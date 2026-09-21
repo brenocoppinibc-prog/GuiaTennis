@@ -1,0 +1,31 @@
+# Como o Netlify publica o GuiaTennis.
+#
+# O site é uma página estática só. Não há nada para compilar: o Netlify
+# pega os arquivos da raiz deste repositório e coloca no ar.
+#
+# Este arquivo só tem efeito quando o site do Netlify está ligado ao
+# repositório do GitHub. Se você continuar arrastando a pasta na mão,
+# ele é ignorado e nada muda.
+
+[build]
+  # A raiz do repositório já é o que vai para o ar — o index.html está aqui.
+  publish = "."
+
+# O HTML não fica em cache. Assim, quando você publica uma correção, quem
+# já visitou o site recebe a versão nova na hora, sem precisar limpar nada.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# As imagens (favicon, ícone do iPhone, imagem de compartilhamento) mudam
+# raramente, então podem ficar guardadas no navegador por uma semana.
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Sobre endereços: o site usa ?court=ID e ?busca=..., que são parâmetros na
+# mesma página. Por isso não precisa de regra de redirecionamento aqui. Se um
+# dia os endereços virarem caminhos de verdade (tipo /academia/morumbi), aí
+# será preciso adicionar um [[redirects]] apontando tudo para /index.html.

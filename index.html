@@ -417,6 +417,113 @@
   .map-fab { bottom: 26px; }
   .map-fab.up { bottom: 88px; }
 
+  /* ======================================================================
+     Três telas: página inicial, busca e página da academia
+     ====================================================================== */
+
+  :root { --green-soft: #EDF4F0; --green-line: #C6DBD1; }
+
+  /* ---- card de resultado (formato do Trivago) ---- */
+  .rcard { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: var(--shadow); transition: box-shadow 0.15s, border-color 0.15s; }
+  .rcard:hover { box-shadow: 0 6px 18px rgba(33,31,26,0.10); border-color: var(--muted-dark); }
+  .rcard-top { display: flex; gap: 12px; padding: 12px; }
+  .rcard-photo { position: relative; width: 132px; height: 132px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, #E4DEC9, #EFEADD); }
+  @media (min-width: 720px) { .rcard-photo { width: 220px; height: 190px; } }
+  .rcard-strip { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .rcard-strip::-webkit-scrollbar { display: none; }
+  .rcard-strip img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; display: block; }
+  .rcard-nophoto { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 4px; }
+  .rcard-dots { position: absolute; left: 0; right: 0; bottom: 7px; display: flex; justify-content: center; gap: 5px; pointer-events: none; }
+  .rcard-dots i { width: 6px; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.55); box-shadow: 0 0 3px rgba(0,0,0,0.4); }
+  .rcard-dots i.on { background: #fff; }
+  .rcard-tag { position: absolute; top: 8px; left: 8px; background: var(--gold); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 999px; }
+  .rcard-info { flex: 1; min-width: 0; }
+  .rcard-head { display: flex; align-items: flex-start; gap: 8px; }
+  .rcard-name { font-size: 18px; font-weight: 700; line-height: 1.18; margin: 0; flex: 1; min-width: 0; }
+  @media (min-width: 720px) { .rcard-name { font-size: 21px; } }
+  .rcard-acts { display: flex; gap: 2px; flex-shrink: 0; }
+  .rcard-acts button { background: none; border: none; padding: 3px; cursor: pointer; display: flex; line-height: 0; }
+  .rcard-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; margin-top: 3px; }
+  .rcard-score { display: flex; align-items: center; gap: 7px; margin-top: 5px; flex-wrap: wrap; }
+  .sbadge { background: var(--green); color: #fff; border-radius: 6px; padding: 3px 8px; font-size: 14px; font-weight: 700; line-height: 1.1; }
+  .sbadge.none { background: var(--bg-alt); color: var(--muted); }
+  .sword { font-size: 14px; font-weight: 700; }
+  .scount { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+  .rcard-line { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; color: var(--muted); margin: 5px 0 0; line-height: 1.35; }
+  .rcard-line span { min-width: 0; }
+  .rcard-line .ico { flex-shrink: 0; margin-top: 1px; }
+
+  .offer { margin: 0 12px 12px; background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 10px; padding: 10px 12px; }
+  .offer-head { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .offer-head strong { font-weight: 700; }
+  .offer-check { color: var(--green); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+  .offer-body { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 6px; }
+  .offer-price { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1.05; white-space: nowrap; }
+  .offer-sub { font-size: 13px; color: var(--muted); margin-top: 1px; }
+  .offer-btn { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; }
+  .offer-note { font-size: 12px; color: var(--muted); margin: 7px 0 0; }
+  .offer-more { border-top: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--muted); }
+  .offer-more strong { color: var(--text); font-weight: 700; margin-right: 5px; }
+
+  /* ---- página inicial ---- */
+  .home-head { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .home-brand { display: flex; align-items: center; gap: 10px; background: none; border: none; padding: 0; cursor: pointer; }
+  .home-brand h1 { font-size: 26px; font-weight: 700; margin: 0; color: var(--green); line-height: 1; }
+  .home-hero { padding: 26px 20px 22px; }
+  .home-hero h2 { font-size: 30px; font-weight: 700; line-height: 1.12; margin: 0; color: var(--text); }
+  @media (min-width: 720px) { .home-hero { padding: 40px 20px 30px; } .home-hero h2 { font-size: 40px; max-width: 620px; } }
+  .home-hero p { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
+  .home-sec { padding: 6px 20px 22px; }
+  .home-sec h3 { font-size: 21px; font-weight: 700; margin: 0 0 12px; }
+  @media (min-width: 720px) { .home-sec h3 { font-size: 25px; } }
+  .home-strip { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+  .home-strip::-webkit-scrollbar { display: none; }
+  .mini { flex: 0 0 210px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; text-align: left; cursor: pointer; padding: 0; box-shadow: var(--shadow); }
+  .mini-photo { height: 118px; background: linear-gradient(135deg, #E4DEC9, #EFEADD); display: flex; align-items: center; justify-content: center; }
+  .mini-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mini-body { padding: 10px 12px 12px; }
+  .mini-name { font-size: 15px; font-weight: 700; margin: 0; line-height: 1.2; }
+  .mini-score { font-size: 13px; margin: 5px 0 0; }
+  .mini-score strong { color: var(--green); font-weight: 700; }
+  .mini-score span { color: var(--muted); }
+  .mini-stars { font-size: 12px; color: var(--gold); margin: 3px 0 0; letter-spacing: 1px; }
+  .mini-stars em { color: var(--muted); font-style: normal; letter-spacing: 0; margin-left: 4px; }
+  .city-tabs { display: flex; gap: 18px; overflow-x: auto; border-bottom: 1px solid var(--border); margin-bottom: 14px; scrollbar-width: none; }
+  .city-tabs::-webkit-scrollbar { display: none; }
+  .city-tab { background: none; border: none; border-bottom: 2px solid transparent; padding: 8px 0 9px; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .city-tab.on { color: var(--green); border-bottom-color: var(--green); font-weight: 700; }
+  .city-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .home-banner { margin: 6px 20px 24px; background: var(--green); border-radius: 14px; padding: 20px; color: #fff; }
+  .home-banner h3 { font-size: 21px; font-weight: 700; margin: 0; color: #fff; }
+  .home-banner p { font-size: 14px; margin: 6px 0 14px; color: rgba(255,255,255,0.82); }
+  .home-banner button { background: var(--gold); color: var(--green-dark); border: none; border-radius: 10px; padding: 12px 20px; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+  /* ---- rodapé em colunas ---- */
+  .sitefooter { background: var(--bg-alt); border-top: 1px solid var(--border); padding: 26px 20px 30px; }
+  .sf-cols { display: grid; gap: 22px; }
+  @media (min-width: 720px) { .sf-cols { grid-template-columns: repeat(3, 1fr); gap: 30px; } }
+  .sf-col h4 { font-size: 15px; font-weight: 700; margin: 0 0 10px; }
+  .sf-col button, .sf-col a { display: block; background: none; border: none; padding: 5px 0; font-size: 14px; color: var(--muted); cursor: pointer; text-align: left; text-decoration: none; }
+  .sf-col button:hover, .sf-col a:hover { color: var(--green); }
+  .sf-base { border-top: 1px solid var(--border); margin-top: 22px; padding-top: 16px; font-size: 12px; color: var(--muted-dark); }
+  .sf-base p { margin: 3px 0; }
+
+  /* ---- página da academia ---- */
+  .courtbar { position: sticky; top: 0; z-index: 20; background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .courtbar button { background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--green); padding: 4px; }
+  .courtbar-name { flex: 1; min-width: 0; font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .courtpage { padding-bottom: 60px; }
+  .courtpage .hero { border-radius: 0; }
+  @media (min-width: 720px) { .courtpage-inner { max-width: 1000px; margin: 0 auto; } .courtpage .hero { border-radius: 14px; overflow: hidden; margin-top: 16px; } }
+  .courtpage .sheet-content { padding: 20px; }
+  .search-header { padding: 16px 20px 18px; border-bottom: 1px solid var(--border); background: var(--card); }
+  .courtpage .detail-rail { top: 62px; }
+  /* no celular o preço e o WhatsApp vêm antes do detalhamento, não no fim */
+  @media (max-width: 859px) {
+    .detail-cols { display: flex; flex-direction: column; }
+    .detail-rail { order: -1; margin-bottom: 20px; }
+  }
+
 </style>
 </head>
 <body>
@@ -438,6 +545,11 @@ function icon(name, size, color) {
   const paths = {
     search: '<circle cx="10" cy="10" r="6"/><line x1="20" y1="20" x2="14.5" y2="14.5"/>',
     filter: '<path d="M3 4.5h18l-7 8.2V20l-4-2.2v-5.1z"/>',
+    check: '<polyline points="4 12.5 9.5 18 20 6"/>',
+    chevron: '<polyline points="9 5 16 12 9 19"/>',
+    chevronLeft: '<polyline points="15 5 8 12 15 19"/>',
+    sparkle: '<path d="M12 3l1.7 5.1L19 10l-5.3 1.9L12 17l-1.7-5.1L5 10l5.3-1.9z"/><path d="M18.4 15.4l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/>',
+    bubble: '<path d="M21 11.5a8 8 0 0 1-8 8H8.5L4 22l1-3.7A8 8 0 1 1 21 11.5z"/>',
     map: '<polygon points="1.5 6 8.5 3 15.5 6 22.5 3 22.5 18 15.5 21 8.5 18 1.5 21"/><line x1="8.5" y1="3" x2="8.5" y2="18"/><line x1="15.5" y1="6" x2="15.5" y2="21"/>',
     list: '<line x1="8.5" y1="6" x2="21" y2="6"/><line x1="8.5" y1="12" x2="21" y2="12"/><line x1="8.5" y1="18" x2="21" y2="18"/><circle cx="3.8" cy="6" r="1.1" fill="' + color + '" stroke="none"/><circle cx="3.8" cy="12" r="1.1" fill="' + color + '" stroke="none"/><circle cx="3.8" cy="18" r="1.1" fill="' + color + '" stroke="none"/>',
     pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
@@ -782,6 +894,9 @@ let state = {
   maxDistance: null,
   cardPhoto: {},
   reviewsExpanded: false,
+  page: "home",
+  backTo: "home",
+  homeCity: null,
   view: "list",
   mapSelected: null,
   mapCenter: null,
@@ -1089,17 +1204,6 @@ function getResults() {
 
 function esc(s) { return (s ?? "").toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-function openCourt(id) {
-  const c = getResults().find(r => r.id === id) || state.allCourts.filter(x => x.id === id).map(decorate)[0];
-  if (!c) return;
-  state.selected = c;
-  state.pendingStar = 0;
-  state.justRated = false;
-  state.reviewsExpanded = false;
-  window.__rateConsent = false;
-  if (!isAdmin) trackClick(c.id, "visualizacao");
-  render();
-}
 
 function render() {
   const scrollTargets = document.querySelectorAll(".sheet, .sheet-scroll, .drawer-body");
@@ -1114,58 +1218,10 @@ function render() {
 
   app.innerHTML = `
     ${isAdmin ? `<div class="admin-banner">Modo admin — só você vê isso <button id="logout-btn" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;margin-left:8px">sair</button></div>` : ""}
-    ${state.view === "map" ? "" : `
-    <div class="header">
-      <div class="brand-row">
-        ${LOGO_SVG}
-        <h1 class="title display">GuiaTennis</h1>
-      </div>
-      <p class="subtitle">Ache e compare quadras e academias perto de você.</p>
-      ${renderSearchCard()}
-      ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
-      ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
-    </div>
-    `}
 
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <p class="toolbar-count">${results.length} ${plural(results.length, "quadra encontrada", "quadras encontradas")}</p>
-        <p class="toolbar-sub">${state.origin ? `a partir de ${esc(state.origin.bairro || state.origin.cidade || "você")}` : "Use o CEP ou o GPS para ordenar por distância"}</p>
-      </div>
-      <div class="toolbar-right">
-        <div class="sortwrap">
-          <button type="button" class="tbtn ${state.showSort ? "on" : ""}" id="sort-toggle">${SORT_OPTS.find(o => o.key === effectiveSort())?.label || "Ordenar"} <span class="caret">▼</span></button>
-          ${renderSortMenu()}
-        </div>
-        <button type="button" class="tbtn filters-tbtn ${activeFilters ? "on" : ""}" id="filters-toggle">
-          ${icon('filter', 14, 'currentColor')} Filtros ${activeFilters ? `<span class="tbtn-badge">${activeFilters}</span>` : ""}
-        </button>
-      </div>
-    </div>
-
-    ${renderActiveChips()}
-
-    ${state.view === "map" ? renderMapView(results) : `
-      <div class="results">
-        ${results.length === 0 ? `
-          <div class="empty">
-            <p style="margin:0 0 10px">Nenhuma quadra encontrada com esses filtros.</p>
-            ${activeFilters ? `<button type="button" class="chip small clear-filters">Limpar todos os filtros</button>` : ""}
-          </div>` : ""}
-        ${results.map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")).join("")}
-      </div>
-    `}
-
-    ${state.view === "map" ? "" : `
-    <div class="footer">
-      <button id="terms-link">Termos de Uso</button>
-      <span>·</span>
-      <button id="privacy-link">Política de Privacidade</button>
-      ${!isAdmin ? `<span>·</span><button id="admin-login-link">GuiaTennis</button>` : ""}
-      <p class="footer-copy">GuiaTennis · guiatennis1@gmail.com</p>
-      <p class="footer-copy">Dados de localização © colaboradores do OpenStreetMap</p>
-    </div>
-    `}
+    ${state.page === "home" ? renderHome() : ""}
+    ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}
+    ${state.page === "court" && state.selected ? renderCourtPage(state.selected) : ""}
 
     <div class="fab-col">
       ${isAdmin ? `
@@ -1173,14 +1229,14 @@ function render() {
         <button class="fab fab-admin" id="fab-admin" title="Solicitações pendentes">
           ${icon('clipboard',20,'var(--green)')}${pending.length ? `<span class="fab-badge">${pending.length}</span>` : ""}
         </button>` : ""}
-      ${state.view === "map" ? "" : `<button class="fab" id="fab-add">+</button>`}
+      ${state.page === "search" && state.view !== "map" ? `<button class="fab" id="fab-add">+</button>` : ""}
     </div>
 
-    <button type="button" class="map-fab ${(state.compareList.length && !state.showCompare) ? "up" : ""}" id="view-toggle">
-      ${state.view === "map" ? `${icon('list', 16, '#fff')} Ver lista` : `${icon('map', 16, '#fff')} Ver no mapa`}
-    </button>
+    ${state.page === "search" ? `
+      <button type="button" class="map-fab ${(state.compareList.length && !state.showCompare) ? "up" : ""}" id="view-toggle">
+        ${state.view === "map" ? `${icon('list', 16, '#fff')} Ver lista` : `${icon('map', 16, '#fff')} Ver no mapa`}
+      </button>` : ""}
 
-    ${state.selected ? renderDetailSheet(state.selected) : ""}
     ${state.showRegister ? renderRegisterSheet() : ""}
     ${state.showAdminPanel ? renderAdminPanel(pending) : ""}
     ${state.showStatsPanel ? renderStatsPanel() : ""}
@@ -1189,7 +1245,7 @@ function render() {
     ${state.showLogin ? renderLoginSheet() : ""}
     ${state.showVisitorSetup ? renderVisitorSetupSheet() : ""}
     ${state.showCompare ? renderCompareSheet() : ""}
-    ${renderFilterDrawer(results.length)}
+    ${state.page === "search" ? renderFilterDrawer(results.length) : ""}
     ${renderNavSheet()}
     ${renderCompareBar()}
     ${renderLightbox()}
@@ -1211,7 +1267,7 @@ function render() {
   });
   window.scrollTo(0, pageScroll);
 
-  if (state.view === "map") mountMap(results);
+  if (state.page === "search" && state.view === "map") mountMap(results);
   else if (__map) { __map.remove(); __map = null; __markers = []; }
 }
 
@@ -1788,6 +1844,270 @@ function mountMap(results) {
   attachMapCardEvents();
 }
 
+// ---------- página inicial ----------
+
+const RECENTS_KEY = "guiatennis_recentes_v1";
+
+function loadRecents() {
+  try { const v = JSON.parse(localStorage.getItem(RECENTS_KEY) || "[]"); return Array.isArray(v) ? v : []; }
+  catch { return []; }
+}
+function pushRecent(id) {
+  const next = [id, ...loadRecents().filter(x => x !== id)].slice(0, 8);
+  try { localStorage.setItem(RECENTS_KEY, JSON.stringify(next)); } catch {}
+}
+
+function cidadesComQuadra() {
+  const map = {};
+  state.allCourts.forEach(c => {
+    const nome = (c.cidade || "").trim();
+    if (!nome) return;
+    if (!map[nome]) map[nome] = [];
+    map[nome].push(c);
+  });
+  return Object.keys(map).sort((a, b) => map[b].length - map[a].length).map(nome => ({ nome, courts: map[nome] }));
+}
+
+function faixaCidade(courts) {
+  const vals = courts.map(parsePriceValue).filter(v => isFinite(v));
+  if (!vals.length) return "";
+  const min = Math.min(...vals), max = Math.max(...vals);
+  return min === max ? `a partir de R$ ${min}/hora` : `de R$ ${min} a R$ ${max} a hora`;
+}
+
+function renderMini(c) {
+  const photos = courtPhotos(c);
+  const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
+  return `
+    <button type="button" class="mini" data-open="${c.id}">
+      <div class="mini-photo">
+        ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 26, 'var(--muted-dark)')}
+      </div>
+      <div class="mini-body">
+        <p class="mini-name">${esc(c.name)}</p>
+        <p class="mini-score">
+          ${c.appCount
+            ? `<strong>${c.appAvg.toFixed(1).replace(".", ",")} · ${scoreWord(c.appAvg, c.appCount)}</strong> <span>${c.appCount}</span>`
+            : `<span>Sem nota ainda</span>`}
+        </p>
+        <p class="mini-stars">${estrelas ? "★".repeat(estrelas) : ""}<em>${totalQuadras(c) ? `${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}` : esc(c.bairro || "")}</em></p>
+      </div>
+    </button>
+  `;
+}
+
+function renderSiteFooter() {
+  return `
+    <div class="sitefooter">
+      <div class="sf-cols">
+        <div class="sf-col">
+          <h4>GuiaTennis</h4>
+          <button type="button" id="footer-cadastrar">Cadastrar minha academia</button>
+          <a href="https://instagram.com/guiatennis" target="_blank" rel="noreferrer">Instagram @guiatennis</a>
+          <a href="mailto:guiatennis1@gmail.com">guiatennis1@gmail.com</a>
+        </div>
+        <div class="sf-col">
+          <h4>Termos e políticas</h4>
+          <button type="button" id="terms-link">Termos de Uso</button>
+          <button type="button" id="privacy-link">Política de Privacidade</button>
+        </div>
+        <div class="sf-col">
+          <h4>Suporte</h4>
+          <button type="button" id="footer-buscar">Como funciona a busca</button>
+          ${!isAdmin ? `<button type="button" id="admin-login-link">Área do GuiaTennis</button>` : ""}
+        </div>
+      </div>
+      <div class="sf-base">
+        <p>GuiaTennis · guiatennis.com.br</p>
+        <p>Dados de localização © colaboradores do OpenStreetMap</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderHome() {
+  const todas = state.allCourts.map(decorate);
+  const recentes = loadRecents().map(id => todas.find(c => c.id === id)).filter(Boolean);
+  const melhores = [...todas]
+    .filter(c => c.appCount > 0)
+    .sort((a, b) => (b.appAvg - a.appAvg) || (b.appCount - a.appCount))
+    .slice(0, 8);
+  const cidades = cidadesComQuadra();
+  const cidadeAtiva = cidades.find(c => c.nome === state.homeCity) || cidades[0];
+
+  return `
+    <div class="home-head">
+      <button type="button" class="home-brand" id="brand-home">
+        ${LOGO_SVG}
+        <h1 class="display">GuiaTennis</h1>
+      </button>
+      <button type="button" class="tbtn" id="home-ir-busca">${icon('search', 14, 'currentColor')} Buscar</button>
+    </div>
+
+    <div class="home-hero">
+      <h2 class="display">Ache uma quadra de tênis perto de você</h2>
+      <p>Compare preço, estrutura e avaliações de academias de tênis — e fale direto com elas.</p>
+      ${renderSearchCard()}
+      ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
+    </div>
+
+    ${recentes.length ? `
+      <div class="home-sec">
+        <h3 class="display">Vistas recentemente</h3>
+        <div class="home-strip">${recentes.map(renderMini).join("")}</div>
+      </div>` : ""}
+
+    ${melhores.length ? `
+      <div class="home-sec">
+        <h3 class="display">Melhores avaliadas no app</h3>
+        <div class="home-strip">${melhores.map(renderMini).join("")}</div>
+      </div>` : ""}
+
+    ${cidades.length ? `
+      <div class="home-sec">
+        <h3 class="display">Onde tem quadra cadastrada</h3>
+        <div class="city-tabs">
+          ${cidades.map(c => `<button type="button" class="city-tab ${c.nome === cidadeAtiva.nome ? "on" : ""}" data-city="${esc(c.nome)}">${esc(c.nome)}</button>`).join("")}
+        </div>
+        <p class="city-note">${cidadeAtiva.courts.length} ${plural(cidadeAtiva.courts.length, "academia cadastrada", "academias cadastradas")}${faixaCidade(cidadeAtiva.courts) ? ` · ${faixaCidade(cidadeAtiva.courts)}` : ""}.</p>
+        <div class="home-strip">${cidadeAtiva.courts.slice(0, 8).map(c => renderMini(decorate(c))).join("")}</div>
+      </div>` : ""}
+
+    <div class="home-banner">
+      <h3 class="display">Tem uma academia de tênis?</h3>
+      <p>O cadastro é gratuito. Seus alunos acham você pelo endereço mais próximo.</p>
+      <button type="button" id="home-cadastrar">Cadastrar de graça</button>
+    </div>
+
+    ${renderSiteFooter()}
+  `;
+}
+
+// ---------- navegação entre as três telas ----------
+
+// O endereço acompanha a tela, então voltar pelo navegador funciona e o link
+// de uma academia continua abrindo direto nela.
+function syncUrl(push) {
+  try {
+    const u = new URL(location.href);
+    u.searchParams.delete("court");
+    u.searchParams.delete("busca");
+    if (state.page === "court" && state.selected) u.searchParams.set("court", state.selected.id);
+    else if (state.page === "search") u.searchParams.set("busca", state.cep || "quadras");
+    const alvo = u.pathname + (u.search ? u.search : "") ;
+    const dados = { page: state.page, court: state.page === "court" && state.selected ? state.selected.id : null };
+    if (push) history.pushState(dados, "", alvo);
+    else history.replaceState(dados, "", alvo);
+  } catch {}
+}
+
+function goHome() {
+  state.page = "home";
+  state.selected = null;
+  state.showSort = false;
+  syncUrl(true);
+  render();
+  window.scrollTo(0, 0);
+}
+
+function goSearch() {
+  state.page = "search";
+  state.selected = null;
+  state.showSort = false;
+  syncUrl(true);
+  render();
+  window.scrollTo(0, 0);
+}
+
+function openCourt(id) {
+  const c = getResults().find(r => r.id === id)
+    || state.allCourts.filter(x => x.id === id).map(decorate)[0]
+    || (state.pending || []).filter(x => x.id === id).map(decorate)[0];
+  if (!c) return;
+  state.backTo = state.page === "court" ? (state.backTo || "search") : state.page;
+  state.selected = c;
+  state.page = "court";
+  state.pendingStar = 0;
+  state.justRated = false;
+  state.reviewsExpanded = false;
+  state.showAdminPanel = false;
+  window.__rateConsent = false;
+  pushRecent(c.id);
+  if (!isAdmin) trackClick(c.id, "visualizacao");
+  syncUrl(true);
+  render();
+  window.scrollTo(0, 0);
+}
+
+function voltarDaFicha() {
+  state.page = state.backTo === "home" ? "home" : "search";
+  state.selected = null;
+  syncUrl(true);
+  render();
+  window.scrollTo(0, 0);
+}
+
+window.addEventListener("popstate", () => {
+  if (!state.loaded) return;
+  const q = new URLSearchParams(location.search);
+  const courtId = q.get("court");
+  if (courtId) {
+    const c = state.allCourts.filter(x => x.id === courtId).map(decorate)[0];
+    if (c) { state.selected = c; state.page = "court"; render(); return; }
+  }
+  state.selected = null;
+  state.page = q.has("busca") ? "search" : "home";
+  render();
+});
+
+function renderSearchPage(results, activeFilters, topBadge) {
+  return `
+    ${state.view === "map" ? "" : `
+      <div class="home-head">
+        <button type="button" class="home-brand" id="brand-home">
+          ${LOGO_SVG}
+          <h1 class="display">GuiaTennis</h1>
+        </button>
+      </div>
+      <div class="search-header">
+        ${renderSearchCard()}
+        ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
+        ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
+      </div>
+    `}
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <p class="toolbar-count">${results.length} ${plural(results.length, "quadra encontrada", "quadras encontradas")}</p>
+        <p class="toolbar-sub">${state.origin ? `a partir de ${esc(state.origin.bairro || state.origin.cidade || "você")}` : "Use o CEP ou o GPS para ordenar por distância"}</p>
+      </div>
+      <div class="toolbar-right">
+        <div class="sortwrap">
+          <button type="button" class="tbtn ${state.showSort ? "on" : ""}" id="sort-toggle">${SORT_OPTS.find(o => o.key === effectiveSort())?.label || "Ordenar"} <span class="caret">▼</span></button>
+          ${renderSortMenu()}
+        </div>
+        <button type="button" class="tbtn filters-tbtn ${activeFilters ? "on" : ""}" id="filters-toggle">
+          ${icon('filter', 14, 'currentColor')} Filtros ${activeFilters ? `<span class="tbtn-badge">${activeFilters}</span>` : ""}
+        </button>
+      </div>
+    </div>
+
+    ${renderActiveChips()}
+
+    ${state.view === "map" ? renderMapView(results) : `
+      <div class="results">
+        ${results.length === 0 ? `
+          <div class="empty">
+            <p style="margin:0 0 10px">Nenhuma quadra encontrada com esses filtros.</p>
+            ${activeFilters ? `<button type="button" class="chip small clear-filters">Limpar todos os filtros</button>` : ""}
+          </div>` : ""}
+        ${results.map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")).join("")}
+      </div>
+      ${renderSiteFooter()}
+    `}
+  `;
+}
+
 // ---------- componentes da interface de busca (estilo Trivago) ----------
 
 function plural(n, singular, plural_) {
@@ -2003,66 +2323,135 @@ function renderActiveChips() {
 }
 
 
+
+// ---------- card de resultado no formato do Trivago ----------
+
+// Cada preço vira uma "oferta": a mais barata abre o card, as outras ficam
+// listadas embaixo, como os parceiros do Trivago.
+function ofertas(c) {
+  const out = [];
+  if (c.priceAula) out.push({ label: "Aula", faixa: c.priceAula });
+  if (c.priceLocacao) out.push({ label: "Locação", faixa: c.priceLocacao });
+  if (!out.length && c.priceRange) out.push({ label: "Preço", faixa: c.priceRange });
+  return out
+    .map(o => ({ ...o, min: parseInt(priceMin(o.faixa) || "0", 10) }))
+    .sort((a, b) => (a.min || 1e9) - (b.min || 1e9));
+}
+
+// Os "✓" verdes ao lado do nome do parceiro.
+function selos(c) {
+  const out = [];
+  if ((c.cobertura || []).includes("coberta")) out.push({ k: "coberta", label: "Coberta" });
+  if ((c.amenities || []).includes("estacionamento_gratuito")) out.push({ k: "estacionamento_gratuito", label: "Estacionamento grátis" });
+  if (out.length < 2 && (c.amenities || []).includes("vestiario")) out.push({ k: "vestiario", label: "Vestiário" });
+  if (out.length < 2 && (c.amenities || []).includes("lanchonete")) out.push({ k: "lanchonete", label: "Lanchonete" });
+  return out.slice(0, 2);
+}
+
+// A linha com a estrelinha, equivalente ao "Piscina externa climatizada".
+// Nunca repete o que já apareceu nos selos da oferta.
+function destaque(c, usados) {
+  const jaUsado = new Set(usados || []);
+  const tem = k => k === "coberta" ? (c.cobertura || []).includes("coberta") : (c.amenities || []).includes(k);
+  const opcoes = [
+    { k: "camera", t: "Câmera para gravar seus pontos" },
+    { k: "coberta", t: "Quadra coberta, joga mesmo com chuva" },
+    { k: "loja", t: "Loja de material no local" },
+    { k: "estacionamento_gratuito", t: "Estacionamento grátis" },
+    { k: "lanchonete", t: "Lanchonete no local" },
+    { k: "assinatura_fitness", t: "Aceita app de assinatura fitness" },
+    { k: "wifi", t: "Wi-Fi no local" },
+    { k: "agua", t: "Água grátis" },
+    { k: "vestiario", t: "Vestiário" },
+  ];
+  const achou = opcoes.find(o => tem(o.k) && !jaUsado.has(o.k));
+  return achou ? achou.t : "";
+}
+
+// O maior valor da faixa, quando a academia informou um intervalo.
+function priceMax(faixa) {
+  const nums = (faixa || "").match(/\d+/g) || [];
+  return nums.length > 1 ? nums[nums.length - 1] : null;
+}
+
+function localLine(c) {
+  const lugar = [c.bairro, c.cidade].filter(Boolean).join(", ");
+  const d = distanceText(c.distanceKm);
+  return d ? `${lugar} · ${d} de você` : lugar;
+}
+
 function renderCard(c, badge) {
   const photos = courtPhotos(c);
-  const idx = cardPhotoIndex(c);
-  const dist = distanceText(c.distanceKm);
   const fav = isFavorite(c.id);
-  const quote = getReviews(c.id).find(r => r.comment && r.comment.trim());
-  const pv = parsePriceValue(c);
+  const precos = ofertas(c);
+  const principal = precos[0];
+  const extras = precos.slice(1);
+  const marcas = selos(c);
+  const dest = destaque(c, marcas.map(m => m.k));
+  const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
 
   return `
-    <div class="card" data-open="${c.id}">
-      <div class="card-media">
-        ${photos.length
-          ? `<img src="${esc(photos[idx])}" alt="${esc(c.name)}" />`
-          : `<span class="card-media-empty">${icon('ball', 32, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></span>`}
-        ${badge ? `<div class="card-badge">${esc(badge)}</div>` : ""}
-        ${isAdmin && pausada ? `<div class="card-badge" style="background:var(--red);left:auto;right:10px;top:52px">Pausada</div>` : ""}
-        <button class="fav-btn" data-fav="${c.id}" title="Favoritar" aria-label="Favoritar">${icon(fav ? 'heartFill' : 'heart', 18, fav ? 'var(--red)' : '#fff')}</button>
-        ${photos.length > 1 ? `
-          <button type="button" class="media-nav media-prev" data-photo-prev="${c.id}" aria-label="Foto anterior">‹</button>
-          <button type="button" class="media-nav media-next" data-photo-next="${c.id}" aria-label="Próxima foto">›</button>
-          <span class="media-count">${idx + 1}/${photos.length}</span>
-        ` : ""}
-      </div>
+    <div class="rcard" data-open="${c.id}">
+      <div class="rcard-top">
+        <div class="rcard-photo">
+          ${photos.length ? `
+            <div class="rcard-strip" data-strip="${c.id}">
+              ${photos.map(p => `<img src="${esc(p)}" alt="${esc(c.name)}" />`).join("")}
+            </div>
+            ${photos.length > 1 ? `<div class="rcard-dots" data-dots="${c.id}">${photos.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
+          ` : `<div class="rcard-nophoto">${icon('ball', 30, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></div>`}
+          ${badge ? `<span class="rcard-tag">${esc(badge)}</span>` : ""}
+          ${isAdmin && pausada ? `<span class="rcard-tag" style="background:var(--red);top:auto;bottom:8px">Pausada</span>` : ""}
+        </div>
 
-      <div class="card-body">
-        <div class="card-top">
-          <div style="min-width:0;flex:1">
-            <p class="card-name">${esc(c.name)}</p>
-            <p class="card-meta">
-              ${icon('pin', 12, 'var(--muted)')} ${esc(c.bairro)}${c.cidade ? ' · ' + esc(c.cidade) : ''}
-              ${dist ? `<span class="distance-pill">${dist} de você</span>` : ''}
-            </p>
+        <div class="rcard-info">
+          <div class="rcard-head">
+            <p class="rcard-name">${esc(c.name)}</p>
+            <div class="rcard-acts">
+              <button type="button" data-share-card="${c.id}" title="Compartilhar" aria-label="Compartilhar">${icon('share', 19, 'var(--muted)')}</button>
+              <button type="button" data-fav="${c.id}" title="Favoritar" aria-label="Favoritar">${icon(fav ? 'heartFill' : 'heart', 20, fav ? 'var(--red)' : 'var(--muted)')}</button>
+            </div>
           </div>
-        </div>
 
-        <div class="tag-row">
-          ${totalQuadras(c) ? `<span class="tag">${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}</span>` : ""}
-          ${(c.pisos || []).map(p => `<span class="tag">${PISO_OPTS.find(x => x.key === p)?.icon || ""} ${PISO_OPTS.find(x => x.key === p)?.label || p}</span>`).join("")}
-          ${(c.cobertura || []).map(k => `<span class="tag">${COBERTURA_OPTS.find(x => x.key === k)?.icon || ""} ${COBERTURA_OPTS.find(x => x.key === k)?.label || k}</span>`).join("")}
-          ${(c.amenities || []).slice(0, 3).map(a => AMENITY_MAP[a] ? `<span class="tag">${AMENITY_MAP[a].icon} ${AMENITY_MAP[a].label}</span>` : "").join("")}
-          ${(c.amenities || []).length > 3 ? `<span class="tag">+${(c.amenities || []).length - 3}</span>` : ""}
-        </div>
+          ${estrelas ? `<div class="rcard-stars">${"★".repeat(estrelas)}</div>` : ""}
 
-        ${quote ? `<p class="card-quote">“${esc(quote.comment.length > 110 ? quote.comment.slice(0, 110) + "…" : quote.comment)}”</p>` : ""}
+          <div class="rcard-score">
+            <span class="sbadge ${c.appCount ? "" : "none"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
+            <span class="sword">${scoreWord(c.appAvg, c.appCount)}</span>
+            ${c.appCount ? `<span class="scount">${icon('bubble', 13, 'var(--muted)')} ${c.appCount}</span>` : ""}
+          </div>
 
-        <div class="card-bottom">
-          <button type="button" class="chip small ${isComparing(c.id) ? 'active' : ''}" data-compare="${c.id}">${isComparing(c.id) ? '✓ Comparando' : '+ Comparar'}</button>
+          <p class="rcard-line"><span class="ico">${icon('pin', 13, 'var(--muted)')}</span><span>${esc(localLine(c))}</span></p>
+          ${dest ? `<p class="rcard-line"><span class="ico">${icon('sparkle', 13, 'var(--gold)')}</span><span>${esc(dest)}</span></p>` : ""}
+          ${totalQuadras(c) ? `<p class="rcard-line"><span class="ico">${icon('ball', 13, 'var(--muted)')}</span><span>${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")} · ${esc(listaPt((c.pisos || []).map(p => PISO_OPTS.find(x => x.key === p)?.label).filter(Boolean)))}</span></p>` : ""}
         </div>
       </div>
 
-      <div class="card-rail">
-        ${scoreBox(c.appAvg, c.appCount, true)}
-        <div class="rail-price-col">
-          ${isFinite(pv)
-            ? `<span class="rail-from">A partir de</span><span class="rail-price">R$ ${pv}</span><span class="rail-unit">por hora</span>`
-            : `<span class="rail-unit">Preço a consultar</span>`}
+      <div class="offer">
+        <div class="offer-head">
+          <strong>${principal ? esc(principal.label) : "Preço"}</strong>
+          ${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}
         </div>
-        <button type="button" class="rail-btn">Ver detalhes</button>
+        <div class="offer-body">
+          <div>
+            ${principal
+              ? `<div class="offer-price">R$ ${esc(priceMin(principal.faixa))}</div>
+                 <div class="offer-sub">por hora${priceMax(principal.faixa) ? ` · até R$ ${esc(priceMax(principal.faixa))}` : ""}</div>`
+              : `<div class="offer-price" style="font-size:19px">A consultar</div>
+                 <div class="offer-sub">a academia ainda não informou o valor</div>`}
+          </div>
+          <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
+        </div>
+        <p class="offer-note">Confirme o valor direto com a academia.</p>
       </div>
+
+      ${extras.length ? extras.map(o => `
+        <div class="offer-more">
+          <span><strong>R$ ${esc(priceMin(o.faixa))}</strong> ${esc(o.label)}</span>
+          <span>${icon('chevron', 14, 'var(--muted)')}</span>
+        </div>
+      `).join("") : ""}
     </div>
   `;
 }
@@ -2144,7 +2533,7 @@ function reviewsSection(c) {
   `;
 }
 
-function renderDetailSheet(c) {
+function renderCourtPage(c) {
   const wa = (c.phone || "").replace(/\D/g, "");
   const dist = distanceText(c.distanceKm);
   const pagoStatus = isAdmin ? getPagoStatus(c.id) : null;
@@ -2189,14 +2578,14 @@ function renderDetailSheet(c) {
   `;
 
   return `
-    <div class="overlay open" id="detail-overlay">
-      <div class="sheet sheet-wide">
-        <div class="hero-actions">
-          <button type="button" class="hero-act ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}">${isComparing(c.id) ? '✓ Comparando' : '+ Comparar'}</button>
-          <button type="button" class="hero-act" data-fav="${c.id}" aria-label="Favoritar">${icon(isFavorite(c.id) ? 'heartFill' : 'heart', 17, isFavorite(c.id) ? 'var(--red)' : 'var(--text)')}</button>
-          <button type="button" class="hero-act" id="detail-close" aria-label="Fechar">✕</button>
-        </div>
-        <div class="sheet-scroll">
+    <div class="courtpage">
+      <div class="courtbar">
+        <button type="button" id="court-back">${icon('chevronLeft', 16, 'var(--green)')} Voltar</button>
+        <span class="courtbar-name">${esc(c.name)}</span>
+        <button type="button" class="hero-act ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}" style="box-shadow:none;background:${isComparing(c.id) ? 'var(--green)' : 'var(--bg-alt)'}">${isComparing(c.id) ? '✓' : '+'} Comparar</button>
+        <button type="button" data-fav="${c.id}" aria-label="Favoritar" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${icon(isFavorite(c.id) ? 'heartFill' : 'heart', 20, isFavorite(c.id) ? 'var(--red)' : 'var(--muted)')}</button>
+      </div>
+      <div class="courtpage-inner">
         ${heroGallery(c)}
         <div class="sheet-content">
           <p class="sheet-eyebrow">${esc(c.bairro)}${c.cidade ? ' · ' + esc(c.cidade) : ''}${dist ? ` · ${dist} de você` : ''}</p>
@@ -2289,7 +2678,6 @@ function renderDetailSheet(c) {
               </div>
             </aside>
           </div>
-        </div>
         </div>
       </div>
     </div>
@@ -2657,6 +3045,46 @@ function attachEvents() {
   const sortBackdrop = document.getElementById("sort-backdrop");
   if (sortBackdrop) sortBackdrop.onclick = () => { state.showSort = false; render(); };
 
+  const brandHome = document.getElementById("brand-home");
+  if (brandHome) brandHome.onclick = goHome;
+
+  const irBusca = document.getElementById("home-ir-busca");
+  if (irBusca) irBusca.onclick = goSearch;
+
+  const courtBack = document.getElementById("court-back");
+  if (courtBack) courtBack.onclick = voltarDaFicha;
+
+  document.querySelectorAll(".city-tab").forEach(el => {
+    el.onclick = () => { state.homeCity = el.dataset.city; render(); };
+  });
+
+  const abrirCadastro = () => {
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[] };
+    state.showRegister = true;
+    state.registerStatus = "idle";
+    render();
+  };
+  const homeCadastrar = document.getElementById("home-cadastrar");
+  if (homeCadastrar) homeCadastrar.onclick = abrirCadastro;
+  const footerCadastrar = document.getElementById("footer-cadastrar");
+  if (footerCadastrar) footerCadastrar.onclick = abrirCadastro;
+  const footerBuscar = document.getElementById("footer-buscar");
+  if (footerBuscar) footerBuscar.onclick = goSearch;
+
+  document.querySelectorAll("[data-share-card]").forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); shareCourt(el.dataset.shareCard); };
+  });
+
+  // pontinhos da galeria do card acompanham o deslize, sem redesenhar a tela
+  document.querySelectorAll("[data-strip]").forEach(strip => {
+    strip.onscroll = () => {
+      const dots = document.querySelector(`[data-dots="${strip.dataset.strip}"]`);
+      if (!dots || !strip.clientWidth) return;
+      const i = Math.round(strip.scrollLeft / strip.clientWidth);
+      dots.querySelectorAll("i").forEach((d, n) => d.classList.toggle("on", n === i));
+    };
+  });
+
   const viewToggle = document.getElementById("view-toggle");
   if (viewToggle) viewToggle.onclick = () => {
     state.view = state.view === "map" ? "list" : "map";
@@ -2821,13 +3249,18 @@ function attachEvents() {
   const cepInput = document.getElementById("cep-input");
   if (cepInput) {
     cepInput.oninput = (e) => { state.cep = e.target.value; };
-    cepInput.onkeydown = (e) => { if (e.key === "Enter") doSearch(); };
+    cepInput.onkeydown = (e) => { if (e.key === "Enter") document.getElementById("search-btn")?.click(); };
   }
   const searchBtn = document.getElementById("search-btn");
-  if (searchBtn) searchBtn.onclick = doSearch;
+  if (searchBtn) searchBtn.onclick = () => {
+    if (!(state.cep || "").trim()) { goSearch(); return; }
+    state.page = "search";
+    syncUrl(true);
+    doSearch().then(() => window.scrollTo(0, 0));
+  };
 
   const locateBtn = document.getElementById("locate-btn");
-  if (locateBtn) locateBtn.onclick = useMyLocation;
+  if (locateBtn) locateBtn.onclick = () => { state.page = "search"; syncUrl(true); useMyLocation(); };
 
   document.querySelectorAll(".sort-chip").forEach(el => { el.onclick = () => { state.sortBy = el.dataset.sort; state.showSort = false; render(); }; });
   const filtersToggle = document.getElementById("filters-toggle");
@@ -3082,10 +3515,6 @@ function attachEvents() {
     };
   });
 
-  const detailClose = document.getElementById("detail-close");
-  const detailOverlay = document.getElementById("detail-overlay");
-  if (detailClose) detailClose.onclick = () => { state.selected = null; render(); };
-  if (detailOverlay) detailOverlay.onclick = (e) => { if (e.target === detailOverlay) { state.selected = null; render(); } };
 
   document.querySelectorAll("#star-picker span").forEach(el => {
     el.onclick = () => { state.pendingStar = parseInt(el.dataset.star, 10); render(); };
@@ -3185,12 +3614,8 @@ function attachEvents() {
 
   document.querySelectorAll("[data-preview]").forEach(el => {
     el.onclick = () => {
-      const p = state.pending.find(x => x.id === el.dataset.preview);
-      if (!p) return;
-      state.selected = p;
-      state.pendingStar = 0;
-      state.justRated = false;
-      render();
+      if (!state.pending.some(x => x.id === el.dataset.preview)) return;
+      openCourt(el.dataset.preview);
     };
   });
 
@@ -3562,13 +3987,17 @@ async function init() {
   if (!isAdmin) trackClick(null, "acesso_site");
   await loadEverything();
 
-  const sharedCourtId = new URLSearchParams(location.search).get("court");
-  if (sharedCourtId) {
-    const shared = state.allCourts.find(c => c.id === sharedCourtId);
-    if (shared) {
-      state.selected = shared;
-      if (!isAdmin) trackClick(shared.id, "visualizacao");
-    }
+  const q = new URLSearchParams(location.search);
+  const sharedCourtId = q.get("court");
+  const shared = sharedCourtId ? state.allCourts.find(c => c.id === sharedCourtId) : null;
+  if (shared) {
+    state.selected = decorate(shared);
+    state.page = "court";
+    state.backTo = "home";
+    pushRecent(shared.id);
+    if (!isAdmin) trackClick(shared.id, "visualizacao");
+  } else {
+    state.page = q.has("busca") ? "search" : "home";
   }
 
   // Remove da comparação academias que não existem mais (excluídas ou pausadas)
@@ -3578,6 +4007,7 @@ async function init() {
   }
 
   state.loaded = true;
+  syncUrl(false);
   render();
 }
 

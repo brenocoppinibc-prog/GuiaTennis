@@ -547,6 +547,25 @@
   .offer-price { font-size: 23px; }
   .offer-body { flex-wrap: wrap; }
 
+  /* ---- comodidades afastadas da modalidade, na caixa de oferta ---- */
+  .offer-head { align-items: baseline; gap: 8px 16px; }
+  .offer-mod { font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  .offer-perks { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-left: auto; }
+  .offer-from { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* ---- vídeo de como funciona a busca ---- */
+  .sec-sub { font-size: 14px; color: var(--muted); margin: -6px 0 12px; }
+  .video-wrap { position: relative; border-radius: 14px; overflow: hidden; background: var(--bg-alt); border: 1px solid var(--border); aspect-ratio: 16 / 9; }
+  .video-player { width: 100%; height: 100%; display: block; border: 0; }
+  .video-holder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
+  .passos { margin: 16px 0 0; padding-left: 20px; font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .passos li { margin-bottom: 8px; }
+  .passos strong { color: var(--text); }
+
+  /* ---- selo de recomendada nos cards da página inicial ---- */
+  .mini { position: relative; }
+  .mini-badge { position: absolute; top: 8px; left: 8px; background: var(--gold); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 999px; }
+
 </style>
 </head>
 <body>
@@ -591,7 +610,8 @@ function icon(name, size, color) {
     clipboard: '<path d="M9 2.5h6a1 1 0 0 1 1 1V6H8V3.5a1 1 0 0 1 1-1z"/><rect x="5" y="4.5" width="14" height="17" rx="2"/><line x1="9" y1="11.5" x2="15" y2="11.5"/><line x1="9" y1="15.5" x2="15" y2="15.5"/>',
     barchart: '<line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="4"/>',
     warning: '<path d="M12 3 2 20h20z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17" r="0.9" fill="' + color + '" stroke="none"/>',
-    ball: '<circle cx="12" cy="12" r="9.5"/><path d="M3 8.5c4 2.5 4 12.5 0 15M21 8.5c-4 2.5-4 12.5 0 15" transform="rotate(0 12 12)"/><path d="M6 3.2c2.5 4 2.5 13.6 0 17.6"/><path d="M18 3.2c-2.5 4-2.5 13.6 0 17.6"/>',
+    ball: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6a9 9 0 0 1 0 12.8"/><path d="M18.4 5.6a9 9 0 0 0 0 12.8"/>',
+    play: '<circle cx="12" cy="12" r="9.5"/><path d="M10 8.2 16 12l-6 3.8z" fill="' + color + '" stroke="none"/>',
     dot: '<circle cx="12" cy="12" r="8" fill="' + color + '" stroke="none"/>',
     parking: '<rect x="3" y="3" width="18" height="18" rx="4"/><text x="12" y="16.5" font-family="Playfair Display, serif" font-size="13" font-weight="700" text-anchor="middle" fill="' + color + '" stroke="none">P</text>',
     watercup: '<path d="M6 4h12l-1.5 15a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1z"/><path d="M7 9c1 1 3 1 4 0s3-1 4 0"/>',
@@ -1869,6 +1889,58 @@ function mountMap(results) {
 
 // ---------- página inicial ----------
 
+// Vídeo do "como funciona a busca" na página inicial.
+// Deixe "" para mostrar só o passo a passo escrito. Para exibir um vídeo,
+// coloque aqui o ID do YouTube (ex.: "dQw4w9WgXcQ") ou o nome de um arquivo
+// publicado junto com o site (ex.: "como-funciona.mp4").
+const VIDEO_COMO_FUNCIONA = "";
+
+// Academias recomendadas escolhidas a dedo: basta pôr os IDs aqui.
+// Com a lista vazia, o guia escolhe sozinho por nota, estrutura, preço e
+// quão completo está o cadastro.
+const RECOMENDADAS = [];
+
+function recomendadasGuia(todas) {
+  if (RECOMENDADAS.length) {
+    return RECOMENDADAS.map(id => todas.find(c => c.id === id)).filter(Boolean);
+  }
+  const ctx = {
+    dists: todas.map(c => c.distanceKm),
+    rates: todas.map(c => c.appCount ? c.appAvg : null),
+    prices: todas.map(c => { const v = parsePriceValue(c); return isFinite(v) ? v : null; }),
+  };
+  return [...todas]
+    .map(c => ({ c, nota: recoScore(c, ctx) + (courtPhotos(c).length ? 10 : 0) + (c.endereco ? 4 : 0) }))
+    .sort((a, b) => b.nota - a.nota)
+    .slice(0, 4)
+    .map(x => x.c);
+}
+
+function blocoVideo() {
+  const v = (VIDEO_COMO_FUNCIONA || "").trim();
+  let player = "";
+  if (/\.(mp4|webm|mov)$/i.test(v)) {
+    player = `<video class="video-player" controls playsinline preload="metadata" src="${esc(v)}"></video>`;
+  } else if (v) {
+    const id = v.includes("/") ? v.split("/").pop().split("?")[0] : v;
+    player = `<iframe class="video-player" src="https://www.youtube-nocookie.com/embed/${esc(id)}" title="Como funciona a busca do GuiaTennis" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  }
+  return `
+    <div class="home-sec">
+      <h3 class="display">Como funciona a busca</h3>
+      <p class="sec-sub">Em um minuto, do endereço até a conversa com a academia.</p>
+      <div class="video-wrap">
+        ${player || `<div class="video-holder">${icon('play', 36, 'var(--green)')}<span>Vídeo em breve — por enquanto, o passo a passo está logo abaixo.</span></div>`}
+      </div>
+      <ol class="passos">
+        <li><strong>Diga onde você está.</strong> CEP, endereço, ponto de referência ou o alvo do GPS.</li>
+        <li><strong>Compare.</strong> As academias aparecem da mais perto para a mais longe, com preço, estrutura e nota de quem já jogou.</li>
+        <li><strong>Fale direto com a academia.</strong> O WhatsApp abre com a conversa já começada.</li>
+      </ol>
+    </div>
+  `;
+}
+
 const RECENTS_KEY = "guiatennis_recentes_v1";
 
 function loadRecents() {
@@ -1898,11 +1970,12 @@ function faixaCidade(courts) {
   return min === max ? `a partir de R$ ${min}/hora` : `de R$ ${min} a R$ ${max} a hora`;
 }
 
-function renderMini(c) {
+function renderMini(c, selo) {
   const photos = courtPhotos(c);
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   return `
     <button type="button" class="mini" data-open="${c.id}">
+      ${selo ? `<span class="mini-badge">${esc(selo)}</span>` : ""}
       <div class="mini-photo">
         ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 26, 'var(--muted-dark)')}
       </div>
@@ -1951,8 +2024,10 @@ function renderSiteFooter() {
 function renderHome() {
   const todas = state.allCourts.map(decorate);
   const recentes = loadRecents().map(id => todas.find(c => c.id === id)).filter(Boolean);
+  const recomendadas = recomendadasGuia(todas);
+  const jaRecomendada = new Set(recomendadas.map(c => c.id));
   const melhores = [...todas]
-    .filter(c => c.appCount > 0)
+    .filter(c => c.appCount > 0 && !jaRecomendada.has(c.id))
     .sort((a, b) => (b.appAvg - a.appAvg) || (b.appCount - a.appCount))
     .slice(0, 8);
   const cidades = cidadesComQuadra();
@@ -1980,10 +2055,19 @@ function renderHome() {
         <div class="home-strip">${recentes.map(renderMini).join("")}</div>
       </div>` : ""}
 
+    ${recomendadas.length ? `
+      <div class="home-sec">
+        <h3 class="display">Recomendadas pelo GuiaTennis</h3>
+        <p class="sec-sub">${RECOMENDADAS.length ? "Escolhidas a dedo pelo guia." : "Escolhidas por nota, estrutura, preço e cadastro completo."}</p>
+        <div class="home-strip">${recomendadas.map(c => renderMini(c, "Recomendada")).join("")}</div>
+      </div>` : ""}
+
+    ${blocoVideo()}
+
     ${melhores.length ? `
       <div class="home-sec">
         <h3 class="display">Melhores avaliadas no app</h3>
-        <div class="home-strip">${melhores.map(renderMini).join("")}</div>
+        <div class="home-strip">${melhores.map(c => renderMini(c)).join("")}</div>
       </div>` : ""}
 
     ${cidades.length ? `
@@ -2453,28 +2537,22 @@ function renderCard(c, badge) {
 
       <div class="offer">
         <div class="offer-head">
-          <strong>${principal ? esc(principal.label) : "Preço"}</strong>
-          ${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}
+          <strong class="offer-mod">${principal ? esc(principal.label) : "Preço"}</strong>
+          ${marcas.length ? `<span class="offer-perks">${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</span>` : ""}
         </div>
         <div class="offer-body">
           <div>
             ${principal
-              ? `<div class="offer-price">${esc(precoTexto(principal.faixa))}</div>
+              ? `<div class="offer-from">A partir de</div>
+                 <div class="offer-price">R$ ${esc(priceMin(principal.faixa))}</div>
                  <div class="offer-sub">por hora</div>`
               : `<div class="offer-price" style="font-size:18px">A consultar</div>
                  <div class="offer-sub">a academia ainda não informou o valor</div>`}
           </div>
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>
-        <p class="offer-note">Confirme o valor direto com a academia.</p>
+        <p class="offer-note">${extras.length ? `Tem ${esc(listaPt(extras.map(o => o.label.toLowerCase())))} também — veja os valores na academia.` : "Confirme o valor direto com a academia."}</p>
       </div>
-
-      ${extras.length ? extras.map(o => `
-        <div class="offer-more">
-          <span><strong>${esc(precoTexto(o.faixa))}</strong> ${esc(o.label)} · por hora</span>
-          <span>${icon('chevron', 14, 'var(--muted)')}</span>
-        </div>
-      `).join("") : ""}
     </div>
   `;
 }

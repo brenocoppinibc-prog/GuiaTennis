@@ -350,13 +350,8 @@
   .sheet-scroll { flex: 1; overflow-y: auto; min-height: 0; }
   .hero-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 200px; background: linear-gradient(135deg, #E4DEC9, #EFEADD); }
 
-  .detail-cols { display: block; }
-  @media (min-width: 860px) { .detail-cols { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 26px; align-items: start; } .detail-rail { position: sticky; top: 8px; } }
-  .rail-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); }
-  .rail-card .cta-btn { width: 100%; }
-  .rail-card-price { font-size: 26px; font-weight: 800; color: var(--green); font-family: 'Playfair Display', serif; line-height: 1.1; }
 
-  .detail-main > .cta-btn { width: 100%; }
+  .courtpage .sheet-content > .cta-btn, .courtpage .cta-col .cta-btn { width: 100%; }
   .sec { margin-top: 24px; }
   .sec-title { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
 
@@ -517,12 +512,40 @@
   @media (min-width: 720px) { .courtpage-inner { max-width: 1000px; margin: 0 auto; } .courtpage .hero { border-radius: 14px; overflow: hidden; margin-top: 16px; } }
   .courtpage .sheet-content { padding: 20px; }
   .search-header { padding: 16px 20px 18px; border-bottom: 1px solid var(--border); background: var(--card); }
-  .courtpage .detail-rail { top: 62px; }
-  /* no celular o preço e o WhatsApp vêm antes do detalhamento, não no fim */
-  @media (max-width: 859px) {
-    .detail-cols { display: flex; flex-direction: column; }
-    .detail-rail { order: -1; margin-bottom: 20px; }
-  }
+
+  /* ---- página da academia: preços como opções que se escolhe ---- */
+  .court-head { padding: 18px 20px 4px; }
+  .court-name { font-size: 27px; font-weight: 700; line-height: 1.12; margin: 4px 0 0; }
+  @media (min-width: 720px) { .court-name { font-size: 34px; } }
+  .court-stars { color: var(--gold); font-size: 15px; letter-spacing: 1px; margin-top: 6px; }
+  .court-score { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
+  .court-score .sbadge { font-size: 16px; padding: 5px 10px; }
+  .court-score-word { font-size: 15px; font-weight: 700; }
+  .court-score-count { font-size: 13px; color: var(--muted); text-decoration: underline; }
+  .court-addr { display: flex; align-items: flex-start; gap: 6px; font-size: 14px; color: var(--muted); margin: 12px 0 0; line-height: 1.4; }
+  .court-addr button { background: none; border: none; padding: 0; color: var(--green); font-weight: 700; font-size: 14px; cursor: pointer; text-decoration: underline; font-family: inherit; }
+
+  .opt-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--card); box-shadow: var(--shadow); }
+  .opt-card + .opt-card { margin-top: 12px; }
+  .opt-card-name { font-size: 18px; font-weight: 700; margin: 0; }
+  .opt-card-desc { font-size: 13px; color: var(--muted); margin: 3px 0 0; }
+  .opt-card-perks { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 9px; }
+  .opt-card-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .opt-card-price { font-size: 25px; font-weight: 800; line-height: 1.05; white-space: nowrap; }
+  .opt-card-unit { font-size: 13px; color: var(--muted); }
+  .opt-card-foot .cta-btn { flex: 1 1 200px; margin: 0; }
+  .opt-nota { font-size: 12px; color: var(--muted); margin: 10px 0 0; line-height: 1.45; }
+
+  /* barra de contato que acompanha a rolagem, como a de reservar do hotel */
+  .court-cta { position: sticky; bottom: 0; z-index: 30; background: var(--card); border-top: 1px solid var(--border); padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); display: flex; gap: 10px; box-shadow: 0 -4px 16px rgba(33,31,26,0.08); }
+  .court-cta .cta-btn { margin: 0; }
+  .court-cta .cta-primary { flex: 1; }
+  .court-cta .cta-secondary { flex: 0 0 auto; padding: 11px 15px; }
+  .court-cta.up { bottom: 64px; }
+
+  /* o preço do card da busca também passa a mostrar a faixa inteira */
+  .offer-price { font-size: 23px; }
+  .offer-body { flex-wrap: wrap; }
 
 </style>
 </head>
@@ -2436,9 +2459,9 @@ function renderCard(c, badge) {
         <div class="offer-body">
           <div>
             ${principal
-              ? `<div class="offer-price">R$ ${esc(priceMin(principal.faixa))}</div>
-                 <div class="offer-sub">por hora${priceMax(principal.faixa) ? ` · até R$ ${esc(priceMax(principal.faixa))}` : ""}</div>`
-              : `<div class="offer-price" style="font-size:19px">A consultar</div>
+              ? `<div class="offer-price">${esc(precoTexto(principal.faixa))}</div>
+                 <div class="offer-sub">por hora</div>`
+              : `<div class="offer-price" style="font-size:18px">A consultar</div>
                  <div class="offer-sub">a academia ainda não informou o valor</div>`}
           </div>
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
@@ -2448,7 +2471,7 @@ function renderCard(c, badge) {
 
       ${extras.length ? extras.map(o => `
         <div class="offer-more">
-          <span><strong>R$ ${esc(priceMin(o.faixa))}</strong> ${esc(o.label)}</span>
+          <span><strong>${esc(precoTexto(o.faixa))}</strong> ${esc(o.label)} · por hora</span>
           <span>${icon('chevron', 14, 'var(--muted)')}</span>
         </div>
       `).join("") : ""}
@@ -2533,20 +2556,69 @@ function reviewsSection(c) {
   `;
 }
 
+// O texto de preço é um só no site inteiro: faixa completa, sempre por hora.
+function precoTexto(faixa) {
+  const min = priceMin(faixa);
+  const max = priceMax(faixa);
+  if (!min) return "";
+  return max && max !== min ? `R$ ${min} a ${max}` : `R$ ${min}`;
+}
+
+// Cada preço vira uma opção que a pessoa escolhe, como os quartos de um hotel.
+function opcoesPreco(c) {
+  const out = [];
+  if (c.priceAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula, assunto: "as aulas" });
+  if (c.priceLocacao) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao, assunto: "alugar a quadra" });
+  if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor informado pela academia", faixa: c.priceRange, assunto: "os valores" });
+  return out.sort((a, b) => (parseInt(priceMin(a.faixa), 10) || 1e9) - (parseInt(priceMin(b.faixa), 10) || 1e9));
+}
+
+function waLink(c, assunto) {
+  const wa = (c.phone || "").replace(/\D/g, "");
+  const texto = assunto
+    ? `Olá! Vim pelo GuiaTennis e queria saber sobre ${assunto}.`
+    : "Olá! Vim pelo GuiaTennis e gostaria de saber mais informações sobre a academia.";
+  return `https://wa.me/55${wa.replace(/^55/, "")}?text=${encodeURIComponent(texto)}`;
+}
+
+function blocoOpcoes(c) {
+  const opcoes = opcoesPreco(c);
+  const marcas = selos(c);
+
+  if (!opcoes.length) {
+    return `
+      <div class="opt-card">
+        <p class="opt-card-name">Preço a consultar</p>
+        <p class="opt-card-desc">A academia ainda não informou os valores no GuiaTennis.</p>
+        <div class="opt-card-foot">
+          <div><span class="opt-card-unit">Pergunte direto para ela</span></div>
+          ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Perguntar no WhatsApp</a>` : ""}
+        </div>
+      </div>`;
+  }
+
+  return opcoes.map(o => `
+    <div class="opt-card">
+      <p class="opt-card-name">${esc(o.nome)}</p>
+      <p class="opt-card-desc">${esc(o.desc)}</p>
+      ${marcas.length ? `<div class="opt-card-perks">${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</div>` : ""}
+      <div class="opt-card-foot">
+        <div>
+          <div class="opt-card-price">${esc(precoTexto(o.faixa))}</div>
+          <div class="opt-card-unit">por hora</div>
+        </div>
+        ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c, o.assunto)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
+      </div>
+    </div>
+  `).join("");
+}
+
 function renderCourtPage(c) {
   const wa = (c.phone || "").replace(/\D/g, "");
   const dist = distanceText(c.distanceKm);
   const pagoStatus = isAdmin ? getPagoStatus(c.id) : null;
-  const pv = parsePriceValue(c);
+  const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
-
-  const contatos = `
-    ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="https://wa.me/55${wa.replace(/^55/, '')}?text=${encodeURIComponent('Olá! Vim pelo GuiaTennis e gostaria de saber mais informações sobre a academia.')}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
-    ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer" style="margin-top:8px">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
-    ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer" style="margin-top:8px">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
-    ${c.endereco ? navLinks(c) : ""}
-    <button class="cta-btn cta-secondary" id="share-btn" data-court="${c.id}" style="margin-top:8px">${icon('share', 15, 'var(--green)')} Compartilhar</button>
-  `;
 
   const adminBlock = !isAdmin ? "" : `
     <div class="admin-pago-box" style="margin-right:0">
@@ -2585,105 +2657,105 @@ function renderCourtPage(c) {
         <button type="button" class="hero-act ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}" style="box-shadow:none;background:${isComparing(c.id) ? 'var(--green)' : 'var(--bg-alt)'}">${isComparing(c.id) ? '✓' : '+'} Comparar</button>
         <button type="button" data-fav="${c.id}" aria-label="Favoritar" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${icon(isFavorite(c.id) ? 'heartFill' : 'heart', 20, isFavorite(c.id) ? 'var(--red)' : 'var(--muted)')}</button>
       </div>
+
       <div class="courtpage-inner">
         ${heroGallery(c)}
-        <div class="sheet-content">
+
+        <div class="court-head">
           <p class="sheet-eyebrow">${esc(c.bairro)}${c.cidade ? ' · ' + esc(c.cidade) : ''}${dist ? ` · ${dist} de você` : ''}</p>
-          <p class="sheet-title display">${esc(c.name)}</p>
-          <div class="sheet-meta" style="margin-top:10px">
-            ${scoreBox(c.appAvg, c.appCount)}
+          <h2 class="court-name display">${esc(c.name)}</h2>
+          ${estrelas ? `<div class="court-stars">${"★".repeat(estrelas)}</div>` : ""}
+          <button type="button" class="court-score" id="ir-avaliacoes">
+            <span class="sbadge ${c.appCount ? "" : "none"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
+            <span class="court-score-word">${scoreWord(c.appAvg, c.appCount)}</span>
+            ${c.appCount ? `<span class="court-score-count">${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}</span>` : ""}
+          </button>
+          ${c.endereco ? `
+            <p class="court-addr">
+              <span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span>
+              <span>${esc(c.endereco)} — <button type="button" data-nav="${c.id}">Ver no mapa</button></span>
+            </p>` : ""}
+        </div>
+
+        <div class="sheet-content" style="padding-top:8px">
+          ${isAdmin ? adminBlock : ""}
+
+          <div class="sec">
+            <p class="sec-title">Escolha o que você quer</p>
+            ${blocoOpcoes(c)}
+            <p class="opt-nota">Valores informados pela própria academia, por hora de quadra. Confirme na conversa antes de fechar horário.</p>
           </div>
 
-          <div class="detail-cols" style="margin-top:20px">
-            <div class="detail-main">
-              ${isAdmin ? adminBlock : ""}
-
-              ${c.appCount ? `<div class="sec"><p class="sec-title">Nota no app</p>${ratingPanel(c)}</div>` : ""}
-
+          ${(totalQuadras(c) || (c.amenities || []).length) ? `
+            <div class="sec">
+              <p class="sec-title">Sobre a academia</p>
               ${totalQuadras(c) ? `
-                <div class="sec">
-                  <p class="sec-title">Quadras (${totalQuadras(c)} no total)</p>
-                  <div class="amenity-grid">
-                    ${QUADRA_COMBOS.filter(q => c.quadras[q.key] > 0).map(q => `
-                      <div class="amenity-item">${PISO_OPTS.find(p => p.key === q.piso)?.icon} ${c.quadras[q.key]}x ${PISO_OPTS.find(p => p.key === q.piso)?.label} ${COBERTURA_OPTS.find(x => x.key === q.cobertura)?.label.toLowerCase()}</div>
-                    `).join("")}
-                  </div>
+                <p class="field-label" style="margin-top:0">Quadras (${totalQuadras(c)} no total)</p>
+                <div class="amenity-grid">
+                  ${QUADRA_COMBOS.filter(q => c.quadras[q.key] > 0).map(q => `
+                    <div class="amenity-item">${PISO_OPTS.find(p => p.key === q.piso)?.icon} ${c.quadras[q.key]}x ${PISO_OPTS.find(p => p.key === q.piso)?.label} ${COBERTURA_OPTS.find(x => x.key === q.cobertura)?.label.toLowerCase()}</div>
+                  `).join("")}
                 </div>` : ""}
-
               ${(c.amenities || []).length ? `
-                <div class="sec">
-                  <p class="sec-title">Comodidades</p>
-                  <div class="amenity-grid">
-                    ${c.amenities.map(a => AMENITY_MAP[a] ? `<div class="amenity-item">${AMENITY_MAP[a].icon} ${AMENITY_MAP[a].label}</div>` : "").join("")}
-                  </div>
+                <p class="field-label">Comodidades</p>
+                <div class="amenity-grid">
+                  ${c.amenities.map(a => AMENITY_MAP[a] ? `<div class="amenity-item">${AMENITY_MAP[a].icon} ${AMENITY_MAP[a].label}</div>` : "").join("")}
                 </div>` : ""}
+            </div>` : ""}
 
-              ${(c.modalidades || []).length ? `
-                <div class="sec">
-                  <p class="sec-title">O que a academia oferece</p>
-                  <div class="tag-row">
-                    ${(c.modalidades || []).map(m => `<span class="tag">${MODALIDADE_OPTS.find(x => x.key === m)?.icon} ${MODALIDADE_OPTS.find(x => x.key === m)?.label}</span>`).join("")}
-                  </div>
-                </div>` : ""}
+          <div class="sec" id="avaliacoes">
+            <p class="sec-title">Avaliações</p>
+            ${c.appCount ? ratingPanel(c) : `<p style="font-size:14px;color:var(--muted);margin:0">Essa academia ainda não tem avaliação no app. A sua pode ser a primeira.</p>`}
 
-              <div class="sec">
-                <p class="sec-title">Preços</p>
-                <div class="price-box" style="margin-top:0">
-                  <p>Faixa de preço por hora</p>
-                  <p>${(c.priceAula || c.priceLocacao) ? priceBlock(c, false) : (c.priceRange ? esc(c.priceRange) : "Consulte diretamente com a academia")}</p>
+            <div class="rate-box">
+              ${state.justRated ? `
+                <p class="rate-thanks">Obrigado por avaliar!</p>
+              ` : `
+                <p>Já jogou aqui? Avalie essa quadra</p>
+                <div class="star-picker" id="star-picker">
+                  ${[1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= state.pendingStar ? 'filled' : ''}">★</span>`).join("")}
                 </div>
-              </div>
-
-              ${c.endereco ? `
-                <div class="sec">
-                  <p class="sec-title">Onde fica</p>
-                  <p style="font-size:14px;margin:2px 0 0">${esc(c.endereco)}</p>
-                  ${navLinks(c)}
-                </div>` : ""}
-
-              <div class="rate-box">
-                ${state.justRated ? `
-                  <p class="rate-thanks">Obrigado por avaliar!</p>
-                ` : `
-                  <p>Já jogou aqui? Avalie essa quadra</p>
-                  <div class="star-picker" id="star-picker">
-                    ${[1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= state.pendingStar ? 'filled' : ''}">★</span>`).join("")}
-                  </div>
-                  <textarea id="rate-comment" class="form-field" style="margin-top:12px;resize:none" rows="2" placeholder="Descreva sua experiência (opcional)">${esc(window.__rateComment || "")}</textarea>
-                  <label class="consent-row" style="text-align:left">
-                    <input type="checkbox" id="rate-consent" ${window.__rateConsent ? "checked" : ""} />
-                    <span>Minha avaliação é verídica e segue os <button type="button" class="inline-link" id="open-terms-from-rating">Termos de Uso</button>.</span>
-                  </label>
-                  <button class="btn-primary" id="rate-submit" style="width:100%;justify-content:center;margin-top:10px;padding:10px 0" ${(state.pendingStar && window.__rateConsent) ? "" : "disabled"}>Enviar avaliação</button>
-                `}
-              </div>
-
-              ${reviewsSection(c)}
-
-              ${c.source === "seed" ? `<p class="footnote">Dados públicos de endereço e comodidades — a nota mostrada é só das avaliações feitas aqui no app.</p>` : ""}
-              ${c.source === "custom" ? `<p class="footnote">Cadastrado pela comunidade e aprovado. Confira os dados antes de fechar horário.</p>` : ""}
+                <textarea id="rate-comment" class="form-field" style="margin-top:12px;resize:none" rows="2" placeholder="Descreva sua experiência (opcional)">${esc(window.__rateComment || "")}</textarea>
+                <label class="consent-row" style="text-align:left">
+                  <input type="checkbox" id="rate-consent" ${window.__rateConsent ? "checked" : ""} />
+                  <span>Minha avaliação é verídica e segue os <button type="button" class="inline-link" id="open-terms-from-rating">Termos de Uso</button>.</span>
+                </label>
+                <button class="btn-primary" id="rate-submit" style="width:100%;justify-content:center;margin-top:10px;padding:10px 0" ${(state.pendingStar && window.__rateConsent) ? "" : "disabled"}>Enviar avaliação</button>
+              `}
             </div>
 
-            <aside class="detail-rail">
-              <div class="rail-card">
-                ${isFinite(pv)
-                  ? `<span class="rail-from">A partir de</span>
-                     <div class="rail-card-price">R$ ${pv}</div>
-                     <span class="rail-unit">por hora · confirme na academia</span>`
-                  : `<div class="rail-card-price" style="font-size:18px">Preço a consultar</div>
-                     <span class="rail-unit">A academia ainda não informou valores</span>`}
-                <div class="cta-col" style="margin-top:14px">
-                  ${contatos}
-                </div>
-              </div>
-            </aside>
+            ${reviewsSection(c)}
           </div>
+
+          ${c.endereco ? `
+            <div class="sec">
+              <p class="sec-title">Onde fica</p>
+              <p style="font-size:14px;margin:2px 0 0">${esc(c.endereco)}</p>
+              ${navLinks(c)}
+            </div>` : ""}
+
+          <div class="sec">
+            <p class="sec-title">Contato</p>
+            <div class="cta-col" style="margin-top:0">
+              ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
+              ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
+              <button class="cta-btn cta-secondary" id="share-btn" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
+            </div>
+          </div>
+
+          ${c.source === "seed" ? `<p class="footnote">Dados públicos de endereço e comodidades — a nota mostrada é só das avaliações feitas aqui no app.</p>` : ""}
+          ${c.source === "custom" ? `<p class="footnote">Cadastrado pela comunidade e aprovado. Confira os dados antes de fechar horário.</p>` : ""}
         </div>
       </div>
+
+      ${c.phone ? `
+        <div class="court-cta ${(state.compareList.length && !state.showCompare) ? "up" : ""}">
+          <a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>
+          <button type="button" class="cta-btn cta-secondary" id="share-btn-2" data-court="${c.id}" aria-label="Compartilhar">${icon('share', 15, 'var(--green)')}</button>
+        </div>` : ""}
     </div>
   `;
 }
-
 function renderRegisterSheet() {
   const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[] };
   window.__form = f;
@@ -3050,6 +3122,15 @@ function attachEvents() {
 
   const irBusca = document.getElementById("home-ir-busca");
   if (irBusca) irBusca.onclick = goSearch;
+
+  const irAvaliacoes = document.getElementById("ir-avaliacoes");
+  if (irAvaliacoes) irAvaliacoes.onclick = () => {
+    const alvo = document.getElementById("avaliacoes");
+    if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const shareBtn2 = document.getElementById("share-btn-2");
+  if (shareBtn2) shareBtn2.onclick = () => shareCourt(shareBtn2.dataset.court);
 
   const courtBack = document.getElementById("court-back");
   if (courtBack) courtBack.onclick = voltarDaFicha;

@@ -713,7 +713,7 @@ const AMENITY_OPTS = [
   { key: "estacionamento_gratuito", label: "Estacionamento grátis", icon: icon('parking', 14, 'var(--green)') },
   { key: "estacionamento_pago", label: "Estacionamento pago", icon: icon('parking', 14, 'var(--gold)') },
   { key: "vestiario", label: "Vestiário", icon: icon('droplet', 14, 'var(--green)') },
-  { key: "loja", label: "Loja de material", icon: icon('bag', 14, 'var(--green)') },
+  { key: "loja", label: "Loja de materiais", icon: icon('bag', 14, 'var(--green)') },
   { key: "wifi", label: "Wi-Fi", icon: icon('wifi', 14, 'var(--green)') },
   { key: "lanchonete", label: "Lanchonete", icon: icon('cup', 14, 'var(--green)') },
   { key: "agua", label: "Água grátis", icon: icon('watercup', 14, 'var(--green)') },
@@ -735,6 +735,14 @@ function matchesAmenityFilter(court, filterKey) {
   }
   return court.amenities?.includes(filterKey);
 }
+
+// Planos de presença no site. O básico é a listagem gratuita; os outros
+// dois são pagos. Guardados na coluna "plano" da tabela academias.
+const PLANO_OPTS = [
+  { key: "basico", label: "Básico", desc: "Listagem gratuita" },
+  { key: "completo", label: "Completo", desc: "Plano pago" },
+  { key: "premium", label: "Premium", desc: "Plano pago, nível mais alto" },
+];
 
 const PISO_OPTS = [
   { key: "saibro", label: "Saibro", icon: icon('dot', 14, '#B5651D') },
@@ -832,6 +840,7 @@ function mapRow(row) {
     source: row.source,
     status: row.status,
     pago: !!row.pago,
+    plano: row.plano || "basico",
     pausada: !!row.pausada,
     pausadaAte: row.pausada_ate,
     nomeSolicitante: row.nome_solicitante,
@@ -882,13 +891,28 @@ async function loadEverything() {
   state.reviewsCache = reviewsCache;
 }
 
-function getPagoStatus(courtId) {
+function getPlano(courtId) {
   const c = state.allCourts.find(x => x.id === courtId) || state.pending.find(x => x.id === courtId);
-  return { pago: !!(c && c.pago) };
+  return (c && c.plano) || "basico";
 }
-async function setPagoStatus(courtId, pago) {
-  await sb.from('academias').update({ pago }).eq('id', courtId);
+
+// O "pago" continua existindo e anda junto com o plano, para as telas e os
+// relatórios antigos não quebrarem: básico é grátis, os outros dois são pagos.
+async function setPlano(courtId, plano) {
+  const { error } = await sb.from('academias')
+    .update({ plano, pago: plano !== "basico" })
+    .eq('id', courtId);
+  if (error) {
+    alert(
+      "Não consegui salvar o plano.\n\n" +
+      "Se a tabela ainda não tem a coluna, rode isto no SQL Editor do Supabase:\n\n" +
+      "alter table academias add column if not exists plano text not null default 'basico';\n\n" +
+      "Erro: " + error.message
+    );
+    return false;
+  }
   await loadEverything();
+  return true;
 }
 
 function loadFavorites() {
@@ -2581,7 +2605,7 @@ function destaque(c, usados) {
   const opcoes = [
     { k: "camera", t: "Câmera para gravar seus pontos" },
     { k: "coberta", t: "Quadra coberta, joga mesmo com chuva" },
-    { k: "loja", t: "Loja de material no local" },
+    { k: "loja", t: "Loja de materiais no local" },
     { k: "estacionamento_gratuito", t: "Estacionamento grátis" },
     { k: "lanchonete", t: "Lanchonete no local" },
     { k: "assinatura_fitness", t: "Aceita app de assinatura fitness" },
@@ -2628,6 +2652,7 @@ function renderCard(c, badge) {
           ` : `<div class="rcard-nophoto">${icon('ball', 30, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></div>`}
           ${badge ? `<span class="rcard-tag">${esc(badge)}</span>` : ""}
           ${isAdmin && pausada ? `<span class="rcard-tag" style="background:var(--red);top:auto;bottom:8px">Pausada</span>` : ""}
+        ${isAdmin && c.plano && c.plano !== "basico" ? `<span class="rcard-tag" style="background:var(--green);top:auto;bottom:${pausada ? "34px" : "8px"}">${esc(PLANO_OPTS.find(o => o.key === c.plano)?.label || c.plano)}</span>` : ""}
         </div>
 
         <div class="rcard-info">
@@ -2835,14 +2860,16 @@ function blocoOpcoes(c) {
 function renderCourtPage(c) {
   const wa = (c.phone || "").replace(/\D/g, "");
   const dist = distanceText(c.distanceKm);
-  const pagoStatus = isAdmin ? getPagoStatus(c.id) : null;
+  const plano = isAdmin ? getPlano(c.id) : null;
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
 
   const adminBlock = !isAdmin ? "" : `
-    <div class="admin-pago-box" style="margin-right:0">
-      <span>${pagoStatus.pago ? "Pago" : "Beta / não pago"}</span>
-      <button type="button" id="toggle-pago" data-court="${c.id}">${pagoStatus.pago ? "Marcar como não pago" : "Marcar como pago"}</button>
+    <div class="admin-pago-box" style="flex-direction:column;align-items:stretch;gap:8px;margin-right:0">
+      <span>Plano: <strong>${esc(PLANO_OPTS.find(o => o.key === plano)?.label || "Básico")}</strong> — ${esc(PLANO_OPTS.find(o => o.key === plano)?.desc || "")}</span>
+      <div class="chip-row">
+        ${PLANO_OPTS.map(o => `<button type="button" class="chip small plano-btn ${plano === o.key ? "active" : ""}" data-court="${c.id}" data-plano="${o.key}">${o.label}</button>`).join("")}
+      </div>
     </div>
     ${c.status !== "pending" ? `
       <div class="admin-pago-box" style="flex-direction:column;align-items:stretch;gap:10px;margin-right:0">
@@ -3607,15 +3634,19 @@ function attachEvents() {
     };
   });
 
-  const togglePago = document.getElementById("toggle-pago");
-  if (togglePago) togglePago.onclick = async () => {
-    const current = getPagoStatus(togglePago.dataset.court);
-    await setPagoStatus(togglePago.dataset.court, !current.pago);
-    if (state.selected && state.selected.id === togglePago.dataset.court) {
-      state.selected = state.allCourts.find(c => c.id === togglePago.dataset.court) || state.pending.find(c => c.id === togglePago.dataset.court);
-    }
-    render();
-  };
+  document.querySelectorAll(".plano-btn").forEach(el => {
+    el.onclick = async () => {
+      const id = el.dataset.court;
+      if (getPlano(id) === el.dataset.plano) return;
+      const ok = await setPlano(id, el.dataset.plano);
+      if (!ok) return;
+      if (state.selected && state.selected.id === id) {
+        const atual = state.allCourts.find(c => c.id === id) || state.pending.find(c => c.id === id);
+        if (atual) state.selected = decorate(atual);
+      }
+      render();
+    };
+  });
 
   async function refreshAfterPauseChange() {
     await loadEverything();

@@ -19,6 +19,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
     --bg: #F7F4EC;
@@ -50,13 +52,8 @@
   .logo-mark { flex-shrink: 0; }
   .subtitle { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
 
-  .search-row { display: flex; gap: 8px; margin-top: 20px; }
-  .search-box { flex: 1; display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0 12px; }
-  .search-box input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); padding: 11px 0; font-size: 14px; font-family: 'Inter', sans-serif; }
-  .search-box input::placeholder { color: var(--muted-dark); }
   .btn-primary { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 0 20px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
   .btn-primary:disabled { opacity: 0.6; cursor: default; }
-  .btn-locate { background: var(--card); border: 1px solid var(--border); border-radius: 10px; width: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   .locate-hint { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; margin-top: 8px; }
 
   .status-line { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 10px; }
@@ -243,18 +240,6 @@
   @media (min-width: 720px) { .container { max-width: 760px; } }
   @media (min-width: 1024px) { .container { max-width: 1180px; } }
 
-  /* ---- shell: sidebar de filtros + resultados (desktop) ---- */
-  .shell { display: block; }
-  @media (min-width: 1024px) {
-    .shell { display: grid; grid-template-columns: 296px minmax(0, 1fr); gap: 24px; align-items: start; padding: 0 20px; }
-    .shell .results { padding: 16px 0 96px; }
-  }
-  .sidebar { display: none; }
-  @media (min-width: 1024px) { .sidebar { display: block; position: sticky; top: 92px; padding-top: 16px; } }
-  .sidebar-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 2px 16px 12px; max-height: calc(100vh - 130px); overflow-y: auto; box-shadow: var(--shadow); }
-  .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card); z-index: 2; }
-  .sidebar-head strong { font-size: 14px; }
-
   /* ---- toolbar (contagem + ordenação + filtros) ---- */
   .toolbar { flex-wrap: wrap; row-gap: 10px; }
   .toolbar-left { display: flex; flex-direction: column; min-width: 0; }
@@ -265,7 +250,6 @@
   .tbtn.on { border-color: var(--green); color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
   .tbtn-badge { background: var(--green); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 7px; }
   .tbtn .caret { font-size: 10px; opacity: 0.7; }
-  @media (min-width: 1024px) { .filters-tbtn { display: none; } }
 
   .sortwrap { position: relative; }
   .sort-backdrop { position: fixed; inset: 0; z-index: 35; }
@@ -277,13 +261,8 @@
   .sort-opt.on .radio { border: 5px solid var(--green); }
   .sort-opt small { display: block; color: var(--muted); font-size: 11px; font-weight: 400; margin-top: 2px; line-height: 1.35; }
 
-  /* ---- atalhos de filtro (linha rolável) ---- */
-  .quick-row { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px; background: var(--bg); border-bottom: 1px solid var(--border); scrollbar-width: none; }
-  .quick-row::-webkit-scrollbar { display: none; }
-
   /* ---- chips de filtros ativos ---- */
   .active-chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 20px 0; }
-  @media (min-width: 1024px) { .active-chips { padding-left: 0; padding-right: 0; } }
   .achip { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; }
   .achip .x { font-size: 13px; line-height: 1; opacity: 0.8; }
   .achip-clear { background: transparent; color: var(--green); border: 1px dashed var(--muted-dark); }
@@ -398,8 +377,43 @@
   .rev-text { font-size: 13px; margin: 5px 0 0; line-height: 1.45; color: var(--text); }
   .rev-more { width: 100%; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 9px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--green); font-family: 'Inter', sans-serif; cursor: pointer; }
 
-  .hl-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .hl { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--green); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+
+  /* ---- barra de busca no formato do Trivago ---- */
+  .searchcard { border: 1px solid var(--border); border-radius: 14px; background: var(--card); overflow: hidden; margin-top: 18px; box-shadow: var(--shadow); }
+  .sc-row { display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-bottom: 1px solid var(--border); }
+  .sc-icon { flex-shrink: 0; display: flex; }
+  .sc-field { flex: 1; min-width: 0; }
+  .sc-label { font-size: 12px; color: var(--muted); line-height: 1.2; }
+  .sc-input { width: 100%; border: none; background: transparent; outline: none; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); padding: 3px 0 1px; }
+  .sc-input::placeholder { color: var(--muted-dark); font-weight: 500; }
+  .sc-select { cursor: pointer; -webkit-appearance: none; appearance: none; }
+  .sc-caret { flex-shrink: 0; color: var(--muted); font-size: 11px; }
+  .sc-locate { flex-shrink: 0; width: 38px; height: 38px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .sc-foot { padding: 12px 14px; }
+  .sc-go { width: 100%; border: none; border-radius: 10px; background: var(--green); color: #fff; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .sc-go:disabled { opacity: 0.65; cursor: default; }
+
+  /* ---- mapa ---- */
+  .mapwrap { position: relative; z-index: 0; height: calc(100vh - 98px); height: calc(100dvh - 98px); min-height: 380px; border-top: 1px solid var(--border); background: var(--bg-alt); }
+  .map { width: 100%; height: 100%; }
+  .leaflet-container { font-family: 'Inter', sans-serif; background: var(--bg-alt); }
+  .pin { display: inline-block; transform: translate(-50%, -100%); background: var(--green); color: #fff; border: 2px solid #fff; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 800; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .pin.on { background: var(--gold); color: var(--green-dark); }
+  .pin-me { display: block; transform: translate(-50%, -50%); width: 16px; height: 16px; border-radius: 999px; background: #fff; border: 4px solid var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .map-card-holder { position: absolute; left: 12px; right: 12px; bottom: 90px; z-index: 900; }
+  .map-card-holder.up { bottom: 152px; }
+  @media (min-width: 720px) { .map-card-holder { max-width: 440px; right: auto; } }
+  .map-card { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); display: flex; gap: 12px; padding: 10px 32px 10px 10px; align-items: center; cursor: pointer; text-align: left; }
+  .map-card-photo { width: 84px; height: 72px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
+  .map-card-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .map-card-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; margin: 0; line-height: 1.15; }
+  .map-card-meta { font-size: 12px; color: var(--muted); margin: 2px 0 4px; }
+  .map-card-price { font-size: 17px; font-weight: 800; color: var(--green); line-height: 1.1; white-space: nowrap; }
+  .map-close { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 14px; color: var(--muted); cursor: pointer; padding: 2px 4px; line-height: 1; }
+  .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 28px; color: var(--muted); font-size: 14px; background: var(--bg-alt); z-index: 900; }
+  .map-fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 45; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 24px rgba(31,77,61,0.35); display: inline-flex; align-items: center; gap: 8px; }
+  .map-fab { bottom: 26px; }
+  .map-fab.up { bottom: 88px; }
 
 </style>
 </head>
@@ -422,6 +436,8 @@ function icon(name, size, color) {
   const paths = {
     search: '<circle cx="10" cy="10" r="6"/><line x1="20" y1="20" x2="14.5" y2="14.5"/>',
     filter: '<path d="M3 4.5h18l-7 8.2V20l-4-2.2v-5.1z"/>',
+    map: '<polygon points="1.5 6 8.5 3 15.5 6 22.5 3 22.5 18 15.5 21 8.5 18 1.5 21"/><line x1="8.5" y1="3" x2="8.5" y2="18"/><line x1="15.5" y1="6" x2="15.5" y2="21"/>',
+    list: '<line x1="8.5" y1="6" x2="21" y2="6"/><line x1="8.5" y1="12" x2="21" y2="12"/><line x1="8.5" y1="18" x2="21" y2="18"/><circle cx="3.8" cy="6" r="1.1" fill="' + color + '" stroke="none"/><circle cx="3.8" cy="12" r="1.1" fill="' + color + '" stroke="none"/><circle cx="3.8" cy="18" r="1.1" fill="' + color + '" stroke="none"/>',
     pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
     phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
     instagram: '<rect x="2.5" y="2.5" width="19" height="19" rx="6"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.3" cy="6.7" r="1" fill="' + color + '" stroke="none"/>',
@@ -764,6 +780,10 @@ let state = {
   maxDistance: null,
   cardPhoto: {},
   reviewsExpanded: false,
+  view: "list",
+  mapSelected: null,
+  mapCenter: null,
+  mapZoom: null,
   selected: null,
   showRegister: false,
   showFilters: false,
@@ -1067,8 +1087,20 @@ function getResults() {
 
 function esc(s) { return (s ?? "").toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
+function openCourt(id) {
+  const c = getResults().find(r => r.id === id) || state.allCourts.filter(x => x.id === id).map(decorate)[0];
+  if (!c) return;
+  state.selected = c;
+  state.pendingStar = 0;
+  state.justRated = false;
+  state.reviewsExpanded = false;
+  window.__rateConsent = false;
+  if (!isAdmin) trackClick(c.id, "visualizacao");
+  render();
+}
+
 function render() {
-  const scrollTargets = document.querySelectorAll(".sheet, .sheet-scroll, .drawer-body, .sidebar-panel");
+  const scrollTargets = document.querySelectorAll(".sheet, .sheet-scroll, .drawer-body");
   const savedScrolls = Array.from(scrollTargets).map(el => ({ id: el.id, cls: el.className, top: el.scrollTop }));
   const pageScroll = window.scrollY;
 
@@ -1077,30 +1109,21 @@ function render() {
   const activeFilters = activeFilterCount();
   const topBadge = { distance: "Mais perto", price: "Menor preço", rating: "Melhor nota", reviews: "Mais avaliada", courts: "Mais quadras", recomendados: "Recomendada" }[effectiveSort()] || "";
   const pending = isAdmin ? state.pending : [];
-  __lastDesktop = isDesktop();
 
   app.innerHTML = `
     ${isAdmin ? `<div class="admin-banner">Modo admin — só você vê isso <button id="logout-btn" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;margin-left:8px">sair</button></div>` : ""}
+    ${state.view === "map" ? "" : `
     <div class="header">
       <div class="brand-row">
         ${LOGO_SVG}
         <h1 class="title display">GuiaTennis</h1>
       </div>
       <p class="subtitle">Ache e compare quadras e academias perto de você.</p>
-      <div class="search-row">
-        <div class="search-box">
-          <span>${icon('search', 16, 'var(--muted)')}</span>
-          <input id="cep-input" placeholder="CEP, endereço ou local (ex: Shopping Morumbi)" value="${esc(state.cep)}" />
-        </div>
-        <button class="btn-primary" id="search-btn" ${state.searchStatus === "loading" ? "disabled" : ""}>
-          ${state.searchStatus === "loading" ? '<span class="spinner"></span>' : "Buscar"}
-        </button>
-        <button class="btn-locate" id="locate-btn" title="Usar minha localização">${icon('locate', 20, 'var(--green)')}</button>
-      </div>
-      <p class="locate-hint">${icon('locate', 11, 'var(--muted)')} O ícone ao lado busca quadras perto de onde você está agora, usando a localização do seu celular</p>
+      ${renderSearchCard()}
       ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
       ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
     </div>
+    `}
 
     <div class="toolbar">
       <div class="toolbar-left">
@@ -1118,23 +1141,20 @@ function render() {
       </div>
     </div>
 
-    ${renderQuickRow()}
+    ${renderActiveChips()}
 
-    <div class="shell">
-      ${isDesktop() ? renderFilterSidebar() : ""}
-      <div style="min-width:0">
-        ${renderActiveChips()}
-        <div class="results">
-          ${results.length === 0 ? `
-            <div class="empty">
-              <p style="margin:0 0 10px">Nenhuma quadra encontrada com esses filtros.</p>
-              ${activeFilters ? `<button type="button" class="chip small clear-filters">Limpar todos os filtros</button>` : ""}
-            </div>` : ""}
-          ${results.map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")).join("")}
-        </div>
+    ${state.view === "map" ? renderMapView(results) : `
+      <div class="results">
+        ${results.length === 0 ? `
+          <div class="empty">
+            <p style="margin:0 0 10px">Nenhuma quadra encontrada com esses filtros.</p>
+            ${activeFilters ? `<button type="button" class="chip small clear-filters">Limpar todos os filtros</button>` : ""}
+          </div>` : ""}
+        ${results.map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")).join("")}
       </div>
-    </div>
+    `}
 
+    ${state.view === "map" ? "" : `
     <div class="footer">
       <button id="terms-link">Termos de Uso</button>
       <span>·</span>
@@ -1143,6 +1163,7 @@ function render() {
       <p class="footer-copy">GuiaTennis · guiatennis1@gmail.com</p>
       <p class="footer-copy">Dados de localização © colaboradores do OpenStreetMap</p>
     </div>
+    `}
 
     <div class="fab-col">
       ${isAdmin ? `
@@ -1150,8 +1171,12 @@ function render() {
         <button class="fab fab-admin" id="fab-admin" title="Solicitações pendentes">
           ${icon('clipboard',20,'var(--green)')}${pending.length ? `<span class="fab-badge">${pending.length}</span>` : ""}
         </button>` : ""}
-      <button class="fab" id="fab-add">+</button>
+      ${state.view === "map" ? "" : `<button class="fab" id="fab-add">+</button>`}
     </div>
+
+    <button type="button" class="map-fab ${(state.compareList.length && !state.showCompare) ? "up" : ""}" id="view-toggle">
+      ${state.view === "map" ? `${icon('list', 16, '#fff')} Ver lista` : `${icon('map', 16, '#fff')} Ver no mapa`}
+    </button>
 
     ${state.selected ? renderDetailSheet(state.selected) : ""}
     ${state.showRegister ? renderRegisterSheet() : ""}
@@ -1183,6 +1208,9 @@ function render() {
     if (el) el.scrollTop = saved.top;
   });
   window.scrollTo(0, pageScroll);
+
+  if (state.view === "map") mountMap(results);
+  else if (__map) { __map.remove(); __map = null; __markers = []; }
 }
 
 const DECIDE_CRITERIA = [
@@ -1578,19 +1606,187 @@ function totalQuadras(c) {
   return QUADRA_COMBOS.reduce((sum, q) => sum + (c.quadras[q.key] || 0), 0);
 }
 
-// ---------- componentes da interface de busca (estilo Trivago) ----------
-
-let __lastDesktop = null;
-function isDesktop() {
-  return window.matchMedia("(min-width: 1024px)").matches;
+// Bloco de busca no formato do Trivago: linhas empilhadas + botão grande.
+function renderSearchCard() {
+  const modalidade = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : "";
+  return `
+    <div class="searchcard">
+      <div class="sc-row">
+        <span class="sc-icon">${icon('search', 18, 'var(--muted)')}</span>
+        <div class="sc-field">
+          <div class="sc-label">Onde você quer jogar</div>
+          <input class="sc-input" id="cep-input" placeholder="CEP, endereço ou ponto de referência" value="${esc(state.cep)}" />
+        </div>
+        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização">${icon('locate', 18, 'var(--green)')}</button>
+      </div>
+      <div class="sc-row">
+        <span class="sc-icon">${icon('ball', 18, 'var(--muted)')}</span>
+        <div class="sc-field">
+          <div class="sc-label">O que você procura</div>
+          <select class="sc-input sc-select" id="sc-modalidade">
+            <option value="" ${modalidade ? "" : "selected"}>Aulas e locação</option>
+            ${MODALIDADE_OPTS.map(m => `<option value="${m.key}" ${modalidade === m.key ? "selected" : ""}>${m.label}</option>`).join("")}
+          </select>
+        </div>
+        <span class="sc-caret">▼</span>
+      </div>
+      <div class="sc-foot">
+        <button class="sc-go" id="search-btn" ${state.searchStatus === "loading" ? "disabled" : ""}>
+          ${state.searchStatus === "loading" ? '<span class="spinner"></span> Buscando' : "Pesquisar"}
+        </button>
+      </div>
+    </div>
+    <p class="locate-hint">${icon('locate', 11, 'var(--muted)')} Toque no alvo para achar quadras perto de onde você está agora</p>
+  `;
 }
 
-window.addEventListener("resize", () => {
-  const d = isDesktop();
-  if (__lastDesktop === null || d === __lastDesktop) return;
-  __lastDesktop = d;
-  if (state.loaded) render();
-});
+// ---------- mapa (Leaflet + OpenStreetMap) ----------
+
+let __map = null;
+let __markers = [];
+let __mapSig = "";
+
+function mapCourts(results) {
+  return results.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
+}
+
+function renderMapView(results) {
+  const comCoord = mapCourts(results);
+  const fora = results.length - comCoord.length;
+  return `
+    <div class="mapwrap">
+      <div class="map" id="map"></div>
+      <div class="map-card-holder ${(state.compareList.length && !state.showCompare) ? "up" : ""}" id="map-card">${mapCardHtml(state.mapSelected)}</div>
+      ${results.length === 0 ? `<div class="map-empty">Nenhuma quadra encontrada com esses filtros.</div>` : ""}
+      ${results.length && !comCoord.length ? `<div class="map-empty">Nenhuma dessas academias tem endereço localizado no mapa ainda.</div>` : ""}
+    </div>
+    ${fora > 0 && comCoord.length ? `<p class="fgroup-note" style="padding:8px 20px 0">${fora} ${plural(fora, "academia não aparece", "academias não aparecem")} no mapa por falta de endereço localizado.</p>` : ""}
+  `;
+}
+
+function mapCardHtml(id) {
+  if (!id) return "";
+  const c = getResults().find(x => x.id === id);
+  if (!c) return "";
+  const photos = courtPhotos(c);
+  const pv = parsePriceValue(c);
+  const dist = distanceText(c.distanceKm);
+  return `
+    <div class="map-card" data-open="${c.id}">
+      <div class="map-card-photo">
+        ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 26, 'var(--muted-dark)')}
+      </div>
+      <div style="min-width:0;flex:1">
+        <p class="map-card-name">${esc(c.name)}</p>
+        <p class="map-card-meta">${esc(c.bairro)}${dist ? ` · ${dist}` : ""}</p>
+        ${scoreBox(c.appAvg, c.appCount, true)}
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        ${isFinite(pv)
+          ? `<div class="map-card-price">R$ ${pv}</div><div class="rail-unit">por hora</div>`
+          : `<div class="rail-unit">preço a<br>consultar</div>`}
+      </div>
+      <button type="button" class="map-close" id="map-card-close" aria-label="Fechar">✕</button>
+    </div>
+  `;
+}
+
+function selectOnMap(id) {
+  state.mapSelected = id;
+  __markers.forEach(m => {
+    if (!m._courtId) return;
+    const el = m.getElement();
+    const span = el && el.querySelector(".pin");
+    if (span) span.classList.toggle("on", m._courtId === id);
+  });
+  const holder = document.getElementById("map-card");
+  if (holder) {
+    holder.innerHTML = mapCardHtml(id);
+    attachMapCardEvents();
+  }
+}
+
+function attachMapCardEvents() {
+  const holder = document.getElementById("map-card");
+  if (!holder) return;
+  const close = holder.querySelector("#map-card-close");
+  if (close) close.onclick = (e) => { e.stopPropagation(); selectOnMap(null); };
+  holder.querySelectorAll("[data-open]").forEach(el => {
+    el.onclick = () => openCourt(el.dataset.open);
+  });
+}
+
+// O render() troca todo o HTML do app, então o mapa é remontado a cada
+// desenho — guardamos centro e zoom pra ele voltar onde estava.
+function mountMap(results) {
+  const el = document.getElementById("map");
+  if (!el) {
+    if (__map) { __map.remove(); __map = null; __markers = []; }
+    return;
+  }
+  if (!window.L) {
+    el.innerHTML = `<div class="map-empty">Não consegui carregar o mapa agora. Confira a conexão e recarregue a página.</div>`;
+    return;
+  }
+  if (__map && __map.getContainer() !== el) { __map.remove(); __map = null; __markers = []; }
+
+  if (!__map) {
+    __map = L.map(el, { zoomControl: true });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '© colaboradores do OpenStreetMap',
+    }).addTo(__map);
+    __map.on("moveend", () => {
+      if (!__map) return;
+      const c = __map.getCenter();
+      state.mapCenter = [c.lat, c.lng];
+      state.mapZoom = __map.getZoom();
+    });
+  }
+
+  __markers.forEach(m => __map.removeLayer(m));
+  __markers = [];
+
+  const comCoord = mapCourts(results);
+  comCoord.forEach(c => {
+    const pv = parsePriceValue(c);
+    const label = isFinite(pv) ? `R$ ${pv}` : "Consultar";
+    const m = L.marker([c.lat, c.lng], {
+      icon: L.divIcon({
+        className: "pin-wrap",
+        iconSize: null,
+        html: `<span class="pin ${state.mapSelected === c.id ? "on" : ""}">${esc(label)}</span>`,
+      }),
+    }).addTo(__map);
+    m._courtId = c.id;
+    m.on("click", () => selectOnMap(c.id));
+    __markers.push(m);
+  });
+
+  if (state.origin) {
+    __markers.push(L.marker([state.origin.lat, state.origin.lng], {
+      interactive: false,
+      icon: L.divIcon({ className: "pin-wrap", iconSize: null, html: `<span class="pin-me"></span>` }),
+    }).addTo(__map));
+  }
+
+  const sig = comCoord.map(c => c.id).join(",") + "|" + (state.origin ? `${state.origin.lat},${state.origin.lng}` : "");
+  if (sig !== __mapSig || !state.mapCenter) {
+    __mapSig = sig;
+    const pts = comCoord.map(c => [c.lat, c.lng]);
+    if (state.origin) pts.push([state.origin.lat, state.origin.lng]);
+    if (pts.length > 1) __map.fitBounds(pts, { padding: [50, 50], maxZoom: 15 });
+    else if (pts.length === 1) __map.setView(pts[0], 14);
+    else __map.setView([-23.55, -46.63], 11);
+  } else {
+    __map.setView(state.mapCenter, state.mapZoom || 12);
+  }
+
+  setTimeout(() => { if (__map) __map.invalidateSize(); }, 60);
+  attachMapCardEvents();
+}
+
+// ---------- componentes da interface de busca (estilo Trivago) ----------
 
 function plural(n, singular, plural_) {
   return n === 1 ? singular : plural_;
@@ -1641,19 +1837,6 @@ function distanceText(km) {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
 }
 
-// Destaques curtos da academia — o equivalente aos "pontos fortes" do hotel.
-function highlights(c) {
-  const out = [];
-  if (typeof c.distanceKm === "number" && c.distanceKm <= 3) out.push("Pertinho de você");
-  if (c.appCount >= 3 && c.appAvg >= 4.5) out.push("Bem avaliada no app");
-  if ((c.cobertura || []).includes("coberta")) out.push("Joga mesmo com chuva");
-  if (totalQuadras(c) >= 4) out.push(`${totalQuadras(c)} quadras`);
-  if ((c.amenities || []).includes("estacionamento_gratuito")) out.push("Estacionamento grátis");
-  if ((c.amenities || []).includes("vestiario")) out.push("Vestiário");
-  if ((c.amenities || []).includes("camera")) out.push("Câmera pra gravar pontos");
-  if ((c.modalidades || []).includes("aulas_proprias")) out.push("Tem aulas");
-  return out.slice(0, 4);
-}
 
 function courtPhotos(c) {
   return (c.photos && c.photos.length) ? c.photos : (c.photoUrl ? [c.photoUrl] : []);
@@ -1722,7 +1905,7 @@ function filterGroupsHtml() {
       <p class="fgroup-title">Piso</p>
       ${PISO_OPTS.map(p => optBtn(
         "piso-chip", `data-piso="${p.key}"`, state.pisoFilters.includes(p.key),
-        `${p.icon} ${p.label}`, semPiso.filter(c => c.pisos?.includes(p.key)).length
+        p.label, semPiso.filter(c => c.pisos?.includes(p.key)).length
       )).join("")}
     </div>
 
@@ -1730,7 +1913,7 @@ function filterGroupsHtml() {
       <p class="fgroup-title">Cobertura</p>
       ${COBERTURA_OPTS.map(o => optBtn(
         "cobertura-chip", `data-cobertura="${o.key}"`, state.coberturaFilters.includes(o.key),
-        `${o.icon} ${o.label}`, semCob.filter(c => c.cobertura?.includes(o.key)).length
+        o.label, semCob.filter(c => c.cobertura?.includes(o.key)).length
       )).join("")}
     </div>
 
@@ -1738,7 +1921,7 @@ function filterGroupsHtml() {
       <p class="fgroup-title">O que você procura</p>
       ${MODALIDADE_OPTS.map(m => optBtn(
         "modalidade-chip", `data-modalidade="${m.key}"`, state.modalidadeFilters.includes(m.key),
-        `${m.icon} ${m.label}`, semMod.filter(c => c.modalidades?.includes(m.key)).length
+        m.label, semMod.filter(c => c.modalidades?.includes(m.key)).length
       )).join("")}
     </div>
 
@@ -1746,39 +1929,23 @@ function filterGroupsHtml() {
       <p class="fgroup-title">Comodidades</p>
       ${FILTER_AMENITY_OPTS.map(a => optBtn(
         "amenity-chip", `data-amenity="${a.key}"`, state.amenityFilters.includes(a.key),
-        `${a.icon} ${a.label}`, semAmen.filter(c => matchesAmenityFilter(c, a.key)).length
+        a.label, semAmen.filter(c => matchesAmenityFilter(c, a.key)).length
       )).join("")}
     </div>
 
     <div class="fgroup">
       <p class="fgroup-title">Suas listas</p>
-      ${optBtn("f-favorites", "", state.favoritesOnly,
-        `${icon(state.favoritesOnly ? "heartFill" : "heart", 14, state.favoritesOnly ? "var(--red)" : "var(--green)")} Só favoritos`,
+      ${optBtn("f-favorites", "", state.favoritesOnly, "Só favoritos",
         semOutros.filter(c => isFavorite(c.id)).length)}
-      ${optBtn("f-compareonly", "", state.compareOnly,
-        `${icon("clipboard", 14, "var(--green)")} Só as que estou comparando`,
+      ${optBtn("f-compareonly", "", state.compareOnly, "Só as que estou comparando",
         semOutros.filter(c => isComparing(c.id)).length)}
     </div>
   `;
 }
 
-function renderFilterSidebar() {
-  const n = activeFilterCount();
-  return `
-    <aside class="sidebar">
-      <div class="sidebar-panel">
-        <div class="sidebar-head">
-          <strong>Filtros${n ? ` (${n})` : ""}</strong>
-          ${n ? `<button type="button" class="inline-link clear-filters">Limpar tudo</button>` : ""}
-        </div>
-        ${filterGroupsHtml()}
-      </div>
-    </aside>
-  `;
-}
 
 function renderFilterDrawer(resultCount) {
-  if (!state.showFilters || isDesktop()) return "";
+  if (!state.showFilters) return "";
   const n = activeFilterCount();
   return `
     <div class="drawer-overlay open" id="drawer-overlay">
@@ -1833,25 +2000,6 @@ function renderActiveChips() {
   </div>`;
 }
 
-// Atalhos rápidos no topo, como a régua de filtros populares do Trivago.
-function renderQuickRow() {
-  const quick = [
-    { on: state.coberturaFilters.includes("coberta"), cls: "cobertura-chip", attr: `data-cobertura="coberta"`, label: `${icon("home", 13, state.coberturaFilters.includes("coberta") ? "#fff" : "var(--green)")} Coberta` },
-    { on: state.pisoFilters.includes("saibro"), cls: "piso-chip", attr: `data-piso="saibro"`, label: "Saibro" },
-    { on: state.pisoFilters.includes("rapida"), cls: "piso-chip", attr: `data-piso="rapida"`, label: "Rápida" },
-    { on: state.modalidadeFilters.includes("aulas_proprias"), cls: "modalidade-chip", attr: `data-modalidade="aulas_proprias"`, label: "Aulas" },
-    { on: state.modalidadeFilters.includes("locacao"), cls: "modalidade-chip", attr: `data-modalidade="locacao"`, label: "Locação" },
-    { on: state.amenityFilters.includes("estacionamento"), cls: "amenity-chip", attr: `data-amenity="estacionamento"`, label: "Estacionamento" },
-    { on: state.amenityFilters.includes("vestiario"), cls: "amenity-chip", attr: `data-amenity="vestiario"`, label: "Vestiário" },
-    { on: state.favoritesOnly, cls: "f-favorites", attr: "", label: `${icon(state.favoritesOnly ? "heartFill" : "heart", 13, state.favoritesOnly ? "#fff" : "var(--green)")} Favoritos` },
-  ];
-  if (state.compareList.length) {
-    quick.push({ on: state.compareOnly, cls: "f-compareonly", attr: "", label: `Em comparação (${state.compareList.length})` });
-  }
-  return `<div class="quick-row">
-    ${quick.map(q => `<button type="button" class="chip small ${q.cls} ${q.on ? "active" : ""}" ${q.attr}>${q.label}</button>`).join("")}
-  </div>`;
-}
 
 function renderCard(c, badge) {
   const photos = courtPhotos(c);
@@ -1999,7 +2147,6 @@ function renderDetailSheet(c) {
   const dist = distanceText(c.distanceKm);
   const pagoStatus = isAdmin ? getPagoStatus(c.id) : null;
   const pv = parsePriceValue(c);
-  const tags = highlights(c);
   const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
 
   const contatos = `
@@ -2055,7 +2202,6 @@ function renderDetailSheet(c) {
           <div class="sheet-meta" style="margin-top:10px">
             ${scoreBox(c.appAvg, c.appCount)}
           </div>
-          ${tags.length ? `<div class="hl-row">${tags.map(t => `<span class="hl">${t}</span>`).join("")}</div>` : ""}
 
           <div class="detail-cols" style="margin-top:20px">
             <div class="detail-main">
@@ -2509,6 +2655,19 @@ function attachEvents() {
   const sortBackdrop = document.getElementById("sort-backdrop");
   if (sortBackdrop) sortBackdrop.onclick = () => { state.showSort = false; render(); };
 
+  const viewToggle = document.getElementById("view-toggle");
+  if (viewToggle) viewToggle.onclick = () => {
+    state.view = state.view === "map" ? "list" : "map";
+    state.mapSelected = null;
+    render();
+  };
+
+  const scModalidade = document.getElementById("sc-modalidade");
+  if (scModalidade) scModalidade.onchange = (e) => {
+    state.modalidadeFilters = e.target.value ? [e.target.value] : [];
+    render();
+  };
+
   // ---- gaveta de filtros ----
   const drawerClose = document.getElementById("drawer-close");
   if (drawerClose) drawerClose.onclick = () => { state.showFilters = false; render(); };
@@ -2695,15 +2854,7 @@ function attachEvents() {
   });
 
   document.querySelectorAll("[data-open]").forEach(el => {
-    el.onclick = () => {
-      const c = getResults().find(r => r.id === el.dataset.open);
-      state.selected = c;
-      state.pendingStar = 0;
-      state.justRated = false;
-      window.__rateConsent = false;
-      if (!isAdmin) trackClick(c.id, "visualizacao");
-      render();
-    };
+    el.onclick = () => openCourt(el.dataset.open);
   });
 
   document.querySelectorAll("[data-fav]").forEach(el => {

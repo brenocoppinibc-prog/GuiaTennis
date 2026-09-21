@@ -566,6 +566,55 @@
   .mini { position: relative; }
   .mini-badge { position: absolute; top: 8px; left: 8px; background: var(--gold); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 999px; }
 
+  /* ---- contato único, que serve para aula e para locação ---- */
+  .offer-contact { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; font-weight: 700; color: var(--green); text-decoration: none; }
+  .offer-contact:hover { text-decoration: underline; }
+  .offer-contact .mod { font-weight: 500; color: var(--muted); }
+  .contato-card { border: 1px solid var(--green-line); background: var(--green-soft); border-radius: 12px; padding: 14px; margin-top: 12px; }
+  .contato-card p { margin: 0; font-size: 14px; }
+  .contato-card .contato-mod { font-weight: 700; font-size: 15px; }
+  .contato-card .contato-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .contato-card .cta-btn { margin-top: 12px; }
+
+  /* ---- animação "como funciona a busca" ---- */
+  .demo { width: 100%; height: 100%; display: block; }
+  .demo text { font-family: 'Playfair Display', serif; }
+  .demo .cena { opacity: 0; }
+  .demo .cena1 { animation: demoCena1 9s infinite; }
+  .demo .cena2 { animation: demoCena2 9s infinite; }
+  .demo .cena3 { animation: demoCena3 9s infinite; }
+  @keyframes demoCena1 { 0% { opacity: 0 } 3%, 29% { opacity: 1 } 33%, 100% { opacity: 0 } }
+  @keyframes demoCena2 { 0%, 33% { opacity: 0 } 36%, 62% { opacity: 1 } 66%, 100% { opacity: 0 } }
+  @keyframes demoCena3 { 0%, 66% { opacity: 0 } 69%, 96% { opacity: 1 } 99%, 100% { opacity: 0 } }
+
+  .demo .digita { animation: demoDigita 9s infinite; }
+  @keyframes demoDigita { 0%, 5% { width: 0 } 22%, 100% { width: 104px } }
+  .demo .cursor { animation: demoCursor 0.9s steps(1) infinite; }
+  @keyframes demoCursor { 0%, 49% { opacity: 1 } 50%, 100% { opacity: 0 } }
+
+  .demo .sobe1 { animation: demoSobe 9s infinite; }
+  .demo .sobe2 { animation: demoSobe2 9s infinite; }
+  .demo .sobe3 { animation: demoSobe3 9s infinite; }
+  @keyframes demoSobe  { 0%, 34% { transform: translateY(16px) } 41%, 100% { transform: translateY(0) } }
+  @keyframes demoSobe2 { 0%, 37% { transform: translateY(16px) } 44%, 100% { transform: translateY(0) } }
+  @keyframes demoSobe3 { 0%, 40% { transform: translateY(16px) } 47%, 100% { transform: translateY(0) } }
+
+  .demo .toque { animation: demoToque 9s infinite; }
+  @keyframes demoToque { 0%, 74% { r: 4; opacity: 0.55 } 88%, 100% { r: 54; opacity: 0 } }
+  .demo .aperta { animation: demoAperta 9s infinite; transform-origin: 320px 224px; transform-box: view-box; }
+  @keyframes demoAperta { 0%, 73% { transform: scale(1) } 76% { transform: scale(0.96) } 80%, 100% { transform: scale(1) } }
+
+  .demo .passo1 { animation: demoCena1 9s infinite; }
+  .demo .passo2 { animation: demoCena2 9s infinite; }
+  .demo .passo3 { animation: demoCena3 9s infinite; }
+
+  /* quem pediu menos movimento vê a cena do meio, parada */
+  @media (prefers-reduced-motion: reduce) {
+    .demo .cena, .demo .digita, .demo .cursor, .demo [class*="sobe"], .demo .toque, .demo .aperta,
+    .demo .passo1, .demo .passo2, .demo .passo3 { animation: none; }
+    .demo .cena2, .demo .passo2 { opacity: 1; }
+  }
+
 </style>
 </head>
 <body>
@@ -1890,9 +1939,10 @@ function mountMap(results) {
 // ---------- página inicial ----------
 
 // Vídeo do "como funciona a busca" na página inicial.
-// Deixe "" para mostrar só o passo a passo escrito. Para exibir um vídeo,
-// coloque aqui o ID do YouTube (ex.: "dQw4w9WgXcQ") ou o nome de um arquivo
-// publicado junto com o site (ex.: "como-funciona.mp4").
+// Vazio, a seção mostra a animação desenhada em demoBusca(), logo abaixo.
+// Para trocar por um vídeo gravado, ponha aqui o ID do YouTube
+// (ex.: "dQw4w9WgXcQ") ou o nome de um arquivo publicado junto com o site
+// (ex.: "como-funciona.mp4").
 const VIDEO_COMO_FUNCIONA = "";
 
 // Academias recomendadas escolhidas a dedo: basta pôr os IDs aqui.
@@ -1916,6 +1966,74 @@ function recomendadasGuia(todas) {
     .map(x => x.c);
 }
 
+// Animação que explica a busca em três passos. É desenhada aqui mesmo, em
+// SVG: não é arquivo de vídeo, não pesa nada e usa as cores da marca.
+// Se um dia entrar um vídeo de verdade em VIDEO_COMO_FUNCIONA, ele assume
+// o lugar dela.
+function demoBusca() {
+  const linha = (y, cor, preco, dist) => `
+    <rect x="239" y="${y}" width="46" height="46" rx="7" fill="${cor}"/>
+    <rect x="293" y="${y + 5}" width="78" height="9" rx="4.5" fill="#D9D2C2"/>
+    <rect x="293" y="${y + 20}" width="54" height="7" rx="3.5" fill="#E6E0D2"/>
+    <rect x="293" y="${y + 32}" width="50" height="14" rx="7" fill="var(--green-soft)"/>
+    <text x="318" y="${y + 42}" font-size="9" font-weight="700" fill="var(--green)" text-anchor="middle">${dist}</text>
+    <text x="401" y="${y + 26}" font-size="12" font-weight="800" fill="var(--green)" text-anchor="end">${preco}</text>
+  `;
+
+  return `
+    <svg class="demo" viewBox="0 0 640 360" role="img"
+         aria-label="Animação em três passos: digitar onde você está, comparar as academias mais perto e falar no WhatsApp.">
+      <rect width="640" height="360" fill="var(--bg-alt)"/>
+      <rect x="215" y="16" width="210" height="282" rx="24" fill="var(--card)" stroke="var(--border)" stroke-width="2"/>
+      <rect x="296" y="28" width="48" height="6" rx="3" fill="var(--border)"/>
+
+      <g class="cena cena1">
+        <text x="239" y="88" font-size="11" fill="var(--muted)">Onde você quer jogar</text>
+        <rect x="239" y="96" width="162" height="32" rx="8" fill="var(--bg)" stroke="var(--border)"/>
+        <clipPath id="demoClip"><rect class="digita" x="251" y="102" width="104" height="22"/></clipPath>
+        <text x="251" y="117" font-size="13" font-weight="700" fill="var(--text)" clip-path="url(#demoClip)">04544-000</text>
+        <rect class="cursor" x="356" y="105" width="1.6" height="15" fill="var(--green)"/>
+        <rect x="239" y="140" width="162" height="34" rx="9" fill="var(--green)"/>
+        <text x="320" y="162" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">Pesquisar</text>
+        <text x="320" y="200" font-size="10" fill="var(--muted)" text-anchor="middle">ou toque no alvo e use o GPS</text>
+      </g>
+
+      <g class="cena cena2">
+        <text x="239" y="72" font-size="11" font-weight="700" fill="var(--text)">7 quadras encontradas</text>
+        <g class="sobe1">${linha(84, "#2E6B54", "R$ 90", "1,2 km")}</g>
+        <g class="sobe2">${linha(146, "#8E6C3A", "R$ 110", "2,4 km")}</g>
+        <g class="sobe3">${linha(208, "#3A5F4B", "R$ 70", "3,8 km")}</g>
+      </g>
+
+      <g class="cena cena3">
+        <rect x="239" y="72" width="46" height="46" rx="7" fill="#2E6B54"/>
+        <rect x="293" y="78" width="86" height="10" rx="5" fill="#D9D2C2"/>
+        <rect x="293" y="94" width="58" height="8" rx="4" fill="#E6E0D2"/>
+        <rect x="239" y="134" width="162" height="1" fill="var(--border)"/>
+        <text x="239" y="152" font-size="10" fill="var(--muted)">A PARTIR DE</text>
+        <text x="239" y="178" font-size="24" font-weight="800" fill="var(--text)">R$ 90</text>
+        <text x="239" y="194" font-size="10" fill="var(--muted)">por hora</text>
+        <circle class="toque" cx="320" cy="224" r="4" fill="var(--green)"/>
+        <g class="aperta">
+          <rect x="239" y="206" width="162" height="36" rx="9" fill="var(--green)"/>
+          <text x="320" y="229" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">Chamar no WhatsApp</text>
+        </g>
+      </g>
+
+      <text class="passo1" x="320" y="330" font-size="18" font-weight="700" fill="var(--text)" text-anchor="middle">1. Diga onde você está</text>
+      <text class="passo2" x="320" y="330" font-size="18" font-weight="700" fill="var(--text)" text-anchor="middle">2. Compare as mais perto</text>
+      <text class="passo3" x="320" y="330" font-size="18" font-weight="700" fill="var(--text)" text-anchor="middle">3. Fale direto com a academia</text>
+
+      <circle cx="302" cy="346" r="4" fill="var(--border)"/>
+      <circle cx="320" cy="346" r="4" fill="var(--border)"/>
+      <circle cx="338" cy="346" r="4" fill="var(--border)"/>
+      <circle class="passo1" cx="302" cy="346" r="4" fill="var(--gold)"/>
+      <circle class="passo2" cx="320" cy="346" r="4" fill="var(--gold)"/>
+      <circle class="passo3" cx="338" cy="346" r="4" fill="var(--gold)"/>
+    </svg>
+  `;
+}
+
 function blocoVideo() {
   const v = (VIDEO_COMO_FUNCIONA || "").trim();
   let player = "";
@@ -1930,7 +2048,7 @@ function blocoVideo() {
       <h3 class="display">Como funciona a busca</h3>
       <p class="sec-sub">Em um minuto, do endereço até a conversa com a academia.</p>
       <div class="video-wrap">
-        ${player || `<div class="video-holder">${icon('play', 36, 'var(--green)')}<span>Vídeo em breve — por enquanto, o passo a passo está logo abaixo.</span></div>`}
+        ${player || demoBusca()}
       </div>
       <ol class="passos">
         <li><strong>Diga onde você está.</strong> CEP, endereço, ponto de referência ou o alvo do GPS.</li>
@@ -2551,7 +2669,9 @@ function renderCard(c, badge) {
           </div>
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>
-        <p class="offer-note">${extras.length ? `Tem ${esc(listaPt(extras.map(o => o.label.toLowerCase())))} também — veja os valores na academia.` : "Confirme o valor direto com a academia."}</p>
+        ${c.phone
+          ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')} Falar no WhatsApp${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
+          : `<p class="offer-note">${modalidadesTexto(c) ? `${esc(modalidadesTexto(c))} — confirme os valores com a academia.` : "Confirme o valor direto com a academia."}</p>`}
       </div>
     </div>
   `;
@@ -2651,12 +2771,35 @@ function opcoesPreco(c) {
   return out.sort((a, b) => (parseInt(priceMin(a.faixa), 10) || 1e9) - (parseInt(priceMin(b.faixa), 10) || 1e9));
 }
 
+// "Aula e locação", "Só aula"... — o que a academia atende, em texto curto.
+function modalidadesTexto(c) {
+  const temAula = !!c.priceAula || (c.modalidades || []).includes("aulas_proprias");
+  const temLoc = !!c.priceLocacao || (c.modalidades || []).includes("locacao");
+  if (temAula && temLoc) return "Aula e locação";
+  if (temAula) return "Aula";
+  if (temLoc) return "Locação";
+  return "";
+}
+
 function waLink(c, assunto) {
   const wa = (c.phone || "").replace(/\D/g, "");
   const texto = assunto
     ? `Olá! Vim pelo GuiaTennis e queria saber sobre ${assunto}.`
     : "Olá! Vim pelo GuiaTennis e gostaria de saber mais informações sobre a academia.";
   return `https://wa.me/55${wa.replace(/^55/, "")}?text=${encodeURIComponent(texto)}`;
+}
+
+function blocoContato(c) {
+  const quem = modalidadesTexto(c);
+  return `
+    <div class="contato-card">
+      <p class="contato-mod">${quem ? `Contato para ${esc(quem.toLowerCase())}` : "Contato da academia"}</p>
+      <p class="contato-sub">É o mesmo WhatsApp para os dois — pergunte horário, disponibilidade e o valor do seu caso.</p>
+      ${c.phone
+        ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
+        : `<p class="contato-sub" style="margin-top:10px">A academia ainda não informou um telefone no GuiaTennis.</p>`}
+    </div>
+  `;
 }
 
 function blocoOpcoes(c) {
@@ -2668,14 +2811,11 @@ function blocoOpcoes(c) {
       <div class="opt-card">
         <p class="opt-card-name">Preço a consultar</p>
         <p class="opt-card-desc">A academia ainda não informou os valores no GuiaTennis.</p>
-        <div class="opt-card-foot">
-          <div><span class="opt-card-unit">Pergunte direto para ela</span></div>
-          ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Perguntar no WhatsApp</a>` : ""}
-        </div>
-      </div>`;
+      </div>
+      ${blocoContato(c)}`;
   }
 
-  return opcoes.map(o => `
+  const lista = opcoes.map(o => `
     <div class="opt-card">
       <p class="opt-card-name">${esc(o.nome)}</p>
       <p class="opt-card-desc">${esc(o.desc)}</p>
@@ -2685,10 +2825,11 @@ function blocoOpcoes(c) {
           <div class="opt-card-price">${esc(precoTexto(o.faixa))}</div>
           <div class="opt-card-unit">por hora</div>
         </div>
-        ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c, o.assunto)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
       </div>
     </div>
   `).join("");
+
+  return lista + blocoContato(c);
 }
 
 function renderCourtPage(c) {
@@ -3229,6 +3370,10 @@ function attachEvents() {
   if (footerCadastrar) footerCadastrar.onclick = abrirCadastro;
   const footerBuscar = document.getElementById("footer-buscar");
   if (footerBuscar) footerBuscar.onclick = goSearch;
+
+  document.querySelectorAll("[data-stop]").forEach(el => {
+    el.addEventListener("click", (e) => e.stopPropagation());
+  });
 
   document.querySelectorAll("[data-share-card]").forEach(el => {
     el.onclick = (e) => { e.stopPropagation(); shareCourt(el.dataset.shareCard); };

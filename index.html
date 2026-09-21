@@ -1,0 +1,3439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GuiaTennis</title>
+<link rel="icon" type="image/png" href="https://guiatennis.com.br/favicon-32.png">
+<link rel="apple-touch-icon" href="https://guiatennis.com.br/apple-touch-icon.png">
+<meta name="description" content="Ache e compare quadras e academias de tênis perto de você.">
+<meta property="og:title" content="GuiaTennis">
+<meta property="og:description" content="Ache e compare quadras e academias de tênis perto de você.">
+<meta property="og:image" content="https://guiatennis.com.br/og-image.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GuiaTennis">
+<meta name="twitter:description" content="Ache e compare quadras e academias de tênis perto de você.">
+<meta name="twitter:image" content="https://guiatennis.com.br/og-image.png">
+<meta property="og:url" content="https://guiatennis.com.br">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #F7F4EC;
+    --bg-alt: #EFEADD;
+    --card: #FFFFFF;
+    --border: #E1DACB;
+    --green: #1F4D3D;
+    --green-light: #2E6B54;
+    --gold: #B8933F;
+    --gold-light: #D8B865;
+    --text: #211F1A;
+    --muted: #7A7362;
+    --muted-dark: #A79F8C;
+    --red: #A8462C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .display { font-family: 'Playfair Display', serif; }
+  .container { max-width: 480px; margin: 0 auto; min-height: 100vh; }
+
+  .admin-banner { background: var(--green); color: #fff; font-weight: 600; font-size: 12px; text-align: center; padding: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  .header { padding: 32px 20px 20px; border-bottom: 1px solid var(--border); background: var(--card); }
+  .title { font-size: 34px; font-weight: 700; line-height: 1.05; margin: 0; color: var(--green); }
+  .brand-row { display: flex; align-items: center; gap: 12px; }
+  .logo-mark { flex-shrink: 0; }
+  .subtitle { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+
+  .search-row { display: flex; gap: 8px; margin-top: 20px; }
+  .search-box { flex: 1; display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0 12px; }
+  .search-box input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); padding: 11px 0; font-size: 14px; font-family: 'Inter', sans-serif; }
+  .search-box input::placeholder { color: var(--muted-dark); }
+  .btn-primary { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 0 20px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .btn-primary:disabled { opacity: 0.6; cursor: default; }
+  .btn-locate { background: var(--card); border: 1px solid var(--border); border-radius: 10px; width: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .locate-hint { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; margin-top: 8px; }
+
+  .status-line { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 10px; }
+  .status-error { color: var(--red); }
+  .status-info { color: var(--muted); }
+
+  .toolbar { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .chip { font-family: 'Inter', sans-serif; font-weight: 600; border-radius: 999px; padding: 6px 13px; font-size: 13px; border: 1px solid var(--border); background: var(--card); color: var(--green); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .chip.small { padding: 5px 11px; font-size: 12px; }
+  .chip.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .results { padding: 16px 20px 96px; display: flex; flex-direction: column; gap: 14px; }
+  .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 32px 0; }
+  .footer { text-align: center; padding: 24px 20px 8px; }
+  .footer button { background: none; border: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; padding: 4px; }
+  .footer span { color: var(--muted); font-size: 12px; }
+  .footer-copy { color: var(--muted-dark); font-size: 11px; margin-top: 6px; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; text-align: left; width: 100%; box-shadow: 0 1px 3px rgba(33,31,26,0.05); }
+  .fav-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.35); border: none; border-radius: 999px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .compare-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .compare-btn.active { background: var(--green); border-color: var(--green); }
+  .sheet-compare-btn { position: absolute; top: 16px; right: 100px; background: rgba(0,0,0,0.35); color: #fff; border: 1px solid rgba(255,255,255,0.4); border-radius: 999px; padding: 7px 13px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .sheet-compare-btn.active { background: var(--green); border-color: var(--green); }
+  .compare-bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--green); color: #fff; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 60; box-shadow: 0 -4px 18px rgba(0,0,0,0.2); }
+  .compare-bar-info { font-size: 13px; line-height: 1.3; }
+  .compare-bar-info strong { display: block; font-size: 15px; }
+  .compare-bar-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .compare-bar button { border: none; border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight: 800; cursor: pointer; }
+  .compare-bar .btn-go { background: var(--gold); color: var(--green-dark, #14332a); }
+  .compare-bar .btn-go:disabled { opacity: 0.45; cursor: not-allowed; }
+  .compare-bar .btn-clear { background: transparent; color: #fff; text-decoration: underline; padding: 10px 4px; }
+  .cmp-table { display: flex; overflow-x: auto; gap: 12px; padding: 4px 0 8px; }
+  .cmp-col { flex: 0 0 240px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .cmp-photo { height: 120px; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
+  .cmp-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .cmp-name { font-size: 15px; font-weight: 800; padding: 10px 12px 2px; }
+  .cmp-sub { font-size: 12px; color: var(--muted); padding: 0 12px 10px; }
+  .cmp-row { border-top: 1px solid var(--border); padding: 8px 12px; }
+  .cmp-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .cmp-val { font-size: 13px; color: var(--text); margin-top: 2px; }
+  .cmp-remove { width: 100%; background: none; border: none; border-top: 1px solid var(--border); padding: 9px; font-size: 12px; color: var(--red); cursor: pointer; }
+  .decide-box { margin-top: 20px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+  .decide-title { font-size: 17px; font-weight: 800; color: var(--text); margin: 0; }
+  .decide-sub { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+  .decide-result { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .decide-verdict { font-size: 20px; font-weight: 800; color: var(--green); margin: 0; }
+  .decide-why { font-size: 13px; color: var(--text); margin: 6px 0 0; line-height: 1.45; }
+  .decide-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .decide-pos { font-size: 13px; font-weight: 800; color: var(--gold); width: 24px; flex-shrink: 0; }
+  .decide-name { font-size: 14px; font-weight: 700; margin: 0; }
+  .decide-tags { font-size: 11px; color: var(--muted); margin: 2px 0 0; }
+  .decide-score { font-size: 15px; font-weight: 800; color: var(--green); flex-shrink: 0; }
+  .decide-notes-echo { font-size: 13px; color: var(--muted); background: var(--card); border-radius: 8px; padding: 8px 10px; margin: 4px 0 0; white-space: pre-wrap; }
+  .note-hit { display: flex; align-items: baseline; gap: 8px; padding: 7px 10px; border-radius: 8px; margin-top: 6px; background: var(--card); border-left: 3px solid var(--border); }
+  .note-hit strong { font-size: 13px; text-transform: capitalize; flex-shrink: 0; }
+  .note-hit span { font-size: 12px; color: var(--muted); }
+  .note-hit-some { border-left-color: var(--green); }
+  .note-hit-all { border-left-color: var(--gold); }
+  .note-hit-none { border-left-color: var(--red); }
+  .confirmar-box { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 14px; }
+  .confirmar-txt { font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 10px; }
+  .confirmar-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+  .decidida-box { margin-top: 16px; background: var(--green); border-radius: 14px; padding: 16px; }
+  .decidida-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin: 0; }
+  .decidida-name { font-size: 22px; font-weight: 800; color: #fff; margin: 6px 0 0; }
+  .decidida-end { font-size: 13px; color: rgba(255,255,255,0.75); margin: 4px 0 0; }
+  .decidida-box .field-label { color: rgba(255,255,255,0.8); }
+  .decidida-box .cta-btn { width: 100%; }
+  .nav-link-dark { background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.35) !important; color: #fff !important; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .stat-card { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
+  .stat-num { font-size: 26px; font-weight: 800; color: var(--green); margin: 0; }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin: 2px 0 0; text-transform: uppercase; letter-spacing: 0.04em; }
+  .stats-ord-lbl { font-size: 12px; color: var(--muted); align-self: center; margin-right: 2px; }
+  .stat-row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .stat-taxa { font-size: 13px; font-weight: 800; padding: 2px 9px; border-radius: 999px; flex-shrink: 0; }
+  .stat-taxa.boa { background: var(--green); color: #fff; }
+  .stat-taxa.media { background: var(--gold); color: #1F4D3D; }
+  .stat-taxa.zero { background: var(--bg-alt); color: var(--muted); }
+  .stat-copy { margin-top: 8px; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--green); font-weight: 700; cursor: pointer; }
+  .decidida-voltar { width: 100%; background: none; border: none; color: rgba(255,255,255,0.75); text-decoration: underline; font-size: 13px; padding: 12px 0 2px; cursor: pointer; }
+  .card-photo-caption { font-size: 11px; color: var(--muted-dark); }
+  .card-badge { position: absolute; top: 10px; left: 10px; background: var(--gold); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 999px; }
+  .card-body { padding: 16px; }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .card-name { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; line-height: 1.15; color: var(--text); margin: 0; }
+  .card-meta { color: var(--muted); font-size: 12px; margin: 5px 0 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .stars { color: var(--gold); font-size: 14px; letter-spacing: 1px; }
+  .rating-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+
+  .card-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .distance-pill { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 4px; color: var(--green); }
+
+  .price-known { color: var(--text); font-weight: 600; }
+  .price-unknown { color: var(--muted-dark); font-size: 12px; }
+
+  .fab-col { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+  .fab { width: 54px; height: 54px; border-radius: 999px; background: var(--green); color: #fff; border: none; font-size: 26px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(31,77,61,0.35); display: flex; align-items: center; justify-content: center; }
+  .fab-admin { width: 46px; height: 46px; font-size: 18px; background: var(--card); color: var(--green); border: 1px solid var(--green); position: relative; }
+  .fab-badge { position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; border-radius: 999px; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(33,31,26,0.55); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
+  .overlay.open { display: flex; }
+  @media (min-width: 640px) { .overlay { align-items: center; } }
+  .sheet { position: relative; width: 100%; max-width: 480px; background: var(--card); border: 1px solid var(--border); border-radius: 18px 18px 0 0; max-height: 88vh; overflow-y: auto; }
+  @media (min-width: 640px) { .sheet { border-radius: 18px; } }
+  .lightbox-overlay { position: fixed; inset: 0; background: rgba(10,10,8,0.96); z-index: 100; display: flex; align-items: center; justify-content: center; }
+  .lightbox-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 100%; }
+  .lightbox-item { flex: 0 0 100%; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
+  .lightbox-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .lightbox-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 999px; width: 36px; height: 36px; font-size: 16px; cursor: pointer; z-index: 2; }
+  .lightbox-counter { position: absolute; top: 20px; left: 16px; color: #fff; font-size: 13px; font-weight: 600; z-index: 2; }
+  .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 999px; width: 40px; height: 40px; font-size: 22px; cursor: pointer; z-index: 2; }
+  .lightbox-prev { left: 12px; }
+  .lightbox-next { right: 12px; }
+  .photo-thumb-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .photo-thumb { position: relative; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb-remove { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.55); color: #fff; border: none; border-radius: 999px; width: 20px; height: 20px; font-size: 11px; cursor: pointer; }
+  .sheet-content { padding: 20px; position: relative; }
+  .sheet-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.85); border: none; color: var(--text); font-size: 18px; cursor: pointer; width: 30px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; }
+  .sheet-eyebrow { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .sheet-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1.1; margin: 4px 0 0; }
+  .sheet-meta { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .price-box { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-top: 16px; }
+  .price-box p:first-child { color: var(--muted); font-size: 12px; margin: 0; }
+  .price-box p:last-child { color: var(--text); font-weight: 600; margin: 2px 0 0; }
+  .amenity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .amenity-item { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; }
+  .cta-col { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+  .cta-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; padding: 11px; font-weight: 600; text-decoration: none; font-size: 14px; border: none; cursor: pointer; }
+  .cta-primary { background: var(--green); color: #fff; }
+  .cta-secondary { border: 1px solid var(--border); color: var(--text); background: transparent; }
+  .cta-danger { border: 1px solid var(--red); color: var(--red); background: transparent; }
+  .footnote { color: var(--muted-dark); font-size: 11px; margin-top: 16px; }
+
+  .rate-box { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 20px; text-align: center; }
+  .rate-box p { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+  .star-picker { font-size: 30px; letter-spacing: 4px; cursor: pointer; }
+  .star-picker span { color: var(--muted-dark); }
+  .star-picker span.filled { color: var(--gold); }
+  .rate-thanks { color: var(--green); font-size: 13px; font-weight: 600; margin-top: 8px; }
+
+  .form-field { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; margin-top: 10px; }
+  .form-field::placeholder { color: var(--muted-dark); }
+  .field-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 14px; margin-bottom: 6px; }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .quadra-count-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .quadra-count-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+  .quadra-count-item span { font-size: 12px; color: var(--muted); }
+  .quadra-count-item input { padding: 6px 10px; margin-top: 6px !important; }
+  .price-input-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .price-input-row span { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .price-input-row .price-input-label { min-width: 52px; color: var(--text); font-weight: 600; }
+  .price-input-row input { margin-top: 0 !important; flex: 1; text-align: center; }
+  .form-error { color: var(--red); font-size: 13px; display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+  .consent-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--muted); }
+  .consent-row input { margin-top: 2px; flex-shrink: 0; }
+  .inline-link { background: none; border: none; padding: 0; color: var(--green); text-decoration: underline; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .form-success { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 24px 0; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .pending-item { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 10px; }
+  .pending-name { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px; margin: 0; }
+  .pending-detail { color: var(--muted); font-size: 12px; margin: 2px 0 0; }
+  .pending-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .pending-actions .cta-btn { flex: 1; padding: 8px; font-size: 13px; }
+  .pending-preview-btn { background: none; border: none; padding: 0; text-align: left; width: 100%; cursor: pointer; }
+  .pending-preview-btn .pending-name { display: flex; align-items: center; gap: 6px; }
+  .admin-pago-box { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin: 8px 40px 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+  .admin-pago-box button { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; }
+  .delete-review-btn { background: none; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+  /* ======================================================================
+     Interface de busca estilo Trivago — listagem, filtros e ficha completa
+     ====================================================================== */
+
+  :root { --green-dark: #14332A; --shadow: 0 1px 3px rgba(33,31,26,0.06); --shadow-lg: 0 14px 34px rgba(33,31,26,0.16); }
+
+  @media (min-width: 720px) { .container { max-width: 760px; } }
+  @media (min-width: 1024px) { .container { max-width: 1180px; } }
+
+  /* ---- shell: sidebar de filtros + resultados (desktop) ---- */
+  .shell { display: block; }
+  @media (min-width: 1024px) {
+    .shell { display: grid; grid-template-columns: 296px minmax(0, 1fr); gap: 24px; align-items: start; padding: 0 20px; }
+    .shell .results { padding: 16px 0 96px; }
+  }
+  .sidebar { display: none; }
+  @media (min-width: 1024px) { .sidebar { display: block; position: sticky; top: 92px; padding-top: 16px; } }
+  .sidebar-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 2px 16px 12px; max-height: calc(100vh - 130px); overflow-y: auto; box-shadow: var(--shadow); }
+  .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card); z-index: 2; }
+  .sidebar-head strong { font-size: 14px; }
+
+  /* ---- toolbar (contagem + ordenação + filtros) ---- */
+  .toolbar { flex-wrap: wrap; row-gap: 10px; }
+  .toolbar-left { display: flex; flex-direction: column; min-width: 0; }
+  .toolbar-count { font-size: 14px; font-weight: 700; margin: 0; color: var(--text); }
+  .toolbar-sub { font-size: 11px; color: var(--muted); margin: 2px 0 0; }
+  .toolbar-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .tbtn { display: inline-flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 8px 13px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; }
+  .tbtn.on { border-color: var(--green); color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .tbtn-badge { background: var(--green); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 7px; }
+  .tbtn .caret { font-size: 10px; opacity: 0.7; }
+  @media (min-width: 1024px) { .filters-tbtn { display: none; } }
+
+  .sortwrap { position: relative; }
+  .sort-backdrop { position: fixed; inset: 0; z-index: 35; }
+  .sort-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); width: 262px; overflow: hidden; }
+  .sort-opt { display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left; background: none; border: none; padding: 10px 13px; cursor: pointer; font-size: 13px; font-family: 'Inter', sans-serif; color: var(--text); font-weight: 600; }
+  .sort-opt + .sort-opt { border-top: 1px solid var(--bg-alt); }
+  .sort-opt:hover { background: var(--bg-alt); }
+  .sort-opt .radio { width: 15px; height: 15px; border-radius: 999px; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 2px; box-sizing: border-box; }
+  .sort-opt.on .radio { border: 5px solid var(--green); }
+  .sort-opt small { display: block; color: var(--muted); font-size: 11px; font-weight: 400; margin-top: 2px; line-height: 1.35; }
+
+  /* ---- atalhos de filtro (linha rolável) ---- */
+  .quick-row { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px; background: var(--bg); border-bottom: 1px solid var(--border); scrollbar-width: none; }
+  .quick-row::-webkit-scrollbar { display: none; }
+
+  /* ---- chips de filtros ativos ---- */
+  .active-chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 20px 0; }
+  @media (min-width: 1024px) { .active-chips { padding-left: 0; padding-right: 0; } }
+  .achip { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; }
+  .achip .x { font-size: 13px; line-height: 1; opacity: 0.8; }
+  .achip-clear { background: transparent; color: var(--green); border: 1px dashed var(--muted-dark); }
+
+  /* ---- gaveta de filtros (mobile/tablet) ---- */
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(33,31,26,0.55); z-index: 60; display: none; }
+  .drawer-overlay.open { display: block; }
+  .drawer { position: absolute; top: 0; right: 0; height: 100%; width: min(390px, 92vw); background: var(--card); display: flex; flex-direction: column; }
+  @media (max-width: 560px) { .drawer { top: auto; bottom: 0; height: 90vh; width: 100%; border-radius: 18px 18px 0 0; } }
+  .drawer-head { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; }
+  .drawer-head strong { font-size: 17px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 2px 18px 18px; }
+  .drawer-foot { border-top: 1px solid var(--border); padding: 12px 18px; display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+  .drawer-foot .cta-btn { flex: 1; margin: 0; }
+  .drawer-close { background: none; border: none; font-size: 18px; color: var(--text); cursor: pointer; padding: 4px 6px; }
+
+  /* ---- grupos de filtro ---- */
+  .fgroup { border-bottom: 1px solid var(--border); padding: 14px 0; }
+  .fgroup:last-child { border-bottom: none; }
+  .fgroup-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 0 0 8px; }
+  .opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; font-size: 14px; color: var(--text); background: none; border: none; width: 100%; text-align: left; font-family: 'Inter', sans-serif; }
+  .opt:disabled { opacity: 0.4; cursor: default; }
+  .opt-check { width: 19px; height: 19px; border-radius: 5px; border: 1.5px solid var(--border); background: var(--card); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; box-sizing: border-box; }
+  .opt.on .opt-check { background: var(--green); border-color: var(--green); }
+  .opt-radio { width: 17px; height: 17px; border-radius: 999px; border: 1.5px solid var(--border); flex-shrink: 0; box-sizing: border-box; }
+  .opt.on .opt-radio { border: 5px solid var(--green); }
+  .opt-label { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .opt-count { margin-left: auto; font-size: 12px; color: var(--muted-dark); flex-shrink: 0; }
+  .range { width: 100%; accent-color: var(--green); margin: 8px 0 2px; }
+  .range-val { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .range-now { font-size: 15px; font-weight: 700; color: var(--green); }
+  .fgroup-note { font-size: 11px; color: var(--muted-dark); margin: 6px 0 0; line-height: 1.4; }
+
+  /* ---- card horizontal estilo Trivago ---- */
+  .card { display: block; transition: box-shadow 0.15s, border-color 0.15s; }
+  .card:hover { box-shadow: 0 6px 18px rgba(33,31,26,0.10); border-color: var(--muted-dark); }
+  .card-media { position: relative; height: 172px; background: linear-gradient(135deg, #E4DEC9, #EFEADD); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-media-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .media-count { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.55); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+  .media-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 999px; background: rgba(255,255,255,0.9); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--text); padding: 0; line-height: 1; }
+  .media-prev { left: 8px; } .media-next { right: 8px; }
+  .card-rail { border-top: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .rail-price-col { display: flex; flex-direction: column; }
+  .rail-from { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+  .rail-price { font-size: 20px; font-weight: 800; color: var(--green); line-height: 1.1; white-space: nowrap; }
+  .rail-unit { font-size: 11px; color: var(--muted); }
+  .rail-btn { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .card-quote { font-size: 12px; color: var(--muted); font-style: italic; margin: 8px 0 0; border-left: 2px solid var(--gold); padding-left: 8px; line-height: 1.4; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .tag { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 7px; font-size: 11px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+
+  @media (min-width: 720px) {
+    .card { display: grid; grid-template-columns: 250px minmax(0, 1fr) 196px; align-items: stretch; }
+    .card-media { height: 100%; min-height: 208px; }
+    .card-rail { border-top: none; border-left: 1px solid var(--border); flex-direction: column; align-items: stretch; justify-content: space-between; padding: 14px; text-align: right; }
+    .card-rail .rail-btn { width: 100%; }
+    .card-rail .score-box { justify-content: flex-end; }
+  }
+
+  /* ---- selo de nota (estilo Trivago) ---- */
+  .score-box { display: inline-flex; align-items: center; gap: 8px; }
+  .score-num { background: var(--green); color: #fff; font-weight: 800; font-size: 15px; border-radius: 8px 8px 8px 2px; padding: 5px 9px; line-height: 1; flex-shrink: 0; }
+  .score-num.empty { background: var(--bg-alt); color: var(--muted); font-weight: 700; }
+  .score-word { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.15; }
+  .score-count { font-size: 11px; color: var(--muted); display: block; font-weight: 400; }
+
+  /* ---- ficha estilo hotel ---- */
+  .sheet-wide { max-width: 920px; }
+  @media (min-width: 640px) { .sheet-wide { max-height: 92vh; } }
+  .hero { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 96px 96px; gap: 3px; background: var(--border); }
+  @media (min-width: 720px) { .hero { grid-template-rows: 152px 152px; } }
+  .hero.solo { grid-template-columns: 1fr; grid-template-rows: 200px; }
+  @media (min-width: 720px) { .hero.solo { grid-template-rows: 307px; } }
+  .hero-cell { position: relative; background: var(--bg-alt); cursor: pointer; overflow: hidden; }
+  .hero-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-main { grid-row: span 2; }
+  .hero-more { position: absolute; right: 10px; bottom: 10px; background: rgba(0,0,0,0.62); color: #fff; border: none; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; }
+  .hero-actions { position: absolute; top: 12px; right: 12px; z-index: 6; display: flex; gap: 8px; }
+  .hero-act { background: rgba(255,255,255,0.93); border: none; border-radius: 999px; height: 34px; min-width: 34px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.22); }
+  .hero-act.on { background: var(--green); color: #fff; }
+  .sheet-wide { display: flex; flex-direction: column; overflow: hidden; }
+  .sheet-scroll { flex: 1; overflow-y: auto; min-height: 0; }
+  .hero-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 200px; background: linear-gradient(135deg, #E4DEC9, #EFEADD); }
+
+  .detail-cols { display: block; }
+  @media (min-width: 860px) { .detail-cols { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 26px; align-items: start; } .detail-rail { position: sticky; top: 8px; } }
+  .rail-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); }
+  .rail-card .cta-btn { width: 100%; }
+  .rail-card-price { font-size: 26px; font-weight: 800; color: var(--green); font-family: 'Playfair Display', serif; line-height: 1.1; }
+
+  .detail-main > .cta-btn { width: 100%; }
+  .sec { margin-top: 24px; }
+  .sec-title { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
+
+  .rating-panel { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+  .rp-score { text-align: center; flex-shrink: 0; }
+  .rp-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: var(--green); line-height: 1; }
+  .rp-word { font-size: 13px; font-weight: 700; margin-top: 4px; }
+  .rp-count { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); padding: 2px 0; }
+  .bar-row .bar-lbl { width: 26px; flex-shrink: 0; color: var(--gold); font-weight: 600; }
+  .bar-track { flex: 1; height: 7px; border-radius: 999px; background: var(--border); overflow: hidden; }
+  .bar-fill { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
+  .bar-row .bar-n { width: 18px; text-align: right; flex-shrink: 0; }
+
+  .review-item { display: flex; gap: 10px; padding: 12px 0; border-top: 1px solid var(--border); }
+  .rev-avatar { width: 36px; height: 36px; border-radius: 999px; background: var(--green); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .rev-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .rev-name { font-size: 13px; font-weight: 700; margin: 0; }
+  .rev-date { font-size: 11px; color: var(--muted-dark); }
+  .rev-text { font-size: 13px; margin: 5px 0 0; line-height: 1.45; color: var(--text); }
+  .rev-more { width: 100%; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 9px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--green); font-family: 'Inter', sans-serif; cursor: pointer; }
+
+  .hl-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .hl { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--green); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+// ---------- Supabase ----------
+const SUPABASE_URL = "https://eultezheqwmxyakvgyjy.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let isAdmin = false;
+
+// ---------- icons (hand-drawn SVG, not emoji — renders identically on every device) ----------
+
+function icon(name, size, color) {
+  size = size || 16;
+  color = color || "currentColor";
+  const paths = {
+    search: '<circle cx="10" cy="10" r="6"/><line x1="20" y1="20" x2="14.5" y2="14.5"/>',
+    filter: '<path d="M3 4.5h18l-7 8.2V20l-4-2.2v-5.1z"/>',
+    pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+    phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
+    instagram: '<rect x="2.5" y="2.5" width="19" height="19" rx="6"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.3" cy="6.7" r="1" fill="' + color + '" stroke="none"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/>',
+    cup: '<path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z"/><path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17"/><line x1="7" y1="3" x2="7" y2="5.5"/><line x1="11" y1="3" x2="11" y2="5.5"/>',
+    bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6.5" x2="21" y2="6.5"/><path d="M16 10.5a4 4 0 0 1-8 0"/>',
+    wifi: '<path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M8.5 16.05a6 6 0 0 1 7 0"/><path d="M2 8.82a16 16 0 0 1 20 0"/><circle cx="12" cy="20" r="1" fill="' + color + '" stroke="none"/>',
+    droplet: '<path d="M12 2s7 8.5 7 13a7 7 0 0 1-14 0c0-4.5 7-13 7-13z"/>',
+    bolt: '<polygon points="13 2 4 14 11 14 9 22 20 10 13 10 13 2" fill="' + color + '"/>',
+    home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.8V20h13V9.8"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/>',
+    cap: '<path d="M22 9.5 12 5 2 9.5l10 4.5 10-4.5z"/><path d="M6 11.7v4.3c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.3"/><path d="M22 9.5v5"/>',
+    key: '<circle cx="7.5" cy="14.5" r="4.5"/><line x1="11" y1="11" x2="20.5" y2="1.5"/><line x1="15.5" y1="6.5" x2="18.5" y2="9.5"/><line x1="18" y1="4" x2="21" y2="7"/>',
+    clipboard: '<path d="M9 2.5h6a1 1 0 0 1 1 1V6H8V3.5a1 1 0 0 1 1-1z"/><rect x="5" y="4.5" width="14" height="17" rx="2"/><line x1="9" y1="11.5" x2="15" y2="11.5"/><line x1="9" y1="15.5" x2="15" y2="15.5"/>',
+    barchart: '<line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="4"/>',
+    warning: '<path d="M12 3 2 20h20z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17" r="0.9" fill="' + color + '" stroke="none"/>',
+    ball: '<circle cx="12" cy="12" r="9.5"/><path d="M3 8.5c4 2.5 4 12.5 0 15M21 8.5c-4 2.5-4 12.5 0 15" transform="rotate(0 12 12)"/><path d="M6 3.2c2.5 4 2.5 13.6 0 17.6"/><path d="M18 3.2c-2.5 4-2.5 13.6 0 17.6"/>',
+    dot: '<circle cx="12" cy="12" r="8" fill="' + color + '" stroke="none"/>',
+    parking: '<rect x="3" y="3" width="18" height="18" rx="4"/><text x="12" y="16.5" font-family="Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="' + color + '" stroke="none">P</text>',
+    watercup: '<path d="M6 4h12l-1.5 15a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1z"/><path d="M7 9c1 1 3 1 4 0s3-1 4 0"/>',
+    camera: '<rect x="3" y="7" width="14" height="11" rx="2"/><path d="M17 10.2 21 8v8l-4-2.2z"/><circle cx="10" cy="12.5" r="3"/>',
+    edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    pass: '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><line x1="2.5" y1="10" x2="21.5" y2="10"/><path d="M6 14.5h4"/>',
+    eye: '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>',
+    locate: '<circle cx="12" cy="12" r="6"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>',
+    heart: '<path d="M12 21s-7.5-4.6-10-9.3C0.5 8.5 2 5 5.5 5c2 0 3.3 1.1 4 2.1.7-1 2-2.1 4-2.1 3.5 0 5 3.5 3 6.7-2.5 4.7-10 9.3-10 9.3z"/>',
+    heartFill: '<path d="M12 21s-7.5-4.6-10-9.3C0.5 8.5 2 5 5.5 5c2 0 3.3 1.1 4 2.1.7-1 2-2.1 4-2.1 3.5 0 5 3.5 3 6.7-2.5 4.7-10 9.3-10 9.3z" fill="' + color + '" stroke="none"/>',
+    share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><line x1="8.2" y1="10.8" x2="15.8" y2="7.2"/><line x1="8.2" y1="13.2" x2="15.8" y2="16.8"/>',
+  };
+  const strokeAttrs = ["ball","instagram","clipboard","home"].includes(name) ? "" : "";
+  const filled = name === "bolt" || name === "warning-fill";
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${paths[name] || ""}</svg>`;
+}
+
+const LOGO_SVG = `
+<svg class="logo-mark" width="46" height="46" viewBox="0 0 1080 1080">
+<defs>
+<linearGradient id="bgGradHeader" x1="0" y1="0" x2="1080" y2="1080" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#2A5C4B"/>
+<stop offset="1" stop-color="#153229"/>
+</linearGradient>
+<clipPath id="headClipHeader">
+<ellipse cx="0" cy="-160" rx="192" ry="252"/>
+</clipPath>
+</defs>
+<rect x="0" y="0" width="1080" height="1080" rx="220" fill="url(#bgGradHeader)"/>
+<g transform="translate(540,580) rotate(-15)">
+<rect x="-40" y="150" width="80" height="290" rx="36" fill="#F7F4EC"/>
+<ellipse cx="0" cy="445" rx="42" ry="22" fill="#F7F4EC"/>
+<path d="M-40 190 L-40 150 Q-40 200 0 210 Q40 200 40 150 L40 190 Z" fill="#F7F4EC"/>
+<ellipse cx="0" cy="-160" rx="212" ry="272" fill="none" stroke="#F7F4EC" stroke-width="48"/>
+<g clip-path="url(#headClipHeader)" stroke="#B8933F" stroke-width="6" opacity="0.55">
+<line x1="-190" y1="-160" x2="190" y2="-160"/>
+<line x1="-190" y1="-90" x2="190" y2="-90"/>
+<line x1="-190" y1="-230" x2="190" y2="-230"/>
+<line x1="-70" y1="-410" x2="-70" y2="90"/>
+<line x1="0" y1="-410" x2="0" y2="90"/>
+<line x1="70" y1="-410" x2="70" y2="90"/>
+</g>
+<path d="M-330 -40 Q-260 -10 -220 -90" fill="none" stroke="#B8933F" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
+<circle cx="0" cy="-160" r="132" fill="#B8933F" stroke="#F7F4EC" stroke-width="10"/>
+</g>
+</svg>`;
+
+
+const AMENITY_OPTS = [
+  { key: "estacionamento_gratuito", label: "Estacionamento grátis", icon: icon('parking', 14, 'var(--green)') },
+  { key: "estacionamento_pago", label: "Estacionamento pago", icon: icon('parking', 14, 'var(--gold)') },
+  { key: "vestiario", label: "Vestiário", icon: icon('droplet', 14, 'var(--green)') },
+  { key: "loja", label: "Loja de material", icon: icon('bag', 14, 'var(--green)') },
+  { key: "wifi", label: "Wi-Fi", icon: icon('wifi', 14, 'var(--green)') },
+  { key: "lanchonete", label: "Lanchonete", icon: icon('cup', 14, 'var(--green)') },
+  { key: "agua", label: "Água grátis", icon: icon('watercup', 14, 'var(--green)') },
+  { key: "camera", label: "Câmera para gravar pontos", icon: icon('camera', 14, 'var(--green)') },
+  { key: "assinatura_fitness", label: "App de assinatura fitness", icon: icon('pass', 14, 'var(--green)') },
+];
+const AMENITY_MAP = Object.fromEntries(AMENITY_OPTS.map(a => [a.key, a]));
+
+// Nos filtros, gratuito e pago aparecem como uma única opção "Estacionamento";
+// no cadastro e na ficha da academia, continuam distintos.
+const FILTER_AMENITY_OPTS = [
+  { key: "estacionamento", label: "Estacionamento", icon: icon('parking', 14, 'var(--green)') },
+  ...AMENITY_OPTS.filter(a => a.key !== "estacionamento_gratuito" && a.key !== "estacionamento_pago"),
+];
+
+function matchesAmenityFilter(court, filterKey) {
+  if (filterKey === "estacionamento") {
+    return court.amenities?.includes("estacionamento_gratuito") || court.amenities?.includes("estacionamento_pago");
+  }
+  return court.amenities?.includes(filterKey);
+}
+
+const PISO_OPTS = [
+  { key: "saibro", label: "Saibro", icon: icon('dot', 14, '#B5651D') },
+  { key: "rapida", label: "Rápida", icon: icon('bolt', 14, 'var(--gold)') },
+];
+
+const COBERTURA_OPTS = [
+  { key: "coberta", label: "Coberta", icon: icon('home', 14, 'var(--green)') },
+  { key: "descoberta", label: "Descoberta", icon: icon('sun', 14, 'var(--gold)') },
+];
+
+const QUADRA_COMBOS = [
+  { key: "saibro_coberta", piso: "saibro", cobertura: "coberta" },
+  { key: "saibro_descoberta", piso: "saibro", cobertura: "descoberta" },
+  { key: "rapida_coberta", piso: "rapida", cobertura: "coberta" },
+  { key: "rapida_descoberta", piso: "rapida", cobertura: "descoberta" },
+];
+
+const SORT_OPTS = [
+  { key: "recomendados", label: "Recomendados", hint: "Equilibra distância, nota, preço e estrutura" },
+  { key: "distance", label: "Mais perto", hint: "Precisa de CEP, endereço ou GPS" },
+  { key: "rating", label: "Melhor avaliado", hint: "Maior nota das avaliações feitas no app" },
+  { key: "price", label: "Menor preço", hint: "Pelo menor valor por hora informado" },
+  { key: "reviews", label: "Mais avaliados", hint: "Quem já recebeu mais avaliações" },
+  { key: "courts", label: "Mais quadras", hint: "Academias com mais quadras cadastradas" },
+];
+
+const RATING_OPTS = [
+  { value: 0, label: "Qualquer nota" },
+  { value: 3, label: "3,0 ou mais — Bom" },
+  { value: 4, label: "4,0 ou mais — Muito bom" },
+  { value: 4.5, label: "4,5 ou mais — Excelente" },
+];
+
+const DISTANCE_OPTS = [
+  { value: null, label: "Qualquer distância" },
+  { value: 2, label: "Até 2 km" },
+  { value: 5, label: "Até 5 km" },
+  { value: 10, label: "Até 10 km" },
+  { value: 20, label: "Até 20 km" },
+];
+
+const MODALIDADE_OPTS = [
+  { key: "aulas_proprias", label: "Aulas", icon: icon('cap', 14, 'var(--green)') },
+  { key: "locacao", label: "Locação", icon: icon('key', 14, 'var(--green)') },
+];
+
+// As academias agora vivem no banco de dados (Supabase), não mais fixas aqui no código.
+
+const FAVORITES_KEY = "guiatennis_favorites_v1"; // favoritos continuam só no navegador (preferência pessoal, não precisa ser compartilhada)
+const VISITOR_KEY = "guiatennis_visitor_v1";
+
+function loadVisitor() {
+  try { return JSON.parse(localStorage.getItem(VISITOR_KEY) || "null"); } catch { return null; }
+}
+function saveVisitor(data) {
+  localStorage.setItem(VISITOR_KEY, JSON.stringify(data));
+}
+function ensureVisitorThen(action) {
+  const v = loadVisitor();
+  if (v && v.nome && v.contato) {
+    action();
+  } else {
+    state.pendingVisitorAction = action;
+    state.showVisitorSetup = true;
+    state.visitorError = "";
+    render();
+  }
+}
+
+function mapRow(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    address: row.address,
+    numero: row.numero,
+    complemento: row.complemento,
+    bairro: row.bairro,
+    cidade: row.cidade,
+    endereco: row.endereco,
+    lat: row.lat,
+    lng: row.lng,
+    phone: row.phone,
+    instagram: row.instagram,
+    site: row.site,
+    priceRange: row.price_range,
+    priceAula: row.price_aula,
+    priceLocacao: row.price_locacao,
+    amenities: row.amenities || [],
+    modalidades: row.modalidades || [],
+    pisos: row.pisos || [],
+    cobertura: row.cobertura || [],
+    quadras: row.quadras || {},
+    photos: row.photos || [],
+    source: row.source,
+    status: row.status,
+    pago: !!row.pago,
+    pausada: !!row.pausada,
+    pausadaAte: row.pausada_ate,
+    nomeSolicitante: row.nome_solicitante,
+    contatoSolicitante: row.contato_solicitante,
+  };
+}
+
+function toRow(f) {
+  return {
+    name: f.name, address: f.address, numero: f.numero, complemento: f.complemento,
+    bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
+    phone: f.phone, instagram: f.instagram, site: f.site,
+    price_range: f.priceRange,
+    price_aula: f.priceAula,
+    price_locacao: f.priceLocacao,
+    amenities: f.amenities || [], modalidades: f.modalidades || [],
+    pisos: f.pisos || [], cobertura: f.cobertura || [],
+    quadras: f.quadras || {}, photos: f.photos || [],
+  };
+}
+
+async function loadEverything() {
+  const { data: published } = await sb.from('academias').select('*').eq('status', 'published').order('created_at');
+  state.allCourts = (published || []).map(mapRow);
+
+  if (isAdmin) {
+    const { data: pend } = await sb.from('academias').select('*').eq('status', 'pending').order('created_at');
+    state.pending = (pend || []).map(mapRow);
+
+    const { data: clicks } = await sb.from('cliques').select('*').order('created_at', { ascending: false }).limit(20000);
+    state.clicksRaw = clicks || [];
+    const clicksCache = {};
+    (clicks || []).forEach(c => {
+      if (!clicksCache[c.academia_id]) clicksCache[c.academia_id] = { whatsapp: 0, site: 0, instagram: 0 };
+      clicksCache[c.academia_id][c.tipo] = (clicksCache[c.academia_id][c.tipo] || 0) + 1;
+    });
+    state.clicksCache = clicksCache;
+  } else {
+    state.pending = [];
+  }
+
+  const { data: reviews } = await sb.from('avaliacoes').select('*').order('created_at', { ascending: false });
+  const reviewsCache = {};
+  (reviews || []).forEach(r => {
+    if (!reviewsCache[r.academia_id]) reviewsCache[r.academia_id] = [];
+    reviewsCache[r.academia_id].push({ id: r.id, stars: r.stars, comment: r.comment, nome_autor: r.nome_autor, contato_autor: r.contato_autor, ts: r.created_at });
+  });
+  state.reviewsCache = reviewsCache;
+}
+
+function getPagoStatus(courtId) {
+  const c = state.allCourts.find(x => x.id === courtId) || state.pending.find(x => x.id === courtId);
+  return { pago: !!(c && c.pago) };
+}
+async function setPagoStatus(courtId, pago) {
+  await sb.from('academias').update({ pago }).eq('id', courtId);
+  await loadEverything();
+}
+
+function loadFavorites() {
+  try { return JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]"); } catch { return []; }
+}
+const COMPARE_MAX = 5;
+const COMPARE_MIN = 2;
+const COMPARE_KEY = "guiatennis_compare_v1";
+
+function loadCompare() {
+  try {
+    const v = JSON.parse(localStorage.getItem(COMPARE_KEY) || "[]");
+    return Array.isArray(v) ? v.slice(0, COMPARE_MAX) : [];
+  } catch { return []; }
+}
+function setCompareList(arr) {
+  state.compareList = arr;
+  try { localStorage.setItem(COMPARE_KEY, JSON.stringify(arr)); } catch {}
+}
+
+function isComparing(courtId) {
+  return state.compareList.includes(courtId);
+}
+function toggleCompare(courtId) {
+  if (isComparing(courtId)) {
+    setCompareList(state.compareList.filter(id => id !== courtId));
+    return { ok: true };
+  }
+  if (state.compareList.length >= COMPARE_MAX) {
+    return { ok: false, msg: `Você pode comparar até ${COMPARE_MAX} academias por vez.` };
+  }
+  setCompareList([...state.compareList, courtId]);
+  return { ok: true };
+}
+function compareCourts() {
+  return state.compareList
+    .map(id => state.allCourts.find(c => c.id === id))
+    .filter(Boolean)
+    .map(c => {
+      const r = getAppRating(c.id);
+      return {
+        ...c,
+        appAvg: r.avg,
+        appCount: r.count,
+        distanceKm: state.origin ? haversineKm(state.origin.lat, state.origin.lng, c.lat, c.lng) : undefined,
+      };
+    });
+}
+
+function listaPt(arr) {
+  const items = arr.filter(Boolean);
+  if (!items.length) return "—";
+  if (items.length === 1) return items[0];
+  return items.slice(0, -1).join(", ") + " e " + items[items.length - 1];
+}
+
+function isFavorite(courtId) {
+  return loadFavorites().includes(courtId);
+}
+function toggleFavorite(courtId) {
+  const favs = loadFavorites();
+  const next = favs.includes(courtId) ? favs.filter(id => id !== courtId) : [...favs, courtId];
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+}
+
+function trackClick(courtId, type) {
+  sb.from('cliques').insert({ academia_id: courtId, tipo: type }).then(() => {});
+}
+function getAllClicks() {
+  return state.clicksCache || {};
+}
+
+// ---------- state ----------
+
+let state = {
+  cep: "",
+  origin: null,
+  allCourts: [],
+  pending: [],
+  reviewsCache: {},
+  clicksCache: {},
+  clicksRaw: [],
+  statsPeriodo: "30",
+  statsOrdem: "views",
+  searchStatus: "idle",
+  errorMsg: "",
+  pisoFilters: [],
+  coberturaFilters: [],
+  amenityFilters: [],
+  modalidadeFilters: [],
+  sortBy: "recomendados",
+  showSort: false,
+  minRating: 0,
+  priceMax: null,
+  maxDistance: null,
+  cardPhoto: {},
+  reviewsExpanded: false,
+  selected: null,
+  showRegister: false,
+  showFilters: false,
+  showAdminPanel: false,
+  showStatsPanel: false,
+  showTerms: false,
+  showPrivacy: false,
+  showLogin: false,
+  showVisitorSetup: false,
+  visitorError: "",
+  pendingVisitorAction: null,
+  loginError: "",
+  loginLoading: false,
+  registerStatus: "idle",
+  registerError: "",
+  cepStatus: "idle",
+  favoritesOnly: false,
+  compareOnly: false,
+  decidePrios: [],
+  showDecideResult: false,
+  decideNotes: "",
+  decidida: null,
+  navCourt: null,
+  compareList: loadCompare(),
+  showCompare: false,
+  pendingStar: 0,
+  justRated: false,
+  loaded: false,
+  lightbox: null,
+};
+
+// ---------- geocoding (real network calls) ----------
+
+async function fetchViaCep(rawCep) {
+  const cep = rawCep.replace(/\D/g, "");
+  if (cep.length !== 8) throw new Error("CEP precisa ter 8 dígitos.");
+  const viaCepRes = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+  if (!viaCepRes.ok) throw new Error("Não consegui consultar esse CEP.");
+  const viaCepData = await viaCepRes.json();
+  if (viaCepData.erro) throw new Error("CEP não encontrado.");
+  return viaCepData;
+}
+
+function stripAccents(str) {
+  return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+async function geocodeCep(rawCep) {
+  const cep = rawCep.replace(/\D/g, "");
+  if (cep.length !== 8) throw new Error("CEP precisa ter 8 dígitos.");
+
+  // Fonte principal: devolve a coordenada já ligada diretamente ao CEP (base IBGE),
+  // mais confiável que tentar geocodificar o endereço por texto.
+  try {
+    const res = await fetch(`https://cep.awesomeapi.com.br/json/${cep}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.lat && data.lng) {
+        return {
+          lat: parseFloat(data.lat),
+          lng: parseFloat(data.lng),
+          bairro: data.neighborhood || data.city,
+          cidade: data.city,
+          uf: data.state,
+          approximate: false,
+        };
+      }
+    }
+  } catch (e) { /* sem sorte, tenta o método reserva abaixo */ }
+
+  // Reserva: ViaCEP (endereço) + OpenStreetMap (texto → coordenada), com degradação progressiva.
+  const viaCepData = await fetchViaCep(rawCep);
+  const logradouro = viaCepData.logradouro || "";
+  const bairro = viaCepData.bairro || "";
+  const cidade = viaCepData.localidade;
+  const uf = viaCepData.uf;
+
+  const attempts = [
+    `${logradouro}, ${bairro}, ${cidade}, ${uf}, Brasil`,
+    `${stripAccents(logradouro)}, ${stripAccents(bairro)}, ${stripAccents(cidade)}, ${uf}, Brasil`,
+    `${bairro}, ${cidade}, ${uf}, Brasil`,
+    `${stripAccents(bairro)}, ${stripAccents(cidade)}, Brasil`,
+    `${bairro}, ${cidade}, Brasil`,
+    `${cidade}, ${uf}, Brasil`,
+  ];
+
+  let geo = null;
+  let approximate = false;
+  for (let i = 0; i < attempts.length; i++) {
+    if (!attempts[i].replace(/[,\s]/g, "")) continue;
+    try {
+      geo = await geocodeAddress(attempts[i]);
+      approximate = i >= 2;
+      break;
+    } catch (e) { /* tenta a próxima tentativa, mais genérica */ }
+  }
+  if (!geo) throw new Error("Não consegui localizar esse CEP no mapa.");
+  return { ...geo, bairro: bairro || cidade, cidade, uf, approximate };
+}
+
+async function geocodeAddress(query) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(query)}`;
+  const res = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!res.ok) throw new Error("Não consegui localizar esse endereço no mapa.");
+  const data = await res.json();
+  if (!data.length) throw new Error("Endereço não encontrado. Tente incluir bairro e cidade.");
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+}
+
+async function geocodeFormAddress(f) {
+  // Tenta primeiro pelo CEP (mais confiável), se a pessoa preencheu um
+  const cepDigits = (f.cep || "").replace(/\D/g, "");
+  if (cepDigits.length === 8) {
+    try {
+      const res = await fetch(`https://cep.awesomeapi.com.br/json/${cepDigits}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.lat && data.lng) return { lat: parseFloat(data.lat), lng: parseFloat(data.lng), approximate: false };
+      }
+    } catch (e) { /* segue pras tentativas por texto */ }
+  }
+
+  const attempts = [
+    `${f.address}, ${f.numero}, ${f.bairro}, ${f.cidade}, Brasil`,
+    `${stripAccents(f.address)}, ${f.numero}, ${stripAccents(f.bairro)}, ${stripAccents(f.cidade)}, Brasil`,
+    `${f.address}, ${f.bairro}, ${f.cidade}, Brasil`,
+    `${f.bairro}, ${f.cidade}, Brasil`,
+    `${stripAccents(f.bairro)}, ${stripAccents(f.cidade)}, Brasil`,
+    `${f.cidade}, Brasil`,
+  ];
+  for (let i = 0; i < attempts.length; i++) {
+    if (!attempts[i].replace(/[,\s]/g, "")) continue;
+    try {
+      const geo = await geocodeAddress(attempts[i]);
+      return { ...geo, approximate: i >= 2 };
+    } catch (e) { /* tenta a próxima, mais genérica */ }
+  }
+  throw new Error("Não consegui localizar esse endereço. Confira o CEP, bairro e cidade.");
+}
+
+async function reverseGeocode(lat, lng) {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+  const res = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!res.ok) throw new Error("Não consegui identificar seu endereço.");
+  const data = await res.json();
+  const a = data.address || {};
+  const bairro = a.suburb || a.neighbourhood || a.city_district || a.village || "sua região";
+  const cidade = a.city || a.town || a.municipality || "";
+  return { lat, lng, bairro, cidade };
+}
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// ---------- in-app ratings (compartilhadas via Supabase, lidas de um cache em memória) ----------
+
+function getReviews(courtId) {
+  return state.reviewsCache[courtId] || [];
+}
+function getAppRating(courtId) {
+  const reviews = getReviews(courtId);
+  if (!reviews.length) return { avg: 0, count: 0 };
+  const sum = reviews.reduce((s, r) => s + r.stars, 0);
+  return { avg: sum / reviews.length, count: reviews.length };
+}
+async function submitRating(courtId, stars, comment) {
+  const trimmed = (comment || "").trim();
+  const v = loadVisitor() || {};
+  const { data } = await sb.from('avaliacoes').insert({ academia_id: courtId, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato }).select().single();
+  if (!state.reviewsCache[courtId]) state.reviewsCache[courtId] = [];
+  state.reviewsCache[courtId].unshift({ id: data && data.id, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato, ts: new Date().toISOString() });
+}
+function starsHtml(avg) {
+  const rounded = Math.round(avg);
+  let out = "";
+  for (let i = 1; i <= 5; i++) out += i <= rounded ? "★" : "☆";
+  return out;
+}
+
+// ---------- derived results ----------
+
+function parsePriceValue(court) {
+  const values = [court.priceAula, court.priceLocacao, court.priceRange]
+    .filter(Boolean)
+    .map(p => { const m = p.match(/\d+/); return m ? parseInt(m[0], 10) : null; })
+    .filter(v => v !== null);
+  return values.length ? Math.min(...values) : Infinity;
+}
+
+// Faixa de preço disponível no acervo — alimenta o slider do painel de filtros.
+function priceBounds() {
+  const vals = state.allCourts.map(parsePriceValue).filter(v => isFinite(v));
+  if (vals.length < 2) return null;
+  const min = Math.floor(Math.min(...vals) / 5) * 5;
+  const max = Math.ceil(Math.max(...vals) / 5) * 5;
+  if (min >= max) return null;
+  return { min, max };
+}
+
+function courtDistance(c) {
+  return state.origin ? haversineKm(state.origin.lat, state.origin.lng, c.lat, c.lng) : undefined;
+}
+
+// `skip` desliga um grupo de filtro — é assim que contamos quantas academias
+// cada opção traria de volta, igual ao contador que o Trivago mostra ao lado
+// de cada caixinha.
+function applyFilters(list, skip) {
+  skip = skip || "";
+  if (skip !== "piso" && state.pisoFilters.length) list = list.filter(c => state.pisoFilters.some(p => c.pisos?.includes(p)));
+  if (skip !== "cobertura" && state.coberturaFilters.length) list = list.filter(c => state.coberturaFilters.some(cv => c.cobertura?.includes(cv)));
+  if (skip !== "amenity" && state.amenityFilters.length) list = list.filter(c => state.amenityFilters.every(a => matchesAmenityFilter(c, a)));
+  if (skip !== "modalidade" && state.modalidadeFilters.length) list = list.filter(c => state.modalidadeFilters.some(m => c.modalidades?.includes(m)));
+  if (skip !== "rating" && state.minRating > 0) list = list.filter(c => { const r = getAppRating(c.id); return r.count > 0 && r.avg >= state.minRating; });
+  if (skip !== "price" && state.priceMax !== null) list = list.filter(c => parsePriceValue(c) <= state.priceMax);
+  if (skip !== "distance" && state.maxDistance !== null && state.origin) list = list.filter(c => courtDistance(c) <= state.maxDistance);
+  if (skip !== "outros") {
+    if (state.favoritesOnly) list = list.filter(c => isFavorite(c.id));
+    if (state.compareOnly) list = list.filter(c => isComparing(c.id));
+  }
+  return list;
+}
+
+function decorate(c) {
+  const r = getAppRating(c.id);
+  return { ...c, appAvg: r.avg, appCount: r.count, distanceKm: courtDistance(c) };
+}
+
+function activeFilterCount() {
+  return state.pisoFilters.length + state.coberturaFilters.length
+    + state.amenityFilters.length + state.modalidadeFilters.length
+    + (state.minRating > 0 ? 1 : 0) + (state.priceMax !== null ? 1 : 0)
+    + (state.maxDistance !== null ? 1 : 0)
+    + (state.favoritesOnly ? 1 : 0) + (state.compareOnly ? 1 : 0);
+}
+
+function clearAllFilters() {
+  state.pisoFilters = [];
+  state.coberturaFilters = [];
+  state.amenityFilters = [];
+  state.modalidadeFilters = [];
+  state.minRating = 0;
+  state.priceMax = null;
+  state.maxDistance = null;
+  state.favoritesOnly = false;
+  state.compareOnly = false;
+}
+
+// Nota "Recomendados": mistura distância, avaliação, preço e estrutura.
+// Quem não tem o dado fica no meio da tabela em vez de ser punido.
+function recoScore(c, ctx) {
+  const dist = typeof c.distanceKm === "number" ? norm(ctx.dists, c.distanceKm, true) : 50;
+  const rate = c.appCount ? norm(ctx.rates, c.appAvg, false) : 42;
+  const pv = parsePriceValue(c);
+  const price = isFinite(pv) ? norm(ctx.prices, pv, true) : 45;
+  const estrutura = Math.min(100, totalQuadras(c) * 9 + (c.amenities || []).length * 6);
+  return dist * 0.34 + rate * 0.30 + price * 0.19 + estrutura * 0.17;
+}
+
+function effectiveSort() {
+  return (state.sortBy === "distance" && !state.origin) ? "recomendados" : state.sortBy;
+}
+
+function getResults() {
+  let list = applyFilters(state.allCourts).map(decorate);
+  const sort = effectiveSort();
+
+  if (sort === "distance") {
+    list = [...list].sort((a, b) => a.distanceKm - b.distanceKm);
+  } else if (sort === "price") {
+    list = [...list].sort((a, b) => parsePriceValue(a) - parsePriceValue(b));
+  } else if (sort === "reviews") {
+    list = [...list].sort((a, b) => (b.appCount - a.appCount) || (b.appAvg - a.appAvg));
+  } else if (sort === "courts") {
+    list = [...list].sort((a, b) => totalQuadras(b) - totalQuadras(a));
+  } else if (sort === "rating") {
+    list = [...list].sort((a, b) => {
+      const aScore = a.appCount ? a.appAvg : -1;
+      const bScore = b.appCount ? b.appAvg : -1;
+      return bScore - aScore;
+    });
+  } else {
+    const ctx = {
+      dists: list.map(c => c.distanceKm),
+      rates: list.map(c => c.appCount ? c.appAvg : null),
+      prices: list.map(c => { const v = parsePriceValue(c); return isFinite(v) ? v : null; }),
+    };
+    list = list
+      .map(c => ({ c, s: recoScore(c, ctx) }))
+      .sort((a, b) => b.s - a.s)
+      .map(x => x.c);
+  }
+  return list;
+}
+
+// ---------- render ----------
+
+function esc(s) { return (s ?? "").toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function render() {
+  const scrollTargets = document.querySelectorAll(".sheet, .sheet-scroll, .drawer-body, .sidebar-panel");
+  const savedScrolls = Array.from(scrollTargets).map(el => ({ id: el.id, cls: el.className, top: el.scrollTop }));
+  const pageScroll = window.scrollY;
+
+  const app = document.getElementById("app");
+  const results = getResults();
+  const activeFilters = activeFilterCount();
+  const topBadge = { distance: "Mais perto", price: "Menor preço", rating: "Melhor nota", reviews: "Mais avaliada", courts: "Mais quadras", recomendados: "Recomendada" }[effectiveSort()] || "";
+  const pending = isAdmin ? state.pending : [];
+  __lastDesktop = isDesktop();
+
+  app.innerHTML = `
+    ${isAdmin ? `<div class="admin-banner">Modo admin — só você vê isso <button id="logout-btn" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;margin-left:8px">sair</button></div>` : ""}
+    <div class="header">
+      <div class="brand-row">
+        ${LOGO_SVG}
+        <h1 class="title display">GuiaTennis</h1>
+      </div>
+      <p class="subtitle">Ache e compare quadras e academias perto de você.</p>
+      <div class="search-row">
+        <div class="search-box">
+          <span>${icon('search', 16, 'var(--muted)')}</span>
+          <input id="cep-input" placeholder="CEP, endereço ou local (ex: Shopping Morumbi)" value="${esc(state.cep)}" />
+        </div>
+        <button class="btn-primary" id="search-btn" ${state.searchStatus === "loading" ? "disabled" : ""}>
+          ${state.searchStatus === "loading" ? '<span class="spinner"></span>' : "Buscar"}
+        </button>
+        <button class="btn-locate" id="locate-btn" title="Usar minha localização">${icon('locate', 20, 'var(--green)')}</button>
+      </div>
+      <p class="locate-hint">${icon('locate', 11, 'var(--muted)')} O ícone ao lado busca quadras perto de onde você está agora, usando a localização do seu celular</p>
+      ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
+      ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <p class="toolbar-count">${results.length} ${plural(results.length, "quadra encontrada", "quadras encontradas")}</p>
+        <p class="toolbar-sub">${state.origin ? `a partir de ${esc(state.origin.bairro || state.origin.cidade || "você")}` : "Busque um CEP, endereço ou use o GPS para ordenar por distância"}</p>
+      </div>
+      <div class="toolbar-right">
+        <div class="sortwrap">
+          <button type="button" class="tbtn ${state.showSort ? "on" : ""}" id="sort-toggle">${SORT_OPTS.find(o => o.key === effectiveSort())?.label || "Ordenar"} <span class="caret">▼</span></button>
+          ${renderSortMenu()}
+        </div>
+        <button type="button" class="tbtn filters-tbtn ${activeFilters ? "on" : ""}" id="filters-toggle">
+          ${icon('filter', 14, 'currentColor')} Filtros ${activeFilters ? `<span class="tbtn-badge">${activeFilters}</span>` : ""}
+        </button>
+      </div>
+    </div>
+
+    ${renderQuickRow()}
+
+    <div class="shell">
+      ${isDesktop() ? renderFilterSidebar() : ""}
+      <div style="min-width:0">
+        ${renderActiveChips()}
+        <div class="results">
+          ${results.length === 0 ? `
+            <div class="empty">
+              <p style="margin:0 0 10px">Nenhuma quadra encontrada com esses filtros.</p>
+              ${activeFilters ? `<button type="button" class="chip small clear-filters">Limpar todos os filtros</button>` : ""}
+            </div>` : ""}
+          ${results.map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <button id="terms-link">Termos de Uso</button>
+      <span>·</span>
+      <button id="privacy-link">Política de Privacidade</button>
+      ${!isAdmin ? `<span>·</span><button id="admin-login-link">GuiaTennis</button>` : ""}
+      <p class="footer-copy">GuiaTennis · guiatennis1@gmail.com</p>
+      <p class="footer-copy">Dados de localização © colaboradores do OpenStreetMap</p>
+    </div>
+
+    <div class="fab-col">
+      ${isAdmin ? `
+        <button class="fab fab-admin" id="fab-stats" title="Cliques">${icon('barchart',20,'var(--green)')}</button>
+        <button class="fab fab-admin" id="fab-admin" title="Solicitações pendentes">
+          ${icon('clipboard',20,'var(--green)')}${pending.length ? `<span class="fab-badge">${pending.length}</span>` : ""}
+        </button>` : ""}
+      <button class="fab" id="fab-add">+</button>
+    </div>
+
+    ${state.selected ? renderDetailSheet(state.selected) : ""}
+    ${state.showRegister ? renderRegisterSheet() : ""}
+    ${state.showAdminPanel ? renderAdminPanel(pending) : ""}
+    ${state.showStatsPanel ? renderStatsPanel() : ""}
+    ${state.showTerms ? renderLegalSheet("Termos de Uso", TERMS_HTML, "terms-close") : ""}
+    ${state.showPrivacy ? renderLegalSheet("Política de Privacidade", PRIVACY_HTML, "privacy-close") : ""}
+    ${state.showLogin ? renderLoginSheet() : ""}
+    ${state.showVisitorSetup ? renderVisitorSetupSheet() : ""}
+    ${state.showCompare ? renderCompareSheet() : ""}
+    ${renderFilterDrawer(results.length)}
+    ${renderNavSheet()}
+    ${renderCompareBar()}
+    ${renderLightbox()}
+  `;
+
+  app.style.paddingBottom = (state.compareList.length && !state.showCompare) ? "110px" : "";
+
+  attachEvents();
+  if (state.lightbox) {
+    const strip = document.getElementById("lightbox-strip");
+    if (strip) strip.scrollLeft = strip.clientWidth * state.lightbox.index;
+  }
+
+  savedScrolls.forEach(saved => {
+    if (!saved.id && !saved.cls.trim()) return;
+    const selector = saved.id ? `#${saved.id}` : `.${saved.cls.trim().split(/\s+/).join(".")}`;
+    const el = document.querySelector(selector);
+    if (el) el.scrollTop = saved.top;
+  });
+  window.scrollTo(0, pageScroll);
+}
+
+const DECIDE_CRITERIA = [
+  { key: "preco", label: "Preço" },
+  { key: "distancia", label: "Distância" },
+  { key: "estrutura", label: "Estrutura" },
+  { key: "avaliacoes", label: "Avaliações" },
+];
+
+function norm(values, value, lowerIsBetter) {
+  const valid = values.filter(v => typeof v === "number" && isFinite(v));
+  if (!valid.length || typeof value !== "number" || !isFinite(value)) return 50;
+  const min = Math.min(...valid), max = Math.max(...valid);
+  if (min === max) return 100;
+  const pct = ((value - min) / (max - min)) * 100;
+  return lowerIsBetter ? 100 - pct : pct;
+}
+
+function decideRanking() {
+  const courts = compareCourts();
+  const an = analisarAnotacoes(state.decideNotes, courts);
+
+  // Critérios marcados + os que a pessoa citou no texto
+  const marcados = [...new Set([...state.decidePrios, ...an.criterios])];
+  const prios = marcados.length ? marcados : DECIDE_CRITERIA.map(c => c.key);
+
+  // Itens concretos citados na anotação (estacionamento, água, coberta...)
+  const exigencias = an.achados.filter(a => a.atendem.length && a.atendem.length < a.total);
+
+  const precos = courts.map(c => { const v = parsePriceValue(c); return isFinite(v) ? v : null; });
+  const dists = courts.map(c => typeof c.distanceKm === "number" ? c.distanceKm : null);
+  const estrs = courts.map(c => (c.amenities||[]).length * 2 + (totalQuadras(c) || 0));
+  const notas = courts.map(c => c.appCount ? c.appAvg : null);
+
+  return courts.map((c, i) => {
+    const scores = {
+      preco: norm(precos, precos[i], true),
+      distancia: norm(dists, dists[i], true),
+      estrutura: norm(estrs, estrs[i], false),
+      avaliacoes: norm(notas, notas[i], false),
+    };
+    let total = prios.reduce((sum, k) => sum + scores[k], 0) / prios.length;
+
+    // O que a pessoa escreveu pesa o dobro: se ela se deu ao trabalho de citar,
+    // é porque importa mais que um critério genérico marcado.
+    let atendidas = [];
+    if (exigencias.length) {
+      atendidas = exigencias.filter(e => e.atendem.some(x => x.id === c.id));
+      const notaAnotacao = (atendidas.length / exigencias.length) * 100;
+      total = (total + notaAnotacao * 2) / 3;
+    }
+
+    const melhores = Object.entries(scores)
+      .filter(([k]) => prios.includes(k))
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .filter(([, v]) => v >= 60)
+      .map(([k]) => DECIDE_CRITERIA.find(x => x.key === k).label.toLowerCase());
+
+    return {
+      court: c,
+      total,
+      melhores,
+      atendeAnotacao: atendidas.map(e => e.label),
+      faltaAnotacao: exigencias.filter(e => !e.atendem.some(x => x.id === c.id)).map(e => e.label),
+    };
+  }).sort((a, b) => b.total - a.total);
+}
+
+// Dicionário de termos → o que a pessoa está procurando.
+// Sem acento e minúsculo; o texto é normalizado antes de comparar.
+const NOTE_KEYWORDS = [
+  { tipo: "amenity", alvo: ["estacionamento_gratuito", "estacionamento_pago"], termos: ["estacionamento", "estacionar", "vaga", "garagem"], label: "estacionamento" },
+  { tipo: "amenity", alvo: ["vestiario"], termos: ["vestiario", "banho", "chuveiro", "trocar de roupa"], label: "vestiário" },
+  { tipo: "amenity", alvo: ["loja"], termos: ["loja", "corda", "encordoamento", "material"], label: "loja de material" },
+  { tipo: "amenity", alvo: ["wifi"], termos: ["wifi", "wi-fi", "internet"], label: "Wi-Fi" },
+  { tipo: "amenity", alvo: ["lanchonete"], termos: ["lanchonete", "lanche", "comer", "comida", "bar"], label: "lanchonete" },
+  { tipo: "amenity", alvo: ["agua"], termos: ["agua", "bebedouro"], label: "água grátis" },
+  { tipo: "amenity", alvo: ["camera"], termos: ["camera", "gravar", "filmar", "video"], label: "câmera" },
+  { tipo: "amenity", alvo: ["assinatura_fitness"], termos: ["gympass", "wellhub", "totalpass", "assinatura", "plano fitness"], label: "app de assinatura fitness" },
+  { tipo: "cobertura", alvo: ["coberta"], termos: ["coberta", "cobertura", "chuva", "sol forte", "sombra"], label: "quadra coberta" },
+  { tipo: "piso", alvo: ["saibro"], termos: ["saibro"], label: "saibro" },
+  { tipo: "piso", alvo: ["rapida"], termos: ["rapida", "dura", "cimento"], label: "quadra rápida" },
+  { tipo: "criterio", alvo: ["preco"], termos: ["caro", "barato", "preco", "valor", "custo", "bolso", "gastar"], label: "preço" },
+  { tipo: "criterio", alvo: ["distancia"], termos: ["perto", "longe", "distancia", "transito", "deslocamento", "chegar"], label: "distância" },
+  { tipo: "criterio", alvo: ["avaliacoes"], termos: ["avaliacao", "nota", "comentario", "reputacao", "recomenda"], label: "avaliações" },
+  { tipo: "criterio", alvo: ["estrutura"], termos: ["estrutura", "instalacao", "espaco", "quadras"], label: "estrutura" },
+];
+
+function semAcento(s) {
+  return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function analisarAnotacoes(texto, courts) {
+  const t = semAcento(texto);
+  if (!t.trim()) return { achados: [], criterios: [] };
+
+  const achados = [];
+  const criterios = [];
+
+  NOTE_KEYWORDS.forEach(k => {
+    if (!k.termos.some(termo => t.includes(semAcento(termo)))) return;
+
+    if (k.tipo === "criterio") {
+      criterios.push(...k.alvo);
+      return;
+    }
+
+    const atendem = courts.filter(c => {
+      if (k.tipo === "amenity") return k.alvo.some(a => (c.amenities||[]).includes(a));
+      if (k.tipo === "cobertura") return k.alvo.some(a => (c.cobertura||[]).includes(a));
+      if (k.tipo === "piso") return k.alvo.some(a => (c.pisos||[]).includes(a));
+      return false;
+    });
+    achados.push({ label: k.label, atendem, total: courts.length });
+  });
+
+  return { achados, criterios: [...new Set(criterios)] };
+}
+
+function renderCompareBar() {
+  const n = state.compareList.length;
+  if (!n || state.showCompare) return "";
+  const falta = COMPARE_MIN - n;
+  return `
+    <div class="compare-bar">
+      <div class="compare-bar-info">
+        <strong>${n} de ${COMPARE_MAX} selecionada${n>1?'s':''}</strong>
+        ${falta > 0 ? `Selecione mais ${falta} pra comparar` : "Pronto pra comparar"}
+      </div>
+      <div class="compare-bar-actions">
+        <button class="btn-clear" id="compare-clear">Limpar</button>
+        <button class="btn-go" id="compare-go" ${n < COMPARE_MIN ? "disabled" : ""}>Comparar</button>
+      </div>
+    </div>
+  `;
+}
+
+function cmpRow(label, value) {
+  return `<div class="cmp-row"><p class="cmp-label">${label}</p><p class="cmp-val">${value}</p></div>`;
+}
+
+function renderCompareSheet() {
+  const courts = compareCourts();
+  return `
+    <div class="overlay open" id="compare-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="compare-close">✕</button>
+        <p class="sheet-title display">Comparar academias</p>
+        <p class="subtitle" style="margin-top:4px">Deslize para o lado para ver todas</p>
+
+        <div class="cmp-table">
+          ${courts.map(c => {
+            const photos = (c.photos && c.photos.length) ? c.photos : (c.photoUrl ? [c.photoUrl] : []);
+            const dist = typeof c.distanceKm === "number"
+              ? (c.distanceKm < 1 ? `${Math.round(c.distanceKm*1000)} m` : `${c.distanceKm.toFixed(1)} km`)
+              : "Busque um endereço";
+            const pisos = listaPt((c.pisos||[]).map(p => PISO_OPTS.find(x=>x.key===p)?.label));
+            const cob = listaPt((c.cobertura||[]).map(x => COBERTURA_OPTS.find(o=>o.key===x)?.label));
+            const mods = listaPt((c.modalidades||[]).map(m => MODALIDADE_OPTS.find(x=>x.key===m)?.label));
+            const ams = listaPt((c.amenities||[]).map(a => AMENITY_MAP[a]?.label));
+            const precos = [
+              c.priceAula ? `Aula: R$ ${esc(c.priceAula)}/hora` : null,
+              c.priceLocacao ? `Locação: R$ ${esc(c.priceLocacao)}/hora` : null,
+            ].filter(Boolean);
+            return `
+              <div class="cmp-col">
+                <div class="cmp-photo">
+                  ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 32, 'var(--muted-dark)')}
+                </div>
+                <p class="cmp-name">${esc(c.name)}</p>
+                <p class="cmp-sub">${esc(c.bairro||"")}${c.cidade ? " · " + esc(c.cidade) : ""}</p>
+                ${cmpRow("Avaliações", c.appCount ? `${starsHtml(c.appAvg)} ${c.appAvg.toFixed(1)} (${c.appCount})` : "Sem avaliações ainda")}
+                ${cmpRow("Distância", dist)}
+                ${cmpRow("Comodidades", ams)}
+                ${cmpRow("Piso", pisos)}
+                ${cmpRow("Cobertura", cob)}
+                ${cmpRow("Quadras", totalQuadras(c) || "—")}
+                ${cmpRow("Modalidades", mods)}
+                ${cmpRow("Preços", precos.length ? precos.join("<br>") : "A consultar")}
+                <button class="cmp-remove" data-cmp-remove="${c.id}">Remover da comparação</button>
+              </div>
+            `;
+          }).join("")}
+        </div>
+
+        <div class="decide-box">
+          <p class="decide-title">Ainda em dúvida?</p>
+          <p class="decide-sub">Marque o que mais pesa na sua escolha e eu te ajudo a decidir.</p>
+
+          <div class="chip-row" style="margin-top:10px">
+            ${DECIDE_CRITERIA.map(cr => `
+              <button type="button" class="chip small decide-prio ${state.decidePrios.includes(cr.key)?"active":""}" data-prio="${cr.key}">${cr.label}</button>
+            `).join("")}
+          </div>
+
+          <p class="field-label" style="margin-top:14px">Seus pontos positivos e negativos (opcional)</p>
+          <textarea class="form-field" id="decide-notes" rows="3" placeholder="Ex: a primeira é mais perto mas não tem estacionamento; a segunda tem quadra coberta...">${esc(state.decideNotes)}</textarea>
+
+          <button class="cta-btn cta-primary" id="decide-go" style="margin-top:10px">Me ajude a decidir</button>
+
+          ${state.showDecideResult ? (() => {
+            const rank = decideRanking();
+            const top = rank[0];
+            const empate = rank.length > 1 && Math.abs(rank[0].total - rank[1].total) < 4;
+            return `
+              <div class="decide-result">
+                ${empate ? `
+                  <p class="decide-verdict">Está muito equilibrado</p>
+                  <p class="decide-why">${esc(rank[0].court.name)} e ${esc(rank[1].court.name)} ficaram praticamente empatadas no que você marcou. Nesse caso, o desempate costuma ser visitar as duas — ou escolher pela que tem o contato mais fácil.</p>
+                ` : `
+                  <p class="decide-verdict">${esc(top.court.name)}</p>
+                  <p class="decide-why">${
+                    top.atendeAnotacao.length
+                      ? `Tem ${listaPt(top.atendeAnotacao)}, que você citou${top.melhores.length ? `, e ainda sai na frente em ${listaPt(top.melhores)}` : ""}.`
+                      : (top.melhores.length
+                          ? `Saiu na frente em ${listaPt(top.melhores)}, considerando o que você marcou como prioridade.`
+                          : `Ficou com o melhor equilíbrio geral entre os critérios que você marcou.`)
+                  }</p>
+                `}
+
+                <p class="field-label" style="margin-top:14px">Como cada uma ficou</p>
+                ${rank.map((r, i) => `
+                  <div class="decide-row">
+                    <span class="decide-pos">${i+1}º</span>
+                    <div style="flex:1;min-width:0">
+                      <p class="decide-name">${esc(r.court.name)}</p>
+                      <p class="decide-tags">${
+                        [
+                          r.atendeAnotacao.length ? "Tem " + listaPt(r.atendeAnotacao) : "",
+                          r.faltaAnotacao.length ? "Não tem " + listaPt(r.faltaAnotacao) : "",
+                          r.melhores.length ? "Forte em " + listaPt(r.melhores) : "",
+                        ].filter(Boolean).join(" · ") || "Sem destaque claro nos critérios marcados"
+                      }</p>
+                    </div>
+                    <span class="decide-score">${Math.round(r.total)}</span>
+                  </div>
+                `).join("")}
+
+                ${(() => {
+                  const an = analisarAnotacoes(state.decideNotes, rank.map(r => r.court));
+                  if (!state.decideNotes.trim()) return "";
+                  if (!an.achados.length && !an.criterios.length) {
+                    return `
+                      <p class="field-label" style="margin-top:14px">Sobre o que você anotou</p>
+                      <p class="decide-why">Não identifiquei um ponto específico no que você escreveu. Tente citar o que importa — estacionamento, quadra coberta, saibro, preço, distância — que eu cruzo com os dados de cada academia.</p>
+                    `;
+                  }
+                  return `
+                    <p class="field-label" style="margin-top:14px">Cruzando com o que você anotou</p>
+                    ${an.achados.map(a => {
+                      if (!a.atendem.length) {
+                        return `<div class="note-hit note-hit-none">
+                          <strong>${a.label}</strong>
+                          <span>Nenhuma das selecionadas tem</span>
+                        </div>`;
+                      }
+                      if (a.atendem.length === a.total) {
+                        return `<div class="note-hit note-hit-all">
+                          <strong>${a.label}</strong>
+                          <span>Todas têm — não serve de desempate</span>
+                        </div>`;
+                      }
+                      return `<div class="note-hit note-hit-some">
+                        <strong>${a.label}</strong>
+                        <span>${listaPt(a.atendem.map(c => c.name))}</span>
+                      </div>`;
+                    }).join("")}
+                    ${an.criterios.length ? `<p class="decide-why" style="margin-top:8px">Você também citou ${listaPt(an.criterios.map(k => DECIDE_CRITERIA.find(x=>x.key===k)?.label.toLowerCase()).filter(Boolean))} — vale marcar isso nas prioridades acima pra entrar no cálculo.</p>` : ""}
+                  `;
+                })()}
+
+                ${(() => {
+                  if (state.decidida) {
+                    const c = courts.find(x => x.id === state.decidida);
+                    if (!c) return "";
+                    const wa = (c.phone||"").replace(/\D/g,"");
+                    const ig = (c.instagram||"").replace(/^@/, "");
+                    return `
+                      <div class="decidida-box">
+                        <p class="decidida-eyebrow">Decisão tomada</p>
+                        <p class="decidida-name">${esc(c.name)}</p>
+                        ${c.endereco ? `<p class="decidida-end">${esc(c.endereco)}</p>` : ""}
+
+                        <p class="field-label" style="margin-top:14px">Fale com a academia</p>
+                        ${wa ? `<a class="cta-btn cta-primary" href="https://wa.me/${wa}?text=${encodeURIComponent("Olá! Vim pelo GuiaTennis e gostaria de saber mais informações sobre a academia.")}" target="_blank" rel="noreferrer" data-track-wa="${c.id}">${icon('phone',15,'#fff')} WhatsApp</a>` : ""}
+                        ${ig ? `<a class="cta-btn cta-secondary" href="https://instagram.com/${encodeURIComponent(ig)}" target="_blank" rel="noreferrer" data-track-ig="${c.id}" style="margin-top:8px">${icon('instagram',15,'var(--green)')} @${esc(ig)}</a>` : ""}
+                        ${c.site ? `<a class="cta-btn cta-secondary" href="${esc(c.site)}" target="_blank" rel="noreferrer" data-track-site="${c.id}" style="margin-top:8px">${icon('globe',15,'var(--green)')} Site</a>` : ""}
+                        ${navLinks(c, { dark: true })}
+
+                        <button type="button" class="decidida-voltar" id="decidida-voltar">Voltar e escolher outra</button>
+                      </div>
+                    `;
+                  }
+                  const sugerida = empate ? null : top.court;
+                  return `
+                    <div class="confirmar-box">
+                      <p class="confirmar-txt">${sugerida ? `Vai fechar com a ${esc(sugerida.name)}?` : "Já decidiu qual vai ser?"}</p>
+                      <div class="confirmar-acoes">
+                        ${rank.map(r => `<button type="button" class="chip small" data-decidir="${r.court.id}">${esc(r.court.name)}</button>`).join("")}
+                      </div>
+                    </div>
+                  `;
+                })()}
+              </div>
+            `;
+          })() : ""}
+        </div>
+
+        <button class="cta-btn cta-secondary" id="compare-clear-2" style="margin-top:14px">Limpar comparação</button>
+      </div></div>
+    </div>
+  `;
+}
+
+function renderLightbox() {
+  if (!state.lightbox) return "";
+  const { photos, index } = state.lightbox;
+  return `
+    <div class="lightbox-overlay" id="lightbox-overlay">
+      <button class="lightbox-close" id="lightbox-close">✕</button>
+      ${photos.length > 1 ? `<p class="lightbox-counter">${index + 1} / ${photos.length}</p>` : ""}
+      <div class="lightbox-strip" id="lightbox-strip">
+        ${photos.map(p => `<div class="lightbox-item"><img src="${esc(p)}" /></div>`).join("")}
+      </div>
+      ${photos.length > 1 ? `
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev">‹</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next">›</button>
+      ` : ""}
+    </div>
+  `;
+}
+
+
+function priceMin(priceStr) {
+  const m = (priceStr || "").match(/\d+/);
+  return m ? m[0] : null;
+}
+
+function navLinks(c, opts) {
+  const dark = opts && opts.dark;
+  const cls = dark ? "cta-btn cta-secondary nav-link-dark" : "cta-btn cta-secondary";
+  const cor = dark ? "#fff" : "var(--green)";
+  return `<button type="button" class="${cls}" data-nav="${c.id}" style="margin-top:8px">${icon('pin',15,cor)} Ver no mapa e direções</button>`;
+}
+
+function renderNavSheet() {
+  if (!state.navCourt) return "";
+  const c = state.allCourts.find(x => x.id === state.navCourt)
+        || (state.pending || []).find(x => x.id === state.navCourt);
+  if (!c) return "";
+  const destino = c.endereco || `${c.lat},${c.lng}`;
+  const q = encodeURIComponent(destino);
+  const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
+  const waze = temCoord
+    ? `https://www.waze.com/ul?ll=${c.lat}%2C${c.lng}&navigate=yes&zoom=17`
+    : `https://www.waze.com/ul?q=${q}&navigate=yes`;
+  return `
+    <div class="overlay open" id="nav-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="nav-close">✕</button>
+        <p class="sheet-title display">Como chegar</p>
+        <p class="subtitle" style="margin-top:4px">${esc(c.name)}</p>
+        <a class="cta-btn cta-primary" href="https://www.google.com/maps/dir/?api=1&destination=${q}" target="_blank" rel="noreferrer" style="margin-top:14px">${icon('pin',15,'#fff')} Google Maps</a>
+        <a class="cta-btn cta-secondary" href="${waze}" target="_blank" rel="noreferrer" style="margin-top:8px">${icon('pin',15,'var(--green)')} Waze</a>
+      </div></div>
+    </div>
+  `;
+}
+
+function priceBlock(c, compact) {
+  const hasAula = !!c.priceAula;
+  const hasLoc = !!c.priceLocacao;
+  if (!hasAula && !hasLoc) {
+    return c.priceRange
+      ? `<span class="price-known">${esc(c.priceRange)}</span>`
+      : `<span class="price-unknown">Preço a consultar</span>`;
+  }
+  if (compact) {
+    const parts = [];
+    if (hasAula) parts.push(`<span class="price-known">${icon('cap',13,'var(--green)')} A partir de R$ ${priceMin(c.priceAula)}/hora</span>`);
+    if (hasLoc) parts.push(`<span class="price-known">${icon('key',13,'var(--green)')} A partir de R$ ${priceMin(c.priceLocacao)}/hora</span>`);
+    return parts.join(" &nbsp; ");
+  }
+  const parts = [];
+  if (hasAula) parts.push(`<span class="price-known">${icon('cap',13,'var(--green)')} Faixa aula: R$ ${esc(c.priceAula)}/hora</span>`);
+  if (hasLoc) parts.push(`<span class="price-known">${icon('key',13,'var(--green)')} Faixa locação: R$ ${esc(c.priceLocacao)}/hora</span>`);
+  return parts.join("<br>");
+}
+
+function totalQuadras(c) {
+  if (!c.quadras) return 0;
+  return QUADRA_COMBOS.reduce((sum, q) => sum + (c.quadras[q.key] || 0), 0);
+}
+
+// ---------- componentes da interface de busca (estilo Trivago) ----------
+
+let __lastDesktop = null;
+function isDesktop() {
+  return window.matchMedia("(min-width: 1024px)").matches;
+}
+
+window.addEventListener("resize", () => {
+  const d = isDesktop();
+  if (__lastDesktop === null || d === __lastDesktop) return;
+  __lastDesktop = d;
+  if (state.loaded) render();
+});
+
+function plural(n, singular, plural_) {
+  return n === 1 ? singular : plural_;
+}
+
+function scoreWord(avg, count) {
+  if (!count) return "Sem nota ainda";
+  if (avg >= 4.6) return "Excelente";
+  if (avg >= 4.2) return "Muito bom";
+  if (avg >= 3.6) return "Bom";
+  if (avg >= 3.0) return "Razoável";
+  return "Regular";
+}
+
+// Selo de nota: número em destaque + palavra + contagem, igual ao dos hotéis.
+function scoreBox(avg, count, compact) {
+  const num = count ? avg.toFixed(1).replace(".", ",") : "—";
+  const sub = count
+    ? `${count} ${plural(count, "avaliação", "avaliações")}${compact ? "" : " no app"}`
+    : (compact ? "" : "Seja o primeiro a avaliar");
+  return `<span class="score-box">
+    <span class="score-num ${count ? "" : "empty"}">${num}</span>
+    <span class="score-word">${scoreWord(avg, count)}<span class="score-count">${sub}</span></span>
+  </span>`;
+}
+
+function ratingDistribution(courtId) {
+  const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  getReviews(courtId).forEach(r => { if (dist[r.stars] !== undefined) dist[r.stars]++; });
+  return dist;
+}
+
+function formatReviewDate(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function initials(nome) {
+  const parts = (nome || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+}
+
+function distanceText(km) {
+  if (typeof km !== "number" || !isFinite(km)) return "";
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+}
+
+// Destaques curtos da academia — o equivalente aos "pontos fortes" do hotel.
+function highlights(c) {
+  const out = [];
+  if (typeof c.distanceKm === "number" && c.distanceKm <= 3) out.push("Pertinho de você");
+  if (c.appCount >= 3 && c.appAvg >= 4.5) out.push("Bem avaliada no app");
+  if ((c.cobertura || []).includes("coberta")) out.push("Joga mesmo com chuva");
+  if (totalQuadras(c) >= 4) out.push(`${totalQuadras(c)} quadras`);
+  if ((c.amenities || []).includes("estacionamento_gratuito")) out.push("Estacionamento grátis");
+  if ((c.amenities || []).includes("vestiario")) out.push("Vestiário");
+  if ((c.amenities || []).includes("camera")) out.push("Câmera pra gravar pontos");
+  if ((c.modalidades || []).includes("aulas_proprias")) out.push("Tem aulas");
+  return out.slice(0, 4);
+}
+
+function courtPhotos(c) {
+  return (c.photos && c.photos.length) ? c.photos : (c.photoUrl ? [c.photoUrl] : []);
+}
+
+function cardPhotoIndex(c) {
+  const photos = courtPhotos(c);
+  if (!photos.length) return 0;
+  const i = state.cardPhoto[c.id] || 0;
+  return Math.min(Math.max(i, 0), photos.length - 1);
+}
+
+// ---------- painel de filtros (mesmo conteúdo na barra lateral e na gaveta) ----------
+
+function optBtn(cls, dataAttr, on, label, count, shape) {
+  return `<button type="button" class="opt ${cls} ${on ? "on" : ""}" ${dataAttr} ${count === 0 && !on ? "disabled" : ""}>
+    <span class="${shape === "radio" ? "opt-radio" : "opt-check"}">${shape === "radio" ? "" : (on ? "✓" : "")}</span>
+    <span class="opt-label">${label}</span>
+    ${count === null ? "" : `<span class="opt-count">${count}</span>`}
+  </button>`;
+}
+
+function filterGroupsHtml() {
+  const pb = priceBounds();
+
+  const semRating = applyFilters(state.allCourts, "rating");
+  const semPiso = applyFilters(state.allCourts, "piso");
+  const semCob = applyFilters(state.allCourts, "cobertura");
+  const semMod = applyFilters(state.allCourts, "modalidade");
+  const semAmen = applyFilters(state.allCourts, "amenity");
+  const semDist = applyFilters(state.allCourts, "distance");
+  const semOutros = applyFilters(state.allCourts, "outros");
+
+  const priceLabel = state.priceMax === null ? "Qualquer preço" : `Até R$ ${state.priceMax}/hora`;
+
+  return `
+    ${pb ? `
+      <div class="fgroup">
+        <p class="fgroup-title">Preço por hora</p>
+        <p class="range-now f-price-now">${priceLabel}</p>
+        <input type="range" class="range f-price" min="${pb.min}" max="${pb.max}" step="5" value="${state.priceMax === null ? pb.max : state.priceMax}" aria-label="Preço máximo por hora" />
+        <div class="range-val"><span>R$ ${pb.min}</span><span>R$ ${pb.max}+</span></div>
+        ${state.priceMax !== null ? `<p class="fgroup-note">Academias que ainda não informaram preço ficam de fora enquanto esse filtro estiver ligado.</p>` : ""}
+      </div>` : ""}
+
+    <div class="fgroup">
+      <p class="fgroup-title">Avaliação no app</p>
+      ${RATING_OPTS.map(o => optBtn(
+        "f-rating", `data-rating="${o.value}"`, state.minRating === o.value, o.label,
+        o.value === 0 ? semRating.length : semRating.filter(c => { const r = getAppRating(c.id); return r.count > 0 && r.avg >= o.value; }).length,
+        "radio"
+      )).join("")}
+    </div>
+
+    ${state.origin ? `
+      <div class="fgroup">
+        <p class="fgroup-title">Distância de ${esc(state.origin.bairro || state.origin.cidade || "você")}</p>
+        ${DISTANCE_OPTS.map(o => optBtn(
+          "f-distance", `data-distance="${o.value === null ? "" : o.value}"`, state.maxDistance === o.value, o.label,
+          o.value === null ? semDist.length : semDist.filter(c => courtDistance(c) <= o.value).length,
+          "radio"
+        )).join("")}
+      </div>` : ""}
+
+    <div class="fgroup">
+      <p class="fgroup-title">Piso</p>
+      ${PISO_OPTS.map(p => optBtn(
+        "piso-chip", `data-piso="${p.key}"`, state.pisoFilters.includes(p.key),
+        `${p.icon} ${p.label}`, semPiso.filter(c => c.pisos?.includes(p.key)).length
+      )).join("")}
+    </div>
+
+    <div class="fgroup">
+      <p class="fgroup-title">Cobertura</p>
+      ${COBERTURA_OPTS.map(o => optBtn(
+        "cobertura-chip", `data-cobertura="${o.key}"`, state.coberturaFilters.includes(o.key),
+        `${o.icon} ${o.label}`, semCob.filter(c => c.cobertura?.includes(o.key)).length
+      )).join("")}
+    </div>
+
+    <div class="fgroup">
+      <p class="fgroup-title">O que você procura</p>
+      ${MODALIDADE_OPTS.map(m => optBtn(
+        "modalidade-chip", `data-modalidade="${m.key}"`, state.modalidadeFilters.includes(m.key),
+        `${m.icon} ${m.label}`, semMod.filter(c => c.modalidades?.includes(m.key)).length
+      )).join("")}
+    </div>
+
+    <div class="fgroup">
+      <p class="fgroup-title">Comodidades</p>
+      ${FILTER_AMENITY_OPTS.map(a => optBtn(
+        "amenity-chip", `data-amenity="${a.key}"`, state.amenityFilters.includes(a.key),
+        `${a.icon} ${a.label}`, semAmen.filter(c => matchesAmenityFilter(c, a.key)).length
+      )).join("")}
+    </div>
+
+    <div class="fgroup">
+      <p class="fgroup-title">Suas listas</p>
+      ${optBtn("f-favorites", "", state.favoritesOnly,
+        `${icon(state.favoritesOnly ? "heartFill" : "heart", 14, state.favoritesOnly ? "var(--red)" : "var(--green)")} Só favoritos`,
+        semOutros.filter(c => isFavorite(c.id)).length)}
+      ${optBtn("f-compareonly", "", state.compareOnly,
+        `${icon("clipboard", 14, "var(--green)")} Só as que estou comparando`,
+        semOutros.filter(c => isComparing(c.id)).length)}
+    </div>
+  `;
+}
+
+function renderFilterSidebar() {
+  const n = activeFilterCount();
+  return `
+    <aside class="sidebar">
+      <div class="sidebar-panel">
+        <div class="sidebar-head">
+          <strong>Filtros${n ? ` (${n})` : ""}</strong>
+          ${n ? `<button type="button" class="inline-link clear-filters">Limpar tudo</button>` : ""}
+        </div>
+        ${filterGroupsHtml()}
+      </div>
+    </aside>
+  `;
+}
+
+function renderFilterDrawer(resultCount) {
+  if (!state.showFilters || isDesktop()) return "";
+  const n = activeFilterCount();
+  return `
+    <div class="drawer-overlay open" id="drawer-overlay">
+      <div class="drawer">
+        <div class="drawer-head">
+          <strong class="display">Filtros${n ? ` (${n})` : ""}</strong>
+          <button type="button" class="drawer-close" id="drawer-close" aria-label="Fechar filtros">✕</button>
+        </div>
+        <div class="drawer-body">${filterGroupsHtml()}</div>
+        <div class="drawer-foot">
+          ${n ? `<button type="button" class="cta-btn cta-secondary clear-filters" style="flex:0 0 auto">Limpar</button>` : ""}
+          <button type="button" class="cta-btn cta-primary" id="drawer-apply">Ver ${resultCount} ${plural(resultCount, "quadra", "quadras")}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSortMenu() {
+  if (!state.showSort) return "";
+  const cur = effectiveSort();
+  return `
+    <div class="sort-backdrop" id="sort-backdrop"></div>
+    <div class="sort-menu" id="sort-menu">
+      ${SORT_OPTS.map(o => {
+        const disabled = o.key === "distance" && !state.origin;
+        return `<button type="button" class="sort-opt sort-chip ${cur === o.key ? "on" : ""}" data-sort="${o.key}" ${disabled ? "disabled style='opacity:.45;cursor:default'" : ""}>
+          <span class="radio"></span>
+          <span>${o.label}<small>${disabled ? "Busque um CEP ou use o GPS primeiro" : o.hint}</small></span>
+        </button>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+// Chips dos filtros ligados, cada um com × pra desligar só aquele.
+function renderActiveChips() {
+  const chips = [];
+  if (state.priceMax !== null) chips.push({ label: `Até R$ ${state.priceMax}/hora`, attr: `data-clear="price"` });
+  if (state.minRating > 0) chips.push({ label: `Nota ${state.minRating.toString().replace(".", ",")}+`, attr: `data-clear="rating"` });
+  if (state.maxDistance !== null) chips.push({ label: `Até ${state.maxDistance} km`, attr: `data-clear="distance"` });
+  state.pisoFilters.forEach(k => chips.push({ label: PISO_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="piso" data-key="${k}"` }));
+  state.coberturaFilters.forEach(k => chips.push({ label: COBERTURA_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="cobertura" data-key="${k}"` }));
+  state.modalidadeFilters.forEach(k => chips.push({ label: MODALIDADE_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="modalidade" data-key="${k}"` }));
+  state.amenityFilters.forEach(k => chips.push({ label: FILTER_AMENITY_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="amenity" data-key="${k}"` }));
+  if (state.favoritesOnly) chips.push({ label: "Só favoritos", attr: `data-clear="favorites"` });
+  if (state.compareOnly) chips.push({ label: "Só em comparação", attr: `data-clear="compareonly"` });
+  if (!chips.length) return "";
+  return `<div class="active-chips">
+    ${chips.map(c => `<button type="button" class="achip" ${c.attr}>${c.label} <span class="x">✕</span></button>`).join("")}
+    <button type="button" class="achip achip-clear clear-filters">Limpar tudo</button>
+  </div>`;
+}
+
+// Atalhos rápidos no topo, como a régua de filtros populares do Trivago.
+function renderQuickRow() {
+  const quick = [
+    { on: state.coberturaFilters.includes("coberta"), cls: "cobertura-chip", attr: `data-cobertura="coberta"`, label: `${icon("home", 13, state.coberturaFilters.includes("coberta") ? "#fff" : "var(--green)")} Coberta` },
+    { on: state.pisoFilters.includes("saibro"), cls: "piso-chip", attr: `data-piso="saibro"`, label: "Saibro" },
+    { on: state.pisoFilters.includes("rapida"), cls: "piso-chip", attr: `data-piso="rapida"`, label: "Rápida" },
+    { on: state.modalidadeFilters.includes("aulas_proprias"), cls: "modalidade-chip", attr: `data-modalidade="aulas_proprias"`, label: "Aulas" },
+    { on: state.modalidadeFilters.includes("locacao"), cls: "modalidade-chip", attr: `data-modalidade="locacao"`, label: "Locação" },
+    { on: state.amenityFilters.includes("estacionamento"), cls: "amenity-chip", attr: `data-amenity="estacionamento"`, label: "Estacionamento" },
+    { on: state.amenityFilters.includes("vestiario"), cls: "amenity-chip", attr: `data-amenity="vestiario"`, label: "Vestiário" },
+    { on: state.favoritesOnly, cls: "f-favorites", attr: "", label: `${icon(state.favoritesOnly ? "heartFill" : "heart", 13, state.favoritesOnly ? "#fff" : "var(--green)")} Favoritos` },
+  ];
+  if (state.compareList.length) {
+    quick.push({ on: state.compareOnly, cls: "f-compareonly", attr: "", label: `Em comparação (${state.compareList.length})` });
+  }
+  return `<div class="quick-row">
+    ${quick.map(q => `<button type="button" class="chip small ${q.cls} ${q.on ? "active" : ""}" ${q.attr}>${q.label}</button>`).join("")}
+  </div>`;
+}
+
+function renderCard(c, badge) {
+  const photos = courtPhotos(c);
+  const idx = cardPhotoIndex(c);
+  const dist = distanceText(c.distanceKm);
+  const fav = isFavorite(c.id);
+  const quote = getReviews(c.id).find(r => r.comment && r.comment.trim());
+  const pv = parsePriceValue(c);
+  const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
+
+  return `
+    <div class="card" data-open="${c.id}">
+      <div class="card-media">
+        ${photos.length
+          ? `<img src="${esc(photos[idx])}" alt="${esc(c.name)}" />`
+          : `<span class="card-media-empty">${icon('ball', 32, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></span>`}
+        ${badge ? `<div class="card-badge">${esc(badge)}</div>` : ""}
+        ${isAdmin && pausada ? `<div class="card-badge" style="background:var(--red);left:auto;right:10px;top:52px">Pausada</div>` : ""}
+        <button class="fav-btn" data-fav="${c.id}" title="Favoritar" aria-label="Favoritar">${icon(fav ? 'heartFill' : 'heart', 18, fav ? 'var(--red)' : '#fff')}</button>
+        ${photos.length > 1 ? `
+          <button type="button" class="media-nav media-prev" data-photo-prev="${c.id}" aria-label="Foto anterior">‹</button>
+          <button type="button" class="media-nav media-next" data-photo-next="${c.id}" aria-label="Próxima foto">›</button>
+          <span class="media-count">${idx + 1}/${photos.length}</span>
+        ` : ""}
+      </div>
+
+      <div class="card-body">
+        <div class="card-top">
+          <div style="min-width:0;flex:1">
+            <p class="card-name">${esc(c.name)}</p>
+            <p class="card-meta">
+              ${icon('pin', 12, 'var(--muted)')} ${esc(c.bairro)}${c.cidade ? ' · ' + esc(c.cidade) : ''}
+              ${dist ? `<span class="distance-pill">${dist} de você</span>` : ''}
+            </p>
+          </div>
+        </div>
+
+        <div class="tag-row">
+          ${totalQuadras(c) ? `<span class="tag">${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}</span>` : ""}
+          ${(c.pisos || []).map(p => `<span class="tag">${PISO_OPTS.find(x => x.key === p)?.icon || ""} ${PISO_OPTS.find(x => x.key === p)?.label || p}</span>`).join("")}
+          ${(c.cobertura || []).map(k => `<span class="tag">${COBERTURA_OPTS.find(x => x.key === k)?.icon || ""} ${COBERTURA_OPTS.find(x => x.key === k)?.label || k}</span>`).join("")}
+          ${(c.amenities || []).slice(0, 3).map(a => AMENITY_MAP[a] ? `<span class="tag">${AMENITY_MAP[a].icon} ${AMENITY_MAP[a].label}</span>` : "").join("")}
+          ${(c.amenities || []).length > 3 ? `<span class="tag">+${(c.amenities || []).length - 3}</span>` : ""}
+        </div>
+
+        ${quote ? `<p class="card-quote">“${esc(quote.comment.length > 110 ? quote.comment.slice(0, 110) + "…" : quote.comment)}”</p>` : ""}
+
+        <div class="card-bottom">
+          <button type="button" class="chip small ${isComparing(c.id) ? 'active' : ''}" data-compare="${c.id}">${isComparing(c.id) ? '✓ Comparando' : '+ Comparar'}</button>
+        </div>
+      </div>
+
+      <div class="card-rail">
+        ${scoreBox(c.appAvg, c.appCount, true)}
+        <div class="rail-price-col">
+          ${isFinite(pv)
+            ? `<span class="rail-from">A partir de</span><span class="rail-price">R$ ${pv}</span><span class="rail-unit">por hora</span>`
+            : `<span class="rail-unit">Preço a consultar</span>`}
+        </div>
+        <button type="button" class="rail-btn">Ver detalhes</button>
+      </div>
+    </div>
+  `;
+}
+
+// Galeria da ficha no formato das páginas de hotel: uma foto grande + duas menores.
+function heroGallery(c) {
+  const photos = courtPhotos(c);
+  if (!photos.length) {
+    return `<div class="hero-empty">${icon('ball', 40, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></div>`;
+  }
+  if (photos.length === 1) {
+    return `<div class="hero solo"><div class="hero-cell" data-lightbox-open="0"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div></div>`;
+  }
+  const side = photos.slice(1, 3);
+  return `
+    <div class="hero">
+      <div class="hero-cell hero-main" data-lightbox-open="0"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>
+      ${side.map((p, i) => `
+        <div class="hero-cell" ${side.length === 1 ? 'style="grid-row:span 2"' : ''} data-lightbox-open="${i + 1}">
+          <img src="${esc(p)}" alt="${esc(c.name)}" />
+          ${(i === side.length - 1 && photos.length > 1) ? `<button type="button" class="hero-more" data-lightbox-open="0">Ver as ${photos.length} fotos</button>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+// Painel de nota com a distribuição de estrelas, como o resumo de avaliações dos hotéis.
+function ratingPanel(c) {
+  const dist = ratingDistribution(c.id);
+  const total = c.appCount || 0;
+  return `
+    <div class="rating-panel">
+      <div class="rp-score">
+        <div class="rp-num">${total ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</div>
+        <div class="rp-word">${scoreWord(c.appAvg, total)}</div>
+        <div class="rp-count">${total ? `${total} ${plural(total, "avaliação", "avaliações")}` : "ainda sem nota"}</div>
+      </div>
+      <div>
+        ${[5, 4, 3, 2, 1].map(n => {
+          const qtd = dist[n];
+          const pct = total ? Math.round((qtd / total) * 100) : 0;
+          return `<div class="bar-row">
+            <span class="bar-lbl">${n} ★</span>
+            <span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>
+            <span class="bar-n">${qtd}</span>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function reviewsSection(c) {
+  const reviews = getReviews(c.id);
+  if (!reviews.length) return "";
+  const limite = state.reviewsExpanded ? reviews.length : 3;
+  const visiveis = reviews.slice(0, limite);
+  return `
+    <div class="sec">
+      <p class="sec-title">O que dizem os jogadores</p>
+      ${visiveis.map(r => `
+        <div class="review-item">
+          <div class="rev-avatar">${esc(initials(r.nome_autor))}</div>
+          <div style="min-width:0;flex:1">
+            <div class="rev-head">
+              <p class="rev-name">${esc(r.nome_autor || "Jogador do GuiaTennis")}</p>
+              <span class="rev-date">${formatReviewDate(r.ts)}</span>
+              ${isAdmin && r.contato_autor ? `<span class="rev-date">(${esc(r.contato_autor)})</span>` : ""}
+            </div>
+            <span class="stars" style="font-size:13px">${starsHtml(r.stars)}</span>
+            ${r.comment ? `<p class="rev-text">${esc(r.comment)}</p>` : ""}
+          </div>
+          ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
+        </div>
+      `).join("")}
+      ${reviews.length > 3 ? `<button type="button" class="rev-more" id="reviews-more">${state.reviewsExpanded ? "Mostrar menos" : `Ver todas as ${reviews.length} avaliações`}</button>` : ""}
+    </div>
+  `;
+}
+
+function renderDetailSheet(c) {
+  const wa = (c.phone || "").replace(/\D/g, "");
+  const dist = distanceText(c.distanceKm);
+  const pagoStatus = isAdmin ? getPagoStatus(c.id) : null;
+  const pv = parsePriceValue(c);
+  const tags = highlights(c);
+  const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
+
+  const contatos = `
+    ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="https://wa.me/55${wa.replace(/^55/, '')}?text=${encodeURIComponent('Olá! Vim pelo GuiaTennis e gostaria de saber mais informações sobre a academia.')}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
+    ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer" style="margin-top:8px">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
+    ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer" style="margin-top:8px">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
+    ${c.endereco ? navLinks(c) : ""}
+    <button class="cta-btn cta-secondary" id="share-btn" data-court="${c.id}" style="margin-top:8px">${icon('share', 15, 'var(--green)')} Compartilhar</button>
+  `;
+
+  const adminBlock = !isAdmin ? "" : `
+    <div class="admin-pago-box" style="margin-right:0">
+      <span>${pagoStatus.pago ? "Pago" : "Beta / não pago"}</span>
+      <button type="button" id="toggle-pago" data-court="${c.id}">${pagoStatus.pago ? "Marcar como não pago" : "Marcar como pago"}</button>
+    </div>
+    ${c.status !== "pending" ? `
+      <div class="admin-pago-box" style="flex-direction:column;align-items:stretch;gap:10px;margin-right:0">
+        <span>${pausada ? `Pausada${c.pausadaAte ? " até " + new Date(c.pausadaAte).toLocaleDateString('pt-BR') : " (sem data definida)"}` : "Em exibição no site"}</span>
+        ${pausada ? `
+          <button type="button" id="resume-court-btn" data-court="${c.id}" style="align-self:flex-start">Reativar agora</button>
+        ` : `
+          <div class="chip-row">
+            <button type="button" class="chip small pause-preset-btn" data-court="${c.id}" data-days="7">Pausar 7 dias</button>
+            <button type="button" class="chip small pause-preset-btn" data-court="${c.id}" data-days="15">Pausar 15 dias</button>
+            <button type="button" class="chip small pause-preset-btn" data-court="${c.id}" data-days="30">Pausar 30 dias</button>
+            <button type="button" class="chip small" id="pause-custom-toggle">Personalizado</button>
+          </div>
+          <div id="pause-custom-row" style="display:none;gap:8px;align-items:center">
+            <input type="date" id="pause-custom-date" class="form-field" style="margin-top:0" />
+            <button type="button" id="pause-custom-confirm" data-court="${c.id}" style="white-space:nowrap">Pausar até essa data</button>
+          </div>
+        `}
+      </div>
+    ` : ""}
+    <button type="button" class="cta-btn cta-secondary" id="edit-court-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('edit', 15, 'var(--green)')} Editar academia</button>
+    ${c.status !== "pending" ? `<button type="button" class="cta-btn cta-danger" id="delete-court-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('warning', 15, 'var(--red)')} Excluir academia</button>` : ""}
+    ${c.nomeSolicitante ? `<p class="footnote" style="margin-bottom:12px">Cadastro enviado por: ${esc(c.nomeSolicitante)} · ${esc(c.contatoSolicitante || "")}</p>` : ""}
+  `;
+
+  return `
+    <div class="overlay open" id="detail-overlay">
+      <div class="sheet sheet-wide">
+        <div class="hero-actions">
+          <button type="button" class="hero-act ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}">${isComparing(c.id) ? '✓ Comparando' : '+ Comparar'}</button>
+          <button type="button" class="hero-act" data-fav="${c.id}" aria-label="Favoritar">${icon(isFavorite(c.id) ? 'heartFill' : 'heart', 17, isFavorite(c.id) ? 'var(--red)' : 'var(--text)')}</button>
+          <button type="button" class="hero-act" id="detail-close" aria-label="Fechar">✕</button>
+        </div>
+        <div class="sheet-scroll">
+        ${heroGallery(c)}
+        <div class="sheet-content">
+          <p class="sheet-eyebrow">${esc(c.bairro)}${c.cidade ? ' · ' + esc(c.cidade) : ''}${dist ? ` · ${dist} de você` : ''}</p>
+          <p class="sheet-title display">${esc(c.name)}</p>
+          <div class="sheet-meta" style="margin-top:10px">
+            ${scoreBox(c.appAvg, c.appCount)}
+          </div>
+          ${tags.length ? `<div class="hl-row">${tags.map(t => `<span class="hl">${t}</span>`).join("")}</div>` : ""}
+
+          <div class="detail-cols" style="margin-top:20px">
+            <div class="detail-main">
+              ${isAdmin ? adminBlock : ""}
+
+              ${c.appCount ? `<div class="sec"><p class="sec-title">Nota no app</p>${ratingPanel(c)}</div>` : ""}
+
+              ${totalQuadras(c) ? `
+                <div class="sec">
+                  <p class="sec-title">Quadras (${totalQuadras(c)} no total)</p>
+                  <div class="amenity-grid">
+                    ${QUADRA_COMBOS.filter(q => c.quadras[q.key] > 0).map(q => `
+                      <div class="amenity-item">${PISO_OPTS.find(p => p.key === q.piso)?.icon} ${c.quadras[q.key]}x ${PISO_OPTS.find(p => p.key === q.piso)?.label} ${COBERTURA_OPTS.find(x => x.key === q.cobertura)?.label.toLowerCase()}</div>
+                    `).join("")}
+                  </div>
+                </div>` : ""}
+
+              ${(c.amenities || []).length ? `
+                <div class="sec">
+                  <p class="sec-title">Comodidades</p>
+                  <div class="amenity-grid">
+                    ${c.amenities.map(a => AMENITY_MAP[a] ? `<div class="amenity-item">${AMENITY_MAP[a].icon} ${AMENITY_MAP[a].label}</div>` : "").join("")}
+                  </div>
+                </div>` : ""}
+
+              ${(c.modalidades || []).length ? `
+                <div class="sec">
+                  <p class="sec-title">O que a academia oferece</p>
+                  <div class="tag-row">
+                    ${(c.modalidades || []).map(m => `<span class="tag">${MODALIDADE_OPTS.find(x => x.key === m)?.icon} ${MODALIDADE_OPTS.find(x => x.key === m)?.label}</span>`).join("")}
+                  </div>
+                </div>` : ""}
+
+              <div class="sec">
+                <p class="sec-title">Preços</p>
+                <div class="price-box" style="margin-top:0">
+                  <p>Faixa de preço por hora</p>
+                  <p>${(c.priceAula || c.priceLocacao) ? priceBlock(c, false) : (c.priceRange ? esc(c.priceRange) : "Consulte diretamente com a academia")}</p>
+                </div>
+              </div>
+
+              ${c.endereco ? `
+                <div class="sec">
+                  <p class="sec-title">Onde fica</p>
+                  <p style="font-size:14px;margin:2px 0 0">${esc(c.endereco)}</p>
+                  ${navLinks(c)}
+                </div>` : ""}
+
+              <div class="rate-box">
+                ${state.justRated ? `
+                  <p class="rate-thanks">Obrigado por avaliar!</p>
+                ` : `
+                  <p>Já jogou aqui? Avalie essa quadra</p>
+                  <div class="star-picker" id="star-picker">
+                    ${[1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= state.pendingStar ? 'filled' : ''}">★</span>`).join("")}
+                  </div>
+                  <textarea id="rate-comment" class="form-field" style="margin-top:12px;resize:none" rows="2" placeholder="Descreva sua experiência (opcional)">${esc(window.__rateComment || "")}</textarea>
+                  <label class="consent-row" style="text-align:left">
+                    <input type="checkbox" id="rate-consent" ${window.__rateConsent ? "checked" : ""} />
+                    <span>Minha avaliação é verídica e segue os <button type="button" class="inline-link" id="open-terms-from-rating">Termos de Uso</button>.</span>
+                  </label>
+                  <button class="btn-primary" id="rate-submit" style="width:100%;justify-content:center;margin-top:10px;padding:10px 0" ${(state.pendingStar && window.__rateConsent) ? "" : "disabled"}>Enviar avaliação</button>
+                `}
+              </div>
+
+              ${reviewsSection(c)}
+
+              ${c.source === "seed" ? `<p class="footnote">Dados públicos de endereço e comodidades — a nota mostrada é só das avaliações feitas aqui no app.</p>` : ""}
+              ${c.source === "custom" ? `<p class="footnote">Cadastrado pela comunidade e aprovado. Confira os dados antes de fechar horário.</p>` : ""}
+            </div>
+
+            <aside class="detail-rail">
+              <div class="rail-card">
+                ${isFinite(pv)
+                  ? `<span class="rail-from">A partir de</span>
+                     <div class="rail-card-price">R$ ${pv}</div>
+                     <span class="rail-unit">por hora · confirme na academia</span>`
+                  : `<div class="rail-card-price" style="font-size:18px">Preço a consultar</div>
+                     <span class="rail-unit">A academia ainda não informou valores</span>`}
+                <div class="cta-col" style="margin-top:14px">
+                  ${contatos}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderRegisterSheet() {
+  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[] };
+  window.__form = f;
+  const isEditing = !!f.__editingId;
+  if (state.registerStatus === "done") {
+    return `
+      <div class="overlay open" id="register-overlay">
+        <div class="sheet"><div class="sheet-content">
+          <button class="sheet-close" id="register-close">✕</button>
+          <div class="form-success">
+            <div style="font-size:36px;color:var(--green)">✓</div>
+            <p style="font-weight:600">${isEditing ? "Alterações salvas!" : (isAdmin ? "Quadra publicada com sucesso!" : "Cadastro enviado para análise!")}</p>
+            ${(!isAdmin && !isEditing) ? `<p class="subtitle">Assim que for aprovado, aparece pra todo mundo no app.</p>` : ""}
+            <button class="cta-btn cta-primary" id="register-close-2" style="padding:8px 20px;width:auto">Fechar</button>
+          </div>
+        </div></div>
+      </div>`;
+  }
+  return `
+    <div class="overlay open" id="register-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="register-close">✕</button>
+        <p class="sheet-title display">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : "Publicar academia/quadra")}</p>
+        <p class="subtitle" style="margin-top:4px">${isEditing ? "Altere o que quiser e salve." : (isAdmin ? "Vai direto pro ar, sem revisão." : "Apresentação no site mediante análise. Faça sua solicitação abaixo.")}</p>
+
+        <input class="form-field" id="f-name" placeholder="Nome da academia/quadra *" value="${esc(f.name)}" />
+
+        ${!isEditing ? `<input class="form-field" id="f-cep" placeholder="CEP" value="${esc(f.cep || '')}" />` : ""}
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
+          <input class="form-field" id="f-address" placeholder="Endereço (rua)${isEditing ? "" : " *"}" value="${esc(f.address)}" style="margin-top:10px" />
+          <input class="form-field" id="f-numero" placeholder="Número${isEditing ? "" : " *"}" value="${esc(f.numero || '')}" style="margin-top:10px" />
+        </div>
+        <input class="form-field" id="f-complemento" placeholder="Complemento (opcional)" value="${esc(f.complemento || '')}" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input class="form-field" id="f-bairro" placeholder="Bairro" value="${esc(f.bairro)}" />
+          <input class="form-field" id="f-cidade" placeholder="Cidade" value="${esc(f.cidade)}" />
+        </div>
+        ${state.cepStatus === "loading" ? `<p class="footnote">Buscando endereço pelo CEP...</p>` : ""}
+        ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}
+
+        <p class="field-label">Fotos (opcional, até 5)</p>
+        <p class="footnote" style="margin:0 0 8px">Só fotos do espaço em si: quadras, recepção/secretaria, vestiário, fachada. Não são permitidas fotos de promoções, preços ou informativos.</p>
+        <input type="file" accept="image/*" multiple id="f-photo-file" class="form-field" style="padding:9px 12px" ${(f.photos||[]).length >= 5 ? "disabled" : ""} />
+        ${(f.photos||[]).length ? `
+          <div class="photo-thumb-row">
+            ${f.photos.map((p, i) => `
+              <div class="photo-thumb">
+                <img src="${esc(p)}" />
+                <button type="button" class="photo-thumb-remove" data-photo-idx="${i}">✕</button>
+              </div>
+            `).join("")}
+          </div>
+        ` : ""}
+
+        <p class="field-label">Quantas quadras de cada tipo${isEditing ? "" : " *"}</p>
+        <div class="quadra-count-grid">
+          ${QUADRA_COMBOS.map(q => `
+            <div class="quadra-count-item">
+              <span>${PISO_OPTS.find(p=>p.key===q.piso)?.icon} ${PISO_OPTS.find(p=>p.key===q.piso)?.label} · ${COBERTURA_OPTS.find(c=>c.key===q.cobertura)?.icon} ${COBERTURA_OPTS.find(c=>c.key===q.cobertura)?.label}</span>
+              <input type="number" min="0" class="form-field reg-quadra-count" data-combo="${q.key}" value="${f.quadras?.[q.key] || 0}" style="margin-top:6px" />
+            </div>
+          `).join("")}
+        </div>
+
+        <p class="field-label">Comodidades</p>
+        <div class="chip-row">
+          ${AMENITY_OPTS.map(a => `<button class="chip small reg-amenity ${f.amenities.includes(a.key)?"active":""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`).join("")}
+        </div>
+
+        <p class="field-label">Modalidade${isEditing ? "" : " *"}</p>
+        <div class="chip-row">
+          ${MODALIDADE_OPTS.map(m => `<button class="chip small reg-modalidade ${f.modalidades.includes(m.key)?"active":""}" data-modalidade="${m.key}">${m.icon} ${m.label}</button>`).join("")}
+        </div>
+
+        ${(f.modalidades.includes("aulas_proprias") || f.modalidades.includes("locacao")) ? `<p class="field-label">Faixa de preço por hora</p>` : ""}
+        ${f.modalidades.includes("aulas_proprias") ? `
+          <div class="price-input-row">
+            <span class="price-input-label">Aula</span>
+            <span>R$</span>
+            <input class="form-field" id="f-price-aula" placeholder="90-140" inputmode="numeric" value="${esc(f.priceAula || '')}" />
+            <span>/hora</span>
+          </div>
+        ` : ""}
+        ${f.modalidades.includes("locacao") ? `
+          <div class="price-input-row">
+            <span class="price-input-label">Locação</span>
+            <span>R$</span>
+            <input class="form-field" id="f-price-locacao" placeholder="80-120" inputmode="numeric" value="${esc(f.priceLocacao || '')}" />
+            <span>/hora</span>
+          </div>
+        ` : ""}
+        ${!f.modalidades.length ? `<p class="footnote">Selecione a modalidade acima para informar o preço.</p>` : ""}
+        <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
+        <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
+        <input class="form-field" id="f-site" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" />
+
+        <p class="footnote">${isEditing ? "Deixe em branco o que não quiser alterar." : "* campos obrigatórios"}</p>
+
+        ${!isEditing ? `
+          <label class="consent-row">
+            <input type="checkbox" id="f-consent" ${f.consent ? "checked" : ""} />
+            <span>Li e concordo com os <button type="button" class="inline-link" id="open-terms-from-form">Termos de Uso</button> e a <button type="button" class="inline-link" id="open-privacy-from-form">Política de Privacidade</button>.</span>
+          </label>
+        ` : ""}
+
+        ${state.registerStatus === "error" ? `<div class="form-error">${icon('warning',13)} ${esc(state.registerError)}</div>` : ""}
+
+        <button class="btn-primary" id="register-submit" style="width:100%;justify-content:center;margin-top:16px;padding:12px 0" ${state.registerStatus==="saving"?"disabled":""}>
+          ${state.registerStatus==="saving" ? '<span class="spinner"></span> Salvando...' : (isEditing ? "Salvar alterações" : (isAdmin ? "Publicar quadra" : "Enviar para análise"))}
+        </button>
+      </div></div>
+    </div>
+  `;
+}
+
+const STATS_PERIODOS = [
+  { key: "7", label: "7 dias" },
+  { key: "30", label: "30 dias" },
+  { key: "90", label: "90 dias" },
+  { key: "all", label: "Tudo" },
+];
+
+function statsAgregado(periodo) {
+  const raw = state.clicksRaw || [];
+  let lista = raw;
+  if (periodo !== "all") {
+    const corte = Date.now() - parseInt(periodo, 10) * 86400000;
+    lista = raw.filter(c => new Date(c.created_at).getTime() >= corte);
+  }
+  const porAcademia = {};
+  let acessos = 0;
+  lista.forEach(c => {
+    if (c.tipo === "acesso_site") { acessos++; return; }
+    if (!c.academia_id) return;
+    if (!porAcademia[c.academia_id]) porAcademia[c.academia_id] = { whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 };
+    porAcademia[c.academia_id][c.tipo] = (porAcademia[c.academia_id][c.tipo] || 0) + 1;
+  });
+  return { porAcademia, acessos, totalEventos: lista.length };
+}
+
+function resumoTexto(court, d) {
+  const contatos = d.whatsapp + d.site + d.instagram + d.compartilhar;
+  const per = STATS_PERIODOS.find(p => p.key === state.statsPeriodo);
+  return `GuiaTennis — ${court.name}\nPeríodo: ${per ? per.label.toLowerCase() : ""}\n\n`
+    + `Visualizações da ficha: ${d.visualizacao}\n`
+    + `Cliques no WhatsApp: ${d.whatsapp}\n`
+    + `Cliques no Instagram: ${d.instagram}\n`
+    + `Cliques no site: ${d.site}\n`
+    + `Compartilhamentos: ${d.compartilhar}\n\n`
+    + `Total de contatos: ${contatos}\n`
+    + `guiatennis.com.br`;
+}
+
+function renderStatsPanel() {
+  const periodo = state.statsPeriodo || "30";
+  const { porAcademia, acessos } = statsAgregado(periodo);
+
+  const linhas = state.allCourts.map(c => {
+    const d = Object.assign({ whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 }, porAcademia[c.id] || {});
+    const contatos = d.whatsapp + d.site + d.instagram + d.compartilhar;
+    const taxa = d.visualizacao ? (contatos / d.visualizacao) * 100 : 0;
+    return { court: c, d, contatos, taxa };
+  });
+
+  const ativas = linhas.filter(r => r.d.visualizacao > 0 || r.contatos > 0);
+  const paradas = linhas.filter(r => r.d.visualizacao === 0 && r.contatos === 0);
+
+  const ordem = state.statsOrdem || "views";
+  ativas.sort((a, b) => {
+    if (ordem === "contatos") return b.contatos - a.contatos;
+    if (ordem === "taxa") return b.taxa - a.taxa;
+    return b.d.visualizacao - a.d.visualizacao;
+  });
+
+  const totViews = ativas.reduce((s, r) => s + r.d.visualizacao, 0);
+  const totContatos = ativas.reduce((s, r) => s + r.contatos, 0);
+  const taxaGeral = totViews ? (totContatos / totViews) * 100 : 0;
+
+  return `
+    <div class="overlay open" id="stats-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="stats-close">✕</button>
+        <p class="sheet-title display">Estatísticas</p>
+        <p class="subtitle" style="margin-top:4px">Registrado por todos os visitantes</p>
+
+        <div class="chip-row" style="margin-top:12px">
+          ${STATS_PERIODOS.map(p => `<button class="chip small ${periodo===p.key?"active":""}" data-stats-per="${p.key}">${p.label}</button>`).join("")}
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><p class="stat-num">${acessos}</p><p class="stat-lbl">Acessos ao site</p></div>
+          <div class="stat-card"><p class="stat-num">${totViews}</p><p class="stat-lbl">Fichas abertas</p></div>
+          <div class="stat-card"><p class="stat-num">${totContatos}</p><p class="stat-lbl">Contatos gerados</p></div>
+          <div class="stat-card"><p class="stat-num">${taxaGeral.toFixed(0)}%</p><p class="stat-lbl">Ficha → contato</p></div>
+        </div>
+
+        <div class="chip-row" style="margin-top:16px">
+          <span class="stats-ord-lbl">Ordenar:</span>
+          <button class="chip small ${ordem==="views"?"active":""}" data-stats-ord="views">Mais vistas</button>
+          <button class="chip small ${ordem==="contatos"?"active":""}" data-stats-ord="contatos">Mais contatos</button>
+          <button class="chip small ${ordem==="taxa"?"active":""}" data-stats-ord="taxa">Melhor taxa</button>
+        </div>
+
+        <p class="field-label" style="margin-top:16px">Com movimento (${ativas.length})</p>
+        ${ativas.length === 0 ? `<p class="empty">Nenhum registro nesse período.</p>` : ""}
+        ${ativas.map(r => `
+          <div class="pending-item">
+            <div class="stat-row-top">
+              <p class="pending-name display" style="margin:0">${esc(r.court.name)}</p>
+              ${r.d.visualizacao ? `<span class="stat-taxa ${r.taxa >= 15 ? 'boa' : (r.taxa > 0 ? 'media' : 'zero')}">${r.taxa.toFixed(0)}%</span>` : ""}
+            </div>
+            <p class="pending-detail">${icon('eye',12)} ${r.d.visualizacao} ficha${r.d.visualizacao===1?"":"s"} aberta${r.d.visualizacao===1?"":"s"} &nbsp;·&nbsp; ${r.contatos} contato${r.contatos===1?"":"s"}</p>
+            <p class="pending-detail">${icon('phone',12)} ${r.d.whatsapp} &nbsp; ${icon('instagram',12)} ${r.d.instagram} &nbsp; ${icon('globe',12)} ${r.d.site} &nbsp; ${icon('share',12)} ${r.d.compartilhar}</p>
+            <button type="button" class="stat-copy" data-copy-stats="${r.court.id}">Copiar resumo pra mandar</button>
+          </div>
+        `).join("")}
+
+        ${paradas.length ? `
+          <p class="field-label" style="margin-top:20px">Sem movimento no período (${paradas.length})</p>
+          <p class="pending-detail" style="margin-bottom:8px">${paradas.map(r => esc(r.court.name)).join(" · ")}</p>
+        ` : ""}
+      </div></div>
+    </div>
+  `;
+}
+
+const TERMS_HTML = `
+<p class="footnote">Última atualização: 10 de setembro de 2026</p>
+<p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
+<p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento.</p>
+<p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
+<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados. O GuiaTennis não garante que preços, disponibilidade ou comodidades estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário.</p>
+<p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
+<p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento, e remover um cadastro a pedido do responsável pelo estabelecimento.</p>
+<p class="field-label" style="margin-top:16px">4. Identificação para avaliar ou cadastrar</p>
+<p style="font-size:14px">Antes de enviar sua primeira avaliação ou solicitação de cadastro, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
+<p class="field-label" style="margin-top:16px">5. Avaliações e comentários</p>
+<p style="font-size:14px">Ao avaliar uma quadra, você concorda em escrever apenas sobre experiências reais, sem conteúdo ofensivo, discriminatório, difamatório ou falso, usando seu nome verdadeiro (já que ele fica público junto da avaliação). O GuiaTennis pode remover avaliações que violem essas regras, mas não se responsabiliza pelo conteúdo publicado por usuários.</p>
+<p class="field-label" style="margin-top:16px">6. Uso de fotos</p>
+<p style="font-size:14px">Fotos enviadas devem pertencer a quem envia, ou ter autorização de uso. Não é permitido enviar fotos de terceiros sem permissão. As fotos devem mostrar apenas o espaço físico da academia/quadra (quadras, recepção, secretaria, vestiário, fachada) — não são permitidas fotos de promoções, tabelas de preço ou materiais informativos/publicitários.</p>
+<p class="field-label" style="margin-top:16px">7. Links e contatos externos</p>
+<p style="font-size:14px">O GuiaTennis direciona usuários para WhatsApp, Instagram e sites das academias. Não temos controle sobre esses canais externos e não nos responsabilizamos por eles.</p>
+<p class="field-label" style="margin-top:16px">8. Uso aceitável</p>
+<p style="font-size:14px">Não é permitido acessar áreas administrativas sem autorização, cadastrar informações falsas propositalmente, usar o site para fins ilegais, ou extrair dados em massa (scraping) sem autorização.</p>
+<p class="field-label" style="margin-top:16px">9. Propriedade intelectual</p>
+<p style="font-size:14px">A marca GuiaTennis, o logotipo e a identidade visual pertencem ao GuiaTennis. As informações de cada academia pertencem aos respectivos estabelecimentos.</p>
+<p class="field-label" style="margin-top:16px">10. Alterações e lei aplicável</p>
+<p style="font-size:14px">Estes termos podem ser atualizados a qualquer momento e são regidos pelas leis brasileiras.</p>
+<p class="field-label" style="margin-top:16px">11. Contato</p>
+<p style="font-size:14px">guiatennis1@gmail.com</p>
+`;
+
+const PRIVACY_HTML = `
+<p class="footnote">Última atualização: 10 de setembro de 2026</p>
+<p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância — não guardamos esse histórico.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, e acessos totais ao site — sem identificar quem gerou o acesso.</p>
+<p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
+<p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
+<p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>
+<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), Supabase (banco de dados e login administrativo), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
+<p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
+<p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o responsável autenticado pode aprovar, editar ou remover conteúdo. Favoritos continuam salvos localmente no seu navegador.</p>
+<p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
+<p style="font-size:14px">Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos podem ser apagados limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo.</p>
+<p class="field-label" style="margin-top:16px">6. Cookies</p>
+<p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (favoritos, lista de comparação, sua identificação, formulários) é estritamente técnico.</p>
+<p class="field-label" style="margin-top:16px">7. Menores de idade</p>
+<p style="font-size:14px">O GuiaTennis não é direcionado a menores de 18 anos e não coleta intencionalmente dados de crianças ou adolescentes.</p>
+<p class="field-label" style="margin-top:16px">8. Contato</p>
+<p style="font-size:14px">guiatennis1@gmail.com</p>
+`;
+
+function renderLegalSheet(title, contentHtml, closeId) {
+  return `
+    <div class="overlay open" id="${closeId}-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="${closeId}">✕</button>
+        <p class="sheet-title display">${title}</p>
+        ${contentHtml}
+      </div></div>
+    </div>
+  `;
+}
+
+function renderVisitorSetupSheet() {
+  const v = loadVisitor() || { nome: "", contato: "" };
+  return `
+    <div class="overlay open" id="visitor-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="visitor-close">✕</button>
+        <p class="sheet-title display">Faça seu cadastro</p>
+        <p class="subtitle" style="margin-top:4px">Nome e WhatsApp pra identificar suas avaliações e solicitações. É rápido, e só pedimos uma vez.</p>
+
+        <input class="form-field" id="visitor-nome" placeholder="Seu nome" value="${esc(v.nome)}" />
+        <input class="form-field" id="visitor-contato" placeholder="WhatsApp (com DDD)" value="${esc(v.contato)}" />
+
+        ${state.visitorError ? `<div class="form-error">${icon('warning',13)} ${esc(state.visitorError)}</div>` : ""}
+
+        <button class="btn-primary" id="visitor-submit" style="width:100%;justify-content:center;margin-top:16px;padding:12px 0">Continuar</button>
+      </div></div>
+    </div>
+  `;
+}
+
+function renderLoginSheet() {
+  return `
+    <div class="overlay open" id="login-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="login-close">✕</button>
+        <p class="sheet-title display">Entrar como admin</p>
+        <p class="subtitle" style="margin-top:4px">Acesso restrito ao responsável pelo GuiaTennis.</p>
+        <input class="form-field" id="login-email" placeholder="E-mail" value="" />
+        <input class="form-field" id="login-password" type="password" placeholder="Senha" />
+        ${state.loginError ? `<div class="form-error">${icon('warning',13)} ${esc(state.loginError)}</div>` : ""}
+        <button class="btn-primary" id="login-submit" style="width:100%;justify-content:center;margin-top:16px;padding:12px 0" ${state.loginLoading ? "disabled" : ""}>
+          ${state.loginLoading ? '<span class="spinner"></span> Entrando...' : "Entrar"}
+        </button>
+      </div></div>
+    </div>
+  `;
+}
+
+function renderAdminPanel(pending) {
+  return `
+    <div class="overlay open" id="admin-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="admin-close">✕</button>
+        <p class="sheet-title display">Solicitações pendentes</p>
+        <p class="subtitle" style="margin-top:4px">${pending.length} aguardando sua revisão</p>
+        ${pending.length === 0 ? `<p class="empty">Nenhuma solicitação no momento.</p>` : ""}
+        ${pending.map(p => `
+          <div class="pending-item">
+            <button type="button" class="pending-preview-btn" data-preview="${p.id}">
+              <p class="pending-name display">${esc(p.name)} ${icon('edit',13,'var(--muted)')}</p>
+            </button>
+            <p class="pending-detail">${esc(p.address)}, ${esc(p.bairro)} - ${esc(p.cidade)}</p>
+            <p class="pending-detail">${(p.pisos||[]).map(x=>PISO_OPTS.find(o=>o.key===x)?.label).join(", ") || "—"} ${p.priceAula ? "· Aula: R$ " + esc(p.priceAula) + "/hora" : ""} ${p.priceLocacao ? "· Locação: R$ " + esc(p.priceLocacao) + "/hora" : ""}</p>
+            <p class="pending-detail">${totalQuadras(p) ? QUADRA_COMBOS.filter(q => p.quadras[q.key] > 0).map(q => `${p.quadras[q.key]}x ${PISO_OPTS.find(o=>o.key===q.piso)?.label} ${COBERTURA_OPTS.find(o=>o.key===q.cobertura)?.label.toLowerCase()}`).join(", ") : "sem detalhamento de quadras"}</p>
+            <p class="pending-detail">${esc(p.phone || "sem telefone")}${p.instagram ? " · " + esc(p.instagram) : ""}</p>
+            ${p.nomeSolicitante ? `<p class="pending-detail" style="color:var(--muted-dark)">Enviado por: ${esc(p.nomeSolicitante)} · ${esc(p.contatoSolicitante || "")}</p>` : ""}
+            <p class="pending-detail">${(p.photos||[]).length ? `${p.photos.length} foto${p.photos.length>1?'s':''} enviada${p.photos.length>1?'s':''}` : "sem fotos"}</p>
+            <div class="pending-actions">
+              <button class="cta-btn cta-primary" data-approve="${p.id}">Aprovar</button>
+              <button class="cta-btn cta-danger" data-reject="${p.id}">Rejeitar</button>
+            </div>
+          </div>
+        `).join("")}
+      </div></div>
+    </div>
+  `;
+}
+
+// ---------- events ----------
+
+function attachEvents() {
+  // ---- ordenação estilo Trivago (botão + menu suspenso) ----
+  const sortToggle = document.getElementById("sort-toggle");
+  if (sortToggle) sortToggle.onclick = () => { state.showSort = !state.showSort; render(); };
+  const sortBackdrop = document.getElementById("sort-backdrop");
+  if (sortBackdrop) sortBackdrop.onclick = () => { state.showSort = false; render(); };
+
+  // ---- gaveta de filtros ----
+  const drawerClose = document.getElementById("drawer-close");
+  if (drawerClose) drawerClose.onclick = () => { state.showFilters = false; render(); };
+  const drawerApply = document.getElementById("drawer-apply");
+  if (drawerApply) drawerApply.onclick = () => { state.showFilters = false; render(); };
+  const drawerOverlay = document.getElementById("drawer-overlay");
+  if (drawerOverlay) drawerOverlay.onclick = (e) => { if (e.target === drawerOverlay) { state.showFilters = false; render(); } };
+
+  document.querySelectorAll(".clear-filters").forEach(el => {
+    el.onclick = () => { clearAllFilters(); render(); };
+  });
+
+  document.querySelectorAll(".f-rating").forEach(el => {
+    el.onclick = () => { state.minRating = parseFloat(el.dataset.rating) || 0; render(); };
+  });
+
+  document.querySelectorAll(".f-distance").forEach(el => {
+    el.onclick = () => { state.maxDistance = el.dataset.distance === "" ? null : parseFloat(el.dataset.distance); render(); };
+  });
+
+  // O slider só re-renderiza quando a pessoa solta — assim o arraste não trava.
+  document.querySelectorAll(".f-price").forEach(el => {
+    el.oninput = () => {
+      const pb = priceBounds();
+      const v = parseInt(el.value, 10);
+      state.priceMax = (pb && v >= pb.max) ? null : v;
+      document.querySelectorAll(".f-price-now").forEach(n => {
+        n.textContent = state.priceMax === null ? "Qualquer preço" : `Até R$ ${state.priceMax}/hora`;
+      });
+    };
+    el.onchange = () => render();
+  });
+
+  document.querySelectorAll(".f-favorites").forEach(el => {
+    el.onclick = () => { state.favoritesOnly = !state.favoritesOnly; render(); };
+  });
+  document.querySelectorAll(".f-compareonly").forEach(el => {
+    el.onclick = () => { state.compareOnly = !state.compareOnly; render(); };
+  });
+
+  // ---- chips de filtro ativo: o × tira só aquele filtro ----
+  document.querySelectorAll("[data-clear]").forEach(el => {
+    el.onclick = () => {
+      const kind = el.dataset.clear;
+      const key = el.dataset.key;
+      if (kind === "price") state.priceMax = null;
+      else if (kind === "rating") state.minRating = 0;
+      else if (kind === "distance") state.maxDistance = null;
+      else if (kind === "piso") state.pisoFilters = state.pisoFilters.filter(x => x !== key);
+      else if (kind === "cobertura") state.coberturaFilters = state.coberturaFilters.filter(x => x !== key);
+      else if (kind === "modalidade") state.modalidadeFilters = state.modalidadeFilters.filter(x => x !== key);
+      else if (kind === "amenity") state.amenityFilters = state.amenityFilters.filter(x => x !== key);
+      else if (kind === "favorites") state.favoritesOnly = false;
+      else if (kind === "compareonly") state.compareOnly = false;
+      render();
+    };
+  });
+
+  // ---- galeria dentro do card da lista ----
+  document.querySelectorAll("[data-photo-prev]").forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const id = el.dataset.photoPrev;
+      const c = state.allCourts.find(x => x.id === id);
+      if (!c) return;
+      const total = courtPhotos(c).length;
+      state.cardPhoto[id] = ((state.cardPhoto[id] || 0) - 1 + total) % total;
+      render();
+    };
+  });
+  document.querySelectorAll("[data-photo-next]").forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const id = el.dataset.photoNext;
+      const c = state.allCourts.find(x => x.id === id);
+      if (!c) return;
+      const total = courtPhotos(c).length;
+      state.cardPhoto[id] = ((state.cardPhoto[id] || 0) + 1) % total;
+      render();
+    };
+  });
+
+  const reviewsMore = document.getElementById("reviews-more");
+  if (reviewsMore) reviewsMore.onclick = () => { state.reviewsExpanded = !state.reviewsExpanded; render(); };
+
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) logoutBtn.onclick = async () => {
+    await sb.auth.signOut();
+    isAdmin = false;
+    await loadEverything();
+    render();
+  };
+
+  const adminLoginLink = document.getElementById("admin-login-link");
+  if (adminLoginLink) adminLoginLink.onclick = () => { state.showLogin = true; state.loginError = ""; render(); };
+
+  const loginClose = document.getElementById("login-close");
+  const loginOverlay = document.getElementById("login-overlay");
+  if (loginClose) loginClose.onclick = () => { state.showLogin = false; render(); };
+  if (loginOverlay) loginOverlay.onclick = (e) => { if (e.target === loginOverlay) { state.showLogin = false; render(); } };
+
+  const visitorClose = document.getElementById("visitor-close");
+  const visitorOverlay = document.getElementById("visitor-overlay");
+  if (visitorClose) visitorClose.onclick = () => { state.showVisitorSetup = false; state.pendingVisitorAction = null; render(); };
+  if (visitorOverlay) visitorOverlay.onclick = (e) => { if (e.target === visitorOverlay) { state.showVisitorSetup = false; state.pendingVisitorAction = null; render(); } };
+
+  const visitorSubmit = document.getElementById("visitor-submit");
+  if (visitorSubmit) visitorSubmit.onclick = () => {
+    const nome = document.getElementById("visitor-nome").value.trim();
+    const contato = document.getElementById("visitor-contato").value.trim();
+    if (!nome || !contato) {
+      state.visitorError = "Preencha nome e WhatsApp.";
+      render();
+      return;
+    }
+    saveVisitor({ nome, contato });
+    state.showVisitorSetup = false;
+    const action = state.pendingVisitorAction;
+    state.pendingVisitorAction = null;
+    if (action) action();
+    else render();
+  };
+
+  const loginSubmit = document.getElementById("login-submit");
+  if (loginSubmit) loginSubmit.onclick = async () => {
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
+    if (!email || !password) {
+      state.loginError = "Preencha e-mail e senha.";
+      render();
+      return;
+    }
+    state.loginLoading = true;
+    state.loginError = "";
+    render();
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    state.loginLoading = false;
+    if (error) {
+      state.loginError = "E-mail ou senha incorretos.";
+      render();
+      return;
+    }
+    isAdmin = true;
+    state.showLogin = false;
+    await loadEverything();
+    render();
+  };
+
+  const cepInput = document.getElementById("cep-input");
+  if (cepInput) {
+    cepInput.oninput = (e) => { state.cep = e.target.value; };
+    cepInput.onkeydown = (e) => { if (e.key === "Enter") doSearch(); };
+  }
+  const searchBtn = document.getElementById("search-btn");
+  if (searchBtn) searchBtn.onclick = doSearch;
+
+  const locateBtn = document.getElementById("locate-btn");
+  if (locateBtn) locateBtn.onclick = useMyLocation;
+
+  document.querySelectorAll(".sort-chip").forEach(el => { el.onclick = () => { state.sortBy = el.dataset.sort; state.showSort = false; render(); }; });
+  const filtersToggle = document.getElementById("filters-toggle");
+  if (filtersToggle) filtersToggle.onclick = () => { state.showFilters = !state.showFilters; render(); };
+
+  document.querySelectorAll(".piso-chip").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.piso;
+      state.pisoFilters = state.pisoFilters.includes(k) ? state.pisoFilters.filter(x=>x!==k) : [...state.pisoFilters, k];
+      render();
+    };
+  });
+  document.querySelectorAll(".cobertura-chip").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.cobertura;
+      state.coberturaFilters = state.coberturaFilters.includes(k) ? state.coberturaFilters.filter(x=>x!==k) : [...state.coberturaFilters, k];
+      render();
+    };
+  });
+  document.querySelectorAll(".amenity-chip").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.amenity;
+      state.amenityFilters = state.amenityFilters.includes(k) ? state.amenityFilters.filter(x=>x!==k) : [...state.amenityFilters, k];
+      render();
+    };
+  });
+
+  document.querySelectorAll("[data-open]").forEach(el => {
+    el.onclick = () => {
+      const c = getResults().find(r => r.id === el.dataset.open);
+      state.selected = c;
+      state.pendingStar = 0;
+      state.justRated = false;
+      window.__rateConsent = false;
+      if (!isAdmin) trackClick(c.id, "visualizacao");
+      render();
+    };
+  });
+
+  document.querySelectorAll("[data-fav]").forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      toggleFavorite(el.dataset.fav);
+      if (state.selected && state.selected.id === el.dataset.fav) {
+        state.selected = { ...state.selected };
+      }
+      render();
+    };
+  });
+
+  const togglePago = document.getElementById("toggle-pago");
+  if (togglePago) togglePago.onclick = async () => {
+    const current = getPagoStatus(togglePago.dataset.court);
+    await setPagoStatus(togglePago.dataset.court, !current.pago);
+    if (state.selected && state.selected.id === togglePago.dataset.court) {
+      state.selected = state.allCourts.find(c => c.id === togglePago.dataset.court) || state.pending.find(c => c.id === togglePago.dataset.court);
+    }
+    render();
+  };
+
+  async function refreshAfterPauseChange() {
+    await loadEverything();
+    if (state.selected) {
+      state.selected = state.allCourts.find(c => c.id === state.selected.id) || state.pending.find(c => c.id === state.selected.id) || state.selected;
+    }
+    render();
+  }
+
+  document.querySelectorAll(".pause-preset-btn").forEach(el => {
+    el.onclick = async () => {
+      const days = parseInt(el.dataset.days, 10);
+      const until = new Date(Date.now() + days * 86400000).toISOString();
+      const { error } = await sb.from('academias').update({ pausada: true, pausada_ate: until }).eq('id', el.dataset.court);
+      if (error) { alert("Não consegui pausar: " + error.message); return; }
+      await refreshAfterPauseChange();
+    };
+  });
+
+  const pauseCustomToggle = document.getElementById("pause-custom-toggle");
+  if (pauseCustomToggle) pauseCustomToggle.onclick = () => {
+    const row = document.getElementById("pause-custom-row");
+    if (row) row.style.display = row.style.display === "none" ? "flex" : "none";
+  };
+
+  const pauseCustomConfirm = document.getElementById("pause-custom-confirm");
+  if (pauseCustomConfirm) pauseCustomConfirm.onclick = async () => {
+    const dateVal = document.getElementById("pause-custom-date").value;
+    if (!dateVal) { alert("Escolha uma data."); return; }
+    const until = new Date(dateVal + "T23:59:59").toISOString();
+    const { error } = await sb.from('academias').update({ pausada: true, pausada_ate: until }).eq('id', pauseCustomConfirm.dataset.court);
+    if (error) { alert("Não consegui pausar: " + error.message); return; }
+    await refreshAfterPauseChange();
+  };
+
+  const resumeCourtBtn = document.getElementById("resume-court-btn");
+  if (resumeCourtBtn) resumeCourtBtn.onclick = async () => {
+    const { error } = await sb.from('academias').update({ pausada: false, pausada_ate: null }).eq('id', resumeCourtBtn.dataset.court);
+    if (error) { alert("Não consegui reativar: " + error.message); return; }
+    await refreshAfterPauseChange();
+  };
+
+  const editCourtBtn = document.getElementById("edit-court-btn");
+  if (editCourtBtn) editCourtBtn.onclick = () => {
+    const c = state.allCourts.find(x => x.id === editCourtBtn.dataset.court) || state.pending.find(x => x.id === editCourtBtn.dataset.court);
+    if (!c) return;
+    const quadras = {};
+    QUADRA_COMBOS.forEach(q => { quadras[q.key] = (c.quadras && c.quadras[q.key]) || 0; });
+    window.__form = {
+      __editingId: c.id,
+      name: c.name || "",
+      address: c.address || c.endereco || "",
+      numero: c.numero || "",
+      complemento: c.complemento || "",
+      bairro: c.bairro || "",
+      cidade: c.cidade || "",
+      quadras,
+      amenities: [...(c.amenities || [])],
+      modalidades: [...(c.modalidades || [])],
+      priceAula: c.priceAula || "",
+      priceLocacao: c.priceLocacao || "",
+      phone: c.phone || "",
+      instagram: c.instagram || "",
+      site: c.site || "",
+      photos: [...(c.photos || (c.photoUrl ? [c.photoUrl] : []))],
+    };
+    state.showRegister = true;
+    state.registerStatus = "idle";
+    render();
+  };
+
+  const deleteCourtBtn = document.getElementById("delete-court-btn");
+  if (deleteCourtBtn) deleteCourtBtn.onclick = async () => {
+    const c = state.allCourts.find(x => x.id === deleteCourtBtn.dataset.court);
+    if (!c) return;
+    if (!confirm(`Excluir "${c.name}" do GuiaTennis? Isso não pode ser desfeito.`)) return;
+    const { error } = await sb.from('academias').delete().eq('id', c.id);
+    if (error) {
+      alert("Não consegui excluir: " + error.message);
+      return;
+    }
+    state.selected = null;
+    await loadEverything();
+    render();
+  };
+
+  document.querySelectorAll(".delete-review-btn").forEach(el => {
+    el.onclick = async () => {
+      if (!confirm("Excluir essa avaliação? Isso não pode ser desfeito.")) return;
+      const { error } = await sb.from('avaliacoes').delete().eq('id', el.dataset.review);
+      if (error) { alert("Não consegui excluir: " + error.message); return; }
+      await loadEverything();
+      if (state.selected) {
+        state.selected = state.allCourts.find(c => c.id === state.selected.id) || state.pending.find(c => c.id === state.selected.id) || state.selected;
+      }
+      render();
+    };
+  });
+
+  const shareBtn = document.getElementById("share-btn");
+  if (shareBtn) shareBtn.onclick = () => shareCourt(shareBtn.dataset.court);
+
+  document.querySelectorAll("[data-lightbox-open]").forEach(el => {
+    el.style.cursor = "pointer";
+    el.onclick = () => {
+      const c = state.selected;
+      if (!c) return;
+      const photos = (c.photos && c.photos.length) ? c.photos : (c.photoUrl ? [c.photoUrl] : []);
+      if (!photos.length) return;
+      state.lightbox = { photos, index: parseInt(el.dataset.lightboxOpen, 10) || 0 };
+      render();
+    };
+  });
+
+  const lightboxOverlay = document.getElementById("lightbox-overlay");
+  const lightboxClose = document.getElementById("lightbox-close");
+  if (lightboxClose) lightboxClose.onclick = () => { state.lightbox = null; render(); };
+  if (lightboxOverlay) lightboxOverlay.onclick = (e) => { if (e.target === lightboxOverlay) { state.lightbox = null; render(); } };
+
+  const lightboxPrev = document.getElementById("lightbox-prev");
+  const lightboxNext = document.getElementById("lightbox-next");
+  if (lightboxPrev) lightboxPrev.onclick = () => {
+    state.lightbox.index = Math.max(0, state.lightbox.index - 1);
+    render();
+  };
+  if (lightboxNext) lightboxNext.onclick = () => {
+    state.lightbox.index = Math.min(state.lightbox.photos.length - 1, state.lightbox.index + 1);
+    render();
+  };
+  const lightboxStrip = document.getElementById("lightbox-strip");
+  if (lightboxStrip) lightboxStrip.onscroll = () => {
+    const i = Math.round(lightboxStrip.scrollLeft / lightboxStrip.clientWidth);
+    if (state.lightbox) state.lightbox.index = i;
+  };
+
+  document.querySelectorAll("[data-compare]").forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const r = toggleCompare(el.dataset.compare);
+      if (!r.ok) { alert(r.msg); return; }
+      render();
+    };
+  });
+
+  document.querySelectorAll(".decide-prio").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.prio;
+      state.decidePrios = state.decidePrios.includes(k)
+        ? state.decidePrios.filter(x => x !== k)
+        : [...state.decidePrios, k];
+      render();
+    };
+  });
+
+  const decideNotes = document.getElementById("decide-notes");
+  if (decideNotes) decideNotes.oninput = (e) => { state.decideNotes = e.target.value; };
+
+  document.querySelectorAll("[data-nav]").forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); state.navCourt = el.dataset.nav; render(); };
+  });
+
+  const navClose = document.getElementById("nav-close");
+  const navOverlay = document.getElementById("nav-overlay");
+  if (navClose) navClose.onclick = () => { state.navCourt = null; render(); };
+  if (navOverlay) navOverlay.onclick = (e) => { if (e.target === navOverlay) { state.navCourt = null; render(); } };
+
+  document.querySelectorAll("[data-decidir]").forEach(el => {
+    el.onclick = () => { state.decidida = el.dataset.decidir; render(); };
+  });
+
+  const decidiaVoltar = document.getElementById("decidida-voltar");
+  if (decidiaVoltar) decidiaVoltar.onclick = () => { state.decidida = null; render(); };
+
+  document.querySelectorAll("[data-track-wa]").forEach(el => { el.onclick = () => trackClick(el.dataset.trackWa, "whatsapp"); });
+  document.querySelectorAll("[data-track-ig]").forEach(el => { el.onclick = () => trackClick(el.dataset.trackIg, "instagram"); });
+  document.querySelectorAll("[data-track-site]").forEach(el => { el.onclick = () => trackClick(el.dataset.trackSite, "site"); });
+
+  const decideGo = document.getElementById("decide-go");
+  if (decideGo) decideGo.onclick = () => { state.showDecideResult = true; render(); };
+
+  const compareGo = document.getElementById("compare-go");
+  if (compareGo) compareGo.onclick = () => { state.showCompare = true; render(); };
+
+  const compareClear = document.getElementById("compare-clear");
+  if (compareClear) compareClear.onclick = () => { setCompareList([]); state.showCompare = false; state.compareOnly = false; state.decidida = null; state.showDecideResult = false; render(); };
+
+  const compareClear2 = document.getElementById("compare-clear-2");
+  if (compareClear2) compareClear2.onclick = () => { setCompareList([]); state.showCompare = false; state.compareOnly = false; state.decidida = null; state.showDecideResult = false; render(); };
+
+  const compareClose = document.getElementById("compare-close");
+  const compareOverlay = document.getElementById("compare-overlay");
+  if (compareClose) compareClose.onclick = () => { state.showCompare = false; render(); };
+  if (compareOverlay) compareOverlay.onclick = (e) => { if (e.target === compareOverlay) { state.showCompare = false; render(); } };
+
+  document.querySelectorAll("[data-cmp-remove]").forEach(el => {
+    el.onclick = () => {
+      setCompareList(state.compareList.filter(id => id !== el.dataset.cmpRemove));
+      if (state.compareList.length < COMPARE_MIN) state.showCompare = false;
+      if (!state.compareList.length) state.compareOnly = false;
+      render();
+    };
+  });
+
+  const detailClose = document.getElementById("detail-close");
+  const detailOverlay = document.getElementById("detail-overlay");
+  if (detailClose) detailClose.onclick = () => { state.selected = null; render(); };
+  if (detailOverlay) detailOverlay.onclick = (e) => { if (e.target === detailOverlay) { state.selected = null; render(); } };
+
+  document.querySelectorAll("#star-picker span").forEach(el => {
+    el.onclick = () => { state.pendingStar = parseInt(el.dataset.star, 10); render(); };
+  });
+  const rateComment = document.getElementById("rate-comment");
+  if (rateComment) rateComment.oninput = (e) => { window.__rateComment = e.target.value; };
+  const rateConsent = document.getElementById("rate-consent");
+  if (rateConsent) rateConsent.onchange = (e) => { window.__rateConsent = e.target.checked; render(); };
+  const openTermsFromRating = document.getElementById("open-terms-from-rating");
+  if (openTermsFromRating) openTermsFromRating.onclick = () => { state.showTerms = true; render(); };
+  const rateSubmit = document.getElementById("rate-submit");
+  if (rateSubmit) rateSubmit.onclick = () => {
+    const courtId = state.selected.id;
+    const stars = state.pendingStar;
+    const comment = window.__rateComment || "";
+    ensureVisitorThen(async () => {
+      await submitRating(courtId, stars, comment);
+      window.__rateComment = "";
+      window.__rateConsent = false;
+      state.justRated = true;
+      const r = getAppRating(courtId);
+      state.selected = { ...state.selected, appAvg: r.avg, appCount: r.count };
+      render();
+    });
+  };
+
+  document.querySelectorAll(".modalidade-chip").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.modalidade;
+      state.modalidadeFilters = state.modalidadeFilters.includes(k) ? state.modalidadeFilters.filter(x=>x!==k) : [...state.modalidadeFilters, k];
+      render();
+    };
+  });
+
+  const fab = document.getElementById("fab-add");
+  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[] }; state.showRegister = true; state.registerStatus = "idle"; render(); };
+
+  const fabAdmin = document.getElementById("fab-admin");
+  if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
+
+  const fabStats = document.getElementById("fab-stats");
+  if (fabStats) fabStats.onclick = () => { state.showStatsPanel = true; render(); };
+
+  const termsLink = document.getElementById("terms-link");
+  if (termsLink) termsLink.onclick = () => { state.showTerms = true; render(); };
+  const privacyLink = document.getElementById("privacy-link");
+  if (privacyLink) privacyLink.onclick = () => { state.showPrivacy = true; render(); };
+
+  const termsClose = document.getElementById("terms-close");
+  const termsOverlay = document.getElementById("terms-close-overlay");
+  if (termsClose) termsClose.onclick = () => { state.showTerms = false; render(); };
+  if (termsOverlay) termsOverlay.onclick = (e) => { if (e.target === termsOverlay) { state.showTerms = false; render(); } };
+
+  const privacyClose = document.getElementById("privacy-close");
+  const privacyOverlay = document.getElementById("privacy-close-overlay");
+  if (privacyClose) privacyClose.onclick = () => { state.showPrivacy = false; render(); };
+  if (privacyOverlay) privacyOverlay.onclick = (e) => { if (e.target === privacyOverlay) { state.showPrivacy = false; render(); } };
+
+  document.querySelectorAll("[data-stats-per]").forEach(el => {
+    el.onclick = () => { state.statsPeriodo = el.dataset.statsPer; render(); };
+  });
+  document.querySelectorAll("[data-stats-ord]").forEach(el => {
+    el.onclick = () => { state.statsOrdem = el.dataset.statsOrd; render(); };
+  });
+  document.querySelectorAll("[data-copy-stats]").forEach(el => {
+    el.onclick = () => {
+      const c = state.allCourts.find(x => x.id === el.dataset.copyStats);
+      if (!c) return;
+      const { porAcademia } = statsAgregado(state.statsPeriodo || "30");
+      const d = Object.assign({ whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 }, porAcademia[c.id] || {});
+      const txt = resumoTexto(c, d);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => { el.textContent = "Copiado!"; setTimeout(() => { el.textContent = "Copiar resumo pra mandar"; }, 1800); })
+          .catch(() => window.prompt("Copie o resumo:", txt));
+      } else {
+        window.prompt("Copie o resumo:", txt);
+      }
+    };
+  });
+
+  const statsClose = document.getElementById("stats-close");
+  const statsOverlay = document.getElementById("stats-overlay");
+  if (statsClose) statsClose.onclick = () => { state.showStatsPanel = false; render(); };
+  if (statsOverlay) statsOverlay.onclick = (e) => { if (e.target === statsOverlay) { state.showStatsPanel = false; render(); } };
+
+  const regClose = document.getElementById("register-close");
+  const regClose2 = document.getElementById("register-close-2");
+  const regOverlay = document.getElementById("register-overlay");
+  if (regClose) regClose.onclick = () => { state.showRegister = false; render(); };
+  if (regClose2) regClose2.onclick = () => { state.showRegister = false; render(); };
+  if (regOverlay) regOverlay.onclick = (e) => { if (e.target === regOverlay) { state.showRegister = false; render(); } };
+
+  const adminClose = document.getElementById("admin-close");
+  const adminOverlay = document.getElementById("admin-overlay");
+  if (adminClose) adminClose.onclick = () => { state.showAdminPanel = false; render(); };
+  if (adminOverlay) adminOverlay.onclick = (e) => { if (e.target === adminOverlay) { state.showAdminPanel = false; render(); } };
+
+  document.querySelectorAll("[data-preview]").forEach(el => {
+    el.onclick = () => {
+      const p = state.pending.find(x => x.id === el.dataset.preview);
+      if (!p) return;
+      state.selected = p;
+      state.pendingStar = 0;
+      state.justRated = false;
+      render();
+    };
+  });
+
+  document.querySelectorAll("[data-approve]").forEach(el => {
+    el.onclick = async () => {
+      await sb.from('academias').update({ status: 'published' }).eq('id', el.dataset.approve);
+      await loadEverything();
+      render();
+    };
+  });
+  document.querySelectorAll("[data-reject]").forEach(el => {
+    el.onclick = async () => {
+      await sb.from('academias').delete().eq('id', el.dataset.reject);
+      await loadEverything();
+      render();
+    };
+  });
+
+  bindFormField("f-name", "name"); bindFormField("f-address", "address"); bindFormField("f-bairro", "bairro");
+  bindFormField("f-cidade", "cidade"); bindFormField("f-numero", "numero"); bindFormField("f-complemento", "complemento");
+  bindPriceField("f-price-aula", "priceAula"); bindPriceField("f-price-locacao", "priceLocacao");
+  bindFormField("f-phone", "phone"); bindFormField("f-instagram", "instagram");
+  bindFormField("f-site", "site");
+
+  document.querySelectorAll("[data-track]").forEach(el => {
+    el.addEventListener("click", () => trackClick(el.dataset.court, el.dataset.track));
+  });
+
+  document.querySelectorAll(".reg-quadra-count").forEach(el => {
+    el.oninput = (e) => {
+      const f = window.__form;
+      if (!f.quadras) f.quadras = {};
+      f.quadras[el.dataset.combo] = Math.max(0, parseInt(e.target.value, 10) || 0);
+    };
+  });
+  document.querySelectorAll(".reg-amenity").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.amenity;
+      const f = window.__form;
+      f.amenities = f.amenities.includes(k) ? f.amenities.filter(x=>x!==k) : [...f.amenities, k];
+      render();
+    };
+  });
+  document.querySelectorAll(".reg-modalidade").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.modalidade;
+      const f = window.__form;
+      f.modalidades = f.modalidades.includes(k) ? f.modalidades.filter(x=>x!==k) : [...f.modalidades, k];
+      render();
+    };
+  });
+
+  const regSubmit = document.getElementById("register-submit");
+  if (regSubmit) regSubmit.onclick = () => {
+    const f = window.__form;
+    if (isAdmin || f.__editingId) {
+      doRegisterSubmit();
+    } else {
+      ensureVisitorThen(doRegisterSubmit);
+    }
+  };
+
+  const consentBox = document.getElementById("f-consent");
+  if (consentBox) consentBox.onchange = (e) => { window.__form.consent = e.target.checked; };
+
+  const openTermsFromForm = document.getElementById("open-terms-from-form");
+  if (openTermsFromForm) openTermsFromForm.onclick = () => { state.showTerms = true; render(); };
+  const openPrivacyFromForm = document.getElementById("open-privacy-from-form");
+  if (openPrivacyFromForm) openPrivacyFromForm.onclick = () => { state.showPrivacy = true; render(); };
+
+  const cepField = document.getElementById("f-cep");
+  if (cepField) {
+    cepField.oninput = (e) => { window.__form.cep = e.target.value; };
+    cepField.onblur = () => autoFillFromCep(window.__form.cep);
+  }
+
+  const photoFile = document.getElementById("f-photo-file");
+  if (photoFile) {
+    photoFile.onchange = (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      const f = window.__form;
+      if (!f.photos) f.photos = [];
+      const room = Math.max(0, 5 - f.photos.length);
+      const toAdd = files.slice(0, room);
+      let pending = toAdd.length;
+      toAdd.forEach((file) => {
+        compressImage(file, 1280, 0.72).then((dataUrl) => {
+          f.photos.push(dataUrl);
+          pending--;
+          if (pending === 0) render();
+        }).catch(() => {
+          pending--;
+          if (pending === 0) render();
+        });
+      });
+    };
+  }
+
+  document.querySelectorAll("[data-photo-idx]").forEach(el => {
+    el.onclick = () => {
+      window.__form.photos.splice(parseInt(el.dataset.photoIdx, 10), 1);
+      render();
+    };
+  });
+}
+
+async function autoFillFromCep(rawCep) {
+  const digits = (rawCep || "").replace(/\D/g, "");
+  if (digits.length !== 8) return;
+  state.cepStatus = "loading";
+  render();
+  try {
+    const data = await fetchViaCep(digits);
+    const f = window.__form;
+    f.address = data.logradouro || f.address;
+    f.bairro = data.bairro || f.bairro;
+    f.cidade = data.localidade || f.cidade;
+    state.cepStatus = "idle";
+  } catch (e) {
+    state.cepStatus = "error";
+  }
+  render();
+}
+
+function compressImage(file, maxDimension, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round(height * (maxDimension / width));
+            width = maxDimension;
+          } else {
+            width = Math.round(width * (maxDimension / height));
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function bindFormField(id, key) {
+  const el = document.getElementById(id);
+  if (el) el.oninput = (e) => { window.__form[key] = e.target.value; };
+}
+
+function bindPriceField(id, key) {
+  const el = document.getElementById(id);
+  if (el) el.oninput = (e) => {
+    const cleaned = e.target.value.replace(/[^0-9-]/g, "");
+    e.target.value = cleaned;
+    window.__form[key] = cleaned;
+  };
+}
+
+function useMyLocation() {
+  if (!navigator.geolocation) {
+    state.errorMsg = "Seu navegador não suporta localização automática.";
+    state.searchStatus = "error";
+    render();
+    return;
+  }
+  state.searchStatus = "loading";
+  state.errorMsg = "";
+  render();
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        const geo = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        state.origin = geo;
+        state.cep = "";
+        state.sortBy = "distance";
+        state.searchStatus = "done";
+      } catch (e) {
+        state.errorMsg = e.message || "Não consegui identificar sua região.";
+        state.searchStatus = "error";
+      }
+      render();
+    },
+    () => {
+      state.errorMsg = "Não consegui acessar sua localização. Permita o acesso ou digite um CEP.";
+      state.searchStatus = "error";
+      render();
+    },
+    { timeout: 10000 }
+  );
+}
+
+function shareCourt(courtId) {
+  const c = (state.allCourts.find(x => x.id === courtId)) || (state.pending && state.pending.find(x => x.id === courtId));
+  if (!c) return;
+  trackClick(courtId, "compartilhar");
+  const url = `${location.origin}${location.pathname}?court=${c.id}`;
+  const text = `Olha essa quadra/academia que eu achei, no GuiaTennis:\n${c.name}${c.endereco ? " - " + c.endereco : (c.bairro ? " - " + c.bairro : "")}`;
+  const fullText = `${text} ${url}`;
+
+  function lastResort() {
+    window.prompt("Copie o link abaixo pra compartilhar:", fullText);
+  }
+
+  try {
+    if (navigator.share) {
+      navigator.share({ title: c.name, text, url }).catch((err) => {
+        if (err && err.name === "AbortError") return; // usuário só fechou o menu de compartilhar
+        lastResort();
+      });
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(fullText).then(() => {
+        alert("Link copiado! Cole onde quiser compartilhar.");
+      }).catch(lastResort);
+    } else {
+      lastResort();
+    }
+  } catch (e) {
+    lastResort();
+  }
+}
+
+async function doSearch() {
+  state.searchStatus = "loading";
+  state.errorMsg = "";
+  render();
+  const termo = state.cep.trim();
+  const digitsOnly = termo.replace(/\D/g, "");
+  try {
+    let geo;
+    if (digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0) {
+      geo = await geocodeCep(termo);
+    } else {
+      // Aceita endereço OU ponto de referência ("Escola Adventista", "Shopping Morumbi").
+      const tentativas = [
+        `${termo}, Brasil`,
+        termo,
+        state.origin && state.origin.cidade ? `${termo}, ${state.origin.cidade}, Brasil` : null,
+      ].filter(Boolean);
+
+      let result = null;
+      for (const q of tentativas) {
+        try { result = await geocodeAddress(q); break; } catch (e) { /* tenta a próxima */ }
+      }
+      if (!result) throw new Error("Não achei esse endereço ou local. Tente incluir o bairro e a cidade.");
+
+      // Descobre bairro/cidade reais pela coordenada, em vez de adivinhar pelo texto digitado
+      let bairro = "", cidade = "";
+      try {
+        const rev = await reverseGeocode(result.lat, result.lng);
+        bairro = rev.bairro || "";
+        cidade = rev.cidade || "";
+      } catch (e) {
+        const parts = termo.split(",").map(s => s.trim()).filter(Boolean);
+        bairro = parts.length > 1 ? parts[parts.length - 2] : parts[0];
+        cidade = parts[parts.length - 1] || "";
+      }
+      geo = { ...result, bairro: bairro || termo, cidade, approximate: false };
+    }
+    state.origin = geo;
+    state.sortBy = "distance";
+    state.searchStatus = "done";
+  } catch (e) {
+    state.errorMsg = e.message || "Não consegui buscar esse endereço ou CEP.";
+    state.searchStatus = "error";
+  }
+  render();
+}
+
+async function doRegisterSubmit() {
+  const f = window.__form;
+  const quadras = f.quadras || {};
+  const hasQuadra = QUADRA_COMBOS.some(q => quadras[q.key] > 0);
+  const pisos = [...new Set(QUADRA_COMBOS.filter(q => quadras[q.key] > 0).map(q => q.piso))];
+  const cobertura = [...new Set(QUADRA_COMBOS.filter(q => quadras[q.key] > 0).map(q => q.cobertura))];
+
+  if (f.__editingId) {
+    if (!f.name.trim()) {
+      state.registerError = "O nome não pode ficar em branco.";
+      state.registerStatus = "error";
+      render();
+      return;
+    }
+    state.registerStatus = "saving";
+    render();
+    const endereco = (f.address || f.numero || f.bairro || f.cidade)
+      ? `${f.address}${f.numero ? ", " + f.numero : ""}${f.complemento ? " - " + f.complemento : ""} - ${f.bairro}, ${f.cidade}`
+      : undefined;
+    const payload = toRow({ ...f, pisos, cobertura });
+    if (endereco) payload.endereco = endereco; else delete payload.endereco;
+    try {
+      const { error } = await sb.from('academias').update(payload).eq('id', f.__editingId);
+      if (error) throw error;
+      await loadEverything();
+      if (state.selected && state.selected.id === f.__editingId) {
+        state.selected = state.allCourts.find(c => c.id === f.__editingId) || state.pending.find(c => c.id === f.__editingId) || state.selected;
+      }
+      state.registerStatus = "done";
+    } catch (e) {
+      state.registerError = e.message || "Não consegui salvar as alterações.";
+      state.registerStatus = "error";
+    }
+    render();
+    return;
+  }
+
+  const missing = [];
+  if (!f.name.trim()) missing.push("nome");
+  if (!f.address.trim() || !f.numero.trim() || !f.bairro.trim() || !f.cidade.trim()) missing.push("endereço completo");
+  if (!f.phone.trim()) missing.push("WhatsApp");
+  if (f.modalidades.includes("aulas_proprias") && !/\d/.test(f.priceAula || "")) missing.push("faixa de preço da aula");
+  if (f.modalidades.includes("locacao") && !/\d/.test(f.priceLocacao || "")) missing.push("faixa de preço da locação");
+  if (!hasQuadra) missing.push("quantidade de quadras");
+  if (!f.modalidades.length) missing.push("modalidade");
+  if (!f.consent) missing.push("aceite dos Termos de Uso e Política de Privacidade");
+
+  if (missing.length) {
+    state.registerError = `Preencha: ${missing.join(", ")}.`;
+    state.registerStatus = "error";
+    render();
+    return;
+  }
+
+  state.registerStatus = "saving";
+  render();
+  try {
+    const geo = await geocodeFormAddress(f);
+    const endereco = `${f.address}, ${f.numero}${f.complemento ? " - " + f.complemento : ""} - ${f.bairro}, ${f.cidade}${f.cep ? " - " + f.cep : ""}`;
+    const visitor = loadVisitor() || {};
+    const payload = {
+      ...toRow({ ...f, pisos, cobertura }),
+      endereco, lat: geo.lat, lng: geo.lng,
+      source: 'custom', status: 'pending',
+      nome_solicitante: isAdmin ? null : visitor.nome,
+      contato_solicitante: isAdmin ? null : visitor.contato,
+    };
+    let insertQuery = sb.from('academias').insert(payload);
+    if (isAdmin) insertQuery = insertQuery.select().single();
+    const { data, error } = await insertQuery;
+    if (error) throw error;
+    if (isAdmin) {
+      const { error: pubError } = await sb.from('academias').update({ status: 'published' }).eq('id', data.id);
+      if (pubError) throw pubError;
+    }
+    await loadEverything();
+    state.registerStatus = "done";
+  } catch (e) {
+    state.registerError = e.message || "Não consegui localizar esse endereço.";
+    state.registerStatus = "error";
+  }
+  render();
+}
+
+async function init() {
+  app_showLoading();
+  const { data: { session } } = await sb.auth.getSession();
+  isAdmin = !!session;
+  if (!isAdmin) trackClick(null, "acesso_site");
+  await loadEverything();
+
+  const sharedCourtId = new URLSearchParams(location.search).get("court");
+  if (sharedCourtId) {
+    const shared = state.allCourts.find(c => c.id === sharedCourtId);
+    if (shared) {
+      state.selected = shared;
+      if (!isAdmin) trackClick(shared.id, "visualizacao");
+    }
+  }
+
+  // Remove da comparação academias que não existem mais (excluídas ou pausadas)
+  if (state.compareList.length) {
+    const validos = state.compareList.filter(id => state.allCourts.some(c => c.id === id));
+    if (validos.length !== state.compareList.length) setCompareList(validos);
+  }
+
+  state.loaded = true;
+  render();
+}
+
+function app_showLoading() {
+  const app = document.getElementById("app");
+  app.innerHTML = `<div style="padding:60px 20px;text-align:center;color:var(--muted)">Carregando...</div>`;
+}
+
+init();
+</script>
+</body>
+</html>

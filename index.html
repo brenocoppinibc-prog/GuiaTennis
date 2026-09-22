@@ -18,6 +18,7 @@
 <meta property="og:url" content="https://guiatennis.com.br">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+<script type="application/ld+json" id="ld-academia"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -181,14 +182,11 @@
   .photo-thumb-remove { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.55); color: #fff; border: none; border-radius: 999px; width: 20px; height: 20px; font-size: 12px; cursor: pointer; }
   .sheet-content { padding: 20px; position: relative; }
   .sheet-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.85); border: none; color: var(--text); font-size: 18px; cursor: pointer; width: 30px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; }
-  .sheet-eyebrow { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
   .sheet-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1.1; margin: 4px 0 0; }
   .sheet-meta { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
   .price-box { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-top: 16px; }
   .price-box p:first-child { color: var(--muted); font-size: 12px; margin: 0; }
   .price-box p:last-child { color: var(--text); font-weight: 600; margin: 2px 0 0; }
-  .amenity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-  .amenity-item { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; }
   .cta-col { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
   .cta-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; padding: 11px; font-weight: 600; text-decoration: none; font-size: 14px; border: none; cursor: pointer; }
   .cta-primary { background: var(--green); color: #fff; }
@@ -335,23 +333,13 @@
   /* ---- ficha estilo hotel ---- */
   .sheet-wide { max-width: 920px; }
   @media (min-width: 640px) { .sheet-wide { max-height: 92vh; } }
-  .hero { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 96px 96px; gap: 3px; background: var(--border); }
-  @media (min-width: 720px) { .hero { grid-template-rows: 152px 152px; } }
-  .hero.solo { grid-template-columns: 1fr; grid-template-rows: 200px; }
-  @media (min-width: 720px) { .hero.solo { grid-template-rows: 307px; } }
-  .hero-cell { position: relative; background: var(--bg-alt); cursor: pointer; overflow: hidden; }
-  .hero-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .hero-main { grid-row: span 2; }
-  .hero-more { position: absolute; right: 10px; bottom: 10px; background: rgba(0,0,0,0.62); color: #fff; border: none; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; font-family: 'Playfair Display', serif; cursor: pointer; }
-  .hero-actions { position: absolute; top: 12px; right: 12px; z-index: 6; display: flex; gap: 8px; }
   .hero-act { background: rgba(255,255,255,0.93); border: none; border-radius: 999px; height: 34px; min-width: 34px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 700; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.22); }
   .hero-act.on { background: var(--green); color: #fff; }
+  .hero-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 240px; background: linear-gradient(135deg, #E4DEC9, #EFEADD); }
   .sheet-wide { display: flex; flex-direction: column; overflow: hidden; }
   .sheet-scroll { flex: 1; overflow-y: auto; min-height: 0; }
-  .hero-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 200px; background: linear-gradient(135deg, #E4DEC9, #EFEADD); }
 
 
-  .courtpage .sheet-content > .cta-btn, .courtpage .cta-col .cta-btn { width: 100%; }
   .sec { margin-top: 24px; }
   .sec-title { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
 
@@ -366,9 +354,7 @@
   .bar-fill { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
   .bar-row .bar-n { width: 18px; text-align: right; flex-shrink: 0; }
 
-  .review-item { display: flex; gap: 10px; padding: 12px 0; border-top: 1px solid var(--border); }
   .rev-avatar { width: 36px; height: 36px; border-radius: 999px; background: var(--green); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .rev-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .rev-name { font-size: 13px; font-weight: 700; margin: 0; }
   .rev-date { font-size: 12px; color: var(--muted-dark); }
   .rev-text { font-size: 13px; margin: 5px 0 0; line-height: 1.45; color: var(--text); }
@@ -508,32 +494,16 @@
   .courtbar button { background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--green); padding: 4px; }
   .courtbar-name { flex: 1; min-width: 0; font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .courtpage { padding-bottom: 60px; }
-  .courtpage .hero { border-radius: 0; }
-  @media (min-width: 720px) { .courtpage-inner { max-width: 1000px; margin: 0 auto; } .courtpage .hero { border-radius: 14px; overflow: hidden; margin-top: 16px; } }
-  .courtpage .sheet-content { padding: 20px; }
+  @media (min-width: 720px) { .courtpage-inner { max-width: 1140px; margin: 0 auto; } }
   .search-header { padding: 16px 20px 18px; border-bottom: 1px solid var(--border); background: var(--card); }
 
   /* ---- página da academia: preços como opções que se escolhe ---- */
-  .court-head { padding: 18px 20px 4px; }
   .court-name { font-size: 27px; font-weight: 700; line-height: 1.12; margin: 4px 0 0; }
   @media (min-width: 720px) { .court-name { font-size: 34px; } }
   .court-stars { color: var(--gold); font-size: 15px; letter-spacing: 1px; margin-top: 6px; }
-  .court-score { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
-  .court-score .sbadge { font-size: 16px; padding: 5px 10px; }
-  .court-score-word { font-size: 15px; font-weight: 700; }
-  .court-score-count { font-size: 13px; color: var(--muted); text-decoration: underline; }
   .court-addr { display: flex; align-items: flex-start; gap: 6px; font-size: 14px; color: var(--muted); margin: 12px 0 0; line-height: 1.4; }
   .court-addr button { background: none; border: none; padding: 0; color: var(--green); font-weight: 700; font-size: 14px; cursor: pointer; text-decoration: underline; font-family: inherit; }
 
-  .opt-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--card); box-shadow: var(--shadow); }
-  .opt-card + .opt-card { margin-top: 12px; }
-  .opt-card-name { font-size: 18px; font-weight: 700; margin: 0; }
-  .opt-card-desc { font-size: 13px; color: var(--muted); margin: 3px 0 0; }
-  .opt-card-perks { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 9px; }
-  .opt-card-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
-  .opt-card-price { font-size: 25px; font-weight: 800; line-height: 1.05; white-space: nowrap; }
-  .opt-card-unit { font-size: 13px; color: var(--muted); }
-  .opt-card-foot .cta-btn { flex: 1 1 200px; margin: 0; }
   .opt-nota { font-size: 12px; color: var(--muted); margin: 10px 0 0; line-height: 1.45; }
 
   /* barra de contato que acompanha a rolagem, como a de reservar do hotel */
@@ -614,6 +584,155 @@
     .demo .passo1, .demo .passo2, .demo .passo3 { animation: none; }
     .demo .cena2, .demo .passo2 { opacity: 1; }
   }
+
+  /* ================= ficha da academia no formato das páginas de hotel ================= */
+
+  /* caminho: Início › Quadras em São Paulo › Bairro › Academia */
+  .ht-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); padding: 10px 20px 8px; }
+  .ht-crumbs button { background: none; border: none; padding: 0; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--green); cursor: pointer; text-decoration: underline; }
+  .ht-crumbs .sep { color: var(--muted-dark); }
+  .ht-crumbs .cur { color: var(--muted); }
+
+  /* galeria em mosaico: uma foto grande e até quatro menores */
+  .ht-gal { position: relative; display: grid; gap: 3px; background: var(--border); height: 240px; grid-template-columns: 1fr; }
+  .ht-gal .g { position: relative; overflow: hidden; background: var(--bg-alt); cursor: pointer; }
+  .ht-gal .g img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ht-gal .g:not(:first-child) { display: none; }
+  .ht-gal-all { position: absolute; right: 12px; bottom: 12px; z-index: 3; display: inline-flex; align-items: center; gap: 6px; background: rgba(20,51,42,0.82); color: #fff; border: none; border-radius: 9px; padding: 8px 13px; font-size: 12px; font-weight: 700; font-family: 'Playfair Display', serif; cursor: pointer; }
+  @media (min-width: 720px) {
+    .ht-gal { height: 400px; grid-template-rows: 1fr 1fr; }
+    .ht-gal .g:not(:first-child) { display: block; }
+    .ht-gal.solo { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    .ht-gal.duo { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr; }
+    .ht-gal.trio { grid-template-columns: 2fr 1fr; }
+    .ht-gal.trio .g:first-child { grid-row: span 2; }
+    .ht-gal.quad { grid-template-columns: 2fr 1fr 1fr; }
+    .ht-gal.quad .g:first-child { grid-row: span 2; }
+    .ht-gal.quad .g:nth-child(4) { grid-column: span 2; }
+    .ht-gal.penta { grid-template-columns: 2fr 1fr 1fr; }
+    .ht-gal.penta .g:first-child { grid-row: span 2; }
+  }
+  @media (min-width: 1000px) { .ht-gal { border-radius: 16px; overflow: hidden; margin: 0 20px; } }
+
+  /* duas colunas: conteúdo à esquerda, cartão de contato fixo à direita */
+  .ht-body { display: block; }
+  .ht-main { min-width: 0; }
+  .ht-aside { display: none; }
+  @media (min-width: 1000px) {
+    .ht-body { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 30px; align-items: start; padding: 0 20px; }
+    .ht-aside { display: block; position: sticky; top: 74px; padding-top: 22px; }
+  }
+
+  .ht-head { padding: 18px 20px 0; }
+  @media (min-width: 1000px) { .ht-head { padding: 22px 0 0; } }
+  .ht-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .ht-tag { font-size: 12px; font-weight: 600; color: var(--green); background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 999px; padding: 4px 10px; }
+  .ht-score { display: inline-flex; align-items: center; gap: 10px; margin-top: 12px; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
+  .ht-score-num { background: var(--green); color: #fff; border-radius: 10px 10px 10px 3px; font-size: 20px; font-weight: 800; padding: 8px 11px; line-height: 1; flex-shrink: 0; }
+  .ht-score-num.empty { background: var(--bg-alt); color: var(--muted); }
+  .ht-score-txt strong { font-size: 15px; display: block; }
+  .ht-score-txt span { font-size: 13px; color: var(--muted); text-decoration: underline; }
+
+  /* barra de seções que acompanha a rolagem */
+  .ht-tabs { position: sticky; top: 54px; z-index: 15; display: flex; gap: 2px; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--border); padding: 0 20px; margin-top: 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .ht-tabs::-webkit-scrollbar { display: none; }
+  .ht-tabs button { background: none; border: none; border-bottom: 3px solid transparent; padding: 13px 11px; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; cursor: pointer; }
+  .ht-tabs button.on { color: var(--green); border-bottom-color: var(--green); }
+  @media (min-width: 1000px) { .ht-tabs { padding: 0; margin-top: 18px; } }
+
+  .ht-sections { padding: 0 20px 20px; }
+  @media (min-width: 1000px) { .ht-sections { padding: 0 0 24px; } }
+  .ht-sec { padding-top: 26px; margin-top: 26px; border-top: 1px solid var(--border); scroll-margin-top: 110px; }
+  .ht-sec:first-child { border-top: none; margin-top: 0; padding-top: 22px; }
+  .ht-sec .sec-title { font-size: 21px; margin-bottom: 8px; }
+  .ht-sec-sub { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  .ht-sec .cta-btn { width: 100%; }
+  .ht-about { font-size: 15px; line-height: 1.55; margin: 0; color: var(--text); }
+
+  /* destaques do topo, no lugar das "informações populares" dos hotéis */
+  .ht-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  @media (min-width: 720px) { .ht-tiles { grid-template-columns: repeat(4, 1fr); } }
+  .ht-tile { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 13px; }
+  .ht-tile-ic { display: block; margin-bottom: 7px; }
+  .ht-tile-t { font-size: 14px; font-weight: 700; margin: 0; line-height: 1.25; }
+  .ht-tile-s { font-size: 12px; color: var(--muted); margin: 3px 0 0; line-height: 1.35; }
+
+  /* opções de preço, no formato da lista de quartos */
+  .ht-room { display: grid; grid-template-columns: 1fr; border: 1px solid var(--border); border-radius: 14px; background: var(--card); box-shadow: var(--shadow); overflow: hidden; margin-top: 12px; }
+  @media (min-width: 720px) { .ht-room { grid-template-columns: minmax(0, 1fr) 210px; } }
+  .ht-room-info { padding: 15px 16px; }
+  .ht-room-name { font-size: 19px; font-weight: 700; margin: 0; }
+  .ht-room-desc { font-size: 13px; color: var(--muted); margin: 3px 0 0; }
+  .ht-room-perks { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 13px; }
+  .ht-room-price { background: var(--green-soft); border-top: 1px solid var(--green-line); padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
+  @media (min-width: 720px) { .ht-room-price { border-top: none; border-left: 1px solid var(--green-line); align-items: flex-end; text-align: right; } }
+  .ht-room-val { font-size: 24px; font-weight: 800; line-height: 1.05; white-space: nowrap; }
+  .ht-room-unit { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* comodidades em grade de ícones */
+  .ht-amen { display: grid; grid-template-columns: 1fr; gap: 9px; margin-top: 8px; }
+  @media (min-width: 560px) { .ht-amen { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1000px) { .ht-amen { grid-template-columns: 1fr 1fr 1fr; } }
+  .ht-amen-i { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--text); }
+
+  /* localização: mapa, endereço e academias vizinhas */
+  .ht-map { position: relative; z-index: 0; isolation: isolate; height: 230px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg-alt); margin-bottom: 12px; }
+  .ht-map-empty { display: flex; align-items: center; justify-content: center; height: 100%; padding: 0 24px; text-align: center; font-size: 13px; color: var(--muted); }
+  .ht-addr-line { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; margin: 0; line-height: 1.45; }
+  .ht-addr-line > span:first-child { flex-shrink: 0; margin-top: 2px; }
+  .pin-court { display: inline-block; width: 18px; height: 18px; border-radius: 999px; background: var(--gold); border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+  .ht-perto { display: grid; gap: 8px; }
+  .ht-perto-i { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; cursor: pointer; font-family: inherit; }
+  .ht-perto-n { font-size: 14px; font-weight: 700; color: var(--text); }
+  .ht-perto-d { font-size: 12px; color: var(--muted); }
+
+  /* avaliações em cartões */
+  .ht-revs { display: grid; gap: 12px; margin-top: 8px; }
+  @media (min-width: 720px) { .ht-revs { grid-template-columns: 1fr 1fr; } }
+  .ht-rev { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 14px; display: flex; flex-direction: column; }
+  .ht-rev-top { display: flex; align-items: center; gap: 8px; }
+  .ht-rev-badge { background: var(--green); color: #fff; border-radius: 8px 8px 8px 2px; font-size: 13px; font-weight: 800; padding: 4px 8px; line-height: 1; }
+  .ht-rev-word { font-size: 13px; font-weight: 700; }
+  .ht-rev-top .delete-review-btn { margin-left: auto; }
+  .ht-rev-text { font-size: 14px; line-height: 1.5; margin: 10px 0 0; flex: 1; }
+  .ht-rev-text.vazio { color: var(--muted-dark); font-style: italic; }
+  .ht-rev-foot { display: flex; align-items: center; gap: 9px; margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); }
+  .ht-rev-foot .rev-avatar { width: 32px; height: 32px; font-size: 13px; }
+
+  /* "bom saber", no lugar do "você precisa saber" dos hotéis */
+  .ht-know { display: grid; gap: 10px; margin-top: 6px; }
+  @media (min-width: 720px) { .ht-know { grid-template-columns: 1fr 1fr; } }
+  .ht-know-i { display: flex; gap: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 12px 13px; font-size: 14px; line-height: 1.45; }
+  .ht-know-ic { flex-shrink: 0; margin-top: 2px; display: flex; }
+  .ht-know-d { font-size: 13px; color: var(--muted); }
+
+  /* perguntas frequentes em sanfona */
+  .ht-faq { border-top: 1px solid var(--border); margin-top: 6px; }
+  .ht-faq details { border-bottom: 1px solid var(--border); }
+  .ht-faq details:last-child { border-bottom: none; }
+  .ht-faq summary { list-style: none; cursor: pointer; padding: 14px 0; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .ht-faq summary::-webkit-details-marker { display: none; }
+  .ht-faq-ic { flex-shrink: 0; display: flex; transition: transform 0.15s ease; }
+  .ht-faq details[open] .ht-faq-ic { transform: rotate(90deg); }
+  .ht-faq p { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0 0 14px; }
+
+  /* cartão fixo de contato (a coluna da direita) */
+  .ht-book { border: 1px solid var(--border); border-radius: 16px; background: var(--card); box-shadow: var(--shadow-lg); padding: 16px; }
+  .ht-book-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 0 0 8px; }
+  .ht-book-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 4px 0; }
+  .ht-book-opt { font-size: 14px; color: var(--muted); }
+  .ht-book-val { font-size: 19px; font-weight: 800; white-space: nowrap; }
+  .ht-book-div { border-top: 1px solid var(--border); margin: 12px 0; }
+  .ht-book-score { display: flex; align-items: center; gap: 9px; font-size: 14px; }
+  .ht-book-sub { font-size: 12px; color: var(--muted); }
+  .ht-book .cta-btn { width: 100%; }
+  .ht-book-note { font-size: 12px; color: var(--muted); margin: 10px 0 0; text-align: center; line-height: 1.4; }
+
+  /* barra fixa do rodapé, só no celular (no desktop o cartão da direita resolve) */
+  .court-cta-price { display: flex; flex-direction: column; margin-right: 4px; min-width: 0; }
+  .court-cta-val { font-size: 17px; font-weight: 800; white-space: nowrap; line-height: 1.1; }
+  .court-cta-unit { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  @media (min-width: 1000px) { .court-cta { display: none; } }
 
 </style>
 </head>
@@ -1010,6 +1129,7 @@ let state = {
   maxDistance: null,
   cardPhoto: {},
   reviewsExpanded: false,
+  faqOpen: {},
   page: "home",
   backTo: "home",
   homeCity: null,
@@ -1385,6 +1505,111 @@ function render() {
 
   if (state.page === "search" && state.view === "map") mountMap(results);
   else if (__map) { __map.remove(); __map = null; __markers = []; }
+
+  if (state.page === "court" && state.selected) {
+    mountMiniMap(state.selected);
+    atualizarSeo(state.selected);
+  } else {
+    if (__miniMap) { __miniMap.remove(); __miniMap = null; }
+    atualizarSeo(null);
+  }
+}
+
+// Mapinha da seção "Explore a região", como o mapa das páginas de hotel.
+function mountMiniMap(c) {
+  const el = document.getElementById("court-mini-map");
+  if (!el) {
+    if (__miniMap) { __miniMap.remove(); __miniMap = null; }
+    return;
+  }
+  const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
+  if (!temCoord) { if (__miniMap) { __miniMap.remove(); __miniMap = null; } return; }
+  if (!window.L) {
+    el.innerHTML = `<div class="ht-map-empty">Não consegui carregar o mapa agora. O endereço abaixo abre no Google Maps e no Waze.</div>`;
+    return;
+  }
+  if (__miniMap && __miniMap.getContainer() !== el) { __miniMap.remove(); __miniMap = null; }
+  if (!__miniMap) {
+    __miniMap = L.map(el, { zoomControl: true, scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '© colaboradores do OpenStreetMap',
+    }).addTo(__miniMap);
+  } else {
+    __miniMap.eachLayer(l => { if (l instanceof L.Marker) __miniMap.removeLayer(l); });
+  }
+  L.marker([c.lat, c.lng], {
+    interactive: false,
+    icon: L.divIcon({ className: "pin-wrap", iconSize: null, html: `<span class="pin-court"></span>` }),
+  }).addTo(__miniMap);
+  __miniMap.setView([c.lat, c.lng], 15);
+  setTimeout(() => { if (__miniMap) __miniMap.invalidateSize(); }, 60);
+}
+
+// Título da aba e dados estruturados da academia. O Google usa esse JSON para
+// entender que a página é de um local esportivo, com nota, preço e perguntas.
+const TITULO_PADRAO = document.title;
+function atualizarSeo(c) {
+  const ld = document.getElementById("ld-academia");
+  if (!c) {
+    if (document.title !== TITULO_PADRAO) document.title = TITULO_PADRAO;
+    if (ld && ld.textContent) ld.textContent = "";
+    return;
+  }
+  const local = [c.bairro, c.cidade].filter(Boolean).join(", ");
+  const titulo = `${c.name}${local ? " — " + local : ""} | GuiaTennis`;
+  if (document.title !== titulo) document.title = titulo;
+  if (!ld) return;
+
+  const url = `${location.origin}${location.pathname}?court=${c.id}`;
+  const lugar = {
+    "@type": "SportsActivityLocation",
+    "@id": url,
+    name: c.name,
+    url,
+    description: descricaoAcademia(c),
+  };
+  const fotos = courtPhotos(c).filter(p => /^https?:/.test(p));
+  if (fotos.length) lugar.image = fotos;
+  if (c.endereco || c.bairro || c.cidade) {
+    lugar.address = {
+      "@type": "PostalAddress",
+      streetAddress: [c.address, c.numero].filter(Boolean).join(", ") || c.endereco || "",
+      addressLocality: c.cidade || "",
+      addressCountry: "BR",
+    };
+  }
+  if (typeof c.lat === "number" && typeof c.lng === "number") {
+    lugar.geo = { "@type": "GeoCoordinates", latitude: c.lat, longitude: c.lng };
+  }
+  if (c.phone) lugar.telephone = "+55" + c.phone.replace(/\D/g, "").replace(/^55/, "");
+  const redes = [c.site, c.instagram ? `https://instagram.com/${c.instagram.replace("@", "")}` : null].filter(Boolean);
+  if (redes.length) lugar.sameAs = redes;
+  const faixa = faixaGeral(c);
+  if (faixa) lugar.priceRange = faixa.texto;
+  if (c.appCount) {
+    lugar.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: Number(c.appAvg.toFixed(1)),
+      reviewCount: c.appCount,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+
+  const faq = perguntasAcademia(c);
+  const grafo = [lugar];
+  if (faq.length) {
+    grafo.push({
+      "@type": "FAQPage",
+      mainEntity: faq.map(f => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    });
+  }
+  ld.textContent = JSON.stringify({ "@context": "https://schema.org", "@graph": grafo });
 }
 
 const DECIDE_CRITERIA = [
@@ -1819,6 +2044,8 @@ function renderSearchCard() {
 let __map = null;
 let __markers = [];
 let __mapSig = "";
+let __miniMap = null;   // mapinha da ficha da academia
+let __htSpy = null;     // marca a seção atual na barra da ficha
 
 function mapCourts(results) {
   return results.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
@@ -2405,7 +2632,7 @@ function initials(nome) {
 
 function distanceText(km) {
   if (typeof km !== "number" || !isFinite(km)) return "";
-  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace(".", ",")} km`;
 }
 
 
@@ -2702,30 +2929,227 @@ function renderCard(c, badge) {
   `;
 }
 
-// Galeria da ficha no formato das páginas de hotel: uma foto grande + duas menores.
-function heroGallery(c) {
+// ---------- ficha da academia no formato das páginas de hotel ----------
+
+// Galeria em mosaico: uma foto grande e até quatro menores, como nas páginas de
+// hotel. No celular aparece só a primeira, ocupando a largura toda.
+function htGaleria(c) {
   const photos = courtPhotos(c);
   if (!photos.length) {
     return `<div class="hero-empty">${icon('ball', 40, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></div>`;
   }
-  if (photos.length === 1) {
-    return `<div class="hero solo"><div class="hero-cell" data-lightbox-open="0"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div></div>`;
-  }
-  const side = photos.slice(1, 3);
+  const n = Math.min(photos.length, 5);
+  const cls = ["", "solo", "duo", "trio", "quad", "penta"][n];
+  const celulas = photos.slice(0, n).map((p, i) => `
+    <div class="g" data-lightbox-open="${i}">
+      <img src="${esc(p)}" alt="Foto ${i + 1} da ${esc(c.name)}" ${i ? 'loading="lazy"' : ""} />
+    </div>`).join("");
   return `
-    <div class="hero">
-      <div class="hero-cell hero-main" data-lightbox-open="0"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>
-      ${side.map((p, i) => `
-        <div class="hero-cell" ${side.length === 1 ? 'style="grid-row:span 2"' : ''} data-lightbox-open="${i + 1}">
-          <img src="${esc(p)}" alt="${esc(c.name)}" />
-          ${(i === side.length - 1 && photos.length > 1) ? `<button type="button" class="hero-more" data-lightbox-open="0">Ver as ${photos.length} fotos</button>` : ""}
-        </div>
-      `).join("")}
-    </div>
-  `;
+    <div class="ht-gal ${cls}">
+      ${celulas}
+      <button type="button" class="ht-gal-all" data-lightbox-open="0">
+        ${icon('camera', 14, '#fff')} ${photos.length === 1 ? "Ver a foto" : `Ver as ${photos.length} fotos`}
+      </button>
+    </div>`;
 }
 
-// Painel de nota com a distribuição de estrelas, como o resumo de avaliações dos hotéis.
+// O caminho até a academia, como o "Brasil › São Paulo › Hotel" das páginas de hotel.
+function htCaminho(c) {
+  const itens = [`<button type="button" data-crumb="home">Início</button>`];
+  if (c.cidade) itens.push(`<button type="button" data-crumb="busca" data-termo="${esc(c.cidade)}">Quadras em ${esc(c.cidade)}</button>`);
+  if (c.bairro) itens.push(`<button type="button" data-crumb="busca" data-termo="${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}">${esc(c.bairro)}</button>`);
+  itens.push(`<span class="cur">${esc(c.name)}</span>`);
+  return `<nav class="ht-crumbs" aria-label="Onde você está">${itens.join(`<span class="sep">›</span>`)}</nav>`;
+}
+
+// Os selinhos ao lado do nome: modalidade, quadras e o que tem de melhor.
+function htEtiquetas(c) {
+  const out = [];
+  const mod = modalidadesTexto(c);
+  if (mod) out.push(mod);
+  const total = totalQuadras(c);
+  if (total) out.push(`${total} ${plural(total, "quadra", "quadras")}`);
+  const pisos = (c.pisos || []).map(k => (PISO_OPTS.find(p => p.key === k) || {}).label).filter(Boolean);
+  if (pisos.length) out.push(listaTexto(pisos));
+  const cobs = (c.cobertura || []).map(k => (COBERTURA_OPTS.find(x => x.key === k) || {}).label).filter(Boolean);
+  if (cobs.length) out.push(listaTexto(cobs));
+  if (!out.length) return "";
+  return `<div class="ht-tags">${out.slice(0, 4).map(t => `<span class="ht-tag">${esc(t)}</span>`).join("")}</div>`;
+}
+
+// O menor e o maior valor considerando todas as opções de preço da academia.
+function faixaGeral(c) {
+  const opcoes = opcoesPreco(c);
+  if (!opcoes.length) return null;
+  const mins = opcoes.map(o => parseInt(priceMin(o.faixa) || "0", 10)).filter(Boolean);
+  if (!mins.length) return null;
+  const barata = opcoes.find(o => parseInt(priceMin(o.faixa) || "0", 10) === Math.min(...mins)) || opcoes[0];
+  return { opcao: barata, texto: precoTexto(barata.faixa) };
+}
+
+// Texto corrido sobre a academia, montado a partir do que ela cadastrou —
+// o equivalente ao "Sobre esta acomodação" das páginas de hotel.
+function descricaoAcademia(c) {
+  const frases = [];
+  const local = [c.bairro, c.cidade].filter(Boolean).join(", ");
+  const dist = distanceText(c.distanceKm);
+  if (local) frases.push(`${c.name} fica em ${local}${dist ? `, a ${dist} de onde você buscou` : ""}.`);
+
+  const total = totalQuadras(c);
+  if (total) frases.push(textoQuadras(c));
+
+  const mod = modalidadesTexto(c);
+  const opcoes = opcoesPreco(c);
+  if (opcoes.length) {
+    frases.push(`A academia cobra, por hora de quadra, ${listaTexto(opcoes.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
+  } else if (mod) {
+    frases.push(`A academia atende ${mod.toLowerCase()}, mas ainda não informou os valores.`);
+  }
+
+  const com = (c.amenities || []).map(a => AMENITY_MAP[a] && AMENITY_MAP[a].label.toLowerCase()).filter(Boolean);
+  if (com.length) frases.push(`Entre as comodidades ${plural(com.length, "está", "estão")} ${listaTexto(com.slice(0, 4))}.`);
+
+  if (c.appCount) {
+    frases.push(`Quem já jogou aqui deu nota ${c.appAvg.toFixed(1).replace(".", ",")} de 5, em ${c.appCount} ${plural(c.appCount, "avaliação feita", "avaliações feitas")} no GuiaTennis.`);
+  }
+  return frases.join(" ");
+}
+
+// "São 8 quadras: 3 de saibro cobertas, 2 de saibro descobertas..." — a mesma
+// frase serve para a descrição e para as perguntas frequentes.
+function textoQuadras(c) {
+  const total = totalQuadras(c);
+  if (!total) return "";
+  const combos = QUADRA_COMBOS.filter(q => c.quadras[q.key] > 0).map(q => ({
+    n: c.quadras[q.key],
+    piso: q.piso === "rapida" ? "piso rápido" : "saibro",
+    cob: q.cobertura === "coberta" ? "coberta" : "descoberta",
+    cobs: q.cobertura === "coberta" ? "cobertas" : "descobertas",
+  }));
+  if (combos.length === 1) {
+    const u = combos[0];
+    return total === 1
+      ? `É 1 quadra de ${u.piso}, ${u.cob}.`
+      : `São ${total} quadras, todas de ${u.piso} e ${u.cobs}.`;
+  }
+  return `São ${total} quadras no total: ${listaTexto(combos.map(u => `${u.n} de ${u.piso} ${u.n === 1 ? u.cob : u.cobs}`))}.`;
+}
+
+function listaTexto(itens) {
+  if (itens.length <= 1) return itens.join("");
+  return itens.slice(0, -1).join(", ") + " e " + itens[itens.length - 1];
+}
+
+// Os quatro destaques do topo, como as "Informações populares" dos hotéis.
+function htDestaques(c) {
+  const faixa = faixaGeral(c);
+  const total = totalQuadras(c);
+  const dist = distanceText(c.distanceKm);
+  const tem = k => (c.amenities || []).includes(k);
+  const candidatos = [
+    c.appCount && { ic: 'sparkle', cor: 'var(--gold)', t: `${c.appAvg.toFixed(1).replace(".", ",")} ${scoreWord(c.appAvg, c.appCount)}`, s: `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no app` },
+    faixa && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: `${faixa.opcao.nome.toLowerCase()}, por hora de quadra` },
+    dist && { ic: 'pin', cor: 'var(--green)', t: `${dist} de você`, s: [c.bairro, c.cidade].filter(Boolean).join(", ") || "a partir da sua busca" },
+    tem("estacionamento_gratuito") && { ic: 'parking', cor: 'var(--green)', t: "Estacionamento grátis", s: "No próprio local" },
+    tem("vestiario") && { ic: 'droplet', cor: 'var(--green)', t: "Vestiário", s: "Para trocar de roupa e tomar banho" },
+    tem("camera") && { ic: 'camera', cor: 'var(--green)', t: "Câmera nas quadras", s: "Grava os seus pontos" },
+    tem("lanchonete") && { ic: 'cup', cor: 'var(--green)', t: "Lanchonete", s: "Para comer algo depois do jogo" },
+    tem("wifi") && { ic: 'wifi', cor: 'var(--green)', t: "Wi-Fi", s: "Rede disponível no local" },
+    tem("loja") && { ic: 'bag', cor: 'var(--green)', t: "Loja de materiais", s: "Corda, bola e acessórios no local" },
+    tem("agua") && { ic: 'watercup', cor: 'var(--green)', t: "Água grátis", s: "Para se hidratar durante o jogo" },
+    tem("assinatura_fitness") && { ic: 'pass', cor: 'var(--green)', t: "App de assinatura fitness", s: "Aceita crédito de plano fitness" },
+    tem("estacionamento_pago") && { ic: 'parking', cor: 'var(--gold)', t: "Estacionamento pago", s: "No próprio local" },
+    total && { ic: 'ball', cor: 'var(--green)', t: `${total} ${plural(total, "quadra", "quadras")}`, s: "estrutura cadastrada pela academia" },
+  ].filter(Boolean).slice(0, 4);
+  if (!candidatos.length) return "";
+  return `<div class="ht-tiles">${candidatos.map(d => `
+    <div class="ht-tile">
+      <span class="ht-tile-ic">${icon(d.ic, 20, d.cor)}</span>
+      <p class="ht-tile-t">${esc(d.t)}</p>
+      <p class="ht-tile-s">${esc(d.s)}</p>
+    </div>`).join("")}</div>`;
+}
+
+// As opções de preço viram cartões parecidos com a lista de quartos de um hotel:
+// o que é de um lado, o valor do outro. O contato é um só, logo abaixo.
+function htOpcoes(c) {
+  const opcoes = opcoesPreco(c);
+  const marcas = selos(c);
+  if (!opcoes.length) {
+    return `
+      <div class="ht-room">
+        <div class="ht-room-info">
+          <p class="ht-room-name">Preço a consultar</p>
+          <p class="ht-room-desc">A academia ainda não informou os valores no GuiaTennis. Pergunte no WhatsApp.</p>
+        </div>
+      </div>
+      ${blocoContato(c)}`;
+  }
+  const cartoes = opcoes.map(o => `
+    <div class="ht-room">
+      <div class="ht-room-info">
+        <p class="ht-room-name">${esc(o.nome)}</p>
+        <p class="ht-room-desc">${esc(o.desc)}</p>
+        ${marcas.length ? `<div class="ht-room-perks">${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</div>` : ""}
+      </div>
+      <div class="ht-room-price">
+        <div class="ht-room-val">${esc(precoTexto(o.faixa))}</div>
+        <div class="ht-room-unit">por hora</div>
+      </div>
+    </div>`).join("");
+  return cartoes + blocoContato(c);
+}
+
+// Quadras e comodidades, na grade de ícones das "Comodidades da acomodação".
+function htComodidades(c) {
+  const total = totalQuadras(c);
+  const lista = (c.amenities || []).map(a => AMENITY_MAP[a]).filter(Boolean);
+  if (!total && !lista.length) return "";
+  return `
+    ${total ? `
+      <p class="field-label" style="margin-top:0">Quadras — ${total} no total</p>
+      <div class="ht-amen">
+        ${QUADRA_COMBOS.filter(q => c.quadras[q.key] > 0).map(q => `
+          <div class="ht-amen-i">${(PISO_OPTS.find(p => p.key === q.piso) || {}).icon || ""}
+            <span>${c.quadras[q.key]}x ${(PISO_OPTS.find(p => p.key === q.piso) || {}).label} ${((COBERTURA_OPTS.find(x => x.key === q.cobertura) || {}).label || "").toLowerCase()}</span>
+          </div>`).join("")}
+      </div>` : ""}
+    ${lista.length ? `
+      <p class="field-label">Comodidades</p>
+      <div class="ht-amen">
+        ${lista.map(a => `<div class="ht-amen-i">${a.icon}<span>${esc(a.label)}</span></div>`).join("")}
+      </div>` : ""}`;
+}
+
+// "Explore a região": mapinha, endereço, direções e as academias mais próximas.
+function htLocalizacao(c) {
+  const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
+  const perto = academiasPerto(c, 3);
+  return `
+    <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">A academia ainda não tem coordenada no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
+    <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
+    ${navLinks(c)}
+    ${perto.length ? `
+      <p class="field-label">Outras academias por perto</p>
+      <div class="ht-perto">
+        ${perto.map(p => `
+          <button type="button" class="ht-perto-i" data-open="${p.c.id}">
+            <span class="ht-perto-n">${esc(p.c.name)}</span>
+            <span class="ht-perto-d">${distanceText(p.km)} daqui${p.c.appCount ? ` · nota ${p.c.appAvg.toFixed(1).replace(".", ",")}` : ""}</span>
+          </button>`).join("")}
+      </div>` : ""}`;
+}
+
+function academiasPerto(c, quantas) {
+  if (typeof c.lat !== "number" || typeof c.lng !== "number") return [];
+  return state.allCourts
+    .filter(x => x.id !== c.id && typeof x.lat === "number" && typeof x.lng === "number")
+    .map(x => ({ c: decorate(x), km: haversineKm(c.lat, c.lng, x.lat, x.lng) }))
+    .sort((a, b) => a.km - b.km)
+    .slice(0, quantas);
+}
+
+// Painel de nota com a distribuição de estrelas, como o resumo dos hotéis.
 function ratingPanel(c) {
   const dist = ratingDistribution(c.id);
   const total = c.appCount || 0;
@@ -2751,31 +3175,33 @@ function ratingPanel(c) {
   `;
 }
 
+// As avaliações em cartões, com a nota de cada uma em destaque.
 function reviewsSection(c) {
   const reviews = getReviews(c.id);
   if (!reviews.length) return "";
-  const limite = state.reviewsExpanded ? reviews.length : 3;
+  const limite = state.reviewsExpanded ? reviews.length : 4;
   const visiveis = reviews.slice(0, limite);
   return `
-    <div class="sec">
-      <p class="sec-title">O que dizem os jogadores</p>
+    <p class="field-label">O que dizem os jogadores</p>
+    <div class="ht-revs">
       ${visiveis.map(r => `
-        <div class="review-item">
-          <div class="rev-avatar">${esc(initials(r.nome_autor))}</div>
-          <div style="min-width:0;flex:1">
-            <div class="rev-head">
-              <p class="rev-name">${esc(r.nome_autor || "Jogador do GuiaTennis")}</p>
-              <span class="rev-date">${formatReviewDate(r.ts)}</span>
-              ${isAdmin && r.contato_autor ? `<span class="rev-date">(${esc(r.contato_autor)})</span>` : ""}
-            </div>
-            <span class="stars" style="font-size:13px">${starsHtml(r.stars)}</span>
-            ${r.comment ? `<p class="rev-text">${esc(r.comment)}</p>` : ""}
+        <article class="ht-rev">
+          <div class="ht-rev-top">
+            <span class="ht-rev-badge">${r.stars}/5</span>
+            <span class="ht-rev-word">${scoreWord(r.stars, 1)}</span>
+            ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
           </div>
-          ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
-        </div>
-      `).join("")}
-      ${reviews.length > 3 ? `<button type="button" class="rev-more" id="reviews-more">${state.reviewsExpanded ? "Mostrar menos" : `Ver todas as ${reviews.length} avaliações`}</button>` : ""}
+          ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>` : `<p class="ht-rev-text vazio">Avaliou sem escrever comentário.</p>`}
+          <div class="ht-rev-foot">
+            <span class="rev-avatar">${esc(initials(r.nome_autor))}</span>
+            <div style="min-width:0">
+              <p class="rev-name">${esc(r.nome_autor || "Jogador do GuiaTennis")}</p>
+              <span class="rev-date">${formatReviewDate(r.ts)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span>
+            </div>
+          </div>
+        </article>`).join("")}
     </div>
+    ${reviews.length > 4 ? `<button type="button" class="rev-more" id="reviews-more">${state.reviewsExpanded ? "Mostrar menos" : `Ver todas as ${reviews.length} avaliações`}</button>` : ""}
   `;
 }
 
@@ -2827,46 +3253,143 @@ function blocoContato(c) {
   `;
 }
 
-function blocoOpcoes(c) {
+// O cartão fixo da direita, no lugar do "Ver disponibilidade" dos hotéis.
+function htCartaoContato(c) {
   const opcoes = opcoesPreco(c);
-  const marcas = selos(c);
+  return `
+    <div class="ht-book">
+      ${opcoes.length ? `
+        <p class="ht-book-lbl">Preço por hora de quadra</p>
+        ${opcoes.map(o => `
+          <div class="ht-book-row">
+            <span class="ht-book-opt">${esc(o.nome)}</span>
+            <span class="ht-book-val">${esc(precoTexto(o.faixa))}</span>
+          </div>`).join("")}
+      ` : `
+        <p class="ht-book-lbl">Preço</p>
+        <div class="ht-book-row"><span class="ht-book-opt">A consultar</span></div>
+      `}
+      <div class="ht-book-div"></div>
+      ${c.appCount ? `
+        <div class="ht-book-score">
+          <span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span>
+          <span><strong>${scoreWord(c.appAvg, c.appCount)}</strong><br><span class="ht-book-sub">${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no app</span></span>
+        </div>` : ""}
+      ${c.phone
+        ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer" style="margin-top:12px">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
+        : `<p class="ht-book-sub" style="margin-top:12px">A academia ainda não informou um telefone.</p>`}
+      <button type="button" class="cta-btn cta-secondary" data-nav="${c.id}" style="margin-top:8px">${icon('pin', 15, 'var(--green)')} Ver no mapa e direções</button>
+      <p class="ht-book-note">Você fala direto com a academia. O GuiaTennis não reserva horário nem cobra taxa.</p>
+    </div>`;
+}
 
-  if (!opcoes.length) {
-    return `
-      <div class="opt-card">
-        <p class="opt-card-name">Preço a consultar</p>
-        <p class="opt-card-desc">A academia ainda não informou os valores no GuiaTennis.</p>
-      </div>
-      ${blocoContato(c)}`;
+// "Bom saber": o equivalente ao "Você precisa saber" das páginas de hotel.
+function htBomSaber(c) {
+  const itens = [
+    { ic: 'clipboard', t: "Os valores são por hora de quadra", d: "Foram informados pela própria academia. Confirme na conversa antes de fechar horário." },
+    { ic: 'phone', t: "A reserva é feita direto com a academia", d: "O GuiaTennis mostra o contato; quem combina dia, horário e pagamento é você com ela." },
+    { ic: 'sparkle', t: "A nota é só das avaliações feitas aqui", d: "Não importamos nota de outros sites. Quem avalia é quem usou o GuiaTennis." },
+  ];
+  if (c.source === "seed") itens.push({ ic: 'globe', t: "Endereço e comodidades vieram de dados públicos", d: "Se algo estiver desatualizado, a academia pode corrigir pelo cadastro." });
+  if (c.source === "custom") itens.push({ ic: 'check', t: "Cadastro enviado pela comunidade e aprovado", d: "Confira os dados com a academia antes de fechar horário." });
+  return `<div class="ht-know">${itens.map(i => `
+    <div class="ht-know-i">
+      <span class="ht-know-ic">${icon(i.ic, 16, 'var(--green)')}</span>
+      <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${esc(i.d)}</span></span>
+    </div>`).join("")}</div>`;
+}
+
+// Perguntas frequentes montadas com o que a academia cadastrou — nada inventado.
+function perguntasAcademia(c) {
+  const faq = [];
+  const opcoes = opcoesPreco(c);
+  if (opcoes.length) {
+    faq.push({
+      q: `Quanto custa jogar em ${c.name}?`,
+      a: opcoes.map(o => `${o.nome}: ${precoTexto(o.faixa)} por hora`).join(". ") + ". Os valores foram informados pela academia e podem mudar conforme horário e professor — confirme no WhatsApp.",
+    });
   }
+  const mod = modalidadesTexto(c);
+  if (mod) {
+    faq.push({
+      q: `${c.name} dá aula de tênis ou só aluga a quadra?`,
+      a: mod === "Aula e locação" ? "As duas coisas: a academia tem aula com professor e também aluga a quadra por hora."
+        : mod === "Aula" ? "A academia trabalha com aula com professor. Para alugar a quadra avulsa, pergunte direto no WhatsApp."
+        : "A academia trabalha com locação da quadra por hora. Para aula com professor, pergunte direto no WhatsApp.",
+    });
+  }
+  const total = totalQuadras(c);
+  if (total) {
+    faq.push({ q: `Quantas quadras ${c.name} tem?`, a: textoQuadras(c) });
+  }
+  if ((c.cobertura || []).length) {
+    faq.push({
+      q: `${c.name} tem quadra coberta?`,
+      a: (c.cobertura || []).includes("coberta")
+        ? "Sim, tem quadra coberta — dá para jogar mesmo com chuva. Confirme a disponibilidade no dia."
+        : "As quadras cadastradas são descobertas, então o jogo depende do tempo.",
+    });
+  }
+  const temEstGratis = (c.amenities || []).includes("estacionamento_gratuito");
+  const temEstPago = (c.amenities || []).includes("estacionamento_pago");
+  if (temEstGratis || temEstPago || (c.amenities || []).length) {
+    faq.push({
+      q: `${c.name} tem estacionamento?`,
+      a: temEstGratis ? "Sim, estacionamento grátis no local."
+        : temEstPago ? "Sim, mas o estacionamento é pago."
+        : "A academia não informou estacionamento no cadastro. Vale perguntar no WhatsApp.",
+    });
+  }
+  if (c.endereco || c.bairro) {
+    faq.push({
+      q: `Onde fica ${c.name}?`,
+      a: `${c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ")}. Na seção "Explore a região" tem o mapa e o atalho para o Google Maps e o Waze.`,
+    });
+  }
+  const contatos = [c.phone ? "WhatsApp" : null, c.instagram ? `Instagram (${c.instagram})` : null, c.site ? "site próprio" : null].filter(Boolean);
+  if (contatos.length) {
+    faq.push({ q: `Como falar com ${c.name}?`, a: `Pelo ${listaTexto(contatos)}. O botão de WhatsApp desta página já abre a conversa com uma mensagem pronta.` });
+  }
+  if (c.appCount) {
+    faq.push({
+      q: `Qual é a nota de ${c.name} no GuiaTennis?`,
+      a: `A nota é ${c.appAvg.toFixed(1).replace(".", ",")} de 5 (${scoreWord(c.appAvg, c.appCount)}), em ${c.appCount} ${plural(c.appCount, "avaliação feita", "avaliações feitas")} por quem usou o GuiaTennis.`,
+    });
+  }
+  return faq;
+}
 
-  const lista = opcoes.map(o => `
-    <div class="opt-card">
-      <p class="opt-card-name">${esc(o.nome)}</p>
-      <p class="opt-card-desc">${esc(o.desc)}</p>
-      ${marcas.length ? `<div class="opt-card-perks">${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</div>` : ""}
-      <div class="opt-card-foot">
-        <div>
-          <div class="opt-card-price">${esc(precoTexto(o.faixa))}</div>
-          <div class="opt-card-unit">por hora</div>
-        </div>
-      </div>
-    </div>
-  `).join("");
+function htPerguntas(c) {
+  const faq = perguntasAcademia(c);
+  if (!faq.length) return "";
+  return `<div class="ht-faq">${faq.map((f, i) => `
+    <details data-faq="${i}" ${state.faqOpen[i] ? "open" : ""}>
+      <summary>${esc(f.q)}<span class="ht-faq-ic">${icon('chevron', 16, 'var(--green)')}</span></summary>
+      <p>${esc(f.a)}</p>
+    </details>`).join("")}</div>`;
+}
 
-  return lista + blocoContato(c);
+// A barra de seções que acompanha a rolagem, como o menu das páginas de hotel.
+function htSecoesDisponiveis(c) {
+  const secs = [{ id: "ht-visao", label: "Visão geral" }, { id: "ht-opcoes", label: "Preços" }];
+  if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Comodidades" });
+  secs.push({ id: "ht-local", label: "Localização" });
+  secs.push({ id: "avaliacoes", label: "Avaliações" });
+  if (perguntasAcademia(c).length) secs.push({ id: "ht-duvidas", label: "Dúvidas" });
+  return secs;
 }
 
 function renderCourtPage(c) {
-  const wa = (c.phone || "").replace(/\D/g, "");
   const dist = distanceText(c.distanceKm);
   const plano = isAdmin ? getPlano(c.id) : null;
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
+  const faixa = faixaGeral(c);
+  const secoes = htSecoesDisponiveis(c);
 
   const adminBlock = !isAdmin ? "" : `
     <div class="admin-pago-box" style="flex-direction:column;align-items:stretch;gap:8px;margin-right:0">
-      <span>Plano: <strong>${esc(PLANO_OPTS.find(o => o.key === plano)?.label || "Básico")}</strong> — ${esc(PLANO_OPTS.find(o => o.key === plano)?.desc || "")}</span>
+      <span>Plano: <strong>${esc((PLANO_OPTS.find(o => o.key === plano) || {}).label || "Básico")}</strong> — ${esc((PLANO_OPTS.find(o => o.key === plano) || {}).desc || "")}</span>
       <div class="chip-row">
         ${PLANO_OPTS.map(o => `<button type="button" class="chip small plano-btn ${plano === o.key ? "active" : ""}" data-court="${c.id}" data-plano="${o.key}">${o.label}</button>`).join("")}
       </div>
@@ -2901,107 +3424,128 @@ function renderCourtPage(c) {
         <button type="button" id="court-back">${icon('chevronLeft', 16, 'var(--green)')} Voltar</button>
         <span class="courtbar-name">${esc(c.name)}</span>
         <button type="button" class="hero-act ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}" style="box-shadow:none;background:${isComparing(c.id) ? 'var(--green)' : 'var(--bg-alt)'}">${isComparing(c.id) ? '✓' : '+'} Comparar</button>
+        <button type="button" id="share-btn" data-court="${c.id}" aria-label="Compartilhar" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${icon('share', 19, 'var(--green)')}</button>
         <button type="button" data-fav="${c.id}" aria-label="Favoritar" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${icon(isFavorite(c.id) ? 'heartFill' : 'heart', 20, isFavorite(c.id) ? 'var(--red)' : 'var(--muted)')}</button>
       </div>
 
       <div class="courtpage-inner">
-        ${heroGallery(c)}
+        ${htCaminho(c)}
+        ${htGaleria(c)}
 
-        <div class="court-head">
-          <p class="sheet-eyebrow">${esc(c.bairro)}${c.cidade ? ' · ' + esc(c.cidade) : ''}${dist ? ` · ${dist} de você` : ''}</p>
-          <h2 class="court-name display">${esc(c.name)}</h2>
-          ${estrelas ? `<div class="court-stars">${"★".repeat(estrelas)}</div>` : ""}
-          <button type="button" class="court-score" id="ir-avaliacoes">
-            <span class="sbadge ${c.appCount ? "" : "none"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
-            <span class="court-score-word">${scoreWord(c.appAvg, c.appCount)}</span>
-            ${c.appCount ? `<span class="court-score-count">${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}</span>` : ""}
-          </button>
-          ${c.endereco ? `
-            <p class="court-addr">
-              <span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span>
-              <span>${esc(c.endereco)} — <button type="button" data-nav="${c.id}">Ver no mapa</button></span>
-            </p>` : ""}
-        </div>
+        <div class="ht-body">
+          <div class="ht-main">
+            <header class="ht-head">
+              <h2 class="court-name display">${esc(c.name)}</h2>
+              ${estrelas ? `<div class="court-stars" aria-label="${estrelas} de 5 estrelas">${"★".repeat(estrelas)}${"☆".repeat(5 - estrelas)}</div>` : ""}
+              ${htEtiquetas(c)}
+              <button type="button" class="ht-score" id="ir-avaliacoes">
+                <span class="ht-score-num ${c.appCount ? "" : "empty"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
+                <span class="ht-score-txt">
+                  <strong>${scoreWord(c.appAvg, c.appCount)}</strong>
+                  <span>${c.appCount ? `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no app` : "seja o primeiro a avaliar"}</span>
+                </span>
+              </button>
+              <p class="court-addr">
+                <span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span>
+                <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}${dist ? ` · ${dist} de você` : ""} — <button type="button" data-nav="${c.id}">Ver no mapa</button></span>
+              </p>
+            </header>
 
-        <div class="sheet-content" style="padding-top:8px">
-          ${isAdmin ? adminBlock : ""}
+            <nav class="ht-tabs" id="ht-tabs" aria-label="Seções da academia">
+              ${secoes.map((s, i) => `<button type="button" data-goto="${s.id}" class="${i === 0 ? "on" : ""}">${s.label}</button>`).join("")}
+            </nav>
 
-          <div class="sec">
-            <p class="sec-title">Escolha o que você quer</p>
-            ${blocoOpcoes(c)}
-            <p class="opt-nota">Valores informados pela própria academia, por hora de quadra. Confirme na conversa antes de fechar horário.</p>
-          </div>
+            <div class="ht-sections">
+              ${isAdmin ? `<div class="ht-sec">${adminBlock}</div>` : ""}
 
-          ${(totalQuadras(c) || (c.amenities || []).length) ? `
-            <div class="sec">
-              <p class="sec-title">Sobre a academia</p>
-              ${totalQuadras(c) ? `
-                <p class="field-label" style="margin-top:0">Quadras (${totalQuadras(c)} no total)</p>
-                <div class="amenity-grid">
-                  ${QUADRA_COMBOS.filter(q => c.quadras[q.key] > 0).map(q => `
-                    <div class="amenity-item">${PISO_OPTS.find(p => p.key === q.piso)?.icon} ${c.quadras[q.key]}x ${PISO_OPTS.find(p => p.key === q.piso)?.label} ${COBERTURA_OPTS.find(x => x.key === q.cobertura)?.label.toLowerCase()}</div>
-                  `).join("")}
-                </div>` : ""}
-              ${(c.amenities || []).length ? `
-                <p class="field-label">Comodidades</p>
-                <div class="amenity-grid">
-                  ${c.amenities.map(a => AMENITY_MAP[a] ? `<div class="amenity-item">${AMENITY_MAP[a].icon} ${AMENITY_MAP[a].label}</div>` : "").join("")}
-                </div>` : ""}
-            </div>` : ""}
+              <section class="ht-sec" id="ht-visao">
+                <h3 class="sec-title">Sobre a academia</h3>
+                <p class="ht-about">${esc(descricaoAcademia(c))}</p>
+                ${htDestaques(c)}
+              </section>
 
-          <div class="sec" id="avaliacoes">
-            <p class="sec-title">Avaliações</p>
-            ${c.appCount ? ratingPanel(c) : `<p style="font-size:14px;color:var(--muted);margin:0">Essa academia ainda não tem avaliação no app. A sua pode ser a primeira.</p>`}
+              <section class="ht-sec" id="ht-opcoes">
+                <h3 class="sec-title">Escolha o que você quer</h3>
+                <p class="ht-sec-sub">Cada opção tem a faixa de preço que a academia informou. O contato é o mesmo para as duas.</p>
+                ${htOpcoes(c)}
+                <p class="opt-nota">Valores por hora de quadra, informados pela própria academia. Confirme na conversa antes de fechar horário.</p>
+              </section>
 
-            <div class="rate-box">
-              ${state.justRated ? `
-                <p class="rate-thanks">Obrigado por avaliar!</p>
-              ` : `
-                <p>Já jogou aqui? Avalie essa quadra</p>
-                <div class="star-picker" id="star-picker">
-                  ${[1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= state.pendingStar ? 'filled' : ''}">★</span>`).join("")}
+              ${(totalQuadras(c) || (c.amenities || []).length) ? `
+                <section class="ht-sec" id="ht-comodidades">
+                  <h3 class="sec-title">Comodidades da academia</h3>
+                  ${htComodidades(c)}
+                </section>` : ""}
+
+              <section class="ht-sec" id="ht-local">
+                <h3 class="sec-title">Explore a região</h3>
+                ${htLocalizacao(c)}
+              </section>
+
+              <section class="ht-sec" id="avaliacoes">
+                <h3 class="sec-title">Avaliações dos jogadores</h3>
+                ${c.appCount ? ratingPanel(c) : `<p class="ht-sec-sub">Essa academia ainda não tem avaliação no app. A sua pode ser a primeira.</p>`}
+
+                <div class="rate-box">
+                  ${state.justRated ? `
+                    <p class="rate-thanks">Obrigado por avaliar!</p>
+                  ` : `
+                    <p>Já jogou aqui? Avalie essa quadra</p>
+                    <div class="star-picker" id="star-picker">
+                      ${[1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= state.pendingStar ? 'filled' : ''}">★</span>`).join("")}
+                    </div>
+                    <textarea id="rate-comment" class="form-field" style="margin-top:12px;resize:none" rows="2" placeholder="Descreva sua experiência (opcional)">${esc(window.__rateComment || "")}</textarea>
+                    <label class="consent-row" style="text-align:left">
+                      <input type="checkbox" id="rate-consent" ${window.__rateConsent ? "checked" : ""} />
+                      <span>Minha avaliação é verídica e segue os <button type="button" class="inline-link" id="open-terms-from-rating">Termos de Uso</button>.</span>
+                    </label>
+                    <button class="btn-primary" id="rate-submit" style="width:100%;justify-content:center;margin-top:10px;padding:10px 0" ${(state.pendingStar && window.__rateConsent) ? "" : "disabled"}>Enviar avaliação</button>
+                  `}
                 </div>
-                <textarea id="rate-comment" class="form-field" style="margin-top:12px;resize:none" rows="2" placeholder="Descreva sua experiência (opcional)">${esc(window.__rateComment || "")}</textarea>
-                <label class="consent-row" style="text-align:left">
-                  <input type="checkbox" id="rate-consent" ${window.__rateConsent ? "checked" : ""} />
-                  <span>Minha avaliação é verídica e segue os <button type="button" class="inline-link" id="open-terms-from-rating">Termos de Uso</button>.</span>
-                </label>
-                <button class="btn-primary" id="rate-submit" style="width:100%;justify-content:center;margin-top:10px;padding:10px 0" ${(state.pendingStar && window.__rateConsent) ? "" : "disabled"}>Enviar avaliação</button>
-              `}
-            </div>
 
-            ${reviewsSection(c)}
-          </div>
+                ${reviewsSection(c)}
+              </section>
 
-          ${c.endereco ? `
-            <div class="sec">
-              <p class="sec-title">Onde fica</p>
-              <p style="font-size:14px;margin:2px 0 0">${esc(c.endereco)}</p>
-              ${navLinks(c)}
-            </div>` : ""}
+              <section class="ht-sec" id="ht-saber">
+                <h3 class="sec-title">Bom saber antes de ir</h3>
+                ${htBomSaber(c)}
+              </section>
 
-          <div class="sec">
-            <p class="sec-title">Contato</p>
-            <div class="cta-col" style="margin-top:0">
-              ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
-              ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
-              <button class="cta-btn cta-secondary" id="share-btn" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
+              ${perguntasAcademia(c).length ? `
+                <section class="ht-sec" id="ht-duvidas">
+                  <h3 class="sec-title">Perguntas frequentes sobre ${esc(c.name)}</h3>
+                  ${htPerguntas(c)}
+                </section>` : ""}
+
+              <section class="ht-sec" id="ht-contato">
+                <h3 class="sec-title">Contato</h3>
+                <div class="cta-col" style="margin-top:0">
+                  ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
+                  ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
+                  <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
+                </div>
+              </section>
             </div>
           </div>
 
-          ${c.source === "seed" ? `<p class="footnote">Dados públicos de endereço e comodidades — a nota mostrada é só das avaliações feitas aqui no app.</p>` : ""}
-          ${c.source === "custom" ? `<p class="footnote">Cadastrado pela comunidade e aprovado. Confira os dados antes de fechar horário.</p>` : ""}
+          <aside class="ht-aside">${htCartaoContato(c)}</aside>
         </div>
       </div>
 
       ${c.phone ? `
         <div class="court-cta ${(state.compareList.length && !state.showCompare) ? "up" : ""}">
+          ${faixa ? `
+            <div class="court-cta-price">
+              <span class="court-cta-val">${esc(faixa.texto)}</span>
+              <span class="court-cta-unit">${esc(faixa.opcao.nome.toLowerCase())}, por hora</span>
+            </div>` : ""}
           <a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>
           <button type="button" class="cta-btn cta-secondary" id="share-btn-2" data-court="${c.id}" aria-label="Compartilhar">${icon('share', 15, 'var(--green)')}</button>
         </div>` : ""}
     </div>
   `;
 }
+
 function renderRegisterSheet() {
   const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[] };
   window.__form = f;
@@ -3380,6 +3924,53 @@ function attachEvents() {
 
   const courtBack = document.getElementById("court-back");
   if (courtBack) courtBack.onclick = voltarDaFicha;
+
+  // ---- ficha: caminho, barra de seções e perguntas frequentes ----
+  document.querySelectorAll("[data-crumb]").forEach(el => {
+    el.onclick = () => {
+      if (el.dataset.crumb === "home") { goHome(); return; }
+      state.cep = el.dataset.termo || "";
+      goSearch();
+      doSearch();
+    };
+  });
+
+  const shareBtn3 = document.getElementById("share-btn-3");
+  if (shareBtn3) shareBtn3.onclick = () => shareCourt(shareBtn3.dataset.court);
+
+  document.querySelectorAll(".ht-faq details").forEach(el => {
+    el.ontoggle = () => { state.faqOpen[el.dataset.faq] = el.open; };
+  });
+
+  if (__htSpy) { window.removeEventListener("scroll", __htSpy); __htSpy = null; }
+  const htTabs = document.getElementById("ht-tabs");
+  if (htTabs) {
+    const botoes = Array.from(htTabs.querySelectorAll("button[data-goto]"));
+    botoes.forEach(b => {
+      b.onclick = () => {
+        const alvo = document.getElementById(b.dataset.goto);
+        if (!alvo) return;
+        const topo = alvo.getBoundingClientRect().top + window.scrollY - (htTabs.offsetHeight + 56);
+        window.scrollTo({ top: Math.max(0, topo), behavior: "smooth" });
+      };
+    });
+    __htSpy = () => {
+      if (!document.body.contains(htTabs)) {
+        window.removeEventListener("scroll", __htSpy);
+        __htSpy = null;
+        return;
+      }
+      const limite = htTabs.getBoundingClientRect().bottom + 30;
+      let atual = botoes[0];
+      botoes.forEach(b => {
+        const alvo = document.getElementById(b.dataset.goto);
+        if (alvo && alvo.getBoundingClientRect().top <= limite) atual = b;
+      });
+      botoes.forEach(b => b.classList.toggle("on", b === atual));
+    };
+    window.addEventListener("scroll", __htSpy, { passive: true });
+    __htSpy();
+  }
 
   document.querySelectorAll(".city-tab").forEach(el => {
     el.onclick = () => { state.homeCity = el.dataset.city; render(); };

@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- O site tem uma paleta só (marfim e verde). Sem isto, o modo escuro
+     automático do Android inverte as cores e desmonta o visual. -->
+<meta name="color-scheme" content="light" />
 <title>GuiaTennis</title>
 <link rel="icon" type="image/png" href="https://guiatennis.com.br/favicon-32.png">
 <link rel="apple-touch-icon" href="https://guiatennis.com.br/apple-touch-icon.png">
@@ -24,6 +27,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
+    color-scheme: light;
     --bg: #F7F4EC;
     --bg-alt: #EFEADD;
     --card: #FFFFFF;
@@ -251,7 +255,11 @@
 
   .sortwrap { position: relative; }
   .sort-backdrop { position: fixed; inset: 0; z-index: 35; }
-  .sort-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); width: 262px; overflow: hidden; }
+  /* No celular a barra quebra a linha e o botão fica na esquerda, então o
+     menu abre para a direita. No computador o botão fica na direita e o menu
+     abre para a esquerda. O ajuste fino fica por conta do JavaScript. */
+  .sort-menu { position: absolute; left: 0; right: auto; top: calc(100% + 6px); z-index: 40; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); width: 262px; max-width: calc(100vw - 32px); overflow: hidden; }
+  @media (min-width: 720px) { .sort-menu { left: auto; right: 0; } }
   .sort-opt { display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left; background: none; border: none; padding: 10px 13px; cursor: pointer; font-size: 13px; font-family: 'Playfair Display', serif; color: var(--text); font-weight: 600; }
   .sort-opt + .sort-opt { border-top: 1px solid var(--bg-alt); }
   .sort-opt:hover { background: var(--bg-alt); }
@@ -689,9 +697,11 @@
   .ht-poi-carregando { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 26px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); margin-top: 8px; text-align: center; }
   .ht-poi-carregando p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; max-width: 320px; }
   .ht-poi-motivo { font-size: 11px; color: var(--red); margin: 10px 0 0; word-break: break-word; }
-  .ht-poi-tentar { margin-top: 10px; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 9px 16px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--green); cursor: pointer; }
+  .ht-poi-tentar { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 9px 16px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--green); text-decoration: none; cursor: pointer; }
 
   /* bola de tênis girando — serve para qualquer espera do site */
+  .tela-carregando { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 70vh; padding: 40px 20px; text-align: center; }
+  .tela-carregando p { margin: 0; font-size: 14px; color: var(--muted); }
   .bola { display: inline-flex; flex-shrink: 0; animation: bolaGira 0.9s linear infinite; }
   @keyframes bolaGira { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .bola { animation-duration: 3.5s; } }
@@ -900,6 +910,36 @@ const PLANO_OPTS = [
   { key: "premium", label: "Premium", desc: "Plano pago, nível mais alto" },
 ];
 
+// Política de cancelamento e reposição. Fica na coluna "politica" (jsonb) da
+// tabela academias, no formato { cancelamentoHoras, reposicao, obs }.
+const CANCEL_OPTS = [
+  { horas: 2, label: "2 horas antes" },
+  { horas: 6, label: "6 horas antes" },
+  { horas: 12, label: "12 horas antes" },
+  { horas: 24, label: "24 horas antes" },
+  { horas: 48, label: "48 horas antes" },
+];
+
+const REPOSICAO_OPTS = [
+  { key: "sim", label: "Tem reposição", desc: "A academia informou que a aula desmarcada dentro do prazo pode ser remarcada." },
+  { key: "nao", label: "Sem reposição", desc: "A academia informou que a aula desmarcada não é remarcada." },
+  { key: "consultar", label: "Depende do caso", desc: "A academia avalia caso a caso — pergunte no WhatsApp." },
+];
+
+function politicaDe(c) {
+  const pol = (c && c.politica) || {};
+  return {
+    cancelamentoHoras: numeroOuNulo(pol.cancelamentoHoras),
+    reposicao: pol.reposicao || "",
+    obs: (pol.obs || "").trim(),
+  };
+}
+
+function temPolitica(c) {
+  const pol = politicaDe(c);
+  return !!(pol.cancelamentoHoras || pol.reposicao || pol.obs);
+}
+
 const PISO_OPTS = [
   { key: "saibro", label: "Saibro", icon: icon('dot', 14, '#B5651D') },
   { key: "rapida", label: "Rápida", icon: icon('bolt', 14, 'var(--gold)') },
@@ -969,6 +1009,15 @@ function ensureVisitorThen(action) {
   }
 }
 
+// O Supabase devolve colunas "numeric" como texto. Sem converter, todo teste
+// de `typeof lat === "number"` falha e o mapa, a distância e o "o que tem por
+// perto" somem sem dizer por quê.
+function numeroOuNulo(v) {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return isFinite(n) ? n : null;
+}
+
 function mapRow(row) {
   return {
     id: row.id,
@@ -979,8 +1028,8 @@ function mapRow(row) {
     bairro: row.bairro,
     cidade: row.cidade,
     endereco: row.endereco,
-    lat: row.lat,
-    lng: row.lng,
+    lat: numeroOuNulo(row.lat),
+    lng: numeroOuNulo(row.lng),
     phone: row.phone,
     instagram: row.instagram,
     site: row.site,
@@ -997,6 +1046,7 @@ function mapRow(row) {
     status: row.status,
     pago: !!row.pago,
     plano: row.plano || "basico",
+    politica: row.politica || {},
     pausada: !!row.pausada,
     pausadaAte: row.pausada_ate,
     nomeSolicitante: row.nome_solicitante,
@@ -1015,6 +1065,7 @@ function toRow(f) {
     amenities: f.amenities || [], modalidades: f.modalidades || [],
     pisos: f.pisos || [], cobertura: f.cobertura || [],
     quadras: f.quadras || {}, photos: f.photos || [],
+    politica: f.politica || {},
   };
 }
 
@@ -3158,8 +3209,26 @@ function htPerto(c) {
   return `<div id="ht-poi-slot">${htPertoConteudo(c)}</div>`;
 }
 
+// Linha de diagnóstico: só o admin vê, e serve para descobrir por que o
+// bloco não apareceu sem precisar abrir o console do navegador.
+function diagnosticoPerto(c, dados) {
+  if (!isAdmin) return "";
+  const partes = [];
+  partes.push((typeof c.lat === "number" && typeof c.lng === "number")
+    ? `coordenada ${c.lat}, ${c.lng}`
+    : `SEM coordenada (lat=${c.lat}, lng=${c.lng}) — edite e salve o endereço para gerar`);
+  partes.push(`situação: ${dados ? dados.status : "ainda não começou"}`);
+  if (dados && dados.status === "ok") partes.push(`${dados.itens.length} lugares achados`);
+  if (dados && dados.motivo) partes.push(`motivo: ${dados.motivo}`);
+  return `<p class="ht-poi-motivo">Só você vê — ${esc(partes.join(" · "))}</p>`;
+}
+
 function htPertoConteudo(c) {
-  if (typeof c.lat !== "number" || typeof c.lng !== "number") return "";
+  if (typeof c.lat !== "number" || typeof c.lng !== "number") {
+    return isAdmin
+      ? `<p class="field-label">O que tem por perto</p>${diagnosticoPerto(c, null)}`
+      : "";
+  }
   const dados = pertoDe(c);
 
   if (!dados || dados.status === "carregando") {
@@ -3168,7 +3237,8 @@ function htPertoConteudo(c) {
       <div class="ht-poi-carregando">
         ${bolaGirando(42)}
         <p>Procurando restaurantes, padarias, academias de musculação e pontos turísticos em volta...</p>
-      </div>`;
+      </div>
+      ${diagnosticoPerto(c, dados)}`;
   }
 
   if (dados.status === "erro") {
@@ -3181,8 +3251,8 @@ function htPertoConteudo(c) {
           ? "Este arquivo está aberto direto do computador, e o navegador bloqueia essa consulta fora de um site. No ar, em guiatennis.com.br, a lista aparece normalmente."
           : "Não consegui consultar o mapa aberto do OpenStreetMap agora para listar o que tem em volta."}</p>
         ${local ? "" : `<button type="button" class="ht-poi-tentar" data-poi-retry="${c.id}">Tentar de novo</button>`}
-        ${isAdmin && dados.motivo ? `<p class="ht-poi-motivo">Motivo (só você vê): ${esc(dados.motivo)}</p>` : ""}
-      </div>`;
+      </div>
+      ${diagnosticoPerto(c, dados)}`;
   }
 
   const grupos = POI_CATS
@@ -3192,7 +3262,8 @@ function htPertoConteudo(c) {
   if (!grupos.length) {
     return `
       <p class="field-label">O que tem por perto</p>
-      <p class="ht-poi-nota">Não achei restaurante, padaria, academia de musculação nem ponto turístico cadastrado no mapa aberto a até 1,5 km daqui.</p>`;
+      <p class="ht-poi-nota">Não achei restaurante, padaria, academia de musculação nem ponto turístico cadastrado no mapa aberto a até 1,5 km daqui.</p>
+      ${diagnosticoPerto(c, dados)}`;
   }
 
   return `
@@ -3208,7 +3279,8 @@ function htPertoConteudo(c) {
             </div>`).join("")}
         </div>`).join("")}
     </div>
-    <p class="ht-poi-nota">Lugares num raio de 1,5 km, tirados do OpenStreetMap. Distância em linha reta e tempo estimado — o caminho real pode ser maior.</p>`;
+    <p class="ht-poi-nota">Lugares num raio de 1,5 km, tirados do OpenStreetMap. Distância em linha reta e tempo estimado — o caminho real pode ser maior.</p>
+    ${diagnosticoPerto(c, dados)}`;
 }
 
 // ---------- ficha da academia no formato das páginas de hotel ----------
@@ -3585,6 +3657,45 @@ function htCartaoContato(c) {
     </div>`;
 }
 
+// Cancelamento e reposição, no lugar das "Políticas" das páginas de hotel.
+function htPolitica(c) {
+  const pol = politicaDe(c);
+
+  if (!temPolitica(c)) {
+    return `
+      <div class="ht-poi-carregando">
+        ${icon('clipboard', 28, 'var(--muted-dark)')}
+        <p>Essa academia ainda não informou como funcionam os cancelamentos e as reposições. Vale perguntar antes de marcar o primeiro horário.</p>
+        ${c.phone ? `<a class="ht-poi-tentar" data-track="whatsapp" data-court="${c.id}" href="${waLink(c, "a política de cancelamento e reposição")}" target="_blank" rel="noreferrer">Perguntar no WhatsApp</a>` : ""}
+        ${isAdmin ? `<button type="button" class="ht-poi-tentar editar-academia" data-court="${c.id}">Preencher agora</button>` : ""}
+      </div>`;
+  }
+
+  const itens = [];
+  if (pol.cancelamentoHoras) {
+    itens.push({
+      ic: 'clipboard',
+      t: `Avise com ${pol.cancelamentoHoras} ${plural(pol.cancelamentoHoras, "hora", "horas")} de antecedência`,
+      d: "É o prazo que a academia pede para desmarcar um horário.",
+    });
+  } else {
+    itens.push({ ic: 'clipboard', t: "Prazo de cancelamento não informado", d: "Pergunte no WhatsApp com quanta antecedência dá para desmarcar." });
+  }
+  const rep = REPOSICAO_OPTS.find(o => o.key === pol.reposicao);
+  itens.push(rep
+    ? { ic: rep.key === "nao" ? 'warning' : 'check', t: rep.label, d: rep.desc }
+    : { ic: 'bubble', t: "Reposição não informada", d: "Pergunte se a aula desmarcada pode ser remarcada." });
+
+  return `
+    <div class="ht-know">${itens.map(i => `
+      <div class="ht-know-i">
+        <span class="ht-know-ic">${icon(i.ic, 16, i.ic === 'warning' ? 'var(--red)' : 'var(--green)')}</span>
+        <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${esc(i.d)}</span></span>
+      </div>`).join("")}</div>
+    ${pol.obs ? `<p class="ht-about" style="margin-top:12px">${esc(pol.obs)}</p>` : ""}
+    <p class="ht-poi-nota">Política informada pela própria academia. Confirme na conversa antes de marcar.</p>`;
+}
+
 // "Bom saber": o equivalente ao "Você precisa saber" das páginas de hotel.
 function htBomSaber(c) {
   const itens = [
@@ -3652,6 +3763,16 @@ function perguntasAcademia(c) {
   if (contatos.length) {
     faq.push({ q: `Como falar com ${c.name}?`, a: `Pelo ${listaTexto(contatos)}. O botão de WhatsApp desta página já abre a conversa com uma mensagem pronta.` });
   }
+  if (temPolitica(c)) {
+    const pol = politicaDe(c);
+    const partes = [];
+    if (pol.cancelamentoHoras) partes.push(`A academia pede que você avise com ${pol.cancelamentoHoras} ${plural(pol.cancelamentoHoras, "hora", "horas")} de antecedência para desmarcar um horário.`);
+    const rep = REPOSICAO_OPTS.find(o => o.key === pol.reposicao);
+    if (rep) partes.push(rep.desc);
+    if (pol.obs) partes.push(pol.obs);
+    faq.push({ q: `Como funciona o cancelamento e a reposição em ${c.name}?`, a: partes.join(" ") });
+  }
+
   if (c.appCount) {
     faq.push({
       q: `Qual é a nota de ${c.name} no GuiaTennis?`,
@@ -3673,7 +3794,11 @@ function htPerguntas(c) {
 
 // A barra de seções que acompanha a rolagem, como o menu das páginas de hotel.
 function htSecoesDisponiveis(c) {
-  const secs = [{ id: "ht-visao", label: "Visão geral" }, { id: "ht-opcoes", label: "Preços" }];
+  const secs = [
+    { id: "ht-visao", label: "Visão geral" },
+    { id: "ht-opcoes", label: "Preços" },
+    { id: "ht-politica", label: "Cancelamento" },
+  ];
   if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Comodidades" });
   secs.push({ id: "ht-local", label: "Localização" });
   secs.push({ id: "avaliacoes", label: "Avaliações" });
@@ -3715,7 +3840,7 @@ function renderCourtPage(c) {
         `}
       </div>
     ` : ""}
-    <button type="button" class="cta-btn cta-secondary" id="edit-court-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('edit', 15, 'var(--green)')} Editar academia</button>
+    <button type="button" class="cta-btn cta-secondary editar-academia" data-court="${c.id}" style="margin-bottom:8px">${icon('edit', 15, 'var(--green)')} Editar academia</button>
     ${c.status !== "pending" ? `<button type="button" class="cta-btn cta-danger" id="delete-court-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('warning', 15, 'var(--red)')} Excluir academia</button>` : ""}
     ${c.nomeSolicitante ? `<p class="footnote" style="margin-bottom:12px">Cadastro enviado por: ${esc(c.nomeSolicitante)} · ${esc(c.contatoSolicitante || "")}</p>` : ""}
   `;
@@ -3769,6 +3894,11 @@ function renderCourtPage(c) {
               <section class="ht-sec" id="ht-opcoes">
                 <h3 class="sec-title">Escolha o que você quer</h3>
                 ${htOpcoes(c)}
+              </section>
+
+              <section class="ht-sec" id="ht-politica">
+                <h3 class="sec-title">Cancelamento e reposição</h3>
+                ${htPolitica(c)}
               </section>
 
               ${(totalQuadras(c) || (c.amenities || []).length) ? `
@@ -3847,8 +3977,15 @@ function renderCourtPage(c) {
   `;
 }
 
+// A política vive em f.politica; esta função garante o formato mesmo quando
+// o formulário ainda não tem nada preenchido.
+function politicaForm(f) {
+  if (!f.politica) f.politica = { cancelamentoHoras: null, reposicao: "", obs: "" };
+  return f.politica;
+}
+
 function renderRegisterSheet() {
-  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[] };
+  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ cancelamentoHoras:null, reposicao:"", obs:"" } };
   window.__form = f;
   const isEditing = !!f.__editingId;
   if (state.registerStatus === "done") {
@@ -3939,6 +4076,19 @@ function renderRegisterSheet() {
           </div>
         ` : ""}
         ${!f.modalidades.length ? `<p class="footnote">Selecione a modalidade acima para informar o preço.</p>` : ""}
+
+        <p class="field-label">Cancelamento — prazo para desmarcar</p>
+        <div class="chip-row">
+          ${CANCEL_OPTS.map(o => `<button type="button" class="chip small reg-cancel ${politicaForm(f).cancelamentoHoras === o.horas ? "active" : ""}" data-cancel="${o.horas}">${o.label}</button>`).join("")}
+        </div>
+
+        <p class="field-label">Reposição da aula desmarcada</p>
+        <div class="chip-row">
+          ${REPOSICAO_OPTS.map(o => `<button type="button" class="chip small reg-reposicao ${politicaForm(f).reposicao === o.key ? "active" : ""}" data-reposicao="${o.key}">${o.label}</button>`).join("")}
+        </div>
+        <textarea class="form-field" id="f-politica-obs" rows="2" style="resize:none" placeholder="Detalhes do cancelamento e da reposição (opcional)">${esc(politicaForm(f).obs)}</textarea>
+        <p class="footnote" style="margin-top:6px">Toque de novo na opção escolhida para desmarcar.</p>
+
         <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
         <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
         <input class="form-field" id="f-site" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" />
@@ -4078,7 +4228,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
-<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados. O GuiaTennis não garante que preços, disponibilidade ou comodidades estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário.</p>
+<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento, e remover um cadastro a pedido do responsável pelo estabelecimento.</p>
 <p class="field-label" style="margin-top:16px">4. Identificação para avaliar ou cadastrar</p>
@@ -4203,6 +4353,19 @@ function renderAdminPanel(pending) {
 
 function attachEvents() {
   // ---- ordenação estilo Trivago (botão + menu suspenso) ----
+  // Garante que o menu de ordenação caiba na tela, seja qual for a largura.
+  const sortMenu = document.getElementById("sort-menu");
+  if (sortMenu) {
+    sortMenu.style.transform = "";
+    const caixa = sortMenu.getBoundingClientRect();
+    const folga = 12;
+    if (caixa.left < folga) {
+      sortMenu.style.transform = `translateX(${Math.ceil(folga - caixa.left)}px)`;
+    } else if (caixa.right > window.innerWidth - folga) {
+      sortMenu.style.transform = `translateX(-${Math.ceil(caixa.right - window.innerWidth + folga)}px)`;
+    }
+  }
+
   const sortToggle = document.getElementById("sort-toggle");
   if (sortToggle) sortToggle.onclick = () => { state.showSort = !state.showSort; render(); };
   const sortBackdrop = document.getElementById("sort-backdrop");
@@ -4288,7 +4451,7 @@ function attachEvents() {
   });
 
   const abrirCadastro = () => {
-    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[] };
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ cancelamentoHoras:null, reposicao:"", obs:"" } };
     state.showRegister = true;
     state.registerStatus = "idle";
     render();
@@ -4591,9 +4754,9 @@ function attachEvents() {
     await refreshAfterPauseChange();
   };
 
-  const editCourtBtn = document.getElementById("edit-court-btn");
-  if (editCourtBtn) editCourtBtn.onclick = () => {
-    const c = state.allCourts.find(x => x.id === editCourtBtn.dataset.court) || state.pending.find(x => x.id === editCourtBtn.dataset.court);
+  document.querySelectorAll(".editar-academia").forEach(botao => {
+   botao.onclick = () => {
+    const c = state.allCourts.find(x => x.id === botao.dataset.court) || state.pending.find(x => x.id === botao.dataset.court);
     if (!c) return;
     const quadras = {};
     QUADRA_COMBOS.forEach(q => { quadras[q.key] = (c.quadras && c.quadras[q.key]) || 0; });
@@ -4614,11 +4777,13 @@ function attachEvents() {
       instagram: c.instagram || "",
       site: c.site || "",
       photos: [...(c.photos || (c.photoUrl ? [c.photoUrl] : []))],
+      politica: { ...politicaDe(c) },
     };
     state.showRegister = true;
     state.registerStatus = "idle";
     render();
-  };
+   };
+  });
 
   const deleteCourtBtn = document.getElementById("delete-court-btn");
   if (deleteCourtBtn) deleteCourtBtn.onclick = async () => {
@@ -4787,7 +4952,7 @@ function attachEvents() {
   });
 
   const fab = document.getElementById("fab-add");
-  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[] }; state.showRegister = true; state.registerStatus = "idle"; render(); };
+  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ cancelamentoHoras:null, reposicao:"", obs:"" } }; state.showRegister = true; state.registerStatus = "idle"; render(); };
 
   const fabAdmin = document.getElementById("fab-admin");
   if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
@@ -4874,6 +5039,24 @@ function attachEvents() {
   bindFormField("f-name", "name"); bindFormField("f-address", "address"); bindFormField("f-bairro", "bairro");
   bindFormField("f-cidade", "cidade"); bindFormField("f-numero", "numero"); bindFormField("f-complemento", "complemento");
   bindPriceField("f-price-aula", "priceAula"); bindPriceField("f-price-locacao", "priceLocacao");
+  document.querySelectorAll(".reg-cancel").forEach(el => {
+    el.onclick = () => {
+      const pol = politicaForm(window.__form);
+      const horas = parseInt(el.dataset.cancel, 10);
+      pol.cancelamentoHoras = pol.cancelamentoHoras === horas ? null : horas;
+      render();
+    };
+  });
+  document.querySelectorAll(".reg-reposicao").forEach(el => {
+    el.onclick = () => {
+      const pol = politicaForm(window.__form);
+      pol.reposicao = pol.reposicao === el.dataset.reposicao ? "" : el.dataset.reposicao;
+      render();
+    };
+  });
+  const politicaObs = document.getElementById("f-politica-obs");
+  if (politicaObs) politicaObs.oninput = (e) => { politicaForm(window.__form).obs = e.target.value; };
+
   bindFormField("f-phone", "phone"); bindFormField("f-instagram", "instagram");
   bindFormField("f-site", "site");
 
@@ -5133,6 +5316,22 @@ async function doSearch() {
   render();
 }
 
+// Enquanto a coluna "politica" não existir na tabela, salva sem ela em vez de
+// falhar — e avisa o admin com o SQL que resolve. Mesmo caminho do "plano".
+function faltaColunaPolitica(erro) {
+  return ((erro && erro.message) || "").toLowerCase().includes("politica");
+}
+
+function avisarSqlPolitica() {
+  if (!isAdmin || window.__avisouPolitica) return;
+  window.__avisouPolitica = true;
+  alert(
+    "Salvei a academia, mas a política de cancelamento ficou de fora.\n\n" +
+    "A tabela ainda não tem a coluna. Rode isto no SQL Editor do Supabase:\n\n" +
+    "alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;"
+  );
+}
+
 async function doRegisterSubmit() {
   const f = window.__form;
   const quadras = f.quadras || {};
@@ -5155,7 +5354,13 @@ async function doRegisterSubmit() {
     const payload = toRow({ ...f, pisos, cobertura });
     if (endereco) payload.endereco = endereco; else delete payload.endereco;
     try {
-      const { error } = await sb.from('academias').update(payload).eq('id', f.__editingId);
+      let { error } = await sb.from('academias').update(payload).eq('id', f.__editingId);
+      if (error && faltaColunaPolitica(error)) {
+        const semPolitica = { ...payload };
+        delete semPolitica.politica;
+        ({ error } = await sb.from('academias').update(semPolitica).eq('id', f.__editingId));
+        if (!error) avisarSqlPolitica();
+      }
       if (error) throw error;
       await loadEverything();
       if (state.selected && state.selected.id === f.__editingId) {
@@ -5200,9 +5405,18 @@ async function doRegisterSubmit() {
       nome_solicitante: isAdmin ? null : visitor.nome,
       contato_solicitante: isAdmin ? null : visitor.contato,
     };
-    let insertQuery = sb.from('academias').insert(payload);
-    if (isAdmin) insertQuery = insertQuery.select().single();
-    const { data, error } = await insertQuery;
+    const enviar = (corpo) => {
+      let q = sb.from('academias').insert(corpo);
+      if (isAdmin) q = q.select().single();
+      return q;
+    };
+    let { data, error } = await enviar(payload);
+    if (error && faltaColunaPolitica(error)) {
+      const semPolitica = { ...payload };
+      delete semPolitica.politica;
+      ({ data, error } = await enviar(semPolitica));
+      if (!error) avisarSqlPolitica();
+    }
     if (error) throw error;
     if (isAdmin) {
       const { error: pubError } = await sb.from('academias').update({ status: 'published' }).eq('id', data.id);
@@ -5250,7 +5464,11 @@ async function init() {
 
 function app_showLoading() {
   const app = document.getElementById("app");
-  app.innerHTML = `<div style="padding:60px 20px;text-align:center;color:var(--muted)">Carregando...</div>`;
+  app.innerHTML = `
+    <div class="tela-carregando">
+      ${bolaGirando(56)}
+      <p>Carregando as quadras...</p>
+    </div>`;
 }
 
 init();

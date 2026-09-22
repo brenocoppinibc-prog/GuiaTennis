@@ -735,6 +735,20 @@
   .ht-rev-foot .rev-avatar { width: 32px; height: 32px; font-size: 13px; }
 
   /* "bom saber", no lugar do "você precisa saber" dos hotéis */
+  /* cancelamento e reposição */
+  .pol-faixa { display: flex; align-items: center; gap: 14px; background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 14px; padding: 15px 17px; font-size: 15px; line-height: 1.45; }
+  .pol-faixa.sem { background: var(--bg-alt); border-color: var(--border); }
+  .pol-faixa-h { flex-shrink: 0; font-size: 32px; font-weight: 800; color: var(--green); line-height: 1; }
+  .pol-faixa-ic { flex-shrink: 0; display: flex; }
+  .pol-lados { display: grid; gap: 12px; margin-top: 12px; }
+  @media (min-width: 560px) { .pol-lados { grid-template-columns: 1fr 1fr; } }
+  .pol-lado { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 15px; }
+  .pol-lado.ok { border-color: var(--green-line); }
+  .pol-lado-ic { display: flex; margin-bottom: 9px; }
+  .pol-lado-t { font-size: 15px; font-weight: 700; margin: 0; }
+  .pol-lado-d { font-size: 14px; color: var(--muted); margin: 5px 0 0; line-height: 1.5; }
+  .pol-texto { font-size: 15px; line-height: 1.55; border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 15px 17px; }
+
   .ht-know { display: grid; gap: 10px; margin-top: 6px; }
   @media (min-width: 720px) { .ht-know { grid-template-columns: 1fr 1fr; } }
   .ht-know-i { display: flex; gap: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 12px 13px; font-size: 14px; line-height: 1.45; }
@@ -911,33 +925,35 @@ const PLANO_OPTS = [
 ];
 
 // Política de cancelamento e reposição. Fica na coluna "politica" (jsonb) da
-// tabela academias, no formato { cancelamentoHoras, reposicao, obs }.
-const CANCEL_OPTS = [
-  { horas: 2, label: "2 horas antes" },
-  { horas: 6, label: "6 horas antes" },
-  { horas: 12, label: "12 horas antes" },
-  { horas: 24, label: "24 horas antes" },
-  { horas: 48, label: "48 horas antes" },
-];
-
+// tabela academias, no formato { reposicao, foraDoPrazo }.
+// Uma escolha só: com quantas horas de antecedência a academia gera a
+// reposição da aula desmarcada. "nao" é para quem não faz reposição.
 const REPOSICAO_OPTS = [
-  { key: "sim", label: "Tem reposição", desc: "A academia informou que a aula desmarcada dentro do prazo pode ser remarcada." },
-  { key: "nao", label: "Sem reposição", desc: "A academia informou que a aula desmarcada não é remarcada." },
-  { key: "consultar", label: "Depende do caso", desc: "A academia avalia caso a caso — pergunte no WhatsApp." },
+  { key: "12", label: "12h", horas: 12 },
+  { key: "24", label: "24h", horas: 24 },
+  { key: "48", label: "48h", horas: 48 },
+  { key: "nao", label: "Não tem reposição", horas: null },
 ];
 
 function politicaDe(c) {
   const pol = (c && c.politica) || {};
+  let reposicao = String(pol.reposicao || "");
+  // Formatos antigos: "sim"/"consultar" não diziam o prazo, e o prazo vinha
+  // em outro campo. Aproveita o que dá e descarta o resto.
+  if (!REPOSICAO_OPTS.some(o => o.key === reposicao)) {
+    const antigo = numeroOuNulo(pol.cancelamentoHoras);
+    reposicao = (antigo && REPOSICAO_OPTS.some(o => o.horas === antigo)) ? String(antigo) : "";
+  }
   return {
-    cancelamentoHoras: numeroOuNulo(pol.cancelamentoHoras),
-    reposicao: pol.reposicao || "",
-    obs: (pol.obs || "").trim(),
+    reposicao,
+    horas: (REPOSICAO_OPTS.find(o => o.key === reposicao) || {}).horas || null,
+    foraDoPrazo: (pol.foraDoPrazo || pol.obs || "").trim(),
   };
 }
 
 function temPolitica(c) {
   const pol = politicaDe(c);
-  return !!(pol.cancelamentoHoras || pol.reposicao || pol.obs);
+  return !!(pol.reposicao || pol.foraDoPrazo);
 }
 
 const PISO_OPTS = [
@@ -3697,29 +3713,50 @@ function htPolitica(c) {
       </div>`;
   }
 
-  const itens = [];
-  if (pol.cancelamentoHoras) {
-    itens.push({
-      ic: 'clipboard',
-      t: `Avise com ${pol.cancelamentoHoras} ${plural(pol.cancelamentoHoras, "hora", "horas")} de antecedência`,
-      d: "É o prazo que a academia pede para desmarcar um horário.",
-    });
-  } else {
-    itens.push({ ic: 'clipboard', t: "Prazo de cancelamento não informado", d: "Pergunte no WhatsApp com quanta antecedência dá para desmarcar." });
+  // Sem reposição: uma faixa só, direta.
+  if (pol.reposicao === "nao") {
+    return `
+      <div class="pol-faixa sem">
+        <span class="pol-faixa-ic">${icon('warning', 22, 'var(--gold)')}</span>
+        <span>Essa academia <strong>não faz reposição</strong> de aula desmarcada.</span>
+      </div>
+      ${pol.foraDoPrazo ? `<div class="pol-texto">${esc(pol.foraDoPrazo)}</div>` : ""}
+      ${politicaRodape(c)}`;
   }
-  const rep = REPOSICAO_OPTS.find(o => o.key === pol.reposicao);
-  itens.push(rep
-    ? { ic: rep.key === "nao" ? 'warning' : 'check', t: rep.label, d: rep.desc }
-    : { ic: 'bubble', t: "Reposição não informada", d: "Pergunte se a aula desmarcada pode ser remarcada." });
 
+  // Só o texto livre, quando a academia não escolheu prazo nenhum.
+  if (!pol.horas) {
+    return `
+      <div class="pol-texto">${esc(pol.foraDoPrazo)}</div>
+      ${politicaRodape(c)}`;
+  }
+
+  const h = pol.horas;
   return `
-    <div class="ht-know">${itens.map(i => `
-      <div class="ht-know-i">
-        <span class="ht-know-ic">${icon(i.ic, 16, i.ic === 'warning' ? 'var(--red)' : 'var(--green)')}</span>
-        <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${esc(i.d)}</span></span>
-      </div>`).join("")}</div>
-    ${pol.obs ? `<p class="ht-about" style="margin-top:12px">${esc(pol.obs)}</p>` : ""}
-    <p class="ht-poi-nota">Política informada pela própria academia. Confirme na conversa antes de marcar.</p>`;
+    <div class="pol-faixa">
+      <span class="pol-faixa-h">${h}h</span>
+      <span>é a antecedência mínima para desmarcar e <strong>ter direito à reposição</strong> da aula.</span>
+    </div>
+
+    <div class="pol-lados">
+      <div class="pol-lado ok">
+        <span class="pol-lado-ic">${icon('check', 20, 'var(--green)')}</span>
+        <p class="pol-lado-t">Avisou com ${h}h ou mais</p>
+        <p class="pol-lado-d">A aula desmarcada gera reposição.</p>
+      </div>
+      <div class="pol-lado atencao">
+        <span class="pol-lado-ic">${icon('warning', 20, 'var(--gold)')}</span>
+        <p class="pol-lado-t">Avisou com menos de ${h}h</p>
+        <p class="pol-lado-d">${pol.foraDoPrazo
+          ? esc(pol.foraDoPrazo)
+          : `A academia não detalhou o que acontece nesse caso.${c.phone ? " Pergunte no WhatsApp." : ""}`}</p>
+      </div>
+    </div>
+    ${politicaRodape(c)}`;
+}
+
+function politicaRodape(c) {
+  return `<p class="ht-poi-nota">Regra informada pela própria academia, que pode mudá-la quando quiser. Confirme na conversa antes de marcar.</p>`;
 }
 
 // "Bom saber": o equivalente ao "Você precisa saber" das páginas de hotel.
@@ -3792,10 +3829,9 @@ function perguntasAcademia(c) {
   if (temPolitica(c)) {
     const pol = politicaDe(c);
     const partes = [];
-    if (pol.cancelamentoHoras) partes.push(`A academia pede que você avise com ${pol.cancelamentoHoras} ${plural(pol.cancelamentoHoras, "hora", "horas")} de antecedência para desmarcar um horário.`);
-    const rep = REPOSICAO_OPTS.find(o => o.key === pol.reposicao);
-    if (rep) partes.push(rep.desc);
-    if (pol.obs) partes.push(pol.obs);
+    if (pol.reposicao === "nao") partes.push("A academia informou que não faz reposição de aula desmarcada.");
+    else if (pol.horas) partes.push(`Desmarcando com ${pol.horas} horas de antecedência ou mais, a aula gera reposição. Com menos que isso, não.`);
+    if (pol.foraDoPrazo) partes.push(pol.foraDoPrazo);
     faq.push({ q: `Como funciona o cancelamento e a reposição em ${c.name}?`, a: partes.join(" ") });
   }
 
@@ -4006,12 +4042,14 @@ function renderCourtPage(c) {
 // A política vive em f.politica; esta função garante o formato mesmo quando
 // o formulário ainda não tem nada preenchido.
 function politicaForm(f) {
-  if (!f.politica) f.politica = { cancelamentoHoras: null, reposicao: "", obs: "" };
-  return f.politica;
+  if (!f.politica) f.politica = { reposicao: "", foraDoPrazo: "" };
+  const pol = f.politica;
+  pol.horas = (REPOSICAO_OPTS.find(o => o.key === pol.reposicao) || {}).horas || null;
+  return pol;
 }
 
 function renderRegisterSheet() {
-  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ cancelamentoHoras:null, reposicao:"", obs:"" } };
+  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" } };
   window.__form = f;
   const isEditing = !!f.__editingId;
   if (state.registerStatus === "done") {
@@ -4103,17 +4141,17 @@ function renderRegisterSheet() {
         ` : ""}
         ${!f.modalidades.length ? `<p class="footnote">Selecione a modalidade acima para informar o preço.</p>` : ""}
 
-        <p class="field-label">Cancelamento — prazo para desmarcar</p>
-        <div class="chip-row">
-          ${CANCEL_OPTS.map(o => `<button type="button" class="chip small reg-cancel ${politicaForm(f).cancelamentoHoras === o.horas ? "active" : ""}" data-cancel="${o.horas}">${o.label}</button>`).join("")}
-        </div>
-
         <p class="field-label">Reposição da aula desmarcada</p>
+        <p class="footnote" style="margin-top:0;margin-bottom:8px">Com quantas horas de antecedência a pessoa precisa avisar para ter direito à reposição.</p>
         <div class="chip-row">
           ${REPOSICAO_OPTS.map(o => `<button type="button" class="chip small reg-reposicao ${politicaForm(f).reposicao === o.key ? "active" : ""}" data-reposicao="${o.key}">${o.label}</button>`).join("")}
         </div>
-        <textarea class="form-field" id="f-politica-obs" rows="2" style="resize:none" placeholder="Detalhes do cancelamento e da reposição (opcional)">${esc(politicaForm(f).obs)}</textarea>
         <p class="footnote" style="margin-top:6px">Toque de novo na opção escolhida para desmarcar.</p>
+
+        <p class="field-label">${politicaForm(f).horas
+          ? `Cancelamento com menos de ${politicaForm(f).horas}h`
+          : "Como funcionam os cancelamentos"}</p>
+        <textarea class="form-field" id="f-politica-fora" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: a aula conta como dada e não gera reposição.">${esc(politicaForm(f).foraDoPrazo)}</textarea>
 
         <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
         <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
@@ -4477,7 +4515,7 @@ function attachEvents() {
   });
 
   const abrirCadastro = () => {
-    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ cancelamentoHoras:null, reposicao:"", obs:"" } };
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" } };
     state.showRegister = true;
     state.registerStatus = "idle";
     render();
@@ -4978,7 +5016,7 @@ function attachEvents() {
   });
 
   const fab = document.getElementById("fab-add");
-  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ cancelamentoHoras:null, reposicao:"", obs:"" } }; state.showRegister = true; state.registerStatus = "idle"; render(); };
+  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" } }; state.showRegister = true; state.registerStatus = "idle"; render(); };
 
   const fabAdmin = document.getElementById("fab-admin");
   if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
@@ -5065,14 +5103,6 @@ function attachEvents() {
   bindFormField("f-name", "name"); bindFormField("f-address", "address"); bindFormField("f-bairro", "bairro");
   bindFormField("f-cidade", "cidade"); bindFormField("f-numero", "numero"); bindFormField("f-complemento", "complemento");
   bindPriceField("f-price-aula", "priceAula"); bindPriceField("f-price-locacao", "priceLocacao");
-  document.querySelectorAll(".reg-cancel").forEach(el => {
-    el.onclick = () => {
-      const pol = politicaForm(window.__form);
-      const horas = parseInt(el.dataset.cancel, 10);
-      pol.cancelamentoHoras = pol.cancelamentoHoras === horas ? null : horas;
-      render();
-    };
-  });
   document.querySelectorAll(".reg-reposicao").forEach(el => {
     el.onclick = () => {
       const pol = politicaForm(window.__form);
@@ -5080,8 +5110,8 @@ function attachEvents() {
       render();
     };
   });
-  const politicaObs = document.getElementById("f-politica-obs");
-  if (politicaObs) politicaObs.oninput = (e) => { politicaForm(window.__form).obs = e.target.value; };
+  const politicaFora = document.getElementById("f-politica-fora");
+  if (politicaFora) politicaFora.oninput = (e) => { politicaForm(window.__form).foraDoPrazo = e.target.value; };
 
   bindFormField("f-phone", "phone"); bindFormField("f-instagram", "instagram");
   bindFormField("f-site", "site");

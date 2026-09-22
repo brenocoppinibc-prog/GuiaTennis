@@ -3026,28 +3026,11 @@ function renderCard(c, badge) {
 // mostradas. "query" é o que vai para o Overpass; "casa" decide em qual
 // categoria cai cada lugar que voltar.
 const POI_CATS = [
-  {
-    key: "restaurante", label: "Restaurantes", ic: "cup",
-    query: ['nwr["amenity"="restaurant"]'],
-    casa: t => t.amenity === "restaurant",
-  },
-  {
-    key: "musculacao", label: "Academias de musculação", ic: "bolt",
-    query: ['nwr["leisure"="fitness_centre"]'],
-    casa: t => t.leisure === "fitness_centre",
-  },
-  {
-    key: "padaria", label: "Padarias e cafeterias", ic: "bag",
-    query: ['nwr["shop"="bakery"]', 'nwr["amenity"="cafe"]'],
-    casa: t => t.shop === "bakery" || t.amenity === "cafe",
-  },
+  { key: "restaurante", label: "Restaurantes", ic: "cup", casa: t => t.amenity === "restaurant" },
+  { key: "musculacao", label: "Academias de musculação", ic: "bolt", casa: t => t.leisure === "fitness_centre" },
+  { key: "padaria", label: "Padarias e cafeterias", ic: "bag", casa: t => t.shop === "bakery" || t.amenity === "cafe" },
   {
     key: "turismo", label: "Pontos turísticos e parques", ic: "sparkle",
-    query: [
-      'nwr["tourism"="attraction"]', 'nwr["tourism"="museum"]', 'nwr["tourism"="viewpoint"]',
-      'nwr["tourism"="theme_park"]', 'nwr["tourism"="zoo"]', 'nwr["tourism"="gallery"]',
-      'nwr["leisure"="park"]',
-    ],
     casa: t => /^(attraction|museum|viewpoint|theme_park|zoo|gallery)$/.test(t.tourism || "") || t.leisure === "park",
   },
 ];
@@ -3061,11 +3044,11 @@ const POI_MAX_GUARDADAS = 60;                    // academias guardadas no naveg
 // Servidores públicos do Overpass, na ordem em que são tentados. Se um não
 // responder, cair ou recusar, passa para o próximo.
 const POI_SERVIDORES = [
-  "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass-api.de/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
 ];
-const POI_ESPERA = 20000;   // 20 segundos por tentativa
+const POI_ESPERA = 12000;   // 12 segundos no total, não por servidor
 
 function poiCacheLer(id) {
   try {
@@ -3102,7 +3085,14 @@ function pertoDe(c) {
 async function carregarPerto(c) {
   if (!c || typeof c.lat !== "number" || typeof c.lng !== "number") return;
   if (state.perto[c.id]) return;
-  state.perto[c.id] = { status: "carregando", itens: [] };
+  state.perto[c.id] = { status: "carregando", itens: [], inicio: Date.now() };
+  setTimeout(() => {
+    const atual = state.perto[c.id];
+    if (atual && atual.status === "carregando") {
+      atual.demorando = true;
+      if (state.page === "court" && state.selected && state.selected.id === c.id) atualizarPerto(c);
+    }
+  }, 6000);
   try {
     const itens = await buscarPerto(c.lat, c.lng);
     state.perto[c.id] = { status: "ok", itens };
@@ -3128,33 +3118,65 @@ function atualizarPerto(c) {
   });
 }
 
-async function buscarPerto(lat, lng) {
-  const filtros = POI_CATS.flatMap(x => x.query)
-    .map(q => `${q}(around:${POI_RAIO},${lat},${lng});`).join("");
-  const consulta = `[out:json][timeout:25];(${filtros});out center 200;`;
-  const motivos = [];
-
-  for (const url of POI_SERVIDORES) {
-    // Alguns provedores de internet e alguns antivírus barram POST para
-    // domínios desconhecidos, então tenta GET primeiro, que é mais simples.
-    for (const metodo of ["GET", "POST"]) {
-      try {
-        const dados = await pedirOverpass(url, consulta, metodo);
-        const itens = organizarPerto(dados.elements || [], lat, lng);
-        return itens;
-      } catch (e) {
-        motivos.push(`${url.replace(/^https:\/\//, "").split("/")[0]} ${metodo}: ${e.message}`);
-      }
-    }
-  }
-  console.warn("GuiaTennis — não consegui consultar o Overpass:\n" + motivos.join("\n"));
-  const erro = new Error(motivos[motivos.length - 1] || "nenhum servidor respondeu");
-  erro.motivos = motivos;
-  throw erro;
+// Caixa de ~1,5 km em volta do ponto. Uma caixa nas configurações da consulta
+// é muito mais barata para o servidor do que um "around" em cada filtro — e
+// era isso que deixava a consulta pendurada na fila. A distância de verdade é
+// conferida depois, aqui no navegador.
+function caixaAoRedor(lat, lng, metros) {
+  const dLat = metros / 111320;
+  const cos = Math.cos(lat * Math.PI / 180);
+  const dLng = metros / (111320 * (Math.abs(cos) > 0.01 ? Math.abs(cos) : 0.01));
+  return [lat - dLat, lng - dLng, lat + dLat, lng + dLng];
 }
 
-async function pedirOverpass(url, consulta, metodo) {
-  const corte = new AbortController();
+function consultaPerto(lat, lng) {
+  const [s, w, n, e] = caixaAoRedor(lat, lng, POI_RAIO).map(v => v.toFixed(5));
+  // Seis filtros largos em vez de onze estreitos: o que sobrar é separado
+  // por categoria aqui no navegador, em organizarPerto().
+  const filtros = [
+    'nwr["amenity"="restaurant"]',
+    'nwr["amenity"="cafe"]',
+    'nwr["shop"="bakery"]',
+    'nwr["leisure"="fitness_centre"]',
+    'nwr["leisure"="park"]',
+    'nwr["tourism"]',
+  ].map(f => f + ";").join("");
+  return `[out:json][timeout:15][bbox:${s},${w},${n},${e}];(${filtros});out center 250;`;
+}
+
+// Os servidores são chamados ao mesmo tempo e vale o primeiro que responder.
+// Antes eram seis tentativas em fila, uma depois da outra: quando todas
+// demoravam, dava dois minutos parado no "carregando".
+async function buscarPerto(lat, lng) {
+  const consulta = consultaPerto(lat, lng);
+  const motivos = [];
+  const cortes = [];
+
+  const tentativas = POI_SERVIDORES.map((url, i) => {
+    const corte = new AbortController();
+    cortes.push(corte);
+    // O primeiro vai por POST, que é o jeito recomendado; os outros por GET,
+    // que passa em redes que barram POST para domínios desconhecidos.
+    return pedirOverpass(url, consulta, i === 0 ? "POST" : "GET", corte).catch(e => {
+      motivos.push(`${url.replace(/^https:\/\//, "").split("/")[0]}: ${e.message}`);
+      throw e;
+    });
+  });
+
+  let dados;
+  try {
+    dados = await Promise.any(tentativas);
+  } catch {
+    console.warn("GuiaTennis — nenhum servidor do Overpass respondeu:\n" + motivos.join("\n"));
+    const erro = new Error(motivos.join(" · ") || "nenhum servidor respondeu");
+    erro.motivos = motivos;
+    throw erro;
+  }
+  cortes.forEach(c => { try { c.abort(); } catch { /* já terminou */ } });
+  return organizarPerto(dados.elements || [], lat, lng);
+}
+
+async function pedirOverpass(url, consulta, metodo, corte) {
   const relogio = setTimeout(() => corte.abort(), POI_ESPERA);
   try {
     const opcoes = metodo === "GET"
@@ -3187,10 +3209,12 @@ function organizarPerto(elementos, lat, lng) {
     if (!cat) return;
     const ponto = el.center || el;
     if (typeof ponto.lat !== "number" || typeof ponto.lon !== "number") return;
+    const km = haversineKm(lat, lng, ponto.lat, ponto.lon);
+    if (km * 1000 > POI_RAIO) return;   // a caixa é quadrada; o raio é redondo
     const chave = cat.key + "|" + nome.toLowerCase();
     if (vistos.has(chave)) return;
     vistos.add(chave);
-    itens.push({ n: nome, c: cat.key, km: haversineKm(lat, lng, ponto.lat, ponto.lon) });
+    itens.push({ n: nome, c: cat.key, km });
   });
   itens.sort((a, b) => a.km - b.km);
   const conta = {};
@@ -3218,6 +3242,7 @@ function diagnosticoPerto(c, dados) {
     ? `coordenada ${c.lat}, ${c.lng}`
     : `SEM coordenada (lat=${c.lat}, lng=${c.lng}) — edite e salve o endereço para gerar`);
   partes.push(`situação: ${dados ? dados.status : "ainda não começou"}`);
+  if (dados && dados.inicio) partes.push(`há ${Math.round((Date.now() - dados.inicio) / 1000)}s`);
   if (dados && dados.status === "ok") partes.push(`${dados.itens.length} lugares achados`);
   if (dados && dados.motivo) partes.push(`motivo: ${dados.motivo}`);
   return `<p class="ht-poi-motivo">Só você vê — ${esc(partes.join(" · "))}</p>`;
@@ -3237,6 +3262,7 @@ function htPertoConteudo(c) {
       <div class="ht-poi-carregando">
         ${bolaGirando(42)}
         <p>Procurando restaurantes, padarias, academias de musculação e pontos turísticos em volta...</p>
+        ${(dados && dados.demorando) ? `<p class="ht-poi-nota" style="margin:0">O mapa aberto está devagar agora. Se não vier em alguns segundos, dá para tentar de novo.</p>` : ""}
       </div>
       ${diagnosticoPerto(c, dados)}`;
   }

@@ -681,6 +681,20 @@
   .ht-addr-line { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; margin: 0; line-height: 1.45; }
   .ht-addr-line > span:first-child { flex-shrink: 0; margin-top: 2px; }
   .pin-court { display: inline-block; width: 18px; height: 18px; border-radius: 999px; background: var(--gold); border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+  .ht-poi { display: grid; gap: 16px; margin: 8px 0 0; }
+  @media (min-width: 720px) { .ht-poi { grid-template-columns: 1fr 1fr; gap: 16px 28px; } }
+  .ht-poi-t { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; margin: 0 0 6px; }
+  .ht-poi-i { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid var(--border); font-size: 14px; }
+  .ht-poi-n { min-width: 0; }
+  .ht-poi-d { flex-shrink: 0; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .ht-poi-nota { font-size: 12px; color: var(--muted-dark); margin: 12px 0 0; line-height: 1.45; }
+  .ht-poi-skel { display: block; height: 12px; border-radius: 6px; background: var(--bg-alt); margin-top: 10px; animation: poiPisca 1.2s ease-in-out infinite; }
+  .ht-poi-skel.t { height: 15px; width: 52%; margin-top: 0; }
+  .ht-poi-g .ht-poi-skel:nth-child(2) { width: 88%; }
+  .ht-poi-g .ht-poi-skel:nth-child(3) { width: 72%; }
+  @keyframes poiPisca { 0%, 100% { opacity: 1 } 50% { opacity: 0.45 } }
+  @media (prefers-reduced-motion: reduce) { .ht-poi-skel { animation: none; } }
+
   .ht-perto { display: grid; gap: 8px; }
   .ht-perto-i { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; cursor: pointer; font-family: inherit; }
   .ht-perto-n { font-size: 14px; font-weight: 700; color: var(--text); }
@@ -1130,6 +1144,7 @@ let state = {
   cardPhoto: {},
   reviewsExpanded: false,
   faqOpen: {},
+  perto: {},
   page: "home",
   backTo: "home",
   homeCity: null,
@@ -1509,6 +1524,7 @@ function render() {
   if (state.page === "court" && state.selected) {
     mountMiniMap(state.selected);
     atualizarSeo(state.selected);
+    carregarPerto(state.selected);
   } else {
     if (__miniMap) { __miniMap.remove(); __miniMap = null; }
     atualizarSeo(null);
@@ -2505,6 +2521,7 @@ function openCourt(id) {
   state.page = "court";
   state.pendingStar = 0;
   state.justRated = false;
+  if (state.perto[id] && state.perto[id].status === "erro") delete state.perto[id];
   state.reviewsExpanded = false;
   state.showAdminPanel = false;
   window.__rateConsent = false;
@@ -2929,6 +2946,195 @@ function renderCard(c, badge) {
   `;
 }
 
+// ---------- o que tem em volta da academia (OpenStreetMap / Overpass) ----------
+
+// As categorias que aparecem no "Explore a região", na ordem em que são
+// mostradas. "query" é o que vai para o Overpass; "casa" decide em qual
+// categoria cai cada lugar que voltar.
+const POI_CATS = [
+  {
+    key: "restaurante", label: "Restaurantes", ic: "cup",
+    query: ['nwr["amenity"="restaurant"]'],
+    casa: t => t.amenity === "restaurant",
+  },
+  {
+    key: "musculacao", label: "Academias de musculação", ic: "bolt",
+    query: ['nwr["leisure"="fitness_centre"]'],
+    casa: t => t.leisure === "fitness_centre",
+  },
+  {
+    key: "padaria", label: "Padarias e cafeterias", ic: "bag",
+    query: ['nwr["shop"="bakery"]', 'nwr["amenity"="cafe"]'],
+    casa: t => t.shop === "bakery" || t.amenity === "cafe",
+  },
+  {
+    key: "turismo", label: "Pontos turísticos e parques", ic: "sparkle",
+    query: ['nwr["tourism"~"^(attraction|museum|viewpoint|theme_park|zoo|gallery)$"]', 'nwr["leisure"="park"]'],
+    casa: t => /^(attraction|museum|viewpoint|theme_park|zoo|gallery)$/.test(t.tourism || "") || t.leisure === "park",
+  },
+];
+
+const POI_RAIO = 1500;          // metros em volta da academia
+const POI_POR_TIPO = 4;         // no máximo 4 lugares de cada tipo
+const POI_KEY = "guiatennis_perto_v1";
+const POI_VALIDADE = 30 * 24 * 60 * 60 * 1000;  // guarda por 30 dias
+const POI_MAX_GUARDADAS = 60;                    // academias guardadas no navegador
+
+// Dois servidores públicos do Overpass: se o primeiro não responder, tenta o segundo.
+const POI_SERVIDORES = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+];
+
+function poiCacheLer(id) {
+  try {
+    const tudo = JSON.parse(localStorage.getItem(POI_KEY) || "{}");
+    const reg = tudo[id];
+    if (!reg || !Array.isArray(reg.itens)) return null;
+    if (Date.now() - reg.ts > POI_VALIDADE) return null;
+    return reg.itens;
+  } catch { return null; }
+}
+
+function poiCacheGravar(id, itens) {
+  try {
+    const tudo = JSON.parse(localStorage.getItem(POI_KEY) || "{}");
+    tudo[id] = { ts: Date.now(), itens };
+    const ids = Object.keys(tudo).sort((a, b) => tudo[b].ts - tudo[a].ts);
+    const enxuto = {};
+    ids.slice(0, POI_MAX_GUARDADAS).forEach(k => { enxuto[k] = tudo[k]; });
+    localStorage.setItem(POI_KEY, JSON.stringify(enxuto));
+  } catch { /* navegador sem espaço ou em modo anônimo: segue sem guardar */ }
+}
+
+// Lê o que já está em memória ou no navegador, sem disparar busca nova.
+function pertoDe(c) {
+  if (state.perto[c.id]) return state.perto[c.id];
+  const guardado = poiCacheLer(c.id);
+  if (guardado) state.perto[c.id] = { status: "ok", itens: guardado };
+  return state.perto[c.id];
+}
+
+// Busca no Overpass só na primeira vez que alguém abre a ficha da academia.
+// Depois disso vem do navegador por 30 dias, então o servidor do
+// OpenStreetMap recebe pouquíssimos pedidos.
+async function carregarPerto(c) {
+  if (!c || typeof c.lat !== "number" || typeof c.lng !== "number") return;
+  if (state.perto[c.id]) return;
+  state.perto[c.id] = { status: "carregando", itens: [] };
+  try {
+    const itens = await buscarPerto(c.lat, c.lng);
+    state.perto[c.id] = { status: "ok", itens };
+    poiCacheGravar(c.id, itens);
+  } catch {
+    state.perto[c.id] = { status: "erro", itens: [] };
+  }
+  if (state.page === "court" && state.selected && state.selected.id === c.id) render();
+}
+
+async function buscarPerto(lat, lng) {
+  const filtros = POI_CATS.flatMap(x => x.query)
+    .map(q => `${q}(around:${POI_RAIO},${lat},${lng});`).join("");
+  const consulta = `[out:json][timeout:20];(${filtros});out center 200;`;
+  let ultimoErro;
+  for (const url of POI_SERVIDORES) {
+    try {
+      const corte = new AbortController();
+      const relogio = setTimeout(() => corte.abort(), 12000);
+      const resposta = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "data=" + encodeURIComponent(consulta),
+        signal: corte.signal,
+      });
+      clearTimeout(relogio);
+      if (!resposta.ok) throw new Error("resposta " + resposta.status);
+      const dados = await resposta.json();
+      return organizarPerto(dados.elements || [], lat, lng);
+    } catch (e) { ultimoErro = e; }
+  }
+  throw ultimoErro || new Error("nenhum servidor respondeu");
+}
+
+function organizarPerto(elementos, lat, lng) {
+  const vistos = new Set();
+  const itens = [];
+  elementos.forEach(el => {
+    const tags = el.tags || {};
+    const nome = (tags.name || "").trim();
+    if (!nome) return;
+    const cat = POI_CATS.find(x => x.casa(tags));
+    if (!cat) return;
+    const ponto = el.center || el;
+    if (typeof ponto.lat !== "number" || typeof ponto.lon !== "number") return;
+    const chave = cat.key + "|" + nome.toLowerCase();
+    if (vistos.has(chave)) return;
+    vistos.add(chave);
+    itens.push({ n: nome, c: cat.key, km: haversineKm(lat, lng, ponto.lat, ponto.lon) });
+  });
+  itens.sort((a, b) => a.km - b.km);
+  const conta = {};
+  return itens.filter(i => (conta[i.c] = (conta[i.c] || 0) + 1) <= POI_POR_TIPO);
+}
+
+// Tempo aproximado até o lugar, como o "5 min a pé" das páginas de hotel.
+function tempoAte(km) {
+  const aPe = Math.max(1, Math.round((km / 4.8) * 60));
+  if (aPe <= 25) return `${aPe} min a pé`;
+  return `${Math.max(1, Math.round((km / 22) * 60))} min de carro`;
+}
+
+// O bloco "O que tem por perto" dentro de "Explore a região".
+function htPerto(c) {
+  if (typeof c.lat !== "number" || typeof c.lng !== "number") return "";
+  const dados = pertoDe(c);
+
+  if (!dados || dados.status === "carregando") {
+    return `
+      <p class="field-label">O que tem por perto</p>
+      <div class="ht-poi">
+        ${POI_CATS.slice(0, 2).map(() => `
+          <div class="ht-poi-g">
+            <span class="ht-poi-skel t"></span>
+            <span class="ht-poi-skel"></span>
+            <span class="ht-poi-skel"></span>
+          </div>`).join("")}
+      </div>
+      <p class="ht-poi-nota">Procurando restaurantes, padarias, academias de musculação e pontos turísticos em volta...</p>`;
+  }
+
+  if (dados.status === "erro") {
+    return `
+      <p class="field-label">O que tem por perto</p>
+      <p class="ht-poi-nota">Não consegui consultar o mapa aberto agora para listar o que tem em volta. Recarregue a página para tentar de novo.</p>`;
+  }
+
+  const grupos = POI_CATS
+    .map(cat => ({ cat, itens: dados.itens.filter(i => i.c === cat.key) }))
+    .filter(g => g.itens.length);
+
+  if (!grupos.length) {
+    return `
+      <p class="field-label">O que tem por perto</p>
+      <p class="ht-poi-nota">Não achei restaurante, padaria, academia de musculação nem ponto turístico cadastrado no mapa aberto a até 1,5 km daqui.</p>`;
+  }
+
+  return `
+    <p class="field-label">O que tem por perto</p>
+    <div class="ht-poi">
+      ${grupos.map(g => `
+        <div class="ht-poi-g">
+          <p class="ht-poi-t">${icon(g.cat.ic, 15, 'var(--green)')} ${esc(g.cat.label)}</p>
+          ${g.itens.map(i => `
+            <div class="ht-poi-i">
+              <span class="ht-poi-n">${esc(i.n)}</span>
+              <span class="ht-poi-d">${distanceText(i.km)} · ${tempoAte(i.km)}</span>
+            </div>`).join("")}
+        </div>`).join("")}
+    </div>
+    <p class="ht-poi-nota">Lugares num raio de 1,5 km, tirados do OpenStreetMap. Distância em linha reta e tempo estimado — o caminho real pode ser maior.</p>`;
+}
+
 // ---------- ficha da academia no formato das páginas de hotel ----------
 
 // Galeria em mosaico: uma foto grande e até quatro menores, como nas páginas de
@@ -3129,6 +3335,7 @@ function htLocalizacao(c) {
     <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">A academia ainda não tem coordenada no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
     <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
     ${navLinks(c)}
+    ${htPerto(c)}
     ${perto.length ? `
       <p class="field-label">Outras academias por perto</p>
       <div class="ht-perto">
@@ -3805,7 +4012,7 @@ const PRIVACY_HTML = `
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>
-<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), Supabase (banco de dados e login administrativo), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
+<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), OpenStreetMap/Overpass (restaurantes, padarias, academias de musculação e pontos turísticos perto de cada academia), Supabase (banco de dados e login administrativo), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
 <p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
 <p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o responsável autenticado pode aprovar, editar ou remover conteúdo. Favoritos continuam salvos localmente no seu navegador.</p>
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>

@@ -218,8 +218,6 @@
   .consent-row input { margin-top: 2px; flex-shrink: 0; }
   .inline-link { background: none; border: none; padding: 0; color: var(--green); text-decoration: underline; font-size: 12px; cursor: pointer; font-family: inherit; }
   .form-success { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 24px 0; }
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
 
   .pending-item { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 10px; }
   .pending-name { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px; margin: 0; }
@@ -688,17 +686,30 @@
   .ht-poi-n { min-width: 0; }
   .ht-poi-d { flex-shrink: 0; font-size: 12px; color: var(--muted); white-space: nowrap; }
   .ht-poi-nota { font-size: 12px; color: var(--muted-dark); margin: 12px 0 0; line-height: 1.45; }
-  .ht-poi-skel { display: block; height: 12px; border-radius: 6px; background: var(--bg-alt); margin-top: 10px; animation: poiPisca 1.2s ease-in-out infinite; }
-  .ht-poi-skel.t { height: 15px; width: 52%; margin-top: 0; }
-  .ht-poi-g .ht-poi-skel:nth-child(2) { width: 88%; }
-  .ht-poi-g .ht-poi-skel:nth-child(3) { width: 72%; }
-  @keyframes poiPisca { 0%, 100% { opacity: 1 } 50% { opacity: 0.45 } }
-  @media (prefers-reduced-motion: reduce) { .ht-poi-skel { animation: none; } }
+  .ht-poi-carregando { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 26px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); margin-top: 8px; text-align: center; }
+  .ht-poi-carregando p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; max-width: 320px; }
+  .ht-poi-motivo { font-size: 11px; color: var(--red); margin: 10px 0 0; word-break: break-word; }
+  .ht-poi-tentar { margin-top: 10px; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 9px 16px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--green); cursor: pointer; }
 
-  .ht-perto { display: grid; gap: 8px; }
-  .ht-perto-i { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; cursor: pointer; font-family: inherit; }
-  .ht-perto-n { font-size: 14px; font-weight: 700; color: var(--text); }
-  .ht-perto-d { font-size: 12px; color: var(--muted); }
+  /* bola de tênis girando — serve para qualquer espera do site */
+  .bola { display: inline-flex; flex-shrink: 0; animation: bolaGira 0.9s linear infinite; }
+  @keyframes bolaGira { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .bola { animation-duration: 3.5s; } }
+
+  .ht-viz { display: grid; gap: 12px; }
+  @media (min-width: 1000px) { .ht-viz { grid-template-columns: 1fr 1fr; } }
+  .ht-viz-c { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px; cursor: pointer; font-family: inherit; box-shadow: var(--shadow); }
+  .ht-viz-foto { width: 92px; height: 92px; border-radius: 10px; overflow: hidden; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
+  .ht-viz-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ht-viz-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .ht-viz-n { font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--text); }
+  .ht-viz-nota { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .ht-viz-nota .sbadge { font-size: 12px; padding: 2px 6px; }
+  .ht-viz-l { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+  .ht-viz-l span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ht-viz-p { font-size: 16px; font-weight: 800; margin-top: 3px; color: var(--text); }
+  .ht-viz-p small { font-size: 11px; font-weight: 500; color: var(--muted); }
+  .ht-viz-seta { display: flex; }
 
   /* avaliações em cartões */
   .ht-revs { display: grid; gap: 12px; margin-top: 8px; }
@@ -762,6 +773,18 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let isAdmin = false;
 
 // ---------- icons (hand-drawn SVG, not emoji — renders identically on every device) ----------
+
+// Bola de tênis girando: a espera do site inteiro usa esta.
+function bolaGirando(tamanho) {
+  const t = tamanho || 20;
+  return `<span class="bola" style="width:${t}px;height:${t}px" aria-hidden="true">
+    <svg viewBox="0 0 40 40" width="${t}" height="${t}">
+      <circle cx="20" cy="20" r="18" fill="#CEDC39" stroke="#A8B62C" stroke-width="1.5"/>
+      <path d="M7.3 7.3A20 20 0 0 1 7.3 32.7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M32.7 7.3A20 20 0 0 0 32.7 32.7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>
+  </span>`;
+}
 
 function icon(name, size, color) {
   size = size || 16;
@@ -2047,7 +2070,7 @@ function renderSearchCard() {
       </div>
       <div class="sc-foot">
         <button class="sc-go" id="search-btn" ${state.searchStatus === "loading" ? "disabled" : ""}>
-          ${state.searchStatus === "loading" ? '<span class="spinner"></span> Buscando' : "Pesquisar"}
+          ${state.searchStatus === "loading" ? bolaGirando(16) + " Buscando" : "Pesquisar"}
         </button>
       </div>
     </div>
@@ -2969,7 +2992,11 @@ const POI_CATS = [
   },
   {
     key: "turismo", label: "Pontos turísticos e parques", ic: "sparkle",
-    query: ['nwr["tourism"~"^(attraction|museum|viewpoint|theme_park|zoo|gallery)$"]', 'nwr["leisure"="park"]'],
+    query: [
+      'nwr["tourism"="attraction"]', 'nwr["tourism"="museum"]', 'nwr["tourism"="viewpoint"]',
+      'nwr["tourism"="theme_park"]', 'nwr["tourism"="zoo"]', 'nwr["tourism"="gallery"]',
+      'nwr["leisure"="park"]',
+    ],
     casa: t => /^(attraction|museum|viewpoint|theme_park|zoo|gallery)$/.test(t.tourism || "") || t.leisure === "park",
   },
 ];
@@ -2980,11 +3007,14 @@ const POI_KEY = "guiatennis_perto_v1";
 const POI_VALIDADE = 30 * 24 * 60 * 60 * 1000;  // guarda por 30 dias
 const POI_MAX_GUARDADAS = 60;                    // academias guardadas no navegador
 
-// Dois servidores públicos do Overpass: se o primeiro não responder, tenta o segundo.
+// Servidores públicos do Overpass, na ordem em que são tentados. Se um não
+// responder, cair ou recusar, passa para o próximo.
 const POI_SERVIDORES = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
 ];
+const POI_ESPERA = 20000;   // 20 segundos por tentativa
 
 function poiCacheLer(id) {
   try {
@@ -3026,34 +3056,73 @@ async function carregarPerto(c) {
     const itens = await buscarPerto(c.lat, c.lng);
     state.perto[c.id] = { status: "ok", itens };
     poiCacheGravar(c.id, itens);
-  } catch {
-    state.perto[c.id] = { status: "erro", itens: [] };
+  } catch (e) {
+    state.perto[c.id] = { status: "erro", itens: [], motivo: (e && e.message) || "" };
   }
-  if (state.page === "court" && state.selected && state.selected.id === c.id) render();
+  if (state.page === "court" && state.selected && state.selected.id === c.id) atualizarPerto(c);
+}
+
+// Troca só o bloco "O que tem por perto", sem redesenhar a ficha inteira
+// (redesenhar fazia a página pular durante a rolagem).
+function atualizarPerto(c) {
+  const lugar = document.getElementById("ht-poi-slot");
+  if (!lugar) return;
+  lugar.innerHTML = htPertoConteudo(c);
+  lugar.querySelectorAll("[data-poi-retry]").forEach(el => {
+    el.onclick = () => {
+      delete state.perto[c.id];
+      atualizarPerto(c);
+      carregarPerto(c);
+    };
+  });
 }
 
 async function buscarPerto(lat, lng) {
   const filtros = POI_CATS.flatMap(x => x.query)
     .map(q => `${q}(around:${POI_RAIO},${lat},${lng});`).join("");
-  const consulta = `[out:json][timeout:20];(${filtros});out center 200;`;
-  let ultimoErro;
+  const consulta = `[out:json][timeout:25];(${filtros});out center 200;`;
+  const motivos = [];
+
   for (const url of POI_SERVIDORES) {
-    try {
-      const corte = new AbortController();
-      const relogio = setTimeout(() => corte.abort(), 12000);
-      const resposta = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "data=" + encodeURIComponent(consulta),
-        signal: corte.signal,
-      });
-      clearTimeout(relogio);
-      if (!resposta.ok) throw new Error("resposta " + resposta.status);
-      const dados = await resposta.json();
-      return organizarPerto(dados.elements || [], lat, lng);
-    } catch (e) { ultimoErro = e; }
+    // Alguns provedores de internet e alguns antivírus barram POST para
+    // domínios desconhecidos, então tenta GET primeiro, que é mais simples.
+    for (const metodo of ["GET", "POST"]) {
+      try {
+        const dados = await pedirOverpass(url, consulta, metodo);
+        const itens = organizarPerto(dados.elements || [], lat, lng);
+        return itens;
+      } catch (e) {
+        motivos.push(`${url.replace(/^https:\/\//, "").split("/")[0]} ${metodo}: ${e.message}`);
+      }
+    }
   }
-  throw ultimoErro || new Error("nenhum servidor respondeu");
+  console.warn("GuiaTennis — não consegui consultar o Overpass:\n" + motivos.join("\n"));
+  const erro = new Error(motivos[motivos.length - 1] || "nenhum servidor respondeu");
+  erro.motivos = motivos;
+  throw erro;
+}
+
+async function pedirOverpass(url, consulta, metodo) {
+  const corte = new AbortController();
+  const relogio = setTimeout(() => corte.abort(), POI_ESPERA);
+  try {
+    const opcoes = metodo === "GET"
+      ? { method: "GET", signal: corte.signal }
+      : {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "data=" + encodeURIComponent(consulta),
+          signal: corte.signal,
+        };
+    const endereco = metodo === "GET" ? `${url}?data=${encodeURIComponent(consulta)}` : url;
+    const resposta = await fetch(endereco, opcoes);
+    if (!resposta.ok) throw new Error("respondeu " + resposta.status);
+    return await resposta.json();
+  } catch (e) {
+    throw new Error(e.name === "AbortError" ? "demorou demais" : (e.message || "falhou"));
+  } finally {
+    clearTimeout(relogio);
+  }
 }
 
 function organizarPerto(elementos, lat, lng) {
@@ -3086,27 +3155,34 @@ function tempoAte(km) {
 
 // O bloco "O que tem por perto" dentro de "Explore a região".
 function htPerto(c) {
+  return `<div id="ht-poi-slot">${htPertoConteudo(c)}</div>`;
+}
+
+function htPertoConteudo(c) {
   if (typeof c.lat !== "number" || typeof c.lng !== "number") return "";
   const dados = pertoDe(c);
 
   if (!dados || dados.status === "carregando") {
     return `
       <p class="field-label">O que tem por perto</p>
-      <div class="ht-poi">
-        ${POI_CATS.slice(0, 2).map(() => `
-          <div class="ht-poi-g">
-            <span class="ht-poi-skel t"></span>
-            <span class="ht-poi-skel"></span>
-            <span class="ht-poi-skel"></span>
-          </div>`).join("")}
-      </div>
-      <p class="ht-poi-nota">Procurando restaurantes, padarias, academias de musculação e pontos turísticos em volta...</p>`;
+      <div class="ht-poi-carregando">
+        ${bolaGirando(42)}
+        <p>Procurando restaurantes, padarias, academias de musculação e pontos turísticos em volta...</p>
+      </div>`;
   }
 
   if (dados.status === "erro") {
+    const local = location.protocol === "file:";
     return `
       <p class="field-label">O que tem por perto</p>
-      <p class="ht-poi-nota">Não consegui consultar o mapa aberto agora para listar o que tem em volta. Recarregue a página para tentar de novo.</p>`;
+      <div class="ht-poi-carregando">
+        ${icon('map', 30, 'var(--muted-dark)')}
+        <p>${local
+          ? "Este arquivo está aberto direto do computador, e o navegador bloqueia essa consulta fora de um site. No ar, em guiatennis.com.br, a lista aparece normalmente."
+          : "Não consegui consultar o mapa aberto do OpenStreetMap agora para listar o que tem em volta."}</p>
+        ${local ? "" : `<button type="button" class="ht-poi-tentar" data-poi-retry="${c.id}">Tentar de novo</button>`}
+        ${isAdmin && dados.motivo ? `<p class="ht-poi-motivo">Motivo (só você vê): ${esc(dados.motivo)}</p>` : ""}
+      </div>`;
   }
 
   const grupos = POI_CATS
@@ -3338,13 +3414,32 @@ function htLocalizacao(c) {
     ${htPerto(c)}
     ${perto.length ? `
       <p class="field-label">Outras academias por perto</p>
-      <div class="ht-perto">
-        ${perto.map(p => `
-          <button type="button" class="ht-perto-i" data-open="${p.c.id}">
-            <span class="ht-perto-n">${esc(p.c.name)}</span>
-            <span class="ht-perto-d">${distanceText(p.km)} daqui${p.c.appCount ? ` · nota ${p.c.appAvg.toFixed(1).replace(".", ",")}` : ""}</span>
-          </button>`).join("")}
-      </div>` : ""}`;
+      <div class="ht-viz">${perto.map(x => cartaoVizinha(x.c, x.km)).join("")}</div>` : ""}`;
+}
+
+// Card da academia vizinha: foto, nota, estrutura e preço — dá para decidir
+// sem sair da ficha, como as sugestões de hotel no fim da página.
+function cartaoVizinha(v, km) {
+  const foto = courtPhotos(v)[0];
+  const faixa = faixaGeral(v);
+  const quadras = totalQuadras(v);
+  const lugar = [v.bairro, v.cidade].filter(Boolean).join(", ");
+  const mod = modalidadesTexto(v);
+  return `
+    <button type="button" class="ht-viz-c" data-open="${v.id}">
+      <span class="ht-viz-foto">${foto ? `<img src="${esc(foto)}" alt="Foto da ${esc(v.name)}" loading="lazy" />` : icon('ball', 26, 'var(--muted-dark)')}</span>
+      <span class="ht-viz-txt">
+        <span class="ht-viz-n">${esc(v.name)}</span>
+        <span class="ht-viz-nota">
+          <span class="sbadge ${v.appCount ? "" : "none"}">${v.appCount ? v.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
+          <span>${scoreWord(v.appAvg, v.appCount)}${v.appCount ? ` · ${v.appCount} ${plural(v.appCount, "avaliação", "avaliações")}` : ""}</span>
+        </span>
+        <span class="ht-viz-l">${icon('pin', 12, 'var(--muted)')}<span>${esc(lugar)} · ${distanceText(km)} daqui</span></span>
+        ${quadras ? `<span class="ht-viz-l">${icon('ball', 12, 'var(--muted)')}<span>${quadras} ${plural(quadras, "quadra", "quadras")}${mod ? ` · ${esc(mod.toLowerCase())}` : ""}</span></span>` : ""}
+        <span class="ht-viz-p">${faixa ? `${esc(faixa.texto)} <small>${esc(faixa.opcao.nome.toLowerCase())}, por hora</small>` : `<small>Preço a consultar</small>`}</span>
+      </span>
+      <span class="ht-viz-seta">${icon('chevron', 16, 'var(--green)')}</span>
+    </button>`;
 }
 
 function academiasPerto(c, quantas) {
@@ -3452,7 +3547,7 @@ function blocoContato(c) {
   return `
     <div class="contato-card">
       <p class="contato-mod">${quem ? `Contato para ${esc(quem.toLowerCase())}` : "Contato da academia"}</p>
-      <p class="contato-sub">É o mesmo WhatsApp para os dois — pergunte horário, disponibilidade e o valor do seu caso.</p>
+      <p class="contato-sub">Pergunte horário, disponibilidade e o valor do seu caso.</p>
       ${c.phone
         ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
         : `<p class="contato-sub" style="margin-top:10px">A academia ainda não informou um telefone no GuiaTennis.</p>`}
@@ -3498,7 +3593,7 @@ function htBomSaber(c) {
     { ic: 'sparkle', t: "A nota é só das avaliações feitas aqui", d: "Não importamos nota de outros sites. Quem avalia é quem usou o GuiaTennis." },
   ];
   if (c.source === "seed") itens.push({ ic: 'globe', t: "Endereço e comodidades vieram de dados públicos", d: "Se algo estiver desatualizado, a academia pode corrigir pelo cadastro." });
-  if (c.source === "custom") itens.push({ ic: 'check', t: "Cadastro enviado pela comunidade e aprovado", d: "Confira os dados com a academia antes de fechar horário." });
+  if (c.source === "custom") itens.push({ ic: 'check', t: "Cadastro enviado pela comunidade", d: "Alguém que conhece a academia mandou os dados, e o GuiaTennis conferiu antes de publicar." });
   return `<div class="ht-know">${itens.map(i => `
     <div class="ht-know-i">
       <span class="ht-know-ic">${icon(i.ic, 16, 'var(--green)')}</span>
@@ -3513,7 +3608,7 @@ function perguntasAcademia(c) {
   if (opcoes.length) {
     faq.push({
       q: `Quanto custa jogar em ${c.name}?`,
-      a: opcoes.map(o => `${o.nome}: ${precoTexto(o.faixa)} por hora`).join(". ") + ". Os valores foram informados pela academia e podem mudar conforme horário e professor — confirme no WhatsApp.",
+      a: opcoes.map(o => `${o.nome}: ${precoTexto(o.faixa)} por hora`).join(". ") + ". O valor pode mudar conforme horário e professor — confirme no WhatsApp.",
     });
   }
   const mod = modalidadesTexto(c);
@@ -3673,9 +3768,7 @@ function renderCourtPage(c) {
 
               <section class="ht-sec" id="ht-opcoes">
                 <h3 class="sec-title">Escolha o que você quer</h3>
-                <p class="ht-sec-sub">Cada opção tem a faixa de preço que a academia informou. O contato é o mesmo para as duas.</p>
                 ${htOpcoes(c)}
-                <p class="opt-nota">Valores por hora de quadra, informados pela própria academia. Confirme na conversa antes de fechar horário.</p>
               </section>
 
               ${(totalQuadras(c) || (c.amenities || []).length) ? `
@@ -3727,6 +3820,7 @@ function renderCourtPage(c) {
               <section class="ht-sec" id="ht-contato">
                 <h3 class="sec-title">Contato</h3>
                 <div class="cta-col" style="margin-top:0">
+                  ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
                   ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
                   ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
                   <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
@@ -3861,7 +3955,7 @@ function renderRegisterSheet() {
         ${state.registerStatus === "error" ? `<div class="form-error">${icon('warning',13)} ${esc(state.registerError)}</div>` : ""}
 
         <button class="btn-primary" id="register-submit" style="width:100%;justify-content:center;margin-top:16px;padding:12px 0" ${state.registerStatus==="saving"?"disabled":""}>
-          ${state.registerStatus==="saving" ? '<span class="spinner"></span> Salvando...' : (isEditing ? "Salvar alterações" : (isAdmin ? "Publicar quadra" : "Enviar para análise"))}
+          ${state.registerStatus==="saving" ? bolaGirando(16) + " Salvando..." : (isEditing ? "Salvar alterações" : (isAdmin ? "Publicar quadra" : "Enviar para análise"))}
         </button>
       </div></div>
     </div>
@@ -4068,7 +4162,7 @@ function renderLoginSheet() {
         <input class="form-field" id="login-password" type="password" placeholder="Senha" />
         ${state.loginError ? `<div class="form-error">${icon('warning',13)} ${esc(state.loginError)}</div>` : ""}
         <button class="btn-primary" id="login-submit" style="width:100%;justify-content:center;margin-top:16px;padding:12px 0" ${state.loginLoading ? "disabled" : ""}>
-          ${state.loginLoading ? '<span class="spinner"></span> Entrando...' : "Entrar"}
+          ${state.loginLoading ? bolaGirando(16) + " Entrando..." : "Entrar"}
         </button>
       </div></div>
     </div>
@@ -4139,6 +4233,16 @@ function attachEvents() {
       state.cep = el.dataset.termo || "";
       goSearch();
       doSearch();
+    };
+  });
+
+  document.querySelectorAll("[data-poi-retry]").forEach(el => {
+    el.onclick = () => {
+      const c = state.selected;
+      if (!c || c.id !== el.dataset.poiRetry) return;
+      delete state.perto[c.id];
+      atualizarPerto(c);
+      carregarPerto(c);
     };
   });
 

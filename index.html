@@ -180,6 +180,14 @@
   .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 999px; width: 40px; height: 40px; font-size: 22px; cursor: pointer; z-index: 2; }
   .lightbox-prev { left: 12px; }
   .lightbox-next { right: 12px; }
+  .foto-caixa { display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; border: 2px dashed var(--green-line); border-radius: 14px; background: var(--green-soft); padding: 22px 16px; margin-top: 4px; cursor: pointer; }
+  .foto-caixa.cheia { border-style: solid; border-color: var(--border); background: var(--bg-alt); cursor: default; }
+  .foto-caixa input[type="file"] { display: none; }
+  .foto-ic { display: flex; }
+  .foto-t { font-size: 15px; font-weight: 700; color: var(--green); line-height: 1.3; }
+  .foto-caixa.cheia .foto-t { color: var(--text); }
+  .foto-s { font-size: 12px; color: var(--muted); line-height: 1.4; max-width: 300px; }
+
   .photo-thumb-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
   .photo-thumb { position: relative; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; }
   .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -673,6 +681,8 @@
   .ht-room-price { background: var(--green-soft); border-top: 1px solid var(--green-line); padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
   @media (min-width: 720px) { .ht-room-price { border-top: none; border-left: 1px solid var(--green-line); align-items: flex-end; text-align: right; } }
   .ht-room-val { font-size: 24px; font-weight: 800; line-height: 1.05; white-space: nowrap; }
+  .sem-valor { font-size: 16px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .court-cta-val.sem-valor { font-size: 15px; }
   .ht-room-unit { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
   /* comodidades em grade de ícones */
@@ -1895,7 +1905,7 @@ function renderCompareSheet() {
                 ${cmpRow("Cobertura", cob)}
                 ${cmpRow("Quadras", totalQuadras(c) || "—")}
                 ${cmpRow("Modalidades", mods)}
-                ${cmpRow("Preços", precos.length ? precos.join("<br>") : "A consultar")}
+                ${cmpRow("Preços", precos.length ? precos.join("<br>") : SEM_PRECO)}
                 <button class="cmp-remove" data-cmp-remove="${c.id}">Remover da comparação</button>
               </div>
             `;
@@ -2092,7 +2102,7 @@ function priceBlock(c, compact) {
   if (!hasAula && !hasLoc) {
     return c.priceRange
       ? `<span class="price-known">${esc(c.priceRange)}</span>`
-      : `<span class="price-unknown">Preço a consultar</span>`;
+      : `<span class="price-unknown">${SEM_PRECO}</span>`;
   }
   if (compact) {
     const parts = [];
@@ -3023,8 +3033,8 @@ function renderCard(c, badge) {
               ? `<div class="offer-from">A partir de</div>
                  <div class="offer-price">R$ ${esc(priceMin(principal.faixa))}</div>
                  <div class="offer-sub">por hora</div>`
-              : `<div class="offer-price" style="font-size:18px">A consultar</div>
-                 <div class="offer-sub">a academia ainda não informou o valor</div>`}
+              : `<div class="offer-price" style="font-size:19px">${SEM_PRECO}</div>
+                 <div class="offer-sub">combine o valor com a academia</div>`}
           </div>
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>
@@ -3396,10 +3406,13 @@ function descricaoAcademia(c) {
 
   const mod = modalidadesTexto(c);
   const opcoes = opcoesPreco(c);
-  if (opcoes.length) {
-    frases.push(`A academia cobra, por hora de quadra, ${listaTexto(opcoes.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
+  const comValor = opcoes.filter(o => temPreco(o.faixa));
+  if (comValor.length) {
+    frases.push(`A academia cobra, por hora de quadra, ${listaTexto(comValor.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
+    const semValor = opcoes.filter(o => !temPreco(o.faixa));
+    if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} é sob consulta.`);
   } else if (mod) {
-    frases.push(`A academia atende ${mod.toLowerCase()}, mas ainda não informou os valores.`);
+    frases.push(`A academia atende ${mod.toLowerCase()}, com valor sob consulta.`);
   }
 
   const com = (c.amenities || []).map(a => AMENITY_MAP[a] && AMENITY_MAP[a].label.toLowerCase()).filter(Boolean);
@@ -3475,8 +3488,8 @@ function htOpcoes(c) {
     return `
       <div class="ht-room">
         <div class="ht-room-info">
-          <p class="ht-room-name">Preço a consultar</p>
-          <p class="ht-room-desc">A academia ainda não informou os valores no GuiaTennis. Pergunte no WhatsApp.</p>
+          <p class="ht-room-name">${SEM_PRECO}</p>
+          <p class="ht-room-desc">A academia ainda não informou aulas nem locação no GuiaTennis. Pergunte no WhatsApp o que ela atende e quanto custa.</p>
         </div>
       </div>
       ${blocoContato(c)}`;
@@ -3489,8 +3502,8 @@ function htOpcoes(c) {
         ${marcas.length ? `<div class="ht-room-perks">${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</div>` : ""}
       </div>
       <div class="ht-room-price">
-        <div class="ht-room-val">${esc(precoTexto(o.faixa))}</div>
-        <div class="ht-room-unit">por hora</div>
+        <div class="ht-room-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${esc(precoTexto(o.faixa))}</div>
+        <div class="ht-room-unit">${temPreco(o.faixa) ? "por hora" : "combine no WhatsApp"}</div>
       </div>
     </div>`).join("");
   return cartoes + blocoContato(c);
@@ -3550,7 +3563,7 @@ function cartaoVizinha(v, km) {
         </span>
         <span class="ht-viz-l">${icon('pin', 12, 'var(--muted)')}<span>${esc(lugar)} · ${distanceText(km)} daqui</span></span>
         ${quadras ? `<span class="ht-viz-l">${icon('ball', 12, 'var(--muted)')}<span>${quadras} ${plural(quadras, "quadra", "quadras")}${mod ? ` · ${esc(mod.toLowerCase())}` : ""}</span></span>` : ""}
-        <span class="ht-viz-p">${faixa ? `${esc(faixa.texto)} <small>${esc(faixa.opcao.nome.toLowerCase())}, por hora</small>` : `<small>Preço a consultar</small>`}</span>
+        <span class="ht-viz-p">${faixa ? `${esc(faixa.texto)} <small>${esc(faixa.opcao.nome.toLowerCase())}, por hora</small>` : `<span class="sem-valor">${SEM_PRECO}</span>`}</span>
       </span>
       <span class="ht-viz-seta">${icon('chevron', 16, 'var(--green)')}</span>
     </button>`;
@@ -3622,19 +3635,29 @@ function reviewsSection(c) {
 }
 
 // O texto de preço é um só no site inteiro: faixa completa, sempre por hora.
+// Sem valor informado, é sempre "Sob consulta" — nenhuma outra palavra.
+const SEM_PRECO = "Sob consulta";
+
 function precoTexto(faixa) {
   const min = priceMin(faixa);
   const max = priceMax(faixa);
-  if (!min) return "";
+  if (!min) return SEM_PRECO;
   return max && max !== min ? `R$ ${min} a ${max}` : `R$ ${min}`;
+}
+
+function temPreco(faixa) {
+  return !!priceMin(faixa);
 }
 
 // Cada preço vira uma opção que a pessoa escolhe, como os quartos de um hotel.
 function opcoesPreco(c) {
   const out = [];
-  if (c.priceAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula, assunto: "as aulas" });
-  if (c.priceLocacao) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao, assunto: "alugar a quadra" });
+  const temAula = !!c.priceAula || (c.modalidades || []).includes("aulas_proprias");
+  const temLoc = !!c.priceLocacao || (c.modalidades || []).includes("locacao");
+  if (temAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula || "", assunto: "as aulas" });
+  if (temLoc) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao || "", assunto: "alugar a quadra" });
   if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor informado pela academia", faixa: c.priceRange, assunto: "os valores" });
+  // Quem tem valor informado aparece primeiro; "sob consulta" vai para o fim.
   return out.sort((a, b) => (parseInt(priceMin(a.faixa), 10) || 1e9) - (parseInt(priceMin(b.faixa), 10) || 1e9));
 }
 
@@ -3679,11 +3702,11 @@ function htCartaoContato(c) {
         ${opcoes.map(o => `
           <div class="ht-book-row">
             <span class="ht-book-opt">${esc(o.nome)}</span>
-            <span class="ht-book-val">${esc(precoTexto(o.faixa))}</span>
+            <span class="ht-book-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${esc(precoTexto(o.faixa))}</span>
           </div>`).join("")}
       ` : `
         <p class="ht-book-lbl">Preço</p>
-        <div class="ht-book-row"><span class="ht-book-opt">A consultar</span></div>
+        <div class="ht-book-row"><span class="ht-book-val sem-valor">${SEM_PRECO}</span></div>
       `}
       <div class="ht-book-div"></div>
       ${c.appCount ? `
@@ -3780,9 +3803,17 @@ function perguntasAcademia(c) {
   const faq = [];
   const opcoes = opcoesPreco(c);
   if (opcoes.length) {
+    const linhas = opcoes.map(o => temPreco(o.faixa)
+      ? `${o.nome}: ${precoTexto(o.faixa)} por hora`
+      : `${o.nome}: sob consulta`);
     faq.push({
       q: `Quanto custa jogar em ${c.name}?`,
-      a: opcoes.map(o => `${o.nome}: ${precoTexto(o.faixa)} por hora`).join(". ") + ". O valor pode mudar conforme horário e professor — confirme no WhatsApp.",
+      a: linhas.join(". ") + ". O valor pode mudar conforme horário e professor — confirme no WhatsApp.",
+    });
+  } else {
+    faq.push({
+      q: `Quanto custa jogar em ${c.name}?`,
+      a: "A academia ainda não publicou os valores no GuiaTennis. O preço é sob consulta — pergunte direto no WhatsApp dela.",
     });
   }
   const mod = modalidadesTexto(c);
@@ -4027,11 +4058,10 @@ function renderCourtPage(c) {
 
       ${c.phone ? `
         <div class="court-cta ${(state.compareList.length && !state.showCompare) ? "up" : ""}">
-          ${faixa ? `
-            <div class="court-cta-price">
-              <span class="court-cta-val">${esc(faixa.texto)}</span>
-              <span class="court-cta-unit">${esc(faixa.opcao.nome.toLowerCase())}, por hora</span>
-            </div>` : ""}
+          <div class="court-cta-price">
+            <span class="court-cta-val ${faixa ? "" : "sem-valor"}">${faixa ? esc(faixa.texto) : SEM_PRECO}</span>
+            <span class="court-cta-unit">${faixa ? `${esc(faixa.opcao.nome.toLowerCase())}, por hora` : "combine no WhatsApp"}</span>
+          </div>
           <a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>
           <button type="button" class="cta-btn cta-secondary" id="share-btn-2" data-court="${c.id}" aria-label="Compartilhar">${icon('share', 15, 'var(--green)')}</button>
         </div>` : ""}
@@ -4088,9 +4118,17 @@ function renderRegisterSheet() {
         ${state.cepStatus === "loading" ? `<p class="footnote">Buscando endereço pelo CEP...</p>` : ""}
         ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}
 
-        <p class="field-label">Fotos (opcional, até 5)</p>
-        <p class="footnote" style="margin:0 0 8px">Só fotos do espaço em si: quadras, recepção/secretaria, vestiário, fachada. Não são permitidas fotos de promoções, preços ou informativos.</p>
-        <input type="file" accept="image/*" multiple id="f-photo-file" class="form-field" style="padding:9px 12px" ${(f.photos||[]).length >= 5 ? "disabled" : ""} />
+        <p class="field-label">Fotos da academia</p>
+        <label class="foto-caixa ${(f.photos||[]).length >= 5 ? "cheia" : ""}" for="f-photo-file">
+          <span class="foto-ic">${icon('camera', 30, (f.photos||[]).length >= 5 ? 'var(--muted)' : 'var(--green)')}</span>
+          <span class="foto-t">${(f.photos||[]).length
+            ? `${f.photos.length} de 5 fotos${f.photos.length >= 5 ? "" : " — toque para adicionar mais"}`
+            : "Toque para escolher as fotos"}</span>
+          <span class="foto-s">${(f.photos||[]).length >= 5
+            ? "Chegou no limite. Remova uma foto para trocar."
+            : "Direto da galeria ou da câmera. Quem tem foto recebe muito mais contato."}</span>
+          <input type="file" accept="image/*" multiple id="f-photo-file" ${(f.photos||[]).length >= 5 ? "disabled" : ""} />
+        </label>
         ${(f.photos||[]).length ? `
           <div class="photo-thumb-row">
             ${f.photos.map((p, i) => `
@@ -4101,6 +4139,7 @@ function renderRegisterSheet() {
             `).join("")}
           </div>
         ` : ""}
+        <p class="footnote" style="margin-top:8px">Só o espaço em si: quadras, recepção, vestiário, fachada. Nada de promoção, tabela de preço ou material de divulgação.</p>
 
         <p class="field-label">Quantas quadras de cada tipo${isEditing ? "" : " *"}</p>
         <div class="quadra-count-grid">
@@ -4122,7 +4161,9 @@ function renderRegisterSheet() {
           ${MODALIDADE_OPTS.map(m => `<button class="chip small reg-modalidade ${f.modalidades.includes(m.key)?"active":""}" data-modalidade="${m.key}">${m.icon} ${m.label}</button>`).join("")}
         </div>
 
-        ${(f.modalidades.includes("aulas_proprias") || f.modalidades.includes("locacao")) ? `<p class="field-label">Faixa de preço por hora</p>` : ""}
+        ${(f.modalidades.includes("aulas_proprias") || f.modalidades.includes("locacao")) ? `
+          <p class="field-label">Faixa de preço por hora (opcional)</p>
+          <p class="footnote" style="margin:0 0 8px">Deixe em branco se preferir não publicar valores — a ficha mostra "Sob consulta".</p>` : ""}
         ${f.modalidades.includes("aulas_proprias") ? `
           <div class="price-input-row">
             <span class="price-input-label">Aula</span>
@@ -5435,8 +5476,6 @@ async function doRegisterSubmit() {
   if (!f.name.trim()) missing.push("nome");
   if (!f.address.trim() || !f.numero.trim() || !f.bairro.trim() || !f.cidade.trim()) missing.push("endereço completo");
   if (!f.phone.trim()) missing.push("WhatsApp");
-  if (f.modalidades.includes("aulas_proprias") && !/\d/.test(f.priceAula || "")) missing.push("faixa de preço da aula");
-  if (f.modalidades.includes("locacao") && !/\d/.test(f.priceLocacao || "")) missing.push("faixa de preço da locação");
   if (!hasQuadra) missing.push("quantidade de quadras");
   if (!f.modalidades.length) missing.push("modalidade");
   if (!f.consent) missing.push("aceite dos Termos de Uso e Política de Privacidade");

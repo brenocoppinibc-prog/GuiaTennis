@@ -180,6 +180,10 @@
   .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 999px; width: 40px; height: 40px; font-size: 22px; cursor: pointer; z-index: 2; }
   .lightbox-prev { left: 12px; }
   .lightbox-next { right: 12px; }
+  .qr-caixa { display: flex; justify-content: center; margin-top: 14px; }
+  .qr-caixa svg { border: 1px solid var(--border); border-radius: 14px; max-width: 100%; height: auto; }
+  .qr-link { font-size: 12px; color: var(--muted); word-break: break-all; text-align: center; margin: 10px 0 0; }
+
   .foto-caixa { display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; border: 2px dashed var(--green-line); border-radius: 14px; background: var(--green-soft); padding: 22px 16px; margin-top: 4px; cursor: pointer; }
   .foto-caixa.cheia { border-style: solid; border-color: var(--border); background: var(--bg-alt); cursor: default; }
   .foto-caixa input[type="file"] { display: none; }
@@ -452,6 +456,11 @@
   .offer-head { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
   .offer-head strong { font-weight: 700; }
   .offer-check { color: var(--green); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+  .offer-dois { display: flex; gap: 20px; min-width: 0; }
+  .offer-um { display: flex; flex-direction: column; min-width: 0; }
+  .offer-um-lbl { font-size: 12px; color: var(--muted); }
+  .offer-um-val { font-size: 22px; font-weight: 800; line-height: 1.1; white-space: nowrap; }
+  .offer-um-val.sem-valor { font-size: 14px; }
   .offer-body { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 6px; }
   .offer-price { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1.05; white-space: nowrap; }
   .offer-sub { font-size: 13px; color: var(--muted); margin-top: 1px; }
@@ -1243,6 +1252,7 @@ let state = {
   cardPhoto: {},
   reviewsExpanded: false,
   faqOpen: {},
+  qrCourt: null,
   perto: {},
   page: "home",
   backTo: "home",
@@ -1597,6 +1607,7 @@ function render() {
     ${state.showCompare ? renderCompareSheet() : ""}
     ${state.page === "search" ? renderFilterDrawer(results.length) : ""}
     ${renderNavSheet()}
+    ${renderQrSheet()}
     ${renderCompareBar()}
     ${renderLightbox()}
   `;
@@ -2069,6 +2080,76 @@ function navLinks(c, opts) {
   const cls = dark ? "cta-btn cta-secondary nav-link-dark" : "cta-btn cta-secondary";
   const cor = dark ? "#fff" : "var(--green)";
   return `<button type="button" class="${cls}" data-nav="${c.id}" style="margin-top:8px">${icon('pin',15,cor)} Ver no mapa e direções</button>`;
+}
+
+// Tela do QR code da academia, só no modo admin. O código é gerado aqui no
+// navegador e aponta direto para a ficha — não expira nem depende de serviço.
+function renderQrSheet() {
+  if (!state.qrCourt || !isAdmin) return "";
+  const c = state.allCourts.find(x => x.id === state.qrCourt)
+        || (state.pending || []).find(x => x.id === state.qrCourt);
+  if (!c) return "";
+  const url = linkDaFicha(c);
+  let svg = "";
+  try { svg = qrSvg(url, 300); } catch (e) { svg = ""; }
+  return `
+    <div class="overlay open" id="qr-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="qr-close">✕</button>
+        <p class="sheet-title display">QR code da ficha</p>
+        <p class="subtitle" style="margin-top:4px">${esc(c.name)}</p>
+        ${svg ? `<div class="qr-caixa">${svg}</div>` : `<p class="footnote" style="color:var(--red)">Não consegui gerar o código para esse endereço.</p>`}
+        <p class="qr-link">${esc(url)}</p>
+        <div class="cta-col" style="margin-top:12px">
+          <button type="button" class="cta-btn cta-primary" data-qr-baixar="png" data-court="${c.id}">Baixar PNG (1200px)</button>
+          <button type="button" class="cta-btn cta-secondary" data-qr-baixar="svg" data-court="${c.id}">Baixar SVG (para impressão)</button>
+        </div>
+        <p class="footnote">Aponta direto para guiatennis.com.br, então funciona para sempre — não expira nem depende de outro site. Imprima e deixe na recepção da academia para os alunos avaliarem.</p>
+      </div></div>
+    </div>
+  `;
+}
+
+function linkDaFicha(c) {
+  return `https://guiatennis.com.br/?court=${c.id}`;
+}
+
+function nomeArquivoQr(c) {
+  const limpo = (c.name || "academia").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `guiatennis-qr-${limpo || "academia"}`;
+}
+
+function baixarQr(c, formato) {
+  const svg = qrSvg(linkDaFicha(c), 1200);
+  const baixa = (endereco) => {
+    const a = document.createElement("a");
+    a.href = endereco;
+    a.download = `${nomeArquivoQr(c)}.${formato}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+  if (formato === "svg") {
+    const endereco = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    baixa(endereco);
+    setTimeout(() => URL.revokeObjectURL(endereco), 4000);
+    return;
+  }
+  const img = new Image();
+  img.onload = () => {
+    const tela = document.createElement("canvas");
+    tela.width = tela.height = 1200;
+    const ctx = tela.getContext("2d");
+    ctx.drawImage(img, 0, 0, 1200, 1200);
+    tela.toBlob((blob) => {
+      const endereco = URL.createObjectURL(blob);
+      baixa(endereco);
+      setTimeout(() => URL.revokeObjectURL(endereco), 4000);
+    }, "image/png");
+  };
+  img.onerror = () => alert("Não consegui montar o PNG. Baixe o SVG, que abre em qualquer editor.");
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
 function renderNavSheet() {
@@ -2920,14 +3001,19 @@ function renderActiveChips() {
 
 // Cada preço vira uma "oferta": a mais barata abre o card, as outras ficam
 // listadas embaixo, como os parceiros do Trivago.
+// O que o card mostra depende do que a pessoa procurou: buscando aula,
+// aparece o valor da aula; buscando locação, o da locação; buscando as duas
+// (ou sem filtro), aparecem as duas, cada uma pelo menor valor.
 function ofertas(c) {
-  const out = [];
-  if (c.priceAula) out.push({ label: "Aula", faixa: c.priceAula });
-  if (c.priceLocacao) out.push({ label: "Locação", faixa: c.priceLocacao });
-  if (!out.length && c.priceRange) out.push({ label: "Preço", faixa: c.priceRange });
-  return out
-    .map(o => ({ ...o, min: parseInt(priceMin(o.faixa) || "0", 10) }))
+  const opcoes = opcoesPreco(c)
+    .map(o => ({ label: o.nome, faixa: o.faixa, min: parseInt(priceMin(o.faixa) || "0", 10) }))
     .sort((a, b) => (a.min || 1e9) - (b.min || 1e9));
+
+  const so = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : null;
+  const alvo = so === "aulas_proprias" ? "Aula" : (so === "locacao" ? "Locação" : null);
+  if (!alvo) return opcoes;
+  const filtrado = opcoes.filter(o => o.label === alvo);
+  return filtrado.length ? filtrado : opcoes;
 }
 
 // Os "✓" verdes ao lado do nome do parceiro.
@@ -3023,18 +3109,32 @@ function renderCard(c, badge) {
 
       <div class="offer">
         <div class="offer-head">
-          <strong class="offer-mod">${principal ? esc(principal.label) : "Preço"}</strong>
+          <strong class="offer-mod">${precos.length > 1 ? "A partir de" : (principal ? esc(principal.label) : "Preço")}</strong>
           ${marcas.length ? `<span class="offer-perks">${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</span>` : ""}
         </div>
         <div class="offer-body">
-          <div>
-            ${principal
-              ? `<div class="offer-from">A partir de</div>
-                 <div class="offer-price">R$ ${esc(priceMin(principal.faixa))}</div>
-                 <div class="offer-sub">por hora</div>`
-              : `<div class="offer-price" style="font-size:19px">${SEM_PRECO}</div>
-                 <div class="offer-sub">combine o valor com a academia</div>`}
-          </div>
+          ${precos.length > 1
+            ? `<div>
+                <div class="offer-dois">
+                  ${precos.map(o => `
+                    <div class="offer-um">
+                      <span class="offer-um-lbl">${esc(o.label)}</span>
+                      <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}` : SEM_PRECO}</span>
+                    </div>`).join("")}
+                </div>
+                <div class="offer-sub">por hora</div>
+              </div>`
+            : `<div>
+                ${principal
+                  ? (principal.min
+                      ? `<div class="offer-from">A partir de</div>
+                         <div class="offer-price">R$ ${esc(priceMin(principal.faixa))}</div>
+                         <div class="offer-sub">por hora</div>`
+                      : `<div class="offer-price sem-valor" style="font-size:19px">${SEM_PRECO}</div>
+                         <div class="offer-sub">combine o valor com a academia</div>`)
+                  : `<div class="offer-price sem-valor" style="font-size:19px">${SEM_PRECO}</div>
+                     <div class="offer-sub">combine o valor com a academia</div>`}
+              </div>`}
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>
         ${c.phone
@@ -3332,6 +3432,403 @@ function htPertoConteudo(c) {
     </div>
     <p class="ht-poi-nota">Lugares num raio de 1,5 km, tirados do OpenStreetMap. Distância em linha reta e tempo estimado — o caminho real pode ser maior.</p>
     ${diagnosticoPerto(c, dados)}`;
+}
+
+// ---------- QR code gerado aqui dentro ----------
+// Sem biblioteca externa e sem serviço de terceiro: o código é montado no
+// próprio navegador. Um QR é só o endereço escrito em quadradinhos, então
+// ele funciona enquanto o site existir — não expira nem depende de ninguém.
+// Modo byte, correção de erro M, versões 1 a 10 (dá para ~200 caracteres).
+
+const QR_BLOCOS = {};
+QR_BLOCOS.M = {
+  1:  { ec: 10, g: [[1, 16]] },
+  2:  { ec: 16, g: [[1, 28]] },
+  3:  { ec: 26, g: [[1, 44]] },
+  4:  { ec: 18, g: [[2, 32]] },
+  5:  { ec: 24, g: [[2, 43]] },
+  6:  { ec: 16, g: [[4, 27]] },
+  7:  { ec: 18, g: [[4, 31]] },
+  8:  { ec: 22, g: [[2, 38], [2, 39]] },
+  9:  { ec: 22, g: [[3, 36], [2, 37]] },
+  10: { ec: 26, g: [[4, 43], [1, 44]] },
+};
+// Nível alto de correção: aguenta cobrir cerca de 30% do código, que é o que
+// permite pôr o emblema do GuiaTennis no meio sem o leitor perder a leitura.
+QR_BLOCOS.H = {
+  1:  { ec: 17, g: [[1, 9]] },
+  2:  { ec: 28, g: [[1, 16]] },
+  3:  { ec: 22, g: [[2, 13]] },
+  4:  { ec: 16, g: [[4, 9]] },
+  5:  { ec: 22, g: [[2, 11], [2, 12]] },
+  6:  { ec: 28, g: [[4, 15]] },
+  7:  { ec: 26, g: [[4, 13], [1, 14]] },
+  8:  { ec: 26, g: [[4, 14], [2, 15]] },
+  9:  { ec: 24, g: [[4, 12], [4, 13]] },
+  10: { ec: 28, g: [[6, 15], [2, 16]] },
+};
+const QR_FORMATO_NIVEL = { M: 0b00, H: 0b10 };
+
+const QR_ALINHAMENTO = {
+  1: [], 2: [6, 18], 3: [6, 22], 4: [6, 26], 5: [6, 30],
+  6: [6, 34], 7: [6, 22, 38], 8: [6, 24, 42], 9: [6, 26, 46], 10: [6, 28, 50],
+};
+
+// Tabelas do corpo finito GF(256), com polinômio 0x11D — a base da correção
+// de erro Reed-Solomon.
+const QR_EXP = new Uint8Array(512);
+const QR_LOG = new Uint8Array(256);
+(function () {
+  let x = 1;
+  for (let i = 0; i < 255; i++) {
+    QR_EXP[i] = x;
+    QR_LOG[x] = i;
+    x <<= 1;
+    if (x & 0x100) x ^= 0x11d;
+  }
+  for (let i = 255; i < 512; i++) QR_EXP[i] = QR_EXP[i - 255];
+})();
+
+function qrMult(a, b) {
+  return (a === 0 || b === 0) ? 0 : QR_EXP[QR_LOG[a] + QR_LOG[b]];
+}
+
+function qrPolinomioGerador(grau) {
+  let poli = [1];
+  for (let i = 0; i < grau; i++) {
+    const novo = new Array(poli.length + 1).fill(0);
+    for (let j = 0; j < poli.length; j++) {
+      novo[j] ^= poli[j];                         // multiplica por x
+      novo[j + 1] ^= qrMult(poli[j], QR_EXP[i]);  // multiplica por alfa^i
+    }
+    poli = novo;
+  }
+  return poli;
+}
+
+function qrCorrecao(dados, quantos) {
+  const gerador = qrPolinomioGerador(quantos);
+  const resto = new Array(quantos).fill(0);
+  for (const byte of dados) {
+    const fator = byte ^ resto[0];
+    resto.shift();
+    resto.push(0);
+    if (fator !== 0) {
+      for (let i = 0; i < quantos; i++) resto[i] ^= qrMult(gerador[i + 1], fator);
+    }
+  }
+  return resto;
+}
+
+// Texto -> bytes UTF-8
+function qrBytes(texto) {
+  return Array.from(new TextEncoder().encode(texto));
+}
+
+function qrVersaoPara(tamanho, nivel) {
+  for (let v = 1; v <= 10; v++) {
+    const info = QR_BLOCOS[nivel][v];
+    const dados = info.g.reduce((s, [n, d]) => s + n * d, 0);
+    const cabecalho = 4 + (v < 10 ? 8 : 16);
+    if (dados * 8 >= cabecalho + tamanho * 8) return v;
+  }
+  return null;
+}
+
+function qrCodewords(texto, nivel) {
+  const bytes = qrBytes(texto);
+  const versao = qrVersaoPara(bytes.length, nivel);
+  if (!versao) throw new Error("texto longo demais para o QR");
+  const info = QR_BLOCOS[nivel][versao];
+  const totalDados = info.g.reduce((s, [n, d]) => s + n * d, 0);
+
+  // fluxo de bits: modo, tamanho, dados, terminador, enchimento
+  const bits = [];
+  const põe = (valor, quantos) => {
+    for (let i = quantos - 1; i >= 0; i--) bits.push((valor >> i) & 1);
+  };
+  põe(0b0100, 4);
+  põe(bytes.length, versao < 10 ? 8 : 16);
+  bytes.forEach(b => põe(b, 8));
+  for (let i = 0; i < 4 && bits.length < totalDados * 8; i++) bits.push(0);
+  while (bits.length % 8) bits.push(0);
+  const dados = [];
+  for (let i = 0; i < bits.length; i += 8) {
+    dados.push(bits.slice(i, i + 8).reduce((v, b) => (v << 1) | b, 0));
+  }
+  const enchimento = [0xec, 0x11];
+  let k = 0;
+  while (dados.length < totalDados) dados.push(enchimento[k++ % 2]);
+
+  // divide em blocos, calcula a correção de cada um e intercala
+  const blocosDados = [];
+  const blocosEc = [];
+  let pos = 0;
+  info.g.forEach(([quantos, porBloco]) => {
+    for (let i = 0; i < quantos; i++) {
+      const bloco = dados.slice(pos, pos + porBloco);
+      pos += porBloco;
+      blocosDados.push(bloco);
+      blocosEc.push(qrCorrecao(bloco, info.ec));
+    }
+  });
+
+  const saida = [];
+  const maiorDados = Math.max(...blocosDados.map(b => b.length));
+  for (let i = 0; i < maiorDados; i++) {
+    blocosDados.forEach(b => { if (i < b.length) saida.push(b[i]); });
+  }
+  for (let i = 0; i < info.ec; i++) {
+    blocosEc.forEach(b => saida.push(b[i]));
+  }
+  return { versao, codewords: saida };
+}
+
+// ---- desenho da matriz ----
+
+function qrNovaMatriz(lado) {
+  const m = [];
+  for (let i = 0; i < lado; i++) m.push(new Array(lado).fill(null));
+  return m;
+}
+
+function qrPõeFinder(m, linha, coluna) {
+  for (let l = -1; l <= 7; l++) {
+    for (let c = -1; c <= 7; c++) {
+      const L = linha + l, C = coluna + c;
+      if (L < 0 || L >= m.length || C < 0 || C >= m.length) continue;
+      const borda = (l >= 0 && l <= 6 && (c === 0 || c === 6)) || (c >= 0 && c <= 6 && (l === 0 || l === 6));
+      const miolo = l >= 2 && l <= 4 && c >= 2 && c <= 4;
+      m[L][C] = (borda || miolo) ? 1 : 0;
+    }
+  }
+}
+
+function qrPõeAlinhamento(m, versao) {
+  const pos = QR_ALINHAMENTO[versao];
+  for (const l of pos) {
+    for (const c of pos) {
+      if (m[l][c] !== null) continue;   // não cobre os finders
+      for (let dl = -2; dl <= 2; dl++) {
+        for (let dc = -2; dc <= 2; dc++) {
+          const borda = Math.max(Math.abs(dl), Math.abs(dc));
+          m[l + dl][c + dc] = (borda !== 1) ? 1 : 0;
+        }
+      }
+    }
+  }
+}
+
+function qrMatrizBase(versao) {
+  const lado = 17 + 4 * versao;
+  const m = qrNovaMatriz(lado);
+  qrPõeFinder(m, 0, 0);
+  qrPõeFinder(m, 0, lado - 7);
+  qrPõeFinder(m, lado - 7, 0);
+  qrPõeAlinhamento(m, versao);
+  for (let i = 8; i < lado - 8; i++) {
+    const v = i % 2 === 0 ? 1 : 0;
+    if (m[6][i] === null) m[6][i] = v;
+    if (m[i][6] === null) m[i][6] = v;
+  }
+  m[lado - 8][8] = 1;   // módulo sempre escuro
+  // reserva o espaço do formato
+  for (let i = 0; i < 9; i++) {
+    if (m[8][i] === null) m[8][i] = 2;
+    if (m[i][8] === null) m[i][8] = 2;
+  }
+  for (let i = 0; i < 8; i++) {
+    if (m[8][lado - 1 - i] === null) m[8][lado - 1 - i] = 2;
+    if (m[lado - 1 - i][8] === null) m[lado - 1 - i][8] = 2;
+  }
+  // reserva o espaço da versão (a partir da versão 7)
+  if (versao >= 7) {
+    for (let i = 0; i < 6; i++) {
+      for (let j = 0; j < 3; j++) {
+        m[i][lado - 11 + j] = 2;
+        m[lado - 11 + j][i] = 2;
+      }
+    }
+  }
+  return m;
+}
+
+function qrPõeDados(m, codewords) {
+  const lado = m.length;
+  const bits = [];
+  codewords.forEach(b => { for (let i = 7; i >= 0; i--) bits.push((b >> i) & 1); });
+  let k = 0;
+  let subindo = true;
+  for (let colDir = lado - 1; colDir > 0; colDir -= 2) {
+    if (colDir === 6) colDir--;   // pula a coluna do tempo
+    for (let passo = 0; passo < lado; passo++) {
+      const linha = subindo ? lado - 1 - passo : passo;
+      for (const col of [colDir, colDir - 1]) {
+        if (m[linha][col] !== null) continue;
+        m[linha][col] = k < bits.length ? bits[k] : 0;
+        k++;
+      }
+    }
+    subindo = !subindo;
+  }
+}
+
+const QR_MASCARAS = [
+  (l, c) => (l + c) % 2 === 0,
+  (l) => l % 2 === 0,
+  (l, c) => c % 3 === 0,
+  (l, c) => (l + c) % 3 === 0,
+  (l, c) => (Math.floor(l / 2) + Math.floor(c / 3)) % 2 === 0,
+  (l, c) => ((l * c) % 2) + ((l * c) % 3) === 0,
+  (l, c) => (((l * c) % 2) + ((l * c) % 3)) % 2 === 0,
+  (l, c) => (((l + c) % 2) + ((l * c) % 3)) % 2 === 0,
+];
+
+function qrAplicaMascara(base, reservado, n) {
+  const lado = base.length;
+  const m = base.map(linha => linha.slice());
+  for (let l = 0; l < lado; l++) {
+    for (let c = 0; c < lado; c++) {
+      if (reservado[l][c]) continue;
+      if (QR_MASCARAS[n](l, c)) m[l][c] ^= 1;
+    }
+  }
+  return m;
+}
+
+function qrPenalidade(m) {
+  const lado = m.length;
+  let p = 0;
+  // 1) sequências de 5 ou mais iguais
+  for (let i = 0; i < lado; i++) {
+    for (const pegar of [(j) => m[i][j], (j) => m[j][i]]) {
+      let run = 1;
+      for (let j = 1; j < lado; j++) {
+        if (pegar(j) === pegar(j - 1)) run++;
+        else { if (run >= 5) p += 3 + (run - 5); run = 1; }
+      }
+      if (run >= 5) p += 3 + (run - 5);
+    }
+  }
+  // 2) blocos 2x2 da mesma cor
+  for (let l = 0; l < lado - 1; l++) {
+    for (let c = 0; c < lado - 1; c++) {
+      const v = m[l][c];
+      if (v === m[l][c + 1] && v === m[l + 1][c] && v === m[l + 1][c + 1]) p += 3;
+    }
+  }
+  // 3) padrão parecido com o do finder
+  const alvo1 = [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0];
+  const alvo2 = [0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1];
+  for (let i = 0; i < lado; i++) {
+    for (let j = 0; j <= lado - 11; j++) {
+      const linha = [], coluna = [];
+      for (let k = 0; k < 11; k++) { linha.push(m[i][j + k]); coluna.push(m[j + k][i]); }
+      for (const seq of [linha, coluna]) {
+        if (seq.every((v, k) => v === alvo1[k]) || seq.every((v, k) => v === alvo2[k])) p += 40;
+      }
+    }
+  }
+  // 4) equilíbrio entre claro e escuro
+  const escuros = m.flat().filter(v => v === 1).length;
+  const pct = (escuros * 100) / (lado * lado);
+  p += Math.floor(Math.abs(pct - 50) / 5) * 10;
+  return p;
+}
+
+function qrFormato(mascara, nivel) {
+  let valor = (QR_FORMATO_NIVEL[nivel] << 3) | mascara;
+  let resto = valor << 10;
+  for (let i = 14; i >= 10; i--) {
+    if ((resto >> i) & 1) resto ^= 0x537 << (i - 10);
+  }
+  return ((valor << 10) | resto) ^ 0x5412;
+}
+
+function qrVersaoBits(versao) {
+  let resto = versao << 12;
+  for (let i = 17; i >= 12; i--) {
+    if ((resto >> i) & 1) resto ^= 0x1f25 << (i - 12);
+  }
+  return (versao << 12) | resto;
+}
+
+function qrPõeFormato(m, mascara, versao, nivel) {
+  const lado = m.length;
+  const bits = qrFormato(mascara, nivel);
+  const pega = i => (bits >> i) & 1;
+  // primeira cópia, em volta do finder de cima à esquerda
+  for (let i = 0; i <= 5; i++) m[i][8] = pega(i);
+  m[7][8] = pega(6);
+  m[8][8] = pega(7);
+  m[8][7] = pega(8);
+  for (let i = 9; i <= 14; i++) m[8][14 - i] = pega(i);
+  // segunda cópia, dividida entre a faixa de baixo e a da direita
+  for (let i = 0; i <= 7; i++) m[8][lado - 1 - i] = pega(i);
+  for (let i = 8; i <= 14; i++) m[lado - 15 + i][8] = pega(i);
+  m[lado - 8][8] = 1;   // módulo sempre escuro
+
+  if (versao >= 7) {
+    const vb = qrVersaoBits(versao);
+    for (let i = 0; i < 18; i++) {
+      const bit = (vb >> i) & 1;
+      const l = Math.floor(i / 3), c = i % 3;
+      m[l][lado - 11 + c] = bit;
+      m[lado - 11 + c][l] = bit;
+    }
+  }
+}
+
+// Devolve a matriz final: 1 é quadradinho escuro, 0 é claro.
+function qrMatriz(texto, nivel) {
+  nivel = nivel || "M";
+  const { versao, codewords } = qrCodewords(texto, nivel);
+  const base = qrMatrizBase(versao);
+  const reservado = base.map(linha => linha.map(v => v !== null));
+  const comDados = base.map(linha => linha.slice());
+  qrPõeDados(comDados, codewords);
+  const limpo = comDados.map(linha => linha.map(v => (v === 2 ? 0 : v)));
+
+  let melhor = null, melhorNota = Infinity;
+  for (let n = 0; n < 8; n++) {
+    const tentativa = qrAplicaMascara(limpo, reservado, n);
+    qrPõeFormato(tentativa, n, versao, nivel);
+    const nota = qrPenalidade(tentativa);
+    if (nota < melhorNota) { melhorNota = nota; melhor = tentativa; }
+  }
+  return melhor;
+}
+
+// Desenha o QR em SVG, nas cores do GuiaTennis e com o emblema no meio.
+// O emblema cobre cerca de 5% da área; o nível alto de correção aguenta bem
+// mais que isso, então o código continua sendo lido.
+function qrSvg(texto, lado, comEmblema) {
+  const m = qrMatriz(texto, "H");
+  const n = m.length;
+  const margem = 4;
+  const total = n + margem * 2;
+  const quadrados = [];
+  for (let l = 0; l < n; l++) {
+    for (let c = 0; c < n; c++) {
+      if (m[l][c]) quadrados.push(`M${c + margem} ${l + margem}h1v1h-1z`);
+    }
+  }
+  const meio = total / 2;
+  const e = total * 0.22;
+  const emblema = comEmblema === false ? "" : `
+  <g transform="translate(${(meio - e / 2).toFixed(3)} ${(meio - e / 2).toFixed(3)})">
+    <rect width="${e.toFixed(3)}" height="${e.toFixed(3)}" rx="${(e * 0.22).toFixed(3)}" fill="#F7F4EC"/>
+    <rect x="${(e * 0.07).toFixed(3)}" y="${(e * 0.07).toFixed(3)}" width="${(e * 0.86).toFixed(3)}" height="${(e * 0.86).toFixed(3)}" rx="${(e * 0.18).toFixed(3)}" fill="#1F4D3D"/>
+    <g transform="translate(${(e / 2).toFixed(3)} ${(e / 2).toFixed(3)}) rotate(-15) scale(${(e / 900).toFixed(5)})">
+      <ellipse cx="0" cy="-140" rx="150" ry="185" fill="none" stroke="#FFFFFF" stroke-width="46"/>
+      <rect x="-27" y="30" width="54" height="270" rx="27" fill="#FFFFFF"/>
+      <circle cx="105" cy="-95" r="80" fill="#B8933F"/>
+    </g>
+  </g>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${lado}" height="${lado}" shape-rendering="crispEdges">
+  <rect width="${total}" height="${total}" fill="#F7F4EC"/>
+  <path d="${quadrados.join("")}" fill="#1F4D3D"/>${emblema}
+</svg>`;
 }
 
 // ---------- ficha da academia no formato das páginas de hotel ----------
@@ -3931,6 +4428,7 @@ function renderCourtPage(c) {
       </div>
     ` : ""}
     <button type="button" class="cta-btn cta-secondary editar-academia" data-court="${c.id}" style="margin-bottom:8px">${icon('edit', 15, 'var(--green)')} Editar academia</button>
+    <button type="button" class="cta-btn cta-secondary" id="qr-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('clipboard', 15, 'var(--green)')} QR code desta ficha</button>
     ${c.status !== "pending" ? `<button type="button" class="cta-btn cta-danger" id="delete-court-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('warning', 15, 'var(--red)')} Excluir academia</button>` : ""}
     ${c.nomeSolicitante ? `<p class="footnote" style="margin-bottom:12px">Cadastro enviado por: ${esc(c.nomeSolicitante)} · ${esc(c.contatoSolicitante || "")}</p>` : ""}
   `;
@@ -4508,6 +5006,20 @@ function attachEvents() {
       delete state.perto[c.id];
       atualizarPerto(c);
       carregarPerto(c);
+    };
+  });
+
+  const qrBtn = document.getElementById("qr-btn");
+  if (qrBtn) qrBtn.onclick = () => { state.qrCourt = qrBtn.dataset.court; render(); };
+  const qrClose = document.getElementById("qr-close");
+  if (qrClose) qrClose.onclick = () => { state.qrCourt = null; render(); };
+  const qrOverlay = document.getElementById("qr-overlay");
+  if (qrOverlay) qrOverlay.onclick = (e) => { if (e.target === qrOverlay) { state.qrCourt = null; render(); } };
+  document.querySelectorAll("[data-qr-baixar]").forEach(el => {
+    el.onclick = () => {
+      const c = state.allCourts.find(x => x.id === el.dataset.court)
+            || (state.pending || []).find(x => x.id === el.dataset.court);
+      if (c) baixarQr(c, el.dataset.qrBaixar);
     };
   });
 

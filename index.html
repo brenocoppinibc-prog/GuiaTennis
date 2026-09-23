@@ -100,9 +100,6 @@
   .cmp-sub-topo { font-size: 14px; color: var(--muted); margin: 6px 0 0; line-height: 1.45; }
   .cmp-vazio { font-size: 14px; color: var(--muted); background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 18px; text-align: center; }
   .cmp-add-lista { display: grid; gap: 10px; }
-  @media (min-width: 900px) { .cmp-add-lista { grid-template-columns: 1fr 1fr; } }
-  /* na tela grande a lista fica na coluna estreita da esquerda, então volta a uma por linha */
-  @media (min-width: 980px) { .cmp-add-lista { grid-template-columns: 1fr; } }
   .cmp-add { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px; }
   .cmp-add.on { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
   .cmp-add-foto { width: 72px; height: 72px; border-radius: 10px; overflow: hidden; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; border: none; padding: 0; cursor: pointer; }
@@ -114,40 +111,39 @@
   .cmp-add-p.sem-valor { font-size: 13px; }
   .cmp-add-btn { flex-shrink: 0; width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--green); background: var(--card); color: var(--green); font-size: 20px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .cmp-add.on .cmp-add-btn { background: var(--green); color: #fff; }
-  /* a comparação fica no topo e, no computador, na coluna ao lado da lista */
-  .cmp-layout { display: block; }
-  .cmp-resultado, .cmp-escolha { min-width: 0; }
-  .cmp-painel { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-top: 16px; }
-  .cmp-painel-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-  .cmp-painel-t { font-size: 16px; font-weight: 800; color: var(--text); margin: 0; }
-  .cmp-painel-n { font-size: 12px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
-  .cmp-vagas { display: flex; gap: 8px; margin-top: 12px; }
-  .cmp-vaga { position: relative; flex: 1 1 0; min-width: 0; min-height: 96px; border: 1px dashed var(--border); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; }
-  .cmp-vaga.on { border-style: solid; border-color: var(--green); }
-  .cmp-vaga-mais { font-size: 24px; font-weight: 700; color: var(--muted); }
+  /* barra de vagas: o cabeçalho da comparação, igual aos comparadores de produto */
+  .cmp-vagas-barra { position: sticky; top: 0; z-index: 12; background: var(--bg); margin: 16px -20px 0; padding: 12px 20px 10px; border-bottom: 1px solid var(--border); }
+  .cmp-vagas { display: flex; gap: 8px; }
+  .cmp-vaga { position: relative; flex: 1 1 0; min-width: 0; min-height: 96px; border: 1px dashed var(--border); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 8px 6px; font-family: inherit; cursor: pointer; }
+  .cmp-vaga.on { border-style: solid; border-color: var(--green); cursor: default; }
+  .cmp-vaga-mais { font-size: 24px; font-weight: 700; color: var(--green); line-height: 1; }
+  .cmp-vaga-add { font-size: 11px; font-weight: 700; color: var(--green); }
   .cmp-vaga-foto { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
   .cmp-vaga-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .cmp-vaga-n { font-size: 11px; font-weight: 700; color: var(--text); text-align: center; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .cmp-vaga-x { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 999px; border: none; background: var(--bg-alt); color: var(--muted); font-size: 11px; line-height: 1; cursor: pointer; font-family: inherit; }
-  .cmp-dica { font-size: 13px; color: var(--muted); margin: 10px 0 0; text-align: center; line-height: 1.4; }
+  .cmp-vagas-n { font-size: 11px; color: var(--muted); margin: 8px 0 0; text-align: center; }
+  .cmp-dica { font-size: 14px; color: var(--muted); margin: 18px 0 0; text-align: center; line-height: 1.45; }
 
-  /* barrinha que gruda no topo enquanto a pessoa rola a lista */
-  .cmp-bandeja { position: sticky; top: 0; z-index: 12; display: flex; align-items: center; gap: 10px; margin: 14px -20px 0; padding: 10px 20px; background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .cmp-bandeja-fotos { display: flex; flex-shrink: 0; }
-  .cmp-bandeja-f { width: 30px; height: 30px; border-radius: 999px; overflow: hidden; border: 2px solid var(--card); background: var(--bg-alt); margin-left: -9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cmp-bandeja-f:first-child { margin-left: 0; }
-  .cmp-bandeja-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .cmp-bandeja-btn { margin-left: auto; flex-shrink: 0; border: none; border-radius: 999px; background: var(--green); color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 16px; cursor: pointer; }
-  .cmp-bandeja-btn.fraco { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+  /* tabela comparativa: uma linha por característica, uma coluna por academia */
+  .ct-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 16px; scrollbar-width: thin; }
+  .ct-grade { display: grid; grid-template-columns: 104px repeat(var(--cols), minmax(132px, 1fr)); min-width: min-content; }
+  .ct-secao { grid-column: 1 / -1; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); background: var(--bg-alt); padding: 8px 10px; margin-top: 10px; border-radius: 8px; }
+  .ct-rot { position: sticky; left: 0; z-index: 2; background: var(--bg); box-shadow: 6px 0 6px -6px rgba(33,31,26,0.14); font-size: 12px; font-weight: 700; color: var(--muted); padding: 11px 10px 11px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; }
+  .ct-cel { position: relative; font-size: 13px; color: var(--text); padding: 11px 28px 11px 10px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); line-height: 1.35; display: flex; align-items: center; }
+  .ct-cel.melhor { background: rgba(31,77,58,0.07); font-weight: 700; }
+  .ct-win { position: absolute; top: 11px; right: 8px; display: inline-flex; }
+  .ct-acao { border-bottom: none; padding-top: 14px; }
+  .ct-wa { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; border-radius: 999px; padding: 8px 13px; font-size: 12px; font-weight: 700; text-decoration: none; }
+  .ct-sem { font-size: 12px; color: var(--muted); }
+  .ct-cel-sem { color: var(--muted); font-weight: 400; }
 
-  @media (min-width: 980px) {
-    .cmp-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
-    .cmp-escolha { order: 0; }
-    .cmp-resultado { order: 1; position: sticky; top: 16px; }
-    .cmp-bandeja { display: none; }
-  }
+  /* seletor de academia (folha) */
+  .cmp-abas { display: flex; gap: 6px; margin-top: 14px; }
+  .cmp-aba { flex: 1 1 0; border: 1px solid var(--border); background: var(--card); border-radius: 999px; padding: 9px 6px; font-family: inherit; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
+  .cmp-aba.on { background: var(--green); border-color: var(--green); color: #fff; }
+  .cmp-pick-lista { display: grid; gap: 8px; margin-top: 12px; max-height: 46vh; overflow-y: auto; }
 
-  .cmp-table { display: flex; overflow-x: auto; gap: 12px; padding: 4px 0 8px; }
   .cmp-col { flex: 0 0 240px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
   .cmp-photo { height: 120px; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
   .cmp-photo img { width: 100%; height: 100%; object-fit: cover; }
@@ -1429,6 +1425,8 @@ let state = {
   decideNotes: "",
   decidida: null,
   navCourt: null,
+  cmpPicker: null,
+  cmpBusca: "",
   compareList: loadCompare(),
   pendingStar: 0,
   justRated: false,
@@ -1751,6 +1749,7 @@ function render() {
     ${state.showVisitorSetup ? renderVisitorSetupSheet() : ""}
     ${state.page === "search" ? renderFilterDrawer(results.length) : ""}
     ${renderNavSheet()}
+    ${renderCmpPicker()}
     ${renderQrSheet()}
     ${renderMenu()}
     ${renderLightbox()}
@@ -2061,12 +2060,10 @@ function renderBuscaComparar() {
     ${state.errorMsg ? `<p class="footnote" style="color:var(--red)">${esc(state.errorMsg)}</p>` : ""}`;
 }
 
-// Lista para ir marcando o que entra na comparação, sem sair da aba.
-function listaParaAdicionar() {
-  const lista = getResults().slice(0, 6);
-  if (!lista.length) return `<p class="cmp-vazio">Nenhuma academia encontrada com os filtros de agora.</p>`;
+// A lista do seletor: mais próximas, favoritas ou todas, com o + de cada uma.
+function listaDoSeletor(lista) {
+  if (!lista.length) return `<p class="cmp-vazio">Nenhuma academia aqui ainda.</p>`;
   return `
-    <p class="field-label" style="margin-top:18px">${state.origin ? "Mais perto de você" : "Academias no guia"}</p>
     <div class="cmp-add-lista">
       ${lista.map(c => {
         const dentro = isComparing(c.id);
@@ -2075,20 +2072,148 @@ function listaParaAdicionar() {
         const dist = distanceText(c.distanceKm);
         return `
           <div class="cmp-add ${dentro ? "on" : ""}">
-            <button type="button" class="cmp-add-foto" data-open="${c.id}" aria-label="Abrir ${esc(c.name)}">
+            <span class="cmp-add-foto">
               ${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : icon('ball', 22, 'var(--muted-dark)')}
-            </button>
-            <button type="button" class="cmp-add-txt" data-open="${c.id}">
+            </span>
+            <span class="cmp-add-txt">
               <span class="cmp-add-n">${esc(c.name)}</span>
               <span class="cmp-add-l">${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}${dist ? ` · ${dist}` : ""}</span>
               <span class="cmp-add-l">${c.appCount ? `Nota ${c.appAvg.toFixed(1).replace(".", ",")} · ${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Sem nota ainda"}</span>
               <span class="cmp-add-p ${faixa ? "" : "sem-valor"}">${faixa ? `${esc(faixa.texto)}` : SEM_PRECO}</span>
-            </button>
+            </span>
             <button type="button" class="cmp-add-btn" data-compare="${c.id}" aria-label="${dentro ? "Tirar da comparação" : "Pôr na comparação"}">${dentro ? "✓" : "+"}</button>
           </div>`;
       }).join("")}
-    </div>
-    <p class="footnote">Toque no + para pôr na comparação. Dá para comparar de ${COMPARE_MIN} a ${COMPARE_MAX} academias.</p>`;
+    </div>`;
+}
+
+// A folha que abre quando a pessoa toca numa vaga. Três jeitos de achar a
+// academia: pela distância, pelos favoritos ou pelo nome.
+function renderCmpPicker() {
+  if (!state.cmpPicker) return "";
+  const aba = state.cmpPicker;
+  const termo = semAcento(state.cmpBusca || "").trim();
+  let lista = state.allCourts.map(decorate);
+  if (aba === "fav") lista = lista.filter(c => isFavorite(c.id));
+  if (aba === "perto") {
+    lista = lista.slice().sort((a, b) => {
+      const da = typeof a.distanceKm === "number" ? a.distanceKm : Infinity;
+      const db = typeof b.distanceKm === "number" ? b.distanceKm : Infinity;
+      return da - db;
+    });
+  } else {
+    lista = lista.slice().sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  }
+  if (termo) lista = lista.filter(c => semAcento(`${c.name} ${c.bairro || ""} ${c.cidade || ""}`).includes(termo));
+  const cheio = state.compareList.length >= COMPARE_MAX;
+  return `
+    <div class="overlay open" id="cmp-pick-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="cmp-pick-close">✕</button>
+        <p class="sheet-title display">Escolher academia</p>
+        <div class="cmp-abas">
+          <button type="button" class="cmp-aba ${aba === "perto" ? "on" : ""}" data-cmp-aba="perto">Mais próximas</button>
+          <button type="button" class="cmp-aba ${aba === "fav" ? "on" : ""}" data-cmp-aba="fav">Favoritas</button>
+          <button type="button" class="cmp-aba ${aba === "todas" ? "on" : ""}" data-cmp-aba="todas">Todas</button>
+        </div>
+        ${aba === "perto" && !state.origin ? `
+          <p class="footnote" style="margin-top:12px">Diga onde você está para ordenar pela mais perto.</p>
+          ${renderBuscaComparar()}` : ""}
+        ${aba === "fav" && !lista.length && !termo ? `
+          <p class="cmp-vazio">Você ainda não favoritou nenhuma academia. Toque no coração na ficha para guardar.</p>` : `
+          <input class="form-field" id="cmp-pick-busca" style="margin-top:12px" placeholder="Filtrar por nome ou bairro" value="${esc(state.cmpBusca)}" />
+          ${cheio ? `<p class="footnote" style="margin-top:10px">A comparação já está com ${COMPARE_MAX} academias. Tire uma para pôr outra.</p>` : ""}
+          <div class="cmp-pick-lista">${listaDoSeletor(lista)}</div>`}
+      </div></div>
+    </div>`;
+}
+
+// Uma linha da tabela sabe quem ganhou: `melhor` diz se o bom é o maior ou o
+// menor número. Quando todo mundo empata, ninguém fica destacado.
+function marcarMelhores(linha) {
+  if (!linha.melhor) return [];
+  const nums = linha.vals.map(v => (typeof v.num === "number" && isFinite(v.num)) ? v.num : null);
+  const validos = nums.filter(n => n !== null);
+  if (validos.length < 2) return [];
+  const alvo = linha.melhor === "menor" ? Math.min(...validos) : Math.max(...validos);
+  if (validos.every(n => n === alvo)) return [];
+  return nums.map(n => n === alvo);
+}
+
+function celPreco(faixa) {
+  const min = priceMin(faixa);
+  if (!min) return { txt: `<span class="ct-cel-sem">${SEM_PRECO}</span>` };
+  return { txt: esc(precoTexto(faixa)), num: parseInt(min, 10) };
+}
+
+function celReposicao(c) {
+  const pol = politicaDe(c);
+  if (pol.reposicao === "nao") return { txt: "Não faz reposição" };
+  if (pol.horas) return { txt: `Avisando ${pol.horas}h antes`, num: pol.horas };
+  return { txt: "Não incluído" };
+}
+
+function linhasComparacao(courts) {
+  const dists = courts.map(c => courtDistance(c));
+  return [
+    { titulo: "Avaliação", linhas: [
+      { rot: "Nota", melhor: "maior", vals: courts.map(c => c.appCount
+        ? { txt: `${starsHtml(c.appAvg)} ${c.appAvg.toFixed(1).replace(".", ",")}`, num: c.appAvg }
+        : { txt: "Sem nota ainda" }) },
+      { rot: "Avaliações", melhor: "maior", vals: courts.map(c => ({ txt: c.appCount ? String(c.appCount) : "—", num: c.appCount || null })) },
+    ]},
+    { titulo: "Preço por hora", linhas: [
+      { rot: "Aula", melhor: "menor", vals: courts.map(c => celPreco(c.priceAula)) },
+      { rot: "Locação", melhor: "menor", vals: courts.map(c => celPreco(c.priceLocacao)) },
+    ]},
+    { titulo: "Estrutura", linhas: [
+      { rot: "Quadras", melhor: "maior", vals: courts.map(c => ({ txt: totalQuadras(c) ? String(totalQuadras(c)) : "—", num: totalQuadras(c) || null })) },
+      { rot: "Piso", vals: courts.map(c => ({ txt: esc(listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos))) || "—" })) },
+      { rot: "Cobertura", vals: courts.map(c => ({ txt: esc(listaPt(rotulosNaOrdem(COBERTURA_OPTS, c.cobertura))) || "—" })) },
+      { rot: "Comodidades", melhor: "maior", vals: courts.map(c => {
+        const l = rotulosNaOrdem(AMENITY_OPTS, c.amenities);
+        return { txt: esc(listaPt(l)) || "—", num: l.length || null };
+      }) },
+    ]},
+    { titulo: "Onde fica", linhas: [
+      { rot: "Bairro", vals: courts.map(c => ({ txt: esc([c.bairro, c.cidade].filter(Boolean).join(", ")) || "—" })) },
+      { rot: "Distância", melhor: "menor", vals: courts.map((c, i) => ({
+        txt: distanceText(dists[i]) || "Busque um endereço",
+        num: typeof dists[i] === "number" ? dists[i] : null })) },
+    ]},
+    { titulo: "Aula e cancelamento", linhas: [
+      { rot: "Atende", vals: courts.map(c => ({ txt: esc(modalidadesTexto(c)) || "—" })) },
+      { rot: "Reposição", vals: courts.map(c => celReposicao(c)) },
+    ]},
+  ];
+}
+
+function tabelaComparacao(courts) {
+  const secoes = linhasComparacao(courts);
+  return `
+    <div class="ct-scroll">
+      <div class="ct-grade" style="--cols:${courts.length}">
+        ${secoes.map(sec => `
+          <div class="ct-secao">${esc(sec.titulo)}</div>
+          ${sec.linhas.map(l => {
+            const ganha = marcarMelhores(l);
+            return `
+              <div class="ct-rot">${esc(l.rot)}</div>
+              ${l.vals.map((v, i) => `
+                <div class="ct-cel ${ganha[i] ? "melhor" : ""}">
+                  <span>${v.txt}</span>
+                  ${ganha[i] ? `<span class="ct-win">${icon('check', 13, 'var(--green)')}</span>` : ""}
+                </div>`).join("")}`;
+          }).join("")}`).join("")}
+        <div class="ct-rot"></div>
+        ${courts.map(c => `
+          <div class="ct-cel ct-acao">
+            ${c.phone
+              ? `<a class="ct-wa" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 13, '#fff')} WhatsApp</a>`
+              : `<span class="ct-sem">Sem telefone</span>`}
+          </div>`).join("")}
+      </div>
+    </div>`;
 }
 
 function renderComparePage() {
@@ -2099,54 +2224,12 @@ function renderComparePage() {
     <div class="cmp-pagina">
       <h2 class="cmp-titulo display">Comparar academias</h2>
       <p class="cmp-sub-topo">Veja lado a lado o que muda entre elas: nota, distância, estrutura e preço.</p>
-      ${bandejaComparar(courts, podeComparar)}
-      <div class="cmp-layout">
-      <section class="cmp-resultado" id="cmp-resultado">
-      <div class="cmp-painel">
-      <div class="cmp-painel-topo">
-        <p class="cmp-painel-t">Sua comparação</p>
-        <span class="cmp-painel-n">${courts.length} de ${COMPARE_MAX}</span>
-      </div>
+      ${vagasComparacao(courts)}
       ${!podeComparar ? `
-        ${vagasComparacao(courts)}
         <p class="cmp-dica">${courts.length === 0
-          ? "Toque no + na lista abaixo para pôr a academia aqui."
+          ? `Toque no + para escolher a academia. Dá para comparar de ${COMPARE_MIN} a ${COMPARE_MAX}.`
           : "Falta escolher mais uma para a comparação aparecer."}</p>` : `
-        <p class="field-label" style="margin-top:14px">Lado a lado — deslize para ver todas</p>
-        <div class="cmp-table">
-          ${courts.map(c => {
-            const photos = (c.photos && c.photos.length) ? c.photos : (c.photoUrl ? [c.photoUrl] : []);
-            const dist = typeof c.distanceKm === "number"
-              ? (c.distanceKm < 1 ? `${Math.round(c.distanceKm*1000)} m` : `${c.distanceKm.toFixed(1)} km`)
-              : "Busque um endereço";
-            const pisos = listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos));
-            const cob = listaPt(rotulosNaOrdem(COBERTURA_OPTS, c.cobertura));
-            const mods = listaPt(rotulosNaOrdem(MODALIDADE_OPTS, c.modalidades));
-            const ams = listaPt(rotulosNaOrdem(AMENITY_OPTS, c.amenities));
-            const precos = [
-              c.priceAula ? `Aula: R$ ${esc(c.priceAula)}/hora` : null,
-              c.priceLocacao ? `Locação: R$ ${esc(c.priceLocacao)}/hora` : null,
-            ].filter(Boolean);
-            return `
-              <div class="cmp-col">
-                <div class="cmp-photo">
-                  ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 32, 'var(--muted-dark)')}
-                </div>
-                <p class="cmp-name">${esc(c.name)}</p>
-                <p class="cmp-sub">${esc(c.bairro||"")}${c.cidade ? " · " + esc(c.cidade) : ""}</p>
-                ${cmpRow("Avaliações", c.appCount ? `${starsHtml(c.appAvg)} ${c.appAvg.toFixed(1)} (${c.appCount})` : "Sem avaliações ainda")}
-                ${cmpRow("Distância", dist)}
-                ${cmpRow("Comodidades", ams)}
-                ${cmpRow("Piso", pisos)}
-                ${cmpRow("Cobertura", cob)}
-                ${cmpRow("Quadras", totalQuadras(c) || "—")}
-                ${cmpRow("Modalidades", mods)}
-                ${cmpRow("Preços", precos.length ? precos.join("<br>") : SEM_PRECO)}
-                <button class="cmp-remove" data-cmp-remove="${c.id}">Remover da comparação</button>
-              </div>
-            `;
-          }).join("")}
-        </div>
+        ${tabelaComparacao(courts)}
 
         <div class="decide-box">
           <p class="decide-title">Ainda em dúvida?</p>
@@ -2273,25 +2356,25 @@ function renderComparePage() {
 
         <button class="cta-btn cta-secondary" id="compare-clear-2" style="margin-top:14px">Limpar comparação</button>
       `}
-      </div>
-      </section>
-      <section class="cmp-escolha">
-        ${renderBuscaComparar()}
-        ${listaParaAdicionar()}
-      </section>
-      </div>
     </div>
   `;
 }
 
-// As vagas da comparação: a pessoa vê de cara onde a academia vai cair e
-// quantas ainda faltam, sem precisar rolar a tela para descobrir.
+// As vagas são o cabeçalho da comparação: mostram quem está dentro, deixam
+// trocar com um toque e ficam grudadas no topo enquanto a tabela rola.
 function vagasComparacao(courts) {
   const total = Math.max(COMPARE_MIN, Math.min(COMPARE_MAX, courts.length + 1));
   const vagas = [];
   for (let i = 0; i < total; i++) {
     const c = courts[i];
-    if (!c) { vagas.push(`<div class="cmp-vaga"><span class="cmp-vaga-mais">+</span></div>`); continue; }
+    if (!c) {
+      vagas.push(`
+        <button type="button" class="cmp-vaga" data-cmp-abrir="1" aria-label="Escolher academia">
+          <span class="cmp-vaga-mais">+</span>
+          <span class="cmp-vaga-add">Escolher</span>
+        </button>`);
+      continue;
+    }
     const foto = courtPhotos(c)[0];
     vagas.push(`
       <div class="cmp-vaga on">
@@ -2300,24 +2383,10 @@ function vagasComparacao(courts) {
         <button type="button" class="cmp-vaga-x" data-cmp-remove="${c.id}" aria-label="Tirar ${esc(c.name)} da comparação">✕</button>
       </div>`);
   }
-  return `<div class="cmp-vagas">${vagas.join("")}</div>`;
-}
-
-// No celular a comparação fica no topo, então esta barrinha gruda embaixo do
-// título e leva de volta para ela com um toque, por mais que a lista seja longa.
-function bandejaComparar(courts, podeComparar) {
-  if (!courts.length) return "";
   return `
-    <div class="cmp-bandeja">
-      <div class="cmp-bandeja-fotos">
-        ${courts.map(c => {
-          const foto = courtPhotos(c)[0];
-          return `<span class="cmp-bandeja-f">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : icon('ball', 14, 'var(--muted-dark)')}</span>`;
-        }).join("")}
-      </div>
-      <button type="button" class="cmp-bandeja-btn ${podeComparar ? "" : "fraco"}" id="cmp-ver">
-        ${podeComparar ? `Ver comparação (${courts.length})` : "Escolha mais uma"}
-      </button>
+    <div class="cmp-vagas-barra">
+      <div class="cmp-vagas">${vagas.join("")}</div>
+      <p class="cmp-vagas-n">${courts.length} de ${COMPARE_MAX} na comparação</p>
     </div>`;
 }
 
@@ -6145,11 +6214,24 @@ function attachEvents() {
   const cmpLocate = document.getElementById("cmp-locate");
   if (cmpLocate) cmpLocate.onclick = () => useMyLocation();
 
-  const cmpVer = document.getElementById("cmp-ver");
-  if (cmpVer) cmpVer.onclick = () => {
-    const alvo = document.getElementById("cmp-resultado");
-    if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  document.querySelectorAll("[data-cmp-abrir]").forEach(el => {
+    el.onclick = () => { state.cmpPicker = state.origin ? "perto" : "todas"; state.cmpBusca = ""; render(); };
+  });
+  document.querySelectorAll("[data-cmp-aba]").forEach(el => {
+    el.onclick = () => { state.cmpPicker = el.dataset.cmpAba; render(); };
+  });
+  const cmpPickClose = document.getElementById("cmp-pick-close");
+  const cmpPickOverlay = document.getElementById("cmp-pick-overlay");
+  if (cmpPickClose) cmpPickClose.onclick = () => { state.cmpPicker = null; render(); };
+  if (cmpPickOverlay) cmpPickOverlay.onclick = (e) => { if (e.target === cmpPickOverlay) { state.cmpPicker = null; render(); } };
+  const cmpPickBusca = document.getElementById("cmp-pick-busca");
+  if (cmpPickBusca) {
+    cmpPickBusca.oninput = (e) => { state.cmpBusca = e.target.value; render(); };
+    if (state.cmpPicker && state.cmpBusca) {
+      cmpPickBusca.focus();
+      cmpPickBusca.setSelectionRange(cmpPickBusca.value.length, cmpPickBusca.value.length);
+    }
+  }
 
   const compareClear2 = document.getElementById("compare-clear-2");
   if (compareClear2) compareClear2.onclick = () => { setCompareList([]); state.compareOnly = false; state.decidida = null; state.showDecideResult = false; render(); };

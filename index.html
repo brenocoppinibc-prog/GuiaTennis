@@ -101,6 +101,8 @@
   .cmp-vazio { font-size: 14px; color: var(--muted); background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 18px; text-align: center; }
   .cmp-add-lista { display: grid; gap: 10px; }
   @media (min-width: 900px) { .cmp-add-lista { grid-template-columns: 1fr 1fr; } }
+  /* na tela grande a lista fica na coluna estreita da esquerda, então volta a uma por linha */
+  @media (min-width: 980px) { .cmp-add-lista { grid-template-columns: 1fr; } }
   .cmp-add { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px; }
   .cmp-add.on { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
   .cmp-add-foto { width: 72px; height: 72px; border-radius: 10px; overflow: hidden; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; border: none; padding: 0; cursor: pointer; }
@@ -112,6 +114,39 @@
   .cmp-add-p.sem-valor { font-size: 13px; }
   .cmp-add-btn { flex-shrink: 0; width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--green); background: var(--card); color: var(--green); font-size: 20px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .cmp-add.on .cmp-add-btn { background: var(--green); color: #fff; }
+  /* a comparação fica no topo e, no computador, na coluna ao lado da lista */
+  .cmp-layout { display: block; }
+  .cmp-resultado, .cmp-escolha { min-width: 0; }
+  .cmp-painel { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-top: 16px; }
+  .cmp-painel-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .cmp-painel-t { font-size: 16px; font-weight: 800; color: var(--text); margin: 0; }
+  .cmp-painel-n { font-size: 12px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+  .cmp-vagas { display: flex; gap: 8px; margin-top: 12px; }
+  .cmp-vaga { position: relative; flex: 1 1 0; min-width: 0; min-height: 96px; border: 1px dashed var(--border); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; }
+  .cmp-vaga.on { border-style: solid; border-color: var(--green); }
+  .cmp-vaga-mais { font-size: 24px; font-weight: 700; color: var(--muted); }
+  .cmp-vaga-foto { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
+  .cmp-vaga-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cmp-vaga-n { font-size: 11px; font-weight: 700; color: var(--text); text-align: center; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .cmp-vaga-x { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 999px; border: none; background: var(--bg-alt); color: var(--muted); font-size: 11px; line-height: 1; cursor: pointer; font-family: inherit; }
+  .cmp-dica { font-size: 13px; color: var(--muted); margin: 10px 0 0; text-align: center; line-height: 1.4; }
+
+  /* barrinha que gruda no topo enquanto a pessoa rola a lista */
+  .cmp-bandeja { position: sticky; top: 0; z-index: 12; display: flex; align-items: center; gap: 10px; margin: 14px -20px 0; padding: 10px 20px; background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .cmp-bandeja-fotos { display: flex; flex-shrink: 0; }
+  .cmp-bandeja-f { width: 30px; height: 30px; border-radius: 999px; overflow: hidden; border: 2px solid var(--card); background: var(--bg-alt); margin-left: -9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cmp-bandeja-f:first-child { margin-left: 0; }
+  .cmp-bandeja-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cmp-bandeja-btn { margin-left: auto; flex-shrink: 0; border: none; border-radius: 999px; background: var(--green); color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 16px; cursor: pointer; }
+  .cmp-bandeja-btn.fraco { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+
+  @media (min-width: 980px) {
+    .cmp-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
+    .cmp-escolha { order: 0; }
+    .cmp-resultado { order: 1; position: sticky; top: 16px; }
+    .cmp-bandeja { display: none; }
+  }
+
   .cmp-table { display: flex; overflow-x: auto; gap: 12px; padding: 4px 0 8px; }
   .cmp-col { flex: 0 0 240px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
   .cmp-photo { height: 120px; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
@@ -2064,13 +2099,20 @@ function renderComparePage() {
     <div class="cmp-pagina">
       <h2 class="cmp-titulo display">Comparar academias</h2>
       <p class="cmp-sub-topo">Veja lado a lado o que muda entre elas: nota, distância, estrutura e preço.</p>
-      ${renderBuscaComparar()}
-      ${listaParaAdicionar()}
+      ${bandejaComparar(courts, podeComparar)}
+      <div class="cmp-layout">
+      <section class="cmp-resultado" id="cmp-resultado">
+      <div class="cmp-painel">
+      <div class="cmp-painel-topo">
+        <p class="cmp-painel-t">Sua comparação</p>
+        <span class="cmp-painel-n">${courts.length} de ${COMPARE_MAX}</span>
+      </div>
       ${!podeComparar ? `
-        <p class="cmp-vazio">${courts.length === 0
-          ? "Você ainda não escolheu nenhuma academia."
-          : "Falta escolher mais uma para dar pra comparar."}</p>` : `
-        <p class="field-label" style="margin-top:22px">Lado a lado — deslize para ver todas</p>
+        ${vagasComparacao(courts)}
+        <p class="cmp-dica">${courts.length === 0
+          ? "Toque no + na lista abaixo para pôr a academia aqui."
+          : "Falta escolher mais uma para a comparação aparecer."}</p>` : `
+        <p class="field-label" style="margin-top:14px">Lado a lado — deslize para ver todas</p>
         <div class="cmp-table">
           ${courts.map(c => {
             const photos = (c.photos && c.photos.length) ? c.photos : (c.photoUrl ? [c.photoUrl] : []);
@@ -2231,8 +2273,52 @@ function renderComparePage() {
 
         <button class="cta-btn cta-secondary" id="compare-clear-2" style="margin-top:14px">Limpar comparação</button>
       `}
+      </div>
+      </section>
+      <section class="cmp-escolha">
+        ${renderBuscaComparar()}
+        ${listaParaAdicionar()}
+      </section>
+      </div>
     </div>
   `;
+}
+
+// As vagas da comparação: a pessoa vê de cara onde a academia vai cair e
+// quantas ainda faltam, sem precisar rolar a tela para descobrir.
+function vagasComparacao(courts) {
+  const total = Math.max(COMPARE_MIN, Math.min(COMPARE_MAX, courts.length + 1));
+  const vagas = [];
+  for (let i = 0; i < total; i++) {
+    const c = courts[i];
+    if (!c) { vagas.push(`<div class="cmp-vaga"><span class="cmp-vaga-mais">+</span></div>`); continue; }
+    const foto = courtPhotos(c)[0];
+    vagas.push(`
+      <div class="cmp-vaga on">
+        <div class="cmp-vaga-foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : icon('ball', 20, 'var(--muted-dark)')}</div>
+        <span class="cmp-vaga-n">${esc(c.name)}</span>
+        <button type="button" class="cmp-vaga-x" data-cmp-remove="${c.id}" aria-label="Tirar ${esc(c.name)} da comparação">✕</button>
+      </div>`);
+  }
+  return `<div class="cmp-vagas">${vagas.join("")}</div>`;
+}
+
+// No celular a comparação fica no topo, então esta barrinha gruda embaixo do
+// título e leva de volta para ela com um toque, por mais que a lista seja longa.
+function bandejaComparar(courts, podeComparar) {
+  if (!courts.length) return "";
+  return `
+    <div class="cmp-bandeja">
+      <div class="cmp-bandeja-fotos">
+        ${courts.map(c => {
+          const foto = courtPhotos(c)[0];
+          return `<span class="cmp-bandeja-f">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : icon('ball', 14, 'var(--muted-dark)')}</span>`;
+        }).join("")}
+      </div>
+      <button type="button" class="cmp-bandeja-btn ${podeComparar ? "" : "fraco"}" id="cmp-ver">
+        ${podeComparar ? `Ver comparação (${courts.length})` : "Escolha mais uma"}
+      </button>
+    </div>`;
 }
 
 function renderLightbox() {
@@ -6058,6 +6144,12 @@ function attachEvents() {
   if (cmpBuscar) cmpBuscar.onclick = () => { if ((state.cep || "").trim()) doSearch(); };
   const cmpLocate = document.getElementById("cmp-locate");
   if (cmpLocate) cmpLocate.onclick = () => useMyLocation();
+
+  const cmpVer = document.getElementById("cmp-ver");
+  if (cmpVer) cmpVer.onclick = () => {
+    const alvo = document.getElementById("cmp-resultado");
+    if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const compareClear2 = document.getElementById("compare-clear-2");
   if (compareClear2) compareClear2.onclick = () => { setCompareList([]); state.compareOnly = false; state.decidida = null; state.showDecideResult = false; render(); };

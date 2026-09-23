@@ -185,6 +185,10 @@
   .stat-card { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
   .stat-num { font-size: 26px; font-weight: 800; color: var(--green); margin: 0; }
   .stat-lbl { font-size: 12px; color: var(--muted); margin: 2px 0 0; text-transform: uppercase; letter-spacing: 0.07em; }
+  .stat-regioes { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 8px; }
+  .stat-regiao { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .stat-regiao:last-child { border-bottom: none; }
+  .stat-regiao strong { font-size: 14px; color: var(--green); flex-shrink: 0; }
   .stats-ord-lbl { font-size: 12px; color: var(--muted); align-self: center; margin-right: 2px; }
   .stat-row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .stat-taxa { font-size: 13px; font-weight: 800; padding: 2px 9px; border-radius: 999px; flex-shrink: 0; }
@@ -638,6 +642,7 @@
 
   /* ---- vídeo de como funciona a busca ---- */
   .sec-sub { font-size: 14px; color: var(--muted); margin: -6px 0 12px; }
+  .hero-total { font-size: 12px; color: var(--muted); margin: 12px 0 0; }
   .video-wrap { position: relative; border-radius: 14px; overflow: hidden; background: var(--bg-alt); border: 1px solid var(--border); aspect-ratio: 16 / 9; }
   .video-player { width: 100%; height: 100%; display: block; border: 0; }
   .video-holder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
@@ -1235,6 +1240,9 @@ async function carregarEstatisticasPublicas() {
       acessos: numeroOuNulo(data.acessos) || 0,
       fichas_abertas: numeroOuNulo(data.fichas_abertas) || 0,
       contatos: numeroOuNulo(data.contatos) || 0,
+      // Totais de sempre. Sem essas colunas na visão, a linha do topo não aparece.
+      acessos_total: numeroOuNulo(data.acessos_total) || 0,
+      buscas_total: numeroOuNulo(data.buscas_total) || 0,
     };
   } catch { /* sem a visão no banco, o bloco simplesmente não aparece */ }
 }
@@ -1357,8 +1365,23 @@ function toggleFavorite(courtId) {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
 }
 
-function trackClick(courtId, type) {
-  sb.from('cliques').insert({ academia_id: courtId, tipo: type }).then(() => {});
+function trackClick(courtId, type, detalhe) {
+  const linha = { academia_id: courtId, tipo: type };
+  if (detalhe) linha.detalhe = String(detalhe).slice(0, 120);
+  sb.from('cliques').insert(linha).then(({ error }) => {
+    // Enquanto a coluna "detalhe" não existir no banco, registra sem ela em
+    // vez de perder o evento.
+    if (error && detalhe) sb.from('cliques').insert({ academia_id: courtId, tipo: type }).then(() => {});
+  });
+}
+
+// Guarda só a região que a busca alcançou — bairro e cidade. Nunca o CEP, o
+// endereço digitado ou a coordenada: serve para saber onde tem procura por
+// quadra, não para seguir ninguém.
+function registrarBusca(geo) {
+  if (isAdmin || !geo) return;
+  const regiao = [geo.bairro, geo.cidade].filter(Boolean).join(", ");
+  trackClick(null, "busca", regiao || "região não identificada");
 }
 function getAllClicks() {
   return state.clicksCache || {};
@@ -2918,6 +2941,19 @@ function porcentoRedondo(parte, todo) {
   return `${Math.max(5, pct)}%`;
 }
 
+// A linha do topo conta a vida inteira do site, não os 30 dias. Só aparece
+// depois de um mínimo de acessos, senão o número fala contra.
+const MINIMO_TOTAL = 50;
+
+function linhaTotalDoSite() {
+  const e = state.estatisticas;
+  if (!e || (e.acessos_total || 0) < MINIMO_TOTAL) return "";
+  const buscas = e.buscas_total
+    ? ` e fizeram ${numeroRedondo(e.buscas_total)} ${plural(e.buscas_total, "busca por quadra", "buscas por quadra")}`
+    : "";
+  return `<p class="hero-total">${numeroRedondo(e.acessos_total)} pessoas já entraram no GuiaTennis${buscas}</p>`;
+}
+
 function blocoMediasAcademias() {
   const e = state.estatisticas;
   if (!e || (e.acessos || 0) < MINIMO_PARA_MOSTRAR) return "";
@@ -3140,6 +3176,7 @@ function renderHome() {
       <p>Compare preço, estrutura e avaliações de academias de tênis — e fale direto com elas.</p>
       ${renderSearchCard()}
       ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
+      ${linhaTotalDoSite()}
     </div>
 
     ${recentes.length ? `
@@ -5331,14 +5368,25 @@ function statsAgregado(periodo) {
     lista = raw.filter(c => new Date(c.created_at).getTime() >= corte);
   }
   const porAcademia = {};
+  const porRegiao = {};
   let acessos = 0;
+  let buscas = 0;
   lista.forEach(c => {
     if (c.tipo === "acesso_site") { acessos++; return; }
+    if (c.tipo === "busca") {
+      buscas++;
+      const onde = (c.detalhe || "").trim() || "Região não identificada";
+      porRegiao[onde] = (porRegiao[onde] || 0) + 1;
+      return;
+    }
     if (!c.academia_id) return;
     if (!porAcademia[c.academia_id]) porAcademia[c.academia_id] = { whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 };
     porAcademia[c.academia_id][c.tipo] = (porAcademia[c.academia_id][c.tipo] || 0) + 1;
   });
-  return { porAcademia, acessos, totalEventos: lista.length };
+  const regioes = Object.keys(porRegiao)
+    .map(nome => ({ nome, n: porRegiao[nome] }))
+    .sort((a, b) => b.n - a.n);
+  return { porAcademia, acessos, buscas, regioes, totalEventos: lista.length };
 }
 
 function resumoTexto(court, d) {
@@ -5356,7 +5404,7 @@ function resumoTexto(court, d) {
 
 function renderStatsPanel() {
   const periodo = state.statsPeriodo || "30";
-  const { porAcademia, acessos } = statsAgregado(periodo);
+  const { porAcademia, acessos, buscas, regioes } = statsAgregado(periodo);
 
   const linhas = state.allCourts.map(c => {
     const d = Object.assign({ whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 }, porAcademia[c.id] || {});
@@ -5392,10 +5440,18 @@ function renderStatsPanel() {
 
         <div class="stats-grid">
           <div class="stat-card"><p class="stat-num">${acessos}</p><p class="stat-lbl">Acessos ao site</p></div>
+          <div class="stat-card"><p class="stat-num">${buscas}</p><p class="stat-lbl">Buscas feitas</p></div>
           <div class="stat-card"><p class="stat-num">${totViews}</p><p class="stat-lbl">Fichas abertas</p></div>
           <div class="stat-card"><p class="stat-num">${totContatos}</p><p class="stat-lbl">Contatos gerados</p></div>
+          <div class="stat-card"><p class="stat-num">${acessos ? (buscas / acessos).toFixed(1).replace(".", ",") : "0"}</p><p class="stat-lbl">Buscas por acesso</p></div>
           <div class="stat-card"><p class="stat-num">${taxaGeral.toFixed(0)}%</p><p class="stat-lbl">Ficha → contato</p></div>
         </div>
+
+        <p class="field-label" style="margin-top:18px">De onde buscaram (${regioes.length})</p>
+        ${regioes.length
+          ? `<div class="stat-regioes">${regioes.map(r => `
+              <div class="stat-regiao"><span>${esc(r.nome)}</span><strong>${r.n}</strong></div>`).join("")}</div>`
+          : `<p class="pending-detail">Nenhuma busca registrada nesse período. Se as buscas antigas não aparecem aqui, é porque a coluna "detalhe" ainda não existia quando foram feitas.</p>`}
 
         <div class="chip-row" style="margin-top:16px">
           <span class="stats-ord-lbl">Ordenar:</span>
@@ -5430,7 +5486,7 @@ function renderStatsPanel() {
 const TERMS_HTML = `
 <p class="footnote">Última atualização: 10 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
-<p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site nos últimos 30 dias, arredondados e sem identificar ninguém.</p>
+<p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site — de sempre e dos últimos 30 dias —, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
 <p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
@@ -5456,7 +5512,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 10 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância — não guardamos esse histórico.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, e acessos totais ao site — sem identificar quem gerou o acesso. Os totais somados dos últimos 30 dias (quantas pessoas usaram o site, quantas abriram uma ficha e quantas chamaram uma academia) aparecem publicamente na página inicial, arredondados; os números por academia continuam visíveis só para a administração.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. Não guardamos o CEP, o endereço digitado nem a coordenada. Guardamos apenas o <strong>bairro e a cidade</strong> que a busca alcançou, sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, buscas feitas (só com o bairro e a cidade alcançados) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, o total de acessos e de buscas desde o começo do site e os totais dos últimos 30 dias (quantas pessoas usaram o site, quantas abriram uma ficha e quantas chamaram uma academia); os números por academia e a lista de regiões buscadas continuam visíveis só para a administração.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>
@@ -6514,6 +6570,7 @@ function useMyLocation() {
         state.cep = "";
         state.sortBy = "distance";
         state.searchStatus = "done";
+        registrarBusca(geo);
       } catch (e) {
         state.errorMsg = e.message || "Não consegui identificar sua região.";
         state.searchStatus = "error";
@@ -6599,6 +6656,7 @@ async function doSearch() {
     state.origin = geo;
     state.sortBy = "distance";
     state.searchStatus = "done";
+    registrarBusca(geo);
   } catch (e) {
     state.errorMsg = e.message || "Não consegui buscar esse endereço ou CEP.";
     state.searchStatus = "error";

@@ -804,6 +804,31 @@
   .ht-poi-i { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid var(--border); font-size: 14px; }
   .ht-poi-n { min-width: 0; }
   .ht-poi-d { flex-shrink: 0; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  /* horário na ficha */
+  .hr-agora { margin-left: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0; text-transform: none; border-radius: 999px; padding: 2px 9px; }
+  .hr-agora.sim { background: rgba(31,77,58,0.12); color: var(--green); }
+  .hr-agora.nao { background: var(--bg-alt); color: var(--muted); }
+  .hr-lista { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--card); }
+  .hr-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 13px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .hr-linha:last-child { border-bottom: none; }
+  .hr-linha strong { font-weight: 700; }
+  .hr-linha.fechado strong { color: var(--muted); font-weight: 400; }
+
+  /* horário no cadastro */
+  .hr-form { display: grid; gap: 14px; }
+  .hr-form-linha { display: grid; grid-template-columns: 1fr auto; gap: 8px 10px; align-items: center; }
+  .hr-form-dia { font-size: 14px; font-weight: 700; }
+  .hr-fechado { justify-self: end; }
+  .hr-form-campos { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+  .hr-form-campos.off { opacity: 0.4; }
+  .hr-form-ate { font-size: 13px; color: var(--muted); }
+  .hr-time { margin-top: 0; flex: 1 1 0; min-width: 0; }
+  @media (min-width: 560px) {
+    .hr-form-linha { grid-template-columns: 150px 1fr auto; }
+    .hr-form-campos { grid-column: 2; grid-row: 1; }
+    .hr-fechado { grid-column: 3; grid-row: 1; }
+  }
+
   .ht-poi-nota { font-size: 12px; color: var(--muted-dark); margin: 12px 0 0; line-height: 1.45; }
   .ht-poi-carregando { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 26px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); margin-top: 8px; text-align: center; }
   .ht-poi-carregando p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; max-width: 320px; }
@@ -1061,30 +1086,16 @@ const REPOSICAO_OPTS = [
 // Duas dicas curtas que a academia escreve: como achar o lugar e o que fazer
 // ao chegar. Ficam na coluna "acesso" (jsonb) da tabela academias.
 // Onde dá para deixar o carro quando a academia não tem vaga própria.
-const ESTACIONAMENTO_OPTS = [
-  { key: "rua", ic: "parking", label: "Dá para estacionar na rua" },
-  { key: "zona_azul", ic: "parking", label: "Zona azul na região" },
-  { key: "pago_perto", ic: "parking", label: "Estacionamento pago por perto" },
-  { key: "dificil", ic: "warning", label: "Difícil estacionar — melhor vir de app" },
-];
-
-// A dúvida de quem aluga quadra pela primeira vez: preciso levar o quê?
-const LEVAR_OPTS = [
-  { key: "raquete_empresta", ic: "bag", label: "Empresta raquete" },
-  { key: "raquete_aluga", ic: "bag", label: "Aluga raquete" },
-  { key: "bola_inclusa", ic: "ball", label: "Bola inclusa no valor" },
-  { key: "bola_sua", ic: "ball", label: "Leve sua bola" },
-];
-
 function acessoDe(c) {
   const a = (c && c.acesso) || {};
   return {
     fachada: (a.fachada || "").trim(),
     referencia: (a.referencia || "").trim(),
     entrada: (a.entrada || "").trim(),
-    estacionamento: Array.isArray(a.estacionamento) ? a.estacionamento : [],
-    estacionamentoNota: (a.estacionamentoNota || "").trim(),
-    levar: Array.isArray(a.levar) ? a.levar : [],
+    // Estacionamento é texto da academia, não lista de opção: cada lugar tem
+    // uma regra própria, e o que resolve é a frase de quem conhece a rua.
+    estacionar: (a.estacionar || a.estacionamentoNota || "").trim(),
+    raquete: !!a.raquete,
   };
 }
 
@@ -1093,18 +1104,74 @@ function temAcesso(c) {
   return !!(a.fachada || a.referencia || a.entrada);
 }
 
-// O estacionamento no próprio lugar já é uma comodidade; aqui entra o resto.
+// O estacionamento no próprio lugar já é uma comodidade; o resto é o texto.
 function estacionarDe(c) {
-  const a = acessoDe(c);
   const am = (c && c.amenities) || [];
-  const noLocal = am.includes("estacionamento_gratuito") ? "Estacionamento grátis no local"
-                : am.includes("estacionamento_pago") ? "Estacionamento pago no local" : null;
-  return { noLocal, fora: naOrdem(ESTACIONAMENTO_OPTS, a.estacionamento), nota: a.estacionamentoNota };
+  const noLocal = am.includes("estacionamento_gratuito") ? "Tem estacionamento grátis no local"
+                : am.includes("estacionamento_pago") ? "Tem estacionamento pago no local" : null;
+  return { noLocal, texto: acessoDe(c).estacionar };
 }
 
 function temEstacionar(c) {
   const e = estacionarDe(c);
-  return !!(e.noLocal || e.fora.length || e.nota);
+  return !!(e.noLocal || e.texto);
+}
+
+// ---------- horário de funcionamento ----------
+
+const HORARIO_DIAS = [
+  { key: "semana", label: "Segunda a sexta", curto: "Seg a sex" },
+  { key: "sabado", label: "Sábado", curto: "Sábado" },
+  { key: "domingo", label: "Domingo", curto: "Domingo" },
+];
+
+function horarioDe(c) {
+  const h = (c && c.horario) || {};
+  const faixa = (k) => {
+    const f = h[k] || {};
+    return { de: (f.de || "").trim(), ate: (f.ate || "").trim(), fechado: !!f.fechado };
+  };
+  return { semana: faixa("semana"), sabado: faixa("sabado"), domingo: faixa("domingo"), nota: (h.nota || "").trim() };
+}
+
+function faixaVale(f) {
+  return !!(f && (f.fechado || (f.de && f.ate)));
+}
+
+function temHorario(c) {
+  const h = horarioDe(c);
+  return HORARIO_DIAS.some(d => faixaVale(h[d.key]));
+}
+
+// "06:00" vira "6h"; "06:30" vira "6h30".
+function horaTexto(hhmm) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || "");
+  if (!m) return hhmm || "";
+  const h = parseInt(m[1], 10);
+  return m[2] === "00" ? `${h}h` : `${h}h${m[2]}`;
+}
+
+function faixaTexto(f) {
+  if (!faixaVale(f)) return "";
+  return f.fechado ? "Fechado" : `${horaTexto(f.de)} às ${horaTexto(f.ate)}`;
+}
+
+// Usa a hora do próprio aparelho, que para quem está no Brasil é a certa.
+// Devolve null quando não dá para saber.
+function abertoAgora(c) {
+  const h = horarioDe(c);
+  const agora = new Date();
+  const dia = agora.getDay();
+  const f = dia === 0 ? h.domingo : dia === 6 ? h.sabado : h.semana;
+  if (!faixaVale(f) || f.fechado) return faixaVale(f) ? false : null;
+  const minutos = (t) => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(t || "");
+    return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : null;
+  };
+  const ini = minutos(f.de), fim = minutos(f.ate);
+  if (ini === null || fim === null) return null;
+  const q = agora.getHours() * 60 + agora.getMinutes();
+  return fim > ini ? (q >= ini && q < fim) : (q >= ini || q < fim);
 }
 
 function politicaDe(c) {
@@ -1236,6 +1303,7 @@ function mapRow(row) {
     plano: row.plano || "basico",
     politica: row.politica || {},
     acesso: row.acesso || {},
+    horario: row.horario || {},
     pausada: !!row.pausada,
     pausadaAte: row.pausada_ate,
     nomeSolicitante: row.nome_solicitante,
@@ -1256,6 +1324,7 @@ function toRow(f) {
     quadras: f.quadras || {}, photos: f.photos || [],
     politica: f.politica || {},
     acesso: f.acesso || {},
+    horario: f.horario || {},
   };
 }
 
@@ -4666,7 +4735,6 @@ function htLocalizacao(c) {
     <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
     ${navLinks(c)}
     ${htAcesso(c)}
-    ${htEstacionar(c)}
     ${htPerto(c)}
     ${perto.length ? `
       <p class="field-label">Outras academias por perto</p>
@@ -4719,30 +4787,32 @@ function htAcesso(c) {
       </div>`).join("")}</div>`;
 }
 
-// Responde a pergunta de quem vai de carro: onde deixo o carro?
-function htEstacionar(c) {
-  if (!temEstacionar(c)) return "";
-  const e = estacionarDe(c);
-  const linhas = [];
-  if (e.noLocal) linhas.push({ ic: "parking", label: e.noLocal });
-  e.fora.forEach(o => linhas.push({ ic: o.ic, label: o.label }));
+// Quem não tem raquete precisa saber antes de sair de casa.
+function htLevar(c) {
+  if (!acessoDe(c).raquete) return "";
   return `
-    <p class="field-label">Estacionamento</p>
+    <p class="field-label" style="margin-top:18px">Raquete</p>
     <div class="ht-amen">
-      ${linhas.map(l => `<div class="ht-amen-i">${icon(l.ic, 16, 'var(--green)')}<span>${esc(l.label)}</span></div>`).join("")}
-    </div>
-    ${e.nota ? `<p class="ht-poi-nota">${esc(e.nota)}</p>` : ""}`;
+      <div class="ht-amen-i">${icon('bag', 16, 'var(--green)')}<span>A academia empresta raquete</span></div>
+    </div>`;
 }
 
-// O que levar aparece junto do preço: bola inclusa muda o valor da hora.
-function htLevar(c) {
-  const lista = naOrdem(LEVAR_OPTS, acessoDe(c).levar);
-  if (!lista.length) return "";
+// O horário fica logo abaixo do resumo: é a segunda coisa que se pergunta,
+// depois do preço.
+function htHorario(c) {
+  if (!temHorario(c)) return "";
+  const h = horarioDe(c);
+  const aberto = abertoAgora(c);
   return `
-    <p class="field-label" style="margin-top:18px">O que levar</p>
-    <div class="ht-amen">
-      ${lista.map(o => `<div class="ht-amen-i">${icon(o.ic, 16, 'var(--green)')}<span>${esc(o.label)}</span></div>`).join("")}
-    </div>`;
+    <p class="field-label" style="margin-top:18px">Horário${aberto === null ? "" : `
+      <span class="hr-agora ${aberto ? "sim" : "nao"}">${aberto ? "Aberto agora" : "Fechado agora"}</span>`}</p>
+    <div class="hr-lista">
+      ${HORARIO_DIAS.filter(d => faixaVale(h[d.key])).map(d => `
+        <div class="hr-linha ${h[d.key].fechado ? "fechado" : ""}">
+          <span>${esc(d.label)}</span><strong>${esc(faixaTexto(h[d.key]))}</strong>
+        </div>`).join("")}
+    </div>
+    ${h.nota ? `<p class="ht-poi-nota">${esc(h.nota)}</p>` : ""}`;
 }
 
 function academiasPerto(c, quantas) {
@@ -5019,18 +5089,23 @@ function perguntasAcademia(c) {
 
   if (temEstacionar(c)) {
     const e = estacionarDe(c);
-    const partes = [];
-    if (e.noLocal) partes.push(e.noLocal + ".");
-    if (e.fora.length) partes.push(listaTexto(e.fora.map(o => o.label.toLowerCase())) + ".");
-    if (e.nota) partes.push(e.nota);
-    faq.push({ q: `Onde estacionar em ${c.name}?`, a: partes.join(" ") });
+    faq.push({ q: `Onde estacionar em ${c.name}?`, a: [e.noLocal ? e.noLocal + "." : "", e.texto].filter(Boolean).join(" ") });
   }
 
-  const levar = naOrdem(LEVAR_OPTS, acessoDe(c).levar);
-  if (levar.length) {
+  if (acessoDe(c).raquete) {
     faq.push({
-      q: `Precisa levar raquete e bola para ${c.name}?`,
-      a: listaTexto(levar.map(o => o.label.toLowerCase())) + ".",
+      q: `Precisa levar raquete para ${c.name}?`,
+      a: "Não precisa: a academia empresta raquete. Confirme na conversa se vai jogar acompanhado, para garantir uma para cada.",
+    });
+  }
+
+  if (temHorario(c)) {
+    const h = horarioDe(c);
+    const linhas = HORARIO_DIAS.filter(d => faixaVale(h[d.key]))
+      .map(d => `${d.label}, ${faixaTexto(h[d.key]).toLowerCase()}`);
+    faq.push({
+      q: `Que horas ${c.name} abre e fecha?`,
+      a: listaTexto(linhas) + "." + (h.nota ? " " + h.nota : ""),
     });
   }
 
@@ -5157,6 +5232,7 @@ function renderCourtPage(c) {
                 <h3 class="sec-title">Sobre a academia</h3>
                 <p class="ht-about">${esc(descricaoAcademia(c))}</p>
                 ${htDestaques(c)}
+                ${htHorario(c)}
               </section>
 
               <section class="ht-sec" id="ht-opcoes">
@@ -5247,10 +5323,23 @@ function acessoForm(f) {
   if (typeof a.fachada !== "string") a.fachada = "";
   if (typeof a.referencia !== "string") a.referencia = "";
   if (typeof a.entrada !== "string") a.entrada = "";
-  if (typeof a.estacionamentoNota !== "string") a.estacionamentoNota = "";
-  if (!Array.isArray(a.estacionamento)) a.estacionamento = [];
-  if (!Array.isArray(a.levar)) a.levar = [];
+  if (typeof a.estacionar !== "string") a.estacionar = typeof a.estacionamentoNota === "string" ? a.estacionamentoNota : "";
+  a.raquete = !!a.raquete;
   return a;
+}
+
+function horarioForm(f) {
+  if (!f.horario) f.horario = {};
+  const h = f.horario;
+  HORARIO_DIAS.forEach(d => {
+    if (!h[d.key] || typeof h[d.key] !== "object") h[d.key] = {};
+    const x = h[d.key];
+    if (typeof x.de !== "string") x.de = "";
+    if (typeof x.ate !== "string") x.ate = "";
+    x.fechado = !!x.fechado;
+  });
+  if (typeof h.nota !== "string") h.nota = "";
+  return h;
 }
 
 function politicaForm(f) {
@@ -5312,15 +5401,30 @@ function renderRegisterSheet() {
         <textarea class="form-field" id="f-acesso-entrada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
 
         <p class="field-label">Onde estacionar</p>
-        <p class="footnote" style="margin:0 0 6px">Vale mesmo quando tem vaga no local — quem chega de carro quer saber antes.</p>
-        <div class="chip-row">
-          ${ESTACIONAMENTO_OPTS.map(o => `<button class="chip small reg-estacionamento ${acessoForm(f).estacionamento.includes(o.key)?"active":""}" data-estacionamento="${o.key}">${icon(o.ic, 13, 'var(--green)')} ${o.label}</button>`).join("")}
-        </div>
-        <textarea class="form-field" id="f-acesso-estacionamento-nota" rows="2" style="resize:none" placeholder="Ex.: a rua tem zona azul até as 19h; depois disso é livre.">${esc(acessoForm(f).estacionamentoNota)}</textarea>
+        <p class="footnote" style="margin:0 0 6px">Escreva como funciona de verdade: se dá para parar na rua, se é zona azul e até que horas, se tem estacionamento pago por perto. Vira uma pergunta frequente na ficha.</p>
+        <textarea class="form-field" id="f-acesso-estacionar" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
 
-        <p class="field-label">O que levar</p>
+        <p class="field-label">Horário de funcionamento</p>
+        <div class="hr-form">
+          ${HORARIO_DIAS.map(d => {
+            const x = horarioForm(f)[d.key];
+            return `
+              <div class="hr-form-linha">
+                <span class="hr-form-dia">${d.label}</span>
+                <button type="button" class="chip small hr-fechado ${x.fechado ? "active" : ""}" data-fechado="${d.key}">Fechado</button>
+                <div class="hr-form-campos ${x.fechado ? "off" : ""}">
+                  <input type="time" class="form-field hr-time" data-hora="${d.key}" data-parte="de" value="${esc(x.de)}" ${x.fechado ? "disabled" : ""} />
+                  <span class="hr-form-ate">às</span>
+                  <input type="time" class="form-field hr-time" data-hora="${d.key}" data-parte="ate" value="${esc(x.ate)}" ${x.fechado ? "disabled" : ""} />
+                </div>
+              </div>`;
+          }).join("")}
+        </div>
+        <input class="form-field" id="f-horario-nota" placeholder="Observação sobre o horário (opcional)" value="${esc(horarioForm(f).nota)}" />
+
+        <p class="field-label">Raquete</p>
         <div class="chip-row">
-          ${LEVAR_OPTS.map(o => `<button class="chip small reg-levar ${acessoForm(f).levar.includes(o.key)?"active":""}" data-levar="${o.key}">${icon(o.ic, 13, 'var(--green)')} ${o.label}</button>`).join("")}
+          <button class="chip small reg-raquete ${acessoForm(f).raquete ? "active" : ""}" data-raquete="1">${icon('bag', 13, 'var(--green)')} A academia empresta raquete</button>
         </div>
 
         <p class="field-label">Fotos da academia</p>
@@ -6466,21 +6570,22 @@ function attachEvents() {
   });
   const acessoFac = document.getElementById("f-acesso-fachada");
   if (acessoFac) acessoFac.oninput = (e) => { acessoForm(window.__form).fachada = e.target.value; };
-  const acessoEstNota = document.getElementById("f-acesso-estacionamento-nota");
-  if (acessoEstNota) acessoEstNota.oninput = (e) => { acessoForm(window.__form).estacionamentoNota = e.target.value; };
-  document.querySelectorAll(".reg-estacionamento").forEach(el => {
-    el.onclick = () => {
-      const a = acessoForm(window.__form);
-      const k = el.dataset.estacionamento;
-      a.estacionamento = a.estacionamento.includes(k) ? a.estacionamento.filter(x => x !== k) : [...a.estacionamento, k];
-      render();
-    };
+  const acessoEst = document.getElementById("f-acesso-estacionar");
+  if (acessoEst) acessoEst.oninput = (e) => { acessoForm(window.__form).estacionar = e.target.value; };
+  document.querySelectorAll(".reg-raquete").forEach(el => {
+    el.onclick = () => { const a = acessoForm(window.__form); a.raquete = !a.raquete; render(); };
   });
-  document.querySelectorAll(".reg-levar").forEach(el => {
+  const horarioNota = document.getElementById("f-horario-nota");
+  if (horarioNota) horarioNota.oninput = (e) => { horarioForm(window.__form).nota = e.target.value; };
+  document.querySelectorAll(".hr-time").forEach(el => {
+    // Sem render() a cada tecla: o campo de hora perderia o foco no meio.
+    el.onchange = (e) => { horarioForm(window.__form)[el.dataset.hora][el.dataset.parte] = e.target.value; };
+  });
+  document.querySelectorAll("[data-fechado]").forEach(el => {
     el.onclick = () => {
-      const a = acessoForm(window.__form);
-      const k = el.dataset.levar;
-      a.levar = a.levar.includes(k) ? a.levar.filter(x => x !== k) : [...a.levar, k];
+      const dia = horarioForm(window.__form)[el.dataset.fechado];
+      dia.fechado = !dia.fechado;
+      if (dia.fechado) { dia.de = ""; dia.ate = ""; }
       render();
     };
   });
@@ -6758,17 +6863,18 @@ async function doSearch() {
 // falhar — e avisa o admin com o SQL que resolve. Mesmo caminho do "plano".
 function faltaColunaNova(erro) {
   const m = ((erro && erro.message) || "").toLowerCase();
-  return m.includes("politica") || m.includes("acesso");
+  return m.includes("politica") || m.includes("acesso") || m.includes("horario");
 }
 
 function avisarSqlColunas() {
   if (!isAdmin || window.__avisouColunas) return;
   window.__avisouColunas = true;
   alert(
-    "Salvei a academia, mas a política de cancelamento e as dicas de acesso ficaram de fora.\n\n" +
+    "Salvei a academia, mas a política de cancelamento, as dicas de acesso e o horário ficaram de fora.\n\n" +
     "A tabela ainda não tem essas colunas. Rode isto no SQL Editor do Supabase:\n\n" +
     "alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;\n" +
-    "alter table academias add column if not exists acesso jsonb not null default '{}'::jsonb;"
+    "alter table academias add column if not exists acesso jsonb not null default '{}'::jsonb;\n" +
+    "alter table academias add column if not exists horario jsonb not null default '{}'::jsonb;"
   );
 }
 

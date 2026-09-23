@@ -3,9 +3,9 @@
 -- ============================================================
 -- Já rodado: a primeira versão da visão estatisticas_publicas.
 --
--- Este bloco: a coluna onde a busca guarda a região, as duas colunas
--- jsonb da academia, e a troca da visão por uma função que devolve os
--- totais do site desde o começo.
+-- Este bloco: a coluna onde a busca guarda a região, as três colunas
+-- jsonb da academia (política, acesso e horário), e a troca da visão por
+-- uma função que devolve os totais do site desde o começo.
 --
 -- Por que função e não visão: uma visão pertence ao postgres e roda com
 -- a permissão dele, então passa por cima do RLS da tabela cliques. É o
@@ -19,6 +19,8 @@ alter table cliques add column if not exists detalhe text;
 alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;
 
 alter table academias add column if not exists acesso jsonb not null default '{}'::jsonb;
+
+alter table academias add column if not exists horario jsonb not null default '{}'::jsonb;
 
 drop view if exists public.estatisticas_publicas;
 

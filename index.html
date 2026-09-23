@@ -518,10 +518,51 @@
   .city-tab { background: none; border: none; border-bottom: 2px solid transparent; padding: 8px 0 9px; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
   .city-tab.on { color: var(--green); border-bottom-color: var(--green); font-weight: 700; }
   .city-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
-  .home-banner { margin: 6px 20px 24px; background: var(--green); border-radius: 14px; padding: 20px; color: #fff; }
-  .home-banner h3 { font-size: 21px; font-weight: 700; margin: 0; color: #fff; }
-  .home-banner p { font-size: 14px; margin: 6px 0 14px; color: rgba(255,255,255,0.82); }
-  .home-banner button { background: var(--gold); color: var(--green-dark); border: none; border-radius: 10px; padding: 12px 20px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  /* menu de três barras */
+  .menu-btn { width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
+  .menu-btn span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
+  .menu-overlay { justify-content: flex-end; align-items: stretch; }
+  .menu-drawer { width: min(340px, 88vw); height: 100%; background: var(--card); overflow-y: auto; padding: 16px 18px calc(24px + env(safe-area-inset-bottom)); box-shadow: -10px 0 30px rgba(33,31,26,0.18); animation: menuEntra 0.18s ease-out; }
+  @keyframes menuEntra { from { transform: translateX(24px); opacity: 0.4 } to { transform: none; opacity: 1 } }
+  @media (prefers-reduced-motion: reduce) { .menu-drawer { animation: none; } }
+  .menu-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .menu-marca { display: flex; align-items: center; gap: 9px; font-size: 17px; color: var(--green); }
+  .menu-marca svg { width: 30px; height: 30px; }
+  .menu-fechar { width: 38px; height: 38px; border: none; background: var(--bg-alt); border-radius: 999px; font-size: 15px; color: var(--text); cursor: pointer; flex-shrink: 0; }
+  .menu-grupo { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-dark); margin: 18px 0 4px; }
+  .menu-item { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; background: none; border: none; border-radius: 10px; padding: 11px 10px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; cursor: pointer; }
+  .menu-item:hover { background: var(--bg-alt); }
+  .menu-rodape { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .menu-versao { font-size: 12px; color: var(--muted-dark); margin: 10px 10px 0; }
+
+  /* faixa de números do guia */
+  .faixa-numeros { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 8px; margin: 0 20px 6px; padding: 14px 10px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; }
+  .num-item { flex: 1 1 0; min-width: 72px; text-align: center; }
+  .num-item strong { display: block; font-size: 22px; font-weight: 800; color: var(--green); line-height: 1.1; }
+  .num-item span { font-size: 12px; color: var(--muted); }
+
+  /* por que o GuiaTennis */
+  .dif-grade { display: grid; gap: 12px; }
+  @media (min-width: 720px) { .dif-grade { grid-template-columns: 1fr 1fr; gap: 14px; } }
+  .dif-item { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 16px; }
+  .dif-ic { display: flex; margin-bottom: 10px; }
+  .dif-t { font-size: 16px; font-weight: 700; margin: 0; line-height: 1.3; }
+  .dif-d { font-size: 14px; color: var(--muted); margin: 6px 0 0; line-height: 1.5; }
+
+  /* por que estar no guia (academias) */
+  .bloco-academias { margin: 16px 20px 28px; background: var(--green); border-radius: 18px; padding: 24px 20px; color: #fff; }
+  @media (min-width: 720px) { .bloco-academias { padding: 30px 28px; } }
+  .ba-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-light); margin: 0; font-weight: 700; }
+  .bloco-academias h3 { font-size: 23px; font-weight: 700; margin: 8px 0 0; color: #fff; }
+  @media (min-width: 720px) { .bloco-academias h3 { font-size: 27px; } }
+  .ba-lista { display: grid; gap: 14px; margin-top: 18px; }
+  @media (min-width: 720px) { .ba-lista { grid-template-columns: 1fr 1fr; gap: 16px 24px; } }
+  .ba-item { display: flex; gap: 10px; font-size: 15px; line-height: 1.45; }
+  .ba-ic { flex-shrink: 0; margin-top: 3px; display: flex; }
+  .ba-d { font-size: 14px; color: rgba(255,255,255,0.78); }
+  .ba-btn { width: 100%; margin-top: 22px; background: var(--gold); color: var(--green-dark); border: none; border-radius: 12px; padding: 15px; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 800; cursor: pointer; }
+  .ba-nota { font-size: 12px; color: rgba(255,255,255,0.7); margin: 10px 0 0; text-align: center; }
+
 
   /* ---- rodapé em colunas ---- */
   .sitefooter { background: var(--bg-alt); border-top: 1px solid var(--border); padding: 26px 20px 30px; }
@@ -1303,6 +1344,8 @@ let state = {
   cardPhoto: {},
   reviewsExpanded: false,
   faqOpen: {},
+  faqSiteOpen: {},
+  showMenu: false,
   qrCourt: null,
   perto: {},
   page: "home",
@@ -1658,6 +1701,7 @@ function render() {
     ${state.page === "search" ? renderFilterDrawer(results.length) : ""}
     ${renderNavSheet()}
     ${renderQrSheet()}
+    ${renderMenu()}
     ${renderAbas()}
     ${renderLightbox()}
   `;
@@ -1722,6 +1766,38 @@ function mountMiniMap(c) {
   setTimeout(() => { if (__miniMap) __miniMap.invalidateSize(); }, 60);
 }
 
+// Dados estruturados do site: quem é o GuiaTennis e as perguntas frequentes
+// da página inicial. O Google usa isso para entender e mostrar o guia.
+function dadosDoSite() {
+  const grafo = [
+    {
+      "@type": "WebSite",
+      name: "GuiaTennis",
+      url: "https://guiatennis.com.br",
+      inLanguage: "pt-BR",
+      description: "Guia de quadras e academias de tênis: ache pelo endereço mais perto, compare preço e estrutura, e fale direto com a academia.",
+    },
+    {
+      "@type": "Organization",
+      name: "GuiaTennis",
+      url: "https://guiatennis.com.br",
+      email: "guiatennis1@gmail.com",
+      sameAs: ["https://instagram.com/guiatennis"],
+    },
+  ];
+  if (state.page === "home") {
+    grafo.push({
+      "@type": "FAQPage",
+      mainEntity: perguntasDoSite().map(f => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    });
+  }
+  return { "@context": "https://schema.org", "@graph": grafo };
+}
+
 // Título da aba e dados estruturados da academia. O Google usa esse JSON para
 // entender que a página é de um local esportivo, com nota, preço e perguntas.
 const TITULO_PADRAO = document.title;
@@ -1729,7 +1805,10 @@ function atualizarSeo(c) {
   const ld = document.getElementById("ld-academia");
   if (!c) {
     if (document.title !== TITULO_PADRAO) document.title = TITULO_PADRAO;
-    if (ld && ld.textContent) ld.textContent = "";
+    if (ld) {
+      const novo = JSON.stringify(dadosDoSite());
+      if (ld.textContent !== novo) ld.textContent = novo;
+    }
     return;
   }
   const local = [c.bairro, c.cidade].filter(Boolean).join(", ");
@@ -1992,12 +2071,7 @@ function renderComparePage() {
   const courts = compareCourts();
   const podeComparar = courts.length >= COMPARE_MIN;
   return `
-    <div class="home-head">
-      <button type="button" class="home-brand" id="brand-home">
-        ${LOGO_SVG}
-        <h1 class="display">GuiaTennis</h1>
-      </button>
-    </div>
+    ${renderCabecalho()}
     <div class="cmp-pagina">
       <h2 class="cmp-titulo display">Comparar academias</h2>
       <p class="cmp-sub-topo">Veja lado a lado o que muda entre elas: nota, distância, estrutura e preço.</p>
@@ -2610,6 +2684,198 @@ function demoBusca() {
   `;
 }
 
+// ---------- cabeçalho e menu ----------
+
+// Mesmo cabeçalho nas três abas: marca à esquerda, menu de três barras à direita.
+function renderCabecalho() {
+  return `
+    <div class="home-head">
+      <button type="button" class="home-brand" id="brand-home">
+        ${LOGO_SVG}
+        <h1 class="display">GuiaTennis</h1>
+      </button>
+      <button type="button" class="menu-btn" id="menu-btn" aria-label="Abrir menu" aria-expanded="${state.showMenu ? "true" : "false"}">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  `;
+}
+
+function renderMenu() {
+  if (!state.showMenu) return "";
+  const item = (id, texto, ic) => `<button type="button" class="menu-item" data-menu="${id}">${icon(ic, 17, 'var(--green)')}<span>${texto}</span></button>`;
+  return `
+    <div class="overlay open menu-overlay" id="menu-overlay">
+      <aside class="menu-drawer" role="dialog" aria-label="Menu">
+        <div class="menu-topo">
+          <span class="menu-marca">${LOGO_SVG}<strong class="display">GuiaTennis</strong></span>
+          <button type="button" class="menu-fechar" id="menu-close" aria-label="Fechar menu">✕</button>
+        </div>
+
+        <p class="menu-grupo">Navegar</p>
+        ${item("home", "Início", "home")}
+        ${item("search", "Buscar quadra", "search")}
+        ${item("comparar", "Comparar academias", "list")}
+
+        <p class="menu-grupo">Entender o guia</p>
+        ${item("como", "Como funciona", "play")}
+        ${item("porque", "Por que o GuiaTennis", "sparkle")}
+        ${item("duvidas", "Perguntas frequentes", "bubble")}
+
+        <p class="menu-grupo">Para academias</p>
+        ${item("academias", "Por que estar no guia", "clipboard")}
+        ${item("cadastrar", "Cadastrar minha academia", "check")}
+
+        <p class="menu-grupo">Contato</p>
+        <a class="menu-item" href="https://instagram.com/guiatennis" target="_blank" rel="noreferrer">${icon('instagram', 17, 'var(--green)')}<span>Instagram @guiatennis</span></a>
+        <a class="menu-item" href="mailto:guiatennis1@gmail.com">${icon('bubble', 17, 'var(--green)')}<span>guiatennis1@gmail.com</span></a>
+
+        <p class="menu-grupo">Legal</p>
+        ${item("termos", "Termos de Uso", "clipboard")}
+        ${item("privacidade", "Política de Privacidade", "clipboard")}
+
+        <div class="menu-rodape">
+          ${isAdmin
+            ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 17, 'var(--muted)')}<span>Sair do modo admin</span></button>`
+            : `<button type="button" class="menu-item" data-menu="admin">${icon('key', 17, 'var(--muted)')}<span>Área do GuiaTennis</span></button>`}
+          <p class="menu-versao">guiatennis.com.br</p>
+        </div>
+      </aside>
+    </div>
+  `;
+}
+
+// ---------- blocos da página inicial ----------
+
+// Números reais do guia, lidos do banco na hora.
+function numerosDoGuia() {
+  const todas = state.allCourts;
+  const quadras = todas.reduce((s, c) => s + totalQuadras(c), 0);
+  const cidades = new Set(todas.map(c => (c.cidade || "").trim()).filter(Boolean)).size;
+  const avaliacoes = Object.values(state.reviewsCache || {}).reduce((s, l) => s + l.length, 0);
+  return { academias: todas.length, quadras, cidades, avaliacoes };
+}
+
+function blocoNumeros() {
+  const n = numerosDoGuia();
+  const itens = [
+    n.academias && { v: n.academias, l: plural(n.academias, "academia", "academias") },
+    n.quadras && { v: n.quadras, l: plural(n.quadras, "quadra", "quadras") },
+    n.cidades && { v: n.cidades, l: plural(n.cidades, "cidade", "cidades") },
+    n.avaliacoes && { v: n.avaliacoes, l: plural(n.avaliacoes, "avaliação", "avaliações") },
+  ].filter(Boolean);
+  if (!itens.length) return "";
+  return `
+    <div class="faixa-numeros">
+      ${itens.map(i => `<div class="num-item"><strong>${i.v}</strong><span>${i.l}</span></div>`).join("")}
+    </div>
+  `;
+}
+
+// "Por que o GuiaTennis" — o que o guia faz de diferente, para quem joga.
+function blocoDiferenciais() {
+  const itens = [
+    { ic: 'pin', t: "Acha pelo endereço mais perto", d: "Digite o CEP, o endereço ou toque no GPS. As quadras aparecem da mais perto para a mais longe — não é lista alfabética nem quem pagou mais." },
+    { ic: 'phone', t: "Você fala direto com a academia", d: "O WhatsApp abre com a conversa já começada. O guia não reserva horário, não cobra taxa e não fica no meio." },
+    { ic: 'sparkle', t: "Nota só de quem jogou aqui", d: "As avaliações são feitas dentro do GuiaTennis, por quem usou. Não importamos nota de outro site." },
+    { ic: 'list', t: "Preço e estrutura na mesma tela", d: "Piso, cobertura, número de quadras, comodidades e faixa de preço por hora — sem precisar abrir cinco abas." },
+  ];
+  return `
+    <div class="home-sec" id="home-porque">
+      <h3 class="display">Por que o GuiaTennis</h3>
+      <p class="sec-sub">Quatro coisas que a gente resolveu porque faltavam.</p>
+      <div class="dif-grade">
+        ${itens.map(i => `
+          <div class="dif-item">
+            <span class="dif-ic">${icon(i.ic, 22, 'var(--green)')}</span>
+            <p class="dif-t">${i.t}</p>
+            <p class="dif-d">${i.d}</p>
+          </div>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+// "Por que as academias estão aqui" — o lado de quem tem a quadra.
+function blocoParaAcademias() {
+  const itens = [
+    { t: "Aparece para quem já está procurando", d: "Quem chega aqui não está passeando: está com a raquete na mão procurando onde jogar hoje." },
+    { t: "O aluno cai direto no seu WhatsApp", d: "Sem intermediário, sem comissão sobre a aula, sem central de reservas. A conversa é sua com ele." },
+    { t: "A listagem é gratuita", d: "Cadastrar e aparecer no guia não custa nada. Você envia os dados, a gente confere e publica." },
+    { t: "Os dados são seus", d: "Preço, fotos, comodidades, política de cancelamento e a dica de como chegar — tudo como você informou, e você pede alteração quando quiser." },
+  ];
+  return `
+    <div class="bloco-academias" id="home-academias">
+      <p class="ba-eyebrow">Para academias e clubes</p>
+      <h3 class="display">Por que estar no GuiaTennis</h3>
+      <div class="ba-lista">
+        ${itens.map(i => `
+          <div class="ba-item">
+            <span class="ba-ic">${icon('check', 16, 'var(--gold)')}</span>
+            <span><strong>${i.t}</strong><br><span class="ba-d">${i.d}</span></span>
+          </div>`).join("")}
+      </div>
+      <button type="button" class="ba-btn" id="home-cadastrar">Cadastrar minha academia</button>
+      <p class="ba-nota">Leva uns 3 minutos. Depois é só responder quem chamar.</p>
+    </div>
+  `;
+}
+
+// Perguntas frequentes do site, em sanfona.
+function perguntasDoSite() {
+  const cidades = cidadesComQuadra().map(c => c.nome);
+  const faq = [
+    {
+      q: "O GuiaTennis cobra alguma coisa de quem procura quadra?",
+      a: "Não. Buscar, comparar, avaliar e falar com a academia é tudo de graça. O guia não cobra taxa de reserva nem comissão.",
+    },
+    {
+      q: "Vocês reservam o horário para mim?",
+      a: "Não. O guia mostra as academias e abre o WhatsApp com a conversa começada. Quem combina dia, horário, valor e pagamento é você com a academia.",
+    },
+    {
+      q: "As notas e os comentários são de verdade?",
+      a: "São de quem avaliou aqui dentro, com nome visível. Não importamos nota do Google nem de outro site, e a academia não escolhe o que aparece.",
+    },
+    {
+      q: "Como uma academia entra no site?",
+      a: "Qualquer pessoa pode enviar o cadastro, inclusive a própria academia. A gente confere os dados antes de publicar, e a listagem é gratuita.",
+    },
+    {
+      q: 'Por que algumas academias aparecem como "Sob consulta"?',
+      a: "Porque ainda não publicaram os valores no guia. Nesse caso é só chamar no WhatsApp e perguntar — o botão já está na ficha.",
+    },
+    {
+      q: "A ordem das academias é paga?",
+      a: "Não. A lista sai por distância, nota, preço e estrutura, conforme a ordenação que você escolher. Se um dia existir posição paga, vai estar escrito na tela.",
+    },
+  ];
+  if (cidades.length) {
+    faq.push({
+      q: "Em quais cidades já tem quadra cadastrada?",
+      a: `Hoje o guia tem academias em ${listaTexto(cidades)}. A lista cresce toda semana — se a sua cidade ainda não está, mande a academia que você joga.`,
+    });
+  }
+  return faq;
+}
+
+function blocoFaqSite() {
+  const faq = perguntasDoSite();
+  return `
+    <div class="home-sec" id="home-duvidas">
+      <h3 class="display">Perguntas frequentes</h3>
+      <p class="sec-sub">O que mais perguntam antes de usar o guia.</p>
+      <div class="ht-faq">
+        ${faq.map((f, i) => `
+          <details data-faqsite="${i}" ${state.faqSiteOpen[i] ? "open" : ""}>
+            <summary>${esc(f.q)}<span class="ht-faq-ic">${icon('chevron', 16, 'var(--green)')}</span></summary>
+            <p>${esc(f.a)}</p>
+          </details>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function blocoVideo() {
   const v = (VIDEO_COMO_FUNCIONA || "").trim();
   let player = "";
@@ -2620,7 +2886,7 @@ function blocoVideo() {
     player = `<iframe class="video-player" src="https://www.youtube-nocookie.com/embed/${esc(id)}" title="Como funciona a busca do GuiaTennis" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
   }
   return `
-    <div class="home-sec">
+    <div class="home-sec" id="home-como">
       <h3 class="display">Como funciona a busca</h3>
       <p class="sec-sub">Em um minuto, do endereço até a conversa com a academia.</p>
       <div class="video-wrap">
@@ -2728,13 +2994,7 @@ function renderHome() {
   const cidadeAtiva = cidades.find(c => c.nome === state.homeCity) || cidades[0];
 
   return `
-    <div class="home-head">
-      <button type="button" class="home-brand" id="brand-home">
-        ${LOGO_SVG}
-        <h1 class="display">GuiaTennis</h1>
-      </button>
-      <button type="button" class="tbtn" id="home-ir-busca">${icon('search', 14, 'currentColor')} Buscar</button>
-    </div>
+    ${renderCabecalho()}
 
     <div class="home-hero">
       <h2 class="display">Ache uma quadra de tênis perto de você</h2>
@@ -2742,6 +3002,7 @@ function renderHome() {
       ${renderSearchCard()}
       ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
     </div>
+    ${blocoNumeros()}
 
     ${recentes.length ? `
       <div class="home-sec">
@@ -2757,6 +3018,7 @@ function renderHome() {
       </div>` : ""}
 
     ${blocoVideo()}
+    ${blocoDiferenciais()}
 
     ${melhores.length ? `
       <div class="home-sec">
@@ -2774,11 +3036,8 @@ function renderHome() {
         <div class="home-strip">${cidadeAtiva.courts.slice(0, 8).map(c => renderMini(decorate(c))).join("")}</div>
       </div>` : ""}
 
-    <div class="home-banner">
-      <h3 class="display">Tem uma academia de tênis?</h3>
-      <p>O cadastro é gratuito. Seus alunos acham você pelo endereço mais próximo.</p>
-      <button type="button" id="home-cadastrar">Cadastrar de graça</button>
-    </div>
+    ${blocoParaAcademias()}
+    ${blocoFaqSite()}
 
     ${renderSiteFooter()}
   `;
@@ -5180,9 +5439,6 @@ function attachEvents() {
   const brandHome = document.getElementById("brand-home");
   if (brandHome) brandHome.onclick = goHome;
 
-  const irBusca = document.getElementById("home-ir-busca");
-  if (irBusca) irBusca.onclick = goSearch;
-
   const irAvaliacoes = document.getElementById("ir-avaliacoes");
   if (irAvaliacoes) irAvaliacoes.onclick = () => {
     const alvo = document.getElementById("avaliacoes");
@@ -5746,6 +6002,43 @@ function attachEvents() {
 
   const decideGo = document.getElementById("decide-go");
   if (decideGo) decideGo.onclick = () => { state.showDecideResult = true; render(); };
+
+  const menuBtn = document.getElementById("menu-btn");
+  if (menuBtn) menuBtn.onclick = () => { state.showMenu = true; render(); };
+  const menuClose = document.getElementById("menu-close");
+  if (menuClose) menuClose.onclick = () => { state.showMenu = false; render(); };
+  const menuOverlay = document.getElementById("menu-overlay");
+  if (menuOverlay) menuOverlay.onclick = (e) => { if (e.target === menuOverlay) { state.showMenu = false; render(); } };
+
+  document.querySelectorAll("[data-menu]").forEach(el => {
+    el.onclick = () => {
+      const alvo = el.dataset.menu;
+      state.showMenu = false;
+      if (alvo === "home" || alvo === "como" || alvo === "porque" || alvo === "duvidas" || alvo === "academias") {
+        const ancoras = { como: "home-como", porque: "home-porque", duvidas: "home-duvidas", academias: "home-academias" };
+        if (state.page !== "home") goHome(); else render();
+        if (ancoras[alvo]) {
+          setTimeout(() => {
+            const el2 = document.getElementById(ancoras[alvo]);
+            if (el2) el2.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 60);
+        }
+        return;
+      }
+      if (alvo === "search") { goSearch(); return; }
+      if (alvo === "comparar") { goComparar(); return; }
+      if (alvo === "cadastrar") { abrirCadastro(); return; }
+      if (alvo === "termos") { state.showTerms = true; render(); return; }
+      if (alvo === "privacidade") { state.showPrivacy = true; render(); return; }
+      if (alvo === "admin") { state.showLogin = true; render(); return; }
+      if (alvo === "sair") { sb.auth.signOut().then(() => location.reload()); return; }
+      render();
+    };
+  });
+
+  document.querySelectorAll("[data-faqsite]").forEach(el => {
+    el.ontoggle = () => { state.faqSiteOpen[el.dataset.faqsite] = el.open; };
+  });
 
   document.querySelectorAll("[data-aba]").forEach(el => {
     el.onclick = () => {

@@ -1060,17 +1060,51 @@ const REPOSICAO_OPTS = [
 
 // Duas dicas curtas que a academia escreve: como achar o lugar e o que fazer
 // ao chegar. Ficam na coluna "acesso" (jsonb) da tabela academias.
+// Onde dá para deixar o carro quando a academia não tem vaga própria.
+const ESTACIONAMENTO_OPTS = [
+  { key: "rua", ic: "parking", label: "Dá para estacionar na rua" },
+  { key: "zona_azul", ic: "parking", label: "Zona azul na região" },
+  { key: "pago_perto", ic: "parking", label: "Estacionamento pago por perto" },
+  { key: "dificil", ic: "warning", label: "Difícil estacionar — melhor vir de app" },
+];
+
+// A dúvida de quem aluga quadra pela primeira vez: preciso levar o quê?
+const LEVAR_OPTS = [
+  { key: "raquete_empresta", ic: "bag", label: "Empresta raquete" },
+  { key: "raquete_aluga", ic: "bag", label: "Aluga raquete" },
+  { key: "bola_inclusa", ic: "ball", label: "Bola inclusa no valor" },
+  { key: "bola_sua", ic: "ball", label: "Leve sua bola" },
+];
+
 function acessoDe(c) {
   const a = (c && c.acesso) || {};
   return {
+    fachada: (a.fachada || "").trim(),
     referencia: (a.referencia || "").trim(),
     entrada: (a.entrada || "").trim(),
+    estacionamento: Array.isArray(a.estacionamento) ? a.estacionamento : [],
+    estacionamentoNota: (a.estacionamentoNota || "").trim(),
+    levar: Array.isArray(a.levar) ? a.levar : [],
   };
 }
 
 function temAcesso(c) {
   const a = acessoDe(c);
-  return !!(a.referencia || a.entrada);
+  return !!(a.fachada || a.referencia || a.entrada);
+}
+
+// O estacionamento no próprio lugar já é uma comodidade; aqui entra o resto.
+function estacionarDe(c) {
+  const a = acessoDe(c);
+  const am = (c && c.amenities) || [];
+  const noLocal = am.includes("estacionamento_gratuito") ? "Estacionamento grátis no local"
+                : am.includes("estacionamento_pago") ? "Estacionamento pago no local" : null;
+  return { noLocal, fora: naOrdem(ESTACIONAMENTO_OPTS, a.estacionamento), nota: a.estacionamentoNota };
+}
+
+function temEstacionar(c) {
+  const e = estacionarDe(c);
+  return !!(e.noLocal || e.fora.length || e.nota);
 }
 
 function politicaDe(c) {
@@ -4611,7 +4645,7 @@ function htOpcoes(c) {
         <div class="ht-room-unit">${temPreco(o.faixa) ? "por hora" : SEM_PRECO_SUB}</div>
       </div>
     </div>`).join("");
-  return cartoes + blocoContato(c);
+  return cartoes + htLevar(c) + blocoContato(c);
 }
 
 // Quadras e comodidades, na grade de ícones das "Comodidades da acomodação".
@@ -4644,6 +4678,7 @@ function htLocalizacao(c) {
     <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
     ${navLinks(c)}
     ${htAcesso(c)}
+    ${htEstacionar(c)}
     ${htPerto(c)}
     ${perto.length ? `
       <p class="field-label">Outras academias por perto</p>
@@ -4680,11 +4715,12 @@ function htAcesso(c) {
   const a = acessoDe(c);
   if (!temAcesso(c)) {
     return isAdmin
-      ? `<p class="ht-poi-motivo">Só você vê — essa academia ainda não escreveu a referência para achar o lugar nem a dica de entrada. Edite a ficha para preencher.</p>`
+      ? `<p class="ht-poi-motivo">Só você vê — essa academia ainda não escreveu como é a fachada, a referência para achar o lugar nem a dica de entrada. Edite a ficha para preencher.</p>`
       : "";
   }
   const itens = [];
-  if (a.referencia) itens.push({ ic: 'eye', t: "Como achar", d: a.referencia });
+  if (a.fachada) itens.push({ ic: 'eye', t: "Como é a fachada", d: a.fachada });
+  if (a.referencia) itens.push({ ic: 'pin', t: "Como achar", d: a.referencia });
   if (a.entrada) itens.push({ ic: 'key', t: "Na chegada", d: a.entrada });
   return `
     <p class="field-label">Como chegar e entrar</p>
@@ -4693,6 +4729,32 @@ function htAcesso(c) {
         <span class="ht-know-ic">${icon(i.ic, 16, 'var(--green)')}</span>
         <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${esc(i.d)}</span></span>
       </div>`).join("")}</div>`;
+}
+
+// Responde a pergunta de quem vai de carro: onde deixo o carro?
+function htEstacionar(c) {
+  if (!temEstacionar(c)) return "";
+  const e = estacionarDe(c);
+  const linhas = [];
+  if (e.noLocal) linhas.push({ ic: "parking", label: e.noLocal });
+  e.fora.forEach(o => linhas.push({ ic: o.ic, label: o.label }));
+  return `
+    <p class="field-label">Estacionamento</p>
+    <div class="ht-amen">
+      ${linhas.map(l => `<div class="ht-amen-i">${icon(l.ic, 16, 'var(--green)')}<span>${esc(l.label)}</span></div>`).join("")}
+    </div>
+    ${e.nota ? `<p class="ht-poi-nota">${esc(e.nota)}</p>` : ""}`;
+}
+
+// O que levar aparece junto do preço: bola inclusa muda o valor da hora.
+function htLevar(c) {
+  const lista = naOrdem(LEVAR_OPTS, acessoDe(c).levar);
+  if (!lista.length) return "";
+  return `
+    <p class="field-label" style="margin-top:18px">O que levar</p>
+    <div class="ht-amen">
+      ${lista.map(o => `<div class="ht-amen-i">${icon(o.ic, 16, 'var(--green)')}<span>${esc(o.label)}</span></div>`).join("")}
+    </div>`;
 }
 
 function academiasPerto(c, quantas) {
@@ -4963,7 +5025,24 @@ function perguntasAcademia(c) {
     const a = acessoDe(c);
     faq.push({
       q: `Como encontrar e entrar em ${c.name}?`,
-      a: [a.referencia, a.entrada].filter(Boolean).join(" "),
+      a: [a.fachada, a.referencia, a.entrada].filter(Boolean).join(" "),
+    });
+  }
+
+  if (temEstacionar(c)) {
+    const e = estacionarDe(c);
+    const partes = [];
+    if (e.noLocal) partes.push(e.noLocal + ".");
+    if (e.fora.length) partes.push(listaTexto(e.fora.map(o => o.label.toLowerCase())) + ".");
+    if (e.nota) partes.push(e.nota);
+    faq.push({ q: `Onde estacionar em ${c.name}?`, a: partes.join(" ") });
+  }
+
+  const levar = naOrdem(LEVAR_OPTS, acessoDe(c).levar);
+  if (levar.length) {
+    faq.push({
+      q: `Precisa levar raquete e bola para ${c.name}?`,
+      a: listaTexto(levar.map(o => o.label.toLowerCase())) + ".",
     });
   }
 
@@ -5175,8 +5254,15 @@ function renderCourtPage(c) {
 // A política vive em f.politica; esta função garante o formato mesmo quando
 // o formulário ainda não tem nada preenchido.
 function acessoForm(f) {
-  if (!f.acesso) f.acesso = { referencia: "", entrada: "" };
-  return f.acesso;
+  if (!f.acesso) f.acesso = {};
+  const a = f.acesso;
+  if (typeof a.fachada !== "string") a.fachada = "";
+  if (typeof a.referencia !== "string") a.referencia = "";
+  if (typeof a.entrada !== "string") a.entrada = "";
+  if (typeof a.estacionamentoNota !== "string") a.estacionamentoNota = "";
+  if (!Array.isArray(a.estacionamento)) a.estacionamento = [];
+  if (!Array.isArray(a.levar)) a.levar = [];
+  return a;
 }
 
 function politicaForm(f) {
@@ -5226,12 +5312,28 @@ function renderRegisterSheet() {
         ${state.cepStatus === "loading" ? `<p class="footnote">Buscando endereço pelo CEP...</p>` : ""}
         ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}
 
+        <p class="field-label">Como é a fachada</p>
+        <p class="footnote" style="margin:0 0 6px">O que a pessoa vê da rua. É o que mais evita passar direto.</p>
+        <textarea class="form-field" id="f-acesso-fachada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
+
         <p class="field-label">Como achar o lugar</p>
-        <p class="footnote" style="margin:0 0 6px">Um ponto de referência ajuda mais que o número: quem chega de primeira vez costuma passar direto.</p>
-        <textarea class="form-field" id="f-acesso-referencia" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: a entrada é pela rua de trás, logo depois do posto — o portão não tem placa.">${esc(acessoForm(f).referencia)}</textarea>
+        <p class="footnote" style="margin:0 0 6px">Um ponto de referência ajuda mais que o número.</p>
+        <textarea class="form-field" id="f-acesso-referencia" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: a entrada é pela rua de trás, logo depois do posto.">${esc(acessoForm(f).referencia)}</textarea>
 
         <p class="field-label">O que fazer ao chegar</p>
         <textarea class="form-field" id="f-acesso-entrada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
+
+        <p class="field-label">Onde estacionar</p>
+        <p class="footnote" style="margin:0 0 6px">Vale mesmo quando tem vaga no local — quem chega de carro quer saber antes.</p>
+        <div class="chip-row">
+          ${ESTACIONAMENTO_OPTS.map(o => `<button class="chip small reg-estacionamento ${acessoForm(f).estacionamento.includes(o.key)?"active":""}" data-estacionamento="${o.key}">${icon(o.ic, 13, 'var(--green)')} ${o.label}</button>`).join("")}
+        </div>
+        <textarea class="form-field" id="f-acesso-estacionamento-nota" rows="2" style="resize:none" placeholder="Ex.: a rua tem zona azul até as 19h; depois disso é livre.">${esc(acessoForm(f).estacionamentoNota)}</textarea>
+
+        <p class="field-label">O que levar</p>
+        <div class="chip-row">
+          ${LEVAR_OPTS.map(o => `<button class="chip small reg-levar ${acessoForm(f).levar.includes(o.key)?"active":""}" data-levar="${o.key}">${icon(o.ic, 13, 'var(--green)')} ${o.label}</button>`).join("")}
+        </div>
 
         <p class="field-label">Fotos da academia</p>
         <label class="foto-caixa ${(f.photos||[]).length >= 5 ? "cheia" : ""}" for="f-photo-file">
@@ -6374,6 +6476,27 @@ function attachEvents() {
       render();
     };
   });
+  const acessoFac = document.getElementById("f-acesso-fachada");
+  if (acessoFac) acessoFac.oninput = (e) => { acessoForm(window.__form).fachada = e.target.value; };
+  const acessoEstNota = document.getElementById("f-acesso-estacionamento-nota");
+  if (acessoEstNota) acessoEstNota.oninput = (e) => { acessoForm(window.__form).estacionamentoNota = e.target.value; };
+  document.querySelectorAll(".reg-estacionamento").forEach(el => {
+    el.onclick = () => {
+      const a = acessoForm(window.__form);
+      const k = el.dataset.estacionamento;
+      a.estacionamento = a.estacionamento.includes(k) ? a.estacionamento.filter(x => x !== k) : [...a.estacionamento, k];
+      render();
+    };
+  });
+  document.querySelectorAll(".reg-levar").forEach(el => {
+    el.onclick = () => {
+      const a = acessoForm(window.__form);
+      const k = el.dataset.levar;
+      a.levar = a.levar.includes(k) ? a.levar.filter(x => x !== k) : [...a.levar, k];
+      render();
+    };
+  });
+
   const acessoRef = document.getElementById("f-acesso-referencia");
   if (acessoRef) acessoRef.oninput = (e) => { acessoForm(window.__form).referencia = e.target.value; };
   const acessoEnt = document.getElementById("f-acesso-entrada");

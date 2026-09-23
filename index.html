@@ -2038,28 +2038,6 @@ function cmpRow(label, value) {
   return `<div class="cmp-row"><p class="cmp-label">${label}</p><p class="cmp-val">${value}</p></div>`;
 }
 
-// Busca por localização dentro da aba Comparar. Usa a mesma geocodificação
-// da busca normal, mas não sai da página.
-function renderBuscaComparar() {
-  return `
-    <div class="searchcard" style="margin-top:14px">
-      <div class="sc-row">
-        <span class="sc-icon">${icon('search', 18, 'var(--muted)')}</span>
-        <div class="sc-field">
-          <div class="sc-label">Procurar perto de</div>
-          <input class="sc-input" id="cmp-cep" placeholder="CEP, endereço ou ponto de referência" value="${esc(state.cep)}" />
-        </div>
-        <button type="button" class="sc-locate" id="cmp-locate" title="Usar minha localização" aria-label="Usar minha localização">${icon('locate', 18, 'var(--green)')}</button>
-      </div>
-      <div class="sc-foot">
-        <button class="sc-go" id="cmp-buscar" ${state.searchStatus === "loading" ? "disabled" : ""}>
-          ${state.searchStatus === "loading" ? bolaGirando(16) + " Buscando" : "Ver academias mais perto"}
-        </button>
-      </div>
-    </div>
-    ${state.errorMsg ? `<p class="footnote" style="color:var(--red)">${esc(state.errorMsg)}</p>` : ""}`;
-}
-
 // A lista do seletor: mais próximas, favoritas ou todas, com o + de cada uma.
 function listaDoSeletor(lista) {
   if (!lista.length) return `<p class="cmp-vazio">Nenhuma academia aqui ainda.</p>`;
@@ -2092,7 +2070,8 @@ function listaDoSeletor(lista) {
 function renderCmpPicker() {
   if (!state.cmpPicker) return "";
   const aba = state.cmpPicker;
-  const termo = semAcento(state.cmpBusca || "").trim();
+  // Só a aba "Todas" tem campo de busca; nas outras a ordem já é a resposta.
+  const termo = aba === "todas" ? semAcento(state.cmpBusca || "").trim() : "";
   let lista = state.allCourts.map(decorate);
   if (aba === "fav") lista = lista.filter(c => isFavorite(c.id));
   if (aba === "perto") {
@@ -2116,12 +2095,9 @@ function renderCmpPicker() {
           <button type="button" class="cmp-aba ${aba === "fav" ? "on" : ""}" data-cmp-aba="fav">Favoritas</button>
           <button type="button" class="cmp-aba ${aba === "todas" ? "on" : ""}" data-cmp-aba="todas">Todas</button>
         </div>
-        ${aba === "perto" && !state.origin ? `
-          <p class="footnote" style="margin-top:12px">Diga onde você está para ordenar pela mais perto.</p>
-          ${renderBuscaComparar()}` : ""}
-        ${aba === "fav" && !lista.length && !termo ? `
+        ${aba === "fav" && !lista.length ? `
           <p class="cmp-vazio">Você ainda não favoritou nenhuma academia. Toque no coração na ficha para guardar.</p>` : `
-          <input class="form-field" id="cmp-pick-busca" style="margin-top:12px" placeholder="Filtrar por nome ou bairro" value="${esc(state.cmpBusca)}" />
+          ${aba === "todas" ? `<input class="form-field" id="cmp-pick-busca" style="margin-top:12px" placeholder="Procure pelo nome" value="${esc(state.cmpBusca)}" />` : ""}
           ${cheio ? `<p class="footnote" style="margin-top:10px">A comparação já está com ${COMPARE_MAX} academias. Tire uma para pôr outra.</p>` : ""}
           <div class="cmp-pick-lista">${listaDoSeletor(lista)}</div>`}
       </div></div>
@@ -6204,21 +6180,11 @@ function attachEvents() {
     el.ontoggle = () => { state.faqSiteOpen[el.dataset.faqsite] = el.open; };
   });
 
-  const cmpCep = document.getElementById("cmp-cep");
-  if (cmpCep) {
-    cmpCep.oninput = (e) => { state.cep = e.target.value; };
-    cmpCep.onkeydown = (e) => { if (e.key === "Enter") document.getElementById("cmp-buscar")?.click(); };
-  }
-  const cmpBuscar = document.getElementById("cmp-buscar");
-  if (cmpBuscar) cmpBuscar.onclick = () => { if ((state.cep || "").trim()) doSearch(); };
-  const cmpLocate = document.getElementById("cmp-locate");
-  if (cmpLocate) cmpLocate.onclick = () => useMyLocation();
-
   document.querySelectorAll("[data-cmp-abrir]").forEach(el => {
     el.onclick = () => { state.cmpPicker = state.origin ? "perto" : "todas"; state.cmpBusca = ""; render(); };
   });
   document.querySelectorAll("[data-cmp-aba]").forEach(el => {
-    el.onclick = () => { state.cmpPicker = el.dataset.cmpAba; render(); };
+    el.onclick = () => { state.cmpPicker = el.dataset.cmpAba; state.cmpBusca = ""; render(); };
   });
   const cmpPickClose = document.getElementById("cmp-pick-close");
   const cmpPickOverlay = document.getElementById("cmp-pick-overlay");

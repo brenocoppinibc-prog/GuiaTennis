@@ -569,11 +569,11 @@
   .menu-versao { font-size: 12px; color: var(--muted-dark); margin: 10px 10px 0; }
 
   /* médias mostradas para quem pensa em cadastrar a academia */
-  .ba-numeros { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.18); }
-  .ban-item { flex: 1 1 0; min-width: 84px; }
+  .ba-numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.18); }
+  @media (min-width: 640px) { .ba-numeros { grid-template-columns: repeat(4, 1fr); } }
+  .ban-item { min-width: 0; }
   .ban-item strong { display: block; font-size: 24px; font-weight: 800; color: var(--gold-light); line-height: 1.1; }
   .ban-item span { font-size: 12px; color: rgba(255,255,255,0.72); line-height: 1.35; display: block; margin-top: 3px; }
-  .ban-nota { font-size: 11px; color: rgba(255,255,255,0.55); margin: 10px 0 0; }
 
   /* por que o GuiaTennis */
   .dif-grade { display: grid; gap: 12px; }
@@ -1283,12 +1283,12 @@ async function carregarEstatisticasPublicas() {
     const data = await lerEstatisticas();
     if (!data) return;
     state.estatisticas = {
-      acessos: numeroOuNulo(data.acessos) || 0,
-      fichas_abertas: numeroOuNulo(data.fichas_abertas) || 0,
-      contatos: numeroOuNulo(data.contatos) || 0,
-      // Totais de sempre. Sem essas colunas, a linha do topo não aparece.
+      // Só totais, desde o começo do site. Faltando qualquer um, o número
+      // que dependia dele simplesmente não aparece.
       acessos_total: numeroOuNulo(data.acessos_total) || 0,
       buscas_total: numeroOuNulo(data.buscas_total) || 0,
+      fichas_total: numeroOuNulo(data.fichas_total) || 0,
+      contatos_total: numeroOuNulo(data.contatos_total) || 0,
     };
   } catch { /* sem os números no banco, o bloco simplesmente não aparece */ }
 }
@@ -2970,10 +2970,9 @@ function blocoDiferenciais() {
   `;
 }
 
-// Os números que a academia vê antes de se cadastrar saem dos últimos 30 dias
-// de uso do site e se atualizam sozinhos. Abaixo desse mínimo o bloco nem
+// Os números que a academia vê antes de se cadastrar são o total do site
+// desde o começo, e se atualizam sozinhos. Abaixo desse mínimo o bloco nem
 // aparece: com pouca gente, o número diz mais contra do que a favor.
-const MINIMO_PARA_MOSTRAR = 30;
 
 // Sempre arredondado para baixo, numa casa redonda, e mostrado com "+". Assim
 // o número fica fácil de ler e nunca promete mais do que de fato aconteceu.
@@ -3001,36 +3000,25 @@ function porcentoRedondo(parte, todo) {
 // depois de um mínimo de acessos, senão o número fala contra.
 const MINIMO_TOTAL = 50;
 
-// O total de sempre acompanha a legenda dos 30 dias, para a academia ver de
-// uma vez o movimento de agora e o tamanho do site.
-function textoTotalDoSite() {
-  const e = state.estatisticas;
-  if (!e || (e.acessos_total || 0) < MINIMO_TOTAL) return "";
-  const buscas = e.buscas_total
-    ? ` e ${numeroRedondo(e.buscas_total)} ${plural(e.buscas_total, "busca", "buscas")}`
-    : "";
-  return ` · ${numeroRedondo(e.acessos_total)} pessoas${buscas} desde o começo`;
-}
-
 function blocoMediasAcademias() {
   const e = state.estatisticas;
-  if (!e || (e.acessos || 0) < MINIMO_PARA_MOSTRAR) return "";
+  if (!e || (e.acessos_total || 0) < MINIMO_TOTAL) return "";
 
   const itens = [
-    { valor: numeroRedondo(e.acessos), rotulo: "pessoas procurando quadra" },
-    e.fichas_abertas && umEmCada(e.fichas_abertas, e.acessos)
-      ? { valor: umEmCada(e.fichas_abertas, e.acessos), rotulo: "abre a ficha de uma academia" }
+    { valor: numeroRedondo(e.acessos_total), rotulo: "pessoas já usaram o GuiaTennis" },
+    e.buscas_total ? { valor: numeroRedondo(e.buscas_total), rotulo: "buscas por quadra" } : null,
+    e.fichas_total && umEmCada(e.fichas_total, e.acessos_total)
+      ? { valor: umEmCada(e.fichas_total, e.acessos_total), rotulo: "abre a ficha de uma academia" }
       : null,
-    e.contatos && e.fichas_abertas && porcentoRedondo(e.contatos, e.fichas_abertas)
-      ? { valor: porcentoRedondo(e.contatos, e.fichas_abertas), rotulo: "de quem abre chama a academia" }
+    e.contatos_total && e.fichas_total && porcentoRedondo(e.contatos_total, e.fichas_total)
+      ? { valor: porcentoRedondo(e.contatos_total, e.fichas_total), rotulo: "de quem abre chama a academia" }
       : null,
   ].filter(Boolean);
 
   return `
     <div class="ba-numeros">
       ${itens.map(i => `<div class="ban-item"><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
-    </div>
-    <p class="ban-nota">Nos últimos 30 dias${esc(textoTotalDoSite())}</p>`;
+    </div>`;
 }
 
 // "Por que as academias estão aqui" — o lado de quem tem a quadra.
@@ -3087,7 +3075,7 @@ function perguntasDoSite() {
   if (cidades.length) {
     faq.push({
       q: "Em quais cidades já tem quadra cadastrada?",
-      a: `Hoje o guia tem academias em ${listaTexto(cidades)}. Se a sua cidade ainda não está, mande a academia que você joga.`,
+      a: `Hoje o guia tem academias em ${listaTexto(cidades)}. A lista cresce toda semana — se a sua cidade ainda não está, mande a academia que você joga.`,
     });
   }
   return faq;
@@ -5567,7 +5555,7 @@ function renderStatsPanel() {
 const TERMS_HTML = `
 <p class="footnote">Última atualização: 23 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
-<p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site — de sempre e dos últimos 30 dias —, arredondados para baixo e sem identificar ninguém.</p>
+<p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
 <p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
@@ -5593,7 +5581,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 23 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. Não guardamos o CEP, o endereço digitado nem a coordenada. Guardamos apenas o <strong>bairro e a cidade</strong> que a busca alcançou, sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, buscas feitas (só com o bairro e a cidade alcançados) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, o total de acessos e de buscas desde o começo do site e os totais dos últimos 30 dias (quantas pessoas usaram o site, quantas abriram uma ficha e quantas chamaram uma academia); os números por academia e a lista de regiões buscadas continuam visíveis só para a administração.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. Não guardamos o CEP, o endereço digitado nem a coordenada. Guardamos apenas o <strong>bairro e a cidade</strong> que a busca alcançou, sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, buscas feitas (só com o bairro e a cidade alcançados) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões buscadas continuam visíveis só para a administração.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>

@@ -3813,16 +3813,39 @@ function qrSvg(texto, lado, comEmblema) {
       if (m[l][c]) quadrados.push(`M${c + margem} ${l + margem}h1v1h-1z`);
     }
   }
+  // O emblema é o logo do site, do jeito que ele é — assim fica centralizado
+  // de verdade e igual à marca. A folga clara em volta separa o logo dos
+  // quadradinhos.
   const meio = total / 2;
   const e = total * 0.22;
+  const folga = e * 1.18;
   const emblema = comEmblema === false ? "" : `
-  <g transform="translate(${(meio - e / 2).toFixed(3)} ${(meio - e / 2).toFixed(3)})">
-    <rect width="${e.toFixed(3)}" height="${e.toFixed(3)}" rx="${(e * 0.22).toFixed(3)}" fill="#F7F4EC"/>
-    <rect x="${(e * 0.07).toFixed(3)}" y="${(e * 0.07).toFixed(3)}" width="${(e * 0.86).toFixed(3)}" height="${(e * 0.86).toFixed(3)}" rx="${(e * 0.18).toFixed(3)}" fill="#1F4D3D"/>
-    <g transform="translate(${(e / 2).toFixed(3)} ${(e / 2).toFixed(3)}) rotate(-15) scale(${(e / 900).toFixed(5)})">
-      <ellipse cx="0" cy="-140" rx="150" ry="185" fill="none" stroke="#FFFFFF" stroke-width="46"/>
-      <rect x="-27" y="30" width="54" height="270" rx="27" fill="#FFFFFF"/>
-      <circle cx="105" cy="-95" r="80" fill="#B8933F"/>
+  <g shape-rendering="geometricPrecision">
+    <rect x="${(meio - folga / 2).toFixed(3)}" y="${(meio - folga / 2).toFixed(3)}" width="${folga.toFixed(3)}" height="${folga.toFixed(3)}" rx="${(folga * 0.24).toFixed(3)}" fill="#F7F4EC"/>
+    <g transform="translate(${(meio - e / 2).toFixed(3)} ${(meio - e / 2).toFixed(3)}) scale(${(e / 1080).toFixed(6)})">
+      <defs>
+        <linearGradient id="qrLogoGrad" x1="0" y1="0" x2="1080" y2="1080" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#2A5C4B"/><stop offset="1" stop-color="#153229"/>
+        </linearGradient>
+        <clipPath id="qrLogoClip"><ellipse cx="0" cy="-160" rx="192" ry="252"/></clipPath>
+      </defs>
+      <rect x="0" y="0" width="1080" height="1080" rx="220" fill="url(#qrLogoGrad)"/>
+      <g transform="translate(540,580) rotate(-15)">
+        <rect x="-40" y="150" width="80" height="290" rx="36" fill="#F7F4EC"/>
+        <ellipse cx="0" cy="445" rx="42" ry="22" fill="#F7F4EC"/>
+        <path d="M-40 190 L-40 150 Q-40 200 0 210 Q40 200 40 150 L40 190 Z" fill="#F7F4EC"/>
+        <ellipse cx="0" cy="-160" rx="212" ry="272" fill="none" stroke="#F7F4EC" stroke-width="48"/>
+        <g clip-path="url(#qrLogoClip)" stroke="#B8933F" stroke-width="6" opacity="0.55">
+          <line x1="-190" y1="-160" x2="190" y2="-160"/>
+          <line x1="-190" y1="-90" x2="190" y2="-90"/>
+          <line x1="-190" y1="-230" x2="190" y2="-230"/>
+          <line x1="-70" y1="-410" x2="-70" y2="90"/>
+          <line x1="0" y1="-410" x2="0" y2="90"/>
+          <line x1="70" y1="-410" x2="70" y2="90"/>
+        </g>
+        <path d="M-330 -40 Q-260 -10 -220 -90" fill="none" stroke="#B8933F" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
+        <circle cx="0" cy="-160" r="132" fill="#B8933F" stroke="#F7F4EC" stroke-width="10"/>
+      </g>
     </g>
   </g>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${lado}" height="${lado}" shape-rendering="crispEdges">

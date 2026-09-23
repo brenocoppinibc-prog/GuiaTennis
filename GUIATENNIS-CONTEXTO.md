@@ -28,7 +28,7 @@ cobra taxa e não fica no meio** da negociação.
 2. **O site não narra o que "a gente faz".** O texto responde dúvida de
    quem está chegando. Nada de "a academia nos enviou", "arredondamos
    para baixo", "atualiza sozinho" fora do bloco que fala com academias.
-3. **Sem preço = "Não incluído" + "consulte a academia"** (`SEM_PRECO` /
+3. **Sem preço = "Não incluído" + "consulte com a academia"** (`SEM_PRECO` /
    `SEM_PRECO_SUB`). Nunca explicar o motivo de faltar o valor.
 4. **Número público sempre arredondado para baixo**, com `+` e ponto de
    milhar (`numeroRedondo`). São **totais do site desde o começo**, nunca
@@ -133,10 +133,17 @@ modalidade:
   "aula":    { "reposicao": "24", "foraDoPrazo": "texto" },
   "locacao": { "reposicao": "12", "foraDoPrazo": "texto" } }
 ```
-`reposicao` é `"12" | "24" | "48" | "nao"`.
+`reposicao` é `"12" | "24" | "48" | "nao"`. A escolha "Aula e locação
+diferentes" só aparece para quem marcou as duas modalidades; quem só dá
+aula (ou só aluga) tem um bloco só, e salva só a regra do que oferece
+(`politicaParaSalvar`). Na ficha, `politicaDe` também esconde a regra da
+modalidade que a academia não oferece.
 
 **`acesso`** — `{ fachada, entrada, estacionar }`, os três em texto
-livre. "Empresta raquete" **não** mora aqui: é a comodidade `raquete`.
+livre. "Empréstimo de raquete" **não** mora aqui: é a comodidade `raquete`.
+`estacionar` só existe para quem **não** marcou estacionamento grátis ou
+pago: com vaga própria o campo some do cadastro e o texto não é salvo.
+No cadastro, esses três campos ficam depois do cancelamento.
 
 **`horario`** — dois modos de preenchimento:
 ```json
@@ -316,6 +323,13 @@ script está no scratchpad (`gera-imagens.js`).
   `preventDefault` no clique; se criar card novo, faça igual.
 - **`innerText` respeita `text-transform`**, então `.field-label` sai em
   maiúsculas nos testes. Compare com o texto transformado.
+- **Admin conectado não conta nas estatísticas.** `registrarBusca` e o
+  `acesso_site` saem se `isAdmin`. Quem testa logado (a sessão fica no
+  celular) acha que a busca "não registrou". O painel avisa isso.
+- **Editar academia tem de carregar tudo o que o formulário salva.** A
+  edição não carregava `horario` (salvar apagava o horário) e carregava a
+  política já transformada por `politicaDe` (a regra única sumia). Hoje usa
+  `politicaParaForm` e uma cópia de `c.horario`.
 - **`create or replace view` só aceita colunas novas no fim.** Mudar
   nome, ordem ou tipo exige `drop` antes — o mesmo vale para
   `create or replace function` com outro `returns table`.

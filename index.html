@@ -531,6 +531,7 @@
   .home-hero h2 { font-size: 30px; font-weight: 700; line-height: 1.12; margin: 0; color: var(--text); }
   @media (min-width: 720px) { .home-hero { padding: 40px 20px 30px; } .home-hero h2 { font-size: 40px; max-width: 620px; } }
   .home-hero p { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
+  .home-hero .home-hero-sub { margin-top: 12px; }
   .home-sec { padding: 6px 20px 22px; }
   .home-sec h3 { font-size: 21px; font-weight: 700; margin: 0 0 12px; }
   @media (min-width: 720px) { .home-sec h3 { font-size: 25px; } }
@@ -1036,7 +1037,7 @@ const AMENITY_OPTS = [
   { key: "lanchonete", label: "Lanchonete", icon: icon('cup', 14, 'var(--green)') },
   { key: "agua", label: "Água grátis", icon: icon('watercup', 14, 'var(--green)') },
   { key: "camera", label: "Câmera para gravar pontos", icon: icon('camera', 14, 'var(--green)') },
-  { key: "raquete", label: "Empresta raquete", icon: icon('bag', 14, 'var(--green)') },
+  { key: "raquete", label: "Empréstimo de raquete", icon: icon('bag', 14, 'var(--green)') },
   { key: "assinatura_fitness", label: "App de assinatura fitness", icon: icon('pass', 14, 'var(--green)') },
 ];
 const AMENITY_MAP = Object.fromEntries(AMENITY_OPTS.map(a => [a.key, a]));
@@ -1242,15 +1243,27 @@ function parteVale(p) {
   return !!(p.reposicao || p.foraDoPrazo);
 }
 
+// Sem modalidade marcada, não dá para excluir nenhuma das duas.
+function ofereceModalidade(c, key) {
+  const m = (c && c.modalidades) || [];
+  return !m.length || m.includes(key);
+}
+
 // A academia escolhe: a mesma regra para aula e locação, ou uma para cada.
+// Quem só dá aula (ou só aluga a quadra) fica só com a regra do que oferece.
 function politicaDe(c) {
   const pol = (c && c.politica) || {};
-  return {
-    modo: pol.modo === "separado" ? "separado" : "igual",
-    geral: parteDaPolitica(pol),
-    aula: parteDaPolitica(pol.aula),
-    locacao: parteDaPolitica(pol.locacao),
-  };
+  const aula = parteDaPolitica(pol.aula);
+  const locacao = parteDaPolitica(pol.locacao);
+  const temAula = ofereceModalidade(c, "aulas_proprias");
+  const temLocacao = ofereceModalidade(c, "locacao");
+  let modo = pol.modo === "separado" ? "separado" : "igual";
+  let geral = parteDaPolitica(pol);
+  if (modo === "separado" && !(temAula && temLocacao)) {
+    modo = "igual";
+    geral = temAula ? aula : locacao;
+  }
+  return { modo, geral, aula, locacao, oque: temAula ? "aula" : "reserva" };
 }
 
 function temPolitica(c) {
@@ -1377,6 +1390,8 @@ function mapRow(row) {
 }
 
 function toRow(f) {
+  const acesso = { ...(f.acesso || {}) };
+  if (temEstacionamentoProprio(f)) delete acesso.estacionar;
   return {
     name: f.name, address: f.address, numero: f.numero, complemento: f.complemento,
     bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
@@ -1387,8 +1402,8 @@ function toRow(f) {
     amenities: f.amenities || [], modalidades: f.modalidades || [],
     pisos: f.pisos || [], cobertura: f.cobertura || [],
     quadras: f.quadras || {}, photos: f.photos || [],
-    politica: f.politica || {},
-    acesso: f.acesso || {},
+    politica: f.politica ? politicaParaSalvar(f) : {},
+    acesso,
     horario: f.horario || {},
   };
 }
@@ -2338,8 +2353,9 @@ function celPreco(faixa) {
 
 function celReposicao(c) {
   const pol = politicaDe(c);
-  if (pol.reposicao === "nao") return { txt: "Não faz reposição" };
-  if (pol.horas) return { txt: `Avisando ${pol.horas}h antes`, num: pol.horas };
+  const p = pol.modo === "separado" ? (parteVale(pol.aula) ? pol.aula : pol.locacao) : pol.geral;
+  if (p.reposicao === "nao") return { txt: "Não faz reposição" };
+  if (p.horas) return { txt: `Avisando ${p.horas}h antes`, num: p.horas };
   return { txt: "Não incluído" };
 }
 
@@ -3349,8 +3365,8 @@ function renderHome() {
 
     <div class="home-hero">
       <h2 class="display">Ache uma quadra de tênis perto de você</h2>
-      <p>Compare preço, estrutura e avaliações de academias de tênis — e fale direto com elas.</p>
       ${renderSearchCard()}
+      <p class="home-hero-sub">Compare preço, estrutura e comodidades de academias de tênis — e fale direto com elas.</p>
       ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
     </div>
 
@@ -4675,9 +4691,9 @@ function descricaoAcademia(c) {
   if (comValor.length) {
     frases.push(`A academia cobra, por hora de quadra, ${listaTexto(comValor.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
     const semValor = opcoes.filter(o => !temPreco(o.faixa));
-    if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} não foi incluído — consulte a academia.`);
+    if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} não foi incluído — consulte com a academia.`);
   } else if (mod) {
-    frases.push(`A academia atende ${mod.toLowerCase()}. O valor não foi incluído — consulte a academia.`);
+    frases.push(`A academia atende ${mod.toLowerCase()}. O valor não foi incluído — consulte com a academia.`);
   }
 
   const com = rotulosNaOrdem(AMENITY_OPTS, c.amenities).map(l => l.toLowerCase());
@@ -4941,7 +4957,7 @@ function reviewsSection(c) {
 // Sem valor, a tela diz que o preço não foi incluído e manda consultar a
 // academia. Sem explicar o motivo: quem chega quer saber o que fazer.
 const SEM_PRECO = "Não incluído";
-const SEM_PRECO_SUB = "consulte a academia";
+const SEM_PRECO_SUB = "consulte com a academia";
 
 function precoTexto(faixa) {
   const min = priceMin(faixa);
@@ -5051,7 +5067,7 @@ function htPolitica(c) {
       ${blocoPolitica(b.p, c, b.oque)}`).join("") + politicaRodape(c);
   }
 
-  return blocoPolitica(pol.geral, c, "aula") + politicaRodape(c);
+  return blocoPolitica(pol.geral, c, pol.oque) + politicaRodape(c);
 }
 
 // O miolo, usado uma vez quando a regra é a mesma e duas quando é separada.
@@ -5118,7 +5134,7 @@ function perguntasAcademia(c) {
     faq.push({
       q: `${c.name} dá aula de tênis ou só aluga a quadra?`,
       a: mod === "Aula e locação" ? "As duas coisas: a academia tem aula com professor e também aluga a quadra por hora."
-        : mod === "Aula" ? "A academia trabalha com aula com professor. Para alugar a quadra avulsa, pergunte direto no WhatsApp."
+        : mod === "Aula" ? "A academia trabalha com aula com professor da academia. Para alugar a quadra avulsa, pergunte direto no WhatsApp."
         : "A academia trabalha com locação da quadra por hora. Para aula com professor, pergunte direto no WhatsApp.",
     });
   }
@@ -5184,7 +5200,7 @@ function perguntasAcademia(c) {
     const texto = pol.modo === "separado"
       ? [parteVale(pol.aula) ? "Aula: " + frase(pol.aula, "aula") : "",
          parteVale(pol.locacao) ? "Locação: " + frase(pol.locacao, "reserva") : ""].filter(Boolean).join(" ")
-      : frase(pol.geral, "aula");
+      : frase(pol.geral, pol.oque);
     faq.push({ q: `Como funciona o cancelamento e a reposição em ${c.name}?`, a: texto });
   }
 
@@ -5387,6 +5403,13 @@ function renderCourtPage(c) {
 
 // A política vive em f.politica; esta função garante o formato mesmo quando
 // o formulário ainda não tem nada preenchido.
+// Com estacionamento no local, a comodidade já responde; o texto de onde
+// parar só aparece para quem não tem vaga própria.
+function temEstacionamentoProprio(f) {
+  const am = (f && f.amenities) || [];
+  return am.includes("estacionamento_gratuito") || am.includes("estacionamento_pago");
+}
+
 function acessoForm(f) {
   if (!f.acesso) f.acesso = {};
   const a = f.acesso;
@@ -5455,6 +5478,29 @@ function blocoPoliticaForm(pol, alvo, titulo) {
       placeholder="${horas ? `O que acontece avisando com menos de ${horas}h` : "Como funcionam os cancelamentos"}">${esc(p.foraDoPrazo)}</textarea>`;
 }
 
+// Para editar: a regra como a academia gravou, sem esconder a da modalidade
+// que ela desmarcou — se voltar a marcar, a regra antiga continua lá.
+function politicaParaForm(c) {
+  const pol = (c && c.politica) || {};
+  const parte = (o) => { const p = parteDaPolitica(o); return { reposicao: p.reposicao, foraDoPrazo: p.foraDoPrazo }; };
+  return { modo: pol.modo === "separado" ? "separado" : "igual", ...parte(pol), aula: parte(pol.aula), locacao: parte(pol.locacao) };
+}
+
+// O que vai para o banco: só a regra das modalidades que a academia oferece.
+function politicaParaSalvar(f) {
+  const pol = politicaForm2(f);
+  const temAula = (f.modalidades || []).includes("aulas_proprias");
+  const temLocacao = (f.modalidades || []).includes("locacao");
+  const parte = (p) => ({ reposicao: p.reposicao, foraDoPrazo: p.foraDoPrazo.trim() });
+  if (temAula === temLocacao) {
+    return pol.modo === "separado"
+      ? { modo: "separado", aula: parte(pol.aula), locacao: parte(pol.locacao) }
+      : { modo: "igual", ...parte(pol) };
+  }
+  const k = temAula ? "aula" : "locacao";
+  return { modo: "igual", ...parte(pol.modo === "separado" ? pol[k] : pol) };
+}
+
 function politicaForm(f) {
   if (!f.politica) f.politica = { reposicao: "", foraDoPrazo: "" };
   const pol = f.politica;
@@ -5501,17 +5547,6 @@ function renderRegisterSheet() {
         </div>
         ${state.cepStatus === "loading" ? `<p class="footnote">Buscando endereço pelo CEP...</p>` : ""}
         ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}
-
-        <p class="field-label">Como é a fachada</p>
-        <p class="footnote" style="margin:0 0 6px">O que a pessoa vê da rua. É o que mais evita passar direto.</p>
-        <textarea class="form-field" id="f-acesso-fachada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
-
-        <p class="field-label">O que fazer ao chegar</p>
-        <textarea class="form-field" id="f-acesso-entrada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
-
-        <p class="field-label">Onde estacionar</p>
-        <p class="footnote" style="margin:0 0 6px">Escreva como funciona de verdade: se dá para parar na rua, se é zona azul e até que horas, se tem estacionamento pago por perto. Vira uma pergunta frequente na ficha.</p>
-        <textarea class="form-field" id="f-acesso-estacionar" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
 
         <p class="field-label">Horário de funcionamento</p>
         <div class="chip-row" style="margin-bottom:12px">
@@ -5590,13 +5625,30 @@ function renderRegisterSheet() {
 
         <p class="field-label">Cancelamento e reposição</p>
         <p class="footnote" style="margin-top:0;margin-bottom:8px">Com quantas horas de antecedência a pessoa precisa avisar para ter direito à reposição. Toque de novo na opção escolhida para desmarcar.</p>
-        <div class="chip-row" style="margin-bottom:10px">
-          <button type="button" class="chip small pol-modo ${politicaForm2(f).modo === "igual" ? "active" : ""}" data-pol-modo="igual">Mesma regra para tudo</button>
-          <button type="button" class="chip small pol-modo ${politicaForm2(f).modo === "separado" ? "active" : ""}" data-pol-modo="separado">Aula e locação diferentes</button>
-        </div>
-        ${politicaForm2(f).modo === "separado"
-          ? blocoPoliticaForm(politicaForm2(f), "aula", "Aula") + blocoPoliticaForm(politicaForm2(f), "locacao", "Locação")
-          : blocoPoliticaForm(politicaForm2(f), "", "")}
+        ${f.modalidades.length === 1 ? `
+          ${blocoPoliticaForm(politicaForm2(f), politicaForm2(f).modo === "separado" ? (f.modalidades[0] === "locacao" ? "locacao" : "aula") : "", "")}
+        ` : `
+          <div class="chip-row" style="margin-bottom:10px">
+            <button type="button" class="chip small pol-modo ${politicaForm2(f).modo === "igual" ? "active" : ""}" data-pol-modo="igual">Mesma regra para tudo</button>
+            <button type="button" class="chip small pol-modo ${politicaForm2(f).modo === "separado" ? "active" : ""}" data-pol-modo="separado">Aula e locação diferentes</button>
+          </div>
+          ${politicaForm2(f).modo === "separado"
+            ? blocoPoliticaForm(politicaForm2(f), "aula", "Aula") + blocoPoliticaForm(politicaForm2(f), "locacao", "Locação")
+            : blocoPoliticaForm(politicaForm2(f), "", "")}
+        `}
+
+        <p class="field-label">Como é a fachada</p>
+        <p class="footnote" style="margin:0 0 6px">O que a pessoa vê da rua. É o que mais evita passar direto.</p>
+        <textarea class="form-field" id="f-acesso-fachada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
+
+        <p class="field-label">O que fazer ao chegar</p>
+        <textarea class="form-field" id="f-acesso-entrada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
+
+        ${!temEstacionamentoProprio(f) ? `
+        <p class="field-label">Onde estacionar</p>
+        <p class="footnote" style="margin:0 0 6px">Escreva como funciona de verdade: se dá para parar na rua, se é zona azul e até que horas, se tem estacionamento pago por perto. Vira uma pergunta frequente na ficha.</p>
+        <textarea class="form-field" id="f-acesso-estacionar" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
+        ` : ""}
 
         <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
         <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
@@ -5700,7 +5752,7 @@ function renderStatsPanel() {
       <div class="sheet"><div class="sheet-content">
         <button class="sheet-close" id="stats-close">✕</button>
         <p class="sheet-title display">Estatísticas</p>
-        <p class="subtitle" style="margin-top:4px">Registrado por todos os visitantes</p>
+        <p class="subtitle" style="margin-top:4px">Registrado por todos os visitantes. Com o admin conectado, os seus acessos e buscas não entram na conta.</p>
 
         <div class="chip-row" style="margin-top:12px">
           ${STATS_PERIODOS.map(p => `<button class="chip small ${periodo===p.key?"active":""}" data-stats-per="${p.key}">${p.label}</button>`).join("")}
@@ -6378,8 +6430,9 @@ function attachEvents() {
       instagram: c.instagram || "",
       site: c.site || "",
       photos: [...(c.photos || (c.photoUrl ? [c.photoUrl] : []))],
-      politica: { ...politicaDe(c) },
+      politica: politicaParaForm(c),
       acesso: { ...acessoDe(c) },
+      horario: JSON.parse(JSON.stringify(c.horario || {})),
     };
     state.showRegister = true;
     state.registerStatus = "idle";
@@ -7035,6 +7088,7 @@ async function doRegisterSubmit() {
         const semNovas = { ...payload };
         delete semNovas.politica;
         delete semNovas.acesso;
+        delete semNovas.horario;
         ({ error } = await sb.from('academias').update(semNovas).eq('id', f.__editingId));
         if (!error) avisarSqlColunas();
       }
@@ -7090,6 +7144,7 @@ async function doRegisterSubmit() {
       const semNovas = { ...payload };
       delete semNovas.politica;
       delete semNovas.acesso;
+      delete semNovas.horario;
       ({ data, error } = await enviar(semNovas));
       if (!error) avisarSqlColunas();
     }

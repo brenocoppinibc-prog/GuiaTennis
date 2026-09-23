@@ -815,6 +815,9 @@
   .hr-linha.fechado strong { color: var(--muted); font-weight: 400; }
 
   /* horário no cadastro */
+  .pol-form-t { font-size: 14px; font-weight: 800; color: var(--text); margin: 16px 0 6px; }
+  .pol-titulo { font-size: 15px; font-weight: 800; color: var(--text); margin: 18px 0 8px; }
+  .pol-titulo:first-child { margin-top: 0; }
   .hr-form { display: grid; gap: 14px; }
   .hr-form-linha { display: grid; grid-template-columns: 1fr auto; gap: 8px 10px; align-items: center; }
   .hr-form-dia { font-size: 14px; font-weight: 700; }
@@ -1033,6 +1036,7 @@ const AMENITY_OPTS = [
   { key: "lanchonete", label: "Lanchonete", icon: icon('cup', 14, 'var(--green)') },
   { key: "agua", label: "Água grátis", icon: icon('watercup', 14, 'var(--green)') },
   { key: "camera", label: "Câmera para gravar pontos", icon: icon('camera', 14, 'var(--green)') },
+  { key: "raquete", label: "Empresta raquete", icon: icon('bag', 14, 'var(--green)') },
   { key: "assinatura_fitness", label: "App de assinatura fitness", icon: icon('pass', 14, 'var(--green)') },
 ];
 const AMENITY_MAP = Object.fromEntries(AMENITY_OPTS.map(a => [a.key, a]));
@@ -1090,18 +1094,16 @@ function acessoDe(c) {
   const a = (c && c.acesso) || {};
   return {
     fachada: (a.fachada || "").trim(),
-    referencia: (a.referencia || "").trim(),
     entrada: (a.entrada || "").trim(),
     // Estacionamento é texto da academia, não lista de opção: cada lugar tem
     // uma regra própria, e o que resolve é a frase de quem conhece a rua.
     estacionar: (a.estacionar || a.estacionamentoNota || "").trim(),
-    raquete: !!a.raquete,
   };
 }
 
 function temAcesso(c) {
   const a = acessoDe(c);
-  return !!(a.fachada || a.referencia || a.entrada);
+  return !!(a.fachada || a.entrada || a.estacionar);
 }
 
 // O estacionamento no próprio lugar já é uma comodidade; o resto é o texto.
@@ -1119,19 +1121,67 @@ function temEstacionar(c) {
 
 // ---------- horário de funcionamento ----------
 
-const HORARIO_DIAS = [
-  { key: "semana", label: "Segunda a sexta", curto: "Seg a sex" },
-  { key: "sabado", label: "Sábado", curto: "Sábado" },
-  { key: "domingo", label: "Domingo", curto: "Domingo" },
+// Dois jeitos de preencher: o mesmo horário de segunda a sexta, ou um
+// horário para cada dia. Sábado e domingo são sempre à parte.
+const HORARIO_SIMPLES = [
+  { key: "semana", label: "Segunda a sexta" },
+  { key: "sabado", label: "Sábado" },
+  { key: "domingo", label: "Domingo" },
 ];
+
+const HORARIO_POR_DIA = [
+  { key: "seg", label: "Segunda", curto: "Seg" },
+  { key: "ter", label: "Terça", curto: "Ter" },
+  { key: "qua", label: "Quarta", curto: "Qua" },
+  { key: "qui", label: "Quinta", curto: "Qui" },
+  { key: "sex", label: "Sexta", curto: "Sex" },
+  { key: "sabado", label: "Sábado", curto: "Sáb" },
+  { key: "domingo", label: "Domingo", curto: "Dom" },
+];
+
+const HORARIO_CHAVES = ["semana", "seg", "ter", "qua", "qui", "sex", "sabado", "domingo"];
 
 function horarioDe(c) {
   const h = (c && c.horario) || {};
-  const faixa = (k) => {
+  const out = { modo: h.modo === "dia" ? "dia" : "igual", nota: (h.nota || "").trim() };
+  HORARIO_CHAVES.forEach(k => {
     const f = h[k] || {};
-    return { de: (f.de || "").trim(), ate: (f.ate || "").trim(), fechado: !!f.fechado };
-  };
-  return { semana: faixa("semana"), sabado: faixa("sabado"), domingo: faixa("domingo"), nota: (h.nota || "").trim() };
+    out[k] = { de: (f.de || "").trim(), ate: (f.ate || "").trim(), fechado: !!f.fechado };
+  });
+  return out;
+}
+
+// Dias seguidos com o mesmo horário viram uma linha só: "Seg a qua 6h às 22h".
+function agruparDias(h) {
+  const grupos = [];
+  HORARIO_POR_DIA.forEach((d, i) => {
+    const f = h[d.key];
+    if (!faixaVale(f)) return;
+    const txt = faixaTexto(f);
+    const ult = grupos[grupos.length - 1];
+    if (ult && ult.texto === txt && ult.fimIdx === i - 1) { ult.fim = d; ult.fimIdx = i; }
+    else grupos.push({ ini: d, fim: d, fimIdx: i, texto: txt, fechado: f.fechado });
+  });
+  return grupos.map(g => ({
+    label: g.ini.key === g.fim.key ? g.ini.label : `${g.ini.curto} a ${g.fim.curto.toLowerCase()}`,
+    texto: g.texto,
+    fechado: g.fechado,
+  }));
+}
+
+function horarioLinhas(c) {
+  const h = horarioDe(c);
+  if (h.modo === "dia") return agruparDias(h);
+  return HORARIO_SIMPLES.filter(d => faixaVale(h[d.key]))
+    .map(d => ({ label: d.label, texto: faixaTexto(h[d.key]), fechado: h[d.key].fechado }));
+}
+
+// Qual faixa vale hoje, seja qual for o modo de preenchimento.
+function faixaDeHoje(c, quando) {
+  const h = horarioDe(c);
+  const d = quando.getDay();
+  if (h.modo === "dia") return h[["domingo", "seg", "ter", "qua", "qui", "sex", "sabado"][d]];
+  return d === 0 ? h.domingo : d === 6 ? h.sabado : h.semana;
 }
 
 function faixaVale(f) {
@@ -1139,8 +1189,7 @@ function faixaVale(f) {
 }
 
 function temHorario(c) {
-  const h = horarioDe(c);
-  return HORARIO_DIAS.some(d => faixaVale(h[d.key]));
+  return horarioLinhas(c).length > 0;
 }
 
 // "06:00" vira "6h"; "06:30" vira "6h30".
@@ -1159,10 +1208,8 @@ function faixaTexto(f) {
 // Usa a hora do próprio aparelho, que para quem está no Brasil é a certa.
 // Devolve null quando não dá para saber.
 function abertoAgora(c) {
-  const h = horarioDe(c);
   const agora = new Date();
-  const dia = agora.getDay();
-  const f = dia === 0 ? h.domingo : dia === 6 ? h.sabado : h.semana;
+  const f = faixaDeHoje(c, agora);
   if (!faixaVale(f) || f.fechado) return faixaVale(f) ? false : null;
   const minutos = (t) => {
     const m = /^(\d{1,2}):(\d{2})$/.exec(t || "");
@@ -1174,25 +1221,43 @@ function abertoAgora(c) {
   return fim > ini ? (q >= ini && q < fim) : (q >= ini || q < fim);
 }
 
-function politicaDe(c) {
-  const pol = (c && c.politica) || {};
-  let reposicao = String(pol.reposicao || "");
+// Uma regra de cancelamento: o prazo e o que acontece fora dele.
+function parteDaPolitica(o) {
+  o = o || {};
+  let reposicao = String(o.reposicao || "");
   // Formatos antigos: "sim"/"consultar" não diziam o prazo, e o prazo vinha
   // em outro campo. Aproveita o que dá e descarta o resto.
-  if (!REPOSICAO_OPTS.some(o => o.key === reposicao)) {
-    const antigo = numeroOuNulo(pol.cancelamentoHoras);
-    reposicao = (antigo && REPOSICAO_OPTS.some(o => o.horas === antigo)) ? String(antigo) : "";
+  if (!REPOSICAO_OPTS.some(x => x.key === reposicao)) {
+    const antigo = numeroOuNulo(o.cancelamentoHoras);
+    reposicao = (antigo && REPOSICAO_OPTS.some(x => x.horas === antigo)) ? String(antigo) : "";
   }
   return {
     reposicao,
-    horas: (REPOSICAO_OPTS.find(o => o.key === reposicao) || {}).horas || null,
-    foraDoPrazo: (pol.foraDoPrazo || pol.obs || "").trim(),
+    horas: (REPOSICAO_OPTS.find(x => x.key === reposicao) || {}).horas || null,
+    foraDoPrazo: (o.foraDoPrazo || o.obs || "").trim(),
+  };
+}
+
+function parteVale(p) {
+  return !!(p.reposicao || p.foraDoPrazo);
+}
+
+// A academia escolhe: a mesma regra para aula e locação, ou uma para cada.
+function politicaDe(c) {
+  const pol = (c && c.politica) || {};
+  return {
+    modo: pol.modo === "separado" ? "separado" : "igual",
+    geral: parteDaPolitica(pol),
+    aula: parteDaPolitica(pol.aula),
+    locacao: parteDaPolitica(pol.locacao),
   };
 }
 
 function temPolitica(c) {
   const pol = politicaDe(c);
-  return !!(pol.reposicao || pol.foraDoPrazo);
+  return pol.modo === "separado"
+    ? (parteVale(pol.aula) || parteVale(pol.locacao))
+    : parteVale(pol.geral);
 }
 
 const PISO_OPTS = [
@@ -2727,7 +2792,9 @@ function renderMapView(results) {
     </div>
     ${fora > 0 && comCoord.length ? `
       <p class="fgroup-note" style="padding:8px 20px 0">${fora} ${plural(fora, "academia não aparece", "academias não aparecem")} no mapa por falta de endereço localizado.${isAdmin ? "" : ""}</p>
-      ${isAdmin ? `<p class="fgroup-note" style="padding:4px 20px 0;color:var(--red)">Só você vê — sem coordenada: ${esc(results.filter(c => typeof c.lat !== "number" || typeof c.lng !== "number").map(c => c.name).join(", "))}. Abra a ficha de cada uma e use "Gerar coordenada pelo endereço".</p>` : ""}
+      ${isAdmin ? `
+        <p class="fgroup-note" style="padding:4px 20px 0;color:var(--red)">Só você vê — sem coordenada: ${esc(results.filter(c => typeof c.lat !== "number" || typeof c.lng !== "number").map(c => c.name).join(", "))}.</p>
+        <div style="padding:8px 20px 0"><button type="button" class="cta-btn cta-secondary" id="geocode-todas">${icon('pin', 15, 'var(--green)')} Gerar as coordenadas que faltam</button></div>` : ""}
     ` : ""}
   `;
 }
@@ -3611,9 +3678,9 @@ function filterGroupsHtml() {
 
     <div class="fgroup">
       <p class="fgroup-title">Suas listas</p>
-      ${optBtn("f-favorites", "", state.favoritesOnly, "Só favoritos",
+      ${optBtn("f-favorites", "", state.favoritesOnly, "Favoritas",
         semOutros.filter(c => isFavorite(c.id)).length)}
-      ${optBtn("f-compareonly", "", state.compareOnly, "Só as que estou comparando",
+      ${optBtn("f-compareonly", "", state.compareOnly, "Comparação",
         semOutros.filter(c => isComparing(c.id)).length)}
     </div>
   `;
@@ -3667,7 +3734,7 @@ function renderActiveChips() {
   state.coberturaFilters.forEach(k => chips.push({ label: COBERTURA_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="cobertura" data-key="${k}"` }));
   state.modalidadeFilters.forEach(k => chips.push({ label: MODALIDADE_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="modalidade" data-key="${k}"` }));
   state.amenityFilters.forEach(k => chips.push({ label: FILTER_AMENITY_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="amenity" data-key="${k}"` }));
-  if (state.favoritesOnly) chips.push({ label: "Só favoritos", attr: `data-clear="favorites"` });
+  if (state.favoritesOnly) chips.push({ label: "Favoritas", attr: `data-clear="favorites"` });
   if (state.compareOnly) chips.push({ label: "Só em comparação", attr: `data-clear="compareonly"` });
   if (!chips.length) return "";
   return `<div class="active-chips">
@@ -4702,7 +4769,7 @@ function htOpcoes(c) {
         <div class="ht-room-unit">${temPreco(o.faixa) ? "por hora" : SEM_PRECO_SUB}</div>
       </div>
     </div>`).join("");
-  return cartoes + htLevar(c) + blocoContato(c);
+  return cartoes + blocoContato(c);
 }
 
 // Quadras e comodidades, na grade de ícones das "Comodidades da acomodação".
@@ -4771,30 +4838,20 @@ function htAcesso(c) {
   const a = acessoDe(c);
   if (!temAcesso(c)) {
     return isAdmin
-      ? `<p class="ht-poi-motivo">Só você vê — essa academia ainda não escreveu como é a fachada, a referência para achar o lugar nem a dica de entrada. Edite a ficha para preencher.</p>`
+      ? `<p class="ht-poi-motivo">Só você vê — essa academia ainda não escreveu como é a fachada, a dica de entrada nem onde estacionar. Edite a ficha para preencher.</p>`
       : "";
   }
   const itens = [];
   if (a.fachada) itens.push({ ic: 'eye', t: "Como é a fachada", d: a.fachada });
-  if (a.referencia) itens.push({ ic: 'pin', t: "Como achar", d: a.referencia });
   if (a.entrada) itens.push({ ic: 'key', t: "Na chegada", d: a.entrada });
+  if (a.estacionar) itens.push({ ic: 'parking', t: "Onde estacionar", d: a.estacionar });
   return `
-    <p class="field-label">Como chegar e entrar</p>
+    <p class="field-label">Como chegar, entrar e estacionar</p>
     <div class="ht-know">${itens.map(i => `
       <div class="ht-know-i">
         <span class="ht-know-ic">${icon(i.ic, 16, 'var(--green)')}</span>
         <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${esc(i.d)}</span></span>
       </div>`).join("")}</div>`;
-}
-
-// Quem não tem raquete precisa saber antes de sair de casa.
-function htLevar(c) {
-  if (!acessoDe(c).raquete) return "";
-  return `
-    <p class="field-label" style="margin-top:18px">Raquete</p>
-    <div class="ht-amen">
-      <div class="ht-amen-i">${icon('bag', 16, 'var(--green)')}<span>A academia empresta raquete</span></div>
-    </div>`;
 }
 
 // O horário fica logo abaixo do resumo: é a segunda coisa que se pergunta,
@@ -4807,9 +4864,9 @@ function htHorario(c) {
     <p class="field-label" style="margin-top:18px">Horário${aberto === null ? "" : `
       <span class="hr-agora ${aberto ? "sim" : "nao"}">${aberto ? "Aberto agora" : "Fechado agora"}</span>`}</p>
     <div class="hr-lista">
-      ${HORARIO_DIAS.filter(d => faixaVale(h[d.key])).map(d => `
-        <div class="hr-linha ${h[d.key].fechado ? "fechado" : ""}">
-          <span>${esc(d.label)}</span><strong>${esc(faixaTexto(h[d.key]))}</strong>
+      ${horarioLinhas(c).map(l => `
+        <div class="hr-linha ${l.fechado ? "fechado" : ""}">
+          <span>${esc(l.label)}</span><strong>${esc(l.texto)}</strong>
         </div>`).join("")}
     </div>
     ${h.nota ? `<p class="ht-poi-nota">${esc(h.nota)}</p>` : ""}`;
@@ -4984,46 +5041,54 @@ function htPolitica(c) {
       </div>`;
   }
 
-  // Sem reposição: uma faixa só, direta.
-  if (pol.reposicao === "nao") {
+  if (pol.modo === "separado") {
+    const blocos = [
+      parteVale(pol.aula) ? { titulo: "Aula", p: pol.aula, oque: "aula" } : null,
+      parteVale(pol.locacao) ? { titulo: "Locação", p: pol.locacao, oque: "reserva" } : null,
+    ].filter(Boolean);
+    return blocos.map(b => `
+      <p class="pol-titulo">${esc(b.titulo)}</p>
+      ${blocoPolitica(b.p, c, b.oque)}`).join("") + politicaRodape(c);
+  }
+
+  return blocoPolitica(pol.geral, c, "aula") + politicaRodape(c);
+}
+
+// O miolo, usado uma vez quando a regra é a mesma e duas quando é separada.
+function blocoPolitica(p, c, oque) {
+  if (p.reposicao === "nao") {
     return `
       <div class="pol-faixa sem">
         <span class="pol-faixa-ic">${icon('warning', 22, 'var(--gold)')}</span>
-        <span>Essa academia <strong>não faz reposição</strong> de aula desmarcada.</span>
+        <span>Essa academia <strong>não faz reposição</strong> de ${esc(oque)} desmarcada.</span>
       </div>
-      ${pol.foraDoPrazo ? `<div class="pol-texto">${esc(pol.foraDoPrazo)}</div>` : ""}
-      ${politicaRodape(c)}`;
+      ${p.foraDoPrazo ? `<div class="pol-texto">${esc(p.foraDoPrazo)}</div>` : ""}`;
   }
 
   // Só o texto livre, quando a academia não escolheu prazo nenhum.
-  if (!pol.horas) {
-    return `
-      <div class="pol-texto">${esc(pol.foraDoPrazo)}</div>
-      ${politicaRodape(c)}`;
-  }
+  if (!p.horas) return `<div class="pol-texto">${esc(p.foraDoPrazo)}</div>`;
 
-  const h = pol.horas;
+  const h = p.horas;
   return `
     <div class="pol-faixa">
       <span class="pol-faixa-h">${h}h</span>
-      <span>é a antecedência mínima para desmarcar e <strong>ter direito à reposição</strong> da aula.</span>
+      <span>é a antecedência mínima para desmarcar e <strong>ter direito à reposição</strong> da ${esc(oque)}.</span>
     </div>
 
     <div class="pol-lados">
       <div class="pol-lado ok">
         <span class="pol-lado-ic">${icon('check', 20, 'var(--green)')}</span>
         <p class="pol-lado-t">Avisou com ${h}h ou mais</p>
-        <p class="pol-lado-d">A aula desmarcada gera reposição.</p>
+        <p class="pol-lado-d">A ${esc(oque)} desmarcada gera reposição.</p>
       </div>
       <div class="pol-lado atencao">
         <span class="pol-lado-ic">${icon('warning', 20, 'var(--gold)')}</span>
         <p class="pol-lado-t">Avisou com menos de ${h}h</p>
-        <p class="pol-lado-d">${pol.foraDoPrazo
-          ? esc(pol.foraDoPrazo)
+        <p class="pol-lado-d">${p.foraDoPrazo
+          ? esc(p.foraDoPrazo)
           : `A academia não detalhou o que acontece nesse caso.${c.phone ? " Pergunte no WhatsApp." : ""}`}</p>
       </div>
-    </div>
-    ${politicaRodape(c)}`;
+    </div>`;
 }
 
 function politicaRodape(c) {
@@ -5083,7 +5148,7 @@ function perguntasAcademia(c) {
     const a = acessoDe(c);
     faq.push({
       q: `Como encontrar e entrar em ${c.name}?`,
-      a: [a.fachada, a.referencia, a.entrada].filter(Boolean).join(" "),
+      a: [a.fachada, a.entrada].filter(Boolean).join(" "),
     });
   }
 
@@ -5092,7 +5157,7 @@ function perguntasAcademia(c) {
     faq.push({ q: `Onde estacionar em ${c.name}?`, a: [e.noLocal ? e.noLocal + "." : "", e.texto].filter(Boolean).join(" ") });
   }
 
-  if (acessoDe(c).raquete) {
+  if ((c.amenities || []).includes("raquete")) {
     faq.push({
       q: `Precisa levar raquete para ${c.name}?`,
       a: "Não precisa: a academia empresta raquete. Confirme na conversa se vai jogar acompanhado, para garantir uma para cada.",
@@ -5100,22 +5165,27 @@ function perguntasAcademia(c) {
   }
 
   if (temHorario(c)) {
-    const h = horarioDe(c);
-    const linhas = HORARIO_DIAS.filter(d => faixaVale(h[d.key]))
-      .map(d => `${d.label}, ${faixaTexto(h[d.key]).toLowerCase()}`);
+    const linhas = horarioLinhas(c).map(l => `${l.label}, ${l.texto.toLowerCase()}`);
     faq.push({
       q: `Que horas ${c.name} abre e fecha?`,
-      a: listaTexto(linhas) + "." + (h.nota ? " " + h.nota : ""),
+      a: listaTexto(linhas) + "." + (horarioDe(c).nota ? " " + horarioDe(c).nota : ""),
     });
   }
 
   if (temPolitica(c)) {
     const pol = politicaDe(c);
-    const partes = [];
-    if (pol.reposicao === "nao") partes.push("A academia informou que não faz reposição de aula desmarcada.");
-    else if (pol.horas) partes.push(`Desmarcando com ${pol.horas} horas de antecedência ou mais, a aula gera reposição. Com menos que isso, não.`);
-    if (pol.foraDoPrazo) partes.push(pol.foraDoPrazo);
-    faq.push({ q: `Como funciona o cancelamento e a reposição em ${c.name}?`, a: partes.join(" ") });
+    const frase = (p, oque) => {
+      const partes = [];
+      if (p.reposicao === "nao") partes.push(`A academia informou que não faz reposição de ${oque} desmarcada.`);
+      else if (p.horas) partes.push(`Desmarcando a ${oque} com ${p.horas} horas de antecedência ou mais, gera reposição. Com menos que isso, não.`);
+      if (p.foraDoPrazo) partes.push(p.foraDoPrazo);
+      return partes.join(" ");
+    };
+    const texto = pol.modo === "separado"
+      ? [parteVale(pol.aula) ? "Aula: " + frase(pol.aula, "aula") : "",
+         parteVale(pol.locacao) ? "Locação: " + frase(pol.locacao, "reserva") : ""].filter(Boolean).join(" ")
+      : frase(pol.geral, "aula");
+    faq.push({ q: `Como funciona o cancelamento e a reposição em ${c.name}?`, a: texto });
   }
 
   return faq;
@@ -5321,25 +5391,68 @@ function acessoForm(f) {
   if (!f.acesso) f.acesso = {};
   const a = f.acesso;
   if (typeof a.fachada !== "string") a.fachada = "";
-  if (typeof a.referencia !== "string") a.referencia = "";
   if (typeof a.entrada !== "string") a.entrada = "";
   if (typeof a.estacionar !== "string") a.estacionar = typeof a.estacionamentoNota === "string" ? a.estacionamentoNota : "";
-  a.raquete = !!a.raquete;
   return a;
 }
 
 function horarioForm(f) {
   if (!f.horario) f.horario = {};
   const h = f.horario;
-  HORARIO_DIAS.forEach(d => {
-    if (!h[d.key] || typeof h[d.key] !== "object") h[d.key] = {};
-    const x = h[d.key];
+  if (h.modo !== "dia") h.modo = "igual";
+  HORARIO_CHAVES.forEach(k => {
+    if (!h[k] || typeof h[k] !== "object") h[k] = {};
+    const x = h[k];
     if (typeof x.de !== "string") x.de = "";
     if (typeof x.ate !== "string") x.ate = "";
     x.fechado = !!x.fechado;
   });
   if (typeof h.nota !== "string") h.nota = "";
   return h;
+}
+
+// Uma linha do horário no cadastro: o dia, o botão "Fechado" e as duas horas.
+function linhaHorarioForm(h, key, label) {
+  const x = h[key];
+  return `
+    <div class="hr-form-linha">
+      <span class="hr-form-dia">${esc(label)}</span>
+      <button type="button" class="chip small hr-fechado ${x.fechado ? "active" : ""}" data-fechado="${key}">Fechado</button>
+      <div class="hr-form-campos ${x.fechado ? "off" : ""}">
+        <input type="time" class="form-field hr-time" data-hora="${key}" data-parte="de" value="${esc(x.de)}" ${x.fechado ? "disabled" : ""} />
+        <span class="hr-form-ate">às</span>
+        <input type="time" class="form-field hr-time" data-hora="${key}" data-parte="ate" value="${esc(x.ate)}" ${x.fechado ? "disabled" : ""} />
+      </div>
+    </div>`;
+}
+
+function politicaForm2(f) {
+  if (!f.politica) f.politica = {};
+  const pol = f.politica;
+  if (pol.modo !== "separado") pol.modo = "igual";
+  ["aula", "locacao"].forEach(k => {
+    if (!pol[k] || typeof pol[k] !== "object") pol[k] = {};
+    if (typeof pol[k].reposicao !== "string") pol[k].reposicao = "";
+    if (typeof pol[k].foraDoPrazo !== "string") pol[k].foraDoPrazo = "";
+  });
+  if (typeof pol.reposicao !== "string") pol.reposicao = "";
+  if (typeof pol.foraDoPrazo !== "string") pol.foraDoPrazo = "";
+  return pol;
+}
+
+// Um bloco de cancelamento no cadastro. `alvo` é "" para a regra única, ou
+// "aula"/"locacao" quando a academia separa as duas.
+function blocoPoliticaForm(pol, alvo, titulo) {
+  const p = alvo ? pol[alvo] : pol;
+  const horas = (REPOSICAO_OPTS.find(o => o.key === p.reposicao) || {}).horas || null;
+  const id = alvo || "geral";
+  return `
+    ${titulo ? `<p class="pol-form-t">${esc(titulo)}</p>` : ""}
+    <div class="chip-row">
+      ${REPOSICAO_OPTS.map(o => `<button type="button" class="chip small reg-reposicao ${p.reposicao === o.key ? "active" : ""}" data-reposicao="${o.key}" data-alvo="${esc(alvo)}">${o.label}</button>`).join("")}
+    </div>
+    <textarea class="form-field" id="f-politica-fora-${id}" data-alvo="${esc(alvo)}" rows="3" style="resize:none"
+      placeholder="${horas ? `O que acontece avisando com menos de ${horas}h` : "Como funcionam os cancelamentos"}">${esc(p.foraDoPrazo)}</textarea>`;
 }
 
 function politicaForm(f) {
@@ -5350,7 +5463,7 @@ function politicaForm(f) {
 }
 
 function renderRegisterSheet() {
-  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" }, acesso:{ referencia:"", entrada:"" } };
+  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
   window.__form = f;
   const isEditing = !!f.__editingId;
   if (state.registerStatus === "done") {
@@ -5393,10 +5506,6 @@ function renderRegisterSheet() {
         <p class="footnote" style="margin:0 0 6px">O que a pessoa vê da rua. É o que mais evita passar direto.</p>
         <textarea class="form-field" id="f-acesso-fachada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
 
-        <p class="field-label">Como achar o lugar</p>
-        <p class="footnote" style="margin:0 0 6px">Um ponto de referência ajuda mais que o número.</p>
-        <textarea class="form-field" id="f-acesso-referencia" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: a entrada é pela rua de trás, logo depois do posto.">${esc(acessoForm(f).referencia)}</textarea>
-
         <p class="field-label">O que fazer ao chegar</p>
         <textarea class="form-field" id="f-acesso-entrada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
 
@@ -5405,27 +5514,15 @@ function renderRegisterSheet() {
         <textarea class="form-field" id="f-acesso-estacionar" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
 
         <p class="field-label">Horário de funcionamento</p>
+        <div class="chip-row" style="margin-bottom:12px">
+          <button type="button" class="chip small hr-modo ${horarioForm(f).modo === "igual" ? "active" : ""}" data-hr-modo="igual">Mesmo horário de segunda a sexta</button>
+          <button type="button" class="chip small hr-modo ${horarioForm(f).modo === "dia" ? "active" : ""}" data-hr-modo="dia">Horário diferente por dia</button>
+        </div>
         <div class="hr-form">
-          ${HORARIO_DIAS.map(d => {
-            const x = horarioForm(f)[d.key];
-            return `
-              <div class="hr-form-linha">
-                <span class="hr-form-dia">${d.label}</span>
-                <button type="button" class="chip small hr-fechado ${x.fechado ? "active" : ""}" data-fechado="${d.key}">Fechado</button>
-                <div class="hr-form-campos ${x.fechado ? "off" : ""}">
-                  <input type="time" class="form-field hr-time" data-hora="${d.key}" data-parte="de" value="${esc(x.de)}" ${x.fechado ? "disabled" : ""} />
-                  <span class="hr-form-ate">às</span>
-                  <input type="time" class="form-field hr-time" data-hora="${d.key}" data-parte="ate" value="${esc(x.ate)}" ${x.fechado ? "disabled" : ""} />
-                </div>
-              </div>`;
-          }).join("")}
+          ${(horarioForm(f).modo === "dia" ? HORARIO_POR_DIA : HORARIO_SIMPLES)
+            .map(d => linhaHorarioForm(horarioForm(f), d.key, d.label)).join("")}
         </div>
         <input class="form-field" id="f-horario-nota" placeholder="Observação sobre o horário (opcional)" value="${esc(horarioForm(f).nota)}" />
-
-        <p class="field-label">Raquete</p>
-        <div class="chip-row">
-          <button class="chip small reg-raquete ${acessoForm(f).raquete ? "active" : ""}" data-raquete="1">${icon('bag', 13, 'var(--green)')} A academia empresta raquete</button>
-        </div>
 
         <p class="field-label">Fotos da academia</p>
         <label class="foto-caixa ${(f.photos||[]).length >= 5 ? "cheia" : ""}" for="f-photo-file">
@@ -5491,17 +5588,15 @@ function renderRegisterSheet() {
         ` : ""}
         ${!f.modalidades.length ? `<p class="footnote">Selecione a modalidade acima para informar o preço.</p>` : ""}
 
-        <p class="field-label">Reposição da aula desmarcada</p>
-        <p class="footnote" style="margin-top:0;margin-bottom:8px">Com quantas horas de antecedência a pessoa precisa avisar para ter direito à reposição.</p>
-        <div class="chip-row">
-          ${REPOSICAO_OPTS.map(o => `<button type="button" class="chip small reg-reposicao ${politicaForm(f).reposicao === o.key ? "active" : ""}" data-reposicao="${o.key}">${o.label}</button>`).join("")}
+        <p class="field-label">Cancelamento e reposição</p>
+        <p class="footnote" style="margin-top:0;margin-bottom:8px">Com quantas horas de antecedência a pessoa precisa avisar para ter direito à reposição. Toque de novo na opção escolhida para desmarcar.</p>
+        <div class="chip-row" style="margin-bottom:10px">
+          <button type="button" class="chip small pol-modo ${politicaForm2(f).modo === "igual" ? "active" : ""}" data-pol-modo="igual">Mesma regra para tudo</button>
+          <button type="button" class="chip small pol-modo ${politicaForm2(f).modo === "separado" ? "active" : ""}" data-pol-modo="separado">Aula e locação diferentes</button>
         </div>
-        <p class="footnote" style="margin-top:6px">Toque de novo na opção escolhida para desmarcar.</p>
-
-        <p class="field-label">${politicaForm(f).horas
-          ? `Cancelamento com menos de ${politicaForm(f).horas}h`
-          : "Como funcionam os cancelamentos"}</p>
-        <textarea class="form-field" id="f-politica-fora" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: a aula conta como dada e não gera reposição.">${esc(politicaForm(f).foraDoPrazo)}</textarea>
+        ${politicaForm2(f).modo === "separado"
+          ? blocoPoliticaForm(politicaForm2(f), "aula", "Aula") + blocoPoliticaForm(politicaForm2(f), "locacao", "Locação")
+          : blocoPoliticaForm(politicaForm2(f), "", "")}
 
         <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
         <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
@@ -5840,6 +5935,35 @@ function attachEvents() {
     };
   });
 
+  const geocodeTodas = document.getElementById("geocode-todas");
+  if (geocodeTodas) geocodeTodas.onclick = async () => {
+    const faltando = state.allCourts.filter(c => typeof c.lat !== "number" || typeof c.lng !== "number");
+    if (!faltando.length) { alert("Todas já têm coordenada."); return; }
+    geocodeTodas.disabled = true;
+    const erros = [];
+    let ok = 0;
+    for (let i = 0; i < faltando.length; i++) {
+      const c = faltando[i];
+      geocodeTodas.textContent = `Procurando ${i + 1} de ${faltando.length}...`;
+      try {
+        const geo = await geocodeFormAddress({
+          cep: "", address: c.address || "", numero: c.numero || "",
+          bairro: c.bairro || "", cidade: c.cidade || "",
+        });
+        const { error } = await sb.from('academias').update({ lat: geo.lat, lng: geo.lng }).eq('id', c.id);
+        if (error) throw error;
+        ok++;
+      } catch (e) {
+        erros.push(`${c.name}: ${e.message || "não localizei"}`);
+      }
+      // O Nominatim pede no máximo uma busca por segundo.
+      if (i < faltando.length - 1) await new Promise(r => setTimeout(r, 1100));
+    }
+    await loadEverything();
+    alert(`${ok} de ${faltando.length} com coordenada agora.` + (erros.length ? `\n\nNão consegui:\n` + erros.join("\n") : ""));
+    render();
+  };
+
   const geocodeBtn = document.getElementById("geocode-btn");
   if (geocodeBtn) geocodeBtn.onclick = async () => {
     const c = state.allCourts.find(x => x.id === geocodeBtn.dataset.court)
@@ -5928,7 +6052,7 @@ function attachEvents() {
   });
 
   const abrirCadastro = () => {
-    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" }, acesso:{ referencia:"", entrada:"" } };
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
     state.showRegister = true;
     state.registerStatus = "idle";
     render();
@@ -6474,7 +6598,7 @@ function attachEvents() {
   });
 
   const fab = document.getElementById("fab-add");
-  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" }, acesso:{ referencia:"", entrada:"" } }; state.showRegister = true; state.registerStatus = "idle"; render(); };
+  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} }; state.showRegister = true; state.registerStatus = "idle"; render(); };
 
   const fabAdmin = document.getElementById("fab-admin");
   if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
@@ -6561,20 +6685,31 @@ function attachEvents() {
   bindFormField("f-name", "name"); bindFormField("f-address", "address"); bindFormField("f-bairro", "bairro");
   bindFormField("f-cidade", "cidade"); bindFormField("f-numero", "numero"); bindFormField("f-complemento", "complemento");
   bindPriceField("f-price-aula", "priceAula"); bindPriceField("f-price-locacao", "priceLocacao");
+  document.querySelectorAll(".pol-modo").forEach(el => {
+    el.onclick = () => { politicaForm2(window.__form).modo = el.dataset.polModo; render(); };
+  });
   document.querySelectorAll(".reg-reposicao").forEach(el => {
     el.onclick = () => {
-      const pol = politicaForm(window.__form);
-      pol.reposicao = pol.reposicao === el.dataset.reposicao ? "" : el.dataset.reposicao;
+      const pol = politicaForm2(window.__form);
+      const alvo = el.dataset.alvo ? pol[el.dataset.alvo] : pol;
+      alvo.reposicao = alvo.reposicao === el.dataset.reposicao ? "" : el.dataset.reposicao;
       render();
     };
+  });
+  document.querySelectorAll('[id^="f-politica-fora-"]').forEach(el => {
+    el.oninput = (e) => {
+      const pol = politicaForm2(window.__form);
+      const alvo = el.dataset.alvo ? pol[el.dataset.alvo] : pol;
+      alvo.foraDoPrazo = e.target.value;
+    };
+  });
+  document.querySelectorAll(".hr-modo").forEach(el => {
+    el.onclick = () => { horarioForm(window.__form).modo = el.dataset.hrModo; render(); };
   });
   const acessoFac = document.getElementById("f-acesso-fachada");
   if (acessoFac) acessoFac.oninput = (e) => { acessoForm(window.__form).fachada = e.target.value; };
   const acessoEst = document.getElementById("f-acesso-estacionar");
   if (acessoEst) acessoEst.oninput = (e) => { acessoForm(window.__form).estacionar = e.target.value; };
-  document.querySelectorAll(".reg-raquete").forEach(el => {
-    el.onclick = () => { const a = acessoForm(window.__form); a.raquete = !a.raquete; render(); };
-  });
   const horarioNota = document.getElementById("f-horario-nota");
   if (horarioNota) horarioNota.oninput = (e) => { horarioForm(window.__form).nota = e.target.value; };
   document.querySelectorAll(".hr-time").forEach(el => {
@@ -6590,13 +6725,8 @@ function attachEvents() {
     };
   });
 
-  const acessoRef = document.getElementById("f-acesso-referencia");
-  if (acessoRef) acessoRef.oninput = (e) => { acessoForm(window.__form).referencia = e.target.value; };
   const acessoEnt = document.getElementById("f-acesso-entrada");
   if (acessoEnt) acessoEnt.oninput = (e) => { acessoForm(window.__form).entrada = e.target.value; };
-
-  const politicaFora = document.getElementById("f-politica-fora");
-  if (politicaFora) politicaFora.oninput = (e) => { politicaForm(window.__form).foraDoPrazo = e.target.value; };
 
   bindFormField("f-phone", "phone"); bindFormField("f-instagram", "instagram");
   bindFormField("f-site", "site");

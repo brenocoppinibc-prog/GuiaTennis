@@ -2806,7 +2806,7 @@ function blocoParaAcademias() {
   ];
   return `
     <div class="bloco-academias" id="home-academias">
-      <p class="ba-eyebrow">Para academias e clubes</p>
+      <p class="ba-eyebrow">Para academias e quadras</p>
       <h3 class="display">Por que estar no GuiaTennis</h3>
       <div class="ba-lista">
         ${itens.map(i => `
@@ -5072,7 +5072,7 @@ function renderRegisterSheet() {
 
         <p class="field-label">Como achar o lugar</p>
         <p class="footnote" style="margin:0 0 6px">Um ponto de referência ajuda mais que o número: quem chega de primeira vez costuma passar direto.</p>
-        <textarea class="form-field" id="f-acesso-referencia" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: fica dentro do clube, entrada pela rua de trás, ao lado do posto.">${esc(acessoForm(f).referencia)}</textarea>
+        <textarea class="form-field" id="f-acesso-referencia" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: a entrada é pela rua de trás, logo depois do posto — o portão não tem placa.">${esc(acessoForm(f).referencia)}</textarea>
 
         <p class="field-label">O que fazer ao chegar</p>
         <textarea class="form-field" id="f-acesso-entrada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>

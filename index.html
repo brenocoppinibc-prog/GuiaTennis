@@ -88,15 +88,11 @@
   .sheet-compare-btn { position: absolute; top: 16px; right: 100px; background: rgba(0,0,0,0.35); color: #fff; border: 1px solid rgba(255,255,255,0.4); border-radius: 999px; padding: 7px 13px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .sheet-compare-btn.active { background: var(--green); border-color: var(--green); }
   /* barra de abas do rodapé */
-  .abas { position: fixed; left: 0; right: 0; bottom: 0; z-index: 55; display: flex; justify-content: center; background: var(--card); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -2px 14px rgba(33,31,26,0.08); }
-  .abas-inner { display: flex; width: 100%; max-width: 520px; }
-  .aba { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; padding: 9px 4px 10px; font-family: 'Playfair Display', serif; font-size: 11px; font-weight: 700; color: var(--muted); cursor: pointer; }
-  .aba.on { color: var(--green); }
-  .aba-ic { position: relative; display: flex; }
-  .aba-badge { position: absolute; top: -7px; right: -11px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--gold); color: var(--green-dark); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
-  .com-abas { padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
-  .com-abas .map-fab { bottom: calc(76px + env(safe-area-inset-bottom)); }
-  .com-abas .fab-col { bottom: calc(74px + env(safe-area-inset-bottom)); }
+  /* aviso de quantas academias estão na comparação, no botão do menu e no
+     próprio item do menu — já que não há mais barra no rodapé */
+  .menu-btn { position: relative; }
+  .menu-conta { position: absolute; top: -9px; right: -9px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--gold); color: var(--green-dark); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card); box-sizing: content-box; }
+  .menu-item-conta { margin-left: auto; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--green); color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
 
   /* aba Comparar */
   .cmp-pagina { padding: 18px 20px 24px; }
@@ -491,7 +487,7 @@
   .offer-more strong { color: var(--text); font-weight: 700; margin-right: 5px; }
 
   /* ---- página inicial ---- */
-  .home-head { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .home-head { background: var(--card); border-bottom: 1px solid var(--border); padding: 17px 20px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .home-brand { display: flex; align-items: center; gap: 10px; background: none; border: none; padding: 0; cursor: pointer; }
   .home-brand h1 { font-size: 26px; font-weight: 700; margin: 0; color: var(--green); line-height: 1; }
   .home-hero { padding: 26px 20px 22px; }
@@ -520,7 +516,7 @@
   .city-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
   /* menu de três barras */
   .menu-btn { width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
-  .menu-btn span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
+  .menu-btn > span:not(.menu-conta) { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
   .menu-overlay { justify-content: flex-end; align-items: stretch; }
   .menu-drawer { width: min(340px, 88vw); height: 100%; background: var(--card); overflow-y: auto; padding: 16px 18px calc(24px + env(safe-area-inset-bottom)); box-shadow: -10px 0 30px rgba(33,31,26,0.18); animation: menuEntra 0.18s ease-out; }
   @keyframes menuEntra { from { transform: translateX(24px); opacity: 0.4 } to { transform: none; opacity: 1 } }
@@ -1702,11 +1698,10 @@ function render() {
     ${renderNavSheet()}
     ${renderQrSheet()}
     ${renderMenu()}
-    ${renderAbas()}
     ${renderLightbox()}
   `;
 
-  app.className = "container" + (state.page === "court" ? "" : " com-abas");
+  app.className = "container";
 
   attachEvents();
   if (state.lightbox) {
@@ -1983,32 +1978,6 @@ function analisarAnotacoes(texto, courts) {
   });
 
   return { achados, criterios: [...new Set(criterios)] };
-}
-
-// Barra de abas no rodapé: Início, Buscar e Comparar. Some na ficha da
-// academia, que já tem a barra de contato embaixo.
-function renderAbas() {
-  if (state.page === "court") return "";
-  const n = state.compareList.length;
-  const abas = [
-    { key: "home", label: "Início", ic: "home" },
-    { key: "search", label: "Buscar", ic: "search" },
-    { key: "comparar", label: "Comparar", ic: "list", conta: n },
-  ];
-  return `
-    <nav class="abas" aria-label="Navegação principal">
-      <div class="abas-inner">
-        ${abas.map(a => `
-          <button type="button" class="aba ${state.page === a.key ? "on" : ""}" data-aba="${a.key}" ${state.page === a.key ? 'aria-current="page"' : ""}>
-            <span class="aba-ic">
-              ${icon(a.ic, 21, state.page === a.key ? 'var(--green)' : 'var(--muted)')}
-              ${a.conta ? `<span class="aba-badge">${a.conta}</span>` : ""}
-            </span>
-            <span>${a.label}</span>
-          </button>`).join("")}
-      </div>
-    </nav>
-  `;
 }
 
 function cmpRow(label, value) {
@@ -2694,8 +2663,9 @@ function renderCabecalho() {
         ${LOGO_SVG}
         <h1 class="display">GuiaTennis</h1>
       </button>
-      <button type="button" class="menu-btn" id="menu-btn" aria-label="Abrir menu" aria-expanded="${state.showMenu ? "true" : "false"}">
+      <button type="button" class="menu-btn" id="menu-btn" aria-label="Abrir menu${state.compareList.length ? ` (${state.compareList.length} na comparação)` : ""}" aria-expanded="${state.showMenu ? "true" : "false"}">
         <span></span><span></span><span></span>
+        ${state.compareList.length ? `<span class="menu-conta">${state.compareList.length}</span>` : ""}
       </button>
     </div>
   `;
@@ -2715,7 +2685,7 @@ function renderMenu() {
         <p class="menu-grupo">Navegar</p>
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
-        ${item("comparar", "Comparar academias", "list")}
+        <button type="button" class="menu-item" data-menu="comparar">${icon('list', 17, 'var(--green)')}<span>Comparar academias</span>${state.compareList.length ? `<span class="menu-item-conta">${state.compareList.length}</span>` : ""}</button>
 
         <p class="menu-grupo">Entender o guia</p>
         ${item("como", "Como funciona", "play")}
@@ -6038,16 +6008,6 @@ function attachEvents() {
 
   document.querySelectorAll("[data-faqsite]").forEach(el => {
     el.ontoggle = () => { state.faqSiteOpen[el.dataset.faqsite] = el.open; };
-  });
-
-  document.querySelectorAll("[data-aba]").forEach(el => {
-    el.onclick = () => {
-      const alvo = el.dataset.aba;
-      if (alvo === state.page) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
-      if (alvo === "home") goHome();
-      else if (alvo === "search") goSearch();
-      else goComparar();
-    };
   });
 
   const cmpCep = document.getElementById("cmp-cep");

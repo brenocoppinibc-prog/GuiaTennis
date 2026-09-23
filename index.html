@@ -677,7 +677,6 @@
   .ht-room-info { padding: 15px 16px; }
   .ht-room-name { font-size: 19px; font-weight: 700; margin: 0; }
   .ht-room-desc { font-size: 13px; color: var(--muted); margin: 3px 0 0; }
-  .ht-room-perks { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 13px; }
   .ht-room-price { background: var(--green-soft); border-top: 1px solid var(--green-line); padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
   @media (min-width: 720px) { .ht-room-price { border-top: none; border-left: 1px solid var(--green-line); align-items: flex-end; text-align: right; } }
   .ht-room-val { font-size: 24px; font-weight: 800; line-height: 1.05; white-space: nowrap; }
@@ -3483,7 +3482,6 @@ function htDestaques(c) {
 // o que é de um lado, o valor do outro. O contato é um só, logo abaixo.
 function htOpcoes(c) {
   const opcoes = opcoesPreco(c);
-  const marcas = selos(c);
   if (!opcoes.length) {
     return `
       <div class="ht-room">
@@ -3499,7 +3497,6 @@ function htOpcoes(c) {
       <div class="ht-room-info">
         <p class="ht-room-name">${esc(o.nome)}</p>
         <p class="ht-room-desc">${esc(o.desc)}</p>
-        ${marcas.length ? `<div class="ht-room-perks">${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</div>` : ""}
       </div>
       <div class="ht-room-price">
         <div class="ht-room-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${esc(precoTexto(o.faixa))}</div>

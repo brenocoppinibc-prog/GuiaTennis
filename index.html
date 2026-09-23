@@ -1237,19 +1237,34 @@ function toRow(f) {
 // fechada: quem responde é a visão "estatisticas_publicas", que devolve três
 // números somados e nada por academia. Enquanto a visão não existir no banco,
 // isto falha em silêncio e o bloco de números some da página.
+// Tenta primeiro a função, que é o jeito que o Supabase considera seguro
+// para somar uma tabela fechada. Se ela ainda não existir no banco, cai na
+// visão antiga — assim o site funciona antes e depois de rodar o SQL.
+async function lerEstatisticas() {
+  try {
+    const r = await sb.rpc('estatisticas_publicas').single();
+    if (!r.error && r.data) return r.data;
+  } catch { /* função ainda não existe */ }
+  try {
+    const r = await sb.from('estatisticas_publicas').select('*').limit(1).single();
+    if (!r.error && r.data) return r.data;
+  } catch { /* visão também não existe */ }
+  return null;
+}
+
 async function carregarEstatisticasPublicas() {
   try {
-    const { data, error } = await sb.from('estatisticas_publicas').select('*').limit(1).single();
-    if (error || !data) return;
+    const data = await lerEstatisticas();
+    if (!data) return;
     state.estatisticas = {
       acessos: numeroOuNulo(data.acessos) || 0,
       fichas_abertas: numeroOuNulo(data.fichas_abertas) || 0,
       contatos: numeroOuNulo(data.contatos) || 0,
-      // Totais de sempre. Sem essas colunas na visão, a linha do topo não aparece.
+      // Totais de sempre. Sem essas colunas, a linha do topo não aparece.
       acessos_total: numeroOuNulo(data.acessos_total) || 0,
       buscas_total: numeroOuNulo(data.buscas_total) || 0,
     };
-  } catch { /* sem a visão no banco, o bloco simplesmente não aparece */ }
+  } catch { /* sem os números no banco, o bloco simplesmente não aparece */ }
 }
 
 async function loadEverything() {

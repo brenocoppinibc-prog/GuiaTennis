@@ -44,6 +44,9 @@ cobra taxa e não fica no meio** da negociação.
 9. **Privacidade:** de uma busca fica guardado só **bairro e cidade**.
    Nunca o CEP, o endereço digitado ou a coordenada. Qualquer mudança
    nisso obriga a mexer na Política de Privacidade.
+10. **SQL vai sempre em bloco pronto para copiar**, escrito na conversa —
+    não só dentro de um arquivo. O Breno roda à mão no SQL Editor do
+    Supabase.
 
 ## 3. Como é feito
 

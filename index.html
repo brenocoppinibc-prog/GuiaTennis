@@ -920,6 +920,19 @@ const AMENITY_OPTS = [
 ];
 const AMENITY_MAP = Object.fromEntries(AMENITY_OPTS.map(a => [a.key, a]));
 
+// O banco guarda as escolhas na ordem em que foram clicadas. Esta função põe
+// tudo de volta na ordem das listas acima, para que piso, cobertura,
+// modalidade e comodidades apareçam sempre na mesma sequência — na busca, no
+// cadastro, na ficha e na comparação.
+function naOrdem(opcoes, escolhidas) {
+  const tem = new Set(escolhidas || []);
+  return opcoes.filter(o => tem.has(o.key));
+}
+
+function rotulosNaOrdem(opcoes, escolhidas) {
+  return naOrdem(opcoes, escolhidas).map(o => o.label);
+}
+
 // Nos filtros, gratuito e pago aparecem como uma única opção "Estacionamento";
 // no cadastro e na ficha da academia, continuam distintos.
 const FILTER_AMENITY_OPTS = [
@@ -952,6 +965,21 @@ const REPOSICAO_OPTS = [
   { key: "48", label: "48h", horas: 48 },
   { key: "nao", label: "Não tem reposição", horas: null },
 ];
+
+// Duas dicas curtas que a academia escreve: como achar o lugar e o que fazer
+// ao chegar. Ficam na coluna "acesso" (jsonb) da tabela academias.
+function acessoDe(c) {
+  const a = (c && c.acesso) || {};
+  return {
+    referencia: (a.referencia || "").trim(),
+    entrada: (a.entrada || "").trim(),
+  };
+}
+
+function temAcesso(c) {
+  const a = acessoDe(c);
+  return !!(a.referencia || a.entrada);
+}
 
 function politicaDe(c) {
   const pol = (c && c.politica) || {};
@@ -1081,6 +1109,7 @@ function mapRow(row) {
     pago: !!row.pago,
     plano: row.plano || "basico",
     politica: row.politica || {},
+    acesso: row.acesso || {},
     pausada: !!row.pausada,
     pausadaAte: row.pausada_ate,
     nomeSolicitante: row.nome_solicitante,
@@ -1100,6 +1129,7 @@ function toRow(f) {
     pisos: f.pisos || [], cobertura: f.cobertura || [],
     quadras: f.quadras || {}, photos: f.photos || [],
     politica: f.politica || {},
+    acesso: f.acesso || {},
   };
 }
 
@@ -1893,10 +1923,10 @@ function renderCompareSheet() {
             const dist = typeof c.distanceKm === "number"
               ? (c.distanceKm < 1 ? `${Math.round(c.distanceKm*1000)} m` : `${c.distanceKm.toFixed(1)} km`)
               : "Busque um endereço";
-            const pisos = listaPt((c.pisos||[]).map(p => PISO_OPTS.find(x=>x.key===p)?.label));
-            const cob = listaPt((c.cobertura||[]).map(x => COBERTURA_OPTS.find(o=>o.key===x)?.label));
-            const mods = listaPt((c.modalidades||[]).map(m => MODALIDADE_OPTS.find(x=>x.key===m)?.label));
-            const ams = listaPt((c.amenities||[]).map(a => AMENITY_MAP[a]?.label));
+            const pisos = listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos));
+            const cob = listaPt(rotulosNaOrdem(COBERTURA_OPTS, c.cobertura));
+            const mods = listaPt(rotulosNaOrdem(MODALIDADE_OPTS, c.modalidades));
+            const ams = listaPt(rotulosNaOrdem(AMENITY_OPTS, c.amenities));
             const precos = [
               c.priceAula ? `Aula: R$ ${esc(c.priceAula)}/hora` : null,
               c.priceLocacao ? `Locação: R$ ${esc(c.priceLocacao)}/hora` : null,
@@ -2262,7 +2292,10 @@ function renderMapView(results) {
       ${results.length === 0 ? `<div class="map-empty">Nenhuma quadra encontrada com esses filtros.</div>` : ""}
       ${results.length && !comCoord.length ? `<div class="map-empty">Nenhuma dessas academias tem endereço localizado no mapa ainda.</div>` : ""}
     </div>
-    ${fora > 0 && comCoord.length ? `<p class="fgroup-note" style="padding:8px 20px 0">${fora} ${plural(fora, "academia não aparece", "academias não aparecem")} no mapa por falta de endereço localizado.</p>` : ""}
+    ${fora > 0 && comCoord.length ? `
+      <p class="fgroup-note" style="padding:8px 20px 0">${fora} ${plural(fora, "academia não aparece", "academias não aparecem")} no mapa por falta de endereço localizado.${isAdmin ? "" : ""}</p>
+      ${isAdmin ? `<p class="fgroup-note" style="padding:4px 20px 0;color:var(--red)">Só você vê — sem coordenada: ${esc(results.filter(c => typeof c.lat !== "number" || typeof c.lng !== "number").map(c => c.name).join(", "))}. Abra a ficha de cada uma e use "Gerar coordenada pelo endereço".</p>` : ""}
+    ` : ""}
   `;
 }
 
@@ -3108,7 +3141,7 @@ function renderCard(c, badge) {
 
           <p class="rcard-line"><span class="ico">${icon('pin', 13, 'var(--muted)')}</span><span>${esc(localLine(c))}</span></p>
           ${dest ? `<p class="rcard-line"><span class="ico">${icon('sparkle', 13, 'var(--gold)')}</span><span>${esc(dest)}</span></p>` : ""}
-          ${totalQuadras(c) ? `<p class="rcard-line"><span class="ico">${icon('ball', 13, 'var(--muted)')}</span><span>${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")} · ${esc(listaPt((c.pisos || []).map(p => PISO_OPTS.find(x => x.key === p)?.label).filter(Boolean)))}</span></p>` : ""}
+          ${totalQuadras(c) ? `<p class="rcard-line"><span class="ico">${icon('ball', 13, 'var(--muted)')}</span><span>${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")} · ${esc(listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)))}</span></p>` : ""}
         </div>
       </div>
 
@@ -3157,7 +3190,6 @@ function renderCard(c, badge) {
 // categoria cai cada lugar que voltar.
 const POI_CATS = [
   { key: "restaurante", label: "Restaurantes", ic: "cup", casa: t => t.amenity === "restaurant" },
-  { key: "musculacao", label: "Academias de musculação", ic: "bolt", casa: t => t.leisure === "fitness_centre" },
   { key: "padaria", label: "Padarias e cafeterias", ic: "bag", casa: t => t.shop === "bakery" || t.amenity === "cafe" },
   {
     key: "turismo", label: "Pontos turísticos e parques", ic: "sparkle",
@@ -3267,7 +3299,6 @@ function consultaPerto(lat, lng) {
     'nwr["amenity"="restaurant"]',
     'nwr["amenity"="cafe"]',
     'nwr["shop"="bakery"]',
-    'nwr["leisure"="fitness_centre"]',
     'nwr["leisure"="park"]',
     'nwr["tourism"]',
   ].map(f => f + ";").join("");
@@ -3391,7 +3422,7 @@ function htPertoConteudo(c) {
       <p class="field-label">O que tem por perto</p>
       <div class="ht-poi-carregando">
         ${bolaGirando(42)}
-        <p>Procurando restaurantes, padarias, academias de musculação e pontos turísticos em volta...</p>
+        <p>Procurando restaurantes, padarias, cafeterias e pontos turísticos em volta...</p>
         ${(dados && dados.demorando) ? `<p class="ht-poi-nota" style="margin:0">O mapa aberto está devagar agora. Se não vier em alguns segundos, dá para tentar de novo.</p>` : ""}
       </div>
       ${diagnosticoPerto(c, dados)}`;
@@ -3418,7 +3449,7 @@ function htPertoConteudo(c) {
   if (!grupos.length) {
     return `
       <p class="field-label">O que tem por perto</p>
-      <p class="ht-poi-nota">Não achei restaurante, padaria, academia de musculação nem ponto turístico cadastrado no mapa aberto a até 1,5 km daqui.</p>
+      <p class="ht-poi-nota">Não achei restaurante, padaria nem ponto turístico cadastrado no mapa aberto a até 1,5 km daqui.</p>
       ${diagnosticoPerto(c, dados)}`;
   }
 
@@ -3899,9 +3930,9 @@ function htEtiquetas(c) {
   if (mod) out.push(mod);
   const total = totalQuadras(c);
   if (total) out.push(`${total} ${plural(total, "quadra", "quadras")}`);
-  const pisos = (c.pisos || []).map(k => (PISO_OPTS.find(p => p.key === k) || {}).label).filter(Boolean);
+  const pisos = rotulosNaOrdem(PISO_OPTS, c.pisos);
   if (pisos.length) out.push(listaTexto(pisos));
-  const cobs = (c.cobertura || []).map(k => (COBERTURA_OPTS.find(x => x.key === k) || {}).label).filter(Boolean);
+  const cobs = rotulosNaOrdem(COBERTURA_OPTS, c.cobertura);
   if (cobs.length) out.push(listaTexto(cobs));
   if (!out.length) return "";
   return `<div class="ht-tags">${out.slice(0, 4).map(t => `<span class="ht-tag">${esc(t)}</span>`).join("")}</div>`;
@@ -3939,7 +3970,7 @@ function descricaoAcademia(c) {
     frases.push(`A academia atende ${mod.toLowerCase()}, com valor sob consulta.`);
   }
 
-  const com = (c.amenities || []).map(a => AMENITY_MAP[a] && AMENITY_MAP[a].label.toLowerCase()).filter(Boolean);
+  const com = rotulosNaOrdem(AMENITY_OPTS, c.amenities).map(l => l.toLowerCase());
   if (com.length) frases.push(`Entre as comodidades ${plural(com.length, "está", "estão")} ${listaTexto(com.slice(0, 4))}.`);
 
   if (c.appCount) {
@@ -4034,7 +4065,7 @@ function htOpcoes(c) {
 // Quadras e comodidades, na grade de ícones das "Comodidades da acomodação".
 function htComodidades(c) {
   const total = totalQuadras(c);
-  const lista = (c.amenities || []).map(a => AMENITY_MAP[a]).filter(Boolean);
+  const lista = naOrdem(AMENITY_OPTS, c.amenities);
   if (!total && !lista.length) return "";
   return `
     ${total ? `
@@ -4060,6 +4091,7 @@ function htLocalizacao(c) {
     <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">A academia ainda não tem coordenada no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
     <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
     ${navLinks(c)}
+    ${htAcesso(c)}
     ${htPerto(c)}
     ${perto.length ? `
       <p class="field-label">Outras academias por perto</p>
@@ -4089,6 +4121,26 @@ function cartaoVizinha(v, km) {
       </span>
       <span class="ht-viz-seta">${icon('chevron', 16, 'var(--green)')}</span>
     </button>`;
+}
+
+// "Como chegar e entrar": o que ajuda a achar o lugar e o que fazer na porta.
+function htAcesso(c) {
+  const a = acessoDe(c);
+  if (!temAcesso(c)) {
+    return isAdmin
+      ? `<p class="ht-poi-motivo">Só você vê — essa academia ainda não escreveu a referência para achar o lugar nem a dica de entrada. Edite a ficha para preencher.</p>`
+      : "";
+  }
+  const itens = [];
+  if (a.referencia) itens.push({ ic: 'eye', t: "Como achar", d: a.referencia });
+  if (a.entrada) itens.push({ ic: 'key', t: "Na chegada", d: a.entrada });
+  return `
+    <p class="field-label">Como chegar e entrar</p>
+    <div class="ht-know">${itens.map(i => `
+      <div class="ht-know-i">
+        <span class="ht-know-ic">${icon(i.ic, 16, 'var(--green)')}</span>
+        <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${esc(i.d)}</span></span>
+      </div>`).join("")}</div>`;
 }
 
 function academiasPerto(c, quantas) {
@@ -4379,6 +4431,14 @@ function perguntasAcademia(c) {
   if (contatos.length) {
     faq.push({ q: `Como falar com ${c.name}?`, a: `Pelo ${listaTexto(contatos)}. O botão de WhatsApp desta página já abre a conversa com uma mensagem pronta.` });
   }
+  if (temAcesso(c)) {
+    const a = acessoDe(c);
+    faq.push({
+      q: `Como encontrar e entrar em ${c.name}?`,
+      a: [a.referencia, a.entrada].filter(Boolean).join(" "),
+    });
+  }
+
   if (temPolitica(c)) {
     const pol = politicaDe(c);
     const partes = [];
@@ -4414,7 +4474,7 @@ function htSecoesDisponiveis(c) {
     { id: "ht-opcoes", label: "Preços" },
     { id: "ht-politica", label: "Cancelamento" },
   ];
-  if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Comodidades" });
+  if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Estrutura" });
   secs.push({ id: "ht-local", label: "Localização" });
   secs.push({ id: "avaliacoes", label: "Avaliações" });
   if (perguntasAcademia(c).length) secs.push({ id: "ht-duvidas", label: "Dúvidas" });
@@ -4457,6 +4517,9 @@ function renderCourtPage(c) {
     ` : ""}
     <button type="button" class="cta-btn cta-secondary editar-academia" data-court="${c.id}" style="margin-bottom:8px">${icon('edit', 15, 'var(--green)')} Editar academia</button>
     <button type="button" class="cta-btn cta-secondary" id="qr-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('clipboard', 15, 'var(--green)')} QR code desta ficha</button>
+    ${(typeof c.lat === "number" && typeof c.lng === "number") ? "" : `
+      <button type="button" class="cta-btn cta-danger" id="geocode-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('pin', 15, 'var(--red)')} Gerar coordenada pelo endereço</button>
+      <p class="footnote" style="margin:-4px 0 12px">Sem coordenada, essa academia não aparece no mapa nem na busca por distância.</p>`}
     ${c.status !== "pending" ? `<button type="button" class="cta-btn cta-danger" id="delete-court-btn" data-court="${c.id}" style="margin-bottom:8px">${icon('warning', 15, 'var(--red)')} Excluir academia</button>` : ""}
     ${c.nomeSolicitante ? `<p class="footnote" style="margin-bottom:12px">Cadastro enviado por: ${esc(c.nomeSolicitante)} · ${esc(c.contatoSolicitante || "")}</p>` : ""}
   `;
@@ -4519,7 +4582,7 @@ function renderCourtPage(c) {
 
               ${(totalQuadras(c) || (c.amenities || []).length) ? `
                 <section class="ht-sec" id="ht-comodidades">
-                  <h3 class="sec-title">Comodidades da academia</h3>
+                  <h3 class="sec-title">Estrutura</h3>
                   ${htComodidades(c)}
                 </section>` : ""}
 
@@ -4594,6 +4657,11 @@ function renderCourtPage(c) {
 
 // A política vive em f.politica; esta função garante o formato mesmo quando
 // o formulário ainda não tem nada preenchido.
+function acessoForm(f) {
+  if (!f.acesso) f.acesso = { referencia: "", entrada: "" };
+  return f.acesso;
+}
+
 function politicaForm(f) {
   if (!f.politica) f.politica = { reposicao: "", foraDoPrazo: "" };
   const pol = f.politica;
@@ -4602,7 +4670,7 @@ function politicaForm(f) {
 }
 
 function renderRegisterSheet() {
-  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" } };
+  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" }, acesso:{ referencia:"", entrada:"" } };
   window.__form = f;
   const isEditing = !!f.__editingId;
   if (state.registerStatus === "done") {
@@ -4640,6 +4708,13 @@ function renderRegisterSheet() {
         </div>
         ${state.cepStatus === "loading" ? `<p class="footnote">Buscando endereço pelo CEP...</p>` : ""}
         ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}
+
+        <p class="field-label">Como achar o lugar</p>
+        <p class="footnote" style="margin:0 0 6px">Um ponto de referência ajuda mais que o número: quem chega de primeira vez costuma passar direto.</p>
+        <textarea class="form-field" id="f-acesso-referencia" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: fica dentro do clube, entrada pela rua de trás, ao lado do posto.">${esc(acessoForm(f).referencia)}</textarea>
+
+        <p class="field-label">O que fazer ao chegar</p>
+        <textarea class="form-field" id="f-acesso-entrada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
 
         <p class="field-label">Fotos da academia</p>
         <label class="foto-caixa ${(f.photos||[]).length >= 5 ? "cheia" : ""}" for="f-photo-file">
@@ -4884,7 +4959,7 @@ const PRIVACY_HTML = `
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>
-<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), OpenStreetMap/Overpass (restaurantes, padarias, academias de musculação e pontos turísticos perto de cada academia), Supabase (banco de dados e login administrativo), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
+<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), OpenStreetMap/Overpass (restaurantes, padarias e pontos turísticos perto de cada academia), Supabase (banco de dados e login administrativo), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
 <p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
 <p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o responsável autenticado pode aprovar, editar ou remover conteúdo. Favoritos continuam salvos localmente no seu navegador.</p>
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
@@ -5038,6 +5113,34 @@ function attachEvents() {
     };
   });
 
+  const geocodeBtn = document.getElementById("geocode-btn");
+  if (geocodeBtn) geocodeBtn.onclick = async () => {
+    const c = state.allCourts.find(x => x.id === geocodeBtn.dataset.court)
+          || (state.pending || []).find(x => x.id === geocodeBtn.dataset.court);
+    if (!c) return;
+    geocodeBtn.disabled = true;
+    geocodeBtn.textContent = "Procurando o endereço...";
+    try {
+      const geo = await geocodeFormAddress({
+        cep: "", address: c.address || "", numero: c.numero || "",
+        bairro: c.bairro || "", cidade: c.cidade || "",
+      });
+      const { error } = await sb.from('academias').update({ lat: geo.lat, lng: geo.lng }).eq('id', c.id);
+      if (error) throw error;
+      await loadEverything();
+      if (state.selected && state.selected.id === c.id) {
+        const atual = state.allCourts.find(x => x.id === c.id) || state.pending.find(x => x.id === c.id);
+        if (atual) state.selected = decorate(atual);
+      }
+      alert(`Coordenada gravada: ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)}${geo.approximate ? "\n\nAtenção: veio do bairro/cidade, não do número exato. Confira no mapa." : ""}`);
+      render();
+    } catch (e) {
+      alert("Não consegui localizar: " + (e.message || "erro desconhecido"));
+      geocodeBtn.disabled = false;
+      render();
+    }
+  };
+
   const qrSiteBtn = document.getElementById("qr-site-btn");
   if (qrSiteBtn) qrSiteBtn.onclick = () => { state.showAdminPanel = false; state.qrCourt = "site"; render(); };
 
@@ -5098,7 +5201,7 @@ function attachEvents() {
   });
 
   const abrirCadastro = () => {
-    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" } };
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" }, acesso:{ referencia:"", entrada:"" } };
     state.showRegister = true;
     state.registerStatus = "idle";
     render();
@@ -5425,6 +5528,7 @@ function attachEvents() {
       site: c.site || "",
       photos: [...(c.photos || (c.photoUrl ? [c.photoUrl] : []))],
       politica: { ...politicaDe(c) },
+      acesso: { ...acessoDe(c) },
     };
     state.showRegister = true;
     state.registerStatus = "idle";
@@ -5599,7 +5703,7 @@ function attachEvents() {
   });
 
   const fab = document.getElementById("fab-add");
-  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" } }; state.showRegister = true; state.registerStatus = "idle"; render(); };
+  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{ reposicao:"", foraDoPrazo:"" }, acesso:{ referencia:"", entrada:"" } }; state.showRegister = true; state.registerStatus = "idle"; render(); };
 
   const fabAdmin = document.getElementById("fab-admin");
   if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
@@ -5693,6 +5797,11 @@ function attachEvents() {
       render();
     };
   });
+  const acessoRef = document.getElementById("f-acesso-referencia");
+  if (acessoRef) acessoRef.oninput = (e) => { acessoForm(window.__form).referencia = e.target.value; };
+  const acessoEnt = document.getElementById("f-acesso-entrada");
+  if (acessoEnt) acessoEnt.oninput = (e) => { acessoForm(window.__form).entrada = e.target.value; };
+
   const politicaFora = document.getElementById("f-politica-fora");
   if (politicaFora) politicaFora.oninput = (e) => { politicaForm(window.__form).foraDoPrazo = e.target.value; };
 
@@ -5957,17 +6066,19 @@ async function doSearch() {
 
 // Enquanto a coluna "politica" não existir na tabela, salva sem ela em vez de
 // falhar — e avisa o admin com o SQL que resolve. Mesmo caminho do "plano".
-function faltaColunaPolitica(erro) {
-  return ((erro && erro.message) || "").toLowerCase().includes("politica");
+function faltaColunaNova(erro) {
+  const m = ((erro && erro.message) || "").toLowerCase();
+  return m.includes("politica") || m.includes("acesso");
 }
 
-function avisarSqlPolitica() {
-  if (!isAdmin || window.__avisouPolitica) return;
-  window.__avisouPolitica = true;
+function avisarSqlColunas() {
+  if (!isAdmin || window.__avisouColunas) return;
+  window.__avisouColunas = true;
   alert(
-    "Salvei a academia, mas a política de cancelamento ficou de fora.\n\n" +
-    "A tabela ainda não tem a coluna. Rode isto no SQL Editor do Supabase:\n\n" +
-    "alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;"
+    "Salvei a academia, mas a política de cancelamento e as dicas de acesso ficaram de fora.\n\n" +
+    "A tabela ainda não tem essas colunas. Rode isto no SQL Editor do Supabase:\n\n" +
+    "alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;\n" +
+    "alter table academias add column if not exists acesso jsonb not null default '{}'::jsonb;"
   );
 }
 
@@ -5994,11 +6105,12 @@ async function doRegisterSubmit() {
     if (endereco) payload.endereco = endereco; else delete payload.endereco;
     try {
       let { error } = await sb.from('academias').update(payload).eq('id', f.__editingId);
-      if (error && faltaColunaPolitica(error)) {
-        const semPolitica = { ...payload };
-        delete semPolitica.politica;
-        ({ error } = await sb.from('academias').update(semPolitica).eq('id', f.__editingId));
-        if (!error) avisarSqlPolitica();
+      if (error && faltaColunaNova(error)) {
+        const semNovas = { ...payload };
+        delete semNovas.politica;
+        delete semNovas.acesso;
+        ({ error } = await sb.from('academias').update(semNovas).eq('id', f.__editingId));
+        if (!error) avisarSqlColunas();
       }
       if (error) throw error;
       await loadEverything();
@@ -6048,11 +6160,12 @@ async function doRegisterSubmit() {
       return q;
     };
     let { data, error } = await enviar(payload);
-    if (error && faltaColunaPolitica(error)) {
-      const semPolitica = { ...payload };
-      delete semPolitica.politica;
-      ({ data, error } = await enviar(semPolitica));
-      if (!error) avisarSqlPolitica();
+    if (error && faltaColunaNova(error)) {
+      const semNovas = { ...payload };
+      delete semNovas.politica;
+      delete semNovas.acesso;
+      ({ data, error } = await enviar(semNovas));
+      if (!error) avisarSqlColunas();
     }
     if (error) throw error;
     if (isAdmin) {

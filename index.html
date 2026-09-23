@@ -2748,7 +2748,6 @@ function blocoDiferenciais() {
   return `
     <div class="home-sec" id="home-porque">
       <h3 class="display">Por que o GuiaTennis</h3>
-      <p class="sec-sub">Quatro coisas que a gente resolveu porque faltavam.</p>
       <div class="dif-grade">
         ${itens.map(i => `
           <div class="dif-item">
@@ -2856,10 +2855,6 @@ function perguntasDoSite() {
       a: "Qualquer pessoa pode enviar o cadastro, inclusive a própria academia. A gente confere os dados antes de publicar, e a listagem é gratuita.",
     },
     {
-      q: 'Por que algumas academias aparecem como "Sob consulta"?',
-      a: "Porque ainda não publicaram os valores no guia. Nesse caso é só chamar no WhatsApp e perguntar — o botão já está na ficha.",
-    },
-    {
       q: "A ordem das academias é paga?",
       a: "Não. A lista sai por distância, nota, preço e estrutura, conforme a ordenação que você escolher. Se um dia existir posição paga, vai estar escrito na tela.",
     },
@@ -2878,7 +2873,6 @@ function blocoFaqSite() {
   return `
     <div class="home-sec" id="home-duvidas">
       <h3 class="display">Perguntas frequentes</h3>
-      <p class="sec-sub">O que mais perguntam antes de usar o guia.</p>
       <div class="ht-faq">
         ${faq.map((f, i) => `
           <details data-faqsite="${i}" ${state.faqSiteOpen[i] ? "open" : ""}>
@@ -3025,8 +3019,8 @@ function renderHome() {
 
     ${recomendadas.length ? `
       <div class="home-sec">
-        <h3 class="display">Recomendadas pelo GuiaTennis</h3>
-        <div class="home-strip">${recomendadas.map(c => renderMini(c, "Recomendada")).join("")}</div>
+        <h3 class="display">Recomendadas</h3>
+        <div class="home-strip">${recomendadas.map(c => renderMini(c)).join("")}</div>
       </div>` : ""}
 
     ${blocoVideo()}
@@ -3542,9 +3536,9 @@ function renderCard(c, badge) {
                          <div class="offer-price">R$ ${esc(priceMin(principal.faixa))}</div>
                          <div class="offer-sub">por hora</div>`
                       : `<div class="offer-price sem-valor" style="font-size:19px">${SEM_PRECO}</div>
-                         <div class="offer-sub">combine o valor com a academia</div>`)
+                         <div class="offer-sub">${SEM_PRECO_SUB}</div>`)
                   : `<div class="offer-price sem-valor" style="font-size:19px">${SEM_PRECO}</div>
-                     <div class="offer-sub">combine o valor com a academia</div>`}
+                     <div class="offer-sub">${SEM_PRECO_SUB}</div>`}
               </div>`}
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>
@@ -4338,9 +4332,9 @@ function descricaoAcademia(c) {
   if (comValor.length) {
     frases.push(`A academia cobra, por hora de quadra, ${listaTexto(comValor.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
     const semValor = opcoes.filter(o => !temPreco(o.faixa));
-    if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} é sob consulta.`);
+    if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} não foi incluído — consulte a academia.`);
   } else if (mod) {
-    frases.push(`A academia atende ${mod.toLowerCase()}, com valor sob consulta.`);
+    frases.push(`A academia atende ${mod.toLowerCase()}. O valor não foi incluído — consulte a academia.`);
   }
 
   const com = rotulosNaOrdem(AMENITY_OPTS, c.amenities).map(l => l.toLowerCase());
@@ -4416,7 +4410,7 @@ function htOpcoes(c) {
       <div class="ht-room">
         <div class="ht-room-info">
           <p class="ht-room-name">${SEM_PRECO}</p>
-          <p class="ht-room-desc">A academia ainda não informou aulas nem locação no GuiaTennis. Pergunte no WhatsApp o que ela atende e quanto custa.</p>
+          <p class="ht-room-desc">O preço não foi incluído. É só consultar a academia no WhatsApp.</p>
         </div>
       </div>
       ${blocoContato(c)}`;
@@ -4429,7 +4423,7 @@ function htOpcoes(c) {
       </div>
       <div class="ht-room-price">
         <div class="ht-room-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${esc(precoTexto(o.faixa))}</div>
-        <div class="ht-room-unit">${temPreco(o.faixa) ? "por hora" : "combine no WhatsApp"}</div>
+        <div class="ht-room-unit">${temPreco(o.faixa) ? "por hora" : SEM_PRECO_SUB}</div>
       </div>
     </div>`).join("");
   return cartoes + blocoContato(c);
@@ -4461,7 +4455,7 @@ function htLocalizacao(c) {
   const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
   const perto = academiasPerto(c, 3);
   return `
-    <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">A academia ainda não tem coordenada no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
+    <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">Essa academia ainda não tem ponto no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
     <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
     ${navLinks(c)}
     ${htAcesso(c)}
@@ -4582,8 +4576,10 @@ function reviewsSection(c) {
 }
 
 // O texto de preço é um só no site inteiro: faixa completa, sempre por hora.
-// Sem valor informado, é sempre "Sob consulta" — nenhuma outra palavra.
-const SEM_PRECO = "Sob consulta";
+// Sem valor, a tela diz que o preço não foi incluído e manda consultar a
+// academia. Sem explicar o motivo: quem chega quer saber o que fazer.
+const SEM_PRECO = "Não incluído";
+const SEM_PRECO_SUB = "consulte a academia";
 
 function precoTexto(faixa) {
   const min = priceMin(faixa);
@@ -4603,8 +4599,8 @@ function opcoesPreco(c) {
   const temLoc = !!c.priceLocacao || (c.modalidades || []).includes("locacao");
   if (temAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula || "", assunto: "as aulas" });
   if (temLoc) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao || "", assunto: "alugar a quadra" });
-  if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor informado pela academia", faixa: c.priceRange, assunto: "os valores" });
-  // Quem tem valor informado aparece primeiro; "sob consulta" vai para o fim.
+  if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor por hora de quadra", faixa: c.priceRange, assunto: "os valores" });
+  // Quem tem valor aparece primeiro; quem não tem vai para o fim.
   return out.sort((a, b) => (parseInt(priceMin(a.faixa), 10) || 1e9) - (parseInt(priceMin(b.faixa), 10) || 1e9));
 }
 
@@ -4634,7 +4630,7 @@ function blocoContato(c) {
       <p class="contato-sub">Pergunte horário, disponibilidade e o valor do seu caso.</p>
       ${c.phone
         ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
-        : `<p class="contato-sub" style="margin-top:10px">A academia ainda não informou um telefone no GuiaTennis.</p>`}
+        : `<p class="contato-sub" style="margin-top:10px">O telefone não foi incluído.</p>`}
     </div>
   `;
 }
@@ -4654,6 +4650,7 @@ function htCartaoContato(c) {
       ` : `
         <p class="ht-book-lbl">Preço</p>
         <div class="ht-book-row"><span class="ht-book-val sem-valor">${SEM_PRECO}</span></div>
+        <p class="ht-book-sub">${SEM_PRECO_SUB}</p>
       `}
       <div class="ht-book-div"></div>
       ${c.appCount ? `
@@ -4663,9 +4660,9 @@ function htCartaoContato(c) {
         </div>` : ""}
       ${c.phone
         ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer" style="margin-top:12px">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
-        : `<p class="ht-book-sub" style="margin-top:12px">A academia ainda não informou um telefone.</p>`}
+        : `<p class="ht-book-sub" style="margin-top:12px">O telefone não foi incluído.</p>`}
       <button type="button" class="cta-btn cta-secondary" data-nav="${c.id}" style="margin-top:8px">${icon('pin', 15, 'var(--green)')} Ver no mapa e direções</button>
-      <p class="ht-book-note">Você fala direto com a academia. O GuiaTennis não reserva horário nem cobra taxa.</p>
+      <p class="ht-book-note">Você fala direto com a academia.</p>
     </div>`;
 }
 
@@ -4677,7 +4674,7 @@ function htPolitica(c) {
     return `
       <div class="ht-poi-carregando">
         ${icon('clipboard', 28, 'var(--muted-dark)')}
-        <p>Essa academia ainda não informou como funcionam os cancelamentos e as reposições. Vale perguntar antes de marcar o primeiro horário.</p>
+        <p>A política de cancelamento não foi incluída. Vale perguntar na academia antes de marcar o primeiro horário.</p>
         ${c.phone ? `<a class="ht-poi-tentar" data-track="whatsapp" data-court="${c.id}" href="${waLink(c, "a política de cancelamento e reposição")}" target="_blank" rel="noreferrer">Perguntar no WhatsApp</a>` : ""}
         ${isAdmin ? `<button type="button" class="ht-poi-tentar editar-academia" data-court="${c.id}">Preencher agora</button>` : ""}
       </div>`;
@@ -4752,7 +4749,7 @@ function perguntasAcademia(c) {
   if (opcoes.length) {
     const linhas = opcoes.map(o => temPreco(o.faixa)
       ? `${o.nome}: ${precoTexto(o.faixa)} por hora`
-      : `${o.nome}: sob consulta`);
+      : `${o.nome}: não incluído`);
     faq.push({
       q: `Quanto custa jogar em ${c.name}?`,
       a: linhas.join(". ") + ". O valor pode mudar conforme horário e professor — confirme no WhatsApp.",
@@ -4760,7 +4757,7 @@ function perguntasAcademia(c) {
   } else {
     faq.push({
       q: `Quanto custa jogar em ${c.name}?`,
-      a: "A academia ainda não publicou os valores no GuiaTennis. O preço é sob consulta — pergunte direto no WhatsApp dela.",
+      a: "O preço não foi incluído. É só consultar a academia — o botão do WhatsApp está aqui na ficha.",
     });
   }
   const mod = modalidadesTexto(c);
@@ -4791,7 +4788,7 @@ function perguntasAcademia(c) {
       q: `${c.name} tem estacionamento?`,
       a: temEstGratis ? "Sim, estacionamento grátis no local."
         : temEstPago ? "Sim, mas o estacionamento é pago."
-        : "A academia não informou estacionamento no cadastro. Vale perguntar no WhatsApp.",
+        : "O estacionamento não foi incluído. Vale perguntar na academia.",
     });
   }
   if (c.endereco || c.bairro) {
@@ -5019,7 +5016,7 @@ function renderCourtPage(c) {
         <div class="court-cta ">
           <div class="court-cta-price">
             <span class="court-cta-val ${faixa ? "" : "sem-valor"}">${faixa ? esc(faixa.texto) : SEM_PRECO}</span>
-            <span class="court-cta-unit">${faixa ? `${esc(faixa.opcao.nome.toLowerCase())}, por hora` : "combine no WhatsApp"}</span>
+            <span class="court-cta-unit">${faixa ? `${esc(faixa.opcao.nome.toLowerCase())}, por hora` : SEM_PRECO_SUB}</span>
           </div>
           <a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>
           <button type="button" class="cta-btn cta-secondary" id="share-btn-2" data-court="${c.id}" aria-label="Compartilhar">${icon('share', 15, 'var(--green)')}</button>
@@ -5134,7 +5131,7 @@ function renderRegisterSheet() {
 
         ${(f.modalidades.includes("aulas_proprias") || f.modalidades.includes("locacao")) ? `
           <p class="field-label">Faixa de preço por hora (opcional)</p>
-          <p class="footnote" style="margin:0 0 8px">Deixe em branco se preferir não publicar valores — a ficha mostra "Sob consulta".</p>` : ""}
+          <p class="footnote" style="margin:0 0 8px">Deixe em branco se preferir não publicar valores — a ficha mostra "Não incluído".</p>` : ""}
         ${f.modalidades.includes("aulas_proprias") ? `
           <div class="price-input-row">
             <span class="price-input-label">Aula</span>

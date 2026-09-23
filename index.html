@@ -2086,8 +2086,10 @@ function navLinks(c, opts) {
 // navegador e aponta direto para a ficha — não expira nem depende de serviço.
 function renderQrSheet() {
   if (!state.qrCourt || !isAdmin) return "";
-  const c = state.allCourts.find(x => x.id === state.qrCourt)
-        || (state.pending || []).find(x => x.id === state.qrCourt);
+  const doSite = state.qrCourt === "site";
+  const c = doSite
+    ? { id: "site", name: "GuiaTennis — site inteiro" }
+    : (state.allCourts.find(x => x.id === state.qrCourt) || (state.pending || []).find(x => x.id === state.qrCourt));
   if (!c) return "";
   const url = linkDaFicha(c);
   let svg = "";
@@ -2096,7 +2098,7 @@ function renderQrSheet() {
     <div class="overlay open" id="qr-overlay">
       <div class="sheet"><div class="sheet-content">
         <button class="sheet-close" id="qr-close">✕</button>
-        <p class="sheet-title display">QR code da ficha</p>
+        <p class="sheet-title display">${doSite ? "QR code do site" : "QR code da ficha"}</p>
         <p class="subtitle" style="margin-top:4px">${esc(c.name)}</p>
         ${svg ? `<div class="qr-caixa">${svg}</div>` : `<p class="footnote" style="color:var(--red)">Não consegui gerar o código para esse endereço.</p>`}
         <p class="qr-link">${esc(url)}</p>
@@ -2104,17 +2106,20 @@ function renderQrSheet() {
           <button type="button" class="cta-btn cta-primary" data-qr-baixar="png" data-court="${c.id}">Baixar PNG (1200px)</button>
           <button type="button" class="cta-btn cta-secondary" data-qr-baixar="svg" data-court="${c.id}">Baixar SVG (para impressão)</button>
         </div>
-        <p class="footnote">Aponta direto para guiatennis.com.br, então funciona para sempre — não expira nem depende de outro site. Imprima e deixe na recepção da academia para os alunos avaliarem.</p>
+        <p class="footnote">Aponta direto para guiatennis.com.br, então funciona para sempre — não expira nem depende de outro site.${doSite
+          ? " Serve para cartão, adesivo, post e qualquer material de divulgação do guia."
+          : " Imprima e deixe na recepção da academia para os alunos avaliarem."}</p>
       </div></div>
     </div>
   `;
 }
 
 function linkDaFicha(c) {
-  return `https://guiatennis.com.br/?court=${c.id}`;
+  return c.id === "site" ? "https://guiatennis.com.br" : `https://guiatennis.com.br/?court=${c.id}`;
 }
 
 function nomeArquivoQr(c) {
+  if (c.id === "site") return "guiatennis-qr-site";
   const limpo = (c.name || "academia").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return `guiatennis-qr-${limpo || "academia"}`;
@@ -4949,6 +4954,7 @@ function renderAdminPanel(pending) {
         <button class="sheet-close" id="admin-close">✕</button>
         <p class="sheet-title display">Solicitações pendentes</p>
         <p class="subtitle" style="margin-top:4px">${pending.length} aguardando sua revisão</p>
+        <button type="button" class="cta-btn cta-secondary" id="qr-site-btn" style="margin-top:12px">${icon('clipboard', 15, 'var(--green)')} QR code do site inteiro</button>
         ${pending.length === 0 ? `<p class="empty">Nenhuma solicitação no momento.</p>` : ""}
         ${pending.map(p => `
           <div class="pending-item">
@@ -5032,6 +5038,9 @@ function attachEvents() {
     };
   });
 
+  const qrSiteBtn = document.getElementById("qr-site-btn");
+  if (qrSiteBtn) qrSiteBtn.onclick = () => { state.showAdminPanel = false; state.qrCourt = "site"; render(); };
+
   const qrBtn = document.getElementById("qr-btn");
   if (qrBtn) qrBtn.onclick = () => { state.qrCourt = qrBtn.dataset.court; render(); };
   const qrClose = document.getElementById("qr-close");
@@ -5040,8 +5049,9 @@ function attachEvents() {
   if (qrOverlay) qrOverlay.onclick = (e) => { if (e.target === qrOverlay) { state.qrCourt = null; render(); } };
   document.querySelectorAll("[data-qr-baixar]").forEach(el => {
     el.onclick = () => {
-      const c = state.allCourts.find(x => x.id === el.dataset.court)
-            || (state.pending || []).find(x => x.id === el.dataset.court);
+      const c = el.dataset.court === "site"
+        ? { id: "site", name: "GuiaTennis" }
+        : (state.allCourts.find(x => x.id === el.dataset.court) || (state.pending || []).find(x => x.id === el.dataset.court));
       if (c) baixarQr(c, el.dataset.qrBaixar);
     };
   });

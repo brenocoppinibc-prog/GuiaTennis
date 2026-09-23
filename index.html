@@ -531,11 +531,11 @@
   .menu-rodape { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); }
   .menu-versao { font-size: 12px; color: var(--muted-dark); margin: 10px 10px 0; }
 
-  /* faixa de números do guia */
-  .faixa-numeros { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 8px; margin: 0 20px 6px; padding: 14px 10px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; }
-  .num-item { flex: 1 1 0; min-width: 72px; text-align: center; }
-  .num-item strong { display: block; font-size: 22px; font-weight: 800; color: var(--green); line-height: 1.1; }
-  .num-item span { font-size: 12px; color: var(--muted); }
+  /* médias mostradas para quem pensa em cadastrar a academia */
+  .ba-numeros { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.18); }
+  .ban-item { flex: 1 1 0; min-width: 84px; }
+  .ban-item strong { display: block; font-size: 24px; font-weight: 800; color: var(--gold-light); line-height: 1.1; }
+  .ban-item span { font-size: 12px; color: rgba(255,255,255,0.72); line-height: 1.35; display: block; margin-top: 3px; }
 
   /* por que o GuiaTennis */
   .dif-grade { display: grid; gap: 12px; }
@@ -2717,31 +2717,6 @@ function renderMenu() {
 
 // ---------- blocos da página inicial ----------
 
-// Números reais do guia, lidos do banco na hora.
-function numerosDoGuia() {
-  const todas = state.allCourts;
-  const quadras = todas.reduce((s, c) => s + totalQuadras(c), 0);
-  const cidades = new Set(todas.map(c => (c.cidade || "").trim()).filter(Boolean)).size;
-  const avaliacoes = Object.values(state.reviewsCache || {}).reduce((s, l) => s + l.length, 0);
-  return { academias: todas.length, quadras, cidades, avaliacoes };
-}
-
-function blocoNumeros() {
-  const n = numerosDoGuia();
-  const itens = [
-    n.academias && { v: n.academias, l: plural(n.academias, "academia", "academias") },
-    n.quadras && { v: n.quadras, l: plural(n.quadras, "quadra", "quadras") },
-    n.cidades && { v: n.cidades, l: plural(n.cidades, "cidade", "cidades") },
-    n.avaliacoes && { v: n.avaliacoes, l: plural(n.avaliacoes, "avaliação", "avaliações") },
-  ].filter(Boolean);
-  if (!itens.length) return "";
-  return `
-    <div class="faixa-numeros">
-      ${itens.map(i => `<div class="num-item"><strong>${i.v}</strong><span>${i.l}</span></div>`).join("")}
-    </div>
-  `;
-}
-
 // "Por que o GuiaTennis" — o que o guia faz de diferente, para quem joga.
 function blocoDiferenciais() {
   const itens = [
@@ -2766,6 +2741,29 @@ function blocoDiferenciais() {
   `;
 }
 
+// Números que a academia quer saber antes de se cadastrar. Ficam aqui na mão
+// porque só você enxerga as estatísticas de clique: abra o painel do admin,
+// toque no gráfico e use "copiar resumo" para pegar os valores atualizados.
+// Deixando a lista vazia, o bloco some da página.
+const NUMEROS_PARA_ACADEMIAS = {
+  periodo: "",          // ex.: "nos últimos 30 dias"
+  itens: [
+    // { valor: "245", rotulo: "buscas por quadra" },
+    // { valor: "1 em 5", rotulo: "abre a ficha de uma academia" },
+    // { valor: "17%", rotulo: "de quem abre chama no WhatsApp" },
+  ],
+};
+
+function blocoMediasAcademias() {
+  const { periodo, itens } = NUMEROS_PARA_ACADEMIAS;
+  if (!itens || !itens.length) return "";
+  return `
+    <div class="ba-numeros">
+      ${itens.map(i => `<div class="ban-item"><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
+    </div>
+    ${periodo ? `<p class="ba-nota" style="margin-top:8px">Média do guia ${esc(periodo)}.</p>` : ""}`;
+}
+
 // "Por que as academias estão aqui" — o lado de quem tem a quadra.
 function blocoParaAcademias() {
   const itens = [
@@ -2785,6 +2783,7 @@ function blocoParaAcademias() {
             <span><strong>${i.t}</strong><br><span class="ba-d">${i.d}</span></span>
           </div>`).join("")}
       </div>
+      ${blocoMediasAcademias()}
       <button type="button" class="ba-btn" id="home-cadastrar">Cadastrar minha academia</button>
       <p class="ba-nota">Leva uns 3 minutos. Depois é só responder quem chamar.</p>
     </div>
@@ -2972,7 +2971,6 @@ function renderHome() {
       ${renderSearchCard()}
       ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
     </div>
-    ${blocoNumeros()}
 
     ${recentes.length ? `
       <div class="home-sec">
@@ -2983,7 +2981,6 @@ function renderHome() {
     ${recomendadas.length ? `
       <div class="home-sec">
         <h3 class="display">Recomendadas pelo GuiaTennis</h3>
-        <p class="sec-sub">${RECOMENDADAS.length ? "Escolhidas a dedo pelo guia." : "Escolhidas por nota, estrutura, preço e cadastro completo."}</p>
         <div class="home-strip">${recomendadas.map(c => renderMini(c, "Recomendada")).join("")}</div>
       </div>` : ""}
 

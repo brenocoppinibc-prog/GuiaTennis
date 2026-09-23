@@ -41,3 +41,14 @@
   from = "/SQL-ESTATISTICAS.sql"
   to = "/404.html"
   status = 404
+
+# O mesmo para os testes e para a função da IA, que roda no Supabase.
+[[redirects]]
+  from = "/testes/*"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/supabase/*"
+  to = "/404.html"
+  status = 404

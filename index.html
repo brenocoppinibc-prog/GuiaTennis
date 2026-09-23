@@ -532,6 +532,9 @@
   @media (min-width: 720px) { .home-hero { padding: 40px 20px 30px; } .home-hero h2 { font-size: 40px; max-width: 620px; } }
   .home-hero p { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
   .home-hero .home-hero-sub { margin-top: 12px; }
+  .ia-previa { border: 1px solid var(--green-line); background: var(--green-soft); border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .ia-previa-t { margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--green); }
+  .ia-caixa { margin-top: 14px; }
   .home-sec { padding: 6px 20px 22px; }
   .home-sec h3 { font-size: 21px; font-weight: 700; margin: 0 0 12px; }
   @media (min-width: 720px) { .home-sec h3 { font-size: 25px; } }
@@ -893,6 +896,10 @@
   .ht-know-i { display: flex; gap: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 12px 13px; font-size: 14px; line-height: 1.45; }
   .ht-know-ic { flex-shrink: 0; margin-top: 2px; display: flex; }
   .ht-know-d { font-size: 13px; color: var(--muted); }
+  .est-linha { display: block; }
+  .est-linha + .est-linha { margin-top: 3px; }
+  .est-linha b { color: var(--text); font-weight: 600; }
+  .est-tag { display: inline-block; font-size: 11px; font-weight: 700; color: var(--green); background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 999px; padding: 1px 8px; }
 
   /* perguntas frequentes em sanfona */
   .ht-faq { border-top: 1px solid var(--border); margin-top: 6px; }
@@ -1104,20 +1111,59 @@ function acessoDe(c) {
 
 function temAcesso(c) {
   const a = acessoDe(c);
-  return !!(a.fachada || a.entrada || a.estacionar);
+  return !!(a.fachada || a.entrada || estacionarLinhas(c).length);
 }
 
-// O estacionamento no próprio lugar já é uma comodidade; o resto é o texto.
-function estacionarDe(c) {
+// Estacionamento no modelo único, o mesmo para todas as academias. Quem
+// preenche é a padronização com IA (função padronizar-academia no Supabase),
+// a partir do que a academia escreveu. Fica em acesso.estacionamento.
+const RUA_OPTS = [
+  { key: "livre", label: "Livre" },
+  { key: "zona_azul", label: "Zona azul" },
+  { key: "restrita", label: "Difícil parar" },
+];
+
+function estacionamentoPadrao(c) {
+  const e = c && c.acesso && c.acesso.estacionamento;
+  if (!e || typeof e !== "object") return null;
+  const t = (v) => String(v || "").trim();
+  const p = {
+    rua: RUA_OPTS.some(o => o.key === e.rua) ? e.rua : "",
+    ruaDetalhe: t(e.rua_detalhe),
+    pagoPerto: t(e.pago_perto),
+    manobrista: t(e.manobrista),
+    convenio: t(e.convenio),
+  };
+  return (p.rua || p.ruaDetalhe || p.pagoPerto || p.manobrista || p.convenio) ? p : null;
+}
+
+// As linhas do estacionamento, sempre na mesma ordem: no local, na rua,
+// pago perto, manobrista, convênio. Com vaga própria, a comodidade responde
+// sozinha. Sem o modelo, fica o texto da academia como ela escreveu.
+function estacionarLinhas(c) {
   const am = (c && c.amenities) || [];
-  const noLocal = am.includes("estacionamento_gratuito") ? "Tem estacionamento grátis no local"
-                : am.includes("estacionamento_pago") ? "Tem estacionamento pago no local" : null;
-  return { noLocal, texto: acessoDe(c).estacionar };
+  if (am.includes("estacionamento_gratuito")) return [{ rot: "No local", txt: "Estacionamento grátis." }];
+  if (am.includes("estacionamento_pago")) return [{ rot: "No local", txt: "Estacionamento pago." }];
+  const p = estacionamentoPadrao(c);
+  if (!p) {
+    const texto = acessoDe(c).estacionar;
+    return texto ? [{ rot: "", txt: texto }] : [];
+  }
+  const linhas = [];
+  if (p.rua || p.ruaDetalhe) {
+    const tag = (RUA_OPTS.find(o => o.key === p.rua) || {}).label;
+    linhas.push({ rot: "Na rua", tag, txt: p.ruaDetalhe });
+  }
+  if (p.pagoPerto) linhas.push({ rot: "Pago perto", txt: p.pagoPerto });
+  if (p.manobrista) linhas.push({ rot: "Manobrista", txt: p.manobrista });
+  if (p.convenio) linhas.push({ rot: "Convênio", txt: p.convenio });
+  return linhas;
 }
 
-function temEstacionar(c) {
-  const e = estacionarDe(c);
-  return !!(e.noLocal || e.texto);
+function estacionarTexto(c) {
+  return estacionarLinhas(c)
+    .map(l => [l.rot ? l.rot + ":" : "", l.tag ? l.tag + "." : "", l.txt].filter(Boolean).join(" "))
+    .join(" ");
 }
 
 // ---------- horário de funcionamento ----------
@@ -1391,7 +1437,8 @@ function mapRow(row) {
 
 function toRow(f) {
   const acesso = { ...(f.acesso || {}) };
-  if (temEstacionamentoProprio(f)) delete acesso.estacionar;
+  delete acesso.estacionamentoNota;
+  if (temEstacionamentoProprio(f)) { delete acesso.estacionar; delete acesso.estacionamento; }
   return {
     name: f.name, address: f.address, numero: f.numero, complemento: f.complemento,
     bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
@@ -1560,23 +1607,29 @@ function toggleFavorite(courtId) {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
 }
 
-function trackClick(courtId, type, detalhe) {
-  const linha = { academia_id: courtId, tipo: type };
-  if (detalhe) linha.detalhe = String(detalhe).slice(0, 120);
-  sb.from('cliques').insert(linha).then(({ error }) => {
-    // Enquanto a coluna "detalhe" não existir no banco, registra sem ela em
-    // vez de perder o evento.
-    if (error && detalhe) sb.from('cliques').insert({ academia_id: courtId, tipo: type }).then(() => {});
+function trackClick(courtId, type, detalhe, cep) {
+  const base = { academia_id: courtId, tipo: type };
+  const comDetalhe = detalhe ? { ...base, detalhe: String(detalhe).slice(0, 120) } : base;
+  // Enquanto as colunas "cep" e "detalhe" não existirem no banco, tenta de
+  // novo sem elas em vez de perder o evento.
+  const tentativas = [];
+  if (cep) tentativas.push({ ...comDetalhe, cep });
+  if (detalhe) tentativas.push(comDetalhe);
+  tentativas.push(base);
+  const enviar = (i) => sb.from('cliques').insert(tentativas[i]).then(({ error }) => {
+    if (error && i + 1 < tentativas.length) enviar(i + 1);
   });
+  enviar(0);
 }
 
-// Guarda só a região que a busca alcançou — bairro e cidade. Nunca o CEP, o
-// endereço digitado ou a coordenada: serve para saber onde tem procura por
-// quadra, não para seguir ninguém.
-function registrarBusca(geo) {
+// Guarda a região que a busca alcançou — bairro e cidade — e, quando a pessoa
+// digitou um CEP, o CEP. Nunca o endereço digitado nem a coordenada: serve
+// para saber onde tem procura por quadra, não para seguir ninguém.
+function registrarBusca(geo, cep) {
   if (isAdmin || !geo) return;
   const regiao = [geo.bairro, geo.cidade].filter(Boolean).join(", ");
-  trackClick(null, "busca", regiao || "região não identificada");
+  const digitos = String(cep || "").replace(/\D/g, "");
+  trackClick(null, "busca", regiao || "região não identificada", digitos.length === 8 ? digitos.slice(0, 5) + "-" + digitos.slice(5) : null);
 }
 function getAllClicks() {
   return state.clicksCache || {};
@@ -4858,16 +4911,21 @@ function htAcesso(c) {
       : "";
   }
   const itens = [];
-  if (a.fachada) itens.push({ ic: 'eye', t: "Como é a fachada", d: a.fachada });
-  if (a.entrada) itens.push({ ic: 'key', t: "Na chegada", d: a.entrada });
-  if (a.estacionar) itens.push({ ic: 'parking', t: "Onde estacionar", d: a.estacionar });
+  if (a.fachada) itens.push({ ic: 'eye', t: "Como é a fachada", d: esc(a.fachada) });
+  if (a.entrada) itens.push({ ic: 'key', t: "Na chegada", d: esc(a.entrada) });
+  const est = estacionarLinhas(c);
+  if (est.length) itens.push({ ic: 'parking', t: "Estacionamento", d: htEstacionarLinhas(est) });
   return `
     <p class="field-label">Como chegar, entrar e estacionar</p>
     <div class="ht-know">${itens.map(i => `
       <div class="ht-know-i">
         <span class="ht-know-ic">${icon(i.ic, 16, 'var(--green)')}</span>
-        <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${esc(i.d)}</span></span>
+        <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${i.d}</span></span>
       </div>`).join("")}</div>`;
+}
+
+function htEstacionarLinhas(linhas) {
+  return linhas.map(l => `<span class="est-linha">${l.rot ? `<b>${esc(l.rot)}</b> ` : ""}${l.tag ? `<span class="est-tag">${esc(l.tag)}</span> ` : ""}${esc(l.txt)}</span>`).join("");
 }
 
 // O horário fica logo abaixo do resumo: é a segunda coisa que se pergunta,
@@ -5152,25 +5210,22 @@ function perguntasAcademia(c) {
   }
   const temEstGratis = (c.amenities || []).includes("estacionamento_gratuito");
   const temEstPago = (c.amenities || []).includes("estacionamento_pago");
-  if (temEstGratis || temEstPago || (c.amenities || []).length) {
+  const semVagaPropria = !temEstGratis && !temEstPago && estacionarLinhas(c).length;
+  if (temEstGratis || temEstPago || semVagaPropria || (c.amenities || []).length) {
     faq.push({
       q: `${c.name} tem estacionamento?`,
       a: temEstGratis ? "Sim, estacionamento grátis no local."
         : temEstPago ? "Sim, mas o estacionamento é pago."
+        : semVagaPropria ? "Não tem estacionamento próprio. " + estacionarTexto(c)
         : "O estacionamento não foi incluído. Vale perguntar na academia.",
     });
   }
-  if (temAcesso(c)) {
+  if (acessoDe(c).fachada || acessoDe(c).entrada) {
     const a = acessoDe(c);
     faq.push({
       q: `Como encontrar e entrar em ${c.name}?`,
       a: [a.fachada, a.entrada].filter(Boolean).join(" "),
     });
-  }
-
-  if (temEstacionar(c)) {
-    const e = estacionarDe(c);
-    faq.push({ q: `Onde estacionar em ${c.name}?`, a: [e.noLocal ? e.noLocal + "." : "", e.texto].filter(Boolean).join(" ") });
   }
 
   if ((c.amenities || []).includes("raquete")) {
@@ -5403,6 +5458,91 @@ function renderCourtPage(c) {
 
 // A política vive em f.politica; esta função garante o formato mesmo quando
 // o formulário ainda não tem nada preenchido.
+// ---------- padronização com IA ----------
+
+// A função padronizar-academia (supabase/functions) recebe os textos livres
+// da academia e devolve tudo no mesmo modelo. Só o admin chama; sem a função
+// no ar, o botão avisa e nada mais muda.
+const FUNCAO_IA = "padronizar-academia";
+
+// `x` é o formulário ou uma academia do banco: os dois têm amenities,
+// modalidades, acesso, horario e politica.
+function textosParaIA(x) {
+  const a = x.acesso || {};
+  const pol = x.politica || {};
+  const am = x.amenities || [];
+  const fora = (o) => String((o && (o.foraDoPrazo || o.obs)) || "");
+  return {
+    fachada: a.fachada || "",
+    entrada: a.entrada || "",
+    estacionar: temEstacionamentoProprio(x) ? "" : (a.estacionar || a.estacionamentoNota || ""),
+    horario_nota: (x.horario && x.horario.nota) || "",
+    fora_do_prazo: pol.modo === "separado"
+      ? { geral: "", aula: fora(pol.aula), locacao: fora(pol.locacao) }
+      : { geral: fora(pol), aula: "", locacao: "" },
+    contexto: {
+      estacionamento_no_local: am.includes("estacionamento_gratuito") ? "gratis" : am.includes("estacionamento_pago") ? "pago" : "nao",
+      modalidades: x.modalidades || [],
+    },
+  };
+}
+
+function temTextoParaIA(t) {
+  return !!(t.fachada || t.entrada || t.estacionar || t.horario_nota
+    || t.fora_do_prazo.geral || t.fora_do_prazo.aula || t.fora_do_prazo.locacao);
+}
+
+async function padronizarComIA(textos) {
+  const { data, error } = await sb.functions.invoke(FUNCAO_IA, { body: textos });
+  if (error) {
+    let motivo = "";
+    try { motivo = (await error.context.json()).erro || ""; } catch { /* a função nem respondeu */ }
+    throw new Error(motivo || "A padronização com IA ainda não está ligada no Supabase. O passo a passo está no GUIATENNIS-CONTEXTO.md.");
+  }
+  if (!data || typeof data !== "object" || !data.estacionamento) throw new Error("A IA não devolveu o modelo esperado. Tente de novo.");
+  return data;
+}
+
+// Põe a resposta da IA no lugar de cada texto. Serve para o formulário e
+// para a academia do banco, no lote.
+function aplicarPadrao(x, r) {
+  const t = (v) => String(v || "").trim();
+  const a = { ...(x.acesso || {}) };
+  delete a.estacionamentoNota;
+  a.fachada = t(r.fachada);
+  a.entrada = t(r.entrada);
+  const e = r.estacionamento || {};
+  const est = {
+    rua: RUA_OPTS.some(o => o.key === e.rua) ? e.rua : "nao_informado",
+    rua_detalhe: t(e.rua_detalhe), pago_perto: t(e.pago_perto),
+    manobrista: t(e.manobrista), convenio: t(e.convenio),
+  };
+  if (!temEstacionamentoProprio(x) && (est.rua !== "nao_informado" || est.rua_detalhe || est.pago_perto || est.manobrista || est.convenio)) {
+    a.estacionamento = est;
+  } else {
+    delete a.estacionamento;
+  }
+  a.padronizadoEm = new Date().toISOString().slice(0, 10);
+  x.acesso = a;
+
+  const nota = t(r.horario_nota);
+  if (nota || (x.horario && x.horario.nota)) {
+    if (!x.horario || typeof x.horario !== "object") x.horario = {};
+    x.horario.nota = nota;
+  }
+
+  const fora = r.fora_do_prazo || {};
+  const pol = x.politica || (x.politica = {});
+  const poe = (o, v) => { if (o && typeof o === "object") { o.foraDoPrazo = t(v); delete o.obs; } };
+  if (pol.modo === "separado") {
+    poe(pol.aula, fora.aula);
+    poe(pol.locacao, fora.locacao);
+  } else {
+    poe(pol, fora.geral);
+  }
+  return x;
+}
+
 // Com estacionamento no local, a comodidade já responde; o texto de onde
 // parar só aparece para quem não tem vaga própria.
 function temEstacionamentoProprio(f) {
@@ -5649,6 +5789,22 @@ function renderRegisterSheet() {
         <p class="footnote" style="margin:0 0 6px">Escreva como funciona de verdade: se dá para parar na rua, se é zona azul e até que horas, se tem estacionamento pago por perto. Vira uma pergunta frequente na ficha.</p>
         <textarea class="form-field" id="f-acesso-estacionar" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
         ` : ""}
+        ${!temEstacionamentoProprio(f) && estacionamentoPadrao(f) ? `
+          <div class="ia-previa">
+            <p class="ia-previa-t">Estacionamento na ficha</p>
+            ${htEstacionarLinhas(estacionarLinhas(f))}
+          </div>` : ""}
+
+        ${isAdmin ? `
+          <div class="ia-caixa">
+            <button type="button" class="cta-btn cta-secondary" id="ia-padronizar" ${(f.__ia || {}).status === "loading" ? "disabled" : ""}>
+              ${(f.__ia || {}).status === "loading" ? bolaGirando(15) + " Padronizando..." : icon('sparkle', 15, 'var(--green)') + " Padronizar os textos com IA"}
+            </button>
+            <p class="footnote" style="margin-top:6px">${(f.__ia || {}).status === "done"
+              ? "Pronto. Confira fachada, chegada, estacionamento, observação do horário e cancelamento antes de salvar."
+              : "Reescreve fachada, chegada, estacionamento, observação do horário e cancelamento no mesmo modelo de todas as academias. Nada é inventado, e você confere antes de salvar."}</p>
+            ${(f.__ia || {}).erro ? `<div class="form-error">${icon('warning',13)} ${esc(f.__ia.erro)}</div>` : ""}
+          </div>` : ""}
 
         <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
         <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
@@ -5689,6 +5845,7 @@ function statsAgregado(periodo) {
   }
   const porAcademia = {};
   const porRegiao = {};
+  const porCep = {};
   let acessos = 0;
   let buscas = 0;
   lista.forEach(c => {
@@ -5697,6 +5854,7 @@ function statsAgregado(periodo) {
       buscas++;
       const onde = (c.detalhe || "").trim() || "Região não identificada";
       porRegiao[onde] = (porRegiao[onde] || 0) + 1;
+      if (c.cep) porCep[c.cep] = (porCep[c.cep] || 0) + 1;
       return;
     }
     if (!c.academia_id) return;
@@ -5706,7 +5864,10 @@ function statsAgregado(periodo) {
   const regioes = Object.keys(porRegiao)
     .map(nome => ({ nome, n: porRegiao[nome] }))
     .sort((a, b) => b.n - a.n);
-  return { porAcademia, acessos, buscas, regioes, totalEventos: lista.length };
+  const ceps = Object.keys(porCep)
+    .map(nome => ({ nome, n: porCep[nome] }))
+    .sort((a, b) => b.n - a.n);
+  return { porAcademia, acessos, buscas, regioes, ceps, totalEventos: lista.length };
 }
 
 function resumoTexto(court, d) {
@@ -5724,7 +5885,7 @@ function resumoTexto(court, d) {
 
 function renderStatsPanel() {
   const periodo = state.statsPeriodo || "30";
-  const { porAcademia, acessos, buscas, regioes } = statsAgregado(periodo);
+  const { porAcademia, acessos, buscas, regioes, ceps } = statsAgregado(periodo);
 
   const linhas = state.allCourts.map(c => {
     const d = Object.assign({ whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 }, porAcademia[c.id] || {});
@@ -5772,6 +5933,11 @@ function renderStatsPanel() {
           ? `<div class="stat-regioes">${regioes.map(r => `
               <div class="stat-regiao"><span>${esc(r.nome)}</span><strong>${r.n}</strong></div>`).join("")}</div>`
           : `<p class="pending-detail">Nenhuma busca registrada nesse período. Se as buscas antigas não aparecem aqui, é porque a coluna "detalhe" ainda não existia quando foram feitas.</p>`}
+
+        ${ceps.length ? `
+          <p class="field-label" style="margin-top:18px">CEPs buscados (${ceps.length})</p>
+          <div class="stat-regioes">${ceps.map(r => `
+            <div class="stat-regiao"><span>${esc(r.nome)}</span><strong>${r.n}</strong></div>`).join("")}</div>` : ""}
 
         <div class="chip-row" style="margin-top:16px">
           <span class="stats-ord-lbl">Ordenar:</span>
@@ -5832,7 +5998,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 23 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. Não guardamos o CEP, o endereço digitado nem a coordenada. Guardamos apenas o <strong>bairro e a cidade</strong> que a busca alcançou, sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, buscas feitas (só com o bairro e a cidade alcançados) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões buscadas continuam visíveis só para a administração.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. Guardamos o <strong>bairro e a cidade</strong> que a busca alcançou e, quando a busca é feita por CEP, o <strong>CEP digitado</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a coordenada.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, buscas feitas (só com o bairro, a cidade e, na busca por CEP, o CEP) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões e CEPs buscados continuam visíveis só para a administração.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>
@@ -5907,6 +6073,7 @@ function renderAdminPanel(pending) {
         <p class="sheet-title display">Solicitações pendentes</p>
         <p class="subtitle" style="margin-top:4px">${pending.length} aguardando sua revisão</p>
         <button type="button" class="cta-btn cta-secondary" id="qr-site-btn" style="margin-top:12px">${icon('clipboard', 15, 'var(--green)')} QR code do site inteiro</button>
+        <button type="button" class="cta-btn cta-secondary" id="ia-lote-btn" style="margin-top:8px">${icon('sparkle', 15, 'var(--green)')} Padronizar com IA as academias que faltam</button>
         ${pending.length === 0 ? `<p class="empty">Nenhuma solicitação no momento.</p>` : ""}
         ${pending.map(p => `
           <div class="pending-item">
@@ -5986,6 +6153,39 @@ function attachEvents() {
       carregarPerto(c);
     };
   });
+
+  const iaLote = document.getElementById("ia-lote-btn");
+  if (iaLote) iaLote.onclick = async () => {
+    const todas = [...state.allCourts, ...(state.pending || [])];
+    const faltando = todas.filter(c => !(c.acesso && c.acesso.padronizadoEm) && temTextoParaIA(textosParaIA(c)));
+    if (!faltando.length) { alert("Todas as academias com texto já estão padronizadas."); return; }
+    if (!confirm(`Padronizar com IA ${faltando.length} ${plural(faltando.length, "academia", "academias")}?\n\nFachada, chegada, estacionamento, observação do horário e cancelamento são reescritos no modelo único e salvos direto. Depois dá para conferir e editar cada ficha.`)) return;
+    iaLote.disabled = true;
+    const erros = [];
+    let ok = 0;
+    for (let i = 0; i < faltando.length; i++) {
+      const c = faltando[i];
+      iaLote.textContent = `Padronizando ${i + 1} de ${faltando.length}...`;
+      try {
+        const x = aplicarPadrao({
+          amenities: c.amenities || [], modalidades: c.modalidades || [],
+          acesso: JSON.parse(JSON.stringify(c.acesso || {})),
+          horario: JSON.parse(JSON.stringify(c.horario || {})),
+          politica: JSON.parse(JSON.stringify(c.politica || {})),
+        }, await padronizarComIA(textosParaIA(c)));
+        const { error } = await sb.from('academias').update({ acesso: x.acesso, horario: x.horario, politica: x.politica }).eq('id', c.id);
+        if (error) throw error;
+        ok++;
+      } catch (e) {
+        erros.push(`${c.name}: ${e.message || "não consegui"}`);
+        // Sem a função no ar, não adianta tentar as outras.
+        if (/ainda não está ligada|Só o admin/.test(e.message || "")) break;
+      }
+    }
+    await loadEverything();
+    alert(`${ok} de ${faltando.length} padronizadas.` + (erros.length ? `\n\nNão consegui:\n` + erros.join("\n") : ""));
+    render();
+  };
 
   const geocodeTodas = document.getElementById("geocode-todas");
   if (geocodeTodas) geocodeTodas.onclick = async () => {
@@ -6431,7 +6631,7 @@ function attachEvents() {
       site: c.site || "",
       photos: [...(c.photos || (c.photoUrl ? [c.photoUrl] : []))],
       politica: politicaParaForm(c),
-      acesso: { ...acessoDe(c) },
+      acesso: { ...JSON.parse(JSON.stringify(c.acesso || {})), ...acessoDe(c) },
       horario: JSON.parse(JSON.stringify(c.horario || {})),
     };
     state.showRegister = true;
@@ -6762,7 +6962,32 @@ function attachEvents() {
   const acessoFac = document.getElementById("f-acesso-fachada");
   if (acessoFac) acessoFac.oninput = (e) => { acessoForm(window.__form).fachada = e.target.value; };
   const acessoEst = document.getElementById("f-acesso-estacionar");
-  if (acessoEst) acessoEst.oninput = (e) => { acessoForm(window.__form).estacionar = e.target.value; };
+  if (acessoEst) acessoEst.oninput = (e) => {
+    const a = acessoForm(window.__form);
+    a.estacionar = e.target.value;
+    // O modelo foi montado a partir do texto antigo: mudou o texto, vale o
+    // texto até padronizar de novo.
+    delete a.estacionamento;
+  };
+  const iaBtn = document.getElementById("ia-padronizar");
+  if (iaBtn) iaBtn.onclick = async () => {
+    const f = window.__form;
+    const textos = textosParaIA({ ...f, acesso: acessoForm(f), horario: horarioForm(f), politica: politicaForm2(f) });
+    if (!temTextoParaIA(textos)) {
+      f.__ia = { erro: "Escreva a fachada, a chegada, o estacionamento, a observação do horário ou o cancelamento antes de padronizar." };
+      render();
+      return;
+    }
+    f.__ia = { status: "loading" };
+    render();
+    try {
+      aplicarPadrao(f, await padronizarComIA(textos));
+      f.__ia = { status: "done" };
+    } catch (e) {
+      f.__ia = { erro: e.message };
+    }
+    render();
+  };
   const horarioNota = document.getElementById("f-horario-nota");
   if (horarioNota) horarioNota.oninput = (e) => { horarioForm(window.__form).nota = e.target.value; };
   document.querySelectorAll(".hr-time").forEach(el => {
@@ -7034,7 +7259,7 @@ async function doSearch() {
     state.origin = geo;
     state.sortBy = "distance";
     state.searchStatus = "done";
-    registrarBusca(geo);
+    registrarBusca(geo, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
   } catch (e) {
     state.errorMsg = e.message || "Não consegui buscar esse endereço ou CEP.";
     state.searchStatus = "error";

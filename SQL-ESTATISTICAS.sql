@@ -3,7 +3,7 @@
 -- ============================================================
 -- Já rodado: a primeira versão da visão estatisticas_publicas.
 --
--- Este bloco: a coluna onde a busca guarda a região, as três colunas
+-- Este bloco: as colunas onde a busca guarda a região e o CEP, as três colunas
 -- jsonb da academia (política, acesso e horário), e a troca da visão por
 -- uma função que devolve os totais do site desde o começo.
 --
@@ -15,6 +15,8 @@
 -- quatro números e nunca uma linha de cliques.
 
 alter table cliques add column if not exists detalhe text;
+
+alter table cliques add column if not exists cep text;
 
 alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;
 

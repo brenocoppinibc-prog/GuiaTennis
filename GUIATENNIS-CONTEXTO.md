@@ -175,8 +175,51 @@ cai na visão antiga; sem nenhuma das duas, o bloco de números some.
 
 ## 5. ⚠️ Pendente de rodar no Supabase
 
-O arquivo **`SQL-ESTATISTICAS.sql`** na raiz tem o bloco pronto. O Breno
-**não rodou nada** até o último commit. Enquanto não rodar:
+O Breno **não rodou nada** até o último commit. O bloco está no arquivo
+`SQL-ESTATISTICAS.sql` na raiz e, para não depender dele, repetido aqui:
+
+```sql
+alter table cliques add column if not exists detalhe text;
+
+alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;
+
+alter table academias add column if not exists acesso jsonb not null default '{}'::jsonb;
+
+alter table academias add column if not exists horario jsonb not null default '{}'::jsonb;
+
+drop view if exists public.estatisticas_publicas;
+
+drop function if exists public.estatisticas_publicas();
+
+create function public.estatisticas_publicas()
+returns table (
+  acessos_total  bigint,
+  buscas_total   bigint,
+  fichas_total   bigint,
+  contatos_total bigint
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    count(*) filter (where tipo = 'acesso_site'),
+    count(*) filter (where tipo = 'busca'),
+    count(*) filter (where tipo = 'visualizacao'),
+    count(*) filter (where tipo in ('whatsapp','site','instagram'))
+  from public.cliques;
+$$;
+
+revoke all on function public.estatisticas_publicas() from public;
+
+grant execute on function public.estatisticas_publicas() to anon, authenticated;
+
+-- Conferir: devem vir quatro números.
+-- select * from public.estatisticas_publicas();
+```
+
+Enquanto não rodar:
 
 - o bloco de números na home não aparece;
 - as buscas são gravadas sem a região;

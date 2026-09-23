@@ -1191,6 +1191,22 @@ function toRow(f) {
   };
 }
 
+// Totais dos últimos 30 dias, só os agregados. A tabela de cliques continua
+// fechada: quem responde é a visão "estatisticas_publicas", que devolve três
+// números somados e nada por academia. Enquanto a visão não existir no banco,
+// isto falha em silêncio e o bloco de números some da página.
+async function carregarEstatisticasPublicas() {
+  try {
+    const { data, error } = await sb.from('estatisticas_publicas').select('*').limit(1).single();
+    if (error || !data) return;
+    state.estatisticas = {
+      acessos: numeroOuNulo(data.acessos) || 0,
+      fichas_abertas: numeroOuNulo(data.fichas_abertas) || 0,
+      contatos: numeroOuNulo(data.contatos) || 0,
+    };
+  } catch { /* sem a visão no banco, o bloco simplesmente não aparece */ }
+}
+
 async function loadEverything() {
   const { data: published } = await sb.from('academias').select('*').eq('status', 'published').order('created_at');
   state.allCourts = (published || []).map(mapRow);
@@ -1210,6 +1226,8 @@ async function loadEverything() {
   } else {
     state.pending = [];
   }
+
+  await carregarEstatisticasPublicas();
 
   const { data: reviews } = await sb.from('avaliacoes').select('*').order('created_at', { ascending: false });
   const reviewsCache = {};
@@ -1324,6 +1342,7 @@ let state = {
   reviewsCache: {},
   clicksCache: {},
   clicksRaw: [],
+  estatisticas: null,
   statsPeriodo: "30",
   statsOrdem: "views",
   searchStatus: "idle",
@@ -2741,27 +2760,52 @@ function blocoDiferenciais() {
   `;
 }
 
-// Números que a academia quer saber antes de se cadastrar. Ficam aqui na mão
-// porque só você enxerga as estatísticas de clique: abra o painel do admin,
-// toque no gráfico e use "copiar resumo" para pegar os valores atualizados.
-// Deixando a lista vazia, o bloco some da página.
-const NUMEROS_PARA_ACADEMIAS = {
-  periodo: "",          // ex.: "nos últimos 30 dias"
-  itens: [
-    // { valor: "245", rotulo: "buscas por quadra" },
-    // { valor: "1 em 5", rotulo: "abre a ficha de uma academia" },
-    // { valor: "17%", rotulo: "de quem abre chama no WhatsApp" },
-  ],
-};
+// Os números que a academia vê antes de se cadastrar saem dos últimos 30 dias
+// de uso do site e se atualizam sozinhos. Abaixo desse mínimo o bloco nem
+// aparece: com pouca gente, o número diz mais contra do que a favor.
+const MINIMO_PARA_MOSTRAR = 30;
+
+// Sempre arredondado para baixo, numa casa redonda, e mostrado com "+". Assim
+// o número fica fácil de ler e nunca promete mais do que de fato aconteceu.
+function numeroRedondo(n) {
+  const v = Math.floor(n || 0);
+  if (v < 10) return String(v);
+  const passo = v < 50 ? 5 : v < 100 ? 10 : v < 500 ? 20 : v < 2000 ? 100 : 500;
+  return "+" + (Math.floor(v / passo) * passo);
+}
+
+// "1 em 5", que é mais fácil de entender do que "20,4%".
+function umEmCada(parte, todo) {
+  if (!parte || !todo) return null;
+  const n = Math.round(todo / parte);
+  return n <= 1 ? "quase todo mundo" : `1 em ${n}`;
+}
+
+function porcentoRedondo(parte, todo) {
+  if (!parte || !todo) return null;
+  const pct = Math.round(((parte / todo) * 100) / 5) * 5;
+  return `${Math.max(5, pct)}%`;
+}
 
 function blocoMediasAcademias() {
-  const { periodo, itens } = NUMEROS_PARA_ACADEMIAS;
-  if (!itens || !itens.length) return "";
+  const e = state.estatisticas;
+  if (!e || (e.acessos || 0) < MINIMO_PARA_MOSTRAR) return "";
+
+  const itens = [
+    { valor: numeroRedondo(e.acessos), rotulo: "pessoas procurando quadra" },
+    e.fichas_abertas && umEmCada(e.fichas_abertas, e.acessos)
+      ? { valor: umEmCada(e.fichas_abertas, e.acessos), rotulo: "abre a ficha de uma academia" }
+      : null,
+    e.contatos && e.fichas_abertas && porcentoRedondo(e.contatos, e.fichas_abertas)
+      ? { valor: porcentoRedondo(e.contatos, e.fichas_abertas), rotulo: "de quem abre chama a academia" }
+      : null,
+  ].filter(Boolean);
+
   return `
     <div class="ba-numeros">
       ${itens.map(i => `<div class="ban-item"><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
     </div>
-    ${periodo ? `<p class="ba-nota" style="margin-top:8px">Média do guia ${esc(periodo)}.</p>` : ""}`;
+    <p class="ba-nota" style="margin-top:8px">Nos últimos 30 dias, arredondado para baixo. Atualiza sozinho.</p>`;
 }
 
 // "Por que as academias estão aqui" — o lado de quem tem a quadra.
@@ -5257,7 +5301,7 @@ function renderStatsPanel() {
 const TERMS_HTML = `
 <p class="footnote">Última atualização: 10 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
-<p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento.</p>
+<p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site nos últimos 30 dias, arredondados e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
 <p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
@@ -5283,7 +5327,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 10 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância — não guardamos esse histórico.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, e acessos totais ao site — sem identificar quem gerou o acesso.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância — não guardamos esse histórico.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, e acessos totais ao site — sem identificar quem gerou o acesso. Os totais somados dos últimos 30 dias (quantas pessoas usaram o site, quantas abriram uma ficha e quantas chamaram uma academia) aparecem publicamente na página inicial, arredondados; os números por academia continuam visíveis só para a administração.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>

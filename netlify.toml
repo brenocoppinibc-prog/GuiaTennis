@@ -29,3 +29,15 @@
 # mesma página. Por isso não precisa de regra de redirecionamento aqui. Se um
 # dia os endereços virarem caminhos de verdade (tipo /academia/morumbi), aí
 # será preciso adicionar um [[redirects]] apontando tudo para /index.html.
+
+# Os arquivos de trabalho ficam no repositório, mas não no ar: o contexto do
+# projeto e o SQL do banco não interessam a quem visita o site.
+[[redirects]]
+  from = "/GUIATENNIS-CONTEXTO.md"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/SQL-ESTATISTICAS.sql"
+  to = "/404.html"
+  status = 404

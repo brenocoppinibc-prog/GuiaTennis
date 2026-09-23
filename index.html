@@ -6,10 +6,13 @@
 <!-- O site tem uma paleta só (marfim e verde). Sem isto, o modo escuro
      automático do Android inverte as cores e desmonta o visual. -->
 <meta name="color-scheme" content="light" />
-<title>GuiaTennis</title>
-<link rel="icon" type="image/png" href="https://guiatennis.com.br/favicon-32.png">
-<link rel="apple-touch-icon" href="https://guiatennis.com.br/apple-touch-icon.png">
-<meta name="description" content="Ache e compare quadras e academias de tênis perto de você.">
+<title>GuiaTennis — quadras e academias de tênis perto de você</title>
+<meta name="theme-color" content="#1F4D3D">
+<link rel="canonical" href="https://guiatennis.com.br/" id="link-canonical">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="Ache e compare quadras e academias de tênis perto de você: preço por hora, estrutura, avaliações e contato direto com a academia.">
 <meta property="og:title" content="GuiaTennis">
 <meta property="og:description" content="Ache e compare quadras e academias de tênis perto de você.">
 <meta property="og:image" content="https://guiatennis.com.br/og-image.png">
@@ -61,7 +64,6 @@
 
   .btn-primary { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 0 20px; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
   .btn-primary:disabled { opacity: 0.6; cursor: default; }
-  .locate-hint { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; margin-top: 8px; }
 
   .status-line { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 10px; }
   .status-error { color: var(--red); }
@@ -603,6 +605,13 @@
   .sf-col h4 { font-size: 15px; font-weight: 700; margin: 0 0 10px; }
   .sf-col button, .sf-col a { display: block; background: none; border: none; padding: 5px 0; font-size: 14px; color: var(--muted); cursor: pointer; text-align: left; text-decoration: none; }
   .sf-col button:hover, .sf-col a:hover { color: var(--green); }
+  .sf-lista { border-top: 1px solid var(--border); margin-top: 22px; padding-top: 18px; }
+  .sf-lista h4 { font-size: 15px; font-weight: 700; margin: 0 0 8px; }
+  .sf-links { display: grid; gap: 2px; }
+  @media (min-width: 560px) { .sf-links { grid-template-columns: 1fr 1fr; column-gap: 20px; } }
+  @media (min-width: 900px) { .sf-links { grid-template-columns: repeat(3, 1fr); } }
+  .sf-links a { display: block; padding: 5px 0; font-size: 13px; color: var(--muted); text-decoration: none; }
+  .sf-links a:hover { color: var(--green); }
   .sf-base { border-top: 1px solid var(--border); margin-top: 22px; padding-top: 16px; font-size: 12px; color: var(--muted-dark); }
   .sf-base p { margin: 3px 0; }
 
@@ -646,9 +655,6 @@
   .video-wrap { position: relative; border-radius: 14px; overflow: hidden; background: var(--bg-alt); border: 1px solid var(--border); aspect-ratio: 16 / 9; }
   .video-player { width: 100%; height: 100%; display: block; border: 0; }
   .video-holder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
-  .passos { margin: 16px 0 0; padding-left: 20px; font-size: 14px; color: var(--muted); line-height: 1.5; }
-  .passos li { margin-bottom: 8px; }
-  .passos strong { color: var(--text); }
 
   /* ---- selo de recomendada nos cards da página inicial ---- */
   .mini { position: relative; }
@@ -843,7 +849,6 @@
   .ht-rev-word { font-size: 13px; font-weight: 700; }
   .ht-rev-top .delete-review-btn { margin-left: auto; }
   .ht-rev-text { font-size: 14px; line-height: 1.5; margin: 10px 0 0; flex: 1; }
-  .ht-rev-text.vazio { color: var(--muted-dark); font-style: italic; }
   .ht-rev-foot { display: flex; align-items: center; gap: 9px; margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); }
   .ht-rev-foot .rev-avatar { width: 32px; height: 32px; font-size: 13px; }
 
@@ -1873,8 +1878,19 @@ function dadosDoSite() {
 // Título da aba e dados estruturados da academia. O Google usa esse JSON para
 // entender que a página é de um local esportivo, com nota, preço e perguntas.
 const TITULO_PADRAO = document.title;
+// A URL canônica acompanha a página aberta: sem isso o Google trata
+// ?court=1, ?busca=… e ?comparar=1 como cópias da home.
+function atualizarCanonical(c) {
+  const el = document.getElementById("link-canonical");
+  if (!el) return;
+  const base = `${location.origin}${location.pathname}`;
+  const url = c ? `${base}?court=${c.id}` : base;
+  if (el.getAttribute("href") !== url) el.setAttribute("href", url);
+}
+
 function atualizarSeo(c) {
   const ld = document.getElementById("ld-academia");
+  atualizarCanonical(c);
   if (!c) {
     if (document.title !== TITULO_PADRAO) document.title = TITULO_PADRAO;
     if (ld) {
@@ -2574,7 +2590,6 @@ function renderSearchCard() {
         </button>
       </div>
     </div>
-    <p class="locate-hint">${icon('locate', 11, 'var(--muted)')} Toque no alvo para usar sua localização agora</p>
   `;
 }
 
@@ -3063,15 +3078,9 @@ function blocoVideo() {
   return `
     <div class="home-sec" id="home-como">
       <h3 class="display">Como funciona a busca</h3>
-      <p class="sec-sub">Em um minuto, do endereço até a conversa com a academia.</p>
       <div class="video-wrap">
         ${player || demoBusca()}
       </div>
-      <ol class="passos">
-        <li><strong>Diga onde você está.</strong> CEP, endereço, ponto de referência ou o alvo do GPS.</li>
-        <li><strong>Compare.</strong> As academias aparecem da mais perto para a mais longe, com preço, estrutura e nota de quem já jogou.</li>
-        <li><strong>Fale direto com a academia.</strong> O WhatsApp abre com a conversa já começada.</li>
-      </ol>
     </div>
   `;
 }
@@ -3127,6 +3136,20 @@ function renderMini(c, selo) {
   `;
 }
 
+// Os cards do site são botões, então o Google não teria por onde chegar nas
+// fichas. Esta lista no rodapé é o caminho: link de verdade para cada uma.
+function linksDasAcademias() {
+  const lista = state.allCourts.slice(0, 40);
+  if (!lista.length) return "";
+  return `
+    <div class="sf-lista">
+      <h4>Academias no guia</h4>
+      <div class="sf-links">
+        ${lista.map(c => `<a href="?court=${encodeURIComponent(c.id)}" data-open="${c.id}">${esc(c.name)}${c.bairro ? ` — ${esc(c.bairro)}` : ""}</a>`).join("")}
+      </div>
+    </div>`;
+}
+
 function renderSiteFooter() {
   return `
     <div class="sitefooter">
@@ -3148,6 +3171,7 @@ function renderSiteFooter() {
           ${!isAdmin ? `<button type="button" id="admin-login-link">Área do GuiaTennis</button>` : ""}
         </div>
       </div>
+      ${linksDasAcademias()}
       <div class="sf-base">
         <p>GuiaTennis · guiatennis.com.br</p>
         <p>Dados de localização © colaboradores do OpenStreetMap</p>
@@ -3971,7 +3995,7 @@ function htPertoConteudo(c) {
         ${icon('map', 30, 'var(--muted-dark)')}
         <p>${local
           ? "Este arquivo está aberto direto do computador, e o navegador bloqueia essa consulta fora de um site. No ar, em guiatennis.com.br, a lista aparece normalmente."
-          : "Não consegui consultar o mapa aberto do OpenStreetMap agora para listar o que tem em volta."}</p>
+          : "Não consegui carregar agora."}</p>
         ${local ? "" : `<button type="button" class="ht-poi-tentar" data-poi-retry="${c.id}">Tentar de novo</button>`}
       </div>
       ${diagnosticoPerto(c, dados)}`;
@@ -4549,23 +4573,23 @@ function htDestaques(c) {
     c.appCount && { ic: 'sparkle', cor: 'var(--gold)', t: `${c.appAvg.toFixed(1).replace(".", ",")} ${scoreWord(c.appAvg, c.appCount)}`, s: `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no app` },
     faixa && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: `${faixa.opcao.nome.toLowerCase()}, por hora de quadra` },
     dist && { ic: 'pin', cor: 'var(--green)', t: `${dist} de você`, s: [c.bairro, c.cidade].filter(Boolean).join(", ") || "a partir da sua busca" },
-    tem("estacionamento_gratuito") && { ic: 'parking', cor: 'var(--green)', t: "Estacionamento grátis", s: "No próprio local" },
-    tem("vestiario") && { ic: 'droplet', cor: 'var(--green)', t: "Vestiário", s: "Para trocar de roupa e tomar banho" },
-    tem("camera") && { ic: 'camera', cor: 'var(--green)', t: "Câmera nas quadras", s: "Grava os seus pontos" },
-    tem("lanchonete") && { ic: 'cup', cor: 'var(--green)', t: "Lanchonete", s: "Para comer algo depois do jogo" },
-    tem("wifi") && { ic: 'wifi', cor: 'var(--green)', t: "Wi-Fi", s: "Rede disponível no local" },
-    tem("loja") && { ic: 'bag', cor: 'var(--green)', t: "Loja de materiais", s: "Corda, bola e acessórios no local" },
-    tem("agua") && { ic: 'watercup', cor: 'var(--green)', t: "Água grátis", s: "Para se hidratar durante o jogo" },
-    tem("assinatura_fitness") && { ic: 'pass', cor: 'var(--green)', t: "App de assinatura fitness", s: "Aceita crédito de plano fitness" },
-    tem("estacionamento_pago") && { ic: 'parking', cor: 'var(--gold)', t: "Estacionamento pago", s: "No próprio local" },
-    total && { ic: 'ball', cor: 'var(--green)', t: `${total} ${plural(total, "quadra", "quadras")}`, s: "estrutura cadastrada pela academia" },
+    tem("estacionamento_gratuito") && { ic: 'parking', cor: 'var(--green)', t: "Estacionamento grátis" },
+    tem("vestiario") && { ic: 'droplet', cor: 'var(--green)', t: "Vestiário" },
+    tem("camera") && { ic: 'camera', cor: 'var(--green)', t: "Câmera nas quadras" },
+    tem("lanchonete") && { ic: 'cup', cor: 'var(--green)', t: "Lanchonete" },
+    tem("wifi") && { ic: 'wifi', cor: 'var(--green)', t: "Wi-Fi" },
+    tem("loja") && { ic: 'bag', cor: 'var(--green)', t: "Loja de materiais" },
+    tem("agua") && { ic: 'watercup', cor: 'var(--green)', t: "Água grátis" },
+    tem("assinatura_fitness") && { ic: 'pass', cor: 'var(--green)', t: "App de assinatura fitness" },
+    tem("estacionamento_pago") && { ic: 'parking', cor: 'var(--gold)', t: "Estacionamento pago" },
+    total && { ic: 'ball', cor: 'var(--green)', t: `${total} ${plural(total, "quadra", "quadras")}` },
   ].filter(Boolean).slice(0, 4);
   if (!candidatos.length) return "";
   return `<div class="ht-tiles">${candidatos.map(d => `
     <div class="ht-tile">
       <span class="ht-tile-ic">${icon(d.ic, 20, d.cor)}</span>
       <p class="ht-tile-t">${esc(d.t)}</p>
-      <p class="ht-tile-s">${esc(d.s)}</p>
+      ${d.s ? `<p class="ht-tile-s">${esc(d.s)}</p>` : ""}
     </div>`).join("")}</div>`;
 }
 
@@ -4729,7 +4753,7 @@ function reviewsSection(c) {
             <span class="ht-rev-word">${scoreWord(r.stars, 1)}</span>
             ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
           </div>
-          ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>` : `<p class="ht-rev-text vazio">Avaliou sem escrever comentário.</p>`}
+          ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>` : ""}
           <div class="ht-rev-foot">
             <span class="rev-avatar">${esc(initials(r.nome_autor))}</span>
             <div style="min-width:0">
@@ -4795,7 +4819,6 @@ function blocoContato(c) {
   return `
     <div class="contato-card">
       <p class="contato-mod">${quem ? `Contato para ${esc(quem.toLowerCase())}` : "Contato da academia"}</p>
-      <p class="contato-sub">Pergunte horário, disponibilidade e o valor do seu caso.</p>
       ${c.phone
         ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
         : `<p class="contato-sub" style="margin-top:10px">O telefone não foi incluído.</p>`}
@@ -4891,23 +4914,7 @@ function htPolitica(c) {
 }
 
 function politicaRodape(c) {
-  return `<p class="ht-poi-nota">Regra informada pela própria academia, que pode mudá-la quando quiser. Confirme na conversa antes de marcar.</p>`;
-}
-
-// "Bom saber": o equivalente ao "Você precisa saber" das páginas de hotel.
-function htBomSaber(c) {
-  const itens = [
-    { ic: 'clipboard', t: "Os valores são por hora de quadra", d: "Foram informados pela própria academia. Confirme na conversa antes de fechar horário." },
-    { ic: 'phone', t: "A reserva é feita direto com a academia", d: "O GuiaTennis mostra o contato; quem combina dia, horário e pagamento é você com ela." },
-    { ic: 'sparkle', t: "A nota é só das avaliações feitas aqui", d: "Não importamos nota de outros sites. Quem avalia é quem usou o GuiaTennis." },
-  ];
-  if (c.source === "seed") itens.push({ ic: 'globe', t: "Endereço e comodidades vieram de dados públicos", d: "Se algo estiver desatualizado, a academia pode corrigir pelo cadastro." });
-  if (c.source === "custom") itens.push({ ic: 'check', t: "Cadastro enviado pela comunidade", d: "Alguém que conhece a academia mandou os dados, e o GuiaTennis conferiu antes de publicar." });
-  return `<div class="ht-know">${itens.map(i => `
-    <div class="ht-know-i">
-      <span class="ht-know-ic">${icon(i.ic, 16, 'var(--green)')}</span>
-      <span><strong>${esc(i.t)}</strong><br><span class="ht-know-d">${esc(i.d)}</span></span>
-    </div>`).join("")}</div>`;
+  return `<p class="ht-poi-nota">Confirme a regra com a academia antes de marcar.</p>`;
 }
 
 // Perguntas frequentes montadas com o que a academia cadastrou — nada inventado.
@@ -4959,16 +4966,6 @@ function perguntasAcademia(c) {
         : "O estacionamento não foi incluído. Vale perguntar na academia.",
     });
   }
-  if (c.endereco || c.bairro) {
-    faq.push({
-      q: `Onde fica ${c.name}?`,
-      a: `${c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ")}. Na seção "Explore a região" tem o mapa e o atalho para o Google Maps e o Waze.`,
-    });
-  }
-  const contatos = [c.phone ? "WhatsApp" : null, c.instagram ? `Instagram (${c.instagram})` : null, c.site ? "site próprio" : null].filter(Boolean);
-  if (contatos.length) {
-    faq.push({ q: `Como falar com ${c.name}?`, a: `Pelo ${listaTexto(contatos)}. O botão de WhatsApp desta página já abre a conversa com uma mensagem pronta.` });
-  }
   if (temAcesso(c)) {
     const a = acessoDe(c);
     faq.push({
@@ -4986,12 +4983,6 @@ function perguntasAcademia(c) {
     faq.push({ q: `Como funciona o cancelamento e a reposição em ${c.name}?`, a: partes.join(" ") });
   }
 
-  if (c.appCount) {
-    faq.push({
-      q: `Qual é a nota de ${c.name} no GuiaTennis?`,
-      a: `A nota é ${c.appAvg.toFixed(1).replace(".", ",")} de 5 (${scoreWord(c.appAvg, c.appCount)}), em ${c.appCount} ${plural(c.appCount, "avaliação feita", "avaliações feitas")} por quem usou o GuiaTennis.`,
-    });
-  }
   return faq;
 }
 
@@ -5151,11 +5142,6 @@ function renderCourtPage(c) {
                 </div>
 
                 ${reviewsSection(c)}
-              </section>
-
-              <section class="ht-sec" id="ht-saber">
-                <h3 class="sec-title">Bom saber antes de ir</h3>
-                ${htBomSaber(c)}
               </section>
 
               ${perguntasAcademia(c).length ? `
@@ -5989,7 +5975,7 @@ function attachEvents() {
   });
 
   document.querySelectorAll("[data-open]").forEach(el => {
-    el.onclick = () => openCourt(el.dataset.open);
+    el.onclick = (e) => { e.preventDefault(); openCourt(el.dataset.open); };
   });
 
   document.querySelectorAll("[data-fav]").forEach(el => {

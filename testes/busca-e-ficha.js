@@ -47,9 +47,20 @@ const { abrir, ok } = require('./harness');
   await page.fill('#cep-input', '05422-000'); await page.keyboard.press('Enter'); await page.waitForTimeout(1200);
   cl = await page.evaluate(() => window.__cliques.map(c => c.tipo));
   ok(!cl.includes('busca') && !cl.includes('acesso_site'), 'admin conectado: nada registrado — ' + cl.join(','));
+  const avisoBusca = await page.evaluate(() => document.querySelector('.admin-aviso')?.textContent || '');
+  ok(avisoBusca.includes('Essa busca não foi gravada'), 'admin buscou: aviso na hora de que não foi gravada');
   await page.evaluate(() => { state.showStatsPanel = true; render(); });
   const aviso = await page.evaluate(() => document.getElementById('stats-overlay')?.textContent.includes('os seus acessos e buscas não entram na conta'));
   ok(aviso, 'painel de estatísticas avisa que o admin não conta');
+  await browser.close();
+
+  // Admin com o banco sem a coluna cep: aviso com o SQL
+  ({ browser, page } = await abrir({ admin: true, semCep: true }));
+  const avisoSql = await page.evaluate(() => document.querySelector('.admin-aviso')?.textContent || '');
+  ok(avisoSql.includes('coluna cep') && avisoSql.includes('add column if not exists cep text'), 'admin vê que falta a coluna cep, com o SQL');
+  await browser.close();
+  ({ browser, page } = await abrir({ admin: true }));
+  ok(await page.evaluate(() => !document.querySelector('.admin-aviso')), 'banco completo: sem aviso');
   await browser.close();
 
   // Fichas

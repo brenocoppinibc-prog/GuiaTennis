@@ -532,6 +532,8 @@
   @media (min-width: 720px) { .home-hero { padding: 40px 20px 30px; } .home-hero h2 { font-size: 40px; max-width: 620px; } }
   .home-hero p { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
   .home-hero .home-hero-sub { margin-top: 12px; }
+  .admin-aviso { background: #FFF6DD; border-bottom: 1px solid #E8D49A; color: #6B5310; font-size: 13px; line-height: 1.45; padding: 9px 16px; }
+  .admin-aviso code { display: block; margin-top: 6px; font-size: 12px; background: #fff; border: 1px solid #E8D49A; border-radius: 8px; padding: 6px 8px; overflow-wrap: anywhere; user-select: all; }
   .est-previa { border: 1px solid var(--green-line); background: var(--green-soft); border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.45; }
   .est-previa-t { margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--green); }
   .home-sec { padding: 6px 20px 22px; }
@@ -1597,6 +1599,13 @@ async function loadEverything() {
 
     const { data: clicks } = await sb.from('cliques').select('*').order('created_at', { ascending: false }).limit(20000);
     state.clicksRaw = clicks || [];
+    // Sem as colunas da busca, a gravação cai para uma versão sem elas e o
+    // admin fica sem saber. Aqui ele fica sabendo, com o SQL.
+    state.faltaSqlCliques = "";
+    for (const coluna of ["detalhe", "cep"]) {
+      const { error: semColuna } = await sb.from('cliques').select(coluna).limit(1);
+      if (semColuna) { state.faltaSqlCliques = coluna; break; }
+    }
     const clicksCache = {};
     (clicks || []).forEach(c => {
       if (!clicksCache[c.academia_id]) clicksCache[c.academia_id] = { whatsapp: 0, site: 0, instagram: 0 };
@@ -1715,7 +1724,9 @@ function trackClick(courtId, type, detalhe, cep) {
   if (detalhe) tentativas.push(comDetalhe);
   tentativas.push(base);
   const enviar = (i) => sb.from('cliques').insert(tentativas[i]).then(({ error }) => {
-    if (error && i + 1 < tentativas.length) enviar(i + 1);
+    if (!error) return;
+    if (i + 1 < tentativas.length) enviar(i + 1);
+    else console.warn("GuiaTennis: não consegui gravar o clique.", error.message);
   });
   enviar(0);
 }
@@ -1724,7 +1735,8 @@ function trackClick(courtId, type, detalhe, cep) {
 // digitou um CEP, o CEP. Nunca o endereço digitado nem a coordenada: serve
 // para saber onde tem procura por quadra, não para seguir ninguém.
 function registrarBusca(geo, cep) {
-  if (isAdmin || !geo) return;
+  if (!geo) return;
+  if (isAdmin) { state.avisoBuscaAdmin = true; return; }
   const regiao = [geo.bairro, geo.cidade].filter(Boolean).join(", ");
   const digitos = String(cep || "").replace(/\D/g, "");
   trackClick(null, "busca", regiao || "região não identificada", digitos.length === 8 ? digitos.slice(0, 5) + "-" + digitos.slice(5) : null);
@@ -2089,6 +2101,8 @@ function render() {
 
   app.innerHTML = `
     ${isAdmin ? `<div class="admin-banner">Modo admin — só você vê isso <button id="logout-btn" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;margin-left:8px">sair</button></div>` : ""}
+    ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia do modo admin ou use uma aba anônima.</div>` : ""}
+    ${isAdmin && state.faltaSqlCliques ? `<div class="admin-aviso">O banco ainda não tem a coluna <strong>${esc(state.faltaSqlCliques)}</strong> na tabela cliques, então as buscas ficam sem região ou sem CEP. Rode no SQL Editor do Supabase:<code>alter table cliques add column if not exists detalhe text;<br>alter table cliques add column if not exists cep text;</code></div>` : ""}
 
     ${state.page === "home" ? renderHome() : ""}
     ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}

@@ -10,8 +10,7 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 **Instagram:** @guiatennis · **E-mail:** guiatennis1@gmail.com
 
 > **Estado:** o site está pronto para publicar. Falta o Breno rodar o SQL
-> da seção 5, ligar a função da IA (seção 5, parte 2) e subir os arquivos
-> no Netlify.
+> da seção 5 e subir os arquivos no Netlify.
 
 ---
 
@@ -40,9 +39,8 @@ cobra taxa e não fica no meio** da negociação.
 6. **Nenhuma dependência nova.** Um arquivo, sem build, sem framework. O
    QR code foi escrito do zero justamente para não depender de serviço de
    terceiro. As únicas coisas de fora são Supabase, Leaflet/OSM, Overpass
-   e as fontes do Google. A IA (Claude, da Anthropic) não entra no
-   `index.html`: roda numa função do Supabase, e o site só chama
-   `sb.functions.invoke`.
+   e as fontes do Google. Nada de IA: o texto da academia é entendido por
+   palavras-chave, no próprio site (seção 4, `acesso`).
 7. **Coluna nova no banco degrada com elegância:** se o `insert`/`update`
    falhar por a coluna não existir, salva sem ela e avisa o admin com o
    SQL exato (`faltaColunaNova` / `avisarSqlColunas`). O mesmo vale para
@@ -150,15 +148,23 @@ livre. "Empréstimo de raquete" **não** mora aqui: é a comodidade `raquete`.
 pago: com vaga própria o campo some do cadastro e o texto não é salvo.
 No cadastro, esses três campos ficam depois do cancelamento.
 
-A padronização com IA acrescenta dois campos ao mesmo jsonb:
-`estacionamento` — o modelo único
-`{ rua: "livre"|"zona_azul"|"restrita"|"nao_informado", rua_detalhe,
-pago_perto, manobrista, convenio }` — e `padronizadoEm` (data). A ficha
-mostra o estacionamento sempre na mesma ordem (`estacionarLinhas`): no
-local, na rua, pago perto, manobrista, convênio. Sem o modelo, mostra o
-texto `estacionar` como a academia escreveu. Mexer no texto de onde parar
-apaga o modelo até padronizar de novo. Com vaga própria, o modelo não é
-salvo: a comodidade responde ("No local: estacionamento grátis").
+**Entendimento dos textos, sem IA.** O banco guarda o texto como a
+academia escreveu; quem arruma é a ficha, na hora de mostrar:
+- `arrumarTexto` — tira emoji e caixa alta, troca "!!!" por ponto, põe
+  horas como 19h/19h30 e valores como R$ 15, corrige acentos comuns
+  (até, não, tênis, às 19h…), maiúscula no começo e ponto no fim. Vale
+  para fachada, chegada, observação do horário e texto do cancelamento.
+- `entenderEstacionar` — quebra o texto em trechos e classifica cada um
+  por palavra-chave (`TERMOS_ESTACIONAR`), como a comparação faz nas
+  anotações: manobrista, convênio, zona azul, difícil parar, pago perto,
+  livre. Trecho sem palavra-chave segue o anterior ("zona azul até 19h,
+  depois libera").
+- `acessoFicha` — frase sobre estacionamento escrita na fachada ou na
+  chegada muda para o bloco de estacionamento.
+- `estacionarLinhas` — o modelo único, sempre na mesma ordem: No local ·
+  Na rua (Livre / Zona azul / Difícil parar) · Pago perto · Manobrista ·
+  Convênio. Com vaga própria, só "No local". O cadastro mostra a prévia
+  ao sair do campo "Onde estacionar".
 
 **`horario`** — dois modos de preenchimento:
 ```json
@@ -254,29 +260,6 @@ Enquanto não rodar:
 
 Nada quebra em nenhum desses casos — foi feito para degradar.
 
-### Parte 2: ligar a padronização com IA
-
-A função está em `supabase/functions/padronizar-academia/index.ts`. Ela
-recebe os textos livres da academia e devolve tudo no modelo único, usando
-o Claude (`claude-opus-5`, com saída em JSON garantida pelo esquema). Só o
-admin chama: ela confere o login e o e-mail contra `ADMIN_EMAILS`.
-
-1. Crie uma chave em console.anthropic.com (API Keys) e ponha crédito.
-   Cada academia padronizada custa poucos centavos de dólar.
-2. No Supabase: **Edge Functions → Deploy a new function → Via Editor**.
-   Nome: `padronizar-academia` (exatamente esse). Cole o conteúdo do
-   `index.ts` e clique em Deploy.
-3. **Edge Functions → Secrets**, dois segredos:
-   - `ANTHROPIC_API_KEY` = a chave do passo 1;
-   - `ADMIN_EMAILS` = o e-mail do admin do GuiaTennis (vários separados
-     por vírgula).
-4. No site, modo admin: edite uma academia e toque em **Padronizar os
-   textos com IA**, ou abra as solicitações pendentes e toque em
-   **Padronizar com IA as academias que faltam**.
-
-Enquanto a função não estiver no ar, os dois botões só avisam que ela
-ainda não está ligada. Nada mais muda.
-
 ## 6. Como testar
 
 Os testes estão em `testes/` e não vão para o ar. Rodam sem internet: o
@@ -286,7 +269,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro ia; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -297,20 +280,17 @@ cd testes && for t in busca-e-ficha cadastro ia; do NODE_PATH=$(npm root -g) nod
   ficha, textos fixos.
 - `cadastro.js` — cancelamento por modalidade, "Onde estacionar" só sem
   vaga própria, ordem dos campos, edição que não apaga horário nem regra.
-- `ia.js` — botão da IA no cadastro, prévia, o que é salvo, a ficha e a
-  pergunta frequente no modelo, sem a função no ar, o lote do painel.
+- `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
+  estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
 
 O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
 separada) e `a2` (só locação, regra única). Chaves: `__admin`,
-`__semDetalhe`, `__semCep`, `__semFuncao`, `__iaResposta`. O que o site
+`__semDetalhe`, `__semCep`. O que o site
 grava fica em `window.__db` e `window.__cliques`; o último `update` em
 `window.__ultimoUpdate`.
 
 Playwright + Chromium já estão na máquina, mas **em `npm root -g`** — por
 isso o `NODE_PATH`.
-
-A função da IA foi testada fora do Supabase: compilada com `tsc` e rodada
-em Node contra uma API falsa, conferindo login, CORS e o pedido enviado.
 
 ## 7. Arquivos que vão para o ar
 
@@ -319,8 +299,8 @@ em Node contra uma API falsa, conferindo login, CORS e o pedido enviado.
 `og-image.png`, `google7b66589ffc303f37.html` (verificação do Search
 Console).
 
-O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql` e as pastas
-`testes/` e `supabase/` ficam no repositório mas fora do ar —
+O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql` e a pasta `testes/`
+ficam no repositório mas fora do ar —
 `netlify.toml` devolve 404 para eles, e eles não entram no zip.
 
 **Como publicar:** o Breno arrasta a pasta no Netlify. Monte o zip com
@@ -433,8 +413,6 @@ c9ade31 Configuração de publicação do Netlify
 ## 11. Em aberto
 
 - Rodar o `SQL-ESTATISTICAS.sql` no Supabase.
-- Ligar a função `padronizar-academia` (seção 5, parte 2) e padronizar as
-  academias em lote.
 - Gerar as coordenadas que faltam (botão no mapa, modo admin).
 - Cadastrar o site no Google Search Console e enviar o `sitemap.xml`.
 - A branch está bem à frente de
@@ -444,5 +422,4 @@ c9ade31 Configuração de publicação do Netlify
 - Segurança a conferir: `isAdmin = !!session`. Se o cadastro de usuários
   estiver aberto no Supabase Auth (Authentication → Sign In / Providers →
   "Allow new users to sign up"), qualquer pessoa cria conta e vira admin
-  no site. Desligue essa opção. A função da IA já se protege com
-  `ADMIN_EMAILS`.
+  no site. Desligue essa opção.

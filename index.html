@@ -532,9 +532,8 @@
   @media (min-width: 720px) { .home-hero { padding: 40px 20px 30px; } .home-hero h2 { font-size: 40px; max-width: 620px; } }
   .home-hero p { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
   .home-hero .home-hero-sub { margin-top: 12px; }
-  .ia-previa { border: 1px solid var(--green-line); background: var(--green-soft); border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.45; }
-  .ia-previa-t { margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--green); }
-  .ia-caixa { margin-top: 14px; }
+  .est-previa { border: 1px solid var(--green-line); background: var(--green-soft); border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .est-previa-t { margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--green); }
   .home-sec { padding: 6px 20px 22px; }
   .home-sec h3 { font-size: 21px; font-weight: 700; margin: 0 0 12px; }
   @media (min-width: 720px) { .home-sec h3 { font-size: 25px; } }
@@ -1110,45 +1109,141 @@ function acessoDe(c) {
 }
 
 function temAcesso(c) {
-  const a = acessoDe(c);
+  const a = acessoFicha(c);
   return !!(a.fachada || a.entrada || estacionarLinhas(c).length);
 }
 
-// Estacionamento no modelo único, o mesmo para todas as academias. Quem
-// preenche é a padronização com IA (função padronizar-academia no Supabase),
-// a partir do que a academia escreveu. Fica em acesso.estacionamento.
+// ---------- entendimento dos textos da academia ----------
+// Cada academia escreve de um jeito. Antes de mostrar, o site arruma a
+// forma (maiúscula, ponto final, horas e valores num formato só) e entende
+// do que cada frase fala, como a comparação faz com as anotações: por
+// palavras-chave. Nada é inventado; só muda a forma e o lugar.
+
+const PALAVRAS_ACENTO = [
+  [/\bate\b/g, "até"], [/\bnao\b/g, "não"], [/\bvoce\b/g, "você"], [/\btambem\b/g, "também"],
+  [/\bproximo\b/g, "próximo"], [/\bproxima\b/g, "próxima"], [/\bgratis\b/g, "grátis"],
+  [/\bportao\b/g, "portão"], [/\brecepcao\b/g, "recepção"],
+  [/\btenis\b/g, "tênis"], [/\bpra\b/g, "para"], [/\bas (?=\d{1,2}h)/g, "às "],
+  [/\bfacil\b/g, "fácil"], [/\bdificil\b/g, "difícil"], [/\bsabado\b/g, "sábado"], [/\bferiado\b/g, "feriado"],
+];
+
+function arrumarTexto(texto) {
+  let t = String(texto || "")
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!t) return "";
+  // Texto todo em maiúsculas vira texto normal.
+  const letras = t.replace(/[^A-Za-zÀ-ÿ]/g, "");
+  if (letras.length > 6 && letras === letras.toUpperCase()) t = t.toLowerCase();
+  t = t
+    .replace(/([!?])\1+/g, ".")
+    .replace(/!/g, ".")
+    .replace(/\b(\d{1,2})\s*(?::|h)\s*00\b/gi, "$1h")
+    .replace(/\b(\d{1,2})\s*(?::|h)\s*(\d{2})\b/gi, "$1h$2")
+    .replace(/\b(\d{1,2})\s*(?:hs|hrs|horas)\b/gi, "$1h")
+    .replace(/r\$\s*(\d+)(?:,00)?/gi, "R$ $1")
+    .replace(/\b(\d+)(?:,00)?\s*reais\b/gi, "R$ $1")
+    .replace(/\s+([.,;:])/g, "$1")
+    .replace(/([.,;:])(?=[^\s\d])/g, "$1 ");
+  PALAVRAS_ACENTO.forEach(([re, certo]) => { t = t.replace(re, certo); });
+  // Maiúscula no começo de cada frase e ponto no fim.
+  t = t.replace(/(^|[.;]\s+)([a-zà-ÿ])/g, (m, antes, l) => antes + l.toUpperCase());
+  if (!/[.:]$/.test(t)) t += ".";
+  return t;
+}
+
+// Do que cada trecho fala, na ordem em que é testado.
+const TERMOS_ESTACIONAR = [
+  { tipo: "manobrista", termos: ["manobrista", "valet", "vallet"] },
+  { tipo: "convenio", termos: ["convenio", "conveniado", "desconto", "parceria", "parceiro"] },
+  { tipo: "zona_azul", termos: ["zona azul", "area azul", "rotativo", "parquimetro", "zona verde"] },
+  { tipo: "restrita", termos: ["proibido", "dificil", "nao da para parar", "nao tem vaga", "sem vaga", "complicado", "lotado"] },
+  { tipo: "pago", termos: ["estacionamento", "garagem", "r$", "reais", "pago", "cobra"] },
+  { tipo: "livre", termos: ["rua", "na frente", "na porta", "calcada", "livre", "gratis", "de graca", "tranquilo", "facil", "sobra vaga", "tem vaga", "vaga"] },
+];
+
+const TERMOS_E_ESTACIONAR = ["estacion", "vaga", "zona azul", "manobrista", "valet", "parar o carro", "deixar o carro", "garagem"];
+
+function falaDeEstacionar(frase) {
+  const t = semAcento(frase);
+  return TERMOS_E_ESTACIONAR.some(x => t.includes(x));
+}
+
+function frases(texto) {
+  return String(texto || "")
+    .replace(/r\$\s*(\d+),(\d{2})/gi, "R$ $1") // a vírgula do valor não separa frase
+    .split(/[.;\n]+|,\s+|\s+e\s+(?=depois|na |no |tem |dá |da |zona|estacion|manobr)/i)
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+
+// O texto de estacionamento vira o modelo único: rua, pago perto,
+// manobrista, convênio. Trecho sem palavra-chave segue o anterior
+// ("zona azul até as 19h, depois libera").
+function entenderEstacionar(texto) {
+  const grupos = { rua: [], pago: [], manobrista: [], convenio: [], outros: [] };
+  let rua = "";
+  let ultimo = "outros";
+  const forca = { zona_azul: 3, restrita: 2, livre: 1 };
+  frases(texto).forEach(f => {
+    const t = semAcento(f);
+    const achado = TERMOS_ESTACIONAR.find(k => k.termos.some(x => t.includes(x)));
+    let grupo = ultimo;
+    if (achado) {
+      if (achado.tipo in forca) {
+        grupo = "rua";
+        if (!rua || forca[achado.tipo] > forca[rua]) rua = achado.tipo;
+      } else {
+        grupo = achado.tipo;
+      }
+    }
+    grupos[grupo].push(f);
+    ultimo = grupo;
+  });
+  const junta = (lista) => lista.map(arrumarTexto).join(" ");
+  return {
+    rua,
+    ruaDetalhe: junta(grupos.rua),
+    pagoPerto: junta(grupos.pago),
+    manobrista: junta(grupos.manobrista),
+    convenio: junta(grupos.convenio),
+    outros: junta(grupos.outros),
+  };
+}
+
+// Fachada e chegada arrumadas. Frase sobre estacionamento escrita ali muda
+// para o bloco de estacionamento, onde é o lugar dela.
+function acessoFicha(c) {
+  const a = acessoDe(c);
+  const separa = (texto) => {
+    const fica = [], sai = [];
+    String(texto || "").split(/(?<=[.!?;])\s+|\n+/).map(x => x.trim()).filter(Boolean)
+      .forEach(f => (falaDeEstacionar(f) ? sai : fica).push(f));
+    return { fica: fica.join(" "), sai: sai.join(". ") };
+  };
+  const fac = separa(a.fachada), ent = separa(a.entrada);
+  return {
+    fachada: arrumarTexto(fac.fica),
+    entrada: arrumarTexto(ent.fica),
+    estacionar: [a.estacionar, fac.sai, ent.sai].filter(Boolean).join(". "),
+  };
+}
+
 const RUA_OPTS = [
   { key: "livre", label: "Livre" },
   { key: "zona_azul", label: "Zona azul" },
   { key: "restrita", label: "Difícil parar" },
 ];
 
-function estacionamentoPadrao(c) {
-  const e = c && c.acesso && c.acesso.estacionamento;
-  if (!e || typeof e !== "object") return null;
-  const t = (v) => String(v || "").trim();
-  const p = {
-    rua: RUA_OPTS.some(o => o.key === e.rua) ? e.rua : "",
-    ruaDetalhe: t(e.rua_detalhe),
-    pagoPerto: t(e.pago_perto),
-    manobrista: t(e.manobrista),
-    convenio: t(e.convenio),
-  };
-  return (p.rua || p.ruaDetalhe || p.pagoPerto || p.manobrista || p.convenio) ? p : null;
-}
-
 // As linhas do estacionamento, sempre na mesma ordem: no local, na rua,
 // pago perto, manobrista, convênio. Com vaga própria, a comodidade responde
-// sozinha. Sem o modelo, fica o texto da academia como ela escreveu.
+// sozinha.
 function estacionarLinhas(c) {
   const am = (c && c.amenities) || [];
   if (am.includes("estacionamento_gratuito")) return [{ rot: "No local", txt: "Estacionamento grátis." }];
   if (am.includes("estacionamento_pago")) return [{ rot: "No local", txt: "Estacionamento pago." }];
-  const p = estacionamentoPadrao(c);
-  if (!p) {
-    const texto = acessoDe(c).estacionar;
-    return texto ? [{ rot: "", txt: texto }] : [];
-  }
+  const p = entenderEstacionar(acessoFicha(c).estacionar);
   const linhas = [];
   if (p.rua || p.ruaDetalhe) {
     const tag = (RUA_OPTS.find(o => o.key === p.rua) || {}).label;
@@ -1157,6 +1252,7 @@ function estacionarLinhas(c) {
   if (p.pagoPerto) linhas.push({ rot: "Pago perto", txt: p.pagoPerto });
   if (p.manobrista) linhas.push({ rot: "Manobrista", txt: p.manobrista });
   if (p.convenio) linhas.push({ rot: "Convênio", txt: p.convenio });
+  if (p.outros) linhas.push({ rot: "", txt: p.outros });
   return linhas;
 }
 
@@ -1438,7 +1534,9 @@ function mapRow(row) {
 function toRow(f) {
   const acesso = { ...(f.acesso || {}) };
   delete acesso.estacionamentoNota;
-  if (temEstacionamentoProprio(f)) { delete acesso.estacionar; delete acesso.estacionamento; }
+  delete acesso.estacionamento;
+  delete acesso.padronizadoEm;
+  if (temEstacionamentoProprio(f)) delete acesso.estacionar;
   return {
     name: f.name, address: f.address, numero: f.numero, complemento: f.complemento,
     bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
@@ -4904,7 +5002,7 @@ function cartaoVizinha(v, km) {
 
 // "Como chegar e entrar": o que ajuda a achar o lugar e o que fazer na porta.
 function htAcesso(c) {
-  const a = acessoDe(c);
+  const a = acessoFicha(c);
   if (!temAcesso(c)) {
     return isAdmin
       ? `<p class="ht-poi-motivo">Só você vê — essa academia ainda não escreveu como é a fachada, a dica de entrada nem onde estacionar. Edite a ficha para preencher.</p>`
@@ -4943,7 +5041,7 @@ function htHorario(c) {
           <span>${esc(l.label)}</span><strong>${esc(l.texto)}</strong>
         </div>`).join("")}
     </div>
-    ${h.nota ? `<p class="ht-poi-nota">${esc(h.nota)}</p>` : ""}`;
+    ${h.nota ? `<p class="ht-poi-nota">${esc(arrumarTexto(h.nota))}</p>` : ""}`;
 }
 
 function academiasPerto(c, quantas) {
@@ -5130,6 +5228,7 @@ function htPolitica(c) {
 
 // O miolo, usado uma vez quando a regra é a mesma e duas quando é separada.
 function blocoPolitica(p, c, oque) {
+  p = { ...p, foraDoPrazo: arrumarTexto(p.foraDoPrazo) };
   if (p.reposicao === "nao") {
     return `
       <div class="pol-faixa sem">
@@ -5220,8 +5319,8 @@ function perguntasAcademia(c) {
         : "O estacionamento não foi incluído. Vale perguntar na academia.",
     });
   }
-  if (acessoDe(c).fachada || acessoDe(c).entrada) {
-    const a = acessoDe(c);
+  if (acessoFicha(c).fachada || acessoFicha(c).entrada) {
+    const a = acessoFicha(c);
     faq.push({
       q: `Como encontrar e entrar em ${c.name}?`,
       a: [a.fachada, a.entrada].filter(Boolean).join(" "),
@@ -5239,7 +5338,7 @@ function perguntasAcademia(c) {
     const linhas = horarioLinhas(c).map(l => `${l.label}, ${l.texto.toLowerCase()}`);
     faq.push({
       q: `Que horas ${c.name} abre e fecha?`,
-      a: listaTexto(linhas) + "." + (horarioDe(c).nota ? " " + horarioDe(c).nota : ""),
+      a: listaTexto(linhas) + "." + (horarioDe(c).nota ? " " + arrumarTexto(horarioDe(c).nota) : ""),
     });
   }
 
@@ -5249,7 +5348,7 @@ function perguntasAcademia(c) {
       const partes = [];
       if (p.reposicao === "nao") partes.push(`A academia informou que não faz reposição de ${oque} desmarcada.`);
       else if (p.horas) partes.push(`Desmarcando a ${oque} com ${p.horas} horas de antecedência ou mais, gera reposição. Com menos que isso, não.`);
-      if (p.foraDoPrazo) partes.push(p.foraDoPrazo);
+      if (p.foraDoPrazo) partes.push(arrumarTexto(p.foraDoPrazo));
       return partes.join(" ");
     };
     const texto = pol.modo === "separado"
@@ -5458,91 +5557,6 @@ function renderCourtPage(c) {
 
 // A política vive em f.politica; esta função garante o formato mesmo quando
 // o formulário ainda não tem nada preenchido.
-// ---------- padronização com IA ----------
-
-// A função padronizar-academia (supabase/functions) recebe os textos livres
-// da academia e devolve tudo no mesmo modelo. Só o admin chama; sem a função
-// no ar, o botão avisa e nada mais muda.
-const FUNCAO_IA = "padronizar-academia";
-
-// `x` é o formulário ou uma academia do banco: os dois têm amenities,
-// modalidades, acesso, horario e politica.
-function textosParaIA(x) {
-  const a = x.acesso || {};
-  const pol = x.politica || {};
-  const am = x.amenities || [];
-  const fora = (o) => String((o && (o.foraDoPrazo || o.obs)) || "");
-  return {
-    fachada: a.fachada || "",
-    entrada: a.entrada || "",
-    estacionar: temEstacionamentoProprio(x) ? "" : (a.estacionar || a.estacionamentoNota || ""),
-    horario_nota: (x.horario && x.horario.nota) || "",
-    fora_do_prazo: pol.modo === "separado"
-      ? { geral: "", aula: fora(pol.aula), locacao: fora(pol.locacao) }
-      : { geral: fora(pol), aula: "", locacao: "" },
-    contexto: {
-      estacionamento_no_local: am.includes("estacionamento_gratuito") ? "gratis" : am.includes("estacionamento_pago") ? "pago" : "nao",
-      modalidades: x.modalidades || [],
-    },
-  };
-}
-
-function temTextoParaIA(t) {
-  return !!(t.fachada || t.entrada || t.estacionar || t.horario_nota
-    || t.fora_do_prazo.geral || t.fora_do_prazo.aula || t.fora_do_prazo.locacao);
-}
-
-async function padronizarComIA(textos) {
-  const { data, error } = await sb.functions.invoke(FUNCAO_IA, { body: textos });
-  if (error) {
-    let motivo = "";
-    try { motivo = (await error.context.json()).erro || ""; } catch { /* a função nem respondeu */ }
-    throw new Error(motivo || "A padronização com IA ainda não está ligada no Supabase. O passo a passo está no GUIATENNIS-CONTEXTO.md.");
-  }
-  if (!data || typeof data !== "object" || !data.estacionamento) throw new Error("A IA não devolveu o modelo esperado. Tente de novo.");
-  return data;
-}
-
-// Põe a resposta da IA no lugar de cada texto. Serve para o formulário e
-// para a academia do banco, no lote.
-function aplicarPadrao(x, r) {
-  const t = (v) => String(v || "").trim();
-  const a = { ...(x.acesso || {}) };
-  delete a.estacionamentoNota;
-  a.fachada = t(r.fachada);
-  a.entrada = t(r.entrada);
-  const e = r.estacionamento || {};
-  const est = {
-    rua: RUA_OPTS.some(o => o.key === e.rua) ? e.rua : "nao_informado",
-    rua_detalhe: t(e.rua_detalhe), pago_perto: t(e.pago_perto),
-    manobrista: t(e.manobrista), convenio: t(e.convenio),
-  };
-  if (!temEstacionamentoProprio(x) && (est.rua !== "nao_informado" || est.rua_detalhe || est.pago_perto || est.manobrista || est.convenio)) {
-    a.estacionamento = est;
-  } else {
-    delete a.estacionamento;
-  }
-  a.padronizadoEm = new Date().toISOString().slice(0, 10);
-  x.acesso = a;
-
-  const nota = t(r.horario_nota);
-  if (nota || (x.horario && x.horario.nota)) {
-    if (!x.horario || typeof x.horario !== "object") x.horario = {};
-    x.horario.nota = nota;
-  }
-
-  const fora = r.fora_do_prazo || {};
-  const pol = x.politica || (x.politica = {});
-  const poe = (o, v) => { if (o && typeof o === "object") { o.foraDoPrazo = t(v); delete o.obs; } };
-  if (pol.modo === "separado") {
-    poe(pol.aula, fora.aula);
-    poe(pol.locacao, fora.locacao);
-  } else {
-    poe(pol, fora.geral);
-  }
-  return x;
-}
-
 // Com estacionamento no local, a comodidade já responde; o texto de onde
 // parar só aparece para quem não tem vaga própria.
 function temEstacionamentoProprio(f) {
@@ -5789,21 +5803,10 @@ function renderRegisterSheet() {
         <p class="footnote" style="margin:0 0 6px">Escreva como funciona de verdade: se dá para parar na rua, se é zona azul e até que horas, se tem estacionamento pago por perto. Vira uma pergunta frequente na ficha.</p>
         <textarea class="form-field" id="f-acesso-estacionar" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
         ` : ""}
-        ${!temEstacionamentoProprio(f) && estacionamentoPadrao(f) ? `
-          <div class="ia-previa">
-            <p class="ia-previa-t">Estacionamento na ficha</p>
+        ${!temEstacionamentoProprio(f) && acessoForm(f).estacionar.trim() ? `
+          <div class="est-previa">
+            <p class="est-previa-t">Estacionamento na ficha</p>
             ${htEstacionarLinhas(estacionarLinhas(f))}
-          </div>` : ""}
-
-        ${isAdmin ? `
-          <div class="ia-caixa">
-            <button type="button" class="cta-btn cta-secondary" id="ia-padronizar" ${(f.__ia || {}).status === "loading" ? "disabled" : ""}>
-              ${(f.__ia || {}).status === "loading" ? bolaGirando(15) + " Padronizando..." : icon('sparkle', 15, 'var(--green)') + " Padronizar os textos com IA"}
-            </button>
-            <p class="footnote" style="margin-top:6px">${(f.__ia || {}).status === "done"
-              ? "Pronto. Confira fachada, chegada, estacionamento, observação do horário e cancelamento antes de salvar."
-              : "Reescreve fachada, chegada, estacionamento, observação do horário e cancelamento no mesmo modelo de todas as academias. Nada é inventado, e você confere antes de salvar."}</p>
-            ${(f.__ia || {}).erro ? `<div class="form-error">${icon('warning',13)} ${esc(f.__ia.erro)}</div>` : ""}
           </div>` : ""}
 
         <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
@@ -6073,7 +6076,6 @@ function renderAdminPanel(pending) {
         <p class="sheet-title display">Solicitações pendentes</p>
         <p class="subtitle" style="margin-top:4px">${pending.length} aguardando sua revisão</p>
         <button type="button" class="cta-btn cta-secondary" id="qr-site-btn" style="margin-top:12px">${icon('clipboard', 15, 'var(--green)')} QR code do site inteiro</button>
-        <button type="button" class="cta-btn cta-secondary" id="ia-lote-btn" style="margin-top:8px">${icon('sparkle', 15, 'var(--green)')} Padronizar com IA as academias que faltam</button>
         ${pending.length === 0 ? `<p class="empty">Nenhuma solicitação no momento.</p>` : ""}
         ${pending.map(p => `
           <div class="pending-item">
@@ -6153,39 +6155,6 @@ function attachEvents() {
       carregarPerto(c);
     };
   });
-
-  const iaLote = document.getElementById("ia-lote-btn");
-  if (iaLote) iaLote.onclick = async () => {
-    const todas = [...state.allCourts, ...(state.pending || [])];
-    const faltando = todas.filter(c => !(c.acesso && c.acesso.padronizadoEm) && temTextoParaIA(textosParaIA(c)));
-    if (!faltando.length) { alert("Todas as academias com texto já estão padronizadas."); return; }
-    if (!confirm(`Padronizar com IA ${faltando.length} ${plural(faltando.length, "academia", "academias")}?\n\nFachada, chegada, estacionamento, observação do horário e cancelamento são reescritos no modelo único e salvos direto. Depois dá para conferir e editar cada ficha.`)) return;
-    iaLote.disabled = true;
-    const erros = [];
-    let ok = 0;
-    for (let i = 0; i < faltando.length; i++) {
-      const c = faltando[i];
-      iaLote.textContent = `Padronizando ${i + 1} de ${faltando.length}...`;
-      try {
-        const x = aplicarPadrao({
-          amenities: c.amenities || [], modalidades: c.modalidades || [],
-          acesso: JSON.parse(JSON.stringify(c.acesso || {})),
-          horario: JSON.parse(JSON.stringify(c.horario || {})),
-          politica: JSON.parse(JSON.stringify(c.politica || {})),
-        }, await padronizarComIA(textosParaIA(c)));
-        const { error } = await sb.from('academias').update({ acesso: x.acesso, horario: x.horario, politica: x.politica }).eq('id', c.id);
-        if (error) throw error;
-        ok++;
-      } catch (e) {
-        erros.push(`${c.name}: ${e.message || "não consegui"}`);
-        // Sem a função no ar, não adianta tentar as outras.
-        if (/ainda não está ligada|Só o admin/.test(e.message || "")) break;
-      }
-    }
-    await loadEverything();
-    alert(`${ok} de ${faltando.length} padronizadas.` + (erros.length ? `\n\nNão consegui:\n` + erros.join("\n") : ""));
-    render();
-  };
 
   const geocodeTodas = document.getElementById("geocode-todas");
   if (geocodeTodas) geocodeTodas.onclick = async () => {
@@ -6965,29 +6934,9 @@ function attachEvents() {
   if (acessoEst) acessoEst.oninput = (e) => {
     const a = acessoForm(window.__form);
     a.estacionar = e.target.value;
-    // O modelo foi montado a partir do texto antigo: mudou o texto, vale o
-    // texto até padronizar de novo.
-    delete a.estacionamento;
   };
-  const iaBtn = document.getElementById("ia-padronizar");
-  if (iaBtn) iaBtn.onclick = async () => {
-    const f = window.__form;
-    const textos = textosParaIA({ ...f, acesso: acessoForm(f), horario: horarioForm(f), politica: politicaForm2(f) });
-    if (!temTextoParaIA(textos)) {
-      f.__ia = { erro: "Escreva a fachada, a chegada, o estacionamento, a observação do horário ou o cancelamento antes de padronizar." };
-      render();
-      return;
-    }
-    f.__ia = { status: "loading" };
-    render();
-    try {
-      aplicarPadrao(f, await padronizarComIA(textos));
-      f.__ia = { status: "done" };
-    } catch (e) {
-      f.__ia = { erro: e.message };
-    }
-    render();
-  };
+  // Ao sair do campo, a prévia mostra como o texto foi entendido.
+  if (acessoEst) acessoEst.onchange = () => render();
   const horarioNota = document.getElementById("f-horario-nota");
   if (horarioNota) horarioNota.oninput = (e) => { horarioForm(window.__form).nota = e.target.value; };
   document.querySelectorAll(".hr-time").forEach(el => {

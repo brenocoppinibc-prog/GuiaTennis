@@ -14,7 +14,6 @@ async function abrir(opts = {}) {
     if (o.admin) window.__admin = true;
     if (o.semDetalhe) window.__semDetalhe = true;
     if (o.semCep) window.__semCep = true;
-    if (o.semFuncao) window.__semFuncao = true;
   }, opts);
   await page.route('**/*', async route => {
     const u = route.request().url();

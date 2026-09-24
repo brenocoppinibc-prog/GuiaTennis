@@ -1,6 +1,5 @@
-// Finge o Supabase para os testes: tabelas em memória (window.__db), a função
-// de estatísticas e a função da IA. Chaves: __admin, __semDetalhe, __semCep,
-// __semFuncao, __iaResposta. O que o site grava em cliques fica em __cliques.
+// Finge o Supabase para os testes: tabelas em memória (window.__db), e a função
+// de estatísticas. Chaves: __admin, __semDetalhe, __semCep. O que o site grava em cliques fica em __cliques.
 (function(){
   const agora = new Date().toISOString();
   const db = window.__db = {
@@ -45,18 +44,6 @@
   }
   window.supabase = { createClient(){ return {
     from: builder,
-    functions: {
-      invoke(nome, { body }) {
-        (window.__iaPedidos = window.__iaPedidos || []).push({ nome, body });
-        if (window.__semFuncao) return Promise.resolve({ data:null, error:{ message:"Failed to send a request to the Edge Function", context:{ json(){ return Promise.reject(new Error("sem corpo")); } } } });
-        const r = window.__iaResposta || {
-          fachada: "Portão preto, ao lado do hotel.", entrada: "Avise na portaria que vai jogar tênis.",
-          estacionamento: { rua: "zona_azul", rua_detalhe: "Até as 19h. Depois fica livre.", pago_perto: "Na esquina, R$ 15 a hora.", manobrista: "", convenio: "" },
-          horario_nota: "Fecha nos feriados.", fora_do_prazo: { geral: "A aula é cobrada.", aula: "Perde a aula.", locacao: "Cobra metade." },
-        };
-        return Promise.resolve({ data: JSON.parse(JSON.stringify(r)), error:null });
-      },
-    },
     rpc(){ return { single(){ return Promise.resolve({ data:{ acessos_total:1234, buscas_total:567, fichas_total:89, contatos_total:12 }, error:null }); } }; },
     auth: {
       getSession(){ return Promise.resolve({ data:{ session: window.__admin ? { user:{ email:"a@b" } } : null } }); },

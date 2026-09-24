@@ -115,6 +115,27 @@ const { abrir, ok } = require('./harness');
     await browser.close();
   }
 
+  // Marco zero nunca: só bairro/cidade não é gravado
+  const nominatim = (regra) => async r => {
+    const u = decodeURIComponent(r.request().url()).replace(/\+/g, ' ');
+    const q = (u.match(/[?&]q=([^&]*)/) || [])[1] || '';
+    const resp = regra(q);
+    return r.fulfill({ contentType: 'application/json', body: JSON.stringify(resp ? [{ lat: resp[0], lon: resp[1] }] : []) });
+  };
+  const academia = { name: 'Morumbi Tennis', address: 'Rua João Scaciotti', numero: '129', bairro: 'Vila Progredior', cidade: 'São Paulo' };
+  const casos = [
+    ['rua achada sem o bairro', q => q.includes('Scaciotti') && !q.includes('Progredior') ? ['-23.5870', '-46.7160'] : (q.startsWith('São Paulo') ? ['-23.5505', '-46.6333'] : null), -23.587],
+    ['rua não achada, nome achado', q => q.includes('Morumbi Tennis') ? ['-23.5855', '-46.7150'] : (q.startsWith('São Paulo') ? ['-23.5505', '-46.6333'] : null), -23.5855],
+    ['só a cidade', q => q.startsWith('São Paulo') ? ['-23.5505', '-46.6333'] : null, 'erro'],
+  ];
+  for (const [nome, regra, esperado] of casos) {
+    ({ browser, page } = await abrir({ admin: true }));
+    await page.route('**/nominatim**', nominatim(regra));
+    const g = await page.evaluate(async (a) => { try { return (await localizarAcademia(a)).lat; } catch (e) { return 'erro'; } }, academia);
+    ok(g === esperado, 'localizar: ' + nome + ' — ' + g);
+    await browser.close();
+  }
+
   // Não achou: aviso com o nome
   ({ browser, page } = await abrir({ admin: true }));
   await page.route('**/nominatim**', r => r.fulfill({ contentType: 'application/json', body: '[]' }));

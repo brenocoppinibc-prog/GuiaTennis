@@ -1925,13 +1925,19 @@ async function localizarAcademia(c) {
   const pelaRua = await localizarPeloEndereco(c);
   // O mapa costuma conhecer a academia pelo nome, com o ponto exato da
   // quadra. Vale se ficar perto do endereço; senão é homônimo em outro lugar.
+  // Quando o endereço só achou o bairro ou a cidade, a distância aceita é
+  // maior, porque o ponto de referência é o centro deles.
   if (c.name) {
     try {
       await new Promise(r => setTimeout(r, 1100)); // Nominatim: uma busca por segundo
       const pelaNome = await geocodeAddress(`${c.name}, ${c.cidade || c.bairro || "Brasil"}`);
-      if (haversineKm(pelaRua.lat, pelaRua.lng, pelaNome.lat, pelaNome.lng) <= 1.5) return pelaNome;
+      const limite = pelaRua.grosso ? 20 : 1.5;
+      if (haversineKm(pelaRua.lat, pelaRua.lng, pelaNome.lat, pelaNome.lng) <= limite) return pelaNome;
     } catch (e) { /* fica com o endereço */ }
   }
+  // Centro do bairro ou da cidade não é o lugar da academia: melhor ficar
+  // sem coordenada (e o admin ser avisado) do que aparecer no marco zero.
+  if (pelaRua.grosso) throw new Error("Só achei o bairro ou a cidade, não a rua.");
   return pelaRua;
 }
 
@@ -1995,19 +2001,27 @@ async function geocodeFormAddress(f) {
     } catch (e) { /* segue pras tentativas por texto */ }
   }
 
+  // Da mais exata para a mais genérica. O bairro atrapalha quando o mapa
+  // conhece o lugar por outro nome ("Vila Progredior" x "Morumbi"), por
+  // isso a rua com a cidade vem antes da rua com o bairro.
+  const temRua = !!(f.address || "").trim();
   const attempts = [
-    `${f.address}, ${f.numero}, ${f.bairro}, ${f.cidade}, Brasil`,
-    `${stripAccents(f.address)}, ${f.numero}, ${stripAccents(f.bairro)}, ${stripAccents(f.cidade)}, Brasil`,
-    `${f.address}, ${f.bairro}, ${f.cidade}, Brasil`,
-    `${f.bairro}, ${f.cidade}, Brasil`,
-    `${stripAccents(f.bairro)}, ${stripAccents(f.cidade)}, Brasil`,
-    `${f.cidade}, Brasil`,
-  ];
+    temRua && { q: `${f.address}, ${f.numero}, ${f.cidade}, Brasil`, nivel: "rua" },
+    temRua && { q: `${f.address}, ${f.numero}, ${f.bairro}, ${f.cidade}, Brasil`, nivel: "rua" },
+    temRua && { q: `${stripAccents(f.address)}, ${f.numero}, ${stripAccents(f.cidade)}, Brasil`, nivel: "rua" },
+    temRua && { q: `${f.address}, ${f.cidade}, Brasil`, nivel: "rua" },
+    temRua && { q: `${f.address}, ${f.bairro}, ${f.cidade}, Brasil`, nivel: "rua" },
+    { q: `${f.bairro}, ${f.cidade}, Brasil`, nivel: "bairro" },
+    { q: `${stripAccents(f.bairro)}, ${stripAccents(f.cidade)}, Brasil`, nivel: "bairro" },
+    { q: `${f.cidade}, Brasil`, nivel: "cidade" },
+  ].filter(Boolean);
   for (let i = 0; i < attempts.length; i++) {
-    if (!attempts[i].replace(/[,\s]/g, "")) continue;
+    if (!attempts[i].q.replace(/[,\s]|Brasil/g, "")) continue;
     try {
-      const geo = await geocodeAddress(attempts[i]);
-      return { ...geo, approximate: i >= 2 };
+      const geo = await geocodeAddress(attempts[i].q);
+      // "grosso": só achou o bairro ou a cidade. Serve para a busca de quem
+      // procura, nunca para gravar como o lugar da academia.
+      return { ...geo, approximate: i >= 3, grosso: attempts[i].nivel !== "rua" };
     } catch (e) { /* tenta a próxima, mais genérica */ }
   }
   throw new Error("Não consegui localizar esse endereço. Confira o CEP, bairro e cidade.");
@@ -7384,7 +7398,10 @@ async function doRegisterSubmit() {
     // Sem achar no mapa, o cadastro entra assim mesmo: a coordenada é
     // buscada de novo na aprovação e quando o admin abre o site.
     let geo = { lat: null, lng: null };
-    try { geo = await geocodeFormAddress(f); } catch (e) { /* segue sem coordenada */ }
+    try {
+      const achado = await geocodeFormAddress(f);
+      if (!achado.grosso) geo = achado;
+    } catch (e) { /* segue sem coordenada */ }
     const endereco = `${f.address}, ${f.numero}${f.complemento ? " - " + f.complemento : ""} - ${f.bairro}, ${f.cidade}${f.cep ? " - " + f.cep : ""}`;
     const visitor = loadVisitor() || {};
     const payload = {

@@ -1904,6 +1904,55 @@ async function geocodeAddress(query) {
   return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
 }
 
+// O CEP que ficou no fim do endereço completo ("... - São Paulo - 05422-000").
+function cepDoTexto(texto) {
+  const m = String(texto || "").match(/\b(\d{5})-?(\d{3})\b/);
+  return m ? m[1] + m[2] : "";
+}
+
+// Acha a coordenada de uma academia já cadastrada. Usa o CEP e o endereço
+// completo quando a rua, o bairro e a cidade não estão preenchidos em
+// separado — é o que fazia academias antigas ficarem fora do mapa.
+async function localizarAcademia(c) {
+  const cep = cepDoTexto(c.endereco);
+  const temCampos = !!(c.address && (c.bairro || c.cidade));
+  if (!temCampos && c.endereco) {
+    if (cep) { try { return await geocodeCep(cep); } catch (e) { /* tenta pelo texto */ } }
+    try { return await geocodeAddress(c.endereco.replace(/\s*-\s*\d{5}-?\d{3}\s*$/, "") + ", Brasil"); } catch (e) { /* tenta pelos campos */ }
+  }
+  return geocodeFormAddress({
+    cep, address: c.address || "", numero: c.numero || "",
+    bairro: c.bairro || "", cidade: c.cidade || "",
+  });
+}
+
+// Com o admin conectado, o site completa sozinho as coordenadas que faltam,
+// uma vez por visita. O Nominatim aceita uma busca por segundo.
+async function completarCoordenadas() {
+  if (!isAdmin || window.__completandoCoordenadas) return;
+  const faltando = semCoordenada();
+  if (!faltando.length) return;
+  window.__completandoCoordenadas = true;
+  state.localizando = { feito: 0, total: faltando.length };
+  state.naoLocalizadas = [];
+  render();
+  for (let i = 0; i < faltando.length; i++) {
+    const c = faltando[i];
+    try {
+      const geo = await localizarAcademia(c);
+      const { error } = await sb.from('academias').update({ lat: geo.lat, lng: geo.lng }).eq('id', c.id);
+      if (error) throw error;
+    } catch (e) {
+      state.naoLocalizadas.push(c.name);
+    }
+    state.localizando.feito = i + 1;
+    if (i < faltando.length - 1) await new Promise(r => setTimeout(r, 1100));
+  }
+  state.localizando = null;
+  await loadEverything();
+  render();
+}
+
 // Academias (publicadas e pendentes) que ficam fora do mapa e da busca por
 // distância por não ter coordenada.
 function semCoordenada() {
@@ -2120,6 +2169,8 @@ function render() {
   app.innerHTML = `
     ${isAdmin ? `<div class="admin-banner">Modo admin — só você vê isso <button id="logout-btn" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;margin-left:8px">sair</button></div>` : ""}
     ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia do modo admin ou use uma aba anônima.</div>` : ""}
+    ${isAdmin && state.localizando ? `<div class="admin-aviso">Colocando no mapa as academias sem coordenada: ${state.localizando.feito} de ${state.localizando.total}…</div>` : ""}
+    ${isAdmin && !state.localizando && (state.naoLocalizadas || []).length ? `<div class="admin-aviso">Não achei no mapa: <strong>${esc(state.naoLocalizadas.join(", "))}</strong>. Confira a rua, o número, o bairro e a cidade em "Editar" e salve — o site tenta de novo.</div>` : ""}
     ${isAdmin && state.faltaSqlCliques ? `<div class="admin-aviso">O banco ainda não tem a coluna <strong>${esc(state.faltaSqlCliques)}</strong> na tabela cliques, então as buscas ficam sem região ou sem CEP. Rode no SQL Editor do Supabase:<code>alter table cliques add column if not exists detalhe text;<br>alter table cliques add column if not exists cep text;</code></div>` : ""}
 
     ${state.page === "home" ? renderHome() : ""}
@@ -6158,10 +6209,7 @@ function attachEvents() {
       const c = faltando[i];
       geocodeTodas.textContent = `Procurando ${i + 1} de ${faltando.length}...`;
       try {
-        const geo = await geocodeFormAddress({
-          cep: "", address: c.address || "", numero: c.numero || "",
-          bairro: c.bairro || "", cidade: c.cidade || "",
-        });
+        const geo = await localizarAcademia(c);
         const { error } = await sb.from('academias').update({ lat: geo.lat, lng: geo.lng }).eq('id', c.id);
         if (error) throw error;
         ok++;
@@ -6184,10 +6232,7 @@ function attachEvents() {
     geocodeBtn.disabled = true;
     geocodeBtn.textContent = "Procurando o endereço...";
     try {
-      const geo = await geocodeFormAddress({
-        cep: "", address: c.address || "", numero: c.numero || "",
-        bairro: c.bairro || "", cidade: c.cidade || "",
-      });
+      const geo = await localizarAcademia(c);
       const { error } = await sb.from('academias').update({ lat: geo.lat, lng: geo.lng }).eq('id', c.id);
       if (error) throw error;
       await loadEverything();
@@ -6453,6 +6498,7 @@ function attachEvents() {
     state.showLogin = false;
     await loadEverything();
     render();
+    completarCoordenadas();
   };
 
   const cepInput = document.getElementById("cep-input");
@@ -6882,7 +6928,12 @@ function attachEvents() {
 
   document.querySelectorAll("[data-approve]").forEach(el => {
     el.onclick = async () => {
-      await sb.from('academias').update({ status: 'published' }).eq('id', el.dataset.approve);
+      const p = (state.pending || []).find(x => x.id === el.dataset.approve);
+      const mudanca = { status: 'published' };
+      if (p && (typeof p.lat !== "number" || typeof p.lng !== "number")) {
+        try { const geo = await localizarAcademia(p); mudanca.lat = geo.lat; mudanca.lng = geo.lng; } catch (e) { /* publica mesmo assim; o aviso do admin mostra quem ficou fora do mapa */ }
+      }
+      await sb.from('academias').update(mudanca).eq('id', el.dataset.approve);
       await loadEverything();
       render();
     };
@@ -7249,6 +7300,15 @@ async function doRegisterSubmit() {
       : undefined;
     const payload = toRow({ ...f, pisos, cobertura });
     if (endereco) payload.endereco = endereco; else delete payload.endereco;
+    const antes = [...state.allCourts, ...(state.pending || [])].find(c => c.id === f.__editingId) || {};
+    const mudouEndereco = ["address", "numero", "bairro", "cidade"].some(k => (antes[k] || "") !== (f[k] || ""));
+    if (mudouEndereco || typeof antes.lat !== "number" || typeof antes.lng !== "number") {
+      try {
+        const geo = await localizarAcademia({ ...antes, address: f.address, numero: f.numero, bairro: f.bairro, cidade: f.cidade, endereco: endereco || antes.endereco });
+        payload.lat = geo.lat; payload.lng = geo.lng;
+        state.naoLocalizadas = (state.naoLocalizadas || []).filter(n => n !== antes.name);
+      } catch (e) { /* salva o resto; o aviso do admin mostra quem ficou fora do mapa */ }
+    }
     try {
       let { error } = await sb.from('academias').update(payload).eq('id', f.__editingId);
       if (error && faltaColunaNova(error)) {
@@ -7291,7 +7351,10 @@ async function doRegisterSubmit() {
   state.registerStatus = "saving";
   render();
   try {
-    const geo = await geocodeFormAddress(f);
+    // Sem achar no mapa, o cadastro entra assim mesmo: a coordenada é
+    // buscada de novo na aprovação e quando o admin abre o site.
+    let geo = { lat: null, lng: null };
+    try { geo = await geocodeFormAddress(f); } catch (e) { /* segue sem coordenada */ }
     const endereco = `${f.address}, ${f.numero}${f.complemento ? " - " + f.complemento : ""} - ${f.bairro}, ${f.cidade}${f.cep ? " - " + f.cep : ""}`;
     const visitor = loadVisitor() || {};
     const payload = {
@@ -7364,6 +7427,7 @@ async function init() {
   syncUrl(false);
   render();
   if (buscarAoAbrir) doSearch();
+  completarCoordenadas();
 }
 
 function app_showLoading() {

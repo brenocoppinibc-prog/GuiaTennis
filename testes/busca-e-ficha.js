@@ -91,6 +91,30 @@ const { abrir, ok } = require('./harness');
   ok(coord[0] === -23.56 && coord[1] === -46.68, 'botão gera a coordenada que faltava — ' + coord);
   await browser.close();
 
+  // Admin abre o site: academia antiga sem coordenada (só endereço completo com CEP) vai para o mapa sozinha
+  ({ browser, page } = await abrir({ admin: true }));
+  await page.evaluate(async () => {
+    Object.assign(window.__db.academias[0], { lat: null, lng: null, address: '', bairro: '', cidade: '', endereco: 'Rua A, 1 - Morumbi, São Paulo - 05422-000' });
+    window.__completandoCoordenadas = false; await loadEverything(); completarCoordenadas();
+  });
+  await page.waitForTimeout(2500);
+  const auto = await page.evaluate(() => [window.__db.academias[0].lat, !!document.querySelector('.admin-aviso')]);
+  ok(auto[0] === -23.56 && !auto[1], 'admin abre o site: coordenada que faltava é gravada sozinha — ' + auto);
+  await browser.close();
+
+  // Não achou: aviso com o nome
+  ({ browser, page } = await abrir({ admin: true }));
+  await page.route('**/nominatim**', r => r.fulfill({ contentType: 'application/json', body: '[]' }));
+  await page.route('**/viacep**', r => r.fulfill({ contentType: 'application/json', body: '{"erro":true}' }));
+  await page.evaluate(async () => {
+    Object.assign(window.__db.academias[0], { lat: null, lng: null });
+    window.__completandoCoordenadas = false; await loadEverything(); completarCoordenadas();
+  });
+  await page.waitForTimeout(2500);
+  const naoAchou = await page.evaluate(() => document.querySelector('.admin-aviso')?.textContent || '');
+  ok(naoAchou.includes('Não achei no mapa') && naoAchou.includes('Só Aula Tennis'), 'não achou: admin vê o nome e o que fazer');
+  await browser.close();
+
   // Página de busca com o mesmo cabeçalho da home, menu incluído
   ({ browser, page } = await abrir({ q: '?busca=quadras' }));
   ok(await page.evaluate(() => state.page === 'search' && !!document.getElementById('menu-btn')), 'página de busca tem o botão de menu');

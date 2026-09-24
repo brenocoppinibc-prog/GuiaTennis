@@ -356,8 +356,15 @@ script está no scratchpad (`gera-imagens.js`).
 - **Nominatim aceita uma busca por segundo.** O "gerar as coordenadas que
   faltam" espera 1,1s entre cada uma.
 - **Academia sem `lat`/`lng` não aparece no mapa** e some da busca por
-  distância. Foi o caso do Morumbi Tennis. O admin tem o botão de gerar
-  em lote na tela do mapa.
+  distância. Foi o caso do Morumbi Tennis. Hoje o site resolve sozinho:
+  `completarCoordenadas` roda quando o admin abre o site ou entra, a
+  aprovação e a edição de endereço localizam de novo, e o cadastro novo
+  entra mesmo sem achar a coordenada. `localizarAcademia` usa o CEP e o
+  endereço completo quando rua/bairro/cidade não estão em campos
+  separados. O que não achar aparece numa faixa amarela para o admin.
+- **Link com `?busca=` precisa refazer a busca.** Recarregar, link salvo
+  e aba reaberta pelo celular chegam assim; sem `doSearch()` no `init`, a
+  página aparece sem buscar e nada é gravado.
 - **Android força modo escuro** e destroi a paleta. Resolvido com
   `<meta name="color-scheme" content="light">` e `color-scheme: light`.
 - **`lat`/`lng` vêm como texto do banco** às vezes. `numeroOuNulo()`

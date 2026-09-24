@@ -102,6 +102,19 @@ const { abrir, ok } = require('./harness');
   ok(auto[0] === -23.56 && !auto[1], 'admin abre o site: coordenada que faltava é gravada sozinha — ' + auto);
   await browser.close();
 
+  // Localização pelo nome: usa o ponto da quadra se estiver perto do endereço; homônimo longe é ignorado
+  for (const [nome, lat, esperado] of [['perto', '-23.5610', -23.561], ['longe', '-22.9000', -23.56]]) {
+    ({ browser, page } = await abrir({ admin: true }));
+    await page.route('**/nominatim**', r => {
+      const u = decodeURIComponent(r.request().url());
+      if (u.includes('Quadra Locação')) return r.fulfill({ contentType: 'application/json', body: JSON.stringify([{ lat, lon: '-46.6810' }]) });
+      return r.fallback();
+    });
+    const g = await page.evaluate(async () => (await localizarAcademia({ name: 'Quadra Locação', address: 'Rua B', numero: '2', bairro: 'Moema', cidade: 'São Paulo' })).lat);
+    ok(g === esperado, 'localização pelo nome, ' + nome + ' do endereço — ' + g);
+    await browser.close();
+  }
+
   // Não achou: aviso com o nome
   ({ browser, page } = await abrir({ admin: true }));
   await page.route('**/nominatim**', r => r.fulfill({ contentType: 'application/json', body: '[]' }));

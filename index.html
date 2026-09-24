@@ -1922,6 +1922,20 @@ function cepDoTexto(texto) {
 // completo quando a rua, o bairro e a cidade não estão preenchidos em
 // separado — é o que fazia academias antigas ficarem fora do mapa.
 async function localizarAcademia(c) {
+  const pelaRua = await localizarPeloEndereco(c);
+  // O mapa costuma conhecer a academia pelo nome, com o ponto exato da
+  // quadra. Vale se ficar perto do endereço; senão é homônimo em outro lugar.
+  if (c.name) {
+    try {
+      await new Promise(r => setTimeout(r, 1100)); // Nominatim: uma busca por segundo
+      const pelaNome = await geocodeAddress(`${c.name}, ${c.cidade || c.bairro || "Brasil"}`);
+      if (haversineKm(pelaRua.lat, pelaRua.lng, pelaNome.lat, pelaNome.lng) <= 1.5) return pelaNome;
+    } catch (e) { /* fica com o endereço */ }
+  }
+  return pelaRua;
+}
+
+async function localizarPeloEndereco(c) {
   const cep = cepDoTexto(c.endereco);
   const temCampos = !!(c.address && (c.bairro || c.cidade));
   if (!temCampos && c.endereco) {
@@ -3117,14 +3131,23 @@ function mountMap(results) {
   __markers = [];
 
   const comCoord = mapCourts(results);
-  comCoord.forEach(c => {
+  // Academias praticamente no mesmo ponto (mesma rua, endereço aproximado)
+  // ficam com os pinos empilhados, em vez de um esconder o outro.
+  const vizinhos = {};
+  const pilha = comCoord.map(c => {
+    const chave = `${c.lat.toFixed(4)},${c.lng.toFixed(4)}`;
+    vizinhos[chave] = (vizinhos[chave] || 0) + 1;
+    return vizinhos[chave] - 1;
+  });
+  comCoord.forEach((c, i) => {
     const pv = parsePriceValue(c);
     const label = isFinite(pv) ? `R$ ${pv}` : "Consultar";
     const m = L.marker([c.lat, c.lng], {
+      zIndexOffset: pilha[i] * 10,
       icon: L.divIcon({
         className: "pin-wrap",
         iconSize: null,
-        html: `<span class="pin ${state.mapSelected === c.id ? "on" : ""}">${esc(label)}</span>`,
+        html: `<span class="pin ${state.mapSelected === c.id ? "on" : ""}"${pilha[i] ? ` style="transform: translate(-50%, calc(-100% - ${pilha[i] * 34}px))"` : ""}>${esc(label)}</span>`,
       }),
     }).addTo(__map);
     m._courtId = c.id;

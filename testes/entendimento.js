@@ -23,6 +23,19 @@ const { abrir, ok } = require('./harness');
   ok(txt.includes('Fecha nos feriados.'), 'observação do horário arrumada');
   await browser.close();
 
+  // Fachada nunca some (caso da Morumbi: vaga própria e fachada com "garagem"/"estacionamento")
+  ({ browser, page } = await abrir({ q: '?court=a1' }));
+  for (const [txt, esperado] of [
+    ['Portão preto ao lado da garagem do prédio', 'Portão preto ao lado da garagem do prédio.'],
+    ['Estacionamento na frente do portão preto', 'Estacionamento na frente do portão preto.'],
+  ]) {
+    const r = await page.evaluate(t => acessoFicha({ amenities: ['estacionamento_gratuito'], acesso: { fachada: t } }).fachada, txt);
+    ok(r === esperado, 'com vaga própria, a fachada fica inteira — ' + r);
+  }
+  const unica = await page.evaluate(() => acessoFicha({ amenities: [], acesso: { fachada: 'Estacionamento na frente do portão preto' } }).fachada);
+  ok(unica === 'Estacionamento na frente do portão preto.', 'sem vaga, frase única não esvazia a fachada');
+  await browser.close();
+
   // Prévia no cadastro
   ({ browser, page } = await abrir({ admin: true, q: '?court=a2' }));
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a2"]').click());

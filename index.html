@@ -1167,7 +1167,9 @@ const TERMOS_ESTACIONAR = [
   { tipo: "livre", termos: ["rua", "na frente", "na porta", "calcada", "livre", "gratis", "de graca", "tranquilo", "facil", "sobra vaga", "tem vaga", "vaga"] },
 ];
 
-const TERMOS_E_ESTACIONAR = ["estacion", "vaga", "zona azul", "manobrista", "valet", "parar o carro", "deixar o carro", "garagem"];
+// Só o que é claramente sobre estacionar. "Garagem" e "vaga" ficam de fora:
+// também servem de referência para achar o portão.
+const TERMOS_E_ESTACIONAR = ["estacion", "zona azul", "manobrista", "valet", "parar o carro", "deixar o carro", "vaga na rua", "vagas na rua"];
 
 function falaDeEstacionar(frase) {
   const t = semAcento(frase);
@@ -1217,13 +1219,17 @@ function entenderEstacionar(texto) {
 }
 
 // Fachada e chegada arrumadas. Frase sobre estacionamento escrita ali muda
-// para o bloco de estacionamento, onde é o lugar dela.
+// para o bloco de estacionamento, onde é o lugar dela — mas só quando a
+// academia não tem vaga própria (senão o bloco mostra só "No local" e a frase
+// sumiria) e nunca a ponto de deixar a fachada ou a chegada vazia.
 function acessoFicha(c) {
   const a = acessoDe(c);
+  const podeMover = !temEstacionamentoProprio(c);
   const separa = (texto) => {
     const fica = [], sai = [];
     String(texto || "").split(/(?<=[.!?;])\s+|\n+/).map(x => x.trim()).filter(Boolean)
-      .forEach(f => (falaDeEstacionar(f) ? sai : fica).push(f));
+      .forEach(f => (podeMover && falaDeEstacionar(f) ? sai : fica).push(f));
+    if (!fica.length) return { fica: sai.join(" "), sai: "" };
     return { fica: fica.join(" "), sai: sai.join(". ") };
   };
   const fac = separa(a.fachada), ent = separa(a.entrada);

@@ -3665,12 +3665,7 @@ window.addEventListener("popstate", () => {
 function renderSearchPage(results, activeFilters, topBadge) {
   return `
     ${state.view === "map" ? "" : `
-      <div class="home-head">
-        <button type="button" class="home-brand" id="brand-home">
-          ${LOGO_SVG}
-          <h1 class="display">GuiaTennis</h1>
-        </button>
-      </div>
+      ${renderCabecalho()}
       <div class="search-header">
         ${renderSearchCard()}
         ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}

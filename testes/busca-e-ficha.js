@@ -63,6 +63,13 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => !document.querySelector('.admin-aviso')), 'banco completo: sem aviso');
   await browser.close();
 
+  // Página de busca com o mesmo cabeçalho da home, menu incluído
+  ({ browser, page } = await abrir({ q: '?busca=quadras' }));
+  ok(await page.evaluate(() => state.page === 'search' && !!document.getElementById('menu-btn')), 'página de busca tem o botão de menu');
+  await page.click('#menu-btn'); await page.waitForTimeout(200);
+  ok(await page.evaluate(() => !!document.getElementById('menu-overlay')), 'menu abre na busca');
+  await browser.close();
+
   // Fichas
   ({ browser, page } = await abrir({ q: '?court=a1' }));
   let txt = await page.evaluate(() => document.getElementById('app').textContent);

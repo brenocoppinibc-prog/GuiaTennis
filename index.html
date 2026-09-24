@@ -1741,10 +1741,6 @@ function registrarBusca(geo, cep) {
   const digitos = String(cep || "").replace(/\D/g, "");
   trackClick(null, "busca", regiao || "região não identificada", digitos.length === 8 ? digitos.slice(0, 5) + "-" + digitos.slice(5) : null);
 }
-function getAllClicks() {
-  return state.clicksCache || {};
-}
-
 // ---------- state ----------
 
 let state = {
@@ -2428,10 +2424,6 @@ function analisarAnotacoes(texto, courts) {
   return { achados, criterios: [...new Set(criterios)] };
 }
 
-function cmpRow(label, value) {
-  return `<div class="cmp-row"><p class="cmp-label">${label}</p><p class="cmp-val">${value}</p></div>`;
-}
-
 // A lista do seletor: mais próximas, favoritas ou todas, com o + de cada uma.
 function listaDoSeletor(lista) {
   if (!lista.length) return `<p class="cmp-vazio">Nenhuma academia aqui ainda.</p>`;
@@ -2889,26 +2881,6 @@ function renderNavSheet() {
       </div></div>
     </div>
   `;
-}
-
-function priceBlock(c, compact) {
-  const hasAula = !!c.priceAula;
-  const hasLoc = !!c.priceLocacao;
-  if (!hasAula && !hasLoc) {
-    return c.priceRange
-      ? `<span class="price-known">${esc(c.priceRange)}</span>`
-      : `<span class="price-unknown">${SEM_PRECO}</span>`;
-  }
-  if (compact) {
-    const parts = [];
-    if (hasAula) parts.push(`<span class="price-known">${icon('cap',13,'var(--green)')} A partir de R$ ${priceMin(c.priceAula)}/hora</span>`);
-    if (hasLoc) parts.push(`<span class="price-known">${icon('key',13,'var(--green)')} A partir de R$ ${priceMin(c.priceLocacao)}/hora</span>`);
-    return parts.join(" &nbsp; ");
-  }
-  const parts = [];
-  if (hasAula) parts.push(`<span class="price-known">${icon('cap',13,'var(--green)')} Faixa aula: R$ ${esc(c.priceAula)}/hora</span>`);
-  if (hasLoc) parts.push(`<span class="price-known">${icon('key',13,'var(--green)')} Faixa locação: R$ ${esc(c.priceLocacao)}/hora</span>`);
-  return parts.join("<br>");
 }
 
 function totalQuadras(c) {
@@ -3759,13 +3731,6 @@ function distanceText(km) {
 
 function courtPhotos(c) {
   return (c.photos && c.photos.length) ? c.photos : (c.photoUrl ? [c.photoUrl] : []);
-}
-
-function cardPhotoIndex(c) {
-  const photos = courtPhotos(c);
-  if (!photos.length) return 0;
-  const i = state.cardPhoto[c.id] || 0;
-  return Math.min(Math.max(i, 0), photos.length - 1);
 }
 
 // ---------- painel de filtros (mesmo conteúdo na barra lateral e na gaveta) ----------
@@ -5662,13 +5627,6 @@ function politicaParaSalvar(f) {
   }
   const k = temAula ? "aula" : "locacao";
   return { modo: "igual", ...parte(pol.modo === "separado" ? pol[k] : pol) };
-}
-
-function politicaForm(f) {
-  if (!f.politica) f.politica = { reposicao: "", foraDoPrazo: "" };
-  const pol = f.politica;
-  pol.horas = (REPOSICAO_OPTS.find(o => o.key === pol.reposicao) || {}).horas || null;
-  return pol;
 }
 
 function renderRegisterSheet() {

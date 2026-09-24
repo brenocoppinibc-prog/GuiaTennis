@@ -574,17 +574,13 @@
   .menu-versao { font-size: 12px; color: var(--muted-dark); margin: 10px 10px 0; }
 
   /* médias mostradas para quem pensa em cadastrar a academia */
-  /* No celular, uma linha por número, com o número numa coluna só; no
-     computador, um ao lado do outro, em colunas iguais. */
-  .ba-numeros { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.18); }
-  .ban-item { min-width: 0; display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 12px; }
-  .ban-item strong { display: block; font-size: 24px; font-weight: 800; color: var(--gold-light); line-height: 1.1; white-space: nowrap; }
-  .ban-item span { font-size: 12px; color: rgba(255,255,255,0.72); line-height: 1.35; display: block; }
-  @media (min-width: 640px) {
-    .ba-numeros { grid-template-columns: repeat(var(--n, 3), 1fr); gap: 12px; }
-    .ban-item { display: block; }
-    .ban-item span { margin-top: 3px; }
-  }
+  /* Os números ficam lado a lado, em colunas iguais, no celular e no
+     computador. */
+  .ba-numeros { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.18); text-align: center; }
+  .ban-item { min-width: 0; }
+  .ban-item strong { display: block; font-size: 22px; font-weight: 800; color: var(--gold-light); line-height: 1.1; white-space: nowrap; }
+  .ban-item span { font-size: 12px; color: rgba(255,255,255,0.72); line-height: 1.35; display: block; margin-top: 4px; }
+  @media (min-width: 640px) { .ban-item strong { font-size: 26px; } }
 
   /* por que o GuiaTennis */
   .dif-grade { display: grid; gap: 12px; }

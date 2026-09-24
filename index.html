@@ -1904,6 +1904,13 @@ async function geocodeAddress(query) {
   return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
 }
 
+// Academias (publicadas e pendentes) que ficam fora do mapa e da busca por
+// distância por não ter coordenada.
+function semCoordenada() {
+  return [...state.allCourts, ...(state.pending || [])]
+    .filter(c => typeof c.lat !== "number" || typeof c.lng !== "number");
+}
+
 async function geocodeFormAddress(f) {
   // Tenta primeiro pelo CEP (mais confiável), se a pessoa preencheu um
   const cepDigits = (f.cep || "").replace(/\D/g, "");
@@ -2962,7 +2969,7 @@ function renderMapView(results) {
       <p class="fgroup-note" style="padding:8px 20px 0">${fora} ${plural(fora, "academia não aparece", "academias não aparecem")} no mapa por falta de endereço localizado.${isAdmin ? "" : ""}</p>
       ${isAdmin ? `
         <p class="fgroup-note" style="padding:4px 20px 0;color:var(--red)">Só você vê — sem coordenada: ${esc(results.filter(c => typeof c.lat !== "number" || typeof c.lng !== "number").map(c => c.name).join(", "))}.</p>
-        <div style="padding:8px 20px 0"><button type="button" class="cta-btn cta-secondary" id="geocode-todas">${icon('pin', 15, 'var(--green)')} Gerar as coordenadas que faltam</button></div>` : ""}
+        <div style="padding:8px 20px 0"><button type="button" class="cta-btn cta-secondary geocode-todas-btn">${icon('pin', 15, 'var(--green)')} Gerar as coordenadas que faltam</button></div>` : ""}
     ` : ""}
   `;
 }
@@ -6058,6 +6065,9 @@ function renderAdminPanel(pending) {
         <p class="sheet-title display">Solicitações pendentes</p>
         <p class="subtitle" style="margin-top:4px">${pending.length} aguardando sua revisão</p>
         <button type="button" class="cta-btn cta-secondary" id="qr-site-btn" style="margin-top:12px">${icon('clipboard', 15, 'var(--green)')} QR code do site inteiro</button>
+        ${semCoordenada().length ? `
+          <p class="pending-detail" style="margin-top:12px;color:var(--red)">Fora do mapa por falta de coordenada: ${esc(semCoordenada().map(c => c.name).join(", "))}.</p>
+          <button type="button" class="cta-btn cta-secondary geocode-todas-btn" style="margin-top:6px">${icon('pin', 15, 'var(--green)')} Gerar as coordenadas que faltam</button>` : ""}
         ${pending.length === 0 ? `<p class="empty">Nenhuma solicitação no momento.</p>` : ""}
         ${pending.map(p => `
           <div class="pending-item">
@@ -6138,9 +6148,8 @@ function attachEvents() {
     };
   });
 
-  const geocodeTodas = document.getElementById("geocode-todas");
-  if (geocodeTodas) geocodeTodas.onclick = async () => {
-    const faltando = state.allCourts.filter(c => typeof c.lat !== "number" || typeof c.lng !== "number");
+  document.querySelectorAll(".geocode-todas-btn").forEach(geocodeTodas => geocodeTodas.onclick = async () => {
+    const faltando = semCoordenada();
     if (!faltando.length) { alert("Todas já têm coordenada."); return; }
     geocodeTodas.disabled = true;
     const erros = [];
@@ -6163,9 +6172,9 @@ function attachEvents() {
       if (i < faltando.length - 1) await new Promise(r => setTimeout(r, 1100));
     }
     await loadEverything();
-    alert(`${ok} de ${faltando.length} com coordenada agora.` + (erros.length ? `\n\nNão consegui:\n` + erros.join("\n") : ""));
+    alert(`${ok} de ${faltando.length} com coordenada agora.` + (erros.length ? `\n\nNão consegui:\n` + erros.join("\n") + `\n\nConfira a rua, o número, o bairro e a cidade dessas academias em "Editar" e tente de novo.` : ""));
     render();
-  };
+  });
 
   const geocodeBtn = document.getElementById("geocode-btn");
   if (geocodeBtn) geocodeBtn.onclick = async () => {
@@ -7192,6 +7201,8 @@ async function doSearch() {
     state.searchStatus = "done";
     registrarBusca(geo, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
   } catch (e) {
+    // Quem buscou e não achou também é procura: conta, sem região.
+    registrarBusca({ bairro: "", cidade: "" }, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
     state.errorMsg = e.message || "Não consegui buscar esse endereço ou CEP.";
     state.searchStatus = "error";
   }
@@ -7337,6 +7348,11 @@ async function init() {
   } else {
     state.page = q.has("comparar") ? "comparar" : (q.has("busca") ? "search" : "home");
   }
+  // Link com a busca no endereço (recarregar a página, link salvo ou
+  // compartilhado, aba reaberta pelo celular): refaz a busca, e ela conta.
+  const termoBusca = (q.get("busca") || "").trim();
+  const buscarAoAbrir = state.page === "search" && termoBusca && termoBusca !== "quadras";
+  if (buscarAoAbrir) state.cep = termoBusca;
 
   // Remove da comparação academias que não existem mais (excluídas ou pausadas)
   if (state.compareList.length) {
@@ -7347,6 +7363,7 @@ async function init() {
   state.loaded = true;
   syncUrl(false);
   render();
+  if (buscarAoAbrir) doSearch();
 }
 
 function app_showLoading() {

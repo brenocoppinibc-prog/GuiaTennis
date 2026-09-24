@@ -63,6 +63,34 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => !document.querySelector('.admin-aviso')), 'banco completo: sem aviso');
   await browser.close();
 
+  // Link com a busca no endereço (recarregar, link salvo, aba reaberta): busca e conta
+  ({ browser, page } = await abrir({ q: '?busca=05422-000' }));
+  await page.waitForTimeout(1200);
+  cl = await page.evaluate(() => window.__cliques.filter(c => c.tipo === 'busca').map(c => c.detalhe + '|' + c.cep));
+  ok(cl.join() === 'Pinheiros, São Paulo|05422-000', 'abrir link ?busca=CEP faz a busca e grava — ' + cl);
+  ok(await page.evaluate(() => state.origin && state.origin.bairro === 'Pinheiros' && location.search.includes('05422')), 'link mantém o CEP e ordena por distância');
+  await browser.close();
+
+  // Busca que não acha o lugar também conta
+  ({ browser, page } = await abrir());
+  await page.route('**/nominatim**', r => r.fulfill({ contentType: 'application/json', body: '[]' }));
+  await page.fill('#cep-input', 'lugar que não existe'); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+  cl = await page.evaluate(() => window.__cliques.filter(c => c.tipo === 'busca').map(c => c.detalhe));
+  ok(cl.join() === 'região não identificada', 'busca sem resultado também é gravada — ' + cl);
+  await browser.close();
+
+  // Academia sem coordenada: aviso e botão no painel do admin
+  ({ browser, page } = await abrir({ admin: true }));
+  page.on('dialog', d => d.accept());
+  await page.evaluate(async () => { window.__db.academias[1].lat = null; window.__db.academias[1].lng = null; await loadEverything(); state.showAdminPanel = true; render(); });
+  const avisoMapa = await page.evaluate(() => document.getElementById('admin-overlay').textContent);
+  ok(avisoMapa.includes('Fora do mapa por falta de coordenada: Quadra Locação'), 'painel mostra quem está fora do mapa');
+  await page.evaluate(() => document.querySelector('#admin-overlay .geocode-todas-btn').click());
+  await page.waitForTimeout(2500);
+  const coord = await page.evaluate(() => [window.__db.academias[1].lat, window.__db.academias[1].lng]);
+  ok(coord[0] === -23.56 && coord[1] === -46.68, 'botão gera a coordenada que faltava — ' + coord);
+  await browser.close();
+
   // Página de busca com o mesmo cabeçalho da home, menu incluído
   ({ browser, page } = await abrir({ q: '?busca=quadras' }));
   ok(await page.evaluate(() => state.page === 'search' && !!document.getElementById('menu-btn')), 'página de busca tem o botão de menu');

@@ -1589,8 +1589,23 @@ async function carregarEstatisticasPublicas() {
   } catch { /* sem os números no banco, o bloco simplesmente não aparece */ }
 }
 
+// O visitante só lê as colunas públicas. Quem pediu o cadastro e o WhatsApp
+// de quem avaliou ficam fechados no banco (SQL-SEGURANCA.sql) e só o admin vê.
+const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, created_at";
+const COLUNAS_AVALIACAO_PUBLICAS = "id, academia_id, stars, comment, nome_autor, created_at";
+
+// Enquanto o banco não tiver alguma dessas colunas, a lista falha; aí lê
+// tudo, como antes, em vez de deixar o site vazio.
+async function lerPublico(tabela, colunas, montar) {
+  if (!isAdmin) {
+    const r = await montar(sb.from(tabela).select(colunas));
+    if (!r.error) return r;
+  }
+  return montar(sb.from(tabela).select('*'));
+}
+
 async function loadEverything() {
-  const { data: published } = await sb.from('academias').select('*').eq('status', 'published').order('created_at');
+  const { data: published } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'));
   state.allCourts = (published || []).map(mapRow);
 
   if (isAdmin) {
@@ -1618,7 +1633,7 @@ async function loadEverything() {
 
   await carregarEstatisticasPublicas();
 
-  const { data: reviews } = await sb.from('avaliacoes').select('*').order('created_at', { ascending: false });
+  const { data: reviews } = await lerPublico('avaliacoes', COLUNAS_AVALIACAO_PUBLICAS, q => q.order('created_at', { ascending: false }));
   const reviewsCache = {};
   (reviews || []).forEach(r => {
     if (!reviewsCache[r.academia_id]) reviewsCache[r.academia_id] = [];
@@ -1953,7 +1968,7 @@ function getAppRating(courtId) {
 async function submitRating(courtId, stars, comment) {
   const trimmed = (comment || "").trim();
   const v = loadVisitor() || {};
-  const { data } = await sb.from('avaliacoes').insert({ academia_id: courtId, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato }).select().single();
+  const { data } = await sb.from('avaliacoes').insert({ academia_id: courtId, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato }).select('id').single();
   if (!state.reviewsCache[courtId]) state.reviewsCache[courtId] = [];
   state.reviewsCache[courtId].unshift({ id: data && data.id, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato, ts: new Date().toISOString() });
 }

@@ -1,5 +1,6 @@
 // Finge o Supabase para os testes: tabelas em memória (window.__db), e a função
-// de estatísticas. Chaves: __admin, __semDetalhe, __semCep. O que o site grava em cliques fica em __cliques.
+// de estatísticas. Chaves: __admin, __semDetalhe, __semCep, __colunasFechadas,
+// __semPlano. O que o site grava em cliques fica em __cliques.
 (function(){
   const agora = new Date().toISOString();
   const db = window.__db = {
@@ -37,6 +38,10 @@
       }
       if (op === "update") { t.filter(pass).forEach(r => Object.assign(r, JSON.parse(JSON.stringify(payload)))); window.__ultimoUpdate = JSON.parse(JSON.stringify(payload)); return { data:null, error:null }; }
       if (op === "delete") { return { data:null, error:null }; }
+      // Depois do SQL-SEGURANCA.sql, o visitante não lê a linha inteira.
+      if (window.__colunasFechadas && !window.__admin && colunas === "*" && (table === "academias" || table === "avaliacoes")) return { data:null, error:{ message:"permission denied for table " + table } };
+      // Antes do SQL, pode faltar coluna nova.
+      if (window.__semPlano && table === "academias" && colunas.includes("plano")) return { data:null, error:{ message:"column academias.plano does not exist" } };
       if (table === "cliques" && window.__semCep && colunas.includes("cep")) return { data:null, error:{ message:"column cliques.cep does not exist" } };
       const out = JSON.parse(JSON.stringify(t.filter(pass)));
       return { data: single ? out[0] : out, error:null };

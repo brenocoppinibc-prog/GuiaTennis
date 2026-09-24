@@ -186,7 +186,8 @@ Cada faixa é `{ de: "06:00", ate: "22:00", fechado: false }`. No modo
 `detalhe` guarda "Bairro, Cidade" e `cep` o CEP digitado ("05422-000"),
 quando a busca foi por CEP. O painel do admin lista os dois.
 
-**RLS:** a tabela é fechada para leitura — só o admin lê. Quem responde
+**RLS:** a tabela é fechada para leitura — só o admin lê. O envio só
+aceita os `tipo` da lista acima (`SQL-SEGURANCA.sql`). Quem responde
 ao visitante é a **função** `estatisticas_publicas()`, que devolve quatro
 totais somados e nada por academia.
 
@@ -201,6 +202,22 @@ o visitante, o RLS bloquearia `cliques` e os números viriam vazios. A
 função `security definer` com `search_path` fixo faz o mesmo de um jeito
 que o Supabase reconhece. O site tenta a função e, se ela não existir,
 cai na visão antiga; sem nenhuma das duas, o bloco de números some.
+
+### Segurança (`SQL-SEGURANCA.sql`)
+- Admin é quem tem o e-mail `guiatennis1@gmail.com` no login: as regras
+  de editar, apagar e ver pendentes/cliques conferem `auth.jwt() ->> 'email'`.
+  O cadastro de novos usuários no Supabase Auth está **desligado**.
+- O visitante (`anon`) lê **só colunas liberadas uma a uma**: tudo menos
+  `nome_solicitante`/`contato_solicitante` (academias) e `contato_autor`
+  (avaliações). O site pede essas colunas pelo nome
+  (`COLUNAS_ACADEMIA_PUBLICAS`, `COLUNAS_AVALIACAO_PUBLICAS`, `lerPublico`);
+  se a lista falhar, tenta `*`, que funciona antes do SQL.
+- Envio de avaliação só com nota de 1 a 5; clique só com `tipo` conhecido;
+  cadastro só como `pending`, sem plano pago.
+- Avisos do Security Advisor que ficam, de propósito:
+  `estatisticas_publicas` como `SECURITY DEFINER` executável por anon e
+  authenticated — é assim que o visitante vê os quatro totais sem ler a
+  tabela `cliques` (ver acima).
 
 ## 5. ⚠️ Pendente de rodar no Supabase
 
@@ -269,7 +286,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -280,6 +297,8 @@ cd testes && for t in busca-e-ficha cadastro entendimento; do NODE_PATH=$(npm ro
   ficha, textos fixos.
 - `cadastro.js` — cancelamento por modalidade, "Onde estacionar" só sem
   vaga própria, ordem dos campos, edição que não apaga horário nem regra.
+- `seguranca.js` — site funciona com o banco fechado (depois do
+  `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
   estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
 
@@ -299,7 +318,8 @@ isso o `NODE_PATH`.
 `og-image.png`, `google7b66589ffc303f37.html` (verificação do Search
 Console).
 
-O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql` e a pasta `testes/`
+O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
+`SQL-SEGURANCA.sql` e a pasta `testes/`
 ficam no repositório mas fora do ar —
 `netlify.toml` devolve 404 para eles, e eles não entram no zip.
 
@@ -359,6 +379,12 @@ script está no scratchpad (`gera-imagens.js`).
   edição não carregava `horario` (salvar apagava o horário) e carregava a
   política já transformada por `politicaDe` (a regra única sumia). Hoje usa
   `politicaParaForm` e uma cópia de `c.horario`.
+- **Coluna nova em `academias` ou `avaliacoes` não aparece para o
+  visitante sozinha.** A leitura do `anon` é liberada coluna por coluna.
+  Depois de `alter table ... add column`, rode de novo o
+  `SQL-SEGURANCA.sql` (ele libera todas menos as de contato) **antes** de
+  pôr a coluna em `COLUNAS_ACADEMIA_PUBLICAS`; senão o site fica vazio
+  para quem não é admin.
 - **`create or replace view` só aceita colunas novas no fim.** Mudar
   nome, ordem ou tipo exige `drop` antes — o mesmo vale para
   `create or replace function` com outro `returns table`.
@@ -412,14 +438,12 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- Rodar o `SQL-ESTATISTICAS.sql` no Supabase.
+- Rodar o `SQL-SEGURANCA.sql` no Supabase (o das estatísticas já foi).
 - Gerar as coordenadas que faltam (botão no mapa, modo admin).
 - Cadastrar o site no Google Search Console e enviar o `sitemap.xml`.
 - A branch está bem à frente de
   `claude/trivago-style-court-interface-fvd0v6`. Não há PR aberto.
 - Ideias que ficaram no ar: posição do bloco "Por que estar no
   GuiaTennis"; tirar o contador da comparação do botão do menu.
-- Segurança a conferir: `isAdmin = !!session`. Se o cadastro de usuários
-  estiver aberto no Supabase Auth (Authentication → Sign In / Providers →
-  "Allow new users to sign up"), qualquer pessoa cria conta e vira admin
-  no site. Desligue essa opção.
+- Ligar "Leaked password protection" no Supabase Auth, se o plano
+  permitir.

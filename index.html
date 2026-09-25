@@ -822,6 +822,8 @@
   .hr-linha.fechado strong { color: var(--muted); font-weight: 400; }
 
   /* horário no cadastro */
+  .pol-horas { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; font-size: 14px; color: var(--muted); }
+  .pol-horas-campo { width: 80px; margin-top: 0; text-align: center; }
   .pol-form-t { font-size: 14px; font-weight: 800; color: var(--text); margin: 16px 0 6px; }
   .pol-titulo { font-size: 15px; font-weight: 800; color: var(--text); margin: 18px 0 8px; }
   .pol-titulo:first-child { margin-top: 0; }
@@ -1097,6 +1099,21 @@ const REPOSICAO_OPTS = [
   { key: "48", label: "48h", horas: 48 },
   { key: "nao", label: "Não tem reposição", horas: null },
 ];
+
+// Além das três opções, a academia pode escrever o prazo que usa de verdade
+// (6h, 36h, 72h...). Fica guardado só com o número de horas.
+const REPOSICAO_MAX_HORAS = 720;
+
+function horasDaReposicao(key) {
+  const opcao = REPOSICAO_OPTS.find(x => x.key === key);
+  if (opcao) return opcao.horas;
+  const n = /^\d+$/.test(String(key || "")) ? parseInt(key, 10) : 0;
+  return n >= 1 && n <= REPOSICAO_MAX_HORAS ? n : null;
+}
+
+function reposicaoValida(key) {
+  return key === "nao" || horasDaReposicao(key) !== null;
+}
 
 // Duas dicas curtas que a academia escreve: como achar o lugar e o que fazer
 // ao chegar. Ficam na coluna "acesso" (jsonb) da tabela academias.
@@ -1380,13 +1397,13 @@ function parteDaPolitica(o) {
   let reposicao = String(o.reposicao || "");
   // Formatos antigos: "sim"/"consultar" não diziam o prazo, e o prazo vinha
   // em outro campo. Aproveita o que dá e descarta o resto.
-  if (!REPOSICAO_OPTS.some(x => x.key === reposicao)) {
+  if (!reposicaoValida(reposicao)) {
     const antigo = numeroOuNulo(o.cancelamentoHoras);
-    reposicao = (antigo && REPOSICAO_OPTS.some(x => x.horas === antigo)) ? String(antigo) : "";
+    reposicao = (antigo && reposicaoValida(String(antigo))) ? String(antigo) : "";
   }
   return {
     reposicao,
-    horas: (REPOSICAO_OPTS.find(x => x.key === reposicao) || {}).horas || null,
+    horas: horasDaReposicao(reposicao),
     foraDoPrazo: (o.foraDoPrazo || o.obs || "").trim(),
   };
 }
@@ -5712,13 +5729,28 @@ function politicaForm2(f) {
 // "aula"/"locacao" quando a academia separa as duas.
 function blocoPoliticaForm(pol, alvo, titulo) {
   const p = alvo ? pol[alvo] : pol;
-  const horas = (REPOSICAO_OPTS.find(o => o.key === p.reposicao) || {}).horas || null;
+  const horas = horasDaReposicao(p.reposicao);
   const id = alvo || "geral";
+  // "Personalizar" fica marcado quando o prazo gravado não é 12, 24 ou 48,
+  // ou enquanto a academia está digitando o dela.
+  const padrao = REPOSICAO_OPTS.some(o => o.key === p.reposicao);
+  const personalizado = !!p.__personalizar || (!!p.reposicao && !padrao);
+  const opcoes = REPOSICAO_OPTS.filter(o => o.key !== "nao");
+  const nao = REPOSICAO_OPTS.find(o => o.key === "nao");
+  const chip = (o) => `<button type="button" class="chip small reg-reposicao ${!personalizado && p.reposicao === o.key ? "active" : ""}" data-reposicao="${o.key}" data-alvo="${esc(alvo)}">${o.label}</button>`;
   return `
     ${titulo ? `<p class="pol-form-t">${esc(titulo)}</p>` : ""}
     <div class="chip-row">
-      ${REPOSICAO_OPTS.map(o => `<button type="button" class="chip small reg-reposicao ${p.reposicao === o.key ? "active" : ""}" data-reposicao="${o.key}" data-alvo="${esc(alvo)}">${o.label}</button>`).join("")}
+      ${opcoes.map(chip).join("")}
+      <button type="button" class="chip small reg-reposicao-outro ${personalizado ? "active" : ""}" data-alvo="${esc(alvo)}">Personalizar</button>
+      ${chip(nao)}
     </div>
+    ${personalizado ? `
+      <div class="pol-horas">
+        <span>Avisando com pelo menos</span>
+        <input type="number" inputmode="numeric" min="1" max="${REPOSICAO_MAX_HORAS}" class="form-field pol-horas-campo" id="f-politica-horas-${id}" data-alvo="${esc(alvo)}" value="${padrao ? "" : esc(p.reposicao)}" placeholder="36" />
+        <span>horas de antecedência</span>
+      </div>` : ""}
     <textarea class="form-field" id="f-politica-fora-${id}" data-alvo="${esc(alvo)}" rows="3" style="resize:none"
       placeholder="${horas ? `O que acontece avisando com menos de ${horas}h` : "Como funcionam os cancelamentos"}">${esc(p.foraDoPrazo)}</textarea>`;
 }
@@ -7000,8 +7032,30 @@ function attachEvents() {
     el.onclick = () => {
       const pol = politicaForm2(window.__form);
       const alvo = el.dataset.alvo ? pol[el.dataset.alvo] : pol;
-      alvo.reposicao = alvo.reposicao === el.dataset.reposicao ? "" : el.dataset.reposicao;
+      const eraPersonalizado = alvo.__personalizar || (alvo.reposicao && !REPOSICAO_OPTS.some(o => o.key === alvo.reposicao));
+      alvo.__personalizar = false;
+      alvo.reposicao = !eraPersonalizado && alvo.reposicao === el.dataset.reposicao ? "" : el.dataset.reposicao;
       render();
+    };
+  });
+  document.querySelectorAll(".reg-reposicao-outro").forEach(el => {
+    el.onclick = () => {
+      const pol = politicaForm2(window.__form);
+      const alvo = el.dataset.alvo ? pol[el.dataset.alvo] : pol;
+      const ativo = alvo.__personalizar || (alvo.reposicao && !REPOSICAO_OPTS.some(o => o.key === alvo.reposicao));
+      alvo.__personalizar = !ativo;
+      // Tocar de novo desmarca, como nas outras opções.
+      if (ativo || REPOSICAO_OPTS.some(o => o.key === alvo.reposicao)) alvo.reposicao = "";
+      render();
+      if (!ativo) document.getElementById(`f-politica-horas-${el.dataset.alvo || "geral"}`)?.focus();
+    };
+  });
+  document.querySelectorAll('[id^="f-politica-horas-"]').forEach(el => {
+    el.oninput = (e) => {
+      const pol = politicaForm2(window.__form);
+      const alvo = el.dataset.alvo ? pol[el.dataset.alvo] : pol;
+      const n = parseInt(String(e.target.value).replace(/\D/g, ""), 10);
+      alvo.reposicao = n >= 1 && n <= REPOSICAO_MAX_HORAS ? String(n) : "";
     };
   });
   document.querySelectorAll('[id^="f-politica-fora-"]').forEach(el => {

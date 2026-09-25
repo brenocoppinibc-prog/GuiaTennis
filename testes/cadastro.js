@@ -60,6 +60,28 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(600);
   const up2 = await page.evaluate(() => window.__ultimoUpdate);
   ok(up2.politica.reposicao === '48', 'regra única continua depois de salvar');
+  // Prazo personalizado de reposição
+  await page.evaluate(async () => { await loadEverything(); state.showRegister = false; render(); document.querySelector('.editar-academia[data-court="a2"]').click(); });
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('.reg-reposicao-outro').click());
+  await page.waitForTimeout(150);
+  ok(await page.evaluate(() => !!document.querySelector('[id^="f-politica-horas-"]') && document.activeElement.id.startsWith('f-politica-horas-')), 'Personalizar abre o campo de horas, já com o cursor');
+  await page.fill('[id^="f-politica-horas-"]', '36');
+  await page.evaluate(() => document.getElementById('register-submit').click());
+  await page.waitForTimeout(600);
+  ok(await page.evaluate(() => window.__ultimoUpdate.politica.reposicao === '36' && !('__personalizar' in window.__ultimoUpdate.politica)), 'salva 36 horas, sem sujeira do formulário');
+  await page.evaluate(async () => { await loadEverything(); state.showRegister = false; state.selected = state.allCourts.find(c => c.id === 'a2'); render(); });
+  const fichaPol = await page.evaluate(() => document.getElementById('app').textContent.replace(/\s+/g, ' '));
+  ok(fichaPol.includes('36h é a antecedência mínima'), 'ficha mostra 36h');
+  await page.evaluate(() => document.querySelector('.editar-academia[data-court="a2"]').click());
+  await page.waitForTimeout(300);
+  const reaberto = await page.evaluate(() => ({ ativo: document.querySelector('.reg-reposicao-outro').classList.contains('active'), v: document.querySelector('[id^="f-politica-horas-"]')?.value }));
+  ok(reaberto.ativo && reaberto.v === '36', 'editar de novo: Personalizar marcado com 36');
+  await page.evaluate(() => document.querySelector('.reg-reposicao[data-reposicao="24"]').click());
+  await page.waitForTimeout(150);
+  const volta = await page.evaluate(() => ({ campo: !!document.querySelector('[id^="f-politica-horas-"]'), rep: window.__form.politica.reposicao }));
+  ok(!volta.campo && volta.rep === '24', 'escolher 24h fecha o campo e vale 24');
+
   // Cadastro novo com as duas modalidades mostra a escolha
   await page.evaluate(() => { window.__form = null; state.showRegister = true; state.registerStatus = 'idle'; render(); });
   await page.evaluate(() => { document.querySelector('.reg-modalidade[data-modalidade="aulas_proprias"]').click(); });

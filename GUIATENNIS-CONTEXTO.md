@@ -136,7 +136,7 @@ modalidade:
   "aula":    { "reposicao": "24", "foraDoPrazo": "texto" },
   "locacao": { "reposicao": "12", "foraDoPrazo": "texto" } }
 ```
-`reposicao` é `"12" | "24" | "48" | "nao"`. A escolha "Aula e locação
+`reposicao` é `"12" | "24" | "48" | "nao"` ou um número de horas de 1 a 720, quando a academia usa "Personalizar" (`horasDaReposicao`). A escolha "Aula e locação
 diferentes" só aparece para quem marcou as duas modalidades; quem só dá
 aula (ou só aluga) tem um bloco só, e salva só a regra do que oferece
 (`politicaParaSalvar`). Na ficha, `politicaDe` também esconde a regra da

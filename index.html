@@ -1754,6 +1754,29 @@ function toggleFavorite(courtId) {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
 }
 
+// Modo diagnóstico: abrir o site com ?diagnostico mostra na tela cada passo
+// da busca e a resposta do banco a cada gravação. Vale até fechar a aba.
+const DIAGNOSTICO = (() => {
+  try {
+    if (new URLSearchParams(location.search).has("diagnostico")) sessionStorage.setItem("guiatennis_diag", "1");
+    return sessionStorage.getItem("guiatennis_diag") === "1";
+  } catch { return false; }
+})();
+
+function diag(texto) {
+  if (!DIAGNOSTICO) return;
+  let caixa = document.getElementById("diag-caixa");
+  if (!caixa) {
+    caixa = document.createElement("div");
+    caixa.id = "diag-caixa";
+    caixa.style.cssText = "position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;max-height:40vh;overflow:auto;background:#111;color:#9f9;font:12px/1.4 monospace;padding:8px 10px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.4);white-space:pre-wrap";
+    document.body.appendChild(caixa);
+  }
+  const hora = new Date().toLocaleTimeString("pt-BR");
+  caixa.textContent += `${hora}  ${texto}\n`;
+  caixa.scrollTop = caixa.scrollHeight;
+}
+
 function trackClick(courtId, type, detalhe, cep) {
   const base = { academia_id: courtId, tipo: type };
   const comDetalhe = detalhe ? { ...base, detalhe: String(detalhe).slice(0, 120) } : base;
@@ -1764,10 +1787,11 @@ function trackClick(courtId, type, detalhe, cep) {
   if (detalhe) tentativas.push(comDetalhe);
   tentativas.push(base);
   const enviar = (i) => sb.from('cliques').insert(tentativas[i]).then(({ error }) => {
-    if (!error) return;
+    if (!error) { diag(`gravado no banco: ${JSON.stringify(tentativas[i])}`); return; }
+    diag(`o banco recusou ${JSON.stringify(tentativas[i])}\n   motivo: ${error.message}${error.code ? " (" + error.code + ")" : ""}`);
     if (i + 1 < tentativas.length) enviar(i + 1);
     else console.warn("GuiaTennis: não consegui gravar o clique.", error.message);
-  });
+  }, (erro) => diag(`sem resposta do banco: ${erro && erro.message}`));
   enviar(0);
 }
 
@@ -1776,6 +1800,7 @@ function trackClick(courtId, type, detalhe, cep) {
 // para saber onde tem procura por quadra, não para seguir ninguém.
 function registrarBusca(geo, cep) {
   if (!geo) return;
+  diag(`busca pronta — região: ${[geo.bairro, geo.cidade].filter(Boolean).join(", ") || "não identificada"} · CEP: ${cep || "nenhum"} · admin: ${isAdmin ? "sim (não grava)" : "não"}`);
   if (isAdmin) { state.avisoBuscaAdmin = true; return; }
   const regiao = [geo.bairro, geo.cidade].filter(Boolean).join(", ");
   const digitos = String(cep || "").replace(/\D/g, "");
@@ -7309,6 +7334,7 @@ function shareCourt(courtId) {
 }
 
 async function doSearch() {
+  diag(`buscando: "${state.cep}"`);
   state.searchStatus = "loading";
   state.errorMsg = "";
   render();
@@ -7350,6 +7376,7 @@ async function doSearch() {
     state.searchStatus = "done";
     registrarBusca(geo, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
   } catch (e) {
+    diag(`a busca não achou o lugar: ${e.message}`);
     // Quem buscou e não achou também é procura: conta, sem região.
     registrarBusca({ bairro: "", cidade: "" }, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
     state.errorMsg = e.message || "Não consegui buscar esse endereço ou CEP.";
@@ -7497,6 +7524,7 @@ async function init() {
   app_showLoading();
   const { data: { session } } = await sb.auth.getSession();
   isAdmin = !!session;
+  diag(`site aberto · admin: ${isAdmin ? "sim" : "não"}`);
   if (!isAdmin) trackClick(null, "acesso_site");
   await loadEverything();
 

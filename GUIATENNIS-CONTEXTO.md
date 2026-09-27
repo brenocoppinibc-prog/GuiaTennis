@@ -362,6 +362,11 @@ script está no scratchpad (`gera-imagens.js`).
   entra mesmo sem achar a coordenada. `localizarAcademia` usa o CEP e o
   endereço completo quando rua/bairro/cidade não estão em campos
   separados. O que não achar aparece numa faixa amarela para o admin.
+- **Tipo novo em `cliques` precisa entrar na trava `cliques_tipo_valido`.**
+  A tabela nasceu com `cliques_tipo_check` sem "busca", e toda busca foi
+  recusada em silêncio até 27/09/2026 — o site tentava três vezes e as
+  três batiam na mesma trava. Criou tipo novo? Troque a trava. Para ver na
+  hora o que o banco responde, abra o site com `?diagnostico`.
 - **Link com `?busca=` precisa refazer a busca.** Recarregar, link salvo
   e aba reaberta pelo celular chegam assim; sem `doSearch()` no `init`, a
   página aparece sem buscar e nada é gravado.

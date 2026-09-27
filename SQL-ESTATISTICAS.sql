@@ -18,6 +18,13 @@ alter table cliques add column if not exists detalhe text;
 
 alter table cliques add column if not exists cep text;
 
+-- A tabela nasceu com uma trava que só aceitava os tipos da época; "busca"
+-- veio depois e era recusado em silêncio (0 buscas gravadas até 27/09/2026).
+alter table public.cliques drop constraint if exists cliques_tipo_check;
+alter table public.cliques drop constraint if exists cliques_tipo_valido;
+alter table public.cliques add constraint cliques_tipo_valido
+  check (tipo in ('acesso_site', 'busca', 'visualizacao', 'whatsapp', 'site', 'instagram', 'compartilhar'));
+
 alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;
 
 alter table academias add column if not exists acesso jsonb not null default '{}'::jsonb;

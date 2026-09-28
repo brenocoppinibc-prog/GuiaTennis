@@ -297,17 +297,43 @@ em aba anônima inflava os números da home.
 - **Chave:** só a "publishable" ou "anon public". Nunca a "secret" nem a
   "service_role".
 - **Estrutura:** `SQL-RETRATO.sql` só lê e devolve colunas, regras (RLS),
-  travas, índices, funções e permissões. O Breno roda no banco de verdade e
-  manda o CSV (Export → Download CSV). Com ele sai a pasta `supabase/`
-  (`migrations/` com a estrutura, `seed.sql` com academias de exemplo) e o
-  SQL para criar o banco de teste igual ao de verdade.
-- **Falta:** o CSV do retrato; o Breno criar o projeto de teste e mandar a
-  URL e a chave; o admin do banco de teste (Authentication → Users → Add
-  user com `guiatennis1@gmail.com`) e cadastro de usuários desligado lá
-  também.
-- **Postgres na máquina:** `/usr/lib/postgresql/16/bin` — dá para rodar o
-  SQL de verdade antes de mandar para o Breno (initdb num diretório do
-  scratchpad, `pg_ctl -o '-p 5433 -k <dir>'`, como usuário `postgres`).
+  travas, índices, funções e permissões. O Breno rodou no banco de verdade
+  em 28/09/2026 e mandou o CSV (Export → Download CSV — colar a tabela no
+  chat corta no meio). Rodar de novo sempre que quiser conferir se o
+  banco de verdade e a pasta `supabase/` continuam iguais.
+- **Pasta `supabase/`:**
+  - `migrations/20260928150000_estrutura_inicial.sql` — a estrutura igual
+    à do banco de verdade. Pode rodar de novo, até no banco de verdade,
+    sem mudar nada.
+  - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
+    não existem): aula e locação, só locação, só aula com horário por dia
+    e prazo de 36h, uma pausada e uma pendente; mais avaliações e
+    cliques. Para antes de gravar se o banco tiver academia de verdade.
+  - **Sem `config.toml` de propósito.** Sem ele a integração do GitHub
+    não age. Com ele, as configurações de login iriam junto (valores
+    padrão do Supabase, como cadastro de usuários ligado). Só criar
+    quando for ligar o Branching ou o "Deploy to production", e com
+    `enable_signup = false` em `[auth]` e `[auth.email]`.
+  - Mudança nova no banco vira um arquivo novo em `migrations/`
+    (`AAAAMMDDhhmmss_nome.sql`), além do bloco na conversa para o Breno.
+- **Conferido aqui (28/09/2026):** banco zerado + migração + seed dá o
+  mesmo retrato do banco de verdade (84 de 84 linhas); migração e seed
+  rodam duas vezes sem erro nem duplicar; como visitante, vê 3 academias
+  (sem a pausada e a pendente), não lê contato, não lê cliques, só grava
+  clique conhecido, nota de 1 a 5 e cadastro pendente; o admin vê as 5 e
+  os cliques; outra conta logada vê como visitante; o site abre as fichas
+  de exemplo sem erro.
+- **Falta:** o Breno criar o projeto `guiatennis-teste`, rodar lá a
+  migração + o seed, criar o admin (Authentication → Users → Add user com
+  `guiatennis1@gmail.com`, confirmado), desligar o cadastro de usuários e
+  mandar a URL e a chave. Aí preencher `BANCO_DE_TESTE` e mandar o zip.
+- **Postgres na máquina:** `/usr/lib/postgresql/16/bin`, como usuário
+  `postgres`, com os dados em `/var/lib/postgresql/…` (no scratchpad o
+  ambiente fecha as permissões de tempos em tempos e o Postgres cai):
+  `initdb -D <dir>/data -A trust -U postgres` e
+  `pg_ctl -D <dir>/data -o '-p 5433 -k <dir>/sock' start`. Antes da
+  migração, criar os papéis `anon`, `authenticated` e a função
+  `auth.jwt()` que o Supabase já traz.
 
 ## 5. Banco: o que já rodou e o que falta
 
@@ -317,30 +343,27 @@ em aba anônima inflava os números da home.
 - função `estatisticas_publicas()`;
 - trava `cliques_tipo_valido` com "busca" — trocou a `cliques_tipo_check`
   antiga, que recusava toda busca (confirmado em 28/09/2026);
-- cadastro de novos usuários desligado no Supabase Auth.
+- cadastro de novos usuários desligado no Supabase Auth;
+- colunas do público em `cliques` (`lat`, `lng`, `origem`, `dispositivo`)
+  e o `SQL-SEGURANCA.sql` inteiro — confirmados pelo retrato de
+  28/09/2026: o visitante não lê `nome_solicitante`,
+  `contato_solicitante` nem `contato_autor`, e as regras de envio estão
+  fechadas.
+
+**Estrutura do banco de verdade** (retrato de 28/09/2026, igual à
+`supabase/migrations/`): as listas de `academias` (`amenities`,
+`modalidades`, `pisos`, `cobertura`, `photos`) são **jsonb**, não
+`text[]`; `lat`/`lng` de academias são `float8` e os de cliques,
+`numeric`; os `id` são todos `uuid`. Regras: "Ver academias publicadas"
+(publicada e não pausada, ou pausa vencida), "Admin ve pendentes",
+"Enviar academia para analise", "Admin edita academias", "Admin exclui
+academias", "Ver avaliacoes", "Enviar avaliacao", "Admin exclui
+avaliacoes", "Admin ve cliques", "Registrar clique". Sem gatilhos e sem
+índices além das chaves.
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
 
-1. Colunas do público. Sem elas, origem, aparelho e ponto da busca não
-   são gravados, e o admin vê uma faixa amarela com este SQL:
-```sql
-alter table cliques add column if not exists lat numeric;
-alter table cliques add column if not exists lng numeric;
-alter table cliques add column if not exists origem text;
-alter table cliques add column if not exists dispositivo text;
-```
-
-2. Segurança — o arquivo `SQL-SEGURANCA.sql` inteiro. O visitante deixa
-   de ler o WhatsApp de quem avaliou e o contato de quem pediu cadastro, e
-   os envios só aceitam o que o site manda. O site já está pronto para
-   ele. Para saber se já rodou:
-```sql
-select policyname, with_check from pg_policies where tablename = 'avaliacoes';
-```
-   Se "Enviar avaliacao" tiver `stars between 1 and 5`, já rodou. Ordem
-   certa: subir o site novo **antes** de rodar esse SQL.
-
-3. Morumbi Tennis, se ainda estiver fora do lugar no mapa:
+1. Morumbi Tennis, se ainda estiver fora do lugar no mapa:
 ```sql
 update academias set lat = null, lng = null where name = 'Morumbi Tennis';
 ```
@@ -417,7 +440,8 @@ consultas da seção 5.
 Console).
 
 O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
-`SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e a pasta `testes/`
+`SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e as pastas `testes/` e
+`supabase/`
 ficam no repositório mas fora do ar —
 `netlify.toml` devolve 404 para eles, e eles não entram no zip.
 
@@ -586,9 +610,9 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- **Banco:** colunas do público e `SQL-SEGURANCA.sql` (seção 5).
-- **Banco de teste:** CSV do `SQL-RETRATO.sql`, projeto `guiatennis-teste`
-  e a URL/chave dele (seção 4, "Banco de teste").
+- **Banco de teste:** o Breno criar o projeto `guiatennis-teste`, rodar
+  a estrutura e os exemplos, e mandar a URL/chave (seção 4, "Banco de
+  teste").
 - **Publicar** o último zip em guiatennis.com.br (conferir que a frase da
   home aparece **embaixo** da busca e fala em "comodidades").
 - **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`.

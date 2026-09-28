@@ -51,7 +51,11 @@ cobra taxa e não fica no meio** da negociação.
    digitado ou o da região achada) e o ponto arredondado para ~100 m**
    (`pontoAproximado`, 3 casas decimais). De cada acesso, **origem**
    (Instagram, Google, Direto…) e **aparelho** (celular, tablet,
-   computador). Nunca o endereço digitado, a coordenada exata, IP ou
+   computador). Cada clique de academia (ficha aberta, WhatsApp, Instagram,
+   site, compartilhar) leva também a origem, o aparelho e a região da
+   última busca (`state.ultimaBusca`), para o painel mostrar o público de
+   cada academia e o "Copiar resumo pra mandar" incluir isso. Admin
+   conectado não grava nada (`trackClick` sai no começo). Nunca o endereço digitado, a coordenada exata, IP ou
    identificador do aparelho. Pedido do Breno em 28/09/2026. Qualquer
    mudança nisso obriga a mexer na Política de Privacidade — e a data de
    "Última atualização" dos dois textos legais tem de acompanhar.

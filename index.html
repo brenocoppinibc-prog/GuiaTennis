@@ -1783,6 +1783,16 @@ function diag(texto) {
 // origem, dispositivo). Se a gravação falhar por causa delas, tenta de novo
 // com menos, em vez de perder o evento.
 function trackClick(courtId, type, detalhe, extras) {
+  // O admin não entra na conta: nem acesso, nem busca, nem clique na ficha.
+  if (isAdmin) return;
+  // Clique de academia (ficha aberta, WhatsApp, Instagram, site,
+  // compartilhar) leva junto de onde a pessoa veio, o aparelho e a região
+  // da busca que ela fez antes — é o que permite ver isso por academia.
+  if (courtId) {
+    const b = state.ultimaBusca || {};
+    detalhe = detalhe || b.detalhe || null;
+    extras = { origem: origemDoAcesso(), dispositivo: dispositivoDoAcesso(), cep: b.cep, lat: b.lat, lng: b.lng, ...(extras || {}) };
+  }
   const base = { academia_id: courtId, tipo: type };
   const comDetalhe = detalhe ? { ...base, detalhe: String(detalhe).slice(0, 120) } : base;
   const limpos = {};
@@ -1804,6 +1814,12 @@ function trackClick(courtId, type, detalhe, extras) {
 // De onde a pessoa veio: link com ?utm_source, ou o site anterior, ou o
 // navegador de dentro do app (Instagram e Facebook abrem o site por dentro).
 function origemDoAcesso() {
+  if (window.__origemAcesso !== undefined) return window.__origemAcesso;
+  window.__origemAcesso = calcularOrigem();
+  return window.__origemAcesso;
+}
+
+function calcularOrigem() {
   try {
     const utm = new URLSearchParams(location.search).get("utm_source");
     if (utm) return utm.slice(0, 40);
@@ -1844,10 +1860,14 @@ function registrarBusca(geo, cep) {
   if (isAdmin) { state.avisoBuscaAdmin = true; return; }
   const regiao = [geo.bairro, geo.cidade].filter(Boolean).join(", ");
   const digitos = String(cep || geo.cep || "").replace(/\D/g, "");
-  trackClick(null, "busca", regiao || "região não identificada", {
+  state.ultimaBusca = {
+    detalhe: regiao || null,
     cep: digitos.length === 8 ? digitos.slice(0, 5) + "-" + digitos.slice(5) : null,
     lat: pontoAproximado(geo.lat),
     lng: pontoAproximado(geo.lng),
+  };
+  trackClick(null, "busca", regiao || "região não identificada", {
+    ...state.ultimaBusca,
     dispositivo: dispositivoDoAcesso(),
   });
 }
@@ -6059,8 +6079,15 @@ function statsAgregado(periodo) {
       return;
     }
     if (!c.academia_id) return;
-    if (!porAcademia[c.academia_id]) porAcademia[c.academia_id] = { whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 };
-    porAcademia[c.academia_id][c.tipo] = (porAcademia[c.academia_id][c.tipo] || 0) + 1;
+    if (!porAcademia[c.academia_id]) porAcademia[c.academia_id] = { whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0, origens: {}, regioes: {}, aparelhos: {} };
+    const pa = porAcademia[c.academia_id];
+    pa[c.tipo] = (pa[c.tipo] || 0) + 1;
+    // Público de quem abriu a ficha: cada ficha aberta conta uma vez.
+    if (c.tipo === "visualizacao") {
+      if (c.origem) pa.origens[c.origem] = (pa.origens[c.origem] || 0) + 1;
+      if (c.dispositivo) pa.aparelhos[c.dispositivo] = (pa.aparelhos[c.dispositivo] || 0) + 1;
+      if (c.detalhe) pa.regioes[c.detalhe] = (pa.regioes[c.detalhe] || 0) + 1;
+    }
   });
   const regioes = Object.keys(porRegiao)
     .map(nome => ({ nome, n: porRegiao[nome] }))
@@ -6070,6 +6097,14 @@ function statsAgregado(periodo) {
     .sort((a, b) => b.n - a.n);
   const lista2 = (obj) => Object.keys(obj).map(nome => ({ nome, n: obj[nome] })).sort((a, b) => b.n - a.n);
   return { porAcademia, acessos, buscas, regioes, ceps, origens: lista2(porOrigem), aparelhos: lista2(porAparelho), pontos, totalEventos: lista.length };
+}
+
+// "Instagram 60% · Google 30%": as três primeiras, em porcentagem do total.
+function topPublico(mapa, qtd = 3) {
+  const total = Object.values(mapa || {}).reduce((a, b) => a + b, 0);
+  if (!total) return "";
+  return Object.entries(mapa).sort((a, b) => b[1] - a[1]).slice(0, qtd)
+    .map(([nome, n]) => `${nome} ${Math.round(n / total * 100)}%`).join(" · ");
 }
 
 function resumoTexto(court, d) {
@@ -6082,7 +6117,10 @@ function resumoTexto(court, d) {
     + `Cliques no site: ${d.site}\n`
     + `Compartilhamentos: ${d.compartilhar}\n\n`
     + `Total de contatos: ${contatos}\n`
-    + `guiatennis.com.br`;
+    + (topPublico(d.origens) ? `\nDe onde vieram: ${topPublico(d.origens)}\n` : "")
+    + (topPublico(d.regioes) ? `Regiões de quem abriu a ficha: ${topPublico(d.regioes)}\n` : "")
+    + (topPublico(d.aparelhos) ? `Aparelho: ${topPublico(d.aparelhos)}\n` : "")
+    + `\nguiatennis.com.br`;
 }
 
 function renderStatsPanel() {
@@ -6171,6 +6209,9 @@ function renderStatsPanel() {
             </div>
             <p class="pending-detail">${icon('eye',12)} ${r.d.visualizacao} ficha${r.d.visualizacao===1?"":"s"} aberta${r.d.visualizacao===1?"":"s"} &nbsp;·&nbsp; ${r.contatos} contato${r.contatos===1?"":"s"}</p>
             <p class="pending-detail">${icon('phone',12)} ${r.d.whatsapp} &nbsp; ${icon('instagram',12)} ${r.d.instagram} &nbsp; ${icon('globe',12)} ${r.d.site} &nbsp; ${icon('share',12)} ${r.d.compartilhar}</p>
+            ${topPublico(r.d.origens) ? `<p class="pending-detail"><strong>Vieram de:</strong> ${esc(topPublico(r.d.origens))}</p>` : ""}
+            ${topPublico(r.d.regioes) ? `<p class="pending-detail"><strong>Regiões:</strong> ${esc(topPublico(r.d.regioes))}</p>` : ""}
+            ${topPublico(r.d.aparelhos) ? `<p class="pending-detail"><strong>Aparelho:</strong> ${esc(topPublico(r.d.aparelhos))}</p>` : ""}
             <button type="button" class="stat-copy" data-copy-stats="${r.court.id}">Copiar resumo pra mandar</button>
           </div>
         `).join("")}
@@ -6213,7 +6254,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 28 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões e CEPs buscados continuam visíveis só para a administração.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões e CEPs buscados continuam visíveis só para a administração.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>

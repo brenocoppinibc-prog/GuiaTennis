@@ -5,11 +5,16 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 
 **Dono:** Breno (brenocoppini.bc@gmail.com)
 **Repositório:** `brenocoppinibc-prog/GuiaTennis`
-**Branch de trabalho:** `claude/new-session-qevg66` — tem todo o trabalho
-(continua a `claude/academia-card-hotel-style-mujo9b`). Não há PR aberto.
-**No ar:** guiatennis.com.br (Netlify) · teste em lucky-liger-1c29a3.netlify.app
-(cada um com o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
-`ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` — seção 4, "Banco de teste")
+**Branches:** `main` = o que está no ar (criada em 28/09/2026 a partir da
+`claude/new-session-qevg66`). O trabalho novo entra por pedido de mudança
+(PR) de uma branch `claude/…` para a `main`; a última foi a
+`claude/github-supabase-connection-n1w3rr`. As outras `claude/…` são
+antigas.
+**No ar:** guiatennis.com.br (Netlify, publica a `main` sozinho) · teste na
+prévia de cada PR, `deploy-preview-N--….netlify.app` (seção 7). Cada um com
+o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
+`ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
+teste")
 **Instagram:** @guiatennis · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 28/09/2026
 
@@ -19,16 +24,17 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 ### Como abrir o chat novo
 Anexe este arquivo e diga em qual branch trabalhar. No chat novo, antes de
 mexer:
-1. `git fetch origin claude/new-session-qevg66` e trabalhar a partir dela
-   (se a branch do chat novo for outra e estiver atrás, avançar com
-   `git merge --ff-only FETCH_HEAD`).
+1. `git fetch origin main` e trabalhar a partir dela (se a branch do chat
+   novo estiver atrás, avançar com `git merge --ff-only FETCH_HEAD`). Se
+   houver PR aberto para a `main`, continuar na branch dele.
 2. Rodar `testes/check-js.sh` e os testes da seção 6.
 
 ### Como o Breno trabalha (importante)
 - Fala português, pelo celular, e manda print. Resposta curta, direta, em
   português, sem jargão.
-- **Publica arrastando um zip no Netlify.** A cada mudança, mandar o zip
-  com os 10 arquivos da seção 7 (só o `index.html` quando ele pedir).
+- **Publica aprovando o PR no GitHub** (desde 28/09/2026 — seção 7). Não
+  mandar mais zip, a não ser que ele peça: cada zip arrastado gasta
+  crédito do Netlify.
 - **SQL sempre em bloco pronto para copiar, escrito na mensagem.** Ele roda
   à mão no SQL Editor do Supabase e manda o resultado em tabela.
 - Testa no celular, muitas vezes **logado como admin** — o que não grava
@@ -334,11 +340,12 @@ em aba anônima inflava os números da home.
   + `seed.sql`, colado pelo Breno no SQL Editor do projeto de teste. Login
   de admin no site de teste é o usuário do projeto de teste, não o do
   de verdade.
-- **Como publicar agora:** o mesmo zip vai primeiro para o lucky-liger
-  (testa com a faixa amarela) e depois para o guiatennis.com.br.
-- **A conferir com o Breno:** se o SQL rodou no projeto de teste (o site
-  de teste abre com as três academias de exemplo), se o admin foi criado
-  e se o cadastro de usuários está desligado lá.
+- **Onde se testa:** na prévia do PR (seção 7), que abre o banco de teste
+  por causa do endereço `deploy-preview-N--….netlify.app`. O lucky-liger
+  também abriria, mas ficou aposentado para não gastar crédito.
+- **A conferir com o Breno:** se o SQL rodou no projeto de teste (a prévia
+  abre com as três academias de exemplo), se o admin foi criado e se o
+  cadastro de usuários está desligado lá.
 - **Postgres na máquina:** `/usr/lib/postgresql/16/bin`, como usuário
   `postgres`, com os dados em `/var/lib/postgresql/…` (no scratchpad o
   ambiente fecha as permissões de tempos em tempos e o Postgres cai):
@@ -421,8 +428,9 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banc
   `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
   estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
-- `banco-de-teste.js` — o site de teste abre o banco de teste; o
-  guiatennis.com.br, link com `?banco=` e endereço parecido, nunca.
+- `banco-de-teste.js` — a prévia do Netlify e o site de teste abrem o
+  banco de teste; o guiatennis.com.br, o endereço do Netlify do site de
+  verdade, link com `?banco=` e endereço parecido, nunca.
 
 O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
 separada) e `a2` (só locação, regra única). Chaves: `__admin`,
@@ -455,12 +463,35 @@ O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
 `SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e as pastas `testes/` e
 `supabase/`
 ficam no repositório mas fora do ar —
-`netlify.toml` devolve 404 para eles, e eles não entram no zip.
+`netlify.toml` devolve 404 para eles. Arquivo novo na raiz vai para o ar
+sozinho: se não for do site, ganha uma regra de 404 no `netlify.toml`.
 
-**Como publicar:** o Breno arrasta a pasta no Netlify — primeiro no site
-de teste (lucky-liger), depois no guiatennis.com.br. Monte o zip com
-esses 10 arquivos e mande; **só o `index.html` não basta**, porque ele
-aponta para os ícones e a imagem de compartilhamento.
+**Como publicar (desde 28/09/2026):** o projeto guiatennis.com.br do Netlify
+está ligado ao GitHub, com a `main` como branch de produção.
+1. O trabalho vai para uma branch `claude/…` com PR para a `main`.
+2. O Netlify monta a **prévia** do PR (`deploy-preview-N--….netlify.app`,
+   o link aparece no PR). Ela usa o **banco de teste** e mostra a faixa
+   amarela. Cada push atualiza a prévia.
+3. O Breno testa na prévia e, se estiver bom, aprova o PR (merge). O
+   Netlify publica a `main` no guiatennis.com.br sozinho.
+
+**Créditos do Netlify** (plano grátis, 28/09/2026): 300 por mês, com
+**teto**: acabou, os sites saem do ar até o mês virar. Cada publicação na
+`main` gasta **15** (máximo de 20 por mês, menos o que for de tráfego:
+20 por GB e 2 por 10 mil acessos). Prévia de PR e branch deploy gastam
+**0**. Por isso:
+- juntar várias mudanças num PR só, em vez de aprovar um por um;
+- o `ignore` do `netlify.toml` pula a publicação quando o merge não mexe
+  em nenhum arquivo do site (contexto, SQL, testes, `supabase/`);
+- "Branch deploys" fica em "Deploy only the production branch";
+- não arrastar zip no lucky-liger nem no guiatennis.com.br — zip no
+  projeto é publicação de produção e, pelo jeito, gasta os mesmos 15.
+  O lucky-liger ficou aposentado (a prévia do PR faz o papel dele);
+- o consumo aparece no Netlify em Team → Usage.
+
+**Emergência (Netlify fora ou sem crédito):** o zip com os 10 arquivos
+acima ainda funciona — **só o `index.html` não basta**, porque ele aponta
+para os ícones e a imagem de compartilhamento.
 
 As imagens foram geradas a partir do `LOGO_SVG` com Playwright — o
 script está no scratchpad (`gera-imagens.js`).
@@ -632,8 +663,10 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- **Banco de teste:** conferir se o site de teste abre com as academias
-  de exemplo e a faixa amarela (seção 4, "Banco de teste").
+- **Netlify:** o Breno trocar a branch de produção para `main` e a branch
+  padrão do GitHub para `main`; depois conferir a prévia do PR (academias
+  de exemplo e faixa amarela) e aprovar. O PR #1
+  (`new-session` → `trivago`) ficou velho e pode ser fechado.
 - **Publicar** o último zip em guiatennis.com.br (conferir que a frase da
   home aparece **embaixo** da busca e fala em "comodidades").
 - **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`.

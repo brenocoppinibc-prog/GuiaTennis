@@ -944,13 +944,15 @@
 
 <script>
 // ---------- Supabase ----------
-// O site de teste do Netlify usa um banco só dele: o que se testa lá não
-// entra nos números nem nas academias de verdade. O mesmo zip vai para os
-// dois endereços, e quem escolhe o banco é o endereço aberto — nunca um
-// parâmetro no link, para ninguém apontar o guiatennis.com.br para outro
-// banco. Enquanto o banco de teste estiver vazio aqui, tudo usa o de verdade.
+// As prévias de teste do Netlify (deploy-preview-N--…netlify.app, uma por
+// pedido de mudança no GitHub) e o antigo site de teste usam um banco só
+// deles: o que se testa lá não entra nos números nem nas academias de
+// verdade. O mesmo arquivo vai para todos os endereços, e quem escolhe o
+// banco é o endereço aberto — nunca um parâmetro no link, para ninguém
+// apontar o guiatennis.com.br para outro banco. Enquanto o banco de teste
+// estiver vazio aqui, tudo usa o de verdade.
 const BANCO_DE_TESTE = { url: "https://ohvbengbujdioxdtewsy.supabase.co", chave: "sb_publishable_NEF5wHWslCi3Uu9GfbHruQ_Ut3r_BBT" };
-const NO_SITE_DE_TESTE = /(^|--)lucky-liger-1c29a3\.netlify\.app$|^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const NO_SITE_DE_TESTE = /^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$|(^|--)lucky-liger-1c29a3\.netlify\.app$|^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const USANDO_BANCO_DE_TESTE = NO_SITE_DE_TESTE && !!BANCO_DE_TESTE.url && !!BANCO_DE_TESTE.chave;
 const SUPABASE_URL = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.url : "https://eultezheqwmxyakvgyjy.supabase.co";
 const SUPABASE_ANON_KEY = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.chave : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";

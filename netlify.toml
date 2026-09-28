@@ -3,13 +3,20 @@
 # O site é uma página estática só. Não há nada para compilar: o Netlify
 # pega os arquivos da raiz deste repositório e coloca no ar.
 #
-# Este arquivo só tem efeito quando o site do Netlify está ligado ao
-# repositório do GitHub. Se você continuar arrastando a pasta na mão,
-# ele é ignorado e nada muda.
+# O projeto guiatennis.com.br está ligado ao GitHub (28/09/2026):
+# - branch main → guiatennis.com.br, banco de verdade. Cada publicação
+#   gasta 15 dos 300 créditos do mês do plano grátis; acabou, o site sai
+#   do ar até o mês virar.
+# - pedido de mudança (PR) para a main → prévia de teste
+#   deploy-preview-N--….netlify.app, banco de teste. Não gasta crédito.
 
 [build]
   # A raiz do repositório já é o que vai para o ar — o index.html está aqui.
   publish = "."
+  # Mudança que não mexe em nenhum arquivo do site (contexto, SQL, testes,
+  # pasta supabase/) não vira publicação — e não gasta crédito. Na dúvida
+  # (primeira publicação, commit anterior desconhecido), publica.
+  ignore = 'test -n "$CACHED_COMMIT_REF" && test "$CACHED_COMMIT_REF" != "$COMMIT_REF" && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- index.html 404.html netlify.toml robots.txt sitemap.xml favicon-32.png favicon-192.png apple-touch-icon.png og-image.png google7b66589ffc303f37.html'
 
 # O HTML não fica em cache. Assim, quando você publica uma correção, quem
 # já visitou o site recebe a versão nova na hora, sem precisar limpar nada.
@@ -50,5 +57,16 @@
 
 [[redirects]]
   from = "/SQL-SEGURANCA.sql"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/SQL-RETRATO.sql"
+  to = "/404.html"
+  status = 404
+
+# A estrutura do banco e as academias de exemplo do banco de teste.
+[[redirects]]
+  from = "/supabase/*"
   to = "/404.html"
   status = 404

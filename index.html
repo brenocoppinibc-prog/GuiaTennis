@@ -45,6 +45,7 @@
     --red: #A8462C;
   }
   * { box-sizing: border-box; }
+  .faixa-banco-teste { background: var(--gold-light); color: var(--text); font-size: 12px; font-weight: 700; text-align: center; padding: 6px 16px; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font-family: 'Playfair Display', serif; font-weight: 500; line-height: 1.45;
@@ -943,8 +944,18 @@
 
 <script>
 // ---------- Supabase ----------
-const SUPABASE_URL = "https://eultezheqwmxyakvgyjy.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";
+// As prévias de teste do Netlify (deploy-preview-N--…netlify.app, uma por
+// pedido de mudança no GitHub) e o antigo site de teste usam um banco só
+// deles: o que se testa lá não entra nos números nem nas academias de
+// verdade. O mesmo arquivo vai para todos os endereços, e quem escolhe o
+// banco é o endereço aberto — nunca um parâmetro no link, para ninguém
+// apontar o guiatennis.com.br para outro banco. Enquanto o banco de teste
+// estiver vazio aqui, tudo usa o de verdade.
+const BANCO_DE_TESTE = { url: "https://ohvbengbujdioxdtewsy.supabase.co", chave: "sb_publishable_NEF5wHWslCi3Uu9GfbHruQ_Ut3r_BBT" };
+const NO_SITE_DE_TESTE = /^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$|(^|--)lucky-liger-1c29a3\.netlify\.app$|^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const USANDO_BANCO_DE_TESTE = NO_SITE_DE_TESTE && !!BANCO_DE_TESTE.url && !!BANCO_DE_TESTE.chave;
+const SUPABASE_URL = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.url : "https://eultezheqwmxyakvgyjy.supabase.co";
+const SUPABASE_ANON_KEY = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.chave : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let isAdmin = false;
@@ -1627,13 +1638,15 @@ async function lerPublico(tabela, colunas, montar) {
   if (!isAdmin) {
     const r = await montar(sb.from(tabela).select(colunas));
     if (!r.error) return r;
+    diag(`o banco recusou a leitura de ${tabela}: ${r.error.message}${r.error.code ? " (" + r.error.code + ")" : ""}`);
   }
   return montar(sb.from(tabela).select('*'));
 }
 
 async function loadEverything() {
-  const { data: published } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'));
+  const { data: published, error: erroAcademias } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'));
   state.allCourts = (published || []).map(mapRow);
+  diag(`academias lidas: ${state.allCourts.length}${erroAcademias ? ` · o banco recusou: ${erroAcademias.message}` : ""}`);
 
   if (isAdmin) {
     const { data: pend } = await sb.from('academias').select('*').eq('status', 'pending').order('created_at');
@@ -7647,10 +7660,11 @@ async function doRegisterSubmit() {
 }
 
 async function init() {
+  if (USANDO_BANCO_DE_TESTE) document.body.insertAdjacentHTML("afterbegin", `<div class="faixa-banco-teste">Banco de teste — nada daqui aparece no guiatennis.com.br</div>`);
   app_showLoading();
   const { data: { session } } = await sb.auth.getSession();
   isAdmin = !!session;
-  diag(`site aberto · admin: ${isAdmin ? "sim" : "não"}`);
+  diag(`site aberto · admin: ${isAdmin ? "sim" : "não"} · banco: ${USANDO_BANCO_DE_TESTE ? "de teste" : "de verdade"}`);
   if (!isAdmin) trackClick(null, "acesso_site", null, { origem: origemDoAcesso(), dispositivo: dispositivoDoAcesso() });
   await loadEverything();
 

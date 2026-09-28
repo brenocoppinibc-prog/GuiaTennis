@@ -1,6 +1,7 @@
 // Finge o Supabase para os testes: tabelas em memória (window.__db), e a função
 // de estatísticas. Chaves: __admin, __semDetalhe, __semCep, __colunasFechadas,
-// __semPlano. O que o site grava em cliques fica em __cliques.
+// __semPlano. O que o site grava em cliques fica em __cliques, e o banco
+// que o site abriu fica em __banco.
 (function(){
   const agora = new Date().toISOString();
   const db = window.__db = {
@@ -48,7 +49,7 @@
     }
     return q;
   }
-  window.supabase = { createClient(){ return {
+  window.supabase = { createClient(url, chave){ window.__banco = { url, chave }; return {
     from: builder,
     rpc(){ return { single(){ return Promise.resolve({ data:{ acessos_total:1234, buscas_total:567, fichas_total:89, contatos_total:12 }, error:null }); } }; },
     auth: {

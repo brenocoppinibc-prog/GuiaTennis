@@ -5,10 +5,16 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 
 **Dono:** Breno (brenocoppini.bc@gmail.com)
 **Repositório:** `brenocoppinibc-prog/GuiaTennis`
-**Branch de trabalho:** `claude/new-session-qevg66` — tem todo o trabalho
-(continua a `claude/academia-card-hotel-style-mujo9b`). Não há PR aberto.
-**No ar:** guiatennis.com.br (Netlify) · teste em lucky-liger-1c29a3.netlify.app
-(os dois usam o mesmo banco)
+**Branches:** `main` = o que está no ar (criada em 28/09/2026 a partir da
+`claude/new-session-qevg66`). O trabalho novo entra por pedido de mudança
+(PR) de uma branch `claude/…` para a `main`; a última foi a
+`claude/github-supabase-connection-n1w3rr`. As outras `claude/…` são
+antigas.
+**No ar:** guiatennis.com.br (Netlify, publica a `main` sozinho) · teste na
+prévia de cada PR, `deploy-preview-N--….netlify.app` (seção 7). Cada um com
+o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
+`ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
+teste")
 **Instagram:** @guiatennis · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 28/09/2026
 
@@ -18,16 +24,17 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 ### Como abrir o chat novo
 Anexe este arquivo e diga em qual branch trabalhar. No chat novo, antes de
 mexer:
-1. `git fetch origin claude/new-session-qevg66` e trabalhar a partir dela
-   (se a branch do chat novo for outra e estiver atrás, avançar com
-   `git merge --ff-only FETCH_HEAD`).
+1. `git fetch origin main` e trabalhar a partir dela (se a branch do chat
+   novo estiver atrás, avançar com `git merge --ff-only FETCH_HEAD`). Se
+   houver PR aberto para a `main`, continuar na branch dele.
 2. Rodar `testes/check-js.sh` e os testes da seção 6.
 
 ### Como o Breno trabalha (importante)
 - Fala português, pelo celular, e manda print. Resposta curta, direta, em
   português, sem jargão.
-- **Publica arrastando um zip no Netlify.** A cada mudança, mandar o zip
-  com os 10 arquivos da seção 7 (só o `index.html` quando ele pedir).
+- **Publica aprovando o PR no GitHub** (desde 28/09/2026 — seção 7). Não
+  mandar mais zip, a não ser que ele peça: cada zip arrastado gasta
+  crédito do Netlify.
 - **SQL sempre em bloco pronto para copiar, escrito na mensagem.** Ele roda
   à mão no SQL Editor do Supabase e manda o resultado em tabela.
 - Testa no celular, muitas vezes **logado como admin** — o que não grava
@@ -258,6 +265,95 @@ cai na visão antiga; sem nenhuma das duas, o bloco de números some.
   authenticated — é assim que o visitante vê os quatro totais sem ler a
   tabela `cliques` (ver acima).
 
+### GitHub ↔ Supabase
+O Breno ligou o repositório pelo painel do Supabase (Project Settings →
+Integrations → GitHub) em 28/09/2026. O site **não depende** disso: ele fala
+com o banco pela chave do `index.html`. A integração só serve para aplicar
+SQL guardado no repositório, e para isso precisa de:
+- uma pasta `supabase/` com `config.toml` e `migrations/` (hoje não existe);
+- a branch de produção certa — a principal do GitHub ainda é a
+  `claude/trivago-style-court-interface-fvd0v6`, que está atrás.
+
+Entre 15:17 e 15:32 de 28/09/2026 a integração passou do projeto de
+verdade (`eultezheqwmxyakvgyjy`) para o de teste (`ohvbengbujdioxdtewsy`):
+o link do "Supabase Preview" nos commits mostra qual projeto está ligado.
+
+Para saber se o app do Supabase está vendo o repositório, confira os
+"check suites" de um commit novo:
+`curl -s https://api.github.com/repos/brenocoppinibc-prog/GuiaTennis/commits/<sha>/check-suites`
+— aparece `supabase` ao lado de `claude` e `render` quando está ligado.
+Confirmado no commit ff7a761: o "Supabase Preview" roda e sai `skipped`
+("This git branch is not associated with any Supabase Branch"). Ou seja,
+está ligado e só age quando se abre um PR, criando um banco de teste
+(Branching). Sem a pasta `supabase/`, esse banco de teste nasce vazio.
+
+### Banco de teste (pedido do Breno em 28/09/2026)
+O Breno quer testar como os sites grandes: um ambiente de teste com banco
+próprio ("staging"), separado do de verdade. Até aqui o site de teste
+(lucky-liger-1c29a3.netlify.app) gravava no banco de verdade, e o teste
+em aba anônima inflava os números da home.
+
+- **Caminho escolhido: grátis.** Um segundo projeto no Supabase
+  (`guiatennis-teste`, plano grátis permite dois). O Branching (banco
+  novo a cada PR) exige o plano Pro (US$ 25/mês) mais US$ 0,01344 por hora
+  de cada banco de teste, e o crédito do plano não cobre isso. Pode entrar
+  depois, sem refazer nada.
+- **No site:** `BANCO_DE_TESTE = { url, chave }` no começo do `<script>`.
+  Preenchido, o site de teste (e as versões de deploy dele,
+  `…--lucky-liger-1c29a3.netlify.app`, e o `localhost`) usa esse banco e
+  mostra uma faixa amarela "Banco de teste". Qualquer outro endereço usa
+  sempre o de verdade. O banco nunca é escolhido por parâmetro no link: isso
+  deixaria alguém apontar o guiatennis.com.br para um banco falso com
+  WhatsApp de golpe. Teste: `testes/banco-de-teste.js`.
+- **Chave:** só a "publishable" ou "anon public". Nunca a "secret" nem a
+  "service_role".
+- **Estrutura:** `SQL-RETRATO.sql` só lê e devolve colunas, regras (RLS),
+  travas, índices, funções e permissões. O Breno rodou no banco de verdade
+  em 28/09/2026 e mandou o CSV (Export → Download CSV — colar a tabela no
+  chat corta no meio). Rodar de novo sempre que quiser conferir se o
+  banco de verdade e a pasta `supabase/` continuam iguais.
+- **Pasta `supabase/`:**
+  - `migrations/20260928150000_estrutura_inicial.sql` — a estrutura igual
+    à do banco de verdade. Pode rodar de novo, até no banco de verdade,
+    sem mudar nada.
+  - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
+    não existem): aula e locação, só locação, só aula com horário por dia
+    e prazo de 36h, uma pausada e uma pendente; mais avaliações e
+    cliques. Para antes de gravar se o banco tiver academia de verdade.
+  - **Sem `config.toml` de propósito.** Sem ele a integração do GitHub
+    não age. Com ele, as configurações de login iriam junto (valores
+    padrão do Supabase, como cadastro de usuários ligado). Só criar
+    quando for ligar o Branching ou o "Deploy to production", e com
+    `enable_signup = false` em `[auth]` e `[auth.email]`.
+  - Mudança nova no banco vira um arquivo novo em `migrations/`
+    (`AAAAMMDDhhmmss_nome.sql`), além do bloco na conversa para o Breno.
+- **Conferido aqui (28/09/2026):** banco zerado + migração + seed dá o
+  mesmo retrato do banco de verdade (84 de 84 linhas); migração e seed
+  rodam duas vezes sem erro nem duplicar; como visitante, vê 3 academias
+  (sem a pausada e a pendente), não lê contato, não lê cliques, só grava
+  clique conhecido, nota de 1 a 5 e cadastro pendente; o admin vê as 5 e
+  os cliques; outra conta logada vê como visitante; o site abre as fichas
+  de exemplo sem erro.
+- **Projeto de teste:** `guiatennis-teste`, URL
+  `https://ohvbengbujdioxdtewsy.supabase.co`, chave publishable já no
+  `BANCO_DE_TESTE` (28/09/2026). Estrutura e exemplos: o SQL da migração
+  + `seed.sql`, colado pelo Breno no SQL Editor do projeto de teste. Login
+  de admin no site de teste é o usuário do projeto de teste, não o do
+  de verdade.
+- **Onde se testa:** na prévia do PR (seção 7), que abre o banco de teste
+  por causa do endereço `deploy-preview-N--….netlify.app`. O lucky-liger
+  também abriria, mas ficou aposentado para não gastar crédito.
+- **A conferir com o Breno:** se o SQL rodou no projeto de teste (a prévia
+  abre com as três academias de exemplo), se o admin foi criado e se o
+  cadastro de usuários está desligado lá.
+- **Postgres na máquina:** `/usr/lib/postgresql/16/bin`, como usuário
+  `postgres`, com os dados em `/var/lib/postgresql/…` (no scratchpad o
+  ambiente fecha as permissões de tempos em tempos e o Postgres cai):
+  `initdb -D <dir>/data -A trust -U postgres` e
+  `pg_ctl -D <dir>/data -o '-p 5433 -k <dir>/sock' start`. Antes da
+  migração, criar os papéis `anon`, `authenticated` e a função
+  `auth.jwt()` que o Supabase já traz.
+
 ## 5. Banco: o que já rodou e o que falta
 
 **Já rodado pelo Breno (confirmado):**
@@ -266,30 +362,27 @@ cai na visão antiga; sem nenhuma das duas, o bloco de números some.
 - função `estatisticas_publicas()`;
 - trava `cliques_tipo_valido` com "busca" — trocou a `cliques_tipo_check`
   antiga, que recusava toda busca (confirmado em 28/09/2026);
-- cadastro de novos usuários desligado no Supabase Auth.
+- cadastro de novos usuários desligado no Supabase Auth;
+- colunas do público em `cliques` (`lat`, `lng`, `origem`, `dispositivo`)
+  e o `SQL-SEGURANCA.sql` inteiro — confirmados pelo retrato de
+  28/09/2026: o visitante não lê `nome_solicitante`,
+  `contato_solicitante` nem `contato_autor`, e as regras de envio estão
+  fechadas.
+
+**Estrutura do banco de verdade** (retrato de 28/09/2026, igual à
+`supabase/migrations/`): as listas de `academias` (`amenities`,
+`modalidades`, `pisos`, `cobertura`, `photos`) são **jsonb**, não
+`text[]`; `lat`/`lng` de academias são `float8` e os de cliques,
+`numeric`; os `id` são todos `uuid`. Regras: "Ver academias publicadas"
+(publicada e não pausada, ou pausa vencida), "Admin ve pendentes",
+"Enviar academia para analise", "Admin edita academias", "Admin exclui
+academias", "Ver avaliacoes", "Enviar avaliacao", "Admin exclui
+avaliacoes", "Admin ve cliques", "Registrar clique". Sem gatilhos e sem
+índices além das chaves.
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
 
-1. Colunas do público. Sem elas, origem, aparelho e ponto da busca não
-   são gravados, e o admin vê uma faixa amarela com este SQL:
-```sql
-alter table cliques add column if not exists lat numeric;
-alter table cliques add column if not exists lng numeric;
-alter table cliques add column if not exists origem text;
-alter table cliques add column if not exists dispositivo text;
-```
-
-2. Segurança — o arquivo `SQL-SEGURANCA.sql` inteiro. O visitante deixa
-   de ler o WhatsApp de quem avaliou e o contato de quem pediu cadastro, e
-   os envios só aceitam o que o site manda. O site já está pronto para
-   ele. Para saber se já rodou:
-```sql
-select policyname, with_check from pg_policies where tablename = 'avaliacoes';
-```
-   Se "Enviar avaliacao" tiver `stars between 1 and 5`, já rodou. Ordem
-   certa: subir o site novo **antes** de rodar esse SQL.
-
-3. Morumbi Tennis, se ainda estiver fora do lugar no mapa:
+1. Morumbi Tennis, se ainda estiver fora do lugar no mapa:
 ```sql
 update academias set lat = null, lng = null where name = 'Morumbi Tennis';
 ```
@@ -318,7 +411,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -335,6 +428,9 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico; do 
   `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
   estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
+- `banco-de-teste.js` — a prévia do Netlify e o site de teste abrem o
+  banco de teste; o guiatennis.com.br, o endereço do Netlify do site de
+  verdade, link com `?banco=` e endereço parecido, nunca.
 
 O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
 separada) e `a2` (só locação, regra única). Chaves: `__admin`,
@@ -364,13 +460,38 @@ consultas da seção 5.
 Console).
 
 O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
-`SQL-SEGURANCA.sql` e a pasta `testes/`
+`SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e as pastas `testes/` e
+`supabase/`
 ficam no repositório mas fora do ar —
-`netlify.toml` devolve 404 para eles, e eles não entram no zip.
+`netlify.toml` devolve 404 para eles. Arquivo novo na raiz vai para o ar
+sozinho: se não for do site, ganha uma regra de 404 no `netlify.toml`.
 
-**Como publicar:** o Breno arrasta a pasta no Netlify. Monte o zip com
-esses 10 arquivos e mande; **só o `index.html` não basta**, porque ele
-aponta para os ícones e a imagem de compartilhamento.
+**Como publicar (desde 28/09/2026):** o projeto guiatennis.com.br do Netlify
+está ligado ao GitHub, com a `main` como branch de produção.
+1. O trabalho vai para uma branch `claude/…` com PR para a `main`.
+2. O Netlify monta a **prévia** do PR (`deploy-preview-N--….netlify.app`,
+   o link aparece no PR). Ela usa o **banco de teste** e mostra a faixa
+   amarela. Cada push atualiza a prévia.
+3. O Breno testa na prévia e, se estiver bom, aprova o PR (merge). O
+   Netlify publica a `main` no guiatennis.com.br sozinho.
+
+**Créditos do Netlify** (plano grátis, 28/09/2026): 300 por mês, com
+**teto**: acabou, os sites saem do ar até o mês virar. Cada publicação na
+`main` gasta **15** (máximo de 20 por mês, menos o que for de tráfego:
+20 por GB e 2 por 10 mil acessos). Prévia de PR e branch deploy gastam
+**0**. Por isso:
+- juntar várias mudanças num PR só, em vez de aprovar um por um;
+- o `ignore` do `netlify.toml` pula a publicação quando o merge não mexe
+  em nenhum arquivo do site (contexto, SQL, testes, `supabase/`);
+- "Branch deploys" fica em "Deploy only the production branch";
+- não arrastar zip no lucky-liger nem no guiatennis.com.br — zip no
+  projeto é publicação de produção e, pelo jeito, gasta os mesmos 15.
+  O lucky-liger ficou aposentado (a prévia do PR faz o papel dele);
+- o consumo aparece no Netlify em Team → Usage.
+
+**Emergência (Netlify fora ou sem crédito):** o zip com os 10 arquivos
+acima ainda funciona — **só o `index.html` não basta**, porque ele aponta
+para os ícones e a imagem de compartilhamento.
 
 As imagens foram geradas a partir do `LOGO_SVG` com Playwright — o
 script está no scratchpad (`gera-imagens.js`).
@@ -459,6 +580,16 @@ script está no scratchpad (`gera-imagens.js`).
   a fachada nunca fica vazia por causa disso.
 - **Admin não grava nenhum clique** (`trackClick` sai no começo), nem de
   academia. Quem testa logado vê a faixa "Essa busca não foi gravada".
+- **Netlify ligado ao GitHub publica a branch de produção sozinho.** O
+  Breno ligou o Netlify ao GitHub em 28/09/2026 (app `netlify` aparece nos
+  commits a partir do 556753c). A branch padrão do GitHub era a
+  `claude/trivago-style-court-interface-fvd0v6` (b972d53, de 21/09), cujo
+  `index.html` lê `select('*')`: depois do `SQL-SEGURANCA.sql` isso é
+  negado ao visitante e o site fica **sem academias para quem não é
+  admin** — e o admin logado vê tudo normal. Conferir sempre em aba
+  anônima. Socorro: Netlify → Deploys → deploy anterior → "Publish
+  deploy", e "Stop auto publishing" até a branch de produção estar certa. Desde
+  28/09/2026 a branch de produção é a `main`.
 - **`create or replace view` só aceita colunas novas no fim.** Mudar
   nome, ordem ou tipo exige `drop` antes — o mesmo vale para
   `create or replace function` com outro `returns table`.
@@ -533,7 +664,10 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- **Banco:** colunas do público e `SQL-SEGURANCA.sql` (seção 5).
+- **Netlify:** branch de produção trocada para `main` pelo Breno em
+  28/09/2026. Falta a branch padrão do GitHub virar `main`, conferir a
+  prévia do PR #2 (academias de exemplo e faixa amarela) e aprovar. O PR #1
+  (`new-session` → `trivago`) ficou velho e pode ser fechado.
 - **Publicar** o último zip em guiatennis.com.br (conferir que a frase da
   home aparece **embaixo** da busca e fala em "comodidades").
 - **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`.

@@ -133,6 +133,13 @@ create policy "Registrar clique" on public.cliques
   with check (tipo in ('acesso_site', 'busca', 'visualizacao', 'whatsapp', 'site', 'instagram', 'compartilhar'));
 
 -- Permissões --------------------------------------------------
+-- As mesmas que o Supabase dá sozinho no banco de verdade — escritas aqui
+-- porque projeto novo pode vir sem elas. Quem decide o que cada um pode
+-- fazer de fato são as regras (RLS) acima.
+grant usage on schema public to anon, authenticated, service_role;
+grant all on table public.academias, public.avaliacoes, public.cliques
+  to anon, authenticated, service_role;
+
 -- O visitante lê tudo menos os contatos: quem pediu o cadastro da
 -- academia e o WhatsApp de quem avaliou. Coluna nova em academias ou
 -- avaliacoes precisa entrar nesta lista para o visitante enxergar.
@@ -174,3 +181,6 @@ $$;
 
 revoke all on function public.estatisticas_publicas() from public;
 grant execute on function public.estatisticas_publicas() to anon, authenticated;
+
+-- O site enxerga as tabelas novas na hora, sem esperar o Supabase recarregar.
+notify pgrst, 'reload schema';

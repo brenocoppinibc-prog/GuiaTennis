@@ -35,8 +35,11 @@ mexer:
 - **Publica aprovando o PR no GitHub** (desde 28/09/2026 — seção 7). Não
   mandar mais zip, a não ser que ele peça: cada zip arrastado gasta
   crédito do Netlify.
-- **SQL sempre em bloco pronto para copiar, escrito na mensagem.** Ele roda
-  à mão no SQL Editor do Supabase e manda o resultado em tabela.
+- **SQL entra sozinho pelo GitHub** (desde 28/09/2026 — seção 4,
+  "Automação do banco"). Mostrar o SQL novo na conversa mesmo assim, para
+  ele saber o que vai mudar. Consulta que só lê (e o bloco manual, se a
+  automação estiver sem os segredos) continua em bloco pronto para
+  copiar; ele roda no SQL Editor e manda o resultado em tabela.
 - Testa no celular, muitas vezes **logado como admin** — o que não grava
   estatística. Para testar como visitante: aba anônima.
 - Quer comparação com referências internacionais grandes (site,
@@ -91,8 +94,11 @@ cobra taxa e não fica no meio** da negociação.
    identificador do aparelho. Pedido do Breno em 28/09/2026. Qualquer
    mudança nisso obriga a mexer na Política de Privacidade — e a data de
    "Última atualização" dos dois textos legais tem de acompanhar.
-10. **SQL vai sempre em bloco pronto para copiar**, escrito na conversa —
-    não só dentro de um arquivo. O Breno roda à mão no SQL Editor.
+10. **SQL novo vira um arquivo em `supabase/migrations/`** e o GitHub
+    aplica: no banco de teste com o PR, no de verdade com o merge (pedido
+    do Breno em 28/09/2026). O SQL também vai escrito na conversa. Se a
+    automação não puder rodar, o bloco pronto para copiar volta a ser o
+    caminho — o Breno roda à mão no SQL Editor.
 11. **Campo vazio não desenha bloco.** Academia que não preencheu
     horário, política ou acesso tem a ficha limpa, sem caixa vazia.
 12. **Informação da mesma natureza mora no mesmo lugar.** Fachada,
@@ -346,6 +352,40 @@ em aba anônima inflava os números da home.
 - **A conferir com o Breno:** se o SQL rodou no projeto de teste (a prévia
   abre com as três academias de exemplo), se o admin foi criado e se o
   cadastro de usuários está desligado lá.
+
+### Automação do banco (pedido do Breno em 28/09/2026)
+Os sites grandes guardam o SQL junto com o código e deixam a esteira
+aplicar. Aqui:
+- **`.github/workflows/banco.yml`** roda `supabase/aplicar.sh`:
+  PR para a `main` que mexe em `supabase/` → banco de **teste**; merge na
+  `main` → banco de **verdade**. Também roda à mão (Actions → Banco de
+  dados → Run workflow, escolhendo teste ou real). Grátis: repositório
+  público.
+- **`supabase/aplicar.sh`** roda, na ordem, cada arquivo de
+  `supabase/migrations/` que ainda não está no histórico
+  (`supabase_migrations.schema_migrations`, a mesma tabela do Supabase),
+  numa transação só junto com a anotação: entra inteiro ou nada. SQL com
+  erro deixa a esteira vermelha e não muda o banco.
+- A estrutura inicial (`20260928150000`) veio do banco de verdade: lá ela
+  é só anotada, sem rodar (`JA_NO_BANCO_REAL` no script). No banco de
+  teste ela roda (pode rodar de novo sem mudar nada).
+- As academias de exemplo (`seed.sql`) só entram no banco de teste, e só
+  se ele estiver sem nenhuma academia.
+- **Segredos** (GitHub → Settings → Secrets and variables → Actions):
+  `BANCO_TESTE_URL` e `BANCO_REAL_URL`, cada um com o endereço **Session
+  pooler** do projeto (Supabase → Connect), com a senha do banco no lugar
+  de `[YOUR-PASSWORD]`. O endereço direto (`db.<ref>.supabase.co`) é só
+  IPv6 e o GitHub não alcança. Sem o segredo, a esteira avisa e não faz
+  nada. Senha só com letras e números (caractere especial precisa ser
+  codificado na URL).
+- **SQL novo:** arquivo `supabase/migrations/AAAAMMDDhhmmss_nome.sql`,
+  que pode rodar de novo sem estragar (`if not exists`, `drop … if
+  exists`). Coluna nova em `academias`/`avaliacoes` entra também no
+  `grant select (…)` para o visitante enxergar (ver seção 9).
+- Testado num Postgres local: banco de teste como o Breno deixou, banco
+  novo, banco igual ao de verdade (a estrutura inicial não roda lá) e SQL
+  com erro (nada entra, saída com erro).
+
 - **Postgres na máquina:** `/usr/lib/postgresql/16/bin`, como usuário
   `postgres`, com os dados em `/var/lib/postgresql/…` (no scratchpad o
   ambiente fecha as permissões de tempos em tempos e o Postgres cai):
@@ -422,8 +462,9 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banc
   ficha, textos fixos.
 - `cadastro.js` — cancelamento por modalidade, "Onde estacionar" só sem
   vaga própria, ordem dos campos, edição que não apaga horário nem regra.
-- `publico.js` — origem e aparelho do acesso, CEP e ponto aproximado da
-  busca, painel do admin e Política de Privacidade.
+- `publico.js` — origem e aparelho do acesso, link compartilhado com a
+  etiqueta `Compartilhado`, CEP e ponto aproximado da busca, painel do
+  admin e Política de Privacidade.
 - `seguranca.js` — site funciona com o banco fechado (depois do
   `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
@@ -668,14 +709,18 @@ c9ade31 Configuração de publicação do Netlify
   28/09/2026. Falta a branch padrão do GitHub virar `main`, conferir a
   prévia do PR #2 (academias de exemplo e faixa amarela) e aprovar. O PR #1
   (`new-session` → `trivago`) ficou velho e pode ser fechado.
-- **Publicar** o último zip em guiatennis.com.br (conferir que a frase da
-  home aparece **embaixo** da busca e fala em "comodidades").
 - **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`.
 - **Academias:** mandar a mensagem da seção 12 às que não preencheram
   horário, preço, cancelamento, como chegar e fotos.
-- **Marketing:** usar `?utm_source=` nos links divulgados (bio do
-  Instagram, WhatsApp) — aparece em "De onde vieram" no painel e no card
-  de cada academia.
+- **Marketing:** links com etiqueta (28/09/2026), que aparecem em "De
+  onde vieram" no painel e no card de cada academia:
+  `?utm_source=Instagram-bio`, `Instagram-stories`, `Instagram-direct`,
+  `WhatsApp` (status, grupos, amigos) e `WhatsApp-academias`. O botão
+  Compartilhar da ficha põe `&utm_source=Compartilhado` sozinho. O site
+  só lê o `utm_source`.
+- **Segredos do banco no GitHub:** `BANCO_TESTE_URL` e `BANCO_REAL_URL`
+  (seção 4, "Automação do banco"). Até lá, a esteira do banco avisa e não
+  aplica nada.
 - **Backup:** uma vez por mês, Table Editor → Export → CSV de cada tabela
   (o plano grátis do Supabase não guarda backup restaurável).
 - Segurança das contas: 2 etapas em Supabase, Netlify, GitHub e Gmail.

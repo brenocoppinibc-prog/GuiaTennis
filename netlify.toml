@@ -70,3 +70,9 @@
   from = "/supabase/*"
   to = "/404.html"
   status = 404
+
+# A automação do GitHub (aplica o SQL novo nos bancos).
+[[redirects]]
+  from = "/.github/*"
+  to = "/404.html"
+  status = 404

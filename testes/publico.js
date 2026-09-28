@@ -8,6 +8,23 @@ const { abrir, ok } = require('./harness');
   ok(cl.origem === 'Instagram' && cl.dispositivo === 'Computador', 'acesso grava origem e aparelho — ' + JSON.stringify(cl));
   await browser.close();
 
+  // Compartilhar: o link leva a etiqueta, e quem recebe conta como
+  // "Compartilhado" no acesso e na ficha aberta
+  ({ browser, page } = await abrir());
+  const link = await page.evaluate(async () => {
+    let enviado = null;
+    navigator.share = (d) => { enviado = d; return Promise.resolve(); };
+    shareCourt('a1');
+    return enviado && enviado.url;
+  });
+  ok(/\?court=a1&utm_source=Compartilhado$/.test(link || ''), 'link compartilhado leva a etiqueta — ' + link);
+  await browser.close();
+  ({ browser, page } = await abrir({ q: '?court=a1&utm_source=Compartilhado' }));
+  cl = await page.evaluate(() => window.__cliques.map(c => c.tipo + ':' + c.origem));
+  ok(cl.includes('acesso_site:Compartilhado') && cl.includes('visualizacao:Compartilhado'), 'quem abre o link compartilhado conta como Compartilhado — ' + cl.join(' | '));
+  ok(await page.evaluate(() => state.page === 'court' && state.selected && state.selected.id === 'a1'), 'o link compartilhado abre a ficha da academia');
+  await browser.close();
+
   // Busca por endereço: CEP da região achada e ponto arredondado (~100 m)
   ({ browser, page } = await abrir());
   await page.route('**/nominatim**', r => {

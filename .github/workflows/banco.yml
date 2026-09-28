@@ -1,0 +1,53 @@
+# Aplica sozinho o SQL novo de supabase/migrations:
+# - pedido de mudança (PR) para a main → banco de teste (guiatennis-teste),
+#   o mesmo que a prévia do Netlify usa;
+# - merge na main ("pode subir") → banco de verdade.
+# As URLs dos bancos ficam nos segredos do repositório: BANCO_TESTE_URL e
+# BANCO_REAL_URL (Settings → Secrets and variables → Actions), com o
+# endereço "Session pooler" do Supabase — o GitHub não alcança o endereço
+# direto, que é só IPv6. Sem o segredo, avisa e não faz nada.
+# Também dá para rodar à mão: Actions → Banco de dados → Run workflow.
+name: Banco de dados
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ["supabase/**", ".github/workflows/banco.yml"]
+  push:
+    branches: [main]
+    paths: ["supabase/**", ".github/workflows/banco.yml"]
+  workflow_dispatch:
+    inputs:
+      destino:
+        description: "Em qual banco aplicar"
+        type: choice
+        options: [teste, real]
+        default: teste
+
+permissions:
+  contents: read
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    env:
+      DESTINO: ${{ github.event_name == 'push' && 'real' || inputs.destino || 'teste' }}
+    # Um de cada vez em cada banco, na ordem em que chegaram.
+    concurrency:
+      group: banco-${{ github.event_name == 'push' && 'real' || inputs.destino || 'teste' }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Aplicar o SQL novo no banco ${{ env.DESTINO }}
+        env:
+          BANCO_TESTE_URL: ${{ secrets.BANCO_TESTE_URL }}
+          BANCO_REAL_URL: ${{ secrets.BANCO_REAL_URL }}
+        run: |
+          if [ "$DESTINO" = real ]; then BANCO_URL="$BANCO_REAL_URL"; else BANCO_URL="$BANCO_TESTE_URL"; fi
+          if [ -z "$BANCO_URL" ]; then
+            echo "::warning::Falta o segredo do banco $DESTINO no GitHub. Nada foi aplicado."
+            exit 0
+          fi
+          command -v psql >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client; }
+          BANCO_URL="$BANCO_URL" bash supabase/aplicar.sh "$DESTINO"

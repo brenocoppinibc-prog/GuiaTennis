@@ -37,7 +37,7 @@ jobs:
       group: banco-${{ github.event_name == 'push' && 'real' || inputs.destino || 'teste' }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Aplicar o SQL novo no banco ${{ env.DESTINO }}
         env:

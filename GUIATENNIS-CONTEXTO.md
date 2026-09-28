@@ -5,12 +5,37 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 
 **Dono:** Breno (brenocoppini.bc@gmail.com)
 **Repositório:** `brenocoppinibc-prog/GuiaTennis`
-**Branch de trabalho:** `claude/new-session-qevg66` (continua a `claude/academia-card-hotel-style-mujo9b`)
-**No ar:** guiatennis.com.br (Netlify) · teste atual em lucky-liger-1c29a3.netlify.app
+**Branch de trabalho:** `claude/new-session-qevg66` — tem todo o trabalho
+(continua a `claude/academia-card-hotel-style-mujo9b`). Não há PR aberto.
+**No ar:** guiatennis.com.br (Netlify) · teste em lucky-liger-1c29a3.netlify.app
+(os dois usam o mesmo banco)
 **Instagram:** @guiatennis · **E-mail:** guiatennis1@gmail.com
+**Atualizado em:** 28/09/2026
 
-> **Estado:** o site está pronto para publicar. Falta o Breno rodar o SQL
-> da seção 5 e subir os arquivos no Netlify.
+> **Estado:** site completo e no ar. O que ainda depende do Breno está na
+> seção 5 (SQL) e na seção 11 (em aberto).
+
+### Como abrir o chat novo
+Anexe este arquivo e diga em qual branch trabalhar. No chat novo, antes de
+mexer:
+1. `git fetch origin claude/new-session-qevg66` e trabalhar a partir dela
+   (se a branch do chat novo for outra e estiver atrás, avançar com
+   `git merge --ff-only FETCH_HEAD`).
+2. Rodar `testes/check-js.sh` e os testes da seção 6.
+
+### Como o Breno trabalha (importante)
+- Fala português, pelo celular, e manda print. Resposta curta, direta, em
+  português, sem jargão.
+- **Publica arrastando um zip no Netlify.** A cada mudança, mandar o zip
+  com os 10 arquivos da seção 7 (só o `index.html` quando ele pedir).
+- **SQL sempre em bloco pronto para copiar, escrito na mensagem.** Ele roda
+  à mão no SQL Editor do Supabase e manda o resultado em tabela.
+- Testa no celular, muitas vezes **logado como admin** — o que não grava
+  estatística. Para testar como visitante: aba anônima.
+- Quer comparação com referências internacionais grandes (site,
+  Instagram, marketing) quando o assunto é GuiaTennis.
+- Não gosta de depender de botão para o que o site pode fazer sozinho
+  ("ele deveria consultar direito").
 
 ---
 
@@ -65,6 +90,17 @@ cobra taxa e não fica no meio** da negociação.
     horário, política ou acesso tem a ficha limpa, sem caixa vazia.
 12. **Informação da mesma natureza mora no mesmo lugar.** Fachada,
     chegada e estacionamento ficam juntos, no mesmo formato.
+13. **Sem IA.** O Breno pediu e depois recusou IA para padronizar textos
+    ("não precisa de IA, é tipo como acontece na comparação"). O site
+    entende por palavra-chave (seção 4, "Entendimento dos textos").
+14. **Números públicos da home:** só acessos, "1 em N abre a ficha" e "% de
+    quem abre chama a academia", **lado a lado** em colunas iguais, também
+    no celular. **Não mostrar total de buscas** no site (fica no painel).
+15. **Textos pedidos pelo Breno:** frase embaixo da busca "Compare preço,
+    estrutura e comodidades de academias de tênis — e fale direto com
+    elas."; filtro "Empréstimo de raquete"; "consulte com a academia";
+    "aula com professor da academia". Nunca "lista alfabética" nem "quem
+    pagou mais".
 
 ## 3. Como é feito
 
@@ -83,40 +119,34 @@ só. Sem build, sem npm, sem framework. Abrir o arquivo já é rodar o site.
   (`guiatennis_visitor_v1`) e o cache do "o que tem por perto"
   (`guiatennis_perto_v1`).
 
-### Mapa do `index.html` (linhas aproximadas)
+### Mapa do `index.html` (linhas aproximadas, ~391 KB)
 
 | Linha | O quê |
 |---|---|
 | topo | `<meta>`, canonical, JSON-LD, CSS inteiro dentro de `<style>` |
-| 931 | Supabase, `LOGO_SVG`, ícones, `bolaGirando` |
-| 1030 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano, ordenação) |
-| 1093 | `acessoDe` — fachada, chegada, estacionamento |
-| 1144 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
-| 1246 | `politicaDe` — cancelamento, igual ou separado por modalidade |
-| 1341 | `mapRow` / `toRow` (banco ↔ objeto) |
-| 1561 | `trackClick`, `registrarBusca` |
-| 1572 | `state` |
-| 1656 | geocodificação (ViaCEP, Nominatim), `haversineKm` |
-| 1820 | filtros, ordenação, `getResults` |
-| 1913 | `render()` |
-| 2066 | SEO, canonical e JSON-LD por academia |
-| 2149 | "Me ajude a decidir" (ranking da comparação) |
-| 2284 | comparação: seletor, tabela alinhada, vagas |
-| 2616 | QR code (folha do admin) |
-| 2856 | mapa Leaflet |
-| 3025 | cabeçalho, menu, blocos da home |
-| 3306 | rodapé do site |
-| 3484 | página de busca, filtros, card da academia |
-| 3957 | "o que tem por perto" (Overpass) |
-| 4242 | QR code: o gerador, escrito do zero |
-| 4837 | `htAcesso` (fachada/chegada/estacionamento) e `htHorario` |
-| 5031 | `htPolitica` e `blocoPolitica` |
-| 5218 | `renderCourtPage` — a ficha inteira |
-| 5465 | formulário de cadastro |
-| 5631 | estatísticas do admin |
-| 5754 | Termos de Uso e Política de Privacidade |
-| 5883 | `attachEvents()` |
-| 7110 | `init()` |
+| 946 | Supabase, `LOGO_SVG`, ícones, `bolaGirando` |
+| 1045 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano) |
+| 1109 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
+| 1123 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
+| 1316 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
+| 1425 | `politicaDe` — cancelamento, igual ou separado por modalidade |
+| 1525 | `mapRow` / `toRow` (banco ↔ objeto) |
+| 1621 | `COLUNAS_*_PUBLICAS`, `lerPublico`, `loadEverything` |
+| 1761 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
+| 1876 | `state` |
+| 1960 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
+| 2264 | `getResults`, `render()` |
+| 3148 | mapa Leaflet da busca (pinos empilhados) |
+| 3403 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias` |
+| 3861 | página de busca, filtros, card da academia |
+| 5202 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia` |
+| 5586 | `renderCourtPage` — a ficha inteira |
+| 5820 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
+| 6048 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
+| 6228 | Termos de Uso e Política de Privacidade |
+| 6360 | `attachEvents()` |
+| 7461 | `doSearch`, `doRegisterSubmit` |
+| 7649 | `init()` |
 
 ## 4. Banco (Supabase)
 
@@ -228,63 +258,56 @@ cai na visão antiga; sem nenhuma das duas, o bloco de números some.
   authenticated — é assim que o visitante vê os quatro totais sem ler a
   tabela `cliques` (ver acima).
 
-## 5. ⚠️ Pendente de rodar no Supabase
+## 5. Banco: o que já rodou e o que falta
 
-O Breno **não rodou nada** até o último commit. O bloco está no arquivo
-`SQL-ESTATISTICAS.sql` na raiz e, para não depender dele, repetido aqui:
+**Já rodado pelo Breno (confirmado):**
+- colunas `politica`, `acesso`, `horario` em `academias`;
+- colunas `detalhe` e `cep` em `cliques`;
+- função `estatisticas_publicas()`;
+- trava `cliques_tipo_valido` com "busca" — trocou a `cliques_tipo_check`
+  antiga, que recusava toda busca (confirmado em 28/09/2026);
+- cadastro de novos usuários desligado no Supabase Auth.
 
+**Falta confirmar / rodar** (tudo seguro para rodar de novo):
+
+1. Colunas do público. Sem elas, origem, aparelho e ponto da busca não
+   são gravados, e o admin vê uma faixa amarela com este SQL:
 ```sql
-alter table cliques add column if not exists detalhe text;
-
-alter table cliques add column if not exists cep text;
-
-alter table academias add column if not exists politica jsonb not null default '{}'::jsonb;
-
-alter table academias add column if not exists acesso jsonb not null default '{}'::jsonb;
-
-alter table academias add column if not exists horario jsonb not null default '{}'::jsonb;
-
-drop view if exists public.estatisticas_publicas;
-
-drop function if exists public.estatisticas_publicas();
-
-create function public.estatisticas_publicas()
-returns table (
-  acessos_total  bigint,
-  buscas_total   bigint,
-  fichas_total   bigint,
-  contatos_total bigint
-)
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select
-    count(*) filter (where tipo = 'acesso_site'),
-    count(*) filter (where tipo = 'busca'),
-    count(*) filter (where tipo = 'visualizacao'),
-    count(*) filter (where tipo in ('whatsapp','site','instagram'))
-  from public.cliques;
-$$;
-
-revoke all on function public.estatisticas_publicas() from public;
-
-grant execute on function public.estatisticas_publicas() to anon, authenticated;
-
--- Conferir: devem vir quatro números.
--- select * from public.estatisticas_publicas();
+alter table cliques add column if not exists lat numeric;
+alter table cliques add column if not exists lng numeric;
+alter table cliques add column if not exists origem text;
+alter table cliques add column if not exists dispositivo text;
 ```
 
-Enquanto não rodar:
+2. Segurança — o arquivo `SQL-SEGURANCA.sql` inteiro. O visitante deixa
+   de ler o WhatsApp de quem avaliou e o contato de quem pediu cadastro, e
+   os envios só aceitam o que o site manda. O site já está pronto para
+   ele. Para saber se já rodou:
+```sql
+select policyname, with_check from pg_policies where tablename = 'avaliacoes';
+```
+   Se "Enviar avaliacao" tiver `stars between 1 and 5`, já rodou. Ordem
+   certa: subir o site novo **antes** de rodar esse SQL.
 
-- o bloco de números na home não aparece;
-- as buscas são gravadas sem a região e sem o CEP;
-- salvar academia perde `politica`, `acesso` e `horario`, e o admin vê um
-  alerta com o SQL;
-- o alerta CRITICAL do Supabase continua.
+3. Morumbi Tennis, se ainda estiver fora do lugar no mapa:
+```sql
+update academias set lat = null, lng = null where name = 'Morumbi Tennis';
+```
+   e o admin abrir o site — ele localiza de novo, pelo nome.
 
-Nada quebra em nenhum desses casos — foi feito para degradar.
+**Consultas úteis (só leitura):**
+```sql
+-- últimos registros
+select tipo, detalhe, cep, origem, dispositivo, created_at
+from cliques order by created_at desc limit 20;
+
+-- total por tipo desde o começo
+select tipo, count(*), max(created_at) from cliques group by tipo;
+
+-- travas da tabela cliques
+select conname, pg_get_constraintdef(oid) from pg_constraint
+where conrelid = 'public.cliques'::regclass and contype = 'c';
+```
 
 ## 6. Como testar
 
@@ -315,12 +338,23 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico; do 
 
 O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
 separada) e `a2` (só locação, regra única). Chaves: `__admin`,
-`__semDetalhe`, `__semCep`. O que o site
+`__semDetalhe`, `__semCep`, `__colunasFechadas`, `__semPlano`. O que o site
 grava fica em `window.__db` e `window.__cliques`; o último `update` em
 `window.__ultimoUpdate`.
 
 Playwright + Chromium já estão na máquina, mas **em `npm root -g`** — por
-isso o `NODE_PATH`.
+isso o `NODE_PATH`. A suíte inteira passa de 2 minutos: rode em segundo
+plano ou um arquivo por vez.
+
+**No site de verdade:** `guiatennis.com.br/?diagnostico` mostra uma caixa
+preta com cada passo da busca e a resposta do banco a cada gravação
+("gravado no banco" ou "o banco recusou … motivo"). Só aparece para quem
+abre com `?diagnostico`, até fechar a aba. Foi assim que se achou a trava
+que recusava as buscas.
+
+**Daqui não se alcança o Supabase nem o site** (a rede do ambiente
+bloqueia). Diagnóstico de produção depende de print do Breno e das
+consultas da seção 5.
 
 ## 7. Arquivos que vão para o ar
 
@@ -408,6 +442,23 @@ script está no scratchpad (`gera-imagens.js`).
   `SQL-SEGURANCA.sql` (ele libera todas menos as de contato) **antes** de
   pôr a coluna em `COLUNAS_ACADEMIA_PUBLICAS`; senão o site fica vazio
   para quem não é admin.
+- **Localizar academia nunca pode gravar o centro da cidade.** O
+  endereço da Morumbi não era achado com o bairro ("Vila Progredior"), a
+  busca generalizava até "São Paulo" e gravava o marco zero. Hoje:
+  rua+cidade antes de rua+bairro; resultado só de bairro/cidade vem
+  marcado `grosso` e nunca é gravado; a busca pelo nome da academia no
+  OpenStreetMap vale se estiver perto (1,5 km, ou 20 km quando o endereço
+  foi grosso).
+- **Duas academias no mesmo ponto: um pino escondia o outro** (Morumbi
+  atrás da Mesqtennis). Pinos com a mesma coordenada (4 casas) ficam
+  empilhados, um acima do outro.
+- **Entendimento de texto não pode apagar informação.** Com vaga própria,
+  a frase da fachada que falava de "estacionamento" ia para o bloco de
+  estacionamento, que só mostra "No local", e sumia. Hoje nada sai da
+  fachada/chegada com vaga própria, "garagem" e "vaga" não movem frase, e
+  a fachada nunca fica vazia por causa disso.
+- **Admin não grava nenhum clique** (`trackClick` sai no começo), nem de
+  academia. Quem testa logado vê a faixa "Essa busca não foi gravada".
 - **`create or replace view` só aceita colunas novas no fim.** Mudar
   nome, ordem ou tipo exige `drop` antes — o mesmo vale para
   `create or replace function` com outro `returns table`.
@@ -415,6 +466,27 @@ script está no scratchpad (`gera-imagens.js`).
 ## 10. Histórico
 
 ```
+ff03015 Público por academia: origem, região e aparelho de quem abre a ficha
+799a269 Dados do público: CEP e ponto aproximado de toda busca, origem e aparelho
+da675ca Registra a causa das buscas não gravadas: trava antiga no tipo de cliques
+535b46b Modo diagnóstico: ?diagnostico mostra cada passo da busca e a resposta do banco
+dbe7243 Cancelamento ganha "Personalizar": a academia escreve o prazo em horas
+5dcc6b2 Academia nunca mais é gravada no centro da cidade
+dd35e2f Pinos no mesmo ponto ficam empilhados, e academia é localizada pelo nome
+69644fc Fachada deixa de sumir quando fala de garagem ou estacionamento
+f3f9914 Números da home lado a lado também no celular
+03a7d2e Números da home alinhados e sem o total de buscas
+4f3729b Coordenada da academia é buscada sozinha, sem depender de botão
+e11a5cb Link com busca no endereço refaz a busca, e ela conta
+25b4d04 Visitante deixa de ler contatos e envios abertos ficam fechados
+ecde3ed Tira "não é lista alfabética nem quem pagou mais" da home
+1e0c58d Tira funções que não eram mais usadas
+ed6095a Página de busca ganha o botão de menu, com o mesmo cabeçalho da home
+98a3e6d Admin fica sabendo por que a busca não entrou no banco
+64d54b7 Estacionamento e textos entendidos pelo próprio site, sem IA
+68db9d3 IA padroniza os textos da academia (desfeito no commit seguinte)
+3234102 Cadastro por modalidade, estacionamento só sem vaga e textos da home
+51024d9 SQL pendente fica escrito dentro do documento de contexto
 f40d81e Horário por dia, cancelamento por modalidade e acesso num bloco só
 7788d7b Tira o "hoje" de quem procura onde jogar
 c95fd53 Horário de funcionamento, e estacionamento vira texto da academia
@@ -461,12 +533,44 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- Rodar o `SQL-SEGURANCA.sql` no Supabase (o das estatísticas já foi).
-- Gerar as coordenadas que faltam (botão no mapa, modo admin).
-- Cadastrar o site no Google Search Console e enviar o `sitemap.xml`.
-- A branch está bem à frente de
-  `claude/trivago-style-court-interface-fvd0v6`. Não há PR aberto.
-- Ideias que ficaram no ar: posição do bloco "Por que estar no
-  GuiaTennis"; tirar o contador da comparação do botão do menu.
-- Ligar "Leaked password protection" no Supabase Auth, se o plano
-  permitir.
+- **Banco:** colunas do público e `SQL-SEGURANCA.sql` (seção 5).
+- **Publicar** o último zip em guiatennis.com.br (conferir que a frase da
+  home aparece **embaixo** da busca e fala em "comodidades").
+- **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`.
+- **Academias:** mandar a mensagem da seção 12 às que não preencheram
+  horário, preço, cancelamento, como chegar e fotos.
+- **Marketing:** usar `?utm_source=` nos links divulgados (bio do
+  Instagram, WhatsApp) — aparece em "De onde vieram" no painel e no card
+  de cada academia.
+- **Backup:** uma vez por mês, Table Editor → Export → CSV de cada tabela
+  (o plano grátis do Supabase não guarda backup restaurável).
+- Segurança das contas: 2 etapas em Supabase, Netlify, GitHub e Gmail.
+  "Leaked password protection" só existe no plano pago; senha forte basta.
+  **Não ligar o Captcha do Supabase** — o login do site não tem captcha e
+  o admin ficaria trancado.
+- Ideias no ar: posição do bloco "Por que estar no GuiaTennis"; tirar o
+  contador da comparação do botão do menu.
+
+## 12. Mensagem para as academias (WhatsApp)
+
+> Oi, tudo bem? Aqui é o Breno, do **GuiaTennis** (guiatennis.com.br), o
+> guia de quadras e academias de tênis onde a [NOME DA ACADEMIA] já
+> aparece.
+>
+> A ficha de vocês ganhou espaço para mais informações — e isso ajuda muito
+> quem está procurando onde jogar a escolher vocês e chamar direto no
+> WhatsApp. Não tem custo nenhum.
+>
+> Se puderem me responder só o que fizer sentido:
+> 1. Horário de funcionamento (segunda a sexta, sábado e domingo).
+> 2. Preço por hora da aula e da locação (se preferirem não divulgar, tudo bem).
+> 3. Cancelamento: com quantas horas de antecedência o aluno precisa avisar
+>    para ter reposição? E o que acontece se avisar depois?
+> 4. Como chegar: como é a fachada, o que fazer ao chegar e onde estacionar.
+> 5. Quadras: quantas de saibro ou rápida, cobertas ou descobertas.
+> 6. Comodidades: vestiário, Wi-Fi, lanchonete, água, loja, empréstimo de
+>    raquete, câmera para gravar pontos, app de assinatura fitness.
+> 7. Até 5 fotos do espaço.
+>
+> Assim que eu atualizar, mando o link da ficha. Também posso mandar um QR
+> code da página de vocês para deixar na recepção. Obrigado!

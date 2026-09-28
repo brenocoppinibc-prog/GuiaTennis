@@ -258,6 +258,20 @@ cai na visão antiga; sem nenhuma das duas, o bloco de números some.
   authenticated — é assim que o visitante vê os quatro totais sem ler a
   tabela `cliques` (ver acima).
 
+### GitHub ↔ Supabase
+O Breno ligou o repositório pelo painel do Supabase (Project Settings →
+Integrations → GitHub) em 28/09/2026. O site **não depende** disso: ele fala
+com o banco pela chave do `index.html`. A integração só serve para aplicar
+SQL guardado no repositório, e para isso precisa de:
+- uma pasta `supabase/` com `config.toml` e `migrations/` (hoje não existe);
+- a branch de produção certa — a principal do GitHub ainda é a
+  `claude/trivago-style-court-interface-fvd0v6`, que está atrás.
+
+Para saber se o app do Supabase está vendo o repositório, confira os
+"check suites" de um commit novo:
+`curl -s https://api.github.com/repos/brenocoppinibc-prog/GuiaTennis/commits/<sha>/check-suites`
+— aparece `supabase` ao lado de `claude` e `render` quando está ligado.
+
 ## 5. Banco: o que já rodou e o que falta
 
 **Já rodado pelo Breno (confirmado):**

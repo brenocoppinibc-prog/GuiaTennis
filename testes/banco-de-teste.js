@@ -3,12 +3,16 @@
 const { abrir, ok } = require('./harness');
 const REAL = 'https://eultezheqwmxyakvgyjy.supabase.co';
 const TESTE = 'https://teste123.supabase.co';
-const comTeste = html => html.replace('const BANCO_DE_TESTE = { url: "", chave: "" };', `const BANCO_DE_TESTE = { url: "${TESTE}", chave: "chave-de-teste" };`);
+const LINHA = /const BANCO_DE_TESTE = \{[^\n]*\};/;
+const comTeste = html => html.replace(LINHA, `const BANCO_DE_TESTE = { url: "${TESTE}", chave: "chave-de-teste" };`);
+const semTeste = html => html.replace(LINHA, 'const BANCO_DE_TESTE = { url: "", chave: "" };');
 (async () => {
   const casos = [
     ['site de teste, banco de teste preenchido', { host: 'lucky-liger-1c29a3.netlify.app', trocar: comTeste }, TESTE, true],
     ['versão de deploy do site de teste', { host: '68f1a2b3c4d5e6--lucky-liger-1c29a3.netlify.app', trocar: comTeste }, TESTE, true],
-    ['site de teste, banco de teste vazio', { host: 'lucky-liger-1c29a3.netlify.app' }, REAL, false],
+    ['site de teste, banco de teste vazio', { host: 'lucky-liger-1c29a3.netlify.app', trocar: semTeste }, REAL, false],
+    ['site de teste com o banco de teste de hoje', { host: 'lucky-liger-1c29a3.netlify.app' }, 'https://ohvbengbujdioxdtewsy.supabase.co', true],
+    ['guiatennis.com.br com o banco de teste de hoje', { host: 'guiatennis.com.br' }, REAL, false],
     ['guiatennis.com.br, banco de teste preenchido', { host: 'guiatennis.com.br', trocar: comTeste }, REAL, false],
     ['link com ?banco= não troca o banco', { host: 'guiatennis.com.br', trocar: comTeste, q: '?banco=' + encodeURIComponent(TESTE) }, REAL, false],
     ['endereço parecido não engana', { host: 'lucky-liger-1c29a3.netlify.app.golpe.com', trocar: comTeste }, REAL, false],

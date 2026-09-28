@@ -949,7 +949,7 @@
 // dois endereços, e quem escolhe o banco é o endereço aberto — nunca um
 // parâmetro no link, para ninguém apontar o guiatennis.com.br para outro
 // banco. Enquanto o banco de teste estiver vazio aqui, tudo usa o de verdade.
-const BANCO_DE_TESTE = { url: "", chave: "" };
+const BANCO_DE_TESTE = { url: "https://ohvbengbujdioxdtewsy.supabase.co", chave: "sb_publishable_NEF5wHWslCi3Uu9GfbHruQ_Ut3r_BBT" };
 const NO_SITE_DE_TESTE = /(^|--)lucky-liger-1c29a3\.netlify\.app$|^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const USANDO_BANCO_DE_TESTE = NO_SITE_DE_TESTE && !!BANCO_DE_TESTE.url && !!BANCO_DE_TESTE.chave;
 const SUPABASE_URL = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.url : "https://eultezheqwmxyakvgyjy.supabase.co";

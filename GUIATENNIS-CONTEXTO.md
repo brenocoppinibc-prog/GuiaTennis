@@ -8,7 +8,8 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 **Branch de trabalho:** `claude/new-session-qevg66` — tem todo o trabalho
 (continua a `claude/academia-card-hotel-style-mujo9b`). Não há PR aberto.
 **No ar:** guiatennis.com.br (Netlify) · teste em lucky-liger-1c29a3.netlify.app
-(os dois usam o mesmo banco)
+(cada um com o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
+`ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` — seção 4, "Banco de teste")
 **Instagram:** @guiatennis · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 28/09/2026
 
@@ -323,10 +324,17 @@ em aba anônima inflava os números da home.
   clique conhecido, nota de 1 a 5 e cadastro pendente; o admin vê as 5 e
   os cliques; outra conta logada vê como visitante; o site abre as fichas
   de exemplo sem erro.
-- **Falta:** o Breno criar o projeto `guiatennis-teste`, rodar lá a
-  migração + o seed, criar o admin (Authentication → Users → Add user com
-  `guiatennis1@gmail.com`, confirmado), desligar o cadastro de usuários e
-  mandar a URL e a chave. Aí preencher `BANCO_DE_TESTE` e mandar o zip.
+- **Projeto de teste:** `guiatennis-teste`, URL
+  `https://ohvbengbujdioxdtewsy.supabase.co`, chave publishable já no
+  `BANCO_DE_TESTE` (28/09/2026). Estrutura e exemplos: o SQL da migração
+  + `seed.sql`, colado pelo Breno no SQL Editor do projeto de teste. Login
+  de admin no site de teste é o usuário do projeto de teste, não o do
+  de verdade.
+- **Como publicar agora:** o mesmo zip vai primeiro para o lucky-liger
+  (testa com a faixa amarela) e depois para o guiatennis.com.br.
+- **A conferir com o Breno:** se o SQL rodou no projeto de teste (o site
+  de teste abre com as três academias de exemplo), se o admin foi criado
+  e se o cadastro de usuários está desligado lá.
 - **Postgres na máquina:** `/usr/lib/postgresql/16/bin`, como usuário
   `postgres`, com os dados em `/var/lib/postgresql/…` (no scratchpad o
   ambiente fecha as permissões de tempos em tempos e o Postgres cai):
@@ -445,7 +453,8 @@ O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
 ficam no repositório mas fora do ar —
 `netlify.toml` devolve 404 para eles, e eles não entram no zip.
 
-**Como publicar:** o Breno arrasta a pasta no Netlify. Monte o zip com
+**Como publicar:** o Breno arrasta a pasta no Netlify — primeiro no site
+de teste (lucky-liger), depois no guiatennis.com.br. Monte o zip com
 esses 10 arquivos e mande; **só o `index.html` não basta**, porque ele
 aponta para os ícones e a imagem de compartilhamento.
 
@@ -610,9 +619,8 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- **Banco de teste:** o Breno criar o projeto `guiatennis-teste`, rodar
-  a estrutura e os exemplos, e mandar a URL/chave (seção 4, "Banco de
-  teste").
+- **Banco de teste:** conferir se o site de teste abre com as academias
+  de exemplo e a faixa amarela (seção 4, "Banco de teste").
 - **Publicar** o último zip em guiatennis.com.br (conferir que a frase da
   home aparece **embaixo** da busca e fala em "comodidades").
 - **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`.

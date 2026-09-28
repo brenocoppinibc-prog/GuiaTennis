@@ -17,6 +17,10 @@
 alter table cliques add column if not exists detalhe text;
 
 alter table cliques add column if not exists cep text;
+alter table cliques add column if not exists lat numeric;
+alter table cliques add column if not exists lng numeric;
+alter table cliques add column if not exists origem text;
+alter table cliques add column if not exists dispositivo text;
 
 -- A tabela nasceu com uma trava que só aceitava os tipos da época; "busca"
 -- veio depois e era recusado em silêncio (0 buscas gravadas até 27/09/2026).

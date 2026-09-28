@@ -532,6 +532,8 @@
   @media (min-width: 720px) { .home-hero { padding: 40px 20px 30px; } .home-hero h2 { font-size: 40px; max-width: 620px; } }
   .home-hero p { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
   .home-hero .home-hero-sub { margin-top: 12px; }
+  .stats-mapa { height: 260px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .stat-regiao small { font-weight: 600; color: var(--muted); margin-left: 4px; }
   .admin-aviso { background: #FFF6DD; border-bottom: 1px solid #E8D49A; color: #6B5310; font-size: 13px; line-height: 1.45; padding: 9px 16px; }
   .admin-aviso code { display: block; margin-top: 6px; font-size: 12px; background: #fff; border: 1px solid #E8D49A; border-radius: 8px; padding: 6px 8px; overflow-wrap: anywhere; user-select: all; }
   .est-previa { border: 1px solid var(--green-line); background: var(--green-soft); border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.45; }
@@ -1642,7 +1644,7 @@ async function loadEverything() {
     // Sem as colunas da busca, a gravação cai para uma versão sem elas e o
     // admin fica sem saber. Aqui ele fica sabendo, com o SQL.
     state.faltaSqlCliques = "";
-    for (const coluna of ["detalhe", "cep"]) {
+    for (const coluna of ["detalhe", "cep", "lat", "origem"]) {
       const { error: semColuna } = await sb.from('cliques').select(coluna).limit(1);
       if (semColuna) { state.faltaSqlCliques = coluna; break; }
     }
@@ -1777,13 +1779,17 @@ function diag(texto) {
   caixa.scrollTop = caixa.scrollHeight;
 }
 
-function trackClick(courtId, type, detalhe, cep) {
+// `extras` são as colunas que o banco pode ainda não ter (cep, lat, lng,
+// origem, dispositivo). Se a gravação falhar por causa delas, tenta de novo
+// com menos, em vez de perder o evento.
+function trackClick(courtId, type, detalhe, extras) {
   const base = { academia_id: courtId, tipo: type };
   const comDetalhe = detalhe ? { ...base, detalhe: String(detalhe).slice(0, 120) } : base;
-  // Enquanto as colunas "cep" e "detalhe" não existirem no banco, tenta de
-  // novo sem elas em vez de perder o evento.
+  const limpos = {};
+  Object.entries(extras || {}).forEach(([k, v]) => { if (v !== null && v !== undefined && v !== "") limpos[k] = v; });
   const tentativas = [];
-  if (cep) tentativas.push({ ...comDetalhe, cep });
+  if (Object.keys(limpos).length) tentativas.push({ ...comDetalhe, ...limpos });
+  if (limpos.cep && Object.keys(limpos).length > 1) tentativas.push({ ...comDetalhe, cep: limpos.cep });
   if (detalhe) tentativas.push(comDetalhe);
   tentativas.push(base);
   const enviar = (i) => sb.from('cliques').insert(tentativas[i]).then(({ error }) => {
@@ -1795,16 +1801,55 @@ function trackClick(courtId, type, detalhe, cep) {
   enviar(0);
 }
 
-// Guarda a região que a busca alcançou — bairro e cidade — e, quando a pessoa
-// digitou um CEP, o CEP. Nunca o endereço digitado nem a coordenada: serve
-// para saber onde tem procura por quadra, não para seguir ninguém.
+// De onde a pessoa veio: link com ?utm_source, ou o site anterior, ou o
+// navegador de dentro do app (Instagram e Facebook abrem o site por dentro).
+function origemDoAcesso() {
+  try {
+    const utm = new URLSearchParams(location.search).get("utm_source");
+    if (utm) return utm.slice(0, 40);
+    const ua = navigator.userAgent || "";
+    if (/Instagram/i.test(ua)) return "Instagram";
+    if (/FBAN|FBAV/i.test(ua)) return "Facebook";
+    const ref = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, "") : "";
+    if (!ref || ref === location.hostname) return "Direto";
+    if (/instagram/.test(ref)) return "Instagram";
+    if (/google\./.test(ref)) return "Google";
+    if (/facebook|fb\./.test(ref)) return "Facebook";
+    if (/whatsapp|wa\.me/.test(ref)) return "WhatsApp";
+    if (/bing\./.test(ref)) return "Bing";
+    return ref.slice(0, 40);
+  } catch { return ""; }
+}
+
+function dispositivoDoAcesso() {
+  const ua = navigator.userAgent || "";
+  if (/iPad|Tablet/i.test(ua)) return "Tablet";
+  if (/Mobi|Android|iPhone/i.test(ua)) return "Celular";
+  return "Computador";
+}
+
+// Ponto da busca arredondado para ~100 m: mostra o quarteirão onde há
+// procura, não a casa de ninguém.
+function pontoAproximado(v) {
+  return typeof v === "number" && isFinite(v) ? Math.round(v * 1000) / 1000 : null;
+}
+
+// Guarda a região que a busca alcançou — bairro, cidade, CEP (o digitado ou o
+// da região achada) e o ponto arredondado para ~100 m. Nunca o endereço
+// digitado nem a coordenada exata: serve para saber onde tem procura por
+// quadra, não para seguir ninguém.
 function registrarBusca(geo, cep) {
   if (!geo) return;
   diag(`busca pronta — região: ${[geo.bairro, geo.cidade].filter(Boolean).join(", ") || "não identificada"} · CEP: ${cep || "nenhum"} · admin: ${isAdmin ? "sim (não grava)" : "não"}`);
   if (isAdmin) { state.avisoBuscaAdmin = true; return; }
   const regiao = [geo.bairro, geo.cidade].filter(Boolean).join(", ");
-  const digitos = String(cep || "").replace(/\D/g, "");
-  trackClick(null, "busca", regiao || "região não identificada", digitos.length === 8 ? digitos.slice(0, 5) + "-" + digitos.slice(5) : null);
+  const digitos = String(cep || geo.cep || "").replace(/\D/g, "");
+  trackClick(null, "busca", regiao || "região não identificada", {
+    cep: digitos.length === 8 ? digitos.slice(0, 5) + "-" + digitos.slice(5) : null,
+    lat: pontoAproximado(geo.lat),
+    lng: pontoAproximado(geo.lng),
+    dispositivo: dispositivoDoAcesso(),
+  });
 }
 // ---------- state ----------
 
@@ -2077,7 +2122,7 @@ async function reverseGeocode(lat, lng) {
   const a = data.address || {};
   const bairro = a.suburb || a.neighbourhood || a.city_district || a.village || "sua região";
   const cidade = a.city || a.town || a.municipality || "";
-  return { lat, lng, bairro, cidade };
+  return { lat, lng, bairro, cidade, cep: (a.postcode || "").replace(/\D/g, "") };
 }
 
 function haversineKm(lat1, lon1, lat2, lon2) {
@@ -2249,7 +2294,7 @@ function render() {
     ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia do modo admin ou use uma aba anônima.</div>` : ""}
     ${isAdmin && state.localizando ? `<div class="admin-aviso">Colocando no mapa as academias sem coordenada: ${state.localizando.feito} de ${state.localizando.total}…</div>` : ""}
     ${isAdmin && !state.localizando && (state.naoLocalizadas || []).length ? `<div class="admin-aviso">Não achei no mapa: <strong>${esc(state.naoLocalizadas.join(", "))}</strong>. Confira a rua, o número, o bairro e a cidade em "Editar" e salve — o site tenta de novo.</div>` : ""}
-    ${isAdmin && state.faltaSqlCliques ? `<div class="admin-aviso">O banco ainda não tem a coluna <strong>${esc(state.faltaSqlCliques)}</strong> na tabela cliques, então as buscas ficam sem região ou sem CEP. Rode no SQL Editor do Supabase:<code>alter table cliques add column if not exists detalhe text;<br>alter table cliques add column if not exists cep text;</code></div>` : ""}
+    ${isAdmin && state.faltaSqlCliques ? `<div class="admin-aviso">O banco ainda não tem a coluna <strong>${esc(state.faltaSqlCliques)}</strong> na tabela cliques, então as estatísticas ficam incompletas. Rode no SQL Editor do Supabase:<code>alter table cliques add column if not exists detalhe text;<br>alter table cliques add column if not exists cep text;<br>alter table cliques add column if not exists lat numeric;<br>alter table cliques add column if not exists lng numeric;<br>alter table cliques add column if not exists origem text;<br>alter table cliques add column if not exists dispositivo text;</code></div>` : ""}
 
     ${state.page === "home" ? renderHome() : ""}
     ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}
@@ -5990,15 +6035,27 @@ function statsAgregado(periodo) {
   const porAcademia = {};
   const porRegiao = {};
   const porCep = {};
+  const porOrigem = {};
+  const porAparelho = {};
+  const pontos = [];
   let acessos = 0;
   let buscas = 0;
   lista.forEach(c => {
-    if (c.tipo === "acesso_site") { acessos++; return; }
+    if (c.tipo === "acesso_site") {
+      acessos++;
+      const o = c.origem || "Não registrado";
+      porOrigem[o] = (porOrigem[o] || 0) + 1;
+      const d = c.dispositivo || "Não registrado";
+      porAparelho[d] = (porAparelho[d] || 0) + 1;
+      return;
+    }
     if (c.tipo === "busca") {
       buscas++;
       const onde = (c.detalhe || "").trim() || "Região não identificada";
       porRegiao[onde] = (porRegiao[onde] || 0) + 1;
       if (c.cep) porCep[c.cep] = (porCep[c.cep] || 0) + 1;
+      const la = numeroOuNulo(c.lat), ln = numeroOuNulo(c.lng);
+      if (la !== null && ln !== null) pontos.push({ lat: la, lng: ln, onde, cep: c.cep || "", quando: c.created_at });
       return;
     }
     if (!c.academia_id) return;
@@ -6011,7 +6068,8 @@ function statsAgregado(periodo) {
   const ceps = Object.keys(porCep)
     .map(nome => ({ nome, n: porCep[nome] }))
     .sort((a, b) => b.n - a.n);
-  return { porAcademia, acessos, buscas, regioes, ceps, totalEventos: lista.length };
+  const lista2 = (obj) => Object.keys(obj).map(nome => ({ nome, n: obj[nome] })).sort((a, b) => b.n - a.n);
+  return { porAcademia, acessos, buscas, regioes, ceps, origens: lista2(porOrigem), aparelhos: lista2(porAparelho), pontos, totalEventos: lista.length };
 }
 
 function resumoTexto(court, d) {
@@ -6029,7 +6087,12 @@ function resumoTexto(court, d) {
 
 function renderStatsPanel() {
   const periodo = state.statsPeriodo || "30";
-  const { porAcademia, acessos, buscas, regioes, ceps } = statsAgregado(periodo);
+  const { porAcademia, acessos, buscas, regioes, ceps, origens, aparelhos, pontos } = statsAgregado(periodo);
+  state.statsPontos = pontos;
+  const listaStat = (titulo, itens) => itens.length ? `
+    <p class="field-label" style="margin-top:18px">${titulo}</p>
+    <div class="stat-regioes">${itens.map(r => `
+      <div class="stat-regiao"><span>${esc(r.nome)}</span><strong>${r.n}${acessos ? ` <small>${Math.round(r.n / acessos * 100)}%</small>` : ""}</strong></div>`).join("")}</div>` : "";
 
   const linhas = state.allCourts.map(c => {
     const d = Object.assign({ whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 }, porAcademia[c.id] || {});
@@ -6071,6 +6134,14 @@ function renderStatsPanel() {
           <div class="stat-card"><p class="stat-num">${acessos ? (buscas / acessos).toFixed(1).replace(".", ",") : "0"}</p><p class="stat-lbl">Buscas por acesso</p></div>
           <div class="stat-card"><p class="stat-num">${taxaGeral.toFixed(0)}%</p><p class="stat-lbl">Ficha → contato</p></div>
         </div>
+
+        ${listaStat("De onde vieram os acessos", origens)}
+        ${listaStat("Aparelho", aparelhos)}
+
+        ${pontos.length ? `
+          <p class="field-label" style="margin-top:18px">Mapa das buscas (${pontos.length})</p>
+          <p class="pending-detail" style="margin:0 0 6px">Cada ponto é uma busca, arredondada para o quarteirão.</p>
+          <div id="stats-mapa" class="stats-mapa"></div>` : ""}
 
         <p class="field-label" style="margin-top:18px">De onde buscaram (${regioes.length})</p>
         ${regioes.length
@@ -6114,7 +6185,7 @@ function renderStatsPanel() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 23 de setembro de 2026</p>
+<p class="footnote">Última atualização: 28 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -6140,9 +6211,9 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 23 de setembro de 2026</p>
+<p class="footnote">Última atualização: 28 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. Guardamos o <strong>bairro e a cidade</strong> que a busca alcançou e, quando a busca é feita por CEP, o <strong>CEP digitado</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a coordenada.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, buscas feitas (só com o bairro, a cidade e, na busca por CEP, o CEP) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões e CEPs buscados continuam visíveis só para a administração.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, visualizações de cada ficha, buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões e CEPs buscados continuam visíveis só para a administração.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>
@@ -7003,6 +7074,19 @@ function attachEvents() {
     };
   });
 
+  const statsMapa = document.getElementById("stats-mapa");
+  if (statsMapa && window.L && (state.statsPontos || []).length) {
+    try {
+      const m = L.map(statsMapa, { zoomControl: true, attributionControl: true });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© colaboradores do OpenStreetMap" }).addTo(m);
+      const pts = state.statsPontos.map(p => [p.lat, p.lng]);
+      state.statsPontos.forEach(p => L.circleMarker([p.lat, p.lng], { radius: 7, color: "#1F4D3F", weight: 2, fillColor: "#C9A54A", fillOpacity: 0.75 })
+        .bindPopup(`${esc(p.onde)}${p.cep ? " · " + esc(p.cep) : ""}<br>${esc(new Date(p.quando).toLocaleString("pt-BR"))}`).addTo(m));
+      if (pts.length > 1) m.fitBounds(pts, { padding: [30, 30], maxZoom: 15 }); else m.setView(pts[0], 14);
+      setTimeout(() => m.invalidateSize(), 80);
+    } catch (e) { /* sem mapa, o resto do painel continua */ }
+  }
+
   const statsClose = document.getElementById("stats-close");
   const statsOverlay = document.getElementById("stats-overlay");
   if (statsClose) statsClose.onclick = () => { state.showStatsPanel = false; render(); };
@@ -7359,17 +7443,18 @@ async function doSearch() {
       if (!result) throw new Error("Não achei esse endereço ou local. Tente incluir o bairro e a cidade.");
 
       // Descobre bairro/cidade reais pela coordenada, em vez de adivinhar pelo texto digitado
-      let bairro = "", cidade = "";
+      let bairro = "", cidade = "", cepAchado = "";
       try {
         const rev = await reverseGeocode(result.lat, result.lng);
         bairro = rev.bairro || "";
         cidade = rev.cidade || "";
+        cepAchado = rev.cep || "";
       } catch (e) {
         const parts = termo.split(",").map(s => s.trim()).filter(Boolean);
         bairro = parts.length > 1 ? parts[parts.length - 2] : parts[0];
         cidade = parts[parts.length - 1] || "";
       }
-      geo = { ...result, bairro: bairro || termo, cidade, approximate: false };
+      geo = { ...result, bairro: bairro || termo, cidade, cep: cepAchado, approximate: false };
     }
     state.origin = geo;
     state.sortBy = "distance";
@@ -7525,7 +7610,7 @@ async function init() {
   const { data: { session } } = await sb.auth.getSession();
   isAdmin = !!session;
   diag(`site aberto · admin: ${isAdmin ? "sim" : "não"}`);
-  if (!isAdmin) trackClick(null, "acesso_site");
+  if (!isAdmin) trackClick(null, "acesso_site", null, { origem: origemDoAcesso(), dispositivo: dispositivoDoAcesso() });
   await loadEverything();
 
   const q = new URLSearchParams(location.search);

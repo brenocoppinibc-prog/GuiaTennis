@@ -47,12 +47,14 @@ cobra taxa e não fica no meio** da negociação.
    a função de estatísticas: sem ela, o bloco de números some, e nada
    quebra.
 8. **Commits, comentários e nomes de função em português.**
-9. **Privacidade:** de uma busca fica guardado **bairro, cidade e, na
-   busca por CEP, o CEP digitado** (pedido do Breno em 23/09/2026). Nunca
-   o endereço digitado nem a coordenada; GPS e endereço não guardam CEP
-   nenhum. Qualquer mudança
-   nisso obriga a mexer na Política de Privacidade — e a data de "Última
-   atualização" dos dois textos legais tem de acompanhar.
+9. **Privacidade:** de uma busca fica guardado **bairro, cidade, CEP (o
+   digitado ou o da região achada) e o ponto arredondado para ~100 m**
+   (`pontoAproximado`, 3 casas decimais). De cada acesso, **origem**
+   (Instagram, Google, Direto…) e **aparelho** (celular, tablet,
+   computador). Nunca o endereço digitado, a coordenada exata, IP ou
+   identificador do aparelho. Pedido do Breno em 28/09/2026. Qualquer
+   mudança nisso obriga a mexer na Política de Privacidade — e a data de
+   "Última atualização" dos dois textos legais tem de acompanhar.
 10. **SQL vai sempre em bloco pronto para copiar**, escrito na conversa —
     não só dentro de um arquivo. O Breno roda à mão no SQL Editor.
 11. **Campo vazio não desenha bloco.** Academia que não preencheu
@@ -179,12 +181,15 @@ Cada faixa é `{ de: "06:00", ate: "22:00", fechado: false }`. No modo
 `id, academia_id, stars, comment, nome_autor, contato_autor, created_at`
 
 ### `cliques`
-`id, academia_id, tipo, detalhe, cep, created_at`
+`id, academia_id, tipo, detalhe, cep, lat, lng, origem, dispositivo, created_at`
 
 `tipo`: `acesso_site`, `busca`, `visualizacao`, `whatsapp`, `site`,
 `instagram`, `compartilhar`. `detalhe` e `cep` só são usados em `busca`:
 `detalhe` guarda "Bairro, Cidade" e `cep` o CEP digitado ("05422-000"),
-quando a busca foi por CEP. O painel do admin lista os dois.
+da busca (digitado ou achado no mapa). `lat`/`lng` são o ponto da busca
+arredondado; `origem` e `dispositivo` vêm do `acesso_site` (e o aparelho
+também da busca). O painel do admin mostra de onde vieram, aparelho, mapa
+das buscas, regiões e CEPs. A trava `cliques_tipo_valido` lista os tipos.
 
 **RLS:** a tabela é fechada para leitura — só o admin lê. O envio só
 aceita os `tipo` da lista acima (`SQL-SEGURANCA.sql`). Quem responde
@@ -286,7 +291,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -297,6 +302,8 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca; do NODE_PAT
   ficha, textos fixos.
 - `cadastro.js` — cancelamento por modalidade, "Onde estacionar" só sem
   vaga própria, ordem dos campos, edição que não apaga horário nem regra.
+- `publico.js` — origem e aparelho do acesso, CEP e ponto aproximado da
+  busca, painel do admin e Política de Privacidade.
 - `seguranca.js` — site funciona com o banco fechado (depois do
   `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o

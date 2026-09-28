@@ -588,7 +588,8 @@ script está no scratchpad (`gera-imagens.js`).
   negado ao visitante e o site fica **sem academias para quem não é
   admin** — e o admin logado vê tudo normal. Conferir sempre em aba
   anônima. Socorro: Netlify → Deploys → deploy anterior → "Publish
-  deploy", e "Stop auto publishing" até a branch de produção estar certa.
+  deploy", e "Stop auto publishing" até a branch de produção estar certa. Desde
+  28/09/2026 a branch de produção é a `main`.
 - **`create or replace view` só aceita colunas novas no fim.** Mudar
   nome, ordem ou tipo exige `drop` antes — o mesmo vale para
   `create or replace function` com outro `returns table`.
@@ -663,9 +664,9 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- **Netlify:** o Breno trocar a branch de produção para `main` e a branch
-  padrão do GitHub para `main`; depois conferir a prévia do PR (academias
-  de exemplo e faixa amarela) e aprovar. O PR #1
+- **Netlify:** branch de produção trocada para `main` pelo Breno em
+  28/09/2026. Falta a branch padrão do GitHub virar `main`, conferir a
+  prévia do PR #2 (academias de exemplo e faixa amarela) e aprovar. O PR #1
   (`new-session` → `trivago`) ficou velho e pode ser fechado.
 - **Publicar** o último zip em guiatennis.com.br (conferir que a frase da
   home aparece **embaixo** da busca e fala em "comodidades").

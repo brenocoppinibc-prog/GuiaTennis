@@ -45,6 +45,7 @@
     --red: #A8462C;
   }
   * { box-sizing: border-box; }
+  .faixa-banco-teste { background: var(--gold-light); color: var(--text); font-size: 12px; font-weight: 700; text-align: center; padding: 6px 16px; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font-family: 'Playfair Display', serif; font-weight: 500; line-height: 1.45;
@@ -943,8 +944,16 @@
 
 <script>
 // ---------- Supabase ----------
-const SUPABASE_URL = "https://eultezheqwmxyakvgyjy.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";
+// O site de teste do Netlify usa um banco só dele: o que se testa lá não
+// entra nos números nem nas academias de verdade. O mesmo zip vai para os
+// dois endereços, e quem escolhe o banco é o endereço aberto — nunca um
+// parâmetro no link, para ninguém apontar o guiatennis.com.br para outro
+// banco. Enquanto o banco de teste estiver vazio aqui, tudo usa o de verdade.
+const BANCO_DE_TESTE = { url: "", chave: "" };
+const NO_SITE_DE_TESTE = /(^|--)lucky-liger-1c29a3\.netlify\.app$|^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const USANDO_BANCO_DE_TESTE = NO_SITE_DE_TESTE && !!BANCO_DE_TESTE.url && !!BANCO_DE_TESTE.chave;
+const SUPABASE_URL = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.url : "https://eultezheqwmxyakvgyjy.supabase.co";
+const SUPABASE_ANON_KEY = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.chave : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let isAdmin = false;
@@ -7647,10 +7656,11 @@ async function doRegisterSubmit() {
 }
 
 async function init() {
+  if (USANDO_BANCO_DE_TESTE) document.body.insertAdjacentHTML("afterbegin", `<div class="faixa-banco-teste">Banco de teste — nada daqui aparece no guiatennis.com.br</div>`);
   app_showLoading();
   const { data: { session } } = await sb.auth.getSession();
   isAdmin = !!session;
-  diag(`site aberto · admin: ${isAdmin ? "sim" : "não"}`);
+  diag(`site aberto · admin: ${isAdmin ? "sim" : "não"} · banco: ${USANDO_BANCO_DE_TESTE ? "de teste" : "de verdade"}`);
   if (!isAdmin) trackClick(null, "acesso_site", null, { origem: origemDoAcesso(), dispositivo: dispositivoDoAcesso() });
   await loadEverything();
 

@@ -17,9 +17,13 @@ async function abrir(opts = {}) {
     if (o.colunasFechadas) window.__colunasFechadas = true;
     if (o.semPlano) window.__semPlano = true;
   }, opts);
+  // opts.host abre o site num endereço de verdade (o de teste do Netlify, por
+  // exemplo) e opts.trocar mexe no index.html antes de servir.
+  const base = opts.host ? 'https://' + opts.host + '/' : 'http://guia.test/';
+  const pagina = opts.trocar ? opts.trocar(html) : html;
   await page.route('**/*', async route => {
     const u = route.request().url();
-    if (u.startsWith('http://guia.test/')) return route.fulfill({ contentType: 'text/html', body: html });
+    if (u.startsWith(base)) return route.fulfill({ contentType: 'text/html', body: pagina });
     if (u.includes('supabase-js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'mock.js'), 'utf8') });
     if (u.includes('leaflet') && u.endsWith('.js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'leaflet-stub.js'), 'utf8') });
     if (u.includes('viacep')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ cep: "05422-000", logradouro: "Rua A", bairro: "Pinheiros", localidade: "São Paulo", uf: "SP" }) });
@@ -27,7 +31,7 @@ async function abrir(opts = {}) {
     if (u.includes('nominatim')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify([{ lat: "-23.56", lon: "-46.68", display_name: "Pinheiros, São Paulo", address: { suburb: "Pinheiros", city: "São Paulo" } }]) });
     return route.abort();
   });
-  await page.goto('http://guia.test/' + (opts.q || ''));
+  await page.goto(base + (opts.q || ''));
   await page.waitForTimeout(700);
   return { browser, page };
 }

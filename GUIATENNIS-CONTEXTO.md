@@ -276,6 +276,39 @@ Confirmado no commit ff7a761: o "Supabase Preview" roda e sai `skipped`
 está ligado e só age quando se abre um PR, criando um banco de teste
 (Branching). Sem a pasta `supabase/`, esse banco de teste nasce vazio.
 
+### Banco de teste (pedido do Breno em 28/09/2026)
+O Breno quer testar como os sites grandes: um ambiente de teste com banco
+próprio ("staging"), separado do de verdade. Até aqui o site de teste
+(lucky-liger-1c29a3.netlify.app) gravava no banco de verdade, e o teste
+em aba anônima inflava os números da home.
+
+- **Caminho escolhido: grátis.** Um segundo projeto no Supabase
+  (`guiatennis-teste`, plano grátis permite dois). O Branching (banco
+  novo a cada PR) exige o plano Pro (US$ 25/mês) mais US$ 0,01344 por hora
+  de cada banco de teste, e o crédito do plano não cobre isso. Pode entrar
+  depois, sem refazer nada.
+- **No site:** `BANCO_DE_TESTE = { url, chave }` no começo do `<script>`.
+  Preenchido, o site de teste (e as versões de deploy dele,
+  `…--lucky-liger-1c29a3.netlify.app`, e o `localhost`) usa esse banco e
+  mostra uma faixa amarela "Banco de teste". Qualquer outro endereço usa
+  sempre o de verdade. O banco nunca é escolhido por parâmetro no link: isso
+  deixaria alguém apontar o guiatennis.com.br para um banco falso com
+  WhatsApp de golpe. Teste: `testes/banco-de-teste.js`.
+- **Chave:** só a "publishable" ou "anon public". Nunca a "secret" nem a
+  "service_role".
+- **Estrutura:** `SQL-RETRATO.sql` só lê e devolve colunas, regras (RLS),
+  travas, índices, funções e permissões. O Breno roda no banco de verdade e
+  manda o CSV (Export → Download CSV). Com ele sai a pasta `supabase/`
+  (`migrations/` com a estrutura, `seed.sql` com academias de exemplo) e o
+  SQL para criar o banco de teste igual ao de verdade.
+- **Falta:** o CSV do retrato; o Breno criar o projeto de teste e mandar a
+  URL e a chave; o admin do banco de teste (Authentication → Users → Add
+  user com `guiatennis1@gmail.com`) e cadastro de usuários desligado lá
+  também.
+- **Postgres na máquina:** `/usr/lib/postgresql/16/bin` — dá para rodar o
+  SQL de verdade antes de mandar para o Breno (initdb num diretório do
+  scratchpad, `pg_ctl -o '-p 5433 -k <dir>'`, como usuário `postgres`).
+
 ## 5. Banco: o que já rodou e o que falta
 
 **Já rodado pelo Breno (confirmado):**
@@ -336,7 +369,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -353,6 +386,8 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico; do 
   `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
   estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
+- `banco-de-teste.js` — o site de teste abre o banco de teste; o
+  guiatennis.com.br, link com `?banco=` e endereço parecido, nunca.
 
 O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
 separada) e `a2` (só locação, regra única). Chaves: `__admin`,
@@ -382,7 +417,7 @@ consultas da seção 5.
 Console).
 
 O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
-`SQL-SEGURANCA.sql` e a pasta `testes/`
+`SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e a pasta `testes/`
 ficam no repositório mas fora do ar —
 `netlify.toml` devolve 404 para eles, e eles não entram no zip.
 
@@ -552,6 +587,8 @@ c9ade31 Configuração de publicação do Netlify
 ## 11. Em aberto
 
 - **Banco:** colunas do público e `SQL-SEGURANCA.sql` (seção 5).
+- **Banco de teste:** CSV do `SQL-RETRATO.sql`, projeto `guiatennis-teste`
+  e a URL/chave dele (seção 4, "Banco de teste").
 - **Publicar** o último zip em guiatennis.com.br (conferir que a frase da
   home aparece **embaixo** da busca e fala em "comodidades").
 - **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`.

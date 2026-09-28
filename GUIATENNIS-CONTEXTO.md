@@ -271,6 +271,10 @@ Para saber se o app do Supabase está vendo o repositório, confira os
 "check suites" de um commit novo:
 `curl -s https://api.github.com/repos/brenocoppinibc-prog/GuiaTennis/commits/<sha>/check-suites`
 — aparece `supabase` ao lado de `claude` e `render` quando está ligado.
+Confirmado no commit ff7a761: o "Supabase Preview" roda e sai `skipped`
+("This git branch is not associated with any Supabase Branch"). Ou seja,
+está ligado e só age quando se abre um PR, criando um banco de teste
+(Branching). Sem a pasta `supabase/`, esse banco de teste nasce vazio.
 
 ## 5. Banco: o que já rodou e o que falta
 

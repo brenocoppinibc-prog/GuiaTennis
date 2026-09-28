@@ -268,6 +268,10 @@ SQL guardado no repositório, e para isso precisa de:
 - a branch de produção certa — a principal do GitHub ainda é a
   `claude/trivago-style-court-interface-fvd0v6`, que está atrás.
 
+Entre 15:17 e 15:32 de 28/09/2026 a integração passou do projeto de
+verdade (`eultezheqwmxyakvgyjy`) para o de teste (`ohvbengbujdioxdtewsy`):
+o link do "Supabase Preview" nos commits mostra qual projeto está ligado.
+
 Para saber se o app do Supabase está vendo o repositório, confira os
 "check suites" de um commit novo:
 `curl -s https://api.github.com/repos/brenocoppinibc-prog/GuiaTennis/commits/<sha>/check-suites`
@@ -545,6 +549,15 @@ script está no scratchpad (`gera-imagens.js`).
   a fachada nunca fica vazia por causa disso.
 - **Admin não grava nenhum clique** (`trackClick` sai no começo), nem de
   academia. Quem testa logado vê a faixa "Essa busca não foi gravada".
+- **Netlify ligado ao GitHub publica a branch de produção sozinho.** O
+  Breno ligou o Netlify ao GitHub em 28/09/2026 (app `netlify` aparece nos
+  commits a partir do 556753c). A branch padrão do GitHub era a
+  `claude/trivago-style-court-interface-fvd0v6` (b972d53, de 21/09), cujo
+  `index.html` lê `select('*')`: depois do `SQL-SEGURANCA.sql` isso é
+  negado ao visitante e o site fica **sem academias para quem não é
+  admin** — e o admin logado vê tudo normal. Conferir sempre em aba
+  anônima. Socorro: Netlify → Deploys → deploy anterior → "Publish
+  deploy", e "Stop auto publishing" até a branch de produção estar certa.
 - **`create or replace view` só aceita colunas novas no fim.** Mudar
   nome, ordem ou tipo exige `drop` antes — o mesmo vale para
   `create or replace function` com outro `returns table`.

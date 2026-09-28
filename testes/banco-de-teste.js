@@ -29,4 +29,15 @@ const semTeste = html => html.replace(LINHA, 'const BANCO_DE_TESTE = { url: "", 
     ok(r.n === 2, `${nome}: academias carregam`);
     await browser.close();
   }
+
+  // ?diagnostico mostra quantas academias vieram do banco e, se ele
+  // recusou, o motivo — é assim que se descobre de longe o que falta.
+  let { browser, page } = await abrir({ q: '?diagnostico' });
+  let t = await page.evaluate(() => document.getElementById('diag-caixa')?.textContent || '');
+  ok(t.includes('banco: de verdade') && t.includes('academias lidas: 2'), 'diagnóstico mostra o banco e as academias lidas');
+  await browser.close();
+  ({ browser, page } = await abrir({ q: '?diagnostico', semPlano: true }));
+  t = await page.evaluate(() => document.getElementById('diag-caixa')?.textContent || '');
+  ok(t.includes('o banco recusou a leitura de academias: column academias.plano does not exist'), 'diagnóstico mostra o motivo da recusa');
+  await browser.close();
 })();

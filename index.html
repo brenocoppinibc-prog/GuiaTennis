@@ -1638,13 +1638,15 @@ async function lerPublico(tabela, colunas, montar) {
   if (!isAdmin) {
     const r = await montar(sb.from(tabela).select(colunas));
     if (!r.error) return r;
+    diag(`o banco recusou a leitura de ${tabela}: ${r.error.message}${r.error.code ? " (" + r.error.code + ")" : ""}`);
   }
   return montar(sb.from(tabela).select('*'));
 }
 
 async function loadEverything() {
-  const { data: published } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'));
+  const { data: published, error: erroAcademias } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'));
   state.allCourts = (published || []).map(mapRow);
+  diag(`academias lidas: ${state.allCourts.length}${erroAcademias ? ` · o banco recusou: ${erroAcademias.message}` : ""}`);
 
   if (isAdmin) {
     const { data: pend } = await sb.from('academias').select('*').eq('status', 'pending').order('created_at');

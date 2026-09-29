@@ -825,7 +825,12 @@ Breno não gosta, responde ele mesmo.
 Imagens em `divulgacao/` (fora do ar), geradas do `LOGO_SVG` por
 `divulgacao/gerar-imagens.js`: `whatsapp-perfil.png` (1080×1080, raquete
 no meio para o corte redondo) e `whatsapp-capa.png` (1600×900; texto em
-cima e nas laterais, porque a foto redonda cobre o meio de baixo). O
+cima e nas laterais, porque a foto redonda cobre o meio de baixo). No
+perfil a raquete é redesenhada para tamanho grande — encordoamento
+completo e pescoço com os dois braços; o logo pequeno tem só três cordas
+de cada lado, e o Breno achou que faltavam traços. Na capa, a quadra é
+reta, vista de trás da linha de fundo, em perspectiva com as medidas
+oficiais (a primeira versão, inclinada, pareceu torta). O
 gerador busca a fonte do Google pelo `curl`, que passa pelo proxy daqui.
 
 Textos do perfil (combinados em 29/09/2026 — para o público e para as

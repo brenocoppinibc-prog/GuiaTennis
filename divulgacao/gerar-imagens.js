@@ -14,15 +14,27 @@ const RAIZ = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8');
 const logo = html.match(/const LOGO_SVG = `([\s\S]*?)`;/)[1];
 
-// Só a raquete, maior e centralizada, sem o quadrado de cantos redondos e
-// sem o pescoço da raquete, que em tamanho grande vira duas pontinhas.
-function raquete(tamanho, escala) {
-  return logo
-    .replace(/class="logo-mark" width="46" height="46"/, `width="${tamanho}" height="${tamanho}"`)
-    .replace(/<rect x="0" y="0" width="1080" height="1080" rx="220" fill="url\(#bgGradHeader\)"\/>/, '')
-    .replace(/<path d="M-40 190[^"]*" fill="#F7F4EC"\/>/, '')
-    .replace('<rect x="-40" y="150" width="80" height="290" rx="36"', '<rect x="-40" y="118" width="80" height="322" rx="36"')
-    .replace('<g transform="translate(540,580) rotate(-15)">', `<g transform="translate(598,538) scale(${escala}) rotate(-15)">`);
+// A raquete do logo, redesenhada para tamanho grande: no ícone pequeno o
+// encordoamento tem só três linhas de cada lado e o pescoço vira duas
+// pontinhas; aqui o encordoamento é completo e o pescoço tem os dois braços
+// de uma raquete de verdade. Mesmas cores e mesma bola do logo.
+function raquete(tamanho) {
+  const creme = '#F7F4EC', ouro = '#B8933F';
+  const cordas = [];
+  for (let y = -400; y <= 80; y += 48) cordas.push(`<line x1="-200" y1="${y}" x2="200" y2="${y}"/>`);
+  for (let x = -168; x <= 168; x += 42) cordas.push(`<line x1="${x}" y1="-420" x2="${x}" y2="100"/>`);
+  return `<svg width="${tamanho}" height="${tamanho}" viewBox="0 0 1080 1080">
+  <defs><clipPath id="cabeca"><ellipse cx="0" cy="-160" rx="190" ry="250"/></clipPath></defs>
+  <g transform="translate(600,532) scale(0.8) rotate(-15)">
+    <g clip-path="url(#cabeca)" stroke="${ouro}" stroke-width="7" opacity="0.6">${cordas.join('')}</g>
+    <path d="M-120 72 L-30 220 M120 72 L30 220" stroke="${creme}" stroke-width="34" stroke-linecap="round" fill="none"/>
+    <rect x="-40" y="200" width="80" height="250" rx="36" fill="${creme}"/>
+    <ellipse cx="0" cy="455" rx="44" ry="22" fill="${creme}"/>
+    <ellipse cx="0" cy="-160" rx="212" ry="272" fill="none" stroke="${creme}" stroke-width="48"/>
+    <path d="M-330 -40 Q-260 -10 -220 -90" fill="none" stroke="${ouro}" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
+    <circle cx="0" cy="-160" r="132" fill="${ouro}" stroke="${creme}" stroke-width="10"/>
+  </g>
+</svg>`;
 }
 
 const FONTE = `<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">`;
@@ -30,18 +42,29 @@ const FUNDO = 'linear-gradient(135deg, #2A5C4B 0%, #1F4D3D 45%, #153229 100%)';
 
 const perfil = `<!doctype html><html><head><meta charset="utf-8">
 <style>html,body{margin:0}body{width:1080px;height:1080px;background:${FUNDO};display:flex;align-items:center;justify-content:center}</style>
-</head><body>${raquete(1080, 0.86)}</body></html>`;
+</head><body>${raquete(1080)}</body></html>`;
 
-// Quadra de tênis vista de cima, em dourado bem clarinho, atrás de tudo.
-const quadra = `<svg width="1600" height="900" viewBox="0 0 1600 900" style="position:absolute;inset:0">
-  <g transform="translate(800 610) rotate(-8)" fill="none" stroke="#D8B865" stroke-opacity="0.16" stroke-width="5">
-    <rect x="-620" y="-270" width="1240" height="540"/>
-    <line x1="-620" y1="-200" x2="620" y2="-200"/><line x1="-620" y1="200" x2="620" y2="200"/>
-    <line x1="-330" y1="-200" x2="-330" y2="200"/><line x1="330" y1="-200" x2="330" y2="200"/>
-    <line x1="-330" y1="0" x2="330" y2="0"/>
-    <line x1="0" y1="-290" x2="0" y2="290" stroke-width="9"/>
+// Quadra de tênis reta, vista de trás da linha de fundo, em perspectiva:
+// medidas oficiais (23,77 × 10,97 m) projetadas numa câmera atrás da quadra.
+function quadraEmPerspectiva() {
+  const L = 23.77, meiaDupla = 5.485, meiaSimples = 4.115, saque = 6.40, rede = L / 2;
+  const d = 8, perto = 960, longe = 455, cx = 800;
+  const K = (perto - longe) / (1 / d - 1 / (L + d)), H = perto - K / d, S = 1500 * d / (2 * meiaDupla);
+  const P = (X, z) => [cx + X * S / (z + d), H + K / (z + d)].map(v => v.toFixed(1)).join(' ');
+  const linha = (X1, z1, X2, z2, w = 5) => `<path d="M${P(X1, z1)} L${P(X2, z2)}" stroke-width="${w}"/>`;
+  return `<svg width="1600" height="900" viewBox="0 0 1600 900" style="position:absolute;inset:0">
+  <g fill="none" stroke="#D8B865" stroke-opacity="0.18" stroke-linecap="round">
+    ${linha(-meiaDupla, 0, -meiaDupla, L)}${linha(meiaDupla, 0, meiaDupla, L)}
+    ${linha(-meiaSimples, 0, -meiaSimples, L)}${linha(meiaSimples, 0, meiaSimples, L)}
+    ${linha(-meiaDupla, 0, meiaDupla, 0)}${linha(-meiaDupla, L, meiaDupla, L)}
+    ${linha(-meiaSimples, rede - saque, meiaSimples, rede - saque)}${linha(-meiaSimples, rede + saque, meiaSimples, rede + saque)}
+    ${linha(0, rede - saque, 0, rede + saque)}
+    ${linha(0, 0, 0, 0.35)}${linha(0, L, 0, L - 0.35)}
+    ${linha(-6.4, rede, 6.4, rede, 9)}
   </g>
 </svg>`;
+}
+const quadra = quadraEmPerspectiva();
 
 const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
 <style>

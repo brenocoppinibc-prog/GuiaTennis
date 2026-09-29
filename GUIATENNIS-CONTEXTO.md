@@ -35,6 +35,9 @@ mexer:
 - **Publica aprovando o PR no GitHub** (desde 28/09/2026 — seção 7). Não
   mandar mais zip, a não ser que ele peça: cada zip arrastado gasta
   crédito do Netlify.
+- **Nunca subir (merge) sem ele confirmar na hora.** Ele diz "pode subir"
+  depois de ver a prévia; se pedir mais alguma mudança depois disso, a
+  mudança vai para a prévia e ele confirma de novo antes do merge.
 - **SQL entra sozinho pelo GitHub** (desde 28/09/2026 — seção 4,
   "Automação do banco"). Mostrar o SQL novo na conversa mesmo assim, para
   ele saber o que vai mudar. Consulta que só lê (e o bloco manual, se a
@@ -101,6 +104,12 @@ cobra taxa e não fica no meio** da negociação.
     caminho — o Breno roda à mão no SQL Editor.
 11. **Campo vazio não desenha bloco.** Academia que não preencheu
     horário, política ou acesso tem a ficha limpa, sem caixa vazia.
+    **Academia sem foto não mostra nada no lugar da foto** (pedido de
+    29/09/2026): nem "Foto em breve", nem bolinha, nem quadrado cinza — na
+    página inicial, na busca, no mapa, na comparação, em "outras academias
+    por perto" e na ficha (sem foto, a ficha começa direto no nome). O
+    selo do cartão da busca, que ficava em cima da foto, vai para cima do
+    nome (`rcard-tag solto`).
 12. **Informação da mesma natureza mora no mesmo lugar.** Fachada,
     chegada e estacionamento ficam juntos, no mesmo formato.
 13. **Sem IA.** O Breno pediu e depois recusou IA para padronizar textos

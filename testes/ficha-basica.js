@@ -96,6 +96,22 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(aviso.includes('Não achei essa região') && aviso.includes('Moema, São Paulo'), 'região não encontrada: diz como escrever');
   await browser.close();
 
+  // Academia sem foto: nada no lugar da foto, em nenhum cartão nem na ficha
+  ({ browser, page } = await abrir());
+  const semFoto = await page.evaluate(() => {
+    const vazio = () => document.querySelectorAll('.mini-photo, .rcard-photo, .rcard-nophoto, .hero-empty, .ht-viz-foto, .cmp-add-foto, .cmp-vaga-foto, .map-card-photo').length;
+    const home = { lugares: vazio(), texto: document.body.innerText.includes('Foto em breve') };
+    state.page = 'search'; render();
+    const busca = { lugares: vazio(), cartoes: document.querySelectorAll('.rcard').length };
+    state.selected = decorate(state.allCourts.find(x => x.id === 'a1')); state.page = 'court'; render();
+    const ficha = { lugares: vazio(), texto: document.body.innerText.includes('Foto em breve'), nome: !!document.querySelector('.court-name') };
+    return { home, busca, ficha };
+  });
+  ok(semFoto.home.lugares === 0 && !semFoto.home.texto, 'página inicial: academia sem foto não mostra área de foto');
+  ok(semFoto.busca.lugares === 0 && semFoto.busca.cartoes === 2, 'busca: cartões sem área de foto — ' + semFoto.busca.cartoes + ' cartões');
+  ok(semFoto.ficha.lugares === 0 && !semFoto.ficha.texto && semFoto.ficha.nome, 'ficha sem foto começa direto no nome, sem "Foto em breve"');
+  await browser.close();
+
   // Termos e Privacidade
   ({ browser, page } = await abrir());
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);

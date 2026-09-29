@@ -48,6 +48,11 @@
   .ficha-basica { display: flex; gap: 6px; align-items: flex-start; margin: 10px 0 0; padding: 8px 10px; background: var(--bg-alt); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
   .ficha-basica svg { flex-shrink: 0; margin-top: 2px; }
   .ficha-dono { margin-top: 14px; }
+  /* Academia sem foto: nada no lugar da foto, o texto ocupa o espaço. */
+  .cmp-add.sem-foto { grid-template-columns: minmax(0, 1fr) auto; }
+  .ht-viz-c.sem-foto { grid-template-columns: minmax(0, 1fr) auto; }
+  .mini.sem-foto .mini-badge { position: static; display: inline-block; margin: 12px 0 0 12px; }
+  .rcard-tag.solto { position: static; display: inline-block; margin: 0 6px 8px 0; }
   .footnote a, .ficha-dono a { color: var(--green); font-weight: 700; }
   .sf-col a.contato-link { display: flex; align-items: center; gap: 7px; }
   .ba-nota a { color: var(--gold-light); font-weight: 700; text-decoration: underline; }
@@ -2688,10 +2693,8 @@ function listaDoSeletor(lista) {
         const faixa = faixaGeral(c);
         const dist = distanceText(c.distanceKm);
         return `
-          <div class="cmp-add ${dentro ? "on" : ""}">
-            <span class="cmp-add-foto">
-              ${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : icon('ball', 22, 'var(--muted-dark)')}
-            </span>
+          <div class="cmp-add ${dentro ? "on" : ""} ${foto ? "" : "sem-foto"}">
+            ${foto ? `<span class="cmp-add-foto"><img src="${esc(foto)}" alt="" loading="lazy" /></span>` : ""}
             <span class="cmp-add-txt">
               <span class="cmp-add-n">${esc(c.name)}</span>
               <span class="cmp-add-l">${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}${dist ? ` · ${dist}` : ""}</span>
@@ -2994,7 +2997,7 @@ function vagasComparacao(courts) {
     const foto = courtPhotos(c)[0];
     vagas.push(`
       <div class="cmp-vaga on">
-        <div class="cmp-vaga-foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : icon('ball', 20, 'var(--muted-dark)')}</div>
+        ${foto ? `<div class="cmp-vaga-foto"><img src="${esc(foto)}" alt="" loading="lazy" /></div>` : ""}
         <span class="cmp-vaga-n">${esc(c.name)}</span>
         <button type="button" class="cmp-vaga-x" data-cmp-remove="${c.id}" aria-label="Tirar ${esc(c.name)} da comparação">✕</button>
       </div>`);
@@ -3238,9 +3241,7 @@ function mapCardHtml(id) {
   const dist = distanceText(c.distanceKm);
   return `
     <div class="map-card" data-open="${c.id}">
-      <div class="map-card-photo">
-        ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 26, 'var(--muted-dark)')}
-      </div>
+      ${photos.length ? `<div class="map-card-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>` : ""}
       <div style="min-width:0;flex:1">
         <p class="map-card-name">${esc(c.name)}</p>
         <p class="map-card-meta">${esc(c.bairro)}${dist ? ` · ${dist}` : ""}</p>
@@ -3723,11 +3724,9 @@ function renderMini(c, selo) {
   const photos = courtPhotos(c);
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   return `
-    <a class="mini" href="?court=${encodeURIComponent(c.id)}" data-open="${c.id}">
+    <a class="mini ${photos.length ? "" : "sem-foto"}" href="?court=${encodeURIComponent(c.id)}" data-open="${c.id}">
       ${selo ? `<span class="mini-badge">${esc(selo)}</span>` : ""}
-      <div class="mini-photo">
-        ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 26, 'var(--muted-dark)')}
-      </div>
+      ${photos.length ? `<div class="mini-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>` : ""}
       <div class="mini-body">
         <p class="mini-name">${esc(c.name)}</p>
         <p class="mini-score">
@@ -4245,19 +4244,23 @@ function renderCard(c, badge) {
   return `
     <div class="rcard" data-open="${c.id}">
       <div class="rcard-top">
+        ${photos.length ? `
         <div class="rcard-photo">
-          ${photos.length ? `
-            <div class="rcard-strip" data-strip="${c.id}">
-              ${photos.map(p => `<img src="${esc(p)}" alt="${esc(c.name)}" />`).join("")}
-            </div>
-            ${photos.length > 1 ? `<div class="rcard-dots" data-dots="${c.id}">${photos.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
-          ` : `<div class="rcard-nophoto">${icon('ball', 30, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></div>`}
+          <div class="rcard-strip" data-strip="${c.id}">
+            ${photos.map(p => `<img src="${esc(p)}" alt="${esc(c.name)}" />`).join("")}
+          </div>
+          ${photos.length > 1 ? `<div class="rcard-dots" data-dots="${c.id}">${photos.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
           ${badge ? `<span class="rcard-tag">${esc(badge)}</span>` : ""}
           ${isAdmin && pausada ? `<span class="rcard-tag" style="background:var(--red);top:auto;bottom:8px">Pausada</span>` : ""}
-        ${isAdmin && c.plano && c.plano !== "basico" ? `<span class="rcard-tag" style="background:var(--green);top:auto;bottom:${pausada ? "34px" : "8px"}">${esc(PLANO_OPTS.find(o => o.key === c.plano)?.label || c.plano)}</span>` : ""}
-        </div>
+          ${isAdmin && c.plano && c.plano !== "basico" ? `<span class="rcard-tag" style="background:var(--green);top:auto;bottom:${pausada ? "34px" : "8px"}">${esc(PLANO_OPTS.find(o => o.key === c.plano)?.label || c.plano)}</span>` : ""}
+        </div>` : ""}
 
         <div class="rcard-info">
+          ${photos.length ? "" : [
+            badge ? `<span class="rcard-tag solto">${esc(badge)}</span>` : "",
+            isAdmin && pausada ? `<span class="rcard-tag solto" style="background:var(--red)">Pausada</span>` : "",
+            isAdmin && c.plano && c.plano !== "basico" ? `<span class="rcard-tag solto" style="background:var(--green)">${esc(PLANO_OPTS.find(o => o.key === c.plano)?.label || c.plano)}</span>` : "",
+          ].join("")}
           <div class="rcard-head">
             <p class="rcard-name">${esc(c.name)}</p>
             <div class="rcard-acts">
@@ -5252,9 +5255,8 @@ function qrSvg(texto, lado, comEmblema) {
 // hotel. No celular aparece só a primeira, ocupando a largura toda.
 function htGaleria(c) {
   const photos = courtPhotos(c);
-  if (!photos.length) {
-    return `<div class="hero-empty">${icon('ball', 40, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></div>`;
-  }
+  // Sem foto, sem galeria: a ficha começa direto no nome.
+  if (!photos.length) return "";
   const n = Math.min(photos.length, 5);
   const cls = ["", "solo", "duo", "trio", "quad", "penta"][n];
   const celulas = photos.slice(0, n).map((p, i) => `
@@ -5463,8 +5465,8 @@ function cartaoVizinha(v, km) {
   const lugar = [v.bairro, v.cidade].filter(Boolean).join(", ");
   const mod = modalidadesTexto(v);
   return `
-    <button type="button" class="ht-viz-c" data-open="${v.id}">
-      <span class="ht-viz-foto">${foto ? `<img src="${esc(foto)}" alt="Foto da ${esc(v.name)}" loading="lazy" />` : icon('ball', 26, 'var(--muted-dark)')}</span>
+    <button type="button" class="ht-viz-c ${foto ? "" : "sem-foto"}" data-open="${v.id}">
+      ${foto ? `<span class="ht-viz-foto"><img src="${esc(foto)}" alt="Foto da ${esc(v.name)}" loading="lazy" /></span>` : ""}
       <span class="ht-viz-txt">
         <span class="ht-viz-n">${esc(v.name)}</span>
         <span class="ht-viz-nota">

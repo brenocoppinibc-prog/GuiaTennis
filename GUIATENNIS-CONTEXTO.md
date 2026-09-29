@@ -35,6 +35,11 @@ mexer:
 - **Publica aprovando o PR no GitHub** (desde 28/09/2026 — seção 7). Não
   mandar mais zip, a não ser que ele peça: cada zip arrastado gasta
   crédito do Netlify.
+- **Cadastro pelo admin: só o nome é obrigatório** (pedido de 29/09/2026;
+  o banco não aceita academia sem nome). Sem asteriscos e sem o aceite dos
+  Termos; o endereço é montado só com o que foi preenchido
+  (`montarEndereco`). Quem pede cadastro pelo site continua mandando
+  endereço, WhatsApp, quadras, modalidade e o aceite.
 - **Nunca subir (merge) sem ele confirmar na hora.** Ele diz "pode subir"
   depois de ver a prévia; se pedir mais alguma mudança depois disso, a
   mudança vai para a prévia e ele confirma de novo antes do merge.

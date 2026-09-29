@@ -6158,6 +6158,8 @@ function renderRegisterSheet() {
   const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
   window.__form = f;
   const isEditing = !!f.__editingId;
+  // Asterisco só para quem pede cadastro pelo site; o admin publica com o que tiver.
+  const obrigatorio = isEditing || isAdmin ? "" : " *";
   if (state.registerStatus === "done") {
     return `
       <div class="overlay open" id="register-overlay">
@@ -6183,8 +6185,8 @@ function renderRegisterSheet() {
 
         ${!isEditing ? `<input class="form-field" id="f-cep" placeholder="CEP" value="${esc(f.cep || '')}" />` : ""}
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
-          <input class="form-field" id="f-address" placeholder="Endereço (rua)${isEditing ? "" : " *"}" value="${esc(f.address)}" style="margin-top:10px" />
-          <input class="form-field" id="f-numero" placeholder="Número${isEditing ? "" : " *"}" value="${esc(f.numero || '')}" style="margin-top:10px" />
+          <input class="form-field" id="f-address" placeholder="Endereço (rua)${obrigatorio}" value="${esc(f.address)}" style="margin-top:10px" />
+          <input class="form-field" id="f-numero" placeholder="Número${obrigatorio}" value="${esc(f.numero || '')}" style="margin-top:10px" />
         </div>
         <input class="form-field" id="f-complemento" placeholder="Complemento (opcional)" value="${esc(f.complemento || '')}" />
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -6228,7 +6230,7 @@ function renderRegisterSheet() {
         ` : ""}
         <p class="footnote" style="margin-top:8px">Só o espaço em si: quadras, recepção, vestiário, fachada. Nada de promoção, tabela de preço ou material de divulgação.</p>
 
-        <p class="field-label">Quantas quadras de cada tipo${isEditing ? "" : " *"}</p>
+        <p class="field-label">Quantas quadras de cada tipo${obrigatorio}</p>
         <div class="quadra-count-grid">
           ${QUADRA_COMBOS.map(q => `
             <div class="quadra-count-item">
@@ -6243,7 +6245,7 @@ function renderRegisterSheet() {
           ${AMENITY_OPTS.map(a => `<button class="chip small reg-amenity ${f.amenities.includes(a.key)?"active":""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`).join("")}
         </div>
 
-        <p class="field-label">Modalidade${isEditing ? "" : " *"}</p>
+        <p class="field-label">Modalidade${obrigatorio}</p>
         <div class="chip-row">
           ${MODALIDADE_OPTS.map(m => `<button class="chip small reg-modalidade ${f.modalidades.includes(m.key)?"active":""}" data-modalidade="${m.key}">${m.icon} ${m.label}</button>`).join("")}
         </div>
@@ -6301,11 +6303,11 @@ function renderRegisterSheet() {
             ${htEstacionarLinhas(estacionarLinhas(f))}
           </div>` : ""}
 
-        <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
+        <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${obrigatorio}" value="${esc(f.phone)}" />
         <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
         <input class="form-field" id="f-site" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" />
 
-        <p class="footnote">${isEditing ? "Deixe em branco o que não quiser alterar." : "* campos obrigatórios"}</p>
+        <p class="footnote">${isEditing ? "Deixe em branco o que não quiser alterar." : (isAdmin ? "Só o nome é obrigatório. O resto você completa quando quiser, em Editar academia." : "* campos obrigatórios")}</p>
 
         ${isAdmin ? `
           <label class="consent-row">
@@ -6314,7 +6316,7 @@ function renderRegisterSheet() {
           </label>
         ` : ""}
 
-        ${!isEditing ? `
+        ${!isEditing && !isAdmin ? `
           <label class="consent-row">
             <input type="checkbox" id="f-consent" ${f.consent ? "checked" : ""} />
             <span>Li e concordo com os <button type="button" class="inline-link" id="open-terms-from-form">Termos de Uso</button> e a <button type="button" class="inline-link" id="open-privacy-from-form">Política de Privacidade</button>.</span>
@@ -7853,6 +7855,15 @@ function avisarSqlColunas() {
   );
 }
 
+// "Rua, número - complemento - bairro, cidade - CEP", só com o que existe:
+// o admin pode publicar sem endereço completo.
+function montarEndereco(f) {
+  const tem = v => String(v || "").trim();
+  const rua = [f.address, f.numero].filter(tem).join(", ");
+  const partes = [[rua, f.complemento].filter(tem).join(" - "), [f.bairro, f.cidade].filter(tem).join(", "), f.cep].filter(tem);
+  return partes.length ? partes.join(" - ") : null;
+}
+
 async function doRegisterSubmit() {
   const f = window.__form;
   const quadras = f.quadras || {};
@@ -7909,13 +7920,18 @@ async function doRegisterSubmit() {
     return;
   }
 
+  // O admin publica com o que tiver e completa depois; só o nome é preciso,
+  // porque o banco não aceita academia sem nome. Quem pede cadastro pelo
+  // site continua mandando o essencial.
   const missing = [];
   if (!f.name.trim()) missing.push("nome");
-  if (!f.address.trim() || !f.numero.trim() || !f.bairro.trim() || !f.cidade.trim()) missing.push("endereço completo");
-  if (!f.phone.trim()) missing.push("WhatsApp");
-  if (!hasQuadra) missing.push("quantidade de quadras");
-  if (!f.modalidades.length) missing.push("modalidade");
-  if (!f.consent) missing.push("aceite dos Termos de Uso e Política de Privacidade");
+  if (!isAdmin) {
+    if (!f.address.trim() || !f.numero.trim() || !f.bairro.trim() || !f.cidade.trim()) missing.push("endereço completo");
+    if (!f.phone.trim()) missing.push("WhatsApp");
+    if (!hasQuadra) missing.push("quantidade de quadras");
+    if (!f.modalidades.length) missing.push("modalidade");
+    if (!f.consent) missing.push("aceite dos Termos de Uso e Política de Privacidade");
+  }
 
   if (missing.length) {
     state.registerError = `Preencha: ${missing.join(", ")}.`;
@@ -7934,7 +7950,7 @@ async function doRegisterSubmit() {
       const achado = await geocodeFormAddress(f);
       if (!achado.grosso) geo = achado;
     } catch (e) { /* segue sem coordenada */ }
-    const endereco = `${f.address}, ${f.numero}${f.complemento ? " - " + f.complemento : ""} - ${f.bairro}, ${f.cidade}${f.cep ? " - " + f.cep : ""}`;
+    const endereco = montarEndereco(f);
     const visitor = loadVisitor() || {};
     const payload = {
       ...toRow({ ...f, pisos, cobertura }),

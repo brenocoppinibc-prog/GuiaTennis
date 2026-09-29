@@ -112,6 +112,31 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(semFoto.ficha.lugares === 0 && !semFoto.ficha.texto && semFoto.ficha.nome, 'ficha sem foto começa direto no nome, sem "Foto em breve"');
   await browser.close();
 
+  // Admin publica academia só com o nome; quem pede pelo site ainda preenche o essencial
+  const FORM_VAZIO = { name: "", cep: "", address: "", numero: "", complemento: "", bairro: "", cidade: "", quadras: {}, amenities: [], modalidades: [], priceAula: "", priceLocacao: "", phone: "", instagram: "", site: "", photos: [], politica: {}, acesso: {}, horario: {} };
+  ({ browser, page } = await abrir({ admin: true }));
+  await page.evaluate((f) => { window.__form = JSON.parse(JSON.stringify(f)); state.showRegister = true; state.registerStatus = 'idle'; render(); }, FORM_VAZIO);
+  const formAdmin = await page.evaluate(() => ({
+    whats: document.getElementById('f-phone').placeholder,
+    nota: document.querySelector('#register-submit').parentElement.innerText,
+    aceite: !!document.getElementById('f-consent'),
+  }));
+  ok(!formAdmin.whats.includes('*') && !formAdmin.aceite && formAdmin.nota.includes('Só o nome é obrigatório'), 'formulário do admin: sem asteriscos e sem aceite, só o nome é obrigatório');
+  await page.fill('#f-name', 'Academia Só Nome');
+  await page.click('#register-submit');
+  await page.waitForTimeout(1500);
+  const soNome = await page.evaluate(() => window.__db.academias.find(a => a.name === 'Academia Só Nome'));
+  ok(soNome && soNome.status === 'published' && soNome.endereco === null, 'admin publica só com o nome — ' + JSON.stringify(soNome && { status: soNome.status, endereco: soNome.endereco }));
+  await browser.close();
+  ({ browser, page } = await abrir());
+  await page.evaluate((f) => { saveVisitor({ nome: 'Visitante', contato: '11999999999' }); window.__form = JSON.parse(JSON.stringify(f)); state.showRegister = true; state.registerStatus = 'idle'; render(); }, FORM_VAZIO);
+  await page.fill('#f-name', 'Pedido Só Nome');
+  await page.click('#register-submit');
+  await page.waitForTimeout(800);
+  const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome') }));
+  ok(!pedido.gravou && pedido.erro.includes('endereço completo') && pedido.erro.includes('WhatsApp'), 'pedido pelo site ainda cobra o essencial — ' + pedido.erro);
+  await browser.close();
+
   // Termos e Privacidade
   ({ browser, page } = await abrir());
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);

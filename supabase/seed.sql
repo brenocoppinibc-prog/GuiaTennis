@@ -174,3 +174,17 @@ values
    '00000000-0000-4000-8000-000000000003', 'instagram',
    null, null, 'Direto', 'Celular', now() - interval '2 days')
 on conflict (id) do nothing;
+
+-- Os exemplos contam como confirmados pela academia, menos a Quadra
+-- Exemplo Moema, que mostra como fica a ficha básica.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'academias' and column_name = 'confirmada'
+  ) then
+    update public.academias
+      set confirmada = (id <> '00000000-0000-4000-8000-000000000002')
+      where id::text like '00000000-0000-4000-8000-00000000000_';
+  end if;
+end $$;

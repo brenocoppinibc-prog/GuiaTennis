@@ -37,6 +37,18 @@
 # dia os endereços virarem caminhos de verdade (tipo /academia/morumbi), aí
 # será preciso adicionar um [[redirects]] apontando tudo para /index.html.
 
+# O sitemap sai do banco de verdade, com a ficha de cada academia publicada
+# (função sitemap(), em supabase/migrations), em XML para qualquer pedido.
+# Academia nova entra sozinha, sem publicar o site. A chave é a pública, a
+# mesma do index.html. O sitemap.xml do repositório fica de reserva: só
+# vale se esta regra sair.
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "https://eultezheqwmxyakvgyjy.supabase.co/rest/v1/rpc/sitemap"
+  status = 200
+  force = true
+  headers = {apikey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY"}
+
 # Os arquivos de trabalho ficam no repositório, mas não no ar: o contexto do
 # projeto e o SQL do banco não interessam a quem visita o site.
 [[redirects]]
@@ -68,5 +80,17 @@
 # A estrutura do banco e as academias de exemplo do banco de teste.
 [[redirects]]
   from = "/supabase/*"
+  to = "/404.html"
+  status = 404
+
+# A automação do GitHub (aplica o SQL novo nos bancos).
+[[redirects]]
+  from = "/.github/*"
+  to = "/404.html"
+  status = 404
+
+# Imagens de divulgação (perfil e capa do WhatsApp) e o gerador delas.
+[[redirects]]
+  from = "/divulgacao/*"
   to = "/404.html"
   status = 404

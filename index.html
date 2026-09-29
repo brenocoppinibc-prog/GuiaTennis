@@ -45,6 +45,19 @@
     --red: #A8462C;
   }
   * { box-sizing: border-box; }
+  .ficha-basica { display: flex; gap: 6px; align-items: flex-start; margin: 10px 0 0; padding: 8px 10px; background: var(--bg-alt); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+  .ficha-basica svg { flex-shrink: 0; margin-top: 2px; }
+  .ficha-dono { margin-top: 14px; }
+  /* Academia sem foto: nada no lugar da foto, o texto ocupa o espaço. */
+  .cmp-add.sem-foto { grid-template-columns: minmax(0, 1fr) auto; }
+  .ht-viz-c.sem-foto { grid-template-columns: minmax(0, 1fr) auto; }
+  .mini.sem-foto .mini-badge { position: static; display: inline-block; margin: 12px 0 0 12px; }
+  .rcard-tag.solto { position: static; display: inline-block; margin: 0 6px 8px 0; }
+  .footnote a, .ficha-dono a { color: var(--green); font-weight: 700; }
+  .sf-col a.contato-link { display: flex; align-items: center; gap: 7px; }
+  .ba-nota a { color: var(--gold-light); font-weight: 700; text-decoration: underline; }
+  .mapa-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .mapa-acoes .cta-btn { flex: 1 1 auto; width: auto; margin: 0; padding: 10px 12px; font-size: 13px; }
   .faixa-banco-teste { background: var(--gold-light); color: var(--text); font-size: 12px; font-weight: 700; text-align: center; padding: 6px 16px; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
@@ -981,6 +994,9 @@ function icon(name, size, color) {
     search: '<circle cx="10" cy="10" r="6"/><line x1="20" y1="20" x2="14.5" y2="14.5"/>',
     filter: '<path d="M3 4.5h18l-7 8.2V20l-4-2.2v-5.1z"/>',
     check: '<polyline points="4 12.5 9.5 18 20 6"/>',
+    whatsapp: '<path d="M3.6 20.4l1.2-3.9A8.6 8.6 0 1 1 8 19.3z"/><path d="M9.1 8.3c.2-.4.5-.5.8-.5h.4c.2 0 .4.1.5.3l.7 1.6c.1.2 0 .4-.1.6l-.5.6c.6 1.1 1.5 2 2.6 2.6l.6-.5c.2-.1.4-.2.6-.1l1.6.7c.2.1.3.3.3.5v.4c0 .3-.1.6-.5.8-1.8.8-6-2.5-7.1-4.7-.3-.8-.3-1.6.1-2.3z"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.8 6.8l8.2 6.2 8.2-6.2"/>',
+    info: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.8" r="0.4"/>',
     chevron: '<polyline points="9 5 16 12 9 19"/>',
     chevronLeft: '<polyline points="15 5 8 12 15 19"/>',
     sparkle: '<path d="M12 3l1.7 5.1L19 10l-5.3 1.9L12 17l-1.7-5.1L5 10l5.3-1.9z"/><path d="M18.4 15.4l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/>',
@@ -1566,6 +1582,9 @@ function mapRow(row) {
     horario: row.horario || {},
     pausada: !!row.pausada,
     pausadaAte: row.pausada_ate,
+    // Ficha básica: listada com dados públicos, ainda não confirmada pela
+    // academia. Banco sem a coluna conta como confirmada.
+    confirmada: row.confirmada !== false,
     nomeSolicitante: row.nome_solicitante,
     contatoSolicitante: row.contato_solicitante,
   };
@@ -1629,22 +1648,30 @@ async function carregarEstatisticasPublicas() {
 
 // O visitante só lê as colunas públicas. Quem pediu o cadastro e o WhatsApp
 // de quem avaliou ficam fechados no banco (SQL-SEGURANCA.sql) e só o admin vê.
-const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, created_at";
+const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, confirmada, created_at";
+// Colunas que chegam ao banco pelo SQL automático. Na publicação, o site
+// pode ir para o ar um pouco antes do SQL: aí lê sem elas, em vez de cair
+// no "*", que o visitante não pode ler.
+const COLUNAS_ACADEMIA_NOVAS = ["confirmada"];
 const COLUNAS_AVALIACAO_PUBLICAS = "id, academia_id, stars, comment, nome_autor, created_at";
 
 // Enquanto o banco não tiver alguma dessas colunas, a lista falha; aí lê
 // tudo, como antes, em vez de deixar o site vazio.
-async function lerPublico(tabela, colunas, montar) {
+async function lerPublico(tabela, colunas, montar, novas = []) {
   if (!isAdmin) {
-    const r = await montar(sb.from(tabela).select(colunas));
-    if (!r.error) return r;
-    diag(`o banco recusou a leitura de ${tabela}: ${r.error.message}${r.error.code ? " (" + r.error.code + ")" : ""}`);
+    const listas = [colunas];
+    if (novas.length) listas.push(colunas.split(", ").filter(c => !novas.includes(c)).join(", "));
+    for (const lista of listas) {
+      const r = await montar(sb.from(tabela).select(lista));
+      if (!r.error) return r;
+      diag(`o banco recusou a leitura de ${tabela}: ${r.error.message}${r.error.code ? " (" + r.error.code + ")" : ""}`);
+    }
   }
   return montar(sb.from(tabela).select('*'));
 }
 
 async function loadEverything() {
-  const { data: published, error: erroAcademias } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'));
+  const { data: published, error: erroAcademias } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'), COLUNAS_ACADEMIA_NOVAS);
   state.allCourts = (published || []).map(mapRow);
   diag(`academias lidas: ${state.allCourts.length}${erroAcademias ? ` · o banco recusou: ${erroAcademias.message}` : ""}`);
 
@@ -1926,6 +1953,7 @@ let state = {
   showRegister: false,
   showFilters: false,
   showAdminPanel: false,
+  mapa: null,
   showStatsPanel: false,
   showTerms: false,
   showPrivacy: false,
@@ -2439,7 +2467,8 @@ function dadosDoSite() {
       name: "GuiaTennis",
       url: "https://guiatennis.com.br",
       email: "guiatennis1@gmail.com",
-      sameAs: ["https://instagram.com/guiatennis"],
+      telephone: "+55 11 92745-6457",
+      sameAs: ["https://instagram.com/guiatennis", "https://wa.me/5511927456457"],
     },
   ];
   if (state.page === "home") {
@@ -2664,10 +2693,8 @@ function listaDoSeletor(lista) {
         const faixa = faixaGeral(c);
         const dist = distanceText(c.distanceKm);
         return `
-          <div class="cmp-add ${dentro ? "on" : ""}">
-            <span class="cmp-add-foto">
-              ${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : icon('ball', 22, 'var(--muted-dark)')}
-            </span>
+          <div class="cmp-add ${dentro ? "on" : ""} ${foto ? "" : "sem-foto"}">
+            ${foto ? `<span class="cmp-add-foto"><img src="${esc(foto)}" alt="" loading="lazy" /></span>` : ""}
             <span class="cmp-add-txt">
               <span class="cmp-add-n">${esc(c.name)}</span>
               <span class="cmp-add-l">${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}${dist ? ` · ${dist}` : ""}</span>
@@ -2970,7 +2997,7 @@ function vagasComparacao(courts) {
     const foto = courtPhotos(c)[0];
     vagas.push(`
       <div class="cmp-vaga on">
-        <div class="cmp-vaga-foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : icon('ball', 20, 'var(--muted-dark)')}</div>
+        ${foto ? `<div class="cmp-vaga-foto"><img src="${esc(foto)}" alt="" loading="lazy" /></div>` : ""}
         <span class="cmp-vaga-n">${esc(c.name)}</span>
         <button type="button" class="cmp-vaga-x" data-cmp-remove="${c.id}" aria-label="Tirar ${esc(c.name)} da comparação">✕</button>
       </div>`);
@@ -3043,6 +3070,30 @@ function renderQrSheet() {
       </div></div>
     </div>
   `;
+}
+
+// WhatsApp Business do próprio GuiaTennis (29/09/2026).
+const WHATSAPP_GUIA = "5511927456457";
+function whatsappGuia(texto) {
+  return `https://wa.me/${WHATSAPP_GUIA}${texto ? "?text=" + encodeURIComponent(texto) : ""}`;
+}
+
+// Contato do GuiaTennis: só "WhatsApp", "Instagram" e "E-mail", com o logo
+// pequeno na frente — sem mostrar o número, o @ nem o e-mail. Os dados
+// completos ficam nos Termos e na Privacidade.
+const CONTATOS_GUIA = [
+  { nome: "WhatsApp", icone: "whatsapp", link: () => whatsappGuia("Olá! Vim pelo site do GuiaTennis."), fora: true },
+  { nome: "Instagram", icone: "instagram", link: () => "https://instagram.com/guiatennis", fora: true },
+  { nome: "E-mail", icone: "mail", link: () => "mailto:guiatennis1@gmail.com", fora: false },
+];
+function linksContato(classe, tamanho, cor) {
+  return CONTATOS_GUIA.map(c => `<a class="${classe}" href="${c.link()}"${c.fora ? ' target="_blank" rel="noreferrer"' : ""}>${icon(c.icone, tamanho, cor)}<span>${c.nome}</span></a>`).join("");
+}
+
+// O responsável pela academia pede correção ou remoção pelo WhatsApp do
+// guia, com a conversa começada — é o "sou o dono" do Google e do Yelp.
+function linkResponsavel(c) {
+  return whatsappGuia(`Olá! Sou responsável pela ${c.name} e quero atualizar a ficha no GuiaTennis (ou pedir a remoção): ${linkDaFicha(c)}`);
 }
 
 function linkDaFicha(c) {
@@ -3190,9 +3241,7 @@ function mapCardHtml(id) {
   const dist = distanceText(c.distanceKm);
   return `
     <div class="map-card" data-open="${c.id}">
-      <div class="map-card-photo">
-        ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 26, 'var(--muted-dark)')}
-      </div>
+      ${photos.length ? `<div class="map-card-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>` : ""}
       <div style="min-width:0;flex:1">
         <p class="map-card-name">${esc(c.name)}</p>
         <p class="map-card-meta">${esc(c.bairro)}${dist ? ` · ${dist}` : ""}</p>
@@ -3454,8 +3503,7 @@ function renderMenu() {
         ${item("cadastrar", "Cadastrar minha academia", "check")}
 
         <p class="menu-grupo">Contato</p>
-        <a class="menu-item" href="https://instagram.com/guiatennis" target="_blank" rel="noreferrer">${icon('instagram', 17, 'var(--green)')}<span>Instagram @guiatennis</span></a>
-        <a class="menu-item" href="mailto:guiatennis1@gmail.com">${icon('bubble', 17, 'var(--green)')}<span>guiatennis1@gmail.com</span></a>
+        ${linksContato("menu-item", 17, "var(--green)")}
 
         <p class="menu-grupo">Legal</p>
         ${item("termos", "Termos de Uso", "clipboard")}
@@ -3569,6 +3617,7 @@ function blocoParaAcademias() {
       ${blocoMediasAcademias()}
       <button type="button" class="ba-btn" id="home-cadastrar">Cadastrar minha academia</button>
       <p class="ba-nota">Leva uns 3 minutos. Depois é só responder quem chamar.</p>
+      <p class="ba-nota">Prefere conversar? <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e quero aparecer no GuiaTennis.")}" target="_blank" rel="noreferrer">Chame o GuiaTennis no WhatsApp</a>.</p>
     </div>
   `;
 }
@@ -3675,11 +3724,9 @@ function renderMini(c, selo) {
   const photos = courtPhotos(c);
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   return `
-    <a class="mini" href="?court=${encodeURIComponent(c.id)}" data-open="${c.id}">
+    <a class="mini ${photos.length ? "" : "sem-foto"}" href="?court=${encodeURIComponent(c.id)}" data-open="${c.id}">
       ${selo ? `<span class="mini-badge">${esc(selo)}</span>` : ""}
-      <div class="mini-photo">
-        ${photos.length ? `<img src="${esc(photos[0])}" alt="${esc(c.name)}" />` : icon('ball', 26, 'var(--muted-dark)')}
-      </div>
+      ${photos.length ? `<div class="mini-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>` : ""}
       <div class="mini-body">
         <p class="mini-name">${esc(c.name)}</p>
         <p class="mini-score">
@@ -3700,8 +3747,7 @@ function renderSiteFooter() {
         <div class="sf-col">
           <h4>GuiaTennis</h4>
           <button type="button" id="footer-cadastrar">Cadastrar minha academia</button>
-          <a href="https://instagram.com/guiatennis" target="_blank" rel="noreferrer">Instagram @guiatennis</a>
-          <a href="mailto:guiatennis1@gmail.com">guiatennis1@gmail.com</a>
+          ${linksContato("contato-link", 15, "currentColor")}
         </div>
         <div class="sf-col">
           <h4>Termos e políticas</h4>
@@ -4198,19 +4244,23 @@ function renderCard(c, badge) {
   return `
     <div class="rcard" data-open="${c.id}">
       <div class="rcard-top">
+        ${photos.length ? `
         <div class="rcard-photo">
-          ${photos.length ? `
-            <div class="rcard-strip" data-strip="${c.id}">
-              ${photos.map(p => `<img src="${esc(p)}" alt="${esc(c.name)}" />`).join("")}
-            </div>
-            ${photos.length > 1 ? `<div class="rcard-dots" data-dots="${c.id}">${photos.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
-          ` : `<div class="rcard-nophoto">${icon('ball', 30, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></div>`}
+          <div class="rcard-strip" data-strip="${c.id}">
+            ${photos.map(p => `<img src="${esc(p)}" alt="${esc(c.name)}" />`).join("")}
+          </div>
+          ${photos.length > 1 ? `<div class="rcard-dots" data-dots="${c.id}">${photos.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
           ${badge ? `<span class="rcard-tag">${esc(badge)}</span>` : ""}
           ${isAdmin && pausada ? `<span class="rcard-tag" style="background:var(--red);top:auto;bottom:8px">Pausada</span>` : ""}
-        ${isAdmin && c.plano && c.plano !== "basico" ? `<span class="rcard-tag" style="background:var(--green);top:auto;bottom:${pausada ? "34px" : "8px"}">${esc(PLANO_OPTS.find(o => o.key === c.plano)?.label || c.plano)}</span>` : ""}
-        </div>
+          ${isAdmin && c.plano && c.plano !== "basico" ? `<span class="rcard-tag" style="background:var(--green);top:auto;bottom:${pausada ? "34px" : "8px"}">${esc(PLANO_OPTS.find(o => o.key === c.plano)?.label || c.plano)}</span>` : ""}
+        </div>` : ""}
 
         <div class="rcard-info">
+          ${photos.length ? "" : [
+            badge ? `<span class="rcard-tag solto">${esc(badge)}</span>` : "",
+            isAdmin && pausada ? `<span class="rcard-tag solto" style="background:var(--red)">Pausada</span>` : "",
+            isAdmin && c.plano && c.plano !== "basico" ? `<span class="rcard-tag solto" style="background:var(--green)">${esc(PLANO_OPTS.find(o => o.key === c.plano)?.label || c.plano)}</span>` : "",
+          ].join("")}
           <div class="rcard-head">
             <p class="rcard-name">${esc(c.name)}</p>
             <div class="rcard-acts">
@@ -4425,8 +4475,8 @@ async function buscarPerto(lat, lng) {
   return organizarPerto(dados.elements || [], lat, lng);
 }
 
-async function pedirOverpass(url, consulta, metodo, corte) {
-  const relogio = setTimeout(() => corte.abort(), POI_ESPERA);
+async function pedirOverpass(url, consulta, metodo, corte, espera = POI_ESPERA) {
+  const relogio = setTimeout(() => corte.abort(), espera);
   try {
     const opcoes = metodo === "GET"
       ? { method: "GET", signal: corte.signal }
@@ -4445,6 +4495,227 @@ async function pedirOverpass(url, consulta, metodo, corte) {
   } finally {
     clearTimeout(relogio);
   }
+}
+
+// ---------- academias no mapa aberto (OpenStreetMap) ----------
+// O OpenStreetMap é um mapa aberto, feito por voluntários; a licença dele
+// (ODbL) deixa usar os dados, até em site comercial, dando o crédito. Aqui
+// ele só sugere ao admin academias de tênis que ainda não estão no guia:
+// o admin confere, adiciona como pendente e a ficha nasce básica
+// (confirmada = false) até a academia confirmar. Nunca dados do Google.
+const MAPA_ESPERA = 20000;       // espera pelos servidores do mapa
+const MAPA_RAIOS = [3, 5, 10];   // km em volta da região procurada
+// Regra do guia: só quadra e academia. Clube, condomínio, escola regular e
+// hotel ficam de fora já na sugestão.
+const MAPA_FORA = /\b(clube|club|country|condom[ií]nio|residencial|edif[ií]cio|col[eé]gio|sesc|associa[cç][aã]o|sociedade|hotel|universidade|faculdade)\b/i;
+
+// A cidade inteira de uma vez pesava demais e não voltava. Agora o admin
+// digita uma região e o mapa procura só em volta dela.
+// Consulta leve: procurar "tênis" no nome de tudo o que é esporte da região
+// pesava demais e os servidores gratuitos não respondiam. Agora o nome só é
+// olhado nos centros esportivos; o resto vem pela etiqueta de esporte.
+function consultaMapa(lat, lng, raioKm) {
+  const perto = `around:${Math.round(raioKm * 1000)},${lat},${lng}`;
+  return `[out:json][timeout:25];(nwr["sport"~"tennis"]["name"](${perto});nwr["leisure"="sports_centre"]["name"~"t[eê]nis",i](${perto}););out tags center 150;`;
+}
+
+async function pedirMapa(consulta) {
+  const motivos = [];
+  const cortes = [];
+  try {
+    return await Promise.any(POI_SERVIDORES.map((url, i) => {
+      const corte = new AbortController();
+      cortes.push(corte);
+      return pedirOverpass(url, consulta, i === 0 ? "POST" : "GET", corte, MAPA_ESPERA).catch(e => {
+        motivos.push(`${url.replace(/^https:\/\//, "").split("/")[0]}: ${e.message}`);
+        throw e;
+      });
+    }));
+  } catch {
+    diag(`mapa aberto sem resposta — ${motivos.join(" · ")}`);
+    const erro = new Error("mapa");
+    erro.mapa = true;
+    throw erro;
+  } finally {
+    cortes.forEach(c => { try { c.abort(); } catch { /* já terminou */ } });
+  }
+}
+
+function nomeComparavel(n) {
+  return (n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+// O que o mapa devolve, já sem repetidos e sem o que não é academia.
+function candidatosDoMapa(elementos) {
+  const vistos = new Set();
+  const itens = [];
+  (elementos || []).forEach(el => {
+    const t = el.tags || {};
+    const lat = typeof el.lat === "number" ? el.lat : el.center && el.center.lat;
+    const lng = typeof el.lon === "number" ? el.lon : el.center && el.center.lon;
+    const nome = (t.name || "").trim();
+    if (!nome || typeof lat !== "number" || typeof lng !== "number" || MAPA_FORA.test(nome)) return;
+    const chave = `${nomeComparavel(nome)}|${lat.toFixed(3)}|${lng.toFixed(3)}`;
+    if (vistos.has(chave)) return;
+    vistos.add(chave);
+    itens.push({
+      osm: `${el.type}/${el.id}`,
+      name: nome, lat, lng,
+      rua: t["addr:street"] || "", numero: t["addr:housenumber"] || "",
+      bairro: t["addr:suburb"] || t["addr:neighbourhood"] || "", cidade: t["addr:city"] || "",
+      cep: t["addr:postcode"] || "",
+      phone: t.phone || t["contact:phone"] || t["contact:whatsapp"] || "",
+      site: t.website || t["contact:website"] || "",
+      instagram: t["contact:instagram"] || "",
+    });
+  });
+  return itens.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+}
+
+// Tira o que já está no guia (publicada ou pendente): a menos de 200 m ou
+// com o mesmo nome.
+function foraDoGuia(candidatos) {
+  const noGuia = [...state.allCourts, ...(state.pending || [])];
+  return (candidatos || []).filter(i => {
+    const nome = nomeComparavel(i.name);
+    return !noGuia.some(c => {
+      const perto = typeof c.lat === "number" && typeof c.lng === "number" && haversineKm(i.lat, i.lng, c.lat, c.lng) < 0.2;
+      const n = nomeComparavel(c.name);
+      return perto || (n && (n === nome || (n.length > 5 && nome.includes(n)) || (nome.length > 5 && n.includes(nome))));
+    });
+  });
+}
+
+// CEP pelo ViaCEP; bairro, cidade ou endereço pelo mapa aberto — o mesmo
+// caminho da busca do site.
+async function pontoDaRegiao(regiao) {
+  const digitos = regiao.replace(/\D/g, "");
+  if (digitos.length === 8 && regiao.replace(/[\d\s-]/g, "") === "") return geocodeCep(regiao);
+  try { return await geocodeAddress(`${regiao}, Brasil`); }
+  catch { return geocodeAddress(regiao); }
+}
+
+async function carregarMapaAberto() {
+  const m = state.mapa || {};
+  const regiao = (m.regiao || "").trim();
+  const raio = m.raio || 5;
+  if (!isAdmin || !regiao || m.status === "carregando") return;
+  state.mapa = { ...m, status: "carregando", itens: [], erro: "" };
+  render();
+  let ponto;
+  try {
+    ponto = await pontoDaRegiao(regiao);
+  } catch {
+    state.mapa = { ...state.mapa, status: "erro", erro: "regiao" };
+    if (state.showAdminPanel) render();
+    return;
+  }
+  try {
+    // Servidor gratuito às vezes está ocupado: tenta de novo sozinho, uma vez.
+    let dados;
+    try { dados = await pedirMapa(consultaMapa(ponto.lat, ponto.lng, raio)); }
+    catch { dados = await pedirMapa(consultaMapa(ponto.lat, ponto.lng, raio)); }
+    const itens = candidatosDoMapa(dados.elements)
+      .map(it => ({ ...it, km: haversineKm(ponto.lat, ponto.lng, it.lat, it.lng) }))
+      .sort((a, b) => a.km - b.km);
+    state.mapa = { ...state.mapa, status: "ok", itens };
+  } catch {
+    state.mapa = { ...state.mapa, status: "erro", erro: "mapa" };
+  }
+  if (state.showAdminPanel) render();
+}
+
+// Rua, número, bairro e cidade de um ponto, para a academia do mapa que
+// não traz o endereço escrito.
+async function enderecoDoPonto(lat, lng) {
+  const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, { headers: { "Accept": "application/json" } });
+  if (!res.ok) throw new Error("sem endereço");
+  const a = (await res.json()).address || {};
+  return {
+    rua: a.road || a.pedestrian || "", numero: a.house_number || "",
+    bairro: a.suburb || a.neighbourhood || a.city_district || "",
+    cidade: a.city || a.town || a.municipality || "", cep: a.postcode || "",
+  };
+}
+
+async function adicionarDoMapa(osm) {
+  const item = ((state.mapa && state.mapa.itens) || []).find(i => i.osm === osm);
+  if (!item) return;
+  let end = { rua: item.rua, numero: item.numero, bairro: item.bairro, cidade: item.cidade, cep: item.cep };
+  if (!end.rua || !end.bairro || !end.cidade) {
+    try {
+      const r = await enderecoDoPonto(item.lat, item.lng);
+      end = { rua: end.rua || r.rua, numero: end.numero || r.numero, bairro: end.bairro || r.bairro, cidade: end.cidade || r.cidade, cep: end.cep || r.cep };
+    } catch { /* entra sem endereço escrito; o admin completa na edição */ }
+  }
+  const rua = [end.rua, end.numero].filter(Boolean).join(", ");
+  const corpo = {
+    name: item.name,
+    address: end.rua, numero: end.numero, bairro: end.bairro, cidade: end.cidade,
+    endereco: [rua, [end.bairro, end.cidade].filter(Boolean).join(", ")].filter(Boolean).join(" - "),
+    lat: item.lat, lng: item.lng,
+    phone: (item.phone || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, ""),
+    site: item.site, instagram: item.instagram,
+    source: "osm", status: "pending", confirmada: false,
+  };
+  let { error } = await sb.from('academias').insert(corpo);
+  if (error && faltaColunaNova(error)) {
+    delete corpo.confirmada;
+    ({ error } = await sb.from('academias').insert(corpo));
+  }
+  if (error) throw error;
+  await loadEverything();
+}
+
+// Convite que o Breno manda, ele mesmo, para a academia achada no mapa.
+function conviteAcademia(nome) {
+  return `Oi! Aqui é o Breno, do GuiaTennis (guiatennis.com.br), o guia de quadras e academias de tênis. Quero colocar a ${nome} no guia, de graça: quem procura aula ou quadra na região fala direto com vocês pelo WhatsApp. Posso te mostrar como fica?`;
+}
+
+function whatsappDe(telefone) {
+  const d = (telefone || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  return d.length >= 10 ? d : "";
+}
+
+function blocoMapaAberto() {
+  const m = state.mapa || {};
+  const raio = m.raio || 5;
+  const itens = m.status === "ok" ? foraDoGuia(m.itens) : [];
+  return `
+    <div class="mapa-bloco">
+      <p class="sheet-title display" style="font-size:18px;margin-top:28px">Academias no mapa que ainda não estão no guia</p>
+      <p class="subtitle" style="margin-top:4px">Do OpenStreetMap, o mapa aberto. Digite uma região e fale com cada academia antes de adicionar.</p>
+      <form id="mapa-form" class="mapa-busca" autocomplete="off">
+        <input class="form-field" id="mapa-regiao" placeholder="Bairro, cidade ou CEP" value="${esc(m.regiao || "")}" />
+        <div class="chip-row" style="margin-top:8px">
+          ${MAPA_RAIOS.map(r => `<button type="button" class="chip small ${raio === r ? "active" : ""}" data-mapa-raio="${r}">Até ${r} km</button>`).join("")}
+        </div>
+        <button type="submit" class="cta-btn cta-primary" style="margin-top:10px" ${m.status === "carregando" ? "disabled" : ""}>${m.status === "carregando" ? bolaGirando(16) + " Procurando no mapa..." : "Procurar academias"}</button>
+      </form>
+      ${m.status === "erro" ? `<p class="pending-detail" style="margin-top:12px">${m.erro === "regiao"
+        ? "Não achei essa região. Escreva o bairro e a cidade, por exemplo: Moema, São Paulo."
+        : "O mapa está lento agora. Espere um pouco e toque em Procurar academias de novo."}</p>` : ""}
+      ${m.status === "ok" ? `<p class="pending-detail" style="margin-top:12px">${itens.length ? `${itens.length} ${plural(itens.length, "academia", "academias")} até ${raio} km de ${esc(m.regiao)}, da mais perto para a mais longe.` : `Nenhuma academia de tênis nova no mapa até ${raio} km de ${esc(m.regiao)}. Tente um raio maior ou outra região.`}</p>` : ""}
+      ${itens.slice(0, 40).map(i => {
+        const wa = whatsappDe(i.phone);
+        const endereco = [[i.rua, i.numero].filter(Boolean).join(", "), i.bairro, i.cidade].filter(Boolean).join(" - ");
+        const google = `https://www.google.com/search?q=${encodeURIComponent([i.name, i.bairro || i.cidade || m.regiao, "tênis"].filter(Boolean).join(" "))}`;
+        return `
+        <div class="pending-item">
+          <p class="pending-name display">${esc(i.name)}</p>
+          <p class="pending-detail">${esc(endereco || "Endereço a completar")} · ${distanceText(i.km)}</p>
+          <p class="pending-detail">${wa ? `WhatsApp/telefone: ${esc(i.phone)}` : "Sem telefone no mapa"}</p>
+          <div class="mapa-acoes">
+            ${wa ? `<a class="cta-btn cta-primary" href="https://wa.me/55${wa}?text=${encodeURIComponent(conviteAcademia(i.name))}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} Chamar no WhatsApp</a>`
+                 : `<a class="cta-btn cta-secondary" href="${google}" target="_blank" rel="noreferrer">${icon('search', 15, 'var(--green)')} Procurar o telefone</a>`}
+            <button class="cta-btn cta-secondary" data-mapa-add="${esc(i.osm)}">Adicionar como pendente</button>
+            <a class="cta-btn cta-secondary" href="https://www.openstreetmap.org/${esc(i.osm)}" target="_blank" rel="noreferrer">Ver no mapa</a>
+          </div>
+        </div>`;
+      }).join("")}
+      ${itens.length > 40 ? `<p class="footnote">Mostrando as 40 mais perto de ${itens.length}.</p>` : ""}
+      <p class="footnote" style="margin-top:12px">Dados © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>. Telefone que não estiver no mapa: procure um por um, no site ou perfil da própria academia.</p>
+    </div>`;
 }
 
 function organizarPerto(elementos, lat, lng) {
@@ -4984,9 +5255,8 @@ function qrSvg(texto, lado, comEmblema) {
 // hotel. No celular aparece só a primeira, ocupando a largura toda.
 function htGaleria(c) {
   const photos = courtPhotos(c);
-  if (!photos.length) {
-    return `<div class="hero-empty">${icon('ball', 40, 'var(--muted-dark)')}<span class="card-photo-caption">Foto em breve</span></div>`;
-  }
+  // Sem foto, sem galeria: a ficha começa direto no nome.
+  if (!photos.length) return "";
   const n = Math.min(photos.length, 5);
   const cls = ["", "solo", "duo", "trio", "quad", "penta"][n];
   const celulas = photos.slice(0, n).map((p, i) => `
@@ -5195,8 +5465,8 @@ function cartaoVizinha(v, km) {
   const lugar = [v.bairro, v.cidade].filter(Boolean).join(", ");
   const mod = modalidadesTexto(v);
   return `
-    <button type="button" class="ht-viz-c" data-open="${v.id}">
-      <span class="ht-viz-foto">${foto ? `<img src="${esc(foto)}" alt="Foto da ${esc(v.name)}" loading="lazy" />` : icon('ball', 26, 'var(--muted-dark)')}</span>
+    <button type="button" class="ht-viz-c ${foto ? "" : "sem-foto"}" data-open="${v.id}">
+      ${foto ? `<span class="ht-viz-foto"><img src="${esc(foto)}" alt="Foto da ${esc(v.name)}" loading="lazy" /></span>` : ""}
       <span class="ht-viz-txt">
         <span class="ht-viz-n">${esc(v.name)}</span>
         <span class="ht-viz-nota">
@@ -5670,6 +5940,7 @@ function renderCourtPage(c) {
                 <span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span>
                 <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}${dist ? ` · ${dist} de você` : ""} — <button type="button" data-nav="${c.id}">Ver no mapa</button></span>
               </p>
+              ${c.confirmada ? "" : `<p class="ficha-basica">${icon('info', 13, 'var(--muted)')} <span><strong>Ficha básica.</strong> Informações públicas, ainda não confirmadas pela academia — confirme horário e preço direto com ela.</span></p>`}
             </header>
 
             <nav class="ht-tabs" id="ht-tabs" aria-label="Seções da academia">
@@ -5745,6 +6016,8 @@ function renderCourtPage(c) {
                   ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
                   <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
                 </div>
+                <p class="footnote ficha-dono">É o responsável por esta academia? <a href="${linkResponsavel(c)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a> para atualizar a ficha ou pedir a remoção.</p>
+                ${c.source === "osm" ? `<p class="footnote">Nome e localização: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>.</p>` : ""}
               </section>
             </div>
           </div>
@@ -5885,6 +6158,8 @@ function renderRegisterSheet() {
   const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
   window.__form = f;
   const isEditing = !!f.__editingId;
+  // Asterisco só para quem pede cadastro pelo site; o admin publica com o que tiver.
+  const obrigatorio = isEditing || isAdmin ? "" : " *";
   if (state.registerStatus === "done") {
     return `
       <div class="overlay open" id="register-overlay">
@@ -5910,8 +6185,8 @@ function renderRegisterSheet() {
 
         ${!isEditing ? `<input class="form-field" id="f-cep" placeholder="CEP" value="${esc(f.cep || '')}" />` : ""}
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
-          <input class="form-field" id="f-address" placeholder="Endereço (rua)${isEditing ? "" : " *"}" value="${esc(f.address)}" style="margin-top:10px" />
-          <input class="form-field" id="f-numero" placeholder="Número${isEditing ? "" : " *"}" value="${esc(f.numero || '')}" style="margin-top:10px" />
+          <input class="form-field" id="f-address" placeholder="Endereço (rua)${obrigatorio}" value="${esc(f.address)}" style="margin-top:10px" />
+          <input class="form-field" id="f-numero" placeholder="Número${obrigatorio}" value="${esc(f.numero || '')}" style="margin-top:10px" />
         </div>
         <input class="form-field" id="f-complemento" placeholder="Complemento (opcional)" value="${esc(f.complemento || '')}" />
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -5955,7 +6230,7 @@ function renderRegisterSheet() {
         ` : ""}
         <p class="footnote" style="margin-top:8px">Só o espaço em si: quadras, recepção, vestiário, fachada. Nada de promoção, tabela de preço ou material de divulgação.</p>
 
-        <p class="field-label">Quantas quadras de cada tipo${isEditing ? "" : " *"}</p>
+        <p class="field-label">Quantas quadras de cada tipo${obrigatorio}</p>
         <div class="quadra-count-grid">
           ${QUADRA_COMBOS.map(q => `
             <div class="quadra-count-item">
@@ -5970,7 +6245,7 @@ function renderRegisterSheet() {
           ${AMENITY_OPTS.map(a => `<button class="chip small reg-amenity ${f.amenities.includes(a.key)?"active":""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`).join("")}
         </div>
 
-        <p class="field-label">Modalidade${isEditing ? "" : " *"}</p>
+        <p class="field-label">Modalidade${obrigatorio}</p>
         <div class="chip-row">
           ${MODALIDADE_OPTS.map(m => `<button class="chip small reg-modalidade ${f.modalidades.includes(m.key)?"active":""}" data-modalidade="${m.key}">${m.icon} ${m.label}</button>`).join("")}
         </div>
@@ -6028,13 +6303,20 @@ function renderRegisterSheet() {
             ${htEstacionarLinhas(estacionarLinhas(f))}
           </div>` : ""}
 
-        <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${isEditing ? "" : " *"}" value="${esc(f.phone)}" />
+        <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${obrigatorio}" value="${esc(f.phone)}" />
         <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
         <input class="form-field" id="f-site" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" />
 
-        <p class="footnote">${isEditing ? "Deixe em branco o que não quiser alterar." : "* campos obrigatórios"}</p>
+        <p class="footnote">${isEditing ? "Deixe em branco o que não quiser alterar." : (isAdmin ? "Só o nome é obrigatório. O resto você completa quando quiser, em Editar academia." : "* campos obrigatórios")}</p>
 
-        ${!isEditing ? `
+        ${isAdmin ? `
+          <label class="consent-row">
+            <input type="checkbox" id="f-confirmada" ${f.confirmada ? "checked" : ""} />
+            <span>Informações confirmadas pela academia. Sem isso, a ficha mostra que os dados são públicos e ainda não foram confirmados.</span>
+          </label>
+        ` : ""}
+
+        ${!isEditing && !isAdmin ? `
           <label class="consent-row">
             <input type="checkbox" id="f-consent" ${f.consent ? "checked" : ""} />
             <span>Li e concordo com os <button type="button" class="inline-link" id="open-terms-from-form">Termos de Uso</button> e a <button type="button" class="inline-link" id="open-privacy-from-form">Política de Privacidade</button>.</span>
@@ -6239,13 +6521,13 @@ function renderStatsPanel() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 28 de setembro de 2026</p>
+<p class="footnote">Última atualização: 29 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
-<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
+<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
-<p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento, e remover um cadastro a pedido do responsável pelo estabelecimento.</p>
+<p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. Identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Antes de enviar sua primeira avaliação ou solicitação de cadastro, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">5. Avaliações e comentários</p>
@@ -6261,27 +6543,28 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">10. Alterações e lei aplicável</p>
 <p style="font-size:14px">Estes termos podem ser atualizados a qualquer momento e são regidos pelas leis brasileiras.</p>
 <p class="field-label" style="margin-top:16px">11. Contato</p>
-<p style="font-size:14px">guiatennis1@gmail.com</p>
+<p style="font-size:14px">WhatsApp (11) 92745-6457 · guiatennis1@gmail.com</p>
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 28 de setembro de 2026</p>
+<p class="footnote">Última atualização: 29 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
 <p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões e CEPs buscados continuam visíveis só para a administração.</p>
+<p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>
-<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), OpenStreetMap/Overpass (restaurantes, padarias e pontos turísticos perto de cada academia), Supabase (banco de dados e login administrativo), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
+<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), OpenStreetMap/Overpass (restaurantes, padarias e pontos turísticos perto de cada academia, e academias de tênis que ainda não estão no guia), Supabase (banco de dados e login administrativo), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
 <p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
 <p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o responsável autenticado pode aprovar, editar ou remover conteúdo. Favoritos continuam salvos localmente no seu navegador.</p>
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
-<p style="font-size:14px">Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos podem ser apagados limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo.</p>
+<p style="font-size:14px">Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos podem ser apagados limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página.</p>
 <p class="field-label" style="margin-top:16px">6. Cookies</p>
 <p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (favoritos, lista de comparação, sua identificação, formulários) é estritamente técnico.</p>
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
 <p style="font-size:14px">O GuiaTennis não é direcionado a menores de 18 anos e não coleta intencionalmente dados de crianças ou adolescentes.</p>
 <p class="field-label" style="margin-top:16px">8. Contato</p>
-<p style="font-size:14px">guiatennis1@gmail.com</p>
+<p style="font-size:14px">WhatsApp (11) 92745-6457 · guiatennis1@gmail.com</p>
 `;
 
 function renderLegalSheet(title, contentHtml, closeId) {
@@ -6357,12 +6640,14 @@ function renderAdminPanel(pending) {
             <p class="pending-detail">${esc(p.phone || "sem telefone")}${p.instagram ? " · " + esc(p.instagram) : ""}</p>
             ${p.nomeSolicitante ? `<p class="pending-detail" style="color:var(--muted-dark)">Enviado por: ${esc(p.nomeSolicitante)} · ${esc(p.contatoSolicitante || "")}</p>` : ""}
             <p class="pending-detail">${(p.photos||[]).length ? `${p.photos.length} foto${p.photos.length>1?'s':''} enviada${p.photos.length>1?'s':''}` : "sem fotos"}</p>
+            ${p.source === "osm" ? `<p class="pending-detail" style="color:var(--muted-dark)">Veio do mapa aberto — ficha básica até a academia confirmar.</p>` : ""}
             <div class="pending-actions">
               <button class="cta-btn cta-primary" data-approve="${p.id}">Aprovar</button>
               <button class="cta-btn cta-danger" data-reject="${p.id}">Rejeitar</button>
             </div>
           </div>
         `).join("")}
+        ${blocoMapaAberto()}
       </div></div>
     </div>
   `;
@@ -6865,6 +7150,7 @@ function attachEvents() {
       politica: politicaParaForm(c),
       acesso: { ...JSON.parse(JSON.stringify(c.acesso || {})), ...acessoDe(c) },
       horario: JSON.parse(JSON.stringify(c.horario || {})),
+      confirmada: c.confirmada,
     };
     state.showRegister = true;
     state.registerStatus = "idle";
@@ -7177,6 +7463,27 @@ function attachEvents() {
       render();
     };
   });
+  const mapaForm = document.getElementById("mapa-form");
+  if (mapaForm) {
+    const campo = document.getElementById("mapa-regiao");
+    campo.oninput = (e) => { state.mapa = { ...(state.mapa || {}), regiao: e.target.value }; };
+    mapaForm.onsubmit = (e) => { e.preventDefault(); state.mapa = { ...(state.mapa || {}), regiao: campo.value }; carregarMapaAberto(); };
+  }
+  document.querySelectorAll("[data-mapa-raio]").forEach(el => {
+    el.onclick = () => {
+      state.mapa = { ...(state.mapa || {}), raio: Number(el.dataset.mapaRaio) };
+      if ((state.mapa.regiao || "").trim()) carregarMapaAberto(); else render();
+    };
+  });
+  document.querySelectorAll("[data-mapa-add]").forEach(el => {
+    el.onclick = async () => {
+      el.disabled = true;
+      el.textContent = "Adicionando...";
+      try { await adicionarDoMapa(el.dataset.mapaAdd); }
+      catch (e) { alert("Não consegui adicionar: " + (e.message || e)); }
+      render();
+    };
+  });
   document.querySelectorAll("[data-reject]").forEach(el => {
     el.onclick = async () => {
       await sb.from('academias').delete().eq('id', el.dataset.reject);
@@ -7306,6 +7613,9 @@ function attachEvents() {
   if (openTermsFromForm) openTermsFromForm.onclick = () => { state.showTerms = true; render(); };
   const openPrivacyFromForm = document.getElementById("open-privacy-from-form");
   if (openPrivacyFromForm) openPrivacyFromForm.onclick = () => { state.showPrivacy = true; render(); };
+
+  const confirmadaField = document.getElementById("f-confirmada");
+  if (confirmadaField) confirmadaField.onchange = (e) => { window.__form.confirmada = e.target.checked; };
 
   const cepField = document.getElementById("f-cep");
   if (cepField) {
@@ -7445,7 +7755,9 @@ function shareCourt(courtId) {
   const c = (state.allCourts.find(x => x.id === courtId)) || (state.pending && state.pending.find(x => x.id === courtId));
   if (!c) return;
   trackClick(courtId, "compartilhar");
-  const url = `${location.origin}${location.pathname}?court=${c.id}`;
+  // A etiqueta faz a visita de quem recebe o link aparecer como
+  // "Compartilhado" em "De onde vieram", em vez de "Direto".
+  const url = `${location.origin}${location.pathname}?court=${c.id}&utm_source=Compartilhado`;
   const text = `Olha essa quadra/academia que eu achei, no GuiaTennis:\n${c.name}${c.endereco ? " - " + c.endereco : (c.bairro ? " - " + c.bairro : "")}`;
   const fullText = `${text} ${url}`;
 
@@ -7528,7 +7840,7 @@ async function doSearch() {
 // falhar — e avisa o admin com o SQL que resolve. Mesmo caminho do "plano".
 function faltaColunaNova(erro) {
   const m = ((erro && erro.message) || "").toLowerCase();
-  return m.includes("politica") || m.includes("acesso") || m.includes("horario");
+  return m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada");
 }
 
 function avisarSqlColunas() {
@@ -7541,6 +7853,15 @@ function avisarSqlColunas() {
     "alter table academias add column if not exists acesso jsonb not null default '{}'::jsonb;\n" +
     "alter table academias add column if not exists horario jsonb not null default '{}'::jsonb;"
   );
+}
+
+// "Rua, número - complemento - bairro, cidade - CEP", só com o que existe:
+// o admin pode publicar sem endereço completo.
+function montarEndereco(f) {
+  const tem = v => String(v || "").trim();
+  const rua = [f.address, f.numero].filter(tem).join(", ");
+  const partes = [[rua, f.complemento].filter(tem).join(" - "), [f.bairro, f.cidade].filter(tem).join(", "), f.cep].filter(tem);
+  return partes.length ? partes.join(" - ") : null;
 }
 
 async function doRegisterSubmit() {
@@ -7563,6 +7884,7 @@ async function doRegisterSubmit() {
       ? `${f.address}${f.numero ? ", " + f.numero : ""}${f.complemento ? " - " + f.complemento : ""} - ${f.bairro}, ${f.cidade}`
       : undefined;
     const payload = toRow({ ...f, pisos, cobertura });
+    if (isAdmin) payload.confirmada = !!f.confirmada;
     if (endereco) payload.endereco = endereco; else delete payload.endereco;
     const antes = [...state.allCourts, ...(state.pending || [])].find(c => c.id === f.__editingId) || {};
     const mudouEndereco = ["address", "numero", "bairro", "cidade"].some(k => (antes[k] || "") !== (f[k] || ""));
@@ -7580,6 +7902,7 @@ async function doRegisterSubmit() {
         delete semNovas.politica;
         delete semNovas.acesso;
         delete semNovas.horario;
+        delete semNovas.confirmada;
         ({ error } = await sb.from('academias').update(semNovas).eq('id', f.__editingId));
         if (!error) avisarSqlColunas();
       }
@@ -7597,13 +7920,18 @@ async function doRegisterSubmit() {
     return;
   }
 
+  // O admin publica com o que tiver e completa depois; só o nome é preciso,
+  // porque o banco não aceita academia sem nome. Quem pede cadastro pelo
+  // site continua mandando o essencial.
   const missing = [];
   if (!f.name.trim()) missing.push("nome");
-  if (!f.address.trim() || !f.numero.trim() || !f.bairro.trim() || !f.cidade.trim()) missing.push("endereço completo");
-  if (!f.phone.trim()) missing.push("WhatsApp");
-  if (!hasQuadra) missing.push("quantidade de quadras");
-  if (!f.modalidades.length) missing.push("modalidade");
-  if (!f.consent) missing.push("aceite dos Termos de Uso e Política de Privacidade");
+  if (!isAdmin) {
+    if (!f.address.trim() || !f.numero.trim() || !f.bairro.trim() || !f.cidade.trim()) missing.push("endereço completo");
+    if (!f.phone.trim()) missing.push("WhatsApp");
+    if (!hasQuadra) missing.push("quantidade de quadras");
+    if (!f.modalidades.length) missing.push("modalidade");
+    if (!f.consent) missing.push("aceite dos Termos de Uso e Política de Privacidade");
+  }
 
   if (missing.length) {
     state.registerError = `Preencha: ${missing.join(", ")}.`;
@@ -7622,12 +7950,13 @@ async function doRegisterSubmit() {
       const achado = await geocodeFormAddress(f);
       if (!achado.grosso) geo = achado;
     } catch (e) { /* segue sem coordenada */ }
-    const endereco = `${f.address}, ${f.numero}${f.complemento ? " - " + f.complemento : ""} - ${f.bairro}, ${f.cidade}${f.cep ? " - " + f.cep : ""}`;
+    const endereco = montarEndereco(f);
     const visitor = loadVisitor() || {};
     const payload = {
       ...toRow({ ...f, pisos, cobertura }),
       endereco, lat: geo.lat, lng: geo.lng,
       source: 'custom', status: 'pending',
+      ...(isAdmin && f.confirmada ? { confirmada: true } : {}),
       nome_solicitante: isAdmin ? null : visitor.nome,
       contato_solicitante: isAdmin ? null : visitor.contato,
     };
@@ -7642,6 +7971,7 @@ async function doRegisterSubmit() {
       delete semNovas.politica;
       delete semNovas.acesso;
       delete semNovas.horario;
+      delete semNovas.confirmada;
       ({ data, error } = await enviar(semNovas));
       if (!error) avisarSqlColunas();
     }

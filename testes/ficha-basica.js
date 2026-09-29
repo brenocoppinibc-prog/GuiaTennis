@@ -51,13 +51,23 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(up.confirmada === true, 'marcar "confirmadas pela academia" grava confirmada — ' + up.confirmada);
   await browser.close();
 
-  // Admin: lista do mapa aberto no painel, sozinha, sem clube e sem o que já está no guia
+  // Admin: procura por região no mapa aberto, sem clube e sem o que já está no guia
   ({ browser, page } = await abrir({ admin: true, overpass: MAPA }));
-  await page.evaluate(() => { try { localStorage.clear(); } catch {} });
   await page.click('#fab-admin');
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(400);
   let nomes = await page.evaluate(() => [...document.querySelectorAll('.mapa-bloco .pending-name')].map(e => e.innerText.trim()));
-  ok(nomes.join() === 'Academia Nova de Tênis', 'lista do mapa mostra só a academia nova — ' + nomes.join(' | '));
+  ok(!nomes.length && await page.isVisible('#mapa-regiao'), 'painel abre sem consultar o mapa, com o campo da região');
+  await page.fill('#mapa-regiao', 'Pinheiros');
+  await page.click('#mapa-form button[type=submit]');
+  await page.waitForTimeout(1500);
+  nomes = await page.evaluate(() => [...document.querySelectorAll('.mapa-bloco .pending-name')].map(e => e.innerText.trim()));
+  ok(nomes.join() === 'Academia Nova de Tênis', 'região mostra só a academia nova — ' + nomes.join(' | '));
+  const acoes = await page.evaluate(() => {
+    const item = document.querySelector('.mapa-bloco .pending-item');
+    return { texto: item.innerText, wa: item.querySelector('a[href^="https://wa.me/"]')?.getAttribute('href') || '' };
+  });
+  ok(acoes.texto.includes('Rua Nova, 10 - Butantã - São Paulo') && acoes.texto.includes('km'), 'academia do mapa mostra endereço e distância — ' + acoes.texto.split('\n').slice(0, 3).join(' · '));
+  ok(acoes.wa.startsWith('https://wa.me/551133334444?text=') && decodeURIComponent(acoes.wa).includes('Quero colocar a Academia Nova de Tênis no guia'), 'botão de WhatsApp da academia com o convite pronto');
   const credito = await page.evaluate(() => document.querySelector('.mapa-bloco')?.innerText.includes('colaboradores do OpenStreetMap'));
   ok(credito, 'lista do mapa dá o crédito ao OpenStreetMap');
   await page.click('[data-mapa-add]');
@@ -75,9 +85,18 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
   ok(termos.includes('ficha básica') && termos.includes('OpenStreetMap') && termos.includes('É o responsável por esta academia?'), 'Termos explicam a ficha básica, o OpenStreetMap e o pedido de remoção');
   ok((termos.match(/Última atualização: 29 de setembro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
-  // WhatsApp do guia no menu, no rodapé e no bloco para academias
-  const wa = await page.evaluate(() => { state.showMenu = true; render(); return [...document.querySelectorAll('a[href^="https://wa.me/5511927456457"]')].map(a => a.innerText.trim()); });
-  ok(wa.some(t => t.includes('(11) 92745-6457')) && wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'WhatsApp do guia aparece no site — ' + wa.join(' | '));
+  // Contato do guia em botões com ícone, no menu, no rodapé e no bloco para academias
+  const contato = await page.evaluate(() => {
+    state.showMenu = true; render();
+    return {
+      wa: [...document.querySelectorAll('a[href^="https://wa.me/5511927456457"]')].map(a => a.innerText.trim()),
+      botoes: [...document.querySelectorAll('.contatos .contato-btn')].map(a => a.innerText.trim()),
+      texto: document.body.innerText,
+    };
+  });
+  ok(contato.botoes.join() === 'WhatsApp,Instagram,E-mail,WhatsApp,Instagram,E-mail', 'menu e rodapé têm os botões WhatsApp, Instagram e E-mail — ' + contato.botoes.join(' | '));
+  ok(contato.wa.some(t => t.includes('Chame no WhatsApp')), 'bloco para academias tem o botão do WhatsApp');
+  ok(!contato.texto.includes('92745-6457') && !contato.texto.includes('guiatennis1@gmail.com') && !contato.texto.includes('@guiatennis'), 'número, e-mail e @ não aparecem escritos na página');
   ok(termos.includes('(11) 92745-6457'), 'Termos e Privacidade têm o WhatsApp');
   await browser.close();
 })();

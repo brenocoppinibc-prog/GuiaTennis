@@ -369,11 +369,18 @@ a galinha" dos sites de dois lados — Yelp, TripAdvisor e Doctoralia
 listaram com dados públicos e depois convidaram o dono a assumir). Regra
 combinada: **nome, endereço, telefone comercial e horário, um por um, pode;
 copiar do Google em massa, fotos, avaliações, textos e logo, não.**
-- No painel do admin (botão da prancheta), no fim, a lista **"Academias no
-  mapa que ainda não estão no guia"** aparece sozinha, do OpenStreetMap
-  (licença ODbL: uso livre, até comercial, com crédito). Consulta a cidade
-  de São Paulo (`MAPA_AREA`) nos mesmos 3 servidores do "o que tem por
-  perto", uma vez por dia (guardada no navegador, `guiatennis_mapa_v1`).
+- No painel do admin (botão da prancheta), no fim, **"Academias no mapa
+  que ainda não estão no guia"**, do OpenStreetMap (licença ODbL: uso
+  livre, até comercial, com crédito). O admin digita uma região (bairro,
+  cidade ou CEP, pelo mesmo caminho da busca do site) e escolhe até 3, 5
+  ou 10 km; o mapa procura só em volta dela, nos mesmos 3 servidores do
+  "o que tem por perto". A primeira versão consultava a cidade inteira ao
+  abrir o painel e não voltava no celular do Breno.
+- Cada academia mostra nome, endereço, distância e o telefone do mapa.
+  Com telefone: botão "Chamar no WhatsApp" com o convite escrito
+  (`conviteAcademia`) — o Breno manda ele mesmo. Sem telefone: "Procurar o
+  telefone" abre a busca do Google com o nome e o bairro (consulta manual,
+  um por um).
 - Fica de fora o que não é academia pela regra do guia (`MAPA_FORA`:
   clube, country, condomínio, colégio, SESC, hotel…) e o que já está no
   guia (a menos de 200 m ou com o mesmo nome).
@@ -802,12 +809,18 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 12. WhatsApp Business do GuiaTennis (29/09/2026)
 
-Número (11) 92745-6457. No site: menu (Contato), rodapé, bloco "Por que
-estar no GuiaTennis" ("Prefere conversar? Chame o GuiaTennis no
-WhatsApp"), link "É o responsável por esta academia?" da ficha (conversa
-começada com o nome e o link da academia), dados para o Google
-(`telephone`) e Termos/Privacidade. Tudo sai de `WHATSAPP_GUIA` e
-`whatsappGuia(texto)`.
+Número (11) 92745-6457. No site, o contato do guia aparece como **botões
+com ícone, sem mostrar os dados** (`botoesContato`): WhatsApp, Instagram e
+E-mail no menu (Contato) e no rodapé — pedido do Breno. O número e o e-mail
+por escrito ficam só nos Termos e na Privacidade. O bloco "Por que estar no
+GuiaTennis" tem o botão "Chame no WhatsApp" (contorno claro sobre o verde;
+link azul padrão ali ficava ilegível). O link "É o responsável por esta
+academia?" abre o WhatsApp do guia com o nome e o link da academia. Tudo sai
+de `WHATSAPP_GUIA` e `whatsappGuia(texto)`. Os dados para o Google levam o
+`telephone`.
+
+**Sem mensagens automáticas** (saudação, ausência, respostas rápidas): o
+Breno não gosta, responde ele mesmo.
 
 Imagens em `divulgacao/` (fora do ar), geradas do `LOGO_SVG` por
 `divulgacao/gerar-imagens.js`: `whatsapp-perfil.png` (1080×1080, raquete
@@ -815,15 +828,16 @@ no meio para o corte redondo) e `whatsapp-capa.png` (1600×900; texto em
 cima e nas laterais, porque a foto redonda cobre o meio de baixo). O
 gerador busca a fonte do Google pelo `curl`, que passa pelo proxy daqui.
 
-Textos do perfil (combinados em 29/09/2026):
-- **Descrição:** "Guia de quadras e academias de tênis 🎾 / Para quem
-  joga: ache as academias mais perto, compare preço, estrutura e
-  avaliações e fale direto com elas — sem taxa e sem intermediário. /
-  Para academias: página grátis no guia, com QR code para a recepção e
-  relatório de quem viu e chamou vocês. Mande ACADEMIA para aparecer. /
-  guiatennis.com.br"
-- **Recado:** "Ache e compare quadras e academias de tênis perto de você
-  🎾 guiatennis.com.br"
+Textos do perfil (combinados em 29/09/2026 — para o público e para as
+academias, sem pedir palavra-chave):
+- **Descrição:** "🎾 GuiaTennis — o guia de quadras e academias de tênis. /
+  Vai jogar? Ache as academias mais perto, compare preço, estrutura e
+  avaliações e fale direto com elas. Sem taxa. / Tem academia? Apareça de
+  graça para quem procura aula ou quadra na sua região: o aluno chama
+  direto no seu WhatsApp, sem comissão. Página completa, QR code para a
+  recepção e relatório de quem viu vocês. / guiatennis.com.br"
+- **Recado:** "Quer jogar tênis? Compare academias perto de você. Tem
+  academia? Apareça grátis 🎾"
 - **Site no perfil:** `https://guiatennis.com.br/?utm_source=WhatsApp-perfil`.
 
 ## 13. Mensagem para as academias (WhatsApp)

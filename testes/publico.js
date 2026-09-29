@@ -102,6 +102,6 @@ const { abrir, ok } = require('./harness');
   // Política de Privacidade conta o que é guardado
   ({ browser, page } = await abrir());
   const pol = await page.evaluate(() => PRIVACY_HTML);
-  ok(pol.includes('arredondado para cerca de 100 metros') && pol.includes('28 de setembro de 2026'), 'Política de Privacidade atualizada');
+  ok(pol.includes('arredondado para cerca de 100 metros') && pol.includes('29 de setembro de 2026') && pol.includes('fontes públicas'), 'Política de Privacidade atualizada');
   await browser.close();
 })();

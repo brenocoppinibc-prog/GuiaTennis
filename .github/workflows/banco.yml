@@ -51,3 +51,14 @@ jobs:
           fi
           command -v psql >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client; }
           BANCO_URL="$BANCO_URL" bash supabase/aplicar.sh "$DESTINO"
+          echo "APLICADO=sim" >> "$GITHUB_ENV"
+
+      - name: Conferir o que o site lê do banco ${{ env.DESTINO }}
+        if: env.APLICADO == 'sim'
+        env:
+          # Endereços e chaves públicos — os mesmos do index.html.
+          API_TESTE: https://ohvbengbujdioxdtewsy.supabase.co
+          CHAVE_TESTE: sb_publishable_NEF5wHWslCi3Uu9GfbHruQ_Ut3r_BBT
+          API_REAL: https://eultezheqwmxyakvgyjy.supabase.co
+          CHAVE_REAL: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY
+        run: bash supabase/conferir.sh "$DESTINO"

@@ -173,7 +173,17 @@ lat, lng, phone, instagram, site, price_range, price_aula,
 price_locacao, amenities[], modalidades[], pisos[], cobertura[],
 quadras(jsonb), photos[], source, status ('published'|'pending'),
 pago, plano, politica(jsonb), acesso(jsonb), horario(jsonb),
-pausada, pausada_ate, nome_solicitante, contato_solicitante`
+pausada, pausada_ate, confirmada, nome_solicitante, contato_solicitante`
+
+**`confirmada`** (desde 29/09/2026): `false` = **ficha básica**, listada
+com dados públicos e ainda não confirmada pela academia. A ficha mostra
+"Ficha básica. Informações públicas, ainda não confirmadas pela academia —
+confirme horário e preço direto com ela." Toda ficha tem, no Contato, o
+link "É o responsável por esta academia? Atualize a ficha ou peça a
+remoção" (e-mail com assunto pronto, `linkResponsavel`). O admin marca
+"Informações confirmadas pela academia" no formulário. As academias que já
+estavam no guia viraram `true` na migração. Banco sem a coluna conta como
+confirmada (`row.confirmada !== false`).
 
 **`politica`** — a academia escolhe uma regra para tudo ou uma para cada
 modalidade:
@@ -353,6 +363,39 @@ em aba anônima inflava os números da home.
   abre com as três academias de exemplo), se o admin foi criado e se o
   cadastro de usuários está desligado lá.
 
+### Academias do mapa aberto (pedido do Breno em 29/09/2026)
+O guia tinha 8 academias e precisava de mais para atrair público (o "ovo e
+a galinha" dos sites de dois lados — Yelp, TripAdvisor e Doctoralia
+listaram com dados públicos e depois convidaram o dono a assumir). Regra
+combinada: **nome, endereço, telefone comercial e horário, um por um, pode;
+copiar do Google em massa, fotos, avaliações, textos e logo, não.**
+- No painel do admin (botão da prancheta), no fim, a lista **"Academias no
+  mapa que ainda não estão no guia"** aparece sozinha, do OpenStreetMap
+  (licença ODbL: uso livre, até comercial, com crédito). Consulta a cidade
+  de São Paulo (`MAPA_AREA`) nos mesmos 3 servidores do "o que tem por
+  perto", uma vez por dia (guardada no navegador, `guiatennis_mapa_v1`).
+- Fica de fora o que não é academia pela regra do guia (`MAPA_FORA`:
+  clube, country, condomínio, colégio, SESC, hotel…) e o que já está no
+  guia (a menos de 200 m ou com o mesmo nome).
+- "Adicionar como pendente" grava com `source = 'osm'`, `confirmada =
+  false`, endereço das etiquetas do mapa (ou do Nominatim, se faltar) e o
+  telefone só com dígitos. O admin confere, completa e aprova como sempre.
+- Ficha com `source = 'osm'` mostra "Nome e localização: © colaboradores
+  do OpenStreetMap". Termos (item 2 e 3) e Privacidade (item 1, 3 e 5)
+  explicam a ficha básica, as fontes públicas e o pedido de remoção.
+
+### Sitemap automático (29/09/2026)
+`/sitemap.xml` não é mais o arquivo do repositório: o `netlify.toml`
+repassa (proxy, `force = true`) para a função `sitemap()` do banco de
+verdade, com a chave pública no cabeçalho. Ela lista a home e a ficha de
+cada academia publicada e em exibição — academia nova entra sozinha, sem
+publicar o site. A função devolve o tipo `"*/*"` (domínio sobre `bytea`)
+e põe o `Content-Type: application/xml` ela mesma: com o tipo
+`"text/xml"`, o PostgREST só devolve XML puro quando o pedido diz
+`Accept: text/xml`, e o Google pede `text/html, …, */*` (viria JSON).
+Conferido num PostgREST 12.2.3 local. A prévia do Netlify também aponta
+para o banco de verdade, então o sitemap só funciona lá depois do merge.
+
 ### Automação do banco (pedido do Breno em 28/09/2026)
 Os sites grandes guardam o SQL junto com o código e deixam a esteira
 aplicar. Aqui:
@@ -385,6 +428,18 @@ aplicar. Aqui:
 - Testado num Postgres local: banco de teste como o Breno deixou, banco
   novo, banco igual ao de verdade (a estrutura inicial não roda lá) e SQL
   com erro (nada entra, saída com erro).
+- Antes de conectar, o script mostra usuário, servidor, porta e o tamanho
+  da senha, e avisa colchete, porta errada, endereço direto ou caractere
+  especial — sem mostrar a senha. Tira espaço e quebra de linha colados.
+  Na primeira vez, a senha recém-trocada no Supabase levou uns minutos
+  para valer no pooler ("password authentication failed").
+- Depois do SQL, `supabase/conferir.sh` testa pela API, com a chave
+  pública, o que o site lê: as academias com as colunas do `index.html` e
+  o sitemap sem pedir formato (tem de vir XML).
+- **Coluna nova que o visitante lê** entra também em
+  `COLUNAS_ACADEMIA_NOVAS`: na publicação, o site pode ir para o ar antes
+  do SQL; aí ele lê sem as colunas novas em vez de cair no `*`, que o
+  visitante não pode ler (o site ficaria vazio).
 
 - **Postgres na máquina:** `/usr/lib/postgresql/16/bin`, como usuário
   `postgres`, com os dados em `/var/lib/postgresql/…` (no scratchpad o
@@ -469,13 +524,19 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banc
   `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
   estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
+- `ficha-basica.js` — aviso da ficha básica e link do responsável,
+  banco sem a coluna nova, caixa do admin, lista do mapa aberto (sem
+  clube, sem o que já está no guia, adicionar como pendente) e textos
+  legais.
 - `banco-de-teste.js` — a prévia do Netlify e o site de teste abrem o
   banco de teste; o guiatennis.com.br, o endereço do Netlify do site de
   verdade, link com `?banco=` e endereço parecido, nunca.
 
 O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
 separada) e `a2` (só locação, regra única). Chaves: `__admin`,
-`__semDetalhe`, `__semCep`, `__colunasFechadas`, `__semPlano`. O que o site
+`__semDetalhe`, `__semCep`, `__colunasFechadas`, `__semPlano`,
+`__semConfirmada` (a `a2` é ficha básica). `abrir({ overpass })` responde o
+OpenStreetMap com um JSON fixo. O que o site
 grava fica em `window.__db` e `window.__cliques`; o último `update` em
 `window.__ultimoUpdate`.
 
@@ -631,6 +692,8 @@ script está no scratchpad (`gera-imagens.js`).
   anônima. Socorro: Netlify → Deploys → deploy anterior → "Publish
   deploy", e "Stop auto publishing" até a branch de produção estar certa. Desde
   28/09/2026 a branch de produção é a `main`.
+- **`pkill -f` com um texto que aparece no próprio comando mata o
+  terminal.** Para parar o PostgREST local: `kill $(pgrep -x postgrest)`.
 - **`create or replace view` só aceita colunas novas no fim.** Mudar
   nome, ordem ou tipo exige `drop` antes — o mesmo vale para
   `create or replace function` com outro `returns table`.
@@ -709,7 +772,14 @@ c9ade31 Configuração de publicação do Netlify
   28/09/2026. Falta a branch padrão do GitHub virar `main`, conferir a
   prévia do PR #2 (academias de exemplo e faixa amarela) e aprovar. O PR #1
   (`new-session` → `trivago`) ficou velho e pode ser fechado.
-- **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`.
+- **Google Search Console:** cadastrar o site e enviar o `sitemap.xml`
+  (depois do merge do PR #3, conferir que guiatennis.com.br/sitemap.xml
+  abre em XML com uma linha por academia).
+- **Crescer as academias** (plano de 29/09/2026): escolher uma região,
+  completar todas as academias dela com ficha básica (lista do mapa no
+  painel + busca manual, um por um), mandar a mensagem "sua academia já
+  está no GuiaTennis" e usar QR code, Collab no Instagram e o relatório do
+  mês para cada academia trazer os próprios alunos.
 - **Academias:** mandar a mensagem da seção 12 às que não preencheram
   horário, preço, cancelamento, como chegar e fotos.
 - **Marketing:** links com etiqueta (28/09/2026), que aparecem em "De

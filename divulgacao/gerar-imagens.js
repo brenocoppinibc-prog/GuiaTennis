@@ -70,7 +70,6 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
 <style>
   html,body{margin:0}
   body{width:1600px;height:900px;background:${FUNDO};position:relative;overflow:hidden;font-family:'Playfair Display',serif;color:#F7F4EC}
-  .bola{position:absolute;right:170px;top:150px;width:92px;height:92px;border-radius:50%;background:#B8933F;border:6px solid #F7F4EC;box-sizing:border-box;opacity:.9}
   .txt{position:absolute;left:0;right:0;top:165px;text-align:center}
   h1{margin:0;font-size:74px;line-height:1.1;font-weight:700;letter-spacing:-.5px}
   p{margin:26px 0 0;font-size:34px;font-weight:500;color:#D8B865}
@@ -78,7 +77,6 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
   .esq{left:80px}.dir{right:80px}
 </style></head><body>
   ${quadra}
-  <div class="bola"></div>
   <div class="txt">
     <h1>Quadras e academias de tênis<br>perto de você</h1>
     <p>Compare preço e estrutura · fale direto no WhatsApp</p>

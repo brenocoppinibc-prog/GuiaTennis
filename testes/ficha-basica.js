@@ -25,7 +25,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   let { browser, page } = await abrir();
   let f = await abrirFicha(page, 'a2');
   ok(f.basica.includes('Ficha básica') && f.basica.includes('não confirmadas pela academia'), 'ficha básica avisa que os dados não foram confirmados — ' + f.basica);
-  ok(f.dono.startsWith('mailto:guiatennis1@gmail.com?subject=') && decodeURIComponent(f.dono).includes('Ficha da Quadra Locação'), 'link do responsável abre o e-mail com o assunto — ' + decodeURIComponent(f.dono).slice(0, 70));
+  ok(f.dono.startsWith('https://wa.me/5511927456457?text=') && decodeURIComponent(f.dono).includes('responsável pela Quadra Locação') && decodeURIComponent(f.dono).includes('?court=a2'), 'link do responsável abre o WhatsApp do guia com a conversa começada — ' + decodeURIComponent(f.dono).slice(0, 90));
   f = await abrirFicha(page, 'a1');
   ok(!f.basica && f.dono, 'ficha confirmada não mostra o aviso, mas tem o link do responsável');
   await browser.close();
@@ -75,5 +75,9 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
   ok(termos.includes('ficha básica') && termos.includes('OpenStreetMap') && termos.includes('É o responsável por esta academia?'), 'Termos explicam a ficha básica, o OpenStreetMap e o pedido de remoção');
   ok((termos.match(/Última atualização: 29 de setembro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
+  // WhatsApp do guia no menu, no rodapé e no bloco para academias
+  const wa = await page.evaluate(() => { state.showMenu = true; render(); return [...document.querySelectorAll('a[href^="https://wa.me/5511927456457"]')].map(a => a.innerText.trim()); });
+  ok(wa.some(t => t.includes('(11) 92745-6457')) && wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'WhatsApp do guia aparece no site — ' + wa.join(' | '));
+  ok(termos.includes('(11) 92745-6457'), 'Termos e Privacidade têm o WhatsApp');
   await browser.close();
 })();

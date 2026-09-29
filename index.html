@@ -2455,7 +2455,8 @@ function dadosDoSite() {
       name: "GuiaTennis",
       url: "https://guiatennis.com.br",
       email: "guiatennis1@gmail.com",
-      sameAs: ["https://instagram.com/guiatennis"],
+      telephone: "+55 11 92745-6457",
+      sameAs: ["https://instagram.com/guiatennis", "https://wa.me/5511927456457"],
     },
   ];
   if (state.page === "home") {
@@ -3061,12 +3062,17 @@ function renderQrSheet() {
   `;
 }
 
-// O responsável pela academia pede correção ou remoção por e-mail, com o
-// assunto já preenchido — é o "sou o dono" do Google e do Yelp.
+// WhatsApp Business do próprio GuiaTennis (29/09/2026).
+const WHATSAPP_GUIA = "5511927456457";
+const WHATSAPP_GUIA_TEXTO = "(11) 92745-6457";
+function whatsappGuia(texto) {
+  return `https://wa.me/${WHATSAPP_GUIA}${texto ? "?text=" + encodeURIComponent(texto) : ""}`;
+}
+
+// O responsável pela academia pede correção ou remoção pelo WhatsApp do
+// guia, com a conversa começada — é o "sou o dono" do Google e do Yelp.
 function linkResponsavel(c) {
-  const assunto = `Ficha da ${c.name} no GuiaTennis`;
-  const corpo = `Sou responsável pela ${c.name} e quero atualizar a ficha / pedir a remoção:\n\n${linkDaFicha(c)}\n\n`;
-  return `mailto:guiatennis1@gmail.com?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  return whatsappGuia(`Olá! Sou responsável pela ${c.name} e quero atualizar a ficha no GuiaTennis (ou pedir a remoção): ${linkDaFicha(c)}`);
 }
 
 function linkDaFicha(c) {
@@ -3478,6 +3484,7 @@ function renderMenu() {
         ${item("cadastrar", "Cadastrar minha academia", "check")}
 
         <p class="menu-grupo">Contato</p>
+        <a class="menu-item" href="${whatsappGuia("Olá! Vim pelo site do GuiaTennis.")}" target="_blank" rel="noreferrer">${icon('phone', 17, 'var(--green)')}<span>WhatsApp ${WHATSAPP_GUIA_TEXTO}</span></a>
         <a class="menu-item" href="https://instagram.com/guiatennis" target="_blank" rel="noreferrer">${icon('instagram', 17, 'var(--green)')}<span>Instagram @guiatennis</span></a>
         <a class="menu-item" href="mailto:guiatennis1@gmail.com">${icon('bubble', 17, 'var(--green)')}<span>guiatennis1@gmail.com</span></a>
 
@@ -3593,6 +3600,7 @@ function blocoParaAcademias() {
       ${blocoMediasAcademias()}
       <button type="button" class="ba-btn" id="home-cadastrar">Cadastrar minha academia</button>
       <p class="ba-nota">Leva uns 3 minutos. Depois é só responder quem chamar.</p>
+      <p class="ba-nota">Prefere conversar? <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e quero aparecer no GuiaTennis.")}" target="_blank" rel="noreferrer">Chame o GuiaTennis no WhatsApp</a>.</p>
     </div>
   `;
 }
@@ -3724,6 +3732,7 @@ function renderSiteFooter() {
         <div class="sf-col">
           <h4>GuiaTennis</h4>
           <button type="button" id="footer-cadastrar">Cadastrar minha academia</button>
+          <a href="${whatsappGuia("Olá! Vim pelo site do GuiaTennis.")}" target="_blank" rel="noreferrer">WhatsApp ${WHATSAPP_GUIA_TEXTO}</a>
           <a href="https://instagram.com/guiatennis" target="_blank" rel="noreferrer">Instagram @guiatennis</a>
           <a href="mailto:guiatennis1@gmail.com">guiatennis1@gmail.com</a>
         </div>
@@ -5937,7 +5946,7 @@ function renderCourtPage(c) {
                   ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
                   <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
                 </div>
-                <p class="footnote ficha-dono">É o responsável por esta academia? <a href="${linkResponsavel(c)}">Atualize a ficha ou peça a remoção</a>.</p>
+                <p class="footnote ficha-dono">É o responsável por esta academia? <a href="${linkResponsavel(c)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a> para atualizar a ficha ou pedir a remoção.</p>
                 ${c.source === "osm" ? `<p class="footnote">Nome e localização: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>.</p>` : ""}
               </section>
             </div>
@@ -6446,7 +6455,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
 <p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
-<p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página ou pelo e-mail guiatennis1@gmail.com.</p>
+<p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. Identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Antes de enviar sua primeira avaliação ou solicitação de cadastro, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">5. Avaliações e comentários</p>
@@ -6462,7 +6471,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">10. Alterações e lei aplicável</p>
 <p style="font-size:14px">Estes termos podem ser atualizados a qualquer momento e são regidos pelas leis brasileiras.</p>
 <p class="field-label" style="margin-top:16px">11. Contato</p>
-<p style="font-size:14px">guiatennis1@gmail.com</p>
+<p style="font-size:14px">WhatsApp (11) 92745-6457 · guiatennis1@gmail.com</p>
 `;
 
 const PRIVACY_HTML = `
@@ -6477,13 +6486,13 @@ const PRIVACY_HTML = `
 <p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
 <p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o responsável autenticado pode aprovar, editar ou remover conteúdo. Favoritos continuam salvos localmente no seu navegador.</p>
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
-<p style="font-size:14px">Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos podem ser apagados limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo mesmo e-mail ou pelo link na própria página.</p>
+<p style="font-size:14px">Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos podem ser apagados limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página.</p>
 <p class="field-label" style="margin-top:16px">6. Cookies</p>
 <p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (favoritos, lista de comparação, sua identificação, formulários) é estritamente técnico.</p>
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
 <p style="font-size:14px">O GuiaTennis não é direcionado a menores de 18 anos e não coleta intencionalmente dados de crianças ou adolescentes.</p>
 <p class="field-label" style="margin-top:16px">8. Contato</p>
-<p style="font-size:14px">guiatennis1@gmail.com</p>
+<p style="font-size:14px">WhatsApp (11) 92745-6457 · guiatennis1@gmail.com</p>
 `;
 
 function renderLegalSheet(title, contentHtml, closeId) {

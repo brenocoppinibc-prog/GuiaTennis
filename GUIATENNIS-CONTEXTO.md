@@ -15,7 +15,7 @@ prévia de cada PR, `deploy-preview-N--….netlify.app` (seção 7). Cada um com
 o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
-**Instagram:** @guiatennis · **E-mail:** guiatennis1@gmail.com
+**Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 28/09/2026
 
 > **Estado:** site completo e no ar. O que ainda depende do Breno está na
@@ -562,8 +562,8 @@ consultas da seção 5.
 Console).
 
 O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
-`SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e as pastas `testes/` e
-`supabase/`
+`SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e as pastas `testes/`,
+`supabase/`, `divulgacao/` e `.github/`
 ficam no repositório mas fora do ar —
 `netlify.toml` devolve 404 para eles. Arquivo novo na raiz vai para o ar
 sozinho: se não for do site, ganha uma regra de 404 no `netlify.toml`.
@@ -780,7 +780,7 @@ c9ade31 Configuração de publicação do Netlify
   painel + busca manual, um por um), mandar a mensagem "sua academia já
   está no GuiaTennis" e usar QR code, Collab no Instagram e o relatório do
   mês para cada academia trazer os próprios alunos.
-- **Academias:** mandar a mensagem da seção 12 às que não preencheram
+- **Academias:** mandar a mensagem da seção 13 às que não preencheram
   horário, preço, cancelamento, como chegar e fotos.
 - **Marketing:** links com etiqueta (28/09/2026), que aparecem em "De
   onde vieram" no painel e no card de cada academia:
@@ -800,7 +800,33 @@ c9ade31 Configuração de publicação do Netlify
 - Ideias no ar: posição do bloco "Por que estar no GuiaTennis"; tirar o
   contador da comparação do botão do menu.
 
-## 12. Mensagem para as academias (WhatsApp)
+## 12. WhatsApp Business do GuiaTennis (29/09/2026)
+
+Número (11) 92745-6457. No site: menu (Contato), rodapé, bloco "Por que
+estar no GuiaTennis" ("Prefere conversar? Chame o GuiaTennis no
+WhatsApp"), link "É o responsável por esta academia?" da ficha (conversa
+começada com o nome e o link da academia), dados para o Google
+(`telephone`) e Termos/Privacidade. Tudo sai de `WHATSAPP_GUIA` e
+`whatsappGuia(texto)`.
+
+Imagens em `divulgacao/` (fora do ar), geradas do `LOGO_SVG` por
+`divulgacao/gerar-imagens.js`: `whatsapp-perfil.png` (1080×1080, raquete
+no meio para o corte redondo) e `whatsapp-capa.png` (1600×900; texto em
+cima e nas laterais, porque a foto redonda cobre o meio de baixo). O
+gerador busca a fonte do Google pelo `curl`, que passa pelo proxy daqui.
+
+Textos do perfil (combinados em 29/09/2026):
+- **Descrição:** "Guia de quadras e academias de tênis 🎾 / Para quem
+  joga: ache as academias mais perto, compare preço, estrutura e
+  avaliações e fale direto com elas — sem taxa e sem intermediário. /
+  Para academias: página grátis no guia, com QR code para a recepção e
+  relatório de quem viu e chamou vocês. Mande ACADEMIA para aparecer. /
+  guiatennis.com.br"
+- **Recado:** "Ache e compare quadras e academias de tênis perto de você
+  🎾 guiatennis.com.br"
+- **Site no perfil:** `https://guiatennis.com.br/?utm_source=WhatsApp-perfil`.
+
+## 13. Mensagem para as academias (WhatsApp)
 
 > Oi, tudo bem? Aqui é o Breno, do **GuiaTennis** (guiatennis.com.br), o
 > guia de quadras e academias de tênis onde a [NOME DA ACADEMIA] já

@@ -375,7 +375,12 @@ copiar do Google em massa, fotos, avaliações, textos e logo, não.**
   cidade ou CEP, pelo mesmo caminho da busca do site) e escolhe até 3, 5
   ou 10 km; o mapa procura só em volta dela, nos mesmos 3 servidores do
   "o que tem por perto". A primeira versão consultava a cidade inteira ao
-  abrir o painel e não voltava no celular do Breno.
+  abrir o painel e não voltava no celular do Breno; a segunda procurava
+  "tênis" no nome de tudo o que tinha `leisure` e também não voltava.
+  Hoje: etiqueta `sport~tennis` com nome, mais centros esportivos com
+  "tênis" no nome; se os servidores não responderem, tenta de novo
+  sozinho uma vez. Mensagens simples: "Não achei essa região…" ou "O mapa
+  está lento agora…". O motivo técnico vai só para o `?diagnostico`.
 - Cada academia mostra nome, endereço, distância e o telefone do mapa.
   Com telefone: botão "Chamar no WhatsApp" com o convite escrito
   (`conviteAcademia`) — o Breno manda ele mesmo. Sem telefone: "Procurar o
@@ -809,15 +814,17 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 12. WhatsApp Business do GuiaTennis (29/09/2026)
 
-Número (11) 92745-6457. No site, o contato do guia aparece como **botões
-com ícone, sem mostrar os dados** (`botoesContato`): WhatsApp, Instagram e
-E-mail no menu (Contato) e no rodapé — pedido do Breno. O número e o e-mail
-por escrito ficam só nos Termos e na Privacidade. O bloco "Por que estar no
-GuiaTennis" tem o botão "Chame no WhatsApp" (contorno claro sobre o verde;
-link azul padrão ali ficava ilegível). O link "É o responsável por esta
-academia?" abre o WhatsApp do guia com o nome e o link da academia. Tudo sai
-de `WHATSAPP_GUIA` e `whatsappGuia(texto)`. Os dados para o Google levam o
-`telephone`.
+Número (11) 92745-6457. No site, o contato do guia aparece **só com o nome
+e o logo pequeno, sem os dados** (`linksContato`): "WhatsApp", "Instagram"
+e "E-mail" no menu (Contato, no formato dos outros itens) e no rodapé (no
+formato dos outros links) — pedido do Breno, que não gostou dos botões em
+pílula. O número e o e-mail por escrito ficam só nos Termos e na
+Privacidade. O bloco "Por que estar no GuiaTennis" tem o link pequeno
+"Prefere conversar? Chame o GuiaTennis no WhatsApp", em dourado e
+sublinhado (o azul padrão ficava ilegível no verde). O link "É o
+responsável por esta academia?" abre o WhatsApp do guia com o nome e o
+link da academia. Tudo sai de `WHATSAPP_GUIA` e `whatsappGuia(texto)`.
+Os dados para o Google levam o `telephone`.
 
 **Sem mensagens automáticas** (saudação, ausência, respostas rápidas): o
 Breno não gosta, responde ele mesmo.

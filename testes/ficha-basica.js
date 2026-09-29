@@ -80,6 +80,22 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(!nomes.length && pendente, 'depois de adicionar, sai da lista do mapa e aparece nas pendentes');
   await browser.close();
 
+  // Mapa sem resposta e região que não existe: mensagem clara
+  ({ browser, page } = await abrir({ admin: true }));
+  await page.click('#fab-admin');
+  await page.fill('#mapa-regiao', 'Pinheiros');
+  await page.click('#mapa-form button[type=submit]');
+  await page.waitForTimeout(1500);
+  let aviso = await page.evaluate(() => document.querySelector('.mapa-bloco')?.innerText || '');
+  ok(aviso.includes('O mapa está lento agora') && !aviso.includes('Não deu certo'), 'mapa sem resposta: pede para tentar de novo em palavras simples');
+  await page.route('**/nominatim.openstreetmap.org/search**', r => r.fulfill({ contentType: 'application/json', body: '[]' }));
+  await page.fill('#mapa-regiao', 'Lugar Que Não Existe');
+  await page.click('#mapa-form button[type=submit]');
+  await page.waitForTimeout(1200);
+  aviso = await page.evaluate(() => document.querySelector('.mapa-bloco')?.innerText || '');
+  ok(aviso.includes('Não achei essa região') && aviso.includes('Moema, São Paulo'), 'região não encontrada: diz como escrever');
+  await browser.close();
+
   // Termos e Privacidade
   ({ browser, page } = await abrir());
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
@@ -90,12 +106,14 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     state.showMenu = true; render();
     return {
       wa: [...document.querySelectorAll('a[href^="https://wa.me/5511927456457"]')].map(a => a.innerText.trim()),
-      botoes: [...document.querySelectorAll('.contatos .contato-btn')].map(a => a.innerText.trim()),
+      menu: [...document.querySelectorAll('.menu-item')].map(a => a.innerText.trim()).filter(t => ['WhatsApp', 'Instagram', 'E-mail'].includes(t)),
+      rodape: [...document.querySelectorAll('.sf-col a.contato-link')].map(a => a.innerText.trim() + (a.querySelector('svg') ? '+logo' : '')),
       texto: document.body.innerText,
     };
   });
-  ok(contato.botoes.join() === 'WhatsApp,Instagram,E-mail,WhatsApp,Instagram,E-mail', 'menu e rodapé têm os botões WhatsApp, Instagram e E-mail — ' + contato.botoes.join(' | '));
-  ok(contato.wa.some(t => t.includes('Chame no WhatsApp')), 'bloco para academias tem o botão do WhatsApp');
+  ok(contato.menu.join() === 'WhatsApp,Instagram,E-mail', 'menu tem WhatsApp, Instagram e E-mail — ' + contato.menu.join(' | '));
+  ok(contato.rodape.join() === 'WhatsApp+logo,Instagram+logo,E-mail+logo', 'rodapé tem WhatsApp, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
+  ok(contato.wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'bloco para academias tem o link do WhatsApp');
   ok(!contato.texto.includes('92745-6457') && !contato.texto.includes('guiatennis1@gmail.com') && !contato.texto.includes('@guiatennis'), 'número, e-mail e @ não aparecem escritos na página');
   ok(termos.includes('(11) 92745-6457'), 'Termos e Privacidade têm o WhatsApp');
   await browser.close();

@@ -49,14 +49,10 @@
   .ficha-basica svg { flex-shrink: 0; margin-top: 2px; }
   .ficha-dono { margin-top: 14px; }
   .footnote a, .ficha-dono a { color: var(--green); font-weight: 700; }
-  .contatos { display: flex; flex-wrap: wrap; gap: 8px; }
-  .contatos .contato-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--green-line); background: var(--card); color: var(--green); font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; text-decoration: none; }
-  .contatos .contato-btn:hover { background: var(--green-soft); color: var(--green); }
-  .contatos-menu { padding: 2px 10px 10px; }
-  .contatos-rodape { margin-top: 10px; }
+  .sf-col a.contato-link { display: flex; align-items: center; gap: 7px; }
+  .ba-nota a { color: var(--gold-light); font-weight: 700; text-decoration: underline; }
   .mapa-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .mapa-acoes .cta-btn { flex: 1 1 auto; width: auto; margin: 0; padding: 10px 12px; font-size: 13px; }
-  .ba-btn.ba-btn-2 { display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; margin-top: 10px; background: transparent; color: #F7F4EC; border: 1px solid rgba(247,244,236,0.55); text-decoration: none; }
   .faixa-banco-teste { background: var(--gold-light); color: var(--text); font-size: 12px; font-weight: 700; text-align: center; padding: 6px 16px; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
@@ -3079,15 +3075,16 @@ function whatsappGuia(texto) {
   return `https://wa.me/${WHATSAPP_GUIA}${texto ? "?text=" + encodeURIComponent(texto) : ""}`;
 }
 
-// Contato do GuiaTennis em botões com ícone — sem mostrar o número, o @ nem
-// o e-mail. Os dados completos ficam nos Termos e na Privacidade.
-function botoesContato(classe) {
-  return `
-    <div class="contatos ${classe || ""}">
-      <a class="contato-btn" href="${whatsappGuia("Olá! Vim pelo site do GuiaTennis.")}" target="_blank" rel="noreferrer" aria-label="WhatsApp do GuiaTennis">${icon('whatsapp', 18, 'currentColor')}<span>WhatsApp</span></a>
-      <a class="contato-btn" href="https://instagram.com/guiatennis" target="_blank" rel="noreferrer" aria-label="Instagram do GuiaTennis">${icon('instagram', 18, 'currentColor')}<span>Instagram</span></a>
-      <a class="contato-btn" href="mailto:guiatennis1@gmail.com" aria-label="E-mail do GuiaTennis">${icon('mail', 18, 'currentColor')}<span>E-mail</span></a>
-    </div>`;
+// Contato do GuiaTennis: só "WhatsApp", "Instagram" e "E-mail", com o logo
+// pequeno na frente — sem mostrar o número, o @ nem o e-mail. Os dados
+// completos ficam nos Termos e na Privacidade.
+const CONTATOS_GUIA = [
+  { nome: "WhatsApp", icone: "whatsapp", link: () => whatsappGuia("Olá! Vim pelo site do GuiaTennis."), fora: true },
+  { nome: "Instagram", icone: "instagram", link: () => "https://instagram.com/guiatennis", fora: true },
+  { nome: "E-mail", icone: "mail", link: () => "mailto:guiatennis1@gmail.com", fora: false },
+];
+function linksContato(classe, tamanho, cor) {
+  return CONTATOS_GUIA.map(c => `<a class="${classe}" href="${c.link()}"${c.fora ? ' target="_blank" rel="noreferrer"' : ""}>${icon(c.icone, tamanho, cor)}<span>${c.nome}</span></a>`).join("");
 }
 
 // O responsável pela academia pede correção ou remoção pelo WhatsApp do
@@ -3505,7 +3502,7 @@ function renderMenu() {
         ${item("cadastrar", "Cadastrar minha academia", "check")}
 
         <p class="menu-grupo">Contato</p>
-        ${botoesContato("contatos-menu")}
+        ${linksContato("menu-item", 17, "var(--green)")}
 
         <p class="menu-grupo">Legal</p>
         ${item("termos", "Termos de Uso", "clipboard")}
@@ -3618,8 +3615,8 @@ function blocoParaAcademias() {
       </div>
       ${blocoMediasAcademias()}
       <button type="button" class="ba-btn" id="home-cadastrar">Cadastrar minha academia</button>
-      <a class="ba-btn ba-btn-2" href="${whatsappGuia("Olá! Tenho uma academia de tênis e quero aparecer no GuiaTennis.")}" target="_blank" rel="noreferrer">${icon('whatsapp', 18, 'currentColor')} Chame no WhatsApp</a>
-      <p class="ba-nota">Cadastro em uns 3 minutos, ou chame no WhatsApp que a gente coloca sua academia no guia.</p>
+      <p class="ba-nota">Leva uns 3 minutos. Depois é só responder quem chamar.</p>
+      <p class="ba-nota">Prefere conversar? <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e quero aparecer no GuiaTennis.")}" target="_blank" rel="noreferrer">Chame o GuiaTennis no WhatsApp</a>.</p>
     </div>
   `;
 }
@@ -3751,7 +3748,7 @@ function renderSiteFooter() {
         <div class="sf-col">
           <h4>GuiaTennis</h4>
           <button type="button" id="footer-cadastrar">Cadastrar minha academia</button>
-          ${botoesContato("contatos-rodape")}
+          ${linksContato("contato-link", 15, "currentColor")}
         </div>
         <div class="sf-col">
           <h4>Termos e políticas</h4>
@@ -4511,9 +4508,34 @@ const MAPA_FORA = /\b(clube|club|country|condom[ií]nio|residencial|edif[ií]cio
 
 // A cidade inteira de uma vez pesava demais e não voltava. Agora o admin
 // digita uma região e o mapa procura só em volta dela.
+// Consulta leve: procurar "tênis" no nome de tudo o que é esporte da região
+// pesava demais e os servidores gratuitos não respondiam. Agora o nome só é
+// olhado nos centros esportivos; o resto vem pela etiqueta de esporte.
 function consultaMapa(lat, lng, raioKm) {
   const perto = `around:${Math.round(raioKm * 1000)},${lat},${lng}`;
-  return `[out:json][timeout:20];(nwr["sport"~"tennis"]["name"](${perto});nwr["name"~"t[eê]nis",i]["leisure"](${perto}););out tags center 200;`;
+  return `[out:json][timeout:25];(nwr["sport"~"tennis"]["name"](${perto});nwr["leisure"="sports_centre"]["name"~"t[eê]nis",i](${perto}););out tags center 150;`;
+}
+
+async function pedirMapa(consulta) {
+  const motivos = [];
+  const cortes = [];
+  try {
+    return await Promise.any(POI_SERVIDORES.map((url, i) => {
+      const corte = new AbortController();
+      cortes.push(corte);
+      return pedirOverpass(url, consulta, i === 0 ? "POST" : "GET", corte, MAPA_ESPERA).catch(e => {
+        motivos.push(`${url.replace(/^https:\/\//, "").split("/")[0]}: ${e.message}`);
+        throw e;
+      });
+    }));
+  } catch {
+    diag(`mapa aberto sem resposta — ${motivos.join(" · ")}`);
+    const erro = new Error("mapa");
+    erro.mapa = true;
+    throw erro;
+  } finally {
+    cortes.forEach(c => { try { c.abort(); } catch { /* já terminou */ } });
+  }
 }
 
 function nomeComparavel(n) {
@@ -4577,22 +4599,26 @@ async function carregarMapaAberto() {
   if (!isAdmin || !regiao || m.status === "carregando") return;
   state.mapa = { ...m, status: "carregando", itens: [], erro: "" };
   render();
-  const cortes = [];
+  let ponto;
   try {
-    const ponto = await pontoDaRegiao(regiao);
-    const dados = await Promise.any(POI_SERVIDORES.map((url, i) => {
-      const corte = new AbortController();
-      cortes.push(corte);
-      return pedirOverpass(url, consultaMapa(ponto.lat, ponto.lng, raio), i === 0 ? "POST" : "GET", corte, MAPA_ESPERA);
-    }));
+    ponto = await pontoDaRegiao(regiao);
+  } catch {
+    state.mapa = { ...state.mapa, status: "erro", erro: "regiao" };
+    if (state.showAdminPanel) render();
+    return;
+  }
+  try {
+    // Servidor gratuito às vezes está ocupado: tenta de novo sozinho, uma vez.
+    let dados;
+    try { dados = await pedirMapa(consultaMapa(ponto.lat, ponto.lng, raio)); }
+    catch { dados = await pedirMapa(consultaMapa(ponto.lat, ponto.lng, raio)); }
     const itens = candidatosDoMapa(dados.elements)
       .map(it => ({ ...it, km: haversineKm(ponto.lat, ponto.lng, it.lat, it.lng) }))
       .sort((a, b) => a.km - b.km);
     state.mapa = { ...state.mapa, status: "ok", itens };
-  } catch (e) {
-    state.mapa = { ...state.mapa, status: "erro", erro: e && e.errors ? "o mapa não respondeu" : (e.message || "não achei essa região") };
+  } catch {
+    state.mapa = { ...state.mapa, status: "erro", erro: "mapa" };
   }
-  cortes.forEach(c => { try { c.abort(); } catch { /* já terminou */ } });
   if (state.showAdminPanel) render();
 }
 
@@ -4663,7 +4689,9 @@ function blocoMapaAberto() {
         </div>
         <button type="submit" class="cta-btn cta-primary" style="margin-top:10px" ${m.status === "carregando" ? "disabled" : ""}>${m.status === "carregando" ? bolaGirando(16) + " Procurando no mapa..." : "Procurar academias"}</button>
       </form>
-      ${m.status === "erro" ? `<p class="pending-detail" style="margin-top:12px">Não deu certo (${esc(m.erro || "")}). Confira a região e tente de novo.</p>` : ""}
+      ${m.status === "erro" ? `<p class="pending-detail" style="margin-top:12px">${m.erro === "regiao"
+        ? "Não achei essa região. Escreva o bairro e a cidade, por exemplo: Moema, São Paulo."
+        : "O mapa está lento agora. Espere um pouco e toque em Procurar academias de novo."}</p>` : ""}
       ${m.status === "ok" ? `<p class="pending-detail" style="margin-top:12px">${itens.length ? `${itens.length} ${plural(itens.length, "academia", "academias")} até ${raio} km de ${esc(m.regiao)}, da mais perto para a mais longe.` : `Nenhuma academia de tênis nova no mapa até ${raio} km de ${esc(m.regiao)}. Tente um raio maior ou outra região.`}</p>` : ""}
       ${itens.slice(0, 40).map(i => {
         const wa = whatsappDe(i.phone);

@@ -20,6 +20,7 @@ async function abrir(opts = {}) {
     if (o.academia) window.__academia = o.academia;
     if (o.acessoNovo) window.__acessoNovo = true;
     if (o.semAcesso) window.__semAcesso = true;
+    if (o.plano) window.__plano = o.plano;
     if (o.avaliacoes) window.__avaliacoesIniciais = o.avaliacoes;
     if (o.respostas) window.__respostasIniciais = o.respostas;
   }, opts);

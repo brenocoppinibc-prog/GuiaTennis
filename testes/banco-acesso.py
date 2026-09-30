@@ -226,6 +226,68 @@ s, r = entrar(email, "senhanova123")
 ok(s == 200, "a senha nova entra")
 refresh = r.get("refresh_token", refresh)
 
+# ---- números da academia (GuiaTennis Parceiros) ----
+# Cliques de exemplo: hoje, 10, 40 e 200 dias atrás, e outros da outra academia.
+sql(f"delete from public.cliques where academia_id in ('{ACADEMIA}', '{OUTRA}')")
+sql(f"""insert into public.cliques (academia_id, tipo, origem, dispositivo, detalhe, created_at)
+  select '{ACADEMIA}'::uuid, 'visualizacao', 'Instagram'::text, 'Celular'::text, 'Pinheiros, São Paulo'::text, now() from generate_series(1, 5)
+  union all select '{ACADEMIA}'::uuid, 'whatsapp', null, 'Celular', null, now() from generate_series(1, 2)
+  union all select '{ACADEMIA}'::uuid, 'compartilhar', null, 'Celular', null, now()
+  union all select '{ACADEMIA}'::uuid, 'instagram', null, 'Computador', null, now() - interval '10 days'
+  union all select '{ACADEMIA}'::uuid, 'visualizacao', 'Google', 'Computador', 'Moema, São Paulo', now() - interval '40 days' from generate_series(1, 3)
+  union all select '{ACADEMIA}'::uuid, 'visualizacao', null::text, null::text, null::text, now() - interval '200 days'
+  union all select '{OUTRA}'::uuid, 'visualizacao', 'Direto', 'Celular', null, now() from generate_series(1, 4)""")
+
+
+def numeros(args, token=None, papel="authenticated"):
+    bom, s = ultimo(f"select public.numeros_da_academia({args})", papel, token)
+    try:
+        return bom, json.loads(s)
+    except ValueError:
+        return bom, s
+
+
+bom, s = sql("select public.numeros_da_academia(30)", "anon")
+ok(not bom and "permission denied" in s, "visitante não lê os números de academia nenhuma")
+bom, s = sql("select public.numeros_da_academia(30)", "authenticated", admin)
+ok(not bom and "Sem acesso" in s, "login sem academia não tem números para ver")
+
+sql(f"update public.academias set plano = 'basico' where id = '{ACADEMIA}'")
+_, d = numeros("90", academia)
+ok(isinstance(d, dict) and sorted(d) == ["contatos", "dias", "plano", "visitas"] and d["dias"] == 30,
+   f"Básico: só visitas e contatos, e pedir 90 dias devolve 30 ({d})")
+ok(d.get("visitas") == 5 and d.get("contatos") == 3, "Básico: conta visitas e contatos dos últimos 30 dias (compartilhar não é contato)")
+_, d2 = numeros(f"30, '{OUTRA}'", academia)
+ok(d2 == d, "academia que pede os números de outra recebe os dela")
+
+sql(f"update public.academias set plano = 'completo' where id = '{ACADEMIA}'")
+_, d = numeros("90", academia)
+ok(d.get("dias") == 90 and d.get("visitas") == 8 and len(d.get("por_dia", [])) == 90 and d["por_dia"][-1]["visitas"] == 5,
+   "Completo: 90 dias, dia a dia, com o dia de hoje por último")
+ok(d.get("canais") == {"whatsapp": 2, "instagram": 1, "site": 0, "compartilhar": 1} and "regioes" not in d and "media_cidade" not in d,
+   f"Completo: contatos por canal, sem bairros nem média da cidade ({d.get('canais')})")
+ok([o["nome"] for o in d.get("origens", [])] == ["Instagram", "Google"] and d["aparelhos"][0] == {"nome": "Celular", "n": 5},
+   f"Completo: de onde vieram e aparelho ({d.get('origens')})")
+_, d = numeros("30", academia)
+ok(d.get("anterior") == {"visitas": 3, "contatos": 0}, f"Completo: período anterior do mesmo tamanho ({d.get('anterior')})")
+_, d = numeros("0", academia)
+ok(d.get("dias") == 7, "Completo: \"desde o começo\" é do Premium, cai para 7 dias")
+_, d = numeros("365", academia)
+ok(d.get("dias") == 90, "Completo: no máximo 90 dias")
+
+sql(f"update public.academias set plano = 'premium' where id = '{ACADEMIA}'")
+_, d = numeros("0", academia)
+ok(d.get("dias") == 0 and d.get("visitas") == 9 and len(d.get("por_dia", [])) == 201 and d.get("anterior") is None,
+   f"Premium: desde o primeiro clique, dia a dia ({len(d.get('por_dia', []))} dias)")
+ok(d.get("regioes", [{}])[0] == {"nome": "Pinheiros, São Paulo", "n": 5}, f"Premium: bairros de quem procurou ({d.get('regioes')})")
+m = d.get("media_cidade") or {}
+ok(m.get("academias", 0) >= 2 and "visitas" in m and "contatos" in m, f"Premium: média das academias da cidade ({m})")
+
+_, d = numeros(f"30, '{OUTRA}'", admin)
+ok(d.get("visitas") == 4 and d.get("plano") == "basico", "admin abre os números de qualquer academia")
+sql(f"delete from public.cliques where academia_id in ('{ACADEMIA}', '{OUTRA}')")
+sql(f"update public.academias set plano = 'basico' where id = '{ACADEMIA}'")
+
 # ---- o admin ----
 bom, s = ultimo("select usuario || '|' || nome_responsavel || '|' || (ultimo_acesso is not null) from public.acessos_das_academias()", "authenticated", admin)
 ok(s == "exemplo.pinheiros|Maria Exemplo|true", f"admin vê o acesso com o responsável e o último acesso ({s})")

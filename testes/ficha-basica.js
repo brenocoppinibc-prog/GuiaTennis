@@ -25,7 +25,15 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   let { browser, page } = await abrir();
   let f = await abrirFicha(page, 'a2');
   ok(f.basica.includes('Ficha básica') && f.basica.includes('não confirmadas pela academia'), 'ficha básica avisa que os dados não foram confirmados — ' + f.basica);
-  ok(f.dono.startsWith('https://wa.me/5511927456457?text=') && decodeURIComponent(f.dono).includes('responsável pela Quadra Locação') && decodeURIComponent(f.dono).includes('guiatennis.com.br/academia/quadra-locacao-a2'), 'link do responsável abre o WhatsApp do guia com a conversa começada — ' + decodeURIComponent(f.dono).slice(0, 90));
+  ok(f.dono === '/parceiros/cadastro?academia=a2', 'link do responsável leva ao GuiaTennis Parceiros, já com a academia — ' + f.dono);
+  await page.click('.ficha-dono a');
+  await page.waitForTimeout(300);
+  const acessoPedido = await page.evaluate(() => ({
+    t: document.querySelector('.pc-reivindicar')?.innerText || '',
+    wa: document.querySelector('.pc-reivindicar a')?.getAttribute('href') || '',
+    link: location.pathname + location.search,
+  }));
+  ok(acessoPedido.t.includes('Pedir o acesso da Quadra Locação') && acessoPedido.wa.startsWith('https://wa.me/5511927456457?text=') && decodeURIComponent(acessoPedido.wa).includes('responsável pela Quadra Locação') && decodeURIComponent(acessoPedido.wa).includes('guiatennis.com.br/academia/quadra-locacao-a2') && acessoPedido.link === '/parceiros/cadastro?academia=a2', 'lá, o pedido de acesso abre o WhatsApp do guia com a conversa começada — ' + decodeURIComponent(acessoPedido.wa).slice(0, 90));
   f = await abrirFicha(page, 'a1');
   ok(!f.basica && f.dono, 'ficha confirmada não mostra o aviso, mas tem o link do responsável');
   await browser.close();

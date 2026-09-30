@@ -24,9 +24,10 @@ teste")
 **Atualizado em:** 30/09/2026
 
 > **Estado (30/09/2026):** a **área da academia** (seção 4, "Área da
-> academia") e os **links no padrão dos grandes** (seção 3, "Endereços")
-> estão no PR #5 para a `main`, com os SQL `20260930120000_acesso_academias`
-> e `20260930130000_links_amigaveis` aplicados sozinhos no banco de teste
+> academia"), o site das academias **GuiaTennis Parceiros** (`/parceiros`,
+> seção 3), os **links no padrão dos grandes** (seção 3, "Endereços") e o
+> visual mais limpo estão no PR #5 para a `main`, com os SQL
+> `20260930120000` a `20260930150000` aplicados sozinhos no banco de teste
 > pelo PR. Falta o Breno testar na prévia (seção 11, primeiro item) e dizer
 > "pode subir". Depois: criar o acesso de cada academia e mandar pelo
 > WhatsApp. Ainda em aberto de antes: conferir o site do PR #3 e o Google
@@ -154,6 +155,9 @@ cobra taxa e não fica no meio** da negociação.
     elas."; filtro "Empréstimo de raquete"; "consulte com a academia";
     "aula com professor da academia". Nunca "lista alfabética" nem "quem
     pagou mais".
+16. **Plano não compra posição.** Os planos do GuiaTennis Parceiros só
+    liberam números mais detalhados para a academia; a ordem da busca é a
+    mesma para todas (seção 3, "GuiaTennis Parceiros"). Está nos Termos.
 
 ## 3. Como é feito
 
@@ -205,49 +209,113 @@ recarregar não perde nada e o "voltar" do celular desfaz o último passo.
   para as regiões.
 - `slugTexto` (site) e `slug()` (banco) têm de dar o mesmo resultado —
   conferido com acento, ç, ñ, º, ª, símbolos e nome longo.
-- **Netlify:** `/academia/*`, `/quadras`, `/quadras/*`, `/busca` e
-  `/comparar` entregam o `index.html` (status 200, `netlify.toml`).
+- **Netlify:** `/academia/*`, `/quadras`, `/quadras/*`, `/busca`,
+  `/comparar`, `/parceiros` e `/parceiros/*` entregam o `index.html`
+  (status 200, `netlify.toml`).
 - Ainda não é igual aos grandes: a prévia do link no WhatsApp mostra a
   imagem e o texto gerais do site, não os da academia — isso exige montar a
   página no servidor (função do Netlify), que gasta crédito. Fica para
   depois, se valer a pena.
 
+### GuiaTennis Parceiros (pedido do Breno em 30/09/2026)
+"Igual trivago para hoteleiros, Uber, iFood… outro site para os
+responsáveis, com menu, ajuda, FAQ e benefícios — copie tudo dos grandes."
+Referências: trivago Business Studio, Booking para Parceiros (join.booking
+e o extranet), iFood Parceiros (portal do parceiro), Uber para motoristas e
+o Google Business Profile ("reivindicar o perfil" e "Desempenho"). O site
+das academias fica em **`/parceiros`**, no mesmo `index.html`, mas com
+cabeçalho, menu, rodapé e largura próprios (de ponta a ponta no
+computador) e, logado no celular, a barra de atalhos embaixo como nos apps
+de parceiro. Não existe mais botão solto de "cadastre sua academia": tudo
+o que é da academia leva para cá.
+
+| Página | Endereço | Google |
+|---|---|---|
+| Apresentação: benefícios, como funciona, números do site, planos, perguntas | `/parceiros` (logado vai para o painel) | indexa |
+| Planos (tabela do que cada plano libera) | `/parceiros/planos` | indexa |
+| Ajuda (10 perguntas + WhatsApp e e-mail) | `/parceiros/ajuda` | indexa |
+| Cadastro: 1) procura a academia no guia → "É a minha" → pedir o acesso pelo WhatsApp; 2) "Cadastrar academia nova" (formulário de sempre) | `/parceiros/cadastro` (`?academia=<id8>` já abre o pedido daquela) | indexa; com `?academia`, não |
+| Entrar (usuário e senha) | `/parceiros/entrar` | não |
+| Painel, Desempenho, Avaliações, Minha ficha, Plano, Conta | `/parceiros/painel` etc. — sem login, cai no Entrar e volta para a página pedida | não |
+
+**Planos** (`PC_PLANOS`, `PC_RECURSOS`): **Básico** grátis — ficha,
+WhatsApp direto sem comissão, responder avaliações, QR code, visitas e
+contatos dos últimos 30 dias. **Completo** — + dia a dia até 90 dias,
+comparação com o período anterior, contatos por canal, de onde vieram e o
+aparelho. **Premium** — + bairros de quem procurou, média das academias da
+cidade e o histórico desde o começo. Preço dos pagos: "Fale com a gente"
+(WhatsApp do guia) — **o Breno ainda não definiu valores**; não inventar
+preço. O admin muda o plano na ficha, como antes (`plano` da tabela). **A
+posição na busca é a mesma em todos os planos** (regra 16 e Termos, seção 4).
+
+**Desempenho:** vem de `numeros_da_academia(p_dias)` (SQL
+`20260930140000`): o banco devolve só os números da academia do login e
+corta pelo plano (pedir 90 dias no Básico devolve 30). Visitas na ficha,
+contatos (WhatsApp, Instagram e site; compartilhar não conta como
+contato), taxa de contato, variação contra o período anterior. Gráficos de
+**uma série cada** (visitas embaixo de contatos, nunca dois eixos),
+colunas finas com a leitura do dia ao tocar/passar o dedo, "Ver os números
+em tabela", soma por semana acima de 92 dias. O que o plano não libera
+aparece **trancado** com "Disponível no plano X · ver planos" — nunca com
+número inventado. Academia logada e admin não contam nas visitas.
+
+**Entradas a partir do site dos jogadores:** menu "Para academias" ›
+"GuiaTennis Parceiros" (logado: "Painel da minha academia"), rodapé,
+bloco da home ("Conhecer o GuiaTennis Parceiros"), o "+" da busca (vai ao
+Cadastro, que procura antes de cadastrar) e a ficha ("Gerencie a ficha no
+GuiaTennis Parceiros" → Cadastro já com a academia). No portal, "Ir para o
+GuiaTennis (jogadores)" volta.
+
+**Código:** `PC_*`, `perguntasParceiros`, `irParceiros(aba)` (a porta de
+entrada de tudo), `carregarNumeros`, `graficoColunas`, `listaBarras`,
+`blocoTrancado`, `pcTopo`/`pcRodape`/`pcBarraDeBaixo`, uma função por
+página (`pcInicio`, `pcPlanos`, `pcAjuda`, `pcCadastro`, `pcEntrar`,
+`pcPrimeiroAcesso`, `pcPainel`, `pcDesempenho`, `pcAvaliacoes`, `pcFicha`,
+`pcConta`) e `ligarEventosParceiros`. CSS em `.pc-*`. O `renderContaSheet`
+(folha por cima do site) saiu.
+
+**Cartão da busca (mesmo pedido):** a caixa de preço ficou só com os
+preços ("Aula / Locação", "a partir de, por hora") e o botão, como a caixa
+de oferta do trivago; as comodidades ("✓ Coberta", "✓ Estacionamento
+grátis") subiram para junto do endereço e das quadras (`.rcard-selos`).
+
 ### Mapa do `index.html` (linhas de 30/09/2026, aproximadas)
 
 | Linha | O quê |
 |---|---|
-| topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` (a área da academia logo no começo: `.conta-*`, `.dono-box`, `.rev-resp*`, `.acesso-*`) |
-| 1008 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
-| 1017 | `isAdmin`, `contaAcademia`, `EMAIL_ADMIN`, `DOMINIO_ACESSO`, `LINK_ENTRAR`, `emailDoLogin`, `naoConta` |
-| 1101 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`), `bolaGirando` |
-| 1132 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano, ordem, distância) |
-| 1196 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
-| 1210 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
-| 1403 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
-| 1512 | `politicaDe` — cancelamento, igual ou separado por modalidade |
-| 1612 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
-| 1711 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `lerContatosPrivados`, `lerRespostas`, `loadEverything` |
-| 1915 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
-| 2032 | `state` |
-| 2137 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
-| 2441 | `getResults`, `render()` (no fim, `sincronizarLink`); SEO: `urlCanonica`, `seoDaPagina`, `atualizarSeo` |
-| 3260 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel` |
-| 3283 | **endereços**: `SITE`, `slugTexto`, `idCurto`, `slugDaAcademia`, `caminhoDaFicha`, `caminhoDaRegiao`, `linkDaFicha` |
-| 3323 | **área da academia**: `carregarConta`, `carregarAcessos`, `senhaProvisoria`, `mensagemDoAcesso`, `faltasDaFicha`, `blocoResposta`, `cartaoAvaliacao`, `renderContaSheet`, `blocoDono`, `blocoAcessoAdmin`, `blocoAcessosPainel`, `salvarDadosConta`, `publicarResposta`, `criarAcesso`, `ligarEventosConta` |
-| ~4000 | página de busca, filtros, card da academia |
-| 4373 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias`, `renderSiteFooter` (cidades) |
-| 4762 | navegação: `PARAMETROS_DA_TELA`, `filtrosNoLink`/`filtrosDoLink`, `urlDoEstado`, `syncUrl`, `sincronizarLink`, `lerLink`, `academiaDoSlug`, `regiaoDoLink`, `aplicarLink`, `irParaSecao`, `goHome`/`goSearch`/`abrirRegiao`/`openCourt`, `popstate` |
-| 5472 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
-| 5632 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
-| 6614 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia`, `htCaminho` (links das regiões) |
-| 6983 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono) |
-| 7275 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
-| 7462 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
-| 7642 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
-| 7726 | `renderLoginSheet` (admin e academia), `renderAdminPanel` |
-| 7787 | `attachEvents()` (chama `ligarEventosConta` no fim do login) |
-| 8947 | `doSearch(opcoes)`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
-| 9158 | `init()` (o link manda na tela: `aplicarLink(lerLink())`) |
+| topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` (área da academia: `.conta-*`, `.dono-box`, `.rev-resp*`, `.acesso-*`; GuiaTennis Parceiros: `.pc-*`, perto da linha 1210; no fim, a camada "Acabamento limpo") |
+| 1384 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
+| 1394 | `isAdmin`, `contaAcademia`, `EMAIL_ADMIN`, `DOMINIO_ACESSO`, `LINK_ENTRAR`, `emailDoLogin`, `naoConta` |
+| 1477 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`, `barchart`), `bolaGirando` |
+| ~1510 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano, ordem, distância) |
+| 1572 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
+| 1586 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
+| 1779 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
+| 1888 | `politicaDe` — cancelamento, igual ou separado por modalidade |
+| 1988 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
+| 2087 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `lerContatosPrivados`, `lerRespostas`, `loadEverything` |
+| 2291 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
+| 2408 | `state` |
+| 2521 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
+| 2825 | `getResults`, `render()` (no fim, `sincronizarLink`; `#app` ganha `pc-cheio` no site dos parceiros); SEO: `urlCanonica`, `seoDaPagina`, `atualizarSeo` |
+| 3662 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel` |
+| 3698 | **endereços**: `SITE`, `slugTexto`, `idCurto`, `slugDaAcademia`, `caminhoDaFicha`, `caminhoDaRegiao`, `linkDaFicha` |
+| 3762 | **área da academia**: `carregarConta`, `carregarAcessos`, `senhaProvisoria`, `mensagemDoAcesso`, `faltasDaFicha`, `blocoResposta`, `cartaoAvaliacao`, `formDadosConta`, `formTrocarSenha`, `blocoDono`, `blocoAcessoAdmin`, `blocoAcessosPainel`, `abrirConta`, `salvarDadosConta`, `publicarResposta`, `criarAcesso`, `ligarEventosConta` |
+| 4709 | **GuiaTennis Parceiros**: `PC_*`, `irParceiros`, `carregarNumeros`, `graficoColunas`, `pcTopo`, `renderParceiros`, `pcInicio` … `pcConta`, `ligarEventosParceiros` |
+| 5528 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias`, `renderSiteFooter` (cidades) |
+| 5913 | navegação: `PARAMETROS_DA_TELA`, `filtrosNoLink`/`filtrosDoLink`, `urlDoEstado`, `syncUrl`, `sincronizarLink`, `lerLink` (inclui `/parceiros/<página>` e o antigo `?entrar`), `academiaDoSlug`, `regiaoDoLink`, `aplicarLink`, `irParaSecao`, `goHome`/`goSearch`/`abrirRegiao`/`openCourt`, `popstate` |
+| ~6500 | página de busca, filtros, card da academia (`.rcard-selos`, caixa de preço `.offer-precos`) |
+| 6625 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
+| 6785 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
+| 7767 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia`, `htCaminho` (links das regiões) |
+| 8136 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono) |
+| 8428 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
+| 8693 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
+| 8795 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
+| 8879 | `renderLoginSheet` (admin; a academia entra pelo `/parceiros/entrar`), `renderAdminPanel` |
+| 8940 | `attachEvents()` (login: academia vai para o GuiaTennis Parceiros; no fim, `ligarEventosConta` e `ligarEventosParceiros`) |
+| 10095 | `doSearch(opcoes)`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
+| 10306 | `init()` (o link manda na tela: `aplicarLink(lerLink())`; abrindo direto no painel/desempenho, busca os números) |
 
 ## 4. Banco (Supabase)
 
@@ -408,11 +476,14 @@ login" pedido por ele:
    senha só aparece nessa hora (não fica guardada em lugar nenhum legível);
    perdeu, "Gerar nova senha". Botões "Mandar pelo WhatsApp" (abre o
    WhatsApp da academia com a mensagem pronta: link da ficha, link
-   `?entrar`, usuário e senha — o Breno manda ele mesmo) e "Copiar
+   `/parceiros/entrar`, usuário e senha — o Breno manda ele mesmo) e "Copiar
    mensagem". "Remover acesso" apaga o login (a ficha fica).
-2. **A academia entra** pelo link `guiatennis.com.br/?entrar&utm_source=WhatsApp-academias`
-   (abre o login da academia), pelo menu ("Entrar na área da academia"),
-   pelo rodapé ou pela ficha ("Já tem acesso? Entre na área da academia").
+2. **A academia entra** pelo **GuiaTennis Parceiros** (seção 3, "GuiaTennis
+   Parceiros"): link `guiatennis.com.br/parceiros/entrar?utm_source=WhatsApp-academias`
+   (`LINK_ENTRAR`; o antigo `/?entrar` continua abrindo e vira esse), pelo
+   menu do site ("Para academias" › "GuiaTennis Parceiros"), pelo rodapé ou
+   pela ficha ("É o responsável por esta academia? Gerencie a ficha no
+   GuiaTennis Parceiros").
    Digita o **usuário** (sem @); o site monta o e-mail
    `<usuario>@acesso.guiatennis.com.br` (`emailDoLogin`) — ninguém recebe
    nada nele. Com @, é o login do admin.
@@ -422,14 +493,16 @@ login" pedido por ele:
    provisória deixa de valer), "quero receber o relatório do mês" (opcional,
    desmarcado — LGPD) e o aceite "Represento esta academia e aceito os
    Termos…". Nada disso aparece no site.
-4. **Painel da academia** (faixa verde no topo, "abrir"): situação da
-   ficha (no ar confirmada, ficha básica, pausada, em análise), "Ainda falta
-   na ficha" (endereço, WhatsApp, horário, preço, cancelamento, quadras,
-   comodidades, como chegar, fotos — o "complete seu perfil" do Google),
-   Editar a ficha, Ver a ficha, QR code da ficha para a recepção, as
-   avaliações com Responder / Editar / Apagar resposta e "Pedir análise ao
-   GuiaTennis" (WhatsApp do guia com a avaliação), dados do responsável,
-   trocar senha e sair.
+4. **Painel da academia**, no GuiaTennis Parceiros (`/parceiros/painel`;
+   no site dos jogadores, a faixa verde "abrir o painel" leva para lá):
+   situação da ficha (no ar confirmada, ficha básica, pausada, em análise),
+   os números do período, "Ficha 5 de 9 completa" (endereço, WhatsApp,
+   horário, preço, cancelamento, quadras, comodidades, como chegar, fotos —
+   o "complete seu perfil" do Google), Editar a ficha, Ver a ficha, QR code
+   para a recepção. Páginas próprias para **Desempenho**, **Avaliações**
+   (Responder / Editar / Apagar resposta e "Pedir análise ao GuiaTennis"),
+   **Minha ficha**, **Plano** e **Conta** (dados do responsável, trocar
+   senha, sair).
 5. **Na ficha dela**, a academia vê o bloco "Área da academia" com Editar e
    o painel, responde embaixo de cada avaliação, e no lugar de "Avalie"
    aparece "Vocês não podem avaliar a própria academia". O link "É o
@@ -475,11 +548,12 @@ senha".
 
 **Conferido aqui (30/09/2026):** Postgres 16 local com as migrações + o
 login de verdade do Supabase (`supabase/auth`, commit de 22/09/2026,
-compilado daqui): `testes/banco-acesso.py`, 61 conferências — a academia
+compilado daqui): `testes/banco-acesso.py`, 76 conferências — a academia
 entra com a senha provisória, troca a senha, edita só o que é dela, não
 apaga nem se avalia, responde só as avaliações dela, não lê contato nem
 cliques; nova senha derruba a sessão; remover acesso e excluir academia
-apagam o login. Também com a biblioteca do site (`@supabase/auth-js`
+apagam o login; `numeros_da_academia` corta o período e os detalhes pelo
+plano, devolve só os números da própria academia e o visitante não chama. Também com a biblioteca do site (`@supabase/auth-js`
 2.117): entrar com usuário, `same_password`, troca com a senha atual.
 
 ### GitHub ↔ Supabase
@@ -537,6 +611,13 @@ em aba anônima inflava os números da home.
     tabelas `academia_acessos` e `respostas`, regras, gatilhos, funções e
     as colunas de contato fechadas para quem está logado (seção 4, "Área da
     academia").
+  - `migrations/20260930140000_numeros_da_academia.sql` — função
+    `numeros_da_academia(p_dias, p_academia)`: os números da própria
+    academia para o Desempenho do GuiaTennis Parceiros, cortados pelo plano
+    (seção 3, "GuiaTennis Parceiros"). O admin pode passar `p_academia`.
+  - `migrations/20260930150000_parceiros_no_sitemap.sql` — o `sitemap()`
+    com `/parceiros`, `/parceiros/planos`, `/parceiros/ajuda` e
+    `/parceiros/cadastro`.
   - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
     não existem): aula e locação, só locação, só aula com horário por dia
     e prazo de 36h, uma pausada e uma pendente; mais avaliações e
@@ -617,7 +698,8 @@ copiar do Google em massa, fotos, avaliações, textos e logo, não.**
 ### Sitemap automático (29/09/2026)
 `/sitemap.xml` não é mais o arquivo do repositório: o `netlify.toml`
 repassa (proxy, `force = true`) para a função `sitemap()` do banco de
-verdade, com a chave pública no cabeçalho. Ela lista a home, as páginas de
+verdade, com a chave pública no cabeçalho. Ela lista a home, as páginas
+públicas do GuiaTennis Parceiros, as páginas de
 cada cidade e bairro com academia (`/quadras/…`, desde 30/09/2026) e a
 ficha de cada academia publicada e em exibição (`/academia/…`) — academia
 nova entra sozinha, sem publicar o site. A função roda com a permissão do
@@ -734,9 +816,11 @@ O histórico fica em `supabase_migrations.schema_migrations` nos dois
 bancos.
 
 **Esperando o merge (30/09/2026):** `20260930120000_acesso_academias`
-(área da academia) e `20260930130000_links_amigaveis` (sitemap com os
-endereços novos). Entra no banco de teste com o PR e no de verdade com o
-merge, sozinho. Pode rodar de novo sem estragar.
+(área da academia), `20260930130000_links_amigaveis` (sitemap com os
+endereços novos), `20260930140000_numeros_da_academia` (Desempenho do
+GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap`. Entra no
+banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
+de novo sem estragar.
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
 
@@ -769,11 +853,12 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
-Em 30/09/2026 (área da academia, links e visual limpo): **245 verificações, todas
-passando** (as 159 de antes, 52 da área da academia e 34 dos links), mais as 61 do
+Em 30/09/2026 (área da academia, links, visual limpo e GuiaTennis
+Parceiros): **319 verificações, todas passando** (160 de antes, 64 da área
+da academia, 34 dos links e 61 do GuiaTennis Parceiros), mais as 76 do
 `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -791,16 +876,17 @@ passando** (as 159 de antes, 52 da área da academia e 34 dos links), mais as 61
   `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
   estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
-- `ficha-basica.js` — aviso da ficha básica e link do responsável no
-  WhatsApp, banco sem a coluna nova, caixa do admin, busca do mapa aberto
+- `ficha-basica.js` — aviso da ficha básica e link do responsável (vai ao
+  Cadastro do GuiaTennis Parceiros, que pede o acesso no WhatsApp), banco sem a coluna nova, caixa do admin, busca do mapa aberto
   por região (sem clube, sem o que já está no guia, adicionar como
   pendente, mensagens de região não achada e de mapa lento), contatos em
   texto com logo e sem os dados, nada no lugar da foto, admin publica só
   com o nome (o visitante continua com os campos essenciais) e textos
   legais.
-- `acesso-academia.js` — link `?entrar`, login por usuário, senha errada,
-  primeiro acesso (validação, troca da senha provisória, aceite), painel
-  com o que falta, responder/apagar resposta, pedir análise, editar só a
+- `acesso-academia.js` — `/parceiros/entrar` (e o antigo `?entrar`), login
+  por usuário, senha errada, primeiro acesso no portal (validação, troca da
+  senha provisória, aceite), painel com os números e o que falta, Conta,
+  responder/apagar resposta, pedir análise, editar só a
   própria ficha sem mandar status/plano, ficha básica que vira confirmada,
   não avaliar a si mesma, nada de editar/responder em outra academia,
   academia logada não conta, trocar senha, login sem acesso, admin cria o
@@ -812,6 +898,15 @@ passando** (as 159 de antes, 52 da área da academia e 34 dos links), mais as 61
   listas, gaveta vira um passo, "voltar" desfaz e não conta busca de novo,
   `?busca=` antigo, comparação, cartões e QR com o endereço novo, `noindex`
   da busca e da comparação, dados do caminho para o Google.
+- `parceiros.js` — GuiaTennis Parceiros: apresentação, planos (o que cada
+  um libera), ajuda, cabeçalho de ponta a ponta, menu do celular com
+  âncoras, cadastro que procura a academia ("É a minha", "Não é essa",
+  academia nova), entradas pelo site dos jogadores, caixa de preço da busca
+  sem as comodidades, página privada sem login volta depois de entrar,
+  Desempenho no Básico/Completo/Premium (períodos trancados, gráficos de
+  uma série, leitura da coluna, 90 dias, desde o começo por semana,
+  bairros e média da cidade), menu e rodapé de quem está logado, `noindex`
+  e banco sem a função dos números.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
   banco de verdade (não no mock) tudo o que a academia pode e não pode.
@@ -824,7 +919,8 @@ separada) e `a2` (só locação, regra única). Chaves: `__admin` (sessão com
 o e-mail do admin), `__semDetalhe`, `__semCep`, `__colunasFechadas`,
 `__semPlano`, `__semConfirmada` (a `a2` é ficha básica), `__academia`
 (academia logada, com acesso completo; `__acessoNovo` = primeiro acesso) e
-`__semAcesso` (banco sem o SQL da área da academia). `abrir({ avaliacoes,
+`__semAcesso` (banco sem o SQL da área da academia); `abrir({ plano })`
+escolhe o plano que `numeros_da_academia` devolve. `abrir({ avaliacoes,
 respostas })` começa com avaliações e respostas. O mock finge o login
 (`signInWithPassword` com as senhas de `window.__senhas`, `updateUser` em
 `__senhaNova`), as funções do banco (`window.__rpcs`) e o gatilho que
@@ -943,6 +1039,13 @@ como modelo (seção 12).
   responsável + "sou representante autorizado"), Booking extranet (dados do
   responsável e CNPJ para cobrança futura) e o QR code de avaliação na
   recepção.
+- **GuiaTennis Parceiros:** trivago Business Studio (site separado para o
+  hoteleiro, números da página, planos que não mexem na posição), Booking
+  para Parceiros (apresentação com benefícios, "como funciona", perguntas
+  frequentes e cadastro), iFood Parceiros e Uber para motoristas (portal
+  com menu próprio e barra de atalhos no celular), Google Business Profile
+  (procurar a empresa antes de cadastrar e "reivindicar"; "Desempenho" com
+  visitas, contatos, período e comparação com o anterior).
 - **Publicação e teste:** o fluxo dos sites grandes — prévia por PR com
   banco de teste (staging), SQL guardado no repositório e aplicado pela
   esteira, merge publica.
@@ -1105,7 +1208,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) Visual limpo: Inter no texto, Playfair nos títulos e mais espaço   ← PR #5, 30/09
+(a seguir) GuiaTennis Parceiros: site das academias com painel, desempenho por plano, planos e ajuda   ← PR #5, 30/09
+2c6556c Visual limpo: Inter no texto, Playfair nos títulos e mais espaço   ← PR #5, 30/09
 082e6ad Links no padrão dos grandes: ficha, região, filtros, abas e comparação   ← PR #5, 30/09
 fbe7e89 Área da academia: login, primeiro acesso, edição da própria ficha e respostas   ← PR #5, 30/09
 2bfc6d0 Documento de contexto atualizado depois do PR #3 (#4)
@@ -1205,9 +1309,13 @@ c9ade31 Configuração de publicação do Netlify
   teste: (1) entrar como admin (usuário admin do projeto de teste), abrir a
   ficha "Quadra Exemplo Moema", bloco "Acesso da academia" → "Criar usuário
   e senha provisória" e "Copiar mensagem"; (2) numa aba anônima, abrir
-  `…/?entrar`, entrar com o usuário e a senha, completar o primeiro acesso,
-  editar a ficha e responder a avaliação da Carla; (3) conferir que a ficha
-  deixou de ser básica e que a resposta aparece para quem não está logado.
+  `…/parceiros/entrar`, entrar com o usuário e a senha, completar o primeiro
+  acesso, ver o painel e o Desempenho, editar a ficha e responder a
+  avaliação da Carla; (3) conferir que a ficha deixou de ser básica e que a
+  resposta aparece para quem não está logado. GuiaTennis Parceiros: abrir
+  `…/parceiros` no celular e no computador (apresentação, planos, ajuda,
+  cadastro procurando uma academia); como admin, mudar o plano da Quadra
+  Exemplo Moema para Completo e Premium e ver o Desempenho mudar.
   Links: abrir uma ficha e ver o endereço `/academia/…`; tocar em
   "Avaliações" (vira `#avaliacoes`); no caminho da ficha, tocar no bairro
   (`/quadras/sao-paulo/moema`); filtrar e ordenar e usar o "voltar" do
@@ -1222,11 +1330,15 @@ c9ade31 Configuração de publicação do Netlify
   provisória. Quem marcou "relatório do mês" aparece no bloco do acesso: o
   "Copiar resumo pra mandar" do painel continua sendo o relatório, mandado
   pelo Breno.
-- **Próximos passos possíveis da área da academia** (referência: Google
-  Business Profile e Yelp): números da própria ficha no painel da academia
-  (visitas, cliques no WhatsApp, de onde vieram — o relatório do mês
-  sozinho), aviso por e-mail de avaliação nova, e mais de um login por
-  academia (a tabela já aceita).
+- **Preço dos planos Completo e Premium:** o Breno define. Hoje o site diz
+  "Fale com a gente" e o botão abre o WhatsApp do guia; quando houver
+  valor, trocar em `PC_PLANOS` (e nos Termos, se mudar a regra).
+- **Próximos passos possíveis do GuiaTennis Parceiros** (referência: Google
+  Business Profile, trivago Business Studio e Yelp): relatório do mês
+  sozinho por e-mail (para quem marcou), aviso de avaliação nova, mais de um
+  login por academia (a tabela já aceita), pedido de acesso com
+  confirmação automática (hoje o Breno confere pelo WhatsApp) e a prévia do
+  link no WhatsApp com a foto da academia (seção 3, "Endereços").
 - **Conferir o site depois do merge do PR #3** (pedido ao Breno em
   29/09/2026, sem resposta ainda): em aba anônima, guiatennis.com.br com o
   WhatsApp e o logo pequeno no menu e no rodapé; uma ficha com "É o

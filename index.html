@@ -1091,8 +1091,15 @@
   .offer-um-val, .offer-price { font-weight: 700; }
   .offer-btn { font-weight: 600; border-radius: 10px; }
   .offer-contact { font-weight: 600; margin-top: 12px; }
-  /* no celular, as comodidades descem para a linha de baixo em vez de estourar */
-  @media (max-width: 560px) { .offer-perks { margin-left: 0; flex-basis: 100%; } }
+  /* comodidades do cartão, em verde, como o "✓ Wi-Fi grátis" do Trivago */
+  .rcard-selos { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 10px 0 0; font-size: 14px; font-weight: 500; color: var(--green); }
+  .rcard-selos span { display: inline-flex; align-items: center; gap: 5px; }
+  .offer-body { margin-top: 0; align-items: center; }
+  .offer-dois { gap: 24px; }
+  .offer-um-lbl { font-size: 13px; }
+  .offer-um-val { font-size: 22px; }
+  .offer-um-val.sem-valor { font-size: 16px; color: var(--muted); }
+  .offer-sub { font-size: 13px; margin-top: 2px; }
   .rail-btn { font-weight: 600; }
   .rcard-tag, .mini-badge, .card-badge { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; padding: 4px 9px; }
 
@@ -1200,6 +1207,166 @@
   .pending-name { font-weight: 600; }
   .admin-pago-box { font-size: 13px; padding: 12px 14px; border-radius: 12px; }
 
+  /* ================= GuiaTennis Parceiros (/parceiros) =================
+     O site da academia, no padrão do trivago Business Studio e do Booking
+     para Parceiros: cabeçalho próprio, página de apresentação, planos,
+     painel com os números e barra de atalhos embaixo no celular. */
+  .container.pc-cheio { max-width: none; }
+  .pc { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+  .pc-topo-in, .pc-main, .pc-rodape-in { width: 100%; max-width: 1180px; margin: 0 auto; box-sizing: border-box; }
+  .pc .cta-primary { color: #fff; }
+  .pc .cta-secondary { color: var(--text); }
+  .pc-topo { position: sticky; top: 0; z-index: 30; background: var(--card); box-shadow: 0 1px 0 var(--border); }
+  .pc-topo-in { display: flex; align-items: center; gap: 16px; padding: 12px 20px; }
+  .pc-marca { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--green) !important; flex-shrink: 0; }
+  .pc-marca .logo-mark { width: 34px; height: 34px; }
+  .pc-marca-t { font-size: 20px; font-weight: 700; }
+  .pc-selo { font-size: 12px; font-weight: 600; color: #fff; background: var(--green); border-radius: 999px; padding: 3px 9px; }
+  .pc-nav { display: none; gap: 4px; margin-left: 8px; }
+  .pc-nav-i { padding: 8px 12px; border-radius: 999px; color: var(--text) !important; text-decoration: none; font-size: 14px; font-weight: 500; white-space: nowrap; }
+  .pc-nav-i:hover { background: var(--bg-alt); }
+  .pc-nav-i.on { background: var(--green-soft); color: var(--green) !important; font-weight: 600; }
+  .pc-topo-acoes { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .pc-entrar { display: none; color: var(--green) !important; font-weight: 600; font-size: 14px; text-decoration: none; }
+  .pc-cta { display: none; background: var(--green); color: #fff !important; text-decoration: none; font-weight: 600; font-size: 14px; padding: 10px 16px; border-radius: 999px; white-space: nowrap; }
+  .pc-quem { display: none; font-size: 14px; font-weight: 600; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pc-menu-btn { width: 42px; height: 42px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  @media (min-width: 1000px) { .pc-nav { display: flex; } .pc-entrar, .pc-cta, .pc-quem { display: inline-block; } .pc-menu-btn { display: none; } }
+  .pc .menu-item { text-decoration: none; color: var(--text); }
+  .pc .menu-drawer .pc-marca-t { font-size: 18px; }
+  .pc-main { flex: 1; }
+  .pc-hero { padding: 44px 20px 36px; }
+  @media (min-width: 900px) { .pc-hero { padding: 80px 20px 64px; max-width: 800px; } }
+  .pc-eyebrow { font-size: 13px; font-weight: 600; color: #8E6D25; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+  .pc-hero h1 { font-size: 36px; line-height: 1.12; margin: 0; }
+  @media (min-width: 900px) { .pc-hero h1 { font-size: 56px; } }
+  .pc-hero-sub { font-size: 17px; line-height: 1.6; color: var(--muted); margin: 16px 0 0; max-width: 580px; }
+  .pc-hero-acoes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .pc-hero-acoes .cta-btn { flex: 1 1 200px; max-width: 280px; }
+  .pc-hero-nota { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); margin: 18px 0 0; }
+  .pc-faixa-num { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 16px; margin: 0 20px; padding: 24px 20px; background: var(--green); border-radius: 18px; color: #fff; text-align: center; }
+  .pc-faixa-num strong { display: block; font-size: 26px; font-weight: 700; color: var(--gold-light); }
+  .pc-faixa-num span { display: block; font-size: 13px; line-height: 1.4; color: rgba(255,255,255,0.82); margin-top: 4px; }
+  .pc-sec { padding: 52px 20px 8px; }
+  .pc-sec h2, .pc-pagina h1 { font-size: 28px; line-height: 1.2; margin: 0 0 12px; }
+  @media (min-width: 900px) { .pc-sec h2 { font-size: 36px; } .pc-pagina h1 { font-size: 38px; } }
+  .pc-sec-sub { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; max-width: 660px; }
+  .pc-sec-sub a, .pc-fim a, .pc .footnote a { color: var(--green); font-weight: 600; }
+  .pc-grade { display: grid; gap: 14px; }
+  @media (min-width: 640px) { .pc-grade { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1000px) { .pc-grade { grid-template-columns: repeat(3, 1fr); gap: 18px; } }
+  .pc-beneficio, .pc-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+  .pc-beneficio-ic { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 12px; background: var(--green-soft); margin-bottom: 14px; }
+  .pc-card-t { font-size: 16px; font-weight: 600; margin: 0; line-height: 1.35; }
+  .pc-card-s { font-size: 14px; line-height: 1.6; color: var(--muted); margin: 6px 0 0; }
+  .pc-card .cta-btn { margin-top: 16px; }
+  .pc-passos { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
+  @media (min-width: 900px) { .pc-passos { grid-template-columns: repeat(3, 1fr); gap: 28px; } }
+  .pc-passos li { display: flex; gap: 14px; align-items: flex-start; }
+  .pc-passo-n { display: inline-flex; flex-shrink: 0; width: 34px; height: 34px; border-radius: 999px; background: var(--green); color: #fff; font-weight: 700; align-items: center; justify-content: center; font-size: 15px; }
+  .pc-passo-n:empty { display: none; }
+  .pc-passo-t { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+  .pc-planos { display: grid; gap: 22px; }
+  @media (min-width: 900px) { .pc-planos { grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start; } }
+  .pc-plano { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 26px 20px 22px; }
+  .pc-plano.destaque { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+  .pc-plano.atual { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  .pc-plano-tag { position: absolute; top: -12px; left: 18px; background: var(--green); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+  .pc-plano.atual .pc-plano-tag { background: var(--gold); color: var(--green-dark); }
+  .pc-plano-n { font-size: 20px; font-weight: 700; margin: 0; }
+  .pc-plano-p { font-family: var(--fonte-titulo); font-size: 26px; font-weight: 700; color: var(--green); margin: 6px 0 0; }
+  .pc-plano-lista { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 10px; }
+  .pc-plano-lista li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; }
+  .pc-plano-lista li svg { margin-top: 2px; }
+  .pc-plano-lista li.nao { color: var(--muted-dark); }
+  .pc-traco { width: 15px; text-align: center; flex-shrink: 0; }
+  .pc-plano .cta-btn { margin-top: 20px; width: 100%; }
+  .pc-plano-ok { display: flex; align-items: center; gap: 6px; margin: 18px 0 0; font-weight: 600; color: var(--green); }
+  .pc-link-btn { display: inline-block; margin-top: 12px; background: none; border: none; padding: 0; color: var(--green) !important; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: none; font-family: inherit; text-align: left; }
+  .pc-fim { margin: 52px 20px 0; padding: 36px 22px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; text-align: center; }
+  .pc-fim h2 { font-size: 26px; margin: 0 0 18px; }
+  .pc-fim .cta-btn { display: inline-flex; min-width: 260px; }
+  .pc-fim p { font-size: 14px; color: var(--muted); margin: 16px 0 0; }
+  .pc-pagina { padding: 32px 20px 40px; }
+  @media (min-width: 900px) { .pc-pagina { padding: 48px 20px 56px; } }
+  .pc-estreita { max-width: 540px; }
+  .pc-pagina > .pc-card { margin-top: 16px; }
+  .pc-bloco { margin-top: 24px; }
+  .pc-bloco-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .pc-bloco-topo h2 { font-family: var(--fonte-texto); font-size: 17px; font-weight: 600; margin: 0 0 12px; }
+  .pc-bloco-topo .pc-link-btn { margin: 0; }
+  .pc-numeros { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .pc-num { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 12px; min-width: 0; }
+  .pc-num-l { display: block; font-size: 13px; color: var(--muted); }
+  .pc-num-v { display: block; font-size: 26px; font-weight: 700; line-height: 1.15; margin-top: 4px; }
+  @media (min-width: 900px) { .pc-num { padding: 18px 20px; } .pc-num-v { font-size: 32px; } }
+  .pc-var { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+  .pc-var.sobe { color: var(--green); }
+  .pc-var.desce { color: var(--red); }
+  .pc-duas { display: grid; gap: 14px; margin-top: 16px; }
+  @media (min-width: 900px) { .pc-duas { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } }
+  .pc-progresso { height: 8px; border-radius: 999px; background: var(--bg-alt); overflow: hidden; margin-top: 12px; }
+  .pc-progresso i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+  .pc-checklist { list-style: none; padding: 0; margin: 18px 0 14px; display: grid; gap: 12px; }
+  @media (min-width: 640px) { .pc-checklist { grid-template-columns: 1fr 1fr 1fr; } }
+  .pc-checklist li { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+  .pc-checklist li.falta { color: var(--muted); }
+  .pc-bolinha { width: 16px; height: 16px; border-radius: 999px; border: 2px solid var(--muted-dark); flex-shrink: 0; }
+  .pc-atalhos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  @media (min-width: 900px) { .pc-atalhos { grid-template-columns: repeat(4, 1fr); } }
+  .pc-atalho { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; text-align: left; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text) !important; text-decoration: none; cursor: pointer; line-height: 1.35; }
+  .pc-periodos { margin: 4px 0 6px; }
+  .pc-chip-trancado { color: var(--muted) !important; display: inline-flex; align-items: center; gap: 5px; }
+  .pc-vazio { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 14px; color: var(--muted); margin: 12px 0 0; }
+  .pc-trancado { display: flex; gap: 14px; align-items: flex-start; margin-top: 16px; border-style: dashed; }
+  .pc-trancado .pc-link-btn { margin-top: 10px; }
+  .pc-cadeado { display: inline-flex; width: 40px; height: 40px; border-radius: 12px; background: #FBF4E4; align-items: center; justify-content: center; flex-shrink: 0; }
+  /* gráfico de colunas: uma série por gráfico, eixo com três marcas */
+  .pc-graf { margin: 0 0 16px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 16px 12px; }
+  .pc-graf figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin-bottom: 14px; }
+  .pc-graf figcaption strong { font-size: 15px; font-weight: 600; }
+  .pc-graf-leitura { font-size: 13px; color: var(--muted); }
+  .pc-graf-area { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; height: 150px; }
+  .pc-graf-eixo { display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: var(--muted); text-align: right; line-height: 1; }
+  .pc-graf-barras { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); align-items: end; column-gap: 2px; height: 100%;
+    background: linear-gradient(var(--border), var(--border)) top / 100% 1px no-repeat, linear-gradient(var(--border), var(--border)) center / 100% 1px no-repeat, linear-gradient(var(--border), var(--border)) bottom / 100% 1px no-repeat; }
+  .pc-barra { height: 100%; display: flex; align-items: flex-end; justify-content: center; background: none; border: none; padding: 0; cursor: pointer; min-width: 0; }
+  .pc-barra i { display: block; width: 100%; max-width: 24px; border-radius: 4px 4px 0 0; }
+  .pc-barra.on i, .pc-barra:hover i { opacity: 0.72; }
+  .pc-graf-x { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 8px 0 0 36px; }
+  .pc-tabela { margin-top: 4px; font-size: 14px; }
+  .pc-tabela summary { cursor: pointer; color: var(--green); font-weight: 600; padding: 6px 0; }
+  .pc-tabela table { width: 100%; border-collapse: collapse; margin-top: 8px; background: var(--card); border-radius: 12px; }
+  .pc-tabela th, .pc-tabela td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .pc-tabela th:not(:first-child), .pc-tabela td:not(:first-child) { text-align: right; }
+  .pc-lista { display: grid; gap: 12px; margin-top: 14px; }
+  .pc-lista + .pc-lista { margin-top: 18px; }
+  .pc-lista-i { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 10px; font-size: 14px; }
+  .pc-lista-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pc-lista-bar { height: 8px; border-radius: 999px; background: var(--bg-alt); overflow: hidden; }
+  .pc-lista-bar i { display: block; height: 100%; border-radius: 999px; }
+  .pc-lista-i strong { font-weight: 600; min-width: 28px; text-align: right; }
+  .pc-achada { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-top: 1px solid var(--border); }
+  .pc-achada .cta-btn { flex-shrink: 0; margin: 0; min-height: 40px; padding: 8px 14px; font-size: 14px; }
+  #pc-resultados { margin-top: 12px; }
+  .pc-acoes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .pc-acoes .cta-btn { flex: 1 1 200px; margin: 0; }
+  .pc-reivindicar { border-color: var(--green-line); background: #F4F8F6; }
+  .pc-contato { margin-top: 24px; }
+  .pc-rodape { margin-top: 56px; background: var(--card); border-top: 1px solid var(--border); }
+  .pc-rodape-in { padding: 36px 20px 44px; display: grid; gap: 28px; }
+  @media (min-width: 900px) { .pc-rodape-in { grid-template-columns: 1fr 2fr; } }
+  .pc-rodape-t { font-size: 14px; color: var(--muted); margin: 10px 0 0; }
+  .pc-rodape-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px; }
+  .pc-rodape h4 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
+  .pc-rodape-cols a, .pc-rodape-cols button { display: block; background: none; border: none; padding: 6px 0; font-family: inherit; font-size: 14px; color: var(--muted) !important; text-decoration: none; cursor: pointer; text-align: left; }
+  .pc-barra-baixo { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--card); box-shadow: 0 -1px 0 var(--border), 0 -6px 20px rgba(33,31,26,0.06); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  .pc-barra-baixo a { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; font-size: 11px; font-weight: 500; color: var(--muted) !important; text-decoration: none; }
+  .pc-barra-baixo a.on { color: var(--green) !important; font-weight: 600; }
+  .pc-logado .pc-rodape { padding-bottom: 72px; }
+  @media (min-width: 1000px) { .pc-barra-baixo { display: none; } .pc-logado .pc-rodape { padding-bottom: 0; } }
+  .ba-btn { display: block; text-align: center; text-decoration: none; }
+
 </style>
 </head>
 <body>
@@ -1229,7 +1396,7 @@ const EMAIL_ADMIN = "guiatennis1@gmail.com";
 // O login de cada academia é um usuário, sem @. O Supabase precisa de um
 // e-mail: ele é montado aqui e não recebe nada.
 const DOMINIO_ACESSO = "acesso.guiatennis.com.br";
-const LINK_ENTRAR = "https://guiatennis.com.br/?entrar&utm_source=WhatsApp-academias";
+const LINK_ENTRAR = "https://guiatennis.com.br/parceiros/entrar?utm_source=WhatsApp-academias";
 
 function emailDoLogin(texto) {
   const t = (texto || "").trim().toLowerCase();
@@ -2291,7 +2458,15 @@ let state = {
   loginModo: "admin",
   // Área da academia: a ficha dela, o painel e o formulário do primeiro acesso.
   minhaAcademia: null,
-  showConta: false,
+  // GuiaTennis Parceiros: página, para onde voltar depois de entrar,
+  // números da academia, busca do cadastro e menu do celular.
+  parceirosAba: "inicio",
+  parceirosDepois: null,
+  numeros: null,
+  numerosDias: 30,
+  pcBusca: "",
+  pcReivindicar: null,
+  pcMenu: false,
   contaModo: "painel",
   contaErro: "",
   contaSalvando: false,
@@ -2697,7 +2872,7 @@ function render() {
 
   app.innerHTML = `
     ${isAdmin ? `<div class="admin-banner">Modo admin — só você vê isso <button id="logout-btn" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;margin-left:8px">sair</button></div>` : ""}
-    ${contaAcademia ? `<div class="conta-banner">${icon('key', 13, '#fff')}<span>Área da academia${minhaAcademia() ? " · " + esc(minhaAcademia().name) : ""}</span><button type="button" data-abrir-conta>${acessoCompleto() ? "abrir" : "completar o acesso"}</button><button type="button" data-sair-conta>sair</button></div>` : ""}
+    ${contaAcademia && state.page !== "parceiros" ? `<div class="conta-banner">${icon('key', 13, '#fff')}<span>Área da academia${minhaAcademia() ? " · " + esc(minhaAcademia().name) : ""}</span><button type="button" data-abrir-conta>${acessoCompleto() ? "abrir o painel" : "completar o acesso"}</button><button type="button" data-sair-conta>sair</button></div>` : ""}
     ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia do modo admin ou use uma aba anônima.</div>` : ""}
     ${isAdmin && state.localizando ? `<div class="admin-aviso">Colocando no mapa as academias sem coordenada: ${state.localizando.feito} de ${state.localizando.total}…</div>` : ""}
     ${isAdmin && !state.localizando && (state.naoLocalizadas || []).length ? `<div class="admin-aviso">Não achei no mapa: <strong>${esc(state.naoLocalizadas.join(", "))}</strong>. Confira a rua, o número, o bairro e a cidade em "Editar" e salve — o site tenta de novo.</div>` : ""}
@@ -2707,6 +2882,7 @@ function render() {
     ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}
     ${state.page === "comparar" ? renderComparePage() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) : ""}
+    ${state.page === "parceiros" ? renderParceiros() : ""}
 
     <div class="fab-col">
       ${isAdmin ? `
@@ -2725,7 +2901,6 @@ function render() {
     ${state.showRegister ? renderRegisterSheet() : ""}
     ${state.showAdminPanel ? renderAdminPanel(pending) : ""}
     ${state.showStatsPanel ? renderStatsPanel() : ""}
-    ${renderContaSheet()}
     ${state.showTerms ? renderLegalSheet("Termos de Uso", TERMS_HTML, "terms-close") : ""}
     ${state.showPrivacy ? renderLegalSheet("Política de Privacidade", PRIVACY_HTML, "privacy-close") : ""}
     ${state.showLogin ? renderLoginSheet() : ""}
@@ -2738,7 +2913,9 @@ function render() {
     ${renderLightbox()}
   `;
 
-  app.className = "container";
+  // O site dos parceiros ocupa a tela inteira, como o site de um parceiro
+  // grande: cabeçalho e rodapé de ponta a ponta, conteúdo no meio.
+  app.className = state.page === "parceiros" ? "container pc-cheio" : "container";
 
   attachEvents();
   if (state.lightbox) {
@@ -2845,6 +3022,10 @@ function urlCanonica(c) {
   if (state.page === "search" && state.regiaoLink) return location.origin + caminhoDaRegiao(state.regiaoLink);
   if (state.page === "search") return location.origin + "/busca";
   if (state.page === "comparar") return location.origin + "/comparar";
+  if (state.page === "parceiros") {
+    const aba = state.parceirosAba || "inicio";
+    return location.origin + "/parceiros" + (aba === "inicio" ? "" : "/" + aba);
+  }
   return location.origin + "/";
 }
 function atualizarCanonical(c) {
@@ -2861,6 +3042,18 @@ function definirMeta(nome, valor) {
 }
 // Título, descrição e indexação das telas que não são ficha.
 function seoDaPagina() {
+  if (state.page === "parceiros") {
+    const aba = state.parceirosAba || "inicio";
+    const titulos = { inicio: "GuiaTennis Parceiros — mais alunos para a sua academia de tênis", planos: "Planos · GuiaTennis Parceiros", ajuda: "Ajuda · GuiaTennis Parceiros", cadastro: "Cadastrar academia · GuiaTennis Parceiros" };
+    // Entram no Google só as páginas públicas; o pedido de uma academia
+    // (?academia=) e as páginas de quem está logado ficam de fora.
+    const noGoogle = titulos[aba] && !(aba === "cadastro" && state.pcReivindicar);
+    return {
+      titulo: titulos[aba] || `${(PC_MENU_LOGADO.find(i => i.aba === aba) || {}).t || "Entrar"} · GuiaTennis Parceiros`,
+      descricao: "Cadastre a sua academia de tênis no GuiaTennis: apareça para quem procura aula e quadra na região e receba contato direto no WhatsApp, sem comissão.",
+      robots: noGoogle ? "" : "noindex, follow",
+    };
+  }
   const r = state.page === "search" ? state.regiaoLink : null;
   if (r) {
     const lugar = termoDaRegiao(r);
@@ -3618,12 +3811,12 @@ function senhaProvisoria() {
 // O Breno manda ele mesmo, pelo WhatsApp dele — nada sai sozinho.
 function mensagemDoAcesso(c, usuario, senha, nova) {
   return (nova ? [
-    `Oi! Aqui é o Breno, do GuiaTennis. Criei uma senha provisória nova para a área da ${c.name}:`,
+    `Oi! Aqui é o Breno, do GuiaTennis. Criei uma senha provisória nova para a ${c.name} entrar no GuiaTennis Parceiros:`,
     "",
   ] : [
     `Oi, tudo bem? Aqui é o Breno, do GuiaTennis (guiatennis.com.br), o guia de quadras e academias de tênis onde a ${c.name} já aparece: ${linkDaFicha(c)}`,
     "",
-    "Criei um acesso para vocês mesmos atualizarem a ficha — horário, preços, fotos e como chegar — e responderem as avaliações dos jogadores. Não tem custo.",
+    "Criei um acesso no GuiaTennis Parceiros, o site das academias, para vocês mesmos atualizarem a ficha — horário, preços, fotos e como chegar —, responderem as avaliações dos jogadores e verem quantas pessoas abriram a ficha e chamaram vocês. No plano Básico, não tem custo.",
     "",
   ]).concat([
     `Entrar: ${LINK_ENTRAR}`,
@@ -3745,21 +3938,6 @@ function cartaoAvaliacao(r, c, onde) {
 
 // ---- folha da área da academia ----
 
-function renderContaSheet() {
-  if (!state.showConta || !contaAcademia) return "";
-  const c = minhaAcademia();
-  const modo = acessoCompleto() ? state.contaModo : "completar";
-  return `
-    <div class="overlay open" id="conta-overlay">
-      <div class="sheet" id="conta-sheet"><div class="sheet-content">
-        <button class="sheet-close" id="conta-close" aria-label="Fechar">✕</button>
-        <p class="conta-rotulo">Área da academia</p>
-        <p class="sheet-title display">${esc(c ? c.name : "Sua academia")}</p>
-        ${modo === "completar" || modo === "dados" ? formDadosConta(modo) : (modo === "senha" ? formTrocarSenha() : painelConta(c))}
-      </div></div>
-    </div>`;
-}
-
 function dadosContaForm() {
   if (!window.__conta || window.__conta.userId !== contaAcademia.userId) {
     const a = contaAcademia;
@@ -3830,54 +4008,6 @@ function formTrocarSenha() {
   `;
 }
 
-function painelConta(c) {
-  if (!c) return `<p class="subtitle" style="margin-top:8px">Não consegui abrir a ficha agora. Feche e abra de novo em instantes.</p>
-    <button type="button" class="conta-sair-link" id="conta-sair">Sair da área da academia</button>`;
-  const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
-  const noAr = c.status !== "pending" && !pausada;
-  const faltas = faltasDaFicha(c);
-  const avaliacoes = getReviews(c.id);
-  const semResposta = avaliacoes.filter(r => !r.resposta).length;
-  const situacao = c.status === "pending" ? "Em análise pelo GuiaTennis: ainda não aparece no site."
-    : pausada ? "Pausada pelo GuiaTennis: não aparece na busca agora."
-    : c.confirmada ? "No ar, com as informações confirmadas por vocês."
-    : "No ar como ficha básica. Revise e salve a ficha para confirmar as informações.";
-  return `
-    ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
-    <p class="conta-situacao ${noAr && c.confirmada ? "ok" : ""}">${icon(noAr && c.confirmada ? 'check' : 'info', 14, noAr && c.confirmada ? 'var(--green)' : 'var(--muted)')} <span>${situacao}</span></p>
-    ${faltas.length ? `
-      <div class="conta-faltas">
-        <p class="conta-faltas-t">Ainda falta na ficha</p>
-        <div class="chip-row">${faltas.map(x => `<span class="conta-falta">${esc(x)}</span>`).join("")}</div>
-        <p class="footnote" style="margin:8px 0 0">Quem procura academia compara horário, preço e fotos antes de chamar no WhatsApp.</p>
-      </div>` : `<p class="conta-situacao ok">${icon('check', 14, 'var(--green)')} <span>Ficha completa.</span></p>`}
-    <div class="cta-col" style="margin-top:14px">
-      <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>
-      <button type="button" class="cta-btn cta-secondary" id="conta-ver-ficha" data-court="${c.id}">${icon('eye', 15, 'var(--green)')} Ver a ficha no site</button>
-      <button type="button" class="cta-btn cta-secondary" id="conta-qr" data-court="${c.id}">${icon('clipboard', 15, 'var(--green)')} QR code da ficha para a recepção</button>
-    </div>
-
-    <p class="field-label" style="margin-top:22px">Avaliações dos jogadores</p>
-    ${avaliacoes.length ? `
-      <p class="footnote" style="margin:0 0 10px">${avaliacoes.length} ${plural(avaliacoes.length, "avaliação", "avaliações")}${semResposta ? ` · ${semResposta} sem resposta` : " · todas respondidas"}. A resposta aparece na ficha, embaixo da avaliação, como "Resposta da academia". A academia não apaga avaliação: se uma for falsa ou ofensiva, peça a análise do GuiaTennis.</p>
-      <div class="ht-revs conta-revs">${avaliacoes.map(r => cartaoAvaliacao(r, c, "painel")).join("")}</div>`
-      : `<p class="footnote" style="margin:0">Ainda sem avaliação. Peça aos alunos para avaliar pela ficha — o QR code na recepção leva direto para ela.</p>`}
-
-    <p class="field-label" style="margin-top:22px">Responsável</p>
-    <div class="conta-dados">
-      <p><strong>${esc(contaAcademia.nome)}</strong>${contaAcademia.cargo ? " · " + esc(contaAcademia.cargo) : ""}</p>
-      <p>${esc(contaAcademia.email)}${contaAcademia.whatsapp ? " · " + esc(telefoneBonito(contaAcademia.whatsapp)) : ""}</p>
-      <p>Usuário: ${esc(contaAcademia.usuario)}</p>
-    </div>
-    <div class="conta-acoes">
-      <button type="button" class="cta-btn cta-secondary" id="conta-editar-dados">Editar dados</button>
-      <button type="button" class="cta-btn cta-secondary" id="conta-trocar-senha">Trocar senha</button>
-    </div>
-    <p class="footnote" style="margin-top:16px">Para pausar a ficha, pedir a remoção ou tirar uma dúvida, <a href="${whatsappGuia(`Olá! Sou da ${c.name} e preciso de ajuda com a ficha no GuiaTennis.`)}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>
-    <button type="button" class="conta-sair-link" id="conta-sair">Sair da área da academia</button>
-  `;
-}
-
 // Na ficha da própria academia, o atalho para editar e para o painel.
 function blocoDono(c) {
   if (!ehMinha(c)) return "";
@@ -3889,7 +4019,7 @@ function blocoDono(c) {
         : "Esta é a ficha de vocês. Complete o primeiro acesso para editar e responder as avaliações."}</p>
       <div class="conta-acoes">
         ${acessoCompleto() ? `<button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>` : ""}
-        <button type="button" class="cta-btn cta-secondary" data-abrir-conta>${acessoCompleto() ? "Abrir o painel" : "Completar o acesso"}</button>
+        <button type="button" class="cta-btn cta-secondary" data-abrir-conta>${acessoCompleto() ? "Abrir o painel da academia" : "Completar o acesso"}</button>
       </div>
     </div>`;
 }
@@ -3953,20 +4083,16 @@ function blocoAcessosPainel() {
 // ---- ações ----
 
 function abrirLoginAcademia() {
-  state.showMenu = false;
   state.loginModo = "academia";
   state.loginError = "";
-  state.showLogin = true;
-  render();
+  irParceiros("entrar");
 }
 
 function abrirConta() {
-  state.showMenu = false;
   state.contaModo = "painel";
   state.contaErro = "";
   state.contaAviso = "";
-  state.showConta = true;
-  render();
+  irParceiros("painel");
 }
 
 async function recarregarTudo() {
@@ -4019,6 +4145,7 @@ async function salvarDadosConta() {
     window.__conta = null;
     state.contaModo = "painel";
     state.contaAviso = primeiraVez ? "Tudo certo! Agora é só manter a ficha em dia." : "Dados salvos.";
+    if (primeiraVez && state.page === "parceiros") { state.parceirosAba = "painel"; syncUrl(false); carregarNumeros(); }
   } catch (e) {
     state.contaErro = e.message || "Não consegui salvar agora. Tente de novo em instantes.";
   }
@@ -4137,7 +4264,7 @@ function copiarTexto(texto) {
 }
 
 function ligarEventosConta() {
-  const fechar = () => { state.showConta = false; state.contaErro = ""; state.contaAviso = ""; render(); };
+  const fechar = () => { state.contaErro = ""; state.contaAviso = ""; render(); };
   const contaClose = document.getElementById("conta-close");
   if (contaClose) contaClose.onclick = fechar;
   const contaOverlay = document.getElementById("conta-overlay");
@@ -4177,7 +4304,7 @@ function ligarEventosConta() {
   const voltar = document.getElementById("conta-voltar");
   if (voltar) voltar.onclick = () => { state.contaErro = ""; state.contaModo = "painel"; render(); };
   const verFicha = document.getElementById("conta-ver-ficha");
-  if (verFicha) verFicha.onclick = () => { state.showConta = false; openCourt(verFicha.dataset.court); };
+  if (verFicha) verFicha.onclick = () => openCourt(verFicha.dataset.court);
   const contaQr = document.getElementById("conta-qr");
   if (contaQr) contaQr.onclick = () => { state.qrCourt = contaQr.dataset.court; render(); };
 
@@ -4579,6 +4706,825 @@ function demoBusca() {
 // ---------- cabeçalho e menu ----------
 
 // Mesmo cabeçalho nas três abas: marca à esquerda, menu de três barras à direita.
+// ---------- GuiaTennis Parceiros (/parceiros) ----------
+// O site da academia, separado do site de quem joga — como o trivago
+// Business Studio, o Booking para Parceiros, o iFood Parceiros e o Uber
+// para motoristas. Tem cabeçalho, menu e rodapé próprios. Sem login:
+// benefícios, como funciona, planos, ajuda, cadastro (achar a academia ou
+// cadastrar uma nova) e entrar. Com login: painel, desempenho (os números
+// da academia, conforme o plano), avaliações, minha ficha, plano e conta.
+// A ordem da busca nunca depende do plano: plano só libera números.
+
+const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar"];
+const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "ficha", "plano", "conta"];
+const PC_MENU_PUBLICO = [
+  { aba: "inicio", t: "Início", ic: "home" },
+  { aba: "inicio", ancora: "pc-beneficios", t: "Benefícios", ic: "sparkle" },
+  { aba: "inicio", ancora: "pc-como", t: "Como funciona", ic: "play" },
+  { aba: "planos", t: "Planos", ic: "list" },
+  { aba: "ajuda", t: "Ajuda", ic: "bubble" },
+];
+const PC_MENU_LOGADO = [
+  { aba: "painel", t: "Painel", ic: "home" },
+  { aba: "desempenho", t: "Desempenho", ic: "barchart" },
+  { aba: "avaliacoes", t: "Avaliações", ic: "bubble" },
+  { aba: "ficha", t: "Minha ficha", ic: "edit" },
+  { aba: "plano", t: "Plano", ic: "sparkle" },
+  { aba: "conta", t: "Conta", ic: "key" },
+  { aba: "ajuda", t: "Ajuda", ic: "info" },
+];
+// Barra de baixo no celular, como os apps de parceiro (iFood, Uber).
+const PC_BARRA = ["painel", "desempenho", "avaliacoes", "ficha", "conta"];
+
+// O que cada plano libera. Tudo o que aparece na busca é igual para todos.
+const PC_RECURSOS = [
+  { t: "Ficha no guia: horário, preço, fotos, cancelamento e como chegar", p: ["basico", "completo", "premium"] },
+  { t: "O aluno chama direto no seu WhatsApp, sem comissão", p: ["basico", "completo", "premium"] },
+  { t: "Responder as avaliações", p: ["basico", "completo", "premium"] },
+  { t: "QR code da ficha para a recepção", p: ["basico", "completo", "premium"] },
+  { t: "Visitas e contatos dos últimos 30 dias", p: ["basico", "completo", "premium"] },
+  { t: "Dia a dia, até 90 dias, e comparação com o período anterior", p: ["completo", "premium"] },
+  { t: "Contatos por canal: WhatsApp, Instagram e site", p: ["completo", "premium"] },
+  { t: "De onde vieram (Instagram, Google…) e o aparelho", p: ["completo", "premium"] },
+  { t: "Bairros de quem procurou antes de abrir a ficha", p: ["premium"] },
+  { t: "Comparação com a média das academias da cidade", p: ["premium"] },
+  { t: "Histórico completo, desde o começo", p: ["premium"] },
+];
+const PC_PLANOS = [
+  { key: "basico", nome: "Básico", preco: "Grátis", resumo: "Para aparecer na busca e receber alunos." },
+  { key: "completo", nome: "Completo", preco: "Fale com a gente", resumo: "Para entender de onde vêm os alunos." },
+  { key: "premium", nome: "Premium", preco: "Fale com a gente", resumo: "Para comparar com a região e crescer." },
+];
+const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos"];
+
+function perguntasParceiros() {
+  return [
+    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde as avaliações. Os planos Completo e Premium só acrescentam números mais detalhados." },
+    { q: "Pagar um plano deixa a minha academia na frente?", a: "Não. A ordem da busca é a mesma em todos os planos: depende da distância, da nota, do preço e da estrutura. Nenhum plano compra posição." },
+    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, procure a academia e toque em \"É a minha\". O GuiaTennis confere com você pelo WhatsApp e manda o usuário e uma senha provisória. No primeiro acesso, você cria a sua senha." },
+    { q: "Como cadastro uma academia nova?", a: "Em Cadastrar, toque em \"Cadastrar academia nova\" e mande os dados. O GuiaTennis confere antes de publicar." },
+    { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O aluno fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
+    { q: "Posso apagar uma avaliação ruim?", a: "Não, como no Google e no TripAdvisor. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
+    { q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado." },
+    { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha nem na posição da busca." },
+    { q: "Esqueci a senha. E agora?", a: "Fale com o GuiaTennis no WhatsApp: a gente gera uma senha provisória nova, e você cria outra ao entrar." },
+    { q: "Posso pausar ou tirar a academia do guia?", a: "Pode. Peça pelo WhatsApp ou pelo e-mail do GuiaTennis." },
+  ];
+}
+
+function abaDoParceiro(aba) {
+  if (PC_PUBLICAS.includes(aba) || PC_PRIVADAS.includes(aba)) return aba;
+  return "inicio";
+}
+
+// Vai para uma página do GuiaTennis Parceiros. Página de quem está logado
+// sem login cai no "Entrar" e volta para ela depois.
+function irParceiros(aba, opcoes = {}) {
+  aba = abaDoParceiro(aba);
+  if (aba === "inicio" && contaAcademia && !opcoes.publico) aba = "painel";
+  if (PC_PRIVADAS.includes(aba) && !contaAcademia) {
+    state.parceirosDepois = aba;
+    aba = "entrar";
+  }
+  state.page = "parceiros";
+  state.parceirosAba = aba;
+  state.selected = null;
+  state.showMenu = false;
+  state.pcMenu = false;
+  state.showLogin = false;
+  state.avisoLink = "";
+  if (aba !== "conta") state.contaModo = "painel";
+  if ((aba === "painel" || aba === "desempenho") && contaAcademia && acessoCompleto()) carregarNumeros();
+  syncUrl(!opcoes.substituir);
+  render();
+  if (opcoes.ancora) {
+    const alvo = document.getElementById(opcoes.ancora);
+    if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    window.scrollTo(0, 0);
+  }
+}
+
+// Os números da academia, pela função do banco (supabase/migrations/
+// 20260930140000_numeros_da_academia.sql). O banco corta o período pelo
+// plano: pedir 90 dias no Básico devolve 30.
+async function carregarNumeros(dias) {
+  const pedido = dias === undefined ? (state.numerosDias ?? 30) : dias;
+  state.numeros = { ...(state.numeros || {}), carregando: true, erro: "" };
+  try {
+    const r = await sb.rpc('numeros_da_academia', { p_dias: pedido });
+    if (r.error || !r.data) throw r.error || new Error("sem dados");
+    state.numeros = { dados: r.data, carregando: false, erro: "" };
+    state.numerosDias = r.data.dias;
+  } catch (e) {
+    diag(`números da academia: ${e && e.message}`);
+    state.numeros = { dados: null, carregando: false, erro: "Não consegui carregar os números agora. Tente de novo em instantes." };
+  }
+  if (state.page === "parceiros") render();
+}
+
+function planoAtual() {
+  const d = state.numeros && state.numeros.dados;
+  return (d && d.plano) || (minhaAcademia() || {}).plano || "basico";
+}
+function nomeDoPlano(key) {
+  return (PC_PLANOS.find(p => p.key === key) || PC_PLANOS[0]).nome;
+}
+function linkPlano(key) {
+  const c = minhaAcademia();
+  return whatsappGuia(`Olá! Quero saber do plano ${nomeDoPlano(key)} do GuiaTennis Parceiros${c ? ` para a ${c.name}` : ""}.`);
+}
+
+function numeroBonito(n) {
+  return Number(n || 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+}
+function diaCurto(iso) {
+  const [a, m, d] = String(iso).slice(0, 10).split("-");
+  return `${d}/${m}`;
+}
+// Variação contra o período anterior, como "+20%" do Google Business.
+function variacao(agora, antes) {
+  if (antes === undefined || antes === null) return "";
+  if (!antes && !agora) return `<span class="pc-var">igual ao período anterior</span>`;
+  if (!antes) return `<span class="pc-var sobe">${icon('chevron', 12, 'var(--green)')} novo no período</span>`;
+  const pct = Math.round(((agora - antes) / antes) * 100);
+  if (pct === 0) return `<span class="pc-var">igual ao período anterior</span>`;
+  return `<span class="pc-var ${pct > 0 ? "sobe" : "desce"}">${pct > 0 ? "+" : ""}${pct}% contra o período anterior</span>`;
+}
+
+// Número "limpo" para o topo do eixo: 4, 5, 10, 20, 50…
+function topoDoEixo(max) {
+  if (max <= 4) return 4;
+  const p = Math.pow(10, Math.floor(Math.log10(max)));
+  for (const m of [1, 2, 5, 10]) if (m * p >= max) return m * p;
+  return 10 * p;
+}
+
+// Colunas de uma série só (visitas ou contatos), uma embaixo da outra — nunca
+// dois eixos no mesmo gráfico. Acima de 92 dias, soma por semana. Tocar ou
+// passar o dedo numa coluna mostra o dia e o valor na linha de cima.
+function graficoColunas(pontos, chave, cor, titulo, unidade) {
+  let barras = pontos.map(p => ({ rotulo: diaCurto(p.dia), valor: p[chave] || 0 }));
+  let porSemana = false;
+  if (barras.length > 92) {
+    porSemana = true;
+    const semanas = [];
+    pontos.forEach((p, i) => {
+      if (i % 7 === 0) semanas.push({ rotulo: `semana de ${diaCurto(p.dia)}`, valor: 0 });
+      semanas[semanas.length - 1].valor += p[chave] || 0;
+    });
+    barras = semanas;
+  }
+  const max = Math.max(0, ...barras.map(b => b.valor));
+  const topo = topoDoEixo(max);
+  const total = barras.reduce((s, b) => s + b.valor, 0);
+  return `
+    <figure class="pc-graf" data-graf>
+      <figcaption>
+        <strong>${esc(titulo)}${porSemana ? " por semana" : " por dia"}</strong>
+        <span class="pc-graf-leitura" aria-live="polite">Total ${numeroBonito(total)} · toque numa coluna</span>
+      </figcaption>
+      <div class="pc-graf-area">
+        <div class="pc-graf-eixo" aria-hidden="true"><span>${numeroBonito(topo)}</span><span>${numeroBonito(topo / 2)}</span><span>0</span></div>
+        <div class="pc-graf-barras" style="--n:${barras.length}">
+          ${barras.map(b => `<button type="button" class="pc-barra" data-tip="${esc(b.rotulo)}: ${numeroBonito(b.valor)} ${esc(unidade)}" aria-label="${esc(b.rotulo)}: ${numeroBonito(b.valor)} ${esc(unidade)}"><i style="height:${b.valor ? Math.max(2, (b.valor / topo) * 100) : 0}%;background:${cor}"></i></button>`).join("")}
+        </div>
+      </div>
+      <div class="pc-graf-x"><span>${esc(barras[0] ? barras[0].rotulo : "")}</span><span>${esc(barras.length ? barras[barras.length - 1].rotulo : "")}</span></div>
+    </figure>`;
+}
+
+// Barras deitadas com o nome e o número em texto (origem, aparelho, bairro).
+function listaBarras(itens, cor) {
+  if (!itens || !itens.length) return `<p class="pc-vazio">Ainda sem dados no período.</p>`;
+  const max = Math.max(1, ...itens.map(i => i.n));
+  return `
+    <div class="pc-lista">
+      ${itens.map(i => `
+        <div class="pc-lista-i">
+          <span class="pc-lista-n">${esc(i.nome)}</span>
+          <span class="pc-lista-bar"><i style="width:${Math.max(2, (i.n / max) * 100)}%;background:${cor || "var(--green)"}"></i></span>
+          <strong>${numeroBonito(i.n)}</strong>
+        </div>`).join("")}
+    </div>`;
+}
+
+// Bloco trancado: o que o plano de cima libera, sem número inventado.
+function blocoTrancado(plano, titulo, texto) {
+  return `
+    <div class="pc-card pc-trancado">
+      <span class="pc-cadeado">${icon('key', 18, 'var(--gold)')}</span>
+      <div>
+        <p class="pc-card-t">${esc(titulo)}</p>
+        <p class="pc-card-s">${esc(texto)}</p>
+        <button type="button" class="pc-link-btn" data-pc="plano">Disponível no plano ${esc(nomeDoPlano(plano))} · ver planos ›</button>
+      </div>
+    </div>`;
+}
+
+function blocosDeNumeros(d) {
+  const taxa = d.visitas ? Math.round((d.contatos / d.visitas) * 100) : null;
+  const ant = d.anterior || null;
+  return `
+    <div class="pc-numeros">
+      <div class="pc-num">
+        <span class="pc-num-l">Visitas na ficha</span>
+        <strong class="pc-num-v">${numeroBonito(d.visitas)}</strong>
+        ${ant ? variacao(d.visitas, ant.visitas) : ""}
+      </div>
+      <div class="pc-num">
+        <span class="pc-num-l">Contatos</span>
+        <strong class="pc-num-v">${numeroBonito(d.contatos)}</strong>
+        ${ant ? variacao(d.contatos, ant.contatos) : `<span class="pc-var">WhatsApp, Instagram e site</span>`}
+      </div>
+      <div class="pc-num">
+        <span class="pc-num-l">Taxa de contato</span>
+        <strong class="pc-num-v">${taxa === null ? "—" : taxa + "%"}</strong>
+        <span class="pc-var">de quem abriu a ficha chamou</span>
+      </div>
+    </div>`;
+}
+
+function textoDoPeriodo(dias) {
+  return dias === 0 ? "desde o começo" : `nos últimos ${dias} dias`;
+}
+
+// ---- cabeçalho, menu e rodapé do site dos parceiros ----
+
+function pcMarca() {
+  return `<a href="/parceiros" class="pc-marca" data-pc="inicio" aria-label="GuiaTennis Parceiros, início">${LOGO_SVG}<span class="pc-marca-t display">GuiaTennis</span><span class="pc-selo">Parceiros</span></a>`;
+}
+
+function pcTopo() {
+  const aba = state.parceirosAba;
+  const logado = !!contaAcademia;
+  const itens = logado ? PC_MENU_LOGADO : PC_MENU_PUBLICO.filter(i => i.ancora || i.aba !== "inicio");
+  const link = (i) => `<a href="/parceiros${i.aba === "inicio" ? "" : "/" + i.aba}${i.ancora ? "#" + i.ancora : ""}" class="pc-nav-i ${!i.ancora && aba === i.aba ? "on" : ""}" data-pc="${i.aba}" ${i.ancora ? `data-pc-ancora="${i.ancora}"` : ""}>${esc(i.t)}</a>`;
+  return `
+    <header class="pc-topo">
+      <div class="pc-topo-in">
+        ${pcMarca()}
+        <nav class="pc-nav" aria-label="GuiaTennis Parceiros">${itens.map(link).join("")}</nav>
+        <div class="pc-topo-acoes">
+          ${logado
+            ? `<span class="pc-quem">${esc((minhaAcademia() || {}).name || contaAcademia.usuario)}</span>`
+            : `<a href="/parceiros/entrar" class="pc-entrar" data-pc="entrar">Entrar</a>
+               <a href="/parceiros/cadastro" class="pc-cta" data-pc="cadastro">Cadastrar academia</a>`}
+          <button type="button" class="pc-menu-btn" id="pc-menu-btn" aria-label="Abrir o menu">${icon('list', 20, 'var(--green)')}</button>
+        </div>
+      </div>
+    </header>
+    ${state.pcMenu ? `
+      <div class="overlay open menu-overlay" id="pc-menu-overlay">
+        <aside class="menu-drawer" role="dialog" aria-label="Menu do GuiaTennis Parceiros">
+          <div class="menu-topo">${pcMarca()}<button type="button" class="menu-fechar" id="pc-menu-close" aria-label="Fechar menu">✕</button></div>
+          <p class="menu-grupo">${logado ? "Sua academia" : "GuiaTennis Parceiros"}</p>
+          ${(logado ? PC_MENU_LOGADO : PC_MENU_PUBLICO).map(i => `<a href="/parceiros${i.aba === "inicio" ? "" : "/" + i.aba}" class="menu-item" data-pc="${i.aba}" ${i.ancora ? `data-pc-ancora="${i.ancora}"` : ""}>${icon(i.ic, 17, 'var(--green)')}<span>${esc(i.t)}</span></a>`).join("")}
+          ${logado ? "" : `
+            <p class="menu-grupo">Acesso</p>
+            <a href="/parceiros/cadastro" class="menu-item" data-pc="cadastro">${icon('check', 17, 'var(--green)')}<span>Cadastrar academia</span></a>
+            <a href="/parceiros/entrar" class="menu-item" data-pc="entrar">${icon('key', 17, 'var(--green)')}<span>Entrar</span></a>`}
+          <div class="menu-rodape">
+            <a href="/" class="menu-item" data-pc-sair-do-portal>${icon('chevronLeft', 17, 'var(--muted)')}<span>Ir para o GuiaTennis (jogadores)</span></a>
+            ${logado ? `<button type="button" class="menu-item" data-sair-conta>${icon('key', 17, 'var(--muted)')}<span>Sair</span></button>` : ""}
+          </div>
+        </aside>
+      </div>` : ""}`;
+}
+
+function pcBarraDeBaixo() {
+  if (!contaAcademia || !acessoCompleto()) return "";
+  return `
+    <nav class="pc-barra-baixo" aria-label="Atalhos">
+      ${PC_BARRA.map(a => {
+        const i = PC_MENU_LOGADO.find(x => x.aba === a);
+        return `<a href="/parceiros/${a}" class="${state.parceirosAba === a ? "on" : ""}" data-pc="${a}">${icon(i.ic, 20, state.parceirosAba === a ? 'var(--green)' : 'var(--muted)')}<span>${esc(i.t === "Minha ficha" ? "Ficha" : i.t)}</span></a>`;
+      }).join("")}
+    </nav>`;
+}
+
+function pcRodape() {
+  return `
+    <footer class="pc-rodape">
+      <div class="pc-rodape-in">
+        <div>
+          ${pcMarca()}
+          <p class="pc-rodape-t">O GuiaTennis para academias e quadras de tênis.</p>
+        </div>
+        <div class="pc-rodape-cols">
+          <div>
+            <h4>${contaAcademia ? "Sua academia" : "Parceiros"}</h4>
+            ${contaAcademia
+              ? PC_MENU_LOGADO.filter(i => i.aba !== "ajuda").map(i => `<a href="/parceiros/${i.aba}" data-pc="${i.aba}">${esc(i.t)}</a>`).join("")
+              : `<a href="/parceiros#pc-beneficios" data-pc="inicio" data-pc-ancora="pc-beneficios">Benefícios</a>
+                 <a href="/parceiros/planos" data-pc="planos">Planos</a>
+                 <a href="/parceiros/cadastro" data-pc="cadastro">Cadastrar academia</a>
+                 <a href="/parceiros/entrar" data-pc="entrar">Entrar</a>`}
+          </div>
+          <div>
+            <h4>Ajuda</h4>
+            <a href="/parceiros/ajuda" data-pc="ajuda">Perguntas frequentes</a>
+            <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e tenho uma dúvida sobre o GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">WhatsApp</a>
+            <a href="mailto:guiatennis1@gmail.com">E-mail</a>
+          </div>
+          <div>
+            <h4>GuiaTennis</h4>
+            <a href="/" data-pc-sair-do-portal>Site para jogadores</a>
+            <button type="button" id="terms-link">Termos de Uso</button>
+            <button type="button" id="privacy-link">Política de Privacidade</button>
+          </div>
+        </div>
+      </div>
+    </footer>`;
+}
+
+// ---- páginas ----
+
+function renderParceiros() {
+  const aba = state.parceirosAba || "inicio";
+  let miolo;
+  if (PC_PRIVADAS.includes(aba) && contaAcademia && !acessoCompleto()) miolo = pcPrimeiroAcesso();
+  else if (aba === "inicio") miolo = pcInicio();
+  else if (aba === "planos") miolo = pcPlanos(false);
+  else if (aba === "ajuda") miolo = pcAjuda();
+  else if (aba === "cadastro") miolo = pcCadastro();
+  else if (aba === "entrar") miolo = pcEntrar();
+  else if (aba === "painel") miolo = pcPainel();
+  else if (aba === "desempenho") miolo = pcDesempenho();
+  else if (aba === "avaliacoes") miolo = pcAvaliacoes();
+  else if (aba === "ficha") miolo = pcFicha();
+  else if (aba === "plano") miolo = pcPlanos(true);
+  else if (aba === "conta") miolo = pcConta();
+  return `
+    <div class="pc ${contaAcademia && acessoCompleto() ? "pc-logado" : ""}" id="parceiros">
+      ${pcTopo()}
+      <main class="pc-main">${miolo}</main>
+      ${pcRodape()}
+      ${pcBarraDeBaixo()}
+    </div>`;
+}
+
+function pcNumerosDoSite() {
+  const e = state.estatisticas;
+  if (!e || (e.acessos_total || 0) < MINIMO_TOTAL) return "";
+  const itens = [
+    { v: numeroRedondo(e.acessos_total), l: "pessoas já usaram o GuiaTennis" },
+    e.fichas_total && umEmCada(e.fichas_total, e.acessos_total) ? { v: umEmCada(e.fichas_total, e.acessos_total), l: "abre a ficha de uma academia" } : null,
+    e.contatos_total && e.fichas_total && porcentoRedondo(e.contatos_total, e.fichas_total) ? { v: porcentoRedondo(e.contatos_total, e.fichas_total), l: "de quem abre chama a academia" } : null,
+  ].filter(Boolean);
+  return `
+    <section class="pc-faixa-num">
+      ${itens.map(i => `<div><strong>${esc(i.v)}</strong><span>${esc(i.l)}</span></div>`).join("")}
+    </section>`;
+}
+
+function pcInicio() {
+  const beneficios = [
+    { ic: "pin", t: "Aparece para quem já está procurando", d: "Quem chega ao GuiaTennis está com a raquete na mão procurando onde jogar perto de casa." },
+    { ic: "phone", t: "O aluno chama direto no seu WhatsApp", d: "Sem intermediário, sem central de reservas e sem comissão sobre a aula." },
+    { ic: "edit", t: "Você mesmo atualiza a ficha", d: "Horário, preço, fotos, cancelamento e como chegar — muda na hora, pelo celular." },
+    { ic: "bubble", t: "Responda as avaliações", d: "A resposta aparece embaixo da avaliação, como no Google e no TripAdvisor." },
+    { ic: "barchart", t: "Veja quem viu a sua academia", d: "Visitas e contatos e, conforme o plano, de onde vieram e de quais bairros." },
+    { ic: "clipboard", t: "QR code para a recepção", d: "O aluno aponta a câmera, abre a ficha e deixa a avaliação." },
+  ];
+  const passos = [
+    { t: "Ache ou cadastre a sua academia", d: "Muitas academias já estão no guia com os dados públicos: é só pedir o acesso. Se a sua não estiver, cadastre." },
+    { t: "Complete a ficha", d: "Horário, preço, fotos e como chegar. Quem procura compara isso antes de chamar." },
+    { t: "Receba alunos e acompanhe", d: "O aluno chama no WhatsApp. No painel, você vê quantas pessoas viram a ficha e chamaram." },
+  ];
+  return `
+    <section class="pc-hero">
+      <p class="pc-eyebrow">GuiaTennis Parceiros</p>
+      <h1 class="display">Mais alunos para a sua academia de tênis</h1>
+      <p class="pc-hero-sub">Apareça para quem procura aula e quadra na sua região. O aluno compara e chama direto no seu WhatsApp — sem comissão.</p>
+      <div class="pc-hero-acoes">
+        <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a>
+        <a href="/parceiros/entrar" class="cta-btn cta-secondary" data-pc="entrar">Já tenho acesso</a>
+      </div>
+      <p class="pc-hero-nota">${icon('check', 14, 'var(--green)')} Grátis no plano Básico · sem comissão · sem taxa por aluno</p>
+    </section>
+    ${pcNumerosDoSite()}
+    <section class="pc-sec" id="pc-beneficios">
+      <h2 class="display">Por que estar no GuiaTennis</h2>
+      <div class="pc-grade">
+        ${beneficios.map(b => `
+          <div class="pc-beneficio">
+            <span class="pc-beneficio-ic">${icon(b.ic, 22, 'var(--green)')}</span>
+            <p class="pc-card-t">${esc(b.t)}</p>
+            <p class="pc-card-s">${esc(b.d)}</p>
+          </div>`).join("")}
+      </div>
+    </section>
+    <section class="pc-sec" id="pc-como">
+      <h2 class="display">Como funciona</h2>
+      <ol class="pc-passos">
+        ${passos.map((p, i) => `<li><span class="pc-passo-n">${i + 1}</span><div><p class="pc-card-t">${esc(p.t)}</p><p class="pc-card-s">${esc(p.d)}</p></div></li>`).join("")}
+      </ol>
+    </section>
+    <section class="pc-sec">
+      <h2 class="display">Planos</h2>
+      <p class="pc-sec-sub">A posição na busca é a mesma em todos os planos. O plano só libera números mais detalhados.</p>
+      ${pcCartoesDePlano(null)}
+    </section>
+    <section class="pc-sec">
+      <h2 class="display">Perguntas frequentes</h2>
+      ${pcFaq(perguntasParceiros().slice(0, 6))}
+      <a href="/parceiros/ajuda" class="pc-link-btn" data-pc="ajuda">Ver todas as perguntas ›</a>
+    </section>
+    <section class="pc-fim">
+      <h2 class="display">Pronto para aparecer para quem procura?</h2>
+      <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a>
+      <p>Prefere conversar? <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e quero aparecer no GuiaTennis.")}" target="_blank" rel="noreferrer">Chame o GuiaTennis no WhatsApp</a>.</p>
+    </section>`;
+}
+
+function pcCartoesDePlano(atual) {
+  return `
+    <div class="pc-planos">
+      ${PC_PLANOS.map(p => `
+        <div class="pc-plano ${atual === p.key ? "atual" : ""} ${p.key === "completo" ? "destaque" : ""}">
+          ${atual === p.key ? `<span class="pc-plano-tag">Seu plano</span>` : (p.key === "completo" && !atual ? `<span class="pc-plano-tag">Recomendado</span>` : "")}
+          <p class="pc-plano-n">${esc(p.nome)}</p>
+          <p class="pc-plano-p">${esc(p.preco)}</p>
+          <p class="pc-card-s">${esc(p.resumo)}</p>
+          <ul class="pc-plano-lista">
+            ${PC_RECURSOS.map(r => `<li class="${r.p.includes(p.key) ? "" : "nao"}">${r.p.includes(p.key) ? icon('check', 15, 'var(--green)') : `<span class="pc-traco">—</span>`}<span>${esc(r.t)}</span></li>`).join("")}
+          </ul>
+          ${atual === p.key
+            ? `<p class="pc-plano-ok">${icon('check', 14, 'var(--green)')} Plano atual</p>`
+            : p.key === "basico"
+              ? (atual ? "" : `<a href="/parceiros/cadastro" class="cta-btn cta-secondary" data-pc="cadastro">Começar grátis</a>`)
+              : `<a href="${linkPlano(p.key)}" class="cta-btn ${p.key === "completo" ? "cta-primary" : "cta-secondary"}" target="_blank" rel="noreferrer">Quero o ${esc(p.nome)}</a>`}
+        </div>`).join("")}
+    </div>`;
+}
+
+function pcFaq(lista) {
+  return `
+    <div class="ht-faq pc-faq">
+      ${lista.map((f, i) => `
+        <details>
+          <summary>${esc(f.q)}<span class="ht-faq-ic">${icon('chevron', 16, 'var(--green)')}</span></summary>
+          <p>${esc(f.a)}</p>
+        </details>`).join("")}
+    </div>`;
+}
+
+function pcPlanos(logado) {
+  return `
+    <section class="pc-pagina">
+      <h1 class="display">${logado ? "Seu plano" : "Planos"}</h1>
+      <p class="pc-sec-sub">A posição na busca é a mesma em todos os planos: depende da distância, da nota, do preço e da estrutura. O plano só libera números mais detalhados sobre a sua ficha.</p>
+      ${pcCartoesDePlano(logado ? planoAtual() : null)}
+      <p class="footnote">Para mudar de plano, <a href="${linkPlano(logado && planoAtual() === "completo" ? "premium" : "completo")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>. O plano muda sem mexer na ficha.</p>
+    </section>`;
+}
+
+function pcAjuda() {
+  return `
+    <section class="pc-pagina">
+      <h1 class="display">Ajuda</h1>
+      <p class="pc-sec-sub">As dúvidas mais comuns das academias. Não achou a sua? Fale com a gente.</p>
+      ${pcFaq(perguntasParceiros())}
+      <div class="pc-card pc-contato">
+        <p class="pc-card-t">Fale com o GuiaTennis</p>
+        <p class="pc-card-s">Quem responde é o Breno, do GuiaTennis.</p>
+        <div class="pc-acoes">
+          <a class="cta-btn cta-primary" href="${whatsappGuia("Olá! Tenho uma academia de tênis e uma dúvida sobre o GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">${icon('whatsapp', 16, '#fff')} WhatsApp</a>
+          <a class="cta-btn cta-secondary" href="mailto:guiatennis1@gmail.com">${icon('mail', 16, 'var(--green)')} E-mail</a>
+        </div>
+      </div>
+    </section>`;
+}
+
+// Cadastro no modelo do Google Business Profile: primeiro procura a academia
+// (muitas já estão no guia); se achou, pede o acesso; se não, cadastra.
+function pcResultadosBusca() {
+  const termo = slugTexto(state.pcBusca || "");
+  if (termo.length < 2) return "";
+  const achadas = state.allCourts.filter(c => slugTexto(c.name).includes(termo)).slice(0, 8);
+  if (!achadas.length) return `<p class="pc-vazio">Não achei nenhuma academia com esse nome no guia. Cadastre a sua logo abaixo.</p>`;
+  return achadas.map(c => `
+    <div class="pc-achada">
+      <div><p class="pc-card-t">${esc(c.name)}</p><p class="pc-card-s">${esc([c.bairro, c.cidade].filter(Boolean).join(", ") || c.endereco || "")}</p></div>
+      <button type="button" class="cta-btn cta-secondary" data-pc-minha="${c.id}">É a minha</button>
+    </div>`).join("");
+}
+
+function pcCadastro() {
+  const escolhida = state.pcReivindicar ? todasAsFichas().find(c => idCurto(c.id) === state.pcReivindicar || c.id === state.pcReivindicar) : null;
+  return `
+    <section class="pc-pagina">
+      <h1 class="display">Cadastre a sua academia</h1>
+      <p class="pc-sec-sub">Grátis no plano Básico. Sem comissão, sem taxa por aluno.</p>
+      ${escolhida ? `
+        <div class="pc-card pc-reivindicar">
+          <p class="pc-card-t">Pedir o acesso da ${esc(escolhida.name)}</p>
+          <p class="pc-card-s">Para proteger a ficha, o GuiaTennis confere com você pelo WhatsApp que você responde pela academia e manda o usuário e uma senha provisória. No primeiro acesso, você cria a sua senha.</p>
+          <div class="pc-acoes">
+            <a class="cta-btn cta-primary" href="${whatsappGuia(`Olá! Sou responsável pela ${escolhida.name} e quero o acesso ao GuiaTennis Parceiros: ${linkDaFicha(escolhida)}`)}" target="_blank" rel="noreferrer">${icon('whatsapp', 16, '#fff')} Pedir o acesso no WhatsApp</a>
+            <button type="button" class="cta-btn cta-secondary" data-pc-minha="">Não é essa</button>
+          </div>
+        </div>` : `
+        <div class="pc-card">
+          <p class="pc-passo-t"><span class="pc-passo-n">1</span> A sua academia já está no GuiaTennis?</p>
+          <input class="form-field" id="pc-busca" placeholder="Nome da academia" value="${esc(state.pcBusca || "")}" autocomplete="off" />
+          <div id="pc-resultados">${pcResultadosBusca()}</div>
+        </div>`}
+      <div class="pc-card">
+        <p class="pc-passo-t"><span class="pc-passo-n">${escolhida ? "" : "2"}</span> ${escolhida ? "Outra academia?" : "Não achou? Cadastre uma academia nova"}</p>
+        <p class="pc-card-s">Endereço, WhatsApp, quadras e o que mais quiser. O GuiaTennis confere os dados antes de publicar.</p>
+        <button type="button" class="cta-btn cta-primary" id="pc-nova">Cadastrar academia nova</button>
+      </div>
+      <p class="pc-sec-sub" style="margin-top:22px">Já tem acesso? <a href="/parceiros/entrar" data-pc="entrar">Entrar</a></p>
+    </section>`;
+}
+
+function pcEntrar() {
+  return `
+    <section class="pc-pagina pc-estreita">
+      <h1 class="display">Entrar no GuiaTennis Parceiros</h1>
+      <p class="pc-sec-sub">Use o usuário e a senha que o GuiaTennis mandou para a sua academia.</p>
+      <div class="pc-card">
+        <label class="field-label" for="login-email" style="margin-top:0">Usuário</label>
+        <input class="form-field" id="login-email" value="${esc(state.loginUsuario || "")}" autocapitalize="none" autocorrect="off" autocomplete="username" style="margin-top:0" />
+        <label class="field-label" for="login-password">Senha</label>
+        <input class="form-field" id="login-password" type="password" autocomplete="current-password" style="margin-top:0" />
+        ${state.loginError ? `<div class="form-error">${icon('warning', 13)} ${esc(state.loginError)}</div>` : ""}
+        <button class="btn-primary" id="login-submit" style="width:100%;justify-content:center;margin-top:18px" ${state.loginLoading ? "disabled" : ""}>
+          ${state.loginLoading ? bolaGirando(16) + " Entrando..." : "Entrar"}
+        </button>
+      </div>
+      <p class="pc-sec-sub" style="margin-top:18px">Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.</p>
+      <p class="pc-sec-sub">Ainda não tem acesso? <a href="/parceiros/cadastro" data-pc="cadastro">Peça aqui</a>.</p>
+    </section>`;
+}
+
+function pcPrimeiroAcesso() {
+  return `
+    <section class="pc-pagina pc-estreita">
+      <p class="pc-eyebrow">Primeiro acesso</p>
+      <h1 class="display">${esc((minhaAcademia() || {}).name || "Sua academia")}</h1>
+      <div class="pc-card">${formDadosConta("completar")}</div>
+    </section>`;
+}
+
+function pcSituacao(c) {
+  const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
+  const noAr = c.status !== "pending" && !pausada;
+  const texto = c.status === "pending" ? "Em análise pelo GuiaTennis: ainda não aparece no site."
+    : pausada ? "Pausada pelo GuiaTennis: não aparece na busca agora."
+    : c.confirmada ? "No ar, com as informações confirmadas por vocês."
+    : "No ar como ficha básica. Revise e salve a ficha para confirmar as informações.";
+  const ok = noAr && c.confirmada;
+  return `<p class="conta-situacao ${ok ? "ok" : ""}">${icon(ok ? 'check' : 'info', 14, ok ? 'var(--green)' : 'var(--muted)')} <span>${texto}</span></p>`;
+}
+
+function pcSemFicha() {
+  return `<section class="pc-pagina"><p class="pc-sec-sub">Não consegui abrir a ficha agora. Tente de novo em instantes.</p></section>`;
+}
+
+function pcPainel() {
+  const c = minhaAcademia();
+  if (!c) return pcSemFicha();
+  const n = state.numeros || {};
+  const d = n.dados;
+  const faltas = faltasDaFicha(c);
+  const semResposta = getReviews(c.id).filter(r => !r.resposta).length;
+  const primeiro = (contaAcademia.nome || "").split(" ")[0];
+  return `
+    <section class="pc-pagina">
+      <p class="pc-eyebrow">${esc(c.name)}</p>
+      <h1 class="display">Olá${primeiro ? ", " + esc(primeiro) : ""}</h1>
+      ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
+      ${pcSituacao(c)}
+
+      <div class="pc-bloco">
+        <div class="pc-bloco-topo"><h2>Desempenho ${d ? textoDoPeriodo(d.dias) : ""}</h2><a href="/parceiros/desempenho" class="pc-link-btn" data-pc="desempenho">Ver tudo ›</a></div>
+        ${n.carregando && !d ? `<p class="pc-vazio">${bolaGirando(18)} Carregando os números…</p>` : ""}
+        ${n.erro ? `<p class="pc-vazio">${esc(n.erro)}</p>` : ""}
+        ${d ? blocosDeNumeros(d) : ""}
+      </div>
+
+      <div class="pc-duas">
+        <div class="pc-card">
+          <p class="pc-card-t">${faltas.length ? `Ficha ${PC_ITENS_FICHA.length - faltas.length} de ${PC_ITENS_FICHA.length} completa` : "Ficha completa"}</p>
+          <div class="pc-progresso"><i style="width:${Math.round(((PC_ITENS_FICHA.length - faltas.length) / PC_ITENS_FICHA.length) * 100)}%"></i></div>
+          <p class="pc-card-s">${faltas.length ? `Falta: ${esc(faltas.join(", "))}.` : "Tudo preenchido. Mantenha horário e preço em dia."}</p>
+          <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} ${faltas.length ? "Completar a ficha" : "Editar a ficha"}</button>
+        </div>
+        <div class="pc-card">
+          <p class="pc-card-t">${semResposta ? `${semResposta} ${plural(semResposta, "avaliação sem resposta", "avaliações sem resposta")}` : "Avaliações em dia"}</p>
+          <p class="pc-card-s">${semResposta ? "Responder mostra para quem procura que a academia está presente." : "Todas as avaliações têm resposta."}</p>
+          <a href="/parceiros/avaliacoes" class="cta-btn cta-secondary" data-pc="avaliacoes">${semResposta ? "Responder" : "Ver avaliações"}</a>
+        </div>
+      </div>
+
+      <div class="pc-atalhos">
+        <button type="button" class="pc-atalho" id="conta-ver-ficha" data-court="${c.id}">${icon('eye', 20, 'var(--green)')}<span>Ver a ficha no site</span></button>
+        <button type="button" class="pc-atalho" id="conta-qr" data-court="${c.id}">${icon('clipboard', 20, 'var(--green)')}<span>QR code para a recepção</span></button>
+        <a href="/parceiros/plano" class="pc-atalho" data-pc="plano">${icon('sparkle', 20, 'var(--green)')}<span>Plano ${esc(nomeDoPlano(planoAtual()))}</span></a>
+        <a href="/parceiros/ajuda" class="pc-atalho" data-pc="ajuda">${icon('info', 20, 'var(--green)')}<span>Ajuda</span></a>
+      </div>
+    </section>`;
+}
+
+function pcDesempenho() {
+  const c = minhaAcademia();
+  if (!c) return pcSemFicha();
+  const n = state.numeros || {};
+  const d = n.dados;
+  const plano = planoAtual();
+  const periodos = [
+    { dias: 7, t: "7 dias", p: ["completo", "premium"] },
+    { dias: 30, t: "30 dias", p: ["basico", "completo", "premium"] },
+    { dias: 90, t: "90 dias", p: ["completo", "premium"] },
+    { dias: 0, t: "Desde o começo", p: ["premium"] },
+  ];
+  const atual = d ? d.dias : state.numerosDias;
+  return `
+    <section class="pc-pagina">
+      <p class="pc-eyebrow">${esc(c.name)}</p>
+      <h1 class="display">Desempenho</h1>
+      <p class="pc-sec-sub">Quantas pessoas abriram a ficha no GuiaTennis e quantas chamaram vocês. Visitas do GuiaTennis e da própria academia logada não contam.</p>
+      <div class="chip-row pc-periodos" role="group" aria-label="Período">
+        ${periodos.map(p => p.p.includes(plano)
+          ? `<button type="button" class="chip small ${atual === p.dias ? "active" : ""}" data-pc-dias="${p.dias}">${p.t}</button>`
+          : `<button type="button" class="chip small pc-chip-trancado" data-pc="plano" title="Disponível em outro plano">${icon('key', 12, 'var(--muted)')} ${p.t}</button>`).join("")}
+      </div>
+      ${n.carregando && !d ? `<p class="pc-vazio">${bolaGirando(18)} Carregando os números…</p>` : ""}
+      ${n.erro ? `<p class="pc-vazio">${esc(n.erro)} <button type="button" class="pc-link-btn" data-pc-dias="${atual ?? 30}">Tentar de novo</button></p>` : ""}
+      ${d ? `
+        <div class="pc-bloco">${blocosDeNumeros(d)}</div>
+        ${d.por_dia ? `
+          <div class="pc-bloco">
+            ${graficoColunas(d.por_dia, "visitas", "#1F4D3D", "Visitas", "visitas")}
+            ${graficoColunas(d.por_dia, "contatos", "#A67F2C", "Contatos", "contatos")}
+            <details class="pc-tabela">
+              <summary>Ver os números em tabela</summary>
+              <table><thead><tr><th>Dia</th><th>Visitas</th><th>Contatos</th></tr></thead>
+              <tbody>${d.por_dia.slice().reverse().map(p => `<tr><td>${diaCurto(p.dia)}</td><td>${p.visitas}</td><td>${p.contatos}</td></tr>`).join("")}</tbody></table>
+            </details>
+          </div>
+          <div class="pc-duas">
+            <div class="pc-card"><p class="pc-card-t">Contatos por canal</p>${listaBarras([
+              { nome: "WhatsApp", n: d.canais.whatsapp }, { nome: "Instagram", n: d.canais.instagram },
+              { nome: "Site", n: d.canais.site }, { nome: "Compartilharam a ficha", n: d.canais.compartilhar },
+            ].filter(i => i.n || i.nome === "WhatsApp"))}</div>
+            <div class="pc-card"><p class="pc-card-t">De onde vieram</p>${listaBarras(d.origens)}</div>
+            <div class="pc-card"><p class="pc-card-t">Aparelho</p>${listaBarras(d.aparelhos)}</div>
+          </div>` : blocoTrancado("completo", "Dia a dia, canais e de onde vieram", "Veja em que dias a ficha mais aparece, por onde chamam vocês e de onde vêm as visitas: Instagram, Google, link compartilhado.")}
+        ${d.regioes ? `
+          <div class="pc-duas">
+            <div class="pc-card"><p class="pc-card-t">Bairros de quem procurou</p><p class="pc-card-s">Onde estava quem buscou quadra antes de abrir a ficha.</p>${listaBarras(d.regioes)}</div>
+            ${d.media_cidade ? `<div class="pc-card"><p class="pc-card-t">Comparação com ${esc(d.media_cidade.cidade || "a cidade")}</p>
+              <p class="pc-card-s">Média de ${d.media_cidade.academias} ${plural(d.media_cidade.academias, "academia", "academias")} no mesmo período.</p>
+              ${listaBarras([{ nome: "Visitas de vocês", n: d.visitas }, { nome: "Média das academias", n: Number(d.media_cidade.visitas) }])}
+              ${listaBarras([{ nome: "Contatos de vocês", n: d.contatos }, { nome: "Média das academias", n: Number(d.media_cidade.contatos) }], "#A67F2C")}
+            </div>` : ""}
+          </div>` : (d.por_dia ? blocoTrancado("premium", "Bairros e comparação com a cidade", "Veja de quais bairros vem quem procura vocês e como a ficha está contra a média das academias da cidade.") : "")}
+      ` : ""}
+      <p class="footnote">São contagens: ninguém é identificado. A posição na busca não depende do plano.</p>
+    </section>`;
+}
+
+function pcAvaliacoes() {
+  const c = minhaAcademia();
+  if (!c) return pcSemFicha();
+  const avaliacoes = getReviews(c.id);
+  const semResposta = avaliacoes.filter(r => !r.resposta).length;
+  const r = getAppRating(c.id);
+  return `
+    <section class="pc-pagina">
+      <p class="pc-eyebrow">${esc(c.name)}</p>
+      <h1 class="display">Avaliações</h1>
+      <div class="pc-numeros">
+        <div class="pc-num"><span class="pc-num-l">Nota</span><strong class="pc-num-v">${r.count ? r.avg.toFixed(1).replace(".", ",") : "—"}</strong><span class="pc-var">${r.count ? scoreWord(r.avg, r.count) : "sem avaliação"}</span></div>
+        <div class="pc-num"><span class="pc-num-l">Avaliações</span><strong class="pc-num-v">${avaliacoes.length}</strong></div>
+        <div class="pc-num"><span class="pc-num-l">Sem resposta</span><strong class="pc-num-v">${semResposta}</strong></div>
+      </div>
+      <p class="pc-sec-sub">A resposta aparece na ficha, embaixo da avaliação, como "Resposta da academia". Agradeça e responda com educação. A academia não apaga avaliação: se uma for falsa ou ofensiva, peça a análise do GuiaTennis.</p>
+      ${avaliacoes.length
+        ? `<div class="ht-revs conta-revs">${avaliacoes.map(x => cartaoAvaliacao(x, c, "painel")).join("")}</div>`
+        : `<div class="pc-card"><p class="pc-card-t">Ainda sem avaliação</p><p class="pc-card-s">Peça aos alunos para avaliar pela ficha — o QR code na recepção leva direto para ela.</p><button type="button" class="cta-btn cta-secondary" id="conta-qr" data-court="${c.id}">QR code da ficha</button></div>`}
+    </section>`;
+}
+
+function pcFicha() {
+  const c = minhaAcademia();
+  if (!c) return pcSemFicha();
+  const faltas = new Set(faltasDaFicha(c));
+  return `
+    <section class="pc-pagina">
+      <p class="pc-eyebrow">${esc(c.name)}</p>
+      <h1 class="display">Minha ficha</h1>
+      ${pcSituacao(c)}
+      <div class="pc-card">
+        <p class="pc-card-t">${faltas.size ? `${PC_ITENS_FICHA.length - faltas.size} de ${PC_ITENS_FICHA.length} itens preenchidos` : "Tudo preenchido"}</p>
+        <div class="pc-progresso"><i style="width:${Math.round(((PC_ITENS_FICHA.length - faltas.size) / PC_ITENS_FICHA.length) * 100)}%"></i></div>
+        <ul class="pc-checklist">
+          ${PC_ITENS_FICHA.map(i => `<li class="${faltas.has(i) ? "falta" : ""}">${faltas.has(i) ? `<span class="pc-bolinha"></span>` : icon('check', 16, 'var(--green)')}<span>${esc(i)}</span></li>`).join("")}
+        </ul>
+        <p class="pc-card-s">Quem procura academia compara horário, preço e fotos antes de chamar no WhatsApp.</p>
+        <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>
+      </div>
+      <div class="pc-atalhos">
+        <button type="button" class="pc-atalho" id="conta-ver-ficha" data-court="${c.id}">${icon('eye', 20, 'var(--green)')}<span>Ver a ficha no site</span></button>
+        <button type="button" class="pc-atalho" id="conta-qr" data-court="${c.id}">${icon('clipboard', 20, 'var(--green)')}<span>QR code para a recepção</span></button>
+      </div>
+      <p class="footnote">Para pausar a ficha ou pedir a remoção, <a href="${whatsappGuia(`Olá! Sou da ${c.name} e preciso de ajuda com a ficha no GuiaTennis.`)}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>
+    </section>`;
+}
+
+function pcConta() {
+  const modo = state.contaModo;
+  return `
+    <section class="pc-pagina pc-estreita">
+      <h1 class="display">Conta</h1>
+      ${modo === "dados" ? `<div class="pc-card">${formDadosConta("dados")}</div>`
+        : modo === "senha" ? `<div class="pc-card">${formTrocarSenha()}</div>`
+        : `
+          ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
+          <div class="pc-card">
+            <p class="pc-card-t">Responsável</p>
+            <div class="conta-dados">
+              <p><strong>${esc(contaAcademia.nome)}</strong>${contaAcademia.cargo ? " · " + esc(contaAcademia.cargo) : ""}</p>
+              <p>${esc(contaAcademia.email)}${contaAcademia.whatsapp ? " · " + esc(telefoneBonito(contaAcademia.whatsapp)) : ""}</p>
+              <p>Usuário: ${esc(contaAcademia.usuario)}</p>
+            </div>
+            <div class="conta-acoes">
+              <button type="button" class="cta-btn cta-secondary" id="conta-editar-dados">Editar dados</button>
+              <button type="button" class="cta-btn cta-secondary" id="conta-trocar-senha">Trocar senha</button>
+            </div>
+          </div>
+          <div class="pc-card">
+            <p class="pc-card-t">Plano ${esc(nomeDoPlano(planoAtual()))}</p>
+            <a href="/parceiros/plano" class="pc-link-btn" data-pc="plano">Ver planos ›</a>
+          </div>
+          <button type="button" class="conta-sair-link" id="conta-sair">Sair do GuiaTennis Parceiros</button>`}
+    </section>`;
+}
+
+function ligarEventosParceiros() {
+  document.querySelectorAll("[data-pc]").forEach(el => {
+    el.onclick = (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      irParceiros(el.dataset.pc, { ancora: el.dataset.pcAncora, publico: !!el.dataset.pcAncora || el.dataset.pc === "inicio" && !contaAcademia });
+    };
+  });
+  document.querySelectorAll("[data-pc-sair-do-portal]").forEach(el => {
+    el.onclick = (e) => { if (e.metaKey || e.ctrlKey) return; e.preventDefault(); state.pcMenu = false; goHome(); };
+  });
+  const menuBtn = document.getElementById("pc-menu-btn");
+  if (menuBtn) menuBtn.onclick = () => { state.pcMenu = true; render(); };
+  const menuClose = document.getElementById("pc-menu-close");
+  if (menuClose) menuClose.onclick = () => { state.pcMenu = false; render(); };
+  const menuOverlay = document.getElementById("pc-menu-overlay");
+  if (menuOverlay) menuOverlay.onclick = (e) => { if (e.target === menuOverlay) { state.pcMenu = false; render(); } };
+
+  document.querySelectorAll("[data-pc-dias]").forEach(el => {
+    el.onclick = () => carregarNumeros(parseInt(el.dataset.pcDias, 10) || 0);
+  });
+  // A coluna tocada mostra o dia e o valor na linha de cima do gráfico.
+  document.querySelectorAll("[data-graf] .pc-barra").forEach(el => {
+    const mostra = () => {
+      const fig = el.closest("[data-graf]");
+      fig.querySelectorAll(".pc-barra.on").forEach(b => b.classList.remove("on"));
+      el.classList.add("on");
+      fig.querySelector(".pc-graf-leitura").textContent = el.dataset.tip;
+    };
+    el.onmouseenter = mostra;
+    el.onfocus = mostra;
+    el.onclick = mostra;
+  });
+
+  const busca = document.getElementById("pc-busca");
+  if (busca) busca.oninput = (e) => {
+    state.pcBusca = e.target.value;
+    const slot = document.getElementById("pc-resultados");
+    if (slot) { slot.innerHTML = pcResultadosBusca(); ligarEventosParceiros(); }
+  };
+  document.querySelectorAll("[data-pc-minha]").forEach(el => {
+    el.onclick = () => { state.pcReivindicar = el.dataset.pcMinha ? idCurto(el.dataset.pcMinha) : null; syncUrl(false); render(); window.scrollTo(0, 0); };
+  });
+  document.querySelectorAll("[data-pc-reivindicar]").forEach(el => {
+    el.onclick = (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      state.pcReivindicar = el.dataset.pcReivindicar;
+      irParceiros("cadastro");
+    };
+  });
+  const nova = document.getElementById("pc-nova");
+  if (nova) nova.onclick = () => {
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
+    state.showRegister = true;
+    state.registerStatus = "idle";
+    render();
+  };
+}
+
 function renderCabecalho() {
   return `
     <div class="home-head">
@@ -4616,10 +5562,7 @@ function renderMenu() {
         ${item("duvidas", "Perguntas frequentes", "bubble")}
 
         <p class="menu-grupo">Para academias</p>
-        ${contaAcademia ? item("conta", "Área da minha academia", "key") : ""}
-        ${item("academias", "Por que estar no guia", "clipboard")}
-        ${item("cadastrar", "Cadastrar minha academia", "check")}
-        ${naoConta() ? "" : item("entrar", "Entrar na área da academia", "key")}
+        ${contaAcademia ? item("conta", "Painel da minha academia", "key") : item("parceiros", "GuiaTennis Parceiros", "sparkle")}
 
         <p class="menu-grupo">Contato</p>
         ${linksContato("menu-item", 17, "var(--green)")}
@@ -4736,8 +5679,8 @@ function blocoParaAcademias() {
           </div>`).join("")}
       </div>
       ${blocoMediasAcademias()}
-      <button type="button" class="ba-btn" id="home-cadastrar">Cadastrar minha academia</button>
-      <p class="ba-nota">Leva uns 3 minutos. Depois é só responder quem chamar.</p>
+      <a href="/parceiros" class="ba-btn" data-pc="inicio">Conhecer o GuiaTennis Parceiros</a>
+      <p class="ba-nota">Cadastro grátis, sem comissão. Lá você cadastra, entra no painel e vê os planos.</p>
       <p class="ba-nota">Prefere conversar? <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e quero aparecer no GuiaTennis.")}" target="_blank" rel="noreferrer">Chame o GuiaTennis no WhatsApp</a>.</p>
     </div>
   `;
@@ -4875,7 +5818,7 @@ function renderSiteFooter() {
           </div>` : ""}
         <div class="sf-col">
           <h4>GuiaTennis</h4>
-          <button type="button" id="footer-cadastrar">Cadastrar minha academia</button>
+          <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
           ${linksContato("contato-link", 15, "currentColor")}
         </div>
         <div class="sf-col">
@@ -4886,8 +5829,7 @@ function renderSiteFooter() {
         <div class="sf-col">
           <h4>Suporte</h4>
           <button type="button" id="footer-buscar">Como funciona a busca</button>
-          ${contaAcademia ? `<button type="button" data-abrir-conta>Área da minha academia</button>` : ""}
-          ${naoConta() ? "" : `<button type="button" data-entrar-academia>Área da academia</button>`}
+          ${contaAcademia ? `<button type="button" data-abrir-conta>Painel da minha academia</button>` : ""}
           ${naoConta() ? "" : `<button type="button" id="admin-login-link">Área do GuiaTennis</button>`}
         </div>
       </div>
@@ -4968,7 +5910,7 @@ function renderHome() {
 // cada tela", junto de linkDaFicha).
 
 // O que a tela escreve no link. O resto (utm_source, diagnostico) fica.
-const PARAMETROS_DA_TELA = ["court", "busca", "comparar", "entrar", "q", "academias", "piso", "cobertura",
+const PARAMETROS_DA_TELA = ["court", "busca", "comparar", "entrar", "q", "academias", "academia", "piso", "cobertura",
   "modalidade", "comodidades", "nota", "preco", "distancia", "favoritas", "comparando", "ordem", "ver"];
 const ORDEM_NO_LINK = { recomendados: "recomendadas", distance: "distancia", rating: "nota", price: "preco", reviews: "avaliacoes", courts: "quadras" };
 // Seções da ficha no link (#avaliacoes), com os nomes que a pessoa lê.
@@ -5040,6 +5982,10 @@ function urlDoEstado() {
   } else if (state.page === "comparar") {
     caminho = "/comparar";
     if (state.compareList.length) p.set("academias", state.compareList.map(idCurto).join(","));
+  } else if (state.page === "parceiros") {
+    const aba = state.parceirosAba || "inicio";
+    caminho = "/parceiros" + (aba === "inicio" ? "" : "/" + aba);
+    if (aba === "cadastro" && state.pcReivindicar) p.set("academia", state.pcReivindicar);
   }
   const busca = p.toString().replace(/%2C/gi, ",");
   return caminho + (busca ? "?" + busca : "") + secao;
@@ -5075,7 +6021,9 @@ function lerLink() {
   const partes = location.pathname.split("/").filter(Boolean).map(x => { try { return decodeURIComponent(x); } catch { return x; } });
   const secao = location.hash.slice(1);
   const r = { q, secao: SECOES_FICHA[secao] ? secao : null, page: "home" };
-  if (partes[0] === "academia" && partes[1]) { r.page = "court"; r.slug = partes[1]; }
+  if (partes[0] === "parceiros") { r.page = "parceiros"; r.aba = abaDoParceiro(partes[1] || "inicio"); r.reivindicar = q.get("academia") || null; }
+  else if (q.has("entrar")) { r.page = "parceiros"; r.aba = "entrar"; }
+  else if (partes[0] === "academia" && partes[1]) { r.page = "court"; r.slug = partes[1]; }
   else if (q.get("court")) { r.page = "court"; r.courtId = q.get("court"); }
   else if (partes[0] === "quadras") { r.page = "search"; r.regiao = { cidade: partes[1] || "", bairro: partes[2] || "" }; }
   else if (partes[0] === "busca" || q.has("busca")) {
@@ -5132,6 +6080,15 @@ function aplicarLink(r) {
     return {};
   }
   state.selected = null;
+  if (r.page === "parceiros") {
+    let aba = r.aba;
+    if (aba === "inicio" && contaAcademia) aba = "painel";
+    if (PC_PRIVADAS.includes(aba) && !contaAcademia) { state.parceirosDepois = aba; aba = "entrar"; }
+    state.page = "parceiros";
+    state.parceirosAba = aba;
+    state.pcReivindicar = r.reivindicar;
+    return { parceiros: aba };
+  }
   if (r.page === "comparar") {
     const ids = r.academias.map(fim => (state.allCourts.find(c => idCurto(c.id) === fim) || {}).id).filter(Boolean);
     if (ids.length) setCompareList(ids.slice(0, COMPARE_MAX));
@@ -5615,37 +6572,24 @@ function renderCard(c, badge) {
           <p class="rcard-line"><span class="ico">${icon('pin', 13, 'var(--muted)')}</span><span>${esc(localLine(c))}</span></p>
           ${dest ? `<p class="rcard-line"><span class="ico">${icon('sparkle', 13, 'var(--gold)')}</span><span>${esc(dest)}</span></p>` : ""}
           ${totalQuadras(c) ? `<p class="rcard-line"><span class="ico">${icon('ball', 13, 'var(--muted)')}</span><span>${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")} · ${esc(listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)))}</span></p>` : ""}
+          ${marcas.length ? `<p class="rcard-selos">${marcas.map(m => `<span>${icon('check', 14, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</p>` : ""}
         </div>
       </div>
 
+      <!-- Só preço e botão, como a caixa de oferta do Trivago: as
+           comodidades ficam no bloco de cima, junto das outras informações. -->
       <div class="offer">
-        <div class="offer-head">
-          <strong class="offer-mod">${precos.length > 1 ? "A partir de" : (principal ? esc(principal.label) : "Preço")}</strong>
-          ${marcas.length ? `<span class="offer-perks">${marcas.map(m => `<span class="offer-check">${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</span>` : ""}
-        </div>
         <div class="offer-body">
-          ${precos.length > 1
-            ? `<div>
-                <div class="offer-dois">
-                  ${precos.map(o => `
-                    <div class="offer-um">
-                      <span class="offer-um-lbl">${esc(o.label)}</span>
-                      <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}` : SEM_PRECO}</span>
-                    </div>`).join("")}
-                </div>
-                <div class="offer-sub">por hora</div>
-              </div>`
-            : `<div>
-                ${principal
-                  ? (principal.min
-                      ? `<div class="offer-from">A partir de</div>
-                         <div class="offer-price">R$ ${esc(priceMin(principal.faixa))}</div>
-                         <div class="offer-sub">por hora</div>`
-                      : `<div class="offer-price sem-valor" style="font-size:19px">${SEM_PRECO}</div>
-                         <div class="offer-sub">${SEM_PRECO_SUB}</div>`)
-                  : `<div class="offer-price sem-valor" style="font-size:19px">${SEM_PRECO}</div>
-                     <div class="offer-sub">${SEM_PRECO_SUB}</div>`}
-              </div>`}
+          <div class="offer-precos">
+            <div class="offer-dois">
+              ${(precos.length ? precos : [{ label: "Preço", min: null }]).map(o => `
+                <div class="offer-um">
+                  <span class="offer-um-lbl">${esc(o.label)}</span>
+                  <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}` : SEM_PRECO}</span>
+                </div>`).join("")}
+            </div>
+            <div class="offer-sub">${precos.some(o => o.min) ? "a partir de, por hora" : SEM_PRECO_SUB}</div>
+          </div>
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>
         ${c.phone
@@ -7343,7 +8287,7 @@ function renderCourtPage(c) {
                   ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
                   <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
                 </div>
-                ${ehMinha(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="${linkResponsavel(c)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a> para atualizar a ficha ou pedir a remoção.${naoConta() ? "" : ` Já tem acesso? <button type="button" class="inline-link" data-entrar-academia>Entre na área da academia</button>.`}</p>`}
+                ${ehMinha(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="/parceiros/cadastro?academia=${idCurto(c.id)}" data-pc-reivindicar="${idCurto(c.id)}">Gerencie a ficha no GuiaTennis Parceiros</a>: atualize os dados, responda as avaliações e veja quem viu a academia.</p>`}
                 ${c.source === "osm" ? `<p class="footnote">Nome e localização: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>.</p>` : ""}
               </section>
             </div>
@@ -7856,8 +8800,8 @@ const TERMS_HTML = `
 <p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
-<p class="field-label" style="margin-top:16px">4. Área da academia</p>
-<p style="font-size:14px">O GuiaTennis pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp. No primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. Na área da academia é possível editar a ficha da própria academia e responder as avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela.</p>
+<p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. O GuiaTennis pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp. No primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. Na área da academia é possível editar a ficha da própria academia e responder as avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. No painel, a academia vê os números da própria ficha — visitas e contatos e, conforme o plano (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis), o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou e a média das academias da cidade. <strong>A posição na busca é a mesma em todos os planos</strong>: nenhum plano compra posição.</p>
 <p class="field-label" style="margin-top:16px">5. Identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Antes de enviar sua primeira avaliação ou solicitação de cadastro, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
@@ -7879,7 +8823,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 30 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números por academia e a lista de regiões e CEPs buscados continuam visíveis só para a administração.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (área da academia):</strong> quando a academia usa o acesso dela, guardamos o nome do responsável, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), se quer receber o relatório do mês, a data do aceite dos Termos e a data do último acesso. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, se ela pedir, mandar o relatório do mês. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -8158,16 +9102,6 @@ function attachEvents() {
     el.onclick = () => { state.homeCity = el.dataset.city; render(); };
   });
 
-  const abrirCadastro = () => {
-    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
-    state.showRegister = true;
-    state.registerStatus = "idle";
-    render();
-  };
-  const homeCadastrar = document.getElementById("home-cadastrar");
-  if (homeCadastrar) homeCadastrar.onclick = abrirCadastro;
-  const footerCadastrar = document.getElementById("footer-cadastrar");
-  if (footerCadastrar) footerCadastrar.onclick = abrirCadastro;
   const footerBuscar = document.getElementById("footer-buscar");
   if (footerBuscar) footerBuscar.onclick = goSearch;
 
@@ -8330,7 +9264,7 @@ function attachEvents() {
   const loginSenha = document.getElementById("login-password");
   if (loginSenha && loginSubmit) loginSenha.onkeydown = (e) => { if (e.key === "Enter") loginSubmit.click(); };
   if (loginSubmit) loginSubmit.onclick = async () => {
-    const academia = state.loginModo === "academia";
+    const academia = state.loginModo === "academia" || state.page === "parceiros";
     const digitado = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value;
     state.loginUsuario = digitado;
@@ -8355,21 +9289,26 @@ function attachEvents() {
     }
     state.showLogin = false;
     state.loginUsuario = "";
+    await loadEverything();
     if (contaAcademia) {
       // Guardada só na memória, até trocar a senha provisória no primeiro
       // acesso: o Supabase pode pedir a senha atual para trocar.
       window.__senhaDoLogin = password;
-      state.showConta = true;
       state.contaModo = "painel";
       state.contaErro = "";
       state.contaAviso = "";
+      const destino = PC_PRIVADAS.includes(state.parceirosDepois) ? state.parceirosDepois : "painel";
+      state.parceirosDepois = null;
+      irParceiros(destino, { substituir: state.page === "parceiros" });
+      return;
     }
-    await loadEverything();
+    if (state.page === "parceiros") { state.page = "home"; syncUrl(false); }
     render();
     if (isAdmin) completarCoordenadas();
   };
 
   ligarEventosConta();
+  ligarEventosParceiros();
 
   const cepInput = document.getElementById("cep-input");
   if (cepInput) {
@@ -8491,7 +9430,6 @@ function attachEvents() {
     // A academia edita só a própria ficha, e depois de completar o acesso.
     if (!isAdmin && ehMinha(c) && !acessoCompleto()) { abrirConta(); return; }
     if (!podeEditar(c)) return;
-    state.showConta = false;
     const quadras = {};
     QUADRA_COMBOS.forEach(q => { quadras[q.key] = (c.quadras && c.quadras[q.key]) || 0; });
     window.__form = {
@@ -8655,7 +9593,8 @@ function attachEvents() {
       }
       if (alvo === "search") { goSearch(); return; }
       if (alvo === "comparar") { goComparar(); return; }
-      if (alvo === "cadastrar") { abrirCadastro(); return; }
+      if (alvo === "cadastrar") { irParceiros("cadastro"); return; }
+      if (alvo === "parceiros") { irParceiros("inicio"); return; }
       if (alvo === "termos") { state.showTerms = true; render(); return; }
       if (alvo === "privacidade") { state.showPrivacy = true; render(); return; }
       if (alvo === "admin") { state.showLogin = true; state.loginModo = "admin"; state.loginError = ""; render(); return; }
@@ -8735,7 +9674,7 @@ function attachEvents() {
   });
 
   const fab = document.getElementById("fab-add");
-  if (fab) fab.onclick = () => { window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} }; state.showRegister = true; state.registerStatus = "idle"; render(); };
+  if (fab) fab.onclick = () => irParceiros("cadastro");
 
   const fabAdmin = document.getElementById("fab-admin");
   if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
@@ -9395,10 +10334,8 @@ async function init() {
     if (validos.length !== state.compareList.length) setCompareList(validos);
   }
 
-  // Link do acesso mandado para a academia (?entrar) abre o login dela; a
-  // academia que ainda não completou o primeiro acesso cai direto nele.
-  if (q.has("entrar") && !naoConta()) { state.showLogin = true; state.loginModo = "academia"; }
-  if (contaAcademia && !acessoCompleto()) state.showConta = true;
+  // Aberto direto no painel ou no desempenho: busca os números da academia.
+  if (state.page === "parceiros" && ["painel", "desempenho"].includes(state.parceirosAba) && contaAcademia && acessoCompleto()) carregarNumeros();
 
   state.loaded = true;
   syncUrl(false);

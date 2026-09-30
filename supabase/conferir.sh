@@ -58,7 +58,7 @@ ler_sitemap() {
     && grep -q "<urlset" "$tmp/sitemap.xml"
 }
 if tentar ler_sitemap; then
-  echo "sitemap: $(grep -o '<loc>' "$tmp/sitemap.xml" | wc -l | tr -d ' ') endereços ($(grep -o '/academia/' "$tmp/sitemap.xml" | wc -l | tr -d ' ') fichas, $(grep -o '/quadras/' "$tmp/sitemap.xml" | wc -l | tr -d ' ') regiões)"
+  echo "sitemap: $(grep -o '<loc>' "$tmp/sitemap.xml" | wc -l | tr -d ' ') endereços ($(grep -o '/academia/' "$tmp/sitemap.xml" | wc -l | tr -d ' ') fichas, $(grep -o '/quadras/' "$tmp/sitemap.xml" | wc -l | tr -d ' ') regiões, $(grep -o '/parceiros' "$tmp/sitemap.xml" | wc -l | tr -d ' ') do GuiaTennis Parceiros)"
   if grep -q '?court=' "$tmp/sitemap.xml"; then
     echo "::error::O sitemap ainda usa o endereço antigo das fichas (?court=)."
     exit 1

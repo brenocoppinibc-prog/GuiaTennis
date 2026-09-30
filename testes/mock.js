@@ -130,6 +130,23 @@
         termos_aceitos_em: x.termos_aceitos_em || new Date().toISOString(), dados_completos_em: x.dados_completos_em || new Date().toISOString() });
       return { data:null, error:null };
     }
+    // Números da academia: o plano sai de window.__plano ou da ficha.
+    if (nome === "numeros_da_academia") {
+      const x = meuAcesso();
+      if (!x) return erro("Sem acesso aos números dessa academia.", "42501");
+      const ac = db.academias.find(y => y.id === x.academia_id) || {};
+      const plano = window.__plano || ac.plano || "basico";
+      const pedido = a.p_dias === undefined ? 30 : a.p_dias;
+      const dias = plano === "premium" ? (pedido <= 0 ? 0 : pedido) : plano === "completo" ? Math.min(Math.max(pedido || 30, 7), 90) : 30;
+      const base = { plano, dias, visitas: 42, contatos: 9 };
+      if (plano === "basico") return { data: base, error: null };
+      const n = dias || 120;
+      const por_dia = Array.from({ length: n }, (_, i) => ({ dia: new Date(Date.UTC(2026, 8, 30) - (n - 1 - i) * 864e5).toISOString().slice(0, 10), visitas: (i * 7) % 5, contatos: i % 4 === 0 ? 1 : 0 }));
+      const completo = { ...base, canais: { whatsapp: 7, instagram: 2, site: 0, compartilhar: 1 }, anterior: { visitas: 30, contatos: 9 }, por_dia,
+        origens: [{ nome: "Instagram", n: 20 }, { nome: "Google", n: 15 }, { nome: "Direto", n: 7 }], aparelhos: [{ nome: "Celular", n: 35 }, { nome: "Computador", n: 7 }] };
+      if (plano === "completo") return { data: completo, error: null };
+      return { data: { ...completo, regioes: [{ nome: "Pinheiros, São Paulo", n: 12 }, { nome: "Vila Madalena, São Paulo", n: 5 }], media_cidade: { cidade: "São Paulo", academias: 2, visitas: 30, contatos: 5 } }, error: null };
+    }
     if (nome === "marcar_senha_trocada") { const x = meuAcesso(); if (x) x.senha_trocada_em = new Date().toISOString(); return { data:null, error:null }; }
     return semFuncao;
   }

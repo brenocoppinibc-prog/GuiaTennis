@@ -37,6 +37,7 @@
 #   /quadras/<cidade>/<bairro>     academias de uma região
 #   /busca?q=…&piso=…              busca com filtros
 #   /comparar?academias=…          comparação
+#   /parceiros/…                   GuiaTennis Parceiros (site das academias)
 # Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
 # endereço) e o site monta a tela pelo link. Os links antigos (?court=,
 # ?busca=) continuam funcionando, porque abrem a própria home.
@@ -60,6 +61,18 @@
   to = "/index.html"
   status = 200
 
+# GuiaTennis Parceiros, o site das academias: /parceiros, /parceiros/planos,
+# /parceiros/entrar, /parceiros/painel…
+[[redirects]]
+  from = "/parceiros"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/parceiros/*"
+  to = "/index.html"
+  status = 200
+
 [[redirects]]
   from = "/comparar"
   to = "/index.html"
@@ -68,6 +81,11 @@
 # O mesmo cuidado de cache do index.html vale para essas telas.
 [[headers]]
   for = "/academia/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/parceiros/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 

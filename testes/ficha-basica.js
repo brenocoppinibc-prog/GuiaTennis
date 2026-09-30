@@ -30,10 +30,10 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.waitForTimeout(300);
   const acessoPedido = await page.evaluate(() => ({
     t: document.querySelector('.pc-reivindicar')?.innerText || '',
-    wa: document.querySelector('.pc-reivindicar a')?.getAttribute('href') || '',
+    email: !!document.getElementById('pc-email'),
     link: location.pathname + location.search,
   }));
-  ok(acessoPedido.t.includes('Administrar a ficha da Quadra Locação') && acessoPedido.wa.startsWith('https://wa.me/5511927456457?text=') && decodeURIComponent(acessoPedido.wa).includes('responsável pela Quadra Locação') && decodeURIComponent(acessoPedido.wa).includes('guiatennis.com.br/academia/quadra-locacao-a2') && acessoPedido.link === '/parceiros/cadastro?academia=a2', 'lá, o pedido de acesso abre o WhatsApp do guia com a conversa começada — ' + decodeURIComponent(acessoPedido.wa).slice(0, 90));
+  ok(acessoPedido.t.includes('Administrar a ficha da Quadra Locação') && acessoPedido.t.includes('Comece pelo seu e-mail') && acessoPedido.email && acessoPedido.link === '/parceiros/cadastro?academia=a2', 'lá, o responsável começa pelo e-mail, já com a academia — ' + acessoPedido.link);
   f = await abrirFicha(page, 'a1');
   ok(!f.basica && f.dono, 'ficha confirmada não mostra o aviso, mas tem o link do responsável');
   await browser.close();

@@ -155,9 +155,19 @@ cobra taxa e não fica no meio** da negociação.
     elas."; filtro "Empréstimo de raquete"; "consulte com a academia";
     "aula com professor da academia". Nunca "lista alfabética" nem "quem
     pagou mais".
-16. **Plano não compra posição.** Os planos do GuiaTennis Parceiros só
-    liberam números mais detalhados para a academia; a ordem da busca é a
-    mesma para todas (seção 3, "GuiaTennis Parceiros"). Está nos Termos.
+16. **Posição paga: por enquanto, não.** Hoje os planos do GuiaTennis
+    Parceiros só liberam números, pessoas e novidades; a ordem da busca é a
+    mesma para todas. O Breno disse (30/09/2026) que **mais para frente
+    haverá posição paga** — então não prometer "nunca" em lugar nenhum.
+    Quando vier, aparece marcada como patrocinada (Termos, seção 4, e a
+    pergunta "A ordem das academias é paga?" do site já dizem isso).
+17. **Sempre oferecer o plano de cima.** Pedido do Breno: toda tela da
+    academia vende o próximo plano (painel, desempenho, conta, plano). No
+    Premium, o que vem aí (promoções e avisos para os alunos).
+18. **Academia não avalia academia.** Conta do GuiaTennis Parceiros (logada)
+    e contato de academia (e-mail/WhatsApp de conta, WhatsApp de academia)
+    não avaliam nenhuma academia; só respondem as da própria. Quem garante
+    é o banco (gatilho `avaliacao_de_parceiro`).
 
 ## 3. Como é feito
 
@@ -234,7 +244,7 @@ o que é da academia leva para cá.
 | Apresentação: benefícios, como funciona, números do site, planos, perguntas | `/parceiros` (logado vai para o painel) | indexa |
 | Planos (tabela do que cada plano libera) | `/parceiros/planos` | indexa |
 | Ajuda (10 perguntas + WhatsApp e e-mail) | `/parceiros/ajuda` | indexa |
-| Cadastro: 1) procura a academia no guia → "Administrar" (pedido do Breno) → pedir o acesso pelo WhatsApp; 2) "Cadastrar academia nova" (formulário de sempre) | `/parceiros/cadastro` (`?academia=<id8>` já abre o pedido daquela) | indexa; com `?academia`, não |
+| Cadastro: 1) e-mail → 2) conta (nome, WhatsApp, senha, aceite) → 3) academia: "Administrar" uma do guia ou "Cadastrar academia nova" | `/parceiros/cadastro` (`?academia=<id8>` já pede aquela) | indexa; com `?academia`, não |
 | Entrar (usuário e senha) | `/parceiros/entrar` | não |
 | Painel, Desempenho, Avaliações, Minha ficha, Plano, Conta | `/parceiros/painel` etc. — sem login, cai no Entrar e volta para a página pedida | não |
 
@@ -243,10 +253,52 @@ WhatsApp direto sem comissão, responder avaliações, QR code, visitas e
 contatos dos últimos 30 dias. **Completo** — + dia a dia até 90 dias,
 comparação com o período anterior, contatos por canal, de onde vieram e o
 aparelho. **Premium** — + bairros de quem procurou, média das academias da
-cidade e o histórico desde o começo. Preço dos pagos: "Fale com a gente"
+cidade e o histórico desde o começo. **Pessoas com acesso:** Básico 2,
+Completo 5, Premium 10 (`PC_PLANOS.pessoas` e `limite_de_pessoas` no banco
+— mudar nos dois). No Premium, "Em breve: promoções na ficha e avisos para
+os seus alunos" (`PC_EM_BREVE`). Preço dos pagos: "Fale com a gente"
 (WhatsApp do guia) — **o Breno ainda não definiu valores**; não inventar
-preço. O admin muda o plano na ficha, como antes (`plano` da tabela). **A
-posição na busca é a mesma em todos os planos** (regra 16 e Termos, seção 4).
+preço. O admin muda o plano na ficha, como antes (`plano` da tabela). Hoje
+a ordem da busca não depende do plano (regra 16).
+
+**Conta do GuiaTennis Parceiros (pedido do Breno em 30/09/2026)** — como o
+Booking e o Google Business Profile, o cadastro começa pelo e-mail:
+1. **E-mail** → `login_do_email` diz se já tem conta. Tem: "Entrar com esse
+   e-mail" (o Entrar aceita e-mail ou usuário; quem recebeu usuário do
+   GuiaTennis entra também pelo e-mail que deu no primeiro acesso). Não tem:
+2. **Conta** → nome, WhatsApp, senha e o aceite (`criar_minha_conta`,
+   chamada pelo visitante; o login é criado direto no `auth.users`, com um
+   freio de 20 contas novas por hora). Entra na hora, **sem academia**.
+3. **Academia** → "Achamos pelo seu e-mail" (domínio do e-mail = domínio do
+   site de uma academia; gmail/hotmail… não contam), busca pelo nome →
+   "Administrar" → "Pedir para administrar" (`pedir_para_administrar`), ou
+   "Cadastrar academia nova" (o formulário não pede de novo nome, WhatsApp
+   nem aceite: vão os da conta; o gatilho `pedido_da_academia_nova` faz da
+   academia nova o pedido da conta).
+4. **O GuiaTennis confere** → no painel do admin, "Pedidos para
+   administrar" com WhatsApp, Aprovar e Recusar. Publicar a academia nova
+   já libera a conta (gatilho `liberar_pedidos_da_academia`). Quem é
+   aprovado vira **responsável principal** se a academia ainda não tem um;
+   senão, equipe.
+- **Não confere se o e-mail é mesmo da pessoa** (o site não manda e-mail):
+  por isso nada é liberado sem o Breno aprovar ou publicar.
+- **Pessoas com acesso (Conta):** o responsável principal adiciona pelo
+  e-mail (`adicionar_pessoa`): e-mail novo ganha login com senha
+  provisória que a tela gera e mostra uma vez, com "Mandar pelo WhatsApp"
+  (o responsável manda) e "Copiar"; e-mail de conta sem academia entra
+  direto, com a senha dela. Remove com `remover_pessoa` (o login some). A
+  equipe vê a lista, edita a ficha e responde avaliações, mas não mexe em
+  pessoas. Plano cheio: some o formulário e aparece "Aprimorar para o…".
+- Conta sem academia vê o painel com o pedido (ou "Falta escolher a sua
+  academia"), menu curto (Painel, Plano, Conta, Ajuda) e sem a barra de
+  baixo.
+
+**Tela cheia e rodapé (mesmo pedido):** o formulário da ficha (editar,
+cadastrar academia nova, admin) ocupa a tela inteira, com atalhos por parte
+no topo (Nome e endereço, Horário, Fotos, Quadras, Modalidade e preço,
+Cancelamento, Como chegar, Contato), como as abas do "Editar perfil" do
+Google. Os dois sites terminam com a **faixa escura do trivago**
+(`rodapeFaixa`): marca, o que é e o copyright, de ponta a ponta.
 
 **Desempenho:** vem de `numeros_da_academia(p_dias)` (SQL
 `20260930140000`): o banco devolve só os números da academia do login e
@@ -548,12 +600,15 @@ senha".
 
 **Conferido aqui (30/09/2026):** Postgres 16 local com as migrações + o
 login de verdade do Supabase (`supabase/auth`, commit de 22/09/2026,
-compilado daqui): `testes/banco-acesso.py`, 76 conferências — a academia
+compilado daqui): `testes/banco-acesso.py`, 121 conferências — a academia
 entra com a senha provisória, troca a senha, edita só o que é dela, não
 apaga nem se avalia, responde só as avaliações dela, não lê contato nem
 cliques; nova senha derruba a sessão; remover acesso e excluir academia
 apagam o login; `numeros_da_academia` corta o período e os detalhes pelo
-plano, devolve só os números da própria academia e o visitante não chama. Também com a biblioteca do site (`@supabase/auth-js`
+plano, devolve só os números da própria academia e o visitante não chama;
+conta por e-mail, pedido, aprovação, publicar libera, equipe com limite do
+plano, e-mail ou WhatsApp de academia sem avaliar, e o freio de contas
+novas. Também com a biblioteca do site (`@supabase/auth-js`
 2.117): entrar com usuário, `same_password`, troca com a senha atual.
 
 ### GitHub ↔ Supabase
@@ -618,6 +673,16 @@ em aba anônima inflava os números da home.
   - `migrations/20260930150000_parceiros_no_sitemap.sql` — o `sitemap()`
     com `/parceiros`, `/parceiros/planos`, `/parceiros/ajuda` e
     `/parceiros/cadastro`.
+  - `migrations/20260930160000_contas_parceiros.sql` — conta sem academia
+    (`academia_id` pode ser nulo), `papel` (principal/equipe), pedido
+    (`pedido_academia_id`, `pedido_nome`, `pedido_em`), `login_do_email`,
+    `criar_minha_conta`, `pedir_para_administrar`, `cancelar_meu_pedido`,
+    `aprovar_pedido_de_acesso`, `recusar_pedido_de_acesso`,
+    `pessoas_da_minha_academia`, `adicionar_pessoa`, `remover_pessoa`,
+    `acessos_das_academias` com papel e pedido, e o bloqueio de avaliação
+    de academia (regra "Enviar avaliacao" + gatilho `avaliacao_de_parceiro`).
+    **Atenção:** rodar de novo o `20260930120000` ou o `SQL-SEGURANCA.sql`
+    à mão desfaz a regra nova de avaliação — rodar este depois.
   - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
     não existem): aula e locação, só locação, só aula com horário por dia
     e prazo de 36h, uma pausada e uma pendente; mais avaliações e
@@ -818,7 +883,8 @@ bancos.
 **Esperando o merge (30/09/2026):** `20260930120000_acesso_academias`
 (área da academia), `20260930130000_links_amigaveis` (sitemap com os
 endereços novos), `20260930140000_numeros_da_academia` (Desempenho do
-GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap`. Entra no
+GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap` e `20260930160000_contas_parceiros`
+(conta por e-mail, pedidos, equipe, academia não avalia). Entra no
 banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
@@ -856,10 +922,10 @@ testes/check-js.sh
 cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
-Em 30/09/2026 (área da academia, links, visual limpo e GuiaTennis
-Parceiros): **320 verificações, todas passando** (160 de antes, 64 da área
-da academia, 34 dos links e 62 do GuiaTennis Parceiros), mais as 76 do
-`banco-acesso.py` no banco e login locais.
+Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
+e contas por e-mail): **368 verificações, todas passando** (160 de antes,
+64 da área da academia, 34 dos links e 110 do GuiaTennis Parceiros), mais
+as 121 do `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
   antes de qualquer outra coisa.**
@@ -906,7 +972,15 @@ da academia, 34 dos links e 62 do GuiaTennis Parceiros), mais as 76 do
   Desempenho no Básico/Completo/Premium (períodos trancados, gráficos de
   uma série, leitura da coluna, 90 dias, desde o começo por semana,
   bairros e média da cidade), menu e rodapé de quem está logado, `noindex`
-  e banco sem a função dos números.
+  e banco sem a função dos números. Também: cadastro pelo e-mail (e-mail
+  que já tem conta, entrar pelo e-mail de contato, criar conta com os
+  avisos, "Achamos pelo seu e-mail", pedido, cancelar, academia nova sem
+  repetir os dados), admin aprova e publicar libera, link da ficha já pede
+  a academia, pessoas com acesso (adicionar, plano cheio, remover, e-mail
+  de outra academia, equipe sem mexer), ofertas de plano e "Em breve" do
+  Premium, "Ver planos" separado, formulário em tela cheia com atalhos,
+  faixa escura nos dois sites e visitante com contato de academia sem
+  avaliar.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
   banco de verdade (não no mock) tudo o que a academia pode e não pode.
@@ -1208,7 +1282,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) GuiaTennis Parceiros: "Administrar" no lugar de "É a minha" no cadastro   ← PR #5, 30/09
+(a seguir) GuiaTennis Parceiros: conta por e-mail, pedidos, equipe, planos, tela cheia e faixa do rodapé   ← PR #5, 30/09
+28846e5 GuiaTennis Parceiros: "Administrar" no lugar de "É a minha" no cadastro   ← PR #5, 30/09
 c0c1d84 GuiaTennis Parceiros: site das academias com painel, desempenho por plano, planos e ajuda   ← PR #5, 30/09
 2c6556c Visual limpo: Inter no texto, Playfair nos títulos e mais espaço   ← PR #5, 30/09
 082e6ad Links no padrão dos grandes: ficha, região, filtros, abas e comparação   ← PR #5, 30/09
@@ -1331,15 +1406,20 @@ c9ade31 Configuração de publicação do Netlify
   provisória. Quem marcou "relatório do mês" aparece no bloco do acesso: o
   "Copiar resumo pra mandar" do painel continua sendo o relatório, mandado
   pelo Breno.
+- **Testar as contas por e-mail na prévia:** em aba anônima,
+  `…/parceiros/cadastro` → e-mail novo → criar a conta → "Administrar" a
+  Quadra Exemplo Moema → como admin, "Pedidos para administrar" → Aprovar.
+  Depois, na Conta, adicionar uma pessoa e entrar com ela em outra aba.
 - **Preço dos planos Completo e Premium:** o Breno define. Hoje o site diz
   "Fale com a gente" e o botão abre o WhatsApp do guia; quando houver
   valor, trocar em `PC_PLANOS` (e nos Termos, se mudar a regra).
-- **Próximos passos possíveis do GuiaTennis Parceiros** (referência: Google
-  Business Profile, trivago Business Studio e Yelp): relatório do mês
-  sozinho por e-mail (para quem marcou), aviso de avaliação nova, mais de um
-  login por academia (a tabela já aceita), pedido de acesso com
-  confirmação automática (hoje o Breno confere pelo WhatsApp) e a prévia do
-  link no WhatsApp com a foto da academia (seção 3, "Endereços").
+- **Próximos passos do GuiaTennis Parceiros** (pedidos do Breno e
+  referência: Google Business Profile, trivago Business Studio e Yelp):
+  promoções na ficha e avisos para os alunos (o "Em breve" do Premium),
+  posição paga marcada como patrocinada, relatório do mês sozinho por
+  e-mail (para quem marcou), aviso de avaliação nova, confirmação do e-mail
+  por código (precisa de um serviço de e-mail) e a prévia do link no
+  WhatsApp com a foto da academia (seção 3, "Endereços").
 - **Conferir o site depois do merge do PR #3** (pedido ao Breno em
   29/09/2026, sem resposta ainda): em aba anônima, guiatennis.com.br com o
   WhatsApp e o logo pequeno no menu e no rodapé; uma ficha com "É o

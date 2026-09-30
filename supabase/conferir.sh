@@ -52,6 +52,21 @@ if [ "$codigo" = 200 ]; then
 fi
 echo "visitante não lê os acessos das academias (resposta $codigo)"
 
+# Cadastro do GuiaTennis Parceiros: o visitante confere se um e-mail já tem
+# conta (e não recebe nada para um e-mail que não tem).
+conferir_email() {
+  codigo="$(curl -sS -o "$tmp/email.json" -w '%{http_code}' -X POST \
+    "$api/rest/v1/rpc/login_do_email" -H "apikey: $chave" -H "Content-Type: application/json" \
+    -d '{"p_email":"ninguem@exemplo.invalid"}')"
+  [ "$codigo" = 200 ] && grep -q '^null$' "$tmp/email.json"
+}
+if tentar conferir_email; then
+  echo "visitante confere o e-mail no cadastro do GuiaTennis Parceiros"
+else
+  echo "::error::O cadastro do GuiaTennis Parceiros não consegue conferir o e-mail (resposta $codigo): $(head -c 300 "$tmp/email.json")"
+  exit 1
+fi
+
 ler_sitemap() {
   # Sem pedir formato, como o Google: tem de vir XML mesmo assim.
   curl -sS -o "$tmp/sitemap.xml" "$api/rest/v1/rpc/sitemap" -H "apikey: $chave" \

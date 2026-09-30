@@ -26,7 +26,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
     url: location.pathname + location.search,
     robots: document.querySelector('meta[name="robots"]')?.getAttribute('content') || '',
   }));
-  ok(login.titulo === 'Entrar no GuiaTennis Parceiros' && login.campo === 'Usuário', 'link do WhatsApp abre o "Entrar" do GuiaTennis Parceiros, pedindo usuário — ' + login.titulo);
+  ok(login.titulo === 'Entrar no GuiaTennis Parceiros' && login.campo === 'E-mail ou usuário', 'link do WhatsApp abre o "Entrar" do GuiaTennis Parceiros, pedindo e-mail ou usuário — ' + login.titulo);
   ok(login.ajuda.startsWith('https://wa.me/5511927456457'), '"Entrar" tem o WhatsApp do guia para quem esqueceu a senha');
   ok(login.url === '/parceiros/entrar?utm_source=WhatsApp-academias' && login.robots.includes('noindex'), 'endereço próprio, com a etiqueta, e fora do Google — ' + login.url);
   await page.fill('#login-email', 'quadra.a2');
@@ -184,7 +184,8 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
     estrelas: document.querySelectorAll('#star-picker').length,
   }));
   ok(outra.responder === 0 && outra.editar === 0 && !outra.dono, 'na ficha de outra academia não há editar nem responder');
-  ok(outra.estrelas === 1, 'avaliar outra academia continua como para qualquer visitante');
+  const outraTexto = await texto(page, '.rate-box');
+  ok(outra.estrelas === 0 && outraTexto.includes('Contas do GuiaTennis Parceiros não avaliam academias'), 'academia logada também não avalia as outras academias');
   const cliques = await page.evaluate(() => window.__cliques.length);
   ok(cliques === cliquesAntes, 'academia logada não entra nas estatísticas — ' + (cliques - cliquesAntes) + ' cliques depois de entrar');
   await browser.close();
@@ -259,7 +260,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(contato.includes('11955550001'), 'admin continua vendo o WhatsApp de quem avaliou (pela função do banco) — ' + contato);
   await page.evaluate(() => { state.showAdminPanel = true; render(); });
   const painel = await texto(page, '#admin-overlay');
-  ok(painel.includes('Acessos das academias') && painel.includes('Usuário quadra.locacao'), 'painel do admin lista os acessos');
+  ok(painel.includes('Acessos das academias') && painel.includes('quadra.locacao'), 'painel do admin lista os acessos');
   await browser.close();
 
   // ---- admin vê e apaga resposta (moderação) ----
@@ -288,6 +289,6 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   // ---- textos legais ----
   ({ browser, page } = await abrir({}));
   const legal = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
-  ok(legal.includes('4. GuiaTennis Parceiros') && legal.includes('mesma em todos os planos') && legal.includes('não pode apagar avaliações') && legal.includes('Responsável pela academia'), 'Termos e Privacidade explicam a área da academia');
+  ok(legal.includes('4. GuiaTennis Parceiros') && legal.includes('não avaliam academias') && legal.includes('identificado como patrocinado') && legal.includes('pessoas da mesma academia veem') && legal.includes('não pode apagar avaliações') && legal.includes('Responsável pela academia'), 'Termos e Privacidade explicam a área da academia');
   await browser.close();
 })();

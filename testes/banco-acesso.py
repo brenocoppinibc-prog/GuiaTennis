@@ -166,7 +166,7 @@ sql(f"delete from public.avaliacoes where id = '{REVIEW_MINHA}'", "authenticated
 _, s = ultimo(f"select count(*) from public.avaliacoes where id = '{REVIEW_MINHA}'")
 ok(s == "1", "academia não apaga avaliação")
 bom, s = sql(f"insert into public.avaliacoes (academia_id, stars, comment, nome_autor) values ('{ACADEMIA}', 5, 'A melhor!', 'Dono')", "authenticated", academia)
-ok(not bom and "row-level security" in s, "academia não avalia a si mesma")
+ok(not bom and "não avaliam" in s, "academia não avalia a si mesma")
 _, s2 = ultimo(f"select stars from public.avaliacoes where id = '00000000-0000-4000-9000-000000000002'")
 sql("update public.avaliacoes set stars = 1 where id = '00000000-0000-4000-9000-000000000002'", "authenticated", academia)
 _, s3 = ultimo(f"select stars from public.avaliacoes where id = '00000000-0000-4000-9000-000000000002'")
@@ -328,6 +328,155 @@ _, uid2 = ultimo(f"select public.criar_acesso_academia('{nova}', 'exemplo.tempor
 sql(f"delete from public.academias where id = '{nova}'", "authenticated", admin)
 _, s = ultimo(f"select count(*) from auth.users where id = '{uid2}'")
 ok(s == "0", "academia excluída leva o login junto")
+
+# ---- contas do GuiaTennis Parceiros (20260930160000) ----
+PENDENTE = "00000000-0000-4000-8000-000000000005"
+sql("delete from public.academia_acessos where usuario like '%@exemplo.com' or usuario like 'exemplo.mapa%'")
+sql("delete from auth.users where email like '%@exemplo.com'")
+sql("delete from public.avaliacoes where comment like 'Teste de conta%'")
+sql(f"update public.academias set plano = 'basico' where id = '{OUTRA}'")
+
+
+def conta_nova(email, whats="(11) 98888-0001", nome="Dono Novo", senha="senhaforte1", aceite="true"):
+    return sql(f"select public.criar_minha_conta('{email}', '{senha}', '{nome}', '{whats}', {aceite})", "anon")
+
+
+_, s = ultimo("select coalesce(public.login_do_email('dono.novo@exemplo.com'), 'nada')", "anon")
+ok(s == "nada", "e-mail sem conta: o cadastro segue para criar a conta")
+bom, s = conta_nova("dono.novo@exemplo.com", aceite="false")
+ok(not bom and "Termos" in s, "conta nova sem o aceite dos Termos é recusada")
+bom, s = conta_nova("dono.novo@exemplo.com", whats="123")
+ok(not bom and "WhatsApp inválido" in s, "conta nova com WhatsApp errado é recusada")
+bom, s = conta_nova("dono.novo@exemplo.com", whats="+55 (11) 98888-0001")
+ok(bom, "visitante cria a conta com e-mail, senha, nome e WhatsApp")
+bom, s = conta_nova("Dono.Novo@Exemplo.com")
+ok(not bom and "já tem conta" in s, "mesmo e-mail de novo: manda entrar com a senha")
+_, s = ultimo("select public.login_do_email(' Dono.Novo@Exemplo.com ')", "anon")
+ok(s == "dono.novo@exemplo.com", f"o cadastro acha a conta pelo e-mail ({s})")
+_, s = ultimo("select whatsapp || '|' || papel || '|' || (academia_id is null) || '|' || (termos_aceitos_em is not null) from public.academia_acessos where usuario = 'dono.novo@exemplo.com'")
+ok(s == "11988880001|principal|true|true", f"conta sem academia, com o WhatsApp arrumado e o aceite ({s})")
+s, r = entrar("dono.novo@exemplo.com", "senhaforte1")
+ok(s == 200, "a conta nova entra pelo login do Supabase com o e-mail")
+conta = r.get("access_token", "")
+bom, s = sql("select public.criar_minha_conta('outra@exemplo.com', 'senhaforte1', 'Outra Pessoa', '11 97777-0001', true)", "authenticated", conta)
+ok(not bom and "Saia da conta" in s, "quem está logado não cria outra conta")
+
+bom, s = ultimo("select count(*) from public.minhas_academias()", "authenticated", conta)
+ok(bom and s == "0", "conta sem academia não edita academia nenhuma")
+bom, s = sql("select public.numeros_da_academia(30)", "authenticated", conta)
+ok(not bom and "Sem acesso" in s, "conta sem academia não vê números")
+bom, s = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{OUTRA}', 5, 'Teste de conta logada')", "authenticated", conta)
+ok(not bom and "não avaliam" in s, "conta de parceiro logada não avalia academia")
+
+bom, s = sql(f"select public.pedir_para_administrar('{PENDENTE}')", "authenticated", conta)
+ok(not bom and "não encontrada" in s, "pedido só vale para academia publicada")
+bom, s = sql(f"select public.pedir_para_administrar('{OUTRA}')", "authenticated", conta)
+_, s = ultimo("select pedido_academia_id || '|' || pedido_nome from public.academia_acessos where usuario = 'dono.novo@exemplo.com'")
+ok(bom and s == f"{OUTRA}|Quadra Exemplo Moema", f"conta pede para administrar a academia ({s})")
+bom, s = sql(f"select public.aprovar_pedido_de_acesso((select user_id from public.academia_acessos where usuario = 'dono.novo@exemplo.com'))", "authenticated", conta)
+ok(not bom and "Só o GuiaTennis" in s, "a conta não aprova o próprio pedido")
+_, s = ultimo("select pedido_nome from public.acessos_das_academias() where usuario = 'dono.novo@exemplo.com'", "authenticated", admin)
+ok(s == "Quadra Exemplo Moema", "admin vê o pedido na lista")
+_, dono_id = ultimo("select user_id from public.academia_acessos where usuario = 'dono.novo@exemplo.com'")
+bom, _ = sql(f"select public.aprovar_pedido_de_acesso('{dono_id}')", "authenticated", admin)
+_, s = ultimo(f"select academia_id || '|' || papel || '|' || (pedido_academia_id is null) from public.academia_acessos where user_id = '{dono_id}'")
+ok(bom and s == f"{OUTRA}|principal|true", f"admin aprova: a conta vira a responsável principal ({s})")
+bom, s = ultimo(f"update public.academias set instagram = '@moema' where id = '{OUTRA}' returning instagram", "authenticated", conta)
+ok(bom and s == "@moema", "depois de aprovada, a conta edita a ficha da academia")
+
+# Equipe: o plano decide quantas pessoas.
+_, s = ultimo("select public.adicionar_pessoa('Equipe1@Exemplo.com', 'Pessoa Um', 'provisoria7')", "authenticated", conta)
+ok(s == "criada", f"responsável principal adiciona uma pessoa com e-mail e senha provisória ({s})")
+s, r = entrar("equipe1@exemplo.com", "provisoria7")
+ok(s == 200, "a pessoa nova entra com o e-mail e a senha provisória")
+equipe = r.get("access_token", "")
+_, s = ultimo("select papel || '|' || (dados_completos_em is null) || '|' || (senha_trocada_em is null) from public.academia_acessos where usuario = 'equipe1@exemplo.com'")
+ok(s == "equipe|true|true", "a pessoa nova faz o primeiro acesso e troca a senha, como as academias")
+bom, s = sql("select public.adicionar_pessoa('equipe2@exemplo.com', 'Pessoa Dois', 'provisoria7')", "authenticated", conta)
+ok(not bom and "até 2 pessoas" in s, "plano Básico: até 2 pessoas")
+sql(f"update public.academias set plano = 'completo' where id = '{OUTRA}'")
+_, s = ultimo("select public.adicionar_pessoa('equipe2@exemplo.com', 'Pessoa Dois', 'provisoria7')", "authenticated", conta)
+ok(s == "criada", "plano Completo: cabe mais gente")
+bom, s = sql("select public.adicionar_pessoa('equipe3@exemplo.com', 'Pessoa Três', 'provisoria7')", "authenticated", equipe)
+ok(not bom and "Só o responsável principal" in s, "quem é da equipe não adiciona pessoas")
+bom, s = sql(f"select public.remover_pessoa('{dono_id}')", "authenticated", equipe)
+ok(not bom and "Só o responsável principal" in s, "quem é da equipe não remove ninguém")
+_, s = sql("select papel || ':' || email from public.pessoas_da_minha_academia()", "authenticated", equipe)
+ok(s.splitlines() == ["principal:dono.novo@exemplo.com", "equipe:equipe1@exemplo.com", "equipe:equipe2@exemplo.com"], f"todos veem quem tem acesso, o principal primeiro ({s.splitlines()})")
+bom, s = sql(f"select public.remover_pessoa('{dono_id}')", "authenticated", conta)
+ok(not bom and "a si mesmo" in s, "o principal não remove a si mesmo")
+_, e2 = ultimo("select user_id from public.academia_acessos where usuario = 'equipe2@exemplo.com'")
+bom, _ = sql(f"select public.remover_pessoa('{e2}')", "authenticated", conta)
+_, s = ultimo(f"select count(*) from auth.users where id = '{e2}'")
+ok(bom and s == "0", "o principal remove uma pessoa e o login dela some")
+bom, s = sql("select public.adicionar_pessoa('dono.novo@exemplo.com', 'Eu', 'provisoria7')", "authenticated", conta)
+ok(not bom and "já tem acesso" in s, "e-mail que já tem academia não entra em outra")
+conta_nova("pediu@exemplo.com", whats="11 97777-0004", nome="Pediu Outra")
+s, r = entrar("pediu@exemplo.com", "senhaforte1")
+sql(f"select public.pedir_para_administrar('{ACADEMIA}')", "authenticated", r.get("access_token", ""))
+bom, s = sql("select public.adicionar_pessoa('pediu@exemplo.com', 'Pediu Outra', 'provisoria7')", "authenticated", conta)
+ok(not bom and "pediu para administrar outra" in s, "quem pediu outra academia não é puxado para a equipe")
+conta_nova("solto@exemplo.com", whats="11 97777-0002", nome="Pessoa Solta")
+_, s = ultimo("select public.adicionar_pessoa('solto@exemplo.com', 'Pessoa Solta', 'provisoria7')", "authenticated", conta)
+_, s2 = ultimo("select academia_id || '|' || papel from public.academia_acessos where usuario = 'solto@exemplo.com'")
+ok(s == "ligada" and s2 == f"{OUTRA}|equipe", f"conta que já existia (sem academia) entra na equipe com a senha dela ({s2})")
+
+# Avaliação: nenhum contato de academia avalia.
+def avaliar(contato):
+    return sql(f"insert into public.avaliacoes (academia_id, stars, comment, nome_autor, contato_autor) values ('{ACADEMIA}', 4, 'Teste de conta visitante', 'Visitante', '{contato}')", "anon")
+
+
+bom, s = avaliar("DONO.NOVO@exemplo.com")
+ok(not bom and "academias não avaliam" in s, "visitante com o e-mail de uma conta de academia não avalia")
+bom, s = avaliar("+55 (11) 98888-0001")
+ok(not bom and "academias não avaliam" in s, "visitante com o WhatsApp de uma conta de academia não avalia")
+bom, s = avaliar("(11) 00000-0003")
+ok(not bom and "academias não avaliam" in s, "visitante com o WhatsApp de uma academia não avalia")
+bom, s = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{ACADEMIA}', 4, 'Teste de conta da equipe')", "authenticated", equipe)
+ok(not bom and "não avaliam" in s, "pessoa da equipe logada não avalia outra academia")
+bom, s = avaliar("11 96666-0001")
+ok(bom, "visitante comum continua avaliando")
+sql("delete from public.avaliacoes where comment like 'Teste de conta%'")
+
+# Academia nova mandada por uma conta: publicar libera a conta junto.
+conta_nova("nova.academia@exemplo.com", whats="11 97777-0003", nome="Dona Nova")
+s, r = entrar("nova.academia@exemplo.com", "senhaforte1")
+nova_conta = r.get("access_token", "")
+bom, s = sql("insert into public.academias (name, status, nome_solicitante, contato_solicitante) values ('Exemplo Nova da Conta', 'pending', 'Dona Nova', '11977770003')", "authenticated", nova_conta)
+_, s = ultimo("select pedido_nome || '|' || (pedido_academia_id is not null) from public.academia_acessos where usuario = 'nova.academia@exemplo.com'")
+ok(bom and s == "Exemplo Nova da Conta|true", f"academia nova mandada pela conta vira o pedido dela ({s})")
+_, nova_id = ultimo("select id from public.academias where name = 'Exemplo Nova da Conta'")
+sql(f"update public.academias set status = 'published' where id = '{nova_id}'", "authenticated", admin)
+_, s = ultimo("select (academia_id = pedido_academia_id or academia_id is not null) || '|' || papel from public.academia_acessos where usuario = 'nova.academia@exemplo.com'")
+_, s2 = ultimo(f"select count(*) from public.academia_acessos where academia_id = '{nova_id}' and papel = 'principal'")
+ok(s == "true|principal" and s2 == "1", "admin publica a academia nova e a conta passa a administrar")
+sql(f"delete from public.academias where id = '{nova_id}'", "authenticated", admin)
+
+# Quem recebeu usuário do GuiaTennis também entra pelo e-mail de contato.
+_, uid_mapa = ultimo(f"select public.criar_acesso_academia('{ACADEMIA}', 'exemplo.mapa', 'provisoria5')", "authenticated", admin)
+sql(f"update public.academia_acessos set email = 'contato@mapa-exemplo.com' where user_id = '{uid_mapa}'")
+_, s = ultimo("select public.login_do_email('Contato@Mapa-Exemplo.com')", "anon")
+ok(s == "exemplo.mapa@acesso.guiatennis.com.br", f"e-mail do responsável leva ao login dado pelo GuiaTennis ({s})")
+
+# O que o visitante não chama.
+for f in ["public.pedir_para_administrar('" + OUTRA + "')", "public.adicionar_pessoa('x@exemplo.com', 'X', 'provisoria7')",
+          "public.pessoas_da_minha_academia()", "public.criar_login('x@exemplo.com', 'provisoria7')",
+          "public.aprovar_pedido_de_acesso('" + dono_id + "')"]:
+    bom, s = sql("select " + f, "anon")
+    ok(not bom and "permission denied" in s, "visitante não chama " + f.split("(")[0])
+
+# Freio contra robô: muitas contas novas na mesma hora.
+recusou = False
+for n in range(25):
+    bom, s = conta_nova(f"robo{n}@exemplo.com", whats=f"11 9{n:04d}-0000", nome="Robo Teste")
+    if not bom:
+        recusou = "Muitos cadastros" in s
+        break
+ok(recusou, "muitas contas novas na mesma hora: pede para esperar")
+
+sql("delete from public.academia_acessos where usuario like '%@exemplo.com' or usuario like 'exemplo.mapa%'")
+sql("delete from auth.users where email like '%@exemplo.com'")
+sql(f"update public.academias set plano = 'basico', instagram = null where id = '{OUTRA}'")
 
 print(f"\n{'Tudo certo.' if not falhas else str(falhas) + ' falha(s).'}")
 sys.exit(1 if falhas else 0)

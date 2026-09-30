@@ -37,6 +37,18 @@
     : window.__academia ? { user: { id: "u-" + window.__academia, email: "quadra." + window.__academia + DOMINIO } } : null;
   const souAdmin = () => !!(sessao && sessao.user.email === ADMIN);
   const meuAcesso = () => sessao && db.academia_acessos.find(a => a.user_id === sessao.user.id);
+  // Conta do GuiaTennis Parceiros (SQL 20260930160000): e-mail de entrar,
+  // telefone só com números e o limite de pessoas do plano.
+  const loginDe = (x) => x.usuario.includes("@") ? x.usuario : x.usuario + DOMINIO;
+  const tel = (t) => { const d = String(t || "").replace(/\D/g, ""); return (d.length === 12 || d.length === 13) && d.startsWith("55") ? d.slice(2) : d; };
+  const planoDe = (id) => window.__plano || (db.academias.find(y => y.id === id) || {}).plano || "basico";
+  const limite = (plano) => ({ premium: 10, completo: 5 }[plano] || 2);
+  const ligar = (x, academiaId) => {
+    const temPrincipal = db.academia_acessos.some(y => y.academia_id === academiaId && (y.papel || "principal") === "principal");
+    Object.assign(x, { academia_id: academiaId, papel: temPrincipal ? "equipe" : "principal", pedido_academia_id: null, pedido_nome: null, pedido_em: null });
+  };
+  let seq = 0;
+  const novoLogin = (email, senha) => { window.__senhas[email] = senha; return "u-conta-" + (++seq); };
   window.__cliques = db.cliques;
   function builder(table) {
     let colunas = "*", rows = null, op = "select", payload = null, filtros = [], single = false;
@@ -57,8 +69,19 @@
         if (table === "cliques" && window.__semDetalhe && "detalhe" in payload) return { data:null, error:{ message:"column detalhe does not exist" } };
         if (table === "cliques" && window.__semCep && "cep" in payload) return { data:null, error:{ message:"column cep does not exist" } };
         if (table === "academias" && window.__semConfirmada && "confirmada" in payload) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
+        if (table === "avaliacoes" && !souAdmin()) {
+          if (meuAcesso()) return { data:null, error:{ message:"Contas do GuiaTennis Parceiros não avaliam academias.", code:"42501" } };
+          const c = String(payload.contato_autor || "").trim().toLowerCase(), n = tel(payload.contato_autor);
+          const deAcademia = c && (db.academia_acessos.some(x => (x.email || "").toLowerCase() === c || loginDe(x) === c || (n.length >= 10 && tel(x.whatsapp) === n))
+            || (n.length >= 10 && db.academias.some(y => tel(y.phone) === n)));
+          if (deAcademia) return { data:null, error:{ message:"Esse contato é de uma academia do GuiaTennis, e academias não avaliam academias.", code:"42501" } };
+        }
         const r = { id: "n" + (t.length+1) + Math.random().toString(36).slice(2,5), created_at: new Date().toISOString(), ...payload };
-        t.push(r); return { data: single ? r : [r], error:null };
+        t.push(r);
+        // Gatilho pedido_da_academia_nova: a academia nova vira o pedido da conta.
+        if (table === "academias" && sessao && !souAdmin() && meuAcesso() && !meuAcesso().academia_id)
+          Object.assign(meuAcesso(), { pedido_academia_id: r.id, pedido_nome: r.name, pedido_em: new Date().toISOString() });
+        return { data: single ? r : [r], error:null };
       }
       if (op === "update") {
         window.__ultimoUpdate = JSON.parse(JSON.stringify(payload));
@@ -68,7 +91,13 @@
           ["status", "pago", "plano", "pausada", "pausada_ate", "source", "nome_solicitante", "contato_solicitante"].forEach(k => delete mudanca[k]);
           mudanca.confirmada = true;
         }
-        t.filter(pass).forEach(r => Object.assign(r, mudanca));
+        t.filter(pass).forEach(r => {
+          const antes = r.status;
+          Object.assign(r, mudanca);
+          // Gatilho liberar_pedidos_da_academia.
+          if (table === "academias" && r.status === "published" && antes !== "published")
+            db.academia_acessos.filter(x => x.pedido_academia_id === r.id && !x.academia_id).forEach(x => ligar(x, r.id));
+        });
         return { data:null, error:null };
       }
       if (op === "delete") {
@@ -130,10 +159,85 @@
         termos_aceitos_em: x.termos_aceitos_em || new Date().toISOString(), dados_completos_em: x.dados_completos_em || new Date().toISOString() });
       return { data:null, error:null };
     }
+    if (nome === "login_do_email") {
+      const e = String(a.p_email || "").trim().toLowerCase();
+      const x = e.includes("@") && db.academia_acessos.find(x => loginDe(x) === e || (x.email || "").toLowerCase() === e);
+      return { data: x ? loginDe(x) : null, error:null };
+    }
+    if (nome === "criar_minha_conta") {
+      const e = String(a.p_email || "").trim().toLowerCase();
+      if (sessao) return erro("Saia da conta atual para criar outra.", "22023");
+      if (!a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
+      if (tel(a.p_whatsapp).length < 10 || tel(a.p_whatsapp).length > 11) return erro("WhatsApp inválido: use o DDD e o número.", "22023");
+      if (db.academia_acessos.some(x => loginDe(x) === e || (x.email || "").toLowerCase() === e) || e === ADMIN) return erro("Esse e-mail já tem conta no GuiaTennis Parceiros. Entre com a sua senha.", "23505");
+      const id = novoLogin(e, a.p_senha);
+      const t = new Date().toISOString();
+      db.academia_acessos.push({ user_id:id, academia_id:null, usuario:e, nome_responsavel:a.p_nome, email:e, whatsapp:tel(a.p_whatsapp), papel:"principal",
+        termos_aceitos_em:t, dados_completos_em:t, senha_trocada_em:t, created_at:t, pedido_academia_id:null, pedido_nome:null, pedido_em:null });
+      return { data:null, error:null };
+    }
+    if (nome === "pedir_para_administrar") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      if (x.academia_id) return erro("A sua conta já administra uma academia.", "22023");
+      const ac = db.academias.find(y => y.id === a.p_academia && y.status === "published");
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      Object.assign(x, { pedido_academia_id: ac.id, pedido_nome: ac.name, pedido_em: new Date().toISOString() });
+      return { data:null, error:null };
+    }
+    if (nome === "cancelar_meu_pedido") {
+      const x = meuAcesso();
+      if (x && !x.academia_id) Object.assign(x, { pedido_academia_id:null, pedido_nome:null, pedido_em:null });
+      return { data:null, error:null };
+    }
+    if (nome === "aprovar_pedido_de_acesso" || nome === "recusar_pedido_de_acesso") {
+      if (!souAdmin()) return erro("Só o GuiaTennis aprova pedidos.", "42501");
+      const x = db.academia_acessos.find(y => y.user_id === a.p_user);
+      if (!x || !x.pedido_academia_id) return erro("Pedido não encontrado.", "22023");
+      if (nome === "aprovar_pedido_de_acesso") ligar(x, x.pedido_academia_id);
+      else Object.assign(x, { pedido_academia_id:null, pedido_nome:null, pedido_em:null });
+      return { data:null, error:null };
+    }
+    if (nome === "pessoas_da_minha_academia") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id) return { data:[], error:null };
+      const lista = db.academia_acessos.filter(y => y.academia_id === x.academia_id)
+        .sort((p, q) => ((q.papel || "principal") === "principal") - ((p.papel || "principal") === "principal"))
+        .map(y => ({ user_id:y.user_id, nome:y.nome_responsavel || null, email:y.email || y.usuario, papel:y.papel || "principal", dados_completos_em:y.dados_completos_em || null, ultimo_acesso:null, sou_eu:y.user_id === x.user_id }));
+      return { data:lista, error:null };
+    }
+    if (nome === "adicionar_pessoa") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id) return erro("A sua conta ainda não administra uma academia.", "42501");
+      if ((x.papel || "principal") !== "principal") return erro("Só o responsável principal adiciona pessoas.", "42501");
+      const e = String(a.p_email || "").trim().toLowerCase();
+      const lim = limite(planoDe(x.academia_id));
+      if (db.academia_acessos.filter(y => y.academia_id === x.academia_id).length >= lim) return erro(`O seu plano permite até ${lim} pessoas. Aprimore o plano para adicionar mais.`, "22023");
+      const outro = db.academia_acessos.find(y => loginDe(y) === e || (y.email || "").toLowerCase() === e);
+      if (outro) {
+        if (outro.academia_id) return erro("Esse e-mail já tem acesso a uma academia no GuiaTennis Parceiros.", "23505");
+        if (outro.pedido_academia_id && outro.pedido_academia_id !== x.academia_id) return erro("Essa pessoa já pediu para administrar outra academia.", "23505");
+        ligar(outro, x.academia_id);
+        return { data:"ligada", error:null };
+      }
+      const id = novoLogin(e, a.p_senha);
+      db.academia_acessos.push({ user_id:id, academia_id:x.academia_id, usuario:e, nome_responsavel:a.p_nome || null, email:e, papel:"equipe", created_at:new Date().toISOString() });
+      return { data:"criada", error:null };
+    }
+    if (nome === "remover_pessoa") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id || (x.papel || "principal") !== "principal") return erro("Só o responsável principal remove pessoas.", "42501");
+      if (a.p_user === x.user_id) return erro("Você não pode remover a si mesmo.", "22023");
+      const i = db.academia_acessos.findIndex(y => y.user_id === a.p_user && y.academia_id === x.academia_id);
+      if (i < 0) return erro("Pessoa não encontrada.", "22023");
+      if ((db.academia_acessos[i].papel || "principal") === "principal") return erro("Outro responsável principal só o GuiaTennis remove.", "42501");
+      db.academia_acessos.splice(i, 1);
+      return { data:null, error:null };
+    }
     // Números da academia: o plano sai de window.__plano ou da ficha.
     if (nome === "numeros_da_academia") {
       const x = meuAcesso();
-      if (!x) return erro("Sem acesso aos números dessa academia.", "42501");
+      if (!x || !x.academia_id) return erro("Sem acesso aos números dessa academia.", "42501");
       const ac = db.academias.find(y => y.id === x.academia_id) || {};
       const plano = window.__plano || ac.plano || "basico";
       const pedido = a.p_dias === undefined ? 30 : a.p_dias;
@@ -163,7 +267,7 @@
       signInWithPassword({ email, password }){
         window.__ultimoLogin = email;
         if (email === ADMIN || (window.__senhas[email] && window.__senhas[email] === password)) {
-          const acesso = db.academia_acessos.find(x => x.usuario + DOMINIO === email);
+          const acesso = db.academia_acessos.find(x => loginDe(x) === email);
           sessao = { user: { id: email === ADMIN ? "admin" : (acesso ? acesso.user_id : "sem-acesso"), email } };
           return Promise.resolve({ data:{ session: sessao, user: sessao.user }, error:null });
         }

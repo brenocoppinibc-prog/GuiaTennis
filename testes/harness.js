@@ -34,6 +34,14 @@ async function abrir(opts = {}) {
     if (u.includes('leaflet') && u.endsWith('.js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'leaflet-stub.js'), 'utf8') });
     // opts.overpass: resposta fixa do OpenStreetMap (lista do mapa no painel)
     if (opts.overpass && u.includes('overpass')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify(opts.overpass) });
+    // opts.fontes: pasta com as fontes do Google baixadas (fontes.css, os
+    // .woff2 e mapa.txt "url arquivo"), para foto de tela com a letra de
+    // verdade. Os testes não precisam delas.
+    if (opts.fontes && u.includes('fonts.googleapis.com')) return route.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(opts.fontes, 'fontes.css'), 'utf8') });
+    if (opts.fontes && u.includes('fonts.gstatic.com')) {
+      const linha = fs.readFileSync(path.join(opts.fontes, 'mapa.txt'), 'utf8').split('\n').find(l => l.startsWith(u + ' '));
+      if (linha) return route.fulfill({ contentType: 'font/woff2', body: fs.readFileSync(path.join(opts.fontes, linha.split(' ')[1])) });
+    }
     if (u.includes('viacep')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ cep: "05422-000", logradouro: "Rua A", bairro: "Pinheiros", localidade: "São Paulo", uf: "SP" }) });
     if (u.includes('nominatim') && u.includes('reverse')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ lat: "-23.56", lon: "-46.68", address: { suburb: "Pinheiros", city: "São Paulo" } }) });
     if (u.includes('nominatim')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify([{ lat: "-23.56", lon: "-46.68", display_name: "Pinheiros, São Paulo", address: { suburb: "Pinheiros", city: "São Paulo" } }]) });

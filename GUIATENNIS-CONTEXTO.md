@@ -74,6 +74,9 @@ mexer:
   academia: seção 4, "Academias do mapa aberto".
 - Não gosta de mensagem automática no WhatsApp (seção 12) nem de botão em
   pílula para contato. Prefere texto com logo pequeno.
+- **Quer o site limpo e espaçado** (30/09/2026: "muito aglomerado"). Letra
+  sem serifa no texto, ar entre os blocos, nada de caixa dentro de caixa
+  (seção 8, "Visual").
 - Mensagem de erro tem de ser simples, dizendo o que fazer ("O mapa está
   lento agora. Espere um pouco…"). O motivo técnico vai para o
   `?diagnostico`.
@@ -769,7 +772,7 @@ testes/check-js.sh
 cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
-Em 30/09/2026 (área da academia e links): **245 verificações, todas
+Em 30/09/2026 (área da academia, links e visual limpo): **245 verificações, todas
 passando** (as 159 de antes, 52 da área da academia e 34 dos links), mais as 61 do
 `banco-acesso.py` no banco e login locais.
 
@@ -944,6 +947,23 @@ como modelo (seção 12).
   banco de teste (staging), SQL guardado no repositório e aplicado pela
   esteira, merge publica.
 
+### Visual (pedido do Breno em 30/09/2026: "deixe mais clean")
+O site usava a Playfair Display em tudo — texto, botão, rótulo e letra
+miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
+- **Letras:** `--fonte-texto` (Inter, do Google Fonts, com as do sistema
+  de reserva) em todo o texto; `--fonte-titulo` (Playfair) só em
+  `.display`, `.sheet-title` e `.sec-title` — marca, títulos de página e de
+  seção. Nome de academia em cartão é Inter.
+- **Tamanhos:** texto base 15px (16px no "Sobre a academia"), nada abaixo
+  de 12px; campos com 16px (o iPhone não dá zoom); botões com 48px de
+  altura; rótulos de campo e de filtro em letra normal, sem CAIXA ALTA.
+- **Espaço:** mais ar entre as seções da home e da ficha, cartões com
+  16–20px de respiro, bordas mais claras (`--border: #E9E3D7`).
+- Tudo isso é a camada **"Acabamento limpo"**, no fim do `<style>` — vale
+  sobre o resto. Regra nova de visual entra nela.
+- No celular estreito, o "Compartilhar" sai da barra de baixo da ficha (já
+  está na barra de cima) para o "Chamar no WhatsApp" caber numa linha.
+
 ## 9. Armadilhas já pisadas (não repetir)
 
 - **`position: sticky` em item de grid** só gruda dentro da própria área
@@ -987,8 +1007,14 @@ como modelo (seção 12).
 - **Os cards são `<button>`, não link.** Sem `<a href="?court=…">` o
   Google não chega em ficha nenhuma. Os minis da home são âncoras com
   `preventDefault` no clique; se criar card novo, faça igual.
-- **`innerText` respeita `text-transform`**, então `.field-label` sai em
-  maiúsculas nos testes. Compare com o texto transformado.
+- **`innerText` respeita `text-transform`.** Desde 30/09/2026 os rótulos
+  (`.field-label`, `.fgroup-title`) não são mais em caixa alta; o que
+  continua em maiúsculas (selos, `.menu-grupo`, `.ct-secao`) sai assim nos
+  testes. Compare com o texto como aparece na tela.
+- **Foto de tela sem a letra de verdade engana.** O `harness.js` bloqueia a
+  internet, e o Chromium cai numa fonte qualquer. Para julgar o visual, use
+  `abrir({ fontes: <pasta> })` com as fontes do Google baixadas por `curl`
+  (`fontes.css`, os `.woff2` e `mapa.txt` com "url arquivo").
 - **Admin conectado não conta nas estatísticas.** `registrarBusca` e o
   `acesso_site` saem se `isAdmin`. Quem testa logado (a sessão fica no
   celular) acha que a busca "não registrou". O painel avisa isso.
@@ -1079,7 +1105,8 @@ como modelo (seção 12).
 ## 10. Histórico
 
 ```
-(a seguir) Links no padrão dos grandes: ficha, região, filtros, abas e comparação   ← PR #5, 30/09
+(a seguir) Visual limpo: Inter no texto, Playfair nos títulos e mais espaço   ← PR #5, 30/09
+082e6ad Links no padrão dos grandes: ficha, região, filtros, abas e comparação   ← PR #5, 30/09
 fbe7e89 Área da academia: login, primeiro acesso, edição da própria ficha e respostas   ← PR #5, 30/09
 2bfc6d0 Documento de contexto atualizado depois do PR #3 (#4)
 92e5685 SQL automático, ficha básica, WhatsApp, buscador do mapa e sitemap (#3)   ← merge na main, 29/09
@@ -1184,7 +1211,8 @@ c9ade31 Configuração de publicação do Netlify
   Links: abrir uma ficha e ver o endereço `/academia/…`; tocar em
   "Avaliações" (vira `#avaliacoes`); no caminho da ficha, tocar no bairro
   (`/quadras/sao-paulo/moema`); filtrar e ordenar e usar o "voltar" do
-  celular. Depois, "pode subir".
+  celular. Visual: ver se a letra nova e o espaço agradaram no celular
+  (home, busca, ficha, filtros). Depois, "pode subir".
 - **Depois do merge dos links:** no Google Search Console, enviar o
   `sitemap.xml` (as fichas agora são `/academia/…` e há páginas de região).
   Links antigos seguem funcionando.

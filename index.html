@@ -23,7 +23,7 @@
 <meta name="twitter:image" content="https://guiatennis.com.br/og-image.png">
 <meta property="og:url" content="https://guiatennis.com.br">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script type="application/ld+json" id="ld-academia"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -98,11 +98,12 @@
   .faixa-banco-teste { background: var(--gold-light); color: var(--text); font-size: 12px; font-weight: 700; text-align: center; padding: 6px 16px; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
-    font-family: 'Playfair Display', serif; font-weight: 500; line-height: 1.45;
+    font-family: var(--fonte-texto); font-weight: 400; line-height: 1.55; font-size: 15px;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1;
   }
   input, select, textarea, button { font-family: inherit; }
-  .display { font-family: 'Playfair Display', serif; }
+  .display { font-family: var(--fonte-titulo); }
   .container { max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
   .admin-banner { background: var(--green); color: #fff; font-weight: 600; font-size: 12px; text-align: center; padding: 6px; letter-spacing: 0.07em; text-transform: uppercase; }
@@ -113,7 +114,7 @@
   .logo-mark { flex-shrink: 0; }
   .subtitle { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
 
-  .btn-primary { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 0 20px; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 0 20px; font-family: var(--fonte-texto); font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
   .btn-primary:disabled { opacity: 0.6; cursor: default; }
 
   .status-line { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 10px; }
@@ -121,7 +122,7 @@
   .status-info { color: var(--muted); }
 
   .toolbar { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .chip { font-family: 'Playfair Display', serif; font-weight: 600; border-radius: 999px; padding: 6px 13px; font-size: 13px; border: 1px solid var(--border); background: var(--card); color: var(--green); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .chip { font-family: var(--fonte-texto); font-weight: 600; border-radius: 999px; padding: 6px 13px; font-size: 13px; border: 1px solid var(--border); background: var(--card); color: var(--green); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .chip.small { padding: 5px 11px; font-size: 12px; }
   .chip.active { background: var(--green); color: #fff; border-color: var(--green); }
 
@@ -254,7 +255,7 @@
   .card-badge { position: absolute; top: 10px; left: 10px; background: var(--gold); color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 4px 10px; border-radius: 999px; }
   .card-body { padding: 16px; }
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .card-name { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; line-height: 1.15; color: var(--text); margin: 0; }
+  .card-name { font-family: var(--fonte-texto); font-size: 19px; font-weight: 700; line-height: 1.15; color: var(--text); margin: 0; }
   .card-meta { color: var(--muted); font-size: 12px; margin: 5px 0 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
   .stars { color: var(--gold); font-size: 14px; letter-spacing: 1px; }
@@ -303,7 +304,7 @@
   .photo-thumb-remove { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.55); color: #fff; border: none; border-radius: 999px; width: 20px; height: 20px; font-size: 12px; cursor: pointer; }
   .sheet-content { padding: 20px; position: relative; }
   .sheet-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.85); border: none; color: var(--text); font-size: 18px; cursor: pointer; width: 30px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; }
-  .sheet-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1.1; margin: 4px 0 0; }
+  .sheet-title { font-family: var(--fonte-titulo); font-size: 26px; font-weight: 700; line-height: 1.1; margin: 4px 0 0; }
   .sheet-meta { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
   .price-box { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-top: 16px; }
   .price-box p:first-child { color: var(--muted); font-size: 12px; margin: 0; }
@@ -322,7 +323,7 @@
   .star-picker span.filled { color: var(--gold); }
   .rate-thanks { color: var(--green); font-size: 13px; font-weight: 600; margin-top: 8px; }
 
-  .form-field { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: 'Playfair Display', serif; font-size: 14px; outline: none; margin-top: 10px; }
+  .form-field { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: var(--fonte-texto); font-size: 14px; outline: none; margin-top: 10px; }
   .form-field::placeholder { color: var(--muted-dark); }
   .field-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 14px; margin-bottom: 6px; }
   .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -341,7 +342,7 @@
   .form-success { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 24px 0; }
 
   .pending-item { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 10px; }
-  .pending-name { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px; margin: 0; }
+  .pending-name { font-family: var(--fonte-texto); font-weight: 700; font-size: 16px; margin: 0; }
   .pending-detail { color: var(--muted); font-size: 12px; margin: 2px 0 0; }
   .pending-actions { display: flex; gap: 8px; margin-top: 10px; }
   .pending-actions .cta-btn { flex: 1; padding: 8px; font-size: 13px; }
@@ -365,7 +366,7 @@
   .toolbar-count { font-size: 14px; font-weight: 700; margin: 0; color: var(--text); }
   .toolbar-sub { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
   .toolbar-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-  .tbtn { display: inline-flex; align-items: center; gap: 6px; font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 600; padding: 8px 13px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; }
+  .tbtn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--fonte-texto); font-size: 13px; font-weight: 600; padding: 8px 13px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; }
   .tbtn.on { border-color: var(--green); color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
   .tbtn-badge { background: var(--green); color: #fff; border-radius: 999px; font-size: 12px; font-weight: 700; padding: 1px 7px; }
   .tbtn .caret { font-size: 11px; opacity: 0.7; }
@@ -377,7 +378,7 @@
      abre para a esquerda. O ajuste fino fica por conta do JavaScript. */
   .sort-menu { position: absolute; left: 0; right: auto; top: calc(100% + 6px); z-index: 40; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); width: 262px; max-width: calc(100vw - 32px); overflow: hidden; }
   @media (min-width: 720px) { .sort-menu { left: auto; right: 0; } }
-  .sort-opt { display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left; background: none; border: none; padding: 10px 13px; cursor: pointer; font-size: 13px; font-family: 'Playfair Display', serif; color: var(--text); font-weight: 600; }
+  .sort-opt { display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left; background: none; border: none; padding: 10px 13px; cursor: pointer; font-size: 13px; font-family: var(--fonte-texto); color: var(--text); font-weight: 600; }
   .sort-opt + .sort-opt { border-top: 1px solid var(--bg-alt); }
   .sort-opt:hover { background: var(--bg-alt); }
   .sort-opt .radio { width: 15px; height: 15px; border-radius: 999px; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 2px; box-sizing: border-box; }
@@ -386,7 +387,7 @@
 
   /* ---- chips de filtros ativos ---- */
   .active-chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 20px 0; }
-  .achip { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 600; font-family: 'Playfair Display', serif; cursor: pointer; }
+  .achip { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 600; font-family: var(--fonte-texto); cursor: pointer; }
   .achip .x { font-size: 13px; line-height: 1; opacity: 0.8; }
   .achip-clear { background: transparent; color: var(--green); border: 1px dashed var(--muted-dark); }
 
@@ -406,7 +407,7 @@
   .fgroup { border-bottom: 1px solid var(--border); padding: 14px 0; }
   .fgroup:last-child { border-bottom: none; }
   .fgroup-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 0 0 8px; }
-  .opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; font-size: 14px; color: var(--text); background: none; border: none; width: 100%; text-align: left; font-family: 'Playfair Display', serif; }
+  .opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; font-size: 14px; color: var(--text); background: none; border: none; width: 100%; text-align: left; font-family: var(--fonte-texto); }
   .opt:disabled { opacity: 0.4; cursor: default; }
   .opt-check { width: 19px; height: 19px; border-radius: 5px; border: 1.5px solid var(--border); background: var(--card); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 800; box-sizing: border-box; }
   .opt.on .opt-check { background: var(--green); border-color: var(--green); }
@@ -433,7 +434,7 @@
   .rail-from { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
   .rail-price { font-size: 20px; font-weight: 800; color: var(--green); line-height: 1.1; white-space: nowrap; }
   .rail-unit { font-size: 12px; color: var(--muted); }
-  .rail-btn { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .rail-btn { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-family: var(--fonte-texto); font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .card-quote { font-size: 12px; color: var(--muted); font-style: italic; margin: 8px 0 0; border-left: 2px solid var(--gold); padding-left: 8px; line-height: 1.4; }
   .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
   .tag { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 7px; font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
@@ -456,7 +457,7 @@
   /* ---- ficha estilo hotel ---- */
   .sheet-wide { max-width: 920px; }
   @media (min-width: 640px) { .sheet-wide { max-height: 92vh; } }
-  .hero-act { background: rgba(255,255,255,0.93); border: none; border-radius: 999px; height: 34px; min-width: 34px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 700; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.22); }
+  .hero-act { background: rgba(255,255,255,0.93); border: none; border-radius: 999px; height: 34px; min-width: 34px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-family: var(--fonte-texto); font-size: 12px; font-weight: 700; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.22); }
   .hero-act.on { background: var(--green); color: #fff; }
   .hero-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 240px; background: linear-gradient(135deg, #E4DEC9, #EFEADD); }
   .sheet-wide { display: flex; flex-direction: column; overflow: hidden; }
@@ -464,11 +465,11 @@
 
 
   .sec { margin-top: 24px; }
-  .sec-title { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
+  .sec-title { font-family: var(--fonte-titulo); font-size: 19px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
 
   .rating-panel { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
   .rp-score { text-align: center; flex-shrink: 0; }
-  .rp-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: var(--green); line-height: 1; }
+  .rp-num { font-family: var(--fonte-texto); font-size: 36px; font-weight: 700; color: var(--green); line-height: 1; }
   .rp-word { font-size: 13px; font-weight: 700; margin-top: 4px; }
   .rp-count { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); padding: 2px 0; }
@@ -481,7 +482,7 @@
   .rev-name { font-size: 13px; font-weight: 700; margin: 0; }
   .rev-date { font-size: 12px; color: var(--muted-dark); }
   .rev-text { font-size: 13px; margin: 5px 0 0; line-height: 1.45; color: var(--text); }
-  .rev-more { width: 100%; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 9px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--green); font-family: 'Playfair Display', serif; cursor: pointer; }
+  .rev-more { width: 100%; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 9px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--green); font-family: var(--fonte-texto); cursor: pointer; }
 
 
   /* ---- barra de busca no formato do Trivago ---- */
@@ -490,19 +491,19 @@
   .sc-icon { flex-shrink: 0; display: flex; }
   .sc-field { flex: 1; min-width: 0; }
   .sc-label { font-size: 12px; color: var(--muted); line-height: 1.2; }
-  .sc-input { width: 100%; border: none; background: transparent; outline: none; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--text); padding: 3px 0 1px; }
+  .sc-input { width: 100%; border: none; background: transparent; outline: none; font-family: var(--fonte-texto); font-size: 15px; font-weight: 700; color: var(--text); padding: 3px 0 1px; }
   .sc-input::placeholder { color: var(--muted-dark); font-weight: 500; }
   .sc-select { cursor: pointer; -webkit-appearance: none; appearance: none; }
   .sc-caret { flex-shrink: 0; color: var(--muted); font-size: 12px; }
   .sc-locate { flex-shrink: 0; width: 38px; height: 38px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .sc-foot { padding: 12px 14px; }
-  .sc-go { width: 100%; border: none; border-radius: 10px; background: var(--green); color: #fff; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .sc-go { width: 100%; border: none; border-radius: 10px; background: var(--green); color: #fff; font-family: var(--fonte-texto); font-size: 16px; font-weight: 700; padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .sc-go:disabled { opacity: 0.65; cursor: default; }
 
   /* ---- mapa ---- */
   .mapwrap { position: relative; z-index: 0; height: calc(100vh - 98px); height: calc(100dvh - 98px); min-height: 380px; border-top: 1px solid var(--border); background: var(--bg-alt); }
   .map { width: 100%; height: 100%; }
-  .leaflet-container { font-family: 'Playfair Display', serif; background: var(--bg-alt); }
+  .leaflet-container { font-family: var(--fonte-texto); background: var(--bg-alt); }
   .pin { display: inline-block; transform: translate(-50%, -100%); background: var(--green); color: #fff; border: 2px solid #fff; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 800; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
   .pin.on { background: var(--gold); color: var(--green-dark); }
   .pin-me { display: block; transform: translate(-50%, -50%); width: 16px; height: 16px; border-radius: 999px; background: #fff; border: 4px solid var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
@@ -512,12 +513,12 @@
   .map-card { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); display: flex; gap: 12px; padding: 10px 32px 10px 10px; align-items: center; cursor: pointer; text-align: left; }
   .map-card-photo { width: 84px; height: 72px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
   .map-card-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .map-card-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; margin: 0; line-height: 1.15; }
+  .map-card-name { font-family: var(--fonte-texto); font-size: 16px; font-weight: 700; margin: 0; line-height: 1.15; }
   .map-card-meta { font-size: 12px; color: var(--muted); margin: 2px 0 4px; }
   .map-card-price { font-size: 17px; font-weight: 800; color: var(--green); line-height: 1.1; white-space: nowrap; }
   .map-close { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 14px; color: var(--muted); cursor: pointer; padding: 2px 4px; line-height: 1; }
   .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 28px; color: var(--muted); font-size: 14px; background: var(--bg-alt); z-index: 900; }
-  .map-fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 45; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 24px rgba(31,77,61,0.35); display: inline-flex; align-items: center; gap: 8px; }
+  .map-fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 45; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-family: var(--fonte-texto); font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 24px rgba(31,77,61,0.35); display: inline-flex; align-items: center; gap: 8px; }
   .map-fab { bottom: 26px; }
   .map-fab.up { bottom: 88px; }
 
@@ -621,7 +622,7 @@
   .menu-marca svg { width: 30px; height: 30px; }
   .menu-fechar { width: 38px; height: 38px; border: none; background: var(--bg-alt); border-radius: 999px; font-size: 15px; color: var(--text); cursor: pointer; flex-shrink: 0; }
   .menu-grupo { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-dark); margin: 18px 0 4px; }
-  .menu-item { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; background: none; border: none; border-radius: 10px; padding: 11px 10px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; cursor: pointer; }
+  .menu-item { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; background: none; border: none; border-radius: 10px; padding: 11px 10px; font-family: var(--fonte-texto); font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; cursor: pointer; }
   .menu-item:hover { background: var(--bg-alt); }
   .menu-rodape { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); }
   .menu-versao { font-size: 12px; color: var(--muted-dark); margin: 10px 10px 0; }
@@ -654,7 +655,7 @@
   .ba-item { display: flex; gap: 10px; font-size: 15px; line-height: 1.45; }
   .ba-ic { flex-shrink: 0; margin-top: 3px; display: flex; }
   .ba-d { font-size: 14px; color: rgba(255,255,255,0.78); }
-  .ba-btn { width: 100%; margin-top: 22px; background: var(--gold); color: var(--green-dark); border: none; border-radius: 12px; padding: 15px; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 800; cursor: pointer; }
+  .ba-btn { width: 100%; margin-top: 22px; background: var(--gold); color: var(--green-dark); border: none; border-radius: 12px; padding: 15px; font-family: var(--fonte-texto); font-size: 16px; font-weight: 800; cursor: pointer; }
   .ba-nota { font-size: 12px; color: rgba(255,255,255,0.7); margin: 10px 0 0; text-align: center; }
 
 
@@ -724,7 +725,7 @@
 
   /* ---- animação "como funciona a busca" ---- */
   .demo { width: 100%; height: 100%; display: block; }
-  .demo text { font-family: 'Playfair Display', serif; }
+  .demo text { font-family: var(--fonte-texto); }
   .demo .cena { opacity: 0; }
   .demo .cena1 { animation: demoCena1 9s infinite; }
   .demo .cena2 { animation: demoCena2 9s infinite; }
@@ -778,7 +779,7 @@
   .ht-gal .g { position: relative; overflow: hidden; background: var(--bg-alt); cursor: pointer; }
   .ht-gal .g img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ht-gal .g:not(:first-child) { display: none; }
-  .ht-gal-all { position: absolute; right: 12px; bottom: 12px; z-index: 3; display: inline-flex; align-items: center; gap: 6px; background: rgba(20,51,42,0.82); color: #fff; border: none; border-radius: 9px; padding: 8px 13px; font-size: 12px; font-weight: 700; font-family: 'Playfair Display', serif; cursor: pointer; }
+  .ht-gal-all { position: absolute; right: 12px; bottom: 12px; z-index: 3; display: inline-flex; align-items: center; gap: 6px; background: rgba(20,51,42,0.82); color: #fff; border: none; border-radius: 9px; padding: 8px 13px; font-size: 12px; font-weight: 700; font-family: var(--fonte-texto); cursor: pointer; }
   @media (min-width: 720px) {
     .ht-gal { height: 400px; grid-template-rows: 1fr 1fr; }
     .ht-gal .g:not(:first-child) { display: block; }
@@ -990,6 +991,214 @@
   .court-cta-val { font-size: 17px; font-weight: 800; white-space: nowrap; line-height: 1.1; }
   .court-cta-unit { font-size: 11px; color: var(--muted); white-space: nowrap; }
   @media (min-width: 1000px) { .court-cta { display: none; } }
+
+  /* ================= Acabamento limpo (30/09/2026) =================
+     Pedido do Breno: o site estava aglomerado. Como Airbnb e Booking:
+     letra sem serifa no texto (Inter), a Playfair só nos títulos e na
+     marca, texto de 15–16px, mais ar entre os blocos, bordas mais leves e
+     botões e campos maiores para o dedo. Fica no fim para valer sobre o
+     resto. */
+  :root {
+    --fonte-texto: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --fonte-titulo: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --border: #E9E3D7;
+    --muted: #6B6557;
+    --muted-dark: #9A937F;
+    --shadow: 0 1px 2px rgba(33,31,26,0.04), 0 6px 18px rgba(33,31,26,0.05);
+  }
+  strong, b { font-weight: 600; }
+
+  /* textos pequenos: nada abaixo de 12px, o comum em 13–14px */
+  .footnote { font-size: 13px; line-height: 1.5; margin-top: 18px; }
+  .subtitle { font-size: 15px; line-height: 1.5; }
+  .pending-detail { font-size: 13px; line-height: 1.45; }
+  .status-line { font-size: 13px; }
+  .inline-link { font-size: inherit; }
+  .consent-row { font-size: 13px; line-height: 1.5; gap: 10px; }
+  .consent-row input { width: 18px; height: 18px; accent-color: var(--green); margin-top: 1px; }
+
+  /* botões e campos maiores, com texto de 16px (o iPhone não dá zoom) */
+  .cta-btn { padding: 13px 16px; font-size: 15px; border-radius: 12px; min-height: 48px; }
+  .cta-col { gap: 10px; }
+  .btn-primary { font-size: 15px; border-radius: 12px; min-height: 48px; }
+  .form-field { font-size: 16px; padding: 13px 14px; border-radius: 12px; margin-top: 12px; background: var(--card); }
+  .form-field:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(31,77,61,0.12); }
+  .field-label { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600; color: var(--text); margin: 22px 0 8px; }
+  .chip { font-weight: 500; font-size: 14px; padding: 8px 14px; }
+  .chip.small { font-size: 13px; padding: 7px 12px; }
+  .chip-row { gap: 8px 8px; }
+  .sheet-content { padding: 26px 22px 30px; }
+  .sheet-title { font-size: 28px; line-height: 1.15; }
+  .sheet-close { top: 18px; right: 18px; width: 36px; height: 36px; background: var(--bg-alt); }
+
+  /* cabeçalho e página inicial com mais ar */
+  .home-head { padding: 14px 20px; border-bottom-color: transparent; box-shadow: 0 1px 0 var(--border); }
+  .home-brand h1 { font-size: 24px; }
+  .home-hero { padding: 34px 20px 30px; }
+  .home-hero h2 { font-size: 32px; line-height: 1.15; }
+  @media (min-width: 720px) { .home-hero { padding: 56px 20px 40px; } .home-hero h2 { font-size: 46px; } }
+  .home-hero .home-hero-sub { margin-top: 16px; font-size: 15px; line-height: 1.55; }
+  .searchcard { margin-top: 24px; border-radius: 16px; box-shadow: 0 2px 4px rgba(33,31,26,0.04), 0 10px 30px rgba(33,31,26,0.07); }
+  .sc-row { padding: 12px 16px; }
+  .sc-label { font-size: 12px; font-weight: 500; }
+  .sc-input { font-size: 16px; font-weight: 600; }
+  .sc-foot { padding: 14px 16px 16px; }
+  .sc-go { font-size: 16px; font-weight: 600; border-radius: 12px; }
+  .home-sec { padding: 26px 20px 30px; }
+  .home-sec h3 { font-size: 23px; margin: 0 0 16px; }
+  @media (min-width: 720px) { .home-sec { padding: 34px 20px 38px; } .home-sec h3 { font-size: 28px; } }
+  .home-strip { gap: 14px; padding-bottom: 10px; }
+  .mini { flex-basis: 220px; border-radius: 14px; }
+  .mini-body { padding: 14px 16px 16px; }
+  .mini-name { font-size: 16px; font-weight: 600; }
+  .mini-score, .mini-stars { margin-top: 6px; }
+  .dif-grade { gap: 14px; }
+  /* ícone ao lado do texto, como os destaques do Airbnb: mais curto */
+  .dif-item { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 14px; padding: 20px; border-radius: 16px; }
+  .dif-ic { grid-row: span 2; margin: 2px 0 0; }
+  .dif-t { font-size: 16px; font-weight: 600; }
+  .dif-d { font-size: 15px; line-height: 1.55; margin-top: 4px; }
+  .city-tabs { gap: 22px; margin-bottom: 16px; }
+  .city-note { font-size: 14px; margin-bottom: 16px; }
+  .bloco-academias { margin: 24px 20px 36px; padding: 30px 22px; border-radius: 20px; }
+  .ba-lista { gap: 18px; margin-top: 22px; }
+  .ba-item { font-size: 16px; line-height: 1.5; }
+  .ba-d { font-size: 15px; line-height: 1.55; margin-top: 2px; }
+  .ba-btn { font-weight: 600; border-radius: 14px; padding: 16px; }
+  .ba-nota { font-size: 13px; margin-top: 14px; }
+  .ban-item strong { font-weight: 700; }
+  .ban-item span { font-size: 13px; }
+
+  /* busca: lista com respiro, cartão mais limpo */
+  .search-header { padding: 20px 20px 22px; border-bottom-color: transparent; }
+  .regiao-titulo { font-size: 26px; margin: 22px 20px 0; }
+  .toolbar { padding: 14px 20px; background: rgba(247,244,236,0.96); backdrop-filter: saturate(1.4) blur(8px); }
+  .toolbar-count { font-size: 15px; font-weight: 600; }
+  .toolbar-sub { font-size: 13px; }
+  .tbtn { font-size: 14px; font-weight: 500; padding: 9px 14px; border-radius: 999px; }
+  .results { gap: 18px; padding: 20px 20px 112px; }
+  .rcard { border-radius: 16px; border-color: var(--border); }
+  .rcard-top { padding: 16px; gap: 14px; }
+  .rcard-name { font-size: 18px; font-weight: 600; line-height: 1.25; }
+  @media (min-width: 720px) { .rcard-name { font-size: 21px; } }
+  .rcard-score { margin-top: 8px; }
+  .rcard-line { font-size: 14px; margin-top: 8px; }
+  .sbadge { font-weight: 600; }
+  .sword { font-weight: 600; }
+  .offer { margin: 0 16px 16px; padding: 14px 16px; border-radius: 12px; background: #F4F8F6; border-color: #DCE9E2; }
+  .offer-head { font-size: 14px; }
+  .offer-mod { font-weight: 600; }
+  .offer-um-val, .offer-price { font-weight: 700; }
+  .offer-btn { font-weight: 600; border-radius: 10px; }
+  .offer-contact { font-weight: 600; margin-top: 12px; }
+  /* no celular, as comodidades descem para a linha de baixo em vez de estourar */
+  @media (max-width: 560px) { .offer-perks { margin-left: 0; flex-basis: 100%; } }
+  .rail-btn { font-weight: 600; }
+  .rcard-tag, .mini-badge, .card-badge { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; padding: 4px 9px; }
+
+  /* gaveta de filtros */
+  .drawer-head { padding: 18px 20px; }
+  .drawer-head strong { font-size: 18px; font-weight: 600; }
+  .drawer-body { padding: 4px 20px 20px; }
+  .drawer-foot { padding: 14px 20px; }
+  .fgroup { padding: 20px 0; }
+  .fgroup-title { text-transform: none; letter-spacing: 0; font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 10px; }
+  .opt { font-size: 15px; padding: 10px 0; gap: 12px; }
+  .opt-count { font-size: 13px; font-weight: 500; }
+  .sort-opt { font-size: 14px; font-weight: 500; padding: 12px 14px; }
+  .sort-opt small { font-size: 13px; font-weight: 400; }
+  .active-chips { padding: 14px 20px 0; }
+  .achip { font-weight: 500; font-size: 13px; padding: 6px 12px; }
+
+  /* ficha da academia: seções separadas por espaço, não por caixas */
+  .courtbar { padding: 10px 16px; }
+  .courtbar-name { font-weight: 600; }
+  .ht-crumbs { font-size: 13px; padding: 14px 20px 10px; }
+  .ht-crumbs button, .ht-crumbs a { font-size: 13px; font-weight: 500; }
+  .ht-head { padding: 22px 20px 0; }
+  .court-name { font-size: 30px; line-height: 1.15; }
+  @media (min-width: 720px) { .court-name { font-size: 38px; } }
+  .ht-tags { gap: 8px; margin-top: 14px; }
+  .ht-tag { font-size: 13px; font-weight: 500; padding: 5px 12px; }
+  .ht-score { margin-top: 16px; }
+  .ht-score-num { font-weight: 700; }
+  .ht-score-txt strong { font-weight: 600; }
+  .court-addr { font-size: 15px; margin-top: 14px; }
+  .ficha-basica { font-size: 13.5px; padding: 11px 13px; margin-top: 16px; border-radius: 12px; line-height: 1.5; }
+  .ht-tabs { margin-top: 22px; }
+  .ht-tabs button { padding: 15px 12px; font-weight: 500; }
+  .ht-tabs button.on { font-weight: 600; }
+  .ht-sec { padding-top: 34px; margin-top: 34px; }
+  .ht-sec:first-child { padding-top: 28px; }
+  .ht-sec .sec-title { font-size: 24px; margin-bottom: 14px; }
+  .ht-sec-sub { font-size: 14px; line-height: 1.5; margin-bottom: 14px; }
+  .ht-about { font-size: 16px; line-height: 1.7; }
+  .ht-tiles { gap: 12px; margin-top: 22px; }
+  .ht-tile { padding: 16px; border-radius: 14px; }
+  .ht-tile-t { font-weight: 600; font-size: 15px; }
+  .ht-tile-s { font-size: 13px; margin-top: 4px; }
+  .ht-room { border-radius: 16px; margin-top: 14px; }
+  .ht-room-info { padding: 18px 18px; }
+  .ht-room-name { font-size: 20px; font-weight: 600; }
+  .ht-room-desc { font-size: 14px; margin-top: 4px; }
+  .ht-room-price { padding: 16px 18px; background: #F4F8F6; }
+  .ht-room-val { font-weight: 700; }
+  .ht-amen { gap: 12px; margin-top: 12px; }
+  .ht-amen-i { font-size: 15px; gap: 11px; }
+  .hr-linha { padding: 13px 16px; font-size: 15px; }
+  .hr-linha strong { font-weight: 600; }
+  .ht-poi-t { font-weight: 600; }
+  .ht-poi-i { padding: 9px 0; }
+  .contato-card { padding: 18px; border-radius: 14px; margin-top: 16px; background: #F4F8F6; border-color: #DCE9E2; }
+  .rating-panel { padding: 18px 20px; border-radius: 16px; gap: 22px; }
+  .rp-num { font-weight: 700; }
+  .rate-box { padding: 20px; border-radius: 14px; margin-top: 22px; }
+  .rate-box p { font-size: 14px; }
+  .ht-revs { gap: 14px; margin-top: 12px; }
+  .ht-rev { padding: 18px; border-radius: 16px; }
+  .ht-rev-text { font-size: 15px; line-height: 1.6; margin-top: 12px; }
+  .ht-rev-foot { margin-top: 14px; padding-top: 14px; }
+  .rev-name { font-size: 14px; font-weight: 600; }
+  .rev-date { font-size: 13px; }
+  .court-cta { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 20px rgba(33,31,26,0.06); border-top-color: transparent; }
+  .court-cta-price { min-width: 0; }
+  .court-cta .cta-primary { white-space: nowrap; }
+  /* no celular estreito, o compartilhar fica só na barra de cima */
+  @media (max-width: 440px) { .court-cta .cta-secondary { display: none; } }
+
+  /* menu e rodapé */
+  .menu-drawer { padding: 18px 20px calc(28px + env(safe-area-inset-bottom)); }
+  .menu-grupo { font-size: 12px; font-weight: 500; letter-spacing: 0.06em; margin: 24px 0 6px; }
+  .menu-item { font-size: 15px; font-weight: 500; padding: 12px 10px; }
+  .sitefooter { padding: 38px 20px 44px; }
+  .sf-cols { gap: 30px; }
+  .sf-col h4 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .sf-col button, .sf-col a { padding: 7px 0; font-size: 15px; }
+  .sf-base { margin-top: 30px; padding-top: 20px; font-size: 13px; }
+
+  /* comparação */
+  .cmp-pagina { padding: 24px 20px 32px; }
+  .cmp-titulo { font-family: var(--fonte-titulo); font-size: 28px; }
+  .cmp-add { padding: 12px; border-radius: 16px; }
+  .cmp-add-n { font-weight: 600; }
+  .ct-rot { font-weight: 600; font-size: 13px; }
+  .ct-cel { font-size: 14px; padding-top: 13px; padding-bottom: 13px; }
+  .ct-cel.melhor { font-weight: 600; }
+  .ct-secao { font-weight: 700; letter-spacing: 0.06em; padding: 10px 12px; margin-top: 14px; }
+
+  /* área da academia e painel do admin no mesmo tom */
+  .conta-situacao { font-size: 14px; padding: 12px 14px; border-radius: 12px; }
+  .conta-faltas { padding: 16px; border-radius: 14px; margin-top: 14px; }
+  .conta-faltas-t { font-size: 14px; font-weight: 600; }
+  .conta-falta { font-size: 13px; padding: 5px 11px; }
+  .conta-dados { font-size: 14px; padding: 14px 16px; border-radius: 12px; }
+  .dono-box { padding: 18px; border-radius: 16px; }
+  .rev-resp { padding: 12px 14px; margin-top: 14px; }
+  .rev-resp-t { font-size: 13px; font-weight: 700; }
+  .rev-resp-texto { font-size: 15px; line-height: 1.6; }
+  .pending-item { padding: 16px; border-radius: 14px; margin-top: 12px; }
+  .pending-name { font-weight: 600; }
+  .admin-pago-box { font-size: 13px; padding: 12px 14px; border-radius: 12px; }
 
 </style>
 </head>

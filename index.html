@@ -661,7 +661,7 @@
   /* ---- rodapé em colunas ---- */
   .sitefooter { background: var(--bg-alt); border-top: 1px solid var(--border); padding: 26px 20px 30px; }
   .sf-cols { display: grid; gap: 22px; }
-  @media (min-width: 720px) { .sf-cols { grid-template-columns: repeat(3, 1fr); gap: 30px; } }
+  @media (min-width: 720px) { .sf-cols { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 30px; } }
   .sf-col h4 { font-size: 15px; font-weight: 700; margin: 0 0 10px; }
   .sf-col button, .sf-col a { display: block; background: none; border: none; padding: 5px 0; font-size: 14px; color: var(--muted); cursor: pointer; text-align: left; text-decoration: none; }
   .sf-col button:hover, .sf-col a:hover { color: var(--green); }
@@ -765,7 +765,11 @@
 
   /* caminho: Início › Quadras em São Paulo › Bairro › Academia */
   .ht-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); padding: 10px 20px 8px; }
-  .ht-crumbs button { background: none; border: none; padding: 0; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--green); cursor: pointer; text-decoration: underline; }
+  .ht-crumbs button, .ht-crumbs a { background: none; border: none; padding: 0; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--green); cursor: pointer; text-decoration: underline; }
+  /* Página de uma região (/quadras/sao-paulo/moema) e aviso de link antigo */
+  .regiao-titulo { font-size: 22px; line-height: 1.2; margin: 14px 20px 0; }
+  .aviso-link { margin: 12px 20px 0; padding: 10px 12px; background: var(--bg-alt); border-radius: 10px; font-size: 13px; color: var(--muted); }
+  .cidade-link { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--green); }
   .ht-crumbs .sep { color: var(--muted-dark); }
   .ht-crumbs .cur { color: var(--muted); }
 
@@ -2056,6 +2060,11 @@ let state = {
   perto: {},
   page: "home",
   backTo: "home",
+  // O que o link guarda além da tela (seção "links de cada tela").
+  secaoFicha: null,
+  regiaoLink: null,
+  avisoLink: "",
+  termoBuscado: "",
   homeCity: null,
   view: "list",
   mapSelected: null,
@@ -2547,6 +2556,7 @@ function render() {
     if (__miniMap) { __miniMap.remove(); __miniMap = null; }
     atualizarSeo(null);
   }
+  sincronizarLink();
 }
 
 // Mapinha da seção "Explore a região", como o mapa das páginas de hotel.
@@ -2616,21 +2626,54 @@ function dadosDoSite() {
 // Título da aba e dados estruturados da academia. O Google usa esse JSON para
 // entender que a página é de um local esportivo, com nota, preço e perguntas.
 const TITULO_PADRAO = document.title;
-// A URL canônica acompanha a página aberta: sem isso o Google trata
-// ?court=1, ?busca=… e ?comparar=1 como cópias da home.
+// A URL canônica acompanha a página aberta, sem filtros nem etiquetas: a
+// ficha, a página da região ou a home. Busca livre e comparação ficam fora
+// do Google (noindex, follow), como o TripAdvisor e o Booking fazem com as
+// buscas internas — o que se indexa são as fichas e as regiões.
+const DESCRICAO_PADRAO = (document.querySelector('meta[name="description"]') || {}).content || "";
+function urlCanonica(c) {
+  if (c) return location.origin + caminhoDaFicha(c);
+  if (state.page === "search" && state.regiaoLink) return location.origin + caminhoDaRegiao(state.regiaoLink);
+  if (state.page === "search") return location.origin + "/busca";
+  if (state.page === "comparar") return location.origin + "/comparar";
+  return location.origin + "/";
+}
 function atualizarCanonical(c) {
   const el = document.getElementById("link-canonical");
   if (!el) return;
-  const base = `${location.origin}${location.pathname}`;
-  const url = c ? `${base}?court=${c.id}` : base;
+  const url = urlCanonica(c);
   if (el.getAttribute("href") !== url) el.setAttribute("href", url);
+}
+function definirMeta(nome, valor) {
+  let el = document.querySelector(`meta[name="${nome}"]`);
+  if (!valor) { if (el && nome === "robots") el.remove(); return; }
+  if (!el) { el = document.createElement("meta"); el.setAttribute("name", nome); document.head.appendChild(el); }
+  if (el.getAttribute("content") !== valor) el.setAttribute("content", valor);
+}
+// Título, descrição e indexação das telas que não são ficha.
+function seoDaPagina() {
+  const r = state.page === "search" ? state.regiaoLink : null;
+  if (r) {
+    const lugar = termoDaRegiao(r);
+    const n = state.allCourts.filter(c => slugTexto(c.cidade) === slugTexto(r.cidade) && (!r.bairro || slugTexto(c.bairro) === slugTexto(r.bairro))).length;
+    return {
+      titulo: `Quadras e academias de tênis em ${lugar} | GuiaTennis`,
+      descricao: `${n ? `${n} ${plural(n, "academia", "academias")} de tênis em ${lugar} e mais perto` : `Academias de tênis perto de ${lugar}`}: compare preço por hora, estrutura e avaliações, e fale direto com a academia.`,
+      robots: "",
+    };
+  }
+  if (state.page === "search" || state.page === "comparar" || state.avisoLink) return { titulo: TITULO_PADRAO, descricao: DESCRICAO_PADRAO, robots: "noindex, follow" };
+  return { titulo: TITULO_PADRAO, descricao: DESCRICAO_PADRAO, robots: "" };
 }
 
 function atualizarSeo(c) {
   const ld = document.getElementById("ld-academia");
   atualizarCanonical(c);
   if (!c) {
-    if (document.title !== TITULO_PADRAO) document.title = TITULO_PADRAO;
+    const pagina = seoDaPagina();
+    if (document.title !== pagina.titulo) document.title = pagina.titulo;
+    definirMeta("description", pagina.descricao);
+    definirMeta("robots", pagina.robots);
     if (ld) {
       const novo = JSON.stringify(dadosDoSite());
       if (ld.textContent !== novo) ld.textContent = novo;
@@ -2640,9 +2683,12 @@ function atualizarSeo(c) {
   const local = [c.bairro, c.cidade].filter(Boolean).join(", ");
   const titulo = `${c.name}${local ? " — " + local : ""} | GuiaTennis`;
   if (document.title !== titulo) document.title = titulo;
+  definirMeta("description", `${descricaoAcademia(c)}`.slice(0, 300));
+  // Ficha pausada ou em análise (só o admin e a academia veem) fica fora.
+  definirMeta("robots", c.status === "published" && state.allCourts.some(x => x.id === c.id) ? "" : "noindex");
   if (!ld) return;
 
-  const url = `${location.origin}${location.pathname}?court=${c.id}`;
+  const url = urlCanonica(c);
   const lugar = {
     "@type": "SportsActivityLocation",
     "@id": url,
@@ -2679,7 +2725,16 @@ function atualizarSeo(c) {
   }
 
   const faq = perguntasAcademia(c);
-  const grafo = [lugar];
+  // O caminho "Início › Quadras em São Paulo › Moema › Academia", que o
+  // Google mostra no resultado no lugar do endereço.
+  const caminho = [{ nome: "Início", url: location.origin + "/" }];
+  if (c.cidade) caminho.push({ nome: `Quadras em ${c.cidade}`, url: location.origin + caminhoDaRegiao({ cidade: c.cidade }) });
+  if (c.cidade && c.bairro) caminho.push({ nome: c.bairro, url: location.origin + caminhoDaRegiao({ cidade: c.cidade, bairro: c.bairro }) });
+  caminho.push({ nome: c.name, url });
+  const grafo = [lugar, {
+    "@type": "BreadcrumbList",
+    itemListElement: caminho.map((x, i) => ({ "@type": "ListItem", position: i + 1, name: x.nome, item: x.url })),
+  }];
   if (faq.length) {
     grafo.push({
       "@type": "FAQPage",
@@ -3225,8 +3280,44 @@ function linkResponsavel(c) {
   return whatsappGuia(`Olá! Sou responsável pela ${c.name} e quero atualizar a ficha no GuiaTennis (ou pedir a remoção): ${linkDaFicha(c)}`);
 }
 
+// ---------- links de cada tela, no padrão dos sites grandes ----------
+// Como Booking, TripAdvisor, Airbnb e Trivago: cada tela tem o próprio
+// endereço, e tudo o que está nela vai junto — quem recebe o link vê a
+// mesma coisa, recarregar não perde nada e o "voltar" do celular desfaz o
+// último passo.
+//   /academia/quadra-exemplo-moema-00000002   ficha (nome + fim do id)
+//   /academia/…#avaliacoes                    ficha aberta numa seção
+//   /quadras/sao-paulo/moema                  academias de uma região
+//   /busca?q=…&piso=saibro&ordem=preco&ver=mapa   busca, filtros, ordem e mapa
+//   /comparar?academias=00000001,00000002     a comparação
+// Os links antigos (?court=, ?busca=, ?comparar=1) continuam abrindo e são
+// trocados pelo endereço novo. O fim do id faz o link sobreviver à troca de
+// nome da academia; o nome é só para quem lê (e para o Google).
+const SITE = "https://guiatennis.com.br";
+
+// O mesmo do slug() do banco (supabase/migrations/20260930130000_links_amigaveis.sql):
+// os dois têm de dar o mesmo resultado, senão o sitemap e a ficha divergem.
+function slugTexto(t) {
+  return stripAccents(String(t || "")).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+function idCurto(id) {
+  return String(id || "").replace(/-/g, "").slice(-8);
+}
+function slugDaAcademia(c) {
+  const nome = slugTexto(c.name).slice(0, 60).replace(/-+$/, "");
+  return [nome, idCurto(c.id)].filter(Boolean).join("-");
+}
+function caminhoDaFicha(c) {
+  return `/academia/${slugDaAcademia(c)}`;
+}
+function caminhoDaRegiao(r) {
+  return "/quadras/" + [r.cidade, r.bairro].filter(Boolean).map(slugTexto).join("/");
+}
+function termoDaRegiao(r) {
+  return [r.bairro, r.cidade].filter(Boolean).join(", ");
+}
 function linkDaFicha(c) {
-  return c.id === "site" ? "https://guiatennis.com.br" : `https://guiatennis.com.br/?court=${c.id}`;
+  return c.id === "site" ? SITE : SITE + caminhoDaFicha(c);
 }
 
 // ---------- área da academia (login de cada academia) ----------
@@ -4545,7 +4636,7 @@ function renderMini(c, selo) {
   const photos = courtPhotos(c);
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   return `
-    <a class="mini ${photos.length ? "" : "sem-foto"}" href="?court=${encodeURIComponent(c.id)}" data-open="${c.id}">
+    <a class="mini ${photos.length ? "" : "sem-foto"}" href="${caminhoDaFicha(c)}" data-open="${c.id}">
       ${selo ? `<span class="mini-badge">${esc(selo)}</span>` : ""}
       ${photos.length ? `<div class="mini-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>` : ""}
       <div class="mini-body">
@@ -4562,9 +4653,17 @@ function renderMini(c, selo) {
 }
 
 function renderSiteFooter() {
+  // As cidades com academia, como os "destinos populares" do rodapé do
+  // TripAdvisor e do Booking: link direto para a página de cada uma.
+  const cidades = cidadesComQuadra().slice(0, 6);
   return `
     <div class="sitefooter">
       <div class="sf-cols">
+        ${cidades.length ? `
+          <div class="sf-col">
+            <h4>Quadras por cidade</h4>
+            ${cidades.map(c => `<a href="${caminhoDaRegiao({ cidade: c.nome })}" data-regiao-link data-cidade="${esc(c.nome)}">Quadras em ${esc(c.nome)}</a>`).join("")}
+          </div>` : ""}
         <div class="sf-col">
           <h4>GuiaTennis</h4>
           <button type="button" id="footer-cadastrar">Cadastrar minha academia</button>
@@ -4606,6 +4705,7 @@ function renderHome() {
   return `
     ${renderCabecalho()}
 
+    ${state.avisoLink ? `<p class="aviso-link">${esc(state.avisoLink)}</p>` : ""}
     <div class="home-hero">
       <h2 class="display">Ache uma quadra de tênis perto de você</h2>
       ${renderSearchCard()}
@@ -4642,6 +4742,7 @@ function renderHome() {
         </div>
         <p class="city-note">${cidadeAtiva.courts.length} ${plural(cidadeAtiva.courts.length, "academia cadastrada", "academias cadastradas")}${faixaCidade(cidadeAtiva.courts) ? ` · ${faixaCidade(cidadeAtiva.courts)}` : ""}.</p>
         <div class="home-strip">${cidadeAtiva.courts.slice(0, 8).map(c => renderMini(decorate(c))).join("")}</div>
+        <a class="cidade-link" href="${caminhoDaRegiao({ cidade: cidadeAtiva.nome })}" data-regiao-link data-cidade="${esc(cidadeAtiva.nome)}">Ver as academias de ${esc(cidadeAtiva.nome)} ›</a>
       </div>` : ""}
 
     ${blocoParaAcademias()}
@@ -4654,27 +4755,207 @@ function renderHome() {
 // ---------- navegação entre as três telas ----------
 
 // O endereço acompanha a tela, então voltar pelo navegador funciona e o link
-// de uma academia continua abrindo direto nela.
+// de uma academia continua abrindo direto nela (formato: seção "links de
+// cada tela", junto de linkDaFicha).
+
+// O que a tela escreve no link. O resto (utm_source, diagnostico) fica.
+const PARAMETROS_DA_TELA = ["court", "busca", "comparar", "entrar", "q", "academias", "piso", "cobertura",
+  "modalidade", "comodidades", "nota", "preco", "distancia", "favoritas", "comparando", "ordem", "ver"];
+const ORDEM_NO_LINK = { recomendados: "recomendadas", distance: "distancia", rating: "nota", price: "preco", reviews: "avaliacoes", courts: "quadras" };
+// Seções da ficha no link (#avaliacoes), com os nomes que a pessoa lê.
+const SECOES_FICHA = { visao: "ht-visao", precos: "ht-opcoes", cancelamento: "ht-politica", estrutura: "ht-comodidades",
+  localizacao: "ht-local", avaliacoes: "avaliacoes", duvidas: "ht-duvidas", contato: "ht-contato" };
+
+// Sem busca feita, a lista começa nas recomendadas; com busca, na mais perto.
+function ordemPadrao() {
+  return state.origin ? "distance" : "recomendados";
+}
+
+// Filtros, ordem e mapa no link, sempre na ordem das listas (naOrdem):
+// o mesmo filtro dá sempre o mesmo link.
+function filtrosNoLink(p) {
+  const lista = (nome, opcoes, escolhidas) => {
+    const v = naOrdem(opcoes, escolhidas).map(o => o.key);
+    if (v.length) p.set(nome, v.join(","));
+  };
+  lista("piso", PISO_OPTS, state.pisoFilters);
+  lista("cobertura", COBERTURA_OPTS, state.coberturaFilters);
+  lista("modalidade", MODALIDADE_OPTS, state.modalidadeFilters);
+  lista("comodidades", FILTER_AMENITY_OPTS, state.amenityFilters);
+  if (state.minRating > 0) p.set("nota", String(state.minRating));
+  if (state.priceMax !== null) p.set("preco", String(state.priceMax));
+  if (state.maxDistance !== null) p.set("distancia", String(state.maxDistance));
+  if (state.favoritesOnly) p.set("favoritas", "1");
+  if (state.compareOnly) p.set("comparando", "1");
+  if (effectiveSort() !== ordemPadrao() && ORDEM_NO_LINK[state.sortBy]) p.set("ordem", ORDEM_NO_LINK[state.sortBy]);
+  if (state.view === "map") p.set("ver", "mapa");
+}
+
+// O contrário: o link manda nos filtros. Valor desconhecido é ignorado.
+// Devolve a ordem pedida no link (ou null), aplicada depois da busca.
+function filtrosDoLink(q) {
+  const lista = (nome, opcoes) => naOrdem(opcoes, (q.get(nome) || "").split(",")).map(o => o.key);
+  state.pisoFilters = lista("piso", PISO_OPTS);
+  state.coberturaFilters = lista("cobertura", COBERTURA_OPTS);
+  state.modalidadeFilters = lista("modalidade", MODALIDADE_OPTS);
+  state.amenityFilters = lista("comodidades", FILTER_AMENITY_OPTS);
+  const nota = parseFloat(q.get("nota"));
+  state.minRating = RATING_OPTS.some(o => o.value === nota) ? nota : 0;
+  const preco = parseInt(q.get("preco"), 10);
+  state.priceMax = preco > 0 ? preco : null;
+  const distancia = parseFloat(q.get("distancia"));
+  state.maxDistance = DISTANCE_OPTS.some(o => o.value === distancia) ? distancia : null;
+  state.favoritesOnly = q.get("favoritas") === "1";
+  state.compareOnly = q.get("comparando") === "1";
+  state.view = q.get("ver") === "mapa" ? "map" : "list";
+  const ordem = Object.keys(ORDEM_NO_LINK).find(k => ORDEM_NO_LINK[k] === q.get("ordem")) || null;
+  state.sortBy = ordem || ordemPadrao();
+  return ordem;
+}
+
+function urlDoEstado() {
+  const p = new URLSearchParams();
+  new URLSearchParams(location.search).forEach((v, k) => { if (!PARAMETROS_DA_TELA.includes(k)) p.set(k, v); });
+  let caminho = "/", secao = "";
+  if (state.page === "court" && state.selected) {
+    caminho = caminhoDaFicha(state.selected);
+    if (state.secaoFicha) secao = "#" + state.secaoFicha;
+  } else if (state.page === "search") {
+    const r = state.regiaoLink;
+    if (r && (state.cep || "").trim() === termoDaRegiao(r)) caminho = caminhoDaRegiao(r);
+    else {
+      caminho = "/busca";
+      if ((state.cep || "").trim()) p.set("q", state.cep.trim());
+    }
+    filtrosNoLink(p);
+  } else if (state.page === "comparar") {
+    caminho = "/comparar";
+    if (state.compareList.length) p.set("academias", state.compareList.map(idCurto).join(","));
+  }
+  const busca = p.toString().replace(/%2C/gi, ",");
+  return caminho + (busca ? "?" + busca : "") + secao;
+}
+
 function syncUrl(push) {
   try {
-    const u = new URL(location.href);
-    u.searchParams.delete("court");
-    u.searchParams.delete("busca");
-    u.searchParams.delete("comparar");
-    u.searchParams.delete("entrar");
-    if (state.page === "court" && state.selected) u.searchParams.set("court", state.selected.id);
-    else if (state.page === "search") u.searchParams.set("busca", state.cep || "quadras");
-    else if (state.page === "comparar") u.searchParams.set("comparar", "1");
-    const alvo = u.pathname + (u.search ? u.search : "") ;
-    const dados = { page: state.page, court: state.page === "court" && state.selected ? state.selected.id : null };
+    const alvo = urlDoEstado();
+    if (alvo === location.pathname + location.search + location.hash) return;
+    const dados = { page: state.page };
     if (push) history.pushState(dados, "", alvo);
     else history.replaceState(dados, "", alvo);
   } catch {}
 }
 
+// Chamada no fim de cada render: o link acompanha filtro, ordem, mapa e
+// seção. Mudou só isso na mesma busca, entra no histórico (o "voltar"
+// desfaz, como no Airbnb). Com a gaveta de filtros aberta, espera fechar
+// para virar um passo só.
+function sincronizarLink() {
+  if (!state.loaded || state.showFilters) return;
+  try {
+    const alvo = urlDoEstado();
+    if (alvo === location.pathname + location.search + location.hash) return;
+    const mesmaTela = alvo.split(/[?#]/)[0] === location.pathname && state.page === "search";
+    syncUrl(mesmaTela && !state.__doHistorico);
+  } catch {}
+}
+
+// O que o link pede: tela, academia, região, termo, filtros e seção.
+function lerLink() {
+  const q = new URLSearchParams(location.search);
+  const partes = location.pathname.split("/").filter(Boolean).map(x => { try { return decodeURIComponent(x); } catch { return x; } });
+  const secao = location.hash.slice(1);
+  const r = { q, secao: SECOES_FICHA[secao] ? secao : null, page: "home" };
+  if (partes[0] === "academia" && partes[1]) { r.page = "court"; r.slug = partes[1]; }
+  else if (q.get("court")) { r.page = "court"; r.courtId = q.get("court"); }
+  else if (partes[0] === "quadras") { r.page = "search"; r.regiao = { cidade: partes[1] || "", bairro: partes[2] || "" }; }
+  else if (partes[0] === "busca" || q.has("busca")) {
+    r.page = "search";
+    r.termo = (q.get("q") ?? q.get("busca") ?? "").trim();
+    if (r.termo === "quadras") r.termo = "";
+  } else if (partes[0] === "comparar" || q.has("comparar")) {
+    r.page = "comparar";
+    r.academias = (q.get("academias") || "").split(",").filter(Boolean);
+  }
+  return r;
+}
+
+function todasAsFichas() {
+  return [...state.allCourts, ...(state.pending || []), ...[minhaAcademia()].filter(Boolean)];
+}
+// Pelo fim do id; o nome só desempata (e pode ter mudado desde o link).
+function academiaDoSlug(slug) {
+  const fim = String(slug || "").split("-").pop();
+  const achadas = todasAsFichas().filter(c => idCurto(c.id) === fim);
+  return achadas.find(c => slugDaAcademia(c) === slug) || achadas[0] || null;
+}
+
+// "/quadras/sao-paulo/moema" → Moema, São Paulo, com os nomes de verdade
+// das academias cadastradas; região sem academia vira texto simples.
+function regiaoDoLink(r) {
+  const desfaz = (t) => t.split("-").filter(Boolean).map(p => p[0].toUpperCase() + p.slice(1)).join(" ");
+  const naCidade = state.allCourts.filter(c => slugTexto(c.cidade) === r.cidade);
+  const noBairro = r.bairro ? naCidade.find(c => slugTexto(c.bairro) === r.bairro) : null;
+  return {
+    cidade: naCidade[0] ? naCidade[0].cidade : desfaz(r.cidade),
+    bairro: r.bairro ? (noBairro ? noBairro.bairro : desfaz(r.bairro)) : "",
+  };
+}
+
+// Monta a tela a partir do link — ao abrir o site, recarregar, voltar e
+// avançar. Devolve o que falta fazer: buscar um termo ou avisar que a
+// academia do link não existe mais.
+function aplicarLink(r) {
+  state.secaoFicha = null;
+  state.regiaoLink = null;
+  state.avisoLink = "";
+  if (r.page === "court") {
+    const c = r.slug ? academiaDoSlug(r.slug) : todasAsFichas().find(x => x.id === r.courtId);
+    if (c) {
+      state.selected = decorate(c);
+      state.page = "court";
+      state.secaoFicha = r.secao;
+      return { ficha: c };
+    }
+    state.page = "home";
+    state.selected = null;
+    state.avisoLink = "Essa academia não está mais no GuiaTennis. Veja outras perto de você.";
+    return {};
+  }
+  state.selected = null;
+  if (r.page === "comparar") {
+    const ids = r.academias.map(fim => (state.allCourts.find(c => idCurto(c.id) === fim) || {}).id).filter(Boolean);
+    if (ids.length) setCompareList(ids.slice(0, COMPARE_MAX));
+    state.page = "comparar";
+    return {};
+  }
+  if (r.page === "search") {
+    state.page = "search";
+    const ordem = filtrosDoLink(r.q);
+    let termo = r.termo || "";
+    if (r.regiao) {
+      state.regiaoLink = regiaoDoLink(r.regiao);
+      termo = termoDaRegiao(state.regiaoLink);
+    }
+    return { termo, ordem };
+  }
+  state.page = "home";
+  return {};
+}
+
+// Rola até a seção do link (#avaliacoes) depois de desenhar a ficha.
+function irParaSecao(nome, suave) {
+  const alvo = document.getElementById(SECOES_FICHA[nome] || "");
+  const barra = document.getElementById("ht-tabs");
+  if (!alvo) return;
+  const topo = alvo.getBoundingClientRect().top + window.scrollY - ((barra ? barra.offsetHeight : 0) + 56);
+  window.scrollTo({ top: Math.max(0, topo), behavior: suave ? "smooth" : "auto" });
+}
+
 function goHome() {
   state.page = "home";
   state.selected = null;
+  state.avisoLink = "";
   state.showSort = false;
   syncUrl(true);
   render();
@@ -4684,6 +4965,7 @@ function goHome() {
 function goComparar() {
   state.page = "comparar";
   state.selected = null;
+  state.avisoLink = "";
   state.showSort = false;
   syncUrl(true);
   render();
@@ -4693,10 +4975,20 @@ function goComparar() {
 function goSearch() {
   state.page = "search";
   state.selected = null;
+  state.avisoLink = "";
   state.showSort = false;
   syncUrl(true);
   render();
   window.scrollTo(0, 0);
+}
+
+// Página de uma região: as academias mais perto do bairro (ou da cidade),
+// com o endereço /quadras/sao-paulo/moema.
+function abrirRegiao(r) {
+  state.regiaoLink = { cidade: r.cidade || "", bairro: r.bairro || "" };
+  state.cep = termoDaRegiao(state.regiaoLink);
+  goSearch();
+  doSearch();
 }
 
 function openCourt(id) {
@@ -4708,6 +5000,8 @@ function openCourt(id) {
   state.backTo = state.page === "court" ? (state.backTo || "search") : state.page;
   state.selected = c;
   state.page = "court";
+  state.secaoFicha = null;
+  state.avisoLink = "";
   state.pendingStar = 0;
   state.justRated = false;
   if (state.perto[id] && state.perto[id].status === "erro") delete state.perto[id];
@@ -4731,21 +5025,28 @@ function voltarDaFicha() {
 
 window.addEventListener("popstate", () => {
   if (!state.loaded) return;
-  const q = new URLSearchParams(location.search);
-  const courtId = q.get("court");
-  if (courtId) {
-    const c = state.allCourts.filter(x => x.id === courtId).map(decorate)[0];
-    if (c) { state.selected = c; state.page = "court"; render(); return; }
-  }
-  state.selected = null;
-  state.page = q.has("comparar") ? "comparar" : (q.has("busca") ? "search" : "home");
+  state.showFilters = false;
+  state.showSort = false;
+  const feito = aplicarLink(lerLink());
+  state.__doHistorico = true;
   render();
+  state.__doHistorico = false;
+  if (feito.termo !== undefined && feito.termo && feito.termo !== state.termoBuscado) {
+    state.cep = feito.termo;
+    doSearch({ ordem: feito.ordem, registrar: false });
+  } else if (state.page === "court" && state.secaoFicha) {
+    irParaSecao(state.secaoFicha, false);
+  } else {
+    window.scrollTo(0, 0);
+  }
 });
 
 function renderSearchPage(results, activeFilters, topBadge) {
+  const regiao = state.regiaoLink && (state.cep || "").trim() === termoDaRegiao(state.regiaoLink) ? state.regiaoLink : null;
   return `
     ${state.view === "map" ? "" : `
       ${renderCabecalho()}
+      ${regiao ? `<h1 class="regiao-titulo display">Quadras e academias de tênis em ${esc(termoDaRegiao(regiao))}</h1>` : ""}
       <div class="search-header">
         ${renderSearchCard()}
         ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
@@ -6098,10 +6399,13 @@ function htGaleria(c) {
 }
 
 // O caminho até a academia, como o "Brasil › São Paulo › Hotel" das páginas de hotel.
+// São links de verdade (/quadras/sao-paulo/moema): o Google segue e a
+// pessoa pode abrir em outra aba.
 function htCaminho(c) {
-  const itens = [`<button type="button" data-crumb="home">Início</button>`];
-  if (c.cidade) itens.push(`<button type="button" data-crumb="busca" data-termo="${esc(c.cidade)}">Quadras em ${esc(c.cidade)}</button>`);
-  if (c.bairro) itens.push(`<button type="button" data-crumb="busca" data-termo="${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}">${esc(c.bairro)}</button>`);
+  const itens = [`<a href="/" data-crumb="home">Início</a>`];
+  if (c.cidade) itens.push(`<a href="${caminhoDaRegiao({ cidade: c.cidade })}" data-crumb="busca" data-cidade="${esc(c.cidade)}">Quadras em ${esc(c.cidade)}</a>`);
+  if (c.cidade && c.bairro) itens.push(`<a href="${caminhoDaRegiao({ cidade: c.cidade, bairro: c.bairro })}" data-crumb="busca" data-cidade="${esc(c.cidade)}" data-bairro="${esc(c.bairro)}">${esc(c.bairro)}</a>`);
+  else if (c.bairro) itens.push(`<span>${esc(c.bairro)}</span>`);
   itens.push(`<span class="cur">${esc(c.name)}</span>`);
   return `<nav class="ht-crumbs" aria-label="Onde você está">${itens.join(`<span class="sep">›</span>`)}</nav>`;
 }
@@ -7505,8 +7809,9 @@ function attachEvents() {
 
   const irAvaliacoes = document.getElementById("ir-avaliacoes");
   if (irAvaliacoes) irAvaliacoes.onclick = () => {
-    const alvo = document.getElementById("avaliacoes");
-    if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
+    state.secaoFicha = "avaliacoes";
+    syncUrl(false);
+    irParaSecao("avaliacoes", true);
   };
 
   const shareBtn2 = document.getElementById("share-btn-2");
@@ -7516,12 +7821,12 @@ function attachEvents() {
   if (courtBack) courtBack.onclick = voltarDaFicha;
 
   // ---- ficha: caminho, barra de seções e perguntas frequentes ----
-  document.querySelectorAll("[data-crumb]").forEach(el => {
-    el.onclick = () => {
+  document.querySelectorAll("[data-crumb], [data-regiao-link]").forEach(el => {
+    el.onclick = (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return; // abrir em outra aba
+      e.preventDefault();
       if (el.dataset.crumb === "home") { goHome(); return; }
-      state.cep = el.dataset.termo || "";
-      goSearch();
-      doSearch();
+      abrirRegiao({ cidade: el.dataset.cidade || "", bairro: el.dataset.bairro || "" });
     };
   });
 
@@ -7616,10 +7921,10 @@ function attachEvents() {
     const botoes = Array.from(htTabs.querySelectorAll("button[data-goto]"));
     botoes.forEach(b => {
       b.onclick = () => {
-        const alvo = document.getElementById(b.dataset.goto);
-        if (!alvo) return;
-        const topo = alvo.getBoundingClientRect().top + window.scrollY - (htTabs.offsetHeight + 56);
-        window.scrollTo({ top: Math.max(0, topo), behavior: "smooth" });
+        // A seção vai para o link (#avaliacoes), como as abas do Booking.
+        state.secaoFicha = Object.keys(SECOES_FICHA).find(k => SECOES_FICHA[k] === b.dataset.goto) || null;
+        syncUrl(false);
+        irParaSecao(state.secaoFicha, true);
       };
     });
     __htSpy = () => {
@@ -8585,6 +8890,8 @@ function useMyLocation() {
         const geo = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
         state.origin = geo;
         state.cep = "";
+        // Busca pelo GPS não vai para o link (nunca a localização exata).
+        state.termoBuscado = "";
         state.sortBy = "distance";
         state.searchStatus = "done";
         registrarBusca(geo);
@@ -8604,12 +8911,12 @@ function useMyLocation() {
 }
 
 function shareCourt(courtId) {
-  const c = (state.allCourts.find(x => x.id === courtId)) || (state.pending && state.pending.find(x => x.id === courtId));
+  const c = todasAsFichas().find(x => x.id === courtId);
   if (!c) return;
   trackClick(courtId, "compartilhar");
   // A etiqueta faz a visita de quem recebe o link aparecer como
   // "Compartilhado" em "De onde vieram", em vez de "Direto".
-  const url = `${location.origin}${location.pathname}?court=${c.id}&utm_source=Compartilhado`;
+  const url = `${location.origin}${caminhoDaFicha(c)}?utm_source=Compartilhado`;
   const text = `Olha essa quadra/academia que eu achei, no GuiaTennis:\n${c.name}${c.endereco ? " - " + c.endereco : (c.bairro ? " - " + c.bairro : "")}`;
   const fullText = `${text} ${url}`;
 
@@ -8635,12 +8942,16 @@ function shareCourt(courtId) {
   }
 }
 
-async function doSearch() {
+// `opcoes.ordem`: a ordem que veio no link (senão, a mais perto).
+// `opcoes.registrar: false`: a busca refeita pelo "voltar" não conta de novo.
+async function doSearch(opcoes = {}) {
   diag(`buscando: "${state.cep}"`);
   state.searchStatus = "loading";
   state.errorMsg = "";
   render();
   const termo = state.cep.trim();
+  state.termoBuscado = termo;
+  const registrar = (geo, cep) => { if (opcoes.registrar !== false) registrarBusca(geo, cep); };
   const digitsOnly = termo.replace(/\D/g, "");
   try {
     let geo;
@@ -8675,13 +8986,13 @@ async function doSearch() {
       geo = { ...result, bairro: bairro || termo, cidade, cep: cepAchado, approximate: false };
     }
     state.origin = geo;
-    state.sortBy = "distance";
+    state.sortBy = opcoes.ordem || "distance";
     state.searchStatus = "done";
-    registrarBusca(geo, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
+    registrar(geo, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
   } catch (e) {
     diag(`a busca não achou o lugar: ${e.message}`);
     // Quem buscou e não achou também é procura: conta, sem região.
-    registrarBusca({ bairro: "", cidade: "" }, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
+    registrar({ bairro: "", cidade: "" }, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
     state.errorMsg = e.message || "Não consegui buscar esse endereço ou CEP.";
     state.searchStatus = "error";
   }
@@ -8856,21 +9167,17 @@ async function init() {
   await loadEverything();
 
   const q = new URLSearchParams(location.search);
-  const sharedCourtId = q.get("court");
-  const shared = sharedCourtId ? (state.allCourts.find(c => c.id === sharedCourtId) || [minhaAcademia()].find(c => c && c.id === sharedCourtId)) : null;
-  if (shared) {
-    state.selected = decorate(shared);
-    state.page = "court";
+  // O link manda na tela: ficha, região, busca com filtros, comparação.
+  const doLink = aplicarLink(lerLink());
+  if (doLink.ficha) {
     state.backTo = "home";
-    pushRecent(shared.id);
-    trackClick(shared.id, "visualizacao");
-  } else {
-    state.page = q.has("comparar") ? "comparar" : (q.has("busca") ? "search" : "home");
+    pushRecent(doLink.ficha.id);
+    trackClick(doLink.ficha.id, "visualizacao");
   }
   // Link com a busca no endereço (recarregar a página, link salvo ou
   // compartilhado, aba reaberta pelo celular): refaz a busca, e ela conta.
-  const termoBusca = (q.get("busca") || "").trim();
-  const buscarAoAbrir = state.page === "search" && termoBusca && termoBusca !== "quadras";
+  const termoBusca = doLink.termo || "";
+  const buscarAoAbrir = state.page === "search" && !!termoBusca;
   if (buscarAoAbrir) state.cep = termoBusca;
 
   // Remove da comparação academias que não existem mais (excluídas ou pausadas)
@@ -8887,7 +9194,8 @@ async function init() {
   state.loaded = true;
   syncUrl(false);
   render();
-  if (buscarAoAbrir) doSearch();
+  if (state.page === "court" && state.secaoFicha) irParaSecao(state.secaoFicha, false);
+  if (buscarAoAbrir) doSearch({ ordem: doLink.ordem });
   completarCoordenadas();
 }
 

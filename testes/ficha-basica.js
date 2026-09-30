@@ -25,7 +25,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   let { browser, page } = await abrir();
   let f = await abrirFicha(page, 'a2');
   ok(f.basica.includes('Ficha básica') && f.basica.includes('não confirmadas pela academia'), 'ficha básica avisa que os dados não foram confirmados — ' + f.basica);
-  ok(f.dono.startsWith('https://wa.me/5511927456457?text=') && decodeURIComponent(f.dono).includes('responsável pela Quadra Locação') && decodeURIComponent(f.dono).includes('?court=a2'), 'link do responsável abre o WhatsApp do guia com a conversa começada — ' + decodeURIComponent(f.dono).slice(0, 90));
+  ok(f.dono.startsWith('https://wa.me/5511927456457?text=') && decodeURIComponent(f.dono).includes('responsável pela Quadra Locação') && decodeURIComponent(f.dono).includes('guiatennis.com.br/academia/quadra-locacao-a2'), 'link do responsável abre o WhatsApp do guia com a conversa começada — ' + decodeURIComponent(f.dono).slice(0, 90));
   f = await abrirFicha(page, 'a1');
   ok(!f.basica && f.dono, 'ficha confirmada não mostra o aviso, mas tem o link do responsável');
   await browser.close();

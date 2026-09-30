@@ -17,7 +17,7 @@ const { abrir, ok } = require('./harness');
     shareCourt('a1');
     return enviado && enviado.url;
   });
-  ok(/\?court=a1&utm_source=Compartilhado$/.test(link || ''), 'link compartilhado leva a etiqueta — ' + link);
+  ok(/\/academia\/so-aula-tennis-a1\?utm_source=Compartilhado$/.test(link || ''), 'link compartilhado leva a etiqueta — ' + link);
   await browser.close();
   ({ browser, page } = await abrir({ q: '?court=a1&utm_source=Compartilhado' }));
   cl = await page.evaluate(() => window.__cliques.map(c => c.tipo + ':' + c.origem));

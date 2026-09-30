@@ -24,9 +24,10 @@ teste")
 **Atualizado em:** 30/09/2026
 
 > **Estado (30/09/2026):** a **área da academia** (seção 4, "Área da
-> academia") está num PR para a `main`, com o SQL
-> `20260930120000_acesso_academias` aplicado sozinho no banco de teste pelo
-> PR. Falta o Breno testar na prévia (seção 11, primeiro item) e dizer
+> academia") e os **links no padrão dos grandes** (seção 3, "Endereços")
+> estão no PR #5 para a `main`, com os SQL `20260930120000_acesso_academias`
+> e `20260930130000_links_amigaveis` aplicados sozinhos no banco de teste
+> pelo PR. Falta o Breno testar na prévia (seção 11, primeiro item) e dizer
 > "pode subir". Depois: criar o acesso de cada academia e mandar pelo
 > WhatsApp. Ainda em aberto de antes: conferir o site do PR #3 e o Google
 > Search Console.
@@ -160,48 +161,90 @@ só. Sem build, sem npm, sem framework. Abrir o arquivo já é rodar o site.
   chama `attachEvents()`. Guarda e devolve `window.scrollY` e o
   `scrollTop` das folhas, então re-renderizar não faz a tela pular.
 - **Estado:** um objeto global `state`. `let isAdmin` fica fora dele.
-- **Rotas:** `history.pushState` com `?court=ID`, `?busca=…`,
-  `?comparar=1`. Páginas: `home`, `search`, `court`, `comparar`.
+- **Rotas:** endereços de verdade, no padrão dos sites grandes (abaixo,
+  "Endereços"). Páginas: `home`, `search`, `court`, `comparar`.
 - **Navegador (`localStorage`):** favoritos (`guiatennis_favorites_v1`),
   comparação (`guiatennis_compare_v1`), vistas recentemente
   (`guiatennis_recentes_v1`), quem está avaliando
   (`guiatennis_visitor_v1`) e o cache do "o que tem por perto"
   (`guiatennis_perto_v1`).
 
+### Endereços (pedido do Breno em 30/09/2026: "igual os grandes em tudo")
+Como Booking, TripAdvisor, Airbnb e Trivago, cada tela tem o próprio link
+e tudo o que está nela vai junto: quem recebe o link vê a mesma coisa,
+recarregar não perde nada e o "voltar" do celular desfaz o último passo.
+
+| Tela | Endereço | Google |
+|---|---|---|
+| Home | `/` | indexa |
+| Ficha | `/academia/<nome>-<últimos 8 do id>` (ex.: `/academia/quadra-exemplo-moema-00000002`) | indexa; pausada/pendente, não |
+| Seção da ficha | `…#avaliacoes` (`visao`, `precos`, `cancelamento`, `estrutura`, `localizacao`, `avaliacoes`, `duvidas`, `contato`) | — |
+| Região | `/quadras/<cidade>` e `/quadras/<cidade>/<bairro>` (título "Quadras e academias de tênis em Moema, São Paulo") | indexa |
+| Busca | `/busca?q=…&piso=…&cobertura=…&modalidade=…&comodidades=…&nota=…&preco=…&distancia=…&favoritas=1&comparando=1&ordem=…&ver=mapa` | `noindex, follow` |
+| Comparação | `/comparar?academias=<id8>,<id8>` | `noindex, follow` |
+
+- O fim do id faz o link da ficha sobreviver à troca de nome (a academia
+  agora edita o nome): o site acha pela ponta do id e corrige o endereço.
+  Academia que saiu do guia: home com aviso e `noindex`.
+- Links antigos (`?court=`, `?busca=`, `?comparar=1`) continuam abrindo e
+  viram o endereço novo, mantendo `utm_source` (QR codes já impressos
+  seguem valendo).
+- Filtros sempre na ordem das listas (`naOrdem`), para o mesmo filtro dar o
+  mesmo link. Mexer em filtro/ordem/mapa entra no histórico (o "voltar"
+  desfaz); com a gaveta de filtros aberta, só vira um passo ao fechar. A
+  busca refeita pelo "voltar" não conta de novo (`doSearch({ registrar:
+  false })`). Busca pelo GPS vai para `/busca` sem nada (nunca a posição).
+- Para o Google: canônica sem filtros (`urlCanonica`), título e descrição
+  da região, `robots` por tela (`seoDaPagina`), dados com o caminho
+  "Início › Quadras em São Paulo › Moema › Academia" (`BreadcrumbList`). O
+  caminho da ficha, o bloco das cidades da home e o rodapé ("Quadras por
+  cidade", como os destinos populares do TripAdvisor) são links de verdade
+  para as regiões.
+- `slugTexto` (site) e `slug()` (banco) têm de dar o mesmo resultado —
+  conferido com acento, ç, ñ, º, ª, símbolos e nome longo.
+- **Netlify:** `/academia/*`, `/quadras`, `/quadras/*`, `/busca` e
+  `/comparar` entregam o `index.html` (status 200, `netlify.toml`).
+- Ainda não é igual aos grandes: a prévia do link no WhatsApp mostra a
+  imagem e o texto gerais do site, não os da academia — isso exige montar a
+  página no servidor (função do Netlify), que gasta crédito. Fica para
+  depois, se valer a pena.
+
 ### Mapa do `index.html` (linhas de 30/09/2026, aproximadas)
 
 | Linha | O quê |
 |---|---|
 | topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` (a área da academia logo no começo: `.conta-*`, `.dono-box`, `.rev-resp*`, `.acesso-*`) |
-| 1004 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
-| 1013 | `isAdmin`, `contaAcademia`, `EMAIL_ADMIN`, `DOMINIO_ACESSO`, `LINK_ENTRAR`, `emailDoLogin`, `naoConta` |
-| 1097 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`), `bolaGirando` |
-| 1128 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano) |
-| 1192 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
-| 1206 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
-| 1399 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
-| 1508 | `politicaDe` — cancelamento, igual ou separado por modalidade |
-| 1608 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
-| 1707 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `lerContatosPrivados`, `lerRespostas`, `loadEverything` |
-| 1911 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
-| 2028 | `state` |
-| 2128 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
-| 2432 | `getResults`, `render()` |
-| 3205 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel`, `linkDaFicha` |
-| 3232 | **área da academia**: `carregarConta`, `carregarAcessos`, `senhaProvisoria`, `mensagemDoAcesso`, `faltasDaFicha`, `blocoResposta`, `cartaoAvaliacao`, `renderContaSheet` (primeiro acesso, painel, trocar senha), `blocoDono`, `blocoAcessoAdmin`, `blocoAcessosPainel`, `salvarDadosConta`, `publicarResposta`, `criarAcesso`, `ligarEventosConta` |
-| ~3900 | página de busca, filtros, card da academia |
-| 4280 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias` |
-| 5169 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
-| 5329 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
-| 6308 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia` |
-| 6677 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono) |
-| 6969 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
-| 7156 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
-| 7336 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
-| 7420 | `renderLoginSheet` (admin e academia), `renderAdminPanel` |
-| 7481 | `attachEvents()` (chama `ligarEventosConta` no fim do login) |
-| 8636 | `doSearch`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
-| 8845 | `init()` |
+| 1008 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
+| 1017 | `isAdmin`, `contaAcademia`, `EMAIL_ADMIN`, `DOMINIO_ACESSO`, `LINK_ENTRAR`, `emailDoLogin`, `naoConta` |
+| 1101 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`), `bolaGirando` |
+| 1132 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano, ordem, distância) |
+| 1196 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
+| 1210 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
+| 1403 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
+| 1512 | `politicaDe` — cancelamento, igual ou separado por modalidade |
+| 1612 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
+| 1711 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `lerContatosPrivados`, `lerRespostas`, `loadEverything` |
+| 1915 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
+| 2032 | `state` |
+| 2137 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
+| 2441 | `getResults`, `render()` (no fim, `sincronizarLink`); SEO: `urlCanonica`, `seoDaPagina`, `atualizarSeo` |
+| 3260 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel` |
+| 3283 | **endereços**: `SITE`, `slugTexto`, `idCurto`, `slugDaAcademia`, `caminhoDaFicha`, `caminhoDaRegiao`, `linkDaFicha` |
+| 3323 | **área da academia**: `carregarConta`, `carregarAcessos`, `senhaProvisoria`, `mensagemDoAcesso`, `faltasDaFicha`, `blocoResposta`, `cartaoAvaliacao`, `renderContaSheet`, `blocoDono`, `blocoAcessoAdmin`, `blocoAcessosPainel`, `salvarDadosConta`, `publicarResposta`, `criarAcesso`, `ligarEventosConta` |
+| ~4000 | página de busca, filtros, card da academia |
+| 4373 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias`, `renderSiteFooter` (cidades) |
+| 4762 | navegação: `PARAMETROS_DA_TELA`, `filtrosNoLink`/`filtrosDoLink`, `urlDoEstado`, `syncUrl`, `sincronizarLink`, `lerLink`, `academiaDoSlug`, `regiaoDoLink`, `aplicarLink`, `irParaSecao`, `goHome`/`goSearch`/`abrirRegiao`/`openCourt`, `popstate` |
+| 5472 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
+| 5632 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
+| 6614 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia`, `htCaminho` (links das regiões) |
+| 6983 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono) |
+| 7275 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
+| 7462 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
+| 7642 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
+| 7726 | `renderLoginSheet` (admin e academia), `renderAdminPanel` |
+| 7787 | `attachEvents()` (chama `ligarEventosConta` no fim do login) |
+| 8947 | `doSearch(opcoes)`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
+| 9158 | `init()` (o link manda na tela: `aplicarLink(lerLink())`) |
 
 ## 4. Banco (Supabase)
 
@@ -484,6 +527,9 @@ em aba anônima inflava os números da home.
     banco de teste fica `false`) e a leitura dela para o visitante.
   - `migrations/20260929120100_sitemap.sql` — domínio `"*/*"` e a função
     `sitemap()`.
+  - `migrations/20260930130000_links_amigaveis.sql` — `slug()`,
+    `slug_da_academia()` e o `sitemap()` com os endereços novos (seção 3,
+    "Endereços").
   - `migrations/20260930120000_acesso_academias.sql` — área da academia:
     tabelas `academia_acessos` e `respostas`, regras, gatilhos, funções e
     as colunas de contato fechadas para quem está logado (seção 4, "Área da
@@ -568,9 +614,12 @@ copiar do Google em massa, fotos, avaliações, textos e logo, não.**
 ### Sitemap automático (29/09/2026)
 `/sitemap.xml` não é mais o arquivo do repositório: o `netlify.toml`
 repassa (proxy, `force = true`) para a função `sitemap()` do banco de
-verdade, com a chave pública no cabeçalho. Ela lista a home e a ficha de
-cada academia publicada e em exibição — academia nova entra sozinha, sem
-publicar o site. A função devolve o tipo `"*/*"` (domínio sobre `bytea`)
+verdade, com a chave pública no cabeçalho. Ela lista a home, as páginas de
+cada cidade e bairro com academia (`/quadras/…`, desde 30/09/2026) e a
+ficha de cada academia publicada e em exibição (`/academia/…`) — academia
+nova entra sozinha, sem publicar o site. A função roda com a permissão do
+visitante: só pode pedir colunas que ele lê (com `a.*` ela quebrou no
+teste local, porque o visitante não lê os contatos). A função devolve o tipo `"*/*"` (domínio sobre `bytea`)
 e põe o `Content-Type: application/xml` ela mesma: com o tipo
 `"text/xml"`, o PostgREST só devolve XML puro quando o pedido diz
 `Accept: text/xml`, e o Google pede `text/html, …, */*` (viria JSON).
@@ -626,7 +675,8 @@ colocados pelo Breno). Aqui:
   execução → passo "Aplicar…". Linhas esperadas: `aplicada: <arquivo>`,
   `anotada sem rodar…`, `visitante lê as academias: N publicadas`,
   `visitante lê as respostas das academias`, `visitante não lê os acessos
-  das academias (resposta 401)`, `sitemap: N endereços`. Do chat, o Claude lê pela ferramenta do GitHub
+  das academias (resposta 401)`, `sitemap: N endereços (F fichas, R
+  regiões)` — e erro se o sitemap ainda tiver `?court=`. Do chat, o Claude lê pela ferramenta do GitHub
   (lista as execuções do `banco.yml` e lê o registro do job). É o jeito de
   conferir produção daqui, já que a rede deste ambiente não alcança o site
   nem o Supabase.
@@ -681,7 +731,8 @@ O histórico fica em `supabase_migrations.schema_migrations` nos dois
 bancos.
 
 **Esperando o merge (30/09/2026):** `20260930120000_acesso_academias`
-(área da academia). Entra no banco de teste com o PR e no de verdade com o
+(área da academia) e `20260930130000_links_amigaveis` (sitemap com os
+endereços novos). Entra no banco de teste com o PR e no de verdade com o
 merge, sozinho. Pode rodar de novo sem estragar.
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
@@ -715,11 +766,11 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
-Em 30/09/2026 (área da academia): **211 verificações, todas
-passando** (as 159 de antes + as da área da academia), mais as 61 do
+Em 30/09/2026 (área da academia e links): **245 verificações, todas
+passando** (as 159 de antes, 52 da área da academia e 34 dos links), mais as 61 do
 `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -752,6 +803,12 @@ passando** (as 159 de antes + as da área da academia), mais as 61 do
   academia logada não conta, trocar senha, login sem acesso, admin cria o
   acesso e a mensagem do WhatsApp, admin continua vendo os contatos,
   moderação de resposta, banco sem o SQL novo e textos legais.
+- `links.js` — endereço de cada tela: ficha por nome e id, nome antigo,
+  `?court=` antigo, academia que saiu, região com título e canônica,
+  caminho da ficha como link, filtros/ordem/mapa no link e na ordem das
+  listas, gaveta vira um passo, "voltar" desfaz e não conta busca de novo,
+  `?busca=` antigo, comparação, cartões e QR com o endereço novo, `noindex`
+  da busca e da comparação, dados do caminho para o Google.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
   banco de verdade (não no mock) tudo o que a academia pode e não pode.
@@ -871,6 +928,11 @@ como modelo (seção 12).
 - **Ficha básica e "É o responsável?":** Yelp, TripAdvisor e Google
   Business Profile ("Claim this business" / "Reivindicar esta empresa") —
   listar com dado público e convidar o dono a assumir a página.
+- **Endereços:** Booking e TripAdvisor (ficha e cidade com endereço
+  próprio, busca interna fora do Google, caminho "Início › Cidade › Bairro"),
+  Airbnb e Trivago (filtros, ordem e mapa no link; "voltar" desfaz),
+  Mercado Livre e TripAdvisor (id no endereço para o link não quebrar),
+  TudoCelular (comparação com as academias no link).
 - **Área da academia:** Google Business Profile (editar o perfil, "complete
   seu perfil", responder avaliação como "Resposta do proprietário", não
   apagar avaliação — só denunciar), Yelp for Business (responder em
@@ -992,6 +1054,11 @@ como modelo (seção 12).
 - **Seed em banco novo marcava os exemplos como ficha básica** (a
   migração da coluna só marca `true` o que já existia antes dela). O fim
   do `seed.sql` acerta isso.
+- **Página em caminho (`/academia/…`) resolve link relativo errado.**
+  Tudo no `index.html` tem de ser absoluto (`/favicon-32.png`,
+  `/academia/…`); um `href="?court=…"` viraria `/academia/x?court=…`.
+- **Função do banco chamada pelo visitante não pode usar `select *`** em
+  `academias`/`avaliacoes` (o `sitemap()` quebrou assim no teste local).
 - **Logado não lê `*` desde a área da academia.** `authenticated` tem
   as mesmas colunas do visitante; `select('*')`, `.select()` sem colunas e
   `insert(...).select()` voltam "permission denied" (o admin lê contatos
@@ -1012,7 +1079,8 @@ como modelo (seção 12).
 ## 10. Histórico
 
 ```
-(a seguir) Área da academia: login, primeiro acesso, edição da própria ficha e respostas   ← PR de 30/09, esperando o Breno
+(a seguir) Links no padrão dos grandes: ficha, região, filtros, abas e comparação   ← PR #5, 30/09
+fbe7e89 Área da academia: login, primeiro acesso, edição da própria ficha e respostas   ← PR #5, 30/09
 2bfc6d0 Documento de contexto atualizado depois do PR #3 (#4)
 92e5685 SQL automático, ficha básica, WhatsApp, buscador do mapa e sitemap (#3)   ← merge na main, 29/09
 d86bc8d Admin publica academia só com o nome
@@ -1113,7 +1181,13 @@ c9ade31 Configuração de publicação do Netlify
   `…/?entrar`, entrar com o usuário e a senha, completar o primeiro acesso,
   editar a ficha e responder a avaliação da Carla; (3) conferir que a ficha
   deixou de ser básica e que a resposta aparece para quem não está logado.
-  Depois, "pode subir".
+  Links: abrir uma ficha e ver o endereço `/academia/…`; tocar em
+  "Avaliações" (vira `#avaliacoes`); no caminho da ficha, tocar no bairro
+  (`/quadras/sao-paulo/moema`); filtrar e ordenar e usar o "voltar" do
+  celular. Depois, "pode subir".
+- **Depois do merge dos links:** no Google Search Console, enviar o
+  `sitemap.xml` (as fichas agora são `/academia/…` e há páginas de região).
+  Links antigos seguem funcionando.
 - **Depois do merge:** criar o acesso de cada academia (começar pelas
   fichas básicas) e mandar a mensagem pronta pelo WhatsApp. No painel,
   acompanhar quem completou ("Ativo desde…") e quem ainda está com a senha

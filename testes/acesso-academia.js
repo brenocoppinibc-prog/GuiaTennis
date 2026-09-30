@@ -205,7 +205,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   }));
   ok(criado.rpc && criado.rpc.p_academia === 'a2' && criado.rpc.p_usuario === 'quadra.locacao' && /^[a-z2-9]{4}-[a-z2-9]{4}$/.test(criado.rpc.p_senha), 'cria o usuário com senha provisória fácil de digitar — ' + (criado.rpc && criado.rpc.p_senha));
   const msg = decodeURIComponent(criado.wa);
-  ok(criado.wa.startsWith('https://wa.me/5511999990002?text=') && msg.includes('Usuário: quadra.locacao') && msg.includes('Senha provisória: ' + criado.rpc.p_senha) && msg.includes('?entrar&utm_source=WhatsApp-academias') && msg.includes('?court=a2'), 'mensagem pronta para o WhatsApp da academia, com o link, usuário e senha');
+  ok(criado.wa.startsWith('https://wa.me/5511999990002?text=') && msg.includes('Usuário: quadra.locacao') && msg.includes('Senha provisória: ' + criado.rpc.p_senha) && msg.includes('?entrar&utm_source=WhatsApp-academias') && msg.includes('guiatennis.com.br/academia/quadra-locacao-a2'), 'mensagem pronta para o WhatsApp da academia, com o link, usuário e senha');
   ok(criado.caixa.includes('Esperando o primeiro acesso') && criado.caixa.includes('ainda não entrou'), 'caixa mostra que a academia ainda não entrou');
   const contato = await page.evaluate(() => document.querySelector('.ht-revs .rev-date')?.innerText || '');
   ok(contato.includes('11955550001'), 'admin continua vendo o WhatsApp de quem avaliou (pela função do banco) — ' + contato);

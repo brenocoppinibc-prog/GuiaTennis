@@ -58,7 +58,11 @@ ler_sitemap() {
     && grep -q "<urlset" "$tmp/sitemap.xml"
 }
 if tentar ler_sitemap; then
-  echo "sitemap: $(grep -o '<loc>' "$tmp/sitemap.xml" | wc -l | tr -d ' ') endereços"
+  echo "sitemap: $(grep -o '<loc>' "$tmp/sitemap.xml" | wc -l | tr -d ' ') endereços ($(grep -o '/academia/' "$tmp/sitemap.xml" | wc -l | tr -d ' ') fichas, $(grep -o '/quadras/' "$tmp/sitemap.xml" | wc -l | tr -d ' ') regiões)"
+  if grep -q '?court=' "$tmp/sitemap.xml"; then
+    echo "::error::O sitemap ainda usa o endereço antigo das fichas (?court=)."
+    exit 1
+  fi
 else
   echo "::error::O sitemap não saiu em XML: $(head -c 300 "$tmp/sitemap.xml")"
   exit 1

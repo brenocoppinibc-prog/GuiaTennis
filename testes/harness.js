@@ -17,6 +17,11 @@ async function abrir(opts = {}) {
     if (o.colunasFechadas) window.__colunasFechadas = true;
     if (o.semPlano) window.__semPlano = true;
     if (o.semConfirmada) window.__semConfirmada = true;
+    if (o.academia) window.__academia = o.academia;
+    if (o.acessoNovo) window.__acessoNovo = true;
+    if (o.semAcesso) window.__semAcesso = true;
+    if (o.avaliacoes) window.__avaliacoesIniciais = o.avaliacoes;
+    if (o.respostas) window.__respostasIniciais = o.respostas;
   }, opts);
   // opts.host abre o site num endereço de verdade (o de teste do Netlify, por
   // exemplo) e opts.trocar mexe no index.html antes de servir.

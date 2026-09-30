@@ -32,6 +32,26 @@ else
   exit 1
 fi
 
+# Área da academia: o visitante lê as respostas, e nunca os logins.
+ler_respostas() {
+  codigo="$(curl -sS -o "$tmp/respostas.json" -w '%{http_code}' \
+    "$api/rest/v1/respostas?select=avaliacao_id,texto,created_at&limit=1" -H "apikey: $chave")"
+  [ "$codigo" = 200 ]
+}
+if tentar ler_respostas; then
+  echo "visitante lê as respostas das academias"
+else
+  echo "::error::O visitante não consegue ler as respostas das academias (resposta $codigo): $(head -c 300 "$tmp/respostas.json")"
+  exit 1
+fi
+codigo="$(curl -sS -o "$tmp/acessos.json" -w '%{http_code}' \
+  "$api/rest/v1/academia_acessos?select=usuario&limit=1" -H "apikey: $chave")"
+if [ "$codigo" = 200 ]; then
+  echo "::error::O visitante conseguiu ler a tabela de acessos das academias: $(head -c 300 "$tmp/acessos.json")"
+  exit 1
+fi
+echo "visitante não lê os acessos das academias (resposta $codigo)"
+
 ler_sitemap() {
   # Sem pedir formato, como o Google: tem de vir XML mesmo assim.
   curl -sS -o "$tmp/sitemap.xml" "$api/rest/v1/rpc/sitemap" -H "apikey: $chave" \

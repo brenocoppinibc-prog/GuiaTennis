@@ -7,10 +7,12 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 **Repositório:** `brenocoppinibc-prog/GuiaTennis`
 **Branches:** `main` = o que está no ar e branch padrão do GitHub (criada
 em 28/09/2026). O trabalho novo entra por pedido de mudança (PR) de uma
-branch `claude/…` para a `main`. Já entraram: **PR #2** (banco de teste e
+branch de trabalho (`claude/…` ou `ccr-…`) para a `main`. Já entraram: **PR #2** (banco de teste e
 publicação pelo GitHub, 28/09) e **PR #3** (SQL automático, ficha básica,
 WhatsApp, buscador do mapa e sitemap, 29/09, merge `92e5685`), os dois da
-`claude/github-supabase-connection-n1w3rr`. O **PR #1** (`new-session` →
+`claude/github-supabase-connection-n1w3rr`. **Área da academia** (30/09):
+branch `ccr-0a610d86-k6plx0`, PR para a `main` esperando o Breno testar na
+prévia. O **PR #1** (`new-session` →
 `trivago`) ficou velho e segue aberto; pode ser fechado. As outras
 `claude/…` são antigas.
 **No ar:** guiatennis.com.br (Netlify, publica a `main` sozinho) · teste na
@@ -21,11 +23,13 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 30/09/2026
 
-> **Estado (30/09/2026):** tudo publicado. Não há PR aberto de trabalho
-> nem SQL esperando. O banco de verdade recebeu sozinho a ficha básica e o
-> sitemap em 29/09 (seção 5). Falta o Breno conferir o site publicado
-> (seção 11, primeiro item). O próximo passo sugerido é o Google Search
-> Console.
+> **Estado (30/09/2026):** a **área da academia** (seção 4, "Área da
+> academia") está num PR para a `main`, com o SQL
+> `20260930120000_acesso_academias` aplicado sozinho no banco de teste pelo
+> PR. Falta o Breno testar na prévia (seção 11, primeiro item) e dizer
+> "pode subir". Depois: criar o acesso de cada academia e mandar pelo
+> WhatsApp. Ainda em aberto de antes: conferir o site do PR #3 e o Google
+> Search Console.
 
 ### Como abrir o chat novo
 Anexe este arquivo e diga em qual branch trabalhar. No chat novo, antes de
@@ -168,40 +172,44 @@ só. Sem build, sem npm, sem framework. Abrir o arquivo já é rodar o site.
 
 | Linha | O quê |
 |---|---|
-| topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` |
-| 967 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
-| 1041 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`), `bolaGirando` |
-| 1072 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano) |
-| 1136 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
-| 1150 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
-| 1343 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
-| 1452 | `politicaDe` — cancelamento, igual ou separado por modalidade |
-| 1552 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
-| 1651 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `loadEverything` |
-| 1801 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
-| 1916 | `state` |
-| 2001 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
-| 2305 | `getResults`, `render()` |
-| 2438 | mapa Leaflet da busca (pinos empilhados) |
-| 3076 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel` |
-| 3172 | página de busca, filtros, card da academia |
-| 3465 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias` |
-| 4346 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
-| 4500 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
-| 5485 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia` |
-| 5869 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`) |
-| 6106 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
-| 6343 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
-| 6523 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
-| 6658 | `attachEvents()` |
-| 7786 | `doSearch`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
-| 7992 | `init()` |
+| topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` (a área da academia logo no começo: `.conta-*`, `.dono-box`, `.rev-resp*`, `.acesso-*`) |
+| 1004 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
+| 1013 | `isAdmin`, `contaAcademia`, `EMAIL_ADMIN`, `DOMINIO_ACESSO`, `LINK_ENTRAR`, `emailDoLogin`, `naoConta` |
+| 1097 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`), `bolaGirando` |
+| 1128 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano) |
+| 1192 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
+| 1206 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
+| 1399 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
+| 1508 | `politicaDe` — cancelamento, igual ou separado por modalidade |
+| 1608 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
+| 1707 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `lerContatosPrivados`, `lerRespostas`, `loadEverything` |
+| 1911 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
+| 2028 | `state` |
+| 2128 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
+| 2432 | `getResults`, `render()` |
+| 3205 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel`, `linkDaFicha` |
+| 3232 | **área da academia**: `carregarConta`, `carregarAcessos`, `senhaProvisoria`, `mensagemDoAcesso`, `faltasDaFicha`, `blocoResposta`, `cartaoAvaliacao`, `renderContaSheet` (primeiro acesso, painel, trocar senha), `blocoDono`, `blocoAcessoAdmin`, `blocoAcessosPainel`, `salvarDadosConta`, `publicarResposta`, `criarAcesso`, `ligarEventosConta` |
+| ~3900 | página de busca, filtros, card da academia |
+| 4280 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias` |
+| 5169 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
+| 5329 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
+| 6308 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia` |
+| 6677 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono) |
+| 6969 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
+| 7156 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
+| 7336 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
+| 7420 | `renderLoginSheet` (admin e academia), `renderAdminPanel` |
+| 7481 | `attachEvents()` (chama `ligarEventosConta` no fim do login) |
+| 8636 | `doSearch`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
+| 8845 | `init()` |
 
 ## 4. Banco (Supabase)
 
 `SUPABASE_URL` e `SUPABASE_ANON_KEY` estão no `index.html` (chave
 pública, é assim mesmo). Admin entra por e-mail/senha do Supabase Auth;
-`isAdmin = !!session`.
+desde 30/09/2026 `isAdmin` só vale para o e-mail `guiatennis1@gmail.com`
+(`carregarConta`); as academias entram pelo mesmo login, com usuário
+(seção 4, "Área da academia").
 
 ### `academias`
 `id, name, address, numero, complemento, bairro, cidade, endereco,
@@ -275,6 +283,19 @@ Cada faixa é `{ de: "06:00", ate: "22:00", fechado: false }`. No modo
 ### `avaliacoes`
 `id, academia_id, stars, comment, nome_autor, contato_autor, created_at`
 
+### `respostas` (30/09/2026)
+`avaliacao_id (chave, uma resposta por avaliação), texto, user_id,
+created_at, updated_at`. Resposta pública da academia embaixo da avaliação
+("Resposta da academia"). O visitante lê tudo menos `user_id`.
+
+### `academia_acessos` (30/09/2026)
+`user_id (auth.users), academia_id, usuario, nome_responsavel, cargo,
+email, whatsapp, cnpj, recebe_relatorio, termos_aceitos_em,
+dados_completos_em, senha_trocada_em, ficha_atualizada_em, created_at,
+updated_at`. Um login por academia. Ninguém de fora lê; a academia lê a
+linha dela; o admin lê todas pela função `acessos_das_academias()`. Gravar,
+só pelas funções (seção 4, "Área da academia").
+
 ### `cliques`
 `id, academia_id, tipo, detalhe, cep, lat, lng, origem, dispositivo, created_at`
 
@@ -303,10 +324,19 @@ função `security definer` com `search_path` fixo faz o mesmo de um jeito
 que o Supabase reconhece. O site tenta a função e, se ela não existir,
 cai na visão antiga; sem nenhuma das duas, o bloco de números some.
 
-### Segurança (`SQL-SEGURANCA.sql`)
+### Segurança (`SQL-SEGURANCA.sql` e `20260930120000_acesso_academias`)
 - Admin é quem tem o e-mail `guiatennis1@gmail.com` no login: as regras
-  de editar, apagar e ver pendentes/cliques conferem `auth.jwt() ->> 'email'`.
-  O cadastro de novos usuários no Supabase Auth está **desligado**.
+  de editar, apagar e ver pendentes/cliques conferem `auth.jwt() ->> 'email'`
+  (desde 30/09 também pela função `eh_admin()`).
+  O cadastro de novos usuários no Supabase Auth está **desligado** — os
+  logins das academias são criados pelo admin, pela função do banco.
+- **Quem está logado (`authenticated`: admin ou academia) lê as mesmas
+  colunas do visitante** desde 30/09/2026. Antes lia tudo, e com as
+  academias logando uma leria o WhatsApp de quem avaliou as outras. O admin
+  vê `nome_solicitante`, `contato_solicitante` e `contato_autor` pela função
+  `contatos_privados()` (o site junta em `loadEverything`). Por isso
+  **nenhuma leitura logada pode pedir `*`**: `select('*')` e `.select()`
+  sem colunas são negados (o insert do admin usa `.select('id')`).
 - O visitante (`anon`) lê **só colunas liberadas uma a uma**: tudo menos
   `nome_solicitante`/`contato_solicitante` (academias) e `contato_autor`
   (avaliações). O site pede essas colunas pelo nome
@@ -318,6 +348,93 @@ cai na visão antiga; sem nenhuma das duas, o bloco de números some.
   `estatisticas_publicas` como `SECURITY DEFINER` executável por anon e
   authenticated — é assim que o visitante vê os quatro totais sem ler a
   tabela `cliques` (ver acima).
+
+### Área da academia (pedido do Breno em 30/09/2026)
+Cada academia ganha um login para **editar a própria ficha e responder as
+avaliações** — como o Google Business Profile, o Yelp for Business, o
+Management Center do TripAdvisor e o extranet do Booking. Como o Breno já
+publicou academias sem elas saberem (fichas básicas), o fluxo é o "pré
+login" pedido por ele:
+
+1. **Admin cria o acesso** na ficha da academia, bloco "Acesso da
+   academia": o site sugere o usuário pelo nome (`quadra.locacao`) e gera
+   uma senha provisória fácil de digitar (`k2fj-sux4`, sem l/o/0/1). A
+   senha só aparece nessa hora (não fica guardada em lugar nenhum legível);
+   perdeu, "Gerar nova senha". Botões "Mandar pelo WhatsApp" (abre o
+   WhatsApp da academia com a mensagem pronta: link da ficha, link
+   `?entrar`, usuário e senha — o Breno manda ele mesmo) e "Copiar
+   mensagem". "Remover acesso" apaga o login (a ficha fica).
+2. **A academia entra** pelo link `guiatennis.com.br/?entrar&utm_source=WhatsApp-academias`
+   (abre o login da academia), pelo menu ("Entrar na área da academia"),
+   pelo rodapé ou pela ficha ("Já tem acesso? Entre na área da academia").
+   Digita o **usuário** (sem @); o site monta o e-mail
+   `<usuario>@acesso.guiatennis.com.br` (`emailDoLogin`) — ninguém recebe
+   nada nele. Com @, é o login do admin.
+3. **Primeiro acesso** (obrigatório para editar): nome do responsável,
+   cargo (Dono(a) ou sócio(a), Gerente, Professor(a), Recepção, Outro),
+   e-mail, WhatsApp do responsável, CNPJ (opcional), senha nova (a
+   provisória deixa de valer), "quero receber o relatório do mês" (opcional,
+   desmarcado — LGPD) e o aceite "Represento esta academia e aceito os
+   Termos…". Nada disso aparece no site.
+4. **Painel da academia** (faixa verde no topo, "abrir"): situação da
+   ficha (no ar confirmada, ficha básica, pausada, em análise), "Ainda falta
+   na ficha" (endereço, WhatsApp, horário, preço, cancelamento, quadras,
+   comodidades, como chegar, fotos — o "complete seu perfil" do Google),
+   Editar a ficha, Ver a ficha, QR code da ficha para a recepção, as
+   avaliações com Responder / Editar / Apagar resposta e "Pedir análise ao
+   GuiaTennis" (WhatsApp do guia com a avaliação), dados do responsável,
+   trocar senha e sair.
+5. **Na ficha dela**, a academia vê o bloco "Área da academia" com Editar e
+   o painel, responde embaixo de cada avaliação, e no lugar de "Avalie"
+   aparece "Vocês não podem avaliar a própria academia". O link "É o
+   responsável?" some para ela.
+
+**O que a academia não pode** (garantido pelo banco, não pela tela):
+apagar avaliação, avaliar a si mesma, mudar status, plano, pago, pausa,
+origem ou quem pediu o cadastro (o gatilho `proteger_ficha_da_academia`
+devolve os valores antigos), mexer em outra academia, apagar a ficha, ler
+contato de quem avaliou/pediu cadastro, ler cliques, criar acesso ou trocar
+senha de ninguém. Salvar a ficha pela conta da academia marca
+`confirmada = true` (sai o aviso de ficha básica) e anota
+`ficha_atualizada_em` para o admin. Pausar ou remover continua pelo
+WhatsApp do guia.
+
+**Admin:** o bloco "Acesso da academia" mostra usuário, "Esperando o
+primeiro acesso" ou "Ativo desde…" com responsável, cargo, e-mail,
+WhatsApp, CNPJ, se quer o relatório, último acesso, "ficha atualizada pela
+academia em…" e "ainda com a senha provisória". O painel (prancheta) lista
+"Acessos das academias". O admin pode apagar resposta (moderação).
+
+**Estatísticas:** academia logada não grava nada (`naoConta()`), como o
+admin — senão cada visita dela à própria ficha contaria.
+
+**Funções do banco** (todas `security definer`, `search_path = ''`):
+`criar_acesso_academia(academia, usuario, senha)`,
+`nova_senha_academia(user, senha)` (derruba as sessões e pede troca de
+novo), `remover_acesso_academia(user)`, `acessos_das_academias()`,
+`contatos_privados()` — só admin; `completar_meu_acesso(...)` e
+`marcar_senha_trocada()` — só a própria academia; `minhas_academias()` e
+`avaliacao_da_minha_academia(id)` servem às regras. O login é criado
+direto em `auth.users` + `auth.identities` com `extensions.crypt(senha,
+gen_salt('bf', 10))`, o mesmo formato do Supabase, e com os campos de token
+em `''` (nulo quebra o login do Supabase). Apagar o acesso (ou a academia)
+apaga o login junto (gatilho `apagar_login_do_acesso`).
+
+**Troca de senha:** pelo login do Supabase (`auth.updateUser`), mandando a
+senha atual junto (`current_password`) — funciona com "Secure password
+change" e "Require current password" ligados ou desligados (conferido no
+GoTrue local). No primeiro acesso a senha provisória fica só na memória da
+página até a troca. Esqueceu a senha: WhatsApp do guia → "Gerar nova
+senha".
+
+**Conferido aqui (30/09/2026):** Postgres 16 local com as migrações + o
+login de verdade do Supabase (`supabase/auth`, commit de 22/09/2026,
+compilado daqui): `testes/banco-acesso.py`, 61 conferências — a academia
+entra com a senha provisória, troca a senha, edita só o que é dela, não
+apaga nem se avalia, responde só as avaliações dela, não lê contato nem
+cliques; nova senha derruba a sessão; remover acesso e excluir academia
+apagam o login. Também com a biblioteca do site (`@supabase/auth-js`
+2.117): entrar com usuário, `same_password`, troca com a senha atual.
 
 ### GitHub ↔ Supabase
 O Breno ligou o repositório pelo painel do Supabase (Project Settings →
@@ -367,6 +484,10 @@ em aba anônima inflava os números da home.
     banco de teste fica `false`) e a leitura dela para o visitante.
   - `migrations/20260929120100_sitemap.sql` — domínio `"*/*"` e a função
     `sitemap()`.
+  - `migrations/20260930120000_acesso_academias.sql` — área da academia:
+    tabelas `academia_acessos` e `respostas`, regras, gatilhos, funções e
+    as colunas de contato fechadas para quem está logado (seção 4, "Área da
+    academia").
   - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
     não existem): aula e locação, só locação, só aula com horário por dia
     e prazo de 36h, uma pausada e uma pendente; mais avaliações e
@@ -498,12 +619,14 @@ colocados pelo Breno). Aqui:
   Na primeira vez, a senha recém-trocada no Supabase levou uns minutos
   para valer no pooler ("password authentication failed").
 - Depois do SQL, `supabase/conferir.sh` testa pela API, com a chave
-  pública, o que o site lê: as academias com as colunas do `index.html` e
-  o sitemap sem pedir formato (tem de vir XML).
+  pública, o que o site lê: as academias com as colunas do `index.html`,
+  as respostas das academias, que a tabela de acessos fica fechada para o
+  visitante, e o sitemap sem pedir formato (tem de vir XML).
 - **Onde ver o resultado:** GitHub → Actions → "Banco de dados" → a
   execução → passo "Aplicar…". Linhas esperadas: `aplicada: <arquivo>`,
   `anotada sem rodar…`, `visitante lê as academias: N publicadas`,
-  `sitemap: N endereços`. Do chat, o Claude lê pela ferramenta do GitHub
+  `visitante lê as respostas das academias`, `visitante não lê os acessos
+  das academias (resposta 401)`, `sitemap: N endereços`. Do chat, o Claude lê pela ferramenta do GitHub
   (lista as execuções do `banco.yml` e lê o registro do job). É o jeito de
   conferir produção daqui, já que a rede deste ambiente não alcança o site
   nem o Supabase.
@@ -555,7 +678,11 @@ visitante lê as academias: 8 publicadas
 sitemap: 9 endereços
 ```
 O histórico fica em `supabase_migrations.schema_migrations` nos dois
-bancos. Não há SQL esperando.
+bancos.
+
+**Esperando o merge (30/09/2026):** `20260930120000_acesso_academias`
+(área da academia). Entra no banco de teste com o PR e no de verdade com o
+merge, sozinho. Pode rodar de novo sem estragar.
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
 
@@ -588,11 +715,12 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
-Em 29/09/2026 (último commit do PR #3): **159 verificações, todas
-passando**.
+Em 30/09/2026 (área da academia): **211 verificações, todas
+passando** (as 159 de antes + as da área da academia), mais as 61 do
+`banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
   antes de qualquer outra coisa.**
@@ -616,14 +744,31 @@ passando**.
   texto com logo e sem os dados, nada no lugar da foto, admin publica só
   com o nome (o visitante continua com os campos essenciais) e textos
   legais.
+- `acesso-academia.js` — link `?entrar`, login por usuário, senha errada,
+  primeiro acesso (validação, troca da senha provisória, aceite), painel
+  com o que falta, responder/apagar resposta, pedir análise, editar só a
+  própria ficha sem mandar status/plano, ficha básica que vira confirmada,
+  não avaliar a si mesma, nada de editar/responder em outra academia,
+  academia logada não conta, trocar senha, login sem acesso, admin cria o
+  acesso e a mensagem do WhatsApp, admin continua vendo os contatos,
+  moderação de resposta, banco sem o SQL novo e textos legais.
+- `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
+  login do Supabase locais (abaixo, "Banco e login locais"). Confere no
+  banco de verdade (não no mock) tudo o que a academia pode e não pode.
 - `banco-de-teste.js` — a prévia do Netlify e o site de teste abrem o
   banco de teste; o guiatennis.com.br, o endereço do Netlify do site de
   verdade, link com `?banco=` e endereço parecido, nunca.
 
 O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
-separada) e `a2` (só locação, regra única). Chaves: `__admin`,
-`__semDetalhe`, `__semCep`, `__colunasFechadas`, `__semPlano`,
-`__semConfirmada` (a `a2` é ficha básica). `abrir({ overpass })` responde o
+separada) e `a2` (só locação, regra única). Chaves: `__admin` (sessão com
+o e-mail do admin), `__semDetalhe`, `__semCep`, `__colunasFechadas`,
+`__semPlano`, `__semConfirmada` (a `a2` é ficha básica), `__academia`
+(academia logada, com acesso completo; `__acessoNovo` = primeiro acesso) e
+`__semAcesso` (banco sem o SQL da área da academia). `abrir({ avaliacoes,
+respostas })` começa com avaliações e respostas. O mock finge o login
+(`signInWithPassword` com as senhas de `window.__senhas`, `updateUser` em
+`__senhaNova`), as funções do banco (`window.__rpcs`) e o gatilho que
+protege a ficha quando quem salva é a academia. `abrir({ overpass })` responde o
 OpenStreetMap com um JSON fixo; `abrir({ host })` finge outro endereço
 (prévia, guiatennis.com.br) e o `createClient` do mock anota em
 `window.__banco` qual banco o site escolheu. Teste de cadastro como
@@ -641,6 +786,21 @@ preta com cada passo da busca e a resposta do banco a cada gravação
 ("gravado no banco" ou "o banco recusou … motivo"). Só aparece para quem
 abre com `?diagnostico`, até fechar a aba. Foi assim que se achou a trava
 que recusava as buscas.
+
+**Banco e login locais (para `banco-acesso.py`):** Postgres como na seção
+4 ("Postgres na máquina"), papéis `anon`, `authenticated`,
+`service_role`, `authenticator`, `supabase_auth_admin` e o esquema `auth`
+do dono `supabase_auth_admin`. O login do Supabase (GoTrue) se compila
+daqui pelo proxy do Go, sem GitHub: `go mod download
+github.com/supabase/auth@<commit>`, copiar a pasta, **apagar a linha
+`replace github.com/joho/godotenv => ./internal/forks/godotenv`** do
+`go.mod` (a pasta não vem no pacote) e `go build`. `gotrue migrate` cria o
+`auth` (inclui `auth.uid()` e `auth.jwt()`); depois `supabase/aplicar.sh
+teste` com `BANCO_URL` local e `gotrue serve` (variáveis
+`GOTRUE_JWT_SECRET`, `DATABASE_URL` com `supabase_auth_admin`,
+`GOTRUE_DISABLE_SIGNUP=true`, `API_EXTERNAL_URL`, `PORT`). O teste cria o
+admin pela API de admin do GoTrue com um token `service_role` assinado
+com o segredo.
 
 **Daqui não se alcança o Supabase nem o site** (a rede do ambiente
 bloqueia, "CONNECT tunnel failed, response 403"). Diagnóstico de produção
@@ -711,6 +871,13 @@ como modelo (seção 12).
 - **Ficha básica e "É o responsável?":** Yelp, TripAdvisor e Google
   Business Profile ("Claim this business" / "Reivindicar esta empresa") —
   listar com dado público e convidar o dono a assumir a página.
+- **Área da academia:** Google Business Profile (editar o perfil, "complete
+  seu perfil", responder avaliação como "Resposta do proprietário", não
+  apagar avaliação — só denunciar), Yelp for Business (responder em
+  público, "Report review"), TripAdvisor Management Center (cargo do
+  responsável + "sou representante autorizado"), Booking extranet (dados do
+  responsável e CNPJ para cobrança futura) e o QR code de avaliação na
+  recepção.
 - **Publicação e teste:** o fluxo dos sites grandes — prévia por PR com
   banco de teste (staging), SQL guardado no repositório e aplicado pela
   esteira, merge publica.
@@ -825,6 +992,18 @@ como modelo (seção 12).
 - **Seed em banco novo marcava os exemplos como ficha básica** (a
   migração da coluna só marca `true` o que já existia antes dela). O fim
   do `seed.sql` acerta isso.
+- **Logado não lê `*` desde a área da academia.** `authenticated` tem
+  as mesmas colunas do visitante; `select('*')`, `.select()` sem colunas e
+  `insert(...).select()` voltam "permission denied" (o admin lê contatos
+  por `contatos_privados()`). Coluna nova em `academias`/`avaliacoes` entra
+  no `grant select (…)` para `anon` **e** `authenticated`.
+- **`isAdmin` é pelo e-mail**, não por ter sessão. O mock dos testes
+  devolve a sessão com `guiatennis1@gmail.com`; login que não é do admin
+  nem de academia sai sozinho (`init` e o botão Entrar).
+- **Login do Supabase quebra com campo de token nulo** em `auth.users`
+  ("converting NULL to string"). `criar_acesso_academia` grava `''` em
+  `confirmation_token`, `recovery_token`, `email_change_token_new` e
+  `email_change`.
 - **Postgres local no scratchpad cai** (as permissões do scratchpad são
   refeitas de tempos em tempos). Dados em `/var/lib/postgresql/…`. Papel
   que já existe dá erro em `create role`: criar dentro de um bloco `do`
@@ -833,6 +1012,8 @@ como modelo (seção 12).
 ## 10. Histórico
 
 ```
+(a seguir) Área da academia: login, primeiro acesso, edição da própria ficha e respostas   ← PR de 30/09, esperando o Breno
+2bfc6d0 Documento de contexto atualizado depois do PR #3 (#4)
 92e5685 SQL automático, ficha básica, WhatsApp, buscador do mapa e sitemap (#3)   ← merge na main, 29/09
 d86bc8d Admin publica academia só com o nome
 16b2e5c Academia sem foto não mostra nada no lugar da foto
@@ -925,6 +1106,25 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
+- **Testar a área da academia na prévia do PR (30/09/2026)** — no banco de
+  teste: (1) entrar como admin (usuário admin do projeto de teste), abrir a
+  ficha "Quadra Exemplo Moema", bloco "Acesso da academia" → "Criar usuário
+  e senha provisória" e "Copiar mensagem"; (2) numa aba anônima, abrir
+  `…/?entrar`, entrar com o usuário e a senha, completar o primeiro acesso,
+  editar a ficha e responder a avaliação da Carla; (3) conferir que a ficha
+  deixou de ser básica e que a resposta aparece para quem não está logado.
+  Depois, "pode subir".
+- **Depois do merge:** criar o acesso de cada academia (começar pelas
+  fichas básicas) e mandar a mensagem pronta pelo WhatsApp. No painel,
+  acompanhar quem completou ("Ativo desde…") e quem ainda está com a senha
+  provisória. Quem marcou "relatório do mês" aparece no bloco do acesso: o
+  "Copiar resumo pra mandar" do painel continua sendo o relatório, mandado
+  pelo Breno.
+- **Próximos passos possíveis da área da academia** (referência: Google
+  Business Profile e Yelp): números da própria ficha no painel da academia
+  (visitas, cliques no WhatsApp, de onde vieram — o relatório do mês
+  sozinho), aviso por e-mail de avaliação nova, e mais de um login por
+  academia (a tabela já aceita).
 - **Conferir o site depois do merge do PR #3** (pedido ao Breno em
   29/09/2026, sem resposta ainda): em aba anônima, guiatennis.com.br com o
   WhatsApp e o logo pequeno no menu e no rodapé; uma ficha com "É o
@@ -937,7 +1137,9 @@ c9ade31 Configuração de publicação do Netlify
 - **PR #1** (`claude/new-session-qevg66` → `claude/trivago-…`): velho,
   pode ser fechado sem merge.
 - **Projeto de teste do Supabase:** criar o admin e desligar o cadastro
-  de usuários (seção 4, "Banco de teste", "A conferir").
+  de usuários (seção 4, "Banco de teste", "A conferir"). Para testar a área
+  da academia na prévia, o admin do projeto de teste precisa ter o e-mail
+  `guiatennis1@gmail.com` (é o que o banco e o site reconhecem).
 - **Crescer as academias** (plano de 29/09/2026): escolher uma região,
   completar todas as academias dela com ficha básica (lista do mapa no
   painel + busca manual, um por um), mandar a mensagem "sua academia já

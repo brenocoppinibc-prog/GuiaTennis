@@ -234,7 +234,7 @@ o que é da academia leva para cá.
 | Apresentação: benefícios, como funciona, números do site, planos, perguntas | `/parceiros` (logado vai para o painel) | indexa |
 | Planos (tabela do que cada plano libera) | `/parceiros/planos` | indexa |
 | Ajuda (10 perguntas + WhatsApp e e-mail) | `/parceiros/ajuda` | indexa |
-| Cadastro: 1) procura a academia no guia → "É a minha" → pedir o acesso pelo WhatsApp; 2) "Cadastrar academia nova" (formulário de sempre) | `/parceiros/cadastro` (`?academia=<id8>` já abre o pedido daquela) | indexa; com `?academia`, não |
+| Cadastro: 1) procura a academia no guia → "Administrar" (pedido do Breno) → pedir o acesso pelo WhatsApp; 2) "Cadastrar academia nova" (formulário de sempre) | `/parceiros/cadastro` (`?academia=<id8>` já abre o pedido daquela) | indexa; com `?academia`, não |
 | Entrar (usuário e senha) | `/parceiros/entrar` | não |
 | Painel, Desempenho, Avaliações, Minha ficha, Plano, Conta | `/parceiros/painel` etc. — sem login, cai no Entrar e volta para a página pedida | não |
 
@@ -857,8 +857,8 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banc
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo e GuiaTennis
-Parceiros): **319 verificações, todas passando** (160 de antes, 64 da área
-da academia, 34 dos links e 61 do GuiaTennis Parceiros), mais as 76 do
+Parceiros): **320 verificações, todas passando** (160 de antes, 64 da área
+da academia, 34 dos links e 62 do GuiaTennis Parceiros), mais as 76 do
 `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -900,7 +900,7 @@ da academia, 34 dos links e 61 do GuiaTennis Parceiros), mais as 76 do
   da busca e da comparação, dados do caminho para o Google.
 - `parceiros.js` — GuiaTennis Parceiros: apresentação, planos (o que cada
   um libera), ajuda, cabeçalho de ponta a ponta, menu do celular com
-  âncoras, cadastro que procura a academia ("É a minha", "Não é essa",
+  âncoras, cadastro que procura a academia ("Administrar", "Não é essa",
   academia nova), entradas pelo site dos jogadores, caixa de preço da busca
   sem as comodidades, página privada sem login volta depois de entrar,
   Desempenho no Básico/Completo/Premium (períodos trancados, gráficos de
@@ -1208,7 +1208,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) GuiaTennis Parceiros: site das academias com painel, desempenho por plano, planos e ajuda   ← PR #5, 30/09
+(a seguir) GuiaTennis Parceiros: "Administrar" no lugar de "É a minha" no cadastro   ← PR #5, 30/09
+c0c1d84 GuiaTennis Parceiros: site das academias com painel, desempenho por plano, planos e ajuda   ← PR #5, 30/09
 2c6556c Visual limpo: Inter no texto, Playfair nos títulos e mais espaço   ← PR #5, 30/09
 082e6ad Links no padrão dos grandes: ficha, região, filtros, abas e comparação   ← PR #5, 30/09
 fbe7e89 Área da academia: login, primeiro acesso, edição da própria ficha e respostas   ← PR #5, 30/09

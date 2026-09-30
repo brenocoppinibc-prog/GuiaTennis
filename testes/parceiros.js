@@ -83,6 +83,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(100);
   let achadas = await page.evaluate(() => [...document.querySelectorAll('.pc-achada .pc-card-t')].map(x => x.innerText));
   ok(achadas.join() === 'Quadra Locação' && await page.evaluate(() => document.activeElement.id === 'pc-busca'), 'procura a academia enquanto digita, sem perder o cursor — ' + achadas.join());
+  ok(await texto(page, '.pc-achada [data-pc-minha]') === 'Administrar', 'botão da academia achada diz "Administrar"');
   await page.fill('#pc-busca', 'locacao');
   achadas = await page.evaluate(() => [...document.querySelectorAll('.pc-achada .pc-card-t')].map(x => x.innerText));
   ok(achadas.join() === 'Quadra Locação', 'acha sem acento também');
@@ -93,7 +94,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(200);
   t = await tela(page);
   const pedido = await page.evaluate(() => ({ t: document.querySelector('.pc-reivindicar')?.innerText || '', wa: decodeURIComponent(document.querySelector('.pc-reivindicar a')?.getAttribute('href') || '') }));
-  ok(pedido.t.includes('Pedir o acesso da Quadra Locação') && pedido.wa.includes('Sou responsável pela Quadra Locação') && t.link === '/parceiros/cadastro?academia=a2' && t.robots.includes('noindex'), '"É a minha": pede o acesso pelo WhatsApp, o link guarda a academia e fica fora do Google — ' + t.link);
+  ok(pedido.t.includes('Administrar a ficha da Quadra Locação') && pedido.wa.includes('Sou responsável pela Quadra Locação') && t.link === '/parceiros/cadastro?academia=a2' && t.robots.includes('noindex'), '"Administrar": pede o acesso pelo WhatsApp, o link guarda a academia e fica fora do Google — ' + t.link);
   await page.click('.pc-reivindicar [data-pc-minha=""]');
   await page.waitForTimeout(200);
   t = await tela(page);

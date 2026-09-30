@@ -4761,7 +4761,7 @@ function perguntasParceiros() {
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde as avaliações. Os planos Completo e Premium só acrescentam números mais detalhados." },
     { q: "Pagar um plano deixa a minha academia na frente?", a: "Não. A ordem da busca é a mesma em todos os planos: depende da distância, da nota, do preço e da estrutura. Nenhum plano compra posição." },
-    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, procure a academia e toque em \"É a minha\". O GuiaTennis confere com você pelo WhatsApp e manda o usuário e uma senha provisória. No primeiro acesso, você cria a sua senha." },
+    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, procure a academia e toque em \"Administrar\". O GuiaTennis confere com você pelo WhatsApp e manda o usuário e uma senha provisória. No primeiro acesso, você cria a sua senha." },
     { q: "Como cadastro uma academia nova?", a: "Em Cadastrar, toque em \"Cadastrar academia nova\" e mande os dados. O GuiaTennis confere antes de publicar." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O aluno fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { q: "Posso apagar uma avaliação ruim?", a: "Não, como no Google e no TripAdvisor. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
@@ -5207,7 +5207,7 @@ function pcResultadosBusca() {
   return achadas.map(c => `
     <div class="pc-achada">
       <div><p class="pc-card-t">${esc(c.name)}</p><p class="pc-card-s">${esc([c.bairro, c.cidade].filter(Boolean).join(", ") || c.endereco || "")}</p></div>
-      <button type="button" class="cta-btn cta-secondary" data-pc-minha="${c.id}">É a minha</button>
+      <button type="button" class="cta-btn cta-secondary" data-pc-minha="${c.id}">Administrar</button>
     </div>`).join("");
 }
 
@@ -5219,7 +5219,7 @@ function pcCadastro() {
       <p class="pc-sec-sub">Grátis no plano Básico. Sem comissão, sem taxa por aluno.</p>
       ${escolhida ? `
         <div class="pc-card pc-reivindicar">
-          <p class="pc-card-t">Pedir o acesso da ${esc(escolhida.name)}</p>
+          <p class="pc-card-t">Administrar a ficha da ${esc(escolhida.name)}</p>
           <p class="pc-card-s">Para proteger a ficha, o GuiaTennis confere com você pelo WhatsApp que você responde pela academia e manda o usuário e uma senha provisória. No primeiro acesso, você cria a sua senha.</p>
           <div class="pc-acoes">
             <a class="cta-btn cta-primary" href="${whatsappGuia(`Olá! Sou responsável pela ${escolhida.name} e quero o acesso ao GuiaTennis Parceiros: ${linkDaFicha(escolhida)}`)}" target="_blank" rel="noreferrer">${icon('whatsapp', 16, '#fff')} Pedir o acesso no WhatsApp</a>

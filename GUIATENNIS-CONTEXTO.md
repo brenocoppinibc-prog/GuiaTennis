@@ -108,7 +108,7 @@ cobra taxa e não fica no meio** da negociação.
 2. **O site não narra o que "a gente faz".** O texto responde dúvida de
    quem está chegando. Nada de "a academia nos enviou", "arredondamos
    para baixo", "atualiza sozinho" fora do bloco que fala com academias.
-3. **Sem preço = "Não incluído" + "consulte com a academia"** (`SEM_PRECO` /
+3. **Sem preço = "Sob consulta" + "fale com a academia"** (pedido de 01/10/2026; antes "Não incluído") (`SEM_PRECO` /
    `SEM_PRECO_SUB`). Nunca explicar o motivo de faltar o valor.
 4. **Número público sempre arredondado para baixo**, com `+` e ponto de
    milhar (`numeroRedondo`). São **totais do site desde o começo**, nunca

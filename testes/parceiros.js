@@ -358,7 +358,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   })));
   ok(caixa.length && caixa.every(c => !c.oferta.includes('✓') && !/Coberta|Wi-?Fi|Estacionamento|Vestiário/i.test(c.oferta)), 'caixa de preço sem as comodidades no meio');
   ok(caixa.some(c => c.selos), 'comodidades ficam junto das outras informações da academia — ' + caixa.map(c => c.selos.replace(/\n/g, ' ')).join(' / '));
-  ok(caixa.every(c => /a partir de, por hora|Consulte/i.test(c.oferta)), 'a legenda do preço fica embaixo dos valores');
+  ok(caixa.every(c => /a partir de, por hora|Sob consulta/i.test(c.oferta)), 'a legenda do preço fica embaixo dos valores');
   await browser.close();
 
   // ---- página de quem está logado, sem login ----

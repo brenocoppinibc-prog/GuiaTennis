@@ -9118,8 +9118,8 @@ function reviewsSection(c) {
 // O texto de preço é um só no site inteiro: faixa completa, sempre por hora.
 // Sem valor, a tela diz que o preço não foi incluído e manda consultar a
 // academia. Sem explicar o motivo: quem chega quer saber o que fazer.
-const SEM_PRECO = "Não incluído";
-const SEM_PRECO_SUB = "consulte com a academia";
+const SEM_PRECO = "Sob consulta";
+const SEM_PRECO_SUB = "fale com a academia";
 
 function precoTexto(faixa) {
   const min = priceMin(faixa);
@@ -9697,7 +9697,7 @@ function politicaParaSalvar(f) {
 // do Google, e dá para salvar em qualquer uma.
 const REG_PASSOS = [
   { id: "dados", t: "Nome e endereço", titulo: "Onde fica a academia?", porque: "É o que faz a academia aparecer para quem busca perto." },
-  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "Aula ou locação e o preço por hora são o que o aluno compara primeiro." },
+  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "O que o aluno compara primeiro é se tem aula ou locação e o preço por hora." },
   { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
   { id: "contato", t: "Contato", titulo: "Como os alunos falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa começada." },
   { id: "fotos", t: "Fotos", titulo: "Fotos da academia", porque: "Ficha com foto recebe muito mais contato." },
@@ -9778,7 +9778,7 @@ function regPassoHtml(id, f, obrigatorio) {
         </div>
         ${(f.modalidades.includes("aulas_proprias") || f.modalidades.includes("locacao")) ? `
           <p class="field-label">Faixa de preço por hora (opcional)</p>
-          <p class="footnote" style="margin:0 0 8px">Deixe em branco se preferir não publicar valores — a ficha mostra "Não incluído".</p>` : ""}
+          <p class="footnote" style="margin:0 0 8px">Deixe em branco se preferir não publicar valores — a ficha mostra "Sob consulta".</p>` : ""}
         ${f.modalidades.includes("aulas_proprias") ? `
           <div class="price-input-row">
             <span class="price-input-label">Aula</span>

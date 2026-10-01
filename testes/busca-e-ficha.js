@@ -162,7 +162,7 @@ const { abrir, ok } = require('./harness');
   ok(!txt.includes('Cobra metade'), 'só aula: regra de locação não aparece');
   ok(txt.includes('Perde a aula'), 'só aula: regra da aula aparece');
   ok(txt.includes('professor da academia. Para alugar a quadra avulsa'), 'FAQ "professor da academia"');
-  ok(txt.includes('consulte com a academia'), '"consulte com a academia"');
+  ok(txt.includes('Sob consulta') && txt.includes('fale com a academia'), 'sem preço: "Sob consulta" e "fale com a academia"');
   ok(txt.includes('Estacionamento grátis.') && !txt.includes('Rua de trás'), 'com vaga própria: ficha mostra "No local" e não o texto de onde parar');
   await browser.close();
   ({ browser, page } = await abrir({ q: '?court=a2' }));

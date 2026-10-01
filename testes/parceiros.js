@@ -26,6 +26,11 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   let corpo = await texto(page, '#parceiros');
   ok(corpo.includes('Por que estar no GuiaTennis') && corpo.includes('Como funciona') && corpo.includes('Perguntas frequentes'), 'benefícios, como funciona e perguntas na mesma página');
   ok(corpo.includes('sem comissão') && corpo.includes('Grátis no plano Básico'), 'deixa claro: grátis no Básico e sem comissão');
+  ok(!/Google|TripAdvisor/.test(corpo.replaceAll('(Instagram, Google…)', '')) && corpo.includes('Responda às avaliações') && !corpo.includes('Responda as avaliações'), 'benefícios sem citar outras marcas, com a crase certa');
+  const como = await page.evaluate(() => [...document.querySelectorAll('.pc-etapas-como li')].map(l => l.querySelector('.pc-card-t').innerText + ' (' + l.querySelector('.pc-etapa-tempo').innerText.trim() + ')'));
+  ok(como.join(' | ') === 'Crie a sua conta (2 minutos) | Encontre a sua academia (Na hora) | Confirme que a academia é sua (Pelo WhatsApp) | Complete a ficha e receba alunos (Todo dia)' && await page.isVisible('.pc-como-fim [data-pc="cadastro"]'), 'como funciona em 4 passos, com o tempo de cada um e o botão para começar — ' + como.length);
+  const marcasNoRodape = await page.evaluate(() => document.querySelectorAll('.pc-rodape .logo-mark').length);
+  ok(marcasNoRodape === 1 && (await texto(page, '.pc-rodape')).split('O GuiaTennis para academias e quadras de tênis').length === 2, 'rodapé com a marca e a frase uma vez só, na faixa escura');
   const planos = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-n').innerText + ':' + (p.querySelector('.pc-plano-tag')?.innerText || '')));
   ok(planos.join() === 'Básico:,Completo:Recomendado,Premium:', 'três planos, o do meio recomendado — ' + planos.join());
   ok(!corpo.includes('mesma em todos os planos') && !corpo.includes('compra posição'), 'não promete que nunca haverá posição paga');

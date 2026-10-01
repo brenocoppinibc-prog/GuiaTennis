@@ -1303,6 +1303,24 @@
   .pc-linha-discreta { color: var(--muted) !important; font-weight: 500; text-decoration: underline; }
   .acesso-pedido .pending-detail { display: block; margin-top: 6px; }
   .acesso-pedido .chip-row { margin-top: 10px; }
+  /* "Como funciona" em etapas, ligadas por uma linha. */
+  .pc-etapas-como { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 14px; position: relative; }
+  .pc-etapas-como li { display: grid; grid-template-columns: 40px 1fr; gap: 14px; position: relative; }
+  .pc-etapas-como li:not(:last-child)::before { content: ""; position: absolute; left: 19px; top: 44px; bottom: -14px; width: 2px; background: var(--green-line); }
+  .pc-etapa-n { display: inline-flex; width: 40px; height: 40px; border-radius: 999px; background: var(--green); color: #fff; font-weight: 700; font-size: 16px; align-items: center; justify-content: center; position: relative; z-index: 1; }
+  .pc-etapa-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; }
+  .pc-etapa-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; }
+  .pc-etapa-passo { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8E6D25; }
+  .pc-etapa-tempo { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--green); background: var(--green-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+  .pc-como-fim { margin-top: 22px; }
+  .pc-como-fim .cta-btn { width: 100%; }
+  @media (min-width: 900px) {
+    .pc-etapas-como { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .pc-etapas-como li { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 12px; }
+    .pc-etapas-como li:not(:last-child)::before { left: 44px; right: -18px; top: 19px; bottom: auto; width: auto; height: 2px; }
+    .pc-etapa-card { height: 100%; box-sizing: border-box; }
+    .pc-como-fim .cta-btn { width: auto; display: inline-flex; padding: 0 28px; }
+  }
   .container.pc-cheio { max-width: none; }
   .pc { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
   .pc-topo-in, .pc-main, .pc-rodape-in { width: 100%; max-width: 1180px; margin: 0 auto; box-sizing: border-box; }
@@ -1447,7 +1465,7 @@
   .pc-contato { margin-top: 24px; }
   .pc-rodape { margin-top: 56px; background: var(--card); border-top: 1px solid var(--border); }
   .pc-rodape-in { padding: 36px 20px 44px; display: grid; gap: 28px; }
-  @media (min-width: 900px) { .pc-rodape-in { grid-template-columns: 1fr 2fr; } }
+  @media (min-width: 900px) { .pc-rodape-cols { grid-template-columns: repeat(3, 1fr); } }
   .pc-rodape-t { font-size: 14px; color: var(--muted); margin: 10px 0 0; }
   .pc-rodape-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px; }
   .pc-rodape h4 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
@@ -3834,7 +3852,7 @@ function linkDaFicha(c) {
 // Como o Google Business Profile, o Yelp for Business e o Management Center
 // do TripAdvisor: o GuiaTennis cria um usuário e uma senha provisória; a
 // academia entra, completa os dados do responsável, troca a senha, edita a
-// própria ficha e responde as avaliações. Apagar avaliação, pausar, mudar o
+// própria ficha e responde às avaliações. Apagar avaliação, pausar, mudar o
 // plano ou mexer em outra academia continua só com o GuiaTennis — e quem
 // garante isso é o banco (supabase/migrations/20260930120000_acesso_academias.sql),
 // não a tela.
@@ -3991,7 +4009,7 @@ function mensagemDoAcesso(c, usuario, senha, nova) {
   ] : [
     `Oi, tudo bem? Aqui é o Breno, do GuiaTennis (guiatennis.com.br), o guia de quadras e academias de tênis onde a ${c.name} já aparece: ${linkDaFicha(c)}`,
     "",
-    "Criei um acesso no GuiaTennis Parceiros, o site das academias, para vocês mesmos atualizarem a ficha — horário, preços, fotos e como chegar —, responderem as avaliações dos jogadores e verem quantas pessoas abriram a ficha e chamaram vocês. No plano Básico, não tem custo.",
+    "Criei um acesso no GuiaTennis Parceiros, o site das academias, para vocês mesmos atualizarem a ficha — horário, preços, fotos e como chegar —, responderem às avaliações dos jogadores e verem quantas pessoas abriram a ficha e chamaram vocês. No plano Básico, não tem custo.",
     "",
   ]).concat([
     `Entrar: ${LINK_ENTRAR}`,
@@ -4187,8 +4205,8 @@ function blocoDono(c) {
     <div class="ht-sec dono-box">
       <p class="conta-rotulo">Área da academia</p>
       <p class="dono-texto">${acessoCompleto()
-        ? "Esta é a ficha de vocês. Edite o que quiser e responda as avaliações aqui embaixo."
-        : "Esta é a ficha de vocês. Complete o primeiro acesso para editar e responder as avaliações."}</p>
+        ? "Esta é a ficha de vocês. Edite o que quiser e responda às avaliações aqui embaixo."
+        : "Esta é a ficha de vocês. Complete o primeiro acesso para editar e responder às avaliações."}</p>
       <div class="conta-acoes">
         ${acessoCompleto() ? `<button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>` : ""}
         <button type="button" class="cta-btn cta-secondary" data-abrir-conta>${acessoCompleto() ? "Abrir o painel da academia" : "Completar o acesso"}</button>
@@ -4207,7 +4225,7 @@ function blocoAcessoAdmin(c) {
   const a = loginDaAcademia(c.id);
   if (!a) {
     return caixa(`
-      <span><strong>Acesso da academia</strong> — a academia entra, edita a própria ficha e responde as avaliações. Não apaga avaliação nem mexe em plano, pausa ou outra academia.</span>
+      <span><strong>Acesso da academia</strong> — a academia entra, edita a própria ficha e responde às avaliações. Não apaga avaliação nem mexe em plano, pausa ou outra academia.</span>
       <label class="acesso-rotulo" for="acesso-usuario">Usuário</label>
       <input class="form-field" id="acesso-usuario" value="${esc(sugestaoUsuario(c))}" autocapitalize="none" autocomplete="off" style="margin-top:0" />
       ${state.acessoErro ? `<span class="acesso-erro">${esc(state.acessoErro)}</span>` : ""}
@@ -4967,7 +4985,7 @@ const PC_BARRA = ["painel", "desempenho", "avaliacoes", "ficha", "conta"];
 const PC_RECURSOS = [
   { t: "Ficha no guia: horário, preço, fotos, cancelamento e como chegar", p: ["basico", "completo", "premium"] },
   { t: "O aluno chama direto no seu WhatsApp, sem comissão", p: ["basico", "completo", "premium"] },
-  { t: "Responder as avaliações", p: ["basico", "completo", "premium"] },
+  { t: "Responder às avaliações", p: ["basico", "completo", "premium"] },
   { t: "QR code da ficha para a recepção", p: ["basico", "completo", "premium"] },
   { t: "Visitas e contatos dos últimos 30 dias", p: ["basico", "completo", "premium"] },
   { t: "Dia a dia, até 90 dias, e comparação com o período anterior", p: ["completo", "premium"] },
@@ -4990,13 +5008,13 @@ const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelam
 
 function perguntasParceiros() {
   return [
-    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde as avaliações. Os planos Completo e Premium mostram de onde vêm os alunos, comparam com a região e dão acesso a mais pessoas da equipe." },
-    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar\": o GuiaTennis confere com você e libera a ficha." },
+    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. Os planos Completo e Premium mostram de onde vêm os alunos, comparam com a região e dão acesso a mais pessoas da equipe." },
+    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto; o GuiaTennis confere antes de publicar, e você já administra a ficha." },
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: até 2 no Básico, 5 no Completo e 10 no Premium." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O aluno fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
-    { q: "Posso apagar uma avaliação ruim?", a: "Não, como no Google e no TripAdvisor. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
-    { q: "A academia pode avaliar outras academias?", a: "Não. Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias — nem a própria, nem as outras. Vocês respondem as avaliações da própria academia." },
+    { q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
+    { q: "A academia pode avaliar outras academias?", a: "Não. Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias — nem a própria, nem as outras. Vocês respondem às avaliações da própria academia." },
     { q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado." },
     { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha." },
     { q: "Esqueci a senha. E agora?", a: "Fale com o GuiaTennis no WhatsApp: a gente gera uma senha provisória nova, e você cria outra ao entrar." },
@@ -5305,10 +5323,6 @@ function pcRodape() {
   return `
     <footer class="pc-rodape">
       <div class="pc-rodape-in">
-        <div>
-          ${pcMarca()}
-          <p class="pc-rodape-t">O GuiaTennis para academias e quadras de tênis.</p>
-        </div>
         <div class="pc-rodape-cols">
           <div>
             <h4>${contaAcademia ? "Sua academia" : "Parceiros"}</h4>
@@ -5381,17 +5395,19 @@ function pcNumerosDoSite() {
 
 function pcInicio() {
   const beneficios = [
-    { ic: "pin", t: "Aparece para quem já está procurando", d: "Quem chega ao GuiaTennis está com a raquete na mão procurando onde jogar perto de casa." },
-    { ic: "phone", t: "O aluno chama direto no seu WhatsApp", d: "Sem intermediário, sem central de reservas e sem comissão sobre a aula." },
-    { ic: "edit", t: "Você mesmo atualiza a ficha", d: "Horário, preço, fotos, cancelamento e como chegar — muda na hora, pelo celular." },
-    { ic: "bubble", t: "Responda as avaliações", d: "A resposta aparece embaixo da avaliação, como no Google e no TripAdvisor." },
-    { ic: "barchart", t: "Veja quem viu a sua academia", d: "Visitas e contatos e, conforme o plano, de onde vieram e de quais bairros." },
-    { ic: "clipboard", t: "QR code para a recepção", d: "O aluno aponta a câmera, abre a ficha e deixa a avaliação." },
+    { ic: "pin", t: "Alunos que já querem jogar", d: "Quem chega ao GuiaTennis está procurando aula ou quadra perto de casa, agora. A sua academia aparece justamente na hora da escolha." },
+    { ic: "phone", t: "Contato direto no seu WhatsApp", d: "Sem intermediário, sem central de reservas e sem comissão: o aluno chama você, e você combina a aula ou a locação do seu jeito." },
+    { ic: "edit", t: "Uma ficha que vende por você", d: "Horário, preços, fotos, regra de cancelamento e como chegar, tudo num só lugar. Você atualiza pelo celular, e a mudança aparece na hora." },
+    { ic: "bubble", t: "Responda às avaliações", d: "Agradeça os elogios e explique as críticas, em público. Quem vê uma academia que responde confia mais para chamar." },
+    { ic: "barchart", t: "Saiba quantos alunos você atrai", d: "Visitas na ficha e contatos no WhatsApp já no plano grátis. Nos planos Completo e Premium, também de onde vieram e de quais bairros." },
+    { ic: "clipboard", t: "QR code para a recepção", d: "Deixe no balcão: o aluno aponta a câmera, abre a ficha e avalia na hora. Mais avaliações, mais confiança de quem ainda não conhece vocês." },
   ];
+  // Como funciona, em etapas, como as páginas de parceiro dos sites grandes.
   const passos = [
-    { t: "Ache ou cadastre a sua academia", d: "Muitas academias já estão no guia com os dados públicos: é só pedir o acesso. Se a sua não estiver, cadastre." },
-    { t: "Complete a ficha", d: "Horário, preço, fotos e como chegar. Quem procura compara isso antes de chamar." },
-    { t: "Receba alunos e acompanhe", d: "O aluno chama no WhatsApp. No painel, você vê quantas pessoas viram a ficha e chamaram." },
+    { t: "Crie a sua conta", tempo: "2 minutos", d: "Comece pelo seu e-mail e preencha os dados de contato. É grátis e não pede cartão.", ic: "key" },
+    { t: "Encontre a sua academia", tempo: "Na hora", d: "Procure pelo nome e pelo bairro e toque em \"Administrar esta academia\". Se a sua ainda não estiver no GuiaTennis, cadastre em poucos minutos.", ic: "search" },
+    { t: "Confirme que a academia é sua", tempo: "Pelo WhatsApp", d: "O GuiaTennis manda um código para o WhatsApp que está na ficha. Você digita o código e a ficha passa a ser sua. Academia nova: o GuiaTennis confere e publica.", ic: "check" },
+    { t: "Complete a ficha e receba alunos", tempo: "Todo dia", d: "Horário, preços, fotos e como chegar. O aluno compara, chama no seu WhatsApp, e você acompanha as visitas e os contatos no painel.", ic: "barchart" },
   ];
   return `
     <section class="pc-hero">
@@ -5418,9 +5434,21 @@ function pcInicio() {
     </section>
     <section class="pc-sec" id="pc-como">
       <h2 class="display">Como funciona</h2>
-      <ol class="pc-passos">
-        ${passos.map((p, i) => `<li><span class="pc-passo-n">${i + 1}</span><div><p class="pc-card-t">${esc(p.t)}</p><p class="pc-card-s">${esc(p.d)}</p></div></li>`).join("")}
+      <p class="pc-sec-sub">Quatro passos, do cadastro ao primeiro aluno. Tudo pelo celular.</p>
+      <ol class="pc-etapas-como">
+        ${passos.map((p, i) => `
+          <li>
+            <span class="pc-etapa-n" aria-hidden="true">${i + 1}</span>
+            <div class="pc-etapa-card">
+              <p class="pc-etapa-topo"><span class="pc-etapa-passo">Passo ${i + 1}</span><span class="pc-etapa-tempo">${icon(p.ic, 13, 'var(--green)')} ${esc(p.tempo)}</span></p>
+              <p class="pc-card-t">${esc(p.t)}</p>
+              <p class="pc-card-s">${esc(p.d)}</p>
+            </div>
+          </li>`).join("")}
       </ol>
+      <div class="pc-como-fim">
+        <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Começar agora — é grátis</a>
+      </div>
     </section>
     <section class="pc-sec">
       <h2 class="display">Planos</h2>
@@ -5959,7 +5987,7 @@ function pcPessoas() {
                <input class="form-field pc-pessoa-campo" data-campo="email" id="pc-pessoa-email" type="email" autocapitalize="none" autocomplete="off" placeholder="E-mail da pessoa" value="${esc(f.email)}" />
                ${state.pessoaErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pessoaErro)}</div>` : ""}
                <button type="button" class="cta-btn cta-primary" id="pc-pessoa-adicionar" ${state.pessoaSalvando ? "disabled" : ""}>${state.pessoaSalvando ? bolaGirando(15) + " Adicionando..." : "Adicionar"}</button>
-               <p class="footnote">A pessoa entra com o e-mail e uma senha provisória que você manda para ela. Ela edita a ficha e responde as avaliações.</p>
+               <p class="footnote">A pessoa entra com o e-mail e uma senha provisória que você manda para ela. Ela edita a ficha e responde às avaliações.</p>
              </div>`}
     </div>`;
 }
@@ -8979,9 +9007,9 @@ function renderCourtPage(c) {
 
                 <div class="rate-box">
                   ${ehMinha(c) ? `
-                    <p style="margin:0">Vocês não podem avaliar a própria academia. Respondam as avaliações dos jogadores aqui embaixo.</p>
+                    <p style="margin:0">Vocês não podem avaliar a própria academia. Respondam às avaliações dos jogadores aqui embaixo.</p>
                   ` : contaAcademia ? `
-                    <p style="margin:0">Contas do GuiaTennis Parceiros não avaliam academias — nem a própria, nem as outras. Vocês respondem as avaliações da própria academia.</p>
+                    <p style="margin:0">Contas do GuiaTennis Parceiros não avaliam academias — nem a própria, nem as outras. Vocês respondem às avaliações da própria academia.</p>
                   ` : state.justRated ? `
                     <p class="rate-thanks">Obrigado por avaliar!</p>
                   ` : `
@@ -9016,7 +9044,7 @@ function renderCourtPage(c) {
                   ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
                   <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
                 </div>
-                ${ehMinha(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="/parceiros/cadastro?academia=${idCurto(c.id)}" data-pc-reivindicar="${idCurto(c.id)}">Gerencie a ficha no GuiaTennis Parceiros</a>: atualize os dados, responda as avaliações e veja quem viu a academia.</p>`}
+                ${ehMinha(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="/parceiros/cadastro?academia=${idCurto(c.id)}" data-pc-reivindicar="${idCurto(c.id)}">Gerencie a ficha no GuiaTennis Parceiros</a>: atualize os dados, responda às avaliações e veja quem viu a academia.</p>`}
                 ${c.source === "osm" ? `<p class="footnote">Nome e localização: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>.</p>` : ""}
               </section>
             </div>
@@ -9549,7 +9577,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder as avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. No painel, a academia vê os números da própria ficha — visitas e contatos e, conforme o plano (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis), o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou e a média das academias da cidade. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. No painel, a academia vê os números da própria ficha — visitas e contatos e, conforme o plano (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis), o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou e a média das academias da cidade. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Antes de enviar sua primeira avaliação ou solicitação de cadastro, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
@@ -9632,7 +9660,7 @@ function renderLoginSheet() {
         <button class="sheet-close" id="login-close">✕</button>
         <p class="sheet-title display">${academia ? "Área da academia" : "Entrar como admin"}</p>
         <p class="subtitle" style="margin-top:4px">${academia
-          ? "Use o usuário e a senha que o GuiaTennis mandou para a sua academia. Aqui vocês editam a ficha e respondem as avaliações."
+          ? "Use o usuário e a senha que o GuiaTennis mandou para a sua academia. Aqui vocês editam a ficha e respondem às avaliações."
           : "Acesso restrito ao responsável pelo GuiaTennis."}</p>
         <input class="form-field" id="login-email" placeholder="${academia ? "Usuário" : "E-mail"}" value="${esc(state.loginUsuario || "")}" autocapitalize="none" autocorrect="off" autocomplete="username" />
         <input class="form-field" id="login-password" type="password" placeholder="Senha" autocomplete="current-password" />

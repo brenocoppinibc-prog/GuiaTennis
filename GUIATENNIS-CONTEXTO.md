@@ -325,6 +325,15 @@ CONTATO, SUA ACADEMIA, INÍCIO. O cadastro começa pelo e-mail:
   academia"), menu curto (Painel, Plano, Conta, Ajuda) e sem a barra de
   baixo.
 
+**Página de apresentação (pedido do Breno em 01/10):** os benefícios
+vendem sem citar outras marcas (nada de "como no Google/TripAdvisor" em
+texto que a academia lê; nas perguntas também não); "responder **às**
+avaliações", com crase, em todo o site. "Como funciona" em 4 passos ligados
+por uma linha — crie a conta (2 minutos), encontre a academia (na hora),
+confirme pelo WhatsApp (o código), complete a ficha e receba alunos (todo
+dia) — com o botão "Começar agora — é grátis". No rodapé dos parceiros, a
+marca e a frase aparecem uma vez só, na faixa escura.
+
 **Tela cheia e rodapé (mesmo pedido):** o formulário da ficha (editar,
 cadastrar academia nova, admin) ocupa a tela inteira, com atalhos por parte
 no topo (Nome e endereço, Horário, Fotos, Quadras, Modalidade e preço,
@@ -964,8 +973,8 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banc
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
-e contas por e-mail): **382 verificações, todas passando** (160 de antes,
-66 da área da academia, 34 dos links e 122 do GuiaTennis Parceiros), mais
+e contas por e-mail): **385 verificações, todas passando** (160 de antes,
+66 da área da academia, 34 dos links e 125 do GuiaTennis Parceiros), mais
 as 133 do `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -1323,7 +1332,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) Cadastro como o do trivago e código no WhatsApp da academia   ← PR #5, 01/10
+(a seguir) Parceiros: benefícios que vendem mais, como funciona em 4 passos e rodapé sem repetir   ← PR #5, 01/10
+b791da7 Cadastro como o do trivago e código no WhatsApp da academia   ← PR #5, 01/10
 866edcd Cadastro dos parceiros: outras opções numa linha discreta   ← PR #5, 01/10
 857b932 GuiaTennis Parceiros: conta por e-mail, pedidos, equipe, planos, tela cheia e faixa do rodapé   ← PR #5, 30/09
 28846e5 GuiaTennis Parceiros: "Administrar" no lugar de "É a minha" no cadastro   ← PR #5, 30/09

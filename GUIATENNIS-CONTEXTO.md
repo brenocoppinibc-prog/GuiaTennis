@@ -10,9 +10,10 @@ em 28/09/2026). O trabalho novo entra por pedido de mudança (PR) de uma
 branch de trabalho (`claude/…` ou `ccr-…`) para a `main`. Já entraram: **PR #2** (banco de teste e
 publicação pelo GitHub, 28/09) e **PR #3** (SQL automático, ficha básica,
 WhatsApp, buscador do mapa e sitemap, 29/09, merge `92e5685`), os dois da
-`claude/github-supabase-connection-n1w3rr`. **Área da academia** (30/09):
-branch `ccr-0a610d86-k6plx0`, PR para a `main` esperando o Breno testar na
-prévia. O **PR #1** (`new-session` →
+`claude/github-supabase-connection-n1w3rr`. **PR #5** (30/09 e 01/10):
+branch `ccr-0a610d86-k6plx0` → `main`, com área da academia, GuiaTennis
+Parceiros, links, visual limpo e tempo até agir — esperando o Breno testar
+na prévia e dizer "pode subir". O **PR #1** (`new-session` →
 `trivago`) ficou velho e segue aberto; pode ser fechado. As outras
 `claude/…` são antigas.
 **No ar:** guiatennis.com.br (Netlify, publica a `main` sozinho) · teste na
@@ -21,17 +22,22 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
-**Atualizado em:** 30/09/2026
+**Atualizado em:** 01/10/2026
 
-> **Estado (30/09/2026):** a **área da academia** (seção 4, "Área da
-> academia"), o site das academias **GuiaTennis Parceiros** (`/parceiros`,
-> seção 3), os **links no padrão dos grandes** (seção 3, "Endereços") e o
-> visual mais limpo estão no PR #5 para a `main`, com os SQL
-> `20260930120000` a `20260930150000` aplicados sozinhos no banco de teste
-> pelo PR. Falta o Breno testar na prévia (seção 11, primeiro item) e dizer
-> "pode subir". Depois: criar o acesso de cada academia e mandar pelo
-> WhatsApp. Ainda em aberto de antes: conferir o site do PR #3 e o Google
-> Search Console.
+> **Estado (01/10/2026):** tudo está no **PR #5** (branch
+> `ccr-0a610d86-k6plx0` → `main`), ainda **sem merge**: a **área da
+> academia** (seção 4), o site das academias **GuiaTennis Parceiros**
+> (`/parceiros`, seção 3: conta por e-mail, cadastro no modelo do trivago
+> com barra de etapas, código no WhatsApp da ficha, equipe por plano,
+> desempenho por plano, ofertas de plano, rodapé verde), os **links no
+> padrão dos grandes** (seção 3, "Endereços"), o visual mais limpo e o
+> **tempo até agir** no painel do admin (seção 4, `cliques`). Os SQL
+> `20260930120000` a `20261001130000` entraram sozinhos no banco de teste
+> pelo PR. Prévia: `deploy-preview-5--stately-salamander-652f72.netlify.app`.
+> Falta o Breno testar na prévia (seção 11, primeiro item) e dizer "pode
+> subir" — só então fazer o merge. Depois: criar o acesso de cada academia
+> e mandar pelo WhatsApp. Ainda em aberto de antes: conferir o site do PR #3
+> e o Google Search Console.
 
 ### Como abrir o chat novo
 Anexe este arquivo e diga em qual branch trabalhar. No chat novo, antes de
@@ -506,7 +512,24 @@ linha dela; o admin lê todas pela função `acessos_das_academias()`. Gravar,
 só pelas funções (seção 4, "Área da academia").
 
 ### `cliques`
-`id, academia_id, tipo, detalhe, cep, lat, lng, origem, dispositivo, created_at`
+`id, academia_id, tipo, detalhe, cep, lat, lng, origem, dispositivo, segundos, segundos_ficha, created_at`
+
+**Tempo até agir (pedido do Breno em 01/10/2026, SQL `20261001130000`):**
+"quanto tempo o cliente fica no site até buscar ou chamar", como o tempo
+até a conversão do Google Analytics. Em cada visita (`trackClick` →
+`tempoAteAgir`): a chegada (`acesso_site`) leva `segundos = 0` — marca a
+visita como medida —; a **primeira** busca e o **primeiro** contato
+(WhatsApp, Instagram ou site) levam os segundos desde a chegada; o contato
+feito da ficha leva também `segundos_ficha` (tempo olhando a ficha). As
+outras buscas e contatos da mesma visita vão sem tempo. Teto de 86400 s.
+Banco sem as colunas: a linha vai sem o tempo, com o resto
+(`trackClick` tenta de novo). No painel de estatísticas do admin, bloco
+"Tempo até agir" (`blocoTempoAteAgir`): **mediana** até a primeira busca,
+até chamar uma academia e olhando a ficha (mediana, porque a média se perde
+com quem deixou a aba aberta), quantas visitas medidas buscaram/chamaram
+(%), e as faixas (até 10 s, 10–30 s, 30 s–1 min, 1–3 min, 3–10 min, mais de
+10 min). Só para o admin por enquanto; dá para virar número do plano
+Premium no GuiaTennis Parceiros. Está na Política de Privacidade.
 
 `tipo`: `acesso_site`, `busca`, `visualizacao`, `whatsapp`, `site`,
 `instagram`, `compartilhar`. `detalhe` e `cep` só são usados em `busca`:
@@ -733,6 +756,8 @@ em aba anônima inflava os números da home.
     valendo), tabela fechada `codigos_de_verificacao`,
     `gerar_codigo_do_pedido` (admin), `confirmar_meu_codigo` (a conta) e
     `acessos_das_academias` com tratamento e `codigo_em`.
+  - `migrations/20261001130000_tempo_ate_agir.sql` — colunas `segundos` e
+    `segundos_ficha` em `cliques`, com trava de 0 a 86400.
   - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
     não existem): aula e locação, só locação, só aula com horário por dia
     e prazo de 36h, uma pausada e uma pendente; mais avaliações e
@@ -936,7 +961,7 @@ endereços novos), `20260930140000_numeros_da_academia` (Desempenho do
 GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap`, `20260930160000_contas_parceiros`
 (conta por e-mail, pedidos, equipe, academia não avalia) e
 `20261001120000_cadastro_e_verificacao` (dados de contato completos e o
-código no WhatsApp da academia). Entra no
+código no WhatsApp da academia) e `20261001130000_tempo_ate_agir`. Entra no
 banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
@@ -971,12 +996,13 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
-e contas por e-mail): **385 verificações, todas passando** (160 de antes,
-66 da área da academia, 34 dos links e 125 do GuiaTennis Parceiros), mais
+e contas por e-mail, tempo até agir — 01/10): **401 verificações, todas
+passando** (160 de antes, 66 da área da academia, 34 dos links, 125 do
+GuiaTennis Parceiros e 16 do tempo até agir), mais
 as 133 do `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -1016,6 +1042,11 @@ as 133 do `banco-acesso.py` no banco e login locais.
   listas, gaveta vira um passo, "voltar" desfaz e não conta busca de novo,
   `?busca=` antigo, comparação, cartões e QR com o endereço novo, `noindex`
   da busca e da comparação, dados do caminho para o Google.
+- `tempo.js` — tempo até agir: primeira busca e primeiro contato levam os
+  segundos, os seguintes não, a chegada leva 0, contato pela ficha leva o
+  tempo olhando a ficha, banco sem as colunas, admin não conta, painel do
+  admin com medianas, porcentagens só das visitas medidas e faixas.
+  `abrir({ semTempo })` finge o banco sem as colunas.
 - `parceiros.js` — GuiaTennis Parceiros: apresentação, planos (o que cada
   um libera), ajuda, cabeçalho de ponta a ponta, menu do celular com
   âncoras, cadastro que procura a academia ("Administrar", "Não é essa",
@@ -1334,7 +1365,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) Rodapé no verde do GuiaTennis   ← PR #5, 01/10
+(a seguir) Tempo até agir: segundos até a primeira busca e até chamar, no painel do admin   ← PR #5, 01/10
+d0b7b1f Rodapé no verde do GuiaTennis   ← PR #5, 01/10
 f9d34e9 Parceiros: benefícios que vendem mais, como funciona em 4 passos e rodapé sem repetir   ← PR #5, 01/10
 b791da7 Cadastro como o do trivago e código no WhatsApp da academia   ← PR #5, 01/10
 866edcd Cadastro dos parceiros: outras opções numa linha discreta   ← PR #5, 01/10

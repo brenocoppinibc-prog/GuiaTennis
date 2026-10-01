@@ -1322,6 +1322,14 @@
     .pc-etapa-card { height: 100%; box-sizing: border-box; }
     .pc-como-fim .cta-btn { width: auto; display: inline-flex; padding: 0 28px; }
   }
+  /* Tempo até agir (painel do admin). */
+  .stat-det { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.35; }
+  .tempo-faixas { display: grid; gap: 6px; }
+  .tempo-faixa { display: grid; grid-template-columns: 96px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+  .tempo-barra { height: 10px; border-radius: 999px; background: var(--bg-alt); overflow: hidden; }
+  .tempo-barra i { display: block; height: 100%; border-radius: 999px; }
+  .tempo-faixa strong { font-size: 13px; min-width: 64px; text-align: right; }
+  .tempo-faixa small { color: var(--muted); font-weight: 500; }
   .container.pc-cheio { max-width: none; }
   .pc { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
   .pc-topo-in, .pc-main, .pc-rodape-in { width: 100%; max-width: 1180px; margin: 0 auto; box-sizing: border-box; }
@@ -2423,10 +2431,39 @@ function diag(texto) {
 // `extras` são as colunas que o banco pode ainda não ter (cep, lat, lng,
 // origem, dispositivo). Se a gravação falhar por causa delas, tenta de novo
 // com menos, em vez de perder o evento.
+// Tempo até agir, como o "tempo até a conversão" dos painéis grandes: em
+// cada visita, a chegada leva 0, e a primeira busca e o primeiro contato
+// com uma academia levam quantos segundos se passaram desde a chegada (e,
+// no contato, quanto tempo a pessoa olhou a ficha). SQL 20261001130000.
+const CHEGADA_AO_SITE = Date.now();
+const TIPOS_DE_CONTATO = ["whatsapp", "instagram", "site"];
+function segundosDesde(momento) {
+  return Math.max(0, Math.min(86400, Math.round((Date.now() - momento) / 1000)));
+}
+function tempoAteAgir(courtId, type) {
+  const t = {};
+  // A chegada leva 0: marca a visita como medida, para a porcentagem de
+  // quem buscou ou chamou contar só as visitas desde que o tempo existe.
+  if (type === "acesso_site") t.segundos = 0;
+  if (type === "visualizacao") window.__fichaAbertaEm = { id: courtId, em: Date.now() };
+  if (type === "busca" && !window.__jaBuscou) {
+    window.__jaBuscou = true;
+    t.segundos = segundosDesde(CHEGADA_AO_SITE);
+  }
+  if (TIPOS_DE_CONTATO.includes(type) && !window.__jaChamou) {
+    window.__jaChamou = true;
+    t.segundos = segundosDesde(CHEGADA_AO_SITE);
+    const ficha = window.__fichaAbertaEm;
+    if (ficha && ficha.id === courtId) t.segundos_ficha = segundosDesde(ficha.em);
+  }
+  return t;
+}
+
 function trackClick(courtId, type, detalhe, extras) {
   // Quem está logado não entra na conta: nem acesso, nem busca, nem clique
   // na ficha — o admin testando e a academia olhando a própria ficha.
   if (naoConta()) return;
+  const tempo = tempoAteAgir(courtId, type);
   // Clique de academia (ficha aberta, WhatsApp, Instagram, site,
   // compartilhar) leva junto de onde a pessoa veio, o aparelho e a região
   // da busca que ela fez antes — é o que permite ver isso por academia.
@@ -2440,6 +2477,8 @@ function trackClick(courtId, type, detalhe, extras) {
   const limpos = {};
   Object.entries(extras || {}).forEach(([k, v]) => { if (v !== null && v !== undefined && v !== "") limpos[k] = v; });
   const tentativas = [];
+  // Banco ainda sem as colunas do tempo: a mesma linha vai sem elas.
+  if (Object.keys(tempo).length) tentativas.push({ ...comDetalhe, ...limpos, ...tempo });
   if (Object.keys(limpos).length) tentativas.push({ ...comDetalhe, ...limpos });
   if (limpos.cep && Object.keys(limpos).length > 1) tentativas.push({ ...comDetalhe, cep: limpos.cep });
   if (detalhe) tentativas.push(comDetalhe);
@@ -9404,6 +9443,18 @@ function statsAgregado(periodo) {
   const pontos = [];
   let acessos = 0;
   let buscas = 0;
+  // Tempo até agir: só a primeira busca e o primeiro contato de cada visita
+  // levam os segundos (ver trackClick).
+  const tempo = { busca: [], contato: [], ficha: [], inicio: null, visitas: 0 };
+  lista.forEach(c => {
+    if (c.segundos !== null && c.segundos !== undefined) {
+      if (c.tipo === "acesso_site") tempo.visitas++;
+      if (c.tipo === "busca") tempo.busca.push(Number(c.segundos));
+      if (TIPOS_DE_CONTATO.includes(c.tipo)) tempo.contato.push(Number(c.segundos));
+      if (!tempo.inicio || c.created_at < tempo.inicio) tempo.inicio = c.created_at;
+    }
+    if (TIPOS_DE_CONTATO.includes(c.tipo) && c.segundos_ficha !== null && c.segundos_ficha !== undefined) tempo.ficha.push(Number(c.segundos_ficha));
+  });
   lista.forEach(c => {
     if (c.tipo === "acesso_site") {
       acessos++;
@@ -9440,7 +9491,7 @@ function statsAgregado(periodo) {
     .map(nome => ({ nome, n: porCep[nome] }))
     .sort((a, b) => b.n - a.n);
   const lista2 = (obj) => Object.keys(obj).map(nome => ({ nome, n: obj[nome] })).sort((a, b) => b.n - a.n);
-  return { porAcademia, acessos, buscas, regioes, ceps, origens: lista2(porOrigem), aparelhos: lista2(porAparelho), pontos, totalEventos: lista.length };
+  return { porAcademia, acessos, buscas, regioes, ceps, origens: lista2(porOrigem), aparelhos: lista2(porAparelho), pontos, tempo, totalEventos: lista.length };
 }
 
 // "Instagram 60% · Google 30%": as três primeiras, em porcentagem do total.
@@ -9467,9 +9518,71 @@ function resumoTexto(court, d) {
     + `\nguiatennis.com.br`;
 }
 
+// "18 s", "2 min 10 s", "1 h 5 min".
+function tempoBonito(seg) {
+  seg = Math.round(seg || 0);
+  if (seg < 60) return `${seg} s`;
+  if (seg < 3600) { const m = Math.floor(seg / 60), s = seg % 60; return s ? `${m} min ${s} s` : `${m} min`; }
+  const h = Math.floor(seg / 3600), m = Math.round((seg % 3600) / 60);
+  return m ? `${h} h ${m} min` : `${h} h`;
+}
+function mediana(valores) {
+  if (!valores.length) return null;
+  const v = [...valores].sort((a, b) => a - b), meio = Math.floor(v.length / 2);
+  return v.length % 2 ? v[meio] : (v[meio - 1] + v[meio]) / 2;
+}
+const FAIXAS_DE_TEMPO = [
+  { ate: 10, t: "Até 10 s" }, { ate: 30, t: "10 a 30 s" }, { ate: 60, t: "30 s a 1 min" },
+  { ate: 180, t: "1 a 3 min" }, { ate: 600, t: "3 a 10 min" }, { ate: Infinity, t: "Mais de 10 min" },
+];
+
+// Tempo até agir no painel do admin: a mediana (metade fez mais rápido,
+// metade mais devagar — a média se perde com quem deixou a aba aberta) e
+// em que faixa de tempo as pessoas agiram, numa barra por faixa.
+function blocoTempoAteAgir(tempo) {
+  if (!tempo.busca.length && !tempo.contato.length) {
+    return `
+      <p class="field-label" style="margin-top:18px">Tempo até agir</p>
+      <p class="pending-detail">Ainda sem dados nesse período. O site mede, em cada visita, quanto tempo a pessoa levou até a primeira busca e até chamar uma academia.</p>`;
+  }
+  const pct = (n) => tempo.visitas ? Math.min(100, Math.round(n / tempo.visitas * 100)) : null;
+  const faixas = (valores, cor) => {
+    const total = valores.length;
+    const contagem = FAIXAS_DE_TEMPO.map((f, i) => ({ nome: f.t, n: valores.filter(v => v <= f.ate && (i === 0 || v > FAIXAS_DE_TEMPO[i - 1].ate)).length }));
+    const max = Math.max(1, ...contagem.map(c => c.n));
+    return `
+      <div class="tempo-faixas">
+        ${contagem.map(c => `
+          <div class="tempo-faixa">
+            <span>${esc(c.nome)}</span>
+            <span class="tempo-barra"><i style="width:${c.n ? Math.max(2, c.n / max * 100) : 0}%;background:${cor}"></i></span>
+            <strong>${c.n}${total ? ` <small>${Math.round(c.n / total * 100)}%</small>` : ""}</strong>
+          </div>`).join("")}
+      </div>`;
+  };
+  const cartao = (rotulo, valores, detalhe) => `
+    <div class="stat-card">
+      <p class="stat-num">${valores.length ? tempoBonito(mediana(valores)) : "—"}</p>
+      <p class="stat-lbl">${rotulo}</p>
+      ${detalhe ? `<p class="stat-det">${detalhe}</p>` : ""}
+    </div>`;
+  const pBusca = pct(tempo.busca.length), pContato = pct(tempo.contato.length);
+  return `
+    <p class="field-label" style="margin-top:18px">Tempo até agir</p>
+    <p class="pending-detail" style="margin:0 0 8px">Quanto tempo a pessoa fica no site até a primeira busca e até chamar uma academia. Mediana: metade das pessoas agiu mais rápido que isso.</p>
+    <div class="stats-grid">
+      ${cartao("Até a primeira busca", tempo.busca, pBusca !== null ? `${tempo.busca.length} ${plural(tempo.busca.length, "visita", "visitas")} · ${pBusca}% buscaram` : `${tempo.busca.length} ${plural(tempo.busca.length, "visita", "visitas")}`)}
+      ${cartao("Até chamar uma academia", tempo.contato, pContato !== null ? `${tempo.contato.length} ${plural(tempo.contato.length, "visita", "visitas")} · ${pContato}% chamaram` : `${tempo.contato.length} ${plural(tempo.contato.length, "visita", "visitas")}`)}
+      ${cartao("Olhando a ficha antes de chamar", tempo.ficha, tempo.ficha.length ? `${tempo.ficha.length} ${plural(tempo.ficha.length, "contato", "contatos")} feitos pela ficha` : "")}
+    </div>
+    ${tempo.busca.length ? `<p class="field-label" style="margin-top:14px;font-size:14px">Tempo até a primeira busca</p>${faixas(tempo.busca, "var(--green)")}` : ""}
+    ${tempo.contato.length ? `<p class="field-label" style="margin-top:14px;font-size:14px">Tempo até chamar uma academia</p>${faixas(tempo.contato, "var(--gold)")}` : ""}
+    <p class="pending-detail" style="margin-top:8px">Medido desde ${dataCurta(tempo.inicio)}. Não identifica ninguém: são só os segundos de cada visita.</p>`;
+}
+
 function renderStatsPanel() {
   const periodo = state.statsPeriodo || "30";
-  const { porAcademia, acessos, buscas, regioes, ceps, origens, aparelhos, pontos } = statsAgregado(periodo);
+  const { porAcademia, acessos, buscas, regioes, ceps, origens, aparelhos, pontos, tempo } = statsAgregado(periodo);
   state.statsPontos = pontos;
   const listaStat = (titulo, itens) => itens.length ? `
     <p class="field-label" style="margin-top:18px">${titulo}</p>
@@ -9516,6 +9629,8 @@ function renderStatsPanel() {
           <div class="stat-card"><p class="stat-num">${acessos ? (buscas / acessos).toFixed(1).replace(".", ",") : "0"}</p><p class="stat-lbl">Buscas por acesso</p></div>
           <div class="stat-card"><p class="stat-num">${taxaGeral.toFixed(0)}%</p><p class="stat-lbl">Ficha → contato</p></div>
         </div>
+
+        ${blocoTempoAteAgir(tempo)}
 
         ${listaStat("De onde vieram os acessos", origens)}
         ${listaStat("Aparelho", aparelhos)}
@@ -9600,7 +9715,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 30 de setembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), se quer receber o relatório do mês, a data do aceite dos Termos, a data do último acesso e o pedido para administrar uma academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, se ela pedir, mandar o relatório do mês. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>

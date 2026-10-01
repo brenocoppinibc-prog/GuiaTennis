@@ -1,5 +1,5 @@
 // Finge o Supabase para os testes: tabelas em memória (window.__db), e as
-// funções do banco. Chaves: __admin, __semDetalhe, __semCep, __colunasFechadas,
+// funções do banco. Chaves: __admin, __semDetalhe, __semCep, __semTempo, __colunasFechadas,
 // __semPlano, __semConfirmada, __academia (id da academia logada),
 // __semAcesso (banco sem o SQL do acesso das academias). O que o site grava
 // em cliques fica em __cliques, o banco que o site abriu fica em __banco, as
@@ -68,6 +68,7 @@
       if (op === "insert") {
         if (table === "cliques" && window.__semDetalhe && "detalhe" in payload) return { data:null, error:{ message:"column detalhe does not exist" } };
         if (table === "cliques" && window.__semCep && "cep" in payload) return { data:null, error:{ message:"column cep does not exist" } };
+        if (table === "cliques" && window.__semTempo && ("segundos" in payload || "segundos_ficha" in payload)) return { data:null, error:{ message:"column segundos does not exist" } };
         if (table === "academias" && window.__semConfirmada && "confirmada" in payload) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
         if (table === "avaliacoes" && !souAdmin()) {
           if (meuAcesso()) return { data:null, error:{ message:"Contas do GuiaTennis Parceiros não avaliam academias.", code:"42501" } };

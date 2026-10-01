@@ -14,6 +14,7 @@ async function abrir(opts = {}) {
     if (o.admin) window.__admin = true;
     if (o.semDetalhe) window.__semDetalhe = true;
     if (o.semCep) window.__semCep = true;
+    if (o.semTempo) window.__semTempo = true;
     if (o.colunasFechadas) window.__colunasFechadas = true;
     if (o.semPlano) window.__semPlano = true;
     if (o.semConfirmada) window.__semConfirmada = true;

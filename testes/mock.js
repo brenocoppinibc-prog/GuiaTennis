@@ -155,7 +155,7 @@
       const x = meuAcesso();
       if (!x) return erro("Acesso não encontrado.", "42501");
       if (!x.termos_aceitos_em && !a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
-      Object.assign(x, { nome_responsavel:a.p_nome, cargo:a.p_cargo, email:a.p_email.toLowerCase(), whatsapp:a.p_whatsapp, cnpj:a.p_cnpj || null, recebe_relatorio:!!a.p_recebe_relatorio,
+      Object.assign(x, { nome_responsavel:a.p_nome, cargo:a.p_cargo, tratamento:a.p_tratamento || x.tratamento || null, email:a.p_email.toLowerCase(), whatsapp:a.p_whatsapp, cnpj:a.p_cnpj || null, recebe_relatorio:!!a.p_recebe_relatorio,
         termos_aceitos_em: x.termos_aceitos_em || new Date().toISOString(), dados_completos_em: x.dados_completos_em || new Date().toISOString() });
       return { data:null, error:null };
     }
@@ -172,7 +172,9 @@
       if (db.academia_acessos.some(x => loginDe(x) === e || (x.email || "").toLowerCase() === e) || e === ADMIN) return erro("Esse e-mail já tem conta no GuiaTennis Parceiros. Entre com a sua senha.", "23505");
       const id = novoLogin(e, a.p_senha);
       const t = new Date().toISOString();
+      if (a.p_tratamento && !["Sr.", "Sra.", "Prefiro não informar"].includes(a.p_tratamento)) return erro("Escolha o tratamento.", "22023");
       db.academia_acessos.push({ user_id:id, academia_id:null, usuario:e, nome_responsavel:a.p_nome, email:e, whatsapp:tel(a.p_whatsapp), papel:"principal",
+        tratamento:a.p_tratamento || null, cargo:a.p_cargo || null, recebe_relatorio:!!a.p_recebe_novidades,
         termos_aceitos_em:t, dados_completos_em:t, senha_trocada_em:t, created_at:t, pedido_academia_id:null, pedido_nome:null, pedido_em:null });
       return { data:null, error:null };
     }
@@ -197,6 +199,30 @@
       if (nome === "aprovar_pedido_de_acesso") ligar(x, x.pedido_academia_id);
       else Object.assign(x, { pedido_academia_id:null, pedido_nome:null, pedido_em:null });
       return { data:null, error:null };
+    }
+    // Código para o WhatsApp da academia (SQL 20261001120000). O código
+    // gerado fica em window.__codigos, para o teste digitar.
+    if (nome === "gerar_codigo_do_pedido") {
+      if (!souAdmin()) return erro("Só o GuiaTennis gera o código.", "42501");
+      const x = db.academia_acessos.find(y => y.user_id === a.p_user);
+      if (!x || !x.pedido_academia_id || x.academia_id) return erro("Pedido não encontrado.", "22023");
+      const codigo = String(100000 + Math.floor(Math.random() * 900000));
+      window.__codigos = window.__codigos || {};
+      window.__codigos[a.p_user] = { codigo, academia: x.pedido_academia_id, tentativas: 0 };
+      x.codigo_em = new Date().toISOString();
+      return { data: codigo, error:null };
+    }
+    if (nome === "confirmar_meu_codigo") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      if (x.academia_id) return erro("A sua conta já administra uma academia.", "22023");
+      const c = (window.__codigos || {})[x.user_id];
+      if (!c || c.academia !== x.pedido_academia_id) return { data:"sem_codigo", error:null };
+      if (c.tentativas >= 5) return { data:"tentativas", error:null };
+      if (String(a.p_codigo || "").replace(/\D/g, "") !== c.codigo) { c.tentativas++; return { data:"errado", error:null }; }
+      ligar(x, c.academia);
+      delete window.__codigos[x.user_id];
+      return { data:"ok", error:null };
     }
     if (nome === "pessoas_da_minha_academia") {
       const x = meuAcesso();

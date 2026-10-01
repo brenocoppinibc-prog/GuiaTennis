@@ -82,8 +82,12 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ({ browser, page } = await abrir({ q: 'parceiros/cadastro' }));
   t = await tela(page);
   ok(t.h1 === 'Cadastre a sua academia' && !t.robots, 'Cadastro tem página própria');
-  let etapas = await page.evaluate(() => [...document.querySelectorAll('.pc-etapas li')].map(l => l.innerText.replace(/\s+/g, ' ').trim() + (l.classList.contains('agora') ? '*' : '')).join(' | '));
-  ok(etapas === '1 E-mail* | 2 Conta | 3 Academia' && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'primeiro passo é o e-mail — ' + etapas);
+  const barra = () => page.evaluate(() => ({
+    etapas: [...document.querySelectorAll('.pc-progresso-etapas li')].map(l => l.innerText.trim() + (l.classList.contains('agora') ? '*' : l.classList.contains('feito') ? '✓' : '')).join(' | '),
+    feito: document.querySelector('.pc-trilho i')?.style.width,
+  }));
+  let etapas = await barra();
+  ok(etapas.etapas === 'DADOS DE CONTATO* | SUA ACADEMIA | INÍCIO' && etapas.feito === '0%' && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'barra do processo em cima, como a do trivago; primeiro os dados de contato — ' + etapas.etapas);
   const linhaEntrar = await page.evaluate(() => ({ t: document.querySelector('.pc-main .pc-linha')?.innerText || '', href: document.querySelector('.pc-main .pc-linha a')?.getAttribute('href') }));
   ok(linhaEntrar.t.includes('Recebeu usuário e senha do GuiaTennis') && linhaEntrar.href === '/parceiros/entrar', 'quem recebeu usuário e senha do GuiaTennis tem a linha para entrar com eles');
   await page.fill('#pc-email', 'nao-e-email');
@@ -116,12 +120,21 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.fill('#pc-email', 'Contato@SoAulaTennis.com.br');
   await page.press('#pc-email', 'Enter');
   await page.waitForTimeout(300);
-  etapas = await page.evaluate(() => [...document.querySelectorAll('.pc-etapas li')].map(l => (l.classList.contains('feito') ? 'ok' : '') + (l.classList.contains('agora') ? '*' : '')).join(','));
-  ok(etapas === 'ok,*,' && await page.isVisible('#pc-conta-nome') && await page.evaluate(() => document.activeElement.id === 'pc-conta-nome'), 'e-mail novo: segundo passo, criar a conta — ' + etapas);
+  ok((await texto(page, '#parceiros h1')) === 'Informe os seus dados de contato' && await page.isVisible('#pc-conta-tratamento') && await page.isVisible('#pc-conta-sobrenome') && await page.isVisible('#pc-conta-cargo') && (await texto(page, '.campo-ddi')) === 'Brasil (+55)', 'e-mail novo: dados de contato completos, como no trivago (tratamento, nome, sobrenome, cargo, telefone com o país)');
+  ok(await page.evaluate(() => document.activeElement.id === 'pc-conta-tratamento'), 'o cursor já vai para o primeiro campo');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .form-error')).includes('seu nome'), 'sem nome: pede o nome');
-  await page.fill('#pc-conta-nome', 'Joana Dona');
+  ok((await texto(page, '#parceiros .form-error')).includes('tratamento'), 'sem tratamento: pede');
+  await page.selectOption('#pc-conta-tratamento', 'Sra.');
+  await page.fill('#pc-conta-nome', 'Joana');
+  await page.click('#pc-criar-conta');
+  await page.waitForTimeout(200);
+  ok((await texto(page, '#parceiros .form-error')).includes('sobrenome'), 'sem sobrenome: pede');
+  await page.fill('#pc-conta-sobrenome', 'Dona');
+  await page.click('#pc-criar-conta');
+  await page.waitForTimeout(200);
+  ok((await texto(page, '#parceiros .form-error')).includes('cargo'), 'sem cargo: pede');
+  await page.selectOption('#pc-conta-cargo', 'Dono(a) ou sócio(a)');
   await page.fill('#pc-conta-whatsapp', '(11) 98888-0001');
   await page.fill('#pc-conta-senha', 'curta');
   await page.click('#pc-criar-conta');
@@ -131,53 +144,58 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('aceitar os Termos'), 'sem o aceite: avisa');
+  await page.check('#pc-conta-novidades');
   await page.check('#pc-conta-aceite');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(800);
   const criada = await page.evaluate(() => ({
     rpc: (window.__rpcs.find(r => r.nome === 'criar_minha_conta') || {}).args,
-    conta: contaAcademia && { academia: contaAcademia.academiaId, nome: contaAcademia.nome },
+    conta: contaAcademia && { academia: contaAcademia.academiaId, nome: contaAcademia.nome, tratamento: contaAcademia.tratamento, cargo: contaAcademia.cargo, novidades: contaAcademia.recebeRelatorio },
     login: window.__ultimoLogin,
   }));
-  ok(criada.rpc && criada.rpc.p_email === 'contato@soaulatennis.com.br' && criada.rpc.p_aceite === true && criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'cria a conta e já entra com o e-mail — ' + JSON.stringify(criada.conta));
+  ok(criada.rpc && criada.rpc.p_email === 'contato@soaulatennis.com.br' && criada.rpc.p_nome === 'Joana Dona' && criada.rpc.p_tratamento === 'Sra.' && criada.rpc.p_cargo === 'Dono(a) ou sócio(a)' && criada.rpc.p_recebe_novidades === true && criada.rpc.p_aceite === true, 'grava tratamento, nome e sobrenome, cargo, telefone e o aceite das novidades — ' + JSON.stringify(criada.conta));
+  ok(criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'cria a conta e já entra com o e-mail');
+  etapas = await barra();
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(/achamos pelo seu e-mail/i.test(corpo) && corpo.includes('Só Aula Tennis'), 'o site acha a academia pelo e-mail (domínio do site dela)');
-  const linhas = await page.evaluate(() => [...document.querySelectorAll('.pc-main .pc-linha')].map(l => l.innerText.replace(/\s+/g, ' ').trim()));
-  ok(linhas.join(' / ') === 'Não é essa? Procurar a minha academia › / A sua academia ainda não está no GuiaTennis? Cadastrar academia nova ›' && !(await page.isVisible('#pc-busca')) && await page.evaluate(() => document.querySelectorAll('.pc-main .pc-card').length) === 1, 'outras opções discretas, numa linha cada, como nos sites grandes — ' + linhas.join(' / '));
-  await page.click('#pc-procurar-outra');
-  await page.waitForTimeout(200);
-  ok(await page.isVisible('#pc-busca') && await page.evaluate(() => document.activeElement.id === 'pc-busca') && await page.isVisible('.pc-sugerida'), '"Procurar a minha academia" abre a busca, já com o cursor, e a sugestão continua');
-  await page.fill('#pc-busca', 'quadra');
+  ok(etapas.etapas === 'DADOS DE CONTATO✓ | SUA ACADEMIA* | INÍCIO' && etapas.feito === '50%', 'a barra anda: segunda etapa, sua academia — ' + etapas.etapas);
+  ok(corpo.includes('Prazer em conhecer você, Joana!') && corpo.includes('Antes de começar, vamos ver se a sua academia já está no GuiaTennis.') && corpo.includes('Dica: escreva também o bairro'), 'tela "Prazer em conhecer você", como a do trivago');
+  let escolhas = await page.evaluate(() => [...document.querySelectorAll('.pc-escolha')].map(b => b.innerText.replace(/\s+/g, ' ').trim() + (b.classList.contains('on') ? '*' : '')));
+  ok(escolhas.length === 1 && escolhas[0].includes('Só Aula Tennis') && escolhas[0].includes('achamos pelo seu e-mail') && escolhas[0].endsWith('*') && !(await page.isDisabled('#pc-administrar')), 'o site acha a academia pelo e-mail (domínio do site dela) e já deixa marcada — ' + escolhas.join(' / '));
+  await page.fill('#pc-busca', 'quadra moema');
   await page.waitForTimeout(100);
-  let achadas = await page.evaluate(() => [...document.querySelectorAll('#pc-resultados .pc-card-t')].map(x => x.innerText));
-  ok(achadas.join() === 'Quadra Locação' && await page.evaluate(() => document.activeElement.id === 'pc-busca'), 'procura a academia enquanto digita, sem perder o cursor — ' + achadas.join());
-  ok(await texto(page, '#pc-resultados [data-pc-minha]') === 'Administrar', 'botão da academia achada diz "Administrar"');
+  escolhas = await page.evaluate(() => [...document.querySelectorAll('#pc-resultados .pc-escolha strong')].map(x => x.innerText));
+  ok(escolhas.join() === 'Só Aula Tennis,Quadra Locação' && await page.evaluate(() => document.activeElement.id === 'pc-busca'), 'procura pelo nome e o bairro enquanto digita, sem perder o cursor — ' + escolhas.join());
   await page.fill('#pc-busca', 'locacao');
-  achadas = await page.evaluate(() => [...document.querySelectorAll('#pc-resultados .pc-card-t')].map(x => x.innerText));
-  ok(achadas.join() === 'Quadra Locação', 'acha sem acento também');
+  escolhas = await page.evaluate(() => [...document.querySelectorAll('#pc-resultados .pc-escolha strong')].map(x => x.innerText));
+  ok(escolhas.includes('Quadra Locação'), 'acha sem acento também');
   await page.fill('#pc-busca', 'zzzz');
-  ok((await texto(page, '#pc-resultados')).includes('Não achei nenhuma academia'), 'não achou: diz em palavras simples');
+  escolhas = await page.evaluate(() => [...document.querySelectorAll('#pc-resultados .pc-escolha strong')].map(x => x.innerText));
+  ok(escolhas.join() === 'Só Aula Tennis', 'sem resultado, continua a que o site achou pelo e-mail');
   await page.fill('#pc-busca', 'quadra');
-  await page.click('#pc-resultados [data-pc-minha]');
+  await page.click('.pc-escolha[data-pc-selecionar="a2"]');
   await page.waitForTimeout(200);
   t = await tela(page);
-  ok((await texto(page, '.pc-reivindicar')).includes('Administrar a ficha da Quadra Locação') && t.link === '/parceiros/cadastro?academia=a2' && t.robots.includes('noindex'), '"Administrar": confirma a academia, o link guarda ela e fica fora do Google — ' + t.link);
-  await page.click('.pc-reivindicar [data-pc-minha=""]');
-  await page.waitForTimeout(200);
-  t = await tela(page);
-  ok(t.link === '/parceiros/cadastro' && await page.isVisible('#pc-busca'), '"Não é essa" volta para a busca');
-  await page.click('.pc-sugerida [data-pc-minha]');
-  await page.waitForTimeout(200);
-  await page.click('[data-pc-pedir]');
+  escolhas = await page.evaluate(() => [...document.querySelectorAll('.pc-escolha.on strong')].map(x => x.innerText));
+  ok(escolhas.join() === 'Quadra Locação' && t.link === '/parceiros/cadastro?academia=a2' && t.robots.includes('noindex'), 'tocar escolhe a academia; o link guarda ela e fica fora do Google — ' + t.link);
+  const linhaNova = await texto(page, '.pc-main .pc-linha');
+  ok(linhaNova.includes('A sua academia ainda não está no GuiaTennis?') && linhaNova.includes('Cadastrar academia nova'), 'academia nova numa linha discreta');
+  await page.click('.pc-escolha[data-pc-selecionar="a1"]');
+  await page.click('#pc-administrar');
   await page.waitForTimeout(500);
   const pedido = await page.evaluate(() => ({
     rpc: (window.__rpcs.find(r => r.nome === 'pedir_para_administrar') || {}).args,
     card: document.querySelector('.pc-pedido')?.innerText || '',
-    wa: decodeURIComponent(document.querySelector('.pc-pedido a')?.getAttribute('href') || ''),
-    etapas: [...document.querySelectorAll('.pc-etapas li.feito')].length,
+    wa: decodeURIComponent([...document.querySelectorAll('.pc-pedido a')].map(a => a.getAttribute('href')).find(h => h.includes('wa.me')) || ''),
+    codigo: !!document.getElementById('pc-codigo'),
   }));
-  ok(pedido.rpc && pedido.rpc.p_academia === 'a1' && /pedido enviado/i.test(pedido.card) && pedido.card.includes('Só Aula Tennis') && pedido.etapas === 3, 'pedido enviado para o GuiaTennis conferir — ' + pedido.card.split('\n')[0]);
-  ok(pedido.wa.includes('pedi para administrar a Só Aula Tennis'), 'dá para agilizar pelo WhatsApp do guia');
+  etapas = await barra();
+  ok(pedido.rpc && pedido.rpc.p_academia === 'a1' && /pedido enviado/i.test(pedido.card) && pedido.card.includes('Só Aula Tennis') && etapas.feito === '100%', '"Administrar esta academia" manda o pedido — ' + pedido.card.split('\n')[0]);
+  ok(pedido.codigo && pedido.card.includes('código de 6 números') && pedido.card.includes('(11) •••••-0001'), 'o pedido pede o código mandado ao WhatsApp da ficha, sem mostrar o número inteiro');
+  ok(pedido.card.includes('não é de vocês') && pedido.card.includes('documento') && pedido.wa.includes('pedi para administrar a Só Aula Tennis'), 'se o WhatsApp da ficha não for deles, confere por documento pelo WhatsApp do guia');
+  await page.fill('#pc-codigo', '123456');
+  await page.click('#pc-confirmar-codigo');
+  await page.waitForTimeout(300);
+  ok((await texto(page, '.pc-pedido .form-error')).includes('ainda não foi mandado'), 'código antes de o GuiaTennis mandar: avisa para aguardar');
   await page.click('.pc-topo [data-pc="inicio"]');
   await page.waitForTimeout(300);
   t = await tela(page);
@@ -241,6 +259,11 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(painelAdmin.includes('Pedidos para administrar') && painelAdmin.includes('Só Aula Tennis') && painelAdmin.includes('Joana Dona') && painelAdmin.includes('Academia do Pedro · academia nova, em análise'), 'admin vê os pedidos para administrar, com a academia nova marcada');
   const waPedido = await page.evaluate(() => document.querySelector('.acesso-pedido a')?.getAttribute('href') || '');
   ok(waPedido.startsWith('https://wa.me/5511988880001?text='), 'admin fala com a pessoa pelo WhatsApp antes de aprovar — ' + waPedido.slice(0, 34));
+  await page.click('.acesso-pedido [data-gerar-codigo="u-joana"]');
+  await page.waitForTimeout(400);
+  const gerado = await page.evaluate(() => ({ codigo: (window.__codigos || {})['u-joana']?.codigo, wa: decodeURIComponent(document.querySelector('.acesso-pedido a.chip.active')?.getAttribute('href') || ''), texto: document.querySelector('.acesso-pedido')?.innerText || '' }));
+  ok(gerado.codigo && gerado.wa.startsWith('https://wa.me/5511999990001?text=') && gerado.wa.includes('código ' + gerado.codigo) && gerado.wa.includes('Se ninguém da academia pediu, é só ignorar'), 'admin gera o código e manda ao WhatsApp que está na ficha da academia, com aviso se não foi ninguém de lá');
+  ok(gerado.texto.includes('Código ' + gerado.codigo), 'o código aparece para o admin mandar');
   await page.click('[data-aprovar-pedido="u-joana"]');
   await page.waitForTimeout(400);
   let joana = await page.evaluate(() => window.__db.academia_acessos.find(x => x.user_id === 'u-joana'));
@@ -250,20 +273,39 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(pedro.academia_id === 'n9' && pedro.papel === 'principal', 'publicar a academia nova libera a conta de quem mandou');
   await browser.close();
 
-  // Veio da ficha ("Gerencie a ficha…"), sem conta: o pedido sai junto com a conta.
+  // Veio da ficha ("Gerencie a ficha…"), sem conta: a academia já vem marcada.
   ({ browser, page } = await abrir({ q: 'parceiros/cadastro?academia=a2' }));
   ok((await texto(page, '.pc-reivindicar')).includes('Administrar a ficha da Quadra Locação') && (await texto(page, '.pc-reivindicar')).includes('Comece pelo seu e-mail'), 'link da ficha: começa pelo e-mail, já com a academia');
   await page.fill('#pc-email', 'dono@gmail.com');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(300);
-  await page.fill('#pc-conta-nome', 'Dono Moema');
+  await page.selectOption('#pc-conta-tratamento', 'Sr.');
+  await page.fill('#pc-conta-nome', 'Dono');
+  await page.fill('#pc-conta-sobrenome', 'Moema');
+  await page.selectOption('#pc-conta-cargo', 'Gerente');
   await page.fill('#pc-conta-whatsapp', '11988880009');
   await page.fill('#pc-conta-senha', 'senhaforte1');
   await page.check('#pc-conta-aceite');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(900);
-  const direto = await page.evaluate(() => ({ pedido: contaAcademia && contaAcademia.pedidoNome, sugestao: !!document.querySelector('.pc-sugerida'), link: location.pathname + location.search }));
-  ok(direto.pedido === 'Quadra Locação' && !direto.sugestao && direto.link === '/parceiros/cadastro', 'conta criada pelo link da ficha já pede aquela academia (gmail não sugere nada)');
+  let direto = await page.evaluate(() => ({ marcada: [...document.querySelectorAll('.pc-escolha.on strong')].map(x => x.innerText).join(), achamos: document.querySelector('#pc-resultados')?.innerText.includes('achamos pelo seu e-mail'), pronto: !document.getElementById('pc-administrar').disabled }));
+  ok(direto.marcada === 'Quadra Locação' && !direto.achamos && direto.pronto, 'conta criada pelo link da ficha já deixa aquela academia marcada (gmail não sugere nada)');
+  await page.click('#pc-administrar');
+  await page.waitForTimeout(500);
+  direto = await page.evaluate(() => ({ pedido: contaAcademia && contaAcademia.pedidoNome, link: location.pathname + location.search }));
+  ok(direto.pedido === 'Quadra Locação' && direto.link === '/parceiros/cadastro', 'um toque em "Administrar esta academia" e o pedido sai');
+  // O código chega no WhatsApp da academia (quem gera é o admin).
+  await page.evaluate(() => { window.__codigos = { [contaAcademia.userId]: { codigo: '482915', academia: 'a2', tentativas: 0 } }; });
+  await page.fill('#pc-codigo', '111111');
+  await page.click('#pc-confirmar-codigo');
+  await page.waitForTimeout(300);
+  ok((await texto(page, '.pc-pedido .form-error')).includes('Código errado'), 'código errado: avisa em palavras simples');
+  await page.fill('#pc-codigo', '482 915');
+  await page.press('#pc-codigo', 'Enter');
+  await page.waitForTimeout(800);
+  t = await tela(page);
+  const liberado = await page.evaluate(() => ({ academia: contaAcademia.academiaId, papel: contaAcademia.papel, aviso: document.querySelector('.conta-aviso')?.innerText || '' }));
+  ok(liberado.academia === 'a2' && t.aba === 'painel' && liberado.aviso.includes('Agora você administra a Quadra Locação'), 'código certo: a conta passa a administrar a academia, sem esperar o Breno — ' + liberado.aviso);
   await browser.close();
 
   // ---- entradas a partir do site dos jogadores ----

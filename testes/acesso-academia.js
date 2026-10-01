@@ -75,9 +75,15 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !document.querySelector('.pc-barra-baixo')), 'antes de completar, sem os atalhos de baixo — ' + await page.evaluate(() => location.pathname));
   await page.click('#conta-salvar-dados');
   await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .form-error')).includes('nome do responsável'), 'sem nome, pede o nome');
-  await page.fill('#conta-nome', 'Maria Exemplo');
-  await page.click('[data-cargo="Gerente"]');
+  ok((await texto(page, '#parceiros .form-error')).includes('tratamento'), 'sem os dados, pede o primeiro que falta (tratamento)');
+  ok(await page.isVisible('#conta-sobrenome') && await page.isVisible('#conta-cargo') && (await texto(page, '#parceiros .campo-ddi')) === 'Brasil (+55)', 'primeiro acesso com os mesmos dados de contato do cadastro (nome e sobrenome, cargo, telefone com o país)');
+  await page.selectOption('#conta-tratamento', 'Sra.');
+  await page.fill('#conta-nome', 'Maria');
+  await page.click('#conta-salvar-dados');
+  await page.waitForTimeout(200);
+  ok((await texto(page, '#parceiros .form-error')).includes('sobrenome'), 'sem sobrenome, pede o sobrenome');
+  await page.fill('#conta-sobrenome', 'Exemplo');
+  await page.selectOption('#conta-cargo', 'Gerente');
   await page.fill('#conta-email', 'Maria@Exemplo.com');
   await page.fill('#conta-whatsapp', '(11) 90000-0001');
   await page.fill('#conta-senha', 'senhanova1');
@@ -100,7 +106,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   }));
   ok(salvo.senha === 'senhanova1' && salvo.atual === 'kpxw-4827', 'troca a senha provisória pelo login do Supabase');
   ok(salvo.rpcs.includes('marcar_senha_trocada'), 'anota que a senha foi trocada');
-  ok(salvo.completar && salvo.completar.p_whatsapp === '11900000001' && salvo.completar.p_cargo === 'Gerente' && salvo.completar.p_aceite === true, 'grava o responsável com o WhatsApp só em números — ' + JSON.stringify(salvo.completar));
+  ok(salvo.completar && salvo.completar.p_whatsapp === '11900000001' && salvo.completar.p_cargo === 'Gerente' && salvo.completar.p_nome === 'Maria Exemplo' && salvo.completar.p_tratamento === 'Sra.' && salvo.completar.p_aceite === true, 'grava o responsável com o WhatsApp só em números — ' + JSON.stringify(salvo.completar));
   folha = await texto(page, '#parceiros .pc-main');
   ok(folha.includes('Olá, Maria') && folha.includes('Tudo certo!'), 'depois do primeiro acesso, abre o painel com o nome do responsável');
   ok(folha.includes('Falta:') && folha.includes('Horário') && folha.includes('Fotos'), 'painel mostra o que falta na ficha');

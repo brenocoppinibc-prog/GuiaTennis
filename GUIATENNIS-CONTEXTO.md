@@ -261,17 +261,29 @@ os seus alunos" (`PC_EM_BREVE`). Preço dos pagos: "Fale com a gente"
 preço. O admin muda o plano na ficha, como antes (`plano` da tabela). Hoje
 a ordem da busca não depende do plano (regra 16).
 
-**Conta do GuiaTennis Parceiros (pedido do Breno em 30/09/2026)** — como o
-Booking e o Google Business Profile, o cadastro começa pelo e-mail:
+**Conta do GuiaTennis Parceiros (pedido do Breno em 30/09 e 01/10/2026)** —
+como o trivago Business Studio, o Booking e o Google Business Profile. Em
+cima, a **barra do processo do trivago** (`pcEtapas`): trilho com a parte
+feita preenchida, um ponto por etapa e os nomes embaixo — DADOS DE
+CONTATO, SUA ACADEMIA, INÍCIO. O cadastro começa pelo e-mail:
 1. **E-mail** → `login_do_email` diz se já tem conta. Tem: "Entrar com esse
    e-mail" (o Entrar aceita e-mail ou usuário; quem recebeu usuário do
    GuiaTennis entra também pelo e-mail que deu no primeiro acesso). Não tem:
-2. **Conta** → nome, WhatsApp, senha e o aceite (`criar_minha_conta`,
-   chamada pelo visitante; o login é criado direto no `auth.users`, com um
-   freio de 20 contas novas por hora). Entra na hora, **sem academia**.
-3. **Academia** → "Achamos pelo seu e-mail" (domínio do e-mail = domínio do
-   site de uma academia; gmail/hotmail… não contam), busca pelo nome →
-   "Administrar" → "Pedir para administrar" (`pedir_para_administrar`), ou
+2. **Dados de contato** (igual ao formulário do trivago) → tratamento (Sr.,
+   Sra., prefiro não informar), nome e sobrenome, cargo na academia,
+   telefone com "Brasil (+55)", senha, "quero receber dicas, novidades e o
+   relatório do mês" (desmarcado) e o aceite → "Salvar e continuar"
+   (`criar_minha_conta`, chamada pelo visitante; o login é criado direto no
+   `auth.users`, com um freio de 20 contas novas por hora). Entra na hora,
+   **sem academia**. O primeiro acesso de quem recebeu usuário do Breno usa
+   os mesmos campos (`camposDeContato`).
+3. **Sua academia** (a tela do trivago "Nice to meet you! Before we get
+   started…") → "Prazer em conhecer você, Joana! Antes de começar, vamos
+   ver se a sua academia já está no GuiaTennis." Busca pelo nome e o bairro,
+   a lista é de escolha (uma marcada por vez); a que o site acha pelo
+   e-mail (domínio do e-mail = domínio do site da academia; gmail/hotmail…
+   não contam) ou a do link da ficha já vem marcada; o botão "Administrar
+   esta academia" só acende com uma marcada (`pedir_para_administrar`), ou
    "Cadastrar academia nova" (o formulário não pede de novo nome, WhatsApp
    nem aceite: vão os da conta; o gatilho `pedido_da_academia_nova` faz da
    academia nova o pedido da conta). Pedido do Breno (01/10): as outras
@@ -284,13 +296,24 @@ Booking e o Google Business Profile, o cadastro começa pelo e-mail:
   do GuiaTennis, ou já tem conta? Entrar ›" do cadastro leva ao Entrar). O
   e-mail entra no primeiro acesso; dali em diante, entra pelo usuário ou
   pelo e-mail.
-4. **O GuiaTennis confere** → no painel do admin, "Pedidos para
-   administrar" com WhatsApp, Aprovar e Recusar. Publicar a academia nova
-   já libera a conta (gatilho `liberar_pedidos_da_academia`). Quem é
-   aprovado vira **responsável principal** se a academia ainda não tem um;
-   senão, equipe.
+4. **Verificação pelo WhatsApp da ficha** (como o Google faz com o telefone
+   da empresa) → no painel do admin, "Pedidos para administrar": "Gerar
+   código para o WhatsApp da academia" (`gerar_codigo_do_pedido`, 6
+   números de bytes aleatórios) e "Mandar o código ao WhatsApp da
+   academia" — o Breno manda, pelo WhatsApp dele, para o número que está
+   na ficha, com o nome de quem pediu e "se ninguém da academia pediu, é
+   só ignorar". Quem pediu vê "(11) •••••-0001" e digita o código
+   (`confirmar_meu_codigo`): certo, a conta passa a administrar na hora. O
+   código fica cifrado numa tabela fechada (`codigos_de_verificacao`), vale
+   72 horas e 5 tentativas (a função devolve 'ok', 'errado', 'tentativas',
+   'venceu' ou 'sem_codigo' em vez de dar erro, para a tentativa ficar
+   contada). Sem WhatsApp na ficha, ou se o número não é deles: documento
+   (CNPJ ou contrato social) pelo WhatsApp do guia, e o Breno aprova à mão
+   (Aprovar/Recusar continuam). Academia nova: publicar já libera a conta
+   (gatilho `liberar_pedidos_da_academia`). Quem é liberado vira
+   **responsável principal** se a academia ainda não tem um; senão, equipe.
 - **Não confere se o e-mail é mesmo da pessoa** (o site não manda e-mail):
-  por isso nada é liberado sem o Breno aprovar ou publicar.
+  quem garante é o código no WhatsApp da academia ou o documento.
 - **Pessoas com acesso (Conta):** o responsável principal adiciona pelo
   e-mail (`adicionar_pessoa`): e-mail novo ganha login com senha
   provisória que a tela gera e mostra uma vez, com "Mandar pelo WhatsApp"
@@ -609,15 +632,16 @@ senha".
 
 **Conferido aqui (30/09/2026):** Postgres 16 local com as migrações + o
 login de verdade do Supabase (`supabase/auth`, commit de 22/09/2026,
-compilado daqui): `testes/banco-acesso.py`, 121 conferências — a academia
+compilado daqui): `testes/banco-acesso.py`, 133 conferências — a academia
 entra com a senha provisória, troca a senha, edita só o que é dela, não
 apaga nem se avalia, responde só as avaliações dela, não lê contato nem
 cliques; nova senha derruba a sessão; remover acesso e excluir academia
 apagam o login; `numeros_da_academia` corta o período e os detalhes pelo
 plano, devolve só os números da própria academia e o visitante não chama;
 conta por e-mail, pedido, aprovação, publicar libera, equipe com limite do
-plano, e-mail ou WhatsApp de academia sem avaliar, e o freio de contas
-novas. Também com a biblioteca do site (`@supabase/auth-js`
+plano, e-mail ou WhatsApp de academia sem avaliar, o freio de contas
+novas, os dados de contato completos e o código (só o admin gera, ninguém lê
+a tabela, errado conta a tentativa, 5 tentativas, 72 horas, certo libera). Também com a biblioteca do site (`@supabase/auth-js`
 2.117): entrar com usuário, `same_password`, troca com a senha atual.
 
 ### GitHub ↔ Supabase
@@ -692,6 +716,12 @@ em aba anônima inflava os números da home.
     de academia (regra "Enviar avaliacao" + gatilho `avaliacao_de_parceiro`).
     **Atenção:** rodar de novo o `20260930120000` ou o `SQL-SEGURANCA.sql`
     à mão desfaz a regra nova de avaliação — rodar este depois.
+  - `migrations/20261001120000_cadastro_e_verificacao.sql` — `tratamento`
+    na conta, `criar_minha_conta` e `completar_meu_acesso` com os campos
+    novos (tratamento, cargo, novidades; a chamada antiga continua
+    valendo), tabela fechada `codigos_de_verificacao`,
+    `gerar_codigo_do_pedido` (admin), `confirmar_meu_codigo` (a conta) e
+    `acessos_das_academias` com tratamento e `codigo_em`.
   - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
     não existem): aula e locação, só locação, só aula com horário por dia
     e prazo de 36h, uma pausada e uma pendente; mais avaliações e
@@ -892,8 +922,10 @@ bancos.
 **Esperando o merge (30/09/2026):** `20260930120000_acesso_academias`
 (área da academia), `20260930130000_links_amigaveis` (sitemap com os
 endereços novos), `20260930140000_numeros_da_academia` (Desempenho do
-GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap` e `20260930160000_contas_parceiros`
-(conta por e-mail, pedidos, equipe, academia não avalia). Entra no
+GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap`, `20260930160000_contas_parceiros`
+(conta por e-mail, pedidos, equipe, academia não avalia) e
+`20261001120000_cadastro_e_verificacao` (dados de contato completos e o
+código no WhatsApp da academia). Entra no
 banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
@@ -932,9 +964,9 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banc
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
-e contas por e-mail): **370 verificações, todas passando** (160 de antes,
-64 da área da academia, 34 dos links e 112 do GuiaTennis Parceiros), mais
-as 121 do `banco-acesso.py` no banco e login locais.
+e contas por e-mail): **382 verificações, todas passando** (160 de antes,
+66 da área da academia, 34 dos links e 122 do GuiaTennis Parceiros), mais
+as 133 do `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
   antes de qualquer outra coisa.**
@@ -1291,7 +1323,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) Cadastro dos parceiros: outras opções numa linha discreta   ← PR #5, 01/10
+(a seguir) Cadastro como o do trivago e código no WhatsApp da academia   ← PR #5, 01/10
+866edcd Cadastro dos parceiros: outras opções numa linha discreta   ← PR #5, 01/10
 857b932 GuiaTennis Parceiros: conta por e-mail, pedidos, equipe, planos, tela cheia e faixa do rodapé   ← PR #5, 30/09
 28846e5 GuiaTennis Parceiros: "Administrar" no lugar de "É a minha" no cadastro   ← PR #5, 30/09
 c0c1d84 GuiaTennis Parceiros: site das academias com painel, desempenho por plano, planos e ajuda   ← PR #5, 30/09
@@ -1417,8 +1450,11 @@ c9ade31 Configuração de publicação do Netlify
   "Copiar resumo pra mandar" do painel continua sendo o relatório, mandado
   pelo Breno.
 - **Testar as contas por e-mail na prévia:** em aba anônima,
-  `…/parceiros/cadastro` → e-mail novo → criar a conta → "Administrar" a
-  Quadra Exemplo Moema → como admin, "Pedidos para administrar" → Aprovar.
+  `…/parceiros/cadastro` → e-mail novo → dados de contato → "Administrar
+  esta academia" (Quadra Exemplo Moema) → como admin, "Pedidos para
+  administrar" → "Gerar código" → o código aparece (no teste, o WhatsApp da
+  ficha é inventado: copie o código em vez de mandar) → digitar na aba
+  anônima.
   Depois, na Conta, adicionar uma pessoa e entrar com ela em outra aba.
 - **Preço dos planos Completo e Premium:** o Breno define. Hoje o site diz
   "Fale com a gente" e o botão abre o WhatsApp do guia; quando houver

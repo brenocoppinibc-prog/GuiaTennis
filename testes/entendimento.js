@@ -1,6 +1,6 @@
 // O site entende e arruma o que a academia escreveu, sem IA: estacionamento
 // no modelo único, fachada e chegada arrumadas, frase no lugar certo.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, irParte } = require('./harness');
 (async () => {
   let { browser, page } = await abrir({ q: '?court=a2' });
   await page.evaluate(async () => {
@@ -40,6 +40,7 @@ const { abrir, ok } = require('./harness');
   ({ browser, page } = await abrir({ admin: true, q: '?court=a2' }));
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a2"]').click());
   await page.waitForTimeout(300);
+  await irParte(page, 'chegada');
   await page.fill('#f-acesso-estacionar', 'DA PRA PARAR NA RUA TRANQUILO');
   await page.evaluate(() => document.getElementById('f-acesso-estacionar').dispatchEvent(new Event('change')));
   await page.waitForTimeout(200);

@@ -1,6 +1,6 @@
 // Ficha básica (academia com dados públicos, ainda não confirmados por ela),
 // link do responsável, lista do mapa aberto no painel e textos legais.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, irParte } = require('./harness');
 
 // O que o OpenStreetMap devolveria: uma academia nova, um clube (fica de
 // fora pela regra do guia), uma já no guia (perto da a1) e uma repetida.
@@ -50,6 +50,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ({ browser, page } = await abrir({ admin: true }));
   await page.evaluate(() => { state.selected = decorate(state.allCourts.find(x => x.id === 'a2')); state.page = 'court'; render(); });
   await page.click('.editar-academia');
+  await irParte(page, 'revisar');
   const marcada = await page.isChecked('#f-confirmada');
   ok(marcada === false, 'edição carrega a ficha básica desmarcada');
   await page.check('#f-confirmada');
@@ -124,12 +125,17 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const FORM_VAZIO = { name: "", cep: "", address: "", numero: "", complemento: "", bairro: "", cidade: "", quadras: {}, amenities: [], modalidades: [], priceAula: "", priceLocacao: "", phone: "", instagram: "", site: "", photos: [], politica: {}, acesso: {}, horario: {} };
   ({ browser, page } = await abrir({ admin: true }));
   await page.evaluate((f) => { window.__form = JSON.parse(JSON.stringify(f)); state.showRegister = true; state.registerStatus = 'idle'; render(); }, FORM_VAZIO);
+  await irParte(page, 'contato');
+  const whats = await page.evaluate(() => document.getElementById('f-phone').placeholder);
+  await irParte(page, 'revisar');
   const formAdmin = await page.evaluate(() => ({
-    whats: document.getElementById('f-phone').placeholder,
-    nota: document.querySelector('#register-submit').parentElement.innerText,
+    nota: document.querySelector('#register-overlay .reg-passo').innerText,
     aceite: !!document.getElementById('f-consent'),
+    falta: document.querySelectorAll('.reg-rev-sinal.falta').length,
   }));
-  ok(!formAdmin.whats.includes('*') && !formAdmin.aceite && formAdmin.nota.includes('Só o nome é obrigatório'), 'formulário do admin: sem asteriscos e sem aceite, só o nome é obrigatório');
+  ok(!whats.includes('*') && !formAdmin.aceite && formAdmin.nota.includes('Só o nome é obrigatório') && formAdmin.falta === 1, 'formulário do admin: sem asteriscos e sem aceite, só o nome é obrigatório');
+  await irParte(page, 'dados');
+  ok(await page.evaluate(() => !!document.getElementById('register-submit')), 'admin publica de qualquer parte, sem ir até o fim');
   await page.fill('#f-name', 'Academia Só Nome');
   await page.click('#register-submit');
   await page.waitForTimeout(1500);
@@ -139,17 +145,25 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ({ browser, page } = await abrir());
   await page.evaluate((f) => { saveVisitor({ nome: 'Visitante', contato: '11999999999' }); window.__form = JSON.parse(JSON.stringify(f)); state.showRegister = true; state.registerStatus = 'idle'; render(); }, FORM_VAZIO);
   await page.fill('#f-name', 'Pedido Só Nome');
+  ok(await page.evaluate(() => !document.getElementById('register-submit')), 'pedido pelo site: o envio fica na última parte');
+  await page.click('#reg-continuar');
+  await page.waitForTimeout(200);
+  const passo1 = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', passo: state.regPasso }));
+  ok(passo1.passo === 0 && passo1.erro.includes('endereço completo') && !passo1.erro.includes('WhatsApp'), 'Continuar cobra o que falta na parte — ' + passo1.erro);
+  await irParte(page, 'revisar');
+  const rev = await page.evaluate(() => [...document.querySelectorAll('.reg-rev-linha')].filter(l => l.querySelector('.falta')).map(l => l.querySelector('strong').innerText).join(', '));
+  ok(rev === 'Nome e endereço, Modalidade e preço, Quadras, Contato', 'revisão marca as partes obrigatórias que faltam — ' + rev);
   await page.click('#register-submit');
   await page.waitForTimeout(800);
-  const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome') }));
-  ok(!pedido.gravou && pedido.erro.includes('endereço completo') && pedido.erro.includes('WhatsApp'), 'pedido pelo site ainda cobra o essencial — ' + pedido.erro);
+  const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome'), passo: state.regPasso }));
+  ok(!pedido.gravou && pedido.erro.includes('endereço completo') && pedido.erro.includes('WhatsApp') && pedido.passo === 0, 'pedido pelo site ainda cobra o essencial e volta para a parte que falta — ' + pedido.erro);
   await browser.close();
 
   // Termos e Privacidade
   ({ browser, page } = await abrir());
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
   ok(termos.includes('ficha básica') && termos.includes('OpenStreetMap') && termos.includes('É o responsável por esta academia?'), 'Termos explicam a ficha básica, o OpenStreetMap e o pedido de remoção');
-  ok((termos.match(/Última atualização: 30 de setembro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
+  ok((termos.match(/Última atualização: 1 de outubro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
   // Contato do guia em botões com ícone, no menu, no rodapé e no bloco para academias
   const contato = await page.evaluate(() => {
     state.showMenu = true; render();

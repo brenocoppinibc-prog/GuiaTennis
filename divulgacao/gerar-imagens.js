@@ -1,7 +1,16 @@
-// Gera as imagens de divulgação a partir do logo do próprio site (LOGO_SVG
-// do index.html), para não depender de outro programa:
+// Gera todas as imagens com o logo a partir do próprio site (logoDesenho, no
+// index.html, entre LOGO-INICIO e LOGO-FIM), para o logo ser igual em todo
+// lugar (pedido do Breno em 01/10/2026) e não depender de outro programa:
+//   favicon-32.png, favicon-192.png  ícone da aba (cantos arredondados)
+//   apple-touch-icon.png  180×180    ícone do iPhone (quadrado: o iPhone
+//                                    arredonda sozinho; canto transparente
+//                                    ficaria preto)
+//   og-image.png          1200×630   imagem do link compartilhado (logo com o
+//                                    nome no meio, fundo creme)
+//   404.html                         o logo da página "não existe", entre
+//                                    <!-- LOGO --> e <!-- /LOGO -->
 //   divulgacao/whatsapp-perfil.png  1080×1080 — foto de perfil (o WhatsApp
-//                                    corta em círculo; o logo fica no meio)
+//                                    corta em círculo; a raquete cabe nele)
 //   divulgacao/whatsapp-capa.png    1600×900  — capa do perfil comercial
 //                                    (16:9; o texto fica longe da parte de
 //                                    baixo, onde a foto redonda fica por cima)
@@ -12,37 +21,30 @@ const { execFileSync } = require('child_process');
 
 const RAIZ = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8');
-const logo = html.match(/const LOGO_SVG = `([\s\S]*?)`;/)[1];
+const trecho = html.match(/\/\/ LOGO-INICIO([\s\S]*?)\/\/ LOGO-FIM/)[1];
+const logoDesenho = new Function(`${trecho}; return logoDesenho;`)();
+const logo = (lado, opcoes) => `<svg xmlns="http://www.w3.org/2000/svg" width="${lado}" height="${lado}" viewBox="0 0 1080 1080">${logoDesenho(opcoes)}</svg>`;
 
-// A raquete do logo, redesenhada para tamanho grande: no ícone pequeno o
-// encordoamento tem só três linhas de cada lado e o pescoço vira duas
-// pontinhas; aqui o encordoamento é completo e o pescoço tem os dois braços
-// de uma raquete de verdade. Mesmas cores e mesma bola do logo.
-function raquete(tamanho) {
-  const creme = '#F7F4EC', ouro = '#B8933F';
-  const cordas = [];
-  for (let y = -400; y <= 80; y += 48) cordas.push(`<line x1="-200" y1="${y}" x2="200" y2="${y}"/>`);
-  for (let x = -168; x <= 168; x += 42) cordas.push(`<line x1="${x}" y1="-420" x2="${x}" y2="100"/>`);
-  return `<svg width="${tamanho}" height="${tamanho}" viewBox="0 0 1080 1080">
-  <defs><clipPath id="cabeca"><ellipse cx="0" cy="-160" rx="190" ry="250"/></clipPath></defs>
-  <g transform="translate(600,532) scale(0.8) rotate(-15)">
-    <g clip-path="url(#cabeca)" stroke="${ouro}" stroke-width="7" opacity="0.6">${cordas.join('')}</g>
-    <path d="M-120 72 L-30 220 M120 72 L30 220" stroke="${creme}" stroke-width="34" stroke-linecap="round" fill="none"/>
-    <rect x="-40" y="200" width="80" height="250" rx="36" fill="${creme}"/>
-    <ellipse cx="0" cy="455" rx="44" ry="22" fill="${creme}"/>
-    <ellipse cx="0" cy="-160" rx="212" ry="272" fill="none" stroke="${creme}" stroke-width="48"/>
-    <path d="M-330 -40 Q-260 -10 -220 -90" fill="none" stroke="${ouro}" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
-    <circle cx="0" cy="-160" r="132" fill="${ouro}" stroke="${creme}" stroke-width="10"/>
-  </g>
-</svg>`;
-}
+// Logo da 404: o mesmo desenho, escrito dentro do arquivo (a 404 não roda o
+// JavaScript do site).
+const p404 = path.join(RAIZ, '404.html');
+const pagina404 = fs.readFileSync(p404, 'utf8');
+const novo404 = pagina404.replace(/<!-- LOGO -->[\s\S]*?<!-- \/LOGO -->/,
+  `<!-- LOGO -->\n  <svg width="72" height="72" viewBox="0 0 1080 1080" aria-hidden="true">${logoDesenho({ id: 'g' })}</svg>\n  <!-- /LOGO -->`);
+if (novo404 === pagina404 && !pagina404.includes('<!-- LOGO -->')) throw new Error('404.html sem as marcas <!-- LOGO -->');
+fs.writeFileSync(p404, novo404);
+
+const sozinho = (lado, opcoes) => `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:transparent}svg{display:block}</style></head><body>${logo(lado, opcoes)}</body></html>`;
+const compartilhar = `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0}body{width:1200px;height:630px;background:#F7F4EC;display:flex;align-items:center;justify-content:center}svg{display:block}</style>
+</head><body>${logo(630, { comNome: true })}</body></html>`;
+
+const perfil = sozinho(1080, { quadrado: true });
 
 const FONTE = `<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">`;
 const FUNDO = 'linear-gradient(135deg, #2A5C4B 0%, #1F4D3D 45%, #153229 100%)';
 
-const perfil = `<!doctype html><html><head><meta charset="utf-8">
-<style>html,body{margin:0}body{width:1080px;height:1080px;background:${FUNDO};display:flex;align-items:center;justify-content:center}</style>
-</head><body>${raquete(1080)}</body></html>`;
 
 // Quadra de tênis reta, vista de trás da linha de fundo, em perspectiva:
 // medidas oficiais (23,77 × 10,97 m) projetadas numa câmera atrás da quadra.
@@ -87,7 +89,16 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
 
 (async () => {
   const browser = await chromium.launch();
-  for (const [nome, conteudo, w, h] of [['whatsapp-perfil.png', perfil, 1080, 1080], ['whatsapp-capa.png', capa, 1600, 900]]) {
+  const imagens = [
+    [path.join(RAIZ, 'favicon-32.png'), sozinho(32, {}), 32, 32],
+    [path.join(RAIZ, 'favicon-192.png'), sozinho(192, {}), 192, 192],
+    [path.join(RAIZ, 'apple-touch-icon.png'), sozinho(180, { quadrado: true }), 180, 180],
+    [path.join(RAIZ, 'og-image.png'), compartilhar, 1200, 630],
+    [path.join(__dirname, 'whatsapp-perfil.png'), perfil, 1080, 1080],
+    [path.join(__dirname, 'whatsapp-capa.png'), capa, 1600, 900],
+  ];
+  for (const [arquivo, conteudo, w, h] of imagens) {
+    const nome = path.basename(arquivo);
     const page = await browser.newPage({ viewport: { width: w, height: h } });
     // A fonte do site vem do Google Fonts pelo curl, que passa por proxy e
     // rede de empresa onde o navegador sozinho às vezes não passa.
@@ -100,7 +111,7 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     await page.evaluate(() => document.fonts.ready);
     const fonte = await page.evaluate(() => document.fonts.check("700 74px 'Playfair Display'"));
     if (nome.includes('capa') && !fonte) console.warn('ATENÇÃO: a fonte Playfair Display não carregou');
-    await page.screenshot({ path: path.join(__dirname, nome) });
+    await page.screenshot({ path: arquivo, omitBackground: nome.startsWith('favicon') });
     await page.close();
     console.log('gerada', nome);
   }

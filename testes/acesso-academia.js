@@ -2,7 +2,7 @@
 // senha provisória, primeiro acesso, edição só da própria ficha, respostas às
 // avaliações, o que a academia não vê nem faz, e o bloco do admin que cria o
 // acesso.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, irParte } = require('./harness');
 
 const AVALIACOES = [
   { id: 'r1', academia_id: 'a2', stars: 3, comment: 'Quadra boa, vestiário simples.', nome_autor: 'Carla', contato_autor: '11955550001', created_at: '2026-09-20T12:00:00Z' },
@@ -146,11 +146,14 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   await page.click('#parceiros .editar-academia');
   await page.waitForTimeout(300);
   const form = await page.evaluate(() => ({
-    titulo: document.querySelector('#register-overlay .sheet-title')?.innerText || '',
+    titulo: document.querySelector('#register-overlay .reg-cabeca')?.innerText || '',
     confirmada: !!document.getElementById('f-confirmada'),
     pagina: state.page,
   }));
+  await irParte(page, 'revisar');
+  form.confirmada = form.confirmada || await page.evaluate(() => !!document.getElementById('f-confirmada'));
   ok(form.titulo === 'Editar Quadra Locação' && !form.confirmada && form.pagina === 'parceiros', 'edita a própria ficha, sem a caixa do admin — ' + form.titulo);
+  await irParte(page, 'contato');
   await page.fill('#f-instagram', '@quadralocacao');
   await page.click('#register-submit');
   await page.waitForTimeout(900);

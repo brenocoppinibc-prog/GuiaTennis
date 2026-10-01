@@ -56,4 +56,12 @@ async function abrir(opts = {}) {
 
 const ok = (c, m) => { if (!c) process.exitCode = 1; console.log((c ? 'OK    ' : 'FALHA ') + m); };
 
-module.exports = { abrir, ok };
+// Cadastro passo a passo (01/10/2026): vai direto para uma parte do
+// formulário da ficha ("dados", "precos", "quadras", "contato", "fotos",
+// "horario", "cancelamento", "chegada", "revisar").
+async function irParte(page, id) {
+  await page.evaluate((id) => { state.regPasso = REG_PASSOS.findIndex(x => x.id === id); render(); }, id);
+  await page.waitForTimeout(120);
+}
+
+module.exports = { abrir, ok, irParte };

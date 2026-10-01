@@ -3,7 +3,7 @@
 // iFood Parceiros. Página inicial com benefícios, como funciona, planos e
 // perguntas; cadastro que primeiro procura a academia; "Entrar"; e, logado,
 // o desempenho conforme o plano — sem o plano mexer na ordem da busca.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, irParte } = require('./harness');
 
 const tela = (page) => page.evaluate(() => ({
   aba: state.parceirosAba,
@@ -220,7 +220,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.click('#pc-nova');
   await page.waitForTimeout(300);
   const form = await page.evaluate(() => ({
-    titulo: document.querySelector('#register-overlay .sheet-title')?.innerText || '',
+    titulo: document.querySelector('#register-overlay .reg-cabeca')?.innerText || '',
     sub: document.querySelector('#register-overlay .subtitle')?.innerText || '',
     aceite: !!document.getElementById('f-consent'),
     visitante: !!document.getElementById('visitor-overlay'),
@@ -230,15 +230,28 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   }));
   ok(form.titulo === 'Cadastrar academia nova' && form.sub.includes('não precisa digitar de novo') && !form.aceite, 'formulário da academia nova não pede de novo os dados nem o aceite');
   ok(form.alto === form.tela, 'formulário em tela cheia — ' + form.alto + ' de ' + form.tela);
-  ok(form.atalhos === 'Nome e endereço | Horário | Fotos | Quadras | Modalidade e preço | Cancelamento | Como chegar | Contato', 'atalhos para cada parte da ficha — ' + form.atalhos);
-  await page.click('.reg-secoes button[data-reg-sec="reg-sec-cancelamento"]');
-  await page.waitForTimeout(800);
-  const topoParte = await page.evaluate(() => document.getElementById('reg-sec-cancelamento').getBoundingClientRect().top);
-  ok(topoParte >= 40 && topoParte < 200, 'atalho leva direto à parte da ficha, sem ficar embaixo dos atalhos — ' + Math.round(topoParte));
+  ok(form.atalhos === 'Nome e endereço | Modalidade e preço | Quadras | Contato | Fotos | Horário | Cancelamento | Como chegar | Revisar', 'uma aba para cada parte, na ordem do que mais importa — ' + form.atalhos);
+  // Pedido do Breno em 01/10/2026: uma parte por tela, com Voltar e Continuar.
+  const telaUm = await page.evaluate(() => ({
+    partes: document.querySelectorAll('#register-overlay .reg-passo').length,
+    progresso: document.querySelector('.reg-progresso-t')?.innerText || '',
+    enviar: !!document.getElementById('register-submit'),
+    continuar: !!document.getElementById('reg-continuar'),
+    voltar: !!document.getElementById('reg-voltar'),
+  }));
+  ok(telaUm.partes === 1 && telaUm.progresso === 'Parte 1 de 9 · Nome e endereço' && telaUm.continuar && !telaUm.voltar && !telaUm.enviar, 'cadastro abre na primeira parte, com Continuar e sem o envio — ' + telaUm.progresso);
+  await page.click('[data-reg-passo="6"]');
+  await page.waitForTimeout(300);
+  const aba = await page.evaluate(() => ({ passo: document.querySelector('#register-overlay .reg-passo')?.dataset.passo, rolou: document.querySelector('#register-overlay .sheet').scrollTop, titulo: document.querySelector('.reg-titulo')?.innerText }));
+  ok(aba.passo === 'cancelamento' && aba.rolou === 0 && aba.titulo === 'Cancelamento e reposição', 'a aba leva direto à parte, do começo da tela — ' + aba.titulo);
+  await page.click('#reg-voltar');
+  await page.waitForTimeout(200);
+  ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo').dataset.passo === 'horario'), 'Voltar volta uma parte');
   await page.evaluate(() => {
     Object.assign(window.__form, { name: 'Academia Nova da Joana', address: 'Rua Nova', numero: '10', bairro: 'Butantã', cidade: 'São Paulo', phone: '11977770000', modalidades: ['locacao'], quadras: { saibro_coberta: 2 } });
     render();
   });
+  await irParte(page, 'revisar');
   await page.click('#register-submit');
   await page.waitForTimeout(900);
   const enviada = await page.evaluate(() => ({
@@ -332,10 +345,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   t = await tela(page);
   ok(t.aba === 'inicio', 'menu do site abre o GuiaTennis Parceiros');
   await page.evaluate(() => { state.page = 'search'; state.view = 'list'; render(); });
-  await page.click('#fab-add');
-  await page.waitForTimeout(300);
-  t = await tela(page);
-  ok(t.aba === 'cadastro' && t.link === '/parceiros/cadastro', 'o "+" da busca leva ao cadastro dos parceiros, que procura antes de cadastrar');
+  // Pedido do Breno em 01/10/2026: sem o "+" no canto da busca.
+  ok(await page.evaluate(() => !document.querySelector('#fab-add') && ![...document.querySelectorAll('.fab')].some(b => b.textContent.trim() === '+')), 'a busca não tem mais o botão "+" no canto');
   await browser.close();
 
   // ---- caixa de preço da busca: só preço e botão ----

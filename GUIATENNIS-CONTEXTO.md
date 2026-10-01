@@ -30,8 +30,12 @@ teste")
 > (`/parceiros`, seção 3: conta por e-mail, cadastro no modelo do trivago
 > com barra de etapas, código no WhatsApp da ficha, equipe por plano,
 > desempenho por plano, ofertas de plano, rodapé verde), os **links no
-> padrão dos grandes** (seção 3, "Endereços"), o visual mais limpo e o
-> **tempo até agir** no painel do admin (seção 4, `cliques`). Os SQL
+> padrão dos grandes** (seção 3, "Endereços"), o visual mais limpo, o
+> **tempo até agir** no painel do admin (seção 4, `cliques`) e, ainda em
+> 01/10, o **logo de três riscos em todo lugar**, o **menu no jeito do
+> trivago**, a **home com a última busca, as parecidas e as chamadas**, as
+> **preferências de busca** e o **cadastro passo a passo** (seção 3, "Menu,
+> home pessoal e cadastro passo a passo"). Os SQL
 > `20260930120000` a `20261001130000` entraram sozinhos no banco de teste
 > pelo PR. Prévia: `deploy-preview-5--stately-salamander-652f72.netlify.app`.
 > Falta o Breno testar na prévia (seção 11, primeiro item) e dizer "pode
@@ -174,6 +178,14 @@ cobra taxa e não fica no meio** da negociação.
     e contato de academia (e-mail/WhatsApp de conta, WhatsApp de academia)
     não avaliam nenhuma academia; só respondem as da própria. Quem garante
     é o banco (gatilho `avaliacao_de_parceiro`).
+19. **O logo é um desenho só** (pedido de 01/10/2026: "não deixe diferente
+    onde tem a logo"): raquete com a bola no meio, **três riscos** saindo
+    pela esquerda e cabo reto com a ponta. Sai de `logoDesenho()` no
+    cabeçalho, rodapé, GuiaTennis Parceiros e QR code; os ícones, a imagem de
+    compartilhar, a 404 e as imagens do WhatsApp saem do mesmo desenho pelo
+    `divulgacao/gerar-imagens.js`. Mudou o logo? Rode o gerador.
+20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
+    e no rodapé (última coluna) — pedido de 01/10/2026.
 
 ## 3. Como é feito
 
@@ -189,8 +201,57 @@ só. Sem build, sem npm, sem framework. Abrir o arquivo já é rodar o site.
 - **Navegador (`localStorage`):** favoritos (`guiatennis_favorites_v1`),
   comparação (`guiatennis_compare_v1`), vistas recentemente
   (`guiatennis_recentes_v1`), quem está avaliando
-  (`guiatennis_visitor_v1`) e o cache do "o que tem por perto"
-  (`guiatennis_perto_v1`).
+  (`guiatennis_visitor_v1`), o cache do "o que tem por perto"
+  (`guiatennis_perto_v1`) e, desde 01/10/2026, a última busca
+  (`guiatennis_ultima_busca_v1`), as academias chamadas
+  (`guiatennis_chamadas_v1`) e as preferências de busca
+  (`guiatennis_preferencias_v1`). Nada disso vai para o banco.
+
+### Menu, home pessoal e cadastro passo a passo (pedido do Breno em 01/10/2026)
+- **Menu no jeito do trivago** (`renderMenu`): "Menu" no meio com a seta de
+  voltar; Início, Buscar quadra, Comparar; **Minhas quadras** (Favoritas,
+  Vistas recentemente, Academias que você chamou — com a contagem na
+  direita); **Preferências** (Preferências de busca, com a cidade na
+  direita); **Suporte** (Como funciona, Perguntas frequentes, Por que o
+  GuiaTennis, Termos, Privacidade, GuiaTennis Parceiros "para academias");
+  **Fale com a gente** (WhatsApp, Instagram, E-mail) por último. As três
+  listas abrem a folha "Minhas quadras" (`renderListaSheet`, abas
+  Favoritas/Vistas/Chamadas, com "Apagar o histórico"/"Apagar a lista").
+- **Home pessoal** (como "Visualizações recentes" e "Ofertas com base nas
+  suas pesquisas recentes" do trivago): "Vistas recentemente" começa pelo
+  cartão da **última busca** (lugar, o que procura, piso/cobertura e a
+  lupa; um toque refaz a busca com os filtros — `refazerUltimaBusca`, link
+  `/busca?q=…`); "Com base na sua última busca" (`academiasParecidas`: até 8
+  academias a até 50 km de onde buscou, com os mesmos filtros, primeiro as
+  ainda não vistas; sem busca, "Perto de <cidade das preferências>");
+  "Academias que você chamou" ("Você chamou no WhatsApp · hoje"). Depois
+  vêm Recomendadas e o resto. A academia chamada é lembrada em
+  `trackClick` antes do `naoConta()` — fica no aparelho até para o admin,
+  e o banco continua sem receber nada do admin.
+- **Preferências de busca** (`renderPrefsSheet`): **estado primeiro**
+  (lista dos 27, `ESTADOS`), **depois a cidade** (o campo só abre com o
+  estado; sugere as cidades que têm academia) e "O que você costuma
+  procurar". A cidade escolhida: abre a lista de cidades da home, vira a
+  busca quando a pessoa toca em "Pesquisar" sem digitar e quando abre
+  "Buscar quadra" pelo menu, e ordena as sugestões. Cidade ainda sem
+  academia é localizada no Nominatim ao salvar (ponto arredondado).
+- **Sem o "+" no canto da busca.** O cadastro de academia continua pelo
+  menu, rodapé, bloco da home e ficha (GuiaTennis Parceiros).
+- **Cadastro passo a passo** (`REG_PASSOS`, `regPassoHtml`, `irParaPasso`;
+  como o "Anuncie seu espaço" do Airbnb, o cadastro do Booking para
+  Parceiros e o primeiro acesso do Google Business Profile): uma parte por
+  tela, barra "Parte N de 9", abas de cada parte (com ✓ quando
+  preenchida) e "Voltar"/"Continuar" presos embaixo. Ordem: **Nome e
+  endereço → Modalidade e preço → Quadras (e comodidades) → Contato →
+  Fotos → Horário → Cancelamento → Como chegar → Revisar** — as quatro
+  primeiras são o que o jogador usa para achar e chamar, o que a academia
+  quer (contato) e o que o GuiaTennis precisa para aprovar; as outras
+  completam a ficha ("Pular" quando vazias). Quem pede cadastro só envia
+  na última parte, e "Continuar" cobra o que falta na parte; o admin e a
+  edição salvam de qualquer parte. A revisão mostra ✓/Falta/Opcional e
+  um toque leva à parte; erro no envio volta para a primeira parte que
+  falta (`irParaFalta`). Todos os campos gravam em `window.__form` ao
+  digitar, então trocar de parte não perde nada.
 
 ### Endereços (pedido do Breno em 30/09/2026: "igual os grandes em tudo")
 Como Booking, TripAdvisor, Airbnb e Trivago, cada tela tem o próprio link
@@ -362,8 +423,7 @@ número inventado. Academia logada e admin não contam nas visitas.
 
 **Entradas a partir do site dos jogadores:** menu "Para academias" ›
 "GuiaTennis Parceiros" (logado: "Painel da minha academia"), rodapé,
-bloco da home ("Conhecer o GuiaTennis Parceiros"), o "+" da busca (vai ao
-Cadastro, que procura antes de cadastrar) e a ficha ("Gerencie a ficha no
+bloco da home ("Conhecer o GuiaTennis Parceiros") e a ficha ("Gerencie a ficha no
 GuiaTennis Parceiros" → Cadastro já com a academia). No portal, "Ir para o
 GuiaTennis (jogadores)" volta.
 
@@ -387,7 +447,7 @@ grátis") subiram para junto do endereço e das quadras (`.rcard-selos`).
 | topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` (área da academia: `.conta-*`, `.dono-box`, `.rev-resp*`, `.acesso-*`; GuiaTennis Parceiros: `.pc-*`, perto da linha 1210; no fim, a camada "Acabamento limpo") |
 | 1384 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
 | 1394 | `isAdmin`, `contaAcademia`, `EMAIL_ADMIN`, `DOMINIO_ACESSO`, `LINK_ENTRAR`, `emailDoLogin`, `naoConta` |
-| 1477 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`, `barchart`), `bolaGirando` |
+| 1477 | ícones (inclui `whatsapp`, `mail`, `info`, `barchart`, `historico`, `ajustes`, `ajuda`, `predio`), `bolaGirando`, **logo**: `logoDesenho` (entre `LOGO-INICIO` e `LOGO-FIM`) e `logoSvg()` |
 | ~1510 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano, ordem, distância) |
 | 1572 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
 | 1586 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
@@ -403,14 +463,15 @@ grátis") subiram para junto do endereço e das quadras (`.rcard-selos`).
 | 3698 | **endereços**: `SITE`, `slugTexto`, `idCurto`, `slugDaAcademia`, `caminhoDaFicha`, `caminhoDaRegiao`, `linkDaFicha` |
 | 3762 | **área da academia**: `carregarConta`, `carregarAcessos`, `senhaProvisoria`, `mensagemDoAcesso`, `faltasDaFicha`, `blocoResposta`, `cartaoAvaliacao`, `formDadosConta`, `formTrocarSenha`, `blocoDono`, `blocoAcessoAdmin`, `blocoAcessosPainel`, `abrirConta`, `salvarDadosConta`, `publicarResposta`, `criarAcesso`, `ligarEventosConta` |
 | 4709 | **GuiaTennis Parceiros**: `PC_*`, `irParceiros`, `carregarNumeros`, `graficoColunas`, `pcTopo`, `renderParceiros`, `pcInicio` … `pcConta`, `ligarEventosParceiros` |
-| 5528 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias`, `renderSiteFooter` (cidades) |
+| ~6560 | o que fica no aparelho: `lerUltimaBusca`/`guardarUltimaBusca`, `lerChamadas`/`lembrarChamada`, `ESTADOS`, `lerPreferencias`, `pontoDaPreferencia` |
+| 5528 | `renderCabecalho`, `renderMenu`, `minhasQuadras`, `renderListaSheet`, `renderPrefsSheet`/`salvarPreferencias`, blocos da home (`blocoVistas`, `academiasParecidas`, `blocoChamadas`), `blocoMediasAcademias`, `renderSiteFooter` (cidades) |
 | 5913 | navegação: `PARAMETROS_DA_TELA`, `filtrosNoLink`/`filtrosDoLink`, `urlDoEstado`, `syncUrl`, `sincronizarLink`, `lerLink` (inclui `/parceiros/<página>` e o antigo `?entrar`), `academiaDoSlug`, `regiaoDoLink`, `aplicarLink`, `irParaSecao`, `goHome`/`goSearch`/`abrirRegiao`/`openCourt`, `popstate` |
 | ~6500 | página de busca, filtros, card da academia (`.rcard-selos`, caixa de preço `.offer-precos`) |
 | 6625 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
 | 6785 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
 | 7767 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia`, `htCaminho` (links das regiões) |
 | 8136 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono) |
-| 8428 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
+| 8428 | formulário de cadastro (`blocoPoliticaForm`, `REG_PASSOS`, `regFaltas`, `regPreenchido`, `regPassoHtml`, `renderRegisterSheet`, `irParaPasso`) |
 | 8693 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
 | 8795 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
 | 8879 | `renderLoginSheet` (admin; a academia entra pelo `/parceiros/entrar`), `renderAdminPanel` |
@@ -996,17 +1057,21 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
-e contas por e-mail, tempo até agir — 01/10): **401 verificações, todas
-passando** (160 de antes, 66 da área da academia, 34 dos links, 125 do
-GuiaTennis Parceiros e 16 do tempo até agir), mais
+e contas por e-mail, tempo até agir, logo, menu, home pessoal,
+preferências e cadastro passo a passo — 01/10): **439 verificações, todas
+passando** (160 de antes, 66 da área da academia, 34 dos links, 127 do
+GuiaTennis Parceiros, 16 do tempo até agir e 31 do `menu-e-home.js`), mais
 as 133 do `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
   antes de qualquer outra coisa.**
+- Formulário da ficha nos testes: é uma parte por tela. `irParte(page,
+  "contato")` (do `harness.js`) vai direto para a parte antes de procurar
+  o campo.
 
 - `busca-e-ficha.js` — frase da home, busca registrada com região e CEP
   (e sem as colunas novas), admin não conta, política por modalidade na
@@ -1168,10 +1233,12 @@ está ligado ao GitHub, com a `main` como branch de produção.
 acima ainda funciona — **só o `index.html` não basta**, porque ele aponta
 para os ícones e a imagem de compartilhamento.
 
-As imagens do site (favicons, ícone do iPhone, `og-image.png`) foram
-geradas a partir do `LOGO_SVG` com Playwright, num script que ficou num
-chat antigo e se perdeu. Para refazer, usar `divulgacao/gerar-imagens.js`
-como modelo (seção 12).
+As imagens do site (favicons, ícone do iPhone, `og-image.png`) e o logo da
+`404.html` saem do `logoDesenho` pelo `divulgacao/gerar-imagens.js`
+(desde 01/10/2026; regra 19). A `og-image.png` é o logo com o nome
+GUIATENNIS no meio de um fundo creme, 1200×630 — a que o Breno mandou.
+O ícone do iPhone e o perfil do WhatsApp são quadrados (o aparelho
+arredonda ou corta em círculo).
 
 ## 8. Referências de design
 
@@ -1196,6 +1263,17 @@ como modelo (seção 12).
   responsável + "sou representante autorizado"), Booking extranet (dados do
   responsável e CNPJ para cobrança futura) e o QR code de avaliação na
   recepção.
+- **Menu e home pessoal (01/10/2026):** trivago — menu em tela com "Menu"
+  no meio, grupos em negrito, ícone de traço e valor na direita
+  ("Minha trivago", "Viagens: Favoritos, Visualizações recentes, Reservas",
+  "Preferências de pesquisa", "Suporte", "trivago para hoteleiros"); home
+  com "Visualizações recentes" começando pela última pesquisa e "Ofertas
+  com base nas suas pesquisas recentes".
+- **Cadastro passo a passo (01/10/2026):** Airbnb ("Anuncie seu espaço":
+  uma pergunta por tela, barra de progresso, Voltar/Avançar), Booking para
+  Parceiros (o essencial primeiro, revisão com o que falta antes de
+  enviar) e Google Business Profile (nome, local e contato antes de
+  horário e fotos; na edição, partes separadas).
 - **GuiaTennis Parceiros:** trivago Business Studio (site separado para o
   hoteleiro, números da página, planos que não mexem na posição), Booking
   para Parceiros (apresentação com benefícios, "como funciona", perguntas
@@ -1365,7 +1443,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) Tempo até agir: segundos até a primeira busca e até chamar, no painel do admin   ← PR #5, 01/10
+(a seguir) Logo de três riscos em todo lugar, menu do trivago, home pessoal, preferências e cadastro passo a passo   ← PR #5, 01/10
+1e2f7d2 Tempo até agir: segundos até a primeira busca e até chamar, no painel do admin   ← PR #5, 01/10
 d0b7b1f Rodapé no verde do GuiaTennis   ← PR #5, 01/10
 f9d34e9 Parceiros: benefícios que vendem mais, como funciona em 4 passos e rodapé sem repetir   ← PR #5, 01/10
 b791da7 Cadastro como o do trivago e código no WhatsApp da academia   ← PR #5, 01/10
@@ -1469,6 +1548,19 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
+- **Testar na prévia o pedido de 01/10/2026** (aba anônima, celular): (1) a
+  logo de três riscos no topo, no rodapé, no QR code (admin › ficha › QR) e
+  no ícone da aba; o link do site mandado no WhatsApp mostra a imagem nova
+  (o WhatsApp guarda a antiga por um tempo); (2) buscar um bairro, abrir uma
+  academia e tocar no WhatsApp dela; voltar ao início: "Vistas
+  recentemente" começa pela busca, depois "Com base na sua última busca" e
+  "Academias que você chamou"; (3) menu › Preferências de busca: estado,
+  depois cidade, salvar; tocar em "Pesquisar" sem digitar abre a cidade;
+  (4) sem o "+" na busca; (5) admin › editar uma academia: uma parte por
+  tela, abas em cima, Voltar/Continuar/Salvar embaixo. Depois do merge,
+  trocar a foto do perfil do WhatsApp Business pela
+  `divulgacao/whatsapp-perfil.png` nova.
+
 - **Testar a área da academia na prévia do PR (30/09/2026)** — no banco de
   teste: (1) entrar como admin (usuário admin do projeto de teste), abrir a
   ficha "Quadra Exemplo Moema", bloco "Acesso da academia" → "Criar usuário
@@ -1569,13 +1661,14 @@ Os dados para o Google levam o `telephone`.
 **Sem mensagens automáticas** (saudação, ausência, respostas rápidas): o
 Breno não gosta, responde ele mesmo.
 
-Imagens em `divulgacao/` (fora do ar), geradas do `LOGO_SVG` por
-`divulgacao/gerar-imagens.js`: `whatsapp-perfil.png` (1080×1080, raquete
-no meio para o corte redondo) e `whatsapp-capa.png` (1600×900; texto em
-cima e nas laterais, porque a foto redonda cobre o meio de baixo). No
-perfil a raquete é redesenhada para tamanho grande — encordoamento
-completo e pescoço com os dois braços; o logo pequeno tem só três cordas
-de cada lado, e o Breno achou que faltavam traços. Na capa, a quadra é
+Imagens em `divulgacao/` (fora do ar), geradas do `logoDesenho` por
+`divulgacao/gerar-imagens.js`: `whatsapp-perfil.png` (1080×1080, o logo
+quadrado, que cabe no corte redondo) e `whatsapp-capa.png` (1600×900; texto em
+cima e nas laterais, porque a foto redonda cobre o meio de baixo). Desde
+01/10/2026 o perfil usa **o mesmo logo do site** (antes era uma raquete
+redesenhada, com um risco curvo só — o Breno pediu o logo igual em todo
+lugar, com os três riscos). **Trocar a foto do perfil do WhatsApp Business
+pela nova.** Na capa, a quadra é
 reta, vista de trás da linha de fundo, em perspectiva com as medidas
 oficiais (a primeira versão, inclinada, pareceu torta). O
 gerador busca a fonte do Google pelo `curl`, que passa pelo proxy daqui.

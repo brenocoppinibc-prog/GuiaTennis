@@ -1262,8 +1262,6 @@
   .reg-secoes::-webkit-scrollbar { display: none; }
   .reg-secoes button { flex-shrink: 0; white-space: nowrap; border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
   .reg-secoes button:hover { border-color: var(--green); color: var(--green); }
-  .reg-ancora { scroll-margin-top: 70px; }
-  #register-overlay .reg-ancora { font-size: 15px; }
   .pc-linha { margin: 18px 4px 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
   .pc-linha-link { display: inline; background: none; border: none; padding: 0; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--green) !important; text-decoration: none; cursor: pointer; }
   .pc-linha-link:hover { text-decoration: underline; }
@@ -1486,6 +1484,79 @@
   @media (min-width: 1000px) { .pc-barra-baixo { display: none; } .pc-logado .pc-rodape .rodape-faixa { padding-bottom: 34px; } }
   .ba-btn { display: block; text-align: center; text-decoration: none; }
 
+  /* ================= Menu no jeito do trivago (01/10/2026) =================
+     Título "Menu" no meio, grupos com título em negrito, ícone de traço e o
+     valor na direita. Só o menu do site: o dos parceiros tem o próprio. */
+  #menu-overlay .menu-drawer { width: min(420px, 100vw); padding: 8px 18px calc(28px + env(safe-area-inset-bottom)); }
+  #menu-overlay .menu-topo { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; border-bottom: none; padding: 6px 0 10px; }
+  #menu-overlay .menu-fechar { width: 44px; height: 44px; background: none; display: flex; align-items: center; justify-content: center; }
+  .menu-titulo { margin: 0; text-align: center; font-size: 18px; font-weight: 700; color: var(--text); }
+  #menu-overlay .menu-grupo { text-transform: none; letter-spacing: 0; font-size: 17px; font-weight: 700; color: var(--text); margin: 22px 0 2px; padding: 0 2px; }
+  #menu-overlay .menu-item { gap: 18px; padding: 14px 2px; font-size: 16px; font-weight: 400; border-radius: 0; }
+  #menu-overlay .menu-item:hover { background: var(--bg-alt); }
+  .menu-valor { margin-left: auto; padding-left: 12px; color: var(--muted); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 48%; }
+  #menu-overlay .menu-rodape { margin-top: 22px; }
+
+  /* Blocos pessoais da home: a última busca como primeiro cartão das vistas,
+     com fundo cinza e a lupa, como no trivago. */
+  .home-sec-sub { margin: -8px 0 14px; color: var(--muted); font-size: 14px; }
+  .mini-busca { background: var(--bg-alt); box-shadow: none; border-color: transparent; position: relative; }
+  .mini-busca .mini-body { padding-right: 46px; }
+  .mini-busca-ic { position: absolute; top: 14px; right: 14px; }
+  .mini-busca-l { margin: 6px 0 0; font-size: 14px; color: var(--text); }
+  .mini-extra { margin: 8px 0 0; font-size: 13px; color: var(--green); font-weight: 500; }
+
+  /* Minhas quadras: abas e linhas com foto, nome e região. */
+  .lista-abas { display: flex; gap: 8px; overflow-x: auto; margin: 14px 0 6px; scrollbar-width: none; }
+  .lista-abas::-webkit-scrollbar { display: none; }
+  .lista-aba { flex-shrink: 0; border: 1px solid var(--border); background: var(--card); border-radius: 999px; padding: 8px 14px; font-family: var(--fonte-texto); font-size: 14px; color: var(--text); cursor: pointer; }
+  .lista-aba.on { background: var(--green); border-color: var(--green); color: #fff; }
+  .lista-linha { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); color: inherit; text-decoration: none; }
+  .lista-foto { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+  .lista-busca-ic { width: 64px; height: 64px; border-radius: 10px; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .lista-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .lista-txt strong { font-size: 16px; font-weight: 600; }
+  .lista-txt span { font-size: 14px; color: var(--muted); }
+  .lista-txt .lista-nota { color: var(--green); font-weight: 500; }
+  .lista-txt .lista-extra { color: var(--green); }
+  .lista-titulo { margin: 14px 0 0; font-size: 15px; font-weight: 600; }
+  .lista-vazia { color: var(--muted); font-size: 15px; margin: 22px 0; }
+  .lista-limpar { margin-top: 18px; background: none; border: none; padding: 8px 0; font-family: var(--fonte-texto); font-size: 14px; color: var(--muted); text-decoration: underline; cursor: pointer; }
+  .pref-cidades { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+  /* Cadastro passo a passo: progresso em cima, uma parte por tela e a barra
+     de Voltar/Continuar presa embaixo, como no Airbnb e no Booking. */
+  #register-overlay .sheet { display: flex; flex-direction: column; }
+  #register-overlay .reg-passos-tela { width: 100%; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; padding-bottom: 0; }
+  .reg-cabeca { margin: 2px 52px 0 0; font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reg-contexto { margin: 12px 0 0; font-size: 14px; }
+  .reg-progresso-t { margin: 14px 0 6px; font-size: 13px; color: var(--muted); }
+  .reg-progresso { height: 6px; border-radius: 999px; background: var(--bg-alt); overflow: hidden; }
+  .reg-progresso i { display: block; height: 100%; background: var(--green); border-radius: 999px; transition: width 0.25s ease; }
+  #register-overlay .reg-secoes { position: static; margin: 14px -22px 0; border-bottom: none; padding: 4px 22px 6px; }
+  .reg-secoes button.on { background: var(--green); border-color: var(--green); color: #fff; }
+  .reg-titulo { margin: 22px 0 0; font-size: 28px; line-height: 1.15; }
+  .reg-porque { margin: 8px 0 4px; }
+  .reg-passo { padding-bottom: 24px; }
+  .reg-passo > .field-label:first-child, .reg-passo > label.field-label:first-child { margin-top: 18px; }
+  .reg-rodape { position: sticky; bottom: 0; margin: auto -22px 0; padding: 12px 22px calc(12px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 4; }
+  .reg-rodape-dir { display: flex; gap: 10px; flex: 1; justify-content: flex-end; }
+  .reg-rodape .cta-btn { margin: 0; flex: 0 1 auto; padding-left: 22px; padding-right: 22px; white-space: nowrap; }
+  @media (max-width: 400px) {
+    .reg-rodape { gap: 8px; padding-left: 16px; padding-right: 16px; margin-left: -22px; margin-right: -22px; }
+    .reg-rodape-dir { gap: 8px; }
+    .reg-rodape .cta-btn { padding-left: 13px; padding-right: 13px; font-size: 14px; }
+  }
+  .reg-voltar { background: none; border: none; padding: 10px 2px; font-family: var(--fonte-texto); font-size: 15px; font-weight: 600; color: var(--text); text-decoration: underline; cursor: pointer; }
+  .reg-revisao { margin-top: 14px; border-top: 1px solid var(--border); }
+  .reg-rev-linha { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--border); padding: 14px 0; font-family: var(--fonte-texto); cursor: pointer; color: var(--text); }
+  .reg-rev-sinal { width: 28px; height: 28px; border-radius: 999px; background: var(--bg-alt); color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+  .reg-rev-sinal.ok { background: var(--green-soft); color: var(--green); }
+  .reg-rev-sinal.falta { background: #FBE9E7; color: var(--red); }
+  .reg-rev-t { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .reg-rev-t strong { font-size: 15px; font-weight: 600; }
+  .reg-rev-t span { font-size: 13px; color: var(--muted); }
+
 </style>
 </head>
 <body>
@@ -1554,6 +1625,10 @@ function icon(name, size, color) {
     info: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.8" r="0.4"/>',
     chevron: '<polyline points="9 5 16 12 9 19"/>',
     chevronLeft: '<polyline points="15 5 8 12 15 19"/>',
+    historico: '<path d="M4.3 13.5A8 8 0 1 0 6.4 6.3"/><polyline points="3.6 3.8 4.6 8.4 9.1 7.2"/><polyline points="12 7.8 12 12 14.8 13.8"/>',
+    ajustes: '<path d="M4 7h2.7M11.3 7H20M4 17h8.7M17.3 17H20"/><circle cx="9" cy="7" r="2.3"/><circle cx="15" cy="17" r="2.3"/>',
+    ajuda: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.9.7c0 1.7-2.5 2.1-2.5 3.8"/><circle cx="12" cy="16.9" r="0.5"/>',
+    predio: '<rect x="5" y="3" width="14" height="18" rx="1.2"/><path d="M9 7h1.5M13.5 7H15M9 10.5h1.5M13.5 10.5H15M9 14h1.5M13.5 14H15M10.5 21v-3h3v3"/>',
     sparkle: '<path d="M12 3l1.7 5.1L19 10l-5.3 1.9L12 17l-1.7-5.1L5 10l5.3-1.9z"/><path d="M18.4 15.4l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/>',
     bubble: '<path d="M21 11.5a8 8 0 0 1-8 8H8.5L4 22l1-3.7A8 8 0 1 1 21 11.5z"/>',
     map: '<polygon points="1.5 6 8.5 3 15.5 6 22.5 3 22.5 18 15.5 21 8.5 18 1.5 21"/><line x1="8.5" y1="3" x2="8.5" y2="18"/><line x1="15.5" y1="6" x2="15.5" y2="21"/>',
@@ -1593,35 +1668,47 @@ function icon(name, size, color) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${paths[name] || ""}</svg>`;
 }
 
-const LOGO_SVG = `
-<svg class="logo-mark" width="46" height="46" viewBox="0 0 1080 1080">
-<defs>
-<linearGradient id="bgGradHeader" x1="0" y1="0" x2="1080" y2="1080" gradientUnits="userSpaceOnUse">
-<stop offset="0" stop-color="#2A5C4B"/>
-<stop offset="1" stop-color="#153229"/>
-</linearGradient>
-<clipPath id="headClipHeader">
-<ellipse cx="0" cy="-160" rx="192" ry="252"/>
-</clipPath>
+// O logo, desenhado num lugar só (pedido do Breno em 01/10/2026: "não deixe
+// diferente onde tem a logo"). Raquete inclinada com a bola no meio, três
+// riscos de movimento saindo pela esquerda e o cabo reto com a ponta. O
+// cabeçalho, o menu, o rodapé, o GuiaTennis Parceiros e o QR code usam esta
+// função; o divulgacao/gerar-imagens.js lê o trecho entre LOGO-INICIO e
+// LOGO-FIM para fazer os ícones, a imagem de compartilhar e a 404.
+// LOGO-INICIO
+function logoDesenho(opcoes) {
+  opcoes = opcoes || {};
+  const id = opcoes.id || "logo";
+  const creme = "#F7F4EC", ouro = "#B8933F";
+  // Sem o nome, a raquete ocupa o quadrado; com o nome, sobe e encolhe para
+  // o GUIATENNIS caber embaixo.
+  const [x, y, escala] = opcoes.comNome ? [507, 349, 1] : [500, 425, 1.285];
+  const cordas = [-55, 0, 55].map(c => `<line x1="${c}" y1="-200" x2="${c}" y2="200"/><line x1="-150" y1="${c}" x2="150" y2="${c}"/>`).join("");
+  return `<defs>
+<linearGradient id="${id}-fundo" x1="0" y1="0" x2="1080" y2="1080" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2A5C4B"/><stop offset="1" stop-color="#153229"/></linearGradient>
+<clipPath id="${id}-cabeca"><ellipse rx="146" ry="197"/></clipPath>
 </defs>
-<rect x="0" y="0" width="1080" height="1080" rx="220" fill="url(#bgGradHeader)"/>
-<g transform="translate(540,580) rotate(-15)">
-<rect x="-40" y="150" width="80" height="290" rx="36" fill="#F7F4EC"/>
-<ellipse cx="0" cy="445" rx="42" ry="22" fill="#F7F4EC"/>
-<path d="M-40 190 L-40 150 Q-40 200 0 210 Q40 200 40 150 L40 190 Z" fill="#F7F4EC"/>
-<ellipse cx="0" cy="-160" rx="212" ry="272" fill="none" stroke="#F7F4EC" stroke-width="48"/>
-<g clip-path="url(#headClipHeader)" stroke="#B8933F" stroke-width="6" opacity="0.55">
-<line x1="-190" y1="-160" x2="190" y2="-160"/>
-<line x1="-190" y1="-90" x2="190" y2="-90"/>
-<line x1="-190" y1="-230" x2="190" y2="-230"/>
-<line x1="-70" y1="-410" x2="-70" y2="90"/>
-<line x1="0" y1="-410" x2="0" y2="90"/>
-<line x1="70" y1="-410" x2="70" y2="90"/>
+<rect width="1080" height="1080" rx="${opcoes.quadrado ? 0 : 220}" fill="url(#${id}-fundo)"/>
+<g transform="translate(${x} ${y}) scale(${escala})">
+<path d="M-242 8L-192 -29M-252 59L-192 16M-257 113L-192 64" fill="none" stroke="${ouro}" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+<g transform="rotate(-15)">
+<g clip-path="url(#${id}-cabeca)" stroke="${ouro}" stroke-width="5" opacity="0.6">${cordas}</g>
+<ellipse rx="163" ry="214" fill="none" stroke="${creme}" stroke-width="38"/>
+<rect x="-30" y="224" width="60" height="232" rx="30" fill="${creme}"/>
+<ellipse cy="466" rx="34" ry="16" fill="${creme}"/>
+<circle r="100" fill="${ouro}" stroke="${creme}" stroke-width="8"/>
 </g>
-<path d="M-330 -40 Q-260 -10 -220 -90" fill="none" stroke="#B8933F" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
-<circle cx="0" cy="-160" r="132" fill="#B8933F" stroke="#F7F4EC" stroke-width="10"/>
-</g>
-</svg>`;
+</g>${opcoes.comNome ? `
+<text x="540" y="945" text-anchor="middle" font-family="Arial, Helvetica, 'Liberation Sans', sans-serif" font-weight="700" font-size="90" letter-spacing="1"><tspan fill="${creme}">GUIA</tspan><tspan fill="${ouro}">TENNIS</tspan></text>` : ""}`;
+}
+// LOGO-FIM
+
+// Cada logo na tela ganha ids próprios: com o mesmo id em dois lugares, o
+// degradê some quando o primeiro está escondido (menu fechado).
+let logosNaTela = 0;
+function logoSvg() {
+  logosNaTela += 1;
+  return `<svg class="logo-mark" width="46" height="46" viewBox="0 0 1080 1080" aria-hidden="true">${logoDesenho({ id: "logo" + logosNaTela })}</svg>`;
+}
 
 
 const AMENITY_OPTS = [
@@ -2460,6 +2547,9 @@ function tempoAteAgir(courtId, type) {
 }
 
 function trackClick(courtId, type, detalhe, extras) {
+  // A academia chamada fica na lista do próprio aparelho ("Academias que você
+  // chamou"), mesmo com o admin conectado: isso não vai para o banco.
+  if (courtId && TIPOS_DE_CONTATO.includes(type)) lembrarChamada(courtId, type);
   // Quem está logado não entra na conta: nem acesso, nem busca, nem clique
   // na ficha — o admin testando e a academia olhando a própria ficha.
   if (naoConta()) return;
@@ -2582,6 +2672,16 @@ let state = {
   faqOpen: {},
   faqSiteOpen: {},
   showMenu: false,
+  // Folhas do menu: "Minhas quadras" (favoritas, vistas, chamadas) e as
+  // preferências de busca.
+  lista: null,
+  showPrefs: false,
+  // Cadastro passo a passo: qual formulário está aberto e em que parte.
+  regForm: null,
+  regPasso: 0,
+  regPassoErro: "",
+  prefErro: "",
+  prefSalvando: false,
   qrCourt: null,
   perto: {},
   page: "home",
@@ -3056,7 +3156,6 @@ function render() {
         <button class="fab fab-admin" id="fab-admin" title="Solicitações pendentes">
           ${icon('clipboard',20,'var(--green)')}${pending.length ? `<span class="fab-badge">${pending.length}</span>` : ""}
         </button>` : ""}
-      ${state.page === "search" && state.view !== "map" ? `<button class="fab" id="fab-add">+</button>` : ""}
     </div>
 
     ${state.page === "search" ? `
@@ -3076,6 +3175,8 @@ function render() {
     ${renderCmpPicker()}
     ${renderQrSheet()}
     ${renderMenu()}
+    ${renderListaSheet()}
+    ${renderPrefsSheet()}
     ${renderLightbox()}
   `;
 
@@ -5307,7 +5408,7 @@ function textoDoPeriodo(dias) {
 // ---- cabeçalho, menu e rodapé do site dos parceiros ----
 
 function pcMarca() {
-  return `<a href="/parceiros" class="pc-marca" data-pc="inicio" aria-label="GuiaTennis Parceiros, início">${LOGO_SVG}<span class="pc-marca-t display">GuiaTennis</span><span class="pc-selo">Parceiros</span></a>`;
+  return `<a href="/parceiros" class="pc-marca" data-pc="inicio" aria-label="GuiaTennis Parceiros, início">${logoSvg()}<span class="pc-marca-t display">GuiaTennis</span><span class="pc-selo">Parceiros</span></a>`;
 }
 
 function pcTopo() {
@@ -6313,7 +6414,7 @@ function renderCabecalho() {
   return `
     <div class="home-head">
       <button type="button" class="home-brand" id="brand-home">
-        ${LOGO_SVG}
+        ${logoSvg()}
         <h1 class="display">GuiaTennis</h1>
       </button>
       <button type="button" class="menu-btn" id="menu-btn" aria-label="Abrir menu${state.compareList.length ? ` (${state.compareList.length} na comparação)` : ""}" aria-expanded="${state.showMenu ? "true" : "false"}">
@@ -6324,48 +6425,210 @@ function renderCabecalho() {
   `;
 }
 
+// Menu no jeito do trivago (pedido do Breno em 01/10/2026): grupos com
+// título, ícone de traço na esquerda e o valor na direita ("Preferências de
+// busca · São Paulo, SP"). Primeiro o que é da pessoa (favoritas, vistas,
+// chamadas e preferências), depois a ajuda; o contato do GuiaTennis fica
+// lá embaixo.
 function renderMenu() {
   if (!state.showMenu) return "";
-  const item = (id, texto, ic) => `<button type="button" class="menu-item" data-menu="${id}">${icon(ic, 17, 'var(--green)')}<span>${texto}</span></button>`;
+  const pref = lerPreferencias();
+  const q = minhasQuadras();
+  const item = (id, texto, ic, valor) => `<button type="button" class="menu-item" data-menu="${id}">${icon(ic, 22, 'var(--text)')}<span>${texto}</span>${valor !== undefined && valor !== "" ? `<span class="menu-valor">${esc(valor)}</span>` : ""}</button>`;
   return `
     <div class="overlay open menu-overlay" id="menu-overlay">
       <aside class="menu-drawer" role="dialog" aria-label="Menu">
         <div class="menu-topo">
-          <span class="menu-marca">${LOGO_SVG}<strong class="display">GuiaTennis</strong></span>
-          <button type="button" class="menu-fechar" id="menu-close" aria-label="Fechar menu">✕</button>
+          <button type="button" class="menu-fechar" id="menu-close" aria-label="Fechar menu">${icon('chevronLeft', 22, 'var(--text)')}</button>
+          <p class="menu-titulo">Menu</p>
+          <span class="menu-topo-lado" aria-hidden="true"></span>
         </div>
 
-        <p class="menu-grupo">Navegar</p>
+        ${contaAcademia ? item("conta", "Painel da minha academia", "key") : ""}
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
-        <button type="button" class="menu-item" data-menu="comparar">${icon('list', 17, 'var(--green)')}<span>Comparar academias</span>${state.compareList.length ? `<span class="menu-item-conta">${state.compareList.length}</span>` : ""}</button>
+        ${item("comparar", "Comparar academias", "list", state.compareList.length || "")}
 
-        <p class="menu-grupo">Entender o guia</p>
+        <p class="menu-grupo">Minhas quadras</p>
+        ${item("favoritas", "Favoritas", "heart", q.favoritas.length || "")}
+        ${item("vistas", "Vistas recentemente", "historico", q.vistas.length || "")}
+        ${item("chamadas", "Academias que você chamou", "phone", q.chamadas.length || "")}
+
+        <p class="menu-grupo">Preferências</p>
+        ${item("preferencias", "Preferências de busca", "ajustes", textoDaPreferencia(pref) || "Escolher")}
+
+        <p class="menu-grupo">Suporte</p>
         ${item("como", "Como funciona", "play")}
+        ${item("duvidas", "Perguntas frequentes", "ajuda")}
         ${item("porque", "Por que o GuiaTennis", "sparkle")}
-        ${item("duvidas", "Perguntas frequentes", "bubble")}
-
-        <p class="menu-grupo">Para academias</p>
-        ${contaAcademia ? item("conta", "Painel da minha academia", "key") : item("parceiros", "GuiaTennis Parceiros", "sparkle")}
-
-        <p class="menu-grupo">Contato</p>
-        ${linksContato("menu-item", 17, "var(--green)")}
-
-        <p class="menu-grupo">Legal</p>
         ${item("termos", "Termos de Uso", "clipboard")}
         ${item("privacidade", "Política de Privacidade", "clipboard")}
+        ${contaAcademia ? "" : item("parceiros", "GuiaTennis Parceiros", "predio", "para academias")}
+
+        <p class="menu-grupo">Fale com a gente</p>
+        ${linksContato("menu-item", 22, "var(--text)")}
 
         <div class="menu-rodape">
           ${isAdmin
-            ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 17, 'var(--muted)')}<span>Sair do modo admin</span></button>`
+            ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 20, 'var(--muted)')}<span>Sair do modo admin</span></button>`
             : contaAcademia
-              ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 17, 'var(--muted)')}<span>Sair da área da academia</span></button>`
-              : `<button type="button" class="menu-item" data-menu="admin">${icon('key', 17, 'var(--muted)')}<span>Área do GuiaTennis</span></button>`}
+              ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 20, 'var(--muted)')}<span>Sair da área da academia</span></button>`
+              : `<button type="button" class="menu-item" data-menu="admin">${icon('key', 20, 'var(--muted)')}<span>Área do GuiaTennis</span></button>`}
           <p class="menu-versao">guiatennis.com.br</p>
         </div>
       </aside>
     </div>
   `;
+}
+
+// As três listas da pessoa, só com academias que ainda estão no site.
+function minhasQuadras() {
+  const acha = id => state.allCourts.find(c => c.id === id);
+  return {
+    favoritas: loadFavorites().map(acha).filter(Boolean).reverse(),
+    vistas: loadRecents().map(acha).filter(Boolean),
+    chamadas: lerChamadas().map(x => ({ ...x, c: acha(x.id) })).filter(x => x.c),
+  };
+}
+
+const LISTAS = {
+  favoritas: { titulo: "Favoritas", aba: "Favoritas", vazio: "Toque no coração de uma academia para guardar aqui." },
+  vistas: { titulo: "Vistas recentemente", aba: "Vistas", vazio: "As academias que você abrir aparecem aqui." },
+  chamadas: { titulo: "Academias que você chamou", aba: "Chamadas", vazio: "Quando você chamar uma academia pelo WhatsApp, Instagram ou site, ela aparece aqui." },
+};
+
+// Favoritas, vistas e chamadas numa folha só, com abas, como os "Favoritos"
+// e as "Visualizações recentes" do trivago.
+function renderListaSheet() {
+  if (!state.lista || !LISTAS[state.lista]) return "";
+  const q = minhasQuadras();
+  const qual = state.lista;
+  const linhas = qual === "chamadas"
+    ? q.chamadas.map(x => ({ c: decorate(x.c), extra: textoDaChamada(x) }))
+    : q[qual].map(c => ({ c: decorate(c), extra: "" }));
+  const ultima = qual === "vistas" ? lerUltimaBusca() : null;
+  const linha = ({ c, extra }) => {
+    const foto = courtPhotos(c)[0];
+    return `
+      <a class="lista-linha" href="${caminhoDaFicha(c)}" data-open="${c.id}">
+        ${foto ? `<img class="lista-foto" src="${esc(foto)}" alt="" loading="lazy" />` : ""}
+        <span class="lista-txt">
+          <strong>${esc(c.name)}</strong>
+          <span>${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}</span>
+          ${c.appCount ? `<span class="lista-nota">${c.appAvg.toFixed(1).replace(".", ",")} · ${scoreWord(c.appAvg, c.appCount)} (${c.appCount})</span>` : ""}
+          ${extra ? `<span class="lista-extra">${esc(extra)}</span>` : ""}
+        </span>
+        ${icon('chevron', 18, 'var(--muted)')}
+      </a>`;
+  };
+  return `
+    <div class="overlay open" id="lista-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="lista-close" aria-label="Fechar">✕</button>
+        <p class="sheet-title display">Minhas quadras</p>
+        <div class="lista-abas" role="tablist">
+          ${Object.keys(LISTAS).map(k => `<button type="button" role="tab" class="lista-aba ${k === qual ? "on" : ""}" aria-selected="${k === qual}" data-lista="${k}">${LISTAS[k].aba}</button>`).join("")}
+        </div>
+        <p class="lista-titulo">${LISTAS[qual].titulo}</p>
+        ${ultima ? `<a class="lista-linha lista-busca" href="${esc(linkDaUltimaBusca(ultima))}" data-refazer-busca>
+            <span class="lista-busca-ic">${icon('search', 20, 'var(--text)')}</span>
+            <span class="lista-txt"><strong>${esc(textoDaBusca(ultima).lugar)}</strong><span>Sua última busca · ${esc(textoDaBusca(ultima).oQue)}</span></span>
+            ${icon('chevron', 18, 'var(--muted)')}
+          </a>` : ""}
+        ${linhas.length ? linhas.map(linha).join("") : `<p class="lista-vazia">${LISTAS[qual].vazio}</p>`}
+        ${(qual === "vistas" && (linhas.length || ultima)) || (qual === "chamadas" && linhas.length)
+          ? `<button type="button" class="lista-limpar" id="lista-limpar">${qual === "vistas" ? "Apagar o histórico" : "Apagar a lista"}</button>` : ""}
+      </div></div>
+    </div>`;
+}
+
+// Preferências de busca, como as "Preferências de pesquisa" do trivago:
+// primeiro o estado, depois a cidade (a cidade só abre com o estado
+// escolhido), e o que a pessoa costuma procurar. Ficam neste aparelho.
+function renderPrefsSheet() {
+  if (!state.showPrefs) return "";
+  const r = window.__pref || {};
+  const comAcademia = cidadesComQuadra().map(c => c.nome);
+  return `
+    <div class="overlay open" id="pref-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="pref-close" aria-label="Fechar">✕</button>
+        <p class="sheet-title display">Preferências de busca</p>
+        <p class="subtitle" style="margin-top:4px">Com elas, o GuiaTennis já abre na sua cidade. Ficam só neste aparelho.</p>
+
+        <label class="field-label" for="pref-uf">Estado</label>
+        <select class="form-field campo-select" id="pref-uf" style="margin-top:0">
+          <option value="" ${r.uf ? "" : "selected"}>Escolha o estado</option>
+          ${ESTADOS.map(([uf, nome]) => `<option value="${uf}" ${r.uf === uf ? "selected" : ""}>${nome}</option>`).join("")}
+        </select>
+
+        <label class="field-label" for="pref-cidade">Cidade</label>
+        <input class="form-field" id="pref-cidade" style="margin-top:0" list="pref-cidades" autocomplete="address-level2"
+               placeholder="${r.uf ? "Digite a cidade" : "Escolha o estado primeiro"}" value="${esc(r.cidade || "")}" ${r.uf ? "" : "disabled"} />
+        <datalist id="pref-cidades">${comAcademia.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
+        ${r.uf && comAcademia.length ? `
+          <p class="fgroup-note">Cidades com academia no guia:</p>
+          <div class="pref-cidades">${comAcademia.slice(0, 8).map(n => `<button type="button" class="chip ${mesmaCidade(n, r.cidade) ? "active" : ""}" data-pref-cidade="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
+
+        <label class="field-label" for="pref-modalidade">O que você costuma procurar</label>
+        <select class="form-field campo-select" id="pref-modalidade" style="margin-top:0">
+          <option value="" ${r.modalidade ? "" : "selected"}>Aulas e locação</option>
+          ${MODALIDADE_OPTS.map(m => `<option value="${m.key}" ${r.modalidade === m.key ? "selected" : ""}>${m.label}</option>`).join("")}
+        </select>
+
+        ${state.prefErro ? `<p class="status-line status-error">${icon('warning', 13)} ${esc(state.prefErro)}</p>` : ""}
+        <div class="cta-col" style="margin-top:18px">
+          <button type="button" class="cta-btn cta-primary" id="pref-salvar" ${state.prefSalvando ? "disabled" : ""}>${state.prefSalvando ? bolaGirando(16) + " Salvando" : "Salvar"}</button>
+          ${lerPreferencias().cidade ? `<button type="button" class="cta-btn cta-secondary" id="pref-apagar">Apagar as preferências</button>` : ""}
+        </div>
+      </div></div>
+    </div>`;
+}
+
+function abrirPreferencias() {
+  const p = lerPreferencias();
+  window.__pref = { uf: p.uf || "", cidade: p.cidade || "", modalidade: p.modalidade || "" };
+  state.prefErro = "";
+  state.prefSalvando = false;
+  state.showPrefs = true;
+  render();
+}
+
+async function salvarPreferencias() {
+  const r = window.__pref || {};
+  const uf = r.uf || "";
+  let cidade = String(r.cidade || "").trim().replace(/\s+/g, " ");
+  if (!uf || !cidade) { state.prefErro = !uf ? "Escolha o estado." : "Digite a cidade."; render(); return; }
+  // Com academia no guia, usa o nome do jeito que está no guia.
+  const doGuia = cidadesComQuadra().find(c => mesmaCidade(c.nome, cidade));
+  if (doGuia) cidade = doGuia.nome;
+  const p = { uf, cidade, modalidade: r.modalidade || "" };
+  // Cidade ainda sem academia: o mapa diz onde ela fica, para sugerir as
+  // academias mais perto. Se o mapa não responder, salva assim mesmo.
+  if (!doGuia) {
+    state.prefSalvando = true;
+    render();
+    try {
+      const nomeUf = (ESTADOS.find(e => e[0] === uf) || [])[1] || uf;
+      const g = await geocodeAddress(`${cidade}, ${nomeUf}, Brasil`);
+      p.lat = pontoAproximado(g.lat);
+      p.lng = pontoAproximado(g.lng);
+    } catch (e) { diag(`preferências: não achei ${cidade}/${uf} no mapa (${e.message})`); }
+  }
+  gravarLocal(PREFERENCIAS_KEY, p);
+  state.homeCity = null;
+  if (!state.origin && !state.modalidadeFilters.length && p.modalidade) state.modalidadeFilters = [p.modalidade];
+  state.prefSalvando = false;
+  state.showPrefs = false;
+  render();
+}
+
+// O "O que você costuma procurar" já vem escolhido na busca da home.
+function aplicarPreferenciaNaBusca() {
+  const p = lerPreferencias();
+  if (p.modalidade && !state.modalidadeFilters.length && MODALIDADE_OPTS.some(m => m.key === p.modalidade)) {
+    state.modalidadeFilters = [p.modalidade];
+  }
 }
 
 // ---------- blocos da página inicial ----------
@@ -6550,6 +6813,102 @@ function pushRecent(id) {
   try { localStorage.setItem(RECENTS_KEY, JSON.stringify(next)); } catch {}
 }
 
+// ---------- o que fica só no aparelho da pessoa ----------
+// Como o trivago e o Booking: a última busca, as academias que a pessoa já
+// chamou e as preferências de busca ficam no navegador dela e voltam na
+// página inicial e no menu. Nada disso vai para o banco (Política de
+// Privacidade, "Favoritos, buscas e preferências").
+function lerLocal(chave, padrao) {
+  try { const v = JSON.parse(localStorage.getItem(chave) || "null"); return v === null ? padrao : v; }
+  catch { return padrao; }
+}
+function gravarLocal(chave, valor) {
+  try { localStorage.setItem(chave, JSON.stringify(valor)); } catch {}
+}
+
+// A última busca, para refazer com um toque ("Vistas recentemente") e para
+// sugerir academias parecidas. Guarda o que a pessoa digitou, a região achada,
+// o ponto arredondado e os filtros de modalidade, piso e cobertura.
+const ULTIMA_BUSCA_KEY = "guiatennis_ultima_busca_v1";
+function lerUltimaBusca() {
+  const b = lerLocal(ULTIMA_BUSCA_KEY, null);
+  return b && typeof b === "object" && (b.termo || b.cidade || b.bairro) ? b : null;
+}
+function guardarUltimaBusca(geo, termo) {
+  if (!geo) return;
+  gravarLocal(ULTIMA_BUSCA_KEY, {
+    termo: String(termo || "").slice(0, 80),
+    bairro: geo.bairro || "",
+    cidade: geo.cidade || "",
+    lat: pontoAproximado(geo.lat),
+    lng: pontoAproximado(geo.lng),
+    modalidades: state.modalidadeFilters.slice(),
+    pisos: state.pisoFilters.slice(),
+    cobertura: state.coberturaFilters.slice(),
+    em: Date.now(),
+  });
+}
+function textoDaBusca(b) {
+  const lugar = [b.bairro, b.cidade].filter(Boolean).join(", ") || b.termo;
+  const oQue = b.modalidades && b.modalidades.length === 1
+    ? (MODALIDADE_OPTS.find(m => m.key === b.modalidades[0]) || {}).label
+    : "Aulas e locação";
+  const detalhes = [...rotulosNaOrdem(PISO_OPTS, b.pisos || []), ...rotulosNaOrdem(COBERTURA_OPTS, b.cobertura || [])];
+  return { lugar, oQue, detalhes: detalhes.join(" · ") };
+}
+
+// As academias que a pessoa já chamou (WhatsApp, Instagram ou site), a mais
+// recente primeiro — como as "Reservas" do trivago.
+const CHAMADAS_KEY = "guiatennis_chamadas_v1";
+function lerChamadas() {
+  const v = lerLocal(CHAMADAS_KEY, []);
+  return Array.isArray(v) ? v.filter(x => x && x.id) : [];
+}
+function lembrarChamada(id, tipo) {
+  const lista = [{ id, tipo, em: Date.now() }, ...lerChamadas().filter(x => x.id !== id)].slice(0, 12);
+  gravarLocal(CHAMADAS_KEY, lista);
+}
+const NOME_DO_CONTATO = { whatsapp: "WhatsApp", instagram: "Instagram", site: "site" };
+
+// Preferências de busca: estado, depois cidade, e o que a pessoa costuma
+// procurar. A cidade preferida abre a lista de cidades da home, vira a busca
+// quando a pessoa toca em "Pesquisar" sem digitar e ordena as sugestões.
+const PREFERENCIAS_KEY = "guiatennis_preferencias_v1";
+const ESTADOS = [
+  ["AC", "Acre"], ["AL", "Alagoas"], ["AP", "Amapá"], ["AM", "Amazonas"], ["BA", "Bahia"],
+  ["CE", "Ceará"], ["DF", "Distrito Federal"], ["ES", "Espírito Santo"], ["GO", "Goiás"],
+  ["MA", "Maranhão"], ["MT", "Mato Grosso"], ["MS", "Mato Grosso do Sul"], ["MG", "Minas Gerais"],
+  ["PA", "Pará"], ["PB", "Paraíba"], ["PR", "Paraná"], ["PE", "Pernambuco"], ["PI", "Piauí"],
+  ["RJ", "Rio de Janeiro"], ["RN", "Rio Grande do Norte"], ["RS", "Rio Grande do Sul"],
+  ["RO", "Rondônia"], ["RR", "Roraima"], ["SC", "Santa Catarina"], ["SP", "São Paulo"],
+  ["SE", "Sergipe"], ["TO", "Tocantins"],
+];
+function lerPreferencias() {
+  const p = lerLocal(PREFERENCIAS_KEY, {});
+  return p && typeof p === "object" ? p : {};
+}
+function textoDaPreferencia(p) {
+  p = p || lerPreferencias();
+  return [p.cidade, p.uf].filter(Boolean).join(", ");
+}
+// O ponto da cidade preferida: o meio das academias dela, ou o que o mapa
+// achou quando a pessoa salvou (cidade ainda sem academia).
+function pontoDaPreferencia(p) {
+  p = p || lerPreferencias();
+  if (!p.cidade) return null;
+  const daCidade = state.allCourts.filter(c => mesmaCidade(c.cidade, p.cidade) && typeof c.lat === "number" && typeof c.lng === "number");
+  if (daCidade.length) {
+    return {
+      lat: daCidade.reduce((s, c) => s + c.lat, 0) / daCidade.length,
+      lng: daCidade.reduce((s, c) => s + c.lng, 0) / daCidade.length,
+    };
+  }
+  return typeof p.lat === "number" && typeof p.lng === "number" ? { lat: p.lat, lng: p.lng } : null;
+}
+function mesmaCidade(a, b) {
+  return slugTexto(a || "") === slugTexto(b || "") && !!slugTexto(a || "");
+}
+
 function cidadesComQuadra() {
   const map = {};
   state.allCourts.forEach(c => {
@@ -6568,7 +6927,7 @@ function faixaCidade(courts) {
   return min === max ? `a partir de R$ ${min}/hora` : `de R$ ${min} a R$ ${max} a hora`;
 }
 
-function renderMini(c, selo) {
+function renderMini(c, selo, extra) {
   const photos = courtPhotos(c);
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   return `
@@ -6583,9 +6942,131 @@ function renderMini(c, selo) {
             : `<span>Sem nota ainda</span>`}
         </p>
         <p class="mini-stars">${estrelas ? "★".repeat(estrelas) : ""}<em>${totalQuadras(c) ? `${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}` : esc(c.bairro || "")}</em></p>
+        ${extra ? `<p class="mini-extra">${esc(extra)}</p>` : ""}
       </div>
     </a>
   `;
+}
+
+// ---------- blocos pessoais da home (só com o que está no aparelho) ----------
+
+// O link da última busca, com os filtros dela: /busca?q=Moema&piso=saibro.
+function linkDaUltimaBusca(b) {
+  const p = new URLSearchParams();
+  p.set("q", b.termo || [b.bairro, b.cidade].filter(Boolean).join(", "));
+  [["piso", PISO_OPTS, b.pisos], ["cobertura", COBERTURA_OPTS, b.cobertura], ["modalidade", MODALIDADE_OPTS, b.modalidades]].forEach(([nome, opcoes, v]) => {
+    const k = naOrdem(opcoes, v || []).map(o => o.key);
+    if (k.length) p.set(nome, k.join(","));
+  });
+  return "/busca?" + p.toString();
+}
+
+function refazerUltimaBusca() {
+  const b = lerUltimaBusca();
+  if (!b) return;
+  clearAllFilters();
+  state.modalidadeFilters = naOrdem(MODALIDADE_OPTS, b.modalidades || []).map(o => o.key);
+  state.pisoFilters = naOrdem(PISO_OPTS, b.pisos || []).map(o => o.key);
+  state.coberturaFilters = naOrdem(COBERTURA_OPTS, b.cobertura || []).map(o => o.key);
+  state.cep = b.termo || [b.bairro, b.cidade].filter(Boolean).join(", ");
+  state.regiaoLink = null;
+  goSearch();
+  doSearch();
+}
+
+// O primeiro cartão de "Vistas recentemente": a última busca, como o
+// "São Paulo · 13 out – 16 out · 2 hóspedes" do trivago. Um toque refaz.
+function cartaoUltimaBusca(b) {
+  const t = textoDaBusca(b);
+  return `
+    <a class="mini mini-busca" href="${esc(linkDaUltimaBusca(b))}" data-refazer-busca aria-label="Buscar de novo: ${esc(t.lugar)}">
+      <div class="mini-body">
+        <span class="mini-busca-ic">${icon('search', 22, 'var(--text)')}</span>
+        <p class="mini-name">${esc(t.lugar)}</p>
+        <p class="mini-busca-l">${esc(t.oQue)}</p>
+        ${t.detalhes ? `<p class="mini-busca-l">${esc(t.detalhes)}</p>` : ""}
+      </div>
+    </a>`;
+}
+
+function blocoVistas(recentes, ultima) {
+  if (!recentes.length && !ultima) return "";
+  return `
+    <div class="home-sec" id="home-vistas">
+      <h3 class="display">Vistas recentemente</h3>
+      <div class="home-strip">
+        ${ultima ? cartaoUltimaBusca(ultima) : ""}
+        ${recentes.map(c => renderMini(c)).join("")}
+      </div>
+    </div>`;
+}
+
+// "Com base na sua última busca", como as "Ofertas com base nas suas pesquisas
+// recentes" do trivago: as academias mais perto de onde a pessoa buscou, com
+// os mesmos filtros. Sem busca, as mais perto da cidade das preferências.
+// Mostra primeiro as que a pessoa ainda não viu.
+const PARECIDAS_RAIO_KM = 50;
+function academiasParecidas(todas, b, recentes) {
+  const pref = lerPreferencias();
+  const temPonto = b && typeof b.lat === "number" && typeof b.lng === "number";
+  const ponto = temPonto ? b : pontoDaPreferencia(pref);
+  if (!ponto) return null;
+  const comPonto = todas.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
+  let lista = comPonto;
+  if (temPonto) {
+    const filtra = (l, campo, quer) => quer && quer.length ? l.filter(c => quer.some(v => (c[campo] || []).includes(v))) : l;
+    const filtrada = filtra(filtra(filtra(lista, "modalidades", b.modalidades), "pisos", b.pisos), "cobertura", b.cobertura);
+    if (filtrada.length) lista = filtrada;
+  }
+  lista = lista
+    .map(c => ({ c, d: haversineKm(ponto.lat, ponto.lng, c.lat, c.lng) }))
+    .filter(x => x.d <= PARECIDAS_RAIO_KM)
+    .sort((x, y) => x.d - y.d);
+  const vistas = new Set((recentes || []).map(c => c.id));
+  const novas = lista.filter(x => !vistas.has(x.c.id));
+  lista = (novas.length ? novas : lista).slice(0, 8);
+  if (!lista.length) return null;
+  return {
+    lista,
+    titulo: temPonto ? "Com base na sua última busca" : `Perto de ${textoDaPreferencia(pref)}`,
+    sub: temPonto ? `Academias perto de ${textoDaBusca(b).lugar}` : "A cidade das suas preferências de busca",
+    deOnde: temPonto ? "da sua busca" : "",
+  };
+}
+
+function blocoParecidas(p) {
+  if (!p) return "";
+  return `
+    <div class="home-sec" id="home-parecidas">
+      <h3 class="display">${esc(p.titulo)}</h3>
+      <p class="home-sec-sub">${esc(p.sub)}</p>
+      <div class="home-strip">${p.lista.map(x => renderMini(x.c, "", x.d < 0.1 ? (p.deOnde ? "No lugar da sua busca" : "") : [distanceText(x.d), p.deOnde].filter(Boolean).join(" "))).join("")}</div>
+    </div>`;
+}
+
+// "hoje", "ontem", "há 3 dias" ou a data.
+function quandoFoi(ms) {
+  const dia = 24 * 3600 * 1000;
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const dias = Math.floor((hoje.getTime() + dia - ms) / dia);
+  if (dias <= 0) return "hoje";
+  if (dias === 1) return "ontem";
+  if (dias < 7) return `há ${dias} dias`;
+  const d = new Date(ms);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function textoDaChamada(x) {
+  return `Você chamou ${x.tipo === "site" ? "pelo site" : "no " + (NOME_DO_CONTATO[x.tipo] || "contato")} · ${quandoFoi(x.em)}`;
+}
+
+function blocoChamadas(chamadas) {
+  if (!chamadas.length) return "";
+  return `
+    <div class="home-sec" id="home-chamadas">
+      <h3 class="display">Academias que você chamou</h3>
+      <div class="home-strip">${chamadas.map(x => renderMini(x.c, "", textoDaChamada(x))).join("")}</div>
+    </div>`;
 }
 
 // Faixa verde do GuiaTennis no fim da página, como a do trivago: marca, o que é e o
@@ -6593,7 +7074,7 @@ function renderMini(c, selo) {
 function rodapeFaixa(parceiros) {
   return `
     <div class="rodape-faixa">
-      <span class="rodape-faixa-marca">${LOGO_SVG}<strong class="display">GuiaTennis</strong>${parceiros ? `<span class="pc-selo">Parceiros</span>` : ""}</span>
+      <span class="rodape-faixa-marca">${logoSvg()}<strong class="display">GuiaTennis</strong>${parceiros ? `<span class="pc-selo">Parceiros</span>` : ""}</span>
       <p>${parceiros ? "O GuiaTennis para academias e quadras de tênis" : "Guia de quadras e academias de tênis"} · guiatennis.com.br</p>
       <p class="rodape-faixa-copy">Copyright © ${new Date().getFullYear()} GuiaTennis | Todos os direitos reservados.</p>
       ${parceiros ? "" : `<p class="rodape-faixa-copy">Dados de localização © colaboradores do OpenStreetMap</p>`}
@@ -6602,7 +7083,8 @@ function rodapeFaixa(parceiros) {
 
 function renderSiteFooter() {
   // As cidades com academia, como os "destinos populares" do rodapé do
-  // TripAdvisor e do Booking: link direto para a página de cada uma.
+  // TripAdvisor e do Booking: link direto para a página de cada uma. O
+  // contato do GuiaTennis fica na última coluna (pedido de 01/10/2026).
   const cidades = cidadesComQuadra().slice(0, 6);
   return `
     <div class="sitefooter">
@@ -6613,11 +7095,6 @@ function renderSiteFooter() {
             ${cidades.map(c => `<a href="${caminhoDaRegiao({ cidade: c.nome })}" data-regiao-link data-cidade="${esc(c.nome)}">Quadras em ${esc(c.nome)}</a>`).join("")}
           </div>` : ""}
         <div class="sf-col">
-          <h4>GuiaTennis</h4>
-          <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
-          ${linksContato("contato-link", 15, "currentColor")}
-        </div>
-        <div class="sf-col">
           <h4>Termos e políticas</h4>
           <button type="button" id="terms-link">Termos de Uso</button>
           <button type="button" id="privacy-link">Política de Privacidade</button>
@@ -6625,8 +7102,13 @@ function renderSiteFooter() {
         <div class="sf-col">
           <h4>Suporte</h4>
           <button type="button" id="footer-buscar">Como funciona a busca</button>
+          <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
           ${contaAcademia ? `<button type="button" data-abrir-conta>Painel da minha academia</button>` : ""}
           ${naoConta() ? "" : `<button type="button" id="admin-login-link">Área do GuiaTennis</button>`}
+        </div>
+        <div class="sf-col">
+          <h4>Fale com a gente</h4>
+          ${linksContato("contato-link", 15, "currentColor")}
         </div>
       </div>
     </div>
@@ -6644,7 +7126,12 @@ function renderHome() {
     .sort((a, b) => (b.appAvg - a.appAvg) || (b.appCount - a.appCount))
     .slice(0, 8);
   const cidades = cidadesComQuadra();
-  const cidadeAtiva = cidades.find(c => c.nome === state.homeCity) || cidades[0];
+  const pref = lerPreferencias();
+  const cidadeAtiva = cidades.find(c => c.nome === state.homeCity)
+    || cidades.find(c => mesmaCidade(c.nome, pref.cidade))
+    || cidades[0];
+  const ultima = lerUltimaBusca();
+  const chamadas = lerChamadas().map(x => ({ ...x, c: todas.find(c => c.id === x.id) })).filter(x => x.c);
 
   return `
     ${renderCabecalho()}
@@ -6657,11 +7144,9 @@ function renderHome() {
       ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
     </div>
 
-    ${recentes.length ? `
-      <div class="home-sec">
-        <h3 class="display">Vistas recentemente</h3>
-        <div class="home-strip">${recentes.map(renderMini).join("")}</div>
-      </div>` : ""}
+    ${blocoVistas(recentes, ultima)}
+    ${blocoParecidas(academiasParecidas(todas, ultima, recentes))}
+    ${blocoChamadas(chamadas)}
 
     ${recomendadas.length ? `
       <div class="home-sec">
@@ -6967,6 +7452,7 @@ function openCourt(id) {
   if (state.perto[id] && state.perto[id].status === "erro") delete state.perto[id];
   state.reviewsExpanded = false;
   state.showAdminPanel = false;
+  state.lista = null;
   window.__rateConsent = false;
   pushRecent(c.id);
   trackClick(c.id, "visualizacao");
@@ -8291,29 +8777,7 @@ function qrSvg(texto, lado, comEmblema) {
   <g shape-rendering="geometricPrecision">
     <rect x="${(meio - folga / 2).toFixed(3)}" y="${(meio - folga / 2).toFixed(3)}" width="${folga.toFixed(3)}" height="${folga.toFixed(3)}" rx="${(folga * 0.24).toFixed(3)}" fill="#F7F4EC"/>
     <g transform="translate(${(meio - e / 2).toFixed(3)} ${(meio - e / 2).toFixed(3)}) scale(${(e / 1080).toFixed(6)})">
-      <defs>
-        <linearGradient id="qrLogoGrad" x1="0" y1="0" x2="1080" y2="1080" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stop-color="#2A5C4B"/><stop offset="1" stop-color="#153229"/>
-        </linearGradient>
-        <clipPath id="qrLogoClip"><ellipse cx="0" cy="-160" rx="192" ry="252"/></clipPath>
-      </defs>
-      <rect x="0" y="0" width="1080" height="1080" rx="220" fill="url(#qrLogoGrad)"/>
-      <g transform="translate(540,580) rotate(-15)">
-        <rect x="-40" y="150" width="80" height="290" rx="36" fill="#F7F4EC"/>
-        <ellipse cx="0" cy="445" rx="42" ry="22" fill="#F7F4EC"/>
-        <path d="M-40 190 L-40 150 Q-40 200 0 210 Q40 200 40 150 L40 190 Z" fill="#F7F4EC"/>
-        <ellipse cx="0" cy="-160" rx="212" ry="272" fill="none" stroke="#F7F4EC" stroke-width="48"/>
-        <g clip-path="url(#qrLogoClip)" stroke="#B8933F" stroke-width="6" opacity="0.55">
-          <line x1="-190" y1="-160" x2="190" y2="-160"/>
-          <line x1="-190" y1="-90" x2="190" y2="-90"/>
-          <line x1="-190" y1="-230" x2="190" y2="-230"/>
-          <line x1="-70" y1="-410" x2="-70" y2="90"/>
-          <line x1="0" y1="-410" x2="0" y2="90"/>
-          <line x1="70" y1="-410" x2="70" y2="90"/>
-        </g>
-        <path d="M-330 -40 Q-260 -10 -220 -90" fill="none" stroke="#B8933F" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
-        <circle cx="0" cy="-160" r="132" fill="#B8933F" stroke="#F7F4EC" stroke-width="10"/>
-      </g>
+      ${logoDesenho({ id: "qr-logo" + (++logosNaTela) })}
     </g>
   </g>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${lado}" height="${lado}" shape-rendering="crispEdges">
@@ -9222,55 +9686,79 @@ function politicaParaSalvar(f) {
   return { modo: "igual", ...parte(pol.modo === "separado" ? pol[k] : pol) };
 }
 
-// Atalhos do formulário da ficha, como as abas do "Editar perfil" do Google.
-const REG_SECOES = [
-  { id: "reg-sec-dados", t: "Nome e endereço" },
-  { id: "reg-sec-horario", t: "Horário" },
-  { id: "reg-sec-fotos", t: "Fotos" },
-  { id: "reg-sec-quadras", t: "Quadras" },
-  { id: "reg-sec-precos", t: "Modalidade e preço" },
-  { id: "reg-sec-cancelamento", t: "Cancelamento" },
-  { id: "reg-sec-chegada", t: "Como chegar" },
-  { id: "reg-sec-contato", t: "Contato" },
+// Cadastro passo a passo (pedido do Breno em 01/10/2026: "em telas
+// separadas, em ordem de importância para o usuário, para eles e para mim").
+// Uma parte por tela, como o "Anuncie seu espaço" do Airbnb, o cadastro do
+// Booking para Parceiros e o primeiro acesso do Google Business Profile:
+// barra de progresso, Voltar e Continuar. Primeiro o que o jogador precisa
+// para achar e chamar a academia — que é também o que a academia quer
+// (contato) e o que o GuiaTennis precisa para aprovar —, depois o que
+// completa a ficha. Na edição, as partes viram abas, como o "Editar perfil"
+// do Google, e dá para salvar em qualquer uma.
+const REG_PASSOS = [
+  { id: "dados", t: "Nome e endereço", titulo: "Onde fica a academia?", porque: "É o que faz a academia aparecer para quem busca perto." },
+  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "Aula ou locação e o preço por hora são o que o aluno compara primeiro." },
+  { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
+  { id: "contato", t: "Contato", titulo: "Como os alunos falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa começada." },
+  { id: "fotos", t: "Fotos", titulo: "Fotos da academia", porque: "Ficha com foto recebe muito mais contato." },
+  { id: "horario", t: "Horário", titulo: "Horário de funcionamento", porque: "A ficha mostra se a academia está aberta agora." },
+  { id: "cancelamento", t: "Cancelamento", titulo: "Cancelamento e reposição", porque: "Tira a dúvida antes da primeira aula." },
+  { id: "chegada", t: "Como chegar", titulo: "Como chegar", porque: "Fachada, entrada e onde parar: é o que mais evita passar direto." },
+  { id: "revisar", t: "Revisar", titulo: "Tudo certo?", porque: "Confira cada parte. Um toque leva até ela." },
 ];
 
-function renderRegisterSheet() {
-  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
-  window.__form = f;
+// Quem pede cadastro pelo site manda o essencial; o admin publica só com o
+// nome; na edição, só o nome não pode ficar em branco (doRegisterSubmit
+// confere de novo).
+function regPedeTudo(f) {
+  return !isAdmin && !f.__editingId;
+}
+function regFaltas(f, passo) {
+  const falta = [];
+  const tem = v => !!String(v || "").trim();
+  if (passo === "dados") {
+    if (!tem(f.name)) falta.push("nome");
+    if (regPedeTudo(f) && !(tem(f.address) && tem(f.numero) && tem(f.bairro) && tem(f.cidade))) falta.push("endereço completo");
+  }
+  if (!regPedeTudo(f)) return falta;
+  if (passo === "precos" && !(f.modalidades || []).length) falta.push("modalidade");
+  if (passo === "quadras" && !QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0)) falta.push("quantidade de quadras");
+  if (passo === "contato" && !tem(f.phone)) falta.push("WhatsApp");
+  if (passo === "revisar" && !f.consent && !contaAcademia) falta.push("aceite dos Termos de Uso e da Política de Privacidade");
+  return falta;
+}
+// A parte já tem alguma coisa? (o ✓ das abas e da revisão)
+function regPreenchido(f, passo) {
+  const tem = v => !!String(v || "").trim();
+  const h = f.horario || {};
+  const pol = f.politica || {};
+  const a = f.acesso || {};
+  switch (passo) {
+    case "dados": return tem(f.name) && (tem(f.address) || tem(f.bairro) || tem(f.cidade));
+    case "precos": return (f.modalidades || []).length > 0;
+    case "quadras": return QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0);
+    case "contato": return tem(f.phone) || tem(f.instagram) || tem(f.site);
+    case "fotos": return (f.photos || []).length > 0;
+    case "horario": return HORARIO_CHAVES.some(k => h[k] && (h[k].fechado || tem(h[k].de) || tem(h[k].ate)));
+    case "cancelamento": return [pol, pol.aula || {}, pol.locacao || {}].some(x => tem(x.reposicao) || tem(x.foraDoPrazo));
+    case "chegada": return tem(a.fachada) || tem(a.entrada) || tem(a.estacionar);
+    default: return false;
+  }
+}
+function regPassoAtual() {
+  const i = Math.max(0, Math.min(REG_PASSOS.length - 1, state.regPasso || 0));
+  return { i, passo: REG_PASSOS[i] };
+}
+
+// O miolo de cada parte.
+function regPassoHtml(id, f, obrigatorio) {
   const isEditing = !!f.__editingId;
   const parceiro = !isAdmin && !isEditing && !!contaAcademia;
-  // Asterisco só para quem pede cadastro pelo site; o admin publica com o que tiver.
-  const obrigatorio = isEditing || isAdmin ? "" : " *";
-  if (state.registerStatus === "done") {
-    return `
-      <div class="overlay open" id="register-overlay">
-        <div class="sheet"><div class="sheet-content">
-          <button class="sheet-close" id="register-close">✕</button>
-          <div class="form-success">
-            <div style="font-size:36px;color:var(--green)">✓</div>
-            <p style="font-weight:600">${isEditing ? "Alterações salvas!" : (isAdmin ? "Quadra publicada com sucesso!" : "Cadastro enviado para análise!")}</p>
-            ${isEditing && !isAdmin ? `<p class="subtitle">Já estão na ficha.</p>` : ""}
-            ${(!isAdmin && !isEditing) ? `<p class="subtitle">${parceiro ? "Assim que o GuiaTennis aprovar, a academia aparece no site e você já administra a ficha pelo GuiaTennis Parceiros." : "Assim que for aprovado, aparece pra todo mundo no app."}</p>` : ""}
-            <button class="cta-btn cta-primary" id="register-close-2" style="padding:8px 20px;width:auto">Fechar</button>
-          </div>
-        </div></div>
-      </div>`;
-  }
-  return `
-    <div class="overlay open" id="register-overlay">
-      <div class="sheet"><div class="sheet-content">
-        <button class="sheet-close" id="register-close">✕</button>
-        <p class="sheet-title display">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra")}</p>
-        <p class="subtitle" style="margin-top:4px">${isEditing ? (isAdmin ? "Altere o que quiser e salve." : "Altere o que quiser e salve: as mudanças entram na ficha na hora, como informações confirmadas pela academia.") : (isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? "O GuiaTennis confere antes de publicar. Os seus dados de contato já vão junto: não precisa digitar de novo." : "Apresentação no site mediante análise. Faça sua solicitação abaixo.")}</p>
-
-        <nav class="reg-secoes" aria-label="Partes da ficha">
-          ${REG_SECOES.map(x => `<button type="button" data-reg-sec="${x.id}">${x.t}</button>`).join("")}
-        </nav>
-
-        <p class="field-label reg-ancora" id="reg-sec-dados">Nome e endereço</p>
+  if (id === "dados") return `
+        <label class="field-label" for="f-name">Nome da academia</label>
         <input class="form-field" id="f-name" placeholder="Nome da academia/quadra *" value="${esc(f.name)}" style="margin-top:0" />
-
-        ${!isEditing ? `<input class="form-field" id="f-cep" placeholder="CEP" value="${esc(f.cep || '')}" />` : ""}
+        <p class="field-label">Endereço</p>
+        ${!isEditing ? `<input class="form-field" id="f-cep" inputmode="numeric" placeholder="CEP" value="${esc(f.cep || '')}" style="margin-top:0" />` : ""}
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
           <input class="form-field" id="f-address" placeholder="Endereço (rua)${obrigatorio}" value="${esc(f.address)}" style="margin-top:10px" />
           <input class="form-field" id="f-numero" placeholder="Número${obrigatorio}" value="${esc(f.numero || '')}" style="margin-top:10px" />
@@ -9281,62 +9769,13 @@ function renderRegisterSheet() {
           <input class="form-field" id="f-cidade" placeholder="Cidade" value="${esc(f.cidade)}" />
         </div>
         ${state.cepStatus === "loading" ? `<p class="footnote">Buscando endereço pelo CEP...</p>` : ""}
-        ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}
+        ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}`;
 
-        <p class="field-label reg-ancora" id="reg-sec-horario">Horário de funcionamento</p>
-        <div class="chip-row" style="margin-bottom:12px">
-          <button type="button" class="chip small hr-modo ${horarioForm(f).modo === "igual" ? "active" : ""}" data-hr-modo="igual">Mesmo horário de segunda a sexta</button>
-          <button type="button" class="chip small hr-modo ${horarioForm(f).modo === "dia" ? "active" : ""}" data-hr-modo="dia">Horário diferente por dia</button>
-        </div>
-        <div class="hr-form">
-          ${(horarioForm(f).modo === "dia" ? HORARIO_POR_DIA : HORARIO_SIMPLES)
-            .map(d => linhaHorarioForm(horarioForm(f), d.key, d.label)).join("")}
-        </div>
-        <input class="form-field" id="f-horario-nota" placeholder="Observação sobre o horário (opcional)" value="${esc(horarioForm(f).nota)}" />
-
-        <p class="field-label reg-ancora" id="reg-sec-fotos">Fotos da academia</p>
-        <label class="foto-caixa ${(f.photos||[]).length >= 5 ? "cheia" : ""}" for="f-photo-file">
-          <span class="foto-ic">${icon('camera', 30, (f.photos||[]).length >= 5 ? 'var(--muted)' : 'var(--green)')}</span>
-          <span class="foto-t">${(f.photos||[]).length
-            ? `${f.photos.length} de 5 fotos${f.photos.length >= 5 ? "" : " — toque para adicionar mais"}`
-            : "Toque para escolher as fotos"}</span>
-          <span class="foto-s">${(f.photos||[]).length >= 5
-            ? "Chegou no limite. Remova uma foto para trocar."
-            : "Direto da galeria ou da câmera. Quem tem foto recebe muito mais contato."}</span>
-          <input type="file" accept="image/*" multiple id="f-photo-file" ${(f.photos||[]).length >= 5 ? "disabled" : ""} />
-        </label>
-        ${(f.photos||[]).length ? `
-          <div class="photo-thumb-row">
-            ${f.photos.map((p, i) => `
-              <div class="photo-thumb">
-                <img src="${esc(p)}" />
-                <button type="button" class="photo-thumb-remove" data-photo-idx="${i}">✕</button>
-              </div>
-            `).join("")}
-          </div>
-        ` : ""}
-        <p class="footnote" style="margin-top:8px">Só o espaço em si: quadras, recepção, vestiário, fachada. Nada de promoção, tabela de preço ou material de divulgação.</p>
-
-        <p class="field-label reg-ancora" id="reg-sec-quadras">Quantas quadras de cada tipo${obrigatorio}</p>
-        <div class="quadra-count-grid">
-          ${QUADRA_COMBOS.map(q => `
-            <div class="quadra-count-item">
-              <span>${PISO_OPTS.find(p=>p.key===q.piso)?.icon} ${PISO_OPTS.find(p=>p.key===q.piso)?.label} · ${COBERTURA_OPTS.find(c=>c.key===q.cobertura)?.icon} ${COBERTURA_OPTS.find(c=>c.key===q.cobertura)?.label}</span>
-              <input type="number" min="0" class="form-field reg-quadra-count" data-combo="${q.key}" value="${f.quadras?.[q.key] || 0}" style="margin-top:6px" />
-            </div>
-          `).join("")}
-        </div>
-
-        <p class="field-label">Comodidades</p>
-        <div class="chip-row">
-          ${AMENITY_OPTS.map(a => `<button class="chip small reg-amenity ${f.amenities.includes(a.key)?"active":""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`).join("")}
-        </div>
-
-        <p class="field-label reg-ancora" id="reg-sec-precos">Modalidade${obrigatorio}</p>
+  if (id === "precos") return `
+        <p class="field-label" style="margin-top:0">Modalidade${obrigatorio}</p>
         <div class="chip-row">
           ${MODALIDADE_OPTS.map(m => `<button class="chip small reg-modalidade ${f.modalidades.includes(m.key)?"active":""}" data-modalidade="${m.key}">${m.icon} ${m.label}</button>`).join("")}
         </div>
-
         ${(f.modalidades.includes("aulas_proprias") || f.modalidades.includes("locacao")) ? `
           <p class="field-label">Faixa de preço por hora (opcional)</p>
           <p class="footnote" style="margin:0 0 8px">Deixe em branco se preferir não publicar valores — a ficha mostra "Não incluído".</p>` : ""}
@@ -9356,9 +9795,66 @@ function renderRegisterSheet() {
             <span>/hora</span>
           </div>
         ` : ""}
-        ${!f.modalidades.length ? `<p class="footnote">Selecione a modalidade acima para informar o preço.</p>` : ""}
+        ${!f.modalidades.length ? `<p class="footnote">Escolha a modalidade para informar o preço.</p>` : ""}`;
 
-        <p class="field-label reg-ancora" id="reg-sec-cancelamento">Cancelamento e reposição</p>
+  if (id === "quadras") return `
+        <p class="field-label" style="margin-top:0">Quantas quadras de cada tipo${obrigatorio}</p>
+        <div class="quadra-count-grid">
+          ${QUADRA_COMBOS.map(q => `
+            <div class="quadra-count-item">
+              <span>${PISO_OPTS.find(p=>p.key===q.piso)?.icon} ${PISO_OPTS.find(p=>p.key===q.piso)?.label} · ${COBERTURA_OPTS.find(c=>c.key===q.cobertura)?.icon} ${COBERTURA_OPTS.find(c=>c.key===q.cobertura)?.label}</span>
+              <input type="number" min="0" inputmode="numeric" class="form-field reg-quadra-count" data-combo="${q.key}" value="${f.quadras?.[q.key] || 0}" style="margin-top:6px" />
+            </div>
+          `).join("")}
+        </div>
+        <p class="field-label">Comodidades</p>
+        <div class="chip-row">
+          ${AMENITY_OPTS.map(a => `<button class="chip small reg-amenity ${f.amenities.includes(a.key)?"active":""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`).join("")}
+        </div>`;
+
+  if (id === "contato") return `
+        <label class="field-label" for="f-phone" style="margin-top:0">WhatsApp da academia${obrigatorio}</label>
+        <input class="form-field" id="f-phone" inputmode="tel" placeholder="WhatsApp (com DDD)${obrigatorio}" value="${esc(f.phone)}" style="margin-top:0" />
+        <label class="field-label" for="f-instagram">Instagram</label>
+        <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" style="margin-top:0" />
+        <label class="field-label" for="f-site">Site</label>
+        <input class="form-field" id="f-site" inputmode="url" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" style="margin-top:0" />`;
+
+  if (id === "fotos") return `
+        <label class="foto-caixa ${(f.photos||[]).length >= 5 ? "cheia" : ""}" for="f-photo-file">
+          <span class="foto-ic">${icon('camera', 30, (f.photos||[]).length >= 5 ? 'var(--muted)' : 'var(--green)')}</span>
+          <span class="foto-t">${(f.photos||[]).length
+            ? `${f.photos.length} de 5 fotos${f.photos.length >= 5 ? "" : " — toque para adicionar mais"}`
+            : "Toque para escolher as fotos"}</span>
+          <span class="foto-s">${(f.photos||[]).length >= 5
+            ? "Chegou no limite. Remova uma foto para trocar."
+            : "Direto da galeria ou da câmera."}</span>
+          <input type="file" accept="image/*" multiple id="f-photo-file" ${(f.photos||[]).length >= 5 ? "disabled" : ""} />
+        </label>
+        ${(f.photos||[]).length ? `
+          <div class="photo-thumb-row">
+            ${f.photos.map((p, i) => `
+              <div class="photo-thumb">
+                <img src="${esc(p)}" />
+                <button type="button" class="photo-thumb-remove" data-photo-idx="${i}">✕</button>
+              </div>
+            `).join("")}
+          </div>
+        ` : ""}
+        <p class="footnote" style="margin-top:8px">Só o espaço em si: quadras, recepção, vestiário, fachada. Nada de promoção, tabela de preço ou material de divulgação.</p>`;
+
+  if (id === "horario") return `
+        <div class="chip-row" style="margin-bottom:12px">
+          <button type="button" class="chip small hr-modo ${horarioForm(f).modo === "igual" ? "active" : ""}" data-hr-modo="igual">Mesmo horário de segunda a sexta</button>
+          <button type="button" class="chip small hr-modo ${horarioForm(f).modo === "dia" ? "active" : ""}" data-hr-modo="dia">Horário diferente por dia</button>
+        </div>
+        <div class="hr-form">
+          ${(horarioForm(f).modo === "dia" ? HORARIO_POR_DIA : HORARIO_SIMPLES)
+            .map(d => linhaHorarioForm(horarioForm(f), d.key, d.label)).join("")}
+        </div>
+        <input class="form-field" id="f-horario-nota" placeholder="Observação sobre o horário (opcional)" value="${esc(horarioForm(f).nota)}" />`;
+
+  if (id === "cancelamento") return `
         <p class="footnote" style="margin-top:0;margin-bottom:8px">Com quantas horas de antecedência a pessoa precisa avisar para ter direito à reposição. Toque de novo na opção escolhida para desmarcar.</p>
         ${f.modalidades.length === 1 ? `
           ${blocoPoliticaForm(politicaForm2(f), politicaForm2(f).modo === "separado" ? (f.modalidades[0] === "locacao" ? "locacao" : "aula") : "", "")}
@@ -9370,10 +9866,11 @@ function renderRegisterSheet() {
           ${politicaForm2(f).modo === "separado"
             ? blocoPoliticaForm(politicaForm2(f), "aula", "Aula") + blocoPoliticaForm(politicaForm2(f), "locacao", "Locação")
             : blocoPoliticaForm(politicaForm2(f), "", "")}
-        `}
+        `}`;
 
-        <p class="field-label reg-ancora" id="reg-sec-chegada">Como é a fachada</p>
-        <p class="footnote" style="margin:0 0 6px">O que a pessoa vê da rua. É o que mais evita passar direto.</p>
+  if (id === "chegada") return `
+        <p class="field-label" style="margin-top:0">Como é a fachada</p>
+        <p class="footnote" style="margin:0 0 6px">O que a pessoa vê da rua.</p>
         <textarea class="form-field" id="f-acesso-fachada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
 
         <p class="field-label">O que fazer ao chegar</p>
@@ -9388,37 +9885,128 @@ function renderRegisterSheet() {
           <div class="est-previa">
             <p class="est-previa-t">Estacionamento na ficha</p>
             ${htEstacionarLinhas(estacionarLinhas(f))}
-          </div>` : ""}
+          </div>` : ""}`;
 
-        <p class="field-label reg-ancora" id="reg-sec-contato">Contato da academia no site</p>
-        <input class="form-field" id="f-phone" placeholder="WhatsApp (com DDD)${obrigatorio}" value="${esc(f.phone)}" style="margin-top:0" />
-        <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" />
-        <input class="form-field" id="f-site" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" />
-
-        <p class="footnote">${isEditing ? "Deixe em branco o que não quiser alterar." : (isAdmin ? "Só o nome é obrigatório. O resto você completa quando quiser, em Editar academia." : "* campos obrigatórios")}</p>
-
+  // Revisar: cada parte com ✓, "Falta" (obrigatória vazia) ou "Opcional",
+  // e um toque leva até ela — o "Quase lá" do Booking.
+  return `
+        <div class="reg-revisao">
+          ${REG_PASSOS.filter(x => x.id !== "revisar").map((x, i) => {
+            const falta = regFaltas(f, x.id);
+            const feito = regPreenchido(f, x.id) && !falta.length;
+            return `
+            <button type="button" class="reg-rev-linha" data-reg-passo="${i}">
+              <span class="reg-rev-sinal ${feito ? "ok" : falta.length ? "falta" : ""}">${feito ? "✓" : falta.length ? "!" : "–"}</span>
+              <span class="reg-rev-t"><strong>${x.t}</strong><span>${feito ? "Preenchido" : falta.length ? `Falta: ${falta.join(", ")}` : "Opcional — dá para completar depois"}</span></span>
+              ${icon('chevron', 16, 'var(--muted)')}
+            </button>`;
+          }).join("")}
+        </div>
+        <p class="footnote">${isEditing ? "O que você não mexeu continua como estava." : (isAdmin ? "Só o nome é obrigatório. O resto você completa quando quiser, em Editar academia." : "* campos obrigatórios")}</p>
         ${isAdmin ? `
           <label class="consent-row">
             <input type="checkbox" id="f-confirmada" ${f.confirmada ? "checked" : ""} />
             <span>Informações confirmadas pela academia. Sem isso, a ficha mostra que os dados são públicos e ainda não foram confirmados.</span>
           </label>
         ` : ""}
-
         ${!isEditing && !isAdmin && !parceiro ? `
           <label class="consent-row">
             <input type="checkbox" id="f-consent" ${f.consent ? "checked" : ""} />
             <span>Li e concordo com os <button type="button" class="inline-link" id="open-terms-from-form">Termos de Uso</button> e a <button type="button" class="inline-link" id="open-privacy-from-form">Política de Privacidade</button>.</span>
           </label>
-        ` : ""}
+        ` : ""}`;
+}
 
+function renderRegisterSheet() {
+  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
+  window.__form = f;
+  // Formulário novo (abriu agora ou é outra academia): começa na primeira parte.
+  if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; }
+  const isEditing = !!f.__editingId;
+  const parceiro = !isAdmin && !isEditing && !!contaAcademia;
+  // Asterisco só para quem pede cadastro pelo site; o admin publica com o que tiver.
+  const obrigatorio = isEditing || isAdmin ? "" : " *";
+  if (state.registerStatus === "done") {
+    return `
+      <div class="overlay open" id="register-overlay">
+        <div class="sheet"><div class="sheet-content">
+          <button class="sheet-close" id="register-close">✕</button>
+          <div class="form-success">
+            <div style="font-size:36px;color:var(--green)">✓</div>
+            <p style="font-weight:600">${isEditing ? "Alterações salvas!" : (isAdmin ? "Quadra publicada com sucesso!" : "Cadastro enviado para análise!")}</p>
+            ${isEditing && !isAdmin ? `<p class="subtitle">Já estão na ficha.</p>` : ""}
+            ${(!isAdmin && !isEditing) ? `<p class="subtitle">${parceiro ? "Assim que o GuiaTennis aprovar, a academia aparece no site e você já administra a ficha pelo GuiaTennis Parceiros." : "Assim que for aprovado, aparece pra todo mundo no app."}</p>` : ""}
+            <button class="cta-btn cta-primary" id="register-close-2" style="padding:8px 20px;width:auto">Fechar</button>
+          </div>
+        </div></div>
+      </div>`;
+  }
+  const { i, passo } = regPassoAtual();
+  const ultimo = i === REG_PASSOS.length - 1;
+  // Admin e edição salvam de qualquer parte; quem pede cadastro vai até o fim.
+  const salvaEmQualquerParte = isAdmin || isEditing;
+  const textoSalvar = isEditing ? "Salvar alterações" : (isAdmin ? "Publicar quadra" : "Enviar para análise");
+  const vazioOpcional = !regPreenchido(f, passo.id) && !regFaltas(f, passo.id).length && passo.id !== "dados";
+  return `
+    <div class="overlay open" id="register-overlay">
+      <div class="sheet"><div class="sheet-content reg-passos-tela">
+        <button class="sheet-close" id="register-close" aria-label="Fechar">✕</button>
+        <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra")}</p>
+        <p class="reg-progresso-t">Parte ${i + 1} de ${REG_PASSOS.length} · ${passo.t}</p>
+        <div class="reg-progresso" role="progressbar" aria-valuemin="1" aria-valuemax="${REG_PASSOS.length}" aria-valuenow="${i + 1}"><i style="width:${Math.round((i + 1) / REG_PASSOS.length * 100)}%"></i></div>
+        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? "O GuiaTennis confere antes de publicar. Os seus dados de contato já vão junto: não precisa digitar de novo." : "Apresentação no site mediante análise. São 9 partes curtas; só as 4 primeiras são obrigatórias."}</p>` : ""}
+
+        <nav class="reg-secoes" aria-label="Partes da ficha">
+          ${REG_PASSOS.map((x, k) => `<button type="button" class="${k === i ? "on" : ""}" data-reg-passo="${k}" ${k === i ? 'aria-current="step"' : ""}>${regPreenchido(f, x.id) && !regFaltas(f, x.id).length ? "✓ " : ""}${x.t}</button>`).join("")}
+        </nav>
+
+        <h2 class="sheet-title display reg-titulo">${passo.titulo}</h2>
+        <p class="subtitle reg-porque">${passo.porque}</p>
+
+        <div class="reg-passo" data-passo="${passo.id}">
+          ${regPassoHtml(passo.id, f, obrigatorio)}
+        </div>
+
+        ${state.regPassoErro ? `<div class="form-error">${icon('warning',13)} ${esc(state.regPassoErro)}</div>` : ""}
         ${state.registerStatus === "error" ? `<div class="form-error">${icon('warning',13)} ${esc(state.registerError)}</div>` : ""}
 
-        <button class="btn-primary" id="register-submit" style="width:100%;justify-content:center;margin-top:16px;padding:12px 0" ${state.registerStatus==="saving"?"disabled":""}>
-          ${state.registerStatus==="saving" ? bolaGirando(16) + " Salvando..." : (isEditing ? "Salvar alterações" : (isAdmin ? "Publicar quadra" : "Enviar para análise"))}
-        </button>
+        <div class="reg-rodape">
+          ${i > 0 ? `<button type="button" class="reg-voltar" id="reg-voltar">Voltar</button>` : `<span></span>`}
+          <div class="reg-rodape-dir">
+            ${!ultimo ? `<button type="button" class="cta-btn ${salvaEmQualquerParte ? "cta-secondary" : "cta-primary"}" id="reg-continuar">${vazioOpcional ? "Pular" : "Continuar"}</button>` : ""}
+            ${ultimo || salvaEmQualquerParte ? `
+              <button class="cta-btn cta-primary" id="register-submit" ${state.registerStatus==="saving"?"disabled":""}>
+                ${state.registerStatus==="saving" ? bolaGirando(16) + " Salvando..." : textoSalvar}
+              </button>` : ""}
+          </div>
+        </div>
       </div></div>
     </div>
   `;
+}
+
+// Anda entre as partes. Para a frente, a parte obrigatória precisa estar
+// completa (só para quem pede cadastro); para trás e pelas abas, livre.
+function irParaPasso(k, conferir) {
+  const f = window.__form || {};
+  const { i, passo } = regPassoAtual();
+  if (conferir && k > i) {
+    const falta = regFaltas(f, passo.id);
+    if (falta.length) { state.regPassoErro = `Preencha: ${falta.join(", ")}.`; render(); return; }
+  }
+  state.regPasso = Math.max(0, Math.min(REG_PASSOS.length - 1, k));
+  state.regPassoErro = "";
+  if (state.registerStatus === "error") state.registerStatus = "idle";
+  render();
+  const folha = document.querySelector("#register-overlay .sheet");
+  if (folha) folha.scrollTop = 0;
+}
+
+// O erro do envio leva para a primeira parte que tem o que falta.
+function irParaFalta(f) {
+  const k = REG_PASSOS.findIndex(x => regFaltas(f, x.id).length);
+  if (k >= 0) state.regPasso = k;
+  state.regPassoErro = "";
 }
 
 const STATS_PERIODOS = [
@@ -9685,7 +10273,7 @@ function renderStatsPanel() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 30 de setembro de 2026</p>
+<p class="footnote">Última atualização: 1 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -9713,9 +10301,9 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 30 de setembro de 2026</p>
+<p class="footnote">Última atualização: 1 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos e lista de comparação:</strong> ficam salvos apenas no navegador do seu próprio aparelho.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou e as preferências de busca (estado, cidade e o que você costuma procurar) ficam salvos apenas no navegador do seu próprio aparelho, para aparecer na página inicial e no menu. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), se quer receber o relatório do mês, a data do aceite dos Termos, a data do último acesso e o pedido para administrar uma academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, se ela pedir, mandar o relatório do mês. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -9725,7 +10313,7 @@ const PRIVACY_HTML = `
 <p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
 <p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o GuiaTennis pode aprovar, editar ou remover conteúdo — cada academia, com o login dela, edita apenas a própria ficha e as próprias respostas. Favoritos continuam salvos localmente no seu navegador.</p>
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
-<p style="font-size:14px">Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos podem ser apagados limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
+<p style="font-size:14px">Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos, histórico e preferências ficam só no seu aparelho: dá para apagar pelo menu do site ou limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
 <p class="field-label" style="margin-top:16px">6. Cookies</p>
 <p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (favoritos, lista de comparação, sua identificação, formulários e a sessão de quem entra na área da academia) é estritamente técnico.</p>
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
@@ -10218,6 +10806,10 @@ function attachEvents() {
   }
   const searchBtn = document.getElementById("search-btn");
   if (searchBtn) searchBtn.onclick = () => {
+    // Sem nada digitado, busca a cidade das preferências (como o trivago, que
+    // já abre no destino de sempre).
+    const pref = lerPreferencias();
+    if (!(state.cep || "").trim() && pref.cidade) { abrirRegiao({ cidade: pref.cidade }); return; }
     if (!(state.cep || "").trim()) { goSearch(); return; }
     state.page = "search";
     syncUrl(true);
@@ -10255,6 +10847,9 @@ function attachEvents() {
 
   document.querySelectorAll("[data-open]").forEach(el => {
     el.onclick = (e) => { e.preventDefault(); openCourt(el.dataset.open); };
+  });
+  document.querySelectorAll("[data-refazer-busca]").forEach(el => {
+    el.onclick = (e) => { e.preventDefault(); state.showMenu = false; state.lista = null; refazerUltimaBusca(); };
   });
 
   document.querySelectorAll("[data-fav]").forEach(el => {
@@ -10492,7 +11087,15 @@ function attachEvents() {
         }
         return;
       }
-      if (alvo === "search") { goSearch(); return; }
+      if (alvo === "search") {
+        // Sem busca feita, a busca abre na cidade das preferências.
+        const pref = lerPreferencias();
+        if (!state.origin && pref.cidade) { abrirRegiao({ cidade: pref.cidade }); return; }
+        goSearch();
+        return;
+      }
+      if (LISTAS[alvo]) { state.lista = alvo; render(); return; }
+      if (alvo === "preferencias") { abrirPreferencias(); return; }
       if (alvo === "comparar") { goComparar(); return; }
       if (alvo === "cadastrar") { irParceiros("cadastro"); return; }
       if (alvo === "parceiros") { irParceiros("inicio"); return; }
@@ -10505,6 +11108,54 @@ function attachEvents() {
       render();
     };
   });
+
+  // ---- Minhas quadras (favoritas, vistas, chamadas) ----
+  const listaClose = document.getElementById("lista-close");
+  if (listaClose) listaClose.onclick = () => { state.lista = null; render(); };
+  const listaOverlay = document.getElementById("lista-overlay");
+  if (listaOverlay) listaOverlay.onclick = (e) => { if (e.target === listaOverlay) { state.lista = null; render(); } };
+  document.querySelectorAll("[data-lista]").forEach(el => {
+    el.onclick = () => { state.lista = el.dataset.lista; render(); };
+  });
+  const listaLimpar = document.getElementById("lista-limpar");
+  if (listaLimpar) listaLimpar.onclick = () => {
+    if (state.lista === "vistas") {
+      try { localStorage.removeItem(RECENTS_KEY); localStorage.removeItem(ULTIMA_BUSCA_KEY); } catch {}
+    } else if (state.lista === "chamadas") {
+      try { localStorage.removeItem(CHAMADAS_KEY); } catch {}
+    }
+    render();
+  };
+
+  // ---- Preferências de busca ----
+  const prefClose = document.getElementById("pref-close");
+  if (prefClose) prefClose.onclick = () => { state.showPrefs = false; render(); };
+  const prefOverlay = document.getElementById("pref-overlay");
+  if (prefOverlay) prefOverlay.onclick = (e) => { if (e.target === prefOverlay) { state.showPrefs = false; render(); } };
+  const prefUf = document.getElementById("pref-uf");
+  if (prefUf) prefUf.onchange = (e) => {
+    window.__pref = { ...(window.__pref || {}), uf: e.target.value };
+    state.prefErro = "";
+    render();
+    if (e.target.value) document.getElementById("pref-cidade")?.focus();
+  };
+  const prefCidade = document.getElementById("pref-cidade");
+  if (prefCidade) prefCidade.oninput = (e) => { window.__pref = { ...(window.__pref || {}), cidade: e.target.value }; };
+  document.querySelectorAll("[data-pref-cidade]").forEach(el => {
+    el.onclick = () => { window.__pref = { ...(window.__pref || {}), cidade: el.dataset.prefCidade }; state.prefErro = ""; render(); };
+  });
+  const prefModalidade = document.getElementById("pref-modalidade");
+  if (prefModalidade) prefModalidade.onchange = (e) => { window.__pref = { ...(window.__pref || {}), modalidade: e.target.value }; };
+  const prefSalvar = document.getElementById("pref-salvar");
+  if (prefSalvar) prefSalvar.onclick = () => salvarPreferencias();
+  const prefApagar = document.getElementById("pref-apagar");
+  if (prefApagar) prefApagar.onclick = () => {
+    try { localStorage.removeItem(PREFERENCIAS_KEY); } catch {}
+    window.__pref = {};
+    state.homeCity = null;
+    state.showPrefs = false;
+    render();
+  };
 
   document.querySelectorAll("[data-faqsite]").forEach(el => {
     el.ontoggle = () => { state.faqSiteOpen[el.dataset.faqsite] = el.open; };
@@ -10581,8 +11232,6 @@ function attachEvents() {
     };
   });
 
-  const fab = document.getElementById("fab-add");
-  if (fab) fab.onclick = () => irParceiros("cadastro");
 
   const fabAdmin = document.getElementById("fab-admin");
   if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
@@ -10809,12 +11458,16 @@ function attachEvents() {
     };
   });
 
-  document.querySelectorAll("[data-reg-sec]").forEach(el => {
-    el.onclick = () => {
-      const alvo = document.getElementById(el.dataset.regSec);
-      if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
+  document.querySelectorAll("[data-reg-passo]").forEach(el => {
+    el.onclick = () => irParaPasso(parseInt(el.dataset.regPasso, 10), false);
   });
+  // A aba da parte atual fica à vista na faixa de cima.
+  const abaAtual = document.querySelector("#register-overlay .reg-secoes button.on");
+  if (abaAtual) abaAtual.parentElement.scrollLeft = Math.max(0, abaAtual.offsetLeft - 22);
+  const regContinuar = document.getElementById("reg-continuar");
+  if (regContinuar) regContinuar.onclick = () => irParaPasso(regPassoAtual().i + 1, true);
+  const regVoltar = document.getElementById("reg-voltar");
+  if (regVoltar) regVoltar.onclick = () => irParaPasso(regPassoAtual().i - 1, false);
   const regSubmit = document.getElementById("register-submit");
   if (regSubmit) regSubmit.onclick = () => {
     const f = window.__form;
@@ -11051,6 +11704,7 @@ async function doSearch(opcoes = {}) {
     state.origin = geo;
     state.sortBy = opcoes.ordem || "distance";
     state.searchStatus = "done";
+    guardarUltimaBusca(geo, termo);
     registrar(geo, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
   } catch (e) {
     diag(`a busca não achou o lugar: ${e.message}`);
@@ -11101,6 +11755,7 @@ async function doRegisterSubmit() {
     if (!f.name.trim()) {
       state.registerError = "O nome não pode ficar em branco.";
       state.registerStatus = "error";
+      state.regPasso = 0;
       render();
       return;
     }
@@ -11164,6 +11819,7 @@ async function doRegisterSubmit() {
   if (missing.length) {
     state.registerError = `Preencha: ${missing.join(", ")}.`;
     state.registerStatus = "error";
+    irParaFalta(f);
     render();
     return;
   }
@@ -11234,6 +11890,7 @@ async function init() {
   const q = new URLSearchParams(location.search);
   // O link manda na tela: ficha, região, busca com filtros, comparação.
   const doLink = aplicarLink(lerLink());
+  if (state.page === "home") aplicarPreferenciaNaBusca();
   if (doLink.ficha) {
     state.backTo = "home";
     pushRecent(doLink.ficha.id);

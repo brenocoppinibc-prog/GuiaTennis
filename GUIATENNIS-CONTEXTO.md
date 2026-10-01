@@ -332,13 +332,15 @@ avaliações", com crase, em todo o site. "Como funciona" em 4 passos ligados
 por uma linha — crie a conta (2 minutos), encontre a academia (na hora),
 confirme pelo WhatsApp (o código), complete a ficha e receba alunos (todo
 dia) — com o botão "Começar agora — é grátis". No rodapé dos parceiros, a
-marca e a frase aparecem uma vez só, na faixa escura.
+marca e a frase aparecem uma vez só, na faixa verde.
 
 **Tela cheia e rodapé (mesmo pedido):** o formulário da ficha (editar,
 cadastrar academia nova, admin) ocupa a tela inteira, com atalhos por parte
 no topo (Nome e endereço, Horário, Fotos, Quadras, Modalidade e preço,
 Cancelamento, Como chegar, Contato), como as abas do "Editar perfil" do
-Google. Os dois sites terminam com a **faixa escura do trivago**
+Google. Os dois sites terminam com a **faixa do trivago, no verde do
+GuiaTennis** (`--green`, pedido do Breno em 01/10; o selo "Parceiros" fica
+dourado nela)
 (`rodapeFaixa`): marca, o que é e o copyright, de ponta a ponta.
 
 **Desempenho:** vem de `numeros_da_academia(p_dias)` (SQL
@@ -1029,7 +1031,7 @@ as 133 do `banco-acesso.py` no banco e login locais.
   a academia, pessoas com acesso (adicionar, plano cheio, remover, e-mail
   de outra academia, equipe sem mexer), ofertas de plano e "Em breve" do
   Premium, "Ver planos" separado, formulário em tela cheia com atalhos,
-  faixa escura nos dois sites e visitante com contato de academia sem
+  faixa verde nos dois sites e visitante com contato de academia sem
   avaliar.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
@@ -1332,7 +1334,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) Parceiros: benefícios que vendem mais, como funciona em 4 passos e rodapé sem repetir   ← PR #5, 01/10
+(a seguir) Rodapé no verde do GuiaTennis   ← PR #5, 01/10
+f9d34e9 Parceiros: benefícios que vendem mais, como funciona em 4 passos e rodapé sem repetir   ← PR #5, 01/10
 b791da7 Cadastro como o do trivago e código no WhatsApp da academia   ← PR #5, 01/10
 866edcd Cadastro dos parceiros: outras opções numa linha discreta   ← PR #5, 01/10
 857b932 GuiaTennis Parceiros: conta por e-mail, pedidos, equipe, planos, tela cheia e faixa do rodapé   ← PR #5, 30/09

@@ -506,7 +506,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   // ---- faixa escura no fim, como a do trivago ----
   ({ browser, page } = await abrir({ w: 1280 }));
   let faixa = await page.evaluate(() => ({ t: document.querySelector('.sitefooter + .rodape-faixa')?.innerText || '', cor: getComputedStyle(document.querySelector('.rodape-faixa')).backgroundColor }));
-  ok(faixa.t.includes('GuiaTennis') && faixa.t.includes('Todos os direitos reservados') && faixa.t.includes('OpenStreetMap') && faixa.cor === 'rgb(29, 31, 28)', 'site dos jogadores termina com a faixa escura, como o trivago');
+  ok(faixa.t.includes('GuiaTennis') && faixa.t.includes('Todos os direitos reservados') && faixa.t.includes('OpenStreetMap') && faixa.cor === 'rgb(31, 77, 61)', 'site dos jogadores termina com a faixa na cor do GuiaTennis, como a do trivago');
   await browser.close();
   ({ browser, page } = await abrir({ q: 'parceiros' }));
   faixa = await page.evaluate(() => ({ t: document.querySelector('.pc-rodape .rodape-faixa')?.innerText || '', largura: document.querySelector('.pc-rodape .rodape-faixa').getBoundingClientRect().width, tela: innerWidth, lateral: document.documentElement.scrollWidth > innerWidth }));

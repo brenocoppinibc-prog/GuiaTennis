@@ -1242,13 +1242,14 @@
   .pc-em-breve { color: var(--muted); }
   .pc-em-breve-tag { flex-shrink: 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #8E6D25; background: #FBF4E4; border-radius: 999px; padding: 2px 8px; margin-top: 1px; }
 
-  /* Faixa escura no fim da página, como a do trivago. */
-  .rodape-faixa { background: #1D1F1C; color: #C9C5BA; text-align: center; padding: 30px 20px 34px; box-shadow: 0 0 0 100vmax #1D1F1C; clip-path: inset(0 -100vmax); }
+  /* Faixa verde do GuiaTennis no fim da página, como a do trivago. */
+  .rodape-faixa { background: var(--green); color: rgba(255,255,255,0.88); text-align: center; padding: 30px 20px 34px; box-shadow: 0 0 0 100vmax var(--green); clip-path: inset(0 -100vmax); }
   .rodape-faixa-marca { display: inline-flex; align-items: center; gap: 10px; color: #fff; }
-  .rodape-faixa-marca .logo-mark { width: 32px; height: 32px; }
+  .rodape-faixa-marca .logo-mark { width: 32px; height: 32px; border-radius: 8px; box-shadow: 0 0 0 1px rgba(255,255,255,0.35); }
+  .rodape-faixa .pc-selo { background: var(--gold); color: var(--green); }
   .rodape-faixa-marca strong { font-size: 22px; font-weight: 700; color: #fff; }
   .rodape-faixa p { margin: 12px 0 0; font-size: 14px; line-height: 1.5; }
-  .rodape-faixa .rodape-faixa-copy { margin-top: 6px; font-size: 13px; color: #97938A; }
+  .rodape-faixa .rodape-faixa-copy { margin-top: 6px; font-size: 13px; color: rgba(255,255,255,0.68); }
   .sitefooter + .rodape-faixa { margin-top: 0; }
   .sitefooter { box-shadow: 0 0 0 100vmax var(--bg-alt); clip-path: inset(0 -100vmax); }
   .pc-rodape .rodape-faixa { box-shadow: none; clip-path: none; }
@@ -6548,7 +6549,7 @@ function renderMini(c, selo) {
   `;
 }
 
-// Faixa escura no fim da página, como a do trivago: marca, o que é e o
+// Faixa verde do GuiaTennis no fim da página, como a do trivago: marca, o que é e o
 // copyright. De ponta a ponta mesmo dentro da coluna do site.
 function rodapeFaixa(parceiros) {
   return `

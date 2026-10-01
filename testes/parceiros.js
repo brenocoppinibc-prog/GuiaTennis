@@ -84,6 +84,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(t.h1 === 'Cadastre a sua academia' && !t.robots, 'Cadastro tem página própria');
   let etapas = await page.evaluate(() => [...document.querySelectorAll('.pc-etapas li')].map(l => l.innerText.replace(/\s+/g, ' ').trim() + (l.classList.contains('agora') ? '*' : '')).join(' | '));
   ok(etapas === '1 E-mail* | 2 Conta | 3 Academia' && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'primeiro passo é o e-mail — ' + etapas);
+  const linhaEntrar = await page.evaluate(() => ({ t: document.querySelector('.pc-main .pc-linha')?.innerText || '', href: document.querySelector('.pc-main .pc-linha a')?.getAttribute('href') }));
+  ok(linhaEntrar.t.includes('Recebeu usuário e senha do GuiaTennis') && linhaEntrar.href === '/parceiros/entrar', 'quem recebeu usuário e senha do GuiaTennis tem a linha para entrar com eles');
   await page.fill('#pc-email', 'nao-e-email');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(200);
@@ -140,7 +142,11 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(criada.rpc && criada.rpc.p_email === 'contato@soaulatennis.com.br' && criada.rpc.p_aceite === true && criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'cria a conta e já entra com o e-mail — ' + JSON.stringify(criada.conta));
   corpo = await texto(page, '#parceiros .pc-main');
   ok(/achamos pelo seu e-mail/i.test(corpo) && corpo.includes('Só Aula Tennis'), 'o site acha a academia pelo e-mail (domínio do site dela)');
-  ok(corpo.includes('Não é essa? Procure a sua academia') && await page.isVisible('#pc-busca'), 'e dá para procurar outra');
+  const linhas = await page.evaluate(() => [...document.querySelectorAll('.pc-main .pc-linha')].map(l => l.innerText.replace(/\s+/g, ' ').trim()));
+  ok(linhas.join(' / ') === 'Não é essa? Procurar a minha academia › / A sua academia ainda não está no GuiaTennis? Cadastrar academia nova ›' && !(await page.isVisible('#pc-busca')) && await page.evaluate(() => document.querySelectorAll('.pc-main .pc-card').length) === 1, 'outras opções discretas, numa linha cada, como nos sites grandes — ' + linhas.join(' / '));
+  await page.click('#pc-procurar-outra');
+  await page.waitForTimeout(200);
+  ok(await page.isVisible('#pc-busca') && await page.evaluate(() => document.activeElement.id === 'pc-busca') && await page.isVisible('.pc-sugerida'), '"Procurar a minha academia" abre a busca, já com o cursor, e a sugestão continua');
   await page.fill('#pc-busca', 'quadra');
   await page.waitForTimeout(100);
   let achadas = await page.evaluate(() => [...document.querySelectorAll('#pc-resultados .pc-card-t')].map(x => x.innerText));

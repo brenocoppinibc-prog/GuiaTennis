@@ -1270,6 +1270,9 @@
   .reg-secoes button:hover { border-color: var(--green); color: var(--green); }
   .reg-ancora { scroll-margin-top: 70px; }
   #register-overlay .reg-ancora { font-size: 15px; }
+  .pc-linha { margin: 18px 4px 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .pc-linha-link { display: inline; background: none; border: none; padding: 0; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--green) !important; text-decoration: none; cursor: pointer; }
+  .pc-linha-link:hover { text-decoration: underline; }
   .container.pc-cheio { max-width: none; }
   .pc { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
   .pc-topo-in, .pc-main, .pc-rodape-in { width: 100%; max-width: 1180px; margin: 0 auto; box-sizing: border-box; }
@@ -2528,6 +2531,7 @@ let state = {
   pcMenu: false,
   pcEmail: "",
   pcEmailPasso: "email",
+  pcProcurar: false,
   pcContaErro: "",
   pcContaSalvando: false,
   pedidoErro: "",
@@ -5518,7 +5522,7 @@ function pcCadastro() {
             ${erro(state.pcContaErro)}
             <button class="btn-primary pc-botao-cheio" id="pc-criar-conta" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Criando a conta..." : "Criar conta e continuar"}</button>
           </div>` : ""}
-        <p class="pc-sec-sub" style="margin-top:22px">Já tem acesso? <a href="/parceiros/entrar" data-pc="entrar">Entrar</a></p>
+        <p class="pc-linha">Recebeu usuário e senha do GuiaTennis, ou já tem conta? <a href="/parceiros/entrar" class="pc-linha-link" data-pc="entrar">Entrar ›</a></p>
       </section>`;
   }
 
@@ -5549,16 +5553,14 @@ function pcCadastro() {
               <button type="button" class="cta-btn cta-primary" data-pc-minha="${sugerida.id}">Administrar</button>
             </div>
           </div>` : ""}
-        <div class="pc-card">
-          <p class="pc-passo-t">${sugerida ? "Não é essa? Procure a sua academia" : "Qual é a sua academia?"}</p>
-          <input class="form-field" id="pc-busca" placeholder="Nome da academia" value="${esc(state.pcBusca || "")}" autocomplete="off" />
-          <div id="pc-resultados">${pcResultadosBusca()}</div>
-        </div>`}
-      <div class="pc-card">
-        <p class="pc-passo-t">${escolhida ? "Outra academia?" : "Não achou? Cadastre uma academia nova"}</p>
-        <p class="pc-card-s">Endereço, WhatsApp da academia, quadras e o que mais quiser. Os seus dados de contato já vão junto. O GuiaTennis confere antes de publicar.</p>
-        <button type="button" class="cta-btn cta-primary" id="pc-nova">Cadastrar academia nova</button>
-      </div>
+        ${sugerida && !state.pcProcurar ? `
+          <p class="pc-linha">Não é essa? <button type="button" class="pc-linha-link" id="pc-procurar-outra">Procurar a minha academia ›</button></p>` : `
+          <div class="pc-card">
+            <p class="pc-passo-t">Qual é a sua academia?</p>
+            <input class="form-field" id="pc-busca" placeholder="Nome da academia" value="${esc(state.pcBusca || "")}" autocomplete="off" />
+            <div id="pc-resultados">${pcResultadosBusca()}</div>
+          </div>`}`}
+      <p class="pc-linha">A sua academia ainda não está no GuiaTennis? <button type="button" class="pc-linha-link" id="pc-nova">Cadastrar academia nova ›</button></p>
     </section>`;
 }
 
@@ -6031,6 +6033,8 @@ function ligarEventosParceiros() {
   const pcCriar = document.getElementById("pc-criar-conta");
   if (pcCriar) pcCriar.onclick = criarContaDeParceiro;
   document.querySelectorAll("[data-pc-pedir]").forEach(el => { el.onclick = () => pedirParaAdministrar(el.dataset.pcPedir); });
+  const pcProcurar = document.getElementById("pc-procurar-outra");
+  if (pcProcurar) pcProcurar.onclick = () => { state.pcProcurar = true; render(); document.getElementById("pc-busca")?.focus(); };
   const pcCancelar = document.getElementById("pc-cancelar-pedido");
   if (pcCancelar) pcCancelar.onclick = cancelarPedido;
 

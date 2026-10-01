@@ -274,7 +274,16 @@ Booking e o Google Business Profile, o cadastro começa pelo e-mail:
    "Administrar" → "Pedir para administrar" (`pedir_para_administrar`), ou
    "Cadastrar academia nova" (o formulário não pede de novo nome, WhatsApp
    nem aceite: vão os da conta; o gatilho `pedido_da_academia_nova` faz da
-   academia nova o pedido da conta).
+   academia nova o pedido da conta). Pedido do Breno (01/10): as outras
+   opções ficam **discretas, numa linha de texto com link** ("Não é essa?
+   Procurar a minha academia ›", "A sua academia ainda não está no
+   GuiaTennis? Cadastrar academia nova ›"), como nos sites grandes — não em
+   caixas grandes.
+- **Quem o Breno cadastrou com usuário e senha** não tem e-mail no começo:
+  entra pelo usuário e a senha provisória (a linha "Recebeu usuário e senha
+  do GuiaTennis, ou já tem conta? Entrar ›" do cadastro leva ao Entrar). O
+  e-mail entra no primeiro acesso; dali em diante, entra pelo usuário ou
+  pelo e-mail.
 4. **O GuiaTennis confere** → no painel do admin, "Pedidos para
    administrar" com WhatsApp, Aprovar e Recusar. Publicar a academia nova
    já libera a conta (gatilho `liberar_pedidos_da_academia`). Quem é
@@ -923,8 +932,8 @@ cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banc
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
-e contas por e-mail): **368 verificações, todas passando** (160 de antes,
-64 da área da academia, 34 dos links e 110 do GuiaTennis Parceiros), mais
+e contas por e-mail): **370 verificações, todas passando** (160 de antes,
+64 da área da academia, 34 dos links e 112 do GuiaTennis Parceiros), mais
 as 121 do `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
@@ -1282,7 +1291,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
-(a seguir) GuiaTennis Parceiros: conta por e-mail, pedidos, equipe, planos, tela cheia e faixa do rodapé   ← PR #5, 30/09
+(a seguir) Cadastro dos parceiros: outras opções numa linha discreta   ← PR #5, 01/10
+857b932 GuiaTennis Parceiros: conta por e-mail, pedidos, equipe, planos, tela cheia e faixa do rodapé   ← PR #5, 30/09
 28846e5 GuiaTennis Parceiros: "Administrar" no lugar de "É a minha" no cadastro   ← PR #5, 30/09
 c0c1d84 GuiaTennis Parceiros: site das academias com painel, desempenho por plano, planos e ajuda   ← PR #5, 30/09
 2c6556c Visual limpo: Inter no texto, Playfair nos títulos e mais espaço   ← PR #5, 30/09

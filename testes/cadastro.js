@@ -79,7 +79,8 @@ const { abrir, ok, irParte } = require('./harness');
   await page.evaluate(() => document.getElementById('register-submit').click());
   await page.waitForTimeout(600);
   ok(await page.evaluate(() => window.__ultimoUpdate.politica.reposicao === '36' && !('__personalizar' in window.__ultimoUpdate.politica)), 'salva 36 horas, sem sujeira do formulário');
-  await page.evaluate(async () => { await loadEverything(); state.showRegister = false; state.selected = state.allCourts.find(c => c.id === 'a2'); render(); });
+  // A ficha do Básico não mostra o cancelamento: confere no Completo.
+  await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'completo'; await loadEverything(); state.showRegister = false; state.selected = decorate(state.allCourts.find(c => c.id === 'a2')); render(); });
   const fichaPol = await page.evaluate(() => document.getElementById('app').textContent.replace(/\s+/g, ' '));
   ok(fichaPol.includes('36h é a antecedência mínima'), 'ficha mostra 36h');
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a2"]').click());

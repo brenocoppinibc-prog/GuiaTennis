@@ -188,12 +188,12 @@ cobra taxa e não fica no meio** da negociação.
     sem caixa "Quero receber por e-mail…" no cadastro nem no primeiro acesso
     (as colunas `recebe_relatorio` continuam no banco, sempre falsas).
 22. **O que cada plano libera** (pedido de 02/10/2026): todos têm nome,
-    endereço, quadras e tipos, modalidade, preço, horário, cancelamento,
-    WhatsApp, avaliações e QR code. **Básico** (grátis): até 3
-    comodidades, até 3 fotos, só o WhatsApp, sem "como chegar" (fachada,
+    endereço, quadras e tipos, modalidade, preço, horário, WhatsApp,
+    avaliações e QR code. **Básico** (grátis): até 3 comodidades, até 3
+    fotos, só o WhatsApp, sem cancelamento e sem "como chegar" (fachada,
     entrada, onde estacionar), 1 pessoa, sem números.
-    **Completo**: todas as comodidades, 5 fotos, Instagram e site, como
-    chegar, 5 pessoas, sem números. **Premium**: o mesmo, 10 pessoas, todos os números
+    **Completo**: todas as comodidades, 5 fotos, Instagram e site,
+    cancelamento, como chegar, 5 pessoas, sem números. **Premium**: o mesmo, 10 pessoas, todos os números
     (Desempenho) e o relatório do mês. O site corta a ficha pelo plano em
     `aplicarPlano` (dentro do `mapRow`; o que passou fica em `c.integral` e
     o formulário de edição usa ele); `LIMITES_DO_PLANO` também trava o

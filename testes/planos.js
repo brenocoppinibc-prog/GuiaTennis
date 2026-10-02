@@ -31,6 +31,8 @@ const { abrir, ok, irParte } = require('./harness');
     const a = { fachada: 'Portão preto', entrada: 'Avise na portaria', estacionar: 'Na rua' };
     return [aplicarPlano({ id: 'y', plano: 'basico', acesso: a }), aplicarPlano({ id: 'y', plano: 'completo', acesso: a })].map(x => Object.keys(x.acesso).length + ':' + Object.keys(x.integral.acesso).length).join();
   });
+  const pol = await page.evaluate(() => ['basico', 'completo'].map(k => Object.keys(aplicarPlano({ id: 'z', plano: k, politica: { modo: 'igual', reposicao: '24' } }).politica).length).join());
+  ok(pol === '0,2', 'Básico: sem cancelamento na ficha; Completo: com — ' + pol);
   ok(chegada === '0:3,3:3', 'Básico: sem como chegar na ficha (fica guardado); Completo: com — ' + chegada);
   await irParte(page, 'fotos');
   ok((await page.evaluate(() => document.querySelector('.reg-plano-nota')?.innerText || '')).includes('até 3 fotos'), 'Básico: aviso de até 3 fotos');

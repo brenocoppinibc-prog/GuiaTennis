@@ -49,7 +49,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   t = await tela(page);
   ok(t.aba === 'planos' && t.link === '/parceiros/planos' && t.h1 === 'Planos' && !t.robots, 'Planos tem endereço próprio e entra no Google — ' + t.link);
   const tabela = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelectorAll('.pc-plano-lista li:not(.nao)').length).join());
-  ok(tabela === '7,9,15', 'cada plano mostra o que libera, um acima do outro — ' + tabela);
+  ok(tabela === '7,10,16', 'cada plano mostra o que libera, um acima do outro — ' + tabela);
   const pessoasPorPlano = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-lista li').innerText.match(/\d+/)[0]).join());
   ok(pessoasPorPlano === '1,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
   ok(/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e avisos para os seus alunos'), 'Premium mostra o que vem aí, marcado "Em breve"');

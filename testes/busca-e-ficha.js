@@ -158,6 +158,9 @@ const { abrir, ok } = require('./harness');
 
   // Fichas
   ({ browser, page } = await abrir({ q: '?court=a1' }));
+  // Cancelamento aparece a partir do plano Completo (02/10/2026).
+  await page.evaluate(async () => { window.__db.academias.forEach(a => a.plano = 'completo'); await loadEverything(); openCourt('a1'); });
+  await page.waitForTimeout(200);
   let txt = await page.evaluate(() => document.getElementById('app').textContent);
   ok(!txt.includes('Cobra metade'), 'só aula: regra de locação não aparece');
   ok(txt.includes('Perde a aula'), 'só aula: regra da aula aparece');
@@ -166,6 +169,9 @@ const { abrir, ok } = require('./harness');
   ok(txt.includes('Estacionamento grátis.') && !txt.includes('Rua de trás'), 'com vaga própria: ficha mostra "No local" e não o texto de onde parar');
   await browser.close();
   ({ browser, page } = await abrir({ q: '?court=a2' }));
+  // Cancelamento aparece a partir do plano Completo (02/10/2026).
+  await page.evaluate(async () => { window.__db.academias.forEach(a => a.plano = 'completo'); await loadEverything(); openCourt('a2'); });
+  await page.waitForTimeout(200);
   txt = await page.evaluate(() => document.getElementById('app').textContent);
   ok(txt.includes('reposição da reserva') || txt.includes('reposição de reserva'), 'só locação: fala em reserva, não aula');
   ok(!/reposição da aula/.test(txt), 'só locação: não fala em aula na política');

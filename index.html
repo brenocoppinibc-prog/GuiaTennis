@@ -52,7 +52,7 @@
   /* Área da academia */
   .conta-banner { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 10px; background: var(--green-light); color: #fff; font-size: 12px; font-weight: 600; padding: 6px 12px; }
   .conta-banner button { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; font-size: 12px; font-family: inherit; padding: 0; }
-  .conta-rotulo { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+  .conta-rotulo { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
   .conta-situacao { display: flex; gap: 7px; align-items: flex-start; margin: 12px 0 0; padding: 9px 11px; background: var(--bg-alt); border-radius: 10px; font-size: 13px; color: var(--muted); line-height: 1.4; }
   .conta-situacao.ok { background: var(--green-soft); color: var(--green); }
   .conta-situacao svg, .conta-aviso svg { flex-shrink: 0; margin-top: 1px; }
@@ -69,7 +69,7 @@
   .dono-box { background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 14px; padding: 14px; }
   .dono-texto { margin: 4px 0 0; font-size: 14px; line-height: 1.45; }
   .rev-resp { margin-top: 12px; padding: 10px 12px; background: var(--bg-alt); border-left: 3px solid var(--green); border-radius: 0 10px 10px 0; }
-  .rev-resp-t { margin: 0; font-size: 12px; font-weight: 800; color: var(--green); }
+  .rev-resp-t { margin: 0; font-size: 12px; font-weight: 700; color: var(--green); }
   .rev-resp-texto { margin: 4px 0 2px; font-size: 14px; line-height: 1.5; white-space: pre-line; }
   .rev-resp .inline-link { display: block; margin-top: 6px; color: var(--red); }
   .rev-resp-links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; }
@@ -145,8 +145,8 @@
   /* aviso de quantas academias estão na comparação, no botão do menu e no
      próprio item do menu — já que não há mais barra no rodapé */
   .menu-btn { position: relative; }
-  .menu-conta { position: absolute; top: -9px; right: -9px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--gold); color: var(--green-dark); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card); box-sizing: content-box; }
-  .menu-item-conta { margin-left: auto; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--green); color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+  .menu-conta { position: absolute; top: -9px; right: -9px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--gold); color: var(--green-dark); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card); box-sizing: content-box; }
+  .menu-item-conta { margin-left: auto; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--green); color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 
   /* aba Comparar */
   .cmp-pagina { padding: 18px 20px 24px; }
@@ -161,7 +161,7 @@
   .cmp-add-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
   .cmp-add-n { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; }
   .cmp-add-l { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cmp-add-p { font-size: 15px; font-weight: 800; color: var(--text); margin-top: 3px; }
+  .cmp-add-p { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 3px; }
   .cmp-add-p.sem-valor { font-size: 13px; }
   .cmp-add-btn { flex-shrink: 0; width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--green); background: var(--card); color: var(--green); font-size: 20px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .cmp-add.on .cmp-add-btn { background: var(--green); color: #fff; }
@@ -182,7 +182,7 @@
   /* tabela comparativa: uma linha por característica, uma coluna por academia */
   .ct-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 16px; scrollbar-width: thin; }
   .ct-grade { display: grid; grid-template-columns: 104px repeat(var(--cols), minmax(132px, 1fr)); min-width: min-content; }
-  .ct-secao { grid-column: 1 / -1; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); background: var(--bg-alt); padding: 8px 10px; margin-top: 10px; border-radius: 8px; }
+  .ct-secao { grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); background: var(--bg-alt); padding: 8px 10px; margin-top: 10px; border-radius: 8px; }
   .ct-rot { position: sticky; left: 0; z-index: 2; background: var(--bg); box-shadow: 6px 0 6px -6px rgba(33,31,26,0.14); font-size: 12px; font-weight: 700; color: var(--muted); padding: 11px 10px 11px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; }
   .ct-cel { position: relative; font-size: 13px; color: var(--text); padding: 11px 28px 11px 10px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); line-height: 1.35; display: flex; align-items: center; }
   .ct-cel.melhor { background: rgba(31,77,58,0.07); font-weight: 700; }
@@ -201,23 +201,23 @@
   .cmp-col { flex: 0 0 240px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
   .cmp-photo { height: 120px; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
   .cmp-photo img { width: 100%; height: 100%; object-fit: cover; }
-  .cmp-name { font-size: 15px; font-weight: 800; padding: 10px 12px 2px; }
+  .cmp-name { font-size: 15px; font-weight: 700; padding: 10px 12px 2px; }
   .cmp-sub { font-size: 12px; color: var(--muted); padding: 0 12px 10px; }
   .cmp-row { border-top: 1px solid var(--border); padding: 8px 12px; }
   .cmp-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
   .cmp-val { font-size: 13px; color: var(--text); margin-top: 2px; }
   .cmp-remove { width: 100%; background: none; border: none; border-top: 1px solid var(--border); padding: 9px; font-size: 12px; color: var(--red); cursor: pointer; }
   .decide-box { margin-top: 20px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
-  .decide-title { font-size: 17px; font-weight: 800; color: var(--text); margin: 0; }
+  .decide-title { font-size: 17px; font-weight: 700; color: var(--text); margin: 0; }
   .decide-sub { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
   .decide-result { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
-  .decide-verdict { font-size: 20px; font-weight: 800; color: var(--green); margin: 0; }
+  .decide-verdict { font-size: 20px; font-weight: 700; color: var(--green); margin: 0; }
   .decide-why { font-size: 13px; color: var(--text); margin: 6px 0 0; line-height: 1.45; }
   .decide-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .decide-pos { font-size: 13px; font-weight: 800; color: var(--gold); width: 24px; flex-shrink: 0; }
+  .decide-pos { font-size: 13px; font-weight: 700; color: var(--gold); width: 24px; flex-shrink: 0; }
   .decide-name { font-size: 14px; font-weight: 700; margin: 0; }
   .decide-tags { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
-  .decide-score { font-size: 15px; font-weight: 800; color: var(--green); flex-shrink: 0; }
+  .decide-score { font-size: 15px; font-weight: 700; color: var(--green); flex-shrink: 0; }
   .decide-notes-echo { font-size: 13px; color: var(--muted); background: var(--card); border-radius: 8px; padding: 8px 10px; margin: 4px 0 0; white-space: pre-wrap; }
   .note-hit { display: flex; align-items: baseline; gap: 8px; padding: 7px 10px; border-radius: 8px; margin-top: 6px; background: var(--card); border-left: 3px solid var(--border); }
   .note-hit strong { font-size: 13px; text-transform: capitalize; flex-shrink: 0; }
@@ -230,14 +230,14 @@
   .confirmar-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
   .decidida-box { margin-top: 16px; background: var(--green); border-radius: 14px; padding: 16px; }
   .decidida-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin: 0; }
-  .decidida-name { font-size: 22px; font-weight: 800; color: #fff; margin: 6px 0 0; }
+  .decidida-name { font-size: 22px; font-weight: 700; color: #fff; margin: 6px 0 0; }
   .decidida-end { font-size: 13px; color: rgba(255,255,255,0.75); margin: 4px 0 0; }
   .decidida-box .field-label { color: rgba(255,255,255,0.8); }
   .decidida-box .cta-btn { width: 100%; }
   .nav-link-dark { background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.35) !important; color: #fff !important; }
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
   .stat-card { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
-  .stat-num { font-size: 26px; font-weight: 800; color: var(--green); margin: 0; }
+  .stat-num { font-size: 26px; font-weight: 700; color: var(--green); margin: 0; }
   .stat-lbl { font-size: 12px; color: var(--muted); margin: 2px 0 0; text-transform: uppercase; letter-spacing: 0.07em; }
   .stat-regioes { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 8px; }
   .stat-regiao { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
@@ -245,7 +245,7 @@
   .stat-regiao strong { font-size: 14px; color: var(--green); flex-shrink: 0; }
   .stats-ord-lbl { font-size: 12px; color: var(--muted); align-self: center; margin-right: 2px; }
   .stat-row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .stat-taxa { font-size: 13px; font-weight: 800; padding: 2px 9px; border-radius: 999px; flex-shrink: 0; }
+  .stat-taxa { font-size: 13px; font-weight: 700; padding: 2px 9px; border-radius: 999px; flex-shrink: 0; }
   .stat-taxa.boa { background: var(--green); color: #fff; }
   .stat-taxa.media { background: var(--gold); color: #1F4D3D; }
   .stat-taxa.zero { background: var(--bg-alt); color: var(--muted); }
@@ -409,7 +409,7 @@
   .fgroup-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 0 0 8px; }
   .opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; font-size: 14px; color: var(--text); background: none; border: none; width: 100%; text-align: left; font-family: var(--fonte-texto); }
   .opt:disabled { opacity: 0.4; cursor: default; }
-  .opt-check { width: 19px; height: 19px; border-radius: 5px; border: 1.5px solid var(--border); background: var(--card); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 800; box-sizing: border-box; }
+  .opt-check { width: 19px; height: 19px; border-radius: 5px; border: 1.5px solid var(--border); background: var(--card); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; box-sizing: border-box; }
   .opt.on .opt-check { background: var(--green); border-color: var(--green); }
   .opt-radio { width: 17px; height: 17px; border-radius: 999px; border: 1.5px solid var(--border); flex-shrink: 0; box-sizing: border-box; }
   .opt.on .opt-radio { border: 5px solid var(--green); }
@@ -432,7 +432,7 @@
   .card-rail { border-top: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .rail-price-col { display: flex; flex-direction: column; }
   .rail-from { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
-  .rail-price { font-size: 20px; font-weight: 800; color: var(--green); line-height: 1.1; white-space: nowrap; }
+  .rail-price { font-size: 20px; font-weight: 700; color: var(--green); line-height: 1.1; white-space: nowrap; }
   .rail-unit { font-size: 12px; color: var(--muted); }
   .rail-btn { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-family: var(--fonte-texto); font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .card-quote { font-size: 12px; color: var(--muted); font-style: italic; margin: 8px 0 0; border-left: 2px solid var(--gold); padding-left: 8px; line-height: 1.4; }
@@ -449,7 +449,7 @@
 
   /* ---- selo de nota (estilo Trivago) ---- */
   .score-box { display: inline-flex; align-items: center; gap: 8px; }
-  .score-num { background: var(--green); color: #fff; font-weight: 800; font-size: 15px; border-radius: 8px 8px 8px 2px; padding: 5px 9px; line-height: 1; flex-shrink: 0; }
+  .score-num { background: var(--green); color: #fff; font-weight: 700; font-size: 15px; border-radius: 8px 8px 8px 2px; padding: 5px 9px; line-height: 1; flex-shrink: 0; }
   .score-num.empty { background: var(--bg-alt); color: var(--muted); font-weight: 700; }
   .score-word { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.15; }
   .score-count { font-size: 12px; color: var(--muted); display: block; font-weight: 500; }
@@ -504,7 +504,7 @@
   .mapwrap { position: relative; z-index: 0; height: calc(100vh - 98px); height: calc(100dvh - 98px); min-height: 380px; border-top: 1px solid var(--border); background: var(--bg-alt); }
   .map { width: 100%; height: 100%; }
   .leaflet-container { font-family: var(--fonte-texto); background: var(--bg-alt); }
-  .pin { display: inline-block; transform: translate(-50%, -100%); background: var(--green); color: #fff; border: 2px solid #fff; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 800; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .pin { display: inline-block; transform: translate(-50%, -100%); background: var(--green); color: #fff; border: 2px solid #fff; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
   .pin.on { background: var(--gold); color: var(--green-dark); }
   .pin-me { display: block; transform: translate(-50%, -50%); width: 16px; height: 16px; border-radius: 999px; background: #fff; border: 4px solid var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
   .map-card-holder { position: absolute; left: 12px; right: 12px; bottom: 90px; z-index: 900; }
@@ -515,7 +515,7 @@
   .map-card-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .map-card-name { font-family: var(--fonte-texto); font-size: 16px; font-weight: 700; margin: 0; line-height: 1.15; }
   .map-card-meta { font-size: 12px; color: var(--muted); margin: 2px 0 4px; }
-  .map-card-price { font-size: 17px; font-weight: 800; color: var(--green); line-height: 1.1; white-space: nowrap; }
+  .map-card-price { font-size: 17px; font-weight: 700; color: var(--green); line-height: 1.1; white-space: nowrap; }
   .map-close { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 14px; color: var(--muted); cursor: pointer; padding: 2px 4px; line-height: 1; }
   .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 28px; color: var(--muted); font-size: 14px; background: var(--bg-alt); z-index: 900; }
   .map-fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 45; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-family: var(--fonte-texto); font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 24px rgba(31,77,61,0.35); display: inline-flex; align-items: center; gap: 8px; }
@@ -565,10 +565,10 @@
   .offer-dois { display: flex; gap: 20px; min-width: 0; }
   .offer-um { display: flex; flex-direction: column; min-width: 0; }
   .offer-um-lbl { font-size: 12px; color: var(--muted); }
-  .offer-um-val { font-size: 22px; font-weight: 800; line-height: 1.1; white-space: nowrap; }
+  .offer-um-val { font-size: 22px; font-weight: 700; line-height: 1.1; white-space: nowrap; }
   .offer-um-val.sem-valor { font-size: 14px; }
   .offer-body { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 6px; }
-  .offer-price { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1.05; white-space: nowrap; }
+  .offer-price { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.05; white-space: nowrap; }
   .offer-sub { font-size: 13px; color: var(--muted); margin-top: 1px; }
   .offer-btn { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; }
   .offer-note { font-size: 12px; color: var(--muted); margin: 7px 0 0; }
@@ -632,7 +632,7 @@
      computador. */
   .ba-numeros { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.18); text-align: center; }
   .ban-item { min-width: 0; }
-  .ban-item strong { display: block; font-size: 22px; font-weight: 800; color: var(--gold-light); line-height: 1.1; white-space: nowrap; }
+  .ban-item strong { display: block; font-size: 22px; font-weight: 700; color: var(--gold-light); line-height: 1.1; white-space: nowrap; }
   .ban-item span { font-size: 12px; color: rgba(255,255,255,0.72); line-height: 1.35; display: block; margin-top: 4px; }
   @media (min-width: 640px) { .ban-item strong { font-size: 26px; } }
 
@@ -655,7 +655,7 @@
   .ba-item { display: flex; gap: 10px; font-size: 15px; line-height: 1.45; }
   .ba-ic { flex-shrink: 0; margin-top: 3px; display: flex; }
   .ba-d { font-size: 14px; color: rgba(255,255,255,0.78); }
-  .ba-btn { width: 100%; margin-top: 22px; background: var(--gold); color: var(--green-dark); border: none; border-radius: 12px; padding: 15px; font-family: var(--fonte-texto); font-size: 16px; font-weight: 800; cursor: pointer; }
+  .ba-btn { width: 100%; margin-top: 22px; background: var(--gold); color: var(--green-dark); border: none; border-radius: 12px; padding: 15px; font-family: var(--fonte-texto); font-size: 16px; font-weight: 700; cursor: pointer; }
   .ba-nota { font-size: 12px; color: rgba(255,255,255,0.7); margin: 10px 0 0; text-align: center; }
 
 
@@ -809,7 +809,7 @@
   .ht-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .ht-tag { font-size: 12px; font-weight: 600; color: var(--green); background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 999px; padding: 4px 10px; }
   .ht-score { display: inline-flex; align-items: center; gap: 10px; margin-top: 12px; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
-  .ht-score-num { background: var(--green); color: #fff; border-radius: 10px 10px 10px 3px; font-size: 20px; font-weight: 800; padding: 8px 11px; line-height: 1; flex-shrink: 0; }
+  .ht-score-num { background: var(--green); color: #fff; border-radius: 10px 10px 10px 3px; font-size: 20px; font-weight: 700; padding: 8px 11px; line-height: 1; flex-shrink: 0; }
   .ht-score-num.empty { background: var(--bg-alt); color: var(--muted); }
   .ht-score-txt strong { font-size: 15px; display: block; }
   .ht-score-txt span { font-size: 13px; color: var(--muted); text-decoration: underline; }
@@ -846,7 +846,7 @@
   .ht-room-desc { font-size: 13px; color: var(--muted); margin: 3px 0 0; }
   .ht-room-price { background: var(--green-soft); border-top: 1px solid var(--green-line); padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
   @media (min-width: 720px) { .ht-room-price { border-top: none; border-left: 1px solid var(--green-line); align-items: flex-end; text-align: right; } }
-  .ht-room-val { font-size: 24px; font-weight: 800; line-height: 1.05; white-space: nowrap; }
+  .ht-room-val { font-size: 24px; font-weight: 700; line-height: 1.05; white-space: nowrap; }
   .sem-valor { font-size: 16px; font-weight: 700; color: var(--muted); white-space: nowrap; }
   .court-cta-val.sem-valor { font-size: 15px; }
   .ht-room-unit { font-size: 13px; color: var(--muted); margin-top: 2px; }
@@ -882,8 +882,8 @@
   /* horário no cadastro */
   .pol-horas { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; font-size: 14px; color: var(--muted); }
   .pol-horas-campo { width: 80px; margin-top: 0; text-align: center; }
-  .pol-form-t { font-size: 14px; font-weight: 800; color: var(--text); margin: 16px 0 6px; }
-  .pol-titulo { font-size: 15px; font-weight: 800; color: var(--text); margin: 18px 0 8px; }
+  .pol-form-t { font-size: 14px; font-weight: 700; color: var(--text); margin: 16px 0 6px; }
+  .pol-titulo { font-size: 15px; font-weight: 700; color: var(--text); margin: 18px 0 8px; }
   .pol-titulo:first-child { margin-top: 0; }
   .hr-form { display: grid; gap: 14px; }
   .hr-form-linha { display: grid; grid-template-columns: 1fr auto; gap: 8px 10px; align-items: center; }
@@ -923,7 +923,7 @@
   .ht-viz-nota .sbadge { font-size: 12px; padding: 2px 6px; }
   .ht-viz-l { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
   .ht-viz-l span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ht-viz-p { font-size: 16px; font-weight: 800; margin-top: 3px; color: var(--text); }
+  .ht-viz-p { font-size: 16px; font-weight: 700; margin-top: 3px; color: var(--text); }
   .ht-viz-p small { font-size: 11px; font-weight: 500; color: var(--muted); }
   .ht-viz-seta { display: flex; }
 
@@ -932,7 +932,7 @@
   @media (min-width: 720px) { .ht-revs { grid-template-columns: 1fr 1fr; } }
   .ht-rev { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 14px; display: flex; flex-direction: column; }
   .ht-rev-top { display: flex; align-items: center; gap: 8px; }
-  .ht-rev-badge { background: var(--green); color: #fff; border-radius: 8px 8px 8px 2px; font-size: 13px; font-weight: 800; padding: 4px 8px; line-height: 1; }
+  .ht-rev-badge { background: var(--green); color: #fff; border-radius: 8px 8px 8px 2px; font-size: 13px; font-weight: 700; padding: 4px 8px; line-height: 1; }
   .ht-rev-word { font-size: 13px; font-weight: 700; }
   .ht-rev-top .delete-review-btn { margin-left: auto; }
   .ht-rev-text { font-size: 14px; line-height: 1.5; margin: 10px 0 0; flex: 1; }
@@ -943,7 +943,7 @@
   /* cancelamento e reposição */
   .pol-faixa { display: flex; align-items: center; gap: 14px; background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 14px; padding: 15px 17px; font-size: 15px; line-height: 1.45; }
   .pol-faixa.sem { background: var(--bg-alt); border-color: var(--border); }
-  .pol-faixa-h { flex-shrink: 0; font-size: 32px; font-weight: 800; color: var(--green); line-height: 1; }
+  .pol-faixa-h { flex-shrink: 0; font-size: 32px; font-weight: 700; color: var(--green); line-height: 1; }
   .pol-faixa-ic { flex-shrink: 0; display: flex; }
   .pol-lados { display: grid; gap: 12px; margin-top: 12px; }
   @media (min-width: 560px) { .pol-lados { grid-template-columns: 1fr 1fr; } }
@@ -979,7 +979,7 @@
   .ht-book-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 0 0 8px; }
   .ht-book-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 4px 0; }
   .ht-book-opt { font-size: 14px; color: var(--muted); }
-  .ht-book-val { font-size: 19px; font-weight: 800; white-space: nowrap; }
+  .ht-book-val { font-size: 19px; font-weight: 700; white-space: nowrap; }
   .ht-book-div { border-top: 1px solid var(--border); margin: 12px 0; }
   .ht-book-score { display: flex; align-items: center; gap: 9px; font-size: 14px; }
   .ht-book-sub { font-size: 12px; color: var(--muted); }
@@ -988,7 +988,7 @@
 
   /* barra fixa do rodapé, só no celular (no desktop o cartão da direita resolve) */
   .court-cta-price { display: flex; flex-direction: column; margin-right: 4px; min-width: 0; }
-  .court-cta-val { font-size: 17px; font-weight: 800; white-space: nowrap; line-height: 1.1; }
+  .court-cta-val { font-size: 17px; font-weight: 700; white-space: nowrap; line-height: 1.1; }
   .court-cta-unit { font-size: 11px; color: var(--muted); white-space: nowrap; }
   @media (min-width: 1000px) { .court-cta { display: none; } }
 
@@ -1276,6 +1276,22 @@
   .pc-progresso-etapas li:nth-child(2) { text-align: center; }
   .pc-progresso-etapas li:last-child { text-align: right; }
   .pc-progresso-etapas li.feito, .pc-progresso-etapas li.agora { color: var(--green); }
+  /* Trilha de tênis: faixa de quadra, linha do saque e a bolinha. */
+  .trilha .trilha-quadra { height: 38px; margin: 0; border-radius: 8px; background: linear-gradient(180deg, #2F6B52, #255A45); box-shadow: inset 0 0 0 2px #F7F4EC, inset 0 0 0 5px #2B6149; }
+  .trilha .trilha-quadra::before { content: ""; position: absolute; left: 10px; right: 10px; top: 50%; height: 2px; margin-top: -1px; background: rgba(247, 244, 236, 0.85); }
+  .trilha .trilha-pista { position: absolute; left: 22px; right: 22px; top: 0; bottom: 0; }
+  .trilha .trilha-pista i { top: 50%; bottom: auto; height: 4px; margin-top: -2px; border-radius: 999px; background: repeating-linear-gradient(90deg, #D8B865 0 7px, transparent 7px 11px); transition: width 0.6s ease; }
+  .trilha .pc-trilho-ponto { width: 3px; height: 14px; margin: -7px 0 0 -1.5px; border-radius: 2px; border: 0; background: rgba(247, 244, 236, 0.85); }
+  .trilha .pc-trilho-ponto.feito { background: #D8B865; }
+  .trilha .trilha-bola { position: absolute; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; transition: left 0.6s cubic-bezier(.3, 1.4, .5, 1); filter: drop-shadow(0 3px 3px rgba(0,0,0,0.3)); }
+  .trilha .trilha-bola svg { display: block; animation: bolaRola 0.6s ease-out; }
+  @keyframes bolaRola { from { transform: rotate(-200deg); } to { transform: rotate(0); } }
+  @media (prefers-reduced-motion: reduce) { .trilha .trilha-bola, .trilha .trilha-pista i { transition: none; } .trilha .trilha-bola svg { animation: none; } }
+  .trilha ol { margin-top: 10px; }
+  .trilha li { font-size: 12px; text-transform: none; letter-spacing: 0; font-weight: 600; }
+  .trilha li.agora { font-weight: 700; }
+  .trilha li:nth-child(n+2):not(:last-child) { text-align: center; }
+  .trilha li:last-child { text-align: right; }
   .obrig { color: var(--red); margin-left: 2px; }
   .campos-dois { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .campo-select { appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 40px; }
@@ -1525,7 +1541,12 @@
   .reg-trava { border: 0; margin: 0; padding: 0; min-width: 0; }
   .reg-trava:disabled { opacity: 0.55; }
   .rate-login { font-size: 14px; color: var(--muted); margin: 4px 0 8px; }
-  .jog-trocar { margin: 6px 0 0; font-size: 14px; }
+  .jog-email-volta { display: flex; align-items: center; gap: 8px; margin: 18px 0 0; padding: 4px 0; background: none; border: none; font-family: var(--fonte-texto); font-size: 16px; color: var(--text); cursor: pointer; max-width: 100%; }
+  .jog-email-volta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #jogador-overlay .trilha { margin: 18px 0 4px; padding: 16px 14px 12px; }
+  .email-sugestao { margin-top: 12px; padding: 14px; border-radius: 12px; background: #FBF4E4; border: 1px solid #EBD9AE; font-size: 15px; }
+  .email-sugestao-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .email-sugestao-acoes .cta-btn { margin: 0; flex: 1 1 140px; min-height: 42px; }
   .jog-grupo { margin: 26px 0 0; font-size: 17px; font-weight: 700; }
   .jog-rodape { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
   .jog-excluir { color: var(--red) !important; }
@@ -2734,6 +2755,8 @@ let state = {
   jogadorAviso: "",
   jogadorSalvando: false,
   jogadorLogin: "",
+  emailSugestao: null,
+  emailSugestaoVista: "",
   depoisDeEntrar: null,
   qrCourt: null,
   perto: {},
@@ -5095,7 +5118,7 @@ function demoBusca() {
     <rect x="293" y="${y + 20}" width="54" height="7" rx="3.5" fill="#E6E0D2"/>
     <rect x="293" y="${y + 32}" width="50" height="14" rx="7" fill="var(--green-soft)"/>
     <text x="318" y="${y + 42}" font-size="9" font-weight="700" fill="var(--green)" text-anchor="middle">${dist}</text>
-    <text x="401" y="${y + 26}" font-size="12" font-weight="800" fill="var(--green)" text-anchor="end">${preco}</text>
+    <text x="401" y="${y + 26}" font-size="12" font-weight="700" fill="var(--green)" text-anchor="end">${preco}</text>
   `;
 
   return `
@@ -5129,7 +5152,7 @@ function demoBusca() {
         <rect x="293" y="94" width="58" height="8" rx="4" fill="#E6E0D2"/>
         <rect x="239" y="134" width="162" height="1" fill="var(--border)"/>
         <text x="239" y="152" font-size="10" fill="var(--muted)">A PARTIR DE</text>
-        <text x="239" y="178" font-size="24" font-weight="800" fill="var(--text)">R$ 90</text>
+        <text x="239" y="178" font-size="24" font-weight="700" fill="var(--text)">R$ 90</text>
         <text x="239" y="194" font-size="10" fill="var(--muted)">por hora</text>
         <circle class="toque" cx="320" cy="224" r="4" fill="var(--green)"/>
         <g class="aperta">
@@ -5809,20 +5832,37 @@ function academiaDoEmail(email) {
   return state.allCourts.find(c => { const site = (c.integral || c).site; return site && dominioDoSite(site) === dominio.toLowerCase(); }) || null;
 }
 
-function pcEtapas(atual) {
-  // Barra do processo, como a do trivago Business Studio: trilho com a
-  // parte feita preenchida, um ponto em cada etapa e o nome embaixo.
-  const etapas = ["Dados de contato", "Sua academia", "Início"];
-  const feito = Math.min(atual, etapas.length - 1) / (etapas.length - 1) * 100;
+// Barra de etapas com cara de tênis (pedido do Breno em 02/10/2026): uma
+// faixa de quadra com a linha do saque no meio, uma marca branca em cada
+// etapa e a bolinha andando até a etapa de agora, deixando o rastro
+// dourado. Serve ao cadastro do GuiaTennis Parceiros e à conta do jogador,
+// como a barra "E-mail · Senha · Economizar" do trivago.
+function trilhaTenis(etapas, atual, rotulo) {
+  const n = etapas.length;
+  const ate = Math.max(0, Math.min(atual, n - 1));
+  const feito = ate / (n - 1) * 100;
+  const bola = `<svg viewBox="0 0 40 40" width="26" height="26" aria-hidden="true">
+      <circle cx="20" cy="20" r="18" fill="#CEDC39" stroke="#A8B62C" stroke-width="1.5"/>
+      <path d="M7.3 7.3A20 20 0 0 1 7.3 32.7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M32.7 7.3A20 20 0 0 0 32.7 32.7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>`;
   return `
-    <div class="pc-progresso-etapas" role="list" aria-label="Etapas do cadastro">
-      <div class="pc-trilho"><i style="width:${feito}%"></i>
-        ${etapas.map((t, i) => `<span class="pc-trilho-ponto ${i <= atual ? "feito" : ""}" style="left:${i / (etapas.length - 1) * 100}%"></span>`).join("")}
+    <div class="pc-progresso-etapas trilha" role="list" aria-label="${esc(rotulo || "Etapas")}">
+      <div class="pc-trilho trilha-quadra">
+        <div class="trilha-pista">
+          <i style="width:${feito}%"></i>
+          ${etapas.map((t, i) => `<span class="pc-trilho-ponto ${i <= ate ? "feito" : ""}" style="left:${i / (n - 1) * 100}%"></span>`).join("")}
+          <span class="trilha-bola" style="left:${feito}%">${bola}</span>
+        </div>
       </div>
-      <ol>
-        ${etapas.map((t, i) => `<li role="listitem" class="${i < atual ? "feito" : i === atual ? "agora" : ""}" ${i === atual ? 'aria-current="step"' : ""}>${esc(t)}</li>`).join("")}
+      <ol style="grid-template-columns:repeat(${n}, 1fr)">
+        ${etapas.map((t, i) => `<li role="listitem" class="${i < ate ? "feito" : i === ate ? "agora" : ""}" ${i === ate ? 'aria-current="step"' : ""}>${i < ate ? "✓ " : ""}${esc(t)}</li>`).join("")}
       </ol>
     </div>`;
+}
+
+function pcEtapas(atual) {
+  return trilhaTenis(["Dados de contato", "Sua academia", "Início"], atual, "Etapas do cadastro");
 }
 
 // "(11) •••••-0002": o WhatsApp da ficha, sem mostrar o número inteiro.
@@ -5902,6 +5942,7 @@ function pcCadastro() {
           <label class="field-label" for="pc-email" style="margin-top:0">E-mail${passo === "criar" ? `<span class="obrig">*</span>` : ""}</label>
           <input class="form-field" id="pc-email" type="email" autocomplete="email" autocapitalize="none" placeholder="voce@suaacademia.com.br" value="${esc(state.pcEmail)}" style="margin-top:0" ${passo === "email" ? "" : "readonly"} />
           ${passo === "email" ? `
+            ${blocoSugestaoEmail(state.pcEmail)}
             ${erro(state.pcContaErro)}
             <button class="btn-primary pc-botao-cheio" id="pc-email-continuar" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Procurando..." : "Continuar"}</button>
             <p class="footnote">Se esse e-mail já tiver conta, você só digita a senha. Se não, completa o cadastro. Recebeu um usuário do GuiaTennis? Escreva o usuário no lugar do e-mail.</p>` : ""}
@@ -6258,6 +6299,7 @@ async function continuarComEmail() {
     return;
   }
   if (!EMAIL_VALIDO.test(email)) { state.pcContaErro = "Escreva um e-mail válido."; render(); return; }
+  if (precisaSugerir(email)) { state.pcContaErro = ""; render(); return; }
   state.pcContaErro = "";
   state.pcContaSalvando = true;
   render();
@@ -6775,22 +6817,28 @@ function renderJogadorSheet() {
       <input type="checkbox" class="jog-aviso" data-campo="${a.campo}" ${f[a.campo] ? "checked" : ""} />
       <span>${esc(a.t)}</span>
     </label>`).join("");
+  // Como no trivago: o e-mail em cima, com a seta para trocar, e a trilha.
   const emailFixo = `
-    <label class="field-label" for="jog-email">E-mail</label>
-    <input class="form-field" id="jog-email" type="email" value="${esc(f.email || "")}" readonly style="margin-top:0" />
-    <p class="jog-trocar"><button type="button" class="inline-link" id="jog-trocar-email">Trocar o e-mail</button></p>`;
+    <button type="button" class="jog-email-volta" id="jog-trocar-email" aria-label="Trocar o e-mail">${icon('chevronLeft', 18, 'var(--text)')}<span>${esc(f.email || "")}</span></button>
+    <input type="hidden" id="jog-email" value="${esc(f.email || "")}" readonly />`;
+  const trilha = tela === "conta" ? "" : trilhaTenis(
+    ["E-mail", tela === "entrar" ? "Senha" : tela === "criar" ? "Seus dados" : "Senha ou cadastro", "Pronto"],
+    tela === "email" ? 0 : 1, "Etapas para entrar");
   let miolo = "";
   if (tela === "email") miolo = `
     <p class="sheet-title display">Entre ou crie a sua conta</p>
     <p class="subtitle" style="margin-top:4px">${esc(state.jogadorMotivo || "Com a conta, você avalia as academias e escolhe os avisos por e-mail.")}</p>
+    ${trilha}
     <label class="field-label" for="jog-email">E-mail</label>
     <input class="form-field" id="jog-email" type="email" autocomplete="email" autocapitalize="none" placeholder="voce@exemplo.com" value="${esc(f.email || "")}" style="margin-top:0" />
+    ${blocoSugestaoEmail(f.email)}
     ${erro}
     <button type="button" class="cta-btn cta-primary" id="jog-continuar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Procurando") || "Continuar"}</button>
     <p class="footnote">Se esse e-mail já tiver conta, você só digita a senha. Se não, completa o cadastro.</p>`;
   if (tela === "entrar") miolo = `
     <p class="sheet-title display">Bem-vindo de volta</p>
     <p class="subtitle" style="margin-top:4px">${esc(state.jogadorMotivo || "Digite a sua senha para entrar.")}</p>
+    ${trilha}
     ${emailFixo}
     <label class="field-label" for="jog-senha">Senha</label>
     <input class="form-field" id="jog-senha" type="password" autocomplete="current-password" style="margin-top:0" />
@@ -6800,6 +6848,7 @@ function renderJogadorSheet() {
   if (tela === "criar") miolo = `
     <p class="sheet-title display">Complete o seu cadastro</p>
     <p class="subtitle" style="margin-top:4px">Esse e-mail ainda não tem conta no GuiaTennis. É grátis e leva um minuto.</p>
+    ${trilha}
     ${emailFixo}
     <label class="field-label" for="jog-nome">Nome e sobrenome</label>
     <input class="form-field jog-campo" data-campo="nome" id="jog-nome" autocomplete="name" value="${esc(f.nome || "")}" style="margin-top:0" />
@@ -6855,11 +6904,56 @@ async function depoisDeEntrarJogador() {
   if (acao) await acao();
 }
 
+// E-mail digitado errado: "fulano@gmial.com" → "Você quis dizer
+// fulano@gmail.com?", como o Booking e o Airbnb. Compara o domínio com os
+// mais usados no Brasil; não precisa de serviço de fora.
+const DOMINIOS_COMUNS = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com.br", "yahoo.com", "icloud.com",
+  "live.com", "msn.com", "uol.com.br", "bol.com.br", "terra.com.br", "hotmail.com.br", "outlook.com.br", "me.com"];
+function distanciaDeTexto(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+      i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1] ? d[i - 2][j - 2] + 1 : Infinity);
+  return d[a.length][b.length];
+}
+function sugestaoDeEmail(email) {
+  const m = String(email || "").trim().toLowerCase().match(/^([^@\s]+)@([^@\s]+)$/);
+  if (!m) return null;
+  const dominio = m[2];
+  if (DOMINIOS_COMUNS.includes(dominio)) return null;
+  let melhor = null, menor = 3;
+  DOMINIOS_COMUNS.forEach(d => { const x = distanciaDeTexto(dominio, d); if (x < menor) { menor = x; melhor = d; } });
+  // "gmail" sem o ".com" também é erro comum.
+  if (!melhor && !dominio.includes(".")) melhor = DOMINIOS_COMUNS.find(d => d.startsWith(dominio + ".")) || null;
+  return melhor ? `${m[1]}@${melhor}` : null;
+}
+// Mostra a sugestão uma vez por e-mail; "Não, está certo" segue com o digitado.
+function precisaSugerir(email) {
+  const para = sugestaoDeEmail(email);
+  if (!para || state.emailSugestaoVista === email) { state.emailSugestao = null; return false; }
+  state.emailSugestao = { de: email, para };
+  return true;
+}
+function blocoSugestaoEmail(email) {
+  const sug = state.emailSugestao;
+  if (!sug || sug.de !== String(email || "").trim().toLowerCase()) return "";
+  return `
+    <div class="email-sugestao" role="alert">
+      <span>Você quis dizer <strong>${esc(sug.para)}</strong>?</span>
+      <div class="email-sugestao-acoes">
+        <button type="button" class="cta-btn cta-primary" data-email-sugestao="usar">Sim, usar esse</button>
+        <button type="button" class="cta-btn cta-secondary" data-email-sugestao="manter">Não, está certo</button>
+      </div>
+    </div>`;
+}
+
 // "Continuar": o banco diz se o e-mail já tem conta.
 async function continuarJogadorComEmail() {
   const email = (document.getElementById("jog-email")?.value || "").trim().toLowerCase();
   window.__jog = { ...(window.__jog || {}), email };
   if (!EMAIL_VALIDO.test(email)) { state.jogadorErro = "Escreva um e-mail válido."; render(); return; }
+  if (precisaSugerir(email)) { state.jogadorErro = ""; render(); return; }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const r = await sb.rpc('conta_do_email', { p_email: email });
   state.jogadorSalvando = false;
@@ -6871,7 +6965,7 @@ async function continuarJogadorComEmail() {
 }
 
 async function entrarJogador() {
-  const email = (document.getElementById("jog-email")?.value || "").trim().toLowerCase();
+  const email = ((window.__jog && window.__jog.email) || document.getElementById("jog-email")?.value || "").trim().toLowerCase();
   const senha = document.getElementById("jog-senha")?.value || "";
   window.__jog = { ...(window.__jog || {}), email };
   if (!email || !senha) { state.jogadorErro = "Preencha o e-mail e a senha."; render(); return; }
@@ -6956,6 +7050,20 @@ function ligarEventosJogador() {
     };
   });
   const fechar = () => { state.jogadorTela = null; state.depoisDeEntrar = null; render(); };
+  document.querySelectorAll("[data-email-sugestao]").forEach(el => {
+    el.onclick = () => {
+      const sug = state.emailSugestao;
+      if (!sug) return;
+      const email = el.dataset.emailSugestao === "usar" ? sug.para : sug.de;
+      state.emailSugestaoVista = email;
+      state.emailSugestao = null;
+      if (state.page === "parceiros" && !state.jogadorTela) { state.pcEmail = email; continuarComEmail(); return; }
+      window.__jog = { ...(window.__jog || {}), email };
+      const campo = document.getElementById("jog-email");
+      if (campo) campo.value = email;
+      continuarJogadorComEmail();
+    };
+  });
   const continuar = document.getElementById("jog-continuar");
   if (continuar) continuar.onclick = () => continuarJogadorComEmail();
   const emailCampo = document.getElementById("jog-email");

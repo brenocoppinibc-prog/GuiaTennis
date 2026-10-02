@@ -91,4 +91,19 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.jogadorTela === 'entrar' && !!document.getElementById('jog-senha')), 'e-mail do admin vai para a senha, no mesmo Entrar');
   await browser.close();
+
+  // E-mail digitado errado: o site sugere o certo; trilha com a bolinha.
+  ({ browser, page } = await abrir());
+  await page.evaluate(() => abrirContaJogador('entrar'));
+  ok(await page.evaluate(() => [...document.querySelectorAll('#jogador-overlay .trilha li')].map(l => l.innerText).join('|') === 'E-mail|Senha ou cadastro|Pronto' && !!document.querySelector('#jogador-overlay .trilha-bola')), 'trilha de tênis: E-mail, Senha ou cadastro, Pronto');
+  await page.fill('#jog-email', 'bia@gmial.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(200);
+  ok((await page.evaluate(() => document.querySelector('.email-sugestao')?.innerText || '')).includes('bia@gmail.com') && await page.evaluate(() => state.jogadorTela === 'email'), '"gmial.com": pergunta se quis dizer gmail.com, antes de seguir');
+  await page.click('[data-email-sugestao="usar"]');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.jogadorTela === 'criar' && window.__jog.email === 'bia@gmail.com' && document.querySelector('.jog-email-volta').innerText.includes('bia@gmail.com')), 'usou a sugestão e seguiu, com o e-mail em cima como no trivago');
+  ok(await page.evaluate(() => document.querySelector('#jogador-overlay .trilha-bola').style.left === '50%'), 'a bolinha andou para a segunda etapa');
+  ok(await page.evaluate(() => sugestaoDeEmail('ana@hotmial.com') === 'ana@hotmail.com' && sugestaoDeEmail('ana@gmail') === 'ana@gmail.com' && sugestaoDeEmail('ana@minhaacademia.com.br') === null), 'sugere hotmail e gmail, e não mexe em domínio próprio');
+  await browser.close();
 })();

@@ -92,7 +92,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     feito: document.querySelector('.pc-trilho i')?.style.width,
   }));
   let etapas = await barra();
-  ok(etapas.etapas === 'DADOS DE CONTATO* | SUA ACADEMIA | INÍCIO' && etapas.feito === '0%' && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'barra do processo em cima, como a do trivago; primeiro os dados de contato — ' + etapas.etapas);
+  ok(etapas.etapas === 'Dados de contato* | Sua academia | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'trilha de tênis em cima, com a bolinha na primeira etapa — ' + etapas.etapas);
   ok((await texto(page, '.pc-main .pc-card .footnote')).includes('Escreva o usuário no lugar do e-mail'), 'quem recebeu usuário do GuiaTennis usa o mesmo campo');
   await page.fill('#pc-email', 'joana@semponto');
   await page.click('#pc-email-continuar');
@@ -157,7 +157,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'cria a conta e já entra com o e-mail');
   etapas = await barra();
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(etapas.etapas === 'DADOS DE CONTATO✓ | SUA ACADEMIA* | INÍCIO' && etapas.feito === '50%', 'a barra anda: segunda etapa, sua academia — ' + etapas.etapas);
+  ok(etapas.etapas === '✓ Dados de contato✓ | Sua academia* | Início' && etapas.feito === '50%' && await page.evaluate(() => document.querySelector('.trilha-bola').style.left) === '50%', 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
   ok(corpo.includes('Prazer em conhecer você, Joana!') && corpo.includes('Antes de começar, vamos ver se a sua academia já está no GuiaTennis.') && corpo.includes('Dica: escreva também o bairro'), 'tela "Prazer em conhecer você", como a do trivago');
   let escolhas = await page.evaluate(() => [...document.querySelectorAll('.pc-escolha')].map(b => b.innerText.replace(/\s+/g, ' ').trim() + (b.classList.contains('on') ? '*' : '')));
   ok(escolhas.length === 1 && escolhas[0].includes('Só Aula Tennis') && escolhas[0].includes('achamos pelo seu e-mail') && escolhas[0].endsWith('*') && !(await page.isDisabled('#pc-administrar')), 'o site acha a academia pelo e-mail (domínio do site dela) e já deixa marcada — ' + escolhas.join(' / '));

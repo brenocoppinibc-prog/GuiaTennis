@@ -236,6 +236,15 @@ cobra taxa e não fica no meio** da negociação.
     entra pelo mesmo "Entrar ou criar conta" com o e-mail dele
     (`conta_do_email` devolve "admin" → senha → o site recarrega em modo
     admin). "Sair do modo admin" continua no menu.
+27. **Trilha de tênis nas etapas** (pedido de 02/10/2026): `trilhaTenis`
+    desenha uma faixa de quadra com a linha do saque, uma marca branca por
+    etapa e a bolinha andando até a etapa de agora (rastro dourado). Usada
+    no cadastro do GuiaTennis Parceiros e no Entrar do jogador ("E-mail ·
+    Senha/Seus dados · Pronto", como a do trivago, com o e-mail em cima e a
+    seta para trocar). E-mail digitado errado ("gmial.com"): o site pergunta
+    "Você quis dizer …@gmail.com?" antes de seguir (`sugestaoDeEmail`).
+    Confirmar que o e-mail existe de verdade exige mandar um código por
+    e-mail — precisa de um serviço de e-mail ligado ao Supabase (em aberto).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

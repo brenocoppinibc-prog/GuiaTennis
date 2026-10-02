@@ -1761,14 +1761,15 @@ const PLANO_OPTS = [
 ];
 
 // O que cada plano libera na ficha (pedido do Breno em 02/10/2026). Nome,
-// endereço, quadras e os tipos, modalidade, preço, horário, cancelamento e
-// como chegar são de todos. O Básico mostra até 3 comodidades, até 3 fotos e
-// só o WhatsApp; o Completo e o Premium mostram tudo. Números (Desempenho)
+// endereço, quadras e os tipos, modalidade, preço, horário e cancelamento
+// são de todos. O Básico mostra até 3 comodidades, até 3 fotos e só o
+// WhatsApp, sem "como chegar" (fachada, entrada e onde estacionar); o
+// Completo e o Premium mostram tudo. Números (Desempenho)
 // só no Premium — o banco confere (SQL 20261002120000).
 const LIMITES_DO_PLANO = {
-  basico: { fotos: 3, comodidades: 3, contatos: ["whatsapp"], numeros: false },
-  completo: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], numeros: false },
-  premium: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], numeros: true },
+  basico: { fotos: 3, comodidades: 3, contatos: ["whatsapp"], chegada: false, numeros: false },
+  completo: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], chegada: true, numeros: false },
+  premium: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], chegada: true, numeros: true },
 };
 function limitesDoPlano(plano) {
   return LIMITES_DO_PLANO[plano] || LIMITES_DO_PLANO.basico;
@@ -1778,7 +1779,7 @@ function limitesDoPlano(plano) {
 // aprimorar o plano; o formulário de edição usa o integral.
 function aplicarPlano(c) {
   const l = limitesDoPlano(c.plano);
-  const integral = { photos: c.photos || [], amenities: c.amenities || [], instagram: c.instagram, site: c.site };
+  const integral = { photos: c.photos || [], amenities: c.amenities || [], instagram: c.instagram, site: c.site, acesso: c.acesso || {} };
   return {
     ...c,
     integral,
@@ -1786,6 +1787,7 @@ function aplicarPlano(c) {
     amenities: integral.amenities.slice(0, l.comodidades),
     instagram: l.contatos.includes("instagram") ? c.instagram : "",
     site: l.contatos.includes("site") ? c.site : "",
+    acesso: l.chegada ? integral.acesso : {},
   };
 }
 
@@ -4212,7 +4214,7 @@ function faltasDaFicha(c) {
   if (!temPolitica(c)) faltas.push("Cancelamento");
   if (!totalQuadras(c)) faltas.push("Quadras");
   if (!(c.amenities || []).length) faltas.push("Comodidades");
-  if (!temAcesso(c)) faltas.push("Como chegar");
+  if (limitesDoPlano(c.plano).chegada && !temAcesso(c)) faltas.push("Como chegar");
   if (!(c.photos || []).length) faltas.push("Fotos");
   return faltas;
 }
@@ -5150,13 +5152,14 @@ const PC_BARRA = ["painel", "desempenho", "avaliacoes", "ficha", "conta"];
 // O que cada plano libera. Tudo o que aparece na busca é igual para todos.
 const PC_RECURSOS = [
   { t: "Nome, endereço, quadras e os tipos de quadra", p: ["basico", "completo", "premium"] },
-  { t: "Modalidade, preço, horário, cancelamento e como chegar", p: ["basico", "completo", "premium"] },
+  { t: "Modalidade, preço, horário e cancelamento", p: ["basico", "completo", "premium"] },
   { t: "O aluno chama direto no seu WhatsApp, sem comissão", p: ["basico", "completo", "premium"] },
   { t: "Responder às avaliações", p: ["basico", "completo", "premium"] },
   { t: "QR code da ficha para a recepção", p: ["basico", "completo", "premium"] },
   { t: "Até 3 comodidades e até 3 fotos na ficha", p: ["basico"] },
   { t: "Todas as comodidades e até 5 fotos na ficha", p: ["completo", "premium"] },
   { t: "Instagram e site na ficha, além do WhatsApp", p: ["completo", "premium"] },
+  { t: "Como chegar: fachada, entrada e onde estacionar", p: ["completo", "premium"] },
   { t: "Visitas, contatos e o dia a dia da ficha", p: ["premium"] },
   { t: "De onde vieram (Instagram, Google…), o aparelho e os canais", p: ["premium"] },
   { t: "Bairros de quem procurou e comparação com a cidade", p: ["premium"] },
@@ -5175,10 +5178,14 @@ const PC_PLANOS = [
 // O que vem aí no Premium (pedido do Breno). Aparece como "Em breve".
 const PC_EM_BREVE = "Promoções na ficha e avisos para os seus alunos";
 const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos"];
+// No Básico, "Como chegar" não entra na conta (é do Completo).
+function itensDaFicha(c) {
+  return PC_ITENS_FICHA.filter(i => i !== "Como chegar" || limitesDoPlano(c && c.plano).chegada);
+}
 
 function perguntasParceiros() {
   return [
-    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram e site) para até 5 pessoas da equipe. O Premium mostra também os números da ficha: visitas, contatos, de onde vêm os alunos e a comparação com a região." },
+    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site e como chegar) para até 5 pessoas da equipe. O Premium mostra também os números da ficha: visitas, contatos, de onde vêm os alunos e a comparação com a região." },
     { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto; o GuiaTennis confere antes de publicar, e você já administra a ficha." },
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium." },
@@ -5986,8 +5993,8 @@ function pcPainel() {
 
       <div class="pc-duas">
         <div class="pc-card">
-          <p class="pc-card-t">${faltas.length ? `Ficha ${PC_ITENS_FICHA.length - faltas.length} de ${PC_ITENS_FICHA.length} completa` : "Ficha completa"}</p>
-          <div class="pc-progresso"><i style="width:${Math.round(((PC_ITENS_FICHA.length - faltas.length) / PC_ITENS_FICHA.length) * 100)}%"></i></div>
+          <p class="pc-card-t">${faltas.length ? `Ficha ${itensDaFicha(c).length - faltas.length} de ${itensDaFicha(c).length} completa` : "Ficha completa"}</p>
+          <div class="pc-progresso"><i style="width:${Math.round(((itensDaFicha(c).length - faltas.length) / itensDaFicha(c).length) * 100)}%"></i></div>
           <p class="pc-card-s">${faltas.length ? `Falta: ${esc(faltas.join(", "))}.` : "Tudo preenchido. Mantenha horário e preço em dia."}</p>
           <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} ${faltas.length ? "Completar a ficha" : "Editar a ficha"}</button>
         </div>
@@ -6108,10 +6115,10 @@ function pcFicha() {
       <h1 class="display">Minha ficha</h1>
       ${pcSituacao(c)}
       <div class="pc-card">
-        <p class="pc-card-t">${faltas.size ? `${PC_ITENS_FICHA.length - faltas.size} de ${PC_ITENS_FICHA.length} itens preenchidos` : "Tudo preenchido"}</p>
-        <div class="pc-progresso"><i style="width:${Math.round(((PC_ITENS_FICHA.length - faltas.size) / PC_ITENS_FICHA.length) * 100)}%"></i></div>
+        <p class="pc-card-t">${faltas.size ? `${itensDaFicha(c).length - faltas.size} de ${itensDaFicha(c).length} itens preenchidos` : "Tudo preenchido"}</p>
+        <div class="pc-progresso"><i style="width:${Math.round(((itensDaFicha(c).length - faltas.size) / itensDaFicha(c).length) * 100)}%"></i></div>
         <ul class="pc-checklist">
-          ${PC_ITENS_FICHA.map(i => `<li class="${faltas.has(i) ? "falta" : ""}">${faltas.has(i) ? `<span class="pc-bolinha"></span>` : icon('check', 16, 'var(--green)')}<span>${esc(i)}</span></li>`).join("")}
+          ${itensDaFicha(c).map(i => `<li class="${faltas.has(i) ? "falta" : ""}">${faltas.has(i) ? `<span class="pc-bolinha"></span>` : icon('check', 16, 'var(--green)')}<span>${esc(i)}</span></li>`).join("")}
         </ul>
         <p class="pc-card-s">Quem procura academia compara horário, preço e fotos antes de chamar no WhatsApp.</p>
         <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>
@@ -9920,18 +9927,20 @@ function regPassoHtml(id, f, obrigatorio) {
             : blocoPoliticaForm(politicaForm2(f), "", "")}
         `}`;
 
+  const travaChegada = !lim.chegada && !isAdmin ? "disabled" : "";
   if (id === "chegada") return `
+        ${lim.chegada ? "" : `<p class="footnote reg-plano-nota" style="margin:0 0 4px">No plano ${esc(nomeDoPlano(plano))}, a ficha não mostra como chegar. Fachada, entrada e onde estacionar aparecem a partir do plano Completo.</p>`}
         <p class="field-label" style="margin-top:0">Como é a fachada</p>
         <p class="footnote" style="margin:0 0 6px">O que a pessoa vê da rua.</p>
-        <textarea class="form-field" id="f-acesso-fachada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
+        <textarea class="form-field" id="f-acesso-fachada" rows="2" ${travaChegada} style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
 
         <p class="field-label">O que fazer ao chegar</p>
-        <textarea class="form-field" id="f-acesso-entrada" rows="2" style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
+        <textarea class="form-field" id="f-acesso-entrada" rows="2" ${travaChegada} style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
 
         ${!temEstacionamentoProprio(f) ? `
         <p class="field-label">Onde estacionar</p>
         <p class="footnote" style="margin:0 0 6px">Escreva como funciona de verdade: se dá para parar na rua, se é zona azul e até que horas, se tem estacionamento pago por perto. Vira uma pergunta frequente na ficha.</p>
-        <textarea class="form-field" id="f-acesso-estacionar" rows="3" style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
+        <textarea class="form-field" id="f-acesso-estacionar" rows="3" ${travaChegada} style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
         ` : ""}
         ${!temEstacionamentoProprio(f) && acessoForm(f).estacionar.trim() ? `
           <div class="est-previa">
@@ -10333,7 +10342,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram e site) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Antes de enviar sua primeira avaliação ou solicitação de cadastro, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
@@ -11000,7 +11009,7 @@ function attachEvents() {
       site: integral.site || "",
       photos: [...(integral.photos || (c.photoUrl ? [c.photoUrl] : []))],
       politica: politicaParaForm(c),
-      acesso: { ...JSON.parse(JSON.stringify(c.acesso || {})), ...acessoDe(c) },
+      acesso: { ...JSON.parse(JSON.stringify(integral.acesso || {})), ...acessoDe({ ...c, acesso: integral.acesso, amenities: integral.amenities }) },
       horario: JSON.parse(JSON.stringify(c.horario || {})),
       confirmada: c.confirmada,
     };

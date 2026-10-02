@@ -6566,9 +6566,10 @@ function renderMenu() {
             : contaAcademia
               ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 20, 'var(--muted)')}<span>Sair da área da academia</span></button>`
               : jogador
-                ? `<button type="button" class="menu-item" data-menu="sair-jogador">${icon('pessoa', 20, 'var(--muted)')}<span>Sair da conta</span></button>
-                   <button type="button" class="menu-item" data-menu="admin">${icon('key', 20, 'var(--muted)')}<span>Área do GuiaTennis</span></button>`
-                : `<button type="button" class="menu-item" data-menu="admin">${icon('key', 20, 'var(--muted)')}<span>Área do GuiaTennis</span></button>`}
+                ? `<button type="button" class="menu-item" data-menu="sair-jogador">${icon('pessoa', 20, 'var(--muted)')}<span>Sair da conta</span></button>`
+                // Sem "Área do GuiaTennis" (02/10/2026): o admin entra pelo
+                // mesmo "Entrar" de todo mundo, com o e-mail dele.
+                : ""}
           <p class="menu-versao">guiatennis.com.br</p>
         </div>
       </aside>
@@ -7470,7 +7471,6 @@ function renderSiteFooter() {
           <button type="button" id="footer-buscar">Como funciona a busca</button>
           <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
           ${contaAcademia ? `<button type="button" data-abrir-conta>Painel da minha academia</button>` : ""}
-          ${naoConta() ? "" : `<button type="button" id="admin-login-link">Área do GuiaTennis</button>`}
         </div>
         <div class="sf-col">
           <h4>Fale com a gente</h4>

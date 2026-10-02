@@ -81,4 +81,14 @@ const { abrir, ok } = require('./harness');
   ({ browser, page } = await abrir({ jogador: true }));
   ok(await page.evaluate(() => jogador && jogador.nome === 'Ana Jogadora' && !window.__saiu), 'jogador logado continua logado ao abrir o site');
   await browser.close();
+
+  // O admin entra pelo mesmo "Entrar", sem a "Área do GuiaTennis".
+  ({ browser, page } = await abrir());
+  ok(await page.evaluate(() => { state.showMenu = true; render(); const t = document.body.innerText; state.showMenu = false; render(); return !t.includes('Área do GuiaTennis'); }), 'sem "Área do GuiaTennis" no menu e no rodapé');
+  await page.evaluate(() => abrirContaJogador('entrar'));
+  await page.fill('#jog-email', 'guiatennis1@gmail.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.jogadorTela === 'entrar' && !!document.getElementById('jog-senha')), 'e-mail do admin vai para a senha, no mesmo Entrar');
+  await browser.close();
 })();

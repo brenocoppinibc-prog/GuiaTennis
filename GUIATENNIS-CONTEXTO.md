@@ -232,6 +232,10 @@ cobra taxa e não fica no meio** da negociação.
     que foi digitado fica na memória. Janela ou passo novo: ponha em
     `camadasDoEstado`/`aplicarCamadas` (e em `CAMADAS_DO_LINK`). Teste:
     `testes/voltar.js`.
+26. **Sem "Área do GuiaTennis" visível** (pedido de 02/10/2026): o admin
+    entra pelo mesmo "Entrar ou criar conta" com o e-mail dele
+    (`conta_do_email` devolve "admin" → senha → o site recarrega em modo
+    admin). "Sair do modo admin" continua no menu.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

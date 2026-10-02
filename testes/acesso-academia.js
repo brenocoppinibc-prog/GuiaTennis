@@ -43,7 +43,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   const dono = await page.evaluate(() => ({ t: document.querySelector('.ficha-dono')?.innerText || '', href: document.querySelector('.ficha-dono a')?.getAttribute('href') || '' }));
   ok(dono.t.includes('Gerencie a ficha no GuiaTennis Parceiros') && dono.href === '/parceiros/cadastro?academia=a2', 'ficha convida o responsável para o GuiaTennis Parceiros — ' + dono.href);
   const menu = await page.evaluate(() => { state.showMenu = true; render(); return document.querySelector('.menu-drawer').innerText; });
-  ok(menu.includes('GuiaTennis Parceiros') && menu.includes('Área do GuiaTennis') && !menu.includes('Cadastrar academia'), 'menu do site tem o GuiaTennis Parceiros e a entrada do GuiaTennis');
+  ok(menu.includes('GuiaTennis Parceiros') && !menu.includes('Área do GuiaTennis') && !menu.includes('Cadastrar academia') && menu.includes('Entrar ou criar conta'), 'menu do site tem o GuiaTennis Parceiros e um Entrar só, sem a "Área do GuiaTennis"');
   await page.evaluate(() => { state.showMenu = false; render(); });
   const respostaVisitante = await page.evaluate(() => document.querySelectorAll('.rev-resp-links, [data-responder]').length);
   ok(respostaVisitante === 0, 'visitante não vê botão de responder');

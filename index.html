@@ -1544,6 +1544,8 @@
   .jog-email-volta { display: flex; align-items: center; gap: 8px; margin: 18px 0 0; padding: 4px 0; background: none; border: none; font-family: var(--fonte-texto); font-size: 16px; color: var(--text); cursor: pointer; max-width: 100%; }
   .jog-email-volta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #jogador-overlay .trilha { margin: 18px 0 4px; padding: 16px 14px 12px; }
+  .pc-confirmar-email { border-color: #EBD9AE; background: #FFFBF1; margin-bottom: 18px; }
+  .pc-confirmar-email .pc-acoes .cta-btn { flex: 1 1 160px; }
   .email-sugestao { margin-top: 12px; padding: 14px; border-radius: 12px; background: #FBF4E4; border: 1px solid #EBD9AE; font-size: 15px; }
   .email-sugestao-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .email-sugestao-acoes .cta-btn { margin: 0; flex: 1 1 140px; min-height: 42px; }
@@ -2756,6 +2758,9 @@ let state = {
   jogadorSalvando: false,
   jogadorLogin: "",
   emailSugestao: null,
+  codigoFalhou: false,
+  codigoMandando: false,
+  codigoDeMinhaConta: false,
   emailSugestaoVista: "",
   depoisDeEntrar: null,
   qrCourt: null,
@@ -2795,6 +2800,10 @@ let state = {
   pcMenu: false,
   pcEmail: "",
   pcEmailPasso: "email",
+  pcCodigoFalhou: false,
+  pcCodigoMandando: false,
+  pcConfirmar: null,
+  pcConfirmarErro: "",
   pcLogin: "",
   pcSelecionada: undefined,
   pcCodigo: "",
@@ -4158,6 +4167,7 @@ function contaDeLinha(x) {
     senhaTrocada: !!x.senha_trocada_em, papel: x.papel || "principal",
     pedidoAcademiaId: x.pedido_academia_id || null, pedidoNome: x.pedido_nome || "",
     pedidoEm: x.pedido_em || null,
+    emailConfirmado: !!x.email_confirmado_em,
   };
 }
 
@@ -4182,7 +4192,7 @@ async function carregarConta(session) {
   if ((user.email || "").toLowerCase() === EMAIL_ADMIN) { isAdmin = true; return; }
   try {
     const { data, error } = await sb.from('academia_acessos').select('*').eq('user_id', user.id);
-    if (!error && data && data[0]) contaAcademia = contaDeLinha(data[0]);
+    if (!error && data && data[0]) contaAcademia = { ...contaDeLinha(data[0]), login: user.email };
   } catch { /* banco sem a tabela: fica como visitante */ }
   if (contaAcademia) return;
   try {
@@ -5954,7 +5964,21 @@ function pcCadastro() {
             <input class="form-field" id="login-password" type="password" autocomplete="current-password" style="margin-top:0" />
             ${erro(state.loginError)}
             <button class="btn-primary pc-botao-cheio" id="login-submit" ${state.loginLoading ? "disabled" : ""}>${state.loginLoading ? bolaGirando(16) + " Entrando..." : "Entrar"}</button>
-            <p class="footnote">Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.</p>` : ""}
+            <p class="footnote">${recebeEmail(state.pcLogin)
+              ? `<button type="button" class="pc-linha-link" id="pc-esqueci">Esqueceu a senha?</button>`
+              : `Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.`}</p>` : ""}
+          ${passo === "esqueci" ? `
+            <p class="pc-linha" style="margin:4px 0 0"><button type="button" class="pc-linha-link" id="pc-trocar-email">Usar outro e-mail</button></p>
+            ${state.pcCodigoFalhou
+              ? `<p class="email-sugestao">Não consegui mandar o código agora. Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>`
+              : `<p class="pc-card-s" style="margin-top:12px">${state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código de 6 números para <strong>${esc(state.pcLogin)}</strong>. Digite o código e a senha nova.`}</p>
+                <label class="field-label" for="pc-codigo-senha">Código de 6 números</label>
+                <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-senha" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />
+                <label class="field-label" for="pc-senha-nova">Senha nova</label>
+                <input class="form-field campo-codigo" data-rascunho="senha" id="pc-senha-nova" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
+                ${erro(state.pcContaErro)}
+                <button class="btn-primary pc-botao-cheio" id="pc-salvar-senha-nova" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar a senha nova"}</button>
+                <p class="footnote"><button type="button" class="pc-linha-link" id="pc-reenviar-codigo">Mandar outro código</button></p>`}` : ""}
           ${passo === "criar" ? `
             <p class="pc-linha" style="margin:8px 0 4px"><button type="button" class="pc-linha-link" id="pc-trocar-email">Trocar o e-mail</button></p>
             ${camposDeContato("pc-conta", f, "pc-conta-campo")}
@@ -5981,6 +6005,7 @@ function pcCadastro() {
   return `
     <section class="pc-pagina pc-estreita">
       ${pcEtapas(1)}
+      ${pcConfirmarEmail()}
       <p class="pc-prazer">Prazer em conhecer você${primeiro ? ", " + esc(primeiro) : ""}!</p>
       <h1 class="display pc-antes">Antes de começar, vamos ver se a sua academia já está no GuiaTennis.</h1>
       ${erro(state.pedidoErro)}
@@ -6053,6 +6078,7 @@ function pcPainel() {
       <p class="pc-eyebrow">${esc(c.name)}</p>
       <h1 class="display">Olá${primeiro ? ", " + esc(primeiro) : ""}</h1>
       ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
+      ${pcConfirmarEmail()}
       ${pcSituacao(c)}
 
       ${veNumeros() ? `
@@ -6325,6 +6351,62 @@ async function continuarComEmail() {
   if (campo) campo.focus();
 }
 
+// "Esqueceu a senha?" do GuiaTennis Parceiros: código no e-mail e senha nova.
+async function pcEsqueciSenha() {
+  state.pcEmailPasso = "esqueci";
+  state.pcContaErro = "";
+  state.pcCodigoFalhou = false;
+  state.pcCodigoMandando = true;
+  render();
+  state.pcCodigoFalhou = !(await enviarCodigo(state.pcLogin));
+  state.pcCodigoMandando = false;
+  render();
+  document.getElementById("pc-codigo-senha")?.focus();
+}
+async function pcSalvarSenhaNova() {
+  const codigo = document.getElementById("pc-codigo-senha")?.value || "";
+  const senha = document.getElementById("pc-senha-nova")?.value || "";
+  if (senha.length < 8) { state.pcContaErro = "A senha nova precisa ter pelo menos 8 caracteres."; render(); return; }
+  state.pcContaSalvando = true; state.pcContaErro = ""; render();
+  const sessao = await conferirCodigo(state.pcLogin, codigo);
+  if (!sessao) { state.pcContaSalvando = false; state.pcContaErro = CODIGO_ERRADO; render(); return; }
+  const { error } = await sb.auth.updateUser({ password: senha });
+  state.pcContaSalvando = false;
+  if (error) { state.pcContaErro = "O código deu certo, mas não consegui salvar a senha. Tente de novo."; render(); return; }
+  try { await sb.rpc('marcar_senha_trocada'); } catch {}
+  await carregarConta(sessao);
+  await loadEverything();
+  state.pcEmailPasso = "email";
+  const destino = !contaAcademia ? "cadastro" : temAcademia() ? (PC_PRIVADAS.includes(state.parceirosDepois) ? state.parceirosDepois : "painel") : "cadastro";
+  state.parceirosDepois = null;
+  state.contaAviso = "Senha nova salva.";
+  irParceiros(destino, { substituir: true });
+}
+
+// Conta do GuiaTennis Parceiros com o e-mail ainda não confirmado: o
+// cartão manda o código e confere, sem sair da tela.
+function pcConfirmarEmail() {
+  const c = contaAcademia;
+  if (!c || c.emailConfirmado || !recebeEmail(c.login)) return "";
+  const enviado = state.pcConfirmar === "enviado";
+  return `
+    <div class="pc-card pc-confirmar-email">
+      <p class="pc-card-t">Confirme o seu e-mail</p>
+      <p class="pc-card-s">${state.pcConfirmar === "falhou"
+        ? "Não consegui mandar o código agora. Tente de novo em instantes."
+        : enviado ? `Mandamos um código de 6 números para <strong>${esc(c.login)}</strong>. Chega em até um minuto; olhe também o spam.`
+        : `Assim a gente sabe que <strong>${esc(c.login)}</strong> é seu e pode mandar os avisos da academia.`}</p>
+      ${enviado ? `
+        <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-email" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" value="${esc((window.__codigo || {}).codigo || "")}" />
+        ${state.pcConfirmarErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pcConfirmarErro)}</div>` : ""}
+        <div class="pc-acoes">
+          <button type="button" class="cta-btn cta-primary" id="pc-confirmar-email">Confirmar</button>
+          <button type="button" class="cta-btn cta-secondary" id="pc-mandar-codigo">Mandar outro código</button>
+        </div>` : `
+        <div class="pc-acoes"><button type="button" class="cta-btn cta-primary" id="pc-mandar-codigo">Mandar o código</button></div>`}
+    </div>`;
+}
+
 async function criarContaDeParceiro() {
   const f = window.__pcConta || {};
   const email = state.pcEmail;
@@ -6486,6 +6568,28 @@ function ligarEventosParceiros() {
   }
   const pcContinuar = document.getElementById("pc-email-continuar");
   if (pcContinuar) pcContinuar.onclick = continuarComEmail;
+  const pcEsqueci = document.getElementById("pc-esqueci");
+  if (pcEsqueci) pcEsqueci.onclick = () => pcEsqueciSenha();
+  const pcReenviar = document.getElementById("pc-reenviar-codigo");
+  if (pcReenviar) pcReenviar.onclick = () => pcEsqueciSenha();
+  const pcSalvarNova = document.getElementById("pc-salvar-senha-nova");
+  if (pcSalvarNova) pcSalvarNova.onclick = () => pcSalvarSenhaNova();
+  const pcMandar = document.getElementById("pc-mandar-codigo");
+  if (pcMandar) pcMandar.onclick = async () => {
+    state.pcConfirmarErro = "";
+    state.pcConfirmar = (await enviarCodigo(contaAcademia.login)) ? "enviado" : "falhou";
+    render();
+    document.getElementById("pc-codigo-email")?.focus();
+  };
+  const pcConfirmarCod = document.getElementById("pc-confirmar-email");
+  if (pcConfirmarCod) pcConfirmarCod.onclick = async () => {
+    const sessao = await conferirCodigo(contaAcademia.login, document.getElementById("pc-codigo-email")?.value);
+    if (!sessao) { state.pcConfirmarErro = CODIGO_ERRADO; render(); return; }
+    await carregarConta(sessao);
+    state.pcConfirmar = null;
+    state.contaAviso = "E-mail confirmado.";
+    render();
+  };
   const pcTrocar = document.getElementById("pc-trocar-email");
   if (pcTrocar) pcTrocar.onclick = () => { state.pcEmailPasso = "email"; state.pcContaErro = ""; render(); document.getElementById("pc-email")?.focus(); };
   document.querySelectorAll(".pc-conta-campo").forEach(el => {
@@ -6821,9 +6925,9 @@ function renderJogadorSheet() {
   const emailFixo = `
     <button type="button" class="jog-email-volta" id="jog-trocar-email" aria-label="Trocar o e-mail">${icon('chevronLeft', 18, 'var(--text)')}<span>${esc(f.email || "")}</span></button>
     <input type="hidden" id="jog-email" value="${esc(f.email || "")}" readonly />`;
-  const trilha = tela === "conta" ? "" : trilhaTenis(
-    ["E-mail", tela === "entrar" ? "Senha" : tela === "criar" ? "Seus dados" : "Senha ou cadastro", "Pronto"],
-    tela === "email" ? 0 : 1, "Etapas para entrar");
+  const trilha = tela === "conta" || tela === "esqueci" ? "" : trilhaTenis(
+    ["E-mail", tela === "entrar" ? "Senha" : tela === "criar" || tela === "codigo" ? "Seus dados" : "Senha ou cadastro", tela === "entrar" ? "Pronto" : "Confirmar"],
+    tela === "email" ? 0 : tela === "codigo" ? 2 : 1, "Etapas para entrar");
   let miolo = "";
   if (tela === "email") miolo = `
     <p class="sheet-title display">Entre ou crie a sua conta</p>
@@ -6844,7 +6948,37 @@ function renderJogadorSheet() {
     <input class="form-field" id="jog-senha" type="password" autocomplete="current-password" style="margin-top:0" />
     ${erro}
     <button type="button" class="cta-btn cta-primary" id="jog-entrar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Entrando") || "Entrar"}</button>
-    <p class="footnote">Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha da minha conta no GuiaTennis.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.</p>`;
+    <p class="jog-troca">${recebeEmail(state.jogadorLogin || f.email)
+      ? `<button type="button" class="inline-link" id="jog-esqueci">Esqueceu a senha?</button>`
+      : `Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.`}</p>
+`;
+  const campoCodigo = `
+    <label class="field-label" for="jog-codigo">Código de 6 números</label>
+    <input class="form-field jog-codigo campo-codigo" data-rascunho="codigo" id="jog-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />`;
+  const reenviar = `<p class="jog-troca"><button type="button" class="inline-link" id="jog-reenviar">Mandar outro código</button></p>`;
+  const naoMandou = `<p class="email-sugestao" role="alert">Não consegui mandar o código agora. ${tela === "codigo" ? "Você pode confirmar depois, em Minha conta." : `Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.`}</p>`;
+  if (tela === "codigo") miolo = `
+    <p class="sheet-title display">Confirme o seu e-mail</p>
+    <p class="subtitle" style="margin-top:4px">Mandamos um código de 6 números para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Chega em até um minuto; olhe também o spam.</p>
+    ${trilha}
+    ${state.codigoMandando ? `<p class="footnote">${bolaGirando(16)} Mandando o código…</p>` : ""}
+    ${state.codigoFalhou ? naoMandou : campoCodigo}
+    ${erro}
+    ${state.codigoFalhou
+      ? `<button type="button" class="cta-btn cta-primary" id="jog-depois" style="margin-top:18px;width:100%">Continuar</button>`
+      : `<button type="button" class="cta-btn cta-primary" id="jog-confirmar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Confirmar"}</button>
+         ${reenviar}
+         ${state.codigoDeMinhaConta ? "" : `<p class="jog-troca"><button type="button" class="inline-link" id="jog-depois">Fazer isso depois</button></p>`}`}`;
+  if (tela === "esqueci") miolo = `
+    <p class="sheet-title display">Crie uma senha nova</p>
+    <p class="subtitle" style="margin-top:4px">Mandamos um código de 6 números para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Digite o código e a senha nova.</p>
+    ${state.codigoFalhou ? naoMandou : `
+      ${campoCodigo}
+      <label class="field-label" for="jog-senha-nova">Senha nova</label>
+      <input class="form-field campo-codigo" data-rascunho="senha" id="jog-senha-nova" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
+      ${erro}
+      <button type="button" class="cta-btn cta-primary" id="jog-salvar-senha" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Salvando") || "Salvar a senha nova"}</button>
+      ${reenviar}`}`;
   if (tela === "criar") miolo = `
     <p class="sheet-title display">Complete o seu cadastro</p>
     <p class="subtitle" style="margin-top:4px">Esse e-mail ainda não tem conta no GuiaTennis. É grátis e leva um minuto.</p>
@@ -6868,7 +7002,8 @@ function renderJogadorSheet() {
     <button type="button" class="cta-btn cta-primary" id="jog-criar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Criando") || "Criar conta"}</button>`;
   if (tela === "conta" && jogador) miolo = `
     <p class="sheet-title display">Minha conta</p>
-    <p class="subtitle" style="margin-top:4px">${esc(jogador.email || "")}</p>
+    <p class="subtitle" style="margin-top:4px">${esc(jogador.email || "")}${jogador.email_confirmado_em ? ` · ${icon('check', 13, 'var(--green)')} confirmado` : ""}</p>
+    ${jogador.email_confirmado_em ? "" : `<p class="email-sugestao">E-mail ainda não confirmado: os avisos só chegam depois de confirmar. <button type="button" class="inline-link" id="jog-confirmar-agora">Confirmar agora</button></p>`}
     ${state.jogadorAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.jogadorAviso)}</p>` : ""}
     <p class="jog-grupo">Dados pessoais</p>
     <label class="field-label" for="jog-nome">Nome e sobrenome</label>
@@ -6948,6 +7083,92 @@ function blocoSugestaoEmail(email) {
     </div>`;
 }
 
+// ---------- código por e-mail (02/10/2026) ----------
+// Prova que o e-mail existe e é da pessoa: o login do Supabase manda um
+// código de 6 números (com o serviço de e-mail ligado no painel) e o site
+// confere. Serve para confirmar o e-mail e para o "Esqueci a senha". Login
+// com o domínio interno das academias (usuário@acesso…) não recebe e-mail:
+// para esses, o "esqueci" continua pelo WhatsApp.
+function recebeEmail(login) {
+  return !!login && login.includes("@") && !login.endsWith("@" + DOMINIO_ACESSO);
+}
+async function enviarCodigo(email) {
+  window.__codigo = {};
+  try {
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+    if (error) diag(`código por e-mail: ${error.message}`);
+    return !error;
+  } catch (e) { diag(`código por e-mail: ${e.message}`); return false; }
+}
+// Confere o código; certo, a pessoa fica logada por ele (e o banco aceita a
+// confirmação do e-mail).
+async function conferirCodigo(email, codigo) {
+  const limpo = String(codigo || "").replace(/\D/g, "");
+  if (limpo.length !== 6) return null;
+  try {
+    const { data, error } = await sb.auth.verifyOtp({ email, token: limpo, type: "email" });
+    if (error || !data || !data.session) return null;
+    try { await sb.rpc('confirmar_meu_email'); } catch {}
+    window.__codigo = { senha: (window.__codigo || {}).senha };
+    return data.session;
+  } catch { return null; }
+}
+const CODIGO_ERRADO = "Código errado ou vencido. Confira o número ou peça outro.";
+
+async function irParaCodigoJogador(tela) {
+  const email = (window.__jog && window.__jog.email) || (jogador && jogador.email) || "";
+  window.__jog = { ...(window.__jog || {}), email };
+  state.jogadorTela = tela;
+  state.jogadorErro = "";
+  state.codigoFalhou = false;
+  state.jogadorSalvando = false;
+  state.codigoMandando = true;
+  render();
+  state.codigoFalhou = !(await enviarCodigo(state.jogadorLogin || email));
+  state.codigoMandando = false;
+  render();
+  document.getElementById("jog-codigo")?.focus();
+}
+
+async function confirmarCodigoJogador() {
+  const email = state.jogadorLogin || (window.__jog && window.__jog.email) || "";
+  const codigo = document.getElementById("jog-codigo")?.value || "";
+  state.jogadorSalvando = true; state.jogadorErro = ""; render();
+  const sessao = await conferirCodigo(email, codigo);
+  state.jogadorSalvando = false;
+  if (!sessao) { state.jogadorErro = CODIGO_ERRADO; render(); return; }
+  await carregarConta(sessao);
+  if (state.codigoDeMinhaConta) {
+    state.codigoDeMinhaConta = false;
+    abrirContaJogador("conta");
+    state.jogadorAviso = "E-mail confirmado.";
+    render();
+    return;
+  }
+  await depoisDeEntrarJogador();
+}
+
+async function salvarSenhaNovaJogador() {
+  const email = state.jogadorLogin || (window.__jog && window.__jog.email) || "";
+  const codigo = document.getElementById("jog-codigo")?.value || "";
+  const senha = document.getElementById("jog-senha-nova")?.value || "";
+  if (senha.length < 8) { state.jogadorErro = "A senha nova precisa ter pelo menos 8 caracteres."; render(); return; }
+  state.jogadorSalvando = true; state.jogadorErro = ""; render();
+  const sessao = await conferirCodigo(email, codigo);
+  if (!sessao) { state.jogadorSalvando = false; state.jogadorErro = CODIGO_ERRADO; render(); return; }
+  const { error } = await sb.auth.updateUser({ password: senha });
+  state.jogadorSalvando = false;
+  if (error) { state.jogadorErro = "O código deu certo, mas não consegui salvar a senha. Tente de novo."; render(); return; }
+  await carregarConta(sessao);
+  if (isAdmin || contaAcademia) {
+    try { await sb.rpc('marcar_senha_trocada'); } catch {}
+    try { history.replaceState(null, "", semCamadas(location.pathname + location.search + location.hash)); } catch {}
+    location.reload();
+    return;
+  }
+  await depoisDeEntrarJogador();
+}
+
 // "Continuar": o banco diz se o e-mail já tem conta.
 async function continuarJogadorComEmail() {
   const email = (document.getElementById("jog-email")?.value || "").trim().toLowerCase();
@@ -7014,7 +7235,7 @@ async function criarContaJogador() {
   }
   const { data, error } = await sb.auth.signInWithPassword({ email, password: f.senha });
   if (!error) await carregarConta(data && data.session);
-  window.__jog = {};
+  window.__jog = { email };
   if (error || !jogador) {
     state.jogadorSalvando = false;
     state.jogadorTela = "entrar";
@@ -7022,7 +7243,9 @@ async function criarContaJogador() {
     render();
     return;
   }
-  await depoisDeEntrarJogador();
+  // Conta criada e logada: agora confirma o e-mail pelo código.
+  state.jogadorLogin = email;
+  await irParaCodigoJogador("codigo");
 }
 
 async function salvarContaJogador() {
@@ -7050,6 +7273,9 @@ function ligarEventosJogador() {
     };
   });
   const fechar = () => { state.jogadorTela = null; state.depoisDeEntrar = null; render(); };
+  document.querySelectorAll(".campo-codigo").forEach(el => {
+    el.oninput = (e) => { window.__codigo = { ...(window.__codigo || {}), [el.dataset.rascunho]: e.target.value }; };
+  });
   document.querySelectorAll("[data-email-sugestao]").forEach(el => {
     el.onclick = () => {
       const sug = state.emailSugestao;
@@ -7064,6 +7290,20 @@ function ligarEventosJogador() {
       continuarJogadorComEmail();
     };
   });
+  const esqueci = document.getElementById("jog-esqueci");
+  if (esqueci) esqueci.onclick = () => irParaCodigoJogador("esqueci");
+  const reenviar = document.getElementById("jog-reenviar");
+  if (reenviar) reenviar.onclick = async () => { state.codigoFalhou = !(await enviarCodigo(state.jogadorLogin || (window.__jog || {}).email)); state.jogadorAviso = ""; state.jogadorErro = state.codigoFalhou ? "" : "Mandamos outro código."; render(); };
+  const confirmarCod = document.getElementById("jog-confirmar");
+  if (confirmarCod) confirmarCod.onclick = () => confirmarCodigoJogador();
+  const campoCod = document.getElementById("jog-codigo");
+  if (campoCod && confirmarCod) campoCod.onkeydown = (e) => { if (e.key === "Enter") confirmarCod.click(); };
+  const depois = document.getElementById("jog-depois");
+  if (depois) depois.onclick = () => { state.codigoDeMinhaConta ? abrirContaJogador("conta") : depoisDeEntrarJogador(); };
+  const salvarSenha = document.getElementById("jog-salvar-senha");
+  if (salvarSenha) salvarSenha.onclick = () => salvarSenhaNovaJogador();
+  const confirmarAgora = document.getElementById("jog-confirmar-agora");
+  if (confirmarAgora) confirmarAgora.onclick = () => { state.codigoDeMinhaConta = true; state.jogadorLogin = jogador.email; irParaCodigoJogador("codigo"); };
   const continuar = document.getElementById("jog-continuar");
   if (continuar) continuar.onclick = () => continuarJogadorComEmail();
   const emailCampo = document.getElementById("jog-email");
@@ -7679,11 +7919,11 @@ const PARAMETROS_DA_TELA = ["court", "busca", "comparar", "entrar", "q", "academ
 //   /parceiros/cadastro?passo=senha|dados   e-mail → senha ou cadastro
 // O que a pessoa digitou fica na memória: voltar um passo mostra o campo
 // como estava. Recarregar num passo sem os dados volta ao começo dele.
-const CONTA_NO_LINK = { email: "email", entrar: "senha", criar: "cadastro", conta: "minha" };
+const CONTA_NO_LINK = { email: "email", entrar: "senha", criar: "cadastro", conta: "minha", codigo: "codigo", esqueci: "nova-senha" };
 function camadasDoEstado() {
   const c = [];
   if (state.page === "parceiros" && !contaAcademia && ["cadastro", "entrar"].includes(state.parceirosAba) && state.pcEmailPasso !== "email")
-    c.push(["passo", state.pcEmailPasso === "existe" ? "senha" : "dados"]);
+    c.push(["passo", { existe: "senha", criar: "dados", esqueci: "nova-senha" }[state.pcEmailPasso] || "senha"]);
   if (state.showMenu || state.pcMenu) c.push(["menu", "1"]);
   if (state.lista) c.push(["lista", state.lista]);
   if (state.showPrefs) c.push(["preferencias", "1"]);
@@ -7707,7 +7947,8 @@ function aplicarCamadas(q) {
   const temEmail = !!(window.__jog && window.__jog.email);
   state.jogadorTela = !conta ? null
     : conta === "conta" ? (jogador ? "conta" : "email")
-    : (conta === "entrar" || conta === "criar") && !temEmail ? "email" : conta;
+    : conta === "codigo" ? (jogador ? "codigo" : "email")
+    : (conta === "entrar" || conta === "criar" || conta === "esqueci") && !temEmail ? "email" : conta;
   if (state.jogadorTela === "conta" && !(window.__jog && window.__jog.nome !== undefined)) {
     window.__jog = { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!jogador[a.campo]])) };
   }
@@ -7729,7 +7970,7 @@ function aplicarCamadas(q) {
   state.showPrivacy = q.get("privacidade") === "1";
   if (state.page === "parceiros" && ["cadastro", "entrar"].includes(state.parceirosAba)) {
     const passo = q.get("passo");
-    state.pcEmailPasso = passo === "senha" && state.pcEmail ? "existe" : passo === "dados" && state.pcEmail ? "criar" : "email";
+    state.pcEmailPasso = !state.pcEmail ? "email" : passo === "senha" ? "existe" : passo === "dados" ? "criar" : passo === "nova-senha" ? "esqueci" : "email";
     state.loginError = "";
     state.pcContaErro = "";
   }

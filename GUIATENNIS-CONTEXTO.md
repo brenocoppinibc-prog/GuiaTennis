@@ -24,6 +24,14 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 01/10/2026
 
+> **Estado (02/10/2026, fim do chat):** PR #5 ainda **sem merge**, com
+> tudo das regras 19 a 28 (logo, menu do trivago, home pessoal,
+> preferências, cadastro passo a passo, planos, conta do jogador, um lugar
+> só para o e-mail, voltar passo a passo, trilha de tênis, código por
+> e-mail). **504 verificações** passando (`check-js.sh` + os 16 arquivos de
+> `testes/`). **Falta o Breno ligar o serviço de e-mail no Supabase**
+> (seção 11, primeiro item) e testar na prévia; depois, "pode subir".
+>
 > **Estado (01/10/2026):** tudo está no **PR #5** (branch
 > `ccr-0a610d86-k6plx0` → `main`), ainda **sem merge**: a **área da
 > academia** (seção 4), o site das academias **GuiaTennis Parceiros**
@@ -245,6 +253,15 @@ cobra taxa e não fica no meio** da negociação.
     "Você quis dizer …@gmail.com?" antes de seguir (`sugestaoDeEmail`).
     Confirmar que o e-mail existe de verdade exige mandar um código por
     e-mail — precisa de um serviço de e-mail ligado ao Supabase (em aberto).
+28. **E-mail confirmado por código** (pedido de 02/10/2026): depois de
+    criar a conta (jogador) o site manda um código de 6 números pelo login
+    do Supabase (`signInWithOtp`) e confere (`verifyOtp`); certo, o banco
+    anota (`confirmar_meu_email`, SQL `20261002150000`, só aceita token de
+    login por código). "Esqueceu a senha?" (jogador e Parceiros) usa o
+    mesmo código + senha nova. Parceiros sem e-mail confirmado veem o
+    cartão "Confirme o seu e-mail" no painel. Login `usuário@acesso…` não
+    recebe e-mail: esqueci pelo WhatsApp. Sem o serviço de e-mail, o site
+    avisa e deixa confirmar depois. Teste: `testes/codigo.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1118,7 +1135,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -1608,6 +1625,20 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+- **Ligar o serviço de e-mail no Supabase (02/10/2026)** — sem isso o
+  código de confirmação e o "Esqueci a senha" não chegam (o site avisa e
+  segue). Passos para o Breno (credenciais nunca pelo chat): (1) criar
+  conta grátis no Resend (resend.com) ou no Brevo, confirmar o domínio
+  guiatennis.com.br (registros DNS que eles mostram) e gerar a senha SMTP;
+  (2) no Supabase, nos dois projetos (teste e de verdade): Authentication →
+  Emails → SMTP Settings → ligar "Custom SMTP" com host, porta, usuário e a
+  senha do serviço, remetente `nao-responda@guiatennis.com.br`, nome
+  "GuiaTennis"; (3) Authentication → Email Templates → "Magic Link": trocar
+  o texto para mostrar o código `{{ .Token }}` ("Seu código do GuiaTennis:
+  {{ .Token }}"); (4) Authentication → Rate Limits: subir o limite de
+  e-mails por hora. Os avisos por e-mail (academias, promoções,
+  novidades) ainda precisam de um envio próprio (próximo passo).
 
 - **Testar na prévia o pedido de 01/10/2026** (aba anônima, celular): (1) a
   logo de três riscos no topo, no rodapé, no QR code (admin › ficha › QR) e

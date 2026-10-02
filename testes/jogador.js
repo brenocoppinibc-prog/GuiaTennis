@@ -29,6 +29,17 @@ const { abrir, ok } = require('./harness');
   const criada = await page.evaluate(() => ({ j: jogador, rpc: (window.__rpcs.find(r => r.nome === 'criar_conta_jogador') || {}).args }));
   ok(criada.j && criada.j.nome === 'Bia Tenista' && criada.j.email === 'bia@exemplo.com' && criada.j.promocoes === true && criada.j.novidades === false, 'cria a conta, entra na hora e guarda os avisos escolhidos');
   ok(criada.rpc && criada.rpc.p_cidade === null && criada.rpc.p_aceite === true, 'manda o aceite e a cidade vazia como nula');
+  // Confirma o e-mail pelo código de 6 números.
+  const cod = await page.evaluate(() => ({ tela: state.jogadorTela, mandou: (window.__codigos || {})['bia@exemplo.com'], link: location.search, bola: document.querySelector('#jogador-overlay .trilha-bola')?.style.left }));
+  ok(cod.tela === 'codigo' && cod.mandou === '123456' && cod.link.includes('conta=codigo') && cod.bola === '100%', 'depois de criar, manda o código e pede para confirmar o e-mail (última etapa da trilha)');
+  await page.fill('#jog-codigo', '999999');
+  await page.click('#jog-confirmar');
+  await page.waitForTimeout(300);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('Código errado'), 'código errado: avisa');
+  await page.fill('#jog-codigo', '123456');
+  await page.click('#jog-confirmar');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => !state.jogadorTela && !!jogador.email_confirmado_em), 'código certo: e-mail confirmado e a janela fecha');
   menu = await page.evaluate(() => { state.showMenu = true; render(); return [...document.querySelectorAll('#menu-overlay .menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim()); });
   ok(menu[0] === 'Minha conta Bia' && menu.includes('Avisos por e-mail Ligados') && menu.includes('Sair da conta'), 'logado: Minha conta, avisos ligados e sair — ' + menu[0]);
   // Minha conta: muda os avisos.
@@ -95,7 +106,7 @@ const { abrir, ok } = require('./harness');
   // E-mail digitado errado: o site sugere o certo; trilha com a bolinha.
   ({ browser, page } = await abrir());
   await page.evaluate(() => abrirContaJogador('entrar'));
-  ok(await page.evaluate(() => [...document.querySelectorAll('#jogador-overlay .trilha li')].map(l => l.innerText).join('|') === 'E-mail|Senha ou cadastro|Pronto' && !!document.querySelector('#jogador-overlay .trilha-bola')), 'trilha de tênis: E-mail, Senha ou cadastro, Pronto');
+  ok(await page.evaluate(() => [...document.querySelectorAll('#jogador-overlay .trilha li')].map(l => l.innerText).join('|') === 'E-mail|Senha ou cadastro|Confirmar' && !!document.querySelector('#jogador-overlay .trilha-bola')), 'trilha de tênis: E-mail, Senha ou cadastro, Confirmar');
   await page.fill('#jog-email', 'bia@gmial.com');
   await page.click('#jog-continuar');
   await page.waitForTimeout(200);
@@ -105,5 +116,40 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => state.jogadorTela === 'criar' && window.__jog.email === 'bia@gmail.com' && document.querySelector('.jog-email-volta').innerText.includes('bia@gmail.com')), 'usou a sugestão e seguiu, com o e-mail em cima como no trivago');
   ok(await page.evaluate(() => document.querySelector('#jogador-overlay .trilha-bola').style.left === '50%'), 'a bolinha andou para a segunda etapa');
   ok(await page.evaluate(() => sugestaoDeEmail('ana@hotmial.com') === 'ana@hotmail.com' && sugestaoDeEmail('ana@gmail') === 'ana@gmail.com' && sugestaoDeEmail('ana@minhaacademia.com.br') === null), 'sugere hotmail e gmail, e não mexe em domínio próprio');
+  await browser.close();
+
+  // Esqueci a senha: código no e-mail e senha nova.
+  ({ browser, page } = await abrir());
+  await page.evaluate(() => { window.__db.jogadores.push({ user_id: 'j-z', nome: 'Zé', email: 'ze@exemplo.com' }); window.__senhas['ze@exemplo.com'] = 'antiga1234'; abrirContaJogador('entrar'); });
+  await page.fill('#jog-email', 'ze@exemplo.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  await page.click('#jog-esqueci');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.jogadorTela === 'esqueci' && (window.__codigos || {})['ze@exemplo.com'] === '123456' && location.search.includes('conta=nova-senha')), 'Esqueceu a senha: manda o código para o e-mail');
+  await page.fill('#jog-codigo', '123456');
+  await page.fill('#jog-senha-nova', 'novasenha99');
+  await page.click('#jog-salvar-senha');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => jogador && jogador.nome === 'Zé' && window.__senhas['ze@exemplo.com'] === 'novasenha99' && !state.jogadorTela), 'código certo: senha nova salva e já entra');
+  await browser.close();
+
+  // Serviço de e-mail desligado: avisa e deixa confirmar depois.
+  ({ browser, page } = await abrir());
+  await page.evaluate(() => { window.__semEmail = true; abrirContaJogador('entrar'); });
+  await page.fill('#jog-email', 'semmail@exemplo.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  await page.fill('#jog-nome', 'Sem Mail');
+  await page.fill('#jog-senha', 'senhaboa12');
+  await page.check('#jog-aceite');
+  await page.click('#jog-criar');
+  await page.waitForTimeout(600);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay')?.innerText || '')).includes('Não consegui mandar o código agora'), 'sem o serviço de e-mail: avisa e não trava');
+  await page.click('#jog-depois');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => jogador && !jogador.email_confirmado_em && !state.jogadorTela), 'segue logado, com o e-mail para confirmar depois');
+  await page.evaluate(() => abrirContaJogador('conta'));
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay')?.innerText || '')).includes('E-mail ainda não confirmado'), 'Minha conta lembra de confirmar o e-mail');
   await browser.close();
 })();

@@ -538,6 +538,9 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.fill('#jog-senha', 'senhaboa12');
   await page.check('#jog-aceite');
   await page.click('#jog-criar');
+  await page.waitForTimeout(600);
+  await page.fill('#jog-codigo', '123456');
+  await page.click('#jog-confirmar');
   await page.waitForTimeout(800);
   const avaliada = await page.evaluate(() => ({ n: window.__db.avaliacoes.length, nome: (window.__db.avaliacoes[0] || {}).nome_autor, obrigado: !!document.querySelector('.rate-thanks'), aberta: !!document.getElementById('jogador-overlay') }));
   ok(avaliada.n === 1 && avaliada.nome === 'Rafa Jogador' && avaliada.obrigado && !avaliada.aberta, 'criou a conta: a avaliação sai sozinha, com o nome da conta — ' + JSON.stringify(avaliada));

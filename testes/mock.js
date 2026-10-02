@@ -303,6 +303,13 @@
       if (db.jogadores.some(j => j.email === email)) return { data: { tipo: "jogador", login: email }, error: null };
       return { data: null, error: null };
     }
+    if (nome === "confirmar_meu_email") {
+      if (!sessao || !sessao.otp) return erro("Confirme o e-mail pelo código.", "42501");
+      const agora2 = new Date().toISOString();
+      db.jogadores.filter(j => j.user_id === sessao.user.id).forEach(j => { j.email_confirmado_em = j.email_confirmado_em || agora2; });
+      db.academia_acessos.filter(x => x.user_id === sessao.user.id).forEach(x => { x.email_confirmado_em = x.email_confirmado_em || agora2; });
+      return { data:null, error:null };
+    }
     if (nome === "criar_conta_jogador") {
       const email = String(a.p_email || "").trim().toLowerCase();
       if (sessao) return erro("Saia da conta atual para criar outra.", "22023");
@@ -353,6 +360,22 @@
         window.__senhaAtualEnviada = attrs.current_password;
         if (sessao) window.__senhas[sessao.user.email] = attrs.password;
         return Promise.resolve({ data:{ user: sessao && sessao.user }, error:null });
+      },
+      // Código por e-mail (SQL 20261002150000): o código mandado fica em
+      // __codigos[email]; window.__semEmail finge o serviço de e-mail desligado.
+      signInWithOtp({ email }){
+        if (window.__semEmail) return Promise.resolve({ data:{}, error:{ message:"Error sending magic link email" } });
+        window.__codigos = window.__codigos || {};
+        window.__codigos[email] = "123456";
+        return Promise.resolve({ data:{}, error:null });
+      },
+      verifyOtp({ email, token }){
+        if (!window.__codigos || window.__codigos[email] !== token) return Promise.resolve({ data:{ session:null }, error:{ message:"Token has expired or is invalid" } });
+        delete window.__codigos[email];
+        const acesso = db.academia_acessos.find(x => loginDe(x) === email);
+        const jog = db.jogadores.find(x => x.email === email);
+        sessao = { user: { id: email === ADMIN ? "admin" : acesso ? acesso.user_id : jog ? jog.user_id : "sem-acesso", email }, otp: true };
+        return Promise.resolve({ data:{ session: sessao, user: sessao.user }, error:null });
       },
       signOut(){ sessao = null; window.__saiu = true; return Promise.resolve({}); },
       onAuthStateChange(){ return { data:{ subscription:{ unsubscribe(){} } } }; },

@@ -5251,6 +5251,8 @@ function irParceiros(aba, opcoes = {}) {
     state.parceirosDepois = aba;
     aba = "entrar";
   }
+  // Entrar/Cadastro aberto de novo começa pelo e-mail.
+  if ((aba === "cadastro" || aba === "entrar") && state.parceirosAba !== aba) { state.pcEmailPasso = "email"; state.loginError = ""; state.pcContaErro = ""; }
   state.page = "parceiros";
   state.parceirosAba = aba;
   state.selected = null;
@@ -6875,7 +6877,11 @@ async function entrarJogador() {
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const { data, error } = await sb.auth.signInWithPassword({ email: state.jogadorLogin || email, password: senha });
   if (!error) await carregarConta(data && data.session);
-  if (!error && (isAdmin || contaAcademia)) { location.reload(); return; }
+  if (!error && (isAdmin || contaAcademia)) {
+    try { history.replaceState(null, "", semCamadas(location.pathname + location.search + location.hash)); } catch {}
+    location.reload();
+    return;
+  }
   if (error || !jogador) {
     if (!error) await sb.auth.signOut();
     state.jogadorSalvando = false;
@@ -7549,7 +7555,77 @@ function renderHome() {
 
 // O que a tela escreve no link. O resto (utm_source, diagnostico) fica.
 const PARAMETROS_DA_TELA = ["court", "busca", "comparar", "entrar", "q", "academias", "academia", "piso", "cobertura",
-  "modalidade", "comodidades", "nota", "preco", "distancia", "favoritas", "comparando", "ordem", "ver"];
+  "modalidade", "comodidades", "nota", "preco", "distancia", "favoritas", "comparando", "ordem", "ver",
+  ...["passo", "menu", "lista", "preferencias", "conta", "parte", "termos", "privacidade"]];
+
+// ---------- cada passo com o próprio link (pedido do Breno em 02/10/2026) ----------
+// "Voltar" tem de desfazer só o último passo, nunca pular para uma tela
+// antiga. Como no Airbnb e no Booking, cada janela aberta e cada passo de
+// um formulário entra no link e no histórico do navegador:
+//   ?menu=1                       menu aberto
+//   ?lista=favoritas|vistas|chamadas   Minhas quadras
+//   ?preferencias=1               Preferências de busca
+//   ?conta=email|senha|cadastro|minha  Entrar / conta do jogador
+//   ?parte=dados|precos|…|pronto  cadastro da academia, parte a parte
+//   ?termos=1  ?privacidade=1     textos legais
+//   /parceiros/cadastro?passo=senha|dados   e-mail → senha ou cadastro
+// O que a pessoa digitou fica na memória: voltar um passo mostra o campo
+// como estava. Recarregar num passo sem os dados volta ao começo dele.
+const CONTA_NO_LINK = { email: "email", entrar: "senha", criar: "cadastro", conta: "minha" };
+function camadasDoEstado() {
+  const c = [];
+  if (state.page === "parceiros" && !contaAcademia && ["cadastro", "entrar"].includes(state.parceirosAba) && state.pcEmailPasso !== "email")
+    c.push(["passo", state.pcEmailPasso === "existe" ? "senha" : "dados"]);
+  if (state.showMenu || state.pcMenu) c.push(["menu", "1"]);
+  if (state.lista) c.push(["lista", state.lista]);
+  if (state.showPrefs) c.push(["preferencias", "1"]);
+  if (state.jogadorTela && CONTA_NO_LINK[state.jogadorTela]) c.push(["conta", CONTA_NO_LINK[state.jogadorTela]]);
+  if (state.showRegister && window.__form) c.push(["parte", state.registerStatus === "done" ? "pronto" : (REG_PASSOS[state.regPasso || 0] || REG_PASSOS[0]).id]);
+  if (state.showTerms) c.push(["termos", "1"]);
+  if (state.showPrivacy) c.push(["privacidade", "1"]);
+  return c;
+}
+
+// O contrário: o link abre (ou fecha) as janelas e os passos.
+function aplicarCamadas(q) {
+  const menu = q.get("menu") === "1";
+  state.showMenu = menu && state.page !== "parceiros";
+  state.pcMenu = menu && state.page === "parceiros";
+  state.lista = LISTAS[q.get("lista")] ? q.get("lista") : null;
+  const prefs = q.get("preferencias") === "1";
+  if (prefs && !state.showPrefs) { const p = lerPreferencias(); window.__pref = window.__pref || { uf: p.uf || "", cidade: p.cidade || "", modalidade: p.modalidade || "" }; }
+  state.showPrefs = prefs;
+  const conta = Object.keys(CONTA_NO_LINK).find(k => CONTA_NO_LINK[k] === q.get("conta")) || null;
+  const temEmail = !!(window.__jog && window.__jog.email);
+  state.jogadorTela = !conta ? null
+    : conta === "conta" ? (jogador ? "conta" : "email")
+    : (conta === "entrar" || conta === "criar") && !temEmail ? "email" : conta;
+  if (state.jogadorTela === "conta" && !(window.__jog && window.__jog.nome !== undefined)) {
+    window.__jog = { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!jogador[a.campo]])) };
+  }
+  if (!state.jogadorTela) { state.jogadorErro = ""; state.jogadorSalvando = false; }
+  const parte = q.get("parte");
+  if (parte && window.__form) {
+    state.showRegister = true;
+    if (parte === "pronto") state.registerStatus = "done";
+    else {
+      if (state.registerStatus === "done" || state.registerStatus === "error") state.registerStatus = "idle";
+      const k = REG_PASSOS.findIndex(x => x.id === parte);
+      state.regPasso = k >= 0 ? k : 0;
+      state.regPassoErro = "";
+    }
+  } else {
+    state.showRegister = false;
+  }
+  state.showTerms = q.get("termos") === "1";
+  state.showPrivacy = q.get("privacidade") === "1";
+  if (state.page === "parceiros" && ["cadastro", "entrar"].includes(state.parceirosAba)) {
+    const passo = q.get("passo");
+    state.pcEmailPasso = passo === "senha" && state.pcEmail ? "existe" : passo === "dados" && state.pcEmail ? "criar" : "email";
+    state.loginError = "";
+    state.pcContaErro = "";
+  }
+}
 const ORDEM_NO_LINK = { recomendados: "recomendadas", distance: "distancia", rating: "nota", price: "preco", reviews: "avaliacoes", courts: "quadras" };
 // Seções da ficha no link (#avaliacoes), com os nomes que a pessoa lê.
 const SECOES_FICHA = { visao: "ht-visao", precos: "ht-opcoes", cancelamento: "ht-politica", estrutura: "ht-comodidades",
@@ -7625,16 +7701,31 @@ function urlDoEstado() {
     caminho = "/parceiros" + (aba === "inicio" ? "" : "/" + aba);
     if (aba === "cadastro" && state.pcReivindicar) p.set("academia", state.pcReivindicar);
   }
+  camadasDoEstado().forEach(([k, v]) => p.set(k, v));
   const busca = p.toString().replace(/%2C/gi, ",");
   return caminho + (busca ? "?" + busca : "") + secao;
 }
+
+// O link sem as janelas e os passos: a tela de baixo.
+function semCamadas(url) {
+  const [antes, hash = ""] = url.split("#");
+  const [caminho, busca = ""] = antes.split("?");
+  const p = new URLSearchParams(busca);
+  CAMADAS_DO_LINK.forEach(k => p.delete(k));
+  const b = p.toString().replace(/%2C/gi, ",");
+  return caminho + (b ? "?" + b : "") + (hash ? "#" + hash : "");
+}
+const CAMADAS_DO_LINK = ["passo", "menu", "lista", "preferencias", "conta", "parte", "termos", "privacidade"];
 
 function syncUrl(push) {
   try {
     const alvo = urlDoEstado();
     if (alvo === location.pathname + location.search + location.hash) return;
-    const dados = { page: state.page };
-    if (push) history.pushState(dados, "", alvo);
+    const dados = { page: state.page, prof: camadasDoEstado().length ? 1 : 0 };
+    // Tela nova aberta de dentro de uma janela (o menu, por exemplo): toma o
+    // lugar da janela no histórico, para o "voltar" não reabrir o menu.
+    const deUmaJanela = (history.state && history.state.prof > 0);
+    if (push && !deUmaJanela) history.pushState(dados, "", alvo);
     else history.replaceState(dados, "", alvo);
   } catch {}
 }
@@ -7644,10 +7735,32 @@ function syncUrl(push) {
 // desfaz, como no Airbnb). Com a gaveta de filtros aberta, espera fechar
 // para virar um passo só.
 function sincronizarLink() {
-  if (!state.loaded || state.showFilters) return;
+  if (!state.loaded || state.showFilters || state.__voltando) return;
   try {
+    const atual = location.pathname + location.search + location.hash;
     const alvo = urlDoEstado();
-    if (alvo === location.pathname + location.search + location.hash) return;
+    if (alvo === atual) return;
+    const h = history.state || {};
+    const prof = h.prof || 0;
+    // Abriu, trocou ou fechou uma janela/passo na mesma tela.
+    if (!state.__doHistorico && semCamadas(alvo) === semCamadas(atual)) {
+      if (!camadasDoEstado().length && prof > 0) {
+        // Fechou (✕, Salvar, Entrar): volta as entradas das janelas, e o
+        // "voltar" seguinte vai para a tela de antes, não para a janela.
+        state.__voltando = true;
+        history.go(-prof);
+        return;
+      }
+      if (!camadasDoEstado().length) { history.replaceState({ page: state.page, prof: 0 }, "", alvo); return; }
+      if (h.pai === alvo) {
+        // Voltou um passo pelo botão do próprio site ("Voltar", "Trocar o e-mail").
+        state.__voltando = true;
+        history.back();
+        return;
+      }
+      history.pushState({ page: state.page, prof: prof + 1, pai: atual }, "", alvo);
+      return;
+    }
     const mesmaTela = alvo.split(/[?#]/)[0] === location.pathname && state.page === "search";
     syncUrl(mesmaTela && !state.__doHistorico);
   } catch {}
@@ -7831,9 +7944,28 @@ function voltarDaFicha() {
 
 window.addEventListener("popstate", () => {
   if (!state.loaded) return;
+  // Quem voltou foi o próprio site (fechou uma janela, "Voltar" de um
+  // passo): a tela já está certa. Só confere se, no meio tempo, abriu
+  // outra janela — aí ela entra no histórico.
+  if (state.__voltando) {
+    state.__voltando = false;
+    sincronizarLink();
+    return;
+  }
   state.showFilters = false;
   state.showSort = false;
-  const feito = aplicarLink(lerLink());
+  const antes = state.page;
+  const link = lerLink();
+  const feito = aplicarLink(link);
+  aplicarCamadas(link.q);
+  // Só fechou ou trocou uma janela: a tela de baixo fica onde estava.
+  if (antes === state.page && semCamadas(location.pathname + location.search + location.hash) === semCamadas(urlDoEstado())
+      && !(feito.termo && feito.termo !== state.termoBuscado)) {
+    state.__doHistorico = true;
+    render();
+    state.__doHistorico = false;
+    return;
+  }
   state.__doHistorico = true;
   render();
   state.__doHistorico = false;
@@ -12276,7 +12408,9 @@ async function init() {
 
   const q = new URLSearchParams(location.search);
   // O link manda na tela: ficha, região, busca com filtros, comparação.
-  const doLink = aplicarLink(lerLink());
+  const linkInicial = lerLink();
+  const doLink = aplicarLink(linkInicial);
+  aplicarCamadas(linkInicial.q);
   if (state.page === "home") aplicarPreferenciaNaBusca();
   if (doLink.ficha) {
     state.backTo = "home";

@@ -221,6 +221,17 @@ cobra taxa e não fica no meio** da negociação.
     cadastre a sua academia"); o usuário sem @ que o GuiaTennis mandou vai
     direto para a senha; e-mail de jogador é recusado ali. Nos testes:
     `irSenha(page, usuario)` do `harness.js`.
+25. **"Voltar" desfaz só o último passo** (pedido de 02/10/2026): cada
+    janela e cada passo tem o próprio link e entra no histórico (`?menu=1`,
+    `?lista=`, `?preferencias=1`, `?conta=email|senha|cadastro|minha`,
+    `?parte=<parte do cadastro>`, `?termos=1`, `?privacidade=1`,
+    `/parceiros/cadastro?passo=senha|dados`). `camadasDoEstado` escreve,
+    `aplicarCamadas` lê; `sincronizarLink` empilha ao abrir/avançar, volta
+    (`history.back`/`go`) ao fechar ou ao "Voltar" do próprio site, e uma
+    tela aberta de dentro de uma janela toma o lugar dela no histórico. O
+    que foi digitado fica na memória. Janela ou passo novo: ponha em
+    `camadasDoEstado`/`aplicarCamadas` (e em `CAMADAS_DO_LINK`). Teste:
+    `testes/voltar.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1094,7 +1105,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

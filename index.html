@@ -1525,7 +1525,7 @@
   .reg-trava { border: 0; margin: 0; padding: 0; min-width: 0; }
   .reg-trava:disabled { opacity: 0.55; }
   .rate-login { font-size: 14px; color: var(--muted); margin: 4px 0 8px; }
-  .jog-troca { margin: 16px 0 0; font-size: 15px; text-align: center; }
+  .jog-trocar { margin: 6px 0 0; font-size: 14px; }
   .jog-grupo { margin: 26px 0 0; font-size: 17px; font-weight: 700; }
   .jog-rodape { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
   .jog-excluir { color: var(--red) !important; }
@@ -2733,6 +2733,7 @@ let state = {
   jogadorErro: "",
   jogadorAviso: "",
   jogadorSalvando: false,
+  jogadorLogin: "",
   depoisDeEntrar: null,
   qrCourt: null,
   perto: {},
@@ -2771,6 +2772,7 @@ let state = {
   pcMenu: false,
   pcEmail: "",
   pcEmailPasso: "email",
+  pcLogin: "",
   pcSelecionada: undefined,
   pcCodigo: "",
   pcContaErro: "",
@@ -5855,9 +5857,11 @@ function pcPedidoEnviado() {
 
 function pcCadastro() {
   const escolhida = state.pcReivindicar ? todasAsFichas().find(c => idCurto(c.id) === state.pcReivindicar || c.id === state.pcReivindicar) : null;
+  // Um lugar só para o e-mail (02/10/2026): Entrar e Cadastro são a mesma
+  // tela. O banco diz se o e-mail já tem conta (senha) ou não (cadastro).
   const cabeca = `
-    <h1 class="display">Cadastre a sua academia</h1>
-    <p class="pc-sec-sub">Grátis no plano Básico. Sem comissão, sem taxa por aluno.</p>`;
+    <h1 class="display">Entre ou cadastre a sua academia</h1>
+    <p class="pc-sec-sub">Comece pelo e-mail. Grátis no plano Básico, sem comissão e sem taxa por aluno.</p>`;
   const erro = (t) => t ? `<div class="form-error">${icon('warning', 13)} ${esc(t)}</div>` : "";
 
   // Conta que já administra uma academia.
@@ -5898,11 +5902,16 @@ function pcCadastro() {
           ${passo === "email" ? `
             ${erro(state.pcContaErro)}
             <button class="btn-primary pc-botao-cheio" id="pc-email-continuar" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Procurando..." : "Continuar"}</button>
-            <p class="footnote">Se esse e-mail já tiver conta, o site acha e você só entra.</p>` : ""}
+            <p class="footnote">Se esse e-mail já tiver conta, você só digita a senha. Se não, completa o cadastro. Recebeu um usuário do GuiaTennis? Escreva o usuário no lugar do e-mail.</p>` : ""}
           ${passo === "existe" ? `
-            <p class="pc-achou">${icon('check', 16, 'var(--green)')} <span>Esse e-mail já tem conta no GuiaTennis Parceiros.</span></p>
-            <a href="/parceiros/entrar" class="btn-primary pc-botao-cheio" id="pc-entrar-com-email">Entrar com esse e-mail</a>
-            <button type="button" class="pc-link-btn" id="pc-trocar-email">Usar outro e-mail</button>` : ""}
+            <p class="pc-achou">${icon('check', 16, 'var(--green)')} <span>${state.pcEmail.includes("@") ? "Esse e-mail já tem conta no GuiaTennis Parceiros." : "Usuário do GuiaTennis Parceiros."} Digite a sua senha.</span></p>
+            <p class="pc-linha" style="margin:4px 0 0"><button type="button" class="pc-linha-link" id="pc-trocar-email">Usar outro e-mail</button></p>
+            <input type="hidden" id="login-email" value="${esc(state.pcLogin || state.pcEmail)}" />
+            <label class="field-label" for="login-password">Senha</label>
+            <input class="form-field" id="login-password" type="password" autocomplete="current-password" style="margin-top:0" />
+            ${erro(state.loginError)}
+            <button class="btn-primary pc-botao-cheio" id="login-submit" ${state.loginLoading ? "disabled" : ""}>${state.loginLoading ? bolaGirando(16) + " Entrando..." : "Entrar"}</button>
+            <p class="footnote">Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.</p>` : ""}
           ${passo === "criar" ? `
             <p class="pc-linha" style="margin:8px 0 4px"><button type="button" class="pc-linha-link" id="pc-trocar-email">Trocar o e-mail</button></p>
             ${camposDeContato("pc-conta", f, "pc-conta-campo")}
@@ -5915,7 +5924,6 @@ function pcCadastro() {
             ${erro(state.pcContaErro)}
             <button class="btn-primary pc-botao-cheio" id="pc-criar-conta" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar e continuar"}</button>` : ""}
         </div>
-        <p class="pc-linha">Recebeu usuário e senha do GuiaTennis, ou já tem conta? <a href="/parceiros/entrar" class="pc-linha-link" data-pc="entrar">Entrar ›</a></p>
       </section>`;
   }
 
@@ -5945,24 +5953,9 @@ function pcCadastro() {
     </section>`;
 }
 
+// Entrar e Cadastro são a mesma tela, que começa pelo e-mail.
 function pcEntrar() {
-  return `
-    <section class="pc-pagina pc-estreita">
-      <h1 class="display">Entrar no GuiaTennis Parceiros</h1>
-      <p class="pc-sec-sub">Use o e-mail da sua conta ou o usuário que o GuiaTennis mandou para a sua academia.</p>
-      <div class="pc-card">
-        <label class="field-label" for="login-email" style="margin-top:0">E-mail ou usuário</label>
-        <input class="form-field" id="login-email" value="${esc(state.loginUsuario || "")}" autocapitalize="none" autocorrect="off" autocomplete="username" style="margin-top:0" />
-        <label class="field-label" for="login-password">Senha</label>
-        <input class="form-field" id="login-password" type="password" autocomplete="current-password" style="margin-top:0" />
-        ${state.loginError ? `<div class="form-error">${icon('warning', 13)} ${esc(state.loginError)}</div>` : ""}
-        <button class="btn-primary" id="login-submit" style="width:100%;justify-content:center;margin-top:18px" ${state.loginLoading ? "disabled" : ""}>
-          ${state.loginLoading ? bolaGirando(16) + " Entrando..." : "Entrar"}
-        </button>
-      </div>
-      <p class="pc-sec-sub" style="margin-top:18px">Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.</p>
-      <p class="pc-sec-sub">Ainda não tem conta? <a href="/parceiros/cadastro" data-pc="cadastro">Cadastre-se</a>.</p>
-    </section>`;
+  return pcCadastro();
 }
 
 function pcPrimeiroAcesso() {
@@ -6253,19 +6246,38 @@ const EMAIL_VALIDO = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 async function continuarComEmail() {
   const email = (state.pcEmail || "").trim().toLowerCase();
   state.pcEmail = email;
+  state.loginError = "";
+  // Usuário do GuiaTennis (sem @): vai direto para a senha.
+  if (email && !email.includes("@") && /^[a-z0-9._-]{3,}$/.test(email)) {
+    state.pcLogin = email;
+    state.pcEmailPasso = "existe";
+    render();
+    document.getElementById("login-password")?.focus();
+    return;
+  }
   if (!EMAIL_VALIDO.test(email)) { state.pcContaErro = "Escreva um e-mail válido."; render(); return; }
   state.pcContaErro = "";
   state.pcContaSalvando = true;
   render();
-  const r = await sb.rpc('login_do_email', { p_email: email });
+  let r = await sb.rpc('conta_do_email', { p_email: email });
+  // Banco sem a função nova: confere como antes.
+  if (r.error) {
+    const v = await sb.rpc('login_do_email', { p_email: email });
+    r = v.error ? v : { data: v.data ? { tipo: "academia", login: v.data } : null, error: null };
+  }
   state.pcContaSalvando = false;
   if (r.error) {
     state.pcContaErro = "Não consegui conferir o e-mail agora. Tente de novo em instantes.";
+  } else if (r.data && (r.data.tipo === "jogador" || r.data.tipo === "outra")) {
+    state.pcContaErro = "Esse e-mail é de uma conta de jogador do GuiaTennis. Para a academia, use outro e-mail.";
   } else {
+    state.pcLogin = r.data ? r.data.login : "";
     state.pcEmailPasso = r.data ? "existe" : "criar";
+    // Veio do "Administrar" de uma ficha: depois de entrar, volta ao pedido.
+    if (r.data && state.pcReivindicar) state.parceirosDepois = "cadastro";
   }
   render();
-  const campo = document.getElementById(state.pcEmailPasso === "criar" ? "pc-conta-tratamento" : "pc-entrar-com-email");
+  const campo = document.getElementById(state.pcEmailPasso === "criar" ? "pc-conta-tratamento" : "login-password");
   if (campo) campo.focus();
 }
 
@@ -6432,15 +6444,6 @@ function ligarEventosParceiros() {
   if (pcContinuar) pcContinuar.onclick = continuarComEmail;
   const pcTrocar = document.getElementById("pc-trocar-email");
   if (pcTrocar) pcTrocar.onclick = () => { state.pcEmailPasso = "email"; state.pcContaErro = ""; render(); document.getElementById("pc-email")?.focus(); };
-  const pcEntrarEmail = document.getElementById("pc-entrar-com-email");
-  if (pcEntrarEmail) pcEntrarEmail.onclick = (e) => {
-    e.preventDefault();
-    state.loginUsuario = state.pcEmail;
-    state.loginError = "";
-    state.parceirosDepois = state.pcReivindicar ? "cadastro" : null;
-    irParceiros("entrar");
-    document.getElementById("login-password")?.focus();
-  };
   document.querySelectorAll(".pc-conta-campo").forEach(el => {
     el.oninput = (e) => { (window.__pcConta || (window.__pcConta = {}))[el.dataset.campo] = e.target.value; };
   });
@@ -6734,9 +6737,12 @@ function avisosLigados(j) {
   return AVISOS_JOGADOR.some(a => j && j[a.campo]);
 }
 
+// Um lugar só para o e-mail (02/10/2026): "entrar" e "criar" começam pelo
+// e-mail; o banco diz se já tem conta (vai para a senha) ou não (completa o
+// cadastro), como no Booking e no Airbnb.
 function abrirContaJogador(tela, motivo) {
   state.showMenu = false;
-  state.jogadorTela = tela;
+  state.jogadorTela = tela === "conta" ? "conta" : "email";
   state.jogadorMotivo = motivo || "";
   state.jogadorErro = "";
   state.jogadorAviso = "";
@@ -6752,7 +6758,7 @@ function abrirContaJogador(tela, motivo) {
 function jogadorEntaoFaz(acao) {
   if (jogador) { acao(); return; }
   state.depoisDeEntrar = acao;
-  abrirContaJogador("entrar", "Para avaliar, entre na sua conta ou crie uma. Leva um minuto.");
+  abrirContaJogador("entrar", "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto.");
 }
 
 function renderJogadorSheet() {
@@ -6766,26 +6772,35 @@ function renderJogadorSheet() {
       <input type="checkbox" class="jog-aviso" data-campo="${a.campo}" ${f[a.campo] ? "checked" : ""} />
       <span>${esc(a.t)}</span>
     </label>`).join("");
+  const emailFixo = `
+    <label class="field-label" for="jog-email">E-mail</label>
+    <input class="form-field" id="jog-email" type="email" value="${esc(f.email || "")}" readonly style="margin-top:0" />
+    <p class="jog-trocar"><button type="button" class="inline-link" id="jog-trocar-email">Trocar o e-mail</button></p>`;
   let miolo = "";
-  if (tela === "entrar") miolo = `
-    <p class="sheet-title display">Entrar</p>
+  if (tela === "email") miolo = `
+    <p class="sheet-title display">Entre ou crie a sua conta</p>
     <p class="subtitle" style="margin-top:4px">${esc(state.jogadorMotivo || "Com a conta, você avalia as academias e escolhe os avisos por e-mail.")}</p>
     <label class="field-label" for="jog-email">E-mail</label>
-    <input class="form-field" id="jog-email" type="email" autocomplete="email" autocapitalize="none" value="${esc(f.email || "")}" style="margin-top:0" />
+    <input class="form-field" id="jog-email" type="email" autocomplete="email" autocapitalize="none" placeholder="voce@exemplo.com" value="${esc(f.email || "")}" style="margin-top:0" />
+    ${erro}
+    <button type="button" class="cta-btn cta-primary" id="jog-continuar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Procurando") || "Continuar"}</button>
+    <p class="footnote">Se esse e-mail já tiver conta, você só digita a senha. Se não, completa o cadastro.</p>`;
+  if (tela === "entrar") miolo = `
+    <p class="sheet-title display">Bem-vindo de volta</p>
+    <p class="subtitle" style="margin-top:4px">${esc(state.jogadorMotivo || "Digite a sua senha para entrar.")}</p>
+    ${emailFixo}
     <label class="field-label" for="jog-senha">Senha</label>
     <input class="form-field" id="jog-senha" type="password" autocomplete="current-password" style="margin-top:0" />
     ${erro}
     <button type="button" class="cta-btn cta-primary" id="jog-entrar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Entrando") || "Entrar"}</button>
-    <p class="jog-troca">Ainda não tem conta? <button type="button" class="inline-link" data-jogador="criar">Criar conta</button></p>
     <p class="footnote">Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha da minha conta no GuiaTennis.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.</p>`;
   if (tela === "criar") miolo = `
-    <p class="sheet-title display">Criar conta</p>
-    <p class="subtitle" style="margin-top:4px">${esc(state.jogadorMotivo || "É grátis. Com a conta, você avalia as academias e escolhe os avisos por e-mail.")}</p>
+    <p class="sheet-title display">Complete o seu cadastro</p>
+    <p class="subtitle" style="margin-top:4px">Esse e-mail ainda não tem conta no GuiaTennis. É grátis e leva um minuto.</p>
+    ${emailFixo}
     <label class="field-label" for="jog-nome">Nome e sobrenome</label>
     <input class="form-field jog-campo" data-campo="nome" id="jog-nome" autocomplete="name" value="${esc(f.nome || "")}" style="margin-top:0" />
     <p class="footnote" style="margin-top:6px">Aparece nas suas avaliações.</p>
-    <label class="field-label" for="jog-email">E-mail</label>
-    <input class="form-field jog-campo" data-campo="email" id="jog-email" type="email" autocomplete="email" autocapitalize="none" value="${esc(f.email || "")}" style="margin-top:0" />
     <label class="field-label" for="jog-senha">Crie uma senha</label>
     <input class="form-field jog-campo" data-campo="senha" id="jog-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" style="margin-top:0" />
     <label class="field-label" for="jog-cidade">Cidade (opcional)</label>
@@ -6798,8 +6813,7 @@ function renderJogadorSheet() {
       <span>Li e concordo com os <button type="button" class="inline-link" id="jog-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="jog-privacidade">Política de Privacidade</button>.</span>
     </label>
     ${erro}
-    <button type="button" class="cta-btn cta-primary" id="jog-criar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Criando") || "Criar conta"}</button>
-    <p class="jog-troca">Já tem conta? <button type="button" class="inline-link" data-jogador="entrar">Entrar</button></p>`;
+    <button type="button" class="cta-btn cta-primary" id="jog-criar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Criando") || "Criar conta"}</button>`;
   if (tela === "conta" && jogador) miolo = `
     <p class="sheet-title display">Minha conta</p>
     <p class="subtitle" style="margin-top:4px">${esc(jogador.email || "")}</p>
@@ -6838,13 +6852,28 @@ async function depoisDeEntrarJogador() {
   if (acao) await acao();
 }
 
+// "Continuar": o banco diz se o e-mail já tem conta.
+async function continuarJogadorComEmail() {
+  const email = (document.getElementById("jog-email")?.value || "").trim().toLowerCase();
+  window.__jog = { ...(window.__jog || {}), email };
+  if (!EMAIL_VALIDO.test(email)) { state.jogadorErro = "Escreva um e-mail válido."; render(); return; }
+  state.jogadorSalvando = true; state.jogadorErro = ""; render();
+  const r = await sb.rpc('conta_do_email', { p_email: email });
+  state.jogadorSalvando = false;
+  if (r.error) { state.jogadorErro = "Não consegui conferir o e-mail agora. Tente de novo em instantes."; render(); return; }
+  state.jogadorLogin = (r.data && r.data.login) || email;
+  state.jogadorTela = r.data ? "entrar" : "criar";
+  render();
+  document.getElementById(r.data ? "jog-senha" : "jog-nome")?.focus();
+}
+
 async function entrarJogador() {
   const email = (document.getElementById("jog-email")?.value || "").trim().toLowerCase();
   const senha = document.getElementById("jog-senha")?.value || "";
   window.__jog = { ...(window.__jog || {}), email };
   if (!email || !senha) { state.jogadorErro = "Preencha o e-mail e a senha."; render(); return; }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+  const { data, error } = await sb.auth.signInWithPassword({ email: state.jogadorLogin || email, password: senha });
   if (!error) await carregarConta(data && data.session);
   if (!error && (isAdmin || contaAcademia)) { location.reload(); return; }
   if (error || !jogador) {
@@ -6878,7 +6907,7 @@ async function criarContaJogador() {
     state.jogadorErro = /já tem conta/.test(r.error.message || "") ? "Esse e-mail já tem conta. Entre com a sua senha."
       : /Muitos cadastros/.test(r.error.message || "") ? r.error.message
       : "Não consegui criar a conta agora. Tente de novo em instantes.";
-    if (/já tem conta/.test(r.error.message || "")) state.jogadorTela = "entrar";
+    if (/já tem conta/.test(r.error.message || "")) { state.jogadorTela = "entrar"; state.jogadorLogin = email; }
     render();
     return;
   }
@@ -6915,11 +6944,17 @@ function ligarEventosJogador() {
   document.querySelectorAll("[data-jogador]").forEach(el => {
     el.onclick = () => {
       window.__jog = { ...(window.__jog || {}), email: document.getElementById("jog-email")?.value || (window.__jog || {}).email || "" };
-      const motivo = state.jogadorTela ? state.jogadorMotivo : (state.page === "court" ? "Para avaliar, entre na sua conta ou crie uma. Leva um minuto." : "");
+      const motivo = state.jogadorTela ? state.jogadorMotivo : (state.page === "court" ? "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto." : "");
       abrirContaJogador(el.dataset.jogador, motivo);
     };
   });
   const fechar = () => { state.jogadorTela = null; state.depoisDeEntrar = null; render(); };
+  const continuar = document.getElementById("jog-continuar");
+  if (continuar) continuar.onclick = () => continuarJogadorComEmail();
+  const emailCampo = document.getElementById("jog-email");
+  if (emailCampo && continuar) emailCampo.onkeydown = (e) => { if (e.key === "Enter") continuar.click(); };
+  const trocar = document.getElementById("jog-trocar-email");
+  if (trocar) trocar.onclick = () => { state.jogadorTela = "email"; state.jogadorErro = ""; render(); document.getElementById("jog-email")?.focus(); };
   const close = document.getElementById("jogador-close");
   if (close) close.onclick = fechar;
   const overlay = document.getElementById("jogador-overlay");
@@ -9843,7 +9878,7 @@ function renderCourtPage(c) {
                     <p class="rate-thanks">Obrigado por avaliar!</p>
                   ` : `
                     <p>Já jogou aqui? Avalie essa quadra</p>
-                    ${jogador ? "" : `<p class="rate-login">Para avaliar, <button type="button" class="inline-link" data-jogador="entrar">entre na sua conta</button> ou <button type="button" class="inline-link" data-jogador="criar">crie uma</button>. Leva um minuto.</p>`}
+                    ${jogador ? "" : `<p class="rate-login">Para avaliar, <button type="button" class="inline-link" data-jogador="entrar">entre com o seu e-mail</button>. Leva um minuto.</p>`}
                     <div class="star-picker" id="star-picker">
                       ${[1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= state.pendingStar ? 'filled' : ''}">★</span>`).join("")}
                     </div>

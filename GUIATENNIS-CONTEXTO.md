@@ -213,6 +213,14 @@ cobra taxa e não fica no meio** da negociação.
     depois). **O envio dos e-mails ainda não existe**: precisa de um serviço
     de e-mail; hoje fica guardado quem quer receber o quê. Esqueceu a
     senha: WhatsApp do GuiaTennis, como nos Parceiros.
+24. **Um lugar só para o e-mail** (pedido de 02/10/2026), no site e no
+    GuiaTennis Parceiros: a pessoa digita o e-mail, toca em Continuar e o
+    banco (`conta_do_email`, SQL `20261002140000`) diz se já tem conta —
+    vai para a senha — ou não — completa o cadastro. No Parceiros,
+    `/parceiros/entrar` e `/parceiros/cadastro` são a mesma tela ("Entre ou
+    cadastre a sua academia"); o usuário sem @ que o GuiaTennis mandou vai
+    direto para a senha; e-mail de jogador é recusado ali. Nos testes:
+    `irSenha(page, usuario)` do `harness.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

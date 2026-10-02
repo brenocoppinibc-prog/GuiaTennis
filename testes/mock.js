@@ -295,6 +295,14 @@
       if (plano === "completo") return { data: completo, error: null };
       return { data: { ...completo, regioes: [{ nome: "Pinheiros, São Paulo", n: 12 }, { nome: "Vila Madalena, São Paulo", n: 5 }], media_cidade: { cidade: "São Paulo", academias: 2, visitas: 30, contatos: 5 } }, error: null };
     }
+    if (nome === "conta_do_email") {
+      const email = String(a.p_email || "").trim().toLowerCase();
+      if (email === ADMIN) return { data: { tipo: "admin", login: email }, error: null };
+      const x = db.academia_acessos.find(y => (y.email || "").toLowerCase() === email || loginDe(y) === email);
+      if (x) return { data: { tipo: "academia", login: loginDe(x) }, error: null };
+      if (db.jogadores.some(j => j.email === email)) return { data: { tipo: "jogador", login: email }, error: null };
+      return { data: null, error: null };
+    }
     if (nome === "criar_conta_jogador") {
       const email = String(a.p_email || "").trim().toLowerCase();
       if (sessao) return erro("Saia da conta atual para criar outra.", "22023");

@@ -65,4 +65,13 @@ async function irParte(page, id) {
   await page.waitForTimeout(120);
 }
 
-module.exports = { abrir, ok, irParte };
+// GuiaTennis Parceiros (02/10/2026): Entrar e Cadastro começam pelo e-mail
+// (ou usuário). Digita e toca em Continuar; se tiver conta, abre a senha.
+async function irSenha(page, usuario) {
+  await page.evaluate(() => { state.pcEmailPasso = 'email'; state.loginError = ''; state.pcContaErro = ''; render(); });
+  await page.fill('#pc-email', usuario);
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
+}
+
+module.exports = { abrir, ok, irParte, irSenha };

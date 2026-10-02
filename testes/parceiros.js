@@ -3,7 +3,7 @@
 // iFood Parceiros. Página inicial com benefícios, como funciona, planos e
 // perguntas; cadastro que primeiro procura a academia; "Entrar"; e, logado,
 // o desempenho conforme o plano — sem o plano mexer na ordem da busca.
-const { abrir, ok, irParte } = require('./harness');
+const { abrir, ok, irParte, irSenha } = require('./harness');
 
 const tela = (page) => page.evaluate(() => ({
   aba: state.parceirosAba,
@@ -86,16 +86,15 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   // ---- cadastro: começa pelo e-mail, como o Booking e o Google ----
   ({ browser, page } = await abrir({ q: 'parceiros/cadastro' }));
   t = await tela(page);
-  ok(t.h1 === 'Cadastre a sua academia' && !t.robots, 'Cadastro tem página própria');
+  ok(t.h1 === 'Entre ou cadastre a sua academia' && !t.robots, 'um lugar só para entrar ou cadastrar, começando pelo e-mail');
   const barra = () => page.evaluate(() => ({
     etapas: [...document.querySelectorAll('.pc-progresso-etapas li')].map(l => l.innerText.trim() + (l.classList.contains('agora') ? '*' : l.classList.contains('feito') ? '✓' : '')).join(' | '),
     feito: document.querySelector('.pc-trilho i')?.style.width,
   }));
   let etapas = await barra();
   ok(etapas.etapas === 'DADOS DE CONTATO* | SUA ACADEMIA | INÍCIO' && etapas.feito === '0%' && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'barra do processo em cima, como a do trivago; primeiro os dados de contato — ' + etapas.etapas);
-  const linhaEntrar = await page.evaluate(() => ({ t: document.querySelector('.pc-main .pc-linha')?.innerText || '', href: document.querySelector('.pc-main .pc-linha a')?.getAttribute('href') }));
-  ok(linhaEntrar.t.includes('Recebeu usuário e senha do GuiaTennis') && linhaEntrar.href === '/parceiros/entrar', 'quem recebeu usuário e senha do GuiaTennis tem a linha para entrar com eles');
-  await page.fill('#pc-email', 'nao-e-email');
+  ok((await texto(page, '.pc-main .pc-card .footnote')).includes('Escreva o usuário no lugar do e-mail'), 'quem recebeu usuário do GuiaTennis usa o mesmo campo');
+  await page.fill('#pc-email', 'joana@semponto');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('e-mail válido'), 'e-mail errado: avisa');
@@ -107,11 +106,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.fill('#pc-email', ' Maria@QuadraLocacao.com.br ');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(300);
-  ok((await texto(page, '#parceiros .pc-main')).includes('Esse e-mail já tem conta') && await page.isVisible('#pc-entrar-com-email'), 'e-mail que já tem conta: o site acha e manda entrar');
-  await page.click('#pc-entrar-com-email');
-  await page.waitForTimeout(300);
-  t = await tela(page);
-  ok(t.aba === 'entrar' && await page.inputValue('#login-email') === 'maria@quadralocacao.com.br', 'Entrar já vem com o e-mail');
+  ok((await texto(page, '#parceiros .pc-main')).includes('Esse e-mail já tem conta') && await page.isVisible('#login-password'), 'e-mail que já tem conta: o site acha e abre a senha ali mesmo');
   await page.fill('#login-password', 'senha12345');
   await page.click('#login-submit');
   await page.waitForTimeout(700);
@@ -369,7 +364,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     window.__db.academia_acessos.push({ user_id: 'u-a2', academia_id: 'a2', usuario: 'quadra.a2', nome_responsavel: 'Maria Teste', cargo: 'Gerente', email: 'm@t.com', whatsapp: '11900000001', termos_aceitos_em: '2026-09-01', dados_completos_em: '2026-09-01', senha_trocada_em: '2026-09-01' });
     window.__senhas['quadra.a2@acesso.guiatennis.com.br'] = 'senha12345';
   });
-  await page.fill('#login-email', 'quadra.a2');
+  await irSenha(page, 'quadra.a2');
   await page.fill('#login-password', 'senha12345');
   await page.click('#login-submit');
   await page.waitForTimeout(600);
@@ -534,11 +529,12 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.click('#rate-submit');
   await page.waitForTimeout(500);
   const recusada = await page.evaluate(() => ({ tela: state.jogadorTela, n: window.__db.avaliacoes.length, obrigado: !!document.querySelector('.rate-thanks') }));
-  ok(recusada.tela === 'entrar' && recusada.n === 0 && !recusada.obrigado, 'visitante sem conta não avalia: o site abre o Entrar');
+  ok(recusada.tela === 'email' && recusada.n === 0 && !recusada.obrigado, 'visitante sem conta não avalia: o site pede o e-mail');
   // Cria a conta ali mesmo e a avaliação sai sozinha, com o nome da conta.
-  await page.click('#jogador-overlay [data-jogador="criar"]');
-  await page.fill('#jog-nome', 'Rafa Jogador');
   await page.fill('#jog-email', 'rafa@exemplo.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  await page.fill('#jog-nome', 'Rafa Jogador');
   await page.fill('#jog-senha', 'senhaboa12');
   await page.check('#jog-aceite');
   await page.click('#jog-criar');

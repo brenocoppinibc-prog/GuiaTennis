@@ -2,7 +2,7 @@
 // senha provisória, primeiro acesso, edição só da própria ficha, respostas às
 // avaliações, o que a academia não vê nem faz, e o bloco do admin que cria o
 // acesso.
-const { abrir, ok, irParte } = require('./harness');
+const { abrir, ok, irParte, irSenha } = require('./harness');
 
 const AVALIACOES = [
   { id: 'r1', academia_id: 'a2', stars: 3, comment: 'Quadra boa, vestiário simples.', nome_autor: 'Carla', contato_autor: '11955550001', created_at: '2026-09-20T12:00:00Z' },
@@ -21,15 +21,16 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   let { browser, page } = await abrir({ q: 'parceiros/entrar?utm_source=WhatsApp-academias', avaliacoes: AVALIACOES });
   let login = await page.evaluate(() => ({
     titulo: document.querySelector('#parceiros h1')?.innerText || '',
-    campo: document.querySelector('label[for="login-email"]')?.innerText || '',
-    ajuda: [...document.querySelectorAll('#parceiros .pc-sec-sub a')].map(a => a.getAttribute('href')).find(h => h.startsWith('https://wa.me/')) || '',
+    campo: document.querySelector('label[for="pc-email"]')?.innerText || '',
+    dica: document.querySelector('#parceiros .pc-card .footnote')?.innerText || '',
     url: location.pathname + location.search,
     robots: document.querySelector('meta[name="robots"]')?.getAttribute('content') || '',
   }));
-  ok(login.titulo === 'Entrar no GuiaTennis Parceiros' && login.campo === 'E-mail ou usuário', 'link do WhatsApp abre o "Entrar" do GuiaTennis Parceiros, pedindo e-mail ou usuário — ' + login.titulo);
-  ok(login.ajuda.startsWith('https://wa.me/5511927456457'), '"Entrar" tem o WhatsApp do guia para quem esqueceu a senha');
+  ok(login.titulo === 'Entre ou cadastre a sua academia' && login.campo === 'E-mail' && login.dica.includes('Escreva o usuário no lugar do e-mail'), 'link do WhatsApp abre o lugar único do e-mail, que aceita o usuário do GuiaTennis — ' + login.titulo);
   ok(login.url === '/parceiros/entrar?utm_source=WhatsApp-academias' && login.robots.includes('noindex'), 'endereço próprio, com a etiqueta, e fora do Google — ' + login.url);
-  await page.fill('#login-email', 'quadra.a2');
+  await irSenha(page, 'quadra.a2');
+  const ajuda = await page.evaluate(() => [...document.querySelectorAll('#parceiros .footnote a')].map(a => a.getAttribute('href')).find(h => h.startsWith('https://wa.me/')) || '');
+  ok(ajuda.startsWith('https://wa.me/5511927456457') && await page.isVisible('#login-password'), 'usuário vai direto para a senha, com o WhatsApp do guia para quem esqueceu');
   await page.fill('#login-password', 'errada');
   await page.click('#login-submit');
   await page.waitForTimeout(300);
@@ -51,7 +52,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   // Link antigo ?entrar (mensagens já mandadas) cai no mesmo lugar.
   ({ browser, page } = await abrir({ q: '?entrar&utm_source=WhatsApp-academias' }));
   login = await page.evaluate(() => ({ titulo: document.querySelector('#parceiros h1')?.innerText || '', url: location.pathname + location.search }));
-  ok(login.titulo === 'Entrar no GuiaTennis Parceiros' && login.url === '/parceiros/entrar?utm_source=WhatsApp-academias', 'link antigo ?entrar vira /parceiros/entrar, mantendo a etiqueta — ' + login.url);
+  ok(login.titulo === 'Entre ou cadastre a sua academia' && login.url === '/parceiros/entrar?utm_source=WhatsApp-academias', 'link antigo ?entrar vira /parceiros/entrar, mantendo a etiqueta — ' + login.url);
   await browser.close();
 
   // ---- primeiro acesso: login com usuário, dados do responsável e senha nova ----
@@ -61,7 +62,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
     window.__db.academia_acessos.push({ user_id: 'u-a2', academia_id: 'a2', usuario: 'quadra.a2' });
     window.__senhas['quadra.a2@acesso.guiatennis.com.br'] = 'kpxw-4827';
   });
-  await page.fill('#login-email', ' Quadra.A2 ');
+  await irSenha(page, ' Quadra.A2 ');
   await page.fill('#login-password', 'kpxw-4827');
   await page.click('#login-submit');
   await page.waitForTimeout(600);
@@ -242,7 +243,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   // ---- login sem acesso (removido) fica de fora ----
   ({ browser, page } = await abrir({ q: 'parceiros/entrar' }));
   await page.evaluate(() => { window.__senhas['antiga@acesso.guiatennis.com.br'] = 'provisoria1'; });
-  await page.fill('#login-email', 'antiga');
+  await irSenha(page, 'antiga');
   await page.fill('#login-password', 'provisoria1');
   await page.click('#login-submit');
   await page.waitForTimeout(500);

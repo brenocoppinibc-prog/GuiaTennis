@@ -200,6 +200,19 @@ cobra taxa e não fica no meio** da negociação.
     formulário. O banco confere pessoas (`limite_de_pessoas`) e números
     (`numeros_da_academia` devolve `{trancado: true}` fora do Premium;
     SQL `20261002120000`).
+23. **Conta do jogador** (pedido de 02/10/2026): buscar, comparar e chamar
+    continuam sem conta; **avaliar exige conta** (uma avaliação por conta
+    em cada academia; o banco põe o nome e o e-mail da conta, gatilho
+    `avaliacao_do_jogador`). A conta (`jogadores`, SQL `20261002130000`)
+    guarda nome, e-mail, cidade e três avisos por e-mail — academias novas
+    e favoritas, promoções das academias, novidades do GuiaTennis —, todos
+    começando desligados (LGPD). No site: `jogador`, `renderJogadorSheet`
+    (Entrar, Criar conta, Minha conta com Sair e Excluir), menu com "Entrar
+    ou criar conta"/"Minha conta" e "Avisos por e-mail", e
+    `jogadorEntaoFaz` (avaliar sem conta abre o Entrar e a avaliação sai
+    depois). **O envio dos e-mails ainda não existe**: precisa de um serviço
+    de e-mail; hoje fica guardado quem quer receber o quê. Esqueceu a
+    senha: WhatsApp do GuiaTennis, como nos Parceiros.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1073,7 +1086,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

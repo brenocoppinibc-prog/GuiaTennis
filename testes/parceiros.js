@@ -525,7 +525,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(faixa.t.includes('Parceiros') && faixa.t.includes('Todos os direitos reservados') && faixa.largura === faixa.tela && !faixa.lateral, 'GuiaTennis Parceiros também, de ponta a ponta');
   await browser.close();
 
-  // ---- avaliação: contato de academia não avalia ----
+  // ---- avaliação: sem conta, o site pede para entrar (02/10/2026) ----
   ({ browser, page } = await abrir({}));
   await page.evaluate(() => { saveVisitor({ nome: 'Dono Disfarçado', contato: '(11) 99999-0001' }); openCourt('a2'); });
   await page.waitForTimeout(300);
@@ -533,11 +533,17 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.check('#rate-consent');
   await page.click('#rate-submit');
   await page.waitForTimeout(500);
-  const recusada = await page.evaluate(() => ({ erro: document.querySelector('.rate-box .form-error')?.innerText || '', n: window.__db.avaliacoes.length, obrigado: !!document.querySelector('.rate-thanks') }));
-  ok(recusada.erro.includes('academias não avaliam academias') && recusada.n === 0 && !recusada.obrigado, 'visitante com o WhatsApp de uma academia não avalia, e a tela explica');
-  await page.evaluate(() => { saveVisitor({ nome: 'Jogador', contato: '(11) 97777-1234' }); });
-  await page.click('#rate-submit');
-  await page.waitForTimeout(500);
-  ok(await page.evaluate(() => window.__db.avaliacoes.length === 1 && !!document.querySelector('.rate-thanks')), 'jogador comum continua avaliando');
+  const recusada = await page.evaluate(() => ({ tela: state.jogadorTela, n: window.__db.avaliacoes.length, obrigado: !!document.querySelector('.rate-thanks') }));
+  ok(recusada.tela === 'entrar' && recusada.n === 0 && !recusada.obrigado, 'visitante sem conta não avalia: o site abre o Entrar');
+  // Cria a conta ali mesmo e a avaliação sai sozinha, com o nome da conta.
+  await page.click('#jogador-overlay [data-jogador="criar"]');
+  await page.fill('#jog-nome', 'Rafa Jogador');
+  await page.fill('#jog-email', 'rafa@exemplo.com');
+  await page.fill('#jog-senha', 'senhaboa12');
+  await page.check('#jog-aceite');
+  await page.click('#jog-criar');
+  await page.waitForTimeout(800);
+  const avaliada = await page.evaluate(() => ({ n: window.__db.avaliacoes.length, nome: (window.__db.avaliacoes[0] || {}).nome_autor, obrigado: !!document.querySelector('.rate-thanks'), aberta: !!document.getElementById('jogador-overlay') }));
+  ok(avaliada.n === 1 && avaliada.nome === 'Rafa Jogador' && avaliada.obrigado && !avaliada.aberta, 'criou a conta: a avaliação sai sozinha, com o nome da conta — ' + JSON.stringify(avaliada));
   await browser.close();
 })();

@@ -19,6 +19,9 @@
     // Login de cada academia (a senha fica em __senhas, pelo e-mail do login).
     academia_acessos: [],
     respostas: JSON.parse(JSON.stringify(window.__respostasIniciais || [])),
+    // Conta do jogador (SQL 20261002130000). window.__jogador abre o site
+    // já logado como "Ana Jogadora".
+    jogadores: [],
   };
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
@@ -33,10 +36,16 @@
       recebe_relatorio: false, termos_aceitos_em: novo ? null : agora, dados_completos_em: novo ? null : agora, senha_trocada_em: novo ? null : agora });
     window.__senhas["quadra." + window.__academia + DOMINIO] = "provisoria1";
   }
+  if (window.__jogador) {
+    db.jogadores.push({ user_id: "j-ana", nome: "Ana Jogadora", email: "ana@exemplo.com", cidade: "São Paulo", avisos_academias: false, promocoes: false, novidades: false, termos_aceitos_em: agora, created_at: agora });
+    window.__senhas["ana@exemplo.com"] = "senhadaana";
+  }
   let sessao = window.__admin ? { user: { id: "admin", email: ADMIN } }
+    : window.__jogador ? { user: { id: "j-ana", email: "ana@exemplo.com" } }
     : window.__academia ? { user: { id: "u-" + window.__academia, email: "quadra." + window.__academia + DOMINIO } } : null;
   const souAdmin = () => !!(sessao && sessao.user.email === ADMIN);
   const meuAcesso = () => sessao && db.academia_acessos.find(a => a.user_id === sessao.user.id);
+  const euJogador = () => sessao && db.jogadores.find(j => j.user_id === sessao.user.id);
   // Conta do GuiaTennis Parceiros (SQL 20260930160000): e-mail de entrar,
   // telefone só com números e o limite de pessoas do plano.
   const loginDe = (x) => x.usuario.includes("@") ? x.usuario : x.usuario + DOMINIO;
@@ -76,6 +85,11 @@
           const deAcademia = c && (db.academia_acessos.some(x => (x.email || "").toLowerCase() === c || loginDe(x) === c || (n.length >= 10 && tel(x.whatsapp) === n))
             || (n.length >= 10 && db.academias.some(y => tel(y.phone) === n)));
           if (deAcademia) return { data:null, error:{ message:"Esse contato é de uma academia do GuiaTennis, e academias não avaliam academias.", code:"42501" } };
+          // Gatilho avaliacao_do_jogador: só com conta, uma por academia, com o nome dela.
+          const j = euJogador();
+          if (!j) return { data:null, error:{ message:"Entre na sua conta para avaliar.", code:"42501" } };
+          if (t.some(r => r.academia_id === payload.academia_id && r.user_id === j.user_id)) return { data:null, error:{ message:"Você já avaliou essa academia.", code:"23505" } };
+          Object.assign(payload, { user_id: j.user_id, nome_autor: j.nome, contato_autor: j.email });
         }
         const r = { id: "n" + (t.length+1) + Math.random().toString(36).slice(2,5), created_at: new Date().toISOString(), ...payload };
         t.push(r);
@@ -86,6 +100,7 @@
       }
       if (op === "update") {
         window.__ultimoUpdate = JSON.parse(JSON.stringify(payload));
+        if (table === "jogadores" && !(euJogador() && filtros.every(([k, v]) => k === "user_id" && v === euJogador().user_id))) return { data:null, error:{ message:"permission denied" } };
         const mudanca = JSON.parse(JSON.stringify(payload));
         // O que o gatilho do banco faz quando quem salva é a academia.
         if (table === "academias" && sessao && !souAdmin()) {
@@ -280,6 +295,27 @@
       if (plano === "completo") return { data: completo, error: null };
       return { data: { ...completo, regioes: [{ nome: "Pinheiros, São Paulo", n: 12 }, { nome: "Vila Madalena, São Paulo", n: 5 }], media_cidade: { cidade: "São Paulo", academias: 2, visitas: 30, contatos: 5 } }, error: null };
     }
+    if (nome === "criar_conta_jogador") {
+      const email = String(a.p_email || "").trim().toLowerCase();
+      if (sessao) return erro("Saia da conta atual para criar outra.", "22023");
+      if (!a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
+      if ((a.p_senha || "").length < 8) return erro("A senha precisa ter pelo menos 8 caracteres.", "22023");
+      if (window.__senhas[email] || email === ADMIN || db.academia_acessos.some(x => (x.email || "").toLowerCase() === email))
+        return erro("Esse e-mail já tem conta no GuiaTennis. Entre com a sua senha.", "23505");
+      const id = novoLogin(email, a.p_senha);
+      db.jogadores.push({ user_id: id, nome: String(a.p_nome).trim(), email, cidade: a.p_cidade || null,
+        avisos_academias: !!a.p_avisos_academias, promocoes: !!a.p_promocoes, novidades: !!a.p_novidades,
+        termos_aceitos_em: new Date().toISOString(), created_at: new Date().toISOString() });
+      return { data:null, error:null };
+    }
+    if (nome === "excluir_minha_conta_jogador") {
+      const j = euJogador();
+      if (!j) return erro("Essa conta não é de jogador.", "42501");
+      db.jogadores.splice(db.jogadores.indexOf(j), 1);
+      db.avaliacoes.filter(r => r.user_id === j.user_id).forEach(r => { r.user_id = null; });
+      delete window.__senhas[j.email];
+      return { data:null, error:null };
+    }
     if (nome === "marcar_senha_trocada") { const x = meuAcesso(); if (x) x.senha_trocada_em = new Date().toISOString(); return { data:null, error:null }; }
     return semFuncao;
   }
@@ -297,7 +333,8 @@
         window.__ultimoLogin = email;
         if (email === ADMIN || (window.__senhas[email] && window.__senhas[email] === password)) {
           const acesso = db.academia_acessos.find(x => loginDe(x) === email);
-          sessao = { user: { id: email === ADMIN ? "admin" : (acesso ? acesso.user_id : "sem-acesso"), email } };
+          const jog = db.jogadores.find(x => x.email === email);
+          sessao = { user: { id: email === ADMIN ? "admin" : (acesso ? acesso.user_id : jog ? jog.user_id : "sem-acesso"), email } };
           return Promise.resolve({ data:{ session: sessao, user: sessao.user }, error:null });
         }
         return Promise.resolve({ data:{ session:null }, error:{ message:"Invalid login credentials", code:"invalid_credentials" } });

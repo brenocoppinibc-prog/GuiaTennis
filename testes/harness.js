@@ -19,6 +19,7 @@ async function abrir(opts = {}) {
     if (o.semPlano) window.__semPlano = true;
     if (o.semConfirmada) window.__semConfirmada = true;
     if (o.academia) window.__academia = o.academia;
+    if (o.jogador) window.__jogador = true;
     if (o.acessoNovo) window.__acessoNovo = true;
     if (o.semAcesso) window.__semAcesso = true;
     if (o.plano) window.__plano = o.plano;

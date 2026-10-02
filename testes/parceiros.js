@@ -49,9 +49,9 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   t = await tela(page);
   ok(t.aba === 'planos' && t.link === '/parceiros/planos' && t.h1 === 'Planos' && !t.robots, 'Planos tem endereço próprio e entra no Google — ' + t.link);
   const tabela = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelectorAll('.pc-plano-lista li:not(.nao)').length).join());
-  ok(tabela === '6,9,14', 'cada plano mostra o que libera, um acima do outro — ' + tabela);
+  ok(tabela === '7,8,14', 'cada plano mostra o que libera, um acima do outro — ' + tabela);
   const pessoasPorPlano = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-lista li').innerText.match(/\d+/)[0]).join());
-  ok(pessoasPorPlano === '2,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
+  ok(pessoasPorPlano === '1,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
   ok(/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e avisos para os seus alunos'), 'Premium mostra o que vem aí, marcado "Em breve"');
   await page.click('.pc-nav a[data-pc="ajuda"]');
   await page.waitForTimeout(200);
@@ -377,58 +377,51 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(t.aba === 'desempenho' && t.link === '/parceiros/desempenho', 'depois de entrar, volta para a página que tinha pedido — ' + t.link);
   await browser.close();
 
-  // ---- Desempenho no plano Básico ----
+  // ---- Desempenho: números só no Premium (pedido de 02/10/2026) ----
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'basico' }));
   t = await tela(page);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(t.h1 === 'Desempenho' && corpo.includes('Visitas na ficha') && corpo.includes('42') && corpo.includes('Contatos') && corpo.includes('9'), 'Básico: visitas e contatos dos últimos 30 dias');
-  ok(corpo.includes('21%') && corpo.includes('Taxa de contato'), 'taxa de contato calculada — 9 de 42');
-  let chips = await page.evaluate(() => [...document.querySelectorAll('.pc-periodos .chip')].map(c => c.innerText.trim() + (c.classList.contains('pc-chip-trancado') ? '🔒' : '') + (c.classList.contains('active') ? '*' : '')));
-  ok(chips.join() === '7 dias🔒,30 dias*,90 dias🔒,Desde o começo🔒', 'Básico: só 30 dias; o resto aparece trancado — ' + chips.join());
-  ok(await page.evaluate(() => document.querySelectorAll('.pc-graf').length) === 0 && corpo.includes('Disponível no plano Completo'), 'Básico: sem gráfico, com o convite do plano Completo');
+  ok(t.h1 === 'Desempenho' && corpo.includes('Os números da academia') && corpo.includes('Disponível no plano Premium') && !corpo.includes('Visitas na ficha') && !corpo.includes('42'), 'Básico: sem números, com o aviso de que são do Premium');
+  ok(await page.evaluate(() => document.querySelectorAll('.pc-graf, .pc-periodos').length) === 0, 'Básico: sem gráfico e sem períodos');
   const verPlanos = await page.evaluate(() => { const b = document.querySelector('.pc-trancado .pc-ver-planos'); const t = document.querySelector('.pc-trancado .pc-trancado-plano'); return b && t ? { texto: b.innerText, separado: b.getBoundingClientRect().top - t.getBoundingClientRect().bottom } : null; });
   ok(verPlanos && verPlanos.texto === 'Ver planos' && verPlanos.separado >= 8, '"Ver planos" num botão separado, embaixo — ' + JSON.stringify(verPlanos));
   ok(!corpo.includes('posição na busca') && /aprimore o plano/i.test(corpo) && corpo.includes('Quero o Completo'), 'Desempenho oferece o próximo plano e não fala de posição na busca');
-  ok(!corpo.includes('Bairros de quem procurou') && !/\d+%\s+contra/.test(corpo), 'Básico: sem bairros e sem comparação com o período anterior');
-  ok(JSON.stringify(await pedidos(page)) === '[30]', 'pede os números ao banco uma vez só');
-  await page.click('.pc-chip-trancado');
+  await page.click('.pc-ver-planos');
   await page.waitForTimeout(200);
   t = await tela(page);
-  ok(t.aba === 'plano' && t.h1 === 'Seu plano', 'período trancado leva aos planos');
+  ok(t.aba === 'plano' && t.h1 === 'Seu plano', '"Ver planos" leva aos planos');
   const meu = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => (p.querySelector('.pc-plano-tag')?.innerText || '-')).join());
   ok(meu === 'Seu plano,Recomendado,-', 'Plano marca o plano atual e recomenda o próximo — ' + meu);
   const quero = await page.evaluate(() => decodeURIComponent(document.querySelector('.pc-plano.destaque a')?.getAttribute('href') || ''));
   ok(quero.includes('plano Completo') && quero.includes('Quadra Locação') && await texto(page, '.pc-plano.destaque a') === 'Aprimorar para o Completo', '"Aprimorar para o Completo" abre o WhatsApp do guia com a academia — ' + quero.slice(0, 80));
   await browser.close();
 
-  // ---- Desempenho no plano Completo ----
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'completo' }));
   corpo = await texto(page, '#parceiros .pc-main');
+  ok(corpo.includes('Disponível no plano Premium') && !corpo.includes('Visitas na ficha') && await page.evaluate(() => document.querySelectorAll('.pc-graf').length) === 0 && corpo.includes('Quero o Premium'), 'Completo: também sem números, com o convite do Premium');
+  await browser.close();
+
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'premium' }));
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(corpo.includes('Visitas na ficha') && corpo.includes('42') && corpo.includes('21%') && corpo.includes('Taxa de contato'), 'Premium: visitas, contatos e taxa de contato');
   const graficos = await page.evaluate(() => [...document.querySelectorAll('.pc-graf')].map(g => g.querySelector('strong').innerText + ':' + g.querySelectorAll('.pc-barra').length));
-  ok(graficos.join() === 'Visitas por dia:30,Contatos por dia:30', 'Completo: um gráfico para visitas e outro para contatos, nunca dois eixos — ' + graficos.join());
-  ok(corpo.includes('+40% contra o período anterior') && corpo.includes('igual ao período anterior'), 'Completo: comparação com o período anterior');
-  ok(corpo.includes('Contatos por canal') && corpo.includes('WhatsApp') && corpo.includes('De onde vieram') && corpo.includes('Instagram') && corpo.includes('Aparelho') && corpo.includes('Celular'), 'Completo: canais, origem e aparelho');
-  const titulosCompleto = await page.evaluate(() => [...document.querySelectorAll('.pc-card-t')].map(t => t.innerText));
-  ok(corpo.includes('Disponível no plano Premium') && !titulosCompleto.includes('Bairros de quem procurou'), 'Completo: bairros trancados, com o convite do Premium');
+  ok(graficos.join() === 'Visitas por dia:30,Contatos por dia:30', 'Premium: um gráfico para visitas e outro para contatos, nunca dois eixos — ' + graficos.join());
+  ok(corpo.includes('+40% contra o período anterior') && corpo.includes('igual ao período anterior'), 'Premium: comparação com o período anterior');
+  ok(corpo.includes('Contatos por canal') && corpo.includes('De onde vieram') && corpo.includes('Aparelho') && corpo.includes('Celular'), 'Premium: canais, origem e aparelho');
+  ok(corpo.includes('Bairros de quem procurou') && corpo.includes('Pinheiros, São Paulo') && corpo.includes('Comparação com São Paulo') && corpo.includes('Média das academias'), 'Premium: bairros e média das academias da cidade');
+  ok(!corpo.includes('Disponível no plano'), 'Premium: nada trancado');
   ok(await page.evaluate(() => !!document.querySelector('.pc-tabela table')), 'os números também em tabela');
   await page.hover('.pc-graf .pc-barra:last-child');
   const leitura = await texto(page, '.pc-graf .pc-graf-leitura');
   ok(leitura.startsWith('30/09:') && leitura.includes('visitas'), 'passar o dedo na coluna mostra o dia e o valor — ' + leitura);
   await page.click('.pc-periodos [data-pc-dias="90"]');
   await page.waitForTimeout(300);
-  chips = await page.evaluate(() => [...document.querySelectorAll('.pc-periodos .chip')].map(c => c.innerText.trim() + (c.classList.contains('pc-chip-trancado') ? '🔒' : '') + (c.classList.contains('active') ? '*' : '')));
-  ok(chips.join() === '7 dias,30 dias,90 dias*,Desde o começo🔒' && JSON.stringify(await pedidos(page)) === '[30,90]', 'Completo: troca para 90 dias; "desde o começo" é do Premium — ' + chips.join());
-  await browser.close();
-
-  // ---- Desempenho no plano Premium ----
-  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'premium' }));
-  corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Bairros de quem procurou') && corpo.includes('Pinheiros, São Paulo') && corpo.includes('Comparação com São Paulo') && corpo.includes('Média das academias'), 'Premium: bairros e média das academias da cidade');
-  ok(!corpo.includes('Disponível no plano'), 'Premium: nada trancado');
+  let chips = await page.evaluate(() => [...document.querySelectorAll('.pc-periodos .chip')].map(c => c.innerText.trim() + (c.classList.contains('pc-chip-trancado') ? '🔒' : '') + (c.classList.contains('active') ? '*' : '')));
+  ok(chips.join() === '7 dias,30 dias,90 dias*,Desde o começo' && JSON.stringify(await pedidos(page)) === '[30,90]', 'Premium: todos os períodos — ' + chips.join());
   await page.click('.pc-periodos [data-pc-dias="0"]');
   await page.waitForTimeout(300);
   const tudo = await page.evaluate(() => ({ graf: document.querySelector('.pc-graf strong')?.innerText, barras: document.querySelectorAll('.pc-graf')[0].querySelectorAll('.pc-barra').length }));
-  ok(tudo.graf === 'Visitas por semana' && tudo.barras === 18 && JSON.stringify(await pedidos(page)) === '[30,0]', 'Premium: desde o começo, somado por semana — ' + JSON.stringify(tudo));
+  ok(tudo.graf === 'Visitas por semana' && tudo.barras === 18 && JSON.stringify(await pedidos(page)) === '[30,90,0]', 'Premium: desde o começo, somado por semana — ' + JSON.stringify(tudo));
   await browser.close();
 
   // ---- painel logado, no computador ----
@@ -455,15 +448,24 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await browser.close();
 
   // ---- banco sem a função dos números ----
-  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', trocar: h => h.replace("sb.rpc('numeros_da_academia'", "sb.rpc('funcao_que_nao_existe'") }));
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'premium', trocar: h => h.replace("sb.rpc('numeros_da_academia'", "sb.rpc('funcao_que_nao_existe'") }));
+  await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'premium'; await loadEverything(); render(); });
   corpo = await texto(page, '#parceiros .pc-main');
   ok(corpo.includes('Não consegui carregar os números agora') && await page.isVisible('.pc-main [data-pc-dias]'), 'sem os números: aviso simples e botão de tentar de novo');
   await browser.close();
-  // ---- pessoas com acesso (responsável principal) e aprimorar o plano ----
+  // ---- pessoas com acesso: Básico 1, Completo 5, Premium 10 ----
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/conta' }));
   await page.waitForTimeout(300);
   let conta = await texto(page, '#parceiros .pc-main');
-  ok(conta.includes('Responsável principal') && conta.includes('Pessoas com acesso') && conta.includes('1 de 2 no plano Básico') && conta.includes('Maria Teste (você)'), 'Conta mostra quem tem acesso e quantas pessoas o plano permite');
+  ok(conta.includes('Responsável principal') && conta.includes('Pessoas com acesso') && conta.includes('1 de 1 no plano Básico') && conta.includes('Maria Teste (você)'), 'Conta mostra quem tem acesso e quantas pessoas o plano permite');
+  ok(!(await page.isVisible('#pc-pessoa-email')) && conta.includes('No Completo, até 5') && conta.includes('Aprimorar para o Completo'), 'Básico já cheio com 1 pessoa: some o formulário e aparece o convite para aprimorar');
+  ok(/aprimore o plano/i.test(conta) && conta.includes('Quero o Completo') && conta.includes('Até 5 pessoas com acesso à academia'), 'Conta oferece o próximo plano embaixo');
+  await browser.close();
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/conta', plano: 'completo' }));
+  await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'completo'; await loadEverything(); await carregarPessoas(); render(); });
+  await page.waitForTimeout(300);
+  conta = await texto(page, '#parceiros .pc-main');
+  ok(conta.includes('1 de 5 no plano Completo'), 'Completo: até 5 pessoas');
   await page.fill('#pc-pessoa-nome', 'Carlos Recepção');
   await page.fill('#pc-pessoa-email', 'Carlos@QuadraLocacao.com.br');
   await page.click('#pc-pessoa-adicionar');
@@ -478,13 +480,12 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(add.caixa.includes(add.rpc.p_senha) && add.wa.startsWith('https://wa.me/?text=') && add.wa.includes('Senha provisória: ' + add.rpc.p_senha) && add.wa.includes('parceiros/entrar') && add.wa.includes('carlos@quadralocacao.com.br'), 'mensagem pronta para mandar à pessoa pelo WhatsApp');
   ok(add.lista.includes('Carlos Recepção') && add.lista.includes('Equipe · ainda não entrou'), 'a pessoa nova aparece na lista, como equipe — ' + add.lista);
   conta = await texto(page, '#parceiros .pc-main');
-  ok(conta.includes('2 de 2 no plano Básico') && !(await page.isVisible('#pc-pessoa-email')) && conta.includes('No Completo, até 5') && conta.includes('Aprimorar para o Completo'), 'plano cheio: some o formulário e aparece o convite para aprimorar');
-  ok(/aprimore o plano/i.test(conta) && conta.includes('Quero o Completo') && conta.includes('Até 5 pessoas com acesso à academia'), 'Conta oferece o próximo plano embaixo');
+  ok(conta.includes('2 de 5 no plano Completo') && await page.isVisible('#pc-pessoa-email'), 'Completo com 2 pessoas: ainda dá para adicionar');
   page.once('dialog', d => d.accept());
   await page.click('[data-pc-remover]');
   await page.waitForTimeout(500);
   conta = await texto(page, '#parceiros .pc-main');
-  ok(conta.includes('1 de 2 no plano Básico') && !conta.includes('Carlos Recepção'), 'o responsável principal remove a pessoa');
+  ok(conta.includes('1 de 5 no plano Completo') && !conta.includes('Carlos Recepção'), 'o responsável principal remove a pessoa');
   await page.evaluate(() => { window.__db.academia_acessos.push({ user_id: 'u-outra', academia_id: 'a1', usuario: 'outra@exemplo.com', email: 'outra@exemplo.com' }); window.__pessoa = { nome: '', email: 'outra@exemplo.com' }; render(); });
   await page.click('#pc-pessoa-adicionar');
   await page.waitForTimeout(400);
@@ -506,7 +507,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'completo' }));
   let painelTexto = await texto(page, "#parceiros .pc-main");
   ok(painelTexto.includes('QR code da sua ficha no GuiaTennis') && painelTexto.includes('Aprimorar para o Premium') && painelTexto.includes('Plano atual: Completo'), 'painel: QR code da ficha e o atalho para aprimorar o plano');
-  ok(painelTexto.includes('Quero o Premium') && painelTexto.includes('Bairros de quem procurou antes de abrir a ficha'), 'painel oferece o Premium com o que ele acrescenta');
+  ok(painelTexto.includes('Quero o Premium') && painelTexto.includes('Visitas, contatos e o dia a dia da ficha') && painelTexto.includes('Disponível no plano Premium'), 'painel do Completo: números trancados e o Premium com o que ele acrescenta');
   await browser.close();
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'premium' }));
   painelTexto = await texto(page, "#parceiros .pc-main");

@@ -1755,10 +1755,39 @@ function matchesAmenityFilter(court, filterKey) {
 // Planos de presença no site. O básico é a listagem gratuita; os outros
 // dois são pagos. Guardados na coluna "plano" da tabela academias.
 const PLANO_OPTS = [
-  { key: "basico", label: "Básico", desc: "Listagem gratuita" },
-  { key: "completo", label: "Completo", desc: "Plano pago" },
-  { key: "premium", label: "Premium", desc: "Plano pago, nível mais alto" },
+  { key: "basico", label: "Básico", desc: "Grátis: ficha básica, 1 pessoa" },
+  { key: "completo", label: "Completo", desc: "Pago: ficha completa, 5 pessoas" },
+  { key: "premium", label: "Premium", desc: "Pago: ficha completa, 10 pessoas e os números" },
 ];
+
+// O que cada plano libera na ficha (pedido do Breno em 02/10/2026). Nome,
+// endereço, quadras e os tipos, modalidade, preço, horário, cancelamento e
+// como chegar são de todos. O Básico mostra até 3 comodidades, até 3 fotos e
+// só o WhatsApp; o Completo e o Premium mostram tudo. Números (Desempenho)
+// só no Premium — o banco confere (SQL 20261002120000).
+const LIMITES_DO_PLANO = {
+  basico: { fotos: 3, comodidades: 3, contatos: ["whatsapp"], numeros: false },
+  completo: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], numeros: false },
+  premium: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], numeros: true },
+};
+function limitesDoPlano(plano) {
+  return LIMITES_DO_PLANO[plano] || LIMITES_DO_PLANO.basico;
+}
+// A ficha como aparece no site: cortada pelo plano. O que a academia
+// guardou além disso continua no banco (c.integral) e volta se ela
+// aprimorar o plano; o formulário de edição usa o integral.
+function aplicarPlano(c) {
+  const l = limitesDoPlano(c.plano);
+  const integral = { photos: c.photos || [], amenities: c.amenities || [], instagram: c.instagram, site: c.site };
+  return {
+    ...c,
+    integral,
+    photos: integral.photos.slice(0, l.fotos),
+    amenities: integral.amenities.slice(0, l.comodidades),
+    instagram: l.contatos.includes("instagram") ? c.instagram : "",
+    site: l.contatos.includes("site") ? c.site : "",
+  };
+}
 
 // Política de cancelamento e reposição. Fica na coluna "politica" (jsonb) da
 // tabela academias, no formato { reposicao, foraDoPrazo }.
@@ -2192,7 +2221,7 @@ function numeroOuNulo(v) {
 }
 
 function mapRow(row) {
-  return {
+  return aplicarPlano({
     id: row.id,
     name: row.name,
     address: row.address,
@@ -2229,7 +2258,7 @@ function mapRow(row) {
     confirmada: row.confirmada !== false,
     nomeSolicitante: row.nome_solicitante,
     contatoSolicitante: row.contato_solicitante,
-  };
+  });
 }
 
 function toRow(f) {
@@ -4150,7 +4179,7 @@ function mensagemDoAcesso(c, usuario, senha, nova) {
   ] : [
     `Oi, tudo bem? Aqui é o Breno, do GuiaTennis (guiatennis.com.br), o guia de quadras e academias de tênis onde a ${c.name} já aparece: ${linkDaFicha(c)}`,
     "",
-    "Criei um acesso no GuiaTennis Parceiros, o site das academias, para vocês mesmos atualizarem a ficha — horário, preços, fotos e como chegar —, responderem às avaliações dos jogadores e verem quantas pessoas abriram a ficha e chamaram vocês. No plano Básico, não tem custo.",
+    "Criei um acesso no GuiaTennis Parceiros, o site das academias, para vocês mesmos atualizarem a ficha — horário, preços, fotos e como chegar —, e responderem às avaliações dos jogadores. No plano Básico, não tem custo.",
     "",
   ]).concat([
     `Entrar: ${LINK_ENTRAR}`,
@@ -5120,27 +5149,28 @@ const PC_BARRA = ["painel", "desempenho", "avaliacoes", "ficha", "conta"];
 
 // O que cada plano libera. Tudo o que aparece na busca é igual para todos.
 const PC_RECURSOS = [
-  { t: "Ficha no guia: horário, preço, fotos, cancelamento e como chegar", p: ["basico", "completo", "premium"] },
+  { t: "Nome, endereço, quadras e os tipos de quadra", p: ["basico", "completo", "premium"] },
+  { t: "Modalidade, preço, horário, cancelamento e como chegar", p: ["basico", "completo", "premium"] },
   { t: "O aluno chama direto no seu WhatsApp, sem comissão", p: ["basico", "completo", "premium"] },
   { t: "Responder às avaliações", p: ["basico", "completo", "premium"] },
   { t: "QR code da ficha para a recepção", p: ["basico", "completo", "premium"] },
-  { t: "Visitas e contatos dos últimos 30 dias", p: ["basico", "completo", "premium"] },
-  { t: "Dia a dia, até 90 dias, e comparação com o período anterior", p: ["completo", "premium"] },
-  { t: "Contatos por canal: WhatsApp, Instagram e site", p: ["completo", "premium"] },
-  { t: "De onde vieram (Instagram, Google…) e o aparelho", p: ["completo", "premium"] },
-  { t: "Bairros de quem procurou antes de abrir a ficha", p: ["premium"] },
-  { t: "Comparação com a média das academias da cidade", p: ["premium"] },
+  { t: "Até 3 comodidades e até 3 fotos na ficha", p: ["basico"] },
+  { t: "Todas as comodidades e até 5 fotos na ficha", p: ["completo", "premium"] },
+  { t: "Instagram e site na ficha, além do WhatsApp", p: ["completo", "premium"] },
+  { t: "Visitas, contatos e o dia a dia da ficha", p: ["premium"] },
+  { t: "De onde vieram (Instagram, Google…), o aparelho e os canais", p: ["premium"] },
+  { t: "Bairros de quem procurou e comparação com a cidade", p: ["premium"] },
   { t: "Histórico completo, desde o começo", p: ["premium"] },
   // O relatório do mês por e-mail é do Premium (pedido de 02/10/2026): não
   // há mais caixa de "quero receber" no cadastro nem no primeiro acesso.
   { t: "Relatório do mês por e-mail", p: ["premium"] },
 ];
 // "pessoas": quantos e-mails entram na mesma academia — o banco confere
-// (limite_de_pessoas, SQL 20260930160000).
+// (limite_de_pessoas, SQL 20261002120000).
 const PC_PLANOS = [
-  { key: "basico", nome: "Básico", preco: "Grátis", pessoas: 2, resumo: "Para aparecer na busca e receber alunos." },
-  { key: "completo", nome: "Completo", preco: "Fale com a gente", pessoas: 5, resumo: "Para entender de onde vêm os alunos." },
-  { key: "premium", nome: "Premium", preco: "Fale com a gente", pessoas: 10, resumo: "Para comparar com a região e crescer." },
+  { key: "basico", nome: "Básico", preco: "Grátis", pessoas: 1, resumo: "Para aparecer na busca e receber alunos." },
+  { key: "completo", nome: "Completo", preco: "Fale com a gente", pessoas: 5, resumo: "Para ter a ficha completa e a equipe junto." },
+  { key: "premium", nome: "Premium", preco: "Fale com a gente", pessoas: 10, resumo: "Para ver os números e crescer." },
 ];
 // O que vem aí no Premium (pedido do Breno). Aparece como "Em breve".
 const PC_EM_BREVE = "Promoções na ficha e avisos para os seus alunos";
@@ -5148,10 +5178,10 @@ const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelam
 
 function perguntasParceiros() {
   return [
-    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. Os planos Completo e Premium mostram de onde vêm os alunos, comparam com a região e dão acesso a mais pessoas da equipe." },
+    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram e site) para até 5 pessoas da equipe. O Premium mostra também os números da ficha: visitas, contatos, de onde vêm os alunos e a comparação com a região." },
     { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto; o GuiaTennis confere antes de publicar, e você já administra a ficha." },
-    { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: até 2 no Básico, 5 no Completo e 10 no Premium." },
+    { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O aluno fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Não. Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias — nem a própria, nem as outras. Vocês respondem às avaliações da própria academia." },
@@ -5363,6 +5393,14 @@ function listaBarras(itens, cor) {
     </div>`;
 }
 
+// Números só no Premium (pedido de 02/10/2026); o banco devolve
+// "trancado" para os outros planos.
+function veNumeros() {
+  const d = state.numeros && state.numeros.dados;
+  return limitesDoPlano(planoAtual()).numeros && !(d && d.trancado);
+}
+const TRANCADO_NUMEROS = ["premium", "Os números da academia", "Quantas pessoas abriram a ficha e chamaram vocês, dia a dia, por qual canal, de onde vieram, de quais bairros e a comparação com as academias da cidade."];
+
 // Bloco trancado: o que o plano de cima libera, sem número inventado.
 function blocoTrancado(plano, titulo, texto) {
   return `
@@ -5539,7 +5577,7 @@ function pcInicio() {
     { ic: "phone", t: "Contato direto no seu WhatsApp", d: "Sem intermediário, sem central de reservas e sem comissão: o aluno chama você, e você combina a aula ou a locação do seu jeito." },
     { ic: "edit", t: "Uma ficha que vende por você", d: "Horário, preços, fotos, regra de cancelamento e como chegar, tudo num só lugar. Você atualiza pelo celular, e a mudança aparece na hora." },
     { ic: "bubble", t: "Responda às avaliações", d: "Agradeça os elogios e explique as críticas, em público. Quem vê uma academia que responde confia mais para chamar." },
-    { ic: "barchart", t: "Saiba quantos alunos você atrai", d: "Visitas na ficha e contatos no WhatsApp já no plano grátis. Nos planos Completo e Premium, também de onde vieram e de quais bairros." },
+    { ic: "barchart", t: "Saiba quantos alunos você atrai", d: "No Premium, as visitas na ficha, os contatos no WhatsApp, de onde vieram e de quais bairros." },
     { ic: "clipboard", t: "QR code para a recepção", d: "Deixe no balcão: o aluno aponta a câmera, abre a ficha e avalia na hora. Mais avaliações, mais confiança de quem ainda não conhece vocês." },
   ];
   // Como funciona, em etapas, como as páginas de parceiro dos sites grandes.
@@ -5592,7 +5630,7 @@ function pcInicio() {
     </section>
     <section class="pc-sec">
       <h2 class="display">Planos</h2>
-      <p class="pc-sec-sub">Comece grátis e aprimore quando quiser: os planos Completo e Premium mostram de onde vêm os alunos, comparam com a região e dão acesso a mais pessoas da equipe.</p>
+      <p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium mostra também os números da academia.</p>
       ${pcCartoesDePlano(null)}
     </section>
     <section class="pc-sec">
@@ -5651,7 +5689,7 @@ function pcPlanos(logado) {
       <h1 class="display">${logado ? "Seu plano" : "Planos"}</h1>
       <p class="pc-sec-sub">${logado && !proximoPlano(atual)
         ? "Vocês estão no plano mais completo. As novidades chegam primeiro para o Premium."
-        : "Comece grátis e aprimore quando quiser: os planos Completo e Premium mostram de onde vêm os alunos, comparam a academia com a região e dão acesso a mais pessoas da equipe."}</p>
+        : "Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium mostra também os números da academia."}</p>
       ${pcCartoesDePlano(atual)}
       <p class="footnote">Para mudar de plano, <a href="${linkPlano(proximoPlano(atual) ? proximoPlano(atual).key : "premium")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>. O plano muda sem mexer na ficha.</p>
     </section>`;
@@ -5721,7 +5759,7 @@ function dominioDoSite(site) {
 function academiaDoEmail(email) {
   const dominio = String(email || "").split("@")[1];
   if (!dominio || EMAIL_GERAL.includes(dominio.toLowerCase())) return null;
-  return state.allCourts.find(c => c.site && dominioDoSite(c.site) === dominio.toLowerCase()) || null;
+  return state.allCourts.find(c => { const site = (c.integral || c).site; return site && dominioDoSite(site) === dominio.toLowerCase(); }) || null;
 }
 
 function pcEtapas(atual) {
@@ -5938,12 +5976,13 @@ function pcPainel() {
       ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
       ${pcSituacao(c)}
 
+      ${veNumeros() ? `
       <div class="pc-bloco">
         <div class="pc-bloco-topo"><h2>Desempenho ${d ? textoDoPeriodo(d.dias) : ""}</h2><a href="/parceiros/desempenho" class="pc-link-btn" data-pc="desempenho">Ver tudo ›</a></div>
         ${n.carregando && !d ? `<p class="pc-vazio">${bolaGirando(18)} Carregando os números…</p>` : ""}
         ${n.erro ? `<p class="pc-vazio">${esc(n.erro)}</p>` : ""}
         ${d ? blocosDeNumeros(d) : ""}
-      </div>
+      </div>` : blocoTrancado(...TRANCADO_NUMEROS)}
 
       <div class="pc-duas">
         <div class="pc-card">
@@ -5983,6 +6022,13 @@ function pcDesempenho() {
     { dias: 0, t: "Desde o começo", p: ["premium"] },
   ];
   const atual = d ? d.dias : state.numerosDias;
+  if (!veNumeros()) return `
+    <section class="pc-pagina">
+      <p class="pc-eyebrow">${esc(c.name)}</p>
+      <h1 class="display">Desempenho</h1>
+      ${blocoTrancado(...TRANCADO_NUMEROS)}
+      ${pcOfertaDePlano()}
+    </section>`;
   return `
     <section class="pc-pagina">
       <p class="pc-eyebrow">${esc(c.name)}</p>
@@ -9749,6 +9795,11 @@ function regPassoAtual() {
 function regPassoHtml(id, f, obrigatorio) {
   const isEditing = !!f.__editingId;
   const parceiro = !isAdmin && !isEditing && !!contaAcademia;
+  // O que o plano da academia mostra na ficha (academia nova começa no Básico).
+  const plano = f.__plano || "basico";
+  const lim = limitesDoPlano(plano);
+  const maxFotos = lim.fotos;
+  const cheiaComodidades = (f.amenities || []).length >= lim.comodidades;
   if (id === "dados") return `
         <label class="field-label" for="f-name">Nome da academia</label>
         <input class="form-field" id="f-name" placeholder="Nome da academia/quadra *" value="${esc(f.name)}" style="margin-top:0" />
@@ -9802,29 +9853,34 @@ function regPassoHtml(id, f, obrigatorio) {
             </div>
           `).join("")}
         </div>
-        <p class="field-label">Comodidades</p>
+        <p class="field-label">Comodidades${isFinite(lim.comodidades) ? ` (até ${lim.comodidades})` : ""}</p>
+        ${isFinite(lim.comodidades) ? `<p class="footnote reg-plano-nota" style="margin:0 0 8px">No plano ${esc(nomeDoPlano(plano))}, a ficha mostra até ${lim.comodidades} comodidades. No Completo, todas.</p>` : ""}
         <div class="chip-row">
-          ${AMENITY_OPTS.map(a => `<button class="chip small reg-amenity ${f.amenities.includes(a.key)?"active":""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`).join("")}
+          ${AMENITY_OPTS.map(a => {
+            const marcada = f.amenities.includes(a.key);
+            return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}" ${!marcada && cheiaComodidades ? "disabled" : ""}>${a.icon} ${a.label}</button>`;
+          }).join("")}
         </div>`;
 
   if (id === "contato") return `
         <label class="field-label" for="f-phone" style="margin-top:0">WhatsApp da academia${obrigatorio}</label>
         <input class="form-field" id="f-phone" inputmode="tel" placeholder="WhatsApp (com DDD)${obrigatorio}" value="${esc(f.phone)}" style="margin-top:0" />
+        ${lim.contatos.includes("instagram") ? "" : `<p class="footnote reg-plano-nota" style="margin:14px 0 0">No plano ${esc(nomeDoPlano(plano))}, a ficha mostra só o WhatsApp. Instagram e site aparecem a partir do plano Completo.</p>`}
         <label class="field-label" for="f-instagram">Instagram</label>
-        <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" style="margin-top:0" />
+        <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" style="margin-top:0" ${lim.contatos.includes("instagram") || isAdmin ? "" : "disabled"} />
         <label class="field-label" for="f-site">Site</label>
-        <input class="form-field" id="f-site" inputmode="url" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" style="margin-top:0" />`;
+        <input class="form-field" id="f-site" inputmode="url" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" style="margin-top:0" ${lim.contatos.includes("site") || isAdmin ? "" : "disabled"} />`;
 
   if (id === "fotos") return `
-        <label class="foto-caixa ${(f.photos||[]).length >= 5 ? "cheia" : ""}" for="f-photo-file">
-          <span class="foto-ic">${icon('camera', 30, (f.photos||[]).length >= 5 ? 'var(--muted)' : 'var(--green)')}</span>
+        <label class="foto-caixa ${(f.photos||[]).length >= maxFotos ? "cheia" : ""}" for="f-photo-file">
+          <span class="foto-ic">${icon('camera', 30, (f.photos||[]).length >= maxFotos ? 'var(--muted)' : 'var(--green)')}</span>
           <span class="foto-t">${(f.photos||[]).length
-            ? `${f.photos.length} de 5 fotos${f.photos.length >= 5 ? "" : " — toque para adicionar mais"}`
+            ? (f.photos.length > maxFotos ? `${f.photos.length} fotos guardadas — a ficha mostra as ${maxFotos} primeiras` : `${f.photos.length} de ${maxFotos} fotos${f.photos.length >= maxFotos ? "" : " — toque para adicionar mais"}`)
             : "Toque para escolher as fotos"}</span>
-          <span class="foto-s">${(f.photos||[]).length >= 5
+          <span class="foto-s">${(f.photos||[]).length >= maxFotos
             ? "Chegou no limite. Remova uma foto para trocar."
             : "Direto da galeria ou da câmera."}</span>
-          <input type="file" accept="image/*" multiple id="f-photo-file" ${(f.photos||[]).length >= 5 ? "disabled" : ""} />
+          <input type="file" accept="image/*" multiple id="f-photo-file" ${(f.photos||[]).length >= maxFotos ? "disabled" : ""} />
         </label>
         ${(f.photos||[]).length ? `
           <div class="photo-thumb-row">
@@ -9836,6 +9892,7 @@ function regPassoHtml(id, f, obrigatorio) {
             `).join("")}
           </div>
         ` : ""}
+        ${maxFotos < 5 ? `<p class="footnote reg-plano-nota" style="margin-top:8px">No plano ${esc(nomeDoPlano(plano))}, a ficha mostra até ${maxFotos} fotos. No Completo, até 5.</p>` : ""}
         <p class="footnote" style="margin-top:8px">Só o espaço em si: quadras, recepção, vestiário, fachada. Nada de promoção, tabela de preço ou material de divulgação.</p>`;
 
   if (id === "horario") return `
@@ -10276,7 +10333,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. No painel, a academia vê os números da própria ficha — visitas e contatos e, conforme o plano (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis), o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou e a média das academias da cidade. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram e site) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Antes de enviar sua primeira avaliação ou solicitação de cadastro, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
@@ -10923,8 +10980,10 @@ function attachEvents() {
     if (!podeEditar(c)) return;
     const quadras = {};
     QUADRA_COMBOS.forEach(q => { quadras[q.key] = (c.quadras && c.quadras[q.key]) || 0; });
+    const integral = c.integral || c;
     window.__form = {
       __editingId: c.id,
+      __plano: c.plano || "basico",
       name: c.name || "",
       address: c.address || c.endereco || "",
       numero: c.numero || "",
@@ -10932,14 +10991,14 @@ function attachEvents() {
       bairro: c.bairro || "",
       cidade: c.cidade || "",
       quadras,
-      amenities: [...(c.amenities || [])],
+      amenities: [...(integral.amenities || [])],
       modalidades: [...(c.modalidades || [])],
       priceAula: c.priceAula || "",
       priceLocacao: c.priceLocacao || "",
       phone: c.phone || "",
-      instagram: c.instagram || "",
-      site: c.site || "",
-      photos: [...(c.photos || (c.photoUrl ? [c.photoUrl] : []))],
+      instagram: integral.instagram || "",
+      site: integral.site || "",
+      photos: [...(integral.photos || (c.photoUrl ? [c.photoUrl] : []))],
       politica: politicaParaForm(c),
       acesso: { ...JSON.parse(JSON.stringify(c.acesso || {})), ...acessoDe(c) },
       horario: JSON.parse(JSON.stringify(c.horario || {})),
@@ -11440,6 +11499,8 @@ function attachEvents() {
     el.onclick = () => {
       const k = el.dataset.amenity;
       const f = window.__form;
+      // O plano limita quantas comodidades a ficha mostra (Básico: 3).
+      if (!f.amenities.includes(k) && f.amenities.length >= limitesDoPlano(f.__plano || "basico").comodidades) return;
       f.amenities = f.amenities.includes(k) ? f.amenities.filter(x=>x!==k) : [...f.amenities, k];
       render();
     };
@@ -11498,7 +11559,7 @@ function attachEvents() {
       if (!files.length) return;
       const f = window.__form;
       if (!f.photos) f.photos = [];
-      const room = Math.max(0, 5 - f.photos.length);
+      const room = Math.max(0, limitesDoPlano(f.__plano || "basico").fotos - f.photos.length);
       const toAdd = files.slice(0, room);
       let pending = toAdd.length;
       toAdd.forEach((file) => {

@@ -111,7 +111,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(folha.includes('Olá, Maria') && folha.includes('Tudo certo!'), 'depois do primeiro acesso, abre o painel com o nome do responsável');
   ok(folha.includes('Falta:') && folha.includes('Horário') && folha.includes('Fotos'), 'painel mostra o que falta na ficha');
   ok(folha.includes('ficha básica'), 'painel avisa que a ficha ainda é básica');
-  ok(folha.includes('Visitas na ficha') && salvo.rpcs.includes('numeros_da_academia'), 'painel já traz os números da academia');
+  ok(folha.includes('Os números da academia') && folha.includes('Disponível no plano Premium') && !folha.includes('Visitas na ficha'), 'painel do Básico: números só no Premium');
   ok(folha.includes('1 avaliação sem resposta'), 'painel conta as avaliações sem resposta');
   ok(await page.isVisible('.pc-barra-baixo'), 'no celular, atalhos embaixo como nos apps de parceiro');
 
@@ -154,11 +154,13 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   form.confirmada = form.confirmada || await page.evaluate(() => !!document.getElementById('f-confirmada'));
   ok(form.titulo === 'Editar Quadra Locação' && !form.confirmada && form.pagina === 'parceiros', 'edita a própria ficha, sem a caixa do admin — ' + form.titulo);
   await irParte(page, 'contato');
-  await page.fill('#f-instagram', '@quadralocacao');
+  // Plano Básico: a ficha mostra só o WhatsApp (pedido de 02/10/2026).
+  ok(await page.evaluate(() => document.getElementById('f-instagram').disabled && document.getElementById('f-site').disabled && document.querySelector('.reg-plano-nota')?.innerText.includes('só o WhatsApp')), 'Básico: Instagram e site travados, com o aviso do plano');
+  await page.fill('#f-phone', '11911112222');
   await page.click('#register-submit');
   await page.waitForTimeout(900);
   const up = await page.evaluate(() => window.__ultimoUpdate || {});
-  ok(up.instagram === '@quadralocacao' && !('status' in up) && !('plano' in up) && !('pausada' in up) && !('confirmada' in up), 'salva sem mandar status, plano, pausa nem confirmada — ' + Object.keys(up).join(','));
+  ok(up.phone === '11911112222' && !('status' in up) && !('plano' in up) && !('pausada' in up) && !('confirmada' in up), 'salva sem mandar status, plano, pausa nem confirmada — ' + Object.keys(up).join(','));
   ok((await texto(page, '#register-overlay')).includes('Já estão na ficha'), 'avisa que as mudanças já estão na ficha');
   await page.click('#register-close-2');
   await page.waitForTimeout(200);
@@ -210,7 +212,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(inicio.cliques === 0, 'acesso da academia logada não conta');
   await page.click('.conta-banner [data-abrir-conta]');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-numeros')), 'faixa abre o painel no GuiaTennis Parceiros, com os números');
+  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-trancado')), 'faixa abre o painel no GuiaTennis Parceiros (Básico: números trancados)');
   await page.click('.pc-barra-baixo [data-pc="avaliacoes"]');
   await page.waitForTimeout(200);
   page.once('dialog', d => d.accept());

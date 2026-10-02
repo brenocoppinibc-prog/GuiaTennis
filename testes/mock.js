@@ -42,7 +42,7 @@
   const loginDe = (x) => x.usuario.includes("@") ? x.usuario : x.usuario + DOMINIO;
   const tel = (t) => { const d = String(t || "").replace(/\D/g, ""); return (d.length === 12 || d.length === 13) && d.startsWith("55") ? d.slice(2) : d; };
   const planoDe = (id) => window.__plano || (db.academias.find(y => y.id === id) || {}).plano || "basico";
-  const limite = (plano) => ({ premium: 10, completo: 5 }[plano] || 2);
+  const limite = (plano) => ({ premium: 10, completo: 5 }[plano] || 1);
   const ligar = (x, academiaId) => {
     const temPrincipal = db.academia_acessos.some(y => y.academia_id === academiaId && (y.papel || "principal") === "principal");
     Object.assign(x, { academia_id: academiaId, papel: temPrincipal ? "equipe" : "principal", pedido_academia_id: null, pedido_nome: null, pedido_em: null });
@@ -269,6 +269,8 @@
       const plano = window.__plano || ac.plano || "basico";
       const pedido = a.p_dias === undefined ? 30 : a.p_dias;
       const dias = plano === "premium" ? (pedido <= 0 ? 0 : pedido) : plano === "completo" ? Math.min(Math.max(pedido || 30, 7), 90) : 30;
+      // Desde 02/10/2026, números só no Premium (SQL 20261002120000).
+      if (plano !== "premium") return { data: { plano, trancado: true }, error: null };
       const base = { plano, dias, visitas: 42, contatos: 9 };
       if (plano === "basico") return { data: base, error: null };
       const n = dias || 120;

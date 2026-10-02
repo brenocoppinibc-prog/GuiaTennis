@@ -187,6 +187,18 @@ cobra taxa e não fica no meio** da negociação.
 21. **Relatório do mês por e-mail é só do Premium** (pedido de 02/10/2026):
     sem caixa "Quero receber por e-mail…" no cadastro nem no primeiro acesso
     (as colunas `recebe_relatorio` continuam no banco, sempre falsas).
+22. **O que cada plano libera** (pedido de 02/10/2026): todos têm nome,
+    endereço, quadras e tipos, modalidade, preço, horário, cancelamento,
+    como chegar, WhatsApp, avaliações e QR code. **Básico** (grátis): até 3
+    comodidades, até 3 fotos, só o WhatsApp, 1 pessoa, sem números.
+    **Completo**: todas as comodidades, 5 fotos, Instagram e site, 5
+    pessoas, sem números. **Premium**: o mesmo, 10 pessoas, todos os números
+    (Desempenho) e o relatório do mês. O site corta a ficha pelo plano em
+    `aplicarPlano` (dentro do `mapRow`; o que passou fica em `c.integral` e
+    o formulário de edição usa ele); `LIMITES_DO_PLANO` também trava o
+    formulário. O banco confere pessoas (`limite_de_pessoas`) e números
+    (`numeros_da_academia` devolve `{trancado: true}` fora do Premium;
+    SQL `20261002120000`).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1060,7 +1072,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

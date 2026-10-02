@@ -4305,10 +4305,6 @@ function formDadosConta(modo) {
       <input class="form-field conta-campo" data-campo="senha" id="conta-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha)}" style="margin-top:0" />
       <input class="form-field conta-campo" data-campo="senha2" id="conta-senha2" type="password" autocomplete="new-password" placeholder="Repita a senha nova" value="${esc(f.senha2)}" />
       <p class="footnote" style="margin-top:6px">A senha provisória deixa de valer. A nova, só vocês sabem.</p>` : ""}
-    <label class="consent-row">
-      <input type="checkbox" class="conta-check" data-campo="recebeRelatorio" ${f.recebeRelatorio ? "checked" : ""} />
-      <span>Quero receber por e-mail dicas para a academia, novidades do GuiaTennis Parceiros e o relatório do mês. Posso cancelar quando quiser.</span>
-    </label>
     ${pedirAceite ? `
       <label class="consent-row">
         <input type="checkbox" class="conta-check" data-campo="aceite" ${f.aceite ? "checked" : ""} />
@@ -4379,7 +4375,7 @@ function blocoAcessoAdmin(c) {
   return caixa(`
     <span><strong>Acesso da academia</strong> · usuário <strong>${esc(a.usuario)}</strong></span>
     <span>${situacao}</span>
-    ${a.dados_completos_em ? `<span>${esc(a.email || "")}${a.whatsapp ? " · " + esc(telefoneBonito(a.whatsapp)) : ""}${a.cnpj ? " · CNPJ " + esc(a.cnpj) : ""}${a.recebe_relatorio ? " · quer o relatório do mês" : ""}</span>` : ""}
+    ${a.dados_completos_em ? `<span>${esc(a.email || "")}${a.whatsapp ? " · " + esc(telefoneBonito(a.whatsapp)) : ""}${a.cnpj ? " · CNPJ " + esc(a.cnpj) : ""}</span>` : ""}
     <span>Último acesso: ${a.ultimo_acesso ? dataHora(a.ultimo_acesso) : "ainda não entrou"}${a.ficha_atualizada_em ? ` · ficha atualizada pela academia em ${dataCurta(a.ficha_atualizada_em)}` : ""}${a.dados_completos_em && !a.senha_trocada_em ? " · ainda com a senha provisória" : ""}</span>
     ${novo ? `
       <div class="acesso-novo">
@@ -4518,7 +4514,7 @@ async function salvarDadosConta() {
     }
     const { error } = await sb.rpc('completar_meu_acesso', {
       p_nome: juntarNome(f), p_cargo: f.cargo, p_email: f.email.trim(), p_whatsapp: whats,
-      p_cnpj: cnpj, p_recebe_relatorio: !!f.recebeRelatorio, p_aceite: !!f.aceite, p_tratamento: f.tratamento,
+      p_cnpj: cnpj, p_recebe_relatorio: false, p_aceite: !!f.aceite, p_tratamento: f.tratamento,
     });
     if (error) throw new Error(mensagemDoBanco(error, "Não consegui salvar agora. Tente de novo em instantes."));
     const primeiraVez = !contaAcademia.dadosCompletos;
@@ -5135,6 +5131,9 @@ const PC_RECURSOS = [
   { t: "Bairros de quem procurou antes de abrir a ficha", p: ["premium"] },
   { t: "Comparação com a média das academias da cidade", p: ["premium"] },
   { t: "Histórico completo, desde o começo", p: ["premium"] },
+  // O relatório do mês por e-mail é do Premium (pedido de 02/10/2026): não
+  // há mais caixa de "quero receber" no cadastro nem no primeiro acesso.
+  { t: "Relatório do mês por e-mail", p: ["premium"] },
 ];
 // "pessoas": quantos e-mails entram na mesma academia — o banco confere
 // (limite_de_pessoas, SQL 20260930160000).
@@ -5828,10 +5827,6 @@ function pcCadastro() {
             ${camposDeContato("pc-conta", f, "pc-conta-campo")}
             <label class="field-label" for="pc-conta-senha">Crie uma senha<span class="obrig">*</span></label>
             <input class="form-field pc-conta-campo" data-campo="senha" id="pc-conta-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha)}" style="margin-top:0" />
-            <label class="consent-row">
-              <input type="checkbox" id="pc-conta-novidades" ${f.novidades ? "checked" : ""} />
-              <span>Quero receber por e-mail dicas para a minha academia, novidades do GuiaTennis Parceiros e o relatório do mês. Posso cancelar quando quiser.</span>
-            </label>
             <label class="consent-row">
               <input type="checkbox" id="pc-conta-aceite" ${f.aceite ? "checked" : ""} />
               <span>Represento a academia e concordo com os <button type="button" class="inline-link" id="pc-conta-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="pc-conta-privacidade">Política de Privacidade</button> do GuiaTennis.<span class="obrig">*</span></span>
@@ -10273,7 +10268,7 @@ function renderStatsPanel() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 1 de outubro de 2026</p>
+<p class="footnote">Última atualização: 2 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -10301,10 +10296,10 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 1 de outubro de 2026</p>
+<p class="footnote">Última atualização: 2 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
 <p style="font-size:14px"><strong>Nome e WhatsApp (identificação):</strong> na primeira vez que você avalia uma quadra ou envia uma solicitação de cadastro, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou e as preferências de busca (estado, cidade e o que você costuma procurar) ficam salvos apenas no navegador do seu próprio aparelho, para aparecer na página inicial e no menu. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
-<p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), se quer receber o relatório do mês, a data do aceite dos Termos, a data do último acesso e o pedido para administrar uma academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, se ela pedir, mandar o relatório do mês. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
+<p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e o pedido para administrar uma academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>

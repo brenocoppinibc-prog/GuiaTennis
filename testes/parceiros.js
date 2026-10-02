@@ -49,7 +49,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   t = await tela(page);
   ok(t.aba === 'planos' && t.link === '/parceiros/planos' && t.h1 === 'Planos' && !t.robots, 'Planos tem endereço próprio e entra no Google — ' + t.link);
   const tabela = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelectorAll('.pc-plano-lista li:not(.nao)').length).join());
-  ok(tabela === '6,9,13', 'cada plano mostra o que libera, um acima do outro — ' + tabela);
+  ok(tabela === '6,9,14', 'cada plano mostra o que libera, um acima do outro — ' + tabela);
   const pessoasPorPlano = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-lista li').innerText.match(/\d+/)[0]).join());
   ok(pessoasPorPlano === '2,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
   ok(/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e avisos para os seus alunos'), 'Premium mostra o que vem aí, marcado "Em breve"');
@@ -149,7 +149,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('aceitar os Termos'), 'sem o aceite: avisa');
-  await page.check('#pc-conta-novidades');
+  ok(!(await page.$('#pc-conta-novidades')) && !(await texto(page, '#parceiros')).includes('Quero receber por e-mail'), 'sem a caixa de receber e-mail (o relatório do mês é do Premium)');
   await page.check('#pc-conta-aceite');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(800);
@@ -158,7 +158,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     conta: contaAcademia && { academia: contaAcademia.academiaId, nome: contaAcademia.nome, tratamento: contaAcademia.tratamento, cargo: contaAcademia.cargo, novidades: contaAcademia.recebeRelatorio },
     login: window.__ultimoLogin,
   }));
-  ok(criada.rpc && criada.rpc.p_email === 'contato@soaulatennis.com.br' && criada.rpc.p_nome === 'Joana Dona' && criada.rpc.p_tratamento === 'Sra.' && criada.rpc.p_cargo === 'Dono(a) ou sócio(a)' && criada.rpc.p_recebe_novidades === true && criada.rpc.p_aceite === true, 'grava tratamento, nome e sobrenome, cargo, telefone e o aceite das novidades — ' + JSON.stringify(criada.conta));
+  ok(criada.rpc && criada.rpc.p_email === 'contato@soaulatennis.com.br' && criada.rpc.p_nome === 'Joana Dona' && criada.rpc.p_tratamento === 'Sra.' && criada.rpc.p_cargo === 'Dono(a) ou sócio(a)' && criada.rpc.p_recebe_novidades === false && criada.rpc.p_aceite === true, 'grava tratamento, nome e sobrenome, cargo, telefone e o aceite — ' + JSON.stringify(criada.conta));
   ok(criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'cria a conta e já entra com o e-mail');
   etapas = await barra();
   corpo = await texto(page, '#parceiros .pc-main');

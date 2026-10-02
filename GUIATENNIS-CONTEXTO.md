@@ -184,6 +184,9 @@ cobra taxa e não fica no meio** da negociação.
     cabeçalho, rodapé, GuiaTennis Parceiros e QR code; os ícones, a imagem de
     compartilhar, a 404 e as imagens do WhatsApp saem do mesmo desenho pelo
     `divulgacao/gerar-imagens.js`. Mudou o logo? Rode o gerador.
+21. **Relatório do mês por e-mail é só do Premium** (pedido de 02/10/2026):
+    sem caixa "Quero receber por e-mail…" no cadastro nem no primeiro acesso
+    (as colunas `recebe_relatorio` continuam no banco, sempre falsas).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

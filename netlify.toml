@@ -32,10 +32,67 @@
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
-# Sobre endereços: o site usa ?court=ID e ?busca=..., que são parâmetros na
-# mesma página. Por isso não precisa de regra de redirecionamento aqui. Se um
-# dia os endereços virarem caminhos de verdade (tipo /academia/morumbi), aí
-# será preciso adicionar um [[redirects]] apontando tudo para /index.html.
+# Endereços de cada tela (30/09/2026), no padrão dos sites grandes:
+#   /academia/<nome>-<fim do id>   ficha da academia
+#   /quadras/<cidade>/<bairro>     academias de uma região
+#   /busca?q=…&piso=…              busca com filtros
+#   /comparar?academias=…          comparação
+#   /parceiros/…                   GuiaTennis Parceiros (site das academias)
+# Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
+# endereço) e o site monta a tela pelo link. Os links antigos (?court=,
+# ?busca=) continuam funcionando, porque abrem a própria home.
+[[redirects]]
+  from = "/academia/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/quadras/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/quadras"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/busca"
+  to = "/index.html"
+  status = 200
+
+# GuiaTennis Parceiros, o site das academias: /parceiros, /parceiros/planos,
+# /parceiros/entrar, /parceiros/painel…
+[[redirects]]
+  from = "/parceiros"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/parceiros/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/comparar"
+  to = "/index.html"
+  status = 200
+
+# O mesmo cuidado de cache do index.html vale para essas telas.
+[[headers]]
+  for = "/academia/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/parceiros/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/quadras/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 # O sitemap sai do banco de verdade, com a ficha de cada academia publicada
 # (função sitemap(), em supabase/migrations), em XML para qualquer pedido.

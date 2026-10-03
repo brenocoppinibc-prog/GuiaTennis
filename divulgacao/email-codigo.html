@@ -1,0 +1,15 @@
+<!-- Modelo do e-mail com o código do GuiaTennis (confirmar o e-mail e
+     "Esqueci a senha"). Colar no Supabase: Authentication → Emails →
+     Templates → "Magic Link" (nos dois projetos, teste e de verdade).
+     Assunto: Seu código do GuiaTennis
+     {{ .Token }} é o código de 6 números que o Supabase põe sozinho. -->
+<div style="margin:0;padding:24px 12px;background:#F6F1E7;font-family:Arial,Helvetica,sans-serif;color:#1F2A24">
+  <div style="max-width:440px;margin:0 auto;background:#FFFFFF;border-radius:16px;padding:28px 24px;border:1px solid #E7DFD0">
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:bold;color:#1F4D3A">GuiaTennis</p>
+    <p style="margin:0 0 8px;font-size:16px;line-height:1.5">Olá! Este é o seu código do GuiaTennis:</p>
+    <p style="margin:18px 0;padding:16px 0;text-align:center;font-size:34px;font-weight:bold;letter-spacing:8px;color:#1F4D3A;background:#EEF4F0;border-radius:12px">{{ .Token }}</p>
+    <p style="margin:0 0 8px;font-size:15px;line-height:1.5">Digite o código na tela do GuiaTennis. Ele vale por 1 hora.</p>
+    <p style="margin:0 0 20px;font-size:14px;line-height:1.5;color:#6B6458">Não foi você que pediu? É só ignorar este e-mail: ninguém entra na sua conta sem o código.</p>
+    <p style="margin:0;font-size:13px;color:#6B6458">GuiaTennis · <a href="https://guiatennis.com.br" style="color:#1F4D3A">guiatennis.com.br</a></p>
+  </div>
+</div>

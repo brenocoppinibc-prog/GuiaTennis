@@ -158,14 +158,27 @@ const { abrir, ok } = require('./harness');
 
   // Fichas
   ({ browser, page } = await abrir({ q: '?court=a1' }));
+  // Cancelamento aparece a partir do plano Completo (02/10/2026).
+  await page.evaluate(async () => { window.__db.academias.forEach(a => a.plano = 'completo'); await loadEverything(); openCourt('a1'); });
+  await page.waitForTimeout(200);
   let txt = await page.evaluate(() => document.getElementById('app').textContent);
   ok(!txt.includes('Cobra metade'), 'só aula: regra de locação não aparece');
   ok(txt.includes('Perde a aula'), 'só aula: regra da aula aparece');
   ok(txt.includes('professor da academia. Para alugar a quadra avulsa'), 'FAQ "professor da academia"');
-  ok(txt.includes('consulte com a academia'), '"consulte com a academia"');
+  ok(txt.includes('Sob consulta') && txt.includes('fale com a academia'), 'sem preço: "Sob consulta" e "fale com a academia"');
+  // Cartão da busca sem preço e sem WhatsApp: sem repetir "confirme o valor".
+  const cartao = await page.evaluate(() => {
+    const div = document.createElement('div');
+    div.innerHTML = renderCard(decorate({ ...state.allCourts.find(x => x.id === 'a1'), phone: '', priceAula: '', priceLocacao: '', priceRange: '' }));
+    return div.textContent.replace(/\s+/g, ' ');
+  });
+  ok(cartao.includes('Sob consulta') && cartao.includes('fale com a academia') && !cartao.includes('Confirme o valor') && !cartao.includes('confirme os valores'), 'cartão sem preço: "Sob consulta · fale com a academia", sem a frase repetida embaixo');
   ok(txt.includes('Estacionamento grátis.') && !txt.includes('Rua de trás'), 'com vaga própria: ficha mostra "No local" e não o texto de onde parar');
   await browser.close();
   ({ browser, page } = await abrir({ q: '?court=a2' }));
+  // Cancelamento aparece a partir do plano Completo (02/10/2026).
+  await page.evaluate(async () => { window.__db.academias.forEach(a => a.plano = 'completo'); await loadEverything(); openCourt('a2'); });
+  await page.waitForTimeout(200);
   txt = await page.evaluate(() => document.getElementById('app').textContent);
   ok(txt.includes('reposição da reserva') || txt.includes('reposição de reserva'), 'só locação: fala em reserva, não aula');
   ok(!/reposição da aula/.test(txt), 'só locação: não fala em aula na política');

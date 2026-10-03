@@ -29,7 +29,7 @@ teste")
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
 > `testes/varias-academias.js`), com o plano e o valor de cada academia
 separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
-SQL `20261003130000_pedidos_de_plano`). **562 verificações** passando
+SQL `20261003130000_pedidos_de_plano`). **566 verificações** passando
 > (`check-js.sh` + os 18 arquivos de `testes/`) e 148 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).
@@ -318,6 +318,13 @@ cobra taxa e não fica no meio** da negociação.
     também anota o pedido. No admin, "Querem mudar de plano" lista os
     pedidos com WhatsApp e "Mudar para o …"; mudar o plano atende o pedido
     e tira da lista. Teste: `testes/plano-ao-finalizar.js`.
+31. **Cidade do estado escolhido** (pedido de 03/10/2026): nas
+    Preferências de busca, a cidade vem da lista oficial de municípios do
+    IBGE (`servicodados.ibge.gov.br`, guardada no aparelho,
+    `CIDADES_DO_UF`). Trocar o estado tira a cidade de outro estado; as
+    cidades do guia sugeridas são só as do estado; salvar uma cidade que
+    não é do estado avisa ("São Paulo não fica em Ceará"); vale o nome
+    oficial. Sem resposta do IBGE, a cidade fica livre e nada é sugerido.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

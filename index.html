@@ -7052,10 +7052,63 @@ function renderListaSheet() {
 // Preferências de busca, como as "Preferências de pesquisa" do trivago:
 // primeiro o estado, depois a cidade (a cidade só abre com o estado
 // escolhido), e o que a pessoa costuma procurar. Ficam neste aparelho.
+// Municípios de cada estado, da lista oficial do IBGE (pedido do Breno em
+// 03/10/2026: escolhido o Ceará, não dá para pôr São Paulo). Como no Booking
+// e no trivago, só aparecem cidades que existem no estado. A lista fica
+// guardada no aparelho; sem internet para o IBGE, a cidade segue livre.
+const CIDADES_DO_UF = {};
+const MUNICIPIOS_KEY = "guiatennis_municipios_";
+async function carregarCidadesDoUf(uf) {
+  if (!uf) return null;
+  if (CIDADES_DO_UF[uf]) return CIDADES_DO_UF[uf];
+  try {
+    const guardada = JSON.parse(localStorage.getItem(MUNICIPIOS_KEY + uf) || "null");
+    if (Array.isArray(guardada) && guardada.length) return (CIDADES_DO_UF[uf] = guardada);
+  } catch { /* sem armazenamento: busca de novo */ }
+  try {
+    const r = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${encodeURIComponent(uf)}/municipios?orderBy=nome`);
+    if (!r.ok) throw new Error("IBGE " + r.status);
+    const nomes = (await r.json()).map(m => m.nome).filter(Boolean);
+    if (!nomes.length) throw new Error("lista vazia");
+    CIDADES_DO_UF[uf] = nomes;
+    try { localStorage.setItem(MUNICIPIOS_KEY + uf, JSON.stringify(nomes)); } catch { /* cheio: fica só na memória */ }
+    return nomes;
+  } catch (e) {
+    diag(`preferências: não li as cidades de ${uf} no IBGE (${e.message})`);
+    return null;
+  }
+}
+function nomeDoUf(uf) {
+  return (ESTADOS.find(e => e[0] === uf) || [])[1] || uf;
+}
+// Carrega as cidades do estado escolhido e confere a cidade: se ela não é
+// daquele estado, sai e o site diz por quê.
+async function conferirCidadeDoUf() {
+  const r = window.__pref || {};
+  if (!r.uf) return;
+  state.prefCidadesCarregando = !CIDADES_DO_UF[r.uf];
+  const lista = await carregarCidadesDoUf(r.uf);
+  state.prefCidadesCarregando = false;
+  const atual = window.__pref || {};
+  if (atual.uf !== r.uf) return;
+  if (lista && atual.cidade && !lista.some(n => mesmaCidade(n, atual.cidade))) {
+    state.prefErro = `${atual.cidade} não fica em ${nomeDoUf(atual.uf)}. Escolha uma cidade de ${nomeDoUf(atual.uf)}.`;
+    window.__pref = { ...atual, cidade: "" };
+  }
+  if (!state.showPrefs) return;
+  // A lista chegou com a pessoa digitando: o cursor continua na cidade.
+  const focado = document.activeElement && document.activeElement.id;
+  render();
+  if (focado === "pref-cidade") document.getElementById("pref-cidade")?.focus();
+}
+
 function renderPrefsSheet() {
   if (!state.showPrefs) return "";
   const r = window.__pref || {};
-  const comAcademia = cidadesComQuadra().map(c => c.nome);
+  const doUf = r.uf ? CIDADES_DO_UF[r.uf] : null;
+  // Só as cidades do guia que ficam no estado escolhido (sem a lista do
+  // IBGE, nenhuma: melhor não sugerir do que sugerir a cidade errada).
+  const comAcademia = doUf ? cidadesComQuadra().map(c => c.nome).filter(n => doUf.some(m => mesmaCidade(m, n))) : [];
   return `
     <div class="overlay open" id="pref-overlay">
       <div class="sheet"><div class="sheet-content">
@@ -7071,8 +7124,8 @@ function renderPrefsSheet() {
 
         <label class="field-label" for="pref-cidade">Cidade</label>
         <input class="form-field" id="pref-cidade" style="margin-top:0" list="pref-cidades" autocomplete="address-level2"
-               placeholder="${r.uf ? "Digite a cidade" : "Escolha o estado primeiro"}" value="${esc(r.cidade || "")}" ${r.uf ? "" : "disabled"} />
-        <datalist id="pref-cidades">${comAcademia.map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
+               placeholder="${!r.uf ? "Escolha o estado primeiro" : state.prefCidadesCarregando ? "Carregando as cidades…" : `Digite a cidade (${esc(nomeDoUf(r.uf))})`}" value="${esc(r.cidade || "")}" ${r.uf ? "" : "disabled"} />
+        <datalist id="pref-cidades">${[...comAcademia, ...(doUf || []).filter(n => !comAcademia.includes(n))].map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
         ${r.uf && comAcademia.length ? `
           <p class="fgroup-note">Cidades com academia no guia:</p>
           <div class="pref-cidades">${comAcademia.slice(0, 8).map(n => `<button type="button" class="chip ${mesmaCidade(n, r.cidade) ? "active" : ""}" data-pref-cidade="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
@@ -7099,6 +7152,7 @@ function abrirPreferencias() {
   state.prefSalvando = false;
   state.showPrefs = true;
   render();
+  conferirCidadeDoUf();
 }
 
 async function salvarPreferencias() {
@@ -7106,6 +7160,13 @@ async function salvarPreferencias() {
   const uf = r.uf || "";
   let cidade = String(r.cidade || "").trim().replace(/\s+/g, " ");
   if (!uf || !cidade) { state.prefErro = !uf ? "Escolha o estado." : "Digite a cidade."; render(); return; }
+  // A cidade precisa ser do estado (lista do IBGE); vale o nome oficial.
+  const doUf = await carregarCidadesDoUf(uf);
+  if (doUf) {
+    const oficial = doUf.find(n => mesmaCidade(n, cidade));
+    if (!oficial) { state.prefErro = `${cidade} não fica em ${nomeDoUf(uf)}. Confira o estado ou escolha uma cidade da lista.`; render(); return; }
+    cidade = oficial;
+  }
   // Com academia no guia, usa o nome do jeito que está no guia.
   const doGuia = cidadesComQuadra().find(c => mesmaCidade(c.nome, cidade));
   if (doGuia) cidade = doGuia.nome;
@@ -7116,7 +7177,7 @@ async function salvarPreferencias() {
     state.prefSalvando = true;
     render();
     try {
-      const nomeUf = (ESTADOS.find(e => e[0] === uf) || [])[1] || uf;
+      const nomeUf = nomeDoUf(uf);
       const g = await geocodeAddress(`${cidade}, ${nomeUf}, Brasil`);
       p.lat = pontoAproximado(g.lat);
       p.lng = pontoAproximado(g.lng);
@@ -12406,10 +12467,15 @@ function attachEvents() {
   if (prefOverlay) prefOverlay.onclick = (e) => { if (e.target === prefOverlay) { state.showPrefs = false; render(); } };
   const prefUf = document.getElementById("pref-uf");
   if (prefUf) prefUf.onchange = (e) => {
-    window.__pref = { ...(window.__pref || {}), uf: e.target.value };
+    // Trocou o estado: a cidade de outro estado sai (como no Booking).
+    const antes = window.__pref || {};
+    const lista = CIDADES_DO_UF[e.target.value];
+    const fica = antes.cidade && (!lista || lista.some(n => mesmaCidade(n, antes.cidade)));
+    window.__pref = { ...antes, uf: e.target.value, cidade: lista && !fica ? "" : antes.cidade };
     state.prefErro = "";
     render();
     if (e.target.value) document.getElementById("pref-cidade")?.focus();
+    conferirCidadeDoUf();
   };
   const prefCidade = document.getElementById("pref-cidade");
   if (prefCidade) prefCidade.oninput = (e) => { window.__pref = { ...(window.__pref || {}), cidade: e.target.value }; };

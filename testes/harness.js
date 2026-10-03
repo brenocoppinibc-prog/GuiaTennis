@@ -46,6 +46,12 @@ async function abrir(opts = {}) {
       const linha = fs.readFileSync(path.join(opts.fontes, 'mapa.txt'), 'utf8').split('\n').find(l => l.startsWith(u + ' '));
       if (linha) return route.fulfill({ contentType: 'font/woff2', body: fs.readFileSync(path.join(opts.fontes, linha.split(' ')[1])) });
     }
+    // Municípios do IBGE: poucos de cada estado, para as preferências.
+    if (u.includes('servicodados.ibge.gov.br')) {
+      const uf = (u.match(/estados\/([A-Z]{2})\//) || [])[1];
+      const lista = { SP: ['Campinas', 'Santos', 'São Paulo'], CE: ['Fortaleza', 'Sobral'], RJ: ['Niterói', 'Rio de Janeiro'] }[uf] || [];
+      return route.fulfill({ contentType: 'application/json', body: JSON.stringify(lista.map((nome, i) => ({ id: i + 1, nome }))) });
+    }
     if (u.includes('viacep')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ cep: "05422-000", logradouro: "Rua A", bairro: "Pinheiros", localidade: "São Paulo", uf: "SP" }) });
     if (u.includes('nominatim') && u.includes('reverse')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ lat: "-23.56", lon: "-46.68", address: { suburb: "Pinheiros", city: "São Paulo" } }) });
     if (u.includes('nominatim')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify([{ lat: "-23.56", lon: "-46.68", display_name: "Pinheiros, São Paulo", address: { suburb: "Pinheiros", city: "São Paulo" } }]) });

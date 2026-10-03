@@ -70,6 +70,30 @@ const fs = require('fs'), path = require('path');
   ok(busca.pagina === 'search' && busca.termo === 'São Paulo' && busca.link === '/quadras/sao-paulo', 'Pesquisar sem digitar abre a cidade das preferências — ' + busca.link);
   await browser.close();
 
+  // ---- a cidade é do estado escolhido (lista do IBGE, 03/10/2026) ----
+  ({ browser, page } = await abrir());
+  await page.evaluate(() => { localStorage.setItem(PREFERENCIAS_KEY, JSON.stringify({ uf: 'CE', cidade: 'São Paulo' })); abrirPreferencias(); });
+  await page.waitForTimeout(400);
+  let uf = await page.evaluate(() => ({ cidade: document.getElementById('pref-cidade').value, erro: document.querySelector('#pref-overlay .status-error')?.innerText || '', chips: [...document.querySelectorAll('[data-pref-cidade]')].map(b => b.innerText) }));
+  ok(uf.cidade === '' && uf.erro.includes('São Paulo não fica em Ceará') && !uf.chips.length, 'Ceará com São Paulo (salvo antes): a cidade sai, o site diz por quê e não sugere São Paulo — ' + uf.erro);
+  ok(await page.evaluate(() => [...document.querySelectorAll('#pref-cidades option')].map(o => o.value).join() === 'Fortaleza,Sobral'), 'no Ceará, a lista só tem cidades do Ceará');
+  await page.fill('#pref-cidade', 'São Paulo');
+  await page.click('#pref-salvar');
+  await page.waitForTimeout(300);
+  uf = await page.evaluate(() => ({ erro: document.querySelector('#pref-overlay .status-error')?.innerText || '', aberta: state.showPrefs }));
+  ok(uf.erro.includes('não fica em Ceará') && uf.aberta, 'digitar São Paulo no Ceará não salva — ' + uf.erro);
+  await page.fill('#pref-cidade', 'fortaleza');
+  await page.click('#pref-salvar');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => lerPreferencias().cidade === 'Fortaleza' && lerPreferencias().uf === 'CE'), 'cidade do estado salva com o nome oficial (Fortaleza)');
+  await page.evaluate(() => abrirPreferencias());
+  await page.waitForTimeout(300);
+  await page.selectOption('#pref-uf', 'SP');
+  await page.waitForTimeout(300);
+  uf = await page.evaluate(() => ({ cidade: document.getElementById('pref-cidade').value, chips: [...document.querySelectorAll('[data-pref-cidade]')].map(b => b.innerText).join() }));
+  ok(uf.cidade === '' && uf.chips === 'São Paulo', 'trocar para São Paulo tira Fortaleza e sugere as cidades do guia em SP — ' + JSON.stringify(uf));
+  await browser.close();
+
   // ---- home: última busca, parecidas e chamadas ----
   ({ browser, page } = await abrir());
   ok(await page.evaluate(() => !document.getElementById('home-vistas') && !document.getElementById('home-chamadas')), 'sem histórico, a home não mostra os blocos pessoais');

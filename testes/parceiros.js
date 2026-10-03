@@ -93,7 +93,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   }));
   let etapas = await barra();
   ok(etapas.etapas === 'Dados de contato* | Sua academia | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'trilha de tênis em cima, com a bolinha na primeira etapa — ' + etapas.etapas);
-  ok((await texto(page, '.pc-main .pc-card .footnote')).includes('Escreva o usuário no lugar do e-mail'), 'quem recebeu usuário do GuiaTennis usa o mesmo campo');
+  ok((await texto(page, '.pc-main .pc-card .footnote')).includes('Pode escrever o usuário aqui'), 'quem recebeu usuário do GuiaTennis usa o mesmo campo');
   await page.fill('#pc-email', 'joana@semponto');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(200);

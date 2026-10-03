@@ -6203,7 +6203,7 @@ function pcCadastro() {
             ${blocoSugestaoEmail(state.pcEmail)}
             ${erro(state.pcContaErro)}
             <button class="btn-primary pc-botao-cheio" id="pc-email-continuar" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Procurando..." : "Continuar"}</button>
-            <p class="footnote">Se esse e-mail já tiver conta, você só digita a senha. Se não, completa o cadastro. Recebeu um usuário do GuiaTennis? Escreva o usuário no lugar do e-mail.</p>` : ""}
+            <p class="footnote">Diga o seu e-mail que a gente encontra o caminho mais rápido: se você já tem conta, é só a senha; se é a primeira vez, o cadastro leva 2 minutos. Recebeu um usuário do GuiaTennis? Pode escrever o usuário aqui.</p>` : ""}
           ${passo === "existe" ? `
             <p class="pc-achou">${icon('check', 16, 'var(--green)')} <span>${state.pcEmail.includes("@") ? "Esse e-mail já tem conta no GuiaTennis Parceiros." : "Usuário do GuiaTennis Parceiros."} Digite a sua senha.</span></p>
             <p class="pc-linha" style="margin:4px 0 0"><button type="button" class="pc-linha-link" id="pc-trocar-email">Usar outro e-mail</button></p>
@@ -7264,7 +7264,7 @@ function renderJogadorSheet() {
     ${blocoSugestaoEmail(f.email)}
     ${erro}
     <button type="button" class="cta-btn cta-primary" id="jog-continuar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Procurando") || "Continuar"}</button>
-    <p class="footnote">Se esse e-mail já tiver conta, você só digita a senha. Se não, completa o cadastro.</p>`;
+    <p class="footnote">Diga o seu e-mail que a gente encontra o caminho mais rápido: se você já tem conta, é só a senha; se é a primeira vez, a conta fica pronta em um minuto. Não mandamos nada sem você pedir.</p>`;
   if (tela === "entrar") miolo = `
     <p class="sheet-title display">Bem-vindo de volta</p>
     <p class="subtitle" style="margin-top:4px">${esc(state.jogadorMotivo || "Digite a sua senha para entrar.")}</p>

@@ -26,7 +26,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
     url: location.pathname + location.search,
     robots: document.querySelector('meta[name="robots"]')?.getAttribute('content') || '',
   }));
-  ok(login.titulo === 'Entre ou cadastre a sua academia' && login.campo === 'E-mail' && login.dica.includes('Escreva o usuário no lugar do e-mail'), 'link do WhatsApp abre o lugar único do e-mail, que aceita o usuário do GuiaTennis — ' + login.titulo);
+  ok(login.titulo === 'Entre ou cadastre a sua academia' && login.campo === 'E-mail' && login.dica.includes('Pode escrever o usuário aqui'), 'link do WhatsApp abre o lugar único do e-mail, que aceita o usuário do GuiaTennis — ' + login.titulo);
   ok(login.url === '/parceiros/entrar?utm_source=WhatsApp-academias' && login.robots.includes('noindex'), 'endereço próprio, com a etiqueta, e fora do Google — ' + login.url);
   await irSenha(page, 'quadra.a2');
   const ajuda = await page.evaluate(() => [...document.querySelectorAll('#parceiros .footnote a')].map(a => a.getAttribute('href')).find(h => h.startsWith('https://wa.me/')) || '');

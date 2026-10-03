@@ -29,8 +29,8 @@ teste")
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
 > `testes/varias-academias.js`), com o plano e o valor de cada academia
 separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
-SQL `20261003130000_pedidos_de_plano`). **568 verificações** passando
-> (`check-js.sh` + os 18 arquivos de `testes/`) e 148 no
+SQL `20261003130000_pedidos_de_plano`). **580 verificações** passando
+> (`check-js.sh` + os 19 arquivos de `testes/`) e 156 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).
 > Continua faltando o Breno ligar o serviço de e-mail no Supabase (seção
@@ -325,6 +325,20 @@ cobra taxa e não fica no meio** da negociação.
     cidades do guia sugeridas são só as do estado; salvar uma cidade que
     não é do estado avisa ("São Paulo não fica em Ceará"); vale o nome
     oficial. Sem resposta do IBGE, a cidade fica livre e nada é sugerido.
+32. **Pedido de acesso vai para o responsável** (pedido de 03/10/2026),
+    como o "Solicitar acesso" do Google Business Profile: quem pede uma
+    academia que já tem responsável principal não recebe código no
+    WhatsApp da ficha; o pedido (`pedido_destino = 'responsavel'`) aparece
+    no painel e na Conta do responsável ("Pedidos de acesso", com nome,
+    e-mail e cargo), que aceita (entra na equipe, se o plano couber;
+    plano cheio oferece o de cima) ou recusa. O responsável também pode pôr
+    a pessoa direto pelo e-mail (Pessoas com acesso). Quem pediu vê
+    "Pedido enviado ao responsável". No admin, o pedido diz "Já tem
+    responsável (…)", sem "Gerar código"; "Aprovar" pede confirmação (só
+    depois de conferir documento). SQL `20261003140000_pedido_ao_responsavel`
+    (`pedidos_para_minha_academia`, `responder_pedido_de_acesso`). Teste:
+    `testes/pedido-ao-responsavel.js`. Quando o e-mail estiver ligado, o
+    responsável deveria receber um aviso por e-mail do pedido (em aberto).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1168,7 +1182,8 @@ código no WhatsApp da academia), `20261001130000_tempo_ate_agir` e, de
 `academia_vinculos`, `academias_da_minha_conta`, `abrir_minha_academia`,
 `remover_acesso_academia` com a academia) e `20261003130000_pedidos_de_plano`
 (pedido de plano pago: `pedir_plano`, `pedidos_de_plano_admin`; mudar o
-plano atende). Entra no
+plano atende) e `20261003140000_pedido_ao_responsavel` (pedido de academia
+com responsável vai para ele). Entra no
 banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
@@ -1203,7 +1218,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -1288,6 +1303,10 @@ as 133 do `banco-acesso.py` no banco e login locais.
   salva inteira, pedido do Premium anotado e WhatsApp, admin sem a tela,
   "Querem mudar de plano" no admin, "O que os alunos não veem" no painel
   e edição no Premium sem a tela.
+- `pedido-ao-responsavel.js` — pedido de academia com responsável vai
+  para ele (sem código), responsável aceita/recusa no painel e na Conta,
+  plano cheio avisa e oferece o de cima, equipe não vê os pedidos, admin
+  sem "Gerar código" e "Aprovar" com confirmação.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
   banco de verdade (não no mock) tudo o que a academia pode e não pode.

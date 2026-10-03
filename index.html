@@ -1305,6 +1305,9 @@
   .pc-busca-ic { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: inline-flex; }
   .pc-escolhas { display: grid; gap: 8px; margin-top: 14px; }
   .pc-escolha-minha { cursor: default; background: var(--bg-alt); }
+  .pc-pedidos-acesso { border: 2px solid var(--green); margin-top: 16px; }
+  .pc-pedido-acoes { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .pc-pedido-acoes .cta-btn { width: auto; padding: 8px 16px; }
   .pc-escondida { background: #FFF8EC; border-color: #F0DDB8; margin-top: 16px; }
   /* Ao finalizar o cadastro: o que o plano esconde e a escolha do plano. */
   .reg-plano-bloco { border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-top: 14px; background: var(--card); }
@@ -4205,7 +4208,7 @@ function contaDeLinha(x) {
     termosAceitos: !!x.termos_aceitos_em, dadosCompletos: !!x.dados_completos_em,
     senhaTrocada: !!x.senha_trocada_em, papel: x.papel || "principal",
     pedidoAcademiaId: x.pedido_academia_id || null, pedidoNome: x.pedido_nome || "",
-    pedidoEm: x.pedido_em || null,
+    pedidoEm: x.pedido_em || null, pedidoDestino: x.pedido_destino || "",
     emailConfirmado: !!x.email_confirmado_em,
   };
 }
@@ -4661,6 +4664,8 @@ function blocoAcessosPainel() {
 // WhatsApp que está na ficha. Quem manda é o Breno, pelo WhatsApp dele.
 function linhaDoCodigo(a) {
   const ficha = state.allCourts.find(c => c.id === a.pedido_academia_id);
+  const dono = (state.acessos || []).find(x => x.academia_id === a.pedido_academia_id && x.papel === "principal" && x.user_id !== a.user_id);
+  if (dono) return `<span class="pending-detail">Já tem responsável (${esc(dono.nome_responsavel || dono.email || dono.usuario)}): o pedido foi para ele aceitar ou recusar. Aprove aqui só se ele não responder ou tiver saído da academia, depois de conferir um documento.</span>`;
   if (!ficha) return `<span class="pending-detail">Academia nova: publicar libera o acesso.</span>`;
   const tel = whatsappDe(ficha.phone);
   if (!tel) return `<span class="pending-detail">A ficha não tem WhatsApp: confira por documento (CNPJ ou contrato social) antes de aprovar.</span>`;
@@ -4753,7 +4758,7 @@ async function salvarDadosConta() {
     window.__conta = null;
     state.contaModo = "painel";
     state.contaAviso = primeiraVez ? "Tudo certo! Agora é só manter a ficha em dia." : "Dados salvos.";
-    if (primeiraVez && state.page === "parceiros") { state.parceirosAba = "painel"; syncUrl(false); if (temAcademia()) carregarNumeros(); }
+    if (primeiraVez && state.page === "parceiros") { state.parceirosAba = "painel"; syncUrl(false); if (temAcademia()) { carregarNumeros(); carregarPedidosDeAcesso(); } }
   } catch (e) {
     state.contaErro = e.message || "Não consegui salvar agora. Tente de novo em instantes.";
   }
@@ -4947,7 +4952,14 @@ function ligarEventosConta() {
     el.onclick = () => apagarResposta(el.dataset.apagarResposta);
   });
 
-  document.querySelectorAll("[data-aprovar-pedido]").forEach(el => { el.onclick = () => decidirPedido(el.dataset.aprovarPedido, true); });
+  document.querySelectorAll("[data-aprovar-pedido]").forEach(el => {
+    el.onclick = () => {
+      const a = (state.acessos || []).find(x => x.user_id === el.dataset.aprovarPedido && x.pedido_academia_id);
+      const temDono = a && (state.acessos || []).some(x => x.academia_id === a.pedido_academia_id && x.papel === "principal" && x.user_id !== a.user_id);
+      if (temDono && !confirm("Essa academia já tem responsável, e o pedido está com ele. Aprovar mesmo assim? Faça isso só depois de conferir um documento.")) return;
+      decidirPedido(el.dataset.aprovarPedido, true);
+    };
+  });
   document.querySelectorAll("[data-gerar-codigo]").forEach(el => { el.onclick = () => gerarCodigoDoPedido(el.dataset.gerarCodigo); });
   document.querySelectorAll("[data-recusar-pedido]").forEach(el => {
     el.onclick = () => { if (confirm("Recusar esse pedido? A conta continua, sem academia.")) decidirPedido(el.dataset.recusarPedido, false); };
@@ -5396,7 +5408,7 @@ function itensDaFicha(c) {
 function perguntasParceiros() {
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe. O Premium mostra também os números da ficha: visitas, contatos, de onde vêm os alunos e a comparação com a região." },
-    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar." },
+    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode pôr você direto em Conta › Pessoas com acesso." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto; o GuiaTennis confere antes de publicar, e você já administra a ficha." },
     { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. No painel, toque no nome da academia (ou em Conta › Suas academias) e em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito, pelo código no WhatsApp da ficha ou por documento, e tem o próprio plano, as próprias pessoas e os próprios números." },
     { q: "Com duas academias, pago um plano só?", a: "Não. Cada academia tem o próprio plano e paga o próprio valor. A academia que entra na conta começa no Básico, grátis, e você escolhe o plano de cada uma. Por exemplo, uma no Premium e outra no Básico. Mudar o plano de uma não muda o das outras." },
@@ -5436,6 +5448,7 @@ function irParceiros(aba, opcoes = {}) {
   state.avisoLink = "";
   if (aba !== "conta") state.contaModo = "painel";
   if ((aba === "painel" || aba === "desempenho") && temAcademia() && acessoCompleto()) carregarNumeros();
+  if ((aba === "painel" || aba === "conta") && temAcademia() && acessoCompleto()) { carregarPedidosDeAcesso(); if (aba === "painel") carregarPessoas(); }
   if (aba === "conta" && temAcademia() && acessoCompleto()) carregarPessoas();
   syncUrl(!opcoes.substituir);
   render();
@@ -6115,6 +6128,20 @@ function pcPedidoEnviado() {
   const ficha = state.allCourts.find(c => c.id === contaAcademia.pedidoAcademiaId);
   const tel = ficha ? telefoneEscondido(ficha.phone) : "";
   const agilizar = `<a class="pc-linha-link" href="${whatsappGuia(`Olá! Sou ${contaAcademia.nome || "responsável"} e pedi para administrar a ${nome} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis ›</a>`;
+  // Academia que já tem responsável (03/10/2026): o pedido vai para ele,
+  // como o "Solicitar acesso" do Google Business Profile.
+  if (contaAcademia.pedidoDestino === "responsavel") {
+    return `
+    <div class="pc-card pc-pedido">
+      <p class="pc-oferta-eyebrow">Pedido enviado ao responsável</p>
+      <p class="pc-card-t">${esc(nome)}</p>
+      <p class="pc-card-s">Essa academia já tem um responsável no GuiaTennis Parceiros. O seu pedido foi para ele, com o seu nome e o seu e-mail: quando ele aceitar, a academia aparece na sua conta.</p>
+      <p class="pc-card-s">Conhece o responsável? Peça para ele aceitar no painel, ou para pôr você direto em Conta › Pessoas com acesso, com o e-mail <strong>${esc(contaAcademia.email || contaAcademia.usuario)}</strong>.</p>
+      ${state.pedidoErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pedidoErro)}</div>` : ""}
+      <p class="pc-linha">O responsável não responde ou saiu da academia? ${agilizar} A gente confere por documento (CNPJ ou contrato social).</p>
+      <p class="pc-linha"><button type="button" class="pc-linha-link pc-linha-discreta" id="pc-cancelar-pedido">Cancelar o pedido</button></p>
+    </div>`;
+  }
   return `
     <div class="pc-card pc-pedido">
       <p class="pc-oferta-eyebrow">${temAcademia() ? "Pedido para administrar outra academia" : "Pedido enviado"}</p>
@@ -6327,6 +6354,7 @@ function pcPainel() {
       <h1 class="display">Olá${primeiro ? ", " + esc(primeiro) : ""}</h1>
       ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
       ${pcConfirmarEmail()}
+      ${pcPedidosDeAcesso()}
       ${contaAcademia.pedidoNome ? pcPedidoEnviado() : ""}
       ${pcSituacao(c)}
 
@@ -6479,6 +6507,54 @@ function pcFicha() {
     </section>`;
 }
 
+// Pedidos de acesso à academia aberta (o responsável principal aceita ou
+// recusa), como o "Solicitações de acesso" do Google Business Profile.
+async function carregarPedidosDeAcesso() {
+  if (!souPrincipal()) { state.pedidosAcesso = []; return; }
+  try {
+    const r = await sb.rpc('pedidos_para_minha_academia');
+    state.pedidosAcesso = r.error ? [] : (r.data || []);
+  } catch { state.pedidosAcesso = []; }
+  if (state.page === "parceiros") render();
+}
+async function responderPedidoDeAcesso(userId, aceitar) {
+  state.pedidoAcessoErro = "";
+  const r = await sb.rpc('responder_pedido_de_acesso', { p_user: userId, p_aceitar: aceitar });
+  if (r.error) { state.pedidoAcessoErro = r.error.message || "Não consegui responder agora."; render(); return; }
+  state.contaAviso = aceitar ? "Pronto! A pessoa entrou na equipe da academia." : "Pedido recusado.";
+  await carregarPedidosDeAcesso();
+  await carregarPessoas();
+}
+function pcPedidosDeAcesso() {
+  const lista = state.pedidosAcesso || [];
+  if (!souPrincipal() || !lista.length) return "";
+  const c = minhaAcademia();
+  const plano = PC_PLANOS.find(p => p.key === planoAtual()) || PC_PLANOS[0];
+  const prox = proximoPlano(plano.key);
+  const cheio = (state.pessoas || []).length >= plano.pessoas;
+  return `
+    <div class="pc-card pc-pedidos-acesso">
+      <p class="pc-oferta-eyebrow">${lista.length === 1 ? "Pedido de acesso" : lista.length + " pedidos de acesso"}</p>
+      <p class="pc-card-t">Querem administrar a ${esc((c || {}).name || "academia")} com vocês</p>
+      <p class="pc-card-s">Aceite só quem é da academia. Quem entra fica na equipe: edita a ficha e responde às avaliações.</p>
+      <ul class="pc-pessoas">
+        ${lista.map(x => `
+          <li>
+            <div>
+              <strong>${esc(x.nome || "Sem nome")}</strong>
+              <span>${esc(x.email || "")}${x.cargo ? " · " + esc(x.cargo) : ""}${x.pedido_em ? " · pediu em " + dataCurta(x.pedido_em) : ""}</span>
+            </div>
+            <span class="pc-pedido-acoes">
+              <button type="button" class="cta-btn cta-primary" data-aceitar-pedido="${x.user_id}">Aceitar</button>
+              <button type="button" class="pc-link-btn" data-recusar-acesso="${x.user_id}">Recusar</button>
+            </span>
+          </li>`).join("")}
+      </ul>
+      ${state.pedidoAcessoErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pedidoAcessoErro)}</div>` : ""}
+      ${cheio && prox ? `<p class="pc-card-s" style="margin-top:10px">O plano ${esc(plano.nome)} já está com ${plano.pessoas} ${plural(plano.pessoas, "pessoa", "pessoas")}. No ${esc(prox.nome)}, cabem até ${prox.pessoas}. <a href="${linkPlano(prox.key)}" target="_blank" rel="noreferrer" data-pedir-plano="${prox.key}">Quero o ${esc(prox.nome)}</a></p>` : ""}
+    </div>`;
+}
+
 function pcPessoas() {
   const plano = planoPorChave(planoAtual());
   const prox = proximoPlano(plano.key);
@@ -6557,6 +6633,7 @@ function pcConta() {
             <p class="pc-card-s">A mesma conta administra quantas academias você responder. Cada academia tem o próprio plano e paga o próprio valor. Toque numa academia para abrir o painel dela.</p>
             ${pcListaAcademias()}
           </div>` : ""}
+          ${temAcademia() ? pcPedidosDeAcesso() : ""}
           ${temAcademia() ? pcPessoas() : ""}
           ${temAcademia() ? pcOfertaDePlano() : ""}
           <button type="button" class="conta-sair-link" id="conta-sair">Sair do GuiaTennis Parceiros</button>`}
@@ -6894,6 +6971,10 @@ function ligarEventosParceiros() {
   // Pessoas com acesso.
   document.querySelectorAll(".pc-pessoa-campo").forEach(el => {
     el.oninput = (e) => { (window.__pessoa || (window.__pessoa = {}))[el.dataset.campo] = e.target.value; };
+  });
+  document.querySelectorAll("[data-aceitar-pedido]").forEach(el => { el.onclick = () => responderPedidoDeAcesso(el.dataset.aceitarPedido, true); });
+  document.querySelectorAll("[data-recusar-acesso]").forEach(el => {
+    el.onclick = () => { if (confirm("Recusar o pedido? A pessoa não entra na academia.")) responderPedidoDeAcesso(el.dataset.recusarAcesso, false); };
   });
   const pcAdicionar = document.getElementById("pc-pessoa-adicionar");
   if (pcAdicionar) pcAdicionar.onclick = adicionarPessoa;
@@ -11594,7 +11675,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. A mesma conta pode administrar mais de uma academia, em qualquer plano: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais, depois de conferir um documento. A mesma conta pode administrar mais de uma academia, em qualquer plano: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade e de mudanças nas suas favoritas, promoções das academias e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -13289,6 +13370,7 @@ async function init() {
 
   // Aberto direto no painel ou no desempenho: busca os números da academia.
   if (state.page === "parceiros" && ["painel", "desempenho"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarNumeros();
+  if (state.page === "parceiros" && ["painel", "conta"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarPedidosDeAcesso();
   if (state.page === "parceiros" && state.parceirosAba === "conta" && temAcademia() && acessoCompleto()) carregarPessoas();
 
   state.loaded = true;

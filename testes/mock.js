@@ -194,6 +194,24 @@
       });
       return { data: JSON.parse(JSON.stringify(linhas)), error:null };
     }
+    // Pedido de acesso ao responsável (SQL 20261003140000).
+    if (nome === "pedidos_para_minha_academia") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return { data:[], error:null };
+      return { data: db.academia_acessos.filter(y => y.pedido_academia_id === x.academia_id && y.user_id !== x.user_id)
+        .map(y => ({ user_id: y.user_id, nome: y.nome_responsavel || null, email: y.email || y.usuario, cargo: y.cargo || null, pedido_em: y.pedido_em || null })), error:null };
+    }
+    if (nome === "responder_pedido_de_acesso") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal responde aos pedidos.", "42501");
+      const ele = db.academia_acessos.find(y => y.user_id === a.p_user && y.pedido_academia_id === x.academia_id);
+      if (!ele) return erro("Pedido não encontrado.", "22023");
+      if (!a.p_aceitar) { Object.assign(ele, { pedido_academia_id:null, pedido_nome:null, pedido_em:null, pedido_destino:null }); return { data:null, error:null }; }
+      const lim = limite(planoDe(x.academia_id));
+      if (db.academia_vinculos.filter(v => v.academia_id === x.academia_id).length >= lim) return erro(`O seu plano permite até ${lim} ${lim === 1 ? "pessoa" : "pessoas"}. Aprimore o plano para aceitar mais gente.`, "22023");
+      ligar(ele, x.academia_id, true);
+      return { data:null, error:null };
+    }
     if (nome === "pedir_plano") {
       const x = meuAcesso();
       if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
@@ -286,7 +304,8 @@
       if (vinculo(x.user_id, a.p_academia)) return erro("A sua conta já administra essa academia.", "22023");
       const ac = db.academias.find(y => y.id === a.p_academia && y.status === "published");
       if (!ac) return erro("Academia não encontrada.", "22023");
-      Object.assign(x, { pedido_academia_id: ac.id, pedido_nome: ac.name, pedido_em: new Date().toISOString() });
+      const temDono = db.academia_vinculos.some(v => v.academia_id === ac.id && v.papel === "principal");
+      Object.assign(x, { pedido_academia_id: ac.id, pedido_nome: ac.name, pedido_em: new Date().toISOString(), pedido_destino: temDono ? "responsavel" : "guiatennis" });
       return { data:null, error:null };
     }
     if (nome === "cancelar_meu_pedido") {
@@ -309,6 +328,7 @@
       const x = db.academia_acessos.find(y => y.user_id === a.p_user);
       if (!x || !x.pedido_academia_id) return erro("Pedido não encontrado.", "22023");
       if (vinculo(x.user_id, x.pedido_academia_id)) return erro("Essa conta já administra essa academia.", "22023");
+      if (db.academia_vinculos.some(v => v.academia_id === x.pedido_academia_id && v.papel === "principal")) return erro("Essa academia já tem responsável: o pedido está com ele.", "22023");
       const codigo = String(100000 + Math.floor(Math.random() * 900000));
       window.__codigos = window.__codigos || {};
       window.__codigos[a.p_user] = { codigo, academia: x.pedido_academia_id, tentativas: 0 };

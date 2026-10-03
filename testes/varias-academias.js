@@ -49,7 +49,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.click('.pc-nav a[data-pc="conta"]');
   await page.waitForTimeout(300);
   let conta = await texto(page, '#parceiros .pc-main');
-  ok(conta.includes('Suas academias (2)') && conta.includes('em qualquer plano') && conta.includes('Responsável principal da Só Aula Tennis'), 'Conta mostra as academias da conta e de qual é o papel');
+  ok(conta.includes('Suas academias (2)') && conta.includes('paga o próprio valor') && conta.includes('Responsável principal da Só Aula Tennis'), 'Conta mostra as academias da conta e de qual é o papel');
   ok(conta.includes('Pessoas com acesso à Só Aula Tennis'), 'as pessoas com acesso são as da academia aberta');
 
   // Na ficha do site, a outra academia da conta oferece abrir no painel.
@@ -157,4 +157,32 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(dialogo.includes('continua administrando 1 outra academia'), 'antes de remover, o admin fica sabendo que a conta tem outra academia');
   ok(removido.r && removido.r.academia === 'a2' && removido.v === 'a1' && removido.conta, 'remover na ficha tira a conta só daquela academia — ' + removido.v);
   await browser.close();
+
+  // ---- cada academia tem o próprio plano e paga o próprio valor ----
+  ({ browser, page } = await abrir({ academia: 'a2', outrasAcademias: ['a1'], q: 'parceiros/plano', w: 1280 }));
+  await page.evaluate(async () => { window.__db.academias.find(x => x.id === 'a1').plano = 'premium'; await recarregarConta(); render(); });
+  let plano = await page.evaluate(() => ({
+    h1: document.querySelector('#parceiros h1')?.textContent || '',
+    eyebrow: document.querySelector('#parceiros .pc-pagina .pc-eyebrow')?.textContent || '',
+    texto: document.querySelector('#parceiros .pc-main')?.textContent.replace(/\s+/g, ' ') || '',
+    itens: [...document.querySelectorAll('#parceiros .pc-main .pc-academia-i')].map(b => b.innerText.replace(/\s+/g, ' ').trim()),
+    wa: decodeURIComponent(document.querySelector('#parceiros .pc-main .footnote a')?.getAttribute('href') || ''),
+  }));
+  ok(plano.h1 === 'Plano desta academia' && plano.eyebrow === 'Quadra Locação', 'com duas academias, a página de plano diz de qual academia é');
+  ok(plano.texto.includes('Cada academia tem o próprio plano e paga o próprio valor') && plano.texto.includes('Mudar o plano de uma não muda o das outras'), 'deixa claro que cada academia paga o próprio plano');
+  ok(plano.itens.some(i => i.startsWith('Quadra Locação') && i.includes('Plano Básico')) && plano.itens.some(i => i.startsWith('Só Aula Tennis') && i.includes('Plano Premium')), 'a lista mostra o plano de cada academia — ' + plano.itens.slice(0, 2).join(' / '));
+  ok(plano.wa.includes('para a Quadra Locação'), 'o pedido de mudar de plano pelo WhatsApp já diz qual academia');
+  await page.click('#parceiros .pc-main [data-abrir-academia="a1"]');
+  await page.waitForTimeout(500);
+  await page.evaluate(() => irParceiros('plano'));
+  await page.waitForTimeout(200);
+  plano = await page.evaluate(() => ({
+    eyebrow: document.querySelector('#parceiros .pc-pagina .pc-eyebrow')?.textContent || '',
+    atual: document.querySelector('.pc-plano.atual, .pc-plano.on, .pc-plano-atual')?.textContent || '',
+    plano: planoAtual(),
+  }));
+  ok(plano.eyebrow === 'Só Aula Tennis' && plano.plano === 'premium', 'trocar de academia mostra o plano dela (Premium), sem mudar o da outra — ' + plano.plano);
+  ok(await page.evaluate(() => window.__db.academias.find(x => x.id === 'a2').plano || 'basico') === 'basico', 'a Quadra Locação continua no Básico');
+  await browser.close();
+
 })();

@@ -27,7 +27,8 @@ teste")
 > **Estado (03/10/2026):** PR #5 ainda **sem merge**. Entrou a regra 29:
 > **uma conta do GuiaTennis Parceiros administra várias academias**, em
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
-> `testes/varias-academias.js`). **533 verificações** passando
+> `testes/varias-academias.js`), com o plano e o valor de cada academia
+separados. **539 verificações** passando
 > (`check-js.sh` + os 17 arquivos de `testes/`) e 137 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).
@@ -279,7 +280,13 @@ cobra taxa e não fica no meio** da negociação.
     Básico). Cada academia é pedida e confirmada separadamente, do mesmo
     jeito (código no WhatsApp da ficha, documento ou academia nova
     publicada), e tem o próprio plano, as próprias pessoas e os próprios
-    números; o papel (principal ou equipe) é de cada academia. Banco:
+    números; o papel (principal ou equipe) é de cada academia. **Cada
+    academia paga o próprio plano** (pedido de 03/10/2026): a academia que
+    entra na conta começa no Básico (o banco só aceita academia nova no
+    Básico) e o Breno muda o plano de cada uma; a lista "Suas academias"
+    mostra o plano de cada uma, a página Plano diz de qual academia é e
+    lista as outras, e Ajuda e Termos dizem que um plano não vale para as
+    outras academias. Banco:
     tabela `academia_vinculos` (quem administra qual, com o papel);
     `academia_acessos.academia_id` virou **a academia aberta no painel**,
     trocada por `abrir_minha_academia`; a lista vem de

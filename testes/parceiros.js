@@ -248,6 +248,9 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   });
   await irParte(page, 'revisar');
   await page.click('#register-submit');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => !!document.querySelector('[data-reg-plano="premium"]') && !window.__db.academias.some(a => a.name === 'Academia Nova da Joana')), 'ao finalizar, a escolha do plano vem antes de enviar');
+  await page.click('[data-reg-plano="premium"]');
   await page.waitForTimeout(900);
   const enviada = await page.evaluate(() => ({
     visitante: !!document.getElementById('visitor-overlay'),
@@ -257,6 +260,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   }));
   ok(!enviada.visitante && enviada.academia && enviada.academia.status === 'pending' && enviada.academia.nome_solicitante === 'Joana Dona' && enviada.academia.contato_solicitante === '11988880001', 'academia nova vai para análise com os dados da conta, sem perguntar de novo');
   ok(enviada.pedido === 'Academia Nova da Joana' && enviada.texto.includes('você já administra a ficha'), 'a academia nova vira o pedido da conta');
+  const pedidoPlano = await page.evaluate(() => window.__db.pedidos_de_plano.map(p => p.plano + ':' + p.onde).join());
+  ok(pedidoPlano === 'premium:cadastro' && enviada.texto.includes('Você escolheu o plano Premium'), 'o Premium escolhido fica anotado para o GuiaTennis — ' + pedidoPlano);
   await browser.close();
 
   // Admin aprova o pedido; publicar a academia nova libera junto.

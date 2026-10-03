@@ -22,6 +22,8 @@
     // qual academia, com o papel de cada uma. academia_id da conta é a
     // academia aberta no painel.
     academia_vinculos: [],
+    // Pedidos de plano (SQL 20261003130000): um por academia.
+    pedidos_de_plano: [],
     respostas: JSON.parse(JSON.stringify(window.__respostasIniciais || [])),
     // Conta do jogador (SQL 20261002130000). window.__jogador abre o site
     // já logado como "Ana Jogadora".
@@ -59,6 +61,7 @@
   const tel = (t) => { const d = String(t || "").replace(/\D/g, ""); return (d.length === 12 || d.length === 13) && d.startsWith("55") ? d.slice(2) : d; };
   const planoDe = (id) => window.__plano || (db.academias.find(y => y.id === id) || {}).plano || "basico";
   const limite = (plano) => ({ premium: 10, completo: 5 }[plano] || 1);
+  const ordem = (plano) => ({ premium: 3, completo: 2 }[plano] || 1);
   const vinculosDe = (userId) => db.academia_vinculos.filter(v => v.user_id === userId);
   const vinculo = (userId, academiaId) => db.academia_vinculos.find(v => v.user_id === userId && v.academia_id === academiaId);
   // ligar_conta_a_academia: abrir = a academia passa a ser a aberta (pedido
@@ -140,6 +143,9 @@
         t.filter(pass).forEach(r => {
           const antes = r.status;
           Object.assign(r, mudanca);
+          // Gatilho pedido_de_plano_atendido.
+          if (table === "academias" && "plano" in mudanca)
+            db.pedidos_de_plano.filter(x => x.academia_id === r.id && ordem(x.plano) <= ordem(r.plano)).forEach(x => db.pedidos_de_plano.splice(db.pedidos_de_plano.indexOf(x), 1));
           // Gatilho liberar_pedidos_da_academia.
           if (table === "academias" && r.status === "published" && antes !== "published")
             db.academia_acessos.filter(x => x.pedido_academia_id === r.id).forEach(x => ligar(x, r.id));
@@ -148,6 +154,7 @@
       }
       if (op === "delete") {
         if (table === "respostas") { const fora = t.filter(pass); fora.forEach(r => t.splice(t.indexOf(r), 1)); window.__apagadas = (window.__apagadas || 0) + fora.length; }
+        if (table === "pedidos_de_plano") { if (!souAdmin()) return { data:null, error:{ message:"permission denied" } }; t.filter(pass).forEach(r => t.splice(t.indexOf(r), 1)); }
         return { data:null, error:null };
       }
       // Depois do SQL-SEGURANCA.sql, o visitante não lê a linha inteira.
@@ -186,6 +193,27 @@
         vs.forEach(v => linhas.push({ ...x, academia_id: v.academia_id, papel: v.papel }));
       });
       return { data: JSON.parse(JSON.stringify(linhas)), error:null };
+    }
+    if (nome === "pedir_plano") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      if (!["completo", "premium"].includes(a.p_plano)) return erro("Plano inválido.", "22023");
+      if (!vinculo(x.user_id, a.p_academia) && x.pedido_academia_id !== a.p_academia) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      if (ordem(ac.plano || "basico") >= ordem(a.p_plano)) return { data:null, error:null };
+      const i = db.pedidos_de_plano.findIndex(y => y.academia_id === a.p_academia);
+      if (i >= 0) db.pedidos_de_plano.splice(i, 1);
+      db.pedidos_de_plano.push({ academia_id: a.p_academia, plano: a.p_plano, user_id: x.user_id, onde: a.p_onde || null, created_at: new Date().toISOString() });
+      return { data:null, error:null };
+    }
+    if (nome === "pedidos_de_plano_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.pedidos_de_plano.map(p => {
+        const ac = db.academias.find(y => y.id === p.academia_id) || {};
+        const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
+        return { academia_id: p.academia_id, nome: ac.name, status: ac.status, plano_atual: ac.plano || "basico", plano: p.plano, onde: p.onde, created_at: p.created_at, pessoa: x.nome_responsavel || null, email: x.email || x.usuario || null, whatsapp: x.whatsapp || null };
+      }), error:null };
     }
     if (nome === "academias_da_minha_conta") {
       const x = meuAcesso();

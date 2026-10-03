@@ -155,10 +155,15 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   form.confirmada = form.confirmada || await page.evaluate(() => !!document.getElementById('f-confirmada'));
   ok(form.titulo === 'Editar Quadra Locação' && !form.confirmada && form.pagina === 'parceiros', 'edita a própria ficha, sem a caixa do admin — ' + form.titulo);
   await irParte(page, 'contato');
-  // Plano Básico: a ficha mostra só o WhatsApp (pedido de 02/10/2026).
-  ok(await page.evaluate(() => document.getElementById('f-instagram').disabled && document.getElementById('f-site').disabled && document.querySelector('.reg-plano-nota')?.innerText.includes('só o WhatsApp')), 'Básico: Instagram e site travados, com o aviso do plano');
+  // Nada trava no meio (03/10/2026): Instagram e site abertos no Básico; o
+  // que o plano esconde aparece ao salvar.
+  ok(await page.evaluate(() => !document.getElementById('f-instagram').disabled && !document.getElementById('f-site').disabled && !document.querySelector('.reg-plano-nota')), 'Básico: Instagram e site abertos, sem aviso no meio');
   await page.fill('#f-phone', '11911112222');
   await page.click('#register-submit');
+  await page.waitForTimeout(300);
+  const tela = await texto(page, '#register-overlay');
+  ok(tela.includes('Quase lá: escolha o plano') && tela.includes('A regra de cancelamento e reposição'), 'ao salvar, mostra o que o Básico esconde (o cancelamento que a academia já tinha)');
+  await page.click('[data-reg-plano="basico"]');
   await page.waitForTimeout(900);
   const up = await page.evaluate(() => window.__ultimoUpdate || {});
   ok(up.phone === '11911112222' && !('status' in up) && !('plano' in up) && !('pausada' in up) && !('confirmada' in up), 'salva sem mandar status, plano, pausa nem confirmada — ' + Object.keys(up).join(','));

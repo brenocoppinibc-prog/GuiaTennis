@@ -28,8 +28,9 @@ teste")
 > **uma conta do GuiaTennis Parceiros administra várias academias**, em
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
 > `testes/varias-academias.js`), com o plano e o valor de cada academia
-separados. **539 verificações** passando
-> (`check-js.sh` + os 17 arquivos de `testes/`) e 137 no
+separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
+SQL `20261003130000_pedidos_de_plano`). **562 verificações** passando
+> (`check-js.sh` + os 18 arquivos de `testes/`) e 148 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).
 > Continua faltando o Breno ligar o serviço de e-mail no Supabase (seção
@@ -299,6 +300,24 @@ cobra taxa e não fica no meio** da negociação.
     Tirar alguém de uma academia só apaga o login se ele ficar sem
     nenhuma; academia apagada idem. No admin, "Remover acesso" na ficha
     tira a conta só daquela academia, e o pedido mostra "já administra…".
+30. **O plano aparece ao finalizar, não no meio** (pedido de 03/10/2026):
+    o formulário da ficha não trava nada pelo plano (comodidades sem
+    limite, até 5 fotos — `FOTOS_MAXIMO` —, Instagram, site, cancelamento
+    e como chegar abertos, sem aviso no meio). Ao tocar em "Enviar"/"Salvar"
+    (quem não é admin, plano abaixo do Premium; na edição, só se o plano
+    esconder alguma coisa), vem a tela "Quase lá: escolha o plano"
+    (`regPlanoHtml`): o que o plano esconde do que foi preenchido
+    (`oQueOPlanoEsconde`), o que falta para vender mais com atalho para a
+    parte (`oQueMelhorar`), Premium primeiro e em destaque, Completo, e
+    "Continuar no Básico, grátis (a ficha esconde N itens)" por último.
+    Tudo é salvo inteiro; a ficha mostra o que o plano libera. Plano pago
+    escolhido vira pedido (`pedir_plano`, tabela `pedidos_de_plano`, SQL
+    `20261003130000`) e a tela final leva ao WhatsApp para combinar; nada é
+    cobrado sozinho. No painel, a academia abaixo do Premium vê "O que os
+    alunos não veem" (`pcFichaEscondida`), e todo "Quero o…" do painel
+    também anota o pedido. No admin, "Querem mudar de plano" lista os
+    pedidos com WhatsApp e "Mudar para o …"; mudar o plano atende o pedido
+    e tira da lista. Teste: `testes/plano-ao-finalizar.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1140,7 +1159,9 @@ GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap`, `20260930160000_c
 código no WhatsApp da academia), `20261001130000_tempo_ate_agir` e, de
 03/10, `20261003120000_varias_academias` (uma conta, várias academias:
 `academia_vinculos`, `academias_da_minha_conta`, `abrir_minha_academia`,
-`remover_acesso_academia` com a academia). Entra no
+`remover_acesso_academia` com a academia) e `20261003130000_pedidos_de_plano`
+(pedido de plano pago: `pedir_plano`, `pedidos_de_plano_admin`; mudar o
+plano atende). Entra no
 banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
@@ -1175,7 +1196,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -1254,6 +1275,12 @@ as 133 do `banco-acesso.py` no banco e login locais.
   sua", pedido, código, as duas no seletor), ficha da outra academia com
   "Abrir no painel", admin com o pedido de quem já tem academia e
   "Remover acesso" só daquela academia.
+- `plano-ao-finalizar.js` — cadastro sem trava (5 comodidades,
+  Instagram), tela do plano ao finalizar (o que esconde, o que melhorar,
+  Premium primeiro, Básico por último), atalho para a parte, academia
+  salva inteira, pedido do Premium anotado e WhatsApp, admin sem a tela,
+  "Querem mudar de plano" no admin, "O que os alunos não veem" no painel
+  e edição no Premium sem a tela.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
   banco de verdade (não no mock) tudo o que a academia pode e não pode.

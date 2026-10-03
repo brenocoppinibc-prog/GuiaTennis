@@ -1305,6 +1305,24 @@
   .pc-busca-ic { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: inline-flex; }
   .pc-escolhas { display: grid; gap: 8px; margin-top: 14px; }
   .pc-escolha-minha { cursor: default; background: var(--bg-alt); }
+  .pc-escondida { background: #FFF8EC; border-color: #F0DDB8; margin-top: 16px; }
+  /* Ao finalizar o cadastro: o que o plano esconde e a escolha do plano. */
+  .reg-plano-bloco { border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-top: 14px; background: var(--card); }
+  .reg-plano-perde { background: #FFF8EC; border-color: #F0DDB8; }
+  .reg-plano-t { display: flex; align-items: flex-start; gap: 8px; font-weight: 600; font-size: 15px; margin: 0; }
+  .reg-plano-bloco ul { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+  .reg-plano-bloco li strong { display: block; font-size: 14px; }
+  .reg-plano-bloco li span { display: block; font-size: 13px; color: var(--muted); }
+  .reg-plano-opcoes { display: grid; gap: 12px; margin-top: 10px; }
+  @media (min-width: 640px) { .reg-plano-opcoes { grid-template-columns: 1fr 1fr; } }
+  .reg-plano-op { position: relative; border: 1px solid var(--border); border-radius: 16px; padding: 16px; background: var(--card); display: flex; flex-direction: column; gap: 6px; }
+  .reg-plano-op.destaque { border: 2px solid var(--green); }
+  .reg-plano-op .pc-plano-tag { position: absolute; top: -11px; left: 14px; }
+  .reg-plano-op-t { font-weight: 600; font-size: 14px; margin: 0; }
+  .reg-plano-op .cta-btn { margin-top: auto; }
+  .reg-plano-basico { display: block; width: 100%; margin-top: 14px; background: none; border: none; color: var(--muted); text-decoration: underline; font-family: inherit; font-size: 14px; cursor: pointer; padding: 10px; }
+  .reg-plano-ok { margin: 14px 0; padding: 14px; border-radius: 14px; background: var(--green-soft); text-align: left; }
+  .reg-plano-ok p { margin: 0 0 10px; font-size: 14px; }
   .pc-escolha { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; font-family: inherit; cursor: pointer; color: var(--text); }
   .pc-escolha.on { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); background: #F4F8F6; }
   .pc-escolha-radio { flex-shrink: 0; width: 20px; height: 20px; border-radius: 999px; border: 2px solid var(--border); box-sizing: border-box; }
@@ -1823,6 +1841,9 @@ const LIMITES_DO_PLANO = {
   completo: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: false },
   premium: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: true },
 };
+// O máximo de fotos de qualquer plano: o cadastro aceita até aqui, e a ficha
+// mostra o que o plano da academia libera.
+const FOTOS_MAXIMO = 5;
 function limitesDoPlano(plano) {
   return LIMITES_DO_PLANO[plano] || LIMITES_DO_PLANO.basico;
 }
@@ -4284,6 +4305,31 @@ async function carregarAcessos() {
     const r = await sb.rpc('acessos_das_academias');
     state.acessos = r.error ? null : (r.data || []);
   } catch { state.acessos = null; }
+  try {
+    const r = await sb.rpc('pedidos_de_plano_admin');
+    state.pedidosDePlano = r.error ? [] : (r.data || []);
+  } catch { state.pedidosDePlano = []; }
+}
+
+// Admin: academias que escolheram um plano pago (ao finalizar o cadastro ou
+// no painel). Combinar o valor pelo WhatsApp e mudar o plano tira da lista.
+function blocoPedidosDePlano() {
+  const lista = state.pedidosDePlano || [];
+  if (!lista.length) return "";
+  const onde = { cadastro: "no cadastro", edicao: "ao editar a ficha", painel: "no painel" };
+  return `
+    <p class="sheet-title display" style="font-size:18px;margin-top:28px">Querem mudar de plano</p>
+    <p class="subtitle" style="margin-top:4px">Combine o valor pelo WhatsApp e mude o plano: a academia sai da lista sozinha.</p>
+    ${lista.map(p => `
+      <div class="pending-item pedido-plano">
+        <span class="pending-name display">${esc(p.nome || "Academia")} · quer o ${esc(nomeDoPlano(p.plano))}</span>
+        <span class="pending-detail">Hoje no ${esc(nomeDoPlano(p.plano_atual))}${p.status === "pending" ? " · academia nova, em análise" : ""} · pediu ${esc(onde[p.onde] || "")} em ${dataCurta(p.created_at)}${p.pessoa ? " · " + esc(p.pessoa) : ""}${p.whatsapp ? " · " + esc(telefoneBonito(p.whatsapp)) : ""}</span>
+        <div class="chip-row">
+          ${p.whatsapp ? `<a class="chip small" href="https://wa.me/55${esc(whatsappDe(p.whatsapp) || p.whatsapp)}?text=${encodeURIComponent(`Oi, ${(p.pessoa || "").split(" ")[0]}! Aqui é o Breno, do GuiaTennis. Vi que você quer o plano ${nomeDoPlano(p.plano)} para a ${p.nome}. Vamos combinar?`)}" target="_blank" rel="noreferrer">WhatsApp</a>` : ""}
+          <button type="button" class="chip small active" data-plano-pedido="${p.academia_id}" data-plano="${p.plano}">Mudar para o ${esc(nomeDoPlano(p.plano))}</button>
+          <button type="button" class="chip small" data-tirar-pedido-plano="${p.academia_id}">Tirar da lista</button>
+        </div>
+      </div>`).join("")}`;
 }
 function loginDaAcademia(academiaId) {
   return (state.acessos || []).find(a => a.academia_id === academiaId && (a.papel || "principal") === "principal")
@@ -4841,6 +4887,8 @@ function ligarEventosConta() {
   });
   document.querySelectorAll("[data-abrir-conta]").forEach(el => { el.onclick = abrirConta; });
   document.querySelectorAll("[data-abrir-academia]").forEach(el => { el.onclick = () => abrirAcademia(el.dataset.abrirAcademia); });
+  // Não segura o link: o WhatsApp abre, e o pedido fica anotado.
+  document.querySelectorAll("[data-pedir-plano]").forEach(el => { el.addEventListener("click", () => pedirPlanoDoPainel(el.dataset.pedirPlano)); });
   document.querySelectorAll("[data-outra-academia]").forEach(el => { el.onclick = adicionarOutraAcademia; });
   document.querySelectorAll("[data-entrar-academia]").forEach(el => { el.onclick = abrirLoginAcademia; });
 
@@ -5463,10 +5511,41 @@ function pcOfertaDePlano() {
       <p class="pc-card-t">Plano ${esc(prox.nome)}: ${esc(prox.resumo.replace(/^Para /, "para ").replace(/\.$/, ""))}</p>
       <ul class="pc-oferta-lista">${ganhos.map(g => `<li>${icon('check', 15, 'var(--green)')}<span>${esc(g)}</span></li>`).join("")}</ul>
       <div class="pc-acoes">
-        <a class="cta-btn cta-primary" href="${linkPlano(prox.key)}" target="_blank" rel="noreferrer">Quero o ${esc(prox.nome)}</a>
+        <a class="cta-btn cta-primary" href="${linkPlano(prox.key)}" target="_blank" rel="noreferrer" data-pedir-plano="${prox.key}">Quero o ${esc(prox.nome)}</a>
         <a href="/parceiros/plano" class="cta-btn cta-secondary" data-pc="plano">Comparar os planos</a>
       </div>
     </div>`;
+}
+
+// Painel da academia: o que o plano esconde da ficha agora (o que ela
+// guardou e não aparece), com o plano que mostra tudo. Pedido do Breno
+// (03/10/2026): mostrar o que se perde no Básico e levar ao plano de cima.
+function pcFichaEscondida() {
+  const c = minhaAcademia();
+  const plano = planoAtual();
+  if (!c || plano === "premium") return "";
+  const integral = c.integral || c;
+  const esconde = oQueOPlanoEsconde({ amenities: integral.amenities, photos: integral.photos, instagram: integral.instagram, site: integral.site, politica: integral.politica, acesso: integral.acesso }, plano);
+  if (!esconde.length) return "";
+  return `
+    <div class="pc-card pc-escondida">
+      <p class="pc-oferta-eyebrow">O que os alunos não veem</p>
+      <p class="pc-card-t">No plano ${esc(nomeDoPlano(plano))}, a ficha da ${esc(c.name)} esconde ${esconde.length === 1 ? "1 coisa" : esconde.length + " coisas"} que vocês preencheram</p>
+      <ul class="pc-oferta-lista">${esconde.map(x => `<li>${icon('eye', 15, 'var(--gold)')}<span><strong>${esc(x.t)}</strong> · ${esc(x.d)}</span></li>`).join("")}</ul>
+      <p class="pc-card-s">Está tudo guardado. Com o plano de cima, aparece na hora, sem preencher de novo.</p>
+      <div class="pc-acoes">
+        <a class="cta-btn cta-primary" href="${linkPlano("premium")}" target="_blank" rel="noreferrer" data-pedir-plano="premium">Quero o Premium: tudo e os números</a>
+        ${plano === "basico" ? `<a class="cta-btn cta-secondary" href="${linkPlano("completo")}" target="_blank" rel="noreferrer" data-pedir-plano="completo">Quero o Completo</a>` : ""}
+      </div>
+    </div>`;
+}
+
+// "Quero o …" da academia logada: o pedido fica anotado para o GuiaTennis,
+// e o link segue abrindo o WhatsApp.
+function pedirPlanoDoPainel(plano) {
+  const c = minhaAcademia();
+  if (!contaAcademia || !c) return;
+  try { sb.rpc('pedir_plano', { p_academia: c.id, p_plano: plano, p_onde: "painel" }).then(() => {}, () => {}); } catch { /* banco sem a função */ }
 }
 
 // Pessoas com acesso à academia (Conta).
@@ -5878,7 +5957,7 @@ function pcCartoesDePlano(atual) {
             ? `<p class="pc-plano-ok">${icon('check', 14, 'var(--green)')} Plano atual</p>`
             : p.key === "basico"
               ? (atual ? "" : `<a href="/parceiros/cadastro" class="cta-btn cta-secondary" data-pc="cadastro">Começar grátis</a>`)
-              : (atual && i < ordem ? "" : `<a href="${linkPlano(p.key)}" class="cta-btn ${p.key === destaque ? "cta-primary" : "cta-secondary"}" target="_blank" rel="noreferrer">${atual ? "Aprimorar para o " : "Quero o "}${esc(p.nome)}</a>`)}
+              : (atual && i < ordem ? "" : `<a href="${linkPlano(p.key)}" class="cta-btn ${p.key === destaque ? "cta-primary" : "cta-secondary"}" target="_blank" rel="noreferrer" ${atual ? `data-pedir-plano="${p.key}"` : ""}>${atual ? "Aprimorar para o " : "Quero o "}${esc(p.nome)}</a>`)}
         </div>`).join("")}
     </div>`;
 }
@@ -6280,6 +6359,7 @@ function pcPainel() {
         <a href="/parceiros/ajuda" class="pc-atalho" data-pc="ajuda">${icon('info', 20, 'var(--green)')}<span>Ajuda</span></a>
       </div>
 
+      ${pcFichaEscondida()}
       ${pcOfertaDePlano()}
     </section>`;
 }
@@ -10781,11 +10861,11 @@ function regPassoAtual() {
 function regPassoHtml(id, f, obrigatorio) {
   const isEditing = !!f.__editingId;
   const parceiro = !isAdmin && !isEditing && !!contaAcademia;
-  // O que o plano da academia mostra na ficha (academia nova começa no Básico).
-  const plano = f.__plano || "basico";
-  const lim = limitesDoPlano(plano);
-  const maxFotos = lim.fotos;
-  const cheiaComodidades = (f.amenities || []).length >= lim.comodidades;
+  // Nada trava pelo plano no meio do cadastro (pedido do Breno em
+  // 03/10/2026): a academia preenche do jeito dela e, ao finalizar, vê o
+  // que o plano esconde e escolhe o plano (regPlanoHtml). Fotos: até 5, o
+  // máximo de qualquer plano.
+  const maxFotos = FOTOS_MAXIMO;
   if (id === "dados") return `
         <label class="field-label" for="f-name">Nome da academia</label>
         <input class="form-field" id="f-name" placeholder="Nome da academia/quadra *" value="${esc(f.name)}" style="margin-top:0" />
@@ -10839,29 +10919,27 @@ function regPassoHtml(id, f, obrigatorio) {
             </div>
           `).join("")}
         </div>
-        <p class="field-label">Comodidades${isFinite(lim.comodidades) ? ` (até ${lim.comodidades})` : ""}</p>
-        ${isFinite(lim.comodidades) ? `<p class="footnote reg-plano-nota" style="margin:0 0 8px">No plano ${esc(nomeDoPlano(plano))}, a ficha mostra até ${lim.comodidades} comodidades. No Completo, todas.</p>` : ""}
+        <p class="field-label">Comodidades</p>
         <div class="chip-row">
           ${AMENITY_OPTS.map(a => {
             const marcada = f.amenities.includes(a.key);
-            return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}" ${!marcada && cheiaComodidades ? "disabled" : ""}>${a.icon} ${a.label}</button>`;
+            return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`;
           }).join("")}
         </div>`;
 
   if (id === "contato") return `
         <label class="field-label" for="f-phone" style="margin-top:0">WhatsApp da academia${obrigatorio}</label>
         <input class="form-field" id="f-phone" inputmode="tel" placeholder="WhatsApp (com DDD)${obrigatorio}" value="${esc(f.phone)}" style="margin-top:0" />
-        ${lim.contatos.includes("instagram") ? "" : `<p class="footnote reg-plano-nota" style="margin:14px 0 0">No plano ${esc(nomeDoPlano(plano))}, a ficha mostra só o WhatsApp. Instagram e site aparecem a partir do plano Completo.</p>`}
         <label class="field-label" for="f-instagram">Instagram</label>
-        <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" style="margin-top:0" ${lim.contatos.includes("instagram") || isAdmin ? "" : "disabled"} />
+        <input class="form-field" id="f-instagram" placeholder="Instagram (@exemplo)" value="${esc(f.instagram)}" style="margin-top:0" />
         <label class="field-label" for="f-site">Site</label>
-        <input class="form-field" id="f-site" inputmode="url" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" style="margin-top:0" ${lim.contatos.includes("site") || isAdmin ? "" : "disabled"} />`;
+        <input class="form-field" id="f-site" inputmode="url" placeholder="Site (opcional, com https://)" value="${esc(f.site)}" style="margin-top:0" />`;
 
   if (id === "fotos") return `
         <label class="foto-caixa ${(f.photos||[]).length >= maxFotos ? "cheia" : ""}" for="f-photo-file">
           <span class="foto-ic">${icon('camera', 30, (f.photos||[]).length >= maxFotos ? 'var(--muted)' : 'var(--green)')}</span>
           <span class="foto-t">${(f.photos||[]).length
-            ? (f.photos.length > maxFotos ? `${f.photos.length} fotos guardadas — a ficha mostra as ${maxFotos} primeiras` : `${f.photos.length} de ${maxFotos} fotos${f.photos.length >= maxFotos ? "" : " — toque para adicionar mais"}`)
+            ? `${f.photos.length} de ${maxFotos} fotos${f.photos.length >= maxFotos ? "" : " — toque para adicionar mais"}`
             : "Toque para escolher as fotos"}</span>
           <span class="foto-s">${(f.photos||[]).length >= maxFotos
             ? "Chegou no limite. Remova uma foto para trocar."
@@ -10878,7 +10956,6 @@ function regPassoHtml(id, f, obrigatorio) {
             `).join("")}
           </div>
         ` : ""}
-        ${maxFotos < 5 ? `<p class="footnote reg-plano-nota" style="margin-top:8px">No plano ${esc(nomeDoPlano(plano))}, a ficha mostra até ${maxFotos} fotos. No Completo, até 5.</p>` : ""}
         <p class="footnote" style="margin-top:8px">Só o espaço em si: quadras, recepção, vestiário, fachada. Nada de promoção, tabela de preço ou material de divulgação.</p>`;
 
   if (id === "horario") return `
@@ -10893,8 +10970,7 @@ function regPassoHtml(id, f, obrigatorio) {
         <input class="form-field" id="f-horario-nota" placeholder="Observação sobre o horário (opcional)" value="${esc(horarioForm(f).nota)}" />`;
 
   if (id === "cancelamento") return `
-        ${lim.cancelamento ? "" : `<p class="footnote reg-plano-nota" style="margin:0 0 8px">No plano ${esc(nomeDoPlano(plano))}, a ficha não mostra a regra de cancelamento. Ela aparece a partir do plano Completo.</p>`}
-        <fieldset class="reg-trava" ${!lim.cancelamento && !isAdmin ? "disabled" : ""}>
+        <fieldset class="reg-trava">
         <p class="footnote" style="margin-top:0;margin-bottom:8px">Com quantas horas de antecedência a pessoa precisa avisar para ter direito à reposição. Toque de novo na opção escolhida para desmarcar.</p>
         ${f.modalidades.length === 1 ? `
           ${blocoPoliticaForm(politicaForm2(f), politicaForm2(f).modo === "separado" ? (f.modalidades[0] === "locacao" ? "locacao" : "aula") : "", "")}
@@ -10909,9 +10985,8 @@ function regPassoHtml(id, f, obrigatorio) {
         `}
         </fieldset>`;
 
-  const travaChegada = !lim.chegada && !isAdmin ? "disabled" : "";
+  const travaChegada = "";
   if (id === "chegada") return `
-        ${lim.chegada ? "" : `<p class="footnote reg-plano-nota" style="margin:0 0 4px">No plano ${esc(nomeDoPlano(plano))}, a ficha não mostra como chegar. Fachada, entrada e onde estacionar aparecem a partir do plano Completo.</p>`}
         <p class="field-label" style="margin-top:0">Como é a fachada</p>
         <p class="footnote" style="margin:0 0 6px">O que a pessoa vê da rua.</p>
         <textarea class="form-field" id="f-acesso-fachada" rows="2" ${travaChegada} style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
@@ -10960,11 +11035,118 @@ function regPassoHtml(id, f, obrigatorio) {
         ` : ""}`;
 }
 
+// ---- ao finalizar o cadastro: o que o plano esconde e a escolha do plano ----
+// Pedido do Breno (03/10/2026): a academia preenche do jeito dela, sem
+// trava; ao finalizar, vê o que o plano esconde da ficha, o que falta para
+// a ficha vender mais e escolhe o plano — como o "Quase lá" do Booking e o
+// upgrade do Google Business Profile. Nada é cobrado sozinho: o pedido fica
+// anotado (pedir_plano) e o GuiaTennis combina o valor pelo WhatsApp.
+
+// O que a academia preencheu e o plano não mostra na ficha.
+function oQueOPlanoEsconde(f, plano) {
+  const l = limitesDoPlano(plano);
+  const tem = v => !!String(v || "").trim();
+  const itens = [];
+  const comodidades = f.amenities || [];
+  if (comodidades.length > l.comodidades) {
+    const fora = comodidades.slice(l.comodidades).map(k => (AMENITY_OPTS.find(a => a.key === k) || {}).label || k);
+    itens.push({ passo: "quadras", t: `${fora.length} das ${comodidades.length} comodidades`, d: `A ficha mostra só ${l.comodidades}. Ficam de fora: ${fora.join(", ")}.` });
+  }
+  const fotos = (f.photos || []).length;
+  if (fotos > l.fotos) itens.push({ passo: "fotos", t: `${fotos - l.fotos} das ${fotos} fotos`, d: `A ficha mostra só as ${l.fotos} primeiras.` });
+  const redes = [tem(f.instagram) && !l.contatos.includes("instagram") ? "Instagram" : "", tem(f.site) && !l.contatos.includes("site") ? "site" : ""].filter(Boolean);
+  if (redes.length) itens.push({ passo: "contato", t: redes.join(" e "), d: "O aluno só vê o botão do WhatsApp." });
+  if (!l.cancelamento && regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "A regra de cancelamento e reposição", d: "É a dúvida que mais trava a primeira aula." });
+  if (!l.chegada && regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Como chegar", d: "Fachada, entrada e onde estacionar ficam escondidos." });
+  return itens;
+}
+
+// O que ainda falta para a ficha vender mais (partes opcionais vazias).
+function oQueMelhorar(f) {
+  const tem = v => !!String(v || "").trim();
+  const itens = [];
+  if (!(f.photos || []).length) itens.push({ passo: "fotos", t: "Pôr fotos", d: "Ficha com foto recebe muito mais contato." });
+  if (!tem(f.priceAula) && !tem(f.priceLocacao)) itens.push({ passo: "precos", t: "Dizer o preço", d: "É o que o aluno compara primeiro." });
+  if (!regPreenchido(f, "horario")) itens.push({ passo: "horario", t: "Pôr o horário", d: "A ficha mostra se a academia está aberta agora." });
+  if (!(f.amenities || []).length) itens.push({ passo: "quadras", t: "Marcar as comodidades", d: "Viram filtro na busca: quem procura estacionamento acha vocês." });
+  if (!regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "Explicar o cancelamento", d: "Tira a dúvida antes da primeira aula." });
+  if (!regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Explicar como chegar", d: "É o que mais evita o aluno passar direto." });
+  return itens;
+}
+
+// A tela aparece para quem não é admin, se o plano ainda não é o Premium:
+// sempre na academia nova; na edição, só se o plano esconder alguma coisa.
+function precisaEscolherPlano(f) {
+  if (isAdmin) return false;
+  const plano = f.__plano || "basico";
+  if (plano === "premium") return false;
+  return !f.__editingId || oQueOPlanoEsconde(f, plano).length > 0;
+}
+
+function regPlanoHtml(f) {
+  const plano = f.__plano || "basico";
+  const esconde = oQueOPlanoEsconde(f, plano);
+  const melhorar = oQueMelhorar(f).slice(0, 3);
+  const passoDe = (id) => REG_PASSOS.findIndex(x => x.id === id);
+  const opcoes = [
+    { key: "premium", tag: "Recomendado", t: "Tudo o que você preencheu aparece, e você vê os números", d: "Quantas pessoas abriram a ficha, quantas chamaram no WhatsApp, de onde vieram e de quais bairros, comparado com as academias da cidade. Até 10 pessoas da equipe.", botao: "Quero o Premium" },
+    { key: "completo", t: "Tudo o que você preencheu aparece", d: "Todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar. Até 5 pessoas da equipe.", botao: "Quero o Completo" },
+  ].filter(o => ordemDoPlano(o.key) > ordemDoPlano(plano));
+  return `
+    <div class="reg-plano">
+      ${esconde.length ? `
+        <div class="reg-plano-bloco reg-plano-perde">
+          <p class="reg-plano-t">${icon('warning', 16, 'var(--gold)')} No plano ${esc(nomeDoPlano(plano))}, a ficha esconde o que você preencheu:</p>
+          <ul>
+            ${esconde.map(x => `<li><strong>${esc(x.t)}</strong><span>${esc(x.d)}</span></li>`).join("")}
+          </ul>
+          <p class="footnote" style="margin:8px 0 0">Nada se perde: fica tudo guardado e aparece assim que a academia mudar de plano.</p>
+        </div>` : `
+        <div class="reg-plano-bloco">
+          <p class="reg-plano-t">${icon('check', 16, 'var(--green)')} Tudo o que você preencheu cabe no plano ${esc(nomeDoPlano(plano))}.</p>
+          <p class="footnote" style="margin:4px 0 0">Mas só o Premium mostra quantas pessoas abriram a ficha e chamaram vocês.</p>
+        </div>`}
+      ${melhorar.length ? `
+        <div class="reg-plano-bloco">
+          <p class="reg-plano-t">Para a ficha receber mais alunos</p>
+          ${melhorar.map(x => `
+            <button type="button" class="reg-rev-linha" data-reg-plano-passo="${passoDe(x.passo)}">
+              <span class="reg-rev-sinal">+</span>
+              <span class="reg-rev-t"><strong>${esc(x.t)}</strong><span>${esc(x.d)}</span></span>
+              ${icon('chevron', 16, 'var(--muted)')}
+            </button>`).join("")}
+        </div>` : ""}
+      <p class="reg-plano-t" style="margin-top:18px">Escolha o plano da ficha</p>
+      <div class="reg-plano-opcoes">
+        ${opcoes.map(o => `
+          <div class="reg-plano-op ${o.key === "premium" ? "destaque" : ""}">
+            ${o.tag ? `<span class="pc-plano-tag">${esc(o.tag)}</span>` : ""}
+            <p class="pc-plano-n">${esc(nomeDoPlano(o.key))}</p>
+            <p class="reg-plano-op-t">${esc(o.t)}</p>
+            <p class="pc-card-s">${esc(o.d)}</p>
+            <button type="button" class="cta-btn ${o.key === "premium" ? "cta-primary" : "cta-secondary"}" data-reg-plano="${o.key}">${esc(o.botao)}</button>
+          </div>`).join("")}
+      </div>
+      <p class="footnote">O valor é combinado com o GuiaTennis pelo WhatsApp, e nada é cobrado sem você confirmar. Cada academia tem o próprio plano.</p>
+      <button type="button" class="reg-plano-basico" data-reg-plano="${plano}">${plano === "basico"
+        ? `Continuar no Básico, grátis${esconde.length ? ` (a ficha esconde ${esconde.length === 1 ? "1 item" : esconde.length + " itens"})` : ""}`
+        : `Continuar no ${esc(nomeDoPlano(plano))}${esconde.length ? ` (a ficha esconde ${esconde.length === 1 ? "1 item" : esconde.length + " itens"})` : ""}`}</button>
+    </div>`;
+}
+function ordemDoPlano(key) {
+  return Math.max(0, PC_PLANOS.findIndex(p => p.key === key));
+}
+// Mensagem pronta para combinar o plano pelo WhatsApp.
+function linkPlanoDaFicha(f, plano) {
+  const nome = (f && f.name) || ((minhaAcademia() || {}).name) || "minha academia";
+  return whatsappGuia(`Olá! Quero o plano ${nomeDoPlano(plano)} do GuiaTennis Parceiros para a ${nome}.`);
+}
+
 function renderRegisterSheet() {
   const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
   window.__form = f;
   // Formulário novo (abriu agora ou é outra academia): começa na primeira parte.
-  if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; }
+  if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; state.regPlanoTela = false; }
   const isEditing = !!f.__editingId;
   const parceiro = !isAdmin && !isEditing && !!contaAcademia;
   // Asterisco só para quem pede cadastro pelo site; o admin publica com o que tiver.
@@ -10979,10 +11161,33 @@ function renderRegisterSheet() {
             <p style="font-weight:600">${isEditing ? "Alterações salvas!" : (isAdmin ? "Quadra publicada com sucesso!" : "Cadastro enviado para análise!")}</p>
             ${isEditing && !isAdmin ? `<p class="subtitle">Já estão na ficha.</p>` : ""}
             ${(!isAdmin && !isEditing) ? `<p class="subtitle">${parceiro ? "Assim que o GuiaTennis aprovar, a academia aparece no site e você já administra a ficha pelo GuiaTennis Parceiros." : "Assim que for aprovado, aparece pra todo mundo no app."}</p>` : ""}
+            ${["completo", "premium"].includes(f.__planoEscolhido) ? `
+              <div class="reg-plano-ok">
+                <p><strong>Você escolheu o plano ${esc(nomeDoPlano(f.__planoEscolhido))}.</strong> ${contaAcademia ? "O pedido ficou anotado: o GuiaTennis fala com você no WhatsApp para combinar o valor." : "Fale com o GuiaTennis no WhatsApp para combinar o valor."} Até lá, a ficha aparece no plano ${esc(nomeDoPlano(f.__plano || "basico"))}.</p>
+                <a class="cta-btn cta-primary" href="${linkPlanoDaFicha(f, f.__planoEscolhido)}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} Combinar o ${esc(nomeDoPlano(f.__planoEscolhido))} agora</a>
+              </div>` : ""}
             <button class="cta-btn cta-primary" id="register-close-2" style="padding:8px 20px;width:auto">Fechar</button>
           </div>
         </div></div>
       </div>`;
+  }
+  if (state.regPlanoTela) {
+    return `
+    <div class="overlay open" id="register-overlay">
+      <div class="sheet"><div class="sheet-content reg-passos-tela">
+        <button class="sheet-close" id="register-close" aria-label="Fechar">✕</button>
+        <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra"}</p>
+        <p class="reg-progresso-t">Último passo · Plano da ficha</p>
+        <div class="reg-progresso"><i style="width:100%"></i></div>
+        <h2 class="sheet-title display reg-titulo">Quase lá: escolha o plano</h2>
+        <p class="subtitle reg-porque">Veja como a ficha ${esc(f.name || "da academia")} vai aparecer para os alunos.</p>
+        ${regPlanoHtml(f)}
+        <div class="reg-rodape">
+          <button type="button" class="reg-voltar" id="reg-plano-voltar">Voltar e revisar</button>
+          <span></span>
+        </div>
+      </div></div>
+    </div>`;
   }
   const { i, passo } = regPassoAtual();
   const ultimo = i === REG_PASSOS.length - 1;
@@ -11324,7 +11529,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. A mesma conta pode administrar mais de uma academia, em qualquer plano: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. A mesma conta pode administrar mais de uma academia, em qualquer plano: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade e de mudanças nas suas favoritas, promoções das academias e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -11452,6 +11657,7 @@ function renderAdminPanel(pending) {
             </div>
           </div>
         `).join("")}
+        ${blocoPedidosDePlano()}
         ${blocoAcessosPainel()}
         ${blocoMapaAberto()}
       </div></div>
@@ -11908,6 +12114,21 @@ function attachEvents() {
     };
   });
 
+  document.querySelectorAll("[data-plano-pedido]").forEach(el => {
+    el.onclick = async () => {
+      if (!(await setPlano(el.dataset.planoPedido, el.dataset.plano))) return;
+      await carregarAcessos();
+      render();
+    };
+  });
+  document.querySelectorAll("[data-tirar-pedido-plano]").forEach(el => {
+    el.onclick = async () => {
+      const { error } = await sb.from('pedidos_de_plano').delete().eq('academia_id', el.dataset.tirarPedidoPlano);
+      if (error) { alert("Não consegui tirar: " + error.message); return; }
+      await carregarAcessos();
+      render();
+    };
+  });
   document.querySelectorAll(".plano-btn").forEach(el => {
     el.onclick = async () => {
       const id = el.dataset.court;
@@ -12496,8 +12717,6 @@ function attachEvents() {
     el.onclick = () => {
       const k = el.dataset.amenity;
       const f = window.__form;
-      // O plano limita quantas comodidades a ficha mostra (Básico: 3).
-      if (!f.amenities.includes(k) && f.amenities.length >= limitesDoPlano(f.__plano || "basico").comodidades) return;
       f.amenities = f.amenities.includes(k) ? f.amenities.filter(x=>x!==k) : [...f.amenities, k];
       render();
     };
@@ -12522,15 +12741,19 @@ function attachEvents() {
   const regVoltar = document.getElementById("reg-voltar");
   if (regVoltar) regVoltar.onclick = () => irParaPasso(regPassoAtual().i - 1, false);
   const regSubmit = document.getElementById("register-submit");
-  if (regSubmit) regSubmit.onclick = () => {
-    const f = window.__form;
-    // Conta do GuiaTennis Parceiros já tem nome e WhatsApp: não pergunta de novo.
-    if (isAdmin || f.__editingId || contaAcademia) {
-      doRegisterSubmit();
-    } else {
-      ensureVisitorThen(doRegisterSubmit);
-    }
-  };
+  if (regSubmit) regSubmit.onclick = enviarFormulario;
+  const regPlanoVoltar = document.getElementById("reg-plano-voltar");
+  if (regPlanoVoltar) regPlanoVoltar.onclick = () => { state.regPlanoTela = false; render(); };
+  document.querySelectorAll("[data-reg-plano-passo]").forEach(el => {
+    el.onclick = () => { state.regPlanoTela = false; irParaPasso(parseInt(el.dataset.regPlanoPasso, 10), false); };
+  });
+  document.querySelectorAll("[data-reg-plano]").forEach(el => {
+    el.onclick = () => {
+      window.__form.__planoEscolhido = el.dataset.regPlano;
+      state.regPlanoTela = false;
+      enviarFormulario();
+    };
+  });
 
   const consentBox = document.getElementById("f-consent");
   if (consentBox) consentBox.onchange = (e) => { window.__form.consent = e.target.checked; };
@@ -12556,7 +12779,7 @@ function attachEvents() {
       if (!files.length) return;
       const f = window.__form;
       if (!f.photos) f.photos = [];
-      const room = Math.max(0, limitesDoPlano(f.__plano || "basico").fotos - f.photos.length);
+      const room = Math.max(0, FOTOS_MAXIMO - f.photos.length);
       const toAdd = files.slice(0, room);
       let pending = toAdd.length;
       toAdd.forEach((file) => {
@@ -12797,6 +13020,33 @@ function montarEndereco(f) {
   return partes.length ? partes.join(" - ") : null;
 }
 
+// "Enviar"/"Salvar" do formulário. Antes, quem não é admin vê a tela do
+// plano (precisaEscolherPlano) — uma vez; a escolha fica em __planoEscolhido.
+function enviarFormulario() {
+  const f = window.__form;
+  // Faltando o obrigatório, o envio segue e cobra o que falta, como antes;
+  // a tela do plano vem quando o cadastro está pronto para sair.
+  const faltaObrigatorio = regPedeTudo(f) && REG_PASSOS.some(x => regFaltas(f, x.id).length);
+  if (precisaEscolherPlano(f) && !f.__planoEscolhido && !faltaObrigatorio) {
+    state.regPlanoTela = true;
+    render();
+    const folha = document.querySelector("#register-overlay .sheet");
+    if (folha) folha.scrollTop = 0;
+    return;
+  }
+  // Conta do GuiaTennis Parceiros já tem nome e WhatsApp: não pergunta de novo.
+  if (isAdmin || f.__editingId || contaAcademia) doRegisterSubmit();
+  else ensureVisitorThen(doRegisterSubmit);
+}
+
+// Plano pago escolhido ao finalizar: fica anotado para o GuiaTennis (só
+// para quem tem conta; sem conta, o WhatsApp da tela de sucesso resolve).
+async function anotarPedidoDePlano(f, academiaId, onde) {
+  if (!contaAcademia || isAdmin || !academiaId || !["completo", "premium"].includes(f.__planoEscolhido)) return;
+  try { await sb.rpc('pedir_plano', { p_academia: academiaId, p_plano: f.__planoEscolhido, p_onde: onde }); }
+  catch { /* banco sem a função: o WhatsApp da tela de sucesso resolve */ }
+}
+
 async function doRegisterSubmit() {
   const f = window.__form;
   const quadras = f.quadras || {};
@@ -12841,6 +13091,7 @@ async function doRegisterSubmit() {
         if (!error) avisarSqlColunas();
       }
       if (error) throw error;
+      await anotarPedidoDePlano(f, f.__editingId, "edicao");
       await loadEverything();
       if (state.selected && state.selected.id === f.__editingId) {
         const achada = state.allCourts.find(c => c.id === f.__editingId) || state.pending.find(c => c.id === f.__editingId)
@@ -12919,7 +13170,10 @@ async function doRegisterSubmit() {
       if (pubError) throw pubError;
     }
     // Conta sem academia: a academia nova vira o pedido dela (o banco anota).
-    if (contaAcademia && !isAdmin) await recarregarConta();
+    if (contaAcademia && !isAdmin) {
+      await recarregarConta();
+      await anotarPedidoDePlano(f, contaAcademia && contaAcademia.pedidoAcademiaId, "cadastro");
+    }
     await loadEverything();
     state.registerStatus = "done";
   } catch (e) {

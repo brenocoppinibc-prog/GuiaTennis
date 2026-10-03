@@ -29,7 +29,7 @@ teste")
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
 > `testes/varias-academias.js`), com o plano e o valor de cada academia
 separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
-SQL `20261003130000_pedidos_de_plano`). **567 verificações** passando
+SQL `20261003130000_pedidos_de_plano`). **568 verificações** passando
 > (`check-js.sh` + os 18 arquivos de `testes/`) e 148 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).

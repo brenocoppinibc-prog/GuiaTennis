@@ -9041,7 +9041,11 @@ function renderCard(c, badge) {
         </div>
         ${c.phone
           ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')} Falar no WhatsApp${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
-          : `<p class="offer-note">${modalidadesTexto(c) ? `${esc(modalidadesTexto(c))} — confirme os valores com a academia.` : "Confirme o valor direto com a academia."}</p>`}
+          // Sem preço, o "Sob consulta · fale com a academia" já diz tudo: a
+          // linha de baixo só traz a modalidade, sem repetir o recado.
+          : !precos.some(o => o.min)
+            ? (modalidadesTexto(c) ? `<p class="offer-note">${esc(modalidadesTexto(c))}</p>` : "")
+            : `<p class="offer-note">${modalidadesTexto(c) ? `${esc(modalidadesTexto(c))} — confirme os valores com a academia.` : "Confirme o valor direto com a academia."}</p>`}
       </div>
     </div>
   `;

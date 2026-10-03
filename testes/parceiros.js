@@ -57,7 +57,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(200);
   corpo = await texto(page, '#parceiros .pc-main');
   const faq = await page.evaluate(() => document.querySelectorAll('#parceiros .pc-faq details').length);
-  ok(faq === 11 && corpo.includes('Posso dar acesso a mais pessoas da academia?') && corpo.includes('A academia pode avaliar outras academias?') && corpo.includes('Esqueci a senha') && !corpo.includes('Pagar um plano'), 'Ajuda com as perguntas das academias — ' + faq);
+  ok(faq === 12 && corpo.includes('Tenho mais de uma academia. Preciso de outra conta?') && corpo.includes('Posso dar acesso a mais pessoas da academia?') && corpo.includes('A academia pode avaliar outras academias?') && corpo.includes('Esqueci a senha') && !corpo.includes('Pagar um plano'), 'Ajuda com as perguntas das academias — ' + faq);
   const contato = await page.evaluate(() => [...document.querySelectorAll('.pc-contato a')].map(a => a.getAttribute('href').slice(0, 20)).join());
   ok(contato.includes('https://wa.me/551192') && contato.includes('mailto:'), 'Ajuda tem WhatsApp e e-mail do GuiaTennis');
   await page.goBack();
@@ -424,7 +424,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   t = await tela(page);
   const painel = await page.evaluate(() => ({
     nav: [...document.querySelectorAll('.pc-nav a')].map(a => a.innerText).join(' | '),
-    quem: document.querySelector('.pc-quem')?.innerText || '',
+    quem: document.querySelector('.pc-seletor-btn')?.innerText.trim() || '',
     barra: !!document.querySelector('.pc-barra-baixo') && getComputedStyle(document.querySelector('.pc-barra-baixo')).display !== 'none',
     rodape: [...document.querySelectorAll('.pc-rodape a[data-pc]')].map(a => a.innerText).join(' | '),
   }));
@@ -481,17 +481,36 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(500);
   conta = await texto(page, '#parceiros .pc-main');
   ok(conta.includes('1 de 5 no plano Completo') && !conta.includes('Carlos Recepção'), 'o responsável principal remove a pessoa');
-  await page.evaluate(() => { window.__db.academia_acessos.push({ user_id: 'u-outra', academia_id: 'a1', usuario: 'outra@exemplo.com', email: 'outra@exemplo.com' }); window.__pessoa = { nome: '', email: 'outra@exemplo.com' }; render(); });
+  // Uma conta, várias academias (03/10/2026): quem já administra outra
+  // academia entra nesta também, sem perder a dela.
+  await page.evaluate(() => {
+    window.__db.academia_acessos.push({ user_id: 'u-outra', academia_id: 'a1', usuario: 'outra@exemplo.com', email: 'outra@exemplo.com', nome_responsavel: 'Outra Pessoa', papel: 'principal' });
+    window.__db.academia_vinculos.push({ user_id: 'u-outra', academia_id: 'a1', papel: 'principal' });
+    window.__pessoa = { nome: '', email: 'outra@exemplo.com' }; render();
+  });
   await page.click('#pc-pessoa-adicionar');
   await page.waitForTimeout(400);
-  ok((await texto(page, '#parceiros .form-error')).includes('já tem acesso a uma academia'), 'e-mail de outra academia: avisa em palavras simples');
+  const outra = await page.evaluate(() => ({
+    caixa: document.querySelector('.pc-pessoa-nova')?.innerText || '',
+    lista: [...document.querySelectorAll('.pc-pessoas li')].map(l => l.innerText.replace(/\s+/g, ' ')).join(' / '),
+    aberta: window.__db.academia_acessos.find(x => x.user_id === 'u-outra').academia_id,
+    vinculos: window.__db.academia_vinculos.filter(v => v.user_id === 'u-outra').map(v => v.academia_id + ':' + v.papel).join(','),
+  }));
+  ok(outra.caixa.includes('administra também esta academia') && outra.lista.includes('Outra Pessoa') && outra.aberta === 'a1' && outra.vinculos === 'a1:principal,a2:equipe',
+    'e-mail de quem já administra outra academia: entra na equipe desta e continua com a dela — ' + outra.vinculos);
+  await page.evaluate(() => { window.__pessoa = { nome: '', email: 'outra@exemplo.com' }; render(); });
+  await page.click('#pc-pessoa-adicionar');
+  await page.waitForTimeout(400);
+  ok((await texto(page, '#parceiros .form-error')).includes('já tem acesso a esta academia'), 'a mesma pessoa de novo: avisa em palavras simples');
   await browser.close();
 
   // Quem é da equipe vê a lista, mas não mexe.
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/conta' }));
   await page.evaluate(async () => {
     window.__db.academia_acessos[0].papel = 'equipe';
+    window.__db.academia_vinculos[0].papel = 'equipe';
     window.__db.academia_acessos.push({ user_id: 'u-dono', academia_id: 'a2', usuario: 'dono@quadra.com', nome_responsavel: 'Dono', email: 'dono@quadra.com', papel: 'principal', dados_completos_em: '2026-09-01' });
+    window.__db.academia_vinculos.push({ user_id: 'u-dono', academia_id: 'a2', papel: 'principal' });
     await recarregarConta(); await carregarPessoas();
   });
   conta = await texto(page, '#parceiros .pc-main');

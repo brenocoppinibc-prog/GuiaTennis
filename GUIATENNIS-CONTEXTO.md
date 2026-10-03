@@ -22,8 +22,18 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
-**Atualizado em:** 01/10/2026
+**Atualizado em:** 03/10/2026
 
+> **Estado (03/10/2026):** PR #5 ainda **sem merge**. Entrou a regra 29:
+> **uma conta do GuiaTennis Parceiros administra várias academias**, em
+> qualquer plano (SQL `20261003120000_varias_academias`, teste
+> `testes/varias-academias.js`). **533 verificações** passando
+> (`check-js.sh` + os 17 arquivos de `testes/`) e 137 no
+> `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
+> números no Básico/Completo e avaliação sem conta, regras 22 e 23).
+> Continua faltando o Breno ligar o serviço de e-mail no Supabase (seção
+> 11) e testar na prévia; depois, "pode subir".
+>
 > **Estado (02/10/2026, fim do chat):** PR #5 ainda **sem merge**, com
 > tudo das regras 19 a 28 (logo, menu do trivago, home pessoal,
 > preferências, cadastro passo a passo, planos, conta do jogador, um lugar
@@ -262,6 +272,26 @@ cobra taxa e não fica no meio** da negociação.
     cartão "Confirme o seu e-mail" no painel. Login `usuário@acesso…` não
     recebe e-mail: esqueci pelo WhatsApp. Sem o serviço de e-mail, o site
     avisa e deixa confirmar depois. Teste: `testes/codigo.js`.
+29. **Uma conta, várias academias** (pedido de 03/10/2026), como o "Suas
+    empresas" do Google Business Profile, as várias propriedades do
+    Booking e as várias lojas do iFood Parceiros: o mesmo login administra
+    quantas academias a pessoa responder, **em qualquer plano** (até no
+    Básico). Cada academia é pedida e confirmada separadamente, do mesmo
+    jeito (código no WhatsApp da ficha, documento ou academia nova
+    publicada), e tem o próprio plano, as próprias pessoas e os próprios
+    números; o papel (principal ou equipe) é de cada academia. Banco:
+    tabela `academia_vinculos` (quem administra qual, com o papel);
+    `academia_acessos.academia_id` virou **a academia aberta no painel**,
+    trocada por `abrir_minha_academia`; a lista vem de
+    `academias_da_minha_conta`. Tela: seletor no topo (computador), grupo
+    "Suas academias" no menu (celular) e na Conta, "Adicionar outra
+    academia" (a mesma busca do cadastro, com "Já é sua" nas da conta), o
+    pedido com o código aparece no painel, e a ficha no site de outra
+    academia da conta tem "Abrir no painel". Pôr na equipe quem já
+    administra outra academia soma esta à conta dela (não troca a aberta).
+    Tirar alguém de uma academia só apaga o login se ele ficar sem
+    nenhuma; academia apagada idem. No admin, "Remover acesso" na ficha
+    tira a conta só daquela academia, e o pedido mostra "já administra…".
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1100,7 +1130,10 @@ endereços novos), `20260930140000_numeros_da_academia` (Desempenho do
 GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap`, `20260930160000_contas_parceiros`
 (conta por e-mail, pedidos, equipe, academia não avalia) e
 `20261001120000_cadastro_e_verificacao` (dados de contato completos e o
-código no WhatsApp da academia) e `20261001130000_tempo_ate_agir`. Entra no
+código no WhatsApp da academia), `20261001130000_tempo_ate_agir` e, de
+03/10, `20261003120000_varias_academias` (uma conta, várias academias:
+`academia_vinculos`, `academias_da_minha_conta`, `abrir_minha_academia`,
+`remover_acesso_academia` com a academia). Entra no
 banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
@@ -1135,7 +1168,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -1207,6 +1240,13 @@ as 133 do `banco-acesso.py` no banco e login locais.
   Premium, "Ver planos" separado, formulário em tela cheia com atalhos,
   faixa verde nos dois sites e visitante com contato de academia sem
   avaliar.
+- `varias-academias.js` — uma conta, várias academias (03/10/2026):
+  seletor no topo com a aberta marcada, trocar abre o painel da outra,
+  menu do celular com "Suas academias", Conta com a lista e as pessoas da
+  academia aberta, "Adicionar outra academia" no Básico (busca com "Já é
+  sua", pedido, código, as duas no seletor), ficha da outra academia com
+  "Abrir no painel", admin com o pedido de quem já tem academia e
+  "Remover acesso" só daquela academia.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
   banco de verdade (não no mock) tudo o que a academia pode e não pode.
@@ -1243,7 +1283,13 @@ preta com cada passo da busca e a resposta do banco a cada gravação
 abre com `?diagnostico`, até fechar a aba. Foi assim que se achou a trava
 que recusava as buscas.
 
-**Banco e login locais (para `banco-acesso.py`):** Postgres como na seção
+**Banco e login locais (para `banco-acesso.py`):** (03/10/2026: com o
+`github.com/supabase/auth@master`, rodar `go get
+github.com/joho/godotenv@v1.4.0` antes do `go build`; o `gotrue serve`
+precisa de `GOTRUE_JWT_AUD=authenticated` e
+`GOTRUE_JWT_DEFAULT_GROUP_NAME=authenticated`, senão nenhum login feito
+pelo SQL entra; e o `seed.sql` só entra com `set session_replication_role
+= replica`, por causa do gatilho que exige conta para avaliar.) Postgres como na seção
 4 ("Postgres na máquina"), papéis `anon`, `authenticated`,
 `service_role`, `authenticator`, `supabase_auth_admin` e o esquema `auth`
 do dono `supabase_auth_admin`. O login do Supabase (GoTrue) se compila
@@ -1639,6 +1685,15 @@ c9ade31 Configuração de publicação do Netlify
   {{ .Token }}"); (4) Authentication → Rate Limits: subir o limite de
   e-mails por hora. Os avisos por e-mail (academias, promoções,
   novidades) ainda precisam de um envio próprio (próximo passo).
+
+- **Testar na prévia "uma conta, várias academias" (03/10/2026)** — no
+  banco de teste: (1) com uma conta que já administra uma academia, abrir
+  Conta › "Adicionar outra academia", escolher outra e tocar em
+  "Administrar esta academia"; (2) como admin, em "Pedidos para
+  administrar", conferir o "já administra…" e gerar o código; (3) digitar
+  o código no painel da conta; (4) trocar de academia pelo nome no topo
+  (computador) ou pelo menu (celular) e ver o painel, o Desempenho e as
+  pessoas mudarem.
 
 - **Testar na prévia o pedido de 01/10/2026** (aba anônima, celular): (1) a
   logo de três riscos no topo, no rodapé, no QR code (admin › ficha › QR) e

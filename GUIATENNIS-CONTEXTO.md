@@ -1741,7 +1741,10 @@ c9ade31 Configuração de publicação do Netlify
   Emails → SMTP Settings → ligar "Custom SMTP" com host, porta, usuário e a
   senha do serviço, remetente `nao-responda@guiatennis.com.br`, nome
   "GuiaTennis"; (3) Authentication → Email Templates → "Magic Link": trocar
-  o texto para mostrar o código `{{ .Token }}` ("Seu código do GuiaTennis:
+  o texto para mostrar o código `{{ .Token }}` (modelo pronto, só colar:
+  `divulgacao/email-codigo.html`, assunto "Seu código do GuiaTennis";
+  o caminho mais curto é a integração do Resend com o Supabase, que
+  preenche o SMTP sozinha) ("Seu código do GuiaTennis:
   {{ .Token }}"); (4) Authentication → Rate Limits: subir o limite de
   e-mails por hora. Os avisos por e-mail (academias, promoções,
   novidades) ainda precisam de um envio próprio (próximo passo).

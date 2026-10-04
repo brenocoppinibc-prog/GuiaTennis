@@ -29,8 +29,8 @@ teste")
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
 > `testes/varias-academias.js`), com o plano e o valor de cada academia
 separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
-SQL `20261003130000_pedidos_de_plano`). **591 verificações** passando
-> (`check-js.sh` + os 20 arquivos de `testes/`) e 156 no
+SQL `20261003130000_pedidos_de_plano`). **609 verificações** passando
+> (`check-js.sh` + os 21 arquivos de `testes/`) e 163 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).
 > Continua faltando o Breno ligar o serviço de e-mail no Supabase (seção
@@ -348,6 +348,23 @@ cobra taxa e não fica no meio** da negociação.
     (`CONVITE_CONTA_KEY`, no aparelho). O convite só promete o que a
     conta faz hoje (avaliar); quando os avisos por e-mail estiverem
     saindo, dá para citá-los. Teste: `testes/convite-conta.js`.
+34. **Senha como os grandes** (pedido de 04/10/2026): olhinho em todo
+    campo de senha (`ligarCamposDeSenha`, roda em cada render), "Repita a
+    senha" em toda senha nova, barrinha fraca/boa/forte embaixo da senha
+    nova (`forcaDaSenha`) e recusa de senha óbvia — as mais usadas, a
+    sequência, a que repete o e-mail ou "guiatennis" (`erroDaSenha`,
+    `SENHAS_COMUNS`). Sem regra de símbolo obrigatório. O código do e-mail
+    aceita 6 a 10 números (o tamanho é do painel do Supabase: Authentication
+    → Sign In / Providers → Email → "Email OTP Length"; o Breno quer 6).
+    Teste: `testes/senha.js`.
+35. **Usuário vira login por e-mail** (pedido de 04/10/2026): quem recebeu
+    usuário do GuiaTennis (`…@acesso.guiatennis.com.br`, que não recebe
+    e-mail) passa a entrar pelo e-mail que informou no primeiro acesso
+    (gatilho `login_segue_o_email`, SQL `20261004120000_login_pelo_email`,
+    que também troca quem já tinha feito o primeiro acesso). O usuário
+    continua entrando: o site pergunta o login a `login_do_usuario`. Assim o
+    "Esqueci a senha" manda o código para todo mundo. Não troca se o e-mail
+    já for de outra conta.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1227,7 +1244,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

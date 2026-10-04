@@ -14,6 +14,7 @@ const { abrir, ok, irSenha } = require('./harness');
   ok(await page.evaluate(() => state.pcEmailPasso === 'esqueci' && (window.__codigos || {})['dona@quadra.com.br'] === '123456' && location.search.includes('passo=nova-senha')), 'Esqueceu a senha: manda o código para o e-mail, com link próprio');
   await page.fill('#pc-codigo-senha', '111111');
   await page.fill('#pc-senha-nova', 'novasenha77');
+  await page.fill('#pc-senha-nova2', 'novasenha77');
   await page.click('#pc-salvar-senha-nova');
   await page.waitForTimeout(300);
   ok((await page.evaluate(() => document.querySelector('#parceiros .form-error')?.innerText || '')).includes('Código errado'), 'código errado: avisa');

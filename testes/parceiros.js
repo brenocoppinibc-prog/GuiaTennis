@@ -137,10 +137,12 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.selectOption('#pc-conta-cargo', 'Dono(a) ou sócio(a)');
   await page.fill('#pc-conta-whatsapp', '(11) 98888-0001');
   await page.fill('#pc-conta-senha', 'curta');
+  await page.fill('#pc-conta-senha2', 'curta');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('8 caracteres'), 'senha curta: avisa');
   await page.fill('#pc-conta-senha', 'senhaforte1');
+  await page.fill('#pc-conta-senha2', 'senhaforte1');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('aceitar os Termos'), 'sem o aceite: avisa');
@@ -303,6 +305,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.selectOption('#pc-conta-cargo', 'Gerente');
   await page.fill('#pc-conta-whatsapp', '11988880009');
   await page.fill('#pc-conta-senha', 'senhaforte1');
+  await page.fill('#pc-conta-senha2', 'senhaforte1');
   await page.check('#pc-conta-aceite');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(900);
@@ -561,6 +564,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(300);
   await page.fill('#jog-nome', 'Rafa Jogador');
   await page.fill('#jog-senha', 'senhaboa12');
+  await page.fill('#jog-senha2', 'senhaboa12');
   await page.check('#jog-aceite');
   await page.click('#jog-criar');
   await page.waitForTimeout(600);

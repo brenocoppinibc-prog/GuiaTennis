@@ -612,6 +612,17 @@
   .city-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
   /* menu de três barras */
   .menu-btn { width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
+  .senha-caixa { position: relative; display: block; }
+  .senha-caixa .form-field { padding-right: 48px; }
+  .senha-olho { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 10px; cursor: pointer; }
+  .senha-olho:hover { background: var(--bg-alt); }
+  .senha-forca { display: flex; align-items: center; gap: 8px; margin: 6px 2px 0; font-size: 13px; color: var(--muted); min-height: 0; }
+  .senha-forca:empty { display: none; }
+  .senha-barra { display: inline-flex; gap: 3px; }
+  .senha-barra i { width: 22px; height: 4px; border-radius: 2px; background: var(--border); }
+  .senha-barra.n0 i:nth-child(1) { background: var(--red, #C0392B); }
+  .senha-barra.n1 i:nth-child(-n+2) { background: var(--gold); }
+  .senha-barra.n2 i { background: var(--green); }
   .conta-topo { width: 44px; height: 44px; margin-left: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--card); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-family: inherit; }
   .conta-topo.destaque { background: #FFF6D8; border-color: #F2D27A; box-shadow: 0 0 0 4px rgba(242, 196, 64, 0.22), 0 0 14px rgba(242, 196, 64, 0.45); }
   .conta-topo.logado { border-radius: 50%; background: var(--green); color: #fff; font-weight: 700; font-size: 17px; border-color: var(--green); }
@@ -1708,6 +1719,7 @@ function icon(name, size, color) {
     chevron: '<polyline points="9 5 16 12 9 19"/>',
     chevronDown: '<polyline points="5 9 12 16 19 9"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    olhoFechado: '<path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-2.9 3.8M6.4 6.4C3.9 8.1 2.5 12 2.5 12S6 19 12 19a9.6 9.6 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
     chevronLeft: '<polyline points="15 5 8 12 15 19"/>',
     pessoa: '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1-4 4-6 7.5-6s6.5 2 7.5 6"/>',
     sino: '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
@@ -4532,6 +4544,8 @@ function formDadosConta(modo) {
     <p class="footnote" style="margin:4px 0 0"><span class="obrig">*</span> Informação obrigatória</p>
     ${camposDeContato("conta", f, "conta-campo")}
     ${campo("email", "E-mail<span class=\"obrig\">*</span>", 'type="email" autocomplete="email" autocapitalize="none"')}
+    ${contaAcademia && !String(contaAcademia.login || "").includes("@") || String((contaAcademia || {}).login || "").endsWith("@" + DOMINIO_ACESSO)
+      ? `<p class="footnote" style="margin:6px 0 0">Você passa a entrar também com este e-mail, e o "Esqueci a senha" manda o código para ele. O usuário continua valendo.</p>` : ""}
     ${campo("cnpj", "CNPJ da academia (opcional)", 'inputmode="numeric"')}
     ${pedirSenha ? `
       <p class="field-label">Senha nova</p>
@@ -4744,8 +4758,7 @@ async function salvarDadosConta() {
   let erro = erroDoContato(f);
   if (!erro && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((f.email || "").trim())) erro = "Confira o e-mail.";
   else if (!erro && cnpj && cnpj.length !== 14) erro = "O CNPJ tem 14 números. Se preferir, deixe em branco.";
-  else if (!erro && pedirSenha && (f.senha || "").length < 8) erro = "A senha nova precisa ter pelo menos 8 caracteres.";
-  else if (!erro && pedirSenha && f.senha !== f.senha2) erro = "As duas senhas não estão iguais.";
+  else if (!erro && pedirSenha && erroDaSenha(f.senha, f.senha2, f.email)) erro = erroDaSenha(f.senha, f.senha2, f.email);
   else if (!erro && pedirAceite && !f.aceite) erro = "Falta aceitar os Termos de Uso e a Política de Privacidade.";
   if (erro) { state.contaErro = erro; render(); return; }
   state.contaErro = "";
@@ -4783,8 +4796,7 @@ async function trocarSenhaConta() {
   const f = window.__senha || {};
   let erro = "";
   if (!f.atual) erro = "Digite a senha atual.";
-  else if ((f.nova || "").length < 8) erro = "A senha nova precisa ter pelo menos 8 caracteres.";
-  else if (f.nova !== f.nova2) erro = "As duas senhas não estão iguais.";
+  else if (erroDaSenha(f.nova, f.nova2, contaAcademia && contaAcademia.email)) erro = erroDaSenha(f.nova, f.nova2, contaAcademia && contaAcademia.email);
   if (erro) { state.contaErro = erro; render(); return; }
   state.contaErro = "";
   state.contaSalvando = true;
@@ -4792,7 +4804,10 @@ async function trocarSenhaConta() {
   try {
     // Entrar de novo confere a senha atual e renova a sessão — o Supabase
     // pode pedir as duas coisas para trocar a senha.
-    const { error: errAtual } = await sb.auth.signInWithPassword({ email: emailDoLogin(contaAcademia.usuario), password: f.atual });
+    // O login pode ter virado o e-mail de contato (SQL 20261004120000).
+    let login = contaAcademia.login || emailDoLogin(contaAcademia.usuario);
+    try { const r = await sb.rpc('login_do_usuario', { p_usuario: contaAcademia.usuario }); if (!r.error && r.data) login = r.data; } catch {}
+    const { error: errAtual } = await sb.auth.signInWithPassword({ email: login, password: f.atual });
     if (errAtual) throw new Error("A senha atual não confere.");
     const { error } = await sb.auth.updateUser({ password: f.nova, current_password: f.atual });
     if (error) throw new Error(mensagemSenha(error));
@@ -6259,11 +6274,13 @@ function pcCadastro() {
             <p class="pc-linha" style="margin:4px 0 0"><button type="button" class="pc-linha-link" id="pc-trocar-email">Usar outro e-mail</button></p>
             ${state.pcCodigoFalhou
               ? `<p class="email-sugestao">Não consegui mandar o código agora. Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>`
-              : `<p class="pc-card-s" style="margin-top:12px">${state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código de 6 números para <strong>${esc(state.pcLogin)}</strong>. Digite o código e a senha nova.`}</p>
-                <label class="field-label" for="pc-codigo-senha">Código de 6 números</label>
-                <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-senha" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />
+              : `<p class="pc-card-s" style="margin-top:12px">${state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código para <strong>${esc(state.pcLogin)}</strong>. Digite o código e a senha nova.`}</p>
+                <label class="field-label" for="pc-codigo-senha">Código do e-mail</label>
+                <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-senha" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />
                 <label class="field-label" for="pc-senha-nova">Senha nova</label>
                 <input class="form-field campo-codigo" data-rascunho="senha" id="pc-senha-nova" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
+                <label class="field-label" for="pc-senha-nova2">Repita a senha nova</label>
+                <input class="form-field campo-codigo" data-rascunho="senha2" id="pc-senha-nova2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc((window.__codigo || {}).senha2 || "")}" style="margin-top:0" />
                 ${erro(state.pcContaErro)}
                 <button class="btn-primary pc-botao-cheio" id="pc-salvar-senha-nova" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar a senha nova"}</button>
                 <p class="footnote"><button type="button" class="pc-linha-link" id="pc-reenviar-codigo">Mandar outro código</button></p>`}` : ""}
@@ -6272,6 +6289,8 @@ function pcCadastro() {
             ${camposDeContato("pc-conta", f, "pc-conta-campo")}
             <label class="field-label" for="pc-conta-senha">Crie uma senha<span class="obrig">*</span></label>
             <input class="form-field pc-conta-campo" data-campo="senha" id="pc-conta-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha)}" style="margin-top:0" />
+            <label class="field-label" for="pc-conta-senha2">Repita a senha<span class="obrig">*</span></label>
+            <input class="form-field pc-conta-campo" data-campo="senha2" id="pc-conta-senha2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc(f.senha2 || "")}" style="margin-top:0" />
             <label class="consent-row">
               <input type="checkbox" id="pc-conta-aceite" ${f.aceite ? "checked" : ""} />
               <span>Represento a academia e concordo com os <button type="button" class="inline-link" id="pc-conta-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="pc-conta-privacidade">Política de Privacidade</button> do GuiaTennis.<span class="obrig">*</span></span>
@@ -6664,7 +6683,11 @@ async function continuarComEmail() {
   state.loginError = "";
   // Usuário do GuiaTennis (sem @): vai direto para a senha.
   if (email && !email.includes("@") && /^[a-z0-9._-]{3,}$/.test(email)) {
-    state.pcLogin = email;
+    // Quem já informou o e-mail no primeiro acesso entra por ele (SQL
+    // 20261004120000): assim o "Esqueci a senha" manda o código.
+    let login = "";
+    try { const r = await sb.rpc('login_do_usuario', { p_usuario: email }); if (!r.error && r.data) login = r.data; } catch {}
+    state.pcLogin = login || email;
     state.pcEmailPasso = "existe";
     render();
     document.getElementById("login-password")?.focus();
@@ -6712,7 +6735,8 @@ async function pcEsqueciSenha() {
 async function pcSalvarSenhaNova() {
   const codigo = document.getElementById("pc-codigo-senha")?.value || "";
   const senha = document.getElementById("pc-senha-nova")?.value || "";
-  if (senha.length < 8) { state.pcContaErro = "A senha nova precisa ter pelo menos 8 caracteres."; render(); return; }
+  const errSenha = erroDaSenha(senha, document.getElementById("pc-senha-nova2")?.value || "", state.pcLogin);
+  if (errSenha) { state.pcContaErro = errSenha; render(); return; }
   state.pcContaSalvando = true; state.pcContaErro = ""; render();
   const sessao = await conferirCodigo(state.pcLogin, codigo);
   if (!sessao) { state.pcContaSalvando = false; state.pcContaErro = CODIGO_ERRADO; render(); return; }
@@ -6740,10 +6764,10 @@ function pcConfirmarEmail() {
       <p class="pc-card-t">Confirme o seu e-mail</p>
       <p class="pc-card-s">${state.pcConfirmar === "falhou"
         ? "Não consegui mandar o código agora. Tente de novo em instantes."
-        : enviado ? `Mandamos um código de 6 números para <strong>${esc(c.login)}</strong>. Chega em até um minuto; olhe também o spam.`
+        : enviado ? `Mandamos um código para <strong>${esc(c.login)}</strong>. Chega em até um minuto; olhe também o spam.`
         : `Assim a gente sabe que <strong>${esc(c.login)}</strong> é seu e pode mandar os avisos da academia.`}</p>
       ${enviado ? `
-        <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-email" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" value="${esc((window.__codigo || {}).codigo || "")}" />
+        <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-email" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" />
         ${state.pcConfirmarErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pcConfirmarErro)}</div>` : ""}
         <div class="pc-acoes">
           <button type="button" class="cta-btn cta-primary" id="pc-confirmar-email">Confirmar</button>
@@ -6759,7 +6783,8 @@ async function criarContaDeParceiro() {
   const erro = (t) => { state.pcContaErro = t; state.pcContaSalvando = false; render(); };
   const falta = erroDoContato(f);
   if (falta) return erro(falta);
-  if ((f.senha || "").length < 8) return erro("A senha precisa ter pelo menos 8 caracteres.");
+  const errSenha = erroDaSenha(f.senha, f.senha2, email);
+  if (errSenha) return erro(errSenha);
   if (!f.aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.");
   state.pcContaErro = "";
   state.pcContaSalvando = true;
@@ -7408,13 +7433,13 @@ function renderJogadorSheet() {
       : `Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.`}</p>
 `;
   const campoCodigo = `
-    <label class="field-label" for="jog-codigo">Código de 6 números</label>
-    <input class="form-field jog-codigo campo-codigo" data-rascunho="codigo" id="jog-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />`;
+    <label class="field-label" for="jog-codigo">Código do e-mail</label>
+    <input class="form-field jog-codigo campo-codigo" data-rascunho="codigo" id="jog-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />`;
   const reenviar = `<p class="jog-troca"><button type="button" class="inline-link" id="jog-reenviar">Mandar outro código</button></p>`;
   const naoMandou = `<p class="email-sugestao" role="alert">Não consegui mandar o código agora. ${tela === "codigo" ? "Você pode confirmar depois, em Minha conta." : `Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.`}</p>`;
   if (tela === "codigo") miolo = `
     <p class="sheet-title display">Confirme o seu e-mail</p>
-    <p class="subtitle" style="margin-top:4px">Mandamos um código de 6 números para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Chega em até um minuto; olhe também o spam.</p>
+    <p class="subtitle" style="margin-top:4px">Mandamos um código para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Chega em até um minuto; olhe também o spam.</p>
     ${trilha}
     ${state.codigoMandando ? `<p class="footnote">${bolaGirando(16)} Mandando o código…</p>` : ""}
     ${state.codigoFalhou ? naoMandou : campoCodigo}
@@ -7426,11 +7451,13 @@ function renderJogadorSheet() {
          ${state.codigoDeMinhaConta ? "" : `<p class="jog-troca"><button type="button" class="inline-link" id="jog-depois">Fazer isso depois</button></p>`}`}`;
   if (tela === "esqueci") miolo = `
     <p class="sheet-title display">Crie uma senha nova</p>
-    <p class="subtitle" style="margin-top:4px">Mandamos um código de 6 números para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Digite o código e a senha nova.</p>
+    <p class="subtitle" style="margin-top:4px">Mandamos um código para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Digite o código e a senha nova.</p>
     ${state.codigoFalhou ? naoMandou : `
       ${campoCodigo}
       <label class="field-label" for="jog-senha-nova">Senha nova</label>
       <input class="form-field campo-codigo" data-rascunho="senha" id="jog-senha-nova" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
+      <label class="field-label" for="jog-senha-nova2">Repita a senha nova</label>
+      <input class="form-field campo-codigo" data-rascunho="senha2" id="jog-senha-nova2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc((window.__codigo || {}).senha2 || "")}" style="margin-top:0" />
       ${erro}
       <button type="button" class="cta-btn cta-primary" id="jog-salvar-senha" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Salvando") || "Salvar a senha nova"}</button>
       ${reenviar}`}`;
@@ -7444,6 +7471,8 @@ function renderJogadorSheet() {
     <p class="footnote" style="margin-top:6px">Aparece nas suas avaliações.</p>
     <label class="field-label" for="jog-senha">Crie uma senha</label>
     <input class="form-field jog-campo" data-campo="senha" id="jog-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" style="margin-top:0" />
+    <label class="field-label" for="jog-senha2">Repita a senha</label>
+    <input class="form-field jog-campo" data-campo="senha2" id="jog-senha2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" style="margin-top:0" />
     <label class="field-label" for="jog-cidade">Cidade (opcional)</label>
     <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" autocomplete="address-level2" value="${esc(f.cidade || "")}" style="margin-top:0" />
     <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
@@ -7540,7 +7569,7 @@ function blocoSugestaoEmail(email) {
 
 // ---------- código por e-mail (02/10/2026) ----------
 // Prova que o e-mail existe e é da pessoa: o login do Supabase manda um
-// código de 6 números (com o serviço de e-mail ligado no painel) e o site
+// código (6 a 10 números, conforme o painel do Supabase) e o site
 // confere. Serve para confirmar o e-mail e para o "Esqueci a senha". Login
 // com o domínio interno das academias (usuário@acesso…) não recebe e-mail:
 // para esses, o "esqueci" continua pelo WhatsApp.
@@ -7559,7 +7588,8 @@ async function enviarCodigo(email) {
 // confirmação do e-mail).
 async function conferirCodigo(email, codigo) {
   const limpo = String(codigo || "").replace(/\D/g, "");
-  if (limpo.length !== 6) return null;
+  // O tamanho vem do painel do Supabase (6 a 10 números; este projeto usa 8).
+  if (limpo.length < 6 || limpo.length > 10) return null;
   try {
     const { data, error } = await sb.auth.verifyOtp({ email, token: limpo, type: "email" });
     if (error || !data || !data.session) return null;
@@ -7569,6 +7599,90 @@ async function conferirCodigo(email, codigo) {
   } catch { return null; }
 }
 const CODIGO_ERRADO = "Código errado ou vencido. Confira o número ou peça outro.";
+
+// ---------- senha (04/10/2026) ----------
+// Como Google, Microsoft e as recomendações atuais de segurança: o que
+// protege é o tamanho e não ser uma senha óbvia, e não regra de símbolo
+// obrigatório. O site recusa as senhas mais usadas, a que repete o e-mail e
+// a sequência; mostra a força enquanto a pessoa digita; o olhinho mostra o
+// que foi digitado; e a senha nova é digitada duas vezes.
+const SENHAS_COMUNS = ["12345678", "123456789", "1234567890", "87654321", "11111111", "00000000",
+  "12341234", "11223344", "senha123", "senha1234", "senhasenha", "password", "password1", "qwertyui",
+  "qwerty123", "abc12345", "abcd1234", "iloveyou", "brasil123", "mudar123", "teste123", "admin123",
+  "guiatennis", "guiatenis", "tenis123", "tennis123", "flamengo", "corinthians", "palmeiras", "saopaulo"];
+function senhaObvia(senha, email) {
+  const s = String(senha || "").toLowerCase();
+  const nomeDoEmail = String(email || "").toLowerCase().split("@")[0];
+  if (SENHAS_COMUNS.some(c => s === c || (c.length >= 8 && s.startsWith(c) && s.length <= c.length + 2))) return true;
+  if (/^(.)\1+$/.test(s)) return true;                                   // aaaaaaaa
+  if ("0123456789012345678909876543210".includes(s) || "abcdefghijklmnopqrstuvwxyz".includes(s)) return true;
+  if (nomeDoEmail.length >= 4 && s.includes(nomeDoEmail)) return true;
+  if (s.includes("guiatenn")) return true;
+  return false;
+}
+// "" se a senha serve; senão, o que corrigir. confirmacao undefined = sem campo.
+function erroDaSenha(senha, confirmacao, email) {
+  const s = String(senha || "");
+  if (s.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
+  if (senhaObvia(s, email)) return "Essa senha é fácil de adivinhar. Use uma frase ou junte palavras e números, como \"saibro coberto 2026\".";
+  if (confirmacao !== undefined && s !== String(confirmacao || "")) return "As duas senhas não estão iguais.";
+  return "";
+}
+function forcaDaSenha(senha, email) {
+  const s = String(senha || "");
+  if (!s) return null;
+  if (s.length < 8 || senhaObvia(s, email)) return { nivel: 0, t: "Fraca" };
+  let pontos = 0;
+  if (s.length >= 12) pontos++;
+  if (s.length >= 16) pontos++;
+  if (/[a-zA-Z]/.test(s) && /\d/.test(s)) pontos++;
+  if (/[^a-zA-Z0-9]/.test(s) || (/[a-z]/.test(s) && /[A-Z]/.test(s))) pontos++;
+  return pontos >= 3 ? { nivel: 2, t: "Forte" } : pontos >= 1 ? { nivel: 1, t: "Boa" } : { nivel: 0, t: "Fraca" };
+}
+
+// Olhinho em todo campo de senha e a força embaixo da senha nova. Roda
+// depois de cada render; o que estava visível continua visível.
+function ligarCamposDeSenha() {
+  state.senhasVisiveis = state.senhasVisiveis || {};
+  document.querySelectorAll('input[type="password"], input[data-era-senha]').forEach(el => {
+    if (el.closest(".senha-caixa")) return;
+    el.setAttribute("data-era-senha", "");
+    const caixa = document.createElement("span");
+    caixa.className = "senha-caixa";
+    const margem = getComputedStyle(el).marginTop;
+    el.parentNode.insertBefore(caixa, el);
+    caixa.appendChild(el);
+    caixa.style.marginTop = margem;
+    el.style.marginTop = "0";
+    const olho = document.createElement("button");
+    olho.type = "button";
+    olho.className = "senha-olho";
+    const desenhar = () => {
+      const ver = !!state.senhasVisiveis[el.id];
+      el.type = ver ? "text" : "password";
+      olho.innerHTML = icon(ver ? "olhoFechado" : "eye", 20, "var(--muted)");
+      olho.setAttribute("aria-label", ver ? "Esconder a senha" : "Mostrar a senha");
+      olho.setAttribute("aria-pressed", ver ? "true" : "false");
+    };
+    olho.onclick = () => { state.senhasVisiveis[el.id] = !state.senhasVisiveis[el.id]; desenhar(); el.focus(); };
+    caixa.appendChild(olho);
+    desenhar();
+    // Força: só na senha nova (não na confirmação nem na senha de entrar).
+    if (el.getAttribute("autocomplete") === "new-password" && !/2$/.test(el.id)) {
+      const forca = document.createElement("p");
+      forca.className = "senha-forca";
+      forca.setAttribute("aria-live", "polite");
+      caixa.insertAdjacentElement("afterend", forca);
+      const mostrar = () => {
+        const email = (window.__jog && window.__jog.email) || state.pcEmail || state.pcLogin || (contaAcademia && contaAcademia.email) || "";
+        const f = forcaDaSenha(el.value, email);
+        forca.innerHTML = f ? `<span class="senha-barra n${f.nivel}"><i></i><i></i><i></i></span><span>Senha ${f.t.toLowerCase()}${f.nivel === 0 && el.value.length >= 8 ? ": fácil de adivinhar" : f.nivel === 0 ? ": use pelo menos 8 caracteres" : ""}</span>` : "";
+      };
+      el.addEventListener("input", mostrar);
+      mostrar();
+    }
+  });
+}
 
 async function irParaCodigoJogador(tela) {
   const email = (window.__jog && window.__jog.email) || (jogador && jogador.email) || "";
@@ -7607,7 +7721,8 @@ async function salvarSenhaNovaJogador() {
   const email = state.jogadorLogin || (window.__jog && window.__jog.email) || "";
   const codigo = document.getElementById("jog-codigo")?.value || "";
   const senha = document.getElementById("jog-senha-nova")?.value || "";
-  if (senha.length < 8) { state.jogadorErro = "A senha nova precisa ter pelo menos 8 caracteres."; render(); return; }
+  const errSenha = erroDaSenha(senha, document.getElementById("jog-senha-nova2")?.value || "", email);
+  if (errSenha) { state.jogadorErro = errSenha; render(); return; }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const sessao = await conferirCodigo(email, codigo);
   if (!sessao) { state.jogadorSalvando = false; state.jogadorErro = CODIGO_ERRADO; render(); return; }
@@ -7666,13 +7781,15 @@ async function entrarJogador() {
 async function criarContaJogador() {
   const f = window.__jog || {};
   f.senha = document.getElementById("jog-senha")?.value || f.senha || "";
+  f.senha2 = document.getElementById("jog-senha2")?.value || f.senha2 || "";
   const email = String(f.email || "").trim().toLowerCase();
   const falta = [];
   if (String(f.nome || "").trim().length < 3) falta.push("o nome");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) falta.push("um e-mail válido");
-  if ((f.senha || "").length < 8) falta.push("uma senha com pelo menos 8 caracteres");
   if (!f.aceite) falta.push("o aceite dos Termos");
   if (falta.length) { state.jogadorErro = `Falta ${listaPt(falta)}.`; render(); return; }
+  const errSenha = erroDaSenha(f.senha, f.senha2, email);
+  if (errSenha) { state.jogadorErro = errSenha; render(); return; }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const r = await sb.rpc('criar_conta_jogador', {
     p_email: email, p_senha: f.senha, p_nome: String(f.nome).trim(), p_aceite: true,
@@ -11724,7 +11841,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia. O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais, depois de conferir um documento. A mesma conta pode administrar mais de uma academia, em qualquer plano: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais, depois de conferir um documento. A mesma conta pode administrar mais de uma academia, em qualquer plano: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade e de mudanças nas suas favoritas, promoções das academias e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -11863,6 +11980,7 @@ function renderAdminPanel(pending) {
 // ---------- events ----------
 
 function attachEvents() {
+  ligarCamposDeSenha();
   // ---- ordenação estilo Trivago (botão + menu suspenso) ----
   // Garante que o menu de ordenação caiba na tela, seja qual for a largura.
   const sortMenu = document.getElementById("sort-menu");
@@ -12204,6 +12322,12 @@ function attachEvents() {
     let { data, error } = await sb.auth.signInWithPassword({ email: emailDoLogin(digitado), password });
     // Quem recebeu usuário do GuiaTennis também entra pelo e-mail que deu no
     // primeiro acesso: o banco diz qual é o login desse e-mail.
+    if (error && !digitado.includes("@")) {
+      try {
+        const r = await sb.rpc('login_do_usuario', { p_usuario: digitado });
+        if (r.data && r.data !== emailDoLogin(digitado)) ({ data, error } = await sb.auth.signInWithPassword({ email: r.data, password }));
+      } catch { /* banco sem a função: fica o erro do login */ }
+    }
     if (error && digitado.includes("@") && emailDoLogin(digitado) !== EMAIL_ADMIN) {
       try {
         const r = await sb.rpc('login_do_email', { p_email: digitado });

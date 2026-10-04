@@ -57,7 +57,8 @@
   const euJogador = () => sessao && db.jogadores.find(j => j.user_id === sessao.user.id);
   // Conta do GuiaTennis Parceiros (SQL 20260930160000): e-mail de entrar,
   // telefone só com números e o limite de pessoas do plano.
-  const loginDe = (x) => x.usuario.includes("@") ? x.usuario : x.usuario + DOMINIO;
+  // Depois do primeiro acesso, quem tinha usuário entra pelo e-mail (SQL 20261004120000).
+  const loginDe = (x) => x.loginEmail || (x.usuario.includes("@") ? x.usuario : x.usuario + DOMINIO);
   const tel = (t) => { const d = String(t || "").replace(/\D/g, ""); return (d.length === 12 || d.length === 13) && d.startsWith("55") ? d.slice(2) : d; };
   const planoDe = (id) => window.__plano || (db.academias.find(y => y.id === id) || {}).plano || "basico";
   const limite = (plano) => ({ premium: 10, completo: 5 }[plano] || 1);
@@ -275,9 +276,20 @@
       const x = meuAcesso();
       if (!x) return erro("Acesso não encontrado.", "42501");
       if (!x.termos_aceitos_em && !a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
+      const novoEmail = String(a.p_email || "").trim().toLowerCase();
+      if (loginDe(x).endsWith(DOMINIO) && novoEmail && !window.__senhas[novoEmail]) {
+        window.__senhas[novoEmail] = window.__senhas[loginDe(x)];
+        delete window.__senhas[loginDe(x)];
+        x.loginEmail = novoEmail;
+      }
       Object.assign(x, { nome_responsavel:a.p_nome, cargo:a.p_cargo, tratamento:a.p_tratamento || x.tratamento || null, email:a.p_email.toLowerCase(), whatsapp:a.p_whatsapp, cnpj:a.p_cnpj || null, recebe_relatorio:!!a.p_recebe_relatorio,
         termos_aceitos_em: x.termos_aceitos_em || new Date().toISOString(), dados_completos_em: x.dados_completos_em || new Date().toISOString() });
       return { data:null, error:null };
+    }
+    if (nome === "login_do_usuario") {
+      const u = String(a.p_usuario || "").trim().toLowerCase();
+      const x = !u.includes("@") && db.academia_acessos.find(y => y.usuario === u);
+      return { data: x ? loginDe(x) : null, error:null };
     }
     if (nome === "login_do_email") {
       const e = String(a.p_email || "").trim().toLowerCase();

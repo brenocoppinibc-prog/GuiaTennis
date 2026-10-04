@@ -1099,6 +1099,8 @@
   .offer-um-lbl { font-size: 13px; }
   .offer-um-val { font-size: 22px; }
   .offer-um-val.sem-valor { font-size: 16px; color: var(--muted); }
+  /* "/h" do lado do valor, menor, como o "/noite" do Airbnb e do Booking. */
+  .offer-por-hora { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 2px; }
   .offer-sub { font-size: 13px; margin-top: 2px; }
   .rail-btn { font-weight: 600; }
   .rcard-tag, .mini-badge, .card-badge { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; padding: 4px 9px; }
@@ -9113,10 +9115,10 @@ function renderCard(c, badge) {
               ${(precos.length ? precos : [{ label: "Preço", min: null }]).map(o => `
                 <div class="offer-um">
                   <span class="offer-um-lbl">${esc(o.label)}</span>
-                  <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}` : SEM_PRECO}</span>
+                  <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}<span class="offer-por-hora">/h</span>` : SEM_PRECO}</span>
                 </div>`).join("")}
             </div>
-            <div class="offer-sub">${precos.some(o => o.min) ? "a partir de, por hora" : SEM_PRECO_SUB}</div>
+            <div class="offer-sub">${precos.some(o => o.min) ? "a partir de" : SEM_PRECO_SUB}</div>
           </div>
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>

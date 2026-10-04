@@ -1741,7 +1741,7 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- **Ligar o serviço de e-mail no Supabase (02/10/2026)** — sem isso o
+- **Ligar o serviço de e-mail no Supabase (02/10/2026)** — 04/10/2026: conta no Resend criada e o domínio guiatennis.com.br **verificado** (DNS no registro.br: TXT `resend._domainkey`, `send` e `rsend` para `…forge.rmta.net`, TXT `_dmarc`). Falta ligar o Resend aos dois projetos do Supabase, colar o modelo e subir o limite (passos 2 a 4 abaixo). Sem isso o
   código de confirmação e o "Esqueci a senha" não chegam (o site avisa e
   segue). Passos para o Breno (credenciais nunca pelo chat): (1) criar
   conta grátis no Resend (resend.com) ou no Brevo, confirmar o domínio

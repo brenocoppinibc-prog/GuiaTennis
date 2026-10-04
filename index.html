@@ -651,6 +651,7 @@
   .convite-t { margin: 0 24px 4px 0; font-weight: 700; font-size: 16px; }
   .convite-s { margin: 0 0 12px; font-size: 14px; line-height: 1.45; color: var(--muted); }
   .convite-btn { width: 100%; }
+  .convite-viagem .convite-ic { background: var(--green); }
   .convite-fechar { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 16px; color: var(--muted); cursor: pointer; padding: 6px; }
   .menu-btn > span:not(.menu-conta) { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
   .menu-overlay { justify-content: flex-end; align-items: stretch; }
@@ -3341,7 +3342,7 @@ function render() {
     ${state.page === "home" ? renderHome() : ""}
     ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}
     ${state.page === "comparar" ? renderComparePage() : ""}
-    ${state.page === "court" && state.selected ? renderCourtPage(state.selected) : ""}
+    ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
     ${state.page === "parceiros" ? renderParceiros() : ""}
 
     <div class="fab-col">
@@ -7296,7 +7297,9 @@ async function conferirCidadeDoUf() {
 // ---------- Vou viajar (pedido do Breno em 04/10/2026) ----------
 // Como as "Próximas viagens" do Airbnb e do Booking: a cidade de casa fica
 // nas Preferências; a viagem é outra coisa. A pessoa guarda a cidade (lista
-// do IBGE) e, se quiser, as datas. Uns 15 dias antes até a volta, a home
+// do IBGE) e, se quiser, onde vai ficar (hotel ou endereço) e as datas. Com
+// o lugar, "Ver quadras" mede a distância a partir do hotel, como a
+// "distância da hospedagem" do Booking. Uns 15 dias antes até a volta, a home
 // mostra o cartão da viagem; durante a viagem, "Pesquisar" sem digitar abre
 // a cidade dela; depois da volta, tudo volta à cidade de casa sozinho. Fica
 // só no aparelho, como as preferências.
@@ -7353,7 +7356,7 @@ function cidadePadraoDaBusca() {
 function abrirViagem(prefill) {
   state.showMenu = false;
   state.viagemErro = "";
-  window.__viagem = { uf: "", cidade: "", ida: "", volta: "", ...(prefill || {}) };
+  window.__viagem = { uf: "", cidade: "", ficar: "", ida: "", volta: "", ...(prefill || {}) };
   state.showViagem = true;
   render();
   conferirCidadeDaViagem();
@@ -7383,12 +7386,44 @@ async function salvarViagem() {
   if (r.ida && r.ida < diaISO()) return erro("A ida já passou. Confira a data.");
   if (r.ida && r.volta && r.volta < r.ida) return erro("A volta precisa ser depois da ida.");
   if (!r.ida && r.volta) return erro("Ponha também a data de ida, ou apague a volta.");
-  const lista = lerViagens().filter(v => !(mesmaCidade(v.cidade, cidade) && (v.ida || "") === (r.ida || "")));
-  lista.push({ id: Date.now(), uf: r.uf, cidade, ida: r.ida || "", volta: r.volta || "" });
+  const ficar = String(r.ficar || "").trim().replace(/\s+/g, " ");
+  // Onde vai ficar: o mapa acha o ponto. Se não achar, guarda assim mesmo e
+  // as quadras aparecem pela cidade.
+  let ponto = null;
+  if (ficar) {
+    state.viagemSalvando = true; render();
+    for (const q of [`${ficar}, ${cidade}, ${nomeDoUf(r.uf)}, Brasil`, `${ficar}, ${cidade}`]) {
+      try { ponto = await geocodeAddress(q); break; } catch (e) { /* tenta a próxima */ }
+    }
+    state.viagemSalvando = false;
+  }
+  const lista = lerViagens().filter(v => String(v.id) !== String(r.id) && !(mesmaCidade(v.cidade, cidade) && (v.ida || "") === (r.ida || "")));
+  lista.push({ id: r.id || Date.now(), uf: r.uf, cidade, ida: r.ida || "", volta: r.volta || "",
+    ...(ficar ? { ficar } : {}), ...(ponto ? { lat: ponto.lat, lng: ponto.lng } : {}) });
   gravarViagens(lista.slice(-5));
+  gravarLocal(VIAGEM_CONVITE_KEY, Date.now());
   state.showViagem = false;
-  state.viagemAviso = `Viagem a ${cidade} guardada.`;
+  state.viagemAviso = ficar && !ponto
+    ? `Viagem a ${cidade} guardada. Não achei "${ficar}" no mapa: as quadras aparecem pela cidade.`
+    : `Viagem a ${cidade} guardada.`;
   if (state.page !== "home") goHome(); else render();
+}
+// "Ver quadras": com o lugar onde vai ficar, a distância é a partir dele (o
+// endereço não vai para o link, como a busca pelo GPS); sem ele, a cidade.
+function verQuadrasDaViagem(id) {
+  const v = lerViagens().find(x => String(x.id) === String(id));
+  state.showViagem = false;
+  state.viagemAviso = "";
+  if (!v) return;
+  if (!(v.ficar && Number.isFinite(v.lat) && Number.isFinite(v.lng))) { abrirRegiao({ cidade: v.cidade }); return; }
+  state.regiaoLink = null;
+  state.cep = "";
+  state.termoBuscado = "";
+  state.origin = { lat: v.lat, lng: v.lng, bairro: v.ficar, cidade: v.cidade, uf: v.uf, cep: "", approximate: false, viagem: true };
+  state.sortBy = "distance";
+  state.searchStatus = "done";
+  contarNavegacao();
+  goSearch();
 }
 function apagarViagem(id) {
   gravarViagens(lerViagens().filter(v => String(v.id) !== String(id)));
@@ -7413,8 +7448,8 @@ function renderViagemSheet() {
             ${viagens.map(v => `
               <div class="viagem-linha">
                 <span class="viagem-ic">${icon('map', 18, 'var(--green)')}</span>
-                <span class="viagem-txt"><strong>${esc(v.cidade)}, ${esc(v.uf)}</strong><small>${esc(textoDaViagem(v) || "sem data")}</small></span>
-                <button type="button" class="pc-link-btn" data-viagem-ver="${esc(v.cidade)}">Ver quadras</button>
+                <span class="viagem-txt"><strong>${esc(v.cidade)}, ${esc(v.uf)}</strong><small>${esc([v.ficar, textoDaViagem(v) || "sem data"].filter(Boolean).join(" · "))}</small></span>
+                <button type="button" class="pc-link-btn" data-viagem-ver="${esc(String(v.id))}">Ver quadras</button>
                 <button type="button" class="pc-link-btn viagem-apagar" data-viagem-apagar="${esc(String(v.id))}" aria-label="Apagar a viagem a ${esc(v.cidade)}">Apagar</button>
               </div>`).join("")}
           </div>
@@ -7434,6 +7469,11 @@ function renderViagemSheet() {
           <p class="fgroup-note">Com academia no guia:</p>
           <div class="pref-cidades">${comAcademia.slice(0, 8).map(n => `<button type="button" class="chip ${mesmaCidade(n, r.cidade) ? "active" : ""}" data-viagem-cidade="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
 
+        <label class="field-label" for="viagem-ficar">Onde você vai ficar (opcional)</label>
+        <input class="form-field" id="viagem-ficar" style="margin-top:0" autocomplete="off" maxlength="120"
+               placeholder="Nome do hotel ou endereço" value="${esc(r.ficar || "")}" />
+        <p class="fgroup-note">Com ele, as quadras aparecem da mais perto do hotel para a mais longe.</p>
+
         <div class="viagem-datas">
           <div><label class="field-label" for="viagem-ida">Ida (opcional)</label>
             <input class="form-field" id="viagem-ida" type="date" min="${diaISO()}" value="${esc(r.ida || "")}" style="margin-top:0" /></div>
@@ -7444,7 +7484,7 @@ function renderViagemSheet() {
 
         ${state.viagemErro ? `<p class="status-line status-error">${icon('warning', 13)} ${esc(state.viagemErro)}</p>` : ""}
         <div class="cta-col" style="margin-top:20px">
-          <button type="button" class="cta-btn cta-primary" id="viagem-salvar">Guardar a viagem</button>
+          <button type="button" class="cta-btn cta-primary" id="viagem-salvar" ${state.viagemSalvando ? "disabled" : ""}>${state.viagemSalvando ? bolaGirando(16) + " Achando no mapa" : "Guardar a viagem"}</button>
         </div>
         <p class="footnote">Fica só neste aparelho, como as preferências de busca.</p>
       </div></div>
@@ -7464,13 +7504,49 @@ function cartaoViagem() {
       <div class="viagem-cartao-txt">
         <p class="viagem-cartao-eyebrow">${agora ? "Você está em viagem" : "Sua próxima viagem"}</p>
         <p class="viagem-cartao-t">${esc(v.cidade)}, ${esc(v.uf)}${textoDaViagem(v) ? ` · ${esc(textoDaViagem(v))}` : ""}</p>
-        <p class="viagem-cartao-s">${n ? `${n} ${plural(n, "academia", "academias")} para jogar lá.` : `Ainda não temos academias em ${esc(v.cidade)}. Veja as mais perto de lá.`}</p>
+        ${v.ficar ? `<p class="viagem-cartao-s">${icon('pin', 13, 'var(--muted)')} ${esc(v.ficar)}</p>` : ""}
+        <p class="viagem-cartao-s">${n ? `${n} ${plural(n, "academia", "academias")} para jogar lá${v.ficar && Number.isFinite(v.lat) ? ", da mais perto do seu hotel para a mais longe" : ""}.` : `Ainda não temos academias em ${esc(v.cidade)}. Veja as mais perto de lá.`}</p>
       </div>
       <div class="viagem-cartao-acoes">
-        <button type="button" class="cta-btn cta-primary" data-viagem-ver="${esc(v.cidade)}">Ver quadras</button>
-        <button type="button" class="pc-link-btn" data-menu-viagem>Editar</button>
+        <button type="button" class="cta-btn cta-primary" data-viagem-ver="${esc(String(v.id))}">Ver quadras</button>
+        <button type="button" class="pc-link-btn" data-viagem-editar="${esc(String(v.id))}">${v.ficar ? "Editar" : "Pôr o hotel"}</button>
       </div>
     </div>`;
+}
+
+// "Vai viajar? A gente também te ajuda" (pedido do Breno em 04/10/2026):
+// não no cadastro, e sim para quem já está navegando — abriu umas academias
+// ou buscou algumas vezes, ou está no site há uns minutos. Como o "Planejando
+// uma viagem?" do Booking e do Airbnb. Some com a viagem guardada; fechado,
+// volta só depois de 30 dias.
+const VIAGEM_CONVITE_KEY = "guiatennis_convite_viagem_v1";
+const VIAGEM_CONVITE_PASSOS = 3;
+const VIAGEM_CONVITE_SEGUNDOS = 120;
+function contarNavegacao() { state.navegou = (state.navegou || 0) + 1; }
+function conviteViagem() {
+  if (isAdmin || contaAcademia) return "";
+  if (state.showMenu || state.jogadorTela || state.showViagem || state.showPrefs || state.showRegister || state.showLogin) return "";
+  if ((state.navegou || 0) < VIAGEM_CONVITE_PASSOS && !state.tempoNoSite) return "";
+  if (lerViagens().length) return "";
+  const fechado = lerLocal(VIAGEM_CONVITE_KEY, 0);
+  if (fechado && Date.now() - fechado < 30 * 864e5) return "";
+  return `
+    <aside class="convite-conta convite-viagem" id="convite-viagem" role="dialog" aria-label="Vai viajar?">
+      <button type="button" class="convite-fechar" id="convite-viagem-fechar" aria-label="Fechar">✕</button>
+      <span class="convite-ic">${icon('map', 26, '#fff')}</span>
+      <div class="convite-txt">
+        <p class="convite-t">Vai viajar? A gente também te ajuda.</p>
+        <p class="convite-s">Diga a cidade e o hotel: o GuiaTennis mostra as quadras para jogar perto de onde você vai ficar.</p>
+        <button type="button" class="cta-btn cta-secondary convite-btn" id="convite-viagem-sim">Contar a viagem</button>
+      </div>
+    </aside>`;
+}
+function ligarTempoNoSite() {
+  setTimeout(() => {
+    state.tempoNoSite = true;
+    const digitando = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+    if (!digitando && conviteViagem() && (state.page === "home" || state.page === "court")) render();
+  }, VIAGEM_CONVITE_SEGUNDOS * 1000);
 }
 
 // Na busca: buscou uma cidade que não é a de casa nem de uma viagem guardada.
@@ -7625,10 +7701,12 @@ function jogadorEntaoFaz(acao) {
   abrirContaJogador("entrar", "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto.");
 }
 
-// Aviso de viagem por e-mail (pedido do Breno em 04/10/2026): junto dos
-// avisos, "Vou viajar". Marcado, abre estado, cidade (IBGE) e datas
-// (opcionais); o e-mail traz as academias de lá. Não redesenha a tela ao
-// marcar (a senha digitada não se perde).
+// Aviso de viagem por e-mail (pedido do Breno em 04/10/2026): em "Minha
+// conta", junto dos avisos, "Vou viajar". Não fica no cadastro (pedido do
+// Breno no mesmo dia): quem ainda nem conhece o site não pensa em viagem; o
+// convite vem depois, enquanto a pessoa navega (conviteViagem). Marcado, abre
+// estado, cidade (IBGE) e datas (opcionais); o e-mail traz as academias de
+// lá. Não redesenha a tela ao marcar.
 function avisoViagemHtml(f) {
   const local = lerViagens()[0] || {};
   const v = {
@@ -7692,8 +7770,11 @@ function dadosDoAvisoViagem(f) {
 // A viagem do aviso também vira a viagem do aparelho (cartão na home).
 function guardarViagemDoAviso(f) {
   if (!f.avisos_viagem || !f.viagem_cidade) return;
-  const lista = lerViagens().filter(v => !(mesmaCidade(v.cidade, f.viagem_cidade) && (v.ida || "") === (f.viagem_ida || "")));
-  lista.push({ id: Date.now(), uf: f.viagem_uf, cidade: f.viagem_cidade, ida: f.viagem_ida || "", volta: f.viagem_volta || "" });
+  const igual = (v) => mesmaCidade(v.cidade, f.viagem_cidade);
+  const antes = lerViagens().find(igual) || {};
+  const lista = lerViagens().filter(v => !igual(v));
+  const lugar = antes.ficar ? { ficar: antes.ficar, lat: antes.lat, lng: antes.lng } : {};
+  lista.push({ id: antes.id || Date.now(), uf: f.viagem_uf, cidade: f.viagem_cidade, ida: f.viagem_ida || "", volta: f.viagem_volta || "", ...lugar });
   gravarViagens(lista.slice(-5));
 }
 
@@ -7785,7 +7866,6 @@ function renderJogadorSheet() {
     <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
     <p class="field-label">Quero receber por e-mail</p>
     ${avisos}
-    ${avisoViagemHtml(f)}
     <label class="consent-row">
       <input type="checkbox" id="jog-aceite" ${f.aceite ? "checked" : ""} />
       <span>Li e concordo com os <button type="button" class="inline-link" id="jog-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="jog-privacidade">Política de Privacidade</button>.</span>
@@ -8099,8 +8179,6 @@ async function criarContaJogador() {
   if (falta.length) { state.jogadorErro = `Falta ${listaPt(falta)}.`; render(); return; }
   const errSenha = erroDaSenha(f.senha, f.senha2, email);
   if (errSenha) { state.jogadorErro = errSenha; render(); return; }
-  const errViagem = await conferirAvisoViagem(f);
-  if (errViagem) { state.jogadorErro = errViagem; render(); return; }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const r = await sb.rpc('criar_conta_jogador', {
     p_email: email, p_senha: f.senha, p_nome: String(f.nome).trim(), p_aceite: true,
@@ -8125,12 +8203,6 @@ async function criarContaJogador() {
     state.jogadorErro = "Conta criada. Entre com o seu e-mail e a senha.";
     render();
     return;
-  }
-  // O aviso de viagem vai na conta (o envio por e-mail lê daqui) e no aparelho.
-  if (f.avisos_viagem) {
-    const dadosViagem = { ...dadosDoAvisoViagem(f), avisos_mudados_em: new Date().toISOString() };
-    try { const { error: errV } = await sb.from('jogadores').update(dadosViagem).eq('user_id', jogador.user_id); if (!errV) Object.assign(jogador, dadosViagem); } catch {}
-    guardarViagemDoAviso(f);
   }
   // Conta criada e logada: agora confirma o e-mail pelo código.
   state.jogadorLogin = email;
@@ -8770,7 +8842,7 @@ function renderHome() {
 
   return `
     ${renderCabecalho()}
-    ${conviteParaConta(recentes.length > 0 || !!ultima || chamadas.length > 0)}
+    ${conviteParaConta(recentes.length > 0 || !!ultima || chamadas.length > 0) || conviteViagem()}
 
     ${state.avisoLink ? `<p class="aviso-link">${esc(state.avisoLink)}</p>` : ""}
     <div class="home-hero">
@@ -9201,6 +9273,7 @@ function openCourt(id) {
   state.lista = null;
   window.__rateConsent = false;
   pushRecent(c.id);
+  contarNavegacao();
   trackClick(c.id, "visualizacao");
   syncUrl(true);
   render();
@@ -12216,7 +12289,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 2 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta"; ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar", que fica na sua conta para o aviso sair, para aparecer na página inicial e no menu. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta"; ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar", que fica na sua conta para o aviso sair, para aparecer na página inicial e no menu. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e o pedido para administrar uma academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -13105,10 +13178,20 @@ function attachEvents() {
   const viagemSalvar = document.getElementById("viagem-salvar");
   if (viagemSalvar) viagemSalvar.onclick = () => salvarViagem();
   document.querySelectorAll("[data-viagem-apagar]").forEach(el => { el.onclick = () => apagarViagem(el.dataset.viagemApagar); });
-  document.querySelectorAll("[data-viagem-ver]").forEach(el => {
-    el.onclick = () => { state.showViagem = false; state.viagemAviso = ""; abrirRegiao({ cidade: el.dataset.viagemVer }); };
+  const viagemFicar = document.getElementById("viagem-ficar");
+  if (viagemFicar) viagemFicar.oninput = (e) => { window.__viagem = { ...(window.__viagem || {}), ficar: e.target.value }; };
+  document.querySelectorAll("[data-viagem-ver]").forEach(el => { el.onclick = () => verQuadrasDaViagem(el.dataset.viagemVer); });
+  document.querySelectorAll("[data-viagem-editar]").forEach(el => {
+    el.onclick = () => {
+      const v = lerViagens().find(x => String(x.id) === el.dataset.viagemEditar);
+      abrirViagem(v ? { id: v.id, uf: v.uf, cidade: v.cidade, ficar: v.ficar || "", ida: v.ida || "", volta: v.volta || "" } : undefined);
+      if (v && !v.ficar) setTimeout(() => document.getElementById("viagem-ficar")?.focus(), 0);
+    };
   });
-  document.querySelectorAll("[data-menu-viagem]").forEach(el => { el.onclick = () => abrirViagem(); });
+  const conviteViagemFechar = document.getElementById("convite-viagem-fechar");
+  if (conviteViagemFechar) conviteViagemFechar.onclick = () => { gravarLocal(VIAGEM_CONVITE_KEY, Date.now()); render(); };
+  const conviteViagemSim = document.getElementById("convite-viagem-sim");
+  if (conviteViagemSim) conviteViagemSim.onclick = () => { gravarLocal(VIAGEM_CONVITE_KEY, Date.now()); abrirViagem(); };
   const perguntaSim = document.getElementById("viagem-pergunta-sim");
   if (perguntaSim) perguntaSim.onclick = () => abrirViagem({ cidade: state.origin.cidade, uf: state.origin.uf || "" });
   const perguntaNao = document.getElementById("viagem-pergunta-nao");
@@ -13700,6 +13783,7 @@ async function doSearch(opcoes = {}) {
     state.origin = geo;
     state.sortBy = opcoes.ordem || "distance";
     state.searchStatus = "done";
+    contarNavegacao();
     guardarUltimaBusca(geo, termo);
     registrar(geo, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
   } catch (e) {
@@ -13948,6 +14032,7 @@ async function init() {
   if (state.page === "court" && state.secaoFicha) irParaSecao(state.secaoFicha, false);
   if (buscarAoAbrir) doSearch({ ordem: doLink.ordem });
   completarCoordenadas();
+  ligarTempoNoSite();
 }
 
 function app_showLoading() {

@@ -373,21 +373,29 @@ cobra taxa e não fica no meio** da negociação.
     espaço só ali, para não espalhar.
 37. **Vou viajar** (pedido de 04/10/2026), como as "Próximas viagens" do
     Airbnb e do Booking: menu › Minhas quadras › "Vou viajar" guarda
-    estado, cidade (lista do IBGE) e datas opcionais (`VIAGENS_KEY`, só no
-    aparelho, até 5). A home mostra o cartão da viagem de 15 dias antes até
+    estado, cidade (lista do IBGE), onde vai ficar (hotel ou endereço,
+    opcional) e datas opcionais (`VIAGENS_KEY`, só no aparelho, até 5).
+    Com o hotel achado no mapa, "Ver quadras" ordena a partir dele, como a
+    "distância da hospedagem" do Booking (`verQuadrasDaViagem`; o endereço
+    não vai para o link); sem o ponto, abre pela cidade e avisa. A home mostra o cartão da viagem de 15 dias antes até
     a volta ("Sua próxima viagem" / "Você está em viagem", com quantas
     academias há lá ou "veja as mais perto"); sem data, fica até apagar.
     Durante a viagem, "Pesquisar" sem digitar abre a cidade dela
     (`cidadePadraoDaBusca`); depois da volta, a viagem some sozinha. Buscar
     uma cidade que não é a de casa pergunta "Vai viajar para…?"
-    (`perguntaViagem`). Política de Privacidade atualizada. Teste:
-    `testes/viagem.js`.
+    (`perguntaViagem`). Convite "Vai viajar? A gente também te ajuda"
+    (`conviteViagem`, pedido de 04/10/2026): **não no cadastro**, só para
+    quem já está navegando — 3 fichas/buscas na visita ou 2 minutos no site
+    —, na ficha e na home (sem empilhar com o convite da conta); some com a
+    viagem guardada e, fechado, volta só em 30 dias. Política de
+    Privacidade atualizada. Teste: `testes/viagem.js`.
 38. **Aviso de viagem por e-mail** (pedido de 04/10/2026): na conta do
-    jogador (criar e Minha conta), junto dos avisos, "Vou viajar". Marcado,
+    jogador, só em Minha conta (saiu do cadastro a pedido do Breno), junto
+    dos avisos, "Vou viajar". Marcado,
     abre estado, cidade (IBGE), ida e volta (as duas opcionais). Fica na
     conta (`jogadores.avisos_viagem`, `viagem_uf/cidade/ida/volta`, SQL
     `20261004130000_aviso_de_viagem` e `20261004140000_viagem_sem_data`) e
-    também vira a viagem do aparelho. Quando o e-mail sai ainda não está
+    também vira a viagem do aparelho (sem perder o hotel guardado nela). Quando o e-mail sai ainda não está
     definido (o Breno vai dizer); o envio é o próximo passo, com os outros
     avisos pelo Resend. Marcar não redesenha a tela, para a senha digitada
     não se perder.

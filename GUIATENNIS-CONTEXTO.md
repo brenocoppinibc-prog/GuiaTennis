@@ -29,8 +29,8 @@ teste")
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
 > `testes/varias-academias.js`), com o plano e o valor de cada academia
 separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
-SQL `20261003130000_pedidos_de_plano`). **580 verificações** passando
-> (`check-js.sh` + os 19 arquivos de `testes/`) e 156 no
+SQL `20261003130000_pedidos_de_plano`). **591 verificações** passando
+> (`check-js.sh` + os 20 arquivos de `testes/`) e 156 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).
 > Continua faltando o Breno ligar o serviço de e-mail no Supabase (seção
@@ -339,6 +339,15 @@ cobra taxa e não fica no meio** da negociação.
     (`pedidos_para_minha_academia`, `responder_pedido_de_acesso`). Teste:
     `testes/pedido-ao-responsavel.js`. Quando o e-mail estiver ligado, o
     responsável deveria receber um aviso por e-mail do pedido (em aberto).
+33. **Convite para a conta, como o trivago** (pedido de 04/10/2026): no
+    topo, ao lado do menu, o ícone da pessoa com brilho dourado para quem
+    não entrou (`botaoConta`); jogador logado vê a inicial do nome;
+    academia e admin não veem. Na home, para quem já usou o site (viu
+    academia, buscou ou chamou), o cartão "Jogou numa dessas academias?
+    · Criar conta" (`conviteParaConta`); fechar esconde por 14 dias
+    (`CONVITE_CONTA_KEY`, no aparelho). O convite só promete o que a
+    conta faz hoje (avaliar); quando os avisos por e-mail estiverem
+    saindo, dá para citá-los. Teste: `testes/convite-conta.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1218,7 +1227,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

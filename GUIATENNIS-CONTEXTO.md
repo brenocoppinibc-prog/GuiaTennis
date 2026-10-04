@@ -357,6 +357,12 @@ cobra taxa e não fica no meio** da negociação.
     aceita 6 a 10 números (o tamanho é do painel do Supabase: Authentication
     → Sign In / Providers → Email → "Email OTP Length"; o Breno quer 6).
     Teste: `testes/senha.js`.
+    "Esqueci a senha" (`senhaNovaPeloCodigo`, correção de 04/10/2026): o
+    código só vale uma vez; se ele deu certo e o Supabase recusou a senha,
+    "tentar de novo" usa a sessão que o código abriu (antes conferia o
+    código gasto e nunca dava certo). A recusa diz o motivo (regra de
+    senha do painel, senha vazada, muitas tentativas); a mesma senha de
+    antes só entra, com "Essa já era a sua senha".
 35. **Usuário vira login por e-mail** (pedido de 04/10/2026): quem recebeu
     usuário do GuiaTennis (`…@acesso.guiatennis.com.br`, que não recebe
     e-mail) passa a entrar pelo e-mail que informou no primeiro acesso

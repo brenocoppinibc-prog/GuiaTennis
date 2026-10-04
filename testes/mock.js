@@ -476,7 +476,12 @@
         return Promise.resolve({ data:{ session:null }, error:{ message:"Invalid login credentials", code:"invalid_credentials" } });
       },
       updateUser(attrs){
-        if (window.__erroSenha) return Promise.resolve({ data:{}, error:{ message:"New password should be different from the old password.", code:"same_password" } });
+        // window.__erroSenha: true (a mesma senha de antes) ou o erro do Supabase; vale uma vez.
+        if (window.__erroSenha) {
+          const e = window.__erroSenha === true ? { message:"New password should be different from the old password.", code:"same_password", status:422 } : window.__erroSenha;
+          window.__erroSenha = null;
+          return Promise.resolve({ data:{}, error:e });
+        }
         window.__senhaNova = attrs.password;
         window.__senhaAtualEnviada = attrs.current_password;
         if (sessao) window.__senhas[sessao.user.email] = attrs.password;

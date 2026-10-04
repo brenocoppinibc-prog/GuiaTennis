@@ -88,8 +88,33 @@ const { abrir, ok } = require('./harness');
   await page.fill('#pc-codigo-senha', '123456');
   await page.fill('#pc-senha-nova', 'quadra nova 2026');
   await page.fill('#pc-senha-nova2', 'quadra nova 2026');
+  await page.evaluate(() => { window.__erroSenha = { message: 'Failed to fetch', status: 0 }; });
   await page.click('#pc-salvar-senha-nova');
   await page.waitForTimeout(700);
-  ok(await page.evaluate(() => !!contaAcademia && window.__senhas['maria@quadra.com.br'] === 'quadra nova 2026'), 'senha nova salva e já entra');
+  ok((await page.evaluate(() => document.querySelector('#parceiros .form-error, #parceiros .status-error')?.innerText || '')).includes('não precisa ser digitado de novo'), 'falhou ao salvar: avisa que o código não precisa de novo');
+  await page.click('#pc-salvar-senha-nova');
+  await page.waitForTimeout(700);
+  ok(await page.evaluate(() => !!contaAcademia && window.__senhas['maria@quadra.com.br'] === 'quadra nova 2026'), 'tentar de novo (com o código já gasto): senha nova salva e já entra');
+  await browser.close();
+
+  // A mesma senha de antes: o código já deixou entrar, então entra.
+  ({ browser, page } = await abrir({ q: 'parceiros/entrar' }));
+  await page.evaluate(async () => {
+    window.__db.academia_acessos.push({ user_id: 'u-mesma', academia_id: 'a2', usuario: 'mesma@quadra.com.br', nome_responsavel: 'Mesma', email: 'mesma@quadra.com.br', papel: 'principal', dados_completos_em: '2026-09-01', senha_trocada_em: '2026-09-01', termos_aceitos_em: '2026-09-01' });
+    window.__db.academia_vinculos.push({ user_id: 'u-mesma', academia_id: 'a2', papel: 'principal' });
+    window.__senhas['mesma@quadra.com.br'] = 'quadra antiga 1';
+  });
+  await page.fill('#pc-email', 'mesma@quadra.com.br');
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
+  await page.click('#pc-esqueci');
+  await page.waitForTimeout(400);
+  await page.fill('#pc-codigo-senha', '123456');
+  await page.fill('#pc-senha-nova', 'quadra antiga 1');
+  await page.fill('#pc-senha-nova2', 'quadra antiga 1');
+  await page.evaluate(() => { window.__erroSenha = true; });
+  await page.click('#pc-salvar-senha-nova');
+  await page.waitForTimeout(700);
+  ok(await page.evaluate(() => !!contaAcademia && (document.body.innerText || '').includes('Essa já era a sua senha')), 'mesma senha de antes: entra e avisa, sem erro');
   await browser.close();
 })();

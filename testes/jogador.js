@@ -132,9 +132,17 @@ const { abrir, ok } = require('./harness');
   await page.fill('#jog-codigo', '123456');
   await page.fill('#jog-senha-nova', 'novasenha99');
   await page.fill('#jog-senha-nova2', 'novasenha99');
+  // O Supabase recusa a senha (regra do painel): diz o motivo, e o código
+  // (que só vale uma vez) não precisa ser digitado de novo.
+  await page.evaluate(() => { window.__erroSenha = { message: 'Password should contain at least one character of each: abcdefghijklmnopqrstuvwxyz, ABCDEFGHIJKLMNOPQRSTUVWXYZ, 0123456789, !@#$%^&*()_+-=[]{};\'\\:"|<>?,./`~.', code: 'weak_password', status: 422, reasons: ['characters'] }; });
   await page.click('#jog-salvar-senha');
   await page.waitForTimeout(500);
-  ok(await page.evaluate(() => jogador && jogador.nome === 'Zé' && window.__senhas['ze@exemplo.com'] === 'novasenha99' && !state.jogadorTela), 'código certo: senha nova salva e já entra');
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('maiúscula, número e símbolo'), 'senha recusada pelo Supabase: diz o motivo');
+  await page.fill('#jog-senha-nova', 'NovaSenha#99');
+  await page.fill('#jog-senha-nova2', 'NovaSenha#99');
+  await page.click('#jog-salvar-senha');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => jogador && jogador.nome === 'Zé' && window.__senhas['ze@exemplo.com'] === 'NovaSenha#99' && !state.jogadorTela), 'tentar de novo funciona sem outro código: senha salva e já entra');
   await browser.close();
 
   // Serviço de e-mail desligado: avisa e deixa confirmar depois.

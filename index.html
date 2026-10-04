@@ -6775,18 +6775,17 @@ async function pcSalvarSenhaNova() {
   const errSenha = erroDaSenha(senha, document.getElementById("pc-senha-nova2")?.value || "", state.pcLogin);
   if (errSenha) { state.pcContaErro = errSenha; render(); return; }
   state.pcContaSalvando = true; state.pcContaErro = ""; render();
-  const sessao = await conferirCodigo(state.pcLogin, codigo);
-  if (!sessao) { state.pcContaSalvando = false; state.pcContaErro = CODIGO_ERRADO; render(); return; }
-  const { error } = await sb.auth.updateUser({ password: senha });
+  const r = await senhaNovaPeloCodigo(state.pcLogin, codigo, senha);
   state.pcContaSalvando = false;
-  if (error) { state.pcContaErro = "O código deu certo, mas não consegui salvar a senha. Tente de novo."; render(); return; }
+  if (r.erro) { state.pcContaErro = r.erro; render(); return; }
+  const sessao = r.sessao;
   try { await sb.rpc('marcar_senha_trocada'); } catch {}
   await carregarConta(sessao);
   await loadEverything();
   state.pcEmailPasso = "email";
   const destino = !contaAcademia ? "cadastro" : temAcademia() ? (PC_PRIVADAS.includes(state.parceirosDepois) ? state.parceirosDepois : "painel") : "cadastro";
   state.parceirosDepois = null;
-  state.contaAviso = "Senha nova salva.";
+  state.contaAviso = r.mesma ? "Essa já era a sua senha. Você entrou com ela." : "Senha nova salva.";
   irParceiros(destino, { substituir: true });
 }
 
@@ -7983,11 +7982,54 @@ async function conferirCodigo(email, codigo) {
     const { data, error } = await sb.auth.verifyOtp({ email, token: limpo, type: "email" });
     if (error || !data || !data.session) return null;
     try { await sb.rpc('confirmar_meu_email'); } catch {}
-    window.__codigo = { senha: (window.__codigo || {}).senha };
+    window.__codigo = { senha: (window.__codigo || {}).senha, senha2: (window.__codigo || {}).senha2 };
     return data.session;
   } catch { return null; }
 }
 const CODIGO_ERRADO = "Código errado ou vencido. Confira o número ou peça outro.";
+
+// "Esqueci a senha": confere o código e salva a senha nova. O código só vale
+// uma vez: se ele deu certo e a senha não (o Supabase recusou), o "tentar de
+// novo" usa a sessão que o código já abriu, em vez de conferir de novo um
+// código gasto. A recusa diz o motivo, como o Google faz.
+async function senhaNovaPeloCodigo(email, codigo, senha) {
+  const guardada = state.sessaoDoCodigo;
+  let sessao = guardada && guardada.email === email ? guardada.sessao : null;
+  if (sessao) {
+    const { data } = await sb.auth.getSession();
+    if (!data || !data.session) sessao = null;
+  }
+  if (!sessao) sessao = await conferirCodigo(email, codigo);
+  if (!sessao) return { erro: CODIGO_ERRADO };
+  state.sessaoDoCodigo = { email, sessao };
+  const { error } = await sb.auth.updateUser({ password: senha });
+  if (error) {
+    diag(`senha nova: ${error.code || error.status || ""} ${error.message}`);
+    // A mesma senha de antes: a pessoa já sabe a senha e o código já a
+    // deixou entrar. Segue, sem obrigar a inventar outra.
+    if (error.code === "same_password" || /different from the old/i.test(error.message || "")) {
+      state.sessaoDoCodigo = null;
+      return { sessao, mesma: true };
+    }
+    return { erro: erroDaSenhaNoSupabase(error) };
+  }
+  state.sessaoDoCodigo = null;
+  return { sessao };
+}
+function erroDaSenhaNoSupabase(error) {
+  const msg = String((error && error.message) || "");
+  const motivos = (error && error.reasons) || [];
+  if (error.code === "weak_password" || /weak|should contain|at least/i.test(msg)) {
+    if (motivos.includes("pwned") || /pwned|leak|breach/i.test(msg)) return "Essa senha já apareceu em vazamentos de outros sites. Escolha outra.";
+    const tamanho = msg.match(/at least (\d+)/i);
+    if (tamanho) return `A senha precisa ter pelo menos ${tamanho[1]} caracteres.`;
+    if (/should contain/i.test(msg)) return "A senha precisa ter letra minúscula, maiúscula, número e símbolo (ex.: !, @, #). Escolha outra.";
+    return "Essa senha é fraca demais. Escolha uma mais longa, que não seja óbvia.";
+  }
+  if (error.code === "reauthentication_needed" || /reauthentication/i.test(msg)) return "Por segurança, peça um código novo e tente de novo.";
+  if (error.status === 429 || /rate limit|too many/i.test(msg)) return "Muitas tentativas seguidas. Espere um minuto e tente de novo.";
+  return "O código deu certo, mas não consegui salvar a senha. Tente de novo; o código não precisa ser digitado de novo.";
+}
 
 // ---------- senha (04/10/2026) ----------
 // Como Google, Microsoft e as recomendações atuais de segurança: o que
@@ -8113,11 +8155,10 @@ async function salvarSenhaNovaJogador() {
   const errSenha = erroDaSenha(senha, document.getElementById("jog-senha-nova2")?.value || "", email);
   if (errSenha) { state.jogadorErro = errSenha; render(); return; }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
-  const sessao = await conferirCodigo(email, codigo);
-  if (!sessao) { state.jogadorSalvando = false; state.jogadorErro = CODIGO_ERRADO; render(); return; }
-  const { error } = await sb.auth.updateUser({ password: senha });
+  const r = await senhaNovaPeloCodigo(email, codigo, senha);
   state.jogadorSalvando = false;
-  if (error) { state.jogadorErro = "O código deu certo, mas não consegui salvar a senha. Tente de novo."; render(); return; }
+  if (r.erro) { state.jogadorErro = r.erro; render(); return; }
+  const sessao = r.sessao;
   await carregarConta(sessao);
   if (isAdmin || contaAcademia) {
     try { await sb.rpc('marcar_senha_trocada'); } catch {}

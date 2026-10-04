@@ -29,8 +29,8 @@ teste")
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
 > `testes/varias-academias.js`), com o plano e o valor de cada academia
 separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
-SQL `20261003130000_pedidos_de_plano`). **609 verificações** passando
-> (`check-js.sh` + os 21 arquivos de `testes/`) e 163 no
+SQL `20261003130000_pedidos_de_plano`). **627 verificações** passando
+> (`check-js.sh` + os 22 arquivos de `testes/`) e 163 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).
 > Continua faltando o Breno ligar o serviço de e-mail no Supabase (seção
@@ -371,6 +371,17 @@ cobra taxa e não fica no meio** da negociação.
     no fim do `<style>`: espaço entre título e campo de cima, entre
     caixinhas de marcar, avisos e links ("Trocar o e-mail"). Mudança de
     espaço só ali, para não espalhar.
+37. **Vou viajar** (pedido de 04/10/2026), como as "Próximas viagens" do
+    Airbnb e do Booking: menu › Minhas quadras › "Vou viajar" guarda
+    estado, cidade (lista do IBGE) e datas opcionais (`VIAGENS_KEY`, só no
+    aparelho, até 5). A home mostra o cartão da viagem de 15 dias antes até
+    a volta ("Sua próxima viagem" / "Você está em viagem", com quantas
+    academias há lá ou "veja as mais perto"); sem data, fica até apagar.
+    Durante a viagem, "Pesquisar" sem digitar abre a cidade dela
+    (`cidadePadraoDaBusca`); depois da volta, a viagem some sozinha. Buscar
+    uma cidade que não é a de casa pergunta "Vai viajar para…?"
+    (`perguntaViagem`). Política de Privacidade atualizada. Teste:
+    `testes/viagem.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1250,7 +1261,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

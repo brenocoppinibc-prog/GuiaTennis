@@ -145,7 +145,7 @@ const fs = require('fs'), path = require('path');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => !lerUltimaBusca() && loadRecents().length === 0), 'apagar o histórico tira as vistas e a última busca');
   const priv = await page.evaluate(() => PRIVACY_HTML);
-  ok(priv.includes('as academias que você chamou e as preferências de busca') && priv.includes('Não vão para o nosso banco de dados'), 'Política de Privacidade diz que isso fica só no aparelho');
+  ok(priv.includes('as academias que você chamou, as preferências de busca') && priv.includes('as viagens que você guardar') && priv.includes('Não vão para o nosso banco de dados'), 'Política de Privacidade diz que isso fica só no aparelho');
 
   // A academia chamada fica no aparelho mesmo sem gravar no banco (admin)
   await browser.close();

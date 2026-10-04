@@ -612,6 +612,22 @@
   .city-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
   /* menu de três barras */
   .menu-btn { width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
+  .viagem-cartao { margin-top: 22px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px 14px; align-items: start; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px; }
+  .viagem-cartao-ic { width: 44px; height: 44px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; }
+  .viagem-cartao-eyebrow { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); }
+  .viagem-cartao-t { margin: 2px 0 0; font-weight: 700; font-size: 17px; color: var(--text); }
+  .viagem-cartao-s { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+  .viagem-cartao-acoes { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; }
+  .viagem-cartao-acoes .cta-btn { width: auto; padding: 10px 18px; }
+  .viagens-lista { display: grid; gap: 10px; margin-top: 18px; }
+  .viagem-linha { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; border: 1px solid var(--border); border-radius: 14px; padding: 12px; background: var(--card); }
+  .viagem-txt strong { display: block; font-size: 15px; }
+  .viagem-txt small { display: block; font-size: 13px; color: var(--muted); }
+  .viagem-apagar { color: var(--muted) !important; }
+  .viagem-datas { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  .viagem-pergunta { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; background: var(--green-soft); border-radius: 14px; padding: 12px 14px; font-size: 14px; position: relative; padding-right: 38px; }
+  .viagem-pergunta span { flex: 1 1 200px; }
+  .viagem-pergunta-x { position: absolute; top: 6px; right: 8px; background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px; }
   .senha-caixa { position: relative; display: block; }
   .senha-caixa .form-field { padding-right: 48px; }
   .senha-olho { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 10px; cursor: pointer; }
@@ -2825,6 +2841,7 @@ let state = {
   // preferências de busca.
   lista: null,
   showPrefs: false,
+  showViagem: false,
   // Cadastro passo a passo: qual formulário está aberto e em que parte.
   regForm: null,
   regPasso: 0,
@@ -3352,6 +3369,7 @@ function render() {
     ${renderMenu()}
     ${renderListaSheet()}
     ${renderPrefsSheet()}
+    ${renderViagemSheet()}
     ${renderJogadorSheet()}
     ${renderLightbox()}
   `;
@@ -7125,6 +7143,7 @@ function renderMenu() {
         ${item("favoritas", "Favoritas", "heart", q.favoritas.length || "")}
         ${item("vistas", "Vistas recentemente", "historico", q.vistas.length || "")}
         ${item("chamadas", "Academias que você chamou", "phone", q.chamadas.length || "")}
+        ${item("viagem", "Vou viajar", "map", (lerViagens()[0] || {}).cidade || "Adicionar")}
 
         <p class="menu-grupo">Preferências</p>
         ${item("preferencias", "Preferências de busca", "ajustes", textoDaPreferencia(pref) || "Escolher")}
@@ -7270,6 +7289,203 @@ async function conferirCidadeDoUf() {
   const focado = document.activeElement && document.activeElement.id;
   render();
   if (focado === "pref-cidade") document.getElementById("pref-cidade")?.focus();
+}
+
+// ---------- Vou viajar (pedido do Breno em 04/10/2026) ----------
+// Como as "Próximas viagens" do Airbnb e do Booking: a cidade de casa fica
+// nas Preferências; a viagem é outra coisa. A pessoa guarda a cidade (lista
+// do IBGE) e, se quiser, as datas. Uns 15 dias antes até a volta, a home
+// mostra o cartão da viagem; durante a viagem, "Pesquisar" sem digitar abre
+// a cidade dela; depois da volta, tudo volta à cidade de casa sozinho. Fica
+// só no aparelho, como as preferências.
+const VIAGENS_KEY = "guiatennis_viagens_v1";
+const VIAGEM_ANTES_DIAS = 15;
+function diaISO(data) {
+  const d = data || new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function somarDias(iso, n) {
+  const [a, m, d] = iso.split("-").map(Number);
+  return diaISO(new Date(a, m - 1, d + n));
+}
+function diaCurto(iso) {
+  const [, m, d] = String(iso || "").split("-");
+  return d && m ? `${d}/${m}` : "";
+}
+// Viagens que ainda não acabaram, da mais próxima para a mais distante.
+function lerViagens() {
+  const lista = lerLocal(VIAGENS_KEY, []);
+  const hoje = diaISO();
+  return (Array.isArray(lista) ? lista : [])
+    .filter(v => v && v.cidade && (!v.volta || v.volta >= hoje))
+    .sort((a, b) => (a.ida || "9999").localeCompare(b.ida || "9999"));
+}
+function gravarViagens(lista) { gravarLocal(VIAGENS_KEY, lista); }
+// Com data: já começou e não acabou. Sem data: não conta como "viajando".
+function viajandoAgora() {
+  const hoje = diaISO();
+  return lerViagens().find(v => v.ida && v.ida <= hoje && (!v.volta || v.volta >= hoje)) || null;
+}
+// A que a home mostra: em andamento, a que começa nos próximos 15 dias, ou
+// a sem data (até a pessoa apagar).
+function viagemDaVez() {
+  const limite = somarDias(diaISO(), VIAGEM_ANTES_DIAS);
+  return viajandoAgora() || lerViagens().find(v => !v.ida || v.ida <= limite) || null;
+}
+function textoDaViagem(v) {
+  if (!v) return "";
+  if (v.ida && v.volta) return `${diaCurto(v.ida)} a ${diaCurto(v.volta)}`;
+  if (v.ida) return `a partir de ${diaCurto(v.ida)}`;
+  return "";
+}
+function academiasNaCidade(cidade) {
+  const c = cidadesComQuadra().find(x => mesmaCidade(x.nome, cidade));
+  return c ? c.courts.length : 0;
+}
+// "Pesquisar" sem digitar: a viagem em andamento vem antes da cidade de casa.
+function cidadePadraoDaBusca() {
+  const v = viajandoAgora();
+  return v ? v.cidade : lerPreferencias().cidade || "";
+}
+
+function abrirViagem(prefill) {
+  state.showMenu = false;
+  state.viagemErro = "";
+  window.__viagem = { uf: "", cidade: "", ida: "", volta: "", ...(prefill || {}) };
+  state.showViagem = true;
+  render();
+  conferirCidadeDaViagem();
+}
+async function conferirCidadeDaViagem() {
+  const r = window.__viagem || {};
+  if (!r.uf) return;
+  await carregarCidadesDoUf(r.uf);
+  if (state.showViagem) {
+    const focado = document.activeElement && document.activeElement.id;
+    render();
+    if (focado) document.getElementById(focado)?.focus();
+  }
+}
+async function salvarViagem() {
+  const r = window.__viagem || {};
+  let cidade = String(r.cidade || "").trim().replace(/\s+/g, " ");
+  const erro = (t) => { state.viagemErro = t; render(); };
+  if (!r.uf) return erro("Escolha o estado da viagem.");
+  if (!cidade) return erro("Digite a cidade da viagem.");
+  const doUf = await carregarCidadesDoUf(r.uf);
+  if (doUf) {
+    const oficial = doUf.find(n => mesmaCidade(n, cidade));
+    if (!oficial) return erro(`${cidade} não fica em ${nomeDoUf(r.uf)}. Confira o estado ou escolha uma cidade da lista.`);
+    cidade = oficial;
+  }
+  if (r.ida && r.ida < diaISO()) return erro("A ida já passou. Confira a data.");
+  if (r.ida && r.volta && r.volta < r.ida) return erro("A volta precisa ser depois da ida.");
+  if (!r.ida && r.volta) return erro("Ponha também a data de ida, ou apague a volta.");
+  const lista = lerViagens().filter(v => !(mesmaCidade(v.cidade, cidade) && (v.ida || "") === (r.ida || "")));
+  lista.push({ id: Date.now(), uf: r.uf, cidade, ida: r.ida || "", volta: r.volta || "" });
+  gravarViagens(lista.slice(-5));
+  state.showViagem = false;
+  state.viagemAviso = `Viagem a ${cidade} guardada.`;
+  if (state.page !== "home") goHome(); else render();
+}
+function apagarViagem(id) {
+  gravarViagens(lerViagens().filter(v => String(v.id) !== String(id)));
+  render();
+}
+
+function renderViagemSheet() {
+  if (!state.showViagem) return "";
+  const r = window.__viagem || {};
+  const doUf = r.uf ? CIDADES_DO_UF[r.uf] : null;
+  const comAcademia = doUf ? cidadesComQuadra().map(c => c.nome).filter(n => doUf.some(m => mesmaCidade(m, n))) : [];
+  const viagens = lerViagens();
+  return `
+    <div class="overlay open" id="viagem-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="viagem-close" aria-label="Fechar">✕</button>
+        <p class="sheet-title display">Vou viajar</p>
+        <p class="subtitle" style="margin-top:4px">Diga para onde vai. Perto da data, o GuiaTennis mostra as quadras de lá, e depois volta para a sua cidade sozinho.</p>
+
+        ${viagens.length ? `
+          <div class="viagens-lista">
+            ${viagens.map(v => `
+              <div class="viagem-linha">
+                <span class="viagem-ic">${icon('map', 18, 'var(--green)')}</span>
+                <span class="viagem-txt"><strong>${esc(v.cidade)}, ${esc(v.uf)}</strong><small>${esc(textoDaViagem(v) || "sem data")}</small></span>
+                <button type="button" class="pc-link-btn" data-viagem-ver="${esc(v.cidade)}">Ver quadras</button>
+                <button type="button" class="pc-link-btn viagem-apagar" data-viagem-apagar="${esc(String(v.id))}" aria-label="Apagar a viagem a ${esc(v.cidade)}">Apagar</button>
+              </div>`).join("")}
+          </div>
+          <p class="field-label" style="margin-top:22px">Outra viagem</p>` : ""}
+
+        <label class="field-label" for="viagem-uf">Estado</label>
+        <select class="form-field campo-select" id="viagem-uf" style="margin-top:0">
+          <option value="" ${r.uf ? "" : "selected"}>Escolha o estado</option>
+          ${ESTADOS.map(([uf, nome]) => `<option value="${uf}" ${r.uf === uf ? "selected" : ""}>${nome}</option>`).join("")}
+        </select>
+
+        <label class="field-label" for="viagem-cidade">Cidade</label>
+        <input class="form-field" id="viagem-cidade" style="margin-top:0" list="viagem-cidades" autocomplete="off"
+               placeholder="${r.uf ? `Digite a cidade (${esc(nomeDoUf(r.uf))})` : "Escolha o estado primeiro"}" value="${esc(r.cidade || "")}" ${r.uf ? "" : "disabled"} />
+        <datalist id="viagem-cidades">${[...comAcademia, ...(doUf || []).filter(n => !comAcademia.includes(n))].map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
+        ${comAcademia.length ? `
+          <p class="fgroup-note">Com academia no guia:</p>
+          <div class="pref-cidades">${comAcademia.slice(0, 8).map(n => `<button type="button" class="chip ${mesmaCidade(n, r.cidade) ? "active" : ""}" data-viagem-cidade="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
+
+        <div class="viagem-datas">
+          <div><label class="field-label" for="viagem-ida">Ida (opcional)</label>
+            <input class="form-field" id="viagem-ida" type="date" min="${diaISO()}" value="${esc(r.ida || "")}" style="margin-top:0" /></div>
+          <div><label class="field-label" for="viagem-volta">Volta (opcional)</label>
+            <input class="form-field" id="viagem-volta" type="date" min="${esc(r.ida || diaISO())}" value="${esc(r.volta || "")}" style="margin-top:0" /></div>
+        </div>
+        <p class="fgroup-note">Com as datas, o GuiaTennis mostra a viagem ${VIAGEM_ANTES_DIAS} dias antes e some depois da volta. Sem datas, fica até você apagar.</p>
+
+        ${state.viagemErro ? `<p class="status-line status-error">${icon('warning', 13)} ${esc(state.viagemErro)}</p>` : ""}
+        <div class="cta-col" style="margin-top:20px">
+          <button type="button" class="cta-btn cta-primary" id="viagem-salvar">Guardar a viagem</button>
+        </div>
+        <p class="footnote">Fica só neste aparelho, como as preferências de busca.</p>
+      </div></div>
+    </div>`;
+}
+
+// Cartão da viagem na home.
+function cartaoViagem() {
+  const v = viagemDaVez();
+  if (!v) return "";
+  const n = academiasNaCidade(v.cidade);
+  const emAndamento = viajandoAgora();
+  const agora = !!emAndamento && String(emAndamento.id) === String(v.id);
+  return `
+    <div class="viagem-cartao" id="viagem-cartao">
+      <span class="viagem-cartao-ic">${icon('map', 22, '#fff')}</span>
+      <div class="viagem-cartao-txt">
+        <p class="viagem-cartao-eyebrow">${agora ? "Você está em viagem" : "Sua próxima viagem"}</p>
+        <p class="viagem-cartao-t">${esc(v.cidade)}, ${esc(v.uf)}${textoDaViagem(v) ? ` · ${esc(textoDaViagem(v))}` : ""}</p>
+        <p class="viagem-cartao-s">${n ? `${n} ${plural(n, "academia", "academias")} para jogar lá.` : `Ainda não temos academias em ${esc(v.cidade)}. Veja as mais perto de lá.`}</p>
+      </div>
+      <div class="viagem-cartao-acoes">
+        <button type="button" class="cta-btn cta-primary" data-viagem-ver="${esc(v.cidade)}">Ver quadras</button>
+        <button type="button" class="pc-link-btn" data-menu-viagem>Editar</button>
+      </div>
+    </div>`;
+}
+
+// Na busca: buscou uma cidade que não é a de casa nem de uma viagem guardada.
+function perguntaViagem() {
+  const o = state.origin;
+  const pref = lerPreferencias();
+  if (!o || state.searchStatus !== "done" || !o.cidade || !pref.cidade) return "";
+  if (mesmaCidade(o.cidade, pref.cidade)) return "";
+  if (lerViagens().some(v => mesmaCidade(v.cidade, o.cidade))) return "";
+  if ((state.viagemPerguntaFechada || []).some(c => mesmaCidade(c, o.cidade))) return "";
+  return `
+    <div class="viagem-pergunta" id="viagem-pergunta">
+      ${icon('map', 18, 'var(--green)')}
+      <span>Vai viajar para <strong>${esc(o.cidade)}</strong>? Guarde a viagem e o GuiaTennis mostra as quadras de lá na hora certa.</span>
+      <button type="button" class="pc-link-btn" id="viagem-pergunta-sim">Guardar viagem</button>
+      <button type="button" class="viagem-pergunta-x" id="viagem-pergunta-nao" aria-label="Não vou viajar">✕</button>
+    </div>`;
 }
 
 function renderPrefsSheet() {
@@ -8445,6 +8661,8 @@ function renderHome() {
       ${renderSearchCard()}
       <p class="home-hero-sub">Compare preço, estrutura e comodidades de academias de tênis — e fale direto com elas.</p>
       ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
+      ${state.viagemAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.viagemAviso)}</p>` : ""}${state.viagemAviso ? (setTimeout(() => { state.viagemAviso = ""; }, 0), "") : ""}
+      ${cartaoViagem()}
     </div>
 
     ${blocoVistas(recentes, ultima)}
@@ -8927,6 +9145,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
         ${renderSearchCard()}
         ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
         ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
+        ${perguntaViagem()}
       </div>
     `}
 
@@ -11880,7 +12099,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 2 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta"; ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou e as preferências de busca (estado, cidade e o que você costuma procurar) ficam salvos apenas no navegador do seu próprio aparelho, para aparecer na página inicial e no menu. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta"; ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade e datas) ficam salvos apenas no navegador do seu próprio aparelho, para aparecer na página inicial e no menu. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e o pedido para administrar uma academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -12394,8 +12613,8 @@ function attachEvents() {
   if (searchBtn) searchBtn.onclick = () => {
     // Sem nada digitado, busca a cidade das preferências (como o trivago, que
     // já abre no destino de sempre).
-    const pref = lerPreferencias();
-    if (!(state.cep || "").trim() && pref.cidade) { abrirRegiao({ cidade: pref.cidade }); return; }
+    const padrao = cidadePadraoDaBusca();
+    if (!(state.cep || "").trim() && padrao) { abrirRegiao({ cidade: padrao }); return; }
     if (!(state.cep || "").trim()) { goSearch(); return; }
     state.page = "search";
     syncUrl(true);
@@ -12698,13 +12917,14 @@ function attachEvents() {
       }
       if (alvo === "search") {
         // Sem busca feita, a busca abre na cidade das preferências.
-        const pref = lerPreferencias();
-        if (!state.origin && pref.cidade) { abrirRegiao({ cidade: pref.cidade }); return; }
+        const padrao = cidadePadraoDaBusca();
+        if (!state.origin && padrao) { abrirRegiao({ cidade: padrao }); return; }
         goSearch();
         return;
       }
       if (LISTAS[alvo]) { state.lista = alvo; render(); return; }
       if (alvo === "preferencias") { abrirPreferencias(); return; }
+      if (alvo === "viagem") { abrirViagem(); return; }
       if (alvo === "entrar-jogador") { abrirContaJogador("entrar"); return; }
       if (alvo === "minha-conta") { abrirContaJogador("conta"); return; }
       if (alvo === "avisos") { abrirContaJogador(jogador ? "conta" : "entrar", jogador ? "" : "Entre na sua conta para escolher os avisos por e-mail."); return; }
@@ -12739,6 +12959,43 @@ function attachEvents() {
     }
     render();
   };
+
+  // ---- Vou viajar ----
+  const viagemClose = document.getElementById("viagem-close");
+  if (viagemClose) viagemClose.onclick = () => { state.showViagem = false; render(); };
+  const viagemOverlay = document.getElementById("viagem-overlay");
+  if (viagemOverlay) viagemOverlay.onclick = (e) => { if (e.target === viagemOverlay) { state.showViagem = false; render(); } };
+  const viagemUf = document.getElementById("viagem-uf");
+  if (viagemUf) viagemUf.onchange = (e) => {
+    const antes = window.__viagem || {};
+    const lista = CIDADES_DO_UF[e.target.value];
+    const fica = antes.cidade && (!lista || lista.some(n => mesmaCidade(n, antes.cidade)));
+    window.__viagem = { ...antes, uf: e.target.value, cidade: lista && !fica ? "" : antes.cidade };
+    state.viagemErro = "";
+    render();
+    if (e.target.value) document.getElementById("viagem-cidade")?.focus();
+    conferirCidadeDaViagem();
+  };
+  const viagemCidade = document.getElementById("viagem-cidade");
+  if (viagemCidade) viagemCidade.oninput = (e) => { window.__viagem = { ...(window.__viagem || {}), cidade: e.target.value }; };
+  document.querySelectorAll("[data-viagem-cidade]").forEach(el => {
+    el.onclick = () => { window.__viagem = { ...(window.__viagem || {}), cidade: el.dataset.viagemCidade }; state.viagemErro = ""; render(); };
+  });
+  ["ida", "volta"].forEach(k => {
+    const el = document.getElementById("viagem-" + k);
+    if (el) el.onchange = (e) => { window.__viagem = { ...(window.__viagem || {}), [k]: e.target.value }; if (k === "ida") render(); };
+  });
+  const viagemSalvar = document.getElementById("viagem-salvar");
+  if (viagemSalvar) viagemSalvar.onclick = () => salvarViagem();
+  document.querySelectorAll("[data-viagem-apagar]").forEach(el => { el.onclick = () => apagarViagem(el.dataset.viagemApagar); });
+  document.querySelectorAll("[data-viagem-ver]").forEach(el => {
+    el.onclick = () => { state.showViagem = false; state.viagemAviso = ""; abrirRegiao({ cidade: el.dataset.viagemVer }); };
+  });
+  document.querySelectorAll("[data-menu-viagem]").forEach(el => { el.onclick = () => abrirViagem(); });
+  const perguntaSim = document.getElementById("viagem-pergunta-sim");
+  if (perguntaSim) perguntaSim.onclick = () => abrirViagem({ cidade: state.origin.cidade, uf: state.origin.uf || "" });
+  const perguntaNao = document.getElementById("viagem-pergunta-nao");
+  if (perguntaNao) perguntaNao.onclick = () => { state.viagemPerguntaFechada = [...(state.viagemPerguntaFechada || []), state.origin.cidade]; render(); };
 
   // ---- Preferências de busca ----
   const prefClose = document.getElementById("pref-close");

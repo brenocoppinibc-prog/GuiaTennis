@@ -7626,10 +7626,9 @@ function jogadorEntaoFaz(acao) {
 }
 
 // Aviso de viagem por e-mail (pedido do Breno em 04/10/2026): junto dos
-// avisos, "Vou viajar". Marcado, abre estado, cidade (IBGE) e datas; uma
-// semana antes da ida, o e-mail traz as academias de lá. Não redesenha a
-// tela ao marcar (a senha digitada não se perde).
-const AVISO_VIAGEM_DIAS_ANTES = 7;
+// avisos, "Vou viajar". Marcado, abre estado, cidade (IBGE) e datas
+// (opcionais); o e-mail traz as academias de lá. Não redesenha a tela ao
+// marcar (a senha digitada não se perde).
 function avisoViagemHtml(f) {
   const local = lerViagens()[0] || {};
   const v = {
@@ -7643,7 +7642,7 @@ function avisoViagemHtml(f) {
   return `
     <label class="consent-row">
       <input type="checkbox" class="jog-aviso" data-campo="avisos_viagem" id="jog-aviso-viagem" ${f.avisos_viagem ? "checked" : ""} />
-      <span><strong>Vou viajar:</strong> uma semana antes da ida, as academias para jogar na cidade da viagem</span>
+      <span><strong>Vou viajar:</strong> as academias para jogar na cidade da viagem</span>
     </label>
     <div class="jog-viagem" id="jog-viagem" ${f.avisos_viagem ? "" : "hidden"}>
       <div class="viagem-datas">
@@ -7655,12 +7654,12 @@ function avisoViagemHtml(f) {
         <div><label class="field-label" for="jog-viagem-cidade">Cidade</label>
           <input class="form-field jog-viagem-campo" data-campo="viagem_cidade" id="jog-viagem-cidade" list="jog-viagem-cidades" autocomplete="off" value="${esc(v.cidade)}" style="margin-top:0" />
           <datalist id="jog-viagem-cidades">${(doUf || []).map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist></div>
-        <div><label class="field-label" for="jog-viagem-ida">Ida</label>
+        <div><label class="field-label" for="jog-viagem-ida">Ida (opcional)</label>
           <input class="form-field jog-viagem-campo" data-campo="viagem_ida" id="jog-viagem-ida" type="date" min="${diaISO()}" value="${esc(v.ida)}" style="margin-top:0" /></div>
         <div><label class="field-label" for="jog-viagem-volta">Volta (opcional)</label>
           <input class="form-field jog-viagem-campo" data-campo="viagem_volta" id="jog-viagem-volta" type="date" min="${diaISO()}" value="${esc(v.volta)}" style="margin-top:0" /></div>
       </div>
-      <p class="fgroup-note">O e-mail sai ${AVISO_VIAGEM_DIAS_ANTES} dias antes da ida. A viagem também aparece na página inicial.</p>
+      <p class="fgroup-note">A viagem também aparece na página inicial.</p>
     </div>`;
 }
 // Confere a viagem do aviso. Devolve o erro, ou "" e os dados arrumados em f.
@@ -7669,8 +7668,8 @@ async function conferirAvisoViagem(f) {
   if (!f.viagem_uf) return "Escolha o estado da viagem.";
   const cidade = String(f.viagem_cidade || "").trim().replace(/\s+/g, " ");
   if (!cidade) return "Digite a cidade da viagem.";
-  if (!f.viagem_ida) return "Ponha a data de ida da viagem, para o aviso sair uma semana antes.";
-  if (f.viagem_ida < diaISO()) return "A ida já passou. Confira a data.";
+  if (f.viagem_ida && f.viagem_ida < diaISO()) return "A ida já passou. Confira a data.";
+  if (!f.viagem_ida && f.viagem_volta) return "Ponha também a data de ida, ou apague a volta.";
   if (f.viagem_volta && f.viagem_volta < f.viagem_ida) return "A volta precisa ser depois da ida.";
   const doUf = await carregarCidadesDoUf(f.viagem_uf);
   if (doUf) {
@@ -7686,7 +7685,7 @@ function dadosDoAvisoViagem(f) {
     avisos_viagem: ligado,
     viagem_uf: ligado ? f.viagem_uf : null,
     viagem_cidade: ligado ? f.viagem_cidade : null,
-    viagem_ida: ligado ? f.viagem_ida : null,
+    viagem_ida: ligado ? (f.viagem_ida || null) : null,
     viagem_volta: ligado ? (f.viagem_volta || null) : null,
   };
 }

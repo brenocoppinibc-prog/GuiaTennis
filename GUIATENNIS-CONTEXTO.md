@@ -384,13 +384,13 @@ cobra taxa e não fica no meio** da negociação.
     `testes/viagem.js`.
 38. **Aviso de viagem por e-mail** (pedido de 04/10/2026): na conta do
     jogador (criar e Minha conta), junto dos avisos, "Vou viajar". Marcado,
-    abre estado, cidade (IBGE), ida (obrigatória) e volta; o e-mail sai 7
-    dias antes da ida (`AVISO_VIAGEM_DIAS_ANTES`; o Breno disse "7", a
-    confirmar se é 7 dias). Fica na conta (`jogadores.avisos_viagem`,
-    `viagem_uf/cidade/ida/volta`, SQL `20261004130000_aviso_de_viagem`) e
-    também vira a viagem do aparelho. O envio do e-mail ainda é o próximo
-    passo (com os outros avisos, pelo Resend). Marcar não redesenha a tela,
-    para a senha digitada não se perder.
+    abre estado, cidade (IBGE), ida e volta (as duas opcionais). Fica na
+    conta (`jogadores.avisos_viagem`, `viagem_uf/cidade/ida/volta`, SQL
+    `20261004130000_aviso_de_viagem` e `20261004140000_viagem_sem_data`) e
+    também vira a viagem do aparelho. Quando o e-mail sai ainda não está
+    definido (o Breno vai dizer); o envio é o próximo passo, com os outros
+    avisos pelo Resend. Marcar não redesenha a tela, para a senha digitada
+    não se perder.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

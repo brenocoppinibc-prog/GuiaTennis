@@ -29,7 +29,7 @@ teste")
 > qualquer plano (SQL `20261003120000_varias_academias`, teste
 > `testes/varias-academias.js`), com o plano e o valor de cada academia
 separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
-SQL `20261003130000_pedidos_de_plano`). **627 verificações** passando
+SQL `20261003130000_pedidos_de_plano`). **634 verificações** passando
 > (`check-js.sh` + os 22 arquivos de `testes/`) e 163 no
 > `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
 > números no Básico/Completo e avaliação sem conta, regras 22 e 23).
@@ -382,6 +382,15 @@ cobra taxa e não fica no meio** da negociação.
     uma cidade que não é a de casa pergunta "Vai viajar para…?"
     (`perguntaViagem`). Política de Privacidade atualizada. Teste:
     `testes/viagem.js`.
+38. **Aviso de viagem por e-mail** (pedido de 04/10/2026): na conta do
+    jogador (criar e Minha conta), junto dos avisos, "Vou viajar". Marcado,
+    abre estado, cidade (IBGE), ida (obrigatória) e volta; o e-mail sai 7
+    dias antes da ida (`AVISO_VIAGEM_DIAS_ANTES`; o Breno disse "7", a
+    confirmar se é 7 dias). Fica na conta (`jogadores.avisos_viagem`,
+    `viagem_uf/cidade/ida/volta`, SQL `20261004130000_aviso_de_viagem`) e
+    também vira a viagem do aparelho. O envio do e-mail ainda é o próximo
+    passo (com os outros avisos, pelo Resend). Marcar não redesenha a tela,
+    para a senha digitada não se perder.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

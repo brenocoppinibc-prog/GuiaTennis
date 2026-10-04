@@ -15,7 +15,7 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.jogadorTela === 'criar' && document.getElementById('jog-email').readOnly && document.getElementById('jog-email').value === 'bia@exemplo.com'), 'e-mail sem conta: completa o cadastro, com o e-mail já preenchido');
   const avisos = await page.evaluate(() => [...document.querySelectorAll('.jog-aviso')].map(c => c.checked));
-  ok(avisos.length === 3 && avisos.every(x => !x), 'três avisos, todos começam desligados');
+  ok(avisos.length === 4 && avisos.every(x => !x), 'quatro avisos (com o "Vou viajar"), todos começam desligados');
   await page.fill('#jog-nome', 'Bia Tenista');
   await page.fill('#jog-senha', 'curta');
   await page.fill('#jog-senha2', 'curta');

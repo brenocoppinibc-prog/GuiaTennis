@@ -365,6 +365,12 @@ cobra taxa e não fica no meio** da negociação.
     continua entrando: o site pergunta o login a `login_do_usuario`. Assim o
     "Esqueci a senha" manda o código para todo mundo. Não troca se o e-mail
     já for de outra conta.
+36. **Respiro nos formulários** (pedido de 04/10/2026): o título de cada
+    campo (`.field-label`, quase sempre `<label>`) é bloco — antes ficava
+    em linha e ignorava a margem, colando no campo de cima. Bloco "Respiro"
+    no fim do `<style>`: espaço entre título e campo de cima, entre
+    caixinhas de marcar, avisos e links ("Trocar o e-mail"). Mudança de
+    espaço só ali, para não espalhar.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

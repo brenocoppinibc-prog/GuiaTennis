@@ -1647,6 +1647,22 @@
   .reg-rev-t strong { font-size: 15px; font-weight: 600; }
   .reg-rev-t span { font-size: 13px; color: var(--muted); }
 
+
+  /* Respiro (pedido do Breno em 04/10/2026): como Airbnb e Booking, cada
+     campo com o título separado do campo de cima. O título é <label>, que
+     ignorava a margem por ser inline: em bloco, a margem vale. */
+  .field-label { display: block; }
+  .field-label + .form-field, .field-label + .senha-caixa, .field-label + select { margin-top: 0; }
+  .consent-row { margin-top: 18px; }
+  .consent-row + .consent-row { margin-top: 14px; }
+  .fgroup-note { margin-top: 8px; }
+  .senha-forca { margin-top: 8px; }
+  .form-error { margin-top: 14px; }
+  .pc-linha { margin-top: 20px; }
+  .reg-porque { margin-bottom: 8px; }
+  .cta-btn + .footnote, .btn-primary + .footnote { margin-top: 20px; }
+  .pc-card-t + .conta-dados { margin-top: 14px; }
+  .conta-dados + .conta-acoes { margin-top: 16px; }
 </style>
 </head>
 <body>

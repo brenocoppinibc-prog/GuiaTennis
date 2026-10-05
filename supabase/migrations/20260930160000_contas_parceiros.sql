@@ -9,7 +9,7 @@
 --     uma academia do guia ou cadastra uma nova — sem digitar os dados de
 --     novo. O GuiaTennis confere e libera. Publicar a academia nova libera
 --     a conta junto.
---   * O responsável principal põe mais pessoas na academia, cada uma com o
+--   * O responsável principal inclui mais pessoas na academia, cada uma com o
 --     próprio e-mail. O plano decide quantas: Básico 2, Completo 5,
 --     Premium 10.
 --   * Conta de academia não avalia academia nenhuma — nem logada, nem
@@ -344,7 +344,7 @@ as $$
   order by (x.papel = 'principal') desc, x.created_at;
 $$;
 
--- O responsável principal põe mais uma pessoa. Conta que já existe (sem
+-- O responsável principal inclui mais uma pessoa. Conta que já existe (sem
 -- academia) entra na academia; e-mail novo ganha login com a senha
 -- provisória que a tela gerou, para o responsável mandar à pessoa.
 create or replace function public.adicionar_pessoa(p_email text, p_nome text, p_senha text)

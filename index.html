@@ -2016,7 +2016,7 @@ const AMENITY_OPTS = [
 ];
 const AMENITY_MAP = Object.fromEntries(AMENITY_OPTS.map(a => [a.key, a]));
 
-// O banco guarda as escolhas na ordem em que foram clicadas. Esta função põe
+// O banco guarda as escolhas na ordem em que foram clicadas. Esta função coloca
 // tudo de volta na ordem das listas acima, para que piso, cobertura,
 // modalidade e comodidades apareçam sempre na mesma sequência — na busca, no
 // cadastro, na ficha e na comparação.
@@ -3501,7 +3501,7 @@ function getAppRating(courtId) {
 }
 async function submitRating(courtId, stars, comment) {
   const trimmed = (comment || "").trim();
-  // Avaliar exige a conta do jogador: o banco põe o nome e o e-mail dela.
+  // Avaliar exige a conta do jogador: o banco preenche o nome e o e-mail dela.
   const v = { nome: (jogador && jogador.nome) || "", contato: (jogador && jogador.email) || "" };
   const { data, error } = await sb.from('avaliacoes').insert({ academia_id: courtId, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato }).select('id').single();
   // Quem administra a academia não avalia ela (o banco confere).
@@ -4115,7 +4115,7 @@ function listaDoSeletor(lista) {
               <span class="cmp-add-l">${c.appCount ? `Nota ${c.appAvg.toFixed(1).replace(".", ",")} · ${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Sem nota ainda"}</span>
               <span class="cmp-add-p ${faixa ? "" : "sem-valor"}">${faixa ? `${esc(faixa.texto)}` : SEM_PRECO}</span>
             </span>
-            <button type="button" class="cmp-add-btn" data-compare="${c.id}" aria-label="${dentro ? "Tirar da comparação" : "Pôr na comparação"}">${dentro ? "✓" : "+"}</button>
+            <button type="button" class="cmp-add-btn" data-compare="${c.id}" aria-label="${dentro ? "Remover da comparação" : "Adicionar à comparação"}">${dentro ? "✓" : "+"}</button>
           </div>`;
       }).join("")}
     </div>`;
@@ -4148,7 +4148,7 @@ function renderCmpPicker() {
         ${aba === "fav" && !lista.length ? `
           <p class="cmp-vazio">Você ainda não favoritou nenhuma academia. Toque no coração na ficha para guardar.</p>` : `
           ${aba === "todas" ? `<input class="form-field" id="cmp-pick-busca" style="margin-top:12px" placeholder="Procure pelo nome" value="${esc(state.cmpBusca)}" />` : ""}
-          ${cheio ? `<p class="footnote" style="margin-top:10px">A comparação já está com ${COMPARE_MAX} academias. Tire uma para pôr outra.</p>` : ""}
+          ${cheio ? `<p class="footnote" style="margin-top:10px">A comparação já está com ${COMPARE_MAX} academias. Remova uma para incluir outra.</p>` : ""}
           <div class="cmp-pick-lista">${listaDoSeletor(lista)}</div>`}
         ${bandejaDoSeletor()}
       </div></div>
@@ -5913,12 +5913,12 @@ function mountMap(results) {
 
 // Vídeo do "como funciona a busca" na página inicial.
 // Vazio, a seção mostra a animação desenhada em demoBusca(), logo abaixo.
-// Para trocar por um vídeo gravado, ponha aqui o ID do YouTube
+// Para trocar por um vídeo gravado, informe aqui o ID do YouTube
 // (ex.: "dQw4w9WgXcQ") ou o nome de um arquivo publicado junto com o site
 // (ex.: "como-funciona.mp4").
 const VIDEO_COMO_FUNCIONA = "";
 
-// Academias recomendadas escolhidas a dedo: basta pôr os IDs aqui.
+// Academias recomendadas escolhidas a dedo: basta incluir os IDs aqui.
 // Com a lista vazia, o guia escolhe sozinho por nota, estrutura, preço e
 // quão completo está o cadastro.
 const RECOMENDADAS = [];
@@ -6082,7 +6082,7 @@ function itensDaFicha(c) {
 function perguntasParceiros() {
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe. O Premium mostra também os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
-    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode pôr você direto em Pessoas." },
+    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode incluir você diretamente em Pessoas." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto; o GuiaTennis confere antes de publicar, e você já administra a ficha." },
     { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. Em Suas academias (ou no nome da academia, no topo do painel), toque em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito que a primeira, e dá para pedir uma enquanto outra ainda está em análise. Cada uma tem o próprio plano, as próprias pessoas e os próprios números." },
     { q: "Com duas academias, pago um plano só?", a: "Não. Cada academia tem o próprio plano e paga o próprio valor. A academia que entra na conta começa no Básico, grátis, e você escolhe o plano de cada uma. Por exemplo, uma no Premium e outra no Básico. Mudar o plano de uma não muda o das outras." },
@@ -6834,7 +6834,7 @@ function pcPedidoEnviado(p, i = 0) {
       <p class="pc-oferta-eyebrow">Pedido enviado ao responsável</p>
       <p class="pc-card-t">${esc(nome)}</p>
       <p class="pc-card-s">Essa academia já tem um responsável no GuiaTennis Parceiros. O seu pedido foi para ele, com o seu nome e o seu e-mail: quando ele aceitar, a academia aparece na sua conta.</p>
-      <p class="pc-card-s">Conhece o responsável? Peça para ele aceitar no painel, ou para pôr você direto em Pessoas com acesso, com o e-mail <strong>${esc(contaAcademia.email || contaAcademia.usuario)}</strong>.</p>
+      <p class="pc-card-s">Conhece o responsável? Peça para ele aceitar no painel ou incluir você diretamente em Pessoas com acesso, com o e-mail <strong>${esc(contaAcademia.email || contaAcademia.usuario)}</strong>.</p>
       ${erroAqui}
       <p class="pc-linha">O responsável não responde ou saiu da academia? ${falar}</p>
       ${cancelar}
@@ -8116,7 +8116,7 @@ function renderListaSheet() {
 // primeiro o estado, depois a cidade (a cidade só abre com o estado
 // escolhido), e o que a pessoa costuma procurar. Ficam neste aparelho.
 // Municípios de cada estado, da lista oficial do IBGE (pedido do Breno em
-// 03/10/2026: escolhido o Ceará, não dá para pôr São Paulo). Como no Booking
+// 03/10/2026: escolhido o Ceará, não dá para escolher São Paulo). Como no Booking
 // e no trivago, só aparecem cidades que existem no estado. A lista fica
 // guardada no aparelho; sem internet para o IBGE, a cidade segue livre.
 const CIDADES_DO_UF = {};
@@ -8256,7 +8256,7 @@ async function salvarViagem() {
   }
   if (r.ida && r.ida < diaISO()) return erro("A ida já passou. Confira a data.");
   if (r.ida && r.volta && r.volta < r.ida) return erro("A volta precisa ser depois da ida.");
-  if (!r.ida && r.volta) return erro("Ponha também a data de ida, ou apague a volta.");
+  if (!r.ida && r.volta) return erro("Informe também a data de ida ou apague a volta.");
   const ficar = String(r.ficar || "").trim().replace(/\s+/g, " ");
   // Onde vai ficar: o mapa acha o ponto. Se não achar, guarda assim mesmo e
   // as quadras aparecem pela cidade.
@@ -8380,7 +8380,7 @@ function cartaoViagem() {
       </div>
       <div class="viagem-cartao-acoes">
         <button type="button" class="cta-btn cta-primary" data-viagem-ver="${esc(String(v.id))}">Ver quadras</button>
-        <button type="button" class="pc-link-btn" data-viagem-editar="${esc(String(v.id))}">${v.ficar ? "Editar" : "Pôr o hotel"}</button>
+        <button type="button" class="pc-link-btn" data-viagem-editar="${esc(String(v.id))}">${v.ficar ? "Editar" : "Adicionar o hotel"}</button>
       </div>
     </div>`;
 }
@@ -8623,7 +8623,7 @@ async function conferirAvisoViagem(f) {
   const cidade = String(f.viagem_cidade || "").trim().replace(/\s+/g, " ");
   if (!cidade) return "Digite a cidade da viagem.";
   if (f.viagem_ida && f.viagem_ida < diaISO()) return "A ida já passou. Confira a data.";
-  if (!f.viagem_ida && f.viagem_volta) return "Ponha também a data de ida, ou apague a volta.";
+  if (!f.viagem_ida && f.viagem_volta) return "Informe também a data de ida ou apague a volta.";
   if (f.viagem_volta && f.viagem_volta < f.viagem_ida) return "A volta precisa ser depois da ida.";
   const doUf = await carregarCidadesDoUf(f.viagem_uf);
   if (doUf) {
@@ -11662,7 +11662,7 @@ QR_BLOCOS.M = {
   10: { ec: 26, g: [[4, 43], [1, 44]] },
 };
 // Nível alto de correção: aguenta cobrir cerca de 30% do código, que é o que
-// permite pôr o emblema do GuiaTennis no meio sem o leitor perder a leitura.
+// permite colocar o emblema do GuiaTennis no meio sem o leitor perder a leitura.
 QR_BLOCOS.H = {
   1:  { ec: 17, g: [[1, 9]] },
   2:  { ec: 28, g: [[1, 16]] },
@@ -11752,12 +11752,12 @@ function qrCodewords(texto, nivel) {
 
   // fluxo de bits: modo, tamanho, dados, terminador, enchimento
   const bits = [];
-  const põe = (valor, quantos) => {
+  const acrescenta = (valor, quantos) => {
     for (let i = quantos - 1; i >= 0; i--) bits.push((valor >> i) & 1);
   };
-  põe(0b0100, 4);
-  põe(bytes.length, versao < 10 ? 8 : 16);
-  bytes.forEach(b => põe(b, 8));
+  acrescenta(0b0100, 4);
+  acrescenta(bytes.length, versao < 10 ? 8 : 16);
+  bytes.forEach(b => acrescenta(b, 8));
   for (let i = 0; i < 4 && bits.length < totalDados * 8; i++) bits.push(0);
   while (bits.length % 8) bits.push(0);
   const dados = [];
@@ -11800,7 +11800,7 @@ function qrNovaMatriz(lado) {
   return m;
 }
 
-function qrPõeFinder(m, linha, coluna) {
+function qrDesenhaFinder(m, linha, coluna) {
   for (let l = -1; l <= 7; l++) {
     for (let c = -1; c <= 7; c++) {
       const L = linha + l, C = coluna + c;
@@ -11812,7 +11812,7 @@ function qrPõeFinder(m, linha, coluna) {
   }
 }
 
-function qrPõeAlinhamento(m, versao) {
+function qrDesenhaAlinhamento(m, versao) {
   const pos = QR_ALINHAMENTO[versao];
   for (const l of pos) {
     for (const c of pos) {
@@ -11830,10 +11830,10 @@ function qrPõeAlinhamento(m, versao) {
 function qrMatrizBase(versao) {
   const lado = 17 + 4 * versao;
   const m = qrNovaMatriz(lado);
-  qrPõeFinder(m, 0, 0);
-  qrPõeFinder(m, 0, lado - 7);
-  qrPõeFinder(m, lado - 7, 0);
-  qrPõeAlinhamento(m, versao);
+  qrDesenhaFinder(m, 0, 0);
+  qrDesenhaFinder(m, 0, lado - 7);
+  qrDesenhaFinder(m, lado - 7, 0);
+  qrDesenhaAlinhamento(m, versao);
   for (let i = 8; i < lado - 8; i++) {
     const v = i % 2 === 0 ? 1 : 0;
     if (m[6][i] === null) m[6][i] = v;
@@ -11861,7 +11861,7 @@ function qrMatrizBase(versao) {
   return m;
 }
 
-function qrPõeDados(m, codewords) {
+function qrDesenhaDados(m, codewords) {
   const lado = m.length;
   const bits = [];
   codewords.forEach(b => { for (let i = 7; i >= 0; i--) bits.push((b >> i) & 1); });
@@ -11961,7 +11961,7 @@ function qrVersaoBits(versao) {
   return (versao << 12) | resto;
 }
 
-function qrPõeFormato(m, mascara, versao, nivel) {
+function qrDesenhaFormato(m, mascara, versao, nivel) {
   const lado = m.length;
   const bits = qrFormato(mascara, nivel);
   const pega = i => (bits >> i) & 1;
@@ -11994,13 +11994,13 @@ function qrMatriz(texto, nivel) {
   const base = qrMatrizBase(versao);
   const reservado = base.map(linha => linha.map(v => v !== null));
   const comDados = base.map(linha => linha.slice());
-  qrPõeDados(comDados, codewords);
+  qrDesenhaDados(comDados, codewords);
   const limpo = comDados.map(linha => linha.map(v => (v === 2 ? 0 : v)));
 
   let melhor = null, melhorNota = Infinity;
   for (let n = 0; n < 8; n++) {
     const tentativa = qrAplicaMascara(limpo, reservado, n);
-    qrPõeFormato(tentativa, n, versao, nivel);
+    qrDesenhaFormato(tentativa, n, versao, nivel);
     const nota = qrPenalidade(tentativa);
     if (nota < melhorNota) { melhorNota = nota; melhor = tentativa; }
   }
@@ -13216,9 +13216,9 @@ function oQueOPlanoEsconde(f, plano) {
 function oQueMelhorar(f) {
   const tem = v => !!String(v || "").trim();
   const itens = [];
-  if (!(f.photos || []).length) itens.push({ passo: "fotos", t: "Pôr fotos", d: "Ficha com foto recebe muito mais contato." });
+  if (!(f.photos || []).length) itens.push({ passo: "fotos", t: "Adicionar fotos", d: "Ficha com foto recebe muito mais contato." });
   if (!tem(f.priceAula) && !tem(f.priceLocacao)) itens.push({ passo: "precos", t: "Dizer o preço", d: "É o que o jogador compara primeiro." });
-  if (!regPreenchido(f, "horario")) itens.push({ passo: "horario", t: "Pôr o horário", d: "A ficha mostra se a academia está aberta agora." });
+  if (!regPreenchido(f, "horario")) itens.push({ passo: "horario", t: "Informar o horário", d: "A ficha mostra se a academia está aberta agora." });
   if (!(f.amenities || []).length) itens.push({ passo: "quadras", t: "Marcar as comodidades", d: "Viram filtro na busca: quem procura estacionamento acha vocês." });
   if (!regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "Explicar o cancelamento", d: "Tira a dúvida antes da primeira aula." });
   if (!regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Explicar como chegar", d: "É o que mais evita o jogador passar direto." });

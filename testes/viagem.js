@@ -119,7 +119,7 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   ok(await page.evaluate(() => state.page === 'search' && /são paulo/i.test(state.cep || '')), 'sem o ponto do hotel, "Ver quadras" abre pela cidade');
   await page.evaluate(() => { gravarViagens([{ id: 9, uf: 'SP', cidade: 'São Paulo', ida: '', volta: '' }]); goHome(); });
   await page.waitForTimeout(150);
-  ok(await page.evaluate(() => document.querySelector('[data-viagem-editar]')?.innerText) === 'Pôr o hotel', 'viagem sem hotel: o cartão convida a pôr o hotel');
+  ok(await page.evaluate(() => document.querySelector('[data-viagem-editar]')?.innerText) === 'Adicionar o hotel', 'viagem sem hotel: o cartão convida a adicionar o hotel');
   await browser.close();
 
   // Convite "Vai viajar?" só para quem já está navegando (04/10/2026).

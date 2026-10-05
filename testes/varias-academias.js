@@ -6,7 +6,7 @@
 // troca pelo seletor.
 const { abrir, ok, vigiarAbas, abasAbertas } = require('./harness');
 
-// textContent: o texto como está escrito (o CSS põe alguns em maiúsculas).
+// textContent: o texto como está escrito (o CSS deixa alguns em maiúsculas).
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.textContent || '').replace(/\s+/g, ' '), sel);
 const rpcs = (page, nome) => page.evaluate((nome) => window.__rpcs.filter(r => r.nome === nome).map(r => r.args), nome);
 const abrirFicha = (page, id) => page.evaluate((id) => {

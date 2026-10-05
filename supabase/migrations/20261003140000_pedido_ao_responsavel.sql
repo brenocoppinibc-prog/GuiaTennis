@@ -5,7 +5,7 @@
 -- administrar uma academia que já tem responsável principal no GuiaTennis
 -- Parceiros não entra pelo código no WhatsApp da ficha. O pedido vai para o
 -- responsável, que aceita (a pessoa entra na equipe, se o plano couber) ou
--- recusa. O responsável também continua podendo pôr a pessoa direto, pelo
+-- recusa. O responsável também continua podendo incluir a pessoa diretamente, pelo
 -- e-mail (adicionar_pessoa). O GuiaTennis ainda aprova à mão nos casos
 -- difíceis (o responsável saiu da academia, por exemplo).
 --

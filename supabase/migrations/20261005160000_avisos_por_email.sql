@@ -18,7 +18,7 @@
 -- Como funciona, sem servidor novo: cada aviso entra na fila
 -- (emails_a_enviar) e, a cada minuto, o relógio do banco (pg_cron) chama
 -- enviar_emails(), que manda pela API do Resend (pg_net). A chave do Resend
--- fica no cofre do Supabase (Vault), nunca no código: quem põe é o GitHub,
+-- fica no cofre do Supabase (Vault), nunca no código: quem a registra é o GitHub,
 -- a partir do segredo RESEND_API_KEY (.github/workflows/banco.yml).
 --
 -- Só recebe aviso quem confirmou o e-mail pelo código; o jogador escolhe
@@ -200,7 +200,7 @@ as $$
   select public.site_dos_emails() || '/?parar-avisos=' || p_token::text || '&aviso=' || p_aviso;
 $$;
 
--- Põe um aviso na fila. Devolve se entrou (o mesmo aviso não entra duas vezes).
+-- Coloca um aviso na fila. Devolve se entrou (o mesmo aviso não entra duas vezes).
 create or replace function public.por_na_fila(
   p_chave text, p_tipo text, p_para text, p_assunto text, p_html text, p_texto text,
   p_descadastro text default null)

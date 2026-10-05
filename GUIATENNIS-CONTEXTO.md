@@ -37,7 +37,7 @@ teste")
 > muda a regra 18), **a página da cidade lista todas as academias da cidade**
 > sem procurar endereço, e os textos "Por que o GuiaTennis" e "Por que estar
 > no GuiaTennis". Também a correção da esteira do banco, vermelha desde o
-> SQL da pausa (SQL `20261005180000_visitante_le_a_pausa`). Falta o Breno pôr o segredo `RESEND_API_KEY` no GitHub
+> SQL da pausa (SQL `20261005180000_visitante_le_a_pausa`). Falta o Breno cadastrar o segredo `RESEND_API_KEY` no GitHub
 > (seção 11, primeiro item). Testes: **802 verificações, nenhuma falha** nos 26 arquivos
 > do navegador e 95 no `banco-emails.py` (Postgres local).
 >
@@ -146,6 +146,10 @@ mexer:
 - **Quer o site limpo e espaçado** (30/09/2026: "muito aglomerado"). Letra
   sem serifa no texto, ar entre os blocos, nada de caixa dentro de caixa
   (seção 8, "Visual").
+- **Sem a palavra "pôr"** (nem "põe", "ponha"): o Breno acha informal
+  (05/10/2026). No site, nos textos internos e no documento, usar
+  "adicionar", "incluir", "informar", "colocar" ou "cadastrar", conforme o
+  sentido.
 - Mensagem de erro tem de ser simples, dizendo o que fazer ("O mapa está
   lento agora. Espere um pouco…"). O motivo técnico vai para o
   `?diagnostico`.
@@ -265,7 +269,7 @@ cobra taxa e não fica no meio** da negociação.
     SQL `20261002120000`).
 23. **Conta do jogador** (pedido de 02/10/2026): buscar, comparar e chamar
     continuam sem conta; **avaliar exige conta** (uma avaliação por conta
-    em cada academia; o banco põe o nome e o e-mail da conta, gatilho
+    em cada academia; o banco preenche o nome e o e-mail da conta, gatilho
     `avaliacao_do_jogador`). A conta (`jogadores`, SQL `20261002130000`)
     guarda nome, e-mail, cidade e três avisos por e-mail — academias novas
     e favoritas, promoções das academias, novidades do GuiaTennis —, todos
@@ -291,7 +295,7 @@ cobra taxa e não fica no meio** da negociação.
     `aplicarCamadas` lê; `sincronizarLink` empilha ao abrir/avançar, volta
     (`history.back`/`go`) ao fechar ou ao "Voltar" do próprio site, e uma
     tela aberta de dentro de uma janela toma o lugar dela no histórico. O
-    que foi digitado fica na memória. Janela ou passo novo: ponha em
+    que foi digitado fica na memória. Janela ou passo novo: inclua em
     `camadasDoEstado`/`aplicarCamadas` (e em `CAMADAS_DO_LINK`). Teste:
     `testes/voltar.js`.
 26. **Sem "Área do GuiaTennis" visível** (pedido de 02/10/2026): o admin
@@ -337,7 +341,7 @@ cobra taxa e não fica no meio** da negociação.
     "Suas academias" no menu (celular) e na Conta, "Adicionar outra
     academia" (a mesma busca do cadastro, com "Já é sua" nas da conta), o
     pedido com o código aparece no painel, e a ficha no site de outra
-    academia da conta tem "Abrir no painel". Pôr na equipe quem já
+    academia da conta tem "Abrir no painel". Incluir na equipe quem já
     administra outra academia soma esta à conta dela (não troca a aberta).
     Tirar alguém de uma academia só apaga o login se ele ficar sem
     nenhuma; academia apagada idem. No admin, "Remover acesso" na ficha
@@ -373,7 +377,7 @@ cobra taxa e não fica no meio** da negociação.
     WhatsApp da ficha; o pedido (`pedido_destino = 'responsavel'`) aparece
     no painel e na Conta do responsável ("Pedidos de acesso", com nome,
     e-mail e cargo), que aceita (entra na equipe, se o plano couber;
-    plano cheio oferece o de cima) ou recusa. O responsável também pode pôr
+    plano cheio oferece o de cima) ou recusa. O responsável também pode incluir
     a pessoa direto pelo e-mail (Pessoas com acesso). Quem pediu vê
     "Pedido enviado ao responsável". No admin, o pedido diz "Já tem
     responsável (…)", sem "Gerar código"; "Aprovar" pede confirmação (só
@@ -1057,7 +1061,7 @@ No cadastro, esses três campos ficam depois do cancelamento.
 
 **Entendimento dos textos, sem IA.** O banco guarda o texto como a
 academia escreveu; quem arruma é a ficha, na hora de mostrar:
-- `arrumarTexto` — tira emoji e caixa alta, troca "!!!" por ponto, põe
+- `arrumarTexto` — tira emoji e caixa alta, troca "!!!" por ponto, escreve
   horas como 19h/19h30 e valores como R$ 15, corrige acentos comuns
   (até, não, tênis, às 19h…), maiúscula no começo e ponto no fim. Vale
   para fachada, chegada, observação do horário e texto do cancelamento.
@@ -1432,7 +1436,7 @@ ficha de cada academia publicada e em exibição (`/academia/…`) — academia
 nova entra sozinha, sem publicar o site. A função roda com a permissão do
 visitante: só pode pedir colunas que ele lê (com `a.*` ela quebrou no
 teste local, porque o visitante não lê os contatos). A função devolve o tipo `"*/*"` (domínio sobre `bytea`)
-e põe o `Content-Type: application/xml` ela mesma: com o tipo
+e define o `Content-Type: application/xml` ela mesma: com o tipo
 `"text/xml"`, o PostgREST só devolve XML puro quando o pedido diz
 `Accept: text/xml`, e o Google pede `text/html, …, */*` (viria JSON).
 Conferido num PostgREST 12.2.3 local. A prévia do Netlify também aponta
@@ -1993,7 +1997,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
   visitante sozinha.** A leitura do `anon` é liberada coluna por coluna.
   Depois de `alter table ... add column`, rode de novo o
   `SQL-SEGURANCA.sql` (ele libera todas menos as de contato) **antes** de
-  pôr a coluna em `COLUNAS_ACADEMIA_PUBLICAS`; senão o site fica vazio
+  incluir a coluna em `COLUNAS_ACADEMIA_PUBLICAS`; senão o site fica vazio
   para quem não é admin.
 - **Localizar academia nunca pode gravar o centro da cidade.** O
   endereço da Morumbi não era achado com o bairro ("Vila Progredior"), a
@@ -2029,7 +2033,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
   `create or replace function` com outro `returns table`.
 - **XML pelo PostgREST:** função que devolve o domínio `"text/xml"` só sai
   como XML se o pedido mandar `Accept: text/xml`; o Google não manda e
-  receberia um texto dentro de JSON. Use o domínio `"*/*"` e ponha o
+  receberia um texto dentro de JSON. Use o domínio `"*/*"` e defina o
   `Content-Type` com `set_config('response.headers', …)`.
 - **Overpass com área grande não volta no celular.** A cidade inteira, ou
   "tênis" no nome de tudo o que é esporte, estourava o tempo dos
@@ -2319,7 +2323,7 @@ c9ade31 Configuração de publicação do Netlify
   onde vieram" no painel e no card de cada academia:
   `?utm_source=Instagram-bio`, `Instagram-stories`, `Instagram-direct`,
   `WhatsApp` (status, grupos, amigos) e `WhatsApp-academias`. O botão
-  Compartilhar da ficha põe `&utm_source=Compartilhado` sozinho. O site
+  Compartilhar da ficha acrescenta `&utm_source=Compartilhado` sozinho. O site
   só lê o `utm_source`.
 - **Links para Instagram e WhatsApp** (passados em 28/09/2026):
   bio do Instagram `https://guiatennis.com.br/?utm_source=Instagram-bio`;

@@ -462,7 +462,7 @@ as $$
   order by (v.papel = 'principal') desc, v.created_at;
 $$;
 
--- O responsável principal da academia aberta põe mais uma pessoa. Conta
+-- O responsável principal da academia aberta inclui mais uma pessoa. Conta
 -- que já existe (com ou sem outras academias) ganha esta também; e-mail
 -- novo ganha login com a senha provisória que a tela gerou.
 create or replace function public.adicionar_pessoa(p_email text, p_nome text, p_senha text)

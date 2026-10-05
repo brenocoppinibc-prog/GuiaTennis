@@ -1,7 +1,7 @@
 // Pedido de acesso vai para o responsável (pedido do Breno em 03/10/2026),
 // como o "Solicitar acesso" do Google Business Profile: quem pede uma
 // academia que já tem responsável principal não entra pelo código; o
-// responsável aceita (se o plano couber) ou recusa, ou põe a pessoa direto
+// responsável aceita (se o plano couber) ou recusa, ou inclui a pessoa diretamente
 // pelo e-mail. O GuiaTennis só aprova em caso excepcional.
 const { abrir, ok } = require('./harness');
 
@@ -26,7 +26,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.waitForTimeout(400);
   let t = await texto(page, '#parceiros .pc-main');
   ok(t.includes('Pedido enviado ao responsável') && t.includes('já tem um responsável') && t.includes('com o seu nome e o seu e-mail'), 'academia com responsável: o pedido vai para ele, e a pessoa sabe disso');
-  ok(!(await page.isVisible('#pc-codigo')) && t.includes('Pessoas com acesso') && t.includes('ana@exemplo.com'), 'sem campo de código; diz que o responsável também pode pôr o e-mail direto');
+  ok(!(await page.isVisible('#pc-codigo')) && t.includes('Pessoas com acesso') && t.includes('ana@exemplo.com'), 'sem campo de código; diz que o responsável também pode incluir o e-mail direto');
   ok(await page.evaluate(() => (window.__db.pedidos_de_acesso.find(x => x.user_id === 'u-ana') || {}).destino === 'responsavel'), 'o pedido fica marcado como do responsável');
   await browser.close();
 
@@ -42,7 +42,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.click('[data-aceitar-pedido="u-ana"]');
   await page.waitForTimeout(500);
   const ana = await page.evaluate(() => ({ v: window.__db.academia_vinculos.filter(v => v.user_id === 'u-ana').map(v => v.academia_id + ':' + v.papel).join(), pedido: window.__db.pedidos_de_acesso.some(p => p.user_id === 'u-ana'), cartao: !!document.querySelector('.pc-pedidos-acesso'), aviso: document.querySelector('.conta-aviso')?.innerText || '' }));
-  ok(ana.v === 'a2:equipe' && !ana.pedido && !ana.cartao && ana.aviso.includes('entrou na equipe'), 'aceitar põe a pessoa na equipe e o pedido some — ' + ana.v);
+  ok(ana.v === 'a2:equipe' && !ana.pedido && !ana.cartao && ana.aviso.includes('entrou na equipe'), 'aceitar inclui a pessoa na equipe e o pedido some — ' + ana.v);
   await browser.close();
 
   // ---- recusar, e plano cheio ----

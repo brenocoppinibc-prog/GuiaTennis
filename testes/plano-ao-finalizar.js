@@ -37,16 +37,16 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   ok(tela.includes('Quase lá: escolha o plano') && !(await page.evaluate(() => window.__db.academias.some(a => a.name === 'Academia do Rui'))), 'ao finalizar, a tela do plano vem antes de enviar');
   ok(tela.includes('2 das 5 comodidades') && tela.includes('A ficha mostra só 3') && tela.includes('Instagram'), 'mostra o que o Básico esconde: 2 comodidades e o Instagram');
   ok(tela.includes('Nada se perde'), 'avisa que nada se perde: fica guardado');
-  ok(tela.includes('Pôr fotos') && tela.includes('Dizer o preço') && tela.includes('Pôr o horário'), 'mostra o que falta para a ficha receber mais jogadores');
+  ok(tela.includes('Adicionar fotos') && tela.includes('Dizer o preço') && tela.includes('Informar o horário'), 'mostra o que falta para a ficha receber mais jogadores');
   const ordem = await page.evaluate(() => [...document.querySelectorAll('[data-reg-plano]')].map(b => b.dataset.regPlano + (b.closest('.destaque') ? '*' : '')).join(','));
   ok(ordem === 'premium*,completo,basico', 'Premium primeiro e em destaque, depois Completo, e o Básico por último — ' + ordem);
   ok((await texto(page, '.reg-plano-basico')).includes('Continuar no Básico, grátis (a ficha esconde 2 itens)'), 'continuar no Básico diz quanto fica escondido');
   ok(tela.includes('nada é cobrado sem você confirmar'), 'deixa claro que nada é cobrado sozinho');
 
-  // "Pôr fotos" leva até a parte, e voltar a enviar mostra a tela de novo.
+  // "Adicionar fotos" leva até a parte, e voltar a enviar mostra a tela de novo.
   await page.click('[data-reg-plano-passo]');
   await page.waitForTimeout(200);
-  ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo')?.dataset.passo === 'fotos'), 'um toque em "Pôr fotos" leva até a parte das fotos');
+  ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo')?.dataset.passo === 'fotos'), 'um toque em "Adicionar fotos" leva até a parte das fotos');
   await irParte(page, 'revisar');
   await page.click('#register-submit');
   await page.waitForTimeout(300);

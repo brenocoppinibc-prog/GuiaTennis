@@ -4,7 +4,7 @@
 -- Como trivago, Booking e TripAdvisor: buscar, comparar e chamar a academia
 -- continuam sem conta; a conta serve para avaliar e para escolher os avisos
 -- por e-mail (academias novas e favoritas, promoções das academias,
--- novidades do GuiaTennis). Avaliar agora exige estar logado, e o banco põe
+-- novidades do GuiaTennis). Avaliar agora exige estar logado, e o banco preenche
 -- o nome e o e-mail da conta na avaliação — ninguém avalia em nome de outro.
 -- Uma avaliação por conta em cada academia, como no Google.
 -- Pode rodar de novo sem estragar nada.

@@ -53,6 +53,33 @@ jobs:
           BANCO_URL="$BANCO_URL" bash supabase/aplicar.sh "$DESTINO"
           echo "APLICADO=sim" >> "$GITHUB_ENV"
 
+      # Avisos por e-mail (SQL 20261005160000): a chave do Resend vai do
+      # segredo RESEND_API_KEY para o cofre (Vault) do banco, sem aparecer no
+      # registro; o endereço dos links é o do site de verdade ou a prévia do PR.
+      - name: Ligar os avisos por e-mail no banco ${{ env.DESTINO }}
+        if: env.APLICADO == 'sim'
+        env:
+          BANCO_TESTE_URL: ${{ secrets.BANCO_TESTE_URL }}
+          BANCO_REAL_URL: ${{ secrets.BANCO_REAL_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ "$DESTINO" = real ]; then
+            BANCO_URL="$BANCO_REAL_URL"; SITE=https://guiatennis.com.br
+          else
+            BANCO_URL="$BANCO_TESTE_URL"; SITE="${PR:+https://deploy-preview-$PR--stately-salamander-652f72.netlify.app}"
+          fi
+          BANCO_URL="$(printf '%s' "$BANCO_URL" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "::warning::Falta o segredo RESEND_API_KEY no GitHub: os avisos por e-mail ficam na fila do banco $DESTINO."
+          fi
+          psql "$BANCO_URL" -X -q -At -v ON_ERROR_STOP=1 -v VERBOSITY=terse \
+            -v chave="$RESEND_API_KEY" -v site="$SITE" <<'SQL' \
+            || echo "::warning::Não consegui guardar a chave do Resend no banco $DESTINO (veja o erro acima)."
+          \set VERBOSITY terse
+          select public.configurar_emails(:'chave', :'site');
+          SQL
+
       - name: Conferir o que o site lê do banco ${{ env.DESTINO }}
         if: env.APLICADO == 'sim'
         env:

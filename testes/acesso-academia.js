@@ -204,7 +204,9 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   }));
   ok(outra.responder === 0 && outra.editar === 0 && !outra.dono, 'na ficha de outra academia não há editar nem responder');
   const outraTexto = await texto(page, '.rate-box');
-  ok(outra.estrelas === 0 && outraTexto.includes('Contas do GuiaTennis Parceiros não avaliam academias'), 'academia logada também não avalia as outras academias');
+  // Desde 05/10/2026 a conta do Parceiros avalia as outras academias como
+  // qualquer jogador (só a que administra, não).
+  ok(outra.estrelas === 1 && !outraTexto.includes('não avaliam'), 'academia logada avalia as outras academias, como qualquer jogador');
   const cliques = await page.evaluate(() => window.__cliques.length);
   ok(cliques === cliquesAntes, 'academia logada não entra nas estatísticas — ' + (cliques - cliquesAntes) + ' cliques depois de entrar');
   await browser.close();
@@ -220,7 +222,8 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(inicio.cliques === 0, 'acesso da academia logada não conta');
   await vigiarAbas(page);
   await page.evaluate(() => { state.showMenu = true; render(); });
-  ok((await page.evaluate(() => document.querySelector('#menu-overlay .menu-item')?.innerText || '')).includes('Painel da minha academia'), 'o menu começa por "Painel da minha academia"');
+  const doMenu = await page.evaluate(() => [...document.querySelectorAll('#menu-overlay .menu-item')].slice(0, 2).map(e => e.innerText));
+  ok(doMenu[0].includes('Minha conta') && doMenu[1].includes('Painel da minha academia'), 'o menu começa por "Minha conta" e "Painel da minha academia" — ' + doMenu.join(' | ').replace(/\s+/g, ' '));
   await page.click('#menu-overlay [data-menu="conta"]');
   await page.waitForTimeout(300);
   const abaDaFaixa = (await abasAbertas(page))[0] || {};
@@ -315,6 +318,6 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   // ---- textos legais ----
   ({ browser, page } = await abrir({}));
   const legal = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
-  ok(legal.includes('4. GuiaTennis Parceiros') && legal.includes('não avaliam academias') && legal.includes('identificado como patrocinado') && legal.includes('pessoas da mesma academia veem') && legal.includes('não pode apagar avaliações') && legal.includes('Responsável pela academia'), 'Termos e Privacidade explicam a área da academia');
+  ok(legal.includes('4. GuiaTennis Parceiros') && legal.includes('não avalia essa academia') && legal.includes('identificado como patrocinado') && legal.includes('pessoas da mesma academia veem') && legal.includes('não pode apagar avaliações') && legal.includes('Responsável pela academia'), 'Termos e Privacidade explicam a área da academia');
   await browser.close();
 })();

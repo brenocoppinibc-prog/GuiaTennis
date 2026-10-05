@@ -30,6 +30,9 @@
     // Conta do jogador (SQL 20261002130000). window.__jogador abre o site
     // já logado como "Ana Jogadora".
     jogadores: [],
+    // Buscas salvas na conta (SQL 20261005150000). window.__semBuscasSalvas
+    // finge o banco sem a tabela.
+    buscas_salvas: [],
   };
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
@@ -41,14 +44,15 @@
     const novo = !!window.__acessoNovo;
     db.academia_acessos.push({ user_id: "u-" + window.__academia, academia_id: window.__academia, usuario: "quadra." + window.__academia,
       nome_responsavel: novo ? null : "Maria Teste", cargo: novo ? null : "Gerente", email: novo ? null : "maria@teste.com", whatsapp: novo ? null : "11900000001", cnpj: null,
-      recebe_relatorio: false, termos_aceitos_em: novo ? null : agora, dados_completos_em: novo ? null : agora, senha_trocada_em: novo ? null : agora });
+      recebe_relatorio: false, termos_aceitos_em: novo ? null : agora, dados_completos_em: novo ? null : agora, senha_trocada_em: novo ? null : agora,
+      avisos_por_email: true, token_avisos: "tok-u-" + window.__academia });
     window.__senhas["quadra." + window.__academia + DOMINIO] = "provisoria1";
     db.academia_vinculos.push({ user_id: "u-" + window.__academia, academia_id: window.__academia, papel: "principal", created_at: agora });
     // window.__outrasAcademias: a mesma conta administra também essas.
     (window.__outrasAcademias || []).forEach(id => db.academia_vinculos.push({ user_id: "u-" + window.__academia, academia_id: id, papel: "principal", created_at: agora }));
   }
   if (window.__jogador) {
-    db.jogadores.push({ user_id: "j-ana", nome: "Ana Jogadora", email: "ana@exemplo.com", cidade: "São Paulo", avisos_academias: false, promocoes: false, novidades: false, termos_aceitos_em: agora, created_at: agora });
+    db.jogadores.push({ user_id: "j-ana", nome: "Ana Jogadora", email: "ana@exemplo.com", cidade: "São Paulo", avisos_academias: false, promocoes: false, novidades: false, termos_aceitos_em: agora, created_at: agora, token_avisos: "tok-j-ana" });
     window.__senhas["ana@exemplo.com"] = "senhadaana";
   }
   let sessao = window.__admin ? { user: { id: "admin", email: ADMIN } }
@@ -132,6 +136,7 @@
       then(res, rej){ return Promise.resolve(run()).then(res, rej); },
     };
     function run(){
+      if (table === "buscas_salvas" && window.__semBuscasSalvas) return { data:null, error:{ message:'relation "public.buscas_salvas" does not exist' } };
       const t = db[table];
       if (!t || (window.__semAcesso && (table === "academia_acessos" || table === "respostas"))) return { data:null, error:{ message:"relation does not exist" } };
       const pass = r => filtros.every(([k,v,op]) => op === "gte" ? String(r[k]) >= String(v) : r[k] === v);
@@ -143,16 +148,30 @@
         if (table === "cliques" && window.__semTempo && ("segundos" in payload || "segundos_ficha" in payload)) return { data:null, error:{ message:"column segundos does not exist" } };
         if (table === "academias" && window.__semConfirmada && "confirmada" in payload) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
         if (table === "avaliacoes" && !souAdmin()) {
-          if (meuAcesso()) return { data:null, error:{ message:"Contas do GuiaTennis Parceiros não avaliam academias.", code:"42501" } };
+          // Gatilho avaliacao_de_parceiro (SQL 20261005170000): quem
+          // administra a academia não avalia ela; as outras, avalia.
+          if (sessao && vinculo(sessao.user.id, payload.academia_id))
+            return { data:null, error:{ message:"Você administra essa academia: responda às avaliações pelo painel do GuiaTennis Parceiros.", code:"42501" } };
           const c = String(payload.contato_autor || "").trim().toLowerCase(), n = tel(payload.contato_autor);
-          const deAcademia = c && (db.academia_acessos.some(x => (x.email || "").toLowerCase() === c || loginDe(x) === c || (n.length >= 10 && tel(x.whatsapp) === n))
-            || (n.length >= 10 && db.academias.some(y => tel(y.phone) === n)));
-          if (deAcademia) return { data:null, error:{ message:"Esse contato é de uma academia do GuiaTennis, e academias não avaliam academias.", code:"42501" } };
+          const daAcademia = db.academia_vinculos.filter(v => v.academia_id === payload.academia_id).map(v => db.academia_acessos.find(x => x.user_id === v.user_id)).filter(Boolean);
+          const deAcademia = c && (daAcademia.some(x => (x.email || "").toLowerCase() === c || loginDe(x) === c || (n.length >= 10 && tel(x.whatsapp) === n))
+            || (n.length >= 10 && db.academias.some(y => y.id === payload.academia_id && tel(y.phone) === n)));
+          if (deAcademia) return { data:null, error:{ message:"Esse contato é da própria academia: quem administra a academia não avalia ela.", code:"42501" } };
           // Gatilho avaliacao_do_jogador: só com conta, uma por academia, com o nome dela.
           const j = euJogador();
           if (!j) return { data:null, error:{ message:"Entre na sua conta para avaliar.", code:"42501" } };
           if (t.some(r => r.academia_id === payload.academia_id && r.user_id === j.user_id)) return { data:null, error:{ message:"Você já avaliou essa academia.", code:"23505" } };
           Object.assign(payload, { user_id: j.user_id, nome_autor: j.nome, contato_autor: j.email });
+        }
+        // Gatilho arrumar_busca_salva e regras da tabela (SQL 20261005150000).
+        if (table === "buscas_salvas") {
+          const j = euJogador();
+          if (!j || payload.user_id !== j.user_id) return { data:null, error:{ message:'new row violates row-level security policy for table "buscas_salvas"', code:"42501" } };
+          if (!/^\/(busca|quadras\/[a-z0-9-]+(\/[a-z0-9-]+)?)(\?[^#\s]*)?$/.test(payload.link || "")) return { data:null, error:{ message:"Busca inválida.", code:"22023" } };
+          if (t.filter(b => b.user_id === j.user_id).length >= 20) return { data:null, error:{ message:"Você já tem 20 buscas salvas. Apague uma para salvar outra.", code:"22023" } };
+          if (t.some(b => b.user_id === j.user_id && b.link === payload.link)) return { data:null, error:{ message:"duplicate key value violates unique constraint", code:"23505" } };
+          const arred = v => typeof v === "number" ? Math.round(v * 1000) / 1000 : null;
+          payload = { ...payload, lat: arred(payload.lat), lng: arred(payload.lng), avisar: !!payload.avisar };
         }
         const r = { id: "n" + (t.length+1) + Math.random().toString(36).slice(2,5), created_at: new Date().toISOString(), ...payload };
         t.push(r);
@@ -166,6 +185,12 @@
       if (op === "update") {
         window.__ultimoUpdate = JSON.parse(JSON.stringify(payload));
         if (table === "jogadores" && !(euJogador() && filtros.every(([k, v]) => k === "user_id" && v === euJogador().user_id))) return { data:null, error:{ message:"permission denied" } };
+        if (table === "buscas_salvas") {
+          const j = euJogador();
+          if (!j || Object.keys(payload).some(k => k !== "avisar")) return { data:null, error:{ message:"permission denied" } };
+          t.filter(pass).filter(r => r.user_id === j.user_id).forEach(r => { r.avisar = !!payload.avisar; });
+          return { data:null, error:null };
+        }
         const mudanca = JSON.parse(JSON.stringify(payload));
         // O que o gatilho do banco faz quando quem salva é a academia.
         if (table === "academias" && sessao && !souAdmin()) {
@@ -187,6 +212,7 @@
       if (op === "delete") {
         if (table === "respostas") { const fora = t.filter(pass); fora.forEach(r => t.splice(t.indexOf(r), 1)); window.__apagadas = (window.__apagadas || 0) + fora.length; }
         if (table === "pedidos_de_plano") { if (!souAdmin()) return { data:null, error:{ message:"permission denied" } }; t.filter(pass).forEach(r => t.splice(t.indexOf(r), 1)); }
+        if (table === "buscas_salvas") { const j = euJogador(); t.filter(pass).filter(r => j && r.user_id === j.user_id).forEach(r => t.splice(t.indexOf(r), 1)); }
         return { data:null, error:null };
       }
       // Depois do SQL-SEGURANCA.sql, o visitante não lê a linha inteira.
@@ -532,6 +558,45 @@
       db.avaliacoes.filter(r => r.user_id === j.user_id).forEach(r => { r.user_id = null; });
       delete window.__senhas[j.email];
       return { data:null, error:null };
+    }
+    // Conta do GuiaTennis Parceiros também joga (SQL 20261005170000).
+    if (nome === "ativar_conta_de_jogador") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta.", "42501");
+      let j = euJogador();
+      if (!j) {
+        const login = sessao.user.email || "";
+        const email = login.includes("@") && !login.endsWith(DOMINIO) ? login : (x.email || "");
+        j = { user_id: x.user_id, nome: x.nome_responsavel || email.split("@")[0], email, cidade: null, avisos_academias: false, promocoes: false, novidades: false,
+          email_confirmado_em: x.email_confirmado_em || null, termos_aceitos_em: x.termos_aceitos_em || new Date().toISOString(), created_at: new Date().toISOString(), token_avisos: "tok-" + x.user_id };
+        db.jogadores.push(j);
+      }
+      return { data: j, error: null };
+    }
+    // Avisos por e-mail (SQL 20261005160000).
+    if (nome === "parar_avisos") {
+      const j = db.jogadores.find(y => y.token_avisos === a.p_token);
+      if (j) {
+        const buscas = db.buscas_salvas.filter(b => b.user_id === j.user_id);
+        if (a.p_aviso === "viagem") { j.avisos_viagem = false; return { data: "viagem", error: null }; }
+        if (a.p_aviso === "novas") { j.avisos_academias = false; buscas.forEach(b => { b.avisar = false; }); return { data: "novas", error: null }; }
+        Object.assign(j, { avisos_academias: false, promocoes: false, novidades: false, avisos_viagem: false });
+        buscas.forEach(b => { b.avisar = false; });
+        return { data: "todos", error: null };
+      }
+      const x = db.academia_acessos.find(y => y.token_avisos === a.p_token);
+      if (x) { x.avisos_por_email = false; return { data: "parceiros", error: null }; }
+      return { data: null, error: null };
+    }
+    if (nome === "mudar_avisos_dos_parceiros") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      x.avisos_por_email = !!a.p_ligado;
+      return { data: null, error: null };
+    }
+    if (nome === "situacao_dos_emails") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      return { data: window.__situacaoEmails || { chave: true, envio: true, relogio: true, na_fila: 0, enviados_7_dias: 3, falharam: 0, ultimo_erro: null, por_tipo: {} }, error: null };
     }
     if (nome === "marcar_senha_trocada") { const x = meuAcesso(); if (x) x.senha_trocada_em = new Date().toISOString(); return { data:null, error:null }; }
     return semFuncao;

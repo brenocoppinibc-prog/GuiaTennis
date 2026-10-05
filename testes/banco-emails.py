@@ -1,0 +1,364 @@
+#!/usr/bin/env python3
+"""Confere os avisos por e-mail e as buscas salvas num Postgres local
+(SQL 20261005150000_buscas_salvas e 20261005160000_avisos_por_email).
+
+Não roda com os outros testes: precisa de um Postgres com a pasta
+supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
+locais" — aqui não precisa do GoTrue). O teste cria um cofre (vault), um
+pg_net (net) e um relógio (cron) de mentira, que anotam o que o banco
+pediu. Nunca aponte para o banco de verdade.
+
+  BANCO_URL=postgresql://postgres@127.0.0.1:5433/postgres python3 testes/banco-emails.py
+
+Cada consulta do site roda como o PostgREST: papel anon ou authenticated,
+com os dados do login em request.jwt.claims.
+"""
+import json, os, subprocess, sys, uuid
+
+BANCO = os.environ["BANCO_URL"]
+if "supabase" in BANCO:
+    sys.exit("Este teste é só para o Postgres local.")
+ADMIN = "guiatennis1@gmail.com"
+PINHEIROS = "00000000-0000-4000-8000-000000000001"   # aulas e locação, saibro
+MOEMA = "00000000-0000-4000-8000-000000000002"       # locação, rápida
+falhas = 0
+
+
+def ok(cond, msg):
+    global falhas
+    if not cond:
+        falhas += 1
+    print(("OK    " if cond else "FALHA ") + msg)
+
+
+def sql(texto, papel=None, user=None, email=None, amr=None):
+    """Devolve (ok, saída). Com papel, roda como o site."""
+    prefixo = ""
+    if papel:
+        c = {"role": papel}
+        if user:
+            c["sub"] = user
+        if email:
+            c["email"] = email
+        if amr:
+            c["amr"] = [{"method": amr}]
+        prefixo = f"set local role {papel}; set local request.jwt.claims = '{json.dumps(c)}'; "
+    r = subprocess.run(["psql", BANCO, "-X", "-q", "-At", "-v", "ON_ERROR_STOP=1", "-1", "-c", prefixo + texto],
+                       capture_output=True, text=True)
+    saida = (r.stdout + r.stderr).strip()
+    return r.returncode == 0, "\n".join(l for l in saida.splitlines() if l and not l.startswith("WARNING") and not l.startswith("NOTICE"))
+
+
+def um(texto, **kw):
+    certo, saida = sql(texto, **kw)
+    if not certo:
+        print("      erro: " + saida)
+    return saida.splitlines()[-1] if certo and saida else ("" if certo else None)
+
+
+def fila(where="true"):
+    return um(f"select count(*) from public.emails_a_enviar where {where}")
+
+
+# Cofre, pg_net e relógio de mentira ---------------------------------------
+sql("""
+create schema if not exists vault;
+create table if not exists vault.secrets (id uuid primary key default gen_random_uuid(), name text unique, secret text, description text);
+create or replace view vault.decrypted_secrets as select id, name, secret as decrypted_secret from vault.secrets;
+create or replace function vault.create_secret(new_secret text, new_name text default null, new_description text default '', new_key_id uuid default null)
+  returns uuid language sql as $$ insert into vault.secrets (name, secret, description) values (new_name, new_secret, new_description) returning id $$;
+create or replace function vault.update_secret(secret_id uuid, new_secret text default null, new_name text default null, new_description text default null, new_key_id uuid default null)
+  returns void language sql as $$ update vault.secrets set secret = coalesce(new_secret, secret) where id = secret_id $$;
+create schema if not exists net;
+create table if not exists net.pedidos (id bigserial primary key, url text, body jsonb, headers jsonb);
+create table if not exists net._http_response (id bigint primary key, status_code int, content text, error_msg text, timed_out boolean, created timestamptz default now());
+create or replace function net.http_post(url text, body jsonb default '{}', params jsonb default '{}', headers jsonb default '{}', timeout_milliseconds integer default 5000)
+  returns bigint language sql as $$ insert into net.pedidos (url, body, headers) values (url, body, headers) returning id $$;
+""")
+# O que uma rodada anterior deixou: contas, academias e avaliações do teste.
+sql("delete from public.avaliacoes where contato_autor like '%@exemplo.com';"
+    "delete from auth.users where email like '%@exemplo.com';"
+    "delete from public.academias where id::text not like '00000000-0000-4000-8000-%';")
+sql("delete from vault.secrets; truncate net.pedidos, net._http_response; truncate public.emails_a_enviar;"
+    "update public.academias set publicada_em = coalesce(created_at, now()) - interval '60 days' where status = 'published';"
+    "update public.emails_configuracao set site = 'https://guiatennis.com.br', prefixo = '';")
+
+
+# Contas ---------------------------------------------------------------------
+def login(email):
+    uid = str(uuid.uuid4())
+    sql(f"insert into auth.users (id, email, aud, role) values ('{uid}', '{email}', 'authenticated', 'authenticated')")
+    return uid
+
+
+def jogador(nome, email, confirmado=True, **colunas):
+    uid = login(email)
+    extra = "".join(f", {k}" for k in colunas)
+    valores = "".join(f", {v}" for v in colunas.values())
+    sql(f"insert into public.jogadores (user_id, nome, email, email_confirmado_em{extra}) values "
+        f"('{uid}', '{nome}', '{email}', {'now()' if confirmado else 'null'}{valores})")
+    return uid
+
+
+def parceiro(nome, email, academia=None, papel="principal", confirmado=True):
+    uid = login(email)
+    sql(f"insert into public.academia_acessos (user_id, usuario, nome_responsavel, cargo, email, whatsapp, email_confirmado_em, academia_id, papel) values "
+        f"('{uid}', '{email}', '{nome}', 'Dono(a)', '{email}', '11999990000', {'now()' if confirmado else 'null'}, "
+        f"{repr(academia) if academia else 'null'}, '{papel}')")
+    if academia:
+        sql(f"insert into public.academia_vinculos (user_id, academia_id, papel) values ('{uid}', '{academia}', '{papel}') on conflict do nothing")
+    return uid
+
+
+sufixo = uuid.uuid4().hex[:6]
+dono = parceiro("Ana Dona", f"ana{sufixo}@exemplo.com", PINHEIROS)
+equipe_sem = parceiro("Beto Sem", f"beto{sufixo}@exemplo.com", PINHEIROS, "equipe", confirmado=False)
+carla = jogador("Carla Jogadora", f"carla{sufixo}@exemplo.com")
+
+# 1. Avaliação nova ----------------------------------------------------------
+print("\n# Avaliação nova")
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{PINHEIROS}', 2, 'Quadra boa, mas <b>demorou</b> & atrasou')",
+                   papel="authenticated", user=carla, email=f"carla{sufixo}@exemplo.com")
+ok(certo, "jogadora avalia normalmente (o aviso não atrapalha)" + ("" if certo else ": " + saida))
+ok(fila("tipo = 'avaliacao'") == "1", "um aviso de avaliação: só para quem confirmou o e-mail")
+linha = um(f"select para || '|' || assunto from public.emails_a_enviar where tipo = 'avaliacao'")
+ok(linha == f"ana{sufixo}@exemplo.com|Academia Exemplo Pinheiros recebeu uma avaliação nova (2 de 5)", "vai para a dona, com a nota no assunto: " + str(linha))
+html = um("select html from public.emails_a_enviar where tipo = 'avaliacao'") or ""
+ok("&lt;b&gt;demorou&lt;/b&gt; &amp; atrasou" in html and "<b>demorou" not in html, "comentário escapado no HTML")
+ok("Pedir análise" in html, "nota baixa lembra o Pedir análise")
+ok("/parceiros/painel?utm_source=Email-avaliacao" in html, "botão leva ao painel, com a etiqueta do e-mail")
+ok("parar-avisos=" in html and "aviso=parceiros" in html, "rodapé com o link para parar os avisos")
+ok(um("select texto like '%★★☆☆☆ (2 de 5)%' and texto not like '%&lt;%' from public.emails_a_enviar where tipo = 'avaliacao'") == "t",
+   "versão em texto com as estrelas, sem HTML")
+
+# Sem a fila, a avaliação continua entrando.
+sql("alter table public.emails_a_enviar rename to emails_a_enviar_x")
+outro = jogador("Davi Jogador", f"davi{sufixo}@exemplo.com")
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars) values ('{PINHEIROS}', 5)",
+                   papel="authenticated", user=outro, email=f"davi{sufixo}@exemplo.com")
+sql("alter table public.emails_a_enviar_x rename to emails_a_enviar")
+ok(certo, "sem a fila, avaliar continua funcionando" + ("" if certo else ": " + saida))
+
+# 2. Pedido de acesso -------------------------------------------------------
+print("\n# Pedido de acesso")
+novo = parceiro("Edu Novo", f"edu{sufixo}@exemplo.com")
+certo, saida = sql(f"select public.pedir_para_administrar('{PINHEIROS}')", papel="authenticated", user=novo, email=f"edu{sufixo}@exemplo.com")
+ok(certo, "pedido para academia com responsável" + ("" if certo else ": " + saida))
+ok(um(f"select para from public.emails_a_enviar where tipo = 'pedido_responsavel'") == f"ana{sufixo}@exemplo.com", "o responsável recebe o pedido")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'pedido_responsavel'") == "Edu Novo pediu acesso à Academia Exemplo Pinheiros", "assunto com quem pediu")
+ok("/parceiros/pessoas" in (um("select html from public.emails_a_enviar where tipo = 'pedido_responsavel'") or ""), "botão leva a Pessoas")
+sql(f"select public.cancelar_meu_pedido('{PINHEIROS}')", papel="authenticated", user=novo)
+sql(f"select public.pedir_para_administrar('{PINHEIROS}')", papel="authenticated", user=novo)
+ok(fila("tipo = 'pedido_responsavel'") == "1", "cancelar e pedir de novo no mesmo dia não manda outro e-mail")
+
+certo, saida = sql(f"select public.pedir_para_administrar('{MOEMA}')", papel="authenticated", user=novo)
+ok(um(f"select para from public.emails_a_enviar where tipo = 'pedido_guiatennis'") == ADMIN, "academia sem responsável: o aviso vai para o GuiaTennis")
+ok(um("select texto like '%WhatsApp 11999990000%' from public.emails_a_enviar where tipo = 'pedido_guiatennis'") == "t", "com o WhatsApp de quem pediu")
+
+# 3. Pedido aceito ------------------------------------------------------------
+print("\n# Pedido aceito")
+sql(f"update public.academia_acessos set academia_id = '{PINHEIROS}' where user_id = '{dono}'")
+certo, saida = sql(f"select public.responder_pedido_de_acesso('{novo}', true)", papel="authenticated", user=dono)
+ok(certo, "responsável aceita" + ("" if certo else ": " + saida))
+ok(um("select para || '|' || assunto from public.emails_a_enviar where tipo = 'pedido_aceito'") == f"edu{sufixo}@exemplo.com|Pronto: você já administra a Academia Exemplo Pinheiros",
+   "quem pediu recebe o \"Pronto\"")
+# Quem confirma pelo próprio código não recebe (já viu na tela).
+codigo = um(f"select public.gerar_codigo_do_pedido('{novo}', '{MOEMA}')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+ok(um(f"select public.confirmar_meu_codigo('{codigo}', '{MOEMA}')", papel="authenticated", user=novo) == "ok", "quem pediu digita o código")
+ok(fila("tipo = 'pedido_aceito'") == "1", "quem digitou o código não recebe o \"Pronto\" (já viu na tela)")
+
+# 4. Vou viajar ---------------------------------------------------------------
+print("\n# Vou viajar")
+fabi = jogador("Fabi Viajante", f"fabi{sufixo}@exemplo.com")
+sql(f"update public.jogadores set avisos_viagem = true, viagem_uf = 'SP', viagem_cidade = 'São Paulo', viagem_ida = current_date + 20, viagem_volta = current_date + 23 where user_id = '{fabi}'",
+    papel="authenticated", user=fabi)
+ok(fila("tipo = 'viagem'") == "0", "viagem daqui a 20 dias: ainda não")
+sql(f"update public.jogadores set viagem_ida = current_date + 5, viagem_volta = current_date + 8 where user_id = '{fabi}'", papel="authenticated", user=fabi)
+ok(fila("tipo = 'viagem'") == "1", "viagem daqui a 5 dias: o aviso sai ao salvar")
+assunto = um("select assunto from public.emails_a_enviar where tipo = 'viagem'")
+ok(assunto == "Sua viagem para São Paulo: 3 academias de tênis para jogar", "assunto com quantas academias (sem a pausada nem a pendente): " + str(assunto))
+html = um("select html from public.emails_a_enviar where tipo = 'viagem'") or ""
+ok("/academia/academia-exemplo-pinheiros-" in html and "utm_source=Email-viagem" in html, "cada academia com link para a ficha")
+ok("Pausada" not in html and "Pendente" not in html, "sem a academia pausada e sem a pendente")
+ok("/quadras/sao-paulo?utm_source=Email-viagem" in html, "botão para a página da cidade")
+ok(" a " in (um("select public.datas_da_viagem(current_date + 5, current_date + 8)") or ""), "datas por extenso")
+sql(f"update public.jogadores set viagem_volta = current_date + 9 where user_id = '{fabi}'", papel="authenticated", user=fabi)
+sql("select public.preparar_aviso_de_viagem(null)")
+ok(fila("tipo = 'viagem'") == "1", "a mesma viagem não recebe de novo")
+sql(f"update public.jogadores set viagem_cidade = 'Ubatuba', viagem_ida = null, viagem_volta = null where user_id = '{fabi}'", papel="authenticated", user=fabi)
+ok(fila("tipo = 'viagem'") == "1", "cidade sem academia no guia: espera")
+gabi = jogador("Gabi Sem Confirmar", f"gabi{sufixo}@exemplo.com", confirmado=False)
+sql(f"update public.jogadores set avisos_viagem = true, viagem_uf = 'SP', viagem_cidade = 'São Paulo' where user_id = '{gabi}'", papel="authenticated", user=gabi)
+ok(fila(f"para = 'gabi{sufixo}@exemplo.com'") == "0", "e-mail não confirmado não recebe")
+sql(f"select public.confirmar_meu_email()", papel="authenticated", user=gabi, amr="otp")
+ok(fila(f"para = 'gabi{sufixo}@exemplo.com' and tipo = 'viagem'") == "1", "ao confirmar o e-mail, a viagem sem data recebe na hora")
+
+# 5. Buscas salvas ---------------------------------------------------------------
+print("\n# Buscas salvas")
+hugo = jogador("Hugo Buscador", f"hugo{sufixo}@exemplo.com")
+busca = ("insert into public.buscas_salvas (user_id, termo, bairro, cidade, lat, lng, filtros, link, avisar) values "
+         f"('{hugo}', 'Moema, São Paulo', 'Moema', 'São Paulo', -23.60123456, -46.66543210, "
+         "'{\"piso\": [\"rapida\"], \"distancia\": 5}', '/busca?q=Moema,+S%C3%A3o+Paulo&piso=rapida&distancia=5', true) returning id")
+id_busca = um(busca, papel="authenticated", user=hugo)
+ok(bool(id_busca), "jogador salva a busca")
+ok(um(f"select lat || ',' || lng from public.buscas_salvas where id = '{id_busca}'") == "-23.601,-46.665", "o ponto fica arredondado (~100 m)")
+certo, _ = sql(busca, papel="authenticated", user=hugo)
+ok(not certo, "a mesma busca não entra duas vezes")
+certo, _ = sql(busca.replace("'/busca?q=Moema", "'https://golpe.com/?q=Moema"), papel="authenticated", user=hugo)
+ok(not certo, "link que não é busca do site é recusado")
+ok(um(f"select count(*) from public.buscas_salvas", papel="authenticated", user=carla) == "0", "outra conta não vê as buscas")
+certo, _ = sql(busca.replace(f"('{hugo}'", f"('{carla}'"), papel="authenticated", user=hugo)
+ok(not certo, "não salva busca em nome de outra conta")
+certo, _ = sql(busca.replace(f"('{hugo}'", f"('{dono}'"), papel="authenticated", user=dono)
+ok(not certo, "conta de academia não salva busca")
+certo, _ = sql(f"update public.buscas_salvas set avisada_ate = now() where id = '{id_busca}'", papel="authenticated", user=hugo)
+ok(not certo, "o site só muda o aviso da busca, mais nada")
+for i in range(19):
+    sql(busca.replace("distancia=5'", f"distancia=5&n={i}'"), papel="authenticated", user=hugo)
+certo, saida = sql(busca.replace("distancia=5'", "distancia=5&n=x'"), papel="authenticated", user=hugo)
+ok(not certo and "20 buscas" in saida, "até 20 buscas por conta")
+sql(f"delete from public.buscas_salvas where user_id = '{hugo}' and id <> '{id_busca}'", papel="authenticated", user=hugo)
+ok(um(f"select count(*) from public.buscas_salvas where user_id = '{hugo}'") == "1", "a própria conta apaga as buscas")
+
+# 6. Academias novas -----------------------------------------------------------
+print("\n# Academias novas")
+iara = jogador("Iara Cidade", f"iara{sufixo}@exemplo.com", avisos_academias="true", cidade="'Sao Paulo'",
+               avisos_mudados_em="now() - interval '2 days'")
+sql("update public.buscas_salvas set avisar_desde = now() - interval '2 days' where id = '%s'" % id_busca)
+
+
+def academia_nova(nome, lat, lng, pisos, cidade="São Paulo"):
+    i = um(f"insert into public.academias (name, cidade, bairro, lat, lng, pisos, modalidades, cobertura, status) values "
+           f"('{nome}', '{cidade}', 'Moema', {lat}, {lng}, '{json.dumps(pisos)}', '[\"locacao\"]', '[\"coberta\"]', 'pending') returning id",
+           papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+    sql(f"update public.academias set status = 'published' where id = '{i}'", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+    return i
+
+
+perto = academia_nova("Arena Nova <Moema>", -23.603, -46.664, ["rapida"])
+ok(um(f"select publicada_em is not null from public.academias where id = '{perto}'") == "t", "publicar marca quando a academia entrou")
+academia_nova("Saibro Novo Moema", -23.602, -46.666, ["saibro"])
+academia_nova("Rápida Longe", -23.40, -46.40, ["rapida"], cidade="Guarulhos")
+sql("select public.preparar_avisos_de_academias_novas()")
+ok(fila(f"para = 'iara{sufixo}@exemplo.com' and tipo = 'academias_novas'") == "1", "cidade da conta (sem acento): recebe")
+assunto = um(f"select assunto from public.emails_a_enviar where para = 'iara{sufixo}@exemplo.com' and tipo = 'academias_novas'")
+ok(assunto == "2 academias novas no GuiaTennis", "as duas de São Paulo, não a de Guarulhos: " + str(assunto))
+html = um(f"select html from public.emails_a_enviar where para = 'hugo{sufixo}@exemplo.com' and tipo = 'academias_novas'") or ""
+ok("Arena Nova &lt;Moema&gt;" in html, "busca salva: a academia nova perto, com piso rápido (nome escapado)")
+ok("Saibro Novo" not in html and "Longe" not in html, "busca salva: sem a de saibro e sem a de longe")
+ok("Na sua busca" in html and "/busca?q=Moema" in html, "seção da busca com o link dela")
+ok(um(f"select assunto from public.emails_a_enviar where para = 'hugo{sufixo}@exemplo.com' and tipo = 'academias_novas'") == "Academia nova no GuiaTennis: Arena Nova <Moema>",
+   "uma só: o nome no assunto")
+ok(fila(f"para = 'carla{sufixo}@exemplo.com' and tipo = 'academias_novas'") == "0", "sem o aviso ligado, nada")
+# A página da cidade salva (sem ponto) vale a cidade inteira.
+leo = jogador("Leo Cidade", f"leo{sufixo}@exemplo.com")
+certo, saida = sql("insert into public.buscas_salvas (user_id, termo, cidade, link, avisar) values "
+                   f"('{leo}', 'São Paulo', 'São Paulo', '/quadras/sao-paulo', true)", papel="authenticated", user=leo)
+ok(certo, "a página da cidade se salva como busca" + ("" if certo else ": " + saida))
+sql(f"update public.buscas_salvas set avisar_desde = now() - interval '2 days' where user_id = '{leo}'")
+sql(f"update public.emails_a_enviar set chave = chave || ':antes' where tipo = 'academias_novas'")
+sql(f"update public.jogadores set academias_avisadas_ate = null where user_id in ('{iara}')")
+sql("select public.preparar_avisos_de_academias_novas()")
+ok(um(f"select assunto from public.emails_a_enviar where para = 'leo{sufixo}@exemplo.com'") == "2 academias novas no GuiaTennis",
+   "busca da cidade: as academias novas da cidade inteira")
+ok("/quadras/sao-paulo?utm_source=Email-academias-novas" in (um(f"select html from public.emails_a_enviar where para = 'leo{sufixo}@exemplo.com'") or ""),
+   "com o link da página da cidade")
+sql(f"delete from public.emails_a_enviar where para in ('leo{sufixo}@exemplo.com', 'iara{sufixo}@exemplo.com') and chave not like '%:antes'")
+sql("update public.emails_a_enviar set chave = replace(chave, ':antes', '') where tipo = 'academias_novas'")
+sql("select public.preparar_avisos_de_academias_novas()")
+ok(fila("tipo = 'academias_novas'") == "2", "rodar de novo não repete")
+sql(f"update public.academias set publicada_em = now() - interval '1 hour' where id = '{perto}'")
+sql("update public.emails_a_enviar set chave = chave || ':ontem' where tipo = 'academias_novas'")
+sql("select public.preparar_avisos_de_academias_novas()")
+ok(fila("tipo = 'academias_novas'") == "2", "academia já avisada não volta no dia seguinte")
+
+# 7. Envio -----------------------------------------------------------------------
+print("\n# Envio pelo Resend")
+ok(um("select public.enviar_emails()") == "0", "sem a chave: nada sai, tudo fica na fila")
+ok(um("select public.configurar_emails('re_teste_123', 'https://deploy-preview-5--exemplo.netlify.app/')") == "chave do Resend guardada", "o GitHub guarda a chave")
+ok(um("select public.configurar_emails('re_teste_456', null)") == "chave do Resend guardada", "trocar a chave")
+ok(um("select count(*) from vault.secrets where name = 'resend_api_key' and secret = 're_teste_456'") == "1", "uma chave só no cofre")
+ok(um("select prefixo = '[Teste] ' from public.emails_configuracao") == "t", "banco de teste: assunto com [Teste]")
+ok(um("select public.site_dos_emails()") == "https://deploy-preview-5--exemplo.netlify.app", "banco de teste: os links novos apontam para a prévia")
+certo, _ = sql("select public.configurar_emails('x', null)", papel="authenticated", user=hugo)
+ok(not certo, "o site não mexe na chave")
+certo, _ = sql("select public.enviar_emails()", papel="anon")
+ok(not certo, "o visitante não dispara o envio")
+certo, _ = sql("select count(*) from public.emails_a_enviar", papel="authenticated", user=dono)
+ok(not certo, "ninguém de fora lê a fila")
+total = int(fila("enviado_em is null"))
+ok(um("select public.enviar_emails()") == "2", "manda dois por vez")
+pedido = um("select body::text || '|' || headers::text from net.pedidos order by id limit 1") or ""
+corpo, cab = pedido.split("|", 1)
+corpo, cab = json.loads(corpo), json.loads(cab)
+ok(cab.get("Authorization") == "Bearer re_teste_456" and cab.get("Idempotency-Key", "").startswith("guiatennis-"), "chave e idempotência no cabeçalho")
+ok(corpo["from"] == "GuiaTennis <nao-responda@guiatennis.com.br>" and corpo["subject"].startswith("[Teste] "), "remetente e assunto")
+ok("List-Unsubscribe" in json.dumps(corpo.get("headers", {})), "cabeçalho para descadastrar")
+ids = um("select string_agg(pedido_id::text, ',' order by pedido_id) from public.emails_a_enviar where pedido_id is not null").split(",")
+sql(f"insert into net._http_response (id, status_code, content) values ({ids[0]}, 200, '{{\"id\":\"abc-123\"}}'), ({ids[1]}, 429, 'rate limit')")
+ok(um("select public.enviar_emails()") == "2", "lê as respostas e manda os próximos")
+ok(um("select resend_id from public.emails_a_enviar where enviado_em is not null") == "abc-123", "o que deu certo fica como enviado")
+ok(um(f"select tentativas || ' ' || erro from public.emails_a_enviar where pedido_id is null and erro like '429%'") is not None, "429 volta para a fila")
+ok(um("select tentativas from public.emails_a_enviar where erro like '429%'") == "1", "429 não conta como tentativa (só a nova)")
+sql("update public.emails_a_enviar set pedido_id = null, tentativas = 5, erro = '422 e-mail inválido' where enviado_em is null and erro like '429%'")
+ok(um("select count(*) from public.emails_a_enviar where tentativas >= 5 and enviado_em is null") == "1", "depois de 5 tentativas, desiste")
+
+# 8. Parar os avisos pelo link ---------------------------------------------------
+print("\n# Parar os avisos")
+token = um(f"select token_avisos from public.jogadores where user_id = '{hugo}'")
+ok(um(f"select public.parar_avisos('{token}', 'novas')", papel="anon") == "novas", "o link do e-mail para os avisos de academias novas, sem entrar")
+ok(um(f"select count(*) from public.buscas_salvas where user_id = '{hugo}' and avisar") == "0", "as buscas salvas param de avisar (e continuam salvas)")
+ok(um(f"select public.parar_avisos('{uuid.uuid4()}', 'novas')", papel="anon") == "", "link inventado não faz nada")
+token = um(f"select token_avisos from public.jogadores where user_id = '{fabi}'")
+ok(um(f"select public.parar_avisos('{token}', 'viagem')", papel="anon") == "viagem", "parar os avisos de viagem")
+ok(um(f"select avisos_viagem from public.jogadores where user_id = '{fabi}'") == "f", "aviso de viagem desligado")
+token = um(f"select token_avisos from public.academia_acessos where user_id = '{dono}'")
+ok(um(f"select public.parar_avisos('{token}', 'parceiros')", papel="anon") == "parceiros", "a academia para os avisos pelo link")
+antes = fila(f"tipo = 'avaliacao' and para = 'ana{sufixo}@exemplo.com'")
+jota = jogador("Jota Jogador", f"jota{sufixo}@exemplo.com")
+sql(f"insert into public.avaliacoes (academia_id, stars) values ('{PINHEIROS}', 4)", papel="authenticated", user=jota)
+ok(fila(f"tipo = 'avaliacao' and para = 'ana{sufixo}@exemplo.com'") == antes, "quem parou não recebe mais")
+ok(fila(f"tipo = 'avaliacao' and para = 'edu{sufixo}@exemplo.com'") == "1", "quem entrou na equipe e tem o e-mail confirmado recebe")
+certo, _ = sql("select public.mudar_avisos_dos_parceiros(true)", papel="authenticated", user=dono)
+ok(certo and um(f"select avisos_por_email from public.academia_acessos where user_id = '{dono}'") == "t", "no Perfil dos Parceiros, liga de novo")
+certo, _ = sql("select public.mudar_avisos_dos_parceiros(true)", papel="authenticated", user=hugo)
+ok(not certo, "jogador não mexe nos avisos dos Parceiros")
+
+# 9. Situação para o admin -------------------------------------------------------
+print("\n# Situação no painel do admin")
+s = um("select public.situacao_dos_emails()::text", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+s = json.loads(s) if s else {}
+ok(s.get("chave") is True and s.get("envio") is True and s.get("relogio") is False, "admin vê a chave, o envio e o relógio (desligado aqui)")
+ok(s.get("enviados_7_dias") == 1 and s.get("falharam") == 1, "e quantos saíram e quantos falharam")
+certo, _ = sql("select public.situacao_dos_emails()", papel="authenticated", user=hugo)
+ok(not certo, "só o admin vê")
+
+# 10. Conta do Parceiros também joga ---------------------------------------------
+print("\n# Conta do GuiaTennis Parceiros no site dos jogadores")
+certo, _ = sql(f"insert into public.avaliacoes (academia_id, stars) values ('{MOEMA}', 5)", papel="authenticated", user=dono)
+ok(not certo, "antes de ativar a parte de jogador, não avalia")
+ok(um("select nome || '|' || email || '|' || (email_confirmado_em is not null) from public.ativar_conta_de_jogador()", papel="authenticated", user=dono)
+   == f"Ana Dona|ana{sufixo}@exemplo.com|true", "o site ativa a parte de jogador com o nome e o e-mail do Parceiros")
+ok(um("select count(*) from public.ativar_conta_de_jogador()", papel="authenticated", user=dono) == "1"
+   and um(f"select count(*) from public.jogadores where user_id = '{dono}'") == "1", "ativar de novo não duplica")
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 5, 'Ótima')", papel="authenticated", user=dono)
+ok(certo, "avalia outra academia normalmente" + ("" if certo else ": " + saida))
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars) values ('{PINHEIROS}', 5)", papel="authenticated", user=dono)
+ok(not certo and "administra essa academia" in saida, "não avalia a academia que administra")
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, contato_autor) values ('{PINHEIROS}', 5, 'ana{sufixo}@exemplo.com')",
+                   papel="authenticated", user=jogador("Kiko Jogador", f"kiko{sufixo}@exemplo.com"))
+ok(not certo and "própria academia" in saida, "o contato de quem administra a academia também não avalia ela")
+certo, _ = sql(busca.replace(f"('{hugo}'", f"('{dono}'"), papel="authenticated", user=dono)
+ok(certo, "salva busca como qualquer jogador")
+certo, _ = sql("select public.excluir_minha_conta_jogador()", papel="authenticated", user=dono)
+ok(certo and um(f"select count(*) from public.jogadores where user_id = '{dono}'") == "0"
+   and um(f"select count(*) from public.academia_acessos where user_id = '{dono}'") == "1"
+   and um(f"select count(*) from auth.users where id = '{dono}'") == "1", "excluir a parte de jogador mantém o login e as academias")
+ok(um(f"select count(*) from public.buscas_salvas where user_id = '{dono}'") == "0", "e apaga as buscas dela")
+
+# Excluir a conta apaga as buscas.
+sql(f"delete from auth.users where id = '{hugo}'")
+ok(um(f"select count(*) from public.buscas_salvas where user_id = '{hugo}'") == "0", "excluir a conta apaga as buscas salvas")
+
+print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
+sys.exit(1 if falhas else 0)

@@ -175,7 +175,7 @@ sql(f"delete from public.avaliacoes where id = '{REVIEW_MINHA}'", "authenticated
 _, s = ultimo(f"select count(*) from public.avaliacoes where id = '{REVIEW_MINHA}'")
 ok(s == "1", "academia não apaga avaliação")
 bom, s = sql(f"insert into public.avaliacoes (academia_id, stars, comment, nome_autor) values ('{ACADEMIA}', 5, 'A melhor!', 'Dono')", "authenticated", academia)
-ok(not bom and "não avaliam" in s, "academia não avalia a si mesma")
+ok(not bom and ("administra" in s or "row-level security" in s), "academia não avalia a si mesma")
 _, s2 = ultimo(f"select stars from public.avaliacoes where id = '00000000-0000-4000-9000-000000000002'")
 sql("update public.avaliacoes set stars = 1 where id = '00000000-0000-4000-9000-000000000002'", "authenticated", academia)
 _, s3 = ultimo(f"select stars from public.avaliacoes where id = '00000000-0000-4000-9000-000000000002'")

@@ -24,6 +24,22 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 05/10/2026
 
+> **Estado (05/10/2026, noite):** o Breno respondeu ao que estava aberto:
+> **não quer endereço próprio para o Parceiros** (fica em
+> guiatennis.com.br/parceiros, `PARCEIROS_NO_ENDERECO_PROPRIO` continua
+> `false`), **o código de 6 números já está ligado** no Supabase e **quer
+> salvar as buscas**. Entraram as regras 51 a 55: **avisos por e-mail pelo
+> Resend** (avaliação nova, pedido de acesso, pedido aceito, viagem e
+> academias novas — SQL `20261005160000_avisos_por_email`), **buscas
+> salvas** na conta (SQL `20261005150000_buscas_salvas`), **a conta do
+> Parceiros funciona como conta normal no site dos jogadores** (só não
+> avalia a academia que administra — SQL `20261005170000_parceiro_tambem_joga`,
+> muda a regra 18), **a página da cidade lista todas as academias da cidade**
+> sem procurar endereço, e os textos "Por que o GuiaTennis" e "Por que estar
+> no GuiaTennis". Falta o Breno pôr o segredo `RESEND_API_KEY` no GitHub
+> (seção 11, primeiro item). Testes: **802 verificações, nenhuma falha** nos 26 arquivos
+> do navegador e 95 no `banco-emails.py` (Postgres local).
+>
 > **Estado (05/10/2026, fim do dia):** depois do pacote abaixo, entraram as
 > regras 46 a 50: **percurso de cada visita** com relatório no admin (SQL
 > `20261005140000`), acessos do admin agrupados por academia, **a academia
@@ -218,10 +234,12 @@ cobra taxa e não fica no meio** da negociação.
 17. **Sempre oferecer o plano de cima.** Pedido do Breno: toda tela da
     academia vende o próximo plano (painel, desempenho, conta, plano). No
     Premium, o que vem aí (promoções e avisos para os alunos).
-18. **Academia não avalia academia.** Conta do GuiaTennis Parceiros (logada)
-    e contato de academia (e-mail/WhatsApp de conta, WhatsApp de academia)
-    não avaliam nenhuma academia; só respondem as da própria. Quem garante
-    é o banco (gatilho `avaliacao_de_parceiro`).
+18. **Quem administra a academia não avalia ela** (mudou em 05/10/2026,
+    regra 53; antes nenhuma conta do Parceiros avaliava). A conta do
+    GuiaTennis Parceiros avalia as outras academias como qualquer jogador;
+    a academia que ela administra (e o e-mail/WhatsApp de quem a
+    administra, ou o WhatsApp dela) não. Quem garante é o banco (gatilho
+    `avaliacao_de_parceiro`).
 19. **O logo é um desenho só** (pedido de 01/10/2026: "não deixe diferente
     onde tem a logo"): raquete com a bola no meio, **três riscos** saindo
     pela esquerda e cabo reto com a ponta. Sai de `logoDesenho()` no
@@ -254,8 +272,7 @@ cobra taxa e não fica no meio** da negociação.
     (Entrar, Criar conta, Minha conta com Sair e Excluir), menu com "Entrar
     ou criar conta"/"Minha conta" e "Avisos por e-mail", e
     `jogadorEntaoFaz` (avaliar sem conta abre o Entrar e a avaliação sai
-    depois). **O envio dos e-mails ainda não existe**: precisa de um serviço
-    de e-mail; hoje fica guardado quem quer receber o quê. Esqueceu a
+    depois). O envio dos avisos existe desde 05/10/2026 (regra 51). Esqueceu a
     senha: WhatsApp do GuiaTennis, como nos Parceiros.
 24. **Um lugar só para o e-mail** (pedido de 02/10/2026), no site e no
     GuiaTennis Parceiros: a pessoa digita o e-mail, toca em Continuar e o
@@ -361,8 +378,8 @@ cobra taxa e não fica no meio** da negociação.
     responsável (…)", sem "Gerar código"; "Aprovar" pede confirmação (só
     depois de conferir documento). SQL `20261003140000_pedido_ao_responsavel`
     (`pedidos_para_minha_academia`, `responder_pedido_de_acesso`). Teste:
-    `testes/pedido-ao-responsavel.js`. Quando o e-mail estiver ligado, o
-    responsável deveria receber um aviso por e-mail do pedido (em aberto).
+    `testes/pedido-ao-responsavel.js`. Desde 05/10/2026 o responsável recebe o
+    pedido também por e-mail (regra 51).
 33. **Convite para a conta, como o trivago** (pedido de 04/10/2026): no
     topo, ao lado do menu, o ícone da pessoa com brilho dourado para quem
     não entrou (`botaoConta`); jogador logado vê a inicial do nome;
@@ -425,9 +442,8 @@ cobra taxa e não fica no meio** da negociação.
     abre estado, cidade (IBGE), ida e volta (as duas opcionais). Fica na
     conta (`jogadores.avisos_viagem`, `viagem_uf/cidade/ida/volta`, SQL
     `20261004130000_aviso_de_viagem` e `20261004140000_viagem_sem_data`) e
-    também vira a viagem do aparelho (sem perder o hotel guardado nela). Quando o e-mail sai ainda não está
-    definido (o Breno vai dizer); o envio é o próximo passo, com os outros
-    avisos pelo Resend. Marcar não redesenha a tela, para a senha digitada
+    também vira a viagem do aparelho (sem perder o hotel guardado nela). O e-mail sai 7 dias antes da ida (ou
+    logo, sem data ou com menos de 7 dias), pelo Resend (regra 51). Marcar não redesenha a tela, para a senha digitada
     não se perder.
 39. **Pacote de 05/10/2026** (fotos do Breno no iPad). Teste:
     `testes/comparar-e-avisos.js`.
@@ -435,8 +451,8 @@ cobra taxa e não fica no meio** da negociação.
       não entrou, um balão sai do ícone (`PUSHES_CONTA`): depois de 10 s,
       fica 9 s, volta a cada 40 s, no máximo 3 por visita; o ✕ para por 3
       dias. Promete só o que a conta faz hoje (avisos por e-mail, avaliar,
-      a mesma conta em todo aparelho). "Salvar as buscas" na conta ainda
-      não existe.
+      a mesma conta em todo aparelho). Desde 05/10/2026 o terceiro balão
+      fala das buscas salvas (regra 52).
     - "Grátis para quem joga" é o primeiro card de "Por que o GuiaTennis",
       com a mesma cor dos outros.
     - Seletor da comparação: bandeja com "Comparar N" quando há 2 a 5.
@@ -540,10 +556,10 @@ cobra taxa e não fica no meio** da negociação.
     GuiaTennis" e "Ver no site" vão para a aba `guiatennis`. O código já
     entende **`parceiros.guiatennis.com.br`** com links curtos (`/painel`,
     `/cadastro`, `/academias`: `caminhoDosParceiros`, `urlDosParceiros`);
-    quando o endereço estiver no ar, trocar `PARCEIROS_NO_ENDERECO_PROPRIO`
-    para `true`: os links do guiatennis.com.br passam a apontar para ele e
-    `guiatennis.com.br/parceiros/…` muda sozinho para lá. Cada endereço tem
-    o próprio login, como o trivago e o Business Studio. Menu do site dos
+    **o Breno não quer outro endereço** (05/10/2026): o Parceiros fica em
+    guiatennis.com.br/parceiros e `PARCEIROS_NO_ENDERECO_PROPRIO` continua
+    `false` (o código fica pronto, sem uso). No mesmo endereço, o login é um
+    só para os dois sites (regra 53). Menu do site dos
     jogadores com a conta de academia: **"Sair da conta"** (não "Sair da
     área da academia").
 46. **Percurso das visitas** (pedido de 05/10/2026: "o caminho exato, de
@@ -594,6 +610,102 @@ cobra taxa e não fica no meio** da negociação.
     05/10/2026: "não acho legal aparecer isso para qualquer acesso"): com o
     Parceiros em aba própria, a conta de academia logada vê o site dos
     jogadores limpo; o painel fica no menu ("Painel da minha academia").
+51. **Avisos por e-mail pelo Resend** (pedido de 05/10/2026: "preciso
+    mandar os e-mails ainda"), como o Google Business Profile (avaliação
+    nova, pedido de acesso), o Airbnb e o Booking ("Sua viagem para…") e o
+    Zillow/Idealista (alerta da busca salva). Tudo dentro do banco, sem
+    servidor novo (SQL `20261005160000_avisos_por_email`): cada aviso entra
+    na fila `emails_a_enviar` (a `chave` não deixa repetir) e o relógio do
+    banco (**pg_cron**, `guiatennis-enviar-emails`, a cada minuto) chama
+    `enviar_emails()`, que manda pela API do Resend com o **pg_net** — dois
+    por vez (limite do Resend), até 5 tentativas em 3 dias, 429 não conta,
+    chave de idempotência. A chave do Resend fica no **cofre (Vault)** do
+    Supabase: o GitHub copia do segredo `RESEND_API_KEY` (passo "Ligar os
+    avisos por e-mail" do `banco.yml`, `configurar_emails`), que também diz
+    o endereço dos links (no banco de teste, a prévia do PR, e o assunto
+    ganha "[Teste]"). Os avisos:
+    - **avaliação nova** → todas as pessoas da academia (gatilho
+      `aviso_de_avaliacao_nova`), com a nota, o comentário, "Responder a
+      avaliação" e, com 1 ou 2 estrelas, o lembrete do "Pedir análise";
+    - **pedido de acesso** → o responsável principal ("Ver o pedido" em
+      Pessoas) ou, quando o pedido é para o GuiaTennis conferir, o admin
+      (com o WhatsApp de quem pediu; academia nova: "Academia nova para
+      aprovar"); um por dia para o mesmo pedido;
+    - **pedido aceito** → quem pediu ("Pronto: você já administra…"),
+      menos quando a própria pessoa digitou o código;
+    - **viagem** → 7 dias antes da ida (sem data ou com menos de 7 dias:
+      ao salvar), uma vez por viagem, com até 6 academias da cidade e "Ver
+      no mapa"; sem academia na cidade, espera; viagem acabada, não;
+    - **academias novas** → uma vez por dia, às 10h de Brasília
+      (`guiatennis-avisos-do-dia`), só quando há novidade: as que entraram
+      na cidade da conta (aviso "Academias novas na minha cidade") e perto
+      de cada busca salva com aviso (distância da busca ou 10 km; a página
+      da cidade vale a cidade inteira; mesmo piso, cobertura e modalidade).
+      `academias.publicada_em` diz quando a academia entrou.
+    Só recebe quem **confirmou o e-mail** pelo código. Todo aviso tem o
+    link **"Não quero mais receber"** (`?parar-avisos=<número da conta>&aviso=`),
+    que abre uma folha que pergunta antes de parar (`renderPararAvisos`,
+    `parar_avisos`), sem entrar na conta, e o cabeçalho List-Unsubscribe.
+    A academia desliga também no Perfil do Parceiros ("Avisos por e-mail",
+    `mudar_avisos_dos_parceiros`; começam ligados, como no Google). Links
+    com `utm_source=Email-…` (aparecem em "De onde vieram"). No admin,
+    Estatísticas mostra se os avisos estão saindo (`situacao_dos_emails`:
+    chave, pg_net, relógio, enviados em 7 dias, fila, último erro). Sem a
+    chave, sem o pg_net ou sem o pg_cron, tudo fica na fila e nada quebra.
+    O aviso da conta virou "Academias novas na minha cidade" (saiu "e
+    mudanças nas minhas favoritas": as favoritas ficam só no aparelho e o
+    banco não as conhece). Teste: `testes/banco-emails.py` (Postgres local)
+    e `testes/buscas-e-avisos.js`.
+52. **Buscas salvas** (pedido de 05/10/2026: "sim salvar busca"), como o
+    "Salvar busca" do Booking e o "Save search" do Zillow e do Idealista:
+    na busca, embaixo da barra, **"Salvar busca"** (sem conta, abre o
+    Entrar e salva depois); salva, vira "Busca salva" e aparece o aviso
+    "Busca salva na sua conta · Avisar por e-mail quando entrar academia
+    nova aqui" (o aviso começa desligado — LGPD). Fica na conta
+    (`buscas_salvas`, SQL `20261005150000`): o que foi digitado, bairro e
+    cidade, o ponto arredondado (~100 m, o banco arredonda de novo), os
+    filtros e o link (`/busca?…` ou a página da cidade, `/quadras/…`; o
+    banco recusa outro link); até 20 por conta, sem repetir. No perfil, o
+    cartão **"Buscas salvas"** (tocar refaz a busca, "Avisar por e-mail de
+    academias novas", "Apagar") e, no menu, "Minhas quadras › Buscas
+    salvas". Banco sem a tabela: o botão e o item somem
+    (`semBuscasSalvas`). Política de Privacidade atualizada.
+53. **A conta do Parceiros é uma conta normal no site dos jogadores**
+    (pedido de 05/10/2026: "deixar como um e-mail normal, só as avaliações
+    que não podem ser feitas se administrar uma academia"), como o Google
+    (a conta do Business Profile avalia outros lugares) e o Booking (o dono
+    de hotel também viaja). No site dos jogadores, a conta logada do
+    Parceiros tem perfil (`/perfil`), buscas salvas, avisos, viagem,
+    "Jogou aqui?" e avalia as outras academias; a parte de jogador nasce
+    sozinha, com o nome e o e-mail do Parceiros (`ativar_conta_de_jogador`,
+    chamada em `carregarConta`; SQL `20261005170000_parceiro_tambem_joga`).
+    Entrar pelo "Entrar" dos jogadores com o e-mail do Parceiros segue como
+    jogador (faz o que ia fazer, sem recarregar). Menu: "Minha conta",
+    "Painel da minha academia" e, no Suporte, **"GuiaTennis Parceiros ·
+    seu painel"** de volta (o Breno, logado com um e-mail do Parceiros,
+    não achava o Parceiros no menu). Sem "Excluir minha conta" no perfil
+    dessa conta ("fale com o GuiaTennis"). As estatísticas continuam sem
+    contar a conta de academia.
+54. **Página da cidade = todas as academias da cidade** (pedido de
+    05/10/2026: "quando clicar em ver as academias de São Paulo, não
+    pesquisar um endereço"), como as páginas de destino do Booking e do
+    TripAdvisor: `/quadras/<cidade>` (e "Ver as academias de…", "Quadras em…",
+    "Buscar quadra" com a cidade das preferências, viagem sem hotel) não
+    procura o endereço no mapa — lista só as academias daquela cidade
+    (`state.cidadeDaPagina`, filtro em `applyFilters`), na ordem
+    recomendada, com "Todas as academias de São Paulo. Para ver as mais
+    perto, digite o bairro, o endereço ou o CEP." Digitar um endereço volta
+    à busca normal. A página do bairro (`/quadras/sao-paulo/moema`)
+    continua mostrando as mais perto do bairro.
+55. **Textos "Por que…"** (pedido de 05/10/2026): em "Por que o
+    GuiaTennis", a taxa aparece uma vez só ("Grátis para quem joga"), o
+    segundo cartão diz que é **"uma facilidade tremenda"** achar a quadra
+    mais perto com tudo o que precisa saber (preço, horário, piso, fotos,
+    como chegar), entram "Compare lado a lado" e "Avisos que trabalham por
+    você". "Por que estar no GuiaTennis" (home e Parceiros) atualizado com
+    o que a academia ganha hoje: buscas salvas e viagens trazendo
+    jogadores por e-mail, ficha que pausa, avaliação nova no e-mail (com o
+    QR code), equipe e várias academias numa conta, números no Premium.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1392,6 +1504,35 @@ colocados pelo Breno). Aqui:
   migração, criar os papéis `anon`, `authenticated` e a função
   `auth.jwt()` que o Supabase já traz.
 
+### Avisos por e-mail e buscas salvas (05/10/2026)
+- `buscas_salvas` (SQL `20261005150000`): `id, user_id (jogadores), termo,
+  bairro, cidade, lat, lng, filtros jsonb, link, avisar, avisar_desde,
+  avisada_ate, created_at`. A conta lê, salva, apaga e só muda `avisar`
+  (gatilho `arrumar_busca_salva`: link do site, ponto arredondado, até 20).
+- `emails_a_enviar` (SQL `20261005160000`): a fila — `chave` (única),
+  `tipo`, `para`, `assunto`, `html`, `texto`, `descadastro`, `tentativas`,
+  `pedido_id` (do pg_net), `enviado_em`, `resend_id`, `erro`. Ninguém de
+  fora lê. `emails_configuracao`: `site`, `remetente` (`GuiaTennis
+  <nao-responda@guiatennis.com.br>`), `prefixo`, `admin`.
+- Colunas novas: `jogadores.token_avisos` e `academias_avisadas_ate`;
+  `academia_acessos.token_avisos` e `avisos_por_email`;
+  `academias.publicada_em` (gatilho `marcar_publicada_em`).
+- Funções: `enviar_emails()` (a cada minuto), `preparar_avisos_do_dia()`
+  (10h), `preparar_aviso_de_viagem`, `preparar_avisos_de_academias_novas`,
+  `configurar_emails(chave, site)` (só o dono do banco, para o GitHub),
+  `parar_avisos(token, aviso)` (visitante), `mudar_avisos_dos_parceiros`,
+  `situacao_dos_emails()` (admin), `ativar_conta_de_jogador()` (SQL
+  `20261005170000`). Gatilhos: `aviso_de_avaliacao_nova`,
+  `aviso_de_pedido_de_acesso`, `aviso_de_pedido_aceito`,
+  `aviso_de_viagem_mudou`. Os gatilhos nunca atrapalham o que os chamou
+  (erro vira aviso no registro do banco).
+- Extensões: **pg_net** e **pg_cron** (o SQL tenta ligar; sem elas, avisa e
+  a fila espera). Para conferir no Supabase: Database › Extensions (as duas
+  ligadas) e Integrations › Cron (os dois trabalhos `guiatennis-…`).
+- Plano grátis do Resend: **100 e-mails por dia, 3.000 por mês** (o código
+  de confirmação conta junto). Passando disso, os avisos ficam na fila e
+  saem no dia seguinte; com mais jogadores, o plano pago do Resend.
+
 ## 5. Banco: o que já rodou e o que falta
 
 **Já rodado pelo Breno (confirmado):**
@@ -1480,7 +1621,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -1583,6 +1724,23 @@ as 133 do `banco-acesso.py` no banco e login locais.
   cadastro dos Parceiros), quem não grava (admin; academia no site dos
   jogadores), banco sem a tabela, e o relatório do admin (funil, origens,
   caminhos, visita passo a passo com "ficou X", Parceiros) e a Política.
+- `buscas-e-avisos.js` — Salvar busca (sem conta pede o Entrar; salva com
+  o ponto arredondado; aviso por e-mail; não repete; menu e perfil;
+  refazer; apagar; banco sem a tabela), página da cidade (todas as da
+  cidade, sem procurar o endereço, salvar a cidade), conta do Parceiros no
+  site dos jogadores (parte de jogador sozinha, inicial no topo, menu com o
+  Parceiros, não avalia a própria, avalia as outras, entrar pelo site dos
+  jogadores), "Não quero mais receber" (pergunta, tira o número do link,
+  link inventado), avisos no Perfil do Parceiros, situação dos e-mails no
+  admin e os textos "Por que…" e da Política.
+- `banco-emails.py` — **não roda com os outros**: precisa de um Postgres
+  local com a pasta `supabase/` aplicada (não precisa do GoTrue); finge o
+  cofre, o pg_net e o relógio. Confere cada aviso (quem recebe, quem não,
+  texto escapado, sem repetir), as buscas salvas (regras, limite, link), o
+  envio (dois por vez, chave e idempotência, 200, 429, 5 tentativas), o
+  "parar avisos", a situação do admin e a conta do Parceiros que também
+  joga. `BANCO_URL=postgresql://postgres@127.0.0.1:5433/postgres python3
+  testes/banco-emails.py` — 95 certas em 05/10/2026, também num banco novo.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
   banco de verdade (não no mock) tudo o que a academia pode e não pode.
@@ -1907,6 +2065,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Avisos por e-mail pelo Resend, buscas salvas, conta do Parceiros como conta normal, página da cidade e textos "Por que"   ← PR #5, 05/10
 (a seguir) Logo de três riscos em todo lugar, menu do trivago, home pessoal, preferências e cadastro passo a passo   ← PR #5, 01/10
 1e2f7d2 Tempo até agir: segundos até a primeira busca e até chamar, no painel do admin   ← PR #5, 01/10
 d0b7b1f Rodapé no verde do GuiaTennis   ← PR #5, 01/10
@@ -2012,15 +2171,29 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-- **Endereço próprio do GuiaTennis Parceiros (05/10/2026, regra 45)** — para
-  ficar como o trivago Business Studio (`parceiros.guiatennis.com.br`, com
-  links curtos): (1) no registro.br, em DNS do guiatennis.com.br, criar um
-  CNAME `parceiros` apontando para o endereço `….netlify.app` do site de
-  verdade; (2) no Netlify, no site do guiatennis.com.br, Domain management
-  → Add a domain alias → `parceiros.guiatennis.com.br` (o certificado sai
-  sozinho). Avisar no chat: aí é só trocar `PARCEIROS_NO_ENDERECO_PROPRIO`
-  para `true` (e o sitemap dos Parceiros, no SQL). Até lá, o Parceiros já
-  abre em outra aba, em guiatennis.com.br/parceiros.
+- **Ligar os avisos por e-mail (05/10/2026, regra 51)** — o Breno (a chave
+  nunca pelo chat): (1) no Resend, API Keys → Create API Key, permissão
+  "Sending access", domínio guiatennis.com.br; copiar a chave (`re_…`);
+  (2) no GitHub, Settings → Secrets and variables → Actions → New
+  repository secret, nome `RESEND_API_KEY`, colar a chave; (3) Actions →
+  Banco de dados → Run workflow, uma vez com "teste" (ou esperar o próximo
+  push do PR); o "real" vai sozinho no merge; (4) no Supabase (nos dois
+  projetos), Database → Extensions: conferir **pg_net** e **pg_cron**
+  ligados (o SQL tenta ligar sozinho). No admin, Estatísticas › "Avisos
+  por e-mail" diz se está tudo certo.
+- **Testar na prévia o pacote de 05/10/2026 (noite)**: (1) buscar um bairro,
+  "Salvar busca" (sem conta, entra e salva), "Avisar por e-mail…", ver em
+  menu › Buscas salvas; (2) na home, "Ver as academias de São Paulo":
+  todas as da cidade, sem "A partir de…"; (3) entrar no site dos jogadores
+  com um e-mail do Parceiros: "Minha conta", o Parceiros no menu, avaliar
+  outra academia (a própria não); (4) com a chave no GitHub e o e-mail
+  confirmado, avaliar uma academia que tem conta e ver o e-mail chegar
+  ("[Teste]" no assunto); (5) no rodapé do e-mail, "Não quero mais
+  receber".
+- **Jogador que vira Parceiros com o mesmo e-mail** (o contrário da regra
+  53): hoje o cadastro do Parceiros ainda pede outro e-mail para quem já
+  tem conta de jogador. Dá para deixar a mesma conta virar Parceiros, se o
+  Breno quiser.
 - **Testar na prévia o pacote de 05/10/2026**: (1) jogador logado: tocar na
   inicial → `/perfil`; (2) chamar uma academia no WhatsApp e, no dia
   seguinte, abrir o site: o balão "Jogou na …?" com as estrelas; (3)
@@ -2029,10 +2202,10 @@ c9ade31 Configuração de publicação do Netlify
   pedir mais uma; (4) no admin, os dois pedidos da mesma conta, um por
   linha; (5) do site dos jogadores, "GuiaTennis Parceiros" abre em outra
   aba.
-- **Salvar as buscas na conta** (como o "Salvar busca" do Booking): ainda
-  não decidido pelo Breno.
-
-- **Ligar o serviço de e-mail no Supabase (02/10/2026)** — 04/10/2026: conta no Resend criada e o domínio guiatennis.com.br **verificado** (DNS no registro.br: TXT `resend._domainkey`, `send` e `rsend` para `…forge.rmta.net`, TXT `_dmarc`). Falta ligar o Resend aos dois projetos do Supabase, colar o modelo e subir o limite (passos 2 a 4 abaixo). Sem isso o
+- **Serviço de e-mail no Supabase (02/10/2026)** — **feito pelo Breno em
+  05/10/2026** ("já fiz o código de 6 dígitos"): Resend com o domínio
+  verificado, ligado ao Supabase, código de 6 números. Os passos abaixo
+  ficam como registro. Sem isso o
   código de confirmação e o "Esqueci a senha" não chegam (o site avisa e
   segue). Passos para o Breno (credenciais nunca pelo chat): (1) criar
   conta grátis no Resend (resend.com) ou no Brevo, confirmar o domínio
@@ -2046,8 +2219,9 @@ c9ade31 Configuração de publicação do Netlify
   o caminho mais curto é a integração do Resend com o Supabase, que
   preenche o SMTP sozinha) ("Seu código do GuiaTennis:
   {{ .Token }}"); (4) Authentication → Rate Limits: subir o limite de
-  e-mails por hora. Os avisos por e-mail (academias, promoções,
-  novidades) ainda precisam de um envio próprio (próximo passo).
+  e-mails por hora. Os avisos por e-mail saem pelo banco desde 05/10/2026
+  (regra 51); "Promoções das academias" e "Novidades do GuiaTennis" ainda
+  não têm e-mail (só ficam guardados).
 
 - **Testar na prévia "uma conta, várias academias" (03/10/2026)** — no
   banco de teste: (1) com uma conta que já administra uma academia, abrir
@@ -2110,9 +2284,8 @@ c9ade31 Configuração de publicação do Netlify
   referência: Google Business Profile, trivago Business Studio e Yelp):
   promoções na ficha e avisos para os alunos (o "Em breve" do Premium),
   posição paga marcada como patrocinada, relatório do mês sozinho por
-  e-mail (para quem marcou), aviso de avaliação nova, confirmação do e-mail
-  por código (precisa de um serviço de e-mail) e a prévia do link no
-  WhatsApp com a foto da academia (seção 3, "Endereços").
+  e-mail (Premium; a fila de e-mails já existe, regra 51) e a prévia do
+  link no WhatsApp com a foto da academia (seção 3, "Endereços").
 - **Conferir o site depois do merge do PR #3** (pedido ao Breno em
   29/09/2026, sem resposta ainda): em aba anônima, guiatennis.com.br com o
   WhatsApp e o logo pequeno no menu e no rodapé; uma ficha com "É o

@@ -41,8 +41,9 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => state.page === 'perfil' && location.pathname === '/perfil' && !!document.getElementById('perfil-jogador')), 'a inicial abre o perfil (Minha conta), com endereço próprio');
   await browser.close();
 
-  // Academia logada: sem ícone de jogador (tem a faixa da academia).
+  // Academia logada (05/10/2026): no site dos jogadores é uma conta normal,
+  // com a inicial no topo, e sem o convite para criar conta.
   ({ browser, page } = await abrir({ academia: 'a2' }));
-  ok(await page.evaluate(() => !document.getElementById('conta-topo')), 'academia logada não vê o ícone de conta de jogador');
+  ok(await page.evaluate(() => document.getElementById('conta-topo')?.innerText === 'M' && !document.querySelector('.conta-topo.destaque')), 'academia logada vê a inicial, como qualquer jogador (sem o convite)');
   await browser.close();
 })();

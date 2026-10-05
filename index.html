@@ -628,6 +628,20 @@
   .viagem-pergunta { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; background: var(--green-soft); border-radius: 14px; padding: 12px 14px; font-size: 14px; position: relative; padding-right: 38px; }
   .viagem-pergunta span { flex: 1 1 200px; }
   .viagem-pergunta-x { position: absolute; top: 6px; right: 8px; background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px; }
+  /* Buscas salvas (05/10/2026): "Salvar busca" embaixo da barra da busca e o
+     aviso depois de salvar, no verde claro da pergunta da viagem. */
+  .busca-salvar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 12px 20px 0; }
+  .busca-salvar-dica { font-size: 13px; color: var(--muted); flex: 1 1 200px; }
+  .busca-salva-aviso { margin: 10px 20px 0; display: flex; align-items: flex-start; gap: 10px; background: var(--green-soft); border-radius: 14px; padding: 12px 38px 12px 14px; font-size: 14px; line-height: 1.5; position: relative; }
+  .busca-salva-aviso strong { display: block; }
+  .busca-salva-aviso .inline-link { display: inline-block; text-align: left; margin: 4px 14px 0 0; }
+  .busca-salva-item { border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  .busca-salva-item:last-child { border-bottom: none; }
+  .busca-salva-item .perfil-item { border-bottom: none; }
+  .busca-salva-acoes { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 0 6px 32px; }
+  .busca-salva-acoes .consent-row { margin: 0; font-size: 13px; }
+  .emails-situacao { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--green-soft); font-size: 13px; line-height: 1.5; }
+  .emails-situacao.falta { background: #FFF4D6; }
   .senha-caixa { position: relative; display: block; }
   .senha-caixa .form-field { padding-right: 48px; }
   .senha-olho { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 10px; cursor: pointer; }
@@ -3490,12 +3504,12 @@ async function submitRating(courtId, stars, comment) {
   // Avaliar exige a conta do jogador: o banco põe o nome e o e-mail dela.
   const v = { nome: (jogador && jogador.nome) || "", contato: (jogador && jogador.email) || "" };
   const { data, error } = await sb.from('avaliacoes').insert({ academia_id: courtId, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato }).select('id').single();
-  // Contas e contatos de academias não avaliam (o banco confere).
+  // Quem administra a academia não avalia ela (o banco confere).
   if (error) {
     const m = error.message || "";
     if (/já avaliou/.test(m)) marcarAvaliada(courtId);
-    throw new Error(/academias? não avaliam|não avaliam academias/.test(m)
-      ? "Esse contato é de uma academia do GuiaTennis, e academias não avaliam academias."
+    throw new Error(/administra essa academia|própria academia|academias? não avaliam|não avaliam academias/.test(m)
+      ? "Você administra essa academia, então não avalia ela. As outras academias você avalia normalmente."
       : /já avaliou/.test(m) ? "Você já avaliou essa academia."
       : /Entre na sua conta|row-level security/.test(m) ? "Entre na sua conta para avaliar."
       : "Não consegui enviar a avaliação agora. Tente de novo em instantes.");
@@ -3571,6 +3585,7 @@ function ordenarPorPerto(lista, deQuem) {
 // de cada caixinha.
 function applyFilters(list, skip) {
   skip = skip || "";
+  if (state.cidadeDaPagina && state.page === "search") list = list.filter(c => mesmaCidade(c.cidade, state.cidadeDaPagina));
   if (skip !== "piso" && state.pisoFilters.length) list = list.filter(c => state.pisoFilters.some(p => c.pisos?.includes(p)));
   if (skip !== "cobertura" && state.coberturaFilters.length) list = list.filter(c => state.coberturaFilters.some(cv => c.cobertura?.includes(cv)));
   if (skip !== "amenity" && state.amenityFilters.length) list = list.filter(c => state.amenityFilters.every(a => matchesAmenityFilter(c, a)));
@@ -3685,6 +3700,7 @@ function render() {
     ${state.page === "comparar" ? renderComparePage() + avisoDeDecisao() + renderDecideSheet() : ""}
     ${pushContaHtml()}
     ${pushAvaliarHtml()}
+    ${renderPararAvisos()}
     ${state.page === "perfil" ? renderPerfilJogador() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
     ${state.page === "parceiros" ? renderParceiros() : ""}
@@ -4772,6 +4788,9 @@ function contaDeLinha(x) {
     pedidoAcademiaId: x.pedido_academia_id || null, pedidoNome: x.pedido_nome || "",
     pedidoEm: x.pedido_em || null, pedidoDestino: x.pedido_destino || "",
     emailConfirmado: !!x.email_confirmado_em,
+    // Avaliação nova e pedidos de acesso por e-mail (SQL 20261005160000):
+    // começam ligados; banco sem a coluna conta como ligado.
+    avisosPorEmail: x.avisos_por_email !== false, temAvisos: "avisos_por_email" in x,
   };
 }
 
@@ -4801,12 +4820,23 @@ async function carregarConta(session) {
   if (contaAcademia) {
     contaAcademia.academias = await carregarMinhasAcademias(contaAcademia);
     contaAcademia.pedidos = await carregarMeusPedidos(contaAcademia);
-    return;
   }
   try {
     const { data, error } = await sb.from('jogadores').select('*').eq('user_id', user.id);
     if (!error && data && data[0]) jogador = data[0];
   } catch { /* banco sem a tabela: fica como visitante */ }
+  // Conta do GuiaTennis Parceiros também joga (pedido do Breno em
+  // 05/10/2026): no site dos jogadores, é uma conta normal — perfil, buscas
+  // salvas, avisos e avaliações (menos da academia que administra). A parte
+  // de jogador nasce sozinha, com o nome e o e-mail do Parceiros.
+  if (contaAcademia && !jogador) {
+    try {
+      const r = await sb.rpc('ativar_conta_de_jogador');
+      const j = r && !r.error ? (Array.isArray(r.data) ? r.data[0] : r.data) : null;
+      if (j && j.user_id) jogador = j;
+    } catch { /* banco sem a função: segue só como academia */ }
+  }
+  if (jogador) await carregarBuscasSalvas();
 }
 
 // Uma conta, várias academias (pedido do Breno em 03/10/2026), como o
@@ -5548,6 +5578,16 @@ function ligarEventosConta() {
   if (editarDados) editarDados.onclick = () => { window.__conta = null; state.contaErro = ""; state.contaAviso = ""; state.contaModo = "dados"; render(); };
   const trocarSenha = document.getElementById("conta-trocar-senha");
   if (trocarSenha) trocarSenha.onclick = () => { window.__senha = null; state.contaErro = ""; state.contaAviso = ""; state.contaModo = "senha"; render(); };
+  const avisosEmail = document.getElementById("pc-avisos-email");
+  if (avisosEmail) avisosEmail.onchange = async (e) => {
+    const ligado = e.target.checked;
+    const r = await sb.rpc('mudar_avisos_dos_parceiros', { p_ligado: ligado });
+    if (r.error) { e.target.checked = !ligado; state.contaAviso = ""; state.contaErro = "Não consegui mudar os avisos agora. Tente de novo em instantes."; render(); return; }
+    contaAcademia.avisosPorEmail = ligado;
+    state.contaErro = "";
+    state.contaAviso = ligado ? "Avisos por e-mail ligados." : "Avisos por e-mail desligados.";
+    render();
+  };
   const voltar = document.getElementById("conta-voltar");
   if (voltar) voltar.onclick = () => { state.contaErro = ""; state.contaModo = "painel"; render(); };
   const verFicha = document.getElementById("conta-ver-ficha");
@@ -6049,7 +6089,7 @@ function perguntasParceiros() {
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
-    { q: "A academia pode avaliar outras academias?", a: "Não. Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias — nem a própria, nem as outras. Vocês respondem às avaliações da própria academia." },
+    { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo painel. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
     { q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado." },
     { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha." },
     { q: "Esqueci a senha. E agora?", a: "Fale com o GuiaTennis no WhatsApp: a gente gera uma senha provisória nova, e você cria outra ao entrar." },
@@ -6522,12 +6562,15 @@ function pcNumerosDoSite() {
 
 function pcInicio() {
   const beneficios = [
-    { ic: "pin", t: "Jogadores que já querem jogar", d: "Quem chega ao GuiaTennis está procurando aula ou quadra perto de casa, agora. A sua academia aparece justamente na hora da escolha." },
+    // Atualizado em 05/10/2026 (pedido do Breno), no jeito do Google
+    // Business Profile, do Booking para parceiros e do trivago Business
+    // Studio: o que a academia ganha hoje, do jogador ao painel.
+    { ic: "pin", t: "Jogadores que já querem jogar", d: "Quem chega ao GuiaTennis está procurando aula ou quadra perto de casa, agora. E quem salvou uma busca na sua região ou vai viajar para a sua cidade recebe a sua academia por e-mail." },
     { ic: "phone", t: "Contato direto no seu WhatsApp", d: "Sem intermediário, sem central de reservas e sem comissão: o jogador chama você, e você combina a aula ou a locação do seu jeito." },
-    { ic: "edit", t: "Uma ficha que vende por você", d: "Horário, preços, fotos, regra de cancelamento e como chegar, tudo num só lugar. Você atualiza pelo celular, e a mudança aparece na hora." },
-    { ic: "bubble", t: "Responda às avaliações", d: "Agradeça os elogios e explique as críticas, em público. Quem vê uma academia que responde confia mais para chamar." },
+    { ic: "edit", t: "Uma ficha que vende por você", d: "Horário, preços, fotos, regra de cancelamento e como chegar, tudo num só lugar. Você atualiza pelo celular, a mudança aparece na hora, e dá para pausar a ficha nas férias ou numa reforma." },
+    { ic: "bubble", t: "Avaliação nova no seu e-mail", d: "Cada avaliação chega no seu e-mail. Responda às avaliações em público e, com o QR code no balcão, o jogador avalia na hora — quem vê uma academia que responde confia mais para chamar." },
+    { ic: "pessoa", t: "Sua equipe e suas academias numa conta", d: "Dê acesso a quem trabalha com você e administre mais de uma academia com o mesmo login. Quem pede acesso à sua academia passa por você, com aviso por e-mail." },
     { ic: "barchart", t: "Saiba quantos jogadores você atrai", tag: "Premium", d: "Com o plano Premium, o seu painel mostra quantas pessoas abriram a ficha, quantas chamaram no WhatsApp, de onde vieram (Instagram, Google…) e de quais bairros.", nota: "No Básico e no Completo esses números já são contados, mas ficam escondidos. Passou para o Premium, eles aparecem no painel — inclusive os de antes." },
-    { ic: "clipboard", t: "QR code para a recepção", d: "Deixe no balcão: o jogador aponta a câmera, abre a ficha e avalia na hora. Mais avaliações, mais confiança de quem ainda não conhece vocês." },
   ];
   // Como funciona, em etapas, como as páginas de parceiro dos sites grandes.
   const passos = [
@@ -7332,6 +7375,15 @@ function pcPerfil() {
               <button type="button" class="cta-btn cta-secondary" id="conta-trocar-senha">Trocar senha</button>
             </div>
           </div>
+          ${contaAcademia.temAvisos ? `
+          <div class="pc-card" id="pc-avisos">
+            <p class="pc-card-t">Avisos por e-mail</p>
+            <label class="consent-row">
+              <input type="checkbox" id="pc-avisos-email" ${contaAcademia.avisosPorEmail ? "checked" : ""} />
+              <span>Avaliação nova e pedidos de acesso das suas academias</span>
+            </label>
+            <p class="fgroup-note">${contaAcademia.emailConfirmado ? `Chegam em ${esc(contaAcademia.email || "")}.` : "Chegam depois de confirmar o e-mail."}</p>
+          </div>` : ""}
           <div class="pc-card">
             <p class="pc-card-t">Suas academias</p>
             <p class="pc-card-s">${qtas ? (qtas === 1 ? "1 academia nesta conta" : `${qtas} academias nesta conta`) : "Nenhuma academia ainda"}${pedidos ? ` · ${pedidos === 1 ? "1 pedido em andamento" : `${pedidos} pedidos em andamento`}` : ""}.</p>
@@ -7833,7 +7885,7 @@ function ligarEventosParceiros() {
 // da pessoa ao lado do menu, com um brilho dourado para quem ainda não
 // entrou; logado, a inicial do nome. Academia e admin têm a faixa própria.
 function botaoConta() {
-  if (isAdmin || contaAcademia) return "";
+  if (isAdmin || (contaAcademia && !jogador)) return "";
   if (jogador) {
     const inicial = (jogador.nome || "?").trim().charAt(0).toUpperCase();
     const confirmar = !jogador.email_confirmado_em;
@@ -7851,7 +7903,7 @@ const PUSH_CONTA_KEY = "guiatennis_push_conta_v1";
 const PUSHES_CONTA = [
   { t: "Novidades das academias", d: "Com a conta grátis, você recebe por e-mail as academias novas na sua cidade.", motivo: "Entre para escolher os avisos por e-mail. Se ainda não tiver conta, o cadastro leva um minuto." },
   { t: "Avalie onde você joga", d: "Dê nota às academias em que você joga e ajude outros jogadores a escolher.", motivo: "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto." },
-  { t: "O GuiaTennis do seu jeito", d: "Escolha os avisos que quer receber e use a mesma conta no celular e no computador.", motivo: "" },
+  { t: "Salve as suas buscas", d: "Guarde o lugar e os filtros na conta e receba por e-mail as academias novas onde você procura — no celular e no computador.", motivo: "Entre para salvar as suas buscas. Se ainda não tiver conta, o cadastro leva um minuto." },
 ];
 const PUSH_CONTA_PRIMEIRO = 10, PUSH_CONTA_DURA = 9, PUSH_CONTA_INTERVALO = 40, PUSH_CONTA_MAX = 3;
 function pushContaHtml() {
@@ -7909,7 +7961,7 @@ function conviteParaConta(usou) {
       <span class="convite-ic">${icon('pessoa', 26, '#fff')}</span>
       <div class="convite-txt">
         <p class="convite-t">Jogou numa dessas academias?</p>
-        <p class="convite-s">Com a conta grátis, você avalia as academias e ajuda outros jogadores a escolher. Leva um minuto.</p>
+        <p class="convite-s">Com a conta grátis, você avalia as academias, salva as suas buscas e recebe por e-mail as academias novas onde procura. Leva um minuto.</p>
         <button type="button" class="cta-btn cta-secondary convite-btn" id="convite-criar">Criar conta</button>
       </div>
     </aside>`;
@@ -7950,9 +8002,9 @@ function renderMenu() {
           <span class="menu-topo-lado" aria-hidden="true"></span>
         </div>
 
-        ${contaAcademia ? item("conta", "Painel da minha academia", "key")
-          : jogador ? item("minha-conta", "Minha conta", "pessoa", (jogador.nome || "").split(" ")[0])
-          : isAdmin ? "" : item("entrar-jogador", "Entrar ou criar conta", "pessoa")}
+        ${jogador ? item("minha-conta", "Minha conta", "pessoa", (jogador.nome || "").split(" ")[0])
+          : contaAcademia || isAdmin ? "" : item("entrar-jogador", "Entrar ou criar conta", "pessoa")}
+        ${contaAcademia ? item("conta", "Painel da minha academia", "key", "Parceiros") : ""}
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
         ${item("comparar", "Comparar academias", "list", state.compareList.length || "")}
@@ -7962,10 +8014,11 @@ function renderMenu() {
         ${item("vistas", "Vistas recentemente", "historico", q.vistas.length || "")}
         ${item("chamadas", "Academias que você chamou", "phone", q.chamadas.length || "")}
         ${item("viagem", "Vou viajar", "map", (lerViagens()[0] || {}).cidade || "Adicionar")}
+        ${isAdmin || semBuscasSalvas ? "" : item("buscas", "Buscas salvas", "search", jogador ? (buscasSalvas.length || "") : "Entrar")}
 
         <p class="menu-grupo">Preferências</p>
         ${item("preferencias", "Preferências de busca", "ajustes", textoDaPreferencia(pref) || "Escolher")}
-        ${contaAcademia || isAdmin ? "" : item("avisos", "Avisos por e-mail", "sino", jogador ? (avisosLigados(jogador) ? "Ligados" : "Desligados") : "Entrar")}
+        ${isAdmin || (contaAcademia && !jogador) ? "" : item("avisos", "Avisos por e-mail", "sino", jogador ? (avisosLigados(jogador) ? "Ligados" : "Desligados") : "Entrar")}
 
         <p class="menu-grupo">Suporte</p>
         ${item("como", "Como funciona", "play")}
@@ -7973,7 +8026,7 @@ function renderMenu() {
         ${item("porque", "Por que o GuiaTennis", "sparkle")}
         ${item("termos", "Termos de Uso", "clipboard")}
         ${item("privacidade", "Política de Privacidade", "clipboard")}
-        ${contaAcademia ? "" : item("parceiros", "GuiaTennis Parceiros", "predio", "para academias")}
+        ${item(contaAcademia ? "conta" : "parceiros", "GuiaTennis Parceiros", "predio", contaAcademia ? "seu painel" : "para academias")}
 
         <p class="menu-grupo">Fale com a gente</p>
         ${linksContato("menu-item", 22, "var(--text)")}
@@ -7982,6 +8035,7 @@ function renderMenu() {
           ${isAdmin
             ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 20, 'var(--muted)')}<span>Sair do modo admin</span></button>`
             : contaAcademia
+              // A conta do Parceiros também joga: sair sai das duas.
               ? `<button type="button" class="menu-item" data-menu="sair">${icon('pessoa', 20, 'var(--muted)')}<span>Sair da conta</span></button>`
               : jogador
                 ? `<button type="button" class="menu-item" data-menu="sair-jogador">${icon('pessoa', 20, 'var(--muted)')}<span>Sair da conta</span></button>`
@@ -8367,17 +8421,21 @@ function ligarTempoNoSite() {
 }
 
 // Na busca: buscou uma cidade que não é a de casa nem de uma viagem guardada.
+// A cidade da busca aberta: a do endereço achado ou a da página da cidade.
+function cidadeDaBusca() {
+  return (state.origin && state.origin.cidade) || state.cidadeDaPagina || "";
+}
 function perguntaViagem() {
-  const o = state.origin;
+  const cidade = cidadeDaBusca();
   const pref = lerPreferencias();
-  if (!o || state.searchStatus !== "done" || !o.cidade || !pref.cidade) return "";
-  if (mesmaCidade(o.cidade, pref.cidade)) return "";
-  if (lerViagens().some(v => mesmaCidade(v.cidade, o.cidade))) return "";
-  if ((state.viagemPerguntaFechada || []).some(c => mesmaCidade(c, o.cidade))) return "";
+  if (state.searchStatus !== "done" || !cidade || !pref.cidade) return "";
+  if (mesmaCidade(cidade, pref.cidade)) return "";
+  if (lerViagens().some(v => mesmaCidade(v.cidade, cidade))) return "";
+  if ((state.viagemPerguntaFechada || []).some(c => mesmaCidade(c, cidade))) return "";
   return `
     <div class="viagem-pergunta" id="viagem-pergunta">
       ${icon('map', 18, 'var(--green)')}
-      <span>Vai viajar para <strong>${esc(o.cidade)}</strong>? Guarde a viagem e o GuiaTennis mostra as quadras de lá na hora certa.</span>
+      <span>Vai viajar para <strong>${esc(cidade)}</strong>? Guarde a viagem e o GuiaTennis mostra as quadras de lá na hora certa.</span>
       <button type="button" class="pc-link-btn" id="viagem-pergunta-sim">Guardar viagem</button>
       <button type="button" class="viagem-pergunta-x" id="viagem-pergunta-nao" aria-label="Não vou viajar">✕</button>
     </div>`;
@@ -8485,7 +8543,7 @@ function aplicarPreferenciaNaBusca() {
 // conta; com ela, a pessoa avalia e escolhe os avisos por e-mail. Os avisos
 // começam desligados (LGPD) e mudam quando ela quiser.
 const AVISOS_JOGADOR = [
-  { campo: "avisos_academias", t: "Academias novas na minha cidade e mudanças nas minhas favoritas" },
+  { campo: "avisos_academias", t: "Academias novas na minha cidade" },
   { campo: "promocoes", t: "Promoções das academias" },
   { campo: "novidades", t: "Novidades e dicas do GuiaTennis" },
 ];
@@ -8513,10 +8571,10 @@ function abrirContaJogador(tela, motivo) {
 }
 
 // Faz a ação (avaliar) já logado; sem conta, abre o Entrar e faz depois.
-function jogadorEntaoFaz(acao) {
+function jogadorEntaoFaz(acao, motivo) {
   if (jogador) { acao(); return; }
   state.depoisDeEntrar = acao;
-  abrirContaJogador("entrar", "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto.");
+  abrirContaJogador("entrar", motivo || "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto.");
 }
 
 // Aviso de viagem por e-mail (pedido do Breno em 04/10/2026): em "Minha
@@ -9012,7 +9070,7 @@ async function entrarJogador() {
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const { data, error } = await sb.auth.signInWithPassword({ email: state.jogadorLogin || email, password: senha });
   if (!error) await carregarConta(data && data.session);
-  if (!error && (isAdmin || contaAcademia)) {
+  if (!error && (isAdmin || (contaAcademia && !jogador))) {
     try { history.replaceState(null, "", semCamadas(location.pathname + location.search + location.hash)); } catch {}
     location.reload();
     return;
@@ -9089,6 +9147,76 @@ async function salvarContaJogador() {
   registrarPasso("acao", { detalhe: "Salvou o perfil" });
   state.jogadorAviso = "Salvo.";
   render();
+}
+
+// ---------- "Não quero mais receber" dos e-mails (05/10/2026) ----------
+// Como o "Cancelar inscrição" do Booking e do Google: o link do rodapé de
+// cada aviso (?parar-avisos=<número da conta>&aviso=…) abre uma folha que
+// pergunta antes de parar — sem precisar entrar na conta. O número sai do
+// link na hora, para não ficar no histórico nem ser compartilhado.
+const AVISOS_DO_LINK = {
+  viagem: "os avisos de viagem",
+  novas: "os avisos de academias novas (da sua cidade e das buscas salvas)",
+  todos: "todos os avisos por e-mail do GuiaTennis",
+  parceiros: "os avisos de avaliação nova e de pedidos de acesso do GuiaTennis Parceiros",
+};
+function lerPararAvisosDoLink() {
+  try {
+    const q = new URLSearchParams(location.search);
+    const token = q.get("parar-avisos");
+    if (!token) return;
+    const aviso = AVISOS_DO_LINK[q.get("aviso")] ? q.get("aviso") : "todos";
+    state.pararAvisos = { token, aviso, feito: false, erro: "" };
+    q.delete("parar-avisos");
+    q.delete("aviso");
+    const resto = q.toString();
+    history.replaceState(history.state, "", location.pathname + (resto ? "?" + resto : "") + location.hash);
+  } catch {}
+}
+async function confirmarPararAvisos() {
+  const p = state.pararAvisos;
+  if (!p) return;
+  p.salvando = true; p.erro = ""; render();
+  const r = await sb.rpc('parar_avisos', { p_token: p.token, p_aviso: p.aviso });
+  p.salvando = false;
+  // Número que não é da forma certa (link cortado): o banco recusa como
+  // texto inválido — é link que não vale, não falha do site.
+  const invalido = r.error && (r.error.code === "22P02" || /invalid input syntax/i.test(r.error.message || ""));
+  if (r.error && !invalido || !r.data) {
+    p.erro = r.error && !invalido ? "Não consegui parar os avisos agora. Tente de novo em instantes." : "Esse link não vale mais. Entre na sua conta para mudar os avisos.";
+    render();
+    return;
+  }
+  p.feito = true;
+  // A conta aberta neste aparelho acompanha.
+  if (jogador && r.data === "viagem") jogador.avisos_viagem = false;
+  if (jogador && r.data === "novas") { jogador.avisos_academias = false; buscasSalvas.forEach(b => { b.avisar = false; }); }
+  if (jogador && r.data === "todos") { ["avisos_academias", "promocoes", "novidades", "avisos_viagem"].forEach(k => { jogador[k] = false; }); buscasSalvas.forEach(b => { b.avisar = false; }); }
+  if (contaAcademia && r.data === "parceiros") contaAcademia.avisosPorEmail = false;
+  render();
+}
+function renderPararAvisos() {
+  const p = state.pararAvisos;
+  if (!p) return "";
+  const oQue = AVISOS_DO_LINK[p.aviso];
+  return `
+    <div class="overlay open" id="parar-overlay">
+      <div class="sheet"><div class="sheet-content" role="dialog" aria-label="Avisos por e-mail">
+        <button type="button" class="sheet-close" id="parar-fechar" aria-label="Fechar">✕</button>
+        ${p.feito ? `
+          <p class="sheet-title display">Pronto</p>
+          <p class="subtitle" style="margin-top:6px">Você não recebe mais ${esc(oQue)}.</p>
+          <p class="fgroup-note">Mudou de ideia? ${p.aviso === "parceiros" ? "No GuiaTennis Parceiros, em Perfil › Avisos por e-mail." : "Em Minha conta › Avisos por e-mail."}</p>
+          <button type="button" class="cta-btn cta-primary" id="parar-ok" style="margin-top:16px;width:100%">Continuar no GuiaTennis</button>
+        ` : `
+          <p class="sheet-title display">Parar os avisos por e-mail?</p>
+          <p class="subtitle" style="margin-top:6px">Você deixa de receber ${esc(oQue)}. Dá para ligar de novo quando quiser.</p>
+          ${p.erro ? `<div class="form-error">${icon('warning', 13)} ${esc(p.erro)}</div>` : ""}
+          <button type="button" class="cta-btn cta-primary" id="parar-sim" style="margin-top:16px;width:100%" ${p.salvando ? "disabled" : ""}>${p.salvando ? bolaGirando(16) + " Parando" : "Parar de receber"}</button>
+          <button type="button" class="inline-link" id="parar-nao" style="margin-top:12px">Continuar recebendo</button>
+        `}
+      </div></div>
+    </div>`;
 }
 
 // ---------- perfil do jogador (pedido do Breno em 05/10/2026) ----------
@@ -9168,6 +9296,7 @@ function renderPerfilJogador() {
             ${item('data-menu="viagem"', 'map', "Vou viajar", viagem ? viagem.cidade : "Adicionar")}
           </div>
         </section>
+        ${blocoBuscasSalvasPerfil()}
         <section class="perfil-cartao">
           <h2>Login e preferências</h2>
           <div class="perfil-lista">
@@ -9185,7 +9314,7 @@ function renderPerfilJogador() {
           <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" value="${esc(f.cidade || "")}" style="margin-top:0" />
           <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
           <h2 id="perfil-avisos" style="margin-top:24px">Avisos por e-mail</h2>
-          <p>Escolha o que quer receber. Dá para mudar quando quiser.</p>
+          <p>Escolha o que quer receber. Dá para mudar quando quiser.${buscasSalvas.length ? " Cada busca salva tem o próprio aviso, em Buscas salvas." : ""}</p>
           ${avisos}
           ${avisoViagemHtml(f)}
           ${state.jogadorErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.jogadorErro)}</div>` : ""}
@@ -9194,7 +9323,9 @@ function renderPerfilJogador() {
       </div>
       <div class="perfil-rodape">
         <button type="button" class="inline-link" id="jog-sair">Sair da conta</button>
-        <button type="button" class="inline-link jog-excluir" id="jog-excluir">Excluir minha conta</button>
+        ${contaAcademia
+          ? `<p class="fgroup-note" style="margin:0">A mesma conta administra academias no GuiaTennis Parceiros. Para excluir a conta, fale com o GuiaTennis.</p>`
+          : `<button type="button" class="inline-link jog-excluir" id="jog-excluir">Excluir minha conta</button>`}
       </div>
     </main>
     ${renderSiteFooter()}`;
@@ -9220,12 +9351,12 @@ function anotarPedidoDeAvaliacao(id, mudanca) {
 // As academias chamadas que ainda não foram avaliadas. Para o balão, só as
 // chamadas há mais de um dia e não dispensadas; para o perfil, todas.
 function academiasParaAvaliar(opcoes = {}) {
-  if (isAdmin || contaAcademia) return [];
+  if (isAdmin || (contaAcademia && !jogador)) return [];
   const agora = Date.now();
   const avaliadas = new Set(lerAvaliadas());
   const pedidos = lerPedidosDeAvaliacao();
   return minhasQuadras().chamadas.filter(x => {
-    if (avaliadas.has(x.id)) return false;
+    if (avaliadas.has(x.id) || ehDaMinhaConta(x.c)) return false;
     const p = pedidos[x.id] || {};
     if (p.nunca) return false;
     const idade = agora - (x.em || 0);
@@ -9238,7 +9369,7 @@ function academiasParaAvaliar(opcoes = {}) {
 }
 function pushAvaliarHtml() {
   const p = state.pushAvaliar;
-  if (!p || isAdmin || contaAcademia || state.page === "parceiros") return "";
+  if (!p || isAdmin || (contaAcademia && !jogador) || state.page === "parceiros") return "";
   const x = minhasQuadras().chamadas.find(y => y.id === p.id);
   if (!x) return "";
   return `
@@ -9256,7 +9387,7 @@ function pushAvaliarHtml() {
 // Uns segundos depois de abrir o site, se houver academia para avaliar e
 // nada na frente (janela aberta, campo sendo digitado, o balão da conta).
 function ligarPedidoDeAvaliacao() {
-  const podeMostrar = () => !isAdmin && !contaAcademia && ["home", "search", "court", "perfil", "comparar"].includes(state.page)
+  const podeMostrar = () => !isAdmin && !(contaAcademia && !jogador) && ["home", "search", "court", "perfil", "comparar"].includes(state.page)
     && state.pushConta == null && !document.querySelector(".overlay.open, .drawer-overlay.open")
     && !(document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
   const tentar = (vez) => {
@@ -9287,6 +9418,28 @@ function avaliarAcademiaChamada(id, estrelas) {
 }
 
 function ligarEventosJogador() {
+  const pararSim = document.getElementById("parar-sim");
+  if (pararSim) pararSim.onclick = () => confirmarPararAvisos();
+  ["parar-nao", "parar-ok", "parar-fechar"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.onclick = () => { state.pararAvisos = null; render(); };
+  });
+  const salvarBuscaBtn = document.getElementById("salvar-busca");
+  if (salvarBuscaBtn) salvarBuscaBtn.onclick = () => {
+    const igual = buscaSalvaIgual(buscaAtualParaSalvar());
+    if (igual && state.buscaSalvaAviso !== igual.id) { state.buscaSalvaAviso = igual.id; render(); return; }
+    if (igual) { irPerfil("perfil-buscas"); return; }
+    salvarBusca();
+  };
+  const buscaAvisar = document.getElementById("busca-salva-avisar");
+  if (buscaAvisar) buscaAvisar.onclick = () => avisarDaBusca(state.buscaSalvaAviso, true);
+  const buscaFechar = document.getElementById("busca-salva-fechar");
+  if (buscaFechar) buscaFechar.onclick = () => { state.buscaSalvaAviso = null; render(); };
+  document.querySelectorAll("[data-abrir-busca]").forEach(el => { el.onclick = () => abrirBuscaSalva(el.dataset.abrirBusca); });
+  document.querySelectorAll("[data-avisar-busca]").forEach(el => { el.onchange = (e) => avisarDaBusca(el.dataset.avisarBusca, e.target.checked); });
+  document.querySelectorAll("[data-apagar-busca]").forEach(el => {
+    el.onclick = () => { if (confirm("Apagar esta busca salva?")) apagarBuscaSalva(el.dataset.apagarBusca); };
+  });
   document.querySelectorAll("[data-push-estrela]").forEach(el => {
     el.onclick = (e) => { e.stopPropagation(); if (state.pushAvaliar) avaliarAcademiaChamada(state.pushAvaliar.id, parseInt(el.dataset.pushEstrela, 10)); };
   });
@@ -9415,11 +9568,15 @@ function ligarEventosJogador() {
 // "Por que o GuiaTennis" — o que o guia faz de diferente, para quem joga.
 function blocoDiferenciais() {
   const itens = [
+    // Pedido do Breno em 05/10/2026: sem repetir que não cobra taxa, e
+    // dizendo a facilidade de achar a quadra mais perto com tudo o que
+    // precisa saber — como o "tudo num lugar só" do Booking e do trivago.
     { ic: 'check', t: "Grátis para quem joga", d: "Buscar, comparar e chamar a academia não custa nada — para aula ou para locar quadra. Sem taxa e sem cartão.", largo: true },
-    { ic: 'pin', t: "Acha pelo endereço mais perto", d: "Digite o CEP, o endereço ou toque no GPS. As quadras aparecem da mais perto para a mais longe." },
-    { ic: 'phone', t: "Você fala direto com a academia", d: "O WhatsApp abre com a conversa já começada. O guia não reserva horário, não cobra taxa e não fica no meio." },
+    { ic: 'pin', t: "A quadra mais perto, com tudo o que você precisa saber", d: "Uma facilidade tremenda: digite o CEP, o endereço ou toque no GPS e veja as quadras da mais perto para a mais longe, cada uma com preço, horário, piso, fotos e como chegar." },
+    { ic: 'phone', t: "Você fala direto com a academia", d: "O WhatsApp abre com a conversa já começada. Você combina o horário com ela, sem central de reservas e sem ninguém no meio." },
     { ic: 'sparkle', t: "Nota só de quem jogou aqui", d: "As avaliações são feitas dentro do GuiaTennis, por quem usou. Não importamos nota de outro site." },
-    { ic: 'list', t: "Preço e estrutura na mesma tela", d: "Piso, cobertura, número de quadras, comodidades e faixa de preço por hora — sem precisar abrir cinco abas." },
+    { ic: 'list', t: "Compare lado a lado", d: "Escolha até 5 academias e veja preço, quadras, comodidades e nota na mesma tabela — sem precisar abrir cinco abas." },
+    { ic: 'sino', t: "Avisos que trabalham por você", d: "Com a conta grátis, salve as suas buscas e receba por e-mail as academias novas onde você procura — e as quadras da cidade quando for viajar.", largo: true },
   ];
   return `
     <div class="home-sec" id="home-porque">
@@ -9489,10 +9646,12 @@ function blocoMediasAcademias() {
 // "Por que as academias estão aqui" — o lado de quem tem a quadra.
 function blocoParaAcademias() {
   const itens = [
-    { t: "Aparece para quem já está procurando", d: "Quem chega aqui não está passeando: está com a raquete na mão procurando onde jogar." },
+    // Atualizado em 05/10/2026 (pedido do Breno): o que a academia ganha
+    // hoje, com o GuiaTennis Parceiros.
+    { t: "Aparece para quem já está procurando", d: "Quem chega aqui está com a raquete na mão procurando onde jogar — e quem salvou uma busca perto de você ou vai viajar para a sua cidade recebe a sua academia por e-mail." },
     { t: "O jogador cai direto no seu WhatsApp", d: "Sem intermediário, sem comissão sobre a aula, sem central de reservas. A conversa é sua com ele." },
-    { t: "A listagem é gratuita", d: "Cadastrar e aparecer no guia não custa nada. Você envia os dados, a gente confere e publica." },
-    { t: "Os dados são seus", d: "Preço, fotos, comodidades, política de cancelamento e a dica de como chegar — tudo como você informou, e você pede alteração quando quiser." },
+    { t: "Grátis para começar", d: "Cadastrar e aparecer no guia não custa nada. Você cria a conta no GuiaTennis Parceiros e cuida da ficha pelo celular." },
+    { t: "Você no controle da ficha", d: "Preço, fotos, horário, cancelamento e como chegar do seu jeito. Avaliação nova chega no seu e-mail para você responder, e dá para pausar a ficha quando precisar." },
   ];
   return `
     <div class="bloco-academias" id="home-academias">
@@ -9731,14 +9890,19 @@ function renderMini(c, selo, extra) {
 // ---------- blocos pessoais da home (só com o que está no aparelho) ----------
 
 // O link da última busca, com os filtros dela: /busca?q=Moema&piso=saibro.
+// A da página da cidade (sem ponto) volta para a página da cidade.
+function ultimaBuscaDaCidade(b) {
+  return !!(b && b.cidade && !b.bairro && typeof b.lat !== "number" && mesmaCidade(b.termo || b.cidade, b.cidade));
+}
 function linkDaUltimaBusca(b) {
   const p = new URLSearchParams();
-  p.set("q", b.termo || [b.bairro, b.cidade].filter(Boolean).join(", "));
+  if (!ultimaBuscaDaCidade(b)) p.set("q", b.termo || [b.bairro, b.cidade].filter(Boolean).join(", "));
   [["piso", PISO_OPTS, b.pisos], ["cobertura", COBERTURA_OPTS, b.cobertura], ["modalidade", MODALIDADE_OPTS, b.modalidades]].forEach(([nome, opcoes, v]) => {
     const k = naOrdem(opcoes, v || []).map(o => o.key);
     if (k.length) p.set(nome, k.join(","));
   });
-  return "/busca?" + p.toString();
+  const busca = p.toString();
+  return (ultimaBuscaDaCidade(b) ? caminhoDaRegiao({ cidade: b.cidade }) : "/busca") + (busca ? "?" + busca : "");
 }
 
 function refazerUltimaBusca() {
@@ -9748,10 +9912,168 @@ function refazerUltimaBusca() {
   state.modalidadeFilters = naOrdem(MODALIDADE_OPTS, b.modalidades || []).map(o => o.key);
   state.pisoFilters = naOrdem(PISO_OPTS, b.pisos || []).map(o => o.key);
   state.coberturaFilters = naOrdem(COBERTURA_OPTS, b.cobertura || []).map(o => o.key);
+  if (ultimaBuscaDaCidade(b)) { abrirRegiao({ cidade: b.cidade }); return; }
   state.cep = b.termo || [b.bairro, b.cidade].filter(Boolean).join(", ");
   state.regiaoLink = null;
   goSearch();
   doSearch();
+}
+
+// ---------- buscas salvas na conta (pedido do Breno em 05/10/2026) ----------
+// Como o "Salvar busca" do Booking e o "Save search" do Zillow e do
+// Idealista: na busca, "Salvar busca" guarda o lugar e os filtros na conta
+// (em qualquer aparelho). Cada busca salva pode avisar por e-mail quando
+// entrar academia nova nela — começa desligado (LGPD) e a pessoa liga ali
+// mesmo ou no perfil. Banco sem a tabela: o botão some.
+let buscasSalvas = [];
+let semBuscasSalvas = false;
+async function carregarBuscasSalvas() {
+  buscasSalvas = [];
+  if (!jogador) return;
+  try {
+    const { data, error } = await sb.from('buscas_salvas').select('*').eq('user_id', jogador.user_id).order('created_at', { ascending: false });
+    if (error) { semBuscasSalvas = true; return; }
+    buscasSalvas = data || [];
+  } catch { semBuscasSalvas = true; }
+}
+// A busca aberta, como fica salva: o que foi digitado (ou a cidade da
+// página), a região achada, o ponto arredondado (~100 m) e os filtros.
+function buscaAtualParaSalvar() {
+  if (state.page !== "search" || state.searchStatus !== "done") return null;
+  const o = state.origin;
+  const cidade = state.cidadeDaPagina;
+  if (!o && !cidade) return null;
+  const termo = cidade ? cidade : ((state.cep || "").trim() || [o.bairro, o.cidade].filter(Boolean).join(", "));
+  if (!termo) return null;
+  const p = new URLSearchParams();
+  if (!cidade) p.set("q", termo);
+  filtrosNoLink(p);
+  ["favoritas", "comparando", "ordem", "ver"].forEach(k => p.delete(k));
+  const filtros = {};
+  ["piso", "cobertura", "modalidade", "comodidades"].forEach(k => { if (p.get(k)) filtros[k] = p.get(k).split(","); });
+  ["nota", "preco", "distancia"].forEach(k => { if (p.get(k)) filtros[k] = Number(p.get(k)); });
+  const busca = p.toString().replace(/%2C/gi, ",");
+  const caminho = cidade ? caminhoDaRegiao({ cidade }) : "/busca";
+  return {
+    termo: termo.slice(0, 120), bairro: (o && o.bairro) || null, cidade: (o && o.cidade) || cidade || null,
+    lat: o ? pontoAproximado(o.lat) : null, lng: o ? pontoAproximado(o.lng) : null, filtros,
+    link: caminho + (busca ? "?" + busca : ""),
+  };
+}
+function buscaSalvaIgual(b) {
+  return (b && buscasSalvas.find(x => x.link === b.link)) || null;
+}
+function detalhesDaBuscaSalva(b) {
+  const f = b.filtros || {};
+  const partes = [
+    ...rotulosNaOrdem(MODALIDADE_OPTS, f.modalidade || []),
+    ...rotulosNaOrdem(PISO_OPTS, f.piso || []),
+    ...rotulosNaOrdem(COBERTURA_OPTS, f.cobertura || []),
+    ...rotulosNaOrdem(FILTER_AMENITY_OPTS, f.comodidades || []),
+  ];
+  if (f.distancia) partes.push(`até ${f.distancia} km`);
+  if (f.preco) partes.push(`até R$ ${f.preco}/hora`);
+  if (f.nota) partes.push(`nota ${String(f.nota).replace(".", ",")}+`);
+  return partes.join(" · ") || "Sem filtros";
+}
+async function salvarBusca() {
+  const b = buscaAtualParaSalvar();
+  if (!b || isAdmin) return;
+  if (!jogador) {
+    jogadorEntaoFaz(() => salvarBusca(), "Para salvar a busca, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto.");
+    return;
+  }
+  const igual = buscaSalvaIgual(b);
+  if (igual) { state.buscaSalvaAviso = igual.id; render(); return; }
+  state.salvandoBusca = true; state.buscaSalvaErro = ""; render();
+  const { data, error } = await sb.from('buscas_salvas').insert({ user_id: jogador.user_id, ...b }).select('*').single();
+  state.salvandoBusca = false;
+  if (error || !data) {
+    state.buscaSalvaErro = /20 buscas/.test((error && error.message) || "")
+      ? "Você já tem 20 buscas salvas. Apague uma no seu perfil para salvar outra."
+      : "Não consegui salvar a busca agora. Tente de novo em instantes.";
+    render();
+    return;
+  }
+  buscasSalvas = [data, ...buscasSalvas];
+  state.buscaSalvaAviso = data.id;
+  registrarPasso("acao", { detalhe: "Salvou a busca" });
+  render();
+}
+async function avisarDaBusca(id, avisar) {
+  const b = buscasSalvas.find(x => x.id === id);
+  if (!b) return;
+  const { error } = await sb.from('buscas_salvas').update({ avisar: !!avisar }).eq('id', id);
+  if (error) { state.buscaSalvaErro = "Não consegui mudar o aviso agora. Tente de novo em instantes."; render(); return; }
+  b.avisar = !!avisar;
+  if (avisar) registrarPasso("acao", { detalhe: "Ligou o aviso da busca salva" });
+  render();
+}
+async function apagarBuscaSalva(id) {
+  const { error } = await sb.from('buscas_salvas').delete().eq('id', id);
+  if (error) { state.buscaSalvaErro = "Não consegui apagar agora. Tente de novo em instantes."; render(); return; }
+  buscasSalvas = buscasSalvas.filter(x => x.id !== id);
+  if (state.buscaSalvaAviso === id) state.buscaSalvaAviso = null;
+  render();
+}
+// Refaz a busca salva pelo link dela, como quem abre o link.
+function abrirBuscaSalva(id) {
+  const b = buscasSalvas.find(x => x.id === id);
+  if (!b) return;
+  state.showMenu = false;
+  state.lista = null;
+  state.buscaSalvaAviso = null;
+  try { history.pushState({ page: "search", prof: 0 }, "", b.link); } catch {}
+  const feito = aplicarLink(lerLink());
+  state.cep = feito.termo || b.termo;
+  render();
+  window.scrollTo(0, 0);
+  doSearch({ ordem: feito.ordem });
+}
+// Na busca: "Salvar busca" (ou "Busca salva"), e o aviso depois de salvar.
+function linhaSalvarBusca() {
+  if (isAdmin || semBuscasSalvas) return "";
+  const b = buscaAtualParaSalvar();
+  if (!b) return "";
+  const salva = buscaSalvaIgual(b);
+  const aviso = salva && state.buscaSalvaAviso === salva.id;
+  const confirmar = jogador && !jogador.email_confirmado_em;
+  return `
+    <div class="busca-salvar">
+      <button type="button" class="tbtn ${salva ? "on" : ""}" id="salvar-busca" ${state.salvandoBusca ? "disabled" : ""}>
+        ${icon(salva ? 'check' : 'sino', 14, 'currentColor')} ${state.salvandoBusca ? "Salvando" : salva ? "Busca salva" : "Salvar busca"}
+      </button>
+      ${salva ? "" : `<span class="busca-salvar-dica">Guarde o lugar e os filtros na sua conta e receba as academias novas daqui.</span>`}
+    </div>
+    ${state.buscaSalvaErro ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.buscaSalvaErro)}</div>` : ""}
+    ${aviso ? `
+      <div class="busca-salva-aviso" role="status" id="busca-salva-aviso">
+        ${icon('check', 16, 'var(--green)')}
+        <span><strong>Busca salva na sua conta.</strong> ${salva.avisar
+          ? `Quando entrar academia nova aqui, você recebe por e-mail${confirmar ? " (depois de confirmar o e-mail)" : ""}.`
+          : `<button type="button" class="inline-link" id="busca-salva-avisar">Avisar por e-mail quando entrar academia nova aqui</button>`}
+          <button type="button" class="inline-link" data-menu="buscas">Ver as buscas salvas</button></span>
+        <button type="button" class="viagem-pergunta-x" id="busca-salva-fechar" aria-label="Fechar">✕</button>
+      </div>` : ""}`;
+}
+function blocoBuscasSalvasPerfil() {
+  if (semBuscasSalvas) return "";
+  const lista = buscasSalvas.map(b => `
+      <div class="busca-salva-item">
+        <button type="button" class="perfil-item" data-abrir-busca="${esc(b.id)}">${icon('search', 20, 'var(--text)')}<span>${esc(b.termo)}<small>${esc(detalhesDaBuscaSalva(b))}</small></span>${icon('chevron', 16, 'var(--muted)')}</button>
+        <div class="busca-salva-acoes">
+          <label class="consent-row"><input type="checkbox" data-avisar-busca="${esc(b.id)}" ${b.avisar ? "checked" : ""} /><span>Avisar por e-mail de academias novas</span></label>
+          <button type="button" class="inline-link" data-apagar-busca="${esc(b.id)}">Apagar</button>
+        </div>
+      </div>`).join("");
+  return `
+        <section class="perfil-cartao perfil-largo" id="perfil-buscas">
+          <h2>Buscas salvas</h2>
+          ${buscasSalvas.length
+            ? `<p>Toque para buscar de novo. Com o aviso ligado, as academias novas de cada busca chegam por e-mail.</p><div class="perfil-lista">${lista}</div>`
+            : `<p>Na busca, toque em <strong>Salvar busca</strong> para guardar o lugar e os filtros aqui e receber as academias novas por e-mail.</p>`}
+          ${state.page === "perfil" && state.buscaSalvaErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.buscaSalvaErro)}</div>` : ""}
+        </section>`;
 }
 
 // O primeiro cartão de "Vistas recentemente": a última busca, como o
@@ -10422,6 +10744,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
         ${renderSearchCard()}
         ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
         ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
+        ${state.cidadeDaPagina && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} Todas as academias de ${esc(state.cidadeDaPagina)}. Para ver as mais perto, digite o bairro, o endereço ou o CEP.</div>` : ""}
         ${perguntaViagem()}
       </div>
     `}
@@ -10429,7 +10752,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
     <div class="toolbar">
       <div class="toolbar-left">
         <p class="toolbar-count">${results.length} ${plural(results.length, "quadra encontrada", "quadras encontradas")}</p>
-        <p class="toolbar-sub">${state.origin ? `a partir de ${esc(state.origin.bairro || state.origin.cidade || "você")}` : "Use o CEP ou o GPS para ordenar por distância"}</p>
+        <p class="toolbar-sub">${state.origin ? `a partir de ${esc(state.origin.bairro || state.origin.cidade || "você")}` : state.cidadeDaPagina ? `em ${esc(state.cidadeDaPagina)}` : "Use o CEP ou o GPS para ordenar por distância"}</p>
       </div>
       <div class="toolbar-right">
         <div class="sortwrap">
@@ -10442,6 +10765,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
       </div>
     </div>
 
+    ${state.view === "map" ? "" : linhaSalvarBusca()}
     ${renderActiveChips()}
 
     ${state.view === "map" ? renderMapView(results) : `
@@ -12442,8 +12766,8 @@ function renderCourtPage(c) {
                 <div class="rate-box">
                   ${ehMinha(c) ? `
                     <p style="margin:0">Vocês não podem avaliar a própria academia. Respondam às avaliações dos jogadores aqui embaixo.</p>
-                  ` : contaAcademia ? `
-                    <p style="margin:0">Contas do GuiaTennis Parceiros não avaliam academias — nem a própria, nem as outras. Vocês respondem às avaliações da própria academia.</p>
+                  ` : ehDaMinhaConta(c) ? `
+                    <p style="margin:0">Você administra esta academia no GuiaTennis Parceiros, então não avalia ela. As outras academias você avalia normalmente.</p>
                   ` : state.justRated ? `
                     <p class="rate-thanks">Obrigado por avaliar!</p>
                   ` : `
@@ -13409,6 +13733,29 @@ function abrirPercursos() {
   carregarPercursos();
 }
 
+// Avisos por e-mail (05/10/2026): o admin vê se os e-mails estão saindo —
+// a chave do Resend no cofre, o envio (pg_net), o relógio (pg_cron), quantos
+// saíram em 7 dias, quantos esperam e o último erro. Banco sem o SQL: some.
+async function carregarSituacaoDosEmails() {
+  try {
+    const r = await sb.rpc('situacao_dos_emails');
+    state.situacaoEmails = r.error ? null : r.data;
+  } catch { state.situacaoEmails = null; }
+  if (state.showStatsPanel) render();
+}
+function situacaoDosEmailsHtml() {
+  const e = state.situacaoEmails;
+  if (!e) return "";
+  const falta = [!e.chave && "a chave do Resend (segredo RESEND_API_KEY no GitHub)", !e.envio && "o pg_net (Database › Extensions)", !e.relogio && "o pg_cron (Database › Extensions)"].filter(Boolean);
+  return `
+    <div class="emails-situacao ${falta.length ? "falta" : ""}">
+      <p style="margin:0"><strong>Avisos por e-mail:</strong> ${falta.length
+        ? `parados — falta ${esc(listaPt(falta))}. ${e.na_fila ? `${e.na_fila} esperando na fila.` : ""}`
+        : `${e.enviados_7_dias} ${e.enviados_7_dias === 1 ? "enviado" : "enviados"} em 7 dias${e.na_fila ? ` · ${e.na_fila} na fila` : ""}${e.falharam ? ` · ${e.falharam} não saíram` : ""}.`}</p>
+      ${e.ultimo_erro ? `<p class="fgroup-note" style="margin:4px 0 0">Último erro: ${esc(e.ultimo_erro)}</p>` : ""}
+    </div>`;
+}
+
 function renderStatsPanel() {
   const periodo = state.statsPeriodo || "30";
   const { porAcademia, acessos, buscas, regioes, ceps, origens, aparelhos, pontos, tempo } = statsAgregado(periodo);
@@ -13445,6 +13792,7 @@ function renderStatsPanel() {
         <button class="sheet-close" id="stats-close">✕</button>
         <p class="sheet-title display">Estatísticas</p>
         <button type="button" class="inline-link" id="stats-ver-percursos" style="margin-top:4px">Ver o percurso de cada visita ›</button>
+        ${situacaoDosEmailsHtml()}
         <p class="subtitle" style="margin-top:4px">Registrado por todos os visitantes. Com o admin conectado, os seus acessos e buscas não entram na conta.</p>
 
         <div class="chip-row" style="margin-top:12px">
@@ -13523,7 +13871,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confirma de outra forma. Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz, e remover a academia do guia continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confirma de outra forma. Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz, e remover a academia do guia continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade e de mudanças nas suas favoritas, promoções das academias e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -13546,13 +13894,13 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 5 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar", que fica na sua conta para o aviso sair, para aparecer na página inicial e no menu. Um dia depois de você chamar uma academia, o site pergunta, no próprio aparelho, se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam só no aparelho.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
-<p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo). Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar" e as buscas que você salvar na conta, que ficam na sua conta (a viagem também aparece na página inicial e no menu). Você apaga cada busca salva no seu perfil. Um dia depois de você chamar uma academia, o site pergunta, no próprio aparelho, se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam só no aparelho.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo). Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso (para o responsável) e pedido aceito; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
 <p class="field-label" style="margin-top:16px">3. Serviços de terceiros</p>
-<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), OpenStreetMap/Overpass (restaurantes, padarias e pontos turísticos perto de cada academia, e academias de tênis que ainda não estão no guia), Supabase (banco de dados e login do GuiaTennis e das academias), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
+<p style="font-size:14px">ViaCEP e AwesomeAPI (CEP → endereço/coordenada), OpenStreetMap/Nominatim (endereço → coordenadas), OpenStreetMap/Overpass (restaurantes, padarias e pontos turísticos perto de cada academia, e academias de tênis que ainda não estão no guia), Supabase (banco de dados e login do GuiaTennis e das academias), Resend (envio dos e-mails do GuiaTennis — o código de confirmação e os avisos —, que recebe o e-mail de quem vai receber e o texto da mensagem), WhatsApp e Instagram (contato com a academia). Esses serviços têm políticas próprias, que não controlamos.</p>
 <p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
 <p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o GuiaTennis pode aprovar, editar ou remover conteúdo — cada academia, com o login dela, edita apenas a própria ficha e as próprias respostas. Favoritos continuam salvos localmente no seu navegador.</p>
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
@@ -14384,6 +14732,12 @@ function attachEvents() {
       if (alvo === "minha-conta") { abrirContaJogador("conta"); return; }
       if (alvo === "avisos") { if (jogador) irPerfil("perfil-avisos"); else abrirContaJogador("entrar", "Entre na sua conta para escolher os avisos por e-mail."); return; }
       if (alvo === "sair-jogador") { sairDaContaJogador(); return; }
+      if (alvo === "buscas") {
+        if (jogador) { irPerfil("perfil-buscas"); return; }
+        abrirContaJogador("entrar", "Entre para ver as suas buscas salvas. Se ainda não tiver conta, o cadastro leva um minuto.");
+        state.depoisDeEntrar = () => irPerfil("perfil-buscas");
+        return;
+      }
       if (alvo === "comparar") { goComparar(); return; }
       if (alvo === "cadastrar") { irParceiros("cadastro"); return; }
       if (alvo === "parceiros") { irParceiros("inicio"); return; }
@@ -14458,9 +14812,9 @@ function attachEvents() {
   const conviteViagemSim = document.getElementById("convite-viagem-sim");
   if (conviteViagemSim) conviteViagemSim.onclick = () => { gravarLocal(VIAGEM_CONVITE_KEY, Date.now()); abrirViagem(); };
   const perguntaSim = document.getElementById("viagem-pergunta-sim");
-  if (perguntaSim) perguntaSim.onclick = () => abrirViagem({ cidade: state.origin.cidade, uf: state.origin.uf || "" });
+  if (perguntaSim) perguntaSim.onclick = () => abrirViagem({ cidade: cidadeDaBusca(), uf: (state.origin && state.origin.uf) || "" });
   const perguntaNao = document.getElementById("viagem-pergunta-nao");
-  if (perguntaNao) perguntaNao.onclick = () => { state.viagemPerguntaFechada = [...(state.viagemPerguntaFechada || []), state.origin.cidade]; render(); };
+  if (perguntaNao) perguntaNao.onclick = () => { state.viagemPerguntaFechada = [...(state.viagemPerguntaFechada || []), cidadeDaBusca()]; render(); };
 
   // ---- Preferências de busca ----
   const prefClose = document.getElementById("pref-close");
@@ -14595,7 +14949,7 @@ function attachEvents() {
   if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
 
   const fabStats = document.getElementById("fab-stats");
-  if (fabStats) fabStats.onclick = () => { state.showStatsPanel = true; render(); };
+  if (fabStats) fabStats.onclick = () => { state.showStatsPanel = true; render(); carregarSituacaoDosEmails(); };
   // Percurso das visitas (05/10/2026).
   const fabPercursos = document.getElementById("fab-percursos");
   if (fabPercursos) fabPercursos.onclick = abrirPercursos;
@@ -15036,12 +15390,28 @@ function shareCourt(courtId) {
 // `opcoes.registrar: false`: a busca refeita pelo "voltar" não conta de novo.
 async function doSearch(opcoes = {}) {
   diag(`buscando: "${state.cep}"`);
-  state.searchStatus = "loading";
   state.errorMsg = "";
-  render();
   const termo = state.cep.trim();
   state.termoBuscado = termo;
   const registrar = (geo, cep) => { if (opcoes.registrar !== false) registrarBusca(geo, cep); };
+  // Página da cidade (/quadras/sao-paulo, "Ver as academias de São Paulo"):
+  // todas as academias da cidade, sem procurar um endereço (pedido do Breno
+  // em 05/10/2026), como as páginas de destino do Booking e do TripAdvisor.
+  const r = state.regiaoLink;
+  if (r && r.cidade && !r.bairro && termo === termoDaRegiao(r)) {
+    state.cidadeDaPagina = r.cidade;
+    state.origin = null;
+    state.sortBy = opcoes.ordem || "recomendados";
+    state.searchStatus = "done";
+    contarNavegacao();
+    guardarUltimaBusca({ bairro: "", cidade: r.cidade }, termo);
+    registrar({ bairro: "", cidade: r.cidade }, null);
+    render();
+    return;
+  }
+  state.cidadeDaPagina = null;
+  state.searchStatus = "loading";
+  render();
   const digitsOnly = termo.replace(/\D/g, "");
   try {
     let geo;
@@ -15300,6 +15670,7 @@ async function init() {
 
   const q = new URLSearchParams(location.search);
   // O link manda na tela: ficha, região, busca com filtros, comparação.
+  lerPararAvisosDoLink();
   const linkInicial = lerLink();
   const doLink = aplicarLink(linkInicial);
   aplicarCamadas(linkInicial.q);

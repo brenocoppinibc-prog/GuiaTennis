@@ -78,10 +78,11 @@ const HORA = 36e5;
   ok(await page.evaluate(() => academiasParaAvaliar({ todas: true }).length === 0), 'academia avaliada sai da lista');
   await browser.close();
 
-  // Admin e academia logada não recebem o pedido.
+  // Conta de academia (05/10/2026): no site dos jogadores é uma conta
+  // normal — recebe o "Jogou aqui?" das outras academias, nunca da própria.
   ({ browser, page } = await abrir({ academia: 'a2' }));
-  await page.evaluate((h) => { gravarLocal(CHAMADAS_KEY, [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }]); }, HORA);
-  ok(await page.evaluate(() => academiasParaAvaliar().length === 0), 'conta de academia não recebe o "Jogou aqui?"');
+  await page.evaluate((h) => { gravarLocal(CHAMADAS_KEY, [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }, { id: 'a2', tipo: 'whatsapp', em: Date.now() - 30 * h }]); }, HORA);
+  ok(await page.evaluate(() => academiasParaAvaliar().map(x => x.id).join(',') === 'a1'), 'conta de academia recebe o "Jogou aqui?" das outras, nunca da própria');
   // Menu do site dos jogadores com a conta da academia: "Sair da conta".
   await page.evaluate(() => { state.showMenu = true; render(); });
   t = await texto(page, '#menu-overlay .menu-rodape');

@@ -36,7 +36,8 @@ teste")
 > avalia a academia que administra — SQL `20261005170000_parceiro_tambem_joga`,
 > muda a regra 18), **a página da cidade lista todas as academias da cidade**
 > sem procurar endereço, e os textos "Por que o GuiaTennis" e "Por que estar
-> no GuiaTennis". Falta o Breno pôr o segredo `RESEND_API_KEY` no GitHub
+> no GuiaTennis". Também a correção da esteira do banco, vermelha desde o
+> SQL da pausa (SQL `20261005180000_visitante_le_a_pausa`). Falta o Breno pôr o segredo `RESEND_API_KEY` no GitHub
 > (seção 11, primeiro item). Testes: **802 verificações, nenhuma falha** nos 26 arquivos
 > do navegador e 95 no `banco-emails.py` (Postgres local).
 >
@@ -1491,6 +1492,12 @@ colocados pelo Breno). Aqui:
   (lista as execuções do `banco.yml` e lê o registro do job). É o jeito de
   conferir produção daqui, já que a rede deste ambiente não alcança o site
   nem o Supabase.
+- **Coluna nova que o site lê precisa da leitura liberada** no SQL:
+  `grant select (coluna) on public.academias to anon, authenticated` (o
+  visitante e quem está logado só leem as colunas da lista). Em 05/10/2026
+  a `pausada_pela_academia` entrou sem isso e a esteira do banco ficou
+  vermelha ("permission denied for table academias" no `conferir.sh`);
+  corrigido no SQL `20261005180000_visitante_le_a_pausa`.
 - **Coluna nova que o visitante lê** entra também em
   `COLUNAS_ACADEMIA_NOVAS`: na publicação, o site pode ir para o ar antes
   do SQL; aí ele lê sem as colunas novas em vez de cair no `*`, que o

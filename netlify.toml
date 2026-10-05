@@ -37,6 +37,7 @@
 #   /quadras/<cidade>/<bairro>     academias de uma região
 #   /busca?q=…&piso=…              busca com filtros
 #   /comparar?academias=…          comparação
+#   /perfil                        perfil da conta do jogador
 #   /parceiros/…                   GuiaTennis Parceiros (site das academias)
 # Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
 # endereço) e o site monta a tela pelo link. Os links antigos (?court=,
@@ -75,6 +76,12 @@
 
 [[redirects]]
   from = "/comparar"
+  to = "/index.html"
+  status = 200
+
+# Perfil da conta do jogador (05/10/2026), como o "Meu trivago".
+[[redirects]]
+  from = "/perfil"
   to = "/index.html"
   status = 200
 

@@ -65,7 +65,7 @@ const { abrir, ok } = require('./harness');
     await sb.rpc('completar_meu_acesso', { p_nome: 'Maria Teste', p_cargo: 'Gerente', p_email: 'maria@quadra.com.br', p_whatsapp: '11900000001', p_cnpj: '', p_recebe_relatorio: false, p_aceite: true });
     await sb.auth.signOut();
     contaAcademia = null;
-    irParceiros('entrar');
+    irParceiros('entrar', { mesmaAba: true });
   });
   await page.waitForTimeout(300);
   await page.fill('#pc-email', 'quadra.a2');

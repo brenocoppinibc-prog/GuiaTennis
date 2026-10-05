@@ -656,6 +656,9 @@
   .conta-topo { position: relative; }
   .conta-topo.destaque { animation: contaPisca 1.6s ease-in-out infinite; }
   .conta-topo.destaque::after { content: "!"; position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #F2B705; color: #3A2A00; font-size: 12px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+  /* E-mail ainda não confirmado (05/10/2026): o círculo da conta ganha o
+     mesmo "!" amarelo, como o Google e a Microsoft lembram de confirmar. */
+  .conta-topo.confirmar::after { content: "!"; position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #F2B705; color: #3A2A00; font-size: 12px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
   @keyframes contaPisca {
     0%, 100% { background: #FFF6D8; box-shadow: 0 0 0 3px rgba(242,183,5,0.25), 0 0 10px rgba(242,183,5,0.35); }
     50% { background: #FFE38A; box-shadow: 0 0 0 7px rgba(242,183,5,0.45), 0 0 22px rgba(242,183,5,0.75); }
@@ -1757,6 +1760,52 @@
   .cta-btn + .footnote, .btn-primary + .footnote { margin-top: 20px; }
   .pc-card-t + .conta-dados { margin-top: 14px; }
   .conta-dados + .conta-acoes { margin-top: 16px; }
+
+  /* Perfil da conta (05/10/2026), como o "Meu trivago": a inicial num
+     círculo, o nome e as partes da conta em cartões. Vale para o site dos
+     jogadores e para o GuiaTennis Parceiros. */
+  .perfil-topo { display: flex; align-items: center; gap: 16px; margin: 4px 0 8px; }
+  .perfil-topo h1 { margin: 0; font-size: 28px; line-height: 1.15; }
+  .perfil-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--green); color: #fff; font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .perfil-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .perfil-pagina { max-width: 760px; margin: 0 auto; padding: 20px 16px 48px; }
+  .perfil-grade { display: grid; gap: 16px; margin-top: 24px; }
+  @media (min-width: 760px) { .perfil-grade { grid-template-columns: 1fr 1fr; } .perfil-grade .perfil-largo { grid-column: 1 / -1; } }
+  .perfil-cartao { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+  .perfil-cartao h2 { font-size: 17px; margin: 0 0 4px; font-family: inherit; font-weight: 700; }
+  .perfil-cartao > p { margin: 0; color: var(--muted); font-size: 14px; }
+  .perfil-lista { display: flex; flex-direction: column; margin-top: 10px; }
+  .perfil-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border: 0; border-top: 1px solid var(--border); background: none; font: inherit; color: var(--text); text-align: left; cursor: pointer; width: 100%; text-decoration: none; }
+  .perfil-item:first-child { border-top: 0; }
+  .perfil-item span { flex: 1; min-width: 0; }
+  .perfil-item small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .perfil-item .menu-valor { flex: 0 0 auto; }
+  .perfil-rodape { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 28px; }
+  .pc-avatar { width: 40px; height: 40px; font-size: 16px; text-decoration: none; margin-left: 0; }
+  .pc-avatar.on { box-shadow: 0 0 0 3px rgba(31, 77, 58, 0.25); }
+
+  /* Suas academias (05/10/2026): um cartão por academia, como o "Suas
+     empresas" do Google Business Profile. */
+  .pc-h2 { font-size: 18px; margin: 28px 0 0; }
+  .pc-acad-add { margin-top: 20px; }
+  .pc-acad-grade { display: grid; gap: 16px; margin-top: 14px; }
+  @media (min-width: 760px) { .pc-acad-grade { grid-template-columns: 1fr 1fr; } }
+  .pc-acad-grade > .pc-card { margin: 0; }
+  .pc-acad.aberta { border-color: var(--green); }
+  .pc-acad-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .pc-acad-selo { font-size: 12px; font-weight: 700; color: var(--green); background: rgba(31, 77, 58, 0.08); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+  .pc-acad-dados { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .pc-acad-dados small { display: block; color: var(--muted); font-size: 12px; }
+  .pc-acad-dados strong { font-size: 14px; }
+
+  /* Pedido de avaliação (05/10/2026): o balão "Jogou aqui?", com estrelas. */
+  .push-conta.push-avaliar { top: auto; bottom: 18px; left: 12px; right: 12px; margin: 0 auto; max-width: 380px; cursor: default; border-color: #F2D27A; }
+  .push-conta.push-avaliar::before { display: none; }
+  .push-avaliar .push-conta-ic { font-size: 20px; color: #C99A1C; }
+  .push-avaliar .push-conta-estrelas { display: flex; gap: 2px; margin-top: 8px; }
+  .push-avaliar .push-conta-estrelas button { border: 0; background: none; padding: 2px; cursor: pointer; font-size: 26px; line-height: 1; color: #E2B53A; }
+  .push-avaliar .push-avaliar-acoes { display: flex; gap: 16px; margin-top: 8px; }
+  .push-avaliar .push-avaliar-acoes button { border: 0; background: none; padding: 0; font: inherit; font-size: 13px; color: var(--muted); text-decoration: underline; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -2984,7 +3033,7 @@ let state = {
   pcConfirmarErro: "",
   pcLogin: "",
   pcSelecionada: undefined,
-  pcCodigo: "",
+  pcCodigos: {},
   pcContaErro: "",
   pcContaSalvando: false,
   pedidoErro: "",
@@ -3259,12 +3308,14 @@ async function submitRating(courtId, stars, comment) {
   // Contas e contatos de academias não avaliam (o banco confere).
   if (error) {
     const m = error.message || "";
+    if (/já avaliou/.test(m)) marcarAvaliada(courtId);
     throw new Error(/academias? não avaliam|não avaliam academias/.test(m)
       ? "Esse contato é de uma academia do GuiaTennis, e academias não avaliam academias."
       : /já avaliou/.test(m) ? "Você já avaliou essa academia."
       : /Entre na sua conta|row-level security/.test(m) ? "Entre na sua conta para avaliar."
       : "Não consegui enviar a avaliação agora. Tente de novo em instantes.");
   }
+  marcarAvaliada(courtId);
   if (!state.reviewsCache[courtId]) state.reviewsCache[courtId] = [];
   state.reviewsCache[courtId].unshift({ id: data && data.id, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato, ts: new Date().toISOString() });
 }
@@ -3448,6 +3499,8 @@ function render() {
     ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}
     ${state.page === "comparar" ? renderComparePage() + avisoDeDecisao() + renderDecideSheet() : ""}
     ${pushContaHtml()}
+    ${pushAvaliarHtml()}
+    ${state.page === "perfil" ? renderPerfilJogador() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
     ${state.page === "parceiros" ? renderParceiros() : ""}
 
@@ -3483,6 +3536,7 @@ function render() {
     ${renderLightbox()}
   `;
 
+  try { window.name = state.page === "parceiros" ? ABA_PARCEIROS : ABA_JOGADORES; } catch {}
   // O site dos parceiros ocupa a tela inteira, como o site de um parceiro
   // grande: cabeçalho e rodapé de ponta a ponta, conteúdo no meio.
   app.className = state.page === "parceiros" ? "container pc-cheio" : "container";
@@ -3592,10 +3646,8 @@ function urlCanonica(c) {
   if (state.page === "search" && state.regiaoLink) return location.origin + caminhoDaRegiao(state.regiaoLink);
   if (state.page === "search") return location.origin + "/busca";
   if (state.page === "comparar") return location.origin + "/comparar";
-  if (state.page === "parceiros") {
-    const aba = state.parceirosAba || "inicio";
-    return location.origin + "/parceiros" + (aba === "inicio" ? "" : "/" + aba);
-  }
+  if (state.page === "perfil") return location.origin + "/perfil";
+  if (state.page === "parceiros") return location.origin + caminhoDosParceiros(state.parceirosAba || "inicio");
   return location.origin + "/";
 }
 function atualizarCanonical(c) {
@@ -3634,6 +3686,7 @@ function seoDaPagina() {
       robots: "",
     };
   }
+  if (state.page === "perfil") return { titulo: "Minha conta | GuiaTennis", descricao: DESCRICAO_PADRAO, robots: "noindex, nofollow" };
   if (state.page === "search" || state.page === "comparar" || state.avisoLink) return { titulo: TITULO_PADRAO, descricao: DESCRICAO_PADRAO, robots: "noindex, follow" };
   return { titulo: TITULO_PADRAO, descricao: DESCRICAO_PADRAO, robots: "" };
 }
@@ -4378,6 +4431,48 @@ function linkResponsavel(c) {
 // nome da academia; o nome é só para quem lê (e para o Google).
 const SITE = "https://guiatennis.com.br";
 
+// GuiaTennis Parceiros, um site à parte (pedido do Breno em 05/10/2026): como
+// o trivago e o trivago Business Studio, o site dos jogadores e o das
+// academias ficam cada um na sua aba. Do site dos jogadores, "GuiaTennis
+// Parceiros" abre o das academias na aba dele (e volta para ela, se já
+// estiver aberta); de lá, "Ir para o GuiaTennis" volta à aba dos jogadores.
+// Endereço próprio, com links curtos (parceiros.guiatennis.com.br/painel):
+// o código já entende esse endereço; os links do guiatennis.com.br passam a
+// apontar para ele quando PARCEIROS_NO_ENDERECO_PROPRIO for true — depois de
+// o Breno criar o endereço no registro.br e no Netlify (GUIATENNIS-CONTEXTO,
+// seção 11). Até lá, o Parceiros fica em guiatennis.com.br/parceiros.
+const SITE_PARCEIROS = "https://parceiros.guiatennis.com.br";
+const PARCEIROS_NO_ENDERECO_PROPRIO = false;
+const ABA_PARCEIROS = "guiatennis-parceiros", ABA_JOGADORES = "guiatennis";
+function noEnderecoDosParceiros() {
+  return /^parceiros\./.test(location.hostname);
+}
+function noSiteDeVerdade() {
+  return /^(www\.)?guiatennis\.com\.br$/.test(location.hostname);
+}
+// O caminho de uma página do Parceiros: curto no endereço próprio.
+function caminhoDosParceiros(aba) {
+  const a = !aba || aba === "inicio" ? "" : aba;
+  return noEnderecoDosParceiros() ? "/" + a : "/parceiros" + (a ? "/" + a : "");
+}
+// O link completo, para abrir em outra aba.
+function urlDosParceiros(aba, busca) {
+  const a = !aba || aba === "inicio" ? "" : aba;
+  const base = PARCEIROS_NO_ENDERECO_PROPRIO && noSiteDeVerdade() ? SITE_PARCEIROS + "/" + a
+    : location.origin + caminhoDosParceiros(a);
+  return base + (busca ? "?" + busca : "");
+}
+function urlDosJogadores(caminho) {
+  return (noEnderecoDosParceiros() ? SITE : location.origin) + (caminho || "/");
+}
+// Abre (ou traz de volta) a aba do outro site. Bloqueada pelo navegador,
+// abre na mesma aba.
+function abrirNaAba(url, nome) {
+  let w = null;
+  try { w = window.open(url, nome); } catch {}
+  if (!w) location.assign(url);
+}
+
 // O mesmo do slug() do banco (supabase/migrations/20260930130000_links_amigaveis.sql):
 // os dois têm de dar o mesmo resultado, senão o sitemap e a ficha divergem.
 function slugTexto(t) {
@@ -4515,7 +4610,11 @@ async function carregarConta(session) {
     const { data, error } = await sb.from('academia_acessos').select('*').eq('user_id', user.id);
     if (!error && data && data[0]) contaAcademia = { ...contaDeLinha(data[0]), login: user.email };
   } catch { /* banco sem a tabela: fica como visitante */ }
-  if (contaAcademia) { contaAcademia.academias = await carregarMinhasAcademias(contaAcademia); return; }
+  if (contaAcademia) {
+    contaAcademia.academias = await carregarMinhasAcademias(contaAcademia);
+    contaAcademia.pedidos = await carregarMeusPedidos(contaAcademia);
+    return;
+  }
   try {
     const { data, error } = await sb.from('jogadores').select('*').eq('user_id', user.id);
     if (!error && data && data[0]) jogador = data[0];
@@ -4537,6 +4636,28 @@ async function carregarMinhasAcademias(conta) {
 }
 function minhasAcademias() {
   return (contaAcademia && contaAcademia.academias) || [];
+}
+// Vários pedidos ao mesmo tempo (pedido do Breno em 05/10/2026), como as
+// empresas "aguardando verificação" do Google Business Profile: a conta pede
+// outra academia mesmo com um pedido aberto. Banco sem o SQL novo: o pedido
+// único das colunas antigas.
+async function carregarMeusPedidos(conta) {
+  try {
+    const r = await sb.rpc('meus_pedidos_de_acesso');
+    if (!r.error && Array.isArray(r.data)) {
+      return r.data.map(x => ({ academiaId: x.academia_id, nome: x.nome || "", destino: x.destino || "", em: x.pedido_em || null, status: x.status || "", codigoEm: x.codigo_em || null }));
+    }
+  } catch { /* banco sem a função */ }
+  return conta.pedidoAcademiaId ? [{ academiaId: conta.pedidoAcademiaId, nome: conta.pedidoNome, destino: conta.pedidoDestino, em: conta.pedidoEm, status: "", codigoEm: null }] : [];
+}
+function meusPedidos() {
+  return (contaAcademia && contaAcademia.pedidos) || [];
+}
+// Chama a função nova (com a academia do pedido); banco antigo, sem ela.
+async function rpcDoPedido(nome, args, academiaId) {
+  let r = await sb.rpc(nome, academiaId ? { ...args, p_academia: academiaId } : args);
+  if (r.error && academiaId && (r.error.code === "PGRST202" || /could not find the function/i.test(r.error.message || ""))) r = await sb.rpc(nome, args);
+  return r;
 }
 // Uma das academias da conta (aberta no painel ou não).
 function ehDaMinhaConta(c) {
@@ -4572,6 +4693,9 @@ function adicionarOutraAcademia() {
   state.pcSelecionada = null;
   state.pcBusca = "";
   state.pedidoErro = "";
+  state.pedidoErroEm = null;
+  state.pcPedidoFeito = null;
+  state.pcAdicionando = true;
   irParceiros("cadastro");
 }
 
@@ -4587,6 +4711,12 @@ async function carregarAcessos() {
     const r = await sb.rpc('acessos_das_academias');
     state.acessos = r.error ? null : (r.data || []);
   } catch { state.acessos = null; }
+  // Um pedido por linha (SQL 20261005120000); sem a função, os pedidos vêm
+  // da lista dos acessos, um por conta.
+  try {
+    const r = await sb.rpc('pedidos_de_acesso_admin');
+    state.pedidosAcesso = r.error ? null : (r.data || []);
+  } catch { state.pedidosAcesso = null; }
   try {
     const r = await sb.rpc('pedidos_de_plano_admin');
     state.pedidosDePlano = r.error ? [] : (r.data || []);
@@ -4909,15 +5039,15 @@ function blocoAcessosPainel() {
   // Uma linha por academia de cada conta (a mesma conta pode administrar
   // várias): o pedido aparece uma vez por conta.
   const umaPorConta = (lista) => lista.filter((a, i) => lista.findIndex(b => b.user_id === a.user_id) === i);
-  const pedidos = umaPorConta(state.acessos.filter(a => a.pedido_academia_id));
-  const semAcademia = umaPorConta(state.acessos.filter(a => !a.academia_id && !a.pedido_academia_id));
+  const pedidos = pedidosDoAdmin();
+  const semAcademia = umaPorConta(state.acessos.filter(a => !a.academia_id && !pedidos.some(p => p.user_id === a.user_id)));
   const comAcademia = state.acessos.filter(a => a.academia_id);
   const quantasDa = (userId) => comAcademia.filter(a => a.user_id === userId).length;
   const pendente = (id) => (state.pending || []).some(c => c.id === id);
   return `
     ${pedidos.length ? `
       <p class="sheet-title display" style="font-size:18px;margin-top:28px">Pedidos para administrar</p>
-      <p class="subtitle" style="margin-top:4px">Gere o código e mande para o WhatsApp da ficha: quem digitar o código prova que responde pela academia, e o acesso sai sozinho. Sem WhatsApp na ficha, confira um documento e aprove. Academia nova: publicar já libera o acesso.</p>
+      <p class="subtitle" style="margin-top:4px">Gere o código e mande para o WhatsApp da ficha: quem digitar o código prova que responde pela academia, e o acesso sai sozinho. Sem WhatsApp na ficha, confirme com a academia e aprove. Academia nova: publicar já libera o acesso. A mesma conta pode ter mais de um pedido.</p>
       ${pedidos.map(a => `
         <div class="pending-item acesso-pedido">
           <span class="pending-name display">${esc(a.pedido_nome || nomeDe(a.pedido_academia_id))}${pendente(a.pedido_academia_id) ? " · academia nova, em análise" : ""}</span>
@@ -4925,8 +5055,8 @@ function blocoAcessosPainel() {
           ${linhaDoCodigo(a)}
           <div class="chip-row">
             ${a.whatsapp ? `<a class="chip small" href="https://wa.me/55${esc(whatsappDe(a.whatsapp) || a.whatsapp)}?text=${encodeURIComponent(`Oi, ${(a.nome_responsavel || "").split(" ")[0]}! Aqui é o Breno, do GuiaTennis. Recebi o seu pedido para administrar a ${a.pedido_nome || "academia"} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">WhatsApp</a>` : ""}
-            <button type="button" class="chip small active" data-aprovar-pedido="${a.user_id}">Aprovar</button>
-            <button type="button" class="chip small" data-recusar-pedido="${a.user_id}">Recusar</button>
+            <button type="button" class="chip small active" data-aprovar-pedido="${a.user_id}" data-academia="${a.pedido_academia_id}">Aprovar</button>
+            <button type="button" class="chip small" data-recusar-pedido="${a.user_id}" data-academia="${a.pedido_academia_id}">Recusar</button>
           </div>
         </div>`).join("")}` : ""}
     <p class="sheet-title display" style="font-size:18px;margin-top:28px">Acessos das academias</p>
@@ -4941,16 +5071,26 @@ function blocoAcessosPainel() {
   `;
 }
 
+// Os pedidos para administrar, um por linha (a mesma conta pode ter vários),
+// no formato da lista antiga dos acessos.
+function pedidosDoAdmin() {
+  if (Array.isArray(state.pedidosAcesso)) {
+    return state.pedidosAcesso.map(p => ({ ...p, pedido_academia_id: p.academia_id, pedido_nome: p.nome, pedido_destino: p.destino }));
+  }
+  const lista = (state.acessos || []).filter(a => a.pedido_academia_id);
+  return lista.filter((a, i) => lista.findIndex(b => b.user_id === a.user_id) === i);
+}
+
 // Verificação como a do Google pelo telefone da empresa: o código vai para o
 // WhatsApp que está na ficha. Quem manda é o Breno, pelo WhatsApp dele.
 function linhaDoCodigo(a) {
   const ficha = state.allCourts.find(c => c.id === a.pedido_academia_id);
   const dono = (state.acessos || []).find(x => x.academia_id === a.pedido_academia_id && x.papel === "principal" && x.user_id !== a.user_id);
-  if (dono) return `<span class="pending-detail">Já tem responsável (${esc(dono.nome_responsavel || dono.email || dono.usuario)}): o pedido foi para ele aceitar ou recusar. Aprove aqui só se ele não responder ou tiver saído da academia, depois de conferir um documento.</span>`;
+  if (dono) return `<span class="pending-detail">Já tem responsável (${esc(dono.nome_responsavel || dono.email || dono.usuario)}): o pedido foi para ele aceitar ou recusar. Aprove aqui só se ele não responder ou tiver saído da academia, depois de confirmar com a academia.</span>`;
   if (!ficha) return `<span class="pending-detail">Academia nova: publicar libera o acesso.</span>`;
   const tel = whatsappDe(ficha.phone);
-  if (!tel) return `<span class="pending-detail">A ficha não tem WhatsApp: confira por documento (CNPJ ou contrato social) antes de aprovar.</span>`;
-  const codigo = (state.codigosGerados || {})[a.user_id];
+  if (!tel) return `<span class="pending-detail">A ficha não tem WhatsApp: confirme com a academia antes de aprovar.</span>`;
+  const codigo = (state.codigosGerados || {})[a.user_id + "|" + a.pedido_academia_id];
   if (codigo) {
     const msg = `Olá! Aqui é o Breno, do GuiaTennis. ${a.nome_responsavel || "Uma pessoa"} pediu para administrar a ficha da ${ficha.name} no GuiaTennis Parceiros. Se for alguém da academia, passe para essa pessoa o código ${codigo}. Se ninguém da academia pediu, é só ignorar esta mensagem.`;
     return `
@@ -4959,19 +5099,19 @@ function linhaDoCodigo(a) {
   }
   return `
     <span class="pending-detail">${a.codigo_em ? `Código gerado em ${dataCurta(a.codigo_em)}.` : "Confirme pelo WhatsApp da ficha, como o Google faz com o telefone da empresa."}</span>
-    <div class="chip-row"><button type="button" class="chip small" data-gerar-codigo="${a.user_id}">${a.codigo_em ? "Gerar outro código" : "Gerar código para o WhatsApp da academia"}</button></div>`;
+    <div class="chip-row"><button type="button" class="chip small" data-gerar-codigo="${a.user_id}" data-academia="${a.pedido_academia_id}">${a.codigo_em ? "Gerar outro código" : "Gerar código para o WhatsApp da academia"}</button></div>`;
 }
 
-async function gerarCodigoDoPedido(userId) {
-  const { data, error } = await sb.rpc('gerar_codigo_do_pedido', { p_user: userId });
+async function gerarCodigoDoPedido(userId, academiaId) {
+  const { data, error } = await rpcDoPedido('gerar_codigo_do_pedido', { p_user: userId }, academiaId);
   if (error) { alert("Não consegui: " + error.message); return; }
-  state.codigosGerados = { ...(state.codigosGerados || {}), [userId]: data };
+  state.codigosGerados = { ...(state.codigosGerados || {}), [userId + "|" + academiaId]: data };
   await carregarAcessos();
   render();
 }
 
-async function decidirPedido(userId, aprovar) {
-  const { error } = await sb.rpc(aprovar ? 'aprovar_pedido_de_acesso' : 'recusar_pedido_de_acesso', { p_user: userId });
+async function decidirPedido(userId, academiaId, aprovar) {
+  const { error } = await rpcDoPedido(aprovar ? 'aprovar_pedido_de_acesso' : 'recusar_pedido_de_acesso', { p_user: userId }, academiaId);
   if (error) { alert("Não consegui: " + error.message); return; }
   await carregarAcessos();
   render();
@@ -5207,7 +5347,12 @@ function ligarEventosConta() {
   const voltar = document.getElementById("conta-voltar");
   if (voltar) voltar.onclick = () => { state.contaErro = ""; state.contaModo = "painel"; render(); };
   const verFicha = document.getElementById("conta-ver-ficha");
-  if (verFicha) verFicha.onclick = () => openCourt(verFicha.dataset.court);
+  // Do Parceiros, a ficha abre na aba do site dos jogadores (05/10/2026).
+  if (verFicha) verFicha.onclick = () => {
+    const c = todasAsFichas().find(x => x.id === verFicha.dataset.court);
+    if (state.page === "parceiros" && c) abrirNaAba(urlDosJogadores(caminhoDaFicha(c)), ABA_JOGADORES);
+    else openCourt(verFicha.dataset.court);
+  };
   const contaQr = document.getElementById("conta-qr");
   if (contaQr) contaQr.onclick = () => { state.qrCourt = contaQr.dataset.court; render(); };
 
@@ -5236,15 +5381,15 @@ function ligarEventosConta() {
 
   document.querySelectorAll("[data-aprovar-pedido]").forEach(el => {
     el.onclick = () => {
-      const a = (state.acessos || []).find(x => x.user_id === el.dataset.aprovarPedido && x.pedido_academia_id);
-      const temDono = a && (state.acessos || []).some(x => x.academia_id === a.pedido_academia_id && x.papel === "principal" && x.user_id !== a.user_id);
-      if (temDono && !confirm("Essa academia já tem responsável, e o pedido está com ele. Aprovar mesmo assim? Faça isso só depois de conferir um documento.")) return;
-      decidirPedido(el.dataset.aprovarPedido, true);
+      const academia = el.dataset.academia;
+      const temDono = (state.acessos || []).some(x => x.academia_id === academia && x.papel === "principal" && x.user_id !== el.dataset.aprovarPedido);
+      if (temDono && !confirm("Essa academia já tem responsável, e o pedido está com ele. Aprovar mesmo assim? Faça isso só depois de confirmar com a academia.")) return;
+      decidirPedido(el.dataset.aprovarPedido, academia, true);
     };
   });
-  document.querySelectorAll("[data-gerar-codigo]").forEach(el => { el.onclick = () => gerarCodigoDoPedido(el.dataset.gerarCodigo); });
+  document.querySelectorAll("[data-gerar-codigo]").forEach(el => { el.onclick = () => gerarCodigoDoPedido(el.dataset.gerarCodigo, el.dataset.academia); });
   document.querySelectorAll("[data-recusar-pedido]").forEach(el => {
-    el.onclick = () => { if (confirm("Recusar esse pedido? A conta continua, sem academia.")) decidirPedido(el.dataset.recusarPedido, false); };
+    el.onclick = () => { if (confirm("Recusar esse pedido? A conta continua, com as outras academias e pedidos dela.")) decidirPedido(el.dataset.recusarPedido, el.dataset.academia, false); };
   });
   const acessoCriar = document.getElementById("acesso-criar");
   if (acessoCriar) acessoCriar.onclick = () => criarAcesso(acessoCriar.dataset.court);
@@ -5631,7 +5776,7 @@ function demoBusca() {
 // A ordem da busca nunca depende do plano: plano só libera números.
 
 const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar"];
-const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "ficha", "plano", "conta"];
+const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "ficha", "pessoas", "plano", "academias", "perfil"];
 const PC_MENU_PUBLICO = [
   { aba: "inicio", t: "Início", ic: "home" },
   { aba: "inicio", ancora: "pc-beneficios", t: "Benefícios", ic: "sparkle" },
@@ -5644,12 +5789,15 @@ const PC_MENU_LOGADO = [
   { aba: "desempenho", t: "Desempenho", ic: "barchart" },
   { aba: "avaliacoes", t: "Avaliações", ic: "bubble" },
   { aba: "ficha", t: "Minha ficha", ic: "edit" },
+  { aba: "pessoas", t: "Pessoas", ic: "pessoa" },
   { aba: "plano", t: "Plano", ic: "sparkle" },
-  { aba: "conta", t: "Conta", ic: "key" },
+  { aba: "academias", t: "Suas academias", curto: "Academias", ic: "predio" },
+  { aba: "perfil", t: "Perfil", ic: "key", soNoMenu: true },
   { aba: "ajuda", t: "Ajuda", ic: "info" },
 ];
-// Barra de baixo no celular, como os apps de parceiro (iFood, Uber).
-const PC_BARRA = ["painel", "desempenho", "avaliacoes", "ficha", "conta"];
+// Barra de baixo no celular, como os apps de parceiro (iFood, Uber), com o
+// Perfil por último.
+const PC_BARRA = ["painel", "desempenho", "avaliacoes", "ficha", "perfil"];
 
 // O que cada plano libera. Tudo o que aparece na busca é igual para todos.
 const PC_RECURSOS = [
@@ -5690,9 +5838,9 @@ function itensDaFicha(c) {
 function perguntasParceiros() {
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe. O Premium mostra também os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
-    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode pôr você direto em Conta › Pessoas com acesso." },
+    { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode pôr você direto em Pessoas." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto; o GuiaTennis confere antes de publicar, e você já administra a ficha." },
-    { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. No painel, toque no nome da academia (ou em Conta › Suas academias) e em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito, pelo código no WhatsApp da ficha ou por documento, e tem o próprio plano, as próprias pessoas e os próprios números." },
+    { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. Em Suas academias (ou no nome da academia, no topo do painel), toque em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito que a primeira, e dá para pedir uma enquanto outra ainda está em análise. Cada uma tem o próprio plano, as próprias pessoas e os próprios números." },
     { q: "Com duas academias, pago um plano só?", a: "Não. Cada academia tem o próprio plano e paga o próprio valor. A academia que entra na conta começa no Básico, grátis, e você escolhe o plano de cada uma. Por exemplo, uma no Premium e outra no Básico. Mudar o plano de uma não muda o das outras." },
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
@@ -5706,6 +5854,8 @@ function perguntasParceiros() {
 }
 
 function abaDoParceiro(aba) {
+  // "Conta" virou o Perfil (05/10/2026); links antigos continuam abrindo.
+  if (aba === "conta") return "perfil";
   if (PC_PUBLICAS.includes(aba) || PC_PRIVADAS.includes(aba)) return aba;
   return "inicio";
 }
@@ -5714,6 +5864,11 @@ function abaDoParceiro(aba) {
 // sem login cai no "Entrar" e volta para ela depois.
 function irParceiros(aba, opcoes = {}) {
   aba = abaDoParceiro(aba);
+  // Do site dos jogadores, o Parceiros abre na aba dele (05/10/2026).
+  if (state.loaded && state.page !== "parceiros" && !opcoes.mesmaAba) {
+    abrirNaAba(urlDosParceiros(aba, aba === "cadastro" && state.pcReivindicar ? "academia=" + encodeURIComponent(state.pcReivindicar) : ""), ABA_PARCEIROS);
+    return;
+  }
   if (aba === "inicio" && contaAcademia && !opcoes.publico) aba = "painel";
   if (PC_PRIVADAS.includes(aba) && !contaAcademia) {
     state.parceirosDepois = aba;
@@ -5728,10 +5883,9 @@ function irParceiros(aba, opcoes = {}) {
   state.pcMenu = false;
   state.showLogin = false;
   state.avisoLink = "";
-  if (aba !== "conta") state.contaModo = "painel";
+  if (aba !== "perfil") state.contaModo = "painel";
   if ((aba === "painel" || aba === "desempenho") && temAcademia() && acessoCompleto()) carregarNumeros();
-  if ((aba === "painel" || aba === "conta") && temAcademia() && acessoCompleto()) { carregarPedidosDeAcesso(); if (aba === "painel") carregarPessoas(); }
-  if (aba === "conta" && temAcademia() && acessoCompleto()) carregarPessoas();
+  if ((aba === "painel" || aba === "pessoas") && temAcademia() && acessoCompleto()) { carregarPedidosDeAcesso(); carregarPessoas(); }
   syncUrl(!opcoes.substituir);
   render();
   if (opcoes.ancora) {
@@ -5998,17 +6152,20 @@ function pcMarca() {
 function pcTopo() {
   const aba = state.parceirosAba;
   const logado = !!contaAcademia;
-  const menuLogado = temAcademia() ? PC_MENU_LOGADO : PC_MENU_LOGADO.filter(i => ["painel", "plano", "conta", "ajuda"].includes(i.aba));
-  const itens = logado ? menuLogado : PC_MENU_PUBLICO.filter(i => i.ancora || i.aba !== "inicio");
-  const link = (i) => `<a href="/parceiros${i.aba === "inicio" ? "" : "/" + i.aba}${i.ancora ? "#" + i.ancora : ""}" class="pc-nav-i ${!i.ancora && aba === i.aba ? "on" : ""}" data-pc="${i.aba}" ${i.ancora ? `data-pc-ancora="${i.ancora}"` : ""}>${esc(i.t)}</a>`;
+  const menuLogado = temAcademia() ? PC_MENU_LOGADO : PC_MENU_LOGADO.filter(i => ["painel", "academias", "plano", "perfil", "ajuda"].includes(i.aba));
+  const itens = logado ? menuLogado.filter(i => !i.soNoMenu) : PC_MENU_PUBLICO.filter(i => i.ancora || i.aba !== "inicio");
+  const link = (i) => `<a href="/parceiros${i.aba === "inicio" ? "" : "/" + i.aba}${i.ancora ? "#" + i.ancora : ""}" class="pc-nav-i ${!i.ancora && aba === i.aba ? "on" : ""}" data-pc="${i.aba}" ${i.ancora ? `data-pc-ancora="${i.ancora}"` : ""}>${esc(i.curto || i.t)}</a>`;
+  const inicial = logado ? (contaAcademia.nome || contaAcademia.usuario || "?").trim().charAt(0).toUpperCase() : "";
+  const confirmar = logado && !contaAcademia.emailConfirmado && recebeEmail(contaAcademia.login);
+  const avatar = logado ? `<a href="/parceiros/perfil" class="conta-topo logado pc-avatar ${aba === "perfil" ? "on" : ""} ${confirmar ? "confirmar" : ""}" data-pc="perfil" aria-label="Perfil${confirmar ? " (confirme o seu e-mail)" : ""}">${esc(inicial)}</a>` : "";
   return `
     <header class="pc-topo">
       <div class="pc-topo-in">
         ${pcMarca()}
         <nav class="pc-nav" aria-label="GuiaTennis Parceiros">${itens.map(link).join("")}</nav>
         <div class="pc-topo-acoes">
-          ${logado && temAcademia() ? pcSeletor()
-            : logado ? `<span class="pc-quem">${esc(contaAcademia.nome || contaAcademia.usuario)}</span>`
+          ${logado && temAcademia() ? pcSeletor() + avatar
+            : logado ? avatar
             : `<a href="/parceiros/entrar" class="pc-entrar" data-pc="entrar">Entrar</a>
                <a href="/parceiros/cadastro" class="pc-cta" data-pc="cadastro">Cadastrar academia</a>`}
           <button type="button" class="pc-menu-btn" id="pc-menu-btn" aria-label="Abrir o menu">${icon('list', 20, 'var(--green)')}</button>
@@ -6122,7 +6279,7 @@ function renderParceiros() {
   const semAcademia = contaAcademia && acessoCompleto() && !temAcademia();
   let miolo;
   if (PC_PRIVADAS.includes(aba) && contaAcademia && !acessoCompleto()) miolo = pcPrimeiroAcesso();
-  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "ficha"].includes(aba)) miolo = pcSemAcademia();
+  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "ficha", "pessoas"].includes(aba)) miolo = pcSemAcademia();
   else if (aba === "inicio") miolo = pcInicio();
   else if (aba === "planos") miolo = pcPlanos(false);
   else if (aba === "ajuda") miolo = pcAjuda();
@@ -6133,7 +6290,9 @@ function renderParceiros() {
   else if (aba === "avaliacoes") miolo = pcAvaliacoes();
   else if (aba === "ficha") miolo = pcFicha();
   else if (aba === "plano") miolo = pcPlanos(temAcademia());
-  else if (aba === "conta") miolo = pcConta();
+  else if (aba === "pessoas") miolo = pcPessoasDaAcademia();
+  else if (aba === "academias") miolo = pcAcademias();
+  else if (aba === "perfil") miolo = pcPerfil();
   return `
     <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""}" id="parceiros">
       ${pcTopo()}
@@ -6407,23 +6566,31 @@ function telefoneEscondido(telefone) {
   return `(${d.slice(0, 2)}) ${d.length === 11 ? "•••••" : "••••"}-${d.slice(-4)}`;
 }
 
-function pcPedidoEnviado() {
-  const nome = contaAcademia.pedidoNome || "a sua academia";
-  const ficha = state.allCourts.find(c => c.id === contaAcademia.pedidoAcademiaId);
+// Um pedido da conta: com o código (academia sem responsável e com WhatsApp
+// na ficha), com o responsável ou em análise (academia nova). O primeiro
+// cartão da tela guarda os ids de sempre (pc-codigo…); os outros vão pelo
+// data-pedido.
+function pcPedidoEnviado(p, i = 0) {
+  const nome = p.nome || "a sua academia";
+  const ficha = state.allCourts.find(c => c.id === p.academiaId);
   const tel = ficha ? telefoneEscondido(ficha.phone) : "";
-  const agilizar = `<a class="pc-linha-link" href="${whatsappGuia(`Olá! Sou ${contaAcademia.nome || "responsável"} e pedi para administrar a ${nome} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis ›</a>`;
+  const id = (base) => i === 0 ? `id="${base}"` : "";
+  const erroAqui = state.pedidoErro && state.pedidoErroEm === p.academiaId
+    ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pedidoErro)}</div>` : "";
+  const falar = `<a class="pc-linha-link" href="${whatsappGuia(`Olá! Sou ${contaAcademia.nome || "responsável"} e pedi para administrar a ${nome} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis ›</a>`;
+  const cancelar = `<p class="pc-linha"><button type="button" class="pc-linha-link pc-linha-discreta" ${id("pc-cancelar-pedido")} data-cancelar-pedido="${p.academiaId}">Cancelar o pedido</button></p>`;
   // Academia que já tem responsável (03/10/2026): o pedido vai para ele,
   // como o "Solicitar acesso" do Google Business Profile.
-  if (contaAcademia.pedidoDestino === "responsavel") {
+  if (p.destino === "responsavel") {
     return `
     <div class="pc-card pc-pedido">
       <p class="pc-oferta-eyebrow">Pedido enviado ao responsável</p>
       <p class="pc-card-t">${esc(nome)}</p>
       <p class="pc-card-s">Essa academia já tem um responsável no GuiaTennis Parceiros. O seu pedido foi para ele, com o seu nome e o seu e-mail: quando ele aceitar, a academia aparece na sua conta.</p>
-      <p class="pc-card-s">Conhece o responsável? Peça para ele aceitar no painel, ou para pôr você direto em Conta › Pessoas com acesso, com o e-mail <strong>${esc(contaAcademia.email || contaAcademia.usuario)}</strong>.</p>
-      ${state.pedidoErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pedidoErro)}</div>` : ""}
-      <p class="pc-linha">O responsável não responde ou saiu da academia? ${agilizar} A gente confere por documento (CNPJ ou contrato social).</p>
-      <p class="pc-linha"><button type="button" class="pc-linha-link pc-linha-discreta" id="pc-cancelar-pedido">Cancelar o pedido</button></p>
+      <p class="pc-card-s">Conhece o responsável? Peça para ele aceitar no painel, ou para pôr você direto em Pessoas com acesso, com o e-mail <strong>${esc(contaAcademia.email || contaAcademia.usuario)}</strong>.</p>
+      ${erroAqui}
+      <p class="pc-linha">O responsável não responde ou saiu da academia? ${falar}</p>
+      ${cancelar}
     </div>`;
   }
   return `
@@ -6435,15 +6602,19 @@ function pcPedidoEnviado() {
       ` : tel ? `
         <p class="pc-card-s">Para confirmar que você responde pela academia, o GuiaTennis manda um código de 6 números para o WhatsApp que está na ficha: <strong class="pc-tel">${esc(tel)}</strong>. Digite o código aqui:</p>
         <div class="pc-codigo">
-          <input class="form-field" id="pc-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000" value="${esc(state.pcCodigo || "")}" aria-label="Código de 6 números" />
-          <button type="button" class="cta-btn cta-primary" id="pc-confirmar-codigo" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(15) : "Confirmar"}</button>
+          <input class="form-field" ${id("pc-codigo")} data-pedido-codigo="${p.academiaId}" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000" value="${esc((state.pcCodigos || {})[p.academiaId] || "")}" aria-label="Código de 6 números" />
+          <button type="button" class="cta-btn cta-primary" ${id("pc-confirmar-codigo")} data-confirmar-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) : "Confirmar"}</button>
         </div>
       ` : `
-        <p class="pc-card-s">A ficha dessa academia não tem WhatsApp. O GuiaTennis confere por documento (CNPJ ou contrato social) e libera a ficha.</p>`}
-      ${state.pedidoErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pedidoErro)}</div>` : ""}
-      ${ficha && tel ? `<p class="pc-linha">O WhatsApp da ficha não é de vocês? ${agilizar} A gente confere por documento (CNPJ ou contrato social).</p>` : `<p class="pc-linha">Quer agilizar? ${agilizar}</p>`}
-      <p class="pc-linha"><button type="button" class="pc-linha-link pc-linha-discreta" id="pc-cancelar-pedido">Cancelar o pedido</button></p>
+        <p class="pc-card-s">A ficha dessa academia não tem WhatsApp para receber o código. O GuiaTennis confirma com você e libera a ficha.</p>`}
+      ${erroAqui}
+      ${ficha && tel ? `<p class="pc-linha">O WhatsApp da ficha não é de vocês? ${falar}</p>` : `<p class="pc-linha">Quer agilizar? ${falar}</p>`}
+      ${cancelar}
     </div>`;
+}
+// Todos os pedidos da conta, um cartão para cada.
+function pcPedidos() {
+  return meusPedidos().map((p, i) => pcPedidoEnviado(p, i)).join("");
 }
 
 function pcCadastro() {
@@ -6455,17 +6626,23 @@ function pcCadastro() {
     <p class="pc-sec-sub">Comece pelo e-mail. Grátis no plano Básico, sem comissão e sem taxa por jogador.</p>`;
   const erro = (t) => t ? `<div class="form-error">${icon('warning', 13)} ${esc(t)}</div>` : "";
 
+  // Com um pedido aberto, dá para pedir mais uma (05/10/2026).
+  const maisUma = (t) => `<p class="pc-linha">${t} <button type="button" class="pc-linha-link" data-outra-academia>Adicionar outra academia ›</button></p>`;
+  const emAndamento = meusPedidos().length;
+
   // Conta que já administra academia: adiciona outra, em qualquer plano
   // (03/10/2026), como o "Adicionar empresa" do Google Business Profile.
-  // Cada academia nova é confirmada do mesmo jeito (código no WhatsApp da
-  // ficha, documento ou academia nova publicada).
+  // Cada academia nova é confirmada do mesmo jeito que a primeira.
   if (temAcademia()) {
-    if (contaAcademia.pedidoNome) {
+    const feito = state.pcPedidoFeito && meusPedidos().find(p => p.academiaId === state.pcPedidoFeito);
+    if (feito) {
       return `
         <section class="pc-pagina pc-estreita">
           <p class="pc-eyebrow">Adicionar outra academia</p>
-          ${pcPedidoEnviado()}
-          <p class="pc-linha"><a href="/parceiros/painel" class="pc-linha-link" data-pc="painel">Voltar ao painel ›</a></p>
+          ${pcPedidoEnviado(feito, 0)}
+          ${maisUma("Responde por mais uma?")}
+          <p class="pc-linha"><a href="/parceiros/academias" class="pc-linha-link" data-pc="academias">Ver todas as suas academias ›</a></p>
+          <p class="pc-linha"><a href="/parceiros/painel" class="pc-linha-link pc-linha-discreta" data-pc="painel">Voltar ao painel</a></p>
         </section>`;
     }
     if (escolhida && !ehDaMinhaConta(escolhida) && !state.pcSelecionada) state.pcSelecionada = escolhida.id;
@@ -6474,10 +6651,11 @@ function pcCadastro() {
       <section class="pc-pagina pc-estreita">
         <p class="pc-eyebrow">Adicionar outra academia</p>
         <h1 class="display pc-antes">Qual academia você também administra?</h1>
-        <p class="pc-sec-sub">A mesma conta cuida de quantas academias você responder, em qualquer plano. Cada uma é confirmada do mesmo jeito: código no WhatsApp da ficha ou documento.</p>
+        <p class="pc-sec-sub">A mesma conta cuida de quantas academias você responder, em qualquer plano, e você pode pedir uma enquanto outra ainda está em análise. Cada uma é confirmada do mesmo jeito que a primeira.</p>
         <p class="pc-sec-sub">Cada academia tem o próprio plano e paga o próprio valor. A academia nova começa no Básico, grátis, e você aprimora o plano dela quando quiser.</p>
         ${jaMinha ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} A ${esc(escolhida.name)} já é sua. <button type="button" class="pc-linha-link" data-abrir-academia="${escolhida.id}">Abrir no painel ›</button></p>` : ""}
-        ${erro(state.pedidoErro)}
+        ${emAndamento ? `<p class="pc-linha">${emAndamento === 1 ? "Você tem 1 pedido em andamento." : `Você tem ${emAndamento} pedidos em andamento.`} <a href="/parceiros/academias" class="pc-linha-link" data-pc="academias">Ver em Suas academias ›</a></p>` : ""}
+        ${erro(state.pedidoErroEm ? "" : state.pedidoErro)}
         <label class="field-label" for="pc-busca">Escreva o nome da academia</label>
         <div class="pc-busca-campo">
           <input class="form-field" id="pc-busca" placeholder="Ex.: Quadra Locação, Moema" value="${esc(state.pcBusca || "")}" autocomplete="off" style="margin-top:0" />
@@ -6557,21 +6735,32 @@ function pcCadastro() {
       </section>`;
   }
 
-  // Conta sem academia: pedido feito (com o código), ou escolher a academia.
-  if (contaAcademia.pedidoNome) {
-    return `<section class="pc-pagina pc-estreita">${pcEtapas(2)}${pcPedidoEnviado()}</section>`;
+  // Conta sem academia: os pedidos feitos (com o código), ou escolher a
+  // academia. Com pedido aberto, também dá para pedir outra.
+  if (emAndamento && !state.pcAdicionando) {
+    return `
+      <section class="pc-pagina pc-estreita">
+        ${pcEtapas(2)}
+        ${pcConfirmarEmail()}
+        ${pcPedidos()}
+        ${maisUma("Também responde por outra academia?")}
+      </section>`;
   }
   if (escolhida && !state.pcSelecionada) state.pcSelecionada = escolhida.id;
   const sugerida = academiaDoEmail(contaAcademia.email);
-  if (sugerida && state.pcSelecionada === undefined) state.pcSelecionada = sugerida.id;
+  if (sugerida && state.pcSelecionada === undefined && !meusPedidos().some(p => p.academiaId === sugerida.id)) state.pcSelecionada = sugerida.id;
   const primeiro = separarNome(contaAcademia.nome).nome;
   return `
     <section class="pc-pagina pc-estreita">
       ${pcEtapas(1)}
       ${pcConfirmarEmail()}
-      <p class="pc-prazer">Prazer em conhecer você${primeiro ? ", " + esc(primeiro) : ""}!</p>
-      <h1 class="display pc-antes">Antes de começar, vamos ver se a sua academia já está no GuiaTennis.</h1>
-      ${erro(state.pedidoErro)}
+      ${emAndamento ? `
+        <p class="pc-eyebrow">Adicionar outra academia</p>
+        <h1 class="display pc-antes">Qual outra academia você administra?</h1>
+        <p class="pc-linha">${emAndamento === 1 ? "O seu pedido continua em andamento." : `Os seus ${emAndamento} pedidos continuam em andamento.`} <button type="button" class="pc-linha-link" data-ver-pedidos>Ver os pedidos ›</button></p>` : `
+        <p class="pc-prazer">Prazer em conhecer você${primeiro ? ", " + esc(primeiro) : ""}!</p>
+        <h1 class="display pc-antes">Antes de começar, vamos ver se a sua academia já está no GuiaTennis.</h1>`}
+      ${erro(state.pedidoErroEm ? "" : state.pedidoErro)}
       <label class="field-label" for="pc-busca">Escreva o nome da sua academia</label>
       <div class="pc-busca-campo">
         <input class="form-field" id="pc-busca" placeholder="Ex.: Quadra Locação, Moema" value="${esc(state.pcBusca || "")}" autocomplete="off" style="margin-top:0" />
@@ -6616,7 +6805,8 @@ function pcSemAcademia() {
     <section class="pc-pagina pc-estreita">
       <p class="pc-eyebrow">Sua conta</p>
       <h1 class="display">Olá${primeiro ? ", " + esc(primeiro) : ""}</h1>
-      ${contaAcademia.pedidoNome ? pcPedidoEnviado() : `
+      ${pcConfirmarEmail()}
+      ${meusPedidos().length ? pcPedidos() + `<p class="pc-linha">Também responde por outra academia? <button type="button" class="pc-linha-link" data-outra-academia>Adicionar outra academia ›</button></p>` : `
         <div class="pc-card">
           <p class="pc-card-t">Falta escolher a sua academia</p>
           <p class="pc-card-s">Procure a sua academia no guia e toque em "Administrar", ou cadastre uma nova. Painel, desempenho e avaliações aparecem aqui assim que o GuiaTennis liberar.</p>
@@ -6644,7 +6834,7 @@ function pcPainel() {
       ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
       ${pcConfirmarEmail()}
       ${pcPedidosDeAcesso()}
-      ${contaAcademia.pedidoNome ? pcPedidoEnviado() : ""}
+      ${pcPedidos()}
       ${pcSituacao(c)}
 
       ${veNumeros() ? `
@@ -6894,38 +7084,124 @@ function pcPessoas() {
     </div>`;
 }
 
-function pcConta() {
+// Perfil da pessoa (pedido do Breno em 05/10/2026), como o "Meu trivago" e o
+// perfil do trivago Business Studio: quem é, como entra e as academias da
+// conta. O que é da academia (pessoas, plano) fica nas páginas dela.
+function pcPerfil() {
   const modo = state.contaModo;
   const comEmail = (contaAcademia.usuario || "").includes("@");
+  const inicial = (contaAcademia.nome || contaAcademia.usuario || "?").trim().charAt(0).toUpperCase();
+  const qtas = minhasAcademias().length, pedidos = meusPedidos().length;
   return `
     <section class="pc-pagina pc-estreita">
-      <h1 class="display">Conta</h1>
+      <div class="perfil-topo">
+        <span class="perfil-avatar" aria-hidden="true">${esc(inicial)}</span>
+        <div>
+          <h1 class="display">${esc(contaAcademia.nome || "Seu perfil")}</h1>
+          <p class="perfil-sub">${[contaAcademia.cargo, "GuiaTennis Parceiros"].filter(Boolean).map(esc).join(" · ")}</p>
+        </div>
+      </div>
       ${modo === "dados" ? `<div class="pc-card">${formDadosConta("dados")}</div>`
         : modo === "senha" ? `<div class="pc-card">${formTrocarSenha()}</div>`
         : `
           ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
+          ${pcConfirmarEmail()}
           <div class="pc-card">
-            <p class="pc-card-t">${temAcademia() ? (contaAcademia.papel === "principal" ? "Responsável principal" : "Você, na equipe") + (minhasAcademias().length > 1 && minhaAcademia() ? " da " + esc(minhaAcademia().name) : "") : "Você"}</p>
+            <p class="pc-card-t">Dados de contato</p>
             <div class="conta-dados">
               <p><strong>${esc(contaAcademia.nome)}</strong>${contaAcademia.cargo ? " · " + esc(contaAcademia.cargo) : ""}</p>
               <p>${esc(contaAcademia.email)}${contaAcademia.whatsapp ? " · " + esc(telefoneBonito(contaAcademia.whatsapp)) : ""}</p>
-              <p>${comEmail ? "Entra com o e-mail: " : "Usuário: "}${esc(contaAcademia.usuario)}</p>
             </div>
             <div class="conta-acoes">
               <button type="button" class="cta-btn cta-secondary" id="conta-editar-dados">Editar dados</button>
+            </div>
+          </div>
+          <div class="pc-card">
+            <p class="pc-card-t">Login e segurança</p>
+            <div class="conta-dados">
+              <p>${comEmail ? "Entra com o e-mail: " : "Usuário: "}${esc(contaAcademia.usuario)}</p>
+              <p>Senha: ••••••••</p>
+            </div>
+            <div class="conta-acoes">
               <button type="button" class="cta-btn cta-secondary" id="conta-trocar-senha">Trocar senha</button>
             </div>
           </div>
-          ${temAcademia() ? `
           <div class="pc-card">
-            <p class="pc-card-t">${minhasAcademias().length > 1 ? `Suas academias (${minhasAcademias().length})` : "Sua academia"}</p>
-            <p class="pc-card-s">A mesma conta administra quantas academias você responder. Cada academia tem o próprio plano e paga o próprio valor. Toque numa academia para abrir o painel dela.</p>
-            ${pcListaAcademias()}
-          </div>` : ""}
-          ${temAcademia() ? pcPedidosDeAcesso() : ""}
-          ${temAcademia() ? pcPessoas() : ""}
-          ${temAcademia() ? pcOfertaDePlano() : ""}
+            <p class="pc-card-t">Suas academias</p>
+            <p class="pc-card-s">${qtas ? (qtas === 1 ? "1 academia nesta conta" : `${qtas} academias nesta conta`) : "Nenhuma academia ainda"}${pedidos ? ` · ${pedidos === 1 ? "1 pedido em andamento" : `${pedidos} pedidos em andamento`}` : ""}.</p>
+            <div class="conta-acoes">
+              <a href="/parceiros/academias" class="cta-btn cta-secondary" data-pc="academias">Administrar as academias</a>
+            </div>
+          </div>
           <button type="button" class="conta-sair-link" id="conta-sair">Sair do GuiaTennis Parceiros</button>`}
+    </section>`;
+}
+
+// Suas academias (pedido do Breno em 05/10/2026): todas as academias da
+// conta num lugar só, como o "Suas empresas" do Google Business Profile e a
+// página do grupo no Booking para quem tem várias propriedades. Os pedidos
+// em andamento ficam logo abaixo, e "Adicionar outra academia" vale sempre,
+// até com um pedido aberto.
+function pcAcademias() {
+  const lista = minhasAcademias();
+  const pedidos = meusPedidos();
+  const situacao = (a) => a.status === "pending" ? "Em análise" : a.pausada ? "Pausada" : "No ar";
+  const cartao = (a) => {
+    const aberta = a.id === contaAcademia.academiaId;
+    const c = state.allCourts.find(x => x.id === a.id);
+    return `
+      <div class="pc-card pc-acad ${aberta ? "aberta" : ""}">
+        <div class="pc-acad-cab">
+          <p class="pc-card-t">${esc(nomeDaMinha(a))}</p>
+          ${aberta ? `<span class="pc-acad-selo">Aberta no painel</span>` : ""}
+        </div>
+        ${a.bairro || a.cidade ? `<p class="pc-card-s">${esc([a.bairro, a.cidade].filter(Boolean).join(", "))}</p>` : ""}
+        <div class="pc-acad-dados">
+          <span><small>Plano</small><strong>${esc(nomeDoPlano(a.plano))}</strong></span>
+          <span><small>Situação</small><strong>${situacao(a)}</strong></span>
+          <span><small>Seu papel</small><strong>${a.papel === "equipe" ? "Equipe" : "Responsável"}</strong></span>
+        </div>
+        <div class="pc-acoes">
+          <button type="button" class="cta-btn cta-primary" data-abrir-academia="${a.id}">${aberta ? "Ir para o painel" : "Abrir o painel"}</button>
+          ${c ? `<a class="cta-btn cta-secondary" href="${esc(urlDosJogadores(caminhoDaFicha(c)))}" target="guiatennis" rel="noreferrer">Ver no site</a>` : ""}
+        </div>
+      </div>`;
+  };
+  return `
+    <section class="pc-pagina">
+      <h1 class="display">Suas academias</h1>
+      <p class="pc-sec-sub">Todas as academias desta conta num lugar só. Cada uma tem o próprio plano, as próprias pessoas e os próprios números.</p>
+      ${pcConfirmarEmail()}
+      ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
+      <div class="pc-acoes pc-acad-add"><button type="button" class="cta-btn cta-primary" data-outra-academia>${icon('plus', 16, '#fff')} Adicionar outra academia</button></div>
+      ${lista.length ? `
+        <h2 class="pc-h2">${lista.length === 1 ? "1 academia" : `${lista.length} academias`}</h2>
+        <div class="pc-acad-grade">${lista.map(cartao).join("")}</div>` : ""}
+      ${pedidos.length ? `
+        <h2 class="pc-h2">${pedidos.length === 1 ? "1 pedido em andamento" : `${pedidos.length} pedidos em andamento`}</h2>
+        <p class="pc-sec-sub">Enquanto o pedido é confirmado, você pode pedir outras academias.</p>
+        <div class="pc-acad-grade">${pcPedidos()}</div>` : ""}
+      ${!lista.length && !pedidos.length ? `
+        <div class="pc-card">
+          <p class="pc-card-t">Nenhuma academia ainda</p>
+          <p class="pc-card-s">Procure a sua academia no guia e toque em "Administrar", ou cadastre uma nova.</p>
+        </div>` : ""}
+    </section>`;
+}
+
+// Pessoas da academia aberta: quem tem acesso, os pedidos de acesso (só o
+// responsável principal vê) e a oferta do plano de cima.
+function pcPessoasDaAcademia() {
+  const c = minhaAcademia();
+  return `
+    <section class="pc-pagina pc-estreita">
+      ${minhasAcademias().length > 1 && c ? `<p class="pc-eyebrow">${esc(c.name)}</p>` : ""}
+      <h1 class="display">Pessoas</h1>
+      <p class="pc-sec-sub">${souPrincipal() ? "Você é o responsável principal: adiciona e remove quem tem acesso." : "Você, na equipe: vê quem tem acesso à academia."}</p>
+      ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
+      ${pcPedidosDeAcesso()}
+      ${pcPessoas()}
+      ${pcOfertaDePlano()}
     </section>`;
 }
 
@@ -7069,6 +7345,8 @@ async function pedirParaAdministrar(academiaId) {
   if (r.error) { state.pedidoErro = r.error.message || "Não consegui mandar o pedido agora."; render(); return; }
   state.pcReivindicar = null;
   state.pcSelecionada = undefined;
+  state.pcPedidoFeito = academiaId;
+  state.pcAdicionando = false;
   await recarregarConta();
   syncUrl(false);
   render();
@@ -7076,13 +7354,15 @@ async function pedirParaAdministrar(academiaId) {
 }
 
 // Código que o GuiaTennis mandou para o WhatsApp da ficha.
-async function confirmarCodigo() {
-  const codigo = (state.pcCodigo || "").replace(/\D/g, "");
+async function confirmarCodigo(academiaId) {
+  academiaId = academiaId || (meusPedidos()[0] || {}).academiaId;
+  const codigo = ((state.pcCodigos || {})[academiaId] || "").replace(/\D/g, "");
+  state.pedidoErroEm = academiaId;
   if (codigo.length !== 6) { state.pedidoErro = "O código tem 6 números."; render(); return; }
   state.pedidoErro = "";
-  state.pcContaSalvando = true;
+  state.pcContaSalvando = academiaId || true;
   render();
-  const r = await sb.rpc('confirmar_meu_codigo', { p_codigo: codigo });
+  const r = await rpcDoPedido('confirmar_meu_codigo', { p_codigo: codigo }, academiaId);
   state.pcContaSalvando = false;
   const avisos = {
     errado: "Código errado. Confira a mensagem no WhatsApp da academia.",
@@ -7095,7 +7375,9 @@ async function confirmarCodigo() {
     render();
     return;
   }
-  state.pcCodigo = "";
+  state.pcCodigos = {};
+  state.pedidoErroEm = null;
+  state.pcPedidoFeito = null;
   await recarregarConta();
   await loadEverything();
   const c = minhaAcademia();
@@ -7103,10 +7385,12 @@ async function confirmarCodigo() {
   irParceiros("painel");
 }
 
-async function cancelarPedido() {
-  const r = await sb.rpc('cancelar_meu_pedido');
-  if (r.error) { state.pedidoErro = "Não consegui cancelar agora."; render(); return; }
+async function cancelarPedido(academiaId) {
+  const r = await rpcDoPedido('cancelar_meu_pedido', {}, academiaId);
+  if (r.error) { state.pedidoErro = "Não consegui cancelar agora."; state.pedidoErroEm = academiaId; render(); return; }
   state.pedidoErro = "";
+  state.pedidoErroEm = null;
+  if (state.pcPedidoFeito === academiaId) state.pcPedidoFeito = null;
   await recarregarConta();
   render();
 }
@@ -7146,7 +7430,13 @@ function ligarEventosParceiros() {
     };
   });
   document.querySelectorAll("[data-pc-sair-do-portal]").forEach(el => {
-    el.onclick = (e) => { if (e.metaKey || e.ctrlKey) return; e.preventDefault(); state.pcMenu = false; goHome(); };
+    el.onclick = (e) => {
+      if (e.metaKey || e.ctrlKey) return;
+      e.preventDefault();
+      state.pcMenu = false;
+      render();
+      abrirNaAba(urlDosJogadores("/"), ABA_JOGADORES);
+    };
   });
   const menuBtn = document.getElementById("pc-menu-btn");
   if (menuBtn) menuBtn.onclick = () => { state.pcMenu = true; render(); };
@@ -7252,15 +7542,14 @@ function ligarEventosParceiros() {
   if (pcAdministrar) pcAdministrar.onclick = () => pedirParaAdministrar(state.pcSelecionada);
   const pcNovidades = document.getElementById("pc-conta-novidades");
   if (pcNovidades) pcNovidades.onchange = (e) => { (window.__pcConta || (window.__pcConta = {})).novidades = e.target.checked; };
-  const pcCodigo = document.getElementById("pc-codigo");
-  if (pcCodigo) {
-    pcCodigo.oninput = (e) => { state.pcCodigo = e.target.value; };
-    pcCodigo.onkeydown = (e) => { if (e.key === "Enter") confirmarCodigo(); };
-  }
-  const pcConfirmar = document.getElementById("pc-confirmar-codigo");
-  if (pcConfirmar) pcConfirmar.onclick = confirmarCodigo;
-  const pcCancelar = document.getElementById("pc-cancelar-pedido");
-  if (pcCancelar) pcCancelar.onclick = cancelarPedido;
+  // Cada pedido tem o próprio código e o próprio "Cancelar".
+  document.querySelectorAll("[data-pedido-codigo]").forEach(el => {
+    el.oninput = (e) => { state.pcCodigos = { ...(state.pcCodigos || {}), [el.dataset.pedidoCodigo]: e.target.value }; };
+    el.onkeydown = (e) => { if (e.key === "Enter") confirmarCodigo(el.dataset.pedidoCodigo); };
+  });
+  document.querySelectorAll("[data-confirmar-codigo]").forEach(el => { el.onclick = () => confirmarCodigo(el.dataset.confirmarCodigo); });
+  document.querySelectorAll("[data-cancelar-pedido]").forEach(el => { el.onclick = () => cancelarPedido(el.dataset.cancelarPedido); });
+  document.querySelectorAll("[data-ver-pedidos]").forEach(el => { el.onclick = () => { state.pcAdicionando = false; state.pedidoErro = ""; render(); window.scrollTo(0, 0); }; });
 
   // Pessoas com acesso.
   document.querySelectorAll(".pc-pessoa-campo").forEach(el => {
@@ -7292,7 +7581,8 @@ function botaoConta() {
   if (isAdmin || contaAcademia) return "";
   if (jogador) {
     const inicial = (jogador.nome || "?").trim().charAt(0).toUpperCase();
-    return `<button type="button" class="conta-topo logado" id="conta-topo" aria-label="Minha conta">${esc(inicial)}</button>`;
+    const confirmar = !jogador.email_confirmado_em;
+    return `<button type="button" class="conta-topo logado ${confirmar ? "confirmar" : ""}" id="conta-topo" aria-label="Minha conta${confirmar ? " (confirme o seu e-mail)" : ""}">${esc(inicial)}</button>`;
   }
   return `<button type="button" class="conta-topo destaque" id="conta-topo" aria-label="Entrar ou criar conta">${icon('pessoa', 22, 'var(--green)')}</button>`;
 }
@@ -7327,7 +7617,7 @@ function pushContaHtml() {
 function ligarPushesDaConta() {
   let mostrados = 0;
   const podeMostrar = () => {
-    if (isAdmin || contaAcademia || jogador || state.page === "parceiros") return false;
+    if (isAdmin || contaAcademia || jogador || state.page === "parceiros" || state.pushAvaliar) return false;
     const fechado = lerLocal(PUSH_CONTA_KEY, 0);
     if (fechado && Date.now() - fechado < 3 * 864e5) return false;
     if (document.querySelector(".overlay.open, .drawer-overlay.open, .convite-conta")) return false;
@@ -7437,7 +7727,7 @@ function renderMenu() {
           ${isAdmin
             ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 20, 'var(--muted)')}<span>Sair do modo admin</span></button>`
             : contaAcademia
-              ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 20, 'var(--muted)')}<span>Sair da área da academia</span></button>`
+              ? `<button type="button" class="menu-item" data-menu="sair">${icon('pessoa', 20, 'var(--muted)')}<span>Sair da conta</span></button>`
               : jogador
                 ? `<button type="button" class="menu-item" data-menu="sair-jogador">${icon('pessoa', 20, 'var(--muted)')}<span>Sair da conta</span></button>`
                 // Sem "Área do GuiaTennis" (02/10/2026): o admin entra pelo
@@ -7952,6 +8242,7 @@ function avisosLigados(j) {
 // e-mail; o banco diz se já tem conta (vai para a senha) ou não (completa o
 // cadastro), como no Booking e no Airbnb.
 function abrirContaJogador(tela, motivo) {
+  if (tela === "conta" && jogador) { irPerfil(); return; }
   state.showMenu = false;
   state.jogadorTela = tela === "conta" ? "conta" : "email";
   state.jogadorMotivo = motivo || "";
@@ -8542,7 +8833,215 @@ async function salvarContaJogador() {
   render();
 }
 
+// ---------- perfil do jogador (pedido do Breno em 05/10/2026) ----------
+// Como o "Meu trivago" e a "Conta" do Airbnb e do Booking: uma página com
+// tudo o que é da pessoa — as quadras dela, o que falta avaliar, os dados,
+// os avisos por e-mail e o login. Endereço próprio: /perfil.
+function formDoJogador() {
+  return { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!jogador[a.campo]])),
+    avisos_viagem: !!jogador.avisos_viagem, ...(jogador.avisos_viagem ? { viagem_uf: jogador.viagem_uf || "", viagem_cidade: jogador.viagem_cidade || "", viagem_ida: jogador.viagem_ida || "", viagem_volta: jogador.viagem_volta || "" } : {}) };
+}
+function irPerfil(ancora) {
+  if (!jogador) {
+    abrirContaJogador("entrar", "Entre para ver o seu perfil. Se ainda não tiver conta, o cadastro leva um minuto.");
+    state.depoisDeEntrar = () => irPerfil(ancora);
+    return;
+  }
+  state.showMenu = false;
+  state.jogadorTela = null;
+  state.jogadorErro = "";
+  state.jogadorAviso = "";
+  state.jogadorSalvando = false;
+  state.lista = null;
+  window.__jog = formDoJogador();
+  state.page = "perfil";
+  state.selected = null;
+  syncUrl(true);
+  render();
+  const alvo = ancora && document.getElementById(ancora);
+  if (alvo) alvo.scrollIntoView({ block: "start" }); else window.scrollTo(0, 0);
+}
+function sairDaContaJogador() {
+  sb.auth.signOut().then(() => { if (state.page === "perfil") location.replace("/"); else location.reload(); });
+}
+
+function renderPerfilJogador() {
+  if (!jogador) return "";
+  const f = window.__jog || (window.__jog = formDoJogador());
+  const q = minhasQuadras();
+  const pref = lerPreferencias();
+  const viagem = lerViagens()[0];
+  const paraAvaliar = academiasParaAvaliar({ todas: true });
+  const primeiro = (jogador.nome || "").split(" ")[0];
+  const inicial = (jogador.nome || "?").trim().charAt(0).toUpperCase();
+  const item = (attrs, ic, t, valor, sub) => `
+    <button type="button" class="perfil-item" ${attrs}>${icon(ic, 20, 'var(--text)')}<span>${esc(t)}${sub ? `<small>${esc(sub)}</small>` : ""}</span>${valor !== undefined && valor !== "" ? `<span class="menu-valor">${esc(valor)}</span>` : ""}${icon('chevron', 16, 'var(--muted)')}</button>`;
+  const avisos = AVISOS_JOGADOR.map(a => `
+    <label class="consent-row">
+      <input type="checkbox" class="jog-aviso" data-campo="${a.campo}" ${f[a.campo] ? "checked" : ""} />
+      <span>${esc(a.t)}</span>
+    </label>`).join("");
+  return `
+    ${renderCabecalho()}
+    <main class="perfil-pagina" id="perfil-jogador">
+      <div class="perfil-topo">
+        <span class="perfil-avatar" aria-hidden="true">${esc(inicial)}</span>
+        <div>
+          <p class="perfil-sub" style="margin:0 0 2px">Minha conta</p>
+          <h1 class="display">Olá${primeiro ? ", " + esc(primeiro) : ""}</h1>
+          <p class="perfil-sub">${esc(jogador.email || "")}${jogador.email_confirmado_em ? ` · ${icon('check', 13, 'var(--green)')} confirmado` : ""}</p>
+        </div>
+      </div>
+      ${jogador.email_confirmado_em ? "" : `<p class="email-sugestao">E-mail ainda não confirmado: os avisos só chegam depois de confirmar. <button type="button" class="inline-link" id="jog-confirmar-agora">Confirmar agora</button></p>`}
+      ${state.jogadorAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.jogadorAviso)}</p>` : ""}
+      <div class="perfil-grade">
+        ${paraAvaliar.length ? `
+        <section class="perfil-cartao perfil-largo" id="perfil-avaliar">
+          <h2>Jogou nessas academias?</h2>
+          <p>Você chamou essas academias. Conte como foi e ajude outros jogadores a escolher.</p>
+          <div class="perfil-lista">${paraAvaliar.map(x => item(`data-avaliar-academia="${x.id}"`, 'bubble', x.c.name, "Avaliar", textoDaChamada(x))).join("")}</div>
+        </section>` : ""}
+        <section class="perfil-cartao">
+          <h2>Minhas quadras</h2>
+          <div class="perfil-lista">
+            ${item('data-menu="favoritas"', 'heart', "Favoritas", q.favoritas.length || "")}
+            ${item('data-menu="vistas"', 'historico', "Vistas recentemente", q.vistas.length || "")}
+            ${item('data-menu="chamadas"', 'phone', "Academias que você chamou", q.chamadas.length || "")}
+            ${item('data-menu="viagem"', 'map', "Vou viajar", viagem ? viagem.cidade : "Adicionar")}
+          </div>
+        </section>
+        <section class="perfil-cartao">
+          <h2>Login e preferências</h2>
+          <div class="perfil-lista">
+            <div class="perfil-item" style="cursor:default">${icon('mail', 20, 'var(--text)')}<span>E-mail da conta<small>${esc(jogador.email || "")}</small></span></div>
+            ${item('id="jog-trocar-senha"', 'key', "Trocar a senha", "", "Mandamos um código para o seu e-mail")}
+            ${item('data-menu="preferencias"', 'ajustes', "Preferências de busca", textoDaPreferencia(pref) || "Escolher")}
+          </div>
+        </section>
+        <section class="perfil-cartao perfil-largo" id="perfil-dados">
+          <h2>Dados pessoais</h2>
+          <p>O nome aparece nas suas avaliações.</p>
+          <label class="field-label" for="jog-nome">Nome e sobrenome</label>
+          <input class="form-field jog-campo" data-campo="nome" id="jog-nome" autocomplete="name" value="${esc(f.nome || "")}" style="margin-top:0" />
+          <label class="field-label" for="jog-cidade">Cidade</label>
+          <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" value="${esc(f.cidade || "")}" style="margin-top:0" />
+          <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
+          <h2 id="perfil-avisos" style="margin-top:24px">Avisos por e-mail</h2>
+          <p>Escolha o que quer receber. Dá para mudar quando quiser.</p>
+          ${avisos}
+          ${avisoViagemHtml(f)}
+          ${state.jogadorErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.jogadorErro)}</div>` : ""}
+          <button type="button" class="cta-btn cta-primary" id="jog-salvar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${state.jogadorSalvando ? bolaGirando(16) + " Salvando" : "Salvar"}</button>
+        </section>
+      </div>
+      <div class="perfil-rodape">
+        <button type="button" class="inline-link" id="jog-sair">Sair da conta</button>
+        <button type="button" class="inline-link jog-excluir" id="jog-excluir">Excluir minha conta</button>
+      </div>
+    </main>
+    ${renderSiteFooter()}`;
+}
+
+// ---------- "Jogou aqui? Avalie" (pedido do Breno em 05/10/2026) ----------
+// Como o Google Maps ("Você esteve em…? Avalie") e o iFood ("Como foi?"):
+// um dia depois de a pessoa chamar uma academia, um balão pergunta se ela
+// jogou lá, com as estrelas para tocar. Uma academia por visita; ignorado ou
+// "Agora não", pergunta de novo em 3 dias (no máximo 3 vezes por academia);
+// "Não joguei aqui" não pergunta mais. Tudo fica no aparelho.
+const AVALIADAS_KEY = "guiatennis_avaliadas_v1";
+const PEDIR_AVALIACAO_KEY = "guiatennis_pedir_avaliacao_v1";
+const PEDIR_AVALIACAO_DEPOIS_H = 24, PEDIR_AVALIACAO_ATE_D = 60, PEDIR_AVALIACAO_INTERVALO_D = 3, PEDIR_AVALIACAO_VEZES = 3, PEDIR_AVALIACAO_ESPERA_S = 6;
+function lerAvaliadas() { const v = lerLocal(AVALIADAS_KEY, []); return Array.isArray(v) ? v : []; }
+function marcarAvaliada(id) { gravarLocal(AVALIADAS_KEY, [id, ...lerAvaliadas().filter(x => x !== id)].slice(0, 50)); }
+function lerPedidosDeAvaliacao() { const v = lerLocal(PEDIR_AVALIACAO_KEY, {}); return v && typeof v === "object" && !Array.isArray(v) ? v : {}; }
+function anotarPedidoDeAvaliacao(id, mudanca) {
+  const t = lerPedidosDeAvaliacao();
+  t[id] = { ...(t[id] || {}), ...mudanca };
+  gravarLocal(PEDIR_AVALIACAO_KEY, t);
+}
+// As academias chamadas que ainda não foram avaliadas. Para o balão, só as
+// chamadas há mais de um dia e não dispensadas; para o perfil, todas.
+function academiasParaAvaliar(opcoes = {}) {
+  if (isAdmin || contaAcademia) return [];
+  const agora = Date.now();
+  const avaliadas = new Set(lerAvaliadas());
+  const pedidos = lerPedidosDeAvaliacao();
+  return minhasQuadras().chamadas.filter(x => {
+    if (avaliadas.has(x.id)) return false;
+    const p = pedidos[x.id] || {};
+    if (p.nunca) return false;
+    const idade = agora - (x.em || 0);
+    if (idade > PEDIR_AVALIACAO_ATE_D * 864e5) return false;
+    if (opcoes.todas) return true;
+    if (idade < PEDIR_AVALIACAO_DEPOIS_H * 36e5) return false;
+    if ((p.vezes || 0) >= PEDIR_AVALIACAO_VEZES) return false;
+    return !(p.adiado && agora - p.adiado < PEDIR_AVALIACAO_INTERVALO_D * 864e5);
+  });
+}
+function pushAvaliarHtml() {
+  const p = state.pushAvaliar;
+  if (!p || isAdmin || contaAcademia || state.page === "parceiros") return "";
+  const x = minhasQuadras().chamadas.find(y => y.id === p.id);
+  if (!x) return "";
+  return `
+    <div class="push-conta push-avaliar" id="push-avaliar" role="dialog" aria-label="Avaliar a ${esc(x.c.name)}">
+      <span class="push-conta-ic" aria-hidden="true">★</span>
+      <span>
+        <p class="push-conta-t">Jogou na ${esc(x.c.name)}?</p>
+        <p class="push-conta-s">${esc(textoDaChamada(x))}. Conte como foi e ajude outros jogadores a escolher.</p>
+        <span class="push-conta-estrelas" role="group" aria-label="Sua nota">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-push-estrela="${n}" aria-label="${n} ${n === 1 ? "estrela" : "estrelas"}">★</button>`).join("")}</span>
+        <span class="push-avaliar-acoes"><button type="button" id="push-avaliar-depois">Agora não</button><button type="button" id="push-avaliar-nunca">Não joguei aqui</button></span>
+      </span>
+      <button type="button" class="push-conta-x" id="push-avaliar-x" aria-label="Fechar">✕</button>
+    </div>`;
+}
+// Uns segundos depois de abrir o site, se houver academia para avaliar e
+// nada na frente (janela aberta, campo sendo digitado, o balão da conta).
+function ligarPedidoDeAvaliacao() {
+  const podeMostrar = () => !isAdmin && !contaAcademia && ["home", "search", "court", "perfil", "comparar"].includes(state.page)
+    && state.pushConta == null && !document.querySelector(".overlay.open, .drawer-overlay.open")
+    && !(document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
+  const tentar = (vez) => {
+    // Uma academia por visita.
+    if (state.pushAvaliarFeito) return;
+    const x = academiasParaAvaliar()[0];
+    if (!x) return;
+    if (!podeMostrar()) { if (vez < 6) setTimeout(() => tentar(vez + 1), 20000); return; }
+    // Na ficha da própria academia, o "Já jogou aqui?" já está na tela.
+    if (state.page === "court" && state.selected && state.selected.id === x.id) return;
+    anotarPedidoDeAvaliacao(x.id, { vezes: ((lerPedidosDeAvaliacao()[x.id] || {}).vezes || 0) + 1, adiado: Date.now() });
+    state.pushAvaliar = { id: x.id };
+    state.pushAvaliarFeito = true;
+    render();
+  };
+  setTimeout(() => tentar(0), PEDIR_AVALIACAO_ESPERA_S * 1000);
+}
+// Abre a ficha nas avaliações, com a nota tocada já marcada.
+function avaliarAcademiaChamada(id, estrelas) {
+  state.pushAvaliar = null;
+  openCourt(id);
+  if (!state.selected || state.selected.id !== id) return;
+  state.pendingStar = estrelas || 0;
+  state.secaoFicha = "avaliacoes";
+  syncUrl(false);
+  render();
+  setTimeout(() => irParaSecao("avaliacoes", true), 60);
+}
+
 function ligarEventosJogador() {
+  document.querySelectorAll("[data-push-estrela]").forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); if (state.pushAvaliar) avaliarAcademiaChamada(state.pushAvaliar.id, parseInt(el.dataset.pushEstrela, 10)); };
+  });
+  const pushDepois = () => { state.pushAvaliar = null; render(); };
+  const pushX = document.getElementById("push-avaliar-x");
+  if (pushX) pushX.onclick = pushDepois;
+  const pushAgoraNao = document.getElementById("push-avaliar-depois");
+  if (pushAgoraNao) pushAgoraNao.onclick = pushDepois;
+  const pushNunca = document.getElementById("push-avaliar-nunca");
+  if (pushNunca) pushNunca.onclick = () => { if (state.pushAvaliar) anotarPedidoDeAvaliacao(state.pushAvaliar.id, { nunca: true }); pushDepois(); };
+  document.querySelectorAll("[data-avaliar-academia]").forEach(el => { el.onclick = () => avaliarAcademiaChamada(el.dataset.avaliarAcademia, 0); });
+  const trocarSenhaJog = document.getElementById("jog-trocar-senha");
+  if (trocarSenhaJog) trocarSenhaJog.onclick = () => { state.jogadorLogin = jogador.email; window.__jog = { ...(window.__jog || {}), email: jogador.email }; irParaCodigoJogador("esqueci"); };
   document.querySelectorAll("[data-jogador]").forEach(el => {
     el.onclick = () => {
       window.__jog = { ...(window.__jog || {}), email: document.getElementById("jog-email")?.value || (window.__jog || {}).email || "" };
@@ -8642,7 +9141,7 @@ function ligarEventosJogador() {
   const salvar = document.getElementById("jog-salvar");
   if (salvar) salvar.onclick = () => salvarContaJogador();
   const sair = document.getElementById("jog-sair");
-  if (sair) sair.onclick = () => { sb.auth.signOut().then(() => location.reload()); };
+  if (sair) sair.onclick = sairDaContaJogador;
   const excluir = document.getElementById("jog-excluir");
   if (excluir) excluir.onclick = async () => {
     if (!confirm("Excluir a sua conta do GuiaTennis? Os seus dados e os avisos saem; as avaliações continuam, com o seu nome. Isso não pode ser desfeito.")) return;
@@ -9257,7 +9756,7 @@ function aplicarCamadas(q) {
   const conta = Object.keys(CONTA_NO_LINK).find(k => CONTA_NO_LINK[k] === q.get("conta")) || null;
   const temEmail = !!(window.__jog && window.__jog.email);
   state.jogadorTela = !conta ? null
-    : conta === "conta" ? (jogador ? "conta" : "email")
+    : conta === "conta" ? (jogador ? null : "email")
     : conta === "codigo" ? (jogador ? "codigo" : "email")
     : (conta === "entrar" || conta === "criar" || conta === "esqueci") && !temEmail ? "email" : conta;
   if (state.jogadorTela === "conta" && !(window.__jog && window.__jog.nome !== undefined)) {
@@ -9356,9 +9855,11 @@ function urlDoEstado() {
   } else if (state.page === "comparar") {
     caminho = "/comparar";
     if (state.compareList.length) p.set("academias", state.compareList.map(idCurto).join(","));
+  } else if (state.page === "perfil") {
+    caminho = "/perfil";
   } else if (state.page === "parceiros") {
     const aba = state.parceirosAba || "inicio";
-    caminho = "/parceiros" + (aba === "inicio" ? "" : "/" + aba);
+    caminho = caminhoDosParceiros(aba);
     if (aba === "cadastro" && state.pcReivindicar) p.set("academia", state.pcReivindicar);
   }
   camadasDoEstado().forEach(([k, v]) => p.set(k, v));
@@ -9433,7 +9934,11 @@ function lerLink() {
   const secao = location.hash.slice(1);
   const r = { q, secao: SECOES_FICHA[secao] ? secao : null, page: "home" };
   if (partes[0] === "parceiros") { r.page = "parceiros"; r.aba = abaDoParceiro(partes[1] || "inicio"); r.reivindicar = q.get("academia") || null; }
+  // parceiros.guiatennis.com.br: "/" é a apresentação, "/painel" o painel.
+  else if (noEnderecoDosParceiros()) { r.page = "parceiros"; r.aba = abaDoParceiro(partes[0] || "inicio"); r.reivindicar = q.get("academia") || null; }
   else if (q.has("entrar")) { r.page = "parceiros"; r.aba = "entrar"; }
+  // Perfil do jogador; o link antigo ?conta=minha também abre ele.
+  else if (partes[0] === "perfil" || (!partes.length && q.get("conta") === "minha")) r.page = "perfil";
   else if (partes[0] === "academia" && partes[1]) { r.page = "court"; r.slug = partes[1]; }
   else if (q.get("court")) { r.page = "court"; r.courtId = q.get("court"); }
   else if (partes[0] === "quadras") { r.page = "search"; r.regiao = { cidade: partes[1] || "", bairro: partes[2] || "" }; }
@@ -9499,6 +10004,15 @@ function aplicarLink(r) {
     state.parceirosAba = aba;
     state.pcReivindicar = r.reivindicar;
     return { parceiros: aba };
+  }
+  if (r.page === "perfil") {
+    if (jogador) {
+      state.page = "perfil";
+      window.__jog = formDoJogador();
+      return {};
+    }
+    state.page = "home";
+    return { entrarParaPerfil: true };
   }
   if (r.page === "comparar") {
     const ids = r.academias.map(fim => (state.allCourts.find(c => idCurto(c.id) === fim) || {}).id).filter(Boolean);
@@ -12576,7 +13090,7 @@ function renderStatsPanel() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 2 de outubro de 2026</p>
+<p class="footnote">Última atualização: 5 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -12584,7 +13098,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confere um documento (CNPJ ou contrato social). Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais, depois de conferir um documento. A mesma conta pode administrar mais de uma academia, em qualquer plano: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confirma de outra forma. Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade e de mudanças nas suas favoritas, promoções das academias e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -12605,10 +13119,10 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 2 de outubro de 2026</p>
+<p class="footnote">Última atualização: 5 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta"; ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar", que fica na sua conta para o aviso sair, para aparecer na página inicial e no menu. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
-<p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e o pedido para administrar uma academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar", que fica na sua conta para o aviso sair, para aparecer na página inicial e no menu. Um dia depois de você chamar uma academia, o site pergunta, no próprio aparelho, se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam só no aparelho. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo). Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
@@ -13100,7 +13614,7 @@ function attachEvents() {
       const destino = PC_PRIVADAS.includes(state.parceirosDepois) || (state.parceirosDepois === "cadastro" && !temAcademia())
         ? state.parceirosDepois : "painel";
       state.parceirosDepois = null;
-      irParceiros(destino, { substituir: state.page === "parceiros" });
+      irParceiros(destino, { substituir: state.page === "parceiros", mesmaAba: true });
       return;
     }
     if (state.page === "parceiros") { state.page = "home"; syncUrl(false); }
@@ -13442,8 +13956,8 @@ function attachEvents() {
       if (alvo === "viagem") { abrirViagem(); return; }
       if (alvo === "entrar-jogador") { abrirContaJogador("entrar"); return; }
       if (alvo === "minha-conta") { abrirContaJogador("conta"); return; }
-      if (alvo === "avisos") { abrirContaJogador(jogador ? "conta" : "entrar", jogador ? "" : "Entre na sua conta para escolher os avisos por e-mail."); return; }
-      if (alvo === "sair-jogador") { sb.auth.signOut().then(() => location.reload()); return; }
+      if (alvo === "avisos") { if (jogador) irPerfil("perfil-avisos"); else abrirContaJogador("entrar", "Entre na sua conta para escolher os avisos por e-mail."); return; }
+      if (alvo === "sair-jogador") { sairDaContaJogador(); return; }
       if (alvo === "comparar") { goComparar(); return; }
       if (alvo === "cadastrar") { irParceiros("cadastro"); return; }
       if (alvo === "parceiros") { irParceiros("inicio"); return; }
@@ -14319,7 +14833,7 @@ async function doRegisterSubmit() {
     // Conta sem academia: a academia nova vira o pedido dela (o banco anota).
     if (contaAcademia && !isAdmin) {
       await recarregarConta();
-      await anotarPedidoDePlano(f, contaAcademia && contaAcademia.pedidoAcademiaId, "cadastro");
+      await anotarPedidoDePlano(f, (data && data.id) || (meusPedidos().slice(-1)[0] || {}).academiaId, "cadastro");
     }
     await loadEverything();
     state.registerStatus = "done";
@@ -14331,6 +14845,10 @@ async function doRegisterSubmit() {
 }
 
 async function init() {
+  if (PARCEIROS_NO_ENDERECO_PROPRIO && noSiteDeVerdade() && /^\/parceiros(\/|$)/.test(location.pathname)) {
+    location.replace(SITE_PARCEIROS + location.pathname.replace(/^\/parceiros/, "") + location.search + location.hash);
+    return;
+  }
   if (USANDO_BANCO_DE_TESTE) document.body.insertAdjacentHTML("afterbegin", `<div class="faixa-banco-teste">Banco de teste — nada daqui aparece no guiatennis.com.br</div>`);
   app_showLoading();
   const { data: { session } } = await sb.auth.getSession();
@@ -14346,6 +14864,8 @@ async function init() {
   const linkInicial = lerLink();
   const doLink = aplicarLink(linkInicial);
   aplicarCamadas(linkInicial.q);
+  // /perfil sem estar logado: abre o Entrar e, depois, o perfil.
+  if (doLink.entrarParaPerfil) irPerfil();
   if (state.page === "home") aplicarPreferenciaNaBusca();
   if (doLink.ficha) {
     state.backTo = "home";
@@ -14366,8 +14886,8 @@ async function init() {
 
   // Aberto direto no painel ou no desempenho: busca os números da academia.
   if (state.page === "parceiros" && ["painel", "desempenho"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarNumeros();
-  if (state.page === "parceiros" && ["painel", "conta"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarPedidosDeAcesso();
-  if (state.page === "parceiros" && state.parceirosAba === "conta" && temAcademia() && acessoCompleto()) carregarPessoas();
+  if (state.page === "parceiros" && ["painel", "pessoas"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarPedidosDeAcesso();
+  if (state.page === "parceiros" && state.parceirosAba === "pessoas" && temAcademia() && acessoCompleto()) carregarPessoas();
 
   state.loaded = true;
   syncUrl(false);
@@ -14377,6 +14897,7 @@ async function init() {
   completarCoordenadas();
   ligarTempoNoSite();
   ligarPushesDaConta();
+  ligarPedidoDeAvaliacao();
 }
 
 function app_showLoading() {

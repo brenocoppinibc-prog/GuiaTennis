@@ -26,14 +26,21 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   let f = await abrirFicha(page, 'a2');
   ok(f.basica.includes('Ficha básica') && f.basica.includes('não confirmadas pela academia'), 'ficha básica avisa que os dados não foram confirmados — ' + f.basica);
   ok(f.dono === '/parceiros/cadastro?academia=a2', 'link do responsável leva ao GuiaTennis Parceiros, já com a academia — ' + f.dono);
+  // O GuiaTennis Parceiros abre na aba dele (05/10/2026), como o trivago
+  // Business Studio; a ficha continua nesta aba.
+  await page.evaluate(() => { window.__abas = []; window.open = (url, nome) => { window.__abas.push({ url, nome }); return {}; }; });
   await page.click('.ficha-dono a');
-  await page.waitForTimeout(300);
-  const acessoPedido = await page.evaluate(() => ({
+  await page.waitForTimeout(200);
+  const aba = await page.evaluate(() => ({ ...(window.__abas[0] || {}), pagina: state.page }));
+  ok(aba.url === 'http://guia.test/parceiros/cadastro?academia=a2' && aba.nome === 'guiatennis-parceiros' && aba.pagina === 'court', 'o GuiaTennis Parceiros abre na aba dele, já com a academia; a ficha continua nesta — ' + aba.url);
+  const { browser: browser2, page: page2 } = await abrir({ q: 'parceiros/cadastro?academia=a2' });
+  const acessoPedido = await page2.evaluate(() => ({
     t: document.querySelector('.pc-reivindicar')?.innerText || '',
     email: !!document.getElementById('pc-email'),
     link: location.pathname + location.search,
   }));
   ok(acessoPedido.t.includes('Administrar a ficha da Quadra Locação') && acessoPedido.t.includes('Comece pelo seu e-mail') && acessoPedido.email && acessoPedido.link === '/parceiros/cadastro?academia=a2', 'lá, o responsável começa pelo e-mail, já com a academia — ' + acessoPedido.link);
+  await browser2.close();
   f = await abrirFicha(page, 'a1');
   ok(!f.basica && f.dono, 'ficha confirmada não mostra o aviso, mas tem o link do responsável');
   await browser.close();
@@ -163,7 +170,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ({ browser, page } = await abrir());
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
   ok(termos.includes('ficha básica') && termos.includes('OpenStreetMap') && termos.includes('É o responsável por esta academia?'), 'Termos explicam a ficha básica, o OpenStreetMap e o pedido de remoção');
-  ok((termos.match(/Última atualização: 2 de outubro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
+  ok((termos.match(/Última atualização: 5 de outubro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
   // Contato do guia em botões com ícone, no menu, no rodapé e no bloco para academias
   const contato = await page.evaluate(() => {
     state.showMenu = true; render();

@@ -84,4 +84,14 @@ async function irSenha(page, usuario) {
   await page.waitForTimeout(300);
 }
 
-module.exports = { abrir, ok, irParte, irSenha };
+// O site dos jogadores e o GuiaTennis Parceiros abrem um ao outro em outra
+// aba (05/10/2026). vigiarAbas troca o window.open por um que só anota;
+// abasAbertas devolve o que foi aberto ({ url, nome }).
+async function vigiarAbas(page) {
+  await page.evaluate(() => { window.__abas = []; window.open = (url, nome) => { window.__abas.push({ url, nome }); return {}; }; });
+}
+async function abasAbertas(page) {
+  return page.evaluate(() => window.__abas || []);
+}
+
+module.exports = { abrir, ok, irParte, irSenha, vigiarAbas, abasAbertas };

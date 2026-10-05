@@ -38,7 +38,7 @@ const { abrir, ok } = require('./harness');
   ok(t.botao.includes('logado') && t.txt === 'A' && !t.convite, 'jogador logado: a inicial do nome e nenhum convite');
   await page.click('#conta-topo');
   await page.waitForTimeout(200);
-  ok(await page.evaluate(() => state.jogadorTela === 'conta'), 'a inicial abre Minha conta');
+  ok(await page.evaluate(() => state.page === 'perfil' && location.pathname === '/perfil' && !!document.getElementById('perfil-jogador')), 'a inicial abre o perfil (Minha conta), com endereço próprio');
   await browser.close();
 
   // Academia logada: sem ícone de jogador (tem a faixa da academia).

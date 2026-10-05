@@ -27,7 +27,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   let t = await texto(page, '#parceiros .pc-main');
   ok(t.includes('Pedido enviado ao responsável') && t.includes('já tem um responsável') && t.includes('com o seu nome e o seu e-mail'), 'academia com responsável: o pedido vai para ele, e a pessoa sabe disso');
   ok(!(await page.isVisible('#pc-codigo')) && t.includes('Pessoas com acesso') && t.includes('ana@exemplo.com'), 'sem campo de código; diz que o responsável também pode pôr o e-mail direto');
-  ok(await page.evaluate(() => window.__db.academia_acessos.find(x => x.user_id === 'u-ana').pedido_destino === 'responsavel'), 'o pedido fica marcado como do responsável');
+  ok(await page.evaluate(() => (window.__db.pedidos_de_acesso.find(x => x.user_id === 'u-ana') || {}).destino === 'responsavel'), 'o pedido fica marcado como do responsável');
   await browser.close();
 
   // ---- o responsável vê o pedido no painel e aceita ----
@@ -41,24 +41,24 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   ok(t.includes('Pedido de acesso') && t.includes('Querem administrar a Quadra Locação com vocês') && t.includes('Ana Nova') && t.includes('ana@exemplo.com · Professora'), 'o responsável vê quem pediu, com e-mail e cargo — ' + t.slice(0, 90));
   await page.click('[data-aceitar-pedido="u-ana"]');
   await page.waitForTimeout(500);
-  const ana = await page.evaluate(() => ({ v: window.__db.academia_vinculos.filter(v => v.user_id === 'u-ana').map(v => v.academia_id + ':' + v.papel).join(), pedido: window.__db.academia_acessos.find(x => x.user_id === 'u-ana').pedido_academia_id, cartao: !!document.querySelector('.pc-pedidos-acesso'), aviso: document.querySelector('.conta-aviso')?.innerText || '' }));
+  const ana = await page.evaluate(() => ({ v: window.__db.academia_vinculos.filter(v => v.user_id === 'u-ana').map(v => v.academia_id + ':' + v.papel).join(), pedido: window.__db.pedidos_de_acesso.some(p => p.user_id === 'u-ana'), cartao: !!document.querySelector('.pc-pedidos-acesso'), aviso: document.querySelector('.conta-aviso')?.innerText || '' }));
   ok(ana.v === 'a2:equipe' && !ana.pedido && !ana.cartao && ana.aviso.includes('entrou na equipe'), 'aceitar põe a pessoa na equipe e o pedido some — ' + ana.v);
   await browser.close();
 
   // ---- recusar, e plano cheio ----
-  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/conta' }));
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/pessoas' }));
   await page.evaluate(async () => {
     window.__db.academia_acessos.push({ user_id: 'u-ze', academia_id: null, usuario: 'ze@exemplo.com', nome_responsavel: 'Zé', email: 'ze@exemplo.com', papel: 'principal', pedido_academia_id: 'a2', pedido_nome: 'Quadra Locação', pedido_em: '2026-10-03T10:00:00Z', pedido_destino: 'responsavel' });
     await carregarPedidosDeAcesso(); await carregarPessoas(); render();
   });
-  ok(await page.isVisible('.pc-pedidos-acesso') && (await texto(page, '.pc-pedidos-acesso')).includes('Quero o Completo'), 'na Conta também; com o Básico cheio, oferece o Completo');
+  ok(await page.isVisible('.pc-pedidos-acesso') && (await texto(page, '.pc-pedidos-acesso')).includes('Quero o Completo'), 'em Pessoas também; com o Básico cheio, oferece o Completo');
   await page.click('[data-aceitar-pedido="u-ze"]');
   await page.waitForTimeout(400);
   ok((await texto(page, '.pc-pedidos-acesso .form-error')).includes('permite até 1 pessoa.'), 'Básico cheio: aceitar avisa do limite do plano');
   page.once('dialog', d => d.accept());
   await page.click('[data-recusar-acesso="u-ze"]');
   await page.waitForTimeout(400);
-  ok(await page.evaluate(() => !window.__db.academia_acessos.find(x => x.user_id === 'u-ze').pedido_academia_id && !document.querySelector('.pc-pedidos-acesso')), 'recusar tira o pedido');
+  ok(await page.evaluate(() => !window.__db.pedidos_de_acesso.some(p => p.user_id === 'u-ze') && !document.querySelector('.pc-pedidos-acesso')), 'recusar tira o pedido');
   await browser.close();
 
   // ---- quem é da equipe não vê os pedidos ----

@@ -2,7 +2,7 @@
 // senha provisória, primeiro acesso, edição só da própria ficha, respostas às
 // avaliações, o que a academia não vê nem faz, e o bloco do admin que cria o
 // acesso.
-const { abrir, ok, irParte, irSenha } = require('./harness');
+const { abrir, ok, vigiarAbas, abasAbertas, irParte, irSenha } = require('./harness');
 
 const AVALIACOES = [
   { id: 'r1', academia_id: 'a2', stars: 3, comment: 'Quadra boa, vestiário simples.', nome_autor: 'Carla', contato_autor: '11955550001', created_at: '2026-09-20T12:00:00Z' },
@@ -116,11 +116,11 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(folha.includes('1 avaliação sem resposta'), 'painel conta as avaliações sem resposta');
   ok(await page.isVisible('.pc-barra-baixo'), 'no celular, atalhos embaixo como nos apps de parceiro');
 
-  // Conta: responsável e usuário.
-  await page.click('.pc-barra-baixo [data-pc="conta"]');
+  // Perfil: responsável e usuário.
+  await page.click('.pc-barra-baixo [data-pc="perfil"]');
   await page.waitForTimeout(200);
   folha = await texto(page, '#parceiros .pc-main');
-  ok(folha.includes('Maria Exemplo') && folha.includes('Gerente') && folha.includes('Usuário: quadra.a2') && await page.evaluate(() => location.pathname) === '/parceiros/conta', 'Conta mostra o responsável e o usuário');
+  ok(folha.includes('Maria Exemplo') && folha.includes('Gerente') && folha.includes('Usuário: quadra.a2') && await page.evaluate(() => location.pathname) === '/parceiros/perfil', 'Perfil mostra o responsável e o usuário');
 
   // Responder avaliação.
   await page.click('.pc-barra-baixo [data-pc="avaliacoes"]');
@@ -190,9 +190,11 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(ficha.resposta.includes('Resposta da academia') && ficha.resposta.includes('reformando o vestiário'), 'resposta aparece na ficha');
   ok(!ficha.responsavel, 'na ficha dela, a academia não vê "É o responsável?"');
   ok(ficha.banner.includes('Quadra Locação'), 'no site dos jogadores, a faixa lembra que está logada');
+  await vigiarAbas(page);
   await page.click('.dono-box [data-abrir-conta]');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => state.page === 'parceiros' && location.pathname === '/parceiros/painel'), 'atalho da ficha volta para o painel do GuiaTennis Parceiros');
+  let abas = await abasAbertas(page);
+  ok(abas.length === 1 && abas[0].url === 'http://guia.test/parceiros/painel' && abas[0].nome === 'guiatennis-parceiros' && await page.evaluate(() => state.page === 'court'), 'atalho da ficha abre o painel do GuiaTennis Parceiros, na aba dele — ' + (abas[0] || {}).url);
   await abrirFicha(page, 'a1');
   const outra = await page.evaluate(() => ({
     responder: document.querySelectorAll('[data-responder]').length,
@@ -216,16 +218,21 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   }));
   ok(inicio.banner.includes('Área da academia') && inicio.banner.includes('Quadra Locação') && inicio.pagina === 'home', 'volta logada: faixa da área da academia, sem abrir nada por cima');
   ok(inicio.cliques === 0, 'acesso da academia logada não conta');
+  await vigiarAbas(page);
   await page.click('.conta-banner [data-abrir-conta]');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-trancado')), 'faixa abre o painel no GuiaTennis Parceiros (Básico: números trancados)');
+  const abaDaFaixa = (await abasAbertas(page))[0] || {};
+  ok(abaDaFaixa.url === 'http://guia.test/parceiros/painel' && abaDaFaixa.nome === 'guiatennis-parceiros', 'faixa abre o painel do GuiaTennis Parceiros, na aba dele');
+  await page.goto(abaDaFaixa.url);
+  await page.waitForTimeout(700);
+  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-trancado')), 'lá, o painel (Básico: números trancados)');
   await page.click('.pc-barra-baixo [data-pc="avaliacoes"]');
   await page.waitForTimeout(200);
   page.once('dialog', d => d.accept());
   await page.click('#parceiros [data-apagar-resposta="r1"]');
   await page.waitForTimeout(600);
   ok(await page.evaluate(() => window.__db.respostas.length === 0), 'academia apaga a própria resposta');
-  await page.click('.pc-barra-baixo [data-pc="conta"]');
+  await page.click('.pc-barra-baixo [data-pc="perfil"]');
   await page.waitForTimeout(200);
   await page.click('#conta-trocar-senha');
   await page.fill('#senha-atual', 'errada');

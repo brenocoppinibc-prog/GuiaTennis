@@ -3,7 +3,7 @@
 // iFood Parceiros. Página inicial com benefícios, como funciona, planos e
 // perguntas; cadastro que primeiro procura a academia; "Entrar"; e, logado,
 // o desempenho conforme o plano — sem o plano mexer na ordem da busca.
-const { abrir, ok, irParte, irSenha } = require('./harness');
+const { abrir, ok, irParte, irSenha, vigiarAbas, abasAbertas } = require('./harness');
 
 const tela = (page) => page.evaluate(() => ({
   aba: state.parceirosAba,
@@ -64,11 +64,14 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(200);
   t = await tela(page);
   ok(t.aba === 'planos', '"voltar" do navegador volta uma página dentro do site dos parceiros');
+  await vigiarAbas(page);
   await page.click('.pc-rodape a[data-pc-sair-do-portal]');
   await page.waitForTimeout(300);
-  t = await tela(page);
-  ok(t.pagina === 'home' && t.link === '/', 'rodapé leva de volta ao site dos jogadores');
-  ok(await page.evaluate(() => document.getElementById('app').className === 'container'), 'o site dos jogadores volta à largura dele');
+  const abaDosJogadores = (await abasAbertas(page))[0] || {};
+  ok(abaDosJogadores.url === 'http://guia.test/' && abaDosJogadores.nome === 'guiatennis', 'rodapé leva de volta ao site dos jogadores, na aba dele');
+  await page.goto(abaDosJogadores.url);
+  await page.waitForTimeout(600);
+  ok(await page.evaluate(() => document.getElementById('app').className === 'container' && window.name === 'guiatennis'), 'o site dos jogadores tem a largura dele e o nome da aba dele');
   await browser.close();
 
   // ---- celular: menu de três barras ----
@@ -196,7 +199,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   etapas = await barra();
   ok(pedido.rpc && pedido.rpc.p_academia === 'a1' && /pedido enviado/i.test(pedido.card) && pedido.card.includes('Só Aula Tennis') && etapas.feito === '100%', '"Administrar esta academia" manda o pedido — ' + pedido.card.split('\n')[0]);
   ok(pedido.codigo && pedido.card.includes('código de 6 números') && pedido.card.includes('(11) •••••-0001'), 'o pedido pede o código mandado ao WhatsApp da ficha, sem mostrar o número inteiro');
-  ok(pedido.card.includes('não é de vocês') && pedido.card.includes('documento') && pedido.wa.includes('pedi para administrar a Só Aula Tennis'), 'se o WhatsApp da ficha não for deles, confere por documento pelo WhatsApp do guia');
+  ok(pedido.card.includes('não é de vocês') && !/documento|CNPJ|contrato/.test(pedido.card) && pedido.wa.includes('pedi para administrar a Só Aula Tennis'), 'se o WhatsApp da ficha não for deles, fala com o GuiaTennis, sem dizer como confere');
   await page.fill('#pc-codigo', '123456');
   await page.click('#pc-confirmar-codigo');
   await page.waitForTimeout(300);
@@ -210,7 +213,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     menu: (() => { state.pcMenu = true; render(); const m = [...document.querySelectorAll('#pc-menu-overlay .menu-item[data-pc]')].map(a => a.innerText.trim()).join(' | '); state.pcMenu = false; render(); return m; })(),
   }));
   ok(t.aba === 'painel' && semAcademia.corpo.includes('Olá, Joana') && semAcademia.corpo.includes('Só Aula Tennis'), 'painel da conta sem academia mostra o pedido');
-  ok(!semAcademia.barra && semAcademia.menu === 'Painel | Plano | Conta | Ajuda', 'sem academia: menu curto e sem a barra de baixo — ' + semAcademia.menu);
+  ok(!semAcademia.barra && semAcademia.menu === 'Painel | Plano | Suas academias | Perfil | Ajuda', 'sem academia: menu curto e sem a barra de baixo — ' + semAcademia.menu);
   await page.click('#pc-cancelar-pedido');
   await page.waitForTimeout(400);
   ok((await texto(page, '#parceiros .pc-main')).includes('Falta escolher a sua academia'), 'cancelar o pedido volta para escolher a academia');
@@ -261,7 +264,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   const enviada = await page.evaluate(() => ({
     visitante: !!document.getElementById('visitor-overlay'),
     academia: window.__db.academias.find(a => a.name === 'Academia Nova da Joana'),
-    pedido: contaAcademia.pedidoNome,
+    pedido: meusPedidos().map(p => p.nome).join(),
     texto: document.querySelector('#register-overlay')?.innerText || '',
   }));
   ok(!enviada.visitante && enviada.academia && enviada.academia.status === 'pending' && enviada.academia.nome_solicitante === 'Joana Dona' && enviada.academia.contato_solicitante === '11988880001', 'academia nova vai para análise com os dados da conta, sem perguntar de novo');
@@ -317,7 +320,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(direto.marcada === 'Quadra Locação' && !direto.achamos && direto.pronto, 'conta criada pelo link da ficha já deixa aquela academia marcada (gmail não sugere nada)');
   await page.click('#pc-administrar');
   await page.waitForTimeout(500);
-  direto = await page.evaluate(() => ({ pedido: contaAcademia && contaAcademia.pedidoNome, link: location.pathname + location.search }));
+  direto = await page.evaluate(() => ({ pedido: contaAcademia && meusPedidos().map(p => p.nome).join(), link: location.pathname + location.search }));
   ok(direto.pedido === 'Quadra Locação' && direto.link === '/parceiros/cadastro', 'um toque em "Administrar esta academia" e o pedido sai');
   // O código chega no WhatsApp da academia (quem gera é o admin).
   await page.evaluate(() => { window.__codigos = { [contaAcademia.userId]: { codigo: '482915', academia: 'a2', tentativas: 0 } }; });
@@ -340,17 +343,16 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     bloco: document.querySelector('.ba-btn')?.getAttribute('href'),
   }));
   ok(entradas.rodape === '/parceiros' && entradas.bloco === '/parceiros', 'rodapé e bloco da home levam ao GuiaTennis Parceiros');
+  await vigiarAbas(page);
   await page.click('.ba-btn');
   await page.waitForTimeout(300);
-  t = await tela(page);
-  ok(t.aba === 'inicio' && t.link === '/parceiros', 'bloco da home abre a página inicial dos parceiros');
-  await page.goBack();
-  await page.waitForTimeout(300);
+  let abas = await abasAbertas(page);
+  ok(abas.length === 1 && abas[0].url === 'http://guia.test/parceiros' && abas[0].nome === 'guiatennis-parceiros' && await page.evaluate(() => state.page === 'home'), 'bloco da home abre o GuiaTennis Parceiros na aba dele, como o trivago Business Studio');
   await page.evaluate(() => { state.showMenu = true; render(); });
   await page.click('.menu-drawer [data-menu="parceiros"]');
   await page.waitForTimeout(300);
-  t = await tela(page);
-  ok(t.aba === 'inicio', 'menu do site abre o GuiaTennis Parceiros');
+  abas = await abasAbertas(page);
+  ok(abas.length === 2 && abas[1].nome === 'guiatennis-parceiros' && abas[1].url === 'http://guia.test/parceiros', 'menu do site abre o GuiaTennis Parceiros (a mesma aba dele)');
   await page.evaluate(() => { state.page = 'search'; state.view = 'list'; render(); });
   // Pedido do Breno em 01/10/2026: sem o "+" no canto da busca.
   ok(await page.evaluate(() => !document.querySelector('#fab-add') && ![...document.querySelectorAll('.fab')].some(b => b.textContent.trim() === '+')), 'a busca não tem mais o botão "+" no canto');
@@ -442,7 +444,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     rodape: [...document.querySelectorAll('.pc-rodape a[data-pc]')].map(a => a.innerText).join(' | '),
   }));
   ok(t.h1 === 'Olá, Maria' && t.robots.includes('noindex'), 'painel cumprimenta o responsável e fica fora do Google');
-  ok(painel.nav === 'Painel | Desempenho | Avaliações | Minha ficha | Plano | Conta | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
+  ok(painel.nav === 'Painel | Desempenho | Avaliações | Minha ficha | Pessoas | Plano | Academias | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
   ok(!painel.barra, 'no computador, sem a barra de baixo');
   ok(!painel.rodape.includes('Cadastrar') && !painel.rodape.includes('Entrar') && painel.rodape.includes('Desempenho'), 'rodapé de quem está logado não oferece Cadastrar nem Entrar — ' + painel.rodape);
   await page.click('.pc-nav a[data-pc="desempenho"]');
@@ -462,14 +464,14 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(corpo.includes('Não consegui carregar os números agora') && await page.isVisible('.pc-main [data-pc-dias]'), 'sem os números: aviso simples e botão de tentar de novo');
   await browser.close();
   // ---- pessoas com acesso: Básico 1, Completo 5, Premium 10 ----
-  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/conta' }));
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/pessoas' }));
   await page.waitForTimeout(300);
   let conta = await texto(page, '#parceiros .pc-main');
-  ok(conta.includes('Responsável principal') && conta.includes('Pessoas com acesso') && conta.includes('1 de 1 no plano Básico') && conta.includes('Maria Teste (você)'), 'Conta mostra quem tem acesso e quantas pessoas o plano permite');
+  ok(conta.includes('Responsável principal') && conta.includes('Pessoas com acesso') && conta.includes('1 de 1 no plano Básico') && conta.includes('Maria Teste (você)'), 'Pessoas mostra quem tem acesso e quantas pessoas o plano permite');
   ok(!(await page.isVisible('#pc-pessoa-email')) && conta.includes('No Completo, até 5') && conta.includes('Aprimorar para o Completo'), 'Básico já cheio com 1 pessoa: some o formulário e aparece o convite para aprimorar');
-  ok(/aprimore o plano/i.test(conta) && conta.includes('Quero o Completo') && conta.includes('Até 5 e-mails com acesso à academia'), 'Conta oferece o próximo plano embaixo');
+  ok(/aprimore o plano/i.test(conta) && conta.includes('Quero o Completo') && conta.includes('Até 5 e-mails com acesso à academia'), 'Pessoas oferece o próximo plano embaixo');
   await browser.close();
-  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/conta', plano: 'completo' }));
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/pessoas', plano: 'completo' }));
   await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'completo'; await loadEverything(); await carregarPessoas(); render(); });
   await page.waitForTimeout(300);
   conta = await texto(page, '#parceiros .pc-main');
@@ -518,7 +520,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await browser.close();
 
   // Quem é da equipe vê a lista, mas não mexe.
-  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/conta' }));
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/pessoas' }));
   await page.evaluate(async () => {
     window.__db.academia_acessos[0].papel = 'equipe';
     window.__db.academia_vinculos[0].papel = 'equipe';

@@ -52,7 +52,7 @@ const { abrir, ok } = require('./harness');
   await page.fill('#jog-cidade', 'São Paulo');
   await page.click('#jog-salvar');
   await page.waitForTimeout(300);
-  const salvo = await page.evaluate(() => ({ up: window.__ultimoUpdate, db: window.__db.jogadores.find(j => j.email === 'bia@exemplo.com'), aviso: document.querySelector('#jogador-overlay .conta-aviso')?.innerText || '' }));
+  const salvo = await page.evaluate(() => ({ up: window.__ultimoUpdate, db: window.__db.jogadores.find(j => j.email === 'bia@exemplo.com'), aviso: document.querySelector('#perfil-jogador .conta-aviso')?.innerText || '' }));
   ok(salvo.db.promocoes === false && salvo.db.avisos_academias === true && salvo.db.cidade === 'São Paulo' && salvo.up.avisos_mudados_em && salvo.aviso.includes('Salvo'), 'Minha conta salva os avisos, a cidade e quando mudou');
   // Avalia uma academia, uma vez só.
   await page.evaluate(() => { state.jogadorTela = null; openCourt('a1'); });
@@ -162,6 +162,6 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => jogador && !jogador.email_confirmado_em && !state.jogadorTela), 'segue logado, com o e-mail para confirmar depois');
   await page.evaluate(() => abrirContaJogador('conta'));
-  ok((await page.evaluate(() => document.querySelector('#jogador-overlay')?.innerText || '')).includes('E-mail ainda não confirmado'), 'Minha conta lembra de confirmar o e-mail');
+  ok((await page.evaluate(() => document.querySelector('#perfil-jogador')?.innerText || '')).includes('E-mail ainda não confirmado'), 'Minha conta lembra de confirmar o e-mail');
   await browser.close();
 })();

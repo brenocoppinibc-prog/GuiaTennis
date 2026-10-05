@@ -122,6 +122,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(300);
   ok((await texto(page, '#parceiros h1')) === 'Informe os seus dados de contato' && await page.isVisible('#pc-conta-tratamento') && await page.isVisible('#pc-conta-sobrenome') && await page.isVisible('#pc-conta-cargo') && (await texto(page, '.campo-ddi')) === 'Brasil (+55)', 'e-mail novo: dados de contato completos, como no trivago (tratamento, nome, sobrenome, cargo, telefone com o país)');
   ok(await page.evaluate(() => document.activeElement.id === 'pc-conta-tratamento'), 'o cursor já vai para o primeiro campo');
+  const dadosDeContato = await page.evaluate(() => ({ cargo: document.querySelector('label[for="pc-conta-cargo"]')?.innerText || '', aceite: document.getElementById('pc-conta-aceite')?.closest('label')?.innerText || '' }));
+  ok(dadosDeContato.cargo.startsWith('Seu cargo') && dadosDeContato.aceite.startsWith('Li e concordo com os Termos de Uso') && !/academia/i.test(dadosDeContato.cargo + dadosDeContato.aceite), 'dados de contato não falam da academia, que ainda não foi escolhida — ' + dadosDeContato.cargo + ' / ' + dadosDeContato.aceite);
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('tratamento'), 'sem tratamento: pede');
@@ -160,6 +162,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   etapas = await barra();
   corpo = await texto(page, '#parceiros .pc-main');
   ok(etapas.etapas === '✓ Dados de contato✓ | Sua academia* | Início' && etapas.feito === '50%' && await page.evaluate(() => document.querySelector('.trilha-bola').style.left) === '50%', 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
+  ok(corpo.includes('Ao pedir, você declara que é dono(a) ou está autorizado(a) pela academia'), 'a declaração de que representa a academia vem na hora de escolher a academia');
   ok(corpo.includes('Prazer em conhecer você, Joana!') && corpo.includes('Antes de começar, vamos ver se a sua academia já está no GuiaTennis.') && corpo.includes('Dica: escreva também o bairro'), 'tela "Prazer em conhecer você", como a do trivago');
   let escolhas = await page.evaluate(() => [...document.querySelectorAll('.pc-escolha')].map(b => b.innerText.replace(/\s+/g, ' ').trim() + (b.classList.contains('on') ? '*' : '')));
   ok(escolhas.length === 1 && escolhas[0].includes('Só Aula Tennis') && escolhas[0].includes('achamos pelo seu e-mail') && escolhas[0].endsWith('*') && !(await page.isDisabled('#pc-administrar')), 'o site acha a academia pelo e-mail (domínio do site dela) e já deixa marcada — ' + escolhas.join(' / '));
@@ -249,6 +252,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     render();
   });
   await irParte(page, 'revisar');
+  ok((await texto(page, '#register-overlay')).includes('Ao enviar, você declara que é dono(a) ou está autorizado(a) pela academia a cadastrá-la'), 'academia nova: a declaração vem junto do envio');
   await page.click('#register-submit');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => !!document.querySelector('[data-reg-plano="premium"]') && !window.__db.academias.some(a => a.name === 'Academia Nova da Joana')), 'ao finalizar, a escolha do plano vem antes de enviar');

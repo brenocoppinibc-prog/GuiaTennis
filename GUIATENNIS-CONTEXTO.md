@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
-**Atualizado em:** 03/10/2026
+**Atualizado em:** 05/10/2026
 
 > **Estado (03/10/2026):** PR #5 ainda **sem merge**. Entrou a regra 29:
 > **uma conta do GuiaTennis Parceiros administra várias academias**, em
@@ -433,6 +433,21 @@ cobra taxa e não fica no meio** da negociação.
       - Planos: "Até 1 e-mail / 5 e-mails / 10 e-mails com acesso".
     - **O site fala "jogadores", não "alunos"**: atende quem faz aula e
       quem loca quadra.
+40. **"Represento a academia" só quando a academia já é conhecida**
+    (pedido de 05/10/2026, print do cadastro: "não faz sentido aparecer
+    represento a academia sendo que nem sabe a academia ainda"). Nos dados
+    de contato do cadastro do GuiaTennis Parceiros, o aceite é só "Li e
+    concordo com os Termos de Uso e a Política de Privacidade do
+    GuiaTennis" e o campo é "Seu cargo" (antes "Cargo na academia"). A
+    declaração vem na hora em que a academia aparece, como o "autorizado a
+    gerenciar esta empresa" do Google Business Profile e o "certifico" do
+    fim do cadastro do Booking: embaixo do "Administrar esta academia"
+    ("Ao pedir, você declara que é dono(a) ou está autorizado(a)…", na
+    primeira academia e em "Adicionar outra academia") e na revisão da
+    academia nova mandada pela conta ("Ao enviar, você declara…"). O
+    primeiro acesso de quem recebeu usuário continua com "Represento esta
+    academia", porque ali a academia já está no título. Teste:
+    `testes/parceiros.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -586,9 +601,10 @@ CONTATO, SUA ACADEMIA, INÍCIO. O cadastro começa pelo e-mail:
    e-mail" (o Entrar aceita e-mail ou usuário; quem recebeu usuário do
    GuiaTennis entra também pelo e-mail que deu no primeiro acesso). Não tem:
 2. **Dados de contato** (igual ao formulário do trivago) → tratamento (Sr.,
-   Sra., prefiro não informar), nome e sobrenome, cargo na academia,
+   Sra., prefiro não informar), nome e sobrenome, "Seu cargo",
    telefone com "Brasil (+55)", senha, "quero receber dicas, novidades e o
-   relatório do mês" (desmarcado) e o aceite → "Salvar e continuar"
+   relatório do mês" (desmarcado) e "Li e concordo com os Termos…" (sem
+   "represento a academia": regra 40) → "Salvar e continuar"
    (`criar_minha_conta`, chamada pelo visitante; o login é criado direto no
    `auth.users`, com um freio de 20 contas novas por hora). Entra na hora,
    **sem academia**. O primeiro acesso de quem recebeu usuário do Breno usa

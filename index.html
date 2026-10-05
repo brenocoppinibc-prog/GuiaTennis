@@ -4438,7 +4438,7 @@ function camposDeContato(p, f, classe) {
         <input class="form-field ${classe}" data-campo="sobrenome" id="${p}-sobrenome" autocomplete="family-name" value="${esc(f.sobrenome || "")}" style="margin-top:0" />
       </div>
     </div>
-    ${sel("cargo", "Cargo na academia", CARGO_OPTS)}
+    ${sel("cargo", "Seu cargo", CARGO_OPTS)}
     <label class="field-label" for="${p}-whatsapp">Telefone (WhatsApp)${ob}</label>
     <div class="campo-telefone">
       <span class="campo-ddi">Brasil (+55)</span>
@@ -4459,7 +4459,7 @@ function erroDoContato(f) {
   if (!f.tratamento) return "Escolha o tratamento.";
   if ((f.nome || "").trim().length < 2) return "Escreva o nome.";
   if ((f.sobrenome || "").trim().length < 2) return "Escreva o sobrenome.";
-  if (!f.cargo) return "Escolha o cargo na academia.";
+  if (!f.cargo) return "Escolha o seu cargo.";
   const whats = (f.whatsapp || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
   if (whats.length < 10 || whats.length > 11) return "Confira o telefone: DDD e número.";
   return "";
@@ -6549,7 +6549,7 @@ function pcCadastro() {
             <input class="form-field pc-conta-campo" data-campo="senha2" id="pc-conta-senha2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc(f.senha2 || "")}" style="margin-top:0" />
             <label class="consent-row">
               <input type="checkbox" id="pc-conta-aceite" ${f.aceite ? "checked" : ""} />
-              <span>Represento a academia e concordo com os <button type="button" class="inline-link" id="pc-conta-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="pc-conta-privacidade">Política de Privacidade</button> do GuiaTennis.<span class="obrig">*</span></span>
+              <span>Li e concordo com os <button type="button" class="inline-link" id="pc-conta-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="pc-conta-privacidade">Política de Privacidade</button> do GuiaTennis.<span class="obrig">*</span></span>
             </label>
             ${erro(state.pcContaErro)}
             <button class="btn-primary pc-botao-cheio" id="pc-criar-conta" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar e continuar"}</button>` : ""}
@@ -6580,6 +6580,7 @@ function pcCadastro() {
       <p class="footnote" style="margin-top:6px">Dica: escreva também o bairro para achar mais rápido.</p>
       <div id="pc-resultados">${pcResultadosBusca()}</div>
       <button type="button" class="btn-primary pc-botao-cheio" id="pc-administrar" ${state.pcSelecionada ? "" : "disabled"}>Administrar esta academia</button>
+      <p class="footnote">Ao pedir, você declara que é dono(a) ou está autorizado(a) pela academia a administrar a ficha dela no GuiaTennis.</p>
       <p class="pc-linha">A sua academia ainda não está no GuiaTennis? <button type="button" class="pc-linha-link" id="pc-nova">Cadastrar academia nova ›</button></p>
     </section>`;
 }
@@ -12077,6 +12078,9 @@ function regPassoHtml(id, f, obrigatorio) {
             <input type="checkbox" id="f-confirmada" ${f.confirmada ? "checked" : ""} />
             <span>Informações confirmadas pela academia. Sem isso, a ficha mostra que os dados são públicos e ainda não foram confirmados.</span>
           </label>
+        ` : ""}
+        ${parceiro ? `
+          <p class="footnote">Ao enviar, você declara que é dono(a) ou está autorizado(a) pela academia a cadastrá-la no GuiaTennis.</p>
         ` : ""}
         ${!isEditing && !isAdmin && !parceiro ? `
           <label class="consent-row">

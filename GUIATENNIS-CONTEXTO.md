@@ -29,11 +29,9 @@ teste")
 > `20261005140000`), acessos do admin agrupados por academia, **a academia
 > pausa a própria ficha** (SQL `20261005130000`), "Pedir análise" na
 > avaliação e o site dos jogadores sem a faixa "Área da academia".
-> **Ao abrir o chat novo, rodar a suíte inteira (seção 6):** esse último
-> pacote foi enviado com os testes novos passando (`percurso.js`,
-> `perfil-e-avaliar.js`, `varias-academias.js`, `acesso-academia.js`) e a
-> suíte em 9 de 25 arquivos, sem falha; o `banco-acesso.py` passou (167
-> certas e as 11 falhas antigas).
+> Testes do pacote final: **752 verificações, nenhuma falha** (`check-js.sh`
+> + os 25 arquivos de `testes/`) e o `banco-acesso.py` com 167 certas e as
+> 11 falhas antigas.
 >
 > **Estado (05/10/2026):** PR #5 ainda **sem merge**. Entraram as regras
 > 40 a 45: "represento a academia" só quando a academia aparece; **perfil

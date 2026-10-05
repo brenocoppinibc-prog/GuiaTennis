@@ -405,6 +405,34 @@ cobra taxa e não fica no meio** da negociação.
     definido (o Breno vai dizer); o envio é o próximo passo, com os outros
     avisos pelo Resend. Marcar não redesenha a tela, para a senha digitada
     não se perder.
+39. **Pacote de 05/10/2026** (fotos do Breno no iPad). Teste:
+    `testes/comparar-e-avisos.js`.
+    - Conta no topo pisca em amarelo, com um "!" (`contaPisca`). Para quem
+      não entrou, um balão sai do ícone (`PUSHES_CONTA`): depois de 10 s,
+      fica 9 s, volta a cada 40 s, no máximo 3 por visita; o ✕ para por 3
+      dias. Promete só o que a conta faz hoje (avisos por e-mail, avaliar,
+      a mesma conta em todo aparelho). "Salvar as buscas" na conta ainda
+      não existe.
+    - "Grátis para quem joga" é o primeiro card de "Por que o GuiaTennis",
+      com a mesma cor dos outros.
+    - Seletor da comparação: bandeja com "Comparar N" quando há 2 a 5.
+    - Tabela da comparação: cada academia em cima da própria coluna, o
+      "+ Escolher" no canto, sem rolar de lado; com 3 a 5 academias, a
+      letra diminui no celular.
+    - "Ainda em dúvida?": um botão na página; depois de 15 s na
+      comparação, um aviso com os destaques (menor preço, melhor nota,
+      mais perto) e "Me ajude a decidir", que abre a mesma ajuda numa
+      folha.
+    - Minhas quadras (todas as abas) e o seletor vão da mais perto para a
+      mais longe (`pontoDeReferencia`, nesta ordem: busca aberta, viagem
+      com hotel, última busca, cidade das preferências).
+    - Parceiros:
+      - "Começar agora · é de graça!" no meio, pulsando.
+      - O card dos números diz "Só no Premium" e que os números já são
+        contados e aparecem ao passar para o Premium.
+      - Planos: "Até 1 e-mail / 5 e-mails / 10 e-mails com acesso".
+    - **O site fala "jogadores", não "alunos"**: atende quem faz aula e
+      quem loca quadra.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1284,7 +1312,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

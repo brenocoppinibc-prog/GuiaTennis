@@ -652,6 +652,81 @@
   .convite-s { margin: 0 0 12px; font-size: 14px; line-height: 1.45; color: var(--muted); }
   .convite-btn { width: 100%; }
   .convite-viagem .convite-ic { background: var(--green); }
+  /* Conta no topo piscando em amarelo e os avisos para entrar (05/10/2026) */
+  .conta-topo { position: relative; }
+  .conta-topo.destaque { animation: contaPisca 1.6s ease-in-out infinite; }
+  .conta-topo.destaque::after { content: "!"; position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #F2B705; color: #3A2A00; font-size: 12px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+  @keyframes contaPisca {
+    0%, 100% { background: #FFF6D8; box-shadow: 0 0 0 3px rgba(242,183,5,0.25), 0 0 10px rgba(242,183,5,0.35); }
+    50% { background: #FFE38A; box-shadow: 0 0 0 7px rgba(242,183,5,0.45), 0 0 22px rgba(242,183,5,0.75); }
+  }
+  .push-conta { position: fixed; top: 74px; right: 12px; left: 12px; margin-left: auto; z-index: 42; max-width: 340px; display: flex; gap: 12px; align-items: flex-start; background: var(--card); border: 1px solid #F2D27A; border-left: 5px solid #F2B705; border-radius: 14px; padding: 12px 34px 12px 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.16); cursor: pointer; text-align: left; font-family: inherit; color: var(--text); animation: pushEntra 0.35s ease-out; }
+  .push-conta::before { content: ""; position: absolute; top: -8px; right: 64px; width: 14px; height: 14px; background: var(--card); border-left: 1px solid #F2D27A; border-top: 1px solid #F2D27A; transform: rotate(45deg); }
+  .push-conta-ic { width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; background: #FFF1C2; display: flex; align-items: center; justify-content: center; }
+  .push-conta-t { margin: 0; font-weight: 700; font-size: 14px; }
+  .push-conta-s { margin: 2px 0 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+  .push-conta-cta { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--green); }
+  .push-conta-x { position: absolute; top: 6px; right: 6px; background: none; border: none; color: var(--muted); font-size: 14px; padding: 6px; cursor: pointer; }
+  @keyframes pushEntra { from { transform: translateY(-10px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .conta-topo.destaque, .push-conta { animation: none; } }
+  /* Grátis para jogadores (05/10/2026): o primeiro card, no mesmo jeito dos outros */
+  .dif-largo { grid-column: 1 / -1; }
+  /* Minhas quadras pela distância */
+  .lista-ordem { display: flex; align-items: center; gap: 6px; margin: -4px 0 6px; font-size: 12px; color: var(--muted); }
+  /* Seletor da comparação: bandeja com "Comparar" */
+  .cmp-bandeja { display: flex; align-items: center; gap: 10px; }
+  .cmp-pick-bandeja { position: sticky; bottom: 0; margin: 12px -4px 0; padding: 12px 4px 4px; background: var(--card); border-top: 1px solid var(--border); }
+  .cmp-bandeja-fotos { display: flex; flex-shrink: 0; }
+  .cmp-bandeja-f { width: 32px; height: 32px; border-radius: 999px; overflow: hidden; border: 2px solid var(--card); background: var(--bg-alt); margin-left: -9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; font-weight: 700; color: var(--green); }
+  .cmp-bandeja-f:first-child { margin-left: 0; }
+  .cmp-bandeja-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cmp-bandeja-n { font-size: 12px; color: var(--muted); }
+  .cmp-bandeja-btn { margin-left: auto; flex-shrink: 0; border: none; border-radius: 999px; background: var(--green); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 20px; cursor: pointer; }
+  .cmp-bandeja-btn.fraco { background: var(--card); color: var(--muted); border: 1px solid var(--border); cursor: default; }
+  /* Comparação: cada academia em cima da coluna dela, sem rolar de lado */
+  .ct-scroll { overflow: visible; }
+  .ct-grade { grid-template-columns: minmax(70px, 0.8fr) repeat(var(--cols), minmax(0, 1fr)); min-width: 0; }
+  .ct-topo { position: sticky; top: 0; z-index: 4; background: var(--bg); padding: 8px 4px 10px; border-bottom: 1px solid var(--border); display: flex; }
+  .ct-topo .cmp-vaga { width: 100%; min-height: 92px; }
+  .ct-canto { padding-left: 0; }
+  .ct-cel { min-width: 0; overflow-wrap: anywhere; }
+  .ct-rot { overflow-wrap: anywhere; }
+  .cmp-pagina > .cmp-vagas-n { margin-top: 14px; }
+  @media (max-width: 899px) {
+    .ct-n3 .ct-cel { font-size: 12px; padding: 9px 20px 9px 7px; }
+    .ct-n4 .ct-cel, .ct-n5 .ct-cel { font-size: 11px; padding: 8px 14px 8px 5px; line-height: 1.3; }
+    .ct-n4 .ct-rot, .ct-n5 .ct-rot { font-size: 10.5px; padding-right: 4px; }
+    .ct-n4 .ct-win, .ct-n5 .ct-win { top: 6px; right: 2px; transform: scale(0.8); }
+    .ct-n4 .ct-wa, .ct-n5 .ct-wa { padding: 6px 8px; font-size: 10.5px; gap: 3px; }
+    .ct-n4 .cmp-vaga-foto, .ct-n5 .cmp-vaga-foto { width: 30px; height: 30px; }
+    .ct-n4 .cmp-vaga-n, .ct-n5 .cmp-vaga-n { font-size: 10px; }
+    .ct-n4 .ct-topo, .ct-n5 .ct-topo { padding-left: 2px; padding-right: 2px; }
+    .ct-n4 .ct-topo .cmp-vaga, .ct-n5 .ct-topo .cmp-vaga { min-height: 78px; padding: 6px 3px; }
+    .ct-n4 .ct-secao, .ct-n5 .ct-secao { font-size: 10px; }
+  }
+  /* "Ainda em dúvida?": botão na página, aviso e folha */
+  .decide-abrir { width: 100%; margin-top: 20px; display: flex; align-items: center; gap: 12px; text-align: left; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 14px; font-family: inherit; color: var(--text); cursor: pointer; }
+  .decide-abrir > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .decide-abrir small { font-size: 13px; color: var(--muted); }
+  .decide-abrir-ic { width: 36px; height: 36px; border-radius: 50%; background: var(--green-soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .decide-push .convite-ic { background: var(--green); }
+  .decide-push-lista { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 4px; }
+  .decide-push-lista li { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
+  .decide-push-lista span { color: var(--muted); }
+  .decide-push-lista strong { text-align: right; }
+  #decide-overlay .decide-box { margin-top: 0; background: none; border: none; padding: 0; }
+  #decide-overlay .decide-title { font-family: var(--fonte-titulo); font-size: 24px; }
+  /* Parceiros: "Começar agora — é de graça!" no meio e com vida */
+  .pc-como-fim { text-align: center; }
+  .pc-como-fim .cta-btn.pc-gratis { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; padding: 0 30px; animation: gratisPulsa 2.4s ease-in-out infinite; }
+  .pc-gratis::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent); transform: skewX(-20deg); animation: gratisBrilho 3s ease-in-out infinite; }
+  .pc-gratis-selo { background: #F2B705; color: #3A2A00; border-radius: 999px; padding: 3px 10px; font-size: 13px; font-weight: 800; }
+  @keyframes gratisPulsa { 0%, 100% { transform: scale(1); box-shadow: 0 6px 16px rgba(31,77,58,0.25); } 50% { transform: scale(1.04); box-shadow: 0 10px 26px rgba(31,77,58,0.38); } }
+  @keyframes gratisBrilho { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+  @media (prefers-reduced-motion: reduce) { .pc-como-fim .cta-btn.pc-gratis, .pc-gratis::after { animation: none; } }
+  .pc-beneficio { position: relative; }
+  .pc-beneficio-tag { position: absolute; top: 18px; right: 18px; background: var(--gold); color: #fff; border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .pc-beneficio-nota { margin: 10px 0 0; font-size: 13px; line-height: 1.45; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 10px; }
   .convite-fechar { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 16px; color: var(--muted); cursor: pointer; padding: 6px; }
   .menu-btn > span:not(.menu-conta) { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
   .menu-overlay { justify-content: flex-end; align-items: stretch; }
@@ -1399,7 +1474,7 @@
     .pc-etapas-como li { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 12px; }
     .pc-etapas-como li:not(:last-child)::before { left: 44px; right: -18px; top: 19px; bottom: auto; width: auto; height: 2px; }
     .pc-etapa-card { height: 100%; box-sizing: border-box; }
-    .pc-como-fim .cta-btn { width: auto; display: inline-flex; padding: 0 28px; }
+    .pc-como-fim .cta-btn { width: auto; display: inline-flex; padding: 0 30px; }
   }
   /* Tempo até agir (painel do admin). */
   .stat-det { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.35; }
@@ -3224,6 +3299,36 @@ function courtDistance(c) {
   return state.origin ? haversineKm(state.origin.lat, state.origin.lng, c.lat, c.lng) : undefined;
 }
 
+// De onde medir "a mais perto" fora da busca (Minhas quadras, seletor da
+// comparação; pedido do Breno em 05/10/2026): a busca aberta, a viagem em
+// andamento com hotel, a última busca, a cidade das preferências (o ponto
+// dela ou o meio das academias de lá). Sem nada disso, null.
+function pontoDeReferencia() {
+  if (state.origin && Number.isFinite(state.origin.lat)) return state.origin;
+  const v = typeof viajandoAgora === "function" ? viajandoAgora() : null;
+  if (v && Number.isFinite(v.lat)) return { lat: v.lat, lng: v.lng };
+  const u = lerUltimaBusca();
+  if (u && Number.isFinite(u.lat) && Number.isFinite(u.lng)) return { lat: u.lat, lng: u.lng };
+  const p = lerPreferencias();
+  if (Number.isFinite(p.lat) && Number.isFinite(p.lng)) return { lat: p.lat, lng: p.lng };
+  if (p.cidade) {
+    const lugar = cidadesComQuadra().find(c => mesmaCidade(c.nome, p.cidade));
+    const pts = lugar ? lugar.courts.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng)) : [];
+    if (pts.length) return { lat: pts.reduce((t, c) => t + c.lat, 0) / pts.length, lng: pts.reduce((t, c) => t + c.lng, 0) / pts.length };
+  }
+  return null;
+}
+function distanciaDaReferencia(c, ref) {
+  return ref && c && Number.isFinite(c.lat) && Number.isFinite(c.lng) ? haversineKm(ref.lat, ref.lng, c.lat, c.lng) : undefined;
+}
+// Ordena da mais perto para a mais longe; sem ponto, a ordem fica como está.
+function ordenarPorPerto(lista, deQuem) {
+  const ref = pontoDeReferencia();
+  if (!ref) return lista;
+  const d = (x) => { const v = distanciaDaReferencia(deQuem ? deQuem(x) : x, ref); return typeof v === "number" ? v : Infinity; };
+  return lista.map((x, i) => ({ x, i, d: d(x) })).sort((a, b) => (a.d - b.d) || (a.i - b.i)).map(o => o.x);
+}
+
 // `skip` desliga um grupo de filtro — é assim que contamos quantas academias
 // cada opção traria de volta, igual ao contador que o Trivago mostra ao lado
 // de cada caixinha.
@@ -3341,7 +3446,8 @@ function render() {
 
     ${state.page === "home" ? renderHome() : ""}
     ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}
-    ${state.page === "comparar" ? renderComparePage() : ""}
+    ${state.page === "comparar" ? renderComparePage() + avisoDeDecisao() + renderDecideSheet() : ""}
+    ${pushContaHtml()}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
     ${state.page === "parceiros" ? renderParceiros() : ""}
 
@@ -3508,7 +3614,7 @@ function definirMeta(nome, valor) {
 function seoDaPagina() {
   if (state.page === "parceiros") {
     const aba = state.parceirosAba || "inicio";
-    const titulos = { inicio: "GuiaTennis Parceiros — mais alunos para a sua academia de tênis", planos: "Planos · GuiaTennis Parceiros", ajuda: "Ajuda · GuiaTennis Parceiros", cadastro: "Cadastrar academia · GuiaTennis Parceiros" };
+    const titulos = { inicio: "GuiaTennis Parceiros — mais jogadores para a sua academia de tênis", planos: "Planos · GuiaTennis Parceiros", ajuda: "Ajuda · GuiaTennis Parceiros", cadastro: "Cadastrar academia · GuiaTennis Parceiros" };
     // Entram no Google só as páginas públicas; o pedido de uma academia
     // (?academia=) e as páginas de quem está logado ficam de fora.
     const noGoogle = titulos[aba] && !(aba === "cadastro" && state.pcReivindicar);
@@ -3642,7 +3748,8 @@ function decideRanking() {
   const exigencias = an.achados.filter(a => a.atendem.length && a.atendem.length < a.total);
 
   const precos = courts.map(c => { const v = parsePriceValue(c); return isFinite(v) ? v : null; });
-  const dists = courts.map(c => typeof c.distanceKm === "number" ? c.distanceKm : null);
+  const ref = pontoDeReferencia();
+  const dists = courts.map(c => { const d = typeof c.distanceKm === "number" ? c.distanceKm : distanciaDaReferencia(c, ref); return typeof d === "number" ? d : null; });
   const estrs = courts.map(c => (c.amenities||[]).length * 2 + (totalQuadras(c) || 0));
   const notas = courts.map(c => c.appCount ? c.appAvg : null);
 
@@ -3764,17 +3871,11 @@ function renderCmpPicker() {
   const aba = state.cmpPicker;
   // Só a aba "Todas" tem campo de busca; nas outras a ordem já é a resposta.
   const termo = aba === "todas" ? semAcento(state.cmpBusca || "").trim() : "";
-  let lista = state.allCourts.map(decorate);
+  const ref = pontoDeReferencia();
+  let lista = state.allCourts.map(decorate).map(c => typeof c.distanceKm === "number" ? c : { ...c, distanceKm: distanciaDaReferencia(c, ref) });
   if (aba === "fav") lista = lista.filter(c => isFavorite(c.id));
-  if (aba === "perto") {
-    lista = lista.slice().sort((a, b) => {
-      const da = typeof a.distanceKm === "number" ? a.distanceKm : Infinity;
-      const db = typeof b.distanceKm === "number" ? b.distanceKm : Infinity;
-      return da - db;
-    });
-  } else {
-    lista = lista.slice().sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-  }
+  lista = lista.slice().sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  if (aba !== "todas") lista = ordenarPorPerto(lista);
   if (termo) lista = lista.filter(c => semAcento(`${c.name} ${c.bairro || ""} ${c.cidade || ""}`).includes(termo));
   const cheio = state.compareList.length >= COMPARE_MAX;
   return `
@@ -3792,7 +3893,25 @@ function renderCmpPicker() {
           ${aba === "todas" ? `<input class="form-field" id="cmp-pick-busca" style="margin-top:12px" placeholder="Procure pelo nome" value="${esc(state.cmpBusca)}" />` : ""}
           ${cheio ? `<p class="footnote" style="margin-top:10px">A comparação já está com ${COMPARE_MAX} academias. Tire uma para pôr outra.</p>` : ""}
           <div class="cmp-pick-lista">${listaDoSeletor(lista)}</div>`}
+        ${bandejaDoSeletor()}
       </div></div>
+    </div>`;
+}
+// Como a bandeja de antes: com 2 a 5 escolhidas, o botão "Comparar".
+function bandejaDoSeletor() {
+  const courts = compareCourts();
+  if (!courts.length) return "";
+  const pode = courts.length >= COMPARE_MIN;
+  return `
+    <div class="cmp-bandeja cmp-pick-bandeja">
+      <div class="cmp-bandeja-fotos">
+        ${courts.map(c => {
+          const foto = courtPhotos(c)[0];
+          return `<span class="cmp-bandeja-f" title="${esc(c.name)}">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" />` : esc(c.name.charAt(0))}</span>`;
+        }).join("")}
+      </div>
+      <span class="cmp-bandeja-n">${courts.length} de ${COMPARE_MAX}</span>
+      <button type="button" class="cmp-bandeja-btn ${pode ? "" : "fraco"}" id="cmp-pick-comparar" ${pode ? "" : "disabled"}>${pode ? `Comparar ${courts.length}` : "Escolha mais uma"}</button>
     </div>`;
 }
 
@@ -3823,7 +3942,8 @@ function celReposicao(c) {
 }
 
 function linhasComparacao(courts) {
-  const dists = courts.map(c => courtDistance(c));
+  const ref = pontoDeReferencia();
+  const dists = courts.map(c => distanciaDaReferencia(c, ref));
   return [
     { titulo: "Avaliação", linhas: [
       { rot: "Nota", melhor: "maior", vals: courts.map(c => c.appCount
@@ -3857,11 +3977,31 @@ function linhasComparacao(courts) {
   ];
 }
 
+// O cartão da academia no topo da coluna dela (pedido do Breno em
+// 05/10/2026: as informações embaixo de cada academia). O "+ Escolher" fica
+// no canto, em cima dos nomes das linhas.
+function cartaoDaColuna(c) {
+  const foto = courtPhotos(c)[0];
+  return `
+    <div class="cmp-vaga on">
+      ${foto ? `<div class="cmp-vaga-foto"><img src="${esc(foto)}" alt="" loading="lazy" /></div>` : ""}
+      <span class="cmp-vaga-n">${esc(c.name)}</span>
+      <button type="button" class="cmp-vaga-x" data-cmp-remove="${c.id}" aria-label="Tirar ${esc(c.name)} da comparação">✕</button>
+    </div>`;
+}
 function tabelaComparacao(courts) {
   const secoes = linhasComparacao(courts);
   return `
     <div class="ct-scroll">
-      <div class="ct-grade" style="--cols:${courts.length}">
+      <div class="ct-grade ct-n${courts.length}" style="--cols:${courts.length}">
+        <div class="ct-topo ct-canto">
+          ${courts.length < COMPARE_MAX ? `
+            <button type="button" class="cmp-vaga ct-escolher" data-cmp-abrir="1" aria-label="Escolher mais uma academia">
+              <span class="cmp-vaga-mais">+</span>
+              <span class="cmp-vaga-add">Escolher</span>
+            </button>` : ""}
+        </div>
+        ${courts.map(c => `<div class="ct-topo">${cartaoDaColuna(c)}</div>`).join("")}
         ${secoes.map(sec => `
           <div class="ct-secao">${esc(sec.titulo)}</div>
           ${sec.linhas.map(l => {
@@ -3893,13 +4033,34 @@ function renderComparePage() {
     <div class="cmp-pagina">
       <h2 class="cmp-titulo display">Comparar academias</h2>
       <p class="cmp-sub-topo">Veja lado a lado o que muda entre elas: nota, distância, estrutura e preço.</p>
-      ${vagasComparacao(courts)}
+      ${!podeComparar ? vagasComparacao(courts) : ""}
       ${!podeComparar ? `
         <p class="cmp-dica">${courts.length === 0
           ? `Toque no + para escolher a academia. Dá para comparar de ${COMPARE_MIN} a ${COMPARE_MAX}.`
           : "Falta escolher mais uma para a comparação aparecer."}</p>` : `
+        <p class="cmp-vagas-n">${courts.length} de ${COMPARE_MAX} na comparação</p>
         ${tabelaComparacao(courts)}
 
+        <button type="button" class="decide-abrir" data-decide-abrir>
+          <span class="decide-abrir-ic">${icon('sparkle', 18, 'var(--green)')}</span>
+          <span><strong>Ainda em dúvida?</strong><small>Marque o que mais pesa e a gente ajuda a decidir.</small></span>
+          ${icon('chevron', 18, 'var(--muted)')}
+        </button>
+
+        <button class="cta-btn cta-secondary" id="compare-clear-2" style="margin-top:14px">Limpar comparação</button>
+      `}
+    </div>
+  `;
+}
+
+// "Ainda em dúvida?" (pedido do Breno em 05/10/2026): sai do meio da
+// página e aparece como aviso depois de 15 segundos olhando a comparação,
+// como o "Ainda decidindo?" dos sites grandes. O aviso já mostra quem ganha
+// em preço, nota e distância (como os "destaques" dos comparadores da
+// Amazon e do Google); "Me ajude a decidir" abre a mesma ajuda numa folha.
+const DECIDE_PUSH_SEGUNDOS = 15;
+function caixaDeDecisao(courts) {
+  return `
         <div class="decide-box">
           <p class="decide-title">Ainda em dúvida?</p>
           <p class="decide-sub">Marque o que mais pesa na sua escolha e eu te ajudo a decidir.</p>
@@ -4021,12 +4182,68 @@ function renderComparePage() {
               </div>
             `;
           })() : ""}
-        </div>
-
-        <button class="cta-btn cta-secondary" id="compare-clear-2" style="margin-top:14px">Limpar comparação</button>
-      `}
-    </div>
-  `;
+        </div>`;
+}
+function destaquesDaComparacao(courts) {
+  const melhor = (vals, menor) => {
+    const ok = vals.map((v, i) => ({ v, i })).filter(o => typeof o.v === "number" && isFinite(o.v));
+    if (ok.length < 2) return null;
+    const alvo = menor ? Math.min(...ok.map(o => o.v)) : Math.max(...ok.map(o => o.v));
+    const ganham = ok.filter(o => o.v === alvo);
+    return ganham.length === 1 ? courts[ganham[0].i] : null;
+  };
+  const preco = (c) => {
+    const ns = [c.priceAula, c.priceLocacao].map(priceMin).filter(Boolean).map(Number);
+    return ns.length ? Math.min(...ns) : null;
+  };
+  const ref = pontoDeReferencia();
+  const dists = courts.map(c => distanciaDaReferencia(c, ref));
+  return [
+    { t: "Menor preço", c: melhor(courts.map(preco), true) },
+    { t: "Melhor nota", c: melhor(courts.map(c => c.appCount ? c.appAvg : null), false) },
+    { t: "Mais perto", c: melhor(dists, true) },
+  ].filter(x => x.c);
+}
+function avisoDeDecisao() {
+  if (state.page !== "comparar" || !state.decidePush || state.decidePushFechado || state.showDecide || state.cmpPicker) return "";
+  const courts = compareCourts();
+  if (courts.length < COMPARE_MIN) return "";
+  const dest = destaquesDaComparacao(courts);
+  return `
+    <aside class="convite-conta decide-push" id="decide-push" role="dialog" aria-label="Ainda em dúvida?">
+      <button type="button" class="convite-fechar" id="decide-push-fechar" aria-label="Fechar">✕</button>
+      <span class="convite-ic">${icon('sparkle', 24, '#fff')}</span>
+      <div class="convite-txt">
+        <p class="convite-t">Ainda em dúvida?</p>
+        ${dest.length ? `<ul class="decide-push-lista">${dest.map(d => `<li><span>${esc(d.t)}</span><strong>${esc(d.c.name)}</strong></li>`).join("")}</ul>` : ""}
+        <p class="convite-s">Marque o que mais pesa para você e a gente ajuda a escolher.</p>
+        <button type="button" class="cta-btn cta-primary convite-btn" data-decide-abrir>Me ajude a decidir</button>
+      </div>
+    </aside>`;
+}
+function renderDecideSheet() {
+  if (!state.showDecide || state.page !== "comparar") return "";
+  const courts = compareCourts();
+  if (courts.length < COMPARE_MIN) return "";
+  return `
+    <div class="overlay open" id="decide-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="decide-close" aria-label="Fechar">✕</button>
+        ${caixaDeDecisao(courts)}
+      </div></div>
+    </div>`;
+}
+// Arma o aviso quando a comparação aparece; vale uma vez por visita.
+function armarAvisoDeDecisao() {
+  if (state.page !== "comparar" || state.decidePush || state.decidePushTimer || state.decidePushFechado) return;
+  if (compareCourts().length < COMPARE_MIN) return;
+  state.decidePushTimer = setTimeout(() => {
+    state.decidePushTimer = null;
+    if (state.page !== "comparar" || compareCourts().length < COMPARE_MIN) return;
+    state.decidePush = true;
+    const digitando = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+    if (!digitando) render();
+  }, DECIDE_PUSH_SEGUNDOS * 1000);
 }
 
 // As vagas são o cabeçalho da comparação: mostram quem está dentro, deixam
@@ -4116,7 +4333,7 @@ function renderQrSheet() {
         </div>
         <p class="footnote">Aponta direto para guiatennis.com.br, então funciona para sempre — não expira nem depende de outro site.${doSite
           ? " Serve para cartão, adesivo, post e qualquer material de divulgação do guia."
-          : " Imprima e deixe na recepção da academia para os alunos avaliarem."}</p>
+          : " Imprima e deixe na recepção da academia para os jogadores avaliarem."}</p>
       </div></div>
     </div>
   `;
@@ -5438,7 +5655,7 @@ const PC_BARRA = ["painel", "desempenho", "avaliacoes", "ficha", "conta"];
 const PC_RECURSOS = [
   { t: "Nome, endereço, quadras e os tipos de quadra", p: ["basico", "completo", "premium"] },
   { t: "Modalidade, preço e horário", p: ["basico", "completo", "premium"] },
-  { t: "O aluno chama direto no seu WhatsApp, sem comissão", p: ["basico", "completo", "premium"] },
+  { t: "O jogador chama direto no seu WhatsApp, sem comissão", p: ["basico", "completo", "premium"] },
   { t: "Responder às avaliações", p: ["basico", "completo", "premium"] },
   { t: "QR code da ficha para a recepção", p: ["basico", "completo", "premium"] },
   { t: "Até 3 comodidades e até 3 fotos na ficha", p: ["basico"] },
@@ -5457,12 +5674,12 @@ const PC_RECURSOS = [
 // "pessoas": quantos e-mails entram na mesma academia — o banco confere
 // (limite_de_pessoas, SQL 20261002120000).
 const PC_PLANOS = [
-  { key: "basico", nome: "Básico", preco: "Grátis", pessoas: 1, resumo: "Para aparecer na busca e receber alunos." },
+  { key: "basico", nome: "Básico", preco: "Grátis", pessoas: 1, resumo: "Para aparecer na busca e receber jogadores." },
   { key: "completo", nome: "Completo", preco: "Fale com a gente", pessoas: 5, resumo: "Para ter a ficha completa e a equipe junto." },
   { key: "premium", nome: "Premium", preco: "Fale com a gente", pessoas: 10, resumo: "Para ver os números e crescer." },
 ];
 // O que vem aí no Premium (pedido do Breno). Aparece como "Em breve".
-const PC_EM_BREVE = "Promoções na ficha e avisos para os seus alunos";
+const PC_EM_BREVE = "Promoções na ficha e avisos para os seus jogadores";
 const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos"];
 // No Básico, "Cancelamento" e "Como chegar" não entram na conta (são do Completo).
 function itensDaFicha(c) {
@@ -5472,13 +5689,13 @@ function itensDaFicha(c) {
 
 function perguntasParceiros() {
   return [
-    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe. O Premium mostra também os números da ficha: visitas, contatos, de onde vêm os alunos e a comparação com a região." },
+    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe. O Premium mostra também os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
     { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia e toque em \"Administrar esta academia\": o GuiaTennis manda um código para o WhatsApp que está na ficha, e você digita o código para confirmar. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode pôr você direto em Conta › Pessoas com acesso." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto; o GuiaTennis confere antes de publicar, e você já administra a ficha." },
     { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. No painel, toque no nome da academia (ou em Conta › Suas academias) e em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito, pelo código no WhatsApp da ficha ou por documento, e tem o próprio plano, as próprias pessoas e os próprios números." },
     { q: "Com duas academias, pago um plano só?", a: "Não. Cada academia tem o próprio plano e paga o próprio valor. A academia que entra na conta começa no Básico, grátis, e você escolhe o plano de cada uma. Por exemplo, uma no Premium e outra no Básico. Mudar o plano de uma não muda o das outras." },
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium." },
-    { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O aluno fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
+    { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Não. Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias — nem a própria, nem as outras. Vocês respondem às avaliações da própria academia." },
     { q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado." },
@@ -5565,7 +5782,7 @@ function planoPorChave(key) {
 }
 
 // "Aprimore o plano": o que o próximo plano acrescenta e o botão. No
-// Premium, o que vem aí (promoções e avisos para os alunos).
+// Premium, o que vem aí (promoções e avisos para os jogadores).
 function pcOfertaDePlano() {
   const atual = planoAtual();
   const prox = proximoPlano(atual);
@@ -5577,12 +5794,12 @@ function pcOfertaDePlano() {
         <p class="pc-card-t">${esc(PC_EM_BREVE)}</p>
         <p class="pc-card-s">Vocês estão no plano mais completo do GuiaTennis Parceiros. As próximas ferramentas chegam primeiro para o Premium.</p>
         <div class="pc-acoes">
-          <a class="cta-btn cta-primary" href="${whatsappGuia(`Olá! Sou da ${c ? c.name : "academia"}, no plano Premium do GuiaTennis Parceiros, e quero saber primeiro das novidades: promoções e avisos para os alunos.`)}" target="_blank" rel="noreferrer">Quero saber primeiro</a>
+          <a class="cta-btn cta-primary" href="${whatsappGuia(`Olá! Sou da ${c ? c.name : "academia"}, no plano Premium do GuiaTennis Parceiros, e quero saber primeiro das novidades: promoções e avisos para os jogadores.`)}" target="_blank" rel="noreferrer">Quero saber primeiro</a>
         </div>
       </div>`;
   }
   const ganhos = PC_RECURSOS.filter(r => r.p.includes(prox.key) && !r.p.includes(atual)).slice(0, 3).map(r => r.t);
-  ganhos.push(`Até ${prox.pessoas} pessoas com acesso à academia`);
+  ganhos.push(`Até ${prox.pessoas} ${plural(prox.pessoas, "e-mail", "e-mails")} com acesso à academia`);
   return `
     <div class="pc-card pc-oferta">
       <p class="pc-oferta-eyebrow">Aprimore o plano</p>
@@ -5607,7 +5824,7 @@ function pcFichaEscondida() {
   if (!esconde.length) return "";
   return `
     <div class="pc-card pc-escondida">
-      <p class="pc-oferta-eyebrow">O que os alunos não veem</p>
+      <p class="pc-oferta-eyebrow">O que os jogadores não veem</p>
       <p class="pc-card-t">No plano ${esc(nomeDoPlano(plano))}, a ficha da ${esc(c.name)} esconde ${esconde.length === 1 ? "1 coisa" : esconde.length + " coisas"} que vocês preencheram</p>
       <ul class="pc-oferta-lista">${esconde.map(x => `<li>${icon('eye', 15, 'var(--gold)')}<span><strong>${esc(x.t)}</strong> · ${esc(x.d)}</span></li>`).join("")}</ul>
       <p class="pc-card-s">Está tudo guardado. Com o plano de cima, aparece na hora, sem preencher de novo.</p>
@@ -5942,30 +6159,30 @@ function pcNumerosDoSite() {
 
 function pcInicio() {
   const beneficios = [
-    { ic: "pin", t: "Alunos que já querem jogar", d: "Quem chega ao GuiaTennis está procurando aula ou quadra perto de casa, agora. A sua academia aparece justamente na hora da escolha." },
-    { ic: "phone", t: "Contato direto no seu WhatsApp", d: "Sem intermediário, sem central de reservas e sem comissão: o aluno chama você, e você combina a aula ou a locação do seu jeito." },
+    { ic: "pin", t: "Jogadores que já querem jogar", d: "Quem chega ao GuiaTennis está procurando aula ou quadra perto de casa, agora. A sua academia aparece justamente na hora da escolha." },
+    { ic: "phone", t: "Contato direto no seu WhatsApp", d: "Sem intermediário, sem central de reservas e sem comissão: o jogador chama você, e você combina a aula ou a locação do seu jeito." },
     { ic: "edit", t: "Uma ficha que vende por você", d: "Horário, preços, fotos, regra de cancelamento e como chegar, tudo num só lugar. Você atualiza pelo celular, e a mudança aparece na hora." },
     { ic: "bubble", t: "Responda às avaliações", d: "Agradeça os elogios e explique as críticas, em público. Quem vê uma academia que responde confia mais para chamar." },
-    { ic: "barchart", t: "Saiba quantos alunos você atrai", d: "No Premium, as visitas na ficha, os contatos no WhatsApp, de onde vieram e de quais bairros." },
-    { ic: "clipboard", t: "QR code para a recepção", d: "Deixe no balcão: o aluno aponta a câmera, abre a ficha e avalia na hora. Mais avaliações, mais confiança de quem ainda não conhece vocês." },
+    { ic: "barchart", t: "Saiba quantos jogadores você atrai", tag: "Premium", d: "Com o plano Premium, o seu painel mostra quantas pessoas abriram a ficha, quantas chamaram no WhatsApp, de onde vieram (Instagram, Google…) e de quais bairros.", nota: "No Básico e no Completo esses números já são contados, mas ficam escondidos. Passou para o Premium, eles aparecem no painel — inclusive os de antes." },
+    { ic: "clipboard", t: "QR code para a recepção", d: "Deixe no balcão: o jogador aponta a câmera, abre a ficha e avalia na hora. Mais avaliações, mais confiança de quem ainda não conhece vocês." },
   ];
   // Como funciona, em etapas, como as páginas de parceiro dos sites grandes.
   const passos = [
     { t: "Crie a sua conta", tempo: "2 minutos", d: "Comece pelo seu e-mail e preencha os dados de contato. É grátis e não pede cartão.", ic: "key" },
     { t: "Encontre a sua academia", tempo: "Na hora", d: "Procure pelo nome e pelo bairro e toque em \"Administrar esta academia\". Se a sua ainda não estiver no GuiaTennis, cadastre em poucos minutos.", ic: "search" },
     { t: "Confirme que a academia é sua", tempo: "Pelo WhatsApp", d: "O GuiaTennis manda um código para o WhatsApp que está na ficha. Você digita o código e a ficha passa a ser sua. Academia nova: o GuiaTennis confere e publica.", ic: "check" },
-    { t: "Complete a ficha e receba alunos", tempo: "Todo dia", d: "Horário, preços, fotos e como chegar. O aluno compara, chama no seu WhatsApp, e você acompanha as visitas e os contatos no painel.", ic: "barchart" },
+    { t: "Complete a ficha e receba jogadores", tempo: "Todo dia", d: "Horário, preços, fotos e como chegar. O jogador compara, chama no seu WhatsApp, e você acompanha as visitas e os contatos no painel.", ic: "barchart" },
   ];
   return `
     <section class="pc-hero">
       <p class="pc-eyebrow">GuiaTennis Parceiros</p>
-      <h1 class="display">Mais alunos para a sua academia de tênis</h1>
-      <p class="pc-hero-sub">Apareça para quem procura aula e quadra na sua região. O aluno compara e chama direto no seu WhatsApp — sem comissão.</p>
+      <h1 class="display">Mais jogadores para a sua academia de tênis</h1>
+      <p class="pc-hero-sub">Apareça para quem procura aula ou quer locar quadra na sua região. O jogador compara e chama direto no seu WhatsApp — sem comissão.</p>
       <div class="pc-hero-acoes">
         <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a>
         <a href="/parceiros/entrar" class="cta-btn cta-secondary" data-pc="entrar">Já tenho acesso</a>
       </div>
-      <p class="pc-hero-nota">${icon('check', 14, 'var(--green)')} Grátis no plano Básico · sem comissão · sem taxa por aluno</p>
+      <p class="pc-hero-nota">${icon('check', 14, 'var(--green)')} Grátis no plano Básico · sem comissão · sem taxa por jogador</p>
     </section>
     ${pcNumerosDoSite()}
     <section class="pc-sec" id="pc-beneficios">
@@ -5973,15 +6190,17 @@ function pcInicio() {
       <div class="pc-grade">
         ${beneficios.map(b => `
           <div class="pc-beneficio">
+            ${b.tag ? `<span class="pc-beneficio-tag">Só no ${esc(b.tag)}</span>` : ""}
             <span class="pc-beneficio-ic">${icon(b.ic, 22, 'var(--green)')}</span>
             <p class="pc-card-t">${esc(b.t)}</p>
             <p class="pc-card-s">${esc(b.d)}</p>
+            ${b.nota ? `<p class="pc-beneficio-nota">${esc(b.nota)}</p>` : ""}
           </div>`).join("")}
       </div>
     </section>
     <section class="pc-sec" id="pc-como">
       <h2 class="display">Como funciona</h2>
-      <p class="pc-sec-sub">Quatro passos, do cadastro ao primeiro aluno. Tudo pelo celular.</p>
+      <p class="pc-sec-sub">Quatro passos, do cadastro ao primeiro jogador. Tudo pelo celular.</p>
       <ol class="pc-etapas-como">
         ${passos.map((p, i) => `
           <li>
@@ -5994,7 +6213,7 @@ function pcInicio() {
           </li>`).join("")}
       </ol>
       <div class="pc-como-fim">
-        <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Começar agora — é grátis</a>
+        <a href="/parceiros/cadastro" class="cta-btn cta-primary pc-gratis" data-pc="cadastro">Começar agora <span class="pc-gratis-selo">é de graça!</span></a>
       </div>
     </section>
     <section class="pc-sec">
@@ -6027,7 +6246,7 @@ function pcCartoesDePlano(atual) {
           <p class="pc-plano-p">${esc(p.preco)}</p>
           <p class="pc-card-s">${esc(p.resumo)}</p>
           <ul class="pc-plano-lista">
-            <li>${icon('check', 15, 'var(--green)')}<span>Até ${p.pessoas} pessoas com acesso à academia</span></li>
+            <li>${icon('check', 15, 'var(--green)')}<span>Até ${p.pessoas} ${plural(p.pessoas, "e-mail", "e-mails")} com acesso à academia</span></li>
             ${PC_RECURSOS.map(r => `<li class="${r.p.includes(p.key) ? "" : "nao"}">${r.p.includes(p.key) ? icon('check', 15, 'var(--green)') : `<span class="pc-traco">—</span>`}<span>${esc(r.t)}</span></li>`).join("")}
             ${p.key === "premium" ? `<li class="pc-em-breve"><span class="pc-em-breve-tag">Em breve</span><span>${esc(PC_EM_BREVE)}</span></li>` : ""}
           </ul>
@@ -6233,7 +6452,7 @@ function pcCadastro() {
   // tela. O banco diz se o e-mail já tem conta (senha) ou não (cadastro).
   const cabeca = `
     <h1 class="display">Entre ou cadastre a sua academia</h1>
-    <p class="pc-sec-sub">Comece pelo e-mail. Grátis no plano Básico, sem comissão e sem taxa por aluno.</p>`;
+    <p class="pc-sec-sub">Comece pelo e-mail. Grátis no plano Básico, sem comissão e sem taxa por jogador.</p>`;
   const erro = (t) => t ? `<div class="form-error">${icon('warning', 13)} ${esc(t)}</div>` : "";
 
   // Conta que já administra academia: adiciona outra, em qualquer plano
@@ -6546,7 +6765,7 @@ function pcAvaliacoes() {
       <p class="pc-sec-sub">A resposta aparece na ficha, embaixo da avaliação, como "Resposta da academia". Agradeça e responda com educação. A academia não apaga avaliação: se uma for falsa ou ofensiva, peça a análise do GuiaTennis.</p>
       ${avaliacoes.length
         ? `<div class="ht-revs conta-revs">${avaliacoes.map(x => cartaoAvaliacao(x, c, "painel")).join("")}</div>`
-        : `<div class="pc-card"><p class="pc-card-t">Ainda sem avaliação</p><p class="pc-card-s">Peça aos alunos para avaliar pela ficha — o QR code na recepção leva direto para ela.</p><button type="button" class="cta-btn cta-secondary" id="conta-qr" data-court="${c.id}">QR code da sua ficha no GuiaTennis</button></div>`}
+        : `<div class="pc-card"><p class="pc-card-t">Ainda sem avaliação</p><p class="pc-card-s">Peça aos jogadores para avaliar pela ficha — o QR code na recepção leva direto para ela.</p><button type="button" class="cta-btn cta-secondary" id="conta-qr" data-court="${c.id}">QR code da sua ficha no GuiaTennis</button></div>`}
     </section>`;
 }
 
@@ -7077,6 +7296,57 @@ function botaoConta() {
   return `<button type="button" class="conta-topo destaque" id="conta-topo" aria-label="Entrar ou criar conta">${icon('pessoa', 22, 'var(--green)')}</button>`;
 }
 
+// Avisos da conta (pedido do Breno em 05/10/2026): o ícone pisca em
+// amarelo e, de tempos em tempos, um balão sai dele chamando para entrar,
+// como o trivago e o Booking ("Entre e veja…"). Só para quem não entrou;
+// no máximo 3 por visita; o ✕ para os avisos por 3 dias. Promete só o que
+// a conta faz hoje.
+const PUSH_CONTA_KEY = "guiatennis_push_conta_v1";
+const PUSHES_CONTA = [
+  { t: "Novidades das academias", d: "Com a conta grátis, você recebe por e-mail as academias novas na sua cidade.", motivo: "Entre para escolher os avisos por e-mail. Se ainda não tiver conta, o cadastro leva um minuto." },
+  { t: "Avalie onde você joga", d: "Dê nota às academias em que você joga e ajude outros jogadores a escolher.", motivo: "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto." },
+  { t: "O GuiaTennis do seu jeito", d: "Escolha os avisos que quer receber e use a mesma conta no celular e no computador.", motivo: "" },
+];
+const PUSH_CONTA_PRIMEIRO = 10, PUSH_CONTA_DURA = 9, PUSH_CONTA_INTERVALO = 40, PUSH_CONTA_MAX = 3;
+function pushContaHtml() {
+  if (state.pushConta == null || isAdmin || contaAcademia || jogador || state.page === "parceiros") return "";
+  const m = PUSHES_CONTA[state.pushConta];
+  if (!m) return "";
+  return `
+    <div class="push-conta" id="push-conta" role="status">
+      <span class="push-conta-ic">${icon('pessoa', 20, '#B58900')}</span>
+      <span>
+        <p class="push-conta-t">${esc(m.t)}</p>
+        <p class="push-conta-s">${esc(m.d)}</p>
+        <span class="push-conta-cta">Entrar ou criar conta ›</span>
+      </span>
+      <button type="button" class="push-conta-x" id="push-conta-x" aria-label="Fechar os avisos">✕</button>
+    </div>`;
+}
+function ligarPushesDaConta() {
+  let mostrados = 0;
+  const podeMostrar = () => {
+    if (isAdmin || contaAcademia || jogador || state.page === "parceiros") return false;
+    const fechado = lerLocal(PUSH_CONTA_KEY, 0);
+    if (fechado && Date.now() - fechado < 3 * 864e5) return false;
+    if (document.querySelector(".overlay.open, .drawer-overlay.open, .convite-conta")) return false;
+    const a = document.activeElement;
+    return !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+  };
+  const proximo = (seg) => setTimeout(() => {
+    if (mostrados >= PUSH_CONTA_MAX) return;
+    if (!podeMostrar()) { proximo(PUSH_CONTA_INTERVALO); return; }
+    state.pushConta = mostrados % PUSHES_CONTA.length;
+    mostrados++;
+    render();
+    setTimeout(() => {
+      if (state.pushConta != null) { state.pushConta = null; const a = document.activeElement; if (!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) render(); }
+      proximo(PUSH_CONTA_INTERVALO);
+    }, PUSH_CONTA_DURA * 1000);
+  }, seg * 1000);
+  proximo(PUSH_CONTA_PRIMEIRO);
+}
+
 // Convite para criar a conta, como o "Acesse ainda mais descontos" do
 // trivago: só na home, para quem já usou o site (viu academia ou buscou),
 // ainda não tem conta e não fechou o convite nos últimos 14 dias. Promete só
@@ -7201,9 +7471,10 @@ function renderListaSheet() {
   if (!state.lista || !LISTAS[state.lista]) return "";
   const q = minhasQuadras();
   const qual = state.lista;
-  const linhas = qual === "chamadas"
+  const ref = pontoDeReferencia();
+  const linhas = ordenarPorPerto(qual === "chamadas"
     ? q.chamadas.map(x => ({ c: decorate(x.c), extra: textoDaChamada(x) }))
-    : q[qual].map(c => ({ c: decorate(c), extra: "" }));
+    : q[qual].map(c => ({ c: decorate(c), extra: "" })), x => x.c);
   const ultima = qual === "vistas" ? lerUltimaBusca() : null;
   const linha = ({ c, extra }) => {
     const foto = courtPhotos(c)[0];
@@ -7212,7 +7483,7 @@ function renderListaSheet() {
         ${foto ? `<img class="lista-foto" src="${esc(foto)}" alt="" loading="lazy" />` : ""}
         <span class="lista-txt">
           <strong>${esc(c.name)}</strong>
-          <span>${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}</span>
+          <span>${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}${distanceText(distanciaDaReferencia(c, ref)) ? ` · ${distanceText(distanciaDaReferencia(c, ref))}` : ""}</span>
           ${c.appCount ? `<span class="lista-nota">${c.appAvg.toFixed(1).replace(".", ",")} · ${scoreWord(c.appAvg, c.appCount)} (${c.appCount})</span>` : ""}
           ${extra ? `<span class="lista-extra">${esc(extra)}</span>` : ""}
         </span>
@@ -7228,6 +7499,7 @@ function renderListaSheet() {
           ${Object.keys(LISTAS).map(k => `<button type="button" role="tab" class="lista-aba ${k === qual ? "on" : ""}" aria-selected="${k === qual}" data-lista="${k}">${LISTAS[k].aba}</button>`).join("")}
         </div>
         <p class="lista-titulo">${LISTAS[qual].titulo}</p>
+        ${ref && linhas.length > 1 ? `<p class="lista-ordem">${icon('pin', 13, 'var(--muted)')} Da mais perto para a mais longe</p>` : ""}
         ${ultima ? `<a class="lista-linha lista-busca" href="${esc(linkDaUltimaBusca(ultima))}" data-refazer-busca>
             <span class="lista-busca-ic">${icon('search', 20, 'var(--text)')}</span>
             <span class="lista-txt"><strong>${esc(textoDaBusca(ultima).lugar)}</strong><span>Sua última busca · ${esc(textoDaBusca(ultima).oQue)}</span></span>
@@ -8385,6 +8657,7 @@ function ligarEventosJogador() {
 // "Por que o GuiaTennis" — o que o guia faz de diferente, para quem joga.
 function blocoDiferenciais() {
   const itens = [
+    { ic: 'check', t: "Grátis para quem joga", d: "Buscar, comparar e chamar a academia não custa nada — para aula ou para locar quadra. Sem taxa e sem cartão.", largo: true },
     { ic: 'pin', t: "Acha pelo endereço mais perto", d: "Digite o CEP, o endereço ou toque no GPS. As quadras aparecem da mais perto para a mais longe." },
     { ic: 'phone', t: "Você fala direto com a academia", d: "O WhatsApp abre com a conversa já começada. O guia não reserva horário, não cobra taxa e não fica no meio." },
     { ic: 'sparkle', t: "Nota só de quem jogou aqui", d: "As avaliações são feitas dentro do GuiaTennis, por quem usou. Não importamos nota de outro site." },
@@ -8395,7 +8668,7 @@ function blocoDiferenciais() {
       <h3 class="display">Por que o GuiaTennis</h3>
       <div class="dif-grade">
         ${itens.map(i => `
-          <div class="dif-item">
+          <div class="dif-item ${i.largo ? "dif-largo" : ""}">
             <span class="dif-ic">${icon(i.ic, 22, 'var(--green)')}</span>
             <p class="dif-t">${i.t}</p>
             <p class="dif-d">${i.d}</p>
@@ -8459,7 +8732,7 @@ function blocoMediasAcademias() {
 function blocoParaAcademias() {
   const itens = [
     { t: "Aparece para quem já está procurando", d: "Quem chega aqui não está passeando: está com a raquete na mão procurando onde jogar." },
-    { t: "O aluno cai direto no seu WhatsApp", d: "Sem intermediário, sem comissão sobre a aula, sem central de reservas. A conversa é sua com ele." },
+    { t: "O jogador cai direto no seu WhatsApp", d: "Sem intermediário, sem comissão sobre a aula, sem central de reservas. A conversa é sua com ele." },
     { t: "A listagem é gratuita", d: "Cadastrar e aparecer no guia não custa nada. Você envia os dados, a gente confere e publica." },
     { t: "Os dados são seus", d: "Preço, fotos, comodidades, política de cancelamento e a dica de como chegar — tudo como você informou, e você pede alteração quando quiser." },
   ];
@@ -11582,9 +11855,9 @@ function politicaParaSalvar(f) {
 // do Google, e dá para salvar em qualquer uma.
 const REG_PASSOS = [
   { id: "dados", t: "Nome e endereço", titulo: "Onde fica a academia?", porque: "É o que faz a academia aparecer para quem busca perto." },
-  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "O que o aluno compara primeiro é se tem aula ou locação e o preço por hora." },
+  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "O que o jogador compara primeiro é se tem aula ou locação e o preço por hora." },
   { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
-  { id: "contato", t: "Contato", titulo: "Como os alunos falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa começada." },
+  { id: "contato", t: "Contato", titulo: "Como os jogadores falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa começada." },
   { id: "fotos", t: "Fotos", titulo: "Fotos da academia", porque: "Ficha com foto recebe muito mais contato." },
   { id: "horario", t: "Horário", titulo: "Horário de funcionamento", porque: "A ficha mostra se a academia está aberta agora." },
   { id: "cancelamento", t: "Cancelamento", titulo: "Cancelamento e reposição", porque: "Tira a dúvida antes da primeira aula." },
@@ -11833,7 +12106,7 @@ function oQueOPlanoEsconde(f, plano) {
   const fotos = (f.photos || []).length;
   if (fotos > l.fotos) itens.push({ passo: "fotos", t: `${fotos - l.fotos} das ${fotos} fotos`, d: `A ficha mostra só as ${l.fotos} primeiras.` });
   const redes = [tem(f.instagram) && !l.contatos.includes("instagram") ? "Instagram" : "", tem(f.site) && !l.contatos.includes("site") ? "site" : ""].filter(Boolean);
-  if (redes.length) itens.push({ passo: "contato", t: redes.join(" e "), d: "O aluno só vê o botão do WhatsApp." });
+  if (redes.length) itens.push({ passo: "contato", t: redes.join(" e "), d: "O jogador só vê o botão do WhatsApp." });
   if (!l.cancelamento && regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "A regra de cancelamento e reposição", d: "É a dúvida que mais trava a primeira aula." });
   if (!l.chegada && regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Como chegar", d: "Fachada, entrada e onde estacionar ficam escondidos." });
   return itens;
@@ -11844,11 +12117,11 @@ function oQueMelhorar(f) {
   const tem = v => !!String(v || "").trim();
   const itens = [];
   if (!(f.photos || []).length) itens.push({ passo: "fotos", t: "Pôr fotos", d: "Ficha com foto recebe muito mais contato." });
-  if (!tem(f.priceAula) && !tem(f.priceLocacao)) itens.push({ passo: "precos", t: "Dizer o preço", d: "É o que o aluno compara primeiro." });
+  if (!tem(f.priceAula) && !tem(f.priceLocacao)) itens.push({ passo: "precos", t: "Dizer o preço", d: "É o que o jogador compara primeiro." });
   if (!regPreenchido(f, "horario")) itens.push({ passo: "horario", t: "Pôr o horário", d: "A ficha mostra se a academia está aberta agora." });
   if (!(f.amenities || []).length) itens.push({ passo: "quadras", t: "Marcar as comodidades", d: "Viram filtro na busca: quem procura estacionamento acha vocês." });
   if (!regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "Explicar o cancelamento", d: "Tira a dúvida antes da primeira aula." });
-  if (!regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Explicar como chegar", d: "É o que mais evita o aluno passar direto." });
+  if (!regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Explicar como chegar", d: "É o que mais evita o jogador passar direto." });
   return itens;
 }
 
@@ -11886,7 +12159,7 @@ function regPlanoHtml(f) {
         </div>`}
       ${melhorar.length ? `
         <div class="reg-plano-bloco">
-          <p class="reg-plano-t">Para a ficha receber mais alunos</p>
+          <p class="reg-plano-t">Para a ficha receber mais jogadores</p>
           ${melhorar.map(x => `
             <button type="button" class="reg-rev-linha" data-reg-plano-passo="${passoDe(x.passo)}">
               <span class="reg-rev-sinal">+</span>
@@ -11958,7 +12231,7 @@ function renderRegisterSheet() {
         <p class="reg-progresso-t">Último passo · Plano da ficha</p>
         <div class="reg-progresso"><i style="width:100%"></i></div>
         <h2 class="sheet-title display reg-titulo">Quase lá: escolha o plano</h2>
-        <p class="subtitle reg-porque">Veja como a ficha ${esc(f.name || "da academia")} vai aparecer para os alunos.</p>
+        <p class="subtitle reg-porque">Veja como a ficha ${esc(f.name || "da academia")} vai aparecer para os jogadores.</p>
         ${regPlanoHtml(f)}
         <div class="reg-rodape">
           <button type="button" class="reg-voltar" id="reg-plano-voltar">Voltar e revisar</button>
@@ -13119,7 +13392,14 @@ function attachEvents() {
   if (decideGo) decideGo.onclick = () => { state.showDecideResult = true; render(); };
 
   const contaTopo = document.getElementById("conta-topo");
-  if (contaTopo) contaTopo.onclick = () => abrirContaJogador(jogador ? "conta" : "entrar");
+  if (contaTopo) contaTopo.onclick = () => { state.pushConta = null; abrirContaJogador(jogador ? "conta" : "entrar"); };
+  const pushConta = document.getElementById("push-conta");
+  if (pushConta) pushConta.onclick = (e) => {
+    const m = PUSHES_CONTA[state.pushConta] || PUSHES_CONTA[0];
+    state.pushConta = null;
+    if (e.target.closest("#push-conta-x")) { gravarLocal(PUSH_CONTA_KEY, Date.now()); render(); return; }
+    abrirContaJogador("entrar", m.motivo);
+  };
   const conviteFechar = document.getElementById("convite-fechar");
   if (conviteFechar) conviteFechar.onclick = () => { gravarLocal(CONVITE_CONTA_KEY, Date.now()); render(); };
   const conviteCriar = document.getElementById("convite-criar");
@@ -13295,6 +13575,24 @@ function attachEvents() {
       cmpPickBusca.setSelectionRange(cmpPickBusca.value.length, cmpPickBusca.value.length);
     }
   }
+
+  const cmpPickComparar = document.getElementById("cmp-pick-comparar");
+  if (cmpPickComparar) cmpPickComparar.onclick = () => {
+    state.cmpPicker = null;
+    if (state.page !== "comparar") { state.page = "comparar"; syncUrl(true); }
+    render();
+    window.scrollTo(0, 0);
+  };
+  document.querySelectorAll("[data-decide-abrir]").forEach(el => {
+    el.onclick = () => { state.showDecide = true; state.decidePushFechado = true; render(); };
+  });
+  const decideClose = document.getElementById("decide-close");
+  if (decideClose) decideClose.onclick = () => { state.showDecide = false; render(); };
+  const decideOverlay = document.getElementById("decide-overlay");
+  if (decideOverlay) decideOverlay.onclick = (e) => { if (e.target === decideOverlay) { state.showDecide = false; render(); } };
+  const decidePushFechar = document.getElementById("decide-push-fechar");
+  if (decidePushFechar) decidePushFechar.onclick = () => { state.decidePushFechado = true; render(); };
+  armarAvisoDeDecisao();
 
   const compareClear2 = document.getElementById("compare-clear-2");
   if (compareClear2) compareClear2.onclick = () => { setCompareList([]); state.compareOnly = false; state.decidida = null; state.showDecideResult = false; render(); };
@@ -14074,6 +14372,7 @@ async function init() {
   if (buscarAoAbrir) doSearch({ ordem: doLink.ordem });
   completarCoordenadas();
   ligarTempoNoSite();
+  ligarPushesDaConta();
 }
 
 function app_showLoading() {

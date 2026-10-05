@@ -26,6 +26,9 @@ async function abrir(opts = {}) {
     if (o.plano) window.__plano = o.plano;
     if (o.avaliacoes) window.__avaliacoesIniciais = o.avaliacoes;
     if (o.respostas) window.__respostasIniciais = o.respostas;
+    // Os avisos da conta (balão no topo) só aparecem com opts.pushes, para não
+    // cobrir os botões nos outros testes.
+    if (!o.pushes) { try { localStorage.setItem('guiatennis_push_conta_v1', String(Date.now())); } catch (e) {} }
   }, opts);
   // opts.host abre o site num endereço de verdade (o de teste do Netlify, por
   // exemplo) e opts.trocar mexe no index.html antes de servir.

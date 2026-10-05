@@ -37,7 +37,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   ok(tela.includes('Quase lá: escolha o plano') && !(await page.evaluate(() => window.__db.academias.some(a => a.name === 'Academia do Rui'))), 'ao finalizar, a tela do plano vem antes de enviar');
   ok(tela.includes('2 das 5 comodidades') && tela.includes('A ficha mostra só 3') && tela.includes('Instagram'), 'mostra o que o Básico esconde: 2 comodidades e o Instagram');
   ok(tela.includes('Nada se perde'), 'avisa que nada se perde: fica guardado');
-  ok(tela.includes('Pôr fotos') && tela.includes('Dizer o preço') && tela.includes('Pôr o horário'), 'mostra o que falta para a ficha receber mais alunos');
+  ok(tela.includes('Pôr fotos') && tela.includes('Dizer o preço') && tela.includes('Pôr o horário'), 'mostra o que falta para a ficha receber mais jogadores');
   const ordem = await page.evaluate(() => [...document.querySelectorAll('[data-reg-plano]')].map(b => b.dataset.regPlano + (b.closest('.destaque') ? '*' : '')).join(','));
   ok(ordem === 'premium*,completo,basico', 'Premium primeiro e em destaque, depois Completo, e o Básico por último — ' + ordem);
   ok((await texto(page, '.reg-plano-basico')).includes('Continuar no Básico, grátis (a ficha esconde 2 itens)'), 'continuar no Básico diz quanto fica escondido');
@@ -88,7 +88,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   // ---- painel da academia no Básico: o que está escondido ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' }));
   const painel = await texto(page, '.pc-escondida');
-  ok(painel.toLowerCase().includes('o que os alunos não veem') && painel.includes('esconde 2 coisas') && painel.includes('A regra de cancelamento') && painel.includes('Como chegar'), 'painel mostra o que o Básico esconde da ficha publicada — ' + painel.slice(0, 120));
+  ok(painel.toLowerCase().includes('o que os jogadores não veem') && painel.includes('esconde 2 coisas') && painel.includes('A regra de cancelamento') && painel.includes('Como chegar'), 'painel mostra o que o Básico esconde da ficha publicada — ' + painel.slice(0, 120));
   ok(await page.isVisible('.pc-escondida [data-pedir-plano="premium"]') && await page.isVisible('.pc-escondida [data-pedir-plano="completo"]'), 'com o Premium primeiro e o Completo ao lado');
   await page.evaluate(() => { window.open = () => null; });
   await page.click('.pc-escondida [data-pedir-plano="premium"]');

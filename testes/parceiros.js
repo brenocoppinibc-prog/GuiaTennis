@@ -21,14 +21,14 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   // ---- página inicial, no computador ----
   let { browser, page } = await abrir({ q: 'parceiros', w: 1280 });
   let t = await tela(page);
-  ok(t.pagina === 'parceiros' && t.aba === 'inicio' && t.h1 === 'Mais alunos para a sua academia de tênis', 'página inicial dos parceiros — ' + t.h1);
+  ok(t.pagina === 'parceiros' && t.aba === 'inicio' && t.h1 === 'Mais jogadores para a sua academia de tênis', 'página inicial dos parceiros — ' + t.h1);
   ok(!t.robots && t.canonica === 'http://guia.test/parceiros' && t.titulo.includes('GuiaTennis Parceiros'), 'página inicial entra no Google, com título próprio — ' + t.titulo);
   let corpo = await texto(page, '#parceiros');
   ok(corpo.includes('Por que estar no GuiaTennis') && corpo.includes('Como funciona') && corpo.includes('Perguntas frequentes'), 'benefícios, como funciona e perguntas na mesma página');
   ok(corpo.includes('sem comissão') && corpo.includes('Grátis no plano Básico'), 'deixa claro: grátis no Básico e sem comissão');
   ok(!/Google|TripAdvisor/.test(corpo.replaceAll('(Instagram, Google…)', '')) && corpo.includes('Responda às avaliações') && !corpo.includes('Responda as avaliações'), 'benefícios sem citar outras marcas, com a crase certa');
   const como = await page.evaluate(() => [...document.querySelectorAll('.pc-etapas-como li')].map(l => l.querySelector('.pc-card-t').innerText + ' (' + l.querySelector('.pc-etapa-tempo').innerText.trim() + ')'));
-  ok(como.join(' | ') === 'Crie a sua conta (2 minutos) | Encontre a sua academia (Na hora) | Confirme que a academia é sua (Pelo WhatsApp) | Complete a ficha e receba alunos (Todo dia)' && await page.isVisible('.pc-como-fim [data-pc="cadastro"]'), 'como funciona em 4 passos, com o tempo de cada um e o botão para começar — ' + como.length);
+  ok(como.join(' | ') === 'Crie a sua conta (2 minutos) | Encontre a sua academia (Na hora) | Confirme que a academia é sua (Pelo WhatsApp) | Complete a ficha e receba jogadores (Todo dia)' && await page.isVisible('.pc-como-fim [data-pc="cadastro"]'), 'como funciona em 4 passos, com o tempo de cada um e o botão para começar — ' + como.length);
   const marcasNoRodape = await page.evaluate(() => document.querySelectorAll('.pc-rodape .logo-mark').length);
   ok(marcasNoRodape === 1 && (await texto(page, '.pc-rodape')).split('O GuiaTennis para academias e quadras de tênis').length === 2, 'rodapé com a marca e a frase uma vez só, na faixa escura');
   const planos = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-n').innerText + ':' + (p.querySelector('.pc-plano-tag')?.innerText || '')));
@@ -52,7 +52,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(tabela === '7,10,16', 'cada plano mostra o que libera, um acima do outro — ' + tabela);
   const pessoasPorPlano = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-lista li').innerText.match(/\d+/)[0]).join());
   ok(pessoasPorPlano === '1,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
-  ok(/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e avisos para os seus alunos'), 'Premium mostra o que vem aí, marcado "Em breve"');
+  ok(/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e avisos para os seus jogadores'), 'Premium mostra o que vem aí, marcado "Em breve"');
   await page.click('.pc-nav a[data-pc="ajuda"]');
   await page.waitForTimeout(200);
   corpo = await texto(page, '#parceiros .pc-main');
@@ -463,7 +463,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   let conta = await texto(page, '#parceiros .pc-main');
   ok(conta.includes('Responsável principal') && conta.includes('Pessoas com acesso') && conta.includes('1 de 1 no plano Básico') && conta.includes('Maria Teste (você)'), 'Conta mostra quem tem acesso e quantas pessoas o plano permite');
   ok(!(await page.isVisible('#pc-pessoa-email')) && conta.includes('No Completo, até 5') && conta.includes('Aprimorar para o Completo'), 'Básico já cheio com 1 pessoa: some o formulário e aparece o convite para aprimorar');
-  ok(/aprimore o plano/i.test(conta) && conta.includes('Quero o Completo') && conta.includes('Até 5 pessoas com acesso à academia'), 'Conta oferece o próximo plano embaixo');
+  ok(/aprimore o plano/i.test(conta) && conta.includes('Quero o Completo') && conta.includes('Até 5 e-mails com acesso à academia'), 'Conta oferece o próximo plano embaixo');
   await browser.close();
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/conta', plano: 'completo' }));
   await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'completo'; await loadEverything(); await carregarPessoas(); render(); });
@@ -535,7 +535,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'premium' }));
   painelTexto = await texto(page, "#parceiros .pc-main");
   const novidade = await page.evaluate(() => decodeURIComponent(document.querySelector('.pc-oferta a')?.getAttribute('href') || ''));
-  ok(/em breve no premium/i.test(painelTexto) && painelTexto.includes('Promoções na ficha e avisos para os seus alunos') && painelTexto.includes('Novidades do Premium') && novidade.includes('quero saber primeiro das novidades'), 'no Premium, o painel mostra o que vem aí e chama para saber primeiro');
+  ok(/em breve no premium/i.test(painelTexto) && painelTexto.includes('Promoções na ficha e avisos para os seus jogadores') && painelTexto.includes('Novidades do Premium') && novidade.includes('quero saber primeiro das novidades'), 'no Premium, o painel mostra o que vem aí e chama para saber primeiro');
   await browser.close();
 
   // ---- faixa escura no fim, como a do trivago ----

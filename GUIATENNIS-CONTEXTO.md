@@ -38,7 +38,7 @@ teste")
 > sem procurar endereço, e os textos "Por que o GuiaTennis" e "Por que estar
 > no GuiaTennis". Também a correção da esteira do banco, vermelha desde o
 > SQL da pausa (SQL `20261005180000_visitante_le_a_pausa`). Falta o Breno cadastrar o segredo `RESEND_API_KEY` no GitHub
-> (seção 11, primeiro item). Testes: **802 verificações, nenhuma falha** nos 26 arquivos
+> (seção 11, primeiro item). Testes: **811 verificações, nenhuma falha** nos 26 arquivos
 > do navegador e 95 no `banco-emails.py` (Postgres local).
 >
 > **Estado (05/10/2026, fim do dia):** depois do pacote abaixo, entraram as
@@ -403,6 +403,11 @@ cobra taxa e não fica no meio** da negociação.
     aceita 6 a 10 números (o tamanho é do painel do Supabase: Authentication
     → Sign In / Providers → Email → "Email OTP Length"; o Breno quer 6).
     Teste: `testes/senha.js`.
+    **Senha recusada (pedido de 05/10/2026):** no cadastro do jogador, no
+    dos Parceiros, no primeiro acesso, em "Trocar senha" e na senha nova
+    pelo código, a senha digitada continua no campo e só "Repita a senha"
+    é apagada (`focarDepoisDaSenha`: o cursor vai para a repetição quando as
+    duas não batem, e para a senha quando é ela que precisa mudar).
     "Esqueci a senha" (`senhaNovaPeloCodigo`, correção de 04/10/2026): o
     código só vale uma vez; se ele deu certo e o Supabase recusou a senha,
     "tentar de novo" usa a sessão que o código abriu (antes conferia o
@@ -441,10 +446,15 @@ cobra taxa e não fica no meio** da negociação.
     —, na ficha e na home (sem empilhar com o convite da conta); some com a
     viagem guardada e, fechado, volta só em 30 dias. Política de
     Privacidade atualizada. Teste: `testes/viagem.js`.
-38. **Aviso de viagem por e-mail** (pedido de 04/10/2026): na conta do
-    jogador, só em Minha conta (saiu do cadastro a pedido do Breno), junto
-    dos avisos, "Vou viajar". Marcado,
-    abre estado, cidade (IBGE), ida e volta (as duas opcionais). Fica na
+38. **Aviso de viagem por e-mail** (pedido de 04/10/2026; **mudou em
+    05/10/2026**: saiu de "Avisos por e-mail" do perfil e foi para a aba
+    "Vou viajar", junto da viagem — `guardarAvisoDaViagem`). Na aba, a
+    caixa "Quero receber um aviso por e-mail perto da data da viagem"
+    (desmarcada; sem conta, guardar pede o Entrar e guarda depois); editar
+    a viagem da conta traz a caixa marcada; desmarcar ou apagar a viagem
+    desliga o aviso. Uma viagem com aviso por vez (a última marcada); a da
+    conta aparece também em outro aparelho (`trazerViagemDaConta`). Antes,
+    em Minha conta, a caixa abria estado, cidade (IBGE), ida e volta. Fica na
     conta (`jogadores.avisos_viagem`, `viagem_uf/cidade/ida/volta`, SQL
     `20261004130000_aviso_de_viagem` e `20261004140000_viagem_sem_data`) e
     também vira a viagem do aparelho (sem perder o hotel guardado nela). O e-mail sai 7 dias antes da ida (ou
@@ -711,6 +721,14 @@ cobra taxa e não fica no meio** da negociação.
     o que a academia ganha hoje: buscas salvas e viagens trazendo
     jogadores por e-mail, ficha que pausa, avaliação nova no e-mail (com o
     QR code), equipe e várias academias numa conta, números no Premium.
+56. **"Tem viagem marcada? O GuiaTennis pode te ajudar"** (pedido de
+    05/10/2026), como o "Planejando uma viagem?" do Booking e do Airbnb: um
+    balão embaixo, uns 5 segundos depois de entrar na conta (e ao abrir o
+    site já logado, se o "Jogou aqui?" não tiver o que perguntar — um balão
+    por visita), com "Guardar a viagem" (abre a aba "Vou viajar", com o
+    aviso por e-mail) e "Agora não". Só para quem não tem viagem guardada;
+    uma vez a cada 30 dias (`PUSH_VIAGEM_KEY`, no aparelho); nunca junto do
+    "Jogou aqui?" nem no cadastro. Teste: `testes/viagem.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

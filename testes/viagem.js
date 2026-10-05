@@ -151,34 +151,85 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   ok(await page.evaluate(() => !!document.getElementById('convite-viagem') && !document.querySelector('.convite-conta:not(.convite-viagem)')), 'na home também, sem empilhar com o convite da conta');
   await browser.close();
 
-  // O cadastro não tem "Vou viajar"; o aviso por e-mail fica em Minha conta.
+  // O cadastro não tem "Vou viajar"; o aviso por e-mail fica na aba da viagem
+  // (pedido do Breno em 05/10/2026), não em "Avisos por e-mail" do perfil.
   ({ browser, page } = await abrir());
   await page.evaluate(() => abrirContaJogador('entrar'));
   await page.fill('#jog-email', 'viaja@exemplo.com');
   await page.click('#jog-continuar');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => state.jogadorTela === 'criar' && !document.getElementById('jog-aviso-viagem') && !document.getElementById('jog-viagem')), 'o cadastro não pergunta de viagem');
+  ok(await page.evaluate(() => state.jogadorTela === 'criar' && !document.getElementById('viagem-aviso') && !document.querySelector('[data-campo="avisos_viagem"]')), 'o cadastro não pergunta de viagem');
   await page.fill('#jog-nome', 'Vai Viajar');
   await page.fill('#jog-senha', 'quadra de saibro');
   await page.fill('#jog-senha2', 'quadra de saibro');
   await page.check('#jog-aceite');
   await page.click('#jog-criar');
   await page.waitForTimeout(800);
-  await page.evaluate(() => { gravarViagens([{ id: 5, uf: 'SP', cidade: 'São Paulo', ficar: 'Hotel Pinheiros', lat: -23.56, lng: -46.68, ida: '', volta: '' }]); abrirContaJogador('conta'); });
+  await page.evaluate(() => { state.jogadorTela = null; irPerfil('perfil-avisos'); });
+  await page.waitForTimeout(250);
+  ok(await page.evaluate(() => !document.querySelector('[data-campo="avisos_viagem"]') && document.querySelector('#perfil-avisos + p').innerText.includes('O aviso da viagem fica em Vou viajar')),
+    'o perfil não tem mais a viagem em "Avisos por e-mail" e diz onde ela ficou');
+  await page.evaluate(() => { gravarViagens([{ id: 5, uf: 'SP', cidade: 'São Paulo', ficar: 'Hotel Pinheiros', lat: -23.56, lng: -46.68, ida: '', volta: '' }]); abrirViagem({ id: 5, uf: 'SP', cidade: 'São Paulo', ficar: 'Hotel Pinheiros', ida: '', volta: '' }); });
   await page.waitForTimeout(300);
-  ok(await page.isHidden('#jog-viagem'), 'Minha conta tem o aviso "Vou viajar", fechado');
-  await page.check('#jog-aviso-viagem');
-  ok(await page.evaluate(() => document.getElementById('jog-viagem-cidade').value === 'São Paulo'), 'marcar já traz a viagem guardada no aparelho');
-  await page.fill('#jog-viagem-ida', dia(20));
-  await page.click('#jog-salvar');
+  t = await page.evaluate(() => ({ caixa: !!document.getElementById('viagem-aviso'), marcada: document.getElementById('viagem-aviso')?.checked, texto: document.querySelector('.viagem-aviso')?.innerText || '' }));
+  ok(t.caixa && t.marcada === false && t.texto.includes('aviso por e-mail perto da data da viagem'), 'a aba "Vou viajar" oferece o aviso por e-mail perto da data, desmarcado');
+  await page.check('#viagem-aviso');
+  await page.fill('#viagem-ida', dia(20));
+  await page.evaluate(() => { window.__viagem.ida = document.getElementById('viagem-ida').value; });
+  await page.click('#viagem-salvar');
   await page.waitForTimeout(500);
-  t = await page.evaluate(() => ({ j: window.__db.jogadores.find(x => x.email === 'viaja@exemplo.com'), local: lerViagens() }));
-  ok(t.j && t.j.avisos_viagem === true && t.j.viagem_cidade === 'São Paulo' && t.j.viagem_uf === 'SP' && !!t.j.viagem_ida, 'a viagem do aviso vai para a conta');
-  ok(t.local.length === 1 && t.local[0].ficar === 'Hotel Pinheiros' && !!t.local[0].ida, 'e a viagem do aparelho ganha a data sem perder o hotel');
-  await page.uncheck('#jog-aviso-viagem');
-  await page.click('#jog-salvar');
+  t = await page.evaluate(() => ({ j: window.__db.jogadores.find(x => x.email === 'viaja@exemplo.com'), local: lerViagens(), aviso: [...document.querySelectorAll('.conta-aviso')].map(e => e.innerText).join(' ') }));
+  ok(t.j && t.j.avisos_viagem === true && t.j.viagem_cidade === 'São Paulo' && t.j.viagem_uf === 'SP' && !!t.j.viagem_ida, 'marcado, a viagem vai para a conta com o aviso');
+  ok(t.local.length === 1 && t.local[0].ficar === 'Hotel Pinheiros' && !!t.local[0].ida && t.aviso.includes('Perto da data, você recebe por e-mail'), 'a viagem do aparelho continua com o hotel, e a mensagem confirma o aviso');
+  await page.evaluate(() => abrirViagem(Object.assign({}, lerViagens()[0])));
+  await page.waitForTimeout(200);
+  t = await page.evaluate(() => ({ marcada: document.getElementById('viagem-aviso').checked, lista: document.querySelector('.viagens-lista')?.innerText || '' }));
+  ok(t.marcada && t.lista.includes('aviso por e-mail'), 'editar a viagem traz o aviso marcado, e a lista mostra "aviso por e-mail"');
+  await page.uncheck('#viagem-aviso');
+  await page.click('#viagem-salvar');
   await page.waitForTimeout(500);
   t = await page.evaluate(() => window.__db.jogadores.find(x => x.email === 'viaja@exemplo.com'));
-  ok(t.avisos_viagem === false && t.viagem_cidade === null, 'desligar o aviso apaga a viagem da conta');
+  ok(t.avisos_viagem === false && t.viagem_cidade === null, 'desmarcar desliga o aviso e tira a viagem da conta');
+  await page.evaluate(() => { abrirViagem(Object.assign({}, lerViagens()[0], { aviso: true })); });
+  await page.click('#viagem-salvar');
+  await page.waitForTimeout(400);
+  await page.evaluate(() => apagarViagem(lerViagens()[0].id));
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => window.__db.jogadores.find(x => x.email === 'viaja@exemplo.com').avisos_viagem === false), 'apagar a viagem desliga o aviso dela');
+  await browser.close();
+
+  // Sem conta: marcar o aviso pede para entrar, e a viagem é guardada depois.
+  ({ browser, page } = await abrir());
+  await page.evaluate(() => { abrirViagem({ uf: 'SP', cidade: 'São Paulo', aviso: true }); });
+  await page.waitForTimeout(300);
+  await page.click('#viagem-salvar');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.jogadorTela === 'email' && /aviso da viagem/.test(state.jogadorMotivo) && typeof state.depoisDeEntrar === 'function' && !lerViagens().length),
+    'sem conta, o aviso pede para entrar antes de guardar');
+  await browser.close();
+
+  // "Tem viagem marcada?": um pouco depois de entrar, uma vez a cada 30 dias.
+  ({ browser, page } = await abrir({ jogador: true }));
+  await page.waitForTimeout(8800);
+  t = await page.evaluate(() => document.getElementById('push-viagem')?.innerText.replace(/\s+/g, ' ') || '');
+  ok(t.includes('Tem viagem marcada?') && t.includes('O GuiaTennis pode te ajudar') && t.includes('aviso por e-mail perto da data'), 'logado, o balão "Tem viagem marcada?" aparece — ' + t.slice(0, 50));
+  await page.click('#push-viagem-sim');
+  await page.waitForTimeout(250);
+  ok(await page.evaluate(() => state.showViagem && !state.pushViagem && !!document.getElementById('viagem-aviso')), '"Guardar a viagem" abre a aba da viagem, com o aviso por e-mail');
+  await page.evaluate(() => { state.showViagem = false; render(); ligarPushViagem(0.1); });
+  await page.waitForTimeout(500);
+  ok(!(await page.$('#push-viagem')), 'visto uma vez, não volta antes de 30 dias');
+  await browser.close();
+  ({ browser, page } = await abrir());
+  await page.evaluate(() => { gravarViagens([{ id: 9, uf: 'RJ', cidade: 'Rio de Janeiro', ida: '', volta: '' }]); });
+  await page.evaluate(async () => { abrirContaJogador('entrar'); });
+  await page.fill('#jog-email', 'ana@exemplo.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { window.__senhas['ana@exemplo.com'] = 'senhadaana'; window.__db.jogadores.push({ user_id: 'j-ana', nome: 'Ana Jogadora', email: 'ana@exemplo.com', token_avisos: 't' }); });
+  await page.fill('#jog-senha', 'senhadaana');
+  await page.click('#jog-entrar');
+  await page.waitForTimeout(6000);
+  ok(!!(await page.evaluate(() => jogador)) && !(await page.$('#push-viagem')), 'com viagem guardada, o balão não aparece');
   await browser.close();
 })();

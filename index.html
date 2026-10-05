@@ -623,8 +623,6 @@
   .viagem-txt small { display: block; font-size: 13px; color: var(--muted); }
   .viagem-apagar { color: var(--muted) !important; }
   .viagem-datas { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
-  .jog-viagem { margin: 6px 0 4px 34px; padding: 4px 14px 14px; border-left: 2px solid var(--green-soft); }
-  .jog-viagem .field-label { margin-top: 14px; }
   .viagem-pergunta { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; background: var(--green-soft); border-radius: 14px; padding: 12px 14px; font-size: 14px; position: relative; padding-right: 38px; }
   .viagem-pergunta span { flex: 1 1 200px; }
   .viagem-pergunta-x { position: absolute; top: 6px; right: 8px; background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px; }
@@ -1840,6 +1838,7 @@
   .push-avaliar .push-conta-estrelas button { border: 0; background: none; padding: 2px; cursor: pointer; font-size: 26px; line-height: 1; color: #E2B53A; }
   .push-avaliar .push-avaliar-acoes { display: flex; gap: 16px; margin-top: 8px; }
   .push-avaliar .push-avaliar-acoes button { border: 0; background: none; padding: 0; font: inherit; font-size: 13px; color: var(--muted); text-decoration: underline; cursor: pointer; }
+  .push-avaliar .push-avaliar-acoes button.push-viagem-sim { color: var(--green); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -3700,6 +3699,7 @@ function render() {
     ${state.page === "comparar" ? renderComparePage() + avisoDeDecisao() + renderDecideSheet() : ""}
     ${pushContaHtml()}
     ${pushAvaliarHtml()}
+    ${pushViagemHtml()}
     ${renderPararAvisos()}
     ${state.page === "perfil" ? renderPerfilJogador() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
@@ -5386,9 +5386,9 @@ async function salvarDadosConta() {
   let erro = erroDoContato(f);
   if (!erro && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((f.email || "").trim())) erro = "Confira o e-mail.";
   else if (!erro && cnpj && cnpj.length !== 14) erro = "O CNPJ tem 14 números. Se preferir, deixe em branco.";
-  else if (!erro && pedirSenha && erroDaSenha(f.senha, f.senha2, f.email)) erro = erroDaSenha(f.senha, f.senha2, f.email);
+  else if (!erro && pedirSenha && erroDaSenha(f.senha, f.senha2, f.email)) { erro = erroDaSenha(f.senha, f.senha2, f.email); f.senha2 = ""; }
   else if (!erro && pedirAceite && !f.aceite) erro = "Falta aceitar os Termos de Uso e a Política de Privacidade.";
-  if (erro) { state.contaErro = erro; render(); return; }
+  if (erro) { state.contaErro = erro; render(); if (!f.senha2 && pedirSenha) focarDepoisDaSenha("conta-senha", "conta-senha2", erro); return; }
   state.contaErro = "";
   state.contaSalvando = true;
   render();
@@ -5424,8 +5424,8 @@ async function trocarSenhaConta() {
   const f = window.__senha || {};
   let erro = "";
   if (!f.atual) erro = "Digite a senha atual.";
-  else if (erroDaSenha(f.nova, f.nova2, contaAcademia && contaAcademia.email)) erro = erroDaSenha(f.nova, f.nova2, contaAcademia && contaAcademia.email);
-  if (erro) { state.contaErro = erro; render(); return; }
+  else if (erroDaSenha(f.nova, f.nova2, contaAcademia && contaAcademia.email)) { erro = erroDaSenha(f.nova, f.nova2, contaAcademia && contaAcademia.email); f.nova2 = ""; }
+  if (erro) { state.contaErro = erro; render(); if (!f.nova2 && f.atual) focarDepoisDaSenha("senha-nova", "senha-nova2", erro); return; }
   state.contaErro = "";
   state.contaSalvando = true;
   render();
@@ -7546,7 +7546,10 @@ async function pcSalvarSenhaNova() {
   const codigo = document.getElementById("pc-codigo-senha")?.value || "";
   const senha = document.getElementById("pc-senha-nova")?.value || "";
   const errSenha = erroDaSenha(senha, document.getElementById("pc-senha-nova2")?.value || "", state.pcLogin);
-  if (errSenha) { state.pcContaErro = errSenha; render(); return; }
+  if (errSenha) {
+    window.__codigo = { ...(window.__codigo || {}), senha, senha2: "" };
+    state.pcContaErro = errSenha; render(); focarDepoisDaSenha("pc-senha-nova", "pc-senha-nova2", errSenha); return;
+  }
   state.pcContaSalvando = true; state.pcContaErro = ""; render();
   const r = await senhaNovaPeloCodigo(state.pcLogin, codigo, senha);
   state.pcContaSalvando = false;
@@ -7593,7 +7596,7 @@ async function criarContaDeParceiro() {
   const falta = erroDoContato(f);
   if (falta) return erro(falta);
   const errSenha = erroDaSenha(f.senha, f.senha2, email);
-  if (errSenha) return erro(errSenha);
+  if (errSenha) { f.senha2 = ""; erro(errSenha); focarDepoisDaSenha("pc-conta-senha", "pc-conta-senha2", errSenha); return; }
   if (!f.aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.");
   state.pcContaErro = "";
   state.pcContaSalvando = true;
@@ -7602,7 +7605,10 @@ async function criarContaDeParceiro() {
     p_email: email, p_senha: f.senha, p_nome: juntarNome(f), p_whatsapp: f.whatsapp, p_aceite: true,
     p_tratamento: f.tratamento, p_cargo: f.cargo, p_recebe_novidades: !!f.novidades,
   });
-  if (r.error) return erro(r.error.message || "Não consegui criar a conta agora.");
+  if (r.error) {
+    if (/senha/i.test(r.error.message || "")) f.senha2 = "";
+    return erro(r.error.message || "Não consegui criar a conta agora.");
+  }
   const { data, error } = await sb.auth.signInWithPassword({ email, password: f.senha });
   if (error) return erro("A conta foi criada, mas não consegui entrar. Tente em Entrar.");
   await carregarConta(data && data.session);
@@ -8224,10 +8230,18 @@ function cidadePadraoDaBusca() {
   return v ? v.cidade : lerPreferencias().cidade || "";
 }
 
+// A viagem que tem o aviso por e-mail na conta (uma por vez).
+function ehViagemDaConta(v) {
+  return !!(v && jogador && jogador.avisos_viagem && mesmaCidade(jogador.viagem_cidade, v.cidade)
+    && (jogador.viagem_ida || "") === (v.ida || ""));
+}
 function abrirViagem(prefill) {
   state.showMenu = false;
   state.viagemErro = "";
+  state.pushViagem = false;
   window.__viagem = { uf: "", cidade: "", ficar: "", ida: "", volta: "", ...(prefill || {}) };
+  window.__viagem.aviso = prefill && prefill.aviso !== undefined ? !!prefill.aviso : ehViagemDaConta(prefill);
+  window.__viagem.eraDaConta = ehViagemDaConta(prefill);
   state.showViagem = true;
   render();
   conferirCidadeDaViagem();
@@ -8257,6 +8271,12 @@ async function salvarViagem() {
   if (r.ida && r.ida < diaISO()) return erro("A ida já passou. Confira a data.");
   if (r.ida && r.volta && r.volta < r.ida) return erro("A volta precisa ser depois da ida.");
   if (!r.ida && r.volta) return erro("Informe também a data de ida ou apague a volta.");
+  // Aviso por e-mail perto da data: precisa da conta. Sem ela, entra e
+  // guarda depois, com tudo o que já foi digitado.
+  if (r.aviso && !jogador && !isAdmin) {
+    jogadorEntaoFaz(() => salvarViagem(), "Para receber o aviso da viagem por e-mail, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto.");
+    return;
+  }
   const ficar = String(r.ficar || "").trim().replace(/\s+/g, " ");
   // Onde vai ficar: o mapa acha o ponto. Se não achar, guarda assim mesmo e
   // as quadras aparecem pela cidade.
@@ -8273,10 +8293,11 @@ async function salvarViagem() {
     ...(ficar ? { ficar } : {}), ...(ponto ? { lat: ponto.lat, lng: ponto.lng } : {}) });
   gravarViagens(lista.slice(-5));
   gravarLocal(VIAGEM_CONVITE_KEY, Date.now());
+  const avisoConta = await guardarAvisoDaViagem(r, cidade);
   state.showViagem = false;
-  state.viagemAviso = ficar && !ponto
+  state.viagemAviso = (ficar && !ponto
     ? `Viagem a ${cidade} guardada. Não achei "${ficar}" no mapa: as quadras aparecem pela cidade.`
-    : `Viagem a ${cidade} guardada.`;
+    : `Viagem a ${cidade} guardada.`) + avisoConta;
   if (state.page !== "home") goHome(); else render();
 }
 // "Ver quadras": com o lugar onde vai ficar, a distância é a partir dele (o
@@ -8297,8 +8318,88 @@ function verQuadrasDaViagem(id) {
   goSearch();
 }
 function apagarViagem(id) {
-  gravarViagens(lerViagens().filter(v => String(v.id) !== String(id)));
+  const v = lerViagens().find(x => String(x.id) === String(id));
+  gravarViagens(lerViagens().filter(x => String(x.id) !== String(id)));
+  if (ehViagemDaConta(v)) desligarAvisoDaViagem();
   render();
+}
+// Aviso por e-mail perto da data (pedido do Breno em 05/10/2026): fica na
+// aba "Vou viajar", junto da viagem, e não mais em "Avisos por e-mail" do
+// perfil. A conta guarda uma viagem com aviso por vez (a última marcada).
+// Devolve o complemento da mensagem de "guardada".
+async function guardarAvisoDaViagem(r, cidade) {
+  if (!jogador || isAdmin) return "";
+  if (!r.aviso) {
+    if (r.eraDaConta) await desligarAvisoDaViagem();
+    return "";
+  }
+  const dados = { avisos_viagem: true, viagem_uf: r.uf, viagem_cidade: cidade, viagem_ida: r.ida || null,
+    viagem_volta: r.volta || null, avisos_mudados_em: new Date().toISOString() };
+  const { error } = await sb.from('jogadores').update(dados).eq('user_id', jogador.user_id);
+  if (error) return " Não consegui ligar o aviso por e-mail agora: tente de novo em Minhas quadras › Vou viajar.";
+  Object.assign(jogador, dados);
+  registrarPasso("acao", { detalhe: "Ligou o aviso da viagem por e-mail" });
+  return jogador.email_confirmado_em
+    ? " Perto da data, você recebe por e-mail as academias de lá."
+    : " Perto da data, você recebe por e-mail as academias de lá (depois de confirmar o e-mail).";
+}
+async function desligarAvisoDaViagem() {
+  if (!jogador) return;
+  const dados = { avisos_viagem: false, viagem_uf: null, viagem_cidade: null, viagem_ida: null, viagem_volta: null,
+    avisos_mudados_em: new Date().toISOString() };
+  const { error } = await sb.from('jogadores').update(dados).eq('user_id', jogador.user_id);
+  if (!error) Object.assign(jogador, dados);
+}
+// A viagem com aviso que está na conta aparece também neste aparelho (entrou
+// em outro celular, por exemplo).
+function trazerViagemDaConta() {
+  if (!jogador || !jogador.avisos_viagem || !jogador.viagem_cidade) return;
+  if (jogador.viagem_volta && jogador.viagem_volta < diaISO()) return;
+  if (lerViagens().some(v => ehViagemDaConta(v))) return;
+  const lista = lerLocal(VIAGENS_KEY, []);
+  gravarViagens([...(Array.isArray(lista) ? lista : []), { id: Date.now(), uf: jogador.viagem_uf || "", cidade: jogador.viagem_cidade,
+    ida: jogador.viagem_ida || "", volta: jogador.viagem_volta || "" }].slice(-5));
+}
+
+// "Tem viagem marcada?" (pedido do Breno em 05/10/2026): um pouco depois de
+// entrar na conta, um balão oferece guardar a viagem e receber o aviso por
+// e-mail perto da data, como o "Planejando uma viagem?" do Booking e do
+// Airbnb. Só para quem não tem viagem guardada; uma vez a cada 30 dias, e um
+// balão por vez (não junto do "Jogou aqui?").
+const PUSH_VIAGEM_KEY = "guiatennis_push_viagem_v1";
+const PUSH_VIAGEM_ESPERA_S = 5, PUSH_VIAGEM_INTERVALO_D = 30;
+function podePushViagem() {
+  if (!jogador || isAdmin || state.page === "parceiros") return false;
+  if (lerViagens().length || jogador.avisos_viagem) return false;
+  const visto = lerLocal(PUSH_VIAGEM_KEY, 0);
+  return !(visto && Date.now() - visto < PUSH_VIAGEM_INTERVALO_D * 864e5);
+}
+function ligarPushViagem(segundos) {
+  if (!podePushViagem()) return;
+  const tentar = (vez) => {
+    if (state.pushViagem || !podePushViagem()) return;
+    const ocupado = state.pushAvaliar || state.pushConta != null || state.showViagem || state.jogadorTela
+      || document.querySelector(".overlay.open, .drawer-overlay.open")
+      || (document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
+    if (ocupado) { if (vez < 6) setTimeout(() => tentar(vez + 1), 15000); return; }
+    gravarLocal(PUSH_VIAGEM_KEY, Date.now());
+    state.pushViagem = true;
+    render();
+  };
+  setTimeout(() => tentar(0), (segundos || PUSH_VIAGEM_ESPERA_S) * 1000);
+}
+function pushViagemHtml() {
+  if (!state.pushViagem || !jogador || isAdmin || state.page === "parceiros") return "";
+  return `
+    <div class="push-conta push-avaliar push-viagem" id="push-viagem" role="dialog" aria-label="Tem viagem marcada?">
+      <span class="push-conta-ic" aria-hidden="true">${icon('map', 20, '#C99A1C')}</span>
+      <span>
+        <p class="push-conta-t">Tem viagem marcada?</p>
+        <p class="push-conta-s">O GuiaTennis pode te ajudar: guarde a viagem e receba um aviso por e-mail perto da data, com as quadras de lá.</p>
+        <span class="push-avaliar-acoes"><button type="button" class="push-viagem-sim" id="push-viagem-sim">Guardar a viagem</button><button type="button" id="push-viagem-depois">Agora não</button></span>
+      </span>
+      <button type="button" class="push-conta-x" id="push-viagem-x" aria-label="Fechar">✕</button>
+    </div>`;
 }
 
 function renderViagemSheet() {
@@ -8319,7 +8420,7 @@ function renderViagemSheet() {
             ${viagens.map(v => `
               <div class="viagem-linha">
                 <span class="viagem-ic">${icon('map', 18, 'var(--green)')}</span>
-                <span class="viagem-txt"><strong>${esc(v.cidade)}, ${esc(v.uf)}</strong><small>${esc([v.ficar, textoDaViagem(v) || "sem data"].filter(Boolean).join(" · "))}</small></span>
+                <span class="viagem-txt"><strong>${esc(v.cidade)}, ${esc(v.uf)}</strong><small>${esc([v.ficar, textoDaViagem(v) || "sem data", ehViagemDaConta(v) ? "aviso por e-mail" : ""].filter(Boolean).join(" · "))}</small></span>
                 <button type="button" class="pc-link-btn" data-viagem-ver="${esc(String(v.id))}">Ver quadras</button>
                 <button type="button" class="pc-link-btn viagem-apagar" data-viagem-apagar="${esc(String(v.id))}" aria-label="Apagar a viagem a ${esc(v.cidade)}">Apagar</button>
               </div>`).join("")}
@@ -8353,11 +8454,19 @@ function renderViagemSheet() {
         </div>
         <p class="fgroup-note">Com as datas, o GuiaTennis mostra a viagem ${VIAGEM_ANTES_DIAS} dias antes e some depois da volta. Sem datas, fica até você apagar.</p>
 
+        ${isAdmin ? "" : `
+        <label class="consent-row viagem-aviso">
+          <input type="checkbox" id="viagem-aviso" ${r.aviso ? "checked" : ""} />
+          <span><strong>Quero receber um aviso por e-mail perto da data da viagem</strong>, com as academias de tênis de lá.</span>
+        </label>
+        <p class="fgroup-note">${!jogador ? "Para receber, entre na sua conta ao guardar a viagem."
+          : `O aviso chega 7 dias antes da ida (sem data, logo depois de guardar)${jogador.email_confirmado_em ? "" : ", depois de confirmar o e-mail"}. Vale para uma viagem por vez.`}</p>`}
+
         ${state.viagemErro ? `<p class="status-line status-error">${icon('warning', 13)} ${esc(state.viagemErro)}</p>` : ""}
         <div class="cta-col" style="margin-top:20px">
           <button type="button" class="cta-btn cta-primary" id="viagem-salvar" ${state.viagemSalvando ? "disabled" : ""}>${state.viagemSalvando ? bolaGirando(16) + " Achando no mapa" : "Guardar a viagem"}</button>
         </div>
-        <p class="footnote">Fica só neste aparelho, como as preferências de busca.</p>
+        <p class="footnote">A viagem fica neste aparelho, como as preferências de busca. Com o aviso por e-mail, ela fica também na sua conta.</p>
       </div></div>
     </div>`;
 }
@@ -8564,8 +8673,7 @@ function abrirContaJogador(tela, motivo) {
   state.jogadorSalvando = false;
   const pref = lerPreferencias();
   window.__jog = tela === "conta" && jogador
-    ? { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!jogador[a.campo]])),
-        avisos_viagem: !!jogador.avisos_viagem, ...(jogador.avisos_viagem ? { viagem_uf: jogador.viagem_uf || "", viagem_cidade: jogador.viagem_cidade || "", viagem_ida: jogador.viagem_ida || "", viagem_volta: jogador.viagem_volta || "" } : {}) }
+    ? { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!jogador[a.campo]])) }
     : { ...(window.__jog || {}), cidade: (window.__jog && window.__jog.cidade) || pref.cidade || "" };
   render();
 }
@@ -8575,83 +8683,6 @@ function jogadorEntaoFaz(acao, motivo) {
   if (jogador) { acao(); return; }
   state.depoisDeEntrar = acao;
   abrirContaJogador("entrar", motivo || "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto.");
-}
-
-// Aviso de viagem por e-mail (pedido do Breno em 04/10/2026): em "Minha
-// conta", junto dos avisos, "Vou viajar". Não fica no cadastro (pedido do
-// Breno no mesmo dia): quem ainda nem conhece o site não pensa em viagem; o
-// convite vem depois, enquanto a pessoa navega (conviteViagem). Marcado, abre
-// estado, cidade (IBGE) e datas (opcionais); o e-mail traz as academias de
-// lá. Não redesenha a tela ao marcar.
-function avisoViagemHtml(f) {
-  const local = lerViagens()[0] || {};
-  const v = {
-    uf: f.viagem_uf !== undefined ? f.viagem_uf : (local.uf || ""),
-    cidade: f.viagem_cidade !== undefined ? f.viagem_cidade : (local.cidade || ""),
-    ida: f.viagem_ida !== undefined ? f.viagem_ida : (local.ida || ""),
-    volta: f.viagem_volta !== undefined ? f.viagem_volta : (local.volta || ""),
-  };
-  window.__jog = { ...(window.__jog || {}), viagem_uf: v.uf, viagem_cidade: v.cidade, viagem_ida: v.ida, viagem_volta: v.volta };
-  const doUf = v.uf ? CIDADES_DO_UF[v.uf] : null;
-  return `
-    <label class="consent-row">
-      <input type="checkbox" class="jog-aviso" data-campo="avisos_viagem" id="jog-aviso-viagem" ${f.avisos_viagem ? "checked" : ""} />
-      <span><strong>Vou viajar:</strong> as academias para jogar na cidade da viagem</span>
-    </label>
-    <div class="jog-viagem" id="jog-viagem" ${f.avisos_viagem ? "" : "hidden"}>
-      <div class="viagem-datas">
-        <div><label class="field-label" for="jog-viagem-uf">Estado</label>
-          <select class="form-field campo-select jog-viagem-campo" data-campo="viagem_uf" id="jog-viagem-uf" style="margin-top:0">
-            <option value="" ${v.uf ? "" : "selected"}>Escolha</option>
-            ${ESTADOS.map(([uf, nome]) => `<option value="${uf}" ${v.uf === uf ? "selected" : ""}>${nome}</option>`).join("")}
-          </select></div>
-        <div><label class="field-label" for="jog-viagem-cidade">Cidade</label>
-          <input class="form-field jog-viagem-campo" data-campo="viagem_cidade" id="jog-viagem-cidade" list="jog-viagem-cidades" autocomplete="off" value="${esc(v.cidade)}" style="margin-top:0" />
-          <datalist id="jog-viagem-cidades">${(doUf || []).map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist></div>
-        <div><label class="field-label" for="jog-viagem-ida">Ida (opcional)</label>
-          <input class="form-field jog-viagem-campo" data-campo="viagem_ida" id="jog-viagem-ida" type="date" min="${diaISO()}" value="${esc(v.ida)}" style="margin-top:0" /></div>
-        <div><label class="field-label" for="jog-viagem-volta">Volta (opcional)</label>
-          <input class="form-field jog-viagem-campo" data-campo="viagem_volta" id="jog-viagem-volta" type="date" min="${diaISO()}" value="${esc(v.volta)}" style="margin-top:0" /></div>
-      </div>
-      <p class="fgroup-note">A viagem também aparece na página inicial.</p>
-    </div>`;
-}
-// Confere a viagem do aviso. Devolve o erro, ou "" e os dados arrumados em f.
-async function conferirAvisoViagem(f) {
-  if (!f.avisos_viagem) return "";
-  if (!f.viagem_uf) return "Escolha o estado da viagem.";
-  const cidade = String(f.viagem_cidade || "").trim().replace(/\s+/g, " ");
-  if (!cidade) return "Digite a cidade da viagem.";
-  if (f.viagem_ida && f.viagem_ida < diaISO()) return "A ida já passou. Confira a data.";
-  if (!f.viagem_ida && f.viagem_volta) return "Informe também a data de ida ou apague a volta.";
-  if (f.viagem_volta && f.viagem_volta < f.viagem_ida) return "A volta precisa ser depois da ida.";
-  const doUf = await carregarCidadesDoUf(f.viagem_uf);
-  if (doUf) {
-    const oficial = doUf.find(n => mesmaCidade(n, cidade));
-    if (!oficial) return `${cidade} não fica em ${nomeDoUf(f.viagem_uf)}. Confira o estado ou escolha uma cidade da lista.`;
-    f.viagem_cidade = oficial;
-  } else f.viagem_cidade = cidade;
-  return "";
-}
-function dadosDoAvisoViagem(f) {
-  const ligado = !!f.avisos_viagem;
-  return {
-    avisos_viagem: ligado,
-    viagem_uf: ligado ? f.viagem_uf : null,
-    viagem_cidade: ligado ? f.viagem_cidade : null,
-    viagem_ida: ligado ? (f.viagem_ida || null) : null,
-    viagem_volta: ligado ? (f.viagem_volta || null) : null,
-  };
-}
-// A viagem do aviso também vira a viagem do aparelho (cartão na home).
-function guardarViagemDoAviso(f) {
-  if (!f.avisos_viagem || !f.viagem_cidade) return;
-  const igual = (v) => mesmaCidade(v.cidade, f.viagem_cidade);
-  const antes = lerViagens().find(igual) || {};
-  const lista = lerViagens().filter(v => !igual(v));
-  const lugar = antes.ficar ? { ficar: antes.ficar, lat: antes.lat, lng: antes.lng } : {};
-  lista.push({ id: antes.id || Date.now(), uf: f.viagem_uf, cidade: f.viagem_cidade, ida: f.viagem_ida || "", volta: f.viagem_volta || "", ...lugar });
-  gravarViagens(lista.slice(-5));
 }
 
 function renderJogadorSheet() {
@@ -8734,9 +8765,9 @@ function renderJogadorSheet() {
     <input class="form-field jog-campo" data-campo="nome" id="jog-nome" autocomplete="name" value="${esc(f.nome || "")}" style="margin-top:0" />
     <p class="footnote" style="margin-top:6px">Aparece nas suas avaliações.</p>
     <label class="field-label" for="jog-senha">Crie uma senha</label>
-    <input class="form-field jog-campo" data-campo="senha" id="jog-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" style="margin-top:0" />
+    <input class="form-field jog-campo" data-campo="senha" id="jog-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha || "")}" style="margin-top:0" />
     <label class="field-label" for="jog-senha2">Repita a senha</label>
-    <input class="form-field jog-campo" data-campo="senha2" id="jog-senha2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" style="margin-top:0" />
+    <input class="form-field jog-campo" data-campo="senha2" id="jog-senha2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc(f.senha2 || "")}" style="margin-top:0" />
     <label class="field-label" for="jog-cidade">Cidade (opcional)</label>
     <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" autocomplete="address-level2" value="${esc(f.cidade || "")}" style="margin-top:0" />
     <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
@@ -8762,7 +8793,6 @@ function renderJogadorSheet() {
     <p class="jog-grupo">Avisos por e-mail</p>
     <p class="footnote" style="margin:0 0 4px">Escolha o que quer receber. Dá para mudar quando quiser.</p>
     ${avisos}
-    ${avisoViagemHtml(f)}
     ${erro}
     <button type="button" class="cta-btn cta-primary" id="jog-salvar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Salvando") || "Salvar"}</button>
     <div class="jog-rodape">
@@ -8929,6 +8959,13 @@ function senhaObvia(senha, email) {
   return false;
 }
 // "" se a senha serve; senão, o que corrigir. confirmacao undefined = sem campo.
+// Senha recusada no cadastro (pedido do Breno em 05/10/2026): a senha
+// digitada continua no campo e só "Repita a senha" é apagada, com o cursor
+// nela — ou na senha, quando é ela que precisa mudar.
+function focarDepoisDaSenha(idSenha, idRepetir, erro) {
+  const alvo = /iguais/.test(erro || "") ? idRepetir : idSenha;
+  setTimeout(() => { const el = document.getElementById(alvo); if (el) el.focus(); }, 0);
+}
 function erroDaSenha(senha, confirmacao, email) {
   const s = String(senha || "");
   if (s.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
@@ -9030,7 +9067,10 @@ async function salvarSenhaNovaJogador() {
   const codigo = document.getElementById("jog-codigo")?.value || "";
   const senha = document.getElementById("jog-senha-nova")?.value || "";
   const errSenha = erroDaSenha(senha, document.getElementById("jog-senha-nova2")?.value || "", email);
-  if (errSenha) { state.jogadorErro = errSenha; render(); return; }
+  if (errSenha) {
+    window.__codigo = { ...(window.__codigo || {}), senha, senha2: "" };
+    state.jogadorErro = errSenha; render(); focarDepoisDaSenha("jog-senha-nova", "jog-senha-nova2", errSenha); return;
+  }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const r = await senhaNovaPeloCodigo(email, codigo, senha);
   state.jogadorSalvando = false;
@@ -9083,7 +9123,9 @@ async function entrarJogador() {
     return;
   }
   registrarPasso("acao", { detalhe: "Entrou na conta de jogador" });
+  trazerViagemDaConta();
   await depoisDeEntrarJogador();
+  ligarPushViagem(PUSH_VIAGEM_ESPERA_S);
 }
 
 async function criarContaJogador() {
@@ -9097,7 +9139,7 @@ async function criarContaJogador() {
   if (!f.aceite) falta.push("o aceite dos Termos");
   if (falta.length) { state.jogadorErro = `Falta ${listaPt(falta)}.`; render(); return; }
   const errSenha = erroDaSenha(f.senha, f.senha2, email);
-  if (errSenha) { state.jogadorErro = errSenha; render(); return; }
+  if (errSenha) { f.senha2 = ""; state.jogadorErro = errSenha; render(); focarDepoisDaSenha("jog-senha", "jog-senha2", errSenha); return; }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const r = await sb.rpc('criar_conta_jogador', {
     p_email: email, p_senha: f.senha, p_nome: String(f.nome).trim(), p_aceite: true,
@@ -9132,18 +9174,15 @@ async function criarContaJogador() {
 async function salvarContaJogador() {
   const f = window.__jog || {};
   if (String(f.nome || "").trim().length < 3) { state.jogadorErro = "Escreva o seu nome."; render(); return; }
-  const errViagem = await conferirAvisoViagem(f);
-  if (errViagem) { state.jogadorErro = errViagem; render(); return; }
-  const mudou = AVISOS_JOGADOR.some(a => !!f[a.campo] !== !!jogador[a.campo]) || !!f.avisos_viagem !== !!jogador.avisos_viagem;
+  const mudou = AVISOS_JOGADOR.some(a => !!f[a.campo] !== !!jogador[a.campo]);
   const dados = { nome: String(f.nome).trim(), cidade: String(f.cidade || "").trim() || null,
-    ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!f[a.campo]])), ...dadosDoAvisoViagem(f) };
+    ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!f[a.campo]])) };
   if (mudou) dados.avisos_mudados_em = new Date().toISOString();
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const { error } = await sb.from('jogadores').update(dados).eq('user_id', jogador.user_id);
   state.jogadorSalvando = false;
   if (error) { state.jogadorErro = "Não consegui salvar agora. Tente de novo em instantes."; render(); return; }
   Object.assign(jogador, dados);
-  guardarViagemDoAviso(f);
   registrarPasso("acao", { detalhe: "Salvou o perfil" });
   state.jogadorAviso = "Salvo.";
   render();
@@ -9224,8 +9263,7 @@ function renderPararAvisos() {
 // tudo o que é da pessoa — as quadras dela, o que falta avaliar, os dados,
 // os avisos por e-mail e o login. Endereço próprio: /perfil.
 function formDoJogador() {
-  return { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!jogador[a.campo]])),
-    avisos_viagem: !!jogador.avisos_viagem, ...(jogador.avisos_viagem ? { viagem_uf: jogador.viagem_uf || "", viagem_cidade: jogador.viagem_cidade || "", viagem_ida: jogador.viagem_ida || "", viagem_volta: jogador.viagem_volta || "" } : {}) };
+  return { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(AVISOS_JOGADOR.map(a => [a.campo, !!jogador[a.campo]])) };
 }
 function irPerfil(ancora) {
   if (!jogador) {
@@ -9314,9 +9352,8 @@ function renderPerfilJogador() {
           <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" value="${esc(f.cidade || "")}" style="margin-top:0" />
           <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
           <h2 id="perfil-avisos" style="margin-top:24px">Avisos por e-mail</h2>
-          <p>Escolha o que quer receber. Dá para mudar quando quiser.${buscasSalvas.length ? " Cada busca salva tem o próprio aviso, em Buscas salvas." : ""}</p>
+          <p>Escolha o que quer receber. Dá para mudar quando quiser.${buscasSalvas.length ? " Cada busca salva tem o próprio aviso, em Buscas salvas." : ""} O aviso da viagem fica em Vou viajar, junto da viagem.</p>
           ${avisos}
-          ${avisoViagemHtml(f)}
           ${state.jogadorErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.jogadorErro)}</div>` : ""}
           <button type="button" class="cta-btn cta-primary" id="jog-salvar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${state.jogadorSalvando ? bolaGirando(16) + " Salvando" : "Salvar"}</button>
         </section>
@@ -9388,7 +9425,7 @@ function pushAvaliarHtml() {
 // nada na frente (janela aberta, campo sendo digitado, o balão da conta).
 function ligarPedidoDeAvaliacao() {
   const podeMostrar = () => !isAdmin && !(contaAcademia && !jogador) && ["home", "search", "court", "perfil", "comparar"].includes(state.page)
-    && state.pushConta == null && !document.querySelector(".overlay.open, .drawer-overlay.open")
+    && state.pushConta == null && !state.pushViagem && !document.querySelector(".overlay.open, .drawer-overlay.open")
     && !(document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
   const tentar = (vez) => {
     // Uma academia por visita.
@@ -9506,36 +9543,7 @@ function ligarEventosJogador() {
     el.oninput = (e) => { window.__jog = { ...(window.__jog || {}), [el.dataset.campo]: e.target.value }; };
   });
   document.querySelectorAll(".jog-aviso").forEach(el => {
-    el.onchange = (e) => {
-      window.__jog = { ...(window.__jog || {}), [el.dataset.campo]: e.target.checked };
-      if (el.dataset.campo === "avisos_viagem") {
-        const bloco = document.getElementById("jog-viagem");
-        if (bloco) bloco.hidden = !e.target.checked;
-        if (e.target.checked && window.__jog.viagem_uf) carregarCidadesDoUf(window.__jog.viagem_uf).then(encherCidadesDaViagem);
-      }
-    };
-  });
-  const encherCidadesDaViagem = (lista) => {
-    const dl = document.getElementById("jog-viagem-cidades");
-    if (dl && lista) dl.innerHTML = lista.map(n => `<option value="${esc(n)}"></option>`).join("");
-  };
-  document.querySelectorAll(".jog-viagem-campo").forEach(el => {
-    const guardar = (e) => { window.__jog = { ...(window.__jog || {}), [el.dataset.campo]: e.target.value }; };
-    el.oninput = guardar;
-    el.onchange = (e) => {
-      guardar(e);
-      if (el.dataset.campo === "viagem_uf") {
-        const cidade = document.getElementById("jog-viagem-cidade");
-        carregarCidadesDoUf(e.target.value).then(lista => {
-          encherCidadesDaViagem(lista);
-          // Cidade de outro estado sai, como nas preferências.
-          if (lista && cidade && cidade.value && !lista.some(n => mesmaCidade(n, cidade.value))) {
-            cidade.value = ""; window.__jog = { ...(window.__jog || {}), viagem_cidade: "" };
-          }
-        });
-      }
-      if (el.dataset.campo === "viagem_ida") { const volta = document.getElementById("jog-viagem-volta"); if (volta) volta.min = e.target.value || diaISO(); }
-    };
+    el.onchange = (e) => { window.__jog = { ...(window.__jog || {}), [el.dataset.campo]: e.target.checked }; };
   });
   const aceite = document.getElementById("jog-aceite");
   if (aceite) aceite.onchange = (e) => { window.__jog = { ...(window.__jog || {}), aceite: e.target.checked }; };
@@ -14796,6 +14804,14 @@ function attachEvents() {
   });
   const viagemSalvar = document.getElementById("viagem-salvar");
   if (viagemSalvar) viagemSalvar.onclick = () => salvarViagem();
+  const viagemAviso = document.getElementById("viagem-aviso");
+  if (viagemAviso) viagemAviso.onchange = (e) => { window.__viagem = { ...(window.__viagem || {}), aviso: e.target.checked }; };
+  const pushViagemSim = document.getElementById("push-viagem-sim");
+  if (pushViagemSim) pushViagemSim.onclick = () => { state.pushViagem = false; abrirViagem(); };
+  ["push-viagem-depois", "push-viagem-x"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.onclick = () => { state.pushViagem = false; render(); };
+  });
   document.querySelectorAll("[data-viagem-apagar]").forEach(el => { el.onclick = () => apagarViagem(el.dataset.viagemApagar); });
   const viagemFicar = document.getElementById("viagem-ficar");
   if (viagemFicar) viagemFicar.oninput = (e) => { window.__viagem = { ...(window.__viagem || {}), ficar: e.target.value }; };
@@ -15708,6 +15724,10 @@ async function init() {
   ligarTempoNoSite();
   ligarPushesDaConta();
   ligarPedidoDeAvaliacao();
+  trazerViagemDaConta();
+  // Já logado ao abrir: o balão da viagem só se o "Jogou aqui?" não tiver
+  // nada para perguntar (um balão por visita).
+  if (jogador && !academiasParaAvaliar().length) ligarPushViagem(PUSH_VIAGEM_ESPERA_S + 3);
   ligarSaidaDoPercurso();
 }
 

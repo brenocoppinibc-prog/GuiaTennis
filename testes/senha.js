@@ -33,9 +33,14 @@ const { abrir, ok } = require('./harness');
   await page.fill('#jog-senha', 'liana2026x'); await page.fill('#jog-senha2', 'liana2026x');
   await page.click('#jog-criar'); await page.waitForTimeout(200);
   ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('fácil de adivinhar'), 'senha com o próprio e-mail não passa');
+  // Senha recusada (05/10/2026): a senha fica e só a repetição é apagada.
+  t = await page.evaluate(() => ({ senha: document.getElementById('jog-senha').value, repetir: document.getElementById('jog-senha2').value, foco: document.activeElement && document.activeElement.id }));
+  ok(t.senha === 'liana2026x' && t.repetir === '' && t.foco === 'jog-senha', 'senha recusada: a senha continua, só a repetição é apagada, e o cursor vai para a senha — ' + JSON.stringify(t));
   await page.fill('#jog-senha', 'quadra de saibro'); await page.fill('#jog-senha2', 'quadra de sabro');
   await page.click('#jog-criar'); await page.waitForTimeout(200);
   ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('não estão iguais'), 'senhas diferentes: avisa');
+  t = await page.evaluate(() => ({ senha: document.getElementById('jog-senha').value, repetir: document.getElementById('jog-senha2').value, foco: document.activeElement && document.activeElement.id }));
+  ok(t.senha === 'quadra de saibro' && t.repetir === '' && t.foco === 'jog-senha2', 'senhas diferentes: apaga só a repetição, com o cursor nela');
   await page.fill('#jog-senha2', 'quadra de saibro');
   await page.click('#jog-criar'); await page.waitForTimeout(600);
   ok(await page.evaluate(() => jogador && jogador.nome === 'Lia Tenista'), 'senhas iguais e boas: a conta é criada');
@@ -46,6 +51,20 @@ const { abrir, ok } = require('./harness');
   await page.click('#jog-confirmar');
   await page.waitForTimeout(500);
   ok(await page.evaluate(() => !document.querySelector('#jogador-overlay .form-error') && window.__rpcs.some(r => r.nome === 'confirmar_meu_email')), 'código de 8 números (até com espaço) confirma o e-mail');
+  await browser.close();
+
+  // Cadastro do GuiaTennis Parceiros: senhas diferentes apagam só a repetição.
+  ({ browser, page } = await abrir({ q: 'parceiros/cadastro' }));
+  await page.fill('#pc-email', 'nova@quadra.com.br');
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { Object.assign(window.__pcConta = window.__pcConta || {}, { tratamento: 'Sra.', nome: 'Rita', sobrenome: 'Dona', cargo: 'Dono(a)', whatsapp: '11988887777', aceite: true }); render(); });
+  await page.fill('#pc-conta-senha', 'saibro coberto 2026');
+  await page.fill('#pc-conta-senha2', 'saibro coberto 2025');
+  await page.evaluate(() => criarContaDeParceiro());
+  await page.waitForTimeout(250);
+  t = await page.evaluate(() => ({ erro: state.pcContaErro, senha: document.getElementById('pc-conta-senha').value, repetir: document.getElementById('pc-conta-senha2').value }));
+  ok(t.erro.includes('não estão iguais') && t.senha === 'saibro coberto 2026' && t.repetir === '', 'Parceiros: senhas diferentes apagam só a repetição — ' + JSON.stringify(t));
   await browser.close();
 
   // Login (senha de entrar): olhinho, sem confirmação nem força.

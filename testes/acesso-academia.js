@@ -127,8 +127,8 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   await page.waitForTimeout(200);
   const semApagar = await page.evaluate(() => document.querySelectorAll('#parceiros .delete-review-btn').length);
   ok(semApagar === 0, 'academia não tem botão de apagar avaliação');
-  const analise = await page.evaluate(() => document.querySelector('#parceiros .rev-resp-links a')?.getAttribute('href') || '');
-  ok(decodeURIComponent(analise).includes('peço a análise de uma avaliação') && decodeURIComponent(analise).includes('Carla'), 'pedir análise abre o WhatsApp do guia com a avaliação');
+  const analise = await page.evaluate(() => ({ href: document.querySelector('#parceiros .ht-rev-top .rev-analise')?.getAttribute('href') || '', naResposta: !!document.querySelector('#parceiros .rev-resp-links a[href*="wa.me"]') }));
+  ok(decodeURIComponent(analise.href).includes('peço a análise de uma avaliação') && decodeURIComponent(analise.href).includes('Carla') && !analise.naResposta, '"Pedir análise" fica na própria avaliação (não na resposta) e abre o WhatsApp do guia com ela');
   await page.click('#parceiros [data-responder="r1"]');
   await page.fill('#resposta-texto', 'Obrigado, Carla! Estamos reformando o vestiário.');
   await page.click('#resposta-publicar');
@@ -189,7 +189,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(!ficha.basica, 'depois de salvar pela academia, some o aviso de ficha básica');
   ok(ficha.resposta.includes('Resposta da academia') && ficha.resposta.includes('reformando o vestiário'), 'resposta aparece na ficha');
   ok(!ficha.responsavel, 'na ficha dela, a academia não vê "É o responsável?"');
-  ok(ficha.banner.includes('Quadra Locação'), 'no site dos jogadores, a faixa lembra que está logada');
+  ok(!ficha.banner, 'no site dos jogadores, sem a faixa "Área da academia" no topo (05/10/2026)');
   await vigiarAbas(page);
   await page.click('.dono-box [data-abrir-conta]');
   await page.waitForTimeout(300);
@@ -216,13 +216,15 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
     pagina: state.page,
     cliques: window.__cliques.length,
   }));
-  ok(inicio.banner.includes('Área da academia') && inicio.banner.includes('Quadra Locação') && inicio.pagina === 'home', 'volta logada: faixa da área da academia, sem abrir nada por cima');
+  ok(!inicio.banner && inicio.pagina === 'home', 'volta logada: o site dos jogadores fica limpo, sem faixa nem nada por cima');
   ok(inicio.cliques === 0, 'acesso da academia logada não conta');
   await vigiarAbas(page);
-  await page.click('.conta-banner [data-abrir-conta]');
+  await page.evaluate(() => { state.showMenu = true; render(); });
+  ok((await page.evaluate(() => document.querySelector('#menu-overlay .menu-item')?.innerText || '')).includes('Painel da minha academia'), 'o menu começa por "Painel da minha academia"');
+  await page.click('#menu-overlay [data-menu="conta"]');
   await page.waitForTimeout(300);
   const abaDaFaixa = (await abasAbertas(page))[0] || {};
-  ok(abaDaFaixa.url === 'http://guia.test/parceiros/painel' && abaDaFaixa.nome === 'guiatennis-parceiros', 'faixa abre o painel do GuiaTennis Parceiros, na aba dele');
+  ok(abaDaFaixa.url === 'http://guia.test/parceiros/painel' && abaDaFaixa.nome === 'guiatennis-parceiros', 'o menu abre o painel do GuiaTennis Parceiros, na aba dele');
   await page.goto(abaDaFaixa.url);
   await page.waitForTimeout(700);
   ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-trancado')), 'lá, o painel (Básico: números trancados)');

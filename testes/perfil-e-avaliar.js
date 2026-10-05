@@ -131,6 +131,33 @@ const HORA = 36e5;
   ok(await page.evaluate(() => !jogador.email_confirmado_em && document.getElementById('conta-topo').className.includes('confirmar')), 'jogador sem o e-mail confirmado: a inicial também ganha o "!"');
   await browser.close();
 
+  // ---- a academia pausa a própria ficha, uma por vez (05/10/2026) ----
+  ({ browser, page } = await abrir({ academia: 'a2', outrasAcademias: ['a1'], q: 'parceiros/academias' }));
+  await page.click('[data-pausar-academia="a1"]');
+  await page.waitForTimeout(150);
+  ok(await page.isVisible('[data-pausar-dias="7"]') && await page.isVisible('[data-pausar-dias="0"]'), '"Pausar no site" pergunta por quanto tempo (7, 15, 30 dias ou até voltar)');
+  await page.click('[data-pausar-dias="7"]');
+  await page.waitForTimeout(500);
+  t = await page.evaluate(() => ({
+    a1: window.__db.academias.find(x => x.id === 'a1'), a2: window.__db.academias.find(x => x.id === 'a2'),
+    aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '',
+    cartao: [...document.querySelectorAll('.pc-acad')].map(c => c.innerText.replace(/\s+/g, ' ')).find(c => c.includes('Só Aula Tennis')) || '',
+  }));
+  const dias = t.a1.pausada_ate ? Math.round((new Date(t.a1.pausada_ate) - new Date()) / 864e5) : 0;
+  ok(t.a1.pausada && t.a1.pausada_pela_academia && dias >= 6 && dias <= 7 && !t.a2.pausada, 'pausa só a Só Aula Tennis, por 7 dias; a outra continua no ar');
+  ok(t.aviso.includes('Só Aula Tennis não aparece na busca até') && t.cartao.includes('Pausada até') && t.cartao.includes('Voltar a aparecer no site'), 'o cartão mostra até quando e o "Voltar a aparecer"');
+  await page.click('[data-voltar-academia="a1"]');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => !window.__db.academias.find(x => x.id === 'a1').pausada && document.querySelector('#parceiros .conta-aviso')?.innerText.includes('voltou a aparecer')), '"Voltar a aparecer no site" traz a ficha de volta');
+  // Pausa feita pelo GuiaTennis: a academia não desfaz.
+  await page.evaluate(async () => { Object.assign(window.__db.academias.find(x => x.id === 'a2'), { pausada: true, pausada_ate: null, pausada_pela_academia: false }); await recarregarConta(); render(); });
+  t = await page.evaluate(() => [...document.querySelectorAll('.pc-acad')].map(c => c.innerText.replace(/\s+/g, ' ')).find(c => c.includes('Quadra Locação')) || '');
+  ok(t.includes('Pausada pelo GuiaTennis') && t.includes('Fale com a gente') && !t.includes('Voltar a aparecer'), 'pausa do GuiaTennis: a academia vê, mas não desfaz');
+  await browser.close();
+  ({ browser, page } = await abrir({ q: 'parceiros/ajuda' }));
+  ok(await page.evaluate(() => document.getElementById('parceiros').textContent.includes('Pausar no site') && TERMS_HTML.includes('pode pausar a ficha dela')), 'Ajuda e Termos dizem que a academia pausa a própria ficha');
+  await browser.close();
+
   // ---- sem dizer como o GuiaTennis confere ----
   ({ browser, page } = await abrir({ q: 'parceiros/ajuda' }));
   t = await page.evaluate(() => [document.querySelector('#parceiros')?.innerText || '', TERMS_HTML].join(' '));

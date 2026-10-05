@@ -152,6 +152,14 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.waitForTimeout(400);
   let rede = await page.evaluate(() => window.__db.academia_vinculos.filter(v => v.user_id === 'u-rede').map(v => v.academia_id).join(','));
   ok(rede === 'a2,a1', 'aprovar soma a academia à conta, sem tirar a outra');
+  // Acessos do admin: uma academia por cartão, com as pessoas juntas (05/10/2026).
+  await page.evaluate(async () => {
+    window.__db.academia_acessos.push({ user_id: 'u-eva', academia_id: 'a2', usuario: 'eva@exemplo.com', nome_responsavel: 'Eva Equipe', email: 'eva@exemplo.com', papel: 'equipe', dados_completos_em: '2026-10-01', senha_trocada_em: '2026-10-01' });
+    window.__db.academia_vinculos.push({ user_id: 'u-eva', academia_id: 'a2', papel: 'equipe' });
+    await carregarAcessos(); render();
+  });
+  const cartoesAcesso = await page.evaluate(() => [...document.querySelectorAll('#admin-overlay .acesso-item')].map(b => b.innerText.replace(/\s+/g, ' ').trim()));
+  ok(cartoesAcesso.length === 2 && cartoesAcesso.some(c => c.startsWith('Quadra Locação') && c.includes('2 pessoas') && c.includes('Rita Rede · responsável') && c.includes('Eva Equipe · equipe')) && cartoesAcesso.some(c => c.startsWith('Só Aula Tennis') && c.includes('1 pessoa')), 'acessos do admin: uma academia por cartão, com as pessoas juntas — ' + cartoesAcesso.join(' / ').slice(0, 180));
   // Remover o acesso na ficha da Quadra Locação tira a conta só dela.
   await page.evaluate(() => { state.showAdminPanel = false; render(); });
   await abrirFicha(page, 'a2');

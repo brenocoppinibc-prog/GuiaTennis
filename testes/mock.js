@@ -25,6 +25,7 @@
     // Pedidos de plano (SQL 20261003130000): um por academia.
     pedidos_de_plano: [],
     pedidos_de_acesso: [],
+    passos_das_visitas: [],
     respostas: JSON.parse(JSON.stringify(window.__respostasIniciais || [])),
     // Conta do jogador (SQL 20261002130000). window.__jogador abre o site
     // já logado como "Ana Jogadora".
@@ -123,6 +124,7 @@
     const q = {
       select(c){ if (c) colunas = c; return q; }, order(){ return q; }, limit(){ return q; },
       eq(k,v){ filtros.push([k,v]); return q; },
+      gte(k,v){ filtros.push([k,v,"gte"]); return q; },
       single(){ single = true; return q; },
       insert(p){ op="insert"; payload=p; return q; },
       update(p){ op="update"; payload=p; return q; },
@@ -132,7 +134,9 @@
     function run(){
       const t = db[table];
       if (!t || (window.__semAcesso && (table === "academia_acessos" || table === "respostas"))) return { data:null, error:{ message:"relation does not exist" } };
-      const pass = r => filtros.every(([k,v]) => r[k] === v);
+      const pass = r => filtros.every(([k,v,op]) => op === "gte" ? String(r[k]) >= String(v) : r[k] === v);
+      // Banco sem a tabela do percurso (SQL 20261005140000).
+      if (table === "passos_das_visitas" && window.__semPercurso) return { data:null, error:{ message:'relation "public.passos_das_visitas" does not exist' } };
       if (op === "insert") {
         if (table === "cliques" && window.__semDetalhe && "detalhe" in payload) return { data:null, error:{ message:"column detalhe does not exist" } };
         if (table === "cliques" && window.__semCep && "cep" in payload) return { data:null, error:{ message:"column cep does not exist" } };
@@ -287,12 +291,26 @@
         return { academia_id: p.academia_id, nome: ac.name, status: ac.status, plano_atual: ac.plano || "basico", plano: p.plano, onde: p.onde, created_at: p.created_at, pessoa: x.nome_responsavel || null, email: x.email || x.usuario || null, whatsapp: x.whatsapp || null };
       }), error:null };
     }
+    // A academia pausa a própria ficha (SQL 20261005130000).
+    if (nome === "pausar_minha_academia") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      if (ac.status !== "published") return erro("A academia ainda está em análise: ela só aparece no site depois que o GuiaTennis publicar.", "22023");
+      if (a.p_pausar && a.p_ate && new Date(a.p_ate) <= new Date()) return erro("Escolha uma data depois de hoje.", "22023");
+      if (!a.p_pausar && ac.pausada && !ac.pausada_pela_academia && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date())) return erro("Essa academia foi pausada pelo GuiaTennis. Fale com a gente para ela voltar a aparecer.", "42501");
+      Object.assign(ac, { pausada: !!a.p_pausar, pausada_ate: a.p_pausar ? (a.p_ate || null) : null, pausada_pela_academia: !!a.p_pausar });
+      return { data:null, error:null };
+    }
     if (nome === "academias_da_minha_conta") {
       const x = meuAcesso();
       if (!x) return { data:[], error:null };
       const lista = vinculosDe(x.user_id).map(v => {
         const ac = db.academias.find(y => y.id === v.academia_id) || {};
-        return { academia_id: v.academia_id, nome: ac.name, papel: v.papel, status: ac.status, pausada: !!ac.pausada, plano: ac.plano || "basico", bairro: ac.bairro, cidade: ac.cidade, aberta: v.academia_id === x.academia_id };
+        const pausada = !!ac.pausada && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date());
+        return { academia_id: v.academia_id, nome: ac.name, papel: v.papel, status: ac.status, pausada, plano: ac.plano || "basico", bairro: ac.bairro, cidade: ac.cidade, aberta: v.academia_id === x.academia_id,
+          pausada_ate: ac.pausada_ate || null, pausada_pela_academia: !!ac.pausada_pela_academia };
       }).sort((p, q) => String(p.nome).localeCompare(String(q.nome)));
       return { data: lista, error:null };
     }

@@ -50,8 +50,6 @@
   .ficha-dono { margin-top: 14px; }
   .ficha-dono .inline-link { font-size: inherit; font-weight: 700; }
   /* Área da academia */
-  .conta-banner { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 10px; background: var(--green-light); color: #fff; font-size: 12px; font-weight: 600; padding: 6px 12px; }
-  .conta-banner button { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; font-size: 12px; font-family: inherit; padding: 0; }
   .conta-rotulo { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
   .conta-situacao { display: flex; gap: 7px; align-items: flex-start; margin: 12px 0 0; padding: 9px 11px; background: var(--bg-alt); border-radius: 10px; font-size: 13px; color: var(--muted); line-height: 1.4; }
   .conta-situacao.ok { background: var(--green-soft); color: var(--green); }
@@ -1051,6 +1049,9 @@
   @media (min-width: 720px) { .ht-revs { grid-template-columns: 1fr 1fr; } }
   .ht-rev { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 14px; display: flex; flex-direction: column; }
   .ht-rev-top { display: flex; align-items: center; gap: 8px; }
+  .acesso-qtas { font-family: Inter, sans-serif; font-size: 13px; color: var(--muted); font-weight: 400; }
+  .acesso-pessoa { display: block; margin-top: 6px; }
+  .rev-analise { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); text-decoration: underline; white-space: nowrap; }
   .ht-rev-badge { background: var(--green); color: #fff; border-radius: 8px 8px 8px 2px; font-size: 13px; font-weight: 700; padding: 4px 8px; line-height: 1; }
   .ht-rev-word { font-size: 13px; font-weight: 700; }
   .ht-rev-top .delete-review-btn { margin-left: auto; }
@@ -1797,6 +1798,25 @@
   .pc-acad-dados { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
   .pc-acad-dados small { display: block; color: var(--muted); font-size: 12px; }
   .pc-acad-dados strong { font-size: 14px; }
+  /* Percurso das visitas (admin, 05/10/2026) */
+  .perc-funil { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .perc-funil-i { position: relative; display: grid; grid-template-columns: 1fr auto 44px; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); overflow: hidden; font-size: 14px; }
+  .perc-funil-i i { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--green); }
+  .perc-funil-i small { color: var(--muted); text-align: right; }
+  .perc-visitas { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .perc-visita { border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+  .perc-visita.aberta { border-color: var(--green); }
+  .perc-cab { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 10px 12px; border: 0; background: none; text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+  .perc-quando { font-weight: 700; font-size: 14px; }
+  .perc-resumo { font-size: 13px; color: var(--muted); }
+  .perc-resultado { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .perc-resultado.ok { color: var(--green); }
+  .perc-linha { list-style: none; margin: 0; padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .perc-linha li { display: grid; grid-template-columns: 52px 1fr; gap: 8px; font-size: 14px; line-height: 1.4; }
+  .perc-linha small { color: var(--muted); }
+  .perc-t { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+  .pc-pausa { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .pc-pausa .chip-row { margin-top: 8px; }
 
   /* Pedido de avaliação (05/10/2026): o balão "Jogou aqui?", com estrelas. */
   .push-conta.push-avaliar { top: auto; bottom: 18px; left: 12px; right: 12px; margin: 0 auto; max-width: 380px; cursor: default; border-color: #F2D27A; }
@@ -2516,6 +2536,7 @@ function mapRow(row) {
     horario: row.horario || {},
     pausada: !!row.pausada,
     pausadaAte: row.pausada_ate,
+    pausadaPelaAcademia: !!row.pausada_pela_academia,
     // Ficha básica: listada com dados públicos, ainda não confirmada pela
     // academia. Banco sem a coluna conta como confirmada.
     confirmada: row.confirmada !== false,
@@ -2582,11 +2603,11 @@ async function carregarEstatisticasPublicas() {
 
 // O visitante só lê as colunas públicas. Quem pediu o cadastro e o WhatsApp
 // de quem avaliou ficam fechados no banco (SQL-SEGURANCA.sql) e só o admin vê.
-const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, confirmada, created_at";
+const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, created_at";
 // Colunas que chegam ao banco pelo SQL automático. Na publicação, o site
 // pode ir para o ar um pouco antes do SQL: aí lê sem elas, em vez de cair
 // no "*", que o visitante não pode ler.
-const COLUNAS_ACADEMIA_NOVAS = ["confirmada"];
+const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia"];
 const COLUNAS_AVALIACAO_PUBLICAS = "id, academia_id, stars, comment, nome_autor, created_at";
 
 // Enquanto o banco não tiver alguma dessas colunas, a lista falha; aí lê
@@ -2751,6 +2772,7 @@ function toggleCompare(courtId) {
     return { ok: false, msg: `Você pode comparar até ${COMPARE_MAX} academias por vez.` };
   }
   setCompareList([...state.compareList, courtId]);
+  registrarPasso("acao", { academia: courtId, detalhe: `Pôs na comparação · ${nomeDaAcademiaDoPasso(courtId)}` });
   return { ok: true };
 }
 function compareCourts() {
@@ -2782,6 +2804,7 @@ function toggleFavorite(courtId) {
   const favs = loadFavorites();
   const next = favs.includes(courtId) ? favs.filter(id => id !== courtId) : [...favs, courtId];
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+  registrarPasso("acao", { academia: courtId, detalhe: `${favs.includes(courtId) ? "Tirou das favoritas" : "Favoritou"} · ${nomeDaAcademiaDoPasso(courtId)}` });
 }
 
 // Modo diagnóstico: abrir o site com ?diagnostico mostra na tela cada passo
@@ -2842,6 +2865,8 @@ function trackClick(courtId, type, detalhe, extras) {
   // A academia chamada fica na lista do próprio aparelho ("Academias que você
   // chamou"), mesmo com o admin conectado: isso não vai para o banco.
   if (courtId && TIPOS_DE_CONTATO.includes(type)) lembrarChamada(courtId, type);
+  if (courtId && TIPOS_DE_CONTATO.includes(type)) registrarPasso("contato", { academia: courtId, detalhe: `${NOME_DO_CONTATO[type] || type} · ${nomeDaAcademiaDoPasso(courtId)}` });
+  if (courtId && type === "compartilhar") registrarPasso("acao", { academia: courtId, detalhe: `Compartilhou a ficha · ${nomeDaAcademiaDoPasso(courtId)}` });
   // Quem está logado não entra na conta: nem acesso, nem busca, nem clique
   // na ficha — o admin testando e a academia olhando a própria ficha.
   if (naoConta()) return;
@@ -2934,7 +2959,167 @@ function registrarBusca(geo, cep) {
     ...state.ultimaBusca,
     dispositivo: dispositivoDoAcesso(),
   });
+  const filtros = activeFilterCount();
+  registrarPasso("busca", { detalhe: `${regiao || "região não identificada"}${filtros ? ` · ${filtros} ${filtros === 1 ? "filtro" : "filtros"}` : ""}` });
 }
+
+// ---------- percurso da visita (pedido do Breno em 05/10/2026) ----------
+// Como a "exploração de caminho" e o "funil" do Google Analytics: cada passo
+// da visita — chegada, telas, buscas, fichas, contatos, ações e as etapas
+// do cadastro do GuiaTennis Parceiros — vai para passos_das_visitas, com o
+// tempo desde a chegada, de onde a pessoa veio, por qual meio e o aparelho.
+// A visita é um número sorteado que vale só para ela (some ao fechar a aba
+// ou depois de 30 minutos parada): não identifica a pessoa nem o aparelho.
+// Da busca vai a região, nunca o endereço digitado; da tela, o caminho do
+// link sem o "?". O admin não grava; a conta de academia só grava no
+// GuiaTennis Parceiros. Banco sem a tabela: para de mandar, sem erro.
+const VISITA_KEY = "guiatennis_visita_v1";
+const VISITA_PARADA_MIN = 30;
+let semPercurso = false;
+function visitaAtual() {
+  let v = null;
+  try { v = JSON.parse(sessionStorage.getItem(VISITA_KEY) || "null"); } catch {}
+  const agora = Date.now();
+  if (!v || !v.id || agora - (v.ultimo || 0) > VISITA_PARADA_MIN * 60000) {
+    let id = "";
+    try { id = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => (b % 36).toString(36)).join(""); }
+    catch { id = (Math.random().toString(36) + Math.random().toString(36)).replace(/[^a-z0-9]/g, "").slice(0, 16); }
+    v = { id, inicio: agora, ultimo: agora, ordem: 0, origem: origemDoAcesso(), meio: meioDoAcesso() };
+  }
+  return v;
+}
+function guardarVisita(v) {
+  try { sessionStorage.setItem(VISITA_KEY, JSON.stringify(v)); } catch {}
+}
+// Por qual meio: o utm_medium do link, a parte de depois do traço da
+// etiqueta (Instagram-bio → bio), o navegador do app ou o site anterior.
+function meioDoAcesso() {
+  if (window.__meioAcesso !== undefined) return window.__meioAcesso;
+  window.__meioAcesso = (() => {
+    try {
+      const q = new URLSearchParams(location.search);
+      const med = q.get("utm_medium");
+      if (med) return med.slice(0, 40);
+      const src = q.get("utm_source") || "";
+      if (src === "Compartilhado") return "link compartilhado";
+      if (src.includes("-")) return src.split("-").slice(1).join(" ").slice(0, 40);
+      if (src) return "link com etiqueta";
+      const ua = navigator.userAgent || "";
+      if (/Instagram/i.test(ua)) return "navegador do Instagram";
+      if (/FBAN|FBAV/i.test(ua)) return "navegador do Facebook";
+      const ref = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, "") : "";
+      if (!ref) return "digitou o endereço ou favorito";
+      if (ref === location.hostname.replace(/^www\./, "")) return "navegando no próprio site";
+      if (/google\./.test(ref)) return "busca do Google";
+      if (/bing\./.test(ref)) return "busca do Bing";
+      return "link em outro site";
+    } catch { return ""; }
+  })();
+  return window.__meioAcesso;
+}
+function nomeDaAcademiaDoPasso(id) {
+  const c = todasAsFichas().find(x => x.id === id);
+  return c ? c.name : "";
+}
+function registrarPasso(tipo, dados = {}) {
+  if (semPercurso || isAdmin) return;
+  const site = dados.site || (state.page === "parceiros" ? "parceiros" : "jogadores");
+  if (contaAcademia && site === "jogadores") return;
+  const v = visitaAtual();
+  if (tipo === "saida" && v.ultimoTipo === "saida") return;
+  v.ordem = (v.ordem || 0) + 1;
+  v.ultimo = Date.now();
+  v.ultimoTipo = tipo;
+  guardarVisita(v);
+  const linha = {
+    visita: v.id, site, ordem: Math.min(v.ordem, 1000), tipo,
+    tela: String(dados.tela || location.pathname || "/").slice(0, 120),
+    detalhe: dados.detalhe ? String(dados.detalhe).slice(0, 160) : null,
+    academia_id: dados.academia || null,
+    origem: String(v.origem || "").slice(0, 60) || null,
+    meio: String(v.meio || "").slice(0, 60) || null,
+    dispositivo: dispositivoDoAcesso(),
+    segundos: Math.min(86400, Math.max(0, Math.round((Date.now() - v.inicio) / 1000))),
+  };
+  // Saindo da página: o navegador pode cortar o pedido normal; vai com
+  // keepalive, direto na API do banco.
+  if (tipo === "saida") {
+    try {
+      fetch(`${SUPABASE_URL}/rest/v1/passos_das_visitas`, { method: "POST", keepalive: true,
+        headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify(linha) }).catch(() => {});
+    } catch {}
+    return;
+  }
+  sb.from('passos_das_visitas').insert(linha).then(({ error }) => {
+    if (!error) { diag(`passo do percurso: ${tipo} · ${linha.detalhe || linha.tela}`); return; }
+    diag(`o banco recusou o passo do percurso: ${error.message}`);
+    if (/does not exist|could not find|schema cache/i.test(error.message || "")) semPercurso = true;
+  }, () => {});
+}
+// A tela de agora (e a janela por cima dela, se houver), para anotar só
+// quando muda.
+function telaDoPercurso() {
+  let base;
+  if (state.page === "parceiros") {
+    const aba = state.parceirosAba || "inicio";
+    const nomes = { inicio: "Apresentação", planos: "Planos", ajuda: "Ajuda", cadastro: "Cadastro", entrar: "Entrar", painel: "Painel",
+      desempenho: "Desempenho", avaliacoes: "Avaliações", ficha: "Minha ficha", pessoas: "Pessoas", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
+    let texto = nomes[aba] || aba;
+    if ((aba === "cadastro" || aba === "entrar") && !contaAcademia) {
+      const passo = state.pcEmailPasso || "email";
+      texto = { email: "Cadastro: o e-mail", existe: "Entrar: a senha", criar: "Cadastro: dados de contato", esqueci: "Esqueci a senha" }[passo] || texto;
+    } else if (aba === "cadastro" && contaAcademia) {
+      texto = !temAcademia() && meusPedidos().length && !state.pcAdicionando ? "Pedidos em andamento" : "Cadastro: escolher a academia";
+    }
+    base = { chave: "pc:" + texto, tipo: "tela", detalhe: "Parceiros · " + texto };
+  } else if (state.page === "court" && state.selected) {
+    base = { chave: "ficha:" + state.selected.id, tipo: "ficha", detalhe: state.selected.name, academia: state.selected.id };
+  } else if (state.page === "search") {
+    base = { chave: "busca", tipo: "tela", detalhe: "Lista da busca" + (state.view === "map" ? " (mapa)" : "") };
+  } else if (state.page === "comparar") {
+    base = { chave: "comparar", tipo: "tela", detalhe: `Comparação de ${state.compareList.length} academias` };
+  } else if (state.page === "perfil") {
+    base = { chave: "perfil", tipo: "tela", detalhe: "Perfil da conta" };
+  } else {
+    base = { chave: "home", tipo: "tela", detalhe: "Página inicial" };
+  }
+  let janela = null;
+  if (state.showRegister && window.__form) {
+    const parte = state.registerStatus === "done" ? "enviado" : (REG_PASSOS[state.regPasso || 0] || REG_PASSOS[0]).t;
+    janela = { chave: "cad:" + parte, detalhe: parte === "enviado" ? "Cadastro da academia enviado" : "Cadastro da academia: " + parte };
+  } else if (state.jogadorTela) {
+    const t = { email: "Entrar: o e-mail", entrar: "Entrar: a senha", criar: "Criar conta de jogador", codigo: "Confirmar o e-mail", esqueci: "Senha nova" }[state.jogadorTela];
+    if (t) janela = { chave: "jog:" + state.jogadorTela, detalhe: t };
+  } else if (state.showMenu || state.pcMenu) {
+    janela = { chave: "menu", detalhe: "Abriu o menu" };
+  } else if (state.lista) {
+    janela = { chave: "lista:" + state.lista, detalhe: { favoritas: "Favoritas", vistas: "Vistas recentemente", chamadas: "Academias que você chamou" }[state.lista] || "Minhas quadras" };
+  }
+  return { base, janela };
+}
+let ultimaTelaDoPercurso = "", ultimaJanelaDoPercurso = "";
+function anotarTelaNoPercurso() {
+  if (!state.loaded) return;
+  const { base, janela } = telaDoPercurso();
+  if (base.chave !== ultimaTelaDoPercurso) {
+    ultimaTelaDoPercurso = base.chave;
+    registrarPasso(base.tipo, { detalhe: base.detalhe, academia: base.academia });
+  }
+  const chaveJanela = janela ? janela.chave : "";
+  if (chaveJanela !== ultimaJanelaDoPercurso) {
+    ultimaJanelaDoPercurso = chaveJanela;
+    if (janela) registrarPasso("tela", { detalhe: janela.detalhe });
+  }
+}
+// Fechou a aba, trocou de app ou de aba: anota a saída (o tempo do último
+// passo sai dela).
+function ligarSaidaDoPercurso() {
+  const sair = () => registrarPasso("saida", { detalhe: "Saiu ou trocou de aba" });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") sair(); });
+  window.addEventListener("pagehide", sair);
+}
+
 // ---------- state ----------
 
 let state = {
@@ -3316,6 +3501,7 @@ async function submitRating(courtId, stars, comment) {
       : "Não consegui enviar a avaliação agora. Tente de novo em instantes.");
   }
   marcarAvaliada(courtId);
+  registrarPasso("acao", { academia: courtId, detalhe: `Avaliou com ${stars} ${stars === 1 ? "estrela" : "estrelas"} · ${nomeDaAcademiaDoPasso(courtId)}` });
   if (!state.reviewsCache[courtId]) state.reviewsCache[courtId] = [];
   state.reviewsCache[courtId].unshift({ id: data && data.id, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato, ts: new Date().toISOString() });
 }
@@ -3489,7 +3675,6 @@ function render() {
 
   app.innerHTML = `
     ${isAdmin ? `<div class="admin-banner">Modo admin — só você vê isso <button id="logout-btn" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;margin-left:8px">sair</button></div>` : ""}
-    ${contaAcademia && state.page !== "parceiros" ? `<div class="conta-banner">${icon('key', 13, '#fff')}<span>${temAcademia() ? `Área da academia${minhaAcademia() ? " · " + esc(minhaAcademia().name) : ""}` : `GuiaTennis Parceiros · ${esc(contaAcademia.nome || contaAcademia.usuario)}`}</span><button type="button" data-abrir-conta>${acessoCompleto() ? "abrir o painel" : "completar o acesso"}</button><button type="button" data-sair-conta>sair</button></div>` : ""}
     ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia do modo admin ou use uma aba anônima.</div>` : ""}
     ${isAdmin && state.localizando ? `<div class="admin-aviso">Colocando no mapa as academias sem coordenada: ${state.localizando.feito} de ${state.localizando.total}…</div>` : ""}
     ${isAdmin && !state.localizando && (state.naoLocalizadas || []).length ? `<div class="admin-aviso">Não achei no mapa: <strong>${esc(state.naoLocalizadas.join(", "))}</strong>. Confira a rua, o número, o bairro e a cidade em "Editar" e salve — o site tenta de novo.</div>` : ""}
@@ -3507,6 +3692,7 @@ function render() {
     <div class="fab-col">
       ${isAdmin ? `
         <button class="fab fab-admin" id="fab-stats" title="Cliques">${icon('barchart',20,'var(--green)')}</button>
+        <button class="fab fab-admin" id="fab-percursos" title="Percurso das visitas">${icon('map',20,'var(--green)')}</button>
         <button class="fab fab-admin" id="fab-admin" title="Solicitações pendentes">
           ${icon('clipboard',20,'var(--green)')}${pending.length ? `<span class="fab-badge">${pending.length}</span>` : ""}
         </button>` : ""}
@@ -3520,6 +3706,7 @@ function render() {
     ${state.showRegister ? renderRegisterSheet() : ""}
     ${state.showAdminPanel ? renderAdminPanel(pending) : ""}
     ${state.showStatsPanel ? renderStatsPanel() : ""}
+    ${state.showPercursos && isAdmin ? renderPercursosPanel() : ""}
     ${state.showTerms ? renderLegalSheet("Termos de Uso", TERMS_HTML, "terms-close") : ""}
     ${state.showPrivacy ? renderLegalSheet("Política de Privacidade", PRIVACY_HTML, "privacy-close") : ""}
     ${state.showLogin ? renderLoginSheet() : ""}
@@ -3567,6 +3754,7 @@ function render() {
     atualizarSeo(null);
   }
   sincronizarLink();
+  anotarTelaNoPercurso();
 }
 
 // Mapinha da seção "Explore a região", como o mapa das páginas de hotel.
@@ -4629,7 +4817,8 @@ async function carregarMinhasAcademias(conta) {
     const r = await sb.rpc('academias_da_minha_conta');
     if (!r.error && Array.isArray(r.data)) {
       return r.data.map(x => ({ id: x.academia_id, nome: x.nome || "", papel: x.papel || "principal", status: x.status || "published",
-        pausada: !!x.pausada, plano: x.plano || "basico", bairro: x.bairro || "", cidade: x.cidade || "" }));
+        pausada: !!x.pausada, plano: x.plano || "basico", bairro: x.bairro || "", cidade: x.cidade || "",
+        pausadaAte: x.pausada_ate || null, pausadaPelaAcademia: !!x.pausada_pela_academia }));
     }
   } catch { /* banco sem a função */ }
   return conta.academiaId ? [{ id: conta.academiaId, nome: "", papel: conta.papel, status: "published", pausada: false, plano: "basico", bairro: "", cidade: "" }] : [];
@@ -4874,17 +5063,21 @@ function blocoResposta(r, c, onde) {
     <div class="rev-resp-links">
       <button type="button" class="inline-link" data-responder="${r.id}" data-onde="${onde}">${r.resposta ? "Editar resposta" : "Responder"}</button>
       ${r.resposta ? `<button type="button" class="inline-link" data-apagar-resposta="${r.id}">Apagar resposta</button>` : ""}
-      <a class="inline-link" href="${linkPedirAnalise(c, r)}" target="_blank" rel="noreferrer">Pedir análise ao GuiaTennis</a>
     </div>` : "";
   return resp + acoes;
 }
 
+// "Pedir análise" fica na própria avaliação (pedido do Breno em 05/10/2026),
+// como o "Denunciar avaliação" do Google: é sobre o que o jogador escreveu,
+// não sobre a resposta da academia.
 function cartaoAvaliacao(r, c, onde) {
+  const minha = ehMinha(c) && acessoCompleto();
   return `
     <article class="ht-rev">
       <div class="ht-rev-top">
         <span class="ht-rev-badge">${r.stars}/5</span>
         <span class="ht-rev-word">${scoreWord(r.stars, 1)}</span>
+        ${minha ? `<a class="rev-analise" href="${linkPedirAnalise(c, r)}" target="_blank" rel="noreferrer" title="Pedir ao GuiaTennis que analise esta avaliação">${icon('warning', 13, 'currentColor')} Pedir análise</a>` : ""}
         ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
       </div>
       ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>` : ""}
@@ -5043,6 +5236,16 @@ function blocoAcessosPainel() {
   const semAcademia = umaPorConta(state.acessos.filter(a => !a.academia_id && !pedidos.some(p => p.user_id === a.user_id)));
   const comAcademia = state.acessos.filter(a => a.academia_id);
   const quantasDa = (userId) => comAcademia.filter(a => a.user_id === userId).length;
+  // Uma academia por cartão, com as pessoas dela juntas (pedido do Breno em
+  // 05/10/2026: uma linha por pessoa e academia ficava empilhado demais).
+  const porAcademia = [];
+  comAcademia.forEach(a => {
+    let g = porAcademia.find(x => x.id === a.academia_id);
+    if (!g) porAcademia.push(g = { id: a.academia_id, pessoas: [] });
+    g.pessoas.push(a);
+  });
+  porAcademia.forEach(g => g.pessoas.sort((x, y) => (y.papel !== "equipe") - (x.papel !== "equipe")));
+  porAcademia.sort((x, y) => nomeDe(x.id).localeCompare(nomeDe(y.id), "pt-BR"));
   const pendente = (id) => (state.pending || []).some(c => c.id === id);
   return `
     ${pedidos.length ? `
@@ -5061,12 +5264,13 @@ function blocoAcessosPainel() {
         </div>`).join("")}` : ""}
     <p class="sheet-title display" style="font-size:18px;margin-top:28px">Acessos das academias</p>
     <p class="subtitle" style="margin-top:4px">${comAcademia.length
-      ? `${umaPorConta(comAcademia).length} ${plural(umaPorConta(comAcademia).length, "pessoa tem", "pessoas têm")} acesso a academias. Para criar outro, abra a ficha da academia e use "Acesso da academia".`
+      ? `${porAcademia.length} ${plural(porAcademia.length, "academia tem", "academias têm")} acesso, com ${umaPorConta(comAcademia).length} ${plural(umaPorConta(comAcademia).length, "pessoa", "pessoas")}. Para criar outro, abra a ficha da academia e use "Acesso da academia".`
       : `Nenhuma academia tem acesso ainda. Abra a ficha da academia e use "Acesso da academia".`}${semAcademia.length ? ` ${semAcademia.length} ${plural(semAcademia.length, "conta nova ainda não escolheu", "contas novas ainda não escolheram")} a academia.` : ""}</p>
-    ${comAcademia.map(a => `
-      <button type="button" class="pending-item acesso-item" data-acesso-ficha="${a.academia_id}">
-        <span class="pending-name display">${esc(nomeDe(a.academia_id))}</span>
-        <span class="pending-detail">${esc(a.usuario)}${a.papel === "equipe" ? " · equipe" : ""} · ${a.dados_completos_em ? `ativo · ${esc(a.nome_responsavel || "")}` : "esperando o primeiro acesso"}${a.ultimo_acesso ? ` · último acesso ${dataCurta(a.ultimo_acesso)}` : ""}</span>
+    ${porAcademia.map(g => `
+      <button type="button" class="pending-item acesso-item" data-acesso-ficha="${g.id}">
+        <span class="pending-name display">${esc(nomeDe(g.id))} <small class="acesso-qtas">· ${g.pessoas.length} ${plural(g.pessoas.length, "pessoa", "pessoas")}</small></span>
+        ${g.pessoas.map(a => `
+          <span class="pending-detail acesso-pessoa">${esc(a.nome_responsavel || a.usuario)} · ${a.papel === "equipe" ? "equipe" : "responsável"} · ${a.dados_completos_em ? "ativo" : "esperando o primeiro acesso"}${a.ultimo_acesso ? ` · último acesso ${dataCurta(a.ultimo_acesso)}` : ""}<br><small>${esc(a.usuario)}</small></span>`).join("")}
       </button>`).join("")}
   `;
 }
@@ -5849,7 +6053,7 @@ function perguntasParceiros() {
     { q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado." },
     { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha." },
     { q: "Esqueci a senha. E agora?", a: "Fale com o GuiaTennis no WhatsApp: a gente gera uma senha provisória nova, e você cria outra ao entrar." },
-    { q: "Posso pausar ou tirar a academia do guia?", a: "Pode. Peça pelo WhatsApp ou pelo e-mail do GuiaTennis." },
+    { q: "Posso pausar ou tirar a academia do guia?", a: "Pausar, sim, quando quiser: em Suas academias, toque em \"Pausar no site\" na academia e escolha por quanto tempo (ou até você voltar). Cada academia pausa separada, e \"Voltar a aparecer\" traz a ficha de volta. Para tirar a academia do guia, peça pelo WhatsApp ou pelo e-mail do GuiaTennis." },
   ];
 }
 
@@ -6791,7 +6995,9 @@ function pcPrimeiroAcesso() {
 function pcSituacao(c) {
   const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
   const noAr = c.status !== "pending" && !pausada;
+  const ate = c.pausadaAte ? ` até ${dataCurta(c.pausadaAte)}` : "";
   const texto = c.status === "pending" ? "Em análise pelo GuiaTennis: ainda não aparece no site."
+    : pausada && c.pausadaPelaAcademia ? `Pausada por vocês${ate}: não aparece na busca agora. Para voltar, use Suas academias.`
     : pausada ? "Pausada pelo GuiaTennis: não aparece na busca agora."
     : c.confirmada ? "No ar, com as informações confirmadas por vocês."
     : "No ar como ficha básica. Revise e salve a ficha para confirmar as informações.";
@@ -6982,7 +7188,7 @@ function pcFicha() {
         <button type="button" class="pc-atalho" id="conta-ver-ficha" data-court="${c.id}">${icon('eye', 20, 'var(--green)')}<span>Ver a ficha no site</span></button>
         <button type="button" class="pc-atalho" id="conta-qr" data-court="${c.id}">${icon('clipboard', 20, 'var(--green)')}<span>QR code da sua ficha no GuiaTennis</span></button>
       </div>
-      <p class="footnote">Para pausar a ficha ou pedir a remoção, <a href="${whatsappGuia(`Olá! Sou da ${c.name} e preciso de ajuda com a ficha no GuiaTennis.`)}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>
+      <p class="footnote">Para tirar a ficha da busca por um tempo, use <a href="/parceiros/academias" data-pc="academias">Suas academias › Pausar no site</a>. Para tirar a academia do guia, <a href="${whatsappGuia(`Olá! Sou da ${c.name} e preciso de ajuda com a ficha no GuiaTennis.`)}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>
     </section>`;
 }
 
@@ -7145,7 +7351,24 @@ function pcPerfil() {
 function pcAcademias() {
   const lista = minhasAcademias();
   const pedidos = meusPedidos();
-  const situacao = (a) => a.status === "pending" ? "Em análise" : a.pausada ? "Pausada" : "No ar";
+  const situacao = (a) => a.status === "pending" ? "Em análise" : a.pausada ? (a.pausadaAte ? `Pausada até ${dataCurta(a.pausadaAte)}` : "Pausada") : "No ar";
+  // Pausar no site (pedido do Breno em 05/10/2026), como o "temporariamente
+  // fechado" do Google Business Profile: cada academia separada.
+  const pausa = (a) => {
+    if (a.status === "pending") return "";
+    if (a.pausada && !a.pausadaPelaAcademia) return `<p class="pc-card-s">Pausada pelo GuiaTennis. <a href="${whatsappGuia(`Olá! Sou da ${nomeDaMinha(a)} e quero que a academia volte a aparecer no GuiaTennis.`)}" target="_blank" rel="noreferrer">Fale com a gente</a> para voltar.</p>`;
+    if (a.pausada) return `<p class="pc-card-s">Não aparece na busca${a.pausadaAte ? ` até ${dataCurta(a.pausadaAte)}` : " até vocês voltarem"}. <button type="button" class="pc-linha-link" data-voltar-academia="${a.id}">Voltar a aparecer no site</button></p>`;
+    if (state.pcPausando === a.id) return `
+      <div class="pc-pausa">
+        <p class="pc-card-s"><strong>Pausar no site por quanto tempo?</strong> A ficha some da busca e volta sozinha no fim do prazo.</p>
+        <div class="chip-row">
+          ${[7, 15, 30].map(d => `<button type="button" class="chip small" data-pausar-dias="${d}" data-academia="${a.id}">${d} dias</button>`).join("")}
+          <button type="button" class="chip small" data-pausar-dias="0" data-academia="${a.id}">Até eu voltar</button>
+        </div>
+        <button type="button" class="pc-linha-link pc-linha-discreta" data-pausar-cancelar>Cancelar</button>
+      </div>`;
+    return `<p class="pc-card-s"><button type="button" class="pc-linha-link pc-linha-discreta" data-pausar-academia="${a.id}">Pausar no site</button></p>`;
+  };
   const cartao = (a) => {
     const aberta = a.id === contaAcademia.academiaId;
     const c = state.allCourts.find(x => x.id === a.id);
@@ -7165,6 +7388,8 @@ function pcAcademias() {
           <button type="button" class="cta-btn cta-primary" data-abrir-academia="${a.id}">${aberta ? "Ir para o painel" : "Abrir o painel"}</button>
           ${c ? `<a class="cta-btn cta-secondary" href="${esc(urlDosJogadores(caminhoDaFicha(c)))}" target="guiatennis" rel="noreferrer">Ver no site</a>` : ""}
         </div>
+        ${pausa(a)}
+        ${state.pausaErro && state.pausaErroEm === a.id ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pausaErro)}</div>` : ""}
       </div>`;
   };
   return `
@@ -7329,6 +7554,7 @@ async function criarContaDeParceiro() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password: f.senha });
   if (error) return erro("A conta foi criada, mas não consegui entrar. Tente em Entrar.");
   await carregarConta(data && data.session);
+  registrarPasso("acao", { site: "parceiros", detalhe: "Criou a conta no GuiaTennis Parceiros" });
   window.__pcConta = null;
   state.pcContaSalvando = false;
   state.pcEmailPasso = "email";
@@ -7347,6 +7573,7 @@ async function pedirParaAdministrar(academiaId) {
   state.pcSelecionada = undefined;
   state.pcPedidoFeito = academiaId;
   state.pcAdicionando = false;
+  registrarPasso("acao", { academia: academiaId, detalhe: `Pediu para administrar · ${nomeDaAcademiaDoPasso(academiaId)}` });
   await recarregarConta();
   syncUrl(false);
   render();
@@ -7375,6 +7602,7 @@ async function confirmarCodigo(academiaId) {
     render();
     return;
   }
+  registrarPasso("acao", { academia: academiaId, detalhe: `Confirmou o código · ${nomeDaAcademiaDoPasso(academiaId)}` });
   state.pcCodigos = {};
   state.pedidoErroEm = null;
   state.pcPedidoFeito = null;
@@ -7383,6 +7611,29 @@ async function confirmarCodigo(academiaId) {
   const c = minhaAcademia();
   state.contaAviso = `Pronto! Agora você administra a ${c ? c.name : "academia"} no GuiaTennis Parceiros.`;
   irParceiros("painel");
+}
+
+// Pausar no site (dias = 0: até voltar) ou voltar a aparecer.
+async function pausarAcademia(academiaId, pausar, dias) {
+  state.pausaErro = "";
+  state.pausaErroEm = null;
+  let ate = null;
+  if (pausar && dias > 0) { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + dias); ate = d.toISOString(); }
+  const r = await sb.rpc('pausar_minha_academia', { p_academia: academiaId, p_pausar: !!pausar, p_ate: ate });
+  if (r.error) {
+    state.pausaErro = (r.error.code === "42501" || r.error.code === "22023") && r.error.message ? r.error.message : "Não consegui mudar agora. Tente de novo em instantes.";
+    state.pausaErroEm = academiaId;
+    render();
+    return;
+  }
+  state.pcPausando = null;
+  registrarPasso("acao", { academia: academiaId, detalhe: `${pausar ? "Pausou no site" : "Voltou a mostrar no site"} · ${nomeDaAcademiaDoPasso(academiaId)}` });
+  await recarregarConta();
+  await loadEverything();
+  const a = minhasAcademias().find(x => x.id === academiaId);
+  const nome = a ? nomeDaMinha(a) : "A academia";
+  state.contaAviso = pausar ? `${nome} não aparece na busca${ate ? " até " + dataCurta(ate) : " até vocês voltarem"}.` : `${nome} voltou a aparecer no site.`;
+  render();
 }
 
 async function cancelarPedido(academiaId) {
@@ -7549,6 +7800,10 @@ function ligarEventosParceiros() {
   });
   document.querySelectorAll("[data-confirmar-codigo]").forEach(el => { el.onclick = () => confirmarCodigo(el.dataset.confirmarCodigo); });
   document.querySelectorAll("[data-cancelar-pedido]").forEach(el => { el.onclick = () => cancelarPedido(el.dataset.cancelarPedido); });
+  document.querySelectorAll("[data-pausar-academia]").forEach(el => { el.onclick = () => { state.pcPausando = el.dataset.pausarAcademia; state.pausaErro = ""; render(); }; });
+  document.querySelectorAll("[data-pausar-cancelar]").forEach(el => { el.onclick = () => { state.pcPausando = null; render(); }; });
+  document.querySelectorAll("[data-pausar-dias]").forEach(el => { el.onclick = () => pausarAcademia(el.dataset.academia, true, parseInt(el.dataset.pausarDias, 10) || 0); });
+  document.querySelectorAll("[data-voltar-academia]").forEach(el => { el.onclick = () => pausarAcademia(el.dataset.voltarAcademia, false); });
   document.querySelectorAll("[data-ver-pedidos]").forEach(el => { el.onclick = () => { state.pcAdicionando = false; state.pedidoErro = ""; render(); window.scrollTo(0, 0); }; });
 
   // Pessoas com acesso.
@@ -8769,6 +9024,7 @@ async function entrarJogador() {
     render();
     return;
   }
+  registrarPasso("acao", { detalhe: "Entrou na conta de jogador" });
   await depoisDeEntrarJogador();
 }
 
@@ -8810,6 +9066,7 @@ async function criarContaJogador() {
     return;
   }
   // Conta criada e logada: agora confirma o e-mail pelo código.
+  registrarPasso("acao", { detalhe: "Criou a conta de jogador" });
   state.jogadorLogin = email;
   await irParaCodigoJogador("codigo");
 }
@@ -8829,6 +9086,7 @@ async function salvarContaJogador() {
   if (error) { state.jogadorErro = "Não consegui salvar agora. Tente de novo em instantes."; render(); return; }
   Object.assign(jogador, dados);
   guardarViagemDoAviso(f);
+  registrarPasso("acao", { detalhe: "Salvou o perfil" });
   state.jogadorAviso = "Salvo.";
   render();
 }
@@ -12985,6 +13243,172 @@ function blocoTempoAteAgir(tempo) {
     <p class="pending-detail" style="margin-top:8px">Medido desde ${dataCurta(tempo.inicio)}. Não identifica ninguém: são só os segundos de cada visita.</p>`;
 }
 
+// ---------- relatório do percurso (admin, 05/10/2026) ----------
+// Como o "funil" e a "exploração de caminho" do Google Analytics e a linha
+// do tempo de uma sessão do Microsoft Clarity, sem gravar a tela: o funil de
+// cada site, de onde vieram (e quem chegou ao fim), os caminhos mais comuns
+// e, visita por visita, o passo a passo com o tempo em cada passo.
+const PERCURSO_PERIODOS = [{ key: "1", label: "Hoje" }, { key: "7", label: "7 dias" }, { key: "30", label: "30 dias" }];
+async function carregarPercursos() {
+  const dias = parseInt(state.percursosPeriodo || "7", 10);
+  const desde = new Date();
+  desde.setHours(0, 0, 0, 0);
+  desde.setDate(desde.getDate() - (dias - 1));
+  state.percursos = { carregando: true, linhas: (state.percursos || {}).linhas || [] };
+  render();
+  try {
+    const r = await sb.from('passos_das_visitas')
+      .select('visita, site, ordem, tipo, tela, detalhe, academia_id, origem, meio, dispositivo, segundos, created_at')
+      .gte('created_at', desde.toISOString()).order('created_at', { ascending: false }).limit(5000);
+    state.percursos = r.error
+      ? { linhas: [], erro: /does not exist|schema cache|could not find/i.test(r.error.message || "")
+          ? "O banco ainda não tem a tabela do percurso (SQL 20261005140000): ela entra sozinha com o PR." : "Não consegui carregar os percursos agora." }
+      : { linhas: r.data || [] };
+  } catch { state.percursos = { linhas: [], erro: "Não consegui carregar os percursos agora." }; }
+  render();
+}
+function duracaoTexto(seg) {
+  seg = Math.max(0, Math.round(seg || 0));
+  if (seg < 60) return `${seg} s`;
+  if (seg < 3600) { const m = Math.floor(seg / 60), r = seg % 60; return r ? `${m} min ${r} s` : `${m} min`; }
+  const h = Math.floor(seg / 3600), m = Math.floor((seg % 3600) / 60);
+  return m ? `${h} h ${m} min` : `${h} h`;
+}
+function relogioDoPercurso(seg) {
+  seg = Math.max(0, Math.round(seg || 0));
+  const h = Math.floor(seg / 3600), m = Math.floor((seg % 3600) / 60), r = seg % 60;
+  return (h ? `${h}:${String(m).padStart(2, "0")}` : `${m}`) + ":" + String(r).padStart(2, "0");
+}
+function textoDoPasso(p) {
+  const d = p.detalhe || p.tela || "";
+  if (p.tipo === "busca") return `Buscou ${d}`;
+  if (p.tipo === "ficha") return `Abriu a ficha: ${d}`;
+  if (p.tipo === "contato") return `Chamou no ${d}`;
+  if (p.tipo === "saida") return "Saiu (fechou ou trocou de aba)";
+  return d;
+}
+// Para os caminhos mais comuns: cada passo vira uma palavra.
+function etapaDoPasso(p) {
+  const d = p.detalhe || "";
+  if (p.tipo === "busca") return "Busca";
+  if (p.tipo === "ficha") return "Ficha";
+  if (p.tipo === "contato") return "Contato";
+  if (p.tipo === "saida") return "";
+  if (p.site === "parceiros") return d.replace(/^Parceiros · /, "");
+  if (d === "Página inicial") return "Início";
+  if (/^Lista da busca/.test(d)) return "Lista";
+  if (/^Comparação/.test(d)) return "Comparação";
+  if (/^Favoritou/.test(d)) return "Favorita";
+  if (/^Pôs na comparação/.test(d)) return "Comparar";
+  if (/^Avaliou/.test(d)) return "Avaliou";
+  return d.split(" · ")[0];
+}
+function visitasDoPercurso(linhas, site) {
+  const mapa = new Map();
+  linhas.forEach(l => { if (!mapa.has(l.visita)) mapa.set(l.visita, []); mapa.get(l.visita).push(l); });
+  const visitas = [];
+  mapa.forEach((passos, id) => {
+    if (!passos.some(p => p.site === site)) return;
+    passos.sort((a, b) => (a.segundos - b.segundos) || (a.ordem - b.ordem) || String(a.created_at).localeCompare(String(b.created_at)));
+    const primeiro = passos[0], ultimo = passos[passos.length - 1];
+    const doSite = passos.filter(p => p.site === site);
+    visitas.push({
+      id, passos, primeiro, inicio: new Date(primeiro.created_at), duracao: Math.max(0, ultimo.segundos - primeiro.segundos),
+      origem: primeiro.origem || "Direto", meio: primeiro.meio || "", dispositivo: primeiro.dispositivo || "",
+      buscou: doSite.some(p => p.tipo === "busca"), abriuFicha: doSite.some(p => p.tipo === "ficha"),
+      chamou: doSite.filter(p => p.tipo === "contato").length,
+      cadastro: doSite.some(p => /Cadastro/.test(p.detalhe || "")),
+      criouConta: doSite.some(p => /Criou a conta no GuiaTennis Parceiros/.test(p.detalhe || "")),
+      pediu: doSite.some(p => /Pediu para administrar|Cadastro da academia enviado/.test(p.detalhe || "")),
+      caminho: doSite.map(etapaDoPasso).filter(Boolean).filter((e, i, a) => i === 0 || e !== a[i - 1]).slice(0, 4).join(" → "),
+    });
+  });
+  visitas.sort((a, b) => b.inicio - a.inicio);
+  return visitas;
+}
+function renderPercursosPanel() {
+  const site = state.percursosSite || "jogadores";
+  const periodo = state.percursosPeriodo || "7";
+  const dados = state.percursos || {};
+  const visitas = visitasDoPercurso(dados.linhas || [], site);
+  const total = visitas.length;
+  const pct = (n) => total ? Math.round(n / total * 100) + "%" : "–";
+  const funil = site === "jogadores"
+    ? [["Visitas", total], ["Buscaram", visitas.filter(v => v.buscou).length], ["Abriram uma ficha", visitas.filter(v => v.abriuFicha).length], ["Chamaram uma academia", visitas.filter(v => v.chamou).length]]
+    : [["Visitas", total], ["Abriram o cadastro", visitas.filter(v => v.cadastro).length], ["Criaram a conta", visitas.filter(v => v.criouConta).length], ["Pediram ou cadastraram academia", visitas.filter(v => v.pediu).length]];
+  const chegouAoFim = (v) => site === "jogadores" ? v.chamou > 0 : (v.pediu || v.criouConta);
+  const origens = {};
+  visitas.forEach(v => {
+    const k = v.origem + (v.meio ? " · " + v.meio : "");
+    origens[k] = origens[k] || { nome: k, n: 0, fim: 0 };
+    origens[k].n++;
+    if (chegouAoFim(v)) origens[k].fim++;
+  });
+  const listaOrigens = Object.values(origens).sort((a, b) => b.n - a.n).slice(0, 8);
+  const caminhos = {};
+  visitas.forEach(v => { if (v.caminho) caminhos[v.caminho] = (caminhos[v.caminho] || 0) + 1; });
+  const listaCaminhos = Object.entries(caminhos).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const mostrar = state.percursosMostrar || 20;
+  const fimTexto = site === "jogadores" ? "chamou" : "conta ou pedido";
+  const resultado = (v) => site === "jogadores"
+    ? (v.chamou ? `Chamou ${v.chamou} ${v.chamou === 1 ? "academia" : "academias"}` : v.abriuFicha ? "Viu fichas, não chamou" : v.buscou ? "Buscou, não abriu ficha" : "Só olhou")
+    : (v.pediu ? "Pediu academia" : v.criouConta ? "Criou a conta" : v.cadastro ? "Começou o cadastro" : "Só olhou");
+  return `
+    <div class="overlay open" id="percursos-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="percursos-close" aria-label="Fechar">✕</button>
+        <p class="sheet-title display">Percurso das visitas</p>
+        <p class="subtitle" style="margin-top:4px">O caminho de cada visita: de onde veio, por qual meio, o que fez e quanto tempo ficou em cada passo. Ninguém é identificado; o admin conectado não entra.</p>
+        <div class="chip-row" style="margin-top:12px">
+          <button class="chip small ${site === "jogadores" ? "active" : ""}" data-perc-site="jogadores">Jogadores</button>
+          <button class="chip small ${site === "parceiros" ? "active" : ""}" data-perc-site="parceiros">GuiaTennis Parceiros</button>
+        </div>
+        <div class="chip-row" style="margin-top:8px">
+          ${PERCURSO_PERIODOS.map(p => `<button class="chip small ${periodo === p.key ? "active" : ""}" data-perc-per="${p.key}">${p.label}</button>`).join("")}
+        </div>
+        ${dados.carregando ? `<p class="footnote">${bolaGirando(16)} Carregando…</p>` : ""}
+        ${dados.erro ? `<p class="email-sugestao">${esc(dados.erro)}</p>` : ""}
+        ${!dados.carregando && !dados.erro && !total ? `<p class="footnote">Nenhuma visita nesse período ainda.</p>` : ""}
+        ${total ? `
+          <p class="field-label" style="margin-top:18px">Funil</p>
+          <div class="perc-funil">${funil.map(([t, n], i) => `
+            <div class="perc-funil-i"><span>${esc(t)}</span><strong>${n}</strong><small>${i ? pct(n) : ""}</small><i style="width:${total ? Math.max(4, Math.round(n / total * 100)) : 0}%"></i></div>`).join("")}</div>
+          <p class="field-label" style="margin-top:18px">De onde vieram</p>
+          <div class="stat-regioes">${listaOrigens.map(o => `
+            <div class="stat-regiao"><span>${esc(o.nome)}</span><strong>${o.n} <small>${o.fim} ${fimTexto}</small></strong></div>`).join("")}</div>
+          ${listaCaminhos.length ? `
+          <p class="field-label" style="margin-top:18px">Caminhos mais comuns</p>
+          <div class="stat-regioes">${listaCaminhos.map(([c, n]) => `
+            <div class="stat-regiao"><span>${esc(c)}</span><strong>${n} <small>${pct(n)}</small></strong></div>`).join("")}</div>` : ""}
+          <p class="field-label" style="margin-top:18px">Visita por visita</p>
+          <div class="perc-visitas">${visitas.slice(0, mostrar).map(v => {
+            const aberta = state.percursoAberto === v.id;
+            return `
+            <div class="perc-visita ${aberta ? "aberta" : ""}">
+              <button type="button" class="perc-cab" data-percurso="${esc(v.id)}" aria-expanded="${aberta}">
+                <span class="perc-quando">${esc(dataHora(v.inicio))}</span>
+                <span class="perc-resumo">${esc(v.origem)}${v.meio ? " · " + esc(v.meio) : ""} · ${esc(v.dispositivo)} · ${duracaoTexto(v.duracao)} · ${v.passos.length} ${v.passos.length === 1 ? "passo" : "passos"}</span>
+                <span class="perc-resultado ${chegouAoFim(v) ? "ok" : ""}">${esc(resultado(v))}</span>
+              </button>
+              ${aberta ? `
+              <ol class="perc-linha">${v.passos.map((p, i) => {
+                const prox = v.passos[i + 1];
+                const ficou = prox && p.tipo !== "saida" ? prox.segundos - p.segundos : 0;
+                return `<li><span class="perc-t">${relogioDoPercurso(p.segundos - v.primeiro.segundos)}</span><span>${i === 0 ? "Chegou: " : ""}${esc(textoDoPasso(p))}${p.site !== site ? ` <small>(${p.site === "parceiros" ? "no GuiaTennis Parceiros" : "no site dos jogadores"})</small>` : ""}${ficou > 0 ? ` <small>· ficou ${duracaoTexto(ficou)}</small>` : ""}</span></li>`;
+              }).join("")}</ol>` : ""}
+            </div>`;
+          }).join("")}</div>
+          ${visitas.length > mostrar ? `<button type="button" class="cta-btn cta-secondary" id="perc-mais" style="margin-top:12px;width:100%">Mostrar mais ${Math.min(20, visitas.length - mostrar)}</button>` : ""}` : ""}
+      </div></div>
+    </div>`;
+}
+function abrirPercursos() {
+  state.showStatsPanel = false;
+  state.showPercursos = true;
+  state.percursosMostrar = 20;
+  carregarPercursos();
+}
+
 function renderStatsPanel() {
   const periodo = state.statsPeriodo || "30";
   const { porAcademia, acessos, buscas, regioes, ceps, origens, aparelhos, pontos, tempo } = statsAgregado(periodo);
@@ -13020,6 +13444,7 @@ function renderStatsPanel() {
       <div class="sheet"><div class="sheet-content">
         <button class="sheet-close" id="stats-close">✕</button>
         <p class="sheet-title display">Estatísticas</p>
+        <button type="button" class="inline-link" id="stats-ver-percursos" style="margin-top:4px">Ver o percurso de cada visita ›</button>
         <p class="subtitle" style="margin-top:4px">Registrado por todos os visitantes. Com o admin conectado, os seus acessos e buscas não entram na conta.</p>
 
         <div class="chip-row" style="margin-top:12px">
@@ -13098,7 +13523,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confirma de outra forma. Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia; pausar ou remover a ficha continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Para liberar uma ficha que já está no guia, o GuiaTennis manda um código ao WhatsApp que aparece na ficha da academia — quem digita o código prova que responde por ela —; sem esse WhatsApp, o GuiaTennis confirma de outra forma. Academia nova só é liberada depois de o GuiaTennis conferir e publicar. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Contas do GuiaTennis Parceiros e contatos de academias não avaliam academias</strong> — nem a própria, nem as outras. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz, e remover a academia do guia continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade e de mudanças nas suas favoritas, promoções das academias e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -13121,7 +13546,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 5 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar", que fica na sua conta para o aviso sair, para aparecer na página inicial e no menu. Um dia depois de você chamar uma academia, o site pergunta, no próprio aparelho, se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam só no aparelho. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar", que fica na sua conta para o aviso sair, para aparecer na página inicial e no menu. Um dia depois de você chamar uma academia, o site pergunta, no próprio aparelho, se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam só no aparelho.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo). Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp das contas (e o WhatsApp das academias) também servem para impedir que academias avaliem academias: quem avaliar com um desses contatos tem a avaliação recusada. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -13614,6 +14039,7 @@ function attachEvents() {
       const destino = PC_PRIVADAS.includes(state.parceirosDepois) || (state.parceirosDepois === "cadastro" && !temAcademia())
         ? state.parceirosDepois : "painel";
       state.parceirosDepois = null;
+      registrarPasso("acao", { site: "parceiros", detalhe: "Entrou no GuiaTennis Parceiros" });
       irParceiros(destino, { substituir: state.page === "parceiros", mesmaAba: true });
       return;
     }
@@ -14170,6 +14596,18 @@ function attachEvents() {
 
   const fabStats = document.getElementById("fab-stats");
   if (fabStats) fabStats.onclick = () => { state.showStatsPanel = true; render(); };
+  // Percurso das visitas (05/10/2026).
+  const fabPercursos = document.getElementById("fab-percursos");
+  if (fabPercursos) fabPercursos.onclick = abrirPercursos;
+  const verPercursos = document.getElementById("stats-ver-percursos");
+  if (verPercursos) verPercursos.onclick = abrirPercursos;
+  const percClose = document.getElementById("percursos-close");
+  if (percClose) percClose.onclick = () => { state.showPercursos = false; render(); };
+  document.querySelectorAll("[data-perc-site]").forEach(el => { el.onclick = () => { state.percursosSite = el.dataset.percSite; state.percursoAberto = null; state.percursosMostrar = 20; render(); }; });
+  document.querySelectorAll("[data-perc-per]").forEach(el => { el.onclick = () => { state.percursosPeriodo = el.dataset.percPer; state.percursoAberto = null; carregarPercursos(); }; });
+  document.querySelectorAll("[data-percurso]").forEach(el => { el.onclick = () => { state.percursoAberto = state.percursoAberto === el.dataset.percurso ? null : el.dataset.percurso; render(); }; });
+  const percMais = document.getElementById("perc-mais");
+  if (percMais) percMais.onclick = () => { state.percursosMostrar = (state.percursosMostrar || 20) + 20; render(); };
 
   const termsLink = document.getElementById("terms-link");
   if (termsLink) termsLink.onclick = () => { state.showTerms = true; render(); };
@@ -14706,6 +15144,7 @@ async function anotarPedidoDePlano(f, academiaId, onde) {
   if (!contaAcademia || isAdmin || !academiaId || !["completo", "premium"].includes(f.__planoEscolhido)) return;
   try { await sb.rpc('pedir_plano', { p_academia: academiaId, p_plano: f.__planoEscolhido, p_onde: onde }); }
   catch { /* banco sem a função: o WhatsApp da tela de sucesso resolve */ }
+  registrarPasso("acao", { academia: academiaId, detalhe: `Escolheu o plano ${nomeDoPlano(f.__planoEscolhido)}` });
 }
 
 async function doRegisterSubmit() {
@@ -14898,6 +15337,7 @@ async function init() {
   ligarTempoNoSite();
   ligarPushesDaConta();
   ligarPedidoDeAvaliacao();
+  ligarSaidaDoPercurso();
 }
 
 function app_showLoading() {

@@ -24,6 +24,17 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 05/10/2026
 
+> **Estado (05/10/2026, fim do dia):** depois do pacote abaixo, entraram as
+> regras 46 a 50: **percurso de cada visita** com relatório no admin (SQL
+> `20261005140000`), acessos do admin agrupados por academia, **a academia
+> pausa a própria ficha** (SQL `20261005130000`), "Pedir análise" na
+> avaliação e o site dos jogadores sem a faixa "Área da academia".
+> **Ao abrir o chat novo, rodar a suíte inteira (seção 6):** esse último
+> pacote foi enviado com os testes novos passando (`percurso.js`,
+> `perfil-e-avaliar.js`, `varias-academias.js`, `acesso-academia.js`) e a
+> suíte em 9 de 25 arquivos, sem falha; o `banco-acesso.py` passou (167
+> certas e as 11 falhas antigas).
+>
 > **Estado (05/10/2026):** PR #5 ainda **sem merge**. Entraram as regras
 > 40 a 45: "represento a academia" só quando a academia aparece; **perfil
 > da conta** do jogador (`/perfil`) e dos Parceiros (`/parceiros/perfil`);
@@ -168,7 +179,10 @@ cobra taxa e não fica no meio** da negociação.
    última busca (`state.ultimaBusca`), para o painel mostrar o público de
    cada academia e o "Copiar resumo pra mandar" incluir isso. Admin
    conectado não grava nada (`trackClick` sai no começo). Nunca o endereço digitado, a coordenada exata, IP ou
-   identificador do aparelho. Pedido do Breno em 28/09/2026. Qualquer
+   identificador do aparelho. Pedido do Breno em 28/09/2026. **Percurso da
+   visita** (05/10/2026, regra 46): os passos de cada visita, ligados por um
+   número sorteado que vale só para aquela visita — não identifica a
+   pessoa, o aparelho nem a conta. Qualquer
    mudança nisso obriga a mexer na Política de Privacidade — e a data de
    "Última atualização" dos dois textos legais tem de acompanhar.
 10. **SQL novo vira um arquivo em `supabase/migrations/`** e o GitHub
@@ -534,6 +548,54 @@ cobra taxa e não fica no meio** da negociação.
     o próprio login, como o trivago e o Business Studio. Menu do site dos
     jogadores com a conta de academia: **"Sair da conta"** (não "Sair da
     área da academia").
+46. **Percurso das visitas** (pedido de 05/10/2026: "o caminho exato, de
+    onde veio, por qual meio, o que fez, por quanto tempo"), como o "funil"
+    e a "exploração de caminho" do Google Analytics e a linha do tempo do
+    Microsoft Clarity (sem gravar a tela). Cada passo vai para a tabela
+    `passos_das_visitas` (SQL `20261005140000_percurso_das_visitas`): a
+    visita (número sorteado em `sessionStorage`, que some ao fechar a aba ou
+    depois de 30 min parada — `visitaAtual`), o site (jogadores ou
+    parceiros), o tipo (tela, busca, ficha, contato, ação, saída), o
+    caminho do link sem o "?", o detalhe, a academia, a origem
+    (`origemDoAcesso`), o meio (`meioDoAcesso`: utm_medium, a parte depois
+    do traço da etiqueta — "Instagram-bio" → "bio" —, navegador do app,
+    busca do Google, digitou o endereço…), o aparelho e os segundos desde a
+    chegada. Quem grava: `registrarPasso`; a tela e a janela por cima
+    (menu, cadastro da academia parte a parte, Entrar/Criar conta) saem
+    sozinhas do fim do `render` (`anotarTelaNoPercurso`); busca (só a
+    região e quantos filtros), contato, compartilhar, favoritar, comparar,
+    avaliar, criar conta/entrar, pedir academia, código, plano escolhido,
+    pausar; a saída vai com `keepalive` ao esconder a página. O admin não
+    grava; a conta de academia só grava no GuiaTennis Parceiros. Banco sem
+    a tabela: para de mandar (`semPercurso`). **Relatório**: botão do mapa
+    no canto do admin (ou "Ver o percurso de cada visita ›" nas
+    Estatísticas) — Jogadores ou Parceiros, Hoje/7/30 dias: funil
+    (visitas → buscaram → abriram ficha → chamaram; no Parceiros: abriram o
+    cadastro → criaram a conta → pediram academia), de onde vieram (com
+    quantos chegaram ao fim), caminhos mais comuns ("Início → Busca → Ficha
+    → Contato") e cada visita passo a passo, com "ficou X" em cada passo.
+    Política de Privacidade atualizada (regra 9). Teste: `testes/percurso.js`.
+47. **Acessos do admin agrupados por academia** (pedido de 05/10/2026: "muito
+    empilhado"): em "Acessos das academias", um cartão por academia com as
+    pessoas dela juntas (responsável primeiro, equipe depois).
+48. **A academia pausa a própria ficha** (pedido de 05/10/2026), como o
+    "temporariamente fechado" do Google Business Profile: em Suas
+    academias, "Pausar no site" (7, 15, 30 dias ou "Até eu voltar") e
+    "Voltar a aparecer no site", cada academia separada; qualquer pessoa
+    que administra a academia pode. Pausa feita pelo GuiaTennis só o
+    GuiaTennis desfaz ("Pausada pelo GuiaTennis. Fale com a gente").
+    Banco: `academias.pausada_pela_academia`, `pausar_minha_academia` e o
+    gatilho `proteger_ficha_da_academia` que só deixa a pausa passar quando
+    vem dessa função (e não marca a ficha como confirmada); SQL
+    `20261005130000_academia_pausa`. Ajuda, Minha ficha e Termos dizem
+    isso. Teste: `testes/perfil-e-avaliar.js`.
+49. **"Pedir análise" fica na avaliação** (pedido de 05/10/2026), como o
+    "Denunciar avaliação" do Google: no topo do cartão da avaliação (só
+    para a academia dona), não mais junto da resposta da academia.
+50. **Sem a faixa "Área da academia" no site dos jogadores** (pedido de
+    05/10/2026: "não acho legal aparecer isso para qualquer acesso"): com o
+    Parceiros em aba própria, a conta de academia logada vê o site dos
+    jogadores limpo; o painel fica no menu ("Painel da minha academia").
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1384,7 +1446,8 @@ plano atende) e `20261003140000_pedido_ao_responsavel` (pedido de academia
 com responsável vai para ele), os de 04/10 (`20261004120000` a
 `20261004140000`) e, de 05/10, `20261005120000_varios_pedidos` (vários
 pedidos por conta: `pedidos_de_acesso`, `meus_pedidos_de_acesso`,
-`pedidos_de_acesso_admin`, código por conta e academia). Entra no
+`pedidos_de_acesso_admin`, código por conta e academia),
+`20261005130000_academia_pausa` e `20261005140000_percurso_das_visitas`. Entra no
 banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
@@ -1419,7 +1482,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -1517,6 +1580,11 @@ as 133 do `banco-acesso.py` no banco e login locais.
   da conta nova com pedido (e o "!" no círculo) e Ajuda/Termos sem CNPJ.
   Abas: `vigiarAbas(page)`/`abasAbertas(page)` (do `harness.js`) trocam o
   `window.open` por um que anota — o Parceiros abre na aba dele.
+- `percurso.js` — passos da visita (chegada com origem/meio/aparelho, busca
+  só com a região, ficha, contato, favoritar, comparar, janelas, etapas do
+  cadastro dos Parceiros), quem não grava (admin; academia no site dos
+  jogadores), banco sem a tabela, e o relatório do admin (funil, origens,
+  caminhos, visita passo a passo com "ficou X", Parceiros) e a Política.
 - `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
   login do Supabase locais (abaixo, "Banco e login locais"). Confere no
   banco de verdade (não no mock) tudo o que a academia pode e não pode.

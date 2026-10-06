@@ -607,4 +607,31 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(!(await page.evaluate(() => document.body.innerText.includes('Voltar ao painel'))), 'sem "Voltar ao painel"');
   ok(await page.evaluate(() => document.querySelector('#parceiros h1')?.innerText.startsWith('Olá') && document.title.startsWith('Atualizações')), 'a página inicial da academia se chama Atualizações — ' + await page.evaluate(() => document.title));
   await browser.close();
+  // Conta de jogador vira conta do Parceiros com o mesmo e-mail (06/10/2026).
+  ({ browser, page } = await abrir({ jogador: true, q: 'parceiros/cadastro' }));
+  t = await page.evaluate(() => ({ h1: document.querySelector('#parceiros h1')?.innerText || '', corpo: document.querySelector('#parceiros .pc-main')?.innerText || '', nome: document.getElementById('pc-conta-nome')?.value, sobrenome: document.getElementById('pc-conta-sobrenome')?.value, senha: !!document.getElementById('pc-conta-senha') }));
+  ok(t.h1 === 'Use a sua conta do GuiaTennis no Parceiros' && t.corpo.includes('ana@exemplo.com') && t.nome === 'Ana' && t.sobrenome === 'Jogadora' && !t.senha, 'jogador logado no Parceiros: completa os dados, com o nome da conta e sem senha nova — ' + t.h1);
+  await page.selectOption('#pc-conta-tratamento', 'Sra.');
+  await page.selectOption('#pc-conta-cargo', 'Dono(a) ou sócio(a)');
+  await page.fill('#pc-conta-whatsapp', '(11) 97777-1234');
+  await page.click('#pc-ativar-conta');
+  await page.waitForTimeout(200);
+  ok((await texto(page, '#parceiros .form-error')).includes('Termos'), 'sem o aceite: pede');
+  await page.check('#pc-conta-aceite');
+  await page.click('#pc-ativar-conta');
+  await page.waitForTimeout(600);
+  t = await page.evaluate(() => ({ conta: !!contaAcademia && contaAcademia.email === 'ana@exemplo.com', jog: !!jogador, h1: document.querySelector('#parceiros h1')?.innerText || '', db: window.__db.academia_acessos.find(x => x.user_id === 'j-ana') }));
+  ok(t.conta && t.jog && t.db && t.db.whatsapp === '11977771234' && /vamos ver se a sua academia/i.test(t.h1), 'a mesma conta passa a valer no Parceiros e segue para a academia — ' + t.h1);
+  await browser.close();
+
+  ({ browser, page } = await abrir({ q: 'parceiros/entrar' }));
+  await page.evaluate(() => { window.__db.jogadores.push({ user_id: 'j-rui', nome: 'Rui Jogador', email: 'rui@exemplo.com', email_confirmado_em: new Date().toISOString() }); window.__senhas['rui@exemplo.com'] = 'senhadorui1'; });
+  await irSenha(page, 'rui@exemplo.com');
+  ok((await texto(page, '#parceiros .pc-main')).includes('Entre com a mesma senha: a mesma conta passa a valer no GuiaTennis Parceiros'), 'e-mail de jogador no Entrar do Parceiros: pede a mesma senha, sem mandar usar outro e-mail');
+  await page.fill('#login-password', 'senhadorui1');
+  await page.click('#login-submit');
+  await page.waitForTimeout(600);
+  t = await page.evaluate(() => ({ h1: document.querySelector('#parceiros h1')?.innerText || '', saiu: !!window.__saiu, jog: !!jogador }));
+  ok(t.h1 === 'Use a sua conta do GuiaTennis no Parceiros' && !t.saiu && t.jog, 'entrou com a senha de jogador: continua logado e completa os dados — ' + t.h1);
+  await browser.close();
 })();

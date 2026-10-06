@@ -83,7 +83,7 @@ const { abrir, ok } = require('./harness');
   await page.evaluate(async () => {
     await sb.rpc('completar_meu_acesso', { p_nome: 'Maria Teste', p_cargo: 'Gerente', p_email: 'maria@quadra.com.br', p_whatsapp: '11900000001', p_cnpj: '', p_recebe_relatorio: false, p_aceite: true });
     await sb.auth.signOut();
-    contaAcademia = null;
+    contaAcademia = null; jogador = null;
     irParceiros('entrar', { mesmaAba: true });
   });
   await page.waitForTimeout(300);
@@ -96,7 +96,7 @@ const { abrir, ok } = require('./harness');
   await page.click('#login-submit');
   await page.waitForTimeout(500);
   ok(await page.evaluate(() => !!contaAcademia), 'o usuário continua entrando com a senha');
-  await page.evaluate(async () => { await sb.auth.signOut(); contaAcademia = null; irParceiros('entrar'); });
+  await page.evaluate(async () => { await sb.auth.signOut(); contaAcademia = null; jogador = null; irParceiros('entrar'); });
   await page.waitForTimeout(300);
   await page.fill('#pc-email', 'quadra.a2');
   await page.click('#pc-email-continuar');

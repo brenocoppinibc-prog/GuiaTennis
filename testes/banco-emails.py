@@ -465,6 +465,20 @@ ok(certo and um("select count(*) from public.avaliacoes where comment = 'Spam do
    "conta do Parceiros: sai, com as avaliações (marcado), e a academia continua no guia" + ("" if certo else ": " + saida))
 ok(um(f"select tipo from public.contas_excluidas where email = 'rex{sufixo}@exemplo.com'") == "jogador e GuiaTennis Parceiros", "o tipo diz que era jogador e Parceiros")
 
+# 15. Conta de jogador vira conta do Parceiros (SQL 20261006160000) -------------
+print("\n# Jogador vira Parceiros com o mesmo e-mail")
+lia = jogador("Lia Jogadora", f"lia{sufixo}@exemplo.com")
+certo, saida = sql("select public.ativar_conta_do_parceiros('Lia Jogadora', '11 98888-7777', false)", papel="authenticated", user=lia)
+ok(not certo and "Termos" in saida, "sem o aceite dos Termos, não ativa")
+certo, saida = sql("select public.ativar_conta_do_parceiros('Lia Jogadora', '11 98888-7777', true, 'Sra.', 'Dono(a)')", papel="authenticated", user=lia)
+ok(certo and um(f"select usuario || '|' || email || '|' || whatsapp || '|' || (email_confirmado_em is not null) from public.academia_acessos where user_id = '{lia}'")
+   == f"lia{sufixo}@exemplo.com|lia{sufixo}@exemplo.com|11988887777|true", "a conta de jogador passa a valer no Parceiros, com o e-mail confirmado" + ("" if certo else ": " + saida))
+ok(um(f"select count(*) from public.jogadores where user_id = '{lia}'") == "1", "e continua jogadora")
+certo, _ = sql("select public.ativar_conta_do_parceiros('Lia Jogadora', '11 98888-7777', true)", papel="authenticated", user=lia)
+ok(certo and um(f"select count(*) from public.academia_acessos where user_id = '{lia}'") == "1", "ativar de novo não duplica")
+certo, saida = sql("select public.ativar_conta_do_parceiros('Ninguém', '11 98888-7777', true)", papel="authenticated", user=str(uuid.uuid4()))
+ok(not certo and "não é de jogador" in saida, "quem não tem conta de jogador não ativa")
+
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")
 ok(um(f"select count(*) from public.buscas_salvas where user_id = '{hugo}'") == "0", "excluir a conta apaga as buscas salvas")

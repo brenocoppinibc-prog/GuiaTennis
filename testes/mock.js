@@ -623,6 +623,20 @@
     }
     // Painel do admin (SQL 20261006120000): os e-mails da fila, mandar de
     // novo e os números das contas. window.__semPainelAdmin finge o banco sem o SQL.
+    // Conta de jogador passa a valer no Parceiros (SQL 20261006160000).
+    if (nome === "ativar_conta_do_parceiros") {
+      if (!sessao) return erro("Entre na sua conta.", "42501");
+      if (meuAcesso()) return { data: null, error: null };
+      const j = euJogador();
+      if (!j) return erro("Essa conta não é de jogador.", "42501");
+      if (!a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
+      if (tel(a.p_whatsapp).length < 10 || tel(a.p_whatsapp).length > 11) return erro("WhatsApp inválido: use o DDD e o número.", "22023");
+      const t = new Date().toISOString();
+      db.academia_acessos.push({ user_id: j.user_id, academia_id: null, usuario: j.email, nome_responsavel: String(a.p_nome).trim(), tratamento: a.p_tratamento || null, cargo: a.p_cargo || null,
+        email: j.email, whatsapp: tel(a.p_whatsapp), recebe_relatorio: !!a.p_recebe_novidades, termos_aceitos_em: t, dados_completos_em: t, senha_trocada_em: t, papel: "principal",
+        email_confirmado_em: j.email_confirmado_em || null, avisos_por_email: true });
+      return { data: null, error: null };
+    }
     // O admin exclui a conta de quem descumprir os Termos (SQL 20261006150000).
     if (nome === "excluir_conta_admin") {
       if (!souAdmin()) return erro("Só o admin.", "42501");

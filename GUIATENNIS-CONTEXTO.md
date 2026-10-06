@@ -847,6 +847,17 @@ cobra taxa e não fica no meio** da negociação.
     plano"/"Em breve no Premium"/"O que os jogadores não veem" fora da
     página Plano (regra 17). No site dos jogadores, o menu diz "Minha
     academia".
+63. **Conta de jogador vale no Parceiros com o mesmo e-mail** (pedido de
+    06/10/2026; o contrário da regra 53), como a conta do Google vale no
+    Maps e no Perfil da Empresa: no Entrar/Cadastro do Parceiros, e-mail de
+    jogador vai para a senha ("Entre com a mesma senha: a mesma conta passa
+    a valer no GuiaTennis Parceiros"); logado como jogador, o Parceiros
+    mostra "Use a sua conta do GuiaTennis no Parceiros": os dados de
+    contato (nome e sobrenome já vêm da conta), o aceite e "Salvar e
+    continuar" — sem senha nova — e segue para a academia. O e-mail
+    confirmado no site dos jogadores vale para o Parceiros. SQL
+    `20261006160000_jogador_vira_parceiro`: `ativar_conta_do_parceiros(nome,
+    whatsapp, aceite, tratamento, cargo, novidades)`.
 62. **O admin exclui a conta de quem descumprir os Termos** (pedido de
     06/10/2026): no painel do admin, "Excluir conta" em **Contas de
     jogador** (cada linha) e em **Acessos ao Parceiros** (lista "Contas do
@@ -2390,10 +2401,6 @@ c9ade31 Configuração de publicação do Netlify
   confirmado, avaliar uma academia que tem conta e ver o e-mail chegar
   ("[Teste]" no assunto); (5) no rodapé do e-mail, "Não quero mais
   receber".
-- **Jogador que vira Parceiros com o mesmo e-mail** (o contrário da regra
-  53): hoje o cadastro do Parceiros ainda pede outro e-mail para quem já
-  tem conta de jogador. Dá para deixar a mesma conta virar Parceiros, se o
-  Breno quiser.
 - **Testar na prévia o pacote de 05/10/2026**: (1) jogador logado: tocar na
   inicial → `/perfil`; (2) chamar uma academia no WhatsApp e, no dia
   seguinte, abrir o site: o balão "Jogou na …?" com as estrelas; (3)

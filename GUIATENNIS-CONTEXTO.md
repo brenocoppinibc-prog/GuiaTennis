@@ -847,6 +847,20 @@ cobra taxa e não fica no meio** da negociação.
     plano"/"Em breve no Premium"/"O que os jogadores não veem" fora da
     página Plano (regra 17). No site dos jogadores, o menu diz "Minha
     academia".
+62. **O admin exclui a conta de quem descumprir os Termos** (pedido de
+    06/10/2026): no painel do admin, "Excluir conta" em **Contas de
+    jogador** (cada linha) e em **Acessos ao Parceiros** (lista "Contas do
+    GuiaTennis Parceiros"). A janela pede o **motivo** (obrigatório, fica
+    guardado) e "Apagar também as avaliações dessa conta" (sem marcar,
+    ficam com o nome, sem a ligação). A conta sai inteira (jogador e
+    Parceiros, é o mesmo login); as academias que ela administrava
+    continuam no guia. O e-mail fica **bloqueado** para outra conta
+    (gatilho em `jogadores` e `academia_acessos`) até o admin tocar em
+    "Liberar o e-mail" na lista "Contas excluídas" (em Contas de jogador).
+    A conta do admin não se exclui. SQL `20261006150000_excluir_conta`:
+    `contas_excluidas` (só o admin lê), `excluir_conta_admin(user, motivo,
+    apagar_avaliacoes)`, `contas_excluidas_admin()`, `liberar_email_admin`.
+    Termos (seção 9) e Política (seção 5) dizem isso.
 60. **Academia nova da conta vai ao ar sozinha** (escolha do Breno em
     06/10/2026, entre manter, isto e liberar tudo): academia NOVA
     cadastrada por conta do Parceiros com o **e-mail confirmado** (e a

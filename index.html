@@ -205,6 +205,7 @@
   .adm-aval-texto { margin: 6px 0 0; font-size: 14px; }
   .adm-aval-resp { margin: 8px 0 0; font-size: 13px; background: var(--bg-alt); border-radius: 8px; padding: 8px 10px; }
   .adm-botao { width: auto; display: inline-flex; margin-top: 10px; }
+  .adm-excluir { display: inline-block; margin-top: 6px; background: none; border: none; padding: 0; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--red); text-decoration: underline; cursor: pointer; }
   @media (min-width: 720px) {
     .adm-kpis { grid-template-columns: repeat(4, 1fr); }
     .adm-colunas { grid-template-columns: 1fr 1fr; column-gap: 14px; }
@@ -9442,7 +9443,7 @@ async function criarContaJogador() {
   if (r.error) {
     state.jogadorSalvando = false;
     state.jogadorErro = /já tem conta/.test(r.error.message || "") ? "Esse e-mail já tem conta. Entre com a sua senha."
-      : /Muitos cadastros/.test(r.error.message || "") ? r.error.message
+      : /Muitos cadastros|não pode criar conta/.test(r.error.message || "") ? r.error.message
       : "Não consegui criar a conta agora. Tente de novo em instantes.";
     if (/já tem conta/.test(r.error.message || "")) { state.jogadorTela = "entrar"; state.jogadorLogin = email; }
     render();
@@ -14208,7 +14209,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">8. Links e contatos externos</p>
 <p style="font-size:14px">O GuiaTennis direciona usuários para WhatsApp, Instagram e sites das academias. Não temos controle sobre esses canais externos e não nos responsabilizamos por eles.</p>
 <p class="field-label" style="margin-top:16px">9. Uso aceitável</p>
-<p style="font-size:14px">Não é permitido acessar áreas administrativas sem autorização, cadastrar informações falsas propositalmente, usar o site para fins ilegais, ou extrair dados em massa (scraping) sem autorização.</p>
+<p style="font-size:14px">Não é permitido acessar áreas administrativas sem autorização, cadastrar informações falsas propositalmente, usar o site para fins ilegais, ou extrair dados em massa (scraping) sem autorização. O GuiaTennis pode excluir, a qualquer momento, a conta (de jogador ou do GuiaTennis Parceiros) de quem descumprir estes Termos ou a lei, e remover as avaliações dessa conta; o e-mail da conta excluída não pode criar outra conta.</p>
 <p class="field-label" style="margin-top:16px">10. Propriedade intelectual</p>
 <p style="font-size:14px">A marca GuiaTennis, o logotipo e a identidade visual pertencem ao GuiaTennis. As informações de cada academia pertencem aos respectivos estabelecimentos.</p>
 <p class="field-label" style="margin-top:16px">11. Alterações e lei aplicável</p>
@@ -14230,7 +14231,7 @@ const PRIVACY_HTML = `
 <p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
 <p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o GuiaTennis pode aprovar, editar ou remover conteúdo — cada academia, com o login dela, edita apenas a própria ficha e as próprias respostas. Favoritos continuam salvos localmente no seu navegador.</p>
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
-<p style="font-size:14px">Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos, histórico e preferências ficam só no seu aparelho: dá para apagar pelo menu do site ou limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
+<p style="font-size:14px">Se uma conta for excluída pelo GuiaTennis por descumprir os Termos de Uso, guardamos o e-mail, o nome, a data e o motivo, só para impedir um novo cadastro com o mesmo e-mail e para a defesa do GuiaTennis. Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos, histórico e preferências ficam só no seu aparelho: dá para apagar pelo menu do site ou limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
 <p class="field-label" style="margin-top:16px">6. Cookies</p>
 <p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (favoritos, lista de comparação, sua identificação, formulários e a sessão de quem entra na área da academia) é estritamente técnico.</p>
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
@@ -14365,6 +14366,7 @@ function abaDoAdmin(aba) {
 
 function irAdmin(aba = "inicio", opcoes = {}) {
   if (!isAdmin) return;
+  state.admAviso = "";
   state.page = "admin";
   state.adminAba = abaDoAdmin(aba);
   state.selected = null;
@@ -14385,7 +14387,7 @@ function carregarAbaDoAdmin() {
   const aba = state.adminAba;
   if (aba === "inicio" || aba === "emails") carregarSituacaoDosEmails();
   if (aba === "inicio" || aba === "jogadores") carregarNumerosDasContas();
-  if (aba === "jogadores") carregarJogadoresDoAdmin();
+  if (aba === "jogadores") { carregarJogadoresDoAdmin(); carregarContasExcluidas(); }
   if (aba === "emails") carregarEmailsRecentes();
   if (aba === "percursos" && !(state.percursos && state.percursos.linhas && state.percursos.linhas.length)) { state.percursosMostrar = 20; carregarPercursos(); }
 }
@@ -14697,7 +14699,7 @@ function admJogadoresHtml() {
           <div class="adm-tr adm-th" role="row"><span role="columnheader">Nome e e-mail</span><span role="columnheader">Cidade</span><span role="columnheader">Criada em</span><span role="columnheader">Avisos</span></div>
           ${lista.slice(0, mostrar).map(j => `
             <div class="adm-tr" role="row">
-              <span role="cell"><strong>${esc(j.nome)}</strong><small>${esc(j.email)}${j.email_confirmado_em ? "" : " · e-mail não confirmado"}</small></span>
+              <span role="cell"><strong>${esc(j.nome)}</strong><small>${esc(j.email)}${j.email_confirmado_em ? "" : " · e-mail não confirmado"}</small>${botaoExcluirConta(j.user_id, j.nome, j.email)}</span>
               <span role="cell">${esc(j.cidade || "—")}</span>
               <span role="cell">${dataCurta(j.created_at)}</span>
               <span role="cell">${avisos(j).length ? esc(avisos(j).join(", ")) : "<small>nenhum</small>"}</span>
@@ -14705,7 +14707,8 @@ function admJogadoresHtml() {
         </div>
         ${lista.length > mostrar ? `<button type="button" class="cta-btn cta-secondary" id="adm-jogadores-mais" style="margin-top:12px">Mostrar mais ${Math.min(50, lista.length - mostrar)}</button>` : ""}`}
       <p class="adm-nota" style="margin-top:12px">Dados pessoais: use só para cuidar das contas e dos avisos (LGPD). A senha de cada conta fica cifrada no Supabase e nem o admin vê.</p>
-    </section>`;
+    </section>
+    ${blocoContasExcluidas()}`;
 }
 
 function admAvaliacoesHtml() {
@@ -14798,13 +14801,107 @@ function admFerramentasHtml() {
     </section>`;
 }
 
+// ---- excluir a conta de quem descumprir os Termos (06/10/2026) ----
+// O admin escreve o motivo (fica guardado) e escolhe se as avaliações da
+// conta saem também. O e-mail fica bloqueado para outra conta, até o admin
+// liberar. SQL 20261006150000.
+function botaoExcluirConta(userId, nome, email) {
+  if (!userId) return "";
+  return `<button type="button" class="adm-excluir" data-adm-excluir="${esc(userId)}" data-nome="${esc(nome || "")}" data-email="${esc(email || "")}">Excluir conta</button>`;
+}
+function admAcessosHtml() {
+  const contas = umaLinhaPorConta(state.acessos || []);
+  const nomeDe = nomeDaAcademiaNoAdmin;
+  return `
+    <section class="adm-bloco">${blocoAcessosDasAcademias() || `<p class="adm-vazio">O banco ainda não mostra os acessos.</p>`}</section>
+    ${contas.length ? `
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Contas do GuiaTennis Parceiros <span class="adm-cont">${contas.length}</span></h2>
+      <div class="adm-tabela" role="table" aria-label="Contas do GuiaTennis Parceiros">
+        <div class="adm-tr adm-th" role="row"><span role="columnheader">Nome e e-mail</span><span role="columnheader">Academias</span><span role="columnheader">Último acesso</span><span role="columnheader">Situação</span></div>
+        ${contas.map(a => {
+          const academias = (state.acessos || []).filter(x => x.user_id === a.user_id && x.academia_id).map(x => nomeDe(x.academia_id));
+          return `
+          <div class="adm-tr" role="row">
+            <span role="cell"><strong>${esc(a.nome_responsavel || a.usuario)}</strong><small>${esc(a.email || a.usuario)}${a.whatsapp ? " · " + esc(telefoneBonito(a.whatsapp)) : ""}</small>${botaoExcluirConta(a.user_id, a.nome_responsavel, a.email || a.usuario)}</span>
+            <span role="cell">${academias.length ? esc(academias.join(", ")) : "<small>nenhuma ainda</small>"}</span>
+            <span role="cell">${a.ultimo_acesso ? dataCurta(a.ultimo_acesso) : "<small>ainda não entrou</small>"}</span>
+            <span role="cell">${a.dados_completos_em ? "Ativa" : "Esperando o primeiro acesso"}</span>
+          </div>`;
+        }).join("")}
+      </div>
+    </section>` : ""}`;
+}
+function blocoContasExcluidas() {
+  const lista = state.admExcluidas || [];
+  if (!lista.length) return "";
+  return `
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Contas excluídas <span class="adm-cont">${lista.length}</span></h2>
+      <p class="adm-nota" style="margin-top:0">Esses e-mails não criam outra conta. Liberar tira o bloqueio (a conta não volta).</p>
+      <div class="adm-tabela" role="table" aria-label="Contas excluídas">
+        ${lista.map(c => `
+          <div class="adm-tr" role="row">
+            <span role="cell"><strong>${esc(c.nome || c.email)}</strong><small>${esc(c.email)}</small></span>
+            <span role="cell">${esc(c.tipo || "")}</span>
+            <span role="cell">${dataCurta(c.excluida_em)}</span>
+            <span role="cell">${esc(c.motivo)}${c.avaliacoes_apagadas ? "<small>avaliações apagadas</small>" : ""}<button type="button" class="chip small" data-adm-liberar="${esc(c.email)}">Liberar o e-mail</button></span>
+          </div>`).join("")}
+      </div>
+    </section>`;
+}
+async function carregarContasExcluidas() {
+  try {
+    const r = await sb.rpc('contas_excluidas_admin');
+    state.admExcluidas = r.error ? [] : (r.data || []);
+  } catch { state.admExcluidas = []; }
+  if (state.page === "admin") render();
+}
+function janelaExcluirConta() {
+  const x = state.admExcluindo;
+  if (!x) return "";
+  return `
+    <div class="overlay open" id="adm-excluir-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="adm-excluir-fechar" aria-label="Fechar">✕</button>
+        <p class="sheet-title display">Excluir a conta</p>
+        <p class="subtitle" style="margin-top:4px"><strong>${esc(x.nome || x.email)}</strong>${x.nome ? " · " + esc(x.email) : ""}</p>
+        <p class="adm-nota">A conta sai do GuiaTennis (jogador e GuiaTennis Parceiros), e esse e-mail não cria outra conta até você liberar. As academias que ela administrava continuam no guia.</p>
+        <label class="field-label" for="adm-excluir-motivo">Motivo (fica guardado)</label>
+        <textarea class="form-field" id="adm-excluir-motivo" rows="3" placeholder="Ex.: avaliações ofensivas; pediu academia que não representa">${esc(x.motivo || "")}</textarea>
+        <label class="consent-row"><input type="checkbox" id="adm-excluir-avaliacoes" ${x.apagar ? "checked" : ""} /><span>Apagar também as avaliações dessa conta (sem marcar, elas ficam com o nome, sem a ligação com a conta)</span></label>
+        ${x.erro ? `<div class="form-error">${icon('warning', 13)} ${esc(x.erro)}</div>` : ""}
+        <div class="adm-acoes" style="margin-top:16px">
+          <button type="button" class="cta-btn cta-danger" id="adm-excluir-confirmar" ${x.salvando ? "disabled" : ""}>${x.salvando ? "Excluindo…" : "Excluir a conta"}</button>
+          <button type="button" class="cta-btn cta-secondary" id="adm-excluir-cancelar">Cancelar</button>
+        </div>
+      </div></div>
+    </div>`;
+}
+async function excluirContaAgora() {
+  const x = state.admExcluindo;
+  if (!x) return;
+  const motivo = String(x.motivo || "").trim();
+  if (motivo.length < 5) { x.erro = "Escreva o motivo da exclusão."; render(); return; }
+  x.salvando = true; x.erro = ""; render();
+  const r = await sb.rpc('excluir_conta_admin', { p_user: x.userId, p_motivo: motivo, p_apagar_avaliacoes: !!x.apagar });
+  if (r.error) { x.salvando = false; x.erro = r.error.message || "Não consegui excluir agora."; render(); return; }
+  state.admExcluindo = null;
+  state.admAviso = `Conta de ${x.nome || x.email} excluída.`;
+  await loadEverything();
+  carregarJogadoresDoAdmin();
+  carregarNumerosDasContas();
+  carregarContasExcluidas();
+  render();
+}
+
 function renderPainelAdmin() {
   const aba = abaDoAdmin(state.adminAba);
   const atual = ADMIN_ABAS.find(x => x.aba === aba);
   const contagem = { pendencias: (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length };
   const conteudo = {
-    inicio: admInicioHtml, pendencias: admPendenciasHtml, academias: admAcademiasHtml, acessos: () => `<section class="adm-bloco">${blocoAcessosDasAcademias()}</section>`,
-    jogadores: admJogadoresHtml, avaliacoes: admAvaliacoesHtml, estatisticas: () => `<section class="adm-bloco">${conteudoDasEstatisticas()}</section>`,
+    inicio: admInicioHtml, pendencias: admPendenciasHtml, academias: admAcademiasHtml,
+    jogadores: admJogadoresHtml, avaliacoes: admAvaliacoesHtml, acessos: admAcessosHtml, estatisticas: () => `<section class="adm-bloco">${conteudoDasEstatisticas()}</section>`,
     percursos: () => `<section class="adm-bloco">${conteudoDosPercursos()}</section>`, emails: admEmailsHtml, ferramentas: admFerramentasHtml,
   }[aba]();
   const item = (x) => `<a href="/admin${x.aba === "inicio" ? "" : "/" + x.aba}" class="adm-nav-i ${x.aba === aba ? "ativo" : ""}" data-adm-aba="${x.aba}" ${x.aba === aba ? 'aria-current="page"' : ""}>${icon(x.ic, 18, 'currentColor')}<span>${x.t}</span>${contagem[x.aba] ? `<span class="adm-nav-n">${contagem[x.aba]}</span>` : ""}</a>`;
@@ -14827,10 +14924,12 @@ function renderPainelAdmin() {
         <main class="adm-main">
           <h1 class="adm-h1">${esc(atual.t)}</h1>
           <p class="adm-sub">${esc(atual.sub)}</p>
+          ${state.admAviso ? `<p class="conta-aviso" role="status">${icon('check', 14, 'var(--green)')} ${esc(state.admAviso)}</p>` : ""}
           ${conteudo}
         </main>
       </div>
-    </div>`;
+    </div>
+    ${janelaExcluirConta()}`;
 }
 
 function ligarEventosDoPainel() {
@@ -14862,6 +14961,24 @@ function ligarEventosDoPainel() {
   });
   document.querySelectorAll("[data-adm-reenviar]").forEach(el => { el.onclick = () => reenviarEmail(el.dataset.admReenviar); });
   document.querySelectorAll("[data-adm-revisada]").forEach(el => { el.onclick = () => marcarRevisada(el.dataset.admRevisada); });
+  document.querySelectorAll("[data-adm-excluir]").forEach(el => {
+    el.onclick = () => { state.admAviso = ""; state.admExcluindo = { userId: el.dataset.admExcluir, nome: el.dataset.nome, email: el.dataset.email, motivo: "", apagar: false }; render(); document.getElementById("adm-excluir-motivo")?.focus(); };
+  });
+  const exMotivo = document.getElementById("adm-excluir-motivo");
+  if (exMotivo) exMotivo.oninput = (e) => { state.admExcluindo.motivo = e.target.value; };
+  const exAval = document.getElementById("adm-excluir-avaliacoes");
+  if (exAval) exAval.onchange = (e) => { state.admExcluindo.apagar = e.target.checked; };
+  const exOk = document.getElementById("adm-excluir-confirmar");
+  if (exOk) exOk.onclick = excluirContaAgora;
+  document.querySelectorAll("#adm-excluir-cancelar, #adm-excluir-fechar").forEach(el => { el.onclick = () => { state.admExcluindo = null; render(); }; });
+  document.querySelectorAll("[data-adm-liberar]").forEach(el => {
+    el.onclick = async () => {
+      if (!confirm(`Liberar ${el.dataset.admLiberar}? Esse e-mail volta a poder criar conta.`)) return;
+      const r = await sb.rpc('liberar_email_admin', { p_email: el.dataset.admLiberar });
+      if (r.error) { alert("Não consegui liberar: " + r.error.message); return; }
+      carregarContasExcluidas();
+    };
+  });
   const atualizarEmails = document.getElementById("adm-emails-atualizar");
   if (atualizarEmails) atualizarEmails.onclick = () => { carregarSituacaoDosEmails(); carregarEmailsRecentes(); };
   const nova = document.getElementById("adm-nova-academia");

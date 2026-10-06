@@ -224,4 +224,50 @@ const tela = (page) => page.evaluate(() => ({
   await page.waitForTimeout(1200);
   ok(idas.includes('/admin'), 'entrar pelo "Entrar" do site com o e-mail do admin: recarrega já no /admin — ' + idas.join(' → '));
   await browser.close();
+
+  // ---- Excluir a conta de quem descumprir os Termos (06/10/2026) ----
+  ({ browser, page } = await abrir({ admin: true, q: 'admin/jogadores', avaliacoes: [{ id: 'rz', academia_id: 'a1', stars: 1, comment: 'Ofensa', nome_autor: 'Bia Souza', user_id: 'j-bia', created_at: agora }], w: 1280 }));
+  await preparar(page);
+  await page.evaluate(() => irAdmin('jogadores'));
+  await page.waitForTimeout(400);
+  await page.click('[data-adm-excluir="j-bia"]');
+  await page.waitForTimeout(150);
+  ok(await page.isVisible('#adm-excluir-overlay') && (await texto(page, '#adm-excluir-overlay')).includes('bia@exemplo.com'), '"Excluir conta" abre a janela com a conta');
+  await page.click('#adm-excluir-confirmar');
+  await page.waitForTimeout(150);
+  ok((await texto(page, '#adm-excluir-overlay')).includes('Escreva o motivo') && await page.evaluate(() => window.__db.jogadores.some(j => j.user_id === 'j-bia')), 'sem o motivo, não exclui');
+  await page.fill('#adm-excluir-motivo', 'Avaliações ofensivas');
+  await page.check('#adm-excluir-avaliacoes');
+  await page.click('#adm-excluir-confirmar');
+  await page.waitForTimeout(700);
+  let ex = await page.evaluate(() => ({ jog: window.__db.jogadores.some(j => j.user_id === 'j-bia'), aval: window.__db.avaliacoes.some(r => r.id === 'rz'), lista: window.__db.contas_excluidas.map(c => c.email + '|' + c.motivo).join(), janela: !!document.getElementById('adm-excluir-overlay'), tela: document.getElementById('painel-admin').innerText }));
+  ok(!ex.jog && !ex.aval && ex.lista === 'bia@exemplo.com|Avaliações ofensivas' && !ex.janela, 'exclui a conta e as avaliações, e guarda o motivo — ' + ex.lista);
+  ok(ex.tela.includes('Conta de Bia Souza excluída') && ex.tela.includes('Contas excluídas') && ex.tela.includes('Avaliações ofensivas'), 'o painel avisa e lista as contas excluídas');
+  page.once('dialog', d => d.accept());
+  await page.click('[data-adm-liberar="bia@exemplo.com"]');
+  await page.waitForTimeout(400);
+  ok(await page.evaluate(() => !window.__db.contas_excluidas.length && !document.getElementById('painel-admin').innerText.includes('Contas excluídas')), '"Liberar o e-mail" tira o bloqueio');
+  // Conta do GuiaTennis Parceiros, em Acessos ao Parceiros
+  await page.evaluate(async (agora) => {
+    window.__db.academia_acessos.push({ user_id: 'u-mal', academia_id: 'a2', usuario: 'mal@aula.com', nome_responsavel: 'Mal Feitor', email: 'mal@aula.com', dados_completos_em: agora });
+    window.__db.academia_vinculos.push({ user_id: 'u-mal', academia_id: 'a2', papel: 'principal' });
+    await carregarAcessos(); irAdmin('acessos');
+  }, agora);
+  await page.waitForTimeout(300);
+  ok((await texto(page, '#painel-admin')).includes('Contas do GuiaTennis Parceiros') && await page.isVisible('[data-adm-excluir="u-mal"]'), 'Acessos ao Parceiros lista as contas, cada uma com "Excluir conta"');
+  await page.click('[data-adm-excluir="u-mal"]');
+  await page.fill('#adm-excluir-motivo', 'Pediu academia que não representa');
+  await page.click('#adm-excluir-confirmar');
+  await page.waitForTimeout(700);
+  ok(await page.evaluate(() => !window.__db.academia_acessos.some(x => x.user_id === 'u-mal') && window.__db.academias.some(a => a.id === 'a2') && window.__db.contas_excluidas.some(c => c.email === 'mal@aula.com' && c.tipo === 'GuiaTennis Parceiros')), 'a conta do Parceiros sai e a academia continua no guia');
+  await browser.close();
+  ({ browser, page } = await abrir());
+  t = await page.evaluate(async () => {
+    window.__db.contas_excluidas.push({ email: 'banido@exemplo.com', motivo: 'Teste', excluida_em: new Date().toISOString() });
+    const j = await sb.rpc('criar_conta_jogador', { p_email: 'banido@exemplo.com', p_senha: 'senha boa 123', p_nome: 'Banido', p_aceite: true });
+    const p = await sb.rpc('criar_minha_conta', { p_email: 'banido@exemplo.com', p_senha: 'senha boa 123', p_nome: 'Banido', p_whatsapp: '11999998888', p_aceite: true });
+    return [j.error && j.error.message, p.error && p.error.message];
+  });
+  ok(t.every(m => /não pode criar conta/.test(m || '')), 'e-mail de conta excluída não cria conta de jogador nem do Parceiros');
+  await browser.close();
 })();

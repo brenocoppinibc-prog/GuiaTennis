@@ -3,7 +3,8 @@
 (SQL 20261005150000_buscas_salvas e 20261005160000_avisos_por_email) e as
 consultas do painel do admin (20261006120000_painel_do_admin) e a declaração
 de quem pede uma academia (20261006130000_declaracao_ao_pedir) e a academia
-nova que vai ao ar sozinha (20261006140000_academia_nova_no_ar).
+nova que vai ao ar sozinha (20261006140000_academia_nova_no_ar) e a exclusão de
+conta pelo admin (20261006150000_excluir_conta).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -433,6 +434,36 @@ semconf = parceiro("Ivo Sem Confirmar", f"ivo{sufixo}@exemplo.com", confirmado=F
 sql(f"update public.academia_acessos set dados_completos_em = now() where user_id = '{semconf}'")
 sql(nova_sql.format(n="Quadra Ivo"), papel="authenticated", user=semconf)
 ok(um("select status from public.academias where name = 'Quadra Ivo'") == "pending", "sem o e-mail confirmado, a academia nova espera o GuiaTennis")
+
+# 14. O admin exclui a conta de quem descumprir os Termos (SQL 20261006150000) --
+print("\n# Admin exclui conta")
+zeca_email = f"zeca{sufixo}@exemplo.com"
+zeca = jogador("Zeca Viola", zeca_email)
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 1, 'Ofensa')", papel="authenticated", user=zeca)
+ok(certo, "o jogador avalia" + ("" if certo else ": " + saida))
+certo, _ = sql(f"select public.excluir_conta_admin('{zeca}', 'Avaliação ofensiva', false)", papel="authenticated", user=hugo)
+ok(not certo, "só o admin exclui conta")
+certo, saida = sql(f"select public.excluir_conta_admin('{zeca}', 'x', false)", **admin_jwt)
+ok(not certo and "motivo" in saida, "sem motivo, não exclui")
+certo, saida = sql(f"select public.excluir_conta_admin('{zeca}', 'Avaliação ofensiva', false)", **admin_jwt)
+ok(certo and um(f"select count(*) from auth.users where id = '{zeca}'") == "0" and um(f"select count(*) from public.jogadores where user_id = '{zeca}'") == "0",
+   "admin exclui a conta do jogador" + ("" if certo else ": " + saida))
+ok(um("select count(*) from public.avaliacoes where comment = 'Ofensa' and user_id is null") == "1", "sem marcar, a avaliação fica, com o nome e sem a ligação")
+ok(um(f"select tipo || '|' || motivo from public.contas_excluidas_admin() where email = '{zeca_email}'", **admin_jwt) == "jogador|Avaliação ofensiva",
+   "fica guardado o e-mail, o tipo e o motivo (só o admin vê)")
+certo, saida = sql(f"select public.criar_conta_jogador('{zeca_email}', 'senha boa 123', 'Zeca de Novo', true)", papel="anon")
+ok(not certo and "não pode criar conta" in saida, "o mesmo e-mail não cria outra conta" + ("" if not certo else ""))
+certo, _ = sql(f"select public.liberar_email_admin('{zeca_email}')", **admin_jwt)
+ok(certo and um(f"select count(*) from public.contas_excluidas where email = '{zeca_email}'") == "0", "admin libera o e-mail")
+dono2 = parceiro("Rex Parceiro", f"rex{sufixo}@exemplo.com", academia=PINHEIROS)
+sql(f"select public.ativar_conta_de_jogador()", papel="authenticated", user=dono2)
+sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 1, 'Spam do Rex')", papel="authenticated", user=dono2)
+certo, saida = sql(f"select public.excluir_conta_admin('{dono2}', 'Pediu academia que não representa', true)", **admin_jwt)
+ok(certo and um("select count(*) from public.avaliacoes where comment = 'Spam do Rex'") == "0"
+   and um(f"select count(*) from public.academia_acessos where user_id = '{dono2}'") == "0"
+   and um(f"select status from public.academias where id = '{PINHEIROS}'") == "published",
+   "conta do Parceiros: sai, com as avaliações (marcado), e a academia continua no guia" + ("" if certo else ": " + saida))
+ok(um(f"select tipo from public.contas_excluidas where email = 'rex{sufixo}@exemplo.com'") == "jogador e GuiaTennis Parceiros", "o tipo diz que era jogador e Parceiros")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

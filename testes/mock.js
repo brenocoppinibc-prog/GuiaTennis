@@ -35,6 +35,8 @@
     buscas_salvas: [],
     // Fila dos avisos por e-mail (SQL 20261005160000), vista pelo painel do admin.
     emails_a_enviar: [],
+    // Contas excluídas pelo admin (SQL 20261006150000): o e-mail fica bloqueado.
+    contas_excluidas: [],
   };
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
@@ -413,6 +415,7 @@
     if (nome === "criar_minha_conta") {
       const e = String(a.p_email || "").trim().toLowerCase();
       if (sessao) return erro("Saia da conta atual para criar outra.", "22023");
+      if (db.contas_excluidas.some(c => c.email === e)) return erro("Esse e-mail não pode criar conta no GuiaTennis. Fale com o GuiaTennis.", "42501");
       if (!a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
       if (tel(a.p_whatsapp).length < 10 || tel(a.p_whatsapp).length > 11) return erro("WhatsApp inválido: use o DDD e o número.", "22023");
       if (db.academia_acessos.some(x => loginDe(x) === e || (x.email || "").toLowerCase() === e) || e === ADMIN) return erro("Esse e-mail já tem conta no GuiaTennis Parceiros. Entre com a sua senha.", "23505");
@@ -562,6 +565,7 @@
       if (sessao) return erro("Saia da conta atual para criar outra.", "22023");
       if (!a.p_aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.", "22023");
       if ((a.p_senha || "").length < 8) return erro("A senha precisa ter pelo menos 8 caracteres.", "22023");
+      if (db.contas_excluidas.some(c => c.email === email)) return erro("Esse e-mail não pode criar conta no GuiaTennis. Fale com o GuiaTennis.", "42501");
       if (window.__senhas[email] || email === ADMIN || db.academia_acessos.some(x => (x.email || "").toLowerCase() === email))
         return erro("Esse e-mail já tem conta no GuiaTennis. Entre com a sua senha.", "23505");
       const id = novoLogin(email, a.p_senha);
@@ -619,6 +623,35 @@
     }
     // Painel do admin (SQL 20261006120000): os e-mails da fila, mandar de
     // novo e os números das contas. window.__semPainelAdmin finge o banco sem o SQL.
+    // O admin exclui a conta de quem descumprir os Termos (SQL 20261006150000).
+    if (nome === "excluir_conta_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      if (String(a.p_motivo || "").trim().length < 5) return erro("Escreva o motivo da exclusão.", "22023");
+      const j = db.jogadores.find(y => y.user_id === a.p_user), x = db.academia_acessos.find(y => y.user_id === a.p_user);
+      if (!j && !x) return erro("Conta não encontrada.", "22023");
+      const emails = [...new Set([j && j.email, x && x.email, x && loginDe(x)].filter(Boolean).map(e => e.toLowerCase()))];
+      const tipo = j && x ? "jogador e GuiaTennis Parceiros" : x ? "GuiaTennis Parceiros" : "jogador";
+      emails.forEach(e => { db.contas_excluidas = db.contas_excluidas.filter(c => c.email !== e); db.contas_excluidas.push({ email: e, nome: (j && j.nome) || (x && x.nome_responsavel), tipo, motivo: a.p_motivo.trim(), avaliacoes_apagadas: !!a.p_apagar_avaliacoes, excluida_em: new Date().toISOString() }); });
+      if (a.p_apagar_avaliacoes) db.avaliacoes = db.avaliacoes.filter(r => r.user_id !== a.p_user);
+      else db.avaliacoes.forEach(r => { if (r.user_id === a.p_user) r.user_id = null; });
+      window.__db.avaliacoes = db.avaliacoes;
+      db.jogadores = db.jogadores.filter(y => y.user_id !== a.p_user); window.__db.jogadores = db.jogadores;
+      db.academia_acessos = db.academia_acessos.filter(y => y.user_id !== a.p_user); window.__db.academia_acessos = db.academia_acessos;
+      db.academia_vinculos = db.academia_vinculos.filter(y => y.user_id !== a.p_user); window.__db.academia_vinculos = db.academia_vinculos;
+      db.buscas_salvas = db.buscas_salvas.filter(y => y.user_id !== a.p_user); window.__db.buscas_salvas = db.buscas_salvas;
+      db.pedidos_de_acesso = db.pedidos_de_acesso.filter(y => y.user_id !== a.p_user); window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
+      window.__db.contas_excluidas = db.contas_excluidas;
+      return { data: null, error: null };
+    }
+    if (nome === "contas_excluidas_admin") {
+      if (!souAdmin()) return { data: [], error: null };
+      return { data: JSON.parse(JSON.stringify(db.contas_excluidas)), error: null };
+    }
+    if (nome === "liberar_email_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      db.contas_excluidas = db.contas_excluidas.filter(c => c.email !== String(a.p_email || "").trim().toLowerCase()); window.__db.contas_excluidas = db.contas_excluidas;
+      return { data: null, error: null };
+    }
     // Academias novas que foram ao ar sozinhas (SQL 20261006140000).
     if (nome === "academias_para_revisar_admin") {
       if (!souAdmin()) return { data: [], error: null };

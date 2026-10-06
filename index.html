@@ -628,6 +628,11 @@
   .viagem-pergunta-x { position: absolute; top: 6px; right: 8px; background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px; }
   /* Buscas salvas (05/10/2026): "Salvar busca" embaixo da barra da busca e o
      aviso depois de salvar, no verde claro da pergunta da viagem. */
+  /* Admin no GuiaTennis Parceiros (06/10/2026): a faixa do modo admin. */
+  .pc-admin-faixa { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; background: #FFF4D6; border-bottom: 1px solid #F2D27A; padding: 10px 20px; font-size: 13px; line-height: 1.45; color: var(--text); }
+  .pc-admin-faixa-acoes { display: flex; gap: 14px; }
+  .pc-admin-faixa-acoes a, .pc-admin-faixa-acoes button { background: none; border: 0; padding: 0; font: inherit; color: var(--green); font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .pc-admin-lista { margin-top: 14px; }
   .busca-salvar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 12px 20px 0; }
   .busca-salvar-dica { font-size: 13px; color: var(--muted); flex: 1 1 200px; }
   .busca-salva-aviso { margin: 10px 20px 0; display: flex; align-items: flex-start; gap: 10px; background: var(--green-soft); border-radius: 14px; padding: 12px 38px 12px 14px; font-size: 14px; line-height: 1.5; position: relative; }
@@ -1859,6 +1864,11 @@ const USANDO_BANCO_DE_TESTE = NO_SITE_DE_TESTE && !!BANCO_DE_TESTE.url && !!BANC
 const SUPABASE_URL = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.url : "https://eultezheqwmxyakvgyjy.supabase.co";
 const SUPABASE_ANON_KEY = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.chave : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Admin vendo o GuiaTennis Parceiros como uma academia (06/10/2026): as
+// funções "da minha academia" viram as do admin para aquela academia
+// (rpcNaVisaoAdmin). Fora desse modo, tudo vai direto ao banco.
+const rpcDoBanco = sb.rpc.bind(sb);
+sb.rpc = (nome, args) => (emVisaoAdmin() ? rpcNaVisaoAdmin(nome, args || {}) : rpcDoBanco(nome, args));
 
 let isAdmin = false;
 // Academia logada na área dela: edita a própria ficha e responde as
@@ -3677,6 +3687,9 @@ function esc(s) { return (s ?? "").toString().replace(/[&<>"']/g, m => ({'&':'&a
 
 
 function render() {
+  // Fora do GuiaTennis Parceiros, o admin volta a ser só o admin (a academia
+  // que ele via volta quando ele abrir o Parceiros de novo).
+  if (contaAcademia && contaAcademia.visaoAdmin && state.page !== "parceiros") contaAcademia = null;
   const scrollTargets = document.querySelectorAll(".sheet, .sheet-scroll, .drawer-body");
   const savedScrolls = Array.from(scrollTargets).map(el => ({ id: el.id, cls: el.className, top: el.scrollTop }));
   const pageScroll = window.scrollY;
@@ -3875,7 +3888,7 @@ function seoDaPagina() {
     // (?academia=) e as páginas de quem está logado ficam de fora.
     const noGoogle = titulos[aba] && !(aba === "cadastro" && state.pcReivindicar);
     return {
-      titulo: titulos[aba] || `${(PC_MENU_LOGADO.find(i => i.aba === aba) || {}).t || "Entrar"} · GuiaTennis Parceiros`,
+      titulo: titulos[aba] || `${(PC_MENU_LOGADO.find(i => i.aba === aba) || {}).t || (aba === "ver" ? "Ver como academia" : "Entrar")} · GuiaTennis Parceiros`,
       descricao: "Cadastre a sua academia de tênis no GuiaTennis: apareça para quem procura aula e quadra na região e receba contato direto no WhatsApp, sem comissão.",
       robots: noGoogle ? "" : "noindex, follow",
     };
@@ -4807,12 +4820,13 @@ function souPrincipal() {
 // Quem está logado: o admin, pelo e-mail, ou uma academia, pelo acesso
 // dela no banco. Login sem acesso (removido pelo admin) fica como visitante.
 async function carregarConta(session) {
+  const visao = contaAcademia && contaAcademia.visaoAdmin ? contaAcademia : null;
   isAdmin = false;
   contaAcademia = null;
   jogador = null;
   const user = session && session.user;
   if (!user) return;
-  if ((user.email || "").toLowerCase() === EMAIL_ADMIN) { isAdmin = true; return; }
+  if ((user.email || "").toLowerCase() === EMAIL_ADMIN) { isAdmin = true; contaAcademia = visao; return; }
   try {
     const { data, error } = await sb.from('academia_acessos').select('*').eq('user_id', user.id);
     if (!error && data && data[0]) contaAcademia = { ...contaDeLinha(data[0]), login: user.email };
@@ -5421,6 +5435,8 @@ async function salvarDadosConta() {
 }
 
 async function trocarSenhaConta() {
+  // Vendo como academia, a senha seria a do admin: não troca daqui.
+  if (emVisaoAdmin()) { state.contaErro = SO_VER_NO_MODO_ADMIN; render(); return; }
   const f = window.__senha || {};
   let erro = "";
   if (!f.atual) erro = "Digite a senha atual.";
@@ -5451,6 +5467,7 @@ async function trocarSenhaConta() {
 }
 
 async function publicarResposta(avaliacaoId) {
+  if (emVisaoAdmin()) { state.respostaErro = SO_VER_NO_MODO_ADMIN; render(); return; }
   const texto = (window.__respostaTexto || "").trim();
   if (!texto) { state.respostaErro = "Escreva a resposta."; render(); return; }
   const c = minhaAcademia();
@@ -5543,8 +5560,19 @@ function ligarEventosConta() {
   const contaOverlay = document.getElementById("conta-overlay");
   if (contaOverlay) contaOverlay.onclick = (e) => { if (e.target === contaOverlay) fechar(); };
 
+  const adminBusca = document.getElementById("pc-admin-busca");
+  if (adminBusca) adminBusca.oninput = (e) => {
+    state.adminBusca = e.target.value;
+    const pos = e.target.selectionStart;
+    render();
+    const campo = document.getElementById("pc-admin-busca");
+    if (campo) { campo.focus(); try { campo.setSelectionRange(pos, pos); } catch {} }
+  };
+  document.querySelectorAll("[data-ver-academia]").forEach(el => { el.onclick = () => verComoAcademia(el.dataset.verAcademia); });
+  const adminSair = document.getElementById("pc-admin-sair");
+  if (adminSair) adminSair.onclick = () => sairDaVisaoAdmin();
   document.querySelectorAll("#conta-sair, [data-sair-conta]").forEach(el => {
-    el.onclick = () => { sb.auth.signOut().then(() => location.reload()); };
+    el.onclick = () => { if (emVisaoAdmin()) { sairDaVisaoAdmin(); return; } sb.auth.signOut().then(() => location.reload()); };
   });
   document.querySelectorAll("[data-abrir-conta]").forEach(el => { el.onclick = abrirConta; });
   document.querySelectorAll("[data-abrir-academia]").forEach(el => { el.onclick = () => abrirAcademia(el.dataset.abrirAcademia); });
@@ -6021,6 +6049,8 @@ function demoBusca() {
 
 const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar"];
 const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "ficha", "pessoas", "plano", "academias", "perfil"];
+// Só do admin: escolher a academia para ver o Parceiros como ela vê.
+const PC_ADMIN = ["ver"];
 const PC_MENU_PUBLICO = [
   { aba: "inicio", t: "Início", ic: "home" },
   { aba: "inicio", ancora: "pc-beneficios", t: "Benefícios", ic: "sparkle" },
@@ -6100,7 +6130,7 @@ function perguntasParceiros() {
 function abaDoParceiro(aba) {
   // "Conta" virou o Perfil (05/10/2026); links antigos continuam abrindo.
   if (aba === "conta") return "perfil";
-  if (PC_PUBLICAS.includes(aba) || PC_PRIVADAS.includes(aba)) return aba;
+  if (PC_PUBLICAS.includes(aba) || PC_PRIVADAS.includes(aba) || PC_ADMIN.includes(aba)) return aba;
   return "inicio";
 }
 
@@ -6113,6 +6143,7 @@ function irParceiros(aba, opcoes = {}) {
     abrirNaAba(urlDosParceiros(aba, aba === "cadastro" && state.pcReivindicar ? "academia=" + encodeURIComponent(state.pcReivindicar) : ""), ABA_PARCEIROS);
     return;
   }
+  aba = abaDoAdminNoParceiros(aba);
   if (aba === "inicio" && contaAcademia && !opcoes.publico) aba = "painel";
   if (PC_PRIVADAS.includes(aba) && !contaAcademia) {
     state.parceirosDepois = aba;
@@ -6410,6 +6441,7 @@ function pcTopo() {
         <div class="pc-topo-acoes">
           ${logado && temAcademia() ? pcSeletor() + avatar
             : logado ? avatar
+            : isAdmin ? `<a href="/parceiros/ver" class="pc-cta" data-pc="ver">Ver como academia</a>`
             : `<a href="/parceiros/entrar" class="pc-entrar" data-pc="entrar">Entrar</a>
                <a href="/parceiros/cadastro" class="pc-cta" data-pc="cadastro">Cadastrar academia</a>`}
           <button type="button" class="pc-menu-btn" id="pc-menu-btn" aria-label="Abrir o menu">${icon('list', 20, 'var(--green)')}</button>
@@ -6518,12 +6550,134 @@ function pcRodape() {
 
 // ---- páginas ----
 
+// ---------- admin no GuiaTennis Parceiros (pedido do Breno em 06/10/2026) ----------
+// "Não estou com acesso no Parceiros sendo admin": como o acesso de suporte
+// do Google Business Profile e o "ver como a propriedade" do Booking, o
+// admin escolhe uma academia e vê o Parceiros como ela vê — painel,
+// desempenho, avaliações, ficha, pessoas e plano. Pedidos de acesso, tirar
+// alguém, pausar e editar a ficha ele faz como admin (o que já podia no
+// admin do site); o que é da academia (responder avaliação, pedir plano,
+// incluir pessoa, dados de contato) fica só para ver. Nada muda no banco:
+// é a conta do admin, com as funções de admin.
+const ADMIN_VE_KEY = "guiatennis_admin_ve_academia";
+function emVisaoAdmin() {
+  return !!(isAdmin && contaAcademia && contaAcademia.visaoAdmin);
+}
+// Página privada aberta pelo admin: a academia que ele estava vendo, ou a
+// escolha da academia. Para quem não é admin, "ver" é a apresentação.
+function abaDoAdminNoParceiros(aba) {
+  if (aba === "ver") return isAdmin ? "ver" : "inicio";
+  if (!isAdmin || contaAcademia) return aba;
+  if (!PC_PRIVADAS.includes(aba) && aba !== "entrar") return aba;
+  let id = null;
+  try { id = sessionStorage.getItem(ADMIN_VE_KEY); } catch {}
+  return id && montarVisaoAdmin(id) ? (aba === "entrar" ? "painel" : aba) : "ver";
+}
+function montarVisaoAdmin(id) {
+  const a = todasAsFichas().find(c => c.id === id);
+  if (!a) return false;
+  contaAcademia = {
+    userId: "admin", academiaId: a.id, usuario: EMAIL_ADMIN, login: EMAIL_ADMIN, nome: "GuiaTennis (admin)",
+    tratamento: "", cargo: "Admin do GuiaTennis", email: EMAIL_ADMIN, whatsapp: "", cnpj: "", recebeRelatorio: false,
+    termosAceitos: true, dadosCompletos: true, senhaTrocada: true, papel: "principal",
+    pedidoAcademiaId: null, pedidoNome: "", pedidoEm: null, pedidoDestino: "", emailConfirmado: true,
+    avisosPorEmail: false, temAvisos: false, visaoAdmin: true, pedidos: [],
+    // Sempre a ficha de agora (pausar e mudar o plano aparecem na hora).
+    get academias() {
+      const c = todasAsFichas().find(x => x.id === this.academiaId);
+      return c ? [{ id: c.id, nome: c.name, papel: "principal", status: c.status || "published", pausada: !!c.pausada,
+        plano: c.plano || "basico", bairro: c.bairro || "", cidade: c.cidade || "", pausadaAte: c.pausadaAte || null,
+        pausadaPelaAcademia: !!c.pausadaPelaAcademia }] : [];
+    },
+  };
+  try { sessionStorage.setItem(ADMIN_VE_KEY, a.id); } catch {}
+  state.numeros = null;
+  state.pessoas = null;
+  state.pedidosDeAcesso = null;
+  return true;
+}
+const SO_VER_NO_MODO_ADMIN = "No modo admin, isso é só para ver. Para mudar, entre com a conta da academia.";
+const RPCS_SO_DA_ACADEMIA = ["adicionar_pessoa", "pedir_plano", "pedir_para_administrar", "cancelar_meu_pedido",
+  "mudar_avisos_dos_parceiros", "completar_meu_acesso", "confirmar_meu_codigo", "confirmar_meu_email",
+  "marcar_senha_trocada", "criar_minha_conta", "ativar_conta_de_jogador", "abrir_minha_academia"];
+async function rpcNaVisaoAdmin(nome, a) {
+  const id = contaAcademia.academiaId;
+  if (RPCS_SO_DA_ACADEMIA.includes(nome)) return { data: null, error: { message: SO_VER_NO_MODO_ADMIN, code: "admin" } };
+  if (nome === "numeros_da_academia") return rpcDoBanco(nome, { ...a, p_academia: id });
+  if (nome === "pessoas_da_minha_academia") {
+    const r = await rpcDoBanco("acessos_das_academias");
+    if (r.error) return r;
+    return { error: null, data: (r.data || []).filter(x => x.academia_id === id)
+      .sort((x, y) => (y.papel === "principal") - (x.papel === "principal"))
+      .map(x => ({ user_id: x.user_id, nome: x.nome_responsavel, email: x.email || x.usuario, papel: x.papel,
+        dados_completos_em: x.dados_completos_em, ultimo_acesso: x.ultimo_acesso, sou_eu: false })) };
+  }
+  if (nome === "pedidos_para_minha_academia") {
+    const r = await rpcDoBanco("pedidos_de_acesso_admin");
+    if (r.error) return r;
+    return { error: null, data: (r.data || []).filter(x => x.academia_id === id)
+      .map(x => ({ user_id: x.user_id, nome: x.nome_responsavel, email: x.email || x.usuario, cargo: x.cargo, pedido_em: x.pedido_em })) };
+  }
+  if (nome === "responder_pedido_de_acesso")
+    return rpcDoBanco(a.p_aceitar ? "aprovar_pedido_de_acesso" : "recusar_pedido_de_acesso", { p_user: a.p_user, p_academia: id });
+  if (nome === "remover_pessoa") return rpcDoBanco("remover_acesso_academia", { p_user: a.p_user, p_academia: id });
+  if (nome === "pausar_minha_academia") {
+    const pausar = !!a.p_pausar;
+    const { error } = await sb.from('academias').update({ pausada: pausar, pausada_ate: pausar ? (a.p_ate || null) : null }).eq('id', a.p_academia || id);
+    return { data: null, error };
+  }
+  return rpcDoBanco(nome, a);
+}
+function verComoAcademia(id) {
+  if (!isAdmin || !montarVisaoAdmin(id)) return;
+  state.contaAviso = "";
+  state.contaErro = "";
+  irParceiros("painel", { mesmaAba: true });
+}
+function sairDaVisaoAdmin() {
+  contaAcademia = null;
+  try { sessionStorage.removeItem(ADMIN_VE_KEY); } catch {}
+  state.numeros = null;
+  irParceiros("ver", { mesmaAba: true });
+}
+function faixaDaVisaoAdmin() {
+  if (!emVisaoAdmin()) return "";
+  const a = minhaAcademia() || {};
+  return `
+    <div class="pc-admin-faixa" role="status">
+      <span>${icon('key', 15, 'currentColor')} <strong>Modo admin:</strong> você vê o GuiaTennis Parceiros da <strong>${esc(a.name || "academia")}</strong> como ela vê. Pedidos, pessoas, pausa e ficha você muda como admin; o resto é só para ver.</span>
+      <span class="pc-admin-faixa-acoes"><a href="/parceiros/ver" data-pc="ver">Trocar de academia</a><button type="button" id="pc-admin-sair">Sair do modo admin</button></span>
+    </div>`;
+}
+function pcVerComoAdmin() {
+  const termo = String(state.adminBusca || "").trim();
+  const lista = todasAsFichas()
+    .filter((c, i, todas) => todas.findIndex(x => x.id === c.id) === i)
+    .filter(c => !termo || [c.name, c.bairro, c.cidade].some(t => slugTexto(t || "").includes(slugTexto(termo))))
+    .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+  const situacao = (c) => c.status === "pending" ? "Em análise" : c.pausada ? "Pausada" : "No ar";
+  return `
+    <section class="pc-pagina pc-estreita">
+      <h1 class="display">Ver como academia</h1>
+      <p class="pc-sec-sub">Escolha a academia para ver o GuiaTennis Parceiros como ela vê: painel, desempenho, avaliações, ficha, pessoas e plano.</p>
+      <label class="field-label" for="pc-admin-busca">Academia</label>
+      <input class="form-field" id="pc-admin-busca" placeholder="Nome, bairro ou cidade" value="${esc(termo)}" autocomplete="off" style="margin-top:0" />
+      <div class="pc-admin-lista">
+        ${lista.length ? lista.slice(0, 60).map(c => `
+          <button type="button" class="perfil-item" data-ver-academia="${esc(c.id)}">${icon('predio', 20, 'var(--text)')}<span>${esc(c.name || "Sem nome")}<small>${esc([c.bairro, c.cidade, nomeDoPlano(c.plano || "basico"), situacao(c)].filter(Boolean).join(" · "))}</small></span>${icon('chevron', 16, 'var(--muted)')}</button>`).join("")
+          : `<p class="pc-card-s">Nenhuma academia com "${esc(termo)}".</p>`}
+      </div>
+      ${lista.length > 60 ? `<p class="fgroup-note">Mostrando 60 de ${lista.length}. Digite o nome para achar as outras.</p>` : ""}
+    </section>`;
+}
+
 function renderParceiros() {
   const aba = state.parceirosAba || "inicio";
   const semAcademia = contaAcademia && acessoCompleto() && !temAcademia();
   let miolo;
   if (PC_PRIVADAS.includes(aba) && contaAcademia && !acessoCompleto()) miolo = pcPrimeiroAcesso();
   else if (semAcademia && ["painel", "desempenho", "avaliacoes", "ficha", "pessoas"].includes(aba)) miolo = pcSemAcademia();
+  else if (aba === "ver") miolo = pcVerComoAdmin();
   else if (aba === "inicio") miolo = pcInicio();
   else if (aba === "planos") miolo = pcPlanos(false);
   else if (aba === "ajuda") miolo = pcAjuda();
@@ -6540,6 +6694,7 @@ function renderParceiros() {
   return `
     <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""}" id="parceiros">
       ${pcTopo()}
+      ${faixaDaVisaoAdmin()}
       <main class="pc-main">${miolo}</main>
       ${pcRodape()}
       ${pcBarraDeBaixo()}
@@ -8032,7 +8187,7 @@ function renderMenu() {
         ${item("porque", "Por que o GuiaTennis", "sparkle")}
         ${item("termos", "Termos de Uso", "clipboard")}
         ${item("privacidade", "Política de Privacidade", "clipboard")}
-        ${item(contaAcademia ? "conta" : "parceiros", "GuiaTennis Parceiros", "predio", contaAcademia ? "seu painel" : "para academias")}
+        ${item(contaAcademia ? "conta" : isAdmin ? "parceiros-admin" : "parceiros", "GuiaTennis Parceiros", "predio", contaAcademia ? "seu painel" : isAdmin ? "ver como academia" : "para academias")}
 
         <p class="menu-grupo">Fale com a gente</p>
         ${linksContato("menu-item", 22, "var(--text)")}
@@ -10585,7 +10740,7 @@ function aplicarLink(r) {
   }
   state.selected = null;
   if (r.page === "parceiros") {
-    let aba = r.aba;
+    let aba = abaDoAdminNoParceiros(r.aba);
     if (aba === "inicio" && contaAcademia) aba = "painel";
     if (PC_PRIVADAS.includes(aba) && !contaAcademia) { state.parceirosDepois = aba; aba = "entrar"; }
     state.page = "parceiros";
@@ -14749,6 +14904,7 @@ function attachEvents() {
       if (alvo === "comparar") { goComparar(); return; }
       if (alvo === "cadastrar") { irParceiros("cadastro"); return; }
       if (alvo === "parceiros") { irParceiros("inicio"); return; }
+      if (alvo === "parceiros-admin") { irParceiros("ver"); return; }
       if (alvo === "termos") { state.showTerms = true; render(); return; }
       if (alvo === "privacidade") { state.showPrivacy = true; render(); return; }
       if (alvo === "admin") { state.showLogin = true; state.loginModo = "admin"; state.loginError = ""; render(); return; }

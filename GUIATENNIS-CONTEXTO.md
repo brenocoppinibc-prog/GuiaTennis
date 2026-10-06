@@ -38,7 +38,7 @@ teste")
 > sem procurar endereço, e os textos "Por que o GuiaTennis" e "Por que estar
 > no GuiaTennis". Também a correção da esteira do banco, vermelha desde o
 > SQL da pausa (SQL `20261005180000_visitante_le_a_pausa`). Falta o Breno cadastrar o segredo `RESEND_API_KEY` no GitHub
-> (seção 11, primeiro item). Testes: **811 verificações, nenhuma falha** nos 26 arquivos
+> (seção 11, primeiro item). Testes: **825 verificações, nenhuma falha** nos 27 arquivos
 > do navegador e 95 no `banco-emails.py` (Postgres local).
 >
 > **Estado (05/10/2026, fim do dia):** depois do pacote abaixo, entraram as
@@ -729,6 +729,29 @@ cobra taxa e não fica no meio** da negociação.
     aviso por e-mail) e "Agora não". Só para quem não tem viagem guardada;
     uma vez a cada 30 dias (`PUSH_VIAGEM_KEY`, no aparelho); nunca junto do
     "Jogou aqui?" nem no cadastro. Teste: `testes/viagem.js`.
+57. **Admin no GuiaTennis Parceiros** (pedido de 06/10/2026: "não estou com
+    acesso no Parceiros sendo admin"), como o acesso de suporte do Google
+    Business Profile e o "ver como a propriedade" do Booking: com o admin
+    logado, página privada do Parceiros (e o "Entrar") abre
+    **`/parceiros/ver`** ("Ver como academia", fora do Google): busca por
+    nome, bairro ou cidade e a lista de todas as academias. Escolhida, o
+    admin vê o Parceiros como ela vê (painel, desempenho, avaliações,
+    ficha, pessoas, plano, Suas academias, perfil), com a faixa amarela
+    "Modo admin… Trocar de academia · Sair do modo admin". Como funciona
+    (`montarVisaoAdmin`, `rpcNaVisaoAdmin`): uma conta de academia de
+    mentira só naquela aba, e as funções "da minha academia" viram as do
+    admin — números com `p_academia`, pessoas de `acessos_das_academias`,
+    pedidos de `pedidos_de_acesso_admin`, aceitar/recusar vira
+    `aprovar/recusar_pedido_de_acesso`, tirar alguém vira
+    `remover_acesso_academia`, pausar muda a ficha como admin; editar a
+    ficha é a edição do admin. O que é da academia fica só para ver
+    ("No modo admin, isso é só para ver…"): responder avaliação, pedir
+    plano, incluir pessoa, dados de contato, avisos, trocar a senha (seria
+    a do admin). A academia escolhida fica na aba (`sessionStorage`):
+    recarregar continua nela; no site dos jogadores o admin volta a ser só
+    o admin; "Sair" no Parceiros sai do modo, não do login. No menu do site
+    dos jogadores, "GuiaTennis Parceiros · ver como academia"; no topo do
+    Parceiros, "Ver como academia". Teste: `testes/admin-parceiros.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1650,7 +1673,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

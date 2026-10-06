@@ -38,6 +38,7 @@
 #   /busca?q=…&piso=…              busca com filtros
 #   /comparar?academias=…          comparação
 #   /perfil                        perfil da conta do jogador
+#   /admin/…                       painel do admin (só o admin vê)
 #   /parceiros/…                   GuiaTennis Parceiros (site das academias)
 # Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
 # endereço) e o site monta a tela pelo link. Os links antigos (?court=,
@@ -84,6 +85,32 @@
   from = "/perfil"
   to = "/index.html"
   status = 200
+
+# Painel do admin (06/10/2026): /admin e /admin/<seção>. Só o admin vê o
+# painel; para qualquer outra pessoa, o site mostra a página inicial. Fica
+# fora do Google (noindex) e não fica guardado no navegador. De propósito,
+# o robots.txt não cita o /admin, para não anunciar que ele existe.
+[[redirects]]
+  from = "/admin"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/admin"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
 
 # O mesmo cuidado de cache do index.html vale para essas telas.
 [[headers]]

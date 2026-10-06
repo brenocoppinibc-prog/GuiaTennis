@@ -22,8 +22,19 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
-**Atualizado em:** 05/10/2026
+**Atualizado em:** 06/10/2026
 
+> **Estado (06/10/2026):** o Breno pediu "quando eu fizer o login, mude o
+> site para eu ter o controle de tudo… separado… mas não aparecer para
+> outras pessoas a minha área". Entrou a regra 58: o **painel do admin**
+> em **`/admin`** (visão geral, pendências, academias, acessos, contas de
+> jogador, avaliações, estatísticas, percurso, e-mails e ferramentas), com
+> SQL `20261006120000_painel_do_admin`. Os três botões redondos do admin
+> saíram do site dos jogadores (agora é a faixa "Abrir o painel").
+> Antes, no mesmo dia, a regra 57 (admin no GuiaTennis Parceiros). Testes:
+> **876 verificações, nenhuma falha** nos 28 arquivos do navegador e 102 no
+> `banco-emails.py` (Postgres local).
+>
 > **Estado (05/10/2026, noite):** o Breno respondeu ao que estava aberto:
 > **não quer endereço próprio para o Parceiros** (fica em
 > guiatennis.com.br/parceiros, `PARCEIROS_NO_ENDERECO_PROPRIO` continua
@@ -596,9 +607,8 @@ cobra taxa e não fica no meio** da negociação.
     avaliar, criar conta/entrar, pedir academia, código, plano escolhido,
     pausar; a saída vai com `keepalive` ao esconder a página. O admin não
     grava; a conta de academia só grava no GuiaTennis Parceiros. Banco sem
-    a tabela: para de mandar (`semPercurso`). **Relatório**: botão do mapa
-    no canto do admin (ou "Ver o percurso de cada visita ›" nas
-    Estatísticas) — Jogadores ou Parceiros, Hoje/7/30 dias: funil
+    a tabela: para de mandar (`semPercurso`). **Relatório**: "Percurso das
+    visitas", no painel do admin (antes, botão do mapa no canto) — Jogadores ou Parceiros, Hoje/7/30 dias: funil
     (visitas → buscaram → abriram ficha → chamaram; no Parceiros: abriram o
     cadastro → criaram a conta → pediram academia), de onde vieram (com
     quantos chegaram ao fim), caminhos mais comuns ("Início → Busca → Ficha
@@ -752,6 +762,52 @@ cobra taxa e não fica no meio** da negociação.
     o admin; "Sair" no Parceiros sai do modo, não do login. No menu do site
     dos jogadores, "GuiaTennis Parceiros · ver como academia"; no topo do
     Parceiros, "Ver como academia". Teste: `testes/admin-parceiros.js`.
+58. **Painel do admin em `/admin`** (pedido de 06/10/2026: "quando eu
+    fizer o login, mude o site para eu ter o controle de tudo, acessos e
+    tudo mais, algo diferenciado, organizado, separado e bem completo…
+    mas não aparecer para outras pessoas a minha área"), como o admin da
+    Shopify, o painel do Stripe e a extranet do Booking: um site à parte,
+    com barra verde-escura em cima ("GuiaTennis · ADMIN", "Ver o site",
+    "Ver como academia", "Sair") e as seções do lado (no celular, no botão
+    de menu). **Entrar com o e-mail do admin leva ao painel** — pelo
+    "Entrar" do site (recarrega já em `/admin`), pelo Entrar do Parceiros e
+    pela senha nova do código. Seções, cada uma no seu link
+    (`/admin/<seção>`): **Visão geral** ("Para fazer agora": academias
+    para aprovar, pedidos para administrar, pedidos de plano, academias
+    fora do mapa, e-mails parados ou que não saíram; os últimos 30 dias —
+    acessos, buscas, fichas abertas e contatos, com a variação contra os
+    30 dias antes e a linha das 12 semanas; academias no ar, pausadas, em
+    análise, fichas básicas, com acesso, por plano; contas, e-mails
+    confirmados, buscas salvas, contas no Parceiros, avaliações e nota
+    média; situação dos e-mails), **Pendências** (aprovar/rejeitar, pedidos
+    para administrar com o código, pedidos de plano), **Academias**
+    (busca, filtros — no ar, em análise, pausadas, fichas básicas, sem
+    acesso, planos pagos, fora do mapa — e, em cada uma, abrir a ficha,
+    editar, ver como academia, QR code, plano, pausar 7/15/30 dias ou
+    voltar para a busca), **Acessos ao Parceiros**, **Contas de jogador**
+    (nome, e-mail, cidade, criada em, avisos ligados; os números de
+    `numeros_das_contas_admin`), **Avaliações** (todas, a mais nova
+    primeiro, com o contato de quem avaliou, a resposta da academia,
+    filtros e excluir), **Estatísticas** e **Percurso das visitas** (o que
+    eram as janelas dos botões redondos), **E-mails** (situação e os
+    últimos 100 da fila, com "Tentar de novo" no que não saiu —
+    `emails_recentes_admin`, `reenviar_email_admin`) e **Ferramentas** (QR
+    do site, coordenadas que faltam, academias do mapa aberto, qual banco).
+    **Ninguém mais vê**: para visitante, jogador ou academia, `/admin` abre
+    a página inicial, com o link "/" e sem nenhum sinal do painel; o
+    painel fica fora do Google (`noindex, nofollow`, também no cabeçalho
+    do Netlify) e o `robots.txt` de propósito não cita o `/admin`. Os
+    dados continuam protegidos no banco (`eh_admin()` em cada função e
+    tabela) — esconder a tela é só a parte visível. No site dos jogadores,
+    o admin vê a faixa "Modo admin — Abrir o painel (n)" e, no menu,
+    "Painel do admin"; os três botões redondos (cliques, percurso,
+    prancheta) saíram. Ficha aberta pelo painel volta ao painel. As
+    janelas antigas (`renderAdminPanel`, `renderStatsPanel`,
+    `renderPercursosPanel`) continuam no código, por cima do mesmo
+    conteúdo (`conteudoDasPendentes`, `conteudoDasEstatisticas`,
+    `conteudoDosPercursos`, `blocoPedidosParaAdministrar`,
+    `blocoAcessosDasAcademias`), e os testes antigos as usam. Teste:
+    `testes/painel-admin.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1271,8 +1327,8 @@ WhatsApp do guia.
 **Admin:** o bloco "Acesso da academia" mostra usuário, "Esperando o
 primeiro acesso" ou "Ativo desde…" com responsável, cargo, e-mail,
 WhatsApp, CNPJ, se quer o relatório, último acesso, "ficha atualizada pela
-academia em…" e "ainda com a senha provisória". O painel (prancheta) lista
-"Acessos das academias". O admin pode apagar resposta (moderação).
+academia em…" e "ainda com a senha provisória". O painel do admin lista
+"Acessos das academias" em "Acessos ao Parceiros" (regra 58). O admin pode apagar resposta (moderação).
 
 **Estatísticas:** academia logada não grava nada (`naoConta()`), como o
 admin — senão cada visita dela à própria ficha contaria.
@@ -1440,7 +1496,7 @@ copiar do Google em massa, fotos, avaliações, textos e logo, não.**
   (os termos do Google Maps proíbem), foto, avaliação, nota, texto de
   descrição e logo. Na dúvida sobre foto, pedir à academia (mensagem da
   seção 13).
-- No painel do admin (botão da prancheta), no fim, **"Academias no mapa
+- No painel do admin, em **Ferramentas** (antes, botão da prancheta), **"Academias no mapa
   que ainda não estão no guia"**, do OpenStreetMap (licença ODbL: uso
   livre, até comercial, com crédito). O admin digita uma região (bairro,
   cidade ou CEP, pelo mesmo caminho da busca do site) e escolhe até 3, 5
@@ -1585,6 +1641,20 @@ colocados pelo Breno). Aqui:
   de confirmação conta junto). Passando disso, os avisos ficam na fila e
   saem no dia seguinte; com mais jogadores, o plano pago do Resend.
 
+### Painel do admin (06/10/2026)
+- SQL `20261006120000_painel_do_admin`, três funções só do admin
+  (`eh_admin()`; quem não é admin recebe "Só o admin." ou lista vazia, o
+  visitante nem chama): `emails_recentes_admin(p_limite)` (os últimos
+  e-mails da fila, sem o corpo: tipo, para, assunto, criado, enviado,
+  tentativas, erro), `reenviar_email_admin(p_id)` (o que não saiu volta
+  para a fila, zerado) e `numeros_das_contas_admin()` (jogadores,
+  confirmados, novos em 7 dias, cada aviso ligado, buscas salvas e com
+  aviso, contas no Parceiros, academias com responsável, pedidos abertos).
+  A lista das contas de jogador o painel lê direto de `jogadores` (o admin
+  já podia ler, pela regra da tabela). Tipos de e-mail na fila:
+  `avaliacao`, `pedido_responsavel`, `pedido_guiatennis`, `pedido_aceito`,
+  `viagem`, `academias_novas`.
+
 ## 5. Banco: o que já rodou e o que falta
 
 **Já rodado pelo Breno (confirmado):**
@@ -1673,7 +1743,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2231,8 +2301,15 @@ c9ade31 Configuração de publicação do Netlify
   Banco de dados → Run workflow, uma vez com "teste" (ou esperar o próximo
   push do PR); o "real" vai sozinho no merge; (4) no Supabase (nos dois
   projetos), Database → Extensions: conferir **pg_net** e **pg_cron**
-  ligados (o SQL tenta ligar sozinho). No admin, Estatísticas › "Avisos
-  por e-mail" diz se está tudo certo.
+  ligados (o SQL tenta ligar sozinho). No painel do admin, **E-mails** (e
+  a Visão geral) diz se está tudo certo.
+- **Testar na prévia o painel do admin (06/10/2026, regra 58)**: (1) sair e
+  entrar de novo com guiatennis1@gmail.com: o site muda para o painel
+  (`/admin`); (2) passar pelas seções (no celular, pelo botão de menu); (3)
+  em Academias, abrir uma, mudar o plano e voltar; (4) numa aba anônima,
+  abrir `/admin`: tem que aparecer só a página inicial. Ideias para depois,
+  se o Breno quiser: mandar as "Novidades do GuiaTennis" por ali e baixar
+  as listas em planilha.
 - **Testar na prévia o pacote de 05/10/2026 (noite)**: (1) buscar um bairro,
   "Salvar busca" (sem conta, entra e salva), "Avisar por e-mail…", ver em
   menu › Buscas salvas; (2) na home, "Ver as academias de São Paulo":

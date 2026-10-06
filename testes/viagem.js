@@ -222,11 +222,12 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await browser.close();
   ({ browser, page } = await abrir());
   await page.evaluate(() => { gravarViagens([{ id: 9, uf: 'RJ', cidade: 'Rio de Janeiro', ida: '', volta: '' }]); });
+  // A conta existe antes do "Continuar": o site abre a senha, e não o cadastro.
+  await page.evaluate(() => { window.__senhas['ana@exemplo.com'] = 'senhadaana'; window.__db.jogadores.push({ user_id: 'j-ana', nome: 'Ana Jogadora', email: 'ana@exemplo.com', token_avisos: 't' }); });
   await page.evaluate(async () => { abrirContaJogador('entrar'); });
   await page.fill('#jog-email', 'ana@exemplo.com');
   await page.click('#jog-continuar');
   await page.waitForTimeout(300);
-  await page.evaluate(() => { window.__senhas['ana@exemplo.com'] = 'senhadaana'; window.__db.jogadores.push({ user_id: 'j-ana', nome: 'Ana Jogadora', email: 'ana@exemplo.com', token_avisos: 't' }); });
   await page.fill('#jog-senha', 'senhadaana');
   await page.click('#jog-entrar');
   await page.waitForTimeout(6000);

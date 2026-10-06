@@ -33,6 +33,8 @@
     // Buscas salvas na conta (SQL 20261005150000). window.__semBuscasSalvas
     // finge o banco sem a tabela.
     buscas_salvas: [],
+    // Fila dos avisos por e-mail (SQL 20261005160000), vista pelo painel do admin.
+    emails_a_enviar: [],
   };
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
@@ -213,6 +215,8 @@
         if (table === "respostas") { const fora = t.filter(pass); fora.forEach(r => t.splice(t.indexOf(r), 1)); window.__apagadas = (window.__apagadas || 0) + fora.length; }
         if (table === "pedidos_de_plano") { if (!souAdmin()) return { data:null, error:{ message:"permission denied" } }; t.filter(pass).forEach(r => t.splice(t.indexOf(r), 1)); }
         if (table === "buscas_salvas") { const j = euJogador(); t.filter(pass).filter(r => j && r.user_id === j.user_id).forEach(r => t.splice(t.indexOf(r), 1)); }
+        // Avaliação: só o admin apaga (painel do admin e ficha).
+        if (table === "avaliacoes") { if (!souAdmin()) return { data:null, error:{ message:"permission denied" } }; t.filter(pass).forEach(r => t.splice(t.indexOf(r), 1)); }
         return { data:null, error:null };
       }
       // Depois do SQL-SEGURANCA.sql, o visitante não lê a linha inteira.
@@ -597,6 +601,29 @@
     if (nome === "situacao_dos_emails") {
       if (!souAdmin()) return erro("Só o admin.", "42501");
       return { data: window.__situacaoEmails || { chave: true, envio: true, relogio: true, na_fila: 0, enviados_7_dias: 3, falharam: 0, ultimo_erro: null, por_tipo: {} }, error: null };
+    }
+    // Painel do admin (SQL 20261006120000): os e-mails da fila, mandar de
+    // novo e os números das contas. window.__semPainelAdmin finge o banco sem o SQL.
+    if (nome === "emails_recentes_admin" || nome === "reenviar_email_admin" || nome === "numeros_das_contas_admin") {
+      if (window.__semPainelAdmin) return semFuncao;
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      const fila = db.emails_a_enviar;
+      if (nome === "emails_recentes_admin") return { data: JSON.parse(JSON.stringify([...fila].sort((x, y) => String(y.criado_em).localeCompare(String(x.criado_em))).slice(0, a.p_limite || 50))), error: null };
+      if (nome === "reenviar_email_admin") {
+        fila.filter(e => e.id === a.p_id && !e.enviado_em).forEach(e => Object.assign(e, { tentativas: 0, erro: null, criado_em: new Date().toISOString() }));
+        return { data: null, error: null };
+      }
+      const semana = Date.now() - 7 * 86400000;
+      return { data: {
+        jogadores: db.jogadores.length, confirmados: db.jogadores.filter(j => j.email_confirmado_em).length,
+        novos_7_dias: db.jogadores.filter(j => new Date(j.created_at).getTime() > semana).length,
+        aviso_cidade: db.jogadores.filter(j => j.avisos_academias).length, aviso_viagem: db.jogadores.filter(j => j.avisos_viagem).length,
+        promocoes: db.jogadores.filter(j => j.promocoes).length, novidades: db.jogadores.filter(j => j.novidades).length,
+        buscas_salvas: db.buscas_salvas.length, buscas_com_aviso: db.buscas_salvas.filter(b => b.avisar).length,
+        contas_parceiros: db.academia_acessos.length,
+        academias_com_responsavel: new Set(db.academia_vinculos.filter(v => v.papel === "principal").map(v => v.academia_id)).size,
+        pedidos_abertos: db.pedidos_de_acesso.length,
+      }, error: null };
     }
     if (nome === "marcar_senha_trocada") { const x = meuAcesso(); if (x) x.senha_trocada_em = new Date().toISOString(); return { data:null, error:null }; }
     return semFuncao;

@@ -68,8 +68,12 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await browser.close();
 
   // Admin: procura por região no mapa aberto, sem clube e sem o que já está no guia
+  // O mapa aberto fica nas Ferramentas do painel do admin (06/10/2026).
   ({ browser, page } = await abrir({ admin: true, overpass: MAPA }));
-  await page.click('#fab-admin');
+  await page.click('#ir-painel-admin');
+  await page.waitForTimeout(200);
+  await page.click('#adm-menu-btn');
+  await page.click('.adm-nav [data-adm-aba="ferramentas"]');
   await page.waitForTimeout(400);
   let nomes = await page.evaluate(() => [...document.querySelectorAll('.mapa-bloco .pending-name')].map(e => e.innerText.trim()));
   ok(!nomes.length && await page.isVisible('#mapa-regiao'), 'painel abre sem consultar o mapa, com o campo da região');
@@ -92,13 +96,14 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(nova && nova.status === 'pending' && nova.source === 'osm' && nova.confirmada === false, 'adicionar do mapa cria pendente, do mapa e ficha básica — ' + JSON.stringify(nova && { status: nova.status, source: nova.source, confirmada: nova.confirmada }));
   ok(nova && nova.endereco === 'Rua Nova, 10 - Butantã, São Paulo' && nova.phone === '1133334444', 'endereço e telefone vêm do mapa — ' + (nova && nova.endereco + ' · ' + nova.phone));
   nomes = await page.evaluate(() => [...document.querySelectorAll('.mapa-bloco .pending-name')].map(e => e.innerText.trim()));
-  const pendente = await page.evaluate(() => document.getElementById('admin-overlay')?.innerText.includes('Veio do mapa aberto'));
+  await page.evaluate(() => irAdmin('pendencias'));
+  await page.waitForTimeout(200);
+  const pendente = await page.evaluate(() => document.getElementById('painel-admin')?.innerText.includes('Veio do mapa aberto'));
   ok(!nomes.length && pendente, 'depois de adicionar, sai da lista do mapa e aparece nas pendentes');
   await browser.close();
 
   // Mapa sem resposta e região que não existe: mensagem clara
-  ({ browser, page } = await abrir({ admin: true }));
-  await page.click('#fab-admin');
+  ({ browser, page } = await abrir({ admin: true, q: 'admin/ferramentas' }));
   await page.fill('#mapa-regiao', 'Pinheiros');
   await page.click('#mapa-form button[type=submit]');
   await page.waitForTimeout(1500);

@@ -192,10 +192,9 @@ async function buscar(page, termo) {
   await browser.close();
 
   // ---- Admin: os e-mails estão saindo? ----
-  ({ browser, page } = await abrir({ admin: true }));
-  await page.click('#fab-stats');
+  ({ browser, page } = await abrir({ admin: true, q: 'admin/emails' }));
   await page.waitForTimeout(300);
-  ok((await texto(page, '.emails-situacao')).includes('3 enviados em 7 dias'), 'Estatísticas: quantos avisos saíram');
+  ok((await texto(page, '.emails-situacao')).includes('3 enviados em 7 dias'), 'painel do admin, E-mails: quantos avisos saíram');
   await page.evaluate(async () => { window.__situacaoEmails = { chave: false, envio: true, relogio: true, na_fila: 4, enviados_7_dias: 0, falharam: 0, ultimo_erro: null }; await carregarSituacaoDosEmails(); });
   t = await texto(page, '.emails-situacao');
   ok(t.includes('parados') && t.includes('RESEND_API_KEY') && t.includes('4 esperando'), 'sem a chave, diz o que falta — ' + t);

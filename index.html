@@ -105,6 +105,121 @@
   .container { max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
   .admin-banner { background: var(--green); color: #fff; font-weight: 600; font-size: 12px; text-align: center; padding: 6px; letter-spacing: 0.07em; text-transform: uppercase; }
+  .admin-banner a, .admin-banner button { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit; margin-left: 8px; padding: 0; }
+
+  /* Painel do admin (06/10/2026): um site à parte, como o admin da Shopify
+     e a extranet do Booking — barra escura em cima, seções do lado. */
+  .container.adm-cheio { max-width: none; }
+  .adm { min-height: 100vh; background: #F3F1EA; }
+  .adm-topo { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; background: #163A2E; color: #fff; }
+  .adm-marca { display: flex; align-items: center; gap: 9px; color: #fff; text-decoration: none; font-weight: 700; font-size: 16px; }
+  .adm-marca .logo-mark { width: 30px; height: 30px; border-radius: 8px; }
+  .adm-marca em { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: var(--gold-light); color: #163A2E; border-radius: 999px; padding: 2px 8px; }
+  .adm-topo-acoes { margin-left: auto; display: flex; gap: 6px; }
+  .adm-topo-acoes button { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .adm-topo-acoes button:hover { background: rgba(255,255,255,0.2); }
+  .adm-menu-btn { display: inline-flex; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 8px; flex-shrink: 0; }
+  .adm-menu-btn span { display: block; height: 2px; background: #fff; border-radius: 2px; }
+  .adm-nav { display: none; flex-direction: column; gap: 2px; padding: 10px; background: var(--card); border-bottom: 1px solid var(--border); }
+  .adm-nav.aberta { display: flex; }
+  .adm-nav-i { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .adm-nav-i:hover { background: var(--bg-alt); }
+  .adm-nav-i.ativo { background: var(--green-soft); color: var(--green); font-weight: 700; }
+  .adm-nav-n { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; border-radius: 999px; min-width: 20px; padding: 1px 6px; text-align: center; }
+  .adm-nav-pe { margin: 12px 12px 4px; font-size: 12px; color: var(--muted); }
+  .adm-main { padding: 20px 16px 60px; max-width: 1100px; }
+  .adm-h1 { font-size: 24px; font-weight: 700; margin: 0; color: var(--text); letter-spacing: -0.01em; }
+  .adm-sub { margin: 4px 0 16px; color: var(--muted); font-size: 14px; }
+  .adm-h2 { font-size: 15px; font-weight: 700; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+  .adm-cont { background: var(--bg-alt); border-radius: 999px; padding: 0 8px; font-size: 12px; color: var(--muted); }
+  .adm-bloco { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .adm-bloco > .chip-row:first-child { margin-top: 0 !important; }
+  /* O que vem das janelas antigas ganha a letra e o tamanho do painel. */
+  .adm .display, .adm .sheet-title { font-family: var(--fonte-texto); }
+  .adm-bloco .sheet-title { font-size: 15px !important; font-weight: 700; margin: 22px 0 4px !important; }
+  .adm-bloco > .sheet-title:first-child { margin-top: 0 !important; }
+  .adm-bloco .subtitle { font-size: 13px; margin-top: 0 !important; }
+  .adm-bloco .pending-name { font-weight: 700; }
+  .adm-nota { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+  .adm-vazio { font-size: 14px; color: var(--muted); margin: 4px 0 0; }
+  .adm-tudo-certo { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; font-weight: 600; color: var(--green); }
+  .adm-tarefas { display: flex; flex-direction: column; gap: 6px; }
+  .adm-tarefa { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--text); cursor: pointer; }
+  .adm-tarefa:hover { border-color: var(--green-line); }
+  .adm-tarefa > span:nth-child(2) { flex: 1; }
+  .adm-tarefa-n { min-width: 28px; height: 28px; border-radius: 999px; background: #FFF4D6; color: #7A5A12; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; padding: 0 8px; }
+  .adm-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .adm-kpi { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--card); min-width: 0; }
+  .adm-kpi-l { margin: 0; font-size: 13px; color: var(--muted); }
+  .adm-kpi-v { margin: 2px 0 0; font-size: 26px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .adm-delta { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .adm-delta.bom { color: var(--green); font-weight: 600; }
+  .adm-delta.ruim { color: var(--red); font-weight: 600; }
+  .adm-delta small { font-weight: 400; color: var(--muted); }
+  .adm-linha { display: block; width: 100%; max-width: 160px; height: 32px; margin-top: 8px; overflow: visible; }
+  .adm-colunas { display: grid; }
+  .adm-lista-num { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .adm-linha-num { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; background: none; border: none; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text); text-align: left; cursor: pointer; }
+  .adm-linha-num:last-child { border-bottom: none; }
+  .adm-linha-num:hover { background: var(--bg); }
+  .adm-linha-num strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .adm-linha-num small { color: var(--muted); font-weight: 500; margin-left: 4px; }
+  .adm-barra { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .adm-busca { margin-top: 0; flex: 1 1 240px; }
+  .adm-nova { flex: 0 0 auto; padding: 10px 14px; }
+  .adm-filtros { margin-top: 12px; flex-wrap: wrap; }
+  .adm-filtros small { color: var(--muted); font-weight: 500; margin-left: 2px; }
+  .adm-filtros .chip.active small { color: inherit; opacity: 0.85; }
+  .adm-acads { margin-top: 10px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .adm-acad { border-bottom: 1px solid var(--border); }
+  .adm-acad:last-child { border-bottom: none; }
+  .adm-acad.aberta { background: var(--bg); }
+  .adm-acad-cab { display: grid; grid-template-columns: 1fr; gap: 6px; width: 100%; text-align: left; background: none; border: none; padding: 12px; cursor: pointer; color: var(--text); font-size: 14px; }
+  .adm-acad-nome strong { display: block; }
+  .adm-acad-nome small { color: var(--muted); font-size: 12.5px; }
+  .adm-pilulas { display: flex; gap: 6px; flex-wrap: wrap; }
+  .adm-pilula { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 2px 9px; background: var(--bg-alt); color: var(--muted); white-space: nowrap; display: inline-block; }
+  .adm-pilula.no-ar { background: var(--green-soft); color: var(--green); }
+  .adm-pilula.analise { background: #FFF4D6; color: #7A5A12; }
+  .adm-pilula.pausada, .adm-pilula.erro { background: #F8E3DC; color: var(--red); }
+  .adm-pilula.plano-completo, .adm-pilula.plano-premium { background: #F3EAD3; color: #6E5520; }
+  .adm-acad-nums { display: flex; gap: 14px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .adm-acad-nums span { display: inline-flex; align-items: center; gap: 4px; }
+  .adm-acad-corpo { padding: 0 12px 14px; }
+  .adm-acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .adm-acoes .cta-btn { flex: 1 1 160px; }
+  .adm-rotulo { margin: 14px 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .adm-tabela { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; font-size: 13.5px; }
+  .adm-tr { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .adm-tr:last-child { border-bottom: none; }
+  .adm-tr small { display: block; color: var(--muted); font-size: 12.5px; word-break: break-word; }
+  .adm-th { display: none; }
+  .adm-tr .chip { margin-top: 6px; }
+  .adm-aval { border-top: 1px solid var(--border); padding: 12px 0; }
+  .adm-aval:first-of-type { border-top: none; }
+  .adm-aval-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .adm-aval-top .adm-nota { margin: 0; }
+  .adm-aval-top .delete-review-btn { margin-left: auto; }
+  .adm-estrelas { color: var(--gold); letter-spacing: 1px; }
+  .adm-estrelas i { font-style: normal; color: var(--border); }
+  .adm-aval-texto { margin: 6px 0 0; font-size: 14px; }
+  .adm-aval-resp { margin: 8px 0 0; font-size: 13px; background: var(--bg-alt); border-radius: 8px; padding: 8px 10px; }
+  .adm-botao { width: auto; display: inline-flex; margin-top: 10px; }
+  @media (min-width: 720px) {
+    .adm-kpis { grid-template-columns: repeat(4, 1fr); }
+    .adm-colunas { grid-template-columns: 1fr 1fr; column-gap: 14px; }
+    .adm-acad-cab { grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1fr); align-items: center; }
+    .adm-acad-nums { justify-content: flex-end; }
+    .adm-tr { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr); gap: 12px; align-items: start; }
+    .adm-th { display: grid; background: var(--bg); font-size: 12px; font-weight: 700; color: var(--muted); }
+  }
+  @media (min-width: 960px) {
+    .adm-menu-btn { display: none; }
+    .adm-corpo { display: grid; grid-template-columns: 240px minmax(0, 1fr); }
+    .adm-nav { display: flex; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; border-bottom: none; border-right: 1px solid var(--border); padding: 16px 10px; }
+    .adm-main { padding: 28px 32px 80px; }
+  }
+  @media (max-width: 560px) { .adm-topo-acoes button span { display: none; } .adm-marca span { display: none; } }
 
   .header { padding: 32px 20px 20px; border-bottom: 1px solid var(--border); background: var(--card); }
   .title { font-size: 34px; font-weight: 700; line-height: 1.05; margin: 0; color: var(--green); }
@@ -265,10 +380,6 @@
   .price-known { color: var(--text); font-weight: 600; }
   .price-unknown { color: var(--muted-dark); font-size: 12px; }
 
-  .fab-col { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
-  .fab { width: 54px; height: 54px; border-radius: 999px; background: var(--green); color: #fff; border: none; font-size: 26px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(31,77,61,0.35); display: flex; align-items: center; justify-content: center; }
-  .fab-admin { width: 46px; height: 46px; font-size: 18px; background: var(--card); color: var(--green); border: 1px solid var(--green); position: relative; }
-  .fab-badge { position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; border-radius: 999px; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
 
   .overlay { position: fixed; inset: 0; background: rgba(33,31,26,0.55); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
   .overlay.open { display: flex; }
@@ -3215,6 +3326,8 @@ let state = {
   showRegister: false,
   showFilters: false,
   showAdminPanel: false,
+  // Painel do admin (/admin): a seção aberta.
+  adminAba: "inicio",
   mapa: null,
   showStatsPanel: false,
   showTerms: false,
@@ -3699,13 +3812,17 @@ function render() {
   const activeFilters = activeFilterCount();
   const topBadge = { distance: "Mais perto", price: "Menor preço", rating: "Melhor nota", reviews: "Mais avaliada", courts: "Mais quadras", recomendados: "Recomendada" }[effectiveSort()] || "";
   const pending = isAdmin ? state.pending : [];
+  // Painel do admin (06/10/2026): um site à parte, só para o admin.
+  const noPainel = isAdmin && state.page === "admin";
+  const pendencias = isAdmin ? pending.length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length : 0;
 
   app.innerHTML = `
-    ${isAdmin ? `<div class="admin-banner">Modo admin — só você vê isso <button id="logout-btn" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;margin-left:8px">sair</button></div>` : ""}
+    ${isAdmin && !noPainel ? `<div class="admin-banner">Modo admin — só você vê isso <a href="/admin" id="ir-painel-admin">Abrir o painel${pendencias ? ` (${pendencias})` : ""}</a> <button id="logout-btn">sair</button></div>` : ""}
+    ${noPainel ? renderPainelAdmin() : ""}
     ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia do modo admin ou use uma aba anônima.</div>` : ""}
-    ${isAdmin && state.localizando ? `<div class="admin-aviso">Colocando no mapa as academias sem coordenada: ${state.localizando.feito} de ${state.localizando.total}…</div>` : ""}
-    ${isAdmin && !state.localizando && (state.naoLocalizadas || []).length ? `<div class="admin-aviso">Não achei no mapa: <strong>${esc(state.naoLocalizadas.join(", "))}</strong>. Confira a rua, o número, o bairro e a cidade em "Editar" e salve — o site tenta de novo.</div>` : ""}
-    ${isAdmin && state.faltaSqlCliques ? `<div class="admin-aviso">O banco ainda não tem a coluna <strong>${esc(state.faltaSqlCliques)}</strong> na tabela cliques, então as estatísticas ficam incompletas. Rode no SQL Editor do Supabase:<code>alter table cliques add column if not exists detalhe text;<br>alter table cliques add column if not exists cep text;<br>alter table cliques add column if not exists lat numeric;<br>alter table cliques add column if not exists lng numeric;<br>alter table cliques add column if not exists origem text;<br>alter table cliques add column if not exists dispositivo text;</code></div>` : ""}
+    ${isAdmin && !noPainel && state.localizando ? `<div class="admin-aviso">Colocando no mapa as academias sem coordenada: ${state.localizando.feito} de ${state.localizando.total}…</div>` : ""}
+    ${isAdmin && !noPainel && !state.localizando && (state.naoLocalizadas || []).length ? `<div class="admin-aviso">Não achei no mapa: <strong>${esc(state.naoLocalizadas.join(", "))}</strong>. Confira a rua, o número, o bairro e a cidade em "Editar" e salve — o site tenta de novo.</div>` : ""}
+    ${isAdmin && !noPainel && state.faltaSqlCliques ? `<div class="admin-aviso">O banco ainda não tem a coluna <strong>${esc(state.faltaSqlCliques)}</strong> na tabela cliques, então as estatísticas ficam incompletas. Rode no SQL Editor do Supabase:<code>alter table cliques add column if not exists detalhe text;<br>alter table cliques add column if not exists cep text;<br>alter table cliques add column if not exists lat numeric;<br>alter table cliques add column if not exists lng numeric;<br>alter table cliques add column if not exists origem text;<br>alter table cliques add column if not exists dispositivo text;</code></div>` : ""}
 
     ${state.page === "home" ? renderHome() : ""}
     ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}
@@ -3717,15 +3834,6 @@ function render() {
     ${state.page === "perfil" ? renderPerfilJogador() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
     ${state.page === "parceiros" ? renderParceiros() : ""}
-
-    <div class="fab-col">
-      ${isAdmin ? `
-        <button class="fab fab-admin" id="fab-stats" title="Cliques">${icon('barchart',20,'var(--green)')}</button>
-        <button class="fab fab-admin" id="fab-percursos" title="Percurso das visitas">${icon('map',20,'var(--green)')}</button>
-        <button class="fab fab-admin" id="fab-admin" title="Solicitações pendentes">
-          ${icon('clipboard',20,'var(--green)')}${pending.length ? `<span class="fab-badge">${pending.length}</span>` : ""}
-        </button>` : ""}
-    </div>
 
     ${state.page === "search" ? `
       <button type="button" class="map-fab " id="view-toggle">
@@ -3755,7 +3863,7 @@ function render() {
   try { window.name = state.page === "parceiros" ? ABA_PARCEIROS : ABA_JOGADORES; } catch {}
   // O site dos parceiros ocupa a tela inteira, como o site de um parceiro
   // grande: cabeçalho e rodapé de ponta a ponta, conteúdo no meio.
-  app.className = state.page === "parceiros" ? "container pc-cheio" : "container";
+  app.className = state.page === "parceiros" ? "container pc-cheio" : noPainel ? "container adm-cheio" : "container";
 
   attachEvents();
   if (state.lightbox) {
@@ -3864,6 +3972,7 @@ function urlCanonica(c) {
   if (state.page === "search") return location.origin + "/busca";
   if (state.page === "comparar") return location.origin + "/comparar";
   if (state.page === "perfil") return location.origin + "/perfil";
+  if (state.page === "admin") return location.origin + "/admin";
   if (state.page === "parceiros") return location.origin + caminhoDosParceiros(state.parceirosAba || "inicio");
   return location.origin + "/";
 }
@@ -3904,6 +4013,7 @@ function seoDaPagina() {
     };
   }
   if (state.page === "perfil") return { titulo: "Minha conta | GuiaTennis", descricao: DESCRICAO_PADRAO, robots: "noindex, nofollow" };
+  if (state.page === "admin") return { titulo: `${(ADMIN_ABAS.find(x => x.aba === state.adminAba) || ADMIN_ABAS[0]).t} · Painel do admin | GuiaTennis`, descricao: DESCRICAO_PADRAO, robots: "noindex, nofollow" };
   if (state.page === "search" || state.page === "comparar" || state.avisoLink) return { titulo: TITULO_PADRAO, descricao: DESCRICAO_PADRAO, robots: "noindex, follow" };
   return { titulo: TITULO_PADRAO, descricao: DESCRICAO_PADRAO, robots: "" };
 }
@@ -5269,30 +5379,27 @@ function blocoAcessoAdmin(c) {
     </div>`);
 }
 
-// No painel do admin: quem já tem acesso e em que pé está.
+// No painel do admin: os pedidos para administrar e quem já tem acesso.
 function blocoAcessosPainel() {
+  return blocoPedidosParaAdministrar() + blocoAcessosDasAcademias();
+}
+function nomeDaAcademiaNoAdmin(id) {
+  return ([...state.allCourts, ...(state.pending || [])].find(c => c.id === id) || {}).name || "Academia";
+}
+// Uma linha por academia de cada conta (a mesma conta pode administrar
+// várias): o pedido aparece uma vez por conta.
+function umaLinhaPorConta(lista) {
+  return lista.filter((a, i) => lista.findIndex(b => b.user_id === a.user_id) === i);
+}
+function blocoPedidosParaAdministrar() {
   if (state.acessos === null) return "";
-  const nomeDe = (id) => ([...state.allCourts, ...(state.pending || [])].find(c => c.id === id) || {}).name || "Academia";
-  // Uma linha por academia de cada conta (a mesma conta pode administrar
-  // várias): o pedido aparece uma vez por conta.
-  const umaPorConta = (lista) => lista.filter((a, i) => lista.findIndex(b => b.user_id === a.user_id) === i);
+  const nomeDe = nomeDaAcademiaNoAdmin;
   const pedidos = pedidosDoAdmin();
-  const semAcademia = umaPorConta(state.acessos.filter(a => !a.academia_id && !pedidos.some(p => p.user_id === a.user_id)));
   const comAcademia = state.acessos.filter(a => a.academia_id);
   const quantasDa = (userId) => comAcademia.filter(a => a.user_id === userId).length;
-  // Uma academia por cartão, com as pessoas dela juntas (pedido do Breno em
-  // 05/10/2026: uma linha por pessoa e academia ficava empilhado demais).
-  const porAcademia = [];
-  comAcademia.forEach(a => {
-    let g = porAcademia.find(x => x.id === a.academia_id);
-    if (!g) porAcademia.push(g = { id: a.academia_id, pessoas: [] });
-    g.pessoas.push(a);
-  });
-  porAcademia.forEach(g => g.pessoas.sort((x, y) => (y.papel !== "equipe") - (x.papel !== "equipe")));
-  porAcademia.sort((x, y) => nomeDe(x.id).localeCompare(nomeDe(y.id), "pt-BR"));
   const pendente = (id) => (state.pending || []).some(c => c.id === id);
+  if (!pedidos.length) return "";
   return `
-    ${pedidos.length ? `
       <p class="sheet-title display" style="font-size:18px;margin-top:28px">Pedidos para administrar</p>
       <p class="subtitle" style="margin-top:4px">Gere o código e mande para o WhatsApp da ficha: quem digitar o código prova que responde pela academia, e o acesso sai sozinho. Sem WhatsApp na ficha, confirme com a academia e aprove. Academia nova: publicar já libera o acesso. A mesma conta pode ter mais de um pedido.</p>
       ${pedidos.map(a => `
@@ -5305,7 +5412,26 @@ function blocoAcessosPainel() {
             <button type="button" class="chip small active" data-aprovar-pedido="${a.user_id}" data-academia="${a.pedido_academia_id}">Aprovar</button>
             <button type="button" class="chip small" data-recusar-pedido="${a.user_id}" data-academia="${a.pedido_academia_id}">Recusar</button>
           </div>
-        </div>`).join("")}` : ""}
+        </div>`).join("")}`;
+}
+function blocoAcessosDasAcademias() {
+  if (state.acessos === null) return "";
+  const nomeDe = nomeDaAcademiaNoAdmin;
+  const umaPorConta = umaLinhaPorConta;
+  const pedidos = pedidosDoAdmin();
+  const semAcademia = umaPorConta(state.acessos.filter(a => !a.academia_id && !pedidos.some(p => p.user_id === a.user_id)));
+  const comAcademia = state.acessos.filter(a => a.academia_id);
+  // Uma academia por cartão, com as pessoas dela juntas (pedido do Breno em
+  // 05/10/2026: uma linha por pessoa e academia ficava empilhado demais).
+  const porAcademia = [];
+  comAcademia.forEach(a => {
+    let g = porAcademia.find(x => x.id === a.academia_id);
+    if (!g) porAcademia.push(g = { id: a.academia_id, pessoas: [] });
+    g.pessoas.push(a);
+  });
+  porAcademia.forEach(g => g.pessoas.sort((x, y) => (y.papel !== "equipe") - (x.papel !== "equipe")));
+  porAcademia.sort((x, y) => nomeDe(x.id).localeCompare(nomeDe(y.id), "pt-BR"));
+  return `
     <p class="sheet-title display" style="font-size:18px;margin-top:28px">Acessos das academias</p>
     <p class="subtitle" style="margin-top:4px">${comAcademia.length
       ? `${porAcademia.length} ${plural(porAcademia.length, "academia tem", "academias têm")} acesso, com ${umaPorConta(comAcademia).length} ${plural(umaPorConta(comAcademia).length, "pessoa", "pessoas")}. Para criar outro, abra a ficha da academia e use "Acesso da academia".`
@@ -8166,6 +8292,7 @@ function renderMenu() {
         ${jogador ? item("minha-conta", "Minha conta", "pessoa", (jogador.nome || "").split(" ")[0])
           : contaAcademia || isAdmin ? "" : item("entrar-jogador", "Entrar ou criar conta", "pessoa")}
         ${contaAcademia ? item("conta", "Painel da minha academia", "key", "Parceiros") : ""}
+        ${isAdmin ? item("painel-admin", "Painel do admin", "key", "só você vê") : ""}
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
         ${item("comparar", "Comparar academias", "list", state.compareList.length || "")}
@@ -9234,7 +9361,7 @@ async function salvarSenhaNovaJogador() {
   await carregarConta(sessao);
   if (isAdmin || contaAcademia) {
     try { await sb.rpc('marcar_senha_trocada'); } catch {}
-    try { history.replaceState(null, "", semCamadas(location.pathname + location.search + location.hash)); } catch {}
+    try { history.replaceState(null, "", isAdmin ? "/admin" : semCamadas(location.pathname + location.search + location.hash)); } catch {}
     location.reload();
     return;
   }
@@ -9266,7 +9393,8 @@ async function entrarJogador() {
   const { data, error } = await sb.auth.signInWithPassword({ email: state.jogadorLogin || email, password: senha });
   if (!error) await carregarConta(data && data.session);
   if (!error && (isAdmin || (contaAcademia && !jogador))) {
-    try { history.replaceState(null, "", semCamadas(location.pathname + location.search + location.hash)); } catch {}
+    // O admin vai para o painel dele (06/10/2026).
+    try { history.replaceState(null, "", isAdmin ? "/admin" : semCamadas(location.pathname + location.search + location.hash)); } catch {}
     location.reload();
     return;
   }
@@ -10600,6 +10728,8 @@ function urlDoEstado() {
     if (state.compareList.length) p.set("academias", state.compareList.map(idCurto).join(","));
   } else if (state.page === "perfil") {
     caminho = "/perfil";
+  } else if (state.page === "admin") {
+    caminho = state.adminAba && state.adminAba !== "inicio" ? "/admin/" + state.adminAba : "/admin";
   } else if (state.page === "parceiros") {
     const aba = state.parceirosAba || "inicio";
     caminho = caminhoDosParceiros(aba);
@@ -10676,7 +10806,9 @@ function lerLink() {
   const partes = location.pathname.split("/").filter(Boolean).map(x => { try { return decodeURIComponent(x); } catch { return x; } });
   const secao = location.hash.slice(1);
   const r = { q, secao: SECOES_FICHA[secao] ? secao : null, page: "home" };
-  if (partes[0] === "parceiros") { r.page = "parceiros"; r.aba = abaDoParceiro(partes[1] || "inicio"); r.reivindicar = q.get("academia") || null; }
+  // Painel do admin: /admin e /admin/<seção>. Quem não é admin vê a home.
+  if (partes[0] === "admin" && !noEnderecoDosParceiros()) { r.page = "admin"; r.aba = partes[1] || "inicio"; }
+  else if (partes[0] === "parceiros") { r.page = "parceiros"; r.aba = abaDoParceiro(partes[1] || "inicio"); r.reivindicar = q.get("academia") || null; }
   // parceiros.guiatennis.com.br: "/" é a apresentação, "/painel" o painel.
   else if (noEnderecoDosParceiros()) { r.page = "parceiros"; r.aba = abaDoParceiro(partes[0] || "inicio"); r.reivindicar = q.get("academia") || null; }
   else if (q.has("entrar")) { r.page = "parceiros"; r.aba = "entrar"; }
@@ -10739,6 +10871,11 @@ function aplicarLink(r) {
     return {};
   }
   state.selected = null;
+  if (r.page === "admin") {
+    state.page = isAdmin ? "admin" : "home";
+    if (isAdmin) state.adminAba = abaDoAdmin(r.aba);
+    return {};
+  }
   if (r.page === "parceiros") {
     let aba = abaDoAdminNoParceiros(r.aba);
     if (aba === "inicio" && contaAcademia) aba = "painel";
@@ -10853,6 +10990,7 @@ function openCourt(id) {
 }
 
 function voltarDaFicha() {
+  if (state.backTo === "admin" && isAdmin) { irAdmin(state.adminAba); return; }
   state.page = state.backTo === "home" ? "home" : "search";
   state.selected = null;
   syncUrl(true);
@@ -10872,10 +11010,12 @@ window.addEventListener("popstate", () => {
   }
   state.showFilters = false;
   state.showSort = false;
-  const antes = state.page;
+  const antes = state.page, abaAntes = state.adminAba;
   const link = lerLink();
   const feito = aplicarLink(link);
   aplicarCamadas(link.q);
+  // Outra seção do painel: busca o que é dela.
+  if (state.page === "admin" && (antes !== "admin" || abaAntes !== state.adminAba)) setTimeout(carregarAbaDoAdmin, 0);
   // Só fechou ou trocou uma janela: a tela de baixo fica onde estava.
   if (antes === state.page && semCamadas(location.pathname + location.search + location.hash) === semCamadas(urlDoEstado())
       && !(feito.termo && feito.termo !== state.termoBuscado)) {
@@ -11583,7 +11723,7 @@ async function carregarMapaAberto() {
     ponto = await pontoDaRegiao(regiao);
   } catch {
     state.mapa = { ...state.mapa, status: "erro", erro: "regiao" };
-    if (state.showAdminPanel) render();
+    if (state.showAdminPanel || state.page === "admin") render();
     return;
   }
   try {
@@ -11598,7 +11738,7 @@ async function carregarMapaAberto() {
   } catch {
     state.mapa = { ...state.mapa, status: "erro", erro: "mapa" };
   }
-  if (state.showAdminPanel) render();
+  if (state.showAdminPanel || state.page === "admin") render();
 }
 
 // Rua, número, bairro e cidade de um ponto, para a academia do mapa que
@@ -13814,6 +13954,17 @@ function visitasDoPercurso(linhas, site) {
   return visitas;
 }
 function renderPercursosPanel() {
+  return `
+    <div class="overlay open" id="percursos-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="percursos-close" aria-label="Fechar">✕</button>
+        <p class="sheet-title display">Percurso das visitas</p>
+        <p class="subtitle" style="margin-top:4px">O caminho de cada visita: de onde veio, por qual meio, o que fez e quanto tempo ficou em cada passo. Ninguém é identificado; o admin conectado não entra.</p>
+        ${conteudoDosPercursos()}
+      </div></div>
+    </div>`;
+}
+function conteudoDosPercursos() {
   const site = state.percursosSite || "jogadores";
   const periodo = state.percursosPeriodo || "7";
   const dados = state.percursos || {};
@@ -13841,11 +13992,6 @@ function renderPercursosPanel() {
     ? (v.chamou ? `Chamou ${v.chamou} ${v.chamou === 1 ? "academia" : "academias"}` : v.abriuFicha ? "Viu fichas, não chamou" : v.buscou ? "Buscou, não abriu ficha" : "Só olhou")
     : (v.pediu ? "Pediu academia" : v.criouConta ? "Criou a conta" : v.cadastro ? "Começou o cadastro" : "Só olhou");
   return `
-    <div class="overlay open" id="percursos-overlay">
-      <div class="sheet"><div class="sheet-content">
-        <button class="sheet-close" id="percursos-close" aria-label="Fechar">✕</button>
-        <p class="sheet-title display">Percurso das visitas</p>
-        <p class="subtitle" style="margin-top:4px">O caminho de cada visita: de onde veio, por qual meio, o que fez e quanto tempo ficou em cada passo. Ninguém é identificado; o admin conectado não entra.</p>
         <div class="chip-row" style="margin-top:12px">
           <button class="chip small ${site === "jogadores" ? "active" : ""}" data-perc-site="jogadores">Jogadores</button>
           <button class="chip small ${site === "parceiros" ? "active" : ""}" data-perc-site="parceiros">GuiaTennis Parceiros</button>
@@ -13885,11 +14031,10 @@ function renderPercursosPanel() {
               }).join("")}</ol>` : ""}
             </div>`;
           }).join("")}</div>
-          ${visitas.length > mostrar ? `<button type="button" class="cta-btn cta-secondary" id="perc-mais" style="margin-top:12px;width:100%">Mostrar mais ${Math.min(20, visitas.length - mostrar)}</button>` : ""}` : ""}
-      </div></div>
-    </div>`;
+          ${visitas.length > mostrar ? `<button type="button" class="cta-btn cta-secondary" id="perc-mais" style="margin-top:12px;width:100%">Mostrar mais ${Math.min(20, visitas.length - mostrar)}</button>` : ""}` : ""}`;
 }
 function abrirPercursos() {
+  if (state.page === "admin") { irAdmin("percursos"); return; }
   state.showStatsPanel = false;
   state.showPercursos = true;
   state.percursosMostrar = 20;
@@ -13904,7 +14049,7 @@ async function carregarSituacaoDosEmails() {
     const r = await sb.rpc('situacao_dos_emails');
     state.situacaoEmails = r.error ? null : r.data;
   } catch { state.situacaoEmails = null; }
-  if (state.showStatsPanel) render();
+  if (state.showStatsPanel || state.page === "admin") render();
 }
 function situacaoDosEmailsHtml() {
   const e = state.situacaoEmails;
@@ -13920,6 +14065,20 @@ function situacaoDosEmailsHtml() {
 }
 
 function renderStatsPanel() {
+  return `
+    <div class="overlay open" id="stats-overlay">
+      <div class="sheet"><div class="sheet-content">
+        <button class="sheet-close" id="stats-close">✕</button>
+        <p class="sheet-title display">Estatísticas</p>
+        <button type="button" class="inline-link" id="stats-ver-percursos" style="margin-top:4px">Ver o percurso de cada visita ›</button>
+        ${situacaoDosEmailsHtml()}
+        <p class="subtitle" style="margin-top:4px">Registrado por todos os visitantes. Com o admin conectado, os seus acessos e buscas não entram na conta.</p>
+        ${conteudoDasEstatisticas()}
+      </div></div>
+    </div>
+  `;
+}
+function conteudoDasEstatisticas() {
   const periodo = state.statsPeriodo || "30";
   const { porAcademia, acessos, buscas, regioes, ceps, origens, aparelhos, pontos, tempo } = statsAgregado(periodo);
   state.statsPontos = pontos;
@@ -13950,14 +14109,6 @@ function renderStatsPanel() {
   const taxaGeral = totViews ? (totContatos / totViews) * 100 : 0;
 
   return `
-    <div class="overlay open" id="stats-overlay">
-      <div class="sheet"><div class="sheet-content">
-        <button class="sheet-close" id="stats-close">✕</button>
-        <p class="sheet-title display">Estatísticas</p>
-        <button type="button" class="inline-link" id="stats-ver-percursos" style="margin-top:4px">Ver o percurso de cada visita ›</button>
-        ${situacaoDosEmailsHtml()}
-        <p class="subtitle" style="margin-top:4px">Registrado por todos os visitantes. Com o admin conectado, os seus acessos e buscas não entram na conta.</p>
-
         <div class="chip-row" style="margin-top:12px">
           ${STATS_PERIODOS.map(p => `<button class="chip small ${periodo===p.key?"active":""}" data-stats-per="${p.key}">${p.label}</button>`).join("")}
         </div>
@@ -14020,8 +14171,6 @@ function renderStatsPanel() {
           <p class="field-label" style="margin-top:20px">Sem movimento no período (${paradas.length})</p>
           <p class="pending-detail" style="margin-bottom:8px">${paradas.map(r => esc(r.court.name)).join(" · ")}</p>
         ` : ""}
-      </div></div>
-    </div>
   `;
 }
 
@@ -14143,6 +14292,18 @@ function renderAdminPanel(pending) {
         ${semCoordenada().length ? `
           <p class="pending-detail" style="margin-top:12px;color:var(--red)">Fora do mapa por falta de coordenada: ${esc(semCoordenada().map(c => c.name).join(", "))}.</p>
           <button type="button" class="cta-btn cta-secondary geocode-todas-btn" style="margin-top:6px">${icon('pin', 15, 'var(--green)')} Gerar as coordenadas que faltam</button>` : ""}
+        ${conteudoDasPendentes(pending)}
+        ${blocoPedidosDePlano()}
+        ${blocoAcessosPainel()}
+        ${blocoMapaAberto()}
+      </div></div>
+    </div>
+  `;
+}
+
+// As academias novas esperando aprovação: na janela antiga e no painel.
+function conteudoDasPendentes(pending) {
+  return `
         ${pending.length === 0 ? `<p class="empty">Nenhuma solicitação no momento.</p>` : ""}
         ${pending.map(p => `
           <div class="pending-item">
@@ -14161,13 +14322,555 @@ function renderAdminPanel(pending) {
               <button class="cta-btn cta-danger" data-reject="${p.id}">Rejeitar</button>
             </div>
           </div>
-        `).join("")}
-        ${blocoPedidosDePlano()}
-        ${blocoAcessosPainel()}
-        ${blocoMapaAberto()}
-      </div></div>
+        `).join("")}`;
+}
+
+// ---------- painel do admin (pedido do Breno em 06/10/2026) ----------
+// "Quando eu fizer o login, mude o site para eu ter o controle de tudo":
+// como o admin da Shopify, o painel do Stripe e a extranet do Booking, um
+// site à parte em /admin — barra lateral com as seções, a visão geral com o
+// que fazer agora e os números, e cada assunto na sua página. Só o admin
+// vê: para qualquer outra pessoa, /admin abre a página inicial, sem sinal
+// de que o painel existe — e os dados continuam protegidos no banco, pelas
+// regras de cada tabela (eh_admin()).
+const ADMIN_ABAS = [
+  { aba: "inicio", t: "Visão geral", ic: "home", sub: "O que fazer agora e como o GuiaTennis está indo." },
+  { aba: "pendencias", t: "Pendências", ic: "clipboard", sub: "Academias para aprovar, pedidos para administrar e pedidos de plano." },
+  { aba: "academias", t: "Academias", ic: "predio", sub: "Todas as academias do guia: situação, plano, nota e movimento dos últimos 30 dias." },
+  { aba: "acessos", t: "Acessos ao Parceiros", ic: "key", sub: "Quem administra cada academia no GuiaTennis Parceiros." },
+  { aba: "jogadores", t: "Contas de jogador", ic: "pessoa", sub: "Quem tem conta no GuiaTennis, os avisos ligados e as buscas salvas." },
+  { aba: "avaliacoes", t: "Avaliações", ic: "bubble", sub: "Todas as avaliações, da mais nova para a mais antiga." },
+  { aba: "estatisticas", t: "Estatísticas", ic: "barchart", sub: "Acessos, buscas, fichas abertas e contatos, por período. Os seus acessos não entram na conta." },
+  { aba: "percursos", t: "Percurso das visitas", ic: "map", sub: "O caminho de cada visita, passo a passo. Ninguém é identificado." },
+  { aba: "emails", t: "E-mails", ic: "mail", sub: "Os avisos que o GuiaTennis manda e a situação de cada um." },
+  { aba: "ferramentas", t: "Ferramentas", ic: "ajustes", sub: "QR code do site, coordenadas do mapa e academias do mapa aberto." },
+];
+function abaDoAdmin(aba) {
+  return ADMIN_ABAS.some(x => x.aba === aba) ? aba : "inicio";
+}
+
+function irAdmin(aba = "inicio", opcoes = {}) {
+  if (!isAdmin) return;
+  state.page = "admin";
+  state.adminAba = abaDoAdmin(aba);
+  state.selected = null;
+  state.showMenu = false;
+  state.admMenu = false;
+  state.showAdminPanel = false;
+  state.showStatsPanel = false;
+  state.showPercursos = false;
+  syncUrl(!opcoes.substituir);
+  render();
+  window.scrollTo(0, 0);
+  carregarAbaDoAdmin();
+}
+
+// Cada seção busca o que é só dela; o resto (academias, cliques, avaliações,
+// acessos e pedidos) já vem com o site.
+function carregarAbaDoAdmin() {
+  const aba = state.adminAba;
+  if (aba === "inicio" || aba === "emails") carregarSituacaoDosEmails();
+  if (aba === "inicio" || aba === "jogadores") carregarNumerosDasContas();
+  if (aba === "jogadores") carregarJogadoresDoAdmin();
+  if (aba === "emails") carregarEmailsRecentes();
+  if (aba === "percursos" && !(state.percursos && state.percursos.linhas && state.percursos.linhas.length)) { state.percursosMostrar = 20; carregarPercursos(); }
+}
+
+async function carregarNumerosDasContas() {
+  try {
+    const r = await sb.rpc('numeros_das_contas_admin');
+    state.admContas = r.error ? { erro: true } : (r.data || {});
+  } catch { state.admContas = { erro: true }; }
+  if (state.page === "admin") render();
+}
+
+async function carregarJogadoresDoAdmin() {
+  try {
+    const r = await sb.from('jogadores')
+      .select('user_id, nome, email, cidade, avisos_academias, avisos_viagem, promocoes, novidades, email_confirmado_em, created_at')
+      .order('created_at', { ascending: false }).limit(2000);
+    state.admJogadores = r.error ? { lista: [], erro: "Não consegui carregar as contas agora." } : { lista: r.data || [] };
+  } catch { state.admJogadores = { lista: [], erro: "Não consegui carregar as contas agora." }; }
+  if (state.page === "admin") render();
+}
+
+async function carregarEmailsRecentes() {
+  state.admEmails = { ...(state.admEmails || { lista: [] }), carregando: true };
+  if (state.page === "admin") render();
+  try {
+    const r = await sb.rpc('emails_recentes_admin', { p_limite: 100 });
+    state.admEmails = r.error
+      ? { lista: [], erro: /could not find|does not exist|schema cache/i.test(r.error.message || "")
+          ? "O banco ainda não tem a lista dos e-mails (SQL 20261006120000): ela entra sozinha com o PR." : "Não consegui carregar os e-mails agora." }
+      : { lista: r.data || [] };
+  } catch { state.admEmails = { lista: [], erro: "Não consegui carregar os e-mails agora." }; }
+  if (state.page === "admin") render();
+}
+
+async function reenviarEmail(id) {
+  const r = await sb.rpc('reenviar_email_admin', { p_id: id });
+  if (r.error) { alert("Não consegui mandar de novo: " + r.error.message); return; }
+  carregarSituacaoDosEmails();
+  await carregarEmailsRecentes();
+}
+
+// ---- números ----
+
+// Quantos eventos de um tipo entre "de" e "até" dias atrás.
+function admContagem(tipos, de, ate) {
+  const agora = Date.now(), ini = agora - de * 86400000, fim = agora - ate * 86400000;
+  return (state.clicksRaw || []).filter(c => {
+    if (!tipos.includes(c.tipo)) return false;
+    const t = new Date(c.created_at).getTime();
+    return t >= ini && t < fim;
+  }).length;
+}
+// As últimas 12 semanas, da mais antiga para esta.
+function admSemanas(tipos) {
+  return Array.from({ length: 12 }, (_, i) => admContagem(tipos, (12 - i) * 7, (11 - i) * 7));
+}
+function numeroCurto(n) {
+  n = Number(n) || 0;
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(".", ",").replace(",0", "") + " mi";
+  if (n >= 10000) return Math.round(n / 1000) + " mil";
+  return n.toLocaleString("pt-BR");
+}
+// "▲ 12% vs 30 dias antes": subir é bom em todos os números do painel.
+function admVariacao(atual, antes) {
+  if (!antes && !atual) return `<span class="adm-delta">sem movimento</span>`;
+  if (!antes) return `<span class="adm-delta bom">novo nos últimos 30 dias</span>`;
+  const p = Math.round((atual - antes) / antes * 100);
+  if (!p) return `<span class="adm-delta">igual aos 30 dias antes</span>`;
+  return `<span class="adm-delta ${p > 0 ? "bom" : "ruim"}">${p > 0 ? "▲" : "▼"} ${Math.abs(p)}% <small>vs 30 dias antes</small></span>`;
+}
+// Linha das 12 semanas, com a semana de agora em destaque.
+function admMiniLinha(valores, rotulo) {
+  const max = Math.max(1, ...valores), w = 120, h = 32, passo = w / (valores.length - 1);
+  const pts = valores.map((v, i) => [Math.round(i * passo * 10) / 10, Math.round((h - 3 - (v / max) * (h - 6)) * 10) / 10]);
+  const ult = pts[pts.length - 1];
+  return `<svg class="adm-linha" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${esc(rotulo)}: ${valores.join(", ")} por semana, nas últimas 12 semanas">
+    <polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="var(--muted-dark)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${ult[0]}" cy="${ult[1]}" r="4" fill="var(--green)" stroke="var(--card)" stroke-width="2"/>
+  </svg>`;
+}
+function admCartaoNumero(rotulo, tipos) {
+  const atual = admContagem(tipos, 30, 0), antes = admContagem(tipos, 60, 30);
+  return `
+    <div class="adm-kpi">
+      <p class="adm-kpi-l">${esc(rotulo)}</p>
+      <p class="adm-kpi-v">${numeroCurto(atual)}</p>
+      ${admVariacao(atual, antes)}
+      ${admMiniLinha(admSemanas(tipos), rotulo)}
+    </div>`;
+}
+
+// O que pede uma ação do admin agora, como a lista de tarefas da Shopify.
+function admParaFazer() {
+  const itens = [];
+  const n = (x) => x || 0;
+  const pend = n((state.pending || []).length);
+  if (pend) itens.push({ n: pend, t: plural(pend, "academia nova esperando aprovação", "academias novas esperando aprovação"), aba: "pendencias" });
+  const ped = n(pedidosDoAdmin().length);
+  if (ped) itens.push({ n: ped, t: plural(ped, "pedido para administrar uma academia", "pedidos para administrar academias"), aba: "pendencias" });
+  const planos = n((state.pedidosDePlano || []).length);
+  if (planos) itens.push({ n: planos, t: plural(planos, "academia quer mudar de plano", "academias querem mudar de plano"), aba: "pendencias" });
+  const fora = semCoordenada().length;
+  if (fora) itens.push({ n: fora, t: plural(fora, "academia fora do mapa, sem coordenada", "academias fora do mapa, sem coordenada"), aba: "ferramentas" });
+  const e = state.situacaoEmails;
+  if (e && (!e.chave || !e.envio || !e.relogio)) itens.push({ n: "!", t: "Os avisos por e-mail estão parados", aba: "emails" });
+  else if (e && e.falharam) itens.push({ n: e.falharam, t: plural(e.falharam, "e-mail não saiu", "e-mails não saíram"), aba: "emails" });
+  if (state.faltaSqlCliques) itens.push({ n: "!", t: `O banco não tem a coluna ${state.faltaSqlCliques} nos cliques: as estatísticas ficam incompletas`, aba: "estatisticas" });
+  return itens;
+}
+
+function todasAsAvaliacoes() {
+  const nomes = {};
+  todasAsFichas().forEach(c => { nomes[c.id] = c.name; });
+  const lista = [];
+  Object.entries(state.reviewsCache || {}).forEach(([academiaId, avs]) => avs.forEach(r => lista.push({ ...r, academiaId, academia: nomes[academiaId] || "Academia que saiu do guia" })));
+  return lista.sort((a, b) => String(b.ts || "").localeCompare(String(a.ts || "")));
+}
+
+function admInicioHtml() {
+  const tarefas = admParaFazer();
+  const academias = state.allCourts;
+  const pausadaAgora = (c) => c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
+  const noAr = academias.filter(c => !pausadaAgora(c)).length;
+  const pausadas = academias.length - noAr;
+  const porPlano = (k) => academias.filter(c => (c.plano || "basico") === k).length;
+  const comAcesso = new Set((state.acessos || []).filter(a => a.academia_id).map(a => a.academia_id)).size;
+  const avs = todasAsAvaliacoes();
+  const media = avs.length ? avs.reduce((s, r) => s + r.stars, 0) / avs.length : 0;
+  const semana = avs.filter(r => new Date(r.ts).getTime() > Date.now() - 7 * 86400000).length;
+  const k = state.admContas && !state.admContas.erro ? state.admContas : null;
+  const linha = (rotulo, valor, aba) => `<button type="button" class="adm-linha-num" data-adm-aba="${aba}"><span>${esc(rotulo)}</span><strong>${valor}</strong></button>`;
+  return `
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Para fazer agora</h2>
+      ${tarefas.length ? `<div class="adm-tarefas">${tarefas.map(x => `
+        <button type="button" class="adm-tarefa" data-adm-aba="${x.aba}">
+          <span class="adm-tarefa-n">${esc(String(x.n))}</span><span>${esc(x.t)}</span>${icon('chevron', 16, 'var(--muted)')}
+        </button>`).join("")}</div>`
+      : `<p class="adm-tudo-certo">${icon('check', 18, 'var(--green)')} Tudo em dia: nenhuma academia, pedido ou aviso esperando você.</p>`}
+    </section>
+
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Últimos 30 dias</h2>
+      <div class="adm-kpis">
+        ${admCartaoNumero("Acessos ao site", ["acesso_site"])}
+        ${admCartaoNumero("Buscas", ["busca"])}
+        ${admCartaoNumero("Fichas abertas", ["visualizacao"])}
+        ${admCartaoNumero("Contatos com academias", TIPOS_DE_CONTATO)}
+      </div>
+      <p class="adm-nota">A linha mostra as últimas 12 semanas; o ponto verde é esta semana. Os seus acessos como admin não entram na conta. <button type="button" class="inline-link" data-adm-aba="estatisticas">Ver as estatísticas ›</button></p>
+    </section>
+
+    <div class="adm-colunas">
+      <section class="adm-bloco">
+        <h2 class="adm-h2">Academias</h2>
+        <div class="adm-lista-num">
+          ${linha("No ar", noAr, "academias")}
+          ${linha("Pausadas", pausadas, "academias")}
+          ${linha("Em análise", (state.pending || []).length, "pendencias")}
+          ${linha("Fichas básicas (ainda não confirmadas)", academias.filter(c => !c.confirmada).length, "academias")}
+          ${linha("Com acesso ao Parceiros", comAcesso, "acessos")}
+          ${linha("Plano Básico · Completo · Premium", `${porPlano("basico")} · ${porPlano("completo")} · ${porPlano("premium")}`, "academias")}
+        </div>
+      </section>
+      <section class="adm-bloco">
+        <h2 class="adm-h2">Contas e avaliações</h2>
+        <div class="adm-lista-num">
+          ${k ? `
+            ${linha("Contas de jogador", `${k.jogadores}${k.novos_7_dias ? ` <small>+${k.novos_7_dias} em 7 dias</small>` : ""}`, "jogadores")}
+            ${linha("Com o e-mail confirmado", k.confirmados, "jogadores")}
+            ${linha("Buscas salvas (com aviso)", `${k.buscas_salvas} (${k.buscas_com_aviso})`, "jogadores")}
+            ${linha("Contas no GuiaTennis Parceiros", k.contas_parceiros, "acessos")}` : state.admContas && state.admContas.erro
+            ? `<p class="adm-nota" style="padding:10px 12px">Os números das contas entram com o SQL 20261006120000, que sobe junto com o PR.</p>`
+            : `<p class="adm-nota" style="padding:10px 12px">${bolaGirando(14)} Carregando…</p>`}
+          ${linha("Avaliações (nota média)", `${avs.length}${avs.length ? ` <small>${media.toFixed(1).replace(".", ",")}</small>` : ""}`, "avaliacoes")}
+          ${linha("Avaliações nos últimos 7 dias", semana, "avaliacoes")}
+        </div>
+      </section>
     </div>
-  `;
+
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Avisos por e-mail</h2>
+      ${situacaoDosEmailsHtml() || `<p class="adm-nota">${bolaGirando(14)} Conferindo os e-mails…</p>`}
+    </section>`;
+}
+
+function admPendenciasHtml() {
+  const pend = state.pending || [];
+  return `
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Academias novas para aprovar <span class="adm-cont">${pend.length}</span></h2>
+      ${conteudoDasPendentes(pend)}
+    </section>
+    <section class="adm-bloco">${blocoPedidosParaAdministrar() || `<h2 class="adm-h2">Pedidos para administrar</h2><p class="adm-vazio">Nenhum pedido agora.</p>`}</section>
+    <section class="adm-bloco">${blocoPedidosDePlano() || `<h2 class="adm-h2">Querem mudar de plano</h2><p class="adm-vazio">Nenhuma academia pediu outro plano.</p>`}</section>`;
+}
+
+const ADM_FILTROS_ACADEMIA = [
+  { k: "todas", t: "Todas", f: () => true },
+  { k: "no-ar", t: "No ar", f: (c, p) => c.status !== "pending" && !p(c) },
+  { k: "analise", t: "Em análise", f: c => c.status === "pending" },
+  { k: "pausadas", t: "Pausadas", f: (c, p) => c.status !== "pending" && p(c) },
+  { k: "basicas", t: "Fichas básicas", f: c => !c.confirmada },
+  { k: "sem-acesso", t: "Sem acesso ao Parceiros", f: c => !pessoasDaAcademia(c.id).length },
+  { k: "pagas", t: "Planos pagos", f: c => (c.plano || "basico") !== "basico" },
+  { k: "sem-mapa", t: "Fora do mapa", f: c => typeof c.lat !== "number" || typeof c.lng !== "number" },
+];
+function admAcademiasHtml() {
+  const pausadaAgora = (c) => c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
+  const filtro = ADM_FILTROS_ACADEMIA.find(x => x.k === state.admFiltro) || ADM_FILTROS_ACADEMIA[0];
+  const termo = slugTexto(String(state.admBusca || "").trim());
+  const todas = todasAsFichas().filter((c, i, l) => l.findIndex(x => x.id === c.id) === i);
+  const lista = todas
+    .filter(c => filtro.f(c, pausadaAgora))
+    .filter(c => !termo || [c.name, c.bairro, c.cidade].some(t => slugTexto(t || "").includes(termo)))
+    .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+  const { porAcademia } = statsAgregado("30");
+  const aberta = state.admAcademiaAberta;
+  const linhaDe = (c) => {
+    const d = porAcademia[c.id] || {};
+    const contatos = (d.whatsapp || 0) + (d.site || 0) + (d.instagram || 0);
+    const nota = getAppRating(c.id);
+    const pessoas = pessoasDaAcademia(c.id).length;
+    const situacao = c.status === "pending" ? ["analise", "Em análise"] : pausadaAgora(c) ? ["pausada", "Pausada"] : ["no-ar", "No ar"];
+    const plano = c.plano || "basico";
+    const estaAberta = aberta === c.id;
+    return `
+      <div class="adm-acad ${estaAberta ? "aberta" : ""}">
+        <button type="button" class="adm-acad-cab" data-adm-academia="${c.id}" aria-expanded="${estaAberta}">
+          <span class="adm-acad-nome"><strong>${esc(c.name)}</strong><small>${esc([c.bairro, c.cidade].filter(Boolean).join(", ") || "Sem endereço")}</small></span>
+          <span class="adm-pilulas">
+            <span class="adm-pilula ${situacao[0]}">${situacao[1]}</span>
+            <span class="adm-pilula plano-${plano}">${esc(nomeDoPlano(plano))}</span>
+            ${c.confirmada ? "" : `<span class="adm-pilula basica">Ficha básica</span>`}
+          </span>
+          <span class="adm-acad-nums">
+            <span title="Nota no GuiaTennis">${nota.count ? `★ ${nota.avg.toFixed(1).replace(".", ",")} <small>(${nota.count})</small>` : `<small>sem nota</small>`}</span>
+            <span title="Fichas abertas em 30 dias">${icon('eye', 12, 'var(--muted)')} ${d.visualizacao || 0}</span>
+            <span title="Contatos em 30 dias">${icon('phone', 12, 'var(--muted)')} ${contatos}</span>
+            <span title="Pessoas com acesso ao Parceiros">${icon('key', 12, 'var(--muted)')} ${pessoas}</span>
+          </span>
+        </button>
+        ${estaAberta ? `
+          <div class="adm-acad-corpo">
+            <div class="adm-acoes">
+              <button type="button" class="chip small" data-open="${c.id}">Abrir a ficha</button>
+              <button type="button" class="chip small editar-academia" data-court="${c.id}">Editar</button>
+              <button type="button" class="chip small" data-adm-ver-como="${c.id}">Ver como academia</button>
+              <button type="button" class="chip small" data-adm-qr="${c.id}">QR code</button>
+            </div>
+            <p class="adm-rotulo">Plano</p>
+            <div class="chip-row">${PLANO_OPTS.map(o => `<button type="button" class="chip small plano-btn ${plano === o.key ? "active" : ""}" data-court="${c.id}" data-plano="${o.key}">${o.label}</button>`).join("")}</div>
+            ${c.status !== "pending" ? `
+              <p class="adm-rotulo">Na busca</p>
+              ${pausadaAgora(c)
+                ? `<p class="adm-nota">Pausada ${c.pausadaAte ? "até " + dataCurta(c.pausadaAte) : "sem data para voltar"}${c.pausadaPelaAcademia ? ", pela própria academia" : ""}.</p>
+                   <div class="chip-row"><button type="button" class="chip small active" data-adm-voltar="${c.id}">Voltar para a busca agora</button></div>`
+                : `<div class="chip-row">${[7, 15, 30].map(n => `<button type="button" class="chip small pause-preset-btn" data-court="${c.id}" data-days="${n}">Pausar ${n} dias</button>`).join("")}</div>`}` : `
+              <div class="adm-acoes" style="margin-top:12px">
+                <button type="button" class="cta-btn cta-primary" data-approve="${c.id}">Aprovar e publicar</button>
+                <button type="button" class="cta-btn cta-danger" data-reject="${c.id}">Rejeitar</button>
+              </div>`}
+            ${pessoas ? `<p class="adm-rotulo">Quem administra</p><p class="adm-nota">${pessoasDaAcademia(c.id).map(a => `${esc(a.nome_responsavel || a.email || a.usuario)} (${a.papel === "equipe" ? "equipe" : "responsável"})`).join(", ")}</p>` : ""}
+          </div>` : ""}
+      </div>`;
+  };
+  return `
+    <section class="adm-bloco">
+      <div class="adm-barra">
+        <input type="search" class="form-field adm-busca" id="adm-busca" placeholder="Buscar por nome, bairro ou cidade" value="${esc(state.admBusca || "")}" autocomplete="off" />
+        <button type="button" class="cta-btn cta-primary adm-nova" id="adm-nova-academia">${icon('plus', 15, '#fff')} Adicionar academia</button>
+      </div>
+      <div class="chip-row adm-filtros">${ADM_FILTROS_ACADEMIA.map(x => {
+        const qtas = todas.filter(c => x.f(c, pausadaAgora)).length;
+        return `<button type="button" class="chip small ${filtro.k === x.k ? "active" : ""}" data-adm-filtro="${x.k}">${x.t} <small>${qtas}</small></button>`;
+      }).join("")}</div>
+      <p class="adm-nota">${lista.length} ${plural(lista.length, "academia", "academias")}. Toque numa academia para ver as ações.</p>
+      <div class="adm-acads">${lista.map(linhaDe).join("") || `<p class="adm-vazio">Nenhuma academia com esse filtro.</p>`}</div>
+    </section>`;
+}
+
+function admJogadoresHtml() {
+  const k = state.admContas && !state.admContas.erro ? state.admContas : null;
+  const dados = state.admJogadores;
+  const termo = slugTexto(String(state.admBuscaJogador || "").trim());
+  const lista = ((dados && dados.lista) || []).filter(j => !termo || [j.nome, j.email, j.cidade].some(t => slugTexto(t || "").includes(termo)));
+  const mostrar = state.admJogadoresMostrar || 50;
+  const avisos = (j) => [j.avisos_academias && "cidade", j.avisos_viagem && "viagem", j.promocoes && "promoções", j.novidades && "novidades"].filter(Boolean);
+  return `
+    ${k ? `
+    <section class="adm-bloco">
+      <div class="adm-kpis">
+        <div class="adm-kpi"><p class="adm-kpi-l">Contas</p><p class="adm-kpi-v">${numeroCurto(k.jogadores)}</p><span class="adm-delta ${k.novos_7_dias ? "bom" : ""}">${k.novos_7_dias ? `+${k.novos_7_dias} em 7 dias` : "nenhuma nova em 7 dias"}</span></div>
+        <div class="adm-kpi"><p class="adm-kpi-l">E-mail confirmado</p><p class="adm-kpi-v">${numeroCurto(k.confirmados)}</p><span class="adm-delta">${k.jogadores ? Math.round(k.confirmados / k.jogadores * 100) : 0}% das contas</span></div>
+        <div class="adm-kpi"><p class="adm-kpi-l">Buscas salvas</p><p class="adm-kpi-v">${numeroCurto(k.buscas_salvas)}</p><span class="adm-delta">${k.buscas_com_aviso} com aviso por e-mail</span></div>
+        <div class="adm-kpi"><p class="adm-kpi-l">Avisos ligados</p><p class="adm-kpi-v">${numeroCurto(k.aviso_cidade)}</p><span class="adm-delta">cidade · ${k.aviso_viagem} viagem · ${k.promocoes} promoções · ${k.novidades} novidades</span></div>
+      </div>
+    </section>` : ""}
+    <section class="adm-bloco">
+      <input type="search" class="form-field adm-busca" id="adm-busca-jogador" placeholder="Buscar por nome, e-mail ou cidade" value="${esc(state.admBuscaJogador || "")}" autocomplete="off" />
+      ${!dados ? `<p class="adm-nota">${bolaGirando(14)} Carregando as contas…</p>`
+        : dados.erro ? `<p class="adm-nota">${esc(dados.erro)}</p>`
+        : !lista.length ? `<p class="adm-vazio">${termo ? "Ninguém com essa busca." : "Nenhuma conta de jogador ainda."}</p>` : `
+        <div class="adm-tabela" role="table" aria-label="Contas de jogador">
+          <div class="adm-tr adm-th" role="row"><span role="columnheader">Nome e e-mail</span><span role="columnheader">Cidade</span><span role="columnheader">Criada em</span><span role="columnheader">Avisos</span></div>
+          ${lista.slice(0, mostrar).map(j => `
+            <div class="adm-tr" role="row">
+              <span role="cell"><strong>${esc(j.nome)}</strong><small>${esc(j.email)}${j.email_confirmado_em ? "" : " · e-mail não confirmado"}</small></span>
+              <span role="cell">${esc(j.cidade || "—")}</span>
+              <span role="cell">${dataCurta(j.created_at)}</span>
+              <span role="cell">${avisos(j).length ? esc(avisos(j).join(", ")) : "<small>nenhum</small>"}</span>
+            </div>`).join("")}
+        </div>
+        ${lista.length > mostrar ? `<button type="button" class="cta-btn cta-secondary" id="adm-jogadores-mais" style="margin-top:12px">Mostrar mais ${Math.min(50, lista.length - mostrar)}</button>` : ""}`}
+      <p class="adm-nota" style="margin-top:12px">Dados pessoais: use só para cuidar das contas e dos avisos (LGPD). A senha de cada conta fica cifrada no Supabase e nem o admin vê.</p>
+    </section>`;
+}
+
+function admAvaliacoesHtml() {
+  const filtro = state.admFiltroAval || "todas";
+  const todas = todasAsAvaliacoes();
+  const filtros = [
+    { k: "todas", t: "Todas", f: () => true },
+    { k: "sem-resposta", t: "Sem resposta da academia", f: r => !r.resposta },
+    { k: "baixas", t: "Nota 1 ou 2", f: r => r.stars <= 2 },
+    { k: "semana", t: "Últimos 7 dias", f: r => new Date(r.ts).getTime() > Date.now() - 7 * 86400000 },
+  ];
+  const ativo = filtros.find(x => x.k === filtro) || filtros[0];
+  const lista = todas.filter(ativo.f);
+  const mostrar = state.admAvalMostrar || 30;
+  return `
+    <section class="adm-bloco">
+      <div class="chip-row adm-filtros">${filtros.map(x => `<button type="button" class="chip small ${ativo.k === x.k ? "active" : ""}" data-adm-filtro-aval="${x.k}">${x.t} <small>${todas.filter(x.f).length}</small></button>`).join("")}</div>
+      ${!lista.length ? `<p class="adm-vazio">Nenhuma avaliação com esse filtro.</p>` : lista.slice(0, mostrar).map(r => `
+        <div class="adm-aval">
+          <div class="adm-aval-top">
+            <span class="adm-estrelas" aria-label="${r.stars} de 5">${"★".repeat(r.stars)}<i>${"★".repeat(5 - r.stars)}</i></span>
+            <button type="button" class="inline-link" data-open="${r.academiaId}">${esc(r.academia)}</button>
+            <span class="adm-nota">${dataCurta(r.ts)}</span>
+            <button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação" aria-label="Excluir avaliação">${icon('warning', 14, 'var(--red)')}</button>
+          </div>
+          ${r.comment ? `<p class="adm-aval-texto">${esc(r.comment)}</p>` : `<p class="adm-nota">Sem comentário.</p>`}
+          <p class="adm-nota">${esc(r.nome_autor || "Sem nome")}${r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</p>
+          ${r.resposta ? `<p class="adm-aval-resp"><strong>Resposta da academia:</strong> ${esc(r.resposta.texto)}</p>` : ""}
+        </div>`).join("")}
+      ${lista.length > mostrar ? `<button type="button" class="cta-btn cta-secondary" id="adm-aval-mais" style="margin-top:12px">Mostrar mais ${Math.min(30, lista.length - mostrar)}</button>` : ""}
+    </section>`;
+}
+
+const ADM_TIPOS_DE_EMAIL = {
+  avaliacao: "Avaliação nova", pedido_responsavel: "Pedido ao responsável", pedido_guiatennis: "Pedido ao GuiaTennis",
+  pedido_aceito: "Pedido aceito", viagem: "Viagem", academias_novas: "Academias novas",
+};
+function admEmailsHtml() {
+  const d = state.admEmails || {};
+  const lista = d.lista || [];
+  const situacao = (e) => e.enviado_em ? ["ok", "Enviado " + dataHora(e.enviado_em)]
+    : e.erro ? ["erro", `Não saiu (${e.tentativas} ${plural(e.tentativas, "tentativa", "tentativas")})`]
+    : ["fila", "Na fila"];
+  return `
+    <section class="adm-bloco">
+      ${situacaoDosEmailsHtml() || `<p class="adm-nota">${bolaGirando(14)} Conferindo os e-mails…</p>`}
+      <p class="adm-nota" style="margin-top:10px">Os avisos saem sozinhos pelo Resend, de minuto em minuto. Para ligar, a chave do Resend entra como segredo RESEND_API_KEY no GitHub (Settings › Secrets and variables › Actions).</p>
+    </section>
+    <section class="adm-bloco">
+      <div class="adm-barra"><h2 class="adm-h2" style="margin:0">Últimos e-mails</h2><button type="button" class="chip small" id="adm-emails-atualizar">Atualizar</button></div>
+      ${d.carregando && !lista.length ? `<p class="adm-nota">${bolaGirando(14)} Carregando…</p>` : ""}
+      ${d.erro ? `<p class="adm-nota">${esc(d.erro)}</p>` : ""}
+      ${!d.carregando && !d.erro && !lista.length ? `<p class="adm-vazio">Nenhum e-mail ainda.</p>` : ""}
+      ${lista.length ? `
+        <div class="adm-tabela" role="table" aria-label="Últimos e-mails">
+          <div class="adm-tr adm-th" role="row"><span role="columnheader">Assunto e para quem</span><span role="columnheader">Tipo</span><span role="columnheader">Criado em</span><span role="columnheader">Situação</span></div>
+          ${lista.map(e => { const s = situacao(e); return `
+            <div class="adm-tr" role="row">
+              <span role="cell"><strong>${esc(e.assunto)}</strong><small>${esc(e.para)}</small></span>
+              <span role="cell">${esc(ADM_TIPOS_DE_EMAIL[e.tipo] || e.tipo)}</span>
+              <span role="cell">${dataHora(e.criado_em)}</span>
+              <span role="cell"><span class="adm-pilula ${s[0] === "ok" ? "no-ar" : s[0] === "erro" ? "erro" : "analise"}">${esc(s[1])}</span>
+                ${!e.enviado_em && e.erro ? `<small>${esc(e.erro)}</small><button type="button" class="chip small" data-adm-reenviar="${e.id}">Tentar de novo</button>` : ""}</span>
+            </div>`; }).join("")}
+        </div>` : ""}
+    </section>`;
+}
+
+function admFerramentasHtml() {
+  const fora = semCoordenada();
+  return `
+    <section class="adm-bloco">
+      <h2 class="adm-h2">QR code do site</h2>
+      <p class="adm-nota">Para cartaz, adesivo e material impresso: abre direto o guiatennis.com.br.</p>
+      <button type="button" class="cta-btn cta-secondary adm-botao" id="qr-site-btn">${icon('clipboard', 15, 'var(--green)')} Gerar o QR code do site</button>
+    </section>
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Coordenadas do mapa</h2>
+      ${fora.length ? `
+        <p class="adm-nota">Fora do mapa por falta de coordenada: ${esc(fora.map(c => c.name).join(", "))}.</p>
+        <button type="button" class="cta-btn cta-secondary adm-botao geocode-todas-btn">${icon('pin', 15, 'var(--green)')} Gerar as coordenadas que faltam</button>`
+      : `<p class="adm-tudo-certo">${icon('check', 18, 'var(--green)')} Todas as academias estão no mapa.</p>`}
+      ${state.localizando ? `<p class="adm-nota">Colocando no mapa: ${state.localizando.feito} de ${state.localizando.total}…</p>` : ""}
+      ${!state.localizando && (state.naoLocalizadas || []).length ? `<p class="adm-nota">Não achei no mapa: <strong>${esc(state.naoLocalizadas.join(", "))}</strong>. Confira o endereço em "Editar" e salve.</p>` : ""}
+    </section>
+    <section class="adm-bloco">${blocoMapaAberto()}</section>
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Banco de dados</h2>
+      <p class="adm-nota">${USANDO_BANCO_DE_TESTE ? "Este site está no banco de teste: nada daqui aparece no guiatennis.com.br." : "Este site está no banco de verdade (guiatennis.com.br)."} O SQL novo entra sozinho pelo GitHub: no banco de teste com o PR, no de verdade quando o PR sobe.</p>
+    </section>`;
+}
+
+function renderPainelAdmin() {
+  const aba = abaDoAdmin(state.adminAba);
+  const atual = ADMIN_ABAS.find(x => x.aba === aba);
+  const contagem = { pendencias: (state.pending || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length };
+  const conteudo = {
+    inicio: admInicioHtml, pendencias: admPendenciasHtml, academias: admAcademiasHtml, acessos: () => `<section class="adm-bloco">${blocoAcessosDasAcademias()}</section>`,
+    jogadores: admJogadoresHtml, avaliacoes: admAvaliacoesHtml, estatisticas: () => `<section class="adm-bloco">${conteudoDasEstatisticas()}</section>`,
+    percursos: () => `<section class="adm-bloco">${conteudoDosPercursos()}</section>`, emails: admEmailsHtml, ferramentas: admFerramentasHtml,
+  }[aba]();
+  const item = (x) => `<a href="/admin${x.aba === "inicio" ? "" : "/" + x.aba}" class="adm-nav-i ${x.aba === aba ? "ativo" : ""}" data-adm-aba="${x.aba}" ${x.aba === aba ? 'aria-current="page"' : ""}>${icon(x.ic, 18, 'currentColor')}<span>${x.t}</span>${contagem[x.aba] ? `<span class="adm-nav-n">${contagem[x.aba]}</span>` : ""}</a>`;
+  return `
+    <div class="adm" id="painel-admin">
+      <header class="adm-topo">
+        <button type="button" class="adm-menu-btn" id="adm-menu-btn" aria-label="Seções do painel" aria-expanded="${state.admMenu ? "true" : "false"}"><span></span><span></span><span></span></button>
+        <a href="/admin" class="adm-marca" data-adm-aba="inicio">${logoSvg()}<span>GuiaTennis</span><em>Admin</em></a>
+        <div class="adm-topo-acoes">
+          <button type="button" id="adm-ver-site" aria-label="Ver o site" title="Ver o site">${icon('globe', 15, 'currentColor')}<span>Ver o site</span></button>
+          <button type="button" id="adm-ver-como" aria-label="Ver como academia" title="Ver como academia">${icon('predio', 15, 'currentColor')}<span>Ver como academia</span></button>
+          <button type="button" id="adm-sair">Sair</button>
+        </div>
+      </header>
+      <div class="adm-corpo">
+        <nav class="adm-nav ${state.admMenu ? "aberta" : ""}" aria-label="Seções do painel">
+          ${ADMIN_ABAS.map(item).join("")}
+          <p class="adm-nav-pe">Só você vê este painel.</p>
+        </nav>
+        <main class="adm-main">
+          <h1 class="adm-h1">${esc(atual.t)}</h1>
+          <p class="adm-sub">${esc(atual.sub)}</p>
+          ${conteudo}
+        </main>
+      </div>
+    </div>`;
+}
+
+function ligarEventosDoPainel() {
+  document.querySelectorAll("[data-adm-aba]").forEach(el => {
+    el.onclick = (e) => { e.preventDefault(); irAdmin(el.dataset.admAba); };
+  });
+  const menuBtn = document.getElementById("adm-menu-btn");
+  if (menuBtn) menuBtn.onclick = () => { state.admMenu = !state.admMenu; render(); };
+  const verSite = document.getElementById("adm-ver-site");
+  if (verSite) verSite.onclick = () => goHome();
+  const verComo = document.getElementById("adm-ver-como");
+  if (verComo) verComo.onclick = () => irParceiros("ver", { mesmaAba: true });
+  const sair = document.getElementById("adm-sair");
+  if (sair) sair.onclick = () => sb.auth.signOut().then(() => { try { history.replaceState(null, "", "/"); } catch {} location.reload(); });
+  document.querySelectorAll("[data-adm-ver-como]").forEach(el => { el.onclick = () => verComoAcademia(el.dataset.admVerComo); });
+  document.querySelectorAll("[data-adm-qr]").forEach(el => { el.onclick = () => { state.qrCourt = el.dataset.admQr; render(); }; });
+  document.querySelectorAll("[data-adm-academia]").forEach(el => {
+    el.onclick = () => { state.admAcademiaAberta = state.admAcademiaAberta === el.dataset.admAcademia ? null : el.dataset.admAcademia; render(); };
+  });
+  document.querySelectorAll("[data-adm-filtro]").forEach(el => { el.onclick = () => { state.admFiltro = el.dataset.admFiltro; render(); }; });
+  document.querySelectorAll("[data-adm-filtro-aval]").forEach(el => { el.onclick = () => { state.admFiltroAval = el.dataset.admFiltroAval; state.admAvalMostrar = 30; render(); }; });
+  document.querySelectorAll("[data-adm-voltar]").forEach(el => {
+    el.onclick = async () => {
+      const { error } = await sb.from('academias').update({ pausada: false, pausada_ate: null }).eq('id', el.dataset.admVoltar);
+      if (error) { alert("Não consegui trazer de volta: " + error.message); return; }
+      await loadEverything();
+      render();
+    };
+  });
+  document.querySelectorAll("[data-adm-reenviar]").forEach(el => { el.onclick = () => reenviarEmail(el.dataset.admReenviar); });
+  const atualizarEmails = document.getElementById("adm-emails-atualizar");
+  if (atualizarEmails) atualizarEmails.onclick = () => { carregarSituacaoDosEmails(); carregarEmailsRecentes(); };
+  const nova = document.getElementById("adm-nova-academia");
+  if (nova) nova.onclick = () => {
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
+    state.showRegister = true;
+    state.registerStatus = "idle";
+    render();
+  };
+  // Busca enquanto digita, sem perder o cursor.
+  const campoVivo = (id, chave) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.oninput = (e) => {
+      state[chave] = e.target.value;
+      const pos = e.target.selectionStart;
+      render();
+      const campo = document.getElementById(id);
+      if (campo) { campo.focus(); try { campo.setSelectionRange(pos, pos); } catch {} }
+    };
+  };
+  campoVivo("adm-busca", "admBusca");
+  campoVivo("adm-busca-jogador", "admBuscaJogador");
+  const jogMais = document.getElementById("adm-jogadores-mais");
+  if (jogMais) jogMais.onclick = () => { state.admJogadoresMostrar = (state.admJogadoresMostrar || 50) + 50; render(); };
+  const avalMais = document.getElementById("adm-aval-mais");
+  if (avalMais) avalMais.onclick = () => { state.admAvalMostrar = (state.admAvalMostrar || 30) + 30; render(); };
 }
 
 // ---------- events ----------
@@ -14554,9 +15257,10 @@ function attachEvents() {
       irParceiros(destino, { substituir: state.page === "parceiros", mesmaAba: true });
       return;
     }
+    // Admin: o site muda para o painel (pedido do Breno em 06/10/2026).
+    if (isAdmin) { irAdmin("inicio", { substituir: state.page === "parceiros" }); completarCoordenadas(); return; }
     if (state.page === "parceiros") { state.page = "home"; syncUrl(false); }
     render();
-    if (isAdmin) completarCoordenadas();
   };
 
   ligarEventosConta();
@@ -14905,6 +15609,7 @@ function attachEvents() {
       if (alvo === "cadastrar") { irParceiros("cadastro"); return; }
       if (alvo === "parceiros") { irParceiros("inicio"); return; }
       if (alvo === "parceiros-admin") { irParceiros("ver"); return; }
+      if (alvo === "painel-admin") { irAdmin("inicio"); return; }
       if (alvo === "termos") { state.showTerms = true; render(); return; }
       if (alvo === "privacidade") { state.showPrivacy = true; render(); return; }
       if (alvo === "admin") { state.showLogin = true; state.loginModo = "admin"; state.loginError = ""; render(); return; }
@@ -15117,14 +15822,11 @@ function attachEvents() {
   });
 
 
-  const fabAdmin = document.getElementById("fab-admin");
-  if (fabAdmin) fabAdmin.onclick = () => { state.showAdminPanel = true; render(); };
-
-  const fabStats = document.getElementById("fab-stats");
-  if (fabStats) fabStats.onclick = () => { state.showStatsPanel = true; render(); carregarSituacaoDosEmails(); };
+  // Painel do admin (06/10/2026): no lugar dos botões redondos de antes.
+  ligarEventosDoPainel();
+  const irPainel = document.getElementById("ir-painel-admin");
+  if (irPainel) irPainel.onclick = (e) => { e.preventDefault(); irAdmin("inicio"); };
   // Percurso das visitas (05/10/2026).
-  const fabPercursos = document.getElementById("fab-percursos");
-  if (fabPercursos) fabPercursos.onclick = abrirPercursos;
   const verPercursos = document.getElementById("stats-ver-percursos");
   if (verPercursos) verPercursos.onclick = abrirPercursos;
   const percClose = document.getElementById("percursos-close");
@@ -15875,6 +16577,7 @@ async function init() {
   syncUrl(false);
   render();
   if (state.page === "court" && state.secaoFicha) irParaSecao(state.secaoFicha, false);
+  if (state.page === "admin") carregarAbaDoAdmin();
   if (buscarAoAbrir) doSearch({ ordem: doLink.ordem });
   completarCoordenadas();
   ligarTempoNoSite();

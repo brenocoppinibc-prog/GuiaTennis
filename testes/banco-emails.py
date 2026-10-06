@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Confere os avisos por e-mail e as buscas salvas num Postgres local
-(SQL 20261005150000_buscas_salvas e 20261005160000_avisos_por_email).
+(SQL 20261005150000_buscas_salvas e 20261005160000_avisos_por_email) e as
+consultas do painel do admin (20261006120000_painel_do_admin).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -355,6 +356,28 @@ ok(certo and um(f"select count(*) from public.jogadores where user_id = '{dono}'
    and um(f"select count(*) from public.academia_acessos where user_id = '{dono}'") == "1"
    and um(f"select count(*) from auth.users where id = '{dono}'") == "1", "excluir a parte de jogador mantém o login e as academias")
 ok(um(f"select count(*) from public.buscas_salvas where user_id = '{dono}'") == "0", "e apaga as buscas dela")
+
+# 11. Painel do admin (SQL 20261006120000) --------------------------------------
+print("\n# Painel do admin")
+n = um("select public.numeros_das_contas_admin()", papel="authenticated", user="00000000-0000-4000-8000-0000000000ad", email=ADMIN)
+n = json.loads(n) if n else {}
+ok(n.get("jogadores") == int(um("select count(*) from public.jogadores")) and n.get("buscas_salvas") == int(um("select count(*) from public.buscas_salvas"))
+   and n.get("contas_parceiros") == int(um("select count(*) from public.academia_acessos")), "admin: os números das contas batem com as tabelas — " + json.dumps(n))
+certo, _ = sql("select public.numeros_das_contas_admin()", papel="authenticated", user=hugo)
+ok(not certo, "os números das contas são só do admin")
+ok(um("select count(*) from public.emails_recentes_admin(500)", papel="authenticated", user="00000000-0000-4000-8000-0000000000ad", email=ADMIN)
+   == um("select count(*) from public.emails_a_enviar"), "admin vê os últimos e-mails da fila")
+ok(um("select count(*) from public.emails_recentes_admin()", papel="authenticated", user=hugo) == "0", "quem não é admin não vê nenhum")
+certo, _ = sql("select * from public.emails_recentes_admin()", papel="anon")
+ok(not certo, "visitante nem chama")
+falhou = um("select id from public.emails_a_enviar where enviado_em is null and erro is not null limit 1")
+if falhou:
+    certo, _ = sql(f"select public.reenviar_email_admin('{falhou}')", papel="authenticated", user=hugo)
+    ok(not certo, "só o admin manda de novo")
+    certo, _ = sql(f"select public.reenviar_email_admin('{falhou}')", papel="authenticated", user="00000000-0000-4000-8000-0000000000ad", email=ADMIN)
+    ok(certo and um(f"select tentativas || '|' || coalesce(erro, '') from public.emails_a_enviar where id = '{falhou}'") == "0|", "admin: o e-mail que não saiu volta para a fila")
+else:
+    ok(False, "faltou um e-mail que não saiu para testar o reenviar")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

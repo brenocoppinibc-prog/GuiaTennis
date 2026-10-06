@@ -101,7 +101,8 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.waitForTimeout(300);
   let cad = await texto(page, '#parceiros .pc-main');
   ok(cad.includes('Adicionar outra academia') && cad.includes('Qual academia você também administra?') && cad.includes('em qualquer plano') && !cad.includes('Cada conta cuida de uma academia'), 'a busca de outra academia, sem mandar falar com o GuiaTennis — ' + cad.slice(0, 90));
-  ok(cad.includes('declara que é dono(a) ou está autorizado(a)'), 'pedir declara que a pessoa responde pela academia');
+  ok(cad.includes('Declaro que estou autorizado(a) pela academia') && !cad.includes('dono(a)'), 'pedir declara, numa caixinha, que a pessoa responde pela academia');
+  ok(!cad.includes('enquanto outra ainda está em análise') && !cad.includes('paga o próprio valor'), 'sem o texto de pedir várias e do plano de cada uma');
   await page.fill('#pc-busca', 'locação');
   await page.waitForTimeout(250);
   const minha = await page.evaluate(() => ({
@@ -113,6 +114,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.waitForTimeout(250);
   await page.click('[data-pc-selecionar="a1"]');
   await page.waitForTimeout(150);
+  await page.check('#pc-declaro');
   await page.click('#pc-administrar');
   await page.waitForTimeout(400);
   const pedido = await rpcs(page, 'pedir_para_administrar');
@@ -218,6 +220,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.fill('#pc-busca', 'aula');
   await page.waitForTimeout(250);
   await page.click('[data-pc-selecionar="a1"]');
+  await page.check('#pc-declaro');
   await page.click('#pc-administrar');
   await page.waitForTimeout(400);
   let txt = await texto(page, '#parceiros .pc-main');
@@ -229,6 +232,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.fill('#pc-busca', 'terceira');
   await page.waitForTimeout(250);
   await page.click('[data-pc-selecionar="a3"]');
+  await page.check('#pc-declaro');
   await page.click('#pc-administrar');
   await page.waitForTimeout(400);
   const dois = await page.evaluate(() => meusPedidos().map(p => p.nome).join(','));

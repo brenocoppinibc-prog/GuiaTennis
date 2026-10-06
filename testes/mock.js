@@ -414,13 +414,15 @@
     if (nome === "pedir_para_administrar") {
       const x = meuAcesso();
       if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      // A declaração (SQL 20261006130000): false recusa, true guarda a hora.
+      if (a.p_declaro === false) return erro("Marque a declaração para pedir.", "22023");
       if (vinculo(x.user_id, a.p_academia)) return erro("A sua conta já administra essa academia.", "22023");
       const ac = db.academias.find(y => y.id === a.p_academia && y.status === "published");
       if (!ac) return erro("Academia não encontrada.", "22023");
       const temDono = db.academia_vinculos.some(v => v.academia_id === ac.id && v.papel === "principal");
       if (pedidosDe(x.user_id).filter(p => p.academia_id !== ac.id).length >= 10) return erro("A sua conta já tem 10 pedidos abertos. Espere algum ser confirmado ou cancele um.", "22023");
       db.pedidos_de_acesso = db.pedidos_de_acesso.filter(p => !(p.user_id === x.user_id && p.academia_id === ac.id));
-      db.pedidos_de_acesso.push({ user_id: x.user_id, academia_id: ac.id, nome: ac.name, destino: temDono ? "responsavel" : "guiatennis", pedido_em: new Date().toISOString() });
+      db.pedidos_de_acesso.push({ user_id: x.user_id, academia_id: ac.id, nome: ac.name, destino: temDono ? "responsavel" : "guiatennis", pedido_em: new Date().toISOString(), declarou_em: a.p_declaro ? new Date().toISOString() : null });
       window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
       return { data:null, error:null };
     }

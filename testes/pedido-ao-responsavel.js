@@ -22,6 +22,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.fill('#pc-busca', 'locação');
   await page.waitForTimeout(200);
   await page.click('[data-pc-selecionar="a2"]');
+  await page.check('#pc-declaro');
   await page.click('#pc-administrar');
   await page.waitForTimeout(400);
   let t = await texto(page, '#parceiros .pc-main');

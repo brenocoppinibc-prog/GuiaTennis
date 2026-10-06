@@ -1876,6 +1876,8 @@
   .field-label + .form-field, .field-label + .senha-caixa, .field-label + select { margin-top: 0; }
   .consent-row { margin-top: 18px; }
   .consent-row + .consent-row { margin-top: 14px; }
+  .pc-declaro { color: var(--text); }
+  .pc-declaro.falta input { outline: 2px solid var(--red); outline-offset: 2px; }
   .fgroup-note { margin-top: 8px; }
   .senha-forca { margin-top: 8px; }
   .form-error { margin-top: 14px; }
@@ -3349,6 +3351,9 @@ let state = {
   pcConfirmarErro: "",
   pcLogin: "",
   pcSelecionada: undefined,
+  // A caixinha "Declaro que estou autorizado(a)…" do pedido (06/10/2026).
+  pcDeclaro: false,
+  pcDeclaroErro: false,
   pcCodigos: {},
   pcContaErro: "",
   pcContaSalvando: false,
@@ -7159,8 +7164,7 @@ function pcCadastro() {
       <section class="pc-pagina pc-estreita">
         <p class="pc-eyebrow">Adicionar outra academia</p>
         <h1 class="display pc-antes">Qual academia você também administra?</h1>
-        <p class="pc-sec-sub">A mesma conta cuida de quantas academias você responder, em qualquer plano, e você pode pedir uma enquanto outra ainda está em análise. Cada uma é confirmada do mesmo jeito que a primeira.</p>
-        <p class="pc-sec-sub">Cada academia tem o próprio plano e paga o próprio valor. A academia nova começa no Básico, grátis, e você aprimora o plano dela quando quiser.</p>
+        <p class="pc-sec-sub">A mesma conta cuida de quantas academias você responder, em qualquer plano.</p>
         ${jaMinha ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} A ${esc(escolhida.name)} já é sua. <button type="button" class="pc-linha-link" data-abrir-academia="${escolhida.id}">Abrir no painel ›</button></p>` : ""}
         ${emAndamento ? `<p class="pc-linha">${emAndamento === 1 ? "Você tem 1 pedido em andamento." : `Você tem ${emAndamento} pedidos em andamento.`} <a href="/parceiros/academias" class="pc-linha-link" data-pc="academias">Ver em Suas academias ›</a></p>` : ""}
         ${erro(state.pedidoErroEm ? "" : state.pedidoErro)}
@@ -7171,8 +7175,8 @@ function pcCadastro() {
         </div>
         <p class="footnote" style="margin-top:6px">Dica: escreva também o bairro para achar mais rápido.</p>
         <div id="pc-resultados">${pcResultadosBusca()}</div>
+        ${caixaDeDeclaracao()}
         <button type="button" class="btn-primary pc-botao-cheio" id="pc-administrar" ${state.pcSelecionada ? "" : "disabled"}>Administrar esta academia</button>
-        <p class="footnote">Ao pedir, você declara que é dono(a) ou está autorizado(a) pela academia a administrar a ficha dela no GuiaTennis.</p>
         <p class="pc-linha">A academia ainda não está no GuiaTennis? <button type="button" class="pc-linha-link" id="pc-nova">Cadastrar academia nova ›</button></p>
         <p class="pc-linha"><a href="/parceiros/painel" class="pc-linha-link pc-linha-discreta" data-pc="painel">Voltar ao painel</a></p>
       </section>`;
@@ -7276,10 +7280,27 @@ function pcCadastro() {
       </div>
       <p class="footnote" style="margin-top:6px">Dica: escreva também o bairro para achar mais rápido.</p>
       <div id="pc-resultados">${pcResultadosBusca()}</div>
+      ${caixaDeDeclaracao()}
       <button type="button" class="btn-primary pc-botao-cheio" id="pc-administrar" ${state.pcSelecionada ? "" : "disabled"}>Administrar esta academia</button>
-      <p class="footnote">Ao pedir, você declara que é dono(a) ou está autorizado(a) pela academia a administrar a ficha dela no GuiaTennis.</p>
       <p class="pc-linha">A sua academia ainda não está no GuiaTennis? <button type="button" class="pc-linha-link" id="pc-nova">Cadastrar academia nova ›</button></p>
     </section>`;
+}
+
+// Pedido do Breno (06/10/2026): a declaração de quem pede vira caixinha
+// obrigatória, como o "Li e concordo" dos sites grandes. O banco guarda
+// quando ela foi marcada (pedidos_de_acesso.declarou_em, SQL
+// 20261006130000): é a prova de que a pessoa declarou e responde pelo que
+// publicar. Quem mentir responde por isso; a confirmação da academia
+// (código no WhatsApp da ficha ou o responsável aceitar) continua.
+const TEXTO_DECLARACAO = "Declaro que estou autorizado(a) pela academia a administrar a ficha dela no GuiaTennis e que respondo pelas informações que publicar.";
+const TEXTO_DECLARACAO_CADASTRO = "Declaro que estou autorizado(a) pela academia a cadastrá-la no GuiaTennis e que respondo pelas informações que publicar.";
+function caixaDeDeclaracao() {
+  return `
+    <label class="consent-row pc-declaro ${state.pcDeclaroErro ? "falta" : ""}">
+      <input type="checkbox" id="pc-declaro" ${state.pcDeclaro ? "checked" : ""} />
+      <span>${TEXTO_DECLARACAO}</span>
+    </label>
+    ${state.pcDeclaroErro ? `<div class="form-error">${icon('warning', 13)} Marque a declaração para pedir.</div>` : ""}`;
 }
 
 // Entrar e Cadastro são a mesma tela, que começa pelo e-mail.
@@ -7886,10 +7907,20 @@ async function criarContaDeParceiro() {
 async function pedirParaAdministrar(academiaId) {
   if (!academiaId) return;
   state.pedidoErro = "";
-  const r = await sb.rpc('pedir_para_administrar', { p_academia: academiaId });
+  if (!state.pcDeclaro) {
+    state.pcDeclaroErro = true;
+    render();
+    document.getElementById("pc-declaro")?.focus();
+    return;
+  }
+  state.pcDeclaroErro = false;
+  let r = await sb.rpc('pedir_para_administrar', { p_academia: academiaId, p_declaro: true });
+  // Banco antes do SQL 20261006130000: pede como antes, sem guardar a hora.
+  if (r.error && /could not find|PGRST202/i.test((r.error.message || "") + (r.error.code || ""))) r = await sb.rpc('pedir_para_administrar', { p_academia: academiaId });
   if (r.error) { state.pedidoErro = r.error.message || "Não consegui mandar o pedido agora."; render(); return; }
   state.pcReivindicar = null;
   state.pcSelecionada = undefined;
+  state.pcDeclaro = false;
   state.pcPedidoFeito = academiaId;
   state.pcAdicionando = false;
   registrarPasso("acao", { academia: academiaId, detalhe: `Pediu para administrar · ${nomeDaAcademiaDoPasso(academiaId)}` });
@@ -8110,6 +8141,8 @@ function ligarEventosParceiros() {
   });
   const pcAdministrar = document.getElementById("pc-administrar");
   if (pcAdministrar) pcAdministrar.onclick = () => pedirParaAdministrar(state.pcSelecionada);
+  const pcDeclaro = document.getElementById("pc-declaro");
+  if (pcDeclaro) pcDeclaro.onchange = (e) => { state.pcDeclaro = e.target.checked; if (state.pcDeclaroErro && state.pcDeclaro) { state.pcDeclaroErro = false; render(); } };
   const pcNovidades = document.getElementById("pc-conta-novidades");
   if (pcNovidades) pcNovidades.onchange = (e) => { (window.__pcConta || (window.__pcConta = {})).novidades = e.target.checked; };
   // Cada pedido tem o próprio código e o próprio "Cancelar".
@@ -13263,6 +13296,7 @@ function regFaltas(f, passo) {
   if (passo === "quadras" && !QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0)) falta.push("quantidade de quadras");
   if (passo === "contato" && !tem(f.phone)) falta.push("WhatsApp");
   if (passo === "revisar" && !f.consent && !contaAcademia) falta.push("aceite dos Termos de Uso e da Política de Privacidade");
+  if (passo === "revisar" && contaAcademia && !isAdmin && !f.__editingId && !f.declaro) falta.push("a declaração de que você está autorizado(a) pela academia");
   return falta;
 }
 // A parte já tem alguma coisa? (o ✓ das abas e da revisão)
@@ -13459,7 +13493,10 @@ function regPassoHtml(id, f, obrigatorio) {
           </label>
         ` : ""}
         ${parceiro ? `
-          <p class="footnote">Ao enviar, você declara que é dono(a) ou está autorizado(a) pela academia a cadastrá-la no GuiaTennis.</p>
+          <label class="consent-row">
+            <input type="checkbox" id="f-declaro" ${f.declaro ? "checked" : ""} />
+            <span>${TEXTO_DECLARACAO_CADASTRO}</span>
+          </label>
         ` : ""}
         ${!isEditing && !isAdmin && !parceiro ? `
           <label class="consent-row">
@@ -14187,7 +14224,7 @@ const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 5 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
 <p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar" e as buscas que você salvar na conta, que ficam na sua conta (a viagem também aparece na página inicial e no menu). Você apaga cada busca salva no seu perfil. Um dia depois de você chamar uma academia, o site pergunta, no próprio aparelho, se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam só no aparelho.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial aparecem publicamente, arredondados, os totais do site desde o começo: quantas pessoas usaram, quantas buscas foram feitas, quantas abriram uma ficha e quantas chamaram uma academia. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
-<p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo). Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso (para o responsável) e pedido aceito; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
+<p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Quando alguém pede para administrar uma academia, o GuiaTennis manda pelo WhatsApp da ficha dela um código com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso (para o responsável) e pedido aceito; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
 <p style="font-size:14px">Não exigimos conta, login, e-mail ou senha para usar o site como visitante. Não coletamos CPF ou dados de pagamento — a negociação de aula/horário acontece fora do GuiaTennis.</p>
@@ -16063,6 +16100,8 @@ function attachEvents() {
 
   const consentBox = document.getElementById("f-consent");
   if (consentBox) consentBox.onchange = (e) => { window.__form.consent = e.target.checked; };
+  const declaroBox = document.getElementById("f-declaro");
+  if (declaroBox) declaroBox.onchange = (e) => { window.__form.declaro = e.target.checked; };
 
   const openTermsFromForm = document.getElementById("open-terms-from-form");
   if (openTermsFromForm) openTermsFromForm.onclick = () => { state.showTerms = true; render(); };
@@ -16442,6 +16481,7 @@ async function doRegisterSubmit() {
     if (!hasQuadra) missing.push("quantidade de quadras");
     if (!f.modalidades.length) missing.push("modalidade");
     if (!f.consent && !contaAcademia) missing.push("aceite dos Termos de Uso e Política de Privacidade");
+    if (contaAcademia && !f.declaro) missing.push("a declaração de que você está autorizado(a) pela academia");
   }
 
   if (missing.length) {

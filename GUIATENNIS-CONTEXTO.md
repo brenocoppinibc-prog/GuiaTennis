@@ -34,8 +34,9 @@ teste")
 > o Breno não gostou da barra de atalhos embaixo do Parceiros no celular:
 > saiu, e tudo fica no menu.
 > Antes, no mesmo dia, a regra 57 (admin no GuiaTennis Parceiros). Testes:
-> **876 verificações, nenhuma falha** nos 28 arquivos do navegador e 102 no
-> `banco-emails.py` (Postgres local).
+> **881 verificações, nenhuma falha** nos 28 arquivos do navegador e 106 no
+> `banco-emails.py` (Postgres local). Por último, a regra 59 (a declaração
+> de quem pede uma academia vira caixinha, com a hora guardada no banco).
 >
 > **Estado (05/10/2026, noite):** o Breno respondeu ao que estava aberto:
 > **não quer endereço próprio para o Parceiros** (fica em
@@ -810,6 +811,24 @@ cobra taxa e não fica no meio** da negociação.
     `conteudoDosPercursos`, `blocoPedidosParaAdministrar`,
     `blocoAcessosDasAcademias`), e os testes antigos as usam. Teste:
     `testes/painel-admin.js`.
+59. **Declaração de quem pede uma academia é caixinha** (pedido de
+    06/10/2026, "coloque com aquele quadradinho, igual 'eu li e
+    concordo'"): no Parceiros, "Administrar esta academia" e o envio de
+    academia nova só vão com a caixinha marcada — "Declaro que estou
+    autorizado(a) pela academia a administrar a ficha dela [cadastrá-la]
+    no GuiaTennis e que respondo pelas informações que publicar" (sem "é
+    dono(a)", pedido do Breno). Sem marcar: "Marque a declaração para
+    pedir". O banco guarda quando foi marcada (`pedidos_de_acesso.declarou_em`,
+    SQL `20261006130000_declaracao_ao_pedir`; `pedir_para_administrar(p_academia,
+    p_declaro)`), como prova. **A confirmação da academia continua** (código
+    no WhatsApp da ficha, o responsável aceitar, ou o GuiaTennis publicar a
+    academia nova): o Breno perguntou se a declaração tira a
+    responsabilidade dele — tira em parte (quem mente responde por isso,
+    e a caixinha com a hora guardada é a prova), mas não toda; sem
+    confirmar, qualquer pessoa tomaria a ficha de uma academia e trocaria
+    o WhatsApp. Saiu também o texto "e você pode pedir uma enquanto outra
+    ainda está em análise…" e "Cada academia tem o próprio plano e paga o
+    próprio valor…" da tela "Adicionar outra academia".
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

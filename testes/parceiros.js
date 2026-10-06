@@ -165,7 +165,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   etapas = await barra();
   corpo = await texto(page, '#parceiros .pc-main');
   ok(etapas.etapas === '✓ Dados de contato✓ | Sua academia* | Início' && etapas.feito === '50%' && await page.evaluate(() => document.querySelector('.trilha-bola').style.left) === '50%', 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
-  ok(corpo.includes('Ao pedir, você declara que é dono(a) ou está autorizado(a) pela academia'), 'a declaração de que representa a academia vem na hora de escolher a academia');
+  ok(corpo.includes('Declaro que estou autorizado(a) pela academia'), 'a declaração de que representa a academia vem na hora de escolher a academia');
   ok(corpo.includes('Prazer em conhecer você, Joana!') && corpo.includes('Antes de começar, vamos ver se a sua academia já está no GuiaTennis.') && corpo.includes('Dica: escreva também o bairro'), 'tela "Prazer em conhecer você", como a do trivago');
   let escolhas = await page.evaluate(() => [...document.querySelectorAll('.pc-escolha')].map(b => b.innerText.replace(/\s+/g, ' ').trim() + (b.classList.contains('on') ? '*' : '')));
   ok(escolhas.length === 1 && escolhas[0].includes('Só Aula Tennis') && escolhas[0].includes('achamos pelo seu e-mail') && escolhas[0].endsWith('*') && !(await page.isDisabled('#pc-administrar')), 'o site acha a academia pelo e-mail (domínio do site dela) e já deixa marcada — ' + escolhas.join(' / '));
@@ -188,8 +188,16 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   const linhaNova = await texto(page, '.pc-main .pc-linha');
   ok(linhaNova.includes('A sua academia ainda não está no GuiaTennis?') && linhaNova.includes('Cadastrar academia nova'), 'academia nova numa linha discreta');
   await page.click('.pc-escolha[data-pc-selecionar="a1"]');
+  // A declaração é uma caixinha obrigatória, como o "Li e concordo" (06/10/2026).
+  const decl = await texto(page, '.pc-declaro');
+  ok(decl.includes('Declaro que estou autorizado(a) pela academia') && decl.includes('respondo pelas informações') && !decl.includes('dono'), 'caixinha da declaração, sem "é dono(a)" — ' + decl);
+  await page.click('#pc-administrar');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => !window.__rpcs.some(r => r.nome === 'pedir_para_administrar') && document.querySelector('.pc-declaro.falta') && document.body.innerText.includes('Marque a declaração para pedir')), 'sem marcar, o pedido não vai e a caixinha pede a marcação');
+  await page.check('#pc-declaro');
   await page.click('#pc-administrar');
   await page.waitForTimeout(500);
+  ok(await page.evaluate(() => (window.__rpcs.find(r => r.nome === 'pedir_para_administrar') || {}).args.p_declaro === true && !!window.__db.pedidos_de_acesso.slice(-1)[0].declarou_em), 'marcada, o pedido vai com a declaração e o banco guarda a hora');
   const pedido = await page.evaluate(() => ({
     rpc: (window.__rpcs.find(r => r.nome === 'pedir_para_administrar') || {}).args,
     card: document.querySelector('.pc-pedido')?.innerText || '',
@@ -255,7 +263,11 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     render();
   });
   await irParte(page, 'revisar');
-  ok((await texto(page, '#register-overlay')).includes('Ao enviar, você declara que é dono(a) ou está autorizado(a) pela academia a cadastrá-la'), 'academia nova: a declaração vem junto do envio');
+  ok((await texto(page, '#register-overlay')).includes('Declaro que estou autorizado(a) pela academia a cadastrá-la'), 'academia nova: a declaração vem numa caixinha junto do envio');
+  await page.click('#register-submit');
+  await page.waitForTimeout(300);
+  ok((await texto(page, '#register-overlay')).includes('a declaração de que você está autorizado(a) pela academia') && await page.evaluate(() => !window.__db.academias.some(a => a.name === 'Academia Nova da Joana')), 'sem marcar a declaração, a academia nova não vai');
+  await page.check('#f-declaro');
   await page.click('#register-submit');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => !!document.querySelector('[data-reg-plano="premium"]') && !window.__db.academias.some(a => a.name === 'Academia Nova da Joana')), 'ao finalizar, a escolha do plano vem antes de enviar');
@@ -318,6 +330,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(900);
   let direto = await page.evaluate(() => ({ marcada: [...document.querySelectorAll('.pc-escolha.on strong')].map(x => x.innerText).join(), achamos: document.querySelector('#pc-resultados')?.innerText.includes('achamos pelo seu e-mail'), pronto: !document.getElementById('pc-administrar').disabled }));
   ok(direto.marcada === 'Quadra Locação' && !direto.achamos && direto.pronto, 'conta criada pelo link da ficha já deixa aquela academia marcada (gmail não sugere nada)');
+  await page.check('#pc-declaro');
   await page.click('#pc-administrar');
   await page.waitForTimeout(500);
   direto = await page.evaluate(() => ({ pedido: contaAcademia && meusPedidos().map(p => p.nome).join(), link: location.pathname + location.search }));

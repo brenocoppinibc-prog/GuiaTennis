@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Confere os avisos por e-mail e as buscas salvas num Postgres local
 (SQL 20261005150000_buscas_salvas e 20261005160000_avisos_por_email) e as
-consultas do painel do admin (20261006120000_painel_do_admin).
+consultas do painel do admin (20261006120000_painel_do_admin) e a declaração
+de quem pede uma academia (20261006130000_declaracao_ao_pedir).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -378,6 +379,22 @@ if falhou:
     ok(certo and um(f"select tentativas || '|' || coalesce(erro, '') from public.emails_a_enviar where id = '{falhou}'") == "0|", "admin: o e-mail que não saiu volta para a fila")
 else:
     ok(False, "faltou um e-mail que não saiu para testar o reenviar")
+
+# 12. Declaração ao pedir (SQL 20261006130000) -----------------------------------
+print("\n# Declaração de quem pede uma academia")
+decl = parceiro("Dora Declara", f"dora{sufixo}@exemplo.com")
+certo, saida = sql(f"select public.pedir_para_administrar('{MOEMA}', false)", papel="authenticated", user=decl)
+ok(not certo and "Marque a declaração" in saida, "sem marcar a declaração, o pedido não vai")
+certo, saida = sql(f"select public.pedir_para_administrar('{MOEMA}', true)", papel="authenticated", user=decl)
+ok(certo and um(f"select declarou_em is not null from public.pedidos_de_acesso where user_id = '{decl}' and academia_id = '{MOEMA}'") == "t",
+   "com a declaração marcada, o banco guarda quando" + ("" if certo else ": " + saida))
+certo, _ = sql(f"select public.pedir_para_administrar('{MOEMA}')", papel="authenticated", user=decl)
+ok(certo and um(f"select declarou_em is not null from public.pedidos_de_acesso where user_id = '{decl}' and academia_id = '{MOEMA}'") == "t",
+   "o site antigo (sem a caixinha) ainda pede, e a hora da declaração fica")
+certo, saida = sql("insert into public.academias (name, cidade, bairro, status, source) values ('Quadra Dora', 'São Paulo', 'Lapa', 'pending', 'custom')", papel="authenticated", user=decl)
+nova = um("select id from public.academias where name = 'Quadra Dora' order by created_at desc limit 1")
+ok(certo and nova and um(f"select declarou_em is not null from public.pedidos_de_acesso where user_id = '{decl}' and academia_id = '{nova}'") == "t",
+   "academia nova da conta: o pedido sai com a hora da declaração" + ("" if certo else ": " + saida))
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

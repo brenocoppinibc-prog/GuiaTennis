@@ -31,6 +31,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.fill('#f-instagram', '@academiadorui');
   ok(await page.evaluate(() => window.__form.instagram === '@academiadorui' || document.getElementById('f-instagram').value === '@academiadorui'), 'Instagram aberto no cadastro');
   await irParte(page, 'revisar');
+  await page.check('#f-declaro');
   await page.click('#register-submit');
   await page.waitForTimeout(300);
   const tela = await texto(page, '#register-overlay');

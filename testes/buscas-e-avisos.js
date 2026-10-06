@@ -123,7 +123,7 @@ async function buscar(page, termo) {
   ok(t.topo === 'M', 'no topo, a inicial do nome, como a de qualquer jogador');
   await page.evaluate(() => { state.showMenu = true; render(); });
   t = await page.evaluate(() => [...document.querySelectorAll('.menu-drawer .menu-item')].map(e => e.innerText.replace(/\s+/g, ' ').trim()));
-  ok(t.some(x => x.startsWith('Minha conta')) && t.some(x => x.startsWith('Painel da minha academia')), 'menu: "Minha conta" e "Painel da minha academia"');
+  ok(t.some(x => x.startsWith('Minha conta')) && t.some(x => x.startsWith('Minha academia')), 'menu: "Minha conta" e "Minha academia"');
   ok(t.some(x => x.startsWith('GuiaTennis Parceiros') && x.includes('seu painel')), 'menu: o GuiaTennis Parceiros continua no Suporte — ' + t.find(x => x.startsWith('GuiaTennis Parceiros')));
   ok(t.some(x => x.startsWith('Avisos por e-mail')) && t.some(x => x.startsWith('Buscas salvas')), 'menu: avisos e buscas salvas, como qualquer jogador');
   await page.evaluate(() => { state.showMenu = false; openCourt('a1'); });

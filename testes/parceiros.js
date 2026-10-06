@@ -221,7 +221,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     menu: (() => { state.pcMenu = true; render(); const m = [...document.querySelectorAll('#pc-menu-overlay .menu-item[data-pc]')].map(a => a.innerText.trim()).join(' | '); state.pcMenu = false; render(); return m; })(),
   }));
   ok(t.aba === 'painel' && semAcademia.corpo.includes('Olá, Joana') && semAcademia.corpo.includes('Só Aula Tennis'), 'painel da conta sem academia mostra o pedido');
-  ok(!semAcademia.barra && semAcademia.menu === 'Painel | Plano | Suas academias | Perfil | Ajuda', 'sem academia: menu curto e sem a barra de baixo — ' + semAcademia.menu);
+  ok(!semAcademia.barra && semAcademia.menu === 'Atualizações | Suas academias | Plano | Perfil | Ajuda', 'sem academia: menu curto e sem a barra de baixo — ' + semAcademia.menu);
   await page.click('#pc-cancelar-pedido');
   await page.waitForTimeout(400);
   ok((await texto(page, '#parceiros .pc-main')).includes('Falta escolher a sua academia'), 'cancelar o pedido volta para escolher a academia');
@@ -408,7 +408,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(await page.evaluate(() => document.querySelectorAll('.pc-graf, .pc-periodos').length) === 0, 'Básico: sem gráfico e sem períodos');
   const verPlanos = await page.evaluate(() => { const b = document.querySelector('.pc-trancado .pc-ver-planos'); const t = document.querySelector('.pc-trancado .pc-trancado-plano'); return b && t ? { texto: b.innerText, separado: b.getBoundingClientRect().top - t.getBoundingClientRect().bottom } : null; });
   ok(verPlanos && verPlanos.texto === 'Ver planos' && verPlanos.separado >= 8, '"Ver planos" num botão separado, embaixo — ' + JSON.stringify(verPlanos));
-  ok(!corpo.includes('posição na busca') && /aprimore o plano/i.test(corpo) && corpo.includes('Quero o Completo'), 'Desempenho oferece o próximo plano e não fala de posição na busca');
+  ok(!corpo.includes('posição na busca') && !/aprimore o plano/i.test(corpo) && !corpo.includes('Quero o Completo'), 'Desempenho sem a caixa do plano (o plano fica num lugar só) e sem falar de posição na busca');
   await page.click('.pc-ver-planos');
   await page.waitForTimeout(200);
   t = await tela(page);
@@ -421,7 +421,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
 
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'completo' }));
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Disponível no plano Premium') && !corpo.includes('Visitas na ficha') && await page.evaluate(() => document.querySelectorAll('.pc-graf').length) === 0 && corpo.includes('Quero o Premium'), 'Completo: também sem números, com o convite do Premium');
+  ok(corpo.includes('Disponível no plano Premium') && corpo.includes('Ver planos') && !corpo.includes('Visitas na ficha') && await page.evaluate(() => document.querySelectorAll('.pc-graf').length) === 0 && !corpo.includes('Quero o Premium'), 'Completo: também sem números, só com o "Ver planos"');
   await browser.close();
 
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'premium' }));
@@ -457,7 +457,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     rodape: [...document.querySelectorAll('.pc-rodape a[data-pc]')].map(a => a.innerText).join(' | '),
   }));
   ok(t.h1 === 'Olá, Maria' && t.robots.includes('noindex'), 'painel cumprimenta o responsável e fica fora do Google');
-  ok(painel.nav === 'Painel | Desempenho | Avaliações | Minha ficha | Pessoas | Plano | Academias | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
+  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Desempenho | Academias | Pessoas | Plano | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
   ok(!painel.barra, 'no computador, sem a barra de baixo');
   ok(!painel.rodape.includes('Cadastrar') && !painel.rodape.includes('Entrar') && painel.rodape.includes('Desempenho'), 'rodapé de quem está logado não oferece Cadastrar nem Entrar — ' + painel.rodape);
   await page.click('.pc-nav a[data-pc="desempenho"]');
@@ -481,8 +481,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(300);
   let conta = await texto(page, '#parceiros .pc-main');
   ok(conta.includes('Responsável principal') && conta.includes('Pessoas com acesso') && conta.includes('1 de 1 no plano Básico') && conta.includes('Maria Teste (você)'), 'Pessoas mostra quem tem acesso e quantas pessoas o plano permite');
-  ok(!(await page.isVisible('#pc-pessoa-email')) && conta.includes('No Completo, até 5') && conta.includes('Aprimorar para o Completo'), 'Básico já cheio com 1 pessoa: some o formulário e aparece o convite para aprimorar');
-  ok(/aprimore o plano/i.test(conta) && conta.includes('Quero o Completo') && conta.includes('Até 5 e-mails com acesso à academia'), 'Pessoas oferece o próximo plano embaixo');
+  ok(!(await page.isVisible('#pc-pessoa-email')) && conta.includes('No Completo, até 5') && conta.includes('Ver planos'), 'Básico já cheio com 1 pessoa: some o formulário e aparece "Ver planos"');
+  ok(!/aprimore o plano/i.test(conta) && !conta.includes('Quero o Completo'), 'Pessoas sem a caixa do plano embaixo');
   await browser.close();
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/pessoas', plano: 'completo' }));
   await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'completo'; await loadEverything(); await carregarPessoas(); render(); });
@@ -548,13 +548,16 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   // Painel: QR da ficha e aprimorar; Premium mostra o que vem aí.
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'completo' }));
   let painelTexto = await texto(page, "#parceiros .pc-main");
-  ok(painelTexto.includes('QR code da sua ficha no GuiaTennis') && painelTexto.includes('Aprimorar para o Premium') && painelTexto.includes('Plano atual: Completo'), 'painel: QR code da ficha e o atalho para aprimorar o plano');
-  ok(painelTexto.includes('Quero o Premium') && painelTexto.includes('Visitas, contatos e o dia a dia da ficha') && painelTexto.includes('Disponível no plano Premium'), 'painel do Completo: números trancados e o Premium com o que ele acrescenta');
+  ok(painelTexto.includes('QR code da sua ficha no GuiaTennis') && !painelTexto.includes('Aprimorar para o') && /Plano\s*Completo/.test(painelTexto), 'Atualizações: QR code da ficha e o atalho "Plano", sem empurrar o plano de cima');
+  ok(!painelTexto.includes('Quero o Premium') && !/aprimore o plano/i.test(painelTexto) && painelTexto.includes('Disponível no plano Premium'), 'Atualizações do Completo: números trancados, sem a caixa "Aprimore o plano"');
+  ok(await page.evaluate(() => { const t = document.querySelector('#parceiros .pc-trancado'), a = document.querySelector('#parceiros .pc-atalhos'); return !!(t && a && (a.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING)); }), 'os números trancados ficam embaixo, depois dos atalhos');
   await browser.close();
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'premium' }));
   painelTexto = await texto(page, "#parceiros .pc-main");
-  const novidade = await page.evaluate(() => decodeURIComponent(document.querySelector('.pc-oferta a')?.getAttribute('href') || ''));
-  ok(/em breve no premium/i.test(painelTexto) && painelTexto.includes('Promoções na ficha e avisos para os seus jogadores') && painelTexto.includes('Novidades do Premium') && novidade.includes('quero saber primeiro das novidades'), 'no Premium, o painel mostra o que vem aí e chama para saber primeiro');
+  ok(!/em breve no premium/i.test(painelTexto) && !(await page.$('.pc-oferta')), 'no Premium, Atualizações sem a caixa de novidades (o plano fica num lugar só)');
+  await page.evaluate(() => irParceiros('plano', { mesmaAba: true }));
+  await page.waitForTimeout(300);
+  ok((await texto(page, '#parceiros .pc-main')).includes('Promoções na ficha e avisos para os seus jogadores'), 'a página Plano mostra o que vem aí no Premium');
   await browser.close();
 
   // ---- faixa escura no fim, como a do trivago ----
@@ -592,5 +595,16 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(800);
   const avaliada = await page.evaluate(() => ({ n: window.__db.avaliacoes.length, nome: (window.__db.avaliacoes[0] || {}).nome_autor, obrigado: !!document.querySelector('.rate-thanks'), aberta: !!document.getElementById('jogador-overlay') }));
   ok(avaliada.n === 1 && avaliada.nome === 'Rafa Jogador' && avaliada.obrigado && !avaliada.aberta, 'criou a conta: a avaliação sai sozinha, com o nome da conta — ' + JSON.stringify(avaliada));
+  await browser.close();
+  // "No ar, com as informações confirmadas por vocês" só logo depois de
+  // publicar ou atualizar (06/10/2026); "Voltar ao painel" não aparece mais.
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' }));
+  ok((await texto(page, '#parceiros .pc-main')).includes('No ar, com as informações confirmadas por vocês'), 'academia publicada há pouco: aparece o "No ar, com as informações confirmadas"');
+  await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a1').created_at = '2026-01-01T10:00:00Z'; await loadEverything(); render(); });
+  ok(!(await texto(page, '#parceiros .pc-main')).includes('No ar, com as informações confirmadas'), 'depois de uns dias sem mudança, o aviso some');
+  await page.evaluate(() => { state.fichaSalvaEm = new Date().toISOString(); render(); });
+  ok((await texto(page, '#parceiros .pc-main')).includes('No ar, com as informações confirmadas por vocês'), 'atualizou a ficha: o aviso volta');
+  ok(!(await page.evaluate(() => document.body.innerText.includes('Voltar ao painel'))), 'sem "Voltar ao painel"');
+  ok(await page.evaluate(() => document.querySelector('#parceiros h1')?.innerText.startsWith('Olá') && document.title.startsWith('Atualizações')), 'a página inicial da academia se chama Atualizações — ' + await page.evaluate(() => document.title));
   await browser.close();
 })();

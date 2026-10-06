@@ -118,7 +118,7 @@ const { abrir, ok } = require('./harness');
     alunos: /alun/i.test(document.body.innerText),
   }));
   ok(t.botao === 'Começar agora é de graça!' && t.centro === 'center' && t.anim === 'gratisPulsa', '"Começar agora — é de graça!" no meio e pulsando — ' + t.botao);
-  ok(/só no premium/i.test(t.premium) && t.premium.includes('ficam escondidos') && t.premium.includes('aparecem no painel'), 'o card dos números explica que eles aparecem no Premium');
+  ok(/só no premium/i.test(t.premium) && t.premium.includes('ficam escondidos') && t.premium.includes('aparecem em Desempenho'), 'o card dos números explica que eles aparecem no Premium');
   ok(t.planos.join(' | ') === 'Até 1 e-mail com acesso à academia | Até 5 e-mails com acesso à academia | Até 10 e-mails com acesso à academia', 'planos: "1 e-mail" e "5 e-mails" com acesso — ' + t.planos.join(' | '));
   ok(!t.alunos, 'a página dos parceiros fala de jogadores, não só de alunos');
   await browser.close();

@@ -251,9 +251,12 @@ cobra taxa e não fica no meio** da negociação.
     haverá posição paga** — então não prometer "nunca" em lugar nenhum.
     Quando vier, aparece marcada como patrocinada (Termos, seção 4, e a
     pergunta "A ordem das academias é paga?" do site já dizem isso).
-17. **Sempre oferecer o plano de cima.** Pedido do Breno: toda tela da
-    academia vende o próximo plano (painel, desempenho, conta, plano). No
-    Premium, o que vem aí (promoções e avisos para os alunos).
+17. **O plano fica num lugar só** (mudou em 06/10/2026, regra 61; antes
+    toda tela vendia o próximo plano e o Breno achou que "está forçando
+    demais"): a página **Plano** do Parceiros é onde se vê o plano, o que
+    ele esconde da ficha e se pede outro. Nas outras telas, só o que está
+    trancado diz "Disponível no plano …" com "Ver planos", e o atalho
+    "Plano" em Atualizações.
 18. **Quem administra a academia não avalia ela** (mudou em 05/10/2026,
     regra 53; antes nenhuma conta do Parceiros avaliava). A conta do
     GuiaTennis Parceiros avalia as outras academias como qualquer jogador;
@@ -830,6 +833,20 @@ cobra taxa e não fica no meio** da negociação.
     o WhatsApp. Saiu também o texto "e você pode pedir uma enquanto outra
     ainda está em análise…" e "Cada academia tem o próprio plano e paga o
     próprio valor…" da tela "Adicionar outra academia".
+61. **Parceiros mais leve** (pedidos de 06/10/2026, com fotos de tela): a
+    página inicial da academia se chama **Atualizações** (o link continua
+    `/parceiros/painel`); o menu vai do mais importante ao menos —
+    Atualizações, Minha ficha, Avaliações, Desempenho, Suas academias,
+    Pessoas, Plano, Perfil, Ajuda; sem "Voltar ao painel" em lugar nenhum;
+    embaixo do cartão do pedido, nenhum texto a mais ("Responde por mais
+    uma?", "Ver todas as suas academias"); "No ar, com as informações
+    confirmadas por vocês" só aparece por 3 dias depois de a ficha ir ao ar
+    ou ser atualizada (o que pede ação — pausada, em análise, ficha
+    básica — aparece sempre); os números trancados ("Disponível no plano
+    Premium") ficam no fim de Atualizações; e sem as caixas "Aprimore o
+    plano"/"Em breve no Premium"/"O que os jogadores não veem" fora da
+    página Plano (regra 17). No site dos jogadores, o menu diz "Minha
+    academia".
 60. **Academia nova da conta vai ao ar sozinha** (escolha do Breno em
     06/10/2026, entre manter, isto e liberar tudo): academia NOVA
     cadastrada por conta do Parceiros com o **e-mail confirmado** (e a

@@ -229,7 +229,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   await vigiarAbas(page);
   await page.evaluate(() => { state.showMenu = true; render(); });
   const doMenu = await page.evaluate(() => [...document.querySelectorAll('#menu-overlay .menu-item')].slice(0, 2).map(e => e.innerText));
-  ok(doMenu[0].includes('Minha conta') && doMenu[1].includes('Painel da minha academia'), 'o menu começa por "Minha conta" e "Painel da minha academia" — ' + doMenu.join(' | ').replace(/\s+/g, ' '));
+  ok(doMenu[0].includes('Minha conta') && doMenu[1].includes('Minha academia'), 'o menu começa por "Minha conta" e "Minha academia" — ' + doMenu.join(' | ').replace(/\s+/g, ' '));
   await page.click('#menu-overlay [data-menu="conta"]');
   await page.waitForTimeout(300);
   const abaDaFaixa = (await abasAbertas(page))[0] || {};

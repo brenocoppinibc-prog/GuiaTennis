@@ -56,7 +56,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.waitForTimeout(300);
   let conta = await texto(page, '#parceiros .pc-main');
   const cartoes = await page.evaluate(() => [...document.querySelectorAll('.pc-acad')].map(c => c.innerText.replace(/\s+/g, ' ')));
-  ok(conta.includes('Suas academias') && conta.includes('2 academias') && cartoes.length === 2 && cartoes.some(c => c.includes('Só Aula Tennis') && c.includes('Aberta no painel') && c.includes('Responsável') && c.includes('Básico')), 'Suas academias mostra todas, com o plano, a situação e o papel — ' + cartoes.join(' / ').slice(0, 160));
+  ok(conta.includes('Suas academias') && conta.includes('2 academias') && cartoes.length === 2 && cartoes.some(c => c.includes('Só Aula Tennis') && c.includes('Aberta agora') && c.includes('Responsável') && c.includes('Básico')), 'Suas academias mostra todas, com o plano, a situação e o papel — ' + cartoes.join(' / ').slice(0, 160));
   ok(await page.evaluate(() => location.pathname === '/parceiros/academias'), 'Suas academias tem o próprio link');
   await page.click('.pc-nav a[data-pc="pessoas"]');
   await page.waitForTimeout(300);
@@ -224,7 +224,9 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.click('#pc-administrar');
   await page.waitForTimeout(400);
   let txt = await texto(page, '#parceiros .pc-main');
-  ok(txt.includes('Pedido para administrar outra academia') && await page.isVisible('#parceiros .pc-main [data-outra-academia]'), 'com o pedido aberto, a tela já oferece adicionar outra academia');
+  ok(txt.includes('Pedido para administrar outra academia') && !txt.includes('Responde por mais uma?') && !txt.includes('Ver todas as suas academias') && !txt.includes('Voltar ao painel'), 'embaixo do cartão do pedido, nenhum texto a mais (06/10/2026)');
+  await page.evaluate(() => irParceiros('academias'));
+  await page.waitForTimeout(300);
   await page.click('#parceiros .pc-main [data-outra-academia]');
   await page.waitForTimeout(300);
   txt = await texto(page, '#parceiros .pc-main');

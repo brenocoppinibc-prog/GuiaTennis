@@ -55,7 +55,7 @@ const passos = (page) => page.evaluate(() => JSON.parse(JSON.stringify(window.__
   ok((await passos(page)).length === 0, 'conta de academia no site dos jogadores não grava');
   await page.evaluate(() => irParceiros('painel', { mesmaAba: true }));
   p = await passos(page);
-  ok(p.length === 1 && p[0].site === 'parceiros' && p[0].detalhe === 'Parceiros · Painel', 'no GuiaTennis Parceiros, a conta da academia grava o percurso');
+  ok(p.length === 1 && p[0].site === 'parceiros' && p[0].detalhe === 'Parceiros · Atualizações', 'no GuiaTennis Parceiros, a conta da academia grava o percurso');
   await browser.close();
   ({ browser, page } = await abrir({ trocar: h => h }));
   await page.evaluate(() => { window.__semPercurso = true; });

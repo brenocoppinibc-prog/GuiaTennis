@@ -79,22 +79,25 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
     state.showRegister = false; await carregarAcessos(); state.showAdminPanel = true; render();
   });
   const adm = await texto(page, '#admin-overlay');
-  ok(adm.includes('Querem mudar de plano') && adm.includes('Quadra Locação · quer o Premium') && adm.includes('Hoje no Básico') && adm.includes('no painel') && adm.includes('Lia Dona'), 'admin vê a academia, o plano pedido, onde pediu e quem');
+  ok(adm.includes('Querem mudar de plano') && adm.includes('Quadra Locação · quer o Premium') && adm.includes('Hoje no Básico') && adm.includes('no GuiaTennis Parceiros') && adm.includes('Lia Dona'), 'admin vê a academia, o plano pedido, onde pediu e quem');
   await page.click('[data-plano-pedido="a2"]');
   await page.waitForTimeout(500);
   const depois = await page.evaluate(() => ({ plano: window.__db.academias.find(a => a.id === 'a2').plano, lista: window.__db.pedidos_de_plano.length, tela: document.querySelector('#admin-overlay')?.innerText || '' }));
   ok(depois.plano === 'premium' && depois.lista === 0 && !depois.tela.includes('Querem mudar de plano'), 'mudar o plano atende o pedido e tira da lista');
   await browser.close();
 
-  // ---- painel da academia no Básico: o que está escondido ----
+  // ---- o plano fica num lugar só (06/10/2026): a página Plano ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' }));
-  const painel = await texto(page, '.pc-escondida');
-  ok(painel.toLowerCase().includes('o que os jogadores não veem') && painel.includes('esconde 2 coisas') && painel.includes('A regra de cancelamento') && painel.includes('Como chegar'), 'painel mostra o que o Básico esconde da ficha publicada — ' + painel.slice(0, 120));
-  ok(await page.isVisible('.pc-escondida [data-pedir-plano="premium"]') && await page.isVisible('.pc-escondida [data-pedir-plano="completo"]'), 'com o Premium primeiro e o Completo ao lado');
-  await page.evaluate(() => { window.open = () => null; });
-  await page.click('.pc-escondida [data-pedir-plano="premium"]');
+  ok(!(await page.$('.pc-escondida')) && !(await page.$('.pc-oferta')), 'Atualizações sem as caixas do plano');
+  await page.evaluate(() => irParceiros('plano', { mesmaAba: true }));
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => window.__db.pedidos_de_plano.some(p => p.academia_id === 'a1' && p.plano === 'premium' && p.onde === 'painel')), '"Quero o Premium" no painel fica anotado para o GuiaTennis');
+  const painel = await texto(page, '.pc-escondida');
+  ok(painel.toLowerCase().includes('o que os jogadores não veem') && painel.includes('esconde 2 coisas') && painel.includes('A regra de cancelamento') && painel.includes('Como chegar'), 'a página Plano mostra o que o Básico esconde da ficha publicada — ' + painel.slice(0, 120));
+  ok(await page.isVisible('[data-pedir-plano="premium"]') && await page.isVisible('[data-pedir-plano="completo"]'), 'com o Premium e o Completo para escolher');
+  await page.evaluate(() => { window.open = () => null; });
+  await page.click('[data-pedir-plano="premium"]');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => window.__db.pedidos_de_plano.some(p => p.academia_id === 'a1' && p.plano === 'premium' && p.onde === 'painel')), '"Aprimorar para o Premium" na página Plano fica anotado para o GuiaTennis');
   await browser.close();
 
   // ---- edição sem nada escondido: salva direto ----

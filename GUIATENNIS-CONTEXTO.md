@@ -30,7 +30,9 @@ teste")
 > em **`/admin`** (visão geral, pendências, academias, acessos, contas de
 > jogador, avaliações, estatísticas, percurso, e-mails e ferramentas), com
 > SQL `20261006120000_painel_do_admin`. Os três botões redondos do admin
-> saíram do site dos jogadores (agora é a faixa "Abrir o painel").
+> saíram do site dos jogadores (agora é a faixa "Abrir o painel"). Depois,
+> o Breno não gostou da barra de atalhos embaixo do Parceiros no celular:
+> saiu, e tudo fica no menu.
 > Antes, no mesmo dia, a regra 57 (admin no GuiaTennis Parceiros). Testes:
 > **876 verificações, nenhuma falha** nos 28 arquivos do navegador e 102 no
 > `banco-emails.py` (Postgres local).
@@ -927,8 +929,9 @@ e o extranet), iFood Parceiros (portal do parceiro), Uber para motoristas e
 o Google Business Profile ("reivindicar o perfil" e "Desempenho"). O site
 das academias fica em **`/parceiros`**, no mesmo `index.html`, mas com
 cabeçalho, menu, rodapé e largura próprios (de ponta a ponta no
-computador) e, logado no celular, a barra de atalhos embaixo como nos apps
-de parceiro. Não existe mais botão solto de "cadastre sua academia": tudo
+computador). No celular, tudo pelo menu: a barra de atalhos embaixo
+(Painel, Desempenho, Avaliações, Ficha, Perfil) saiu em 06/10/2026 — o
+Breno não gostou dela. Não existe mais botão solto de "cadastre sua academia": tudo
 o que é da academia leva para cá.
 
 | Página | Endereço | Google |
@@ -2022,7 +2025,7 @@ arredonda ou corta em círculo).
   hoteleiro, números da página, planos que não mexem na posição), Booking
   para Parceiros (apresentação com benefícios, "como funciona", perguntas
   frequentes e cadastro), iFood Parceiros e Uber para motoristas (portal
-  com menu próprio e barra de atalhos no celular), Google Business Profile
+  com menu próprio; a barra de atalhos do celular saiu em 06/10/2026), Google Business Profile
   (procurar a empresa antes de cadastrar e "reivindicar"; "Desempenho" com
   visitas, contatos, período e comparação com o anterior).
 - **Publicação e teste:** o fluxo dos sites grandes — prévia por PR com

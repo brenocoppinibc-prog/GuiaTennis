@@ -1460,7 +1460,7 @@
   /* ================= GuiaTennis Parceiros (/parceiros) =================
      O site da academia, no padrão do trivago Business Studio e do Booking
      para Parceiros: cabeçalho próprio, página de apresentação, planos,
-     painel com os números e barra de atalhos embaixo no celular. */
+     painel com os números; no celular, tudo pelo menu (sem barra embaixo). */
   /* Conta do GuiaTennis Parceiros: etapas do cadastro, pedido, pessoas e
      a oferta do próximo plano. */
   .pc-botao-cheio { width: 100%; justify-content: center; margin-top: 16px; padding: 12px 0; text-decoration: none; display: flex; }
@@ -1779,11 +1779,6 @@
   .pc-rodape-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px; }
   .pc-rodape h4 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
   .pc-rodape-cols a, .pc-rodape-cols button { display: block; background: none; border: none; padding: 6px 0; font-family: inherit; font-size: 14px; color: var(--muted) !important; text-decoration: none; cursor: pointer; text-align: left; }
-  .pc-barra-baixo { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--card); box-shadow: 0 -1px 0 var(--border), 0 -6px 20px rgba(33,31,26,0.06); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
-  .pc-barra-baixo a { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; font-size: 11px; font-weight: 500; color: var(--muted) !important; text-decoration: none; }
-  .pc-barra-baixo a.on { color: var(--green) !important; font-weight: 600; }
-  .pc-logado .pc-rodape .rodape-faixa { padding-bottom: 106px; }
-  @media (min-width: 1000px) { .pc-barra-baixo { display: none; } .pc-logado .pc-rodape .rodape-faixa { padding-bottom: 34px; } }
   .ba-btn { display: block; text-align: center; text-decoration: none; }
 
   /* ================= Menu no jeito do trivago (01/10/2026) =================
@@ -6195,9 +6190,6 @@ const PC_MENU_LOGADO = [
   { aba: "perfil", t: "Perfil", ic: "key", soNoMenu: true },
   { aba: "ajuda", t: "Ajuda", ic: "info" },
 ];
-// Barra de baixo no celular, como os apps de parceiro (iFood, Uber), com o
-// Perfil por último.
-const PC_BARRA = ["painel", "desempenho", "avaliacoes", "ficha", "perfil"];
 
 // O que cada plano libera. Tudo o que aparece na busca é igual para todos.
 const PC_RECURSOS = [
@@ -6631,17 +6623,6 @@ function pcSeletor() {
     </div>`;
 }
 
-function pcBarraDeBaixo() {
-  if (!temAcademia() || !acessoCompleto()) return "";
-  return `
-    <nav class="pc-barra-baixo" aria-label="Atalhos">
-      ${PC_BARRA.map(a => {
-        const i = PC_MENU_LOGADO.find(x => x.aba === a);
-        return `<a href="/parceiros/${a}" class="${state.parceirosAba === a ? "on" : ""}" data-pc="${a}">${icon(i.ic, 20, state.parceirosAba === a ? 'var(--green)' : 'var(--muted)')}<span>${esc(i.t === "Minha ficha" ? "Ficha" : i.t)}</span></a>`;
-      }).join("")}
-    </nav>`;
-}
-
 function pcRodape() {
   return `
     <footer class="pc-rodape">
@@ -6823,7 +6804,6 @@ function renderParceiros() {
       ${faixaDaVisaoAdmin()}
       <main class="pc-main">${miolo}</main>
       ${pcRodape()}
-      ${pcBarraDeBaixo()}
     </div>`;
 }
 

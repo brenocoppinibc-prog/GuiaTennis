@@ -5,6 +5,12 @@
 // academia nova é confirmada do mesmo jeito, e a academia aberta no painel
 // troca pelo seletor.
 const { abrir, ok, vigiarAbas, abasAbertas } = require('./harness');
+// No celular, o Parceiros abre cada página pelo menu (06/10/2026: sem a
+// barra de atalhos embaixo).
+async function menuPc(page, aba) {
+  await page.click('#pc-menu-btn');
+  await page.click(`#pc-menu-overlay .menu-item[data-pc="${aba}"]`);
+}
 
 // textContent: o texto como está escrito (o CSS deixa alguns em maiúsculas).
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.textContent || '').replace(/\s+/g, ' '), sel);
@@ -116,7 +122,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(await page.evaluate(() => window.__db.academia_acessos[0].academia_id === 'a2'), 'enquanto isso, a primeira academia continua aberta');
 
   // O painel também mostra o pedido, com o código.
-  await page.click('.pc-barra-baixo a[data-pc="painel"]');
+  await menuPc(page, 'painel');
   await page.waitForTimeout(300);
   ok((await texto(page, '#parceiros .pc-main')).includes('Pedido para administrar outra academia') && await page.isVisible('#pc-codigo'), 'o painel mostra o pedido da outra academia, com o campo do código');
 

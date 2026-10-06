@@ -3,6 +3,12 @@
 // avaliações, o que a academia não vê nem faz, e o bloco do admin que cria o
 // acesso.
 const { abrir, ok, vigiarAbas, abasAbertas, irParte, irSenha } = require('./harness');
+// No celular, o Parceiros abre cada página pelo menu (06/10/2026: sem a
+// barra de atalhos embaixo).
+async function menuPc(page, aba) {
+  await page.click('#pc-menu-btn');
+  await page.click(`#pc-menu-overlay .menu-item[data-pc="${aba}"]`);
+}
 
 const AVALIACOES = [
   { id: 'r1', academia_id: 'a2', stars: 3, comment: 'Quadra boa, vestiário simples.', nome_autor: 'Carla', contato_autor: '11955550001', created_at: '2026-09-20T12:00:00Z' },
@@ -73,7 +79,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   let folha = await texto(page, '#parceiros .pc-main');
   ok(/primeiro acesso/i.test(folha) && folha.includes('Bem-vindos!') && folha.includes('Quadra Locação') && await page.isVisible('#conta-senha'), 'primeiro acesso abre sozinho, com a academia e a senha nova');
   ok(folha.includes('Represento esta academia'), 'primeiro acesso pede o aceite dos Termos');
-  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !document.querySelector('.pc-barra-baixo')), 'antes de completar, sem os atalhos de baixo — ' + await page.evaluate(() => location.pathname));
+  ok(await page.evaluate(() => location.pathname === '/parceiros/painel'), 'antes de completar, fica no painel — ' + await page.evaluate(() => location.pathname));
   await page.click('#conta-salvar-dados');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('tratamento'), 'sem os dados, pede o primeiro que falta (tratamento)');
@@ -114,16 +120,16 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(folha.includes('ficha básica'), 'painel avisa que a ficha ainda é básica');
   ok(folha.includes('Os números da academia') && folha.includes('Disponível no plano Premium') && !folha.includes('Visitas na ficha'), 'painel do Básico: números só no Premium');
   ok(folha.includes('1 avaliação sem resposta'), 'painel conta as avaliações sem resposta');
-  ok(await page.isVisible('.pc-barra-baixo'), 'no celular, atalhos embaixo como nos apps de parceiro');
+  ok(!(await page.$('.pc-barra-baixo')) && await page.isVisible('#pc-menu-btn'), 'no celular, sem barra de atalhos embaixo: tudo pelo menu');
 
   // Perfil: responsável e usuário.
-  await page.click('.pc-barra-baixo [data-pc="perfil"]');
+  await menuPc(page, 'perfil');
   await page.waitForTimeout(200);
   folha = await texto(page, '#parceiros .pc-main');
   ok(folha.includes('Maria Exemplo') && folha.includes('Gerente') && folha.includes('Usuário: quadra.a2') && await page.evaluate(() => location.pathname) === '/parceiros/perfil', 'Perfil mostra o responsável e o usuário');
 
   // Responder avaliação.
-  await page.click('.pc-barra-baixo [data-pc="avaliacoes"]');
+  await menuPc(page, 'avaliacoes');
   await page.waitForTimeout(200);
   const semApagar = await page.evaluate(() => document.querySelectorAll('#parceiros .delete-review-btn').length);
   ok(semApagar === 0, 'academia não tem botão de apagar avaliação');
@@ -140,7 +146,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(folha.includes('Resposta da academia') && semResp === '0', 'Avaliações mostra a resposta publicada e zera as sem resposta');
 
   // Editar a ficha: só o que é dela, e confirma a ficha.
-  await page.click('.pc-barra-baixo [data-pc="ficha"]');
+  await menuPc(page, 'ficha');
   await page.waitForTimeout(200);
   folha = await texto(page, '#parceiros .pc-main');
   ok(folha.includes('Minha ficha') && folha.includes('itens preenchidos'), 'Minha ficha mostra quanto da ficha está preenchido');
@@ -231,13 +237,13 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   await page.goto(abaDaFaixa.url);
   await page.waitForTimeout(700);
   ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-trancado')), 'lá, o painel (Básico: números trancados)');
-  await page.click('.pc-barra-baixo [data-pc="avaliacoes"]');
+  await menuPc(page, 'avaliacoes');
   await page.waitForTimeout(200);
   page.once('dialog', d => d.accept());
   await page.click('#parceiros [data-apagar-resposta="r1"]');
   await page.waitForTimeout(600);
   ok(await page.evaluate(() => window.__db.respostas.length === 0), 'academia apaga a própria resposta');
-  await page.click('.pc-barra-baixo [data-pc="perfil"]');
+  await menuPc(page, 'perfil');
   await page.waitForTimeout(200);
   await page.click('#conta-trocar-senha');
   await page.fill('#senha-atual', 'errada');

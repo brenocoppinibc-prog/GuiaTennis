@@ -177,10 +177,23 @@
         }
         const r = { id: "n" + (t.length+1) + Math.random().toString(36).slice(2,5), created_at: new Date().toISOString(), ...payload };
         t.push(r);
-        // Gatilho pedido_da_academia_nova: a academia nova vira o pedido da conta.
+        // Gatilho pedido_da_academia_nova (SQL 20261006140000): conta com o
+        // e-mail confirmado e até 3 academias novas em 24 h → no ar na hora e
+        // a conta administra; senão, vira o pedido da conta.
         if (table === "academias" && sessao && !souAdmin() && meuAcesso()) {
-          fecharPedido(meuAcesso().user_id, r.id);
-          db.pedidos_de_acesso.push({ user_id: meuAcesso().user_id, academia_id: r.id, nome: r.name, destino: "guiatennis", pedido_em: new Date().toISOString() });
+          const x = meuAcesso();
+          const dia = Date.now() - 86400000;
+          const novas = vinculosDe(x.user_id).filter(v => { const ac = db.academias.find(y => y.id === v.academia_id); return ac && ac.id !== r.id && new Date(ac.created_at).getTime() > dia; }).length;
+          if (r.status === "pending" && x.email_confirmado_em && x.dados_completos_em && novas < 3) {
+            const agora3 = new Date().toISOString();
+            Object.assign(r, { status: "published", confirmada: true, revisar_desde: agora3, publicada_em: agora3 });
+            ligar(x, r.id, true);
+            vinculo(x.user_id, r.id).declarou_em = agora3;
+            db.emails_a_enviar.push({ id: "e-no-ar-" + r.id, tipo: "academia_no_ar", para: ADMIN, assunto: "Academia nova no ar: " + r.name, criado_em: agora3, enviado_em: null, tentativas: 0, erro: null });
+          } else {
+            fecharPedido(x.user_id, r.id);
+            db.pedidos_de_acesso.push({ user_id: x.user_id, academia_id: r.id, nome: r.name, destino: "guiatennis", pedido_em: new Date().toISOString(), declarou_em: new Date().toISOString() });
+          }
         }
         return { data: single ? r : [r], error:null };
       }
@@ -606,6 +619,21 @@
     }
     // Painel do admin (SQL 20261006120000): os e-mails da fila, mandar de
     // novo e os números das contas. window.__semPainelAdmin finge o banco sem o SQL.
+    // Academias novas que foram ao ar sozinhas (SQL 20261006140000).
+    if (nome === "academias_para_revisar_admin") {
+      if (!souAdmin()) return { data: [], error: null };
+      return { data: db.academias.filter(a => a.revisar_desde).map(a => {
+        const v = db.academia_vinculos.find(y => y.academia_id === a.id && y.papel === "principal");
+        const x = v && db.academia_acessos.find(y => y.user_id === v.user_id);
+        return { id: a.id, nome: a.name, bairro: a.bairro, cidade: a.cidade, no_ar_desde: a.revisar_desde, quem: x ? x.nome_responsavel : null, email: x ? (x.email || x.usuario) : null, whatsapp: x ? x.whatsapp : null, declarou_em: v ? v.declarou_em || null : null };
+      }), error: null };
+    }
+    if (nome === "marcar_academia_revisada") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (ac) ac.revisar_desde = null;
+      return { data: null, error: null };
+    }
     if (nome === "emails_recentes_admin" || nome === "reenviar_email_admin" || nome === "numeros_das_contas_admin") {
       if (window.__semPainelAdmin) return semFuncao;
       if (!souAdmin()) return erro("Só o admin.", "42501");

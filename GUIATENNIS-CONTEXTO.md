@@ -34,9 +34,10 @@ teste")
 > o Breno não gostou da barra de atalhos embaixo do Parceiros no celular:
 > saiu, e tudo fica no menu.
 > Antes, no mesmo dia, a regra 57 (admin no GuiaTennis Parceiros). Testes:
-> **881 verificações, nenhuma falha** nos 28 arquivos do navegador e 106 no
-> `banco-emails.py` (Postgres local). Por último, a regra 59 (a declaração
-> de quem pede uma academia vira caixinha, com a hora guardada no banco).
+> **881 verificações, nenhuma falha** nos 28 arquivos do navegador e 116 no
+> `banco-emails.py` (Postgres local). Por último, as regras 59 (a declaração
+> de quem pede uma academia vira caixinha, com a hora guardada no banco) e
+> 60 (academia nova de conta com e-mail confirmado vai ao ar sozinha).
 >
 > **Estado (05/10/2026, noite):** o Breno respondeu ao que estava aberto:
 > **não quer endereço próprio para o Parceiros** (fica em
@@ -829,6 +830,23 @@ cobra taxa e não fica no meio** da negociação.
     o WhatsApp. Saiu também o texto "e você pode pedir uma enquanto outra
     ainda está em análise…" e "Cada academia tem o próprio plano e paga o
     próprio valor…" da tela "Adicionar outra academia".
+60. **Academia nova da conta vai ao ar sozinha** (escolha do Breno em
+    06/10/2026, entre manter, isto e liberar tudo): academia NOVA
+    cadastrada por conta do Parceiros com o **e-mail confirmado** (e a
+    declaração marcada) entra no ar na hora, confirmada e no Básico, e a
+    conta já administra como responsável. Até 3 academias novas por conta
+    em 24 horas; da 4ª em diante, ou sem e-mail confirmado, vira pedido
+    como antes. O admin recebe o e-mail "Academia nova no ar" e a vê em
+    **Pendências › "Foram ao ar sozinhas: revise"** (abrir a ficha, ver
+    como academia, "Marcar como revisada"); "Para fazer agora" e o número
+    da seção contam elas. Academia que **já está** no guia continua com a
+    confirmação (código ou responsável). SQL
+    `20261006140000_academia_nova_no_ar`: `academias.revisar_desde`,
+    `academia_vinculos.declarou_em` (a hora da declaração passa do pedido
+    para o vínculo), `pedido_da_academia_nova()`, `aviso_de_academia_no_ar`,
+    `academias_para_revisar_admin()`, `marcar_academia_revisada(id)`; o
+    `proteger_ficha_da_academia` deixa passar só essa publicação
+    (`guiatennis.academia_nova_no_ar`). Termos (seção 4) atualizados.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

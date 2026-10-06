@@ -2,7 +2,8 @@
 """Confere os avisos por e-mail e as buscas salvas num Postgres local
 (SQL 20261005150000_buscas_salvas e 20261005160000_avisos_por_email) e as
 consultas do painel do admin (20261006120000_painel_do_admin) e a declaração
-de quem pede uma academia (20261006130000_declaracao_ao_pedir).
+de quem pede uma academia (20261006130000_declaracao_ao_pedir) e a academia
+nova que vai ao ar sozinha (20261006140000_academia_nova_no_ar).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -395,6 +396,43 @@ certo, saida = sql("insert into public.academias (name, cidade, bairro, status, 
 nova = um("select id from public.academias where name = 'Quadra Dora' order by created_at desc limit 1")
 ok(certo and nova and um(f"select declarou_em is not null from public.pedidos_de_acesso where user_id = '{decl}' and academia_id = '{nova}'") == "t",
    "academia nova da conta: o pedido sai com a hora da declaração" + ("" if certo else ": " + saida))
+
+# 13. Academia nova da conta vai ao ar sozinha (SQL 20261006140000) --------------
+print("\n# Academia nova da conta vai ao ar sozinha")
+eva = parceiro("Eva Nova", f"eva{sufixo}@exemplo.com")
+sql(f"update public.academia_acessos set dados_completos_em = now() where user_id = '{eva}'")
+nova_sql = "insert into public.academias (name, cidade, bairro, status, source) values ('{n}', 'São Paulo', 'Lapa', 'pending', 'custom')"
+certo, saida = sql(nova_sql.format(n="Quadra Eva 1"), papel="authenticated", user=eva)
+e1 = um("select id from public.academias where name = 'Quadra Eva 1'")
+ok(certo and um(f"select status || '|' || confirmada || '|' || (revisar_desde is not null) || '|' || (publicada_em is not null) from public.academias where id = '{e1}'") == "published|true|true|true",
+   "conta com e-mail confirmado: a academia nova vai ao ar na hora, confirmada e para o admin revisar" + ("" if certo else ": " + saida))
+ok(um(f"select papel || '|' || (declarou_em is not null) from public.academia_vinculos where user_id = '{eva}' and academia_id = '{e1}'") == "principal|true"
+   and um(f"select count(*) from public.pedidos_de_acesso where user_id = '{eva}'") == "0"
+   and um(f"select academia_id from public.academia_acessos where user_id = '{eva}'") == e1,
+   "a conta já administra a academia, como responsável, com a hora da declaração, sem pedido")
+ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'academia_no_ar' and chave = 'no-ar:{e1}' and assunto like 'Academia nova no ar: Quadra Eva 1'") == "1",
+   "o admin recebe o e-mail \"Academia nova no ar\"")
+admin_jwt = dict(papel="authenticated", user="00000000-0000-4000-8000-0000000000ad", email=ADMIN)
+ok(um(f"select nome || '|' || quem || '|' || (declarou_em is not null) from public.academias_para_revisar_admin() where id = '{e1}'", **admin_jwt) == "Quadra Eva 1|Eva Nova|true",
+   "o painel do admin lista a academia para revisar, com quem cadastrou")
+ok(um("select count(*) from public.academias_para_revisar_admin()", papel="authenticated", user=eva) == "0", "quem não é admin não vê a lista")
+certo, _ = sql(f"select public.marcar_academia_revisada('{e1}')", papel="authenticated", user=eva)
+ok(not certo, "só o admin marca como revisada")
+certo, _ = sql(f"select public.marcar_academia_revisada('{e1}')", **admin_jwt)
+ok(certo and um(f"select revisar_desde is null from public.academias where id = '{e1}'") == "t", "admin marca como revisada e ela sai da lista")
+certo, _ = sql(f"update public.academias set status = 'pending', revisar_desde = now() where id = '{e1}'", papel="authenticated", user=eva)
+ok(um(f"select status || '|' || (revisar_desde is null) from public.academias where id = '{e1}'") == "published|true", "a academia continua sem mexer na situação nem na revisão da própria ficha")
+for i in (2, 3):
+    sql(nova_sql.format(n=f"Quadra Eva {i}"), papel="authenticated", user=eva)
+certo, _ = sql(nova_sql.format(n="Quadra Eva 4"), papel="authenticated", user=eva)
+e4 = um("select id from public.academias where name = 'Quadra Eva 4'")
+ok(certo and um(f"select status from public.academias where id = '{e4}'") == "pending"
+   and um(f"select count(*) from public.pedidos_de_acesso where user_id = '{eva}' and academia_id = '{e4}'") == "1",
+   "a 4ª academia nova em 24 horas espera o GuiaTennis, como antes")
+semconf = parceiro("Ivo Sem Confirmar", f"ivo{sufixo}@exemplo.com", confirmado=False)
+sql(f"update public.academia_acessos set dados_completos_em = now() where user_id = '{semconf}'")
+sql(nova_sql.format(n="Quadra Ivo"), papel="authenticated", user=semconf)
+ok(um("select status from public.academias where name = 'Quadra Ivo'") == "pending", "sem o e-mail confirmado, a academia nova espera o GuiaTennis")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

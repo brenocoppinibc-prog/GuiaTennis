@@ -1303,8 +1303,11 @@
   .mini-score, .mini-stars { margin-top: 6px; }
   .dif-grade { gap: 14px; }
   /* ícone ao lado do texto, como os destaques do Airbnb: mais curto */
-  .dif-item { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 14px; padding: 20px; border-radius: 16px; }
-  .dif-ic { grid-row: span 2; margin: 2px 0 0; }
+  /* "Organize isso reto" (06/10/2026): cartões do mesmo tamanho, duas
+     colunas, título e texto colados em cima — sem o texto descer quando o
+     cartão do lado é mais alto. */
+  .dif-item { display: grid; grid-template-columns: 28px minmax(0, 1fr); grid-template-rows: auto 1fr; align-content: start; column-gap: 14px; padding: 20px; border-radius: 16px; }
+  .dif-ic { grid-row: span 2; margin: 2px 0 0; align-self: start; }
   .dif-t { font-size: 16px; font-weight: 600; }
   .dif-d { font-size: 15px; line-height: 1.55; margin-top: 4px; }
   .city-tabs { gap: 22px; margin-bottom: 16px; }
@@ -9873,12 +9876,12 @@ function blocoDiferenciais() {
     // Pedido do Breno em 05/10/2026: sem repetir que não cobra taxa, e
     // dizendo a facilidade de achar a quadra mais perto com tudo o que
     // precisa saber — como o "tudo num lugar só" do Booking e do trivago.
-    { ic: 'check', t: "Grátis para quem joga", d: "Buscar, comparar e chamar a academia não custa nada — para aula ou para locar quadra. Sem taxa e sem cartão.", largo: true },
+    { ic: 'check', t: "Grátis para quem joga", d: "Buscar, comparar e chamar a academia não custa nada — para aula ou para locar quadra. Sem taxa e sem cartão." },
     { ic: 'pin', t: "A quadra mais perto, com tudo o que você precisa saber", d: "Uma facilidade tremenda: digite o CEP, o endereço ou toque no GPS e veja as quadras da mais perto para a mais longe, cada uma com preço, horário, piso, fotos e como chegar." },
     { ic: 'phone', t: "Você fala direto com a academia", d: "O WhatsApp abre com a conversa já começada. Você combina o horário com ela, sem central de reservas e sem ninguém no meio." },
     { ic: 'sparkle', t: "Nota só de quem jogou aqui", d: "As avaliações são feitas dentro do GuiaTennis, por quem usou. Não importamos nota de outro site." },
     { ic: 'list', t: "Compare lado a lado", d: "Escolha até 5 academias e veja preço, quadras, comodidades e nota na mesma tabela — sem precisar abrir cinco abas." },
-    { ic: 'sino', t: "Avisos que trabalham por você", d: "Com a conta grátis, salve as suas buscas e receba por e-mail as academias novas onde você procura — e as quadras da cidade quando for viajar.", largo: true },
+    { ic: 'sino', t: "Avisos que trabalham por você", d: "Com a conta grátis, salve as suas buscas e receba por e-mail as academias novas onde você procura — e as quadras da cidade quando for viajar." },
   ];
   return `
     <div class="home-sec" id="home-porque">

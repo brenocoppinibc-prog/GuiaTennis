@@ -34,10 +34,15 @@ teste")
 > o Breno não gostou da barra de atalhos embaixo do Parceiros no celular:
 > saiu, e tudo fica no menu.
 > Antes, no mesmo dia, a regra 57 (admin no GuiaTennis Parceiros). Testes:
-> **881 verificações, nenhuma falha** nos 28 arquivos do navegador e 116 no
-> `banco-emails.py` (Postgres local). Por último, as regras 59 (a declaração
-> de quem pede uma academia vira caixinha, com a hora guardada no banco) e
-> 60 (academia nova de conta com e-mail confirmado vai ao ar sozinha).
+> **902 verificações, nenhuma falha** nos 28 arquivos do navegador e 131 no
+> `banco-emails.py` (Postgres local). Depois, no mesmo dia: regra 59 (a
+> declaração de quem pede uma academia vira caixinha, com a hora guardada),
+> 60 (academia nova de conta com e-mail confirmado vai ao ar sozinha), 61
+> (Parceiros mais leve: "Atualizações", menu por importância, plano num
+> lugar só), 62 (o admin exclui conta que descumprir os Termos) e 63 (conta
+> de jogador vale no Parceiros), e o "Por que o GuiaTennis" em seis cartões
+> iguais. O Breno perguntou se pedir documento garante mais: a resposta
+> está na regra 59 (o código no WhatsApp da ficha prova mais que documento).
 >
 > **Estado (05/10/2026, noite):** o Breno respondeu ao que estava aberto:
 > **não quer endereço próprio para o Parceiros** (fica em
@@ -830,7 +835,14 @@ cobra taxa e não fica no meio** da negociação.
     responsabilidade dele — tira em parte (quem mente responde por isso,
     e a caixinha com a hora guardada é a prova), mas não toda; sem
     confirmar, qualquer pessoa tomaria a ficha de uma academia e trocaria
-    o WhatsApp. Saiu também o texto "e você pode pedir uma enquanto outra
+    o WhatsApp. **Documento** (perguntou depois): ajuda pouco — cartão CNPJ
+    e contrato social são públicos (qualquer um baixa), RG/CNH prova quem é
+    a pessoa e não que ela responde pela academia, guardar documento pede
+    cuidado da LGPD e alguém precisa conferir um por um. Os grandes (Google
+    Business Profile, Booking) confirmam por código no telefone/carta e só
+    pedem documento em disputa; o código no WhatsApp da ficha prova que a
+    pessoa controla o canal da academia. Documento pode entrar como
+    alternativa quando o WhatsApp da ficha não é deles, se o Breno quiser. Saiu também o texto "e você pode pedir uma enquanto outra
     ainda está em análise…" e "Cada academia tem o próprio plano e paga o
     próprio valor…" da tela "Adicionar outra academia".
 61. **Parceiros mais leve** (pedidos de 06/10/2026, com fotos de tela): a

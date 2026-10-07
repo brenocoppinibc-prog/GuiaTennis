@@ -71,8 +71,9 @@ ok(r.status === 200 && envio, "e-mail recebido: encaminha");
 ok(pedidos[0].url === "https://api.resend.com/emails/receiving/em_1?html_format=cid" && pedidos[0].cabecalhos.Authorization === "Bearer re_full_teste", "busca o e-mail inteiro com a chave de leitura (imagens como cid)");
 ok(envio.corpo.to[0] === "guiatennis1@gmail.com" && envio.corpo.from === "Ana Souza pelo GuiaTennis <encaminhado@guiatennis.com.br>", "vai para o Gmail, com o nome de quem escreveu");
 ok(envio.corpo.reply_to[0] === "Ana Souza <ana@academia.com>", "responder vai para quem escreveu");
-ok(envio.corpo.subject === "Quero anunciar" && envio.corpo.html.includes("Recebido em contato@guiatennis.com.br · De: Ana Souza &lt;ana@academia.com&gt;") && envio.corpo.html.includes('src="cid:img1"'),
-  "mesmo assunto, com a linha de para onde foi e quem mandou");
+ok(envio.corpo.subject === "Quero anunciar" && envio.corpo.html === '<p>Oi! <img src="cid:img1"></p>' && envio.corpo.text === "Oi!",
+  "mesmo assunto e o corpo como foi escrito, sem nada a mais (a resposta cita a mensagem)");
+ok(envio.corpo.headers["X-GuiaTennis-Recebido-Em"] === "contato@guiatennis.com.br", "para qual endereço foi fica num cabeçalho, sem aparecer no corpo");
 ok(envio.cabecalhos["Idempotency-Key"] === "encaminhar-em_1", "webhook repetido não manda duas vezes");
 const anexos = envio.corpo.attachments || [];
 ok(anexos.length === 2 && anexos[0].content_id === "img1" && !anexos[1].content_id && Buffer.from(anexos[1].content, "base64").toString() === "conteudo at2", "anexos e imagens no corpo vão junto");
@@ -83,7 +84,7 @@ emailRecebido = { ...emailRecebido, reply_to: ["respostas@academia.com"], html: 
 pedidos = [];
 await receber(assinado(evento({ attachments: [] })));
 const e2 = pedidos.find((p) => p.url === "https://api.resend.com/emails").corpo;
-ok(e2.to[0] === "breno@exemplo.com" && e2.reply_to[0] === "respostas@academia.com" && e2.html.includes("Só texto &lt;b&gt;") && !e2.attachments, "respeita o responder-para do original; e-mail só de texto vira HTML escapado");
+ok(e2.to[0] === "breno@exemplo.com" && e2.reply_to[0] === "respostas@academia.com" && e2.html.includes("Só texto &lt;b&gt;") && !e2.html.includes("Recebido em") && !e2.attachments, "respeita o responder-para do original; e-mail só de texto vira HTML escapado");
 ok(!pedidos.some((p) => p.url.includes("/attachments")), "sem anexo, não busca anexos");
 
 // Não encaminha o próprio encaminhado.

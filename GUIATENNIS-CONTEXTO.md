@@ -1114,9 +1114,13 @@ cobra taxa e não fica no meio** da negociação.
       (`/.netlify/functions/receber-email`), que confere a assinatura do
       webhook, busca o e-mail inteiro e encaminha para o
       guiatennis1@gmail.com, com "Fulano pelo GuiaTennis
-      <encaminhado@guiatennis.com.br>", o "responder" para quem escreveu,
-      os anexos e uma linha "Recebido em contato@… · De: …". Erro: 500, e o
-      Resend tenta de novo (sem repetir, pela chave de idempotência).
+      <encaminhado@guiatennis.com.br>", o "responder" para quem escreveu e
+      os anexos, **com o corpo como foi escrito** (em 08/10/2026 saiu a
+      faixa "Recebido em … · De: …": na resposta o Gmail cita a mensagem,
+      e quem escreveu veria; para qual endereço foi fica no cabeçalho
+      `X-GuiaTennis-Recebido-Em`). Erro: 500, e o Resend tenta de novo
+      (sem repetir, pela chave de idempotência). **Funcionou na prévia em
+      08/10/2026** (teste do Breno).
     - **Responder:** no Gmail, "Enviar e-mail como"
       contato@guiatennis.com.br pelo SMTP do Resend (`smtp.resend.com`,
       usuário `resend`, senha = uma chave "Sending access").
@@ -2273,8 +2277,8 @@ as 133 do `banco-acesso.py` no banco e login locais.
 - `receber-email.mjs` — regra 67, roda sozinho, sem internet: `node
   testes/receber-email.mjs`. Assinatura do webhook (certa, errada, velha,
   corpo mexido), encaminha para o Gmail com o nome de quem escreveu, o
-  "responder", os anexos e as imagens, sem repetir e sem círculo; erro do
-  Resend dá 500.
+  "responder", os anexos e as imagens, o corpo sem nada a mais (o endereço
+  num cabeçalho), sem repetir e sem círculo; erro do Resend dá 500.
 - `banco-emails.py` — **não roda com os outros**: precisa de um Postgres
   local com a pasta `supabase/` aplicada (não precisa do GoTrue); finge o
   cofre, o pg_net e o relógio. Confere cada aviso (quem recebe, quem não,

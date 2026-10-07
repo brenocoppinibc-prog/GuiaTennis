@@ -4,8 +4,8 @@
 // Quem escreve para qualquer endereço @guiatennis.com.br (contato@, breno@,
 // parceiros@…) cai no Resend (registro MX do domínio). O Resend avisa esta
 // função (webhook "email.received"); ela busca o e-mail inteiro e o
-// encaminha para o Gmail do GuiaTennis, com o "responder" apontando para
-// quem escreveu. No Gmail, o Breno responde como contato@guiatennis.com.br
+// encaminha para o Gmail do GuiaTennis como foi escrito, com o "responder"
+// apontando para quem escreveu. No Gmail, o Breno responde como contato@guiatennis.com.br
 // ("Enviar e-mail como", pelo SMTP do Resend).
 //
 // Endereço: https://guiatennis.com.br/.netlify/functions/receber-email
@@ -85,13 +85,17 @@ async function anexosDe(id, chave) {
   return { anexos, deFora };
 }
 
-// O e-mail que vai para o Gmail: o original, com uma linha em cima dizendo
-// para qual endereço do GuiaTennis foi e quem mandou.
+// O e-mail que vai para o Gmail: o original, como foi escrito, sem nada a
+// mais no corpo (pedido do Breno em 08/10/2026 — na resposta, o Gmail cita
+// a mensagem inteira, e quem escreveu veria o que fosse acrescentado). Quem
+// mandou aparece no nome ("Ana pelo GuiaTennis"); para qual endereço do
+// GuiaTennis foi fica num cabeçalho (X-GuiaTennis-Recebido-Em). Só o aviso
+// de anexo grande demais entra no corpo, quando acontece.
 export function montarEncaminhado(email, destino, anexos, deFora) {
   const para = (email.to || []).filter((t) => /@guiatennis\.com\.br\s*>?$/i.test(t)).join(", ") || (email.to || []).join(", ");
   const de = email.from || "";
-  const aviso = `Recebido em ${para} · De: ${de}${deFora ? ` · ${deFora} ${deFora === 1 ? "anexo ficou" : "anexos ficaram"} de fora (grande demais): veja no Resend, em Emails › Receiving` : ""}`;
-  const html = `<div style="margin:0 0 14px;padding:8px 12px;background:#F6F1E7;border-radius:8px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6B6458">${textoHtml(aviso)}</div>`
+  const aviso = deFora ? `${deFora} ${deFora === 1 ? "anexo ficou" : "anexos ficaram"} de fora (grande demais): veja no Resend, em Emails › Receiving.` : "";
+  const html = (aviso ? `<p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6B6458">${textoHtml(aviso)}</p>` : "")
     + (email.html || `<pre style="font-family:inherit;white-space:pre-wrap">${textoHtml(email.text || "")}</pre>`);
   return {
     from: `${nomeLimpo(nomeDe(de)) || "Alguém"} pelo GuiaTennis <${REMETENTE}>`,
@@ -99,7 +103,8 @@ export function montarEncaminhado(email, destino, anexos, deFora) {
     reply_to: email.reply_to && email.reply_to.length ? email.reply_to : [de],
     subject: email.subject || "(sem assunto)",
     html,
-    text: `${aviso}\n\n${email.text || ""}`,
+    text: (aviso ? `${aviso}\n\n` : "") + (email.text || ""),
+    headers: { "X-GuiaTennis-Recebido-Em": para.slice(0, 300) },
     ...(anexos.length ? { attachments: anexos } : {}),
   };
 }

@@ -24,6 +24,18 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 07/10/2026 (noite)
 
+> **Estado (07/10/2026, mais tarde):** o Breno conseguiu o número dos
+> códigos, (11) 97185-3987 (regra 66; ainda falta a conta na Meta), e
+> pediu "quero fazer [o e-mail com o domínio] pelo resend… quero poder ter
+> minha logo nos emails". Entrou a regra 67: **a logo em todos os
+> e-mails** (SQL `20261007150000_logo_nos_emails` e o modelo do código,
+> `divulgacao/email-codigo.html`, que o Breno precisa colar de novo no
+> Supabase) e **receber e responder como @guiatennis.com.br**: o Resend
+> recebe, a função do Netlify `netlify/functions/receber-email.mjs`
+> encaminha para o Gmail, e o Gmail responde pelo SMTP do Resend. Falta o
+> Breno ligar (seção 11, item "E-mail com o domínio"). Testes: 199 no
+> `banco-emails.py` e 21 no `testes/receber-email.mjs`.
+>
 > **Estado (07/10/2026, noite):** o Breno cadastrou o `RESEND_API_KEY` no
 > GitHub (avisos por e-mail ligados no banco de teste: "chave do Resend
 > guardada"), perguntou se dá para recuperar a senha pelo e-mail (dá:
@@ -1070,6 +1082,42 @@ cobra taxa e não fica no meio** da negociação.
     entre os serviços, o limite de 3), Termos e Ajuda atualizados. SQL
     `20261007140000_codigo_pelo_whatsapp`; teste
     `testes/codigo-pelo-whatsapp.js` e a seção 18 do `banco-emails.py`.
+67. **E-mail com o domínio e a logo nos e-mails, pelo Resend** (pedido de
+    07/10/2026: "quero fazer pelo resend pq mais para frente vou precisar
+    pagar de qualquer jeito, eu quero poder ter minha logo nos emails tbm
+    com o dominio @guiatennis.com.br"). Ofereci Google Workspace (R$ 34,50
+    por mês), Zoho (grátis, outro app) ou o Resend; ele escolheu o Resend.
+    - **A logo** no alto de todo e-mail, ao lado do nome, como Airbnb e
+      Booking: o ícone do site (`favicon-192.png`, PNG — Gmail e Outlook
+      não mostram SVG), em tabela; sem imagem, o nome continua. Nos avisos
+      (`email_montado`, SQL `20261007150000_logo_nos_emails`) e no e-mail
+      do código (`divulgacao/email-codigo.html`, colar de novo no Supabase).
+    - **Receber:** o domínio recebe pelo Resend (registro MX). Qualquer
+      endereço @guiatennis.com.br (contato@, breno@, parceiros@…) chega na
+      função `netlify/functions/receber-email.mjs`
+      (`/.netlify/functions/receber-email`), que confere a assinatura do
+      webhook, busca o e-mail inteiro e encaminha para o
+      guiatennis1@gmail.com, com "Fulano pelo GuiaTennis
+      <encaminhado@guiatennis.com.br>", o "responder" para quem escreveu,
+      os anexos e uma linha "Recebido em contato@… · De: …". Erro: 500, e o
+      Resend tenta de novo (sem repetir, pela chave de idempotência).
+    - **Responder:** no Gmail, "Enviar e-mail como"
+      contato@guiatennis.com.br pelo SMTP do Resend (`smtp.resend.com`,
+      usuário `resend`, senha = uma chave "Sending access").
+    - **Conta:** no Resend, cada e-mail recebido e cada encaminhado contam
+      no limite (grátis: 100 por dia, 3.000 por mês, junto com os avisos);
+      o Pro é US$ 20 por mês para 50.000. A função gasta quase nada dos
+      créditos do Netlify (só roda quando chega e-mail).
+    - **A logo redonda ao lado do remetente na lista do Gmail** é outra
+      coisa: o **BIMI**, que pede DMARC rígido e um certificado pago (CMC,
+      US$ 650 a 1.100 por ano, com 12 meses de logo em uso no site; ou VMC,
+      com marca registrada). Fica para depois.
+    - **Depois que receber funcionar:** trocar o contato do site
+      (guiatennis1@gmail.com, 8 lugares no `index.html`: menu, rodapé,
+      Termos e Política) por contato@guiatennis.com.br. O **login do admin
+      continua guiatennis1@gmail.com** (`eh_admin()`); não mudar.
+    Teste: `node testes/receber-email.mjs` (21) e a seção 19 do
+    `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2168,6 +2216,11 @@ as 133 do `banco-acesso.py` no banco e login locais.
   digita vence; sem e-mail confirmado, espera; desligado e banco sem o SQL,
   como antes; admin manda pelo WhatsApp do GuiaTennis, vê se saiu ou o
   erro (e gera à mão), e a situação em E-mails; Ajuda e Política.
+- `receber-email.mjs` — regra 67, roda sozinho, sem internet: `node
+  testes/receber-email.mjs`. Assinatura do webhook (certa, errada, velha,
+  corpo mexido), encaminha para o Gmail com o nome de quem escreveu, o
+  "responder", os anexos e as imagens, sem repetir e sem círculo; erro do
+  Resend dá 500.
 - `banco-emails.py` — **não roda com os outros**: precisa de um Postgres
   local com a pasta `supabase/` aplicada (não precisa do GoTrue); finge o
   cofre, o pg_net e o relógio. Confere cada aviso (quem recebe, quem não,
@@ -2248,7 +2301,9 @@ pelas ferramentas do GitHub (PR, checks, Actions).
 `index.html`, `404.html`, `netlify.toml`, `robots.txt`, `sitemap.xml`,
 `favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png`,
 `og-image.png`, `google7b66589ffc303f37.html` (verificação do Search
-Console).
+Console) e a função `netlify/functions/receber-email.mjs` (regra 67; o
+código dela não fica visível: `/netlify/*` dá 404, e ela roda em
+`/.netlify/functions/receber-email`).
 
 O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
 `SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e as pastas `testes/`,
@@ -2500,6 +2555,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Logo nos e-mails e e-mail com o domínio pelo Resend (receber e responder)   ← PR #5, 07/10
 (a seguir) Código da disputa pelo WhatsApp (API oficial da Meta) e "Esqueci a senha" certo na Ajuda   ← PR #5, 07/10
 (a seguir) Avisos por e-mail pelo Resend, buscas salvas, conta do Parceiros como conta normal, página da cidade e textos "Por que"   ← PR #5, 05/10
 (a seguir) Logo de três riscos em todo lugar, menu do trivago, home pessoal, preferências e cadastro passo a passo   ← PR #5, 01/10
@@ -2610,6 +2666,10 @@ c9ade31 Configuração de publicação do Netlify
 **Resumo (07/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
 regra 65; o merge espera o Breno. Pendente:
+00. **E-mail com o domínio e a logo** (regra 67, item "E-mail com o
+   domínio" abaixo): colar o modelo novo do código no Supabase; ligar o
+   recebimento no Resend, o webhook, as 2 variáveis no Netlify e o
+   "Enviar e-mail como" no Gmail.
 0. **Ligar o código da disputa pelo WhatsApp** (regra 66, item "Ligar o
    código pelo WhatsApp" abaixo): conta na Meta, número só para os
    códigos, modelo `codigo_guiatennis` e os 3 segredos no GitHub. Sem
@@ -2635,6 +2695,30 @@ regra 65; o merge espera o Breno. Pendente:
 6. Antigos: fechar o PR #1; no projeto de teste do Supabase, criar o
    admin e desligar o cadastro; backup mensal; 2 etapas nas contas.
 
+- **E-mail com o domínio (07/10/2026, regra 67)** — o Breno (chave nunca
+  pelo chat): (1) **logo no e-mail do código:** Supabase (nos dois
+  projetos) › Authentication › Emails › Templates › Magic Link: colar o
+  `divulgacao/email-codigo.html` novo; (2) **receber:** Resend › Domains ›
+  guiatennis.com.br › ligar **Receiving** e adicionar no DNS (onde estão
+  os registros do Resend) o registro **MX** que ele mostrar, sem apagar
+  os outros; (3) Resend › API Keys › Create: nome "Receber e-mails",
+  **Full access**; (4) Resend › Webhooks › Add endpoint: na prévia
+  `https://deploy-preview-5--stately-salamander-652f72.netlify.app/.netlify/functions/receber-email`
+  (depois do merge, trocar por `https://guiatennis.com.br/.netlify/functions/receber-email`),
+  evento **email.received**; copiar o **Signing secret** (`whsec_…`);
+  (5) Netlify › Site configuration › Environment variables:
+  `RESEND_RECEBER_KEY` (a chave do passo 3) e `RESEND_WEBHOOK_SECRET` (o
+  do passo 4), em todos os contextos; publicar de novo (ou esperar o
+  próximo push); (6) teste: do e-mail pessoal, escrever para
+  contato@guiatennis.com.br e ver chegar no guiatennis1@gmail.com; (7)
+  **responder como contato@:** Resend › API Keys › Create "Gmail",
+  **Sending access**, domínio guiatennis.com.br; Gmail no computador ›
+  Configurações › Contas e importação › Enviar e-mail como › Adicionar
+  outro endereço: nome **GuiaTennis**, contato@guiatennis.com.br; SMTP
+  `smtp.resend.com`, porta **465**, usuário `resend`, senha = a chave,
+  SSL; o Gmail manda um código para contato@ (chega pelo encaminhamento);
+  depois, "tornar padrão". (8) Avisar no chat: aí o contato do site muda
+  para contato@guiatennis.com.br.
 - **Ligar o código pelo WhatsApp (07/10/2026, regra 66)** — o Breno (o token
   nunca pelo chat): (1) um **chip novo só para os códigos** (o (11)
   92745-6457 fica no aplicativo, com ele respondendo); o número não pode

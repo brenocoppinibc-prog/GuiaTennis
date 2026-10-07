@@ -7,8 +7,9 @@ nova que vai ao ar sozinha (20261006140000_academia_nova_no_ar) e a exclusão de
 conta pelo admin (20261006150000_excluir_conta), a conta de jogador que vira
 Parceiros (20261006160000), a data em que a ficha foi atualizada
 (20261007120000_ficha_atualizada_em), o código só em disputa
-(20261007130000_codigo_so_em_disputa) e o código da disputa pelo WhatsApp
-(20261007140000_codigo_pelo_whatsapp).
+(20261007130000_codigo_so_em_disputa), o código da disputa pelo WhatsApp
+(20261007140000_codigo_pelo_whatsapp) e a logo nos e-mails
+(20261007150000_logo_nos_emails).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -701,6 +702,11 @@ ok(resposta(f"select public.contestar_academia('{sem_zap}')", papel="authenticat
 ok(um("select public.numero_do_whatsapp('+55 (11) 98765-4321') || '|' || coalesce(public.numero_do_whatsapp('98765-4321'), 'nada')") == "5511987654321|nada",
    "número com ou sem 55 vira 55 + DDD; sem DDD, nada")
 sql("delete from vault.secrets where name = 'whatsapp_token'; update public.whatsapp_configuracao set numero_id = null, real = false, numero_de_teste = null;")
+
+# 19. A logo nos e-mails (SQL 20261007150000) -----------------------------------
+print("\n# Logo nos e-mails")
+html_logo = um("select html from public.emails_a_enviar where tipo = 'avaliacao' order by criado_em limit 1") or ""
+ok('src="https://guiatennis.com.br/favicon-192.png"' in html_logo and ">GuiaTennis</td>" in html_logo, "todo aviso tem a logo no alto, ao lado do nome")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

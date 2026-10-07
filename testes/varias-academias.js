@@ -120,16 +120,19 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const pedido = await rpcs(page, 'pedir_para_administrar');
   cad = await texto(page, '#parceiros .pc-main');
   ok(pedido.length === 1 && pedido[0].p_academia === 'a1', 'pede para administrar a segunda academia');
-  ok(cad.includes('Pedido para administrar outra academia') && cad.includes('Só Aula Tennis') && cad.includes('(11) •••••-0001') && await page.isVisible('#pc-codigo'), 'o pedido mostra o WhatsApp escondido da ficha e o campo do código');
+  // Sem o e-mail confirmado, espera a confirmação (o código só em disputa,
+  // 07/10/2026) — ou o GuiaTennis conferir, se quiser, pelo código.
+  ok(cad.includes('Pedido para administrar outra academia') && cad.includes('Só Aula Tennis') && cad.includes('Confirme o seu e-mail') && !(await page.isVisible('#pc-codigo')), 'o pedido espera o e-mail confirmado, sem código');
   ok(await page.evaluate(() => window.__db.academia_acessos[0].academia_id === 'a2'), 'enquanto isso, a primeira academia continua aberta');
 
-  // O painel também mostra o pedido, com o código.
+  // O GuiaTennis resolveu conferir pelo código: o painel mostra o pedido
+  // com o WhatsApp escondido da ficha e o campo do código.
+  await page.evaluate(async () => { window.__codigos = { 'u-a2': { codigo: '482913', academia: 'a1', tentativas: 0, em: new Date().toISOString() } }; await recarregarConta(); });
   await menuPc(page, 'painel');
   await page.waitForTimeout(300);
-  ok((await texto(page, '#parceiros .pc-main')).includes('Pedido para administrar outra academia') && await page.isVisible('#pc-codigo'), 'o painel mostra o pedido da outra academia, com o campo do código');
+  ok((await texto(page, '#parceiros .pc-main')).includes('Pedido para administrar outra academia') && (await texto(page, '#parceiros .pc-main')).includes('(11) •••••-0001') && await page.isVisible('#pc-codigo'), 'com o código mandado, o painel mostra o pedido com o WhatsApp escondido e o campo do código');
 
-  // O GuiaTennis manda o código ao WhatsApp da ficha; a pessoa digita.
-  await page.evaluate(() => { window.__codigos = { 'u-a2': { codigo: '482913', academia: 'a1', tentativas: 0 } }; });
+  // A pessoa digita o código.
   await page.fill('#pc-codigo', '482913');
   await page.click('#pc-confirmar-codigo');
   await page.waitForTimeout(600);
@@ -244,7 +247,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const listaDeTudo = await page.evaluate(() => ({ cartoes: document.querySelectorAll('.pc-acad').length, pedidos: [...document.querySelectorAll('.pc-pedido .pc-card-t')].map(x => x.innerText).join(','), h2: [...document.querySelectorAll('.pc-h2')].map(x => x.innerText).join(' | ') }));
   ok(listaDeTudo.cartoes === 1 && listaDeTudo.pedidos === 'Só Aula Tennis,Tênis Terceira' && listaDeTudo.h2.includes('2 pedidos em andamento'), 'Suas academias mostra a academia e os dois pedidos — ' + listaDeTudo.h2);
   // O código de cada pedido confirma só aquele pedido.
-  await page.evaluate(() => { window.__codigos = { 'u-a2|a3': { codigo: '135790', academia: 'a3', tentativas: 0 } }; });
+  await page.evaluate(async () => { window.__codigos = { 'u-a2|a3': { codigo: '135790', academia: 'a3', tentativas: 0, em: new Date().toISOString() } }; await recarregarConta(); render(); });
   await page.fill('[data-pedido-codigo="a3"]', '135790');
   await page.click('[data-confirmar-codigo="a3"]');
   await page.waitForTimeout(600);

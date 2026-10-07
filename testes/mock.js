@@ -108,6 +108,23 @@
     if (abrir || !x.academia_id) Object.assign(x, { academia_id: academiaId, papel: vinculo(x.user_id, academiaId).papel });
     fecharPedido(x.user_id, academiaId);
   };
+  // SQL 20261007130000: academia do guia sem responsável, assumida sem
+  // código; e quem vence a disputa vira o responsável (os outros saem).
+  const assumir = (x, academiaId) => {
+    const ac = db.academias.find(y => y.id === academiaId);
+    const t = new Date().toISOString();
+    ac.revisar_desde = t;
+    ligar(x, academiaId, true);
+    Object.assign(vinculo(x.user_id, academiaId), { declarou_em: t, telefone_da_ficha: ac.phone || null });
+    db.pedidos_de_acesso.filter(p => p.academia_id === academiaId && p.destino === "guiatennis").forEach(p => { p.destino = "responsavel"; });
+    db.emails_a_enviar.push({ id: "e-assumida-" + academiaId + x.user_id, tipo: "academia_assumida", para: ADMIN, assunto: "Academia assumida: " + ac.name, criado_em: t, enviado_em: null, tentativas: 0, erro: null });
+  };
+  const vencerDisputa = (x, academiaId) => {
+    db.academia_vinculos.filter(v => v.academia_id === academiaId && v.user_id !== x.user_id).forEach(v => desligar(v.user_id, academiaId));
+    ligar(x, academiaId, true);
+    vinculo(x.user_id, academiaId).papel = "principal";
+    x.papel = "principal";
+  };
   // Vínculo removido: se era a academia aberta, abre outra (ou nenhuma).
   const desligar = (userId, academiaId) => {
     const i = db.academia_vinculos.findIndex(v => v.user_id === userId && v.academia_id === academiaId);
@@ -182,14 +199,13 @@
         // Gatilho marcar_dados_atualizados (SQL 20261007120000).
         if (table === "academias") r.dados_atualizados_em = r.created_at;
         t.push(r);
-        // Gatilho pedido_da_academia_nova (SQL 20261006140000): conta com o
-        // e-mail confirmado e até 3 academias novas em 24 h → no ar na hora e
-        // a conta administra; senão, vira o pedido da conta.
+        // Gatilho pedido_da_academia_nova (SQL 20261006140000 e
+        // 20261007130000): conta com o e-mail confirmado → no ar na hora e a
+        // conta administra; senão, vira o pedido da conta.
         if (table === "academias" && sessao && !souAdmin() && meuAcesso()) {
           const x = meuAcesso();
-          const dia = Date.now() - 86400000;
-          const novas = vinculosDe(x.user_id).filter(v => { const ac = db.academias.find(y => y.id === v.academia_id); return ac && ac.id !== r.id && new Date(ac.created_at).getTime() > dia; }).length;
-          if (r.status === "pending" && x.email_confirmado_em && x.dados_completos_em && novas < 3) {
+          // Sem o limite de 3 em 24 horas (SQL 20261007130000).
+          if (r.status === "pending" && x.email_confirmado_em && x.dados_completos_em) {
             const agora3 = new Date().toISOString();
             Object.assign(r, { status: "published", confirmada: true, revisar_desde: agora3, publicada_em: agora3 });
             ligar(x, r.id, true);
@@ -306,21 +322,22 @@
         const ac = db.academias.find(y => y.id === p.academia_id) || {};
         const c = (window.__codigos || {})[p.user_id + "|" + p.academia_id];
         return { user_id: p.user_id, academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, codigo_em: c ? c.em : null,
-          nome_responsavel: x.nome_responsavel || null, tratamento: x.tratamento || null, cargo: x.cargo || null, email: x.email || null, usuario: x.usuario, whatsapp: x.whatsapp || null };
+          nome_responsavel: x.nome_responsavel || null, tratamento: x.tratamento || null, cargo: x.cargo || null, email: x.email || null, usuario: x.usuario, whatsapp: x.whatsapp || null,
+          telefone_antes: (db.academia_vinculos.find(v => v.academia_id === p.academia_id && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha || null };
       }), error:null };
     }
     // Pedido de acesso ao responsável (SQL 20261003140000).
     if (nome === "pedidos_para_minha_academia") {
       const x = meuAcesso();
       if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return { data:[], error:null };
-      return { data: pedidosPara(x.academia_id).filter(p => p.user_id !== x.user_id)
+      return { data: pedidosPara(x.academia_id).filter(p => p.user_id !== x.user_id && p.destino !== "disputa")
         .map(p => { const y = db.academia_acessos.find(z => z.user_id === p.user_id) || {};
           return { user_id: p.user_id, nome: y.nome_responsavel || null, email: y.email || y.usuario, cargo: y.cargo || null, pedido_em: p.pedido_em || null }; }), error:null };
     }
     if (nome === "responder_pedido_de_acesso") {
       const x = meuAcesso();
       if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal responde aos pedidos.", "42501");
-      const ele = pedidosPara(x.academia_id).some(p => p.user_id === a.p_user) && db.academia_acessos.find(y => y.user_id === a.p_user);
+      const ele = pedidosPara(x.academia_id).some(p => p.user_id === a.p_user && p.destino !== "disputa") && db.academia_acessos.find(y => y.user_id === a.p_user);
       if (!ele) return erro("Pedido não encontrado.", "22023");
       if (!a.p_aceitar) { fecharPedido(a.p_user, x.academia_id); return { data:null, error:null }; }
       const lim = limite(planoDe(x.academia_id));
@@ -449,10 +466,27 @@
       const ac = db.academias.find(y => y.id === a.p_academia && y.status === "published");
       if (!ac) return erro("Academia não encontrada.", "22023");
       const temDono = db.academia_vinculos.some(v => v.academia_id === ac.id && v.papel === "principal");
+      // Sem responsável e sem disputa (SQL 20261007130000): com o e-mail
+      // confirmado e a declaração, a conta assume na hora.
+      if (a.p_declaro === true && x.email_confirmado_em && x.dados_completos_em && !temDono) {
+        fecharPedido(x.user_id, ac.id);
+        assumir(x, ac.id);
+        return { data:"assumiu", error:null };
+      }
       if (pedidosDe(x.user_id).filter(p => p.academia_id !== ac.id).length >= 10) return erro("A sua conta já tem 10 pedidos abertos. Espere algum ser confirmado ou cancele um.", "22023");
       db.pedidos_de_acesso = db.pedidos_de_acesso.filter(p => !(p.user_id === x.user_id && p.academia_id === ac.id));
       db.pedidos_de_acesso.push({ user_id: x.user_id, academia_id: ac.id, nome: ac.name, destino: temDono ? "responsavel" : "guiatennis", pedido_em: new Date().toISOString(), declarou_em: a.p_declaro ? new Date().toISOString() : null });
       window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
+      return { data:"pedido", error:null };
+    }
+    if (nome === "contestar_academia") {
+      if (window.__semDisputa) return semFuncao;
+      const x = meuAcesso();
+      const p = x && pedidosDe(x.user_id).find(q => q.academia_id === a.p_academia && q.destino === "responsavel");
+      if (!p) return erro("Peça para administrar a academia antes de contestar.", "22023");
+      Object.assign(p, { destino: "disputa", pedido_em: new Date().toISOString() });
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      db.emails_a_enviar.push({ id: "e-disputa-" + a.p_academia + x.user_id, tipo: "disputa", para: ADMIN, assunto: "Disputa: " + ac.name, criado_em: p.pedido_em, enviado_em: null, tentativas: 0, erro: null });
       return { data:null, error:null };
     }
     if (nome === "cancelar_meu_pedido") {
@@ -465,7 +499,7 @@
       const x = db.academia_acessos.find(y => y.user_id === a.p_user);
       const p = x && pedidoDaConta(x.user_id, a.p_academia);
       if (!p) return erro("Pedido não encontrado.", "22023");
-      if (nome === "aprovar_pedido_de_acesso") ligar(x, p.academia_id);
+      if (nome === "aprovar_pedido_de_acesso") { if (p.destino === "disputa") vencerDisputa(x, p.academia_id); else ligar(x, p.academia_id); }
       else fecharPedido(x.user_id, p.academia_id);
       return { data:null, error:null };
     }
@@ -477,7 +511,7 @@
       const p = x && pedidoDaConta(x.user_id, a.p_academia);
       if (!p) return erro("Pedido não encontrado.", "22023");
       if (vinculo(x.user_id, p.academia_id)) return erro("Essa conta já administra essa academia.", "22023");
-      if (db.academia_vinculos.some(v => v.academia_id === p.academia_id && v.papel === "principal")) return erro("Essa academia já tem responsável: o pedido está com ele.", "22023");
+      if (p.destino !== "disputa" && db.academia_vinculos.some(v => v.academia_id === p.academia_id && v.papel === "principal")) return erro("Essa academia já tem responsável: o pedido está com ele.", "22023");
       const codigo = String(100000 + Math.floor(Math.random() * 900000));
       window.__codigos = window.__codigos || {};
       // Um código por conta e academia; o mais novo também fica na conta (o teste lê dali).
@@ -496,7 +530,8 @@
       if (!c || !pedidosDe(x.user_id).some(p => p.academia_id === c.academia)) return { data:"sem_codigo", error:null };
       if (c.tentativas >= 5) return { data:"tentativas", error:null };
       if (String(a.p_codigo || "").replace(/\D/g, "") !== c.codigo) { c.tentativas++; return { data:"errado", error:null }; }
-      ligar(x, c.academia);
+      const naDisputa = pedidosDe(x.user_id).some(p => p.academia_id === c.academia && p.destino === "disputa");
+      if (naDisputa) vencerDisputa(x, c.academia); else ligar(x, c.academia);
       delete cs[x.user_id + "|" + c.academia];
       return { data:"ok", error:null };
     }
@@ -571,6 +606,14 @@
       const agora2 = new Date().toISOString();
       db.jogadores.filter(j => j.user_id === sessao.user.id).forEach(j => { j.email_confirmado_em = j.email_confirmado_em || agora2; });
       db.academia_acessos.filter(x => x.user_id === sessao.user.id).forEach(x => { x.email_confirmado_em = x.email_confirmado_em || agora2; });
+      // assumir_pedidos_da_conta (SQL 20261007130000).
+      const x = meuAcesso();
+      if (x && x.dados_completos_em) pedidosDe(x.user_id).filter(p => p.destino === "guiatennis" && p.declarou_em).forEach(p => {
+        const ac = db.academias.find(y => y.id === p.academia_id);
+        if (!ac) return;
+        if (ac.status === "pending") { Object.assign(ac, { status: "published", confirmada: true, revisar_desde: agora2 }); ligar(x, ac.id, true); }
+        else if (!db.academia_vinculos.some(v => v.academia_id === ac.id && v.papel === "principal")) assumir(x, ac.id);
+      });
       return { data:null, error:null };
     }
     if (nome === "criar_conta_jogador") {

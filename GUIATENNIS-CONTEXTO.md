@@ -24,6 +24,17 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 07/10/2026
 
+> **Estado (07/10/2026, depois):** o Breno pediu "eu quero manter o código
+> em casos de disputa, para novas não", tirar o limite de 3 academias
+> novas em 24 horas, o "No ar" por 1 dia (era 3) e a ficha confirmada com
+> um símbolo visível. Entrou a regra 65 (muda as regras 59, 60 e 61): a
+> academia do guia sem responsável passa a ser da conta na hora (e-mail
+> confirmado + declaração), o código no WhatsApp da academia só na
+> disputa ("Contestar"), documento só se não der pelo código, e o selo
+> verde ao lado do nome. SQL `20261007130000_codigo_so_em_disputa`.
+> Testes: **943 verificações, nenhuma falha** nos 30 arquivos do navegador
+> e 160 no `banco-emails.py`.
+>
 > **Estado (07/10/2026):** o Breno mandou uma análise do site feita pelo
 > GPT ("faça as adaptações que servem e funcionam para o site"). Entrou a
 > regra 64 (o que serviu: "Confirmada pela academia · atualizada há…" na
@@ -838,8 +849,10 @@ cobra taxa e não fica no meio** da negociação.
     dono(a)", pedido do Breno). Sem marcar: "Marque a declaração para
     pedir". O banco guarda quando foi marcada (`pedidos_de_acesso.declarou_em`,
     SQL `20261006130000_declaracao_ao_pedir`; `pedir_para_administrar(p_academia,
-    p_declaro)`), como prova. **A confirmação da academia continua** (código
-    no WhatsApp da ficha, o responsável aceitar, ou o GuiaTennis publicar a
+    p_declaro)`), como prova. **Mudou em 07/10/2026 (regra 65):** sem
+    responsável e sem disputa, a declaração e o e-mail confirmado bastam;
+    o código só na disputa. Antes, a confirmação continuava (código no
+    WhatsApp da ficha, o responsável aceitar, ou o GuiaTennis publicar a
     academia nova): o Breno perguntou se a declaração tira a
     responsabilidade dele — tira em parte (quem mente responde por isso,
     e a caixinha com a hora guardada é a prova), mas não toda; sem
@@ -861,7 +874,7 @@ cobra taxa e não fica no meio** da negociação.
     Pessoas, Plano, Perfil, Ajuda; sem "Voltar ao painel" em lugar nenhum;
     embaixo do cartão do pedido, nenhum texto a mais ("Responde por mais
     uma?", "Ver todas as suas academias"); "No ar, com as informações
-    confirmadas por vocês" só aparece por 3 dias depois de a ficha ir ao ar
+    confirmadas por vocês" só aparece por 1 dia (era 3; mudou em 07/10/2026) depois de a ficha ir ao ar
     ou ser atualizada (o que pede ação — pausada, em análise, ficha
     básica — aparece sempre); os números trancados ("Disponível no plano
     Premium") ficam no fim de Atualizações; e sem as caixas "Aprimore o
@@ -897,9 +910,9 @@ cobra taxa e não fica no meio** da negociação.
     06/10/2026, entre manter, isto e liberar tudo): academia NOVA
     cadastrada por conta do Parceiros com o **e-mail confirmado** (e a
     declaração marcada) entra no ar na hora, confirmada e no Básico, e a
-    conta já administra como responsável. Até 3 academias novas por conta
-    em 24 horas; da 4ª em diante, ou sem e-mail confirmado, vira pedido
-    como antes. O admin recebe o e-mail "Academia nova no ar" e a vê em
+    conta já administra como responsável. Sem e-mail confirmado, vira
+    pedido; confirmou o e-mail, vai ao ar sozinha. (O limite de 3 por conta
+    em 24 horas saiu em 07/10/2026, regra 65.) O admin recebe o e-mail "Academia nova no ar" e a vê em
     **Pendências › "Foram ao ar sozinhas: revise"** (abrir a ficha, ver
     como academia, "Marcar como revisada"); "Para fazer agora" e o número
     da seção contam elas. Academia que **já está** no guia continua com a
@@ -956,6 +969,48 @@ cobra taxa e não fica no meio** da negociação.
     perguntas é a ordem do Booking e do Airbnb para parceiros; as seis
     perguntas da análise já têm resposta nela); fotos, gradientes e
     animações (a análise mesma pede para não exagerar).
+65. **O código só em disputa** (pedido de 07/10/2026: "eu quero manter o
+    código em casos de disputa, para novas não"; "Academia que já está no
+    guia continua precisando do código: não precisa disso"; "São até 3 por
+    conta em 24 horas: tire isso"; e, sobre o Google e o Booking, que
+    "confirmam por código no telefone ou por carta, e só pedem documento
+    quando há disputa": "aplique isso, gostei"). Agora:
+    - **Academia nova** da conta com o e-mail confirmado: no ar na hora,
+      **sem limite** por dia.
+    - **Academia do guia sem responsável:** com o e-mail confirmado e a
+      declaração, a conta passa a administrar **na hora, sem código**
+      (`pedir_para_administrar` devolve `'assumiu'`); o admin recebe
+      "Academia assumida" e revisa em Pendências ("Foram ao ar ou foram
+      assumidas sozinhas", com "· assumida"). O banco guarda o WhatsApp que
+      a ficha tinha (`academia_vinculos.telefone_da_ficha`).
+    - **Sem o e-mail confirmado:** vira pedido; ao confirmar o e-mail
+      (`confirmar_meu_email` → `assumir_pedidos_da_conta`), a academia do
+      guia passa a ser da conta e a nova vai ao ar, sozinhas. O admin pode
+      aprovar antes ou conferir pelo código.
+    - **Academia com responsável:** o pedido vai para ele, como antes. No
+      cartão, **"Contestar"** ("A academia é sua e você não conhece quem
+      administra, ou ele saiu da academia?") vira **disputa**
+      (`contestar_academia`, destino `'disputa'`, e-mail "Disputa" ao
+      admin). O responsável não vê nem recusa a disputa.
+    - **Na disputa:** o admin gera o código e manda para o WhatsApp que a
+      academia tinha quando o responsável de agora assumiu sem código (o
+      painel mostra os dois números se mudou); quem digita vira o
+      responsável e **quem administrava sai** (`vencer_disputa`; a conta
+      continua). Sem como usar o código, o GuiaTennis pede documento pelo
+      WhatsApp e decide em "Aprovar" (pergunta antes). **Carta** (como o
+      cartão-postal do Google) não entrou: os Correios não dão para
+      automatizar, e o WhatsApp da academia já é o "telefone da empresa".
+    - **"No ar, com as informações confirmadas"** por 1 dia (era 3).
+    - **Selo de confirmada:** círculo verde com ✓ ao lado do nome (ficha,
+      resultado da busca e cartões da home), como o "Claimed" do Yelp e o
+      verificado do Instagram; na ficha, tocar no selo leva ao texto, que
+      foi para o **fim da ficha** (seção Contato): "Confirmada pela academia
+      · atualizada há…" ou o aviso de "Ficha básica".
+    Termos (seção 4), Política (código só na disputa, o WhatsApp guardado),
+    "Como funciona" (passo 3: "Declare que responde pela academia") e a
+    Ajuda ("E se outra pessoa estiver administrando a minha academia?")
+    atualizados. SQL `20261007130000_codigo_so_em_disputa`. Teste
+    `testes/codigo-so-em-disputa.js` e a seção 17 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1899,7 +1954,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2018,6 +2073,12 @@ as 133 do `banco-acesso.py` no banco e login locais.
   funcionam as avaliações", os números da home e do Parceiros com a nota,
   o cartão "Avaliações feitas no GuiaTennis", a descrição para o Google e
   a pergunta nova da Ajuda.
+- `codigo-so-em-disputa.js` — regra 65: conta com e-mail confirmado assume
+  a academia do guia sem responsável na hora; com responsável, "Contestar"
+  vira disputa e o código vence; banco sem o SQL; sem e-mail confirmado o
+  pedido espera e confirmar o e-mail resolve; admin vê a disputa, o
+  WhatsApp de antes e decide; o selo no nome e o texto no fim da ficha;
+  "No ar" por 1 dia; "Como funciona" e Termos.
 - `banco-emails.py` — **não roda com os outros**: precisa de um Postgres
   local com a pasta `supabase/` aplicada (não precisa do GoTrue); finge o
   cofre, o pg_net e o relógio. Confere cada aviso (quem recebe, quem não,

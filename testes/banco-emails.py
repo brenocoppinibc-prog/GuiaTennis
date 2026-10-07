@@ -5,8 +5,9 @@ consultas do painel do admin (20261006120000_painel_do_admin) e a declaração
 de quem pede uma academia (20261006130000_declaracao_ao_pedir) e a academia
 nova que vai ao ar sozinha (20261006140000_academia_nova_no_ar) e a exclusão de
 conta pelo admin (20261006150000_excluir_conta), a conta de jogador que vira
-Parceiros (20261006160000) e a data em que a ficha foi atualizada
-(20261007120000_ficha_atualizada_em).
+Parceiros (20261006160000), a data em que a ficha foi atualizada
+(20261007120000_ficha_atualizada_em) e o código só em disputa
+(20261007130000_codigo_so_em_disputa).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -429,9 +430,10 @@ for i in (2, 3):
     sql(nova_sql.format(n=f"Quadra Eva {i}"), papel="authenticated", user=eva)
 certo, _ = sql(nova_sql.format(n="Quadra Eva 4"), papel="authenticated", user=eva)
 e4 = um("select id from public.academias where name = 'Quadra Eva 4'")
-ok(certo and um(f"select status from public.academias where id = '{e4}'") == "pending"
-   and um(f"select count(*) from public.pedidos_de_acesso where user_id = '{eva}' and academia_id = '{e4}'") == "1",
-   "a 4ª academia nova em 24 horas espera o GuiaTennis, como antes")
+# Sem o limite de 3 em 24 horas (SQL 20261007130000).
+ok(certo and um(f"select status from public.academias where id = '{e4}'") == "published"
+   and um(f"select count(*) from public.pedidos_de_acesso where user_id = '{eva}' and academia_id = '{e4}'") == "0",
+   "a 4ª academia nova em 24 horas também vai ao ar (sem limite)")
 semconf = parceiro("Ivo Sem Confirmar", f"ivo{sufixo}@exemplo.com", confirmado=False)
 sql(f"update public.academia_acessos set dados_completos_em = now() where user_id = '{semconf}'")
 sql(nova_sql.format(n="Quadra Ivo"), papel="authenticated", user=semconf)
@@ -513,6 +515,63 @@ sql(f"select public.pausar_minha_academia('{MOEMA}', false)", papel="authenticat
 certo, saida = sql("insert into public.academias (name, status) values ('Academia Recém Chegada', 'pending') returning dados_atualizados_em > now() - interval '1 minute'")
 ok(certo and saida.splitlines()[-1] == "t", "academia nova entra com a data de hoje" + ("" if certo else ": " + saida))
 sql("delete from public.academias where name = 'Academia Recém Chegada'")
+
+# 17. O código só em disputa (SQL 20261007130000) --------------------------------
+print("\n# Código só em disputa")
+livre = um(f"insert into public.academias (name, cidade, bairro, phone, status, source, confirmada) values ('Quadra Livre {sufixo}', 'São Paulo', 'Lapa', '11977776666', 'published', 'custom', true) returning id")
+envelhecer(livre)
+fabio = parceiro("Fábio Primeiro", f"fabio{sufixo}@exemplo.com")
+gil = parceiro("Gil Segundo", f"gil{sufixo}@exemplo.com")
+sql(f"update public.academia_acessos set dados_completos_em = now() where user_id in ('{fabio}', '{gil}')")
+certo, saida = sql(f"select public.pedir_para_administrar('{livre}', true)", papel="authenticated", user=fabio)
+ok(certo and saida.splitlines()[-1] == "assumiu", "academia do guia sem responsável: a conta com e-mail confirmado assume na hora, sem código" + ("" if certo else ": " + saida))
+ok(um(f"select papel || '|' || telefone_da_ficha || '|' || (declarou_em is not null) from public.academia_vinculos where user_id = '{fabio}' and academia_id = '{livre}'") == "principal|11977776666|true",
+   "vira o responsável, com o WhatsApp que a ficha tinha e a hora da declaração")
+ok(um(f"select (revisar_desde is not null) || '|' || (dados_atualizados_em = '{velha}') from public.academias where id = '{livre}'") == "true|true",
+   "vai para o admin revisar, e a data da ficha não muda")
+ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'academia_assumida' and assunto = 'Academia assumida: Quadra Livre {sufixo}'") == "1", "o admin recebe o e-mail \"Academia assumida\"")
+ok(um(f"select count(*) from public.academias_para_revisar_admin() where id = '{livre}'", **admin_jwt) == "1", "e a vê em Pendências")
+certo, saida = sql(f"select public.pedir_para_administrar('{livre}', true)", papel="authenticated", user=gil)
+ok(certo and saida.splitlines()[-1] == "pedido" and um(f"select destino from public.pedidos_de_acesso where user_id = '{gil}' and academia_id = '{livre}'") == "responsavel",
+   "com responsável, o pedido vai para ele, como antes")
+sql(f"update public.academias set phone = '11900001111' where id = '{livre}'", papel="authenticated", user=fabio)
+certo, saida = sql(f"select public.contestar_academia('{livre}')", papel="authenticated", user=gil)
+ok(certo and um(f"select destino from public.pedidos_de_acesso where user_id = '{gil}' and academia_id = '{livre}'") == "disputa", "quem pediu contesta: vira disputa" + ("" if certo else ": " + saida))
+ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'disputa' and assunto = 'Disputa: Quadra Livre {sufixo}'") == "1", "o admin recebe o e-mail da disputa")
+ok(um(f"select count(*) from public.pedidos_para_minha_academia() where user_id = '{gil}'", papel="authenticated", user=fabio) == "0", "o responsável não vê a disputa")
+certo, _ = sql(f"select public.responder_pedido_de_acesso('{gil}', false)", papel="authenticated", user=fabio)
+ok(not certo and um(f"select count(*) from public.pedidos_de_acesso where user_id = '{gil}' and academia_id = '{livre}'") == "1", "nem recusa a disputa")
+ok(um(f"select telefone_antes from public.pedidos_de_acesso_admin() where user_id = '{gil}' and academia_id = '{livre}'", **admin_jwt) == "11977776666",
+   "o admin vê o WhatsApp que a ficha tinha antes (o número mudou depois)")
+certo, saida = sql(f"select public.contestar_academia('{PINHEIROS}')", papel="authenticated", user=gil)
+ok(not certo and "Peça para administrar" in saida, "sem pedido, não contesta")
+codigo = um(f"select public.gerar_codigo_do_pedido('{gil}', '{livre}')", **admin_jwt)
+ok(codigo and len(codigo) == 6, "na disputa, o admin gera o código mesmo com responsável")
+certo, saida = sql(f"select public.confirmar_meu_codigo('{codigo}', '{livre}')", papel="authenticated", user=gil)
+ok(certo and saida.splitlines()[-1] == "ok", "quem digita o código vence a disputa" + ("" if certo else ": " + saida))
+ok(um(f"select string_agg(user_id::text || ':' || papel, ',') from public.academia_vinculos where academia_id = '{livre}'") == f"{gil}:principal",
+   "e vira o responsável; quem administrava sai da academia")
+ok(um(f"select count(*) from public.academia_acessos where user_id = '{fabio}'") == "1", "a conta de quem perdeu continua")
+sql(f"select public.pedir_para_administrar('{livre}', true)", papel="authenticated", user=fabio)
+sql(f"select public.contestar_academia('{livre}')", papel="authenticated", user=fabio)
+certo, saida = sql(f"select public.aprovar_pedido_de_acesso('{fabio}', '{livre}')", **admin_jwt)
+ok(certo and um(f"select string_agg(user_id::text || ':' || papel, ',') from public.academia_vinculos where academia_id = '{livre}'") == f"{fabio}:principal",
+   "o admin também decide a disputa (por documento): quem pediu vira o responsável" + ("" if certo else ": " + saida))
+# Sem o e-mail confirmado, o pedido espera; confirmou, vai em frente sozinho.
+livre2 = um(f"insert into public.academias (name, cidade, bairro, phone, status, source) values ('Quadra Livre Dois {sufixo}', 'São Paulo', 'Lapa', '11966665555', 'published', 'custom') returning id")
+jade = parceiro("Jade Espera", f"jade{sufixo}@exemplo.com", confirmado=False)
+sql(f"update public.academia_acessos set dados_completos_em = now() where user_id = '{jade}'")
+certo, saida = sql(f"select public.pedir_para_administrar('{livre2}', true)", papel="authenticated", user=jade)
+ok(certo and saida.splitlines()[-1] == "pedido" and um(f"select destino from public.pedidos_de_acesso where user_id = '{jade}'") == "guiatennis",
+   "sem o e-mail confirmado, vira pedido ao GuiaTennis")
+sql(nova_sql.format(n=f"Quadra Jade {sufixo}"), papel="authenticated", user=jade)
+certo, saida = sql("select public.confirmar_meu_email()", papel="authenticated", user=jade, amr="otp")
+ok(certo and um(f"select papel from public.academia_vinculos where user_id = '{jade}' and academia_id = '{livre2}'") == "principal",
+   "confirmou o e-mail: a academia do guia passa a ser dela" + ("" if certo else ": " + saida))
+ok(um(f"select status from public.academias where name = 'Quadra Jade {sufixo}'") == "published"
+   and um(f"select count(*) from public.academia_vinculos v join public.academias a on a.id = v.academia_id where v.user_id = '{jade}' and a.name = 'Quadra Jade {sufixo}'") == "1"
+   and um(f"select count(*) from public.pedidos_de_acesso where user_id = '{jade}'") == "0",
+   "e a academia nova dela vai ao ar, já administrada por ela")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

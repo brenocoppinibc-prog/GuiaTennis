@@ -28,7 +28,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(corpo.includes('sem comissão') && corpo.includes('Grátis no plano Básico'), 'deixa claro: grátis no Básico e sem comissão');
   ok(!/Google|TripAdvisor/.test(corpo.replaceAll('(Instagram, Google…)', '')) && corpo.includes('Responda às avaliações') && !corpo.includes('Responda as avaliações'), 'benefícios sem citar outras marcas, com a crase certa');
   const como = await page.evaluate(() => [...document.querySelectorAll('.pc-etapas-como li')].map(l => l.querySelector('.pc-card-t').innerText + ' (' + l.querySelector('.pc-etapa-tempo').innerText.trim() + ')'));
-  ok(como.join(' | ') === 'Crie a sua conta (2 minutos) | Encontre a sua academia (Na hora) | Confirme que a academia é sua (Pelo WhatsApp) | Complete a ficha e receba jogadores (Todo dia)' && await page.isVisible('.pc-como-fim [data-pc="cadastro"]'), 'como funciona em 4 passos, com o tempo de cada um e o botão para começar — ' + como.length);
+  ok(como.join(' | ') === 'Crie a sua conta (2 minutos) | Encontre a sua academia (Na hora) | Declare que responde pela academia (Na hora) | Complete a ficha e receba jogadores (Todo dia)' && await page.isVisible('.pc-como-fim [data-pc="cadastro"]'), 'como funciona em 4 passos, com o tempo de cada um e o botão para começar — ' + como.length);
   const marcasNoRodape = await page.evaluate(() => document.querySelectorAll('.pc-rodape .logo-mark').length);
   ok(marcasNoRodape === 1 && (await texto(page, '.pc-rodape')).split('O GuiaTennis para academias e quadras de tênis').length === 2, 'rodapé com a marca e a frase uma vez só, na faixa escura');
   const planos = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-n').innerText + ':' + (p.querySelector('.pc-plano-tag')?.innerText || '')));
@@ -57,7 +57,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(200);
   corpo = await texto(page, '#parceiros .pc-main');
   const faq = await page.evaluate(() => document.querySelectorAll('#parceiros .pc-faq details').length);
-  ok(faq === 14 && corpo.includes('O que quer dizer "atualizada há…" na ficha?') && corpo.includes('Com duas academias, pago um plano só?') && corpo.includes('Tenho mais de uma academia. Preciso de outra conta?') && corpo.includes('Posso dar acesso a mais pessoas da academia?') && corpo.includes('A academia pode avaliar outras academias?') && corpo.includes('Esqueci a senha') && !corpo.includes('Pagar um plano'), 'Ajuda com as perguntas das academias — ' + faq);
+  ok(faq === 15 && corpo.includes('E se outra pessoa estiver administrando a minha academia?') && corpo.includes('O que quer dizer "atualizada há…" na ficha?') && corpo.includes('Com duas academias, pago um plano só?') && corpo.includes('Tenho mais de uma academia. Preciso de outra conta?') && corpo.includes('Posso dar acesso a mais pessoas da academia?') && corpo.includes('A academia pode avaliar outras academias?') && corpo.includes('Esqueci a senha') && !corpo.includes('Pagar um plano'), 'Ajuda com as perguntas das academias — ' + faq);
   const contato = await page.evaluate(() => [...document.querySelectorAll('.pc-contato a')].map(a => a.getAttribute('href').slice(0, 20)).join());
   ok(contato.includes('https://wa.me/551192') && contato.includes('mailto:'), 'Ajuda tem WhatsApp e e-mail do GuiaTennis');
   await page.goBack();
@@ -206,12 +206,10 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   }));
   etapas = await barra();
   ok(pedido.rpc && pedido.rpc.p_academia === 'a1' && /pedido enviado/i.test(pedido.card) && pedido.card.includes('Só Aula Tennis') && etapas.feito === '100%', '"Administrar esta academia" manda o pedido — ' + pedido.card.split('\n')[0]);
-  ok(pedido.codigo && pedido.card.includes('código de 6 números') && pedido.card.includes('(11) •••••-0001'), 'o pedido pede o código mandado ao WhatsApp da ficha, sem mostrar o número inteiro');
-  ok(pedido.card.includes('não é de vocês') && !/documento|CNPJ|contrato/.test(pedido.card) && pedido.wa.includes('pedi para administrar a Só Aula Tennis'), 'se o WhatsApp da ficha não for deles, fala com o GuiaTennis, sem dizer como confere');
-  await page.fill('#pc-codigo', '123456');
-  await page.click('#pc-confirmar-codigo');
-  await page.waitForTimeout(300);
-  ok((await texto(page, '.pc-pedido .form-error')).includes('ainda não foi mandado'), 'código antes de o GuiaTennis mandar: avisa para aguardar');
+  // O código só em disputa (07/10/2026): sem o e-mail confirmado, o pedido
+  // espera a confirmação; confirmado, a ficha passa a ser da conta.
+  ok(!pedido.codigo && pedido.card.includes('Confirme o seu e-mail') && pedido.card.includes('passa a ser sua na hora'), 'sem o e-mail confirmado, o pedido espera a confirmação do e-mail, sem código');
+  ok(pedido.card.includes('Quer agilizar?') && !/documento|CNPJ|contrato/.test(pedido.card) && pedido.wa.includes('pedi para administrar a Só Aula Tennis'), 'dá para falar com o GuiaTennis, sem pedir documento');
   await page.click('.pc-topo [data-pc="inicio"]');
   await page.waitForTimeout(300);
   t = await tela(page);
@@ -335,8 +333,9 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(500);
   direto = await page.evaluate(() => ({ pedido: contaAcademia && meusPedidos().map(p => p.nome).join(), link: location.pathname + location.search }));
   ok(direto.pedido === 'Quadra Locação' && direto.link === '/parceiros/cadastro', 'um toque em "Administrar esta academia" e o pedido sai');
-  // O código chega no WhatsApp da academia (quem gera é o admin).
-  await page.evaluate(() => { window.__codigos = { [contaAcademia.userId]: { codigo: '482915', academia: 'a2', tentativas: 0 } }; });
+  // Sem o e-mail confirmado, o admin pode conferir pelo código, que chega no
+  // WhatsApp da academia (desde 07/10/2026, o código só é preciso na disputa).
+  await page.evaluate(async () => { window.__codigos = { [contaAcademia.userId]: { codigo: '482915', academia: 'a2', tentativas: 0, em: new Date().toISOString() } }; await recarregarConta(); render(); });
   await page.fill('#pc-codigo', '111111');
   await page.click('#pc-confirmar-codigo');
   await page.waitForTimeout(300);

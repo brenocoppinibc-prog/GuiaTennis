@@ -3,9 +3,9 @@
 const { abrir, ok } = require('./harness');
 (async () => {
   let { browser, page } = await abrir();
-  // Menu: "Entrar ou criar conta" no topo e "Avisos por e-mail".
-  let menu = await page.evaluate(() => { state.showMenu = true; render(); return [...document.querySelectorAll('#menu-overlay .menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim()); });
-  ok(menu[0] === 'Entrar ou criar conta' && menu.includes('Avisos por e-mail Entrar'), 'menu: entrar no topo e os avisos — ' + menu.slice(0, 2).join(' | '));
+  // Menu (regra 68): "Entrar ou criar conta" no topo; os avisos só com conta.
+  let menu = await page.evaluate(() => { state.showMenu = true; render(); return [document.querySelector('#menu-overlay .menu-conta-topo')?.innerText.replace(/\s+/g, ' ').trim() || '', ...[...document.querySelectorAll('#menu-overlay .menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim())]; });
+  ok(menu[0].startsWith('Entrar ou criar conta') && !menu.some(i => i.startsWith('Avisos por e-mail')), 'menu: entrar no topo; os avisos aparecem depois de entrar — ' + menu.slice(0, 2).join(' | '));
   await page.click('[data-menu="entrar-jogador"]');
   await page.waitForTimeout(150);
   // Um lugar só para o e-mail: o site vê que não tem conta e abre o cadastro.
@@ -42,8 +42,8 @@ const { abrir, ok } = require('./harness');
   await page.click('#jog-confirmar');
   await page.waitForTimeout(500);
   ok(await page.evaluate(() => !state.jogadorTela && !!jogador.email_confirmado_em), 'código certo: e-mail confirmado e a janela fecha');
-  menu = await page.evaluate(() => { state.showMenu = true; render(); return [...document.querySelectorAll('#menu-overlay .menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim()); });
-  ok(menu[0] === 'Minha conta Bia' && menu.includes('Avisos por e-mail Ligados') && menu.includes('Sair da conta'), 'logado: Minha conta, avisos ligados e sair — ' + menu[0]);
+  menu = await page.evaluate(() => { state.showMenu = true; render(); return [document.querySelector('#menu-overlay .menu-conta-topo')?.innerText.replace(/\s+/g, ' ').trim() || '', ...[...document.querySelectorAll('#menu-overlay .menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim())]; });
+  ok(menu[0].includes('Olá, Bia!') && menu.includes('Avisos por e-mail Ligados') && menu[menu.length - 1] === 'Sair da conta', 'logado: "Olá, Bia!" em cima, avisos ligados e "Sair da conta" por último — ' + menu[0]);
   // Minha conta: muda os avisos.
   await page.click('[data-menu="minha-conta"]');
   await page.waitForTimeout(150);

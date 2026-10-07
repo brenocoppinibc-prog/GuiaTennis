@@ -8,8 +8,9 @@ conta pelo admin (20261006150000_excluir_conta), a conta de jogador que vira
 Parceiros (20261006160000), a data em que a ficha foi atualizada
 (20261007120000_ficha_atualizada_em), o código só em disputa
 (20261007130000_codigo_so_em_disputa), o código da disputa pelo WhatsApp
-(20261007140000_codigo_pelo_whatsapp) e a logo nos e-mails
-(20261007150000_logo_nos_emails).
+(20261007140000_codigo_pelo_whatsapp), a logo nos e-mails
+(20261007150000_logo_nos_emails) e os acessos em todo plano
+(20261007160000_acessos_em_todo_plano).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -707,6 +708,21 @@ sql("delete from vault.secrets where name = 'whatsapp_token'; update public.what
 print("\n# Logo nos e-mails")
 html_logo = um("select html from public.emails_a_enviar where tipo = 'avaliacao' order by criado_em limit 1") or ""
 ok('src="https://guiatennis.com.br/favicon-192.png"' in html_logo and ">GuiaTennis</td>" in html_logo, "todo aviso tem a logo no alto, ao lado do nome")
+
+# 20. Os acessos da ficha em todo plano (SQL 20261007160000) ---------------------
+print("\n# Acessos em todo plano")
+sql(f"delete from public.cliques where academia_id = '{PINHEIROS}';"
+    f"insert into public.cliques (academia_id, tipo, created_at) values ('{PINHEIROS}', 'visualizacao', now()), ('{PINHEIROS}', 'visualizacao', now() - interval '3 days'),"
+    f"('{PINHEIROS}', 'visualizacao', now() - interval '29 days'), ('{PINHEIROS}', 'visualizacao', now() - interval '40 days'), ('{PINHEIROS}', 'whatsapp', now());"
+    f"update public.academias set plano = 'basico' where id = '{PINHEIROS}';")
+plano_antes = "completo"  # o do seed.sql; volta no fim
+num = json.loads(um("select public.numeros_da_academia(30)::text", papel="authenticated", user=dono) or "{}")
+ok(num.get("trancado") is True and num.get("acessos") == 3 and num.get("dias") == 30, "Básico vê os acessos dos últimos 30 dias — " + json.dumps(num))
+ok("contatos" not in num and "origens" not in num and "visitas" not in num, "e só isso: quem chamou e de onde vieram continuam no Premium")
+sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
+num = json.loads(um("select public.numeros_da_academia(30)::text", papel="authenticated", user=dono) or "{}")
+ok(num.get("visitas") == 3 and num.get("contatos") == 1 and not num.get("trancado"), "Premium continua vendo tudo, com os mesmos acessos")
+sql(f"update public.academias set plano = '{plano_antes}' where id = '{PINHEIROS}'; delete from public.cliques where academia_id = '{PINHEIROS}';")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

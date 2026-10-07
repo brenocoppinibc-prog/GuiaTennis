@@ -639,7 +639,9 @@
       const pedido = a.p_dias === undefined ? 30 : a.p_dias;
       const dias = plano === "premium" ? (pedido <= 0 ? 0 : pedido) : plano === "completo" ? Math.min(Math.max(pedido || 30, 7), 90) : 30;
       // Desde 02/10/2026, números só no Premium (SQL 20261002120000).
-      if (plano !== "premium") return { data: { plano, trancado: true }, error: null };
+      // Desde 07/10/2026, os acessos de 30 dias em todo plano (SQL 20261007160000).
+      // window.__semAcessos finge o banco antes dele; window.__acessos troca o número.
+      if (plano !== "premium") return { data: window.__semAcessos ? { plano, trancado: true } : { plano, trancado: true, dias: 30, acessos: window.__acessos ?? 42 }, error: null };
       const base = { plano, dias, visitas: 42, contatos: 9 };
       if (plano === "basico") return { data: base, error: null };
       const n = dias || 120;

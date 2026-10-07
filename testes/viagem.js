@@ -11,7 +11,7 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   let { browser, page } = await abrir();
   await page.evaluate(() => { localStorage.setItem(PREFERENCIAS_KEY, JSON.stringify({ uf: 'CE', cidade: 'Fortaleza' })); state.showMenu = true; render(); });
   const item = await page.evaluate(() => [...document.querySelectorAll('.menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim()).find(t => t.startsWith('Vou viajar')) || '');
-  ok(item === 'Vou viajar Adicionar', 'menu › Minhas quadras tem "Vou viajar" — ' + item);
+  ok(item === 'Vou viajar', 'menu › Minhas quadras tem "Vou viajar" (sem viagem, nada na direita) — ' + item);
   await page.click('[data-menu="viagem"]');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => state.showViagem && document.getElementById('viagem-cidade').disabled), 'a folha abre, com a cidade esperando o estado');

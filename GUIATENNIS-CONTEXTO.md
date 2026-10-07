@@ -24,6 +24,21 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
 **Atualizado em:** 07/10/2026 (noite)
 
+> **Estado (08/10/2026):** o Breno mandou prints do menu do trivago e do
+> Parceiros: "deixe o menu de jogadores mais limpo como o parceiros… ou
+> numa ideia do trivago" e, sobre o bloco trancado dos números, "pode subir
+> um pouco mais os números e deixe mais atrativos como acessos… no meio da
+> tela". Entrou a regra 68: menu dos jogadores no estilo do Parceiros, com
+> a conta em cima ("Olá, Ana!", como o trivago), e **os acessos dos últimos
+> 30 dias em todo plano**, em destaque logo abaixo do "Olá" (SQL
+> `20261007160000_acessos_em_todo_plano`; muda as regras 22 e 61). No
+> meio, ele estava ligando o recebimento de e-mail (MX do Resend:
+> `inbound-smtp.sa-east-1.amazonaws.com`, **verificado no Resend em
+> 08/10/2026**) e o WhatsApp na Meta (app GuiaTennis criado, na Etapa 2).
+> Testes: **967 verificações, nenhuma falha** nos 32 arquivos do navegador
+> (o novo é `testes/acessos-em-destaque.js`), 202 no `banco-emails.py` e 21
+> no `receber-email.mjs`.
+>
 > **Estado (07/10/2026, mais tarde):** o Breno conseguiu o número dos
 > códigos, (11) 97185-3987 (regra 66; ainda falta a conta na Meta), e
 > pediu "quero fazer [o e-mail com o domínio] pelo resend… quero poder ter
@@ -329,7 +344,8 @@ cobra taxa e não fica no meio** da negociação.
     endereço, quadras e tipos, modalidade, preço, horário, WhatsApp,
     avaliações e QR code. **Básico** (grátis): até 3 comodidades, até 3
     fotos, só o WhatsApp, sem cancelamento e sem "como chegar" (fachada,
-    entrada, onde estacionar), 1 pessoa, sem números.
+    entrada, onde estacionar), 1 pessoa, sem números (desde 08/10/2026,
+    só os acessos de 30 dias — regra 68).
     **Completo**: todas as comodidades, 5 fotos, Instagram e site,
     cancelamento, como chegar, 5 pessoas, sem números. **Premium**: o mesmo, 10 pessoas, todos os números
     (Desempenho) e o relatório do mês. O site corta a ficha pelo plano em
@@ -1118,6 +1134,32 @@ cobra taxa e não fica no meio** da negociação.
       continua guiatennis1@gmail.com** (`eh_admin()`); não mudar.
     Teste: `node testes/receber-email.mjs` (21) e a seção 19 do
     `banco-emails.py`.
+68. **Menu limpo e os acessos em destaque** (pedido de 08/10/2026, com
+    prints do trivago e do Parceiros).
+    - **Menu do site dos jogadores** no estilo do Parceiros: a marca e o X
+      em cima; logo abaixo, a conta — "Olá, Ana!" e o e-mail (como o "Olá
+      de novo!" do trivago), ou "Entrar ou criar conta · Salve buscas e
+      avalie academias"; grupos com título pequeno e ícone verde
+      (GuiaTennis, Minhas quadras, Preferências, Ajuda); na direita, só
+      valor que diz algo (quantas, a cidade, Ligados) — saíram "Entrar",
+      "Adicionar", "Escolher"; "Buscas salvas" e "Avisos por e-mail" só
+      com conta. No rodapé: "GuiaTennis Parceiros" com a linha de baixo,
+      "Fale com a gente" numa linha só (WhatsApp, Instagram, E-mail),
+      links pequenos (Por que o GuiaTennis, Termos de Uso, Privacidade) e
+      "Sair da conta" por último. Saiu o título "Menu" no meio com a seta.
+    - **Os acessos em todo plano**, como o LinkedIn ("X pessoas viram o seu
+      perfil", e quem viu só no Premium) e o Google Business Profile: no
+      Básico e no Completo, Atualizações mostra logo abaixo do "Olá", no
+      meio, num bloco verde, **o número de acessos à ficha nos últimos 30
+      dias**, com o que o Premium libera trancado (quantos chamaram, de
+      onde vieram, bairros) e "Ver os números no Premium"; o mesmo em
+      Desempenho. Zero acessos: "Nenhum acesso ainda" e a dica do QR code;
+      banco antigo: o bloco sem número (nunca inventado). O banco
+      (`numeros_da_academia`, SQL `20261007160000_acessos_em_todo_plano`)
+      devolve `{plano, trancado, dias: 30, acessos}` fora do Premium.
+      **Muda a regra 22** (Básico e Completo agora veem os acessos de 30
+      dias) e **a 61** (os números trancados não ficam mais no fim de
+      Atualizações).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2086,7 +2128,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2211,6 +2253,9 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pedido espera e confirmar o e-mail resolve; admin vê a disputa, o
   WhatsApp de antes e decide; o selo no nome e o texto no fim da ficha;
   "No ar" por 1 dia; "Como funciona" e Termos.
+- `acessos-em-destaque.js` — regra 68: Básico e Completo veem os acessos de
+  30 dias em destaque, logo abaixo do "Olá", no meio; singular, zero
+  acessos (dica do QR code), banco antigo sem número; Premium sem o bloco.
 - `codigo-pelo-whatsapp.js` — regra 66: contestar manda o código na hora
   para o WhatsApp de antes, "Mandar outro código" pede para esperar, quem
   digita vence; sem e-mail confirmado, espera; desligado e banco sem o SQL,
@@ -2555,6 +2600,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Menu dos jogadores limpo como o do Parceiros e os acessos de 30 dias em todo plano   ← PR #5, 08/10
 (a seguir) Logo nos e-mails e e-mail com o domínio pelo Resend (receber e responder)   ← PR #5, 07/10
 (a seguir) Código da disputa pelo WhatsApp (API oficial da Meta) e "Esqueci a senha" certo na Ajuda   ← PR #5, 07/10
 (a seguir) Avisos por e-mail pelo Resend, buscas salvas, conta do Parceiros como conta normal, página da cidade e textos "Por que"   ← PR #5, 05/10

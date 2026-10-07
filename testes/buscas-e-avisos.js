@@ -122,8 +122,8 @@ async function buscar(page, termo) {
   ok(t.jog === 'maria@teste.com' && t.nome === 'Maria Teste' && t.db === 1, 'a conta do Parceiros ganha a parte de jogador sozinha, com o nome e o e-mail dela');
   ok(t.topo === 'M', 'no topo, a inicial do nome, como a de qualquer jogador');
   await page.evaluate(() => { state.showMenu = true; render(); });
-  t = await page.evaluate(() => [...document.querySelectorAll('.menu-drawer .menu-item')].map(e => e.innerText.replace(/\s+/g, ' ').trim()));
-  ok(t.some(x => x.startsWith('Minha conta')) && t.some(x => x.startsWith('Minha academia')), 'menu: "Minha conta" e "Minha academia"');
+  t = await page.evaluate(() => [document.querySelector('.menu-drawer .menu-conta-topo')?.innerText.replace(/\s+/g, ' ').trim() || '', ...[...document.querySelectorAll('.menu-drawer .menu-item')].map(e => e.innerText.replace(/\s+/g, ' ').trim())]);
+  ok(t[0].includes('Olá, Maria!') && t.some(x => x.startsWith('Minha academia')), 'menu: a conta ("Olá, Maria!") e "Minha academia" — ' + t[0]);
   ok(t.some(x => x.startsWith('GuiaTennis Parceiros') && x.includes('seu painel')), 'menu: o GuiaTennis Parceiros continua no Suporte — ' + t.find(x => x.startsWith('GuiaTennis Parceiros')));
   ok(t.some(x => x.startsWith('Avisos por e-mail')) && t.some(x => x.startsWith('Buscas salvas')), 'menu: avisos e buscas salvas, como qualquer jogador');
   await page.evaluate(() => { state.showMenu = false; openCourt('a1'); });

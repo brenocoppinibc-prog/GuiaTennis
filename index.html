@@ -1756,6 +1756,18 @@
   .pc-vazio { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 14px; color: var(--muted); margin: 12px 0 0; }
   .pc-trancado { display: flex; gap: 14px; align-items: flex-start; margin-top: 16px; border-style: dashed; }
   .pc-trancado .pc-link-btn { margin-top: 10px; }
+  /* Os acessos em todo plano (07/10/2026): o número grande, no meio, no
+     verde do logo, logo abaixo do "Olá". */
+  .pc-vitrine { margin: 22px 0 6px; padding: 26px 22px 24px; border-radius: 20px; text-align: center; color: #F7F4EC; background: linear-gradient(135deg, #2A5C4B 0%, #1F4D3D 55%, #153229 100%); box-shadow: 0 10px 28px rgba(21,50,41,0.18); }
+  .pc-vitrine-eyebrow { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #E5CB86; }
+  .pc-vitrine-n { display: block; margin: 6px 0 0; font-family: var(--fonte-titulo, Georgia, serif); font-size: 64px; line-height: 1; font-weight: 700; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+  .pc-vitrine-t { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 0; font-family: var(--fonte-titulo, Georgia, serif); font-size: 26px; font-weight: 700; color: #FFFFFF; }
+  .pc-vitrine-l { margin: 8px auto 0; max-width: 32ch; font-size: 15px; line-height: 1.45; color: rgba(247,244,236,0.88); }
+  .pc-vitrine-trancados { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 0; margin: 18px 0 0; }
+  .pc-vitrine-trancados li { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; background: rgba(247,244,236,0.1); font-size: 13px; color: rgba(247,244,236,0.92); }
+  .pc-vitrine-s { margin: 14px auto 0; max-width: 40ch; font-size: 13px; line-height: 1.5; color: rgba(247,244,236,0.72); }
+  .pc-vitrine-btn { display: inline-flex; align-items: center; justify-content: center; margin: 18px 0 0; min-height: 46px; padding: 0 22px; border-radius: 12px; background: #B8933F; color: #FFFFFF !important; font-size: 15px; font-weight: 700; text-decoration: none; }
+  .pc-vitrine-btn:hover { background: #A5822F; }
   .pc-cadeado { display: inline-flex; width: 40px; height: 40px; border-radius: 12px; background: #FBF4E4; align-items: center; justify-content: center; flex-shrink: 0; }
   /* gráfico de colunas: uma série por gráfico, eixo com três marcas */
   .pc-graf { margin: 0 0 16px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 16px 12px; }
@@ -1798,18 +1810,28 @@
   .pc-rodape-cols a, .pc-rodape-cols button { display: block; background: none; border: none; padding: 6px 0; font-family: inherit; font-size: 14px; color: var(--muted) !important; text-decoration: none; cursor: pointer; text-align: left; }
   .ba-btn { display: block; text-align: center; text-decoration: none; }
 
-  /* ================= Menu no jeito do trivago (01/10/2026) =================
-     Título "Menu" no meio, grupos com título em negrito, ícone de traço e o
-     valor na direita. Só o menu do site: o dos parceiros tem o próprio. */
-  #menu-overlay .menu-drawer { width: min(420px, 100vw); padding: 8px 18px calc(28px + env(safe-area-inset-bottom)); }
-  #menu-overlay .menu-topo { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; border-bottom: none; padding: 6px 0 10px; }
-  #menu-overlay .menu-fechar { width: 44px; height: 44px; background: none; display: flex; align-items: center; justify-content: center; }
+  /* ================= Menu limpo, como o do Parceiros (07/10/2026) ==========
+     A marca e o X em cima, a conta (como o "Olá de novo!" do trivago), os
+     grupos com título pequeno e ícone verde; links pequenos no rodapé. */
+  .menu-marca { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--green) !important; font-size: 18px; font-weight: 700; }
+  .menu-marca .logo-mark { width: 34px; height: 34px; }
   .menu-titulo { margin: 0; text-align: center; font-size: 18px; font-weight: 700; color: var(--text); }
-  #menu-overlay .menu-grupo { text-transform: none; letter-spacing: 0; font-size: 17px; font-weight: 700; color: var(--text); margin: 22px 0 2px; padding: 0 2px; }
-  #menu-overlay .menu-item { gap: 18px; padding: 14px 2px; font-size: 16px; font-weight: 400; border-radius: 0; }
-  #menu-overlay .menu-item:hover { background: var(--bg-alt); }
-  .menu-valor { margin-left: auto; padding-left: 12px; color: var(--muted); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 48%; }
-  #menu-overlay .menu-rodape { margin-top: 22px; }
+  .menu-valor { margin-left: auto; padding-left: 12px; color: var(--muted); font-size: 14px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 48%; }
+  .menu-conta-topo { display: flex; align-items: center; gap: 12px; width: 100%; margin: 14px 0 2px; padding: 12px 10px; border: none; border-radius: 14px; background: var(--bg-alt); font-family: inherit; text-align: left; cursor: pointer; }
+  .menu-conta-topo:hover { background: #EFE8DA; }
+  .menu-avatar { width: 42px; height: 42px; border-radius: 999px; background: var(--green); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; flex-shrink: 0; }
+  .menu-avatar.vazio { background: var(--card); border: 1px solid var(--border); }
+  .menu-conta-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .menu-conta-txt strong { font-size: 15px; color: var(--text); }
+  .menu-conta-txt small { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .menu-contato { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 4px 10px 0; }
+  .menu-contato-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 0; font-size: 14px; font-weight: 500; color: var(--text) !important; text-decoration: none; }
+  .menu-item-txt { display: flex; flex-direction: column; gap: 1px; }
+  .menu-item-txt small { font-size: 12px; font-weight: 400; color: var(--muted); }
+  .menu-sair { margin-top: 10px; }
+  .menu-links { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 14px 10px 0; }
+  .menu-links button { background: none; border: none; padding: 4px 0; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; }
+  .menu-links button:hover { color: var(--text); text-decoration: underline; }
 
   /* Blocos pessoais da home: a última busca como primeiro cartão das vistas,
      com fundo cinza e a lupa, como no trivago. */
@@ -6568,7 +6590,6 @@ function veNumeros() {
   const d = state.numeros && state.numeros.dados;
   return limitesDoPlano(planoAtual()).numeros && !(d && d.trancado);
 }
-const TRANCADO_NUMEROS = ["premium", "Os números da academia", "Quantas pessoas abriram a ficha e chamaram vocês, dia a dia, por qual canal, de onde vieram, de quais bairros e a comparação com as academias da cidade."];
 
 // Bloco trancado: o que o plano de cima libera, sem número inventado.
 function blocoTrancado(plano, titulo, texto) {
@@ -6581,6 +6602,34 @@ function blocoTrancado(plano, titulo, texto) {
         <p class="pc-trancado-plano">Disponível no plano ${esc(nomeDoPlano(plano))}</p>
         <a href="/parceiros/plano" class="cta-btn cta-secondary pc-ver-planos" data-pc="plano">Ver planos</a>
       </div>
+    </div>`;
+}
+
+// Os acessos em todo plano (pedido do Breno em 07/10/2026: "pode subir um
+// pouco mais os números e deixe mais atrativos como acessos… no meio da
+// tela"). Como o LinkedIn ("X pessoas viram o seu perfil") e o Google
+// Business Profile: o número de acessos dos últimos 30 dias em destaque,
+// logo abaixo do "Olá", e o resto (quem chamou, de onde vieram, bairros)
+// trancado no Premium. O número vem do banco (SQL 20261007160000); banco
+// antigo ou carregando: o bloco aparece sem número, nunca com um inventado.
+function vitrineDosAcessos() {
+  const n = state.numeros || {};
+  const d = n.dados;
+  const acessos = d && typeof d.acessos === "number" ? d.acessos : null;
+  const trancados = ["Quantos chamaram vocês", "De onde vieram", "Bairros de quem procurou"];
+  return `
+    <div class="pc-vitrine">
+      <p class="pc-vitrine-eyebrow">Últimos 30 dias</p>
+      ${acessos === null
+        ? `<p class="pc-vitrine-t">${n.carregando ? `${bolaGirando(18)} Contando os acessos…` : "Os acessos da ficha de vocês"}</p>`
+        : acessos > 0
+          ? `<strong class="pc-vitrine-n">${numeroBonito(acessos)}</strong>
+             <p class="pc-vitrine-l">${acessos === 1 ? "acesso" : "acessos"} à ficha de vocês no GuiaTennis</p>`
+          : `<p class="pc-vitrine-t">Nenhum acesso ainda</p>
+             <p class="pc-vitrine-l">Coloque o QR code da ficha na recepção e no Instagram: os alunos chegam por ele.</p>`}
+      <ul class="pc-vitrine-trancados">${trancados.map(t => `<li>${icon('key', 13, 'var(--gold-claro, #E5CB86)')}<span>${t}</span></li>`).join("")}</ul>
+      <p class="pc-vitrine-s">No plano Premium, vocês veem quantos chamaram e por qual canal, o dia a dia, de onde vieram e a comparação com as academias da cidade.</p>
+      <a href="/parceiros/plano" class="pc-vitrine-btn" data-pc="plano">Ver os números no Premium</a>
     </div>`;
 }
 
@@ -7498,6 +7547,7 @@ function pcPainel() {
       ${pcPedidos()}
       ${pcSituacao(c)}
 
+      ${veNumeros() ? "" : vitrineDosAcessos()}
       ${veNumeros() ? `
       <div class="pc-bloco">
         <div class="pc-bloco-topo"><h2>Desempenho ${d ? textoDoPeriodo(d.dias) : ""}</h2><a href="/parceiros/desempenho" class="pc-link-btn" data-pc="desempenho">Ver tudo ›</a></div>
@@ -7526,8 +7576,6 @@ function pcPainel() {
         <a href="/parceiros/plano" class="pc-atalho" data-pc="plano">${icon('sparkle', 20, 'var(--green)')}<span>Plano</span><small>${esc(nomeDoPlano(planoAtual()))}</small></a>
         <a href="/parceiros/ajuda" class="pc-atalho" data-pc="ajuda">${icon('info', 20, 'var(--green)')}<span>Ajuda</span></a>
       </div>
-
-      ${veNumeros() ? "" : blocoTrancado(...TRANCADO_NUMEROS)}
     </section>`;
 }
 
@@ -7548,7 +7596,7 @@ function pcDesempenho() {
     <section class="pc-pagina">
       <p class="pc-eyebrow">${esc(c.name)}</p>
       <h1 class="display">Desempenho</h1>
-      ${blocoTrancado(...TRANCADO_NUMEROS)}
+      ${vitrineDosAcessos()}
     </section>`;
   return `
     <section class="pc-pagina">
@@ -8513,28 +8561,45 @@ function renderCabecalho() {
   `;
 }
 
-// Menu no jeito do trivago (pedido do Breno em 01/10/2026): grupos com
-// título, ícone de traço na esquerda e o valor na direita ("Preferências de
-// busca · São Paulo, SP"). Primeiro o que é da pessoa (favoritas, vistas,
-// chamadas e preferências), depois a ajuda; o contato do GuiaTennis fica
-// lá embaixo.
+// Menu limpo, no jeito do GuiaTennis Parceiros e do trivago (pedidos do
+// Breno em 01/10/2026 e 07/10/2026: "deixe o menu de jogadores mais limpo
+// como o parceiros… ou numa ideia do trivago"). Em cima, a marca e o X;
+// logo abaixo, a conta ("Olá, Ana!" e o e-mail, como o "Olá de novo!" do
+// trivago) ou "Entrar ou criar conta"; depois os grupos com o título
+// pequeno e o ícone verde, como no Parceiros. Só valor que diz alguma coisa
+// na direita (quantas, a cidade, ligados). Termos, Política e "Por que o
+// GuiaTennis" viram links pequenos no rodapé, como nos sites grandes, e o
+// contato do GuiaTennis fica por último, numa linha só (regra 20).
 function renderMenu() {
   if (!state.showMenu) return "";
   const pref = lerPreferencias();
   const q = minhasQuadras();
-  const item = (id, texto, ic, valor) => `<button type="button" class="menu-item" data-menu="${id}">${icon(ic, 22, 'var(--text)')}<span>${texto}</span>${valor !== undefined && valor !== "" ? `<span class="menu-valor">${esc(valor)}</span>` : ""}</button>`;
+  const item = (id, texto, ic, valor) => `<button type="button" class="menu-item" data-menu="${id}">${icon(ic, 17, 'var(--green)')}<span>${texto}</span>${valor !== undefined && valor !== "" && valor !== 0 ? `<span class="menu-valor">${esc(valor)}</span>` : ""}</button>`;
+  const nome = jogador ? (jogador.nome || "").trim() : "";
+  const conta = jogador ? `
+        <button type="button" class="menu-conta-topo" data-menu="minha-conta">
+          <span class="menu-avatar">${esc((nome || jogador.email || "?").charAt(0).toUpperCase())}</span>
+          <span class="menu-conta-txt"><strong>Olá${nome ? ", " + esc(nome.split(" ")[0]) : ""}!</strong><small>${esc(jogador.email || "Minha conta")}</small></span>
+          ${icon('chevron', 16, 'var(--muted)')}
+        </button>`
+    : contaAcademia || isAdmin ? ""
+    : `
+        <button type="button" class="menu-conta-topo" data-menu="entrar-jogador">
+          <span class="menu-avatar vazio">${icon('pessoa', 18, 'var(--green)')}</span>
+          <span class="menu-conta-txt"><strong>Entrar ou criar conta</strong><small>Salve buscas e avalie academias</small></span>
+          ${icon('chevron', 16, 'var(--muted)')}
+        </button>`;
   return `
     <div class="overlay open menu-overlay" id="menu-overlay">
       <aside class="menu-drawer" role="dialog" aria-label="Menu">
         <div class="menu-topo">
-          <button type="button" class="menu-fechar" id="menu-close" aria-label="Fechar menu">${icon('chevronLeft', 22, 'var(--text)')}</button>
-          <p class="menu-titulo">Menu</p>
-          <span class="menu-topo-lado" aria-hidden="true"></span>
+          <a href="/" class="menu-marca" data-menu="home" aria-label="GuiaTennis, início">${logoSvg()}<span class="display">GuiaTennis</span></a>
+          <button type="button" class="menu-fechar" id="menu-close" aria-label="Fechar menu">✕</button>
         </div>
+        ${conta}
 
-        ${jogador ? item("minha-conta", "Minha conta", "pessoa", (jogador.nome || "").split(" ")[0])
-          : contaAcademia || isAdmin ? "" : item("entrar-jogador", "Entrar ou criar conta", "pessoa")}
-        ${contaAcademia ? item("conta", "Minha academia", "key", "Parceiros") : ""}
+        <p class="menu-grupo">GuiaTennis</p>
+        ${contaAcademia ? item("conta", "Minha academia", "predio", "Parceiros") : ""}
         ${isAdmin ? item("painel-admin", "Painel do admin", "key", "só você vê") : ""}
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
@@ -8544,32 +8609,33 @@ function renderMenu() {
         ${item("favoritas", "Favoritas", "heart", q.favoritas.length || "")}
         ${item("vistas", "Vistas recentemente", "historico", q.vistas.length || "")}
         ${item("chamadas", "Academias que você chamou", "phone", q.chamadas.length || "")}
-        ${item("viagem", "Vou viajar", "map", (lerViagens()[0] || {}).cidade || "Adicionar")}
-        ${isAdmin || semBuscasSalvas ? "" : item("buscas", "Buscas salvas", "search", jogador ? (buscasSalvas.length || "") : "Entrar")}
+        ${item("viagem", "Vou viajar", "map", (lerViagens()[0] || {}).cidade || "")}
+        ${jogador && !semBuscasSalvas ? item("buscas", "Buscas salvas", "search", buscasSalvas.length || "") : ""}
 
         <p class="menu-grupo">Preferências</p>
-        ${item("preferencias", "Preferências de busca", "ajustes", textoDaPreferencia(pref) || "Escolher")}
-        ${isAdmin || (contaAcademia && !jogador) ? "" : item("avisos", "Avisos por e-mail", "sino", jogador ? (avisosLigados(jogador) ? "Ligados" : "Desligados") : "Entrar")}
+        ${item("preferencias", "Preferências de busca", "ajustes", textoDaPreferencia(pref))}
+        ${jogador ? item("avisos", "Avisos por e-mail", "sino", avisosLigados(jogador) ? "Ligados" : "Desligados") : ""}
 
-        <p class="menu-grupo">Suporte</p>
+        <p class="menu-grupo">Ajuda</p>
         ${item("como", "Como funciona", "play")}
         ${item("duvidas", "Perguntas frequentes", "ajuda")}
-        ${item("porque", "Por que o GuiaTennis", "sparkle")}
-        ${item("termos", "Termos de Uso", "clipboard")}
-        ${item("privacidade", "Política de Privacidade", "clipboard")}
-        ${item(contaAcademia ? "conta" : isAdmin ? "parceiros-admin" : "parceiros", "GuiaTennis Parceiros", "predio", contaAcademia ? "seu painel" : isAdmin ? "ver como academia" : "para academias")}
-
-        <p class="menu-grupo">Fale com a gente</p>
-        ${linksContato("menu-item", 22, "var(--text)")}
 
         <div class="menu-rodape">
+          <button type="button" class="menu-item" data-menu="${contaAcademia ? "conta" : isAdmin ? "parceiros-admin" : "parceiros"}">${icon('predio', 17, 'var(--green)')}<span class="menu-item-txt"><span>GuiaTennis Parceiros</span><small>${contaAcademia ? "seu painel" : isAdmin ? "ver como academia" : "para academias e quadras"}</small></span></button>
+          <p class="menu-grupo">Fale com a gente</p>
+          <div class="menu-contato">${linksContato("menu-contato-i", 15, "var(--green)")}</div>
+          <p class="menu-links">
+            <button type="button" data-menu="porque">Por que o GuiaTennis</button>
+            <button type="button" data-menu="termos">Termos de Uso</button>
+            <button type="button" data-menu="privacidade">Privacidade</button>
+          </p>
           ${isAdmin
-            ? `<button type="button" class="menu-item" data-menu="sair">${icon('key', 20, 'var(--muted)')}<span>Sair do modo admin</span></button>`
+            ? `<button type="button" class="menu-item menu-sair" data-menu="sair">${icon('key', 17, 'var(--muted)')}<span>Sair do modo admin</span></button>`
             : contaAcademia
               // A conta do Parceiros também joga: sair sai das duas.
-              ? `<button type="button" class="menu-item" data-menu="sair">${icon('pessoa', 20, 'var(--muted)')}<span>Sair da conta</span></button>`
+              ? `<button type="button" class="menu-item menu-sair" data-menu="sair">${icon('pessoa', 17, 'var(--muted)')}<span>Sair da conta</span></button>`
               : jogador
-                ? `<button type="button" class="menu-item" data-menu="sair-jogador">${icon('pessoa', 20, 'var(--muted)')}<span>Sair da conta</span></button>`
+                ? `<button type="button" class="menu-item menu-sair" data-menu="sair-jogador">${icon('pessoa', 17, 'var(--muted)')}<span>Sair da conta</span></button>`
                 // Sem "Área do GuiaTennis" (02/10/2026): o admin entra pelo
                 // mesmo "Entrar" de todo mundo, com o e-mail dele.
                 : ""}
@@ -16028,7 +16094,10 @@ function attachEvents() {
   if (menuOverlay) menuOverlay.onclick = (e) => { if (e.target === menuOverlay) { state.showMenu = false; render(); } };
 
   document.querySelectorAll("[data-menu]").forEach(el => {
-    el.onclick = () => {
+    el.onclick = (e) => {
+      // A marca no alto do menu é um link (abre em outra aba com o dedo
+      // longo); o toque normal fica no site, sem recarregar.
+      if (el.tagName === "A") e.preventDefault();
       const alvo = el.dataset.menu;
       state.showMenu = false;
       if (alvo === "home" || alvo === "como" || alvo === "porque" || alvo === "duvidas" || alvo === "academias") {

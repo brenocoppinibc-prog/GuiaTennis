@@ -118,7 +118,8 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(folha.includes('Olá, Maria') && folha.includes('Tudo certo!'), 'depois do primeiro acesso, abre o painel com o nome do responsável');
   ok(folha.includes('Falta:') && folha.includes('Horário') && folha.includes('Fotos'), 'painel mostra o que falta na ficha');
   ok(folha.includes('ficha básica'), 'painel avisa que a ficha ainda é básica');
-  ok(folha.includes('Os números da academia') && folha.includes('Disponível no plano Premium') && !folha.includes('Visitas na ficha'), 'painel do Básico: números só no Premium');
+  // Desde 08/10/2026 (regra 68): os acessos de 30 dias em destaque, o resto no Premium.
+  ok(folha.includes('acessos à ficha de vocês') && folha.includes('Ver os números no Premium') && !folha.includes('Visitas na ficha'), 'painel do Básico: os acessos em destaque, o resto só no Premium');
   ok(folha.includes('1 avaliação sem resposta'), 'painel conta as avaliações sem resposta');
   ok(!(await page.$('.pc-barra-baixo')) && await page.isVisible('#pc-menu-btn'), 'no celular, sem barra de atalhos embaixo: tudo pelo menu');
 
@@ -228,15 +229,16 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(inicio.cliques === 0, 'acesso da academia logada não conta');
   await vigiarAbas(page);
   await page.evaluate(() => { state.showMenu = true; render(); });
-  const doMenu = await page.evaluate(() => [...document.querySelectorAll('#menu-overlay .menu-item')].slice(0, 2).map(e => e.innerText));
-  ok(doMenu[0].includes('Minha conta') && doMenu[1].includes('Minha academia'), 'o menu começa por "Minha conta" e "Minha academia" — ' + doMenu.join(' | ').replace(/\s+/g, ' '));
+  // Menu limpo (regra 68): a conta em cima ("Olá…"), depois "Minha academia".
+  const doMenu = await page.evaluate(() => [document.querySelector('#menu-overlay .menu-conta-topo')?.innerText || '', document.querySelector('#menu-overlay .menu-item')?.innerText || '']);
+  ok(doMenu[0].includes('Olá') && doMenu[1].includes('Minha academia'), 'o menu começa pela conta ("Olá…") e por "Minha academia" — ' + doMenu.join(' | ').replace(/\s+/g, ' '));
   await page.click('#menu-overlay [data-menu="conta"]');
   await page.waitForTimeout(300);
   const abaDaFaixa = (await abasAbertas(page))[0] || {};
   ok(abaDaFaixa.url === 'http://guia.test/parceiros/painel' && abaDaFaixa.nome === 'guiatennis-parceiros', 'o menu abre o painel do GuiaTennis Parceiros, na aba dele');
   await page.goto(abaDaFaixa.url);
   await page.waitForTimeout(700);
-  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-trancado')), 'lá, o painel (Básico: números trancados)');
+  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-vitrine')), 'lá, o painel (Básico: os acessos e o resto no Premium)');
   await menuPc(page, 'avaliacoes');
   await page.waitForTimeout(200);
   page.once('dialog', d => d.accept());

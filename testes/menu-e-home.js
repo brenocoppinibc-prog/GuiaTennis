@@ -31,20 +31,22 @@ const fs = require('fs'), path = require('path');
   ok(await page.evaluate(() => !document.getElementById('fab-add')), 'busca sem o "+" no canto');
   await page.evaluate(() => goHome());
 
-  // ---- menu no jeito do trivago ----
+  // ---- menu limpo, como o do Parceiros, com a conta do trivago (regra 68) ----
   const menu = await page.evaluate(() => {
     state.showMenu = true; render();
     const d = document.querySelector('#menu-overlay .menu-drawer');
-    const grupos = [...d.querySelectorAll('.menu-grupo')].map(g => g.innerText.trim());
+    const grupos = [...d.querySelectorAll('.menu-grupo')].map(g => g.textContent.trim());
     const itens = [...d.querySelectorAll('.menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim());
-    return { titulo: d.querySelector('.menu-titulo')?.innerText, grupos, itens };
+    const ordem = [...d.querySelectorAll('.menu-item, .menu-contato-i, .menu-links button')].map(i => i.innerText.replace(/\s+/g, ' ').trim());
+    return { titulo: d.querySelector('.menu-titulo')?.innerText, marca: d.querySelector('.menu-topo .menu-marca')?.innerText, conta: d.querySelector('.menu-conta-topo')?.innerText.replace(/\s+/g, ' ').trim(), grupos, itens, ordem };
   });
-  ok(menu.titulo === 'Menu', 'menu com o título no meio, como o do trivago');
-  ok(menu.grupos.join() === 'Minhas quadras,Preferências,Suporte,Fale com a gente', 'grupos na ordem: minhas quadras, preferências, suporte e o contato por último — ' + menu.grupos.join(' | '));
-  const pos = t => menu.itens.findIndex(i => i.startsWith(t));
+  ok(!menu.titulo && menu.marca === 'GuiaTennis' && (menu.conta || '').startsWith('Entrar ou criar conta'), 'menu com a marca em cima e a conta logo abaixo, sem o título "Menu" — ' + menu.conta);
+  ok(menu.grupos.join() === 'GuiaTennis,Minhas quadras,Preferências,Ajuda,Fale com a gente', 'grupos na ordem, com o contato por último — ' + menu.grupos.join(' | '));
+  const pos = t => menu.ordem.findIndex(i => i.startsWith(t));
   ok(pos('Favoritas') > 0 && pos('Vistas recentemente') > 0 && pos('Academias que você chamou') > 0, 'favoritas, vistas e chamadas no menu');
-  ok(pos('WhatsApp') > pos('GuiaTennis Parceiros') && pos('WhatsApp') > pos('Política de Privacidade'), 'contatos do GuiaTennis lá embaixo');
-  ok(menu.itens.some(i => i === 'Preferências de busca Escolher'), 'preferências de busca com "Escolher" na direita');
+  ok(pos('WhatsApp') > pos('GuiaTennis Parceiros') && pos('Privacidade') > pos('WhatsApp') && pos('Termos de Uso') > 0, 'contatos do GuiaTennis lá embaixo, e Termos e Privacidade como links pequenos');
+  ok(menu.itens.some(i => i === 'Preferências de busca') && !menu.itens.some(i => /Escolher|Entrar$|Adicionar/.test(i)), 'na direita, só valor que diz algo (sem "Escolher", "Entrar", "Adicionar")');
+  ok(!menu.itens.some(i => i.startsWith('Buscas salvas') || i.startsWith('Avisos por e-mail')), 'sem conta: sem "Buscas salvas" e "Avisos por e-mail" (a conta em cima leva a eles)');
 
   // ---- preferências: estado, depois cidade ----
   await page.click('[data-menu="preferencias"]');

@@ -181,7 +181,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     state.showMenu = true; render();
     return {
       wa: [...document.querySelectorAll('a[href^="https://wa.me/5511927456457"]')].map(a => a.innerText.trim()),
-      menu: [...document.querySelectorAll('.menu-item')].map(a => a.innerText.trim()).filter(t => ['WhatsApp', 'Instagram', 'E-mail'].includes(t)),
+      menu: [...document.querySelectorAll('.menu-contato-i')].map(a => a.innerText.trim()).filter(t => ['WhatsApp', 'Instagram', 'E-mail'].includes(t)),
       rodape: [...document.querySelectorAll('.sf-col a.contato-link')].map(a => a.innerText.trim() + (a.querySelector('svg') ? '+logo' : '')),
       texto: document.body.innerText,
     };

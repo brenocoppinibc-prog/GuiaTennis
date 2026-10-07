@@ -3992,7 +3992,7 @@ function dadosDoSite() {
       "@type": "Organization",
       name: "GuiaTennis",
       url: "https://guiatennis.com.br",
-      email: "guiatennis1@gmail.com",
+      email: "contato@guiatennis.com.br",
       telephone: "+55 11 92745-6457",
       sameAs: ["https://instagram.com/guiatennis", "https://wa.me/5511927456457"],
     },
@@ -4783,7 +4783,9 @@ function whatsappGuia(texto) {
 const CONTATOS_GUIA = [
   { nome: "WhatsApp", icone: "whatsapp", link: () => whatsappGuia("Olá! Vim pelo site do GuiaTennis."), fora: true },
   { nome: "Instagram", icone: "instagram", link: () => "https://instagram.com/guiatennis", fora: true },
-  { nome: "E-mail", icone: "mail", link: () => "mailto:guiatennis1@gmail.com", fora: false },
+  // E-mail com o domínio desde 08/10/2026 (regra 67): chega no Gmail do
+  // GuiaTennis pelo Resend. O login do admin continua guiatennis1@gmail.com.
+  { nome: "E-mail", icone: "mail", link: () => "mailto:contato@guiatennis.com.br", fora: false },
 ];
 function linksContato(classe, tamanho, cor) {
   return CONTATOS_GUIA.map(c => `<a class="${classe}" href="${c.link()}"${c.fora ? ' target="_blank" rel="noreferrer"' : ""}>${icon(c.icone, tamanho, cor)}<span>${c.nome}</span></a>`).join("");
@@ -6791,7 +6793,7 @@ function pcRodape() {
             <h4>Ajuda</h4>
             <a href="/parceiros/ajuda" data-pc="ajuda">Perguntas frequentes</a>
             <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e tenho uma dúvida sobre o GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">WhatsApp</a>
-            <a href="mailto:guiatennis1@gmail.com">E-mail</a>
+            <a href="mailto:contato@guiatennis.com.br">E-mail</a>
           </div>
           <div>
             <h4>GuiaTennis</h4>
@@ -7117,7 +7119,7 @@ function pcAjuda() {
         <p class="pc-card-s">Quem responde é o Breno, do GuiaTennis.</p>
         <div class="pc-acoes">
           <a class="cta-btn cta-primary" href="${whatsappGuia("Olá! Tenho uma academia de tênis e uma dúvida sobre o GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">${icon('whatsapp', 16, '#fff')} WhatsApp</a>
-          <a class="cta-btn cta-secondary" href="mailto:guiatennis1@gmail.com">${icon('mail', 16, 'var(--green)')} E-mail</a>
+          <a class="cta-btn cta-secondary" href="mailto:contato@guiatennis.com.br">${icon('mail', 16, 'var(--green)')} E-mail</a>
         </div>
       </div>
     </section>`;
@@ -14597,7 +14599,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
 <p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
-<p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail guiatennis1@gmail.com.</p>
+<p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
 <p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz, e remover a academia do guia continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. Hoje, a ordem da busca não depende do plano. Se no futuro houver destaque pago na busca, ele aparecerá identificado como patrocinado.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
@@ -14616,7 +14618,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">11. Alterações e lei aplicável</p>
 <p style="font-size:14px">Estes termos podem ser atualizados a qualquer momento e são regidos pelas leis brasileiras.</p>
 <p class="field-label" style="margin-top:16px">12. Contato</p>
-<p style="font-size:14px">WhatsApp (11) 92745-6457 · guiatennis1@gmail.com</p>
+<p style="font-size:14px">WhatsApp (11) 92745-6457 · contato@guiatennis.com.br</p>
 `;
 
 const PRIVACY_HTML = `
@@ -14638,7 +14640,7 @@ const PRIVACY_HTML = `
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
 <p style="font-size:14px">O GuiaTennis não é direcionado a menores de 18 anos e não coleta intencionalmente dados de crianças ou adolescentes.</p>
 <p class="field-label" style="margin-top:16px">8. Contato</p>
-<p style="font-size:14px">WhatsApp (11) 92745-6457 · guiatennis1@gmail.com</p>
+<p style="font-size:14px">WhatsApp (11) 92745-6457 · contato@guiatennis.com.br</p>
 `;
 
 function renderLegalSheet(title, contentHtml, closeId) {

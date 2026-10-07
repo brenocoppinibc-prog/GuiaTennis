@@ -21,7 +21,7 @@ prévia de cada PR, `deploy-preview-N--….netlify.app` (seção 7). Cada um com
 o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
-**Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
+**Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 07/10/2026 (noite)
 
 > **Estado (08/10/2026):** o Breno mandou prints do menu do trivago e do
@@ -1132,10 +1132,17 @@ cobra taxa e não fica no meio** da negociação.
       coisa: o **BIMI**, que pede DMARC rígido e um certificado pago (CMC,
       US$ 650 a 1.100 por ano, com 12 meses de logo em uso no site; ou VMC,
       com marca registrada). Fica para depois.
-    - **Depois que receber funcionar:** trocar o contato do site
-      (guiatennis1@gmail.com, 8 lugares no `index.html`: menu, rodapé,
-      Termos e Política) por contato@guiatennis.com.br. O **login do admin
-      continua guiatennis1@gmail.com** (`eh_admin()`); não mudar.
+    - **Funcionando desde 08/10/2026** (testes do Breno): recebe em
+      contato@ e responde como contato@ pelo Gmail ("Enviar e-mail como",
+      padrão, nome GuiaTennis, "Sempre responder com o endereço padrão" —
+      os encaminhados chegam endereçados ao guiatennis1, então "responder
+      do mesmo endereço" sairia do Gmail). O contato do site (menu,
+      rodapé, Ajuda do Parceiros, dados para o Google, Termos e Política)
+      virou contato@guiatennis.com.br. O **login do admin continua
+      guiatennis1@gmail.com** (`EMAIL_ADMIN`, `eh_admin()`); não mudar.
+      **Depois do merge:** no Resend › Webhooks, trocar o endereço da
+      prévia por `https://guiatennis.com.br/.netlify/functions/receber-email`
+      (a prévia continua no ar, mas o site de verdade é o certo).
     Teste: `node testes/receber-email.mjs` (21) e a seção 19 do
     `banco-emails.py`.
 68. **Menu limpo e os acessos em destaque** (pedido de 08/10/2026, com
@@ -2725,10 +2732,9 @@ c9ade31 Configuração de publicação do Netlify
 **Resumo (07/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
 regra 65; o merge espera o Breno. Pendente:
-00. **E-mail com o domínio e a logo** (regra 67, item "E-mail com o
-   domínio" abaixo): colar o modelo novo do código no Supabase; ligar o
-   recebimento no Resend, o webhook, as 2 variáveis no Netlify e o
-   "Enviar e-mail como" no Gmail.
+00. **E-mail com o domínio** (regra 67): **funcionando desde 08/10/2026**.
+   Falta só: colar o modelo novo do código (com a logo) no Supabase e,
+   depois do merge, trocar o webhook do Resend para o site de verdade.
 0. **Ligar o código da disputa pelo WhatsApp** (regra 66, item "Ligar o
    código pelo WhatsApp" abaixo): conta na Meta, número só para os
    códigos, modelo `codigo_guiatennis` e os 3 segredos no GitHub. Sem

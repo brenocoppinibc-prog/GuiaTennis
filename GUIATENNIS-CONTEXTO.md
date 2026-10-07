@@ -165,6 +165,8 @@ mexer:
 - **Nunca subir (merge) sem ele confirmar na hora.** Ele diz "pode subir"
   depois de ver a prévia; se pedir mais alguma mudança depois disso, a
   mudança vai para a prévia e ele confirma de novo antes do merge.
+  **Não lembrar disso no fim de cada resposta** (07/10/2026: "não precisa
+  sempre dizer que preciso falar pode subir, eu já sei disso").
 - **SQL entra sozinho pelo GitHub** (desde 28/09/2026 — seção 4,
   "Automação do banco"). Mostrar o SQL novo na conversa mesmo assim, para
   ele saber o que vai mudar. Consulta que só lê (e o bloco manual, se a
@@ -2516,6 +2518,27 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (07/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
+regra 65; o merge espera o Breno. Pendente:
+1. **Segredo `RESEND_API_KEY` no GitHub** (primeiro item abaixo): sem ele,
+   os avisos por e-mail ficam na fila do banco.
+2. **Testar na prévia** o que entrou de 05/10 a 07/10: painel do admin
+   (`/admin`); academia do guia assumida na hora e "Contestar" (disputa
+   com o código); academia nova no ar na hora; selo verde no nome e o
+   texto no fim da ficha; "Como funcionam as avaliações"; os números da
+   home e do Parceiros; excluir conta; conta de jogador no Parceiros.
+3. **Preço dos planos Completo e Premium** (o Breno define).
+4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
+   criar o acesso de cada academia e mandar a mensagem; trocar a foto do
+   WhatsApp Business.
+5. **Ideias oferecidas, sem resposta:** "Novidades do GuiaTennis" por
+   e-mail pelo painel do admin; baixar as listas em planilha; "Dados dos
+   últimos 30 dias" nos números quando houver volume; promoções na ficha,
+   posição patrocinada e relatório do mês sozinho (Premium).
+6. Antigos: fechar o PR #1; no projeto de teste do Supabase, criar o
+   admin e desligar o cadastro; backup mensal; 2 etapas nas contas.
 
 - **Ligar os avisos por e-mail (05/10/2026, regra 51)** — o Breno (a chave
   nunca pelo chat): (1) no Resend, API Keys → Create API Key, permissão

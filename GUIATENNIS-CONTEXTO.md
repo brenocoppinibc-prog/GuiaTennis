@@ -77,8 +77,8 @@ teste")
 > muda a regra 18), **a página da cidade lista todas as academias da cidade**
 > sem procurar endereço, e os textos "Por que o GuiaTennis" e "Por que estar
 > no GuiaTennis". Também a correção da esteira do banco, vermelha desde o
-> SQL da pausa (SQL `20261005180000_visitante_le_a_pausa`). Falta o Breno cadastrar o segredo `RESEND_API_KEY` no GitHub
-> (seção 11, primeiro item). Testes: **825 verificações, nenhuma falha** nos 27 arquivos
+> SQL da pausa (SQL `20261005180000_visitante_le_a_pausa`). O segredo `RESEND_API_KEY` entrou no GitHub em 07/10/2026
+> (seção 11). Testes: **825 verificações, nenhuma falha** nos 27 arquivos
 > do navegador e 95 no `banco-emails.py` (Postgres local).
 >
 > **Estado (05/10/2026, fim do dia):** depois do pacote abaixo, entraram as
@@ -2522,8 +2522,11 @@ c9ade31 Configuração de publicação do Netlify
 **Resumo (07/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
 regra 65; o merge espera o Breno. Pendente:
-1. **Segredo `RESEND_API_KEY` no GitHub** (primeiro item abaixo): sem ele,
-   os avisos por e-mail ficam na fila do banco.
+1. ~~Segredo `RESEND_API_KEY` no GitHub~~ — **feito pelo Breno em
+   07/10/2026**; a execução do "Banco de dados" do PR #5 disse "chave do
+   Resend guardada" no banco de teste. No banco de verdade entra sozinha
+   no merge. Falta conferir na prévia (admin › E-mails) e ver um aviso
+   chegar.
 2. **Testar na prévia** o que entrou de 05/10 a 07/10: painel do admin
    (`/admin`); academia do guia assumida na hora e "Contestar" (disputa
    com o código); academia nova no ar na hora; selo verde no nome e o

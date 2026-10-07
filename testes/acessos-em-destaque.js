@@ -8,22 +8,23 @@ const { abrir, ok } = require('./harness');
 const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.innerText || '', sel);
 
 (async () => {
-  // ---- Básico: o cartão pequeno "Desempenho", logo abaixo do "Olá" ----
+  // ---- Básico: o cartão pequeno "Desempenho", embaixo das avaliações ----
   let { browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'basico' });
   await page.waitForTimeout(400);
   let r = await page.evaluate(() => {
     const c = document.querySelector('#parceiros .pc-desempenho-mini');
-    const ficha = [...document.querySelectorAll('#parceiros .pc-card-t')].find(e => e.innerText.startsWith('Ficha'));
+    const aval = [...document.querySelectorAll('#parceiros .pc-card-t')].find(e => e.innerText.startsWith('Avaliações'));
+    const atalhos = document.querySelector('#parceiros .pc-atalhos');
     return {
       texto: c?.innerText.replace(/\s+/g, ' ').trim() || '',
       link: c?.getAttribute('href'),
-      antesDaFicha: !!(c && ficha && (c.compareDocumentPosition(ficha) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      lugar: !!(c && aval && atalhos && (aval.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) && (c.compareDocumentPosition(atalhos) & Node.DOCUMENT_POSITION_FOLLOWING)),
       altura: c ? Math.round(c.getBoundingClientRect().height) : 0,
       grande: !!document.querySelector('#parceiros .pc-vitrine'),
     };
   });
   ok(r.texto.startsWith('Desempenho') && r.texto.includes('42 acessos à ficha nos últimos 30 dias') && r.texto.includes('Ver detalhes'), 'Básico: o cartão "Desempenho" com os acessos de 30 dias — ' + r.texto);
-  ok(r.link === '/parceiros/desempenho' && r.antesDaFicha && r.altura < 110 && !r.grande, 'pequeno, logo abaixo do "Olá", e leva à aba Desempenho — ' + r.altura + 'px');
+  ok(r.link === '/parceiros/desempenho' && r.lugar && r.altura < 110 && !r.grande, 'pequeno, embaixo das avaliações (antes dos atalhos), e leva à aba Desempenho — ' + r.altura + 'px');
   await page.evaluate(async () => { window.__acessos = 1; await carregarNumeros(); });
   ok((await texto(page, '#parceiros .pc-desempenho-mini')).includes('1 acesso à ficha'), 'um acesso: no singular');
   await page.evaluate(async () => { window.__acessos = 0; await carregarNumeros(); });

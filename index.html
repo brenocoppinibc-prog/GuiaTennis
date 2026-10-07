@@ -6619,8 +6619,9 @@ function blocoTrancado(plano, titulo, texto) {
 // pequeno e algo como conferir mais detalhes na aba desempenho… algo com
 // desempenho, insights"). Como o cartão "Desempenho" do Google Business
 // Profile e o "X pessoas viram o seu perfil" do LinkedIn: em Atualizações,
-// um cartão pequeno chamado Desempenho, com os acessos dos últimos 30 dias
-// numa linha e "Ver detalhes" para a aba Desempenho; lá, os acessos e o que
+// um cartão pequeno chamado Desempenho, embaixo das avaliações (pedido de
+// 08/10/2026), com os acessos dos últimos 30 dias numa linha e "Ver
+// detalhes" para a aba Desempenho; lá, os acessos e o que
 // o Premium libera. O número vem do banco (SQL 20261007160000); banco
 // antigo ou carregando: sem número, nunca inventado.
 function acessosDe30Dias() {
@@ -7572,7 +7573,6 @@ function pcPainel() {
       ${pcPedidos()}
       ${pcSituacao(c)}
 
-      ${veNumeros() ? "" : cartaoDeDesempenho()}
       ${veNumeros() ? `
       <div class="pc-bloco">
         <div class="pc-bloco-topo"><h2>Desempenho ${d ? textoDoPeriodo(d.dias) : ""}</h2><a href="/parceiros/desempenho" class="pc-link-btn" data-pc="desempenho">Ver tudo ›</a></div>
@@ -7594,6 +7594,8 @@ function pcPainel() {
           <a href="/parceiros/avaliacoes" class="cta-btn cta-secondary" data-pc="avaliacoes">${semResposta ? "Responder" : "Ver avaliações"}</a>
         </div>
       </div>
+
+      ${veNumeros() ? "" : cartaoDeDesempenho()}
 
       <div class="pc-atalhos">
         <button type="button" class="pc-atalho" id="conta-ver-ficha" data-court="${c.id}">${icon('eye', 20, 'var(--green)')}<span>Ver a ficha no site</span></button>

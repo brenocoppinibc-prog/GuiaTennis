@@ -35,7 +35,7 @@ teste")
 > meio, ele estava ligando o recebimento de e-mail (MX do Resend:
 > `inbound-smtp.sa-east-1.amazonaws.com`, **verificado no Resend em
 > 08/10/2026**) e o WhatsApp na Meta (app GuiaTennis criado, na Etapa 2).
-> Testes: **968 verificações, nenhuma falha** nos 32 arquivos do navegador
+> Testes: **969 verificações, nenhuma falha** nos 32 arquivos do navegador
 > (o novo é `testes/acessos-em-destaque.js`), 202 no `banco-emails.py` e 21
 > no `receber-email.mjs`.
 >
@@ -1152,8 +1152,9 @@ cobra taxa e não fica no meio** da negociação.
       Saiu o título "Menu" no meio com a seta.
     - **Os acessos em todo plano**, como o cartão "Desempenho" do Google
       Business Profile e o "X pessoas viram o seu perfil" do LinkedIn: no
-      Básico e no Completo, Atualizações mostra logo abaixo do "Olá" **um
-      cartão pequeno "Desempenho"** — "42 acessos à ficha nos últimos 30
+      Básico e no Completo, Atualizações mostra **um cartão pequeno
+      "Desempenho"**, embaixo do cartão das avaliações e antes dos atalhos
+      (o Breno pediu "deixe abaixo das avaliações"), — "42 acessos à ficha nos últimos 30
       dias" e "Ver detalhes ›" (o Breno achou grande demais o primeiro
       bloco verde, com o número enorme: "deixe pequeno e algo como
       conferir mais detalhes na aba desempenho… algo com desempenho,
@@ -2261,7 +2262,7 @@ as 133 do `banco-acesso.py` no banco e login locais.
   WhatsApp de antes e decide; o selo no nome e o texto no fim da ficha;
   "No ar" por 1 dia; "Como funciona" e Termos.
 - `acessos-em-destaque.js` — regra 68: Básico e Completo veem o cartão
-  pequeno "Desempenho" com os acessos de 30 dias logo abaixo do "Olá", e
+  pequeno "Desempenho" com os acessos de 30 dias embaixo das avaliações, e
   "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
   singular, zero acessos, banco antigo sem número; Premium sem o cartão.
 - `codigo-pelo-whatsapp.js` — regra 66: contestar manda o código na hora

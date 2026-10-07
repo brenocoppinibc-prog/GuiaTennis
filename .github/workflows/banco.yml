@@ -80,6 +80,31 @@ jobs:
           select public.configurar_emails(:'chave', :'site');
           SQL
 
+      # Código da disputa pelo WhatsApp (SQL 20261007140000): o token da Meta
+      # vai do segredo WHATSAPP_TOKEN para o cofre (Vault) do banco. No banco
+      # de teste, a mensagem só vai para WHATSAPP_NUMERO_DE_TESTE (as fichas
+      # de teste têm WhatsApp inventado); sem ele, não manda nada.
+      - name: Ligar o código pelo WhatsApp no banco ${{ env.DESTINO }}
+        if: env.APLICADO == 'sim'
+        env:
+          BANCO_TESTE_URL: ${{ secrets.BANCO_TESTE_URL }}
+          BANCO_REAL_URL: ${{ secrets.BANCO_REAL_URL }}
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_NUMERO_ID: ${{ secrets.WHATSAPP_NUMERO_ID }}
+          WHATSAPP_NUMERO_DE_TESTE: ${{ secrets.WHATSAPP_NUMERO_DE_TESTE }}
+        run: |
+          if [ "$DESTINO" = real ]; then BANCO_URL="$BANCO_REAL_URL"; REAL=true; else BANCO_URL="$BANCO_TESTE_URL"; REAL=false; fi
+          BANCO_URL="$(printf '%s' "$BANCO_URL" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          if [ -z "$WHATSAPP_TOKEN" ] || [ -z "$WHATSAPP_NUMERO_ID" ]; then
+            echo "Sem os segredos WHATSAPP_TOKEN e WHATSAPP_NUMERO_ID: o código da disputa continua pelo admin."
+          fi
+          psql "$BANCO_URL" -X -q -At -v ON_ERROR_STOP=1 -v VERBOSITY=terse \
+            -v token="$WHATSAPP_TOKEN" -v numero="$WHATSAPP_NUMERO_ID" -v teste="$WHATSAPP_NUMERO_DE_TESTE" -v real="$REAL" <<'SQL' \
+            || echo "::warning::Não consegui guardar o token do WhatsApp no banco $DESTINO (veja o erro acima)."
+          \set VERBOSITY terse
+          select public.configurar_whatsapp(:'token', :'numero', :'teste', :'real'::boolean);
+          SQL
+
       - name: Conferir o que o site lê do banco ${{ env.DESTINO }}
         if: env.APLICADO == 'sim'
         env:

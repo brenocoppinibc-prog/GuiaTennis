@@ -125,6 +125,35 @@
     vinculo(x.user_id, academiaId).papel = "principal";
     x.papel = "principal";
   };
+  // O código da disputa pelo WhatsApp (SQL 20261007140000), como o banco:
+  // vai para o WhatsApp de antes (na disputa) ou o da ficha; a conta pede
+  // um por hora, até 3. O código fica em window.__codigos, como o do admin.
+  const codigoPeloWhatsapp = (x, academiaId, origem) => {
+    if (!window.__whatsappLigado) return "desligado";
+    const ac = db.academias.find(y => y.id === academiaId) || {};
+    const disputa = db.pedidos_de_acesso.some(p => p.user_id === x.user_id && p.academia_id === academiaId && p.destino === "disputa");
+    const antes = disputa && (db.academia_vinculos.find(v => v.academia_id === academiaId && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha;
+    const para = tel(antes || ac.phone || "");
+    if (para.length < 10) return "sem_whatsapp";
+    const codigo = String(100000 + Math.floor(Math.random() * 900000));
+    const em = new Date().toISOString();
+    const c = { codigo, academia: academiaId, tentativas: 0, em };
+    window.__codigos = window.__codigos || {};
+    window.__codigos[x.user_id + "|" + academiaId] = c;
+    window.__codigos[x.user_id] = c;
+    window.__whatsapps = window.__whatsapps || [];
+    window.__whatsapps.push({ user_id: x.user_id, academia_id: academiaId, para: "55" + para, codigo, origem, criado_em: em, enviado_em: em, erro: null });
+    return "mandado";
+  };
+  const codigoDaDisputaPelaConta = (x, academiaId) => {
+    if (!db.pedidos_de_acesso.some(p => p.user_id === x.user_id && p.academia_id === academiaId && p.destino === "disputa")) return "sem_disputa";
+    if (!x.email_confirmado_em) return "confirme_email";
+    if (!window.__whatsappLigado) return "desligado";
+    const meus = (window.__whatsapps || []).filter(w => w.user_id === x.user_id && w.academia_id === academiaId && w.origem !== "admin");
+    if (meus.some(w => Date.now() - new Date(w.criado_em).getTime() < 3600e3)) return "espere";
+    if (meus.length >= 3) return "limite";
+    return codigoPeloWhatsapp(x, academiaId, "conta");
+  };
   // Vínculo removido: se era a academia aberta, abre outra (ou nenhuma).
   const desligar = (userId, academiaId) => {
     const i = db.academia_vinculos.findIndex(v => v.user_id === userId && v.academia_id === academiaId);
@@ -323,7 +352,11 @@
         const c = (window.__codigos || {})[p.user_id + "|" + p.academia_id];
         return { user_id: p.user_id, academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, codigo_em: c ? c.em : null,
           nome_responsavel: x.nome_responsavel || null, tratamento: x.tratamento || null, cargo: x.cargo || null, email: x.email || null, usuario: x.usuario, whatsapp: x.whatsapp || null,
-          telefone_antes: (db.academia_vinculos.find(v => v.academia_id === p.academia_id && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha || null };
+          telefone_antes: (db.academia_vinculos.find(v => v.academia_id === p.academia_id && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha || null,
+          ...(() => {
+            const w = (window.__whatsapps || []).filter(z => z.user_id === p.user_id && z.academia_id === p.academia_id).slice(-1)[0];
+            return w ? { whatsapp_em: w.criado_em, whatsapp_enviado_em: w.enviado_em, whatsapp_origem: w.origem, whatsapp_erro: w.erro } : {};
+          })() };
       }), error:null };
     }
     // Pedido de acesso ao responsável (SQL 20261003140000).
@@ -487,7 +520,30 @@
       Object.assign(p, { destino: "disputa", pedido_em: new Date().toISOString() });
       const ac = db.academias.find(y => y.id === a.p_academia) || {};
       db.emails_a_enviar.push({ id: "e-disputa-" + a.p_academia + x.user_id, tipo: "disputa", para: ADMIN, assunto: "Disputa: " + ac.name, criado_em: p.pedido_em, enviado_em: null, tentativas: 0, erro: null });
-      return { data:null, error:null };
+      // Banco antes do SQL 20261007140000: não devolve nada.
+      if (window.__semCodigoPeloWhatsapp) return { data:null, error:null };
+      return { data: codigoDaDisputaPelaConta(x, p.academia_id), error:null };
+    }
+    // O código da disputa pelo WhatsApp (SQL 20261007140000). window.__whatsappLigado
+    // liga o envio; window.__whatsapps anota as mensagens (o teste lê o código dali).
+    if (nome === "pedir_codigo_da_disputa") {
+      if (window.__semCodigoPeloWhatsapp) return semFuncao;
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      return { data: codigoDaDisputaPelaConta(x, a.p_academia), error:null };
+    }
+    if (nome === "mandar_codigo_admin") {
+      if (window.__semCodigoPeloWhatsapp) return semFuncao;
+      if (!souAdmin()) return erro("Só o GuiaTennis manda o código.", "42501");
+      const x = db.academia_acessos.find(y => y.user_id === a.p_user);
+      const p = x && pedidoDaConta(x.user_id, a.p_academia);
+      if (!p) return erro("Pedido não encontrado.", "22023");
+      return { data: codigoPeloWhatsapp(x, p.academia_id, "admin"), error:null };
+    }
+    if (nome === "situacao_do_whatsapp") {
+      if (window.__semCodigoPeloWhatsapp) return semFuncao;
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      return { data: window.__situacaoWhatsapp || { ligado: !!window.__whatsappLigado, token: !!window.__whatsappLigado, numero: !!window.__whatsappLigado, real: true, numero_de_teste: false, envio: true, relogio: true, enviados_30_dias: (window.__whatsapps || []).length, falharam: 0, ultimo_erro: null }, error:null };
     }
     if (nome === "cancelar_meu_pedido") {
       const x = meuAcesso();

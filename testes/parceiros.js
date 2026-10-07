@@ -296,7 +296,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(painelAdmin.includes('Pedidos para administrar') && painelAdmin.includes('Só Aula Tennis') && painelAdmin.includes('Joana Dona') && painelAdmin.includes('Academia do Pedro · academia nova, em análise'), 'admin vê os pedidos para administrar, com a academia nova marcada');
   const waPedido = await page.evaluate(() => document.querySelector('.acesso-pedido a')?.getAttribute('href') || '');
   ok(waPedido.startsWith('https://wa.me/5511988880001?text='), 'admin fala com a pessoa pelo WhatsApp antes de aprovar — ' + waPedido.slice(0, 34));
-  await page.click('.acesso-pedido [data-gerar-codigo="u-joana"]');
+  await page.click('.acesso-pedido [data-mandar-codigo="u-joana"]');
   await page.waitForTimeout(400);
   const gerado = await page.evaluate(() => ({ codigo: (window.__codigos || {})['u-joana']?.codigo, wa: decodeURIComponent(document.querySelector('.acesso-pedido a.chip.active')?.getAttribute('href') || ''), texto: document.querySelector('.acesso-pedido')?.innerText || '' }));
   ok(gerado.codigo && gerado.wa.startsWith('https://wa.me/5511999990001?text=') && gerado.wa.includes('código ' + gerado.codigo) && gerado.wa.includes('Se ninguém da academia pediu, é só ignorar'), 'admin gera o código e manda ao WhatsApp que está na ficha da academia, com aviso se não foi ninguém de lá');

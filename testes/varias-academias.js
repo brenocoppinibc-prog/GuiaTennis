@@ -270,7 +270,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   });
   const linhas = await page.evaluate(() => [...document.querySelectorAll('#admin-overlay .acesso-pedido')].map(x => x.innerText.split('\n')[0]).join(','));
   ok(linhas === 'Só Aula Tennis,Quadra Locação', 'admin vê os dois pedidos da mesma conta, um por linha — ' + linhas);
-  await page.click('[data-gerar-codigo="u-duas"][data-academia="a1"]');
+  await page.click('[data-mandar-codigo="u-duas"][data-academia="a1"]');
   await page.waitForTimeout(400);
   ok(await page.evaluate(() => (window.__rpcs.filter(r => r.nome === 'gerar_codigo_do_pedido').slice(-1)[0] || {}).args.p_academia === 'a1' && (window.__codigos || {})['u-duas|a1']), 'o código é gerado para o pedido daquela academia');
   page.once('dialog', d => d.accept());

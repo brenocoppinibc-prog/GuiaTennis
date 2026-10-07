@@ -83,7 +83,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
     await carregarAcessos(); state.showAdminPanel = true; render();
   });
   t = await texto(page, '#admin-overlay .acesso-pedido');
-  ok(t.includes('Já tem responsável (Dono Quadra)') && !(await page.isVisible('[data-gerar-codigo="u-ana"]')), 'admin: academia com responsável não tem "Gerar código", e o pedido diz com quem está');
+  ok(t.includes('Já tem responsável (Dono Quadra)') && !(await page.isVisible('[data-gerar-codigo="u-ana"]')) && !(await page.isVisible('[data-mandar-codigo="u-ana"]')), 'admin: academia com responsável não tem "Gerar código", e o pedido diz com quem está');
   let dialogo = '';
   page.once('dialog', d => { dialogo = d.message(); d.dismiss(); });
   await page.click('[data-aprovar-pedido="u-ana"]');

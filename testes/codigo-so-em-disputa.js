@@ -63,7 +63,8 @@ async function pedirPelaTela(page, busca, id) {
     campo: !!document.querySelector('[data-pedido-codigo="a3"]'),
   }));
   ok(r.rpc && r.rpc.p_academia === 'a3' && r.destino === 'disputa' && r.email, 'contestar vira disputa e avisa o admin por e-mail');
-  ok(cartao.toLowerCase().includes('em disputa') && cartao.includes('(11) •••••-0003') && r.campo && cartao.includes('documento'),
+  // O número não aparece: na disputa, o código vai para o WhatsApp de antes, que pode não ser o da ficha.
+  ok(cartao.toLowerCase().includes('em disputa') && cartao.includes('WhatsApp da academia') && !cartao.includes('•••') && r.campo && cartao.includes('documento'),
     'o cartão da disputa pede o código mandado ao WhatsApp da academia e diz que, sem ele, pode ser documento — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await page.evaluate(async () => { window.__codigos = { 'u-a2|a3': { codigo: '246810', academia: 'a3', tentativas: 0, em: new Date().toISOString() } }; await recarregarConta(); render(); });
   await page.fill('[data-pedido-codigo="a3"]', '246810');
@@ -133,7 +134,8 @@ async function pedirPelaTela(page, busca, id) {
   ok(painel.includes('Só Aula Tennis · em disputa') && painel.includes('Em disputa com Tito Tomou') && painel.includes('O código vai para o WhatsApp que a academia tinha antes de Tito Tomou assumir, (11) 99999-0001') && painel.includes('o da ficha agora é (11) 91111-2222'),
     'admin vê a disputa e o WhatsApp que a academia tinha antes de quem administra assumir');
   ok(painel.includes('Foram ao ar ou foram assumidas sozinhas: revise') && painel.includes('Só Aula Tennis · assumida') && painel.includes('Assumiu: '), 'em Pendências, a academia assumida aparece como "assumida"');
-  await page.click('[data-gerar-codigo="u-dona"]');
+  // WhatsApp do GuiaTennis desligado: "Mandar código" gera, e o Breno manda do WhatsApp dele.
+  await page.click('[data-mandar-codigo="u-dona"]');
   await page.waitForTimeout(500);
   const wa = await page.evaluate(() => [...document.querySelectorAll('a')].map(a => a.getAttribute('href')).find(h => h && h.includes('wa.me/5511999990001')) || '');
   ok(wa.includes('wa.me/5511999990001'), 'o código vai para o WhatsApp de antes, não para o número novo da ficha');

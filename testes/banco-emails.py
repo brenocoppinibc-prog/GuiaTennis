@@ -6,8 +6,9 @@ de quem pede uma academia (20261006130000_declaracao_ao_pedir) e a academia
 nova que vai ao ar sozinha (20261006140000_academia_nova_no_ar) e a exclusão de
 conta pelo admin (20261006150000_excluir_conta), a conta de jogador que vira
 Parceiros (20261006160000), a data em que a ficha foi atualizada
-(20261007120000_ficha_atualizada_em) e o código só em disputa
-(20261007130000_codigo_so_em_disputa).
+(20261007120000_ficha_atualizada_em), o código só em disputa
+(20261007130000_codigo_so_em_disputa) e o código da disputa pelo WhatsApp
+(20261007140000_codigo_pelo_whatsapp).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -572,6 +573,134 @@ ok(um(f"select status from public.academias where name = 'Quadra Jade {sufixo}'"
    and um(f"select count(*) from public.academia_vinculos v join public.academias a on a.id = v.academia_id where v.user_id = '{jade}' and a.name = 'Quadra Jade {sufixo}'") == "1"
    and um(f"select count(*) from public.pedidos_de_acesso where user_id = '{jade}'") == "0",
    "e a academia nova dela vai ao ar, já administrada por ela")
+
+# 18. O código da disputa sai sozinho pelo WhatsApp (SQL 20261007140000) -------
+print("\n# Código da disputa pelo WhatsApp")
+sql("truncate public.whatsapp_a_enviar; truncate net.pedidos;"
+    "update public.whatsapp_configuracao set numero_id = null, real = false, numero_de_teste = null;")
+
+
+def ultimo_whatsapp():
+    linha = um("select url || '|' || body::text || '|' || headers::text from net.pedidos where url like '%graph.facebook.com%' order by id desc limit 1") or "||"
+    url, corpo, cab = linha.split("|", 2)
+    return url, json.loads(corpo or "{}"), json.loads(cab or "{}")
+
+
+def codigo_de(corpo):
+    return corpo["template"]["components"][0]["parameters"][0]["text"]
+
+
+def contas_completas(*uids):
+    sql(f"update public.academia_acessos set dados_completos_em = now() where user_id in ({', '.join(repr(u) for u in uids)})")
+
+
+def resposta(texto, **kw):
+    certo, saida = sql(texto, **kw)
+    return saida.splitlines()[-1] if certo and saida else ("ERRO " + saida if not certo else "")
+
+
+livre3 = um(f"insert into public.academias (name, cidade, bairro, phone, status, source, confirmada) values ('Quadra Zap {sufixo}', 'São Paulo', 'Lapa', '(11) 95555-4444', 'published', 'custom', true) returning id")
+kaio = parceiro("Kaio Dono", f"kaio{sufixo}@exemplo.com")
+luna = parceiro("Luna Contesta", f"luna{sufixo}@exemplo.com")
+contas_completas(kaio, luna)
+sql(f"select public.pedir_para_administrar('{livre3}', true)", papel="authenticated", user=kaio)
+sql(f"update public.academias set phone = '11911112222' where id = '{livre3}'", papel="authenticated", user=kaio)
+sql(f"select public.pedir_para_administrar('{livre3}', true)", papel="authenticated", user=luna)
+saida = resposta(f"select public.contestar_academia('{livre3}')", papel="authenticated", user=luna)
+ok(saida == "desligado", "sem o WhatsApp ligado, contestar continua como antes: " + saida)
+ok(um(f"select position('mande o código' in texto) > 0 from public.emails_a_enviar where tipo = 'disputa' and texto like 'Luna Contesta%'") == "t",
+   "e o e-mail da disputa pede ao admin para mandar o código")
+ok(um(f"select public.mandar_codigo_admin('{luna}', '{livre3}')", **admin_jwt) == "desligado", "o admin também ouve \"desligado\" (o painel gera o código como antes)")
+ok(um("select public.configurar_whatsapp('', '', null, false)") == "sem WhatsApp: o código da disputa continua pelo admin", "sem os segredos, o GitHub só avisa")
+ok("não manda nada" in (um("select public.configurar_whatsapp('tok_teste', '1234567890', null, false)") or ""),
+   "banco de teste sem o número de teste: guarda o token e avisa")
+ok(resposta(f"select public.pedir_codigo_da_disputa('{livre3}')", papel="authenticated", user=luna) == "desligado",
+   "e não manda para o WhatsApp das fichas de teste")
+ok(um("select public.configurar_whatsapp('tok_teste', '123 456', '(11) 98888-7777', false)") == "token do WhatsApp guardado", "com o número de teste, liga")
+ok(um("select count(*) from vault.secrets where name = 'whatsapp_token' and secret = 'tok_teste'") == "1", "o token fica no cofre, uma vez só")
+saida = resposta(f"select public.pedir_codigo_da_disputa('{livre3}')", papel="authenticated", user=luna)
+ok(saida == "mandado", "\"Mandar outro código\": sai na hora: " + saida)
+url, corpo, cab = ultimo_whatsapp()
+ok(url == "https://graph.facebook.com/v23.0/123456/messages" and cab.get("Authorization") == "Bearer tok_teste", "pela API oficial da Meta, com o token")
+ok(corpo.get("to") == "5511988887777", "no banco de teste, vai só para o número de teste")
+ok(corpo.get("template", {}).get("name") == "codigo_guiatennis" and corpo["template"]["language"]["code"] == "pt_BR", "no modelo de autenticação do GuiaTennis")
+cod = codigo_de(corpo)
+ok(len(cod) == 6 and cod.isdigit() and corpo["template"]["components"][1]["parameters"][0]["text"] == cod, "código de 6 números, também no botão \"Copiar código\"")
+ok(um(f"select count(*) from public.codigos_de_verificacao where user_id = '{luna}' and academia_id = '{livre3}' and codigo_hash <> '{cod}'") == "1", "o banco guarda o código só cifrado")
+ok(resposta(f"select public.pedir_codigo_da_disputa('{livre3}')", papel="authenticated", user=luna) == "espere", "outro código só depois de uma hora")
+for _ in range(2):
+    sql(f"update public.whatsapp_a_enviar set criado_em = criado_em - interval '2 hours' where user_id = '{luna}'")
+    sql(f"select public.pedir_codigo_da_disputa('{livre3}')", papel="authenticated", user=luna)
+sql(f"update public.whatsapp_a_enviar set criado_em = criado_em - interval '2 hours' where user_id = '{luna}'")
+ok(resposta(f"select public.pedir_codigo_da_disputa('{livre3}')", papel="authenticated", user=luna) == "limite", "até 3 códigos em 3 dias")
+sql("select public.enviar_whatsapps()")
+ok(um("select count(*) from public.whatsapp_a_enviar where corpo is not null and criado_em < now() - interval '2 hours'") == "0",
+   "código com mais de 2 horas não sai mais (e some da fila)")
+ok(um(f"select public.mandar_codigo_admin('{luna}', '{livre3}')", **admin_jwt) == "mandado", "o admin manda mesmo depois do limite")
+# A resposta da Meta, para três mensagens novas do admin.
+for _ in range(2):
+    sql(f"select public.mandar_codigo_admin('{luna}', '{livre3}')", **admin_jwt)
+ids = (um("select string_agg(pedido_id::text, ',' order by pedido_id) from (select pedido_id from public.whatsapp_a_enviar where pedido_id is not null order by pedido_id desc limit 3) x") or "").split(",")
+sql(f"insert into net._http_response (id, status_code, content) values ({ids[0]}, 200, '{{\"messages\":[{{\"id\":\"wamid.ABC\"}}]}}'), "
+    f"({ids[1]}, 400, '{{\"error\":{{\"message\":\"Template name does not exist in the translation\",\"code\":132001}}}}'), ({ids[2]}, 503, 'fora do ar')")
+sql("select public.enviar_whatsapps()")
+ok(um("select mensagem_id || '|' || (corpo is null) from public.whatsapp_a_enviar where enviado_em is not null") == "wamid.ABC|true", "o que saiu fica como enviado, sem o código guardado")
+ok(um("select (corpo is null) || '|' || erro from public.whatsapp_a_enviar where erro like '400%'") == "true|400 Template name does not exist in the translation",
+   "erro da Meta (modelo errado): não tenta de novo e mostra o motivo")
+ok(um("select (corpo is not null) || '|' || tentativas from public.whatsapp_a_enviar where erro like '503%'") == "true|2", "fora do ar: tenta de novo")
+ok(um(f"select whatsapp_origem || '|' || (whatsapp_em is not null) from public.pedidos_de_acesso_admin() where user_id = '{luna}' and academia_id = '{livre3}'", **admin_jwt) == "admin|true",
+   "o admin vê a última mensagem do pedido")
+sit = json.loads(um("select public.situacao_do_whatsapp()::text", **admin_jwt) or "{}")
+ok(sit.get("ligado") is True and sit.get("real") is False and sit.get("enviados_30_dias") == 1 and sit.get("ultimo_erro"), "situação do WhatsApp para o admin")
+certo, _ = sql("select public.situacao_do_whatsapp()", papel="authenticated", user=luna)
+ok(not certo, "só o admin vê a situação")
+certo, _ = sql(f"select public.pedir_codigo_da_disputa('{livre3}')", papel="anon")
+ok(not certo, "o visitante não pede código")
+certo, _ = sql("select count(*) from public.whatsapp_a_enviar", papel="authenticated", user=luna)
+ok(not certo, "ninguém de fora lê a fila do WhatsApp")
+certo, _ = sql("select public.configurar_whatsapp('x', '1', null, true)", papel="authenticated", user=luna)
+ok(not certo, "o site não mexe no token")
+certo, _ = sql("select public.enviar_whatsapps()", papel="authenticated", user=luna)
+ok(not certo, "nem dispara o envio")
+certo, _ = sql(f"select public.mandar_codigo_admin('{luna}', '{livre3}')", papel="authenticated", user=luna)
+ok(not certo, "só o admin usa o \"mandar o código\" do admin")
+# Banco de verdade: vai para o WhatsApp que a ficha tinha quando o responsável
+# assumiu (o número mudou depois).
+sql("select public.configurar_whatsapp('tok_real', '123456', null, true)")
+sql(f"select public.mandar_codigo_admin('{luna}', '{livre3}')", **admin_jwt)
+ok(ultimo_whatsapp()[1].get("to") == "5511955554444", "no banco de verdade, vai para o WhatsApp de antes da academia")
+# Quem contesta com o e-mail confirmado recebe o código na hora; digitou, vence.
+mel = parceiro("Mel Na Hora", f"mel{sufixo}@exemplo.com")
+contas_completas(mel)
+sql(f"select public.pedir_para_administrar('{livre3}', true)", papel="authenticated", user=mel)
+saida = resposta(f"select public.contestar_academia('{livre3}')", papel="authenticated", user=mel)
+ok(saida == "mandado", "contestar manda o código na hora: " + saida)
+ok(um(f"select position('saiu sozinho' in texto) > 0 from public.emails_a_enviar where tipo = 'disputa' and texto like 'Mel Na Hora%'") == "t",
+   "o e-mail ao admin diz que o código já saiu")
+cod_mel = codigo_de(ultimo_whatsapp()[1])
+ok(um(f"select codigo_em is not null from public.meus_pedidos_de_acesso() where academia_id = '{livre3}'", papel="authenticated", user=mel) == "t",
+   "o cartão de quem pediu sabe que o código saiu")
+saida = resposta(f"select public.confirmar_meu_codigo('{cod_mel}', '{livre3}')", papel="authenticated", user=mel)
+ok(saida == "ok" and um(f"select string_agg(user_id::text || ':' || papel, ',') from public.academia_vinculos where academia_id = '{livre3}'") == f"{mel}:principal",
+   "quem digita o código do WhatsApp vence a disputa: " + saida)
+# Sem o e-mail confirmado: espera; confirmou, o código sai sozinho.
+nina = parceiro("Nina Depois", f"nina{sufixo}@exemplo.com", confirmado=False)
+contas_completas(nina)
+sql(f"select public.pedir_para_administrar('{livre3}', true)", papel="authenticated", user=nina)
+ok(resposta(f"select public.contestar_academia('{livre3}')", papel="authenticated", user=nina) == "confirme_email", "sem o e-mail confirmado, o código espera")
+sql("select public.confirmar_meu_email()", papel="authenticated", user=nina, amr="otp")
+ok(um(f"select origem from public.whatsapp_a_enviar where user_id = '{nina}'") == "conta", "confirmou o e-mail: o código sai sozinho")
+# Ficha sem WhatsApp.
+sem_zap = um(f"insert into public.academias (name, cidade, bairro, status, source) values ('Quadra Sem Zap {sufixo}', 'São Paulo', 'Lapa', 'published', 'custom') returning id")
+otto = parceiro("Otto Dono", f"otto{sufixo}@exemplo.com")
+paula = parceiro("Paula Contesta", f"paula{sufixo}@exemplo.com")
+contas_completas(otto, paula)
+sql(f"select public.pedir_para_administrar('{sem_zap}', true)", papel="authenticated", user=otto)
+sql(f"select public.pedir_para_administrar('{sem_zap}', true)", papel="authenticated", user=paula)
+ok(resposta(f"select public.contestar_academia('{sem_zap}')", papel="authenticated", user=paula) == "sem_whatsapp", "ficha sem WhatsApp: avisa (o admin pede documento)")
+ok(um("select public.numero_do_whatsapp('+55 (11) 98765-4321') || '|' || coalesce(public.numero_do_whatsapp('98765-4321'), 'nada')") == "5511987654321|nada",
+   "número com ou sem 55 vira 55 + DDD; sem DDD, nada")
+sql("delete from vault.secrets where name = 'whatsapp_token'; update public.whatsapp_configuracao set numero_id = null, real = false, numero_de_teste = null;")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

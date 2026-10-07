@@ -22,8 +22,22 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
-**Atualizado em:** 07/10/2026
+**Atualizado em:** 07/10/2026 (noite)
 
+> **Estado (07/10/2026, noite):** o Breno cadastrou o `RESEND_API_KEY` no
+> GitHub (avisos por e-mail ligados no banco de teste: "chave do Resend
+> guardada"), perguntou se dá para recuperar a senha pelo e-mail (dá:
+> "Esqueceu a senha?" manda o código ao e-mail; só o usuário antigo sem
+> e-mail, que o GuiaTennis criou, continua pelo WhatsApp — a Ajuda do
+> Parceiros dizia o contrário e foi corrigida) e pediu "quero automatizar o
+> código por whatsapp em conflitos de acesso com a academia". Entrou a
+> regra 66: na disputa, o código sai sozinho pela **API oficial do
+> WhatsApp (Meta)**, SQL `20261007140000_codigo_pelo_whatsapp`. Falta o
+> Breno criar a conta na Meta e cadastrar os segredos (seção 11, primeiro
+> item); sem eles, tudo continua como antes. Testes: **958 verificações,
+> nenhuma falha** nos 31 arquivos do navegador (o novo é
+> `testes/codigo-pelo-whatsapp.js`) e **198 no `banco-emails.py`**.
+>
 > **Estado (07/10/2026, depois):** o Breno pediu "eu quero manter o código
 > em casos de disputa, para novas não", tirar o limite de 3 academias
 > novas em 24 horas, o "No ar" por 1 dia (era 3) e a ficha confirmada com
@@ -1013,6 +1027,46 @@ cobra taxa e não fica no meio** da negociação.
     Ajuda ("E se outra pessoa estiver administrando a minha academia?")
     atualizados. SQL `20261007130000_codigo_so_em_disputa`. Teste
     `testes/codigo-so-em-disputa.js` e a seção 17 do `banco-emails.py`.
+66. **O código da disputa sai sozinho pelo WhatsApp** (pedido de
+    07/10/2026: "quero automatizar o código por whatsapp em conflitos de
+    acesso com a academia"), como o código por telefone do Google Business
+    Profile e os códigos do Uber, do iFood e do Mercado Livre: pela **API
+    oficial do WhatsApp** (WhatsApp Business Platform, da Meta), num modelo
+    de **autenticação** (`codigo_guiatennis`, "123456 é o seu código de
+    verificação.", botão "Copiar código"). **Nada de programa que imita o
+    WhatsApp no celular** (Z-API, Baileys e parecidos): é contra as regras
+    da Meta e o número é banido — o Breno só quer coisa certa e legal.
+    - **Contestar** vira disputa e, com o e-mail confirmado, o código sai
+      **na hora** (`contestar_academia` agora devolve `'mandado'`,
+      `'confirme_email'`, `'desligado'`, `'sem_whatsapp'`, `'espere'` ou
+      `'limite'`); sem o e-mail confirmado, sai quando a pessoa confirmar.
+    - Vai para o WhatsApp de antes (o que a ficha tinha quando o
+      responsável de agora assumiu), como na regra 65. Por isso o cartão da
+      disputa **não mostra o número** (podia mostrar o da ficha, que não é
+      o que recebe).
+    - **"Mandar outro código"** no cartão: um por hora, até 3 em 3 dias
+      (`pedir_codigo_da_disputa`), para ninguém encher o WhatsApp da
+      academia. O admin manda sem limite ("Mandar código ao WhatsApp da
+      academia", `mandar_codigo_admin`) e vê "Código mandado sozinho pelo
+      WhatsApp do GuiaTennis em…" ou o erro da Meta (aí, "Gerar código para
+      mandar do seu WhatsApp", o jeito antigo).
+    - **Desligado** (sem os segredos, ou banco sem o SQL): tudo como antes —
+      o admin gera e manda do WhatsApp dele. Não é erro.
+    - **Banco de teste:** só manda para `WHATSAPP_NUMERO_DE_TESTE` (as fichas
+      de teste têm WhatsApp inventado, que pode ser de alguém); sem ele, não
+      manda nada.
+    - O WhatsApp Business do Breno, (11) 92745-6457, **continua no
+      aplicativo**, com ele respondendo à mão (seção 12): o código sai de
+      um **número só para os códigos**, ligado à API. Usar o mesmo número
+      nos dois ("coexistência") só por um parceiro da Meta, que cobra por
+      mês.
+    - Custo: a Meta cobra cada mensagem de autenticação entregue no Brasil
+      (US$ 0,0068 desde abril de 2026, menos de R$ 0,05). Uma disputa custa
+      centavos.
+    E-mail da disputa ao admin diz se o código já saiu. Política (a Meta
+    entre os serviços, o limite de 3), Termos e Ajuda atualizados. SQL
+    `20261007140000_codigo_pelo_whatsapp`; teste
+    `testes/codigo-pelo-whatsapp.js` e a seção 18 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1854,6 +1908,31 @@ colocados pelo Breno). Aqui:
   de confirmação conta junto). Passando disso, os avisos ficam na fila e
   saem no dia seguinte; com mais jogadores, o plano pago do Resend.
 
+### Código da disputa pelo WhatsApp (07/10/2026, regra 66)
+- SQL `20261007140000_codigo_pelo_whatsapp`. `whatsapp_configuracao`:
+  `numero_id` (a "Identificação do número de telefone" da Meta),
+  `modelo` (`codigo_guiatennis`), `idioma` (`pt_BR`), `versao` (`v23.0`,
+  da Graph API; trocar aqui quando a Meta aposentar), `real` (só o banco de
+  verdade manda para as academias) e `numero_de_teste`. O token fica no
+  cofre (`whatsapp_token`).
+- `whatsapp_a_enviar`: a fila (`para`, `user_id`, `academia_id`, `origem`
+  conta/admin, `corpo` com o código — apagado quando sai ou desiste —,
+  `tentativas`, `pedido_id` do pg_net, `enviado_em`, `mensagem_id` wamid,
+  `erro`). Ninguém de fora lê.
+- Funções: `contestar_academia` (agora devolve texto),
+  `pedir_codigo_da_disputa`, `mandar_codigo_admin`, `enviar_whatsapps()`
+  (na hora e a cada minuto, `guiatennis-enviar-whatsapp`: 4xx não repete,
+  429/5xx até 3 vezes, código com mais de 2 horas desiste),
+  `configurar_whatsapp(token, numero_id, numero_de_teste, real)` (GitHub),
+  `situacao_do_whatsapp()` (admin, em E-mails), `pedidos_de_acesso_admin`
+  (+ `whatsapp_em`, `whatsapp_enviado_em`, `whatsapp_origem`,
+  `whatsapp_erro`), `assumir_pedidos_da_conta` (confirmar o e-mail manda o
+  código da disputa que esperava) e as internas `numero_do_whatsapp`,
+  `whatsapp_ligado`, `whatsapp_do_pedido`, `novo_codigo`,
+  `codigo_pelo_whatsapp`, `codigo_da_disputa_pela_conta`.
+- Segredos no GitHub (passo "Ligar o código pelo WhatsApp" do `banco.yml`):
+  `WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` e `WHATSAPP_NUMERO_DE_TESTE`.
+
 ### Painel do admin (06/10/2026)
 - SQL `20261006120000_painel_do_admin`, três funções só do admin
   (`eh_admin()`; quem não é admin recebe "Só o admin." ou lista vazia, o
@@ -1956,7 +2035,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2081,6 +2160,11 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pedido espera e confirmar o e-mail resolve; admin vê a disputa, o
   WhatsApp de antes e decide; o selo no nome e o texto no fim da ficha;
   "No ar" por 1 dia; "Como funciona" e Termos.
+- `codigo-pelo-whatsapp.js` — regra 66: contestar manda o código na hora
+  para o WhatsApp de antes, "Mandar outro código" pede para esperar, quem
+  digita vence; sem e-mail confirmado, espera; desligado e banco sem o SQL,
+  como antes; admin manda pelo WhatsApp do GuiaTennis, vê se saiu ou o
+  erro (e gera à mão), e a situação em E-mails; Ajuda e Política.
 - `banco-emails.py` — **não roda com os outros**: precisa de um Postgres
   local com a pasta `supabase/` aplicada (não precisa do GoTrue); finge o
   cofre, o pg_net e o relógio. Confere cada aviso (quem recebe, quem não,
@@ -2413,6 +2497,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Código da disputa pelo WhatsApp (API oficial da Meta) e "Esqueci a senha" certo na Ajuda   ← PR #5, 07/10
 (a seguir) Avisos por e-mail pelo Resend, buscas salvas, conta do Parceiros como conta normal, página da cidade e textos "Por que"   ← PR #5, 05/10
 (a seguir) Logo de três riscos em todo lugar, menu do trivago, home pessoal, preferências e cadastro passo a passo   ← PR #5, 01/10
 1e2f7d2 Tempo até agir: segundos até a primeira busca e até chamar, no painel do admin   ← PR #5, 01/10
@@ -2522,6 +2607,10 @@ c9ade31 Configuração de publicação do Netlify
 **Resumo (07/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
 regra 65; o merge espera o Breno. Pendente:
+0. **Ligar o código da disputa pelo WhatsApp** (regra 66, item "Ligar o
+   código pelo WhatsApp" abaixo): conta na Meta, número só para os
+   códigos, modelo `codigo_guiatennis` e os 3 segredos no GitHub. Sem
+   isso, o admin continua mandando à mão.
 1. ~~Segredo `RESEND_API_KEY` no GitHub~~ — **feito pelo Breno em
    07/10/2026**; a execução do "Banco de dados" do PR #5 disse "chave do
    Resend guardada" no banco de teste. No banco de verdade entra sozinha
@@ -2543,6 +2632,31 @@ regra 65; o merge espera o Breno. Pendente:
 6. Antigos: fechar o PR #1; no projeto de teste do Supabase, criar o
    admin e desligar o cadastro; backup mensal; 2 etapas nas contas.
 
+- **Ligar o código pelo WhatsApp (07/10/2026, regra 66)** — o Breno (o token
+  nunca pelo chat): (1) um **chip novo só para os códigos** (o (11)
+  92745-6457 fica no aplicativo, com ele respondendo); o número não pode
+  estar no aplicativo do WhatsApp; (2) business.facebook.com: portfólio
+  empresarial "GuiaTennis"; (3) developers.facebook.com › Meus apps ›
+  Criar app › tipo **Empresa** › adicionar o produto **WhatsApp**, ligado ao
+  portfólio; (4) WhatsApp › Configuração da API › **Adicionar número de
+  telefone**: nome de exibição "GuiaTennis", confirmar pelo SMS; copiar a
+  **Identificação do número de telefone**; (5) WhatsApp Manager › Modelos
+  de mensagem › Criar modelo: categoria **Autenticação**, nome
+  `codigo_guiatennis`, idioma **Português (BR)**, entrega **Copiar
+  código**, sem recomendação de segurança e sem validade (a pessoa repassa
+  o código, e ele vale 72 horas) — esperar "Aprovado"; (6) WhatsApp Manager
+  › Forma de pagamento: cartão (cada código custa centavos); (7)
+  Configurações do negócio › Usuários do sistema › Adicionar (Admin) ›
+  Atribuir ativos (o app e a conta do WhatsApp, controle total) › **Gerar
+  token**, validade **Nunca**, permissões `whatsapp_business_messaging` e
+  `whatsapp_business_management`; (8) no GitHub (Settings › Secrets and
+  variables › Actions): `WHATSAPP_TOKEN` (o token),
+  `WHATSAPP_NUMERO_ID` (a identificação do passo 4) e
+  `WHATSAPP_NUMERO_DE_TESTE` (o WhatsApp pessoal do Breno, que recebe os
+  códigos da prévia); (9) avisar no chat: roda o "Banco de dados" do PR e,
+  na prévia, admin › E-mails diz "Código da disputa pelo WhatsApp:
+  ligado". Teste: uma disputa na prévia, o código chega no WhatsApp
+  pessoal.
 - **Ligar os avisos por e-mail (05/10/2026, regra 51)** — o Breno (a chave
   nunca pelo chat): (1) no Resend, API Keys → Create API Key, permissão
   "Sending access", domínio guiatennis.com.br; copiar a chave (`re_…`);

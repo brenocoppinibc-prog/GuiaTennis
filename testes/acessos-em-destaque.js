@@ -1,49 +1,55 @@
-// Pedido do Breno em 08/10/2026: "pode subir um pouco mais os números e
-// deixe mais atrativos como acessos… deixe no meio da tela". Os acessos dos
-// últimos 30 dias em todo plano, logo abaixo do "Olá" (regra 68).
+// Os acessos em todo plano (regra 68). Pedidos do Breno: 08/10/2026 "deixe
+// mais atrativos como acessos", e depois "está muito grande, deixe pequeno e
+// algo como conferir mais detalhes na aba desempenho… algo com desempenho,
+// insights". Em Atualizações, um cartão pequeno "Desempenho" com os acessos
+// de 30 dias e "Ver detalhes"; na aba Desempenho, os acessos e o Premium.
 const { abrir, ok } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.innerText || '', sel);
 
 (async () => {
-  // ---- Básico: o número grande, logo abaixo do "Olá", antes da ficha ----
+  // ---- Básico: o cartão pequeno "Desempenho", logo abaixo do "Olá" ----
   let { browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'basico' });
   await page.waitForTimeout(400);
   let r = await page.evaluate(() => {
-    const v = document.querySelector('#parceiros .pc-vitrine');
+    const c = document.querySelector('#parceiros .pc-desempenho-mini');
     const ficha = [...document.querySelectorAll('#parceiros .pc-card-t')].find(e => e.innerText.startsWith('Ficha'));
-    const caixa = v && v.getBoundingClientRect();
     return {
-      n: v?.querySelector('.pc-vitrine-n')?.innerText,
-      texto: v?.innerText.replace(/\s+/g, ' ') || '',
-      antesDaFicha: !!(v && ficha && (v.compareDocumentPosition(ficha) & Node.DOCUMENT_POSITION_FOLLOWING)),
-      centro: v ? getComputedStyle(v).textAlign : '',
-      noAlto: caixa ? caixa.top < 600 : false,
-      trancadoNoFim: !!document.querySelector('#parceiros .pc-trancado'),
+      texto: c?.innerText.replace(/\s+/g, ' ').trim() || '',
+      link: c?.getAttribute('href'),
+      antesDaFicha: !!(c && ficha && (c.compareDocumentPosition(ficha) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      altura: c ? Math.round(c.getBoundingClientRect().height) : 0,
+      grande: !!document.querySelector('#parceiros .pc-vitrine'),
     };
   });
-  ok(r.n === '42' && r.texto.includes('ÚLTIMOS 30 DIAS') && r.texto.includes('acessos à ficha de vocês no GuiaTennis'), 'Básico: os acessos dos últimos 30 dias em destaque — ' + r.texto.slice(0, 90));
-  ok(r.antesDaFicha && r.noAlto && r.centro === 'center', 'logo abaixo do "Olá", antes da ficha, no meio e na primeira tela');
-  ok(r.texto.includes('Quantos chamaram vocês') && r.texto.includes('De onde vieram') && r.texto.includes('Ver os números no Premium') && !r.trancadoNoFim, 'o resto trancado no Premium, sem o bloco antigo no fim');
+  ok(r.texto.startsWith('Desempenho') && r.texto.includes('42 acessos à ficha nos últimos 30 dias') && r.texto.includes('Ver detalhes'), 'Básico: o cartão "Desempenho" com os acessos de 30 dias — ' + r.texto);
+  ok(r.link === '/parceiros/desempenho' && r.antesDaFicha && r.altura < 110 && !r.grande, 'pequeno, logo abaixo do "Olá", e leva à aba Desempenho — ' + r.altura + 'px');
   await page.evaluate(async () => { window.__acessos = 1; await carregarNumeros(); });
-  ok((await texto(page, '#parceiros .pc-vitrine')).includes('acesso à ficha de vocês'), 'um acesso: no singular');
+  ok((await texto(page, '#parceiros .pc-desempenho-mini')).includes('1 acesso à ficha'), 'um acesso: no singular');
+  await page.evaluate(async () => { window.__acessos = 0; await carregarNumeros(); });
+  ok((await texto(page, '#parceiros .pc-desempenho-mini')).includes('Nenhum acesso à ficha nos últimos 30 dias'), 'nenhum acesso: diz isso');
+  await page.evaluate(async () => { window.__semAcessos = true; await carregarNumeros(); });
+  r = await texto(page, '#parceiros .pc-desempenho-mini');
+  ok(r.includes('Quantas pessoas abriram a ficha de vocês') && !/\d/.test(r), 'banco antes do SQL novo: o cartão sem número (nunca inventado)');
+  await page.evaluate(() => { window.__semAcessos = false; window.__acessos = 42; });
+  await page.click('#parceiros .pc-desempenho-mini');
+  await page.waitForTimeout(400);
+  r = await page.evaluate(() => ({ aba: state.parceirosAba, v: document.querySelector('#parceiros .pc-vitrine')?.innerText.replace(/\s+/g, ' ') || '' }));
+  ok(r.aba === 'desempenho' && r.v.includes('42 acessos à ficha de vocês') && r.v.includes('Quantos chamaram vocês') && r.v.includes('Ver os números no Premium'), '"Ver detalhes": na aba Desempenho, os acessos e o que o Premium libera — ' + r.v.slice(0, 90));
   await page.evaluate(async () => { window.__acessos = 0; await carregarNumeros(); });
   r = await texto(page, '#parceiros .pc-vitrine');
-  ok(r.includes('Nenhum acesso ainda') && r.includes('QR code') && !(await page.$('#parceiros .pc-vitrine-n')), 'nenhum acesso: diz isso e dá a dica do QR code — ' + r.replace(/\s+/g, ' ').slice(0, 80));
-  await page.evaluate(async () => { window.__semAcessos = true; await carregarNumeros(); });
-  r = await texto(page, '#parceiros .pc-vitrine');
-  ok(r.includes('Os acessos da ficha de vocês') && !/\d/.test(r.replace('30 DIAS', '')), 'banco antes do SQL novo: o bloco sem número (nunca inventado)');
+  ok(r.includes('Nenhum acesso ainda') && r.includes('QR code'), 'Desempenho com nenhum acesso: a dica do QR code');
   await browser.close();
 
   // ---- Completo: igual ao Básico ----
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'completo' }));
   await page.waitForTimeout(400);
-  ok((await texto(page, '#parceiros .pc-vitrine-n')) === '42', 'Completo: os acessos também');
+  ok((await texto(page, '#parceiros .pc-desempenho-mini')).includes('42 acessos'), 'Completo: o cartão também');
   await browser.close();
 
-  // ---- Premium: os números de sempre, sem o bloco ----
+  // ---- Premium: os números de sempre, sem o cartão ----
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'premium' }));
   await page.waitForTimeout(400);
-  ok(!(await page.$('#parceiros .pc-vitrine')) && (await texto(page, '#parceiros .pc-main')).includes('Visitas na ficha'), 'Premium: o Desempenho de sempre, sem o bloco dos acessos');
+  ok(!(await page.$('#parceiros .pc-desempenho-mini')) && (await texto(page, '#parceiros .pc-main')).includes('Visitas na ficha'), 'Premium: o Desempenho de sempre, sem o cartão pequeno');
   await browser.close();
 })();

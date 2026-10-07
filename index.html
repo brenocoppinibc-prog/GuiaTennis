@@ -1756,18 +1756,24 @@
   .pc-vazio { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 14px; color: var(--muted); margin: 12px 0 0; }
   .pc-trancado { display: flex; gap: 14px; align-items: flex-start; margin-top: 16px; border-style: dashed; }
   .pc-trancado .pc-link-btn { margin-top: 10px; }
-  /* Os acessos em todo plano (07/10/2026): o número grande, no meio, no
-     verde do logo, logo abaixo do "Olá". */
-  .pc-vitrine { margin: 22px 0 6px; padding: 26px 22px 24px; border-radius: 20px; text-align: center; color: #F7F4EC; background: linear-gradient(135deg, #2A5C4B 0%, #1F4D3D 55%, #153229 100%); box-shadow: 0 10px 28px rgba(21,50,41,0.18); }
-  .pc-vitrine-eyebrow { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #E5CB86; }
-  .pc-vitrine-n { display: block; margin: 6px 0 0; font-family: var(--fonte-titulo, Georgia, serif); font-size: 64px; line-height: 1; font-weight: 700; color: #FFFFFF; font-variant-numeric: tabular-nums; }
-  .pc-vitrine-t { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 0; font-family: var(--fonte-titulo, Georgia, serif); font-size: 26px; font-weight: 700; color: #FFFFFF; }
-  .pc-vitrine-l { margin: 8px auto 0; max-width: 32ch; font-size: 15px; line-height: 1.45; color: rgba(247,244,236,0.88); }
-  .pc-vitrine-trancados { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 0; margin: 18px 0 0; }
-  .pc-vitrine-trancados li { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; background: rgba(247,244,236,0.1); font-size: 13px; color: rgba(247,244,236,0.92); }
-  .pc-vitrine-s { margin: 14px auto 0; max-width: 40ch; font-size: 13px; line-height: 1.5; color: rgba(247,244,236,0.72); }
-  .pc-vitrine-btn { display: inline-flex; align-items: center; justify-content: center; margin: 18px 0 0; min-height: 46px; padding: 0 22px; border-radius: 12px; background: #B8933F; color: #FFFFFF !important; font-size: 15px; font-weight: 700; text-decoration: none; }
-  .pc-vitrine-btn:hover { background: #A5822F; }
+  /* Os acessos em todo plano (08/10/2026): o cartão pequeno "Desempenho" em
+     Atualizações e, na aba Desempenho, os acessos e o que o Premium libera. */
+  .pc-desempenho-mini { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 14px 16px; text-decoration: none; color: var(--text) !important; }
+  .pc-desempenho-mini:hover { border-color: var(--green); }
+  .pc-desempenho-ic { width: 38px; height: 38px; border-radius: 10px; background: #EEF4F0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pc-desempenho-txt { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .pc-desempenho-txt .pc-card-t, .pc-desempenho-txt .pc-card-s { margin: 0; }
+  .pc-desempenho-txt strong { color: var(--green); }
+  .pc-desempenho-ver { display: inline-flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 600; color: var(--green); white-space: nowrap; }
+  .pc-vitrine { margin-top: 16px; }
+  .pc-vitrine-eyebrow { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-dark); }
+  .pc-vitrine-t { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; font-size: 15px; color: var(--text); }
+  .pc-vitrine-n { font-family: var(--fonte-titulo, Georgia, serif); font-size: 30px; line-height: 1; color: var(--green); }
+  .pc-vitrine-sub { margin: 16px 0 0; font-size: 13px; color: var(--muted); }
+  .pc-vitrine-trancados { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0; margin: 8px 0 0; }
+  .pc-vitrine-trancados li { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text); }
+  .pc-vitrine-btn { display: inline-flex; align-items: center; margin: 16px 0 0; min-height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--green) !important; font-size: 14px; font-weight: 600; text-decoration: none; }
+  .pc-vitrine-btn:hover { border-color: var(--green); }
   .pc-cadeado { display: inline-flex; width: 40px; height: 40px; border-radius: 12px; background: #FBF4E4; align-items: center; justify-content: center; flex-shrink: 0; }
   /* gráfico de colunas: uma série por gráfico, eixo com três marcas */
   .pc-graf { margin: 0 0 16px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 16px 12px; }
@@ -1824,12 +1830,15 @@
   .menu-conta-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
   .menu-conta-txt strong { font-size: 15px; color: var(--text); }
   .menu-conta-txt small { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .menu-contato { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 4px 10px 0; }
-  .menu-contato-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 0; font-size: 14px; font-weight: 500; color: var(--text) !important; text-decoration: none; }
+  .menu-fale { cursor: default; align-items: flex-start; }
+  .menu-fale:hover { background: none !important; }
+  .menu-contato { display: flex; flex-wrap: wrap; gap: 2px 16px; margin-top: 4px; }
+  .menu-contato-i { display: inline-flex; align-items: center; gap: 5px; padding: 4px 0; font-size: 13px; font-weight: 500; color: var(--muted) !important; text-decoration: none; }
+  .menu-contato-i:hover { color: var(--text) !important; }
   .menu-item-txt { display: flex; flex-direction: column; gap: 1px; }
   .menu-item-txt small { font-size: 12px; font-weight: 400; color: var(--muted); }
-  .menu-sair { margin-top: 10px; }
-  .menu-links { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 14px 10px 0; }
+  .menu-sair { margin-top: 0; }
+  .menu-links { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 6px 10px 0; padding-left: 28px; }
   .menu-links button { background: none; border: none; padding: 4px 0; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; }
   .menu-links button:hover { color: var(--text); text-decoration: underline; }
 
@@ -6605,30 +6614,46 @@ function blocoTrancado(plano, titulo, texto) {
     </div>`;
 }
 
-// Os acessos em todo plano (pedido do Breno em 07/10/2026: "pode subir um
-// pouco mais os números e deixe mais atrativos como acessos… no meio da
-// tela"). Como o LinkedIn ("X pessoas viram o seu perfil") e o Google
-// Business Profile: o número de acessos dos últimos 30 dias em destaque,
-// logo abaixo do "Olá", e o resto (quem chamou, de onde vieram, bairros)
-// trancado no Premium. O número vem do banco (SQL 20261007160000); banco
-// antigo ou carregando: o bloco aparece sem número, nunca com um inventado.
+// Os acessos em todo plano (pedidos do Breno em 07/10/2026 e 08/10/2026:
+// "deixe mais atrativos como acessos" e depois "está muito grande, deixe
+// pequeno e algo como conferir mais detalhes na aba desempenho… algo com
+// desempenho, insights"). Como o cartão "Desempenho" do Google Business
+// Profile e o "X pessoas viram o seu perfil" do LinkedIn: em Atualizações,
+// um cartão pequeno chamado Desempenho, com os acessos dos últimos 30 dias
+// numa linha e "Ver detalhes" para a aba Desempenho; lá, os acessos e o que
+// o Premium libera. O número vem do banco (SQL 20261007160000); banco
+// antigo ou carregando: sem número, nunca inventado.
+function acessosDe30Dias() {
+  const d = (state.numeros || {}).dados;
+  return d && typeof d.acessos === "number" ? d.acessos : null;
+}
+function cartaoDeDesempenho() {
+  const acessos = acessosDe30Dias();
+  const linha = acessos === null ? "Quantas pessoas abriram a ficha de vocês"
+    : acessos > 0 ? `<strong>${numeroBonito(acessos)} ${acessos === 1 ? "acesso" : "acessos"}</strong> à ficha nos últimos 30 dias`
+    : "Nenhum acesso à ficha nos últimos 30 dias";
+  return `
+    <a href="/parceiros/desempenho" class="pc-card pc-desempenho-mini" data-pc="desempenho">
+      <span class="pc-desempenho-ic">${icon('barchart', 18, 'var(--green)')}</span>
+      <span class="pc-desempenho-txt"><span class="pc-card-t">Desempenho</span><span class="pc-card-s">${linha}</span></span>
+      <span class="pc-desempenho-ver">Ver detalhes ${icon('chevron', 14, 'var(--green)')}</span>
+    </a>`;
+}
 function vitrineDosAcessos() {
   const n = state.numeros || {};
-  const d = n.dados;
-  const acessos = d && typeof d.acessos === "number" ? d.acessos : null;
-  const trancados = ["Quantos chamaram vocês", "De onde vieram", "Bairros de quem procurou"];
+  const acessos = acessosDe30Dias();
+  const trancados = ["Quantos chamaram vocês", "Por qual canal", "Dia a dia", "De onde vieram", "Bairros de quem procurou", "Comparação com a cidade"];
   return `
-    <div class="pc-vitrine">
+    <div class="pc-card pc-vitrine">
       <p class="pc-vitrine-eyebrow">Últimos 30 dias</p>
       ${acessos === null
-        ? `<p class="pc-vitrine-t">${n.carregando ? `${bolaGirando(18)} Contando os acessos…` : "Os acessos da ficha de vocês"}</p>`
+        ? `<p class="pc-vitrine-t">${n.carregando ? `${bolaGirando(16)} Contando os acessos…` : "Os acessos da ficha de vocês aparecem aqui."}</p>`
         : acessos > 0
-          ? `<strong class="pc-vitrine-n">${numeroBonito(acessos)}</strong>
-             <p class="pc-vitrine-l">${acessos === 1 ? "acesso" : "acessos"} à ficha de vocês no GuiaTennis</p>`
-          : `<p class="pc-vitrine-t">Nenhum acesso ainda</p>
-             <p class="pc-vitrine-l">Coloque o QR code da ficha na recepção e no Instagram: os alunos chegam por ele.</p>`}
-      <ul class="pc-vitrine-trancados">${trancados.map(t => `<li>${icon('key', 13, 'var(--gold-claro, #E5CB86)')}<span>${t}</span></li>`).join("")}</ul>
-      <p class="pc-vitrine-s">No plano Premium, vocês veem quantos chamaram e por qual canal, o dia a dia, de onde vieram e a comparação com as academias da cidade.</p>
+          ? `<p class="pc-vitrine-t"><strong class="pc-vitrine-n">${numeroBonito(acessos)}</strong> ${acessos === 1 ? "acesso" : "acessos"} à ficha de vocês no GuiaTennis</p>`
+          : `<p class="pc-vitrine-t">Nenhum acesso ainda.</p>
+             <p class="pc-card-s">Coloque o QR code da ficha na recepção e no Instagram: os alunos chegam por ele.</p>`}
+      <p class="pc-vitrine-sub">No plano Premium, vocês veem também:</p>
+      <ul class="pc-vitrine-trancados">${trancados.map(t => `<li>${icon('key', 12, 'var(--gold)')}<span>${t}</span></li>`).join("")}</ul>
       <a href="/parceiros/plano" class="pc-vitrine-btn" data-pc="plano">Ver os números no Premium</a>
     </div>`;
 }
@@ -7547,7 +7572,7 @@ function pcPainel() {
       ${pcPedidos()}
       ${pcSituacao(c)}
 
-      ${veNumeros() ? "" : vitrineDosAcessos()}
+      ${veNumeros() ? "" : cartaoDeDesempenho()}
       ${veNumeros() ? `
       <div class="pc-bloco">
         <div class="pc-bloco-topo"><h2>Desempenho ${d ? textoDoPeriodo(d.dias) : ""}</h2><a href="/parceiros/desempenho" class="pc-link-btn" data-pc="desempenho">Ver tudo ›</a></div>
@@ -8567,9 +8592,10 @@ function renderCabecalho() {
 // logo abaixo, a conta ("Olá, Ana!" e o e-mail, como o "Olá de novo!" do
 // trivago) ou "Entrar ou criar conta"; depois os grupos com o título
 // pequeno e o ícone verde, como no Parceiros. Só valor que diz alguma coisa
-// na direita (quantas, a cidade, ligados). Termos, Política e "Por que o
-// GuiaTennis" viram links pequenos no rodapé, como nos sites grandes, e o
-// contato do GuiaTennis fica por último, numa linha só (regra 20).
+// na direita (quantas, a cidade, ligados). Tudo o que é de suporte fica
+// junto, no fim, em "Suporte" (pedido de 08/10/2026): como funciona,
+// perguntas, o GuiaTennis Parceiros, o contato numa linha só (regra 20) e
+// Termos e Privacidade como links pequenos. "Sair da conta" por último.
 function renderMenu() {
   if (!state.showMenu) return "";
   const pref = lerPreferencias();
@@ -8616,19 +8642,18 @@ function renderMenu() {
         ${item("preferencias", "Preferências de busca", "ajustes", textoDaPreferencia(pref))}
         ${jogador ? item("avisos", "Avisos por e-mail", "sino", avisosLigados(jogador) ? "Ligados" : "Desligados") : ""}
 
-        <p class="menu-grupo">Ajuda</p>
+        <p class="menu-grupo">Suporte</p>
         ${item("como", "Como funciona", "play")}
         ${item("duvidas", "Perguntas frequentes", "ajuda")}
+        <button type="button" class="menu-item" data-menu="${contaAcademia ? "conta" : isAdmin ? "parceiros-admin" : "parceiros"}">${icon('predio', 17, 'var(--green)')}<span class="menu-item-txt"><span>GuiaTennis Parceiros</span><small>${contaAcademia ? "seu painel" : isAdmin ? "ver como academia" : "para academias e quadras"}</small></span></button>
+        <div class="menu-item menu-fale">${icon('bubble', 17, 'var(--green)')}<span class="menu-item-txt"><span>Fale com a gente</span><span class="menu-contato">${linksContato("menu-contato-i", 14, "var(--green)")}</span></span></div>
+        <p class="menu-links">
+          <button type="button" data-menu="porque">Por que o GuiaTennis</button>
+          <button type="button" data-menu="termos">Termos de Uso</button>
+          <button type="button" data-menu="privacidade">Privacidade</button>
+        </p>
 
         <div class="menu-rodape">
-          <button type="button" class="menu-item" data-menu="${contaAcademia ? "conta" : isAdmin ? "parceiros-admin" : "parceiros"}">${icon('predio', 17, 'var(--green)')}<span class="menu-item-txt"><span>GuiaTennis Parceiros</span><small>${contaAcademia ? "seu painel" : isAdmin ? "ver como academia" : "para academias e quadras"}</small></span></button>
-          <p class="menu-grupo">Fale com a gente</p>
-          <div class="menu-contato">${linksContato("menu-contato-i", 15, "var(--green)")}</div>
-          <p class="menu-links">
-            <button type="button" data-menu="porque">Por que o GuiaTennis</button>
-            <button type="button" data-menu="termos">Termos de Uso</button>
-            <button type="button" data-menu="privacidade">Privacidade</button>
-          </p>
           ${isAdmin
             ? `<button type="button" class="menu-item menu-sair" data-menu="sair">${icon('key', 17, 'var(--muted)')}<span>Sair do modo admin</span></button>`
             : contaAcademia

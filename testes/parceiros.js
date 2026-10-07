@@ -406,7 +406,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   // Desde 08/10/2026 (regra 68): os acessos de 30 dias, o resto no Premium.
   ok(t.h1 === 'Desempenho' && corpo.includes('42') && corpo.includes('acessos à ficha de vocês') && corpo.includes('Quantos chamaram vocês') && !corpo.includes('Visitas na ficha') && !corpo.includes('Contatos'), 'Básico: só os acessos de 30 dias, o resto trancado no Premium — ' + corpo.replace(/\s+/g, ' ').slice(0, 120));
   ok(await page.evaluate(() => document.querySelectorAll('.pc-graf, .pc-periodos').length) === 0, 'Básico: sem gráfico e sem períodos');
-  const verPlanos = await page.evaluate(() => { const b = document.querySelector('.pc-vitrine .pc-vitrine-btn'); const t = document.querySelector('.pc-vitrine .pc-vitrine-s'); return b && t ? { texto: b.innerText, separado: b.getBoundingClientRect().top - t.getBoundingClientRect().bottom, link: b.getAttribute('href') } : null; });
+  const verPlanos = await page.evaluate(() => { const b = document.querySelector('.pc-vitrine .pc-vitrine-btn'); const t = document.querySelector('.pc-vitrine .pc-vitrine-trancados'); return b && t ? { texto: b.innerText, separado: b.getBoundingClientRect().top - t.getBoundingClientRect().bottom, link: b.getAttribute('href') } : null; });
   ok(verPlanos && verPlanos.texto === 'Ver os números no Premium' && verPlanos.separado >= 8 && verPlanos.link === '/parceiros/plano', '"Ver os números no Premium" num botão separado, embaixo, que leva aos planos — ' + JSON.stringify(verPlanos));
   ok(!corpo.includes('posição na busca') && !/aprimore o plano/i.test(corpo) && !corpo.includes('Quero o Completo'), 'Desempenho sem a caixa do plano (o plano fica num lugar só) e sem falar de posição na busca');
   await page.click('.pc-vitrine-btn');
@@ -549,9 +549,9 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'completo' }));
   let painelTexto = await texto(page, "#parceiros .pc-main");
   ok(painelTexto.includes('QR code da sua ficha no GuiaTennis') && !painelTexto.includes('Aprimorar para o') && /Plano\s*Completo/.test(painelTexto), 'Atualizações: QR code da ficha e o atalho "Plano", sem empurrar o plano de cima');
-  ok(!painelTexto.includes('Quero o Premium') && !/aprimore o plano/i.test(painelTexto) && painelTexto.includes('Ver os números no Premium'), 'Atualizações do Completo: os acessos e o resto no Premium, sem a caixa "Aprimore o plano"');
-  // Desde 08/10/2026 (regra 68): os acessos sobem para logo abaixo do "Olá".
-  ok(await page.evaluate(() => { const v = document.querySelector('#parceiros .pc-vitrine'), a = document.querySelector('#parceiros .pc-atalhos'); return !!(v && a && (v.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING)); }), 'os acessos ficam em cima, antes dos atalhos');
+  ok(!painelTexto.includes('Quero o Premium') && !/aprimore o plano/i.test(painelTexto) && painelTexto.includes('Ver detalhes'), 'Atualizações do Completo: o cartão Desempenho com os acessos, sem a caixa "Aprimore o plano"');
+  // Desde 08/10/2026 (regra 68): o cartão Desempenho fica em cima.
+  ok(await page.evaluate(() => { const v = document.querySelector('#parceiros .pc-desempenho-mini'), a = document.querySelector('#parceiros .pc-atalhos'); return !!(v && a && (v.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING)); }), 'o cartão Desempenho fica em cima, antes dos atalhos');
   await browser.close();
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'premium' }));
   painelTexto = await texto(page, "#parceiros .pc-main");

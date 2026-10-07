@@ -35,7 +35,7 @@ teste")
 > meio, ele estava ligando o recebimento de e-mail (MX do Resend:
 > `inbound-smtp.sa-east-1.amazonaws.com`, **verificado no Resend em
 > 08/10/2026**) e o WhatsApp na Meta (app GuiaTennis criado, na Etapa 2).
-> Testes: **967 verificações, nenhuma falha** nos 32 arquivos do navegador
+> Testes: **968 verificações, nenhuma falha** nos 32 arquivos do navegador
 > (o novo é `testes/acessos-em-destaque.js`), 202 no `banco-emails.py` e 21
 > no `receber-email.mjs`.
 >
@@ -1140,21 +1140,28 @@ cobra taxa e não fica no meio** da negociação.
       em cima; logo abaixo, a conta — "Olá, Ana!" e o e-mail (como o "Olá
       de novo!" do trivago), ou "Entrar ou criar conta · Salve buscas e
       avalie academias"; grupos com título pequeno e ícone verde
-      (GuiaTennis, Minhas quadras, Preferências, Ajuda); na direita, só
+      (GuiaTennis, Minhas quadras, Preferências, Suporte); na direita, só
       valor que diz algo (quantas, a cidade, Ligados) — saíram "Entrar",
       "Adicionar", "Escolher"; "Buscas salvas" e "Avisos por e-mail" só
-      com conta. No rodapé: "GuiaTennis Parceiros" com a linha de baixo,
-      "Fale com a gente" numa linha só (WhatsApp, Instagram, E-mail),
-      links pequenos (Por que o GuiaTennis, Termos de Uso, Privacidade) e
-      "Sair da conta" por último. Saiu o título "Menu" no meio com a seta.
-    - **Os acessos em todo plano**, como o LinkedIn ("X pessoas viram o seu
-      perfil", e quem viu só no Premium) e o Google Business Profile: no
-      Básico e no Completo, Atualizações mostra logo abaixo do "Olá", no
-      meio, num bloco verde, **o número de acessos à ficha nos últimos 30
-      dias**, com o que o Premium libera trancado (quantos chamaram, de
-      onde vieram, bairros) e "Ver os números no Premium"; o mesmo em
-      Desempenho. Zero acessos: "Nenhum acesso ainda" e a dica do QR code;
-      banco antigo: o bloco sem número (nunca inventado). O banco
+      com conta. **Tudo de suporte junto, em "Suporte"** (o Breno pediu
+      de novo no mesmo dia: "os contatos e o outro site deixe tudo junto
+      em uma parte"): Como funciona, Perguntas frequentes, "GuiaTennis
+      Parceiros" com a linha de baixo, "Fale com a gente" com WhatsApp,
+      Instagram e E-mail pequenos embaixo, e os links pequenos (Por que o
+      GuiaTennis, Termos de Uso, Privacidade). "Sair da conta" por último.
+      Saiu o título "Menu" no meio com a seta.
+    - **Os acessos em todo plano**, como o cartão "Desempenho" do Google
+      Business Profile e o "X pessoas viram o seu perfil" do LinkedIn: no
+      Básico e no Completo, Atualizações mostra logo abaixo do "Olá" **um
+      cartão pequeno "Desempenho"** — "42 acessos à ficha nos últimos 30
+      dias" e "Ver detalhes ›" (o Breno achou grande demais o primeiro
+      bloco verde, com o número enorme: "deixe pequeno e algo como
+      conferir mais detalhes na aba desempenho… algo com desempenho,
+      insights"). Na aba **Desempenho**, os acessos e a lista do que o
+      Premium libera (quantos chamaram, canal, dia a dia, de onde vieram,
+      bairros, comparação com a cidade) e "Ver os números no Premium".
+      Zero acessos: "Nenhum acesso…" (e a dica do QR code em Desempenho);
+      banco antigo: sem número (nunca inventado). O banco
       (`numeros_da_academia`, SQL `20261007160000_acessos_em_todo_plano`)
       devolve `{plano, trancado, dias: 30, acessos}` fora do Premium.
       **Muda a regra 22** (Básico e Completo agora veem os acessos de 30
@@ -2253,9 +2260,10 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pedido espera e confirmar o e-mail resolve; admin vê a disputa, o
   WhatsApp de antes e decide; o selo no nome e o texto no fim da ficha;
   "No ar" por 1 dia; "Como funciona" e Termos.
-- `acessos-em-destaque.js` — regra 68: Básico e Completo veem os acessos de
-  30 dias em destaque, logo abaixo do "Olá", no meio; singular, zero
-  acessos (dica do QR code), banco antigo sem número; Premium sem o bloco.
+- `acessos-em-destaque.js` — regra 68: Básico e Completo veem o cartão
+  pequeno "Desempenho" com os acessos de 30 dias logo abaixo do "Olá", e
+  "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
+  singular, zero acessos, banco antigo sem número; Premium sem o cartão.
 - `codigo-pelo-whatsapp.js` — regra 66: contestar manda o código na hora
   para o WhatsApp de antes, "Mandar outro código" pede para esperar, quem
   digita vence; sem e-mail confirmado, espera; desligado e banco sem o SQL,

@@ -119,7 +119,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(folha.includes('Falta:') && folha.includes('Horário') && folha.includes('Fotos'), 'painel mostra o que falta na ficha');
   ok(folha.includes('ficha básica'), 'painel avisa que a ficha ainda é básica');
   // Desde 08/10/2026 (regra 68): os acessos de 30 dias em destaque, o resto no Premium.
-  ok(folha.includes('acessos à ficha de vocês') && folha.includes('Ver os números no Premium') && !folha.includes('Visitas na ficha'), 'painel do Básico: os acessos em destaque, o resto só no Premium');
+  ok(folha.includes('Desempenho') && folha.includes('acessos à ficha nos últimos 30 dias') && !folha.includes('Visitas na ficha'), 'painel do Básico: o cartão Desempenho com os acessos, o resto só no Premium');
   ok(folha.includes('1 avaliação sem resposta'), 'painel conta as avaliações sem resposta');
   ok(!(await page.$('.pc-barra-baixo')) && await page.isVisible('#pc-menu-btn'), 'no celular, sem barra de atalhos embaixo: tudo pelo menu');
 
@@ -238,7 +238,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ok(abaDaFaixa.url === 'http://guia.test/parceiros/painel' && abaDaFaixa.nome === 'guiatennis-parceiros', 'o menu abre o painel do GuiaTennis Parceiros, na aba dele');
   await page.goto(abaDaFaixa.url);
   await page.waitForTimeout(700);
-  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-vitrine')), 'lá, o painel (Básico: os acessos e o resto no Premium)');
+  ok(await page.evaluate(() => location.pathname === '/parceiros/painel' && !!document.querySelector('#parceiros .pc-desempenho-mini')), 'lá, o painel (Básico: o cartão Desempenho com os acessos)');
   await menuPc(page, 'avaliacoes');
   await page.waitForTimeout(200);
   page.once('dialog', d => d.accept());

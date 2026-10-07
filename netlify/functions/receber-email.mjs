@@ -9,7 +9,9 @@
 // ("Enviar e-mail como", pelo SMTP do Resend).
 //
 // Endereço: https://guiatennis.com.br/.netlify/functions/receber-email
-// Variáveis no Netlify (Site configuration › Environment variables):
+// Variáveis no Netlify (Project configuration › Environment variables,
+// marcadas como "Contains secret values" — colocadas pelo Breno em
+// 08/10/2026, em Production e Deploy Previews; mudou uma, publicar de novo):
 //   RESEND_RECEBER_KEY     chave do Resend com "Full access" (ler o e-mail
 //                          recebido precisa dela; a "Sending access" dos
 //                          avisos não lê)

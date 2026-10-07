@@ -2764,7 +2764,9 @@ regra 65; o merge espera o Breno. Pendente:
   (5) Netlify › Site configuration › Environment variables:
   `RESEND_RECEBER_KEY` (a chave do passo 3) e `RESEND_WEBHOOK_SECRET` (o
   do passo 4), em todos os contextos; publicar de novo (ou esperar o
-  próximo push); (6) teste: do e-mail pessoal, escrever para
+  próximo push) — **feitos pelo Breno em 08/10/2026** (MX verificado,
+  chave Full access, webhook na prévia e as duas variáveis marcadas como
+  segredo, em Production e Deploy Previews); (6) teste: do e-mail pessoal, escrever para
   contato@guiatennis.com.br e ver chegar no guiatennis1@gmail.com; (7)
   **responder como contato@:** Resend › API Keys › Create "Gmail",
   **Sending access**, domínio guiatennis.com.br; Gmail no computador ›

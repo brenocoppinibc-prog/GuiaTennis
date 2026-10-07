@@ -1,6 +1,7 @@
 // Finge o Supabase para os testes: tabelas em memória (window.__db), e as
 // funções do banco. Chaves: __admin, __semDetalhe, __semCep, __semTempo, __colunasFechadas,
-// __semPlano, __semConfirmada, __academia (id da academia logada),
+// __semPlano, __semConfirmada, __semDataDaFicha, __a1AtualizadaEm, __a1CriadaEm,
+// __academia (id da academia logada),
 // __semAcesso (banco sem o SQL do acesso das academias). O que o site grava
 // em cliques fica em __cliques, o banco que o site abriu fica em __banco, as
 // funções chamadas em __rpcs e a última senha trocada em __senhaNova.
@@ -8,7 +9,7 @@
   const agora = new Date().toISOString();
   const db = window.__db = {
     academias: [
-      { id:"a1", name:"Só Aula Tennis", address:"Rua A", numero:"1", bairro:"Pinheiros", cidade:"São Paulo", endereco:"Rua A, 1 - Pinheiros, São Paulo", lat:-23.56, lng:-46.68, phone:"11999990001", instagram:"", site:"", price_aula:"", price_locacao:"", amenities:["raquete","estacionamento_gratuito"], modalidades:["aulas_proprias"], quadras:{saibro_coberta:2}, pisos:["saibro"], cobertura:["coberta"], photos:[], status:"published", created_at:agora,
+      { id:"a1", name:"Só Aula Tennis", address:"Rua A", numero:"1", bairro:"Pinheiros", cidade:"São Paulo", endereco:"Rua A, 1 - Pinheiros, São Paulo", lat:-23.56, lng:-46.68, phone:"11999990001", instagram:"", site:"", price_aula:"", price_locacao:"", amenities:["raquete","estacionamento_gratuito"], modalidades:["aulas_proprias"], quadras:{saibro_coberta:2}, pisos:["saibro"], cobertura:["coberta"], photos:[], status:"published", created_at: window.__a1CriadaEm || agora, dados_atualizados_em: window.__a1AtualizadaEm || null,
         politica:{ modo:"separado", aula:{reposicao:"24", foraDoPrazo:"Perde a aula."}, locacao:{reposicao:"12", foraDoPrazo:"Cobra metade."} },
         acesso:{ fachada:"Portão preto", entrada:"Avise na portaria", estacionar:"Rua de trás" },
         horario:{ modo:"igual", semana:{de:"06:00",ate:"22:00",fechado:false}, sabado:{de:"08:00",ate:"14:00",fechado:false}, domingo:{de:"",ate:"",fechado:true}, nota:"" } },
@@ -178,6 +179,8 @@
           payload = { ...payload, lat: arred(payload.lat), lng: arred(payload.lng), avisar: !!payload.avisar };
         }
         const r = { id: "n" + (t.length+1) + Math.random().toString(36).slice(2,5), created_at: new Date().toISOString(), ...payload };
+        // Gatilho marcar_dados_atualizados (SQL 20261007120000).
+        if (table === "academias") r.dados_atualizados_em = r.created_at;
         t.push(r);
         // Gatilho pedido_da_academia_nova (SQL 20261006140000): conta com o
         // e-mail confirmado e até 3 academias novas em 24 h → no ar na hora e
@@ -209,6 +212,12 @@
           return { data:null, error:null };
         }
         const mudanca = JSON.parse(JSON.stringify(payload));
+        // Gatilho marcar_dados_atualizados (SQL 20261007120000): só o banco
+        // escreve a data; muda quando a informação muda ou a academia salva.
+        const FORA_DA_FICHA = ["status", "pago", "plano", "pausada", "pausada_ate", "pausada_pela_academia", "source", "nome_solicitante", "contato_solicitante", "revisar_desde", "publicada_em", "confirmada", "lat", "lng"];
+        if (table === "academias") delete mudanca.dados_atualizados_em;
+        const atualizou = (r) => table === "academias" && ((sessao && !souAdmin() && vinculo(sessao.user.id, r.id))
+          || Object.keys(mudanca).some(k => !FORA_DA_FICHA.includes(k) && JSON.stringify(r[k] ?? null) !== JSON.stringify(mudanca[k] ?? null)));
         // O que o gatilho do banco faz quando quem salva é a academia.
         if (table === "academias" && sessao && !souAdmin()) {
           ["status", "pago", "plano", "pausada", "pausada_ate", "source", "nome_solicitante", "contato_solicitante"].forEach(k => delete mudanca[k]);
@@ -216,6 +225,7 @@
         }
         t.filter(pass).forEach(r => {
           const antes = r.status;
+          if (atualizou(r)) r.dados_atualizados_em = new Date().toISOString();
           Object.assign(r, mudanca);
           // Gatilho pedido_de_plano_atendido.
           if (table === "academias" && "plano" in mudanca)
@@ -240,6 +250,9 @@
       if (window.__semPlano && table === "academias" && colunas.includes("plano")) return { data:null, error:{ message:"column academias.plano does not exist" } };
       // Banco sem a coluna da ficha básica: a lista com ela falha, e o "*" não traz o campo.
       if (window.__semConfirmada && table === "academias" && colunas.includes("confirmada")) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
+      // Banco antes do SQL 20261007120000 (a data da ficha).
+      if (window.__semDataDaFicha && table === "academias" && colunas.includes("dados_atualizados_em")) return { data:null, error:{ message:"column academias.dados_atualizados_em does not exist" } };
+      if (window.__semDataDaFicha && table === "academias") { const out = JSON.parse(JSON.stringify(t.filter(pass))).map(r => { delete r.dados_atualizados_em; return r; }); return { data: single ? out[0] : out, error:null }; }
       if (window.__semConfirmada && table === "academias") { const out = JSON.parse(JSON.stringify(t.filter(pass))).map(r => { delete r.confirmada; return r; }); return { data: single ? out[0] : out, error:null }; }
       if (table === "cliques" && window.__semCep && colunas.includes("cep")) return { data:null, error:{ message:"column cliques.cep does not exist" } };
       const out = JSON.parse(JSON.stringify(t.filter(pass)));

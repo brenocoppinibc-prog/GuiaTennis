@@ -4,7 +4,9 @@
 consultas do painel do admin (20261006120000_painel_do_admin) e a declaração
 de quem pede uma academia (20261006130000_declaracao_ao_pedir) e a academia
 nova que vai ao ar sozinha (20261006140000_academia_nova_no_ar) e a exclusão de
-conta pelo admin (20261006150000_excluir_conta).
+conta pelo admin (20261006150000_excluir_conta), a conta de jogador que vira
+Parceiros (20261006160000) e a data em que a ficha foi atualizada
+(20261007120000_ficha_atualizada_em).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -478,6 +480,39 @@ certo, _ = sql("select public.ativar_conta_do_parceiros('Lia Jogadora', '11 9888
 ok(certo and um(f"select count(*) from public.academia_acessos where user_id = '{lia}'") == "1", "ativar de novo não duplica")
 certo, saida = sql("select public.ativar_conta_do_parceiros('Ninguém', '11 98888-7777', true)", papel="authenticated", user=str(uuid.uuid4()))
 ok(not certo and "não é de jogador" in saida, "quem não tem conta de jogador não ativa")
+
+# 16. "Atualizada há 4 dias" na ficha (SQL 20261007120000) ----------------------
+print("\n# Quando a ficha foi atualizada")
+velha = "2026-01-01 12:00:00+00"
+def envelhecer(academia):
+    sql(f"set local session_replication_role = replica; update public.academias set dados_atualizados_em = '{velha}' where id = '{academia}'")
+def data_de(academia):
+    return um(f"select dados_atualizados_em = '{velha}' from public.academias where id = '{academia}'")
+envelhecer(MOEMA)
+ok(um(f"select dados_atualizados_em is not null from public.academias where id = '{MOEMA}'", papel="anon") == "t", "o visitante lê a data")
+sql(f"update public.academias set pausada = true, plano = 'completo', confirmada = true, lat = lat + 0.001 where id = '{MOEMA}'", **admin_jwt)
+ok(data_de(MOEMA) == "t", "pausar, mudar o plano, o selo ou a coordenada não conta como atualizar")
+sql(f"update public.academias set pausada = false, plano = 'basico' where id = '{MOEMA}'", **admin_jwt)
+sql(f"update public.academias set price_locacao = '130-{sufixo}' where id = '{MOEMA}'", **admin_jwt)
+ok(data_de(MOEMA) == "f", "mudar o preço atualiza a data")
+envelhecer(MOEMA)
+sql(f"update public.academias set price_locacao = '130-{sufixo}' where id = '{MOEMA}'", **admin_jwt)
+ok(data_de(MOEMA) == "t", "o admin salvar sem mudar nada não atualiza")
+dona3 = parceiro("Iris Dona", f"iris{sufixo}@exemplo.com", MOEMA)
+certo, saida = sql(f"update public.academias set name = name where id = '{MOEMA}'", papel="authenticated", user=dona3)
+ok(certo and data_de(MOEMA) == "f", "a academia salvar a ficha, mesmo sem mudar nada, confirma que está tudo certo" + ("" if certo else ": " + saida))
+sql(f"update public.academias set dados_atualizados_em = '2020-01-01' where id = '{MOEMA}'", papel="authenticated", user=dona3)
+ok(um(f"select dados_atualizados_em > now() - interval '1 minute' from public.academias where id = '{MOEMA}'") == "t", "a academia não escreve a data à mão")
+envelhecer(MOEMA)
+sql(f"update public.academias set dados_atualizados_em = now() where id = '{MOEMA}'", **admin_jwt)
+ok(data_de(MOEMA) == "t", "nem o admin")
+envelhecer(MOEMA)
+certo, saida = sql(f"select public.pausar_minha_academia('{MOEMA}', true)", papel="authenticated", user=dona3)
+ok(certo and data_de(MOEMA) == "t", "a academia pausar a ficha não conta como atualizar" + ("" if certo else ": " + saida))
+sql(f"select public.pausar_minha_academia('{MOEMA}', false)", papel="authenticated", user=dona3)
+certo, saida = sql("insert into public.academias (name, status) values ('Academia Recém Chegada', 'pending') returning dados_atualizados_em > now() - interval '1 minute'")
+ok(certo and saida.splitlines()[-1] == "t", "academia nova entra com a data de hoje" + ("" if certo else ": " + saida))
+sql("delete from public.academias where name = 'Academia Recém Chegada'")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

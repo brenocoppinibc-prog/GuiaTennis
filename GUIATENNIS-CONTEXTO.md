@@ -22,8 +22,17 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
-**Atualizado em:** 06/10/2026
+**Atualizado em:** 07/10/2026
 
+> **Estado (07/10/2026):** o Breno mandou uma análise do site feita pelo
+> GPT ("faça as adaptações que servem e funcionam para o site"). Entrou a
+> regra 64 (o que serviu: "Confirmada pela academia · atualizada há…" na
+> ficha, "Como funcionam as avaliações", os números do site ditos como são
+> contados e "onde jogar tênis" na descrição para o Google; o que não
+> serviu está na própria regra). SQL `20261007120000_ficha_atualizada_em`.
+> Testes: **921 verificações, nenhuma falha** nos 29 arquivos do navegador
+> e 140 no `banco-emails.py` (Postgres local).
+>
 > **Estado (06/10/2026):** o Breno pediu "quando eu fizer o login, mude o
 > site para eu ter o controle de tudo… separado… mas não aparecer para
 > outras pessoas a minha área". Entrou a regra 58: o **painel do admin**
@@ -901,6 +910,52 @@ cobra taxa e não fica no meio** da negociação.
     `academias_para_revisar_admin()`, `marcar_academia_revisada(id)`; o
     `proteger_ficha_da_academia` deixa passar só essa publicação
     (`guiatennis.academia_nova_no_ar`). Termos (seção 4) atualizados.
+64. **O que serviu da análise do GPT** (pedido de 07/10/2026: "faça as
+    adaptações que servem e funcionam para o site"). A análise diz que o
+    maior risco é o dado velho e a pergunta "25% de quantas pessoas?". Entrou:
+    - **"Confirmada pela academia · atualizada há 4 dias"** no topo da
+      ficha confirmada, como o "Atualizado pela empresa há 2 semanas" do
+      Google Maps e o "Claimed" do Yelp: hoje, ontem, há N dias, há N
+      semanas e, depois de 2 meses, "atualizada em junho de 2026". A data
+      (`academias.dados_atualizados_em`) só o banco escreve: muda quando a
+      informação que o jogador vê muda, ou quando a academia salva a ficha
+      (salvar sem mudar nada confirma que está tudo certo); pausar,
+      publicar, plano, selo e coordenada não contam. Ficha parada há mais
+      de 3 meses: Atualizações lembra a academia de conferir e salvar
+      (como o "Confirme as informações" do Google). Pergunta nova na Ajuda
+      do Parceiros. SQL `20261007120000_ficha_atualizada_em`.
+    - **"Como funcionam as avaliações"** (fechado, embaixo da nota), como o
+      do Airbnb e do Google: só quem tem conta avalia, uma vez por
+      academia, declarando que é verídica; quem administra não avalia; a
+      academia responde mas não apaga; o GuiaTennis só remove a que
+      descumpre os Termos; nada importado. O cartão "Nota só de quem jogou
+      aqui" virou **"Avaliações feitas no GuiaTennis"**: o guia não confere
+      se a pessoa jogou, então não promete isso.
+    - **Números do site ditos como são contados** (home e Parceiros, a
+      mesma função `numerosDoSite`): "+1.200 visitas ao GuiaTennis" (cada
+      acesso é uma visita; antes dizia "pessoas"), "1 em 14 visitas abre a
+      ficha de uma academia", "15% das fichas abertas viram contato com a
+      academia" e a nota "Desde o lançamento do site, contados pelo próprio
+      GuiaTennis e arredondados…". "Dados dos últimos 30 dias" fica para
+      quando houver volume (a análise mesma diz isso). Política (seção 5)
+      ajustada; textos legais em 7 de outubro de 2026.
+    - A descrição para o Google começa com **"Onde jogar tênis perto de
+      você"** (a busca que vale, segundo a análise).
+    - De carona: o cadastro de academia nova no Parceiros e a Ajuda diziam
+      que o GuiaTennis confere antes de publicar; com o e-mail confirmado,
+      entra no ar na hora (regra 60).
+    **Não entrou, e por quê:** trocar "Cadastrar minha academia" por "Quero
+    trazer mais jogadores" (os grandes — Booking, Airbnb, Google Business
+    Profile, iFood — usam o verbo da ação no botão e o benefício no título,
+    que já é "Mais jogadores para a sua academia de tênis"; a própria
+    análise diz "eu testaria", e o site não tem teste A/B); outro título
+    para a home (a análise dá a nota mais alta para o atual); o cartão de
+    resultado e a ficha (já têm o que ela lista: nome, nota, distância,
+    preço, quadras, piso, coberta, aulas, WhatsApp, "Ver academia"); a
+    ordem da página do Parceiros (benefícios → como funciona → planos →
+    perguntas é a ordem do Booking e do Airbnb para parceiros; as seis
+    perguntas da análise já têm resposta nela); fotos, gradientes e
+    animações (a análise mesma pede para não exagerar).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -1214,7 +1269,14 @@ lat, lng, phone, instagram, site, price_range, price_aula,
 price_locacao, amenities[], modalidades[], pisos[], cobertura[],
 quadras(jsonb), photos[], source, status ('published'|'pending'),
 pago, plano, politica(jsonb), acesso(jsonb), horario(jsonb),
-pausada, pausada_ate, confirmada, nome_solicitante, contato_solicitante`
+pausada, pausada_ate, confirmada, dados_atualizados_em, nome_solicitante,
+contato_solicitante`
+
+**`dados_atualizados_em`** (07/10/2026, regra 64): quando a informação da
+ficha mudou ou a academia salvou a ficha. Só o gatilho
+`marcar_dados_atualizados` escreve (o que vier do site é trocado);
+`dados_da_ficha(jsonb)` diz o que conta como informação (tira situação,
+plano, pausa, selo, coordenada, quem pediu). Visitante lê.
 
 **`confirmada`** (desde 29/09/2026): `false` = **ficha básica**, listada
 com dados públicos e ainda não confirmada pela academia. A ficha mostra
@@ -1837,7 +1899,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -1949,6 +2011,13 @@ as 133 do `banco-acesso.py` no banco e login locais.
   jogadores), "Não quero mais receber" (pergunta, tira o número do link,
   link inventado), avisos no Perfil do Parceiros, situação dos e-mails no
   admin e os textos "Por que…" e da Política.
+- `confianca-na-ficha.js` — regra 64: "Confirmada pela academia ·
+  atualizada há…" (hoje, ontem, semanas, mês), ficha básica sem a linha,
+  banco sem a coluna, a academia salvar deixa "atualizada hoje" e não
+  escreve a data à mão, o lembrete de ficha parada em Atualizações, "Como
+  funcionam as avaliações", os números da home e do Parceiros com a nota,
+  o cartão "Avaliações feitas no GuiaTennis", a descrição para o Google e
+  a pergunta nova da Ajuda.
 - `banco-emails.py` — **não roda com os outros**: precisa de um Postgres
   local com a pasta `supabase/` aplicada (não precisa do GoTrue); finge o
   cofre, o pg_net e o relógio. Confere cada aviso (quem recebe, quem não,

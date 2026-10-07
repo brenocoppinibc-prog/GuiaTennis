@@ -1057,7 +1057,10 @@ cobra taxa e não fica no meio** da negociação.
       manda nada.
     - O WhatsApp Business do Breno, (11) 92745-6457, **continua no
       aplicativo**, com ele respondendo à mão (seção 12): o código sai de
-      um **número só para os códigos**, ligado à API. Usar o mesmo número
+      um **número só para os códigos**, ligado à API — **(11) 97185-3987**
+      (+55 11 97185-3987, conseguido pelo Breno em 07/10/2026; o chip só
+      entra no celular para receber o SMS da Meta e depois fica guardado,
+      com recarga de vez em quando para a linha não ser cancelada). Usar o mesmo número
       nos dois ("coexistência") só por um parceiro da Meta, que cobra por
       mês.
     - Custo: a Meta cobra cada mensagem de autenticação entregue no Brasil

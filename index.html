@@ -2026,6 +2026,9 @@
   .perc-linha small { color: var(--muted); }
   .perc-t { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
   .pc-pausa { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .pc-saida textarea { min-height: 72px; resize: vertical; margin-top: 10px; }
+  .pc-saida .pc-acoes { margin-top: 12px; align-items: center; }
+  .pc-saida-aberta { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: #FBF4E4; }
   .pc-pausa .chip-row { margin-top: 8px; }
 
   /* Pedido de avaliação (05/10/2026): o balão "Jogou aqui?", com estrelas. */
@@ -5227,6 +5230,11 @@ async function carregarAcessos() {
     const r = await sb.rpc('pedidos_de_plano_admin');
     state.pedidosDePlano = r.error ? [] : (r.data || []);
   } catch { state.pedidosDePlano = []; }
+  // Pedidos para tirar a academia do guia (SQL 20261008150000).
+  try {
+    const r = await sb.rpc('pedidos_para_sair_admin');
+    state.pedidosParaSairAdmin = r.error ? [] : (r.data || []);
+  } catch { state.pedidosParaSairAdmin = []; }
   // Academias novas que foram ao ar sozinhas (SQL 20261006140000).
   try {
     const r = await sb.rpc('academias_para_revisar_admin');
@@ -5288,6 +5296,49 @@ function blocoPedidosDePlano() {
         </div>
       </div>`).join("")}`;
 }
+// Admin: academias que pediram para sair do guia (pedido do Breno em
+// 08/10/2026: "a exclusão preciso pedir uma solicitação"). "Tirar do guia"
+// apaga a ficha; "Manter no guia" fecha o pedido com uma resposta. Quem
+// pediu recebe a resposta por e-mail (SQL 20261008150000).
+const MOTIVOS_PARA_SAIR = [
+  { k: "fechou", t: "A academia fechou" },
+  { k: "nao_quer", t: "Não queremos mais aparecer" },
+  { k: "outro", t: "Outro motivo" },
+];
+function blocoPedidosParaSair() {
+  const lista = state.pedidosParaSairAdmin || [];
+  if (!lista.length) return "";
+  return `
+    <p class="sheet-title display" style="font-size:18px;margin-top:28px">Querem sair do guia</p>
+    <p class="subtitle" style="margin-top:4px">Confira se quem pediu responde pela academia. "Tirar do guia" apaga a ficha, com as avaliações; "Manter no guia" fecha o pedido. Quem pediu recebe a resposta por e-mail.</p>
+    ${lista.map(p => `
+      <div class="pending-item pedido-saida">
+        <span class="pending-name display">${esc(p.nome || "Academia")}</span>
+        <span class="pending-detail">${esc([p.bairro, p.cidade].filter(Boolean).join(", ") || "Sem endereço")} · pediu em ${dataHora(p.pedido_em)}</span>
+        <span class="pending-detail">Motivo: ${esc((MOTIVOS_PARA_SAIR.find(m => m.k === p.motivo) || {}).t || p.motivo)}${p.detalhes ? " — " + esc(p.detalhes) : ""}</span>
+        <span class="pending-detail">Pediu: ${esc(p.pessoa || "")}${p.email ? " · " + esc(p.email) : ""}${p.whatsapp ? " · " + esc(telefoneBonito(p.whatsapp)) : ""}</span>
+        <div class="chip-row">
+          ${p.academia_id ? `<button type="button" class="chip small" data-open="${p.academia_id}">Abrir a ficha</button>` : ""}
+          <button type="button" class="chip small" data-saida-manter="${p.id}">Manter no guia</button>
+          <button type="button" class="chip small active" data-saida-tirar="${p.id}" data-nome="${esc(p.nome || "")}">Tirar do guia</button>
+        </div>
+      </div>`).join("")}`;
+}
+async function resolverPedidoParaSair(id, remover, nome) {
+  let resposta = null;
+  if (remover) {
+    if (!confirm(`Tirar "${nome || "a academia"}" do GuiaTennis? A ficha é apagada, com as avaliações. Isso não pode ser desfeito.`)) return;
+  } else {
+    resposta = prompt("Resposta para a academia (opcional). Vai no e-mail, junto com \"a academia continua no GuiaTennis\".", "");
+    if (resposta === null) return;
+  }
+  const r = await sb.rpc('resolver_pedido_para_sair', { p_id: id, p_remover: !!remover, p_resposta: resposta || null });
+  if (r.error) { alert("Não consegui agora: " + r.error.message); return; }
+  state.pedidosParaSairAdmin = (state.pedidosParaSairAdmin || []).filter(p => p.id !== id);
+  if (remover) await loadEverything();
+  render();
+}
+
 function loginDaAcademia(academiaId) {
   return (state.acessos || []).find(a => a.academia_id === academiaId && (a.papel || "principal") === "principal")
     || (state.acessos || []).find(a => a.academia_id === academiaId) || null;
@@ -6498,7 +6549,7 @@ function perguntasParceiros() {
     { q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado." },
     { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha." },
     { q: "Esqueci a senha. E agora?", a: "Na tela de entrar, digite o seu e-mail e toque em \"Esqueceu a senha?\": mandamos um código para o seu e-mail, e você cria a senha nova ali mesmo. Se você entra com o usuário que o GuiaTennis mandou (sem e-mail), fale com o GuiaTennis no WhatsApp." },
-    { q: "Posso pausar ou tirar a academia do guia?", a: "Pausar, sim, quando quiser: em Suas academias, toque em \"Pausar no site\" na academia e escolha por quanto tempo (ou até você voltar). Cada academia pausa separada, e \"Voltar a aparecer\" traz a ficha de volta. Para tirar a academia do guia, peça pelo WhatsApp ou pelo e-mail do GuiaTennis." },
+    { q: "Posso pausar ou tirar a academia do guia?", a: "Pausar, sim, quando quiser: em Suas academias, toque em \"Pausar no site\" na academia e escolha por quanto tempo (ou até você voltar). Cada academia pausa separada, e \"Voltar a aparecer\" traz a ficha de volta. Para tirar a academia do guia, o responsável principal toca em \"Pedir para tirar do guia\" e conta o motivo: o GuiaTennis confere e responde por e-mail. Tirada do guia, a ficha é apagada, com as avaliações." },
   ];
 }
 
@@ -6536,6 +6587,7 @@ function irParceiros(aba, opcoes = {}) {
   if (aba !== "perfil") state.contaModo = "painel";
   if ((aba === "painel" || aba === "desempenho") && temAcademia() && acessoCompleto()) carregarNumeros();
   if ((aba === "painel" || aba === "pessoas") && temAcademia() && acessoCompleto()) { carregarPedidosDeAcesso(); carregarPessoas(); }
+  if (aba === "academias" && contaAcademia) { state.pcSaindo = null; state.pcSaidaErro = ""; carregarPedidosParaSair(); }
   if (aba === "promocoes" && temAcademia() && acessoCompleto()) { state.pcPromoMsg = null; state.pcPromoEditando = null; state.pcPromoForm = null; carregarPromocoesDaAcademia(); }
   syncUrl(!opcoes.substituir);
   render();
@@ -7941,7 +7993,7 @@ function pcFicha() {
         <button type="button" class="pc-atalho" id="conta-ver-ficha" data-court="${c.id}">${icon('eye', 20, 'var(--green)')}<span>Ver a ficha no site</span></button>
         <button type="button" class="pc-atalho" id="conta-qr" data-court="${c.id}">${icon('clipboard', 20, 'var(--green)')}<span>QR code da sua ficha no GuiaTennis</span></button>
       </div>
-      <p class="footnote">Para tirar a ficha da busca por um tempo, use <a href="/parceiros/academias" data-pc="academias">Suas academias › Pausar no site</a>. Para tirar a academia do guia, <a href="${whatsappGuia(`Olá! Sou da ${c.name} e preciso de ajuda com a ficha no GuiaTennis.`)}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>
+      <p class="footnote">Para tirar a ficha da busca por um tempo, use <a href="/parceiros/academias" data-pc="academias">Suas academias › Pausar no site</a>. Para tirar a academia do guia, use <a href="/parceiros/academias" data-pc="academias">Suas academias › Pedir para tirar do guia</a>.</p>
     </section>`;
 }
 
@@ -8131,6 +8183,32 @@ function pcAcademias() {
       </div>`;
     return `<p class="pc-card-s"><button type="button" class="pc-linha-link pc-linha-discreta" data-pausar-academia="${a.id}">Pausar no site</button></p>`;
   };
+  // Tirar do guia é um pedido (08/10/2026): o responsável principal pede,
+  // o GuiaTennis confere e responde por e-mail. Pausar continua na hora.
+  const saida = (a) => {
+    if (a.status === "pending") return "";
+    const pedido = (state.pedidosParaSair || []).find(p => p.academia_id === a.id);
+    if (pedido) return `
+      <div class="pc-saida-aberta">
+        <p class="pc-card-s"><strong>Pedido para tirar do guia enviado em ${dataCurta(pedido.pedido_em)}.</strong> O GuiaTennis confere e responde por e-mail. Até lá, a academia continua no guia${a.pausada ? "" : "; se quiser, pause no site enquanto isso"}.</p>
+        <button type="button" class="pc-linha-link pc-linha-discreta" data-cancelar-saida="${a.id}">Cancelar o pedido</button>
+      </div>`;
+    if (a.papel === "equipe") return "";
+    if (state.pcSaindo !== a.id) return `<p class="pc-card-s"><button type="button" class="pc-linha-link pc-linha-discreta" data-pedir-saida="${a.id}">Pedir para tirar do guia</button></p>`;
+    const motivo = state.pcSaidaMotivo || "";
+    return `
+      <div class="pc-pausa pc-saida">
+        <p class="pc-card-s"><strong>Tirar a academia do guia?</strong> A ficha sai do GuiaTennis, com as avaliações e os números. Se for só por um tempo, pause no site.</p>
+        <p class="field-label">Motivo</p>
+        <div class="chip-row">${MOTIVOS_PARA_SAIR.map(m => `<button type="button" class="chip small ${motivo === m.k ? "active" : ""}" data-saida-motivo="${m.k}">${esc(m.t)}</button>`).join("")}</div>
+        <textarea class="form-field" id="pc-saida-detalhes" maxlength="500" placeholder="${motivo === "outro" ? "Conte o motivo em poucas palavras" : "Quer contar algo? (opcional)"}">${esc(state.pcSaidaDetalhes || "")}</textarea>
+        ${state.pcSaidaErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pcSaidaErro)}</div>` : ""}
+        <div class="pc-acoes">
+          <button type="button" class="cta-btn cta-primary" id="pc-saida-enviar" data-academia="${a.id}" ${state.pcSaidaEnviando ? "disabled" : ""}>${state.pcSaidaEnviando ? bolaGirando(15) + " Enviando..." : "Enviar o pedido"}</button>
+          <button type="button" class="pc-linha-link pc-linha-discreta" data-saida-voltar>Voltar</button>
+        </div>
+      </div>`;
+  };
   const cartao = (a) => {
     const aberta = a.id === contaAcademia.academiaId;
     const c = state.allCourts.find(x => x.id === a.id);
@@ -8152,6 +8230,7 @@ function pcAcademias() {
         </div>
         ${pausa(a)}
         ${state.pausaErro && state.pausaErroEm === a.id ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pausaErro)}</div>` : ""}
+        ${saida(a)}
       </div>`;
   };
   return `
@@ -8174,6 +8253,44 @@ function pcAcademias() {
           <p class="pc-card-s">Procure a sua academia no guia e toque em "Administrar", ou cadastre uma nova.</p>
         </div>` : ""}
     </section>`;
+}
+
+async function carregarPedidosParaSair() {
+  try {
+    const r = await sb.rpc('meus_pedidos_para_sair');
+    state.pedidosParaSair = r.error ? [] : (r.data || []);
+  } catch { state.pedidosParaSair = []; }
+  if (state.page === "parceiros") render();
+}
+async function pedirParaSair(academiaId) {
+  if (state.pcSaidaEnviando) return;
+  const detalhes = (document.getElementById("pc-saida-detalhes")?.value || "").trim();
+  state.pcSaidaDetalhes = detalhes;
+  if (!state.pcSaidaMotivo) { state.pcSaidaErro = "Escolha o motivo."; render(); return; }
+  if (state.pcSaidaMotivo === "outro" && !detalhes) { state.pcSaidaErro = "Conte o motivo em poucas palavras."; render(); return; }
+  state.pcSaidaEnviando = true; state.pcSaidaErro = ""; render();
+  let r;
+  try { r = await sb.rpc('pedir_para_sair_do_guia', { p_academia: academiaId, p_motivo: state.pcSaidaMotivo, p_detalhes: detalhes || null }); }
+  catch (e) { r = { error: e }; }
+  state.pcSaidaEnviando = false;
+  if (r.error) {
+    const m = String(r.error.message || "");
+    state.pcSaidaErro = /responsável principal|Já existe|motivo|500 letras/.test(m) ? m : "Não consegui enviar agora. Tente de novo em instantes.";
+    render();
+    return;
+  }
+  state.pcSaindo = null; state.pcSaidaMotivo = ""; state.pcSaidaDetalhes = "";
+  state.contaAviso = "Pedido enviado. O GuiaTennis confere e responde por e-mail.";
+  await carregarPedidosParaSair();
+  render();
+}
+async function cancelarPedidoParaSair(academiaId) {
+  if (!confirm("Cancelar o pedido para tirar a academia do guia?")) return;
+  const r = await sb.rpc('cancelar_pedido_para_sair', { p_academia: academiaId });
+  if (r.error) { alert("Não consegui cancelar agora. Tente de novo."); return; }
+  state.contaAviso = "Pedido cancelado: a academia continua no guia.";
+  await carregarPedidosParaSair();
+  render();
 }
 
 // Pessoas da academia aberta: quem tem acesso, os pedidos de acesso (só o
@@ -8700,6 +8817,12 @@ function ligarEventosParceiros() {
   document.querySelectorAll("[data-pausar-cancelar]").forEach(el => { el.onclick = () => { state.pcPausando = null; render(); }; });
   document.querySelectorAll("[data-pausar-dias]").forEach(el => { el.onclick = () => pausarAcademia(el.dataset.academia, true, parseInt(el.dataset.pausarDias, 10) || 0); });
   document.querySelectorAll("[data-voltar-academia]").forEach(el => { el.onclick = () => pausarAcademia(el.dataset.voltarAcademia, false); });
+  document.querySelectorAll("[data-pedir-saida]").forEach(el => { el.onclick = () => { state.pcSaindo = el.dataset.pedirSaida; state.pcSaidaMotivo = ""; state.pcSaidaDetalhes = ""; state.pcSaidaErro = ""; state.pcPausando = null; render(); }; });
+  document.querySelectorAll("[data-saida-motivo]").forEach(el => { el.onclick = () => { state.pcSaidaDetalhes = document.getElementById("pc-saida-detalhes")?.value || ""; state.pcSaidaMotivo = el.dataset.saidaMotivo; state.pcSaidaErro = ""; render(); }; });
+  document.querySelectorAll("[data-saida-voltar]").forEach(el => { el.onclick = () => { state.pcSaindo = null; state.pcSaidaErro = ""; render(); }; });
+  document.querySelectorAll("[data-cancelar-saida]").forEach(el => { el.onclick = () => cancelarPedidoParaSair(el.dataset.cancelarSaida); });
+  const pcSaidaEnviar = document.getElementById("pc-saida-enviar");
+  if (pcSaidaEnviar) pcSaidaEnviar.onclick = () => pedirParaSair(pcSaidaEnviar.dataset.academia);
   document.querySelectorAll("[data-ver-pedidos]").forEach(el => { el.onclick = () => { state.pcAdicionando = false; state.pedidoErro = ""; render(); window.scrollTo(0, 0); }; });
 
   // Pessoas com acesso.
@@ -8918,7 +9041,7 @@ function renderMenu() {
 // a faixa "Modo admin", que saiu em 08/10/2026).
 function pendenciasDoAdmin() {
   if (!isAdmin) return 0;
-  return (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length;
+  return (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length + (state.pedidosParaSairAdmin || []).length;
 }
 
 // As três listas da pessoa, só com academias que ainda estão no site.
@@ -14992,7 +15115,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz, e remover a academia do guia continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. No plano Premium, a academia também pode divulgar até 3 promoções ao mesmo tempo, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. A promoção nova é avisada por e-mail a quem favoritou a academia e pediu avisos de promoções, no máximo uma vez por semana para cada academia.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. Tirar a academia do guia é um pedido do responsável principal, feito no GuiaTennis Parceiros (Suas academias › Pedir para tirar do guia): o GuiaTennis confere quem pediu e responde por e-mail; tirada do guia, a ficha é apagada, com as avaliações. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. No plano Premium, a academia também pode divulgar até 3 promoções ao mesmo tempo, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. A promoção nova é avisada por e-mail a quem favoritou a academia e pediu avisos de promoções, no máximo uma vez por semana para cada academia.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -15310,6 +15433,8 @@ function admParaFazer() {
   if (ped) itens.push({ n: ped, t: plural(ped, "pedido para administrar uma academia", "pedidos para administrar academias"), aba: "pendencias" });
   const planos = n((state.pedidosDePlano || []).length);
   if (planos) itens.push({ n: planos, t: plural(planos, "academia quer mudar de plano", "academias querem mudar de plano"), aba: "pendencias" });
+  const sair = n((state.pedidosParaSairAdmin || []).length);
+  if (sair) itens.push({ n: sair, t: plural(sair, "academia pediu para sair do guia", "academias pediram para sair do guia"), aba: "pendencias" });
   const fora = semCoordenada().length;
   if (fora) itens.push({ n: fora, t: plural(fora, "academia fora do mapa, sem coordenada", "academias fora do mapa, sem coordenada"), aba: "ferramentas" });
   const e = state.situacaoEmails;
@@ -15404,7 +15529,8 @@ function admPendenciasHtml() {
     </section>
     ${blocoParaRevisar() ? `<section class="adm-bloco">${blocoParaRevisar()}</section>` : ""}
     <section class="adm-bloco">${blocoPedidosParaAdministrar() || `<h2 class="adm-h2">Pedidos para administrar</h2><p class="adm-vazio">Nenhum pedido agora.</p>`}</section>
-    <section class="adm-bloco">${blocoPedidosDePlano() || `<h2 class="adm-h2">Querem mudar de plano</h2><p class="adm-vazio">Nenhuma academia pediu outro plano.</p>`}</section>`;
+    <section class="adm-bloco">${blocoPedidosDePlano() || `<h2 class="adm-h2">Querem mudar de plano</h2><p class="adm-vazio">Nenhuma academia pediu outro plano.</p>`}</section>
+    <section class="adm-bloco">${blocoPedidosParaSair() || `<h2 class="adm-h2">Querem sair do guia</h2><p class="adm-vazio">Nenhuma academia pediu para sair.</p>`}</section>`;
 }
 
 const ADM_FILTROS_ACADEMIA = [
@@ -15717,7 +15843,7 @@ async function excluirContaAgora() {
 function renderPainelAdmin() {
   const aba = abaDoAdmin(state.adminAba);
   const atual = ADMIN_ABAS.find(x => x.aba === aba);
-  const contagem = { pendencias: (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length };
+  const contagem = { pendencias: (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length + (state.pedidosParaSairAdmin || []).length };
   const conteudo = {
     inicio: admInicioHtml, pendencias: admPendenciasHtml, academias: admAcademiasHtml,
     jogadores: admJogadoresHtml, avaliacoes: admAvaliacoesHtml, acessos: admAcessosHtml, estatisticas: () => `<section class="adm-bloco">${conteudoDasEstatisticas()}</section>`,
@@ -16329,6 +16455,8 @@ function attachEvents() {
       render();
     };
   });
+  document.querySelectorAll("[data-saida-tirar]").forEach(el => { el.onclick = () => resolverPedidoParaSair(el.dataset.saidaTirar, true, el.dataset.nome); });
+  document.querySelectorAll("[data-saida-manter]").forEach(el => { el.onclick = () => resolverPedidoParaSair(el.dataset.saidaManter, false); });
   document.querySelectorAll("[data-tirar-pedido-plano]").forEach(el => {
     el.onclick = async () => {
       const { error } = await sb.from('pedidos_de_plano').delete().eq('academia_id', el.dataset.tirarPedidoPlano);
@@ -17598,6 +17726,7 @@ async function init() {
   if (state.page === "parceiros" && ["painel", "pessoas"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarPedidosDeAcesso();
   if (state.page === "parceiros" && state.parceirosAba === "pessoas" && temAcademia() && acessoCompleto()) carregarPessoas();
   if (state.page === "parceiros" && state.parceirosAba === "promocoes" && temAcademia() && acessoCompleto()) carregarPromocoesDaAcademia();
+  if (state.page === "parceiros" && state.parceirosAba === "academias" && contaAcademia) carregarPedidosParaSair();
 
   // Aberto pelo "Entenda como funciona" (/parceiros/ajuda#numeros): a
   // pergunta já aberta, na tela.

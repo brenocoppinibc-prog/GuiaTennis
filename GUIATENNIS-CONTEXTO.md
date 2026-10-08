@@ -36,6 +36,9 @@ teste")
 > Testes: **1.038 verificações, nenhuma falha** nos 35 arquivos do
 > navegador (o novo é `testes/promocoes.js`) e **234 no
 > `banco-emails.py`** (Postgres local, seção 22 nova).
+> Depois, "deixe isso oculto" (a nota dos números, regra 73) e a regra 76
+> (tirar do guia vira pedido, SQL `20261008150000_pedido_para_sair_do_guia`):
+> **252 no `banco-emails.py`** e o teste novo `testes/sair-do-guia.js`.
 >
 > **Estado (08/10/2026, fim do dia):** o Breno pediu "eu quero que
 > academias que são Premium tenha um símbolo de verificado diferente e
@@ -1381,6 +1384,25 @@ cobra taxa e não fica no meio** da negociação.
     os nomes que são função: "abre no Google Maps e no Waze", "de onde
     vieram (Instagram, Google…)" e os serviços citados na Privacidade. As
     referências continuam nos comentários do código e neste documento.
+76. **Tirar a academia do guia é um pedido** (pedido de 08/10/2026: "eu
+    quero que a pausa o administrador consiga fazer, agora a exclusão
+    preciso pedir uma solicitação"; muda a regra 48). **Pausar** continua
+    com quem administra a academia, na hora. **Tirar do guia:** em Suas
+    academias, o **responsável principal** (a equipe não) toca em "Pedir
+    para tirar do guia", escolhe o motivo ("A academia fechou", "Não
+    queremos mais aparecer", "Outro motivo" — este pede o texto) e envia;
+    o cartão mostra "Pedido para tirar do guia enviado em…" com "Cancelar
+    o pedido". Um pedido aberto por academia. O admin recebe e-mail e vê em
+    **Pendências › Querem sair do guia** (motivo, quem pediu, e-mail,
+    WhatsApp): **"Tirar do guia"** (pergunta antes) apaga a ficha, com as
+    avaliações, como o "Excluir" do admin; **"Manter no guia"** fecha o
+    pedido com uma resposta opcional. Quem pediu recebe a resposta por
+    e-mail. SQL `20261008150000_pedido_para_sair_do_guia` (tabela
+    `pedidos_para_sair`, sem leitura direta; `pedir_para_sair_do_guia`,
+    `cancelar_pedido_para_sair`, `meus_pedidos_para_sair`,
+    `pedidos_para_sair_admin`, `resolver_pedido_para_sair`). Ajuda, Termos
+    e o rodapé de Minha ficha atualizados. Testes: `testes/sair-do-guia.js`
+    e a seção 23 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2360,7 +2382,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2489,6 +2511,10 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pequeno "Desempenho" com os acessos de 30 dias embaixo das avaliações, e
   "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
   singular, zero acessos, banco antigo sem número; Premium sem o cartão.
+- `sair-do-guia.js` — regra 76: o responsável pede (motivo obrigatório,
+  "Outro" pede texto), o cartão mostra o pedido, cancelar; a equipe não
+  pede; o admin vê em Pendências, "Manter no guia" com resposta e "Tirar
+  do guia" apaga a ficha; textos.
 - `promocoes.js` — regra 72: fora do Premium, trancado; publicar (pede
   o título), o aviso de quantos o e-mail avisou, mudar, até 3 valendo,
   encerrar; na ficha, o atalho e o bloco com os preços (a vencida e a do

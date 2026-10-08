@@ -11,7 +11,8 @@ Parceiros (20261006160000), a data em que a ficha foi atualizada
 (20261007140000_codigo_pelo_whatsapp), a logo nos e-mails
 (20261007150000_logo_nos_emails) e os acessos em todo plano
 (20261007160000_acessos_em_todo_plano), os guardados na conta
-(20261008130000_guardados_na_conta) e as promoções (20261008140000_promocoes).
+(20261008130000_guardados_na_conta), as promoções (20261008140000_promocoes)
+e o pedido para tirar do guia (20261008150000_pedido_para_sair_do_guia).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -824,6 +825,51 @@ ok(um(f"select public.parar_avisos('{token}', 'promocoes')", papel="anon") == "p
    and um(f"select promocoes::text || avisos_academias::text from public.jogadores where user_id = '{fa}'") == "falsefalse",
    "o link do e-mail desliga só as promoções")
 sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; update public.academias set plano = '{plano_antes}' where id = '{PINHEIROS}';")
+
+# 23. Tirar a academia do guia vira pedido (SQL 20261008150000) ------------------
+print("\n# Pedido para tirar do guia")
+sql("delete from public.pedidos_para_sair; delete from public.emails_a_enviar where tipo like 'pedido_para_sair%';")
+sair = um("insert into public.academias (name, status, cidade, bairro) values ('Academia Que Sai', 'published', 'São Paulo', 'Lapa') returning id")
+resp_sai = parceiro("Rui Sai", f"rui{sufixo}@exemplo.com", sair)
+equipe_sai = parceiro("Tati Equipe", f"tati{sufixo}@exemplo.com", sair, "equipe")
+certo, saida = sql(f"select public.pedir_para_sair_do_guia('{sair}', 'fechou')", papel="authenticated", user=equipe_sai)
+ok(not certo and "responsável principal" in saida, "só o responsável principal pede para tirar do guia")
+certo, saida = sql(f"select public.pedir_para_sair_do_guia('{sair}', 'outro', '')", papel="authenticated", user=resp_sai)
+ok(not certo and "Conte o motivo" in saida, "\"Outro motivo\" pede o motivo escrito")
+certo, saida = sql(f"select public.pedir_para_sair_do_guia('{sair}', 'fechou', 'Fechamos em setembro.')", papel="authenticated", user=resp_sai)
+ok(certo, "o responsável pede para tirar do guia" + ("" if certo else ": " + saida))
+ok(um("select count(*) from public.academias where id = '" + sair + "'") == "1", "o pedido não tira nada sozinho: a academia continua no guia")
+aviso = um("select para || '|' || assunto from public.emails_a_enviar where tipo = 'pedido_para_sair'")
+ok(aviso == "guiatennis1@gmail.com|Pedido para tirar do guia: Academia Que Sai", "o admin recebe o pedido por e-mail — " + str(aviso))
+certo, saida = sql(f"select public.pedir_para_sair_do_guia('{sair}', 'fechou')", papel="authenticated", user=resp_sai)
+ok(not certo and "Já existe um pedido" in saida, "um pedido aberto por academia")
+ok(um("select count(*) from public.meus_pedidos_para_sair()", papel="authenticated", user=equipe_sai) == "1", "a equipe da academia vê que há um pedido aberto")
+ok(um("select count(*) from public.meus_pedidos_para_sair()", papel="authenticated", user=carla) == "0", "outra conta não vê")
+ok(um("select count(*) from public.pedidos_para_sair_admin()", papel="authenticated", user=carla) == "0", "só o admin vê a lista de pedidos")
+certo, _ = sql("select count(*) from public.pedidos_para_sair", papel="authenticated", user=resp_sai)
+ok(not certo, "a tabela não se lê direto")
+admin_kw = admin_jwt
+linha = um("select nome || '|' || motivo || '|' || pessoa from public.pedidos_para_sair_admin()", **admin_kw)
+ok(linha == "Academia Que Sai|fechou|Rui Sai", "o admin vê a academia, o motivo e quem pediu — " + str(linha))
+pid = um("select id from public.pedidos_para_sair_admin()", **admin_kw)
+certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', false, 'Que tal pausar por um tempo?')", papel="authenticated", user=resp_sai)
+ok(not certo, "quem pediu não resolve o próprio pedido")
+certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', false, 'Que tal pausar por um tempo?')", **admin_kw)
+ok(certo and um("select count(*) from public.academias where id = '" + sair + "'") == "1"
+   and um(f"select resolucao from public.pedidos_para_sair where id = '{pid}'") == "mantida", "\"Manter no guia\" fecha o pedido e a academia fica")
+html = um("select html from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta'") or ""
+ok("continua no GuiaTennis" in html and "Que tal pausar por um tempo?" in html, "quem pediu recebe a resposta por e-mail")
+sql(f"select public.pedir_para_sair_do_guia('{sair}', 'nao_quer')", papel="authenticated", user=resp_sai)
+certo, _ = sql(f"select public.cancelar_pedido_para_sair('{sair}')", papel="authenticated", user=equipe_sai)
+ok(certo and um("select count(*) from public.meus_pedidos_para_sair()", papel="authenticated", user=resp_sai) == "0", "quem administra cancela o pedido")
+sql(f"select public.pedir_para_sair_do_guia('{sair}', 'nao_quer')", papel="authenticated", user=resp_sai)
+pid = um("select id from public.pedidos_para_sair_admin()", **admin_kw)
+certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', true)", **admin_kw)
+ok(certo and um("select count(*) from public.academias where id = '" + sair + "'") == "0", "\"Tirar do guia\" apaga a ficha" + ("" if certo else ": " + saida))
+ok(um(f"select resolucao || '|' || academia_nome || '|' || (academia_id is null)::text from public.pedidos_para_sair where id = '{pid}'") == "removida|Academia Que Sai|true",
+   "o pedido fica registrado, com o nome da academia")
+ok(um("select count(*) from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and assunto = 'A Academia Que Sai saiu do GuiaTennis'") == "1",
+   "quem pediu recebe o aviso de que a academia saiu")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

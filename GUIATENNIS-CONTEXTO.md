@@ -33,7 +33,10 @@ teste")
 > entrar; quem tinha coisas no celular leva para a conta ao entrar.
 > Testes: **1.066 verificações, nenhuma falha** nos 33 arquivos do
 > navegador (o novo é `testes/guardados-na-conta.js`), 212 no
-> `banco-emails.py` e 21 no `receber-email.mjs`.
+> `banco-emails.py` e 21 no `receber-email.mjs`. Depois ele pediu "eu
+> quero que vc suba o html novo" (o modelo do e-mail do código): o
+> `banco.yml` agora manda o `divulgacao/email-codigo.html` para o Supabase
+> sozinho; falta o segredo `SUPABASE_ACCESS_TOKEN` no GitHub (seção 11).
 >
 > **Estado (08/10/2026):** o Breno mandou prints do menu do trivago e do
 > Parceiros: "deixe o menu de jogadores mais limpo como o parceiros… ou
@@ -2848,9 +2851,13 @@ regra 65; o merge espera o Breno. Pendente:
    admin e desligar o cadastro; backup mensal; 2 etapas nas contas.
 
 - **E-mail com o domínio (07/10/2026, regra 67)** — o Breno (chave nunca
-  pelo chat): (1) **logo no e-mail do código:** Supabase (nos dois
-  projetos) › Authentication › Emails › Templates › Magic Link: colar o
-  `divulgacao/email-codigo.html` novo; (2) **receber:** Resend › Domains ›
+  pelo chat): (1) **logo no e-mail do código:** não precisa mais colar
+  (pedido de 08/10/2026, "eu quero que vc suba o html novo"): o
+  `banco.yml` manda o `divulgacao/email-codigo.html` para o Supabase pela
+  API de gerenciamento (passo "Modelo do e-mail do código"; teste no PR,
+  com a logo da prévia; de verdade no merge). Falta só o Breno criar o
+  token em supabase.com/dashboard/account/tokens e colocar no GitHub como
+  segredo `SUPABASE_ACCESS_TOKEN`; (2) **receber:** Resend › Domains ›
   guiatennis.com.br › ligar **Receiving** e adicionar no DNS (onde estão
   os registros do Resend) o registro **MX** que ele mostrar, sem apagar
   os outros; (3) Resend › API Keys › Create: nome "Receber e-mails",

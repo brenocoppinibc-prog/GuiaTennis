@@ -37,13 +37,15 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.evaluate(() => { state.page = 'home'; state.selected = null; render(); });
   const home = await page.evaluate(() => ({
     nums: [...document.querySelectorAll('.ba-numeros .ban-item')].map(x => x.innerText.replace(/\s+/g, ' ')),
-    nota: document.querySelector('.ban-nota')?.innerText || '',
+    nota: document.querySelector('.ba-numeros + .como-numeros p')?.textContent || '',
+    como: (() => { const d = document.querySelector('.ba-numeros + .como-numeros'); return d ? { aberto: d.open, resumo: d.querySelector('summary').innerText } : null; })(),
     dif: document.querySelector('.dif-grade, #home-diferenciais, .bloco-diferenciais')?.innerText || document.body.innerText,
   }));
   ok(home.nums[0] === '+1.200 visitas ao GuiaTennis', 'home: visitas, não "pessoas" — ' + home.nums[0]);
   ok(home.nums[1] === '1 em 14 visitas abre a ficha de uma academia', 'home: a base do "1 em 14" — ' + home.nums[1]);
   ok(home.nums[2] === '15% das fichas abertas viram contato com a academia', 'home: a base da porcentagem — ' + home.nums[2]);
   ok(home.nota.includes('Desde o lançamento') && home.nota.includes('WhatsApp, no Instagram ou no site') && home.nota.includes('não entram'), 'home: de onde vêm os números');
+  ok(home.como && !home.como.aberto && home.como.resumo.includes('Entenda como funciona'), 'home: a explicação fica fechada em "Entenda como funciona", como a das avaliações');
   ok(home.dif.includes('Avaliações feitas no GuiaTennis') && !home.dif.includes('Nota só de quem jogou aqui'), '"Por que o GuiaTennis" não promete que quem avaliou jogou');
   const desc = await page.evaluate(() => document.querySelector('meta[name="description"]').content);
   ok(desc.startsWith('Onde jogar tênis perto de você'), 'a descrição para o Google fala em "onde jogar tênis"');
@@ -52,11 +54,16 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   // ---- Parceiros: os mesmos números, com a nota; a pergunta da data ----
   ({ browser, page } = await abrir({ q: 'parceiros' }));
   const pc = await page.evaluate(() => ({
-    nums: [...document.querySelectorAll('.pc-faixa-num > div')].map(x => x.innerText.replace(/\s+/g, ' ')),
-    nota: document.querySelector('.pc-faixa-nota')?.innerText || '',
+    nums: [...document.querySelectorAll('.pc-faixa-itens > div')].map(x => x.innerText.replace(/\s+/g, ' ')),
+    tops: [...document.querySelectorAll('.pc-faixa-itens > div')].map(x => Math.round(x.getBoundingClientRect().top)),
+    nota: document.querySelector('.pc-faixa-num .como-numeros p')?.textContent || '',
+    resumo: document.querySelector('.pc-faixa-num .como-numeros summary')?.innerText || '',
   }));
   ok(pc.nums.length === 3 && pc.nums[0] === '+1.200 visitas ao GuiaTennis' && pc.nums[2].startsWith('15% das fichas abertas'), 'Parceiros: os mesmos números — ' + pc.nums.join(' | '));
-  ok(pc.nota.includes('Desde o lançamento'), 'Parceiros: com a nota de onde vêm');
+  ok(pc.nota.includes('Desde o lançamento') && pc.resumo.includes('Entenda como funciona'), 'Parceiros: com "Entenda como funciona", que explica de onde vêm');
+  ok(new Set(pc.tops).size === 1, 'Parceiros, no celular: os três números lado a lado, na mesma linha — ' + pc.tops.join(','));
+  await page.click('.pc-faixa-num .como-numeros summary');
+  ok(await page.isVisible('.pc-faixa-num .como-numeros p'), 'tocar em "Entenda como funciona" abre a explicação');
   await page.evaluate(() => irParceiros('ajuda', { mesmaAba: true }));
   await page.waitForTimeout(300);
   const ajuda = await page.evaluate(() => document.body.innerText);

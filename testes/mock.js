@@ -38,7 +38,12 @@
     emails_a_enviar: [],
     // Contas excluídas pelo admin (SQL 20261006150000): o e-mail fica bloqueado.
     contas_excluidas: [],
+    // Promoções das academias Premium (SQL 20261008140000). window.__semPromocoes
+    // finge o banco sem a tabela; window.__promoAviso diz o que o e-mail fez.
+    promocoes: JSON.parse(JSON.stringify(window.__promocoesIniciais || [])),
   };
+  // window.__premium: ids das academias que começam no Premium.
+  (window.__premium || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "premium"; });
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
   window.__senhas = {};
@@ -188,6 +193,14 @@
     };
     function run(){
       if (table === "buscas_salvas" && window.__semBuscasSalvas) return { data:null, error:{ message:'relation "public.buscas_salvas" does not exist' } };
+      if (table === "promocoes" && window.__semPromocoes) return { data:null, error:{ message:'relation "public.promocoes" does not exist' } };
+      // Política promocoes_valendo: só as valendo, de academia Premium no ar.
+      if (table === "promocoes" && op === "select") {
+        const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+        const visiveis = db.promocoes.filter(x => { const ac = db.academias.find(y => y.id === x.academia_id); return ac && ac.plano === "premium" && ac.status === "published" && String(x.valida_ate) >= hoje; })
+          .map(x => ({ id: x.id, academia_id: x.academia_id, titulo: x.titulo, detalhes: x.detalhes, valida_ate: x.valida_ate }));
+        return { data: visiveis, error:null };
+      }
       const t = db[table];
       if (!t || (window.__semAcesso && (table === "academia_acessos" || table === "respostas"))) return { data:null, error:{ message:"relation does not exist" } };
       const pass = r => filtros.every(([k,v,op]) => op === "gte" ? String(r[k]) >= String(v) : r[k] === v);
@@ -410,6 +423,44 @@
       if (!a.p_pausar && ac.pausada && !ac.pausada_pela_academia && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date())) return erro("Essa academia foi pausada pelo GuiaTennis. Fale com a gente para ela voltar a aparecer.", "42501");
       Object.assign(ac, { pausada: !!a.p_pausar, pausada_ate: a.p_pausar ? (a.p_ate || null) : null, pausada_pela_academia: !!a.p_pausar });
       return { data:null, error:null };
+    }
+    // Promoções (SQL 20261008140000).
+    if (nome === "salvar_promocao") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac || ac.plano !== "premium") return erro("As promoções são do plano Premium.", "42501");
+      const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+      const limite = new Date(Date.now() + 90 * 86400000).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+      const titulo = String(a.p_titulo || "").trim();
+      if (titulo.length < 3 || titulo.length > 60) return erro('Escreva a promoção em até 60 letras (por exemplo, "Primeira aula grátis").', "22023");
+      if (!a.p_valida_ate || a.p_valida_ate < hoje || a.p_valida_ate > limite) return erro("Escolha até quando a promoção vale: de hoje até 90 dias.", "22023");
+      if (a.p_id) {
+        const p = db.promocoes.find(y => y.id === a.p_id && y.academia_id === a.p_academia);
+        if (!p) return erro("Promoção não encontrada.", "22023");
+        Object.assign(p, { titulo, detalhes: String(a.p_detalhes || "").trim() || null, valida_ate: a.p_valida_ate });
+        return { data: { id: p.id, aviso: null, avisados: p.avisados || 0 }, error:null };
+      }
+      if (db.promocoes.filter(y => y.academia_id === a.p_academia && y.valida_ate >= hoje).length >= 3) return erro("A academia já tem 3 promoções valendo. Encerre uma para criar outra.", "22023");
+      const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
+      const p = { id: "promo-" + (db.promocoes.length + 1), academia_id: a.p_academia, titulo, detalhes: String(a.p_detalhes || "").trim() || null, valida_ate: a.p_valida_ate, avisados: aviso.avisados, created_at: new Date().toISOString() };
+      db.promocoes.push(p);
+      return { data: { id: p.id, aviso: aviso.aviso, avisados: aviso.avisados }, error:null };
+    }
+    if (nome === "apagar_promocao") {
+      const p = db.promocoes.find(y => y.id === a.p_id);
+      if (!p) return { data:null, error:null };
+      const x = meuAcesso();
+      if (!souAdmin() && !(x && vinculo(x.user_id, p.academia_id))) return erro("A sua conta não administra essa academia.", "42501");
+      db.promocoes = window.__db.promocoes = db.promocoes.filter(y => y.id !== a.p_id);
+      return { data:null, error:null };
+    }
+    if (nome === "promocoes_da_minha_academia") {
+      const x = meuAcesso();
+      if (!souAdmin() && !(x && vinculo(x.user_id, a.p_academia))) return { data:[], error:null };
+      const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+      return { data: db.promocoes.filter(y => y.academia_id === a.p_academia).map(y => ({ ...y, valendo: y.valida_ate >= hoje }))
+        .sort((p, q) => (q.valendo - p.valendo) || String(q.valida_ate).localeCompare(String(p.valida_ate))), error:null };
     }
     if (nome === "academias_da_minha_conta") {
       const x = meuAcesso();

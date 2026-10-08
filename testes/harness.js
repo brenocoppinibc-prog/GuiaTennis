@@ -29,6 +29,9 @@ async function abrir(opts = {}) {
     if (o.plano) window.__plano = o.plano;
     if (o.avaliacoes) window.__avaliacoesIniciais = o.avaliacoes;
     if (o.respostas) window.__respostasIniciais = o.respostas;
+    if (o.promocoes) window.__promocoesIniciais = o.promocoes;
+    if (o.semPromocoes) window.__semPromocoes = true;
+    if (o.premium) window.__premium = o.premium;
     // Os avisos da conta (balão no topo) só aparecem com opts.pushes, para não
     // cobrir os botões nos outros testes.
     if (!o.pushes) { try { localStorage.setItem('guiatennis_push_conta_v1', String(Date.now())); } catch (e) {} }

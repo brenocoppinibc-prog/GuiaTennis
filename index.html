@@ -55,6 +55,21 @@
   .ficha-confirmada svg { flex-shrink: 0; }
   .ficha-confirmada.premium strong { color: var(--gold); }
   .rcard.patrocinada { border-color: var(--gold-light); }
+  .rcard-line.rcard-promo { color: var(--text); }
+  .rcard-promo strong { color: #8A6A22; font-weight: 700; }
+  .ht-promo-atalho { display: flex; align-items: center; gap: 8px; width: 100%; margin: 14px 0 0; padding: 11px 14px; border: 1px solid var(--gold-light); border-radius: 12px; background: #FBF7EC; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
+  .ht-promo-atalho span { flex: 1; min-width: 0; }
+  .ht-promo-atalho strong { color: #8A6A22; }
+  .ht-promos { display: grid; gap: 12px; margin: 0 0 18px; }
+  .ht-promo { padding: 16px 18px; border: 1px solid var(--gold-light); border-radius: 14px; background: #FBF7EC; }
+  .ht-promo-tag { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #8A6A22; }
+  .ht-promo-t { margin: 6px 0 0; font-size: 17px; font-weight: 700; line-height: 1.3; }
+  .ht-promo-d { margin: 6px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--text); }
+  .ht-promo-v { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+  .pc-promo-lista { display: grid; gap: 12px; margin-top: 18px; }
+  .pc-promo.encerrada { opacity: 0.7; }
+  .pc-promo-acoes { display: flex; gap: 16px; margin-top: 10px; }
+  .pc-promo-form textarea { min-height: 84px; resize: vertical; }
   .rcard-patrocinado { margin: 0 0 4px; font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
   .resultados-titulo { margin: 10px 0 -4px; font-size: 15px; font-weight: 700; color: var(--text); }
   .ficha-dono { margin-top: 14px; }
@@ -892,7 +907,6 @@
   .ban-item { min-width: 0; }
   .ban-item strong { display: block; font-size: 22px; font-weight: 700; color: var(--gold-light); line-height: 1.1; white-space: nowrap; }
   .ban-item span { font-size: 12px; color: rgba(255,255,255,0.72); line-height: 1.35; display: block; margin-top: 4px; }
-  .ban-nota { margin: 12px 0 0; font-size: 11.5px; line-height: 1.45; color: rgba(255,255,255,0.6); text-align: center; }
   @media (min-width: 640px) { .ban-item strong { font-size: 26px; } }
 
   /* por que o GuiaTennis */
@@ -1344,6 +1358,16 @@
   .results { gap: 18px; padding: 20px 20px 112px; }
   .rcard { border-radius: 16px; border-color: var(--border); }
   .rcard-top { padding: 16px; gap: 14px; }
+  /* Sem o branco embaixo da foto (pedido de 08/10/2026, com print): no
+     celular, a foto em cima, na largura do cartão, e o texto embaixo; no
+     computador, a foto do lado acompanha a altura do texto. */
+  @media (max-width: 719px) {
+    .rcard-top { flex-direction: column; }
+    .rcard-photo { width: 100%; height: auto; aspect-ratio: 16 / 9; }
+  }
+  @media (min-width: 720px) {
+    .rcard-photo { align-self: stretch; height: auto; min-height: 190px; }
+  }
   .rcard-name { font-size: 18px; font-weight: 600; line-height: 1.25; }
   @media (min-width: 720px) { .rcard-name { font-size: 21px; } }
   .rcard-score { margin-top: 8px; }
@@ -1505,8 +1529,6 @@
   .pc-trancado-plano { font-size: 14px; font-weight: 600; color: #8E6D25; margin: 14px 0 0; }
   .pc-trancado .pc-ver-planos { display: inline-flex; width: auto; margin: 12px 0 0; padding: 8px 18px; min-height: 40px; font-size: 14px; }
   .pc-atalho small { font-size: 12px; font-weight: 500; color: var(--muted); margin-top: -4px; }
-  .pc-em-breve { color: var(--muted); }
-  .pc-em-breve-tag { flex-shrink: 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #8E6D25; background: #FBF4E4; border-radius: 999px; padding: 2px 8px; margin-top: 1px; }
 
   /* Faixa verde do GuiaTennis no fim da página, como a do trivago. */
   .rodape-faixa { background: var(--green); color: rgba(255,255,255,0.88); text-align: center; padding: 30px 20px 34px; box-shadow: 0 0 0 100vmax var(--green); clip-path: inset(0 -100vmax); }
@@ -1679,11 +1701,21 @@
   .pc-hero-sub { font-size: 17px; line-height: 1.6; color: var(--muted); margin: 16px 0 0; max-width: 580px; }
   .pc-hero-acoes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
   .pc-hero-acoes .cta-btn { flex: 1 1 200px; max-width: 280px; }
-  .pc-hero-nota { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); margin: 18px 0 0; }
-  .pc-faixa-num { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 16px; margin: 0 20px; padding: 24px 20px; background: var(--green); border-radius: 18px; color: #fff; text-align: center; }
-  .pc-faixa-num strong { display: block; font-size: 26px; font-weight: 700; color: var(--gold-light); }
-  .pc-faixa-num span { display: block; font-size: 13px; line-height: 1.4; color: rgba(255,255,255,0.82); margin-top: 4px; }
-  .pc-faixa-nota { grid-column: 1 / -1; margin: 0; font-size: 11.5px; line-height: 1.45; color: rgba(255,255,255,0.62); }
+  .pc-hero-nota { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.45; color: var(--muted); margin: 18px 0 0; }
+  .pc-hero-nota svg { flex-shrink: 0; margin-top: 3px; }
+  /* Os números em colunas iguais, lado a lado, no celular e no computador
+     (08/10/2026: "alinhe melhor os dados"; antes 2 em cima e 1 sozinho). */
+  .pc-faixa-num { margin: 0 20px; padding: 24px 16px 18px; background: var(--green); border-radius: 18px; color: #fff; text-align: center; }
+  .pc-faixa-itens { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 12px; align-items: start; }
+  .pc-faixa-itens > div { min-width: 0; }
+  .pc-faixa-num strong { display: block; font-size: 24px; font-weight: 700; line-height: 1.1; white-space: nowrap; color: var(--gold-light); }
+  .pc-faixa-num span { display: block; font-size: 12.5px; line-height: 1.35; color: rgba(255,255,255,0.82); margin-top: 6px; }
+  @media (min-width: 640px) { .pc-faixa-num strong { font-size: 28px; } .pc-faixa-num span { font-size: 13.5px; } }
+  /* "Entenda como funciona": fechado, abre a explicação (como o das avaliações). */
+  .como-numeros { margin: 16px 0 0; font-size: 12.5px; color: rgba(255,255,255,0.78); text-align: center; }
+  .como-numeros summary { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; list-style: none; text-decoration: underline; text-underline-offset: 2px; }
+  .como-numeros summary::-webkit-details-marker { display: none; }
+  .como-numeros p { margin: 8px 0 0; line-height: 1.5; color: rgba(255,255,255,0.7); }
   .pc-sec { padding: 52px 20px 8px; }
   .pc-sec h2, .pc-pagina h1 { font-size: 28px; line-height: 1.2; margin: 0 0 12px; }
   @media (min-width: 900px) { .pc-sec h2 { font-size: 36px; } .pc-pagina h1 { font-size: 38px; } }
@@ -1715,6 +1747,8 @@
   .pc-plano-lista { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 10px; }
   .pc-plano-lista li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; }
   .pc-plano-lista li svg { margin-top: 2px; }
+  .pc-plano-lista li .selo-premium { margin: 2px 0 0; }
+  .pc-plano-n .selo-premium { margin-left: 8px; vertical-align: -0.15em; }
   .pc-plano-lista li.nao { color: var(--muted-dark); }
   .pc-traco { width: 15px; text-align: center; flex-shrink: 0; }
   .pc-plano .cta-btn { margin-top: 20px; width: 100%; }
@@ -2076,6 +2110,7 @@ function icon(name, size, color) {
     search: '<circle cx="10" cy="10" r="6"/><line x1="20" y1="20" x2="14.5" y2="14.5"/>',
     filter: '<path d="M3 4.5h18l-7 8.2V20l-4-2.2v-5.1z"/>',
     check: '<polyline points="4 12.5 9.5 18 20 6"/>',
+    tag: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7.3 7.3a1 1 0 0 1-1.4 0z"/><circle cx="8" cy="8" r="1.4"/>',
     whatsapp: '<path d="M3.6 20.4l1.2-3.9A8.6 8.6 0 1 1 8 19.3z"/><path d="M9.1 8.3c.2-.4.5-.5.8-.5h.4c.2 0 .4.1.5.3l.7 1.6c.1.2 0 .4-.1.6l-.5.6c.6 1.1 1.5 2 2.6 2.6l.6-.5c.2-.1.4-.2.6-.1l1.6.7c.2.1.3.3.3.5v.4c0 .3-.1.6-.5.8-1.8.8-6-2.5-7.1-4.7-.3-.8-.3-1.6.1-2.3z"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.8 6.8l8.2 6.2 8.2-6.2"/>',
     info: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.8" r="0.4"/>',
@@ -2890,6 +2925,7 @@ async function loadEverything() {
     reviewsCache[r.academia_id].push({ id: r.id, stars: r.stars, comment: r.comment, nome_autor: r.nome_autor, contato_autor: r.contato_autor, ts: r.created_at, resposta: respostas[r.id] || null });
   });
   state.reviewsCache = reviewsCache;
+  await carregarPromocoes();
 
   if (isAdmin) {
     const contatos = await lerContatosPrivados();
@@ -2905,6 +2941,34 @@ async function loadEverything() {
     }));
     await carregarAcessos();
   }
+}
+
+// Promoções das academias Premium (pedido de 08/10/2026, SQL
+// 20261008140000): o banco só entrega as que estão valendo, de academia
+// Premium no ar. Sem a tabela, nada aparece e nada quebra.
+async function carregarPromocoes() {
+  const mapa = {};
+  try {
+    const r = await sb.from('promocoes').select('id, academia_id, titulo, detalhes, valida_ate').order('valida_ate');
+    if (r.error) diag(`o banco recusou a leitura das promoções: ${r.error.message}`);
+    else (r.data || []).forEach(x => { (mapa[x.academia_id] = mapa[x.academia_id] || []).push(x); });
+  } catch { /* banco sem a tabela */ }
+  state.promocoes = mapa;
+}
+function hojeEmBrasilia(maisDias = 0) {
+  return new Date(Date.now() + maisDias * 86400000).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+}
+function promocoesDe(c) {
+  if (!c || c.plano !== "premium") return [];
+  const hoje = hojeEmBrasilia();
+  return ((state.promocoes || {})[c.id] || []).filter(x => String(x.valida_ate) >= hoje);
+}
+// "31 de outubro" (o ano só quando não é o deste ano).
+function diaPorExtenso(iso) {
+  const [a, m, d] = String(iso || "").split("-").map(Number);
+  if (!a || !m || !d) return "";
+  const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  return `${d} de ${meses[m - 1]}${String(a) === hojeEmBrasilia().slice(0, 4) ? "" : " de " + a}`;
 }
 
 function getPlano(courtId) {
@@ -3261,7 +3325,7 @@ function telaDoPercurso() {
   if (state.page === "parceiros") {
     const aba = state.parceirosAba || "inicio";
     const nomes = { inicio: "Apresentação", planos: "Planos", ajuda: "Ajuda", cadastro: "Cadastro", entrar: "Entrar", painel: "Atualizações",
-      desempenho: "Desempenho", avaliacoes: "Avaliações", ficha: "Minha ficha", pessoas: "Pessoas", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
+      desempenho: "Desempenho", avaliacoes: "Avaliações", promocoes: "Promoções", ficha: "Minha ficha", pessoas: "Pessoas", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
     let texto = nomes[aba] || aba;
     if ((aba === "cadastro" || aba === "entrar") && !contaAcademia) {
       const passo = state.pcEmailPasso || "email";
@@ -6354,7 +6418,7 @@ function demoBusca() {
 // aparece no topo da busca, marcado "Patrocinado" (regra 71).
 
 const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar"];
-const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "ficha", "pessoas", "plano", "academias", "perfil"];
+const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "promocoes", "ficha", "pessoas", "plano", "academias", "perfil"];
 // Só do admin: escolher a academia para ver o Parceiros como ela vê.
 const PC_ADMIN = ["ver"];
 const PC_MENU_PUBLICO = [
@@ -6370,6 +6434,7 @@ const PC_MENU_LOGADO = [
   { aba: "painel", t: "Atualizações", ic: "home" },
   { aba: "ficha", t: "Minha ficha", ic: "edit" },
   { aba: "avaliacoes", t: "Avaliações", ic: "bubble" },
+  { aba: "promocoes", t: "Promoções", ic: "tag" },
   { aba: "desempenho", t: "Desempenho", ic: "barchart" },
   { aba: "academias", t: "Suas academias", curto: "Academias", ic: "predio" },
   { aba: "pessoas", t: "Pessoas", ic: "pessoa" },
@@ -6391,8 +6456,10 @@ const PC_RECURSOS = [
   { t: "Regra de cancelamento e reposição", p: ["completo", "premium"] },
   { t: "Como chegar: fachada, entrada e onde estacionar", p: ["completo", "premium"] },
   // Pedido de 08/10/2026 (regra 71): selo dourado e topo da busca.
-  { t: "Selo Premium dourado ao lado do nome", p: ["premium"] },
+  { t: "Selo Premium dourado ao lado do nome", p: ["premium"], selo: true },
   { t: "No topo da busca da região, marcada como \"Patrocinado\"", p: ["premium"] },
+  // Pedido de 08/10/2026: as promoções saíram do "Em breve".
+  { t: "Promoções na ficha e na busca, com aviso por e-mail a quem favoritou", p: ["premium"] },
   { t: "Visitas, contatos e o dia a dia da ficha", p: ["premium"] },
   { t: "De onde vieram (Instagram, Google…), o aparelho e os canais", p: ["premium"] },
   { t: "Bairros de quem procurou e comparação com a cidade", p: ["premium"] },
@@ -6406,10 +6473,8 @@ const PC_RECURSOS = [
 const PC_PLANOS = [
   { key: "basico", nome: "Básico", preco: "Grátis", pessoas: 1, resumo: "Para aparecer na busca e receber jogadores." },
   { key: "completo", nome: "Completo", preco: "Fale com a gente", pessoas: 5, resumo: "Para ter a ficha completa e a equipe junto." },
-  { key: "premium", nome: "Premium", preco: "Fale com a gente", pessoas: 10, resumo: "Para aparecer primeiro, ver os números e crescer." },
+  { key: "premium", nome: "Premium", preco: "Fale com a gente", pessoas: 10, resumo: "Para aparecer primeiro, divulgar promoções e ver os números." },
 ];
-// O que vem aí no Premium (pedido do Breno). Aparece como "Em breve".
-const PC_EM_BREVE = "Promoções na ficha e avisos para os seus jogadores";
 const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos"];
 // No Básico, "Cancelamento" e "Como chegar" não entram na conta (são do Completo).
 function itensDaFicha(c) {
@@ -6421,15 +6486,16 @@ function perguntasParceiros() {
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe. O Premium ganha o selo dourado, aparece no topo da busca da região, marcado como \"Patrocinado\", e mostra os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
     { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia, marque a declaração e toque em \"Administrar esta academia\": com o e-mail confirmado, a ficha passa a ser sua na hora, e o GuiaTennis confere depois. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode incluir você diretamente em Pessoas." },
-    { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\". Na disputa, um código de 6 números vai na hora para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia, como o Google e o Booking fazem." },
+    { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\". Na disputa, um código de 6 números vai na hora para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto. Com o seu e-mail confirmado, a academia entra no ar na hora e você já administra a ficha; o GuiaTennis confere depois." },
-    { q: "O que quer dizer \"atualizada há…\" na ficha?", a: "Na ficha, o jogador vê \"Confirmada pela academia\" e quando ela foi atualizada pela última vez, como no Google Maps. A data muda quando vocês salvam a ficha no GuiaTennis Parceiros — salvar, mesmo sem mudar nada, confirma que está tudo certo. Pausar a ficha ou mudar o plano não mexe na data." },
+    { q: "O que quer dizer \"atualizada há…\" na ficha?", a: "Na ficha, o jogador vê \"Confirmada pela academia\" e quando ela foi atualizada pela última vez. A data muda quando vocês salvam a ficha no GuiaTennis Parceiros — salvar, mesmo sem mudar nada, confirma que está tudo certo. Pausar a ficha ou mudar o plano não mexe na data." },
     { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. Em Suas academias (ou no nome da academia, no topo do GuiaTennis Parceiros), toque em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito que a primeira, e dá para pedir uma enquanto outra ainda está em análise. Cada uma tem o próprio plano, as próprias pessoas e os próprios números." },
     { q: "Com duas academias, pago um plano só?", a: "Não. Cada academia tem o próprio plano e paga o próprio valor. A academia que entra na conta começa no Básico, grátis, e você escolhe o plano de cada uma. Por exemplo, uma no Premium e outra no Básico. Mudar o plano de uma não muda o das outras." },
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
+    { q: "Como funcionam as promoções?", a: "No plano Premium, em Promoções, a academia publica até 3 promoções ao mesmo tempo, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Quem favoritou a academia e aceita promoções recebe um aviso por e-mail, no máximo um por semana. A academia responde pelo que anuncia e combina as condições direto com o jogador." },
     { q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado." },
     { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha." },
     { q: "Esqueci a senha. E agora?", a: "Na tela de entrar, digite o seu e-mail e toque em \"Esqueceu a senha?\": mandamos um código para o seu e-mail, e você cria a senha nova ali mesmo. Se você entra com o usuário que o GuiaTennis mandou (sem e-mail), fale com o GuiaTennis no WhatsApp." },
@@ -6471,6 +6537,7 @@ function irParceiros(aba, opcoes = {}) {
   if (aba !== "perfil") state.contaModo = "painel";
   if ((aba === "painel" || aba === "desempenho") && temAcademia() && acessoCompleto()) carregarNumeros();
   if ((aba === "painel" || aba === "pessoas") && temAcademia() && acessoCompleto()) { carregarPedidosDeAcesso(); carregarPessoas(); }
+  if (aba === "promocoes" && temAcademia() && acessoCompleto()) { state.pcPromoMsg = null; state.pcPromoEditando = null; state.pcPromoForm = null; carregarPromocoesDaAcademia(); }
   syncUrl(!opcoes.substituir);
   render();
   if (opcoes.ancora) {
@@ -6985,7 +7052,7 @@ function renderParceiros() {
   const semAcademia = contaAcademia && acessoCompleto() && !temAcademia();
   let miolo;
   if (PC_PRIVADAS.includes(aba) && contaAcademia && !acessoCompleto()) miolo = pcPrimeiroAcesso();
-  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "ficha", "pessoas"].includes(aba)) miolo = pcSemAcademia();
+  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "promocoes", "ficha", "pessoas"].includes(aba)) miolo = pcSemAcademia();
   else if (aba === "ver") miolo = pcVerComoAdmin();
   else if (aba === "inicio") miolo = pcInicio();
   else if (aba === "planos") miolo = pcPlanos(false);
@@ -6995,6 +7062,7 @@ function renderParceiros() {
   else if (aba === "painel") miolo = pcPainel();
   else if (aba === "desempenho") miolo = pcDesempenho();
   else if (aba === "avaliacoes") miolo = pcAvaliacoes();
+  else if (aba === "promocoes") miolo = pcPromocoes();
   else if (aba === "ficha") miolo = pcFicha();
   else if (aba === "plano") miolo = pcPlanos(temAcademia());
   else if (aba === "pessoas") miolo = pcPessoasDaAcademia();
@@ -7014,8 +7082,10 @@ function pcNumerosDoSite() {
   if (!itens.length) return "";
   return `
     <section class="pc-faixa-num">
-      ${itens.map(i => `<div><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
-      <p class="pc-faixa-nota">${esc(NOTA_DOS_NUMEROS)}</p>
+      <div class="pc-faixa-itens" style="--n:${itens.length}">
+        ${itens.map(i => `<div><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
+      </div>
+      ${comoFuncionamOsNumeros()}
     </section>`;
 }
 
@@ -7107,13 +7177,12 @@ function pcCartoesDePlano(atual) {
       ${PC_PLANOS.map((p, i) => `
         <div class="pc-plano ${atual === p.key ? "atual" : ""} ${p.key === destaque ? "destaque" : ""}">
           ${atual === p.key ? `<span class="pc-plano-tag">Seu plano</span>` : (p.key === destaque ? `<span class="pc-plano-tag">Recomendado</span>` : "")}
-          <p class="pc-plano-n">${esc(p.nome)}</p>
+          <p class="pc-plano-n">${esc(p.nome)}${p.key === "premium" ? seloPremium(20) : ""}</p>
           <p class="pc-plano-p">${esc(p.preco)}</p>
           <p class="pc-card-s">${esc(p.resumo)}</p>
           <ul class="pc-plano-lista">
             <li>${icon('check', 15, 'var(--green)')}<span>Até ${p.pessoas} ${plural(p.pessoas, "e-mail", "e-mails")} com acesso à academia</span></li>
-            ${PC_RECURSOS.map(r => `<li class="${r.p.includes(p.key) ? "" : "nao"}">${r.p.includes(p.key) ? icon('check', 15, 'var(--green)') : `<span class="pc-traco">—</span>`}<span>${esc(r.t)}</span></li>`).join("")}
-            ${p.key === "premium" ? `<li class="pc-em-breve"><span class="pc-em-breve-tag">Em breve</span><span>${esc(PC_EM_BREVE)}</span></li>` : ""}
+            ${PC_RECURSOS.map(r => `<li class="${r.p.includes(p.key) ? "" : "nao"}">${r.p.includes(p.key) ? (r.selo ? seloPremium(15) : icon('check', 15, 'var(--green)')) : `<span class="pc-traco">—</span>`}<span>${esc(r.t)}</span></li>`).join("")}
           </ul>
           ${atual === p.key
             ? `<p class="pc-plano-ok">${icon('check', 14, 'var(--green)')} Plano atual</p>`
@@ -7743,6 +7812,112 @@ function pcAvaliacoes() {
         ? `<div class="ht-revs conta-revs">${avaliacoes.map(x => cartaoAvaliacao(x, c, "painel")).join("")}</div>`
         : `<div class="pc-card"><p class="pc-card-t">Ainda sem avaliação</p><p class="pc-card-s">Peça aos jogadores para avaliar pela ficha — o QR code na recepção leva direto para ela.</p><button type="button" class="cta-btn cta-secondary" id="conta-qr" data-court="${c.id}">QR code da sua ficha no GuiaTennis</button></div>`}
     </section>`;
+}
+
+// Promoções (pedido de 08/10/2026: "quero colocar em ação que academias
+// com Premium divulgue promoções"): a academia Premium cria, muda e
+// encerra; aparece na ficha e na busca. A promoção nova avisa por e-mail
+// quem favoritou a academia e aceita promoções, no máximo uma vez por
+// semana (SQL 20261008140000).
+async function carregarPromocoesDaAcademia() {
+  const c = minhaAcademia();
+  if (!c) return;
+  try {
+    const r = await sb.rpc('promocoes_da_minha_academia', { p_academia: c.id });
+    state.pcPromocoes = r.error ? [] : (r.data || []);
+  } catch { state.pcPromocoes = []; }
+  if (state.page === "parceiros") render();
+}
+
+function pcPromocoes() {
+  const c = minhaAcademia();
+  if (!c) return pcSemFicha();
+  const topo = `<p class="pc-eyebrow">${esc(c.name)}</p><h1 class="display">Promoções</h1>`;
+  if ((c.plano || "basico") !== "premium") {
+    return `
+      <section class="pc-pagina">
+        ${topo}
+        ${blocoTrancado("premium", "Divulgue promoções", "Primeira aula grátis, desconto na locação, pacote de aulas: a promoção aparece na ficha e no resultado da busca, e quem favoritou a academia recebe um aviso por e-mail.")}
+      </section>`;
+  }
+  const lista = state.pcPromocoes || [];
+  const valendo = lista.filter(x => x.valendo);
+  const editando = state.pcPromoEditando ? lista.find(x => x.id === state.pcPromoEditando) : null;
+  const f = state.pcPromoForm || (editando
+    ? { titulo: editando.titulo, detalhes: editando.detalhes || "", ate: editando.valida_ate }
+    : { titulo: "", detalhes: "", ate: hojeEmBrasilia(30) });
+  const msg = state.pcPromoMsg;
+  return `
+    <section class="pc-pagina">
+      ${topo}
+      <p class="pc-sec-sub">A promoção aparece na ficha e no resultado da busca, com a validade. Quem favoritou a academia e aceita promoções recebe um aviso por e-mail, no máximo um por semana. Até 3 promoções ao mesmo tempo, por até 90 dias.</p>
+      ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
+      ${editando || valendo.length < 3 ? `
+        <div class="pc-card pc-promo-form">
+          <p class="pc-card-t">${editando ? "Mudar a promoção" : "Nova promoção"}</p>
+          <label class="field-label" for="pc-promo-titulo">Promoção</label>
+          <input class="form-field pc-promo-campo" data-campo="titulo" id="pc-promo-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
+          <label class="field-label" for="pc-promo-detalhes">Detalhes (opcional)</label>
+          <textarea class="form-field pc-promo-campo" data-campo="detalhes" id="pc-promo-detalhes" maxlength="280" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até 17h." style="margin-top:0">${esc(f.detalhes)}</textarea>
+          <label class="field-label" for="pc-promo-ate">Válida até</label>
+          <input class="form-field pc-promo-campo" data-campo="ate" id="pc-promo-ate" type="date" min="${hojeEmBrasilia()}" max="${hojeEmBrasilia(90)}" value="${esc(f.ate)}" style="margin-top:0" />
+          <button type="button" class="cta-btn cta-primary" id="pc-promo-salvar" ${state.pcPromoSalvando ? "disabled" : ""}>${state.pcPromoSalvando ? bolaGirando(15) + " Salvando..." : editando ? "Salvar a mudança" : "Publicar promoção"}</button>
+          ${editando ? `<button type="button" class="inline-link" id="pc-promo-cancelar" style="margin-top:12px">Cancelar</button>` : ""}
+        </div>` : `<p class="pc-card-s">A academia já tem 3 promoções valendo. Encerre uma para criar outra.</p>`}
+      ${lista.length ? `
+        <div class="pc-promo-lista">
+          ${lista.map(x => `
+            <div class="pc-card pc-promo ${x.valendo ? "" : "encerrada"}">
+              <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} ${x.valendo ? "Valendo" : "Encerrada"}</p>
+              <p class="pc-card-t" style="margin-top:6px">${esc(x.titulo)}</p>
+              ${x.detalhes ? `<p class="pc-card-s">${esc(x.detalhes)}</p>` : ""}
+              <p class="footnote" style="margin-top:8px">${x.valendo ? `Válida até ${esc(diaPorExtenso(x.valida_ate))}` : `Terminou em ${esc(diaPorExtenso(x.valida_ate))}`}${x.avisados ? ` · aviso por e-mail para ${x.avisados} ${plural(x.avisados, "pessoa", "pessoas")}` : ""}</p>
+              <div class="pc-promo-acoes">
+                ${x.valendo ? `<button type="button" class="inline-link" data-promo-mudar="${x.id}">Mudar</button>` : ""}
+                <button type="button" class="inline-link" data-promo-encerrar="${x.id}">${x.valendo ? "Encerrar" : "Apagar"}</button>
+              </div>
+            </div>`).join("")}
+        </div>` : ""}
+    </section>`;
+}
+
+async function salvarPromocao() {
+  const c = minhaAcademia();
+  if (!c || state.pcPromoSalvando) return;
+  const editando = state.pcPromoEditando;
+  const f = { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "" };
+  state.pcPromoForm = f;
+  if (f.titulo.trim().length < 3) { state.pcPromoMsg = { tipo: "erro", texto: "Escreva a promoção (por exemplo, \"Primeira aula grátis\")." }; render(); return; }
+  if (!f.ate) { state.pcPromoMsg = { tipo: "erro", texto: "Escolha até quando a promoção vale." }; render(); return; }
+  state.pcPromoSalvando = true; state.pcPromoMsg = null; render();
+  let r;
+  try { r = await sb.rpc('salvar_promocao', { p_academia: c.id, p_id: editando || null, p_titulo: f.titulo.trim(), p_detalhes: f.detalhes.trim(), p_valida_ate: f.ate }); }
+  catch (e) { r = { error: e }; }
+  state.pcPromoSalvando = false;
+  if (r.error) {
+    const m = String(r.error.message || "");
+    state.pcPromoMsg = { tipo: "erro", texto: /Premium|60 letras|280 letras|90 dias|3 promoções|em análise|não administra/.test(m) ? m : "Não consegui salvar agora. Tente de novo em instantes." };
+    render();
+    return;
+  }
+  const d = r.data || {};
+  state.pcPromoMsg = { tipo: "ok", texto: editando ? "Promoção atualizada."
+    : d.aviso === "enviado" ? `Promoção publicada. O aviso por e-mail vai para ${d.avisados} ${plural(d.avisados, "pessoa que favoritou", "pessoas que favoritaram")} a academia.`
+    : d.aviso === "semana" ? "Promoção publicada. A academia já mandou um aviso por e-mail nesta semana: esta aparece na ficha e na busca, sem e-mail."
+    : "Promoção publicada na ficha e na busca. Quem favoritar a academia e aceitar promoções recebe as próximas por e-mail." };
+  state.pcPromoForm = null; state.pcPromoEditando = null;
+  await Promise.all([carregarPromocoes(), carregarPromocoesDaAcademia()]);
+  render();
+}
+
+async function encerrarPromocao(id) {
+  const x = (state.pcPromocoes || []).find(y => y.id === id);
+  if (!confirm(x && x.valendo ? "Encerrar esta promoção? Ela sai da ficha e da busca na hora." : "Apagar esta promoção da lista?")) return;
+  const r = await sb.rpc('apagar_promocao', { p_id: id });
+  state.pcPromoMsg = r.error ? { tipo: "erro", texto: "Não consegui encerrar agora. Tente de novo." } : { tipo: "ok", texto: x && x.valendo ? "Promoção encerrada." : "Promoção apagada." };
+  if (state.pcPromoEditando === id) { state.pcPromoEditando = null; state.pcPromoForm = null; }
+  await Promise.all([carregarPromocoes(), carregarPromocoesDaAcademia()]);
+  render();
 }
 
 function pcFicha() {
@@ -8496,6 +8671,19 @@ function ligarEventosParceiros() {
   });
   const pcAdministrar = document.getElementById("pc-administrar");
   if (pcAdministrar) pcAdministrar.onclick = () => pedirParaAdministrar(state.pcSelecionada);
+  // Promoções: o que foi digitado fica guardado entre um render e outro.
+  document.querySelectorAll(".pc-promo-campo").forEach(el => {
+    el.oninput = () => {
+      const f = state.pcPromoForm || { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "" };
+      state.pcPromoForm = { ...f, [el.dataset.campo]: el.value };
+    };
+  });
+  const pcPromoSalvar = document.getElementById("pc-promo-salvar");
+  if (pcPromoSalvar) pcPromoSalvar.onclick = salvarPromocao;
+  const pcPromoCancelar = document.getElementById("pc-promo-cancelar");
+  if (pcPromoCancelar) pcPromoCancelar.onclick = () => { state.pcPromoEditando = null; state.pcPromoForm = null; state.pcPromoMsg = null; render(); };
+  document.querySelectorAll("[data-promo-mudar]").forEach(el => { el.onclick = () => { state.pcPromoEditando = el.dataset.promoMudar; state.pcPromoForm = null; state.pcPromoMsg = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }; });
+  document.querySelectorAll("[data-promo-encerrar]").forEach(el => { el.onclick = () => encerrarPromocao(el.dataset.promoEncerrar); });
   const pcDeclaro = document.getElementById("pc-declaro");
   if (pcDeclaro) pcDeclaro.onchange = (e) => { state.pcDeclaro = e.target.checked; if (state.pcDeclaroErro && state.pcDeclaro) { state.pcDeclaroErro = false; render(); } };
   const pcNovidades = document.getElementById("pc-conta-novidades");
@@ -9345,7 +9533,7 @@ function aplicarPreferenciaNaBusca() {
 // começam desligados (LGPD) e mudam quando ela quiser.
 const AVISOS_JOGADOR = [
   { campo: "avisos_academias", t: "Academias novas na minha cidade" },
-  { campo: "promocoes", t: "Promoções das academias" },
+  { campo: "promocoes", t: "Promoções das academias favoritas" },
   { campo: "novidades", t: "Novidades e dicas do GuiaTennis" },
 ];
 function avisosLigados(j) {
@@ -9889,6 +10077,7 @@ async function salvarContaJogador() {
 const AVISOS_DO_LINK = {
   viagem: "os avisos de viagem",
   novas: "os avisos de academias novas (da sua cidade e das buscas salvas)",
+  promocoes: "os avisos de promoções das academias favoritas",
   todos: "todos os avisos por e-mail do GuiaTennis",
   parceiros: "os avisos de avaliação nova e de pedidos de acesso do GuiaTennis Parceiros",
 };
@@ -10330,7 +10519,16 @@ const MINIMO_TOTAL = 50;
 // são contados (análise de 07/10/2026: "25% de quantas pessoas?"). Cada
 // acesso ao site é uma visita — a mesma pessoa voltando conta de novo —,
 // então o número é de visitas, não de pessoas; a porcentagem diz a base.
-const NOTA_DOS_NUMEROS = "Desde o lançamento do site, contados pelo próprio GuiaTennis e arredondados. Contato é o toque no WhatsApp, no Instagram ou no site da academia. As visitas de quem administra o GuiaTennis ou uma academia não entram.";
+const NOTA_DOS_NUMEROS = "Desde o lançamento do site, contados pelo próprio GuiaTennis e arredondados para baixo. Visita é cada vez que alguém abre o site: a mesma pessoa voltando conta de novo. Contato é o toque no WhatsApp, no Instagram ou no site da academia. As visitas de quem administra o GuiaTennis ou uma academia não entram.";
+// A explicação fica fechada, como "Como funcionam as avaliações" (pedido de
+// 08/10/2026: "faça igual as avaliações… entenda como funciona").
+function comoFuncionamOsNumeros() {
+  return `
+    <details class="como-numeros">
+      <summary>${icon('info', 14, 'currentColor')} Entenda como funciona</summary>
+      <p>${esc(NOTA_DOS_NUMEROS)}</p>
+    </details>`;
+}
 function numerosDoSite() {
   const e = state.estatisticas;
   if (!e || (e.acessos_total || 0) < MINIMO_TOTAL) return [];
@@ -10350,7 +10548,7 @@ function blocoMediasAcademias() {
     <div class="ba-numeros" style="--n:${itens.length}">
       ${itens.map(i => `<div class="ban-item"><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
     </div>
-    <p class="ban-nota">${esc(NOTA_DOS_NUMEROS)}</p>`;
+    ${comoFuncionamOsNumeros()}`;
 }
 
 // "Por que as academias estão aqui" — o lado de quem tem a quadra.
@@ -10396,7 +10594,7 @@ function perguntasDoSite() {
     },
     {
       q: "As notas e os comentários são de verdade?",
-      a: "São de quem avaliou aqui dentro, com nome visível. Não importamos nota do Google nem de outro site, e a academia não escolhe o que aparece.",
+      a: "São de quem avaliou aqui dentro, com nome visível. Não importamos nota de outros sites, e a academia não escolhe o que aparece.",
     },
     {
       q: "Como uma academia entra no site?",
@@ -11846,6 +12044,7 @@ function renderCard(c, badge) {
   const dest = destaque(c, marcas.map(m => m.k));
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
+  const promo = promocoesDe(c)[0];
 
   return `
     <div class="rcard ${c.patrocinada ? "patrocinada" : ""}" data-open="${c.id}">
@@ -11886,6 +12085,7 @@ function renderCard(c, badge) {
 
           <p class="rcard-line"><span class="ico">${icon('pin', 13, 'var(--muted)')}</span><span>${esc(localLine(c))}</span></p>
           ${dest ? `<p class="rcard-line"><span class="ico">${icon('sparkle', 13, 'var(--gold)')}</span><span>${esc(dest)}</span></p>` : ""}
+          ${promo ? `<p class="rcard-line rcard-promo"><span class="ico">${icon('tag', 14, 'var(--gold)')}</span><span><strong>Promoção:</strong> ${esc(promo.titulo)}</span></p>` : ""}
           ${totalQuadras(c) ? `<p class="rcard-line"><span class="ico">${icon('ball', 13, 'var(--muted)')}</span><span>${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")} · ${esc(listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)))}</span></p>` : ""}
           ${marcas.length ? `<p class="rcard-selos">${marcas.map(m => `<span>${icon('check', 14, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</p>` : ""}
         </div>
@@ -13496,6 +13696,29 @@ function seloConfirmada(tam = 16, botao = false) {
     : `<span class="selo-confirmada" title="Confirmada pela academia" role="img" aria-label="Confirmada pela academia">${desenho}</span>`;
 }
 
+// Promoção na ficha: um atalho no topo leva ao bloco, que fica com os
+// preços (a mesma natureza mora no mesmo lugar).
+function atalhoDaPromocao(c) {
+  const lista = promocoesDe(c);
+  if (!lista.length) return "";
+  return `<button type="button" class="ht-promo-atalho" id="ir-promocoes">${icon('tag', 16, 'var(--gold)')}<span><strong>Promoção</strong> · ${esc(lista[0].titulo)}${lista.length > 1 ? ` e mais ${lista.length - 1}` : ""}</span>${icon('chevron', 14, 'var(--gold)')}</button>`;
+}
+function htPromocoes(c) {
+  const lista = promocoesDe(c);
+  if (!lista.length) return "";
+  return `
+    <div class="ht-promos" id="ht-promocoes">
+      ${lista.map(x => `
+        <div class="ht-promo">
+          <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} Promoção</p>
+          <p class="ht-promo-t">${esc(x.titulo)}</p>
+          ${x.detalhes ? `<p class="ht-promo-d">${esc(x.detalhes)}</p>` : ""}
+          <p class="ht-promo-v">Válida até ${esc(diaPorExtenso(x.valida_ate))} · combine com a academia pelo WhatsApp</p>
+          ${isAdmin ? `<button type="button" class="inline-link" data-apagar-promo="${x.id}">Remover promoção</button>` : ""}
+        </div>`).join("")}
+    </div>`;
+}
+
 function avisoDaFichaBasica() {
   return `<p class="ficha-basica">${icon('info', 13, 'var(--muted)')} <span><strong>Ficha básica.</strong> Informações públicas, ainda não confirmadas pela academia — confirme horário e preço direto com ela.</span></p>`;
 }
@@ -13575,6 +13798,7 @@ function renderCourtPage(c) {
                 <span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span>
                 <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}${dist ? ` · ${dist} de você` : ""} — <button type="button" data-nav="${c.id}">Ver no mapa</button></span>
               </p>
+              ${atalhoDaPromocao(c)}
             </header>
 
             <nav class="ht-tabs" id="ht-tabs" aria-label="Seções da academia">
@@ -13594,6 +13818,7 @@ function renderCourtPage(c) {
 
               <section class="ht-sec" id="ht-opcoes">
                 <h3 class="sec-title">Escolha o que você quer</h3>
+                ${htPromocoes(c)}
                 ${htOpcoes(c)}
               </section>
 
@@ -14760,9 +14985,9 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz, e remover a academia do guia continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz, e remover a academia do guia continua sendo pedido ao GuiaTennis. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório do mês por e-mail. O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. No plano Premium, a academia também pode divulgar até 3 promoções ao mesmo tempo, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. A promoção nova é avisada por e-mail a quem favoritou a academia e pediu avisos de promoções, no máximo uma vez por semana para cada academia.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
-<p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade e de mudanças nas suas favoritas, promoções das academias e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
+<p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
 <p style="font-size:14px">Ao avaliar uma quadra, você concorda em escrever apenas sobre experiências reais, sem conteúdo ofensivo, discriminatório, difamatório ou falso, usando seu nome verdadeiro (já que ele fica público junto da avaliação). O GuiaTennis pode remover avaliações que violem essas regras, mas não se responsabiliza pelo conteúdo publicado por usuários. A academia avaliada pode responder publicamente e pedir a análise de uma avaliação que pareça falsa ou ofensiva; quem decide se ela fica é o GuiaTennis.</p>
@@ -14783,7 +15008,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 8 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. A lista de comparação fica só na tela e no link da comparação. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos de promoções, os favoritos também servem para isso: quando uma academia favorita publica uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso (para o responsável) e pedido aceito; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -15625,6 +15850,22 @@ function attachEvents() {
   if (irConfirmacao) irConfirmacao.onclick = () => {
     document.getElementById("ficha-confirmacao")?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
+
+  const irPromocoes = document.getElementById("ir-promocoes");
+  if (irPromocoes) irPromocoes.onclick = () => {
+    const alvo = document.getElementById("ht-promocoes");
+    const barra = document.getElementById("ht-tabs");
+    if (alvo) window.scrollTo({ top: Math.max(0, alvo.getBoundingClientRect().top + window.scrollY - ((barra ? barra.offsetHeight : 0) + 56)), behavior: "smooth" });
+  };
+  document.querySelectorAll("[data-apagar-promo]").forEach(el => {
+    el.onclick = async () => {
+      if (!confirm("Remover esta promoção do site?")) return;
+      const r = await sb.rpc('apagar_promocao', { p_id: el.dataset.apagarPromo });
+      if (r.error) { alert("Não consegui remover agora. Tente de novo."); return; }
+      await carregarPromocoes();
+      render();
+    };
+  });
 
   const irAvaliacoes = document.getElementById("ir-avaliacoes");
   if (irAvaliacoes) irAvaliacoes.onclick = () => {
@@ -17341,6 +17582,7 @@ async function init() {
   if (state.page === "parceiros" && ["painel", "desempenho"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarNumeros();
   if (state.page === "parceiros" && ["painel", "pessoas"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarPedidosDeAcesso();
   if (state.page === "parceiros" && state.parceirosAba === "pessoas" && temAcademia() && acessoCompleto()) carregarPessoas();
+  if (state.page === "parceiros" && state.parceirosAba === "promocoes" && temAcademia() && acessoCompleto()) carregarPromocoesDaAcademia();
 
   state.loaded = true;
   syncUrl(false);

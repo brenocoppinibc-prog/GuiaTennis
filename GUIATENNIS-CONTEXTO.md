@@ -24,6 +24,19 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 08/10/2026
 
+> **Estado (08/10/2026, noite):** com prints, o Breno pediu: o selo
+> dourado aparecendo no cartão do Premium; "colocar em ação que academias
+> com Premium divulguem promoções"; os números do Parceiros alinhados, com
+> "Entenda como funciona" igual ao das avaliações; o cartão da busca sem o
+> branco embaixo da foto; e "tire em todos os lugares do site onde compare
+> o GuiaTennis com exemplos de outros grandes sites". Antes, "pode trocar
+> para sob consulta" (regra 3). Entraram as regras 72 (promoções, SQL
+> `20261008140000_promocoes`), 73 (números e "Entenda como funciona"), 74
+> (cartão com a foto em cima no celular) e 75 (sem citar outros sites).
+> Testes: **1.038 verificações, nenhuma falha** nos 35 arquivos do
+> navegador (o novo é `testes/promocoes.js`) e **234 no
+> `banco-emails.py`** (Postgres local, seção 22 nova).
+>
 > **Estado (08/10/2026, fim do dia):** o Breno pediu "eu quero que
 > academias que são Premium tenha um símbolo de verificado diferente e
 > aparece mais bem recomendada e algo avisando que é patrocínio e abaixo
@@ -241,7 +254,8 @@ mexer:
 - Testa no celular, muitas vezes **logado como admin** — o que não grava
   estatística. Para testar como visitante: aba anônima.
 - Quer comparação com referências internacionais grandes (site,
-  Instagram, marketing) quando o assunto é GuiaTennis.
+  Instagram, marketing) quando o assunto é GuiaTennis — **na conversa**.
+  No site, nenhuma comparação com outros sites (regra 75).
 - Não gosta de depender de botão para o que o site pode fazer sozinho
   ("ele deveria consultar direito").
 - **Senha e endereço do banco nunca pelo chat.** Vão direto nos segredos do
@@ -1299,6 +1313,68 @@ cobra taxa e não fica no meio** da negociação.
       "Quanto custa estar no GuiaTennis?" e o resumo do Premium ("Para
       aparecer primeiro, ver os números e crescer"). Só no site, sem SQL.
       Teste `testes/premium-patrocinado.js`.
+72. **Promoções das academias Premium** (pedido de 08/10/2026: "quero
+    colocar em ação que academias com Premium divulgue promoções"; era o
+    "Em breve" do Premium). SQL `20261008140000_promocoes`:
+    - **Parceiros › Promoções** (`/parceiros/promocoes`, depois de
+      Avaliações no menu; `pcPromocoes`): título (até 60 letras), detalhes
+      (opcional, até 280) e "Válida até" (de hoje a 90 dias; de saída, 30).
+      **Até 3 valendo** por academia. "Mudar" e "Encerrar" (apaga, pergunta
+      antes); as vencidas ficam na lista como "Encerrada". Fora do Premium,
+      a página mostra o bloco trancado "Disponível no plano Premium".
+    - **No site** (`carregarPromocoes`, `promocoesDe`): o banco só entrega
+      as que estão valendo, de academia Premium no ar (política
+      `promocoes_valendo` + `promocao_visivel`). Na ficha, um atalho
+      dourado no topo ("Promoção · Primeira aula grátis ›", `#ir-promocoes`)
+      leva ao bloco que fica **com os preços** (`#ht-promocoes`, dentro de
+      `#ht-opcoes`), com os detalhes e "Válida até 28 de outubro · combine
+      com a academia pelo WhatsApp". No cartão da busca, a linha
+      "Promoção: …" com a etiqueta dourada. O admin vê "Remover promoção"
+      na ficha.
+    - **Aviso por e-mail** (`avisar_promocao`, ao criar, não ao mudar):
+      para quem **favoritou** a academia (`jogadores.guardados.favoritas`,
+      regra 70), ligou **"Promoções das academias favoritas"** na conta e
+      confirmou o e-mail; nunca para quem administra a academia. **Um por
+      academia a cada 7 dias**: a seguinte aparece no site, sem e-mail. O
+      e-mail traz a promoção, a validade, "Ver a academia"
+      (`utm_source=Email-promocao`) e "Não quero mais receber promoções"
+      (`parar_avisos(token, 'promocoes')`). A academia vê só quantas pessoas
+      foram avisadas, nunca quem.
+    - Banco: `promocoes` (`id, academia_id, titulo, detalhes, valida_ate,
+      criada_por, avisados, avisada_em, created_at, updated_at`; o
+      visitante lê só `id, academia_id, titulo, detalhes, valida_ate,
+      created_at`); funções `salvar_promocao`, `apagar_promocao` (academia
+      ou admin), `promocoes_da_minha_academia`, `avisar_promocao` (só o
+      banco). Sem a tabela, o site segue sem promoções.
+    - Textos: Planos (sai o "Em breve"; entra "Promoções na ficha e na
+      busca, com aviso por e-mail a quem favoritou"; resumo do Premium
+      "Para aparecer primeiro, divulgar promoções e ver os números"), Ajuda
+      ("Como funcionam as promoções?"), Termos (a academia responde pelo
+      que anuncia; o GuiaTennis remove a enganosa) e Privacidade (os
+      favoritos servem para o aviso de promoção).
+    Testes: `testes/promocoes.js` e a seção 22 do `banco-emails.py`.
+73. **Números do site alinhados, com "Entenda como funciona"** (pedido de
+    08/10/2026, com print: "alinhe melhor os dados e faça igual as
+    avaliações… entenda como funciona"): no Parceiros, os três números em
+    colunas iguais, lado a lado (antes 2 em cima e 1 sozinho); a nota de
+    como são contados virou um "Entenda como funciona" fechado
+    (`comoFuncionamOsNumeros`, como o "Como funcionam as avaliações"), na
+    home e no Parceiros, explicando também o que é visita. O ✓ do "Grátis
+    no plano Básico" alinhado com a primeira linha. O selo dourado aparece
+    no cartão do Premium (ao lado do nome e no item do selo).
+74. **Cartão da busca sem o branco embaixo da foto** (pedido de 08/10/2026,
+    com print): no celular, a foto em cima, na largura do cartão (16:9), e
+    o texto embaixo; no computador, a foto do lado acompanha a altura do
+    texto.
+75. **O site não compara o GuiaTennis com outros sites** (pedido de
+    08/10/2026: "tire em todos os lugares do site onde compare o
+    GuiaTennis com exemplos de outros grandes sites"): nada de "como o
+    Google", "como o Booking"… em texto que o visitante ou a academia leem.
+    Saíram da Ajuda do Parceiros ("como o Google e o Booking fazem", "como
+    no Google Maps") e da pergunta das notas ("nota de outros sites"). Ficam
+    os nomes que são função: "abre no Google Maps e no Waze", "de onde
+    vieram (Instagram, Google…)" e os serviços citados na Privacidade. As
+    referências continuam nos comentários do código e neste documento.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2109,7 +2185,18 @@ colocados pelo Breno). Aqui:
   `initdb -D <dir>/data -A trust -U postgres` e
   `pg_ctl -D <dir>/data -o '-p 5433 -k <dir>/sock' start`. Antes da
   migração, criar os papéis `anon`, `authenticated` e a função
-  `auth.jwt()` que o Supabase já traz.
+  `auth.jwt()` que o Supabase já traz. Para o `banco-emails.py` sem o GoTrue (08/10/2026,
+  234 certas): papéis `anon`, `authenticated`, `service_role`,
+  `authenticator`, `supabase_auth_admin`; esquema `extensions` com o
+  `pgcrypto` dentro; esquema `auth` com `auth.users` (id, email, aud,
+  role, encrypted_password, email_confirmed_at, raw_app_meta_data,
+  raw_user_meta_data, created_at, updated_at, confirmation_token,
+  recovery_token, email_change_token_new, email_change…), `auth.identities`
+  e as funções `auth.uid()`, `auth.jwt()`, `auth.role()` lendo
+  `request.jwt.claims`; `grant usage` em `auth`, `public` e `extensions`
+  para os papéis do site e `alter default privileges` no `public`. Depois
+  `supabase/aplicar.sh teste` e o `seed.sql` com `set
+  session_replication_role = replica`.
 
 ### Avisos por e-mail e buscas salvas (05/10/2026)
 - `buscas_salvas` (SQL `20261005150000`): `id, user_id (jogadores), termo,
@@ -2267,7 +2354,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2396,6 +2483,11 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pequeno "Desempenho" com os acessos de 30 dias embaixo das avaliações, e
   "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
   singular, zero acessos, banco antigo sem número; Premium sem o cartão.
+- `promocoes.js` — regra 72: fora do Premium, trancado; publicar (pede
+  o título), o aviso de quantos o e-mail avisou, mudar, até 3 valendo,
+  encerrar; na ficha, o atalho e o bloco com os preços (a vencida e a do
+  Básico não aparecem); o cartão da busca; o admin remove; banco sem a
+  tabela; Planos, Ajuda, Termos, Privacidade e o aviso da conta.
 - `premium-patrocinado.js` — regra 71: a Premium perto no topo com
   "Patrocinado" e o selo dourado, o título "Mais perto de você" e as
   outras da mais perto para a mais longe, sem repetir; no máximo 2; a mais
@@ -2752,6 +2844,8 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Promoções do Premium, números com "Entenda como funciona", foto em cima no cartão e o site sem citar outros sites   ← PR #5, 08/10
+(a seguir) Preço sem valor diz "sob consulta" também no texto da ficha   ← PR #5, 08/10
 (a seguir) Premium com selo dourado e até 2 "Patrocinado" no topo da busca   ← PR #5, 08/10
 (a seguir) Menu dos jogadores limpo como o do Parceiros e os acessos de 30 dias em todo plano   ← PR #5, 08/10
 (a seguir) Logo nos e-mails e e-mail com o domínio pelo Resend (receber e responder)   ← PR #5, 07/10
@@ -2864,7 +2958,7 @@ c9ade31 Configuração de publicação do Netlify
 
 **Resumo (08/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
-regra 71; o merge espera o Breno dizer "pode subir". Pendente:
+regra 75; o merge espera o Breno dizer "pode subir". Pendente:
 00. **E-mail com o domínio** (regra 67): **funcionando desde 08/10/2026**.
    Falta só: (a) o Breno criar o token do Supabase e colocar no GitHub
    como segredo `SUPABASE_ACCESS_TOKEN` (passo a passo no item "E-mail com
@@ -2902,15 +2996,20 @@ regra 71; o merge espera o Breno dizer "pode subir". Pendente:
    home e do Parceiros; excluir conta; conta de jogador no Parceiros. E o
    Premium (regra 71): no painel, colocar uma academia confirmada no
    Premium e buscar um bairro perto dela: "Patrocinado" no topo, selo
-   dourado, e "Mais perto de você" embaixo.
+   dourado, e "Mais perto de você" embaixo. E as promoções (regra 72):
+   com a academia no Premium, Parceiros › Promoções › publicar; ver o
+   atalho e o bloco na ficha e a linha no cartão; com uma conta de
+   jogador que favoritou a academia e ligou "Promoções das academias
+   favoritas", ver o e-mail chegar.
 3. **Preço dos planos Completo e Premium** (o Breno define).
 4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
    criar o acesso de cada academia e mandar a mensagem; trocar a foto do
    WhatsApp Business.
 5. **Ideias oferecidas, sem resposta:** "Novidades do GuiaTennis" por
    e-mail pelo painel do admin; baixar as listas em planilha; "Dados dos
-   últimos 30 dias" nos números quando houver volume; promoções na ficha
-   e relatório do mês sozinho (Premium); no Desempenho do Premium, quantas
+   últimos 30 dias" nos números quando houver volume; relatório do mês
+   sozinho (Premium); no Desempenho do Premium, quantos viram e tocaram na
+   promoção; no Desempenho do Premium, quantas
    vezes a academia apareceu no topo patrocinado e quantos tocaram nela
    (regra 71).
 6. Antigos: fechar o PR #1; no projeto de teste do Supabase, criar o
@@ -3085,7 +3184,6 @@ regra 71; o merge espera o Breno dizer "pode subir". Pendente:
   valor, trocar em `PC_PLANOS` (e nos Termos, se mudar a regra).
 - **Próximos passos do GuiaTennis Parceiros** (pedidos do Breno e
   referência: Google Business Profile, trivago Business Studio e Yelp):
-  promoções na ficha e avisos para os alunos (o "Em breve" do Premium),
   relatório do mês sozinho por
   e-mail (Premium; a fila de e-mails já existe, regra 51) e a prévia do
   link no WhatsApp com a foto da academia (seção 3, "Endereços").

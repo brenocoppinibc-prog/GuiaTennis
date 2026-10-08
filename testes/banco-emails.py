@@ -10,8 +10,8 @@ Parceiros (20261006160000), a data em que a ficha foi atualizada
 (20261007130000_codigo_so_em_disputa), o código da disputa pelo WhatsApp
 (20261007140000_codigo_pelo_whatsapp), a logo nos e-mails
 (20261007150000_logo_nos_emails) e os acessos em todo plano
-(20261007160000_acessos_em_todo_plano) e os guardados na conta
-(20261008130000_guardados_na_conta).
+(20261007160000_acessos_em_todo_plano), os guardados na conta
+(20261008130000_guardados_na_conta) e as promoções (20261008140000_promocoes).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -752,6 +752,78 @@ ok(not certo or um(f"select guardados->'favoritas'->>0 from public.jogadores whe
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")
 ok(um(f"select count(*) from public.buscas_salvas where user_id = '{hugo}'") == "0", "excluir a conta apaga as buscas salvas")
+
+# 22. Promoções das academias Premium (SQL 20261008140000) -----------------------
+print("\n# Promoções")
+sql(f"delete from public.promocoes where academia_id in ('{PINHEIROS}', '{MOEMA}'); delete from public.emails_a_enviar where tipo = 'promocao';"
+    f"update public.academias set plano = 'completo' where id = '{PINHEIROS}';")
+ate = um("select (public.hoje_em_brasilia() + 10)::text")
+salvar = lambda titulo, user=dono, academia=PINHEIROS, pid="null", detalhes="Na primeira aula, sem custo.", validade=None: sql(
+    f"select public.salvar_promocao('{academia}', {pid}, '{titulo}', '{detalhes}', '{validade or ate}')::text", papel="authenticated", user=user)
+certo, saida = salvar("Primeira aula grátis")
+ok(not certo and "plano Premium" in saida, "fora do Premium, não cria promoção")
+sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
+fa = jogador("Fabi Fã", f"fabi{sufixo}@exemplo.com", promocoes="true")
+sem_promo = jogador("Gil Sem Promo", f"gil{sufixo}@exemplo.com")
+nao_conf = jogador("Ivo Não Confirmou", f"ivo{sufixo}@exemplo.com", confirmado=False, promocoes="true")
+outra_fav = jogador("Juli Outra", f"juli{sufixo}@exemplo.com", promocoes="true")
+for uid, fav in ((fa, PINHEIROS), (sem_promo, PINHEIROS), (nao_conf, PINHEIROS), (outra_fav, MOEMA)):
+    sql(f"select public.guardar_na_conta('favoritas', '[\"{fav}\"]'::jsonb)", papel="authenticated", user=uid)
+# Quem administra a academia e também favoritou não recebe.
+sql(f"insert into public.jogadores (user_id, nome, email, email_confirmado_em, promocoes, guardados) values "
+    f"('{dono}', 'Ana Dona', 'ana{sufixo}@exemplo.com', now(), true, jsonb_build_object('favoritas', jsonb_build_array('{PINHEIROS}'))) on conflict (user_id) do update set promocoes = true, guardados = excluded.guardados")
+certo, saida = salvar("Primeira aula grátis")
+r = json.loads(saida.splitlines()[-1]) if certo else {}
+ok(certo and r.get("aviso") == "enviado" and r.get("avisados") == 1, "Premium cria a promoção e avisa quem favoritou e quer promoções — " + saida)
+ok(um("select string_agg(para, ',') from public.emails_a_enviar where tipo = 'promocao'") == f"fabi{sufixo}@exemplo.com",
+   "só quem favoritou, ligou promoções e confirmou o e-mail; nunca quem administra a academia")
+html = um("select html from public.emails_a_enviar where tipo = 'promocao'") or ""
+ok(um("select assunto from public.emails_a_enviar where tipo = 'promocao'") == "Promoção na Academia Exemplo Pinheiros: Primeira aula grátis"
+   and "Primeira aula grátis" in html and "Válida até" in html and "utm_source=Email-promocao" in html and "aviso=promocoes" in html,
+   "o e-mail traz a promoção, a validade, o link da ficha e o link para parar")
+pid = r.get("id")
+ok(um(f"select count(*) from public.promocoes where id = '{pid}'", papel="anon") == "1", "o visitante vê a promoção valendo")
+ok(um(f"select count(*) from public.promocoes", papel="anon") == "1", "e só as valendo, de academia Premium no ar")
+certo, _ = sql(f"select avisados from public.promocoes", papel="anon")
+ok(not certo, "o visitante não vê quantas pessoas foram avisadas")
+certo, saida = salvar("Aula dupla com desconto")
+r2 = json.loads(saida.splitlines()[-1]) if certo else {}
+ok(certo and r2.get("aviso") == "semana" and fila("tipo = 'promocao'") == "1", "a segunda promoção da semana aparece na ficha, sem novo e-mail")
+salvar("Terceira")
+certo, saida = salvar("Quarta")
+ok(not certo and "3 promoções" in saida, "até 3 promoções valendo")
+certo, saida = salvar("Primeira aula grátis (mudou)", pid=f"'{pid}'")
+ok(certo and um(f"select titulo from public.promocoes where id = '{pid}'") == "Primeira aula grátis (mudou)" and fila("tipo = 'promocao'") == "1",
+   "mudar a promoção não manda e-mail de novo")
+velha = um(f"insert into public.promocoes (academia_id, titulo, valida_ate) values ('{PINHEIROS}', 'Velha', public.hoje_em_brasilia() - 5) returning id")
+certo, saida = salvar("Velha de volta", pid=f"'{velha}'")
+ok(not certo and "3 promoções" in saida, "trazer de volta uma vencida também respeita as 3 valendo")
+sql(f"delete from public.promocoes where id = '{velha}'")
+certo, saida = salvar("Longa demais", validade=um("select (public.hoje_em_brasilia() + 91)::text"))
+ok(not certo and "90 dias" in saida, "vale no máximo 90 dias")
+certo, saida = salvar("x", pid=f"'{pid}'")
+ok(not certo and "60 letras" in saida, "título curto demais é recusado")
+certo, saida = salvar("De outra academia", user=carla)
+ok(not certo and "não administra" in saida, "quem não administra a academia não cria promoção")
+lista = um(f"select count(*) || '|' || sum(avisados) from public.promocoes_da_minha_academia('{PINHEIROS}')", papel="authenticated", user=dono)
+ok(lista == "3|1", "a academia vê as suas promoções e quantos o e-mail avisou — " + str(lista))
+ok(um(f"select count(*) from public.promocoes_da_minha_academia('{PINHEIROS}')", papel="authenticated", user=carla) == "0", "outra conta não vê as promoções da academia")
+sql(f"update public.promocoes set valida_ate = public.hoje_em_brasilia() - 1 where id = '{pid}'")
+ok(um(f"select count(*) from public.promocoes where id = '{pid}'", papel="anon") == "0", "promoção vencida sai do site")
+ok(um(f"select valendo::text from public.promocoes_da_minha_academia('{PINHEIROS}') where id = '{pid}'", papel="authenticated", user=dono) == "false",
+   "e continua na lista da academia, como encerrada")
+sql(f"update public.academias set plano = 'completo' where id = '{PINHEIROS}'")
+ok(um("select count(*) from public.promocoes", papel="anon") == "0", "academia que sai do Premium: as promoções somem do site")
+sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
+certo, _ = sql(f"select public.apagar_promocao('{pid}')", papel="authenticated", user=carla)
+ok(not certo, "outra conta não apaga a promoção")
+certo, saida = sql(f"select public.apagar_promocao('{pid}')", papel="authenticated", user=dono)
+ok(certo and um(f"select count(*) from public.promocoes where id = '{pid}'") == "0", "a academia encerra a promoção")
+token = um(f"select token_avisos from public.jogadores where user_id = '{fa}'")
+ok(um(f"select public.parar_avisos('{token}', 'promocoes')", papel="anon") == "promocoes"
+   and um(f"select promocoes::text || avisos_academias::text from public.jogadores where user_id = '{fa}'") == "falsefalse",
+   "o link do e-mail desliga só as promoções")
+sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; update public.academias set plano = '{plano_antes}' where id = '{PINHEIROS}';")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

@@ -182,5 +182,12 @@ const { abrir, ok } = require('./harness');
   txt = await page.evaluate(() => document.getElementById('app').textContent);
   ok(txt.includes('reposição da reserva') || txt.includes('reposição de reserva'), 'só locação: fala em reserva, não aula');
   ok(!/reposição da aula/.test(txt), 'só locação: não fala em aula na política');
+  // Sem preço, a ficha inteira diz "sob consulta" (regra 3, pedido de 08/10/2026).
+  await page.evaluate(() => openCourt('a1'));
+  await page.waitForTimeout(200);
+  txt = await page.evaluate(() => document.getElementById('app').textContent.replace(/\s+/g, ' '));
+  const faqPreco = await page.evaluate(() => perguntasAcademia(state.selected).find(f => f.q.startsWith('Quanto custa')).a);
+  ok(txt.includes('O valor é sob consulta: fale com a academia.') && !/(valor|preço) não foi incluído|: não incluído/.test(txt + faqPreco) && faqPreco.startsWith('O valor é sob consulta'),
+    'sem preço: "sob consulta" no texto da ficha e na pergunta do preço, nunca "não foi incluído"');
   await browser.close();
 })();

@@ -12902,9 +12902,9 @@ function descricaoAcademia(c) {
   if (comValor.length) {
     frases.push(`A academia cobra, por hora de quadra, ${listaTexto(comValor.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
     const semValor = opcoes.filter(o => !temPreco(o.faixa));
-    if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} não foi incluído — consulte com a academia.`);
+    if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} é sob consulta: fale com a academia.`);
   } else if (mod) {
-    frases.push(`A academia atende ${mod.toLowerCase()}. O valor não foi incluído — consulte com a academia.`);
+    frases.push(`A academia atende ${mod.toLowerCase()}. O valor é sob consulta: fale com a academia.`);
   }
 
   const com = rotulosNaOrdem(AMENITY_OPTS, c.amenities).map(l => l.toLowerCase());
@@ -12980,7 +12980,7 @@ function htOpcoes(c) {
       <div class="ht-room">
         <div class="ht-room-info">
           <p class="ht-room-name">${SEM_PRECO}</p>
-          <p class="ht-room-desc">O preço não foi incluído. É só consultar a academia no WhatsApp.</p>
+          <p class="ht-room-desc">Fale com a academia no WhatsApp para saber o valor.</p>
         </div>
       </div>
       ${blocoContato(c)}`;
@@ -13166,8 +13166,8 @@ function reviewsSection(c) {
 }
 
 // O texto de preço é um só no site inteiro: faixa completa, sempre por hora.
-// Sem valor, a tela diz que o preço não foi incluído e manda consultar a
-// academia. Sem explicar o motivo: quem chega quer saber o que fazer.
+// Sem valor, a tela diz "Sob consulta" e manda falar com a academia (regra
+// 3). Sem explicar o motivo: quem chega quer saber o que fazer.
 const SEM_PRECO = "Sob consulta";
 const SEM_PRECO_SUB = "fale com a academia";
 
@@ -13328,10 +13328,10 @@ function politicaRodape(c) {
 function perguntasAcademia(c) {
   const faq = [];
   const opcoes = opcoesPreco(c);
-  if (opcoes.length) {
+  if (opcoes.some(o => temPreco(o.faixa))) {
     const linhas = opcoes.map(o => temPreco(o.faixa)
       ? `${o.nome}: ${precoTexto(o.faixa)} por hora`
-      : `${o.nome}: não incluído`);
+      : `${o.nome}: sob consulta`);
     faq.push({
       q: `Quanto custa jogar em ${c.name}?`,
       a: linhas.join(". ") + ". O valor pode mudar conforme horário e professor — confirme no WhatsApp.",
@@ -13339,7 +13339,7 @@ function perguntasAcademia(c) {
   } else {
     faq.push({
       q: `Quanto custa jogar em ${c.name}?`,
-      a: "O preço não foi incluído. É só consultar a academia — o botão do WhatsApp está aqui na ficha.",
+      a: "O valor é sob consulta: fale com a academia pelo botão do WhatsApp aqui na ficha.",
     });
   }
   const mod = modalidadesTexto(c);

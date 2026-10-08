@@ -279,7 +279,11 @@ cobra taxa e não fica no meio** da negociação.
    quem está chegando. Nada de "a academia nos enviou", "arredondamos
    para baixo", "atualiza sozinho" fora do bloco que fala com academias.
 3. **Sem preço = "Sob consulta" + "fale com a academia"** (pedido de 01/10/2026; antes "Não incluído") (`SEM_PRECO` /
-   `SEM_PRECO_SUB`). Nunca explicar o motivo de faltar o valor.
+   `SEM_PRECO_SUB`). Nunca explicar o motivo de faltar o valor. Vale
+   também no texto "Sobre a academia" ("O valor é sob consulta: fale com
+   a academia.") e na pergunta "Quanto custa…?" (08/10/2026: "pode trocar
+   para sob consulta"); "não foi incluído" fica só para telefone e
+   estacionamento.
 4. **Número público sempre arredondado para baixo**, com `+` e ponto de
    milhar (`numeroRedondo`). São **totais do site desde o começo**, nunca
    uma janela de 30 dias. O site nunca promete mais do que aconteceu.

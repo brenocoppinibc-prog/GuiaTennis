@@ -1827,16 +1827,20 @@
   .menu-conta-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
   .menu-conta-txt strong { font-size: 15px; color: var(--text); }
   .menu-conta-txt small { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .menu-fale { cursor: default; align-items: flex-start; }
-  .menu-fale:hover { background: none !important; }
-  .menu-contato { display: flex; flex-wrap: wrap; gap: 2px 16px; margin-top: 4px; }
-  .menu-contato-i { display: inline-flex; align-items: center; gap: 5px; padding: 4px 0; font-size: 13px; font-weight: 500; color: var(--muted) !important; text-decoration: none; }
-  .menu-contato-i:hover { color: var(--text) !important; }
+  /* "Fale com a gente" (08/10/2026): uma folha com os três contatos, cada
+     um numa linha grande, com o ícone e para que serve. */
+  .contato-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+  .contato-opcao { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); color: var(--text) !important; text-decoration: none; }
+  .contato-opcao:hover { border-color: var(--green); }
+  .contato-ic { width: 42px; height: 42px; border-radius: 12px; background: #EEF4F0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .contato-txt { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .contato-txt strong { font-size: 15px; }
+  .contato-txt small { font-size: 13px; color: var(--muted); }
   .menu-item-txt { display: flex; flex-direction: column; gap: 1px; }
   .menu-item-txt small { font-size: 12px; font-weight: 400; color: var(--muted); }
   .menu-sair { margin-top: 0; }
-  .menu-links { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 6px 10px 0; padding-left: 28px; }
-  .menu-links button { background: none; border: none; padding: 4px 0; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; }
+  .menu-links { display: flex; flex-wrap: wrap; gap: 0 14px; margin: 16px 10px 0; }
+  .menu-links button { background: none; border: none; padding: 3px 0; font-family: inherit; font-size: 12px; color: var(--muted); cursor: pointer; }
   .menu-links button:hover { color: var(--text); text-decoration: underline; }
 
   /* Blocos pessoais da home: a última busca como primeiro cartão das vistas,
@@ -3378,6 +3382,7 @@ let state = {
   showStatsPanel: false,
   showTerms: false,
   showPrivacy: false,
+  showContato: false,
   showLogin: false,
   loginModo: "admin",
   // Área da academia: a ficha dela, o painel e o formulário do primeiro acesso.
@@ -3895,6 +3900,7 @@ function render() {
     ${state.showPercursos && isAdmin ? renderPercursosPanel() : ""}
     ${state.showTerms ? renderLegalSheet("Termos de Uso", TERMS_HTML, "terms-close") : ""}
     ${state.showPrivacy ? renderLegalSheet("Política de Privacidade", PRIVACY_HTML, "privacy-close") : ""}
+    ${state.showContato ? renderContatoSheet() : ""}
     ${state.showLogin ? renderLoginSheet() : ""}
     ${state.showVisitorSetup ? renderVisitorSetupSheet() : ""}
     ${state.page === "search" ? renderFilterDrawer(results.length) : ""}
@@ -8594,9 +8600,10 @@ function renderCabecalho() {
 // trivago) ou "Entrar ou criar conta"; depois os grupos com o título
 // pequeno e o ícone verde, como no Parceiros. Só valor que diz alguma coisa
 // na direita (quantas, a cidade, ligados). Tudo o que é de suporte fica
-// junto, no fim, em "Suporte" (pedido de 08/10/2026): como funciona,
-// perguntas, o GuiaTennis Parceiros, o contato numa linha só (regra 20) e
-// Termos e Privacidade como links pequenos. "Sair da conta" por último.
+// junto, no fim, em "Suporte" (pedidos de 08/10/2026): como funciona,
+// perguntas, o GuiaTennis Parceiros e "Fale com a gente" (por último, regra
+// 20), que abre a folha com os contatos. Depois, "Sair da conta" e, bem no
+// fim, em letra pequena, Por que o GuiaTennis, Termos e Privacidade.
 function renderMenu() {
   if (!state.showMenu) return "";
   const pref = lerPreferencias();
@@ -8647,12 +8654,7 @@ function renderMenu() {
         ${item("como", "Como funciona", "play")}
         ${item("duvidas", "Perguntas frequentes", "ajuda")}
         <button type="button" class="menu-item" data-menu="${contaAcademia ? "conta" : isAdmin ? "parceiros-admin" : "parceiros"}">${icon('predio', 17, 'var(--green)')}<span class="menu-item-txt"><span>GuiaTennis Parceiros</span><small>${contaAcademia ? "seu painel" : isAdmin ? "ver como academia" : "para academias e quadras"}</small></span></button>
-        <div class="menu-item menu-fale">${icon('bubble', 17, 'var(--green)')}<span class="menu-item-txt"><span>Fale com a gente</span><span class="menu-contato">${linksContato("menu-contato-i", 14, "var(--green)")}</span></span></div>
-        <p class="menu-links">
-          <button type="button" data-menu="porque">Por que o GuiaTennis</button>
-          <button type="button" data-menu="termos">Termos de Uso</button>
-          <button type="button" data-menu="privacidade">Privacidade</button>
-        </p>
+        ${item("contato", "Fale com a gente", "bubble")}
 
         <div class="menu-rodape">
           ${isAdmin
@@ -8665,6 +8667,11 @@ function renderMenu() {
                 // Sem "Área do GuiaTennis" (02/10/2026): o admin entra pelo
                 // mesmo "Entrar" de todo mundo, com o e-mail dele.
                 : ""}
+          <p class="menu-links">
+            <button type="button" data-menu="porque">Por que o GuiaTennis</button>
+            <button type="button" data-menu="termos">Termos de Uso</button>
+            <button type="button" data-menu="privacidade">Privacidade</button>
+          </p>
           <p class="menu-versao">guiatennis.com.br</p>
         </div>
       </aside>
@@ -14648,6 +14655,30 @@ const PRIVACY_HTML = `
 <p style="font-size:14px">WhatsApp (11) 92745-6457 · contato@guiatennis.com.br</p>
 `;
 
+// "Fale com a gente" (pedido de 08/10/2026: "com a pessoa clicando em fale
+// com a gente direciona para ver os contatos melhor"), como o "Ajuda e
+// suporte" do trivago: uma folha com cada contato numa linha grande, com o
+// ícone e para que serve. Sem o número, o @ e o e-mail escritos (seção 12):
+// eles ficam nos Termos e na Privacidade.
+const PARA_QUE_SERVE_O_CONTATO = {
+  WhatsApp: "A resposta mais rápida",
+  Instagram: "Novidades, dicas e mensagens",
+  "E-mail": "Parcerias, imprensa e assuntos mais longos",
+};
+function renderContatoSheet() {
+  return renderLegalSheet("Fale com a gente", `
+    <p class="subtitle" style="margin-top:4px">Dúvida, sugestão ou problema no site? Escolha por onde prefere falar.</p>
+    <div class="contato-opcoes">
+      ${CONTATOS_GUIA.map(c => `
+        <a class="contato-opcao" href="${c.link()}"${c.fora ? ' target="_blank" rel="noreferrer"' : ""} data-contato="${esc(c.nome)}">
+          <span class="contato-ic">${icon(c.icone, 20, 'var(--green)')}</span>
+          <span class="contato-txt"><strong>${esc(c.nome)}</strong><small>${esc(PARA_QUE_SERVE_O_CONTATO[c.nome] || "")}</small></span>
+          ${icon('chevron', 16, 'var(--muted)')}
+        </a>`).join("")}
+    </div>
+    <p class="footnote" style="margin-top:16px">Tem academia? As dúvidas sobre a ficha e os planos ficam na Ajuda do GuiaTennis Parceiros.</p>`, "contato-close");
+}
+
 function renderLegalSheet(title, contentHtml, closeId) {
   return `
     <div class="overlay open" id="${closeId}-overlay">
@@ -16172,6 +16203,7 @@ function attachEvents() {
       if (alvo === "painel-admin") { irAdmin("inicio"); return; }
       if (alvo === "termos") { state.showTerms = true; render(); return; }
       if (alvo === "privacidade") { state.showPrivacy = true; render(); return; }
+      if (alvo === "contato") { state.showContato = true; render(); return; }
       if (alvo === "admin") { state.showLogin = true; state.loginModo = "admin"; state.loginError = ""; render(); return; }
       if (alvo === "entrar") { abrirLoginAcademia(); return; }
       if (alvo === "conta") { abrirConta(); return; }
@@ -16406,6 +16438,11 @@ function attachEvents() {
   const termsOverlay = document.getElementById("terms-close-overlay");
   if (termsClose) termsClose.onclick = () => { state.showTerms = false; render(); };
   if (termsOverlay) termsOverlay.onclick = (e) => { if (e.target === termsOverlay) { state.showTerms = false; render(); } };
+
+  const contatoClose = document.getElementById("contato-close");
+  const contatoOverlay = document.getElementById("contato-close-overlay");
+  if (contatoClose) contatoClose.onclick = () => { state.showContato = false; render(); };
+  if (contatoOverlay) contatoOverlay.onclick = (e) => { if (e.target === contatoOverlay) { state.showContato = false; render(); } };
 
   const privacyClose = document.getElementById("privacy-close");
   const privacyOverlay = document.getElementById("privacy-close-overlay");

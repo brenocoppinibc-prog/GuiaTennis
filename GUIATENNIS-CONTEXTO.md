@@ -1173,9 +1173,14 @@ cobra taxa e não fica no meio** da negociação.
       com conta. **Tudo de suporte junto, em "Suporte"** (o Breno pediu
       de novo no mesmo dia: "os contatos e o outro site deixe tudo junto
       em uma parte"): Como funciona, Perguntas frequentes, "GuiaTennis
-      Parceiros" com a linha de baixo, "Fale com a gente" com WhatsApp,
-      Instagram e E-mail pequenos embaixo, e os links pequenos (Por que o
-      GuiaTennis, Termos de Uso, Privacidade). "Sair da conta" por último.
+      Parceiros" com a linha de baixo e **"Fale com a gente", que abre uma
+      folha com os contatos** (pedido de 08/10/2026: "com a pessoa clicando
+      em fale com a gente direciona para ver os contatos melhor"), como o
+      "Ajuda e suporte" do trivago — WhatsApp ("A resposta mais rápida"),
+      Instagram e E-mail, cada um numa linha grande, sem o número, o @ e o
+      e-mail escritos (`renderContatoSheet`). Depois "Sair da conta" e,
+      **bem no fim, em letra pequena**, Por que o GuiaTennis, Termos de Uso
+      e Privacidade.
       Saiu o título "Menu" no meio com a seta.
     - **Os acessos em todo plano**, como o cartão "Desempenho" do Google
       Business Profile e o "X pessoas viram o seu perfil" do LinkedIn: no

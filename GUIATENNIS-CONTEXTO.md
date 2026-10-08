@@ -1085,10 +1085,17 @@ cobra taxa e não fica no meio** da negociação.
       manda nada.
     - O WhatsApp Business do Breno, (11) 92745-6457, **continua no
       aplicativo**, com ele respondendo à mão (seção 12): o código sai de
-      um **número só para os códigos**, ligado à API — **(11) 97185-3987**
-      (+55 11 97185-3987, conseguido pelo Breno em 07/10/2026; o chip só
-      entra no celular para receber o SMS da Meta e depois fica guardado,
-      com recarga de vez em quando para a linha não ser cancelada). Usar o mesmo número
+      um **número só para os códigos**, ligado à API — **(11) 93333-4613**
+      (+55 11 93333-4613, "Identificação do número de telefone"
+      `1303308766209946` = segredo `WHATSAPP_NUMERO_ID`; registrado pela
+      API em 08/10/2026 pelo Graph API Explorer, `POST
+      1303308766209946/register` com `messaging_product` e `pin`, porque o
+      botão "Registrar" da tela falhava; a conta do WhatsApp na Meta está
+      com o nome "GuiaTenni" — corrigir —, e o nome de exibição
+      "GuiaTennis" estava em análise). O primeiro número, (11) 97185-3987,
+      ficou "unverified" noutra conta e pode ser apagado. O chip só entra
+      no celular para receber o SMS da Meta e depois fica guardado, com
+      recarga de vez em quando para a linha não ser cancelada. Usar o mesmo número
       nos dois ("coexistência") só por um parceiro da Meta, que cobra por
       mês.
     - Custo: a Meta cobra cada mensagem de autenticação entregue no Brasil

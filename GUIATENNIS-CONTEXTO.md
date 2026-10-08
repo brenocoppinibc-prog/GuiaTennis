@@ -2743,9 +2743,19 @@ regra 65; o merge espera o Breno. Pendente:
    Falta só: colar o modelo novo do código (com a logo) no Supabase e,
    depois do merge, trocar o webhook do Resend para o site de verdade.
 0. **Ligar o código da disputa pelo WhatsApp** (regra 66, item "Ligar o
-   código pelo WhatsApp" abaixo): conta na Meta, número só para os
-   códigos, modelo `codigo_guiatennis` e os 3 segredos no GitHub. Sem
-   isso, o admin continua mandando à mão.
+   código pelo WhatsApp" abaixo). **Em 08/10/2026:** app GuiaTennis criado,
+   número (11) 93333-4613 registrado pela API, cartão cadastrado. **Parado
+   na verificação da empresa:** a Meta só deixa criar modelo de
+   Autenticação (o do código) para empresa verificada ("Esta conta do
+   WhatsApp Business não tem permissão para criar um modelo de mensagem"),
+   e a verificação pede CNPJ — **o GuiaTennis ainda não tem**. Modelo de
+   "Utilidade" com código não: é contra as regras da Meta. Quando houver
+   CNPJ: Etapa 3 (verificação: documento, endereço, telefone e, se
+   pedir, o domínio — código no site ou no DNS), depois o modelo
+   `codigo_guiatennis`, o token do usuário do sistema e os 3 segredos
+   (`WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` = 1303308766209946,
+   `WHATSAPP_NUMERO_DE_TESTE`). Até lá, o admin manda o código à mão, como
+   sempre (nada quebra). Recarregar o chip de vez em quando.
 1. ~~Segredo `RESEND_API_KEY` no GitHub~~ — **feito pelo Breno em
    07/10/2026**; a execução do "Banco de dados" do PR #5 disse "chave do
    Resend guardada" no banco de teste. No banco de verdade entra sozinha

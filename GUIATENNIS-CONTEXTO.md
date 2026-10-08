@@ -22,8 +22,19 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 07/10/2026 (noite)
+**Atualizado em:** 08/10/2026
 
+> **Estado (08/10/2026, mais tarde):** o Breno pediu "eu quero que somente
+> as vistas recentes fiquem salvas no celular, de resto tudo pela conta".
+> Entrou a regra 70 (SQL `20261008130000_guardados_na_conta`): no celular
+> só as vistas recentemente e a última busca; favoritas, academias
+> chamadas, viagens, preferências e o "Jogou aqui?" vão para a conta, como
+> no Airbnb. Sem conta, o coração, a viagem e as preferências pedem para
+> entrar; quem tinha coisas no celular leva para a conta ao entrar.
+> Testes: **1.066 verificações, nenhuma falha** nos 33 arquivos do
+> navegador (o novo é `testes/guardados-na-conta.js`), 212 no
+> `banco-emails.py` e 21 no `receber-email.mjs`.
+>
 > **Estado (08/10/2026):** o Breno mandou prints do menu do trivago e do
 > Parceiros: "deixe o menu de jogadores mais limpo como o parceiros… ou
 > numa ideia do trivago" e, sobre o bloco trancado dos números, "pode subir
@@ -1215,6 +1226,29 @@ cobra taxa e não fica no meio** da negociação.
     Em qual banco o site está continua no painel do admin, em Ferramentas.
     A faixa do "Ver como academia" no Parceiros continua (diz qual
     academia o admin está vendo).
+70. **No celular, só as vistas recentes; o resto na conta** (pedido de
+    08/10/2026: "eu quero que somente as vistas recentes fiquem salvas no
+    celular, de resto tudo pela conta"), como o Airbnb (a lista de
+    favoritos é da conta; sem conta, o coração pede para entrar).
+    - **No aparelho:** as vistas recentemente e a última busca (que aparece
+      junto delas), mais o que é só do funcionamento (avisos já
+      dispensados, a visita, caches de cidades e do "perto").
+    - **Na conta** (`jogadores.guardados`, jsonb, SQL
+      `20261008130000_guardados_na_conta`; `guardar_na_conta(chave,
+      valor)` troca só a lista daquela chave): `favoritas`, `chamadas`,
+      `viagens`, `preferencias`, `avaliadas` e `pedir_avaliacao` (o "Jogou
+      aqui? Avalie"). No site: `lerDaConta`, `gravarNaConta` (fila, uma de
+      cada vez).
+    - **Sem conta:** o coração, salvar a viagem e salvar as preferências
+      pedem para entrar (`jogadorEntaoFaz`) e, entrando, fazem o que a
+      pessoa pediu; as academias chamadas não ficam guardadas; Favoritas e
+      Chamadas vazias convidam a entrar. A comparação fica só na tela e no
+      link `/comparar?academias=…`.
+    - **Quem tinha coisas no celular:** ao entrar, vão para a conta,
+      juntando com o que ela já tinha, e saem do celular
+      (`levarParaAConta`).
+    - Política de Privacidade ("Favoritos, buscas e preferências") e a data
+      dos textos legais (8 de outubro de 2026) atualizadas.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2183,7 +2217,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2312,6 +2346,13 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pequeno "Desempenho" com os acessos de 30 dias embaixo das avaliações, e
   "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
   singular, zero acessos, banco antigo sem número; Premium sem o cartão.
+- `guardados-na-conta.js` — regra 70: sem conta, no celular só as vistas
+  e a última busca (nada de favoritas, chamadas, viagens, preferências,
+  avaliações nem comparação); o coração pede para entrar e, entrando,
+  favorita na conta; Favoritas vazias convidam a entrar; sair tira da
+  tela; o que estava no celular junta com a conta e sai do celular (a
+  conta vence nas preferências); banco recusou, fica no celular; outro
+  aparelho vê o que está na conta.
 - `codigo-pelo-whatsapp.js` — regra 66: contestar manda o código na hora
   para o WhatsApp de antes, "Mandar outro código" pede para esperar, quem
   digita vence; sem e-mail confirmado, espera; desligado e banco sem o SQL,

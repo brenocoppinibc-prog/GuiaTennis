@@ -2654,7 +2654,7 @@ const MODALIDADE_OPTS = [
 
 // As academias agora vivem no banco de dados (Supabase), não mais fixas aqui no código.
 
-const FAVORITES_KEY = "guiatennis_favorites_v1"; // favoritos continuam só no navegador (preferência pessoal, não precisa ser compartilhada)
+const FAVORITES_KEY = "guiatennis_favorites_v1"; // só para levar as antigas do celular para a conta (08/10/2026)
 const VISITOR_KEY = "guiatennis_visitor_v1";
 
 function loadVisitor() {
@@ -2927,22 +2927,23 @@ async function setPlano(courtId, plano) {
   return true;
 }
 
+// As favoritas ficam na conta (pedido de 08/10/2026), como no Airbnb.
 function loadFavorites() {
-  try { return JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]"); } catch { return []; }
+  const v = lerDaConta("favoritas", []);
+  return Array.isArray(v) ? v : [];
 }
 const COMPARE_MAX = 5;
 const COMPARE_MIN = 2;
 const COMPARE_KEY = "guiatennis_compare_v1";
 
+// A comparação fica só na tela e no link (/comparar?academias=…), nada no
+// celular (pedido de 08/10/2026: no aparelho, só as vistas recentemente).
 function loadCompare() {
-  try {
-    const v = JSON.parse(localStorage.getItem(COMPARE_KEY) || "[]");
-    return Array.isArray(v) ? v.slice(0, COMPARE_MAX) : [];
-  } catch { return []; }
+  try { localStorage.removeItem(COMPARE_KEY); } catch {}
+  return [];
 }
 function setCompareList(arr) {
   state.compareList = arr;
-  try { localStorage.setItem(COMPARE_KEY, JSON.stringify(arr)); } catch {}
 }
 
 function isComparing(courtId) {
@@ -2985,10 +2986,17 @@ function listaPt(arr) {
 function isFavorite(courtId) {
   return loadFavorites().includes(courtId);
 }
+// Sem conta, o coração pede para entrar e, entrando, favorita (Airbnb).
 function toggleFavorite(courtId) {
+  if (!jogador) {
+    if (isAdmin) return;
+    jogadorEntaoFaz(() => { if (!loadFavorites().includes(courtId)) toggleFavorite(courtId); render(); },
+      "Para salvar as suas favoritas, entre com o seu e-mail. Elas ficam na sua conta e aparecem em qualquer aparelho.");
+    return;
+  }
   const favs = loadFavorites();
-  const next = favs.includes(courtId) ? favs.filter(id => id !== courtId) : [...favs, courtId];
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+  const next = favs.includes(courtId) ? favs.filter(id => id !== courtId) : [...favs, courtId].slice(-200);
+  gravarNaConta("favoritas", next);
   registrarPasso("acao", { academia: courtId, detalhe: `${favs.includes(courtId) ? "Tirou das favoritas" : "Favoritou"} · ${nomeDaAcademiaDoPasso(courtId)}` });
 }
 
@@ -5020,6 +5028,7 @@ async function carregarConta(session) {
     } catch { /* banco sem a função: segue só como academia */ }
   }
   if (jogador) await carregarBuscasSalvas();
+  if (jogador) levarParaAConta();
 }
 
 // Uma conta, várias academias (pedido do Breno em 03/10/2026), como o
@@ -8744,7 +8753,12 @@ function renderListaSheet() {
             <span class="lista-txt"><strong>${esc(textoDaBusca(ultima).lugar)}</strong><span>Sua última busca · ${esc(textoDaBusca(ultima).oQue)}</span></span>
             ${icon('chevron', 18, 'var(--muted)')}
           </a>` : ""}
-        ${linhas.length ? linhas.map(linha).join("") : `<p class="lista-vazia">${LISTAS[qual].vazio}</p>`}
+        ${linhas.length ? linhas.map(linha).join("")
+          // Favoritas e chamadas ficam na conta (08/10/2026): sem ela, o convite para entrar.
+          : qual !== "vistas" && !jogador && !isAdmin
+            ? `<p class="lista-vazia">${qual === "favoritas" ? "As suas favoritas ficam guardadas na sua conta e aparecem em qualquer aparelho." : "As academias que você chamar ficam guardadas na sua conta, para você achar de novo e avaliar depois."}</p>
+               <button type="button" class="cta-btn cta-primary lista-entrar" data-menu="entrar-jogador" style="width:100%;margin-top:12px">Entrar ou criar conta</button>`
+            : `<p class="lista-vazia">${LISTAS[qual].vazio}</p>`}
         ${(qual === "vistas" && (linhas.length || ultima)) || (qual === "chamadas" && linhas.length)
           ? `<button type="button" class="lista-limpar" id="lista-limpar">${qual === "vistas" ? "Apagar o histórico" : "Apagar a lista"}</button>` : ""}
       </div></div>
@@ -8753,7 +8767,7 @@ function renderListaSheet() {
 
 // Preferências de busca, como as "Preferências de pesquisa" do trivago:
 // primeiro o estado, depois a cidade (a cidade só abre com o estado
-// escolhido), e o que a pessoa costuma procurar. Ficam neste aparelho.
+// escolhido), e o que a pessoa costuma procurar. Ficam na conta (08/10/2026).
 // Municípios de cada estado, da lista oficial do IBGE (pedido do Breno em
 // 03/10/2026: escolhido o Ceará, não dá para escolher São Paulo). Como no Booking
 // e no trivago, só aparecem cidades que existem no estado. A lista fica
@@ -8812,7 +8826,7 @@ async function conferirCidadeDoUf() {
 // "distância da hospedagem" do Booking. Uns 15 dias antes até a volta, a home
 // mostra o cartão da viagem; durante a viagem, "Pesquisar" sem digitar abre
 // a cidade dela; depois da volta, tudo volta à cidade de casa sozinho. Fica
-// só no aparelho, como as preferências.
+// na conta (desde 08/10/2026), como as preferências.
 const VIAGENS_KEY = "guiatennis_viagens_v1";
 const VIAGEM_ANTES_DIAS = 15;
 function diaISO(data) {
@@ -8829,13 +8843,13 @@ function diaCurto(iso) {
 }
 // Viagens que ainda não acabaram, da mais próxima para a mais distante.
 function lerViagens() {
-  const lista = lerLocal(VIAGENS_KEY, []);
+  const lista = lerDaConta("viagens", []);
   const hoje = diaISO();
   return (Array.isArray(lista) ? lista : [])
     .filter(v => v && v.cidade && (!v.volta || v.volta >= hoje))
     .sort((a, b) => (a.ida || "9999").localeCompare(b.ida || "9999"));
 }
-function gravarViagens(lista) { gravarLocal(VIAGENS_KEY, lista); }
+function gravarViagens(lista) { gravarNaConta("viagens", lista); }
 // Com data: já começou e não acabou. Sem data: não conta como "viajando".
 function viajandoAgora() {
   const hoje = diaISO();
@@ -8904,10 +8918,12 @@ async function salvarViagem() {
   if (r.ida && r.ida < diaISO()) return erro("A ida já passou. Confira a data.");
   if (r.ida && r.volta && r.volta < r.ida) return erro("A volta precisa ser depois da ida.");
   if (!r.ida && r.volta) return erro("Informe também a data de ida ou apague a volta.");
-  // Aviso por e-mail perto da data: precisa da conta. Sem ela, entra e
-  // guarda depois, com tudo o que já foi digitado.
-  if (r.aviso && !jogador && !isAdmin) {
-    jogadorEntaoFaz(() => salvarViagem(), "Para receber o aviso da viagem por e-mail, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto.");
+  // A viagem fica na conta (desde 08/10/2026). Sem ela, entra e guarda
+  // depois, com tudo o que já foi digitado.
+  if (!jogador && !isAdmin) {
+    jogadorEntaoFaz(() => salvarViagem(), r.aviso
+      ? "Para receber o aviso da viagem por e-mail, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto."
+      : "Para guardar a viagem, entre com o seu e-mail. Ela fica na sua conta e aparece em qualquer aparelho.");
     return;
   }
   const ficar = String(r.ficar || "").trim().replace(/\s+/g, " ");
@@ -8989,7 +9005,7 @@ function trazerViagemDaConta() {
   if (!jogador || !jogador.avisos_viagem || !jogador.viagem_cidade) return;
   if (jogador.viagem_volta && jogador.viagem_volta < diaISO()) return;
   if (lerViagens().some(v => ehViagemDaConta(v))) return;
-  const lista = lerLocal(VIAGENS_KEY, []);
+  const lista = lerDaConta("viagens", []);
   gravarViagens([...(Array.isArray(lista) ? lista : []), { id: Date.now(), uf: jogador.viagem_uf || "", cidade: jogador.viagem_cidade,
     ida: jogador.viagem_ida || "", volta: jogador.viagem_volta || "" }].slice(-5));
 }
@@ -9099,7 +9115,7 @@ function renderViagemSheet() {
         <div class="cta-col" style="margin-top:20px">
           <button type="button" class="cta-btn cta-primary" id="viagem-salvar" ${state.viagemSalvando ? "disabled" : ""}>${state.viagemSalvando ? bolaGirando(16) + " Achando no mapa" : "Guardar a viagem"}</button>
         </div>
-        <p class="footnote">A viagem fica neste aparelho, como as preferências de busca. Com o aviso por e-mail, ela fica também na sua conta.</p>
+        <p class="footnote">A viagem fica na sua conta e aparece em qualquer aparelho em que você entrar.</p>
       </div></div>
     </div>`;
 }
@@ -9251,6 +9267,12 @@ async function salvarPreferencias() {
   // Com academia no guia, usa o nome do jeito que está no guia.
   const doGuia = cidadesComQuadra().find(c => mesmaCidade(c.nome, cidade));
   if (doGuia) cidade = doGuia.nome;
+  // As preferências ficam na conta (desde 08/10/2026): sem ela, entra e
+  // salva depois, com o que já foi escolhido (a cidade já conferida).
+  if (!jogador && !isAdmin) {
+    jogadorEntaoFaz(() => salvarPreferencias(), "Para salvar as preferências de busca, entre com o seu e-mail. Elas ficam na sua conta e valem em qualquer aparelho.");
+    return;
+  }
   const p = { uf, cidade, modalidade: r.modalidade || "" };
   // Cidade ainda sem academia: o mapa diz onde ela fica, para sugerir as
   // academias mais perto. Se o mapa não responder, salva assim mesmo.
@@ -9264,7 +9286,7 @@ async function salvarPreferencias() {
       p.lng = pontoAproximado(g.lng);
     } catch (e) { diag(`preferências: não achei ${cidade}/${uf} no mapa (${e.message})`); }
   }
-  gravarLocal(PREFERENCIAS_KEY, p);
+  gravarNaConta("preferencias", p);
   state.homeCity = null;
   if (!state.origin && !state.modalidadeFilters.length && p.modalidade) state.modalidadeFilters = [p.modalidade];
   state.prefSalvando = false;
@@ -10007,17 +10029,17 @@ function renderPerfilJogador() {
 // um dia depois de a pessoa chamar uma academia, um balão pergunta se ela
 // jogou lá, com as estrelas para tocar. Uma academia por visita; ignorado ou
 // "Agora não", pergunta de novo em 3 dias (no máximo 3 vezes por academia);
-// "Não joguei aqui" não pergunta mais. Tudo fica no aparelho.
+// "Não joguei aqui" não pergunta mais. Fica na conta (desde 08/10/2026).
 const AVALIADAS_KEY = "guiatennis_avaliadas_v1";
 const PEDIR_AVALIACAO_KEY = "guiatennis_pedir_avaliacao_v1";
 const PEDIR_AVALIACAO_DEPOIS_H = 24, PEDIR_AVALIACAO_ATE_D = 60, PEDIR_AVALIACAO_INTERVALO_D = 3, PEDIR_AVALIACAO_VEZES = 3, PEDIR_AVALIACAO_ESPERA_S = 6;
-function lerAvaliadas() { const v = lerLocal(AVALIADAS_KEY, []); return Array.isArray(v) ? v : []; }
-function marcarAvaliada(id) { gravarLocal(AVALIADAS_KEY, [id, ...lerAvaliadas().filter(x => x !== id)].slice(0, 50)); }
-function lerPedidosDeAvaliacao() { const v = lerLocal(PEDIR_AVALIACAO_KEY, {}); return v && typeof v === "object" && !Array.isArray(v) ? v : {}; }
+function lerAvaliadas() { const v = lerDaConta("avaliadas", []); return Array.isArray(v) ? v : []; }
+function marcarAvaliada(id) { gravarNaConta("avaliadas", [id, ...lerAvaliadas().filter(x => x !== id)].slice(0, 50)); }
+function lerPedidosDeAvaliacao() { const v = lerDaConta("pedir_avaliacao", {}); return v && typeof v === "object" && !Array.isArray(v) ? v : {}; }
 function anotarPedidoDeAvaliacao(id, mudanca) {
-  const t = lerPedidosDeAvaliacao();
+  const t = { ...lerPedidosDeAvaliacao() };
   t[id] = { ...(t[id] || {}), ...mudanca };
-  gravarLocal(PEDIR_AVALIACAO_KEY, t);
+  gravarNaConta("pedir_avaliacao", t);
 }
 // As academias chamadas que ainda não foram avaliadas. Para o balão, só as
 // chamadas há mais de um dia e não dispensadas; para o perfil, todas.
@@ -10403,11 +10425,61 @@ function pushRecent(id) {
   try { localStorage.setItem(RECENTS_KEY, JSON.stringify(next)); } catch {}
 }
 
-// ---------- o que fica só no aparelho da pessoa ----------
-// Como o trivago e o Booking: a última busca, as academias que a pessoa já
-// chamou e as preferências de busca ficam no navegador dela e voltam na
-// página inicial e no menu. Nada disso vai para o banco (Política de
-// Privacidade, "Favoritos, buscas e preferências").
+// ---------- o que fica no aparelho e o que fica na conta ----------
+// Pedido do Breno em 08/10/2026: "somente as vistas recentes fiquem salvas
+// no celular, de resto tudo pela conta". No aparelho: as vistas
+// recentemente e a última busca, que aparece junto delas (e o que é só do
+// funcionamento do site, como os avisos já dispensados). Na conta
+// (jogadores.guardados, SQL 20261008130000): favoritas, academias chamadas,
+// viagens, preferências de busca e o "Jogou aqui? Avalie" — como o Airbnb,
+// aparecem em qualquer aparelho. Sem conta, nada disso é guardado.
+function lerDaConta(chave, padrao) {
+  const g = jogador && jogador.guardados;
+  const v = g && typeof g === "object" ? g[chave] : undefined;
+  return v === undefined || v === null ? padrao : v;
+}
+// Troca a lista na hora (a tela já mostra) e manda para o banco em fila,
+// uma de cada vez, só a lista que mudou. Devolve se o banco aceitou.
+let filaDaConta = Promise.resolve(true);
+function gravarNaConta(chave, valor) {
+  if (!jogador) return Promise.resolve(false);
+  jogador.guardados = { ...(jogador.guardados && typeof jogador.guardados === "object" ? jogador.guardados : {}), [chave]: valor };
+  filaDaConta = filaDaConta.then(async () => {
+    try {
+      const { error } = await sb.rpc('guardar_na_conta', { p_chave: chave, p_valor: valor });
+      if (error) diag(`guardar na conta (${chave}): ${error.message}`);
+      return !error;
+    } catch (e) { diag(`guardar na conta (${chave}): ${e.message}`); return false; }
+  });
+  return filaDaConta;
+}
+// Quem tinha coisas guardadas no celular (antes de 08/10/2026): ao entrar,
+// vão para a conta (juntando com o que a conta já tinha) e saem do celular.
+const GUARDADOS_DO_CELULAR = [
+  ["guiatennis_favorites_v1", "favoritas"], ["guiatennis_chamadas_v1", "chamadas"],
+  ["guiatennis_viagens_v1", "viagens"], ["guiatennis_preferencias_v1", "preferencias"],
+  ["guiatennis_avaliadas_v1", "avaliadas"], ["guiatennis_pedir_avaliacao_v1", "pedir_avaliacao"],
+];
+function levarParaAConta() {
+  if (!jogador) return;
+  for (const [k, chave] of GUARDADOS_DO_CELULAR) {
+    const local = lerLocal(k, null);
+    if (local === null) continue;
+    const conta = lerDaConta(chave, null);
+    let junto;
+    if (Array.isArray(local)) {
+      const ja = Array.isArray(conta) ? conta : [];
+      const idDe = x => x && typeof x === "object" ? String(x.id) : String(x);
+      const tem = new Set(ja.map(idDe));
+      junto = [...ja, ...local.filter(x => x && !tem.has(idDe(x)))];
+    } else if (local && typeof local === "object") {
+      junto = chave === "preferencias" ? (conta && conta.cidade ? conta : local) : { ...local, ...(conta || {}) };
+    }
+    const tirar = () => { try { localStorage.removeItem(k); } catch {} };
+    if (junto === undefined || JSON.stringify(junto) === JSON.stringify(conta)) { tirar(); continue; }
+    gravarNaConta(chave, junto).then(ok => { if (ok) tirar(); });
+  }
+}
 function lerLocal(chave, padrao) {
   try { const v = JSON.parse(localStorage.getItem(chave) || "null"); return v === null ? padrao : v; }
   catch { return padrao; }
@@ -10448,15 +10520,17 @@ function textoDaBusca(b) {
 }
 
 // As academias que a pessoa já chamou (WhatsApp, Instagram ou site), a mais
-// recente primeiro — como as "Reservas" do trivago.
+// recente primeiro — como as "Reservas" do trivago. Na conta (08/10/2026);
+// sem conta, não fica guardado.
 const CHAMADAS_KEY = "guiatennis_chamadas_v1";
 function lerChamadas() {
-  const v = lerLocal(CHAMADAS_KEY, []);
+  const v = lerDaConta("chamadas", []);
   return Array.isArray(v) ? v.filter(x => x && x.id) : [];
 }
 function lembrarChamada(id, tipo) {
+  if (!jogador) return;
   const lista = [{ id, tipo, em: Date.now() }, ...lerChamadas().filter(x => x.id !== id)].slice(0, 12);
-  gravarLocal(CHAMADAS_KEY, lista);
+  gravarNaConta("chamadas", lista);
 }
 const NOME_DO_CONTATO = { whatsapp: "WhatsApp", instagram: "Instagram", site: "site" };
 
@@ -10474,8 +10548,8 @@ const ESTADOS = [
   ["SE", "Sergipe"], ["TO", "Tocantins"],
 ];
 function lerPreferencias() {
-  const p = lerLocal(PREFERENCIAS_KEY, {});
-  return p && typeof p === "object" ? p : {};
+  const p = lerDaConta("preferencias", {});
+  return p && typeof p === "object" && !Array.isArray(p) ? p : {};
 }
 function textoDaPreferencia(p) {
   p = p || lerPreferencias();
@@ -14606,7 +14680,7 @@ function conteudoDasEstatisticas() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 7 de outubro de 2026</p>
+<p class="footnote">Última atualização: 8 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -14635,9 +14709,9 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 7 de outubro de 2026</p>
+<p class="footnote">Última atualização: 8 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica apenas no seu aparelho.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> os favoritos, a lista de comparação, as academias vistas, a última busca, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar) e as viagens que você guardar (cidade, onde vai ficar e datas) ficam salvos apenas no navegador do seu próprio aparelho — exceto a viagem do aviso por e-mail "Vou viajar" e as buscas que você salvar na conta, que ficam na sua conta (a viagem também aparece na página inicial e no menu). Você apaga cada busca salva no seu perfil. Um dia depois de você chamar uma academia, o site pergunta, no próprio aparelho, se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam só no aparelho.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. A lista de comparação fica só na tela e no link da comparação. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso (para o responsável) e pedido aceito; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -14647,9 +14721,9 @@ const PRIVACY_HTML = `
 <p class="field-label" style="margin-top:16px">4. Onde os dados ficam armazenados</p>
 <p style="font-size:14px">Academias, avaliações, identificação (nome/WhatsApp) e cliques ficam num banco de dados protegido (Supabase), com acesso controlado por regras de segurança — qualquer pessoa pode ver o que está publicado e enviar avaliação/cadastro novo, mas só o GuiaTennis pode aprovar, editar ou remover conteúdo — cada academia, com o login dela, edita apenas a própria ficha e as próprias respostas. Favoritos continuam salvos localmente no seu navegador.</p>
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
-<p style="font-size:14px">Se uma conta for excluída pelo GuiaTennis por descumprir os Termos de Uso, guardamos o e-mail, o nome, a data e o motivo, só para impedir um novo cadastro com o mesmo e-mail e para a defesa do GuiaTennis. Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. Favoritos, histórico e preferências ficam só no seu aparelho: dá para apagar pelo menu do site ou limpando os dados do site nas configurações do navegador. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
+<p style="font-size:14px">Se uma conta for excluída pelo GuiaTennis por descumprir os Termos de Uso, guardamos o e-mail, o nome, a data e o motivo, só para impedir um novo cadastro com o mesmo e-mail e para a defesa do GuiaTennis. Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. O histórico (academias vistas recentemente e a última busca) fica só no seu aparelho: dá para apagar pelo menu do site ou limpando os dados do site nas configurações do navegador. Favoritos, academias chamadas, viagens e preferências ficam na sua conta: você apaga cada um pelo menu, e excluir a conta apaga tudo. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
 <p class="field-label" style="margin-top:16px">6. Cookies</p>
-<p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (favoritos, lista de comparação, sua identificação, formulários e a sessão de quem entra na área da academia) é estritamente técnico.</p>
+<p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (as academias vistas recentemente e a última busca, sua identificação, formulários, os avisos que você já fechou e a sessão de quem entra na conta) é estritamente técnico.</p>
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
 <p style="font-size:14px">O GuiaTennis não é direcionado a menores de 18 anos e não coleta intencionalmente dados de crianças ou adolescentes.</p>
 <p class="field-label" style="margin-top:16px">8. Contato</p>
@@ -16187,7 +16261,7 @@ function attachEvents() {
       if (LISTAS[alvo]) { state.lista = alvo; render(); return; }
       if (alvo === "preferencias") { abrirPreferencias(); return; }
       if (alvo === "viagem") { abrirViagem(); return; }
-      if (alvo === "entrar-jogador") { abrirContaJogador("entrar"); return; }
+      if (alvo === "entrar-jogador") { state.lista = null; abrirContaJogador("entrar"); return; }
       if (alvo === "minha-conta") { abrirContaJogador("conta"); return; }
       if (alvo === "avisos") { if (jogador) irPerfil("perfil-avisos"); else abrirContaJogador("entrar", "Entre na sua conta para escolher os avisos por e-mail."); return; }
       if (alvo === "sair-jogador") { sairDaContaJogador(); return; }
@@ -16226,7 +16300,7 @@ function attachEvents() {
     if (state.lista === "vistas") {
       try { localStorage.removeItem(RECENTS_KEY); localStorage.removeItem(ULTIMA_BUSCA_KEY); } catch {}
     } else if (state.lista === "chamadas") {
-      try { localStorage.removeItem(CHAMADAS_KEY); } catch {}
+      gravarNaConta("chamadas", []);
     }
     render();
   };
@@ -16314,7 +16388,7 @@ function attachEvents() {
   if (prefSalvar) prefSalvar.onclick = () => salvarPreferencias();
   const prefApagar = document.getElementById("pref-apagar");
   if (prefApagar) prefApagar.onclick = () => {
-    try { localStorage.removeItem(PREFERENCIAS_KEY); } catch {}
+    gravarNaConta("preferencias", {});
     window.__pref = {};
     state.homeCity = null;
     state.showPrefs = false;

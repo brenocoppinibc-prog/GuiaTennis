@@ -27,13 +27,18 @@ const passos = (page) => page.evaluate(() => JSON.parse(JSON.stringify(window.__
   ok(contato.detalhe === 'WhatsApp · Só Aula Tennis' && contato.academia_id === 'a1', 'o contato vira um passo — ' + contato.detalhe);
   ok(new Set(p.map(x => x.visita)).size === 1 && /^[a-z0-9]{16}$/.test(p[0].visita) && p.every((x, i) => !i || (x.ordem > p[i - 1].ordem && x.segundos >= p[i - 1].segundos)), 'uma visita só (número sorteado), com a ordem e o tempo desde a chegada');
   ok(!p.some(x => 'lat' in x || 'ip' in x || 'cep' in x) && !p.some(x => /\?/.test(x.tela)), 'sem ponto, CEP, IP nem a parte do link depois do "?"');
-  // Favoritar e comparar também são passos.
-  await page.evaluate(() => { toggleFavorite('a2'); toggleCompare('a2'); });
+  // Comparar também é um passo; sem conta, o coração abre o Entrar (as
+  // favoritas ficam na conta, 08/10/2026), e isso entra no caminho.
+  await page.evaluate(() => { toggleCompare('a2'); toggleFavorite('a2'); });
   p = await passos(page);
-  ok(p.some(x => x.detalhe === 'Favoritou · Quadra Locação') && p.some(x => x.detalhe === 'Pôs na comparação · Quadra Locação'), 'favoritar e comparar entram no caminho');
-  await page.evaluate(() => { state.showMenu = true; render(); });
+  ok(p.some(x => x.detalhe === 'Pôs na comparação · Quadra Locação') && p[p.length - 1].detalhe === 'Entrar: o e-mail' && !p.some(x => x.detalhe.startsWith('Favoritou')), 'comparar entra no caminho; sem conta, o coração abre o Entrar');
+  await page.evaluate(() => { state.jogadorTela = null; state.showMenu = true; render(); });
   p = await passos(page);
   ok(p[p.length - 1].detalhe === 'Abriu o menu', 'janelas por cima (menu, cadastro, Entrar) também');
+  await browser.close();
+  ({ browser, page } = await abrir({ jogador: true }));
+  await page.evaluate(() => toggleFavorite('a2'));
+  ok((await passos(page)).some(x => x.detalhe === 'Favoritou · Quadra Locação'), 'com conta, favoritar entra no caminho');
   await browser.close();
 
   // ---- GuiaTennis Parceiros: as etapas do cadastro ----

@@ -10,7 +10,8 @@ Parceiros (20261006160000), a data em que a ficha foi atualizada
 (20261007130000_codigo_so_em_disputa), o código da disputa pelo WhatsApp
 (20261007140000_codigo_pelo_whatsapp), a logo nos e-mails
 (20261007150000_logo_nos_emails) e os acessos em todo plano
-(20261007160000_acessos_em_todo_plano).
+(20261007160000_acessos_em_todo_plano) e os guardados na conta
+(20261008130000_guardados_na_conta).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -725,6 +726,28 @@ sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
 num = json.loads(um("select public.numeros_da_academia(30)::text", papel="authenticated", user=dono) or "{}")
 ok(num.get("visitas") == 3 and num.get("contatos") == 1 and not num.get("trancado"), "Premium continua vendo tudo, com os mesmos acessos")
 sql(f"update public.academias set plano = '{plano_antes}' where id = '{PINHEIROS}'; delete from public.cliques where academia_id = '{PINHEIROS}';")
+
+# 21. O que a pessoa guarda fica na conta (SQL 20261008130000) -------------------
+print("\n# Guardados na conta")
+gui = jogador("Gui Guarda", f"gui{sufixo}@exemplo.com")
+certo, saida = sql(f"select public.guardar_na_conta('favoritas', '[\"{PINHEIROS}\"]'::jsonb)", papel="authenticated", user=gui)
+ok(certo and um(f"select guardados->'favoritas'->>0 from public.jogadores where user_id = '{gui}'") == PINHEIROS, "a favorita vai para a conta" + ("" if certo else ": " + saida))
+sql("""select public.guardar_na_conta('preferencias', '{"uf": "SP", "cidade": "São Paulo"}'::jsonb)""", papel="authenticated", user=gui)
+ok(um(f"select (guardados->'favoritas'->>0) || '|' || (guardados->'preferencias'->>'cidade') from public.jogadores where user_id = '{gui}'") == f"{PINHEIROS}|São Paulo",
+   "guardar uma lista não apaga as outras")
+ok(um(f"select guardados->'preferencias'->>'cidade' from public.jogadores where user_id = '{gui}'", papel="authenticated", user=gui) == "São Paulo", "a conta lê o que guardou")
+certo, saida = sql("select public.guardar_na_conta('senha', '[]'::jsonb)", papel="authenticated", user=gui)
+ok(not certo and "Não sei guardar" in saida, "só as listas conhecidas")
+certo, saida = sql("""select public.guardar_na_conta('favoritas', '{"a": 1}'::jsonb)""", papel="authenticated", user=gui)
+ok(not certo and "Formato" in saida, "cada lista no formato dela")
+certo, saida = sql(f"select public.guardar_na_conta('chamadas', (select jsonb_agg(repeat('x', 100)) from generate_series(1, 300)))", papel="authenticated", user=gui)
+ok(not certo and "Grande demais" in saida, "nada grande demais")
+certo, _ = sql("select public.guardar_na_conta('favoritas', '[]'::jsonb)", papel="anon")
+ok(not certo, "o visitante não guarda nada no banco")
+certo, saida = sql(f"select public.guardar_na_conta('favoritas', '[]'::jsonb)", papel="authenticated", user=hugo)
+ok(um(f"select guardados->'favoritas'->>0 from public.jogadores where user_id = '{gui}'") == PINHEIROS, "cada um guarda só na própria conta")
+certo, _ = sql(f"update public.jogadores set guardados = '{{}}'::jsonb where user_id = '{gui}'", papel="authenticated", user=gui)
+ok(not certo or um(f"select guardados->'favoritas'->>0 from public.jogadores where user_id = '{gui}'") == PINHEIROS, "a coluna não se troca direto, só pela função")
 
 # Excluir a conta apaga as buscas.
 sql(f"delete from auth.users where id = '{hugo}'")

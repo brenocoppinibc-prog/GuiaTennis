@@ -88,10 +88,11 @@ const { abrir, ok } = require('./harness');
   ok(await page.isVisible('#decide-push'), 'depois de 15 segundos na comparação, o aviso aparece');
   await browser.close();
 
-  // ---- Minhas quadras: a mais perto primeiro ----
-  ({ browser, page } = await abrir());
+  // ---- Minhas quadras: a mais perto primeiro (favoritas na conta) ----
+  ({ browser, page } = await abrir({ jogador: true }));
   t = await page.evaluate(() => {
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(['a1', 'a2']));
+    gravarLocal(PUSH_VIAGEM_KEY, Date.now());
+    gravarNaConta('favoritas', ['a1', 'a2']);
     state.favorites = loadFavorites();
     state.origin = { lat: -23.601, lng: -46.661, bairro: 'Moema', cidade: 'São Paulo' };
     state.lista = 'favoritas'; render();

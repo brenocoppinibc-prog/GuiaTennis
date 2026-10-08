@@ -2,14 +2,15 @@
 // do Airbnb e do Booking: a viagem fica separada da cidade de casa; perto da
 // data a home mostra o cartão, durante a viagem "Pesquisar" abre a cidade
 // dela, e depois da volta tudo volta sozinho. Com o hotel, as quadras vêm da
-// mais perto dele; o convite aparece para quem já está navegando.
+// mais perto dele; o convite aparece para quem já está navegando. A viagem
+// fica na conta (08/10/2026): sem conta, guardar pede para entrar.
 const { abrir, ok } = require('./harness');
 
 const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
 (async () => {
-  let { browser, page } = await abrir();
-  await page.evaluate(() => { localStorage.setItem(PREFERENCIAS_KEY, JSON.stringify({ uf: 'CE', cidade: 'Fortaleza' })); state.showMenu = true; render(); });
+  let { browser, page } = await abrir({ jogador: true });
+  await page.evaluate(() => { gravarLocal(PUSH_VIAGEM_KEY, Date.now()); gravarNaConta('preferencias', { uf: 'CE', cidade: 'Fortaleza' }); state.showMenu = true; render(); });
   const item = await page.evaluate(() => [...document.querySelectorAll('.menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim()).find(t => t.startsWith('Vou viajar')) || '');
   ok(item === 'Vou viajar', 'menu › Minhas quadras tem "Vou viajar" (sem viagem, nada na direita) — ' + item);
   await page.click('[data-menu="viagem"]');
@@ -32,6 +33,7 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.waitForTimeout(300);
   let t = await page.evaluate(() => ({ salvo: lerViagens()[0], cartao: document.getElementById('viagem-cartao')?.innerText.replace(/\s+/g, ' ') || '', aviso: document.querySelector('.home-hero .conta-aviso')?.innerText || '' }));
   ok(t.salvo && t.salvo.cidade === 'São Paulo' && t.salvo.uf === 'SP', 'guarda a viagem com o nome oficial da cidade');
+  ok(await page.evaluate(() => { const v = window.__db.jogadores.find(j => j.user_id === 'j-ana').guardados.viagens; return v.length === 1 && v[0].cidade === 'São Paulo' && !localStorage.getItem(VIAGENS_KEY); }), 'a viagem vai para a conta, e não para o celular');
   ok(/sua próxima viagem/i.test(t.cartao) && t.cartao.includes('São Paulo, SP') && t.cartao.includes('2 academias para jogar lá') && t.aviso.includes('guardada'), 'a home mostra o cartão da próxima viagem, com as academias de lá — ' + t.cartao.slice(0, 80));
   await page.evaluate(() => render());
   ok(await page.evaluate(() => !document.querySelector('.home-hero .conta-aviso')), 'o aviso "guardada" aparece só uma vez');
@@ -45,7 +47,7 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.waitForTimeout(800);
   ok(await page.evaluate(() => state.page === 'search' && /são paulo/i.test(state.termoBuscado || state.cep || '')), '"Ver quadras" abre a busca na cidade da viagem');
   // Depois da volta, some sozinha.
-  await page.evaluate((d) => { const l = JSON.parse(localStorage.getItem(VIAGENS_KEY)); l[0].ida = d[0]; l[0].volta = d[1]; localStorage.setItem(VIAGENS_KEY, JSON.stringify(l)); goHome(); }, [dia(-6), dia(-2)]);
+  await page.evaluate((d) => { const l = lerViagens(); l[0].ida = d[0]; l[0].volta = d[1]; gravarViagens(l); goHome(); }, [dia(-6), dia(-2)]);
   await page.waitForTimeout(200);
   t = await page.evaluate(() => ({ lista: lerViagens().length, cartao: !!document.getElementById('viagem-cartao'), padrao: cidadePadraoDaBusca() }));
   ok(t.lista === 0 && !t.cartao && t.padrao === 'Fortaleza', 'depois da volta, a viagem some e tudo volta para a cidade de casa');
@@ -64,9 +66,10 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await browser.close();
 
   // Busca de outra cidade: pergunta se vai viajar.
-  ({ browser, page } = await abrir());
+  ({ browser, page } = await abrir({ jogador: true }));
   await page.evaluate(() => {
-    localStorage.setItem(PREFERENCIAS_KEY, JSON.stringify({ uf: 'CE', cidade: 'Fortaleza' }));
+    gravarLocal(PUSH_VIAGEM_KEY, Date.now());
+    gravarNaConta('preferencias', { uf: 'CE', cidade: 'Fortaleza' });
     state.origin = { lat: -23.56, lng: -46.68, bairro: 'Pinheiros', cidade: 'São Paulo', uf: 'SP' };
     state.searchStatus = 'done'; state.page = 'search'; render();
   });
@@ -79,13 +82,13 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.click('#viagem-pergunta-nao');
   await page.waitForTimeout(150);
   ok(await page.evaluate(() => !document.getElementById('viagem-pergunta')), 'o X tira a pergunta');
-  await page.evaluate(() => { localStorage.setItem(PREFERENCIAS_KEY, JSON.stringify({ uf: 'SP', cidade: 'São Paulo' })); state.viagemPerguntaFechada = []; render(); });
+  await page.evaluate(() => { gravarNaConta('preferencias', { uf: 'SP', cidade: 'São Paulo' }); state.viagemPerguntaFechada = []; render(); });
   ok(await page.evaluate(() => !document.getElementById('viagem-pergunta')), 'buscar a própria cidade não pergunta nada');
   await browser.close();
 
   // Onde vai ficar (04/10/2026): "Ver quadras" mede a partir do hotel.
-  ({ browser, page } = await abrir());
-  await page.evaluate(() => abrirViagem());
+  ({ browser, page } = await abrir({ jogador: true }));
+  await page.evaluate(() => { gravarLocal(PUSH_VIAGEM_KEY, Date.now()); abrirViagem(); });
   await page.waitForTimeout(150);
   await page.selectOption('#viagem-uf', 'SP');
   await page.waitForTimeout(300);
@@ -145,10 +148,13 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.click('#convite-viagem-fechar');
   await page.waitForTimeout(150);
   ok(await page.evaluate(() => !document.getElementById('convite-viagem') && lerLocal(VIAGEM_CONVITE_KEY, 0) > 0), 'o X fecha e lembra (30 dias)');
-  await page.evaluate(() => { localStorage.removeItem(VIAGEM_CONVITE_KEY); gravarViagens([{ id: 3, uf: 'SP', cidade: 'São Paulo', ida: '', volta: '' }]); render(); });
-  ok(await page.evaluate(() => !document.getElementById('convite-viagem')), 'quem já guardou uma viagem não vê o convite');
-  await page.evaluate(() => { gravarViagens([]); state.navegou = 0; state.tempoNoSite = false; goHome(); localStorage.setItem(CONVITE_CONTA_KEY, JSON.stringify(Date.now())); state.tempoNoSite = true; render(); });
+  await page.evaluate(() => { localStorage.removeItem(VIAGEM_CONVITE_KEY); state.navegou = 0; state.tempoNoSite = false; goHome(); localStorage.setItem(CONVITE_CONTA_KEY, JSON.stringify(Date.now())); state.tempoNoSite = true; render(); });
   ok(await page.evaluate(() => !!document.getElementById('convite-viagem') && !document.querySelector('.convite-conta:not(.convite-viagem)')), 'na home também, sem empilhar com o convite da conta');
+  await browser.close();
+  ({ browser, page } = await abrir({ jogador: true }));
+  await page.evaluate(() => { gravarLocal(PUSH_VIAGEM_KEY, Date.now()); gravarViagens([{ id: 3, uf: 'SP', cidade: 'São Paulo', ida: '', volta: '' }]); state.tempoNoSite = true; openCourt('a1'); });
+  await page.waitForTimeout(150);
+  ok(await page.evaluate(() => !document.getElementById('convite-viagem')), 'quem já guardou uma viagem não vê o convite');
   await browser.close();
 
   // O cadastro não tem "Vou viajar"; o aviso por e-mail fica na aba da viagem
@@ -180,7 +186,7 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.waitForTimeout(500);
   t = await page.evaluate(() => ({ j: window.__db.jogadores.find(x => x.email === 'viaja@exemplo.com'), local: lerViagens(), aviso: [...document.querySelectorAll('.conta-aviso')].map(e => e.innerText).join(' ') }));
   ok(t.j && t.j.avisos_viagem === true && t.j.viagem_cidade === 'São Paulo' && t.j.viagem_uf === 'SP' && !!t.j.viagem_ida, 'marcado, a viagem vai para a conta com o aviso');
-  ok(t.local.length === 1 && t.local[0].ficar === 'Hotel Pinheiros' && !!t.local[0].ida && t.aviso.includes('Perto da data, você recebe por e-mail'), 'a viagem do aparelho continua com o hotel, e a mensagem confirma o aviso');
+  ok(t.local.length === 1 && t.local[0].ficar === 'Hotel Pinheiros' && !!t.local[0].ida && t.aviso.includes('Perto da data, você recebe por e-mail'), 'a viagem da conta continua com o hotel, e a mensagem confirma o aviso');
   await page.evaluate(() => abrirViagem(Object.assign({}, lerViagens()[0])));
   await page.waitForTimeout(200);
   t = await page.evaluate(() => ({ marcada: document.getElementById('viagem-aviso').checked, lista: document.querySelector('.viagens-lista')?.innerText || '' }));
@@ -189,7 +195,7 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.click('#viagem-salvar');
   await page.waitForTimeout(500);
   t = await page.evaluate(() => window.__db.jogadores.find(x => x.email === 'viaja@exemplo.com'));
-  ok(t.avisos_viagem === false && t.viagem_cidade === null, 'desmarcar desliga o aviso e tira a viagem da conta');
+  ok(t.avisos_viagem === false && t.viagem_cidade === null, 'desmarcar desliga o aviso por e-mail da viagem');
   await page.evaluate(() => { abrirViagem(Object.assign({}, lerViagens()[0], { aviso: true })); });
   await page.click('#viagem-salvar');
   await page.waitForTimeout(400);
@@ -207,6 +213,23 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   ok(await page.evaluate(() => state.jogadorTela === 'email' && /aviso da viagem/.test(state.jogadorMotivo) && typeof state.depoisDeEntrar === 'function' && !lerViagens().length),
     'sem conta, o aviso pede para entrar antes de guardar');
   await browser.close();
+  ({ browser, page } = await abrir());
+  await page.evaluate(() => { abrirViagem({ uf: 'SP', cidade: 'São Paulo', ficar: 'Hotel Pinheiros' }); });
+  await page.waitForTimeout(300);
+  await page.click('#viagem-salvar');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.jogadorTela === 'email' && /guardar a viagem/.test(state.jogadorMotivo) && !lerViagens().length && !localStorage.getItem(VIAGENS_KEY)),
+    'sem conta, guardar a viagem pede para entrar (nada fica no celular)');
+  await page.fill('#jog-email', 'ana@exemplo.com');
+  await page.evaluate(() => { window.__senhas['ana@exemplo.com'] = 'senhadaana'; window.__db.jogadores.push({ user_id: 'j-ana', nome: 'Ana Jogadora', email: 'ana@exemplo.com', token_avisos: 't' }); });
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  await page.fill('#jog-senha', 'senhadaana');
+  await page.click('#jog-entrar');
+  await page.waitForTimeout(1200);
+  t = await page.evaluate(() => ({ v: lerViagens(), conta: (window.__db.jogadores.find(j => j.user_id === 'j-ana').guardados || {}).viagens || [] }));
+  ok(t.v.length === 1 && t.v[0].ficar === 'Hotel Pinheiros' && t.conta.length === 1, 'entrando, a viagem é guardada na conta com o que já estava digitado');
+  await browser.close();
 
   // "Tem viagem marcada?": um pouco depois de entrar, uma vez a cada 30 dias.
   ({ browser, page } = await abrir({ jogador: true }));
@@ -221,9 +244,9 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   ok(!(await page.$('#push-viagem')), 'visto uma vez, não volta antes de 30 dias');
   await browser.close();
   ({ browser, page } = await abrir());
-  await page.evaluate(() => { gravarViagens([{ id: 9, uf: 'RJ', cidade: 'Rio de Janeiro', ida: '', volta: '' }]); });
-  // A conta existe antes do "Continuar": o site abre a senha, e não o cadastro.
-  await page.evaluate(() => { window.__senhas['ana@exemplo.com'] = 'senhadaana'; window.__db.jogadores.push({ user_id: 'j-ana', nome: 'Ana Jogadora', email: 'ana@exemplo.com', token_avisos: 't' }); });
+  // A viagem já está na conta (guardada em outro aparelho). A conta existe
+  // antes do "Continuar": o site abre a senha, e não o cadastro.
+  await page.evaluate(() => { window.__senhas['ana@exemplo.com'] = 'senhadaana'; window.__db.jogadores.push({ user_id: 'j-ana', nome: 'Ana Jogadora', email: 'ana@exemplo.com', token_avisos: 't', guardados: { viagens: [{ id: 9, uf: 'RJ', cidade: 'Rio de Janeiro', ida: '', volta: '' }] } }); });
   await page.evaluate(async () => { abrirContaJogador('entrar'); });
   await page.fill('#jog-email', 'ana@exemplo.com');
   await page.click('#jog-continuar');
@@ -231,6 +254,6 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.fill('#jog-senha', 'senhadaana');
   await page.click('#jog-entrar');
   await page.waitForTimeout(6000);
-  ok(!!(await page.evaluate(() => jogador)) && !(await page.$('#push-viagem')), 'com viagem guardada, o balão não aparece');
+  ok(!!(await page.evaluate(() => jogador)) && !(await page.$('#push-viagem')) && (await page.evaluate(() => lerViagens()[0]?.cidade)) === 'Rio de Janeiro', 'a viagem guardada em outro aparelho aparece; com ela, o balão não aparece');
   await browser.close();
 })();

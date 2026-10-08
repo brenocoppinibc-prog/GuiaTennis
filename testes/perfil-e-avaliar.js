@@ -10,7 +10,7 @@ const HORA = 36e5;
 (async () => {
   // ---- perfil do jogador ----
   let { browser, page } = await abrir({ jogador: true });
-  await page.evaluate((h) => { gravarLocal(CHAMADAS_KEY, [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }]); toggleFavorite && toggleFavorite('a2'); render(); }, HORA);
+  await page.evaluate((h) => { gravarNaConta('chamadas', [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }]); toggleFavorite && toggleFavorite('a2'); render(); }, HORA);
   await page.click('#conta-topo');
   await page.waitForTimeout(250);
   let t = await page.evaluate(() => ({
@@ -49,12 +49,12 @@ const HORA = 36e5;
   ok(await page.evaluate(() => state.page === 'home' && state.jogadorTela === 'email' && /perfil/.test(state.jogadorMotivo) && typeof state.depoisDeEntrar === 'function'), '/perfil sem conta: abre o Entrar e volta para o perfil depois');
   await browser.close();
 
-  // ---- "Jogou aqui?" ----
-  ({ browser, page } = await abrir());
-  await page.evaluate((h) => { gravarLocal(CHAMADAS_KEY, [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 2 * h }]); ligarPedidoDeAvaliacao(); }, HORA);
+  // ---- "Jogou aqui?" (as academias chamadas ficam na conta, 08/10/2026) ----
+  ({ browser, page } = await abrir({ jogador: true }));
+  await page.evaluate((h) => { gravarLocal(PUSH_VIAGEM_KEY, Date.now()); gravarNaConta('chamadas', [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 2 * h }]); ligarPedidoDeAvaliacao(); }, HORA);
   await page.waitForTimeout(6600);
   ok(!(await page.$('#push-avaliar')), 'chamou há pouco (menos de um dia): ainda não pergunta');
-  await page.evaluate((h) => { gravarLocal(CHAMADAS_KEY, [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }]); ligarPedidoDeAvaliacao(); }, HORA);
+  await page.evaluate((h) => { gravarNaConta('chamadas', [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }]); ligarPedidoDeAvaliacao(); }, HORA);
   await page.waitForTimeout(6600);
   t = await page.evaluate(() => ({ txt: document.getElementById('push-avaliar')?.innerText.replace(/\s+/g, ' ') || '', estrelas: document.querySelectorAll('#push-avaliar [data-push-estrela]').length, conta: !!document.getElementById('push-conta') }));
   ok(t.txt.includes('Jogou na Só Aula Tennis?') && t.txt.includes('Você chamou no WhatsApp') && t.estrelas === 5, 'um dia depois de chamar, o balão pergunta se jogou, com as estrelas — ' + t.txt.slice(0, 60));
@@ -67,8 +67,8 @@ const HORA = 36e5;
   await browser.close();
 
   // "Não joguei aqui" não pergunta mais; avaliar tira da lista.
-  ({ browser, page } = await abrir());
-  await page.evaluate((h) => { gravarLocal(CHAMADAS_KEY, [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }, { id: 'a2', tipo: 'site', em: Date.now() - 50 * h }]); ligarPedidoDeAvaliacao(); }, HORA);
+  ({ browser, page } = await abrir({ jogador: true }));
+  await page.evaluate((h) => { gravarLocal(PUSH_VIAGEM_KEY, Date.now()); gravarNaConta('chamadas', [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }, { id: 'a2', tipo: 'site', em: Date.now() - 50 * h }]); ligarPedidoDeAvaliacao(); }, HORA);
   await page.waitForTimeout(6600);
   const primeira = await page.evaluate(() => state.pushAvaliar && state.pushAvaliar.id);
   await page.click('#push-avaliar-nunca');
@@ -81,7 +81,7 @@ const HORA = 36e5;
   // Conta de academia (05/10/2026): no site dos jogadores é uma conta
   // normal — recebe o "Jogou aqui?" das outras academias, nunca da própria.
   ({ browser, page } = await abrir({ academia: 'a2' }));
-  await page.evaluate((h) => { gravarLocal(CHAMADAS_KEY, [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }, { id: 'a2', tipo: 'whatsapp', em: Date.now() - 30 * h }]); }, HORA);
+  await page.evaluate((h) => { gravarNaConta('chamadas', [{ id: 'a1', tipo: 'whatsapp', em: Date.now() - 30 * h }, { id: 'a2', tipo: 'whatsapp', em: Date.now() - 30 * h }]); }, HORA);
   ok(await page.evaluate(() => academiasParaAvaliar().map(x => x.id).join(',') === 'a1'), 'conta de academia recebe o "Jogou aqui?" das outras, nunca da própria');
   // Menu do site dos jogadores com a conta da academia: "Sair da conta".
   await page.evaluate(() => { state.showMenu = true; render(); });

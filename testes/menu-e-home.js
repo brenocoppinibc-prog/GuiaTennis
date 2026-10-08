@@ -60,8 +60,20 @@ const fs = require('fs'), path = require('path');
   await page.selectOption('#pref-modalidade', 'locacao');
   await page.click('#pref-salvar');
   await page.waitForTimeout(300);
+  // Sem conta, salvar pede para entrar (as preferências ficam na conta,
+  // 08/10/2026); entrando, salva o que já estava escolhido.
+  ok(await page.evaluate(() => state.jogadorTela === 'email' && /preferências de busca/.test(state.jogadorMotivo) && !lerPreferencias().cidade && !localStorage.getItem(PREFERENCIAS_KEY)),
+    'sem conta, salvar as preferências pede para entrar (nada fica no celular)');
+  await page.evaluate(() => { window.__senhas['ana@exemplo.com'] = 'senhadaana'; window.__db.jogadores.push({ user_id: 'j-ana', nome: 'Ana Jogadora', email: 'ana@exemplo.com', token_avisos: 't' }); });
+  await page.fill('#jog-email', 'ana@exemplo.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  await page.fill('#jog-senha', 'senhadaana');
+  await page.click('#jog-entrar');
+  await page.waitForTimeout(1000);
   const pref = await page.evaluate(() => ({ p: lerPreferencias(), mod: state.modalidadeFilters.join(), aberta: state.showPrefs }));
-  ok(pref.p.uf === 'SP' && pref.p.cidade === 'São Paulo' && pref.p.modalidade === 'locacao' && !pref.aberta, 'salva estado, cidade (com o nome do guia) e o que procura — ' + JSON.stringify(pref.p));
+  ok(pref.p.uf === 'SP' && pref.p.cidade === 'São Paulo' && pref.p.modalidade === 'locacao' && !pref.aberta, 'entrando, salva estado, cidade (com o nome do guia) e o que procura — ' + JSON.stringify(pref.p));
+  ok(await page.evaluate(() => (window.__db.jogadores.find(j => j.user_id === 'j-ana').guardados || {}).preferencias?.cidade === 'São Paulo'), 'as preferências vão para a conta');
   ok(pref.mod === 'locacao', 'o que a pessoa costuma procurar já vem escolhido na busca');
   const valor = await page.evaluate(() => { state.showMenu = true; render(); const v = [...document.querySelectorAll('.menu-item')].find(i => i.innerText.includes('Preferências de busca')).querySelector('.menu-valor').innerText; state.showMenu = false; render(); return v; });
   ok(valor === 'São Paulo, SP', 'menu mostra a cidade escolhida na direita — ' + valor);
@@ -74,8 +86,8 @@ const fs = require('fs'), path = require('path');
   await browser.close();
 
   // ---- a cidade é do estado escolhido (lista do IBGE, 03/10/2026) ----
-  ({ browser, page } = await abrir());
-  await page.evaluate(() => { localStorage.setItem(PREFERENCIAS_KEY, JSON.stringify({ uf: 'CE', cidade: 'São Paulo' })); abrirPreferencias(); });
+  ({ browser, page } = await abrir({ jogador: true }));
+  await page.evaluate(() => { gravarLocal(PUSH_VIAGEM_KEY, Date.now()); gravarNaConta('preferencias', { uf: 'CE', cidade: 'São Paulo' }); abrirPreferencias(); });
   await page.waitForTimeout(400);
   let uf = await page.evaluate(() => ({ cidade: document.getElementById('pref-cidade').value, erro: document.querySelector('#pref-overlay .status-error')?.innerText || '', chips: [...document.querySelectorAll('[data-pref-cidade]')].map(b => b.innerText) }));
   ok(uf.cidade === '' && uf.erro.includes('São Paulo não fica em Ceará') && !uf.chips.length, 'Ceará com São Paulo (salvo antes): a cidade sai, o site diz por quê e não sugere São Paulo — ' + uf.erro);
@@ -98,7 +110,8 @@ const fs = require('fs'), path = require('path');
   await browser.close();
 
   // ---- home: última busca, parecidas e chamadas ----
-  ({ browser, page } = await abrir());
+  ({ browser, page } = await abrir({ jogador: true }));
+  await page.evaluate(() => gravarLocal(PUSH_VIAGEM_KEY, Date.now()));
   ok(await page.evaluate(() => !document.getElementById('home-vistas') && !document.getElementById('home-chamadas')), 'sem histórico, a home não mostra os blocos pessoais');
   await page.fill('#cep-input', 'Pinheiros');
   await page.evaluate(() => { state.pisoFilters = ['saibro']; });
@@ -148,14 +161,14 @@ const fs = require('fs'), path = require('path');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => !lerUltimaBusca() && loadRecents().length === 0), 'apagar o histórico tira as vistas e a última busca');
   const priv = await page.evaluate(() => PRIVACY_HTML);
-  ok(priv.includes('as academias que você chamou, as preferências de busca') && priv.includes('as viagens que você guardar') && priv.includes('Não vão para o nosso banco de dados'), 'Política de Privacidade diz que isso fica só no aparelho');
+  ok(priv.includes('ficam apenas as academias vistas recentemente e a última busca') && priv.includes('as academias que você chamou, as preferências de busca') && priv.includes('Sem conta, nada disso é guardado'), 'Política de Privacidade: no aparelho só as vistas e a última busca; o resto na conta');
 
-  // A academia chamada fica no aparelho mesmo sem gravar no banco (admin)
+  // Admin sem conta de jogador: a chamada não fica guardada, e o banco não recebe nada
   await browser.close();
   ({ browser, page } = await abrir({ admin: true }));
   await page.evaluate(() => { const antes = window.__db.cliques.length; trackClick('a2', 'instagram'); window.__antes = antes; });
   await page.waitForTimeout(200);
   const adm = await page.evaluate(() => ({ local: lerChamadas().map(x => x.id + ':' + x.tipo).join(), banco: window.__db.cliques.length - window.__antes }));
-  ok(adm.local === 'a2:instagram' && adm.banco === 0, 'admin: a chamada fica na lista do aparelho, e o banco não recebe nada');
+  ok(adm.local === '' && adm.banco === 0 && !(await page.evaluate(() => localStorage.getItem(CHAMADAS_KEY))), 'admin sem conta de jogador: a chamada não fica guardada, e o banco não recebe nada');
   await browser.close();
 })();

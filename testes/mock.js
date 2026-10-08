@@ -540,6 +540,17 @@
       if (!p) return erro("Pedido não encontrado.", "22023");
       return { data: codigoPeloWhatsapp(x, p.academia_id, "admin"), error:null };
     }
+    // O que a pessoa guarda fica na conta (SQL 20261008130000).
+    if (nome === "guardar_na_conta") {
+      if (window.__semGuardados) return semFuncao;
+      const j = euJogador();
+      if (!j) return erro("Conta de jogador não encontrada.", "42501");
+      const objeto = ["preferencias", "pedir_avaliacao"].includes(a.p_chave);
+      if (!["favoritas", "chamadas", "viagens", "preferencias", "avaliadas", "pedir_avaliacao"].includes(a.p_chave)) return erro("Não sei guardar isso.", "22023");
+      if (a.p_valor == null || (objeto ? (typeof a.p_valor !== "object" || Array.isArray(a.p_valor)) : !Array.isArray(a.p_valor))) return erro("Formato errado.", "22023");
+      j.guardados = { ...(j.guardados || {}), [a.p_chave]: JSON.parse(JSON.stringify(a.p_valor)) };
+      return { data: null, error: null };
+    }
     if (nome === "situacao_do_whatsapp") {
       if (window.__semCodigoPeloWhatsapp) return semFuncao;
       if (!souAdmin()) return erro("Só o admin.", "42501");

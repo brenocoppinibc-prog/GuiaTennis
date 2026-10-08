@@ -1135,8 +1135,17 @@ cobra taxa e não fica no meio** da negociação.
       no limite (grátis: 100 por dia, 3.000 por mês, junto com os avisos);
       o Pro é US$ 20 por mês para 50.000. A função gasta quase nada dos
       créditos do Netlify (só roda quando chega e-mail).
-    - **A logo redonda ao lado do remetente na lista do Gmail** é outra
-      coisa: o **BIMI**, que pede DMARC rígido e um certificado pago (CMC,
+    - **Assinatura com a logo** nos e-mails que o Breno manda pelo Gmail
+      como contato@: `divulgacao/email-assinatura.png` (logo + GuiaTennis +
+      guiatennis.com.br, 2x, feita do `logoDesenho`), em Gmail ›
+      Configurações › Geral › Assinatura, escolhida para o contato@.
+      **A foto redonda do remetente** sem pagar: criar uma Conta do Google
+      com o e-mail contato@guiatennis.com.br ("usar meu endereço de e-mail
+      atual"; o código chega pelo encaminhamento) e colocar
+      `divulgacao/whatsapp-perfil.png` como foto — o Gmail costuma mostrar
+      essa foto para quem recebe, sem garantia.
+    - **A logo redonda ao lado do remetente na lista do Gmail**, do jeito
+      oficial, é o **BIMI**, que pede DMARC rígido e um certificado pago (CMC,
       US$ 650 a 1.100 por ano, com 12 meses de logo em uso no site; ou VMC,
       com marca registrada). Fica para depois.
     - **Funcionando desde 08/10/2026** (testes do Breno): recebe em

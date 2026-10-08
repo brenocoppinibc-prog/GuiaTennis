@@ -170,13 +170,14 @@ const tela = (page) => page.evaluate(() => ({
   await page.click('#adm-ver-site');
   await page.waitForTimeout(300);
   t = await tela(page);
-  const faixa = await texto(page, '.admin-banner');
-  ok(t.page === 'home' && !t.painel && faixa.toLowerCase().includes('abrir o painel') && !(await page.evaluate(() => !!document.querySelector('.fab'))), '"Ver o site": a home, com a faixa "Abrir o painel" e sem os botões redondos de antes');
+  // Sem a faixa "Modo admin" (pedido de 08/10/2026): o painel fica no menu.
+  ok(t.page === 'home' && !t.painel && !(await page.$('.admin-banner')) && !(await page.evaluate(() => document.body.innerText.includes('Modo admin'))) && !(await page.evaluate(() => !!document.querySelector('.fab'))), '"Ver o site": a home, sem faixa do modo admin e sem os botões redondos de antes');
   ok(await page.evaluate(() => { state.showMenu = true; render(); const x = document.querySelector('.menu-drawer [data-menu="painel-admin"]')?.innerText || ''; state.showMenu = false; render(); return x.includes('Painel do admin'); }), 'menu do site: "Painel do admin" para o admin');
-  await page.click('#ir-painel-admin');
+  await page.click('#menu-btn');
+  await page.click('.menu-drawer [data-menu="painel-admin"]');
   await page.waitForTimeout(300);
   t = await tela(page);
-  ok(t.painel && t.aba === 'inicio', 'a faixa volta ao painel');
+  ok(t.painel && t.aba === 'inicio', 'o menu volta ao painel');
 
   // Sair: sai da conta e recarrega na página inicial.
   await page.evaluate(() => { const sair = sb.auth.signOut; sb.auth.signOut = () => { localStorage.setItem('teste_saiu', '1'); return sair(); }; });

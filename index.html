@@ -99,7 +99,6 @@
   .ba-nota a { color: var(--gold-light); font-weight: 700; text-decoration: underline; }
   .mapa-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .mapa-acoes .cta-btn { flex: 1 1 auto; width: auto; margin: 0; padding: 10px 12px; font-size: 13px; }
-  .faixa-banco-teste { background: var(--gold-light); color: var(--text); font-size: 12px; font-weight: 700; text-align: center; padding: 6px 16px; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font-family: var(--fonte-texto); font-weight: 400; line-height: 1.55; font-size: 15px;
@@ -110,8 +109,6 @@
   .display { font-family: var(--fonte-titulo); }
   .container { max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
-  .admin-banner { background: var(--green); color: #fff; font-weight: 600; font-size: 12px; text-align: center; padding: 6px; letter-spacing: 0.07em; text-transform: uppercase; }
-  .admin-banner a, .admin-banner button { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit; margin-left: 8px; padding: 0; }
 
   /* Painel do admin (06/10/2026): um site à parte, como o admin da Shopify
      e a extranet do Booking — barra escura em cima, seções do lado. */
@@ -3866,10 +3863,10 @@ function render() {
   const pending = isAdmin ? state.pending : [];
   // Painel do admin (06/10/2026): um site à parte, só para o admin.
   const noPainel = isAdmin && state.page === "admin";
-  const pendencias = isAdmin ? pending.length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length : 0;
 
   app.innerHTML = `
-    ${isAdmin && !noPainel ? `<div class="admin-banner">Modo admin — só você vê isso <a href="/admin" id="ir-painel-admin">Abrir o painel${pendencias ? ` (${pendencias})` : ""}</a> <button id="logout-btn">sair</button></div>` : ""}
+    ${/* Sem a faixa "Modo admin" (pedido de 08/10/2026): o admin abre o
+         painel e sai pelo menu ("Painel do admin", "Sair do modo admin"). */ ""}
     ${noPainel ? renderPainelAdmin() : ""}
     ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia do modo admin ou use uma aba anônima.</div>` : ""}
     ${isAdmin && !noPainel && state.localizando ? `<div class="admin-aviso">Colocando no mapa as academias sem coordenada: ${state.localizando.feito} de ${state.localizando.total}…</div>` : ""}
@@ -8630,7 +8627,7 @@ function renderMenu() {
 
         <p class="menu-grupo">GuiaTennis</p>
         ${contaAcademia ? item("conta", "Minha academia", "predio", "Parceiros") : ""}
-        ${isAdmin ? item("painel-admin", "Painel do admin", "key", "só você vê") : ""}
+        ${isAdmin ? item("painel-admin", "Painel do admin", "key", pendenciasDoAdmin() ? `${pendenciasDoAdmin()} ${pendenciasDoAdmin() === 1 ? "pendência" : "pendências"}` : "só você vê") : ""}
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
         ${item("comparar", "Comparar academias", "list", state.compareList.length || "")}
@@ -8673,6 +8670,14 @@ function renderMenu() {
       </aside>
     </div>
   `;
+}
+
+// Quantas coisas esperam o admin (academias novas, para revisar, pedidos
+// para administrar e de plano): no menu, ao lado de "Painel do admin" (era
+// a faixa "Modo admin", que saiu em 08/10/2026).
+function pendenciasDoAdmin() {
+  if (!isAdmin) return 0;
+  return (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length;
 }
 
 // As três listas da pessoa, só com academias que ainda estão no site.
@@ -17111,7 +17116,8 @@ async function init() {
     location.replace(SITE_PARCEIROS + location.pathname.replace(/^\/parceiros/, "") + location.search + location.hash);
     return;
   }
-  if (USANDO_BANCO_DE_TESTE) document.body.insertAdjacentHTML("afterbegin", `<div class="faixa-banco-teste">Banco de teste — nada daqui aparece no guiatennis.com.br</div>`);
+  // Sem a faixa "Banco de teste" na prévia (pedido de 08/10/2026): o painel
+  // do admin, em Ferramentas, continua dizendo em qual banco o site está.
   app_showLoading();
   const { data: { session } } = await sb.auth.getSession();
   await carregarConta(session);

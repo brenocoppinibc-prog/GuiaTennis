@@ -1186,6 +1186,15 @@ cobra taxa e não fica no meio** da negociação.
       **Muda a regra 22** (Básico e Completo agora veem os acessos de 30
       dias) e **a 61** (os números trancados não ficam mais no fim de
       Atualizações).
+69. **Sem as faixas no alto** (pedido de 08/10/2026, com print: "tire
+    isso da prévia e do site normal"): saíram a faixa "Banco de teste —
+    nada daqui aparece no guiatennis.com.br" da prévia e a faixa "Modo
+    admin — só você vê isso · Abrir o painel · Sair" do site. O admin abre
+    o painel pelo menu ("Painel do admin", com o número de pendências na
+    direita, `pendenciasDoAdmin()`) e sai por lá ("Sair do modo admin").
+    Em qual banco o site está continua no painel do admin, em Ferramentas.
+    A faixa do "Ver como academia" no Parceiros continua (diz qual
+    academia o admin está vendo).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

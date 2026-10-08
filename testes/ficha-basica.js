@@ -70,7 +70,9 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   // Admin: procura por região no mapa aberto, sem clube e sem o que já está no guia
   // O mapa aberto fica nas Ferramentas do painel do admin (06/10/2026).
   ({ browser, page } = await abrir({ admin: true, overpass: MAPA }));
-  await page.click('#ir-painel-admin');
+  // Sem a faixa "Modo admin" (08/10/2026): o painel abre pelo menu.
+  await page.click('#menu-btn');
+  await page.click('.menu-drawer [data-menu="painel-admin"]');
   await page.waitForTimeout(200);
   await page.click('#adm-menu-btn');
   await page.click('.adm-nav [data-adm-aba="ferramentas"]');

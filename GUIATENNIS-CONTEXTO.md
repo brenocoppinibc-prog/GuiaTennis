@@ -24,6 +24,15 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 08/10/2026
 
+> **Estado (08/10/2026, fim da noite):** o Breno pediu "a pausa o
+> administrador consiga fazer, agora a exclusão preciso pedir uma
+> solicitação" e um chat no lugar do WhatsApp direto, que "entende o que a
+> pessoa precisa… e se não for possível, direcionar ao meu whatsapp".
+> Entraram a regra 76 (tirar do guia vira pedido, SQL
+> `20261008150000_pedido_para_sair_do_guia`) e a 77 (chat de ajuda, por
+> palavras-chave, sem IA de fora). Testes novos: `sair-do-guia.js`,
+> `chat-de-ajuda.js` e a seção 23 do `banco-emails.py` (252 certas).
+>
 > **Estado (08/10/2026, noite):** com prints, o Breno pediu: o selo
 > dourado aparecendo no cartão do Premium; "colocar em ação que academias
 > com Premium divulguem promoções"; os números do Parceiros alinhados, com
@@ -1403,6 +1412,48 @@ cobra taxa e não fica no meio** da negociação.
     `pedidos_para_sair_admin`, `resolver_pedido_para_sair`). Ajuda, Termos
     e o rodapé de Minha ficha atualizados. Testes: `testes/sair-do-guia.js`
     e a seção 23 do `banco-emails.py`.
+77. **Chat de ajuda no lugar do WhatsApp direto** (pedido de 08/10/2026:
+    "ao invés de já direcionar para o whatsapp fazer um chat dentro do site
+    que uma 'ia' entende o que a pessoa precisa, tenta ajudar ela, mostrando
+    os caminhos e se não for possível, direcionar ao meu whatsapp").
+    - **Como entende:** por palavras-chave, no próprio site, sem serviço de
+      IA de fora (regras 6 e 13; nada é pago nem gravado). `CHAT_TEMAS`:
+      cada assunto tem as palavras que a pessoa costuma escrever (sem
+      acento; uma palavra vale pelo começo, "cadastr" pega "cadastro"), a
+      resposta e os caminhos. `entenderDuvida`: frase vale 3, palavra 2;
+      ganha o assunto com mais pontos; empate vira "Você quer saber
+      sobre:" com os empatados; nada, "Não entendi bem…" com os assuntos e
+      o WhatsApp (na segunda vez, o WhatsApp vem primeiro). Assuntos do
+      Parceiros (cadastrar, assumir, disputa, planos, comissão, pausar,
+      tirar do guia, promoções, topo patrocinado, desempenho, avaliações,
+      pessoas, editar a ficha, várias academias, QR code, avisos) e dos
+      jogadores (achar quadra, reservar, preço, avaliar, conta, favoritas,
+      buscas salvas, viagem, promoções, patrocinado, avisos, excluir a
+      conta, informação errada, tenho academia, comparar), e dos dois
+      (saudação, senha, código, selos, números, falar com uma pessoa).
+      Assunto novo: um item em `CHAT_TEMAS` (e, se for dos primeiros, em
+      `CHAT_SUGESTOES`).
+    - **Como responde:** a resposta, os botões do caminho ("pc:<aba>" abre
+      a página do Parceiros, "menu:<item>" faz o que o item do menu faz,
+      `acaoDoMenu`) e "Resolveu" / "Ainda preciso de ajuda" — este leva ao
+      **WhatsApp do Breno com a dúvida já escrita** ("Vim pelo chat de
+      ajuda do GuiaTennis. Minha dúvida: …").
+    - **Onde abre** (`data-abrir-chat`, `abrirChat`): "Fale com a gente"
+      (menu e rodapé do site dos jogadores: "Chat de ajuda", Instagram,
+      E-mail — o WhatsApp saiu dali) e, no Parceiros, o rodapé ("Chat de
+      ajuda", no lugar do WhatsApp) e o cartão "Fale com o GuiaTennis" da
+      Ajuda ("Abrir o chat de ajuda" + E-mail). **Continuam indo direto ao
+      WhatsApp** os assuntos que só o Breno resolve: combinar o valor do
+      plano ("Quero o…"), "Prefere conversar? Chame o GuiaTennis no
+      WhatsApp" (academias que querem entrar), "Pedir análise" da
+      avaliação, a academia pausada pelo GuiaTennis e o usuário sem e-mail
+      que esqueceu a senha.
+    - A conversa fica só na tela (Política de Privacidade, "Chat de
+      ajuda"); muda de site (jogadores/Parceiros) começa outra. Teste:
+      `testes/chat-de-ajuda.js`.
+    - Se o Breno quiser uma IA de verdade depois: dá para ligar o mesmo
+      chat a um modelo de linguagem por uma função do Netlify, com chave
+      própria e custo por mensagem; muda as regras 6 e 13.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2382,7 +2433,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2511,6 +2562,11 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pequeno "Desempenho" com os acessos de 30 dias embaixo das avaliações, e
   "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
   singular, zero acessos, banco antigo sem número; Premium sem o cartão.
+- `chat-de-ajuda.js` — regra 77: abre pela folha "Fale com a gente", pelo
+  rodapé e pela Ajuda do Parceiros; entende as dúvidas de cada site; o
+  caminho fecha o chat e abre a página; "Ainda preciso de ajuda" e o
+  "não entendi" levam ao WhatsApp com a dúvida; a conversa continua ao
+  abrir de novo; Privacidade.
 - `sair-do-guia.js` — regra 76: o responsável pede (motivo obrigatório,
   "Outro" pede texto), o cartão mostra o pedido, cancelar; a equipe não
   pede; o admin vê em Pendências, "Manter no guia" com resposta e "Tirar
@@ -3032,7 +3088,12 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
    com a academia no Premium, Parceiros › Promoções › publicar; ver o
    atalho e o bloco na ficha e a linha no cartão; com uma conta de
    jogador que favoritou a academia e ligou "Promoções das academias
-   favoritas", ver o e-mail chegar.
+   favoritas", ver o e-mail chegar. E (regras 76 e 77): no Parceiros,
+   Suas academias › "Pedir para tirar do guia" e, no painel, Pendências ›
+   "Querem sair do guia"; o chat de ajuda pela Ajuda do Parceiros e por
+   "Fale com a gente" (escrever dúvidas do jeito que as pessoas escrevem e
+   ver se ele entende; o que ele não entender, dizer no chat para
+   ensinar).
 3. **Preço dos planos Completo e Premium** (o Breno define).
 4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
    criar o acesso de cada academia e mandar a mensagem; trocar a foto do
@@ -3263,10 +3324,11 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
 ## 12. WhatsApp Business do GuiaTennis (29/09/2026)
 
 Número (11) 92745-6457. No site, o contato do guia aparece **só com o nome
-e o logo pequeno, sem os dados** (`linksContato`): "WhatsApp", "Instagram"
-e "E-mail" no menu (Contato, no formato dos outros itens) e no rodapé (no
+e o logo pequeno, sem os dados** (`linksContato`): desde 08/10/2026
+"Chat de ajuda" (regra 77, no lugar do "WhatsApp"), "Instagram" e
+"E-mail" no menu (Contato, no formato dos outros itens) e no rodapé (no
 formato dos outros links) — pedido do Breno, que não gostou dos botões em
-pílula. O número e o e-mail por escrito ficam só nos Termos e na
+pílula. O WhatsApp do Breno fica atrás do chat. O número e o e-mail por escrito ficam só nos Termos e na
 Privacidade. O bloco "Por que estar no GuiaTennis" tem o link pequeno
 "Prefere conversar? Chame o GuiaTennis no WhatsApp", em dourado e
 sublinhado (o azul padrão ficava ilegível no verde). O link "É o

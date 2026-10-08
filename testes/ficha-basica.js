@@ -183,7 +183,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     state.showMenu = true; render();
     return {
       wa: [...document.querySelectorAll('a[href^="https://wa.me/5511927456457"]')].map(a => a.innerText.trim()),
-      rodape: [...document.querySelectorAll('.sf-col a.contato-link')].map(a => a.innerText.trim() + (a.querySelector('svg') ? '+logo' : '')),
+      rodape: [...document.querySelectorAll('.sf-col .contato-link')].map(a => a.innerText.trim() + (a.querySelector('svg') ? '+logo' : '')),
       texto: document.body.innerText,
     };
   });
@@ -192,14 +192,14 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     state.showMenu = true; render();
     document.querySelector('.menu-drawer [data-menu="contato"]').click();
     const f = document.getElementById('contato-close-overlay');
-    const r = { menu: !!document.querySelector('.menu-drawer'), itens: f ? [...f.querySelectorAll('.contato-opcao strong')].map(e => e.innerText) : [], links: f ? [...f.querySelectorAll('.contato-opcao')].map(a => a.getAttribute('href')) : [], texto: f ? f.innerText : '' };
+    const r = { menu: !!document.querySelector('.menu-drawer'), itens: f ? [...f.querySelectorAll('.contato-opcao strong')].map(e => e.innerText) : [], links: f ? [...f.querySelectorAll('.contato-opcao')].map(a => a.getAttribute('href') || (a.hasAttribute('data-abrir-chat') ? 'chat' : '')) : [], texto: f ? f.innerText : '' };
     state.showContato = false; render();
     return r;
   });
-  ok(!folhaContato.menu && folhaContato.itens.join() === 'WhatsApp,Instagram,E-mail' && folhaContato.links[0].startsWith('https://wa.me/5511927456457') && folhaContato.links[2] === 'mailto:contato@guiatennis.com.br',
-    'menu › "Fale com a gente" abre a folha com WhatsApp, Instagram e E-mail — ' + folhaContato.itens.join(' | '));
+  ok(!folhaContato.menu && folhaContato.itens.join() === 'Chat de ajuda,Instagram,E-mail' && folhaContato.links[0] === 'chat' && folhaContato.links[2] === 'mailto:contato@guiatennis.com.br',
+    'menu › "Fale com a gente" abre a folha com o chat de ajuda (no lugar do WhatsApp direto), Instagram e E-mail — ' + folhaContato.itens.join(' | '));
   ok(!folhaContato.texto.includes('92745') && !folhaContato.texto.includes('@'), 'na folha, sem o número, o @ e o e-mail escritos');
-  ok(contato.rodape.join() === 'WhatsApp+logo,Instagram+logo,E-mail+logo', 'rodapé tem WhatsApp, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
+  ok(contato.rodape.join() === 'Chat de ajuda+logo,Instagram+logo,E-mail+logo', 'rodapé tem o chat de ajuda, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
   ok(contato.wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'bloco para academias tem o link do WhatsApp');
   ok(!contato.texto.includes('92745-6457') && !contato.texto.includes('guiatennis1@gmail.com') && !contato.texto.includes('@guiatennis'), 'número, e-mail e @ não aparecem escritos na página');
   ok(termos.includes('(11) 92745-6457'), 'Termos e Privacidade têm o WhatsApp');

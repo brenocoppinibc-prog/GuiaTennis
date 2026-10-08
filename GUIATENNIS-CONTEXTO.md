@@ -2809,14 +2809,22 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-**Resumo (07/10/2026, ao trocar de chat).** O PR #5 (branch
+**Resumo (08/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
-regra 65; o merge espera o Breno. Pendente:
+regra 70; o merge espera o Breno dizer "pode subir". Pendente:
 00. **E-mail com o domínio** (regra 67): **funcionando desde 08/10/2026**.
-   Falta só: colar o modelo novo do código (com a logo) no Supabase e,
-   depois do merge, trocar o webhook do Resend para o site de verdade.
-0. **Ligar o código da disputa pelo WhatsApp** (regra 66, item "Ligar o
-   código pelo WhatsApp" abaixo). **Em 08/10/2026:** app GuiaTennis criado,
+   Falta só: (a) o Breno criar o token do Supabase e colocar no GitHub
+   como segredo `SUPABASE_ACCESS_TOKEN` (passo a passo no item "E-mail com
+   o domínio" abaixo); com ele, rodar de novo o "Banco de dados" do PR e
+   conferir no registro "Modelo do e-mail do código trocado no Supabase
+   teste" — o de verdade troca sozinho no merge; (b) depois do merge,
+   trocar o webhook do Resend para o site de verdade.
+0. **WhatsApp automático do código: ESPERANDO O CNPJ.** O Breno decidiu
+   em 08/10/2026: "se o whatsapp só funcionar quando tiver cnpj, deixe
+   esperando isso e quando eu criar um, eu aviso e voltamos com isso".
+   **Não puxar o assunto antes de ele avisar.** Ligar o código da disputa
+   pelo WhatsApp (regra 66, item "Ligar o código pelo WhatsApp" abaixo).
+   **Em 08/10/2026:** app GuiaTennis criado,
    número (11) 93333-4613 registrado pela API, cartão cadastrado. **Parado
    na verificação da empresa:** a Meta só deixa criar modelo de
    Autenticação (o do código) para empresa verificada ("Esta conta do

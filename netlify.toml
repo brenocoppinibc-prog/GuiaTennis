@@ -16,7 +16,7 @@
   # Mudança que não mexe em nenhum arquivo do site (contexto, SQL, testes,
   # pasta supabase/) não vira publicação — e não gasta crédito. Na dúvida
   # (primeira publicação, commit anterior desconhecido), publica.
-  ignore = 'test -n "$CACHED_COMMIT_REF" && test "$CACHED_COMMIT_REF" != "$COMMIT_REF" && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- index.html 404.html netlify.toml robots.txt sitemap.xml favicon-32.png favicon-192.png apple-touch-icon.png og-image.png google7b66589ffc303f37.html netlify/functions'
+  ignore = 'test -n "$CACHED_COMMIT_REF" && test "$CACHED_COMMIT_REF" != "$COMMIT_REF" && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- index.html 404.html netlify.toml robots.txt sitemap.xml favicon-32.png favicon-192.png apple-touch-icon.png og-image.png email-logo.png google7b66589ffc303f37.html netlify/functions'
 
 # Função que recebe os e-mails do domínio pelo Resend e encaminha para o
 # Gmail (07/10/2026): netlify/functions/receber-email.mjs, no endereço

@@ -9,12 +9,16 @@
 //                                    nome no meio, fundo creme)
 //   404.html                         o logo da página "não existe", entre
 //                                    <!-- LOGO --> e <!-- /LOGO -->
+//   email-logo.png        120×120    o ícone no alto dos e-mails (aparece
+//                                    com 40 pixels; os riscos mais fortes,
+//                                    { pequeno: true }, para não sumirem)
 //   divulgacao/whatsapp-perfil.png  1080×1080 — foto de perfil (o WhatsApp
 //                                    corta em círculo; a raquete cabe nele)
 //   divulgacao/whatsapp-capa.png    1600×900  — capa do perfil comercial
 //                                    (16:9; o texto fica longe da parte de
 //                                    baixo, onde a foto redonda fica por cima)
 // Rodar: NODE_PATH=$(npm root -g) node divulgacao/gerar-imagens.js
+// Só algumas: … gerar-imagens.js email-logo.png (os nomes dos arquivos).
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const { execFileSync } = require('child_process');
@@ -94,11 +98,14 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     [path.join(RAIZ, 'favicon-192.png'), sozinho(192, {}), 192, 192],
     [path.join(RAIZ, 'apple-touch-icon.png'), sozinho(180, { quadrado: true }), 180, 180],
     [path.join(RAIZ, 'og-image.png'), compartilhar, 1200, 630],
+    [path.join(RAIZ, 'email-logo.png'), sozinho(120, { pequeno: true }), 120, 120],
     [path.join(__dirname, 'whatsapp-perfil.png'), perfil, 1080, 1080],
     [path.join(__dirname, 'whatsapp-capa.png'), capa, 1600, 900],
   ];
+  const so = process.argv.slice(2);
   for (const [arquivo, conteudo, w, h] of imagens) {
     const nome = path.basename(arquivo);
+    if (so.length && !so.includes(nome)) continue;
     const page = await browser.newPage({ viewport: { width: w, height: h } });
     // A fonte do site vem do Google Fonts pelo curl, que passa por proxy e
     // rede de empresa onde o navegador sozinho às vezes não passa.
@@ -111,7 +118,7 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     await page.evaluate(() => document.fonts.ready);
     const fonte = await page.evaluate(() => document.fonts.check("700 74px 'Playfair Display'"));
     if (nome.includes('capa') && !fonte) console.warn('ATENÇÃO: a fonte Playfair Display não carregou');
-    await page.screenshot({ path: arquivo, omitBackground: nome.startsWith('favicon') });
+    await page.screenshot({ path: arquivo, omitBackground: nome.startsWith('favicon') || nome === 'email-logo.png' });
     await page.close();
     console.log('gerada', nome);
   }

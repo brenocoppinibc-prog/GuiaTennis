@@ -1111,8 +1111,14 @@ cobra taxa e não fica no meio** da negociação.
     com o dominio @guiatennis.com.br"). Ofereci Google Workspace (R$ 34,50
     por mês), Zoho (grátis, outro app) ou o Resend; ele escolheu o Resend.
     - **A logo** no alto de todo e-mail, ao lado do nome, como Airbnb e
-      Booking: o ícone do site (`favicon-192.png`, PNG — Gmail e Outlook
-      não mostram SVG), em tabela; sem imagem, o nome continua. Nos avisos
+      Booking, em PNG (Gmail e Outlook não mostram SVG), em tabela; sem
+      imagem, o nome continua. Desde 08/10/2026 (o Breno: "falta um risco
+      na raquete") é o **`email-logo.png`** (120×120, aparece com 40), feito
+      pelo `divulgacao/gerar-imagens.js email-logo.png` com
+      `logoDesenho({ pequeno: true })` — os três riscos mais grossos e
+      fortes; o `favicon-192.png` encolhido apagava os riscos. Nos avisos o
+      endereço vem de `site_dos_emails()` (SQL
+      `20261008120000_icone_do_email`). Nos avisos
       (`email_montado`, SQL `20261007150000_logo_nos_emails`) e no e-mail
       do código (`divulgacao/email-codigo.html`, colar de novo no Supabase).
     - **Receber:** o domínio recebe pelo Resend (registro MX). Qualquer
@@ -2395,8 +2401,8 @@ pelas ferramentas do GitHub (PR, checks, Actions).
 
 `index.html`, `404.html`, `netlify.toml`, `robots.txt`, `sitemap.xml`,
 `favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png`,
-`og-image.png`, `google7b66589ffc303f37.html` (verificação do Search
-Console) e a função `netlify/functions/receber-email.mjs` (regra 67; o
+`og-image.png`, `email-logo.png` (o ícone dos e-mails),
+`google7b66589ffc303f37.html` (verificação do Search Console) e a função `netlify/functions/receber-email.mjs` (regra 67; o
 código dela não fica visível: `/netlify/*` dá 404, e ela roda em
 `/.netlify/functions/receber-email`).
 

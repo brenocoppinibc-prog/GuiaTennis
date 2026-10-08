@@ -707,7 +707,9 @@ sql("delete from vault.secrets where name = 'whatsapp_token'; update public.what
 # 19. A logo nos e-mails (SQL 20261007150000) -----------------------------------
 print("\n# Logo nos e-mails")
 html_logo = um("select html from public.emails_a_enviar where tipo = 'avaliacao' order by criado_em limit 1") or ""
-ok('src="https://guiatennis.com.br/favicon-192.png"' in html_logo and ">GuiaTennis</td>" in html_logo, "todo aviso tem a logo no alto, ao lado do nome")
+ok('/email-logo.png"' in html_logo and ">GuiaTennis</td>" in html_logo, "todo aviso tem a logo no alto, ao lado do nome")
+ok(um("select public.email_montado('t', '', null, null, '')").count(um("select public.site_dos_emails()") + '/email-logo.png') == 1,
+   "o ícone do e-mail (com os riscos fortes) vem do site dos e-mails: a prévia no teste, o site de verdade no real")
 
 # 20. Os acessos da ficha em todo plano (SQL 20261007160000) ---------------------
 print("\n# Acessos em todo plano")

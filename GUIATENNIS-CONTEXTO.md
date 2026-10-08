@@ -32,6 +32,8 @@ teste")
 > `20261008150000_pedido_para_sair_do_guia`) e a 77 (chat de ajuda, por
 > palavras-chave, sem IA de fora). Testes novos: `sair-do-guia.js`,
 > `chat-de-ajuda.js` e a seção 23 do `banco-emails.py` (252 certas).
+> Ao todo: **1.080 verificações, nenhuma falha** nos 37 arquivos do
+> navegador.
 >
 > **Estado (08/10/2026, noite):** com prints, o Breno pediu: o selo
 > dourado aparecendo no cartão do Premium; "colocar em ação que academias

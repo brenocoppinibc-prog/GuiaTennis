@@ -58,8 +58,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   corpo = await texto(page, '#parceiros .pc-main');
   const faq = await page.evaluate(() => document.querySelectorAll('#parceiros .pc-faq details').length);
   ok(faq === 17 && corpo.includes('E se outra pessoa estiver administrando a minha academia?') && corpo.includes('O que quer dizer "atualizada há…" na ficha?') && corpo.includes('Com duas academias, pago um plano só?') && corpo.includes('Tenho mais de uma academia. Preciso de outra conta?') && corpo.includes('Posso dar acesso a mais pessoas da academia?') && corpo.includes('A academia pode avaliar outras academias?') && corpo.includes('Esqueci a senha') && !corpo.includes('Pagar um plano'), 'Ajuda com as perguntas das academias — ' + faq);
-  const contato = await page.evaluate(() => [...document.querySelectorAll('.pc-contato a')].map(a => a.getAttribute('href').slice(0, 20)).join());
-  ok(contato.includes('https://wa.me/551192') && contato.includes('mailto:'), 'Ajuda tem WhatsApp e e-mail do GuiaTennis');
+  const contato = await page.evaluate(() => [...document.querySelectorAll('.pc-contato a')].map(a => a.getAttribute('href').slice(0, 20)).join() + '|' + !!document.querySelector('.pc-contato [data-abrir-chat]'));
+  ok(!contato.includes('https://wa.me/') && contato.includes('mailto:') && contato.endsWith('|true'), 'Ajuda tem o chat de ajuda (que leva ao WhatsApp se precisar) e o e-mail do GuiaTennis');
   await page.goBack();
   await page.waitForTimeout(200);
   t = await tela(page);

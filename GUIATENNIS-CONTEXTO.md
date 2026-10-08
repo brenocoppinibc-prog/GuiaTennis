@@ -1356,16 +1356,22 @@ cobra taxa e não fica no meio** da negociação.
 73. **Números do site alinhados, com "Entenda como funciona"** (pedido de
     08/10/2026, com print: "alinhe melhor os dados e faça igual as
     avaliações… entenda como funciona"): no Parceiros, os três números em
-    colunas iguais, lado a lado (antes 2 em cima e 1 sozinho); a nota de
-    como são contados virou um "Entenda como funciona" fechado
-    (`comoFuncionamOsNumeros`, como o "Como funcionam as avaliações"), na
-    home e no Parceiros, explicando também o que é visita. O ✓ do "Grátis
+    colunas iguais, lado a lado (antes 2 em cima e 1 sozinho). A nota de
+    como são contados **fica oculta** (pedido de 08/10/2026, com print:
+    "deixe isso oculto"): no bloco verde, na home e no Parceiros, só o link
+    "Entenda como funciona" (`comoFuncionamOsNumeros`), que leva à Ajuda
+    do Parceiros com a pergunta "Como são contados os números do
+    GuiaTennis?" já aberta e na tela (`/parceiros/ajuda#numeros`,
+    `irParaPerguntaDaAjuda`; da home, abre na aba do Parceiros). A
+    pergunta explica também o que é visita. O ✓ do "Grátis
     no plano Básico" alinhado com a primeira linha. O selo dourado aparece
     no cartão do Premium (ao lado do nome e no item do selo).
 74. **Cartão da busca sem o branco embaixo da foto** (pedido de 08/10/2026,
     com print): no celular, a foto em cima, na largura do cartão (16:9), e
     o texto embaixo; no computador, a foto do lado acompanha a altura do
-    texto.
+    texto. **Academia sem foto: nenhuma imagem, só o nome** (como sempre
+    foi, regra confirmada pelo Breno em 08/10/2026; teste em
+    `ficha-basica.js`).
 75. **O site não compara o GuiaTennis com outros sites** (pedido de
     08/10/2026: "tire em todos os lugares do site onde compare o
     GuiaTennis com exemplos de outros grandes sites"): nada de "como o

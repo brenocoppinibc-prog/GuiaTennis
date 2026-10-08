@@ -326,6 +326,6 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   // ---- textos legais ----
   ({ browser, page } = await abrir({}));
   const legal = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
-  ok(legal.includes('4. GuiaTennis Parceiros') && legal.includes('não avalia essa academia') && legal.includes('identificado como patrocinado') && legal.includes('pessoas da mesma academia veem') && legal.includes('não pode apagar avaliações') && legal.includes('Responsável pela academia'), 'Termos e Privacidade explicam a área da academia');
+  ok(legal.includes('4. GuiaTennis Parceiros') && legal.includes('não avalia essa academia') && legal.includes('identificada como patrocinada ("Patrocinado")') && legal.includes('pessoas da mesma academia veem') && legal.includes('não pode apagar avaliações') && legal.includes('Responsável pela academia'), 'Termos e Privacidade explicam a área da academia');
   await browser.close();
 })();

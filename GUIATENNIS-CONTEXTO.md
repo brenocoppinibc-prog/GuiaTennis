@@ -24,6 +24,17 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 08/10/2026
 
+> **Estado (08/10/2026, fim do dia):** o Breno pediu "eu quero que
+> academias que são Premium tenha um símbolo de verificado diferente e
+> aparece mais bem recomendada e algo avisando que é patrocínio e abaixo
+> delas aparecerem as mais próximas mesmo". Entrou a regra 71 (muda a
+> regra 16): **selo dourado** da academia Premium e **no máximo 2
+> "Patrocinado" no topo da busca** (até 10 km de onde a pessoa buscou);
+> abaixo, "Mais perto de você" e as outras da mais perto para a mais
+> longe, sem repetir. Só no site, sem SQL. Testes: **1.010 verificações,
+> nenhuma falha** nos 34 arquivos do navegador (o novo é
+> `testes/premium-patrocinado.js`).
+>
 > **Estado (08/10/2026, mais tarde):** o Breno pediu "eu quero que somente
 > as vistas recentes fiquem salvas no celular, de resto tudo pela conta".
 > Entrou a regra 70 (SQL `20261008130000_guardados_na_conta`): no celular
@@ -327,12 +338,12 @@ cobra taxa e não fica no meio** da negociação.
     elas."; filtro "Empréstimo de raquete"; "consulte com a academia";
     "aula com professor da academia". Nunca "lista alfabética" nem "quem
     pagou mais".
-16. **Posição paga: por enquanto, não.** Hoje os planos do GuiaTennis
-    Parceiros só liberam números, pessoas e novidades; a ordem da busca é a
-    mesma para todas. O Breno disse (30/09/2026) que **mais para frente
-    haverá posição paga** — então não prometer "nunca" em lugar nenhum.
-    Quando vier, aparece marcada como patrocinada (Termos, seção 4, e a
-    pergunta "A ordem das academias é paga?" do site já dizem isso).
+16. **Posição paga: só o topo "Patrocinado" do Premium** (mudou em
+    08/10/2026, regra 71; antes "por enquanto, não"). Fora as até 2
+    patrocinadas do topo, a ordem da busca é a mesma para todas, em
+    qualquer plano. Toda posição paga aparece escrita "Patrocinado" no
+    cartão (Código de Defesa do Consumidor, art. 36: publicidade tem de
+    ser identificada como tal).
 17. **O plano fica num lugar só** (mudou em 06/10/2026, regra 61; antes
     toda tela vendia o próximo plano e o Breno achou que "está forçando
     demais"): a página **Plano** do Parceiros é onde se vê o plano, o que
@@ -1252,6 +1263,38 @@ cobra taxa e não fica no meio** da negociação.
       (`levarParaAConta`).
     - Política de Privacidade ("Favoritos, buscas e preferências") e a data
       dos textos legais (8 de outubro de 2026) atualizadas.
+71. **Premium: selo dourado e topo "Patrocinado"** (pedido de 08/10/2026:
+    "eu quero que academias que são Premium tenha um símbolo de verificado
+    diferente e aparece mais bem recomendada e algo avisando que é
+    patrocínio e abaixo delas aparecerem as mais próximas mesmo"), como os
+    anúncios do Google Maps, os "Sponsored" do Yelp e o "Patrocinado" do
+    iFood e do Mercado Livre. **Muda a regra 16.**
+    - **Selo:** academia Premium com a ficha confirmada (`ehPremium`) tem o
+      selo **dourado em estrela** (o recorte do verificado do Instagram,
+      `seloPremium`) no lugar do círculo verde, no resultado, nos cartões
+      da home e na ficha (`seloDaAcademia` escolhe). Rótulo: "Academia
+      Premium, confirmada pela academia"; no fim da ficha, "Confirmada pela
+      academia · Academia Premium · atualizada há…". Premium com ficha
+      básica não tem selo.
+    - **Topo:** `comPatrocinadas` (no fim do `getResults`) coloca **no
+      máximo 2** (`PATROCINADAS_MAX`) academias Premium no topo, com
+      "Patrocinado" em cima do nome e a borda dourada. Só as que passaram
+      pelos filtros, não pausadas e, com ponto de partida, a até **10 km**
+      (`PATROCINIO_RAIO_KM`), as mais perto primeiro; sem ponto (página da
+      cidade), na ordem da lista. Vale em qualquer ordem escolhida; não
+      vale em "só favoritas" e "só as da comparação".
+    - **Abaixo:** um título com a ordem ("Mais perto de você", por padrão
+      com endereço; "Recomendadas", "Menor preço"…) e as outras, sem
+      repetir as do topo (`cartoesDaBusca`). A Premium que não coube no
+      topo (a terceira, ou a mais de 10 km) fica no lugar dela, com o selo.
+      Sem patrocinada, a lista é a de sempre, com a etiqueta da ordem no
+      primeiro cartão.
+    - **Textos:** "A ordem das academias é paga?" (site), Termos (seção 4),
+      planos do Parceiros ("Selo Premium dourado ao lado do nome" e "No
+      topo da busca da região, marcada como "Patrocinado""), a pergunta
+      "Quanto custa estar no GuiaTennis?" e o resumo do Premium ("Para
+      aparecer primeiro, ver os números e crescer"). Só no site, sem SQL.
+      Teste `testes/premium-patrocinado.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2220,7 +2263,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2349,6 +2392,11 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pequeno "Desempenho" com os acessos de 30 dias embaixo das avaliações, e
   "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
   singular, zero acessos, banco antigo sem número; Premium sem o cartão.
+- `premium-patrocinado.js` — regra 71: a Premium perto no topo com
+  "Patrocinado" e o selo dourado, o título "Mais perto de você" e as
+  outras da mais perto para a mais longe, sem repetir; no máximo 2; a mais
+  de 10 km, sem topo; outra ordem; comparação e filtros; página da cidade;
+  Premium com ficha básica ou pausada; selo na ficha; textos.
 - `guardados-na-conta.js` — regra 70: sem conta, no celular só as vistas
   e a última busca (nada de favoritas, chamadas, viagens, preferências,
   avaliações nem comparação); o coração pede para entrar e, entrando,
@@ -2700,6 +2748,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Premium com selo dourado e até 2 "Patrocinado" no topo da busca   ← PR #5, 08/10
 (a seguir) Menu dos jogadores limpo como o do Parceiros e os acessos de 30 dias em todo plano   ← PR #5, 08/10
 (a seguir) Logo nos e-mails e e-mail com o domínio pelo Resend (receber e responder)   ← PR #5, 07/10
 (a seguir) Código da disputa pelo WhatsApp (API oficial da Meta) e "Esqueci a senha" certo na Ajuda   ← PR #5, 07/10
@@ -2811,7 +2860,7 @@ c9ade31 Configuração de publicação do Netlify
 
 **Resumo (08/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
-regra 70; o merge espera o Breno dizer "pode subir". Pendente:
+regra 71; o merge espera o Breno dizer "pode subir". Pendente:
 00. **E-mail com o domínio** (regra 67): **funcionando desde 08/10/2026**.
    Falta só: (a) o Breno criar o token do Supabase e colocar no GitHub
    como segredo `SUPABASE_ACCESS_TOKEN` (passo a passo no item "E-mail com
@@ -2846,15 +2895,20 @@ regra 70; o merge espera o Breno dizer "pode subir". Pendente:
    (`/admin`); academia do guia assumida na hora e "Contestar" (disputa
    com o código); academia nova no ar na hora; selo verde no nome e o
    texto no fim da ficha; "Como funcionam as avaliações"; os números da
-   home e do Parceiros; excluir conta; conta de jogador no Parceiros.
+   home e do Parceiros; excluir conta; conta de jogador no Parceiros. E o
+   Premium (regra 71): no painel, colocar uma academia confirmada no
+   Premium e buscar um bairro perto dela: "Patrocinado" no topo, selo
+   dourado, e "Mais perto de você" embaixo.
 3. **Preço dos planos Completo e Premium** (o Breno define).
 4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
    criar o acesso de cada academia e mandar a mensagem; trocar a foto do
    WhatsApp Business.
 5. **Ideias oferecidas, sem resposta:** "Novidades do GuiaTennis" por
    e-mail pelo painel do admin; baixar as listas em planilha; "Dados dos
-   últimos 30 dias" nos números quando houver volume; promoções na ficha,
-   posição patrocinada e relatório do mês sozinho (Premium).
+   últimos 30 dias" nos números quando houver volume; promoções na ficha
+   e relatório do mês sozinho (Premium); no Desempenho do Premium, quantas
+   vezes a academia apareceu no topo patrocinado e quantos tocaram nela
+   (regra 71).
 6. Antigos: fechar o PR #1; no projeto de teste do Supabase, criar o
    admin e desligar o cadastro; backup mensal; 2 etapas nas contas.
 
@@ -3028,7 +3082,7 @@ regra 70; o merge espera o Breno dizer "pode subir". Pendente:
 - **Próximos passos do GuiaTennis Parceiros** (pedidos do Breno e
   referência: Google Business Profile, trivago Business Studio e Yelp):
   promoções na ficha e avisos para os alunos (o "Em breve" do Premium),
-  posição paga marcada como patrocinada, relatório do mês sozinho por
+  relatório do mês sozinho por
   e-mail (Premium; a fila de e-mails já existe, regra 51) e a prévia do
   link no WhatsApp com a foto da academia (seção 3, "Endereços").
 - **Conferir o site depois do merge do PR #3** (pedido ao Breno em

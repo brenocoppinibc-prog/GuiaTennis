@@ -1502,7 +1502,7 @@ cobra taxa e não fica no meio** da negociação.
       `guardar_conversa_de_ajuda` (a primeira cria; as outras atualizam a
       mesma), uma gravação depois da outra (`guardarConversa`). Só guarda
       depois da primeira dúvida; o título é a primeira dúvida (um "oi" não
-      conta). `CHAT_NA_CONTA = ["parceiros"]`: pôr "jogadores" ali liga o
+      conta). `CHAT_NA_CONTA = ["parceiros"]`: incluir "jogadores" ali liga o
       mesmo no site dos jogadores.
     - **Na tela:** embaixo do topo do chat, "Conversas (N)" e "Nova
       conversa". "Conversas" troca a conversa pela lista ("Suas
@@ -3312,7 +3312,7 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
    promoção; no Desempenho do Premium, quantas
    vezes a academia apareceu no topo patrocinado e quantos tocaram nela
    (regra 71). De 09/10: ligar o chat guardado na conta também no site dos
-   jogadores (é só pôr "jogadores" em `CHAT_NA_CONTA`); no painel do admin,
+   jogadores (é só incluir "jogadores" em `CHAT_NA_CONTA`); no painel do admin,
    as dúvidas mais escritas no chat (para ensinar assuntos novos); e-mail
    para a academia quando o plano muda, dizendo o que mudou.
 6. Antigos: fechar o PR #1; no projeto de teste do Supabase, criar o

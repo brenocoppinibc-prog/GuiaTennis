@@ -7,10 +7,13 @@ conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
 **Repositório:** `brenocoppinibc-prog/GuiaTennis`
 **Branches:** `main` = o que está no ar e branch padrão do GitHub (criada
 em 28/09/2026). O trabalho novo entra por pedido de mudança (PR) de uma
-branch `claude/…` para a `main`. Já entraram: **PR #2** (banco de teste e
+branch de trabalho (`claude/…` ou `ccr-…`) para a `main`. Já entraram: **PR #2** (banco de teste e
 publicação pelo GitHub, 28/09) e **PR #3** (SQL automático, ficha básica,
 WhatsApp, buscador do mapa e sitemap, 29/09, merge `92e5685`), os dois da
-`claude/github-supabase-connection-n1w3rr`. O **PR #1** (`new-session` →
+`claude/github-supabase-connection-n1w3rr`. **PR #5** (30/09 e 01/10):
+branch `ccr-0a610d86-k6plx0` → `main`, com área da academia, GuiaTennis
+Parceiros, links, visual limpo e tempo até agir — esperando o Breno testar
+na prévia e dizer "pode subir". O **PR #1** (`new-session` →
 `trivago`) ficou velho e segue aberto; pode ser fechado. As outras
 `claude/…` são antigas.
 **No ar:** guiatennis.com.br (Netlify, publica a `main` sozinho) · teste na
@@ -18,14 +21,270 @@ prévia de cada PR, `deploy-preview-N--….netlify.app` (seção 7). Cada um com
 o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
-**Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
-**Atualizado em:** 30/09/2026
+**Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
+**Atualizado em:** 09/10/2026
 
-> **Estado (30/09/2026):** tudo publicado. Não há PR aberto de trabalho
-> nem SQL esperando. O banco de verdade recebeu sozinho a ficha básica e o
-> sitemap em 29/09 (seção 5). Falta o Breno conferir o site publicado
-> (seção 11, primeiro item). O próximo passo sugerido é o Google Search
-> Console.
+> **Estado (09/10/2026, madrugada):** o Breno pediu um lembrete "aos
+> usuários que não entraram a 3 meses… mesmo sem marcar avisos" e, para o
+> Parceiros, "algo para relembrar dos números… mês a mês". Perguntado,
+> escolheu o lembrete para **todos os jogadores com e-mail confirmado**
+> (regra 86, exceção da regra 23, SQL `20261009140000_lembrete_de_volta`)
+> e o **resumo do mês para todo plano, com os números do plano** (regra
+> 87, muda a regra 21, SQL `20261009150000_resumo_do_mes`). Teste novo:
+> `volta-e-resumo.js` e as seções 26 e 27 do `banco-emails.py`. Ao todo:
+> **1.201 verificações, nenhuma falha** nos 43 arquivos do navegador, e
+> **311** no `banco-emails.py`.
+>
+> **Estado (09/10/2026, fim da noite):** o Breno pediu "academias devem
+> receber mensagem de atualização do cadastro depois de 3 meses sem
+> alterações" (regra 85, SQL `20261009130000_lembrete_de_conferir_a_ficha`):
+> e-mail "Confira a ficha" para quem administra a academia com a ficha
+> parada há 3 meses (de novo a cada 3 meses), com o botão abrindo a
+> academia certa (`?abrir=`). Testes novos: `lembrete-da-ficha.js` e a
+> seção 25 do `banco-emails.py`. Ao todo: **1.185 verificações, nenhuma
+> falha** nos 42 arquivos do navegador, e **283** no `banco-emails.py`.
+>
+> **Estado (09/10/2026, noite):** o Breno criou o token do Supabase e pôs
+> no GitHub como segredo `SUPABASE_ACCESS_TOKEN` (seção 11, item 00). O
+> "Banco de dados" do PR #5 rodou de novo e disse "Modelo do e-mail do
+> código trocado no Supabase teste (logo de https://deploy-preview-5--…)".
+> O de verdade troca sozinho no merge. O token é do tipo novo, com
+> permissão limitada: projetos `GuiaTennis-teste` e `GuiaTennis`,
+> **Auth Config: Read-write** e, no grupo Project, a de administrador
+> (sem ela o Supabase responde 403 "Missing required permission(s):
+> project_admin_write"), sem validade (Never).
+>
+> **Estado (09/10/2026, depois):** o Breno pediu "faça que o chat de
+> parceiros fique salvo na conta também e tenha histórico e que pode
+> iniciar novo chat" (regra 79, SQL `20261009120000_conversas_do_chat`) e,
+> com prints, que a tela da senha não fique "grudada" (regra 80), o
+> "Continuar" à direita com "um aviso do que falta preencher" (regra 81) e
+> que o plano menor limite o que a academia faz e o que aparece, com
+> "aviso de que não estará visível na ficha e com opção de querer ou não
+> alterar e precisar pagar a mais" (regra 82). Testes novos:
+> `chat-na-conta.js`, `plano-na-ficha.js` e a seção 24 do
+> `banco-emails.py` (267 certas). Depois: "unifique em apenas um lugar os
+> emails que foram excluídos e podem liberar o acesso" (regra 83) e "no
+> final do cadastro consiga ver uma prévia da ficha com as informações
+> preenchidas e com opção de editar ou confirmar" (regra 84, teste
+> `previa-da-ficha.js`). Ao todo: **1.176 verificações, nenhuma falha**
+> nos 41 arquivos do navegador, e 267 no `banco-emails.py`.
+>
+> **Estado (09/10/2026):** o Breno perguntou se precisa subir algum HTML
+> de e-mail (não: os novos saem do banco; o do código sobe sozinho, mas o
+> registro do "Banco de dados" diz que falta o segredo
+> `SUPABASE_ACCESS_TOKEN` — seção 11, item 00) e pediu a página inicial do
+> Parceiros "acendendo" ao descer (regra 78).
+>
+> **Estado (08/10/2026, fim da noite):** o Breno pediu "a pausa o
+> administrador consiga fazer, agora a exclusão preciso pedir uma
+> solicitação" e um chat no lugar do WhatsApp direto, que "entende o que a
+> pessoa precisa… e se não for possível, direcionar ao meu whatsapp".
+> Entraram a regra 76 (tirar do guia vira pedido, SQL
+> `20261008150000_pedido_para_sair_do_guia`) e a 77 (chat de ajuda, por
+> palavras-chave, sem IA de fora). Testes novos: `sair-do-guia.js`,
+> `chat-de-ajuda.js` e a seção 23 do `banco-emails.py` (252 certas).
+> Ao todo: **1.080 verificações, nenhuma falha** nos 37 arquivos do
+> navegador.
+>
+> **Estado (08/10/2026, noite):** com prints, o Breno pediu: o selo
+> dourado aparecendo no cartão do Premium; "colocar em ação que academias
+> com Premium divulguem promoções"; os números do Parceiros alinhados, com
+> "Entenda como funciona" igual ao das avaliações; o cartão da busca sem o
+> branco embaixo da foto; e "tire em todos os lugares do site onde compare
+> o GuiaTennis com exemplos de outros grandes sites". Antes, "pode trocar
+> para sob consulta" (regra 3). Entraram as regras 72 (promoções, SQL
+> `20261008140000_promocoes`), 73 (números e "Entenda como funciona"), 74
+> (cartão com a foto em cima no celular) e 75 (sem citar outros sites).
+> Testes: **1.038 verificações, nenhuma falha** nos 35 arquivos do
+> navegador (o novo é `testes/promocoes.js`) e **234 no
+> `banco-emails.py`** (Postgres local, seção 22 nova).
+> Depois, "deixe isso oculto" (a nota dos números, regra 73) e a regra 76
+> (tirar do guia vira pedido, SQL `20261008150000_pedido_para_sair_do_guia`):
+> **252 no `banco-emails.py`** e o teste novo `testes/sair-do-guia.js`.
+>
+> **Estado (08/10/2026, fim do dia):** o Breno pediu "eu quero que
+> academias que são Premium tenha um símbolo de verificado diferente e
+> aparece mais bem recomendada e algo avisando que é patrocínio e abaixo
+> delas aparecerem as mais próximas mesmo". Entrou a regra 71 (muda a
+> regra 16): **selo dourado** da academia Premium e **no máximo 2
+> "Patrocinado" no topo da busca** (até 10 km de onde a pessoa buscou);
+> abaixo, "Mais perto de você" e as outras da mais perto para a mais
+> longe, sem repetir. Só no site, sem SQL. Testes: **1.010 verificações,
+> nenhuma falha** nos 34 arquivos do navegador (o novo é
+> `testes/premium-patrocinado.js`).
+>
+> **Estado (08/10/2026, mais tarde):** o Breno pediu "eu quero que somente
+> as vistas recentes fiquem salvas no celular, de resto tudo pela conta".
+> Entrou a regra 70 (SQL `20261008130000_guardados_na_conta`): no celular
+> só as vistas recentemente e a última busca; favoritas, academias
+> chamadas, viagens, preferências e o "Jogou aqui?" vão para a conta, como
+> no Airbnb. Sem conta, o coração, a viagem e as preferências pedem para
+> entrar; quem tinha coisas no celular leva para a conta ao entrar.
+> Testes: **1.066 verificações, nenhuma falha** nos 33 arquivos do
+> navegador (o novo é `testes/guardados-na-conta.js`), 212 no
+> `banco-emails.py` e 21 no `receber-email.mjs`. Depois ele pediu "eu
+> quero que vc suba o html novo" (o modelo do e-mail do código): o
+> `banco.yml` agora manda o `divulgacao/email-codigo.html` para o Supabase
+> sozinho; falta o segredo `SUPABASE_ACCESS_TOKEN` no GitHub (seção 11).
+>
+> **Estado (08/10/2026):** o Breno mandou prints do menu do trivago e do
+> Parceiros: "deixe o menu de jogadores mais limpo como o parceiros… ou
+> numa ideia do trivago" e, sobre o bloco trancado dos números, "pode subir
+> um pouco mais os números e deixe mais atrativos como acessos… no meio da
+> tela". Entrou a regra 68: menu dos jogadores no estilo do Parceiros, com
+> a conta em cima ("Olá, Ana!", como o trivago), e **os acessos dos últimos
+> 30 dias em todo plano**, em destaque logo abaixo do "Olá" (SQL
+> `20261007160000_acessos_em_todo_plano`; muda as regras 22 e 61). No
+> meio, ele estava ligando o recebimento de e-mail (MX do Resend:
+> `inbound-smtp.sa-east-1.amazonaws.com`, **verificado no Resend em
+> 08/10/2026**) e o WhatsApp na Meta (app GuiaTennis criado, na Etapa 2).
+> Testes: **969 verificações, nenhuma falha** nos 32 arquivos do navegador
+> (o novo é `testes/acessos-em-destaque.js`), 202 no `banco-emails.py` e 21
+> no `receber-email.mjs`.
+>
+> **Estado (07/10/2026, mais tarde):** o Breno conseguiu o número dos
+> códigos, (11) 97185-3987 (regra 66; ainda falta a conta na Meta), e
+> pediu "quero fazer [o e-mail com o domínio] pelo resend… quero poder ter
+> minha logo nos emails". Entrou a regra 67: **a logo em todos os
+> e-mails** (SQL `20261007150000_logo_nos_emails` e o modelo do código,
+> `divulgacao/email-codigo.html`, que o Breno precisa colar de novo no
+> Supabase) e **receber e responder como @guiatennis.com.br**: o Resend
+> recebe, a função do Netlify `netlify/functions/receber-email.mjs`
+> encaminha para o Gmail, e o Gmail responde pelo SMTP do Resend. Falta o
+> Breno ligar (seção 11, item "E-mail com o domínio"). Testes: 199 no
+> `banco-emails.py` e 21 no `testes/receber-email.mjs`.
+>
+> **Estado (07/10/2026, noite):** o Breno cadastrou o `RESEND_API_KEY` no
+> GitHub (avisos por e-mail ligados no banco de teste: "chave do Resend
+> guardada"), perguntou se dá para recuperar a senha pelo e-mail (dá:
+> "Esqueceu a senha?" manda o código ao e-mail; só o usuário antigo sem
+> e-mail, que o GuiaTennis criou, continua pelo WhatsApp — a Ajuda do
+> Parceiros dizia o contrário e foi corrigida) e pediu "quero automatizar o
+> código por whatsapp em conflitos de acesso com a academia". Entrou a
+> regra 66: na disputa, o código sai sozinho pela **API oficial do
+> WhatsApp (Meta)**, SQL `20261007140000_codigo_pelo_whatsapp`. Falta o
+> Breno criar a conta na Meta e cadastrar os segredos (seção 11, primeiro
+> item); sem eles, tudo continua como antes. Testes: **958 verificações,
+> nenhuma falha** nos 31 arquivos do navegador (o novo é
+> `testes/codigo-pelo-whatsapp.js`) e **198 no `banco-emails.py`**.
+>
+> **Estado (07/10/2026, depois):** o Breno pediu "eu quero manter o código
+> em casos de disputa, para novas não", tirar o limite de 3 academias
+> novas em 24 horas, o "No ar" por 1 dia (era 3) e a ficha confirmada com
+> um símbolo visível. Entrou a regra 65 (muda as regras 59, 60 e 61): a
+> academia do guia sem responsável passa a ser da conta na hora (e-mail
+> confirmado + declaração), o código no WhatsApp da academia só na
+> disputa ("Contestar"), documento só se não der pelo código, e o selo
+> verde ao lado do nome. SQL `20261007130000_codigo_so_em_disputa`.
+> Testes: **943 verificações, nenhuma falha** nos 30 arquivos do navegador
+> e 160 no `banco-emails.py`.
+>
+> **Estado (07/10/2026):** o Breno mandou uma análise do site feita pelo
+> GPT ("faça as adaptações que servem e funcionam para o site"). Entrou a
+> regra 64 (o que serviu: "Confirmada pela academia · atualizada há…" na
+> ficha, "Como funcionam as avaliações", os números do site ditos como são
+> contados e "onde jogar tênis" na descrição para o Google; o que não
+> serviu está na própria regra). SQL `20261007120000_ficha_atualizada_em`.
+> Testes: **921 verificações, nenhuma falha** nos 29 arquivos do navegador
+> e 140 no `banco-emails.py` (Postgres local).
+>
+> **Estado (06/10/2026):** o Breno pediu "quando eu fizer o login, mude o
+> site para eu ter o controle de tudo… separado… mas não aparecer para
+> outras pessoas a minha área". Entrou a regra 58: o **painel do admin**
+> em **`/admin`** (visão geral, pendências, academias, acessos, contas de
+> jogador, avaliações, estatísticas, percurso, e-mails e ferramentas), com
+> SQL `20261006120000_painel_do_admin`. Os três botões redondos do admin
+> saíram do site dos jogadores (agora é a faixa "Abrir o painel"). Depois,
+> o Breno não gostou da barra de atalhos embaixo do Parceiros no celular:
+> saiu, e tudo fica no menu.
+> Antes, no mesmo dia, a regra 57 (admin no GuiaTennis Parceiros). Testes:
+> **902 verificações, nenhuma falha** nos 28 arquivos do navegador e 131 no
+> `banco-emails.py` (Postgres local). Depois, no mesmo dia: regra 59 (a
+> declaração de quem pede uma academia vira caixinha, com a hora guardada),
+> 60 (academia nova de conta com e-mail confirmado vai ao ar sozinha), 61
+> (Parceiros mais leve: "Atualizações", menu por importância, plano num
+> lugar só), 62 (o admin exclui conta que descumprir os Termos) e 63 (conta
+> de jogador vale no Parceiros), e o "Por que o GuiaTennis" em seis cartões
+> iguais. O Breno perguntou se pedir documento garante mais: a resposta
+> está na regra 59 (o código no WhatsApp da ficha prova mais que documento).
+>
+> **Estado (05/10/2026, noite):** o Breno respondeu ao que estava aberto:
+> **não quer endereço próprio para o Parceiros** (fica em
+> guiatennis.com.br/parceiros, `PARCEIROS_NO_ENDERECO_PROPRIO` continua
+> `false`), **o código de 6 números já está ligado** no Supabase e **quer
+> salvar as buscas**. Entraram as regras 51 a 55: **avisos por e-mail pelo
+> Resend** (avaliação nova, pedido de acesso, pedido aceito, viagem e
+> academias novas — SQL `20261005160000_avisos_por_email`), **buscas
+> salvas** na conta (SQL `20261005150000_buscas_salvas`), **a conta do
+> Parceiros funciona como conta normal no site dos jogadores** (só não
+> avalia a academia que administra — SQL `20261005170000_parceiro_tambem_joga`,
+> muda a regra 18), **a página da cidade lista todas as academias da cidade**
+> sem procurar endereço, e os textos "Por que o GuiaTennis" e "Por que estar
+> no GuiaTennis". Também a correção da esteira do banco, vermelha desde o
+> SQL da pausa (SQL `20261005180000_visitante_le_a_pausa`). O segredo `RESEND_API_KEY` entrou no GitHub em 07/10/2026
+> (seção 11). Testes: **825 verificações, nenhuma falha** nos 27 arquivos
+> do navegador e 95 no `banco-emails.py` (Postgres local).
+>
+> **Estado (05/10/2026, fim do dia):** depois do pacote abaixo, entraram as
+> regras 46 a 50: **percurso de cada visita** com relatório no admin (SQL
+> `20261005140000`), acessos do admin agrupados por academia, **a academia
+> pausa a própria ficha** (SQL `20261005130000`), "Pedir análise" na
+> avaliação e o site dos jogadores sem a faixa "Área da academia".
+> Testes do pacote final: **752 verificações, nenhuma falha** (`check-js.sh`
+> + os 25 arquivos de `testes/`) e o `banco-acesso.py` com 167 certas e as
+> 11 falhas antigas.
+>
+> **Estado (05/10/2026):** PR #5 ainda **sem merge**. Entraram as regras
+> 40 a 45: "represento a academia" só quando a academia aparece; **perfil
+> da conta** do jogador (`/perfil`) e dos Parceiros (`/parceiros/perfil`);
+> **"Jogou aqui? Avalie"** um dia depois de chamar uma academia; **Suas
+> academias** (`/parceiros/academias`) e **vários pedidos ao mesmo tempo**
+> (SQL `20261005120000_varios_pedidos`); o site dos Parceiros **em outra
+> aba**, pronto para o endereço próprio `parceiros.guiatennis.com.br`; sem
+> dizer como o GuiaTennis confere (nada de CNPJ/documento no site); menu
+> "Sair da conta". Testes: seção 6. Falta o Breno: e-mail no Supabase,
+> endereço dos Parceiros no registro.br e no Netlify (seção 11) e testar na
+> prévia.
+>
+> **Estado (03/10/2026):** PR #5 ainda **sem merge**. Entrou a regra 29:
+> **uma conta do GuiaTennis Parceiros administra várias academias**, em
+> qualquer plano (SQL `20261003120000_varias_academias`, teste
+> `testes/varias-academias.js`), com o plano e o valor de cada academia
+separados, e a regra 30 (o plano aparece só ao finalizar o cadastro,
+SQL `20261003130000_pedidos_de_plano`). **634 verificações** passando
+> (`check-js.sh` + os 22 arquivos de `testes/`) e 163 no
+> `banco-acesso.py` (as 11 que falham lá são antigas: o teste ainda espera
+> números no Básico/Completo e avaliação sem conta, regras 22 e 23).
+> Continua faltando o Breno ligar o serviço de e-mail no Supabase (seção
+> 11) e testar na prévia; depois, "pode subir".
+>
+> **Estado (02/10/2026, fim do chat):** PR #5 ainda **sem merge**, com
+> tudo das regras 19 a 28 (logo, menu do trivago, home pessoal,
+> preferências, cadastro passo a passo, planos, conta do jogador, um lugar
+> só para o e-mail, voltar passo a passo, trilha de tênis, código por
+> e-mail). **504 verificações** passando (`check-js.sh` + os 16 arquivos de
+> `testes/`). **Falta o Breno ligar o serviço de e-mail no Supabase**
+> (seção 11, primeiro item) e testar na prévia; depois, "pode subir".
+>
+> **Estado (01/10/2026):** tudo está no **PR #5** (branch
+> `ccr-0a610d86-k6plx0` → `main`), ainda **sem merge**: a **área da
+> academia** (seção 4), o site das academias **GuiaTennis Parceiros**
+> (`/parceiros`, seção 3: conta por e-mail, cadastro no modelo do trivago
+> com barra de etapas, código no WhatsApp da ficha, equipe por plano,
+> desempenho por plano, ofertas de plano, rodapé verde), os **links no
+> padrão dos grandes** (seção 3, "Endereços"), o visual mais limpo, o
+> **tempo até agir** no painel do admin (seção 4, `cliques`) e, ainda em
+> 01/10, o **logo de três riscos em todo lugar**, o **menu no jeito do
+> trivago**, a **home com a última busca, as parecidas e as chamadas**, as
+> **preferências de busca** e o **cadastro passo a passo** (seção 3, "Menu,
+> home pessoal e cadastro passo a passo"). Os SQL
+> `20260930120000` a `20261001130000` entraram sozinhos no banco de teste
+> pelo PR. Prévia: `deploy-preview-5--stately-salamander-652f72.netlify.app`.
+> Falta o Breno testar na prévia (seção 11, primeiro item) e dizer "pode
+> subir" — só então fazer o merge. Depois: criar o acesso de cada academia
+> e mandar pelo WhatsApp. Ainda em aberto de antes: conferir o site do PR #3
+> e o Google Search Console.
 
 ### Como abrir o chat novo
 Anexe este arquivo e diga em qual branch trabalhar. No chat novo, antes de
@@ -51,6 +310,8 @@ mexer:
 - **Nunca subir (merge) sem ele confirmar na hora.** Ele diz "pode subir"
   depois de ver a prévia; se pedir mais alguma mudança depois disso, a
   mudança vai para a prévia e ele confirma de novo antes do merge.
+  **Não lembrar disso no fim de cada resposta** (07/10/2026: "não precisa
+  sempre dizer que preciso falar pode subir, eu já sei disso").
 - **SQL entra sozinho pelo GitHub** (desde 28/09/2026 — seção 4,
   "Automação do banco"). Mostrar o SQL novo na conversa mesmo assim, para
   ele saber o que vai mudar. Consulta que só lê (e o bloco manual, se a
@@ -59,7 +320,8 @@ mexer:
 - Testa no celular, muitas vezes **logado como admin** — o que não grava
   estatística. Para testar como visitante: aba anônima.
 - Quer comparação com referências internacionais grandes (site,
-  Instagram, marketing) quando o assunto é GuiaTennis.
+  Instagram, marketing) quando o assunto é GuiaTennis — **na conversa**.
+  No site, nenhuma comparação com outros sites (regra 75).
 - Não gosta de depender de botão para o que o site pode fazer sozinho
   ("ele deveria consultar direito").
 - **Senha e endereço do banco nunca pelo chat.** Vão direto nos segredos do
@@ -69,6 +331,13 @@ mexer:
   academia: seção 4, "Academias do mapa aberto".
 - Não gosta de mensagem automática no WhatsApp (seção 12) nem de botão em
   pílula para contato. Prefere texto com logo pequeno.
+- **Quer o site limpo e espaçado** (30/09/2026: "muito aglomerado"). Letra
+  sem serifa no texto, ar entre os blocos, nada de caixa dentro de caixa
+  (seção 8, "Visual").
+- **Sem a palavra "pôr"** (nem "põe", "ponha"): o Breno acha informal
+  (05/10/2026). No site, nos textos internos e no documento, usar
+  "adicionar", "incluir", "informar", "colocar" ou "cadastrar", conforme o
+  sentido.
 - Mensagem de erro tem de ser simples, dizendo o que fazer ("O mapa está
   lento agora. Espere um pouco…"). O motivo técnico vai para o
   `?diagnostico`.
@@ -89,8 +358,12 @@ cobra taxa e não fica no meio** da negociação.
 2. **O site não narra o que "a gente faz".** O texto responde dúvida de
    quem está chegando. Nada de "a academia nos enviou", "arredondamos
    para baixo", "atualiza sozinho" fora do bloco que fala com academias.
-3. **Sem preço = "Não incluído" + "consulte com a academia"** (`SEM_PRECO` /
-   `SEM_PRECO_SUB`). Nunca explicar o motivo de faltar o valor.
+3. **Sem preço = "Sob consulta" + "fale com a academia"** (pedido de 01/10/2026; antes "Não incluído") (`SEM_PRECO` /
+   `SEM_PRECO_SUB`). Nunca explicar o motivo de faltar o valor. Vale
+   também no texto "Sobre a academia" ("O valor é sob consulta: fale com
+   a academia.") e na pergunta "Quanto custa…?" (08/10/2026: "pode trocar
+   para sob consulta"); "não foi incluído" fica só para telefone e
+   estacionamento.
 4. **Número público sempre arredondado para baixo**, com `+` e ponto de
    milhar (`numeroRedondo`). São **totais do site desde o começo**, nunca
    uma janela de 30 dias. O site nunca promete mais do que aconteceu.
@@ -117,7 +390,10 @@ cobra taxa e não fica no meio** da negociação.
    última busca (`state.ultimaBusca`), para o painel mostrar o público de
    cada academia e o "Copiar resumo pra mandar" incluir isso. Admin
    conectado não grava nada (`trackClick` sai no começo). Nunca o endereço digitado, a coordenada exata, IP ou
-   identificador do aparelho. Pedido do Breno em 28/09/2026. Qualquer
+   identificador do aparelho. Pedido do Breno em 28/09/2026. **Percurso da
+   visita** (05/10/2026, regra 46): os passos de cada visita, ligados por um
+   número sorteado que vale só para aquela visita — não identifica a
+   pessoa, o aparelho nem a conta. Qualquer
    mudança nisso obriga a mexer na Política de Privacidade — e a data de
    "Última atualização" dos dois textos legais tem de acompanhar.
 10. **SQL novo vira um arquivo em `supabase/migrations/`** e o GitHub
@@ -146,6 +422,1325 @@ cobra taxa e não fica no meio** da negociação.
     elas."; filtro "Empréstimo de raquete"; "consulte com a academia";
     "aula com professor da academia". Nunca "lista alfabética" nem "quem
     pagou mais".
+16. **Posição paga: só o topo "Patrocinado" do Premium** (mudou em
+    08/10/2026, regra 71; antes "por enquanto, não"). Fora as até 2
+    patrocinadas do topo, a ordem da busca é a mesma para todas, em
+    qualquer plano. Toda posição paga aparece escrita "Patrocinado" no
+    cartão (Código de Defesa do Consumidor, art. 36: publicidade tem de
+    ser identificada como tal).
+17. **O plano fica num lugar só** (mudou em 06/10/2026, regra 61; antes
+    toda tela vendia o próximo plano e o Breno achou que "está forçando
+    demais"): a página **Plano** do Parceiros é onde se vê o plano, o que
+    ele esconde da ficha e se pede outro. Nas outras telas, só o que está
+    trancado diz "Disponível no plano …" com "Ver planos", e o atalho
+    "Plano" em Atualizações.
+18. **Quem administra a academia não avalia ela** (mudou em 05/10/2026,
+    regra 53; antes nenhuma conta do Parceiros avaliava). A conta do
+    GuiaTennis Parceiros avalia as outras academias como qualquer jogador;
+    a academia que ela administra (e o e-mail/WhatsApp de quem a
+    administra, ou o WhatsApp dela) não. Quem garante é o banco (gatilho
+    `avaliacao_de_parceiro`).
+19. **O logo é um desenho só** (pedido de 01/10/2026: "não deixe diferente
+    onde tem a logo"): raquete com a bola no meio, **três riscos** saindo
+    pela esquerda e cabo reto com a ponta. Sai de `logoDesenho()` no
+    cabeçalho, rodapé, GuiaTennis Parceiros e QR code; os ícones, a imagem de
+    compartilhar, a 404 e as imagens do WhatsApp saem do mesmo desenho pelo
+    `divulgacao/gerar-imagens.js`. Mudou o logo? Rode o gerador.
+21. **Resumo do mês por e-mail para todo plano; o relatório completo é do
+    Premium** (mudou em 09/10/2026, regra 87; antes, desde 02/10/2026, o
+    relatório do mês era só do Premium). Sem caixa "Quero receber por
+    e-mail…" no cadastro nem no primeiro acesso: desliga no Perfil (as
+    colunas `recebe_relatorio` continuam no banco, sempre falsas).
+22. **O que cada plano libera** (pedido de 02/10/2026): todos têm nome,
+    endereço, quadras e tipos, modalidade, preço, horário, WhatsApp,
+    avaliações e QR code. **Básico** (grátis): até 3 comodidades, até 3
+    fotos, só o WhatsApp, sem cancelamento e sem "como chegar" (fachada,
+    entrada, onde estacionar), 1 pessoa, sem números (desde 08/10/2026,
+    só os acessos de 30 dias — regra 68).
+    **Completo**: todas as comodidades, 5 fotos, Instagram e site,
+    cancelamento, como chegar, 5 pessoas, sem números. **Premium**: o mesmo, 10 pessoas, todos os números
+    (Desempenho) e o relatório do mês. O site corta a ficha pelo plano em
+    `aplicarPlano` (dentro do `mapRow`; o que passou fica em `c.integral` e
+    o formulário de edição usa ele); `LIMITES_DO_PLANO` também trava o
+    formulário. O banco confere pessoas (`limite_de_pessoas`) e números
+    (`numeros_da_academia` devolve `{trancado: true}` fora do Premium;
+    SQL `20261002120000`).
+23. **Conta do jogador** (pedido de 02/10/2026): buscar, comparar e chamar
+    continuam sem conta; **avaliar exige conta** (uma avaliação por conta
+    em cada academia; o banco preenche o nome e o e-mail da conta, gatilho
+    `avaliacao_do_jogador`). A conta (`jogadores`, SQL `20261002130000`)
+    guarda nome, e-mail, cidade e três avisos por e-mail — academias novas
+    e favoritas, promoções das academias, novidades do GuiaTennis —, todos
+    começando desligados (LGPD). **Exceção (09/10/2026, escolha do Breno,
+    regra 86):** o lembrete de quem fica 3 meses sem entrar começa ligado
+    para toda conta com o e-mail confirmado. No site: `jogador`, `renderJogadorSheet`
+    (Entrar, Criar conta, Minha conta com Sair e Excluir), menu com "Entrar
+    ou criar conta"/"Minha conta" e "Avisos por e-mail", e
+    `jogadorEntaoFaz` (avaliar sem conta abre o Entrar e a avaliação sai
+    depois). O envio dos avisos existe desde 05/10/2026 (regra 51). Esqueceu a
+    senha: WhatsApp do GuiaTennis, como nos Parceiros.
+24. **Um lugar só para o e-mail** (pedido de 02/10/2026), no site e no
+    GuiaTennis Parceiros: a pessoa digita o e-mail, toca em Continuar e o
+    banco (`conta_do_email`, SQL `20261002140000`) diz se já tem conta —
+    vai para a senha — ou não — completa o cadastro. No Parceiros,
+    `/parceiros/entrar` e `/parceiros/cadastro` são a mesma tela ("Entre ou
+    cadastre a sua academia"); o usuário sem @ que o GuiaTennis mandou vai
+    direto para a senha; e-mail de jogador é recusado ali. Nos testes:
+    `irSenha(page, usuario)` do `harness.js`.
+25. **"Voltar" desfaz só o último passo** (pedido de 02/10/2026): cada
+    janela e cada passo tem o próprio link e entra no histórico (`?menu=1`,
+    `?lista=`, `?preferencias=1`, `?conta=email|senha|cadastro|minha`,
+    `?parte=<parte do cadastro>`, `?termos=1`, `?privacidade=1`,
+    `/parceiros/cadastro?passo=senha|dados`). `camadasDoEstado` escreve,
+    `aplicarCamadas` lê; `sincronizarLink` empilha ao abrir/avançar, volta
+    (`history.back`/`go`) ao fechar ou ao "Voltar" do próprio site, e uma
+    tela aberta de dentro de uma janela toma o lugar dela no histórico. O
+    que foi digitado fica na memória. Janela ou passo novo: inclua em
+    `camadasDoEstado`/`aplicarCamadas` (e em `CAMADAS_DO_LINK`). Teste:
+    `testes/voltar.js`.
+26. **Sem "Área do GuiaTennis" visível** (pedido de 02/10/2026): o admin
+    entra pelo mesmo "Entrar ou criar conta" com o e-mail dele
+    (`conta_do_email` devolve "admin" → senha → o site recarrega em modo
+    admin). "Sair do modo admin" continua no menu.
+27. **Trilha de tênis nas etapas** (pedido de 02/10/2026): `trilhaTenis`
+    desenha uma faixa de quadra com a linha do saque, uma marca branca por
+    etapa e a bolinha andando até a etapa de agora (rastro dourado). Usada
+    no cadastro do GuiaTennis Parceiros e no Entrar do jogador ("E-mail ·
+    Senha/Seus dados · Pronto", como a do trivago, com o e-mail em cima e a
+    seta para trocar). E-mail digitado errado ("gmial.com"): o site pergunta
+    "Você quis dizer …@gmail.com?" antes de seguir (`sugestaoDeEmail`).
+    Confirmar que o e-mail existe de verdade exige mandar um código por
+    e-mail — precisa de um serviço de e-mail ligado ao Supabase (em aberto).
+28. **E-mail confirmado por código** (pedido de 02/10/2026): depois de
+    criar a conta (jogador) o site manda um código de 6 números pelo login
+    do Supabase (`signInWithOtp`) e confere (`verifyOtp`); certo, o banco
+    anota (`confirmar_meu_email`, SQL `20261002150000`, só aceita token de
+    login por código). "Esqueceu a senha?" (jogador e Parceiros) usa o
+    mesmo código + senha nova. Parceiros sem e-mail confirmado veem o
+    cartão "Confirme o seu e-mail" no painel. Login `usuário@acesso…` não
+    recebe e-mail: esqueci pelo WhatsApp. Sem o serviço de e-mail, o site
+    avisa e deixa confirmar depois. Teste: `testes/codigo.js`.
+29. **Uma conta, várias academias** (pedido de 03/10/2026), como o "Suas
+    empresas" do Google Business Profile, as várias propriedades do
+    Booking e as várias lojas do iFood Parceiros: o mesmo login administra
+    quantas academias a pessoa responder, **em qualquer plano** (até no
+    Básico). Cada academia é pedida e confirmada separadamente, do mesmo
+    jeito (código no WhatsApp da ficha, documento ou academia nova
+    publicada), e tem o próprio plano, as próprias pessoas e os próprios
+    números; o papel (principal ou equipe) é de cada academia. **Cada
+    academia paga o próprio plano** (pedido de 03/10/2026): a academia que
+    entra na conta começa no Básico (o banco só aceita academia nova no
+    Básico) e o Breno muda o plano de cada uma; a lista "Suas academias"
+    mostra o plano de cada uma, a página Plano diz de qual academia é e
+    lista as outras, e Ajuda e Termos dizem que um plano não vale para as
+    outras academias. Banco:
+    tabela `academia_vinculos` (quem administra qual, com o papel);
+    `academia_acessos.academia_id` virou **a academia aberta no painel**,
+    trocada por `abrir_minha_academia`; a lista vem de
+    `academias_da_minha_conta`. Tela: seletor no topo (computador), grupo
+    "Suas academias" no menu (celular) e na Conta, "Adicionar outra
+    academia" (a mesma busca do cadastro, com "Já é sua" nas da conta), o
+    pedido com o código aparece no painel, e a ficha no site de outra
+    academia da conta tem "Abrir no painel". Incluir na equipe quem já
+    administra outra academia soma esta à conta dela (não troca a aberta).
+    Tirar alguém de uma academia só apaga o login se ele ficar sem
+    nenhuma; academia apagada idem. No admin, "Remover acesso" na ficha
+    tira a conta só daquela academia, e o pedido mostra "já administra…".
+30. **O plano aparece ao finalizar, não no meio** (pedido de 03/10/2026):
+    o formulário da ficha não trava nada pelo plano (comodidades sem
+    limite, até 5 fotos — `FOTOS_MAXIMO` —, Instagram, site, cancelamento
+    e como chegar abertos, sem aviso no meio). Ao tocar em "Enviar"/"Salvar"
+    (quem não é admin, plano abaixo do Premium; na edição, só se o plano
+    esconder alguma coisa), vem a tela "Quase lá: escolha o plano"
+    (`regPlanoHtml`): o que o plano esconde do que foi preenchido
+    (`oQueOPlanoEsconde`), o que falta para vender mais com atalho para a
+    parte (`oQueMelhorar`), Premium primeiro e em destaque, Completo, e
+    "Continuar no Básico, grátis (a ficha esconde N itens)" por último.
+    Tudo é salvo inteiro; a ficha mostra o que o plano libera. Plano pago
+    escolhido vira pedido (`pedir_plano`, tabela `pedidos_de_plano`, SQL
+    `20261003130000`) e a tela final leva ao WhatsApp para combinar; nada é
+    cobrado sozinho. No painel, a academia abaixo do Premium vê "O que os
+    alunos não veem" (`pcFichaEscondida`), e todo "Quero o…" do painel
+    também anota o pedido. No admin, "Querem mudar de plano" lista os
+    pedidos com WhatsApp e "Mudar para o …"; mudar o plano atende o pedido
+    e tira da lista. Teste: `testes/plano-ao-finalizar.js`.
+31. **Cidade do estado escolhido** (pedido de 03/10/2026): nas
+    Preferências de busca, a cidade vem da lista oficial de municípios do
+    IBGE (`servicodados.ibge.gov.br`, guardada no aparelho,
+    `CIDADES_DO_UF`). Trocar o estado tira a cidade de outro estado; as
+    cidades do guia sugeridas são só as do estado; salvar uma cidade que
+    não é do estado avisa ("São Paulo não fica em Ceará"); vale o nome
+    oficial. Sem resposta do IBGE, a cidade fica livre e nada é sugerido.
+32. **Pedido de acesso vai para o responsável** (pedido de 03/10/2026),
+    como o "Solicitar acesso" do Google Business Profile: quem pede uma
+    academia que já tem responsável principal não recebe código no
+    WhatsApp da ficha; o pedido (`pedido_destino = 'responsavel'`) aparece
+    no painel e na Conta do responsável ("Pedidos de acesso", com nome,
+    e-mail e cargo), que aceita (entra na equipe, se o plano couber;
+    plano cheio oferece o de cima) ou recusa. O responsável também pode incluir
+    a pessoa direto pelo e-mail (Pessoas com acesso). Quem pediu vê
+    "Pedido enviado ao responsável". No admin, o pedido diz "Já tem
+    responsável (…)", sem "Gerar código"; "Aprovar" pede confirmação (só
+    depois de conferir documento). SQL `20261003140000_pedido_ao_responsavel`
+    (`pedidos_para_minha_academia`, `responder_pedido_de_acesso`). Teste:
+    `testes/pedido-ao-responsavel.js`. Desde 05/10/2026 o responsável recebe o
+    pedido também por e-mail (regra 51).
+33. **Convite para a conta, como o trivago** (pedido de 04/10/2026): no
+    topo, ao lado do menu, o ícone da pessoa com brilho dourado para quem
+    não entrou (`botaoConta`); jogador logado vê a inicial do nome;
+    academia e admin não veem. Na home, para quem já usou o site (viu
+    academia, buscou ou chamou), o cartão "Jogou numa dessas academias?
+    · Criar conta" (`conviteParaConta`); fechar esconde por 14 dias
+    (`CONVITE_CONTA_KEY`, no aparelho). O convite só promete o que a
+    conta faz hoje (avaliar); quando os avisos por e-mail estiverem
+    saindo, dá para citá-los. Teste: `testes/convite-conta.js`.
+34. **Senha como os grandes** (pedido de 04/10/2026): olhinho em todo
+    campo de senha (`ligarCamposDeSenha`, roda em cada render), "Repita a
+    senha" em toda senha nova, barrinha fraca/boa/forte embaixo da senha
+    nova (`forcaDaSenha`) e recusa de senha óbvia — as mais usadas, a
+    sequência, a que repete o e-mail ou "guiatennis" (`erroDaSenha`,
+    `SENHAS_COMUNS`). Sem regra de símbolo obrigatório. O código do e-mail
+    aceita 6 a 10 números (o tamanho é do painel do Supabase: Authentication
+    → Sign In / Providers → Email → "Email OTP Length"; o Breno quer 6).
+    Teste: `testes/senha.js`.
+    **Senha recusada (pedido de 05/10/2026):** no cadastro do jogador, no
+    dos Parceiros, no primeiro acesso, em "Trocar senha" e na senha nova
+    pelo código, a senha digitada continua no campo e só "Repita a senha"
+    é apagada (`focarDepoisDaSenha`: o cursor vai para a repetição quando as
+    duas não batem, e para a senha quando é ela que precisa mudar).
+    "Esqueci a senha" (`senhaNovaPeloCodigo`, correção de 04/10/2026): o
+    código só vale uma vez; se ele deu certo e o Supabase recusou a senha,
+    "tentar de novo" usa a sessão que o código abriu (antes conferia o
+    código gasto e nunca dava certo). A recusa diz o motivo (regra de
+    senha do painel, senha vazada, muitas tentativas); a mesma senha de
+    antes só entra, com "Essa já era a sua senha".
+35. **Usuário vira login por e-mail** (pedido de 04/10/2026): quem recebeu
+    usuário do GuiaTennis (`…@acesso.guiatennis.com.br`, que não recebe
+    e-mail) passa a entrar pelo e-mail que informou no primeiro acesso
+    (gatilho `login_segue_o_email`, SQL `20261004120000_login_pelo_email`,
+    que também troca quem já tinha feito o primeiro acesso). O usuário
+    continua entrando: o site pergunta o login a `login_do_usuario`. Assim o
+    "Esqueci a senha" manda o código para todo mundo. Não troca se o e-mail
+    já for de outra conta.
+36. **Respiro nos formulários** (pedido de 04/10/2026): o título de cada
+    campo (`.field-label`, quase sempre `<label>`) é bloco — antes ficava
+    em linha e ignorava a margem, colando no campo de cima. Bloco "Respiro"
+    no fim do `<style>`: espaço entre título e campo de cima, entre
+    caixinhas de marcar, avisos e links ("Trocar o e-mail"). Mudança de
+    espaço só ali, para não espalhar.
+37. **Vou viajar** (pedido de 04/10/2026), como as "Próximas viagens" do
+    Airbnb e do Booking: menu › Minhas quadras › "Vou viajar" guarda
+    estado, cidade (lista do IBGE), onde vai ficar (hotel ou endereço,
+    opcional) e datas opcionais (`VIAGENS_KEY`, só no aparelho, até 5).
+    Com o hotel achado no mapa, "Ver quadras" ordena a partir dele, como a
+    "distância da hospedagem" do Booking (`verQuadrasDaViagem`; o endereço
+    não vai para o link); sem o ponto, abre pela cidade e avisa. A home mostra o cartão da viagem de 15 dias antes até
+    a volta ("Sua próxima viagem" / "Você está em viagem", com quantas
+    academias há lá ou "veja as mais perto"); sem data, fica até apagar.
+    Durante a viagem, "Pesquisar" sem digitar abre a cidade dela
+    (`cidadePadraoDaBusca`); depois da volta, a viagem some sozinha. Buscar
+    uma cidade que não é a de casa pergunta "Vai viajar para…?"
+    (`perguntaViagem`). Convite "Vai viajar? A gente também te ajuda"
+    (`conviteViagem`, pedido de 04/10/2026): **não no cadastro**, só para
+    quem já está navegando — 3 fichas/buscas na visita ou 2 minutos no site
+    —, na ficha e na home (sem empilhar com o convite da conta); some com a
+    viagem guardada e, fechado, volta só em 30 dias. Política de
+    Privacidade atualizada. Teste: `testes/viagem.js`.
+38. **Aviso de viagem por e-mail** (pedido de 04/10/2026; **mudou em
+    05/10/2026**: saiu de "Avisos por e-mail" do perfil e foi para a aba
+    "Vou viajar", junto da viagem — `guardarAvisoDaViagem`). Na aba, a
+    caixa "Quero receber um aviso por e-mail perto da data da viagem"
+    (desmarcada; sem conta, guardar pede o Entrar e guarda depois); editar
+    a viagem da conta traz a caixa marcada; desmarcar ou apagar a viagem
+    desliga o aviso. Uma viagem com aviso por vez (a última marcada); a da
+    conta aparece também em outro aparelho (`trazerViagemDaConta`). Antes,
+    em Minha conta, a caixa abria estado, cidade (IBGE), ida e volta. Fica na
+    conta (`jogadores.avisos_viagem`, `viagem_uf/cidade/ida/volta`, SQL
+    `20261004130000_aviso_de_viagem` e `20261004140000_viagem_sem_data`) e
+    também vira a viagem do aparelho (sem perder o hotel guardado nela). O e-mail sai 7 dias antes da ida (ou
+    logo, sem data ou com menos de 7 dias), pelo Resend (regra 51). Marcar não redesenha a tela, para a senha digitada
+    não se perder.
+39. **Pacote de 05/10/2026** (fotos do Breno no iPad). Teste:
+    `testes/comparar-e-avisos.js`.
+    - Conta no topo pisca em amarelo, com um "!" (`contaPisca`). Para quem
+      não entrou, um balão sai do ícone (`PUSHES_CONTA`): depois de 10 s,
+      fica 9 s, volta a cada 40 s, no máximo 3 por visita; o ✕ para por 3
+      dias. Promete só o que a conta faz hoje (avisos por e-mail, avaliar,
+      a mesma conta em todo aparelho). Desde 05/10/2026 o terceiro balão
+      fala das buscas salvas (regra 52).
+    - "Grátis para quem joga" é o primeiro card de "Por que o GuiaTennis",
+      com a mesma cor dos outros.
+    - Seletor da comparação: bandeja com "Comparar N" quando há 2 a 5.
+    - Tabela da comparação: cada academia em cima da própria coluna, o
+      "+ Escolher" no canto, sem rolar de lado; com 3 a 5 academias, a
+      letra diminui no celular.
+    - "Ainda em dúvida?": um botão na página; depois de 15 s na
+      comparação, um aviso com os destaques (menor preço, melhor nota,
+      mais perto) e "Me ajude a decidir", que abre a mesma ajuda numa
+      folha.
+    - Minhas quadras (todas as abas) e o seletor vão da mais perto para a
+      mais longe (`pontoDeReferencia`, nesta ordem: busca aberta, viagem
+      com hotel, última busca, cidade das preferências).
+    - Parceiros:
+      - "Começar agora · é de graça!" no meio, pulsando.
+      - O card dos números diz "Só no Premium" e que os números já são
+        contados e aparecem ao passar para o Premium.
+      - Planos: "Até 1 e-mail / 5 e-mails / 10 e-mails com acesso".
+    - **O site fala "jogadores", não "alunos"**: atende quem faz aula e
+      quem loca quadra.
+40. **"Represento a academia" só quando a academia já é conhecida**
+    (pedido de 05/10/2026, print do cadastro: "não faz sentido aparecer
+    represento a academia sendo que nem sabe a academia ainda"). Nos dados
+    de contato do cadastro do GuiaTennis Parceiros, o aceite é só "Li e
+    concordo com os Termos de Uso e a Política de Privacidade do
+    GuiaTennis" e o campo é "Seu cargo" (antes "Cargo na academia"). A
+    declaração vem na hora em que a academia aparece, como o "autorizado a
+    gerenciar esta empresa" do Google Business Profile e o "certifico" do
+    fim do cadastro do Booking: embaixo do "Administrar esta academia"
+    ("Ao pedir, você declara que é dono(a) ou está autorizado(a)…", na
+    primeira academia e em "Adicionar outra academia") e na revisão da
+    academia nova mandada pela conta ("Ao enviar, você declara…"). O
+    primeiro acesso de quem recebeu usuário continua com "Represento esta
+    academia", porque ali a academia já está no título. Teste:
+    `testes/parceiros.js`.
+41. **Perfil da conta do jogador** (pedido de 05/10/2026, referência: o
+    "Meu trivago" e a "Conta" do Airbnb e do Booking): "Minha conta" virou
+    uma página própria, **`/perfil`** (`renderPerfilJogador`, `irPerfil`),
+    fora do Google. Topo com a inicial num círculo, "Olá, Nome" e o e-mail;
+    cartões: "Jogou nessas academias?" (as chamadas ainda sem avaliação,
+    com "Avaliar"), Minhas quadras (favoritas, vistas, chamadas, "Vou
+    viajar"), Login e preferências (e-mail da conta, "Trocar a senha" pelo
+    código no e-mail, preferências de busca), Dados pessoais e Avisos por
+    e-mail (os mesmos campos `jog-*` da antiga folha) e, embaixo, Sair e
+    Excluir. A inicial no topo e o menu "Minha conta" abrem o perfil; o
+    menu "Avisos por e-mail" abre nos avisos; `/perfil` sem conta abre o
+    Entrar e volta para o perfil; o link antigo `?conta=minha` vira
+    `/perfil`; sair do perfil volta para a home. Teste:
+    `testes/perfil-e-avaliar.js`.
+42. **"Jogou aqui? Avalie essa academia"** (pedido de 05/10/2026, como o
+    "Você esteve em…?" do Google Maps e o "Como foi?" do iFood): **um dia
+    depois** de a pessoa chamar uma academia (WhatsApp, Instagram ou site —
+    a lista "Academias que você chamou", no aparelho), um balão embaixo
+    pergunta "Jogou na …?", com 5 estrelas; tocar numa estrela abre a ficha
+    nas avaliações com a nota marcada (sem conta, o envio pede o Entrar).
+    Uma academia por visita, 6 s depois de abrir o site, sem cobrir janela
+    aberta nem o balão da conta; ignorado ou "Agora não", volta em 3 dias,
+    no máximo 3 vezes; "Não joguei aqui" não pergunta mais; avaliada (ou
+    "Você já avaliou"), sai. Só até 60 dias depois do contato. Admin e
+    academia não recebem. Tudo no aparelho (`AVALIADAS_KEY`,
+    `PEDIR_AVALIACAO_KEY`, `academiasParaAvaliar`, `ligarPedidoDeAvaliacao`);
+    Política de Privacidade atualizada (5 de outubro).
+43. **Parceiros: Perfil, Suas academias e Pessoas** (pedido de 05/10/2026):
+    a antiga página "Conta" virou três. **Perfil** (`/parceiros/perfil`,
+    `pcPerfil`; o círculo com a inicial no topo e o último atalho da barra
+    de baixo): dados de contato, login e senha, quantas academias e pedidos
+    a conta tem, Sair. **Suas academias** (`/parceiros/academias`,
+    `pcAcademias`; "Academias" no menu), como o "Suas empresas" do Google
+    Business Profile: um cartão por academia (plano, situação, papel,
+    "Abrir o painel", "Ver no site"), os pedidos em andamento e "Adicionar
+    outra academia" sempre. **Pessoas** (`/parceiros/pessoas`,
+    `pcPessoasDaAcademia`): quem tem acesso à academia aberta, os pedidos
+    de acesso (responsável) e o plano de cima. `/parceiros/conta` abre o
+    Perfil (links antigos). **"Confirme o seu e-mail"** (correção de
+    05/10/2026: a conta nova que já tinha pedido uma academia não via mais o
+    aviso) aparece no painel com ou sem academia, na tela dos pedidos, em
+    Suas academias e no Perfil, e o círculo da conta ganha o "!" amarelo
+    enquanto o e-mail não é confirmado — nos Parceiros e na inicial do
+    jogador (`.conta-topo.confirmar`).
+44. **Vários pedidos ao mesmo tempo** (pedido de 05/10/2026): com um pedido
+    aberto, a conta pede outra academia (no cartão do pedido: "Adicionar
+    outra academia ›"). Cada pedido tem o próprio código, o próprio
+    "Cancelar" e o próprio destino (GuiaTennis ou responsável). Banco:
+    tabela `pedidos_de_acesso` (uma linha por conta e academia, até 10
+    abertos), `codigos_de_verificacao` com chave (conta, academia),
+    `meus_pedidos_de_acesso`, `pedidos_de_acesso_admin` (o admin vê um
+    pedido por linha) e as funções do pedido com `p_academia` (opcional,
+    para o site antigo); SQL `20261005120000_varios_pedidos`. As colunas
+    `pedido_*` de `academia_acessos` ficam vazias. No site: `meusPedidos()`,
+    `pcPedidos()`, `pcPedidoEnviado(p, i)`, `rpcDoPedido`. **O site não diz
+    como o GuiaTennis confere** (pedido de 05/10/2026: "é difícil ter acesso
+    ao CNPJ"): nada de "documento (CNPJ ou contrato social)" nas telas, na
+    Ajuda nem nos Termos — só "Fale com o GuiaTennis" / "o GuiaTennis
+    confirma com você". Teste: `testes/varias-academias.js` e, no banco,
+    `banco-acesso.py`.
+45. **Parceiros em outra aba, com endereço próprio** (pedido de 05/10/2026,
+    print do trivago e do trivago Business Studio abertos em abas
+    separadas): do site dos jogadores, toda entrada no GuiaTennis Parceiros
+    abre a aba dele (`window.open` com o nome `guiatennis-parceiros`, que
+    volta para a mesma aba; bloqueado, abre na mesma); de lá, "Ir para o
+    GuiaTennis" e "Ver no site" vão para a aba `guiatennis`. O código já
+    entende **`parceiros.guiatennis.com.br`** com links curtos (`/painel`,
+    `/cadastro`, `/academias`: `caminhoDosParceiros`, `urlDosParceiros`);
+    **o Breno não quer outro endereço** (05/10/2026): o Parceiros fica em
+    guiatennis.com.br/parceiros e `PARCEIROS_NO_ENDERECO_PROPRIO` continua
+    `false` (o código fica pronto, sem uso). No mesmo endereço, o login é um
+    só para os dois sites (regra 53). Menu do site dos
+    jogadores com a conta de academia: **"Sair da conta"** (não "Sair da
+    área da academia").
+46. **Percurso das visitas** (pedido de 05/10/2026: "o caminho exato, de
+    onde veio, por qual meio, o que fez, por quanto tempo"), como o "funil"
+    e a "exploração de caminho" do Google Analytics e a linha do tempo do
+    Microsoft Clarity (sem gravar a tela). Cada passo vai para a tabela
+    `passos_das_visitas` (SQL `20261005140000_percurso_das_visitas`): a
+    visita (número sorteado em `sessionStorage`, que some ao fechar a aba ou
+    depois de 30 min parada — `visitaAtual`), o site (jogadores ou
+    parceiros), o tipo (tela, busca, ficha, contato, ação, saída), o
+    caminho do link sem o "?", o detalhe, a academia, a origem
+    (`origemDoAcesso`), o meio (`meioDoAcesso`: utm_medium, a parte depois
+    do traço da etiqueta — "Instagram-bio" → "bio" —, navegador do app,
+    busca do Google, digitou o endereço…), o aparelho e os segundos desde a
+    chegada. Quem grava: `registrarPasso`; a tela e a janela por cima
+    (menu, cadastro da academia parte a parte, Entrar/Criar conta) saem
+    sozinhas do fim do `render` (`anotarTelaNoPercurso`); busca (só a
+    região e quantos filtros), contato, compartilhar, favoritar, comparar,
+    avaliar, criar conta/entrar, pedir academia, código, plano escolhido,
+    pausar; a saída vai com `keepalive` ao esconder a página. O admin não
+    grava; a conta de academia só grava no GuiaTennis Parceiros. Banco sem
+    a tabela: para de mandar (`semPercurso`). **Relatório**: "Percurso das
+    visitas", no painel do admin (antes, botão do mapa no canto) — Jogadores ou Parceiros, Hoje/7/30 dias: funil
+    (visitas → buscaram → abriram ficha → chamaram; no Parceiros: abriram o
+    cadastro → criaram a conta → pediram academia), de onde vieram (com
+    quantos chegaram ao fim), caminhos mais comuns ("Início → Busca → Ficha
+    → Contato") e cada visita passo a passo, com "ficou X" em cada passo.
+    Política de Privacidade atualizada (regra 9). Teste: `testes/percurso.js`.
+47. **Acessos do admin agrupados por academia** (pedido de 05/10/2026: "muito
+    empilhado"): em "Acessos das academias", um cartão por academia com as
+    pessoas dela juntas (responsável primeiro, equipe depois).
+48. **A academia pausa a própria ficha** (pedido de 05/10/2026), como o
+    "temporariamente fechado" do Google Business Profile: em Suas
+    academias, "Pausar no site" (7, 15, 30 dias ou "Até eu voltar") e
+    "Voltar a aparecer no site", cada academia separada; qualquer pessoa
+    que administra a academia pode. Pausa feita pelo GuiaTennis só o
+    GuiaTennis desfaz ("Pausada pelo GuiaTennis. Fale com a gente").
+    Banco: `academias.pausada_pela_academia`, `pausar_minha_academia` e o
+    gatilho `proteger_ficha_da_academia` que só deixa a pausa passar quando
+    vem dessa função (e não marca a ficha como confirmada); SQL
+    `20261005130000_academia_pausa`. Ajuda, Minha ficha e Termos dizem
+    isso. Teste: `testes/perfil-e-avaliar.js`.
+49. **"Pedir análise" fica na avaliação** (pedido de 05/10/2026), como o
+    "Denunciar avaliação" do Google: no topo do cartão da avaliação (só
+    para a academia dona), não mais junto da resposta da academia.
+50. **Sem a faixa "Área da academia" no site dos jogadores** (pedido de
+    05/10/2026: "não acho legal aparecer isso para qualquer acesso"): com o
+    Parceiros em aba própria, a conta de academia logada vê o site dos
+    jogadores limpo; o painel fica no menu ("Painel da minha academia").
+51. **Avisos por e-mail pelo Resend** (pedido de 05/10/2026: "preciso
+    mandar os e-mails ainda"), como o Google Business Profile (avaliação
+    nova, pedido de acesso), o Airbnb e o Booking ("Sua viagem para…") e o
+    Zillow/Idealista (alerta da busca salva). Tudo dentro do banco, sem
+    servidor novo (SQL `20261005160000_avisos_por_email`): cada aviso entra
+    na fila `emails_a_enviar` (a `chave` não deixa repetir) e o relógio do
+    banco (**pg_cron**, `guiatennis-enviar-emails`, a cada minuto) chama
+    `enviar_emails()`, que manda pela API do Resend com o **pg_net** — dois
+    por vez (limite do Resend), até 5 tentativas em 3 dias, 429 não conta,
+    chave de idempotência. A chave do Resend fica no **cofre (Vault)** do
+    Supabase: o GitHub copia do segredo `RESEND_API_KEY` (passo "Ligar os
+    avisos por e-mail" do `banco.yml`, `configurar_emails`), que também diz
+    o endereço dos links (no banco de teste, a prévia do PR, e o assunto
+    ganha "[Teste]"). Os avisos:
+    - **avaliação nova** → todas as pessoas da academia (gatilho
+      `aviso_de_avaliacao_nova`), com a nota, o comentário, "Responder a
+      avaliação" e, com 1 ou 2 estrelas, o lembrete do "Pedir análise";
+    - **pedido de acesso** → o responsável principal ("Ver o pedido" em
+      Pessoas) ou, quando o pedido é para o GuiaTennis conferir, o admin
+      (com o WhatsApp de quem pediu; academia nova: "Academia nova para
+      aprovar"); um por dia para o mesmo pedido;
+    - **pedido aceito** → quem pediu ("Pronto: você já administra…"),
+      menos quando a própria pessoa digitou o código;
+    - **viagem** → 7 dias antes da ida (sem data ou com menos de 7 dias:
+      ao salvar), uma vez por viagem, com até 6 academias da cidade e "Ver
+      no mapa"; sem academia na cidade, espera; viagem acabada, não;
+    - **academias novas** → uma vez por dia, às 10h de Brasília
+      (`guiatennis-avisos-do-dia`), só quando há novidade: as que entraram
+      na cidade da conta (aviso "Academias novas na minha cidade") e perto
+      de cada busca salva com aviso (distância da busca ou 10 km; a página
+      da cidade vale a cidade inteira; mesmo piso, cobertura e modalidade).
+      `academias.publicada_em` diz quando a academia entrou.
+    Só recebe quem **confirmou o e-mail** pelo código. Todo aviso tem o
+    link **"Não quero mais receber"** (`?parar-avisos=<número da conta>&aviso=`),
+    que abre uma folha que pergunta antes de parar (`renderPararAvisos`,
+    `parar_avisos`), sem entrar na conta, e o cabeçalho List-Unsubscribe.
+    A academia desliga também no Perfil do Parceiros ("Avisos por e-mail",
+    `mudar_avisos_dos_parceiros`; começam ligados, como no Google). Links
+    com `utm_source=Email-…` (aparecem em "De onde vieram"). No admin,
+    Estatísticas mostra se os avisos estão saindo (`situacao_dos_emails`:
+    chave, pg_net, relógio, enviados em 7 dias, fila, último erro). Sem a
+    chave, sem o pg_net ou sem o pg_cron, tudo fica na fila e nada quebra.
+    O aviso da conta virou "Academias novas na minha cidade" (saiu "e
+    mudanças nas minhas favoritas": as favoritas ficam só no aparelho e o
+    banco não as conhece). Teste: `testes/banco-emails.py` (Postgres local)
+    e `testes/buscas-e-avisos.js`.
+52. **Buscas salvas** (pedido de 05/10/2026: "sim salvar busca"), como o
+    "Salvar busca" do Booking e o "Save search" do Zillow e do Idealista:
+    na busca, embaixo da barra, **"Salvar busca"** (sem conta, abre o
+    Entrar e salva depois); salva, vira "Busca salva" e aparece o aviso
+    "Busca salva na sua conta · Avisar por e-mail quando entrar academia
+    nova aqui" (o aviso começa desligado — LGPD). Fica na conta
+    (`buscas_salvas`, SQL `20261005150000`): o que foi digitado, bairro e
+    cidade, o ponto arredondado (~100 m, o banco arredonda de novo), os
+    filtros e o link (`/busca?…` ou a página da cidade, `/quadras/…`; o
+    banco recusa outro link); até 20 por conta, sem repetir. No perfil, o
+    cartão **"Buscas salvas"** (tocar refaz a busca, "Avisar por e-mail de
+    academias novas", "Apagar") e, no menu, "Minhas quadras › Buscas
+    salvas". Banco sem a tabela: o botão e o item somem
+    (`semBuscasSalvas`). Política de Privacidade atualizada.
+53. **A conta do Parceiros é uma conta normal no site dos jogadores**
+    (pedido de 05/10/2026: "deixar como um e-mail normal, só as avaliações
+    que não podem ser feitas se administrar uma academia"), como o Google
+    (a conta do Business Profile avalia outros lugares) e o Booking (o dono
+    de hotel também viaja). No site dos jogadores, a conta logada do
+    Parceiros tem perfil (`/perfil`), buscas salvas, avisos, viagem,
+    "Jogou aqui?" e avalia as outras academias; a parte de jogador nasce
+    sozinha, com o nome e o e-mail do Parceiros (`ativar_conta_de_jogador`,
+    chamada em `carregarConta`; SQL `20261005170000_parceiro_tambem_joga`).
+    Entrar pelo "Entrar" dos jogadores com o e-mail do Parceiros segue como
+    jogador (faz o que ia fazer, sem recarregar). Menu: "Minha conta",
+    "Painel da minha academia" e, no Suporte, **"GuiaTennis Parceiros ·
+    seu painel"** de volta (o Breno, logado com um e-mail do Parceiros,
+    não achava o Parceiros no menu). Sem "Excluir minha conta" no perfil
+    dessa conta ("fale com o GuiaTennis"). As estatísticas continuam sem
+    contar a conta de academia.
+54. **Página da cidade = todas as academias da cidade** (pedido de
+    05/10/2026: "quando clicar em ver as academias de São Paulo, não
+    pesquisar um endereço"), como as páginas de destino do Booking e do
+    TripAdvisor: `/quadras/<cidade>` (e "Ver as academias de…", "Quadras em…",
+    "Buscar quadra" com a cidade das preferências, viagem sem hotel) não
+    procura o endereço no mapa — lista só as academias daquela cidade
+    (`state.cidadeDaPagina`, filtro em `applyFilters`), na ordem
+    recomendada, com "Todas as academias de São Paulo. Para ver as mais
+    perto, digite o bairro, o endereço ou o CEP." Digitar um endereço volta
+    à busca normal. A página do bairro (`/quadras/sao-paulo/moema`)
+    continua mostrando as mais perto do bairro.
+55. **Textos "Por que…"** (pedido de 05/10/2026): em "Por que o
+    GuiaTennis", a taxa aparece uma vez só ("Grátis para quem joga"), o
+    segundo cartão diz que é **"uma facilidade tremenda"** achar a quadra
+    mais perto com tudo o que precisa saber (preço, horário, piso, fotos,
+    como chegar), entram "Compare lado a lado" e "Avisos que trabalham por
+    você". "Por que estar no GuiaTennis" (home e Parceiros) atualizado com
+    o que a academia ganha hoje: buscas salvas e viagens trazendo
+    jogadores por e-mail, ficha que pausa, avaliação nova no e-mail (com o
+    QR code), equipe e várias academias numa conta, números no Premium.
+56. **"Tem viagem marcada? O GuiaTennis pode te ajudar"** (pedido de
+    05/10/2026), como o "Planejando uma viagem?" do Booking e do Airbnb: um
+    balão embaixo, uns 5 segundos depois de entrar na conta (e ao abrir o
+    site já logado, se o "Jogou aqui?" não tiver o que perguntar — um balão
+    por visita), com "Guardar a viagem" (abre a aba "Vou viajar", com o
+    aviso por e-mail) e "Agora não". Só para quem não tem viagem guardada;
+    uma vez a cada 30 dias (`PUSH_VIAGEM_KEY`, no aparelho); nunca junto do
+    "Jogou aqui?" nem no cadastro. Teste: `testes/viagem.js`.
+57. **Admin no GuiaTennis Parceiros** (pedido de 06/10/2026: "não estou com
+    acesso no Parceiros sendo admin"), como o acesso de suporte do Google
+    Business Profile e o "ver como a propriedade" do Booking: com o admin
+    logado, página privada do Parceiros (e o "Entrar") abre
+    **`/parceiros/ver`** ("Ver como academia", fora do Google): busca por
+    nome, bairro ou cidade e a lista de todas as academias. Escolhida, o
+    admin vê o Parceiros como ela vê (painel, desempenho, avaliações,
+    ficha, pessoas, plano, Suas academias, perfil), com a faixa amarela
+    "Modo admin… Trocar de academia · Sair do modo admin". Como funciona
+    (`montarVisaoAdmin`, `rpcNaVisaoAdmin`): uma conta de academia de
+    mentira só naquela aba, e as funções "da minha academia" viram as do
+    admin — números com `p_academia`, pessoas de `acessos_das_academias`,
+    pedidos de `pedidos_de_acesso_admin`, aceitar/recusar vira
+    `aprovar/recusar_pedido_de_acesso`, tirar alguém vira
+    `remover_acesso_academia`, pausar muda a ficha como admin; editar a
+    ficha é a edição do admin. O que é da academia fica só para ver
+    ("No modo admin, isso é só para ver…"): responder avaliação, pedir
+    plano, incluir pessoa, dados de contato, avisos, trocar a senha (seria
+    a do admin). A academia escolhida fica na aba (`sessionStorage`):
+    recarregar continua nela; no site dos jogadores o admin volta a ser só
+    o admin; "Sair" no Parceiros sai do modo, não do login. No menu do site
+    dos jogadores, "GuiaTennis Parceiros · ver como academia"; no topo do
+    Parceiros, "Ver como academia". Teste: `testes/admin-parceiros.js`.
+58. **Painel do admin em `/admin`** (pedido de 06/10/2026: "quando eu
+    fizer o login, mude o site para eu ter o controle de tudo, acessos e
+    tudo mais, algo diferenciado, organizado, separado e bem completo…
+    mas não aparecer para outras pessoas a minha área"), como o admin da
+    Shopify, o painel do Stripe e a extranet do Booking: um site à parte,
+    com barra verde-escura em cima ("GuiaTennis · ADMIN", "Ver o site",
+    "Ver como academia", "Sair") e as seções do lado (no celular, no botão
+    de menu). **Entrar com o e-mail do admin leva ao painel** — pelo
+    "Entrar" do site (recarrega já em `/admin`), pelo Entrar do Parceiros e
+    pela senha nova do código. Seções, cada uma no seu link
+    (`/admin/<seção>`): **Visão geral** ("Para fazer agora": academias
+    para aprovar, pedidos para administrar, pedidos de plano, academias
+    fora do mapa, e-mails parados ou que não saíram; os últimos 30 dias —
+    acessos, buscas, fichas abertas e contatos, com a variação contra os
+    30 dias antes e a linha das 12 semanas; academias no ar, pausadas, em
+    análise, fichas básicas, com acesso, por plano; contas, e-mails
+    confirmados, buscas salvas, contas no Parceiros, avaliações e nota
+    média; situação dos e-mails), **Pendências** (aprovar/rejeitar, pedidos
+    para administrar com o código, pedidos de plano), **Academias**
+    (busca, filtros — no ar, em análise, pausadas, fichas básicas, sem
+    acesso, planos pagos, fora do mapa — e, em cada uma, abrir a ficha,
+    editar, ver como academia, QR code, plano, pausar 7/15/30 dias ou
+    voltar para a busca), **Acessos ao Parceiros**, **Contas de jogador**
+    (nome, e-mail, cidade, criada em, avisos ligados; os números de
+    `numeros_das_contas_admin`), **Avaliações** (todas, a mais nova
+    primeiro, com o contato de quem avaliou, a resposta da academia,
+    filtros e excluir), **Estatísticas** e **Percurso das visitas** (o que
+    eram as janelas dos botões redondos), **E-mails** (situação e os
+    últimos 100 da fila, com "Tentar de novo" no que não saiu —
+    `emails_recentes_admin`, `reenviar_email_admin`) e **Ferramentas** (QR
+    do site, coordenadas que faltam, academias do mapa aberto, qual banco).
+    **Ninguém mais vê**: para visitante, jogador ou academia, `/admin` abre
+    a página inicial, com o link "/" e sem nenhum sinal do painel; o
+    painel fica fora do Google (`noindex, nofollow`, também no cabeçalho
+    do Netlify) e o `robots.txt` de propósito não cita o `/admin`. Os
+    dados continuam protegidos no banco (`eh_admin()` em cada função e
+    tabela) — esconder a tela é só a parte visível. No site dos jogadores,
+    o admin vê a faixa "Modo admin — Abrir o painel (n)" e, no menu,
+    "Painel do admin"; os três botões redondos (cliques, percurso,
+    prancheta) saíram. Ficha aberta pelo painel volta ao painel. As
+    janelas antigas (`renderAdminPanel`, `renderStatsPanel`,
+    `renderPercursosPanel`) continuam no código, por cima do mesmo
+    conteúdo (`conteudoDasPendentes`, `conteudoDasEstatisticas`,
+    `conteudoDosPercursos`, `blocoPedidosParaAdministrar`,
+    `blocoAcessosDasAcademias`), e os testes antigos as usam. Teste:
+    `testes/painel-admin.js`.
+59. **Declaração de quem pede uma academia é caixinha** (pedido de
+    06/10/2026, "coloque com aquele quadradinho, igual 'eu li e
+    concordo'"): no Parceiros, "Administrar esta academia" e o envio de
+    academia nova só vão com a caixinha marcada — "Declaro que estou
+    autorizado(a) pela academia a administrar a ficha dela [cadastrá-la]
+    no GuiaTennis e que respondo pelas informações que publicar" (sem "é
+    dono(a)", pedido do Breno). Sem marcar: "Marque a declaração para
+    pedir". O banco guarda quando foi marcada (`pedidos_de_acesso.declarou_em`,
+    SQL `20261006130000_declaracao_ao_pedir`; `pedir_para_administrar(p_academia,
+    p_declaro)`), como prova. **Mudou em 07/10/2026 (regra 65):** sem
+    responsável e sem disputa, a declaração e o e-mail confirmado bastam;
+    o código só na disputa. Antes, a confirmação continuava (código no
+    WhatsApp da ficha, o responsável aceitar, ou o GuiaTennis publicar a
+    academia nova): o Breno perguntou se a declaração tira a
+    responsabilidade dele — tira em parte (quem mente responde por isso,
+    e a caixinha com a hora guardada é a prova), mas não toda; sem
+    confirmar, qualquer pessoa tomaria a ficha de uma academia e trocaria
+    o WhatsApp. **Documento** (perguntou depois): ajuda pouco — cartão CNPJ
+    e contrato social são públicos (qualquer um baixa), RG/CNH prova quem é
+    a pessoa e não que ela responde pela academia, guardar documento pede
+    cuidado da LGPD e alguém precisa conferir um por um. Os grandes (Google
+    Business Profile, Booking) confirmam por código no telefone/carta e só
+    pedem documento em disputa; o código no WhatsApp da ficha prova que a
+    pessoa controla o canal da academia. Documento pode entrar como
+    alternativa quando o WhatsApp da ficha não é deles, se o Breno quiser. Saiu também o texto "e você pode pedir uma enquanto outra
+    ainda está em análise…" e "Cada academia tem o próprio plano e paga o
+    próprio valor…" da tela "Adicionar outra academia".
+61. **Parceiros mais leve** (pedidos de 06/10/2026, com fotos de tela): a
+    página inicial da academia se chama **Atualizações** (o link continua
+    `/parceiros/painel`); o menu vai do mais importante ao menos —
+    Atualizações, Minha ficha, Avaliações, Desempenho, Suas academias,
+    Pessoas, Plano, Perfil, Ajuda; sem "Voltar ao painel" em lugar nenhum;
+    embaixo do cartão do pedido, nenhum texto a mais ("Responde por mais
+    uma?", "Ver todas as suas academias"); "No ar, com as informações
+    confirmadas por vocês" só aparece por 1 dia (era 3; mudou em 07/10/2026) depois de a ficha ir ao ar
+    ou ser atualizada (o que pede ação — pausada, em análise, ficha
+    básica — aparece sempre); os números trancados ("Disponível no plano
+    Premium") ficam no fim de Atualizações; e sem as caixas "Aprimore o
+    plano"/"Em breve no Premium"/"O que os jogadores não veem" fora da
+    página Plano (regra 17). No site dos jogadores, o menu diz "Minha
+    academia".
+63. **Conta de jogador vale no Parceiros com o mesmo e-mail** (pedido de
+    06/10/2026; o contrário da regra 53), como a conta do Google vale no
+    Maps e no Perfil da Empresa: no Entrar/Cadastro do Parceiros, e-mail de
+    jogador vai para a senha ("Entre com a mesma senha: a mesma conta passa
+    a valer no GuiaTennis Parceiros"); logado como jogador, o Parceiros
+    mostra "Use a sua conta do GuiaTennis no Parceiros": os dados de
+    contato (nome e sobrenome já vêm da conta), o aceite e "Salvar e
+    continuar" — sem senha nova — e segue para a academia. O e-mail
+    confirmado no site dos jogadores vale para o Parceiros. SQL
+    `20261006160000_jogador_vira_parceiro`: `ativar_conta_do_parceiros(nome,
+    whatsapp, aceite, tratamento, cargo, novidades)`.
+62. **O admin exclui a conta de quem descumprir os Termos** (pedido de
+    06/10/2026): no painel do admin, "Excluir conta" em **Contas de
+    jogador** (cada linha) e em **Acessos ao Parceiros** (lista "Contas do
+    GuiaTennis Parceiros"). A janela pede o **motivo** (obrigatório, fica
+    guardado) e "Apagar também as avaliações dessa conta" (sem marcar,
+    ficam com o nome, sem a ligação). A conta sai inteira (jogador e
+    Parceiros, é o mesmo login); as academias que ela administrava
+    continuam no guia. O e-mail fica **bloqueado** para outra conta
+    (gatilho em `jogadores` e `academia_acessos`) até o admin tocar em
+    "Liberar o e-mail" na lista "Contas excluídas" (em Contas de jogador).
+    A conta do admin não se exclui. SQL `20261006150000_excluir_conta`:
+    `contas_excluidas` (só o admin lê), `excluir_conta_admin(user, motivo,
+    apagar_avaliacoes)`, `contas_excluidas_admin()`, `liberar_email_admin`.
+    Termos (seção 9) e Política (seção 5) dizem isso.
+60. **Academia nova da conta vai ao ar sozinha** (escolha do Breno em
+    06/10/2026, entre manter, isto e liberar tudo): academia NOVA
+    cadastrada por conta do Parceiros com o **e-mail confirmado** (e a
+    declaração marcada) entra no ar na hora, confirmada e no Básico, e a
+    conta já administra como responsável. Sem e-mail confirmado, vira
+    pedido; confirmou o e-mail, vai ao ar sozinha. (O limite de 3 por conta
+    em 24 horas saiu em 07/10/2026, regra 65.) O admin recebe o e-mail "Academia nova no ar" e a vê em
+    **Pendências › "Foram ao ar sozinhas: revise"** (abrir a ficha, ver
+    como academia, "Marcar como revisada"); "Para fazer agora" e o número
+    da seção contam elas. Academia que **já está** no guia continua com a
+    confirmação (código ou responsável). SQL
+    `20261006140000_academia_nova_no_ar`: `academias.revisar_desde`,
+    `academia_vinculos.declarou_em` (a hora da declaração passa do pedido
+    para o vínculo), `pedido_da_academia_nova()`, `aviso_de_academia_no_ar`,
+    `academias_para_revisar_admin()`, `marcar_academia_revisada(id)`; o
+    `proteger_ficha_da_academia` deixa passar só essa publicação
+    (`guiatennis.academia_nova_no_ar`). Termos (seção 4) atualizados.
+64. **O que serviu da análise do GPT** (pedido de 07/10/2026: "faça as
+    adaptações que servem e funcionam para o site"). A análise diz que o
+    maior risco é o dado velho e a pergunta "25% de quantas pessoas?". Entrou:
+    - **"Confirmada pela academia · atualizada há 4 dias"** no topo da
+      ficha confirmada, como o "Atualizado pela empresa há 2 semanas" do
+      Google Maps e o "Claimed" do Yelp: hoje, ontem, há N dias, há N
+      semanas e, depois de 2 meses, "atualizada em junho de 2026". A data
+      (`academias.dados_atualizados_em`) só o banco escreve: muda quando a
+      informação que o jogador vê muda, ou quando a academia salva a ficha
+      (salvar sem mudar nada confirma que está tudo certo); pausar,
+      publicar, plano, selo e coordenada não contam. Ficha parada há mais
+      de 3 meses: Atualizações lembra a academia de conferir e salvar
+      (como o "Confirme as informações" do Google). Pergunta nova na Ajuda
+      do Parceiros. SQL `20261007120000_ficha_atualizada_em`.
+    - **"Como funcionam as avaliações"** (fechado, embaixo da nota), como o
+      do Airbnb e do Google: só quem tem conta avalia, uma vez por
+      academia, declarando que é verídica; quem administra não avalia; a
+      academia responde mas não apaga; o GuiaTennis só remove a que
+      descumpre os Termos; nada importado. O cartão "Nota só de quem jogou
+      aqui" virou **"Avaliações feitas no GuiaTennis"**: o guia não confere
+      se a pessoa jogou, então não promete isso.
+    - **Números do site ditos como são contados** (home e Parceiros, a
+      mesma função `numerosDoSite`): "+1.200 visitas ao GuiaTennis" (cada
+      acesso é uma visita; antes dizia "pessoas"), "1 em 14 visitas abre a
+      ficha de uma academia", "15% das fichas abertas viram contato com a
+      academia" e a nota "Desde o lançamento do site, contados pelo próprio
+      GuiaTennis e arredondados…". "Dados dos últimos 30 dias" fica para
+      quando houver volume (a análise mesma diz isso). Política (seção 5)
+      ajustada; textos legais em 7 de outubro de 2026.
+    - A descrição para o Google começa com **"Onde jogar tênis perto de
+      você"** (a busca que vale, segundo a análise).
+    - De carona: o cadastro de academia nova no Parceiros e a Ajuda diziam
+      que o GuiaTennis confere antes de publicar; com o e-mail confirmado,
+      entra no ar na hora (regra 60).
+    **Não entrou, e por quê:** trocar "Cadastrar minha academia" por "Quero
+    trazer mais jogadores" (os grandes — Booking, Airbnb, Google Business
+    Profile, iFood — usam o verbo da ação no botão e o benefício no título,
+    que já é "Mais jogadores para a sua academia de tênis"; a própria
+    análise diz "eu testaria", e o site não tem teste A/B); outro título
+    para a home (a análise dá a nota mais alta para o atual); o cartão de
+    resultado e a ficha (já têm o que ela lista: nome, nota, distância,
+    preço, quadras, piso, coberta, aulas, WhatsApp, "Ver academia"); a
+    ordem da página do Parceiros (benefícios → como funciona → planos →
+    perguntas é a ordem do Booking e do Airbnb para parceiros; as seis
+    perguntas da análise já têm resposta nela); fotos, gradientes e
+    animações (a análise mesma pede para não exagerar).
+65. **O código só em disputa** (pedido de 07/10/2026: "eu quero manter o
+    código em casos de disputa, para novas não"; "Academia que já está no
+    guia continua precisando do código: não precisa disso"; "São até 3 por
+    conta em 24 horas: tire isso"; e, sobre o Google e o Booking, que
+    "confirmam por código no telefone ou por carta, e só pedem documento
+    quando há disputa": "aplique isso, gostei"). Agora:
+    - **Academia nova** da conta com o e-mail confirmado: no ar na hora,
+      **sem limite** por dia.
+    - **Academia do guia sem responsável:** com o e-mail confirmado e a
+      declaração, a conta passa a administrar **na hora, sem código**
+      (`pedir_para_administrar` devolve `'assumiu'`); o admin recebe
+      "Academia assumida" e revisa em Pendências ("Foram ao ar ou foram
+      assumidas sozinhas", com "· assumida"). O banco guarda o WhatsApp que
+      a ficha tinha (`academia_vinculos.telefone_da_ficha`).
+    - **Sem o e-mail confirmado:** vira pedido; ao confirmar o e-mail
+      (`confirmar_meu_email` → `assumir_pedidos_da_conta`), a academia do
+      guia passa a ser da conta e a nova vai ao ar, sozinhas. O admin pode
+      aprovar antes ou conferir pelo código.
+    - **Academia com responsável:** o pedido vai para ele, como antes. No
+      cartão, **"Contestar"** ("A academia é sua e você não conhece quem
+      administra, ou ele saiu da academia?") vira **disputa**
+      (`contestar_academia`, destino `'disputa'`, e-mail "Disputa" ao
+      admin). O responsável não vê nem recusa a disputa.
+    - **Na disputa:** o admin gera o código e manda para o WhatsApp que a
+      academia tinha quando o responsável de agora assumiu sem código (o
+      painel mostra os dois números se mudou); quem digita vira o
+      responsável e **quem administrava sai** (`vencer_disputa`; a conta
+      continua). Sem como usar o código, o GuiaTennis pede documento pelo
+      WhatsApp e decide em "Aprovar" (pergunta antes). **Carta** (como o
+      cartão-postal do Google) não entrou: os Correios não dão para
+      automatizar, e o WhatsApp da academia já é o "telefone da empresa".
+    - **"No ar, com as informações confirmadas"** por 1 dia (era 3).
+    - **Selo de confirmada:** círculo verde com ✓ ao lado do nome (ficha,
+      resultado da busca e cartões da home), como o "Claimed" do Yelp e o
+      verificado do Instagram; na ficha, tocar no selo leva ao texto, que
+      foi para o **fim da ficha** (seção Contato): "Confirmada pela academia
+      · atualizada há…" ou o aviso de "Ficha básica".
+    Termos (seção 4), Política (código só na disputa, o WhatsApp guardado),
+    "Como funciona" (passo 3: "Declare que responde pela academia") e a
+    Ajuda ("E se outra pessoa estiver administrando a minha academia?")
+    atualizados. SQL `20261007130000_codigo_so_em_disputa`. Teste
+    `testes/codigo-so-em-disputa.js` e a seção 17 do `banco-emails.py`.
+66. **O código da disputa sai sozinho pelo WhatsApp** (pedido de
+    07/10/2026: "quero automatizar o código por whatsapp em conflitos de
+    acesso com a academia"), como o código por telefone do Google Business
+    Profile e os códigos do Uber, do iFood e do Mercado Livre: pela **API
+    oficial do WhatsApp** (WhatsApp Business Platform, da Meta), num modelo
+    de **autenticação** (`codigo_guiatennis`, "123456 é o seu código de
+    verificação.", botão "Copiar código"). **Nada de programa que imita o
+    WhatsApp no celular** (Z-API, Baileys e parecidos): é contra as regras
+    da Meta e o número é banido — o Breno só quer coisa certa e legal.
+    - **Contestar** vira disputa e, com o e-mail confirmado, o código sai
+      **na hora** (`contestar_academia` agora devolve `'mandado'`,
+      `'confirme_email'`, `'desligado'`, `'sem_whatsapp'`, `'espere'` ou
+      `'limite'`); sem o e-mail confirmado, sai quando a pessoa confirmar.
+    - Vai para o WhatsApp de antes (o que a ficha tinha quando o
+      responsável de agora assumiu), como na regra 65. Por isso o cartão da
+      disputa **não mostra o número** (podia mostrar o da ficha, que não é
+      o que recebe).
+    - **"Mandar outro código"** no cartão: um por hora, até 3 em 3 dias
+      (`pedir_codigo_da_disputa`), para ninguém encher o WhatsApp da
+      academia. O admin manda sem limite ("Mandar código ao WhatsApp da
+      academia", `mandar_codigo_admin`) e vê "Código mandado sozinho pelo
+      WhatsApp do GuiaTennis em…" ou o erro da Meta (aí, "Gerar código para
+      mandar do seu WhatsApp", o jeito antigo).
+    - **Desligado** (sem os segredos, ou banco sem o SQL): tudo como antes —
+      o admin gera e manda do WhatsApp dele. Não é erro.
+    - **Banco de teste:** só manda para `WHATSAPP_NUMERO_DE_TESTE` (as fichas
+      de teste têm WhatsApp inventado, que pode ser de alguém); sem ele, não
+      manda nada.
+    - O WhatsApp Business do Breno, (11) 92745-6457, **continua no
+      aplicativo**, com ele respondendo à mão (seção 12): o código sai de
+      um **número só para os códigos**, ligado à API — **(11) 93333-4613**
+      (+55 11 93333-4613, "Identificação do número de telefone"
+      `1303308766209946` = segredo `WHATSAPP_NUMERO_ID`; registrado pela
+      API em 08/10/2026 pelo Graph API Explorer, `POST
+      1303308766209946/register` com `messaging_product` e `pin`, porque o
+      botão "Registrar" da tela falhava; a conta do WhatsApp na Meta está
+      com o nome "GuiaTenni" — corrigir —, e o nome de exibição
+      "GuiaTennis" estava em análise). O primeiro número, (11) 97185-3987,
+      ficou "unverified" noutra conta e pode ser apagado. O chip só entra
+      no celular para receber o SMS da Meta e depois fica guardado, com
+      recarga de vez em quando para a linha não ser cancelada. Usar o mesmo número
+      nos dois ("coexistência") só por um parceiro da Meta, que cobra por
+      mês.
+    - Custo: a Meta cobra cada mensagem de autenticação entregue no Brasil
+      (US$ 0,0068 desde abril de 2026, menos de R$ 0,05). Uma disputa custa
+      centavos.
+    E-mail da disputa ao admin diz se o código já saiu. Política (a Meta
+    entre os serviços, o limite de 3), Termos e Ajuda atualizados. SQL
+    `20261007140000_codigo_pelo_whatsapp`; teste
+    `testes/codigo-pelo-whatsapp.js` e a seção 18 do `banco-emails.py`.
+67. **E-mail com o domínio e a logo nos e-mails, pelo Resend** (pedido de
+    07/10/2026: "quero fazer pelo resend pq mais para frente vou precisar
+    pagar de qualquer jeito, eu quero poder ter minha logo nos emails tbm
+    com o dominio @guiatennis.com.br"). Ofereci Google Workspace (R$ 34,50
+    por mês), Zoho (grátis, outro app) ou o Resend; ele escolheu o Resend.
+    - **A logo** no alto de todo e-mail, ao lado do nome, como Airbnb e
+      Booking, em PNG (Gmail e Outlook não mostram SVG), em tabela; sem
+      imagem, o nome continua. Desde 08/10/2026 (o Breno: "falta um risco
+      na raquete") é o **`email-logo.png`** (120×120, aparece com 40), feito
+      pelo `divulgacao/gerar-imagens.js email-logo.png` com
+      `logoDesenho({ pequeno: true })` — os três riscos mais grossos e
+      fortes; o `favicon-192.png` encolhido apagava os riscos. Nos avisos o
+      endereço vem de `site_dos_emails()` (SQL
+      `20261008120000_icone_do_email`). Nos avisos
+      (`email_montado`, SQL `20261007150000_logo_nos_emails`) e no e-mail
+      do código (`divulgacao/email-codigo.html`, colar de novo no Supabase).
+    - **Receber:** o domínio recebe pelo Resend (registro MX). Qualquer
+      endereço @guiatennis.com.br (contato@, breno@, parceiros@…) chega na
+      função `netlify/functions/receber-email.mjs`
+      (`/.netlify/functions/receber-email`), que confere a assinatura do
+      webhook, busca o e-mail inteiro e encaminha para o
+      guiatennis1@gmail.com, com "Fulano pelo GuiaTennis
+      <encaminhado@guiatennis.com.br>", o "responder" para quem escreveu e
+      os anexos, **com o corpo como foi escrito** (em 08/10/2026 saiu a
+      faixa "Recebido em … · De: …": na resposta o Gmail cita a mensagem,
+      e quem escreveu veria; para qual endereço foi fica no cabeçalho
+      `X-GuiaTennis-Recebido-Em`). Erro: 500, e o Resend tenta de novo
+      (sem repetir, pela chave de idempotência). **Funcionou na prévia em
+      08/10/2026** (teste do Breno).
+    - **Responder:** no Gmail, "Enviar e-mail como"
+      contato@guiatennis.com.br pelo SMTP do Resend (`smtp.resend.com`,
+      usuário `resend`, senha = uma chave "Sending access").
+    - **Conta:** no Resend, cada e-mail recebido e cada encaminhado contam
+      no limite (grátis: 100 por dia, 3.000 por mês, junto com os avisos);
+      o Pro é US$ 20 por mês para 50.000. A função gasta quase nada dos
+      créditos do Netlify (só roda quando chega e-mail).
+    - **Assinatura com a logo** nos e-mails que o Breno manda pelo Gmail
+      como contato@: `divulgacao/email-assinatura.png` (logo + GuiaTennis +
+      guiatennis.com.br, 2x, feita do `logoDesenho`), em Gmail ›
+      Configurações › Geral › Assinatura, escolhida para o contato@.
+      **A foto redonda do remetente** sem pagar: criar uma Conta do Google
+      com o e-mail contato@guiatennis.com.br ("usar meu endereço de e-mail
+      atual"; o código chega pelo encaminhamento) e colocar
+      `divulgacao/whatsapp-perfil.png` como foto — o Gmail costuma mostrar
+      essa foto para quem recebe, sem garantia.
+    - **A logo redonda ao lado do remetente na lista do Gmail**, do jeito
+      oficial, é o **BIMI**, que pede DMARC rígido e um certificado pago (CMC,
+      US$ 650 a 1.100 por ano, com 12 meses de logo em uso no site; ou VMC,
+      com marca registrada). Fica para depois.
+    - **Funcionando desde 08/10/2026** (testes do Breno): recebe em
+      contato@ e responde como contato@ pelo Gmail ("Enviar e-mail como",
+      padrão, nome GuiaTennis, "Sempre responder com o endereço padrão" —
+      os encaminhados chegam endereçados ao guiatennis1, então "responder
+      do mesmo endereço" sairia do Gmail). O contato do site (menu,
+      rodapé, Ajuda do Parceiros, dados para o Google, Termos e Política)
+      virou contato@guiatennis.com.br. O **login do admin continua
+      guiatennis1@gmail.com** (`EMAIL_ADMIN`, `eh_admin()`); não mudar.
+      **Depois do merge:** no Resend › Webhooks, trocar o endereço da
+      prévia por `https://guiatennis.com.br/.netlify/functions/receber-email`
+      (a prévia continua no ar, mas o site de verdade é o certo).
+    Teste: `node testes/receber-email.mjs` (21) e a seção 19 do
+    `banco-emails.py`.
+68. **Menu limpo e os acessos em destaque** (pedido de 08/10/2026, com
+    prints do trivago e do Parceiros).
+    - **Menu do site dos jogadores** no estilo do Parceiros: a marca e o X
+      em cima; logo abaixo, a conta — "Olá, Ana!" e o e-mail (como o "Olá
+      de novo!" do trivago), ou "Entrar ou criar conta · Salve buscas e
+      avalie academias"; grupos com título pequeno e ícone verde
+      (GuiaTennis, Minhas quadras, Preferências, Suporte); na direita, só
+      valor que diz algo (quantas, a cidade, Ligados) — saíram "Entrar",
+      "Adicionar", "Escolher"; "Buscas salvas" e "Avisos por e-mail" só
+      com conta. **Tudo de suporte junto, em "Suporte"** (o Breno pediu
+      de novo no mesmo dia: "os contatos e o outro site deixe tudo junto
+      em uma parte"): Como funciona, Perguntas frequentes, "GuiaTennis
+      Parceiros" com a linha de baixo e **"Fale com a gente", que abre uma
+      folha com os contatos** (pedido de 08/10/2026: "com a pessoa clicando
+      em fale com a gente direciona para ver os contatos melhor"), como o
+      "Ajuda e suporte" do trivago — WhatsApp ("A resposta mais rápida"),
+      Instagram e E-mail, cada um numa linha grande, sem o número, o @ e o
+      e-mail escritos (`renderContatoSheet`). Depois "Sair da conta" e,
+      **bem no fim, em letra pequena**, Por que o GuiaTennis, Termos de Uso
+      e Privacidade.
+      Saiu o título "Menu" no meio com a seta.
+    - **Os acessos em todo plano**, como o cartão "Desempenho" do Google
+      Business Profile e o "X pessoas viram o seu perfil" do LinkedIn: no
+      Básico e no Completo, Atualizações mostra **um cartão pequeno
+      "Desempenho"**, embaixo do cartão das avaliações e antes dos atalhos
+      (o Breno pediu "deixe abaixo das avaliações"), — "42 acessos à ficha nos últimos 30
+      dias" e "Ver detalhes ›" (o Breno achou grande demais o primeiro
+      bloco verde, com o número enorme: "deixe pequeno e algo como
+      conferir mais detalhes na aba desempenho… algo com desempenho,
+      insights"). Na aba **Desempenho**, os acessos e a lista do que o
+      Premium libera (quantos chamaram, canal, dia a dia, de onde vieram,
+      bairros, comparação com a cidade) e "Ver os números no Premium".
+      Zero acessos: "Nenhum acesso…" (e a dica do QR code em Desempenho);
+      banco antigo: sem número (nunca inventado). O banco
+      (`numeros_da_academia`, SQL `20261007160000_acessos_em_todo_plano`)
+      devolve `{plano, trancado, dias: 30, acessos}` fora do Premium.
+      **Muda a regra 22** (Básico e Completo agora veem os acessos de 30
+      dias) e **a 61** (os números trancados não ficam mais no fim de
+      Atualizações).
+69. **Sem as faixas no alto** (pedido de 08/10/2026, com print: "tire
+    isso da prévia e do site normal"): saíram a faixa "Banco de teste —
+    nada daqui aparece no guiatennis.com.br" da prévia e a faixa "Modo
+    admin — só você vê isso · Abrir o painel · Sair" do site. O admin abre
+    o painel pelo menu ("Painel do admin", com o número de pendências na
+    direita, `pendenciasDoAdmin()`) e sai por lá ("Sair do modo admin").
+    Em qual banco o site está continua no painel do admin, em Ferramentas.
+    A faixa do "Ver como academia" no Parceiros continua (diz qual
+    academia o admin está vendo).
+70. **No celular, só as vistas recentes; o resto na conta** (pedido de
+    08/10/2026: "eu quero que somente as vistas recentes fiquem salvas no
+    celular, de resto tudo pela conta"), como o Airbnb (a lista de
+    favoritos é da conta; sem conta, o coração pede para entrar).
+    - **No aparelho:** as vistas recentemente e a última busca (que aparece
+      junto delas), mais o que é só do funcionamento (avisos já
+      dispensados, a visita, caches de cidades e do "perto").
+    - **Na conta** (`jogadores.guardados`, jsonb, SQL
+      `20261008130000_guardados_na_conta`; `guardar_na_conta(chave,
+      valor)` troca só a lista daquela chave): `favoritas`, `chamadas`,
+      `viagens`, `preferencias`, `avaliadas` e `pedir_avaliacao` (o "Jogou
+      aqui? Avalie"). No site: `lerDaConta`, `gravarNaConta` (fila, uma de
+      cada vez).
+    - **Sem conta:** o coração, salvar a viagem e salvar as preferências
+      pedem para entrar (`jogadorEntaoFaz`) e, entrando, fazem o que a
+      pessoa pediu; as academias chamadas não ficam guardadas; Favoritas e
+      Chamadas vazias convidam a entrar. A comparação fica só na tela e no
+      link `/comparar?academias=…`.
+    - **Quem tinha coisas no celular:** ao entrar, vão para a conta,
+      juntando com o que ela já tinha, e saem do celular
+      (`levarParaAConta`).
+    - Política de Privacidade ("Favoritos, buscas e preferências") e a data
+      dos textos legais (8 de outubro de 2026) atualizadas.
+71. **Premium: selo dourado e topo "Patrocinado"** (pedido de 08/10/2026:
+    "eu quero que academias que são Premium tenha um símbolo de verificado
+    diferente e aparece mais bem recomendada e algo avisando que é
+    patrocínio e abaixo delas aparecerem as mais próximas mesmo"), como os
+    anúncios do Google Maps, os "Sponsored" do Yelp e o "Patrocinado" do
+    iFood e do Mercado Livre. **Muda a regra 16.**
+    - **Selo:** academia Premium com a ficha confirmada (`ehPremium`) tem o
+      selo **dourado em estrela** (o recorte do verificado do Instagram,
+      `seloPremium`) no lugar do círculo verde, no resultado, nos cartões
+      da home e na ficha (`seloDaAcademia` escolhe). Rótulo: "Academia
+      Premium, confirmada pela academia"; no fim da ficha, "Confirmada pela
+      academia · Academia Premium · atualizada há…". Premium com ficha
+      básica não tem selo.
+    - **Topo:** `comPatrocinadas` (no fim do `getResults`) coloca **no
+      máximo 2** (`PATROCINADAS_MAX`) academias Premium no topo, com
+      "Patrocinado" em cima do nome e a borda dourada. Só as que passaram
+      pelos filtros, não pausadas e, com ponto de partida, a até **10 km**
+      (`PATROCINIO_RAIO_KM`), as mais perto primeiro; sem ponto (página da
+      cidade), na ordem da lista. Vale em qualquer ordem escolhida; não
+      vale em "só favoritas" e "só as da comparação".
+    - **Abaixo:** um título com a ordem ("Mais perto de você", por padrão
+      com endereço; "Recomendadas", "Menor preço"…) e as outras, sem
+      repetir as do topo (`cartoesDaBusca`). A Premium que não coube no
+      topo (a terceira, ou a mais de 10 km) fica no lugar dela, com o selo.
+      Sem patrocinada, a lista é a de sempre, com a etiqueta da ordem no
+      primeiro cartão.
+    - **Textos:** "A ordem das academias é paga?" (site), Termos (seção 4),
+      planos do Parceiros ("Selo Premium dourado ao lado do nome" e "No
+      topo da busca da região, marcada como "Patrocinado""), a pergunta
+      "Quanto custa estar no GuiaTennis?" e o resumo do Premium ("Para
+      aparecer primeiro, ver os números e crescer"). Só no site, sem SQL.
+      Teste `testes/premium-patrocinado.js`.
+72. **Promoções das academias Premium** (pedido de 08/10/2026: "quero
+    colocar em ação que academias com Premium divulgue promoções"; era o
+    "Em breve" do Premium). SQL `20261008140000_promocoes`:
+    - **Parceiros › Promoções** (`/parceiros/promocoes`, depois de
+      Avaliações no menu; `pcPromocoes`): título (até 60 letras), detalhes
+      (opcional, até 280) e "Válida até" (de hoje a 90 dias; de saída, 30).
+      **Até 3 valendo** por academia. "Mudar" e "Encerrar" (apaga, pergunta
+      antes); as vencidas ficam na lista como "Encerrada". Fora do Premium,
+      a página mostra o bloco trancado "Disponível no plano Premium".
+    - **No site** (`carregarPromocoes`, `promocoesDe`): o banco só entrega
+      as que estão valendo, de academia Premium no ar (política
+      `promocoes_valendo` + `promocao_visivel`). Na ficha, um atalho
+      dourado no topo ("Promoção · Primeira aula grátis ›", `#ir-promocoes`)
+      leva ao bloco que fica **com os preços** (`#ht-promocoes`, dentro de
+      `#ht-opcoes`), com os detalhes e "Válida até 28 de outubro · combine
+      com a academia pelo WhatsApp". No cartão da busca, a linha
+      "Promoção: …" com a etiqueta dourada. O admin vê "Remover promoção"
+      na ficha.
+    - **Aviso por e-mail** (`avisar_promocao`, ao criar, não ao mudar):
+      para quem **favoritou** a academia (`jogadores.guardados.favoritas`,
+      regra 70), ligou **"Promoções das academias favoritas"** na conta e
+      confirmou o e-mail; nunca para quem administra a academia. **Um por
+      academia a cada 7 dias**: a seguinte aparece no site, sem e-mail. O
+      e-mail traz a promoção, a validade, "Ver a academia"
+      (`utm_source=Email-promocao`) e "Não quero mais receber promoções"
+      (`parar_avisos(token, 'promocoes')`). A academia vê só quantas pessoas
+      foram avisadas, nunca quem.
+    - Banco: `promocoes` (`id, academia_id, titulo, detalhes, valida_ate,
+      criada_por, avisados, avisada_em, created_at, updated_at`; o
+      visitante lê só `id, academia_id, titulo, detalhes, valida_ate,
+      created_at`); funções `salvar_promocao`, `apagar_promocao` (academia
+      ou admin), `promocoes_da_minha_academia`, `avisar_promocao` (só o
+      banco). Sem a tabela, o site segue sem promoções.
+    - Textos: Planos (sai o "Em breve"; entra "Promoções na ficha e na
+      busca, com aviso por e-mail a quem favoritou"; resumo do Premium
+      "Para aparecer primeiro, divulgar promoções e ver os números"), Ajuda
+      ("Como funcionam as promoções?"), Termos (a academia responde pelo
+      que anuncia; o GuiaTennis remove a enganosa) e Privacidade (os
+      favoritos servem para o aviso de promoção).
+    Testes: `testes/promocoes.js` e a seção 22 do `banco-emails.py`.
+73. **Números do site alinhados, com "Entenda como funciona"** (pedido de
+    08/10/2026, com print: "alinhe melhor os dados e faça igual as
+    avaliações… entenda como funciona"): no Parceiros, os três números em
+    colunas iguais, lado a lado (antes 2 em cima e 1 sozinho). A nota de
+    como são contados **fica oculta** (pedido de 08/10/2026, com print:
+    "deixe isso oculto"): no bloco verde, na home e no Parceiros, só o link
+    "Entenda como funciona" (`comoFuncionamOsNumeros`), que leva à Ajuda
+    do Parceiros com a pergunta "Como são contados os números do
+    GuiaTennis?" já aberta e na tela (`/parceiros/ajuda#numeros`,
+    `irParaPerguntaDaAjuda`; da home, abre na aba do Parceiros). A
+    pergunta explica também o que é visita. O ✓ do "Grátis
+    no plano Básico" alinhado com a primeira linha. O selo dourado aparece
+    no cartão do Premium (ao lado do nome e no item do selo).
+74. **Cartão da busca sem o branco embaixo da foto** (pedido de 08/10/2026,
+    com print): no celular, a foto em cima, na largura do cartão (16:9), e
+    o texto embaixo; no computador, a foto do lado acompanha a altura do
+    texto. **Academia sem foto: nenhuma imagem, só o nome** (como sempre
+    foi, regra confirmada pelo Breno em 08/10/2026; teste em
+    `ficha-basica.js`).
+75. **O site não compara o GuiaTennis com outros sites** (pedido de
+    08/10/2026: "tire em todos os lugares do site onde compare o
+    GuiaTennis com exemplos de outros grandes sites"): nada de "como o
+    Google", "como o Booking"… em texto que o visitante ou a academia leem.
+    Saíram da Ajuda do Parceiros ("como o Google e o Booking fazem", "como
+    no Google Maps") e da pergunta das notas ("nota de outros sites"). Ficam
+    os nomes que são função: "abre no Google Maps e no Waze", "de onde
+    vieram (Instagram, Google…)" e os serviços citados na Privacidade. As
+    referências continuam nos comentários do código e neste documento.
+76. **Tirar a academia do guia é um pedido** (pedido de 08/10/2026: "eu
+    quero que a pausa o administrador consiga fazer, agora a exclusão
+    preciso pedir uma solicitação"; muda a regra 48). **Pausar** continua
+    com quem administra a academia, na hora. **Tirar do guia:** em Suas
+    academias, o **responsável principal** (a equipe não) toca em "Pedir
+    para tirar do guia", escolhe o motivo ("A academia fechou", "Não
+    queremos mais aparecer", "Outro motivo" — este pede o texto) e envia;
+    o cartão mostra "Pedido para tirar do guia enviado em…" com "Cancelar
+    o pedido". Um pedido aberto por academia. O admin recebe e-mail e vê em
+    **Pendências › Querem sair do guia** (motivo, quem pediu, e-mail,
+    WhatsApp): **"Tirar do guia"** (pergunta antes) apaga a ficha, com as
+    avaliações, como o "Excluir" do admin; **"Manter no guia"** fecha o
+    pedido com uma resposta opcional. Quem pediu recebe a resposta por
+    e-mail. SQL `20261008150000_pedido_para_sair_do_guia` (tabela
+    `pedidos_para_sair`, sem leitura direta; `pedir_para_sair_do_guia`,
+    `cancelar_pedido_para_sair`, `meus_pedidos_para_sair`,
+    `pedidos_para_sair_admin`, `resolver_pedido_para_sair`). Ajuda, Termos
+    e o rodapé de Minha ficha atualizados. Testes: `testes/sair-do-guia.js`
+    e a seção 23 do `banco-emails.py`.
+77. **Chat de ajuda no lugar do WhatsApp direto** (pedido de 08/10/2026:
+    "ao invés de já direcionar para o whatsapp fazer um chat dentro do site
+    que uma 'ia' entende o que a pessoa precisa, tenta ajudar ela, mostrando
+    os caminhos e se não for possível, direcionar ao meu whatsapp").
+    - **Como entende:** por palavras-chave, no próprio site, sem serviço de
+      IA de fora (regras 6 e 13; nada é pago nem gravado). `CHAT_TEMAS`:
+      cada assunto tem as palavras que a pessoa costuma escrever (sem
+      acento; uma palavra vale pelo começo, "cadastr" pega "cadastro"), a
+      resposta e os caminhos. `entenderDuvida`: frase vale 3, palavra 2;
+      ganha o assunto com mais pontos; empate vira "Você quer saber
+      sobre:" com os empatados; nada, "Não entendi bem…" com os assuntos e
+      o WhatsApp (na segunda vez, o WhatsApp vem primeiro). Assuntos do
+      Parceiros (cadastrar, assumir, disputa, planos, comissão, pausar,
+      tirar do guia, promoções, topo patrocinado, desempenho, avaliações,
+      pessoas, editar a ficha, várias academias, QR code, avisos) e dos
+      jogadores (achar quadra, reservar, preço, avaliar, conta, favoritas,
+      buscas salvas, viagem, promoções, patrocinado, avisos, excluir a
+      conta, informação errada, tenho academia, comparar), e dos dois
+      (saudação, senha, código, selos, números, falar com uma pessoa).
+      Assunto novo: um item em `CHAT_TEMAS` (e, se for dos primeiros, em
+      `CHAT_SUGESTOES`).
+    - **Como responde:** a resposta, os botões do caminho ("pc:<aba>" abre
+      a página do Parceiros, "menu:<item>" faz o que o item do menu faz,
+      `acaoDoMenu`) e "Resolveu" / "Ainda preciso de ajuda" — este leva ao
+      **WhatsApp do Breno com a dúvida já escrita** ("Vim pelo chat de
+      ajuda do GuiaTennis. Minha dúvida: …").
+    - **Onde abre** (`data-abrir-chat`, `abrirChat`): "Fale com a gente"
+      (menu e rodapé do site dos jogadores: "Chat de ajuda", Instagram,
+      E-mail — o WhatsApp saiu dali) e, no Parceiros, o rodapé ("Chat de
+      ajuda", no lugar do WhatsApp) e o cartão "Fale com o GuiaTennis" da
+      Ajuda ("Abrir o chat de ajuda" + E-mail). **Continuam indo direto ao
+      WhatsApp** os assuntos que só o Breno resolve: combinar o valor do
+      plano ("Quero o…"), "Prefere conversar? Chame o GuiaTennis no
+      WhatsApp" (academias que querem entrar), "Pedir análise" da
+      avaliação, a academia pausada pelo GuiaTennis e o usuário sem e-mail
+      que esqueceu a senha.
+    - No site dos jogadores (e no Parceiros sem conta) a conversa fica só
+      na tela; no Parceiros com a conta aberta, fica guardada na conta
+      (regra 79). Muda de site (jogadores/Parceiros) começa outra. Teste:
+      `testes/chat-de-ajuda.js`.
+    - Se o Breno quiser uma IA de verdade depois: dá para ligar o mesmo
+      chat a um modelo de linguagem por uma função do Netlify, com chave
+      própria e custo por mensagem; muda as regras 6 e 13.
+78. **A página inicial do Parceiros "acende" ao descer** (pedido de
+    09/10/2026: "no parceiros ao ir descendo a primeira tela inicial, as
+    informações vão aparecendo, tipo acendendo"). Só em `/parceiros` (a
+    página inicial; o `#parceiros` ganha a classe `pc-revelando`): cada
+    bloco tem `revela(chave, ordem)` (`data-revela` e `--rv`, para entrarem
+    um depois do outro) e começa apagado; o `ligarRevelar` (um
+    IntersectionObserver) acende quando ele entra na tela — sobe um pouco e
+    ganha cor; os ícones dos cartões e os números dos passos dão um brilho
+    dourado, e os números do site brilham uma vez. O topo acende sozinho ao
+    abrir. O que já acendeu fica aceso quando a tela é redesenhada
+    (`BLOCOS_ACESOS`); quem liga "reduzir movimento" no celular vê tudo de
+    uma vez; o texto está sempre na página. Teste:
+    `testes/parceiros-acender.js`.
+79. **O chat do Parceiros fica guardado na conta** (pedido de 09/10/2026:
+    "faça que o chat de parceiros fique salvo na conta também e tenha
+    histórico e que pode iniciar novo chat"), como o histórico de conversas
+    da ajuda da Shopify e do Intercom.
+    - **Quando guarda:** no GuiaTennis Parceiros, com a conta aberta
+      (`contaDoChat`: conta do Parceiros ou de jogador; o admin não
+      guarda). Cada mensagem regrava a conversa inteira pela função
+      `guardar_conversa_de_ajuda` (a primeira cria; as outras atualizam a
+      mesma), uma gravação depois da outra (`guardarConversa`). Só guarda
+      depois da primeira dúvida; o título é a primeira dúvida (um "oi" não
+      conta). `CHAT_NA_CONTA = ["parceiros"]`: incluir "jogadores" ali liga o
+      mesmo no site dos jogadores.
+    - **Na tela:** embaixo do topo do chat, "Conversas (N)" e "Nova
+      conversa". "Conversas" troca a conversa pela lista ("Suas
+      conversas"): "Nova conversa" em cima, a mais recente primeiro, com
+      "Hoje, 14:32" / "Ontem" / "28 de set.", a aberta marcada; um toque
+      abre; a lixeira pergunta ali mesmo ("Apagar"/"Cancelar"). A seta
+      volta. Rodapé: "A conversa fica guardada na sua conta." (ou "Não deu
+      para guardar…" se o banco recusar).
+    - **Sem conta:** "A conversa fica só na sua tela. Entre na sua conta
+      para guardar as conversas." (o link leva ao Entrar); ao entrar, a
+      conversa aberta passa para a conta. Saiu ou trocou de conta: começa
+      outra, sem as conversas da conta anterior. Recarregou a página: a
+      conversa aberta na aba continua (`sessionStorage`,
+      `guiatennis_chat_atual`).
+    - **Banco:** SQL `20261009120000_conversas_do_chat` — tabela
+      `conversas_de_ajuda` (user_id → `auth.users`, apaga junto com a
+      conta; site; título até 80; mensagens até 120 e 64 KB), a conta só lê
+      e apaga as próprias (RLS) e grava só pela função, que confere cada
+      mensagem (`de` 'eu'/'gt', o que a pessoa escreve até 300 letras) e
+      guarda as **50 mais recentes**. O que volta do banco passa por
+      `mensagemDoBanco` (só caminhos e assuntos que o chat conhece).
+    - Política de Privacidade ("Chat de ajuda") explica o que fica e por
+      quanto. Testes: `testes/chat-na-conta.js` e a seção 24 do
+      `banco-emails.py`.
+80. **Tela da senha do Parceiros sem nada grudado** (print de 09/10/2026:
+    "está muito grudado isso aqui, confuso desse jeito"). Depois do
+    e-mail, ele fica num cartão com o botão "Trocar" (como o login do
+    Google e do Booking mostram a conta escolhida), no lugar do campo
+    travado e do "Usar outro e-mail"; o aviso da conta achada vai num
+    quadro verde claro, com título e texto ("Você já tem conta no
+    GuiaTennis" / "É a sua conta de jogador. Entre com a mesma senha e ela
+    passa a valer também no GuiaTennis Parceiros."). O mesmo cartão vale em
+    "Esqueci a senha" e nos dados de contato. `emailEscolhido` em
+    `pcCadastro`.
+81. **"Continuar" à direita e o que falta preencher** (print de
+    09/10/2026: "isso dificulta o cadastro, deixe o continuar no lado
+    direito e um aviso do que falta preencher"). Na barra de baixo do
+    formulário da ficha: "Voltar" à esquerda; à direita "Salvar
+    alterações" (na edição, sem destaque) e **"Continuar" por último, em
+    destaque**; na última parte, só o envio, em destaque. Em cima dos
+    botões, `regAvisoDoQueFalta`: "Falta preencher: Fotos, Horário e
+    Como chegar" (o obrigatório primeiro, com *, em vermelho; até 3 nomes e
+    "e mais N"); cada nome leva à parte; tudo preenchido, "Todas as partes
+    estão preenchidas." Na Revisão não aparece (ela já mostra cada parte).
+82. **O plano limita o que a academia faz e o que aparece; a ficha avisa
+    ali mesmo** (pedido de 09/10/2026: "ao uma academia mudar do Premium
+    para o completo precisa limitar as ações dela e as informações que
+    serão visualizadas para todos, todas as informações no básico completo
+    podem ser preenchidas mas com aviso de que não estará visível na ficha
+    e com opção de querer ou não alterar e precisar pagar a mais").
+    - **Na ficha (cadastro e edição):** tudo pode ser preenchido. A parte
+      que o plano não mostra traz um aviso no começo
+      (`avisoDoPlanoNaParte`, `PARTES_DO_PLANO`; em Quadras, junto das
+      comodidades): "No plano Básico, a ficha mostra só o botão do
+      WhatsApp. O Instagram que você informou fica de fora." + "fica
+      guardado e aparece na ficha no plano Completo. O Completo é pago: o
+      valor é combinado com o GuiaTennis pelo WhatsApp, e nada é cobrado
+      sem você confirmar." e a escolha **"Quero o Completo"** / **"Manter
+      o Básico"**. Quero: vira "Você pediu o plano Completo…" (com
+      "Desfazer o pedido") em todas as partes, e ao salvar o pedido vai
+      para o GuiaTennis (`pedir_plano`) sem a tela "Quase lá". Manter: o
+      aviso encolhe ("Mudar de ideia") e salvar também não pergunta o
+      plano. Sem escolher, a tela "Quase lá" do fim continua (regra do
+      03/10). Partes com aviso no Básico: comodidades (mostra 3), contato
+      (só WhatsApp), fotos (mostra 3 de 5), cancelamento e como chegar. No
+      Completo e no Premium, nenhum aviso; o admin não vê.
+    - **Saiu do Premium** (o que já era limitado pelo banco: promoções
+      não aparecem nem são publicadas, números trancados, sem selo
+      dourado e sem "Patrocinado"): Promoções mostra as que estão
+      guardadas e não aparecem ("A promoção de vocês não aparece no plano
+      Completo… volta a aparecer, enquanto valer, se a academia voltar ao
+      Premium"). **Pessoas acima do limite** do plano: aviso "O plano
+      Completo é para até 5 pessoas, e a academia tem 7. Tire 2 pessoas…",
+      e ninguém novo entra. Nada é apagado.
+    - **O admin, ao baixar o plano** (botões de plano da academia), confirma
+      vendo o que muda na hora (`oQueMudaAoBaixarOPlano`: selo e
+      Patrocinado, promoções, números, o que sai da ficha, quantas pessoas)
+      e que nada é apagado. Subir o plano não pergunta.
+    - Teste: `testes/plano-na-ficha.js`.
+83. **Contas excluídas num lugar só** (pedido de 09/10/2026: "unifique em
+    apenas um lugar os emails que foram excluídos e podem liberar o
+    acesso"). O painel do admin ganhou a seção **Contas excluídas**
+    (`/admin/excluidas`, `admExcluidasHtml`), a única com "Liberar o
+    e-mail": nome, e-mail, a conta (jogador ou GuiaTennis Parceiros),
+    quando, o motivo e se as avaliações foram apagadas; com mais de 8, uma
+    busca. Contas de jogador e Acessos ao Parceiros, onde fica o "Excluir
+    conta", não listam mais as excluídas: um aviso leva à seção
+    (`notaDasExcluidas`), e o aviso depois de excluir diz onde o e-mail
+    ficou. Liberar avisa "… liberado: pode criar uma conta nova".
+84. **Prévia da ficha no fim do cadastro** (pedido de 09/10/2026: "quero
+    que no final do cadastro consiga ver uma prévia da ficha com as
+    informações preenchidas e com opção de editar ou confirmar"), como o
+    "Revise o seu anúncio" do Airbnb. A última parte ("Confira a prévia da
+    ficha") começa com a ficha montada com o que foi preenchido
+    (`fichaDoFormulario` → `mapRow`, cortada pelo plano) e os mesmos blocos
+    da página da academia: fotos, nome com o selo e endereço, sobre e
+    horário, preços, estrutura, cancelamento, como chegar e contato. Cada
+    bloco tem "Editar", que leva à parte; o que o plano não mostra aparece
+    como "Preenchido, mas não aparece no plano Básico." O conteúdo é só para
+    ver (`inert`, links viram texto em `soParaVer`). Embaixo da prévia, a
+    lista das partes de antes. Na barra de baixo: "Voltar", **"Editar"** (a
+    primeira parte) e **"Confirmar e salvar" / "Confirmar e enviar" /
+    "Confirmar e publicar"** (edição, pedido, admin). Confirmar segue como
+    antes (a tela do plano, se faltar escolher). Teste:
+    `testes/previa-da-ficha.js`.
+85. **Lembrete por e-mail da ficha parada há 3 meses** (pedido de
+    09/10/2026: "academias devem receber mensagem de atualização do
+    cadastro depois de 3 meses sem alterações"), como o "Confirme as
+    informações da sua empresa" do Google Business Profile, o "Is your
+    business information up to date?" do Yelp e os lembretes do Booking
+    para parceiros. SQL `20261009130000_lembrete_de_conferir_a_ficha`:
+    - **Quando:** junto com os avisos do dia (10h de Brasília,
+      `preparar_avisos_do_dia` chama `preparar_lembretes_de_ficha`), para a
+      academia **no ar** (pausada não recebe) com alguém no Parceiros cuja
+      ficha (`dados_atualizados_em`, regra 64) não muda há **3 meses**.
+      Uma vez ao completar 3 meses e **de novo a cada 3 meses** enquanto
+      ela continuar parada; salvar a ficha (mesmo sem mudar nada) zera a
+      conta. Quando foi lembrada fica em `lembretes_de_ficha` (tabela à
+      parte: coluna nova em `academias` mexeria na data da ficha). Sem
+      ninguém para receber, não anota e tenta no dia seguinte.
+    - **Para quem:** todas as pessoas da academia com o e-mail confirmado e
+      os avisos do Parceiros ligados (`quem_recebe_da_academia`, a mesma
+      chave do Perfil › Avisos por e-mail, que agora diz "Avaliação nova,
+      pedidos de acesso e o lembrete de conferir a ficha").
+    - **O e-mail** (tipo `ficha_parada`, "Conferir a ficha" no painel do
+      admin): assunto "Confira a ficha da <academia> no GuiaTennis",
+      título "Está tudo certo na ficha?", desde quando não muda e há
+      quantos meses, "Preço, horário, quadras e professores mudam com o
+      tempo… salvar, mesmo sem mudar nada… volta a dizer 'atualizada
+      hoje'", botão **"Conferir a ficha"** e o link para parar.
+    - **O botão** abre `/parceiros/ficha?abrir=<id curto>&utm_source=Email-ficha`:
+      `abrirAcademiaDoLink` abre a academia do e-mail quando a conta tem
+      várias (sem login, guarda e abre depois de entrar); academia que não
+      é da conta é ignorada. O lembrete em Atualizações (regra 64)
+      continua igual.
+    - Textos: Ajuda do Parceiros ("O que quer dizer 'atualizada há…'"),
+      folha "Não quero mais receber", chat de ajuda e Política de
+      Privacidade (data dos textos legais: 9 de outubro de 2026).
+    Testes: `testes/lembrete-da-ficha.js` e a seção 25 do
+    `banco-emails.py`.
+86. **Lembrete para o jogador que não entra há 3 meses** (pedido de
+    09/10/2026: "quero fazer um lembrete aos usuários que não entraram a 3
+    meses, pode fazer isso mesmo sem marcar avisos?"; perguntado, escolheu
+    **"todos com e-mail confirmado"**, sabendo que é a exceção à regra 23 e
+    que o e-mail de marketing sem opt-in pede a Política atualizada e
+    cuidado com o domínio). Como o "Sentimos sua falta" do Booking e do
+    Airbnb, com o que serve para quem joga. SQL
+    `20261009140000_lembrete_de_volta`:
+    - **Quando:** com os avisos do dia, para a conta de jogador com o
+      e-mail confirmado cuja última visita (a mais recente entre
+      `jogadores.visto_em`, o último login do Supabase e a criação da
+      conta) foi há mais de **3 meses**. **Uma vez por ausência:** só sai de
+      novo depois de a pessoa voltar e ficar mais 3 meses fora
+      (`lembrado_de_volta_em`). Quem tem conta no Parceiros não recebe (já
+      recebe o resumo do mês). **No máximo 200 por dia**, das ausências
+      mais recentes para as mais antigas, para o domínio não parecer envio
+      em massa (o mesmo domínio manda o código de login).
+    - **A visita:** `marcar_visita_da_conta()`, chamada pelo site ao abrir
+      com a conta (`carregarConta`, uma vez por abertura); o banco anota no
+      máximo uma vez a cada 12 horas. Só o banco escreve `visto_em`.
+    - **O e-mail** (tipo `volta`): com a cidade da conta e academias novas
+      desde a última visita, assunto "N academias novas em <cidade> desde a
+      sua última visita", a lista (`lista_de_academias_email`) e o botão
+      "Ver academias em <cidade>"; sem elas, "Faz tempo que você não passa
+      no GuiaTennis", com a frase da busca (regra 15) e "Buscar academias".
+      Diz há quantos meses e que só volta a sair depois da próxima visita;
+      link "Não quero mais receber este lembrete" (`parar_avisos(token,
+      'volta')`; "todos" também desliga).
+    - **Na conta:** `jogadores.lembrete_de_volta` começa **ligado** (a
+      exceção da regra 23). Aparece em Minha conta › Avisos por e-mail
+      ("Lembrete se eu ficar 3 meses sem entrar…", `soNaConta` em
+      `AVISOS_JOGADOR`, só se o banco tem a coluna); no cadastro, não é
+      caixa: uma nota diz que vem ligado e onde desligar. Privacidade: a
+      data da última visita com a conta aberta e o lembrete.
+    Testes: `testes/volta-e-resumo.js` e a seção 26 do `banco-emails.py`.
+87. **Resumo do mês por e-mail para quem administra a academia** (pedido de
+    09/10/2026: "para parceiros também é legal algo para relembrar dos
+    números que tiverem mês a mês"; perguntado, **"todos, com os números do
+    plano"**). Como o relatório de desempenho do mês do Google Business
+    Profile. Muda a regra 21. SQL `20261009150000_resumo_do_mes`:
+    - **Quando:** com os avisos do dia, nos primeiros 7 dias do mês (o mês
+      anterior, no horário de Brasília), uma vez por academia e pessoa
+      (chave `resumo:<academia>:<pessoa>:<AAAA-MM>`), para a academia no ar
+      que já estava no guia no mês e tem alguém no Parceiros; vai para quem
+      recebe os avisos do Parceiros (`quem_recebe_da_academia`).
+    - **Todos os planos:** acessos à ficha no mês (com "N% a mais/a menos
+      que em <mês anterior> (N)"), avaliações novas com a média e quantas
+      esperam resposta. Botão "Abrir o GuiaTennis Parceiros"
+      (`/parceiros/painel?abrir=…&utm_source=Email-resumo`).
+    - **Premium:** também quem chamou (WhatsApp, Instagram, site), quantos
+      compartilharam e de onde vieram (as 3 origens com mais acessos).
+      Botão "Ver o desempenho" (`/parceiros/desempenho?abrir=…`).
+    - Os números são os do painel (o admin e a academia logada não contam).
+      Assunto "Setembro na <academia>: N acessos à ficha"; título "O mês
+      de setembro na <academia>". `preparar_resumos_do_mes(p_hoje)` aceita
+      o dia só para o teste. Tipo `resumo_do_mes` no painel do admin.
+    - Textos: Planos ("Resumo do mês por e-mail: acessos e avaliações" em
+      todos; "Relatório completo do mês por e-mail: quem chamou e de onde
+      vieram" no Premium), Perfil › Avisos por e-mail, a folha "Não quero
+      mais receber", o chat, a Ajuda ("O que aparece em Desempenho?"),
+      Termos e Privacidade.
+    Testes: `testes/volta-e-resumo.js` e a seção 27 do `banco-emails.py`.
+20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
+    e no rodapé (última coluna) — pedido de 01/10/2026.
 
 ## 3. Como é feito
 
@@ -156,52 +1751,300 @@ só. Sem build, sem npm, sem framework. Abrir o arquivo já é rodar o site.
   chama `attachEvents()`. Guarda e devolve `window.scrollY` e o
   `scrollTop` das folhas, então re-renderizar não faz a tela pular.
 - **Estado:** um objeto global `state`. `let isAdmin` fica fora dele.
-- **Rotas:** `history.pushState` com `?court=ID`, `?busca=…`,
-  `?comparar=1`. Páginas: `home`, `search`, `court`, `comparar`.
+- **Rotas:** endereços de verdade, no padrão dos sites grandes (abaixo,
+  "Endereços"). Páginas: `home`, `search`, `court`, `comparar`.
 - **Navegador (`localStorage`):** favoritos (`guiatennis_favorites_v1`),
   comparação (`guiatennis_compare_v1`), vistas recentemente
   (`guiatennis_recentes_v1`), quem está avaliando
-  (`guiatennis_visitor_v1`) e o cache do "o que tem por perto"
-  (`guiatennis_perto_v1`).
+  (`guiatennis_visitor_v1`), o cache do "o que tem por perto"
+  (`guiatennis_perto_v1`) e, desde 01/10/2026, a última busca
+  (`guiatennis_ultima_busca_v1`), as academias chamadas
+  (`guiatennis_chamadas_v1`) e as preferências de busca
+  (`guiatennis_preferencias_v1`). Nada disso vai para o banco.
+
+### Menu, home pessoal e cadastro passo a passo (pedido do Breno em 01/10/2026)
+- **Menu no jeito do trivago** (`renderMenu`): "Menu" no meio com a seta de
+  voltar; Início, Buscar quadra, Comparar; **Minhas quadras** (Favoritas,
+  Vistas recentemente, Academias que você chamou — com a contagem na
+  direita); **Preferências** (Preferências de busca, com a cidade na
+  direita); **Suporte** (Como funciona, Perguntas frequentes, Por que o
+  GuiaTennis, Termos, Privacidade, GuiaTennis Parceiros "para academias");
+  **Fale com a gente** (WhatsApp, Instagram, E-mail) por último. As três
+  listas abrem a folha "Minhas quadras" (`renderListaSheet`, abas
+  Favoritas/Vistas/Chamadas, com "Apagar o histórico"/"Apagar a lista").
+- **Home pessoal** (como "Visualizações recentes" e "Ofertas com base nas
+  suas pesquisas recentes" do trivago): "Vistas recentemente" começa pelo
+  cartão da **última busca** (lugar, o que procura, piso/cobertura e a
+  lupa; um toque refaz a busca com os filtros — `refazerUltimaBusca`, link
+  `/busca?q=…`); "Com base na sua última busca" (`academiasParecidas`: até 8
+  academias a até 50 km de onde buscou, com os mesmos filtros, primeiro as
+  ainda não vistas; sem busca, "Perto de <cidade das preferências>");
+  "Academias que você chamou" ("Você chamou no WhatsApp · hoje"). Depois
+  vêm Recomendadas e o resto. A academia chamada é lembrada em
+  `trackClick` antes do `naoConta()` — fica no aparelho até para o admin,
+  e o banco continua sem receber nada do admin.
+- **Preferências de busca** (`renderPrefsSheet`): **estado primeiro**
+  (lista dos 27, `ESTADOS`), **depois a cidade** (o campo só abre com o
+  estado; sugere as cidades que têm academia) e "O que você costuma
+  procurar". A cidade escolhida: abre a lista de cidades da home, vira a
+  busca quando a pessoa toca em "Pesquisar" sem digitar e quando abre
+  "Buscar quadra" pelo menu, e ordena as sugestões. Cidade ainda sem
+  academia é localizada no Nominatim ao salvar (ponto arredondado).
+- **Sem o "+" no canto da busca.** O cadastro de academia continua pelo
+  menu, rodapé, bloco da home e ficha (GuiaTennis Parceiros).
+- **Cadastro passo a passo** (`REG_PASSOS`, `regPassoHtml`, `irParaPasso`;
+  como o "Anuncie seu espaço" do Airbnb, o cadastro do Booking para
+  Parceiros e o primeiro acesso do Google Business Profile): uma parte por
+  tela, barra "Parte N de 9", abas de cada parte (com ✓ quando
+  preenchida) e "Voltar"/"Continuar" presos embaixo. Ordem: **Nome e
+  endereço → Modalidade e preço → Quadras (e comodidades) → Contato →
+  Fotos → Horário → Cancelamento → Como chegar → Revisar** — as quatro
+  primeiras são o que o jogador usa para achar e chamar, o que a academia
+  quer (contato) e o que o GuiaTennis precisa para aprovar; as outras
+  completam a ficha ("Pular" quando vazias). Quem pede cadastro só envia
+  na última parte, e "Continuar" cobra o que falta na parte; o admin e a
+  edição salvam de qualquer parte. A revisão mostra ✓/Falta/Opcional e
+  um toque leva à parte; erro no envio volta para a primeira parte que
+  falta (`irParaFalta`). Todos os campos gravam em `window.__form` ao
+  digitar, então trocar de parte não perde nada.
+
+### Endereços (pedido do Breno em 30/09/2026: "igual os grandes em tudo")
+Como Booking, TripAdvisor, Airbnb e Trivago, cada tela tem o próprio link
+e tudo o que está nela vai junto: quem recebe o link vê a mesma coisa,
+recarregar não perde nada e o "voltar" do celular desfaz o último passo.
+
+| Tela | Endereço | Google |
+|---|---|---|
+| Home | `/` | indexa |
+| Ficha | `/academia/<nome>-<últimos 8 do id>` (ex.: `/academia/quadra-exemplo-moema-00000002`) | indexa; pausada/pendente, não |
+| Seção da ficha | `…#avaliacoes` (`visao`, `precos`, `cancelamento`, `estrutura`, `localizacao`, `avaliacoes`, `duvidas`, `contato`) | — |
+| Região | `/quadras/<cidade>` e `/quadras/<cidade>/<bairro>` (título "Quadras e academias de tênis em Moema, São Paulo") | indexa |
+| Busca | `/busca?q=…&piso=…&cobertura=…&modalidade=…&comodidades=…&nota=…&preco=…&distancia=…&favoritas=1&comparando=1&ordem=…&ver=mapa` | `noindex, follow` |
+| Comparação | `/comparar?academias=<id8>,<id8>` | `noindex, follow` |
+| Perfil do jogador (regra 41) | `/perfil` | `noindex, nofollow` |
+
+- O fim do id faz o link da ficha sobreviver à troca de nome (a academia
+  agora edita o nome): o site acha pela ponta do id e corrige o endereço.
+  Academia que saiu do guia: home com aviso e `noindex`.
+- Links antigos (`?court=`, `?busca=`, `?comparar=1`) continuam abrindo e
+  viram o endereço novo, mantendo `utm_source` (QR codes já impressos
+  seguem valendo).
+- Filtros sempre na ordem das listas (`naOrdem`), para o mesmo filtro dar o
+  mesmo link. Mexer em filtro/ordem/mapa entra no histórico (o "voltar"
+  desfaz); com a gaveta de filtros aberta, só vira um passo ao fechar. A
+  busca refeita pelo "voltar" não conta de novo (`doSearch({ registrar:
+  false })`). Busca pelo GPS vai para `/busca` sem nada (nunca a posição).
+- Para o Google: canônica sem filtros (`urlCanonica`), título e descrição
+  da região, `robots` por tela (`seoDaPagina`), dados com o caminho
+  "Início › Quadras em São Paulo › Moema › Academia" (`BreadcrumbList`). O
+  caminho da ficha, o bloco das cidades da home e o rodapé ("Quadras por
+  cidade", como os destinos populares do TripAdvisor) são links de verdade
+  para as regiões.
+- `slugTexto` (site) e `slug()` (banco) têm de dar o mesmo resultado —
+  conferido com acento, ç, ñ, º, ª, símbolos e nome longo.
+- **Netlify:** `/academia/*`, `/quadras`, `/quadras/*`, `/busca`,
+  `/comparar`, `/perfil`, `/parceiros` e `/parceiros/*` entregam o `index.html`
+  (status 200, `netlify.toml`).
+- Ainda não é igual aos grandes: a prévia do link no WhatsApp mostra a
+  imagem e o texto gerais do site, não os da academia — isso exige montar a
+  página no servidor (função do Netlify), que gasta crédito. Fica para
+  depois, se valer a pena.
+
+### GuiaTennis Parceiros (pedido do Breno em 30/09/2026)
+"Igual trivago para hoteleiros, Uber, iFood… outro site para os
+responsáveis, com menu, ajuda, FAQ e benefícios — copie tudo dos grandes."
+Referências: trivago Business Studio, Booking para Parceiros (join.booking
+e o extranet), iFood Parceiros (portal do parceiro), Uber para motoristas e
+o Google Business Profile ("reivindicar o perfil" e "Desempenho"). O site
+das academias fica em **`/parceiros`**, no mesmo `index.html`, mas com
+cabeçalho, menu, rodapé e largura próprios (de ponta a ponta no
+computador). No celular, tudo pelo menu: a barra de atalhos embaixo
+(Painel, Desempenho, Avaliações, Ficha, Perfil) saiu em 06/10/2026 — o
+Breno não gostou dela. Não existe mais botão solto de "cadastre sua academia": tudo
+o que é da academia leva para cá.
+
+| Página | Endereço | Google |
+|---|---|---|
+| Apresentação: benefícios, como funciona, números do site, planos, perguntas | `/parceiros` (logado vai para o painel) | indexa |
+| Planos (tabela do que cada plano libera) | `/parceiros/planos` | indexa |
+| Ajuda (10 perguntas + WhatsApp e e-mail) | `/parceiros/ajuda` | indexa |
+| Cadastro: 1) e-mail → 2) conta (nome, WhatsApp, senha, aceite) → 3) academia: "Administrar" uma do guia ou "Cadastrar academia nova" | `/parceiros/cadastro` (`?academia=<id8>` já pede aquela) | indexa; com `?academia`, não |
+| Entrar (usuário e senha) | `/parceiros/entrar` | não |
+| Painel, Desempenho, Avaliações, Minha ficha, Pessoas, Plano, Suas academias, Perfil (regra 43) | `/parceiros/painel`, `/parceiros/pessoas`, `/parceiros/academias`, `/parceiros/perfil` etc. (`/parceiros/conta` abre o Perfil) — sem login, cai no Entrar e volta para a página pedida | não |
+
+**Planos** (`PC_PLANOS`, `PC_RECURSOS`): **Básico** grátis — ficha,
+WhatsApp direto sem comissão, responder avaliações, QR code, visitas e
+contatos dos últimos 30 dias. **Completo** — + dia a dia até 90 dias,
+comparação com o período anterior, contatos por canal, de onde vieram e o
+aparelho. **Premium** — + bairros de quem procurou, média das academias da
+cidade e o histórico desde o começo. **Pessoas com acesso:** Básico 2,
+Completo 5, Premium 10 (`PC_PLANOS.pessoas` e `limite_de_pessoas` no banco
+— mudar nos dois). No Premium, "Em breve: promoções na ficha e avisos para
+os seus alunos" (`PC_EM_BREVE`). Preço dos pagos: "Fale com a gente"
+(WhatsApp do guia) — **o Breno ainda não definiu valores**; não inventar
+preço. O admin muda o plano na ficha, como antes (`plano` da tabela). Hoje
+a ordem da busca não depende do plano (regra 16).
+
+**Conta do GuiaTennis Parceiros (pedido do Breno em 30/09 e 01/10/2026)** —
+como o trivago Business Studio, o Booking e o Google Business Profile. Em
+cima, a **barra do processo do trivago** (`pcEtapas`): trilho com a parte
+feita preenchida, um ponto por etapa e os nomes embaixo — DADOS DE
+CONTATO, SUA ACADEMIA, INÍCIO. O cadastro começa pelo e-mail:
+1. **E-mail** → `login_do_email` diz se já tem conta. Tem: "Entrar com esse
+   e-mail" (o Entrar aceita e-mail ou usuário; quem recebeu usuário do
+   GuiaTennis entra também pelo e-mail que deu no primeiro acesso). Não tem:
+2. **Dados de contato** (igual ao formulário do trivago) → tratamento (Sr.,
+   Sra., prefiro não informar), nome e sobrenome, "Seu cargo",
+   telefone com "Brasil (+55)", senha, "quero receber dicas, novidades e o
+   relatório do mês" (desmarcado) e "Li e concordo com os Termos…" (sem
+   "represento a academia": regra 40) → "Salvar e continuar"
+   (`criar_minha_conta`, chamada pelo visitante; o login é criado direto no
+   `auth.users`, com um freio de 20 contas novas por hora). Entra na hora,
+   **sem academia**. O primeiro acesso de quem recebeu usuário do Breno usa
+   os mesmos campos (`camposDeContato`).
+3. **Sua academia** (a tela do trivago "Nice to meet you! Before we get
+   started…") → "Prazer em conhecer você, Joana! Antes de começar, vamos
+   ver se a sua academia já está no GuiaTennis." Busca pelo nome e o bairro,
+   a lista é de escolha (uma marcada por vez); a que o site acha pelo
+   e-mail (domínio do e-mail = domínio do site da academia; gmail/hotmail…
+   não contam) ou a do link da ficha já vem marcada; o botão "Administrar
+   esta academia" só acende com uma marcada (`pedir_para_administrar`), ou
+   "Cadastrar academia nova" (o formulário não pede de novo nome, WhatsApp
+   nem aceite: vão os da conta; o gatilho `pedido_da_academia_nova` faz da
+   academia nova o pedido da conta). Pedido do Breno (01/10): as outras
+   opções ficam **discretas, numa linha de texto com link** ("Não é essa?
+   Procurar a minha academia ›", "A sua academia ainda não está no
+   GuiaTennis? Cadastrar academia nova ›"), como nos sites grandes — não em
+   caixas grandes.
+- **Quem o Breno cadastrou com usuário e senha** não tem e-mail no começo:
+  entra pelo usuário e a senha provisória (a linha "Recebeu usuário e senha
+  do GuiaTennis, ou já tem conta? Entrar ›" do cadastro leva ao Entrar). O
+  e-mail entra no primeiro acesso; dali em diante, entra pelo usuário ou
+  pelo e-mail.
+4. **Verificação pelo WhatsApp da ficha** (como o Google faz com o telefone
+   da empresa) → no painel do admin, "Pedidos para administrar": "Gerar
+   código para o WhatsApp da academia" (`gerar_codigo_do_pedido`, 6
+   números de bytes aleatórios) e "Mandar o código ao WhatsApp da
+   academia" — o Breno manda, pelo WhatsApp dele, para o número que está
+   na ficha, com o nome de quem pediu e "se ninguém da academia pediu, é
+   só ignorar". Quem pediu vê "(11) •••••-0001" e digita o código
+   (`confirmar_meu_codigo`): certo, a conta passa a administrar na hora. O
+   código fica cifrado numa tabela fechada (`codigos_de_verificacao`), vale
+   72 horas e 5 tentativas (a função devolve 'ok', 'errado', 'tentativas',
+   'venceu' ou 'sem_codigo' em vez de dar erro, para a tentativa ficar
+   contada). Sem WhatsApp na ficha, ou se o número não é deles: a pessoa
+   fala com o GuiaTennis no WhatsApp, o Breno confirma do jeito dele e
+   aprova à mão (Aprovar/Recusar continuam). O site não diz como ele
+   confere (regra 44). Academia nova: publicar já libera a conta
+   (gatilho `liberar_pedidos_da_academia`). Quem é liberado vira
+   **responsável principal** se a academia ainda não tem um; senão, equipe.
+- **Não confere se o e-mail é mesmo da pessoa** (o site não manda e-mail):
+  quem garante é o código no WhatsApp da academia ou o documento.
+- **Pessoas com acesso (página Pessoas, regra 43):** o responsável principal adiciona pelo
+  e-mail (`adicionar_pessoa`): e-mail novo ganha login com senha
+  provisória que a tela gera e mostra uma vez, com "Mandar pelo WhatsApp"
+  (o responsável manda) e "Copiar"; e-mail de conta sem academia entra
+  direto, com a senha dela. Remove com `remover_pessoa` (o login some). A
+  equipe vê a lista, edita a ficha e responde avaliações, mas não mexe em
+  pessoas. Plano cheio: some o formulário e aparece "Aprimorar para o…".
+- Conta sem academia vê o painel com o pedido (ou "Falta escolher a sua
+  academia"), menu curto (Painel, Plano, Conta, Ajuda) e sem a barra de
+  baixo.
+
+**Página de apresentação (pedido do Breno em 01/10):** os benefícios
+vendem sem citar outras marcas (nada de "como no Google/TripAdvisor" em
+texto que a academia lê; nas perguntas também não); "responder **às**
+avaliações", com crase, em todo o site. "Como funciona" em 4 passos ligados
+por uma linha — crie a conta (2 minutos), encontre a academia (na hora),
+confirme pelo WhatsApp (o código), complete a ficha e receba alunos (todo
+dia) — com o botão "Começar agora — é grátis". No rodapé dos parceiros, a
+marca e a frase aparecem uma vez só, na faixa verde.
+
+**Tela cheia e rodapé (mesmo pedido):** o formulário da ficha (editar,
+cadastrar academia nova, admin) ocupa a tela inteira, com atalhos por parte
+no topo (Nome e endereço, Horário, Fotos, Quadras, Modalidade e preço,
+Cancelamento, Como chegar, Contato), como as abas do "Editar perfil" do
+Google. Os dois sites terminam com a **faixa do trivago, no verde do
+GuiaTennis** (`--green`, pedido do Breno em 01/10; o selo "Parceiros" fica
+dourado nela)
+(`rodapeFaixa`): marca, o que é e o copyright, de ponta a ponta.
+
+**Desempenho:** vem de `numeros_da_academia(p_dias)` (SQL
+`20260930140000`): o banco devolve só os números da academia do login e
+corta pelo plano (pedir 90 dias no Básico devolve 30). Visitas na ficha,
+contatos (WhatsApp, Instagram e site; compartilhar não conta como
+contato), taxa de contato, variação contra o período anterior. Gráficos de
+**uma série cada** (visitas embaixo de contatos, nunca dois eixos),
+colunas finas com a leitura do dia ao tocar/passar o dedo, "Ver os números
+em tabela", soma por semana acima de 92 dias. O que o plano não libera
+aparece **trancado** com "Disponível no plano X · ver planos" — nunca com
+número inventado. Academia logada e admin não contam nas visitas.
+
+**Entradas a partir do site dos jogadores:** menu "Para academias" ›
+"GuiaTennis Parceiros" (logado: "Painel da minha academia"), rodapé,
+bloco da home ("Conhecer o GuiaTennis Parceiros") e a ficha ("Gerencie a ficha no
+GuiaTennis Parceiros" → Cadastro já com a academia). No portal, "Ir para o
+GuiaTennis (jogadores)" volta.
+
+**Código:** `PC_*`, `perguntasParceiros`, `irParceiros(aba)` (a porta de
+entrada de tudo), `carregarNumeros`, `graficoColunas`, `listaBarras`,
+`blocoTrancado`, `pcTopo`/`pcRodape`/`pcBarraDeBaixo`, uma função por
+página (`pcInicio`, `pcPlanos`, `pcAjuda`, `pcCadastro`, `pcEntrar`,
+`pcPrimeiroAcesso`, `pcPainel`, `pcDesempenho`, `pcAvaliacoes`, `pcFicha`,
+`pcConta`) e `ligarEventosParceiros`. CSS em `.pc-*`. O `renderContaSheet`
+(folha por cima do site) saiu.
+
+**Cartão da busca (mesmo pedido):** a caixa de preço ficou só com os
+preços ("Aula / Locação", "a partir de, por hora") e o botão, como a caixa
+de oferta do trivago; as comodidades ("✓ Coberta", "✓ Estacionamento
+grátis") subiram para junto do endereço e das quadras (`.rcard-selos`).
 
 ### Mapa do `index.html` (linhas de 30/09/2026, aproximadas)
 
 | Linha | O quê |
 |---|---|
-| topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` |
-| 967 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
-| 1041 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`), `bolaGirando` |
-| 1072 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano) |
-| 1136 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
-| 1150 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
-| 1343 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
-| 1452 | `politicaDe` — cancelamento, igual ou separado por modalidade |
-| 1552 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
-| 1651 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `loadEverything` |
-| 1801 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
-| 1916 | `state` |
-| 2001 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
-| 2305 | `getResults`, `render()` |
-| 2438 | mapa Leaflet da busca (pinos empilhados) |
-| 3076 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel` |
-| 3172 | página de busca, filtros, card da academia |
-| 3465 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias` |
-| 4346 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
-| 4500 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
-| 5485 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia` |
-| 5869 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`) |
-| 6106 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
-| 6343 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
-| 6523 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
-| 6658 | `attachEvents()` |
-| 7786 | `doSearch`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
-| 7992 | `init()` |
+| topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` (área da academia: `.conta-*`, `.dono-box`, `.rev-resp*`, `.acesso-*`; GuiaTennis Parceiros: `.pc-*`, perto da linha 1210; no fim, a camada "Acabamento limpo") |
+| 1384 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
+| 1394 | `isAdmin`, `contaAcademia`, `EMAIL_ADMIN`, `DOMINIO_ACESSO`, `LINK_ENTRAR`, `emailDoLogin`, `naoConta` |
+| 1477 | ícones (inclui `whatsapp`, `mail`, `info`, `barchart`, `historico`, `ajustes`, `ajuda`, `predio`), `bolaGirando`, **logo**: `logoDesenho` (entre `LOGO-INICIO` e `LOGO-FIM`) e `logoSvg()` |
+| ~1510 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano, ordem, distância) |
+| 1572 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
+| 1586 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
+| 1779 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
+| 1888 | `politicaDe` — cancelamento, igual ou separado por modalidade |
+| 1988 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
+| 2087 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `lerContatosPrivados`, `lerRespostas`, `loadEverything` |
+| 2291 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
+| 2408 | `state` |
+| 2521 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
+| 2825 | `getResults`, `render()` (no fim, `sincronizarLink`; `#app` ganha `pc-cheio` no site dos parceiros); SEO: `urlCanonica`, `seoDaPagina`, `atualizarSeo` |
+| 3662 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel` |
+| 3698 | **endereços**: `SITE`, `slugTexto`, `idCurto`, `slugDaAcademia`, `caminhoDaFicha`, `caminhoDaRegiao`, `linkDaFicha` |
+| 3762 | **área da academia**: `carregarConta`, `carregarAcessos`, `senhaProvisoria`, `mensagemDoAcesso`, `faltasDaFicha`, `blocoResposta`, `cartaoAvaliacao`, `formDadosConta`, `formTrocarSenha`, `blocoDono`, `blocoAcessoAdmin`, `blocoAcessosPainel`, `abrirConta`, `salvarDadosConta`, `publicarResposta`, `criarAcesso`, `ligarEventosConta` |
+| 4709 | **GuiaTennis Parceiros**: `PC_*`, `irParceiros`, `carregarNumeros`, `graficoColunas`, `pcTopo`, `renderParceiros`, `pcInicio` … `pcConta`, `ligarEventosParceiros` |
+| ~6560 | o que fica no aparelho: `lerUltimaBusca`/`guardarUltimaBusca`, `lerChamadas`/`lembrarChamada`, `ESTADOS`, `lerPreferencias`, `pontoDaPreferencia` |
+| 5528 | `renderCabecalho`, `renderMenu`, `minhasQuadras`, `renderListaSheet`, `renderPrefsSheet`/`salvarPreferencias`, blocos da home (`blocoVistas`, `academiasParecidas`, `blocoChamadas`), `blocoMediasAcademias`, `renderSiteFooter` (cidades) |
+| 5913 | navegação: `PARAMETROS_DA_TELA`, `filtrosNoLink`/`filtrosDoLink`, `urlDoEstado`, `syncUrl`, `sincronizarLink`, `lerLink` (inclui `/parceiros/<página>` e o antigo `?entrar`), `academiaDoSlug`, `regiaoDoLink`, `aplicarLink`, `irParaSecao`, `goHome`/`goSearch`/`abrirRegiao`/`openCourt`, `popstate` |
+| ~6500 | página de busca, filtros, card da academia (`.rcard-selos`, caixa de preço `.offer-precos`) |
+| 6625 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
+| 6785 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
+| 7767 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia`, `htCaminho` (links das regiões) |
+| 8136 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono) |
+| 8428 | formulário de cadastro (`blocoPoliticaForm`, `REG_PASSOS`, `regFaltas`, `regPreenchido`, `regPassoHtml`, `renderRegisterSheet`, `irParaPasso`) |
+| 8693 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
+| 8795 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
+| 8879 | `renderLoginSheet` (admin; a academia entra pelo `/parceiros/entrar`), `renderAdminPanel` |
+| 8940 | `attachEvents()` (login: academia vai para o GuiaTennis Parceiros; no fim, `ligarEventosConta` e `ligarEventosParceiros`) |
+| 10095 | `doSearch(opcoes)`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
+| 10306 | `init()` (o link manda na tela: `aplicarLink(lerLink())`; abrindo direto no painel/desempenho, busca os números) |
 
 ## 4. Banco (Supabase)
 
 `SUPABASE_URL` e `SUPABASE_ANON_KEY` estão no `index.html` (chave
 pública, é assim mesmo). Admin entra por e-mail/senha do Supabase Auth;
-`isAdmin = !!session`.
+desde 30/09/2026 `isAdmin` só vale para o e-mail `guiatennis1@gmail.com`
+(`carregarConta`); as academias entram pelo mesmo login, com usuário
+(seção 4, "Área da academia").
 
 ### `academias`
 `id, name, address, numero, complemento, bairro, cidade, endereco,
@@ -209,7 +2052,14 @@ lat, lng, phone, instagram, site, price_range, price_aula,
 price_locacao, amenities[], modalidades[], pisos[], cobertura[],
 quadras(jsonb), photos[], source, status ('published'|'pending'),
 pago, plano, politica(jsonb), acesso(jsonb), horario(jsonb),
-pausada, pausada_ate, confirmada, nome_solicitante, contato_solicitante`
+pausada, pausada_ate, confirmada, dados_atualizados_em, nome_solicitante,
+contato_solicitante`
+
+**`dados_atualizados_em`** (07/10/2026, regra 64): quando a informação da
+ficha mudou ou a academia salvou a ficha. Só o gatilho
+`marcar_dados_atualizados` escreve (o que vier do site é trocado);
+`dados_da_ficha(jsonb)` diz o que conta como informação (tira situação,
+plano, pausa, selo, coordenada, quem pediu). Visitante lê.
 
 **`confirmada`** (desde 29/09/2026): `false` = **ficha básica**, listada
 com dados públicos e ainda não confirmada pela academia. A ficha mostra
@@ -247,7 +2097,7 @@ No cadastro, esses três campos ficam depois do cancelamento.
 
 **Entendimento dos textos, sem IA.** O banco guarda o texto como a
 academia escreveu; quem arruma é a ficha, na hora de mostrar:
-- `arrumarTexto` — tira emoji e caixa alta, troca "!!!" por ponto, põe
+- `arrumarTexto` — tira emoji e caixa alta, troca "!!!" por ponto, escreve
   horas como 19h/19h30 e valores como R$ 15, corrige acentos comuns
   (até, não, tênis, às 19h…), maiúscula no começo e ponto no fim. Vale
   para fachada, chegada, observação do horário e texto do cancelamento.
@@ -275,8 +2125,38 @@ Cada faixa é `{ de: "06:00", ate: "22:00", fechado: false }`. No modo
 ### `avaliacoes`
 `id, academia_id, stars, comment, nome_autor, contato_autor, created_at`
 
+### `respostas` (30/09/2026)
+`avaliacao_id (chave, uma resposta por avaliação), texto, user_id,
+created_at, updated_at`. Resposta pública da academia embaixo da avaliação
+("Resposta da academia"). O visitante lê tudo menos `user_id`.
+
+### `academia_acessos` (30/09/2026)
+`user_id (auth.users), academia_id, usuario, nome_responsavel, cargo,
+email, whatsapp, cnpj, recebe_relatorio, termos_aceitos_em,
+dados_completos_em, senha_trocada_em, ficha_atualizada_em, created_at,
+updated_at`. Um login por academia. Ninguém de fora lê; a academia lê a
+linha dela; o admin lê todas pela função `acessos_das_academias()`. Gravar,
+só pelas funções (seção 4, "Área da academia").
+
 ### `cliques`
-`id, academia_id, tipo, detalhe, cep, lat, lng, origem, dispositivo, created_at`
+`id, academia_id, tipo, detalhe, cep, lat, lng, origem, dispositivo, segundos, segundos_ficha, created_at`
+
+**Tempo até agir (pedido do Breno em 01/10/2026, SQL `20261001130000`):**
+"quanto tempo o cliente fica no site até buscar ou chamar", como o tempo
+até a conversão do Google Analytics. Em cada visita (`trackClick` →
+`tempoAteAgir`): a chegada (`acesso_site`) leva `segundos = 0` — marca a
+visita como medida —; a **primeira** busca e o **primeiro** contato
+(WhatsApp, Instagram ou site) levam os segundos desde a chegada; o contato
+feito da ficha leva também `segundos_ficha` (tempo olhando a ficha). As
+outras buscas e contatos da mesma visita vão sem tempo. Teto de 86400 s.
+Banco sem as colunas: a linha vai sem o tempo, com o resto
+(`trackClick` tenta de novo). No painel de estatísticas do admin, bloco
+"Tempo até agir" (`blocoTempoAteAgir`): **mediana** até a primeira busca,
+até chamar uma academia e olhando a ficha (mediana, porque a média se perde
+com quem deixou a aba aberta), quantas visitas medidas buscaram/chamaram
+(%), e as faixas (até 10 s, 10–30 s, 30 s–1 min, 1–3 min, 3–10 min, mais de
+10 min). Só para o admin por enquanto; dá para virar número do plano
+Premium no GuiaTennis Parceiros. Está na Política de Privacidade.
 
 `tipo`: `acesso_site`, `busca`, `visualizacao`, `whatsapp`, `site`,
 `instagram`, `compartilhar`. `detalhe` e `cep` só são usados em `busca`:
@@ -303,10 +2183,19 @@ função `security definer` com `search_path` fixo faz o mesmo de um jeito
 que o Supabase reconhece. O site tenta a função e, se ela não existir,
 cai na visão antiga; sem nenhuma das duas, o bloco de números some.
 
-### Segurança (`SQL-SEGURANCA.sql`)
+### Segurança (`SQL-SEGURANCA.sql` e `20260930120000_acesso_academias`)
 - Admin é quem tem o e-mail `guiatennis1@gmail.com` no login: as regras
-  de editar, apagar e ver pendentes/cliques conferem `auth.jwt() ->> 'email'`.
-  O cadastro de novos usuários no Supabase Auth está **desligado**.
+  de editar, apagar e ver pendentes/cliques conferem `auth.jwt() ->> 'email'`
+  (desde 30/09 também pela função `eh_admin()`).
+  O cadastro de novos usuários no Supabase Auth está **desligado** — os
+  logins das academias são criados pelo admin, pela função do banco.
+- **Quem está logado (`authenticated`: admin ou academia) lê as mesmas
+  colunas do visitante** desde 30/09/2026. Antes lia tudo, e com as
+  academias logando uma leria o WhatsApp de quem avaliou as outras. O admin
+  vê `nome_solicitante`, `contato_solicitante` e `contato_autor` pela função
+  `contatos_privados()` (o site junta em `loadEverything`). Por isso
+  **nenhuma leitura logada pode pedir `*`**: `select('*')` e `.select()`
+  sem colunas são negados (o insert do admin usa `.select('id')`).
 - O visitante (`anon`) lê **só colunas liberadas uma a uma**: tudo menos
   `nome_solicitante`/`contato_solicitante` (academias) e `contato_autor`
   (avaliações). O site pede essas colunas pelo nome
@@ -318,6 +2207,103 @@ cai na visão antiga; sem nenhuma das duas, o bloco de números some.
   `estatisticas_publicas` como `SECURITY DEFINER` executável por anon e
   authenticated — é assim que o visitante vê os quatro totais sem ler a
   tabela `cliques` (ver acima).
+
+### Área da academia (pedido do Breno em 30/09/2026)
+Cada academia ganha um login para **editar a própria ficha e responder as
+avaliações** — como o Google Business Profile, o Yelp for Business, o
+Management Center do TripAdvisor e o extranet do Booking. Como o Breno já
+publicou academias sem elas saberem (fichas básicas), o fluxo é o "pré
+login" pedido por ele:
+
+1. **Admin cria o acesso** na ficha da academia, bloco "Acesso da
+   academia": o site sugere o usuário pelo nome (`quadra.locacao`) e gera
+   uma senha provisória fácil de digitar (`k2fj-sux4`, sem l/o/0/1). A
+   senha só aparece nessa hora (não fica guardada em lugar nenhum legível);
+   perdeu, "Gerar nova senha". Botões "Mandar pelo WhatsApp" (abre o
+   WhatsApp da academia com a mensagem pronta: link da ficha, link
+   `/parceiros/entrar`, usuário e senha — o Breno manda ele mesmo) e "Copiar
+   mensagem". "Remover acesso" apaga o login (a ficha fica).
+2. **A academia entra** pelo **GuiaTennis Parceiros** (seção 3, "GuiaTennis
+   Parceiros"): link `guiatennis.com.br/parceiros/entrar?utm_source=WhatsApp-academias`
+   (`LINK_ENTRAR`; o antigo `/?entrar` continua abrindo e vira esse), pelo
+   menu do site ("Para academias" › "GuiaTennis Parceiros"), pelo rodapé ou
+   pela ficha ("É o responsável por esta academia? Gerencie a ficha no
+   GuiaTennis Parceiros").
+   Digita o **usuário** (sem @); o site monta o e-mail
+   `<usuario>@acesso.guiatennis.com.br` (`emailDoLogin`) — ninguém recebe
+   nada nele. Com @, é o login do admin.
+3. **Primeiro acesso** (obrigatório para editar): nome do responsável,
+   cargo (Dono(a) ou sócio(a), Gerente, Professor(a), Recepção, Outro),
+   e-mail, WhatsApp do responsável, CNPJ (opcional), senha nova (a
+   provisória deixa de valer), "quero receber o relatório do mês" (opcional,
+   desmarcado — LGPD) e o aceite "Represento esta academia e aceito os
+   Termos…". Nada disso aparece no site.
+4. **Painel da academia**, no GuiaTennis Parceiros (`/parceiros/painel`;
+   no site dos jogadores, a faixa verde "abrir o painel" leva para lá):
+   situação da ficha (no ar confirmada, ficha básica, pausada, em análise),
+   os números do período, "Ficha 5 de 9 completa" (endereço, WhatsApp,
+   horário, preço, cancelamento, quadras, comodidades, como chegar, fotos —
+   o "complete seu perfil" do Google), Editar a ficha, Ver a ficha, QR code
+   para a recepção. Páginas próprias para **Desempenho**, **Avaliações**
+   (Responder / Editar / Apagar resposta e "Pedir análise ao GuiaTennis"),
+   **Minha ficha**, **Plano** e **Conta** (dados do responsável, trocar
+   senha, sair).
+5. **Na ficha dela**, a academia vê o bloco "Área da academia" com Editar e
+   o painel, responde embaixo de cada avaliação, e no lugar de "Avalie"
+   aparece "Vocês não podem avaliar a própria academia". O link "É o
+   responsável?" some para ela.
+
+**O que a academia não pode** (garantido pelo banco, não pela tela):
+apagar avaliação, avaliar a si mesma, mudar status, plano, pago, pausa,
+origem ou quem pediu o cadastro (o gatilho `proteger_ficha_da_academia`
+devolve os valores antigos), mexer em outra academia, apagar a ficha, ler
+contato de quem avaliou/pediu cadastro, ler cliques, criar acesso ou trocar
+senha de ninguém. Salvar a ficha pela conta da academia marca
+`confirmada = true` (sai o aviso de ficha básica) e anota
+`ficha_atualizada_em` para o admin. Pausar ou remover continua pelo
+WhatsApp do guia.
+
+**Admin:** o bloco "Acesso da academia" mostra usuário, "Esperando o
+primeiro acesso" ou "Ativo desde…" com responsável, cargo, e-mail,
+WhatsApp, CNPJ, se quer o relatório, último acesso, "ficha atualizada pela
+academia em…" e "ainda com a senha provisória". O painel do admin lista
+"Acessos das academias" em "Acessos ao Parceiros" (regra 58). O admin pode apagar resposta (moderação).
+
+**Estatísticas:** academia logada não grava nada (`naoConta()`), como o
+admin — senão cada visita dela à própria ficha contaria.
+
+**Funções do banco** (todas `security definer`, `search_path = ''`):
+`criar_acesso_academia(academia, usuario, senha)`,
+`nova_senha_academia(user, senha)` (derruba as sessões e pede troca de
+novo), `remover_acesso_academia(user)`, `acessos_das_academias()`,
+`contatos_privados()` — só admin; `completar_meu_acesso(...)` e
+`marcar_senha_trocada()` — só a própria academia; `minhas_academias()` e
+`avaliacao_da_minha_academia(id)` servem às regras. O login é criado
+direto em `auth.users` + `auth.identities` com `extensions.crypt(senha,
+gen_salt('bf', 10))`, o mesmo formato do Supabase, e com os campos de token
+em `''` (nulo quebra o login do Supabase). Apagar o acesso (ou a academia)
+apaga o login junto (gatilho `apagar_login_do_acesso`).
+
+**Troca de senha:** pelo login do Supabase (`auth.updateUser`), mandando a
+senha atual junto (`current_password`) — funciona com "Secure password
+change" e "Require current password" ligados ou desligados (conferido no
+GoTrue local). No primeiro acesso a senha provisória fica só na memória da
+página até a troca. Esqueceu a senha: WhatsApp do guia → "Gerar nova
+senha".
+
+**Conferido aqui (30/09/2026):** Postgres 16 local com as migrações + o
+login de verdade do Supabase (`supabase/auth`, commit de 22/09/2026,
+compilado daqui): `testes/banco-acesso.py`, 133 conferências — a academia
+entra com a senha provisória, troca a senha, edita só o que é dela, não
+apaga nem se avalia, responde só as avaliações dela, não lê contato nem
+cliques; nova senha derruba a sessão; remover acesso e excluir academia
+apagam o login; `numeros_da_academia` corta o período e os detalhes pelo
+plano, devolve só os números da própria academia e o visitante não chama;
+conta por e-mail, pedido, aprovação, publicar libera, equipe com limite do
+plano, e-mail ou WhatsApp de academia sem avaliar, o freio de contas
+novas, os dados de contato completos e o código (só o admin gera, ninguém lê
+a tabela, errado conta a tentativa, 5 tentativas, 72 horas, certo libera). Também com a biblioteca do site (`@supabase/auth-js`
+2.117): entrar com usuário, `same_password`, troca com a senha atual.
 
 ### GitHub ↔ Supabase
 O Breno ligou o repositório pelo painel do Supabase (Project Settings →
@@ -367,6 +2353,38 @@ em aba anônima inflava os números da home.
     banco de teste fica `false`) e a leitura dela para o visitante.
   - `migrations/20260929120100_sitemap.sql` — domínio `"*/*"` e a função
     `sitemap()`.
+  - `migrations/20260930130000_links_amigaveis.sql` — `slug()`,
+    `slug_da_academia()` e o `sitemap()` com os endereços novos (seção 3,
+    "Endereços").
+  - `migrations/20260930120000_acesso_academias.sql` — área da academia:
+    tabelas `academia_acessos` e `respostas`, regras, gatilhos, funções e
+    as colunas de contato fechadas para quem está logado (seção 4, "Área da
+    academia").
+  - `migrations/20260930140000_numeros_da_academia.sql` — função
+    `numeros_da_academia(p_dias, p_academia)`: os números da própria
+    academia para o Desempenho do GuiaTennis Parceiros, cortados pelo plano
+    (seção 3, "GuiaTennis Parceiros"). O admin pode passar `p_academia`.
+  - `migrations/20260930150000_parceiros_no_sitemap.sql` — o `sitemap()`
+    com `/parceiros`, `/parceiros/planos`, `/parceiros/ajuda` e
+    `/parceiros/cadastro`.
+  - `migrations/20260930160000_contas_parceiros.sql` — conta sem academia
+    (`academia_id` pode ser nulo), `papel` (principal/equipe), pedido
+    (`pedido_academia_id`, `pedido_nome`, `pedido_em`), `login_do_email`,
+    `criar_minha_conta`, `pedir_para_administrar`, `cancelar_meu_pedido`,
+    `aprovar_pedido_de_acesso`, `recusar_pedido_de_acesso`,
+    `pessoas_da_minha_academia`, `adicionar_pessoa`, `remover_pessoa`,
+    `acessos_das_academias` com papel e pedido, e o bloqueio de avaliação
+    de academia (regra "Enviar avaliacao" + gatilho `avaliacao_de_parceiro`).
+    **Atenção:** rodar de novo o `20260930120000` ou o `SQL-SEGURANCA.sql`
+    à mão desfaz a regra nova de avaliação — rodar este depois.
+  - `migrations/20261001120000_cadastro_e_verificacao.sql` — `tratamento`
+    na conta, `criar_minha_conta` e `completar_meu_acesso` com os campos
+    novos (tratamento, cargo, novidades; a chamada antiga continua
+    valendo), tabela fechada `codigos_de_verificacao`,
+    `gerar_codigo_do_pedido` (admin), `confirmar_meu_codigo` (a conta) e
+    `acessos_das_academias` com tratamento e `codigo_em`.
+  - `migrations/20261001130000_tempo_ate_agir.sql` — colunas `segundos` e
+    `segundos_ficha` em `cliques`, com trava de 0 a 86400.
   - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
     não existem): aula e locação, só locação, só aula com horário por dia
     e prazo de 36h, uma pausada e uma pendente; mais avaliações e
@@ -417,7 +2435,7 @@ copiar do Google em massa, fotos, avaliações, textos e logo, não.**
   (os termos do Google Maps proíbem), foto, avaliação, nota, texto de
   descrição e logo. Na dúvida sobre foto, pedir à academia (mensagem da
   seção 13).
-- No painel do admin (botão da prancheta), no fim, **"Academias no mapa
+- No painel do admin, em **Ferramentas** (antes, botão da prancheta), **"Academias no mapa
   que ainda não estão no guia"**, do OpenStreetMap (licença ODbL: uso
   livre, até comercial, com crédito). O admin digita uma região (bairro,
   cidade ou CEP, pelo mesmo caminho da busca do site) e escolhe até 3, 5
@@ -447,10 +2465,14 @@ copiar do Google em massa, fotos, avaliações, textos e logo, não.**
 ### Sitemap automático (29/09/2026)
 `/sitemap.xml` não é mais o arquivo do repositório: o `netlify.toml`
 repassa (proxy, `force = true`) para a função `sitemap()` do banco de
-verdade, com a chave pública no cabeçalho. Ela lista a home e a ficha de
-cada academia publicada e em exibição — academia nova entra sozinha, sem
-publicar o site. A função devolve o tipo `"*/*"` (domínio sobre `bytea`)
-e põe o `Content-Type: application/xml` ela mesma: com o tipo
+verdade, com a chave pública no cabeçalho. Ela lista a home, as páginas
+públicas do GuiaTennis Parceiros, as páginas de
+cada cidade e bairro com academia (`/quadras/…`, desde 30/09/2026) e a
+ficha de cada academia publicada e em exibição (`/academia/…`) — academia
+nova entra sozinha, sem publicar o site. A função roda com a permissão do
+visitante: só pode pedir colunas que ele lê (com `a.*` ela quebrou no
+teste local, porque o visitante não lê os contatos). A função devolve o tipo `"*/*"` (domínio sobre `bytea`)
+e define o `Content-Type: application/xml` ela mesma: com o tipo
 `"text/xml"`, o PostgREST só devolve XML puro quando o pedido diz
 `Accept: text/xml`, e o Google pede `text/html, …, */*` (viria JSON).
 Conferido num PostgREST 12.2.3 local. A prévia do Netlify também aponta
@@ -498,15 +2520,24 @@ colocados pelo Breno). Aqui:
   Na primeira vez, a senha recém-trocada no Supabase levou uns minutos
   para valer no pooler ("password authentication failed").
 - Depois do SQL, `supabase/conferir.sh` testa pela API, com a chave
-  pública, o que o site lê: as academias com as colunas do `index.html` e
-  o sitemap sem pedir formato (tem de vir XML).
+  pública, o que o site lê: as academias com as colunas do `index.html`,
+  as respostas das academias, que a tabela de acessos fica fechada para o
+  visitante, e o sitemap sem pedir formato (tem de vir XML).
 - **Onde ver o resultado:** GitHub → Actions → "Banco de dados" → a
   execução → passo "Aplicar…". Linhas esperadas: `aplicada: <arquivo>`,
   `anotada sem rodar…`, `visitante lê as academias: N publicadas`,
-  `sitemap: N endereços`. Do chat, o Claude lê pela ferramenta do GitHub
+  `visitante lê as respostas das academias`, `visitante não lê os acessos
+  das academias (resposta 401)`, `sitemap: N endereços (F fichas, R
+  regiões)` — e erro se o sitemap ainda tiver `?court=`. Do chat, o Claude lê pela ferramenta do GitHub
   (lista as execuções do `banco.yml` e lê o registro do job). É o jeito de
   conferir produção daqui, já que a rede deste ambiente não alcança o site
   nem o Supabase.
+- **Coluna nova que o site lê precisa da leitura liberada** no SQL:
+  `grant select (coluna) on public.academias to anon, authenticated` (o
+  visitante e quem está logado só leem as colunas da lista). Em 05/10/2026
+  a `pausada_pela_academia` entrou sem isso e a esteira do banco ficou
+  vermelha ("permission denied for table academias" no `conferir.sh`);
+  corrigido no SQL `20261005180000_visitante_le_a_pausa`.
 - **Coluna nova que o visitante lê** entra também em
   `COLUNAS_ACADEMIA_NOVAS`: na publicação, o site pode ir para o ar antes
   do SQL; aí ele lê sem as colunas novas em vez de cair no `*`, que o
@@ -518,7 +2549,93 @@ colocados pelo Breno). Aqui:
   `initdb -D <dir>/data -A trust -U postgres` e
   `pg_ctl -D <dir>/data -o '-p 5433 -k <dir>/sock' start`. Antes da
   migração, criar os papéis `anon`, `authenticated` e a função
-  `auth.jwt()` que o Supabase já traz.
+  `auth.jwt()` que o Supabase já traz. Para o `banco-emails.py` sem o GoTrue (08/10/2026,
+  234 certas): papéis `anon`, `authenticated`, `service_role`,
+  `authenticator`, `supabase_auth_admin`; esquema `extensions` com o
+  `pgcrypto` dentro; esquema `auth` com `auth.users` (id, email, aud,
+  role, encrypted_password, email_confirmed_at, raw_app_meta_data,
+  raw_user_meta_data, created_at, updated_at, confirmation_token,
+  recovery_token, email_change_token_new, email_change…), `auth.identities`
+  e as funções `auth.uid()`, `auth.jwt()`, `auth.role()` lendo
+  `request.jwt.claims`; `grant usage` em `auth`, `public` e `extensions`
+  para os papéis do site e `alter default privileges` no `public`. Depois
+  `supabase/aplicar.sh teste` e o `seed.sql` com `set
+  session_replication_role = replica`.
+
+### Avisos por e-mail e buscas salvas (05/10/2026)
+- `buscas_salvas` (SQL `20261005150000`): `id, user_id (jogadores), termo,
+  bairro, cidade, lat, lng, filtros jsonb, link, avisar, avisar_desde,
+  avisada_ate, created_at`. A conta lê, salva, apaga e só muda `avisar`
+  (gatilho `arrumar_busca_salva`: link do site, ponto arredondado, até 20).
+- `emails_a_enviar` (SQL `20261005160000`): a fila — `chave` (única),
+  `tipo`, `para`, `assunto`, `html`, `texto`, `descadastro`, `tentativas`,
+  `pedido_id` (do pg_net), `enviado_em`, `resend_id`, `erro`. Ninguém de
+  fora lê. `emails_configuracao`: `site`, `remetente` (`GuiaTennis
+  <nao-responda@guiatennis.com.br>`), `prefixo`, `admin`.
+- Colunas novas: `jogadores.token_avisos` e `academias_avisadas_ate`;
+  `academia_acessos.token_avisos` e `avisos_por_email`;
+  `academias.publicada_em` (gatilho `marcar_publicada_em`).
+- Funções: `enviar_emails()` (a cada minuto), `preparar_avisos_do_dia()`
+  (10h), `preparar_aviso_de_viagem`, `preparar_avisos_de_academias_novas`,
+  `configurar_emails(chave, site)` (só o dono do banco, para o GitHub),
+  `parar_avisos(token, aviso)` (visitante), `mudar_avisos_dos_parceiros`,
+  `situacao_dos_emails()` (admin), `ativar_conta_de_jogador()` (SQL
+  `20261005170000`). Gatilhos: `aviso_de_avaliacao_nova`,
+  `aviso_de_pedido_de_acesso`, `aviso_de_pedido_aceito`,
+  `aviso_de_viagem_mudou`. Os gatilhos nunca atrapalham o que os chamou
+  (erro vira aviso no registro do banco).
+- Extensões: **pg_net** e **pg_cron** (o SQL tenta ligar; sem elas, avisa e
+  a fila espera). Para conferir no Supabase: Database › Extensions (as duas
+  ligadas) e Integrations › Cron (os dois trabalhos `guiatennis-…`).
+- Plano grátis do Resend: **100 e-mails por dia, 3.000 por mês** (o código
+  de confirmação conta junto). Passando disso, os avisos ficam na fila e
+  saem no dia seguinte; com mais jogadores, o plano pago do Resend.
+
+### Código da disputa pelo WhatsApp (07/10/2026, regra 66)
+- SQL `20261007140000_codigo_pelo_whatsapp`. `whatsapp_configuracao`:
+  `numero_id` (a "Identificação do número de telefone" da Meta),
+  `modelo` (`codigo_guiatennis`), `idioma` (`pt_BR`), `versao` (`v23.0`,
+  da Graph API; trocar aqui quando a Meta aposentar), `real` (só o banco de
+  verdade manda para as academias) e `numero_de_teste`. O token fica no
+  cofre (`whatsapp_token`).
+- `whatsapp_a_enviar`: a fila (`para`, `user_id`, `academia_id`, `origem`
+  conta/admin, `corpo` com o código — apagado quando sai ou desiste —,
+  `tentativas`, `pedido_id` do pg_net, `enviado_em`, `mensagem_id` wamid,
+  `erro`). Ninguém de fora lê.
+- Funções: `contestar_academia` (agora devolve texto),
+  `pedir_codigo_da_disputa`, `mandar_codigo_admin`, `enviar_whatsapps()`
+  (na hora e a cada minuto, `guiatennis-enviar-whatsapp`: 4xx não repete,
+  429/5xx até 3 vezes, código com mais de 2 horas desiste),
+  `configurar_whatsapp(token, numero_id, numero_de_teste, real)` (GitHub),
+  `situacao_do_whatsapp()` (admin, em E-mails), `pedidos_de_acesso_admin`
+  (+ `whatsapp_em`, `whatsapp_enviado_em`, `whatsapp_origem`,
+  `whatsapp_erro`), `assumir_pedidos_da_conta` (confirmar o e-mail manda o
+  código da disputa que esperava) e as internas `numero_do_whatsapp`,
+  `whatsapp_ligado`, `whatsapp_do_pedido`, `novo_codigo`,
+  `codigo_pelo_whatsapp`, `codigo_da_disputa_pela_conta`.
+- Segredos no GitHub (passo "Ligar o código pelo WhatsApp" do `banco.yml`):
+  `WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` e `WHATSAPP_NUMERO_DE_TESTE`.
+
+### Painel do admin (06/10/2026)
+- SQL `20261006120000_painel_do_admin`, três funções só do admin
+  (`eh_admin()`; quem não é admin recebe "Só o admin." ou lista vazia, o
+  visitante nem chama): `emails_recentes_admin(p_limite)` (os últimos
+  e-mails da fila, sem o corpo: tipo, para, assunto, criado, enviado,
+  tentativas, erro), `reenviar_email_admin(p_id)` (o que não saiu volta
+  para a fila, zerado) e `numeros_das_contas_admin()` (jogadores,
+  confirmados, novos em 7 dias, cada aviso ligado, buscas salvas e com
+  aviso, contas no Parceiros, academias com responsável, pedidos abertos).
+  A lista das contas de jogador o painel lê direto de `jogadores` (o admin
+  já podia ler, pela regra da tabela). Tipos de e-mail na fila:
+  `avaliacao`, `pedido_responsavel`, `pedido_guiatennis`, `pedido_aceito`,
+  `viagem`, `academias_novas` (e, depois, `ficha_parada`, regra 85).
+- `jogadores` ganhou (SQL `20261009140000`, regra 86) `visto_em` (só o
+  banco escreve, por `marcar_visita_da_conta`), `lembrete_de_volta`
+  (começa ligado; a conta muda) e `lembrado_de_volta_em`. Tipos novos na
+  fila: `volta` e `resumo_do_mes` (regra 87, `preparar_resumos_do_mes`).
+- `lembretes_de_ficha` (SQL `20261009130000`, regra 85): `academia_id`
+  (chave, apaga junto com a academia) e `lembrada_em`. Sem acesso do site
+  (RLS ligada, sem regra); só `preparar_lembretes_de_ficha()` escreve.
 
 ## 5. Banco: o que já rodou e o que falta
 
@@ -555,7 +2672,27 @@ visitante lê as academias: 8 publicadas
 sitemap: 9 endereços
 ```
 O histórico fica em `supabase_migrations.schema_migrations` nos dois
-bancos. Não há SQL esperando.
+bancos.
+
+**Esperando o merge (30/09/2026):** `20260930120000_acesso_academias`
+(área da academia), `20260930130000_links_amigaveis` (sitemap com os
+endereços novos), `20260930140000_numeros_da_academia` (Desempenho do
+GuiaTennis Parceiros) e `20260930150000_parceiros_no_sitemap`, `20260930160000_contas_parceiros`
+(conta por e-mail, pedidos, equipe, academia não avalia) e
+`20261001120000_cadastro_e_verificacao` (dados de contato completos e o
+código no WhatsApp da academia), `20261001130000_tempo_ate_agir` e, de
+03/10, `20261003120000_varias_academias` (uma conta, várias academias:
+`academia_vinculos`, `academias_da_minha_conta`, `abrir_minha_academia`,
+`remover_acesso_academia` com a academia) e `20261003130000_pedidos_de_plano`
+(pedido de plano pago: `pedir_plano`, `pedidos_de_plano_admin`; mudar o
+plano atende) e `20261003140000_pedido_ao_responsavel` (pedido de academia
+com responsável vai para ele), os de 04/10 (`20261004120000` a
+`20261004140000`) e, de 05/10, `20261005120000_varios_pedidos` (vários
+pedidos por conta: `pedidos_de_acesso`, `meus_pedidos_de_acesso`,
+`pedidos_de_acesso_admin`, código por conta e academia),
+`20261005130000_academia_pausa` e `20261005140000_percurso_das_visitas`. Entra no
+banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
+de novo sem estragar.
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
 
@@ -588,14 +2725,21 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
-Em 29/09/2026 (último commit do PR #3): **159 verificações, todas
-passando**.
+Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
+e contas por e-mail, tempo até agir, logo, menu, home pessoal,
+preferências e cadastro passo a passo — 01/10): **439 verificações, todas
+passando** (160 de antes, 66 da área da academia, 34 dos links, 127 do
+GuiaTennis Parceiros, 16 do tempo até agir e 31 do `menu-e-home.js`), mais
+as 133 do `banco-acesso.py` no banco e login locais.
 
 - `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
   antes de qualquer outra coisa.**
+- Formulário da ficha nos testes: é uma parte por tela. `irParte(page,
+  "contato")` (do `harness.js`) vai direto para a parte antes de procurar
+  o campo.
 
 - `busca-e-ficha.js` — frase da home, busca registrada com região e CEP
   (e sem as colunas novas), admin não conta, política por modalidade na
@@ -609,21 +2753,209 @@ passando**.
   `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
 - `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
   estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
-- `ficha-basica.js` — aviso da ficha básica e link do responsável no
-  WhatsApp, banco sem a coluna nova, caixa do admin, busca do mapa aberto
+- `ficha-basica.js` — aviso da ficha básica e link do responsável (vai ao
+  Cadastro do GuiaTennis Parceiros, que pede o acesso no WhatsApp), banco sem a coluna nova, caixa do admin, busca do mapa aberto
   por região (sem clube, sem o que já está no guia, adicionar como
   pendente, mensagens de região não achada e de mapa lento), contatos em
   texto com logo e sem os dados, nada no lugar da foto, admin publica só
   com o nome (o visitante continua com os campos essenciais) e textos
   legais.
+- `acesso-academia.js` — `/parceiros/entrar` (e o antigo `?entrar`), login
+  por usuário, senha errada, primeiro acesso no portal (validação, troca da
+  senha provisória, aceite), painel com os números e o que falta, Conta,
+  responder/apagar resposta, pedir análise, editar só a
+  própria ficha sem mandar status/plano, ficha básica que vira confirmada,
+  não avaliar a si mesma, nada de editar/responder em outra academia,
+  academia logada não conta, trocar senha, login sem acesso, admin cria o
+  acesso e a mensagem do WhatsApp, admin continua vendo os contatos,
+  moderação de resposta, banco sem o SQL novo e textos legais.
+- `links.js` — endereço de cada tela: ficha por nome e id, nome antigo,
+  `?court=` antigo, academia que saiu, região com título e canônica,
+  caminho da ficha como link, filtros/ordem/mapa no link e na ordem das
+  listas, gaveta vira um passo, "voltar" desfaz e não conta busca de novo,
+  `?busca=` antigo, comparação, cartões e QR com o endereço novo, `noindex`
+  da busca e da comparação, dados do caminho para o Google.
+- `tempo.js` — tempo até agir: primeira busca e primeiro contato levam os
+  segundos, os seguintes não, a chegada leva 0, contato pela ficha leva o
+  tempo olhando a ficha, banco sem as colunas, admin não conta, painel do
+  admin com medianas, porcentagens só das visitas medidas e faixas.
+  `abrir({ semTempo })` finge o banco sem as colunas.
+- `parceiros.js` — GuiaTennis Parceiros: apresentação, planos (o que cada
+  um libera), ajuda, cabeçalho de ponta a ponta, menu do celular com
+  âncoras, cadastro que procura a academia ("Administrar", "Não é essa",
+  academia nova), entradas pelo site dos jogadores, caixa de preço da busca
+  sem as comodidades, página privada sem login volta depois de entrar,
+  Desempenho no Básico/Completo/Premium (períodos trancados, gráficos de
+  uma série, leitura da coluna, 90 dias, desde o começo por semana,
+  bairros e média da cidade), menu e rodapé de quem está logado, `noindex`
+  e banco sem a função dos números. Também: cadastro pelo e-mail (e-mail
+  que já tem conta, entrar pelo e-mail de contato, criar conta com os
+  avisos, "Achamos pelo seu e-mail", pedido, cancelar, academia nova sem
+  repetir os dados), admin aprova e publicar libera, link da ficha já pede
+  a academia, pessoas com acesso (adicionar, plano cheio, remover, e-mail
+  de outra academia, equipe sem mexer), ofertas de plano e "Em breve" do
+  Premium, "Ver planos" separado, formulário em tela cheia com atalhos,
+  faixa verde nos dois sites e visitante com contato de academia sem
+  avaliar.
+- `varias-academias.js` — uma conta, várias academias (03/10/2026):
+  seletor no topo com a aberta marcada, trocar abre o painel da outra,
+  menu do celular com "Suas academias", Conta com a lista e as pessoas da
+  academia aberta, "Adicionar outra academia" no Básico (busca com "Já é
+  sua", pedido, código, as duas no seletor), ficha da outra academia com
+  "Abrir no painel", admin com o pedido de quem já tem academia e
+  "Remover acesso" só daquela academia.
+- `plano-ao-finalizar.js` — cadastro sem trava (5 comodidades,
+  Instagram), tela do plano ao finalizar (o que esconde, o que melhorar,
+  Premium primeiro, Básico por último), atalho para a parte, academia
+  salva inteira, pedido do Premium anotado e WhatsApp, admin sem a tela,
+  "Querem mudar de plano" no admin, "O que os alunos não veem" no painel
+  e edição no Premium sem a tela.
+- `pedido-ao-responsavel.js` — pedido de academia com responsável vai
+  para ele (sem código), responsável aceita/recusa no painel e na Conta,
+  plano cheio avisa e oferece o de cima, equipe não vê os pedidos, admin
+  sem "Gerar código" e "Aprovar" com confirmação.
+- `perfil-e-avaliar.js` — perfil do jogador em `/perfil` (seções, listas,
+  trocar a senha, "Avaliar", menu dos avisos, `?conta=minha`, sem conta),
+  "Jogou aqui?" (antes de um dia não pergunta; depois, balão com estrelas
+  que abre a ficha com a nota; "Não joguei aqui"; avaliada sai; academia
+  não recebe), menu "Sair da conta", Perfil dos Parceiros (inicial no topo,
+  `/parceiros/conta` → Perfil), "Confirme o seu e-mail" em todas as telas
+  da conta nova com pedido (e o "!" no círculo) e Ajuda/Termos sem CNPJ.
+  Abas: `vigiarAbas(page)`/`abasAbertas(page)` (do `harness.js`) trocam o
+  `window.open` por um que anota — o Parceiros abre na aba dele.
+- `percurso.js` — passos da visita (chegada com origem/meio/aparelho, busca
+  só com a região, ficha, contato, favoritar, comparar, janelas, etapas do
+  cadastro dos Parceiros), quem não grava (admin; academia no site dos
+  jogadores), banco sem a tabela, e o relatório do admin (funil, origens,
+  caminhos, visita passo a passo com "ficou X", Parceiros) e a Política.
+- `buscas-e-avisos.js` — Salvar busca (sem conta pede o Entrar; salva com
+  o ponto arredondado; aviso por e-mail; não repete; menu e perfil;
+  refazer; apagar; banco sem a tabela), página da cidade (todas as da
+  cidade, sem procurar o endereço, salvar a cidade), conta do Parceiros no
+  site dos jogadores (parte de jogador sozinha, inicial no topo, menu com o
+  Parceiros, não avalia a própria, avalia as outras, entrar pelo site dos
+  jogadores), "Não quero mais receber" (pergunta, tira o número do link,
+  link inventado), avisos no Perfil do Parceiros, situação dos e-mails no
+  admin e os textos "Por que…" e da Política.
+- `confianca-na-ficha.js` — regra 64: "Confirmada pela academia ·
+  atualizada há…" (hoje, ontem, semanas, mês), ficha básica sem a linha,
+  banco sem a coluna, a academia salvar deixa "atualizada hoje" e não
+  escreve a data à mão, o lembrete de ficha parada em Atualizações, "Como
+  funcionam as avaliações", os números da home e do Parceiros com a nota,
+  o cartão "Avaliações feitas no GuiaTennis", a descrição para o Google e
+  a pergunta nova da Ajuda.
+- `codigo-so-em-disputa.js` — regra 65: conta com e-mail confirmado assume
+  a academia do guia sem responsável na hora; com responsável, "Contestar"
+  vira disputa e o código vence; banco sem o SQL; sem e-mail confirmado o
+  pedido espera e confirmar o e-mail resolve; admin vê a disputa, o
+  WhatsApp de antes e decide; o selo no nome e o texto no fim da ficha;
+  "No ar" por 1 dia; "Como funciona" e Termos.
+- `acessos-em-destaque.js` — regra 68: Básico e Completo veem o cartão
+  pequeno "Desempenho" com os acessos de 30 dias embaixo das avaliações, e
+  "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
+  singular, zero acessos, banco antigo sem número; Premium sem o cartão.
+- `parceiros-acender.js` — regra 78: o topo acende ao abrir, o resto
+  começa apagado e acende ao descer, continua aceso ao redesenhar, só na
+  página inicial, e tudo de uma vez com "reduzir movimento".
+- `previa-da-ficha.js` — regra 84: a prévia na última parte, com os
+  blocos na ordem da ficha, cortada pelo plano (o que fica de fora dito),
+  só para ver; "Editar" de cada bloco e o de baixo; "Confirmar e salvar"
+  segue para o plano e salva; Premium com o selo dourado e tudo à vista;
+  pedido pelo site sem selo e "Confirmar e enviar"; admin com "Confirmar e
+  publicar". O `painel-admin.js` confere a seção Contas excluídas (regra
+  83).
+- `volta-e-resumo.js` — regras 86 e 87: abrir o site com a conta anota a
+  visita (uma vez por abertura; banco antigo, em silêncio); o lembrete
+  ligado em Minha conta, desligar e salvar; banco sem a coluna (não
+  aparece, salvar continua); o cadastro sem a caixa e com a nota; o link
+  "parar" do lembrete; Planos, Ajuda, Termos e Privacidade. A seção 26 do
+  `banco-emails.py` confere o lembrete (quem recebe, com e sem cidade, uma
+  vez por ausência, a visita a cada 12 horas, parar) e a 27, o resumo do
+  mês (só nos primeiros 7 dias, o mês de Brasília, comparação, média, sem
+  resposta, Premium com canais e origens, uma vez por mês, pausada, avisos
+  desligados).
+- `lembrete-da-ficha.js` — regra 85: o link do e-mail
+  (`/parceiros/ficha?abrir=`) abre a academia do e-mail numa conta com
+  várias (e grava a troca), não troca se já está aberta nem se a academia
+  não é da conta; sem login, vai para Entrar e guarda a academia; a Ajuda,
+  a folha "Não quero mais receber" e a Privacidade citam o lembrete. A
+  seção 25 do `banco-emails.py` confere o envio (3 meses, uma vez, de novo
+  3 meses depois, quem recebe, pausada, salvar zera, avisos do dia).
+- `chat-na-conta.js` — regra 79: com a conta, a primeira dúvida cria a
+  conversa (com ela de título) e as outras atualizam; "Nova conversa";
+  "Conversas" lista, abre, continua e apaga (com "Cancelar"); recarregar
+  continua; sair da conta começa do zero; outro aparelho (só as da
+  conta; caminho estranho do banco não volta); sem conta fica na tela e,
+  ao entrar, passa para a conta; banco sem a tabela; jogadores e admin
+  não guardam; Privacidade.
+- `plano-na-ficha.js` — regras 81 e 82: "Continuar" à direita e o que
+  falta (um toque leva à parte); o aviso do plano em cada parte, contando o
+  que fica de fora; "Quero o Completo" (pedido ao salvar, sem a tela do
+  fim) e "Manter o Básico" ("Mudar de ideia"); Completo sem aviso;
+  Promoções guardadas fora do Premium; Pessoas acima do limite; o admin
+  confirma ao baixar o plano e não ao subir.
+- `chat-de-ajuda.js` — regra 77: abre pela folha "Fale com a gente", pelo
+  rodapé e pela Ajuda do Parceiros; entende as dúvidas de cada site; o
+  caminho fecha o chat e abre a página; "Ainda preciso de ajuda" e o
+  "não entendi" levam ao WhatsApp com a dúvida; a conversa continua ao
+  abrir de novo; Privacidade.
+- `sair-do-guia.js` — regra 76: o responsável pede (motivo obrigatório,
+  "Outro" pede texto), o cartão mostra o pedido, cancelar; a equipe não
+  pede; o admin vê em Pendências, "Manter no guia" com resposta e "Tirar
+  do guia" apaga a ficha; textos.
+- `promocoes.js` — regra 72: fora do Premium, trancado; publicar (pede
+  o título), o aviso de quantos o e-mail avisou, mudar, até 3 valendo,
+  encerrar; na ficha, o atalho e o bloco com os preços (a vencida e a do
+  Básico não aparecem); o cartão da busca; o admin remove; banco sem a
+  tabela; Planos, Ajuda, Termos, Privacidade e o aviso da conta.
+- `premium-patrocinado.js` — regra 71: a Premium perto no topo com
+  "Patrocinado" e o selo dourado, o título "Mais perto de você" e as
+  outras da mais perto para a mais longe, sem repetir; no máximo 2; a mais
+  de 10 km, sem topo; outra ordem; comparação e filtros; página da cidade;
+  Premium com ficha básica ou pausada; selo na ficha; textos.
+- `guardados-na-conta.js` — regra 70: sem conta, no celular só as vistas
+  e a última busca (nada de favoritas, chamadas, viagens, preferências,
+  avaliações nem comparação); o coração pede para entrar e, entrando,
+  favorita na conta; Favoritas vazias convidam a entrar; sair tira da
+  tela; o que estava no celular junta com a conta e sai do celular (a
+  conta vence nas preferências); banco recusou, fica no celular; outro
+  aparelho vê o que está na conta.
+- `codigo-pelo-whatsapp.js` — regra 66: contestar manda o código na hora
+  para o WhatsApp de antes, "Mandar outro código" pede para esperar, quem
+  digita vence; sem e-mail confirmado, espera; desligado e banco sem o SQL,
+  como antes; admin manda pelo WhatsApp do GuiaTennis, vê se saiu ou o
+  erro (e gera à mão), e a situação em E-mails; Ajuda e Política.
+- `receber-email.mjs` — regra 67, roda sozinho, sem internet: `node
+  testes/receber-email.mjs`. Assinatura do webhook (certa, errada, velha,
+  corpo mexido), encaminha para o Gmail com o nome de quem escreveu, o
+  "responder", os anexos e as imagens, o corpo sem nada a mais (o endereço
+  num cabeçalho), sem repetir e sem círculo; erro do Resend dá 500.
+- `banco-emails.py` — **não roda com os outros**: precisa de um Postgres
+  local com a pasta `supabase/` aplicada (não precisa do GoTrue); finge o
+  cofre, o pg_net e o relógio. Confere cada aviso (quem recebe, quem não,
+  texto escapado, sem repetir), as buscas salvas (regras, limite, link), o
+  envio (dois por vez, chave e idempotência, 200, 429, 5 tentativas), o
+  "parar avisos", a situação do admin e a conta do Parceiros que também
+  joga. `BANCO_URL=postgresql://postgres@127.0.0.1:5433/postgres python3
+  testes/banco-emails.py` — 95 certas em 05/10/2026, também num banco novo.
+- `banco-acesso.py` — **não roda com os outros**: precisa de Postgres e do
+  login do Supabase locais (abaixo, "Banco e login locais"). Confere no
+  banco de verdade (não no mock) tudo o que a academia pode e não pode.
 - `banco-de-teste.js` — a prévia do Netlify e o site de teste abrem o
   banco de teste; o guiatennis.com.br, o endereço do Netlify do site de
   verdade, link com `?banco=` e endereço parecido, nunca.
 
 O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
-separada) e `a2` (só locação, regra única). Chaves: `__admin`,
-`__semDetalhe`, `__semCep`, `__colunasFechadas`, `__semPlano`,
-`__semConfirmada` (a `a2` é ficha básica). `abrir({ overpass })` responde o
+separada) e `a2` (só locação, regra única). Chaves: `__admin` (sessão com
+o e-mail do admin), `__semDetalhe`, `__semCep`, `__colunasFechadas`,
+`__semPlano`, `__semConfirmada` (a `a2` é ficha básica), `__academia`
+(academia logada, com acesso completo; `__acessoNovo` = primeiro acesso) e
+`__semAcesso` (banco sem o SQL da área da academia); `abrir({ plano })`
+escolhe o plano que `numeros_da_academia` devolve. `abrir({ avaliacoes,
+respostas })` começa com avaliações e respostas. O mock finge o login
+(`signInWithPassword` com as senhas de `window.__senhas`, `updateUser` em
+`__senhaNova`), as funções do banco (`window.__rpcs`) e o gatilho que
+protege a ficha quando quem salva é a academia. `abrir({ overpass })` responde o
 OpenStreetMap com um JSON fixo; `abrir({ host })` finge outro endereço
 (prévia, guiatennis.com.br) e o `createClient` do mock anota em
 `window.__banco` qual banco o site escolheu. Teste de cadastro como
@@ -642,6 +2974,31 @@ preta com cada passo da busca e a resposta do banco a cada gravação
 abre com `?diagnostico`, até fechar a aba. Foi assim que se achou a trava
 que recusava as buscas.
 
+**Banco e login locais (para `banco-acesso.py`):** (05/10/2026: o
+`go mod download -json` escreve uma linha antes do JSON — pule-a para ler
+o `Dir`; o papel `supabase_auth_admin` precisa de `alter role … set
+search_path = auth` e os papéis do site de `grant usage on schema auth`,
+como no Supabase; com isso: 167 certas e as 11 falhas antigas.) (03/10/2026: com o
+`github.com/supabase/auth@master`, rodar `go get
+github.com/joho/godotenv@v1.4.0` antes do `go build`; o `gotrue serve`
+precisa de `GOTRUE_JWT_AUD=authenticated` e
+`GOTRUE_JWT_DEFAULT_GROUP_NAME=authenticated`, senão nenhum login feito
+pelo SQL entra; e o `seed.sql` só entra com `set session_replication_role
+= replica`, por causa do gatilho que exige conta para avaliar.) Postgres como na seção
+4 ("Postgres na máquina"), papéis `anon`, `authenticated`,
+`service_role`, `authenticator`, `supabase_auth_admin` e o esquema `auth`
+do dono `supabase_auth_admin`. O login do Supabase (GoTrue) se compila
+daqui pelo proxy do Go, sem GitHub: `go mod download
+github.com/supabase/auth@<commit>`, copiar a pasta, **apagar a linha
+`replace github.com/joho/godotenv => ./internal/forks/godotenv`** do
+`go.mod` (a pasta não vem no pacote) e `go build`. `gotrue migrate` cria o
+`auth` (inclui `auth.uid()` e `auth.jwt()`); depois `supabase/aplicar.sh
+teste` com `BANCO_URL` local e `gotrue serve` (variáveis
+`GOTRUE_JWT_SECRET`, `DATABASE_URL` com `supabase_auth_admin`,
+`GOTRUE_DISABLE_SIGNUP=true`, `API_EXTERNAL_URL`, `PORT`). O teste cria o
+admin pela API de admin do GoTrue com um token `service_role` assinado
+com o segredo.
+
 **Daqui não se alcança o Supabase nem o site** (a rede do ambiente
 bloqueia, "CONNECT tunnel failed, response 403"). Diagnóstico de produção
 depende de print do Breno, das consultas da seção 5 e do registro da
@@ -652,8 +3009,10 @@ pelas ferramentas do GitHub (PR, checks, Actions).
 
 `index.html`, `404.html`, `netlify.toml`, `robots.txt`, `sitemap.xml`,
 `favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png`,
-`og-image.png`, `google7b66589ffc303f37.html` (verificação do Search
-Console).
+`og-image.png`, `email-logo.png` (o ícone dos e-mails),
+`google7b66589ffc303f37.html` (verificação do Search Console) e a função `netlify/functions/receber-email.mjs` (regra 67; o
+código dela não fica visível: `/netlify/*` dá 404, e ela roda em
+`/.netlify/functions/receber-email`).
 
 O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
 `SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e as pastas `testes/`,
@@ -695,10 +3054,12 @@ está ligado ao GitHub, com a `main` como branch de produção.
 acima ainda funciona — **só o `index.html` não basta**, porque ele aponta
 para os ícones e a imagem de compartilhamento.
 
-As imagens do site (favicons, ícone do iPhone, `og-image.png`) foram
-geradas a partir do `LOGO_SVG` com Playwright, num script que ficou num
-chat antigo e se perdeu. Para refazer, usar `divulgacao/gerar-imagens.js`
-como modelo (seção 12).
+As imagens do site (favicons, ícone do iPhone, `og-image.png`) e o logo da
+`404.html` saem do `logoDesenho` pelo `divulgacao/gerar-imagens.js`
+(desde 01/10/2026; regra 19). A `og-image.png` é o logo com o nome
+GUIATENNIS no meio de um fundo creme, 1200×630 — a que o Breno mandou.
+O ícone do iPhone e o perfil do WhatsApp são quadrados (o aparelho
+arredonda ou corta em círculo).
 
 ## 8. Referências de design
 
@@ -711,9 +3072,56 @@ como modelo (seção 12).
 - **Ficha básica e "É o responsável?":** Yelp, TripAdvisor e Google
   Business Profile ("Claim this business" / "Reivindicar esta empresa") —
   listar com dado público e convidar o dono a assumir a página.
+- **Endereços:** Booking e TripAdvisor (ficha e cidade com endereço
+  próprio, busca interna fora do Google, caminho "Início › Cidade › Bairro"),
+  Airbnb e Trivago (filtros, ordem e mapa no link; "voltar" desfaz),
+  Mercado Livre e TripAdvisor (id no endereço para o link não quebrar),
+  TudoCelular (comparação com as academias no link).
+- **Área da academia:** Google Business Profile (editar o perfil, "complete
+  seu perfil", responder avaliação como "Resposta do proprietário", não
+  apagar avaliação — só denunciar), Yelp for Business (responder em
+  público, "Report review"), TripAdvisor Management Center (cargo do
+  responsável + "sou representante autorizado"), Booking extranet (dados do
+  responsável e CNPJ para cobrança futura) e o QR code de avaliação na
+  recepção.
+- **Menu e home pessoal (01/10/2026):** trivago — menu em tela com "Menu"
+  no meio, grupos em negrito, ícone de traço e valor na direita
+  ("Minha trivago", "Viagens: Favoritos, Visualizações recentes, Reservas",
+  "Preferências de pesquisa", "Suporte", "trivago para hoteleiros"); home
+  com "Visualizações recentes" começando pela última pesquisa e "Ofertas
+  com base nas suas pesquisas recentes".
+- **Cadastro passo a passo (01/10/2026):** Airbnb ("Anuncie seu espaço":
+  uma pergunta por tela, barra de progresso, Voltar/Avançar), Booking para
+  Parceiros (o essencial primeiro, revisão com o que falta antes de
+  enviar) e Google Business Profile (nome, local e contato antes de
+  horário e fotos; na edição, partes separadas).
+- **GuiaTennis Parceiros:** trivago Business Studio (site separado para o
+  hoteleiro, números da página, planos que não mexem na posição), Booking
+  para Parceiros (apresentação com benefícios, "como funciona", perguntas
+  frequentes e cadastro), iFood Parceiros e Uber para motoristas (portal
+  com menu próprio; a barra de atalhos do celular saiu em 06/10/2026), Google Business Profile
+  (procurar a empresa antes de cadastrar e "reivindicar"; "Desempenho" com
+  visitas, contatos, período e comparação com o anterior).
 - **Publicação e teste:** o fluxo dos sites grandes — prévia por PR com
   banco de teste (staging), SQL guardado no repositório e aplicado pela
   esteira, merge publica.
+
+### Visual (pedido do Breno em 30/09/2026: "deixe mais clean")
+O site usava a Playfair Display em tudo — texto, botão, rótulo e letra
+miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
+- **Letras:** `--fonte-texto` (Inter, do Google Fonts, com as do sistema
+  de reserva) em todo o texto; `--fonte-titulo` (Playfair) só em
+  `.display`, `.sheet-title` e `.sec-title` — marca, títulos de página e de
+  seção. Nome de academia em cartão é Inter.
+- **Tamanhos:** texto base 15px (16px no "Sobre a academia"), nada abaixo
+  de 12px; campos com 16px (o iPhone não dá zoom); botões com 48px de
+  altura; rótulos de campo e de filtro em letra normal, sem CAIXA ALTA.
+- **Espaço:** mais ar entre as seções da home e da ficha, cartões com
+  16–20px de respiro, bordas mais claras (`--border: #E9E3D7`).
+- Tudo isso é a camada **"Acabamento limpo"**, no fim do `<style>` — vale
+  sobre o resto. Regra nova de visual entra nela.
+- No celular estreito, o "Compartilhar" sai da barra de baixo da ficha (já
+  está na barra de cima) para o "Chamar no WhatsApp" caber numa linha.
 
 ## 9. Armadilhas já pisadas (não repetir)
 
@@ -758,8 +3166,14 @@ como modelo (seção 12).
 - **Os cards são `<button>`, não link.** Sem `<a href="?court=…">` o
   Google não chega em ficha nenhuma. Os minis da home são âncoras com
   `preventDefault` no clique; se criar card novo, faça igual.
-- **`innerText` respeita `text-transform`**, então `.field-label` sai em
-  maiúsculas nos testes. Compare com o texto transformado.
+- **`innerText` respeita `text-transform`.** Desde 30/09/2026 os rótulos
+  (`.field-label`, `.fgroup-title`) não são mais em caixa alta; o que
+  continua em maiúsculas (selos, `.menu-grupo`, `.ct-secao`) sai assim nos
+  testes. Compare com o texto como aparece na tela.
+- **Foto de tela sem a letra de verdade engana.** O `harness.js` bloqueia a
+  internet, e o Chromium cai numa fonte qualquer. Para julgar o visual, use
+  `abrir({ fontes: <pasta> })` com as fontes do Google baixadas por `curl`
+  (`fontes.css`, os `.woff2` e `mapa.txt` com "url arquivo").
 - **Admin conectado não conta nas estatísticas.** `registrarBusca` e o
   `acesso_site` saem se `isAdmin`. Quem testa logado (a sessão fica no
   celular) acha que a busca "não registrou". O painel avisa isso.
@@ -771,7 +3185,7 @@ como modelo (seção 12).
   visitante sozinha.** A leitura do `anon` é liberada coluna por coluna.
   Depois de `alter table ... add column`, rode de novo o
   `SQL-SEGURANCA.sql` (ele libera todas menos as de contato) **antes** de
-  pôr a coluna em `COLUNAS_ACADEMIA_PUBLICAS`; senão o site fica vazio
+  incluir a coluna em `COLUNAS_ACADEMIA_PUBLICAS`; senão o site fica vazio
   para quem não é admin.
 - **Localizar academia nunca pode gravar o centro da cidade.** O
   endereço da Morumbi não era achado com o bairro ("Vila Progredior"), a
@@ -807,7 +3221,7 @@ como modelo (seção 12).
   `create or replace function` com outro `returns table`.
 - **XML pelo PostgREST:** função que devolve o domínio `"text/xml"` só sai
   como XML se o pedido mandar `Accept: text/xml`; o Google não manda e
-  receberia um texto dentro de JSON. Use o domínio `"*/*"` e ponha o
+  receberia um texto dentro de JSON. Use o domínio `"*/*"` e defina o
   `Content-Type` com `set_config('response.headers', …)`.
 - **Overpass com área grande não volta no celular.** A cidade inteira, ou
   "tênis" no nome de tudo o que é esporte, estourava o tempo dos
@@ -825,6 +3239,23 @@ como modelo (seção 12).
 - **Seed em banco novo marcava os exemplos como ficha básica** (a
   migração da coluna só marca `true` o que já existia antes dela). O fim
   do `seed.sql` acerta isso.
+- **Página em caminho (`/academia/…`) resolve link relativo errado.**
+  Tudo no `index.html` tem de ser absoluto (`/favicon-32.png`,
+  `/academia/…`); um `href="?court=…"` viraria `/academia/x?court=…`.
+- **Função do banco chamada pelo visitante não pode usar `select *`** em
+  `academias`/`avaliacoes` (o `sitemap()` quebrou assim no teste local).
+- **Logado não lê `*` desde a área da academia.** `authenticated` tem
+  as mesmas colunas do visitante; `select('*')`, `.select()` sem colunas e
+  `insert(...).select()` voltam "permission denied" (o admin lê contatos
+  por `contatos_privados()`). Coluna nova em `academias`/`avaliacoes` entra
+  no `grant select (…)` para `anon` **e** `authenticated`.
+- **`isAdmin` é pelo e-mail**, não por ter sessão. O mock dos testes
+  devolve a sessão com `guiatennis1@gmail.com`; login que não é do admin
+  nem de academia sai sozinho (`init` e o botão Entrar).
+- **Login do Supabase quebra com campo de token nulo** em `auth.users`
+  ("converting NULL to string"). `criar_acesso_academia` grava `''` em
+  `confirmation_token`, `recovery_token`, `email_change_token_new` e
+  `email_change`.
 - **Postgres local no scratchpad cai** (as permissões do scratchpad são
   refeitas de tempos em tempos). Dados em `/var/lib/postgresql/…`. Papel
   que já existe dá erro em `create role`: criar dentro de um bloco `do`
@@ -833,6 +3264,28 @@ como modelo (seção 12).
 ## 10. Histórico
 
 ```
+(a seguir) Contas excluídas num lugar só no painel e a prévia da ficha no fim do cadastro   ← PR #5, 09/10
+(a seguir) Chat do Parceiros guardado na conta, tela da senha arrumada, "Continuar" à direita com o que falta e o plano avisando na ficha   ← PR #5, 09/10
+(a seguir) Promoções do Premium, números com "Entenda como funciona", foto em cima no cartão e o site sem citar outros sites   ← PR #5, 08/10
+(a seguir) Preço sem valor diz "sob consulta" também no texto da ficha   ← PR #5, 08/10
+(a seguir) Premium com selo dourado e até 2 "Patrocinado" no topo da busca   ← PR #5, 08/10
+(a seguir) Menu dos jogadores limpo como o do Parceiros e os acessos de 30 dias em todo plano   ← PR #5, 08/10
+(a seguir) Logo nos e-mails e e-mail com o domínio pelo Resend (receber e responder)   ← PR #5, 07/10
+(a seguir) Código da disputa pelo WhatsApp (API oficial da Meta) e "Esqueci a senha" certo na Ajuda   ← PR #5, 07/10
+(a seguir) Avisos por e-mail pelo Resend, buscas salvas, conta do Parceiros como conta normal, página da cidade e textos "Por que"   ← PR #5, 05/10
+(a seguir) Logo de três riscos em todo lugar, menu do trivago, home pessoal, preferências e cadastro passo a passo   ← PR #5, 01/10
+1e2f7d2 Tempo até agir: segundos até a primeira busca e até chamar, no painel do admin   ← PR #5, 01/10
+d0b7b1f Rodapé no verde do GuiaTennis   ← PR #5, 01/10
+f9d34e9 Parceiros: benefícios que vendem mais, como funciona em 4 passos e rodapé sem repetir   ← PR #5, 01/10
+b791da7 Cadastro como o do trivago e código no WhatsApp da academia   ← PR #5, 01/10
+866edcd Cadastro dos parceiros: outras opções numa linha discreta   ← PR #5, 01/10
+857b932 GuiaTennis Parceiros: conta por e-mail, pedidos, equipe, planos, tela cheia e faixa do rodapé   ← PR #5, 30/09
+28846e5 GuiaTennis Parceiros: "Administrar" no lugar de "É a minha" no cadastro   ← PR #5, 30/09
+c0c1d84 GuiaTennis Parceiros: site das academias com painel, desempenho por plano, planos e ajuda   ← PR #5, 30/09
+2c6556c Visual limpo: Inter no texto, Playfair nos títulos e mais espaço   ← PR #5, 30/09
+082e6ad Links no padrão dos grandes: ficha, região, filtros, abas e comparação   ← PR #5, 30/09
+fbe7e89 Área da academia: login, primeiro acesso, edição da própria ficha e respostas   ← PR #5, 30/09
+2bfc6d0 Documento de contexto atualizado depois do PR #3 (#4)
 92e5685 SQL automático, ficha básica, WhatsApp, buscador do mapa e sitemap (#3)   ← merge na main, 29/09
 d86bc8d Admin publica academia só com o nome
 16b2e5c Academia sem foto não mostra nada no lugar da foto
@@ -925,6 +3378,292 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
+**Resumo (09/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está verde e sem conflito, com tudo até a
+**regra 87** (lembrete da ficha parada, lembrete de volta do jogador e
+resumo do mês do Parceiros, 09/10 à noite). A prévia do Netlify está atualizada. O merge espera o Breno
+dizer "pode subir" (não lembrar a toda hora). Os testes de 09/10: **1.201
+verificações, nenhuma falha**, nos 43 arquivos do navegador (comando na
+seção 6) e **311 no `banco-emails.py`** (Postgres local; se ele tiver
+caído, `pg_ctl` como na seção 6, "Postgres na máquina", com os dados em
+`/var/lib/postgresql/gt`). O chat anterior deixou de acompanhar o PR (sem
+conferências marcadas): no chat novo, voltar a acompanhar o PR #5.
+O que entrou em 09/10 (regras 78 a 84): Parceiros "acendendo" ao descer;
+chat do Parceiros guardado na conta (SQL `20261009120000_conversas_do_chat`,
+já aplicado no banco de teste); tela da senha com o cartão do e-mail;
+"Continuar" à direita e "Falta preencher"; o plano avisando em cada parte
+da ficha (e o admin confirmando ao baixar o plano); contas excluídas num
+lugar só no painel; prévia da ficha no fim do cadastro. Pendente, igual a
+antes: ~~o segredo `SUPABASE_ACCESS_TOKEN`~~ (feito em 09/10, item 00) e o Breno testar na
+prévia (item 2, com os passos de 09/10). O resto do resumo abaixo continua
+valendo.
+
+**Resumo (08/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
+regra 75; o merge espera o Breno dizer "pode subir". Pendente:
+00. **E-mail com o domínio** (regra 67): **funcionando desde 08/10/2026**.
+   Falta só: (a) ~~o token do Supabase como segredo
+   `SUPABASE_ACCESS_TOKEN`~~ — **feito pelo Breno em 09/10/2026**; o
+   registro do "Banco de dados" disse "Modelo do e-mail do código trocado
+   no Supabase teste"; o de verdade troca sozinho no merge (conferir no
+   registro da execução da `main`). Falta testar na prévia: "Esqueci a
+   senha" e ver o e-mail com a logo; (b) depois do merge,
+   trocar o webhook do Resend para o site de verdade.
+0. **WhatsApp automático do código: ESPERANDO O CNPJ.** O Breno decidiu
+   em 08/10/2026: "se o whatsapp só funcionar quando tiver cnpj, deixe
+   esperando isso e quando eu criar um, eu aviso e voltamos com isso".
+   **Não puxar o assunto antes de ele avisar.** Ligar o código da disputa
+   pelo WhatsApp (regra 66, item "Ligar o código pelo WhatsApp" abaixo).
+   **Em 08/10/2026:** app GuiaTennis criado,
+   número (11) 93333-4613 registrado pela API, cartão cadastrado. **Parado
+   na verificação da empresa:** a Meta só deixa criar modelo de
+   Autenticação (o do código) para empresa verificada ("Esta conta do
+   WhatsApp Business não tem permissão para criar um modelo de mensagem"),
+   e a verificação pede CNPJ — **o GuiaTennis ainda não tem**. Modelo de
+   "Utilidade" com código não: é contra as regras da Meta. Quando houver
+   CNPJ: Etapa 3 (verificação: documento, endereço, telefone e, se
+   pedir, o domínio — código no site ou no DNS), depois o modelo
+   `codigo_guiatennis`, o token do usuário do sistema e os 3 segredos
+   (`WHATSAPP_TOKEN`, `WHATSAPP_NUMERO_ID` = 1303308766209946,
+   `WHATSAPP_NUMERO_DE_TESTE`). Até lá, o admin manda o código à mão, como
+   sempre (nada quebra). Recarregar o chip de vez em quando.
+1. ~~Segredo `RESEND_API_KEY` no GitHub~~ — **feito pelo Breno em
+   07/10/2026**; a execução do "Banco de dados" do PR #5 disse "chave do
+   Resend guardada" no banco de teste. No banco de verdade entra sozinha
+   no merge. Falta conferir na prévia (admin › E-mails) e ver um aviso
+   chegar.
+2. **Testar na prévia** o que entrou de 05/10 a 07/10: painel do admin
+   (`/admin`); academia do guia assumida na hora e "Contestar" (disputa
+   com o código); academia nova no ar na hora; selo verde no nome e o
+   texto no fim da ficha; "Como funcionam as avaliações"; os números da
+   home e do Parceiros; excluir conta; conta de jogador no Parceiros. E o
+   Premium (regra 71): no painel, colocar uma academia confirmada no
+   Premium e buscar um bairro perto dela: "Patrocinado" no topo, selo
+   dourado, e "Mais perto de você" embaixo. E as promoções (regra 72):
+   com a academia no Premium, Parceiros › Promoções › publicar; ver o
+   atalho e o bloco na ficha e a linha no cartão; com uma conta de
+   jogador que favoritou a academia e ligou "Promoções das academias
+   favoritas", ver o e-mail chegar. E (regras 76 e 77): no Parceiros,
+   Suas academias › "Pedir para tirar do guia" e, no painel, Pendências ›
+   "Querem sair do guia"; o chat de ajuda pela Ajuda do Parceiros e por
+   "Fale com a gente" (escrever dúvidas do jeito que as pessoas escrevem e
+   ver se ele entende; o que ele não entender, dizer no chat para
+   ensinar). E (regras 79 a 82, 09/10): com a conta no Parceiros, falar
+   no chat, "Nova conversa", "Conversas" (abrir e apagar), e entrar em
+   outro aparelho para ver as mesmas; a tela da senha com o cartão do
+   e-mail e "Trocar"; em Minha ficha, "Continuar" à direita e o "Falta
+   preencher"; no Básico, os avisos das partes, "Quero o Completo" (ver o
+   pedido no painel do admin) e "Manter o Básico"; no painel do admin,
+   baixar uma academia do Premium e ler a pergunta. E (regras 83 e 84):
+   painel › Contas excluídas (excluir uma conta de teste e liberar); no
+   fim do cadastro e da edição, a prévia da ficha, "Editar" e "Confirmar".
+   E (regra 85): o lembrete da ficha parada só sai depois de 3 meses; para
+   ver agora no banco de teste, no SQL Editor do `guiatennis-teste`:
+   `update academias set dados_atualizados_em = now() - interval '100 days'
+   where name = '<academia de teste com conta>';` (com `set
+   session_replication_role = replica;` antes, senão o gatilho não deixa)
+   e `select preparar_lembretes_de_ficha();` — o e-mail sai em até 1
+   minuto; tocar em "Conferir a ficha" abre a ficha certa no Parceiros.
+   E (regras 86 e 87): em Minha conta, o "Lembrete se eu ficar 3 meses sem
+   entrar" ligado; no cadastro, a nota. Para ver os e-mails agora, no SQL
+   Editor do `guiatennis-teste`: `update jogadores set visto_em = null,
+   created_at = now() - interval '120 days' where email = '<conta de
+   teste>'; update auth.users set last_sign_in_at = now() - interval '120
+   days' where email = '<conta de teste>'; select
+   preparar_lembretes_de_volta();` e `select
+   preparar_resumos_do_mes('2026-11-02');` (o resumo de outubro).
+3. **Preço dos planos Completo e Premium** (o Breno define).
+4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
+   criar o acesso de cada academia e mandar a mensagem; trocar a foto do
+   WhatsApp Business.
+5. **Ideias oferecidas, sem resposta:** "Novidades do GuiaTennis" por
+   e-mail pelo painel do admin; baixar as listas em planilha; "Dados dos
+   últimos 30 dias" nos números quando houver volume; relatório do mês
+   sozinho (Premium); no Desempenho do Premium, quantos viram e tocaram na
+   promoção; no Desempenho do Premium, quantas
+   vezes a academia apareceu no topo patrocinado e quantos tocaram nela
+   (regra 71). De 09/10: ligar o chat guardado na conta também no site dos
+   jogadores (é só incluir "jogadores" em `CHAT_NA_CONTA`); no painel do admin,
+   as dúvidas mais escritas no chat (para ensinar assuntos novos); e-mail
+   para a academia quando o plano muda, dizendo o que mudou.
+6. Antigos: fechar o PR #1; no projeto de teste do Supabase, criar o
+   admin e desligar o cadastro; backup mensal; 2 etapas nas contas.
+
+- **E-mail com o domínio (07/10/2026, regra 67)** — o Breno (chave nunca
+  pelo chat): (1) **logo no e-mail do código:** não precisa mais colar
+  (pedido de 08/10/2026, "eu quero que vc suba o html novo"): o
+  `banco.yml` manda o `divulgacao/email-codigo.html` para o Supabase pela
+  API de gerenciamento (passo "Modelo do e-mail do código"; teste no PR,
+  com a logo da prévia; de verdade no merge). Falta só o Breno criar o
+  token em supabase.com/dashboard/account/tokens e colocar no GitHub como
+  segredo `SUPABASE_ACCESS_TOKEN` — **feito em 09/10/2026** (token com
+  permissão limitada: os dois projetos, Auth Config Read-write e o
+  administrador do projeto; se um dia trocar, é apagar e criar outro
+  igual e usar "Update" no segredo); (2) **receber:** Resend › Domains ›
+  guiatennis.com.br › ligar **Receiving** e adicionar no DNS (onde estão
+  os registros do Resend) o registro **MX** que ele mostrar, sem apagar
+  os outros; (3) Resend › API Keys › Create: nome "Receber e-mails",
+  **Full access**; (4) Resend › Webhooks › Add endpoint: na prévia
+  `https://deploy-preview-5--stately-salamander-652f72.netlify.app/.netlify/functions/receber-email`
+  (depois do merge, trocar por `https://guiatennis.com.br/.netlify/functions/receber-email`),
+  evento **email.received**; copiar o **Signing secret** (`whsec_…`);
+  (5) Netlify › Site configuration › Environment variables:
+  `RESEND_RECEBER_KEY` (a chave do passo 3) e `RESEND_WEBHOOK_SECRET` (o
+  do passo 4), em todos os contextos; publicar de novo (ou esperar o
+  próximo push) — **feitos pelo Breno em 08/10/2026** (MX verificado,
+  chave Full access, webhook na prévia e as duas variáveis marcadas como
+  segredo, em Production e Deploy Previews); (6) teste: do e-mail pessoal, escrever para
+  contato@guiatennis.com.br e ver chegar no guiatennis1@gmail.com; (7)
+  **responder como contato@:** Resend › API Keys › Create "Gmail",
+  **Sending access**, domínio guiatennis.com.br; Gmail no computador ›
+  Configurações › Contas e importação › Enviar e-mail como › Adicionar
+  outro endereço: nome **GuiaTennis**, contato@guiatennis.com.br; SMTP
+  `smtp.resend.com`, porta **465**, usuário `resend`, senha = a chave,
+  SSL; o Gmail manda um código para contato@ (chega pelo encaminhamento);
+  depois, "tornar padrão". (8) Avisar no chat: aí o contato do site muda
+  para contato@guiatennis.com.br.
+- **Ligar o código pelo WhatsApp (07/10/2026, regra 66)** — o Breno (o token
+  nunca pelo chat): (1) um **chip novo só para os códigos** (o (11)
+  92745-6457 fica no aplicativo, com ele respondendo); o número não pode
+  estar no aplicativo do WhatsApp; (2) business.facebook.com: portfólio
+  empresarial "GuiaTennis"; (3) developers.facebook.com › Meus apps ›
+  Criar app › tipo **Empresa** › adicionar o produto **WhatsApp**, ligado ao
+  portfólio; (4) WhatsApp › Configuração da API › **Adicionar número de
+  telefone**: nome de exibição "GuiaTennis", confirmar pelo SMS; copiar a
+  **Identificação do número de telefone**; (5) WhatsApp Manager › Modelos
+  de mensagem › Criar modelo: categoria **Autenticação**, nome
+  `codigo_guiatennis`, idioma **Português (BR)**, entrega **Copiar
+  código**, sem recomendação de segurança e sem validade (a pessoa repassa
+  o código, e ele vale 72 horas) — esperar "Aprovado"; (6) WhatsApp Manager
+  › Forma de pagamento: cartão (cada código custa centavos); (7)
+  Configurações do negócio › Usuários do sistema › Adicionar (Admin) ›
+  Atribuir ativos (o app e a conta do WhatsApp, controle total) › **Gerar
+  token**, validade **Nunca**, permissões `whatsapp_business_messaging` e
+  `whatsapp_business_management`; (8) no GitHub (Settings › Secrets and
+  variables › Actions): `WHATSAPP_TOKEN` (o token),
+  `WHATSAPP_NUMERO_ID` (a identificação do passo 4) e
+  `WHATSAPP_NUMERO_DE_TESTE` (o WhatsApp pessoal do Breno, que recebe os
+  códigos da prévia); (9) avisar no chat: roda o "Banco de dados" do PR e,
+  na prévia, admin › E-mails diz "Código da disputa pelo WhatsApp:
+  ligado". Teste: uma disputa na prévia, o código chega no WhatsApp
+  pessoal.
+- **Ligar os avisos por e-mail (05/10/2026, regra 51)** — o Breno (a chave
+  nunca pelo chat): (1) no Resend, API Keys → Create API Key, permissão
+  "Sending access", domínio guiatennis.com.br; copiar a chave (`re_…`);
+  (2) no GitHub, Settings → Secrets and variables → Actions → New
+  repository secret, nome `RESEND_API_KEY`, colar a chave; (3) Actions →
+  Banco de dados → Run workflow, uma vez com "teste" (ou esperar o próximo
+  push do PR); o "real" vai sozinho no merge; (4) no Supabase (nos dois
+  projetos), Database → Extensions: conferir **pg_net** e **pg_cron**
+  ligados (o SQL tenta ligar sozinho). No painel do admin, **E-mails** (e
+  a Visão geral) diz se está tudo certo.
+- **Testar na prévia o painel do admin (06/10/2026, regra 58)**: (1) sair e
+  entrar de novo com guiatennis1@gmail.com: o site muda para o painel
+  (`/admin`); (2) passar pelas seções (no celular, pelo botão de menu); (3)
+  em Academias, abrir uma, mudar o plano e voltar; (4) numa aba anônima,
+  abrir `/admin`: tem que aparecer só a página inicial. Ideias para depois,
+  se o Breno quiser: mandar as "Novidades do GuiaTennis" por ali e baixar
+  as listas em planilha.
+- **Testar na prévia o pacote de 05/10/2026 (noite)**: (1) buscar um bairro,
+  "Salvar busca" (sem conta, entra e salva), "Avisar por e-mail…", ver em
+  menu › Buscas salvas; (2) na home, "Ver as academias de São Paulo":
+  todas as da cidade, sem "A partir de…"; (3) entrar no site dos jogadores
+  com um e-mail do Parceiros: "Minha conta", o Parceiros no menu, avaliar
+  outra academia (a própria não); (4) com a chave no GitHub e o e-mail
+  confirmado, avaliar uma academia que tem conta e ver o e-mail chegar
+  ("[Teste]" no assunto); (5) no rodapé do e-mail, "Não quero mais
+  receber".
+- **Testar na prévia o pacote de 05/10/2026**: (1) jogador logado: tocar na
+  inicial → `/perfil`; (2) chamar uma academia no WhatsApp e, no dia
+  seguinte, abrir o site: o balão "Jogou na …?" com as estrelas; (3)
+  Parceiros: o círculo com a inicial (Perfil), "Academias" (Suas
+  academias), "Pessoas"; com um pedido aberto, "Adicionar outra academia" e
+  pedir mais uma; (4) no admin, os dois pedidos da mesma conta, um por
+  linha; (5) do site dos jogadores, "GuiaTennis Parceiros" abre em outra
+  aba.
+- **Serviço de e-mail no Supabase (02/10/2026)** — **feito pelo Breno em
+  05/10/2026** ("já fiz o código de 6 dígitos"): Resend com o domínio
+  verificado, ligado ao Supabase, código de 6 números. Os passos abaixo
+  ficam como registro. Sem isso o
+  código de confirmação e o "Esqueci a senha" não chegam (o site avisa e
+  segue). Passos para o Breno (credenciais nunca pelo chat): (1) criar
+  conta grátis no Resend (resend.com) ou no Brevo, confirmar o domínio
+  guiatennis.com.br (registros DNS que eles mostram) e gerar a senha SMTP;
+  (2) no Supabase, nos dois projetos (teste e de verdade): Authentication →
+  Emails → SMTP Settings → ligar "Custom SMTP" com host, porta, usuário e a
+  senha do serviço, remetente `nao-responda@guiatennis.com.br`, nome
+  "GuiaTennis"; (3) Authentication → Email Templates → "Magic Link": trocar
+  o texto para mostrar o código `{{ .Token }}` (modelo pronto, só colar:
+  `divulgacao/email-codigo.html`, assunto "Seu código do GuiaTennis";
+  o caminho mais curto é a integração do Resend com o Supabase, que
+  preenche o SMTP sozinha) ("Seu código do GuiaTennis:
+  {{ .Token }}"); (4) Authentication → Rate Limits: subir o limite de
+  e-mails por hora. Os avisos por e-mail saem pelo banco desde 05/10/2026
+  (regra 51); "Promoções das academias" e "Novidades do GuiaTennis" ainda
+  não têm e-mail (só ficam guardados).
+
+- **Testar na prévia "uma conta, várias academias" (03/10/2026)** — no
+  banco de teste: (1) com uma conta que já administra uma academia, abrir
+  Conta › "Adicionar outra academia", escolher outra e tocar em
+  "Administrar esta academia"; (2) como admin, em "Pedidos para
+  administrar", conferir o "já administra…" e gerar o código; (3) digitar
+  o código no painel da conta; (4) trocar de academia pelo nome no topo
+  (computador) ou pelo menu (celular) e ver o painel, o Desempenho e as
+  pessoas mudarem.
+
+- **Testar na prévia o pedido de 01/10/2026** (aba anônima, celular): (1) a
+  logo de três riscos no topo, no rodapé, no QR code (admin › ficha › QR) e
+  no ícone da aba; o link do site mandado no WhatsApp mostra a imagem nova
+  (o WhatsApp guarda a antiga por um tempo); (2) buscar um bairro, abrir uma
+  academia e tocar no WhatsApp dela; voltar ao início: "Vistas
+  recentemente" começa pela busca, depois "Com base na sua última busca" e
+  "Academias que você chamou"; (3) menu › Preferências de busca: estado,
+  depois cidade, salvar; tocar em "Pesquisar" sem digitar abre a cidade;
+  (4) sem o "+" na busca; (5) admin › editar uma academia: uma parte por
+  tela, abas em cima, Voltar/Continuar/Salvar embaixo. Depois do merge,
+  trocar a foto do perfil do WhatsApp Business pela
+  `divulgacao/whatsapp-perfil.png` nova.
+
+- **Testar a área da academia na prévia do PR (30/09/2026)** — no banco de
+  teste: (1) entrar como admin (usuário admin do projeto de teste), abrir a
+  ficha "Quadra Exemplo Moema", bloco "Acesso da academia" → "Criar usuário
+  e senha provisória" e "Copiar mensagem"; (2) numa aba anônima, abrir
+  `…/parceiros/entrar`, entrar com o usuário e a senha, completar o primeiro
+  acesso, ver o painel e o Desempenho, editar a ficha e responder a
+  avaliação da Carla; (3) conferir que a ficha deixou de ser básica e que a
+  resposta aparece para quem não está logado. GuiaTennis Parceiros: abrir
+  `…/parceiros` no celular e no computador (apresentação, planos, ajuda,
+  cadastro procurando uma academia); como admin, mudar o plano da Quadra
+  Exemplo Moema para Completo e Premium e ver o Desempenho mudar.
+  Links: abrir uma ficha e ver o endereço `/academia/…`; tocar em
+  "Avaliações" (vira `#avaliacoes`); no caminho da ficha, tocar no bairro
+  (`/quadras/sao-paulo/moema`); filtrar e ordenar e usar o "voltar" do
+  celular. Visual: ver se a letra nova e o espaço agradaram no celular
+  (home, busca, ficha, filtros). Depois, "pode subir".
+- **Depois do merge dos links:** no Google Search Console, enviar o
+  `sitemap.xml` (as fichas agora são `/academia/…` e há páginas de região).
+  Links antigos seguem funcionando.
+- **Depois do merge:** criar o acesso de cada academia (começar pelas
+  fichas básicas) e mandar a mensagem pronta pelo WhatsApp. No painel,
+  acompanhar quem completou ("Ativo desde…") e quem ainda está com a senha
+  provisória. Quem marcou "relatório do mês" aparece no bloco do acesso: o
+  "Copiar resumo pra mandar" do painel continua sendo o relatório, mandado
+  pelo Breno.
+- **Testar as contas por e-mail na prévia:** em aba anônima,
+  `…/parceiros/cadastro` → e-mail novo → dados de contato → "Administrar
+  esta academia" (Quadra Exemplo Moema) → como admin, "Pedidos para
+  administrar" → "Gerar código" → o código aparece (no teste, o WhatsApp da
+  ficha é inventado: copie o código em vez de mandar) → digitar na aba
+  anônima.
+  Depois, na Conta, adicionar uma pessoa e entrar com ela em outra aba.
+- **Preço dos planos Completo e Premium:** o Breno define. Hoje o site diz
+  "Fale com a gente" e o botão abre o WhatsApp do guia; quando houver
+  valor, trocar em `PC_PLANOS` (e nos Termos, se mudar a regra).
+- **Próximos passos do GuiaTennis Parceiros** (pedidos do Breno e
+  referência: Google Business Profile, trivago Business Studio e Yelp):
+  relatório do mês sozinho por
+  e-mail (Premium; a fila de e-mails já existe, regra 51) e a prévia do
+  link no WhatsApp com a foto da academia (seção 3, "Endereços").
 - **Conferir o site depois do merge do PR #3** (pedido ao Breno em
   29/09/2026, sem resposta ainda): em aba anônima, guiatennis.com.br com o
   WhatsApp e o logo pequeno no menu e no rodapé; uma ficha com "É o
@@ -937,7 +3676,9 @@ c9ade31 Configuração de publicação do Netlify
 - **PR #1** (`claude/new-session-qevg66` → `claude/trivago-…`): velho,
   pode ser fechado sem merge.
 - **Projeto de teste do Supabase:** criar o admin e desligar o cadastro
-  de usuários (seção 4, "Banco de teste", "A conferir").
+  de usuários (seção 4, "Banco de teste", "A conferir"). Para testar a área
+  da academia na prévia, o admin do projeto de teste precisa ter o e-mail
+  `guiatennis1@gmail.com` (é o que o banco e o site reconhecem).
 - **Crescer as academias** (plano de 29/09/2026): escolher uma região,
   completar todas as academias dela com ficha básica (lista do mapa no
   painel + busca manual, um por um), mandar a mensagem "sua academia já
@@ -949,7 +3690,7 @@ c9ade31 Configuração de publicação do Netlify
   onde vieram" no painel e no card de cada academia:
   `?utm_source=Instagram-bio`, `Instagram-stories`, `Instagram-direct`,
   `WhatsApp` (status, grupos, amigos) e `WhatsApp-academias`. O botão
-  Compartilhar da ficha põe `&utm_source=Compartilhado` sozinho. O site
+  Compartilhar da ficha acrescenta `&utm_source=Compartilhado` sozinho. O site
   só lê o `utm_source`.
 - **Links para Instagram e WhatsApp** (passados em 28/09/2026):
   bio do Instagram `https://guiatennis.com.br/?utm_source=Instagram-bio`;
@@ -967,10 +3708,11 @@ c9ade31 Configuração de publicação do Netlify
 ## 12. WhatsApp Business do GuiaTennis (29/09/2026)
 
 Número (11) 92745-6457. No site, o contato do guia aparece **só com o nome
-e o logo pequeno, sem os dados** (`linksContato`): "WhatsApp", "Instagram"
-e "E-mail" no menu (Contato, no formato dos outros itens) e no rodapé (no
+e o logo pequeno, sem os dados** (`linksContato`): desde 08/10/2026
+"Chat de ajuda" (regra 77, no lugar do "WhatsApp"), "Instagram" e
+"E-mail" no menu (Contato, no formato dos outros itens) e no rodapé (no
 formato dos outros links) — pedido do Breno, que não gostou dos botões em
-pílula. O número e o e-mail por escrito ficam só nos Termos e na
+pílula. O WhatsApp do Breno fica atrás do chat. O número e o e-mail por escrito ficam só nos Termos e na
 Privacidade. O bloco "Por que estar no GuiaTennis" tem o link pequeno
 "Prefere conversar? Chame o GuiaTennis no WhatsApp", em dourado e
 sublinhado (o azul padrão ficava ilegível no verde). O link "É o
@@ -981,13 +3723,14 @@ Os dados para o Google levam o `telephone`.
 **Sem mensagens automáticas** (saudação, ausência, respostas rápidas): o
 Breno não gosta, responde ele mesmo.
 
-Imagens em `divulgacao/` (fora do ar), geradas do `LOGO_SVG` por
-`divulgacao/gerar-imagens.js`: `whatsapp-perfil.png` (1080×1080, raquete
-no meio para o corte redondo) e `whatsapp-capa.png` (1600×900; texto em
-cima e nas laterais, porque a foto redonda cobre o meio de baixo). No
-perfil a raquete é redesenhada para tamanho grande — encordoamento
-completo e pescoço com os dois braços; o logo pequeno tem só três cordas
-de cada lado, e o Breno achou que faltavam traços. Na capa, a quadra é
+Imagens em `divulgacao/` (fora do ar), geradas do `logoDesenho` por
+`divulgacao/gerar-imagens.js`: `whatsapp-perfil.png` (1080×1080, o logo
+quadrado, que cabe no corte redondo) e `whatsapp-capa.png` (1600×900; texto em
+cima e nas laterais, porque a foto redonda cobre o meio de baixo). Desde
+01/10/2026 o perfil usa **o mesmo logo do site** (antes era uma raquete
+redesenhada, com um risco curvo só — o Breno pediu o logo igual em todo
+lugar, com os três riscos). **Trocar a foto do perfil do WhatsApp Business
+pela nova.** Na capa, a quadra é
 reta, vista de trás da linha de fundo, em perspectiva com as medidas
 oficiais (a primeira versão, inclinada, pareceu torta). O
 gerador busca a fonte do Google pelo `curl`, que passa pelo proxy daqui.

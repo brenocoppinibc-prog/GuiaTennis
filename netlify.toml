@@ -16,7 +16,13 @@
   # Mudança que não mexe em nenhum arquivo do site (contexto, SQL, testes,
   # pasta supabase/) não vira publicação — e não gasta crédito. Na dúvida
   # (primeira publicação, commit anterior desconhecido), publica.
-  ignore = 'test -n "$CACHED_COMMIT_REF" && test "$CACHED_COMMIT_REF" != "$COMMIT_REF" && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- index.html 404.html netlify.toml robots.txt sitemap.xml favicon-32.png favicon-192.png apple-touch-icon.png og-image.png google7b66589ffc303f37.html'
+  ignore = 'test -n "$CACHED_COMMIT_REF" && test "$CACHED_COMMIT_REF" != "$COMMIT_REF" && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- index.html 404.html netlify.toml robots.txt sitemap.xml favicon-32.png favicon-192.png apple-touch-icon.png og-image.png email-logo.png google7b66589ffc303f37.html netlify/functions'
+
+# Função que recebe os e-mails do domínio pelo Resend e encaminha para o
+# Gmail (07/10/2026): netlify/functions/receber-email.mjs, no endereço
+# /.netlify/functions/receber-email. Sem pacote nenhum para instalar.
+[functions]
+  directory = "netlify/functions"
 
 # O HTML não fica em cache. Assim, quando você publica uma correção, quem
 # já visitou o site recebe a versão nova na hora, sem precisar limpar nada.
@@ -32,10 +38,101 @@
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
-# Sobre endereços: o site usa ?court=ID e ?busca=..., que são parâmetros na
-# mesma página. Por isso não precisa de regra de redirecionamento aqui. Se um
-# dia os endereços virarem caminhos de verdade (tipo /academia/morumbi), aí
-# será preciso adicionar um [[redirects]] apontando tudo para /index.html.
+# Endereços de cada tela (30/09/2026), no padrão dos sites grandes:
+#   /academia/<nome>-<fim do id>   ficha da academia
+#   /quadras/<cidade>/<bairro>     academias de uma região
+#   /busca?q=…&piso=…              busca com filtros
+#   /comparar?academias=…          comparação
+#   /perfil                        perfil da conta do jogador
+#   /admin/…                       painel do admin (só o admin vê)
+#   /parceiros/…                   GuiaTennis Parceiros (site das academias)
+# Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
+# endereço) e o site monta a tela pelo link. Os links antigos (?court=,
+# ?busca=) continuam funcionando, porque abrem a própria home.
+[[redirects]]
+  from = "/academia/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/quadras/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/quadras"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/busca"
+  to = "/index.html"
+  status = 200
+
+# GuiaTennis Parceiros, o site das academias: /parceiros, /parceiros/planos,
+# /parceiros/entrar, /parceiros/painel…
+[[redirects]]
+  from = "/parceiros"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/parceiros/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/comparar"
+  to = "/index.html"
+  status = 200
+
+# Perfil da conta do jogador (05/10/2026), como o "Meu trivago".
+[[redirects]]
+  from = "/perfil"
+  to = "/index.html"
+  status = 200
+
+# Painel do admin (06/10/2026): /admin e /admin/<seção>. Só o admin vê o
+# painel; para qualquer outra pessoa, o site mostra a página inicial. Fica
+# fora do Google (noindex) e não fica guardado no navegador. De propósito,
+# o robots.txt não cita o /admin, para não anunciar que ele existe.
+[[redirects]]
+  from = "/admin"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/admin"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
+
+# O mesmo cuidado de cache do index.html vale para essas telas.
+[[headers]]
+  for = "/academia/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/parceiros/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/quadras/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 # O sitemap sai do banco de verdade, com a ficha de cada academia publicada
 # (função sitemap(), em supabase/migrations), em XML para qualquer pedido.
@@ -94,3 +191,11 @@
   from = "/divulgacao/*"
   to = "/404.html"
   status = 404
+
+# O código da função que recebe os e-mails (fica em /.netlify/functions/…,
+# outro endereço, que continua funcionando).
+[[redirects]]
+  from = "/netlify/*"
+  to = "/404.html"
+  status = 404
+  force = true

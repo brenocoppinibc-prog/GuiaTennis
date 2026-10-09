@@ -3,7 +3,8 @@
 const { abrir, ok } = require('./harness');
 (async () => {
   for (const [nome, opts] of [['banco fechado (depois do SQL)', { colunasFechadas: true }], ['banco antigo sem coluna nova', { semPlano: true }], ['banco como hoje', {}]]) {
-    const { browser, page } = await abrir(opts);
+    // Avaliar exige a conta do jogador (02/10/2026).
+    const { browser, page } = await abrir({ ...opts, jogador: true });
     const n = await page.evaluate(() => state.allCourts.length);
     ok(n === 2, nome + ': academias aparecem — ' + n);
     await page.evaluate(async () => { await submitRating('a1', 5, 'Ótima'); });

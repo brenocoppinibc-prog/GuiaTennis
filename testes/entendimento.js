@@ -1,6 +1,6 @@
 // O site entende e arruma o que a academia escreveu, sem IA: estacionamento
 // no modelo único, fachada e chegada arrumadas, frase no lugar certo.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, irParte } = require('./harness');
 (async () => {
   let { browser, page } = await abrir({ q: '?court=a2' });
   await page.evaluate(async () => {
@@ -9,6 +9,8 @@ const { abrir, ok } = require('./harness');
       entrada: 'avise na portaria que vai jogar tenis 😀',
       estacionar: 'zona azul ate 19:00, depois libera. tem estacionamento na esquina 15 reais. Manobrista na porta',
     };
+    // Como chegar aparece a partir do plano Completo (02/10/2026).
+    window.__db.academias[1].plano = 'completo';
     window.__db.academias[1].horario = { modo: 'igual', semana: { de: '06:00', ate: '22:00', fechado: false }, sabado: { de: '', ate: '', fechado: true }, domingo: { de: '', ate: '', fechado: true }, nota: 'fecha nos feriados' };
     await loadEverything(); state.selected = state.allCourts.find(c => c.id === 'a2'); render();
   });
@@ -40,6 +42,7 @@ const { abrir, ok } = require('./harness');
   ({ browser, page } = await abrir({ admin: true, q: '?court=a2' }));
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a2"]').click());
   await page.waitForTimeout(300);
+  await irParte(page, 'chegada');
   await page.fill('#f-acesso-estacionar', 'DA PRA PARAR NA RUA TRANQUILO');
   await page.evaluate(() => document.getElementById('f-acesso-estacionar').dispatchEvent(new Event('change')));
   await page.waitForTimeout(200);

@@ -1,6 +1,6 @@
 // Ficha básica (academia com dados públicos, ainda não confirmados por ela),
 // link do responsável, lista do mapa aberto no painel e textos legais.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, irParte } = require('./harness');
 
 // O que o OpenStreetMap devolveria: uma academia nova, um clube (fica de
 // fora pela regra do guia), uma já no guia (perto da a1) e uma repetida.
@@ -25,7 +25,22 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   let { browser, page } = await abrir();
   let f = await abrirFicha(page, 'a2');
   ok(f.basica.includes('Ficha básica') && f.basica.includes('não confirmadas pela academia'), 'ficha básica avisa que os dados não foram confirmados — ' + f.basica);
-  ok(f.dono.startsWith('https://wa.me/5511927456457?text=') && decodeURIComponent(f.dono).includes('responsável pela Quadra Locação') && decodeURIComponent(f.dono).includes('?court=a2'), 'link do responsável abre o WhatsApp do guia com a conversa começada — ' + decodeURIComponent(f.dono).slice(0, 90));
+  ok(f.dono === '/parceiros/cadastro?academia=a2', 'link do responsável leva ao GuiaTennis Parceiros, já com a academia — ' + f.dono);
+  // O GuiaTennis Parceiros abre na aba dele (05/10/2026), como o trivago
+  // Business Studio; a ficha continua nesta aba.
+  await page.evaluate(() => { window.__abas = []; window.open = (url, nome) => { window.__abas.push({ url, nome }); return {}; }; });
+  await page.click('.ficha-dono a');
+  await page.waitForTimeout(200);
+  const aba = await page.evaluate(() => ({ ...(window.__abas[0] || {}), pagina: state.page }));
+  ok(aba.url === 'http://guia.test/parceiros/cadastro?academia=a2' && aba.nome === 'guiatennis-parceiros' && aba.pagina === 'court', 'o GuiaTennis Parceiros abre na aba dele, já com a academia; a ficha continua nesta — ' + aba.url);
+  const { browser: browser2, page: page2 } = await abrir({ q: 'parceiros/cadastro?academia=a2' });
+  const acessoPedido = await page2.evaluate(() => ({
+    t: document.querySelector('.pc-reivindicar')?.innerText || '',
+    email: !!document.getElementById('pc-email'),
+    link: location.pathname + location.search,
+  }));
+  ok(acessoPedido.t.includes('Administrar a ficha da Quadra Locação') && acessoPedido.t.includes('Comece pelo seu e-mail') && acessoPedido.email && acessoPedido.link === '/parceiros/cadastro?academia=a2', 'lá, o responsável começa pelo e-mail, já com a academia — ' + acessoPedido.link);
+  await browser2.close();
   f = await abrirFicha(page, 'a1');
   ok(!f.basica && f.dono, 'ficha confirmada não mostra o aviso, mas tem o link do responsável');
   await browser.close();
@@ -42,6 +57,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ({ browser, page } = await abrir({ admin: true }));
   await page.evaluate(() => { state.selected = decorate(state.allCourts.find(x => x.id === 'a2')); state.page = 'court'; render(); });
   await page.click('.editar-academia');
+  await irParte(page, 'revisar');
   const marcada = await page.isChecked('#f-confirmada');
   ok(marcada === false, 'edição carrega a ficha básica desmarcada');
   await page.check('#f-confirmada');
@@ -52,8 +68,14 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await browser.close();
 
   // Admin: procura por região no mapa aberto, sem clube e sem o que já está no guia
+  // O mapa aberto fica nas Ferramentas do painel do admin (06/10/2026).
   ({ browser, page } = await abrir({ admin: true, overpass: MAPA }));
-  await page.click('#fab-admin');
+  // Sem a faixa "Modo admin" (08/10/2026): o painel abre pelo menu.
+  await page.click('#menu-btn');
+  await page.click('.menu-drawer [data-menu="painel-admin"]');
+  await page.waitForTimeout(200);
+  await page.click('#adm-menu-btn');
+  await page.click('.adm-nav [data-adm-aba="ferramentas"]');
   await page.waitForTimeout(400);
   let nomes = await page.evaluate(() => [...document.querySelectorAll('.mapa-bloco .pending-name')].map(e => e.innerText.trim()));
   ok(!nomes.length && await page.isVisible('#mapa-regiao'), 'painel abre sem consultar o mapa, com o campo da região');
@@ -76,13 +98,14 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(nova && nova.status === 'pending' && nova.source === 'osm' && nova.confirmada === false, 'adicionar do mapa cria pendente, do mapa e ficha básica — ' + JSON.stringify(nova && { status: nova.status, source: nova.source, confirmada: nova.confirmada }));
   ok(nova && nova.endereco === 'Rua Nova, 10 - Butantã, São Paulo' && nova.phone === '1133334444', 'endereço e telefone vêm do mapa — ' + (nova && nova.endereco + ' · ' + nova.phone));
   nomes = await page.evaluate(() => [...document.querySelectorAll('.mapa-bloco .pending-name')].map(e => e.innerText.trim()));
-  const pendente = await page.evaluate(() => document.getElementById('admin-overlay')?.innerText.includes('Veio do mapa aberto'));
+  await page.evaluate(() => irAdmin('pendencias'));
+  await page.waitForTimeout(200);
+  const pendente = await page.evaluate(() => document.getElementById('painel-admin')?.innerText.includes('Veio do mapa aberto'));
   ok(!nomes.length && pendente, 'depois de adicionar, sai da lista do mapa e aparece nas pendentes');
   await browser.close();
 
   // Mapa sem resposta e região que não existe: mensagem clara
-  ({ browser, page } = await abrir({ admin: true }));
-  await page.click('#fab-admin');
+  ({ browser, page } = await abrir({ admin: true, q: 'admin/ferramentas' }));
   await page.fill('#mapa-regiao', 'Pinheiros');
   await page.click('#mapa-form button[type=submit]');
   await page.waitForTimeout(1500);
@@ -116,12 +139,17 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const FORM_VAZIO = { name: "", cep: "", address: "", numero: "", complemento: "", bairro: "", cidade: "", quadras: {}, amenities: [], modalidades: [], priceAula: "", priceLocacao: "", phone: "", instagram: "", site: "", photos: [], politica: {}, acesso: {}, horario: {} };
   ({ browser, page } = await abrir({ admin: true }));
   await page.evaluate((f) => { window.__form = JSON.parse(JSON.stringify(f)); state.showRegister = true; state.registerStatus = 'idle'; render(); }, FORM_VAZIO);
+  await irParte(page, 'contato');
+  const whats = await page.evaluate(() => document.getElementById('f-phone').placeholder);
+  await irParte(page, 'revisar');
   const formAdmin = await page.evaluate(() => ({
-    whats: document.getElementById('f-phone').placeholder,
-    nota: document.querySelector('#register-submit').parentElement.innerText,
+    nota: document.querySelector('#register-overlay .reg-passo').innerText,
     aceite: !!document.getElementById('f-consent'),
+    falta: document.querySelectorAll('.reg-rev-sinal.falta').length,
   }));
-  ok(!formAdmin.whats.includes('*') && !formAdmin.aceite && formAdmin.nota.includes('Só o nome é obrigatório'), 'formulário do admin: sem asteriscos e sem aceite, só o nome é obrigatório');
+  ok(!whats.includes('*') && !formAdmin.aceite && formAdmin.nota.includes('Só o nome é obrigatório') && formAdmin.falta === 1, 'formulário do admin: sem asteriscos e sem aceite, só o nome é obrigatório');
+  await irParte(page, 'dados');
+  ok(await page.evaluate(() => !!document.getElementById('register-submit')), 'admin publica de qualquer parte, sem ir até o fim');
   await page.fill('#f-name', 'Academia Só Nome');
   await page.click('#register-submit');
   await page.waitForTimeout(1500);
@@ -131,29 +159,47 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ({ browser, page } = await abrir());
   await page.evaluate((f) => { saveVisitor({ nome: 'Visitante', contato: '11999999999' }); window.__form = JSON.parse(JSON.stringify(f)); state.showRegister = true; state.registerStatus = 'idle'; render(); }, FORM_VAZIO);
   await page.fill('#f-name', 'Pedido Só Nome');
+  ok(await page.evaluate(() => !document.getElementById('register-submit')), 'pedido pelo site: o envio fica na última parte');
+  await page.click('#reg-continuar');
+  await page.waitForTimeout(200);
+  const passo1 = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', passo: state.regPasso }));
+  ok(passo1.passo === 0 && passo1.erro.includes('endereço completo') && !passo1.erro.includes('WhatsApp'), 'Continuar cobra o que falta na parte — ' + passo1.erro);
+  await irParte(page, 'revisar');
+  const rev = await page.evaluate(() => [...document.querySelectorAll('.reg-rev-linha')].filter(l => l.querySelector('.falta')).map(l => l.querySelector('strong').innerText).join(', '));
+  ok(rev === 'Nome e endereço, Modalidade e preço, Quadras, Contato', 'revisão marca as partes obrigatórias que faltam — ' + rev);
   await page.click('#register-submit');
   await page.waitForTimeout(800);
-  const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome') }));
-  ok(!pedido.gravou && pedido.erro.includes('endereço completo') && pedido.erro.includes('WhatsApp'), 'pedido pelo site ainda cobra o essencial — ' + pedido.erro);
+  const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome'), passo: state.regPasso }));
+  ok(!pedido.gravou && pedido.erro.includes('endereço completo') && pedido.erro.includes('WhatsApp') && pedido.passo === 0, 'pedido pelo site ainda cobra o essencial e volta para a parte que falta — ' + pedido.erro);
   await browser.close();
 
   // Termos e Privacidade
   ({ browser, page } = await abrir());
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
   ok(termos.includes('ficha básica') && termos.includes('OpenStreetMap') && termos.includes('É o responsável por esta academia?'), 'Termos explicam a ficha básica, o OpenStreetMap e o pedido de remoção');
-  ok((termos.match(/Última atualização: 29 de setembro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
+  ok((termos.match(/Última atualização: 9 de outubro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
   // Contato do guia em botões com ícone, no menu, no rodapé e no bloco para academias
   const contato = await page.evaluate(() => {
     state.showMenu = true; render();
     return {
       wa: [...document.querySelectorAll('a[href^="https://wa.me/5511927456457"]')].map(a => a.innerText.trim()),
-      menu: [...document.querySelectorAll('.menu-item')].map(a => a.innerText.trim()).filter(t => ['WhatsApp', 'Instagram', 'E-mail'].includes(t)),
-      rodape: [...document.querySelectorAll('.sf-col a.contato-link')].map(a => a.innerText.trim() + (a.querySelector('svg') ? '+logo' : '')),
+      rodape: [...document.querySelectorAll('.sf-col .contato-link')].map(a => a.innerText.trim() + (a.querySelector('svg') ? '+logo' : '')),
       texto: document.body.innerText,
     };
   });
-  ok(contato.menu.join() === 'WhatsApp,Instagram,E-mail', 'menu tem WhatsApp, Instagram e E-mail — ' + contato.menu.join(' | '));
-  ok(contato.rodape.join() === 'WhatsApp+logo,Instagram+logo,E-mail+logo', 'rodapé tem WhatsApp, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
+  // Desde 08/10/2026, "Fale com a gente" no menu abre a folha com os contatos.
+  const folhaContato = await page.evaluate(() => {
+    state.showMenu = true; render();
+    document.querySelector('.menu-drawer [data-menu="contato"]').click();
+    const f = document.getElementById('contato-close-overlay');
+    const r = { menu: !!document.querySelector('.menu-drawer'), itens: f ? [...f.querySelectorAll('.contato-opcao strong')].map(e => e.innerText) : [], links: f ? [...f.querySelectorAll('.contato-opcao')].map(a => a.getAttribute('href') || (a.hasAttribute('data-abrir-chat') ? 'chat' : '')) : [], texto: f ? f.innerText : '' };
+    state.showContato = false; render();
+    return r;
+  });
+  ok(!folhaContato.menu && folhaContato.itens.join() === 'Chat de ajuda,Instagram,E-mail' && folhaContato.links[0] === 'chat' && folhaContato.links[2] === 'mailto:contato@guiatennis.com.br',
+    'menu › "Fale com a gente" abre a folha com o chat de ajuda (no lugar do WhatsApp direto), Instagram e E-mail — ' + folhaContato.itens.join(' | '));
+  ok(!folhaContato.texto.includes('92745') && !folhaContato.texto.includes('@'), 'na folha, sem o número, o @ e o e-mail escritos');
+  ok(contato.rodape.join() === 'Chat de ajuda+logo,Instagram+logo,E-mail+logo', 'rodapé tem o chat de ajuda, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
   ok(contato.wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'bloco para academias tem o link do WhatsApp');
   ok(!contato.texto.includes('92745-6457') && !contato.texto.includes('guiatennis1@gmail.com') && !contato.texto.includes('@guiatennis'), 'número, e-mail e @ não aparecem escritos na página');
   ok(termos.includes('(11) 92745-6457'), 'Termos e Privacidade têm o WhatsApp');

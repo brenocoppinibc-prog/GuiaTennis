@@ -1,0 +1,139 @@
+// Senha (pedido do Breno em 04/10/2026): olhinho para mostrar o que foi
+// digitado, "repita a senha" em toda senha nova, força enquanto digita e
+// recusa das senhas óbvias — como Google e Microsoft. E o código do e-mail
+// aceita 6 a 8 números (o tamanho vem do painel do Supabase).
+const { abrir, ok } = require('./harness');
+
+(async () => {
+  let { browser, page } = await abrir();
+  await page.evaluate(() => abrirContaJogador('entrar'));
+  await page.fill('#jog-email', 'liana@exemplo.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  ok(await page.isVisible('#jog-senha2') && await page.isVisible('.senha-caixa #jog-senha + .senha-olho'), 'criar conta: senha, "repita a senha" e o olhinho');
+  await page.fill('#jog-senha', 'saibro coberto 2026');
+  await page.click('.senha-caixa #jog-senha + .senha-olho');
+  let t = await page.evaluate(() => ({ tipo: document.getElementById('jog-senha').type, rotulo: document.querySelector('#jog-senha + .senha-olho').getAttribute('aria-label'), outra: document.getElementById('jog-senha2').type }));
+  ok(t.tipo === 'text' && t.rotulo === 'Esconder a senha' && t.outra === 'password', 'o olhinho mostra só aquela senha — ' + JSON.stringify(t));
+  await page.click('.senha-caixa #jog-senha + .senha-olho');
+  ok(await page.evaluate(() => document.getElementById('jog-senha').type === 'password'), 'outro toque esconde de novo');
+
+  const forca = async (senha) => { await page.fill('#jog-senha', senha); return page.evaluate(() => document.querySelector('.senha-forca')?.innerText.trim() || ''); };
+  ok((await forca('12345678')).includes('fraca: fácil de adivinhar'), '12345678: fraca, fácil de adivinhar');
+  ok((await forca('curta')).includes('pelo menos 8'), 'curta: fraca, pede 8 caracteres');
+  ok((await forca('quadra2026')).includes('boa'), 'quadra2026: boa');
+  ok((await forca('Saibro coberto em Moema 2026')).includes('forte'), 'frase longa com número: forte');
+  ok(!(await page.evaluate(() => document.querySelectorAll('.senha-forca').length > 1)), 'a força aparece só embaixo da senha, não da confirmação');
+
+  await page.fill('#jog-nome', 'Lia Tenista');
+  await page.check('#jog-aceite');
+  await page.fill('#jog-senha', '12345678'); await page.fill('#jog-senha2', '12345678');
+  await page.click('#jog-criar'); await page.waitForTimeout(200);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('fácil de adivinhar'), 'senha óbvia não passa');
+  await page.fill('#jog-senha', 'liana2026x'); await page.fill('#jog-senha2', 'liana2026x');
+  await page.click('#jog-criar'); await page.waitForTimeout(200);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('fácil de adivinhar'), 'senha com o próprio e-mail não passa');
+  // Senha recusada (05/10/2026): a senha fica e só a repetição é apagada.
+  t = await page.evaluate(() => ({ senha: document.getElementById('jog-senha').value, repetir: document.getElementById('jog-senha2').value, foco: document.activeElement && document.activeElement.id }));
+  ok(t.senha === 'liana2026x' && t.repetir === '' && t.foco === 'jog-senha', 'senha recusada: a senha continua, só a repetição é apagada, e o cursor vai para a senha — ' + JSON.stringify(t));
+  await page.fill('#jog-senha', 'quadra de saibro'); await page.fill('#jog-senha2', 'quadra de sabro');
+  await page.click('#jog-criar'); await page.waitForTimeout(200);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('não estão iguais'), 'senhas diferentes: avisa');
+  t = await page.evaluate(() => ({ senha: document.getElementById('jog-senha').value, repetir: document.getElementById('jog-senha2').value, foco: document.activeElement && document.activeElement.id }));
+  ok(t.senha === 'quadra de saibro' && t.repetir === '' && t.foco === 'jog-senha2', 'senhas diferentes: apaga só a repetição, com o cursor nela');
+  await page.fill('#jog-senha2', 'quadra de saibro');
+  await page.click('#jog-criar'); await page.waitForTimeout(600);
+  ok(await page.evaluate(() => jogador && jogador.nome === 'Lia Tenista'), 'senhas iguais e boas: a conta é criada');
+
+  // Código de 8 números (como o que o Supabase mandou) é aceito.
+  await page.evaluate(() => { window.__codigos['liana@exemplo.com'] = '03618040'; });
+  await page.fill('#jog-codigo', '0361 8040');
+  await page.click('#jog-confirmar');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => !document.querySelector('#jogador-overlay .form-error') && window.__rpcs.some(r => r.nome === 'confirmar_meu_email')), 'código de 8 números (até com espaço) confirma o e-mail');
+  await browser.close();
+
+  // Cadastro do GuiaTennis Parceiros: senhas diferentes apagam só a repetição.
+  ({ browser, page } = await abrir({ q: 'parceiros/cadastro' }));
+  await page.fill('#pc-email', 'nova@quadra.com.br');
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { Object.assign(window.__pcConta = window.__pcConta || {}, { tratamento: 'Sra.', nome: 'Rita', sobrenome: 'Dona', cargo: 'Dono(a)', whatsapp: '11988887777', aceite: true }); render(); });
+  await page.fill('#pc-conta-senha', 'saibro coberto 2026');
+  await page.fill('#pc-conta-senha2', 'saibro coberto 2025');
+  await page.evaluate(() => criarContaDeParceiro());
+  await page.waitForTimeout(250);
+  t = await page.evaluate(() => ({ erro: state.pcContaErro, senha: document.getElementById('pc-conta-senha').value, repetir: document.getElementById('pc-conta-senha2').value }));
+  ok(t.erro.includes('não estão iguais') && t.senha === 'saibro coberto 2026' && t.repetir === '', 'Parceiros: senhas diferentes apagam só a repetição — ' + JSON.stringify(t));
+  await browser.close();
+
+  // Login (senha de entrar): olhinho, sem confirmação nem força.
+  ({ browser, page } = await abrir({ q: 'parceiros/entrar' }));
+  await page.evaluate(() => { window.__senhas['dona@quadra.com.br'] = 'x'; window.__db.academia_acessos.push({ user_id: 'u-d', usuario: 'dona@quadra.com.br', email: 'dona@quadra.com.br' }); });
+  await page.fill('#pc-email', 'dona@quadra.com.br');
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
+  t = await page.evaluate(() => ({ olho: !!document.querySelector('#login-password + .senha-olho'), forca: !!document.querySelector('.senha-forca'), dois: !!document.getElementById('login-password2') }));
+  ok(t.olho && !t.forca && !t.dois, 'na senha de entrar: só o olhinho');
+  await browser.close();
+
+  // Quem recebeu usuário do GuiaTennis: depois do primeiro acesso, entra
+  // pelo e-mail, e o "Esqueci a senha" manda o código (04/10/2026).
+  ({ browser, page } = await abrir({ academia: 'a2', acessoNovo: true }));
+  await page.evaluate(async () => {
+    await sb.rpc('completar_meu_acesso', { p_nome: 'Maria Teste', p_cargo: 'Gerente', p_email: 'maria@quadra.com.br', p_whatsapp: '11900000001', p_cnpj: '', p_recebe_relatorio: false, p_aceite: true });
+    await sb.auth.signOut();
+    contaAcademia = null; jogador = null;
+    irParceiros('entrar', { mesmaAba: true });
+  });
+  await page.waitForTimeout(300);
+  await page.fill('#pc-email', 'quadra.a2');
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
+  t = await page.evaluate(() => ({ login: state.pcLogin, esqueci: !!document.getElementById('pc-esqueci') }));
+  ok(t.login === 'maria@quadra.com.br' && t.esqueci, 'o usuário leva ao e-mail de contato, com "Esqueceu a senha?" por e-mail — ' + t.login);
+  await page.fill('#login-password', 'provisoria1');
+  await page.click('#login-submit');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => !!contaAcademia), 'o usuário continua entrando com a senha');
+  await page.evaluate(async () => { await sb.auth.signOut(); contaAcademia = null; jogador = null; irParceiros('entrar'); });
+  await page.waitForTimeout(300);
+  await page.fill('#pc-email', 'quadra.a2');
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
+  await page.click('#pc-esqueci');
+  await page.waitForTimeout(400);
+  ok(await page.evaluate(() => (window.__codigos || {})['maria@quadra.com.br'] === '123456' && state.pcEmailPasso === 'esqueci'), 'Esqueci a senha manda o código para o e-mail de contato');
+  await page.fill('#pc-codigo-senha', '123456');
+  await page.fill('#pc-senha-nova', 'quadra nova 2026');
+  await page.fill('#pc-senha-nova2', 'quadra nova 2026');
+  await page.evaluate(() => { window.__erroSenha = { message: 'Failed to fetch', status: 0 }; });
+  await page.click('#pc-salvar-senha-nova');
+  await page.waitForTimeout(700);
+  ok((await page.evaluate(() => document.querySelector('#parceiros .form-error, #parceiros .status-error')?.innerText || '')).includes('não precisa ser digitado de novo'), 'falhou ao salvar: avisa que o código não precisa de novo');
+  await page.click('#pc-salvar-senha-nova');
+  await page.waitForTimeout(700);
+  ok(await page.evaluate(() => !!contaAcademia && window.__senhas['maria@quadra.com.br'] === 'quadra nova 2026'), 'tentar de novo (com o código já gasto): senha nova salva e já entra');
+  await browser.close();
+
+  // A mesma senha de antes: o código já deixou entrar, então entra.
+  ({ browser, page } = await abrir({ q: 'parceiros/entrar' }));
+  await page.evaluate(async () => {
+    window.__db.academia_acessos.push({ user_id: 'u-mesma', academia_id: 'a2', usuario: 'mesma@quadra.com.br', nome_responsavel: 'Mesma', email: 'mesma@quadra.com.br', papel: 'principal', dados_completos_em: '2026-09-01', senha_trocada_em: '2026-09-01', termos_aceitos_em: '2026-09-01' });
+    window.__db.academia_vinculos.push({ user_id: 'u-mesma', academia_id: 'a2', papel: 'principal' });
+    window.__senhas['mesma@quadra.com.br'] = 'quadra antiga 1';
+  });
+  await page.fill('#pc-email', 'mesma@quadra.com.br');
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
+  await page.click('#pc-esqueci');
+  await page.waitForTimeout(400);
+  await page.fill('#pc-codigo-senha', '123456');
+  await page.fill('#pc-senha-nova', 'quadra antiga 1');
+  await page.fill('#pc-senha-nova2', 'quadra antiga 1');
+  await page.evaluate(() => { window.__erroSenha = true; });
+  await page.click('#pc-salvar-senha-nova');
+  await page.waitForTimeout(700);
+  ok(await page.evaluate(() => !!contaAcademia && (document.body.innerText || '').includes('Essa já era a sua senha')), 'mesma senha de antes: entra e avisa, sem erro');
+  await browser.close();
+})();

@@ -24,6 +24,12 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 08/10/2026
 
+> **Estado (09/10/2026):** o Breno perguntou se precisa subir algum HTML
+> de e-mail (não: os novos saem do banco; o do código sobe sozinho, mas o
+> registro do "Banco de dados" diz que falta o segredo
+> `SUPABASE_ACCESS_TOKEN` — seção 11, item 00) e pediu a página inicial do
+> Parceiros "acendendo" ao descer (regra 78).
+>
 > **Estado (08/10/2026, fim da noite):** o Breno pediu "a pausa o
 > administrador consiga fazer, agora a exclusão preciso pedir uma
 > solicitação" e um chat no lugar do WhatsApp direto, que "entende o que a
@@ -1456,6 +1462,19 @@ cobra taxa e não fica no meio** da negociação.
     - Se o Breno quiser uma IA de verdade depois: dá para ligar o mesmo
       chat a um modelo de linguagem por uma função do Netlify, com chave
       própria e custo por mensagem; muda as regras 6 e 13.
+78. **A página inicial do Parceiros "acende" ao descer** (pedido de
+    09/10/2026: "no parceiros ao ir descendo a primeira tela inicial, as
+    informações vão aparecendo, tipo acendendo"). Só em `/parceiros` (a
+    página inicial; o `#parceiros` ganha a classe `pc-revelando`): cada
+    bloco tem `revela(chave, ordem)` (`data-revela` e `--rv`, para entrarem
+    um depois do outro) e começa apagado; o `ligarRevelar` (um
+    IntersectionObserver) acende quando ele entra na tela — sobe um pouco e
+    ganha cor; os ícones dos cartões e os números dos passos dão um brilho
+    dourado, e os números do site brilham uma vez. O topo acende sozinho ao
+    abrir. O que já acendeu fica aceso quando a tela é redesenhada
+    (`BLOCOS_ACESOS`); quem liga "reduzir movimento" no celular vê tudo de
+    uma vez; o texto está sempre na página. Teste:
+    `testes/parceiros-acender.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2435,7 +2454,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2564,6 +2583,9 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pequeno "Desempenho" com os acessos de 30 dias embaixo das avaliações, e
   "Ver detalhes" abre a aba Desempenho com o que o Premium libera;
   singular, zero acessos, banco antigo sem número; Premium sem o cartão.
+- `parceiros-acender.js` — regra 78: o topo acende ao abrir, o resto
+  começa apagado e acende ao descer, continua aceso ao redesenhar, só na
+  página inicial, e tudo de uma vez com "reduzir movimento".
 - `chat-de-ajuda.js` — regra 77: abre pela folha "Fale com a gente", pelo
   rodapé e pela Ajuda do Parceiros; entende as dúvidas de cada site; o
   caminho fecha o chat e abre a página; "Ainda preciso de ajuda" e o

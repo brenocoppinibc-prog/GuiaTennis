@@ -1706,6 +1706,20 @@
   /* Os números em colunas iguais, lado a lado, no celular e no computador
      (08/10/2026: "alinhe melhor os dados"; antes 2 em cima e 1 sozinho). */
   .pc-faixa-num { margin: 0 20px; padding: 24px 16px 18px; background: var(--green); border-radius: 18px; color: #fff; text-align: center; }
+  /* Aparecer "acendendo" ao descer, só na página inicial do Parceiros. */
+  .pc-revelando [data-revela] { opacity: 0; transform: translateY(22px); filter: saturate(0.3) brightness(1.06);
+    transition: opacity 0.7s ease, transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.9s ease; transition-delay: calc(var(--rv, 0) * 120ms); }
+  .pc-revelando [data-revela].aceso { opacity: 1; transform: none; filter: none; }
+  .pc-revelando [data-revela].ja { transition: none; }
+  .pc-revelando [data-revela].aceso:not(.ja) .pc-beneficio-ic,
+  .pc-revelando [data-revela].aceso:not(.ja) .pc-etapa-n { animation: acender 1.2s ease-out calc(var(--rv, 0) * 120ms + 0.3s) 1 both; }
+  .pc-revelando [data-revela].aceso:not(.ja) .pc-faixa-itens strong { animation: brilhar 1.6s ease-out 0.25s 1 both; }
+  @keyframes acender { 0% { box-shadow: 0 0 0 0 rgba(216,184,101,0.6); } 100% { box-shadow: 0 0 0 16px rgba(216,184,101,0); } }
+  @keyframes brilhar { 0% { text-shadow: 0 0 0 rgba(216,184,101,0); opacity: 0.4; } 40% { text-shadow: 0 0 18px rgba(216,184,101,0.85); opacity: 1; } 100% { text-shadow: 0 0 0 rgba(216,184,101,0); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .pc-revelando [data-revela] { opacity: 1; transform: none; filter: none; transition: none; }
+    .pc-revelando [data-revela] .pc-beneficio-ic, .pc-revelando [data-revela] .pc-etapa-n, .pc-revelando [data-revela] .pc-faixa-itens strong { animation: none; }
+  }
   .pc-faixa-itens { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 12px; align-items: start; }
   .pc-faixa-itens > div { min-width: 0; }
   .pc-faixa-num strong { display: block; font-size: 24px; font-weight: 700; line-height: 1.1; white-space: nowrap; color: var(--gold-light); }
@@ -7157,7 +7171,7 @@ function renderParceiros() {
   else if (aba === "academias") miolo = pcAcademias();
   else if (aba === "perfil") miolo = pcPerfil();
   return `
-    <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""}" id="parceiros">
+    <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""} ${aba === "inicio" ? "pc-revelando" : ""}" id="parceiros">
       ${pcTopo()}
       ${faixaDaVisaoAdmin()}
       <main class="pc-main">${miolo}</main>
@@ -7165,11 +7179,11 @@ function renderParceiros() {
     </div>`;
 }
 
-function pcNumerosDoSite() {
+function pcNumerosDoSite(revelar = false) {
   const itens = numerosDoSite();
   if (!itens.length) return "";
   return `
-    <section class="pc-faixa-num">
+    <section class="pc-faixa-num" ${revelar ? revela("numeros") : ""}>
       <div class="pc-faixa-itens" style="--n:${itens.length}">
         ${itens.map(i => `<div><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
       </div>
@@ -7198,21 +7212,21 @@ function pcInicio() {
   ];
   return `
     <section class="pc-hero">
-      <p class="pc-eyebrow">GuiaTennis Parceiros</p>
-      <h1 class="display">Mais jogadores para a sua academia de tênis</h1>
-      <p class="pc-hero-sub">Apareça para quem procura aula ou quer locar quadra na sua região. O jogador compara e chama direto no seu WhatsApp — sem comissão.</p>
-      <div class="pc-hero-acoes">
+      <p class="pc-eyebrow" ${revela("hero-0", 0)}>GuiaTennis Parceiros</p>
+      <h1 class="display" ${revela("hero-1", 1)}>Mais jogadores para a sua academia de tênis</h1>
+      <p class="pc-hero-sub" ${revela("hero-2", 2)}>Apareça para quem procura aula ou quer locar quadra na sua região. O jogador compara e chama direto no seu WhatsApp — sem comissão.</p>
+      <div class="pc-hero-acoes" ${revela("hero-3", 3)}>
         <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a>
         <a href="/parceiros/entrar" class="cta-btn cta-secondary" data-pc="entrar">Já tenho acesso</a>
       </div>
-      <p class="pc-hero-nota">${icon('check', 14, 'var(--green)')} Grátis no plano Básico · sem comissão · sem taxa por jogador</p>
+      <p class="pc-hero-nota" ${revela("hero-4", 4)}>${icon('check', 14, 'var(--green)')} Grátis no plano Básico · sem comissão · sem taxa por jogador</p>
     </section>
-    ${pcNumerosDoSite()}
+    ${pcNumerosDoSite(true)}
     <section class="pc-sec" id="pc-beneficios">
-      <h2 class="display">Por que estar no GuiaTennis</h2>
+      <h2 class="display" ${revela("ben-h")}>Por que estar no GuiaTennis</h2>
       <div class="pc-grade">
-        ${beneficios.map(b => `
-          <div class="pc-beneficio">
+        ${beneficios.map((b, i) => `
+          <div class="pc-beneficio" ${revela("ben-" + i, i % 3)}>
             ${b.tag ? `<span class="pc-beneficio-tag">Só no ${esc(b.tag)}</span>` : ""}
             <span class="pc-beneficio-ic">${icon(b.ic, 22, 'var(--green)')}</span>
             <p class="pc-card-t">${esc(b.t)}</p>
@@ -7222,11 +7236,11 @@ function pcInicio() {
       </div>
     </section>
     <section class="pc-sec" id="pc-como">
-      <h2 class="display">Como funciona</h2>
-      <p class="pc-sec-sub">Quatro passos, do cadastro ao primeiro jogador. Tudo pelo celular.</p>
+      <h2 class="display" ${revela("como-h")}>Como funciona</h2>
+      <p class="pc-sec-sub" ${revela("como-s", 1)}>Quatro passos, do cadastro ao primeiro jogador. Tudo pelo celular.</p>
       <ol class="pc-etapas-como">
         ${passos.map((p, i) => `
-          <li>
+          <li ${revela("como-" + i, 1)}>
             <span class="pc-etapa-n" aria-hidden="true">${i + 1}</span>
             <div class="pc-etapa-card">
               <p class="pc-etapa-topo"><span class="pc-etapa-passo">Passo ${i + 1}</span><span class="pc-etapa-tempo">${icon(p.ic, 13, 'var(--green)')} ${esc(p.tempo)}</span></p>
@@ -7235,35 +7249,65 @@ function pcInicio() {
             </div>
           </li>`).join("")}
       </ol>
-      <div class="pc-como-fim">
+      <div class="pc-como-fim" ${revela("como-fim")}>
         <a href="/parceiros/cadastro" class="cta-btn cta-primary pc-gratis" data-pc="cadastro">Começar agora <span class="pc-gratis-selo">é de graça!</span></a>
       </div>
     </section>
     <section class="pc-sec">
-      <h2 class="display">Planos</h2>
-      <p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>
-      ${pcCartoesDePlano(null)}
+      <h2 class="display" ${revela("plano-h")}>Planos</h2>
+      <p class="pc-sec-sub" ${revela("plano-s", 1)}>Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>
+      ${pcCartoesDePlano(null, true)}
     </section>
-    <section class="pc-sec">
+    <section class="pc-sec" ${revela("faq")}>
       <h2 class="display">Perguntas frequentes</h2>
       ${pcFaq(perguntasParceiros().slice(0, 6))}
       <a href="/parceiros/ajuda" class="pc-link-btn" data-pc="ajuda">Ver todas as perguntas ›</a>
     </section>
-    <section class="pc-fim">
+    <section class="pc-fim" ${revela("fim")}>
       <h2 class="display">Pronto para aparecer para quem procura?</h2>
       <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a>
       <p>Prefere conversar? <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e quero aparecer no GuiaTennis.")}" target="_blank" rel="noreferrer">Chame o GuiaTennis no WhatsApp</a>.</p>
     </section>`;
 }
 
-function pcCartoesDePlano(atual) {
+// Página inicial do Parceiros: os blocos "acendem" ao aparecer na tela
+// (pedido de 08/10/2026: "ao ir descendo… as informações vão aparecendo,
+// tipo acendendo"). Cada bloco tem uma chave (data-revela) e a ordem dentro
+// do grupo (--rv, para entrarem um depois do outro). O que já acendeu fica
+// aceso quando a tela é redesenhada; quem pede menos movimento no celular
+// vê tudo de uma vez.
+const BLOCOS_ACESOS = new Set();
+function revela(chave, ordem = 0) {
+  return `data-revela="${chave}" style="--rv:${ordem}"`;
+}
+function ligarRevelar() {
+  const blocos = document.querySelectorAll(".pc-revelando [data-revela]");
+  if (window.__observaRevela) { window.__observaRevela.disconnect(); window.__observaRevela = null; }
+  if (!blocos.length) { BLOCOS_ACESOS.clear(); return; }
+  const semMovimento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (semMovimento || !("IntersectionObserver" in window)) { blocos.forEach(el => el.classList.add("aceso", "ja")); return; }
+  const obs = window.__observaRevela = new IntersectionObserver((vistos) => {
+    vistos.forEach(v => {
+      if (!v.isIntersecting) return;
+      v.target.classList.add("aceso");
+      BLOCOS_ACESOS.add(v.target.dataset.revela);
+      obs.unobserve(v.target);
+    });
+  }, { rootMargin: "0px 0px -6% 0px", threshold: 0.12 });
+  blocos.forEach(el => {
+    if (BLOCOS_ACESOS.has(el.dataset.revela)) el.classList.add("aceso", "ja");
+    else obs.observe(el);
+  });
+}
+
+function pcCartoesDePlano(atual, revelar = false) {
   const prox = atual ? proximoPlano(atual) : null;
   const destaque = atual ? (prox && prox.key) : "completo";
   const ordem = PC_PLANOS.findIndex(p => p.key === atual);
   return `
     <div class="pc-planos">
       ${PC_PLANOS.map((p, i) => `
-        <div class="pc-plano ${atual === p.key ? "atual" : ""} ${p.key === destaque ? "destaque" : ""}">
+        <div class="pc-plano ${atual === p.key ? "atual" : ""} ${p.key === destaque ? "destaque" : ""}" ${revelar ? revela("plano-" + p.key, i) : ""}>
           ${atual === p.key ? `<span class="pc-plano-tag">Seu plano</span>` : (p.key === destaque ? `<span class="pc-plano-tag">Recomendado</span>` : "")}
           <p class="pc-plano-n">${esc(p.nome)}${p.key === "premium" ? seloPremium(20) : ""}</p>
           <p class="pc-plano-p">${esc(p.preco)}</p>
@@ -17126,6 +17170,7 @@ function attachEvents() {
     };
   });
   ligarChat();
+  ligarRevelar();
 
   // ---- Minhas quadras (favoritas, vistas, chamadas) ----
   const listaClose = document.getElementById("lista-close");

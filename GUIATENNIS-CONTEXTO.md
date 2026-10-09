@@ -24,6 +24,15 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 09/10/2026
 
+> **Estado (09/10/2026, fim da noite):** o Breno pediu "academias devem
+> receber mensagem de atualização do cadastro depois de 3 meses sem
+> alterações" (regra 85, SQL `20261009130000_lembrete_de_conferir_a_ficha`):
+> e-mail "Confira a ficha" para quem administra a academia com a ficha
+> parada há 3 meses (de novo a cada 3 meses), com o botão abrindo a
+> academia certa (`?abrir=`). Testes novos: `lembrete-da-ficha.js` e a
+> seção 25 do `banco-emails.py`. Ao todo: **1.185 verificações, nenhuma
+> falha** nos 42 arquivos do navegador, e **283** no `banco-emails.py`.
+>
 > **Estado (09/10/2026, noite):** o Breno criou o token do Supabase e pôs
 > no GitHub como segredo `SUPABASE_ACCESS_TOKEN` (seção 11, item 00). O
 > "Banco de dados" do PR #5 rodou de novo e disse "Modelo do e-mail do
@@ -1618,6 +1627,41 @@ cobra taxa e não fica no meio** da negociação.
     "Confirmar e publicar"** (edição, pedido, admin). Confirmar segue como
     antes (a tela do plano, se faltar escolher). Teste:
     `testes/previa-da-ficha.js`.
+85. **Lembrete por e-mail da ficha parada há 3 meses** (pedido de
+    09/10/2026: "academias devem receber mensagem de atualização do
+    cadastro depois de 3 meses sem alterações"), como o "Confirme as
+    informações da sua empresa" do Google Business Profile, o "Is your
+    business information up to date?" do Yelp e os lembretes do Booking
+    para parceiros. SQL `20261009130000_lembrete_de_conferir_a_ficha`:
+    - **Quando:** junto com os avisos do dia (10h de Brasília,
+      `preparar_avisos_do_dia` chama `preparar_lembretes_de_ficha`), para a
+      academia **no ar** (pausada não recebe) com alguém no Parceiros cuja
+      ficha (`dados_atualizados_em`, regra 64) não muda há **3 meses**.
+      Uma vez ao completar 3 meses e **de novo a cada 3 meses** enquanto
+      ela continuar parada; salvar a ficha (mesmo sem mudar nada) zera a
+      conta. Quando foi lembrada fica em `lembretes_de_ficha` (tabela à
+      parte: coluna nova em `academias` mexeria na data da ficha). Sem
+      ninguém para receber, não anota e tenta no dia seguinte.
+    - **Para quem:** todas as pessoas da academia com o e-mail confirmado e
+      os avisos do Parceiros ligados (`quem_recebe_da_academia`, a mesma
+      chave do Perfil › Avisos por e-mail, que agora diz "Avaliação nova,
+      pedidos de acesso e o lembrete de conferir a ficha").
+    - **O e-mail** (tipo `ficha_parada`, "Conferir a ficha" no painel do
+      admin): assunto "Confira a ficha da <academia> no GuiaTennis",
+      título "Está tudo certo na ficha?", desde quando não muda e há
+      quantos meses, "Preço, horário, quadras e professores mudam com o
+      tempo… salvar, mesmo sem mudar nada… volta a dizer 'atualizada
+      hoje'", botão **"Conferir a ficha"** e o link para parar.
+    - **O botão** abre `/parceiros/ficha?abrir=<id curto>&utm_source=Email-ficha`:
+      `abrirAcademiaDoLink` abre a academia do e-mail quando a conta tem
+      várias (sem login, guarda e abre depois de entrar); academia que não
+      é da conta é ignorada. O lembrete em Atualizações (regra 64)
+      continua igual.
+    - Textos: Ajuda do Parceiros ("O que quer dizer 'atualizada há…'"),
+      folha "Não quero mais receber", chat de ajuda e Política de
+      Privacidade (data dos textos legais: 9 de outubro de 2026).
+    Testes: `testes/lembrete-da-ficha.js` e a seção 25 do
+    `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2507,7 +2551,10 @@ colocados pelo Breno). Aqui:
   A lista das contas de jogador o painel lê direto de `jogadores` (o admin
   já podia ler, pela regra da tabela). Tipos de e-mail na fila:
   `avaliacao`, `pedido_responsavel`, `pedido_guiatennis`, `pedido_aceito`,
-  `viagem`, `academias_novas`.
+  `viagem`, `academias_novas` (e, depois, `ficha_parada`, regra 85).
+- `lembretes_de_ficha` (SQL `20261009130000`, regra 85): `academia_id`
+  (chave, apaga junto com a academia) e `lembrada_em`. Sem acesso do site
+  (RLS ligada, sem regra); só `preparar_lembretes_de_ficha()` escreve.
 
 ## 5. Banco: o que já rodou e o que falta
 
@@ -2597,7 +2644,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2736,6 +2783,13 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pedido pelo site sem selo e "Confirmar e enviar"; admin com "Confirmar e
   publicar". O `painel-admin.js` confere a seção Contas excluídas (regra
   83).
+- `lembrete-da-ficha.js` — regra 85: o link do e-mail
+  (`/parceiros/ficha?abrir=`) abre a academia do e-mail numa conta com
+  várias (e grava a troca), não troca se já está aberta nem se a academia
+  não é da conta; sem login, vai para Entrar e guarda a academia; a Ajuda,
+  a folha "Não quero mais receber" e a Privacidade citam o lembrete. A
+  seção 25 do `banco-emails.py` confere o envio (3 meses, uma vez, de novo
+  3 meses depois, quem recebe, pausada, salvar zera, avisos do dia).
 - `chat-na-conta.js` — regra 79: com a conta, a primeira dúvida cria a
   conversa (com ela de título) e as outras atualizam; "Nova conversa";
   "Conversas" lista, abre, continua e apaga (com "Cancelar"); recarregar
@@ -3235,11 +3289,11 @@ c9ade31 Configuração de publicação do Netlify
 
 **Resumo (09/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde e sem conflito, com tudo até a
-**regra 84** (último commit de código: `25920e5`; depois só este
-documento). A prévia do Netlify está atualizada. O merge espera o Breno
-dizer "pode subir" (não lembrar a toda hora). Os testes de 09/10: **1.176
-verificações, nenhuma falha**, nos 41 arquivos do navegador (comando na
-seção 6) e **267 no `banco-emails.py`** (Postgres local; se ele tiver
+**regra 85** (lembrete por e-mail da ficha parada há 3 meses, 09/10 à
+noite). A prévia do Netlify está atualizada. O merge espera o Breno
+dizer "pode subir" (não lembrar a toda hora). Os testes de 09/10: **1.185
+verificações, nenhuma falha**, nos 42 arquivos do navegador (comando na
+seção 6) e **283 no `banco-emails.py`** (Postgres local; se ele tiver
 caído, `pg_ctl` como na seção 6, "Postgres na máquina", com os dados em
 `/var/lib/postgresql/gt`). O chat anterior deixou de acompanhar o PR (sem
 conferências marcadas): no chat novo, voltar a acompanhar o PR #5.
@@ -3312,6 +3366,13 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
    baixar uma academia do Premium e ler a pergunta. E (regras 83 e 84):
    painel › Contas excluídas (excluir uma conta de teste e liberar); no
    fim do cadastro e da edição, a prévia da ficha, "Editar" e "Confirmar".
+   E (regra 85): o lembrete da ficha parada só sai depois de 3 meses; para
+   ver agora no banco de teste, no SQL Editor do `guiatennis-teste`:
+   `update academias set dados_atualizados_em = now() - interval '100 days'
+   where name = '<academia de teste com conta>';` (com `set
+   session_replication_role = replica;` antes, senão o gatilho não deixa)
+   e `select preparar_lembretes_de_ficha();` — o e-mail sai em até 1
+   minuto; tocar em "Conferir a ficha" abre a ficha certa no Parceiros.
 3. **Preço dos planos Completo e Premium** (o Breno define).
 4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
    criar o acesso de cada academia e mandar a mensagem; trocar a foto do

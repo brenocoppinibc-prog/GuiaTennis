@@ -12,8 +12,9 @@ Parceiros (20261006160000), a data em que a ficha foi atualizada
 (20261007150000_logo_nos_emails) e os acessos em todo plano
 (20261007160000_acessos_em_todo_plano), os guardados na conta
 (20261008130000_guardados_na_conta), as promoções (20261008140000_promocoes)
-o pedido para tirar do guia (20261008150000_pedido_para_sair_do_guia) e as
-conversas do chat guardadas na conta (20261009120000_conversas_do_chat).
+o pedido para tirar do guia (20261008150000_pedido_para_sair_do_guia), as
+conversas do chat guardadas na conta (20261009120000_conversas_do_chat) e o
+lembrete de conferir a ficha (20261009130000_lembrete_de_conferir_a_ficha).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -908,6 +909,66 @@ certo, _ = sql(f"delete from public.conversas_de_ajuda where id in (select id fr
 ok(certo and um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}'") == "47", "a própria conta apaga as conversas")
 sql(f"delete from auth.users where id = '{ana_chat}'")
 ok(um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}'") == "0", "excluir a conta apaga as conversas")
+
+# 25. Lembrete de conferir a ficha parada há 3 meses (SQL 20261009130000) ---------
+print("\n# Lembrete de conferir a ficha")
+sql("set local session_replication_role = replica; update public.academias set dados_atualizados_em = now();"
+    "delete from public.lembretes_de_ficha; delete from public.emails_a_enviar where tipo = 'ficha_parada';")
+parada = um("insert into public.academias (name, status, bairro, cidade) values ('Academia Parada', 'published', 'Lapa', 'São Paulo') returning id")
+sql(f"update public.academias set plano = 'completo' where id = '{parada}'")  # o Básico tem 1 pessoa só
+lia = parceiro("Lia Parada", f"liaparada{sufixo}@exemplo.com", parada)
+teo = parceiro("Teo Equipe", f"teoparada{sufixo}@exemplo.com", parada, papel="equipe")
+parceiro("Rui Sem Confirmar", f"ruiparada{sufixo}@exemplo.com", parada, papel="equipe", confirmado=False)
+def parar_a_ficha(dias=100):
+    sql(f"set local session_replication_role = replica; update public.academias set dados_atualizados_em = now() - interval '{dias} days' where id = '{parada}'")
+lembrar = lambda: um("select public.preparar_lembretes_de_ficha()")
+parar_a_ficha(80)
+ok(lembrar() == "0" and fila("tipo = 'ficha_parada'") == "0", "ficha com menos de 3 meses: nada")
+parar_a_ficha()
+ok(lembrar() == "1", "ficha parada há 3 meses: lembra a academia")
+ok(um("select string_agg(para, ',' order by para) from public.emails_a_enviar where tipo = 'ficha_parada'") == f"liaparada{sufixo}@exemplo.com,teoparada{sufixo}@exemplo.com",
+   "vai para quem administra com o e-mail confirmado (responsável e equipe)")
+html = um("select html from public.emails_a_enviar where tipo = 'ficha_parada' limit 1") or ""
+curto = parada.replace("-", "")[-8:]
+ok(um("select assunto from public.emails_a_enviar where tipo = 'ficha_parada' limit 1") == "Confira a ficha da Academia Parada no GuiaTennis"
+   and "Conferir a ficha" in html and f"/parceiros/ficha?abrir={curto}&amp;utm_source=Email-ficha" in html
+   and "há 3 meses" in html and "atualizada hoje" in html and "aviso=parceiros" in html,
+   "o e-mail diz desde quando, pede para conferir e salvar, abre a ficha da academia e tem o link para parar")
+texto = sql("select texto from public.emails_a_enviar where tipo = 'ficha_parada' limit 1")[1]  # várias linhas
+ok(f"/parceiros/ficha?abrir={curto}&utm_source=Email-ficha" in texto, "a versão em texto tem o link")
+ok(lembrar() == "0" and fila("tipo = 'ficha_parada'") == "2", "no dia seguinte, não repete")
+# Três meses depois, ainda parada (a fila já foi limpa): lembra de novo.
+sql(f"update public.lembretes_de_ficha set lembrada_em = now() - interval '100 days' where academia_id = '{parada}';"
+    "delete from public.emails_a_enviar where tipo = 'ficha_parada';")
+sql(f"update public.academia_acessos set avisos_por_email = false where user_id = '{teo}'")
+parar_a_ficha(190)
+ok(lembrar() == "1" and um("select string_agg(para, ',') from public.emails_a_enviar where tipo = 'ficha_parada'") == f"liaparada{sufixo}@exemplo.com",
+   "continua parada 3 meses depois: lembra de novo, menos quem desligou os avisos")
+ok("há 6 meses" in (um("select html from public.emails_a_enviar where tipo = 'ficha_parada'") or ""), "o e-mail conta os meses")
+# A academia salvou a ficha: a data volta a hoje e o lembrete para.
+sql(f"update public.lembretes_de_ficha set lembrada_em = now() - interval '100 days' where academia_id = '{parada}';"
+    "delete from public.emails_a_enviar where tipo = 'ficha_parada';")
+certo, saida = sql(f"update public.academias set name = name where id = '{parada}'", papel="authenticated", user=lia)
+ok(certo and lembrar() == "0", "salvou a ficha: não lembra" + ("" if certo else ": " + saida))
+parar_a_ficha()
+sql(f"update public.academias set pausada = true where id = '{parada}'")
+ok(lembrar() == "0", "academia pausada não recebe")
+sql(f"update public.academias set pausada = false where id = '{parada}'")
+sql(f"update public.academia_acessos set email_confirmado_em = null where user_id = '{lia}'")
+ok(lembrar() == "0" and um(f"select lembrada_em < now() - interval '90 days' from public.lembretes_de_ficha where academia_id = '{parada}'") == "t",
+   "sem ninguém para receber, não anota (tenta de novo no dia seguinte)")
+sql(f"update public.academia_acessos set email_confirmado_em = now() where user_id = '{lia}'")
+sql("select public.preparar_avisos_do_dia()")
+ok(fila("tipo = 'ficha_parada'") == "1", "sai junto com os avisos do dia (10h de Brasília)")
+sem_dono = um("insert into public.academias (name, status) values ('Academia Sem Dono', 'published') returning id")
+sql(f"set local session_replication_role = replica; update public.academias set dados_atualizados_em = now() - interval '200 days' where id = '{sem_dono}'")
+ok(lembrar() == "0", "academia sem ninguém no Parceiros: nada")
+certo, _ = sql("select public.preparar_lembretes_de_ficha()", papel="anon")
+ok(not certo, "o visitante não dispara o lembrete")
+certo, _ = sql("select * from public.lembretes_de_ficha", papel="authenticated", user=lia)
+ok(not certo, "a tabela dos lembretes não é lida pelo site")
+sql(f"delete from public.academias where id in ('{parada}', '{sem_dono}')")
+ok(um(f"select count(*) from public.lembretes_de_ficha where academia_id = '{parada}'") == "0", "apagar a academia apaga o lembrete")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

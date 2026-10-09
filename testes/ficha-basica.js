@@ -177,7 +177,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ({ browser, page } = await abrir());
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
   ok(termos.includes('ficha básica') && termos.includes('OpenStreetMap') && termos.includes('É o responsável por esta academia?'), 'Termos explicam a ficha básica, o OpenStreetMap e o pedido de remoção');
-  ok((termos.match(/Última atualização: 8 de outubro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
+  ok((termos.match(/Última atualização: 9 de outubro de 2026/g) || []).length === 2, 'data dos dois textos legais acompanha a mudança');
   // Contato do guia em botões com ícone, no menu, no rodapé e no bloco para academias
   const contato = await page.evaluate(() => {
     state.showMenu = true; render();

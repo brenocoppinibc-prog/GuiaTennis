@@ -69,6 +69,8 @@
   }
   if (window.__jogador) {
     db.jogadores.push({ user_id: "j-ana", nome: "Ana Jogadora", email: "ana@exemplo.com", cidade: "São Paulo", avisos_academias: false, promocoes: false, novidades: false, termos_aceitos_em: agora, created_at: agora, token_avisos: "tok-j-ana" });
+    // Banco com o lembrete de volta (SQL 20261009140000): a coluna existe e começa ligada.
+    if (window.__lembreteDeVolta) Object.assign(db.jogadores[db.jogadores.length - 1], { lembrete_de_volta: true, visto_em: null });
     window.__senhas["ana@exemplo.com"] = "senhadaana";
   }
   let sessao = window.__admin ? { user: { id: "admin", email: ADMIN } }
@@ -851,13 +853,21 @@
       return { data: j, error: null };
     }
     // Avisos por e-mail (SQL 20261005160000).
+    if (nome === "marcar_visita_da_conta") {
+      const j = sessao && db.jogadores.find(y => y.user_id === sessao.user.id);
+      if (!j || !("visto_em" in j)) return semFuncao;
+      j.visto_em = new Date().toISOString();
+      return { data: null, error: null };
+    }
     if (nome === "parar_avisos") {
       const j = db.jogadores.find(y => y.token_avisos === a.p_token);
       if (j) {
         const buscas = db.buscas_salvas.filter(b => b.user_id === j.user_id);
         if (a.p_aviso === "viagem") { j.avisos_viagem = false; return { data: "viagem", error: null }; }
         if (a.p_aviso === "novas") { j.avisos_academias = false; buscas.forEach(b => { b.avisar = false; }); return { data: "novas", error: null }; }
+        if (a.p_aviso === "volta" && "lembrete_de_volta" in j) { j.lembrete_de_volta = false; return { data: "volta", error: null }; }
         Object.assign(j, { avisos_academias: false, promocoes: false, novidades: false, avisos_viagem: false });
+        if ("lembrete_de_volta" in j) j.lembrete_de_volta = false;
         buscas.forEach(b => { b.avisar = false; });
         return { data: "todos", error: null };
       }

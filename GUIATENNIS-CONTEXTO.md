@@ -24,6 +24,17 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 09/10/2026
 
+> **Estado (09/10/2026, madrugada):** o Breno pediu um lembrete "aos
+> usuários que não entraram a 3 meses… mesmo sem marcar avisos" e, para o
+> Parceiros, "algo para relembrar dos números… mês a mês". Perguntado,
+> escolheu o lembrete para **todos os jogadores com e-mail confirmado**
+> (regra 86, exceção da regra 23, SQL `20261009140000_lembrete_de_volta`)
+> e o **resumo do mês para todo plano, com os números do plano** (regra
+> 87, muda a regra 21, SQL `20261009150000_resumo_do_mes`). Teste novo:
+> `volta-e-resumo.js` e as seções 26 e 27 do `banco-emails.py`. Ao todo:
+> **1.201 verificações, nenhuma falha** nos 43 arquivos do navegador, e
+> **311** no `banco-emails.py`.
+>
 > **Estado (09/10/2026, fim da noite):** o Breno pediu "academias devem
 > receber mensagem de atualização do cadastro depois de 3 meses sem
 > alterações" (regra 85, SQL `20261009130000_lembrete_de_conferir_a_ficha`):
@@ -435,9 +446,11 @@ cobra taxa e não fica no meio** da negociação.
     cabeçalho, rodapé, GuiaTennis Parceiros e QR code; os ícones, a imagem de
     compartilhar, a 404 e as imagens do WhatsApp saem do mesmo desenho pelo
     `divulgacao/gerar-imagens.js`. Mudou o logo? Rode o gerador.
-21. **Relatório do mês por e-mail é só do Premium** (pedido de 02/10/2026):
-    sem caixa "Quero receber por e-mail…" no cadastro nem no primeiro acesso
-    (as colunas `recebe_relatorio` continuam no banco, sempre falsas).
+21. **Resumo do mês por e-mail para todo plano; o relatório completo é do
+    Premium** (mudou em 09/10/2026, regra 87; antes, desde 02/10/2026, o
+    relatório do mês era só do Premium). Sem caixa "Quero receber por
+    e-mail…" no cadastro nem no primeiro acesso: desliga no Perfil (as
+    colunas `recebe_relatorio` continuam no banco, sempre falsas).
 22. **O que cada plano libera** (pedido de 02/10/2026): todos têm nome,
     endereço, quadras e tipos, modalidade, preço, horário, WhatsApp,
     avaliações e QR code. **Básico** (grátis): até 3 comodidades, até 3
@@ -458,7 +471,9 @@ cobra taxa e não fica no meio** da negociação.
     `avaliacao_do_jogador`). A conta (`jogadores`, SQL `20261002130000`)
     guarda nome, e-mail, cidade e três avisos por e-mail — academias novas
     e favoritas, promoções das academias, novidades do GuiaTennis —, todos
-    começando desligados (LGPD). No site: `jogador`, `renderJogadorSheet`
+    começando desligados (LGPD). **Exceção (09/10/2026, escolha do Breno,
+    regra 86):** o lembrete de quem fica 3 meses sem entrar começa ligado
+    para toda conta com o e-mail confirmado. No site: `jogador`, `renderJogadorSheet`
     (Entrar, Criar conta, Minha conta com Sair e Excluir), menu com "Entrar
     ou criar conta"/"Minha conta" e "Avisos por e-mail", e
     `jogadorEntaoFaz` (avaliar sem conta abre o Entrar e a avaliação sai
@@ -1662,6 +1677,68 @@ cobra taxa e não fica no meio** da negociação.
       Privacidade (data dos textos legais: 9 de outubro de 2026).
     Testes: `testes/lembrete-da-ficha.js` e a seção 25 do
     `banco-emails.py`.
+86. **Lembrete para o jogador que não entra há 3 meses** (pedido de
+    09/10/2026: "quero fazer um lembrete aos usuários que não entraram a 3
+    meses, pode fazer isso mesmo sem marcar avisos?"; perguntado, escolheu
+    **"todos com e-mail confirmado"**, sabendo que é a exceção à regra 23 e
+    que o e-mail de marketing sem opt-in pede a Política atualizada e
+    cuidado com o domínio). Como o "Sentimos sua falta" do Booking e do
+    Airbnb, com o que serve para quem joga. SQL
+    `20261009140000_lembrete_de_volta`:
+    - **Quando:** com os avisos do dia, para a conta de jogador com o
+      e-mail confirmado cuja última visita (a mais recente entre
+      `jogadores.visto_em`, o último login do Supabase e a criação da
+      conta) foi há mais de **3 meses**. **Uma vez por ausência:** só sai de
+      novo depois de a pessoa voltar e ficar mais 3 meses fora
+      (`lembrado_de_volta_em`). Quem tem conta no Parceiros não recebe (já
+      recebe o resumo do mês). **No máximo 200 por dia**, das ausências
+      mais recentes para as mais antigas, para o domínio não parecer envio
+      em massa (o mesmo domínio manda o código de login).
+    - **A visita:** `marcar_visita_da_conta()`, chamada pelo site ao abrir
+      com a conta (`carregarConta`, uma vez por abertura); o banco anota no
+      máximo uma vez a cada 12 horas. Só o banco escreve `visto_em`.
+    - **O e-mail** (tipo `volta`): com a cidade da conta e academias novas
+      desde a última visita, assunto "N academias novas em <cidade> desde a
+      sua última visita", a lista (`lista_de_academias_email`) e o botão
+      "Ver academias em <cidade>"; sem elas, "Faz tempo que você não passa
+      no GuiaTennis", com a frase da busca (regra 15) e "Buscar academias".
+      Diz há quantos meses e que só volta a sair depois da próxima visita;
+      link "Não quero mais receber este lembrete" (`parar_avisos(token,
+      'volta')`; "todos" também desliga).
+    - **Na conta:** `jogadores.lembrete_de_volta` começa **ligado** (a
+      exceção da regra 23). Aparece em Minha conta › Avisos por e-mail
+      ("Lembrete se eu ficar 3 meses sem entrar…", `soNaConta` em
+      `AVISOS_JOGADOR`, só se o banco tem a coluna); no cadastro, não é
+      caixa: uma nota diz que vem ligado e onde desligar. Privacidade: a
+      data da última visita com a conta aberta e o lembrete.
+    Testes: `testes/volta-e-resumo.js` e a seção 26 do `banco-emails.py`.
+87. **Resumo do mês por e-mail para quem administra a academia** (pedido de
+    09/10/2026: "para parceiros também é legal algo para relembrar dos
+    números que tiverem mês a mês"; perguntado, **"todos, com os números do
+    plano"**). Como o relatório de desempenho do mês do Google Business
+    Profile. Muda a regra 21. SQL `20261009150000_resumo_do_mes`:
+    - **Quando:** com os avisos do dia, nos primeiros 7 dias do mês (o mês
+      anterior, no horário de Brasília), uma vez por academia e pessoa
+      (chave `resumo:<academia>:<pessoa>:<AAAA-MM>`), para a academia no ar
+      que já estava no guia no mês e tem alguém no Parceiros; vai para quem
+      recebe os avisos do Parceiros (`quem_recebe_da_academia`).
+    - **Todos os planos:** acessos à ficha no mês (com "N% a mais/a menos
+      que em <mês anterior> (N)"), avaliações novas com a média e quantas
+      esperam resposta. Botão "Abrir o GuiaTennis Parceiros"
+      (`/parceiros/painel?abrir=…&utm_source=Email-resumo`).
+    - **Premium:** também quem chamou (WhatsApp, Instagram, site), quantos
+      compartilharam e de onde vieram (as 3 origens com mais acessos).
+      Botão "Ver o desempenho" (`/parceiros/desempenho?abrir=…`).
+    - Os números são os do painel (o admin e a academia logada não contam).
+      Assunto "Setembro na <academia>: N acessos à ficha"; título "O mês
+      de setembro na <academia>". `preparar_resumos_do_mes(p_hoje)` aceita
+      o dia só para o teste. Tipo `resumo_do_mes` no painel do admin.
+    - Textos: Planos ("Resumo do mês por e-mail: acessos e avaliações" em
+      todos; "Relatório completo do mês por e-mail: quem chamou e de onde
+      vieram" no Premium), Perfil › Avisos por e-mail, a folha "Não quero
+      mais receber", o chat, a Ajuda ("O que aparece em Desempenho?"),
+      Termos e Privacidade.
+    Testes: `testes/volta-e-resumo.js` e a seção 27 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2552,6 +2629,10 @@ colocados pelo Breno). Aqui:
   já podia ler, pela regra da tabela). Tipos de e-mail na fila:
   `avaliacao`, `pedido_responsavel`, `pedido_guiatennis`, `pedido_aceito`,
   `viagem`, `academias_novas` (e, depois, `ficha_parada`, regra 85).
+- `jogadores` ganhou (SQL `20261009140000`, regra 86) `visto_em` (só o
+  banco escreve, por `marcar_visita_da_conta`), `lembrete_de_volta`
+  (começa ligado; a conta muda) e `lembrado_de_volta_em`. Tipos novos na
+  fila: `volta` e `resumo_do_mes` (regra 87, `preparar_resumos_do_mes`).
 - `lembretes_de_ficha` (SQL `20261009130000`, regra 85): `academia_id`
   (chave, apaga junto com a academia) e `lembrada_em`. Sem acesso do site
   (RLS ligada, sem regra); só `preparar_lembretes_de_ficha()` escreve.
@@ -2644,7 +2725,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2783,6 +2864,16 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pedido pelo site sem selo e "Confirmar e enviar"; admin com "Confirmar e
   publicar". O `painel-admin.js` confere a seção Contas excluídas (regra
   83).
+- `volta-e-resumo.js` — regras 86 e 87: abrir o site com a conta anota a
+  visita (uma vez por abertura; banco antigo, em silêncio); o lembrete
+  ligado em Minha conta, desligar e salvar; banco sem a coluna (não
+  aparece, salvar continua); o cadastro sem a caixa e com a nota; o link
+  "parar" do lembrete; Planos, Ajuda, Termos e Privacidade. A seção 26 do
+  `banco-emails.py` confere o lembrete (quem recebe, com e sem cidade, uma
+  vez por ausência, a visita a cada 12 horas, parar) e a 27, o resumo do
+  mês (só nos primeiros 7 dias, o mês de Brasília, comparação, média, sem
+  resposta, Premium com canais e origens, uma vez por mês, pausada, avisos
+  desligados).
 - `lembrete-da-ficha.js` — regra 85: o link do e-mail
   (`/parceiros/ficha?abrir=`) abre a academia do e-mail numa conta com
   várias (e grava a troca), não troca se já está aberta nem se a academia
@@ -3289,11 +3380,11 @@ c9ade31 Configuração de publicação do Netlify
 
 **Resumo (09/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde e sem conflito, com tudo até a
-**regra 85** (lembrete por e-mail da ficha parada há 3 meses, 09/10 à
-noite). A prévia do Netlify está atualizada. O merge espera o Breno
-dizer "pode subir" (não lembrar a toda hora). Os testes de 09/10: **1.185
-verificações, nenhuma falha**, nos 42 arquivos do navegador (comando na
-seção 6) e **283 no `banco-emails.py`** (Postgres local; se ele tiver
+**regra 87** (lembrete da ficha parada, lembrete de volta do jogador e
+resumo do mês do Parceiros, 09/10 à noite). A prévia do Netlify está atualizada. O merge espera o Breno
+dizer "pode subir" (não lembrar a toda hora). Os testes de 09/10: **1.201
+verificações, nenhuma falha**, nos 43 arquivos do navegador (comando na
+seção 6) e **311 no `banco-emails.py`** (Postgres local; se ele tiver
 caído, `pg_ctl` como na seção 6, "Postgres na máquina", com os dados em
 `/var/lib/postgresql/gt`). O chat anterior deixou de acompanhar o PR (sem
 conferências marcadas): no chat novo, voltar a acompanhar o PR #5.
@@ -3373,6 +3464,14 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
    session_replication_role = replica;` antes, senão o gatilho não deixa)
    e `select preparar_lembretes_de_ficha();` — o e-mail sai em até 1
    minuto; tocar em "Conferir a ficha" abre a ficha certa no Parceiros.
+   E (regras 86 e 87): em Minha conta, o "Lembrete se eu ficar 3 meses sem
+   entrar" ligado; no cadastro, a nota. Para ver os e-mails agora, no SQL
+   Editor do `guiatennis-teste`: `update jogadores set visto_em = null,
+   created_at = now() - interval '120 days' where email = '<conta de
+   teste>'; update auth.users set last_sign_in_at = now() - interval '120
+   days' where email = '<conta de teste>'; select
+   preparar_lembretes_de_volta();` e `select
+   preparar_resumos_do_mes('2026-11-02');` (o resumo de outubro).
 3. **Preço dos planos Completo e Premium** (o Breno define).
 4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
    criar o acesso de cada academia e mandar a mensagem; trocar a foto do

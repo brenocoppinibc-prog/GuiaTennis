@@ -43,8 +43,8 @@ const estado = (page) => page.evaluate(() => ({
   const ajuda = await page.evaluate(() => document.body.textContent.replace(/\s+/g, ' '));
   ok(ajuda.includes('Quando a ficha passa 3 meses sem mudar, o GuiaTennis manda um e-mail para vocês conferirem.'), 'a Ajuda diz que o e-mail chega depois de 3 meses sem mudar');
   const textos = await page.evaluate(() => ({
-    parar: document.documentElement.innerHTML.includes('os avisos de avaliação nova, de pedidos de acesso e o lembrete de conferir a ficha do GuiaTennis Parceiros'),
-    privacidade: document.documentElement.innerHTML.includes('pedido aceito e, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha'),
+    parar: document.documentElement.innerHTML.includes('os avisos de avaliação nova, de pedidos de acesso, o lembrete de conferir a ficha e o resumo do mês do GuiaTennis Parceiros'),
+    privacidade: document.documentElement.innerHTML.includes('pedido aceito, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha'),
   }));
   ok(textos.parar, 'a folha "Não quero mais receber" cita o lembrete');
   ok(textos.privacidade, 'a Política de Privacidade cita o lembrete');

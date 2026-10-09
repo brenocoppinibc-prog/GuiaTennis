@@ -13,8 +13,10 @@ Parceiros (20261006160000), a data em que a ficha foi atualizada
 (20261007160000_acessos_em_todo_plano), os guardados na conta
 (20261008130000_guardados_na_conta), as promoções (20261008140000_promocoes)
 o pedido para tirar do guia (20261008150000_pedido_para_sair_do_guia), as
-conversas do chat guardadas na conta (20261009120000_conversas_do_chat) e o
-lembrete de conferir a ficha (20261009130000_lembrete_de_conferir_a_ficha).
+conversas do chat guardadas na conta (20261009120000_conversas_do_chat), o
+lembrete de conferir a ficha (20261009130000_lembrete_de_conferir_a_ficha), o
+lembrete do jogador que não entra há 3 meses (20261009140000_lembrete_de_volta)
+e o resumo do mês do Parceiros (20261009150000_resumo_do_mes).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -969,6 +971,124 @@ certo, _ = sql("select * from public.lembretes_de_ficha", papel="authenticated",
 ok(not certo, "a tabela dos lembretes não é lida pelo site")
 sql(f"delete from public.academias where id in ('{parada}', '{sem_dono}')")
 ok(um(f"select count(*) from public.lembretes_de_ficha where academia_id = '{parada}'") == "0", "apagar a academia apaga o lembrete")
+
+# 26. Lembrete para o jogador que não entra há 3 meses (SQL 20261009140000) -------
+print("\n# Lembrete de volta do jogador")
+sql("delete from public.emails_a_enviar where tipo = 'volta';"
+    "update public.jogadores set visto_em = now();"  # as contas das outras seções: ativas
+    "set local session_replication_role = replica; update public.academias set publicada_em = now() - interval '200 days';")
+def sumir(uid, dias=120):
+    sql(f"update public.jogadores set visto_em = null, created_at = now() - interval '{dias} days' where user_id = '{uid}';"
+        f"update auth.users set last_sign_in_at = now() - interval '{dias} days' where id = '{uid}'")
+vera = jogador("Vera Volta", f"veravolta{sufixo}@exemplo.com", cidade="'Sao Paulo'")
+sumir(vera)
+sem_cidade = jogador("Caio Sem Cidade", f"caiovolta{sufixo}@exemplo.com")
+sumir(sem_cidade)
+nao_conf_v = jogador("Nina Não Confirmou", f"ninavolta{sufixo}@exemplo.com", confirmado=False)
+sumir(nao_conf_v)
+desligou = jogador("Otto Desligou", f"ottovolta{sufixo}@exemplo.com", lembrete_de_volta="false")
+sumir(desligou)
+ativa = jogador("Pia Ativa", f"piavolta{sufixo}@exemplo.com")
+sumir(ativa, 30)
+sql(f"update public.jogadores set visto_em = now() - interval '120 days' where user_id = '{dono}'")
+nova_sp = academia_nova("Quadra Recém Aberta", -23.55, -46.63, ["saibro"])
+sql(f"set local session_replication_role = replica; update public.academias set publicada_em = now() - interval '10 days' where id = '{nova_sp}'")
+sql("select public.preparar_lembretes_de_volta()")
+para = um("select string_agg(para, ',' order by para) from public.emails_a_enviar where tipo = 'volta'") or ""
+ok(para == f"caiovolta{sufixo}@exemplo.com,veravolta{sufixo}@exemplo.com",
+   "vai para quem não entra há 3 meses, com o e-mail confirmado, mesmo sem ter ligado avisos — " + para)
+ok(f"ana{sufixo}@" not in para, "quem administra academia não recebe (já recebe o resumo do mês)")
+ok(um(f"select assunto from public.emails_a_enviar where para = 'veravolta{sufixo}@exemplo.com'") == "1 academia nova em Sao Paulo desde a sua última visita",
+   "com cidade: o assunto conta as academias novas desde a última visita")
+html = um(f"select html from public.emails_a_enviar where para = 'veravolta{sufixo}@exemplo.com'") or ""
+ok("Quadra Recém Aberta" in html and "Faz 3 meses que você não entra" in html and "Vera" in html
+   and "/quadras/sao-paulo?utm_source=Email-volta" in html and "aviso=volta" in html and "Ver academias em Sao Paulo" in html,
+   "o e-mail traz o nome, há quantos meses, as academias novas, o botão da cidade e o link para parar")
+ok(um(f"select assunto from public.emails_a_enviar where para = 'caiovolta{sufixo}@exemplo.com'") == "Faz tempo que você não passa no GuiaTennis"
+   and "Buscar academias" in (um(f"select html from public.emails_a_enviar where para = 'caiovolta{sufixo}@exemplo.com'") or ""),
+   "sem cidade: o lembrete simples, com \"Buscar academias\"")
+ok(um("select public.preparar_lembretes_de_volta()") == "0" and fila("tipo = 'volta'") == "2", "não repete enquanto a pessoa não voltar")
+certo, _ = sql("select public.marcar_visita_da_conta()", papel="authenticated", user=vera)
+ok(certo and um(f"select visto_em > now() - interval '1 minute' from public.jogadores where user_id = '{vera}'") == "t", "abrir o site com a conta anota a visita")
+sql(f"update public.jogadores set visto_em = now() - interval '1 hour' where user_id = '{vera}'")
+sql("select public.marcar_visita_da_conta()", papel="authenticated", user=vera)
+ok(um(f"select visto_em < now() - interval '50 minutes' from public.jogadores where user_id = '{vera}'") == "t", "no máximo uma anotação a cada 12 horas")
+# Voltou e sumiu de novo: depois de mais 3 meses, um lembrete novo.
+sql(f"update public.jogadores set lembrado_de_volta_em = now() - interval '200 days', visto_em = now() - interval '100 days' where user_id = '{vera}'")
+ok(um("select public.preparar_lembretes_de_volta()") == "1" and fila(f"tipo = 'volta' and para = 'veravolta{sufixo}@exemplo.com'") == "2",
+   "voltou e ficou mais 3 meses sem entrar: um lembrete novo")
+certo, _ = sql("update public.jogadores set visto_em = '2020-01-01' where user_id = auth.uid()", papel="authenticated", user=vera)
+ok(not certo, "a conta não escreve a data da visita à mão")
+certo, _ = sql("update public.jogadores set lembrete_de_volta = false where user_id = auth.uid()", papel="authenticated", user=sem_cidade)
+ok(certo and um(f"select lembrete_de_volta::text from public.jogadores where user_id = '{sem_cidade}'") == "false", "a conta desliga o lembrete em Minha conta")
+token = um(f"select token_avisos from public.jogadores where user_id = '{vera}'")
+sql(f"update public.jogadores set avisos_academias = true where user_id = '{vera}'")
+ok(um(f"select public.parar_avisos('{token}', 'volta')", papel="anon") == "volta"
+   and um(f"select lembrete_de_volta::text || avisos_academias::text from public.jogadores where user_id = '{vera}'") == "falsetrue",
+   "o link do e-mail desliga só o lembrete")
+sql(f"update public.jogadores set lembrete_de_volta = true where user_id = '{vera}'")
+um(f"select public.parar_avisos('{token}', 'todos')", papel="anon")
+ok(um(f"select lembrete_de_volta::text from public.jogadores where user_id = '{vera}'") == "false", "\"todos\" também desliga o lembrete")
+certo, _ = sql("select public.preparar_lembretes_de_volta()", papel="anon")
+ok(not certo, "o visitante não dispara o lembrete")
+sql(f"delete from public.academias where id = '{nova_sp}'")
+
+# 27. Resumo do mês para quem administra a academia (SQL 20261009150000) ---------
+print("\n# Resumo do mês do Parceiros")
+sql("delete from public.emails_a_enviar where tipo = 'resumo_do_mes'")
+resumo = um("insert into public.academias (name, status, bairro, cidade) values ('Academia do Resumo', 'published', 'Lapa', 'São Paulo') returning id")
+sql(f"set local session_replication_role = replica; update public.academias set plano = 'completo', publicada_em = '2026-08-01' where id = '{resumo}'")
+rita = parceiro("Rita Resumo", f"ritaresumo{sufixo}@exemplo.com", resumo)
+saulo = parceiro("Saulo Equipe", f"sauloresumo{sufixo}@exemplo.com", resumo, papel="equipe")
+cliques = [("visualizacao", "2026-09-10 15:00+00", "Instagram"), ("visualizacao", "2026-09-11 15:00+00", "Instagram"),
+           ("visualizacao", "2026-09-30 23:00+00", "Google"),  # 20h de 30/09 em Brasília: setembro
+           ("visualizacao", "2026-10-01 02:00+00", "Google"),  # 23h de 30/09 em Brasília: setembro
+           ("visualizacao", "2026-10-01 04:00+00", "Google"),  # 1h de 01/10 em Brasília: outubro, fora
+           ("visualizacao", "2026-08-05 15:00+00", "Direto"), ("visualizacao", "2026-08-06 15:00+00", "Direto"),
+           ("whatsapp", "2026-09-12 15:00+00", ""), ("compartilhar", "2026-09-12 16:00+00", "")]
+sql("insert into public.cliques (academia_id, tipo, created_at, origem) values "
+    + ", ".join(f"('{resumo}', '{t}', '{d}', '{o}')" for t, d, o in cliques))
+sql(f"set local session_replication_role = replica; insert into public.avaliacoes (academia_id, stars, comment, nome_autor, created_at) values "
+    f"('{resumo}', 5, 'Ótima', 'Joana', '2026-09-15 12:00+00'), ('{resumo}', 4, 'Boa', 'Lúcio', '2026-09-20 12:00+00')")
+mes = lambda dia="2026-10-02": um(f"select public.preparar_resumos_do_mes('{dia}')")
+ok(mes("2026-10-08") == "0", "depois do dia 7, não sai")
+mes()
+deles = f"tipo = 'resumo_do_mes' and para in ('ritaresumo{sufixo}@exemplo.com', 'sauloresumo{sufixo}@exemplo.com')"
+ok(fila(deles) == "2", "sai para cada pessoa da academia")
+ok(um(f"select assunto from public.emails_a_enviar where para = 'ritaresumo{sufixo}@exemplo.com' and tipo = 'resumo_do_mes'")
+   == "Setembro na Academia do Resumo: 4 acessos à ficha", "o assunto traz o mês e os acessos (o mês contado no horário de Brasília)")
+html = um(f"select html from public.emails_a_enviar where para = 'ritaresumo{sufixo}@exemplo.com' and tipo = 'resumo_do_mes'") or ""
+curto = resumo.replace("-", "")[-8:]
+ok("100% a mais que em agosto (2)" in html and "avaliações novas" in html and "média 4,5 ★" in html and "2 avaliações esperam resposta" in html,
+   "acessos com o mês anterior, avaliações novas com a média e as que esperam resposta")
+ok("Quem chamou" not in html and "De onde vieram" not in html, "fora do Premium, só o que o plano mostra no painel")
+ok(f"/parceiros/painel?abrir={curto}&amp;utm_source=Email-resumo" in html and "Abrir o GuiaTennis Parceiros" in html and "aviso=parceiros" in html,
+   "o botão abre o painel da academia e há o link para parar")
+mes()
+ok(fila(deles) == "2", "uma vez por mês")
+sql(f"update public.academias set plano = 'premium' where id = '{resumo}'; delete from public.emails_a_enviar where {deles}")
+sql(f"update public.academia_acessos set avisos_por_email = false where user_id = '{saulo}'")
+mes()
+ok(fila(deles) == "1", "quem desligou os avisos não recebe")
+html = um(f"select html from public.emails_a_enviar where {deles}") or ""
+ok("WhatsApp 1 · Instagram 0 · site 0" in html and "1 pessoa compartilhou" in html and "Google (2), Instagram (2)" in html
+   and f"/parceiros/desempenho?abrir={curto}" in html and "Ver o desempenho" in html,
+   "Premium: também quem chamou, quem compartilhou e de onde vieram")
+texto = sql(f"select texto from public.emails_a_enviar where {deles}")[1]
+ok("• 4 acessos à ficha" in texto and "Quem chamou: WhatsApp 1" in texto, "a versão em texto tem os mesmos números")
+sql(f"delete from public.emails_a_enviar where {deles}; update public.academias set pausada = true where id = '{resumo}'")
+mes()
+ok(fila(deles) == "0", "academia pausada não recebe")
+sql(f"update public.academias set pausada = false where id = '{resumo}'")
+sql(f"set local session_replication_role = replica; update public.academias set publicada_em = '2026-10-01 12:00+00' where id = '{resumo}'")
+mes()
+ok(fila(deles) == "0", "academia que entrou depois do mês: nada")
+sql(f"set local session_replication_role = replica; update public.academias set publicada_em = '2026-08-01' where id = '{resumo}'")
+sql("select public.preparar_avisos_do_dia()")
+ok(um("select count(*) from public.emails_a_enviar where tipo in ('volta', 'ficha_parada')") is not None, "os avisos do dia rodam com os lembretes e o resumo sem erro")
+certo, _ = sql("select public.preparar_resumos_do_mes()", papel="authenticated", user=rita)
+ok(not certo, "quem administra não dispara o resumo")
+sql(f"delete from public.academias where id = '{resumo}'")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

@@ -37,7 +37,8 @@ teste")
 > emails que foram excluídos e podem liberar o acesso" (regra 83) e "no
 > final do cadastro consiga ver uma prévia da ficha com as informações
 > preenchidas e com opção de editar ou confirmar" (regra 84, teste
-> `previa-da-ficha.js`).
+> `previa-da-ficha.js`). Ao todo: **1.176 verificações, nenhuma falha**
+> nos 41 arquivos do navegador, e 267 no `banco-emails.py`.
 >
 > **Estado (09/10/2026):** o Breno perguntou se precisa subir algum HTML
 > de e-mail (não: os novos saem do banco; o do código sobe sozinho, mas o

@@ -42,7 +42,7 @@ const tela = (page) => page.evaluate(() => ({
   ok(t.painel && t.h1 === 'Visão geral' && t.link === '/admin', 'admin em /admin: o painel, na visão geral');
   ok(t.robots.includes('noindex') && t.robots.includes('nofollow') && t.titulo.includes('Painel do admin'), 'fora do Google, com título próprio — ' + t.titulo);
   ok(await page.evaluate(() => !document.querySelector('.admin-banner') && !document.getElementById('menu-btn') && !document.querySelector('.fab')), 'separado do site: sem a faixa, o menu e os botões do site dos jogadores');
-  ok(await page.evaluate(() => document.querySelectorAll('.adm-nav [data-adm-aba]').length === 10), 'dez seções na barra do lado');
+  ok(await page.evaluate(() => document.querySelectorAll('.adm-nav [data-adm-aba]').length === 11), 'onze seções na barra do lado');
   let inicio = await texto(page, '#painel-admin');
   ok(inicio.includes('Para fazer agora') && inicio.includes('1 academia nova esperando aprovação'), 'Para fazer agora: a academia nova esperando');
   ok(await page.evaluate(() => document.querySelectorAll('.adm-kpi').length === 4 && document.querySelectorAll('.adm-kpi svg.adm-linha').length === 4), 'últimos 30 dias: acessos, buscas, fichas e contatos, com a linha das 12 semanas');
@@ -243,11 +243,18 @@ const tela = (page) => page.evaluate(() => ({
   await page.waitForTimeout(700);
   let ex = await page.evaluate(() => ({ jog: window.__db.jogadores.some(j => j.user_id === 'j-bia'), aval: window.__db.avaliacoes.some(r => r.id === 'rz'), lista: window.__db.contas_excluidas.map(c => c.email + '|' + c.motivo).join(), janela: !!document.getElementById('adm-excluir-overlay'), tela: document.getElementById('painel-admin').innerText }));
   ok(!ex.jog && !ex.aval && ex.lista === 'bia@exemplo.com|Avaliações ofensivas' && !ex.janela, 'exclui a conta e as avaliações, e guarda o motivo — ' + ex.lista);
-  ok(ex.tela.includes('Conta de Bia Souza excluída') && ex.tela.includes('Contas excluídas') && ex.tela.includes('Avaliações ofensivas'), 'o painel avisa e lista as contas excluídas');
+  ok(ex.tela.includes('Conta de Bia Souza excluída. O e-mail fica em Contas excluídas') && !ex.tela.includes('Avaliações ofensivas') && !(await page.$('[data-adm-liberar]')),
+    'o painel avisa e diz onde fica o e-mail; Contas de jogador não lista as excluídas');
+  // Pedido de 09/10/2026: os e-mails excluídos ficam num lugar só.
+  await page.click('.adm-main .adm-nota [data-adm-aba="excluidas"]');
+  await page.waitForTimeout(400);
+  ex = await page.evaluate(() => ({ aba: state.adminAba, link: location.pathname, tela: document.getElementById('adm-excluidas')?.innerText || '' }));
+  ok(ex.aba === 'excluidas' && ex.link === '/admin/excluidas' && ex.tela.includes('bia@exemplo.com') && ex.tela.includes('Avaliações ofensivas') && ex.tela.includes('avaliações apagadas'),
+    '"Contas excluídas" tem a seção própria, com o e-mail, o motivo e o "Liberar" — ' + ex.link);
   page.once('dialog', d => d.accept());
   await page.click('[data-adm-liberar="bia@exemplo.com"]');
   await page.waitForTimeout(400);
-  ok(await page.evaluate(() => !window.__db.contas_excluidas.length && !document.getElementById('painel-admin').innerText.includes('Contas excluídas')), '"Liberar o e-mail" tira o bloqueio');
+  ok(await page.evaluate(() => !window.__db.contas_excluidas.length && document.getElementById('adm-excluidas').innerText.includes('Nenhuma conta excluída') && document.getElementById('painel-admin').innerText.includes('bia@exemplo.com liberado')), '"Liberar o e-mail" tira o bloqueio e avisa');
   // Conta do GuiaTennis Parceiros, em Acessos ao Parceiros
   await page.evaluate(async (agora) => {
     window.__db.academia_acessos.push({ user_id: 'u-mal', academia_id: 'a2', usuario: 'mal@aula.com', nome_responsavel: 'Mal Feitor', email: 'mal@aula.com', dados_completos_em: agora });
@@ -261,6 +268,11 @@ const tela = (page) => page.evaluate(() => ({
   await page.click('#adm-excluir-confirmar');
   await page.waitForTimeout(700);
   ok(await page.evaluate(() => !window.__db.academia_acessos.some(x => x.user_id === 'u-mal') && window.__db.academias.some(a => a.id === 'a2') && window.__db.contas_excluidas.some(c => c.email === 'mal@aula.com' && c.tipo === 'GuiaTennis Parceiros')), 'a conta do Parceiros sai e a academia continua no guia');
+  ok(!(await page.$('[data-adm-liberar]')) && await page.isVisible('.adm-main .adm-nota [data-adm-aba="excluidas"]'), 'Acessos ao Parceiros também não lista as excluídas: aponta para o mesmo lugar');
+  await page.click('.adm-nav [data-adm-aba="excluidas"]');
+  await page.waitForTimeout(400);
+  ok((await texto(page, '#adm-excluidas')).includes('mal@aula.com') && (await texto(page, '#adm-excluidas')).includes('GuiaTennis Parceiros') && await page.isVisible('[data-adm-liberar="mal@aula.com"]'),
+    'a conta do Parceiros excluída aparece no mesmo lugar, com "Liberar o e-mail"');
   await browser.close();
   ({ browser, page } = await abrir());
   t = await page.evaluate(async () => {

@@ -26,7 +26,7 @@ async function editarFicha(page) {
   ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo')?.dataset.passo === 'fotos'), 'um toque no que falta leva até a parte');
   ok((await texto(page, '#reg-plano-aviso')).startsWith('No plano Básico, a ficha mostra as 3 primeiras fotos.'), 'nas fotos, o aviso do que o Básico mostra — ' + await texto(page, '#reg-plano-aviso'));
   await irParte(page, 'revisar');
-  ok((await botoes(page)) === 'register-submit*' && !(await page.$('#reg-falta')), 'na revisão, só "Salvar alterações", em destaque (a revisão já mostra o que falta)');
+  ok((await botoes(page)) === 'reg-editar,register-submit*' && !(await page.$('#reg-falta')), 'na revisão, "Editar" e "Confirmar e salvar", em destaque (a revisão já mostra o que falta) — ' + await botoes(page));
 
   // As partes que o Básico mostra não têm aviso; as outras têm, com a escolha.
   const avisos = {};

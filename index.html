@@ -146,6 +146,7 @@
   .adm-nav.aberta { display: flex; }
   .adm-nav-i { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; }
   .adm-nav-i:hover { background: var(--bg-alt); }
+  .adm-liberar { display: block; margin-top: 8px; }
   .adm-nav-i.ativo { background: var(--green-soft); color: var(--green); font-weight: 700; }
   .adm-nav-n { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; border-radius: 999px; min-width: 20px; padding: 1px 6px; text-align: center; }
   .adm-nav-pe { margin: 12px 12px 4px; font-size: 12px; color: var(--muted); }
@@ -2025,6 +2026,25 @@
   .reg-plano-aviso-acoes .cta-btn { margin: 0; flex: 1 1 140px; min-height: 42px; }
   .reg-plano-aviso-link { background: none; border: 0; padding: 0; margin: 6px 0 0 24px; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--green); text-decoration: underline; cursor: pointer; }
   .reg-plano-aviso-s .reg-plano-aviso-link { margin: 0; }
+  .reg-previa { margin-top: 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); overflow: hidden; }
+  .reg-previa-topo { padding: 14px 16px 12px; background: var(--green-soft); border-bottom: 1px solid var(--green-line); }
+  .reg-previa-t { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 700; color: var(--green); }
+  .reg-previa-s { margin: 4px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+  .reg-previa-bloco { padding: 14px 16px 16px; border-top: 1px solid var(--border); }
+  .reg-previa-topo + .reg-previa-bloco { border-top: 0; }
+  .reg-previa-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .reg-previa-h { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .reg-previa-editar { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; padding: 5px 12px; border: 1px solid var(--green-line); border-radius: 999px; background: var(--card); color: var(--green); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .reg-previa-editar:hover { background: var(--green-soft); }
+  .reg-previa-conteudo { pointer-events: none; }
+  .reg-previa-conteudo .court-name { margin: 0; font-size: 24px; }
+  .reg-previa-conteudo .court-addr { margin-top: 8px; }
+  .reg-previa-conteudo .ht-gal { margin: 0; border-radius: 12px; overflow: hidden; }
+  .reg-previa-conteudo .ht-gal-all { display: none; }
+  .reg-previa-conteudo .cta-btn { cursor: default; }
+  .reg-previa-vazio { display: flex; align-items: flex-start; gap: 6px; margin: 8px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+  .reg-previa-vazio:first-child { margin-top: 0; }
+  .reg-previa-vazio > svg { flex-shrink: 0; margin-top: 2px; }
   .reg-falta { display: flex; align-items: flex-start; gap: 7px; margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
   .reg-falta > svg { flex-shrink: 0; margin-top: 2px; }
   .reg-falta.ok { color: var(--green); font-weight: 600; }
@@ -14356,7 +14376,7 @@ const REG_PASSOS = [
   { id: "horario", t: "Horário", titulo: "Horário de funcionamento", porque: "A ficha mostra se a academia está aberta agora." },
   { id: "cancelamento", t: "Cancelamento", titulo: "Cancelamento e reposição", porque: "Tira a dúvida antes da primeira aula." },
   { id: "chegada", t: "Como chegar", titulo: "Como chegar", porque: "Fachada, entrada e onde parar: é o que mais evita passar direto." },
-  { id: "revisar", t: "Revisar", titulo: "Tudo certo?", porque: "Confira cada parte. Um toque leva até ela." },
+  { id: "revisar", t: "Revisar", titulo: "Confira a prévia da ficha", porque: "É assim que os jogadores vão ver. Mude o que quiser em Editar, ou confirme." },
 ];
 
 // Quem pede cadastro pelo site manda o essencial; o admin publica só com o
@@ -14552,9 +14572,12 @@ function regPassoHtml(id, f, obrigatorio) {
             ${htEstacionarLinhas(estacionarLinhas(f))}
           </div>` : ""}`;
 
-  // Revisar: cada parte com ✓, "Falta" (obrigatória vazia) ou "Opcional",
-  // e um toque leva até ela — o "Quase lá" do Booking.
+  // Revisar: a prévia da ficha e, embaixo, cada parte com ✓, "Falta"
+  // (obrigatória vazia) ou "Opcional"; um toque leva até ela — o "Quase lá"
+  // do Booking.
   return `
+        ${previaDaFicha(f)}
+        <p class="reg-plano-t" style="margin-top:22px">Partes da ficha</p>
         <div class="reg-revisao">
           ${REG_PASSOS.filter(x => x.id !== "revisar").map((x, i) => {
             const falta = regFaltas(f, x.id);
@@ -14807,7 +14830,9 @@ function renderRegisterSheet() {
   const ultimo = i === REG_PASSOS.length - 1;
   // Admin e edição salvam de qualquer parte; quem pede cadastro vai até o fim.
   const salvaEmQualquerParte = isAdmin || isEditing;
-  const textoSalvar = isEditing ? "Salvar alterações" : (isAdmin ? "Publicar quadra" : "Enviar para análise");
+  const textoSalvar = ultimo
+    ? (isEditing ? "Confirmar e salvar" : isAdmin ? "Confirmar e publicar" : "Confirmar e enviar")
+    : (isEditing ? "Salvar alterações" : (isAdmin ? "Publicar quadra" : "Enviar para análise"));
   const vazioOpcional = !regPreenchido(f, passo.id) && !regFaltas(f, passo.id).length && passo.id !== "dados";
   return `
     <div class="overlay open" id="register-overlay">
@@ -14838,6 +14863,7 @@ function renderRegisterSheet() {
           <div class="reg-rodape-linha">
             ${i > 0 ? `<button type="button" class="reg-voltar" id="reg-voltar">Voltar</button>` : `<span></span>`}
             <div class="reg-rodape-dir">
+              ${ultimo ? `<button type="button" class="cta-btn cta-secondary" id="reg-editar">Editar</button>` : ""}
               ${ultimo || salvaEmQualquerParte ? `
                 <button class="cta-btn ${ultimo ? "cta-primary" : "cta-secondary"}" id="register-submit" ${state.registerStatus==="saving"?"disabled":""}>
                   ${state.registerStatus==="saving" ? bolaGirando(16) + " Salvando..." : textoSalvar}
@@ -14849,6 +14875,72 @@ function renderRegisterSheet() {
       </div></div>
     </div>
   `;
+}
+
+// A prévia da ficha no fim do cadastro (pedido do Breno em 09/10/2026:
+// "quero que no final do cadastro consiga ver uma prévia da ficha com as
+// informações preenchidas e com opção de editar ou confirmar"), como o
+// "Revise o seu anúncio" do Airbnb e a prévia da propriedade do Booking: a
+// ficha montada com o que foi preenchido, cortada pelo plano, com os mesmos
+// blocos da página da academia. Cada bloco tem "Editar", que leva à parte; o
+// conteúdo é só para ver (inert). Confirmar fica na barra de baixo.
+function fichaDoFormulario(f) {
+  const ativas = QUADRA_COMBOS.filter(q => (f.quadras || {})[q.key] > 0);
+  const linha = { ...toRow({ ...f, pisos: [...new Set(ativas.map(q => q.piso))], cobertura: [...new Set(ativas.map(q => q.cobertura))] }),
+    id: f.__editingId || "previa", endereco: montarEndereco(f), plano: f.__plano || "basico", status: "published",
+    confirmada: isAdmin ? !!f.confirmada : !!(contaAcademia || f.__editingId) };
+  return { ...mapRow(linha), appAvg: 0, appCount: 0, distanceKm: null };
+}
+function previaDaFicha(f) {
+  const c = fichaDoFormulario(f);
+  const plano = f.__plano || "basico";
+  const l = limitesDoPlano(plano);
+  const passo = (id) => REG_PASSOS.findIndex(x => x.id === id);
+  const escondido = (t) => `<p class="reg-previa-vazio">${icon('olhoFechado', 15, '#8E6D25')} ${esc(t)}</p>`;
+  const vazio = (t) => `<p class="reg-previa-vazio">${esc(t)}</p>`;
+  const bloco = (titulo, id, conteudo) => `
+    <div class="reg-previa-bloco" data-previa="${id}">
+      <div class="reg-previa-cab">
+        <p class="reg-previa-h">${esc(titulo)}</p>
+        <button type="button" class="reg-previa-editar" data-reg-passo="${passo(id)}" aria-label="Editar: ${esc(titulo)}">${icon('edit', 14, 'currentColor')} Editar</button>
+      </div>
+      <div class="reg-previa-conteudo" inert>${soParaVer(conteudo)}</div>
+    </div>`;
+  // Links viram texto: na prévia, nada abre o WhatsApp nem conta clique.
+  function soParaVer(html) {
+    return html.replace(/<a\b/g, "<span").replace(/<\/a>/g, "</span>").replace(/ (href|target|rel|data-track|data-court|data-lightbox-open)="[^"]*"/g, "");
+  }
+  const contatos = [
+    c.phone ? `<span class="cta-btn cta-primary">${icon('phone', 15, '#fff')} Chamar no WhatsApp</span>` : "",
+    c.site ? `<span class="cta-btn cta-secondary">${icon('globe', 15, 'var(--green)')} Ver site</span>` : "",
+    c.instagram ? `<span class="cta-btn cta-secondary">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</span>` : "",
+  ].join("");
+  const redesFora = l.contatos.includes("instagram") ? [] : [String(f.instagram || "").trim() && "Instagram", String(f.site || "").trim() && "site"].filter(Boolean);
+  return `
+    <div class="reg-previa" id="reg-previa">
+      <div class="reg-previa-topo">
+        <p class="reg-previa-t">${icon('eye', 16, 'var(--green)')} Prévia da ficha</p>
+        <p class="reg-previa-s">Como os jogadores vão ver${plano === "premium" ? "" : `, no plano ${esc(nomeDoPlano(plano))}`}. Toque em Editar para mudar uma parte.</p>
+      </div>
+      ${bloco("Fotos", "fotos", courtPhotos(c).length ? htGaleria(c) : vazio("Sem foto: a ficha começa direto no nome."))}
+      ${bloco("Nome e endereço", "dados", `
+        <h3 class="court-name display">${esc(c.name || "Nome da academia")}${seloDaAcademia(c, 20, false)}</h3>
+        ${htEtiquetas(c)}
+        <p class="court-addr"><span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span><span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>`)}
+      ${bloco("Sobre a academia e horário", "horario", `<p class="ht-about">${esc(descricaoAcademia(c))}</p>${htHorario(c)}`)}
+      ${bloco("Aulas, locação e preço", "precos", htOpcoes(c))}
+      ${bloco("Estrutura", "quadras", (totalQuadras(c) || (c.amenities || []).length) ? htComodidades(c)
+        + ((f.amenities || []).length > (c.amenities || []).length ? escondido(`${(f.amenities || []).length - c.amenities.length} comodidades não aparecem no plano ${nomeDoPlano(plano)}.`) : "")
+        : vazio("Sem quadras nem comodidades informadas."))}
+      ${bloco("Cancelamento e reposição", "cancelamento", !l.cancelamento
+        ? escondido(regPreenchido(f, "cancelamento") ? `Preenchido, mas não aparece no plano ${nomeDoPlano(plano)}.` : `Não aparece no plano ${nomeDoPlano(plano)}.`)
+        : regPreenchido(f, "cancelamento") ? htPolitica(c) : vazio("Não informado: a ficha diz para perguntar à academia."))}
+      ${bloco("Como chegar", "chegada", !l.chegada
+        ? escondido(regPreenchido(f, "chegada") ? `Preenchido, mas não aparece no plano ${nomeDoPlano(plano)}.` : `Não aparece no plano ${nomeDoPlano(plano)}.`)
+        : temAcesso(c) ? htAcesso(c) : vazio("Não informado."))}
+      ${bloco("Contato", "contato", (contatos ? `<div class="cta-col" style="margin-top:0">${contatos}</div>` : vazio("Sem contato informado."))
+        + (redesFora.length ? escondido(`${redesFora.length > 1 ? "Instagram e site não aparecem" : `O ${redesFora[0]} não aparece`} no plano ${nomeDoPlano(plano)}.`) : ""))}
+    </div>`;
 }
 
 // O que ainda falta, preso em cima dos botões (pedido do Breno em
@@ -16152,6 +16244,10 @@ const ADMIN_ABAS = [
   { aba: "academias", t: "Academias", ic: "predio", sub: "Todas as academias do guia: situação, plano, nota e movimento dos últimos 30 dias." },
   { aba: "acessos", t: "Acessos ao Parceiros", ic: "key", sub: "Quem administra cada academia no GuiaTennis Parceiros." },
   { aba: "jogadores", t: "Contas de jogador", ic: "pessoa", sub: "Quem tem conta no GuiaTennis, os avisos ligados e as buscas salvas." },
+  // Um lugar só para os e-mails das contas excluídas (pedido do Breno em
+  // 09/10/2026: "unifique em apenas um lugar os emails que foram excluídos e
+  // podem liberar o acesso"): de jogador e do GuiaTennis Parceiros.
+  { aba: "excluidas", t: "Contas excluídas", ic: "lixo", sub: "Os e-mails das contas que você excluiu, de jogador e do GuiaTennis Parceiros. Eles não criam outra conta até você liberar." },
   { aba: "avaliacoes", t: "Avaliações", ic: "bubble", sub: "Todas as avaliações, da mais nova para a mais antiga." },
   { aba: "estatisticas", t: "Estatísticas", ic: "barchart", sub: "Acessos, buscas, fichas abertas e contatos, por período. Os seus acessos não entram na conta." },
   { aba: "percursos", t: "Percurso das visitas", ic: "map", sub: "O caminho de cada visita, passo a passo. Ninguém é identificado." },
@@ -16185,7 +16281,8 @@ function carregarAbaDoAdmin() {
   const aba = state.adminAba;
   if (aba === "inicio" || aba === "emails") carregarSituacaoDosEmails();
   if (aba === "inicio" || aba === "jogadores") carregarNumerosDasContas();
-  if (aba === "jogadores") { carregarJogadoresDoAdmin(); carregarContasExcluidas(); }
+  if (aba === "jogadores") carregarJogadoresDoAdmin();
+  if (aba === "excluidas") carregarContasExcluidas();
   if (aba === "emails") carregarEmailsRecentes();
   if (aba === "percursos" && !(state.percursos && state.percursos.linhas && state.percursos.linhas.length)) { state.percursosMostrar = 20; carregarPercursos(); }
 }
@@ -16508,8 +16605,8 @@ function admJogadoresHtml() {
         </div>
         ${lista.length > mostrar ? `<button type="button" class="cta-btn cta-secondary" id="adm-jogadores-mais" style="margin-top:12px">Mostrar mais ${Math.min(50, lista.length - mostrar)}</button>` : ""}`}
       <p class="adm-nota" style="margin-top:12px">Dados pessoais: use só para cuidar das contas e dos avisos (LGPD). A senha de cada conta fica cifrada no Supabase e nem o admin vê.</p>
-    </section>
-    ${blocoContasExcluidas()}`;
+      ${notaDasExcluidas()}
+    </section>`;
 }
 
 function admAvaliacoesHtml() {
@@ -16632,25 +16729,36 @@ function admAcessosHtml() {
           </div>`;
         }).join("")}
       </div>
-    </section>` : ""}`;
+    </section>` : ""}
+    <section class="adm-bloco">${notaDasExcluidas()}</section>`;
 }
-function blocoContasExcluidas() {
-  const lista = state.admExcluidas || [];
-  if (!lista.length) return "";
+// Contas excluídas: a seção própria do painel, a única com o "Liberar".
+function admExcluidasHtml() {
+  const lista = state.admExcluidas;
+  if (!lista) return `<section class="adm-bloco"><p class="adm-nota">${bolaGirando(14)} Carregando…</p></section>`;
+  const termo = slugTexto(String(state.admBuscaExcluida || "").trim());
+  const vistas = lista.filter(c => !termo || [c.nome, c.email, c.motivo].some(t => slugTexto(t || "").includes(termo)));
   return `
-    <section class="adm-bloco">
-      <h2 class="adm-h2">Contas excluídas <span class="adm-cont">${lista.length}</span></h2>
-      <p class="adm-nota" style="margin-top:0">Esses e-mails não criam outra conta. Liberar tira o bloqueio (a conta não volta).</p>
-      <div class="adm-tabela" role="table" aria-label="Contas excluídas">
-        ${lista.map(c => `
-          <div class="adm-tr" role="row">
-            <span role="cell"><strong>${esc(c.nome || c.email)}</strong><small>${esc(c.email)}</small></span>
-            <span role="cell">${esc(c.tipo || "")}</span>
-            <span role="cell">${dataCurta(c.excluida_em)}</span>
-            <span role="cell">${esc(c.motivo)}${c.avaliacoes_apagadas ? "<small>avaliações apagadas</small>" : ""}<button type="button" class="chip small" data-adm-liberar="${esc(c.email)}">Liberar o e-mail</button></span>
-          </div>`).join("")}
-      </div>
+    <section class="adm-bloco" id="adm-excluidas">
+      ${!lista.length ? `<p class="adm-vazio">Nenhuma conta excluída. Quando você excluir uma conta (em Acessos ao Parceiros ou em Contas de jogador), o e-mail aparece aqui.</p>` : `
+        <h2 class="adm-h2">E-mails bloqueados <span class="adm-cont">${lista.length}</span></h2>
+        <p class="adm-nota" style="margin-top:0">Esses e-mails não criam outra conta, nem de jogador nem do GuiaTennis Parceiros. Liberar tira o bloqueio: a pessoa pode criar uma conta nova (a conta antiga não volta).</p>
+        ${lista.length > 8 ? `<input type="search" class="form-field adm-busca" id="adm-busca-excluida" placeholder="Buscar por nome, e-mail ou motivo" value="${esc(state.admBuscaExcluida || "")}" autocomplete="off" />` : ""}
+        <div class="adm-tabela" role="table" aria-label="Contas excluídas">
+          <div class="adm-tr adm-th" role="row"><span role="columnheader">Nome e e-mail</span><span role="columnheader">Conta</span><span role="columnheader">Excluída em</span><span role="columnheader">Motivo</span></div>
+          ${vistas.map(c => `
+            <div class="adm-tr" role="row">
+              <span role="cell"><strong>${esc(c.nome || c.email)}</strong><small>${esc(c.email)}</small></span>
+              <span role="cell">${esc(c.tipo || "—")}</span>
+              <span role="cell">${dataCurta(c.excluida_em)}</span>
+              <span role="cell">${esc(c.motivo)}${c.avaliacoes_apagadas ? "<small>avaliações apagadas</small>" : ""}<span class="adm-liberar"><button type="button" class="chip small" data-adm-liberar="${esc(c.email)}">Liberar o e-mail</button></span></span>
+            </div>`).join("") || `<p class="adm-vazio">Ninguém com essa busca.</p>`}
+        </div>`}
     </section>`;
+}
+// Onde dá para excluir uma conta, um aviso leva às excluídas.
+function notaDasExcluidas() {
+  return `<p class="adm-nota">Ao excluir uma conta, o e-mail fica bloqueado em <a href="/admin/excluidas" data-adm-aba="excluidas">Contas excluídas</a>, onde você libera quando quiser.</p>`;
 }
 async function carregarContasExcluidas() {
   try {
@@ -16689,7 +16797,7 @@ async function excluirContaAgora() {
   const r = await sb.rpc('excluir_conta_admin', { p_user: x.userId, p_motivo: motivo, p_apagar_avaliacoes: !!x.apagar });
   if (r.error) { x.salvando = false; x.erro = r.error.message || "Não consegui excluir agora."; render(); return; }
   state.admExcluindo = null;
-  state.admAviso = `Conta de ${x.nome || x.email} excluída.`;
+  state.admAviso = `Conta de ${x.nome || x.email} excluída. O e-mail fica em Contas excluídas, onde você libera quando quiser.`;
   await loadEverything();
   carregarJogadoresDoAdmin();
   carregarNumerosDasContas();
@@ -16703,7 +16811,7 @@ function renderPainelAdmin() {
   const contagem = { pendencias: (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length + (state.pedidosParaSairAdmin || []).length };
   const conteudo = {
     inicio: admInicioHtml, pendencias: admPendenciasHtml, academias: admAcademiasHtml,
-    jogadores: admJogadoresHtml, avaliacoes: admAvaliacoesHtml, acessos: admAcessosHtml, estatisticas: () => `<section class="adm-bloco">${conteudoDasEstatisticas()}</section>`,
+    jogadores: admJogadoresHtml, excluidas: admExcluidasHtml, avaliacoes: admAvaliacoesHtml, acessos: admAcessosHtml, estatisticas: () => `<section class="adm-bloco">${conteudoDasEstatisticas()}</section>`,
     percursos: () => `<section class="adm-bloco">${conteudoDosPercursos()}</section>`, emails: admEmailsHtml, ferramentas: admFerramentasHtml,
   }[aba]();
   const item = (x) => `<a href="/admin${x.aba === "inicio" ? "" : "/" + x.aba}" class="adm-nav-i ${x.aba === aba ? "ativo" : ""}" data-adm-aba="${x.aba}" ${x.aba === aba ? 'aria-current="page"' : ""}>${icon(x.ic, 18, 'currentColor')}<span>${x.t}</span>${contagem[x.aba] ? `<span class="adm-nav-n">${contagem[x.aba]}</span>` : ""}</a>`;
@@ -16827,6 +16935,7 @@ function ligarEventosDoPainel() {
       if (!confirm(`Liberar ${el.dataset.admLiberar}? Esse e-mail volta a poder criar conta.`)) return;
       const r = await sb.rpc('liberar_email_admin', { p_email: el.dataset.admLiberar });
       if (r.error) { alert("Não consegui liberar: " + r.error.message); return; }
+      state.admAviso = `${el.dataset.admLiberar} liberado: pode criar uma conta nova.`;
       carregarContasExcluidas();
     };
   });
@@ -16853,6 +16962,7 @@ function ligarEventosDoPainel() {
   };
   campoVivo("adm-busca", "admBusca");
   campoVivo("adm-busca-jogador", "admBuscaJogador");
+  campoVivo("adm-busca-excluida", "admBuscaExcluida");
   const jogMais = document.getElementById("adm-jogadores-mais");
   if (jogMais) jogMais.onclick = () => { state.admJogadoresMostrar = (state.admJogadoresMostrar || 50) + 50; render(); };
   const avalMais = document.getElementById("adm-aval-mais");
@@ -18071,6 +18181,9 @@ function attachEvents() {
   if (regContinuar) regContinuar.onclick = () => irParaPasso(regPassoAtual().i + 1, true);
   const regVoltar = document.getElementById("reg-voltar");
   if (regVoltar) regVoltar.onclick = () => irParaPasso(regPassoAtual().i - 1, false);
+  // "Editar" da prévia: volta ao começo da ficha.
+  const regEditar = document.getElementById("reg-editar");
+  if (regEditar) regEditar.onclick = () => irParaPasso(0, false);
   const regSubmit = document.getElementById("register-submit");
   if (regSubmit) regSubmit.onclick = enviarFormulario;
   const regPlanoVoltar = document.getElementById("reg-plano-voltar");

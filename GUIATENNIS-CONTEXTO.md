@@ -33,7 +33,11 @@ teste")
 > "aviso de que não estará visível na ficha e com opção de querer ou não
 > alterar e precisar pagar a mais" (regra 82). Testes novos:
 > `chat-na-conta.js`, `plano-na-ficha.js` e a seção 24 do
-> `banco-emails.py` (267 certas).
+> `banco-emails.py` (267 certas). Depois: "unifique em apenas um lugar os
+> emails que foram excluídos e podem liberar o acesso" (regra 83) e "no
+> final do cadastro consiga ver uma prévia da ficha com as informações
+> preenchidas e com opção de editar ou confirmar" (regra 84, teste
+> `previa-da-ficha.js`).
 >
 > **Estado (09/10/2026):** o Breno perguntou se precisa subir algum HTML
 > de e-mail (não: os novos saem do banco; o do código sobe sozinho, mas o
@@ -1577,6 +1581,32 @@ cobra taxa e não fica no meio** da negociação.
       Patrocinado, promoções, números, o que sai da ficha, quantas pessoas)
       e que nada é apagado. Subir o plano não pergunta.
     - Teste: `testes/plano-na-ficha.js`.
+83. **Contas excluídas num lugar só** (pedido de 09/10/2026: "unifique em
+    apenas um lugar os emails que foram excluídos e podem liberar o
+    acesso"). O painel do admin ganhou a seção **Contas excluídas**
+    (`/admin/excluidas`, `admExcluidasHtml`), a única com "Liberar o
+    e-mail": nome, e-mail, a conta (jogador ou GuiaTennis Parceiros),
+    quando, o motivo e se as avaliações foram apagadas; com mais de 8, uma
+    busca. Contas de jogador e Acessos ao Parceiros, onde fica o "Excluir
+    conta", não listam mais as excluídas: um aviso leva à seção
+    (`notaDasExcluidas`), e o aviso depois de excluir diz onde o e-mail
+    ficou. Liberar avisa "… liberado: pode criar uma conta nova".
+84. **Prévia da ficha no fim do cadastro** (pedido de 09/10/2026: "quero
+    que no final do cadastro consiga ver uma prévia da ficha com as
+    informações preenchidas e com opção de editar ou confirmar"), como o
+    "Revise o seu anúncio" do Airbnb. A última parte ("Confira a prévia da
+    ficha") começa com a ficha montada com o que foi preenchido
+    (`fichaDoFormulario` → `mapRow`, cortada pelo plano) e os mesmos blocos
+    da página da academia: fotos, nome com o selo e endereço, sobre e
+    horário, preços, estrutura, cancelamento, como chegar e contato. Cada
+    bloco tem "Editar", que leva à parte; o que o plano não mostra aparece
+    como "Preenchido, mas não aparece no plano Básico." O conteúdo é só para
+    ver (`inert`, links viram texto em `soParaVer`). Embaixo da prévia, a
+    lista das partes de antes. Na barra de baixo: "Voltar", **"Editar"** (a
+    primeira parte) e **"Confirmar e salvar" / "Confirmar e enviar" /
+    "Confirmar e publicar"** (edição, pedido, admin). Confirmar segue como
+    antes (a tela do plano, se faltar escolher). Teste:
+    `testes/previa-da-ficha.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2556,7 +2586,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2688,6 +2718,13 @@ as 133 do `banco-acesso.py` no banco e login locais.
 - `parceiros-acender.js` — regra 78: o topo acende ao abrir, o resto
   começa apagado e acende ao descer, continua aceso ao redesenhar, só na
   página inicial, e tudo de uma vez com "reduzir movimento".
+- `previa-da-ficha.js` — regra 84: a prévia na última parte, com os
+  blocos na ordem da ficha, cortada pelo plano (o que fica de fora dito),
+  só para ver; "Editar" de cada bloco e o de baixo; "Confirmar e salvar"
+  segue para o plano e salva; Premium com o selo dourado e tudo à vista;
+  pedido pelo site sem selo e "Confirmar e enviar"; admin com "Confirmar e
+  publicar". O `painel-admin.js` confere a seção Contas excluídas (regra
+  83).
 - `chat-na-conta.js` — regra 79: com a conta, a primeira dúvida cria a
   conversa (com ela de título) e as outras atualizam; "Nova conversa";
   "Conversas" lista, abre, continua e apaga (com "Cancelar"); recarregar
@@ -3071,6 +3108,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Contas excluídas num lugar só no painel e a prévia da ficha no fim do cadastro   ← PR #5, 09/10
 (a seguir) Chat do Parceiros guardado na conta, tela da senha arrumada, "Continuar" à direita com o que falta e o plano avisando na ficha   ← PR #5, 09/10
 (a seguir) Promoções do Premium, números com "Entenda como funciona", foto em cima no cartão e o site sem citar outros sites   ← PR #5, 08/10
 (a seguir) Preço sem valor diz "sob consulta" também no texto da ficha   ← PR #5, 08/10
@@ -3185,7 +3223,7 @@ c9ade31 Configuração de publicação do Netlify
 ## 11. Em aberto
 
 **Resumo (09/10/2026).** O PR #5 segue verde, agora com as regras até a
-82; o merge espera o Breno dizer "pode subir". O resto do resumo abaixo
+84; o merge espera o Breno dizer "pode subir". O resto do resumo abaixo
 continua valendo.
 
 **Resumo (08/10/2026, ao trocar de chat).** O PR #5 (branch
@@ -3243,7 +3281,9 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
    e-mail e "Trocar"; em Minha ficha, "Continuar" à direita e o "Falta
    preencher"; no Básico, os avisos das partes, "Quero o Completo" (ver o
    pedido no painel do admin) e "Manter o Básico"; no painel do admin,
-   baixar uma academia do Premium e ler a pergunta.
+   baixar uma academia do Premium e ler a pergunta. E (regras 83 e 84):
+   painel › Contas excluídas (excluir uma conta de teste e liberar); no
+   fim do cadastro e da edição, a prévia da ficha, "Editar" e "Confirmar".
 3. **Preço dos planos Completo e Premium** (o Breno define).
 4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
    criar o acesso de cada academia e mandar a mensagem; trocar a foto do

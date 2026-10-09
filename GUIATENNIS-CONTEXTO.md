@@ -24,6 +24,16 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 09/10/2026
 
+> **Estado (09/10/2026, noite):** o Breno criou o token do Supabase e pôs
+> no GitHub como segredo `SUPABASE_ACCESS_TOKEN` (seção 11, item 00). O
+> "Banco de dados" do PR #5 rodou de novo e disse "Modelo do e-mail do
+> código trocado no Supabase teste (logo de https://deploy-preview-5--…)".
+> O de verdade troca sozinho no merge. O token é do tipo novo, com
+> permissão limitada: projetos `GuiaTennis-teste` e `GuiaTennis`,
+> **Auth Config: Read-write** e, no grupo Project, a de administrador
+> (sem ela o Supabase responde 403 "Missing required permission(s):
+> project_admin_write"), sem validade (Never).
+>
 > **Estado (09/10/2026, depois):** o Breno pediu "faça que o chat de
 > parceiros fique salvo na conta também e tenha histórico e que pode
 > iniciar novo chat" (regra 79, SQL `20261009120000_conversas_do_chat`) e,
@@ -3239,7 +3249,7 @@ já aplicado no banco de teste); tela da senha com o cartão do e-mail;
 "Continuar" à direita e "Falta preencher"; o plano avisando em cada parte
 da ficha (e o admin confirmando ao baixar o plano); contas excluídas num
 lugar só no painel; prévia da ficha no fim do cadastro. Pendente, igual a
-antes: o segredo `SUPABASE_ACCESS_TOKEN` (item 00) e o Breno testar na
+antes: ~~o segredo `SUPABASE_ACCESS_TOKEN`~~ (feito em 09/10, item 00) e o Breno testar na
 prévia (item 2, com os passos de 09/10). O resto do resumo abaixo continua
 valendo.
 
@@ -3247,11 +3257,12 @@ valendo.
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
 regra 75; o merge espera o Breno dizer "pode subir". Pendente:
 00. **E-mail com o domínio** (regra 67): **funcionando desde 08/10/2026**.
-   Falta só: (a) o Breno criar o token do Supabase e colocar no GitHub
-   como segredo `SUPABASE_ACCESS_TOKEN` (passo a passo no item "E-mail com
-   o domínio" abaixo); com ele, rodar de novo o "Banco de dados" do PR e
-   conferir no registro "Modelo do e-mail do código trocado no Supabase
-   teste" — o de verdade troca sozinho no merge; (b) depois do merge,
+   Falta só: (a) ~~o token do Supabase como segredo
+   `SUPABASE_ACCESS_TOKEN`~~ — **feito pelo Breno em 09/10/2026**; o
+   registro do "Banco de dados" disse "Modelo do e-mail do código trocado
+   no Supabase teste"; o de verdade troca sozinho no merge (conferir no
+   registro da execução da `main`). Falta testar na prévia: "Esqueci a
+   senha" e ver o e-mail com a logo; (b) depois do merge,
    trocar o webhook do Resend para o site de verdade.
 0. **WhatsApp automático do código: ESPERANDO O CNPJ.** O Breno decidiu
    em 08/10/2026: "se o whatsapp só funcionar quando tiver cnpj, deixe
@@ -3325,7 +3336,10 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
   API de gerenciamento (passo "Modelo do e-mail do código"; teste no PR,
   com a logo da prévia; de verdade no merge). Falta só o Breno criar o
   token em supabase.com/dashboard/account/tokens e colocar no GitHub como
-  segredo `SUPABASE_ACCESS_TOKEN`; (2) **receber:** Resend › Domains ›
+  segredo `SUPABASE_ACCESS_TOKEN` — **feito em 09/10/2026** (token com
+  permissão limitada: os dois projetos, Auth Config Read-write e o
+  administrador do projeto; se um dia trocar, é apagar e criar outro
+  igual e usar "Update" no segredo); (2) **receber:** Resend › Domains ›
   guiatennis.com.br › ligar **Receiving** e adicionar no DNS (onde estão
   os registros do Resend) o registro **MX** que ele mostrar, sem apagar
   os outros; (3) Resend › API Keys › Create: nome "Receber e-mails",

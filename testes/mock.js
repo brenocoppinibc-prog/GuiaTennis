@@ -43,6 +43,10 @@
     promocoes: JSON.parse(JSON.stringify(window.__promocoesIniciais || [])),
     // Pedidos para tirar a academia do guia (SQL 20261008150000).
     pedidos_para_sair: [],
+    // Conversas do chat de ajuda guardadas na conta (SQL 20261009120000).
+    // window.__conversasIniciais começa com algumas; window.__semConversas
+    // finge o banco sem a tabela.
+    conversas_de_ajuda: JSON.parse(JSON.stringify(window.__conversasIniciais || [])),
   };
   // window.__premium: ids das academias que começam no Premium.
   (window.__premium || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "premium"; });
@@ -206,6 +210,15 @@
       const t = db[table];
       if (!t || (window.__semAcesso && (table === "academia_acessos" || table === "respostas"))) return { data:null, error:{ message:"relation does not exist" } };
       const pass = r => filtros.every(([k,v,op]) => op === "gte" ? String(r[k]) >= String(v) : r[k] === v);
+      // Conversas do chat: só a própria conta lê e apaga; gravar é pela função.
+      if (table === "conversas_de_ajuda") {
+        if (window.__semConversas) return { data:null, error:{ message:'relation "public.conversas_de_ajuda" does not exist' } };
+        const eu = sessao && sessao.user.id;
+        const minhas = t.filter(r => r.user_id === eu).filter(pass);
+        if (op === "select") return { data: JSON.parse(JSON.stringify(minhas)).sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em))), error:null };
+        if (op === "delete") { minhas.forEach(r => t.splice(t.indexOf(r), 1)); return { data:null, error:null }; }
+        return { data:null, error:{ message:"permission denied for table conversas_de_ajuda", code:"42501" } };
+      }
       // Banco sem a tabela do percurso (SQL 20261005140000).
       if (table === "passos_das_visitas" && window.__semPercurso) return { data:null, error:{ message:'relation "public.passos_das_visitas" does not exist' } };
       if (op === "insert") {
@@ -322,8 +335,30 @@
   }
   const semFuncao = { data:null, error:{ message:"Could not find the function", code:"PGRST202" } };
   const erro = (message, code) => ({ data:null, error:{ message, code } });
+  let seqConversa = 0;
   function rodarRpc(nome, a){
     window.__rpcs.push({ nome, args: JSON.parse(JSON.stringify(a || {})) });
+    // Chat de ajuda guardado na conta (SQL 20261009120000).
+    if (nome === "guardar_conversa_de_ajuda") {
+      if (window.__semConversas) return semFuncao;
+      if (!sessao) return erro("Entre na sua conta para guardar a conversa.", "42501");
+      const eu = sessao.user.id, m = a.p_mensagens;
+      if (!["parceiros", "jogadores"].includes(a.p_site)) return erro("Chat inválido.", "22023");
+      if (!Array.isArray(m) || !m.length || m.length > 120 || m.some(x => !x || !["eu", "gt"].includes(x.de) || typeof x.texto !== "string" || x.texto.length > 2000 || (x.de === "eu" && x.texto.length > 300)))
+        return erro("Conversa inválida.", "22023");
+      const titulo = String(a.p_titulo || "").trim().slice(0, 80) || String((m.find(x => x.de === "eu") || {}).texto || "").trim().slice(0, 80);
+      if (!titulo) return erro("Escreva a sua dúvida antes.", "22023");
+      const quando = new Date(Date.now() + (++seqConversa)).toISOString();
+      let c = a.p_id && db.conversas_de_ajuda.find(x => x.id === a.p_id && x.user_id === eu);
+      if (c) Object.assign(c, { mensagens: JSON.parse(JSON.stringify(m)), titulo, atualizada_em: quando });
+      else {
+        c = { id: "conv-" + seqConversa, user_id: eu, site: a.p_site, titulo, mensagens: JSON.parse(JSON.stringify(m)), criada_em: quando, atualizada_em: quando };
+        db.conversas_de_ajuda.push(c);
+        db.conversas_de_ajuda.filter(x => x.user_id === eu).sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em)))
+          .slice(50).forEach(x => db.conversas_de_ajuda.splice(db.conversas_de_ajuda.indexOf(x), 1));
+      }
+      return { data: c.id, error:null };
+    }
     if (nome === "estatisticas_publicas") return { data:{ acessos_total:1234, buscas_total:567, fichas_total:89, contatos_total:12 }, error:null };
     if (window.__semAcesso) return semFuncao;
     if (nome === "contatos_privados") {

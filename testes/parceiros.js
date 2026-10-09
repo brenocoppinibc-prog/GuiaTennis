@@ -109,7 +109,15 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.fill('#pc-email', ' Maria@QuadraLocacao.com.br ');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(300);
-  ok((await texto(page, '#parceiros .pc-main')).includes('Esse e-mail já tem conta') && await page.isVisible('#login-password'), 'e-mail que já tem conta: o site acha e abre a senha ali mesmo');
+  ok((await texto(page, '#parceiros .pc-aviso-conta')).includes('Você já tem conta no GuiaTennis Parceiros') && await page.isVisible('#login-password'), 'e-mail que já tem conta: o site acha e abre a senha ali mesmo');
+  // Pedido do Breno em 09/10/2026 ("está muito grudado isso aqui"): o e-mail
+  // fica num cartão com "Trocar", e o aviso num quadro à parte.
+  ok((await texto(page, '#pc-email-escolhido')) === 'maria@quadralocacao.com.br' && (await texto(page, '#pc-trocar-email')) === 'Trocar' && !(await page.$('#pc-email')), 'o e-mail aparece num cartão com "Trocar", sem o campo travado');
+  await page.click('#pc-trocar-email');
+  await page.waitForTimeout(200);
+  ok(await page.evaluate(() => document.activeElement.id === 'pc-email' && document.getElementById('pc-email').value.trim() === 'maria@quadralocacao.com.br'), '"Trocar" volta ao campo do e-mail, pronto para corrigir');
+  await page.click('#pc-email-continuar');
+  await page.waitForTimeout(300);
   await page.fill('#login-password', 'senha12345');
   await page.click('#login-submit');
   await page.waitForTimeout(700);
@@ -628,7 +636,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ({ browser, page } = await abrir({ q: 'parceiros/entrar' }));
   await page.evaluate(() => { window.__db.jogadores.push({ user_id: 'j-rui', nome: 'Rui Jogador', email: 'rui@exemplo.com', email_confirmado_em: new Date().toISOString() }); window.__senhas['rui@exemplo.com'] = 'senhadorui1'; });
   await irSenha(page, 'rui@exemplo.com');
-  ok((await texto(page, '#parceiros .pc-main')).includes('Entre com a mesma senha: a mesma conta passa a valer no GuiaTennis Parceiros'), 'e-mail de jogador no Entrar do Parceiros: pede a mesma senha, sem mandar usar outro e-mail');
+  ok((await texto(page, '#parceiros .pc-aviso-conta')).includes('Entre com a mesma senha e ela passa a valer também no GuiaTennis Parceiros'), 'e-mail de jogador no Entrar do Parceiros: pede a mesma senha, sem mandar usar outro e-mail');
   await page.fill('#login-password', 'senhadorui1');
   await page.click('#login-submit');
   await page.waitForTimeout(600);

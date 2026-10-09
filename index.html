@@ -1506,7 +1506,16 @@
      a oferta do próximo plano. */
   .pc-botao-cheio { width: 100%; justify-content: center; margin-top: 16px; padding: 12px 0; text-decoration: none; display: flex; }
   a.pc-botao-cheio { color: #fff !important; }
-  .pc-achou { display: flex; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 15px; font-weight: 600; color: var(--green); }
+  /* O e-mail já escolhido, com "Trocar", e o aviso da conta achada (09/10/2026). */
+  .pc-email-escolhido { display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+  .pc-email-escolhido > svg { flex-shrink: 0; }
+  .pc-email-txt { flex: 1; min-width: 0; overflow-wrap: anywhere; line-height: 1.35; font-size: 15px; font-weight: 600; color: var(--text); }
+  .pc-email-trocar { flex-shrink: 0; background: none; border: 1px solid var(--green-line); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--green); cursor: pointer; }
+  .pc-email-trocar:hover { background: var(--green-soft); }
+  .pc-aviso-conta { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 4px; padding: 12px 14px; border: 1px solid var(--green-line); border-radius: 12px; background: var(--green-soft); }
+  .pc-aviso-conta > svg { flex-shrink: 0; margin-top: 1px; }
+  .pc-aviso-conta-t { margin: 0; font-size: 14.5px; font-weight: 700; color: var(--green); line-height: 1.35; }
+  .pc-aviso-conta-s { margin: 4px 0 0; font-size: 14px; font-weight: 400; color: var(--text); line-height: 1.5; }
   .pc-oferta { margin-top: 20px; border-color: #E6D3A5; background: linear-gradient(180deg, #FFFBF1, var(--card)); }
   .pc-oferta-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8E6D25; margin: 0 0 8px; }
   .pc-oferta-lista { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
@@ -1912,6 +1921,27 @@
   .chat-campo { flex: 1; min-width: 0; padding: 11px 14px; border: 1px solid var(--border); border-radius: 12px; font: inherit; font-size: 16px; background: var(--bg); color: var(--text); }
   .chat-enviar { display: flex; align-items: center; justify-content: center; width: 46px; border: 0; border-radius: 12px; background: var(--green); cursor: pointer; }
   .chat-nota { margin: 0; padding: 0 12px 10px; background: var(--card); font-size: 11.5px; color: var(--muted); text-align: center; }
+  /* Conversas guardadas na conta (09/10/2026): a barra, a lista e o apagar. */
+  .chat-nota.solta { padding-top: 10px; border-top: 1px solid var(--border); }
+  .chat-nota-link { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--green); text-decoration: underline; cursor: pointer; }
+  .chat-voltar { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex-shrink: 0; background: none; border: 0; padding: 0; cursor: pointer; }
+  .chat-barra { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; background: var(--card); border-bottom: 1px solid var(--border); }
+  .chat-barra-bt { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--green-line); border-radius: 999px; background: var(--card); color: var(--green); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .chat-barra-bt:hover { background: var(--green-soft); }
+  .chat-nova-grande { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border: 0; border-radius: 12px; background: var(--green); color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+  .chat-conversas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .chat-conversa { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: 12px; background: var(--card); overflow: hidden; }
+  .chat-conversa.atual { border-color: var(--green-line); background: var(--green-soft); }
+  .chat-conversa-abrir { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 12px 14px; background: none; border: 0; text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+  .chat-conversa-t { margin: 0; font-size: 14.5px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .chat-conversa-s { margin: 0; font-size: 12.5px; color: var(--muted); }
+  .chat-conversa-apagar { flex-shrink: 0; width: 48px; display: flex; align-items: center; justify-content: center; background: none; border: 0; border-left: 1px solid var(--border); color: var(--muted); cursor: pointer; }
+  .chat-conversa-apagar:hover { color: #B3261E; }
+  .chat-conversa.apagando { flex-direction: column; gap: 4px; padding: 12px 14px; border-color: #E8B4AE; background: #FFF6F5; }
+  .chat-conversa-sim { display: flex; gap: 8px; margin-top: 8px; }
+  .chat-acao.perigo { border-color: #B3261E; background: #B3261E; color: #fff; }
+  .chat-lista-vazia { margin: 6px 4px; font-size: 14px; line-height: 1.5; color: var(--muted); text-align: center; }
+  .chat-lista-nota { margin: 2px 0 0; font-size: 12px; color: var(--muted); text-align: center; }
   .contato-ic { width: 42px; height: 42px; border-radius: 12px; background: #EEF4F0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .contato-txt { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
   .contato-txt strong { font-size: 15px; }
@@ -1979,11 +2009,31 @@
   .reg-porque { margin: 8px 0 4px; }
   .reg-passo { padding-bottom: 24px; }
   .reg-passo > .field-label:first-child, .reg-passo > label.field-label:first-child { margin-top: 18px; }
-  .reg-rodape { position: sticky; bottom: 0; margin: auto -22px 0; padding: 12px 22px calc(12px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 4; }
+  .reg-rodape { position: sticky; bottom: 0; margin: auto -22px 0; padding: 10px 22px calc(12px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; z-index: 4; }
+  .reg-rodape-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .reg-rodape-dir { display: flex; gap: 10px; flex: 1; justify-content: flex-end; }
+  .pc-acima-do-plano { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 4px; padding: 12px 14px; border: 1px solid #EBD9AE; border-radius: 12px; background: #FFFBF1; }
+  .pc-acima-do-plano > svg { flex-shrink: 0; margin-top: 2px; }
+  .pc-acima-do-plano p { margin: 0; font-size: 14px; line-height: 1.5; }
+  .reg-plano-aviso { margin: 16px 0 12px; padding: 14px 16px; border: 1px solid #EBD9AE; border-radius: 14px; background: #FFFBF1; }
+  .reg-plano-aviso.pediu { border-color: var(--green-line); background: var(--green-soft); }
+  .reg-plano-aviso.manteve { padding: 10px 14px; background: var(--card); border-color: var(--border); }
+  .reg-plano-aviso-t { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--text); }
+  .reg-plano-aviso-t > svg { flex-shrink: 0; margin-top: 2px; }
+  .reg-plano-aviso-s { margin: 6px 0 0 24px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+  .reg-plano-aviso-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0 24px; }
+  .reg-plano-aviso-acoes .cta-btn { margin: 0; flex: 1 1 140px; min-height: 42px; }
+  .reg-plano-aviso-link { background: none; border: 0; padding: 0; margin: 6px 0 0 24px; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--green); text-decoration: underline; cursor: pointer; }
+  .reg-plano-aviso-s .reg-plano-aviso-link { margin: 0; }
+  .reg-falta { display: flex; align-items: flex-start; gap: 7px; margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+  .reg-falta > svg { flex-shrink: 0; margin-top: 2px; }
+  .reg-falta.ok { color: var(--green); font-weight: 600; }
+  .reg-falta-parte { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .reg-falta-parte.obrig { color: var(--red); }
   .reg-rodape .cta-btn { margin: 0; flex: 0 1 auto; padding-left: 22px; padding-right: 22px; white-space: nowrap; }
   @media (max-width: 400px) {
-    .reg-rodape { gap: 8px; padding-left: 16px; padding-right: 16px; margin-left: -22px; margin-right: -22px; }
+    .reg-rodape { padding-left: 16px; padding-right: 16px; margin-left: -22px; margin-right: -22px; }
+    .reg-rodape-linha { gap: 8px; }
     .reg-rodape-dir { gap: 8px; }
     .reg-rodape .cta-btn { padding-left: 13px; padding-right: 13px; font-size: 14px; }
   }
@@ -2162,6 +2212,7 @@ function icon(name, size, color) {
     chevron: '<polyline points="9 5 16 12 9 19"/>',
     chevronDown: '<polyline points="5 9 12 16 19 9"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    lixo: '<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/>',
     olhoFechado: '<path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-2.9 3.8M6.4 6.4C3.9 8.1 2.5 12 2.5 12S6 19 12 19a9.6 9.6 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
     chevronLeft: '<polyline points="15 5 8 12 15 19"/>',
     pessoa: '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1-4 4-6 7.5-6s6.5 2 7.5 6"/>',
@@ -3020,6 +3071,24 @@ function diaPorExtenso(iso) {
 function getPlano(courtId) {
   const c = state.allCourts.find(x => x.id === courtId) || state.pending.find(x => x.id === courtId);
   return (c && c.plano) || "basico";
+}
+
+// Baixar o plano limita na hora o que a academia faz e o que a ficha mostra
+// (pedido do Breno em 09/10/2026). O admin confirma vendo o que muda; nada
+// é apagado: volta tudo se o plano subir de novo.
+function oQueMudaAoBaixarOPlano(id, de, para) {
+  const c = state.allCourts.find(x => x.id === id) || state.pending.find(x => x.id === id) || {};
+  const a = limitesDoPlano(de), b = limitesDoPlano(para);
+  const muda = [];
+  if (de === "premium") muda.push("sai o selo dourado e o \"Patrocinado\" da busca", "as promoções saem da ficha e da busca, e ela não publica outras", "os números (Desempenho) ficam trancados");
+  if (b.comodidades < a.comodidades) muda.push(`a ficha mostra só ${b.comodidades} comodidades`);
+  if (b.fotos < a.fotos) muda.push(`a ficha mostra só ${b.fotos} fotos`);
+  if (b.contatos.length < a.contatos.length) muda.push("a ficha mostra só o WhatsApp (sem Instagram e site)");
+  if (a.cancelamento && !b.cancelamento) muda.push("o cancelamento sai da ficha");
+  if (a.chegada && !b.chegada) muda.push("como chegar sai da ficha");
+  const pessoas = planoPorChave(para).pessoas;
+  muda.push(`até ${pessoas} ${plural(pessoas, "pessoa", "pessoas")} com acesso (quem passar do limite, o responsável principal precisa tirar)`);
+  return `Passar a ${c.name || "academia"} do ${nomeDoPlano(de)} para o ${nomeDoPlano(para)}?\n\nNa hora:\n- ${muda.join("\n- ")}\n\nNada é apagado: tudo volta se o plano subir de novo.`;
 }
 
 // O "pago" continua existindo e anda junto com o plano, para as telas e os
@@ -7567,6 +7636,16 @@ function pcCadastro() {
     <h1 class="display">Entre ou cadastre a sua academia</h1>
     <p class="pc-sec-sub">Comece pelo e-mail. Grátis no plano Básico, sem comissão e sem taxa por jogador.</p>`;
   const erro = (t) => t ? `<div class="form-error">${icon('warning', 13)} ${esc(t)}</div>` : "";
+  // Depois do e-mail, ele fica num cartão com "Trocar" (pedido do Breno em
+  // 09/10/2026: "está muito grudado isso aqui, confuso desse jeito"), como
+  // o login do Google e do Booking mostram a conta escolhida.
+  const emailEscolhido = (obrigatorio) => `
+    <p class="field-label" style="margin-top:0">${state.pcEmail.includes("@") ? "E-mail" : "Usuário"}${obrigatorio ? `<span class="obrig">*</span>` : ""}</p>
+    <div class="pc-email-escolhido">
+      ${icon('pessoa', 18, 'var(--green)')}
+      <span class="pc-email-txt" id="pc-email-escolhido">${esc(state.pcEmail.trim())}</span>
+      <button type="button" class="pc-email-trocar" id="pc-trocar-email">Trocar</button>
+    </div>`;
 
   const emAndamento = meusPedidos().length;
 
@@ -7645,16 +7724,26 @@ function pcCadastro() {
             <p class="pc-card-s">Comece pelo seu e-mail. Com a conta pronta, o pedido vai direto para o GuiaTennis conferir.</p>
           </div>` : ""}
         <div class="pc-card">
-          <label class="field-label" for="pc-email" style="margin-top:0">E-mail${passo === "criar" ? `<span class="obrig">*</span>` : ""}</label>
-          <input class="form-field" id="pc-email" type="email" autocomplete="email" autocapitalize="none" placeholder="voce@suaacademia.com.br" value="${esc(state.pcEmail)}" style="margin-top:0" ${passo === "email" ? "" : "readonly"} />
+          ${passo === "email" ? `
+            <label class="field-label" for="pc-email" style="margin-top:0">E-mail</label>
+            <input class="form-field" id="pc-email" type="email" autocomplete="email" autocapitalize="none" placeholder="voce@suaacademia.com.br" value="${esc(state.pcEmail)}" style="margin-top:0" />` : emailEscolhido(passo === "criar")}
           ${passo === "email" ? `
             ${blocoSugestaoEmail(state.pcEmail)}
             ${erro(state.pcContaErro)}
             <button class="btn-primary pc-botao-cheio" id="pc-email-continuar" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Procurando..." : "Continuar"}</button>
             <p class="footnote">Diga o seu e-mail que a gente encontra o caminho mais rápido: se você já tem conta, é só a senha; se é a primeira vez, o cadastro leva 2 minutos. Recebeu um usuário do GuiaTennis? Pode escrever o usuário aqui.</p>` : ""}
           ${passo === "existe" ? `
-            <p class="pc-achou">${icon('check', 16, 'var(--green)')} <span>${state.pcContaDeJogador ? "Esse e-mail já tem conta no GuiaTennis (de jogador). Entre com a mesma senha: a mesma conta passa a valer no GuiaTennis Parceiros." : state.pcEmail.includes("@") ? "Esse e-mail já tem conta no GuiaTennis Parceiros. Digite a sua senha." : "Usuário do GuiaTennis Parceiros. Digite a sua senha."}</span></p>
-            <p class="pc-linha" style="margin:4px 0 0"><button type="button" class="pc-linha-link" id="pc-trocar-email">Usar outro e-mail</button></p>
+            <div class="pc-aviso-conta">
+              ${icon('check', 18, 'var(--green)')}
+              <div>${state.pcContaDeJogador
+                ? `<p class="pc-aviso-conta-t">Você já tem conta no GuiaTennis</p>
+                   <p class="pc-aviso-conta-s">É a sua conta de jogador. Entre com a mesma senha e ela passa a valer também no GuiaTennis Parceiros.</p>`
+                : state.pcEmail.includes("@")
+                  ? `<p class="pc-aviso-conta-t">Você já tem conta no GuiaTennis Parceiros</p>
+                     <p class="pc-aviso-conta-s">Digite a sua senha para entrar.</p>`
+                  : `<p class="pc-aviso-conta-t">Usuário do GuiaTennis Parceiros</p>
+                     <p class="pc-aviso-conta-s">Digite a sua senha para entrar.</p>`}</div>
+            </div>
             <input type="hidden" id="login-email" value="${esc(state.pcLogin || state.pcEmail)}" />
             <label class="field-label" for="login-password">Senha</label>
             <input class="form-field" id="login-password" type="password" autocomplete="current-password" style="margin-top:0" />
@@ -7664,7 +7753,6 @@ function pcCadastro() {
               ? `<button type="button" class="pc-linha-link" id="pc-esqueci">Esqueceu a senha?</button>`
               : `Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.`}</p>` : ""}
           ${passo === "esqueci" ? `
-            <p class="pc-linha" style="margin:4px 0 0"><button type="button" class="pc-linha-link" id="pc-trocar-email">Usar outro e-mail</button></p>
             ${state.pcCodigoFalhou
               ? `<p class="email-sugestao">Não consegui mandar o código agora. Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>`
               : `<p class="pc-card-s" style="margin-top:12px">${state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código para <strong>${esc(state.pcLogin)}</strong>. Digite o código e a senha nova.`}</p>
@@ -7678,7 +7766,6 @@ function pcCadastro() {
                 <button class="btn-primary pc-botao-cheio" id="pc-salvar-senha-nova" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar a senha nova"}</button>
                 <p class="footnote"><button type="button" class="pc-linha-link" id="pc-reenviar-codigo">Mandar outro código</button></p>`}` : ""}
           ${passo === "criar" ? `
-            <p class="pc-linha" style="margin:8px 0 4px"><button type="button" class="pc-linha-link" id="pc-trocar-email">Trocar o e-mail</button></p>
             ${camposDeContato("pc-conta", f, "pc-conta-campo")}
             <label class="field-label" for="pc-conta-senha">Crie uma senha<span class="obrig">*</span></label>
             <input class="form-field pc-conta-campo" data-campo="senha" id="pc-conta-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha)}" style="margin-top:0" />
@@ -7966,9 +8053,19 @@ function pcPromocoes() {
   if (!c) return pcSemFicha();
   const topo = `<p class="pc-eyebrow">${esc(c.name)}</p><h1 class="display">Promoções</h1>`;
   if ((c.plano || "basico") !== "premium") {
+    // Saiu do Premium (pedido do Breno em 09/10/2026: "ao uma academia mudar
+    // do Premium para o completo precisa limitar as ações dela"): as
+    // promoções ficam guardadas, mas não aparecem nem podem ser publicadas.
+    const guardadas = (state.pcPromocoes || []).filter(x => x.valendo);
     return `
       <section class="pc-pagina">
         ${topo}
+        ${guardadas.length ? `
+          <div class="pc-card pc-escondida" id="pc-promo-guardadas">
+            <p class="pc-card-t">${guardadas.length === 1 ? "A promoção de vocês não aparece" : `As ${guardadas.length} promoções de vocês não aparecem`} no plano ${esc(nomeDoPlano(c.plano || "basico"))}</p>
+            <ul class="pc-oferta-lista">${guardadas.map(x => `<li>${icon('tag', 15, 'var(--gold)')}<span><strong>${esc(x.titulo)}</strong> · válida até ${esc(diaPorExtenso(x.valida_ate))}</span></li>`).join("")}</ul>
+            <p class="pc-card-s">Os jogadores não veem ${guardadas.length === 1 ? "a promoção" : "as promoções"} na ficha nem na busca. ${guardadas.length === 1 ? "Ela fica guardada e volta a aparecer, enquanto valer," : "Elas ficam guardadas e voltam a aparecer, enquanto valerem,"} se a academia voltar ao Premium.</p>
+          </div>` : ""}
         ${blocoTrancado("premium", "Divulgue promoções", "Primeira aula grátis, desconto na locação, pacote de aulas: a promoção aparece na ficha e no resultado da busca, e quem favoritou a academia recebe um aviso por e-mail.")}
       </section>`;
   }
@@ -8131,6 +8228,9 @@ function pcPessoas() {
   const prox = proximoPlano(plano.key);
   const lista = state.pessoas;
   const cheio = !!lista && lista.length >= plano.pessoas;
+  // Plano menor que o número de pessoas (o plano baixou): o responsável
+  // principal escolhe quem sai.
+  const sobram = lista ? lista.length - plano.pessoas : 0;
   const nova = state.pessoaNova;
   const f = window.__pessoa || (window.__pessoa = { nome: "", email: "" });
   return `
@@ -8139,6 +8239,11 @@ function pcPessoas() {
         <p class="pc-card-t" style="margin:0">Pessoas com acesso${minhasAcademias().length > 1 && minhaAcademia() ? " à " + esc(minhaAcademia().name) : ""}</p>
         <span class="pc-contagem">${lista ? lista.length : "—"} de ${plano.pessoas} no plano ${esc(plano.nome)}</span>
       </div>
+      ${sobram > 0 ? `
+        <div class="pc-acima-do-plano" id="pc-acima-do-plano">
+          ${icon('warning', 16, '#8E6D25')}
+          <p>O plano ${esc(plano.nome)} é para até ${plano.pessoas} ${plural(plano.pessoas, "pessoa", "pessoas")}, e a academia tem ${lista.length}. ${souPrincipal() ? `Tire ${sobram} ${plural(sobram, "pessoa", "pessoas")} para ficar no limite do plano` : `O responsável principal precisa tirar ${sobram} ${plural(sobram, "pessoa", "pessoas")}`}, ou fale com o GuiaTennis para mudar de plano.</p>
+        </div>` : ""}
       ${lista === null ? `<p class="pc-vazio">${bolaGirando(16)} Carregando…</p>` : `
         <ul class="pc-pessoas">
           ${lista.map(x => `
@@ -14361,6 +14466,7 @@ function regPassoHtml(id, f, obrigatorio) {
           `).join("")}
         </div>
         <p class="field-label">Comodidades</p>
+        ${avisoDoPlanoNaParte(f, "quadras")}
         <div class="chip-row">
           ${AMENITY_OPTS.map(a => {
             const marcada = f.amenities.includes(a.key);
@@ -14583,6 +14689,65 @@ function regPlanoHtml(f) {
 function ordemDoPlano(key) {
   return Math.max(0, PC_PLANOS.findIndex(p => p.key === key));
 }
+
+// O aviso do plano dentro da própria parte (pedido do Breno em 09/10/2026:
+// "todas as informações no básico completo podem ser preenchidas mas com
+// aviso de que não estará visível na ficha e com opção de querer ou não
+// alterar e precisar pagar a mais"). A academia preenche tudo; a parte que o
+// plano não mostra diz isso ali mesmo e deixa escolher: pedir o plano que
+// mostra (pago, combinado pelo WhatsApp) ou manter o plano. A escolha vale
+// para o formulário inteiro e dispensa a tela do plano no fim.
+//   mostra(l)  o plano de limites l mostra a parte?
+//   fora(f, l) o que a academia já preencheu e fica de fora
+const PARTES_DO_PLANO = {
+  quadras: { mostra: l => l.comodidades === Infinity,
+    t: l => `a ficha mostra as ${l.comodidades} primeiras comodidades que você marcar`,
+    d: "Pode marcar todas: as outras ficam guardadas e aparecem",
+    fora: (f, l) => { const n = (f.amenities || []).length - l.comodidades; return n > 0 ? `${n} das ${(f.amenities || []).length} que você marcou ${n === 1 ? "fica" : "ficam"} de fora` : ""; } },
+  contato: { mostra: l => l.contatos.includes("instagram"),
+    t: () => "a ficha mostra só o botão do WhatsApp",
+    d: "Instagram e site ficam guardados e aparecem",
+    fora: f => { const x = [String(f.instagram || "").trim() && "o Instagram", String(f.site || "").trim() && "o site"].filter(Boolean); return x.length ? `${x.join(" e ")} que você informou ${x.length === 1 ? "fica" : "ficam"} de fora` : ""; } },
+  fotos: { mostra: l => l.fotos >= FOTOS_MAXIMO,
+    t: l => `a ficha mostra as ${l.fotos} primeiras fotos`,
+    d: `Pode mandar até ${FOTOS_MAXIMO}: as outras ficam guardadas e aparecem`,
+    fora: (f, l) => { const n = (f.photos || []).length - l.fotos; return n > 0 ? `${n} das ${(f.photos || []).length} fotos ${n === 1 ? "fica" : "ficam"} de fora` : ""; } },
+  cancelamento: { mostra: l => l.cancelamento,
+    t: () => "o cancelamento e a reposição não aparecem na ficha",
+    d: "Pode preencher: fica guardado e aparece" },
+  chegada: { mostra: l => l.chegada,
+    t: () => "como chegar não aparece na ficha",
+    d: "Pode preencher: fica guardado e aparece" },
+};
+function avisoDoPlanoNaParte(f, id) {
+  const parte = PARTES_DO_PLANO[id];
+  if (isAdmin || !parte) return "";
+  const plano = f.__plano || "basico";
+  const l = limitesDoPlano(plano);
+  if (parte.mostra(l)) return "";
+  const acima = PC_PLANOS.find(p => ordemDoPlano(p.key) > ordemDoPlano(plano) && parte.mostra(limitesDoPlano(p.key)));
+  if (!acima) return "";
+  const atual = nomeDoPlano(plano);
+  const escolhido = f.__planoEscolhido;
+  const pediu = ["completo", "premium"].includes(escolhido) && ordemDoPlano(escolhido) >= ordemDoPlano(acima.key);
+  const manteve = escolhido === plano;
+  const fora = parte.fora ? parte.fora(f, l) : "";
+  return `
+    <div class="reg-plano-aviso${pediu ? " pediu" : manteve ? " manteve" : ""}" id="reg-plano-aviso">
+      <p class="reg-plano-aviso-t">${icon(pediu ? 'check' : 'olhoFechado', 16, pediu ? 'var(--green)' : '#8E6D25')}<span>No plano ${esc(atual)}, ${esc(parte.t(l))}.${fora ? ` <strong>${esc(fora.charAt(0).toUpperCase() + fora.slice(1))}.</strong>` : ""}</span></p>
+      ${pediu ? `
+        <p class="reg-plano-aviso-s">Você pediu o plano ${esc(nomeDoPlano(escolhido))}. Ao salvar, o pedido vai para o GuiaTennis, que combina o valor com você pelo WhatsApp; até lá, a ficha aparece no ${esc(atual)}.</p>
+        <button type="button" class="reg-plano-aviso-link" data-reg-plano-aviso="">Desfazer o pedido</button>`
+      : manteve ? `
+        <p class="reg-plano-aviso-s">${esc(parte.d)} na ficha se a academia mudar para o ${esc(acima.nome)}. <button type="button" class="reg-plano-aviso-link" data-reg-plano-aviso="">Mudar de ideia</button></p>`
+      : `
+        <p class="reg-plano-aviso-s">${esc(parte.d)} na ficha no plano ${esc(acima.nome)}. O ${esc(acima.nome)} é pago: o valor é combinado com o GuiaTennis pelo WhatsApp, e nada é cobrado sem você confirmar.</p>
+        <div class="reg-plano-aviso-acoes">
+          <button type="button" class="cta-btn cta-primary" data-reg-plano-aviso="${acima.key}">Quero o ${esc(acima.nome)}</button>
+          <button type="button" class="cta-btn cta-secondary" data-reg-plano-aviso="${plano}">Manter o ${esc(atual)}</button>
+        </div>`}
+    </div>`;
+}
 // Mensagem pronta para combinar o plano pelo WhatsApp.
 function linkPlanoDaFicha(f, plano) {
   const nome = (f && f.name) || ((minhaAcademia() || {}).name) || "minha academia";
@@ -14630,8 +14795,10 @@ function renderRegisterSheet() {
         <p class="subtitle reg-porque">Veja como a ficha ${esc(f.name || "da academia")} vai aparecer para os jogadores.</p>
         ${regPlanoHtml(f)}
         <div class="reg-rodape">
-          <button type="button" class="reg-voltar" id="reg-plano-voltar">Voltar e revisar</button>
-          <span></span>
+          <div class="reg-rodape-linha">
+            <button type="button" class="reg-voltar" id="reg-plano-voltar">Voltar e revisar</button>
+            <span></span>
+          </div>
         </div>
       </div></div>
     </div>`;
@@ -14659,6 +14826,7 @@ function renderRegisterSheet() {
         <p class="subtitle reg-porque">${passo.porque}</p>
 
         <div class="reg-passo" data-passo="${passo.id}">
+          ${passo.id === "quadras" ? "" : avisoDoPlanoNaParte(f, passo.id)}
           ${regPassoHtml(passo.id, f, obrigatorio)}
         </div>
 
@@ -14666,18 +14834,37 @@ function renderRegisterSheet() {
         ${state.registerStatus === "error" ? `<div class="form-error">${icon('warning',13)} ${esc(state.registerError)}</div>` : ""}
 
         <div class="reg-rodape">
-          ${i > 0 ? `<button type="button" class="reg-voltar" id="reg-voltar">Voltar</button>` : `<span></span>`}
-          <div class="reg-rodape-dir">
-            ${!ultimo ? `<button type="button" class="cta-btn ${salvaEmQualquerParte ? "cta-secondary" : "cta-primary"}" id="reg-continuar">${vazioOpcional ? "Pular" : "Continuar"}</button>` : ""}
-            ${ultimo || salvaEmQualquerParte ? `
-              <button class="cta-btn cta-primary" id="register-submit" ${state.registerStatus==="saving"?"disabled":""}>
-                ${state.registerStatus==="saving" ? bolaGirando(16) + " Salvando..." : textoSalvar}
-              </button>` : ""}
+          ${passo.id === "revisar" ? "" : regAvisoDoQueFalta(f, i)}
+          <div class="reg-rodape-linha">
+            ${i > 0 ? `<button type="button" class="reg-voltar" id="reg-voltar">Voltar</button>` : `<span></span>`}
+            <div class="reg-rodape-dir">
+              ${ultimo || salvaEmQualquerParte ? `
+                <button class="cta-btn ${ultimo ? "cta-primary" : "cta-secondary"}" id="register-submit" ${state.registerStatus==="saving"?"disabled":""}>
+                  ${state.registerStatus==="saving" ? bolaGirando(16) + " Salvando..." : textoSalvar}
+                </button>` : ""}
+              ${!ultimo ? `<button type="button" class="cta-btn cta-primary" id="reg-continuar">${vazioOpcional ? "Pular" : "Continuar"}</button>` : ""}
+            </div>
           </div>
         </div>
       </div></div>
     </div>
   `;
+}
+
+// O que ainda falta, preso em cima dos botões (pedido do Breno em
+// 09/10/2026: "deixe o continuar no lado direito e um aviso do que falta
+// preencher"), como o "faltam 3 etapas" do anúncio do Airbnb: primeiro o
+// obrigatório (com *), depois as partes vazias; um toque leva até a parte.
+function regAvisoDoQueFalta(f, i) {
+  const faltam = REG_PASSOS.map((x, k) => ({ x, k, obrig: regFaltas(f, x.id).length > 0 }))
+    .filter(({ x, obrig }) => x.id !== "revisar" && (obrig || !regPreenchido(f, x.id)))
+    .sort((a, b) => (b.obrig - a.obrig) || (a.k - b.k));
+  if (!faltam.length) return `<p class="reg-falta ok" id="reg-falta">${icon('check', 14, 'var(--green)')}<span>Todas as partes estão preenchidas.</span></p>`;
+  const mostra = faltam.slice(0, 3);
+  const nomes = mostra.map(({ x, k, obrig }) => `<button type="button" class="reg-falta-parte${obrig ? " obrig" : ""}${k === i ? " aqui" : ""}" data-reg-passo="${k}">${esc(x.t)}${obrig ? "*" : ""}</button>`);
+  const resto = faltam.length - mostra.length;
+  const lista = resto > 0 ? `${nomes.join(", ")} e mais ${resto}` : nomes.length > 1 ? `${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]}` : nomes[0];
+  return `<p class="reg-falta" id="reg-falta">${icon('info', 14, 'var(--muted)')}<span>Falta preencher: ${lista}</span></p>`;
 }
 
 // Anda entre as partes. Para a frente, a parte obrigatória precisa estar
@@ -15219,7 +15406,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 8 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos de promoções, os favoritos também servem para isso: quando uma academia favorita publica uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> no site dos jogadores, e no GuiaTennis Parceiros sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. No GuiaTennis Parceiros, com a sua conta aberta, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat e quando), para você ver o histórico em "Conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos de promoções, os favoritos também servem para isso: quando uma academia favorita publica uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e, no plano Premium, mandar o relatório do mês por e-mail. As pessoas da mesma academia veem o nome e o e-mail umas das outras. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso (para o responsável) e pedido aceito; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -15255,7 +15442,9 @@ const PARA_QUE_SERVE_O_CONTATO = {
 // whatsapp". Sem serviço de IA de fora (regras 6 e 13): o chat entende a
 // dúvida por palavras-chave, como o texto da academia é entendido (seção 4,
 // `acesso`), responde com o caminho no próprio site e, se não resolver, abre
-// o WhatsApp do Breno com a dúvida já escrita. Nada da conversa é gravado.
+// o WhatsApp do Breno com a dúvida já escrita. No GuiaTennis Parceiros, com a
+// conta aberta, a conversa fica guardada na conta (09/10/2026, mais abaixo);
+// fora disso, fica só na tela.
 //   t   o nome do assunto (aparece nos botões de sugestão)
 //   p   palavras e frases que a pessoa costuma escrever (sem acento; uma
 //       palavra vale pelo começo: "cadastr" pega "cadastrar" e "cadastro")
@@ -15461,19 +15650,200 @@ function linkWhatsDoChat() {
   const onde = siteDoChat() === "parceiros" ? "GuiaTennis Parceiros" : "GuiaTennis";
   return whatsappGuia(`Olá! Vim pelo chat de ajuda do ${onde}.${ch.ultimaPergunta ? ` Minha dúvida: ${ch.ultimaPergunta}` : ""}`);
 }
-function abrirChat() {
-  const site = siteDoChat();
-  if (!state.chat || state.chat.site !== site) state.chat = { site, msgs: [], rascunho: "", ultimaPergunta: "", erros: 0 };
-  state.chat.aberto = true;
-  state.chat.focar = true;
-  state.showMenu = false; state.showContato = false; state.pcMenu = false;
-  if (!state.chat.msgs.length) {
-    state.chat.msgs.push({ de: "gt", texto: `Oi! Este é o chat de ajuda do ${site === "parceiros" ? "GuiaTennis Parceiros" : "GuiaTennis"}. Escreva a sua dúvida com as suas palavras ou escolha um assunto:`, chips: sugestoesDoChat() });
-  }
+// Conversas guardadas na conta (pedido do Breno em 09/10/2026: "faça que o
+// chat de parceiros fique salvo na conta também e tenha histórico e que pode
+// iniciar novo chat"), como o histórico de conversas da ajuda da Shopify e do
+// Intercom: com a conta aberta no Parceiros, cada conversa vai para a conta
+// (SQL 20261009120000), "Conversas" lista as anteriores e "Nova conversa"
+// começa outra. Sem conta, e no site dos jogadores, ela fica só na tela.
+const CHAT_NA_CONTA = ["parceiros"];
+const CHAT_ATUAL_KEY = "guiatennis_chat_atual";
+const CHAT_MAX_MSGS = 120;
+const CHAT_MAX_CONVERSAS = 50;
+const IR_DO_CHAT = /^(pc:[a-z-]+|menu:[a-z-]+|entrar|whatsapp)$/;
+function contaDoChat() {
+  if (!CHAT_NA_CONTA.includes(siteDoChat()) || isAdmin) return null;
+  if (contaAcademia && !contaAcademia.visaoAdmin && contaAcademia.userId) return contaAcademia.userId;
+  return jogador ? jogador.user_id : null;
+}
+function conversaNova(site, conta) {
+  return { site, conta, id: null, titulo: "", rascunho: "", ultimaPergunta: "", erros: 0, vendo: "conversa",
+    msgs: [{ de: "gt", texto: `Oi! Este é o chat de ajuda do ${site === "parceiros" ? "GuiaTennis Parceiros" : "GuiaTennis"}. Escreva a sua dúvida com as suas palavras ou escolha um assunto:`, chips: sugestoesDoChat() }] };
+}
+function temPerguntaNoChat(ch) {
+  return !!(ch && ch.msgs.some(m => m.de === "eu"));
+}
+// O título da conversa no histórico: a primeira dúvida (um "oi" não conta).
+function tituloDoChat(ch) {
+  return ch.titulo || ((ch.msgs.find(m => m.de === "eu") || {}).texto || "").slice(0, 80);
+}
+function mensagemParaGuardar(m, ultima) {
+  const out = { de: m.de, texto: String(m.texto || "").slice(0, m.de === "eu" ? 300 : 2000) };
+  if (m.acoes && m.acoes.length) out.acoes = m.acoes.map(a => ({ t: a.t, ir: a.ir }));
+  if (ultima && m.chips && m.chips.length) out.chips = m.chips.map(c => (c.tema ? { t: c.t, tema: c.tema } : { t: c.t, resp: c.resp }));
+  return out;
+}
+// O que volta do banco passa pelo mesmo filtro: só caminhos e assuntos que o
+// chat conhece.
+function mensagemDoBanco(m) {
+  if (!m || (m.de !== "eu" && m.de !== "gt") || typeof m.texto !== "string") return null;
+  const out = { de: m.de, texto: m.texto.slice(0, 2000) };
+  if (Array.isArray(m.acoes)) out.acoes = m.acoes.filter(a => a && typeof a.t === "string" && IR_DO_CHAT.test(a.ir || "")).map(a => ({ t: a.t.slice(0, 80), ir: a.ir }));
+  if (Array.isArray(m.chips)) out.chips = m.chips.filter(c => c && typeof c.t === "string" && ((c.tema && CHAT_TEMAS.some(t => t.id === c.tema)) || c.resp === "sim" || c.resp === "nao"))
+    .map(c => (c.tema ? { t: c.t.slice(0, 80), tema: c.tema } : { t: c.t.slice(0, 80), resp: c.resp }));
+  return out;
+}
+function conversaDoBanco(r) {
+  const msgs = r && Array.isArray(r.mensagens) ? r.mensagens.map(mensagemDoBanco).filter(Boolean) : [];
+  if (!r || !r.id || !msgs.length) return null;
+  return { id: r.id, titulo: String(r.titulo || "").slice(0, 80) || "Conversa", msgs, em: r.atualizada_em };
+}
+function resumoDaConversa(ch) {
+  return { id: ch.id, titulo: tituloDoChat(ch) || "Conversa", msgs: ch.msgs.slice(), em: new Date().toISOString() };
+}
+function quandoDaConversa(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  const fuso = { timeZone: "America/Sao_Paulo" };
+  const dia = (x) => x.toLocaleDateString("sv-SE", fuso);
+  const hora = d.toLocaleTimeString("pt-BR", { ...fuso, hour: "2-digit", minute: "2-digit" });
+  if (dia(d) === dia(new Date())) return `Hoje, ${hora}`;
+  if (dia(d) === dia(new Date(Date.now() - 864e5))) return `Ontem, ${hora}`;
+  const mesmoAno = dia(d).slice(0, 4) === dia(new Date()).slice(0, 4);
+  return d.toLocaleDateString("pt-BR", { ...fuso, day: "numeric", month: "short", ...(mesmoAno ? {} : { year: "numeric" }) });
+}
+// render() refaz a tela inteira: quem estava escrevendo continua no campo.
+function renderDoChat() {
+  const campo = document.getElementById("chat-texto");
+  if (state.chat && campo && document.activeElement === campo) state.chat.focar = true;
   render();
+}
+
+async function carregarConversasDoChat() {
+  const conta = contaDoChat(), site = siteDoChat();
+  if (!conta) return;
+  const cv = state.conversasDoChat;
+  if (cv && cv.conta === conta && cv.site === site && (cv.lista || cv.carregando)) return;
+  state.conversasDoChat = { conta, site, lista: null, carregando: true, erro: false };
+  let lista = null;
+  try {
+    const { data, error } = await sb.from('conversas_de_ajuda').select('id, titulo, mensagens, atualizada_em')
+      .eq('user_id', conta).eq('site', site).order('atualizada_em', { ascending: false });
+    if (!error) lista = (data || []).map(conversaDoBanco).filter(Boolean);
+  } catch { /* banco sem a tabela: o chat segue só na tela */ }
+  if (contaDoChat() !== conta) return;
+  state.conversasDoChat = { conta, site, lista, carregando: false, erro: !lista };
+  const ch = state.chat;
+  if (lista && ch && ch.conta === conta) {
+    // Guardada enquanto a lista chegava.
+    if (ch.id && !lista.some(c => c.id === ch.id)) lista.unshift(resumoDaConversa(ch));
+    // Recarregou a página: continua a conversa que estava aberta nesta aba.
+    if (!ch.id && !temPerguntaNoChat(ch)) {
+      let atual = null;
+      try { atual = sessionStorage.getItem(CHAT_ATUAL_KEY); } catch {}
+      const c = atual && lista.find(x => x.id === atual);
+      if (c) Object.assign(ch, conversaGuardadaNoChat(c));
+    }
+  }
+  if (state.chat && state.chat.aberto) renderDoChat();
+}
+function conversaGuardadaNoChat(c) {
+  return { id: c.id, titulo: c.titulo, msgs: c.msgs.slice(), erros: 0, apagando: null,
+    ultimaPergunta: ([...c.msgs].reverse().find(m => m.de === "eu") || {}).texto || "" };
+}
+// Cada mensagem nova vai para a conta, uma gravação depois da outra (a
+// primeira cria a conversa; as outras atualizam a mesma).
+function guardarConversa() {
+  const ch = state.chat;
+  if (!ch || !ch.conta || !temPerguntaNoChat(ch)) return;
+  const conta = ch.conta;
+  ch.fila = (ch.fila || Promise.resolve()).then(async () => {
+    if (contaDoChat() !== conta) return;
+    const novo = !ch.id;
+    let ok = false;
+    try {
+      const msgs = ch.msgs.slice(-CHAT_MAX_MSGS);
+      const r = await sb.rpc('guardar_conversa_de_ajuda', { p_id: ch.id, p_site: ch.site, p_titulo: tituloDoChat(ch) || null,
+        p_mensagens: msgs.map((m, i) => mensagemParaGuardar(m, i === msgs.length - 1)) });
+      if (!r.error && r.data) { ch.id = r.data; ok = true; }
+    } catch { /* banco sem a função */ }
+    const mudou = ch.naoGuardou !== !ok;
+    ch.naoGuardou = !ok;
+    if (ok) {
+      if (state.chat === ch) { try { sessionStorage.setItem(CHAT_ATUAL_KEY, ch.id); } catch {} }
+      const cv = state.conversasDoChat;
+      if (cv && cv.conta === conta && cv.lista) cv.lista = [resumoDaConversa(ch), ...cv.lista.filter(c => c.id !== ch.id)].slice(0, CHAT_MAX_CONVERSAS);
+    }
+    if (state.chat === ch && ch.aberto && (mudou || novo)) renderDoChat();
+  });
+}
+
+function abrirChat() {
+  const site = siteDoChat(), conta = contaDoChat();
+  let ch = state.chat;
+  // Entrou na conta com a conversa aberta: ela passa para a conta. Saiu ou
+  // trocou de conta: começa outra (a conversa é de quem estava).
+  if (ch && ch.site === site && ch.conta !== conta) {
+    if (!ch.conta && conta) { ch.conta = conta; guardarConversa(); }
+    else ch = null;
+  }
+  if (!ch || ch.site !== site) ch = state.chat = conversaNova(site, conta);
+  ch.aberto = true;
+  ch.vendo = "conversa";
+  ch.focar = true;
+  state.showMenu = false; state.showContato = false; state.pcMenu = false;
+  render();
+  if (conta) carregarConversasDoChat();
 }
 function fecharChat() {
   if (state.chat) state.chat.aberto = false;
+  render();
+}
+function novaConversa() {
+  state.chat = conversaNova(siteDoChat(), contaDoChat());
+  state.chat.aberto = true;
+  state.chat.focar = true;
+  try { sessionStorage.removeItem(CHAT_ATUAL_KEY); } catch {}
+  render();
+}
+function verConversasDoChat() {
+  const ch = state.chat;
+  if (!ch) return;
+  ch.vendo = "conversas";
+  ch.apagando = null;
+  ch.erroConversas = "";
+  render();
+  carregarConversasDoChat();
+}
+function voltarAConversa() {
+  const ch = state.chat;
+  if (!ch) return;
+  ch.vendo = "conversa";
+  ch.focar = true;
+  render();
+}
+function abrirConversaGuardada(id) {
+  const cv = state.conversasDoChat;
+  const c = cv && cv.lista && cv.lista.find(x => x.id === id);
+  if (!c) return;
+  if (state.chat && state.chat.id === id) { voltarAConversa(); return; }
+  state.chat = { ...conversaNova(siteDoChat(), contaDoChat()), ...conversaGuardadaNoChat(c), aberto: true, focar: true };
+  try { sessionStorage.setItem(CHAT_ATUAL_KEY, id); } catch {}
+  render();
+}
+async function apagarConversaGuardada(id) {
+  const cv = state.conversasDoChat;
+  if (!cv || !cv.lista || !state.chat) return;
+  let ok = false;
+  try { const { error } = await sb.from('conversas_de_ajuda').delete().eq('id', id); ok = !error; } catch {}
+  const ch = state.chat;
+  ch.apagando = null;
+  if (!ok) { ch.erroConversas = "Não deu para apagar agora. Tente de novo daqui a pouco."; render(); return; }
+  cv.lista = cv.lista.filter(c => c.id !== id);
+  if (ch.id === id) {
+    state.chat = { ...conversaNova(ch.site, ch.conta), aberto: true, vendo: ch.vendo };
+    try { sessionStorage.removeItem(CHAT_ATUAL_KEY); } catch {}
+  }
   render();
 }
 function responderComTema(tema) {
@@ -15490,6 +15860,7 @@ function enviarAoChat(texto) {
   ch.ultimaPergunta = pergunta;
   ch.rascunho = "";
   const r = entenderDuvida(pergunta);
+  if (!ch.titulo && !(r.tipo === "tema" && r.tema.id === "saudacao")) ch.titulo = pergunta.slice(0, 80);
   if (r.tipo === "tema") responderComTema(r.tema);
   else if (r.tipo === "duvida") ch.msgs.push({ de: "gt", texto: "Você quer saber sobre:", chips: r.temas.map(t => ({ t: t.t, tema: t.id })) });
   else {
@@ -15501,6 +15872,7 @@ function enviarAoChat(texto) {
   }
   ch.focar = true;
   render();
+  guardarConversa();
 }
 function escolherNoChat(dado) {
   const ch = state.chat;
@@ -15510,6 +15882,7 @@ function escolherNoChat(dado) {
     if (!tema) return;
     ch.msgs.push({ de: "eu", texto: tema.t });
     ch.ultimaPergunta = ch.ultimaPergunta || tema.t;
+    if (!ch.titulo && tema.id !== "saudacao") ch.titulo = tema.t;
     responderComTema(tema);
   } else if (dado.resp === "sim") {
     ch.msgs.push({ de: "eu", texto: "Resolveu" });
@@ -15519,6 +15892,7 @@ function escolherNoChat(dado) {
     ch.msgs.push({ de: "gt", texto: "Tudo bem. O Breno, do GuiaTennis, responde pelo WhatsApp. A sua dúvida já vai escrita na mensagem.", acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] });
   }
   render();
+  guardarConversa();
 }
 function irPeloChat(ir) {
   if (state.chat) state.chat.aberto = false;
@@ -15536,19 +15910,39 @@ function irPeloChat(ir) {
 function renderChat() {
   const ch = state.chat;
   if (!ch || !ch.aberto) return "";
+  const conta = contaDoChat();
+  const cv = conta && state.conversasDoChat && state.conversasDoChat.conta === conta ? state.conversasDoChat : null;
+  const nConversas = cv && cv.lista ? cv.lista.length : 0;
+  const lista = ch.vendo === "conversas" && conta;
   const ultima = ch.msgs.length - 1;
   const quebras = (t) => esc(t).replace(/\n/g, "<br>");
+  const nomeDoSite = ch.site === "parceiros" ? "GuiaTennis Parceiros" : "GuiaTennis";
+  const temPergunta = temPerguntaNoChat(ch);
+  const barra = !lista && (conta || temPergunta) ? `
+        <div class="chat-barra">
+          ${conta ? `<button type="button" class="chat-barra-bt" id="chat-ver-conversas">${icon('historico', 15, 'currentColor')} Conversas${nConversas ? ` (${nConversas})` : ""}</button>` : "<span></span>"}
+          ${temPergunta ? `<button type="button" class="chat-barra-bt" id="chat-nova">${icon('plus', 15, 'currentColor')} Nova conversa</button>` : ""}
+        </div>` : "";
+  const nota = lista ? "As conversas ficam guardadas na sua conta. Você apaga quando quiser."
+    : conta ? (ch.naoGuardou ? "Não deu para guardar esta conversa na conta agora." : "A conversa fica guardada na sua conta.")
+    : CHAT_NA_CONTA.includes(ch.site) && !isAdmin ? `A conversa fica só na sua tela. <button type="button" class="chat-nota-link" data-chat-ir="entrar">Entre na sua conta</button> para guardar as conversas.`
+    : "A conversa fica só na sua tela.";
   return `
     <div class="chat-overlay" id="chat-overlay">
       <section class="chat-caixa" role="dialog" aria-label="Chat de ajuda">
         <header class="chat-topo">
-          <span class="chat-marca" aria-hidden="true">${logoSvg()}</span>
+          ${lista
+            ? `<button type="button" class="chat-voltar" id="chat-voltar" aria-label="Voltar à conversa">${icon('chevronLeft', 20, '#fff')}</button>`
+            : `<span class="chat-marca" aria-hidden="true">${logoSvg()}</span>`}
           <div class="chat-topo-txt">
-            <p class="chat-titulo">Ajuda do ${ch.site === "parceiros" ? "GuiaTennis Parceiros" : "GuiaTennis"}</p>
-            <p class="chat-sub">Respostas na hora. Se precisar, o Breno responde no WhatsApp.</p>
+            <p class="chat-titulo">${lista ? "Suas conversas" : `Ajuda do ${nomeDoSite}`}</p>
+            <p class="chat-sub">${lista ? `Chat de ajuda do ${nomeDoSite}` : "Respostas na hora. Se precisar, o Breno responde no WhatsApp."}</p>
           </div>
           <button type="button" class="chat-fechar" id="chat-fechar" aria-label="Fechar o chat">✕</button>
         </header>
+        ${barra}
+        ${lista ? `
+        <div class="chat-msgs chat-lista" id="chat-lista">${listaDeConversasDoChat(ch, cv)}</div>` : `
         <div class="chat-msgs" id="chat-msgs" aria-live="polite">
           ${ch.msgs.map((m, i) => `
             <div class="chat-msg ${m.de}">
@@ -15562,17 +15956,50 @@ function renderChat() {
         <form class="chat-envio" id="chat-form" autocomplete="off">
           <input id="chat-texto" class="chat-campo" maxlength="300" placeholder="Escreva a sua dúvida" value="${esc(ch.rascunho || "")}" aria-label="Escreva a sua dúvida" />
           <button type="submit" class="chat-enviar" aria-label="Enviar">${icon('enviar', 18, '#fff')}</button>
-        </form>
-        <p class="chat-nota">A conversa fica só na sua tela.</p>
+        </form>`}
+        <p class="chat-nota${lista ? " solta" : ""}">${nota}</p>
       </section>
     </div>`;
+}
+// "Suas conversas": a mais recente em cima, um toque abre, a lixeira apaga
+// (com a confirmação ali mesmo).
+function listaDeConversasDoChat(ch, cv) {
+  const nova = `<button type="button" class="chat-nova-grande" id="chat-nova-lista">${icon('plus', 17, '#fff')} Nova conversa</button>`;
+  if (!cv || cv.carregando) return nova + `<p class="chat-lista-vazia">${bolaGirando(15)} Abrindo as suas conversas…</p>`;
+  if (cv.erro) return nova + `<p class="chat-lista-vazia">Não deu para abrir as conversas agora. Tente de novo daqui a pouco.</p>`;
+  if (!cv.lista.length) return nova + `<p class="chat-lista-vazia">Nenhuma conversa guardada ainda. As próximas ficam aqui, na sua conta.</p>`;
+  return `${nova}
+    ${ch.erroConversas ? `<div class="form-error">${icon('warning', 13)} ${esc(ch.erroConversas)}</div>` : ""}
+    <ul class="chat-conversas">
+      ${cv.lista.map(c => ch.apagando === c.id ? `
+        <li class="chat-conversa apagando">
+          <p class="chat-conversa-t">Apagar "${esc(c.titulo)}"?</p>
+          <p class="chat-conversa-s">A conversa sai da sua conta.</p>
+          <div class="chat-conversa-sim">
+            <button type="button" class="chat-acao perigo" data-chat-apagar-sim="${esc(c.id)}">Apagar</button>
+            <button type="button" class="chat-acao" data-chat-apagar-nao>Cancelar</button>
+          </div>
+        </li>` : `
+        <li class="chat-conversa${ch.id === c.id ? " atual" : ""}">
+          <button type="button" class="chat-conversa-abrir" data-chat-abrir="${esc(c.id)}">
+            <span class="chat-conversa-t">${esc(c.titulo)}</span>
+            <span class="chat-conversa-s">${ch.id === c.id ? "Aberta agora · " : ""}${esc(quandoDaConversa(c.em))}</span>
+          </button>
+          <button type="button" class="chat-conversa-apagar" data-chat-apagar="${esc(c.id)}" aria-label="Apagar a conversa ${esc(c.titulo)}" title="Apagar">${icon('lixo', 17, 'currentColor')}</button>
+        </li>`).join("")}
+    </ul>
+    <p class="chat-lista-nota">Ficam guardadas as ${CHAT_MAX_CONVERSAS} conversas mais recentes.</p>`;
 }
 function ligarChat() {
   document.querySelectorAll("[data-abrir-chat]").forEach(el => { el.onclick = (e) => { e.preventDefault(); abrirChat(); }; });
   const ch = state.chat;
   if (!ch || !ch.aberto) return;
-  const fechar = document.getElementById("chat-fechar");
-  if (fechar) fechar.onclick = fecharChat;
+  const bt = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  bt("chat-fechar", fecharChat);
+  bt("chat-ver-conversas", verConversasDoChat);
+  bt("chat-nova", novaConversa);
+  bt("chat-nova-lista", novaConversa);
+  bt("chat-voltar", voltarAConversa);
   const fundo = document.getElementById("chat-overlay");
   if (fundo) fundo.onclick = (e) => { if (e.target === fundo) fecharChat(); };
   const campo = document.getElementById("chat-texto");
@@ -15582,9 +16009,16 @@ function ligarChat() {
   document.querySelectorAll("[data-chat-tema]").forEach(el => { el.onclick = () => escolherNoChat({ tema: el.dataset.chatTema }); });
   document.querySelectorAll("[data-chat-resp]").forEach(el => { el.onclick = () => escolherNoChat({ resp: el.dataset.chatResp }); });
   document.querySelectorAll("[data-chat-ir]").forEach(el => { el.onclick = () => irPeloChat(el.dataset.chatIr); });
+  document.querySelectorAll("[data-chat-abrir]").forEach(el => { el.onclick = () => abrirConversaGuardada(el.dataset.chatAbrir); });
+  document.querySelectorAll("[data-chat-apagar]").forEach(el => { el.onclick = () => { ch.apagando = el.dataset.chatApagar; ch.erroConversas = ""; render(); }; });
+  document.querySelectorAll("[data-chat-apagar-sim]").forEach(el => { el.onclick = () => { el.disabled = true; apagarConversaGuardada(el.dataset.chatApagarSim); }; });
+  document.querySelectorAll("[data-chat-apagar-nao]").forEach(el => { el.onclick = () => { ch.apagando = null; render(); }; });
   const msgs = document.getElementById("chat-msgs");
   if (msgs) msgs.scrollTop = msgs.scrollHeight;
-  if (ch.focar && campo) { ch.focar = false; try { campo.focus({ preventScroll: true }); } catch {} }
+  if (ch.focar && campo) {
+    ch.focar = false;
+    try { campo.focus({ preventScroll: true }); campo.setSelectionRange(campo.value.length, campo.value.length); } catch {}
+  }
 }
 
 function renderContatoSheet() {
@@ -16941,6 +17375,7 @@ function attachEvents() {
     el.onclick = async () => {
       const id = el.dataset.court;
       if (getPlano(id) === el.dataset.plano) return;
+      if (ordemDoPlano(el.dataset.plano) < ordemDoPlano(getPlano(id)) && !confirm(oQueMudaAoBaixarOPlano(id, getPlano(id), el.dataset.plano))) return;
       const ok = await setPlano(id, el.dataset.plano);
       if (!ok) return;
       if (state.selected && state.selected.id === id) {
@@ -17648,6 +18083,14 @@ function attachEvents() {
       window.__form.__planoEscolhido = el.dataset.regPlano;
       state.regPlanoTela = false;
       enviarFormulario();
+    };
+  });
+  document.querySelectorAll("[data-reg-plano-aviso]").forEach(el => {
+    el.onclick = () => {
+      const plano = el.dataset.regPlanoAviso;
+      if (plano) window.__form.__planoEscolhido = plano;
+      else delete window.__form.__planoEscolhido;
+      render();
     };
   });
 

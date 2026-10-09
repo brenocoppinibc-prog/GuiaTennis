@@ -22,8 +22,19 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 08/10/2026
+**Atualizado em:** 09/10/2026
 
+> **Estado (09/10/2026, depois):** o Breno pediu "faça que o chat de
+> parceiros fique salvo na conta também e tenha histórico e que pode
+> iniciar novo chat" (regra 79, SQL `20261009120000_conversas_do_chat`) e,
+> com prints, que a tela da senha não fique "grudada" (regra 80), o
+> "Continuar" à direita com "um aviso do que falta preencher" (regra 81) e
+> que o plano menor limite o que a academia faz e o que aparece, com
+> "aviso de que não estará visível na ficha e com opção de querer ou não
+> alterar e precisar pagar a mais" (regra 82). Testes novos:
+> `chat-na-conta.js`, `plano-na-ficha.js` e a seção 24 do
+> `banco-emails.py` (267 certas).
+>
 > **Estado (09/10/2026):** o Breno perguntou se precisa subir algum HTML
 > de e-mail (não: os novos saem do banco; o do código sobe sozinho, mas o
 > registro do "Banco de dados" diz que falta o segredo
@@ -1456,8 +1467,9 @@ cobra taxa e não fica no meio** da negociação.
       WhatsApp" (academias que querem entrar), "Pedir análise" da
       avaliação, a academia pausada pelo GuiaTennis e o usuário sem e-mail
       que esqueceu a senha.
-    - A conversa fica só na tela (Política de Privacidade, "Chat de
-      ajuda"); muda de site (jogadores/Parceiros) começa outra. Teste:
+    - No site dos jogadores (e no Parceiros sem conta) a conversa fica só
+      na tela; no Parceiros com a conta aberta, fica guardada na conta
+      (regra 79). Muda de site (jogadores/Parceiros) começa outra. Teste:
       `testes/chat-de-ajuda.js`.
     - Se o Breno quiser uma IA de verdade depois: dá para ligar o mesmo
       chat a um modelo de linguagem por uma função do Netlify, com chave
@@ -1475,6 +1487,96 @@ cobra taxa e não fica no meio** da negociação.
     (`BLOCOS_ACESOS`); quem liga "reduzir movimento" no celular vê tudo de
     uma vez; o texto está sempre na página. Teste:
     `testes/parceiros-acender.js`.
+79. **O chat do Parceiros fica guardado na conta** (pedido de 09/10/2026:
+    "faça que o chat de parceiros fique salvo na conta também e tenha
+    histórico e que pode iniciar novo chat"), como o histórico de conversas
+    da ajuda da Shopify e do Intercom.
+    - **Quando guarda:** no GuiaTennis Parceiros, com a conta aberta
+      (`contaDoChat`: conta do Parceiros ou de jogador; o admin não
+      guarda). Cada mensagem regrava a conversa inteira pela função
+      `guardar_conversa_de_ajuda` (a primeira cria; as outras atualizam a
+      mesma), uma gravação depois da outra (`guardarConversa`). Só guarda
+      depois da primeira dúvida; o título é a primeira dúvida (um "oi" não
+      conta). `CHAT_NA_CONTA = ["parceiros"]`: pôr "jogadores" ali liga o
+      mesmo no site dos jogadores.
+    - **Na tela:** embaixo do topo do chat, "Conversas (N)" e "Nova
+      conversa". "Conversas" troca a conversa pela lista ("Suas
+      conversas"): "Nova conversa" em cima, a mais recente primeiro, com
+      "Hoje, 14:32" / "Ontem" / "28 de set.", a aberta marcada; um toque
+      abre; a lixeira pergunta ali mesmo ("Apagar"/"Cancelar"). A seta
+      volta. Rodapé: "A conversa fica guardada na sua conta." (ou "Não deu
+      para guardar…" se o banco recusar).
+    - **Sem conta:** "A conversa fica só na sua tela. Entre na sua conta
+      para guardar as conversas." (o link leva ao Entrar); ao entrar, a
+      conversa aberta passa para a conta. Saiu ou trocou de conta: começa
+      outra, sem as conversas da conta anterior. Recarregou a página: a
+      conversa aberta na aba continua (`sessionStorage`,
+      `guiatennis_chat_atual`).
+    - **Banco:** SQL `20261009120000_conversas_do_chat` — tabela
+      `conversas_de_ajuda` (user_id → `auth.users`, apaga junto com a
+      conta; site; título até 80; mensagens até 120 e 64 KB), a conta só lê
+      e apaga as próprias (RLS) e grava só pela função, que confere cada
+      mensagem (`de` 'eu'/'gt', o que a pessoa escreve até 300 letras) e
+      guarda as **50 mais recentes**. O que volta do banco passa por
+      `mensagemDoBanco` (só caminhos e assuntos que o chat conhece).
+    - Política de Privacidade ("Chat de ajuda") explica o que fica e por
+      quanto. Testes: `testes/chat-na-conta.js` e a seção 24 do
+      `banco-emails.py`.
+80. **Tela da senha do Parceiros sem nada grudado** (print de 09/10/2026:
+    "está muito grudado isso aqui, confuso desse jeito"). Depois do
+    e-mail, ele fica num cartão com o botão "Trocar" (como o login do
+    Google e do Booking mostram a conta escolhida), no lugar do campo
+    travado e do "Usar outro e-mail"; o aviso da conta achada vai num
+    quadro verde claro, com título e texto ("Você já tem conta no
+    GuiaTennis" / "É a sua conta de jogador. Entre com a mesma senha e ela
+    passa a valer também no GuiaTennis Parceiros."). O mesmo cartão vale em
+    "Esqueci a senha" e nos dados de contato. `emailEscolhido` em
+    `pcCadastro`.
+81. **"Continuar" à direita e o que falta preencher** (print de
+    09/10/2026: "isso dificulta o cadastro, deixe o continuar no lado
+    direito e um aviso do que falta preencher"). Na barra de baixo do
+    formulário da ficha: "Voltar" à esquerda; à direita "Salvar
+    alterações" (na edição, sem destaque) e **"Continuar" por último, em
+    destaque**; na última parte, só o envio, em destaque. Em cima dos
+    botões, `regAvisoDoQueFalta`: "Falta preencher: Fotos, Horário e
+    Como chegar" (o obrigatório primeiro, com *, em vermelho; até 3 nomes e
+    "e mais N"); cada nome leva à parte; tudo preenchido, "Todas as partes
+    estão preenchidas." Na Revisão não aparece (ela já mostra cada parte).
+82. **O plano limita o que a academia faz e o que aparece; a ficha avisa
+    ali mesmo** (pedido de 09/10/2026: "ao uma academia mudar do Premium
+    para o completo precisa limitar as ações dela e as informações que
+    serão visualizadas para todos, todas as informações no básico completo
+    podem ser preenchidas mas com aviso de que não estará visível na ficha
+    e com opção de querer ou não alterar e precisar pagar a mais").
+    - **Na ficha (cadastro e edição):** tudo pode ser preenchido. A parte
+      que o plano não mostra traz um aviso no começo
+      (`avisoDoPlanoNaParte`, `PARTES_DO_PLANO`; em Quadras, junto das
+      comodidades): "No plano Básico, a ficha mostra só o botão do
+      WhatsApp. O Instagram que você informou fica de fora." + "fica
+      guardado e aparece na ficha no plano Completo. O Completo é pago: o
+      valor é combinado com o GuiaTennis pelo WhatsApp, e nada é cobrado
+      sem você confirmar." e a escolha **"Quero o Completo"** / **"Manter
+      o Básico"**. Quero: vira "Você pediu o plano Completo…" (com
+      "Desfazer o pedido") em todas as partes, e ao salvar o pedido vai
+      para o GuiaTennis (`pedir_plano`) sem a tela "Quase lá". Manter: o
+      aviso encolhe ("Mudar de ideia") e salvar também não pergunta o
+      plano. Sem escolher, a tela "Quase lá" do fim continua (regra do
+      03/10). Partes com aviso no Básico: comodidades (mostra 3), contato
+      (só WhatsApp), fotos (mostra 3 de 5), cancelamento e como chegar. No
+      Completo e no Premium, nenhum aviso; o admin não vê.
+    - **Saiu do Premium** (o que já era limitado pelo banco: promoções
+      não aparecem nem são publicadas, números trancados, sem selo
+      dourado e sem "Patrocinado"): Promoções mostra as que estão
+      guardadas e não aparecem ("A promoção de vocês não aparece no plano
+      Completo… volta a aparecer, enquanto valer, se a academia voltar ao
+      Premium"). **Pessoas acima do limite** do plano: aviso "O plano
+      Completo é para até 5 pessoas, e a academia tem 7. Tire 2 pessoas…",
+      e ninguém novo entra. Nada é apagado.
+    - **O admin, ao baixar o plano** (botões de plano da academia), confirma
+      vendo o que muda na hora (`oQueMudaAoBaixarOPlano`: selo e
+      Patrocinado, promoções, números, o que sai da ficha, quantas pessoas)
+      e que nada é apagado. Subir o plano não pergunta.
+    - Teste: `testes/plano-na-ficha.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2454,7 +2556,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2586,6 +2688,19 @@ as 133 do `banco-acesso.py` no banco e login locais.
 - `parceiros-acender.js` — regra 78: o topo acende ao abrir, o resto
   começa apagado e acende ao descer, continua aceso ao redesenhar, só na
   página inicial, e tudo de uma vez com "reduzir movimento".
+- `chat-na-conta.js` — regra 79: com a conta, a primeira dúvida cria a
+  conversa (com ela de título) e as outras atualizam; "Nova conversa";
+  "Conversas" lista, abre, continua e apaga (com "Cancelar"); recarregar
+  continua; sair da conta começa do zero; outro aparelho (só as da
+  conta; caminho estranho do banco não volta); sem conta fica na tela e,
+  ao entrar, passa para a conta; banco sem a tabela; jogadores e admin
+  não guardam; Privacidade.
+- `plano-na-ficha.js` — regras 81 e 82: "Continuar" à direita e o que
+  falta (um toque leva à parte); o aviso do plano em cada parte, contando o
+  que fica de fora; "Quero o Completo" (pedido ao salvar, sem a tela do
+  fim) e "Manter o Básico" ("Mudar de ideia"); Completo sem aviso;
+  Promoções guardadas fora do Premium; Pessoas acima do limite; o admin
+  confirma ao baixar o plano e não ao subir.
 - `chat-de-ajuda.js` — regra 77: abre pela folha "Fale com a gente", pelo
   rodapé e pela Ajuda do Parceiros; entende as dúvidas de cada site; o
   caminho fecha o chat e abre a página; "Ainda preciso de ajuda" e o
@@ -2956,6 +3071,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Chat do Parceiros guardado na conta, tela da senha arrumada, "Continuar" à direita com o que falta e o plano avisando na ficha   ← PR #5, 09/10
 (a seguir) Promoções do Premium, números com "Entenda como funciona", foto em cima no cartão e o site sem citar outros sites   ← PR #5, 08/10
 (a seguir) Preço sem valor diz "sob consulta" também no texto da ficha   ← PR #5, 08/10
 (a seguir) Premium com selo dourado e até 2 "Patrocinado" no topo da busca   ← PR #5, 08/10
@@ -3068,6 +3184,10 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
+**Resumo (09/10/2026).** O PR #5 segue verde, agora com as regras até a
+82; o merge espera o Breno dizer "pode subir". O resto do resumo abaixo
+continua valendo.
+
 **Resumo (08/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
 regra 75; o merge espera o Breno dizer "pode subir". Pendente:
@@ -3117,7 +3237,13 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
    "Querem sair do guia"; o chat de ajuda pela Ajuda do Parceiros e por
    "Fale com a gente" (escrever dúvidas do jeito que as pessoas escrevem e
    ver se ele entende; o que ele não entender, dizer no chat para
-   ensinar).
+   ensinar). E (regras 79 a 82, 09/10): com a conta no Parceiros, falar
+   no chat, "Nova conversa", "Conversas" (abrir e apagar), e entrar em
+   outro aparelho para ver as mesmas; a tela da senha com o cartão do
+   e-mail e "Trocar"; em Minha ficha, "Continuar" à direita e o "Falta
+   preencher"; no Básico, os avisos das partes, "Quero o Completo" (ver o
+   pedido no painel do admin) e "Manter o Básico"; no painel do admin,
+   baixar uma academia do Premium e ler a pergunta.
 3. **Preço dos planos Completo e Premium** (o Breno define).
 4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
    criar o acesso de cada academia e mandar a mensagem; trocar a foto do

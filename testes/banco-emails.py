@@ -12,7 +12,8 @@ Parceiros (20261006160000), a data em que a ficha foi atualizada
 (20261007150000_logo_nos_emails) e os acessos em todo plano
 (20261007160000_acessos_em_todo_plano), os guardados na conta
 (20261008130000_guardados_na_conta), as promoções (20261008140000_promocoes)
-e o pedido para tirar do guia (20261008150000_pedido_para_sair_do_guia).
+o pedido para tirar do guia (20261008150000_pedido_para_sair_do_guia) e as
+conversas do chat guardadas na conta (20261009120000_conversas_do_chat).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -870,6 +871,43 @@ ok(um(f"select resolucao || '|' || academia_nome || '|' || (academia_id is null)
    "o pedido fica registrado, com o nome da academia")
 ok(um("select count(*) from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and assunto = 'A Academia Que Sai saiu do GuiaTennis'") == "1",
    "quem pediu recebe o aviso de que a academia saiu")
+
+# 24. O chat de ajuda guardado na conta (SQL 20261009120000) ----------------------
+print("\n# Conversas do chat na conta")
+ana_chat = parceiro("Ana Chat", f"anachat{sufixo}@exemplo.com")
+bia_chat = parceiro("Bia Chat", f"biachat{sufixo}@exemplo.com")
+conversa = json.dumps([{"de": "gt", "texto": "Oi! Escreva a sua dúvida."}, {"de": "eu", "texto": "esqueci minha senha"},
+                       {"de": "gt", "texto": "Na tela de entrar...", "acoes": [{"t": "Entrar", "ir": "entrar"}]}]).replace("'", "''")
+certo, saida = sql(f"select public.guardar_conversa_de_ajuda(null, 'parceiros', null, '{conversa}'::jsonb)", papel="anon")
+ok(not certo, "sem conta, nada é guardado")
+certo, saida = sql("insert into public.conversas_de_ajuda (user_id, titulo) values (auth.uid(), 'x')", papel="authenticated", user=ana_chat)
+ok(not certo, "a tabela não recebe gravação direta: só pela função")
+cid = um(f"select public.guardar_conversa_de_ajuda(null, 'parceiros', null, '{conversa}'::jsonb)", papel="authenticated", user=ana_chat)
+ok(bool(cid) and um(f"select titulo || '|' || jsonb_array_length(mensagens) from public.conversas_de_ajuda where id = '{cid}'") == "esqueci minha senha|3",
+   "a primeira dúvida cria a conversa, com ela de título")
+mais = json.dumps(json.loads(conversa.replace("''", "'")) + [{"de": "eu", "texto": "Ainda preciso de ajuda"}, {"de": "gt", "texto": "Tudo bem."}]).replace("'", "''")
+outra = um(f"select public.guardar_conversa_de_ajuda('{cid}', 'parceiros', 'esqueci minha senha', '{mais}'::jsonb)", papel="authenticated", user=ana_chat)
+ok(outra == cid and um(f"select jsonb_array_length(mensagens) from public.conversas_de_ajuda where id = '{cid}'") == "5", "a mesma conversa é atualizada")
+ok(um("select count(*) from public.conversas_de_ajuda", papel="authenticated", user=ana_chat) == "1"
+   and um("select count(*) from public.conversas_de_ajuda", papel="authenticated", user=bia_chat) == "0", "cada conta só lê as próprias conversas")
+da_bia = um(f"select public.guardar_conversa_de_ajuda('{cid}', 'parceiros', null, '{conversa}'::jsonb)", papel="authenticated", user=bia_chat)
+ok(da_bia and da_bia != cid and um(f"select jsonb_array_length(mensagens) from public.conversas_de_ajuda where id = '{cid}'") == "5",
+   "o id de outra conta não mexe na conversa dela: vira uma conversa nova de quem mandou")
+sql("delete from public.conversas_de_ajuda", papel="authenticated", user=bia_chat)
+ok(um(f"select count(*) from public.conversas_de_ajuda where id = '{cid}'") == "1", "outra conta não apaga")
+for ruim, porque in [("[]", "conversa vazia"), ('[{"de": "x", "texto": "oi"}]', "quem fala só pode ser a pessoa ou o chat"),
+                     (json.dumps([{"de": "eu", "texto": "a" * 301}]), "o que a pessoa escreve tem até 300 letras"),
+                     ('[{"de": "gt", "texto": "Oi!"}]', "sem nenhuma dúvida, não guarda")]:
+    certo, _ = sql(f"select public.guardar_conversa_de_ajuda(null, 'parceiros', null, '{ruim}'::jsonb)", papel="authenticated", user=ana_chat)
+    ok(not certo, "recusa: " + porque)
+certo, _ = sql(f"select public.guardar_conversa_de_ajuda(null, 'outro', null, '{conversa}'::jsonb)", papel="authenticated", user=ana_chat)
+ok(not certo, "recusa chat de site que não existe")
+um(f"select public.guardar_conversa_de_ajuda(null, 'parceiros', null, '{conversa}'::jsonb) from generate_series(1, 51)", papel="authenticated", user=ana_chat)
+ok(um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}'") == "50", "ficam as 50 conversas mais recentes")
+certo, _ = sql(f"delete from public.conversas_de_ajuda where id in (select id from public.conversas_de_ajuda limit 3)", papel="authenticated", user=ana_chat)
+ok(certo and um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}'") == "47", "a própria conta apaga as conversas")
+sql(f"delete from auth.users where id = '{ana_chat}'")
+ok(um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}'") == "0", "excluir a conta apaga as conversas")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

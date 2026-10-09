@@ -3223,9 +3223,25 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-**Resumo (09/10/2026).** O PR #5 segue verde, agora com as regras até a
-84; o merge espera o Breno dizer "pode subir". O resto do resumo abaixo
-continua valendo.
+**Resumo (09/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está verde e sem conflito, com tudo até a
+**regra 84** (último commit de código: `25920e5`; depois só este
+documento). A prévia do Netlify está atualizada. O merge espera o Breno
+dizer "pode subir" (não lembrar a toda hora). Os testes de 09/10: **1.176
+verificações, nenhuma falha**, nos 41 arquivos do navegador (comando na
+seção 6) e **267 no `banco-emails.py`** (Postgres local; se ele tiver
+caído, `pg_ctl` como na seção 6, "Postgres na máquina", com os dados em
+`/var/lib/postgresql/gt`). O chat anterior deixou de acompanhar o PR (sem
+conferências marcadas): no chat novo, voltar a acompanhar o PR #5.
+O que entrou em 09/10 (regras 78 a 84): Parceiros "acendendo" ao descer;
+chat do Parceiros guardado na conta (SQL `20261009120000_conversas_do_chat`,
+já aplicado no banco de teste); tela da senha com o cartão do e-mail;
+"Continuar" à direita e "Falta preencher"; o plano avisando em cada parte
+da ficha (e o admin confirmando ao baixar o plano); contas excluídas num
+lugar só no painel; prévia da ficha no fim do cadastro. Pendente, igual a
+antes: o segredo `SUPABASE_ACCESS_TOKEN` (item 00) e o Breno testar na
+prévia (item 2, com os passos de 09/10). O resto do resumo abaixo continua
+valendo.
 
 **Resumo (08/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde, sem conflito, com tudo até a
@@ -3295,7 +3311,10 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
    sozinho (Premium); no Desempenho do Premium, quantos viram e tocaram na
    promoção; no Desempenho do Premium, quantas
    vezes a academia apareceu no topo patrocinado e quantos tocaram nela
-   (regra 71).
+   (regra 71). De 09/10: ligar o chat guardado na conta também no site dos
+   jogadores (é só pôr "jogadores" em `CHAT_NA_CONTA`); no painel do admin,
+   as dúvidas mais escritas no chat (para ensinar assuntos novos); e-mail
+   para a academia quando o plano muda, dizendo o que mudou.
 6. Antigos: fechar o PR #1; no projeto de teste do Supabase, criar o
    admin e desligar o cadastro; backup mensal; 2 etapas nas contas.
 

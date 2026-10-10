@@ -2016,15 +2016,22 @@
   .pc-acima-do-plano { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 4px; padding: 12px 14px; border: 1px solid #EBD9AE; border-radius: 12px; background: #FFFBF1; }
   .pc-acima-do-plano > svg { flex-shrink: 0; margin-top: 2px; }
   .pc-acima-do-plano p { margin: 0; font-size: 14px; line-height: 1.5; }
-  .reg-plano-aviso { margin: 16px 0 12px; padding: 14px 16px; border: 1px solid #EBD9AE; border-radius: 14px; background: #FFFBF1; }
+  .reg-plano-aviso { margin: 12px 0 10px; padding: 0; border: 1px solid #EBD9AE; border-radius: 12px; background: #FFFBF1; }
+  .reg-plano-aviso-linha { display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-size: 13.5px; line-height: 1.35; color: var(--text); cursor: pointer; list-style: none; }
+  .reg-plano-aviso-linha::-webkit-details-marker { display: none; }
+  .reg-plano-aviso-linha > svg { flex-shrink: 0; }
+  .reg-plano-aviso-curto { flex: 1; min-width: 0; }
+  .reg-plano-aviso-mais { flex-shrink: 0; font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 2px; }
+  .reg-plano-aviso-corpo { padding: 0 14px 14px; }
+  .reg-plano-aviso-corpo .reg-plano-aviso-t { padding-top: 2px; border-top: 1px solid rgba(142,109,37,0.18); padding-top: 10px; }
   .reg-plano-aviso.pediu { border-color: var(--green-line); background: var(--green-soft); }
-  .reg-plano-aviso.manteve { padding: 10px 14px; background: var(--card); border-color: var(--border); }
+  .reg-plano-aviso.manteve { background: var(--card); border-color: var(--border); }
   .reg-plano-aviso-t { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--text); }
   .reg-plano-aviso-t > svg { flex-shrink: 0; margin-top: 2px; }
-  .reg-plano-aviso-s { margin: 6px 0 0 24px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
-  .reg-plano-aviso-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0 24px; }
+  .reg-plano-aviso-s { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+  .reg-plano-aviso-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
   .reg-plano-aviso-acoes .cta-btn { margin: 0; flex: 1 1 140px; min-height: 42px; }
-  .reg-plano-aviso-link { background: none; border: 0; padding: 0; margin: 6px 0 0 24px; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--green); text-decoration: underline; cursor: pointer; }
+  .reg-plano-aviso-link { background: none; border: 0; padding: 0; margin: 6px 0 0; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--green); text-decoration: underline; cursor: pointer; }
   .reg-plano-aviso-s .reg-plano-aviso-link { margin: 0; }
   .reg-previa { margin-top: 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); overflow: hidden; }
   .reg-previa-topo { padding: 14px 16px 12px; background: var(--green-soft); border-bottom: 1px solid var(--green-line); }
@@ -2050,6 +2057,26 @@
   .reg-falta.ok { color: var(--green); font-weight: 600; }
   .reg-falta-parte { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   .reg-falta-parte.obrig { color: var(--red); }
+  .reg-falta-caixa { padding: 10px 12px; border: 1px solid rgba(192,57,43,0.35); border-radius: 12px; background: rgba(192,57,43,0.06); }
+  .reg-falta-caixa .reg-falta { color: var(--text); }
+  .reg-legenda { margin: 4px 0 0; font-size: 12.5px; color: var(--muted); }
+  .reg-falta-caixa .reg-legenda { margin: 6px 0 0 21px; }
+  .reg-destaques { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+  .reg-destaques .field-label { margin-top: 0; }
+  .reg-destaques-n { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); }
+  .reg-fotos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .reg-foto { position: relative; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--bg-alt); }
+  .reg-foto.capa { grid-column: 1 / -1; aspect-ratio: 16 / 10; }
+  .reg-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .reg-foto.fora img { opacity: 0.55; }
+  .reg-foto-tag, .reg-foto-capa { position: absolute; left: 8px; bottom: 8px; padding: 5px 10px; border-radius: 999px; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; background: rgba(255,255,255,0.92); color: #1F2A24; }
+  .reg-foto-capa { cursor: pointer; }
+  .reg-foto-fora { position: absolute; left: 8px; top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; background: rgba(0,0,0,0.6); }
+  .reg-foto-tirar { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 999px; border: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 15px; cursor: pointer; }
+  .reg-ponto-mapa { height: 220px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .reg-ponto-s { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .reg-ponto-s.ok { color: var(--green); font-weight: 600; }
+  .reg-ponto-btn { width: auto; margin: 0; }
   .reg-rodape .cta-btn { margin: 0; flex: 0 1 auto; padding-left: 22px; padding-right: 22px; white-space: nowrap; }
   @media (max-width: 400px) {
     .reg-rodape { padding-left: 16px; padding-right: 16px; margin-left: -22px; margin-right: -22px; }
@@ -3734,13 +3761,25 @@ async function geocodeCep(rawCep) {
   return { ...geo, bairro: bairro || cidade, cidade, uf, approximate };
 }
 
-async function geocodeAddress(query) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(query)}`;
+// O ponto pelo número da porta (pedido do Breno em 10/10/2026: "a
+// localização no mapa não está exata conforme o número da rua"): o mapa
+// costuma devolver o meio da rua antes da casa. Entre os 5 primeiros
+// resultados, vale o que tem o mesmo número; sem ele, o primeiro, e "exato"
+// diz qual foi.
+function numeroDoTexto(q) {
+  const m = String(q || "").replace(/\b\d{5}-?\d{3}\b/g, "").match(/(?:^|[\s,])(\d{1,5})(?=[\s,]|$)/);
+  return m ? m[1] : "";
+}
+async function geocodeAddress(query, numero) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&countrycodes=br&q=${encodeURIComponent(query)}`;
   const res = await fetch(url, { headers: { "Accept": "application/json" } });
   if (!res.ok) throw new Error("Não consegui localizar esse endereço no mapa.");
   const data = await res.json();
   if (!data.length) throw new Error("Endereço não encontrado. Tente incluir bairro e cidade.");
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  const n = String(numero !== undefined ? numero || "" : numeroDoTexto(query)).trim();
+  const daPorta = n ? data.find(d => d.address && String(d.address.house_number || "").split(/[;,]/).map(x => x.trim()).includes(n)) : null;
+  const d = daPorta || data[0];
+  return { lat: parseFloat(d.lat), lng: parseFloat(d.lon), exato: !!daPorta };
 }
 
 // O CEP que ficou no fim do endereço completo ("... - São Paulo - 05422-000").
@@ -3820,7 +3859,15 @@ function semCoordenada() {
 }
 
 async function geocodeFormAddress(f) {
-  // Tenta primeiro pelo CEP (mais confiável), se a pessoa preencheu um
+  // Primeiro a porta: com rua e número, o ponto da casa vale mais que o
+  // centro do CEP (que pode cobrir a rua inteira).
+  if (String(f.address || "").trim() && String(f.numero || "").trim()) {
+    try {
+      const g = await geocodeAddress(`${f.address}, ${f.numero}, ${f.cidade}, Brasil`, f.numero);
+      if (g.exato) return { ...g, approximate: false, grosso: false };
+    } catch (e) { /* segue para o CEP e o texto */ }
+  }
+  // Depois o CEP, se a pessoa preencheu um
   const cepDigits = (f.cep || "").replace(/\D/g, "");
   if (cepDigits.length === 8) {
     try {
@@ -4179,6 +4226,7 @@ function render() {
 
   if (state.page === "search" && state.view === "map") mountMap(results);
   else if (__map) { __map.remove(); __map = null; __markers = []; }
+  montarMapaDoPonto();
 
   if (state.page === "court" && state.selected) {
     mountMiniMap(state.selected);
@@ -14458,6 +14506,131 @@ function regPassoAtual() {
   return { i, passo: REG_PASSOS[i] };
 }
 
+// O ponto da academia no mapa (pedido do Breno em 10/10/2026: "a
+// localização no mapa não está exata conforme o número da rua"), como o
+// "O alfinete está no lugar certo?" do Airbnb e do Google Business Profile:
+// o endereço acha o ponto e a academia arrasta o alfinete até a entrada. O
+// ponto que ela confere é o que vai para o banco (doRegisterSubmit).
+//   f.__lat, f.__lng   o ponto no mapa do formulário
+//   f.__pontoManual    a academia arrastou ou tocou no mapa
+//   f.__pontoExato     o endereço achou o número da porta
+//   f.__pontoAtual     é o ponto que a ficha já tinha (edição)
+function regPontoHtml(f) {
+  const tem = typeof f.__lat === "number" && typeof f.__lng === "number";
+  const situacao = f.__pontoManual ? "✓ Ponto ajustado por você."
+    : f.__pontoAtual ? "É o ponto que aparece hoje na ficha. Se não for a entrada, arraste o alfinete ou toque no lugar certo."
+    : f.__pontoExato ? "Achado pelo número. Se não for a entrada, arraste o alfinete ou toque no lugar certo."
+    : "O mapa não achou o número exato: arraste o alfinete ou toque na entrada da academia.";
+  return `
+        <div class="reg-ponto" id="reg-ponto">
+          <p class="field-label">Ponto no mapa</p>
+          ${tem ? `
+            <div class="reg-ponto-mapa" id="reg-ponto-mapa" aria-label="Mapa com o ponto da academia"></div>
+            <p class="reg-ponto-s${f.__pontoManual ? " ok" : ""}" id="reg-ponto-s">${esc(situacao)}</p>
+            <button type="button" class="reg-plano-aviso-link reg-ponto-de-novo" id="reg-ponto-buscar">Achar de novo pelo endereço</button>` : `
+            <p class="footnote" style="margin:0 0 8px">Confira se o alfinete cai na entrada da academia: é para onde o mapa e o "Como chegar" levam o jogador.</p>
+            <button type="button" class="cta-btn cta-secondary reg-ponto-btn" id="reg-ponto-buscar" ${state.regPontoBuscando ? "disabled" : ""}>${state.regPontoBuscando ? bolaGirando(16) + " Procurando no mapa..." : icon('pin', 15, 'var(--green)') + " Ver no mapa"}</button>`}
+          ${state.regPontoErro ? `<p class="footnote" style="color:var(--red)">${esc(state.regPontoErro)}</p>` : ""}
+        </div>`;
+}
+async function buscarPontoDaFicha() {
+  const f = window.__form;
+  if (!f) return;
+  if (!String(f.address || "").trim() && !String(f.cep || "").replace(/\D/g, "")) {
+    state.regPontoErro = "Preencha a rua e o número primeiro."; render(); return;
+  }
+  state.regPontoBuscando = true; state.regPontoErro = ""; render();
+  try {
+    const g = await geocodeFormAddress(f);
+    if (g.grosso) throw new Error("só o bairro");
+    Object.assign(f, { __lat: g.lat, __lng: g.lng, __pontoExato: !!g.exato, __pontoManual: false, __pontoAtual: false });
+  } catch (e) {
+    state.regPontoErro = "Não achei esse endereço no mapa. Confira a rua, o número e a cidade.";
+  }
+  state.regPontoBuscando = false;
+  render();
+}
+// O alfinete arrastado (ou o toque no mapa): sem redesenhar a tela.
+function moverPontoDaFicha(lat, lng) {
+  const f = window.__form;
+  if (!f || !isFinite(lat) || !isFinite(lng)) return;
+  Object.assign(f, { __lat: lat, __lng: lng, __pontoManual: true, __pontoAtual: false });
+  const s = document.getElementById("reg-ponto-s");
+  if (s) { s.textContent = "✓ Ponto ajustado por você."; s.classList.add("ok"); }
+}
+let __mapaPonto = null;
+function montarMapaDoPonto() {
+  const el = document.getElementById("reg-ponto-mapa");
+  if (__mapaPonto) { try { __mapaPonto.remove(); } catch (e) {} __mapaPonto = null; }
+  const f = window.__form;
+  if (!el || !f || typeof f.__lat !== "number" || !window.L) return;
+  __mapaPonto = L.map(el, { zoomControl: true, scrollWheelZoom: false });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© colaboradores do OpenStreetMap" }).addTo(__mapaPonto);
+  const alfinete = L.marker([f.__lat, f.__lng], { draggable: true, autoPan: true,
+    icon: L.divIcon({ className: "pin-wrap", iconSize: null, html: `<span class="pin-court"></span>` }) }).addTo(__mapaPonto);
+  alfinete.on("dragend", () => { const p = alfinete.getLatLng(); moverPontoDaFicha(p.lat, p.lng); });
+  __mapaPonto.on("click", (e) => { alfinete.setLatLng(e.latlng); moverPontoDaFicha(e.latlng.lat, e.latlng.lng); });
+  __mapaPonto.setView([f.__lat, f.__lng], 18);
+  setTimeout(() => { if (__mapaPonto) __mapaPonto.invalidateSize(); }, 60);
+}
+
+// Quais comodidades a ficha mostra quando o plano limita (pedido do Breno em
+// 10/10/2026: "em comodidades que vão aparecer se não tiver o completo, dê a
+// opção para escolher quais serão apresentadas"), como as "Principais
+// competências" do LinkedIn (escolha até 5). A ficha mostra as primeiras
+// da lista (aplicarPlano): as escolhidas vão para o começo de f.amenities.
+//   f.__destaques   as escolhidas (só no formulário; o banco guarda a ordem)
+function limiteDeComodidades(f) {
+  return isAdmin && !f.__editingId ? Infinity : limitesDoPlano(f.__plano || "basico").comodidades;
+}
+function ordenarDestaques(f) {
+  const n = limiteDeComodidades(f);
+  if (n === Infinity) return;
+  if (!Array.isArray(f.__destaques)) f.__destaques = (f.amenities || []).slice(0, n);
+  f.__destaques = f.__destaques.filter(k => (f.amenities || []).includes(k)).slice(0, n);
+  f.amenities = [...f.__destaques, ...(f.amenities || []).filter(k => !f.__destaques.includes(k))];
+}
+function regDestaquesHtml(f) {
+  const n = limiteDeComodidades(f);
+  if (n === Infinity || (f.amenities || []).length <= n) return "";
+  ordenarDestaques(f);
+  const escolhidas = f.__destaques.length;
+  return `
+        <div class="reg-destaques" id="reg-destaques">
+          <p class="field-label">Quais aparecem na ficha no plano ${esc(nomeDoPlano(f.__plano || "basico"))}</p>
+          <p class="footnote" style="margin:0 0 8px">Escolha até ${n}. As outras ficam guardadas e aparecem no Completo.</p>
+          <div class="chip-row">
+            ${f.amenities.map(k => {
+              const a = AMENITY_OPTS.find(x => x.key === k);
+              const on = f.__destaques.includes(k);
+              return `<button type="button" class="chip small reg-destaque ${on ? "active" : ""}" data-destaque="${esc(k)}" aria-pressed="${on}">${on ? "✓ " : ""}${a ? `${a.icon} ${esc(a.label)}` : esc(k)}</button>`;
+            }).join("")}
+          </div>
+          <p class="reg-destaques-n">${escolhidas} de ${n} escolhidas${escolhidas < n ? ` · com menos de ${n}, a ficha completa com as próximas que você marcou` : ""}.</p>
+          ${state.regDestaqueErro ? `<p class="footnote" style="color:var(--red);margin-top:4px">${esc(state.regDestaqueErro)}</p>` : ""}
+        </div>`;
+}
+
+// As fotos do formulário em tamanho de ver (pedido do Breno em 10/10/2026:
+// "quero que as fotos apareçam maiores"), como o "Fotos do anúncio" do
+// Airbnb: a primeira grande, marcada como capa, e as outras em duas colunas.
+// "Usar como capa" põe a foto em primeiro; no plano que mostra menos fotos,
+// as que ficam de fora dizem isso em cima da própria foto.
+function regFotosHtml(f) {
+  const l = limitesDoPlano(f.__plano || "basico");
+  const limite = isAdmin ? Infinity : l.fotos;
+  return `
+          <div class="reg-fotos" id="reg-fotos">
+            ${f.photos.map((p, i) => `
+              <div class="reg-foto${i === 0 ? " capa" : ""}${i >= limite ? " fora" : ""}">
+                <img src="${esc(p)}" alt="Foto ${i + 1} da academia" />
+                ${i === 0 ? `<span class="reg-foto-tag">Capa</span>` : `<button type="button" class="reg-foto-capa" data-photo-capa="${i}">Usar como capa</button>`}
+                ${i >= limite ? `<span class="reg-foto-fora">${icon('olhoFechado', 13, '#fff')} Fora da ficha no ${esc(nomeDoPlano(f.__plano || "basico"))}</span>` : ""}
+                <button type="button" class="reg-foto-tirar" data-photo-idx="${i}" aria-label="Tirar a foto ${i + 1}">✕</button>
+              </div>`).join("")}
+          </div>`;
+}
+
 // O miolo de cada parte.
 function regPassoHtml(id, f, obrigatorio) {
   const isEditing = !!f.__editingId;
@@ -14482,7 +14655,8 @@ function regPassoHtml(id, f, obrigatorio) {
           <input class="form-field" id="f-cidade" placeholder="Cidade" value="${esc(f.cidade)}" />
         </div>
         ${state.cepStatus === "loading" ? `<p class="footnote">Buscando endereço pelo CEP...</p>` : ""}
-        ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}`;
+        ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}
+        ${regPontoHtml(f)}`;
 
   if (id === "precos") return `
         <p class="field-label" style="margin-top:0">Modalidade${obrigatorio}</p>
@@ -14527,7 +14701,8 @@ function regPassoHtml(id, f, obrigatorio) {
             const marcada = f.amenities.includes(a.key);
             return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`;
           }).join("")}
-        </div>`;
+        </div>
+        ${regDestaquesHtml(f)}`;
 
   if (id === "contato") return `
         <label class="field-label" for="f-phone" style="margin-top:0">WhatsApp da academia${obrigatorio}</label>
@@ -14548,16 +14723,7 @@ function regPassoHtml(id, f, obrigatorio) {
             : "Direto da galeria ou da câmera."}</span>
           <input type="file" accept="image/*" multiple id="f-photo-file" ${(f.photos||[]).length >= maxFotos ? "disabled" : ""} />
         </label>
-        ${(f.photos||[]).length ? `
-          <div class="photo-thumb-row">
-            ${f.photos.map((p, i) => `
-              <div class="photo-thumb">
-                <img src="${esc(p)}" />
-                <button type="button" class="photo-thumb-remove" data-photo-idx="${i}">✕</button>
-              </div>
-            `).join("")}
-          </div>
-        ` : ""}
+        ${(f.photos||[]).length ? regFotosHtml(f) : ""}
         <p class="footnote" style="margin-top:8px">Só o espaço em si: quadras, recepção, vestiário, fachada. Nada de promoção, tabela de preço ou material de divulgação.</p>`;
 
   if (id === "horario") return `
@@ -14757,23 +14923,27 @@ function ordemDoPlano(key) {
 // para o formulário inteiro e dispensa a tela do plano no fim.
 //   mostra(l)  o plano de limites l mostra a parte?
 //   fora(f, l) o que a academia já preencheu e fica de fora
+// Fechado, o aviso é uma linha (pedido do Breno em 10/10/2026: "deixe esse
+// aviso menor e se clicar explica mais em todas as abas"), como os avisos
+// "Saiba mais" do Booking para parceiros; aberto, a explicação e a escolha.
+//   curto(l)  a linha do aviso fechado
 const PARTES_DO_PLANO = {
-  quadras: { mostra: l => l.comodidades === Infinity,
+  quadras: { mostra: l => l.comodidades === Infinity, curto: l => `a ficha mostra ${l.comodidades} comodidades`,
     t: l => `a ficha mostra as ${l.comodidades} primeiras comodidades que você marcar`,
     d: "Pode marcar todas: as outras ficam guardadas e aparecem",
     fora: (f, l) => { const n = (f.amenities || []).length - l.comodidades; return n > 0 ? `${n} das ${(f.amenities || []).length} que você marcou ${n === 1 ? "fica" : "ficam"} de fora` : ""; } },
-  contato: { mostra: l => l.contatos.includes("instagram"),
+  contato: { mostra: l => l.contatos.includes("instagram"), curto: () => "a ficha mostra só o WhatsApp",
     t: () => "a ficha mostra só o botão do WhatsApp",
     d: "Instagram e site ficam guardados e aparecem",
     fora: f => { const x = [String(f.instagram || "").trim() && "o Instagram", String(f.site || "").trim() && "o site"].filter(Boolean); return x.length ? `${x.join(" e ")} que você informou ${x.length === 1 ? "fica" : "ficam"} de fora` : ""; } },
-  fotos: { mostra: l => l.fotos >= FOTOS_MAXIMO,
+  fotos: { mostra: l => l.fotos >= FOTOS_MAXIMO, curto: l => `a ficha mostra ${l.fotos} fotos`,
     t: l => `a ficha mostra as ${l.fotos} primeiras fotos`,
     d: `Pode mandar até ${FOTOS_MAXIMO}: as outras ficam guardadas e aparecem`,
     fora: (f, l) => { const n = (f.photos || []).length - l.fotos; return n > 0 ? `${n} das ${(f.photos || []).length} fotos ${n === 1 ? "fica" : "ficam"} de fora` : ""; } },
-  cancelamento: { mostra: l => l.cancelamento,
+  cancelamento: { mostra: l => l.cancelamento, curto: () => "o cancelamento não aparece na ficha",
     t: () => "o cancelamento e a reposição não aparecem na ficha",
     d: "Pode preencher: fica guardado e aparece" },
-  chegada: { mostra: l => l.chegada,
+  chegada: { mostra: l => l.chegada, curto: () => "como chegar não aparece na ficha",
     t: () => "como chegar não aparece na ficha",
     d: "Pode preencher: fica guardado e aparece" },
 };
@@ -14790,9 +14960,13 @@ function avisoDoPlanoNaParte(f, id) {
   const pediu = ["completo", "premium"].includes(escolhido) && ordemDoPlano(escolhido) >= ordemDoPlano(acima.key);
   const manteve = escolhido === plano;
   const fora = parte.fora ? parte.fora(f, l) : "";
+  const aberto = state.regAvisoAberto === id;
+  const curto = pediu ? `Você pediu o plano ${nomeDoPlano(escolhido)}` : `No ${atual}, ${parte.curto(l)}`;
   return `
-    <div class="reg-plano-aviso${pediu ? " pediu" : manteve ? " manteve" : ""}" id="reg-plano-aviso">
-      <p class="reg-plano-aviso-t">${icon(pediu ? 'check' : 'olhoFechado', 16, pediu ? 'var(--green)' : '#8E6D25')}<span>No plano ${esc(atual)}, ${esc(parte.t(l))}.${fora ? ` <strong>${esc(fora.charAt(0).toUpperCase() + fora.slice(1))}.</strong>` : ""}</span></p>
+    <details class="reg-plano-aviso${pediu ? " pediu" : manteve ? " manteve" : ""}" id="reg-plano-aviso" data-aviso-parte="${id}" ${aberto ? "open" : ""}>
+      <summary class="reg-plano-aviso-linha">${icon(pediu ? 'check' : 'olhoFechado', 15, pediu ? 'var(--green)' : '#8E6D25')}<span class="reg-plano-aviso-curto">${esc(curto)}</span><span class="reg-plano-aviso-mais">${aberto ? "Fechar" : "Saiba mais"}</span></summary>
+      <div class="reg-plano-aviso-corpo">
+      <p class="reg-plano-aviso-t"><span>No plano ${esc(atual)}, ${esc(parte.t(l))}.${fora ? ` <strong>${esc(fora.charAt(0).toUpperCase() + fora.slice(1))}.</strong>` : ""}</span></p>
       ${pediu ? `
         <p class="reg-plano-aviso-s">Você pediu o plano ${esc(nomeDoPlano(escolhido))}. Ao salvar, o pedido vai para o GuiaTennis, que combina o valor com você pelo WhatsApp; até lá, a ficha aparece no ${esc(atual)}.</p>
         <button type="button" class="reg-plano-aviso-link" data-reg-plano-aviso="">Desfazer o pedido</button>`
@@ -14804,7 +14978,8 @@ function avisoDoPlanoNaParte(f, id) {
           <button type="button" class="cta-btn cta-primary" data-reg-plano-aviso="${acima.key}">Quero o ${esc(acima.nome)}</button>
           <button type="button" class="cta-btn cta-secondary" data-reg-plano-aviso="${plano}">Manter o ${esc(atual)}</button>
         </div>`}
-    </div>`;
+      </div>
+    </details>`;
 }
 // Mensagem pronta para combinar o plano pelo WhatsApp.
 function linkPlanoDaFicha(f, plano) {
@@ -14816,7 +14991,7 @@ function renderRegisterSheet() {
   const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
   window.__form = f;
   // Formulário novo (abriu agora ou é outra academia): começa na primeira parte.
-  if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; state.regPlanoTela = false; }
+  if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; state.regPlanoTela = false; state.regFaltaVisivel = false; state.regAvisoAberto = null; state.regPontoErro = ""; state.regDestaqueErro = ""; }
   const isEditing = !!f.__editingId;
   const parceiro = !isAdmin && !isEditing && !!contaAcademia;
   // Asterisco só para quem pede cadastro pelo site; o admin publica com o que tiver.
@@ -14884,6 +15059,7 @@ function renderRegisterSheet() {
 
         <h2 class="sheet-title display reg-titulo">${passo.titulo}</h2>
         <p class="subtitle reg-porque">${passo.porque}</p>
+        ${passo.id === "dados" || (obrigatorio && ["precos", "quadras", "contato"].includes(passo.id)) ? `<p class="reg-legenda">* Obrigatório</p>` : ""}
 
         <div class="reg-passo" data-passo="${passo.id}">
           ${passo.id === "quadras" ? "" : avisoDoPlanoNaParte(f, passo.id)}
@@ -14978,20 +15154,22 @@ function previaDaFicha(f) {
     </div>`;
 }
 
-// O que ainda falta, preso em cima dos botões (pedido do Breno em
-// 09/10/2026: "deixe o continuar no lado direito e um aviso do que falta
-// preencher"), como o "faltam 3 etapas" do anúncio do Airbnb: primeiro o
-// obrigatório (com *), depois as partes vazias; um toque leva até a parte.
+// O que falta, em cima dos botões. Mudou em 10/10/2026 (pedido do Breno:
+// "esse aviso deve aparecer quando for concluído sem as informações
+// obrigatórias, deixe uma descrição do que é o *"; antes, desde 09/10, ficava
+// sempre à vista com as partes vazias): só depois de tentar concluir sem o
+// obrigatório, só as partes obrigatórias, com a legenda do *. Como o "Revise
+// os campos obrigatórios" do Booking ao publicar. Um toque leva até a parte.
 function regAvisoDoQueFalta(f, i) {
-  const faltam = REG_PASSOS.map((x, k) => ({ x, k, obrig: regFaltas(f, x.id).length > 0 }))
-    .filter(({ x, obrig }) => x.id !== "revisar" && (obrig || !regPreenchido(f, x.id)))
-    .sort((a, b) => (b.obrig - a.obrig) || (a.k - b.k));
-  if (!faltam.length) return `<p class="reg-falta ok" id="reg-falta">${icon('check', 14, 'var(--green)')}<span>Todas as partes estão preenchidas.</span></p>`;
-  const mostra = faltam.slice(0, 3);
-  const nomes = mostra.map(({ x, k, obrig }) => `<button type="button" class="reg-falta-parte${obrig ? " obrig" : ""}${k === i ? " aqui" : ""}" data-reg-passo="${k}">${esc(x.t)}${obrig ? "*" : ""}</button>`);
-  const resto = faltam.length - mostra.length;
-  const lista = resto > 0 ? `${nomes.join(", ")} e mais ${resto}` : nomes.length > 1 ? `${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]}` : nomes[0];
-  return `<p class="reg-falta" id="reg-falta">${icon('info', 14, 'var(--muted)')}<span>Falta preencher: ${lista}</span></p>`;
+  if (!state.regFaltaVisivel) return "";
+  const faltam = REG_PASSOS.map((x, k) => ({ x, k })).filter(({ x }) => x.id !== "revisar" && regFaltas(f, x.id).length);
+  if (!faltam.length) return "";
+  const nomes = faltam.map(({ x, k }) => `<button type="button" class="reg-falta-parte obrig${k === i ? " aqui" : ""}" data-reg-passo="${k}">${esc(x.t)}*</button>`);
+  const lista = nomes.length > 1 ? `${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]}` : nomes[0];
+  return `<div class="reg-falta-caixa" id="reg-falta-caixa">
+      <p class="reg-falta" id="reg-falta">${icon('warning', 14, 'var(--red)')}<span>Para concluir, falta preencher: ${lista}</span></p>
+      <p class="reg-legenda">* Obrigatório: sem isso, a ficha não pode ser enviada.</p>
+    </div>`;
 }
 
 // Anda entre as partes. Para a frente, a parte obrigatória precisa estar
@@ -17585,9 +17763,13 @@ function attachEvents() {
     const quadras = {};
     QUADRA_COMBOS.forEach(q => { quadras[q.key] = (c.quadras && c.quadras[q.key]) || 0; });
     const integral = c.integral || c;
+    const temPonto = typeof c.lat === "number" && typeof c.lng === "number";
     window.__form = {
       __editingId: c.id,
       __plano: c.plano || "basico",
+      __lat: temPonto ? c.lat : null,
+      __lng: temPonto ? c.lng : null,
+      __pontoAtual: temPonto,
       name: c.name || "",
       address: c.address || c.endereco || "",
       numero: c.numero || "",
@@ -18195,7 +18377,27 @@ function attachEvents() {
     el.onclick = () => {
       const k = el.dataset.amenity;
       const f = window.__form;
+      const n = limiteDeComodidades(f);
+      if (n !== Infinity && !Array.isArray(f.__destaques)) f.__destaques = f.amenities.slice(0, n);
       f.amenities = f.amenities.includes(k) ? f.amenities.filter(x=>x!==k) : [...f.amenities, k];
+      // A nova entra entre as que aparecem enquanto houver vaga.
+      if (n !== Infinity && f.amenities.includes(k) && f.__destaques.length < n) f.__destaques.push(k);
+      ordenarDestaques(f);
+      state.regDestaqueErro = "";
+      render();
+    };
+  });
+  document.querySelectorAll(".reg-destaque").forEach(el => {
+    el.onclick = () => {
+      const f = window.__form;
+      const k = el.dataset.destaque;
+      const n = limiteDeComodidades(f);
+      ordenarDestaques(f);
+      state.regDestaqueErro = "";
+      if (f.__destaques.includes(k)) f.__destaques = f.__destaques.filter(x => x !== k);
+      else if (f.__destaques.length >= n) state.regDestaqueErro = `Já são ${n}. Toque numa escolhida para tirar e depois escolha outra.`;
+      else f.__destaques.push(k);
+      ordenarDestaques(f);
       render();
     };
   });
@@ -18223,6 +18425,8 @@ function attachEvents() {
   if (regEditar) regEditar.onclick = () => irParaPasso(0, false);
   const regSubmit = document.getElementById("register-submit");
   if (regSubmit) regSubmit.onclick = enviarFormulario;
+  const regPonto = document.getElementById("reg-ponto-buscar");
+  if (regPonto) regPonto.onclick = buscarPontoDaFicha;
   const regPlanoVoltar = document.getElementById("reg-plano-voltar");
   if (regPlanoVoltar) regPlanoVoltar.onclick = () => { state.regPlanoTela = false; render(); };
   document.querySelectorAll("[data-reg-plano-passo]").forEach(el => {
@@ -18240,9 +18444,18 @@ function attachEvents() {
       const plano = el.dataset.regPlanoAviso;
       if (plano) window.__form.__planoEscolhido = plano;
       else delete window.__form.__planoEscolhido;
+      // Escolheu: o aviso volta a ser uma linha. "Mudar de ideia" e
+      // "Desfazer" deixam aberto, com a escolha à vista.
+      if (plano) state.regAvisoAberto = null;
       render();
     };
   });
+  const avisoDoPlano = document.getElementById("reg-plano-aviso");
+  if (avisoDoPlano) avisoDoPlano.ontoggle = () => {
+    state.regAvisoAberto = avisoDoPlano.open ? avisoDoPlano.dataset.avisoParte : null;
+    const mais = avisoDoPlano.querySelector(".reg-plano-aviso-mais");
+    if (mais) mais.textContent = avisoDoPlano.open ? "Fechar" : "Saiba mais";
+  };
 
   const consentBox = document.getElementById("f-consent");
   if (consentBox) consentBox.onchange = (e) => { window.__form.consent = e.target.checked; };
@@ -18289,6 +18502,14 @@ function attachEvents() {
   document.querySelectorAll("[data-photo-idx]").forEach(el => {
     el.onclick = () => {
       window.__form.photos.splice(parseInt(el.dataset.photoIdx, 10), 1);
+      render();
+    };
+  });
+  document.querySelectorAll("[data-photo-capa]").forEach(el => {
+    el.onclick = () => {
+      const fotos = window.__form.photos;
+      const [foto] = fotos.splice(parseInt(el.dataset.photoCapa, 10), 1);
+      fotos.unshift(foto);
       render();
     };
   });
@@ -18345,7 +18566,15 @@ function compressImage(file, maxDimension, quality) {
 
 function bindFormField(id, key) {
   const el = document.getElementById(id);
-  if (el) el.oninput = (e) => { window.__form[key] = e.target.value; };
+  if (el) el.oninput = (e) => {
+    const f = window.__form;
+    f[key] = e.target.value;
+    // Mudou o endereço: o ponto que o mapa achou antes não vale mais (o
+    // que a academia arrastou fica, até ela pedir de novo).
+    if (["address", "numero", "bairro", "cidade"].includes(key) && !f.__pontoManual && typeof f.__lat === "number") {
+      Object.assign(f, { __lat: null, __lng: null, __pontoExato: false, __pontoAtual: false });
+    }
+  };
 }
 
 function bindPriceField(id, key) {
@@ -18542,6 +18771,9 @@ function enviarFormulario() {
     if (folha) folha.scrollTop = 0;
     return;
   }
+  // Faltando o obrigatório, o aviso vem antes de pedir nome e WhatsApp a
+  // quem não tem conta (10/10/2026).
+  if (faltaObrigatorio) { doRegisterSubmit(); return; }
   // Conta do GuiaTennis Parceiros já tem nome e WhatsApp: não pergunta de novo.
   if (isAdmin || f.__editingId || contaAcademia) doRegisterSubmit();
   else ensureVisitorThen(doRegisterSubmit);
@@ -18568,6 +18800,7 @@ async function doRegisterSubmit() {
       state.registerError = "O nome não pode ficar em branco.";
       state.registerStatus = "error";
       state.regPasso = 0;
+      state.regFaltaVisivel = true;
       render();
       return;
     }
@@ -18581,7 +18814,9 @@ async function doRegisterSubmit() {
     if (endereco) payload.endereco = endereco; else delete payload.endereco;
     const antes = [...state.allCourts, ...(state.pending || [])].find(c => c.id === f.__editingId) || {};
     const mudouEndereco = ["address", "numero", "bairro", "cidade"].some(k => (antes[k] || "") !== (f[k] || ""));
-    if (mudouEndereco || typeof antes.lat !== "number" || typeof antes.lng !== "number") {
+    if (typeof f.__lat === "number" && typeof f.__lng === "number" && !f.__pontoAtual) {
+      payload.lat = f.__lat; payload.lng = f.__lng;
+    } else if (mudouEndereco || typeof antes.lat !== "number" || typeof antes.lng !== "number") {
       try {
         const geo = await localizarAcademia({ ...antes, address: f.address, numero: f.numero, bairro: f.bairro, cidade: f.cidade, endereco: endereco || antes.endereco });
         payload.lat = geo.lat; payload.lng = geo.lng;
@@ -18636,6 +18871,7 @@ async function doRegisterSubmit() {
   if (missing.length) {
     state.registerError = `Preencha: ${missing.join(", ")}.`;
     state.registerStatus = "error";
+    state.regFaltaVisivel = true;
     irParaFalta(f);
     render();
     return;
@@ -18647,7 +18883,8 @@ async function doRegisterSubmit() {
     // Sem achar no mapa, o cadastro entra assim mesmo: a coordenada é
     // buscada de novo na aprovação e quando o admin abre o site.
     let geo = { lat: null, lng: null };
-    try {
+    if (typeof f.__lat === "number" && typeof f.__lng === "number") geo = { lat: f.__lat, lng: f.__lng };
+    else try {
       const achado = await geocodeFormAddress(f);
       if (!achado.grosso) geo = achado;
     } catch (e) { /* segue sem coordenada */ }

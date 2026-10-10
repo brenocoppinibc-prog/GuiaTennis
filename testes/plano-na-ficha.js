@@ -9,6 +9,8 @@ const { abrir, ok, irParte } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
 const botoes = (page) => page.evaluate(() => [...document.querySelectorAll('.reg-rodape-dir .cta-btn')].map(b => b.id + (b.classList.contains('cta-primary') ? '*' : '')).join(','));
+// O aviso do plano fica fechado numa linha (10/10/2026): abre para ler e escolher.
+const abrirAviso = (page) => page.evaluate(() => { const d = document.getElementById('reg-plano-aviso'); if (d) d.open = true; });
 async function editarFicha(page) {
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
@@ -20,11 +22,11 @@ async function editarFicha(page) {
   await page.waitForTimeout(400);
   await editarFicha(page);
   ok((await botoes(page)) === 'register-submit,reg-continuar*', 'na edição, "Continuar" fica à direita e em destaque; "Salvar alterações" ao lado — ' + await botoes(page));
-  ok((await texto(page, '#reg-falta')) === 'Falta preencher: Fotos', 'em cima dos botões, o aviso do que falta preencher — ' + await texto(page, '#reg-falta'));
-  await page.click('#reg-falta [data-reg-passo]');
-  await page.waitForTimeout(250);
-  ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo')?.dataset.passo === 'fotos'), 'um toque no que falta leva até a parte');
-  ok((await texto(page, '#reg-plano-aviso')).startsWith('No plano Básico, a ficha mostra as 3 primeiras fotos.'), 'nas fotos, o aviso do que o Básico mostra — ' + await texto(page, '#reg-plano-aviso'));
+  ok(!(await page.$('#reg-falta')), 'sem tentar concluir, nada de "Falta preencher" (10/10/2026)');
+  await irParte(page, 'fotos');
+  ok((await texto(page, '#reg-plano-aviso')) === 'No Básico, a ficha mostra 3 fotos Saiba mais', 'nas fotos, o aviso do Básico numa linha, com "Saiba mais" — ' + await texto(page, '#reg-plano-aviso'));
+  await abrirAviso(page);
+  ok((await texto(page, '#reg-plano-aviso')).includes('No plano Básico, a ficha mostra as 3 primeiras fotos.'), 'aberto, explica o que o Básico mostra — ' + await texto(page, '#reg-plano-aviso'));
   await irParte(page, 'revisar');
   ok((await botoes(page)) === 'reg-editar,register-submit*' && !(await page.$('#reg-falta')), 'na revisão, "Editar" e "Confirmar e salvar", em destaque (a revisão já mostra o que falta) — ' + await botoes(page));
 
@@ -32,6 +34,7 @@ async function editarFicha(page) {
   const avisos = {};
   for (const parte of ['dados', 'precos', 'quadras', 'contato', 'fotos', 'horario', 'cancelamento', 'chegada']) {
     await irParte(page, parte);
+    await abrirAviso(page);
     avisos[parte] = await texto(page, '#reg-plano-aviso');
   }
   ok(!avisos.dados && !avisos.precos && !avisos.horario, 'nome, preço e horário aparecem em todo plano: sem aviso');
@@ -43,6 +46,7 @@ async function editarFicha(page) {
   ok(avisos.chegada.includes('Quero o Completo') && avisos.chegada.includes('Manter o Básico'), 'e dá a escolha: "Quero o Completo" ou "Manter o Básico"');
   await irParte(page, 'quadras');
   for (const k of ['wifi', 'vestiario', 'loja']) await page.click(`.reg-amenity[data-amenity="${k}"]`);
+  await abrirAviso(page);
   ok((await texto(page, '#reg-plano-aviso')).includes('2 das 5 que você marcou ficam de fora') && await page.evaluate(() => document.querySelectorAll('.reg-amenity:disabled').length === 0),
     'marcou mais do que o Básico mostra: o aviso conta o que fica de fora, sem travar — ' + await texto(page, '#reg-plano-aviso'));
   ok(await page.evaluate(() => { const a = document.getElementById('reg-plano-aviso'), l = [...document.querySelectorAll('#register-overlay .field-label')].find(x => x.innerText === 'Comodidades'); return !!a && !!l && (l.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING); }),
@@ -52,9 +56,12 @@ async function editarFicha(page) {
   await irParte(page, 'contato');
   await page.fill('#f-instagram', '@soaula');
   await page.evaluate(() => { window.__form.instagram = '@soaula'; render(); });
+  await abrirAviso(page);
   ok((await texto(page, '#reg-plano-aviso')).includes('O Instagram que você informou fica de fora'), 'no contato, o aviso diz que o Instagram fica de fora');
   await page.click('[data-reg-plano-aviso="completo"]');
   await page.waitForTimeout(150);
+  ok((await texto(page, '#reg-plano-aviso')) === 'Você pediu o plano Completo Saiba mais', 'escolheu: o aviso volta a ser uma linha — ' + await texto(page, '#reg-plano-aviso'));
+  await abrirAviso(page);
   ok((await texto(page, '#reg-plano-aviso')).includes('Você pediu o plano Completo') && await page.isVisible('[data-reg-plano-aviso=""]'), '"Quero o Completo" vira o pedido, com "Desfazer o pedido"');
   await irParte(page, 'chegada');
   ok((await texto(page, '#reg-plano-aviso')).includes('Você pediu o plano Completo'), 'a escolha vale nas outras partes também');
@@ -70,13 +77,15 @@ async function editarFicha(page) {
   await editarFicha(page);
   await irParte(page, 'contato');
   await page.evaluate(() => { window.__form.instagram = '@soaula'; render(); });
+  await abrirAviso(page);
   await page.click('[data-reg-plano-aviso="basico"]');
   await page.waitForTimeout(150);
+  await abrirAviso(page);
   ok(await page.evaluate(() => document.getElementById('reg-plano-aviso').classList.contains('manteve')) && (await texto(page, '#reg-plano-aviso')).includes('Mudar de ideia') && !(await page.$('#reg-plano-aviso .cta-btn')),
     '"Manter o Básico" encolhe o aviso, com "Mudar de ideia"');
   await page.click('[data-reg-plano-aviso=""]');
   await page.waitForTimeout(150);
-  ok(await page.isVisible('[data-reg-plano-aviso="completo"]'), '"Mudar de ideia" traz a escolha de volta');
+  ok(await page.isVisible('[data-reg-plano-aviso="completo"]'), '"Mudar de ideia" traz a escolha de volta, com o aviso aberto');
   await page.click('[data-reg-plano-aviso="basico"]');
   await page.click('#register-submit');
   await page.waitForTimeout(900);

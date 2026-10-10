@@ -22,8 +22,16 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 09/10/2026
+**Atualizado em:** 10/10/2026
 
+> **Estado (10/10/2026):** com prints do cadastro no celular, o Breno
+> pediu fotos maiores, o aviso do plano menor (abrindo ao tocar), o "Falta
+> preencher" só ao concluir sem o obrigatório (com a legenda do *), o
+> ponto no mapa certo pelo número da rua e escolher quais comodidades
+> aparecem no Básico (regra 88, sem SQL). Teste novo:
+> `fotos-ponto-e-aviso.js`. Ao todo: **1.237 verificações, nenhuma
+> falha** nos 44 arquivos do navegador, e 311 no `banco-emails.py`.
+>
 > **Estado (09/10/2026, madrugada):** o Breno pediu um lembrete "aos
 > usuários que não entraram a 3 meses… mesmo sem marcar avisos" e, para o
 > Parceiros, "algo para relembrar dos números… mês a mês". Perguntado,
@@ -1577,10 +1585,11 @@ cobra taxa e não fica no meio** da negociação.
     formulário da ficha: "Voltar" à esquerda; à direita "Salvar
     alterações" (na edição, sem destaque) e **"Continuar" por último, em
     destaque**; na última parte, só o envio, em destaque. Em cima dos
-    botões, `regAvisoDoQueFalta`: "Falta preencher: Fotos, Horário e
-    Como chegar" (o obrigatório primeiro, com *, em vermelho; até 3 nomes e
-    "e mais N"); cada nome leva à parte; tudo preenchido, "Todas as partes
-    estão preenchidas." Na Revisão não aparece (ela já mostra cada parte).
+    botões, `regAvisoDoQueFalta`. **Mudou em 10/10/2026 (regra 88):** só
+    aparece depois de tentar concluir sem o obrigatório, só com as partes
+    obrigatórias (com *) e a legenda "* Obrigatório"; antes ficava sempre à
+    vista, com as partes vazias. Cada nome leva à parte. Na Revisão não
+    aparece (ela já mostra cada parte).
 82. **O plano limita o que a academia faz e o que aparece; a ficha avisa
     ali mesmo** (pedido de 09/10/2026: "ao uma academia mudar do Premium
     para o completo precisa limitar as ações dela e as informações que
@@ -1739,6 +1748,50 @@ cobra taxa e não fica no meio** da negociação.
       mais receber", o chat, a Ajuda ("O que aparece em Desempenho?"),
       Termos e Privacidade.
     Testes: `testes/volta-e-resumo.js` e a seção 27 do `banco-emails.py`.
+88. **Cadastro da ficha: fotos grandes, aviso do plano numa linha, o que
+    falta só ao concluir, o ponto no mapa e as comodidades do Básico**
+    (prints de 10/10/2026, cinco pedidos):
+    - **"quero que as fotos apareçam maiores"** (`regFotosHtml`), como o
+      "Fotos do anúncio" do Airbnb: a primeira ocupa a largura, marcada
+      "Capa"; as outras em duas colunas (4:3), com "Usar como capa" (põe em
+      primeiro) e o ✕ maior. No plano que mostra menos fotos, as de fora
+      dizem "Fora da ficha no Básico" em cima da própria foto.
+    - **"deixe esse aviso menor e se clicar explica mais em todas as
+      abas"** (`avisoDoPlanoNaParte`, regra 82): o aviso do plano é um
+      `<details>` fechado numa linha ("No Básico, a ficha mostra 3 fotos ·
+      Saiba mais", `PARTES_DO_PLANO.curto`); aberto, a explicação de antes e
+      "Quero o Completo"/"Manter o Básico". Escolher fecha de novo ("Você
+      pediu o plano Completo"); `state.regAvisoAberto` guarda qual está
+      aberto entre um desenho e outro. Vale em Quadras, Contato, Fotos,
+      Cancelamento e Como chegar.
+    - **"esse aviso deve aparecer quando for concluído sem as informações
+      obrigatórias, deixe uma descrição do que é o *"** (regra 81): "Para
+      concluir, falta preencher: Nome e endereço*, …" só depois de tocar em
+      concluir sem o obrigatório (`state.regFaltaVisivel`), com "*
+      Obrigatório: sem isso, a ficha não pode ser enviada."; e "*
+      Obrigatório" embaixo do título das partes com campo obrigatório.
+      Sem conta, o aviso vem antes de pedir nome e WhatsApp.
+    - **"a localização no mapa não está exata conforme o número da rua"**:
+      (a) `geocodeAddress` pede 5 resultados com o endereço detalhado e fica
+      com o que tem o **mesmo número da porta** (`exato`); sem ele, o
+      primeiro. `geocodeFormAddress` tenta a porta **antes do CEP** (o
+      centro do CEP pode cobrir a rua inteira). (b) Em Nome e endereço,
+      **"Ponto no mapa"** (`regPontoHtml`, como o "O alfinete está no lugar
+      certo?" do Airbnb e do Google Business Profile): "Ver no mapa" acha o
+      ponto pelo endereço e mostra um mapa com o alfinete para **arrastar**
+      ou tocar no lugar certo (`moverPontoDaFicha`); na edição, começa no
+      ponto de hoje. O ponto conferido vai para o banco no envio e na
+      edição (sem procurar de novo); mudar o endereço apaga o ponto achado,
+      mas não o arrastado ("Achar de novo pelo endereço" refaz).
+    - **"em comodidades… dê a opção para escolher quais serão
+      apresentadas"** (`regDestaquesHtml`), como as "Principais
+      competências" do LinkedIn: com mais comodidades marcadas do que o
+      plano mostra, "Quais aparecem na ficha no plano Básico": toque para
+      escolher até 3 ("3 de 3 escolhidas"; com 3, pede para tirar uma
+      antes). As escolhidas vão para o começo de `amenities` (a ficha
+      mostra as primeiras, `aplicarPlano`); nada muda no banco.
+    Teste: `testes/fotos-ponto-e-aviso.js` (e o `plano-na-ficha.js`
+    ajustado).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2725,7 +2778,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2864,6 +2917,14 @@ as 133 do `banco-acesso.py` no banco e login locais.
   pedido pelo site sem selo e "Confirmar e enviar"; admin com "Confirmar e
   publicar". O `painel-admin.js` confere a seção Contas excluídas (regra
   83).
+- `fotos-ponto-e-aviso.js` — regra 88: sem "Falta preencher" antes de
+  concluir e a legenda do *; o ponto de hoje no mapa da edição, arrastar e
+  salvar; as fotos (capa na largura, duas colunas, "Fora da ficha no
+  Básico", "Usar como capa"); o aviso do plano numa linha em cada aba e
+  aberto por "Saiba mais"; escolher as 3 comodidades e salvar; pedido pelo
+  site: o aviso só do obrigatório ao concluir, que some ao preencher; "Ver
+  no mapa", arrastar, mudar o número sem perder o ponto e enviar com ele;
+  o resultado com o número da porta vence o meio da rua e o CEP.
 - `volta-e-resumo.js` — regras 86 e 87: abrir o site com a conta anota a
   visita (uma vez por abertura; banco antigo, em silêncio); o lembrete
   ligado em Minha conta, desligar e salvar; banco sem a coluna (não
@@ -3380,10 +3441,10 @@ c9ade31 Configuração de publicação do Netlify
 
 **Resumo (09/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde e sem conflito, com tudo até a
-**regra 87** (lembrete da ficha parada, lembrete de volta do jogador e
-resumo do mês do Parceiros, 09/10 à noite). A prévia do Netlify está atualizada. O merge espera o Breno
-dizer "pode subir" (não lembrar a toda hora). Os testes de 09/10: **1.201
-verificações, nenhuma falha**, nos 43 arquivos do navegador (comando na
+**regra 88** (10/10: fotos, aviso do plano, o que falta, o ponto no mapa
+e as comodidades do Básico). A prévia do Netlify está atualizada. O merge espera o Breno
+dizer "pode subir" (não lembrar a toda hora). Os testes de 10/10: **1.237
+verificações, nenhuma falha**, nos 44 arquivos do navegador (comando na
 seção 6) e **311 no `banco-emails.py`** (Postgres local; se ele tiver
 caído, `pg_ctl` como na seção 6, "Postgres na máquina", com os dados em
 `/var/lib/postgresql/gt`). O chat anterior deixou de acompanhar o PR (sem
@@ -3472,6 +3533,11 @@ regra 75; o merge espera o Breno dizer "pode subir". Pendente:
    days' where email = '<conta de teste>'; select
    preparar_lembretes_de_volta();` e `select
    preparar_resumos_do_mes('2026-11-02');` (o resumo de outubro).
+   E (regra 88, 10/10): no cadastro pelo celular, as fotos grandes com a
+   capa; o aviso do plano numa linha com "Saiba mais"; concluir sem o
+   obrigatório para ver o "Falta preencher"; em Nome e endereço, "Ver no
+   mapa", arrastar o alfinete até a entrada e salvar (conferir o ponto na
+   ficha); com mais de 3 comodidades no Básico, escolher as 3 que aparecem.
 3. **Preço dos planos Completo e Premium** (o Breno define).
 4. **Depois do merge:** enviar o `sitemap.xml` no Google Search Console;
    criar o acesso de cada academia e mandar a mensagem; trocar a foto do

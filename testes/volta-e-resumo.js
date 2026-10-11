@@ -46,7 +46,27 @@ const daAna = (page) => page.evaluate(() => window.__db.jogadores.find(j => j.us
     texto: document.getElementById('jogador-overlay')?.innerText || '',
   }));
   ok(cadastro.caixas.length === 3 && !cadastro.caixas.includes('lembrete_de_volta'), 'o cadastro mostra só os 3 avisos que começam desligados');
-  ok(cadastro.texto.includes('Se você ficar 3 meses sem entrar, mandamos um lembrete com as academias novas da sua cidade. Dá para desligar em Minha conta.'), 'e diz que o lembrete vem ligado e onde desligar');
+  ok(!cadastro.texto.includes('Se você ficar 3 meses sem entrar') && await page.evaluate(() => {
+    const nota = document.querySelector('#jogador-overlay .jog-nota-conta'), botao = document.getElementById('jog-criar');
+    return !!nota && nota.innerText === 'A conta recebe lembretes ocasionais, que você desliga em Minha conta.'
+      && !!(botao.compareDocumentPosition(nota) & Node.DOCUMENT_POSITION_FOLLOWING) && parseFloat(getComputedStyle(nota).fontSize) < 12;
+  }), 'o lembrete fica implícito: uma nota pequena embaixo de "Criar conta" (11/10/2026)');
+
+  // Sem o aceite (11/10/2026): o aviso diz o nome dos dois textos e some ao marcar a caixa.
+  const erro = () => page.evaluate(() => (document.querySelector('#jogador-overlay .form-error')?.innerText || '').trim());
+  await page.click('#jog-criar');
+  await page.waitForTimeout(150);
+  ok((await erro()) === 'Falta o nome. Aceite os Termos de Uso e a Política de Privacidade.', 'sem nome e sem aceite: os dois no aviso — ' + await erro());
+  await page.check('#jog-aceite');
+  ok((await erro()) === 'Falta o nome.', 'marcou o aceite: sai só essa parte do aviso, na hora — ' + await erro());
+  await page.fill('#jog-nome', 'Nina Nova');
+  await page.uncheck('#jog-aceite');
+  await page.click('#jog-criar');
+  await page.waitForTimeout(150);
+  ok((await erro()) === 'Aceite os Termos de Uso e a Política de Privacidade.', 'só falta o aceite: "Aceite os Termos de Uso e a Política de Privacidade." — ' + await erro());
+  await page.check('#jog-aceite');
+  ok((await erro()) === '' && await page.evaluate(() => window.__jog.aceite === true && document.getElementById('jog-nome').value === 'Nina Nova'),
+    'marcou: o aviso some na hora, sem apagar o que foi digitado');
   await browser.close();
 
   // ---- o link do e-mail para parar só o lembrete ----

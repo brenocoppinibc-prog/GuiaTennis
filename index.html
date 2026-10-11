@@ -2060,6 +2060,7 @@
   .reg-falta-caixa { padding: 10px 12px; border: 1px solid rgba(192,57,43,0.35); border-radius: 12px; background: rgba(192,57,43,0.06); }
   .reg-falta-caixa .reg-falta { color: var(--text); }
   .reg-legenda { margin: 4px 0 0; font-size: 12.5px; color: var(--muted); }
+  .jog-nota-conta { margin: 8px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--muted); text-align: center; }
   .reg-falta-caixa .reg-legenda { margin: 6px 0 0 21px; }
   .reg-destaques { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
   .reg-destaques .field-label { margin-top: 0; }
@@ -6024,7 +6025,7 @@ async function salvarDadosConta() {
   if (!erro && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((f.email || "").trim())) erro = "Confira o e-mail.";
   else if (!erro && cnpj && cnpj.length !== 14) erro = "O CNPJ tem 14 números. Se preferir, deixe em branco.";
   else if (!erro && pedirSenha && erroDaSenha(f.senha, f.senha2, f.email)) { erro = erroDaSenha(f.senha, f.senha2, f.email); f.senha2 = ""; }
-  else if (!erro && pedirAceite && !f.aceite) erro = "Falta aceitar os Termos de Uso e a Política de Privacidade.";
+  else if (!erro && pedirAceite && !f.aceite) erro = "Aceite os Termos de Uso e a Política de Privacidade.";
   if (erro) { state.contaErro = erro; render(); if (!f.senha2 && pedirSenha) focarDepoisDaSenha("conta-senha", "conta-senha2", erro); return; }
   state.contaErro = "";
   state.contaSalvando = true;
@@ -6208,7 +6209,10 @@ function ligarEventosConta() {
     el.oninput = (e) => { dadosContaForm()[el.dataset.campo] = e.target.value; };
   });
   document.querySelectorAll(".conta-check").forEach(el => {
-    el.onchange = (e) => { dadosContaForm()[el.dataset.campo] = e.target.checked; };
+    el.onchange = (e) => {
+      dadosContaForm()[el.dataset.campo] = e.target.checked;
+      if (el.dataset.campo === "aceite" && e.target.checked) tirarAvisoDoAceite("contaErro", el.closest(".pc-card") || document.getElementById("parceiros"));
+    };
   });
   document.querySelectorAll(".conta-cargo").forEach(el => {
     el.onclick = () => { dadosContaForm().cargo = el.dataset.cargo; render(); };
@@ -8703,7 +8707,7 @@ async function criarContaDeParceiro() {
   if (falta) return erro(falta);
   const errSenha = erroDaSenha(f.senha, f.senha2, email);
   if (errSenha) { f.senha2 = ""; erro(errSenha); focarDepoisDaSenha("pc-conta-senha", "pc-conta-senha2", errSenha); return; }
-  if (!f.aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.");
+  if (!f.aceite) return erro("Aceite os Termos de Uso e a Política de Privacidade.");
   state.pcContaErro = "";
   state.pcContaSalvando = true;
   render();
@@ -8734,7 +8738,7 @@ async function ativarParceirosDoJogador() {
   const erro = (t) => { state.pcContaErro = t; state.pcContaSalvando = false; render(); };
   const falta = erroDoContato(f);
   if (falta) return erro(falta);
-  if (!f.aceite) return erro("Falta aceitar os Termos de Uso e a Política de Privacidade.");
+  if (!f.aceite) return erro("Aceite os Termos de Uso e a Política de Privacidade.");
   state.pcContaErro = "";
   state.pcContaSalvando = true;
   render();
@@ -9044,7 +9048,10 @@ function ligarEventosParceiros() {
     el.oninput = (e) => { (window.__pcConta || (window.__pcConta = {}))[el.dataset.campo] = e.target.value; };
   });
   const pcAceite = document.getElementById("pc-conta-aceite");
-  if (pcAceite) pcAceite.onchange = (e) => { (window.__pcConta || (window.__pcConta = {})).aceite = e.target.checked; };
+  if (pcAceite) pcAceite.onchange = (e) => {
+    (window.__pcConta || (window.__pcConta = {})).aceite = e.target.checked;
+    if (e.target.checked) tirarAvisoDoAceite("pcContaErro", "#parceiros");
+  };
   const pcTermos = document.getElementById("pc-conta-termos");
   if (pcTermos) pcTermos.onclick = () => { state.showTerms = true; render(); };
   const pcPrivacidade = document.getElementById("pc-conta-privacidade");
@@ -10060,13 +10067,13 @@ function renderJogadorSheet() {
     <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
     <p class="field-label">Quero receber por e-mail</p>
     ${avisos}
-    <p class="footnote" style="margin:2px 0 8px">Se você ficar 3 meses sem entrar, mandamos um lembrete com as academias novas da sua cidade. Dá para desligar em Minha conta.</p>
     <label class="consent-row">
       <input type="checkbox" id="jog-aceite" ${f.aceite ? "checked" : ""} />
       <span>Li e concordo com os <button type="button" class="inline-link" id="jog-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="jog-privacidade">Política de Privacidade</button>.</span>
     </label>
     ${erro}
-    <button type="button" class="cta-btn cta-primary" id="jog-criar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Criando") || "Criar conta"}</button>`;
+    <button type="button" class="cta-btn cta-primary" id="jog-criar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Criando") || "Criar conta"}</button>
+    <p class="jog-nota-conta">A conta recebe lembretes ocasionais, que você desliga em Minha conta.</p>`;
   if (tela === "conta" && jogador) miolo = `
     <p class="sheet-title display">Minha conta</p>
     <p class="subtitle" style="margin-top:4px">${esc(jogador.email || "")}${jogador.email_confirmado_em ? ` · ${icon('check', 13, 'var(--green)')} confirmado` : ""}</p>
@@ -10425,8 +10432,11 @@ async function criarContaJogador() {
   const falta = [];
   if (String(f.nome || "").trim().length < 3) falta.push("o nome");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) falta.push("um e-mail válido");
-  if (!f.aceite) falta.push("o aceite dos Termos");
-  if (falta.length) { state.jogadorErro = `Falta ${listaPt(falta)}.`; render(); return; }
+  // Sem o aceite, o aviso diz o nome dos dois textos (pedido do Breno em
+  // 11/10/2026: "quero que apareça, aceite os termos de uso e política de
+  // privacidade").
+  const semAceite = !f.aceite ? "Aceite os Termos de Uso e a Política de Privacidade." : "";
+  if (falta.length || semAceite) { state.jogadorErro = [falta.length ? `Falta ${listaPt(falta)}.` : "", semAceite].filter(Boolean).join(" "); render(); return; }
   const errSenha = erroDaSenha(f.senha, f.senha2, email);
   if (errSenha) { f.senha2 = ""; state.jogadorErro = errSenha; render(); focarDepoisDaSenha("jog-senha", "jog-senha2", errSenha); return; }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
@@ -10839,7 +10849,10 @@ function ligarEventosJogador() {
     el.onchange = (e) => { window.__jog = { ...(window.__jog || {}), [el.dataset.campo]: e.target.checked }; };
   });
   const aceite = document.getElementById("jog-aceite");
-  if (aceite) aceite.onchange = (e) => { window.__jog = { ...(window.__jog || {}), aceite: e.target.checked }; };
+  if (aceite) aceite.onchange = (e) => {
+    window.__jog = { ...(window.__jog || {}), aceite: e.target.checked };
+    if (e.target.checked) tirarAvisoDoAceite("jogadorErro", "#jogador-overlay");
+  };
   const termos = document.getElementById("jog-termos");
   if (termos) termos.onclick = () => { state.showTerms = true; render(); };
   const priv = document.getElementById("jog-privacidade");
@@ -18562,6 +18575,20 @@ function compressImage(file, maxDimension, quality) {
     };
     reader.readAsDataURL(file);
   });
+}
+
+// Marcou o aceite: o aviso que só pedia o aceite some sem redesenhar a tela
+// (o que já foi digitado e o foco ficam); se pedia mais coisas, tira só a
+// parte do aceite.
+function tirarAvisoDoAceite(chave, onde) {
+  const t = state[chave] || "";
+  if (!t.includes("Termos de Uso")) return;
+  state[chave] = t.replace(/\s*Aceite os Termos de Uso e a Política de Privacidade\./, "").trim();
+  const raiz = typeof onde === "string" ? document.querySelector(onde) : onde;
+  const caixa = raiz && raiz.querySelector(".form-error");
+  if (!caixa) return;
+  if (!state[chave]) caixa.remove();
+  else caixa.lastChild.textContent = " " + state[chave];
 }
 
 function bindFormField(id, key) {

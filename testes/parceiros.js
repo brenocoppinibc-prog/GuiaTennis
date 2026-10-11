@@ -158,7 +158,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.fill('#pc-conta-senha2', 'senhaforte1');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .form-error')).includes('aceitar os Termos'), 'sem o aceite: avisa');
+  ok((await texto(page, '#parceiros .form-error')).includes('Aceite os Termos de Uso e a Política de Privacidade.'), 'sem o aceite: avisa com o nome dos dois textos');
   ok(!(await page.$('#pc-conta-novidades')) && !(await texto(page, '#parceiros')).includes('Quero receber por e-mail'), 'sem a caixa de receber e-mail (o relatório do mês é do Premium)');
   await page.check('#pc-conta-aceite');
   await page.click('#pc-criar-conta');

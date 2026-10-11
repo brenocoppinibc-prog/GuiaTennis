@@ -101,7 +101,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   await page.fill('#conta-senha2', 'senhanova1');
   await page.click('#conta-salvar-dados');
   await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .form-error')).includes('aceitar os Termos'), 'sem o aceite: avisa');
+  ok((await texto(page, '#parceiros .form-error')).includes('Aceite os Termos de Uso e a Política de Privacidade.'), 'sem o aceite: avisa com o nome dos dois textos');
   await page.check('#parceiros .conta-check[data-campo="aceite"]');
   await page.click('#conta-salvar-dados');
   await page.waitForTimeout(900);

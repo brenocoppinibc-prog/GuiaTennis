@@ -22,8 +22,15 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 10/10/2026
+**Atualizado em:** 11/10/2026
 
+> **Estado (11/10/2026):** com prints, o Breno pediu a nota do lembrete
+> no Criar conta "mais implícita" (regra 86: uma linha pequena embaixo do
+> botão) e o aviso do aceite com "Aceite os Termos de Uso e a Política de
+> Privacidade", que agora some ao marcar a caixa (regra 89). Ao todo:
+> **1.241 verificações, nenhuma falha** nos 44 arquivos do navegador, e
+> 311 no `banco-emails.py`.
+>
 > **Estado (10/10/2026):** com prints do cadastro no celular, o Breno
 > pediu fotos maiores, o aviso do plano menor (abrindo ao tocar), o "Falta
 > preencher" só ao concluir sem o obrigatório (com a legenda do *), o
@@ -1718,7 +1725,11 @@ cobra taxa e não fica no meio** da negociação.
       exceção da regra 23). Aparece em Minha conta › Avisos por e-mail
       ("Lembrete se eu ficar 3 meses sem entrar…", `soNaConta` em
       `AVISOS_JOGADOR`, só se o banco tem a coluna); no cadastro, não é
-      caixa: uma nota diz que vem ligado e onde desligar. Privacidade: a
+      caixa: desde 11/10/2026 (print: "isso pode ficar mais implícito?"),
+      só uma nota pequena embaixo de "Criar conta" ("A conta recebe
+      lembretes ocasionais, que você desliga em Minha conta.",
+      `.jog-nota-conta`), como as letras miúdas do Booking e do Airbnb
+      sobre os e-mails da conta; antes, um parágrafo entre os avisos. Privacidade: a
       data da última visita com a conta aberta e o lembrete.
     Testes: `testes/volta-e-resumo.js` e a seção 26 do `banco-emails.py`.
 87. **Resumo do mês por e-mail para quem administra a academia** (pedido de
@@ -1792,6 +1803,17 @@ cobra taxa e não fica no meio** da negociação.
       mostra as primeiras, `aplicarPlano`); nada muda no banco.
     Teste: `testes/fotos-ponto-e-aviso.js` (e o `plano-na-ficha.js`
     ajustado).
+89. **O aceite dos Termos com o nome dos dois textos, e o aviso some ao
+    marcar** (print de 11/10/2026, com a caixa marcada e "Falta o aceite
+    dos Termos." ainda na tela: "quero que apareça, aceite os termos de
+    uso e política de privacidade"). O aviso era de um toque anterior em
+    "Criar conta" e só saía no próximo. Agora: sem o aceite, o aviso diz
+    **"Aceite os Termos de Uso e a Política de Privacidade."** (no Criar
+    conta do jogador, junto do que mais faltar: "Falta o nome. Aceite os
+    Termos…"; no cadastro e no primeiro acesso do Parceiros, o mesmo
+    texto); marcar a caixa tira essa parte do aviso na hora, sem
+    redesenhar a tela (`tirarAvisoDoAceite`). Testes:
+    `volta-e-resumo.js`, `parceiros.js` e `acesso-academia.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3441,9 +3463,10 @@ c9ade31 Configuração de publicação do Netlify
 
 **Resumo (09/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde e sem conflito, com tudo até a
-**regra 88** (10/10: fotos, aviso do plano, o que falta, o ponto no mapa
-e as comodidades do Básico). A prévia do Netlify está atualizada. O merge espera o Breno
-dizer "pode subir" (não lembrar a toda hora). Os testes de 10/10: **1.237
+**regra 89** (10/10: fotos, aviso do plano, o que falta, o ponto no mapa
+e as comodidades do Básico; 11/10: a nota do lembrete e o aviso do
+aceite). A prévia do Netlify está atualizada. O merge espera o Breno
+dizer "pode subir" (não lembrar a toda hora). Os testes de 11/10: **1.241
 verificações, nenhuma falha**, nos 44 arquivos do navegador (comando na
 seção 6) e **311 no `banco-emails.py`** (Postgres local; se ele tiver
 caído, `pg_ctl` como na seção 6, "Postgres na máquina", com os dados em

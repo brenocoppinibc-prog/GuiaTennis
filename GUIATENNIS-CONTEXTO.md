@@ -2634,7 +2634,9 @@ colocados pelo Breno). Aqui:
   do SQL; aí ele lê sem as colunas novas em vez de cair no `*`, que o
   visitante não pode ler (o site ficaria vazio).
 
-- **Postgres na máquina:** `/usr/lib/postgresql/16/bin`, como usuário
+- **Postgres na máquina** (desde 10/10/2026, o passo a passo inteiro e o
+  SQL de base estão em `testes/banco-local-base.sql`):
+  `/usr/lib/postgresql/16/bin`, como usuário
   `postgres`, com os dados em `/var/lib/postgresql/…` (no scratchpad o
   ambiente fecha as permissões de tempos em tempos e o Postgres cai):
   `initdb -D <dir>/data -A trust -U postgres` e
@@ -3477,7 +3479,52 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
-**Resumo (09/10/2026, ao trocar de chat).** O PR #5 (branch
+**Resumo (11/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 90** (último commit: `09c74e1`, mais este documento). A
+prévia do Netlify está atualizada e o "Banco de dados" do PR aplicou todo
+o SQL no banco de teste (até `20261009150000_resumo_do_mes`). O merge
+espera o Breno dizer **"pode subir"** (não lembrar a toda hora). Testes de
+11/10: **1.243 verificações, nenhuma falha**, nos 44 arquivos do navegador
+(comando na seção 6) e **311 no `banco-emails.py`**. O chat anterior
+**deixou de acompanhar o PR** (sem conferências marcadas, sem inscrição):
+no chat novo, voltar a acompanhar o PR #5.
+
+O que entrou de 09/10 (noite) a 11/10:
+- **Token do Supabase feito** (09/10): segredo `SUPABASE_ACCESS_TOKEN` no
+  GitHub, token novo com permissão limitada (Auth Config Read-write e o
+  administrador do projeto, nos dois projetos, sem validade). O modelo do
+  e-mail do código já foi trocado no Supabase teste; o de verdade troca
+  sozinho no merge.
+- **Regra 85:** e-mail "Confira a ficha" para a academia com a ficha
+  parada há 3 meses (de novo a cada 3 meses), com o botão abrindo a
+  academia certa (`?abrir=`).
+- **Regra 86:** lembrete para o jogador que não entra há 3 meses, **ligado
+  para todos com e-mail confirmado** (escolha do Breno, exceção da regra
+  23), uma vez por ausência, até 200 por dia; no Criar conta, só uma linha
+  pequena embaixo do botão (11/10: "mais implícito").
+- **Regra 87:** resumo do mês por e-mail para todo plano (muda a regra 21);
+  o Premium recebe também quem chamou e de onde vieram.
+- **Regra 88** (10/10, prints do cadastro no celular): fotos grandes com
+  capa; aviso do plano numa linha com "Saiba mais"; "Falta preencher" só
+  ao concluir sem o obrigatório, com a legenda do *; ponto no mapa pelo
+  número da porta e alfinete para arrastar ("Ver no mapa"); escolher as 3
+  comodidades do Básico.
+- **Regra 89** (11/10): "Aceite os Termos de Uso e a Política de
+  Privacidade." e o aviso some ao marcar a caixa.
+- **Regra 90** (11/10): a faixa dos números do Parceiros com título e texto
+  antes e "Cadastrar minha academia grátis" depois.
+
+Pendente, igual a antes: o Breno testar na prévia (item 2, com os passos
+até a regra 90) e dizer "pode subir"; depois do merge, trocar o webhook do
+Resend para o site de verdade (item 00b) e conferir no registro da
+execução da `main` "Modelo do e-mail do código trocado no Supabase real";
+WhatsApp do código esperando o CNPJ (item 0, não puxar o assunto).
+**Banco local para o `banco-emails.py`:** o contêiner novo não tem o
+Postgres pronto; os comandos e o SQL de base estão em
+`testes/banco-local-base.sql` (feito em 10/10).
+
+**Resumo (09/10/2026, ao trocar de chat, antigo).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde e sem conflito, com tudo até a
 **regra 90** (10/10: fotos, aviso do plano, o que falta, o ponto no mapa
 e as comodidades do Básico; 11/10: a nota do lembrete, o aviso do aceite

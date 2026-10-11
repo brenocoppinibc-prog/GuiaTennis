@@ -21,8 +21,8 @@ async function escrever(page, texto) {
   await page.click('#contato-close-overlay [data-abrir-chat]');
   await page.waitForTimeout(300);
   let u = await ultima(page);
-  ok(await page.isVisible('#chat-overlay .chat-caixa') && u.texto.includes('chat de ajuda do GuiaTennis') && u.chips.length === 6 && u.chips.includes('Achar quadra perto'),
-    'a folha "Fale com a gente" abre o chat, com a saudação e 6 assuntos — ' + u.chips.join(' | '));
+  ok(await page.isVisible('#chat-overlay .chat-caixa') && u.texto.includes('chat de ajuda do GuiaTennis') && u.chips.length === 7 && u.chips.includes('Achar quadra perto') && u.chips.includes('Algo não funcionou'),
+    'a folha "Fale com a gente" abre o chat, com a saudação e 7 assuntos (com "Algo não funcionou") — ' + u.chips.join(' | '));
   ok(await page.evaluate(() => document.activeElement && document.activeElement.id === 'chat-texto'), 'o campo já vem pronto para escrever');
   await escrever(page, 'esqueci minha senha');
   u = await ultima(page);
@@ -34,7 +34,7 @@ async function escrever(page, texto) {
     '"Ainda preciso de ajuda" leva ao WhatsApp do Breno, com a dúvida escrita');
   await escrever(page, 'xpto qwerty');
   u = await ultima(page);
-  ok(u.texto.includes('Não entendi bem') && u.whats && u.chips.length === 6, 'sem entender: pede para escrever de outro jeito, sugere assuntos e oferece o WhatsApp');
+  ok(u.texto.includes('Não entendi bem') && u.whats && u.chips.length === 7, 'sem entender: pede para escrever de outro jeito, sugere assuntos e oferece o WhatsApp');
   await escrever(page, 'zzz aaa');
   u = await ultima(page);
   ok(u.texto.includes('Ainda não entendi') && u.whats, 'sem entender de novo: o WhatsApp vem primeiro');

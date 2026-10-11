@@ -22,8 +22,20 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 11/10/2026
+**Atualizado em:** 11/10/2026 (tarde)
 
+> **Estado (11/10/2026, tarde):** o Breno pediu "eu preciso saber em algum
+> lugar se alguma ação do site apresentou falha ou não e direcionar melhor
+> os clientes quando algo não funcionar". Entrou a regra 91 (SQL
+> `20261011120000_falhas_do_site`): toda falha de verdade (conexão, banco,
+> serviço de fora, código do site) vai para o painel do admin, em **Falhas
+> do site** (`/admin/falhas`), com o aparelho, o caminho da visita e
+> "Marcar como resolvida"; falha nova manda e-mail (no máximo um a cada 3
+> horas). Quem usa vê o que fazer ("Confira a internet…"), um **código do
+> problema** e "fale com a gente", que abre o chat com o problema e o
+> código já escritos (e dali o WhatsApp do Breno). Testes: **1.287 verificações, nenhuma falha** nos 45 arquivos do navegador
+> e **340 no `banco-emails.py`** (seção 28 nova).
+>
 > **Estado (11/10/2026):** com prints, o Breno pediu a nota do lembrete
 > no Criar conta "mais implícita" (regra 86: uma linha pequena embaixo do
 > botão) e o aviso do aceite com "Aceite os Termos de Uso e a Política de
@@ -1830,6 +1842,90 @@ cobra taxa e não fica no meio** da negociação.
     na lista." com o botão branco **"Cadastrar minha academia grátis"**;
     "Entenda como funciona" continua no fim. Os números ficam juntos no
     centro (até 760 px) no computador. Teste: `confianca-na-ficha.js`.
+91. **Falhas do site num lugar só e ajuda ao cliente quando algo não
+    funciona** (pedido de 11/10/2026: "eu preciso saber em algum lugar se
+    alguma ação do site apresentou falha ou não e direcionar melhor os
+    clientes quando algo não funcionar"), como o Sentry (cada falha num
+    lugar só, com o aparelho e o caminho até ela), o "Issues" do Vercel e o
+    "ID da solicitação" do Stripe e da Microsoft (a pessoa vê um código
+    curto e, mandando ele, o suporte acha a falha exata). SQL
+    `20261011120000_falhas_do_site`.
+    - **O que conta como falha:** a internet que caiu (tipo "Conexão"), o
+      banco que respondeu com erro de verdade (5xx, função ou tabela que
+      falta, tempo esgotado — "Banco"), um serviço de fora que falhou (CEP,
+      endereços, mapa aberto, IBGE, o Leaflet — "Serviço de fora") e erro do
+      próprio código do site ("Código do site", `window.onerror` e promessa
+      rejeitada sem tratamento). **Erro de regra não é falha:** senha
+      errada, campo que falta, plano cheio, código errado, "já avaliou",
+      endereço que não existe e os erros com código 22023, 42501, P0001,
+      23505… continuam só com a mensagem de sempre (`ehFalhaTecnica`). O
+      `new Error("…")` do próprio site só é falha se a rede ou o servidor
+      falharam junto.
+    - **Como o site descobre:** o `window.fetch` do site é trocado antes do
+      `createClient` (o Supabase guarda o fetch que existe na hora): rede
+      que cai e resposta 5xx/429 viram uma falha técnica guardada por 6
+      segundos (`FALHAS.pendentes`, `anotarFalhaDaRede`); a tela que
+      mostrou o erro chama **`falhou(acao, erro, opcoes)`**, que adota essa
+      falha (o motivo de verdade) e registra uma só; a que nenhuma tela
+      adotou vai sozinha, sem aviso ao cliente (`mandarFalhasNaoAdotadas`).
+      Erro do código: `falhaDoCodigo`, com a linha e o começo da pilha.
+    - **O que a pessoa vê:** sem internet, "Sem conexão com a internet.
+      Confira o Wi-Fi ou os dados do celular e tente de novo." (com
+      internet, mas a conexão falhou: "A conexão falhou. Confira a internet
+      e tente de novo em instantes."); antes, a internet que caía no Entrar
+      dizia "E-mail ou senha incorretos". Embaixo do aviso da tela (o
+      `.form-error` e parecidos), a linha **"Se continuar, fale com a gente
+      · código K7Q2MX"** (`ligarAjudaDasFalhas`, roda em cada render). Sem
+      aviso na tela (onde era um `alert()`, e o erro do código logo depois
+      de um toque), **a faixa embaixo** (`mostrarFaixaDeFalha`, fora do
+      `#app`): o aviso, "Tentar de novo" (quando a tela passa `tentar`),
+      "Preciso de ajuda" e "Código do problema: K7Q2MX"; some em 20 s ou no
+      ✕. "Fale com a gente"/"Preciso de ajuda" abre o **chat de ajuda** com
+      "Sinto muito: não deu para … (código …)", o que costuma resolver
+      (conferir a internet, "Recarregar a página") e o WhatsApp do Breno com
+      "Tive um problema: não deu para … (código …)". No chat, o assunto novo
+      **"Algo não funcionou"** ("deu erro", "não funciona", "travou"…) cita
+      o código da falha da última meia hora. O admin, no lugar de "fale com
+      a gente", vê "Anotada em Falhas" / "Ver em Falhas".
+    - **O código:** 6 letras e números sem os que confundem (0, O, 1, I),
+      sorteado no aparelho (aparece mesmo sem internet). A mesma falha
+      repetida em 5 segundos fica com o mesmo código; até 25 por página.
+      Sem internet, o registro espera na aba (`sessionStorage`) e vai quando
+      a conexão volta.
+    - **No banco** (`falhas_do_site`, só o admin lê; o site grava pela
+      função `registrar_falha(jsonb)`, que nunca dá erro ao site): o código,
+      o grupo (a ação, o tipo e a mensagem sem números nem ids), a visita
+      (o número do percurso), o site, a ação, o tipo, a mensagem e o detalhe
+      **sem dados de quem usa** (`falha_sem_dados` tira e-mail, telefone,
+      números longos e chaves, no site e no banco), a tela sem o "?", quem
+      (visitante, jogador, academia ou admin — o banco descobre pelo login),
+      a academia, o aparelho, o navegador e o sistema (nome e versão
+      principal), se a pessoa viu o aviso, e quando foi resolvida. Até 30
+      por visita e 500 no site por hora; fica 90 dias.
+    - **Painel do admin › Falhas do site** (`/admin/falhas`, `admFalhasHtml`):
+      procurar pelo código que o cliente mandou (qualquer dia dos 90);
+      período (24 horas, 7, 30, 90 dias) e Abertas/Resolvidas/Todas; as
+      iguais juntas, com o tipo, "Nova" ou "Voltou", quantas vezes, quantas
+      visitas, a última e a primeira vez, o site e a tela, os aparelhos e os
+      navegadores; cada ocorrência com o código, quem, o aparelho, a academia
+      e se a pessoa viu o aviso; **"Ver o caminho da visita até a falha"**
+      (os passos do percurso até ali e o que ela fez depois — se ainda
+      chamou uma academia); **"Marcar como resolvida"**
+      (`resolver_falhas_admin`). Em "Para fazer agora" e com o número ao lado
+      de "Falhas do site": as abertas das últimas 24 horas, menos as do
+      admin e as de conexão.
+    - **E-mail ao admin** (tipo `falha_no_site`, "Falha no site"): falha nova
+      (não apareceu nas últimas 24 horas) ou que voltou depois de resolvida,
+      no máximo um a cada 3 horas, com a ação, a mensagem, o código, a tela,
+      o aparelho e "Abrir o painel" (`/admin/falhas`). Não manda: falha do
+      admin e de conexão (quase sempre a internet de quem usa; fica no
+      painel).
+    - Política de Privacidade ("Falhas do site") e a data dos dois textos
+      legais (11 de outubro de 2026). Testes: `testes/falhas.js` e a seção
+      28 do `banco-emails.py`. Pontos que usam: todo `alert("Não consegui…")`
+      virou `avisarFalha` (erro de regra continua no alert) e os avisos
+      "Não consegui…" das telas passam por `falhou`. Ponto novo de erro:
+      `state.x = falhou("o que a pessoa tentava", error, { texto, regra })`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2730,6 +2826,21 @@ colocados pelo Breno). Aqui:
   (chave, apaga junto com a academia) e `lembrada_em`. Sem acesso do site
   (RLS ligada, sem regra); só `preparar_lembretes_de_ficha()` escreve.
 
+### Falhas do site (11/10/2026, regra 91)
+- `falhas_do_site` (SQL `20261011120000`): `id, codigo` (6, sem 0/O/1/I),
+  `grupo` (md5 da ação, do tipo e da mensagem sem números), `visita`,
+  `site` (jogadores, parceiros, admin), `acao`, `tipo` (rede, banco,
+  servico, codigo), `mensagem` (até 300), `detalhe` (até 200), `tela`,
+  `quem` (visitante, jogador, academia, admin), `academia_id`,
+  `dispositivo`, `navegador`, `sistema`, `aviso_na_tela`, `resolvida_em`,
+  `created_at`. RLS: só o admin lê; ninguém grava direto.
+- Funções: `registrar_falha(jsonb)` (anon e authenticated; devolve true se
+  guardou, nunca erro; limite de 30 por visita e 500 por hora; apaga o que
+  passou de 90 dias; e-mail ao admin), `falhas_admin(p_dias, p_codigo)`,
+  `resolver_falhas_admin(p_grupo)` e as internas `falha_sem_dados`,
+  `grupo_da_falha`, `nome_do_tipo_de_falha`. Tipo novo na fila:
+  `falha_no_site`.
+
 ## 5. Banco: o que já rodou e o que falta
 
 **Já rodado pelo Breno (confirmado):**
@@ -2818,7 +2929,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -2965,6 +3076,26 @@ as 133 do `banco-acesso.py` no banco e login locais.
   site: o aviso só do obrigatório ao concluir, que some ao preencher; "Ver
   no mapa", arrastar, mudar o número sem perder o ponto e enviar com ele;
   o resultado com o número da porta vence o meio da rua e o CEP.
+- `falhas.js` — regra 91: a internet que cai ao conferir o e-mail (o
+  aviso de conexão, a linha "Se continuar, fale com a gente · código", o
+  registro com o mesmo código, a visita, o aparelho e a tela, sem a faixa
+  repetida, o chat com o problema e o WhatsApp com o código); erro de regra
+  e senha errada sem registro; a internet que cai no Entrar não diz "senha
+  incorreta"; a faixa (texto, código, "Tentar de novo", "Preciso de
+  ajuda", ✕); a mesma falha só uma vez; dados que saem da mensagem; erro
+  do código com e sem toque; serviço com 503 e serviço que não respondeu
+  (sozinhos depois de 6 s, sem o que veio no link); a tela que adota a
+  falha da rede; endereço que não existe não é falha; sem internet (o
+  registro espera e vai quando volta); o chat ("Algo não funcionou", com e
+  sem falha recente); banco sem a tabela; o painel (Para fazer agora, o
+  número na barra, os grupos, aparelhos e navegadores, as ocorrências, o
+  caminho da visita, procurar pelo código, resolver, Resolvidas, a faixa
+  do admin "Ver em Falhas") e a Privacidade. A seção 28 do
+  `banco-emails.py` confere o banco (quem, a tela, só pela função, só o
+  admin lê, e-mail na falha nova e na que voltou, uma vez a cada 3 horas,
+  sem e-mail do admin e de conexão, os grupos, os dados que saem, o que é
+  ignorado, a academia, os limites, procurar pelo código, resolver e os 90
+  dias).
 - `volta-e-resumo.js` — regras 86 e 87: abrir o site com a conta anota a
   visita (uma vez por abertura; banco antigo, em silêncio); o lembrete
   ligado em Minha conta, desligar e salvar; banco sem a coluna (não
@@ -3365,6 +3496,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Falhas do site no painel do admin e ajuda ao cliente quando algo não funciona (regra 91)   ← PR #5, 11/10
 (a seguir) Contas excluídas num lugar só no painel e a prévia da ficha no fim do cadastro   ← PR #5, 09/10
 (a seguir) Chat do Parceiros guardado na conta, tela da senha arrumada, "Continuar" à direita com o que falta e o plano avisando na ficha   ← PR #5, 09/10
 (a seguir) Promoções do Premium, números com "Entenda como funciona", foto em cima no cartão e o site sem citar outros sites   ← PR #5, 08/10
@@ -3478,6 +3610,20 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Depois do resumo (11/10/2026, tarde).** Este chat voltou a acompanhar o
+PR #5 (inscrito nos eventos do GitHub, com conferência marcada). O Breno
+pediu um lugar para saber das falhas do site e ajuda melhor ao cliente
+quando algo não funciona: **regra 91**, SQL `20261011120000_falhas_do_site`
+(entra no banco de teste com o PR e no de verdade com o merge). Para
+testar na prévia: (a) no celular, desligar o Wi-Fi e os dados com o site
+aberto e tocar em "Entrar ou criar conta › Continuar": o aviso "Sem
+conexão…" e a linha "Se continuar, fale com a gente · código"; "fale com a
+gente" abre o chat com o código; (b) ligar a internet de novo e abrir o
+painel do admin › **Falhas do site**: a falha aparece (as de conexão não
+mandam e-mail); procurar pelo código; "Ver o caminho da visita";
+"Marcar como resolvida"; (c) no chat, escrever "deu erro". Testes:
+**1.287 verificações, nenhuma falha** nos 45 arquivos do navegador e **340 no `banco-emails.py`**.
 
 **Resumo (11/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

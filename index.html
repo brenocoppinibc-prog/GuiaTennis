@@ -2190,6 +2190,40 @@
   .push-avaliar .push-avaliar-acoes { display: flex; gap: 16px; margin-top: 8px; }
   .push-avaliar .push-avaliar-acoes button { border: 0; background: none; padding: 0; font: inherit; font-size: 13px; color: var(--muted); text-decoration: underline; cursor: pointer; }
   .push-avaliar .push-avaliar-acoes button.push-viagem-sim { color: var(--green); font-weight: 600; }
+
+  /* Falhas do site no painel do admin (11/10/2026) */
+  .adm-falhas { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  .adm-falha { border: 1px solid var(--border); border-left: 4px solid var(--red); border-radius: 12px; background: var(--card); padding: 12px 14px; }
+  .adm-falha.resolvida { border-left-color: var(--green); opacity: 0.85; }
+  .adm-falha-selos { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 6px; }
+  .adm-falha-t { margin: 0; font-weight: 700; font-size: 15px; }
+  .adm-falha-m { margin: 4px 0 0; font-size: 13px; color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-word; }
+  .adm-falha-n { margin: 8px 0 0; font-size: 13.5px; }
+  .adm-falha-s { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+  .adm-falha-acoes { margin-top: 10px; flex-wrap: wrap; }
+  .adm-falha-ocs { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .adm-falha-oc { border-top: 1px solid var(--border); padding-top: 10px; font-size: 13px; }
+  .adm-falha-oc-s { color: var(--muted); margin-top: 2px; }
+  .adm-falha-oc-s small { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-word; }
+  .adm-falha-cod { letter-spacing: 0.04em; }
+  .adm-falha-caminho { padding: 8px 0 0; }
+  .adm-falha-aqui { color: var(--red); }
+  .adm-falha-busca { margin-top: 8px; }
+  .adm-falha-achada { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+  /* Falhas do site (11/10/2026): a linha de ajuda embaixo do aviso da tela
+     e a faixa embaixo, quando a tela não tem onde avisar. */
+  .falha-ajuda { display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
+  .falha-link { border: 0; background: none; padding: 0; font: inherit; color: var(--green); font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .falha-faixa { position: fixed; left: 12px; right: 12px; bottom: 16px; margin: 0 auto; max-width: 440px; z-index: 9000; display: flex; gap: 10px; align-items: flex-start; background: var(--card); border: 1px solid var(--border); border-left: 5px solid var(--red); border-radius: 14px; padding: 12px 36px 12px 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); color: var(--text); font-family: inherit; animation: pushEntra 0.3s ease-out; }
+  .falha-faixa-ic { color: var(--red); line-height: 0; margin-top: 1px; }
+  .falha-faixa-txt { flex: 1; min-width: 0; }
+  .falha-faixa-t { margin: 0; font-size: 14px; line-height: 1.4; font-weight: 600; }
+  .falha-faixa-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .falha-faixa-bt { display: inline-block; border: 1px solid var(--border); background: var(--card); color: var(--green); border-radius: 10px; padding: 7px 12px; font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .falha-faixa-bt.forte { background: var(--green); border-color: var(--green); color: #fff; }
+  .falha-faixa-cod { margin: 8px 0 0; font-size: 12px; color: var(--muted); letter-spacing: 0.02em; }
+  .falha-faixa-fechar { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border: 0; background: none; color: var(--muted); font-size: 15px; cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) { .falha-faixa { animation: none; } }
 </style>
 </head>
 <body>
@@ -2209,6 +2243,26 @@ const NO_SITE_DE_TESTE = /^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$|(^|--)l
 const USANDO_BANCO_DE_TESTE = NO_SITE_DE_TESTE && !!BANCO_DE_TESTE.url && !!BANCO_DE_TESTE.chave;
 const SUPABASE_URL = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.url : "https://eultezheqwmxyakvgyjy.supabase.co";
 const SUPABASE_ANON_KEY = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.chave : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";
+// Falhas do site (pedido do Breno em 11/10/2026): toda chamada de rede do
+// site passa por aqui — banco, CEP, endereços, mapa aberto, cidades do IBGE.
+// Internet que caiu e servidor com erro (5xx ou 429, "muitos pedidos") viram
+// uma falha técnica anotada em FALHAS.pendentes; a tela que mostrou o erro ao
+// cliente adota a falha (falhou(), na seção "falhas do site"), e a que
+// ninguém adotou vai sozinha para o banco. Fica antes do createClient: o
+// Supabase guarda o fetch que existe quando o cliente é criado.
+const FALHAS = { pendentes: [], timer: null, naTela: null, enviadas: [], fila: [] };
+const FETCH_DO_NAVEGADOR = typeof window.fetch === "function" ? window.fetch.bind(window) : null;
+if (FETCH_DO_NAVEGADOR) window.fetch = function (recurso, opcoes) {
+  let url = "";
+  try { url = typeof recurso === "string" ? recurso : (recurso && recurso.url) || String(recurso); } catch {}
+  return FETCH_DO_NAVEGADOR(recurso, opcoes).then(r => {
+    if (r && (r.status >= 500 || r.status === 429)) { try { anotarFalhaDaRede(url, r.status); } catch {} }
+    return r;
+  }, erro => {
+    if (!(erro && erro.name === "AbortError")) { try { anotarFalhaDaRede(url, 0, erro); } catch {} }
+    throw erro;
+  });
+};
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Admin vendo o GuiaTennis Parceiros como uma academia (06/10/2026): as
 // funções "da minha academia" viram as do admin para aquela academia
@@ -3154,6 +3208,7 @@ async function setPlano(courtId, plano) {
     .update({ plano, pago: plano !== "basico" })
     .eq('id', courtId);
   if (error) {
+    falhou("mudar o plano", error, { silenciosa: true, academia: courtId });
     alert(
       "Não consegui salvar o plano.\n\n" +
       "Se a tabela ainda não tem a coluna, rode isto no SQL Editor do Supabase:\n\n" +
@@ -3261,6 +3316,389 @@ function diag(texto) {
   caixa.textContent += `${hora}  ${texto}\n`;
   caixa.scrollTop = caixa.scrollHeight;
 }
+
+// ---------- falhas do site (pedido do Breno em 11/10/2026) ----------
+// "Eu preciso saber em algum lugar se alguma ação do site apresentou falha
+// ou não e direcionar melhor os clientes quando algo não funcionar." Como o
+// Sentry (cada falha num lugar só, com o aparelho e o caminho até ela) e o
+// "ID da solicitação" do Stripe e da Microsoft (a pessoa vê um código curto
+// e, mandando ele, o suporte acha a falha exata):
+// - o que falha vai para falhas_do_site (SQL 20261011120000) e aparece no
+//   painel do admin, em Falhas (/admin/falhas); falha nova manda e-mail;
+// - a pessoa vê o que fazer ("Confira a internet", "Tente de novo") e, se
+//   continuar, "fale com a gente", que abre o chat de ajuda com o problema
+//   e o código já escritos (e dali o WhatsApp do Breno);
+// - erro de regra (senha errada, campo que falta, plano cheio) não é falha:
+//   continua só com a mensagem de sempre.
+// Nada de quem usa (regra 9): sem conta, e-mail, IP ou identificador do
+// aparelho; a mensagem técnica perde e-mails, telefones e chaves.
+const LETRAS_DO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const FALHA_JANELA_MS = 6000;
+const FALHAS_POR_PAGINA = 25;
+const FALHAS_FILA_KEY = "guiatennis_falhas_fila_v1";
+const TEXTO_SEM_INTERNET = "Sem conexão com a internet. Confira o Wi-Fi ou os dados do celular e tente de novo.";
+const TEXTO_CONEXAO_FALHOU = "A conexão falhou. Confira a internet e tente de novo em instantes.";
+// Erro de regra (o banco ou o login dizendo o que falta) não é falha do site.
+const CODIGOS_DE_REGRA = ["22023", "42501", "P0001", "23505", "23514", "23503", "22P02", "22001"];
+
+// Seis letras e números, sem os que confundem (0, O, 1, I): "K7Q2MX".
+function codigoDeFalha() {
+  let n;
+  try { n = Array.from(crypto.getRandomValues(new Uint8Array(6))); }
+  catch { n = Array.from({ length: 6 }, () => Math.floor(Math.random() * 256)); }
+  return n.map(b => LETRAS_DO_CODIGO[b % LETRAS_DO_CODIGO.length]).join("");
+}
+// O mesmo filtro do banco (falha_sem_dados): chaves, e-mails, telefones e
+// números longos saem antes de mandar.
+function semDadosNaFalha(t, max = 300) {
+  return String(t == null ? "" : t)
+    .replace(/(Bearer\s+\S+|eyJ[A-Za-z0-9._-]{10,}|sb_[a-z]+_[A-Za-z0-9_-]{10,})/g, "[chave]")
+    .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "[e-mail]")
+    .replace(/\(?\d{2}\)?[ .-]?\d{4,5}[ .-]?\d{4}/g, "[número]")
+    .replace(/\d{8,}/g, "[número]")
+    .trim().slice(0, max);
+}
+// O navegador e o sistema só pelo nome e a versão principal ("Safari 17",
+// "iOS 17"): ajudam a achar o que falha num aparelho só, sem identificar.
+function navegadorDaFalha() {
+  const ua = navigator.userAgent || "";
+  const v = (re) => { const m = ua.match(re); return m ? " " + m[1] : ""; };
+  if (/Instagram/i.test(ua)) return "Instagram";
+  if (/FBAN|FBAV/i.test(ua)) return "Facebook";
+  if (/SamsungBrowser/i.test(ua)) return "Samsung Internet" + v(/SamsungBrowser\/(\d+)/);
+  if (/Edg\//.test(ua)) return "Edge" + v(/Edg\/(\d+)/);
+  if (/OPR\//.test(ua)) return "Opera" + v(/OPR\/(\d+)/);
+  if (/Firefox\//.test(ua)) return "Firefox" + v(/Firefox\/(\d+)/);
+  if (/CriOS\//.test(ua)) return "Chrome" + v(/CriOS\/(\d+)/);
+  if (/Chrome\//.test(ua)) return "Chrome" + v(/Chrome\/(\d+)/);
+  if (/Safari\//.test(ua)) return "Safari" + v(/Version\/(\d+)/);
+  return "Outro";
+}
+function sistemaDaFalha() {
+  const ua = navigator.userAgent || "";
+  let m;
+  if ((m = ua.match(/(?:iPhone|iPad|iPod).*? OS (\d+)/))) return "iOS " + m[1];
+  if ((m = ua.match(/Android (\d+)/))) return "Android " + m[1];
+  if (/Windows/.test(ua)) return "Windows";
+  if (/Mac OS X/.test(ua)) return "macOS";
+  if (/CrOS/.test(ua)) return "ChromeOS";
+  if (/Linux/.test(ua)) return "Linux";
+  return "";
+}
+function siteDaFalha() {
+  try { return isAdmin && state.page === "admin" ? "admin" : state.page === "parceiros" ? "parceiros" : "jogadores"; }
+  catch { return "jogadores"; }
+}
+// Que serviço é cada endereço. Do banco vai o caminho (a função ou a
+// tabela); dos serviços de fora, só o nome (o caminho do CEP tem o CEP).
+function servicoDaFalha(url) {
+  let u;
+  try { u = new URL(url, location.href); } catch { return { nome: "Rede", host: "", caminho: "" }; }
+  const host = u.hostname, caminho = u.pathname;
+  if (url.startsWith(SUPABASE_URL) || /supabase\.co$/.test(host)) {
+    const rpc = caminho.match(/\/rest\/v1\/rpc\/([a-z0-9_]+)/i), tabela = caminho.match(/\/rest\/v1\/([a-z0-9_]+)/i);
+    return { nome: rpc ? `Banco: ${rpc[1]}` : tabela ? `Banco: tabela ${tabela[1]}` : /\/auth\//.test(caminho) ? "Login (Supabase)" : "Banco", banco: true, host, caminho };
+  }
+  if (/viacep/.test(host)) return { nome: "Serviço do CEP (ViaCEP)", host, caminho: "" };
+  if (/nominatim/.test(host)) return { nome: "Serviço de endereços (OpenStreetMap)", host, caminho: "" };
+  if (/overpass/.test(host)) return { nome: "Mapa aberto (Overpass)", host, caminho: "" };
+  if (/ibge\.gov\.br/.test(host)) return { nome: "Cidades do IBGE", host, caminho: "" };
+  return { nome: host || "Rede", host, caminho: "" };
+}
+// Chamado pelo fetch do site (lá no começo) quando a rede ou o servidor
+// falham. Fica guardado por alguns segundos para a tela adotar.
+function anotarFalhaDaRede(url, status, erro) {
+  if (/\/rpc\/registrar_falha|\/passos_das_visitas/.test(url)) return;
+  if (!status && document.visibilityState === "hidden") return;
+  const s = servicoDaFalha(url);
+  FALHAS.pendentes.push({
+    em: Date.now(), acao: s.nome, tipo: !status ? "rede" : s.banco ? "banco" : "servico",
+    mensagem: status ? `${s.nome} respondeu com erro ${status}${status === 429 ? " (muitos pedidos)" : ""}`
+      : `Sem resposta de ${s.host || "rede"}${erro && erro.message ? ` (${erro.message})` : ""}`,
+    detalhe: s.host + s.caminho,
+  });
+  diag(`falha na rede: ${s.nome} · ${status || "sem resposta"}`);
+  clearTimeout(FALHAS.timer);
+  FALHAS.timer = setTimeout(mandarFalhasNaoAdotadas, FALHA_JANELA_MS);
+}
+// A falha técnica que nenhuma tela adotou vai sozinha, sem aviso ao
+// cliente: o site seguiu sem ela (o número da home, o mapa aberto…).
+function mandarFalhasNaoAdotadas() {
+  const agora = Date.now();
+  const velhas = FALHAS.pendentes.filter(f => agora - f.em >= FALHA_JANELA_MS - 50);
+  FALHAS.pendentes = FALHAS.pendentes.filter(f => !velhas.includes(f));
+  velhas.forEach(f => registrarFalha(f));
+  if (FALHAS.pendentes.length) FALHAS.timer = setTimeout(mandarFalhasNaoAdotadas, FALHA_JANELA_MS);
+}
+// A tela que mostrou o erro leva junto as falhas técnicas dos últimos
+// segundos (o motivo de verdade), em vez de elas irem separadas.
+function adotarFalhasTecnicas() {
+  const agora = Date.now();
+  const recentes = FALHAS.pendentes.filter(f => agora - f.em < FALHA_JANELA_MS);
+  FALHAS.pendentes = FALHAS.pendentes.filter(f => !recentes.includes(f));
+  return recentes;
+}
+function ehFalhaDeRede(erro) {
+  if (!erro) return false;
+  if (erro.status === 0) return true;
+  return /Failed to fetch|NetworkError|Load failed|network ?error|ERR_INTERNET|ERR_NETWORK|appears to be offline/i.test(`${erro.name || ""} ${erro.message || ""}`);
+}
+function ehFalhaTecnica(erro) {
+  if (!erro) return false;
+  if (ehFalhaDeRede(erro)) return true;
+  const codigo = String(erro.code || ""), status = Number(erro.status) || 0, msg = String(erro.message || "");
+  if (CODIGOS_DE_REGRA.includes(codigo)) return false;
+  if (ehEsperaDoCodigo(erro)) return false;
+  if (status >= 500 || status === 429) return true;
+  if (/^PGRST|^42883$|^42P01$|^42703$|^XX000$|^57014$|^53/.test(codigo)) return true;
+  if (/error sending|smtp|rate limit/i.test(msg)) return true;
+  // Login, código errado, senha fraca: a tela já diz o que fazer.
+  if (status >= 400) return false;
+  if (/invalid login|invalid_credentials|has expired or is invalid|same_password|different from the old|weak_password|already registered/i.test(`${codigo} ${msg}`)) return false;
+  return true;
+}
+// O Supabase pede 60 segundos entre um código e outro: é espera, não falha.
+function ehEsperaDoCodigo(erro) {
+  return /only request this after|security purposes/i.test((erro && erro.message) || "");
+}
+function tipoDoErro(erro) {
+  if (ehFalhaDeRede(erro)) return "rede";
+  if (erro && (erro.code || erro.status || erro.details !== undefined)) return "banco";
+  return erro instanceof Error ? "codigo" : "banco";
+}
+function mensagemDoErro(erro) {
+  if (!erro) return "";
+  if (typeof erro === "string") return erro;
+  const msg = erro.message || erro.error_description || erro.msg || "";
+  const codigo = erro.code && !String(msg).includes(erro.code) ? String(erro.code) : "";
+  return [codigo, msg].filter(Boolean).join(" · ") || String(erro);
+}
+
+// Manda uma falha ao banco e devolve o código que a pessoa vê. A mesma falha
+// repetida em poucos segundos não vai de novo (fica o mesmo código).
+function registrarFalha(f) {
+  const acao = String(f.acao || "Ação do site").trim();
+  const p = {
+    codigo: codigoDeFalha(), visita: null, site: siteDaFalha(),
+    acao: (acao.charAt(0).toUpperCase() + acao.slice(1)).slice(0, 80), tipo: f.tipo || "codigo",
+    mensagem: semDadosNaFalha(f.mensagem, 300), detalhe: semDadosNaFalha(f.detalhe, 200),
+    tela: "/", academia: f.academia || null, dispositivo: "", navegador: "", sistema: "", aviso: !!f.aviso,
+  };
+  try {
+    const agora = Date.now();
+    const igual = FALHAS.enviadas.find(x => x.acao === p.acao && x.mensagem === p.mensagem && agora - x.em < 5000);
+    if (igual) return igual.codigo;
+    FALHAS.enviadas = [...FALHAS.enviadas.slice(-40), { acao: p.acao, mensagem: p.mensagem, em: agora, codigo: p.codigo }];
+    try { const v = visitaAtual(); guardarVisita(v); p.visita = v.id; } catch {}
+    p.tela = String(location.pathname || "/").slice(0, 120);
+    p.dispositivo = dispositivoDoAcesso();
+    p.navegador = navegadorDaFalha();
+    p.sistema = sistemaDaFalha();
+    diag(`falha registrada ${p.codigo}: ${p.acao} · ${p.tipo} · ${p.mensagem}`);
+    FALHAS.total = (FALHAS.total || 0) + 1;
+    if (FALHAS.total <= FALHAS_POR_PAGINA) mandarFalhaAoBanco(p);
+  } catch (e) { console.warn("GuiaTennis: não consegui anotar a falha.", e); }
+  return p.codigo;
+}
+function mandarFalhaAoBanco(p) {
+  if (navigator.onLine === false) { guardarFalhaNaFila(p); return; }
+  rpcDoBanco('registrar_falha', { p_falha: p }).then(({ error }) => {
+    if (error && ehFalhaDeRede(error)) guardarFalhaNaFila(p);
+    else if (!error) mandarFilaDeFalhas();
+  }, () => guardarFalhaNaFila(p));
+}
+// Sem internet, a falha espera na aba e vai quando a conexão voltar.
+function guardarFalhaNaFila(p) {
+  try {
+    const fila = JSON.parse(sessionStorage.getItem(FALHAS_FILA_KEY) || "[]");
+    sessionStorage.setItem(FALHAS_FILA_KEY, JSON.stringify([...fila, p].slice(-10)));
+  } catch {}
+}
+function mandarFilaDeFalhas() {
+  let fila = [];
+  try { fila = JSON.parse(sessionStorage.getItem(FALHAS_FILA_KEY) || "[]"); sessionStorage.removeItem(FALHAS_FILA_KEY); } catch {}
+  fila.forEach(p => rpcDoBanco('registrar_falha', { p_falha: p }).then(({ error }) => { if (error && ehFalhaDeRede(error)) guardarFalhaNaFila(p); }, () => guardarFalhaNaFila(p)));
+}
+window.addEventListener("online", () => mandarFilaDeFalhas());
+
+// O que a tela chama quando uma ação da pessoa não deu certo. Devolve o
+// texto do aviso. Erro de regra: o aviso de sempre, sem registrar. Falha de
+// verdade: registra, diz o que fazer (sem internet, "Confira o Wi-Fi…") e
+// coloca embaixo do aviso da tela "Se continuar, fale com a gente · código"
+// (sem aviso na tela, como no lugar de um alert, vem a faixa embaixo).
+//   acao     o que a pessoa tentava, no infinitivo ("enviar a avaliação")
+//   erro     o que voltou do banco, do login ou do código
+//   opcoes   texto (o aviso da falha), regra (o aviso do erro de regra; sem
+//            ele, o texto), tentar (o "Tentar de novo" da faixa),
+//            academia, soSeTecnica (só é falha se a rede ou o servidor
+//            falhou: um endereço que não existe não é), silenciosa
+//            (registra sem mostrar ajuda).
+// No lugar de alert("Não consegui…"): erro de regra continua no alert, com a
+// mensagem de sempre; falha de verdade vira a faixa com o código.
+function avisarFalha(acao, erro, textoDeRegra, opcoes = {}) {
+  if (erro && !ehFalhaTecnica(erro)) { alert(textoDeRegra); return; }
+  falhou(acao, erro, opcoes);
+}
+function falhou(acao, erro, opcoes = {}) {
+  const padrao = `Não deu para ${acao} agora. Tente de novo em instantes.`;
+  const deRegra = opcoes.regra !== undefined ? opcoes.regra : (opcoes.texto || padrao);
+  // new Error("…") é o próprio site avisando (endereço não achado, senha que
+  // não confere): só é falha se a rede ou o servidor falharam junto.
+  const doSite = erro instanceof Error && erro.constructor === Error && !erro.code && !erro.status && !ehFalhaDeRede(erro);
+  const soSeTecnica = opcoes.soSeTecnica || doSite;
+  if (erro && !soSeTecnica && !ehFalhaTecnica(erro)) return deRegra;
+  const tecnicas = adotarFalhasTecnicas();
+  const semInternet = navigator.onLine === false;
+  const rede = semInternet || ehFalhaDeRede(erro) || tecnicas.some(t => t.tipo === "rede");
+  if (soSeTecnica && !rede && !tecnicas.length) return deRegra;
+  const t0 = tecnicas[0];
+  const tipo = rede ? "rede" : t0 ? t0.tipo : erro ? tipoDoErro(erro) : "codigo";
+  const texto = rede ? (semInternet ? TEXTO_SEM_INTERNET : TEXTO_CONEXAO_FALHOU) : (opcoes.texto || padrao);
+  const codigo = registrarFalha({
+    acao, tipo, academia: opcoes.academia, aviso: !opcoes.silenciosa,
+    mensagem: [mensagemDoErro(erro), t0 && t0.mensagem].filter(Boolean).join(" · ") || "Sem mensagem",
+    detalhe: [erro && erro.status ? `status ${erro.status}` : "", ...tecnicas.map(t => t.detalhe)].filter(Boolean).join(" · "),
+  });
+  if (!opcoes.silenciosa) mostrarAjudaDaFalha({ codigo, acao, texto, tipo, tentar: opcoes.tentar, alvos: [texto, opcoes.texto] });
+  return texto;
+}
+
+// A tela que mostra o aviso ganha a linha de ajuda no próximo desenho; se
+// nenhuma mostrar, vem a faixa embaixo.
+function mostrarAjudaDaFalha(f) {
+  const atual = FALHAS.naTela = { ...f, em: Date.now(), mostrada: false, fechada: false };
+  setTimeout(() => {
+    if (FALHAS.naTela !== atual) return;
+    ligarAjudaDasFalhas();
+    if (!atual.mostrada) mostrarFaixaDeFalha(atual);
+  }, 350);
+}
+function ajudaDaFalhaHtml(f) {
+  // O admin não fala com ele mesmo: a falha já está em Falhas, no painel.
+  if (isAdmin) return `<span class="falha-ajuda" data-codigo="${f.codigo}">Anotada em <a href="/admin/falhas" class="falha-link" data-falha-painel>Falhas</a> · código ${f.codigo}</span>`;
+  return `<span class="falha-ajuda" data-codigo="${f.codigo}">Se continuar, <button type="button" class="falha-link" data-falha-ajuda="${f.codigo}">fale com a gente</button> · código ${f.codigo}</span>`;
+}
+// Roda em cada render (attachEvents): o aviso da tela com o texto da falha
+// de agora ganha, logo embaixo, a linha "Se continuar, fale com a gente ·
+// código" (fora do aviso, para não mexer no desenho dele).
+function ligarAjudaDasFalhas() {
+  const f = FALHAS.naTela;
+  if (!f || Date.now() - f.em > 10 * 60000) return;
+  const igual = (t) => String(t || "").replace(/\s+/g, " ").trim();
+  const alvos = [...new Set([f.texto, ...(f.alvos || [])].map(igual).filter(Boolean))];
+  if (alvos.length) document.querySelectorAll(".form-error, .status-error, [role=alert], .email-sugestao, .map-empty, .ht-map-empty, .pc-sec-sub, .pc-card-s, .pc-vazio, .acesso-erro, .chat-lista-vazia, .adm-erro").forEach(el => {
+    if (el.closest("#falha-faixa") || el.querySelector(".falha-ajuda") || (el.nextElementSibling && el.nextElementSibling.classList.contains("falha-ajuda"))) return;
+    const t = igual(el.textContent);
+    if (!alvos.some(a => t.includes(a))) return;
+    el.insertAdjacentHTML("afterend", ajudaDaFalhaHtml(f));
+  });
+  if (document.querySelector(`#app .falha-ajuda[data-codigo="${f.codigo}"]`)) f.mostrada = true;
+  document.querySelectorAll("[data-falha-painel]").forEach(a => { a.onclick = (e) => { e.preventDefault(); esconderFaixaDeFalha(); irAdmin("falhas"); }; });
+  document.querySelectorAll("#app [data-falha-ajuda]").forEach(bt => {
+    bt.onclick = (e) => { e.preventDefault(); e.stopPropagation(); abrirChatDaFalha(FALHAS.naTela && FALHAS.naTela.codigo === bt.dataset.falhaAjuda ? FALHAS.naTela : { codigo: bt.dataset.falhaAjuda, acao: "concluir o que você tentava" }); };
+  });
+}
+// A faixa embaixo, como o aviso do Gmail ("Não foi possível enviar ·
+// Tentar novamente"): fica fora do #app, então o render não apaga. Some em
+// 20 segundos (não enquanto o dedo ou o mouse estiver nela) ou no ✕.
+function mostrarFaixaDeFalha(f) {
+  esconderFaixaDeFalha();
+  if (f.fechada) return;
+  const el = document.createElement("div");
+  el.id = "falha-faixa";
+  el.className = "falha-faixa";
+  el.setAttribute("role", "alert");
+  el.innerHTML = `
+    <span class="falha-faixa-ic" aria-hidden="true">${icon('warning', 18, 'currentColor')}</span>
+    <div class="falha-faixa-txt">
+      <p class="falha-faixa-t">${esc(f.texto)}</p>
+      <div class="falha-faixa-acoes">
+        ${f.tentar ? `<button type="button" class="falha-faixa-bt forte" data-falha-tentar>Tentar de novo</button>` : ""}
+        ${isAdmin ? `<a href="/admin/falhas" class="falha-faixa-bt" data-falha-painel>Ver em Falhas</a>` : `<button type="button" class="falha-faixa-bt" data-falha-faixa-ajuda>Preciso de ajuda</button>`}
+      </div>
+      <p class="falha-faixa-cod">Código do problema: ${f.codigo}</p>
+    </div>
+    <button type="button" class="falha-faixa-fechar" aria-label="Fechar o aviso">✕</button>`;
+  document.body.appendChild(el);
+  f.mostrada = true;
+  el.querySelector(".falha-faixa-fechar").onclick = () => { f.fechada = true; esconderFaixaDeFalha(); };
+  const ajuda = el.querySelector("[data-falha-faixa-ajuda]");
+  if (ajuda) ajuda.onclick = () => abrirChatDaFalha(f);
+  const painel = el.querySelector("[data-falha-painel]");
+  if (painel) painel.onclick = (e) => { e.preventDefault(); esconderFaixaDeFalha(); irAdmin("falhas"); };
+  const tentar = el.querySelector("[data-falha-tentar]");
+  if (tentar) tentar.onclick = () => { esconderFaixaDeFalha(); try { f.tentar(); } catch (e) { console.warn(e); } };
+  clearTimeout(FALHAS.timerFaixa);
+  const sumir = () => {
+    if (!document.body.contains(el)) return;
+    if (el.matches(":hover") || el.contains(document.activeElement)) { FALHAS.timerFaixa = setTimeout(sumir, 5000); return; }
+    el.remove();
+  };
+  FALHAS.timerFaixa = setTimeout(sumir, 20000);
+}
+function esconderFaixaDeFalha() {
+  const el = document.getElementById("falha-faixa");
+  if (el) el.remove();
+}
+// "Fale com a gente": o chat de ajuda abre com o problema, o que costuma
+// resolver e o WhatsApp do Breno com o código já escrito.
+function mensagemDaFalhaNoChat(f) {
+  const dicas = f.tipo === "rede"
+    ? "1. Confira o Wi-Fi ou os dados do celular.\n2. Toque em \"Recarregar a página\" e tente de novo."
+    : "1. Espere um minuto e tente de novo.\n2. Se não der, toque em \"Recarregar a página\".\n3. Continuou? O Breno resolve pelo WhatsApp: o código já vai na mensagem, e com ele dá para ver o que aconteceu.";
+  return { de: "gt", texto: `Sinto muito: não deu para ${f.acao} (código ${f.codigo}).\n\nO que costuma resolver:\n${dicas}`,
+    acoes: [{ t: "Recarregar a página", ir: "recarregar" }, { t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] };
+}
+function abrirChatDaFalha(f) {
+  esconderFaixaDeFalha();
+  abrirChat();
+  const ch = state.chat;
+  if (!ch) return;
+  ch.falha = { codigo: f.codigo, acao: f.acao };
+  ch.msgs.push(mensagemDaFalhaNoChat(f));
+  ch.focar = false;
+  render();
+}
+// A falha mostrada há pouco (meia hora), para o chat citar o código.
+function falhaRecente() {
+  const f = FALHAS.naTela;
+  return f && Date.now() - f.em < 30 * 60000 ? f : null;
+}
+
+// Erro do próprio código (o que o navegador mostraria no console): vai para
+// o banco com a linha; logo depois de um toque da pessoa, ela vê a faixa com
+// o que fazer. Erros de extensões do navegador e o "Script error." de
+// outros sites ficam de fora.
+let ultimaInteracao = 0;
+["click", "submit", "change"].forEach(ev => document.addEventListener(ev, () => { ultimaInteracao = Date.now(); }, true));
+function pilhaCurta(erro) {
+  const linhas = String((erro && erro.stack) || "").split("\n").map(l => l.trim()).filter(l => /^at |@/.test(l));
+  return linhas.slice(0, 2).map(l => l.replace(/\(?https?:\/\/[^\s)]*?:(\d+:\d+)\)?/g, "$1")).join(" < ").slice(0, 160);
+}
+function falhaDoCodigo(mensagem, onde) {
+  try {
+    const msg = String(mensagem || "").slice(0, 240);
+    if (!msg || /^Script error\.?$/i.test(msg) || /ResizeObserver loop/i.test(msg)) return;
+    const depoisDeUmToque = Date.now() - ultimaInteracao < 4000;
+    const codigo = registrarFalha({ acao: "Código do site", tipo: "codigo", mensagem: msg, detalhe: onde, aviso: depoisDeUmToque });
+    if (depoisDeUmToque) mostrarAjudaDaFalha({ codigo, acao: "concluir o que você tentava", tipo: "codigo",
+      texto: "Algo não funcionou como deveria. Tente de novo; se continuar, recarregue a página." });
+  } catch {}
+}
+window.addEventListener("error", (e) => {
+  if (!e || !e.message) return;
+  const arquivo = String(e.filename || "");
+  if (arquivo && !/^https?:/i.test(arquivo)) return;
+  const deFora = arquivo && !arquivo.startsWith(location.origin) ? arquivo.replace(/^https?:\/\//, "").split("?")[0].slice(0, 80) : "";
+  const linha = e.lineno ? `linha ${e.lineno}${e.colno ? ":" + e.colno : ""}` : "";
+  falhaDoCodigo(e.message, [deFora, linha, pilhaCurta(e.error)].filter(Boolean).join(" · "));
+});
+window.addEventListener("unhandledrejection", (e) => {
+  const r = e && e.reason;
+  // A rede que caiu já foi anotada pelo fetch.
+  if (!r || ehFalhaDeRede(r) || r.name === "AbortError") return;
+  falhaDoCodigo(r.message || String(r), pilhaCurta(r));
+});
 
 // `extras` são as colunas que o banco pode ainda não ter (cep, lat, lng,
 // origem, dispositivo). Se a gravação falhar por causa delas, tenta de novo
@@ -3957,7 +4395,7 @@ async function submitRating(courtId, stars, comment) {
       ? "Você administra essa academia, então não avalia ela. As outras academias você avalia normalmente."
       : /já avaliou/.test(m) ? "Você já avaliou essa academia."
       : /Entre na sua conta|row-level security/.test(m) ? "Entre na sua conta para avaliar."
-      : "Não consegui enviar a avaliação agora. Tente de novo em instantes.");
+      : falhou("enviar a avaliação", error, { texto: "Não consegui enviar a avaliação agora. Tente de novo em instantes.", academia: courtId }));
   }
   marcarAvaliada(courtId);
   registrarPasso("acao", { academia: courtId, detalhe: `Avaliou com ${stars} ${stars === 1 ? "estrela" : "estrelas"} · ${nomeDaAcademiaDoPasso(courtId)}` });
@@ -4260,6 +4698,7 @@ function mountMiniMap(c) {
   if (!temCoord) { if (__miniMap) { __miniMap.remove(); __miniMap = null; } return; }
   if (!window.L) {
     el.innerHTML = `<div class="ht-map-empty">Não consegui carregar o mapa agora. O endereço abaixo abre no Google Maps e no Waze.</div>`;
+    mapaNaoCarregou();
     return;
   }
   if (__miniMap && __miniMap.getContainer() !== el) { __miniMap.remove(); __miniMap = null; }
@@ -5388,7 +5827,7 @@ async function abrirAcademia(id) {
   state.pcMenu = false;
   if (!contaAcademia || !id || id === contaAcademia.academiaId) { if (state.page === "parceiros") render(); else irParceiros("painel"); return; }
   const r = await sb.rpc('abrir_minha_academia', { p_academia: id });
-  if (r.error) { alert("Não consegui abrir essa academia agora. Tente de novo em instantes."); return; }
+  if (r.error) { avisarFalha("abrir essa academia", r.error, "Não consegui abrir essa academia agora. Tente de novo em instantes.", { texto: "Não consegui abrir essa academia agora. Tente de novo em instantes.", academia: id, tentar: () => abrirAcademia(id) }); return; }
   state.numeros = null;
   state.pessoas = null;
   state.pessoaNova = null;
@@ -5488,7 +5927,7 @@ function academiaAssumida(a) {
 }
 async function marcarRevisada(id) {
   const r = await sb.rpc('marcar_academia_revisada', { p_academia: id });
-  if (r.error) { alert("Não consegui marcar agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("marcar a academia como revisada", r.error, "Não consegui marcar agora: " + r.error.message, { academia: id }); return; }
   state.paraRevisar = (state.paraRevisar || []).filter(a => a.id !== id);
   render();
 }
@@ -5550,7 +5989,7 @@ async function resolverPedidoParaSair(id, remover, nome) {
     if (resposta === null) return;
   }
   const r = await sb.rpc('resolver_pedido_para_sair', { p_id: id, p_remover: !!remover, p_resposta: resposta || null });
-  if (r.error) { alert("Não consegui agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("resolver o pedido para sair do guia", r.error, "Não consegui agora: " + r.error.message); return; }
   state.pedidosParaSairAdmin = (state.pedidosParaSairAdmin || []).filter(p => p.id !== id);
   if (remover) await loadEverything();
   render();
@@ -5975,7 +6414,7 @@ function linhaDoCodigo(a) {
 async function mandarCodigoDoPedido(userId, academiaId) {
   const { data, error } = await rpcDoPedido('mandar_codigo_admin', { p_user: userId }, academiaId);
   if (error && (error.code === "PGRST202" || /could not find the function/i.test(error.message || ""))) return gerarCodigoDoPedido(userId, academiaId);
-  if (error) { alert("Não consegui: " + error.message); return; }
+  if (error) { avisarFalha("mandar o código ao WhatsApp da academia", error, "Não consegui: " + error.message, { academia: academiaId }); return; }
   if (data === "desligado") return gerarCodigoDoPedido(userId, academiaId);
   if (data === "sem_whatsapp") { alert("A ficha não tem WhatsApp para receber o código. Peça documento e decida em \"Aprovar\"."); return; }
   await carregarAcessos();
@@ -5984,7 +6423,7 @@ async function mandarCodigoDoPedido(userId, academiaId) {
 
 async function gerarCodigoDoPedido(userId, academiaId) {
   const { data, error } = await rpcDoPedido('gerar_codigo_do_pedido', { p_user: userId }, academiaId);
-  if (error) { alert("Não consegui: " + error.message); return; }
+  if (error) { avisarFalha("gerar o código do pedido", error, "Não consegui: " + error.message, { academia: academiaId }); return; }
   state.codigosGerados = { ...(state.codigosGerados || {}), [userId + "|" + academiaId]: data };
   await carregarAcessos();
   render();
@@ -5992,7 +6431,7 @@ async function gerarCodigoDoPedido(userId, academiaId) {
 
 async function decidirPedido(userId, academiaId, aprovar) {
   const { error } = await rpcDoPedido(aprovar ? 'aprovar_pedido_de_acesso' : 'recusar_pedido_de_acesso', { p_user: userId }, academiaId);
-  if (error) { alert("Não consegui: " + error.message); return; }
+  if (error) { avisarFalha(aprovar ? "aprovar o pedido de acesso" : "recusar o pedido de acesso", error, "Não consegui: " + error.message, { academia: academiaId }); return; }
   await carregarAcessos();
   render();
 }
@@ -6052,7 +6491,7 @@ async function salvarDadosConta() {
       p_nome: juntarNome(f), p_cargo: f.cargo, p_email: f.email.trim(), p_whatsapp: whats,
       p_cnpj: cnpj, p_recebe_relatorio: false, p_aceite: !!f.aceite, p_tratamento: f.tratamento,
     });
-    if (error) throw new Error(mensagemDoBanco(error, "Não consegui salvar agora. Tente de novo em instantes."));
+    if (error) throw new Error(falhou("salvar os dados de contato", error, { texto: "Não consegui salvar agora. Tente de novo em instantes.", regra: mensagemDoBanco(error, "Não consegui salvar agora. Tente de novo em instantes.") }));
     const primeiraVez = !contaAcademia.dadosCompletos;
     await recarregarConta();
     window.__conta = null;
@@ -6084,9 +6523,9 @@ async function trocarSenhaConta() {
     let login = contaAcademia.login || emailDoLogin(contaAcademia.usuario);
     try { const r = await sb.rpc('login_do_usuario', { p_usuario: contaAcademia.usuario }); if (!r.error && r.data) login = r.data; } catch {}
     const { error: errAtual } = await sb.auth.signInWithPassword({ email: login, password: f.atual });
-    if (errAtual) throw new Error("A senha atual não confere.");
+    if (errAtual) throw new Error(falhou("trocar a senha", errAtual, { texto: "Não consegui trocar a senha agora. Tente de novo em instantes.", regra: "A senha atual não confere." }));
     const { error } = await sb.auth.updateUser({ password: f.nova, current_password: f.atual });
-    if (error) throw new Error(mensagemSenha(error));
+    if (error) throw new Error(falhou("trocar a senha", error, { texto: mensagemSenha(error), regra: mensagemSenha(error) }));
     await sb.rpc('marcar_senha_trocada');
     window.__senha = null;
     state.contaModo = "painel";
@@ -6109,7 +6548,7 @@ async function publicarResposta(avaliacaoId) {
     ? await sb.from('respostas').update({ texto }).eq('avaliacao_id', avaliacaoId)
     : await sb.from('respostas').insert({ avaliacao_id: avaliacaoId, texto });
   if (error) {
-    state.respostaErro = "Não consegui publicar a resposta agora. Tente de novo em instantes.";
+    state.respostaErro = falhou("publicar a resposta", error, { texto: "Não consegui publicar a resposta agora. Tente de novo em instantes." });
     render();
     return;
   }
@@ -6122,7 +6561,7 @@ async function publicarResposta(avaliacaoId) {
 async function apagarResposta(avaliacaoId) {
   if (!confirm("Apagar essa resposta? Ela sai da ficha na hora.")) return;
   const { error } = await sb.from('respostas').delete().eq('avaliacao_id', avaliacaoId);
-  if (error) { alert("Não consegui apagar a resposta agora. Tente de novo."); return; }
+  if (error) { avisarFalha("apagar a resposta", error, "Não consegui apagar a resposta agora. Tente de novo.", { texto: "Não consegui apagar a resposta agora. Tente de novo em instantes.", tentar: () => apagarResposta(avaliacaoId) }); return; }
   await recarregarTudo();
 }
 
@@ -6139,7 +6578,7 @@ async function criarAcesso(courtId) {
   const senha = senhaProvisoria();
   const { error } = await sb.rpc('criar_acesso_academia', { p_academia: courtId, p_usuario: usuario, p_senha: senha });
   if (error) {
-    state.acessoErro = mensagemDoBanco(error, "Não consegui criar o acesso: " + error.message);
+    state.acessoErro = falhou("criar o acesso da academia", error, { texto: "Não consegui criar o acesso agora. Tente de novo em instantes.", regra: mensagemDoBanco(error, "Não consegui criar o acesso: " + error.message), academia: courtId });
     render();
     return;
   }
@@ -6155,7 +6594,7 @@ async function novaSenhaAcesso(userId, courtId) {
   const a = loginDaAcademia(courtId);
   const senha = senhaProvisoria();
   const { error } = await sb.rpc('nova_senha_academia', { p_user: userId, p_senha: senha });
-  if (error) { state.acessoErro = "Não consegui trocar a senha: " + error.message; render(); return; }
+  if (error) { state.acessoErro = falhou("trocar a senha da academia", error, { texto: "Não consegui trocar a senha agora. Tente de novo em instantes.", regra: "Não consegui trocar a senha: " + error.message, academia: courtId }); render(); return; }
   state.acessoErro = "";
   state.acessoNovo = { academiaId: courtId, usuario: a ? a.usuario : "", senha, mensagem: mensagemDoAcesso(c || { name: "academia", id: courtId }, a ? a.usuario : "", senha, true) };
   await carregarAcessos();
@@ -6169,7 +6608,7 @@ async function removerAcesso(userId, courtId) {
     ? `Tirar essa conta desta academia? Ela continua administrando ${outras} ${plural(outras, "outra academia", "outras academias")}. A ficha continua no site.`
     : "Remover o acesso dessa academia? Ela não entra mais na área da academia. A ficha continua no site.")) return;
   const { error } = await sb.rpc('remover_acesso_academia', courtId ? { p_user: userId, p_academia: courtId } : { p_user: userId });
-  if (error) { state.acessoErro = "Não consegui remover: " + error.message; render(); return; }
+  if (error) { state.acessoErro = falhou("remover o acesso", error, { texto: "Não consegui remover agora. Tente de novo em instantes.", regra: "Não consegui remover: " + error.message, academia: courtId }); render(); return; }
   state.acessoErro = "";
   state.acessoNovo = null;
   await carregarAcessos();
@@ -6245,7 +6684,7 @@ function ligarEventosConta() {
   if (avisosEmail) avisosEmail.onchange = async (e) => {
     const ligado = e.target.checked;
     const r = await sb.rpc('mudar_avisos_dos_parceiros', { p_ligado: ligado });
-    if (r.error) { e.target.checked = !ligado; state.contaAviso = ""; state.contaErro = "Não consegui mudar os avisos agora. Tente de novo em instantes."; render(); return; }
+    if (r.error) { e.target.checked = !ligado; state.contaAviso = ""; state.contaErro = falhou("mudar os avisos por e-mail", r.error, { texto: "Não consegui mudar os avisos agora. Tente de novo em instantes." }); render(); return; }
     contaAcademia.avisosPorEmail = ligado;
     state.contaErro = "";
     state.contaAviso = ligado ? "Avisos por e-mail ligados." : "Avisos por e-mail desligados.";
@@ -6498,6 +6937,12 @@ function attachMapCardEvents() {
 
 // O render() troca todo o HTML do app, então o mapa é remontado a cada
 // desenho — guardamos centro e zoom pra ele voltar onde estava.
+// O mapa (Leaflet, do unpkg.com) não carregou: uma falha por página.
+function mapaNaoCarregou() {
+  if (FALHAS.semMapa) return;
+  FALHAS.semMapa = true;
+  registrarFalha({ acao: "Carregar o mapa", tipo: navigator.onLine === false ? "rede" : "servico", mensagem: "O mapa (Leaflet, unpkg.com) não carregou" });
+}
 function mountMap(results) {
   const el = document.getElementById("map");
   if (!el) {
@@ -6506,6 +6951,7 @@ function mountMap(results) {
   }
   if (!window.L) {
     el.innerHTML = `<div class="map-empty">Não consegui carregar o mapa agora. Confira a conexão e recarregue a página.</div>`;
+    mapaNaoCarregou();
     return;
   }
   if (__map && __map.getContainer() !== el) { __map.remove(); __map = null; __markers = []; }
@@ -6833,7 +7279,7 @@ async function carregarNumeros(dias) {
     state.numerosDias = r.data.dias;
   } catch (e) {
     diag(`números da academia: ${e && e.message}`);
-    state.numeros = { dados: null, carregando: false, erro: "Não consegui carregar os números agora. Tente de novo em instantes." };
+    state.numeros = { dados: null, carregando: false, erro: falhou("carregar os números da academia", e, { texto: "Não consegui carregar os números agora. Tente de novo em instantes." }) };
   }
   if (state.page === "parceiros") render();
 }
@@ -8240,7 +8686,7 @@ async function salvarPromocao() {
   state.pcPromoSalvando = false;
   if (r.error) {
     const m = String(r.error.message || "");
-    state.pcPromoMsg = { tipo: "erro", texto: /Premium|60 letras|280 letras|90 dias|3 promoções|em análise|não administra/.test(m) ? m : "Não consegui salvar agora. Tente de novo em instantes." };
+    state.pcPromoMsg = { tipo: "erro", texto: /Premium|60 letras|280 letras|90 dias|3 promoções|em análise|não administra/.test(m) ? m : falhou("salvar a promoção", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes.", academia: c.id }) };
     render();
     return;
   }
@@ -8258,7 +8704,7 @@ async function encerrarPromocao(id) {
   const x = (state.pcPromocoes || []).find(y => y.id === id);
   if (!confirm(x && x.valendo ? "Encerrar esta promoção? Ela sai da ficha e da busca na hora." : "Apagar esta promoção da lista?")) return;
   const r = await sb.rpc('apagar_promocao', { p_id: id });
-  state.pcPromoMsg = r.error ? { tipo: "erro", texto: "Não consegui encerrar agora. Tente de novo." } : { tipo: "ok", texto: x && x.valendo ? "Promoção encerrada." : "Promoção apagada." };
+  state.pcPromoMsg = r.error ? { tipo: "erro", texto: falhou("encerrar a promoção", r.error, { texto: "Não consegui encerrar agora. Tente de novo." }) } : { tipo: "ok", texto: x && x.valendo ? "Promoção encerrada." : "Promoção apagada." };
   if (state.pcPromoEditando === id) { state.pcPromoEditando = null; state.pcPromoForm = null; }
   await Promise.all([carregarPromocoes(), carregarPromocoesDaAcademia()]);
   render();
@@ -8303,7 +8749,7 @@ async function carregarPedidosDeAcesso() {
 async function responderPedidoDeAcesso(userId, aceitar) {
   state.pedidoAcessoErro = "";
   const r = await sb.rpc('responder_pedido_de_acesso', { p_user: userId, p_aceitar: aceitar });
-  if (r.error) { state.pedidoAcessoErro = r.error.message || "Não consegui responder agora."; render(); return; }
+  if (r.error) { state.pedidoAcessoErro = falhou("responder o pedido de acesso", r.error, { texto: "Não consegui responder agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui responder agora." }); render(); return; }
   state.contaAviso = aceitar ? "Pronto! A pessoa entrou na equipe da academia." : "Pedido recusado.";
   await carregarPedidosDeAcesso();
   await carregarPessoas();
@@ -8576,7 +9022,7 @@ async function pedirParaSair(academiaId) {
   state.pcSaidaEnviando = false;
   if (r.error) {
     const m = String(r.error.message || "");
-    state.pcSaidaErro = /responsável principal|Já existe|motivo|500 letras/.test(m) ? m : "Não consegui enviar agora. Tente de novo em instantes.";
+    state.pcSaidaErro = /responsável principal|Já existe|motivo|500 letras/.test(m) ? m : falhou("pedir para tirar a academia do guia", r.error, { texto: "Não consegui enviar agora. Tente de novo em instantes.", academia: academiaId });
     render();
     return;
   }
@@ -8588,7 +9034,7 @@ async function pedirParaSair(academiaId) {
 async function cancelarPedidoParaSair(academiaId) {
   if (!confirm("Cancelar o pedido para tirar a academia do guia?")) return;
   const r = await sb.rpc('cancelar_pedido_para_sair', { p_academia: academiaId });
-  if (r.error) { alert("Não consegui cancelar agora. Tente de novo."); return; }
+  if (r.error) { avisarFalha("cancelar o pedido para sair do guia", r.error, "Não consegui cancelar agora. Tente de novo.", { texto: "Não consegui cancelar agora. Tente de novo em instantes.", academia: academiaId, tentar: () => cancelarPedidoParaSair(academiaId) }); return; }
   state.contaAviso = "Pedido cancelado: a academia continua no guia.";
   await carregarPedidosParaSair();
   render();
@@ -8643,7 +9089,7 @@ async function continuarComEmail() {
   }
   state.pcContaSalvando = false;
   if (r.error) {
-    state.pcContaErro = "Não consegui conferir o e-mail agora. Tente de novo em instantes.";
+    state.pcContaErro = falhou("conferir o e-mail", r.error, { texto: "Não consegui conferir o e-mail agora. Tente de novo em instantes." });
   } else if (r.data && r.data.tipo === "outra") {
     state.pcContaErro = "Esse e-mail é de outra conta do GuiaTennis. Para a academia, use outro e-mail.";
   } else {
@@ -8738,7 +9184,7 @@ async function criarContaDeParceiro() {
   });
   if (r.error) {
     if (/senha/i.test(r.error.message || "")) f.senha2 = "";
-    return erro(r.error.message || "Não consegui criar a conta agora.");
+    return erro(falhou("criar a conta do Parceiros", r.error, { texto: "Não consegui criar a conta agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui criar a conta agora." }));
   }
   const { data, error } = await sb.auth.signInWithPassword({ email, password: f.senha });
   if (error) return erro("A conta foi criada, mas não consegui entrar. Tente em Entrar.");
@@ -8767,7 +9213,7 @@ async function ativarParceirosDoJogador() {
     p_nome: juntarNome(f), p_whatsapp: f.whatsapp, p_aceite: true,
     p_tratamento: f.tratamento, p_cargo: f.cargo, p_recebe_novidades: !!f.novidades,
   });
-  if (r.error) return erro(r.error.message || "Não consegui agora. Tente de novo em instantes.");
+  if (r.error) return erro(falhou("usar a conta de jogador no Parceiros", r.error, { texto: "Não consegui agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui agora. Tente de novo em instantes." }));
   await recarregarConta();
   registrarPasso("acao", { site: "parceiros", detalhe: "Usou a conta de jogador no GuiaTennis Parceiros" });
   window.__pcConta = null;
@@ -8792,7 +9238,7 @@ async function pedirParaAdministrar(academiaId) {
   let r = await sb.rpc('pedir_para_administrar', { p_academia: academiaId, p_declaro: true });
   // Banco antes do SQL 20261006130000: pede como antes, sem guardar a hora.
   if (r.error && /could not find|PGRST202/i.test((r.error.message || "") + (r.error.code || ""))) r = await sb.rpc('pedir_para_administrar', { p_academia: academiaId });
-  if (r.error) { state.pedidoErro = r.error.message || "Não consegui mandar o pedido agora."; render(); return; }
+  if (r.error) { state.pedidoErro = falhou("pedir para administrar a academia", r.error, { texto: "Não consegui mandar o pedido agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui mandar o pedido agora.", academia: academiaId }); render(); return; }
   state.pcReivindicar = null;
   state.pcSelecionada = undefined;
   state.pcDeclaro = false;
@@ -8826,9 +9272,7 @@ async function contestarAcademia(academiaId) {
   state.pedidoAviso = "";
   const r = await sb.rpc('contestar_academia', { p_academia: academiaId });
   if (r.error) {
-    state.pedidoErro = /could not find|PGRST202/i.test((r.error.message || "") + (r.error.code || ""))
-      ? "Não consegui contestar agora. Fale com o GuiaTennis no WhatsApp."
-      : (r.error.message || "Não consegui contestar agora.");
+    state.pedidoErro = falhou("contestar quem administra a academia", r.error, { texto: "Não consegui contestar agora. Fale com o GuiaTennis no WhatsApp.", regra: r.error.message || "Não consegui contestar agora.", academia: academiaId });
     render();
     return;
   }
@@ -8858,9 +9302,7 @@ async function pedirOutroCodigo(academiaId) {
   const r = await sb.rpc('pedir_codigo_da_disputa', { p_academia: academiaId });
   state.pcContaSalvando = false;
   if (r.error) {
-    state.pedidoErro = /could not find|PGRST202/i.test((r.error.message || "") + (r.error.code || ""))
-      ? "Não consegui mandar agora. Fale com o GuiaTennis no WhatsApp."
-      : (r.error.message || "Não consegui mandar agora.");
+    state.pedidoErro = falhou("mandar outro código", r.error, { texto: "Não consegui mandar agora. Fale com o GuiaTennis no WhatsApp.", regra: r.error.message || "Não consegui mandar agora.", academia: academiaId });
     render();
     return;
   }
@@ -8889,7 +9331,7 @@ async function confirmarCodigo(academiaId) {
     sem_codigo: "O código ainda não foi mandado. Aguarde a mensagem no WhatsApp da academia.",
   };
   if (r.error || r.data !== "ok") {
-    state.pedidoErro = r.error ? (r.error.message || "Não consegui conferir agora.") : (avisos[r.data] || "Não consegui conferir agora.");
+    state.pedidoErro = r.error ? falhou("conferir o código", r.error, { texto: "Não consegui conferir agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui conferir agora.", academia: academiaId }) : (avisos[r.data] || "Não consegui conferir agora.");
     render();
     return;
   }
@@ -8912,7 +9354,7 @@ async function pausarAcademia(academiaId, pausar, dias) {
   if (pausar && dias > 0) { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + dias); ate = d.toISOString(); }
   const r = await sb.rpc('pausar_minha_academia', { p_academia: academiaId, p_pausar: !!pausar, p_ate: ate });
   if (r.error) {
-    state.pausaErro = (r.error.code === "42501" || r.error.code === "22023") && r.error.message ? r.error.message : "Não consegui mudar agora. Tente de novo em instantes.";
+    state.pausaErro = (r.error.code === "42501" || r.error.code === "22023") && r.error.message ? r.error.message : falhou(pausar ? "pausar a academia" : "voltar a mostrar a academia", r.error, { texto: "Não consegui mudar agora. Tente de novo em instantes.", academia: academiaId });
     state.pausaErroEm = academiaId;
     render();
     return;
@@ -8929,7 +9371,7 @@ async function pausarAcademia(academiaId, pausar, dias) {
 
 async function cancelarPedido(academiaId) {
   const r = await rpcDoPedido('cancelar_meu_pedido', {}, academiaId);
-  if (r.error) { state.pedidoErro = "Não consegui cancelar agora."; state.pedidoErroEm = academiaId; render(); return; }
+  if (r.error) { state.pedidoErro = falhou("cancelar o pedido", r.error, { texto: "Não consegui cancelar agora. Tente de novo em instantes.", regra: "Não consegui cancelar agora.", academia: academiaId }); state.pedidoErroEm = academiaId; render(); return; }
   state.pedidoErro = "";
   state.pedidoErroEm = null;
   if (state.pcPedidoFeito === academiaId) state.pcPedidoFeito = null;
@@ -8947,7 +9389,7 @@ async function adicionarPessoa() {
   const senha = senhaProvisoria();
   const r = await sb.rpc('adicionar_pessoa', { p_email: email, p_nome: (f.nome || "").trim(), p_senha: senha });
   state.pessoaSalvando = false;
-  if (r.error) { state.pessoaErro = r.error.message || "Não consegui adicionar agora."; render(); return; }
+  if (r.error) { state.pessoaErro = falhou("adicionar a pessoa", r.error, { texto: "Não consegui adicionar agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui adicionar agora." }); render(); return; }
   state.pessoaNova = { email, nome: (f.nome || "").trim(), senha, ligada: r.data === "ligada" };
   window.__pessoa = null;
   await carregarPessoas();
@@ -8957,7 +9399,7 @@ async function removerPessoa(userId, nome) {
   const c = minhaAcademia();
   if (!confirm(`Remover ${nome || "essa pessoa"} da ${c ? c.name : "academia"}? Se ela não administrar outra academia, deixa de entrar no GuiaTennis Parceiros.`)) return;
   const r = await sb.rpc('remover_pessoa', { p_user: userId });
-  if (r.error) { state.pessoaErro = r.error.message || "Não consegui remover agora."; render(); return; }
+  if (r.error) { state.pessoaErro = falhou("remover a pessoa", r.error, { texto: "Não consegui remover agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui remover agora." }); render(); return; }
   state.pessoaErro = "";
   state.pessoaNova = null;
   await carregarPessoas();
@@ -9637,7 +10079,7 @@ async function guardarAvisoDaViagem(r, cidade) {
   const dados = { avisos_viagem: true, viagem_uf: r.uf, viagem_cidade: cidade, viagem_ida: r.ida || null,
     viagem_volta: r.volta || null, avisos_mudados_em: new Date().toISOString() };
   const { error } = await sb.from('jogadores').update(dados).eq('user_id', jogador.user_id);
-  if (error) return " Não consegui ligar o aviso por e-mail agora: tente de novo em Minhas quadras › Vou viajar.";
+  if (error) return " " + falhou("ligar o aviso da viagem", error, { texto: "Não consegui ligar o aviso por e-mail agora: tente de novo em Minhas quadras › Vou viajar.", silenciosa: true });
   Object.assign(jogador, dados);
   registrarPasso("acao", { detalhe: "Ligou o aviso da viagem por e-mail" });
   return jogador.email_confirmado_em
@@ -10191,9 +10633,9 @@ async function enviarCodigo(email) {
   window.__codigo = {};
   try {
     const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
-    if (error) diag(`código por e-mail: ${error.message}`);
+    if (error) { diag(`código por e-mail: ${error.message}`); falhou("mandar o código por e-mail", error, { texto: "Não consegui mandar o código agora." }); }
     return !error;
-  } catch (e) { diag(`código por e-mail: ${e.message}`); return false; }
+  } catch (e) { diag(`código por e-mail: ${e.message}`); falhou("mandar o código por e-mail", e, { texto: "Não consegui mandar o código agora." }); return false; }
 }
 // Confere o código; certo, a pessoa fica logada por ele (e o banco aceita a
 // confirmação do e-mail).
@@ -10411,7 +10853,7 @@ async function continuarJogadorComEmail() {
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const r = await sb.rpc('conta_do_email', { p_email: email });
   state.jogadorSalvando = false;
-  if (r.error) { state.jogadorErro = "Não consegui conferir o e-mail agora. Tente de novo em instantes."; render(); return; }
+  if (r.error) { state.jogadorErro = falhou("conferir o e-mail", r.error, { texto: "Não consegui conferir o e-mail agora. Tente de novo em instantes." }); render(); return; }
   state.jogadorLogin = (r.data && r.data.login) || email;
   state.jogadorTela = r.data ? "entrar" : "criar";
   render();
@@ -10435,7 +10877,8 @@ async function entrarJogador() {
   if (error || !jogador) {
     if (!error) await sb.auth.signOut();
     state.jogadorSalvando = false;
-    state.jogadorErro = "E-mail ou senha incorretos.";
+    // Internet que caiu não é senha errada (11/10/2026).
+    state.jogadorErro = error ? falhou("entrar na conta", error, { texto: "Não deu para entrar agora. Tente de novo em instantes.", regra: "E-mail ou senha incorretos." }) : "E-mail ou senha incorretos.";
     render();
     return;
   }
@@ -10470,7 +10913,7 @@ async function criarContaJogador() {
     state.jogadorSalvando = false;
     state.jogadorErro = /já tem conta/.test(r.error.message || "") ? "Esse e-mail já tem conta. Entre com a sua senha."
       : /Muitos cadastros|não pode criar conta/.test(r.error.message || "") ? r.error.message
-      : "Não consegui criar a conta agora. Tente de novo em instantes.";
+      : falhou("criar a conta", r.error, { texto: "Não consegui criar a conta agora. Tente de novo em instantes." });
     if (/já tem conta/.test(r.error.message || "")) { state.jogadorTela = "entrar"; state.jogadorLogin = email; }
     render();
     return;
@@ -10502,7 +10945,7 @@ async function salvarContaJogador() {
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const { error } = await sb.from('jogadores').update(dados).eq('user_id', jogador.user_id);
   state.jogadorSalvando = false;
-  if (error) { state.jogadorErro = "Não consegui salvar agora. Tente de novo em instantes."; render(); return; }
+  if (error) { state.jogadorErro = falhou("salvar o perfil", error, { texto: "Não consegui salvar agora. Tente de novo em instantes." }); render(); return; }
   Object.assign(jogador, dados);
   registrarPasso("acao", { detalhe: "Salvou o perfil" });
   state.jogadorAviso = "Salvo.";
@@ -10545,7 +10988,7 @@ async function confirmarPararAvisos() {
   // texto inválido — é link que não vale, não falha do site.
   const invalido = r.error && (r.error.code === "22P02" || /invalid input syntax/i.test(r.error.message || ""));
   if (r.error && !invalido || !r.data) {
-    p.erro = r.error && !invalido ? "Não consegui parar os avisos agora. Tente de novo em instantes." : "Esse link não vale mais. Entre na sua conta para mudar os avisos.";
+    p.erro = r.error && !invalido ? falhou("parar os avisos por e-mail", r.error, { texto: "Não consegui parar os avisos agora. Tente de novo em instantes." }) : "Esse link não vale mais. Entre na sua conta para mudar os avisos.";
     render();
     return;
   }
@@ -10892,7 +11335,7 @@ function ligarEventosJogador() {
   if (excluir) excluir.onclick = async () => {
     if (!confirm("Excluir a sua conta do GuiaTennis? Os seus dados e os avisos saem; as avaliações continuam, com o seu nome. Isso não pode ser desfeito.")) return;
     const r = await sb.rpc('excluir_minha_conta_jogador');
-    if (r.error) { state.jogadorErro = "Não consegui excluir agora. Fale com o GuiaTennis no WhatsApp."; render(); return; }
+    if (r.error) { state.jogadorErro = falhou("excluir a conta", r.error, { texto: "Não consegui excluir agora. Fale com o GuiaTennis no WhatsApp." }); render(); return; }
     try { await sb.auth.signOut(); } catch {}
     location.reload();
   };
@@ -11404,7 +11847,7 @@ async function salvarBusca() {
   if (error || !data) {
     state.buscaSalvaErro = /20 buscas/.test((error && error.message) || "")
       ? "Você já tem 20 buscas salvas. Apague uma no seu perfil para salvar outra."
-      : "Não consegui salvar a busca agora. Tente de novo em instantes.";
+      : falhou("salvar a busca", error, { texto: "Não consegui salvar a busca agora. Tente de novo em instantes." });
     render();
     return;
   }
@@ -11417,14 +11860,14 @@ async function avisarDaBusca(id, avisar) {
   const b = buscasSalvas.find(x => x.id === id);
   if (!b) return;
   const { error } = await sb.from('buscas_salvas').update({ avisar: !!avisar }).eq('id', id);
-  if (error) { state.buscaSalvaErro = "Não consegui mudar o aviso agora. Tente de novo em instantes."; render(); return; }
+  if (error) { state.buscaSalvaErro = falhou("mudar o aviso da busca", error, { texto: "Não consegui mudar o aviso agora. Tente de novo em instantes." }); render(); return; }
   b.avisar = !!avisar;
   if (avisar) registrarPasso("acao", { detalhe: "Ligou o aviso da busca salva" });
   render();
 }
 async function apagarBuscaSalva(id) {
   const { error } = await sb.from('buscas_salvas').delete().eq('id', id);
-  if (error) { state.buscaSalvaErro = "Não consegui apagar agora. Tente de novo em instantes."; render(); return; }
+  if (error) { state.buscaSalvaErro = falhou("apagar a busca salva", error, { texto: "Não consegui apagar agora. Tente de novo em instantes." }); render(); return; }
   buscasSalvas = buscasSalvas.filter(x => x.id !== id);
   if (state.buscaSalvaAviso === id) state.buscaSalvaAviso = null;
   render();
@@ -15714,7 +16157,7 @@ function conteudoDasEstatisticas() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 9 de outubro de 2026</p>
+<p class="footnote">Última atualização: 11 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -15743,9 +16186,9 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 9 de outubro de 2026</p>
+<p class="footnote">Última atualização: 11 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> no site dos jogadores, e no GuiaTennis Parceiros sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. No GuiaTennis Parceiros, com a sua conta aberta, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat e quando), para você ver o histórico em "Conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos de promoções, os favoritos também servem para isso: quando uma academia favorita publica uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> no site dos jogadores, e no GuiaTennis Parceiros sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. No GuiaTennis Parceiros, com a sua conta aberta, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat e quando), para você ver o histórico em "Conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos de promoções, os favoritos também servem para isso: quando uma academia favorita publica uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e mandar o resumo do mês por e-mail (no plano Premium, o relatório completo). As pessoas da mesma academia veem o nome e o e-mail umas das outras. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso (para o responsável), pedido aceito, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha (de novo a cada 3 meses enquanto ela continuar igual) e, no começo de cada mês, o resumo dos números da academia no mês anterior; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -15877,6 +16320,12 @@ const CHAT_TEMAS = [
     p: ["codigo", "nao chegou", "nao recebi", "confirmar e mail", "confirmar email", "confirmacao", "verificar e mail", "spam", "6 numeros", "seis numeros"],
     r: "O código de 6 números vai para o e-mail da conta e chega em até alguns minutos. Confira a caixa de spam e a aba Promoções. Se não chegar, peça outro na mesma tela. Confira também se o e-mail foi digitado certo.",
     a: [{ t: "Entrar", ir: "entrar" }] },
+  // Algo não funcionou (11/10/2026): o que costuma resolver e o código do
+  // problema, se a pessoa viu um.
+  { id: "problema", onde: "todos", t: "Algo não funcionou",
+    p: ["erro", "deu erro", "bug", "travou", "trava", "travando", "nao funciona", "nao carrega", "nao abre", "nao salva", "nao salvou", "nao envia", "nao enviou", "falha", "falhou", "tela branca", "pagina branca", "deu problema", "problema no site", "fora do ar", "codigo do problema"],
+    r: "Sinto muito. O que costuma resolver: confira a internet, recarregue a página e tente de novo. Se continuar, fale com o Breno no WhatsApp. Se apareceu um \"código do problema\" (6 letras e números), mande junto: com ele dá para ver exatamente o que aconteceu.",
+    a: [{ t: "Recarregar a página", ir: "recarregar" }, { t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] },
   { id: "humano", onde: "todos", t: "Falar com uma pessoa",
     p: ["falar com", "atendente", "humano", "pessoa de verdade", "alguem", "whatsapp", "contato", "suporte", "atendimento", "breno"],
     r: "Claro. O Breno, do GuiaTennis, responde pelo WhatsApp. A sua dúvida já vai escrita na mensagem.",
@@ -15945,8 +16394,8 @@ const CHAT_TEMAS = [
 ];
 // Os primeiros assuntos que o chat sugere, em cada site.
 const CHAT_SUGESTOES = {
-  parceiros: ["cadastrar", "senha", "planos", "promocoes", "pausar", "sair"],
-  jogadores: ["buscar", "reservar", "avaliar", "conta", "favoritas", "tenho-academia"],
+  parceiros: ["cadastrar", "senha", "planos", "promocoes", "pausar", "sair", "problema"],
+  jogadores: ["buscar", "reservar", "avaliar", "conta", "favoritas", "tenho-academia", "problema"],
 };
 
 function siteDoChat() {
@@ -15987,7 +16436,9 @@ function sugestoesDoChat() {
 function linkWhatsDoChat() {
   const ch = state.chat || {};
   const onde = siteDoChat() === "parceiros" ? "GuiaTennis Parceiros" : "GuiaTennis";
-  return whatsappGuia(`Olá! Vim pelo chat de ajuda do ${onde}.${ch.ultimaPergunta ? ` Minha dúvida: ${ch.ultimaPergunta}` : ""}`);
+  // Veio de uma falha (11/10/2026): o problema e o código vão escritos.
+  const problema = ch.falha ? ` Tive um problema: não deu para ${ch.falha.acao} (código ${ch.falha.codigo}).` : "";
+  return whatsappGuia(`Olá! Vim pelo chat de ajuda do ${onde}.${problema}${ch.ultimaPergunta ? ` Minha dúvida: ${ch.ultimaPergunta}` : ""}`);
 }
 // Conversas guardadas na conta (pedido do Breno em 09/10/2026: "faça que o
 // chat de parceiros fique salvo na conta também e tenha histórico e que pode
@@ -15999,7 +16450,7 @@ const CHAT_NA_CONTA = ["parceiros"];
 const CHAT_ATUAL_KEY = "guiatennis_chat_atual";
 const CHAT_MAX_MSGS = 120;
 const CHAT_MAX_CONVERSAS = 50;
-const IR_DO_CHAT = /^(pc:[a-z-]+|menu:[a-z-]+|entrar|whatsapp)$/;
+const IR_DO_CHAT = /^(pc:[a-z-]+|menu:[a-z-]+|entrar|whatsapp|recarregar)$/;
 function contaDoChat() {
   if (!CHAT_NA_CONTA.includes(siteDoChat()) || isAdmin) return null;
   if (contaAcademia && !contaAcademia.visaoAdmin && contaAcademia.userId) return contaAcademia.userId;
@@ -16105,6 +16556,7 @@ function guardarConversa() {
       const r = await sb.rpc('guardar_conversa_de_ajuda', { p_id: ch.id, p_site: ch.site, p_titulo: tituloDoChat(ch) || null,
         p_mensagens: msgs.map((m, i) => mensagemParaGuardar(m, i === msgs.length - 1)) });
       if (!r.error && r.data) { ch.id = r.data; ok = true; }
+      else if (r.error) falhou("guardar a conversa do chat na conta", r.error, { silenciosa: true });
     } catch { /* banco sem a função */ }
     const mudou = ch.naoGuardou !== !ok;
     ch.naoGuardou = !ok;
@@ -16173,11 +16625,11 @@ function abrirConversaGuardada(id) {
 async function apagarConversaGuardada(id) {
   const cv = state.conversasDoChat;
   if (!cv || !cv.lista || !state.chat) return;
-  let ok = false;
-  try { const { error } = await sb.from('conversas_de_ajuda').delete().eq('id', id); ok = !error; } catch {}
+  let ok = false, erro = null;
+  try { const { error } = await sb.from('conversas_de_ajuda').delete().eq('id', id); ok = !error; erro = error; } catch (e) { erro = e; }
   const ch = state.chat;
   ch.apagando = null;
-  if (!ok) { ch.erroConversas = "Não deu para apagar agora. Tente de novo daqui a pouco."; render(); return; }
+  if (!ok) { ch.erroConversas = falhou("apagar a conversa", erro, { texto: "Não deu para apagar agora. Tente de novo daqui a pouco." }); render(); return; }
   cv.lista = cv.lista.filter(c => c.id !== id);
   if (ch.id === id) {
     state.chat = { ...conversaNova(ch.site, ch.conta), aberto: true, vendo: ch.vendo };
@@ -16188,6 +16640,13 @@ async function apagarConversaGuardada(id) {
 function responderComTema(tema) {
   const ch = state.chat;
   ch.erros = 0;
+  // "Deu erro" logo depois de uma falha: o chat já sabe qual foi e o código.
+  const falha = tema.id === "problema" && falhaRecente();
+  if (falha) {
+    ch.falha = { codigo: falha.codigo, acao: falha.acao };
+    ch.msgs.push({ ...mensagemDaFalhaNoChat(falha), chips: [{ t: "Resolveu", resp: "sim" }, { t: "Ainda preciso de ajuda", resp: "nao" }] });
+    return;
+  }
   const chips = tema.id === "saudacao" ? sugestoesDoChat() : tema.id === "humano" ? null : [{ t: "Resolveu", resp: "sim" }, { t: "Ainda preciso de ajuda", resp: "nao" }];
   ch.msgs.push({ de: "gt", texto: tema.r, acoes: tema.a, chips });
 }
@@ -16234,6 +16693,7 @@ function escolherNoChat(dado) {
   guardarConversa();
 }
 function irPeloChat(ir) {
+  if (ir === "recarregar") { location.reload(); return; }
   if (state.chat) state.chat.aberto = false;
   if (ir === "entrar") ir = siteDoChat() === "parceiros" ? "pc:entrar" : "menu:entrar-jogador";
   if (ir.startsWith("pc:")) {
@@ -16499,6 +16959,9 @@ const ADMIN_ABAS = [
   { aba: "estatisticas", t: "Estatísticas", ic: "barchart", sub: "Acessos, buscas, fichas abertas e contatos, por período. Os seus acessos não entram na conta." },
   { aba: "percursos", t: "Percurso das visitas", ic: "map", sub: "O caminho de cada visita, passo a passo. Ninguém é identificado." },
   { aba: "emails", t: "E-mails", ic: "mail", sub: "Os avisos que o GuiaTennis manda e a situação de cada um." },
+  // Falhas do site (pedido do Breno em 11/10/2026: "eu preciso saber em
+  // algum lugar se alguma ação do site apresentou falha ou não").
+  { aba: "falhas", t: "Falhas do site", ic: "warning", sub: "O que não funcionou para quem usa o site, com o aparelho e o caminho até a falha. Quem viu o aviso recebeu um código: procure por ele aqui." },
   { aba: "ferramentas", t: "Ferramentas", ic: "ajustes", sub: "QR code do site, coordenadas do mapa e academias do mapa aberto." },
 ];
 function abaDoAdmin(aba) {
@@ -16531,6 +16994,7 @@ function carregarAbaDoAdmin() {
   if (aba === "jogadores") carregarJogadoresDoAdmin();
   if (aba === "excluidas") carregarContasExcluidas();
   if (aba === "emails") carregarEmailsRecentes();
+  if (aba === "falhas" || aba === "inicio") carregarFalhas();
   if (aba === "percursos" && !(state.percursos && state.percursos.linhas && state.percursos.linhas.length)) { state.percursosMostrar = 20; carregarPercursos(); }
 }
 
@@ -16547,8 +17011,8 @@ async function carregarJogadoresDoAdmin() {
     const r = await sb.from('jogadores')
       .select('user_id, nome, email, cidade, avisos_academias, avisos_viagem, promocoes, novidades, email_confirmado_em, created_at')
       .order('created_at', { ascending: false }).limit(2000);
-    state.admJogadores = r.error ? { lista: [], erro: "Não consegui carregar as contas agora." } : { lista: r.data || [] };
-  } catch { state.admJogadores = { lista: [], erro: "Não consegui carregar as contas agora." }; }
+    state.admJogadores = r.error ? { lista: [], erro: falhou("carregar as contas de jogador", r.error, { texto: "Não consegui carregar as contas agora.", silenciosa: true }) } : { lista: r.data || [] };
+  } catch (e) { state.admJogadores = { lista: [], erro: falhou("carregar as contas de jogador", e, { texto: "Não consegui carregar as contas agora.", silenciosa: true }) }; }
   if (state.page === "admin") render();
 }
 
@@ -16559,15 +17023,15 @@ async function carregarEmailsRecentes() {
     const r = await sb.rpc('emails_recentes_admin', { p_limite: 100 });
     state.admEmails = r.error
       ? { lista: [], erro: /could not find|does not exist|schema cache/i.test(r.error.message || "")
-          ? "O banco ainda não tem a lista dos e-mails (SQL 20261006120000): ela entra sozinha com o PR." : "Não consegui carregar os e-mails agora." }
+          ? "O banco ainda não tem a lista dos e-mails (SQL 20261006120000): ela entra sozinha com o PR." : falhou("carregar os e-mails", r.error, { texto: "Não consegui carregar os e-mails agora.", silenciosa: true }) }
       : { lista: r.data || [] };
-  } catch { state.admEmails = { lista: [], erro: "Não consegui carregar os e-mails agora." }; }
+  } catch (e) { state.admEmails = { lista: [], erro: falhou("carregar os e-mails", e, { texto: "Não consegui carregar os e-mails agora.", silenciosa: true }) }; }
   if (state.page === "admin") render();
 }
 
 async function reenviarEmail(id) {
   const r = await sb.rpc('reenviar_email_admin', { p_id: id });
-  if (r.error) { alert("Não consegui mandar de novo: " + r.error.message); return; }
+  if (r.error) { avisarFalha("mandar o e-mail de novo", r.error, "Não consegui mandar de novo: " + r.error.message); return; }
   carregarSituacaoDosEmails();
   await carregarEmailsRecentes();
 }
@@ -16642,6 +17106,8 @@ function admParaFazer() {
   if (e && (!e.chave || !e.envio || !e.relogio)) itens.push({ n: "!", t: "Os avisos por e-mail estão parados", aba: "emails" });
   else if (e && e.falharam) itens.push({ n: e.falharam, t: plural(e.falharam, "e-mail não saiu", "e-mails não saíram"), aba: "emails" });
   if (state.faltaSqlCliques) itens.push({ n: "!", t: `O banco não tem a coluna ${state.faltaSqlCliques} nos cliques: as estatísticas ficam incompletas`, aba: "estatisticas" });
+  const falhas = falhasNovasParaOAdmin();
+  if (falhas) itens.push({ n: falhas, t: plural(falhas, "falha no site nas últimas 24 horas", "falhas no site nas últimas 24 horas"), aba: "falhas" });
   return itens;
 }
 
@@ -16891,7 +17357,7 @@ const ADM_TIPOS_DE_EMAIL = {
   avaliacao: "Avaliação nova", pedido_responsavel: "Pedido ao responsável", pedido_guiatennis: "Pedido ao GuiaTennis",
   pedido_aceito: "Pedido aceito", viagem: "Viagem", academias_novas: "Academias novas", academia_no_ar: "Academia nova no ar",
   academia_assumida: "Academia assumida", disputa: "Disputa", ficha_parada: "Conferir a ficha",
-  volta: "Lembrete de volta", resumo_do_mes: "Resumo do mês",
+  volta: "Lembrete de volta", resumo_do_mes: "Resumo do mês", falha_no_site: "Falha no site",
 };
 function admEmailsHtml() {
   const d = state.admEmails || {};
@@ -16922,6 +17388,204 @@ function admEmailsHtml() {
             </div>`; }).join("")}
         </div>` : ""}
     </section>`;
+}
+
+// ---- falhas do site (11/10/2026) ----
+// Como o "Issues" do Sentry: as falhas iguais (a mesma ação com a mesma
+// mensagem) ficam juntas, com quantas vezes, para quantas visitas, em que
+// aparelho e navegador, a primeira e a última vez, e cada ocorrência com o
+// código que a pessoa viu e o caminho da visita até a falha (o percurso).
+// "Marcar como resolvida" fecha o grupo; se voltar, aparece como "Voltou".
+const ADM_TIPOS_DE_FALHA = { rede: "Conexão", banco: "Banco", servico: "Serviço de fora", codigo: "Código do site" };
+const ADM_QUEM_DA_FALHA = { visitante: "visitante", jogador: "jogador com conta", academia: "conta do Parceiros", admin: "você (admin)" };
+const ADM_SITE_DA_FALHA = { jogadores: "Site dos jogadores", parceiros: "GuiaTennis Parceiros", admin: "Painel do admin" };
+async function carregarFalhas() {
+  const atual = state.admFalhas || {};
+  const dias = atual.dias || 7;
+  state.admFalhas = { ...atual, dias, carregando: true };
+  if (state.page === "admin") render();
+  try {
+    const r = await sb.rpc('falhas_admin', { p_dias: dias });
+    state.admFalhas = r.error
+      ? { dias, lista: [], erro: /could not find|does not exist|schema cache|PGRST202/i.test(`${r.error.message || ""} ${r.error.code || ""}`)
+          ? "O banco ainda não tem as falhas (SQL 20261011120000): elas entram sozinhas com o PR." : "Não consegui carregar as falhas agora." }
+      : { dias, lista: r.data || [] };
+  } catch { state.admFalhas = { dias, lista: [], erro: "Não consegui carregar as falhas agora." }; }
+  if (state.page === "admin") render();
+}
+// A mesma falha junta. A lista vem da mais nova para a mais antiga.
+function gruposDeFalhas(lista) {
+  const mapa = new Map();
+  (lista || []).forEach(f => {
+    if (!mapa.has(f.grupo)) mapa.set(f.grupo, { grupo: f.grupo, acao: f.acao, tipo: f.tipo, mensagem: f.mensagem, ocorrencias: [] });
+    mapa.get(f.grupo).ocorrencias.push(f);
+  });
+  const dia = Date.now() - 86400000;
+  return [...mapa.values()].map(g => {
+    const abertas = g.ocorrencias.filter(f => !f.resolvida_em);
+    const ultima = g.ocorrencias[0], primeira = g.ocorrencias[g.ocorrencias.length - 1];
+    return { ...g, abertas, ultima, primeira,
+      visitas: new Set(g.ocorrencias.map(f => f.visita || f.id)).size,
+      voltou: abertas.length > 0 && g.ocorrencias.some(f => f.resolvida_em),
+      nova: new Date(primeira.created_at).getTime() > dia,
+      // A de conexão quase sempre é a internet de quem usa: fica na lista,
+      // mas não conta em "Para fazer agora".
+      deFora: abertas.filter(f => f.quem !== "admin" && f.tipo !== "rede" && new Date(f.created_at).getTime() > dia).length };
+  }).sort((a, b) => (b.abertas.length > 0) - (a.abertas.length > 0) || String(b.ultima.created_at).localeCompare(String(a.ultima.created_at)));
+}
+// Para o "Para fazer agora" e o número ao lado de Falhas: as falhas abertas
+// das últimas 24 horas que não foram do próprio admin nem de conexão.
+function falhasNovasParaOAdmin() {
+  const d = state.admFalhas;
+  if (!d || !d.lista) return 0;
+  return gruposDeFalhas(d.lista).filter(g => g.deFora > 0).length;
+}
+function contarPor(lista, chave) {
+  const n = {};
+  lista.forEach(f => { const k = typeof chave === "function" ? chave(f) : f[chave]; if (k) n[k] = (n[k] || 0) + 1; });
+  return Object.entries(n).sort((a, b) => b[1] - a[1]);
+}
+function haQuantoTempo(iso) {
+  const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return "agora há pouco";
+  if (s < 3600) return `há ${Math.floor(s / 60)} min`;
+  if (s < 86400) return `há ${Math.floor(s / 3600)} h`;
+  return dataHora(iso);
+}
+function ocorrenciaDaFalhaHtml(f) {
+  const v = state.admFalhaVisita;
+  const aberta = v && v.id === f.id;
+  return `
+    <li class="adm-falha-oc">
+      <div class="adm-falha-oc-t"><strong>${esc(dataHora(f.created_at))}</strong> · código <strong class="adm-falha-cod">${esc(f.codigo)}</strong>${f.resolvida_em ? ` · <small>resolvida em ${esc(dataCurta(f.resolvida_em))}</small>` : ""}</div>
+      <div class="adm-falha-oc-s">${esc(ADM_QUEM_DA_FALHA[f.quem] || f.quem)} · ${esc([f.dispositivo, f.navegador, f.sistema].filter(Boolean).join(", ") || "aparelho não informado")}
+        · ${esc(ADM_SITE_DA_FALHA[f.site] || f.site)}${f.tela ? ` · ${esc(f.tela)}` : ""}${f.academia_nome ? ` · ${esc(f.academia_nome)}` : ""}</div>
+      <div class="adm-falha-oc-s">${f.aviso_na_tela ? "A pessoa viu o aviso, com o código." : "Sem aviso na tela: o site seguiu sem isso."}${f.detalhe ? ` <small>${esc(f.detalhe)}</small>` : ""}</div>
+      ${f.visita ? `<button type="button" class="inline-link" data-falha-visita="${esc(f.id)}">${aberta ? "Esconder o caminho da visita" : "Ver o caminho da visita até a falha"}</button>` : ""}
+      ${aberta ? caminhoDaVisitaHtml(v, f) : ""}
+    </li>`;
+}
+function caminhoDaVisitaHtml(v, f) {
+  if (v.carregando) return `<p class="adm-nota">${bolaGirando(14)} Abrindo o caminho…</p>`;
+  if (v.erro || !v.passos.length) return `<p class="adm-nota">${v.erro ? "Não consegui abrir o caminho agora." : "Essa visita não tem passos gravados (admin e conta de academia no site dos jogadores não gravam o percurso)."}</p>`;
+  const quando = new Date(f.created_at).getTime(), inicio = new Date(v.passos[0].created_at).getTime() - (v.passos[0].segundos || 0) * 1000;
+  const antes = v.passos.filter(p => new Date(p.created_at).getTime() <= quando + 1000);
+  const depois = v.passos.length - antes.length;
+  return `
+    <ol class="perc-linha adm-falha-caminho">${antes.map((p, i) => `<li><span class="perc-t">${relogioDoPercurso(p.segundos - v.passos[0].segundos)}</span><span>${i === 0 ? "Chegou: " : ""}${esc(textoDoPasso(p))}</span></li>`).join("")}
+      <li class="adm-falha-aqui"><span class="perc-t">${relogioDoPercurso(Math.round((quando - inicio) / 1000) - (v.passos[0].segundos || 0))}</span><span><strong>Falha: ${esc(f.acao)}</strong></span></li>
+    </ol>
+    ${depois ? `<p class="adm-nota">Depois da falha, mais ${depois} ${plural(depois, "passo", "passos")}${v.passos.some(p => p.tipo === "contato" && new Date(p.created_at).getTime() > quando) ? ", e a pessoa ainda chamou uma academia" : ""}.</p>` : `<p class="adm-nota">Depois da falha, a visita acabou.</p>`}`;
+}
+async function abrirVisitaDaFalha(id) {
+  const lista = [...((state.admFalhas || {}).lista || []), ...(((state.admFalhaAchada || {}).lista) || [])];
+  const f = lista.find(x => x.id === id);
+  if (!f || !f.visita) return;
+  if (state.admFalhaVisita && state.admFalhaVisita.id === id) { state.admFalhaVisita = null; render(); return; }
+  state.admFalhaVisita = { id, carregando: true, passos: [] };
+  render();
+  try {
+    const r = await sb.from('passos_das_visitas').select('tipo, tela, detalhe, segundos, ordem, created_at')
+      .eq('visita', f.visita).order('segundos', { ascending: true }).order('ordem', { ascending: true }).limit(300);
+    if (!state.admFalhaVisita || state.admFalhaVisita.id !== id) return;
+    state.admFalhaVisita = r.error ? { id, erro: true, passos: [] } : { id, passos: r.data || [] };
+  } catch { state.admFalhaVisita = { id, erro: true, passos: [] }; }
+  render();
+}
+async function procurarFalhaPeloCodigo() {
+  const codigo = String(document.getElementById("adm-falha-codigo")?.value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  state.admFalhaCodigo = codigo;
+  if (!codigo) { state.admFalhaAchada = null; render(); return; }
+  state.admFalhaAchada = { codigo, carregando: true, lista: [] };
+  render();
+  try {
+    const r = await sb.rpc('falhas_admin', { p_dias: 90, p_codigo: codigo });
+    state.admFalhaAchada = { codigo, lista: r.error ? [] : (r.data || []), erro: !!r.error };
+  } catch { state.admFalhaAchada = { codigo, lista: [], erro: true }; }
+  render();
+}
+async function resolverGrupoDeFalhas(grupo) {
+  const r = await sb.rpc('resolver_falhas_admin', { p_grupo: grupo });
+  if (r.error) { avisarFalha("marcar a falha como resolvida", r.error, "Não consegui marcar agora: " + r.error.message); return; }
+  state.admAviso = "Marcada como resolvida. Se voltar a acontecer, ela aparece como \"Voltou\" e você recebe um e-mail.";
+  await carregarFalhas();
+}
+function admFalhasHtml() {
+  const d = state.admFalhas || {};
+  const filtro = state.admFalhasFiltro || "abertas";
+  const grupos = gruposDeFalhas(d.lista);
+  const vistos = grupos.filter(g => filtro === "todas" || (filtro === "abertas" ? g.abertas.length : !g.abertas.length));
+  const total = (d.lista || []).length;
+  const abertas = grupos.filter(g => g.abertas.length).length;
+  const visitas = new Set((d.lista || []).map(f => f.visita || f.id)).size;
+  const achada = state.admFalhaAchada;
+  const chip = (ativo, attr, valor, texto) => `<button type="button" class="chip small ${ativo ? "active" : ""}" ${attr}="${valor}">${texto}</button>`;
+  return `
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Procurar pelo código</h2>
+      <p class="adm-nota" style="margin-top:0">Quem vê uma falha recebe um código de 6 letras e números ("Código do problema: K7Q2MX"). Mandou pelo WhatsApp ou pelo chat? Procure aqui.</p>
+      <form class="adm-barra adm-falha-busca" id="adm-falha-busca">
+        <input type="search" class="form-field adm-busca" id="adm-falha-codigo" placeholder="Ex.: K7Q2MX" value="${esc(state.admFalhaCodigo || "")}" autocomplete="off" maxlength="12" />
+        <button type="submit" class="cta-btn cta-secondary">Procurar</button>
+      </form>
+      ${achada ? achada.carregando ? `<p class="adm-nota">${bolaGirando(14)} Procurando…</p>`
+        : achada.lista.length ? `<ul class="adm-falha-ocs">${achada.lista.map(f => `<li class="adm-falha-achada"><p class="adm-falha-t"><span class="adm-pilula erro">${esc(ADM_TIPOS_DE_FALHA[f.tipo] || f.tipo)}</span> ${esc(f.acao)}</p>${f.mensagem ? `<p class="adm-falha-m">${esc(f.mensagem)}</p>` : ""}<ul class="adm-falha-ocs">${ocorrenciaDaFalhaHtml(f)}</ul></li>`).join("")}</ul>`
+        : `<p class="adm-vazio">${achada.erro ? "Não consegui procurar agora." : `Nenhuma falha com o código ${esc(achada.codigo)} nos últimos 90 dias.`}</p>` : ""}
+    </section>
+    <section class="adm-bloco">
+      <div class="adm-barra">
+        <h2 class="adm-h2" style="margin:0">Falhas ${d.dias === 1 ? "de hoje" : `dos últimos ${d.dias || 7} dias`}</h2>
+        <button type="button" class="chip small" id="adm-falhas-atualizar">Atualizar</button>
+      </div>
+      <div class="chip-row" style="margin-top:10px">
+        ${[[1, "24 horas"], [7, "7 dias"], [30, "30 dias"], [90, "90 dias"]].map(([n, t]) => chip((d.dias || 7) === n, "data-falhas-dias", n, t)).join("")}
+      </div>
+      <div class="chip-row" style="margin-top:8px">
+        ${[["abertas", "Abertas"], ["resolvidas", "Resolvidas"], ["todas", "Todas"]].map(([k, t]) => chip(filtro === k, "data-falhas-filtro", k, t)).join("")}
+      </div>
+      ${d.carregando && !total ? `<p class="adm-nota">${bolaGirando(14)} Carregando…</p>` : ""}
+      ${d.erro ? `<p class="adm-nota">${esc(d.erro)}</p>` : ""}
+      ${!d.carregando && !d.erro ? total
+        ? `<p class="adm-nota">${total} ${plural(total, "falha", "falhas")} em ${grupos.length} ${plural(grupos.length, "tipo", "tipos")} · ${abertas} ${plural(abertas, "aberta", "abertas")} · ${visitas} ${plural(visitas, "visita afetada", "visitas afetadas")}</p>`
+        : `<p class="adm-tudo-certo">${icon('check', 18, 'var(--green)')} Nenhuma falha no período: tudo funcionando.</p>` : ""}
+      ${vistos.length ? `<div class="adm-falhas">${vistos.map(g => {
+        const aberto = state.admFalhaAberta === g.grupo;
+        const aparelhos = contarPor(g.ocorrencias, "dispositivo").map(([k, n]) => `${k} ${n}`).join(" · ");
+        const navegadores = contarPor(g.ocorrencias, f => f.navegador).slice(0, 3).map(([k, n]) => `${k} (${n})`).join(", ");
+        const telas = contarPor(g.ocorrencias, "tela").slice(0, 2).map(([k]) => k).join(", ");
+        const sites = contarPor(g.ocorrencias, "site").map(([k]) => ADM_SITE_DA_FALHA[k] || k).join(" e ");
+        const mostrar = state.admFalhaMostrar || 10;
+        return `
+        <article class="adm-falha ${g.abertas.length ? "" : "resolvida"}">
+          <p class="adm-falha-selos"><span class="adm-pilula erro">${esc(ADM_TIPOS_DE_FALHA[g.tipo] || g.tipo)}</span>${g.voltou ? `<span class="adm-pilula analise">Voltou</span>` : g.nova && g.abertas.length ? `<span class="adm-pilula analise">Nova</span>` : ""}${!g.abertas.length ? `<span class="adm-pilula no-ar">Resolvida</span>` : ""}</p>
+          <p class="adm-falha-t">${esc(g.acao)}</p>
+          ${g.mensagem ? `<p class="adm-falha-m">${esc(g.mensagem)}</p>` : ""}
+          <p class="adm-falha-n"><strong>${g.ocorrencias.length} ${plural(g.ocorrencias.length, "vez", "vezes")}</strong> · ${g.visitas} ${plural(g.visitas, "visita", "visitas")} · última ${esc(haQuantoTempo(g.ultima.created_at))}${g.ocorrencias.length > 1 ? ` · primeira ${esc(dataHora(g.primeira.created_at))}` : ""}</p>
+          <p class="adm-falha-s">${esc(sites)}${telas ? ` · ${esc(telas)}` : ""}</p>
+          ${aparelhos || navegadores ? `<p class="adm-falha-s">${esc(aparelhos)}${navegadores ? ` · ${esc(navegadores)}` : ""}</p>` : ""}
+          <div class="adm-acoes adm-falha-acoes">
+            <button type="button" class="chip small" data-falha-grupo="${esc(g.grupo)}" aria-expanded="${aberto}">${aberto ? "Esconder as ocorrências" : `Ver ${g.ocorrencias.length === 1 ? "a ocorrência" : "as ocorrências"}`}</button>
+            ${g.abertas.length ? `<button type="button" class="chip small" data-falha-resolver="${esc(g.grupo)}">Marcar como resolvida</button>` : ""}
+          </div>
+          ${aberto ? `<ul class="adm-falha-ocs">${g.ocorrencias.slice(0, mostrar).map(ocorrenciaDaFalhaHtml).join("")}</ul>
+            ${g.ocorrencias.length > mostrar ? `<button type="button" class="inline-link" id="adm-falha-mais">Mostrar mais ${Math.min(20, g.ocorrencias.length - mostrar)}</button>` : ""}` : ""}
+        </article>`;
+      }).join("")}</div>` : !d.carregando && !d.erro && total ? `<p class="adm-vazio">Nenhuma falha ${filtro === "abertas" ? "aberta" : "resolvida"} no período.</p>` : ""}
+      <p class="adm-nota" style="margin-top:14px">Falha nova, ou que volta depois de resolvida, manda um e-mail para você (no máximo um a cada 3 horas). Ficam aqui sem e-mail as suas, como admin, e as de conexão, que quase sempre são a internet de quem usa (repetindo muito numa ação, vale olhar). Fica guardado por 90 dias, sem dados de quem usa: nada de conta, e-mail ou IP.</p>
+    </section>`;
+}
+function ligarFalhasDoAdmin() {
+  const busca = document.getElementById("adm-falha-busca");
+  if (busca) busca.onsubmit = (e) => { e.preventDefault(); procurarFalhaPeloCodigo(); };
+  const atualizar = document.getElementById("adm-falhas-atualizar");
+  if (atualizar) atualizar.onclick = () => carregarFalhas();
+  document.querySelectorAll("[data-falhas-dias]").forEach(el => { el.onclick = () => { state.admFalhas = { ...(state.admFalhas || {}), dias: parseInt(el.dataset.falhasDias, 10) }; carregarFalhas(); }; });
+  document.querySelectorAll("[data-falhas-filtro]").forEach(el => { el.onclick = () => { state.admFalhasFiltro = el.dataset.falhasFiltro; render(); }; });
+  document.querySelectorAll("[data-falha-grupo]").forEach(el => { el.onclick = () => { state.admFalhaAberta = state.admFalhaAberta === el.dataset.falhaGrupo ? null : el.dataset.falhaGrupo; state.admFalhaMostrar = 10; state.admFalhaVisita = null; render(); }; });
+  document.querySelectorAll("[data-falha-resolver]").forEach(el => { el.onclick = () => resolverGrupoDeFalhas(el.dataset.falhaResolver); });
+  document.querySelectorAll("[data-falha-visita]").forEach(el => { el.onclick = () => abrirVisitaDaFalha(el.dataset.falhaVisita); });
+  const mais = document.getElementById("adm-falha-mais");
+  if (mais) mais.onclick = () => { state.admFalhaMostrar = (state.admFalhaMostrar || 10) + 20; render(); };
 }
 
 function admFerramentasHtml() {
@@ -17043,7 +17707,7 @@ async function excluirContaAgora() {
   if (motivo.length < 5) { x.erro = "Escreva o motivo da exclusão."; render(); return; }
   x.salvando = true; x.erro = ""; render();
   const r = await sb.rpc('excluir_conta_admin', { p_user: x.userId, p_motivo: motivo, p_apagar_avaliacoes: !!x.apagar });
-  if (r.error) { x.salvando = false; x.erro = r.error.message || "Não consegui excluir agora."; render(); return; }
+  if (r.error) { x.salvando = false; x.erro = falhou("excluir a conta", r.error, { texto: "Não consegui excluir agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui excluir agora." }); render(); return; }
   state.admExcluindo = null;
   state.admAviso = `Conta de ${x.nome || x.email} excluída. O e-mail fica em Contas excluídas, onde você libera quando quiser.`;
   await loadEverything();
@@ -17056,11 +17720,12 @@ async function excluirContaAgora() {
 function renderPainelAdmin() {
   const aba = abaDoAdmin(state.adminAba);
   const atual = ADMIN_ABAS.find(x => x.aba === aba);
-  const contagem = { pendencias: (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length + (state.pedidosParaSairAdmin || []).length };
+  const contagem = { pendencias: (state.pending || []).length + (state.paraRevisar || []).length + pedidosDoAdmin().length + (state.pedidosDePlano || []).length + (state.pedidosParaSairAdmin || []).length,
+    falhas: falhasNovasParaOAdmin() };
   const conteudo = {
     inicio: admInicioHtml, pendencias: admPendenciasHtml, academias: admAcademiasHtml,
     jogadores: admJogadoresHtml, excluidas: admExcluidasHtml, avaliacoes: admAvaliacoesHtml, acessos: admAcessosHtml, estatisticas: () => `<section class="adm-bloco">${conteudoDasEstatisticas()}</section>`,
-    percursos: () => `<section class="adm-bloco">${conteudoDosPercursos()}</section>`, emails: admEmailsHtml, ferramentas: admFerramentasHtml,
+    percursos: () => `<section class="adm-bloco">${conteudoDosPercursos()}</section>`, emails: admEmailsHtml, falhas: admFalhasHtml, ferramentas: admFerramentasHtml,
   }[aba]();
   const item = (x) => `<a href="/admin${x.aba === "inicio" ? "" : "/" + x.aba}" class="adm-nav-i ${x.aba === aba ? "ativo" : ""}" data-adm-aba="${x.aba}" ${x.aba === aba ? 'aria-current="page"' : ""}>${icon(x.ic, 18, 'currentColor')}<span>${x.t}</span>${contagem[x.aba] ? `<span class="adm-nav-n">${contagem[x.aba]}</span>` : ""}</a>`;
   return `
@@ -17161,7 +17826,7 @@ function ligarEventosDoPainel() {
   document.querySelectorAll("[data-adm-voltar]").forEach(el => {
     el.onclick = async () => {
       const { error } = await sb.from('academias').update({ pausada: false, pausada_ate: null }).eq('id', el.dataset.admVoltar);
-      if (error) { alert("Não consegui trazer de volta: " + error.message); return; }
+      if (error) { avisarFalha("trazer a academia de volta para a busca", error, "Não consegui trazer de volta: " + error.message, { academia: el.dataset.admVoltar }); return; }
       await loadEverything();
       render();
     };
@@ -17182,13 +17847,14 @@ function ligarEventosDoPainel() {
     el.onclick = async () => {
       if (!confirm(`Liberar ${el.dataset.admLiberar}? Esse e-mail volta a poder criar conta.`)) return;
       const r = await sb.rpc('liberar_email_admin', { p_email: el.dataset.admLiberar });
-      if (r.error) { alert("Não consegui liberar: " + r.error.message); return; }
+      if (r.error) { avisarFalha("liberar o e-mail", r.error, "Não consegui liberar: " + r.error.message); return; }
       state.admAviso = `${el.dataset.admLiberar} liberado: pode criar uma conta nova.`;
       carregarContasExcluidas();
     };
   });
   const atualizarEmails = document.getElementById("adm-emails-atualizar");
   if (atualizarEmails) atualizarEmails.onclick = () => { carregarSituacaoDosEmails(); carregarEmailsRecentes(); };
+  ligarFalhasDoAdmin();
   const nova = document.getElementById("adm-nova-academia");
   if (nova) nova.onclick = () => {
     window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
@@ -17221,6 +17887,7 @@ function ligarEventosDoPainel() {
 
 function attachEvents() {
   ligarCamposDeSenha();
+  ligarAjudaDasFalhas();
   // ---- ordenação estilo Trivago (botão + menu suspenso) ----
   // Garante que o menu de ordenação caiba na tela, seja qual for a largura.
   const sortMenu = document.getElementById("sort-menu");
@@ -17266,7 +17933,7 @@ function attachEvents() {
     el.onclick = async () => {
       if (!confirm("Remover esta promoção do site?")) return;
       const r = await sb.rpc('apagar_promocao', { p_id: el.dataset.apagarPromo });
-      if (r.error) { alert("Não consegui remover agora. Tente de novo."); return; }
+      if (r.error) { avisarFalha("remover a promoção", r.error, "Não consegui remover agora. Tente de novo."); return; }
       await carregarPromocoes();
       render();
     };
@@ -17349,7 +18016,8 @@ function attachEvents() {
       alert(`Coordenada gravada: ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)}${geo.approximate ? "\n\nAtenção: veio do bairro/cidade, não do número exato. Confira no mapa." : ""}`);
       render();
     } catch (e) {
-      alert("Não consegui localizar: " + (e.message || "erro desconhecido"));
+      const texto = falhou("localizar a academia no mapa", e, { texto: "Não consegui localizar: " + (e.message || "erro desconhecido"), soSeTecnica: true, silenciosa: true });
+      alert(texto);
       geocodeBtn.disabled = false;
       render();
     }
@@ -17615,8 +18283,9 @@ function attachEvents() {
     }
     if (error || (!isAdmin && !contaAcademia)) {
       if (!error) await sb.auth.signOut();
+      // Internet que caiu não é senha errada (11/10/2026).
       state.loginError = error
-        ? (digitado.includes("@") ? "E-mail ou senha incorretos." : "Usuário ou senha incorretos.")
+        ? falhou("entrar na conta", error, { texto: "Não deu para entrar agora. Tente de novo em instantes.", regra: digitado.includes("@") ? "E-mail ou senha incorretos." : "Usuário ou senha incorretos." })
         : "Esse acesso não está ativo. Fale com o GuiaTennis no WhatsApp.";
       render();
       return;
@@ -17725,7 +18394,7 @@ function attachEvents() {
   document.querySelectorAll("[data-tirar-pedido-plano]").forEach(el => {
     el.onclick = async () => {
       const { error } = await sb.from('pedidos_de_plano').delete().eq('academia_id', el.dataset.tirarPedidoPlano);
-      if (error) { alert("Não consegui tirar: " + error.message); return; }
+      if (error) { avisarFalha("tirar o pedido de plano", error, "Não consegui tirar: " + error.message, { academia: el.dataset.tirarPedidoPlano }); return; }
       await carregarAcessos();
       render();
     };
@@ -17758,7 +18427,7 @@ function attachEvents() {
       const days = parseInt(el.dataset.days, 10);
       const until = new Date(Date.now() + days * 86400000).toISOString();
       const { error } = await sb.from('academias').update({ pausada: true, pausada_ate: until }).eq('id', el.dataset.court);
-      if (error) { alert("Não consegui pausar: " + error.message); return; }
+      if (error) { avisarFalha("pausar a academia", error, "Não consegui pausar: " + error.message, { academia: el.dataset.court }); return; }
       await refreshAfterPauseChange();
     };
   });
@@ -17775,14 +18444,14 @@ function attachEvents() {
     if (!dateVal) { alert("Escolha uma data."); return; }
     const until = new Date(dateVal + "T23:59:59").toISOString();
     const { error } = await sb.from('academias').update({ pausada: true, pausada_ate: until }).eq('id', pauseCustomConfirm.dataset.court);
-    if (error) { alert("Não consegui pausar: " + error.message); return; }
+    if (error) { avisarFalha("pausar a academia", error, "Não consegui pausar: " + error.message, { academia: pauseCustomConfirm.dataset.court }); return; }
     await refreshAfterPauseChange();
   };
 
   const resumeCourtBtn = document.getElementById("resume-court-btn");
   if (resumeCourtBtn) resumeCourtBtn.onclick = async () => {
     const { error } = await sb.from('academias').update({ pausada: false, pausada_ate: null }).eq('id', resumeCourtBtn.dataset.court);
-    if (error) { alert("Não consegui reativar: " + error.message); return; }
+    if (error) { avisarFalha("reativar a academia", error, "Não consegui reativar: " + error.message, { academia: resumeCourtBtn.dataset.court }); return; }
     await refreshAfterPauseChange();
   };
 
@@ -17837,7 +18506,7 @@ function attachEvents() {
     if (!confirm(`Excluir "${c.name}" do GuiaTennis? Isso não pode ser desfeito.`)) return;
     const { error } = await sb.from('academias').delete().eq('id', c.id);
     if (error) {
-      alert("Não consegui excluir: " + error.message);
+      avisarFalha("excluir a academia", error, "Não consegui excluir: " + error.message, { academia: c.id });
       return;
     }
     state.selected = null;
@@ -17849,7 +18518,7 @@ function attachEvents() {
     el.onclick = async () => {
       if (!confirm("Excluir essa avaliação? Isso não pode ser desfeito.")) return;
       const { error } = await sb.from('avaliacoes').delete().eq('id', el.dataset.review);
-      if (error) { alert("Não consegui excluir: " + error.message); return; }
+      if (error) { avisarFalha("excluir a avaliação", error, "Não consegui excluir: " + error.message); return; }
       await loadEverything();
       if (state.selected) {
         state.selected = state.allCourts.find(c => c.id === state.selected.id) || state.pending.find(c => c.id === state.selected.id) || state.selected;
@@ -18308,7 +18977,7 @@ function attachEvents() {
       el.disabled = true;
       el.textContent = "Adicionando...";
       try { await adicionarDoMapa(el.dataset.mapaAdd); }
-      catch (e) { alert("Não consegui adicionar: " + (e.message || e)); }
+      catch (e) { avisarFalha("adicionar a academia do mapa aberto", e, "Não consegui adicionar: " + (e.message || e)); }
       render();
     };
   });
@@ -18656,7 +19325,7 @@ function useMyLocation() {
         state.searchStatus = "done";
         registrarBusca(geo);
       } catch (e) {
-        state.errorMsg = e.message || "Não consegui identificar sua região.";
+        state.errorMsg = falhou("achar a sua região", e, { texto: e.message || "Não consegui identificar sua região.", soSeTecnica: true });
         state.searchStatus = "error";
       }
       render();
@@ -18771,7 +19440,7 @@ async function doSearch(opcoes = {}) {
     diag(`a busca não achou o lugar: ${e.message}`);
     // Quem buscou e não achou também é procura: conta, sem região.
     registrar({ bairro: "", cidade: "" }, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
-    state.errorMsg = e.message || "Não consegui buscar esse endereço ou CEP.";
+    state.errorMsg = falhou("buscar o endereço", e, { texto: e.message || "Não consegui buscar esse endereço ou CEP.", soSeTecnica: true });
     state.searchStatus = "error";
   }
   render();
@@ -18895,7 +19564,7 @@ async function doRegisterSubmit() {
       if (!isAdmin) state.fichaSalvaEm = new Date().toISOString();
       state.registerStatus = "done";
     } catch (e) {
-      state.registerError = e.message || "Não consegui salvar as alterações.";
+      state.registerError = falhou("salvar a ficha", e, { texto: "Não consegui salvar as alterações agora. Tente de novo em instantes.", regra: e.message || "Não consegui salvar as alterações.", academia: f.__editingId });
       state.registerStatus = "error";
     }
     render();
@@ -18980,7 +19649,7 @@ async function doRegisterSubmit() {
     await loadEverything();
     state.registerStatus = "done";
   } catch (e) {
-    state.registerError = e.message || "Não consegui localizar esse endereço.";
+    state.registerError = falhou("enviar a ficha da academia", e, { texto: "Não consegui enviar agora. Tente de novo em instantes.", regra: e.message || "Não consegui localizar esse endereço." });
     state.registerStatus = "error";
   }
   render();
@@ -19059,6 +19728,7 @@ async function init() {
   // nada para perguntar (um balão por visita).
   if (jogador && !academiasParaAvaliar().length) ligarPushViagem(PUSH_VIAGEM_ESPERA_S + 3);
   ligarSaidaDoPercurso();
+  mandarFilaDeFalhas();
 }
 
 function app_showLoading() {

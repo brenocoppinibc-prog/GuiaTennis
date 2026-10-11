@@ -47,6 +47,9 @@
     // window.__conversasIniciais começa com algumas; window.__semConversas
     // finge o banco sem a tabela.
     conversas_de_ajuda: JSON.parse(JSON.stringify(window.__conversasIniciais || [])),
+    // Falhas do site (SQL 20261011120000). window.__falhasIniciais começa com
+    // algumas; window.__semFalhas finge o banco sem a tabela.
+    falhas_do_site: JSON.parse(JSON.stringify(window.__falhasIniciais || [])),
   };
   // window.__premium: ids das academias que começam no Premium.
   (window.__premium || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "premium"; });
@@ -966,13 +969,45 @@
         pedidos_abertos: db.pedidos_de_acesso.length,
       }, error: null };
     }
+    // Falhas do site (SQL 20261011120000): o site manda, o banco descobre quem.
+    if (nome === "registrar_falha") {
+      if (window.__semFalhas) return semFuncao;
+      const f = a.p_falha || {};
+      if (!/^[A-HJ-NP-Z2-9]{6}$/.test(f.codigo || "") || !f.acao) return { data: false, error: null };
+      const quem = souAdmin() ? "admin" : !sessao ? "visitante" : meuAcesso() ? "academia" : euJogador() ? "jogador" : "visitante";
+      const grupo = [f.acao, f.tipo, String(f.mensagem || "").replace(/[0-9]+/g, "#")].join("|");
+      db.falhas_do_site.unshift({ id: "falha-" + (db.falhas_do_site.length + 1), codigo: f.codigo, grupo, visita: f.visita || null, site: f.site, acao: f.acao,
+        tipo: f.tipo, mensagem: f.mensagem || null, detalhe: f.detalhe || null, tela: String(f.tela || "").split("?")[0] || null, quem,
+        academia_id: f.academia || null, dispositivo: f.dispositivo || null, navegador: f.navegador || null, sistema: f.sistema || null,
+        aviso_na_tela: !!f.aviso, resolvida_em: null, created_at: new Date().toISOString() });
+      return { data: true, error: null };
+    }
+    if (nome === "falhas_admin") {
+      if (window.__semFalhas) return semFuncao;
+      if (!souAdmin()) return { data: [], error: null };
+      const codigo = String(a.p_codigo || "").toUpperCase().replace(/-/g, "").trim();
+      const desde = Date.now() - (a.p_dias || 30) * 86400000;
+      const lista = db.falhas_do_site.filter(f => codigo ? f.codigo === codigo : new Date(f.created_at).getTime() > desde)
+        .map(f => ({ ...f, academia_nome: (db.academias.find(y => y.id === f.academia_id) || {}).name || null }))
+        .sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)));
+      return { data: JSON.parse(JSON.stringify(lista)), error: null };
+    }
+    if (nome === "resolver_falhas_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis marca a falha como resolvida.", "42501");
+      let n = 0;
+      db.falhas_do_site.forEach(f => { if (f.grupo === a.p_grupo && !f.resolvida_em) { f.resolvida_em = new Date().toISOString(); n++; } });
+      return { data: n, error: null };
+    }
     if (nome === "marcar_senha_trocada") { const x = meuAcesso(); if (x) x.senha_trocada_em = new Date().toISOString(); return { data:null, error:null }; }
     return semFuncao;
   }
   window.supabase = { createClient(url, chave){ window.__banco = { url, chave }; return {
     from: builder,
     rpc(nome, args){
-      const r = rodarRpc(nome, args);
+      // window.__rpcComFalha[nome]: a função devolve esse erro (falha de teste).
+      const comFalha = window.__rpcComFalha && window.__rpcComFalha[nome];
+      if (comFalha) window.__rpcs.push({ nome, args: JSON.parse(JSON.stringify(args || {})) });
+      const r = comFalha ? { data: null, error: comFalha } : rodarRpc(nome, args);
       const p = Promise.resolve(r);
       p.single = () => Promise.resolve(r);
       return p;

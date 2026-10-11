@@ -15,8 +15,9 @@ Parceiros (20261006160000), a data em que a ficha foi atualizada
 o pedido para tirar do guia (20261008150000_pedido_para_sair_do_guia), as
 conversas do chat guardadas na conta (20261009120000_conversas_do_chat), o
 lembrete de conferir a ficha (20261009130000_lembrete_de_conferir_a_ficha), o
-lembrete do jogador que não entra há 3 meses (20261009140000_lembrete_de_volta)
-e o resumo do mês do Parceiros (20261009150000_resumo_do_mes).
+lembrete do jogador que não entra há 3 meses (20261009140000_lembrete_de_volta),
+o resumo do mês do Parceiros (20261009150000_resumo_do_mes) e as falhas do
+site (20261011120000_falhas_do_site).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -1089,6 +1090,95 @@ ok(um("select count(*) from public.emails_a_enviar where tipo in ('volta', 'fich
 certo, _ = sql("select public.preparar_resumos_do_mes()", papel="authenticated", user=rita)
 ok(not certo, "quem administra não dispara o resumo")
 sql(f"delete from public.academias where id = '{resumo}'")
+
+# 28. Falhas do site (SQL 20261011120000) ------------------------------------------
+print("\n# Falhas do site")
+sql("truncate public.falhas_do_site; truncate public.emails_a_enviar")
+
+
+def falha(papel="anon", user=None, email=None, **campos):
+    f = {"codigo": "K7Q2MX", "visita": "visita" + sufixo, "site": "jogadores", "acao": "Enviar a avaliação", "tipo": "banco",
+         "mensagem": "Could not find the function public.x", "tela": "/academia/so-aula-1?abrir=2", "dispositivo": "Celular",
+         "navegador": "Safari 17", "sistema": "iOS 17", "aviso": True}
+    f.update(campos)
+    return um(f"select public.registrar_falha('{json.dumps(f).replace(chr(39), chr(39) * 2)}'::jsonb)", papel=papel, user=user, email=email)
+
+
+ok(falha() == "t", "o visitante registra a falha")
+linha = um("select codigo || '|' || quem || '|' || tela || '|' || tipo || '|' || aviso_na_tela from public.falhas_do_site")
+ok(linha == "K7Q2MX|visitante|/academia/so-aula-1|banco|true", "guarda o código, quem (pelo login), a tela sem o \"?\" e se a pessoa viu o aviso")
+certo, _ = sql("select count(*) from public.falhas_do_site", papel="anon")
+ok(not certo, "o visitante não lê as falhas")
+certo, _ = sql("insert into public.falhas_do_site (codigo, grupo, acao) values ('AAAAAA', 'x', 'y')", papel="anon")
+ok(not certo, "ninguém grava direto na tabela, só pela função")
+ok(um("select count(*) from public.falhas_do_site", papel="authenticated", user=carla, email=f"carla{sufixo}@exemplo.com") == "0",
+   "um jogador não lê as falhas")
+ok(fila("tipo = 'falha_no_site'") == "1" and "Enviar a avaliação" in (um("select assunto from public.emails_a_enviar where tipo = 'falha_no_site'") or ""),
+   "falha nova manda e-mail ao admin")
+corpo = um("select html from public.emails_a_enviar where tipo = 'falha_no_site'") or ""
+ok("K7Q2MX" in corpo and "/admin/falhas" in corpo and "Safari 17" in corpo, "o e-mail traz o código, o aparelho e o link para Falhas no painel")
+ok(falha(codigo="ABC234", mensagem="Could not find the function public.x") == "t" and fila("tipo = 'falha_no_site'") == "1",
+   "a mesma falha de novo não manda outro e-mail")
+ok(falha(codigo="DEF567", acao="Salvar a busca", mensagem="timeout") == "t" and fila("tipo = 'falha_no_site'") == "1",
+   "outra falha nova nas mesmas 3 horas fica só no painel")
+sql("truncate public.emails_a_enviar")
+ok(falha(codigo="DEF568", acao="Abrir a ficha", tipo="rede", mensagem="Failed to fetch") == "t" and fila("tipo = 'falha_no_site'") == "0",
+   "falha de conexão (a internet de quem usa) fica no painel, sem e-mail")
+ok(um("select count(distinct grupo) from public.falhas_do_site") == "3" and um("select count(*) from public.falhas_do_site where acao = 'Enviar a avaliação'") == "2"
+   and um("select count(distinct grupo) from public.falhas_do_site where acao = 'Enviar a avaliação'") == "1", "as iguais ficam no mesmo grupo")
+ok(falha(codigo="GHJ789", mensagem="Erro 503 em 12345 ms") == "t" and falha(codigo="GHJ78A".replace("A", "2"), mensagem="Erro 503 em 9 ms") == "t"
+   and um("select count(distinct grupo) from public.falhas_do_site where mensagem like 'Erro 503%'") == "1",
+   "números diferentes na mensagem não separam a falha")
+falha(codigo="LMN234", mensagem=f"duplicate key (email)=(maria{sufixo}@exemplo.com) whatsapp (11) 98765-4321 cpf 12345678901",
+      detalhe="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.x")
+gravada = um("select mensagem || '|' || detalhe from public.falhas_do_site where codigo = 'LMN234'") or ""
+ok("@" not in gravada and "98765" not in gravada and "12345678901" not in gravada and "eyJ" not in gravada and "[e-mail]" in gravada,
+   "e-mail, telefone, números longos e chaves saem da mensagem")
+for ruim, porque in [({"codigo": "abc"}, "código fora do formato"), ({"codigo": "OOOOOO"}, "código com letra que confunde (O)"), ({"acao": ""}, "sem a ação")]:
+    ok(falha(**ruim) == "f", "ignora: " + porque)
+ok(falha(codigo="PQR234", tipo="inventado", site="outro", visita="NÃO VALE") == "t"
+   and um("select tipo || '|' || site || '|' || coalesce(visita, '-') from public.falhas_do_site where codigo = 'PQR234'") == "codigo|jogadores|-",
+   "tipo, site e visita estranhos viram o padrão, sem dar erro")
+ok(falha(codigo="STU234", academia=PINHEIROS) == "t" and um(f"select academia_id from public.falhas_do_site where codigo = 'STU234'") == PINHEIROS
+   and falha(codigo="STU235", academia="00000000-0000-4000-8000-999999999999") == "t"
+   and um("select coalesce(academia_id::text, '-') from public.falhas_do_site where codigo = 'STU235'") == "-",
+   "a academia entra só se existir")
+ok(falha(codigo="VWX234", papel="authenticated", user=carla, email=f"carla{sufixo}@exemplo.com") == "t"
+   and um("select quem from public.falhas_do_site where codigo = 'VWX234'") == "jogador", "o banco sabe que foi um jogador com conta")
+ok(falha(codigo="VWX235", papel="authenticated", user=dono, email=f"ana{sufixo}@exemplo.com") == "t"
+   and um("select quem from public.falhas_do_site where codigo = 'VWX235'") == "academia", "e que foi uma conta do Parceiros")
+admin_uid = um(f"select id from auth.users where email = '{ADMIN}'") or login(ADMIN)
+sql("truncate public.emails_a_enviar")
+ok(falha(codigo="YZA234", acao="Excluir a avaliação", papel="authenticated", user=admin_uid, email=ADMIN) == "t"
+   and um("select quem from public.falhas_do_site where codigo = 'YZA234'") == "admin" and fila("tipo = 'falha_no_site'") == "0",
+   "a falha do admin fica marcada como dele e não manda e-mail")
+# Limite por visita: 30 por hora.
+sql("truncate public.falhas_do_site")
+for i in range(32):
+    falha(codigo="Q" + "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"[i] + "2345", visita="enchendo" + sufixo)
+ok(um(f"select count(*) from public.falhas_do_site where visita = 'enchendo{sufixo}'") == "30", "até 30 falhas por visita a cada hora")
+# O admin lê, procura pelo código e resolve.
+lista = um("select count(*) from public.falhas_admin(30)", papel="authenticated", user=admin_uid, email=ADMIN)
+ok(lista == "30", "o admin vê as falhas dos últimos dias")
+ok(um("select count(*) from public.falhas_admin(30)", papel="authenticated", user=carla, email=f"carla{sufixo}@exemplo.com") == "0",
+   "a função do admin não devolve nada para os outros")
+sql("set local session_replication_role = replica; update public.falhas_do_site set created_at = now() - interval '40 days' where codigo = 'Q22345'")
+ok(um("select count(*) from public.falhas_admin(30, 'q2-2345')", papel="authenticated", user=admin_uid, email=ADMIN) == "1",
+   "pelo código acha a falha de qualquer dia, com letra minúscula e traço")
+grupo = um("select grupo from public.falhas_do_site limit 1")
+ok(um(f"select public.resolver_falhas_admin('{grupo}')", papel="authenticated", user=admin_uid, email=ADMIN) == "30",
+   "\"Marcar como resolvida\" fecha todas as do grupo")
+certo, _ = sql(f"select public.resolver_falhas_admin('{grupo}')", papel="authenticated", user=carla, email=f"carla{sufixo}@exemplo.com")
+ok(not certo, "só o admin marca como resolvida")
+sql("truncate public.emails_a_enviar")
+ok(falha(codigo="BCD234", visita="outra" + sufixo) == "t" and fila("tipo = 'falha_no_site'") == "1"
+   and "voltou" in (um("select lower(assunto) from public.emails_a_enviar where tipo = 'falha_no_site'") or ""),
+   "a falha que volta depois de resolvida manda e-mail de novo (\"Falha voltou\")")
+# Passou de 90 dias, sai.
+sql("set local session_replication_role = replica; update public.falhas_do_site set created_at = now() - interval '91 days' where codigo = 'Q22345'")
+falha(codigo="EFG234", visita="limpa" + sufixo)
+ok(um("select count(*) from public.falhas_do_site where codigo = 'Q22345'") == "0", "o que passou de 90 dias sai")
+sql("truncate public.falhas_do_site; truncate public.emails_a_enviar")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

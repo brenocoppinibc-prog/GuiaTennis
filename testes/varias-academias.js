@@ -100,7 +100,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.click('#parceiros .pc-main [data-outra-academia]');
   await page.waitForTimeout(300);
   let cad = await texto(page, '#parceiros .pc-main');
-  ok(cad.includes('Adicionar outra academia') && cad.includes('Qual academia você também administra?') && cad.includes('em qualquer plano') && !cad.includes('Cada conta cuida de uma academia'), 'a busca de outra academia, sem mandar falar com o GuiaTennis — ' + cad.slice(0, 90));
+  ok(cad.includes('Adicionar outra academia') && cad.includes('Qual academia você também administra?') && !cad.includes('Cada conta cuida de uma academia') && !cad.includes('A mesma conta cuida'), 'a busca de outra academia, sem mandar falar com o GuiaTennis — ' + cad.slice(0, 90));
   ok(cad.includes('Declaro que estou autorizado(a) pela academia') && !cad.includes('dono(a)'), 'pedir declara, numa caixinha, que a pessoa responde pela academia');
   ok(!cad.includes('enquanto outra ainda está em análise') && !cad.includes('paga o próprio valor'), 'sem o texto de pedir várias e do plano de cada uma');
   await page.fill('#pc-busca', 'locação');
@@ -195,7 +195,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     wa: decodeURIComponent(document.querySelector('#parceiros .pc-main .footnote a')?.getAttribute('href') || ''),
   }));
   ok(plano.h1 === 'Plano desta academia' && plano.eyebrow === 'Quadra Locação', 'com duas academias, a página de plano diz de qual academia é');
-  ok(plano.texto.includes('Cada academia tem o próprio plano e paga o próprio valor') && plano.texto.includes('Mudar o plano de uma não muda o das outras'), 'deixa claro que cada academia paga o próprio plano');
+  ok(plano.texto.includes('Cada academia tem o próprio plano e paga o próprio valor'), 'deixa claro que cada academia paga o próprio plano');
   ok(plano.itens.some(i => i.startsWith('Quadra Locação') && i.includes('Plano Básico')) && plano.itens.some(i => i.startsWith('Só Aula Tennis') && i.includes('Plano Premium')), 'a lista mostra o plano de cada academia — ' + plano.itens.slice(0, 2).join(' / '));
   ok(plano.wa.includes('para a Quadra Locação'), 'o pedido de mudar de plano pelo WhatsApp já diz qual academia');
   await page.click('#parceiros .pc-main [data-abrir-academia="a1"]');

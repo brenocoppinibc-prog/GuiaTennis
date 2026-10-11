@@ -2212,6 +2212,7 @@
   .adm-falha-achada { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
   /* Falhas do site (11/10/2026): a linha de ajuda embaixo do aviso da tela
      e a faixa embaixo, quando a tela não tem onde avisar. */
+  .pc-saiba-mais { color: var(--green); font-weight: 600; text-decoration: underline; white-space: nowrap; }
   .falha-ajuda { display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
   .falha-link { border: 0; background: none; padding: 0; font: inherit; color: var(--green); font-weight: 600; text-decoration: underline; cursor: pointer; }
   .falha-faixa { position: fixed; left: 12px; right: 12px; bottom: 16px; margin: 0 auto; max-width: 440px; z-index: 9000; display: flex; gap: 10px; align-items: flex-start; background: var(--card); border: 1px solid var(--border); border-left: 5px solid var(--red); border-radius: 14px; padding: 12px 36px 12px 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); color: var(--text); font-family: inherit; animation: pushEntra 0.3s ease-out; }
@@ -3285,7 +3286,7 @@ function toggleFavorite(courtId) {
   if (!jogador) {
     if (isAdmin) return;
     jogadorEntaoFaz(() => { if (!loadFavorites().includes(courtId)) toggleFavorite(courtId); render(); },
-      "Para salvar as suas favoritas, entre com o seu e-mail. Elas ficam na sua conta e aparecem em qualquer aparelho.");
+      "Para salvar as suas favoritas, entre com o seu e-mail.");
     return;
   }
   const favs = loadFavorites();
@@ -5505,9 +5506,9 @@ function renderQrSheet() {
           <button type="button" class="cta-btn cta-primary" data-qr-baixar="png" data-court="${c.id}">Baixar PNG (1200px)</button>
           <button type="button" class="cta-btn cta-secondary" data-qr-baixar="svg" data-court="${c.id}">Baixar SVG (para impressão)</button>
         </div>
-        <p class="footnote">Aponta direto para guiatennis.com.br, então funciona para sempre — não expira nem depende de outro site.${doSite
-          ? " Serve para cartão, adesivo, post e qualquer material de divulgação do guia."
-          : " Imprima e deixe na recepção da academia para os jogadores avaliarem."}</p>
+        <p class="footnote">${doSite
+          ? "Serve para cartão, adesivo, post e qualquer material de divulgação do guia."
+          : "Imprima e deixe na recepção da academia para os jogadores avaliarem."}</p>
       </div></div>
     </div>
   `;
@@ -5667,7 +5668,7 @@ function camposDeContato(p, f, classe) {
       <span class="campo-ddi">Brasil (+55)</span>
       <input class="form-field ${classe}" data-campo="whatsapp" id="${p}-whatsapp" inputmode="tel" autocomplete="tel-national" placeholder="11 90000-0000" value="${esc(f.whatsapp || "")}" style="margin-top:0" />
     </div>
-    <p class="footnote" style="margin-top:6px">Fique tranquilo: só falamos com você sobre assuntos importantes da conta.</p>`;
+`;
 }
 
 // "Maria da Silva" -> nome "Maria", sobrenome "da Silva".
@@ -6184,14 +6185,11 @@ function formDadosConta(modo) {
     <p class="footnote" style="margin:4px 0 0"><span class="obrig">*</span> Informação obrigatória</p>
     ${camposDeContato("conta", f, "conta-campo")}
     ${campo("email", "E-mail<span class=\"obrig\">*</span>", 'type="email" autocomplete="email" autocapitalize="none"')}
-    ${contaAcademia && !String(contaAcademia.login || "").includes("@") || String((contaAcademia || {}).login || "").endsWith("@" + DOMINIO_ACESSO)
-      ? `<p class="footnote" style="margin:6px 0 0">Você passa a entrar também com este e-mail, e o "Esqueci a senha" manda o código para ele. O usuário continua valendo.</p>` : ""}
     ${campo("cnpj", "CNPJ da academia (opcional)", 'inputmode="numeric"')}
     ${pedirSenha ? `
       <p class="field-label">Senha nova</p>
       <input class="form-field conta-campo" data-campo="senha" id="conta-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha)}" style="margin-top:0" />
-      <input class="form-field conta-campo" data-campo="senha2" id="conta-senha2" type="password" autocomplete="new-password" placeholder="Repita a senha nova" value="${esc(f.senha2)}" />
-      <p class="footnote" style="margin-top:6px">A senha provisória deixa de valer. A nova, só vocês sabem.</p>` : ""}
+      <input class="form-field conta-campo" data-campo="senha2" id="conta-senha2" type="password" autocomplete="new-password" placeholder="Repita a senha nova" value="${esc(f.senha2)}" />` : ""}
     ${pedirAceite ? `
       <label class="consent-row">
         <input type="checkbox" class="conta-check" data-campo="aceite" ${f.aceite ? "checked" : ""} />
@@ -7210,14 +7208,14 @@ function perguntasParceiros() {
     { q: "Com duas academias, pago um plano só?", a: "Não. Cada academia tem o próprio plano e paga o próprio valor. A academia que entra na conta começa no Básico, grátis, e você escolhe o plano de cada uma. Por exemplo, uma no Premium e outra no Básico. Mudar o plano de uma não muda o das outras." },
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
-    { q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
+    { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
-    { q: "Como funcionam as promoções?", a: "No plano Premium, em Promoções, a academia publica até 3 promoções ao mesmo tempo, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Quem favoritou a academia e aceita promoções recebe um aviso por e-mail, no máximo um por semana. A academia responde pelo que anuncia e combina as condições direto com o jogador." },
+    { id: "promocoes", q: "Como funcionam as promoções?", a: "No plano Premium, em Promoções, a academia publica até 3 promoções ao mesmo tempo, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Quem favoritou a academia e aceita promoções recebe um aviso por e-mail, no máximo um por semana. A academia responde pelo que anuncia e combina as condições direto com o jogador." },
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
-    { q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
+    { id: "desempenho", q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
     { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha." },
     { q: "Esqueci a senha. E agora?", a: "Na tela de entrar, digite o seu e-mail e toque em \"Esqueceu a senha?\": mandamos um código para o seu e-mail, e você cria a senha nova ali mesmo. Se você entra com o usuário que o GuiaTennis mandou (sem e-mail), fale com o GuiaTennis no WhatsApp." },
-    { q: "Posso pausar ou tirar a academia do guia?", a: "Pausar, sim, quando quiser: em Suas academias, toque em \"Pausar no site\" na academia e escolha por quanto tempo (ou até você voltar). Cada academia pausa separada, e \"Voltar a aparecer\" traz a ficha de volta. Para tirar a academia do guia, o responsável principal toca em \"Pedir para tirar do guia\" e conta o motivo: o GuiaTennis confere e responde por e-mail. Tirada do guia, a ficha é apagada, com as avaliações." },
+    { id: "pausar", q: "Posso pausar ou tirar a academia do guia?", a: "Pausar, sim, quando quiser: em Suas academias, toque em \"Pausar no site\" na academia e escolha por quanto tempo (ou até você voltar). Cada academia pausa separada, e \"Voltar a aparecer\" traz a ficha de volta. Para tirar a academia do guia, o responsável principal toca em \"Pedir para tirar do guia\" e conta o motivo: o GuiaTennis confere e responde por e-mail. Tirada do guia, a ficha é apagada, com as avaliações." },
   ];
 }
 
@@ -7979,11 +7977,11 @@ function pcPlanos(logado) {
         : "Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia."}</p>
       ${logado ? pcFichaEscondida() : ""}
       ${pcCartoesDePlano(atual)}
-      <p class="footnote">Para mudar de plano, <a href="${linkPlano(proximoPlano(atual) ? proximoPlano(atual).key : "premium")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>. O plano muda sem mexer na ficha.${logado ? " Cada academia tem o próprio plano e paga o próprio valor." : " Tem mais de uma academia? Cada uma tem o próprio plano, e todas ficam na mesma conta."}</p>
+      <p class="footnote">Para mudar de plano, <a href="${linkPlano(proximoPlano(atual) ? proximoPlano(atual).key : "premium")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.${logado ? " Cada academia tem o próprio plano." : ""}</p>
       ${varias ? `
         <div class="pc-card" style="margin-top:20px">
           <p class="pc-card-t">Plano de cada academia</p>
-          <p class="pc-card-s">Cada academia tem o próprio plano e paga o próprio valor. Mudar o plano de uma não muda o das outras. Toque numa academia para ver o plano dela.</p>
+          <p class="pc-card-s">Cada academia tem o próprio plano e paga o próprio valor. Toque numa academia para ver o plano dela.</p>
           ${pcListaAcademias()}
         </div>` : ""}
     </section>`;
@@ -7997,7 +7995,7 @@ function pcAjuda() {
       ${pcFaq(perguntasParceiros())}
       <div class="pc-card pc-contato">
         <p class="pc-card-t">Fale com o GuiaTennis</p>
-        <p class="pc-card-s">Escreva a sua dúvida no chat de ajuda: ele mostra o caminho no site e, se precisar, leva você ao WhatsApp do Breno.</p>
+        <p class="pc-card-s">Escreva a sua dúvida no chat de ajuda.</p>
         <div class="pc-acoes">
           <button type="button" class="cta-btn cta-primary" data-abrir-chat>${icon('bubble', 16, '#fff')} Abrir o chat de ajuda</button>
           <a class="cta-btn cta-secondary" href="mailto:contato@guiatennis.com.br">${icon('mail', 16, 'var(--green)')} E-mail</a>
@@ -8228,7 +8226,6 @@ function pcCadastro() {
       <section class="pc-pagina pc-estreita">
         <p class="pc-eyebrow">Adicionar outra academia</p>
         <h1 class="display pc-antes">Qual academia você também administra?</h1>
-        <p class="pc-sec-sub">A mesma conta cuida de quantas academias você responder, em qualquer plano.</p>
         ${jaMinha ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} A ${esc(escolhida.name)} já é sua. <button type="button" class="pc-linha-link" data-abrir-academia="${escolhida.id}">Abrir ›</button></p>` : ""}
         ${emAndamento ? `<p class="pc-linha">${emAndamento === 1 ? "Você tem 1 pedido em andamento." : `Você tem ${emAndamento} pedidos em andamento.`} <a href="/parceiros/academias" class="pc-linha-link" data-pc="academias">Ver em Suas academias ›</a></p>` : ""}
         ${erro(state.pedidoErroEm ? "" : state.pedidoErro)}
@@ -8254,7 +8251,7 @@ function pcCadastro() {
       <section class="pc-pagina pc-estreita">
         ${pcEtapas(0)}
         <h1 class="display">Use a sua conta do GuiaTennis no Parceiros</h1>
-        <p class="pc-sec-sub">Você já tem conta com o e-mail <strong>${esc(jogador.email)}</strong>. Complete os dados de contato e a mesma conta, com a mesma senha, passa a valer no GuiaTennis Parceiros.</p>
+        <p class="pc-sec-sub">Você já tem conta com o e-mail <strong>${esc(jogador.email)}</strong>. Complete os dados de contato para usá-la no GuiaTennis Parceiros.</p>
         <p class="footnote" style="margin:6px 0 0"><span class="obrig">*</span> Informação obrigatória</p>
         <div class="pc-card">
           ${camposDeContato("pc-conta", f, "pc-conta-campo")}
@@ -8282,7 +8279,7 @@ function pcCadastro() {
         ${escolhida ? `
           <div class="pc-card pc-reivindicar">
             <p class="pc-card-t">Administrar a ficha da ${esc(escolhida.name)}</p>
-            <p class="pc-card-s">Comece pelo seu e-mail. Com a conta pronta, o pedido vai direto para o GuiaTennis conferir.</p>
+            <p class="pc-card-s">Comece pelo seu e-mail.</p>
           </div>` : ""}
         <div class="pc-card">
           ${passo === "email" ? `
@@ -8292,7 +8289,7 @@ function pcCadastro() {
             ${blocoSugestaoEmail(state.pcEmail)}
             ${erro(state.pcContaErro)}
             <button class="btn-primary pc-botao-cheio" id="pc-email-continuar" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Procurando..." : "Continuar"}</button>
-            <p class="footnote">Diga o seu e-mail que a gente encontra o caminho mais rápido: se você já tem conta, é só a senha; se é a primeira vez, o cadastro leva 2 minutos. Recebeu um usuário do GuiaTennis? Pode escrever o usuário aqui.</p>` : ""}
+            <p class="footnote">Recebeu um usuário do GuiaTennis? Escreva o usuário aqui.</p>` : ""}
           ${passo === "existe" ? `
             <div class="pc-aviso-conta">
               ${icon('check', 18, 'var(--green)')}
@@ -8446,7 +8443,7 @@ function pcSemAcademia() {
       ${meusPedidos().length ? pcPedidos() + `<p class="pc-linha">Também responde por outra academia? <button type="button" class="pc-linha-link" data-outra-academia>Adicionar outra academia ›</button></p>` : `
         <div class="pc-card">
           <p class="pc-card-t">Falta escolher a sua academia</p>
-          <p class="pc-card-s">Procure a sua academia no guia e toque em "Administrar", ou cadastre uma nova. Atualizações, desempenho e avaliações aparecem aqui assim que o GuiaTennis liberar.</p>
+          <p class="pc-card-s">Procure a sua academia no guia e toque em "Administrar", ou cadastre uma nova.</p>
           <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Escolher a academia</a>
         </div>`}
     </section>`;
@@ -8530,7 +8527,7 @@ function pcDesempenho() {
     <section class="pc-pagina">
       <p class="pc-eyebrow">${esc(c.name)}</p>
       <h1 class="display">Desempenho</h1>
-      <p class="pc-sec-sub">Quantas pessoas abriram a ficha no GuiaTennis e quantas chamaram vocês. Visitas do GuiaTennis e da própria academia logada não contam.</p>
+      <p class="pc-sec-sub">Quantas pessoas abriram a ficha no GuiaTennis e quantas chamaram vocês. ${saibaMaisNaAjuda("desempenho")}</p>
       <div class="chip-row pc-periodos" role="group" aria-label="Período">
         ${periodos.map(p => p.p.includes(plano)
           ? `<button type="button" class="chip small ${atual === p.dias ? "active" : ""}" data-pc-dias="${p.dias}">${p.t}</button>`
@@ -8568,7 +8565,6 @@ function pcDesempenho() {
             </div>` : ""}
           </div>` : (d.por_dia ? blocoTrancado("premium", "Bairros e comparação com a cidade", "Veja de quais bairros vem quem procura vocês e como a ficha está contra a média das academias da cidade.") : "")}
       ` : ""}
-      <p class="footnote">São contagens: ninguém é identificado.</p>
     </section>`;
 }
 
@@ -8587,7 +8583,7 @@ function pcAvaliacoes() {
         <div class="pc-num"><span class="pc-num-l">Avaliações</span><strong class="pc-num-v">${avaliacoes.length}</strong></div>
         <div class="pc-num"><span class="pc-num-l">Sem resposta</span><strong class="pc-num-v">${semResposta}</strong></div>
       </div>
-      <p class="pc-sec-sub">A resposta aparece na ficha, embaixo da avaliação, como "Resposta da academia". Agradeça e responda com educação. A academia não apaga avaliação: se uma for falsa ou ofensiva, peça a análise do GuiaTennis.</p>
+      <p class="pc-sec-sub">Dica: agradeça e responda com educação. Avaliação falsa ou ofensiva? Toque em "Pedir análise". ${saibaMaisNaAjuda("avaliacoes")}</p>
       ${avaliacoes.length
         ? `<div class="ht-revs conta-revs">${avaliacoes.map(x => cartaoAvaliacao(x, c, "painel")).join("")}</div>`
         : `<div class="pc-card"><p class="pc-card-t">Ainda sem avaliação</p><p class="pc-card-s">Peça aos jogadores para avaliar pela ficha — o QR code na recepção leva direto para ela.</p><button type="button" class="cta-btn cta-secondary" id="conta-qr" data-court="${c.id}">QR code da sua ficha no GuiaTennis</button></div>`}
@@ -8640,7 +8636,7 @@ function pcPromocoes() {
   return `
     <section class="pc-pagina">
       ${topo}
-      <p class="pc-sec-sub">A promoção aparece na ficha e no resultado da busca, com a validade. Quem favoritou a academia e aceita promoções recebe um aviso por e-mail, no máximo um por semana. Até 3 promoções ao mesmo tempo, por até 90 dias.</p>
+      <p class="pc-sec-sub">Até 3 promoções ao mesmo tempo, por até 90 dias. ${saibaMaisNaAjuda("promocoes")}</p>
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
       ${editando || valendo.length < 3 ? `
         <div class="pc-card pc-promo-form">
@@ -8837,7 +8833,6 @@ function pcPessoas() {
                <input class="form-field pc-pessoa-campo" data-campo="email" id="pc-pessoa-email" type="email" autocapitalize="none" autocomplete="off" placeholder="E-mail da pessoa" value="${esc(f.email)}" />
                ${state.pessoaErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pessoaErro)}</div>` : ""}
                <button type="button" class="cta-btn cta-primary" id="pc-pessoa-adicionar" ${state.pessoaSalvando ? "disabled" : ""}>${state.pessoaSalvando ? bolaGirando(15) + " Adicionando..." : "Adicionar"}</button>
-               <p class="footnote">A pessoa entra com o e-mail e uma senha provisória que você manda para ela. Ela edita a ficha e responde às avaliações.</p>
              </div>`}
     </div>`;
 }
@@ -8921,7 +8916,7 @@ function pcAcademias() {
     if (a.pausada) return `<p class="pc-card-s">Não aparece na busca${a.pausadaAte ? ` até ${dataCurta(a.pausadaAte)}` : " até vocês voltarem"}. <button type="button" class="pc-linha-link" data-voltar-academia="${a.id}">Voltar a aparecer no site</button></p>`;
     if (state.pcPausando === a.id) return `
       <div class="pc-pausa">
-        <p class="pc-card-s"><strong>Pausar no site por quanto tempo?</strong> A ficha some da busca e volta sozinha no fim do prazo.</p>
+        <p class="pc-card-s"><strong>Pausar no site por quanto tempo?</strong></p>
         <div class="chip-row">
           ${[7, 15, 30].map(d => `<button type="button" class="chip small" data-pausar-dias="${d}" data-academia="${a.id}">${d} dias</button>`).join("")}
           <button type="button" class="chip small" data-pausar-dias="0" data-academia="${a.id}">Até eu voltar</button>
@@ -8937,7 +8932,7 @@ function pcAcademias() {
     const pedido = (state.pedidosParaSair || []).find(p => p.academia_id === a.id);
     if (pedido) return `
       <div class="pc-saida-aberta">
-        <p class="pc-card-s"><strong>Pedido para tirar do guia enviado em ${dataCurta(pedido.pedido_em)}.</strong> O GuiaTennis confere e responde por e-mail. Até lá, a academia continua no guia${a.pausada ? "" : "; se quiser, pause no site enquanto isso"}.</p>
+        <p class="pc-card-s"><strong>Pedido para tirar do guia enviado em ${dataCurta(pedido.pedido_em)}.</strong> A resposta chega por e-mail.</p>
         <button type="button" class="pc-linha-link pc-linha-discreta" data-cancelar-saida="${a.id}">Cancelar o pedido</button>
       </div>`;
     if (a.papel === "equipe") return "";
@@ -8983,7 +8978,6 @@ function pcAcademias() {
   return `
     <section class="pc-pagina">
       <h1 class="display">Suas academias</h1>
-      <p class="pc-sec-sub">Todas as academias desta conta num lugar só. Cada uma tem o próprio plano, as próprias pessoas e os próprios números.</p>
       ${pcConfirmarEmail()}
       ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
       <div class="pc-acoes pc-acad-add"><button type="button" class="cta-btn cta-primary" data-outra-academia>${icon('plus', 16, '#fff')} Adicionar outra academia</button></div>
@@ -9154,7 +9148,7 @@ function pcConfirmarEmail() {
       <p class="pc-card-s">${state.pcConfirmar === "falhou"
         ? "Não consegui mandar o código agora. Tente de novo em instantes."
         : enviado ? `Mandamos um código para <strong>${esc(c.login)}</strong>. Chega em até um minuto; olhe também o spam.`
-        : `Assim a gente sabe que <strong>${esc(c.login)}</strong> é seu e pode mandar os avisos da academia.`}</p>
+        : `O código vai para <strong>${esc(c.login)}</strong>.`}</p>
       ${enviado ? `
         <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-email" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" />
         ${state.pcConfirmarErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pcConfirmarErro)}</div>` : ""}
@@ -9850,7 +9844,7 @@ function renderListaSheet() {
         ${linhas.length ? linhas.map(linha).join("")
           // Favoritas e chamadas ficam na conta (08/10/2026): sem ela, o convite para entrar.
           : qual !== "vistas" && !jogador && !isAdmin
-            ? `<p class="lista-vazia">${qual === "favoritas" ? "As suas favoritas ficam guardadas na sua conta e aparecem em qualquer aparelho." : "As academias que você chamar ficam guardadas na sua conta, para você achar de novo e avaliar depois."}</p>
+            ? `<p class="lista-vazia">${qual === "favoritas" ? "Entre na sua conta para guardar as suas favoritas." : "Entre na sua conta para guardar as academias que você chamar."}</p>
                <button type="button" class="cta-btn cta-primary lista-entrar" data-menu="entrar-jogador" style="width:100%;margin-top:12px">Entrar ou criar conta</button>`
             : `<p class="lista-vazia">${LISTAS[qual].vazio}</p>`}
         ${(qual === "vistas" && (linhas.length || ultima)) || (qual === "chamadas" && linhas.length)
@@ -10017,7 +10011,7 @@ async function salvarViagem() {
   if (!jogador && !isAdmin) {
     jogadorEntaoFaz(() => salvarViagem(), r.aviso
       ? "Para receber o aviso da viagem por e-mail, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto."
-      : "Para guardar a viagem, entre com o seu e-mail. Ela fica na sua conta e aparece em qualquer aparelho.");
+      : "Para guardar a viagem, entre com o seu e-mail.");
     return;
   }
   const ficar = String(r.ficar || "").trim().replace(/\s+/g, " ");
@@ -10156,7 +10150,7 @@ function renderViagemSheet() {
       <div class="sheet"><div class="sheet-content">
         <button class="sheet-close" id="viagem-close" aria-label="Fechar">✕</button>
         <p class="sheet-title display">Vou viajar</p>
-        <p class="subtitle" style="margin-top:4px">Diga para onde vai. Perto da data, o GuiaTennis mostra as quadras de lá, e depois volta para a sua cidade sozinho.</p>
+        <p class="subtitle" style="margin-top:4px">Diga para onde vai e onde vai ficar.</p>
 
         ${viagens.length ? `
           <div class="viagens-lista">
@@ -10209,7 +10203,6 @@ function renderViagemSheet() {
         <div class="cta-col" style="margin-top:20px">
           <button type="button" class="cta-btn cta-primary" id="viagem-salvar" ${state.viagemSalvando ? "disabled" : ""}>${state.viagemSalvando ? bolaGirando(16) + " Achando no mapa" : "Guardar a viagem"}</button>
         </div>
-        <p class="footnote">A viagem fica na sua conta e aparece em qualquer aparelho em que você entrar.</p>
       </div></div>
     </div>`;
 }
@@ -10305,7 +10298,6 @@ function renderPrefsSheet() {
       <div class="sheet"><div class="sheet-content">
         <button class="sheet-close" id="pref-close" aria-label="Fechar">✕</button>
         <p class="sheet-title display">Preferências de busca</p>
-        <p class="subtitle" style="margin-top:4px">Com elas, o GuiaTennis já abre na sua cidade.</p>
 
         <label class="field-label" for="pref-uf">Estado</label>
         <select class="form-field campo-select" id="pref-uf" style="margin-top:0">
@@ -10364,7 +10356,7 @@ async function salvarPreferencias() {
   // As preferências ficam na conta (desde 08/10/2026): sem ela, entra e
   // salva depois, com o que já foi escolhido (a cidade já conferida).
   if (!jogador && !isAdmin) {
-    jogadorEntaoFaz(() => salvarPreferencias(), "Para salvar as preferências de busca, entre com o seu e-mail. Elas ficam na sua conta e valem em qualquer aparelho.");
+    jogadorEntaoFaz(() => salvarPreferencias(), "Para salvar as preferências de busca, entre com o seu e-mail.");
     return;
   }
   const p = { uf, cidade, modalidade: r.modalidade || "" };
@@ -10470,7 +10462,7 @@ function renderJogadorSheet() {
     ${blocoSugestaoEmail(f.email)}
     ${erro}
     <button type="button" class="cta-btn cta-primary" id="jog-continuar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Procurando") || "Continuar"}</button>
-    <p class="footnote">Diga o seu e-mail que a gente encontra o caminho mais rápido: se você já tem conta, é só a senha; se é a primeira vez, a conta fica pronta em um minuto. Não mandamos nada sem você pedir.</p>`;
+`;
   if (tela === "entrar") miolo = `
     <p class="sheet-title display">Bem-vindo de volta</p>
     <p class="subtitle" style="margin-top:4px">${esc(state.jogadorMotivo || "Digite a sua senha para entrar.")}</p>
@@ -10549,7 +10541,6 @@ function renderJogadorSheet() {
     <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" value="${esc(f.cidade || "")}" style="margin-top:0" />
     <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
     <p class="jog-grupo">Avisos por e-mail</p>
-    <p class="footnote" style="margin:0 0 4px">Escolha o que quer receber. Dá para mudar quando quiser.</p>
     ${avisos}
     ${erro}
     <button type="button" class="cta-btn cta-primary" id="jog-salvar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Salvando") || "Salvar"}</button>
@@ -11119,7 +11110,7 @@ function renderPerfilJogador() {
           <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" value="${esc(f.cidade || "")}" style="margin-top:0" />
           <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
           <h2 id="perfil-avisos" style="margin-top:24px">Avisos por e-mail</h2>
-          <p>Escolha o que quer receber. Dá para mudar quando quiser.${buscasSalvas.length ? " Cada busca salva tem o próprio aviso, em Buscas salvas." : ""} O aviso da viagem fica em Vou viajar, junto da viagem.</p>
+          <p>${buscasSalvas.length ? "Cada busca salva tem o próprio aviso, em Buscas salvas. " : ""}O aviso da viagem fica em Vou viajar.</p>
           ${avisos}
           ${state.jogadorErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.jogadorErro)}</div>` : ""}
           <button type="button" class="cta-btn cta-primary" id="jog-salvar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${state.jogadorSalvando ? bolaGirando(16) + " Salvando" : "Salvar"}</button>
@@ -11411,6 +11402,11 @@ const NOTA_DOS_NUMEROS = "Desde o lançamento do site, contados pelo próprio Gu
 // "Entenda como funciona" leva à pergunta da Ajuda do Parceiros, já aberta
 // (pedidos de 08/10/2026: "faça igual as avaliações com redirecionamento" e,
 // sobre o texto aberto dentro do bloco verde, "deixe isso oculto").
+// Explicação mais longa não fica na tela: um "Saiba mais" leva à pergunta
+// certa da Ajuda (regra 93).
+function saibaMaisNaAjuda(id, texto = "Saiba mais") {
+  return `<a href="${esc(urlDosParceiros("ajuda"))}#${id}" class="pc-saiba-mais" data-pc-faq="${id}">${esc(texto)}</a>`;
+}
 function comoFuncionamOsNumeros() {
   return `<p class="como-numeros"><a href="${esc(urlDosParceiros("ajuda"))}#numeros" data-pc-faq="numeros">${icon('info', 14, 'currentColor')} Entenda como funciona</a></p>`;
 }
@@ -15005,7 +15001,7 @@ function regPontoHtml(f) {
             <div class="reg-ponto-mapa" id="reg-ponto-mapa" aria-label="Mapa com o ponto da academia"></div>
             <p class="reg-ponto-s${f.__pontoManual ? " ok" : ""}" id="reg-ponto-s">${esc(situacao)}</p>
             <button type="button" class="reg-plano-aviso-link reg-ponto-de-novo" id="reg-ponto-buscar">Achar de novo pelo endereço</button>` : `
-            <p class="footnote" style="margin:0 0 8px">Confira se o alfinete cai na entrada da academia: é para onde o mapa e o "Como chegar" levam o jogador.</p>
+            <p class="footnote" style="margin:0 0 8px">Confira se o alfinete cai na entrada da academia.</p>
             <button type="button" class="cta-btn cta-secondary reg-ponto-btn" id="reg-ponto-buscar" ${state.regPontoBuscando ? "disabled" : ""}>${state.regPontoBuscando ? bolaGirando(16) + " Procurando no mapa..." : icon('pin', 15, 'var(--green)') + " Ver no mapa"}</button>`}
           ${state.regPontoErro ? `<p class="footnote" style="color:var(--red)">${esc(state.regPontoErro)}</p>` : ""}
         </div>`;
@@ -15075,7 +15071,7 @@ function regDestaquesHtml(f) {
   return `
         <div class="reg-destaques" id="reg-destaques">
           <p class="field-label">Quais aparecem na ficha no plano ${esc(nomeDoPlano(f.__plano || "basico"))}</p>
-          <p class="footnote" style="margin:0 0 8px">Escolha até ${n}. As outras ficam guardadas e aparecem no Completo.</p>
+          <p class="footnote" style="margin:0 0 8px">Escolha até ${n}.</p>
           <div class="chip-row">
             ${f.amenities.map(k => {
               const a = AMENITY_OPTS.find(x => x.key === k);
@@ -15241,7 +15237,7 @@ function regPassoHtml(id, f, obrigatorio) {
 
         ${!temEstacionamentoProprio(f) ? `
         <p class="field-label">Onde estacionar</p>
-        <p class="footnote" style="margin:0 0 6px">Escreva como funciona de verdade: se dá para parar na rua, se é zona azul e até que horas, se tem estacionamento pago por perto. Vira uma pergunta frequente na ficha.</p>
+        <p class="footnote" style="margin:0 0 6px">Escreva como funciona de verdade: se dá para parar na rua, se é zona azul e até que horas, se tem estacionamento pago por perto.</p>
         <textarea class="form-field" id="f-acesso-estacionar" rows="3" ${travaChegada} style="resize:none;margin-top:0" placeholder="Ex.: dá para parar na rua de trás. Na frente é zona azul até as 19h; depois fica livre. Tem um estacionamento pago na esquina, R$ 15 a hora.">${esc(acessoForm(f).estacionar)}</textarea>
         ` : ""}
         ${!temEstacionamentoProprio(f) && acessoForm(f).estacionar.trim() ? `
@@ -15268,7 +15264,7 @@ function regPassoHtml(id, f, obrigatorio) {
             </button>`;
           }).join("")}
         </div>
-        <p class="footnote">${isEditing ? "O que você não mexeu continua como estava." : (isAdmin ? "Só o nome é obrigatório. O resto você completa quando quiser, em Editar academia." : "* campos obrigatórios")}</p>
+        ${isEditing ? "" : `<p class="footnote">${isAdmin ? "Só o nome é obrigatório. O resto você completa quando quiser, em Editar academia." : "* campos obrigatórios"}</p>`}
         ${isAdmin ? `
           <label class="consent-row">
             <input type="checkbox" id="f-confirmada" ${f.confirmada ? "checked" : ""} />
@@ -16961,7 +16957,7 @@ const ADMIN_ABAS = [
   { aba: "emails", t: "E-mails", ic: "mail", sub: "Os avisos que o GuiaTennis manda e a situação de cada um." },
   // Falhas do site (pedido do Breno em 11/10/2026: "eu preciso saber em
   // algum lugar se alguma ação do site apresentou falha ou não").
-  { aba: "falhas", t: "Falhas do site", ic: "warning", sub: "O que não funcionou para quem usa o site, com o aparelho e o caminho até a falha. Quem viu o aviso recebeu um código: procure por ele aqui." },
+  { aba: "falhas", t: "Falhas do site", ic: "warning", sub: "O que não funcionou para quem usa o site." },
   { aba: "ferramentas", t: "Ferramentas", ic: "ajustes", sub: "QR code do site, coordenadas do mapa e academias do mapa aberto." },
 ];
 function abaDoAdmin(aba) {
@@ -17523,9 +17519,8 @@ function admFalhasHtml() {
   return `
     <section class="adm-bloco">
       <h2 class="adm-h2">Procurar pelo código</h2>
-      <p class="adm-nota" style="margin-top:0">Quem vê uma falha recebe um código de 6 letras e números ("Código do problema: K7Q2MX"). Mandou pelo WhatsApp ou pelo chat? Procure aqui.</p>
       <form class="adm-barra adm-falha-busca" id="adm-falha-busca">
-        <input type="search" class="form-field adm-busca" id="adm-falha-codigo" placeholder="Ex.: K7Q2MX" value="${esc(state.admFalhaCodigo || "")}" autocomplete="off" maxlength="12" />
+        <input type="search" class="form-field adm-busca" id="adm-falha-codigo" placeholder="Código que o cliente mandou (ex.: K7Q2MX)" value="${esc(state.admFalhaCodigo || "")}" autocomplete="off" maxlength="12" />
         <button type="submit" class="cta-btn cta-secondary">Procurar</button>
       </form>
       ${achada ? achada.carregando ? `<p class="adm-nota">${bolaGirando(14)} Procurando…</p>`
@@ -17571,7 +17566,7 @@ function admFalhasHtml() {
             ${g.ocorrencias.length > mostrar ? `<button type="button" class="inline-link" id="adm-falha-mais">Mostrar mais ${Math.min(20, g.ocorrencias.length - mostrar)}</button>` : ""}` : ""}
         </article>`;
       }).join("")}</div>` : !d.carregando && !d.erro && total ? `<p class="adm-vazio">Nenhuma falha ${filtro === "abertas" ? "aberta" : "resolvida"} no período.</p>` : ""}
-      <p class="adm-nota" style="margin-top:14px">Falha nova, ou que volta depois de resolvida, manda um e-mail para você (no máximo um a cada 3 horas). Ficam aqui sem e-mail as suas, como admin, e as de conexão, que quase sempre são a internet de quem usa (repetindo muito numa ação, vale olhar). Fica guardado por 90 dias, sem dados de quem usa: nada de conta, e-mail ou IP.</p>
+      <p class="adm-nota" style="margin-top:14px">Falha nova ou que voltou manda e-mail (no máximo um a cada 3 horas), menos as suas e as de conexão.</p>
     </section>`;
 }
 function ligarFalhasDoAdmin() {

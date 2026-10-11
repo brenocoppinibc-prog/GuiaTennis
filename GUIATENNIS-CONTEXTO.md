@@ -24,6 +24,14 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 11/10/2026 (tarde)
 
+> **Estado (11/10/2026, noite):** o Breno lembrou que "o site não precisa
+> explicar o que ele está fazendo em opções pequenas, se há necessidade de
+> explicar, levar um redirecionamento… e dar dicas que facilitam o uso do
+> cliente também é legal" (regra 93): saíram as frases que narravam o
+> sistema embaixo de botões, campos e caixinhas (jogadores e Parceiros); em
+> Promoções, Desempenho e Avaliações, o detalhe virou "Saiba mais" para a
+> pergunta da Ajuda; as dicas ficaram. Testes: **1.301 verificações, nenhuma falha** nos 46 arquivos do navegador e 340 no `banco-emails.py`.
+>
 > **Estado (11/10/2026, fim da tarde):** o Breno lembrou que "para sair da
 > conta precisa aparecer sair da conta e não sair do site, sair do site é
 > só fechar a aba" (regra 92): todo botão que desconecta diz "Sair da
@@ -373,6 +381,9 @@ mexer:
   (05/10/2026). No site, nos textos internos e no documento, usar
   "adicionar", "incluir", "informar", "colocar" ou "cadastrar", conforme o
   sentido.
+- **Opção pequena não se explica** (11/10/2026, regra 93): sem frase
+  contando o que o site faz; o complexo vai para a Ajuda ("Saiba mais");
+  dica que facilita o uso, sim.
 - **Sair da conta é "Sair da conta"** (11/10/2026, regra 92): sair do
   site é fechar a aba; nenhum botão diz "Sair" sozinho ou "Sair do site".
 - Mensagem de erro tem de ser simples, dizendo o que fazer ("O mapa está
@@ -1945,6 +1956,37 @@ cobra taxa e não fica no meio** da negociação.
     "Sair" sozinho. Única exceção: no "Ver como academia" do admin, o que
     sai só do modo (e não da conta) continua "Sair do modo admin". Testes:
     `painel-admin.js`, `perfil-e-avaliar.js` e `admin-parceiros.js`.
+93. **O site não explica o que faz em opção pequena; o complexo leva à
+    Ajuda; dica que facilita, sim** (pedido de 11/10/2026: "o site não
+    precisa explicar o que ele está fazendo em opções pequenas, se há
+    necessidade de explicar, levar um redirecionamento, mas isso são para
+    coisas mais complexas e dar dicas que facilitam o uso do cliente também
+    é legal"). Reforça a regra 2. Como o Airbnb e o Booking ("Entre para
+    salvar", sem dizer onde fica guardado), e a Ajuda do Google e da Shopify
+    (o detalhe mora na central de ajuda, a tela só tem o "Saiba mais").
+    - **Sai:** frase que narra o sistema ao lado de botão, campo ou caixinha
+      ("Elas ficam na sua conta e aparecem em qualquer aparelho", "Diga o
+      seu e-mail que a gente encontra o caminho mais rápido…", "Dá para
+      mudar quando quiser", "Fique tranquilo…", "A senha provisória deixa de
+      valer…", "São contagens: ninguém é identificado", "O que você não mexeu
+      continua como estava", "Vira uma pergunta frequente na ficha", o
+      porquê técnico do QR code, "Com elas, o GuiaTennis já abre na sua
+      cidade", "A mesma conta cuida de quantas academias…").
+    - **Assunto complexo:** uma linha e **"Saiba mais"** para a pergunta da
+      Ajuda do Parceiros (`saibaMaisNaAjuda(id)`, perguntas com `id`:
+      `promocoes`, `desempenho`, `avaliacoes`, `pausar`, `numeros`), como em
+      Promoções, Desempenho e Avaliações.
+    - **Fica:** dica que facilita ("Dica: escreva também o bairro…", "olhe
+      também o spam", "Recebeu um usuário do GuiaTennis? Escreva o usuário
+      aqui", "Imprima e deixe na recepção…", "Toque no coração de uma
+      academia…"), o que precisa ser dito por lei ou para decidir
+      (Patrocinado, aceite dos Termos, o lembrete da conta da regra 86, o
+      que se perde ao tirar a academia do guia, o valor do plano combinado
+      sem cobrança automática, os avisos do plano da regra 82) e as respostas
+      da Ajuda e do chat, que são o lugar da explicação.
+    - Vale para texto novo: antes de escrever uma frase embaixo de um
+      botão, perguntar se ela ajuda a pessoa a fazer algo (fica) ou só conta
+      o que o site faz (sai, ou vira "Saiba mais").
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2948,7 +2990,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -3095,6 +3137,12 @@ as 133 do `banco-acesso.py` no banco e login locais.
   site: o aviso só do obrigatório ao concluir, que some ao preencher; "Ver
   no mapa", arrastar, mudar o número sem perder o ponto e enviar com ele;
   o resultado com o número da porta vence o meio da rua e o CEP.
+- `sem-explicacao.js` — regra 93: o Entrar sem o parágrafo do e-mail; o
+  coração sem conta só pede para entrar; Favoritas sem conta com o convite
+  curto; Avisos por e-mail sem "Dá para mudar quando quiser", com a dica do
+  aviso da viagem; Promoções, Desempenho e Avaliações do Parceiros com
+  "Saiba mais", que abre a pergunta certa da Ajuda já aberta; a dica das
+  Avaliações continua.
 - `falhas.js` — regra 91: a internet que cai ao conferir o e-mail (o
   aviso de conexão, a linha "Se continuar, fale com a gente · código", o
   registro com o mesmo código, a visita, o aparelho e a tela, sem a faixa
@@ -3515,6 +3563,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Opção pequena sem explicação, "Saiba mais" para a Ajuda e as dicas mantidas (regra 93)   ← PR #5, 11/10
 (a seguir) Sair da conta diz "Sair da conta" em todo lugar (regra 92)   ← PR #5, 11/10
 (a seguir) Falhas do site no painel do admin e ajuda ao cliente quando algo não funciona (regra 91)   ← PR #5, 11/10
 (a seguir) Contas excluídas num lugar só no painel e a prévia da ficha no fim do cadastro   ← PR #5, 09/10
@@ -3630,6 +3679,13 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Depois do resumo (11/10/2026, noite).** Regra 93: opção pequena não se
+explica; o complexo leva à Ajuda ("Saiba mais" em Promoções, Desempenho e
+Avaliações do Parceiros); dica que facilita fica. Para testar na prévia:
+Entrar/Criar conta sem o parágrafo embaixo do e-mail; favoritas, viagem e
+preferências sem conta pedem só para entrar; no Parceiros, os "Saiba mais"
+abrem a pergunta certa da Ajuda. Testes: **1.301 verificações, nenhuma falha** nos 46 arquivos do navegador e 340 no `banco-emails.py`.
 
 **Depois do resumo (11/10/2026, fim da tarde).** Regra 92: todo botão que
 desconecta a conta diz "Sair da conta" (sair do site é fechar a aba). Para

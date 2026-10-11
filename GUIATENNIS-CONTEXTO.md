@@ -27,9 +27,11 @@ teste")
 > **Estado (11/10/2026):** com prints, o Breno pediu a nota do lembrete
 > no Criar conta "mais implícita" (regra 86: uma linha pequena embaixo do
 > botão) e o aviso do aceite com "Aceite os Termos de Uso e a Política de
-> Privacidade", que agora some ao marcar a caixa (regra 89). Ao todo:
-> **1.241 verificações, nenhuma falha** nos 44 arquivos do navegador, e
-> 311 no `banco-emails.py`.
+> Privacidade", que agora some ao marcar a caixa (regra 89). Depois, que
+> os números do Parceiros "atraiam mais o público para cadastrar", com
+> texto antes e o convite depois (regra 90). Ao todo: **1.243
+> verificações, nenhuma falha** nos 44 arquivos do navegador, e 311 no
+> `banco-emails.py`.
 >
 > **Estado (10/10/2026):** com prints do cadastro no celular, o Breno
 > pediu fotos maiores, o aviso do plano menor (abrindo ao tocar), o "Falta
@@ -1814,6 +1816,20 @@ cobra taxa e não fica no meio** da negociação.
     texto); marcar a caixa tira essa parte do aviso na hora, sem
     redesenhar a tela (`tirarAvisoDoAceite`). Testes:
     `volta-e-resumo.js`, `parceiros.js` e `acesso-academia.js`.
+90. **Os números do Parceiros com texto antes e o convite depois** (print
+    de 11/10/2026: "parece que os números só estão existindo, faça que
+    atraia mais o público para cadastrar não deixando só os números soltos
+    e um pouco de texto antes de tudo"), como as faixas de números do
+    Booking para Parceiros e do Airbnb para anfitriões. A faixa verde
+    (`pcNumerosDoSite`, `#pc-numeros`) agora tem: "O GuiaTennis hoje",
+    o título **"Jogadores já escolhem onde jogar por aqui"**, o texto
+    "Quem entra no GuiaTennis está procurando aula ou quadra: compara as
+    academias da região e chama direto no WhatsApp. Veja o caminho de quem
+    chega:", os três números (iguais, regras 4, 14 e 73), e depois
+    "Cada ficha aberta é um jogador conhecendo uma academia. Coloque a sua
+    na lista." com o botão branco **"Cadastrar minha academia grátis"**;
+    "Entenda como funciona" continua no fim. Os números ficam juntos no
+    centro (até 760 px) no computador. Teste: `confianca-na-ficha.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3463,10 +3479,10 @@ c9ade31 Configuração de publicação do Netlify
 
 **Resumo (09/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está verde e sem conflito, com tudo até a
-**regra 89** (10/10: fotos, aviso do plano, o que falta, o ponto no mapa
-e as comodidades do Básico; 11/10: a nota do lembrete e o aviso do
-aceite). A prévia do Netlify está atualizada. O merge espera o Breno
-dizer "pode subir" (não lembrar a toda hora). Os testes de 11/10: **1.241
+**regra 90** (10/10: fotos, aviso do plano, o que falta, o ponto no mapa
+e as comodidades do Básico; 11/10: a nota do lembrete, o aviso do aceite
+e os números do Parceiros com texto e convite). A prévia do Netlify está atualizada. O merge espera o Breno
+dizer "pode subir" (não lembrar a toda hora). Os testes de 11/10: **1.243
 verificações, nenhuma falha**, nos 44 arquivos do navegador (comando na
 seção 6) e **311 no `banco-emails.py`** (Postgres local; se ele tiver
 caído, `pg_ctl` como na seção 6, "Postgres na máquina", com os dados em

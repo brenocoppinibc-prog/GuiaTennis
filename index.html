@@ -1715,7 +1715,15 @@
   .pc-hero-nota svg { flex-shrink: 0; margin-top: 3px; }
   /* Os números em colunas iguais, lado a lado, no celular e no computador
      (08/10/2026: "alinhe melhor os dados"; antes 2 em cima e 1 sozinho). */
-  .pc-faixa-num { margin: 0 20px; padding: 24px 16px 18px; background: var(--green); border-radius: 18px; color: #fff; text-align: center; }
+  .pc-faixa-num { margin: 0 20px; padding: 28px 18px 20px; background: var(--green); border-radius: 18px; color: #fff; text-align: center; }
+  .pc-faixa-eyebrow { margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-light); }
+  .pc-faixa-num .pc-faixa-t { margin: 0 auto 8px; max-width: 560px; font-size: 24px; line-height: 1.2; color: #fff; }
+  .pc-faixa-num .pc-faixa-s { display: block; margin: 0 auto 20px; max-width: 560px; font-size: 14.5px; line-height: 1.5; color: rgba(255,255,255,0.86); }
+  .pc-faixa-cta { margin: 22px auto 0; padding-top: 18px; max-width: 560px; border-top: 1px solid rgba(255,255,255,0.18); }
+  .pc-faixa-cta p { margin: 0 0 12px; font-size: 14.5px; line-height: 1.45; color: #fff; }
+  .pc-faixa-btn { display: inline-flex; width: auto; margin: 0; padding: 12px 22px; background: #fff; color: var(--green); border: 0; font-weight: 700; }
+  .pc-faixa-btn:hover { background: var(--gold-light); color: var(--green); }
+  @media (min-width: 640px) { .pc-faixa-num .pc-faixa-t { font-size: 30px; } .pc-faixa-num { padding: 36px 28px 24px; } }
   /* Aparecer "acendendo" ao descer, só na página inicial do Parceiros. */
   .pc-revelando [data-revela] { opacity: 0; transform: translateY(22px); filter: saturate(0.3) brightness(1.06);
     transition: opacity 0.7s ease, transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.9s ease; transition-delay: calc(var(--rv, 0) * 120ms); }
@@ -1730,7 +1738,7 @@
     .pc-revelando [data-revela] { opacity: 1; transform: none; filter: none; transition: none; }
     .pc-revelando [data-revela] .pc-beneficio-ic, .pc-revelando [data-revela] .pc-etapa-n, .pc-revelando [data-revela] .pc-faixa-itens strong { animation: none; }
   }
-  .pc-faixa-itens { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 12px; align-items: start; }
+  .pc-faixa-itens { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 12px; align-items: start; max-width: 760px; margin: 0 auto; }
   .pc-faixa-itens > div { min-width: 0; }
   .pc-faixa-num strong { display: block; font-size: 24px; font-weight: 700; line-height: 1.1; white-space: nowrap; color: var(--gold-light); }
   .pc-faixa-num span { display: block; font-size: 12.5px; line-height: 1.35; color: rgba(255,255,255,0.82); margin-top: 6px; }
@@ -7342,13 +7350,26 @@ function renderParceiros() {
     </div>`;
 }
 
+// Os números do site com o que eles querem dizer para a academia (pedido do
+// Breno em 11/10/2026: "parece que os números só estão existindo, faça que
+// atraia mais o público para cadastrar… e um pouco de texto antes de
+// tudo"), como as faixas de números do Booking para Parceiros e do Airbnb
+// para anfitriões: uma frase antes, os números, e o convite para cadastrar
+// logo depois. O texto não promete mais do que os números mostram (regra 4).
 function pcNumerosDoSite(revelar = false) {
   const itens = numerosDoSite();
   if (!itens.length) return "";
   return `
-    <section class="pc-faixa-num" ${revelar ? revela("numeros") : ""}>
+    <section class="pc-faixa-num" id="pc-numeros" ${revelar ? revela("numeros") : ""}>
+      <p class="pc-faixa-eyebrow">O GuiaTennis hoje</p>
+      <h2 class="display pc-faixa-t">Jogadores já escolhem onde jogar por aqui</h2>
+      <p class="pc-faixa-s">Quem entra no GuiaTennis está procurando aula ou quadra: compara as academias da região e chama direto no WhatsApp. Veja o caminho de quem chega:</p>
       <div class="pc-faixa-itens" style="--n:${itens.length}">
         ${itens.map(i => `<div><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
+      </div>
+      <div class="pc-faixa-cta">
+        <p>Cada ficha aberta é um jogador conhecendo uma academia. Coloque a sua na lista.</p>
+        <a href="/parceiros/cadastro" class="cta-btn pc-faixa-btn" data-pc="cadastro">Cadastrar minha academia grátis</a>
       </div>
       ${comoFuncionamOsNumeros()}
     </section>`;

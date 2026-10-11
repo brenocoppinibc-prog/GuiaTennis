@@ -63,6 +63,16 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(pc.nums.length === 3 && pc.nums[0] === '+1.200 visitas ao GuiaTennis' && pc.nums[2].startsWith('15% das fichas abertas'), 'Parceiros: os mesmos números — ' + pc.nums.join(' | '));
   ok(!pc.nota.includes('Desde o lançamento') && pc.resumo.includes('Entenda como funciona'), 'Parceiros: o bloco verde só com os números e "Entenda como funciona" (o texto fica oculto)');
   ok(new Set(pc.tops).size === 1, 'Parceiros, no celular: os três números lado a lado, na mesma linha — ' + pc.tops.join(','));
+  // 11/10/2026: um texto antes dos números e o convite para cadastrar depois.
+  const faixa = await page.evaluate(() => {
+    const sec = document.getElementById('pc-numeros'), t = sec.querySelector('.pc-faixa-t'), s = sec.querySelector('.pc-faixa-s'),
+      nums = sec.querySelector('.pc-faixa-itens'), btn = sec.querySelector('.pc-faixa-cta [data-pc="cadastro"]');
+    const depois = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    return { t: t.innerText, s: s.innerText, btn: btn ? btn.innerText : '', ordem: depois(t, nums) && depois(s, nums) && !!btn && depois(nums, btn) };
+  });
+  ok(faixa.t === 'Jogadores já escolhem onde jogar por aqui' && faixa.s.startsWith('Quem entra no GuiaTennis está procurando aula ou quadra') && faixa.ordem,
+    'Parceiros: um título e um texto antes dos números, e o convite depois — ' + JSON.stringify(faixa));
+  ok(faixa.btn === 'Cadastrar minha academia grátis', 'o convite leva ao cadastro');
   await page.click('.pc-faixa-num .como-numeros a');
   await page.waitForTimeout(700);
   let aj = await page.evaluate(() => { const d = document.getElementById('pc-faq-numeros'); const b = d && d.getBoundingClientRect(); return { aba: state.parceirosAba, aberto: !!(d && d.open), texto: d ? d.innerText : '', visivel: !!b && b.top >= 0 && b.top < innerHeight }; });

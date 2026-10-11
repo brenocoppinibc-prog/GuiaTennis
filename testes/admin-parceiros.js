@@ -72,6 +72,10 @@ const agora = new Date().toISOString();
   await page.waitForTimeout(400);
   ok(await page.evaluate(() => emVisaoAdmin() && state.parceirosAba === 'painel'), 'abrir o Parceiros de novo volta para a academia que estava vendo');
 
+  // No "Ver como academia", o sair do menu é do modo, não da conta.
+  await page.evaluate(() => { state.pcMenu = true; render(); });
+  ok(await page.evaluate(() => (document.querySelector('[data-sair-conta]')?.innerText.trim() || '') === 'Sair do modo admin'), 'vendo como academia, o menu diz "Sair do modo admin" (não sai da conta)');
+  await page.evaluate(() => { state.pcMenu = false; render(); });
   // Sair do modo admin: volta à escolha, sem sair do login.
   await page.click('#pc-admin-sair');
   await page.waitForTimeout(300);

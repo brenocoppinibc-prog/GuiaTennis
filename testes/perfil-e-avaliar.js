@@ -98,7 +98,13 @@ const HORA = 36e5;
     corpo: document.querySelector('#parceiros .pc-main')?.innerText.replace(/\s+/g, ' ') || '',
   }));
   ok(t.link === '/parceiros/perfil' && t.inicial === 'M', 'o círculo com a inicial, no topo, abre o Perfil — ' + t.link);
-  ok(['Dados de contato', 'Login e segurança', 'Suas academias', 'Sair do GuiaTennis Parceiros'].every(x => t.corpo.includes(x)) && !t.corpo.includes('Pessoas com acesso'), 'o Perfil é da pessoa: dados, login e as academias; as pessoas ficam na academia');
+  ok(['Dados de contato', 'Login e segurança', 'Suas academias', 'Sair da conta'].every(x => t.corpo.includes(x)) && !t.corpo.includes('Pessoas com acesso'), 'o Perfil é da pessoa: dados, login e as academias; as pessoas ficam na academia');
+  // Sair da conta diz "Sair da conta" (pedido de 11/10/2026: "sair do site é só fechar a aba").
+  ok(!t.corpo.includes('Sair do GuiaTennis Parceiros'), 'o Perfil diz "Sair da conta", não "Sair do GuiaTennis Parceiros"');
+  await page.evaluate(() => { state.pcMenu = true; render(); });
+  const menuPc = await page.evaluate(() => document.querySelector('[data-sair-conta]')?.innerText.trim() || '');
+  ok(menuPc === 'Sair da conta', 'o menu do Parceiros diz "Sair da conta" — ' + menuPc);
+  await page.evaluate(() => { state.pcMenu = false; render(); });
   await page.click('#parceiros .pc-main [data-pc="academias"]');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => location.pathname === '/parceiros/academias'), '"Administrar as academias" leva a Suas academias');

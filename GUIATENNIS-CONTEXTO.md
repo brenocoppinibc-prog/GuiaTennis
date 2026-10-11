@@ -24,6 +24,12 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 11/10/2026 (tarde)
 
+> **Estado (11/10/2026, fim da tarde):** o Breno lembrou que "para sair da
+> conta precisa aparecer sair da conta e não sair do site, sair do site é
+> só fechar a aba" (regra 92): todo botão que desconecta diz "Sair da
+> conta" (antes havia "Sair", "Sair do GuiaTennis Parceiros" e, para o
+> admin, "Sair do modo admin"). Testes: **1.292 verificações, nenhuma falha** nos 45 arquivos do navegador e 340 no `banco-emails.py`.
+>
 > **Estado (11/10/2026, tarde):** o Breno pediu "eu preciso saber em algum
 > lugar se alguma ação do site apresentou falha ou não e direcionar melhor
 > os clientes quando algo não funcionar". Entrou a regra 91 (SQL
@@ -367,6 +373,8 @@ mexer:
   (05/10/2026). No site, nos textos internos e no documento, usar
   "adicionar", "incluir", "informar", "colocar" ou "cadastrar", conforme o
   sentido.
+- **Sair da conta é "Sair da conta"** (11/10/2026, regra 92): sair do
+  site é fechar a aba; nenhum botão diz "Sair" sozinho ou "Sair do site".
 - Mensagem de erro tem de ser simples, dizendo o que fazer ("O mapa está
   lento agora. Espere um pouco…"). O motivo técnico vai para o
   `?diagnostico`.
@@ -530,7 +538,7 @@ cobra taxa e não fica no meio** da negociação.
 26. **Sem "Área do GuiaTennis" visível** (pedido de 02/10/2026): o admin
     entra pelo mesmo "Entrar ou criar conta" com o e-mail dele
     (`conta_do_email` devolve "admin" → senha → o site recarrega em modo
-    admin). "Sair do modo admin" continua no menu.
+    admin). "Sair da conta" fica no menu (11/10/2026, regra 92).
 27. **Trilha de tênis nas etapas** (pedido de 02/10/2026): `trilhaTenis`
     desenha uma faixa de quadra com a linha do saque, uma marca branca por
     etapa e a bolinha andando até a etapa de agora (rastro dourado). Usada
@@ -1926,6 +1934,17 @@ cobra taxa e não fica no meio** da negociação.
       virou `avisarFalha` (erro de regra continua no alert) e os avisos
       "Não consegui…" das telas passam por `falhou`. Ponto novo de erro:
       `state.x = falhou("o que a pessoa tentava", error, { texto, regra })`.
+92. **Sair da conta diz "Sair da conta"** (pedido de 11/10/2026: "para
+    sair da conta precisa aparecer sair da conta e não sair do site, sair do
+    site é só fechar a aba"). Todo botão que desconecta a conta diz **"Sair
+    da conta"**: menu do site dos jogadores (jogador, conta do Parceiros e
+    admin — antes "Sair do modo admin"), Minha conta, menu e Perfil do
+    Parceiros (antes "Sair" e "Sair do GuiaTennis Parceiros"), primeiro
+    acesso (antes "Sair"), "Não é você? Sair da conta e usar outro e-mail" e
+    o topo do painel do admin (antes "Sair"). Nada de "Sair do site" nem de
+    "Sair" sozinho. Única exceção: no "Ver como academia" do admin, o que
+    sai só do modo (e não da conta) continua "Sair do modo admin". Testes:
+    `painel-admin.js`, `perfil-e-avaliar.js` e `admin-parceiros.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3496,6 +3515,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Sair da conta diz "Sair da conta" em todo lugar (regra 92)   ← PR #5, 11/10
 (a seguir) Falhas do site no painel do admin e ajuda ao cliente quando algo não funciona (regra 91)   ← PR #5, 11/10
 (a seguir) Contas excluídas num lugar só no painel e a prévia da ficha no fim do cadastro   ← PR #5, 09/10
 (a seguir) Chat do Parceiros guardado na conta, tela da senha arrumada, "Continuar" à direita com o que falta e o plano avisando na ficha   ← PR #5, 09/10
@@ -3610,6 +3630,12 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Depois do resumo (11/10/2026, fim da tarde).** Regra 92: todo botão que
+desconecta a conta diz "Sair da conta" (sair do site é fechar a aba). Para
+testar na prévia: o menu do site (com conta de jogador, do Parceiros e o
+admin), o Perfil e o menu do Parceiros e o topo do painel do admin dizem
+"Sair da conta". Testes: **1.292 verificações, nenhuma falha** nos 45 arquivos do navegador e 340 no `banco-emails.py`.
 
 **Depois do resumo (11/10/2026, tarde).** Este chat voltou a acompanhar o
 PR #5 (inscrito nos eventos do GitHub, com conferência marcada). O Breno

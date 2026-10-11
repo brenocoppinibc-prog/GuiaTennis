@@ -138,7 +138,7 @@
   .adm-marca .logo-mark { width: 30px; height: 30px; border-radius: 8px; }
   .adm-marca em { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: var(--gold-light); color: #163A2E; border-radius: 999px; padding: 2px 8px; }
   .adm-topo-acoes { margin-left: auto; display: flex; gap: 6px; }
-  .adm-topo-acoes button { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .adm-topo-acoes button { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .adm-topo-acoes button:hover { background: rgba(255,255,255,0.2); }
   .adm-menu-btn { display: inline-flex; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 8px; flex-shrink: 0; }
   .adm-menu-btn span { display: block; height: 2px; background: #fff; border-radius: 2px; }
@@ -4607,9 +4607,9 @@ function render() {
 
   app.innerHTML = `
     ${/* Sem a faixa "Modo admin" (pedido de 08/10/2026): o admin abre o
-         painel e sai pelo menu ("Painel do admin", "Sair do modo admin"). */ ""}
+         painel e sai pelo menu ("Painel do admin", "Sair da conta"). */ ""}
     ${noPainel ? renderPainelAdmin() : ""}
-    ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia do modo admin ou use uma aba anônima.</div>` : ""}
+    ${isAdmin && state.avisoBuscaAdmin ? `<div class="admin-aviso">Essa busca não foi gravada: com o admin conectado, suas buscas não entram nas estatísticas. Para testar, saia da conta ou use uma aba anônima.</div>` : ""}
     ${isAdmin && !noPainel && state.localizando ? `<div class="admin-aviso">Colocando no mapa as academias sem coordenada: ${state.localizando.feito} de ${state.localizando.total}…</div>` : ""}
     ${isAdmin && !noPainel && !state.localizando && (state.naoLocalizadas || []).length ? `<div class="admin-aviso">Não achei no mapa: <strong>${esc(state.naoLocalizadas.join(", "))}</strong>. Confira a rua, o número, o bairro e a cidade em "Editar" e salve — o site tenta de novo.</div>` : ""}
     ${isAdmin && !noPainel && state.faltaSqlCliques ? `<div class="admin-aviso">O banco ainda não tem a coluna <strong>${esc(state.faltaSqlCliques)}</strong> na tabela cliques, então as estatísticas ficam incompletas. Rode no SQL Editor do Supabase:<code>alter table cliques add column if not exists detalhe text;<br>alter table cliques add column if not exists cep text;<br>alter table cliques add column if not exists lat numeric;<br>alter table cliques add column if not exists lng numeric;<br>alter table cliques add column if not exists origem text;<br>alter table cliques add column if not exists dispositivo text;</code></div>` : ""}
@@ -6202,7 +6202,7 @@ function formDadosConta(modo) {
       ${state.contaSalvando ? bolaGirando(16) + " Salvando..." : (primeiro ? "Salvar e continuar" : "Salvar")}
     </button>
     ${primeiro
-      ? `<button type="button" class="conta-sair-link" id="conta-sair">Sair</button>`
+      ? `<button type="button" class="conta-sair-link" id="conta-sair">Sair da conta</button>`
       : `<button type="button" class="cta-btn cta-secondary" id="conta-voltar" style="margin-top:8px;width:100%">Voltar</button>`}
   `;
 }
@@ -7569,7 +7569,7 @@ function pcTopo() {
             <a href="/parceiros/entrar" class="menu-item" data-pc="entrar">${icon('key', 17, 'var(--green)')}<span>Entrar</span></a>`}
           <div class="menu-rodape">
             <a href="/" class="menu-item" data-pc-sair-do-portal>${icon('chevronLeft', 17, 'var(--muted)')}<span>Ir para o GuiaTennis (jogadores)</span></a>
-            ${logado ? `<button type="button" class="menu-item" data-sair-conta>${icon('key', 17, 'var(--muted)')}<span>Sair</span></button>` : ""}
+            ${logado ? `<button type="button" class="menu-item" data-sair-conta>${icon('key', 17, 'var(--muted)')}<span>${emVisaoAdmin() ? "Sair do modo admin" : "Sair da conta"}</span></button>` : ""}
           </div>
         </aside>
       </div>` : ""}`;
@@ -8264,7 +8264,7 @@ function pcCadastro() {
           </label>
           ${erro(state.pcContaErro)}
           <button class="btn-primary pc-botao-cheio" id="pc-ativar-conta" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar e continuar"}</button>
-          <p class="footnote">Não é você? <button type="button" class="pc-linha-link" data-sair-conta>Sair e usar outro e-mail</button></p>
+          <p class="footnote">Não é você? <button type="button" class="pc-linha-link" data-sair-conta>Sair da conta e usar outro e-mail</button></p>
         </div>
       </section>`;
   }
@@ -8900,7 +8900,7 @@ function pcPerfil() {
               <a href="/parceiros/academias" class="cta-btn cta-secondary" data-pc="academias">Administrar as academias</a>
             </div>
           </div>
-          <button type="button" class="conta-sair-link" id="conta-sair">Sair do GuiaTennis Parceiros</button>`}
+          <button type="button" class="conta-sair-link" id="conta-sair">${emVisaoAdmin() ? "Sair do modo admin" : "Sair da conta"}</button>`}
     </section>`;
 }
 
@@ -9762,7 +9762,7 @@ function renderMenu() {
 
         <div class="menu-rodape">
           ${isAdmin
-            ? `<button type="button" class="menu-item menu-sair" data-menu="sair">${icon('key', 17, 'var(--muted)')}<span>Sair do modo admin</span></button>`
+            ? `<button type="button" class="menu-item menu-sair" data-menu="sair">${icon('pessoa', 17, 'var(--muted)')}<span>Sair da conta</span></button>`
             : contaAcademia
               // A conta do Parceiros também joga: sair sai das duas.
               ? `<button type="button" class="menu-item menu-sair" data-menu="sair">${icon('pessoa', 17, 'var(--muted)')}<span>Sair da conta</span></button>`
@@ -17736,7 +17736,7 @@ function renderPainelAdmin() {
         <div class="adm-topo-acoes">
           <button type="button" id="adm-ver-site" aria-label="Ver o site" title="Ver o site">${icon('globe', 15, 'currentColor')}<span>Ver o site</span></button>
           <button type="button" id="adm-ver-como" aria-label="Ver como academia" title="Ver como academia">${icon('predio', 15, 'currentColor')}<span>Ver como academia</span></button>
-          <button type="button" id="adm-sair">Sair</button>
+          <button type="button" id="adm-sair">Sair da conta</button>
         </div>
       </header>
       <div class="adm-corpo">

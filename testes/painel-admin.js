@@ -173,6 +173,7 @@ const tela = (page) => page.evaluate(() => ({
   // Sem a faixa "Modo admin" (pedido de 08/10/2026): o painel fica no menu.
   ok(t.page === 'home' && !t.painel && !(await page.$('.admin-banner')) && !(await page.evaluate(() => document.body.innerText.includes('Modo admin'))) && !(await page.evaluate(() => !!document.querySelector('.fab'))), '"Ver o site": a home, sem faixa do modo admin e sem os botões redondos de antes');
   ok(await page.evaluate(() => { state.showMenu = true; render(); const x = document.querySelector('.menu-drawer [data-menu="painel-admin"]')?.innerText || ''; state.showMenu = false; render(); return x.includes('Painel do admin'); }), 'menu do site: "Painel do admin" para o admin');
+  ok(await page.evaluate(() => { state.showMenu = true; render(); const x = document.querySelector('.menu-drawer .menu-sair')?.innerText.trim() || ''; state.showMenu = false; render(); return x === 'Sair da conta'; }), 'menu do site com o admin: "Sair da conta" (não "Sair do modo admin")');
   await page.click('#menu-btn');
   await page.click('.menu-drawer [data-menu="painel-admin"]');
   await page.waitForTimeout(300);
@@ -180,10 +181,11 @@ const tela = (page) => page.evaluate(() => ({
   ok(t.painel && t.aba === 'inicio', 'o menu volta ao painel');
 
   // Sair: sai da conta e recarrega na página inicial.
+  ok(await page.evaluate(() => document.getElementById('adm-sair').innerText.trim() === 'Sair da conta'), 'o botão do painel diz "Sair da conta"');
   await page.evaluate(() => { const sair = sb.auth.signOut; sb.auth.signOut = () => { localStorage.setItem('teste_saiu', '1'); return sair(); }; });
   await page.click('#adm-sair');
   await page.waitForTimeout(1000);
-  ok(await page.evaluate(() => localStorage.getItem('teste_saiu') === '1' && location.pathname === '/'), '"Sair" sai da conta e volta à página inicial');
+  ok(await page.evaluate(() => localStorage.getItem('teste_saiu') === '1' && location.pathname === '/'), '"Sair da conta" sai da conta e volta à página inicial');
   await browser.close();
 
   // ---- No celular: as seções ficam no botão de menu ----

@@ -80,7 +80,7 @@ async function escrever(page, texto) {
     ['como faço promoção de aula grátis', 'até 3 promoções'],
     ['outra pessoa está administrando minha academia', 'Contestar'],
     ['tem uma avaliação falsa', 'Pedir análise'],
-    ['quero dar acesso para o professor', 'Em Pessoas'],
+    ['quero dar acesso para o professor', 'Em Acessos'],
   ];
   for (const [q, esperado] of casos) {
     await escrever(page, q);
@@ -90,6 +90,9 @@ async function escrever(page, texto) {
   await page.click('[data-chat-ir="pc:pessoas"]');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => !document.getElementById('chat-overlay') && ['pessoas', 'entrar'].includes(state.parceirosAba)), 'o caminho leva à página do Parceiros (sem conta, pede para entrar antes)');
+  // O Entrar do Parceiros fica sem rodapé (13/10/2026): o rodapé é conferido no início.
+  await page.evaluate(() => irParceiros('inicio', { mesmaAba: true }));
+  await page.waitForTimeout(300);
   const rodape = await page.evaluate(() => [...document.querySelectorAll('.pc-rodape-cols [data-abrir-chat]')].map(b => b.innerText.trim()).join() + '|' + document.querySelectorAll('.pc-rodape-cols a[href^="https://wa.me"]').length);
   ok(rodape === 'Chat de ajuda|0', 'o rodapé do Parceiros tem o chat de ajuda no lugar do WhatsApp');
   await browser.close();

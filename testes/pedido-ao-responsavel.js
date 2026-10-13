@@ -27,7 +27,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.waitForTimeout(400);
   let t = await texto(page, '#parceiros .pc-main');
   ok(t.includes('Pedido enviado ao responsável') && t.includes('já tem um responsável') && t.includes('com o seu nome e o seu e-mail'), 'academia com responsável: o pedido vai para ele, e a pessoa sabe disso');
-  ok(!(await page.isVisible('#pc-codigo')) && t.includes('Pessoas com acesso') && t.includes('ana@exemplo.com'), 'sem campo de código; diz que o responsável também pode incluir o e-mail direto');
+  ok(!(await page.isVisible('#pc-codigo')) && t.includes('diretamente em Acessos') && t.includes('ana@exemplo.com'), 'sem campo de código; diz que o responsável também pode incluir o e-mail direto');
   ok(await page.evaluate(() => (window.__db.pedidos_de_acesso.find(x => x.user_id === 'u-ana') || {}).destino === 'responsavel'), 'o pedido fica marcado como do responsável');
   await browser.close();
 

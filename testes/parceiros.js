@@ -465,7 +465,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     rodape: [...document.querySelectorAll('.pc-rodape a[data-pc]')].map(a => a.innerText).join(' | '),
   }));
   ok(t.h1 === 'Olá, Maria' && t.robots.includes('noindex'), 'painel cumprimenta o responsável e fica fora do Google');
-  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Promoções | Desempenho | Academias | Pessoas | Plano | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
+  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Promoções | Desempenho | Academias | Acessos | Plano | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
   ok(!painel.barra, 'no computador, sem a barra de baixo');
   ok(!painel.rodape.includes('Cadastrar') && !painel.rodape.includes('Entrar') && painel.rodape.includes('Desempenho'), 'rodapé de quem está logado não oferece Cadastrar nem Entrar — ' + painel.rodape);
   await page.click('.pc-nav a[data-pc="desempenho"]');
@@ -491,6 +491,14 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(conta.includes('Responsável principal') && conta.includes('Pessoas com acesso') && conta.includes('1 de 1 no plano Básico') && conta.includes('Maria Teste (você)'), 'Pessoas mostra quem tem acesso e quantas pessoas o plano permite');
   ok(!(await page.isVisible('#pc-pessoa-email')) && conta.includes('No Completo, até 5') && conta.includes('Ver planos'), 'Básico já cheio com 1 pessoa: some o formulário e aparece "Ver planos"');
   ok(!/aprimore o plano/i.test(conta) && !conta.includes('Quero o Completo'), 'Pessoas sem a caixa do plano embaixo');
+  // "Pessoas" virou "Acessos" (13/10/2026): o título, o menu e o endereço; o link antigo continua abrindo.
+  t = await page.evaluate(() => ({ h1: document.querySelector('#parceiros .pc-main h1')?.innerText, link: location.pathname }));
+  ok(t.h1 === 'Acessos' && t.link === '/parceiros/acessos', 'o link antigo /parceiros/pessoas abre "Acessos", e o endereço vira /parceiros/acessos — ' + JSON.stringify(t));
+  await browser.close();
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/acessos' }));
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.parceirosAba === 'pessoas' && document.querySelector('#parceiros .pc-main h1')?.innerText === 'Acessos' && document.title.startsWith('Acessos')),
+    '/parceiros/acessos abre a página, com "Acessos" no título da aba — ' + await page.evaluate(() => document.title));
   await browser.close();
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/pessoas', plano: 'completo' }));
   await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'completo'; await loadEverything(); await carregarPessoas(); render(); });

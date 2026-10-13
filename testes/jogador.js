@@ -115,7 +115,7 @@ const { abrir, ok } = require('./harness');
   ok((await page.evaluate(() => document.querySelector('.email-sugestao')?.innerText || '')).includes('bia@gmail.com') && await page.evaluate(() => state.jogadorTela === 'email'), '"gmial.com": pergunta se quis dizer gmail.com, antes de seguir');
   await page.click('[data-email-sugestao="usar"]');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => state.jogadorTela === 'criar' && window.__jog.email === 'bia@gmail.com' && document.querySelector('.jog-email-volta').innerText.includes('bia@gmail.com')), 'usou a sugestão e seguiu, com o e-mail em cima como no trivago');
+  ok(await page.evaluate(() => state.jogadorTela === 'criar' && window.__jog.email === 'bia@gmail.com' && document.getElementById('jog-email-escolhido').innerText.includes('bia@gmail.com')), 'usou a sugestão e seguiu, com o e-mail no cartão com "Trocar", como no Parceiros');
   ok(await page.evaluate(() => document.querySelector('#jogador-overlay .trilha-bola').style.left === '50%'), 'a bolinha andou para a segunda etapa');
   ok(await page.evaluate(() => sugestaoDeEmail('ana@hotmial.com') === 'ana@hotmail.com' && sugestaoDeEmail('ana@gmail') === 'ana@gmail.com' && sugestaoDeEmail('ana@minhaacademia.com.br') === null), 'sugere hotmail e gmail, e não mexe em domínio próprio');
   await browser.close();

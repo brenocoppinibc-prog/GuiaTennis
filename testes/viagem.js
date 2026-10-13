@@ -236,6 +236,14 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.waitForTimeout(8800);
   t = await page.evaluate(() => document.getElementById('push-viagem')?.innerText.replace(/\s+/g, ' ') || '');
   ok(t.includes('Tem viagem marcada?') && t.includes('O GuiaTennis pode te ajudar') && t.includes('aviso por e-mail perto da data'), 'logado, o balão "Tem viagem marcada?" aparece — ' + t.slice(0, 50));
+  // Na busca, o "Ver no mapa" fica embaixo: o balão vai para o alto (13/10/2026).
+  const caixas = await page.evaluate(() => {
+    state.page = 'search'; render();
+    const b = document.getElementById('push-viagem').getBoundingClientRect(), m = document.getElementById('view-toggle').getBoundingClientRect();
+    return { balaoBaixo: b.bottom, mapaTopo: m.top, noAlto: document.getElementById('push-viagem').classList.contains('no-alto'), alto: b.top };
+  });
+  ok(caixas.noAlto && caixas.alto < 120 && caixas.balaoBaixo < caixas.mapaTopo, 'na busca, o balão fica no alto, longe do "Ver no mapa" — ' + JSON.stringify(caixas));
+  await page.evaluate(() => { state.page = 'home'; render(); });
   await page.click('#push-viagem-sim');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => state.showViagem && !state.pushViagem && !!document.getElementById('viagem-aviso')), '"Guardar a viagem" abre a aba da viagem, com o aviso por e-mail');

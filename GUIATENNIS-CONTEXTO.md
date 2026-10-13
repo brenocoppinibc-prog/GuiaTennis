@@ -24,6 +24,19 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 13/10/2026
 
+> **Estado (13/10/2026, fim da tarde):** com prints, o Breno pediu: a
+> palavra "acessos" no lugar de "pessoas" (e-mail e site, regra 97); o
+> balão da viagem no alto da busca, sem o "Ver no mapa" em cima; "conversa
+> iniciada"; que recarregar a página não apague o cadastro, "em todas abas"
+> (regra 96, rascunho na aba); e, no meio, o cadastro, o e-mail e as outras
+> janelas "fechadas", sem ver o resto do site (regra 95, tela cheia no
+> celular). Depois, o Entrar/Criar conta dos jogadores numa tela própria,
+> igual à do Parceiros, com o cartão do e-mail e o quadro da conta achada.
+> No print, a senha do admin apareceu escrita: o Breno foi avisado para
+> trocá-la. SQL `20261013140000_acessos_nos_emails`. Teste novo:
+> `rascunho.js`. Testes: **1.305 verificações, nenhuma falha** nos 47
+> arquivos do navegador e **356 no `banco-emails.py`**.
+>
 > **Estado (13/10/2026, tarde):** com print do cartão da academia no
 > painel, o Breno pediu e-mail "no nosso estilo" para quem administra quando
 > o plano muda, os contatos de quem administra ali no cartão, todos os
@@ -2097,6 +2110,83 @@ cobra taxa e não fica no meio** da negociação.
       por e-mail") e a Política de Privacidade listam os avisos novos;
       textos legais em 13 de outubro de 2026. Testes: `painel-admin.js` e a
       seção 29 do `banco-emails.py`.
+95. **Janela aberta = tela fechada nela** (pedido de 13/10/2026, com print
+    do cadastro da ficha mostrando a busca embaixo: "não quero que a tela de
+    cadastro seja assim superficial, nem do email para o cadastro e outras
+    opções também, quero que fique nessa parte fechada, não dando para ver
+    outras partes do site"), como o Airbnb e o Booking no celular.
+    - **No celular (até 719 px), toda janela `.overlay > .sheet` ocupa a tela
+      toda** (cadastro da ficha, Entrar/Criar conta, Preferências, Vou viajar,
+      listas, QR, comparação…), com o fundo branco, sem o site atrás; o chat de
+      ajuda também. No computador, as janelas continuam no meio, com o fundo
+      escuro. O menu (gaveta) continua como era.
+    - **Com uma janela aberta, a página de trás não rola**
+      (`html.com-janela`, ligada no fim do `render`; `overscroll-behavior`).
+      Antes, rolar dentro da janela rolava a página: o Samsung Internet
+      escondia as barras, a tela crescia, a janela não acompanhava e o site
+      aparecia embaixo, com a bolinha "voltar ao topo" do próprio navegador.
+    - **Cadastro e Entrar do Parceiros sem menu e sem rodapé**
+      (`pcFocado`, `pcTopoFocado`): só a marca e o ✕ (volta ao início do
+      Parceiros; logado, a Suas academias ou ao painel), como o cadastro do
+      trivago Business Studio e o "Anuncie seu espaço" do Airbnb.
+    - **Entrar ou criar conta dos jogadores numa tela própria, igual à do
+      Parceiros** (13/10/2026, com print: "deixe em outra tela como no
+      parceiros"; e, sobre o cartão do e-mail e o quadro da conta achada do
+      Parceiros, "eu gostei disso, faça no jogadores também"): em qualquer
+      tamanho, a marca e o ✕ no alto, o fundo creme, a trilha, o título
+      grande e o formulário num cartão branco (`pagina` no
+      `renderJogadorSheet`; continua no `?conta=`, e o "voltar" fecha). O
+      e-mail fica num cartão com "Trocar" (`#jog-email-escolhido`) e, no
+      passo da senha, o quadro "Você já tem conta no GuiaTennis · Digite a
+      sua senha para entrar." (conta do Parceiros: "Você já tem conta no
+      GuiaTennis Parceiros · Entre com a mesma senha…",
+      `state.jogadorContaTipo`), como a regra 80.
+    - Teste: `rascunho.js`.
+96. **Recarregar não apaga o que estava sendo preenchido** (pedido de
+    13/10/2026: "eu estava preenchendo um cadastro, a página recarregou e
+    apagou tudo, tire essa falha em todas abas"). Quem recarrega é o
+    navegador (puxar a tela para baixo no topo, voltar da galeria de fotos ou
+    do WhatsApp com pouca memória); o site só recarrega ao entrar e ao sair
+    da conta. Como o rascunho do Gmail e o "Anuncie seu espaço" do Airbnb:
+    - O que está na memória dos formulários (`RASCUNHO_GLOBAIS`: `__form`
+      com as fotos, `__jog`, `__pcConta`, `__conta`, `__pessoa`, `__viagem`,
+      `__pref`, `__respostaTexto`, `__rateComment`, `__rateConsent`, mais o
+      e-mail do cadastro do Parceiros e a tela do plano do cadastro) fica
+      guardado **só na aba** (`sessionStorage`, `guardarRascunho`): no fim
+      de cada `render`, a cada tecla (250 ms depois) e ao sair da aba
+      (`visibilitychange`/`pagehide`). **Sem senha nem código** (as chaves
+      com senha, código ou token não vão). As fotos (até 5, já diminuídas)
+      vão numa chave à parte, só quando mudam; sem espaço, vai sem elas.
+    - Ao abrir, `restaurarRascunho` (no `init`, antes do `aplicarCamadas`)
+      devolve tudo como se a página não tivesse recarregado: o link já diz a
+      tela (`?parte=` do cadastro, `?conta=cadastro`,
+      `/parceiros/cadastro?passo=dados`), e agora ela abre com os dados, no
+      mesmo passo (antes, "recarregar num passo sem os dados volta ao começo
+      dele"). Vale 12 horas; só começa a guardar depois de restaurar (a
+      primeira tela, ainda vazia, não apaga o rascunho).
+    - Fechou a aba, some (regra 70: nada fica no celular). Sair da conta
+      apaga (`onAuthStateChange` "SIGNED_OUT"). Política de Privacidade
+      ("O que você está preenchendo num formulário… fica guardado só na aba
+      aberta").
+    - Teste: `rascunho.js` (cadastro da ficha na parte 2 com foto e
+      comodidade, criar conta do jogador, dados de contato do Parceiros, sem
+      senha nem código).
+97. **"Pessoas" do Parceiros virou "Acessos"** (pedido de 13/10/2026, com
+    print do e-mail de pessoa nova: "não seria melhor usar a palavra
+    acessos? até no site mesmo"), como o "Acessos ao Parceiros" do painel do
+    admin e o "Pessoas e acesso" do Google Business Profile. Menu, título da
+    página e da aba, Ajuda, chat ("Em Acessos…", "Abrir Acessos") e o
+    endereço `/parceiros/acessos` (`caminhoDosParceiros`; o antigo
+    `/parceiros/pessoas` continua abrindo, `abaDoParceiro`; por dentro a aba
+    continua `pessoas`). A lista dentro da página continua "Pessoas com
+    acesso". Os números da ficha continuam "acessos à ficha". E-mails (SQL
+    `20261013140000_acessos_nos_emails`): "Acesso novo na academia", "Tire o
+    acesso dela em Acessos", "Ver os acessos", "aceite em Acessos" e "tira
+    quem passar do limite em Acessos". No mesmo dia: o balão "Tem viagem
+    marcada?" (e o "Jogou aqui?") vai para o alto na busca, onde embaixo fica
+    o "Ver no mapa" (`no-alto`, print do Breno com o botão em cima do
+    texto), e "conversa começada" virou "conversa iniciada" (Parceiros,
+    Ajuda e chat).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3100,7 +3190,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho; do NODE_PATH=$(npm root -g) node $t.js; done
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros
@@ -3688,6 +3778,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Janelas em tela cheia, rascunho na aba, "Acessos", balão no alto e "conversa iniciada" (regras 95 a 97)   ← PR #5, 13/10
 (a seguir) O cargo junto do nome e do e-mail no aviso de pessoa nova (regra 94)   ← PR #5, 13/10
 (a seguir) Avisos da academia para todos que administram, e-mail do plano novo e da pessoa nova, contatos no painel (regra 94)   ← PR #5, 13/10
 (a seguir) Falhas: a internet que cai vira um registro só, com o que ficou sem carregar (regra 91)   ← PR #5, 13/10
@@ -3820,6 +3911,19 @@ falha**, nos 46 arquivos do navegador (comando na seção 6) e **340 no
 `testes/banco-local-base.sql`). Este chat **deixou de acompanhar o PR**
 (conferência cancelada, sem inscrição): no chat novo, voltar a acompanhar o
 PR #5.
+
+**Depois do resumo (13/10/2026, fim da tarde).** Regras 95 a 97 (SQL
+`20261013140000_acessos_nos_emails`). Para testar na prévia, no celular:
+(a) abrir "Entrar ou criar conta" (uma tela igual à do Parceiros, com o
+e-mail no cartão com "Trocar" e o quadro "Você já tem conta"), Preferências
+e o cadastro da ficha: a tela toda, sem o site atrás, e a página de trás
+não rola; (b)
+`/parceiros/cadastro`: só a marca e o ✕; (c) no meio do cadastro da ficha
+(com uma foto), puxar a tela para baixo para recarregar: volta na mesma
+parte, com tudo; o mesmo no criar conta e nos dados de contato do
+Parceiros; (d) Parceiros › Acessos (menu e título) e os e-mails "Acesso
+novo na academia"; (e) logado, na busca, o balão "Tem viagem marcada?" no
+alto.
 
 **Depois do resumo (13/10/2026, tarde).** Regra 94 (SQL
 `20261013120000_avisos_para_toda_a_equipe`, entra no banco de teste com o

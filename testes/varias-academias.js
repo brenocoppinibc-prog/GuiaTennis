@@ -6,8 +6,10 @@
 // troca pelo seletor.
 const { abrir, ok, vigiarAbas, abasAbertas } = require('./harness');
 // No celular, o Parceiros abre cada página pelo menu (06/10/2026: sem a
-// barra de atalhos embaixo).
+// barra de atalhos embaixo). No cadastro (tela fechada, 13/10/2026), sai
+// pelo ✕ antes.
 async function menuPc(page, aba) {
+  if (!(await page.$('#pc-menu-btn'))) { await page.click('.pc-fechar'); await page.waitForTimeout(200); }
   await page.click('#pc-menu-btn');
   await page.click(`#pc-menu-overlay .menu-item[data-pc="${aba}"]`);
 }

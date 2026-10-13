@@ -24,6 +24,15 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 13/10/2026
 
+> **Estado (13/10/2026, noite):** com print da prévia no fim do cadastro,
+> o Breno pediu "uma prévia de como vai ficar mesmo, como se já estivesse e
+> podendo editar, mas de forma limpa a opção, não muito a montuado": a
+> prévia agora é a ficha com os títulos da página da academia, um lápis
+> pequeno em cada parte, "+ Adicionar…" no que está vazio e uma linha
+> discreta no que o plano esconde; saiu a lista "Partes da ficha" (regra
+> 84). Sem SQL. Testes: **1.330 verificações, nenhuma falha** nos 47
+> arquivos do navegador e 356 no `banco-emails.py`.
+
 > **Estado (13/10/2026, fim da tarde):** com prints, o Breno pediu: a
 > palavra "acessos" no lugar de "pessoas" (e-mail e site, regra 97); o
 > balão da viagem no alto da busca, sem o "Ver no mapa" em cima; "conversa
@@ -1721,14 +1730,35 @@ cobra taxa e não fica no meio** da negociação.
     (`fichaDoFormulario` → `mapRow`, cortada pelo plano) e os mesmos blocos
     da página da academia: fotos, nome com o selo e endereço, sobre e
     horário, preços, estrutura, cancelamento, como chegar e contato. Cada
-    bloco tem "Editar", que leva à parte; o que o plano não mostra aparece
-    como "Preenchido, mas não aparece no plano Básico." O conteúdo é só para
-    ver (`inert`, links viram texto em `soParaVer`). Embaixo da prévia, a
-    lista das partes de antes. Na barra de baixo: "Voltar", **"Editar"** (a
+    bloco leva à sua parte. O conteúdo é só para ver (`inert`, links viram
+    texto em `soParaVer`). Na barra de baixo: "Voltar", **"Editar"** (a
     primeira parte) e **"Confirmar e salvar" / "Confirmar e enviar" /
     "Confirmar e publicar"** (edição, pedido, admin). Confirmar segue como
     antes (a tela do plano, se faltar escolher). Teste:
     `testes/previa-da-ficha.js`.
+    - **Desde 13/10/2026, a prévia é a ficha de verdade, com a edição
+      discreta** (pedido com print da prévia de antes, em caixas com rótulo
+      em maiúsculas e um "Editar" em cada: "deixe uma prévia de como vai
+      ficar mesmo, como se já estivesse e podendo editar, mas de forma limpa
+      a opção, não muito a montuado"), como a prévia do anúncio do Airbnb e
+      o lápis de cada parte do perfil no Google Business Profile. Sem caixas
+      nem rótulos: as partes com os mesmos títulos da página da academia
+      ("Sobre a academia", "Escolha o que você quer", "Estrutura"), e um
+      **lápis pequeno e redondo** no canto de cada parte
+      (`.reg-previa-lapis`; nas fotos, em cima da foto). Parte vazia: só um
+      **"+ Adicionar fotos"** (ou "Adicionar quadras e comodidades",
+      "Adicionar a regra de cancelamento", "Adicionar como chegar",
+      "Adicionar o WhatsApp"), que leva à parte. O que o plano esconde vira
+      **uma linha discreta** com o olho fechado ("Cancelamento e reposição:
+      preenchido, mas fica de fora no plano Básico.", "2 comodidades ficam
+      de fora no plano Básico.", "O Instagram fica de fora no plano
+      Básico."). Embaixo do título, só "É assim que os jogadores vão ver.
+      Toque no lápis para mudar uma parte." Saiu a lista "Partes da ficha"
+      embaixo da prévia (as abas do alto e os lápis levam às partes) e a
+      nota "* campos obrigatórios"; quem tenta confirmar sem o obrigatório
+      vê o "Para concluir, falta preencher" em cima dos botões, como nas
+      outras partes (regra 88). Para o admin, ao adicionar, fica a nota "Só
+      o nome é obrigatório…".
 85. **Lembrete por e-mail da ficha parada há 3 meses** (pedido de
     09/10/2026: "academias devem receber mensagem de atualização do
     cadastro depois de 3 meses sem alterações"), como o "Confirme as
@@ -3323,8 +3353,11 @@ as 133 do `banco-acesso.py` no banco e login locais.
   começa apagado e acende ao descer, continua aceso ao redesenhar, só na
   página inicial, e tudo de uma vez com "reduzir movimento".
 - `previa-da-ficha.js` — regra 84: a prévia na última parte, com os
-  blocos na ordem da ficha, cortada pelo plano (o que fica de fora dito),
-  só para ver; "Editar" de cada bloco e o de baixo; "Confirmar e salvar"
+  blocos na ordem da ficha, cortada pelo plano (o que fica de fora numa
+  linha discreta), só para ver; desde 13/10, os mesmos títulos da ficha e
+  um lápis por parte, sem rótulo em maiúsculas nem botão "Editar", "+
+  Adicionar fotos" sem foto e, sem o obrigatório, o "falta preencher" em
+  cima dos botões; o lápis de cada parte e o "Editar" de baixo; "Confirmar e salvar"
   segue para o plano e salva; Premium com o selo dourado e tudo à vista;
   pedido pelo site sem selo e "Confirmar e enviar"; admin com "Confirmar e
   publicar". O `painel-admin.js` confere a seção Contas excluídas (regra
@@ -3778,6 +3811,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Prévia da ficha de verdade, com um lápis discreto em cada parte (regra 84)   ← PR #5, 13/10
 (a seguir) Janelas em tela cheia, rascunho na aba, "Acessos", balão no alto e "conversa iniciada" (regras 95 a 97)   ← PR #5, 13/10
 (a seguir) O cargo junto do nome e do e-mail no aviso de pessoa nova (regra 94)   ← PR #5, 13/10
 (a seguir) Avisos da academia para todos que administram, e-mail do plano novo e da pessoa nova, contatos no painel (regra 94)   ← PR #5, 13/10
@@ -3911,6 +3945,15 @@ falha**, nos 46 arquivos do navegador (comando na seção 6) e **340 no
 `testes/banco-local-base.sql`). Este chat **deixou de acompanhar o PR**
 (conferência cancelada, sem inscrição): no chat novo, voltar a acompanhar o
 PR #5.
+
+**Depois do resumo (13/10/2026, noite).** Regra 84 (prévia da ficha), sem
+SQL. Para testar na prévia: editar uma academia (ou cadastrar uma) e ir até
+"Revisar": a ficha aparece como na página da academia, com um lápis pequeno
+em cada parte (tocar leva à parte), "+ Adicionar…" no que está vazio e uma
+linha com o olho fechado no que o plano Básico esconde; tentar "Confirmar"
+sem o nome mostra o que falta em cima dos botões. O `varias-academias.js`
+agora sai do cadastro pelo ✕ antes de usar o menu (a tela fechada da regra
+95 tirou o menu dali).
 
 **Depois do resumo (13/10/2026, fim da tarde).** Regras 95 a 97 (SQL
 `20261013140000_acessos_nos_emails`). Para testar na prévia, no celular:

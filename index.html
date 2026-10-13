@@ -2048,25 +2048,29 @@
   .reg-plano-aviso-acoes .cta-btn { margin: 0; flex: 1 1 140px; min-height: 42px; }
   .reg-plano-aviso-link { background: none; border: 0; padding: 0; margin: 6px 0 0; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--green); text-decoration: underline; cursor: pointer; }
   .reg-plano-aviso-s .reg-plano-aviso-link { margin: 0; }
-  .reg-previa { margin-top: 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); overflow: hidden; }
-  .reg-previa-topo { padding: 14px 16px 12px; background: var(--green-soft); border-bottom: 1px solid var(--green-line); }
-  .reg-previa-t { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 700; color: var(--green); }
-  .reg-previa-s { margin: 4px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
-  .reg-previa-bloco { padding: 14px 16px 16px; border-top: 1px solid var(--border); }
-  .reg-previa-topo + .reg-previa-bloco { border-top: 0; }
-  .reg-previa-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-  .reg-previa-h { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-  .reg-previa-editar { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; padding: 5px 12px; border: 1px solid var(--green-line); border-radius: 999px; background: var(--card); color: var(--green); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-  .reg-previa-editar:hover { background: var(--green-soft); }
+  /* Prévia da ficha (13/10/2026): a ficha como ela é, com um lápis pequeno
+     no canto de cada parte. */
+  .reg-previa { margin-top: 14px; border: 1px solid var(--border); border-radius: 18px; background: var(--card); overflow: hidden; }
+  .reg-previa-corpo { padding: 2px 18px 6px; }
+  .reg-previa-sec { position: relative; padding: 18px 0; border-top: 1px solid var(--border); }
+  .reg-previa-corpo > .reg-previa-sec:first-child, .reg-previa-corpo > :first-child { border-top: 0; }
+  .reg-previa-fotos { padding: 0; border-top: 0; }
   .reg-previa-conteudo { pointer-events: none; }
-  .reg-previa-conteudo .court-name { margin: 0; font-size: 24px; }
+  /* O lápis fica ao lado do título; o resto usa a largura toda. */
+  .reg-previa-conteudo > .sec-title, .reg-previa-conteudo > .court-name, .reg-previa-sec[data-previa="contato"] .reg-previa-conteudo { padding-right: 44px; }
+  .reg-previa-conteudo .sec-title { margin-top: 2px; }
+  .reg-previa-conteudo .court-name { margin: 0; font-size: 26px; }
   .reg-previa-conteudo .court-addr { margin-top: 8px; }
-  .reg-previa-conteudo .ht-gal { margin: 0; border-radius: 12px; overflow: hidden; }
+  .reg-previa-conteudo .ht-gal { margin: 0; border-radius: 0; overflow: hidden; }
   .reg-previa-conteudo .ht-gal-all { display: none; }
   .reg-previa-conteudo .cta-btn { cursor: default; }
-  .reg-previa-vazio { display: flex; align-items: flex-start; gap: 6px; margin: 8px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
-  .reg-previa-vazio:first-child { margin-top: 0; }
-  .reg-previa-vazio > svg { flex-shrink: 0; margin-top: 2px; }
+  .reg-previa-lapis { position: absolute; top: 14px; right: 0; z-index: 2; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--green); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .reg-previa-lapis:hover { background: var(--green-soft); border-color: var(--green-line); }
+  .reg-previa-fotos .reg-previa-lapis { top: 12px; right: 12px; border-color: transparent; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
+  .reg-previa-mais { display: flex; align-items: center; gap: 8px; width: 100%; padding: 15px 0; border: 0; border-top: 1px solid var(--border); background: none; color: var(--green); font: inherit; font-size: 14.5px; font-weight: 600; text-align: left; cursor: pointer; }
+  .reg-previa > .reg-previa-mais { padding: 15px 18px; border-top: 0; border-bottom: 1px solid var(--border); }
+  .reg-previa-fora { display: flex; align-items: flex-start; gap: 6px; margin: 10px 0 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .reg-previa-corpo > .reg-previa-fora { margin: 0; padding: 12px 0; border-top: 1px solid var(--border); }
   .reg-falta { display: flex; align-items: flex-start; gap: 7px; margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
   .reg-falta > svg { flex-shrink: 0; margin-top: 2px; }
   .reg-falta.ok { color: var(--green); font-weight: 600; }
@@ -15064,7 +15068,7 @@ const REG_PASSOS = [
   { id: "horario", t: "Horário", titulo: "Horário de funcionamento", porque: "A ficha mostra se a academia está aberta agora." },
   { id: "cancelamento", t: "Cancelamento", titulo: "Cancelamento e reposição", porque: "Tira a dúvida antes da primeira aula." },
   { id: "chegada", t: "Como chegar", titulo: "Como chegar", porque: "Fachada, entrada e onde parar: é o que mais evita passar direto." },
-  { id: "revisar", t: "Revisar", titulo: "Confira a prévia da ficha", porque: "É assim que os jogadores vão ver. Mude o que quiser em Editar, ou confirme." },
+  { id: "revisar", t: "Revisar", titulo: "Confira a prévia da ficha", porque: "É assim que os jogadores vão ver. Toque no lápis para mudar uma parte." },
 ];
 
 // Quem pede cadastro pelo site manda o essencial; o admin publica só com o
@@ -15378,25 +15382,12 @@ function regPassoHtml(id, f, obrigatorio) {
             ${htEstacionarLinhas(estacionarLinhas(f))}
           </div>` : ""}`;
 
-  // Revisar: a prévia da ficha e, embaixo, cada parte com ✓, "Falta"
-  // (obrigatória vazia) ou "Opcional"; um toque leva até ela — o "Quase lá"
-  // do Booking.
+  // Revisar: só a prévia da ficha (13/10/2026: a lista "Partes da ficha"
+  // embaixo dela saiu; as abas do alto e o lápis de cada parte levam até
+  // ela, e o que falta aparece ao tentar confirmar, como nas outras partes).
   return `
         ${previaDaFicha(f)}
-        <p class="reg-plano-t" style="margin-top:22px">Partes da ficha</p>
-        <div class="reg-revisao">
-          ${REG_PASSOS.filter(x => x.id !== "revisar").map((x, i) => {
-            const falta = regFaltas(f, x.id);
-            const feito = regPreenchido(f, x.id) && !falta.length;
-            return `
-            <button type="button" class="reg-rev-linha" data-reg-passo="${i}">
-              <span class="reg-rev-sinal ${feito ? "ok" : falta.length ? "falta" : ""}">${feito ? "✓" : falta.length ? "!" : "–"}</span>
-              <span class="reg-rev-t"><strong>${x.t}</strong><span>${feito ? "Preenchido" : falta.length ? `Falta: ${falta.join(", ")}` : "Opcional — dá para completar depois"}</span></span>
-              ${icon('chevron', 16, 'var(--muted)')}
-            </button>`;
-          }).join("")}
-        </div>
-        ${isEditing ? "" : `<p class="footnote">${isAdmin ? "Só o nome é obrigatório. O resto você completa quando quiser, em Editar academia." : "* campos obrigatórios"}</p>`}
+        ${isAdmin && !isEditing ? `<p class="footnote">Só o nome é obrigatório. O resto você completa quando quiser, em Editar academia.</p>` : ""}
         ${isAdmin ? `
           <label class="consent-row">
             <input type="checkbox" id="f-confirmada" ${f.confirmada ? "checked" : ""} />
@@ -15675,7 +15666,7 @@ function renderRegisterSheet() {
         ${state.registerStatus === "error" ? `<div class="form-error">${icon('warning',13)} ${esc(state.registerError)}</div>` : ""}
 
         <div class="reg-rodape">
-          ${passo.id === "revisar" ? "" : regAvisoDoQueFalta(f, i)}
+          ${regAvisoDoQueFalta(f, i)}
           <div class="reg-rodape-linha">
             ${i > 0 ? `<button type="button" class="reg-voltar" id="reg-voltar">Voltar</button>` : `<span></span>`}
             <div class="reg-rodape-dir">
@@ -15707,55 +15698,61 @@ function fichaDoFormulario(f) {
     confirmada: isAdmin ? !!f.confirmada : !!(contaAcademia || f.__editingId) };
   return { ...mapRow(linha), appAvg: 0, appCount: 0, distanceKm: null };
 }
+// Desde 13/10/2026 (pedido do Breno, com print: "deixe uma prévia de como vai
+// ficar mesmo, como se já estivesse e podendo editar, mas de forma limpa a
+// opção, não muito amontoado"): a ficha no desenho da página da academia —
+// a galeria, o nome com o selo, as seções com os mesmos títulos — e só um
+// lápis pequeno no canto de cada parte, como a prévia do anúncio do Airbnb e o
+// perfil da empresa no Google. O que está vazio vira uma linha "+ Adicionar…";
+// o que o plano esconde, uma linha discreta.
 function previaDaFicha(f) {
   const c = fichaDoFormulario(f);
   const plano = f.__plano || "basico";
   const l = limitesDoPlano(plano);
+  const nomePlano = nomeDoPlano(plano);
   const passo = (id) => REG_PASSOS.findIndex(x => x.id === id);
-  const escondido = (t) => `<p class="reg-previa-vazio">${icon('olhoFechado', 15, '#8E6D25')} ${esc(t)}</p>`;
-  const vazio = (t) => `<p class="reg-previa-vazio">${esc(t)}</p>`;
-  const bloco = (titulo, id, conteudo) => `
-    <div class="reg-previa-bloco" data-previa="${id}">
-      <div class="reg-previa-cab">
-        <p class="reg-previa-h">${esc(titulo)}</p>
-        <button type="button" class="reg-previa-editar" data-reg-passo="${passo(id)}" aria-label="Editar: ${esc(titulo)}">${icon('edit', 14, 'currentColor')} Editar</button>
-      </div>
-      <div class="reg-previa-conteudo" inert>${soParaVer(conteudo)}</div>
-    </div>`;
+  const nomes = { fotos: "Fotos", dados: "Nome e endereço", horario: "Sobre a academia e horário", precos: "Aulas, locação e preço", quadras: "Estrutura", cancelamento: "Cancelamento e reposição", chegada: "Como chegar", contato: "Contato" };
   // Links viram texto: na prévia, nada abre o WhatsApp nem conta clique.
-  function soParaVer(html) {
-    return html.replace(/<a\b/g, "<span").replace(/<\/a>/g, "</span>").replace(/ (href|target|rel|data-track|data-court|data-lightbox-open)="[^"]*"/g, "");
-  }
+  const soParaVer = (html) => html.replace(/<a\b/g, "<span").replace(/<\/a>/g, "</span>").replace(/ (href|target|rel|data-track|data-court|data-lightbox-open)="[^"]*"/g, "");
+  const lapis = (id) => `<button type="button" class="reg-previa-lapis" data-reg-passo="${passo(id)}" aria-label="Editar: ${esc(nomes[id])}">${icon('edit', 15, 'currentColor')}</button>`;
+  const secao = (id, titulo, html, extra = "") => `
+      <section class="reg-previa-sec${id === "fotos" ? " reg-previa-fotos" : ""}" data-previa="${id}">
+        ${lapis(id)}
+        <div class="reg-previa-conteudo" inert>${soParaVer((titulo ? `<h3 class="sec-title">${titulo}</h3>` : "") + html)}</div>
+        ${extra}
+      </section>`;
+  const adicionar = (id, t) => `<button type="button" class="reg-previa-mais" data-previa="${id}" data-reg-passo="${passo(id)}">${icon('plus', 15, 'currentColor')} ${esc(t)}</button>`;
+  const fora = (t, id) => `<p class="reg-previa-fora"${id ? ` data-previa="${id}"` : ""}>${icon('olhoFechado', 14, '#8E6D25')} ${esc(t)}</p>`;
+  const comodidadesFora = (f.amenities || []).length - (c.amenities || []).length;
   const contatos = [
     c.phone ? `<span class="cta-btn cta-primary">${icon('phone', 15, '#fff')} Chamar no WhatsApp</span>` : "",
     c.site ? `<span class="cta-btn cta-secondary">${icon('globe', 15, 'var(--green)')} Ver site</span>` : "",
     c.instagram ? `<span class="cta-btn cta-secondary">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</span>` : "",
   ].join("");
   const redesFora = l.contatos.includes("instagram") ? [] : [String(f.instagram || "").trim() && "Instagram", String(f.site || "").trim() && "site"].filter(Boolean);
+  const parteFora = (id, temPlano, preenchida, titulo, html, textoAdicionar) => !temPlano
+    ? (preenchida ? fora(`${nomes[id]}: preenchido, mas fica de fora no plano ${nomePlano}.`, id) : "")
+    : preenchida ? secao(id, titulo, html) : adicionar(id, textoAdicionar);
   return `
     <div class="reg-previa" id="reg-previa">
-      <div class="reg-previa-topo">
-        <p class="reg-previa-t">${icon('eye', 16, 'var(--green)')} Prévia da ficha</p>
-        <p class="reg-previa-s">Como os jogadores vão ver${plano === "premium" ? "" : `, no plano ${esc(nomeDoPlano(plano))}`}. Toque em Editar para mudar uma parte.</p>
+      ${courtPhotos(c).length ? secao("fotos", "", htGaleria(c)) : adicionar("fotos", "Adicionar fotos")}
+      <div class="reg-previa-corpo">
+        ${secao("dados", "", `
+          <h2 class="court-name display">${esc(c.name || "Nome da academia")}${seloDaAcademia(c, 20, false)}</h2>
+          ${htEtiquetas(c)}
+          <p class="court-addr"><span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span><span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>`)}
+        ${secao("horario", "Sobre a academia", `<p class="ht-about">${esc(descricaoAcademia(c))}</p>${htHorario(c)}`)}
+        ${secao("precos", "Escolha o que você quer", htOpcoes(c))}
+        ${(totalQuadras(c) || (c.amenities || []).length)
+          ? secao("quadras", "Estrutura", htComodidades(c), comodidadesFora > 0 ? fora(`${comodidadesFora} ${plural(comodidadesFora, "comodidade fica", "comodidades ficam")} de fora no plano ${nomePlano}.`) : "")
+          : adicionar("quadras", "Adicionar quadras e comodidades")}
+        ${parteFora("cancelamento", l.cancelamento, regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
+        ${parteFora("chegada", l.chegada, temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar", htAcesso(c), "Adicionar como chegar")}
+        ${contatos
+          ? secao("contato", "", `<div class="cta-col" style="margin-top:0">${contatos}</div>`,
+              redesFora.length ? fora(`${redesFora.length > 1 ? "Instagram e site ficam" : `O ${redesFora[0]} fica`} de fora no plano ${nomePlano}.`) : "")
+          : adicionar("contato", "Adicionar o WhatsApp")}
       </div>
-      ${bloco("Fotos", "fotos", courtPhotos(c).length ? htGaleria(c) : vazio("Sem foto: a ficha começa direto no nome."))}
-      ${bloco("Nome e endereço", "dados", `
-        <h3 class="court-name display">${esc(c.name || "Nome da academia")}${seloDaAcademia(c, 20, false)}</h3>
-        ${htEtiquetas(c)}
-        <p class="court-addr"><span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span><span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>`)}
-      ${bloco("Sobre a academia e horário", "horario", `<p class="ht-about">${esc(descricaoAcademia(c))}</p>${htHorario(c)}`)}
-      ${bloco("Aulas, locação e preço", "precos", htOpcoes(c))}
-      ${bloco("Estrutura", "quadras", (totalQuadras(c) || (c.amenities || []).length) ? htComodidades(c)
-        + ((f.amenities || []).length > (c.amenities || []).length ? escondido(`${(f.amenities || []).length - c.amenities.length} comodidades não aparecem no plano ${nomeDoPlano(plano)}.`) : "")
-        : vazio("Sem quadras nem comodidades informadas."))}
-      ${bloco("Cancelamento e reposição", "cancelamento", !l.cancelamento
-        ? escondido(regPreenchido(f, "cancelamento") ? `Preenchido, mas não aparece no plano ${nomeDoPlano(plano)}.` : `Não aparece no plano ${nomeDoPlano(plano)}.`)
-        : regPreenchido(f, "cancelamento") ? htPolitica(c) : vazio("Não informado: a ficha diz para perguntar à academia."))}
-      ${bloco("Como chegar", "chegada", !l.chegada
-        ? escondido(regPreenchido(f, "chegada") ? `Preenchido, mas não aparece no plano ${nomeDoPlano(plano)}.` : `Não aparece no plano ${nomeDoPlano(plano)}.`)
-        : temAcesso(c) ? htAcesso(c) : vazio("Não informado."))}
-      ${bloco("Contato", "contato", (contatos ? `<div class="cta-col" style="margin-top:0">${contatos}</div>` : vazio("Sem contato informado."))
-        + (redesFora.length ? escondido(`${redesFora.length > 1 ? "Instagram e site não aparecem" : `O ${redesFora[0]} não aparece`} no plano ${nomeDoPlano(plano)}.`) : ""))}
     </div>`;
 }
 

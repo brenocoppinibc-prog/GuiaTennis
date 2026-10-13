@@ -145,9 +145,8 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const formAdmin = await page.evaluate(() => ({
     nota: document.querySelector('#register-overlay .reg-passo').innerText,
     aceite: !!document.getElementById('f-consent'),
-    falta: document.querySelectorAll('.reg-rev-sinal.falta').length,
   }));
-  ok(!whats.includes('*') && !formAdmin.aceite && formAdmin.nota.includes('Só o nome é obrigatório') && formAdmin.falta === 1, 'formulário do admin: sem asteriscos e sem aceite, só o nome é obrigatório');
+  ok(!whats.includes('*') && !formAdmin.aceite && formAdmin.nota.includes('Só o nome é obrigatório'), 'formulário do admin: sem asteriscos e sem aceite, só o nome é obrigatório');
   await irParte(page, 'dados');
   ok(await page.evaluate(() => !!document.getElementById('register-submit')), 'admin publica de qualquer parte, sem ir até o fim');
   await page.fill('#f-name', 'Academia Só Nome');
@@ -165,12 +164,11 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const passo1 = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', passo: state.regPasso }));
   ok(passo1.passo === 0 && passo1.erro.includes('endereço completo') && !passo1.erro.includes('WhatsApp'), 'Continuar cobra o que falta na parte — ' + passo1.erro);
   await irParte(page, 'revisar');
-  const rev = await page.evaluate(() => [...document.querySelectorAll('.reg-rev-linha')].filter(l => l.querySelector('.falta')).map(l => l.querySelector('strong').innerText).join(', '));
-  ok(rev === 'Nome e endereço, Modalidade e preço, Quadras, Contato', 'revisão marca as partes obrigatórias que faltam — ' + rev);
   await page.click('#register-submit');
   await page.waitForTimeout(800);
-  const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome'), passo: state.regPasso }));
+  const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome'), passo: state.regPasso, falta: (document.getElementById('reg-falta')?.innerText || '').replace(/\s+/g, ' ') }));
   ok(!pedido.gravou && pedido.erro.includes('endereço completo') && pedido.erro.includes('WhatsApp') && pedido.passo === 0, 'pedido pelo site ainda cobra o essencial e volta para a parte que falta — ' + pedido.erro);
+  ok(pedido.falta.includes('Nome e endereço*, Modalidade e preço*, Quadras* e Contato*'), 'e diz as partes obrigatórias que faltam (desde 13/10, no lugar da lista embaixo da prévia) — ' + pedido.falta);
   await browser.close();
 
   // Termos e Privacidade

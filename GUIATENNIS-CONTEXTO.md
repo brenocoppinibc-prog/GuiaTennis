@@ -1801,7 +1801,7 @@ cobra taxa e não fica no meio** da negociação.
     (prints de 10/10/2026, cinco pedidos):
     - **"quero que as fotos apareçam maiores"** (`regFotosHtml`), como o
       "Fotos do anúncio" do Airbnb: a primeira ocupa a largura, marcada
-      "Capa"; as outras em duas colunas (4:3), com "Usar como capa" (põe em
+      "Capa"; as outras em duas colunas (4:3), com "Usar como capa" (coloca em
       primeiro) e o ✕ maior. No plano que mostra menos fotos, as de fora
       dizem "Fora da ficha no Básico" em cima da própria foto.
     - **"deixe esse aviso menor e se clicar explica mais em todas as

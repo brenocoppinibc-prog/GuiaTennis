@@ -24,6 +24,14 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 13/10/2026
 
+> **Estado (13/10/2026, tarde):** com print do cartão da academia no
+> painel, o Breno pediu e-mail "no nosso estilo" para quem administra quando
+> o plano muda, os contatos de quem administra ali no cartão, todos os
+> avisos da academia para todos que administram e um aviso para quem já
+> administra quando entra alguém novo. Entrou a regra 94 (SQL
+> `20261013120000_avisos_para_toda_a_equipe`). Testes: **356 no
+> `banco-emails.py`** (seção 29 nova) e o `painel-admin.js`.
+>
 > **Estado (13/10/2026, depois):** o Breno fez o teste das falhas na
 > prévia ("deu quase tudo certo") e mandou print do painel › Falhas do site
 > com oito cartões "Conexão · Nova", um por tabela ("Banco: tabela
@@ -905,8 +913,9 @@ cobra taxa e não fica no meio** da negociação.
     - **avaliação nova** → todas as pessoas da academia (gatilho
       `aviso_de_avaliacao_nova`), com a nota, o comentário, "Responder a
       avaliação" e, com 1 ou 2 estrelas, o lembrete do "Pedir análise";
-    - **pedido de acesso** → o responsável principal ("Ver o pedido" em
-      Pessoas) ou, quando o pedido é para o GuiaTennis conferir, o admin
+    - **pedido de acesso** → todos que administram (desde 13/10/2026,
+      regra 94; antes só o responsável principal): o responsável com "Ver
+      o pedido" em Pessoas, a equipe sabendo que ele decide; ou, quando o pedido é para o GuiaTennis conferir, o admin
       (com o WhatsApp de quem pediu; academia nova: "Academia nova para
       aprovar"); um por dia para o mesmo pedido;
     - **pedido aceito** → quem pediu ("Pronto: você já administra…"),
@@ -2023,6 +2032,67 @@ cobra taxa e não fica no meio** da negociação.
     - Vale para texto novo: antes de escrever uma frase embaixo de um
       botão, perguntar se ela ajuda a pessoa a fazer algo (fica) ou só conta
       o que o site faz (sai, ou vira "Saiba mais").
+94. **Os avisos da academia vão para todos que a administram; plano novo
+    e pessoa nova também avisam** (pedido de 13/10/2026, com print do
+    cartão da academia no painel: "eu quero que ao alterar o plano os
+    administradores da academia recebam um email no nosso estilo · deixe os
+    contatos de acesso do administrador já ali, facilitando · se
+    atualizações sobre as academias não forem todos os administradores que
+    recebem os emails, mude isso para todos receberem, se quando tiver um
+    novo acesso na mesma academia, administradores que já tem o acesso
+    receber informando sobre a outra pessoa"). Como o Google Business
+    Profile (todo dono e gerente recebe "Novo usuário no perfil", com
+    "não reconhece? remova") e a Shopify e o Booking para Parceiros (o
+    resumo do plano novo para quem administra a conta). SQL
+    `20261013120000_avisos_para_toda_a_equipe`.
+    - **Quem recebe o quê** (sempre: e-mail confirmado, avisos ligados,
+      "Não quero mais receber"): avaliação nova, lembrete da ficha parada e
+      resumo do mês já iam para todos; **pedido de acesso** (antes só o
+      responsável principal) vai para todos — o responsável com "Ver o
+      pedido", a equipe sabendo que "quem aceita ou recusa é o responsável
+      principal (nome)" (tipo `pedido_equipe`); **resposta do pedido para
+      tirar do guia** (antes só quem pediu) vai também para a equipe ("A
+      pedido de Rui…" / "Rui pediu para tirar… e ela continua no guia"),
+      com a lista guardada antes de a ficha ser apagada. Pedido aceito
+      continua só para quem pediu (é a resposta dele).
+    - **Plano novo** (tipo `plano`, gatilho `aviso_de_plano_novo` em
+      `academias.plano`): "A X agora está no plano Premium" (subindo) ou "O
+      plano da X mudou para o Básico" (descendo); "Olá, Ana!", "passou do
+      Básico para o Premium", a lista do que a academia passa a ter ou
+      deixa de ter (`o_que_muda_no_plano`, a mesma régua do
+      `LIMITES_DO_PLANO` e do `oQueMudaAoBaixarOPlano`: comodidades, fotos,
+      Instagram e site, cancelamento, como chegar, selo dourado,
+      Patrocinado, promoções, Desempenho, relatório completo, pessoas),
+      descendo "Nada é apagado…" e, com gente demais para o plano, "o
+      responsável principal tira quem passar do limite em Pessoas"; botão
+      "Ver o plano" (`/parceiros/plano?abrir=`). O admin às vezes toca num
+      plano e volta: o e-mail que ainda espera na fila (o relógio manda a
+      cada minuto) é trocado pelo novo, contando do plano de antes do
+      primeiro toque (o plano de antes vai na `chave`); se voltou ao mesmo,
+      nenhum sai. A pergunta ao baixar o plano termina com "Quem administra
+      a academia recebe um e-mail com o que muda."; a Ajuda ("Como mudo de
+      plano?") também diz.
+    - **Pessoa nova** (tipo `pessoa_nova`, gatilho `aviso_de_pessoa_nova`
+      em `academia_vinculos`, então vale para todo jeito de entrar: incluída
+      em Pessoas, pedido aceito, aprovada pelo GuiaTennis, código):
+      "Edu agora administra a X com você", com o nome e o e-mail (a
+      Política já dizia que as pessoas da mesma academia veem isso) e "Não
+      conhece essa pessoa?" — o responsável "tire o acesso em Pessoas"; a
+      equipe "fale com o responsável principal ou com o GuiaTennis". Não
+      recebem: a própria pessoa e quem fez a inclusão (`auth.uid()`). Na
+      disputa, quem administrava sai antes de a pessoa nova entrar: ninguém
+      recebe.
+    - **Painel do admin › Academias › Quem administra:** cada pessoa numa
+      linha, o responsável primeiro: nome · papel · cargo; o e-mail
+      (`mailto:`) e o WhatsApp (`wa.me`, com "Oi, Ana! Aqui é o Breno, do
+      GuiaTennis, sobre a X.") em texto com ícone pequeno, prontos para
+      tocar (`pessoasComContatoHtml`, dados que o `acessos_das_academias`
+      já trazia); sem contato, "Usuário …, sem e-mail nem WhatsApp"; embaixo,
+      o último acesso (ou "Esperando o primeiro acesso").
+    - Admin › E-mails nomeia os tipos novos; Perfil do Parceiros ("Avisos
+      por e-mail") e a Política de Privacidade listam os avisos novos;
+      textos legais em 13 de outubro de 2026. Testes: `painel-admin.js` e a
+      seção 29 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3202,6 +3272,18 @@ as 133 do `banco-acesso.py` no banco e login locais.
   sem e-mail do admin e de conexão, os grupos, os dados que saem, o que é
   ignorado, a academia, os limites, procurar pelo código, resolver e os 90
   dias).
+- Regra 94 (13/10/2026): o `painel-admin.js` confere a pergunta ao baixar
+  o plano (diz que quem administra recebe o e-mail) e "Quem administra"
+  com o e-mail e o WhatsApp para tocar, o responsável primeiro e o usuário
+  quando não há contato. A seção 29 do `banco-emails.py` confere o banco:
+  a primeira pessoa não avisa ninguém; pessoa nova avisa quem já estava (o
+  responsável com "tire o acesso", a equipe com o texto dela), menos a
+  própria e quem incluiu; plano novo para todos com e-mail confirmado, o
+  texto subindo e descendo (o que muda, "Nada é apagado", o limite de
+  pessoas), trocar de novo antes de sair (um e-mail só, do plano de antes)
+  e voltar ao mesmo (nenhum), avisos desligados, outra mudança sem e-mail;
+  pedido de acesso para o responsável e para a equipe; a resposta do
+  pedido para tirar do guia também para a equipe (seção 23).
 - `volta-e-resumo.js` — regras 86 e 87: abrir o site com a conta anota a
   visita (uma vez por abertura; banco antigo, em silêncio); o lembrete
   ligado em Minha conta, desligar e salvar; banco sem a coluna (não
@@ -3602,6 +3684,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Avisos da academia para todos que administram, e-mail do plano novo e da pessoa nova, contatos no painel (regra 94)   ← PR #5, 13/10
 (a seguir) Falhas: a internet que cai vira um registro só, com o que ficou sem carregar (regra 91)   ← PR #5, 13/10
 (a seguir) Opção pequena sem explicação, "Saiba mais" para a Ajuda e as dicas mantidas (regra 93)   ← PR #5, 11/10
 (a seguir) Sair da conta diz "Sair da conta" em todo lugar (regra 92)   ← PR #5, 11/10
@@ -3732,6 +3815,20 @@ falha**, nos 46 arquivos do navegador (comando na seção 6) e **340 no
 `testes/banco-local-base.sql`). Este chat **deixou de acompanhar o PR**
 (conferência cancelada, sem inscrição): no chat novo, voltar a acompanhar o
 PR #5.
+
+**Depois do resumo (13/10/2026, tarde).** Regra 94 (SQL
+`20261013120000_avisos_para_toda_a_equipe`, entra no banco de teste com o
+PR): e-mail do plano novo para todos que administram, aviso de pessoa
+nova para quem já administrava, pedido de acesso e resposta do "tirar do
+guia" para todos, e os contatos de cada pessoa em Academias › Quem
+administra. Para testar na prévia: no painel, abrir uma academia com conta
+(e-mail confirmado), ver os contatos e tocar no e-mail e no WhatsApp; mudar
+o plano (subir e, depois de 1 minuto, baixar) e ver os dois e-mails
+chegarem ("[Teste]" no assunto); com outra conta, pedir acesso à mesma
+academia e, como responsável, aceitar em Pessoas — quem já estava na equipe
+recebe "agora administra a … com você". Ideias deixadas de fora (não
+pedidas): avisar a equipe quando a academia é pausada, quando alguém sai da
+equipe e quando alguém contesta quem administra.
 
 **Depois do resumo (13/10/2026).** O Breno testou as falhas (passos 22 a
 26) e só não entendeu os oito cartões "Conexão · Nova" do painel, um por

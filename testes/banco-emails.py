@@ -16,8 +16,9 @@ o pedido para tirar do guia (20261008150000_pedido_para_sair_do_guia), as
 conversas do chat guardadas na conta (20261009120000_conversas_do_chat), o
 lembrete de conferir a ficha (20261009130000_lembrete_de_conferir_a_ficha), o
 lembrete do jogador que não entra há 3 meses (20261009140000_lembrete_de_volta),
-o resumo do mês do Parceiros (20261009150000_resumo_do_mes) e as falhas do
-site (20261011120000_falhas_do_site).
+o resumo do mês do Parceiros (20261009150000_resumo_do_mes), as falhas do
+site (20261011120000_falhas_do_site) e os avisos para toda a equipe da
+academia (20261013120000_avisos_para_toda_a_equipe).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -862,8 +863,11 @@ ok(not certo, "quem pediu não resolve o próprio pedido")
 certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', false, 'Que tal pausar por um tempo?')", **admin_kw)
 ok(certo and um("select count(*) from public.academias where id = '" + sair + "'") == "1"
    and um(f"select resolucao from public.pedidos_para_sair where id = '{pid}'") == "mantida", "\"Manter no guia\" fecha o pedido e a academia fica")
-html = um("select html from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta'") or ""
+html = um(f"select html from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and para = 'rui{sufixo}@exemplo.com'") or ""
 ok("continua no GuiaTennis" in html and "Que tal pausar por um tempo?" in html, "quem pediu recebe a resposta por e-mail")
+html = um(f"select html from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and para = 'tati{sufixo}@exemplo.com'") or ""
+ok("Rui Sai</strong> pediu para tirar" in html and "continua no guia" in html and "Que tal pausar por um tempo?" in html and "Não quero mais receber" in html,
+   "a equipe também recebe a resposta, dizendo quem pediu (SQL 20261013120000)")
 sql(f"select public.pedir_para_sair_do_guia('{sair}', 'nao_quer')", papel="authenticated", user=resp_sai)
 certo, _ = sql(f"select public.cancelar_pedido_para_sair('{sair}')", papel="authenticated", user=equipe_sai)
 ok(certo and um("select count(*) from public.meus_pedidos_para_sair()", papel="authenticated", user=resp_sai) == "0", "quem administra cancela o pedido")
@@ -873,8 +877,11 @@ certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', true)", **
 ok(certo and um("select count(*) from public.academias where id = '" + sair + "'") == "0", "\"Tirar do guia\" apaga a ficha" + ("" if certo else ": " + saida))
 ok(um(f"select resolucao || '|' || academia_nome || '|' || (academia_id is null)::text from public.pedidos_para_sair where id = '{pid}'") == "removida|Academia Que Sai|true",
    "o pedido fica registrado, com o nome da academia")
-ok(um("select count(*) from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and assunto = 'A Academia Que Sai saiu do GuiaTennis'") == "1",
+ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and assunto = 'A Academia Que Sai saiu do GuiaTennis' and para = 'rui{sufixo}@exemplo.com'") == "1",
    "quem pediu recebe o aviso de que a academia saiu")
+html = um(f"select html from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and assunto = 'A Academia Que Sai saiu do GuiaTennis' and para = 'tati{sufixo}@exemplo.com'") or ""
+ok("A pedido de <strong>Rui Sai</strong>" in html and "administrava a Academia Que Sai" in html,
+   "a equipe também fica sabendo que a academia saiu (o e-mail sai antes de a ficha ser apagada)")
 
 # 24. O chat de ajuda guardado na conta (SQL 20261009120000) ----------------------
 print("\n# Conversas do chat na conta")
@@ -1179,6 +1186,74 @@ sql("set local session_replication_role = replica; update public.falhas_do_site 
 falha(codigo="EFG234", visita="limpa" + sufixo)
 ok(um("select count(*) from public.falhas_do_site where codigo = 'Q22345'") == "0", "o que passou de 90 dias sai")
 sql("truncate public.falhas_do_site; truncate public.emails_a_enviar")
+
+# 29. Avisos para toda a equipe (SQL 20261013120000) ------------------------------
+print("\n# Avisos para toda a equipe")
+sql("truncate public.emails_a_enviar")
+eq = um("insert into public.academias (name, status, cidade, bairro, plano) values ('Academia da Equipe', 'published', 'São Paulo', 'Lapa', 'basico') returning id")
+resp_eq = parceiro("Paula Responsável", f"paulaeq{sufixo}@exemplo.com", eq)
+ok(fila() == "0", "a primeira pessoa da academia não gera aviso (não há quem avisar)")
+equipe_eq = parceiro("Edu Equipe", f"edueq{sufixo}@exemplo.com", eq, "equipe")
+novo = um(f"select html || '|' || assunto || '|' || para from public.emails_a_enviar where tipo = 'pessoa_nova'") or ""
+ok(fila("tipo = 'pessoa_nova'") == "1" and f"paulaeq{sufixo}@exemplo.com" in novo and "Edu Equipe agora administra a Academia da Equipe com você" in novo
+   and f"edueq{sufixo}@exemplo.com" in novo.split("|")[0] and "Tire o acesso dela em <strong>Pessoas</strong>" in novo,
+   "pessoa nova: quem já administrava recebe, com o nome e o e-mail dela e como tirar o acesso — " + novo[-120:])
+sem_conf = parceiro("Sid Sem", f"sideq{sufixo}@exemplo.com", eq, "equipe", confirmado=False)
+equipe_html = um(f"select html from public.emails_a_enviar where tipo = 'pessoa_nova' and para = 'edueq{sufixo}@exemplo.com'") or ""
+ok(fila("tipo = 'pessoa_nova'") == "3" and fila(f"para = 'sideq{sufixo}@exemplo.com'") == "0" and "Fale com o responsável principal" in equipe_html,
+   "a terceira pessoa avisa as duas de antes (a equipe com o texto dela); quem entrou não recebe sobre si")
+# Quem inclui a pessoa não recebe o aviso dela.
+sql("truncate public.emails_a_enviar")
+sql(f"update public.academias set plano = 'premium' where id = '{eq}'; truncate public.emails_a_enviar")
+outra = parceiro("Olga Outra", f"olgaeq{sufixo}@exemplo.com")
+certo, saida = sql(f"select public.adicionar_pessoa('olgaeq{sufixo}@exemplo.com', 'Olga Outra', null)", papel="authenticated", user=resp_eq)
+ok(certo and fila(f"tipo = 'pessoa_nova' and para = 'paulaeq{sufixo}@exemplo.com'") == "0"
+   and fila(f"tipo = 'pessoa_nova' and para = 'edueq{sufixo}@exemplo.com'") == "1",
+   "quem incluiu a pessoa (a responsável) não recebe; o resto da equipe sim" + ("" if certo else ": " + saida))
+
+# O plano mudou.
+sql(f"delete from public.academia_vinculos where user_id = '{outra}' and academia_id = '{eq}'; update public.academias set plano = 'basico' where id = '{eq}'; truncate public.emails_a_enviar")
+sql(f"update public.academias set plano = 'premium' where id = '{eq}'")
+ok(fila("tipo = 'plano'") == "2" and fila(f"tipo = 'plano' and para = 'sideq{sufixo}@exemplo.com'") == "0",
+   "plano novo: todos que administram com o e-mail confirmado recebem")
+plano = um(f"select assunto || '|' || html || '|' || replace(texto, E'\\n', ' ¶ ') from public.emails_a_enviar where tipo = 'plano' and para = 'paulaeq{sufixo}@exemplo.com'") or ""
+ok(plano.startswith("A Academia da Equipe agora está no plano Premium|") and "Olá, Paula!" in plano and "do <strong>Básico</strong> para o <strong>Premium</strong>" in plano
+   and "O selo dourado ao lado do nome" in plano and "Instagram e site" in plano and "Pessoas com acesso: até 10 (antes, até 1)" in plano
+   and "Ver o plano" in plano and "/parceiros/plano?abrir=" in plano and "Não quero mais receber" in plano and "• Promoções na ficha e na busca" in plano,
+   "o e-mail diz o plano de antes e o novo e o que a academia passa a ter, no nosso visual — " + plano[:80])
+# O admin muda de ideia antes de o e-mail sair: vai um só, do plano de antes.
+sql(f"update public.academias set plano = 'completo' where id = '{eq}'")
+plano = um(f"select assunto || '|' || html from public.emails_a_enviar where tipo = 'plano' and para = 'paulaeq{sufixo}@exemplo.com'") or ""
+ok(fila("tipo = 'plano'") == "2" and plano.startswith("A Academia da Equipe agora está no plano Completo|") and "do <strong>Básico</strong> para o <strong>Completo</strong>" in plano
+   and "selo dourado" not in plano,
+   "trocou de novo antes de sair: o e-mail que esperava é trocado pelo novo, contando do plano de antes")
+sql(f"update public.academias set plano = 'basico' where id = '{eq}'")
+ok(fila("tipo = 'plano'") == "0", "voltou ao mesmo plano antes de sair: nenhum e-mail")
+# Descendo, com mais pessoas do que o plano permite.
+sql(f"update public.academias set plano = 'premium' where id = '{eq}'; update public.emails_a_enviar set enviado_em = now() where tipo = 'plano'")
+sql(f"update public.academias set plano = 'basico' where id = '{eq}'")
+plano = um(f"select assunto || '|' || html from public.emails_a_enviar where tipo = 'plano' and enviado_em is null and para = 'edueq{sufixo}@exemplo.com'") or ""
+ok(plano.startswith("O plano da Academia da Equipe mudou para o Básico|") and "Com o Básico, a academia deixa de ter:" in plano
+   and "Nada é apagado" in plano and "Hoje 3 pessoas têm acesso à academia, e o Básico permite até 1" in plano and "Olá, Edu!" in plano,
+   "descendo: o que a academia deixa de ter, que nada é apagado e quem passa do limite de pessoas — " + plano[:70])
+sql(f"update public.academia_acessos set avisos_por_email = false where user_id = '{equipe_eq}'; truncate public.emails_a_enviar")
+sql(f"update public.academias set plano = 'completo' where id = '{eq}'")
+ok(fila("tipo = 'plano'") == "1" and fila(f"para = 'edueq{sufixo}@exemplo.com'") == "0", "quem desligou os avisos não recebe")
+sql(f"update public.academia_acessos set avisos_por_email = true where user_id = '{equipe_eq}'; truncate public.emails_a_enviar")
+sql(f"update public.academias set name = 'Academia da Equipe' where id = '{eq}'")
+ok(fila() == "0", "mudar outra coisa da academia não manda o e-mail do plano")
+
+# Pedido de acesso: o responsável decide, a equipe fica sabendo.
+pede = parceiro("Rafa Pede", f"rafaeq{sufixo}@exemplo.com")
+certo, saida = sql(f"select public.pedir_para_administrar('{eq}', true)", papel="authenticated", user=pede)
+resp_html = um(f"select tipo || '|' || html from public.emails_a_enviar where para = 'paulaeq{sufixo}@exemplo.com'") or ""
+eq_html = um(f"select tipo || '|' || html from public.emails_a_enviar where para = 'edueq{sufixo}@exemplo.com'") or ""
+ok(certo and resp_html.startswith("pedido_responsavel|") and "aceite em <strong>Pessoas</strong>" in resp_html and "Ver o pedido" in resp_html,
+   "pedido de acesso: o responsável recebe, com \"Ver o pedido\"" + ("" if certo else ": " + saida))
+ok(eq_html.startswith("pedido_equipe|") and "Quem aceita ou recusa é o responsável principal (Paula Responsável)" in eq_html,
+   "e a equipe também, dizendo que quem decide é o responsável — " + eq_html[:60])
+ok(fila(f"para = 'sideq{sufixo}@exemplo.com'") == "0" and fila(f"para = 'rafaeq{sufixo}@exemplo.com'") == "0", "sem o e-mail confirmado não recebe; quem pediu não recebe o próprio pedido")
+sql(f"delete from public.academias where id = '{eq}'; truncate public.emails_a_enviar")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

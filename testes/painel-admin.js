@@ -86,6 +86,31 @@ const tela = (page) => page.evaluate(() => ({
   await page.click('[data-adm-voltar="a1"]');
   await page.waitForTimeout(500);
   ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').pausada === false), 'volta para a busca na hora');
+  // Baixar o plano pergunta antes e diz que quem administra recebe o e-mail (13/10/2026).
+  let pergunta = '';
+  page.once('dialog', d => { pergunta = d.message(); d.accept(); });
+  await page.click('.adm-acad.aberta .plano-btn[data-plano="basico"]');
+  await page.waitForTimeout(500);
+  ok(pergunta.includes('do Premium para o Básico') && pergunta.includes('Quem administra a academia recebe um e-mail com o que muda'),
+    'baixar o plano avisa que quem administra recebe um e-mail — ' + pergunta.slice(-60));
+  // Quem administra, com o e-mail e o WhatsApp prontos para tocar (pedido de 13/10/2026).
+  await page.evaluate(async () => {
+    window.__db.academia_acessos.push(
+      { user_id: 'u-eq1', usuario: 'ana@exemplo.com', nome_responsavel: 'Ana Souza', cargo: 'Sócia', email: 'ana@exemplo.com', whatsapp: '(11) 98765-4321', dados_completos_em: '2026-10-01T10:00:00Z', papel: 'principal', academia_id: 'a1' },
+      { user_id: 'u-eq2', usuario: 'quadra.equipe', nome_responsavel: 'Beto', email: null, whatsapp: '', papel: 'equipe', academia_id: 'a1' });
+    window.__db.academia_vinculos.push({ user_id: 'u-eq1', academia_id: 'a1', papel: 'principal' }, { user_id: 'u-eq2', academia_id: 'a1', papel: 'equipe' });
+    await carregarAcessos();
+    render();
+  });
+  await page.waitForTimeout(200);
+  const pessoas = await page.evaluate(() => [...document.querySelectorAll('.adm-acad.aberta .adm-pessoa')].map(li => ({
+    t: li.innerText.replace(/\s+/g, ' '), links: [...li.querySelectorAll('a')].map(a => a.getAttribute('href')) })));
+  const ana = pessoas.find(p => p.t.includes('Ana Souza')), beto = pessoas.find(p => p.t.includes('Beto'));
+  ok(ana && ana.t.includes('responsável · Sócia') && ana.t.includes('ana@exemplo.com') && ana.t.includes('(11) 98765-4321')
+    && ana.links.includes('mailto:ana@exemplo.com') && ana.links.some(l => l.startsWith('https://wa.me/5511987654321?text=') && decodeURIComponent(l).includes('Oi, Ana! Aqui é o Breno, do GuiaTennis')),
+    'quem administra aparece com o e-mail e o WhatsApp, prontos para tocar — ' + (ana && ana.t));
+  ok(pessoas.findIndex(p => p === ana) < pessoas.findIndex(p => p === beto) && beto.t.includes('equipe') && beto.t.includes('Usuário quadra.equipe, sem e-mail nem WhatsApp') && beto.t.includes('Esperando o primeiro acesso'),
+    'o responsável vem primeiro; sem contato, o usuário — ' + (beto && beto.t));
 
   // Abrir a ficha e voltar ao painel.
   await page.click('.adm-acad.aberta [data-open="a1"]');

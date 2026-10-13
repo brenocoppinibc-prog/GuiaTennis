@@ -26,6 +26,8 @@ const BANCO = { message: 'Could not find the function public.conta_do_email(p_em
   let lista = await falhas(page);
   ok(lista.length === 1 && lista[0].codigo === codigo && lista[0].acao === 'Conferir o e-mail' && lista[0].tipo === 'rede' && lista[0].aviso_na_tela === true,
     'a falha vai para o banco com o mesmo código, a ação e o tipo — ' + JSON.stringify(lista[0] && { acao: lista[0].acao, tipo: lista[0].tipo }));
+  ok(lista[0].mensagem === 'A conexão caiu: o site ficou sem resposta.' && /Failed to fetch/.test(lista[0].detalhe),
+    'no painel, a mensagem diz o que houve (igual em todo navegador) e o técnico fica no detalhe — ' + lista[0].mensagem + ' | ' + lista[0].detalhe);
   ok(lista[0].site === 'jogadores' && lista[0].quem === 'visitante' && /^[a-z0-9]{8,32}$/.test(lista[0].visita || '') && lista[0].dispositivo && lista[0].navegador && lista[0].tela === '/',
     'com o site, quem, a visita do percurso, o aparelho, o navegador e a tela');
   ok(!(await page.isVisible('#falha-faixa')), 'com o aviso na tela, sem a faixa embaixo (nada repetido)');
@@ -149,6 +151,33 @@ const BANCO = { message: 'Could not find the function public.conta_do_email(p_em
   ok(lista.length === 1 && lista[0].acao === 'Salvar a busca', 'a conexão voltou: o registro vai sozinho');
   await browser.close();
 
+  // ---- modo avião com a página carregando: um registro só, não um por tabela ----
+  // (teste do Breno em 13/10/2026: oito cartões "Banco: tabela …" no painel)
+  ({ browser, page } = await abrir({}));
+  await page.context().setOffline(true);
+  await page.evaluate(() => ['rest/v1/rpc/estatisticas_publicas', 'rest/v1/estatisticas_publicas?select=*', 'rest/v1/avaliacoes?select=id', 'rest/v1/respostas?select=texto', 'rest/v1/promocoes?select=id', 'rest/v1/cliques']
+    .forEach(c => fetch(`${SUPABASE_URL}/${c}`).catch(() => {})));
+  await page.waitForTimeout(6800);
+  // Mais uma parte que falha na mesma queda não vira outro registro.
+  await page.evaluate(() => fetch(`${SUPABASE_URL}/rest/v1/academias?select=id`).catch(() => {}));
+  await page.waitForTimeout(6800);
+  await page.context().setOffline(false);
+  await page.waitForTimeout(400);
+  lista = await falhas(page);
+  ok(lista.length === 1 && lista[0].acao === 'Carregar partes da página' && lista[0].tipo === 'rede' && lista[0].mensagem === 'O aparelho estava sem internet.' && !lista[0].aviso_na_tela,
+    'sem internet, tudo o que a página carregava vira uma falha só, dizendo que o aparelho estava sem internet — ' + lista.map(f => f.acao + ': ' + f.mensagem).join(' | '));
+  ok(/Ficou sem: os números da home, as avaliações, as respostas às avaliações, as promoções, a contagem de cliques/.test(lista[0].detalhe) && !/supabase/.test(lista[0].detalhe),
+    'o detalhe diz o que ficou sem carregar, sem o endereço do banco — ' + lista[0].detalhe);
+  // A conexão voltou e caiu de novo: outra queda, outro registro (no mesmo cartão do painel).
+  await page.context().setOffline(true);
+  await page.evaluate(() => fetch(`${SUPABASE_URL}/rest/v1/promocoes?select=id`).catch(() => {}));
+  await page.waitForTimeout(6800);
+  await page.context().setOffline(false);
+  await page.waitForTimeout(400);
+  lista = await falhas(page);
+  ok(lista.length === 2 && lista[0].acao === lista[1].acao && lista[0].mensagem === lista[1].mensagem, 'a queda seguinte vai de novo, com a mesma ação e mensagem (o painel junta as duas)');
+  await browser.close();
+
   // ---- o chat entende "deu erro" ----
   ({ browser, page } = await abrir({}));
   await page.evaluate(() => abrirChat());
@@ -189,6 +218,7 @@ const BANCO = { message: 'Could not find the function public.conta_do_email(p_em
     { ...base, id: 'f3', codigo: 'DEF567', grupo: 'g1', visita: 'visitadois', created_at: iso(60) },
     { ...base, id: 'f4', codigo: 'GHJ234', grupo: 'g2', acao: 'Salvar a ficha', tipo: 'rede', mensagem: 'Failed to fetch', site: 'parceiros', quem: 'academia', visita: 'visitatres', created_at: iso(3 * 24 * 60) },
     { ...base, id: 'f5', codigo: 'LMN234', grupo: 'g3', acao: 'Excluir a avaliação', quem: 'admin', site: 'admin', visita: null, created_at: iso(10) },
+    { ...base, id: 'f6', codigo: 'PQR234', grupo: 'g4', acao: 'Carregar partes da página', tipo: 'rede', mensagem: 'O aparelho estava sem internet.', detalhe: 'Ficou sem: os números da home, as promoções', aviso_na_tela: false, tela: '/', academia_id: null, visita: 'visitaquatro', created_at: iso(2) },
   ];
   ({ browser, page } = await abrir({ admin: true, q: 'admin', falhas: iniciais, w: 1100 }));
   await page.waitForTimeout(400);
@@ -200,10 +230,13 @@ const BANCO = { message: 'Could not find the function public.conta_do_email(p_em
   await page.waitForTimeout(400);
   const tela = await page.evaluate(() => ({ url: location.pathname, h1: document.querySelector('.adm-h1')?.innerText, cartoes: [...document.querySelectorAll('.adm-falha')].map(a => a.innerText.replace(/\s+/g, ' ')), resumo: [...document.querySelectorAll('.adm-nota')].map(n => n.innerText).find(t => /tipos/.test(t)) || '' }));
   ok(tela.url === '/admin/falhas' && tela.h1 === 'Falhas do site', 'a seção abre em /admin/falhas');
-  ok(tela.cartoes.length === 3 && tela.cartoes[0].includes('Enviar a avaliação') && tela.cartoes[0].includes('3 vezes') && tela.cartoes[0].includes('2 visitas') && tela.cartoes[0].includes('Nova'),
+  ok(tela.cartoes.length === 4 && tela.cartoes[0].includes('Enviar a avaliação') && tela.cartoes[0].includes('3 vezes') && tela.cartoes[0].includes('2 visitas') && tela.cartoes[0].includes('Nova'),
     'as iguais juntas, com quantas vezes, quantas visitas e "Nova" — ' + tela.cartoes[0]);
   ok(tela.cartoes[0].includes('Celular 2 · Computador 1') && tela.cartoes[0].includes('Safari 17 (2)') && tela.cartoes[0].includes('Site dos jogadores'), 'com os aparelhos, os navegadores e o site');
-  ok(tela.resumo.includes('5 falhas em 3 tipos') && tela.resumo.includes('4 visitas afetadas'), 'o resumo do período — ' + tela.resumo);
+  ok(tela.resumo.includes('6 falhas em 4 tipos') && tela.resumo.includes('5 visitas afetadas'), 'o resumo do período — ' + tela.resumo);
+  const conexao = tela.cartoes.findIndex(t => t.includes('Carregar partes da página'));
+  ok(conexao > tela.cartoes.findIndex(t => t.includes('Excluir a avaliação')) && tela.cartoes[conexao].includes('Quase sempre é a internet de quem usava'),
+    'a de conexão vem depois das do site (mesmo sendo a mais nova), dizendo que quase sempre é a internet de quem usava — ' + tela.cartoes[conexao]);
   // As ocorrências e o caminho da visita até a falha.
   await page.evaluate(() => window.__db.passos_das_visitas.push(
     { visita: 'visitaum1', site: 'jogadores', ordem: 1, tipo: 'chegada', tela: '/', detalhe: 'Página inicial', segundos: 0, created_at: new Date(Date.now() - 8 * 60000).toISOString() },

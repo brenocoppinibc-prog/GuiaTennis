@@ -2258,6 +2258,7 @@ if (FETCH_DO_NAVEGADOR) window.fetch = function (recurso, opcoes) {
   try { url = typeof recurso === "string" ? recurso : (recurso && recurso.url) || String(recurso); } catch {}
   return FETCH_DO_NAVEGADOR(recurso, opcoes).then(r => {
     if (r && (r.status >= 500 || r.status === 429)) { try { anotarFalhaDaRede(url, r.status); } catch {} }
+    else if (navigator.onLine !== false) FALHAS.quedaAnotada = false;
     return r;
   }, erro => {
     if (!(erro && erro.name === "AbortError")) { try { anotarFalhaDaRede(url, 0, erro); } catch {} }
@@ -3390,21 +3391,31 @@ function siteDaFalha() {
   try { return isAdmin && state.page === "admin" ? "admin" : state.page === "parceiros" ? "parceiros" : "jogadores"; }
   catch { return "jogadores"; }
 }
+// O que a página carrega de cada tabela ou função, como o admin entende
+// ("Ficou sem: os números da home, as promoções").
+const PARTES_DO_BANCO = {
+  academias: "as academias", avaliacoes: "as avaliações", respostas: "as respostas às avaliações",
+  promocoes: "as promoções", cliques: "a contagem de cliques", estatisticas_publicas: "os números da home",
+  jogadores: "a conta", buscas_salvas: "as buscas salvas", guardar_na_conta: "o que fica na conta",
+  marcar_visita_da_conta: "a visita da conta", conversas_de_ajuda: "as conversas do chat",
+};
 // Que serviço é cada endereço. Do banco vai o caminho (a função ou a
 // tabela); dos serviços de fora, só o nome (o caminho do CEP tem o CEP).
 function servicoDaFalha(url) {
   let u;
-  try { u = new URL(url, location.href); } catch { return { nome: "Rede", host: "", caminho: "" }; }
+  try { u = new URL(url, location.href); } catch { return { nome: "Rede", parte: "a rede", host: "", caminho: "" }; }
   const host = u.hostname, caminho = u.pathname;
   if (url.startsWith(SUPABASE_URL) || /supabase\.co$/.test(host)) {
     const rpc = caminho.match(/\/rest\/v1\/rpc\/([a-z0-9_]+)/i), tabela = caminho.match(/\/rest\/v1\/([a-z0-9_]+)/i);
-    return { nome: rpc ? `Banco: ${rpc[1]}` : tabela ? `Banco: tabela ${tabela[1]}` : /\/auth\//.test(caminho) ? "Login (Supabase)" : "Banco", banco: true, host, caminho };
+    const login = /\/auth\//.test(caminho), nomeNoBanco = (rpc || tabela || [])[1];
+    return { nome: rpc ? `Banco: ${rpc[1]}` : tabela ? `Banco: tabela ${tabela[1]}` : login ? "Login (Supabase)" : "Banco",
+      parte: login ? "o login" : PARTES_DO_BANCO[nomeNoBanco] || nomeNoBanco || "o banco", banco: true, host, caminho };
   }
-  if (/viacep/.test(host)) return { nome: "Serviço do CEP (ViaCEP)", host, caminho: "" };
-  if (/nominatim/.test(host)) return { nome: "Serviço de endereços (OpenStreetMap)", host, caminho: "" };
-  if (/overpass/.test(host)) return { nome: "Mapa aberto (Overpass)", host, caminho: "" };
-  if (/ibge\.gov\.br/.test(host)) return { nome: "Cidades do IBGE", host, caminho: "" };
-  return { nome: host || "Rede", host, caminho: "" };
+  if (/viacep/.test(host)) return { nome: "Serviço do CEP (ViaCEP)", parte: "o CEP", host, caminho: "" };
+  if (/nominatim/.test(host)) return { nome: "Serviço de endereços (OpenStreetMap)", parte: "os endereços", host, caminho: "" };
+  if (/overpass/.test(host)) return { nome: "Mapa aberto (Overpass)", parte: "o mapa aberto", host, caminho: "" };
+  if (/ibge\.gov\.br/.test(host)) return { nome: "Cidades do IBGE", parte: "as cidades do IBGE", host, caminho: "" };
+  return { nome: host || "Rede", parte: host || "a rede", host, caminho: "" };
 }
 // Chamado pelo fetch do site (lá no começo) quando a rede ou o servidor
 // falham. Fica guardado por alguns segundos para a tela adotar.
@@ -3413,7 +3424,8 @@ function anotarFalhaDaRede(url, status, erro) {
   if (!status && document.visibilityState === "hidden") return;
   const s = servicoDaFalha(url);
   FALHAS.pendentes.push({
-    em: Date.now(), acao: s.nome, tipo: !status ? "rede" : s.banco ? "banco" : "servico",
+    em: Date.now(), acao: s.nome, parte: s.parte, tipo: !status ? "rede" : s.banco ? "banco" : "servico",
+    semInternet: !status && navigator.onLine === false, erro: erro && erro.message ? erro.message : "",
     mensagem: status ? `${s.nome} respondeu com erro ${status}${status === 429 ? " (muitos pedidos)" : ""}`
       : `Sem resposta de ${s.host || "rede"}${erro && erro.message ? ` (${erro.message})` : ""}`,
     detalhe: s.host + s.caminho,
@@ -3424,12 +3436,33 @@ function anotarFalhaDaRede(url, status, erro) {
 }
 // A falha técnica que nenhuma tela adotou vai sozinha, sem aviso ao
 // cliente: o site seguiu sem ela (o número da home, o mapa aberto…).
+// A internet que cai (o aparelho sem internet, ou várias partes sem
+// resposta ao mesmo tempo) derruba tudo o que a página carregava: vai um
+// registro só por queda, com o que ficou sem carregar no detalhe (no teste
+// do modo avião de 13/10/2026 eram oito cartões, um por tabela).
 function mandarFalhasNaoAdotadas() {
   const agora = Date.now();
   const velhas = FALHAS.pendentes.filter(f => agora - f.em >= FALHA_JANELA_MS - 50);
   FALHAS.pendentes = FALHAS.pendentes.filter(f => !velhas.includes(f));
-  velhas.forEach(f => registrarFalha(f));
+  const daRede = velhas.filter(f => f.tipo === "rede");
+  const queda = daRede.length > 0 && (daRede.some(f => f.semInternet) || new Set(daRede.map(f => f.parte)).size > 1);
+  (queda ? velhas.filter(f => f.tipo !== "rede") : velhas).forEach(f => registrarFalha(f));
+  if (queda && !FALHAS.quedaAnotada) {
+    FALHAS.quedaAnotada = true;
+    registrarFalha({ acao: "Carregar partes da página", tipo: "rede", ...textosDaQueda(daRede) });
+  }
   if (FALHAS.pendentes.length) FALHAS.timer = setTimeout(mandarFalhasNaoAdotadas, FALHA_JANELA_MS);
+}
+// Falha de conexão no painel: a mensagem diz o que houve (igual em todo
+// navegador, para as iguais ficarem juntas) e o técnico vai no detalhe.
+function textosDaQueda(tecnicas, erro) {
+  const semInternet = navigator.onLine === false || tecnicas.some(t => t.semInternet);
+  const partes = [...new Set(tecnicas.map(t => t.parte).filter(Boolean))];
+  const tecnico = (tecnicas.find(t => t.erro) || {}).erro || (erro ? mensagemDoErro(erro) : "");
+  return {
+    mensagem: semInternet ? "O aparelho estava sem internet." : "A conexão caiu: o site ficou sem resposta.",
+    detalhe: [partes.length ? `Ficou sem: ${partes.join(", ")}` : "", tecnico].filter(Boolean).join(" · "),
+  };
 }
 // A tela que mostrou o erro leva junto as falhas técnicas dos últimos
 // segundos (o motivo de verdade), em vez de elas irem separadas.
@@ -3520,7 +3553,7 @@ function mandarFilaDeFalhas() {
   try { fila = JSON.parse(sessionStorage.getItem(FALHAS_FILA_KEY) || "[]"); sessionStorage.removeItem(FALHAS_FILA_KEY); } catch {}
   fila.forEach(p => rpcDoBanco('registrar_falha', { p_falha: p }).then(({ error }) => { if (error && ehFalhaDeRede(error)) guardarFalhaNaFila(p); }, () => guardarFalhaNaFila(p)));
 }
-window.addEventListener("online", () => mandarFilaDeFalhas());
+window.addEventListener("online", () => { FALHAS.quedaAnotada = false; mandarFilaDeFalhas(); });
 
 // O que a tela chama quando uma ação da pessoa não deu certo. Devolve o
 // texto do aviso. Erro de regra: o aviso de sempre, sem registrar. Falha de
@@ -3557,8 +3590,10 @@ function falhou(acao, erro, opcoes = {}) {
   const texto = rede ? (semInternet ? TEXTO_SEM_INTERNET : TEXTO_CONEXAO_FALHOU) : (opcoes.texto || padrao);
   const codigo = registrarFalha({
     acao, tipo, academia: opcoes.academia, aviso: !opcoes.silenciosa,
-    mensagem: [mensagemDoErro(erro), t0 && t0.mensagem].filter(Boolean).join(" · ") || "Sem mensagem",
-    detalhe: [erro && erro.status ? `status ${erro.status}` : "", ...tecnicas.map(t => t.detalhe)].filter(Boolean).join(" · "),
+    ...(rede ? textosDaQueda(tecnicas, erro) : {
+      mensagem: [mensagemDoErro(erro), t0 && t0.mensagem].filter(Boolean).join(" · ") || "Sem mensagem",
+      detalhe: [erro && erro.status ? `status ${erro.status}` : "", ...tecnicas.map(t => t.detalhe)].filter(Boolean).join(" · "),
+    }),
   });
   if (!opcoes.silenciosa) mostrarAjudaDaFalha({ codigo, acao, texto, tipo, tentar: opcoes.tentar, alvos: [texto, opcoes.texto] });
   return texto;
@@ -17427,7 +17462,9 @@ function gruposDeFalhas(lista) {
       // A de conexão quase sempre é a internet de quem usa: fica na lista,
       // mas não conta em "Para fazer agora".
       deFora: abertas.filter(f => f.quem !== "admin" && f.tipo !== "rede" && new Date(f.created_at).getTime() > dia).length };
-  }).sort((a, b) => (b.abertas.length > 0) - (a.abertas.length > 0) || String(b.ultima.created_at).localeCompare(String(a.ultima.created_at)));
+  // Abertas primeiro; nelas, as de conexão depois das outras.
+  }).sort((a, b) => (b.abertas.length > 0) - (a.abertas.length > 0) || (a.tipo === "rede") - (b.tipo === "rede")
+    || String(b.ultima.created_at).localeCompare(String(a.ultima.created_at)));
 }
 // Para o "Para fazer agora" e o número ao lado de Falhas: as falhas abertas
 // das últimas 24 horas que não foram do próprio admin nem de conexão.
@@ -17555,6 +17592,7 @@ function admFalhasHtml() {
           <p class="adm-falha-selos"><span class="adm-pilula erro">${esc(ADM_TIPOS_DE_FALHA[g.tipo] || g.tipo)}</span>${g.voltou ? `<span class="adm-pilula analise">Voltou</span>` : g.nova && g.abertas.length ? `<span class="adm-pilula analise">Nova</span>` : ""}${!g.abertas.length ? `<span class="adm-pilula no-ar">Resolvida</span>` : ""}</p>
           <p class="adm-falha-t">${esc(g.acao)}</p>
           ${g.mensagem ? `<p class="adm-falha-m">${esc(g.mensagem)}</p>` : ""}
+          ${g.tipo === "rede" ? `<p class="adm-falha-s">Quase sempre é a internet de quem usava; só preocupa se aparecer em muitas visitas.</p>` : ""}
           <p class="adm-falha-n"><strong>${g.ocorrencias.length} ${plural(g.ocorrencias.length, "vez", "vezes")}</strong> · ${g.visitas} ${plural(g.visitas, "visita", "visitas")} · última ${esc(haQuantoTempo(g.ultima.created_at))}${g.ocorrencias.length > 1 ? ` · primeira ${esc(dataHora(g.primeira.created_at))}` : ""}</p>
           <p class="adm-falha-s">${esc(sites)}${telas ? ` · ${esc(telas)}` : ""}</p>
           ${aparelhos || navegadores ? `<p class="adm-falha-s">${esc(aparelhos)}${navegadores ? ` · ${esc(navegadores)}` : ""}</p>` : ""}

@@ -24,6 +24,18 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 13/10/2026
 
+> **Estado (13/10/2026, depois):** o Breno fez o teste das falhas na
+> prévia ("deu quase tudo certo") e mandou print do painel › Falhas do site
+> com oito cartões "Conexão · Nova", um por tabela ("Banco: tabela
+> cliques", "…estatisticas_publicas", "…respostas", "…promocoes",
+> "…avaliacoes"…): "só isso que não entendi". Era o próprio modo avião: a
+> página carregava várias partes ao mesmo tempo e cada uma virou um cartão.
+> Agora a internet que cai vira **um registro só** ("Carregar partes da
+> página · O aparelho estava sem internet.", com o que ficou sem carregar no
+> detalhe), o cartão de conexão diz que quase sempre é a internet de quem
+> usava e vem depois das falhas do site (regra 91, sem SQL). Este chat
+> voltou a acompanhar o PR #5.
+>
 > **Estado (13/10/2026):** nada novo no código desde a regra 93; o Breno
 > pediu o passo a passo para testar os passos 22 a 26 da prévia e trocou de
 > chat. Leia o "Resumo (13/10/2026, ao trocar de chat)" na seção 11.
@@ -1892,6 +1904,26 @@ cobra taxa e não fica no meio** da negociação.
       falha (o motivo de verdade) e registra uma só; a que nenhuma tela
       adotou vai sozinha, sem aviso ao cliente (`mandarFalhasNaoAdotadas`).
       Erro do código: `falhaDoCodigo`, com a linha e o começo da pilha.
+    - **A internet que cai vira uma falha só** (13/10/2026: no teste do
+      modo avião, o Breno viu oito cartões "Conexão · Nova" — "Banco: tabela
+      cliques", "…estatisticas_publicas", "…respostas", "…promocoes",
+      "…avaliacoes"… —, um por parte da página, e não entendeu). Como o
+      Sentry, que junta os "Failed to fetch" num problema só: o que nenhuma
+      tela adotou e é de conexão, com o aparelho sem internet ou com duas ou
+      mais partes sem resposta juntas, vai como **um registro só por queda**:
+      "Carregar partes da página", com "O aparelho estava sem internet." (ou
+      "A conexão caiu: o site ficou sem resposta.") e, no detalhe, "Ficou sem:
+      os números da home, as avaliações, as promoções…" (`PARTES_DO_BANCO`,
+      sem o endereço do banco). Outra queda só conta depois de a conexão
+      voltar (`FALHAS.quedaAnotada`, zera no `online` e na primeira resposta
+      com internet). Uma parte só sem resposta, com internet, continua com o
+      nome do serviço (pode ser ele fora do ar). Na falha de conexão que a
+      tela adotou ("Conferir o e-mail"), a mensagem também é o texto simples,
+      igual em todo navegador (para as iguais ficarem juntas), e o técnico
+      ("Failed to fetch") vai no detalhe (`textosDaQueda`). No painel, o
+      cartão de conexão diz "Quase sempre é a internet de quem usava; só
+      preocupa se aparecer em muitas visitas." e vem depois das falhas do
+      site.
     - **O que a pessoa vê:** sem internet, "Sem conexão com a internet.
       Confira o Wi-Fi ou os dados do celular e tente de novo." (com
       internet, mas a conexão falhou: "A conexão falhou. Confira a internet
@@ -3157,7 +3189,10 @@ as 133 do `banco-acesso.py` no banco e login locais.
   do código com e sem toque; serviço com 503 e serviço que não respondeu
   (sozinhos depois de 6 s, sem o que veio no link); a tela que adota a
   falha da rede; endereço que não existe não é falha; sem internet (o
-  registro espera e vai quando volta); o chat ("Algo não funcionou", com e
+  registro espera e vai quando volta); modo avião com várias partes
+  carregando (um registro só por queda, "O aparelho estava sem internet.",
+  o que ficou sem carregar no detalhe, sem o endereço do banco; a queda
+  seguinte vai de novo); o chat ("Algo não funcionou", com e
   sem falha recente); banco sem a tabela; o painel (Para fazer agora, o
   número na barra, os grupos, aparelhos e navegadores, as ocorrências, o
   caminho da visita, procurar pelo código, resolver, Resolvidas, a faixa
@@ -3567,6 +3602,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Falhas: a internet que cai vira um registro só, com o que ficou sem carregar (regra 91)   ← PR #5, 13/10
 (a seguir) Opção pequena sem explicação, "Saiba mais" para a Ajuda e as dicas mantidas (regra 93)   ← PR #5, 11/10
 (a seguir) Sair da conta diz "Sair da conta" em todo lugar (regra 92)   ← PR #5, 11/10
 (a seguir) Falhas do site no painel do admin e ajuda ao cliente quando algo não funciona (regra 91)   ← PR #5, 11/10
@@ -3696,6 +3732,19 @@ falha**, nos 46 arquivos do navegador (comando na seção 6) e **340 no
 `testes/banco-local-base.sql`). Este chat **deixou de acompanhar o PR**
 (conferência cancelada, sem inscrição): no chat novo, voltar a acompanhar o
 PR #5.
+
+**Depois do resumo (13/10/2026).** O Breno testou as falhas (passos 22 a
+26) e só não entendeu os oito cartões "Conexão · Nova" do painel, um por
+tabela: eram do próprio modo avião. A internet que cai agora vira um
+registro só por queda (regra 91, "A internet que cai vira uma falha só"),
+sem SQL. Os oito cartões do teste continuam no banco de teste: "Marcar como
+resolvida" em cada um (ou deixar, saem em 90 dias). Para conferir na
+prévia: repetir o passo 22 do mesmo jeito (aba anônima, modo avião,
+religar) e abrir Falhas do site: no lugar dos cartões por tabela, um
+"Carregar partes da página · O aparelho estava sem internet." (com "Ficou
+sem: …" na ocorrência), depois das falhas do site; o de "Conferir o e-mail"
+com o mesmo texto simples, sem "Failed to fetch".
+Este chat voltou a acompanhar o PR #5 (inscrito nos eventos do GitHub).
 
 O que entrou em 11/10 (depois do resumo de 11/10):
 - **Regra 91 — falhas do site** (SQL `20261011120000_falhas_do_site`): o

@@ -22,8 +22,12 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 11/10/2026 (tarde)
+**Atualizado em:** 13/10/2026
 
+> **Estado (13/10/2026):** nada novo no código desde a regra 93; o Breno
+> pediu o passo a passo para testar os passos 22 a 26 da prévia e trocou de
+> chat. Leia o "Resumo (13/10/2026, ao trocar de chat)" na seção 11.
+>
 > **Estado (11/10/2026, noite):** o Breno lembrou que "o site não precisa
 > explicar o que ele está fazendo em opções pequenas, se há necessidade de
 > explicar, levar um redirecionamento… e dar dicas que facilitam o uso do
@@ -3680,6 +3684,44 @@ c9ade31 Configuração de publicação do Netlify
 
 ## 11. Em aberto
 
+**Resumo (13/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 93** (último commit de código: `cde5ebf`, mais este
+documento). A prévia do Netlify está atualizada e o "Banco de dados" do PR
+aplicou todo o SQL no banco de teste (até `20261011120000_falhas_do_site`).
+Nenhum comentário ou revisão no PR. O merge espera o Breno dizer **"pode
+subir"** (não lembrar a toda hora). Testes: **1.301 verificações, nenhuma
+falha**, nos 46 arquivos do navegador (comando na seção 6) e **340 no
+`banco-emails.py`** (Postgres local: passo a passo em
+`testes/banco-local-base.sql`). Este chat **deixou de acompanhar o PR**
+(conferência cancelada, sem inscrição): no chat novo, voltar a acompanhar o
+PR #5.
+
+O que entrou em 11/10 (depois do resumo de 11/10):
+- **Regra 91 — falhas do site** (SQL `20261011120000_falhas_do_site`): o
+  que falha de verdade (conexão, banco, serviço de fora, código do site)
+  vai para o painel do admin › **Falhas do site** (`/admin/falhas`), com as
+  iguais juntas, aparelhos, o caminho da visita, procurar pelo código e
+  "Marcar como resolvida"; e-mail ao admin em falha nova (no máximo um a
+  cada 3 horas; não manda as do admin nem as de conexão). Quem usa vê o que
+  fazer, o **código do problema** e "fale com a gente", que abre o chat com
+  o problema e o código (e dali o WhatsApp). Erro de regra continua igual.
+- **Regra 92:** todo botão que desconecta diz **"Sair da conta"** (exceção:
+  "Sair do modo admin" no "Ver como academia", que não sai da conta).
+- **Regra 93:** opção pequena não se explica; o complexo vira **"Saiba
+  mais"** para a pergunta da Ajuda do Parceiros (Promoções, Desempenho,
+  Avaliações); dica que facilita fica.
+
+Pendente: o Breno testar na prévia (passos 1 a 26 da descrição do PR; os
+novos são o 22 a 26 — em 13/10 ele pediu e recebeu o passo a passo deles:
+modo avião no "Entrar ou criar conta" da aba anônima, anotar o código,
+religar a internet com a aba aberta, ver em Falhas do site, "deu erro" no
+chat, "Sair da conta" nos três tipos de conta, e os "Saiba mais" com a
+academia no Premium) e dizer "pode subir"; depois do merge, trocar o
+webhook do Resend para o site de verdade (item 00b) e conferir no registro
+da execução da `main` "Modelo do e-mail do código trocado no Supabase
+real"; WhatsApp do código esperando o CNPJ (item 0, não puxar o assunto).
+
 **Depois do resumo (11/10/2026, noite).** Regra 93: opção pequena não se
 explica; o complexo leva à Ajuda ("Saiba mais" em Promoções, Desempenho e
 Avaliações do Parceiros); dica que facilita fica. Para testar na prévia:
@@ -3707,7 +3749,7 @@ mandam e-mail); procurar pelo código; "Ver o caminho da visita";
 "Marcar como resolvida"; (c) no chat, escrever "deu erro". Testes:
 **1.287 verificações, nenhuma falha** nos 45 arquivos do navegador e **340 no `banco-emails.py`**.
 
-**Resumo (11/10/2026, ao trocar de chat).** O PR #5 (branch
+**Resumo (11/10/2026, ao trocar de chat, antigo).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
 até a **regra 90** (último commit: `09c74e1`, mais este documento). A
 prévia do Netlify está atualizada e o "Banco de dados" do PR aplicou todo

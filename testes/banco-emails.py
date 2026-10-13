@@ -18,7 +18,8 @@ lembrete de conferir a ficha (20261009130000_lembrete_de_conferir_a_ficha), o
 lembrete do jogador que não entra há 3 meses (20261009140000_lembrete_de_volta),
 o resumo do mês do Parceiros (20261009150000_resumo_do_mes), as falhas do
 site (20261011120000_falhas_do_site) e os avisos para toda a equipe da
-academia (20261013120000_avisos_para_toda_a_equipe).
+academia (20261013120000_avisos_para_toda_a_equipe e
+20261013130000_cargo_no_aviso_de_pessoa_nova).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -1196,8 +1197,8 @@ ok(fila() == "0", "a primeira pessoa da academia não gera aviso (não há quem 
 equipe_eq = parceiro("Edu Equipe", f"edueq{sufixo}@exemplo.com", eq, "equipe")
 novo = um(f"select html || '|' || assunto || '|' || para from public.emails_a_enviar where tipo = 'pessoa_nova'") or ""
 ok(fila("tipo = 'pessoa_nova'") == "1" and f"paulaeq{sufixo}@exemplo.com" in novo and "Edu Equipe agora administra a Academia da Equipe com você" in novo
-   and f"edueq{sufixo}@exemplo.com" in novo.split("|")[0] and "Tire o acesso dela em <strong>Pessoas</strong>" in novo,
-   "pessoa nova: quem já administrava recebe, com o nome e o e-mail dela e como tirar o acesso — " + novo[-120:])
+   and f"<strong>Edu Equipe</strong> (Dono(a) · edueq{sufixo}@exemplo.com)" in novo.split("|")[0] and "Tire o acesso dela em <strong>Pessoas</strong>" in novo,
+   "pessoa nova: quem já administrava recebe, com o nome, o cargo e o e-mail dela e como tirar o acesso (SQL 20261013130000) — " + novo[-120:])
 sem_conf = parceiro("Sid Sem", f"sideq{sufixo}@exemplo.com", eq, "equipe", confirmado=False)
 equipe_html = um(f"select html from public.emails_a_enviar where tipo = 'pessoa_nova' and para = 'edueq{sufixo}@exemplo.com'") or ""
 ok(fila("tipo = 'pessoa_nova'") == "3" and fila(f"para = 'sideq{sufixo}@exemplo.com'") == "0" and "Fale com o responsável principal" in equipe_html,

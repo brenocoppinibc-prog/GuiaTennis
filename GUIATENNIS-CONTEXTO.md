@@ -2044,7 +2044,8 @@ cobra taxa e não fica no meio** da negociação.
     Profile (todo dono e gerente recebe "Novo usuário no perfil", com
     "não reconhece? remova") e a Shopify e o Booking para Parceiros (o
     resumo do plano novo para quem administra a conta). SQL
-    `20261013120000_avisos_para_toda_a_equipe`.
+    `20261013120000_avisos_para_toda_a_equipe` e
+    `20261013130000_cargo_no_aviso_de_pessoa_nova`.
     - **Quem recebe o quê** (sempre: e-mail confirmado, avisos ligados,
       "Não quero mais receber"): avaliação nova, lembrete da ficha parada e
       resumo do mês já iam para todos; **pedido de acesso** (antes só o
@@ -2075,8 +2076,11 @@ cobra taxa e não fica no meio** da negociação.
     - **Pessoa nova** (tipo `pessoa_nova`, gatilho `aviso_de_pessoa_nova`
       em `academia_vinculos`, então vale para todo jeito de entrar: incluída
       em Pessoas, pedido aceito, aprovada pelo GuiaTennis, código):
-      "Edu agora administra a X com você", com o nome e o e-mail (a
-      Política já dizia que as pessoas da mesma academia veem isso) e "Não
+      "Edu agora administra a X com você", com o nome, o cargo e o e-mail
+      ("Edu Souza (Recepção · edu@…)", como o pedido de acesso; o cargo
+      entrou a pedido do Breno, "coloque o cargo tbm, junto", SQL
+      `20261013130000_cargo_no_aviso_de_pessoa_nova`; a Política diz que as
+      pessoas da mesma academia veem o nome, o cargo e o e-mail) e "Não
       conhece essa pessoa?" — o responsável "tire o acesso em Pessoas"; a
       equipe "fale com o responsável principal ou com o GuiaTennis". Não
       recebem: a própria pessoa e quem fez a inclusão (`auth.uid()`). Na
@@ -3684,6 +3688,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) O cargo junto do nome e do e-mail no aviso de pessoa nova (regra 94)   ← PR #5, 13/10
 (a seguir) Avisos da academia para todos que administram, e-mail do plano novo e da pessoa nova, contatos no painel (regra 94)   ← PR #5, 13/10
 (a seguir) Falhas: a internet que cai vira um registro só, com o que ficou sem carregar (regra 91)   ← PR #5, 13/10
 (a seguir) Opção pequena sem explicação, "Saiba mais" para a Ajuda e as dicas mantidas (regra 93)   ← PR #5, 11/10
@@ -3826,7 +3831,9 @@ administra. Para testar na prévia: no painel, abrir uma academia com conta
 o plano (subir e, depois de 1 minuto, baixar) e ver os dois e-mails
 chegarem ("[Teste]" no assunto); com outra conta, pedir acesso à mesma
 academia e, como responsável, aceitar em Pessoas — quem já estava na equipe
-recebe "agora administra a … com você". Ideias deixadas de fora (não
+recebe "agora administra a … com você". Depois, "coloque o cargo tbm, junto": o aviso de pessoa nova mostra
+"Nome (cargo · e-mail)" (SQL `20261013130000_cargo_no_aviso_de_pessoa_nova`).
+Ideias deixadas de fora (não
 pedidas): avisar a equipe quando a academia é pausada, quando alguém sai da
 equipe e quando alguém contesta quem administra.
 

@@ -28,8 +28,8 @@ teste")
 > pela revisão: o atalho das partes do meio virou "Revisar e salvar" /
 > "Revisar e publicar" e leva à prévia; só lá salva (regra 84). Sem SQL.
 > Testes: **1.331 verificações, nenhuma falha** nos 47 arquivos do
-> navegador. A descrição do PR #5 ainda não cita isso (atualizar junto com
-> o próximo pedido).
+> navegador. Depois o Breno trocou de chat: leia o "Resumo (14/10/2026, ao
+> trocar de chat)" na seção 11.
 
 > **Estado (13/10/2026, noite):** com print da prévia no fim do cadastro,
 > o Breno pediu "uma prévia de como vai ficar mesmo, como se já estivesse e
@@ -3949,6 +3949,28 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (14/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 97** e a regra 84 atualizada (prévia da ficha com lápis e
+"Revisar e salvar"; último commit de código: `e14ddf3`, mais este
+documento). A prévia do Netlify está atualizada e o "aplicar" passou o SQL
+no banco de teste (até `20261013140000_acessos_nos_emails`). A descrição do
+PR está em dia (seções 1 a 26 e passos de teste 1 a 35). Nenhum comentário
+ou revisão no PR. O merge espera o Breno dizer **"pode subir"** (não
+lembrar a toda hora). Testes: **1.331 verificações, nenhuma falha**, nos 47
+arquivos do navegador (comando na seção 6) e **356 no `banco-emails.py`**
+(Postgres local: passo a passo em `testes/banco-local-base.sql`). Este chat
+**deixou de acompanhar o PR** (conferência cancelada, sem inscrição): no
+chat novo, voltar a acompanhar o PR #5.
+**O limite de uso do Breno está acabando rápido.** No chat novo: ler deste
+documento só o topo, este resumo e os títulos das regras (seção 2); no
+`index.html`, procurar com `grep` e ler só o trecho que vai mudar; rodar a
+bateria de testes mostrando só as falhas; prints só quando o pedido for de
+visual; respostas curtas; conferir o PR com `get_check_runs` (a resposta é
+curta), não com `get`. Sugerido a ele: Sonnet para pedidos simples, esforço
+médio, juntar pedidos numa mensagem e trocar de chat a cada 3 ou 4 pedidos
+grandes.
 
 **Resumo (13/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

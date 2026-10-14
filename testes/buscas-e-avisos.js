@@ -231,14 +231,15 @@ async function buscar(page, termo) {
   });
   ok(reco.primeira === reco.ultima && reco.n <= 4 && reco.ordenada && reco.naTela, 'recomendadas: a Premium vem primeiro; sem Premium, pela nota e pela ficha mais completa');
   ok((await page.evaluate(() => perguntasDoSite().find(f => f.q.includes('ordem')).a)).includes('começam pelas do plano Premium'), 'a pergunta da ordem diz que as recomendadas começam pelas Premium');
+  // Pedido de 14/10/2026: nas recomendadas, a Premium se reconhece pelo selo dourado, sem a palavra "Patrocinado".
   const marca = await page.evaluate(() => {
     const c = state.allCourts[state.allCourts.length - 1]; const antes = { plano: c.plano, confirmada: c.confirmada };
     c.plano = 'premium'; c.confirmada = true; state.page = 'home'; render();
-    const cards = [...document.querySelectorAll('#home-recomendadas .mini')];
-    const r = { primeiro: cards[0]?.innerText || '', outros: cards.slice(1).filter(x => x.innerText.includes('Patrocinado')).length };
+    const card = document.querySelector('#home-recomendadas .mini');
+    const r = { selo: !!card?.querySelector('.selo-premium'), texto: card?.innerText || '' };
     Object.assign(c, antes); render(); return r;
   });
-  ok(marca.primeiro.startsWith('Patrocinado') && marca.outros === 0, 'a Premium nas recomendadas vem escrita "Patrocinado" (regra 16); as outras não — ' + marca.primeiro.slice(0, 40));
+  ok(marca.selo && !marca.texto.includes('Patrocinado'), 'a Premium nas recomendadas tem o selo dourado, sem "Patrocinado" no cartão');
   await page.evaluate(() => { state.page = 'home'; acaoDoMenu('dicas'); });
   await page.waitForFunction(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }, null, { timeout: 4000 }).catch(() => {});
   ok(await page.evaluate(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }), '"Dicas de uso" do menu leva às dicas');

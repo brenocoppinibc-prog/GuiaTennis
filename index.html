@@ -71,7 +71,6 @@
   .pc-promo-acoes { display: flex; gap: 16px; margin-top: 10px; }
   .pc-promo-form textarea { min-height: 84px; resize: vertical; }
   .rcard-patrocinado { margin: 0 0 4px; font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
-  .mini-patrocinado { margin: 0 0 3px; font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
   .resultados-titulo { margin: 10px 0 -4px; font-size: 15px; font-weight: 700; color: var(--text); }
   .ficha-dono { margin-top: 14px; }
   .ficha-dono .inline-link { font-size: inherit; font-weight: 700; }
@@ -11690,7 +11689,7 @@ function perguntasDoSite() {
     },
     {
       q: "A ordem das academias é paga?",
-      a: "Só as marcadas como \"Patrocinado\": são academias do plano Premium, no máximo duas no topo, perto de onde você buscou. Abaixo delas, a lista segue a ordem que você escolher — por padrão, das mais perto para as mais longe —, e nenhuma academia paga para mudar essa ordem. Na página inicial, as \"Academias recomendadas\" começam pelas do plano Premium; sem elas, vêm as mais bem avaliadas e com a ficha mais completa. O selo dourado ao lado do nome mostra a academia Premium; o verde, a academia que confirmou as informações da ficha.",
+      a: "Na busca, só as marcadas como \"Patrocinado\": são academias do plano Premium, no máximo duas no topo, perto de onde você buscou. Abaixo delas, a lista segue a ordem que você escolher — por padrão, das mais perto para as mais longe —, e nenhuma academia paga para mudar essa ordem. Na página inicial, as \"Academias recomendadas\" começam pelas do plano Premium; sem elas, vêm as mais bem avaliadas e com a ficha mais completa. O selo dourado ao lado do nome mostra a academia Premium; o verde, a academia que confirmou as informações da ficha.",
     },
   ];
   if (cidades.length) {
@@ -11914,9 +11913,7 @@ function faixaCidade(courts) {
   return min === max ? `a partir de R$ ${min}/hora` : `de R$ ${min} a R$ ${max} a hora`;
 }
 
-// patrocinado: a Premium nas "Academias recomendadas" (regra 101) é posição
-// paga e leva a palavra "Patrocinado", como no topo da busca (regra 16).
-function renderMini(c, selo, extra, patrocinado) {
+function renderMini(c, selo, extra) {
   const photos = courtPhotos(c);
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
   return `
@@ -11924,7 +11921,6 @@ function renderMini(c, selo, extra, patrocinado) {
       ${selo ? `<span class="mini-badge">${esc(selo)}</span>` : ""}
       ${photos.length ? `<div class="mini-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>` : ""}
       <div class="mini-body">
-        ${patrocinado ? `<p class="mini-patrocinado">Patrocinado</p>` : ""}
         <p class="mini-name">${esc(c.name)}${seloDaAcademia(c, 14)}</p>
         <p class="mini-score">
           ${c.appCount
@@ -12309,7 +12305,7 @@ function renderHome() {
     ${recomendadas.length ? `
       <div class="home-sec" id="home-recomendadas">
         <h3 class="display">Academias recomendadas</h3>
-        <div class="home-strip">${recomendadas.map(c => renderMini(c, null, null, ehPremium(c))).join("")}</div>
+        <div class="home-strip">${recomendadas.map(c => renderMini(c)).join("")}</div>
         <button type="button" class="ver-todas" data-ir-busca>Ver todas as academias ›</button>
       </div>` : ""}
 

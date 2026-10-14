@@ -1,6 +1,6 @@
 // Ficha básica (academia com dados públicos, ainda não confirmados por ela),
 // link do responsável, lista do mapa aberto no painel e textos legais.
-const { abrir, ok, irParte } = require('./harness');
+const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 // O que o OpenStreetMap devolveria: uma academia nova, um clube (fica de
 // fora pela regra do guia), uma já no guia (perto da a1) e uma repetida.
@@ -61,7 +61,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const marcada = await page.isChecked('#f-confirmada');
   ok(marcada === false, 'edição carrega a ficha básica desmarcada');
   await page.check('#f-confirmada');
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(800);
   const up = await page.evaluate(() => window.__ultimoUpdate || {});
   ok(up.confirmada === true, 'marcar "confirmadas pela academia" grava confirmada — ' + up.confirmada);
@@ -148,9 +148,14 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   }));
   ok(!whats.includes('*') && !formAdmin.aceite && formAdmin.nota.includes('Só o nome é obrigatório'), 'formulário do admin: sem asteriscos e sem aceite, só o nome é obrigatório');
   await irParte(page, 'dados');
-  ok(await page.evaluate(() => !!document.getElementById('register-submit')), 'admin publica de qualquer parte, sem ir até o fim');
+  ok(await page.evaluate(() => document.getElementById('register-submit')?.innerText.trim() === 'Revisar e publicar'), 'admin tem o atalho em qualquer parte: "Revisar e publicar"');
   await page.fill('#f-name', 'Academia Só Nome');
+  // 14/10/2026: o atalho leva à revisão; só lá publica.
   await page.click('#register-submit');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => regPassoAtual().passo.id === 'revisar' && !!document.getElementById('reg-previa') && !window.__db.academias.some(a => a.name === 'Academia Só Nome')),
+    'o atalho leva à prévia da ficha, sem publicar ainda');
+  await salvarFicha(page);
   await page.waitForTimeout(1500);
   const soNome = await page.evaluate(() => window.__db.academias.find(a => a.name === 'Academia Só Nome'));
   ok(soNome && soNome.status === 'published' && soNome.endereco === null, 'admin publica só com o nome — ' + JSON.stringify(soNome && { status: soNome.status, endereco: soNome.endereco }));
@@ -164,7 +169,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const passo1 = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', passo: state.regPasso }));
   ok(passo1.passo === 0 && passo1.erro.includes('endereço completo') && !passo1.erro.includes('WhatsApp'), 'Continuar cobra o que falta na parte — ' + passo1.erro);
   await irParte(page, 'revisar');
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(800);
   const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome'), passo: state.regPasso, falta: (document.getElementById('reg-falta')?.innerText || '').replace(/\s+/g, ' ') }));
   ok(!pedido.gravou && pedido.erro.includes('endereço completo') && pedido.erro.includes('WhatsApp') && pedido.passo === 0, 'pedido pelo site ainda cobra o essencial e volta para a parte que falta — ' + pedido.erro);

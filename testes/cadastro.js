@@ -1,4 +1,4 @@
-const { abrir, ok, irParte } = require('./harness');
+const { abrir, ok, irParte, salvarFicha } = require('./harness');
 (async () => {
   let { browser, page } = await abrir({ admin: true, q: '?court=a1' });
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a1"]').click());
@@ -49,7 +49,7 @@ const { abrir, ok, irParte } = require('./harness');
   await page.evaluate(() => document.querySelector('.reg-modalidade[data-modalidade="locacao"]').click());
   await irParte(page, 'quadras');
   await page.evaluate(() => document.querySelector('.reg-amenity[data-amenity="estacionamento_gratuito"]').click());
-  await page.evaluate(() => document.getElementById('register-submit').click());
+  await salvarFicha(page);
   await page.waitForTimeout(600);
   const up = await page.evaluate(() => window.__ultimoUpdate);
   ok(JSON.stringify(up.politica) === JSON.stringify({ modo: 'igual', reposicao: '24', foraDoPrazo: 'Perde a aula.' }), 'salva só a regra da aula — ' + JSON.stringify(up.politica));
@@ -64,7 +64,7 @@ const { abrir, ok, irParte } = require('./harness');
   await irParte(page, 'cancelamento');
   const r = await page.evaluate(() => [...document.querySelectorAll('.reg-reposicao.active')].map(e => e.dataset.reposicao).join());
   ok(r === '48', 'regra única aparece na edição — ' + r);
-  await page.evaluate(() => document.getElementById('register-submit').click());
+  await salvarFicha(page);
   await page.waitForTimeout(600);
   const up2 = await page.evaluate(() => window.__ultimoUpdate);
   ok(up2.politica.reposicao === '48', 'regra única continua depois de salvar');
@@ -76,7 +76,7 @@ const { abrir, ok, irParte } = require('./harness');
   await page.waitForTimeout(150);
   ok(await page.evaluate(() => !!document.querySelector('[id^="f-politica-horas-"]') && document.activeElement.id.startsWith('f-politica-horas-')), 'Personalizar abre o campo de horas, já com o cursor');
   await page.fill('[id^="f-politica-horas-"]', '36');
-  await page.evaluate(() => document.getElementById('register-submit').click());
+  await salvarFicha(page);
   await page.waitForTimeout(600);
   ok(await page.evaluate(() => window.__ultimoUpdate.politica.reposicao === '36' && !('__personalizar' in window.__ultimoUpdate.politica)), 'salva 36 horas, sem sujeira do formulário');
   // A ficha do Básico não mostra o cancelamento: confere no Completo.

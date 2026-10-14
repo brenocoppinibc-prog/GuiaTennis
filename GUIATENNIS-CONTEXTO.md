@@ -22,7 +22,14 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 13/10/2026
+**Atualizado em:** 14/10/2026
+
+> **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
+> pela revisão: o atalho das partes do meio virou "Revisar e salvar" /
+> "Revisar e publicar" e leva à prévia; só lá salva (regra 84). Sem SQL.
+> Testes: **1.331 verificações, nenhuma falha** nos 47 arquivos do
+> navegador. A descrição do PR #5 ainda não cita isso (atualizar junto com
+> o próximo pedido).
 
 > **Estado (13/10/2026, noite):** com print da prévia no fim do cadastro,
 > o Breno pediu "uma prévia de como vai ficar mesmo, como se já estivesse e
@@ -1759,6 +1766,15 @@ cobra taxa e não fica no meio** da negociação.
       vê o "Para concluir, falta preencher" em cima dos botões, como nas
       outras partes (regra 88). Para o admin, ao adicionar, fica a nota "Só
       o nome é obrigatório…".
+    - **Só se salva na revisão** (pedido de 14/10/2026: "sempre que uma
+      academia for enviar a publicação, redirecionar para a revisão, só ali
+      salvar"), como o Airbnb e o Booking, que sempre passam pela prévia
+      antes de publicar. Na edição e no admin, o atalho das partes do meio
+      virou **"Revisar e salvar"** / **"Revisar e publicar"** (antes "Salvar
+      alterações" / "Publicar quadra", que salvavam dali): leva à prévia, e
+      só o "Confirmar…" de lá salva. Por dentro, `enviarFormulario` fora da
+      última parte só leva à revisão. Nos testes, `salvarFicha` (harness)
+      toca de novo quando cai na revisão.
 85. **Lembrete por e-mail da ficha parada há 3 meses** (pedido de
     09/10/2026: "academias devem receber mensagem de atualização do
     cadastro depois de 3 meses sem alterações"), como o "Confirme as
@@ -3811,6 +3827,7 @@ miúda — e parecia aglomerado. Hoje, no padrão de Airbnb e Booking:
 ## 10. Histórico
 
 ```
+(a seguir) Salvar a ficha só na revisão: "Revisar e salvar" leva à prévia (regra 84)   ← PR #5, 14/10
 (a seguir) Prévia da ficha de verdade, com um lápis discreto em cada parte (regra 84)   ← PR #5, 13/10
 (a seguir) Janelas em tela cheia, rascunho na aba, "Acessos", balão no alto e "conversa iniciada" (regras 95 a 97)   ← PR #5, 13/10
 (a seguir) O cargo junto do nome e do e-mail no aviso de pessoa nova (regra 94)   ← PR #5, 13/10

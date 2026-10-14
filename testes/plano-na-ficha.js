@@ -5,7 +5,7 @@
 //   informações no básico completo podem ser preenchidas mas com aviso de que
 //   não estará visível na ficha e com opção de querer ou não alterar e
 //   precisar pagar a mais".
-const { abrir, ok, irParte } = require('./harness');
+const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
 const botoes = (page) => page.evaluate(() => [...document.querySelectorAll('.reg-rodape-dir .cta-btn')].map(b => b.id + (b.classList.contains('cta-primary') ? '*' : '')).join(','));
@@ -21,7 +21,7 @@ async function editarFicha(page) {
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha' });
   await page.waitForTimeout(400);
   await editarFicha(page);
-  ok((await botoes(page)) === 'register-submit,reg-continuar*', 'na edição, "Continuar" fica à direita e em destaque; "Salvar alterações" ao lado — ' + await botoes(page));
+  ok((await botoes(page)) === 'register-submit,reg-continuar*', 'na edição, "Continuar" fica à direita e em destaque; "Revisar e salvar" ao lado — ' + await botoes(page));
   ok(!(await page.$('#reg-falta')), 'sem tentar concluir, nada de "Falta preencher" (10/10/2026)');
   await irParte(page, 'fotos');
   ok((await texto(page, '#reg-plano-aviso')) === 'No Básico, a ficha mostra 3 fotos Saiba mais', 'nas fotos, o aviso do Básico numa linha, com "Saiba mais" — ' + await texto(page, '#reg-plano-aviso'));
@@ -65,7 +65,7 @@ async function editarFicha(page) {
   ok((await texto(page, '#reg-plano-aviso')).includes('Você pediu o plano Completo') && await page.isVisible('[data-reg-plano-aviso=""]'), '"Quero o Completo" vira o pedido, com "Desfazer o pedido"');
   await irParte(page, 'chegada');
   ok((await texto(page, '#reg-plano-aviso')).includes('Você pediu o plano Completo'), 'a escolha vale nas outras partes também');
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(900);
   let fim = await page.evaluate(() => ({ t: document.querySelector('#register-overlay')?.innerText || '', pedido: window.__db.pedidos_de_plano.map(p => p.academia_id + ':' + p.plano).join() }));
   ok(!fim.t.includes('Quase lá') && fim.t.includes('Você escolheu o plano Completo') && fim.pedido === 'a1:completo', 'ao salvar, não pergunta o plano de novo: o pedido do Completo vai para o GuiaTennis — ' + fim.pedido);
@@ -87,7 +87,7 @@ async function editarFicha(page) {
   await page.waitForTimeout(150);
   ok(await page.isVisible('[data-reg-plano-aviso="completo"]'), '"Mudar de ideia" traz a escolha de volta, com o aviso aberto');
   await page.click('[data-reg-plano-aviso="basico"]');
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(900);
   fim = await page.evaluate(() => ({ t: document.querySelector('#register-overlay')?.innerText || '', pedido: window.__db.pedidos_de_plano.length, insta: window.__db.academias.find(a => a.id === 'a1').instagram }));
   ok(!fim.t.includes('Quase lá') && fim.t.includes('Alterações salvas') && fim.pedido === 0 && fim.insta === '@soaula', 'salvou no Básico, com o Instagram guardado, sem pedido de plano');

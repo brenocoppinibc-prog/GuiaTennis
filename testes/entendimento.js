@@ -1,6 +1,6 @@
 // O site entende e arruma o que a academia escreveu, sem IA: estacionamento
 // no modelo único, fachada e chegada arrumadas, frase no lugar certo.
-const { abrir, ok, irParte } = require('./harness');
+const { abrir, ok, irParte, salvarFicha } = require('./harness');
 (async () => {
   let { browser, page } = await abrir({ q: '?court=a2' });
   await page.evaluate(async () => {
@@ -48,7 +48,7 @@ const { abrir, ok, irParte } = require('./harness');
   await page.waitForTimeout(200);
   const previa = await page.evaluate(() => document.querySelector('.est-previa')?.innerText.replace(/\s+/g, ' ').trim());
   ok(previa === 'Estacionamento na ficha Na rua Livre Da para parar na rua tranquilo.', 'prévia mostra como foi entendido — ' + previa);
-  await page.evaluate(() => document.getElementById('register-submit').click());
+  await salvarFicha(page);
   await page.waitForTimeout(500);
   const up = await page.evaluate(() => window.__ultimoUpdate.acesso);
   ok(up.estacionar === 'DA PRA PARAR NA RUA TRANQUILO', 'o banco guarda o texto como a academia escreveu');

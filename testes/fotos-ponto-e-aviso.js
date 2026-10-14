@@ -6,7 +6,7 @@
 // 4) "a localização no mapa não está exata conforme o número da rua";
 // 5) "em comodidades que vão aparecer se não tiver o completo, dê a opção
 //    para escolher quais serão apresentadas".
-const { abrir, ok, irParte } = require('./harness');
+const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
 const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -78,7 +78,7 @@ const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ
 
   // Salvar: o ponto arrastado e as comodidades escolhidas vão para o banco.
   await page.evaluate(() => { window.__form.__planoEscolhido = 'basico'; });
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(900);
   const salvo = await page.evaluate(() => { const a = window.__db.academias.find(x => x.id === 'a1'); return { lat: a.lat, lng: a.lng, am: a.amenities.slice(0, 3).join(), ficha: (state.allCourts.find(x => x.id === 'a1') || {}).amenities.slice().sort().join() }; });
   ok(salvo.lat === -23.5612 && salvo.lng === -46.6815, 'salvou o ponto arrastado — ' + salvo.lat + ',' + salvo.lng);
@@ -93,7 +93,7 @@ const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ
   await irParte(page, 'revisar');
   ok(!(await page.$('#reg-falta')), 'antes de concluir, sem o aviso');
   await page.evaluate(() => { window.__form.consent = true; });
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(300);
   const aviso = await texto(page, '#reg-falta-caixa');
   ok(aviso.startsWith('Para concluir, falta preencher: Nome e endereço*, Modalidade e preço* e Quadras*') && aviso.includes('* Obrigatório: sem isso, a ficha não pode ser enviada.'),
@@ -116,7 +116,7 @@ const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ
   ok(await page.evaluate(() => window.__form.__lat === -23.5701), 'mudar o endereço não desfaz o ponto arrastado');
   await irParte(page, 'revisar');
   await page.evaluate(() => { saveVisitor({ nome: 'Rita Teste', contato: '11988887777' }); window.__form.__planoEscolhido = 'basico'; });
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(900);
   const nova = await page.evaluate(() => window.__db.academias.find(a => a.name === 'Arena Teste'));
   ok(nova && nova.lat === -23.5701 && nova.lng === -46.6902, 'o pedido vai com o ponto conferido — ' + (nova ? nova.lat + ',' + nova.lng : 'sem academia'));

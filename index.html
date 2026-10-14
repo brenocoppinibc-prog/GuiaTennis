@@ -15634,11 +15634,13 @@ function renderRegisterSheet() {
   }
   const { i, passo } = regPassoAtual();
   const ultimo = i === REG_PASSOS.length - 1;
-  // Admin e edição salvam de qualquer parte; quem pede cadastro vai até o fim.
+  // Admin e edição têm o atalho em qualquer parte, mas ele leva à revisão:
+  // só lá se salva (pedido do Breno em 14/10/2026: "sempre que uma academia
+  // for enviar a publicação, redirecionar para a revisão, só ali salvar").
   const salvaEmQualquerParte = isAdmin || isEditing;
   const textoSalvar = ultimo
     ? (isEditing ? "Confirmar e salvar" : isAdmin ? "Confirmar e publicar" : "Confirmar e enviar")
-    : (isEditing ? "Salvar alterações" : (isAdmin ? "Publicar quadra" : "Enviar para análise"));
+    : (isEditing ? "Revisar e salvar" : "Revisar e publicar");
   const vazioOpcional = !regPreenchido(f, passo.id) && !regFaltas(f, passo.id).length && passo.id !== "dados";
   return `
     <div class="overlay open" id="register-overlay">
@@ -19607,6 +19609,8 @@ function montarEndereco(f) {
 // plano (precisaEscolherPlano) — uma vez; a escolha fica em __planoEscolhido.
 function enviarFormulario() {
   const f = window.__form;
+  // Fora da revisão, salvar leva à prévia da ficha; só ali salva de verdade.
+  if (!state.regPlanoTela && regPassoAtual().i < REG_PASSOS.length - 1) { irParaPasso(REG_PASSOS.length - 1, false); return; }
   // Faltando o obrigatório, o envio segue e cobra o que falta, como antes;
   // a tela do plano vem quando o cadastro está pronto para sair.
   const faltaObrigatorio = regPedeTudo(f) && REG_PASSOS.some(x => regFaltas(f, x.id).length);

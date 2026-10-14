@@ -1,7 +1,7 @@
 // Análise de 07/10/2026 (o que serve da análise do GPT): a ficha diz se é
 // da academia e quando foi atualizada, a seção de avaliações explica como
 // elas funcionam, e os números do site dizem o que contam.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, salvarFicha } = require('./harness');
 
 const diasAtras = (n) => new Date(Date.now() - n * 86400000).toISOString();
 const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.innerText || '', sel);
@@ -110,7 +110,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.waitForTimeout(300);
   await page.click('#parceiros .editar-academia');
   await page.waitForTimeout(300);
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(800);
   const depois = await page.evaluate(() => {
     const c = state.allCourts.find(x => x.id === 'a1');

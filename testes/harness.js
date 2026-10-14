@@ -86,6 +86,17 @@ async function irParte(page, id) {
   await page.waitForTimeout(120);
 }
 
+// Salvar a ficha (14/10/2026): fora da revisão, o botão de salvar leva à
+// prévia; só lá salva. Toca no botão e, se caiu na revisão, toca de novo.
+async function salvarFicha(page) {
+  for (let k = 0; k < 2; k++) {
+    const naRevisao = await page.evaluate(() => !!state.regPlanoTela || regPassoAtual().passo.id === 'revisar');
+    await page.evaluate(() => document.getElementById('register-submit').click());
+    if (naRevisao) return;
+    await page.waitForTimeout(200);
+  }
+}
+
 // GuiaTennis Parceiros (02/10/2026): Entrar e Cadastro começam pelo e-mail
 // (ou usuário). Digita e toca em Continuar; se tiver conta, abre a senha.
 async function irSenha(page, usuario) {
@@ -105,4 +116,4 @@ async function abasAbertas(page) {
   return page.evaluate(() => window.__abas || []);
 }
 
-module.exports = { abrir, ok, irParte, irSenha, vigiarAbas, abasAbertas };
+module.exports = { abrir, ok, irParte, irSenha, salvarFicha, vigiarAbas, abasAbertas };

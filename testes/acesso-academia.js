@@ -2,7 +2,7 @@
 // senha provisória, primeiro acesso, edição só da própria ficha, respostas às
 // avaliações, o que a academia não vê nem faz, e o bloco do admin que cria o
 // acesso.
-const { abrir, ok, vigiarAbas, abasAbertas, irParte, irSenha } = require('./harness');
+const { abrir, ok, vigiarAbas, abasAbertas, irParte, irSenha, salvarFicha } = require('./harness');
 // No celular, o Parceiros abre cada página pelo menu (06/10/2026: sem a
 // barra de atalhos embaixo).
 async function menuPc(page, aba) {
@@ -166,7 +166,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   // que o plano esconde aparece ao salvar.
   ok(await page.evaluate(() => !document.getElementById('f-instagram').disabled && !document.getElementById('f-site').disabled && !document.querySelector('.reg-plano-nota')), 'Básico: Instagram e site abertos, sem aviso no meio');
   await page.fill('#f-phone', '11911112222');
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(300);
   const tela = await texto(page, '#register-overlay');
   ok(tela.includes('Quase lá: escolha o plano') && tela.includes('A regra de cancelamento e reposição'), 'ao salvar, mostra o que o Básico esconde (o cancelamento que a academia já tinha)');

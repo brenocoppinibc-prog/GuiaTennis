@@ -4,7 +4,7 @@
 // "Quase lá" do Booking e o upgrade do Google Business Profile. O pedido de
 // plano pago fica anotado para o GuiaTennis; no painel, a academia no Básico
 // vê o que está escondido; o admin vê quem quer mudar de plano.
-const { abrir, ok, irParte } = require('./harness');
+const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' '), sel);
 
@@ -32,7 +32,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   ok(await page.evaluate(() => window.__form.instagram === '@academiadorui' || document.getElementById('f-instagram').value === '@academiadorui'), 'Instagram aberto no cadastro');
   await irParte(page, 'revisar');
   await page.check('#f-declaro');
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(300);
   const tela = await texto(page, '#register-overlay');
   ok(tela.includes('Quase lá: escolha o plano') && !(await page.evaluate(() => window.__db.academias.some(a => a.name === 'Academia do Rui'))), 'ao finalizar, a tela do plano vem antes de enviar');
@@ -49,7 +49,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo')?.dataset.passo === 'fotos'), 'um toque em "Adicionar fotos" leva até a parte das fotos');
   await irParte(page, 'revisar');
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(300);
   await page.click('[data-reg-plano="premium"]');
   await page.waitForTimeout(900);
@@ -68,7 +68,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   ({ browser, page } = await abrir({ admin: true }));
   await page.evaluate(() => { window.__form = null; state.showRegister = true; state.registerStatus = 'idle'; render(); });
   await page.fill('#f-name', 'Do Admin');
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(600);
   ok(!(await texto(page, '#register-overlay')).includes('escolha o plano') && await page.evaluate(() => window.__db.academias.some(a => a.name === 'Do Admin')), 'admin publica direto, sem a tela do plano');
 
@@ -106,7 +106,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.evaluate(async () => { await loadEverything(); render(); });
   await page.click('#parceiros .editar-academia');
   await page.waitForTimeout(300);
-  await page.click('#register-submit');
+  await salvarFicha(page);
   await page.waitForTimeout(800);
   ok((await texto(page, '#register-overlay')).includes('Já estão na ficha'), 'no Premium, editar salva direto, sem a tela do plano');
   await browser.close();

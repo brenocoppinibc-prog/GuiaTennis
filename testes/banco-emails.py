@@ -19,7 +19,8 @@ lembrete do jogador que não entra há 3 meses (20261009140000_lembrete_de_volta
 o resumo do mês do Parceiros (20261009150000_resumo_do_mes), as falhas do
 site (20261011120000_falhas_do_site) e os avisos para toda a equipe da
 academia (20261013120000_avisos_para_toda_a_equipe,
-20261013130000_cargo_no_aviso_de_pessoa_nova e 20261013140000_acessos_nos_emails).
+20261013130000_cargo_no_aviso_de_pessoa_nova e 20261013140000_acessos_nos_emails)
+e o Premium nas recomendadas (20261014120000_premium_nas_recomendadas).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -1220,7 +1221,8 @@ ok(fila("tipo = 'plano'") == "2" and fila(f"tipo = 'plano' and para = 'sideq{suf
 plano = um(f"select assunto || '|' || html || '|' || replace(texto, E'\\n', ' ¶ ') from public.emails_a_enviar where tipo = 'plano' and para = 'paulaeq{sufixo}@exemplo.com'") or ""
 ok(plano.startswith("A Academia da Equipe agora está no plano Premium|") and "Olá, Paula!" in plano and "do <strong>Básico</strong> para o <strong>Premium</strong>" in plano
    and "O selo dourado ao lado do nome" in plano and "Instagram e site" in plano and "Pessoas com acesso: até 10 (antes, até 1)" in plano
-   and "Ver o plano" in plano and "/parceiros/plano?abrir=" in plano and "Não quero mais receber" in plano and "• Promoções na ficha e na busca" in plano,
+   and "Ver o plano" in plano and "/parceiros/plano?abrir=" in plano and "Não quero mais receber" in plano and "• Promoções na ficha e na busca" in plano
+   and "• Entre as “Academias recomendadas” da página inicial" in plano,
    "o e-mail diz o plano de antes e o novo e o que a academia passa a ter, no nosso visual — " + plano[:80])
 # O admin muda de ideia antes de o e-mail sair: vai um só, do plano de antes.
 sql(f"update public.academias set plano = 'completo' where id = '{eq}'")

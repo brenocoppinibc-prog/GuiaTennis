@@ -29,7 +29,9 @@ teste")
 > bloco verde com a ideia do site e "Indicar para quem joga"; menu com
 > "Dicas de uso" (regra 98). Depois, a home reordenada: academias primeiro
 > e a explicação aos poucos (regra 99); chat de ajuda com o vocabulário da
-> busca e menos coisa na tela (regra 100). Sem SQL. Testes: **1.340 verificações, nenhuma
+> busca e menos coisa na tela (regra 100); Premium primeiro nas "Academias
+> recomendadas" (regra 101, SQL `20261014120000_premium_nas_recomendadas`).
+> 356 no `banco-emails.py`, nenhuma falha. Testes: **1.343 verificações, nenhuma
 > falha** nos 47 arquivos. Este chat voltou a acompanhar o PR #5.
 
 > **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
@@ -536,7 +538,9 @@ cobra taxa e não fica no meio** da negociação.
     patrocinadas do topo, a ordem da busca é a mesma para todas, em
     qualquer plano. Toda posição paga aparece escrita "Patrocinado" no
     cartão (Código de Defesa do Consumidor, art. 36: publicidade tem de
-    ser identificada como tal).
+    ser identificada como tal). Desde 14/10/2026 (regra 101), as Premium
+    também vêm primeiro nas "Academias recomendadas" da página inicial,
+    marcadas "Patrocinado" do mesmo jeito.
 17. **O plano fica num lugar só** (mudou em 06/10/2026, regra 61; antes
     toda tela vendia o próximo plano e o Breno achou que "está forçando
     demais"): a página **Plano** do Parceiros é onde se vê o plano, o que
@@ -2286,6 +2290,24 @@ cobra taxa e não fica no meio** da negociação.
     CEP. Como o Intercom e o iFood: no primeiro "Não entendi" não aparece o
     WhatsApp (só na segunda vez) e os assuntos ficam **numa linha só, que
     desliza para o lado**, em vez de três linhas empilhadas.
+101. **Premium nas "Academias recomendadas"** (pedido de 14/10/2026: "as
+    academias Premium devem aparecer em recomendadas também, se não tiver
+    nenhuma, vá por avaliações e informações mais completas, mude onde tem
+    que mudar falando que no Premium elas aparecem como recomendadas").
+    `recomendadasGuia`: primeiro as Premium (`ehPremium`), da mais perto
+    para a mais longe quando se sabe onde a pessoa está; depois as
+    escolhidas a dedo (`RECOMENDADAS`); as vagas que sobram (4 no total)
+    vão para as mais bem avaliadas e com a ficha mais completa
+    (`pontosDaFicha`: fotos, comodidades, preço, horário, cancelamento,
+    como chegar, endereço, contatos e confirmada). Muda a regra 16: além do
+    topo "Patrocinado", a vitrine da página inicial também pesa o Premium —
+    e, por ser posição paga, a Premium ali vem com **"Patrocinado"** em
+    cima do nome no cartão (`renderMini(…, patrocinado)`) —, e o site diz isso (como o "Recomendado" do Booking e do trivago):
+    Planos ("Entre as \"Academias recomendadas\" da página inicial"), a
+    pergunta "A ordem das academias é paga?", a Ajuda e o chat do Parceiros
+    e dos jogadores, o aviso ao baixar o plano, os Termos (14 de outubro de
+    2026) e o e-mail "Plano novo" (SQL
+    `20261014120000_premium_nas_recomendadas`).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

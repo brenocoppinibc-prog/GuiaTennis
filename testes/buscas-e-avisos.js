@@ -220,6 +220,25 @@ async function buscar(page, termo) {
   const achadas = esperada.map(pos);
   ok(achadas.every((p, k) => p >= 0 || esperada[k] === 'Melhores avaliadas') && achadas.filter(p => p >= 0).every((p, k, a) => !k || p > a[k - 1]),
     'home: academias primeiro, depois o site explicado aos poucos — ' + ordem.join(' | '));
+  // Regra 101: as Premium primeiro nas recomendadas; sem elas, nota e ficha completa.
+  const reco = await page.evaluate(() => {
+    const todas = state.allCourts.map(decorate);
+    const sem = recomendadasGuia(todas.map(c => ({ ...c, plano: 'basico' })));
+    const ultima = todas[todas.length - 1];
+    const com = recomendadasGuia(todas.map(c => c.id === ultima.id ? { ...c, plano: 'premium', confirmada: true } : { ...c, plano: 'basico' }));
+    const pts = sem.map(c => (c.appCount ? c.appAvg * 10 + Math.min(c.appCount, 20) : 0) + pontosDaFicha(c));
+    return { primeira: com[0].id, ultima: ultima.id, n: com.length, ordenada: pts.every((p, i) => !i || p <= pts[i - 1]), naTela: !!document.querySelector('#home-recomendadas .home-strip') };
+  });
+  ok(reco.primeira === reco.ultima && reco.n <= 4 && reco.ordenada && reco.naTela, 'recomendadas: a Premium vem primeiro; sem Premium, pela nota e pela ficha mais completa');
+  ok((await page.evaluate(() => perguntasDoSite().find(f => f.q.includes('ordem')).a)).includes('começam pelas do plano Premium'), 'a pergunta da ordem diz que as recomendadas começam pelas Premium');
+  const marca = await page.evaluate(() => {
+    const c = state.allCourts[state.allCourts.length - 1]; const antes = { plano: c.plano, confirmada: c.confirmada };
+    c.plano = 'premium'; c.confirmada = true; state.page = 'home'; render();
+    const cards = [...document.querySelectorAll('#home-recomendadas .mini')];
+    const r = { primeiro: cards[0]?.innerText || '', outros: cards.slice(1).filter(x => x.innerText.includes('Patrocinado')).length };
+    Object.assign(c, antes); render(); return r;
+  });
+  ok(marca.primeiro.startsWith('Patrocinado') && marca.outros === 0, 'a Premium nas recomendadas vem escrita "Patrocinado" (regra 16); as outras não — ' + marca.primeiro.slice(0, 40));
   await page.evaluate(() => { state.page = 'home'; acaoDoMenu('dicas'); });
   await page.waitForFunction(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }, null, { timeout: 4000 }).catch(() => {});
   ok(await page.evaluate(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }), '"Dicas de uso" do menu leva às dicas');

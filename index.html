@@ -7166,15 +7166,27 @@ function pontosDaFicha(c) {
 // vão para as mais bem avaliadas e com a ficha mais completa. Como o
 // "Recomendado" do Booking e do trivago, que pesa o anunciante — e as
 // perguntas frequentes dizem isso.
-function recomendadasGuia(todas) {
-  const perto = (c) => (typeof c.distanceKm === "number" && isFinite(c.distanceKm)) ? c.distanceKm : null;
+// Com um ponto (a última busca, as preferências ou a cidade aproximada —
+// pontoDaHome), vêm antes as que ficam perto dele (pedido de 14/10/2026);
+// "evitar" são as que já aparecem no bloco de cima, para não repetir.
+function recomendadasGuia(todas, ponto, evitar) {
+  const km = (c) => ponto && typeof c.lat === "number" && typeof c.lng === "number"
+    ? haversineKm(ponto.lat, ponto.lng, c.lat, c.lng)
+    : (typeof c.distanceKm === "number" && isFinite(c.distanceKm) ? c.distanceKm : null);
+  const perto = (c) => { const d = km(c); return ponto ? d !== null && d <= PARECIDAS_RAIO_KM : true; };
   const nota = (c) => (c.appCount ? c.appAvg * 10 + Math.min(c.appCount, 20) : 0) + pontosDaFicha(c);
+  const porNota = (a, b) => nota(b) - nota(a);
   const premium = todas.filter(ehPremium).sort((a, b) =>
-    (perto(a) !== null && perto(b) !== null ? perto(a) - perto(b) : 0) || (nota(b) - nota(a)));
+    (km(a) !== null && km(b) !== null ? km(a) - km(b) : 0) || porNota(a, b));
   const aDedo = RECOMENDADAS.map(id => todas.find(c => c.id === id)).filter(c => c && !ehPremium(c));
   const ja = new Set([...premium, ...aDedo].map(c => c.id));
-  const resto = todas.filter(c => !ja.has(c.id)).sort((a, b) => nota(b) - nota(a));
-  return [...premium, ...aDedo, ...resto].slice(0, VAGAS_RECOMENDADAS);
+  const resto = todas.filter(c => !ja.has(c.id) && !(evitar && evitar.has(c.id)));
+  return [
+    ...premium.filter(perto), ...aDedo,
+    ...resto.filter(perto).sort(porNota),
+    ...premium.filter(c => !perto(c)),
+    ...resto.filter(c => !perto(c)).sort(porNota),
+  ].slice(0, VAGAS_RECOMENDADAS);
 }
 
 // Animação que explica a busca em três passos. É desenhada aqui mesmo, em
@@ -11817,13 +11829,19 @@ function gravarLocal(chave, valor) {
 // sugerir academias parecidas. Guarda o que a pessoa digitou, a região achada,
 // o ponto arredondado e os filtros de modalidade, piso e cobertura.
 const ULTIMA_BUSCA_KEY = "guiatennis_ultima_busca_v1";
+// A última busca fica no aparelho e, com a conta aberta, também na conta
+// (pedido de 14/10/2026: "as quadras mais perto da última busca da conta"):
+// vale a mais recente das duas.
 function lerUltimaBusca() {
-  const b = lerLocal(ULTIMA_BUSCA_KEY, null);
-  return b && typeof b === "object" && (b.termo || b.cidade || b.bairro) ? b : null;
+  const valida = (b) => b && typeof b === "object" && (b.termo || b.cidade || b.bairro) ? b : null;
+  const local = valida(lerLocal(ULTIMA_BUSCA_KEY, null));
+  const daConta = valida(lerDaConta("ultima_busca", null));
+  if (local && daConta) return (daConta.em || 0) > (local.em || 0) ? daConta : local;
+  return local || daConta;
 }
 function guardarUltimaBusca(geo, termo) {
   if (!geo) return;
-  gravarLocal(ULTIMA_BUSCA_KEY, {
+  const b = {
     termo: String(termo || "").slice(0, 80),
     bairro: geo.bairro || "",
     cidade: geo.cidade || "",
@@ -11833,7 +11851,42 @@ function guardarUltimaBusca(geo, termo) {
     pisos: state.pisoFilters.slice(),
     cobertura: state.coberturaFilters.slice(),
     em: Date.now(),
-  });
+  };
+  gravarLocal(ULTIMA_BUSCA_KEY, b);
+  if (jogador) gravarNaConta("ultima_busca", b);
+}
+
+// Onde a pessoa está, mais ou menos (pedido de 14/10/2026: "tem como saber
+// antes de fazer o login… a localização aproximada?"): sem busca e sem
+// preferência, a cidade aproximada da conexão, que a hospedagem (Netlify)
+// informa em netlify/functions/onde.mjs — como o "perto de você" do Booking
+// e do Airbnb antes de qualquer busca. Não pede permissão (não é o GPS), é
+// só a cidade, fica só na aba e não vai para o banco. Sem ela, nada muda.
+const ONDE_KEY = "guiatennis_onde_v1";
+function lerOndeAproximado() {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(ONDE_KEY) || "null");
+    return v && typeof v.lat === "number" && typeof v.lng === "number" && v.cidade ? v : null;
+  } catch { return null; }
+}
+async function buscarOndeAproximado() {
+  if (state.ondeBuscado || lerOndeAproximado()) return;
+  state.ondeBuscado = true;
+  try {
+    const r = await fetch("/.netlify/functions/onde", { cache: "no-store" });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d || typeof d.lat !== "number" || typeof d.lng !== "number" || !d.cidade) return;
+    const onde = { cidade: String(d.cidade).slice(0, 60), uf: String(d.uf || "").slice(0, 2), lat: d.lat, lng: d.lng };
+    try { sessionStorage.setItem(ONDE_KEY, JSON.stringify(onde)); } catch {}
+    if (state.page === "home") render();
+  } catch {}
+}
+// O ponto que a página inicial usa para "perto": a última busca, a cidade
+// das preferências ou, sem as duas, a cidade aproximada da conexão.
+function pontoDaHome(ultima, pref) {
+  if (ultima && typeof ultima.lat === "number" && typeof ultima.lng === "number") return ultima;
+  return pontoDaPreferencia(pref) || lerOndeAproximado();
 }
 function textoDaBusca(b) {
   const lugar = [b.bairro, b.cidade].filter(Boolean).join(", ") || b.termo;
@@ -12164,7 +12217,9 @@ const PARECIDAS_RAIO_KM = 50;
 function academiasParecidas(todas, b, recentes) {
   const pref = lerPreferencias();
   const temPonto = b && typeof b.lat === "number" && typeof b.lng === "number";
-  const ponto = temPonto ? b : pontoDaPreferencia(pref);
+  const daPref = temPonto ? null : pontoDaPreferencia(pref);
+  const onde = temPonto || daPref ? null : lerOndeAproximado();
+  const ponto = temPonto ? b : (daPref || onde);
   if (!ponto) return null;
   const comPonto = todas.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
   let lista = comPonto;
@@ -12183,8 +12238,8 @@ function academiasParecidas(todas, b, recentes) {
   if (!lista.length) return null;
   return {
     lista,
-    titulo: temPonto ? "Com base na sua última busca" : `Perto de ${textoDaPreferencia(pref)}`,
-    sub: temPonto ? `Academias perto de ${textoDaBusca(b).lugar}` : "A cidade das suas preferências de busca",
+    titulo: temPonto ? "Com base na sua última busca" : onde ? `Perto de você, em ${onde.cidade}` : `Perto de ${textoDaPreferencia(pref)}`,
+    sub: temPonto ? `Academias perto de ${textoDaBusca(b).lugar}` : onde ? "Academias da sua região" : "A cidade das suas preferências de busca",
     deOnde: temPonto ? "da sua busca" : "",
   };
 }
@@ -12273,18 +12328,21 @@ function renderSiteFooter() {
 function renderHome() {
   const todas = state.allCourts.map(decorate);
   const recentes = loadRecents().map(id => todas.find(c => c.id === id)).filter(Boolean);
-  const recomendadas = recomendadasGuia(todas);
+  const pref = lerPreferencias();
+  const ultima = lerUltimaBusca();
+  if (!pontoDaHome(ultima, pref)) setTimeout(buscarOndeAproximado, 0);
+  const parecidas = academiasParecidas(todas, ultima, recentes);
+  const recomendadas = recomendadasGuia(todas, pontoDaHome(ultima, pref), new Set(parecidas ? parecidas.lista.map(x => x.c.id) : []));
   const jaRecomendada = new Set(recomendadas.map(c => c.id));
   const melhores = [...todas]
     .filter(c => c.appCount > 0 && !jaRecomendada.has(c.id))
     .sort((a, b) => (b.appAvg - a.appAvg) || (b.appCount - a.appCount))
     .slice(0, 8);
   const cidades = cidadesComQuadra();
-  const pref = lerPreferencias();
   const cidadeAtiva = cidades.find(c => c.nome === state.homeCity)
     || cidades.find(c => mesmaCidade(c.nome, pref.cidade))
+    || (lerOndeAproximado() && cidades.find(c => mesmaCidade(c.nome, lerOndeAproximado().cidade)))
     || cidades[0];
-  const ultima = lerUltimaBusca();
   const chamadas = lerChamadas().map(x => ({ ...x, c: todas.find(c => c.id === x.id) })).filter(x => x.c);
 
   // Ordem da home (pedido de 14/10/2026), como o Booking e o Airbnb: as
@@ -12305,7 +12363,7 @@ function renderHome() {
     </div>
 
     ${blocoVistas(recentes, ultima)}
-    ${blocoParecidas(academiasParecidas(todas, ultima, recentes))}
+    ${blocoParecidas(parecidas)}
     ${blocoChamadas(chamadas)}
 
     ${recomendadas.length ? `
@@ -16383,9 +16441,9 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 13 de outubro de 2026</p>
+<p class="footnote">Última atualização: 14 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> no site dos jogadores, e no GuiaTennis Parceiros sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. No GuiaTennis Parceiros, com a sua conta aberta, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat e quando), para você ver o histórico em "Conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos de promoções, os favoritos também servem para isso: quando uma academia favorita publica uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> no site dos jogadores, e no GuiaTennis Parceiros sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. No GuiaTennis Parceiros, com a sua conta aberta, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat e quando), para você ver o histórico em "Conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos de promoções, os favoritos também servem para isso: quando uma academia favorita publica uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e mandar o resumo do mês por e-mail (no plano Premium, o relatório completo). As pessoas da mesma academia veem o nome, o cargo e o e-mail umas das outras. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso, pessoa nova com acesso à academia (com o nome, o cargo e o e-mail dela), mudança de plano (com o que muda), a resposta do pedido para tirar a academia do guia, pedido aceito, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha (de novo a cada 3 meses enquanto ela continuar igual) e, no começo de cada mês, o resumo dos números da academia no mês anterior; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -16397,6 +16455,7 @@ const PRIVACY_HTML = `
 <p class="field-label" style="margin-top:16px">5. Seus direitos (LGPD)</p>
 <p style="font-size:14px">Se uma conta for excluída pelo GuiaTennis por descumprir os Termos de Uso, guardamos o e-mail, o nome, a data e o motivo, só para impedir um novo cadastro com o mesmo e-mail e para a defesa do GuiaTennis. Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. O histórico (academias vistas recentemente e a última busca) fica só no seu aparelho: dá para apagar pelo menu do site ou limpando os dados do site nas configurações do navegador. Favoritos, academias chamadas, viagens e preferências ficam na sua conta: você apaga cada um pelo menu, e excluir a conta apaga tudo. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
 <p class="field-label" style="margin-top:16px">6. Cookies</p>
+<p style="font-size:14px"><strong>Cidade aproximada:</strong> antes de qualquer busca, para mostrar academias perto de você, o site pergunta à hospedagem (Netlify) a cidade aproximada da sua conexão — só a cidade, o estado e um ponto de cerca de 1 km, sem pedir o GPS. Ela fica só na aba aberta e não é guardada pelo GuiaTennis.</p>
 <p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (as academias vistas recentemente e a última busca, sua identificação, formulários, os avisos que você já fechou e a sessão de quem entra na conta) é estritamente técnico.</p>
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
 <p style="font-size:14px">O GuiaTennis não é direcionado a menores de 18 anos e não coleta intencionalmente dados de crianças ou adolescentes.</p>
@@ -16427,7 +16486,9 @@ const PARA_QUE_SERVE_O_CONTATO = {
 //   t   o nome do assunto (aparece nos botões de sugestão)
 //   p   palavras e frases que a pessoa costuma escrever (sem acento; uma
 //       palavra vale pelo começo: "cadastr" pega "cadastrar" e "cadastro")
-//   r   a resposta; a  os caminhos (botões): "pc:<aba>" abre a página do
+//   r   a resposta; d  o segundo passo, quando a pessoa diz que não deu
+//       certo ou volta ao mesmo assunto (sem "d", o chat oferece o Breno);
+//   a  os caminhos (botões): "pc:<aba>" abre a página do
 //       Parceiros, "menu:<item>" faz o que o item do menu faz, "whatsapp"
 //       abre o WhatsApp do Breno.
 const CHAT_TEMAS = [
@@ -16511,18 +16572,21 @@ const CHAT_TEMAS = [
     a: [] },
   { id: "senha", onde: "todos", t: "Esqueci a senha",
     p: ["senha", "esqueci", "nao consigo entrar", "nao entra", "login", "logar", "acessar a conta", "entrar na conta", "bloque"],
-    r: "Na tela de entrar, digite o seu e-mail e toque em \"Esqueceu a senha?\": o código vai para o seu e-mail, e você cria a senha nova ali mesmo. Se você entra com o usuário que o GuiaTennis mandou (sem e-mail), fale com o Breno no WhatsApp.",
+    r: "Na tela de entrar, digite o seu e-mail e toque em \"Esqueceu a senha?\": o código vai para o seu e-mail, e você cria a senha nova ali mesmo.",
+    d: "Vamos por outro caminho: confira se o e-mail está escrito igual ao da conta e olhe também o spam. Quem entra com o usuário que o GuiaTennis mandou (sem e-mail) troca a senha com o Breno, pelo WhatsApp.",
     a: [{ t: "Entrar", ir: "entrar" }] },
   { id: "codigo", onde: "todos", t: "O código não chegou",
     p: ["codigo", "nao chegou", "nao recebi", "confirmar e mail", "confirmar email", "confirmacao", "verificar e mail", "spam", "6 numeros", "seis numeros"],
-    r: "O código de 6 números vai para o e-mail da conta e chega em até alguns minutos. Confira a caixa de spam e a aba Promoções. Se não chegar, peça outro na mesma tela. Confira também se o e-mail foi digitado certo.",
+    r: "O código de 6 números vai para o e-mail da conta e chega em até alguns minutos. Confira a caixa de spam e a aba Promoções.",
+    d: "Peça outro código na mesma tela e confira se o e-mail foi digitado certo. Às vezes ele demora uns minutinhos.",
     a: [{ t: "Entrar", ir: "entrar" }] },
   // Algo não funcionou (11/10/2026): o que costuma resolver e o código do
   // problema, se a pessoa viu um.
   { id: "problema", onde: "todos", t: "Algo não funcionou",
     p: ["erro", "deu erro", "bug", "travou", "trava", "travando", "nao funciona", "nao carrega", "nao abre", "nao salva", "nao salvou", "nao envia", "nao enviou", "falha", "falhou", "tela branca", "pagina branca", "deu problema", "problema no site", "fora do ar", "codigo do problema"],
-    r: "Sinto muito. O que costuma resolver: confira a internet, recarregue a página e tente de novo. Se continuar, fale com o Breno no WhatsApp. Se apareceu um \"código do problema\" (6 letras e números), mande junto: com ele dá para ver exatamente o que aconteceu.",
-    a: [{ t: "Recarregar a página", ir: "recarregar" }, { t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] },
+    r: "Sinto muito. O que costuma resolver: confira a internet, recarregue a página e tente de novo.",
+    d: "Então o Breno vê isso com você pelo WhatsApp. Apareceu um \"código do problema\" (6 letras e números)? Mande junto: com ele dá para ver exatamente o que aconteceu.",
+    a: [{ t: "Recarregar a página", ir: "recarregar" }] },
   { id: "humano", onde: "todos", t: "Falar com uma pessoa",
     p: ["falar com", "atendente", "humano", "pessoa de verdade", "alguem", "whatsapp", "contato", "suporte", "atendimento", "breno"],
     r: "Claro. O Breno, do GuiaTennis, responde pelo WhatsApp. A sua dúvida já vai escrita na mensagem.",
@@ -16536,7 +16600,8 @@ const CHAT_TEMAS = [
       // Quando é a busca ou a localização que não funciona, a dica certa é
       // esta, não a do "Algo não funcionou".
       "localizacao nao", "gps nao", "busca nao", "pesquisa nao", "nao acho", "nao encontro"],
-    r: "Na página inicial, digite o bairro, o endereço ou o CEP e toque em Pesquisar — ou toque no alvo para usar a sua localização. A lista começa pela mais perto; em Filtros, escolha piso, quadra coberta, preço, nota e comodidades. Se a localização não funcionar, permita a localização para o site no navegador ou digite o CEP.",
+    r: "Na página inicial, digite o bairro, o endereço ou o CEP e toque em Pesquisar — ou toque no alvo para usar a sua localização. A lista começa pela mais perto; em Filtros, escolha piso, quadra coberta, preço, nota e comodidades.",
+    d: "Vamos por outro caminho: digite só o CEP ou o nome do bairro. Quando o alvo não acha você, o navegador pode estar bloqueando a localização: permita a localização para o site nas configurações dele.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "reservar", onde: "jogadores", t: "Reservar ou marcar aula",
     p: ["reserv", "agendar", "agenda", "marcar", "alugar", "locar", "locacao", "horario livre", "disponivel", "disponibilidade", "aula experimental"],
@@ -16847,22 +16912,85 @@ function responderComTema(tema) {
   const falha = tema.id === "problema" && falhaRecente();
   if (falha) {
     ch.falha = { codigo: falha.codigo, acao: falha.acao };
-    ch.msgs.push({ ...mensagemDaFalhaNoChat(falha), chips: [{ t: "Resolveu", resp: "sim" }, { t: "Ainda preciso de ajuda", resp: "nao" }] });
+    ch.msgs.push(mensagemDaFalhaNoChat(falha));
+    ch.tema = "problema";
+    ch.tentativas = { ...(ch.tentativas || {}), problema: 1 };
     return;
   }
-  const chips = tema.id === "saudacao" ? sugestoesDoChat() : tema.id === "humano" ? null : [{ t: "Resolveu", resp: "sim" }, { t: "Ainda preciso de ajuda", resp: "nao" }];
-  ch.msgs.push({ de: "gt", texto: tema.r, acoes: tema.a, chips });
+  // Conversa em vez de formulário (pedido do Breno em 14/10/2026: "deixe ele
+  // com uma conversa mais fluída e os 'se' menos antecipados, mais calmo"):
+  // a resposta vem sozinha, sem "Resolveu / Ainda preciso de ajuda" a cada
+  // vez; o próximo passo só aparece se a pessoa disser que não deu certo.
+  ch.esperando = null;
+  if (tema.id === "saudacao") {
+    const jaConversou = ch.msgs.some(m => m.de === "gt" && m.tema);
+    ch.msgs.push({ de: "gt", tema: "saudacao", texto: jaConversou ? "Oi! Pode falar, estou por aqui." : tema.r, chips: jaConversou ? null : sugestoesDoChat() });
+    return;
+  }
+  ch.tema = tema.id;
+  ch.msgs.push({ de: "gt", tema: tema.id, texto: tema.r, acoes: tema.a });
+}
+// A pessoa voltou ao mesmo assunto ou disse que não deu certo: o chat não
+// repete a mesma resposta. Primeiro o outro caminho ("d"); depois, o Breno.
+function seguirNoTema(tema) {
+  const ch = state.chat;
+  // Uma falha acabou de aparecer e o chat ainda não falou dela: fala agora.
+  if (tema.id === "problema" && !ch.falha && falhaRecente()) { responderComTema(tema); return; }
+  ch.tentativas = ch.tentativas || {};
+  const n = (ch.tentativas[tema.id] = (ch.tentativas[tema.id] || 0) + 1);
+  ch.tema = tema.id;
+  if (n === 1 && tema.d) {
+    const comBreno = tema.d.includes("Breno");
+    ch.msgs.push({ de: "gt", tema: tema.id, texto: tema.d,
+      acoes: comBreno ? [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] : (tema.a || []) });
+    return;
+  }
+  ch.esperando = "whatsapp";
+  ch.msgs.push({ de: "gt", tema: tema.id, texto: n <= 2
+    ? "Entendi, ainda não deu certo. O Breno, do GuiaTennis, pode ver isso com você. Quer falar com ele pelo WhatsApp? A sua dúvida já vai escrita."
+    : "Nesse caso, o melhor é o Breno ver com você. A conversa no WhatsApp já abre com a sua dúvida.",
+    acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] });
+}
+// O que a pessoa responde sem ser um assunto: agradecer, dizer que não deu
+// certo, "sim" ou "não". Sem acento e em minúsculas (textoDoChat).
+const CHAT_NAO_DEU = /\b(nao (deu|funcion\w*|resolv\w*|adiant\w*|ajud\w*|entendi|consigo|consegui)|ainda nao|continua\w*|mesmo problema|de novo nada|nada ainda|deu errado)\b/;
+const CHAT_OBRIGADO = /\b(obrigad\w*|valeu|vlw|brigad\w*|deu certo|resolveu|resolvido|consegui|perfeito|otimo|show|beleza|blz|massa|top|ajudou)\b/;
+function respostaSolta(pergunta) {
+  const t = textoDoChat(pergunta).trim();
+  if (CHAT_NAO_DEU.test(t)) return "naoDeu";
+  if (/^(sim|s|quero|pode|pode ser|claro|isso|ok quero|bora)$/.test(t)) return "sim";
+  if (/^(nao|n|agora nao|nao obrigad\w*|nao precisa|deixa)$/.test(t)) return "nao";
+  if (CHAT_OBRIGADO.test(t) || /^(ok|certo|entendi|ah ta|ta|ta bom|beleza)$/.test(t)) return "obrigado";
+  return null;
 }
 function enviarAoChat(texto) {
   const ch = state.chat;
   const pergunta = String(texto || "").trim().slice(0, 300);
   if (!ch || !pergunta) return;
   ch.msgs.push({ de: "eu", texto: pergunta });
-  ch.ultimaPergunta = pergunta;
+  // "Não deu", "sim", "obrigado"… não são a dúvida que vai para o WhatsApp.
+  if (!respostaSolta(pergunta)) ch.ultimaPergunta = pergunta;
   ch.rascunho = "";
   const r = entenderDuvida(pergunta);
-  if (!ch.titulo && !(r.tipo === "tema" && r.tema.id === "saudacao")) ch.titulo = pergunta.slice(0, 80);
-  if (r.tipo === "tema") responderComTema(r.tema);
+  const solta = respostaSolta(pergunta);
+  const temaAtual = ch.tema && CHAT_TEMAS.find(t => t.id === ch.tema);
+  if (!ch.titulo && !(r.tipo === "tema" && r.tema.id === "saudacao") && !solta) ch.titulo = pergunta.slice(0, 80);
+  // Mudou de assunto: responde o novo. Voltou ao mesmo (ou disse que não
+  // deu certo, sem falar de outro assunto): segue no mesmo, sem repetir.
+  const outroAssunto = r.tipo === "tema" && r.tema.id !== ch.tema && !(solta === "naoDeu" && r.tema.id === "problema" && temaAtual);
+  if (r.tipo === "tema" && r.tema.id === ch.tema && r.tema.id !== "saudacao") { ch.erros = 0; seguirNoTema(r.tema); }
+  else if (outroAssunto) responderComTema(r.tema);
+  else if (solta === "naoDeu" && temaAtual) { ch.erros = 0; seguirNoTema(temaAtual); }
+  else if (solta === "sim" && ch.esperando === "whatsapp") {
+    ch.esperando = null;
+    ch.msgs.push({ de: "gt", texto: "Combinado. Toque no botão e a conversa abre com a sua dúvida.", acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] });
+  } else if (solta === "nao" || solta === "obrigado") {
+    ch.esperando = null;
+    const respostas = solta === "nao"
+      ? ["Tudo bem. Se quiser outra coisa, é só escrever.", "Sem problema. Estou por aqui."]
+      : ["Que bom! Qualquer outra dúvida, é só escrever.", "Por nada! Boas partidas.", "Combinado! Estou por aqui."];
+    ch.msgs.push({ de: "gt", texto: respostas[ch.msgs.length % respostas.length] });
+  }
   else if (r.tipo === "duvida") ch.msgs.push({ de: "gt", texto: "Você quer saber sobre:", chips: r.temas.map(t => ({ t: t.t, tema: t.id })) });
   else {
     ch.erros += 1;
@@ -16886,7 +17014,7 @@ function escolherNoChat(dado) {
     ch.msgs.push({ de: "eu", texto: tema.t });
     ch.ultimaPergunta = ch.ultimaPergunta || tema.t;
     if (!ch.titulo && tema.id !== "saudacao") ch.titulo = tema.t;
-    responderComTema(tema);
+    if (tema.id === ch.tema) seguirNoTema(tema); else responderComTema(tema);
   } else if (dado.resp === "sim") {
     ch.msgs.push({ de: "eu", texto: "Resolveu" });
     ch.msgs.push({ de: "gt", texto: "Que bom! Se precisar de mais alguma coisa, é só escrever." });
@@ -18862,6 +18990,8 @@ function attachEvents() {
   if (listaLimpar) listaLimpar.onclick = () => {
     if (state.lista === "vistas") {
       try { localStorage.removeItem(RECENTS_KEY); localStorage.removeItem(ULTIMA_BUSCA_KEY); } catch {}
+      // A última busca também sai da conta (regra 102).
+      if (lerDaConta("ultima_busca", null)) gravarNaConta("ultima_busca", {});
     } else if (state.lista === "chamadas") {
       gravarNaConta("chamadas", []);
     }

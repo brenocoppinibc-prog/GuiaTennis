@@ -26,12 +26,30 @@ async function escrever(page, texto) {
   ok(await page.evaluate(() => document.activeElement && document.activeElement.id === 'chat-texto'), 'o campo já vem pronto para escrever');
   await escrever(page, 'esqueci minha senha');
   u = await ultima(page);
-  ok(u.texto.includes('Esqueceu a senha?') && u.acoes.includes('Entrar') && u.chips.join() === 'Resolveu,Ainda preciso de ajuda', 'entende "esqueci minha senha", mostra o caminho e pergunta se resolveu');
-  await page.click('[data-chat-resp="nao"]');
-  await page.waitForTimeout(200);
+  // 14/10/2026: conversa, não formulário — sem "Resolveu / Ainda preciso de ajuda" a cada resposta.
+  ok(u.texto.includes('Esqueceu a senha?') && u.acoes.includes('Entrar') && !u.chips.length && !u.whats, 'entende "esqueci minha senha" e mostra o caminho, sem botões de "resolveu?" nem o WhatsApp antes da hora');
+  await escrever(page, 'não deu certo');
   u = await ultima(page);
-  ok(u.texto.includes('WhatsApp') && decodeURIComponent(u.whats).includes('Minha dúvida: esqueci minha senha') && u.whats.startsWith('https://wa.me/5511927456457'),
-    '"Ainda preciso de ajuda" leva ao WhatsApp do Breno, com a dúvida escrita');
+  ok(u.texto.includes('outro caminho') && u.texto.includes('spam') && !u.texto.includes('Esqueceu a senha?'), '"não deu certo": outro caminho, sem repetir a resposta — ' + u.texto.slice(0, 60));
+  await escrever(page, 'ainda não');
+  u = await ultima(page);
+  ok(u.texto.includes('Quer falar com ele pelo WhatsApp?') && decodeURIComponent(u.whats).includes('Minha dúvida: esqueci minha senha') && u.whats.startsWith('https://wa.me/5511927456457'),
+    'na segunda vez, oferece o Breno no WhatsApp, com a dúvida de verdade escrita (não o "ainda não")');
+  await escrever(page, 'sim');
+  u = await ultima(page);
+  ok(u.texto.startsWith('Combinado') && u.whats, '"sim" depois da oferta: o botão do WhatsApp');
+  await escrever(page, 'valeu!');
+  u = await ultima(page);
+  ok(/Que bom|Por nada|Combinado/.test(u.texto) && !u.chips.length, '"valeu": responde como numa conversa — ' + u.texto);
+  await escrever(page, 'oi');
+  u = await ultima(page);
+  ok(u.texto.includes('Pode falar') && !u.chips.length, 'um "oi" no meio da conversa não recomeça tudo');
+  await escrever(page, 'como funciona o patrocinado?');
+  u = await ultima(page);
+  ok(u.texto.includes('destaque por patrocínio'), 'muda de assunto sem tocar em nada: o chat acompanha — ' + u.texto.slice(0, 50));
+  await escrever(page, 'como funciona o patrocinado?');
+  u = await ultima(page);
+  ok(!u.texto.includes('destaque por patrocínio') && u.texto.includes('Breno'), 'o mesmo assunto de novo: não repete a mesma resposta');
   await escrever(page, 'xpto qwerty');
   u = await ultima(page);
   ok(u.texto.includes('Não entendi bem') && !u.whats && u.chips.length === 7, 'sem entender: pede para escrever de outro jeito e sugere assuntos (o WhatsApp fica para a segunda vez)');
@@ -41,11 +59,14 @@ async function escrever(page, texto) {
   u = await ultima(page);
   ok(u.texto.includes('Ainda não entendi') && u.whats, 'sem entender de novo: o WhatsApp vem primeiro');
   // Pedido de 14/10/2026: "busca", "pesquisar", "localização" levam a achar quadra.
-  for (const frase of ['Não consegui fazer a busca', 'como pesquiso uma quadra', 'minha localização não funciona', 'onde tem quadra perto de mim']) {
-    await escrever(page, frase);
-    u = await ultima(page);
-    ok(u.texto.includes('Pesquisar') && u.texto.includes('permita a localização'), 'entende "' + frase + '" — ' + u.texto.slice(0, 60));
-  }
+  ok(await page.evaluate(() => ['Não consegui fazer a busca', 'como pesquiso uma quadra', 'minha localização não funciona', 'onde tem quadra perto de mim'].every(f => entenderDuvida(f).tema?.id === 'buscar')),
+    'entende "busca", "pesquiso", "localização" e "perto de mim" como achar quadra');
+  await escrever(page, 'Não consegui fazer a busca');
+  u = await ultima(page);
+  ok(u.texto.includes('Pesquisar') && !u.texto.includes('permita a localização'), 'a busca: o caminho primeiro, sem antecipar o "se não funcionar"');
+  await escrever(page, 'a localização não funciona');
+  u = await ultima(page);
+  ok(u.texto.includes('permita a localização'), 'a localização não funcionou: aí vem a dica do navegador');
   await escrever(page, 'quero salvar a busca');
   u = await ultima(page);
   ok(!u.texto.includes('permita a localização'), '"salvar a busca" continua indo para as buscas salvas — ' + u.texto.slice(0, 60));
@@ -55,9 +76,8 @@ async function escrever(page, texto) {
   await escrever(page, 'o telefone da academia está errado');
   u = await ultima(page);
   ok(u.texto.includes('o que está errado') && u.whats, 'informação errada: leva ao WhatsApp para avisar');
-  await page.click('[data-chat-resp="sim"]');
-  await page.waitForTimeout(150);
-  ok((await ultima(page)).texto.includes('Que bom!'), '"Resolveu" encerra com simpatia');
+  await escrever(page, 'resolveu, obrigado');
+  ok(/Que bom|Por nada|Combinado/.test((await ultima(page)).texto), '"resolveu, obrigado" encerra com simpatia');
   await escrever(page, 'onde ficam minhas favoritas');
   await page.click('[data-chat-ir="menu:favoritas"]');
   await page.waitForTimeout(300);

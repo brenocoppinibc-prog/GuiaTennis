@@ -47,6 +47,9 @@ async function abrir(opts = {}) {
   const pagina = opts.trocar ? opts.trocar(html) : html;
   await page.route('**/*', async route => {
     const u = route.request().url();
+    // opts.onde: a cidade aproximada da conexão (netlify/functions/onde.mjs);
+    // sem ela, a função responde vazio, como fora do Brasil.
+    if (u.includes('/.netlify/functions/onde')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify(opts.onde || {}) });
     if (u.startsWith(base)) return route.fulfill({ contentType: 'text/html', body: pagina });
     if (u.includes('supabase-js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'mock.js'), 'utf8') });
     if (u.includes('leaflet') && u.endsWith('.js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'leaflet-stub.js'), 'utf8') });

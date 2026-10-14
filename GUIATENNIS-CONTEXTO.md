@@ -31,7 +31,9 @@ teste")
 > e a explicação aos poucos (regra 99); chat de ajuda com o vocabulário da
 > busca e menos coisa na tela (regra 100); Premium primeiro nas "Academias
 > recomendadas" (regra 101, SQL `20261014120000_premium_nas_recomendadas`).
-> 356 no `banco-emails.py`, nenhuma falha. Testes: **1.343 verificações, nenhuma
+> Depois: perto da última busca da conta e da cidade da conexão (regra 102,
+> SQL `20261014130000_ultima_busca_na_conta`, função `onde.mjs`) e o chat
+> como conversa (regra 103). 358 no `banco-emails.py`, nenhuma falha. Testes: **1.357 verificações (48 arquivos), nenhuma
 > falha** nos 47 arquivos. Este chat voltou a acompanhar o PR #5.
 
 > **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
@@ -2320,6 +2322,44 @@ cobra taxa e não fica no meio** da negociação.
     Ajuda e o chat do Parceiros, o aviso ao baixar o plano, os Termos (14 de outubro de
     2026) e o e-mail "Plano novo" (SQL
     `20261014120000_premium_nas_recomendadas`).
+102. **Perto da última busca da conta e, antes de tudo, da cidade da
+    conexão** (pedido de 14/10/2026: "é legal aparecer as quadras mais
+    perto da última busca da conta, se não tiver deixar assim mesmo, tem
+    como saber antes de fazer o login e ou buscas sem o login saber a
+    localização aproximada… se sim, eu quero usar isso"). (a) A última
+    busca vai também para a conta (`jogadores.guardados.ultima_busca`, SQL
+    `20261014130000_ultima_busca_na_conta`); vale a mais recente entre a
+    do aparelho e a da conta. (b) Sem busca e sem preferência, a cidade
+    aproximada da conexão vem da Netlify (`netlify/functions/onde.mjs`,
+    `context.geo`: cidade, estado e ponto arredondado a ~1 km; só no
+    Brasil; fora disso, vazio), sem pedir o GPS, guardada só na aba
+    (`sessionStorage`, `ONDE_KEY`). Como o "perto de você" do Booking e do
+    Airbnb. `pontoDaHome` = última busca → preferências → cidade da
+    conexão. Usam o ponto: o bloco de cima ("Com base na sua última busca"
+    / "Perto de você, em São Paulo" — "Academias da sua região"), as
+    "Academias recomendadas" (Premium perto primeiro, depois as perto pela
+    nota e ficha completa, sem repetir as do bloco de cima; sem ponto,
+    como antes) e a aba aberta de "Academias por cidade". A cidade da
+    conexão é aproximada (operadora de celular costuma dar a capital).
+    Privacidade atualizada (14 de outubro de 2026).
+103. **Chat de ajuda como conversa** (pedido de 14/10/2026: "o chat envia
+    as mesmas mensagens desde o início da conversa até clicar preciso de
+    ajuda. deixe ele com uma conversa mais fluída e os 'se' menos
+    antecipados, mais calmo… se ele mudar de tópico sem fazer nenhuma ação
+    o chat deve entender isso"). Sem IA (regra 13), por regras:
+    - Sem "Resolveu / Ainda preciso de ajuda" depois de cada resposta, e
+      sem o WhatsApp antes da hora. As respostas perderam os "Se não
+      chegar…", "Se continuar…": o segundo passo mora no campo `d` do
+      assunto e só aparece quando a pessoa diz que não deu certo.
+    - `respostaSolta`: "não deu", "ainda não", "não funcionou"… seguem no
+      mesmo assunto (`seguirNoTema`): primeiro o outro caminho (`d`),
+      depois "Quer falar com ele pelo WhatsApp?" — e "sim" mostra o botão.
+      "Valeu", "obrigado", "resolveu", "ok" respondem com simpatia (frases
+      que variam); "não" fecha com calma. Essas falas não viram a dúvida
+      que vai escrita no WhatsApp.
+    - Voltar ao mesmo assunto (escrevendo ou tocando) não repete a
+      resposta; mudar de assunto sem tocar em nada é entendido e
+      respondido. Um "oi" no meio da conversa responde "Pode falar".
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3323,7 +3363,8 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce; do NODE_PATH=$(npm root -g) node $t.js; done
+node testes/onde.mjs
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

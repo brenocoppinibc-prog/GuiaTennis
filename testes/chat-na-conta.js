@@ -30,7 +30,7 @@ async function abrirChat(page) {
   let g = await guardadas(page);
   ok(g.length === 1 && g[0].user === 'u-a1' && g[0].site === 'parceiros' && g[0].titulo === 'esqueci minha senha' && g[0].n === 3, 'a primeira dúvida cria a conversa na conta, com ela de título — ' + JSON.stringify(g));
   ok((await barra(page)).join() === 'Conversas (1),Nova conversa', 'aparecem "Conversas (1)" e "Nova conversa" — ' + (await barra(page)).join());
-  await page.click('[data-chat-resp="nao"]');
+  await escrever(page, 'ainda preciso de ajuda');
   await page.waitForTimeout(250);
   g = await guardadas(page);
   ok(g.length === 1 && g[0].n === 5, 'cada mensagem nova atualiza a mesma conversa — ' + JSON.stringify(g));
@@ -53,7 +53,7 @@ async function abrirChat(page) {
   await page.click('[data-chat-abrir] >> nth=1');
   await page.waitForTimeout(250);
   m = await msgs(page);
-  ok(m.includes('EU: esqueci minha senha') && m.includes('EU: Ainda preciso de ajuda') && await page.isVisible('#chat-texto'), 'um toque abre a conversa antiga, inteira');
+  ok(m.includes('EU: esqueci minha senha') && m.includes('EU: ainda preciso de ajuda') && await page.isVisible('#chat-texto'), 'um toque abre a conversa antiga, inteira');
   await escrever(page, 'quero pausar durante as férias');
   g = await guardadas(page);
   ok(g.length === 2 && g.find(x => x.titulo === 'esqueci minha senha').n === 7, 'continuar a conversa antiga guarda nela mesma');

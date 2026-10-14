@@ -20,7 +20,8 @@ o resumo do mês do Parceiros (20261009150000_resumo_do_mes), as falhas do
 site (20261011120000_falhas_do_site) e os avisos para toda a equipe da
 academia (20261013120000_avisos_para_toda_a_equipe,
 20261013130000_cargo_no_aviso_de_pessoa_nova e 20261013140000_acessos_nos_emails)
-e o Premium nas recomendadas (20261014120000_premium_nas_recomendadas).
+o Premium nas recomendadas (20261014120000_premium_nas_recomendadas) e a
+última busca na conta (20261014130000_ultima_busca_na_conta).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -745,6 +746,11 @@ sql("""select public.guardar_na_conta('preferencias', '{"uf": "SP", "cidade": "S
 ok(um(f"select (guardados->'favoritas'->>0) || '|' || (guardados->'preferencias'->>'cidade') from public.jogadores where user_id = '{gui}'") == f"{PINHEIROS}|São Paulo",
    "guardar uma lista não apaga as outras")
 ok(um(f"select guardados->'preferencias'->>'cidade' from public.jogadores where user_id = '{gui}'", papel="authenticated", user=gui) == "São Paulo", "a conta lê o que guardou")
+# 14/10/2026 (SQL 20261014130000): a última busca também vai para a conta, como objeto.
+certo, saida = sql("""select public.guardar_na_conta('ultima_busca', '{"cidade": "São Paulo", "lat": -23.56, "lng": -46.68, "em": 1}'::jsonb)""", papel="authenticated", user=gui)
+ok(certo and um(f"select guardados->'ultima_busca'->>'cidade' from public.jogadores where user_id = '{gui}'") == "São Paulo", "a última busca vai para a conta" + ("" if certo else ": " + saida))
+certo, saida = sql("select public.guardar_na_conta('ultima_busca', '[]'::jsonb)", papel="authenticated", user=gui)
+ok(not certo and "Formato" in saida, "a última busca é um objeto")
 certo, saida = sql("select public.guardar_na_conta('senha', '[]'::jsonb)", papel="authenticated", user=gui)
 ok(not certo and "Não sei guardar" in saida, "só as listas conhecidas")
 certo, saida = sql("""select public.guardar_na_conta('favoritas', '{"a": 1}'::jsonb)""", papel="authenticated", user=gui)

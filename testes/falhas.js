@@ -188,7 +188,12 @@ const BANCO = { message: 'Could not find the function public.conta_do_email(p_em
   await page.click('.chat-enviar');
   await page.waitForTimeout(200);
   let resposta = await page.evaluate(() => [...document.querySelectorAll('#chat-msgs .chat-msg')].pop().innerText);
-  ok(resposta.includes('recarregue a página') && resposta.includes('código do problema'), 'sem falha recente, diz o que costuma resolver e pede o código, se houver');
+  ok(resposta.includes('recarregue a página') && !resposta.includes('código do problema'), 'sem falha recente, diz o que costuma resolver (sem antecipar o resto)');
+  await page.fill('#chat-texto', 'não resolveu');
+  await page.click('.chat-enviar');
+  await page.waitForTimeout(200);
+  resposta = await page.evaluate(() => [...document.querySelectorAll('#chat-msgs .chat-msg')].pop().innerText);
+  ok(resposta.includes('código do problema') && resposta.includes('Breno'), '"não resolveu": o Breno no WhatsApp e o código, se houver');
   await page.evaluate(() => { fecharChat(); falhou('salvar o perfil', { message: 'boom', code: 'XX000' }, { silenciosa: false }); });
   await page.waitForTimeout(600);
   const cod = (await falhas(page))[0].codigo;

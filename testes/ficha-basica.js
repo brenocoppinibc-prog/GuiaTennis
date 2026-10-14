@@ -203,7 +203,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     'menu › "Fale com a gente" abre a folha com o chat de ajuda (no lugar do WhatsApp direto), Instagram e E-mail — ' + folhaContato.itens.join(' | '));
   ok(!folhaContato.texto.includes('92745') && !folhaContato.texto.includes('@'), 'na folha, sem o número, o @ e o e-mail escritos');
   ok(contato.rodape.join() === 'Chat de ajuda+logo,Instagram+logo,E-mail+logo', 'rodapé tem o chat de ajuda, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
-  ok(contato.wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'bloco para academias tem o link do WhatsApp');
+  ok(!contato.wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'sem o bloco para academias na home (regra 98)');
   ok(!contato.texto.includes('92745-6457') && !contato.texto.includes('guiatennis1@gmail.com') && !contato.texto.includes('@guiatennis'), 'número, e-mail e @ não aparecem escritos na página');
   ok(termos.includes('(11) 92745-6457'), 'Termos e Privacidade têm o WhatsApp');
   await browser.close();

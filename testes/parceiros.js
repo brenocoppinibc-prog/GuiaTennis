@@ -360,14 +360,15 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ({ browser, page } = await abrir({}));
   const entradas = await page.evaluate(() => ({
     rodape: document.querySelector('.sitefooter a[data-pc="inicio"]')?.getAttribute('href'),
-    bloco: document.querySelector('.ba-btn')?.getAttribute('href'),
+    // Regra 98: a home não tem mais o bloco para academias.
+    bloco: !!document.querySelector('#home-academias, .home a[data-pc="inicio"]:not(.sitefooter a)'),
   }));
-  ok(entradas.rodape === '/parceiros' && entradas.bloco === '/parceiros', 'rodapé e bloco da home levam ao GuiaTennis Parceiros');
+  ok(entradas.rodape === '/parceiros' && !entradas.bloco, 'rodapé leva ao GuiaTennis Parceiros, sem bloco para academias na home');
   await vigiarAbas(page);
-  await page.click('.ba-btn');
+  await page.click('.sitefooter a[data-pc="inicio"]');
   await page.waitForTimeout(300);
   let abas = await abasAbertas(page);
-  ok(abas.length === 1 && abas[0].url === 'http://guia.test/parceiros' && abas[0].nome === 'guiatennis-parceiros' && await page.evaluate(() => state.page === 'home'), 'bloco da home abre o GuiaTennis Parceiros na aba dele, como o trivago Business Studio');
+  ok(abas.length === 1 && abas[0].url === 'http://guia.test/parceiros' && abas[0].nome === 'guiatennis-parceiros' && await page.evaluate(() => state.page === 'home'), 'rodapé abre o GuiaTennis Parceiros na aba dele, como o trivago Business Studio');
   await page.evaluate(() => { state.showMenu = true; render(); });
   await page.click('.menu-drawer [data-menu="parceiros"]');
   await page.waitForTimeout(300);

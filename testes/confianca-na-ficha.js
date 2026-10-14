@@ -36,17 +36,15 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   // ---- home: os números dizem o que contam ----
   await page.evaluate(() => { state.page = 'home'; state.selected = null; render(); });
   const home = await page.evaluate(() => ({
-    nums: [...document.querySelectorAll('.ba-numeros .ban-item')].map(x => x.innerText.replace(/\s+/g, ' ')),
+    // Regra 98: os números do site saíram da home (ficam no Parceiros, testados abaixo).
+    nums: document.querySelectorAll('.ba-numeros, .ban-item').length,
     nota: perguntasParceiros().find(f => f.id === 'numeros')?.a || '',
-    como: (() => { const a = document.querySelector('.ba-numeros + .como-numeros a'); return a ? { texto: a.innerText, href: a.getAttribute('href'), bloco: a.closest('section, div').innerText } : null; })(),
+    como: !!document.querySelector('#home-ideia .como-numeros, #home-dicas .como-numeros'),
     dif: document.querySelector('.dif-grade, #home-diferenciais, .bloco-diferenciais')?.innerText || document.body.innerText,
   }));
-  ok(home.nums[0] === '+1.200 visitas ao GuiaTennis', 'home: visitas, não "pessoas" — ' + home.nums[0]);
-  ok(home.nums[1] === '1 em 14 visitas abre a ficha de uma academia', 'home: a base do "1 em 14" — ' + home.nums[1]);
-  ok(home.nums[2] === '15% das fichas abertas viram contato com a academia', 'home: a base da porcentagem — ' + home.nums[2]);
+  ok(home.nums === 0, 'home dos jogadores sem os números do site para academias');
   ok(home.nota.includes('Desde o lançamento') && home.nota.includes('WhatsApp, no Instagram ou no site') && home.nota.includes('não entram'), 'home: de onde vêm os números');
-  ok(home.como && home.como.texto.includes('Entenda como funciona') && home.como.href.endsWith('/parceiros/ajuda#numeros') && !home.como.bloco.includes('Desde o lançamento'),
-    'home: "Entenda como funciona" leva à pergunta da Ajuda; o texto não aparece no bloco — ' + (home.como && home.como.href));
+  ok(!home.como, 'home sem o "Entenda como funciona" dos números');
   ok(home.dif.includes('Avaliações feitas no GuiaTennis') && !home.dif.includes('Nota só de quem jogou aqui'), '"Por que o GuiaTennis" não promete que quem avaliou jogou');
   const desc = await page.evaluate(() => document.querySelector('meta[name="description"]').content);
   ok(desc.startsWith('Onde jogar tênis perto de você'), 'a descrição para o Google fala em "onde jogar tênis"');

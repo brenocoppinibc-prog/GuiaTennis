@@ -24,6 +24,11 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 14/10/2026
 
+> **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o
+> bloco para academias; no lugar, "Dicas para achar a quadra certa" e o
+> bloco verde com a ideia do site e "Indicar para quem joga"; menu com
+> "Dicas de uso" (regra 98). Sem SQL. Este chat voltou a acompanhar o PR #5.
+
 > **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
 > pela revisão: o atalho das partes do meio virou "Revisar e salvar" /
 > "Revisar e publicar" e leva à prévia; só lá salva (regra 84). Sem SQL.
@@ -2233,6 +2238,27 @@ cobra taxa e não fica no meio** da negociação.
     o "Ver no mapa" (`no-alto`, print do Breno com o botão em cima do
     texto), e "conversa começada" virou "conversa iniciada" (Parceiros,
     Ajuda e chat).
+98. **A home dos jogadores não fala com a academia; no lugar, a ideia do
+    site e dicas de uso** (pedido de 14/10/2026: "tire as informações dos
+    parceiros que tem nos jogadores e complete um pouco mais divulgando a
+    ideia do site e dicas também para utilização do site como os grandes,
+    trivago, ifood parceiros"). Como o trivago e o iFood, o site de quem
+    usa não tem bloco para o parceiro: fica só a entrada pequena no menu
+    (Suporte › "GuiaTennis Parceiros") e no rodapé, e a ficha ("Gerencie a
+    ficha…"). Saiu da home o bloco verde "Por que estar no GuiaTennis" (com
+    os números do site e o WhatsApp para academias) e a pergunta "Como uma
+    academia entra no site?" (virou "Preciso de conta para usar o
+    GuiaTennis?"). Entraram, antes das perguntas: **"Dicas para achar a
+    quadra certa"** (`blocoDicas`, `#home-dicas`, seis dicas numeradas:
+    localização, filtros, salvar e comparar, ler a ficha até o fim, chamar
+    com o essencial, avaliar) e o bloco verde **"Todo o tênis da sua região
+    num lugar só"** (`blocoIdeia`, `#home-ideia`: a ideia do site, para
+    quem é — começar, jogar com os amigos, evoluir, viajar — e os botões
+    "Encontrar uma quadra" e "Indicar para quem joga", que abre a folha de
+    compartilhar do celular ou o WhatsApp com a mensagem pronta e o link
+    com `utm_source=indicacao`). No menu, Suporte ganhou "Dicas de uso"
+    (rola até as dicas). Os nomes trivago e iFood ficam só no código e
+    aqui (regra 75).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -2475,8 +2501,8 @@ aparece **trancado** com "Disponível no plano X · ver planos" — nunca com
 número inventado. Academia logada e admin não contam nas visitas.
 
 **Entradas a partir do site dos jogadores:** menu "Para academias" ›
-"GuiaTennis Parceiros" (logado: "Painel da minha academia"), rodapé,
-bloco da home ("Conhecer o GuiaTennis Parceiros") e a ficha ("Gerencie a ficha no
+"GuiaTennis Parceiros" (logado: "Painel da minha academia"), rodapé
+e a ficha (o bloco da home saiu em 14/10/2026, regra 98) ("Gerencie a ficha no
 GuiaTennis Parceiros" → Cadastro já com a academia). No portal, "Ir para o
 GuiaTennis (jogadores)" volta.
 

@@ -204,8 +204,17 @@ async function buscar(page, termo) {
   ({ browser, page } = await abrir());
   t = await texto(page, '#home-porque');
   ok(t.includes('facilidade tremenda') && t.includes('mais perto') && (t.match(/taxa/g) || []).length === 1, '"Por que o GuiaTennis": a facilidade de achar a quadra mais perto, e a taxa uma vez só');
-  t = await texto(page, '#home-academias');
-  ok(t.includes('Grátis para começar') && t.includes('Avaliação nova chega no seu e-mail') && !t.includes('a gente confere e publica'), '"Por que estar no GuiaTennis" (home) atualizado');
+  // 14/10/2026: a home dos jogadores não fala com a academia; no lugar,
+  // a ideia do site e as dicas de uso.
+  ok(!(await page.$('#home-academias')) && !(await texto(page, 'main, body')).includes('Por que estar no GuiaTennis'), 'a home dos jogadores não tem o bloco para academias');
+  t = await texto(page, '#home-ideia');
+  ok(t.includes('Todo o tênis da sua região num lugar só') && t.includes('Encontrar uma quadra') && t.includes('Indicar para quem joga') && !t.includes('Parceiros'), '"A ideia do GuiaTennis" na home, sem falar com a academia');
+  t = await texto(page, '#home-dicas');
+  ok(t.includes('Dicas para achar a quadra certa') && (await page.$$('#home-dicas li')).length === 6 && t.includes('Chame com o essencial'), 'seis dicas de uso na home');
+  ok(!(await texto(page, '#home-duvidas')).includes('Como uma academia entra'), 'as perguntas da home são de quem joga');
+  await page.evaluate(() => { state.page = 'home'; acaoDoMenu('dicas'); });
+  await page.waitForFunction(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }, null, { timeout: 4000 }).catch(() => {});
+  ok(await page.evaluate(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }), '"Dicas de uso" do menu leva às dicas');
   await page.evaluate(() => { state.page = 'parceiros'; state.parceirosAba = 'inicio'; render(); });
   t = await texto(page, '#pc-beneficios');
   ok(t.includes('Avaliação nova no seu e-mail') && t.includes('Sua equipe e suas academias numa conta') && t.includes('vai viajar para a sua cidade'), '"Por que estar no GuiaTennis" (Parceiros) atualizado');

@@ -121,11 +121,13 @@ const buscar = (page, origem, extra) => page.evaluate(({ origem, extra }) => {
   // ---- textos: pergunta do site, Termos e planos do Parceiros ----
   ({ browser, page } = await abrir({ q: 'parceiros/planos' }));
   r = await page.evaluate(() => ({
-    faq: (perguntasDoSite().find(f => f.q === 'A ordem das academias é paga?') || {}).a || '',
+    faq: (perguntasDoSite().find(f => f.q === 'Como funciona a ordem das academias?') || {}).a || '',
+    velha: perguntasDoSite().some(f => f.q === 'A ordem das academias é paga?'),
     termos: TERMS_HTML,
   }));
   // 14/10/2026: a pergunta saiu; o "Patrocinado" no cartão identifica, e o detalhe fica nos Termos.
-  ok(!r.faq && r.termos.includes('também identificadas como "Patrocinado"'), 'sem a pergunta "A ordem das academias é paga?"; os Termos contam as recomendadas');
+  ok(!r.velha && r.faq.includes('"Patrocinado" são academias do plano Premium') && r.faq.includes('da mais perto para a mais longe') && r.termos.includes('também identificadas como "Patrocinado"'),
+    '"Como funciona a ordem das academias?": a ordem escolhida e as patrocinadas do Premium; o detalhe nos Termos');
   ok(r.termos.includes('identificada como patrocinada ("Patrocinado")') && r.termos.includes('a até 10 km') && !r.termos.includes('Hoje, a ordem da busca não depende do plano'),
     'os Termos dizem como funciona o topo patrocinado');
   const premium = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].pop().innerText);

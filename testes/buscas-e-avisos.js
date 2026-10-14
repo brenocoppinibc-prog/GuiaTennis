@@ -230,7 +230,7 @@ async function buscar(page, termo) {
     return { primeira: com[0].id, ultima: ultima.id, n: com.length, ordenada: pts.every((p, i) => !i || p <= pts[i - 1]), naTela: !!document.querySelector('#home-recomendadas .home-strip') };
   });
   ok(reco.primeira === reco.ultima && reco.n <= 4 && reco.ordenada && reco.naTela, 'recomendadas: a Premium vem primeiro; sem Premium, pela nota e pela ficha mais completa');
-  ok(!(await page.evaluate(() => perguntasDoSite().some(f => f.q.includes('ordem')))), 'sem a pergunta sobre a ordem paga nas perguntas frequentes');
+  ok(await page.evaluate(() => perguntasDoSite().some(f => f.q === 'Como funciona a ordem das academias?') && !perguntasDoSite().some(f => f.q.includes('é paga'))), 'pergunta "Como funciona a ordem das academias?" no lugar da "é paga?"');
   // Regra 101: a Premium nas recomendadas vem escrita "Patrocinado" (regra 16), com o selo dourado.
   const marca = await page.evaluate(() => {
     const c = state.allCourts[state.allCourts.length - 1]; const antes = { plano: c.plano, confirmada: c.confirmada };

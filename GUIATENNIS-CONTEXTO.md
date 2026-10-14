@@ -2312,7 +2312,10 @@ cobra taxa e não fica no meio** da negociação.
     implícito, mas ainda assim explícito"): o "Patrocinado" no cartão é a
     identificação, e o detalhe mora nos Termos. O chat, se perguntarem,
     responde curto ("\"Patrocinado\" identifica as academias que aparecem em
-    destaque por patrocínio…"). O resto conta o Premium nas recomendadas (como o "Recomendado" do Booking e do trivago):
+    destaque por patrocínio…"). Depois, no lugar dela, entrou **"Como funciona
+    a ordem das academias?"** (pedido do mesmo dia): a lista segue a ordem
+    escolhida (por padrão, da mais perto) e as marcadas "Patrocinado" são do
+    Premium, em destaque no topo da busca e entre as recomendadas. O resto conta o Premium nas recomendadas (como o "Recomendado" do Booking e do trivago):
     Planos ("Entre as \"Academias recomendadas\" da página inicial"), a
     Ajuda e o chat do Parceiros, o aviso ao baixar o plano, os Termos (14 de outubro de
     2026) e o e-mail "Plano novo" (SQL

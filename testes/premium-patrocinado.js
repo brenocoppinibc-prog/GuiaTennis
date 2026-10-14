@@ -124,8 +124,8 @@ const buscar = (page, origem, extra) => page.evaluate(({ origem, extra }) => {
     faq: (perguntasDoSite().find(f => f.q === 'A ordem das academias é paga?') || {}).a || '',
     termos: TERMS_HTML,
   }));
-  ok(r.faq.includes('"Patrocinado"') && r.faq.includes('no máximo duas') && r.faq.includes('selo dourado') && !r.faq.startsWith('Não.'),
-    'a pergunta "A ordem das academias é paga?" explica o patrocínio e o selo');
+  // 14/10/2026: a pergunta saiu; o "Patrocinado" no cartão identifica, e o detalhe fica nos Termos.
+  ok(!r.faq && r.termos.includes('também identificadas como "Patrocinado"'), 'sem a pergunta "A ordem das academias é paga?"; os Termos contam as recomendadas');
   ok(r.termos.includes('identificada como patrocinada ("Patrocinado")') && r.termos.includes('a até 10 km') && !r.termos.includes('Hoje, a ordem da busca não depende do plano'),
     'os Termos dizem como funciona o topo patrocinado');
   const premium = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].pop().innerText);

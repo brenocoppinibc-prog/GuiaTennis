@@ -230,16 +230,16 @@ async function buscar(page, termo) {
     return { primeira: com[0].id, ultima: ultima.id, n: com.length, ordenada: pts.every((p, i) => !i || p <= pts[i - 1]), naTela: !!document.querySelector('#home-recomendadas .home-strip') };
   });
   ok(reco.primeira === reco.ultima && reco.n <= 4 && reco.ordenada && reco.naTela, 'recomendadas: a Premium vem primeiro; sem Premium, pela nota e pela ficha mais completa');
-  ok((await page.evaluate(() => perguntasDoSite().find(f => f.q.includes('ordem')).a)).includes('começam pelas do plano Premium'), 'a pergunta da ordem diz que as recomendadas começam pelas Premium');
-  // Pedido de 14/10/2026: nas recomendadas, a Premium se reconhece pelo selo dourado, sem a palavra "Patrocinado".
+  ok(!(await page.evaluate(() => perguntasDoSite().some(f => f.q.includes('ordem')))), 'sem a pergunta sobre a ordem paga nas perguntas frequentes');
+  // Regra 101: a Premium nas recomendadas vem escrita "Patrocinado" (regra 16), com o selo dourado.
   const marca = await page.evaluate(() => {
     const c = state.allCourts[state.allCourts.length - 1]; const antes = { plano: c.plano, confirmada: c.confirmada };
     c.plano = 'premium'; c.confirmada = true; state.page = 'home'; render();
-    const card = document.querySelector('#home-recomendadas .mini');
-    const r = { selo: !!card?.querySelector('.selo-premium'), texto: card?.innerText || '' };
+    const cards = [...document.querySelectorAll('#home-recomendadas .mini')];
+    const r = { primeiro: cards[0]?.innerText || '', selo: !!cards[0]?.querySelector('.selo-premium'), outros: cards.slice(1).filter(x => x.innerText.includes('Patrocinado')).length };
     Object.assign(c, antes); render(); return r;
   });
-  ok(marca.selo && !marca.texto.includes('Patrocinado'), 'a Premium nas recomendadas tem o selo dourado, sem "Patrocinado" no cartão');
+  ok(marca.primeiro.startsWith('Patrocinado') && marca.selo && marca.outros === 0, 'a Premium nas recomendadas vem escrita "Patrocinado", com o selo dourado; as outras não — ' + marca.primeiro.slice(0, 40));
   await page.evaluate(() => { state.page = 'home'; acaoDoMenu('dicas'); });
   await page.waitForFunction(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }, null, { timeout: 4000 }).catch(() => {});
   ok(await page.evaluate(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }), '"Dicas de uso" do menu leva às dicas');

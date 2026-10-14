@@ -540,8 +540,9 @@ cobra taxa e não fica no meio** da negociação.
     cartão (Código de Defesa do Consumidor, art. 36: publicidade tem de
     ser identificada como tal). Desde 14/10/2026 (regra 101), as Premium
     também vêm primeiro nas "Academias recomendadas" da página inicial,
-    identificadas só pelo selo dourado (escolha do Breno) e explicadas na
-    pergunta "A ordem das academias é paga?".
+    marcadas "Patrocinado" do mesmo jeito; a pergunta "A ordem das
+    academias é paga?" saiu das perguntas frequentes (o detalhe fica nos
+    Termos).
 17. **O plano fica num lugar só** (mudou em 06/10/2026, regra 61; antes
     toda tela vendia o próximo plano e o Breno achou que "está forçando
     demais"): a página **Plano** do Parceiros é onde se vê o plano, o que
@@ -2301,15 +2302,19 @@ cobra taxa e não fica no meio** da negociação.
     vão para as mais bem avaliadas e com a ficha mais completa
     (`pontosDaFicha`: fotos, comodidades, preço, horário, cancelamento,
     como chegar, endereço, contatos e confirmada). Muda a regra 16: além do
-    topo "Patrocinado", a vitrine da página inicial também pesa o Premium.
-    No cartão, a Premium se reconhece **só pelo selo dourado**, sem a
-    palavra "Patrocinado" (o Breno pediu assim no mesmo dia: "o símbolo de
-    verificado do Premium já não diz que é patrocinado? não gostaria que
-    aparecesse"; avisado de que o CDC, art. 36, pede publicidade
-    identificada). O site diz isso (como o "Recomendado" do Booking e do trivago):
+    topo "Patrocinado", a vitrine da página inicial também pesa o Premium,
+    e o cartão da Premium ali vem com **"Patrocinado"** em cima do nome
+    (`renderMini(…, patrocinado)`), além do selo dourado. (No mesmo dia o
+    Breno tirou e pôs de volta: "é melhor colocar patrocinado então".)
+    **Sem a pergunta "A ordem das academias é paga?"** nas perguntas
+    frequentes (pedido do mesmo dia: "isso também é meio ruim de ficar
+    mostrando… como são feitas do site. Talvez está em termos ou algo mais
+    implícito, mas ainda assim explícito"): o "Patrocinado" no cartão é a
+    identificação, e o detalhe mora nos Termos. O chat, se perguntarem,
+    responde curto ("\"Patrocinado\" identifica as academias que aparecem em
+    destaque por patrocínio…"). O resto conta o Premium nas recomendadas (como o "Recomendado" do Booking e do trivago):
     Planos ("Entre as \"Academias recomendadas\" da página inicial"), a
-    pergunta "A ordem das academias é paga?", a Ajuda e o chat do Parceiros
-    e dos jogadores, o aviso ao baixar o plano, os Termos (14 de outubro de
+    Ajuda e o chat do Parceiros, o aviso ao baixar o plano, os Termos (14 de outubro de
     2026) e o e-mail "Plano novo" (SQL
     `20261014120000_premium_nas_recomendadas`).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")

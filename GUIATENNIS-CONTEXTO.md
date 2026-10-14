@@ -27,7 +27,8 @@ teste")
 > **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o
 > bloco para academias; no lugar, "Dicas para achar a quadra certa" e o
 > bloco verde com a ideia do site e "Indicar para quem joga"; menu com
-> "Dicas de uso" (regra 98). Sem SQL. Este chat voltou a acompanhar o PR #5.
+> "Dicas de uso" (regra 98). Sem SQL. Testes: **1.333 verificações, nenhuma
+> falha** nos 47 arquivos. Este chat voltou a acompanhar o PR #5.
 
 > **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
 > pela revisão: o atalho das partes do meio virou "Revisar e salvar" /

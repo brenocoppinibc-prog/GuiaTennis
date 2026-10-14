@@ -130,7 +130,7 @@ const fs = require('fs'), path = require('path');
     sub: document.querySelector('#home-parecidas .home-sec-sub')?.innerText,
     badgeNumero: [...document.querySelectorAll('#home-vistas .mini-badge')].length,
   }));
-  ok(home.ordem.join() === 'home-vistas,home-parecidas,home-chamadas,Recomendadas', 'home: vistas, parecidas com a busca e chamadas antes das recomendadas — ' + home.ordem.join(' | '));
+  ok(home.ordem.join() === 'home-vistas,home-parecidas,home-chamadas,Academias recomendadas', 'home: vistas, parecidas com a busca e chamadas antes das recomendadas — ' + home.ordem.join(' | '));
   ok(home.primeiro.startsWith('Pinheiros, São Paulo') && home.primeiro.includes('Aulas e locação') && home.primeiro.includes('Saibro'), 'primeiro cartão das vistas é a última busca, como no trivago — ' + home.primeiro);
   ok(home.linkBusca === '/busca?q=Pinheiros&piso=saibro', 'o cartão da busca é um link de verdade — ' + home.linkBusca);
   ok(home.badgeNumero === 0, 'vistas sem selo com número');

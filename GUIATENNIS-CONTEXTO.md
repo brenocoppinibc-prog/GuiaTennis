@@ -27,7 +27,8 @@ teste")
 > **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o
 > bloco para academias; no lugar, "Dicas para achar a quadra certa" e o
 > bloco verde com a ideia do site e "Indicar para quem joga"; menu com
-> "Dicas de uso" (regra 98). Sem SQL. Testes: **1.333 verificações, nenhuma
+> "Dicas de uso" (regra 98). Depois, a home reordenada: academias primeiro
+> e a explicação aos poucos (regra 99). Sem SQL. Testes: **1.334 verificações, nenhuma
 > falha** nos 47 arquivos. Este chat voltou a acompanhar o PR #5.
 
 > **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
@@ -2260,6 +2261,17 @@ cobra taxa e não fica no meio** da negociação.
     com `utm_source=indicacao`). No menu, Suporte ganhou "Dicas de uso"
     (rola até as dicas). Os nomes trivago e iFood ficam só no código e
     aqui (regra 75).
+99. **Home: as academias primeiro, depois o site explicado aos poucos**
+    (pedido de 14/10/2026: "a ordem do início não está muito legal,
+    reorganize tudo desde deixar as academias em primeiro mais aparente e
+    ir explicar gradualmente o site e informações necessárias"). Como o
+    Booking e o Airbnb: depois da busca e do que é da pessoa (vistas,
+    parecidas, chamadas), vêm as academias — **"Academias recomendadas"**
+    (com "Ver todas as academias ›", que abre a busca), **"Academias por
+    cidade"** (era "Onde tem quadra cadastrada") e **"Melhores avaliadas"**
+    (era "… no app") —; depois a explicação, do simples ao detalhe: "Por
+    que o GuiaTennis", "Como funciona a busca", "Dicas para achar a quadra
+    certa", o bloco verde da ideia e "Perguntas frequentes".
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

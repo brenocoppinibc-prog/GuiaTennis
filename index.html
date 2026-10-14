@@ -1056,6 +1056,7 @@
   .regiao-titulo { font-size: 22px; line-height: 1.2; margin: 14px 20px 0; }
   .aviso-link { margin: 12px 20px 0; padding: 10px 12px; background: var(--bg-alt); border-radius: 10px; font-size: 13px; color: var(--muted); }
   .cidade-link { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--green); }
+  .ver-todas { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--green); background: none; border: none; padding: 0; font-family: var(--fonte-texto); cursor: pointer; }
   .ht-crumbs .sep { color: var(--muted-dark); }
   .ht-crumbs .cur { color: var(--muted); }
 
@@ -11599,7 +11600,7 @@ function blocoIdeia() {
           </div>`).join("")}
       </div>
       <div class="ba-botoes">
-        <button type="button" class="ba-btn" data-ideia-buscar>Encontrar uma quadra</button>
+        <button type="button" class="ba-btn" data-ir-busca>Encontrar uma quadra</button>
         <button type="button" class="ba-btn2" data-indicar>${icon('share', 16, '#fff')} Indicar para quem joga</button>
       </div>
     </div>
@@ -12258,6 +12259,9 @@ function renderHome() {
   const ultima = lerUltimaBusca();
   const chamadas = lerChamadas().map(x => ({ ...x, c: todas.find(c => c.id === x.id) })).filter(x => x.c);
 
+  // Ordem da home (pedido de 14/10/2026), como o Booking e o Airbnb: as
+  // academias primeiro, bem à vista, e depois o site explicado aos poucos —
+  // por quê, como funciona, dicas, a ideia e as perguntas (regra 99).
   return `
     ${renderCabecalho()}
     ${conviteParaConta(recentes.length > 0 || !!ultima || chamadas.length > 0) || conviteViagem()}
@@ -12278,22 +12282,14 @@ function renderHome() {
 
     ${recomendadas.length ? `
       <div class="home-sec">
-        <h3 class="display">Recomendadas</h3>
+        <h3 class="display">Academias recomendadas</h3>
         <div class="home-strip">${recomendadas.map(c => renderMini(c)).join("")}</div>
-      </div>` : ""}
-
-    ${blocoVideo()}
-    ${blocoDiferenciais()}
-
-    ${melhores.length ? `
-      <div class="home-sec">
-        <h3 class="display">Melhores avaliadas no app</h3>
-        <div class="home-strip">${melhores.map(c => renderMini(c)).join("")}</div>
+        <button type="button" class="ver-todas" data-ir-busca>Ver todas as academias ›</button>
       </div>` : ""}
 
     ${cidades.length ? `
       <div class="home-sec">
-        <h3 class="display">Onde tem quadra cadastrada</h3>
+        <h3 class="display">Academias por cidade</h3>
         <div class="city-tabs">
           ${cidades.map(c => `<button type="button" class="city-tab ${c.nome === cidadeAtiva.nome ? "on" : ""}" data-city="${esc(c.nome)}">${esc(c.nome)}</button>`).join("")}
         </div>
@@ -12301,6 +12297,15 @@ function renderHome() {
         <div class="home-strip">${cidadeAtiva.courts.slice(0, 8).map(c => renderMini(decorate(c))).join("")}</div>
         <a class="cidade-link" href="${caminhoDaRegiao({ cidade: cidadeAtiva.nome })}" data-regiao-link data-cidade="${esc(cidadeAtiva.nome)}">Ver as academias de ${esc(cidadeAtiva.nome)} ›</a>
       </div>` : ""}
+
+    ${melhores.length ? `
+      <div class="home-sec">
+        <h3 class="display">Melhores avaliadas</h3>
+        <div class="home-strip">${melhores.map(c => renderMini(c)).join("")}</div>
+      </div>` : ""}
+
+    ${blocoDiferenciais()}
+    ${blocoVideo()}
 
     ${blocoDicas()}
     ${blocoIdeia()}
@@ -18252,7 +18257,7 @@ function attachEvents() {
 
   const footerBuscar = document.getElementById("footer-buscar");
   if (footerBuscar) footerBuscar.onclick = goSearch;
-  document.querySelectorAll("[data-ideia-buscar]").forEach(el => { el.onclick = goSearch; });
+  document.querySelectorAll("[data-ir-busca]").forEach(el => { el.onclick = goSearch; });
   document.querySelectorAll("[data-indicar]").forEach(el => { el.onclick = indicarOGuia; });
 
   document.querySelectorAll("[data-stop]").forEach(el => {

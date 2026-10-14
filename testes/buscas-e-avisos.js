@@ -83,7 +83,7 @@ async function buscar(page, termo) {
     state.allCourts.push({ ...state.allCourts[0], id: 'a9', name: 'Campinas Tênis', cidade: 'Campinas', bairro: 'Cambuí', lat: -22.9, lng: -47.06 });
     render();
   });
-  await page.click('.cidade-link');
+  await page.click('a.cidade-link');
   await page.waitForTimeout(700);
   t = await page.evaluate(() => ({
     cidade: state.cidadeDaPagina, origem: state.origin, link: location.pathname,
@@ -212,6 +212,14 @@ async function buscar(page, termo) {
   t = await texto(page, '#home-dicas');
   ok(t.includes('Dicas para achar a quadra certa') && (await page.$$('#home-dicas li')).length === 6 && t.includes('Chame com o essencial'), 'seis dicas de uso na home');
   ok(!(await texto(page, '#home-duvidas')).includes('Como uma academia entra'), 'as perguntas da home são de quem joga');
+  // Regra 99: as academias primeiro; depois por quê, como funciona, dicas, ideia e perguntas.
+  const ordem = await page.evaluate(() => [...document.querySelectorAll('.home-sec h3, .bloco-ideia h3')].map(h => h.innerText.trim()));
+  const pos = (t) => ordem.findIndex(x => x.startsWith(t));
+  // "Melhores avaliadas" só aparece com avaliação; o resto vem sempre, nesta ordem.
+  const esperada = ['Academias recomendadas', 'Academias por cidade', 'Melhores avaliadas', 'Por que o GuiaTennis', 'Como funciona a busca', 'Dicas para', 'Todo o tênis', 'Perguntas frequentes'];
+  const achadas = esperada.map(pos);
+  ok(achadas.every((p, k) => p >= 0 || esperada[k] === 'Melhores avaliadas') && achadas.filter(p => p >= 0).every((p, k, a) => !k || p > a[k - 1]),
+    'home: academias primeiro, depois o site explicado aos poucos — ' + ordem.join(' | '));
   await page.evaluate(() => { state.page = 'home'; acaoDoMenu('dicas'); });
   await page.waitForFunction(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }, null, { timeout: 4000 }).catch(() => {});
   ok(await page.evaluate(() => { const r = document.getElementById('home-dicas').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }), '"Dicas de uso" do menu leva às dicas');

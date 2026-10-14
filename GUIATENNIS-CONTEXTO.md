@@ -28,7 +28,8 @@ teste")
 > bloco para academias; no lugar, "Dicas para achar a quadra certa" e o
 > bloco verde com a ideia do site e "Indicar para quem joga"; menu com
 > "Dicas de uso" (regra 98). Depois, a home reordenada: academias primeiro
-> e a explicação aos poucos (regra 99). Sem SQL. Testes: **1.334 verificações, nenhuma
+> e a explicação aos poucos (regra 99); chat de ajuda com o vocabulário da
+> busca e menos coisa na tela (regra 100). Sem SQL. Testes: **1.340 verificações, nenhuma
 > falha** nos 47 arquivos. Este chat voltou a acompanhar o PR #5.
 
 > **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
@@ -2272,6 +2273,19 @@ cobra taxa e não fica no meio** da negociação.
     (era "… no app") —; depois a explicação, do simples ao detalhe: "Por
     que o GuiaTennis", "Como funciona a busca", "Dicas para achar a quadra
     certa", o bloco verde da ideia e "Perguntas frequentes".
+100. **Chat de ajuda: o vocabulário da busca e menos coisa na tela**
+    (pedido de 14/10/2026, com print do chat respondendo "Não entendi" a
+    "Não consegui fazer a busca": "será que ficou aglomerado comparando aos
+    grandes? busca, localização são palavras que devem estar no
+    vocabulário… buscar é para encontrar as quadras"). "Achar quadra perto"
+    entende busca, buscar, pesquisar, procurar, encontrar, achar, onde tem,
+    perto de mim, filtro e localização (pelo começo da palavra) e ganha de
+    "Algo não funcionou" quando o que falha é a busca ou a localização
+    ("localização não funciona", "busca não…", "não acho…"); a resposta
+    termina com a dica de permitir a localização no navegador ou digitar o
+    CEP. Como o Intercom e o iFood: no primeiro "Não entendi" não aparece o
+    WhatsApp (só na segunda vez) e os assuntos ficam **numa linha só, que
+    desliza para o lado**, em vez de três linhas empilhadas.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

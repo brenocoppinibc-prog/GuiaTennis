@@ -1936,7 +1936,11 @@
   .chat-acoes { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 86%; }
   .chat-acao { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid var(--green); border-radius: 10px; background: var(--card); color: var(--green); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
   .chat-acao.whats { background: var(--green); color: #fff; }
-  .chat-chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 100%; }
+  /* Assuntos numa linha só, que desliza para o lado (como as sugestões do
+     iFood e do Google Mensagens), em vez de três linhas empilhadas. */
+  .chat-chips { display: flex; flex-wrap: nowrap; gap: 6px; max-width: 100%; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .chat-chips::-webkit-scrollbar { display: none; }
+  .chat-chips .chip { flex-shrink: 0; white-space: nowrap; }
   .chat-envio { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); background: var(--card); }
   .chat-campo { flex: 1; min-width: 0; padding: 11px 14px; border: 1px solid var(--border); border-radius: 12px; font: inherit; font-size: 16px; background: var(--bg); color: var(--text); }
   .chat-enviar { display: flex; align-items: center; justify-content: center; width: 46px; border: 0; border-radius: 12px; background: var(--green); cursor: pointer; }
@@ -16501,8 +16505,14 @@ const CHAT_TEMAS = [
     a: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] },
   // ---- GuiaTennis (jogadores) ----
   { id: "buscar", onde: "jogadores", t: "Achar quadra perto",
-    p: ["perto", "buscar", "procurar", "pesquisar", "encontrar", "onde jogar", "cep", "gps", "bairro", "mapa", "localiz", "proxim", "regiao"],
-    r: "Na página inicial, digite o bairro, o endereço ou o CEP (ou toque no alvo para usar o GPS) e toque em Pesquisar. A lista começa pela mais perto. Em Filtros, escolha piso, quadra coberta, preço, nota e comodidades.",
+    // Pedido de 14/10/2026: "busca", "localização", "pesquisar"… são o
+    // vocabulário de quem quer achar quadra (o "busca" não era entendido).
+    // Palavra curta vale pelo começo: "busc" pega busca, buscar, buscando.
+    p: ["perto", "busc", "pesquis", "procur", "encontr", "achar", "acho", "ache", "onde jogar", "onde tem", "perto de mim", "cep", "gps", "bairro", "mapa", "localiz", "proxim", "regiao", "filtr", "lista de quadras", "lista de academias",
+      // Quando é a busca ou a localização que não funciona, a dica certa é
+      // esta, não a do "Algo não funcionou".
+      "localizacao nao", "gps nao", "busca nao", "pesquisa nao", "nao acho", "nao encontro"],
+    r: "Na página inicial, digite o bairro, o endereço ou o CEP e toque em Pesquisar — ou toque no alvo para usar a sua localização. A lista começa pela mais perto; em Filtros, escolha piso, quadra coberta, preço, nota e comodidades. Se a localização não funcionar, permita a localização para o site no navegador ou digite o CEP.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "reservar", onde: "jogadores", t: "Reservar ou marcar aula",
     p: ["reserv", "agendar", "agenda", "marcar", "alugar", "locar", "locacao", "horario livre", "disponivel", "disponibilidade", "aula experimental"],
@@ -16834,8 +16844,10 @@ function enviarAoChat(texto) {
     ch.erros += 1;
     ch.msgs.push({ de: "gt", texto: ch.erros > 1
       ? "Ainda não entendi. O Breno, do GuiaTennis, pode ajudar pelo WhatsApp: a sua dúvida já vai escrita. Ou escolha um assunto:"
-      : "Não entendi bem. Escreva de outro jeito, em poucas palavras (por exemplo, \"esqueci a senha\"), ou escolha um assunto. Se preferir, fale com o Breno no WhatsApp.",
-      acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }], chips: sugestoesDoChat() });
+      : "Não entendi bem. Tente em poucas palavras, como \"buscar quadra\" ou \"esqueci a senha\", ou escolha um assunto:",
+      // Como os chats de ajuda dos grandes (Intercom, iFood): a pessoa só é
+      // levada ao atendimento na segunda vez que o chat não entende.
+      acoes: ch.erros > 1 ? [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] : [], chips: sugestoesDoChat() });
   }
   ch.focar = true;
   render();

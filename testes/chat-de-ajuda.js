@@ -34,10 +34,21 @@ async function escrever(page, texto) {
     '"Ainda preciso de ajuda" leva ao WhatsApp do Breno, com a dúvida escrita');
   await escrever(page, 'xpto qwerty');
   u = await ultima(page);
-  ok(u.texto.includes('Não entendi bem') && u.whats && u.chips.length === 7, 'sem entender: pede para escrever de outro jeito, sugere assuntos e oferece o WhatsApp');
+  ok(u.texto.includes('Não entendi bem') && !u.whats && u.chips.length === 7, 'sem entender: pede para escrever de outro jeito e sugere assuntos (o WhatsApp fica para a segunda vez)');
+  const linha = await page.evaluate(() => { const c = [...document.querySelectorAll('.chat-chips')].pop(); const tops = [...c.querySelectorAll('.chip')].map(x => Math.round(x.getBoundingClientRect().top)); return { tops: new Set(tops).size, rola: getComputedStyle(c).overflowX }; });
+  ok(linha.tops === 1 && linha.rola === 'auto', 'os assuntos ficam numa linha só, que desliza para o lado');
   await escrever(page, 'zzz aaa');
   u = await ultima(page);
   ok(u.texto.includes('Ainda não entendi') && u.whats, 'sem entender de novo: o WhatsApp vem primeiro');
+  // Pedido de 14/10/2026: "busca", "pesquisar", "localização" levam a achar quadra.
+  for (const frase of ['Não consegui fazer a busca', 'como pesquiso uma quadra', 'minha localização não funciona', 'onde tem quadra perto de mim']) {
+    await escrever(page, frase);
+    u = await ultima(page);
+    ok(u.texto.includes('Pesquisar') && u.texto.includes('permita a localização'), 'entende "' + frase + '" — ' + u.texto.slice(0, 60));
+  }
+  await escrever(page, 'quero salvar a busca');
+  u = await ultima(page);
+  ok(!u.texto.includes('permita a localização'), '"salvar a busca" continua indo para as buscas salvas — ' + u.texto.slice(0, 60));
   await escrever(page, 'como reservo uma aula?');
   u = await ultima(page);
   ok(u.texto.includes('não faz reservas') && u.texto.includes('Chamar no WhatsApp'), 'entende "como reservo uma aula?" — ' + u.texto.slice(0, 80));

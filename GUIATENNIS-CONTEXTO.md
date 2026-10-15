@@ -22,7 +22,10 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 14/10/2026
+**Atualizado em:** 15/10/2026
+
+> **Estado (15/10/2026):** o Breno trocou de chat: leia o "Resumo (15/10/2026,
+> ao trocar de chat)" na seção 11.
 
 > **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o
 > bloco para academias; no lugar, "Dicas para achar a quadra certa" e o
@@ -4115,6 +4118,32 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (15/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 104** (último commit de código: `ec77046`, mais este
+documento). O "aplicar" passou o SQL no banco de teste até
+`20261015120000_envios_de_aviso`. Neste chat entraram as regras 98 a 104:
+home dos jogadores sem o bloco das academias, com dicas e a ideia do site
+(98); academias primeiro e explicação aos poucos (99); chat com o
+vocabulário da busca (100); Premium primeiro nas "Academias
+recomendadas", marcadas "Patrocinado", e a pergunta "Como funciona a ordem
+das academias?" (101); perto da última busca da conta e da cidade
+aproximada da conexão, função `netlify/functions/onde.mjs` (102); chat como
+conversa (103); envios de aviso pagos no Completo e no Premium, promoções
+só no Premium (104). **A descrição do PR parou na seção 26 e no passo de
+teste 35**: faltam as regras 98 a 104 (atualizar quando o Breno pedir ou
+antes do merge). O estudo de preços está num doc do Claude, "GuiaTennis:
+estudo de preços dos planos"
+(https://claude.ai/code/artifact/9586a96e-f093-404a-a828-291c1c4edf7e):
+preço de lançamento Completo R$ 29, Premium R$ 69, envio R$ 7,90 / R$ 3,90;
+os preços **não aparecem no site** até o Breno decidir. Testes: **1.370
+verificações, nenhuma falha**, nos 49 arquivos do navegador (comando na
+seção 6, mais `node testes/onde.mjs`) e **373 no `banco-emails.py`**. O
+merge espera o Breno dizer **"pode subir"**. Este chat **deixou de
+acompanhar o PR** (conferência cancelada, sem inscrição): no chat novo,
+voltar a acompanhar o PR #5. Seguem valendo: respostas curtas, ler só o
+trecho que muda, prints só quando o pedido for de visual.
 
 **Resumo (14/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

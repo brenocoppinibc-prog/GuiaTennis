@@ -28,7 +28,8 @@ teste")
 > ao trocar de chat)" na seção 11.
 > Depois, no chat novo: o "pensamento" do chat (regra 105), Completo nas
 > recomendadas, perto primeiro e a viagem na home (106) e o chat na conta
-> dos jogadores com abas e "Resolvida" (107), SQL
+> dos jogadores com abas e "Resolvida" (107) e o chat do Parceiros que
+> leva a qualquer página e responde pelo plano (108), SQL
 > `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo, verde.
 > Testes: 1.394 verificações nos 50 arquivos do navegador e 377 no
 > `banco-emails.py`, nenhuma falha.
@@ -2458,6 +2459,24 @@ cobra taxa e não fica no meio** da negociação.
     `guardar_conversa_de_ajuda(…, p_resolvida)` (vazio não muda) e as 50
     mais recentes **por site**; banco sem isso, o site guarda sem o status.
     Privacidade (15 de outubro de 2026). Teste: `testes/chat-na-conta.js`.
+108. **O chat do Parceiros também "pensa"** (pedido de 15/10/2026: "crie um
+    chat para o parceiros também, seguindo dúvidas e orientando qualquer
+    direção que possa ter no parceiros"). Como a ajuda da Shopify e do
+    Booking Extranet, sem IA: (a) **leva a qualquer página**
+    (`CHAT_PAGINAS_PC`): "onde fica…", "como abro…", "cadê…", "não acho…"
+    ou só o nome ("minha ficha") respondem "Fica no menu do Parceiros, em
+    …: <o que tem lá>" com o botão; sem conta, a página da conta pede para
+    entrar antes; "onde troco a senha" leva ao Perfil; (b) **as partes da
+    ficha** (`CHAT_DETALHES_PC`: fotos, preço, horário, quadras, endereço,
+    contato, comodidades, cancelamento, como chegar), com o que o plano
+    libera; o mesmo assunto de novo pergunta "qual parte?"; (c) **pela
+    conta** (`contextoDoChatPc`, `planoAtual`): promoções, avisos,
+    desempenho, acessos, planos, topo e ficha respondem pelo plano e pela
+    academia aberta (`rc`/`ac`/`rcAntes` nos assuntos); assuntos novos
+    "Por onde começo" (o que falta na ficha, `faltasDaFicha`; o primeiro
+    sugerido), "A academia não aparece" (no ar, em análise ou pausada) e
+    "O que tem no Parceiros" (as páginas para tocar). Teste:
+    `testes/chat-parceiros.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3461,7 +3480,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce envios-de-aviso pensamento-e-home; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce envios-de-aviso pensamento-e-home chat-parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 ```
 

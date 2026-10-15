@@ -16715,6 +16715,28 @@ const PARA_QUE_SERVE_O_CONTATO = {
 //       abre o WhatsApp do Breno.
 const CHAT_TEMAS = [
   // ---- GuiaTennis Parceiros ----
+  // rc: a resposta com a conta aberta, pela academia e pelo plano dela
+  // (15/10/2026). Sem conta, vale o "r".
+  { id: "comecar", onde: "parceiros", t: "Por onde começo",
+    p: ["por onde comeco", "por onde eu comeco", "o que falta", "o que faco agora", "o que fazer agora", "proximo passo", "proximos passos", "primeiros passos", "como comecar", "completar a ficha", "ficha completa", "ficha incompleta"],
+    r: "Comece pelo cadastro: o seu e-mail, depois a academia (se ela já estiver no guia, é só administrar). Com o e-mail confirmado, a academia vai ao ar no Básico, que é grátis, e você completa a ficha em Minha ficha.",
+    a: [{ t: "Cadastrar minha academia", ir: "pc:cadastro" }],
+    rc: x => {
+      const faltas = faltasDaFicha(x.c);
+      return faltas.length
+        ? `Na ${x.c.name}, falta preencher: ${faltas.join(", ")}. Ficha completa aparece melhor para quem procura${x.plano !== "basico" ? " e sobe entre as \"Academias recomendadas\"" : ""}.`
+        : `A ficha da ${x.c.name} está completa. Próximos passos: responda às avaliações, imprima o QR code da ficha para a recepção e acompanhe os acessos em Atualizações.`;
+    },
+    ac: x => (faltasDaFicha(x.c).length ? [{ t: "Completar a ficha", ir: "pc:ficha" }] : [{ t: "Avaliações", ir: "pc:avaliacoes" }, { t: "Abrir Minha ficha", ir: "pc:ficha" }]) },
+  { id: "nao-aparece", onde: "parceiros", t: "A academia não aparece",
+    p: ["nao aparece", "nao apareco", "nao esta aparecendo", "sumiu", "sumiram", "nao acho minha academia", "nao encontro minha academia", "invisivel", "fora da busca", "nao aparece na busca"],
+    r: "Entre na conta do Parceiros: em Minha ficha aparece a situação da academia (no ar, em análise ou pausada) e o que fazer.",
+    a: [{ t: "Entrar", ir: "pc:entrar" }],
+    rc: x => situacaoNoChat(x).texto, ac: x => situacaoNoChat(x).a },
+  { id: "mapa-pc", onde: "parceiros", t: "O que tem no Parceiros",
+    p: ["o que tem aqui", "o que da para fazer", "o que posso fazer", "paginas", "menu", "como funciona o parceiros", "como usar", "me ajuda a navegar", "navegar", "onde fica cada"],
+    r: "No Parceiros, a academia cuida da ficha, responde às avaliações, vê os números, publica promoções e avisa os jogadores. Para onde quer ir?",
+    a: [] },
   { id: "cadastrar", onde: "parceiros", t: "Cadastrar a academia",
     p: ["cadastr", "registr", "anunciar", "incluir minha academia", "colocar minha academia", "aparecer no guia", "aparecer no site", "academia nova", "nova academia", "como entro no guia"],
     r: "Toque em \"Cadastrar academia\" e comece pelo seu e-mail. Depois procure a academia: se ela já estiver no guia, toque em \"Administrar esta academia\"; se não, em \"Cadastrar academia nova\". Com o e-mail confirmado, a academia vai ao ar na hora, no plano Básico, que é grátis.",
@@ -16727,7 +16749,7 @@ const CHAT_TEMAS = [
     p: ["outra pessoa", "outro administra", "outra conta", "contestar", "disputa", "nao reconheco", "nao conheco", "ex funcionario", "ex socio", "saiu da academia", "roubaram", "tomaram"],
     r: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\". Na disputa, um código de 6 números vai para o WhatsApp da academia: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia.",
     a: [{ t: "Suas academias", ir: "pc:academias" }] },
-  { id: "planos", onde: "parceiros", t: "Planos e preços",
+  { id: "planos", onde: "parceiros", t: "Planos e preços", rcAntes: x => `A ${x.c.name} está no ${x.nome}. `,
     p: ["plano", "preco", "valor", "quanto custa", "quanto e", "premium", "completo", "basico", "pagar", "pagamento", "mensalidade", "assinatura", "gratis", "gratuito"],
     r: "O Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira, para até 5 pessoas da equipe, e entra entre as \"Academias recomendadas\", quanto mais completa a ficha. O Premium tem o selo dourado, aparece no topo da busca como \"Patrocinado\" e entre as recomendadas da página inicial, divulga promoções e mostra os números da ficha. O valor do Completo e do Premium é combinado com o GuiaTennis, e nada é cobrado sem a academia confirmar.",
     a: [{ t: "Ver os planos", ir: "pc:planos" }, { t: "Combinar o valor no WhatsApp", ir: "whatsapp" }] },
@@ -16746,12 +16768,17 @@ const CHAT_TEMAS = [
   { id: "promocoes", onde: "parceiros", t: "Promoções",
     p: ["promocao", "promocoes", "desconto", "oferta", "aula gratis", "cupom", "divulgar"],
     r: "No plano Premium, a academia publica até 3 promoções ao mesmo tempo, por até 90 dias. Elas aparecem na ficha e no resultado da busca, e a academia escolhe quando avisar por e-mail os jogadores que favoritaram ou estão perto (cada aviso gasta 1 envio).",
-    a: [{ t: "Abrir Promoções", ir: "pc:promocoes" }] },
+    a: [{ t: "Abrir Promoções", ir: "pc:promocoes" }],
+    rc: x => (x.plano === "premium" ? `A ${x.c.name} está no Premium: em Promoções, toque em "Nova promoção" (até 3 ao mesmo tempo, por até 90 dias). Elas aparecem na ficha e na busca.`
+      : `As promoções são do Premium; a ${x.c.name} está no ${x.nome}. Em Plano, veja o que muda.`),
+    ac: x => (x.plano === "premium" ? [{ t: "Abrir Promoções", ir: "pc:promocoes" }] : [{ t: "Ver o meu plano", ir: "pc:plano" }]) },
   { id: "avisos", onde: "parceiros", t: "Avisos por e-mail",
     p: ["aviso", "avisar", "notificac", "notificar", "mandar email", "mandar e-mail", "enviar email", "enviar e-mail", "envio", "creditos", "disparo"],
     r: "Nos planos Completo e Premium, em Avisos por e-mail, a academia escreve um aviso e ele chega aos jogadores que favoritaram ou estão perto. Cada aviso gasta 1 envio, comprado antes em pacotes; no Premium, o envio sai mais barato.",
-    a: [{ t: "Abrir Avisos por e-mail", ir: "pc:avisos" }] },
-  { id: "topo", onde: "parceiros", t: "Aparecer primeiro na busca",
+    a: [{ t: "Abrir Avisos por e-mail", ir: "pc:avisos" }],
+    rc: x => (x.plano === "basico" ? `Os avisos por e-mail são do Completo e do Premium; a ${x.c.name} está no Básico. Em Plano, veja o que muda.` : null),
+    ac: x => (x.plano === "basico" ? [{ t: "Ver o meu plano", ir: "pc:plano" }] : null) },
+  { id: "topo", onde: "parceiros", t: "Aparecer primeiro na busca", rcAntes: x => (x.plano === "premium" ? `A ${x.c.name} já é Premium. ` : `A ${x.c.name} está no ${x.nome}. `),
     p: ["patrocin", "primeiro", "primeiro lugar", "aparecer primeiro", "apareco em primeiro", "topo", "destaque", "ranking", "posicao", "subir na busca", "ordem da busca", "mais visto"],
     r: "As academias Premium podem aparecer no topo da busca, marcadas como \"Patrocinado\": no máximo duas por busca, perto de onde o jogador procurou. Abaixo delas, a lista segue a ordem que o jogador escolheu, que nenhum plano muda. Na página inicial, as Premium também aparecem primeiro entre as \"Academias recomendadas\"; depois vêm as do Completo, da ficha mais completa para a menos completa, sempre antes as perto de quem procura.",
     a: [{ t: "Ver o Premium", ir: "pc:planos" }] },
@@ -16762,7 +16789,10 @@ const CHAT_TEMAS = [
   { id: "desempenho", onde: "parceiros", t: "Visitas e contatos da academia",
     p: ["desempenho", "visitas", "acessos", "relatorio", "estatistic", "quantas pessoas", "quantos jogadores", "cliques", "metricas", "resultado"],
     r: "Em Atualizações, todo plano vê os acessos dos últimos 30 dias. No Premium, Desempenho mostra também quantas pessoas chamaram a academia, de onde vieram e os bairros de quem procurou. São contagens: ninguém é identificado.",
-    a: [{ t: "Abrir Desempenho", ir: "pc:desempenho" }] },
+    a: [{ t: "Abrir Desempenho", ir: "pc:desempenho" }],
+    rc: x => (x.l.numeros ? `A ${x.c.name} está no Premium: em Desempenho, os acessos, quem chamou (WhatsApp, Instagram, site), de onde vieram e os bairros de quem procurou. São contagens: ninguém é identificado.`
+      : `A ${x.c.name} está no ${x.nome}: em Atualizações, os acessos dos últimos 30 dias. Quem chamou e de onde vieram ficam no Premium.`),
+    ac: x => (x.l.numeros ? null : [{ t: "Abrir Atualizações", ir: "pc:painel" }, { t: "Ver o meu plano", ir: "pc:plano" }]) },
   { id: "numeros", onde: "todos", t: "Como são contados os números",
     p: ["como sao contados", "como e contado", "numeros do site", "visitas ao guiatennis", "1 em", "de onde vem os numeros"],
     r: NOTA_DOS_NUMEROS,
@@ -16772,13 +16802,15 @@ const CHAT_TEMAS = [
     r: "Em Avaliações, a academia responde em público a cada avaliação. Nenhuma academia apaga avaliação; se uma for falsa ou ofensiva, toque em \"Pedir análise\" nela, e o GuiaTennis confere.",
     a: [{ t: "Abrir Avaliações", ir: "pc:avaliacoes" }] },
   { id: "pessoas", onde: "parceiros", t: "Dar acesso a mais pessoas",
-    p: ["pessoas", "equipe", "funcionari", "dar acesso", "outro email", "outro e mail", "socio", "professor", "colega", "recepcion", "acesso para"],
+    p: ["pessoas", "quantas pessoas posso", "adicionar pessoa", "colocar mais pessoas", "equipe", "funcionari", "dar acesso", "outro email", "outro e mail", "socio", "professor", "colega", "recepcion", "acesso para"],
     r: "Em Acessos, o responsável principal adiciona quem trabalha com ele pelo e-mail: 1 pessoa no Básico, até 5 no Completo e até 10 no Premium.",
-    a: [{ t: "Abrir Acessos", ir: "pc:pessoas" }] },
+    a: [{ t: "Abrir Acessos", ir: "pc:pessoas" }],
+    rc: x => `Em Acessos, o responsável principal adiciona quem trabalha com ele pelo e-mail. No ${x.nome}, a ${x.c.name} tem até ${x.pessoas} ${plural(x.pessoas, "pessoa", "pessoas")}${x.plano === "premium" ? "" : "; o plano acima libera mais"}.` },
   { id: "ficha", onde: "parceiros", t: "Editar a ficha",
-    p: ["editar", "foto", "fotos", "imagem", "horario", "endereco", "telefone", "whatsapp da academia", "atualizar", "corrigir", "mudar a ficha", "informacoes da academia", "cancelamento", "como chegar"],
+    p: ["edit", "edicao", "foto", "fotos", "imagem", "horario", "endereco", "telefone", "whatsapp da academia", "atualizar", "corrigir", "mudar a ficha", "informacoes da academia", "cancelamento", "como chegar"],
     r: "Em Minha ficha, toque em \"Editar a ficha\": nome e endereço, modalidade e preço, quadras, contato, fotos, horário, cancelamento e como chegar, uma parte por tela. O que aparece depende do plano.",
-    a: [{ t: "Abrir Minha ficha", ir: "pc:ficha" }] },
+    a: [{ t: "Abrir Minha ficha", ir: "pc:ficha" }],
+    rc: x => { const f = faltasDaFicha(x.c); return `Em Minha ficha, toque em "Editar a ficha": nome e endereço, modalidade e preço, quadras, contato, fotos, horário, cancelamento e como chegar, uma parte por tela.${f.length ? ` Na ${x.c.name}, falta: ${f.join(", ")}.` : ""}`; } },
   { id: "varias", onde: "parceiros", t: "Mais de uma academia",
     p: ["varias academias", "outra academia", "mais de uma", "duas academias", "filial", "unidade", "unidades", "outra unidade"],
     r: "A mesma conta administra quantas academias você responder, em qualquer plano. Em Suas academias, toque em \"Adicionar outra academia\". Cada academia tem o próprio plano, as próprias pessoas e os próprios números.",
@@ -16888,7 +16920,7 @@ const CHAT_TEMAS = [
 ];
 // Os primeiros assuntos que o chat sugere, em cada site.
 const CHAT_SUGESTOES = {
-  parceiros: ["cadastrar", "senha", "planos", "promocoes", "pausar", "sair", "problema"],
+  parceiros: ["comecar", "cadastrar", "senha", "planos", "promocoes", "pausar", "sair", "problema"],
   jogadores: ["buscar", "reservar", "avaliar", "conta", "favoritas", "tenho-academia", "problema"],
 };
 
@@ -16969,7 +17001,7 @@ function tituloDoChat(ch) {
 function mensagemParaGuardar(m, ultima) {
   const out = { de: m.de, texto: String(m.texto || "").slice(0, m.de === "eu" ? 300 : 2000) };
   if (m.acoes && m.acoes.length) out.acoes = m.acoes.map(a => ({ t: a.t, ir: a.ir }));
-  if (ultima && m.chips && m.chips.length) out.chips = m.chips.map(c => (c.tema ? { t: c.t, tema: c.tema } : c.det ? { t: c.t, det: c.det } : { t: c.t, resp: c.resp }));
+  if (ultima && m.chips && m.chips.length) out.chips = m.chips.map(c => (c.tema ? { t: c.t, tema: c.tema } : c.det ? { t: c.t, det: c.det } : c.pg ? { t: c.t, pg: c.pg } : { t: c.t, resp: c.resp }));
   return out;
 }
 // O que volta do banco passa pelo mesmo filtro: só caminhos e assuntos que o
@@ -16979,8 +17011,8 @@ function mensagemDoBanco(m) {
   const out = { de: m.de, texto: m.texto.slice(0, 2000) };
   if (Array.isArray(m.acoes)) out.acoes = m.acoes.filter(a => a && typeof a.t === "string" && IR_DO_CHAT.test(a.ir || "")).map(a => ({ t: a.t.slice(0, 80), ir: a.ir }));
   if (Array.isArray(m.chips)) out.chips = m.chips.filter(c => c && typeof c.t === "string" && ((c.tema && CHAT_TEMAS.some(t => t.id === c.tema))
-      || (c.det && CHAT_DETALHES.some(d => d.id === c.det)) || c.resp === "sim" || c.resp === "nao"))
-    .map(c => (c.tema ? { t: c.t.slice(0, 80), tema: c.tema } : c.det ? { t: c.t.slice(0, 80), det: c.det } : { t: c.t.slice(0, 80), resp: c.resp }));
+      || (c.det && detalhePorId(c.det)) || (c.pg && CHAT_PAGINAS_PC.some(p => p.aba === c.pg)) || c.resp === "sim" || c.resp === "nao"))
+    .map(c => (c.tema ? { t: c.t.slice(0, 80), tema: c.tema } : c.det ? { t: c.t.slice(0, 80), det: c.det } : c.pg ? { t: c.t.slice(0, 80), pg: c.pg } : { t: c.t.slice(0, 80), resp: c.resp }));
   return out;
 }
 function conversaDoBanco(r) {
@@ -17174,7 +17206,13 @@ function responderComTema(tema) {
     return;
   }
   ch.tema = tema.id;
-  ch.msgs.push({ de: "gt", tema: tema.id, texto: tema.r, acoes: tema.a });
+  ch.pagina = null;
+  // No Parceiros, com a conta aberta: a resposta pela academia e pelo plano.
+  const x = tema.onde === "parceiros" || tema.id === "mapa-pc" ? contextoDoChatPc() : null;
+  const daConta = x && x.c && tema.rc ? tema.rc(x) : null;
+  const texto = daConta || ((x && x.c && tema.rcAntes ? tema.rcAntes(x) : "") + tema.r);
+  const acoes = (x && x.c && tema.ac && tema.ac(x)) || tema.a;
+  ch.msgs.push({ de: "gt", tema: tema.id, texto, acoes, chips: tema.id === "mapa-pc" ? chipsDasPaginas() : null });
 }
 // A pessoa voltou ao mesmo assunto ou disse que não deu certo: o chat não
 // repete a mesma resposta. Primeiro o outro caminho ("d"); depois, o Breno.
@@ -17263,7 +17301,7 @@ function distanciaDeDigitacao(a, b) {
 let vocabularioDoChat = null;
 function palavrasDoChat() {
   if (!vocabularioDoChat) {
-    const todas = [...CHAT_TEMAS, ...CHAT_DETALHES].flatMap(x => x.p.map(p => textoDoChat(p).trim())).filter(p => p && !p.includes(" "));
+    const todas = [...CHAT_TEMAS, ...CHAT_DETALHES, ...CHAT_DETALHES_PC, ...CHAT_PAGINAS_PC].flatMap(x => x.p.map(p => textoDoChat(p).trim())).filter(p => p && !p.includes(" "));
     vocabularioDoChat = [...new Set(todas)];
   }
   return vocabularioDoChat;
@@ -17306,6 +17344,118 @@ function lugarDaDuvida(pergunta, det) {
   if (/^(quadra|academia|busca|filtro|site|mapa|conta|lista|celular|computador|pc|app|aplicativo|navegador|google|chrome|safari|iphone|android|tela|menu|gps)/.test(t)) return "";
   return lugar;
 }
+// ---- O mesmo "pensamento" no GuiaTennis Parceiros (pedido do Breno em
+// 15/10/2026: "crie um chat para o parceiros também, seguindo dúvidas e
+// orientando qualquer direção que possa ter no parceiros"). Como a ajuda
+// da Shopify e do Booking Extranet: o chat leva a qualquer página ("onde
+// fica…", "como abro…", "cadê…"), entende as partes da ficha e responde
+// conforme o plano e a situação da academia aberta.
+const CHAT_PAGINAS_PC = [
+  { aba: "painel", t: "Atualizações", p: ["atualizac", "painel", "pagina inicial", "inicio da conta"],
+    r: "o que mudou na academia: avaliações novas, pedidos de acesso, lembretes e os acessos dos últimos 30 dias" },
+  { aba: "ficha", t: "Minha ficha", p: ["minha ficha", "ficha"], r: "a ficha como o jogador vê, o QR code e \"Editar a ficha\"" },
+  { aba: "avaliacoes", t: "Avaliações", p: ["avaliac", "comentarios", "notas"], r: "as avaliações dos jogadores, para responder ou pedir análise" },
+  { aba: "promocoes", t: "Promoções", p: ["promoc"], r: "as promoções da academia, no Premium" },
+  { aba: "avisos", t: "Avisos por e-mail", p: ["avisos por e mail", "avisos por email", "envios", "saldo de envios"],
+    r: "os avisos por e-mail aos jogadores e o saldo de envios, no Completo e no Premium" },
+  { aba: "desempenho", t: "Desempenho", p: ["desempenho", "numeros", "estatistic", "metricas", "relatorio"],
+    r: "os números da ficha: visitas, quem chamou e de onde vieram (completos no Premium)" },
+  { aba: "academias", t: "Suas academias", p: ["suas academias", "minhas academias", "trocar de academia", "outra academia"],
+    r: "as academias da conta: trocar, adicionar, pausar ou pedir para tirar do guia" },
+  { aba: "pessoas", t: "Acessos", p: ["acessos", "equipe", "pessoas"], r: "quem tem acesso à academia: adicionar ou tirar pessoas" },
+  { aba: "plano", t: "Plano", p: ["meu plano", "plano", "assinatura"], r: "o plano da academia e o que cada plano libera" },
+  { aba: "perfil", t: "Perfil", p: ["perfil", "meus dados", "meu nome", "meu email", "meu e mail", "senha", "trocar o email", "sair da conta"],
+    r: "os seus dados, a senha, os e-mails do Parceiros e \"Sair da conta\"" },
+  { aba: "ajuda", t: "Ajuda", p: ["ajuda", "perguntas frequentes", "duvidas frequentes"], r: "as perguntas frequentes do Parceiros" },
+  { aba: "cadastro", t: "Cadastrar academia", p: ["cadastro"], r: "o cadastro da conta e da academia" },
+  { aba: "entrar", t: "Entrar", p: ["entrar", "login", "logar"], r: "a entrada na conta do Parceiros" },
+];
+const CHAT_IR_PARA = /\b(onde (fica|esta|vejo|ve|acho|encontro|tem|mudo|troco|edito|altero|mexo)|cade|como (chego|vou|acho|abro|volto)|abrir|abre|abra|ir (para|pra|pro)|me leva|leva (para|pra)|qual (aba|pagina|menu|tela)|em que (aba|pagina|tela)|nao acho|nao encontro|consigo (achar|abrir|encontrar))\b/;
+function paginaDaDuvida(txt, palavras) {
+  const lista = CHAT_PAGINAS_PC.map(pg => ({ pg, n: pontosDoTema(pg, txt, palavras) })).filter(x => x.n >= 2).sort((a, b) => b.n - a.n);
+  return lista.length ? lista[0].pg : null;
+}
+// A academia aberta na conta, o plano e o que ele libera.
+function contextoDoChatPc() {
+  const c = contaAcademia ? minhaAcademia() : null;
+  // O mesmo plano que as páginas do Parceiros mostram.
+  const plano = c ? planoAtual() : null;
+  const p = plano && PC_PLANOS.find(x => x.key === plano);
+  return { c, plano, nome: plano ? nomeDoPlano(plano) : "", l: limitesDoPlano(plano), pessoas: p ? p.pessoas : null };
+}
+// As partes da ficha (Editar a ficha), com o que o plano libera.
+const CHAT_DETALHES_PC = [
+  { id: "pc-fotos", t: "Fotos", p: ["foto", "fotos", "imagem", "imagens", "capa"],
+    r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
+      + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
+  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidade e preço: o valor por hora da aula e da locação. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+  { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
+    r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
+  { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
+    r: () => "Em Minha ficha › Editar a ficha, na parte Quadras: quantas são e de que tipo (saibro ou rápida, coberta ou descoberta). É o que o jogador filtra na busca." },
+  { id: "pc-endereco", t: "Endereço", p: ["endereco", "mudou de endereco", "localizacao", "pino", "mapa"],
+    r: () => "Em Minha ficha › Editar a ficha, na parte Nome e endereço: confira o endereço e o pino no mapa. É dele que a busca mede a distância." },
+  { id: "pc-contato", t: "Contato", p: ["whatsapp", "telefone", "celular", "instagram", "site"],
+    r: x => "Em Minha ficha › Editar a ficha, na parte Contato: o WhatsApp que o jogador chama"
+      + (x.l.contatos.includes("instagram") ? ", o Instagram e o site." : `. Instagram e site aparecem no Completo e no Premium${x.c ? ` (a ${x.c.name} está no ${x.nome})` : ""}.`) },
+  { id: "pc-comodidades", t: "Comodidades", p: ["comodidade", "comodidades", "estacionamento", "vestiario", "lanchonete", "wifi"],
+    r: x => "Em Minha ficha › Editar a ficha, na parte Comodidades: marque o que a academia oferece. "
+      + (x.l.comodidades < Infinity ? `No ${x.c ? x.nome : "Básico"}, aparecem ${x.l.comodidades}; no Completo e no Premium, todas.` : "No seu plano, aparecem todas.") },
+  { id: "pc-cancelamento", t: "Cancelamento", p: ["cancelamento", "desmarcar", "remarcar", "politica"],
+    r: x => "Em Minha ficha › Editar a ficha, na parte Cancelamento: a regra para desmarcar aula e locação. "
+      + (x.l.cancelamento ? "O seu plano mostra a regra na ficha." : `Ela aparece no Completo e no Premium${x.c ? `; a ${x.c.name} está no ${x.nome}` : ""}.`) },
+  { id: "pc-chegar", t: "Como chegar", p: ["como chegar", "fachada", "entrada", "onde estacionar"],
+    r: x => "Em Minha ficha › Editar a ficha, na parte Como chegar: a fachada, a entrada e onde estacionar. "
+      + (x.l.chegada ? "O seu plano mostra isso na ficha." : `Aparece no Completo e no Premium${x.c ? `; a ${x.c.name} está no ${x.nome}` : ""}.`) },
+].map(d => ({ ...d, temas: ["ficha"], a: [{ t: "Abrir Minha ficha", ir: "pc:ficha" }] }));
+function detalhePorId(id) {
+  return CHAT_DETALHES.find(d => d.id === id) || CHAT_DETALHES_PC.find(d => d.id === id) || null;
+}
+function detalhePcDaDuvida(txt, palavras, r) {
+  const det = CHAT_DETALHES_PC.find(d => pontosDoTema(d, txt, palavras) >= 2 && !(d.nao || []).some(w => palavras.includes(w)));
+  if (!det) return null;
+  return r.tipo !== "tema" || det.temas.includes(r.tema.id) ? det : null;
+}
+function responderDetalhePc(det) {
+  const ch = state.chat;
+  ch.esperando = null;
+  ch.detalhe = det.id;
+  ch.tema = "ficha";
+  ch.pagina = null;
+  ch.msgs.push({ de: "gt", tema: "ficha", det: det.id, texto: det.r(contextoDoChatPc()), acoes: det.a });
+}
+// "Onde fica…": o caminho no menu e o botão que abre a página. Sem conta,
+// a página da conta pede para entrar antes e abre depois.
+function responderDirecao(pg) {
+  const ch = state.chat;
+  ch.esperando = null;
+  ch.detalhe = null;
+  ch.tema = null;
+  ch.pagina = pg.aba;
+  const aba = pg.aba === "plano" && !contaAcademia ? "planos" : pg.aba;
+  const privada = PC_PRIVADAS.includes(aba) && !contaAcademia;
+  const onde = ["cadastro", "entrar"].includes(aba) ? `Fica no alto da página, em "${pg.t}"` : `Fica no menu do Parceiros, em "${aba === "planos" ? "Planos" : pg.t}"`;
+  ch.msgs.push({ de: "gt", texto: `${onde}: ${pg.r}.${privada ? " É na conta do Parceiros: toque abaixo, entre, e a página abre em seguida." : ""}`,
+    acoes: [{ t: `Abrir ${aba === "planos" ? "Planos" : pg.t}`, ir: `pc:${aba}` }] });
+}
+// O mapa do Parceiros: as páginas, para escolher para onde ir.
+function chipsDasPaginas() {
+  const abas = contaAcademia ? ["painel", "ficha", "avaliacoes", "promocoes", "avisos", "desempenho", "academias", "pessoas", "plano", "perfil"]
+    : ["cadastro", "entrar", "plano", "ajuda"];
+  return abas.map(a => CHAT_PAGINAS_PC.find(p => p.aba === a)).map(p => ({ t: p.aba === "plano" && !contaAcademia ? "Planos" : p.t, pg: p.aba }));
+}
+// A situação da academia, para "minha academia não aparece".
+function situacaoNoChat(x) {
+  const c = x.c;
+  const pausada = c.pausada && (!c.pausadaAte || new Date(c.pausadaAte) > new Date());
+  const ate = c.pausadaAte ? ` até ${dataCurta(c.pausadaAte)}` : "";
+  if (c.status === "pending") return { texto: `A ${c.name} está em análise pelo GuiaTennis: ainda não aparece no site. Assim que for aprovada, vai ao ar sozinha.`, a: [{ t: "Abrir Minha ficha", ir: "pc:ficha" }] };
+  if (pausada && c.pausadaPelaAcademia) return { texto: `A ${c.name} está pausada por vocês${ate}: não aparece na busca agora. Em Suas academias, toque em "Voltar a aparecer no site".`, a: [{ t: "Suas academias", ir: "pc:academias" }] };
+  if (pausada) return { texto: `A ${c.name} foi pausada pelo GuiaTennis: não aparece na busca agora. O Breno explica o motivo pelo WhatsApp.`, a: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] };
+  return { texto: `A ${c.name} está no ar. Na busca, a lista começa pela mais perto de onde o jogador procurou: pesquise o bairro da academia para encontrá-la.${x.plano === "premium" ? "" : " No Premium, ela aparece no topo da busca da região, marcada como \"Patrocinado\"."}`,
+    a: [{ t: "Abrir Minha ficha", ir: "pc:ficha" }] };
+}
 function pensarNoChat(pergunta) {
   const { txt, trocas } = corrigirDigitacao(textoDoChat(pergunta));
   const r = entenderDuvida(txt);
@@ -17315,7 +17465,16 @@ function pensarNoChat(pergunta) {
   // "Como reservo uma aula?" é do assunto Reservar, não um filtro da busca.
   if (det && r.tipo === "tema" && !CHAT_TEMAS_DO_DETALHE.includes(r.tema.id)) det = null;
   const lugar = site === "jogadores" && (det || (r.tipo === "tema" && r.tema.id === "buscar")) ? lugarDaDuvida(pergunta, det) : "";
-  return { r, solta, det, lugar, trocas };
+  let pagina = null, detPc = null;
+  if (site === "parceiros") {
+    const palavras = txt.trim().split(" ").filter(Boolean);
+    // "Onde fica Desempenho?", "cadê o meu plano" ou só o nome da página
+    // ("minha ficha"): leva até ela.
+    pagina = paginaDaDuvida(txt, palavras);
+    if (pagina && !(CHAT_IR_PARA.test(txt) || (palavras.length <= 3 && r.tipo !== "tema"))) pagina = null;
+    detPc = pagina ? null : detalhePcDaDuvida(txt, palavras, r);
+  }
+  return { r, solta, det, lugar, trocas, pagina, detPc };
 }
 // Quantas academias há com o detalhe, no lugar ou na cidade de quem pergunta.
 function contagemDoDetalhe(det, lugar) {
@@ -17381,6 +17540,15 @@ function outraPerguntaNoTema(tema, lugar) {
       chips: CHAT_DETALHES.map(d => ({ t: d.t, det: d.id })) });
     return;
   }
+  const partes = CHAT_DETALHES_PC.filter(d => d.temas.includes(tema.id));
+  if (partes.length) {
+    ch.msgs.push({ de: "gt", tema: tema.id, texto: `Sobre "${tema.t}", qual parte?`, chips: partes.map(d => ({ t: d.t, det: d.id })) });
+    return;
+  }
+  if (tema.id === "mapa-pc") {
+    ch.msgs.push({ de: "gt", tema: tema.id, texto: "Para onde quer ir?", chips: chipsDasPaginas() });
+    return;
+  }
   ch.esperando = "whatsapp";
   ch.msgs.push({ de: "gt", tema: tema.id, texto: `Sobre "${tema.t}", o que eu sei está aí em cima. Se a sua dúvida é outra, me conte com outras palavras — ou o Breno, do GuiaTennis, responde pelo WhatsApp, com a sua pergunta já escrita.`,
     acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] });
@@ -17389,6 +17557,8 @@ function outraPerguntaNoTema(tema, lugar) {
 // que o chat entendeu primeiro, como "Achar quadra perto"; sem assunto, a
 // primeira dúvida.
 function tituloPeloAssunto(p, pergunta) {
+  if (p.pagina) return `Onde fica ${p.pagina.t}`;
+  if (p.detPc) return `Ficha: ${p.detPc.t}`;
   if (p.det) return CHAT_DETALHES.find(d => d.id === p.det.id).t + (p.lugar ? ` em ${p.lugar}` : "");
   if (p.r.tipo === "tema" && p.r.tema.id !== "saudacao") return p.r.tema.t;
   return pergunta;
@@ -17411,8 +17581,16 @@ function enviarAoChat(texto) {
   if (solta === "obrigado" && CHAT_RESOLVEU.test(textoDoChat(pergunta))) ch.resolvida = true;
   const naoDeu = solta === "naoDeu";
   const outroAssunto = r.tipo === "tema" && r.tema.id !== ch.tema && !(naoDeu && r.tema.id === "problema" && temaAtual);
-  if (det && !(naoDeu && det.id === ch.detalhe)) { ch.erros = 0; responderDetalhe(det, lugar, p.trocas); }
+  if (p.pagina && !(naoDeu && ch.pagina === p.pagina.aba)) { ch.erros = 0; responderDirecao(p.pagina); }
+  else if (p.detPc && !(naoDeu && p.detPc.id === ch.detalhe)) { ch.erros = 0; responderDetalhePc(p.detPc); }
+  else if (det && !(naoDeu && det.id === ch.detalhe)) { ch.erros = 0; responderDetalhe(det, lugar, p.trocas); }
   else if (naoDeu && detAtual && !outroAssunto) { ch.erros = 0; seguirNoDetalhe(detAtual); }
+  // Levou a uma página e a pessoa diz que não deu: o Breno.
+  else if (naoDeu && ch.pagina && !outroAssunto) {
+    ch.esperando = "whatsapp";
+    ch.msgs.push({ de: "gt", texto: "Entendi, ainda não deu certo. O Breno, do GuiaTennis, pode ver isso com você. Quer falar com ele pelo WhatsApp? A sua dúvida já vai escrita.",
+      acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] });
+  }
   else if (r.tipo === "tema" && r.tema.id === ch.tema && r.tema.id !== "saudacao") {
     ch.erros = 0;
     if (naoDeu) seguirNoTema(r.tema); else outraPerguntaNoTema(r.tema, lugar);
@@ -17432,9 +17610,10 @@ function enviarAoChat(texto) {
   else if (r.tipo === "duvida") ch.msgs.push({ de: "gt", texto: "Você quer saber sobre:", chips: r.temas.map(t => ({ t: t.t, tema: t.id })) });
   // Não entendeu, mas a conversa é sobre a busca: pergunta o que a pessoa
   // quer achar, em vez de recomeçar pelos assuntos.
-  else if (temaAtual && temaAtual.id === "buscar" && !ch.erros) {
+  else if (temaAtual && (temaAtual.id === "buscar" || temaAtual.id === "ficha") && !ch.erros) {
     ch.erros += 1;
-    ch.msgs.push({ de: "gt", texto: "Não entendi bem essa parte. Sobre a busca, posso ajudar com:", chips: CHAT_DETALHES.map(d => ({ t: d.t, det: d.id })) });
+    ch.msgs.push({ de: "gt", texto: `Não entendi bem essa parte. Sobre ${temaAtual.id === "buscar" ? "a busca" : "a ficha"}, posso ajudar com:`,
+      chips: (temaAtual.id === "buscar" ? CHAT_DETALHES : CHAT_DETALHES_PC).map(d => ({ t: d.t, det: d.id })) });
   }
   else {
     ch.erros += 1;
@@ -17461,12 +17640,18 @@ function escolherNoChat(dado) {
     // Tocar no mesmo assunto de novo não quer dizer que não deu certo.
     if (tema.id === ch.tema) outraPerguntaNoTema(tema, ""); else { ch.detalhe = null; responderComTema(tema); }
   } else if (dado.det) {
-    const det = CHAT_DETALHES.find(d => d.id === dado.det);
+    const det = detalhePorId(dado.det);
     if (!det) return;
     ch.msgs.push({ de: "eu", texto: det.t });
     ch.ultimaPergunta = ch.ultimaPergunta || det.t;
     if (!ch.titulo) ch.titulo = det.t;
-    responderDetalhe(det, ch.lugar || "", []);
+    if (CHAT_DETALHES_PC.includes(det)) responderDetalhePc(det); else responderDetalhe(det, ch.lugar || "", []);
+  } else if (dado.pg) {
+    const pg = CHAT_PAGINAS_PC.find(p => p.aba === dado.pg);
+    if (!pg) return;
+    ch.msgs.push({ de: "eu", texto: pg.aba === "plano" && !contaAcademia ? "Planos" : pg.t });
+    if (!ch.titulo) ch.titulo = `Onde fica ${pg.t}`;
+    responderDirecao(pg);
   } else if (dado.resp === "sim") {
     ch.msgs.push({ de: "eu", texto: "Resolveu" });
     ch.msgs.push({ de: "gt", texto: "Que bom! Se precisar de mais alguma coisa, é só escrever." });
@@ -17568,7 +17753,7 @@ function renderChat() {
               ${m.acoes && m.acoes.length ? `<div class="chat-acoes">${m.acoes.map(a => a.ir === "whatsapp"
                 ? `<a class="chat-acao whats" href="${esc(linkWhatsDoChat())}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} ${esc(a.t)}</a>`
                 : `<button type="button" class="chat-acao" data-chat-ir="${esc(a.ir)}">${esc(a.t)} ${icon('chevron', 13, 'currentColor')}</button>`).join("")}</div>` : ""}
-              ${i === ultima && m.chips && m.chips.length ? `<div class="chat-chips">${m.chips.map(c => `<button type="button" class="chip small" ${c.tema ? `data-chat-tema="${esc(c.tema)}"` : c.det ? `data-chat-det="${esc(c.det)}"` : `data-chat-resp="${esc(c.resp)}"`}>${esc(c.t)}</button>`).join("")}</div>` : ""}
+              ${i === ultima && m.chips && m.chips.length ? `<div class="chat-chips">${m.chips.map(c => `<button type="button" class="chip small" ${c.tema ? `data-chat-tema="${esc(c.tema)}"` : c.det ? `data-chat-det="${esc(c.det)}"` : c.pg ? `data-chat-pg="${esc(c.pg)}"` : `data-chat-resp="${esc(c.resp)}"`}>${esc(c.t)}</button>`).join("")}</div>` : ""}
             </div>`).join("")}
         </div>
         <form class="chat-envio" id="chat-form" autocomplete="off">
@@ -17639,6 +17824,7 @@ function ligarChat() {
   if (form) form.onsubmit = (e) => { e.preventDefault(); enviarAoChat(campo ? campo.value : ""); };
   document.querySelectorAll("[data-chat-tema]").forEach(el => { el.onclick = () => escolherNoChat({ tema: el.dataset.chatTema }); });
   document.querySelectorAll("[data-chat-det]").forEach(el => { el.onclick = () => escolherNoChat({ det: el.dataset.chatDet }); });
+  document.querySelectorAll("[data-chat-pg]").forEach(el => { el.onclick = () => escolherNoChat({ pg: el.dataset.chatPg }); });
   document.querySelectorAll("[data-chat-resp]").forEach(el => { el.onclick = () => escolherNoChat({ resp: el.dataset.chatResp }); });
   document.querySelectorAll("[data-chat-ir]").forEach(el => { el.onclick = () => irPeloChat(el.dataset.chatIr); });
   document.querySelectorAll("[data-chat-abrir]").forEach(el => { el.onclick = () => abrirConversaGuardada(el.dataset.chatAbrir); });

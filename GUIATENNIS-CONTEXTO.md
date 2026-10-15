@@ -2385,7 +2385,11 @@ cobra taxa e não fica no meio** da negociação.
     página Planos, o Completo mostra as promoções "com o adicional de
     Promoções"; no Completo sem ele, Promoções mostra "Quero o adicional"
     (WhatsApp). Valor sugerido no estudo de preços (doc "GuiaTennis: estudo
-    de preços dos planos", 14/10/2026): R$ 29/mês. Ajuda, chat, Termos e
+    de preços dos planos", 14/10/2026): R$ 15/mês no preço de lançamento
+    (o Breno achou a tabela cheia cara "por agora, não temos acessos para
+    justificar"; lançamento: Completo R$ 29, Premium R$ 69, travado por 12
+    meses; tabela cheia R$ 59, R$ 149 e R$ 29 quando houver, em média, 6
+    contatos por mês por academia). Os preços ainda não aparecem no site. Ajuda, chat, Termos e
     Privacidade atualizados.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.

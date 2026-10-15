@@ -38,7 +38,7 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   }));
   ok(r.args && r.args.p_academia === 'a1' && r.args.p_id === null && r.args.p_titulo === 'Primeira aula grátis' && r.args.p_valida_ate,
     'publica com a academia, o título, os detalhes e a validade');
-  ok(r.aviso.includes('Promoção publicada') && r.aviso.includes('2 pessoas que favoritaram'), 'diz para quantas pessoas vai o aviso por e-mail — ' + r.aviso);
+  ok(r.aviso.includes('Promoção publicada') && r.aviso.includes('2 jogadores'), 'diz para quantas pessoas vai o aviso por e-mail — ' + r.aviso);
   ok(r.lista.length === 1 && /valendo/i.test(r.lista[0]) && /Válida até \d+ de [a-zç]+/.test(r.lista[0]) && r.lista[0].includes('aviso por e-mail para 2 pessoas'), 'a promoção aparece na lista, valendo — ' + r.lista[0]);
   ok(r.site.join() === 'Primeira aula grátis', 'e já aparece no site');
   await page.click('[data-promo-mudar]');
@@ -112,9 +112,9 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
     link: AVISOS_DO_LINK.promocoes || '',
   }));
   ok(r.premium.includes('Promoções na ficha e na busca, com aviso por e-mail a quem favoritou') && !/em breve/i.test(r.premium), 'o Premium mostra as promoções, sem "Em breve"');
-  ok(r.faq.includes('até 3 promoções') && r.faq.includes('90 dias') && r.faq.includes('no máximo um por semana'), 'a Ajuda explica como funcionam as promoções');
+  ok(r.faq.includes('até 3 promoções') && r.faq.includes('90 dias') && r.faq.includes('no máximo uma vez por semana') && r.faq.includes('adicional de Promoções'), 'a Ajuda explica como funcionam as promoções');
   ok(r.termos.includes('até 3 promoções ao mesmo tempo') && r.termos.includes('responde pelo que anuncia') && r.termos.includes('remover a promoção enganosa'), 'os Termos dizem quem responde pela promoção');
-  ok(r.privacidade.includes('os favoritos também servem para isso') && r.privacidade.includes('a academia não recebe o seu nome nem o seu e-mail'), 'a Privacidade explica o uso dos favoritos no aviso');
-  ok(r.aviso === 'Promoções das academias favoritas' && r.link.includes('promoções'), 'o aviso da conta e o link do e-mail falam das academias favoritas');
+  ok(r.privacidade.includes('os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso') && r.privacidade.includes('a academia não recebe o seu nome nem o seu e-mail'), 'a Privacidade explica o uso dos favoritos no aviso');
+  ok(r.aviso === 'Promoções das academias favoritas e perto de você' && r.link.includes('perto de você'), 'o aviso da conta e o link do e-mail falam das favoritas e das academias perto (regra 104)');
   await browser.close();
 })();

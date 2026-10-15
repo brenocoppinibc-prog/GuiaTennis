@@ -33,6 +33,7 @@ async function abrir(opts = {}) {
     if (o.promocoes) window.__promocoesIniciais = o.promocoes;
     if (o.semPromocoes) window.__semPromocoes = true;
     if (o.premium) window.__premium = o.premium;
+    if (o.adicional) window.__adicional = o.adicional;
     if (o.conversas) window.__conversasIniciais = o.conversas;
     if (o.semConversas) window.__semConversas = true;
     if (o.falhas) window.__falhasIniciais = o.falhas;

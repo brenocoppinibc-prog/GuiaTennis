@@ -20,8 +20,9 @@ o resumo do mês do Parceiros (20261009150000_resumo_do_mes), as falhas do
 site (20261011120000_falhas_do_site) e os avisos para toda a equipe da
 academia (20261013120000_avisos_para_toda_a_equipe,
 20261013130000_cargo_no_aviso_de_pessoa_nova e 20261013140000_acessos_nos_emails)
-o Premium nas recomendadas (20261014120000_premium_nas_recomendadas) e a
-última busca na conta (20261014130000_ultima_busca_na_conta).
+o Premium nas recomendadas (20261014120000_premium_nas_recomendadas) a
+última busca na conta (20261014130000_ultima_busca_na_conta) e o adicional de
+Promoções (20261014140000_adicional_de_promocoes).
 
 Não roda com os outros testes: precisa de um Postgres com a pasta
 supabase/ aplicada (GUIATENNIS-CONTEXTO.md, seção 6, "Banco e login
@@ -838,6 +839,37 @@ token = um(f"select token_avisos from public.jogadores where user_id = '{fa}'")
 ok(um(f"select public.parar_avisos('{token}', 'promocoes')", papel="anon") == "promocoes"
    and um(f"select promocoes::text || avisos_academias::text from public.jogadores where user_id = '{fa}'") == "falsefalse",
    "o link do e-mail desliga só as promoções")
+# 14/10/2026 (SQL 20261014140000): o adicional de Promoções no Completo, a
+# academia escolhe quando avisar e o aviso vai também para quem está perto.
+sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo = 'promocao';"
+    f"update public.academias set plano = 'completo', adicional_promocoes = false where id = '{PINHEIROS}'")
+certo, saida = salvar("Aula experimental")
+ok(not certo and "adicional" in saida, "no Completo sem o adicional, não cria promoção")
+sql(f"update public.academias set adicional_promocoes = true where id = '{PINHEIROS}'", papel="authenticated", user=dono)
+ok(um(f"select adicional_promocoes::text from public.academias where id = '{PINHEIROS}'") == "false", "a academia não liga o adicional sozinha")
+sql(f"update public.academias set adicional_promocoes = true where id = '{PINHEIROS}'")
+cidade_pin = um(f"select cidade from public.academias where id = '{PINHEIROS}'")
+perto = jogador("Paula Perto", f"paulaperto{sufixo}@exemplo.com", promocoes="true", cidade=f"'{cidade_pin}'")
+longe = jogador("Lia Longe", f"lialonge{sufixo}@exemplo.com", promocoes="true", cidade="'Fortaleza'")
+buscou = jogador("Beto Buscou", f"betobuscou{sufixo}@exemplo.com", promocoes="true", cidade="'Fortaleza'")
+lat_lng = um(f"select lat || ',' || lng from public.academias where id = '{PINHEIROS}'").split(",")
+sql(f"select public.guardar_na_conta('ultima_busca', jsonb_build_object('cidade', 'X', 'lat', {float(lat_lng[0]) + 0.05}, 'lng', {lat_lng[1]}, 'em', 1))", papel="authenticated", user=buscou)
+certo, saida = sql(f"select public.salvar_promocao('{PINHEIROS}', null, 'Aula experimental', 'Grátis', '{ate}', false)::text", papel="authenticated", user=dono)
+r3 = json.loads(saida.splitlines()[-1]) if certo else {}
+ok(certo and r3.get("aviso") == "depois" and fila("tipo = 'promocao'") == "0", "o Completo com o adicional publica; sem pedir o aviso, nenhum e-mail sai — " + saida)
+ok(um(f"select count(*) from public.promocoes where id = '{r3.get('id')}'", papel="anon") == "1", "a promoção do Completo com o adicional aparece no site")
+certo, saida = sql(f"select public.avisar_minha_promocao('{r3.get('id')}')::text", papel="authenticated", user=carla)
+ok(not certo and "não administra" in saida, "outra conta não manda o aviso")
+certo, saida = sql(f"select public.avisar_minha_promocao('{r3.get('id')}')::text", papel="authenticated", user=dono)
+paras = um("select string_agg(para, ',' order by para) from public.emails_a_enviar where tipo = 'promocao'") or ""
+ok(certo and f"paulaperto{sufixo}" in paras and f"betobuscou{sufixo}" in paras and f"lialonge{sufixo}" not in paras and f"ana{sufixo}" not in paras,
+   "avisar depois: vai para quem é da cidade da academia e para quem buscou perto; não para quem é de longe nem para quem administra — " + paras)
+htmlp = um(f"select html from public.emails_a_enviar where tipo = 'promocao' and para = 'paulaperto{sufixo}@exemplo.com'") or ""
+ok("perto de você" in htmlp and "favoritas e perto de você" in htmlp, "o e-mail de quem está perto diz \"perto de você\"")
+certo, saida = sql(f"select public.avisar_minha_promocao('{r3.get('id')}')::text", papel="authenticated", user=dono)
+ok(not certo and "já foi avisada" in saida, "cada promoção avisa uma vez")
+sql(f"update public.academias set adicional_promocoes = false where id = '{PINHEIROS}'")
+ok(um(f"select count(*) from public.promocoes where id = '{r3.get('id')}'", papel="anon") == "0", "sem o adicional, a promoção do Completo sai do site")
 sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; update public.academias set plano = '{plano_antes}' where id = '{PINHEIROS}';")
 
 # 23. Tirar a academia do guia vira pedido (SQL 20261008150000) ------------------

@@ -53,6 +53,9 @@
   };
   // window.__premium: ids das academias que começam no Premium.
   (window.__premium || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "premium"; });
+  // window.__adicional: ids das academias no Completo com o adicional de Promoções (SQL 20261014140000).
+  (window.__adicional || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) { ac.plano = "completo"; ac.adicional_promocoes = true; } });
+  const promocoesLiberadas = (ac) => !!ac && (ac.plano === "premium" || (ac.plano === "completo" && !!ac.adicional_promocoes));
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
   window.__senhas = {};
@@ -208,7 +211,7 @@
       // Política promocoes_valendo: só as valendo, de academia Premium no ar.
       if (table === "promocoes" && op === "select") {
         const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
-        const visiveis = db.promocoes.filter(x => { const ac = db.academias.find(y => y.id === x.academia_id); return ac && ac.plano === "premium" && ac.status === "published" && String(x.valida_ate) >= hoje; })
+        const visiveis = db.promocoes.filter(x => { const ac = db.academias.find(y => y.id === x.academia_id); return ac && promocoesLiberadas(ac) && ac.status === "published" && String(x.valida_ate) >= hoje; })
           .map(x => ({ id: x.id, academia_id: x.academia_id, titulo: x.titulo, detalhes: x.detalhes, valida_ate: x.valida_ate }));
         return { data: visiveis, error:null };
       }
@@ -512,7 +515,7 @@
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
       const ac = db.academias.find(y => y.id === a.p_academia);
-      if (!ac || ac.plano !== "premium") return erro("As promoções são do plano Premium.", "42501");
+      if (!promocoesLiberadas(ac)) return erro("As promoções são do plano Premium ou do Completo com o adicional de Promoções.", "42501");
       const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
       const limite = new Date(Date.now() + 90 * 86400000).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
       const titulo = String(a.p_titulo || "").trim();
@@ -525,10 +528,22 @@
         return { data: { id: p.id, aviso: null, avisados: p.avisados || 0 }, error:null };
       }
       if (db.promocoes.filter(y => y.academia_id === a.p_academia && y.valida_ate >= hoje).length >= 3) return erro("A academia já tem 3 promoções valendo. Encerre uma para criar outra.", "22023");
-      const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
-      const p = { id: "promo-" + (db.promocoes.length + 1), academia_id: a.p_academia, titulo, detalhes: String(a.p_detalhes || "").trim() || null, valida_ate: a.p_valida_ate, avisados: aviso.avisados, created_at: new Date().toISOString() };
+      window.__ultimoAvisar = a.p_avisar;
+      const aviso = a.p_avisar === false ? { aviso: "depois", avisados: 0 } : (window.__promoAviso || { aviso: "ninguem", avisados: 0 });
+      const p = { id: "promo-" + (db.promocoes.length + 1), academia_id: a.p_academia, titulo, detalhes: String(a.p_detalhes || "").trim() || null, valida_ate: a.p_valida_ate, avisados: aviso.avisados,
+        avisada_em: aviso.avisados > 0 ? new Date().toISOString() : null, created_at: new Date().toISOString() };
       db.promocoes.push(p);
       return { data: { id: p.id, aviso: aviso.aviso, avisados: aviso.avisados }, error:null };
+    }
+    if (nome === "avisar_minha_promocao") {
+      const p = db.promocoes.find(y => y.id === a.p_id);
+      if (!p) return erro("Promoção não encontrada.", "22023");
+      const x = meuAcesso();
+      if (!(x && vinculo(x.user_id, p.academia_id))) return erro("A sua conta não administra essa academia.", "42501");
+      if (p.avisada_em) return erro("Essa promoção já foi avisada por e-mail.", "22023");
+      const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
+      if (aviso.avisados > 0) Object.assign(p, { avisados: aviso.avisados, avisada_em: new Date().toISOString() });
+      return { data: { aviso: aviso.aviso, avisados: aviso.avisados }, error:null };
     }
     if (nome === "apagar_promocao") {
       const p = db.promocoes.find(y => y.id === a.p_id);

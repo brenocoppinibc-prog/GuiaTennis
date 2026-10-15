@@ -33,7 +33,11 @@ teste")
 > recomendadas" (regra 101, SQL `20261014120000_premium_nas_recomendadas`).
 > Depois: perto da última busca da conta e da cidade da conexão (regra 102,
 > SQL `20261014130000_ultima_busca_na_conta`, função `onde.mjs`) e o chat
-> como conversa (regra 103). 358 no `banco-emails.py`, nenhuma falha. Testes: **1.357 verificações (48 arquivos), nenhuma
+> como conversa (regra 103). Depois: adicional de Promoções no Completo e o
+> aviso de promoção para quem está perto (regra 104, SQL
+> `20261014140000_adicional_de_promocoes`); estudo de preços num doc do
+> Claude ("GuiaTennis: estudo de preços dos planos"). 367 no
+> `banco-emails.py`, nenhuma falha. Testes: **1.366 verificações (49 arquivos), nenhuma
 > falha** nos 47 arquivos. Este chat voltou a acompanhar o PR #5.
 
 > **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
@@ -2360,6 +2364,29 @@ cobra taxa e não fica no meio** da negociação.
     - Voltar ao mesmo assunto (escrevendo ou tocando) não repete a
       resposta; mudar de assunto sem tocar em nada é entendido e
       respondido. Um "oi" no meio da conversa responde "Pode falar".
+104. **Adicional de Promoções no Completo e o aviso para quem está perto**
+    (pedido de 14/10/2026: "quero que o plano completo possa pagar um
+    adicional para as promoções e que as notificações possam ser enviadas
+    por academias sobre promoções também"; quem recebe: "todos"; canal:
+    "por enquanto só email"). SQL `20261014140000_adicional_de_promocoes`:
+    `academias.adicional_promocoes` (o admin liga no painel, no chip
+    "Adicional de Promoções" ao lado do plano, só no Completo; a academia
+    não muda — `proteger_ficha_da_academia`); `promocoes_liberadas` =
+    Premium ou Completo com o adicional (no site, `promocoesLiberadas`).
+    O aviso (`avisar_promocao`) vai para quem ligou "Promoções das
+    academias favoritas e perto de você" e favoritou a academia **ou** está
+    perto: cidade da conta ou das preferências igual à da academia, ou
+    busca salva ou última busca a até 25 km ("todos" foi lido como esses
+    grupos: mandar para a base inteira, de qualquer cidade, seria spam).
+    Continua: e-mail confirmado, nunca quem administra, no máximo 1 aviso
+    por academia a cada 7 dias. A academia escolhe: ao publicar, a caixinha
+    "Avisar por e-mail…" (`p_avisar`); depois, "Avisar os jogadores por
+    e-mail" na promoção que ainda não avisou (`avisar_minha_promocao`). Na
+    página Planos, o Completo mostra as promoções "com o adicional de
+    Promoções"; no Completo sem ele, Promoções mostra "Quero o adicional"
+    (WhatsApp). Valor sugerido no estudo de preços (doc "GuiaTennis: estudo
+    de preços dos planos", 14/10/2026): R$ 29/mês. Ajuda, chat, Termos e
+    Privacidade atualizados.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3363,7 +3390,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce adicional-promocoes; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 ```
 

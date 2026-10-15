@@ -49,7 +49,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   t = await tela(page);
   ok(t.aba === 'planos' && t.link === '/parceiros/planos' && t.h1 === 'Planos' && !t.robots, 'Planos tem endereço próprio e entra no Google — ' + t.link);
   const tabela = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelectorAll('.pc-plano-lista li:not(.nao)').length).join());
-  ok(tabela === '8,12,20', 'cada plano mostra o que libera, um acima do outro — ' + tabela);  // + o resumo do mês (regra 87), as recomendadas (regra 101) e o adicional de Promoções no Completo (regra 104)
+  ok(tabela === '8,12,21', 'cada plano mostra o que libera, um acima do outro — ' + tabela);  // + o resumo do mês (regra 87), as recomendadas (regra 101) e os avisos por e-mail no Completo e no Premium (regra 104)
   const pessoasPorPlano = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-lista li').innerText.match(/\d+/)[0]).join());
   ok(pessoasPorPlano === '1,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
   ok(!/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e na busca'), 'Premium mostra as promoções, que já funcionam (sem "Em breve")');
@@ -57,7 +57,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(200);
   corpo = await texto(page, '#parceiros .pc-main');
   const faq = await page.evaluate(() => document.querySelectorAll('#parceiros .pc-faq details').length);
-  ok(faq === 17 && corpo.includes('E se outra pessoa estiver administrando a minha academia?') && corpo.includes('O que quer dizer "atualizada há…" na ficha?') && corpo.includes('Com duas academias, pago um plano só?') && corpo.includes('Tenho mais de uma academia. Preciso de outra conta?') && corpo.includes('Posso dar acesso a mais pessoas da academia?') && corpo.includes('A academia pode avaliar outras academias?') && corpo.includes('Esqueci a senha') && !corpo.includes('Pagar um plano'), 'Ajuda com as perguntas das academias — ' + faq);
+  ok(faq === 18 && corpo.includes('E se outra pessoa estiver administrando a minha academia?') && corpo.includes('O que quer dizer "atualizada há…" na ficha?') && corpo.includes('Com duas academias, pago um plano só?') && corpo.includes('Tenho mais de uma academia. Preciso de outra conta?') && corpo.includes('Posso dar acesso a mais pessoas da academia?') && corpo.includes('A academia pode avaliar outras academias?') && corpo.includes('Esqueci a senha') && !corpo.includes('Pagar um plano'), 'Ajuda com as perguntas das academias — ' + faq);
   const contato = await page.evaluate(() => [...document.querySelectorAll('.pc-contato a')].map(a => a.getAttribute('href').slice(0, 20)).join() + '|' + !!document.querySelector('.pc-contato [data-abrir-chat]'));
   ok(!contato.includes('https://wa.me/') && contato.includes('mailto:') && contato.endsWith('|true'), 'Ajuda tem o chat de ajuda (que leva ao WhatsApp se precisar) e o e-mail do GuiaTennis');
   await page.goBack();
@@ -466,7 +466,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     rodape: [...document.querySelectorAll('.pc-rodape a[data-pc]')].map(a => a.innerText).join(' | '),
   }));
   ok(t.h1 === 'Olá, Maria' && t.robots.includes('noindex'), 'painel cumprimenta o responsável e fica fora do Google');
-  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Promoções | Desempenho | Academias | Acessos | Plano | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
+  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Promoções | Avisos por e-mail | Desempenho | Academias | Acessos | Plano | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
   ok(!painel.barra, 'no computador, sem a barra de baixo');
   ok(!painel.rodape.includes('Cadastrar') && !painel.rodape.includes('Entrar') && painel.rodape.includes('Desempenho'), 'rodapé de quem está logado não oferece Cadastrar nem Entrar — ' + painel.rodape);
   await page.click('.pc-nav a[data-pc="desempenho"]');

@@ -37,7 +37,7 @@ teste")
 > aviso de promoção para quem está perto (regra 104, SQL
 > `20261014140000_adicional_de_promocoes`); estudo de preços num doc do
 > Claude ("GuiaTennis: estudo de preços dos planos"). 367 no
-> `banco-emails.py`, nenhuma falha. Testes: **1.366 verificações (49 arquivos), nenhuma
+> `banco-emails.py`, nenhuma falha. Testes: **1.370 verificações (49 arquivos), nenhuma
 > falha** nos 47 arquivos. Este chat voltou a acompanhar o PR #5.
 
 > **Estado (14/10/2026):** o Breno pediu que salvar a ficha passe sempre
@@ -2364,33 +2364,40 @@ cobra taxa e não fica no meio** da negociação.
     - Voltar ao mesmo assunto (escrevendo ou tocando) não repete a
       resposta; mudar de assunto sem tocar em nada é entendido e
       respondido. Um "oi" no meio da conversa responde "Pode falar".
-104. **Adicional de Promoções no Completo e o aviso para quem está perto**
-    (pedido de 14/10/2026: "quero que o plano completo possa pagar um
-    adicional para as promoções e que as notificações possam ser enviadas
-    por academias sobre promoções também"; quem recebe: "todos"; canal:
-    "por enquanto só email"). SQL `20261014140000_adicional_de_promocoes`:
-    `academias.adicional_promocoes` (o admin liga no painel, no chip
-    "Adicional de Promoções" ao lado do plano, só no Completo; a academia
-    não muda — `proteger_ficha_da_academia`); `promocoes_liberadas` =
-    Premium ou Completo com o adicional (no site, `promocoesLiberadas`).
-    O aviso (`avisar_promocao`) vai para quem ligou "Promoções das
-    academias favoritas e perto de você" e favoritou a academia **ou** está
-    perto: cidade da conta ou das preferências igual à da academia, ou
-    busca salva ou última busca a até 25 km ("todos" foi lido como esses
-    grupos: mandar para a base inteira, de qualquer cidade, seria spam).
-    Continua: e-mail confirmado, nunca quem administra, no máximo 1 aviso
-    por academia a cada 7 dias. A academia escolhe: ao publicar, a caixinha
-    "Avisar por e-mail…" (`p_avisar`); depois, "Avisar os jogadores por
-    e-mail" na promoção que ainda não avisou (`avisar_minha_promocao`). Na
-    página Planos, o Completo mostra as promoções "com o adicional de
-    Promoções"; no Completo sem ele, Promoções mostra "Quero o adicional"
-    (WhatsApp). Valor sugerido no estudo de preços (doc "GuiaTennis: estudo
-    de preços dos planos", 14/10/2026): R$ 15/mês no preço de lançamento
-    (o Breno achou a tabela cheia cara "por agora, não temos acessos para
-    justificar"; lançamento: Completo R$ 29, Premium R$ 69, travado por 12
-    meses; tabela cheia R$ 59, R$ 149 e R$ 29 quando houver, em média, 6
-    contatos por mês por academia). Os preços ainda não aparecem no site. Ajuda, chat, Termos e
-    Privacidade atualizados.
+104. **Envios de aviso pagos no Completo e no Premium; promoções só no
+    Premium** (pedidos de 14/10/2026). Primeiro veio o "adicional de
+    Promoções" no Completo (SQL `20261014140000_adicional_de_promocoes`);
+    no mesmo dia o Breno trocou: "o completo e o Premium paguem para enviar
+    notificações/email aos usuários, mas o Premium ter desconto para
+    enviar" — promoções: "só o Premium publica"; pagamento: "pacote de
+    envios antes" (como as moedas do GetNinjas). SQL
+    `20261015120000_envios_de_aviso` (tira a coluna do adicional):
+    - `academias.envios_de_aviso` = saldo. O admin soma no painel (Academias
+      › a academia: "Envios de aviso: N" com +1, +5 e −1; `somar_envios`)
+      depois do Pix; a academia não muda o próprio saldo
+      (`proteger_ficha_da_academia`), e mudar o saldo não mexe na data
+      "atualizada há…" (`dados_da_ficha`, `marcar_dados_atualizados`).
+    - Cada aviso que chega a alguém gasta 1 envio (`gastar_envio_de_aviso`);
+      se ninguém recebe, não gasta. No máximo 1 aviso por semana por
+      academia, somando avisos e promoções (`avisou_nesta_semana`).
+    - Quem recebe (`destinatarios_da_academia`): ligou "Avisos e promoções
+      das academias favoritas e perto de você" (a coluna `promocoes` de
+      sempre), confirmou o e-mail, não administra a academia, e favoritou a
+      academia ou está perto (cidade da conta ou das preferências, busca
+      salva ou última busca a até 25 km; o "todos" do Breno foi lido como
+      esses grupos).
+    - Parceiros › **Avisos por e-mail** (`/parceiros/avisos`, Completo e
+      Premium; Básico trancado): o saldo com "Comprar envios" (WhatsApp),
+      assunto (60) e mensagem (500), "Mandar o aviso" e a lista do que já
+      saiu (`enviar_aviso_da_academia`, `avisos_da_minha_academia`, tabela
+      `avisos_das_academias`, e-mail `aviso_da_academia`).
+    - Promoções (só Premium): a caixinha "Avisar por e-mail… (usa 1 envio ·
+      N envios disponíveis)"; sem envios, "compre envios"; "Avisar os
+      jogadores por e-mail" depois, se houver saldo.
+    - O valor do envio é combinado (não aparece no site); sugestão no
+      estudo de preços: ver o doc "GuiaTennis: estudo de preços dos planos".
+      Planos, Ajuda ("Como funcionam os avisos por e-mail?"), chat, Termos e
+      Privacidade atualizados.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3394,7 +3401,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce adicional-promocoes; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce envios-de-aviso; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 ```
 

@@ -53,9 +53,11 @@
   };
   // window.__premium: ids das academias que começam no Premium.
   (window.__premium || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "premium"; });
-  // window.__adicional: ids das academias no Completo com o adicional de Promoções (SQL 20261014140000).
-  (window.__adicional || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) { ac.plano = "completo"; ac.adicional_promocoes = true; } });
-  const promocoesLiberadas = (ac) => !!ac && (ac.plano === "premium" || (ac.plano === "completo" && !!ac.adicional_promocoes));
+  // window.__completo: ids das academias no Completo; window.__envios: {id: saldo} (SQL 20261015120000).
+  (window.__completo || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "completo"; });
+  Object.entries(window.__envios || {}).forEach(([id, n]) => { const ac = db.academias.find(y => y.id === id); if (ac) ac.envios_de_aviso = n; });
+  db.avisos = window.__db.avisos = [];
+  const promocoesLiberadas = (ac) => !!ac && ac.plano === "premium";
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
   window.__senhas = {};
@@ -515,7 +517,7 @@
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
       const ac = db.academias.find(y => y.id === a.p_academia);
-      if (!promocoesLiberadas(ac)) return erro("As promoções são do plano Premium ou do Completo com o adicional de Promoções.", "42501");
+      if (!promocoesLiberadas(ac)) return erro("As promoções são do plano Premium.", "42501");
       const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
       const limite = new Date(Date.now() + 90 * 86400000).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
       const titulo = String(a.p_titulo || "").trim();
@@ -529,7 +531,8 @@
       }
       if (db.promocoes.filter(y => y.academia_id === a.p_academia && y.valida_ate >= hoje).length >= 3) return erro("A academia já tem 3 promoções valendo. Encerre uma para criar outra.", "22023");
       window.__ultimoAvisar = a.p_avisar;
-      const aviso = a.p_avisar === false ? { aviso: "depois", avisados: 0 } : (window.__promoAviso || { aviso: "ninguem", avisados: 0 });
+      const aviso = a.p_avisar === false ? { aviso: "depois", avisados: 0 } : !(ac.envios_de_aviso > 0) ? { aviso: "sem_envios", avisados: 0 } : (window.__promoAviso || { aviso: "ninguem", avisados: 0 });
+      if (aviso.avisados > 0) ac.envios_de_aviso -= 1;
       const p = { id: "promo-" + (db.promocoes.length + 1), academia_id: a.p_academia, titulo, detalhes: String(a.p_detalhes || "").trim() || null, valida_ate: a.p_valida_ate, avisados: aviso.avisados,
         avisada_em: aviso.avisados > 0 ? new Date().toISOString() : null, created_at: new Date().toISOString() };
       db.promocoes.push(p);
@@ -541,9 +544,38 @@
       const x = meuAcesso();
       if (!(x && vinculo(x.user_id, p.academia_id))) return erro("A sua conta não administra essa academia.", "42501");
       if (p.avisada_em) return erro("Essa promoção já foi avisada por e-mail.", "22023");
+      const acp = db.academias.find(y => y.id === p.academia_id);
+      if (!(acp.envios_de_aviso > 0)) return erro("A academia não tem envios de aviso. Compre um pacote de envios para avisar os jogadores.", "22023");
       const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
-      if (aviso.avisados > 0) Object.assign(p, { avisados: aviso.avisados, avisada_em: new Date().toISOString() });
-      return { data: { aviso: aviso.aviso, avisados: aviso.avisados }, error:null };
+      if (aviso.avisados > 0) { Object.assign(p, { avisados: aviso.avisados, avisada_em: new Date().toISOString() }); acp.envios_de_aviso -= 1; }
+      return { data: { aviso: aviso.aviso, avisados: aviso.avisados, saldo: acp.envios_de_aviso }, error:null };
+    }
+    // Avisos por e-mail (SQL 20261015120000).
+    if (nome === "avisos_da_minha_academia") {
+      const x = meuAcesso();
+      if (!souAdmin() && !(x && vinculo(x.user_id, a.p_academia))) return { data:null, error:null };
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      const lista = db.avisos.filter(y => y.academia_id === a.p_academia).sort((p, q) => String(q.created_at).localeCompare(String(p.created_at)));
+      const semana = lista.some(y => y.avisados > 0 && Date.now() - new Date(y.created_at) < 7 * 86400000);
+      return { data: { saldo: ac.envios_de_aviso || 0, avisos: lista, semana }, error:null };
+    }
+    if (nome === "enviar_aviso_da_academia") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("Os avisos por e-mail são do Completo e do Premium.", "42501");
+      if (!(ac.envios_de_aviso > 0)) return erro("A academia não tem envios de aviso. Compre um pacote de envios para avisar os jogadores.", "22023");
+      const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
+      const novo = { id: "aviso-" + (db.avisos.length + 1), academia_id: a.p_academia, titulo: a.p_titulo, mensagem: a.p_mensagem, avisados: aviso.avisados, created_at: new Date().toISOString() };
+      db.avisos.push(novo);
+      if (aviso.avisados > 0) ac.envios_de_aviso -= 1;
+      return { data: { id: novo.id, aviso: aviso.aviso, avisados: aviso.avisados, saldo: ac.envios_de_aviso }, error:null };
+    }
+    if (nome === "somar_envios") {
+      if (!souAdmin()) return erro("Só o admin muda os envios.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      ac.envios_de_aviso = Math.max(0, (ac.envios_de_aviso || 0) + Number(a.p_quantos || 0));
+      return { data: ac.envios_de_aviso, error:null };
     }
     if (nome === "apagar_promocao") {
       const p = db.promocoes.find(y => y.id === a.p_id);

@@ -15,11 +15,11 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   let corpo = await texto(page, '#parceiros .pc-main');
   ok(corpo.includes('Promoções') && corpo.includes('Disponível no plano Premium') && !(await page.$('#pc-promo-titulo')), 'fora do Premium: a página mostra o que é e "Disponível no plano Premium"');
   const menu = await page.evaluate(() => PC_MENU_LOGADO.map(x => x.t).join(','));
-  ok(menu.includes('Avaliações,Promoções,Desempenho'), 'Promoções no menu do Parceiros, depois de Avaliações');
+  ok(menu.includes('Avaliações,Promoções,Avisos por e-mail,Desempenho'), 'Promoções no menu do Parceiros, depois de Avaliações');
   await browser.close();
 
   // ---- Premium: publicar, mudar, encerrar ----
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'] }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'], envios: { a1: 3 } }));
   await page.waitForTimeout(400);
   ok(await page.isVisible('#pc-promo-titulo') && (await page.inputValue('#pc-promo-ate')) === dia(30), 'Premium: o formulário, valendo 30 dias de saída');
   await page.click('#pc-promo-salvar');
@@ -111,10 +111,10 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
     aviso: AVISOS_JOGADOR.find(x => x.campo === 'promocoes').t,
     link: AVISOS_DO_LINK.promocoes || '',
   }));
-  ok(r.premium.includes('Promoções na ficha e na busca, com aviso por e-mail a quem favoritou') && !/em breve/i.test(r.premium), 'o Premium mostra as promoções, sem "Em breve"');
-  ok(r.faq.includes('até 3 promoções') && r.faq.includes('90 dias') && r.faq.includes('no máximo uma vez por semana') && r.faq.includes('adicional de Promoções'), 'a Ajuda explica como funcionam as promoções');
+  ok(r.premium.includes('Promoções na ficha e na busca') && !/em breve/i.test(r.premium), 'o Premium mostra as promoções, sem "Em breve"');
+  ok(r.faq.includes('até 3 promoções') && r.faq.includes('90 dias') && r.faq.includes('gasta 1 envio'), 'a Ajuda explica como funcionam as promoções');
   ok(r.termos.includes('até 3 promoções ao mesmo tempo') && r.termos.includes('responde pelo que anuncia') && r.termos.includes('remover a promoção enganosa'), 'os Termos dizem quem responde pela promoção');
   ok(r.privacidade.includes('os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso') && r.privacidade.includes('a academia não recebe o seu nome nem o seu e-mail'), 'a Privacidade explica o uso dos favoritos no aviso');
-  ok(r.aviso === 'Promoções das academias favoritas e perto de você' && r.link.includes('perto de você'), 'o aviso da conta e o link do e-mail falam das favoritas e das academias perto (regra 104)');
+  ok(r.aviso === 'Avisos e promoções das academias favoritas e perto de você' && r.link.includes('perto de você'), 'o aviso da conta e o link do e-mail falam das favoritas e das academias perto (regra 104)');
   await browser.close();
 })();

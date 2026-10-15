@@ -778,7 +778,8 @@ salvar = lambda titulo, user=dono, academia=PINHEIROS, pid="null", detalhes="Na 
     f"select public.salvar_promocao('{academia}', {pid}, '{titulo}', '{detalhes}', '{validade or ate}')::text", papel="authenticated", user=user)
 certo, saida = salvar("Primeira aula grátis")
 ok(not certo and "plano Premium" in saida, "fora do Premium, não cria promoção")
-sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
+# Desde 14/10/2026 (SQL 20261015120000), cada aviso por e-mail gasta 1 envio comprado.
+sql(f"update public.academias set plano = 'premium', envios_de_aviso = 3 where id = '{PINHEIROS}'")
 fa = jogador("Fabi Fã", f"fabi{sufixo}@exemplo.com", promocoes="true")
 sem_promo = jogador("Gil Sem Promo", f"gil{sufixo}@exemplo.com")
 nao_conf = jogador("Ivo Não Confirmou", f"ivo{sufixo}@exemplo.com", confirmado=False, promocoes="true")
@@ -839,37 +840,62 @@ token = um(f"select token_avisos from public.jogadores where user_id = '{fa}'")
 ok(um(f"select public.parar_avisos('{token}', 'promocoes')", papel="anon") == "promocoes"
    and um(f"select promocoes::text || avisos_academias::text from public.jogadores where user_id = '{fa}'") == "falsefalse",
    "o link do e-mail desliga só as promoções")
-# 14/10/2026 (SQL 20261014140000): o adicional de Promoções no Completo, a
-# academia escolhe quando avisar e o aviso vai também para quem está perto.
-sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo = 'promocao';"
-    f"update public.academias set plano = 'completo', adicional_promocoes = false where id = '{PINHEIROS}'")
+# 14/10/2026 (SQL 20261015120000): envios de aviso pagos no Completo e no
+# Premium; só o Premium publica promoções; o aviso vai também para quem está perto.
+sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo in ('promocao', 'aviso_da_academia');"
+    f"delete from public.avisos_das_academias where academia_id = '{PINHEIROS}';"
+    f"update public.academias set plano = 'completo', envios_de_aviso = 0 where id = '{PINHEIROS}'")
 certo, saida = salvar("Aula experimental")
-ok(not certo and "adicional" in saida, "no Completo sem o adicional, não cria promoção")
-sql(f"update public.academias set adicional_promocoes = true where id = '{PINHEIROS}'", papel="authenticated", user=dono)
-ok(um(f"select adicional_promocoes::text from public.academias where id = '{PINHEIROS}'") == "false", "a academia não liga o adicional sozinha")
-sql(f"update public.academias set adicional_promocoes = true where id = '{PINHEIROS}'")
+ok(not certo and "plano Premium" in saida, "o Completo não publica promoção: só o Premium")
+saldo = lambda: um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'")
+enviar = lambda titulo="Turma nova aos sábados", msg="Abrimos uma turma para iniciantes aos sábados, às 9h.", user=dono: sql(
+    f"select public.enviar_aviso_da_academia('{PINHEIROS}', '{titulo}', '{msg}')::text", papel="authenticated", user=user)
+certo, saida = enviar()
+ok(not certo and "não tem envios" in saida, "sem envios, a academia não manda aviso")
+sql(f"update public.academias set envios_de_aviso = 5 where id = '{PINHEIROS}'", papel="authenticated", user=dono)
+ok(saldo() == "0", "a academia não muda o próprio saldo de envios")
+certo, saida = sql(f"select public.somar_envios('{PINHEIROS}', 2)", papel="authenticated", user=dono)
+ok(not certo and "Só o admin" in saida, "só o admin soma envios")
+data_antes = um(f"select dados_atualizados_em from public.academias where id = '{PINHEIROS}'")
+ok(um(f"select public.somar_envios('{PINHEIROS}', 2)", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN) == "2"
+   and um(f"select dados_atualizados_em from public.academias where id = '{PINHEIROS}'") == data_antes,
+   "o admin soma 2 envios, e a ficha não muda a data de atualizada")
 cidade_pin = um(f"select cidade from public.academias where id = '{PINHEIROS}'")
 perto = jogador("Paula Perto", f"paulaperto{sufixo}@exemplo.com", promocoes="true", cidade=f"'{cidade_pin}'")
 longe = jogador("Lia Longe", f"lialonge{sufixo}@exemplo.com", promocoes="true", cidade="'Fortaleza'")
 buscou = jogador("Beto Buscou", f"betobuscou{sufixo}@exemplo.com", promocoes="true", cidade="'Fortaleza'")
 lat_lng = um(f"select lat || ',' || lng from public.academias where id = '{PINHEIROS}'").split(",")
 sql(f"select public.guardar_na_conta('ultima_busca', jsonb_build_object('cidade', 'X', 'lat', {float(lat_lng[0]) + 0.05}, 'lng', {lat_lng[1]}, 'em', 1))", papel="authenticated", user=buscou)
-certo, saida = sql(f"select public.salvar_promocao('{PINHEIROS}', null, 'Aula experimental', 'Grátis', '{ate}', false)::text", papel="authenticated", user=dono)
-r3 = json.loads(saida.splitlines()[-1]) if certo else {}
-ok(certo and r3.get("aviso") == "depois" and fila("tipo = 'promocao'") == "0", "o Completo com o adicional publica; sem pedir o aviso, nenhum e-mail sai — " + saida)
-ok(um(f"select count(*) from public.promocoes where id = '{r3.get('id')}'", papel="anon") == "1", "a promoção do Completo com o adicional aparece no site")
-certo, saida = sql(f"select public.avisar_minha_promocao('{r3.get('id')}')::text", papel="authenticated", user=carla)
-ok(not certo and "não administra" in saida, "outra conta não manda o aviso")
-certo, saida = sql(f"select public.avisar_minha_promocao('{r3.get('id')}')::text", papel="authenticated", user=dono)
-paras = um("select string_agg(para, ',' order by para) from public.emails_a_enviar where tipo = 'promocao'") or ""
-ok(certo and f"paulaperto{sufixo}" in paras and f"betobuscou{sufixo}" in paras and f"lialonge{sufixo}" not in paras and f"ana{sufixo}" not in paras,
-   "avisar depois: vai para quem é da cidade da academia e para quem buscou perto; não para quem é de longe nem para quem administra — " + paras)
-htmlp = um(f"select html from public.emails_a_enviar where tipo = 'promocao' and para = 'paulaperto{sufixo}@exemplo.com'") or ""
-ok("perto de você" in htmlp and "favoritas e perto de você" in htmlp, "o e-mail de quem está perto diz \"perto de você\"")
-certo, saida = sql(f"select public.avisar_minha_promocao('{r3.get('id')}')::text", papel="authenticated", user=dono)
-ok(not certo and "já foi avisada" in saida, "cada promoção avisa uma vez")
-sql(f"update public.academias set adicional_promocoes = false where id = '{PINHEIROS}'")
-ok(um(f"select count(*) from public.promocoes where id = '{r3.get('id')}'", papel="anon") == "0", "sem o adicional, a promoção do Completo sai do site")
+certo, saida = enviar(user=carla)
+ok(not certo and "não administra" in saida, "outra conta não manda aviso pela academia")
+certo, saida = enviar(msg="curta")
+ok(not certo and "10 a 500" in saida, "mensagem curta demais é recusada")
+certo, saida = enviar()
+r4 = json.loads(saida.splitlines()[-1]) if certo else {}
+paras = um("select string_agg(para, ',' order by para) from public.emails_a_enviar where tipo = 'aviso_da_academia'") or ""
+ok(certo and r4.get("aviso") == "enviado" and r4.get("saldo") == 1 and saldo() == "1", "o Completo manda o aviso e gasta 1 envio — " + saida)
+ok(f"paulaperto{sufixo}" in paras and f"betobuscou{sufixo}" in paras and f"lialonge{sufixo}" not in paras and f"ana{sufixo}" not in paras,
+   "vai para quem é da cidade da academia e para quem buscou perto; não para quem é de longe nem para quem administra — " + paras)
+htmla = um(f"select html from public.emails_a_enviar where tipo = 'aviso_da_academia' and para = 'paulaperto{sufixo}@exemplo.com'") or ""
+ok("Turma nova aos sábados" in htmla and "perto de você" in htmla and "mandou um aviso" in htmla and "aviso=promocoes" in htmla,
+   "o e-mail traz o aviso, diz \"perto de você\" e tem o link para parar")
+certo, saida = enviar("Outro aviso")
+r5 = json.loads(saida.splitlines()[-1]) if certo else {}
+ok(certo and r5.get("aviso") == "semana" and saldo() == "1", "no máximo 1 aviso por semana: o segundo não sai nem gasta envio")
+lista = json.loads(um(f"select public.avisos_da_minha_academia('{PINHEIROS}')::text", papel="authenticated", user=dono) or "{}")
+ok(lista.get("saldo") == 1 and len(lista.get("avisos", [])) == 1 and lista["avisos"][0]["avisados"] >= 2 and lista.get("semana") is True,
+   "a academia vê o saldo, os avisos mandados e que já avisou nesta semana")
+ok(um(f"select public.avisos_da_minha_academia('{PINHEIROS}')::text", papel="authenticated", user=carla) in (None, "", "null"), "outra conta não vê os avisos da academia")
+# Premium: a promoção também gasta 1 envio (com desconto no preço, combinado à parte).
+sql(f"delete from public.avisos_das_academias where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo in ('promocao', 'aviso_da_academia');"
+    f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
+certo, saida = sql(f"select public.salvar_promocao('{PINHEIROS}', null, 'Aula experimental', 'Grátis', '{ate}', true)::text", papel="authenticated", user=dono)
+r6 = json.loads(saida.splitlines()[-1]) if certo else {}
+ok(certo and r6.get("aviso") == "enviado" and saldo() == "0", "Premium: a promoção avisa e gasta o último envio — " + saida)
+certo, saida = sql(f"select public.salvar_promocao('{PINHEIROS}', null, 'Outra', 'Sem envio', '{ate}', false)::text", papel="authenticated", user=dono)
+r7 = json.loads(saida.splitlines()[-1]) if certo else {}
+certo, saida = sql(f"select public.avisar_minha_promocao('{r7.get('id')}')::text", papel="authenticated", user=dono)
+ok(not certo and "não tem envios" in saida, "sem envios, avisar depois pede para comprar um pacote")
 sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; update public.academias set plano = '{plano_antes}' where id = '{PINHEIROS}';")
 
 # 23. Tirar a academia do guia vira pedido (SQL 20261008150000) ------------------

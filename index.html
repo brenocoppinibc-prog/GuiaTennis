@@ -1954,6 +1954,18 @@
   .chat-barra { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; background: var(--card); border-bottom: 1px solid var(--border); }
   .chat-barra-bt { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--green-line); border-radius: 999px; background: var(--card); color: var(--green); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .chat-barra-bt:hover { background: var(--green-soft); }
+  /* Abas do chat (15/10/2026): a conversa, as guardadas e o status. */
+  .chat-abas { display: flex; align-items: center; gap: 4px; padding: 6px 10px 0; background: var(--card); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .chat-aba { display: inline-flex; align-items: center; gap: 6px; padding: 9px 10px 10px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .chat-aba.on { color: var(--green); border-bottom-color: var(--green); }
+  .chat-abas .chat-barra-bt { margin-left: auto; padding: 5px 10px; font-size: 13px; }
+  .chat-status { display: flex; align-items: center; gap: 8px; padding: 7px 14px; background: var(--card); border-bottom: 1px solid var(--border); font-size: 13px; }
+  .chat-status-titulo { flex: 1; min-width: 0; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-status-t { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 999px; background: var(--bg-alt); color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .chat-status-t.ok { background: var(--green-soft); color: var(--green); }
+  .chat-status-bt { padding: 0; border: 0; background: none; color: var(--green); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+  .chat-filtro { display: flex; gap: 6px; flex-shrink: 0; }
+  .chat-conversa-s .ok { color: var(--green); font-weight: 600; }
   .chat-nova-grande { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border: 0; border-radius: 12px; background: var(--green); color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
   .chat-conversas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
   .chat-conversa { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: 12px; background: var(--card); overflow: hidden; }
@@ -7175,22 +7187,35 @@ function pontosDaFicha(c) {
 // Com um ponto (a última busca, as preferências ou a cidade aproximada —
 // pontoDaHome), vêm antes as que ficam perto dele (pedido de 14/10/2026);
 // "evitar" são as que já aparecem no bloco de cima, para não repetir.
-function recomendadasGuia(todas, ponto, evitar) {
-  const km = (c) => ponto && typeof c.lat === "number" && typeof c.lng === "number"
+// Desde 15/10/2026 (pedido do Breno: "as academias no completo também podem
+// aparecer nas recomendadas quanto mais preenchidas… o mais próximo da
+// localização possível"): depois das Premium vêm as do Completo, da ficha
+// mais completa para a menos completa; com um ponto, cada grupo começa pelas
+// que ficam perto dele, como o "Recomendado" do Booking.
+function ehCompletoNoGuia(c) {
+  return !!c && c.plano === "completo" && !!c.confirmada;
+}
+function kmDoPonto(ponto, c) {
+  return ponto && typeof c.lat === "number" && typeof c.lng === "number"
     ? haversineKm(ponto.lat, ponto.lng, c.lat, c.lng)
     : (typeof c.distanceKm === "number" && isFinite(c.distanceKm) ? c.distanceKm : null);
+}
+function recomendadasGuia(todas, ponto, evitar) {
+  const km = (c) => kmDoPonto(ponto, c);
   const perto = (c) => { const d = km(c); return ponto ? d !== null && d <= PARECIDAS_RAIO_KM : true; };
+  const porKm = (a, b) => (km(a) !== null && km(b) !== null ? km(a) - km(b) : 0);
   const nota = (c) => (c.appCount ? c.appAvg * 10 + Math.min(c.appCount, 20) : 0) + pontosDaFicha(c);
-  const porNota = (a, b) => nota(b) - nota(a);
-  const premium = todas.filter(ehPremium).sort((a, b) =>
-    (km(a) !== null && km(b) !== null ? km(a) - km(b) : 0) || porNota(a, b));
-  const aDedo = RECOMENDADAS.map(id => todas.find(c => c.id === id)).filter(c => c && !ehPremium(c));
-  const ja = new Set([...premium, ...aDedo].map(c => c.id));
+  const porNota = (a, b) => (nota(b) - nota(a)) || porKm(a, b);
+  const premium = todas.filter(ehPremium).sort((a, b) => porKm(a, b) || porNota(a, b));
+  const completo = todas.filter(c => ehCompletoNoGuia(c) && !(evitar && evitar.has(c.id)))
+    .sort((a, b) => (pontosDaFicha(b) - pontosDaFicha(a)) || porKm(a, b));
+  const aDedo = RECOMENDADAS.map(id => todas.find(c => c.id === id)).filter(c => c && !ehPremium(c) && !ehCompletoNoGuia(c));
+  const ja = new Set([...premium, ...completo, ...aDedo].map(c => c.id));
   const resto = todas.filter(c => !ja.has(c.id) && !(evitar && evitar.has(c.id)));
   return [
-    ...premium.filter(perto), ...aDedo,
+    ...premium.filter(perto), ...completo.filter(perto), ...aDedo,
     ...resto.filter(perto).sort(porNota),
-    ...premium.filter(c => !perto(c)),
+    ...premium.filter(c => !perto(c)), ...completo.filter(c => !perto(c)),
     ...resto.filter(c => !perto(c)).sort(porNota),
   ].slice(0, VAGAS_RECOMENDADAS);
 }
@@ -7319,7 +7344,9 @@ const PC_RECURSOS = [
   { t: "Selo Premium dourado ao lado do nome", p: ["premium"], selo: true },
   { t: "No topo da busca da região, marcada como \"Patrocinado\"", p: ["premium"] },
   // Pedido de 14/10/2026 (regra 101).
-  { t: "Entre as \"Academias recomendadas\" da página inicial", p: ["premium"] },
+  // Pedido de 15/10/2026: o Completo também entra, pela ficha mais completa.
+  { t: "Entre as \"Academias recomendadas\" da página inicial, quanto mais completa a ficha", p: ["completo", "premium"] },
+  { t: "Primeiro entre as recomendadas, marcada como \"Patrocinado\"", p: ["premium"] },
   // Pedido de 08/10/2026: as promoções saíram do "Em breve".
   { t: "Promoções na ficha e na busca", p: ["premium"] },
   // Regra 104: avisos por e-mail pagos por envio, mais baratos no Premium.
@@ -7350,7 +7377,7 @@ function itensDaFicha(c) {
 
 function perguntasParceiros() {
   return [
-    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe. O Premium ganha o selo dourado, aparece no topo da busca da região, marcado como \"Patrocinado\", e entre as \"Academias recomendadas\" da página inicial, e mostra os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
+    { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe e entra entre as \"Academias recomendadas\" da página inicial, quanto mais completa a ficha. O Premium ganha o selo dourado, aparece no topo da busca da região, marcado como \"Patrocinado\", e entre as \"Academias recomendadas\" da página inicial, e mostra os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
     { q: "Minha academia já aparece no guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia, marque a declaração e toque em \"Administrar esta academia\": com o e-mail confirmado, a ficha passa a ser sua na hora, e o GuiaTennis confere depois. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode incluir você diretamente em Acessos." },
     { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\". Na disputa, um código de 6 números vai na hora para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto. Com o seu e-mail confirmado, a academia entra no ar na hora e você já administra a ficha; o GuiaTennis confere depois." },
@@ -10242,7 +10269,20 @@ function lerViagens() {
     .filter(v => v && v.cidade && (!v.volta || v.volta >= hoje))
     .sort((a, b) => (a.ida || "9999").localeCompare(b.ida || "9999"));
 }
-function gravarViagens(lista) { gravarNaConta("viagens", lista); }
+// As viagens que já acabaram ficam guardadas (as 3 do último ano) para a
+// home lembrar delas (pedido de 15/10/2026).
+function viagensFeitas() {
+  const lista = lerDaConta("viagens", []);
+  const hoje = diaISO(), umAno = somarDias(hoje, -365);
+  return (Array.isArray(lista) ? lista : [])
+    .filter(v => v && v.cidade && v.volta && v.volta < hoje && v.volta >= umAno)
+    .sort((a, b) => b.volta.localeCompare(a.volta))
+    .slice(0, 3);
+}
+function gravarViagens(lista) {
+  const ids = new Set(lista.map(v => String(v.id)));
+  gravarNaConta("viagens", [...viagensFeitas().filter(v => !ids.has(String(v.id))), ...lista]);
+}
 // Com data: já começou e não acabou. Sem data: não conta como "viajando".
 function viajandoAgora() {
   const hoje = diaISO();
@@ -10532,6 +10572,38 @@ function cartaoViagem() {
         <button type="button" class="cta-btn cta-primary" data-viagem-ver="${esc(String(v.id))}">Ver quadras</button>
         <button type="button" class="pc-link-btn" data-viagem-editar="${esc(String(v.id))}">${v.ficar ? "Editar" : "Adicionar o hotel"}</button>
       </div>
+    </div>`;
+}
+
+// A viagem na home, com a conta (pedido do Breno em 15/10/2026: "se já fez
+// uma viagem e marcou alguma viagem aparecer uma seção sobre isso também, só
+// quando já tiver a conta"), como o "Sua próxima viagem" e o "Voltar a…" do
+// Booking e do Airbnb: as academias da cidade da viagem marcada, da mais
+// perto do hotel para a mais longe; sem viagem marcada, as da última viagem
+// do último ano.
+function blocoViagemDaConta(todas) {
+  if (!jogador || isAdmin) return "";
+  const proxima = lerViagens()[0] || null;
+  const v = proxima || viagensFeitas()[0];
+  if (!v) return "";
+  const hotel = Number.isFinite(v.lat) && Number.isFinite(v.lng) ? { lat: v.lat, lng: v.lng } : null;
+  const nota = (c) => (c.appCount ? c.appAvg * 10 + Math.min(c.appCount, 20) : 0) + pontosDaFicha(c);
+  const lista = todas.filter(c => mesmaCidade(c.cidade, v.cidade))
+    .sort((a, b) => hotel ? (kmDoPonto(hotel, a) ?? Infinity) - (kmDoPonto(hotel, b) ?? Infinity) : nota(b) - nota(a))
+    .slice(0, 8);
+  if (!lista.length) return "";
+  const quando = textoDaViagem(v);
+  const titulo = proxima ? `Para a sua viagem a ${v.cidade}` : `Vai voltar a ${v.cidade}?`;
+  const sub = proxima
+    ? `${quando ? `${quando[0].toUpperCase()}${quando.slice(1)} · ` : ""}${hotel ? "da mais perto do seu hotel para a mais longe" : `as academias de ${v.cidade}`}.`
+    : `Da sua viagem${quando ? ` de ${quando}` : ""}. As academias de lá continuam aqui.`;
+  return `
+    <div class="home-sec" id="home-viagem">
+      <h3 class="display">${esc(titulo)}</h3>
+      <p class="city-note">${esc(sub)}</p>
+      <div class="home-strip">${lista.map(c => renderMini(c)).join("")}</div>
+      ${proxima ? `<button type="button" class="ver-todas" data-viagem-ver="${esc(String(v.id))}">Ver as quadras da viagem ›</button>`
+        : `<a class="cidade-link" href="${caminhoDaRegiao({ cidade: v.cidade })}" data-regiao-link data-cidade="${esc(v.cidade)}">Ver as academias de ${esc(v.cidade)} ›</a>`}
     </div>`;
 }
 
@@ -12475,11 +12547,16 @@ function renderHome() {
   const ultima = lerUltimaBusca();
   if (!pontoDaHome(ultima, pref)) setTimeout(buscarOndeAproximado, 0);
   const parecidas = academiasParecidas(todas, ultima, recentes);
-  const recomendadas = recomendadasGuia(todas, pontoDaHome(ultima, pref), new Set(parecidas ? parecidas.lista.map(x => x.c.id) : []));
+  const ponto = pontoDaHome(ultima, pref);
+  const recomendadas = recomendadasGuia(todas, ponto, new Set(parecidas ? parecidas.lista.map(x => x.c.id) : []));
   const jaRecomendada = new Set(recomendadas.map(c => c.id));
+  // Cada seção começa pelas academias mais perto do ponto (pedido de
+  // 15/10/2026: "o mais próximo da localização possível").
+  const kmDaHome = (c) => { const d = kmDoPonto(ponto, c); return d === null ? Infinity : d; };
+  const pertoDaHome = (c) => !ponto || kmDaHome(c) <= PARECIDAS_RAIO_KM;
   const melhores = [...todas]
     .filter(c => c.appCount > 0 && !jaRecomendada.has(c.id))
-    .sort((a, b) => (b.appAvg - a.appAvg) || (b.appCount - a.appCount))
+    .sort((a, b) => (pertoDaHome(b) - pertoDaHome(a)) || (b.appAvg - a.appAvg) || (b.appCount - a.appCount))
     .slice(0, 8);
   const cidades = cidadesComQuadra();
   const cidadeAtiva = cidades.find(c => c.nome === state.homeCity)
@@ -12508,6 +12585,7 @@ function renderHome() {
     ${blocoVistas(recentes, ultima)}
     ${blocoParecidas(parecidas)}
     ${blocoChamadas(chamadas)}
+    ${blocoViagemDaConta(todas)}
 
     ${recomendadas.length ? `
       <div class="home-sec" id="home-recomendadas">
@@ -12523,7 +12601,7 @@ function renderHome() {
           ${cidades.map(c => `<button type="button" class="city-tab ${c.nome === cidadeAtiva.nome ? "on" : ""}" data-city="${esc(c.nome)}">${esc(c.nome)}</button>`).join("")}
         </div>
         <p class="city-note">${cidadeAtiva.courts.length} ${plural(cidadeAtiva.courts.length, "academia cadastrada", "academias cadastradas")}${faixaCidade(cidadeAtiva.courts) ? ` · ${faixaCidade(cidadeAtiva.courts)}` : ""}.</p>
-        <div class="home-strip">${cidadeAtiva.courts.slice(0, 8).map(c => renderMini(decorate(c))).join("")}</div>
+        <div class="home-strip">${(ponto ? [...cidadeAtiva.courts].sort((a, b) => kmDaHome(a) - kmDaHome(b)) : cidadeAtiva.courts).slice(0, 8).map(c => renderMini(decorate(c))).join("")}</div>
         <a class="cidade-link" href="${caminhoDaRegiao({ cidade: cidadeAtiva.nome })}" data-regiao-link data-cidade="${esc(cidadeAtiva.nome)}">Ver as academias de ${esc(cidadeAtiva.nome)} ›</a>
       </div>` : ""}
 
@@ -16556,7 +16634,7 @@ function conteudoDasEstatisticas() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 14 de outubro de 2026</p>
+<p class="footnote">Última atualização: 15 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -16564,7 +16642,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. Tirar a academia do guia é um pedido do responsável principal, feito no GuiaTennis Parceiros (Suas academias › Pedir para tirar do guia): o GuiaTennis confere quem pediu e responde por e-mail; tirada do guia, a ficha é apagada, com as avaliações. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa. No plano Premium, a academia também pode divulgar até 3 promoções ao mesmo tempo, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode mandar avisos e promoções por e-mail a quem pediu esses avisos e favoritou a academia ou está perto dela, no máximo uma vez por semana. Cada aviso que chega a alguém gasta 1 envio, comprado antes em pacotes (o valor é combinado com o GuiaTennis e é menor no Premium). A academia responde pelo que escreve no aviso, e o GuiaTennis pode suspender os envios de quem mandar aviso enganoso ou fora do assunto.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. Tirar a academia do guia é um pedido do responsável principal, feito no GuiaTennis Parceiros (Suas academias › Pedir para tirar do guia): o GuiaTennis confere quem pediu e responde por e-mail; tirada do guia, a ficha é apagada, com as avaliações. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar até 3 promoções ao mesmo tempo, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode mandar avisos e promoções por e-mail a quem pediu esses avisos e favoritou a academia ou está perto dela, no máximo uma vez por semana. Cada aviso que chega a alguém gasta 1 envio, comprado antes em pacotes (o valor é combinado com o GuiaTennis e é menor no Premium). A academia responde pelo que escreve no aviso, e o GuiaTennis pode suspender os envios de quem mandar aviso enganoso ou fora do assunto.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, avisos e promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -16585,9 +16663,9 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 14 de outubro de 2026</p>
+<p class="footnote">Última atualização: 15 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> no site dos jogadores, e no GuiaTennis Parceiros sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. No GuiaTennis Parceiros, com a sua conta aberta, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat e quando), para você ver o histórico em "Conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos e promoções das academias, os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso: quando uma academia favorita ou perto de você manda um aviso ou uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. Com a sua conta aberta, no site dos jogadores e no GuiaTennis Parceiros, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat, o título, se está em aberto ou resolvida e quando), para você ver o histórico em "Suas conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes de cada site; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos e promoções das academias, os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso: quando uma academia favorita ou perto de você manda um aviso ou uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e mandar o resumo do mês por e-mail (no plano Premium, o relatório completo). As pessoas da mesma academia veem o nome, o cargo e o e-mail umas das outras. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso, pessoa nova com acesso à academia (com o nome, o cargo e o e-mail dela), mudança de plano (com o que muda), a resposta do pedido para tirar a academia do guia, pedido aceito, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha (de novo a cada 3 meses enquanto ela continuar igual) e, no começo de cada mês, o resumo dos números da academia no mês anterior; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -16651,7 +16729,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Suas academias", ir: "pc:academias" }] },
   { id: "planos", onde: "parceiros", t: "Planos e preços",
     p: ["plano", "preco", "valor", "quanto custa", "quanto e", "premium", "completo", "basico", "pagar", "pagamento", "mensalidade", "assinatura", "gratis", "gratuito"],
-    r: "O Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira, para até 5 pessoas da equipe. O Premium tem o selo dourado, aparece no topo da busca como \"Patrocinado\" e entre as recomendadas da página inicial, divulga promoções e mostra os números da ficha. O valor do Completo e do Premium é combinado com o GuiaTennis, e nada é cobrado sem a academia confirmar.",
+    r: "O Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira, para até 5 pessoas da equipe, e entra entre as \"Academias recomendadas\", quanto mais completa a ficha. O Premium tem o selo dourado, aparece no topo da busca como \"Patrocinado\" e entre as recomendadas da página inicial, divulga promoções e mostra os números da ficha. O valor do Completo e do Premium é combinado com o GuiaTennis, e nada é cobrado sem a academia confirmar.",
     a: [{ t: "Ver os planos", ir: "pc:planos" }, { t: "Combinar o valor no WhatsApp", ir: "whatsapp" }] },
   { id: "comissao", onde: "parceiros", t: "Comissão",
     p: ["comissao", "taxa", "porcentagem", "intermedi", "repasse", "cobra", "cobram", "cobrado"],
@@ -16675,7 +16753,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Abrir Avisos por e-mail", ir: "pc:avisos" }] },
   { id: "topo", onde: "parceiros", t: "Aparecer primeiro na busca",
     p: ["patrocin", "primeiro", "primeiro lugar", "aparecer primeiro", "apareco em primeiro", "topo", "destaque", "ranking", "posicao", "subir na busca", "ordem da busca", "mais visto"],
-    r: "As academias Premium podem aparecer no topo da busca, marcadas como \"Patrocinado\": no máximo duas por busca, perto de onde o jogador procurou. Abaixo delas, a lista segue a ordem que o jogador escolheu, que nenhum plano muda. Na página inicial, as Premium também aparecem primeiro entre as \"Academias recomendadas\".",
+    r: "As academias Premium podem aparecer no topo da busca, marcadas como \"Patrocinado\": no máximo duas por busca, perto de onde o jogador procurou. Abaixo delas, a lista segue a ordem que o jogador escolheu, que nenhum plano muda. Na página inicial, as Premium também aparecem primeiro entre as \"Academias recomendadas\"; depois vêm as do Completo, da ficha mais completa para a menos completa, sempre antes as perto de quem procura.",
     a: [{ t: "Ver o Premium", ir: "pc:planos" }] },
   { id: "selo", onde: "todos", t: "Os selos ao lado do nome",
     p: ["selo", "verificad", "verificac", "check", "dourado", "simbolo", "confirmada pela"],
@@ -16861,19 +16939,24 @@ function linkWhatsDoChat() {
 // iniciar novo chat"), como o histórico de conversas da ajuda da Shopify e do
 // Intercom: com a conta aberta no Parceiros, cada conversa vai para a conta
 // (SQL 20261009120000), "Conversas" lista as anteriores e "Nova conversa"
-// começa outra. Sem conta, e no site dos jogadores, ela fica só na tela.
-const CHAT_NA_CONTA = ["parceiros"];
+// começa outra. Sem conta, ela fica só na tela. Desde 15/10/2026 também no
+// site dos jogadores ("deixe que o chat possa ser salvo na conta e ter abas
+// de navegação dentro dos chat com títulos e resolvida ou não"), como as
+// conversas do Intercom e do Zendesk: abas "Conversa" e "Suas conversas",
+// cada uma com título e "Em aberto" ou "Resolvida".
+const CHAT_NA_CONTA = ["parceiros", "jogadores"];
 const CHAT_ATUAL_KEY = "guiatennis_chat_atual";
 const CHAT_MAX_MSGS = 120;
 const CHAT_MAX_CONVERSAS = 50;
-const IR_DO_CHAT = /^(pc:[a-z-]+|menu:[a-z-]+|entrar|whatsapp|recarregar)$/;
+// "busca:piso=saibro&q=Moema" abre a busca já filtrada (15/10/2026).
+const IR_DO_CHAT = /^(pc:[a-z-]+|menu:[a-z-]+|entrar|whatsapp|recarregar|busca:[A-Za-z0-9_=&%.+-]{0,200})$/;
 function contaDoChat() {
   if (!CHAT_NA_CONTA.includes(siteDoChat()) || isAdmin) return null;
   if (contaAcademia && !contaAcademia.visaoAdmin && contaAcademia.userId) return contaAcademia.userId;
   return jogador ? jogador.user_id : null;
 }
 function conversaNova(site, conta) {
-  return { site, conta, id: null, titulo: "", rascunho: "", ultimaPergunta: "", erros: 0, vendo: "conversa",
+  return { site, conta, id: null, titulo: "", rascunho: "", ultimaPergunta: "", erros: 0, vendo: "conversa", resolvida: false,
     msgs: [{ de: "gt", texto: `Oi! Este é o chat de ajuda do ${site === "parceiros" ? "GuiaTennis Parceiros" : "GuiaTennis"}. Escreva a sua dúvida com as suas palavras ou escolha um assunto:`, chips: sugestoesDoChat() }] };
 }
 function temPerguntaNoChat(ch) {
@@ -16886,7 +16969,7 @@ function tituloDoChat(ch) {
 function mensagemParaGuardar(m, ultima) {
   const out = { de: m.de, texto: String(m.texto || "").slice(0, m.de === "eu" ? 300 : 2000) };
   if (m.acoes && m.acoes.length) out.acoes = m.acoes.map(a => ({ t: a.t, ir: a.ir }));
-  if (ultima && m.chips && m.chips.length) out.chips = m.chips.map(c => (c.tema ? { t: c.t, tema: c.tema } : { t: c.t, resp: c.resp }));
+  if (ultima && m.chips && m.chips.length) out.chips = m.chips.map(c => (c.tema ? { t: c.t, tema: c.tema } : c.det ? { t: c.t, det: c.det } : { t: c.t, resp: c.resp }));
   return out;
 }
 // O que volta do banco passa pelo mesmo filtro: só caminhos e assuntos que o
@@ -16895,17 +16978,18 @@ function mensagemDoBanco(m) {
   if (!m || (m.de !== "eu" && m.de !== "gt") || typeof m.texto !== "string") return null;
   const out = { de: m.de, texto: m.texto.slice(0, 2000) };
   if (Array.isArray(m.acoes)) out.acoes = m.acoes.filter(a => a && typeof a.t === "string" && IR_DO_CHAT.test(a.ir || "")).map(a => ({ t: a.t.slice(0, 80), ir: a.ir }));
-  if (Array.isArray(m.chips)) out.chips = m.chips.filter(c => c && typeof c.t === "string" && ((c.tema && CHAT_TEMAS.some(t => t.id === c.tema)) || c.resp === "sim" || c.resp === "nao"))
-    .map(c => (c.tema ? { t: c.t.slice(0, 80), tema: c.tema } : { t: c.t.slice(0, 80), resp: c.resp }));
+  if (Array.isArray(m.chips)) out.chips = m.chips.filter(c => c && typeof c.t === "string" && ((c.tema && CHAT_TEMAS.some(t => t.id === c.tema))
+      || (c.det && CHAT_DETALHES.some(d => d.id === c.det)) || c.resp === "sim" || c.resp === "nao"))
+    .map(c => (c.tema ? { t: c.t.slice(0, 80), tema: c.tema } : c.det ? { t: c.t.slice(0, 80), det: c.det } : { t: c.t.slice(0, 80), resp: c.resp }));
   return out;
 }
 function conversaDoBanco(r) {
   const msgs = r && Array.isArray(r.mensagens) ? r.mensagens.map(mensagemDoBanco).filter(Boolean) : [];
   if (!r || !r.id || !msgs.length) return null;
-  return { id: r.id, titulo: String(r.titulo || "").slice(0, 80) || "Conversa", msgs, em: r.atualizada_em };
+  return { id: r.id, titulo: String(r.titulo || "").slice(0, 80) || "Conversa", msgs, em: r.atualizada_em, resolvida: r.resolvida === true };
 }
 function resumoDaConversa(ch) {
-  return { id: ch.id, titulo: tituloDoChat(ch) || "Conversa", msgs: ch.msgs.slice(), em: new Date().toISOString() };
+  return { id: ch.id, titulo: tituloDoChat(ch) || "Conversa", msgs: ch.msgs.slice(), em: new Date().toISOString(), resolvida: !!ch.resolvida };
 }
 function quandoDaConversa(iso) {
   const d = new Date(iso);
@@ -16933,8 +17017,11 @@ async function carregarConversasDoChat() {
   state.conversasDoChat = { conta, site, lista: null, carregando: true, erro: false };
   let lista = null;
   try {
-    const { data, error } = await sb.from('conversas_de_ajuda').select('id, titulo, mensagens, atualizada_em')
+    const ler = (campos) => sb.from('conversas_de_ajuda').select(campos)
       .eq('user_id', conta).eq('site', site).order('atualizada_em', { ascending: false });
+    let { data, error } = await ler('id, titulo, mensagens, atualizada_em, resolvida');
+    // Banco ainda sem a coluna "resolvida": tudo fica "Em aberto".
+    if (error) ({ data, error } = await ler('id, titulo, mensagens, atualizada_em'));
     if (!error) lista = (data || []).map(conversaDoBanco).filter(Boolean);
   } catch { /* banco sem a tabela: o chat segue só na tela */ }
   if (contaDoChat() !== conta) return;
@@ -16954,7 +17041,7 @@ async function carregarConversasDoChat() {
   if (state.chat && state.chat.aberto) renderDoChat();
 }
 function conversaGuardadaNoChat(c) {
-  return { id: c.id, titulo: c.titulo, msgs: c.msgs.slice(), erros: 0, apagando: null,
+  return { id: c.id, titulo: c.titulo, msgs: c.msgs.slice(), erros: 0, apagando: null, resolvida: !!c.resolvida,
     ultimaPergunta: ([...c.msgs].reverse().find(m => m.de === "eu") || {}).texto || "" };
 }
 // Cada mensagem nova vai para a conta, uma gravação depois da outra (a
@@ -16969,8 +17056,11 @@ function guardarConversa() {
     let ok = false;
     try {
       const msgs = ch.msgs.slice(-CHAT_MAX_MSGS);
-      const r = await sb.rpc('guardar_conversa_de_ajuda', { p_id: ch.id, p_site: ch.site, p_titulo: tituloDoChat(ch) || null,
-        p_mensagens: msgs.map((m, i) => mensagemParaGuardar(m, i === msgs.length - 1)) });
+      const dados = { p_id: ch.id, p_site: ch.site, p_titulo: tituloDoChat(ch) || null,
+        p_mensagens: msgs.map((m, i) => mensagemParaGuardar(m, i === msgs.length - 1)) };
+      let r = await sb.rpc('guardar_conversa_de_ajuda', { ...dados, p_resolvida: !!ch.resolvida });
+      // Banco ainda sem o "resolvida" (SQL 20261015130000): guarda sem ele.
+      if (r.error && /p_resolvida|PGRST202|function/i.test(`${r.error.code} ${r.error.message}`)) r = await sb.rpc('guardar_conversa_de_ajuda', dados);
       if (!r.error && r.data) { ch.id = r.data; ok = true; }
       else if (r.error) falhou("guardar a conversa do chat na conta", r.error, { silenciosa: true });
     } catch { /* banco sem a função */ }
@@ -17021,6 +17111,14 @@ function verConversasDoChat() {
   ch.erroConversas = "";
   render();
   carregarConversasDoChat();
+}
+function marcarConversaResolvida(sim) {
+  const ch = state.chat;
+  if (!ch) return;
+  ch.resolvida = !!sim;
+  ch.focar = !sim;
+  render();
+  guardarConversa();
 }
 function voltarAConversa() {
   const ch = state.chat;
@@ -17101,8 +17199,10 @@ function seguirNoTema(tema) {
 }
 // O que a pessoa responde sem ser um assunto: agradecer, dizer que não deu
 // certo, "sim" ou "não". Sem acento e em minúsculas (textoDoChat).
-const CHAT_NAO_DEU = /\b(nao (deu|funcion\w*|resolv\w*|adiant\w*|ajud\w*|entendi|consigo|consegui)|ainda nao|continua\w*|mesmo problema|de novo nada|nada ainda|deu errado)\b/;
+const CHAT_NAO_DEU = /\b(nao (deu|funcion\w*|resolv\w*|adiant\w*|ajud\w*|entendi|consigo|consegui)|nao (esta|ta|estou|to) (indo|dando|funcionando|aparecendo|carregando|abrindo|conseguindo)|ainda nao|continua\w*|mesmo problema|de novo nada|nada ainda|deu errado)\b/;
 const CHAT_OBRIGADO = /\b(obrigad\w*|valeu|vlw|brigad\w*|deu certo|resolveu|resolvido|consegui|perfeito|otimo|show|beleza|blz|massa|top|ajudou)\b/;
+// Quem diz que resolveu ou agradece fecha a conversa como "Resolvida".
+const CHAT_RESOLVEU = /\b(obrigad\w*|valeu|vlw|brigad\w*|deu certo|resolveu|resolvido|consegui|ajudou)\b/;
 function respostaSolta(pergunta) {
   const t = textoDoChat(pergunta).trim();
   if (CHAT_NAO_DEU.test(t)) return "naoDeu";
@@ -17111,24 +17211,214 @@ function respostaSolta(pergunta) {
   if (CHAT_OBRIGADO.test(t) || /^(ok|certo|entendi|ah ta|ta|ta bom|beleza)$/.test(t)) return "obrigado";
   return null;
 }
+
+// O "pensamento" do chat (pedido do Breno em 15/10/2026, com print: "fiz
+// outra pergunta e o chat supôs que não tinha dado certo sem nem ter dado
+// errado… mais inteligente seguindo a conversa, como se fosse um
+// 'pensamento'"). Sem IA (regra 13): antes de responder, o chat lê a frase
+// por partes, como os assistentes do Booking e do Airbnb —
+//   1. corrige o erro de digitação pelo contexto ("quadras de saindo" →
+//      saibro) e diz o que entendeu;
+//   2. acha o detalhe que a busca sabe filtrar (saibro, coberta, preço…) e
+//      o lugar ("em Moema"), e responde com o botão que já abre a busca
+//      filtrada, com quantas academias há;
+//   3. só segue para o "outro caminho" e o Breno quando a pessoa diz que
+//      não deu certo — outra pergunta sobre o mesmo assunto é só outra
+//      pergunta.
+const CHAT_DETALHES = [
+  { id: "saibro", nome: "quadras de saibro", t: "Quadras de saibro", p: ["saibro"],
+    tem: c => (c.pisos || []).includes("saibro"), q: "piso=saibro", com: "quadra de saibro",
+    r: "Na busca, abra Filtros e escolha Piso › Saibro.", bt: "Ver quadras de saibro" },
+  { id: "rapida", nome: "quadras rápidas", t: "Quadras rápidas", p: ["rapida", "rapidas", "dura", "duras", "cimento", "hard", "piso rapido"],
+    tem: c => (c.pisos || []).includes("rapida"), q: "piso=rapida", com: "quadra rápida",
+    r: "Na busca, abra Filtros e escolha Piso › Rápida (a quadra dura, de cimento ou resina).", bt: "Ver quadras rápidas" },
+  { id: "coberta", nome: "quadras cobertas", t: "Quadras cobertas", p: ["coberta", "cobertas", "coberto", "cobertura", "chuva", "chovendo", "indoor"],
+    tem: c => (c.cobertura || []).includes("coberta"), q: "cobertura=coberta", com: "quadra coberta",
+    r: "Na busca, abra Filtros e escolha Quadra › Coberta: dá para jogar com chuva.", bt: "Ver quadras cobertas" },
+  { id: "barata", nome: "as mais em conta", t: "As mais em conta", p: ["barat", "mais em conta", "menor preco", "economic", "preco baixo"],
+    q: "ordem=preco", r: "Na busca, ordene por \"Menor preço\": a lista começa pelo menor valor por hora informado.", bt: "Ver pelo menor preço" },
+  { id: "nota", nome: "as mais bem avaliadas", t: "As mais bem avaliadas", p: ["melhor avaliad", "melhores", "bem avaliad", "melhor nota", "mais recomendad"],
+    q: "ordem=nota", r: "Na busca, ordene por \"Melhor avaliado\": a lista começa pela maior nota de quem jogou lá.", bt: "Ver as mais bem avaliadas" },
+  { id: "estacionamento", nome: "academias com estacionamento", t: "Com estacionamento", p: ["estacionamento", "estacionar", "garagem"],
+    tem: c => matchesAmenityFilter(c, "estacionamento"), q: "comodidades=estacionamento", com: "estacionamento",
+    r: "Na busca, abra Filtros e escolha Comodidades › Estacionamento.", bt: "Ver com estacionamento" },
+  { id: "aula", nome: "aulas de tênis", t: "Aulas de tênis", p: ["aula", "aulas", "professor", "professora", "aprender", "iniciante", "escolinha"],
+    tem: c => (c.modalidades || []).includes("aulas_proprias"), q: "modalidade=aulas_proprias", com: "aulas",
+    r: "Na busca, escolha \"Aulas\": aparecem as academias com professores. A aula você combina direto com a academia, pelo WhatsApp.", bt: "Ver academias com aulas" },
+];
+// Os assuntos em que o detalhe vale: dentro deles, ou sem assunto nenhum.
+const CHAT_TEMAS_DO_DETALHE = ["buscar", "preco-jog", "comparar", "patrocinado"];
+const CHAT_PISOS = ["saibro", "rapida", "coberta", "cobertas", "descoberta"];
+// Distância de digitação: letra trocada, a mais, a menos ou duas vizinhas
+// invertidas contam 1 ("sabiro" → saibro).
+function distanciaDeDigitacao(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+  }
+  return d[a.length][b.length];
+}
+let vocabularioDoChat = null;
+function palavrasDoChat() {
+  if (!vocabularioDoChat) {
+    const todas = [...CHAT_TEMAS, ...CHAT_DETALHES].flatMap(x => x.p.map(p => textoDoChat(p).trim())).filter(p => p && !p.includes(" "));
+    vocabularioDoChat = [...new Set(todas)];
+  }
+  return vocabularioDoChat;
+}
+// Palavra desconhecida perto de uma conhecida vale como ela: por 1 letra
+// (palavras de 6 letras ou mais; tipos de quadra, 5 ou mais); logo depois de
+// "quadra de", por até 2 — ali só cabe o tipo de quadra.
+function corrigirDigitacao(txt) {
+  const vocab = palavrasDoChat();
+  const conhecida = (w) => vocab.some(v => w === v || (v.length >= 4 && w.startsWith(v)));
+  const palavras = txt.trim().split(" ").filter(Boolean);
+  const trocas = [];
+  const out = palavras.map((w, i) => {
+    if (w.length < 5 || conhecida(w)) return w;
+    const depoisDeQuadra = /^quadras?$/.test(palavras[i - 1] || "")
+      || (/^quadras?$/.test(palavras[i - 2] || "") && ["de", "com", "em", "no", "na"].includes(palavras[i - 1]));
+    const perto = (lista, lim) => lista.find(v => Math.abs(v.length - w.length) <= lim && distanciaDeDigitacao(w, v) <= lim);
+    const certa = depoisDeQuadra ? perto(CHAT_PISOS, 2) : (perto(CHAT_PISOS, 1) || (w.length >= 6 ? perto(vocab.filter(v => v.length >= 6), 1) : null));
+    if (!certa) return w;
+    trocas.push(certa);
+    return certa;
+  });
+  return { txt: " " + out.join(" ") + " ", trocas };
+}
+function detalheDaDuvida(txt) {
+  const palavras = txt.trim().split(" ").filter(Boolean);
+  return CHAT_DETALHES.find(d => pontosDoTema(d, txt, palavras) >= 2) || null;
+}
+// O lugar da pergunta ("em Moema", "perto do Ibirapuera"), escrito como a
+// pessoa escreveu. "Perto de mim" não é lugar.
+const CHAT_NAO_E_LUGAR = /^(mim|voce|voces|casa|aqui|ai|la|minha casa|meu bairro|minha regiao|minha cidade|algum lugar|qualquer lugar)$/;
+function lugarDaDuvida(pergunta, det) {
+  const m = String(pergunta).match(/(?:^|\s)(?:em|no|na|perto d[eoa]s?|pr[oó]xim[oa] (?:d[eoa]|ao|à)|bairro|cidade de)\s+([^?!.,;]{2,40})/i);
+  if (!m) return "";
+  let lugar = m[1].trim().replace(/\s+/g, " ");
+  const t = textoDoChat(lugar).trim();
+  if (!t || CHAT_NAO_E_LUGAR.test(t)) return "";
+  // "em saibro", "na quadra coberta": é o detalhe, não o lugar.
+  if (det && pontosDoTema(det, " " + t + " ", t.split(" ")) >= 2) return "";
+  if (/^(quadra|academia|busca|filtro|site|mapa|conta|lista|celular|computador|pc|app|aplicativo|navegador|google|chrome|safari|iphone|android|tela|menu|gps)/.test(t)) return "";
+  return lugar;
+}
+function pensarNoChat(pergunta) {
+  const { txt, trocas } = corrigirDigitacao(textoDoChat(pergunta));
+  const r = entenderDuvida(txt);
+  const solta = respostaSolta(pergunta);
+  const site = siteDoChat();
+  let det = site === "jogadores" ? detalheDaDuvida(txt) : null;
+  // "Como reservo uma aula?" é do assunto Reservar, não um filtro da busca.
+  if (det && r.tipo === "tema" && !CHAT_TEMAS_DO_DETALHE.includes(r.tema.id)) det = null;
+  const lugar = site === "jogadores" && (det || (r.tipo === "tema" && r.tema.id === "buscar")) ? lugarDaDuvida(pergunta, det) : "";
+  return { r, solta, det, lugar, trocas };
+}
+// Quantas academias há com o detalhe, no lugar ou na cidade de quem pergunta.
+function contagemDoDetalhe(det, lugar) {
+  if (!det.tem) return "";
+  const cidades = cidadesComQuadra();
+  const ponto = pontoDaHome(lerUltimaBusca(), lerPreferencias());
+  const cidade = (lugar && cidades.find(c => mesmaCidade(c.nome, lugar)))
+    || (!lugar && ponto && ponto.cidade && cidades.find(c => mesmaCidade(c.nome, ponto.cidade))) || null;
+  // Bairro ("em Moema"): sem contar, para não misturar com a cidade toda.
+  if (lugar && !cidade) return "";
+  const lista = cidade ? cidade.courts : state.allCourts;
+  if (!lista.length) return "";
+  const n = lista.filter(c => det.tem(decorate(c))).length;
+  const onde = cidade ? `em ${cidade.nome}` : "no GuiaTennis";
+  return n ? `Há ${n} ${plural(n, "academia", "academias")} com ${det.com} ${onde}. `
+    : `Ainda não há academias com ${det.com} ${onde}${cidade ? " no GuiaTennis" : ""}. `;
+}
+function irDaBusca(det, lugar) {
+  const p = new URLSearchParams(det ? det.q : "");
+  if (lugar) p.set("q", lugar.slice(0, 40));
+  return "busca:" + p.toString();
+}
+function responderDetalhe(det, lugar, trocas) {
+  const ch = state.chat;
+  ch.esperando = null;
+  ch.detalhe = det.id;
+  ch.lugar = lugar || "";
+  ch.tema = ch.tema && CHAT_TEMAS_DO_DETALHE.includes(ch.tema) ? ch.tema : "buscar";
+  const entendi = trocas.length || lugar ? `Entendi: ${det.nome}${lugar ? ` em ${lugar}` : ""}. ` : "";
+  ch.msgs.push({ de: "gt", tema: ch.tema, det: det.id, texto: entendi + contagemDoDetalhe(det, lugar) + det.r,
+    acoes: [{ t: det.bt + (lugar ? ` em ${lugar}` : ""), ir: irDaBusca(det, lugar) }] });
+}
+// "Não deu" depois de um detalhe: o que costuma acontecer com o filtro;
+// depois, o Breno.
+function seguirNoDetalhe(det) {
+  const ch = state.chat;
+  ch.tentativas = ch.tentativas || {};
+  const n = (ch.tentativas["det:" + det.id] = (ch.tentativas["det:" + det.id] || 0) + 1);
+  if (n === 1) {
+    ch.msgs.push({ de: "gt", tema: ch.tema, det: det.id, texto: `Se a lista veio vazia, ainda não há ${det.nome} perto do lugar buscado. Em Filtros, aumente a distância ou busque um bairro vizinho.`,
+      acoes: [{ t: det.bt, ir: irDaBusca(det, ch.lugar) }] });
+    return;
+  }
+  ch.esperando = "whatsapp";
+  ch.msgs.push({ de: "gt", tema: ch.tema, texto: "Entendi, ainda não deu certo. O Breno, do GuiaTennis, pode ver isso com você. Quer falar com ele pelo WhatsApp? A sua dúvida já vai escrita.",
+    acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] });
+}
+// Outra pergunta sobre o mesmo assunto, sem dizer que não deu certo: o chat
+// não supõe que falhou (pedido de 15/10/2026). Na busca, pergunta o que a
+// pessoa quer achar; nos outros assuntos, diz que o que sabe já está ali e
+// deixa o Breno à mão, sem o "ainda não deu certo".
+function outraPerguntaNoTema(tema, lugar) {
+  const ch = state.chat;
+  ch.esperando = null;
+  if (tema.id === "buscar" && lugar) {
+    ch.lugar = lugar;
+    ch.msgs.push({ de: "gt", tema: tema.id, texto: `Entendi: quadras em ${lugar}. A lista começa pela mais perto; em Filtros, escolha piso, quadra coberta, preço e comodidades.`,
+      acoes: [{ t: `Buscar quadras em ${lugar}`, ir: irDaBusca(null, lugar) }] });
+    return;
+  }
+  if (tema.id === "buscar") {
+    ch.msgs.push({ de: "gt", tema: tema.id, texto: "O que você quer achar? Escolha abaixo ou escreva, como \"quadra coberta em Moema\".",
+      chips: CHAT_DETALHES.map(d => ({ t: d.t, det: d.id })) });
+    return;
+  }
+  ch.esperando = "whatsapp";
+  ch.msgs.push({ de: "gt", tema: tema.id, texto: `Sobre "${tema.t}", o que eu sei está aí em cima. Se a sua dúvida é outra, me conte com outras palavras — ou o Breno, do GuiaTennis, responde pelo WhatsApp, com a sua pergunta já escrita.`,
+    acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] });
+}
+// Título da conversa (pedido de 15/10/2026: "abas… com títulos"): o assunto
+// que o chat entendeu primeiro, como "Achar quadra perto"; sem assunto, a
+// primeira dúvida.
+function tituloPeloAssunto(p, pergunta) {
+  if (p.det) return CHAT_DETALHES.find(d => d.id === p.det.id).t + (p.lugar ? ` em ${p.lugar}` : "");
+  if (p.r.tipo === "tema" && p.r.tema.id !== "saudacao") return p.r.tema.t;
+  return pergunta;
+}
 function enviarAoChat(texto) {
   const ch = state.chat;
   const pergunta = String(texto || "").trim().slice(0, 300);
   if (!ch || !pergunta) return;
   ch.msgs.push({ de: "eu", texto: pergunta });
+  const p = pensarNoChat(pergunta);
+  const { r, solta, det, lugar } = p;
   // "Não deu", "sim", "obrigado"… não são a dúvida que vai para o WhatsApp.
-  if (!respostaSolta(pergunta)) ch.ultimaPergunta = pergunta;
+  if (!solta) ch.ultimaPergunta = pergunta;
   ch.rascunho = "";
-  const r = entenderDuvida(pergunta);
-  const solta = respostaSolta(pergunta);
   const temaAtual = ch.tema && CHAT_TEMAS.find(t => t.id === ch.tema);
-  if (!ch.titulo && !(r.tipo === "tema" && r.tema.id === "saudacao") && !solta) ch.titulo = pergunta.slice(0, 80);
-  // Mudou de assunto: responde o novo. Voltou ao mesmo (ou disse que não
-  // deu certo, sem falar de outro assunto): segue no mesmo, sem repetir.
-  const outroAssunto = r.tipo === "tema" && r.tema.id !== ch.tema && !(solta === "naoDeu" && r.tema.id === "problema" && temaAtual);
-  if (r.tipo === "tema" && r.tema.id === ch.tema && r.tema.id !== "saudacao") { ch.erros = 0; seguirNoTema(r.tema); }
-  else if (outroAssunto) responderComTema(r.tema);
-  else if (solta === "naoDeu" && temaAtual) { ch.erros = 0; seguirNoTema(temaAtual); }
+  const detAtual = ch.detalhe && CHAT_DETALHES.find(d => d.id === ch.detalhe);
+  if (!ch.titulo && !(r.tipo === "tema" && r.tema.id === "saudacao") && !solta) ch.titulo = tituloPeloAssunto(p, pergunta).slice(0, 80);
+  // Pergunta nova reabre a conversa; "resolveu", "valeu"… fecham.
+  if (!solta && ch.resolvida) ch.resolvida = false;
+  if (solta === "obrigado" && CHAT_RESOLVEU.test(textoDoChat(pergunta))) ch.resolvida = true;
+  const naoDeu = solta === "naoDeu";
+  const outroAssunto = r.tipo === "tema" && r.tema.id !== ch.tema && !(naoDeu && r.tema.id === "problema" && temaAtual);
+  if (det && !(naoDeu && det.id === ch.detalhe)) { ch.erros = 0; responderDetalhe(det, lugar, p.trocas); }
+  else if (naoDeu && detAtual && !outroAssunto) { ch.erros = 0; seguirNoDetalhe(detAtual); }
+  else if (r.tipo === "tema" && r.tema.id === ch.tema && r.tema.id !== "saudacao") {
+    ch.erros = 0;
+    if (naoDeu) seguirNoTema(r.tema); else outraPerguntaNoTema(r.tema, lugar);
+  }
+  else if (outroAssunto) { ch.detalhe = null; responderComTema(r.tema); }
+  else if (naoDeu && temaAtual) { ch.erros = 0; seguirNoTema(temaAtual); }
   else if (solta === "sim" && ch.esperando === "whatsapp") {
     ch.esperando = null;
     ch.msgs.push({ de: "gt", texto: "Combinado. Toque no botão e a conversa abre com a sua dúvida.", acoes: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] });
@@ -17140,6 +17430,12 @@ function enviarAoChat(texto) {
     ch.msgs.push({ de: "gt", texto: respostas[ch.msgs.length % respostas.length] });
   }
   else if (r.tipo === "duvida") ch.msgs.push({ de: "gt", texto: "Você quer saber sobre:", chips: r.temas.map(t => ({ t: t.t, tema: t.id })) });
+  // Não entendeu, mas a conversa é sobre a busca: pergunta o que a pessoa
+  // quer achar, em vez de recomeçar pelos assuntos.
+  else if (temaAtual && temaAtual.id === "buscar" && !ch.erros) {
+    ch.erros += 1;
+    ch.msgs.push({ de: "gt", texto: "Não entendi bem essa parte. Sobre a busca, posso ajudar com:", chips: CHAT_DETALHES.map(d => ({ t: d.t, det: d.id })) });
+  }
   else {
     ch.erros += 1;
     ch.msgs.push({ de: "gt", texto: ch.erros > 1
@@ -17162,7 +17458,15 @@ function escolherNoChat(dado) {
     ch.msgs.push({ de: "eu", texto: tema.t });
     ch.ultimaPergunta = ch.ultimaPergunta || tema.t;
     if (!ch.titulo && tema.id !== "saudacao") ch.titulo = tema.t;
-    if (tema.id === ch.tema) seguirNoTema(tema); else responderComTema(tema);
+    // Tocar no mesmo assunto de novo não quer dizer que não deu certo.
+    if (tema.id === ch.tema) outraPerguntaNoTema(tema, ""); else { ch.detalhe = null; responderComTema(tema); }
+  } else if (dado.det) {
+    const det = CHAT_DETALHES.find(d => d.id === dado.det);
+    if (!det) return;
+    ch.msgs.push({ de: "eu", texto: det.t });
+    ch.ultimaPergunta = ch.ultimaPergunta || det.t;
+    if (!ch.titulo) ch.titulo = det.t;
+    responderDetalhe(det, ch.lugar || "", []);
   } else if (dado.resp === "sim") {
     ch.msgs.push({ de: "eu", texto: "Resolveu" });
     ch.msgs.push({ de: "gt", texto: "Que bom! Se precisar de mais alguma coisa, é só escrever." });
@@ -17176,6 +17480,7 @@ function escolherNoChat(dado) {
 function irPeloChat(ir) {
   if (ir === "recarregar") { location.reload(); return; }
   if (state.chat) state.chat.aberto = false;
+  if (ir.startsWith("busca:")) { abrirBuscaDoChat(ir.slice(6)); return; }
   if (ir === "entrar") ir = siteDoChat() === "parceiros" ? "pc:entrar" : "menu:entrar-jogador";
   if (ir.startsWith("pc:")) {
     let aba = ir.slice(3);
@@ -17187,6 +17492,25 @@ function irPeloChat(ir) {
   render();
 }
 
+// O botão do chat abre a busca já filtrada, no lugar perguntado ou, sem ele,
+// no da última busca (ou a cidade de casa, da viagem, da conexão).
+function abrirBuscaDoChat(qs) {
+  const p = new URLSearchParams(qs);
+  [...p.keys()].forEach(k => { if (!["q", "piso", "cobertura", "modalidade", "comodidades", "ordem"].includes(k)) p.delete(k); });
+  if (!p.get("q")) {
+    const ultima = lerUltimaBusca(), onde = lerOndeAproximado();
+    const termo = (state.termoBuscado || "").trim() || (ultima && ultima.termo) || cidadePadraoDaBusca() || (onde && onde.cidade) || "";
+    if (termo) p.set("q", termo);
+  }
+  state.showMenu = false;
+  state.lista = null;
+  try { history.pushState({ page: "search", prof: 0 }, "", "/busca?" + p.toString().replace(/%2C/gi, ",")); } catch {}
+  const feito = aplicarLink(lerLink());
+  state.cep = feito.termo || p.get("q") || "";
+  render();
+  window.scrollTo(0, 0);
+  if (state.cep) doSearch({ ordem: feito.ordem });
+}
 function renderChat() {
   const ch = state.chat;
   if (!ch || !ch.aberto) return "";
@@ -17198,10 +17522,24 @@ function renderChat() {
   const quebras = (t) => esc(t).replace(/\n/g, "<br>");
   const nomeDoSite = ch.site === "parceiros" ? "GuiaTennis Parceiros" : "GuiaTennis";
   const temPergunta = temPerguntaNoChat(ch);
-  const barra = !lista && (conta || temPergunta) ? `
+  // Com a conta: abas "Conversa" e "Suas conversas" e, na conversa, o
+  // título e "Em aberto" ou "Resolvida", que a pessoa troca ali mesmo.
+  const barra = conta ? `
+        <div class="chat-abas" role="tablist">
+          <button type="button" role="tab" class="chat-aba${lista ? "" : " on"}" aria-selected="${!lista}" id="chat-aba-conversa">Conversa</button>
+          <button type="button" role="tab" class="chat-aba${lista ? " on" : ""}" aria-selected="${!!lista}" id="chat-ver-conversas">Suas conversas${nConversas ? ` (${nConversas})` : ""}</button>
+          ${temPergunta && !lista ? `<button type="button" class="chat-barra-bt" id="chat-nova">${icon('plus', 14, 'currentColor')} Nova</button>` : ""}
+        </div>
+        ${!lista && temPergunta ? `
+        <div class="chat-status">
+          <span class="chat-status-titulo">${esc(tituloDoChat(ch) || "Conversa")}</span>
+          <span class="chat-status-t${ch.resolvida ? " ok" : ""}">${ch.resolvida ? `${icon('check', 13, 'currentColor')} Resolvida` : "Em aberto"}</span>
+          <button type="button" class="chat-status-bt" id="chat-resolvida">${ch.resolvida ? "Reabrir" : "Marcar resolvida"}</button>
+        </div>` : ""}`
+    : temPergunta ? `
         <div class="chat-barra">
-          ${conta ? `<button type="button" class="chat-barra-bt" id="chat-ver-conversas">${icon('historico', 15, 'currentColor')} Conversas${nConversas ? ` (${nConversas})` : ""}</button>` : "<span></span>"}
-          ${temPergunta ? `<button type="button" class="chat-barra-bt" id="chat-nova">${icon('plus', 15, 'currentColor')} Nova conversa</button>` : ""}
+          <span></span>
+          <button type="button" class="chat-barra-bt" id="chat-nova">${icon('plus', 15, 'currentColor')} Nova conversa</button>
         </div>` : "";
   const nota = lista ? "As conversas ficam guardadas na sua conta. Você apaga quando quiser."
     : conta ? (ch.naoGuardou ? "Não deu para guardar esta conversa na conta agora." : "A conversa fica guardada na sua conta.")
@@ -17230,7 +17568,7 @@ function renderChat() {
               ${m.acoes && m.acoes.length ? `<div class="chat-acoes">${m.acoes.map(a => a.ir === "whatsapp"
                 ? `<a class="chat-acao whats" href="${esc(linkWhatsDoChat())}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} ${esc(a.t)}</a>`
                 : `<button type="button" class="chat-acao" data-chat-ir="${esc(a.ir)}">${esc(a.t)} ${icon('chevron', 13, 'currentColor')}</button>`).join("")}</div>` : ""}
-              ${i === ultima && m.chips && m.chips.length ? `<div class="chat-chips">${m.chips.map(c => `<button type="button" class="chip small" ${c.tema ? `data-chat-tema="${esc(c.tema)}"` : `data-chat-resp="${esc(c.resp)}"`}>${esc(c.t)}</button>`).join("")}</div>` : ""}
+              ${i === ultima && m.chips && m.chips.length ? `<div class="chat-chips">${m.chips.map(c => `<button type="button" class="chip small" ${c.tema ? `data-chat-tema="${esc(c.tema)}"` : c.det ? `data-chat-det="${esc(c.det)}"` : `data-chat-resp="${esc(c.resp)}"`}>${esc(c.t)}</button>`).join("")}</div>` : ""}
             </div>`).join("")}
         </div>
         <form class="chat-envio" id="chat-form" autocomplete="off">
@@ -17248,10 +17586,20 @@ function listaDeConversasDoChat(ch, cv) {
   if (!cv || cv.carregando) return nova + `<p class="chat-lista-vazia">${bolaGirando(15)} Abrindo as suas conversas…</p>`;
   if (cv.erro) return nova + `<p class="chat-lista-vazia">Não deu para abrir as conversas agora. Tente de novo daqui a pouco.</p>`;
   if (!cv.lista.length) return nova + `<p class="chat-lista-vazia">Nenhuma conversa guardada ainda. As próximas ficam aqui, na sua conta.</p>`;
+  const resolvidas = cv.lista.filter(c => c.resolvida);
+  const abertas = cv.lista.filter(c => !c.resolvida);
+  // Abre em "Em aberto"; se só houver resolvidas, nelas.
+  const filtro = ch.filtroConversas || (abertas.length || !resolvidas.length ? "abertas" : "resolvidas");
+  const mostrar = filtro === "resolvidas" ? resolvidas : abertas;
   return `${nova}
+    <div class="chat-filtro" role="tablist">
+      <button type="button" role="tab" class="chip small${filtro === "abertas" ? " active" : ""}" aria-selected="${filtro === "abertas"}" data-chat-filtro="abertas">Em aberto (${abertas.length})</button>
+      <button type="button" role="tab" class="chip small${filtro === "resolvidas" ? " active" : ""}" aria-selected="${filtro === "resolvidas"}" data-chat-filtro="resolvidas">Resolvidas (${resolvidas.length})</button>
+    </div>
     ${ch.erroConversas ? `<div class="form-error">${icon('warning', 13)} ${esc(ch.erroConversas)}</div>` : ""}
+    ${mostrar.length ? "" : `<p class="chat-lista-vazia">${filtro === "resolvidas" ? "Nenhuma conversa resolvida ainda." : "Nenhuma conversa em aberto."}</p>`}
     <ul class="chat-conversas">
-      ${cv.lista.map(c => ch.apagando === c.id ? `
+      ${mostrar.map(c => ch.apagando === c.id ? `
         <li class="chat-conversa apagando">
           <p class="chat-conversa-t">Apagar "${esc(c.titulo)}"?</p>
           <p class="chat-conversa-s">A conversa sai da sua conta.</p>
@@ -17263,7 +17611,7 @@ function listaDeConversasDoChat(ch, cv) {
         <li class="chat-conversa${ch.id === c.id ? " atual" : ""}">
           <button type="button" class="chat-conversa-abrir" data-chat-abrir="${esc(c.id)}">
             <span class="chat-conversa-t">${esc(c.titulo)}</span>
-            <span class="chat-conversa-s">${ch.id === c.id ? "Aberta agora · " : ""}${esc(quandoDaConversa(c.em))}</span>
+            <span class="chat-conversa-s">${c.resolvida ? `<span class="ok">Resolvida</span>` : "Em aberto"} · ${ch.id === c.id ? "Aberta agora · " : ""}${esc(quandoDaConversa(c.em))}</span>
           </button>
           <button type="button" class="chat-conversa-apagar" data-chat-apagar="${esc(c.id)}" aria-label="Apagar a conversa ${esc(c.titulo)}" title="Apagar">${icon('lixo', 17, 'currentColor')}</button>
         </li>`).join("")}
@@ -17277,6 +17625,9 @@ function ligarChat() {
   const bt = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
   bt("chat-fechar", fecharChat);
   bt("chat-ver-conversas", verConversasDoChat);
+  bt("chat-aba-conversa", voltarAConversa);
+  bt("chat-resolvida", () => marcarConversaResolvida(!ch.resolvida));
+  document.querySelectorAll("[data-chat-filtro]").forEach(el => { el.onclick = () => { ch.filtroConversas = el.dataset.chatFiltro; render(); }; });
   bt("chat-nova", novaConversa);
   bt("chat-nova-lista", novaConversa);
   bt("chat-voltar", voltarAConversa);
@@ -17287,6 +17638,7 @@ function ligarChat() {
   const form = document.getElementById("chat-form");
   if (form) form.onsubmit = (e) => { e.preventDefault(); enviarAoChat(campo ? campo.value : ""); };
   document.querySelectorAll("[data-chat-tema]").forEach(el => { el.onclick = () => escolherNoChat({ tema: el.dataset.chatTema }); });
+  document.querySelectorAll("[data-chat-det]").forEach(el => { el.onclick = () => escolherNoChat({ det: el.dataset.chatDet }); });
   document.querySelectorAll("[data-chat-resp]").forEach(el => { el.onclick = () => escolherNoChat({ resp: el.dataset.chatResp }); });
   document.querySelectorAll("[data-chat-ir]").forEach(el => { el.onclick = () => irPeloChat(el.dataset.chatIr); });
   document.querySelectorAll("[data-chat-abrir]").forEach(el => { el.onclick = () => abrirConversaGuardada(el.dataset.chatAbrir); });

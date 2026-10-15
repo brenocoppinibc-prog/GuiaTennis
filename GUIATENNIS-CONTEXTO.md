@@ -26,6 +26,10 @@ teste")
 
 > **Estado (15/10/2026):** o Breno trocou de chat: leia o "Resumo (15/10/2026,
 > ao trocar de chat)" na seção 11.
+> Depois, no chat novo: o "pensamento" do chat (regra 105), Completo nas
+> recomendadas, perto primeiro e a viagem na home (106) e o chat na conta
+> dos jogadores com abas e "Resolvida" (107), SQL
+> `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo.
 
 > **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o
 > bloco para academias; no lugar, "Dicas para achar a quadra certa" e o
@@ -2401,6 +2405,57 @@ cobra taxa e não fica no meio** da negociação.
       estudo de preços: ver o doc "GuiaTennis: estudo de preços dos planos".
       Planos, Ajuda ("Como funcionam os avisos por e-mail?"), chat, Termos e
       Privacidade atualizados.
+105. **O "pensamento" do chat** (pedido de 15/10/2026, com print: "fiz
+    outra pergunta e o chat supôs que não tinha dado certo sem nem ter dado
+    errado… mais inteligente seguindo a conversa, como se fosse um
+    'pensamento'"). Sem IA (regra 13), `pensarNoChat` lê a frase por partes,
+    como os assistentes do Booking e do Airbnb: (a) corrige a digitação pelo
+    contexto (`corrigirDigitacao`: 1 letra em palavras conhecidas; logo
+    depois de "quadra de", até 2 — "quadras de saindo" → saibro; "estou
+    saindo" não muda) e diz "Entendi: quadras de saibro."; (b) acha o
+    detalhe que a busca filtra (`CHAT_DETALHES`: saibro, rápida, coberta,
+    menor preço, melhor nota, estacionamento, aulas) e o lugar ("em
+    Moema"), diz quantas academias há (na cidade ou no guia) e dá o botão
+    que abre a busca já filtrada (`busca:piso=saibro&q=Moema`,
+    `abrirBuscaDoChat`); (c) só vai ao "outro caminho" e ao Breno quando a
+    pessoa diz que não deu ("não está indo" também conta): outra pergunta
+    no mesmo assunto não é falha (`outraPerguntaNoTema`: na busca, "O que
+    você quer achar?" com os detalhes; nos outros, "o que eu sei está aí
+    em cima… ou o Breno"). O lugar fica na conversa para o próximo
+    detalhe. Teste: `testes/pensamento-e-home.js`.
+106. **Home: Completo nas recomendadas, perto primeiro e a viagem da conta**
+    (pedido de 15/10/2026: "as academias no completo também podem aparecer
+    nas recomendadas quanto mais preenchidas… o mais próximo da localização
+    possível… se já fez uma viagem e marcou alguma viagem aparecer uma
+    seção sobre isso também, só quando já tiver a conta"). Muda as regras
+    16 e 101: `recomendadasGuia` = Premium → Completo confirmado, da ficha
+    mais completa (`pontosDaFicha`) → a dedo → o resto pela nota; com o
+    ponto (`pontoDaHome`), cada grupo começa pelas a até 50 km. "Academias
+    por cidade" e "Melhores avaliadas" também começam pelas mais perto. Só
+    o Premium leva "Patrocinado". Textos: Planos (linha nova do Completo e
+    "Primeiro entre as recomendadas" do Premium), perguntas, chat do
+    Parceiros, Termos (15 de outubro de 2026) e o e-mail "Plano novo" (SQL
+    `20261015130000_chat_e_recomendadas`). **Viagem na home**
+    (`blocoViagemDaConta`, só com a conta), como o "Sua próxima viagem" e o
+    "Voltar a…" do Booking: "Para a sua viagem a <cidade>" com as academias
+    de lá, da mais perto do hotel, e "Ver as quadras da viagem"; sem viagem
+    marcada, a última do último ano: "Vai voltar a <cidade>?".
+    `gravarViagens` passou a guardar as 3 viagens feitas do último ano
+    (`viagensFeitas`).
+107. **Chat na conta também para jogadores, com abas e "Resolvida"**
+    (pedido de 15/10/2026: "deixe que o chat possa ser salvo na conta e ter
+    abas de navegação dentro dos chat com títulos e resolvida ou não"). Muda
+    a regra 79: `CHAT_NA_CONTA` = os dois sites. Com a conta, abas
+    "Conversa" e "Suas conversas (N)" e "+ Nova"; na conversa, o título e
+    "Em aberto"/"Resolvida" com "Marcar resolvida"/"Reabrir"; na lista, "Em
+    aberto (N)" e "Resolvidas (N)". O título é o assunto entendido ("Esqueci
+    a senha", "Quadras de saibro em Moema"); sem assunto, a dúvida.
+    "Resolveu", "deu certo", "valeu", "obrigado" fecham como resolvida;
+    pergunta nova reabre. Como as conversas do Intercom e do Zendesk. SQL
+    `20261015130000_chat_e_recomendadas`: coluna `resolvida`,
+    `guardar_conversa_de_ajuda(…, p_resolvida)` (vazio não muda) e as 50
+    mais recentes **por site**; banco sem isso, o site guarda sem o status.
+    Privacidade (15 de outubro de 2026). Teste: `testes/chat-na-conta.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3404,7 +3459,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce envios-de-aviso; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce envios-de-aviso pensamento-e-home; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 ```
 

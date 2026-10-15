@@ -7,9 +7,9 @@ const { abrir, ok, irSenha } = require('./harness');
 
 const msgs = (page) => page.evaluate(() => [...document.querySelectorAll('#chat-msgs .chat-msg')].map(m => (m.classList.contains('eu') ? 'EU: ' : 'GT: ') + m.querySelector('.chat-bolha').innerText.trim()));
 const nota = (page) => page.evaluate(() => document.querySelector('.chat-nota')?.innerText.trim() || '');
-const barra = (page) => page.evaluate(() => [...document.querySelectorAll('.chat-barra .chat-barra-bt')].map(b => b.innerText.trim()));
+const barra = (page) => page.evaluate(() => [...document.querySelectorAll('.chat-abas .chat-aba, .chat-abas .chat-barra-bt, .chat-barra .chat-barra-bt')].map(b => b.innerText.trim()));
 const lista = (page) => page.evaluate(() => [...document.querySelectorAll('.chat-conversa')].map(li => li.innerText.replace(/\s+/g, ' ').trim()));
-const guardadas = (page) => page.evaluate(() => window.__db.conversas_de_ajuda.map(c => ({ user: c.user_id, site: c.site, titulo: c.titulo, n: c.mensagens.length })));
+const guardadas = (page) => page.evaluate(() => window.__db.conversas_de_ajuda.map(c => ({ user: c.user_id, site: c.site, titulo: c.titulo, n: c.mensagens.length, resolvida: !!c.resolvida })));
 async function escrever(page, texto) {
   await page.fill('#chat-texto', texto);
   await page.click('.chat-enviar');
@@ -25,11 +25,11 @@ async function abrirChat(page) {
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' });
   await page.waitForTimeout(300);
   await abrirChat(page);
-  ok((await nota(page)) === 'A conversa fica guardada na sua conta.' && (await barra(page)).join() === 'Conversas', 'com a conta aberta: o chat avisa que guarda na conta e mostra "Conversas" — ' + (await barra(page)).join());
+  ok((await nota(page)) === 'A conversa fica guardada na sua conta.' && (await barra(page)).join() === 'Conversa,Suas conversas', 'com a conta aberta: o chat avisa que guarda na conta e mostra as abas — ' + (await barra(page)).join());
   await escrever(page, 'esqueci minha senha');
   let g = await guardadas(page);
-  ok(g.length === 1 && g[0].user === 'u-a1' && g[0].site === 'parceiros' && g[0].titulo === 'esqueci minha senha' && g[0].n === 3, 'a primeira dúvida cria a conversa na conta, com ela de título — ' + JSON.stringify(g));
-  ok((await barra(page)).join() === 'Conversas (1),Nova conversa', 'aparecem "Conversas (1)" e "Nova conversa" — ' + (await barra(page)).join());
+  ok(g.length === 1 && g[0].user === 'u-a1' && g[0].site === 'parceiros' && g[0].titulo === 'Esqueci a senha' && g[0].n === 3, 'a primeira dúvida cria a conversa na conta, com o assunto de título — ' + JSON.stringify(g));
+  ok((await barra(page)).join() === 'Conversa,Suas conversas (1),Nova', 'aparecem as abas "Conversa" e "Suas conversas (1)" e "Nova" — ' + (await barra(page)).join());
   await escrever(page, 'ainda preciso de ajuda');
   await page.waitForTimeout(250);
   g = await guardadas(page);
@@ -38,16 +38,16 @@ async function abrirChat(page) {
   await page.click('#chat-nova');
   await page.waitForTimeout(200);
   let m = await msgs(page);
-  ok(m.length === 1 && m[0].includes('chat de ajuda do GuiaTennis Parceiros') && (await barra(page)).join() === 'Conversas (1)', '"Nova conversa" começa do zero, com a saudação');
+  ok(m.length === 1 && m[0].includes('chat de ajuda do GuiaTennis Parceiros') && (await barra(page)).join() === 'Conversa,Suas conversas (1)', '"Nova conversa" começa do zero, com a saudação');
   await escrever(page, 'oi');
   await escrever(page, 'como faço promoção de aula grátis');
   g = await guardadas(page);
-  ok(g.length === 2 && g[1].titulo === 'como faço promoção de aula grátis', 'a segunda conversa vai para a conta, e o "oi" não vira título — ' + JSON.stringify(g.map(x => x.titulo)));
+  ok(g.length === 2 && g[1].titulo === 'Promoções', 'a segunda conversa vai para a conta, e o "oi" não vira título — ' + JSON.stringify(g.map(x => x.titulo)));
 
   await page.click('#chat-ver-conversas');
   await page.waitForTimeout(250);
   let l = await lista(page);
-  ok(await page.isVisible('#chat-nova-lista') && l.length === 2 && l[0].startsWith('como faço promoção de aula grátis Aberta agora · Hoje') && l[1].startsWith('esqueci minha senha Hoje'),
+  ok(await page.isVisible('#chat-nova-lista') && l.length === 2 && l[0].startsWith('Promoções Em aberto · Aberta agora · Hoje') && l[1].startsWith('Esqueci a senha Em aberto · Hoje'),
     '"Conversas" lista as duas, a mais recente em cima, com o dia e a hora — ' + l.join(' | '));
   ok(!(await page.$('#chat-form')) && (await page.evaluate(() => document.querySelector('.chat-titulo').innerText)) === 'Suas conversas', 'a lista toma o lugar da conversa');
   await page.click('[data-chat-abrir] >> nth=1');
@@ -56,16 +56,16 @@ async function abrirChat(page) {
   ok(m.includes('EU: esqueci minha senha') && m.includes('EU: ainda preciso de ajuda') && await page.isVisible('#chat-texto'), 'um toque abre a conversa antiga, inteira');
   await escrever(page, 'quero pausar durante as férias');
   g = await guardadas(page);
-  ok(g.length === 2 && g.find(x => x.titulo === 'esqueci minha senha').n === 7, 'continuar a conversa antiga guarda nela mesma');
+  ok(g.length === 2 && g.find(x => x.titulo === 'Esqueci a senha').n === 7, 'continuar a conversa antiga guarda nela mesma');
   await page.click('#chat-ver-conversas');
   await page.waitForTimeout(200);
   l = await lista(page);
-  ok(l[0].startsWith('esqueci minha senha Aberta agora'), 'a conversa que mexeu sobe para o topo — ' + l[0]);
+  ok(l[0].startsWith('Esqueci a senha Em aberto · Aberta agora'), 'a conversa que mexeu sobe para o topo — ' + l[0]);
 
   // Apagar: confirma ali mesmo; "Cancelar" desiste.
   await page.click('.chat-conversa:nth-child(2) [data-chat-apagar]');
   await page.waitForTimeout(150);
-  ok((await page.evaluate(() => document.querySelector('.chat-conversa.apagando')?.innerText || '')).includes('Apagar "como faço promoção de aula grátis"?'), 'a lixeira pergunta antes de apagar');
+  ok((await page.evaluate(() => document.querySelector('.chat-conversa.apagando')?.innerText || '')).includes('Apagar "Promoções"?'), 'a lixeira pergunta antes de apagar');
   await page.click('[data-chat-apagar-nao]');
   await page.waitForTimeout(150);
   ok((await lista(page)).length === 2 && (await guardadas(page)).length === 2, '"Cancelar" não apaga');
@@ -73,7 +73,7 @@ async function abrirChat(page) {
   await page.waitForTimeout(150);
   await page.click('[data-chat-apagar-sim]');
   await page.waitForTimeout(250);
-  ok((await lista(page)).length === 1 && (await guardadas(page)).map(x => x.titulo).join() === 'esqueci minha senha', '"Apagar" tira a conversa da conta e da lista');
+  ok((await lista(page)).length === 1 && (await guardadas(page)).map(x => x.titulo).join() === 'Esqueci a senha', '"Apagar" tira a conversa da conta e da lista');
   await page.click('#chat-voltar');
   await page.waitForTimeout(150);
   ok((await msgs(page)).includes('EU: quero pausar durante as férias'), 'a seta volta para a conversa aberta');
@@ -102,11 +102,11 @@ async function abrirChat(page) {
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel', conversas }));
   await page.waitForTimeout(300);
   await abrirChat(page);
-  ok((await barra(page)).join() === 'Conversas (1)', 'em outro aparelho, "Conversas (1)": só as da própria conta');
+  ok((await barra(page)).join() === 'Conversa,Suas conversas (1)', 'em outro aparelho, "Conversas (1)": só as da própria conta');
   await page.click('#chat-ver-conversas');
   await page.waitForTimeout(200);
   l = await lista(page);
-  ok(l.length === 1 && /^Como mudo de plano\? 20 de set\.?$/.test(l[0]), 'a data de outro dia aparece por extenso — ' + l[0]);
+  ok(l.length === 1 && /^Como mudo de plano\? Em aberto · 20 de set\.?$/.test(l[0]), 'a data de outro dia aparece por extenso — ' + l[0]);
   await page.click('[data-chat-abrir="c-velha"]');
   await page.waitForTimeout(200);
   const acoes = await page.evaluate(() => ({ ir: [...document.querySelectorAll('[data-chat-ir]')].map(b => b.dataset.chatIr), chips: [...document.querySelectorAll('.chat-chips .chip')].map(c => c.innerText.trim()) }));
@@ -140,7 +140,7 @@ async function abrirChat(page) {
   await abrirChat(page);
   await page.waitForTimeout(200);
   g = await guardadas(page);
-  ok((await msgs(page)).includes('EU: esqueci minha senha') && g.length === 1 && g[0].user === 'u-a2' && g[0].titulo === 'esqueci minha senha', 'entrou na conta: a conversa continua e passa a ser guardada nela — ' + JSON.stringify(g));
+  ok((await msgs(page)).includes('EU: esqueci minha senha') && g.length === 1 && g[0].user === 'u-a2' && g[0].titulo === 'Esqueci a senha', 'entrou na conta: a conversa continua e passa a ser guardada nela — ' + JSON.stringify(g));
   await browser.close();
 
   // ---- banco sem a tabela: o chat funciona e diz que não guardou ----
@@ -154,14 +154,40 @@ async function abrirChat(page) {
   ok((await page.evaluate(() => document.querySelector('.chat-lista-vazia')?.innerText || '')).includes('Não deu para abrir as conversas agora'), 'e a lista avisa que não abriu');
   await browser.close();
 
-  // ---- site dos jogadores e admin: o chat não guarda ----
+  // ---- site dos jogadores (15/10/2026): guarda na conta, com abas e "Resolvida" ----
   ({ browser, page } = await abrir({ jogador: true }));
   await page.evaluate(() => { state.showMenu = true; render(); document.querySelector('.menu-drawer [data-menu="contato"]').click(); });
   await page.waitForTimeout(200);
   await page.click('#contato-close-overlay [data-abrir-chat]');
   await page.waitForTimeout(250);
   await escrever(page, 'esqueci minha senha');
-  ok((await nota(page)) === 'A conversa fica só na sua tela.' && !(await page.$('#chat-ver-conversas')) && (await guardadas(page)).length === 0, 'no site dos jogadores, mesmo com conta, a conversa fica só na tela');
+  g = await guardadas(page);
+  ok((await nota(page)) === 'A conversa fica guardada na sua conta.' && (await barra(page)).join() === 'Conversa,Suas conversas (1),Nova' && g.length === 1 && g[0].site === 'jogadores' && g[0].titulo === 'Esqueci a senha' && !g[0].resolvida,
+    'no site dos jogadores, com conta, a conversa vai para a conta, com o assunto de título — ' + JSON.stringify(g));
+  const status = () => page.evaluate(() => document.querySelector('.chat-status')?.innerText.replace(/\s+/g, ' ').trim() || '');
+  ok((await status()) === 'Esqueci a senha Em aberto Marcar resolvida', 'a conversa mostra o título e "Em aberto" — ' + await status());
+  await page.click('#chat-resolvida');
+  await page.waitForTimeout(250);
+  ok((await status()).includes('Resolvida Reabrir') && (await guardadas(page))[0].resolvida, '"Marcar resolvida" marca a conversa como resolvida, também na conta');
+  await escrever(page, 'como avalio uma academia');
+  ok((await status()).includes('Em aberto') && !(await guardadas(page))[0].resolvida, 'pergunta nova reabre a conversa');
+  await escrever(page, 'resolveu, valeu');
+  ok((await status()).includes('Resolvida') && (await guardadas(page))[0].resolvida, '"resolveu, valeu" fecha como resolvida');
+  await page.click('#chat-nova');
+  await page.waitForTimeout(150);
+  await escrever(page, 'quero viajar');
+  await page.click('#chat-ver-conversas');
+  await page.waitForTimeout(250);
+  const filtros = () => page.evaluate(() => [...document.querySelectorAll('[data-chat-filtro]')].map(b => b.innerText.trim() + (b.classList.contains('active') ? '*' : '')).join());
+  l = await lista(page);
+  ok((await filtros()) === 'Em aberto (1)*,Resolvidas (1)' && l.length === 1 && l[0].startsWith('Vou viajar Em aberto · Aberta agora'), 'a lista separa "Em aberto" e "Resolvidas" — ' + await filtros() + ' | ' + l.join(' | '));
+  await page.click('[data-chat-filtro="resolvidas"]');
+  await page.waitForTimeout(150);
+  l = await lista(page);
+  ok(l.length === 1 && l[0].startsWith('Esqueci a senha Resolvida · Hoje'), 'a aba "Resolvidas" mostra as resolvidas — ' + l.join(' | '));
+  await page.click('#chat-aba-conversa');
+  await page.waitForTimeout(150);
+  ok((await msgs(page)).includes('EU: quero viajar'), 'a aba "Conversa" volta à conversa aberta');
   await browser.close();
   ({ browser, page } = await abrir({ admin: true, q: 'parceiros/ajuda' }));
   await page.waitForTimeout(300);

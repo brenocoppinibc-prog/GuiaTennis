@@ -983,6 +983,15 @@ um(f"select public.guardar_conversa_de_ajuda(null, 'parceiros', null, '{conversa
 ok(um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}'") == "50", "ficam as 50 conversas mais recentes")
 certo, _ = sql(f"delete from public.conversas_de_ajuda where id in (select id from public.conversas_de_ajuda limit 3)", papel="authenticated", user=ana_chat)
 ok(certo and um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}'") == "47", "a própria conta apaga as conversas")
+# Site dos jogadores e "Resolvida" (SQL 20261015130000).
+rid = um(f"select public.guardar_conversa_de_ajuda(null, 'jogadores', null, '{conversa}'::jsonb, true)", papel="authenticated", user=ana_chat)
+ok(um(f"select site || '|' || resolvida from public.conversas_de_ajuda where id = '{rid}'") == "jogadores|true", "a conversa do site dos jogadores vai para a conta, marcada como resolvida")
+um(f"select public.guardar_conversa_de_ajuda('{rid}', 'jogadores', null, '{mais}'::jsonb)", papel="authenticated", user=ana_chat)
+ok(um(f"select resolvida from public.conversas_de_ajuda where id = '{rid}'") == "t", "sem dizer, o \"resolvida\" não muda (o site antigo continua guardando)")
+um(f"select public.guardar_conversa_de_ajuda('{rid}', 'jogadores', null, '{mais}'::jsonb, false)", papel="authenticated", user=ana_chat)
+ok(um(f"select resolvida from public.conversas_de_ajuda where id = '{rid}'") == "f", "pergunta nova reabre a conversa")
+ok(um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}' and site = 'parceiros'") == "47",
+   "as 50 mais recentes contam por site: a do site dos jogadores não apaga a do Parceiros")
 sql(f"delete from auth.users where id = '{ana_chat}'")
 ok(um(f"select count(*) from public.conversas_de_ajuda where user_id = '{ana_chat}'") == "0", "excluir a conta apaga as conversas")
 
@@ -1286,7 +1295,8 @@ plano = um(f"select assunto || '|' || html || '|' || replace(texto, E'\\n', ' ¶
 ok(plano.startswith("A Academia da Equipe agora está no plano Premium|") and "Olá, Paula!" in plano and "do <strong>Básico</strong> para o <strong>Premium</strong>" in plano
    and "O selo dourado ao lado do nome" in plano and "Instagram e site" in plano and "Pessoas com acesso: até 10 (antes, até 1)" in plano
    and "Ver o plano" in plano and "/parceiros/plano?abrir=" in plano and "Não quero mais receber" in plano and "• Promoções na ficha e na busca" in plano
-   and "• Entre as “Academias recomendadas” da página inicial" in plano,
+   and "• Entre as “Academias recomendadas” da página inicial, quanto mais completa a ficha" in plano
+   and "• Primeiro entre as recomendadas, marcada como “Patrocinado”" in plano,
    "o e-mail diz o plano de antes e o novo e o que a academia passa a ter, no nosso visual — " + plano[:80])
 # O admin muda de ideia antes de o e-mail sair: vai um só, do plano de antes.
 sql(f"update public.academias set plano = 'completo' where id = '{eq}'")

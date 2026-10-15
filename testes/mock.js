@@ -360,9 +360,10 @@
       if (!titulo) return erro("Escreva a sua dúvida antes.", "22023");
       const quando = new Date(Date.now() + (++seqConversa)).toISOString();
       let c = a.p_id && db.conversas_de_ajuda.find(x => x.id === a.p_id && x.user_id === eu);
-      if (c) Object.assign(c, { mensagens: JSON.parse(JSON.stringify(m)), titulo, atualizada_em: quando });
+      const res = a.p_resolvida === undefined || a.p_resolvida === null ? {} : { resolvida: !!a.p_resolvida };
+      if (c) Object.assign(c, { mensagens: JSON.parse(JSON.stringify(m)), titulo, atualizada_em: quando, ...res });
       else {
-        c = { id: "conv-" + seqConversa, user_id: eu, site: a.p_site, titulo, mensagens: JSON.parse(JSON.stringify(m)), criada_em: quando, atualizada_em: quando };
+        c = { id: "conv-" + seqConversa, user_id: eu, site: a.p_site, titulo, mensagens: JSON.parse(JSON.stringify(m)), criada_em: quando, atualizada_em: quando, resolvida: !!a.p_resolvida };
         db.conversas_de_ajuda.push(c);
         db.conversas_de_ajuda.filter(x => x.user_id === eu).sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em)))
           .slice(50).forEach(x => db.conversas_de_ajuda.splice(db.conversas_de_ajuda.indexOf(x), 1));

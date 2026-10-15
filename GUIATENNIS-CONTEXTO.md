@@ -29,7 +29,9 @@ teste")
 > Depois, no chat novo: o "pensamento" do chat (regra 105), Completo nas
 > recomendadas, perto primeiro e a viagem na home (106) e o chat na conta
 > dos jogadores com abas e "Resolvida" (107), SQL
-> `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo.
+> `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo, verde.
+> Testes: 1.394 verificações nos 50 arquivos do navegador e 377 no
+> `banco-emails.py`, nenhuma falha.
 
 > **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o
 > bloco para academias; no lugar, "Dicas para achar a quadra certa" e o

@@ -35,7 +35,7 @@ teste")
 > avaliação organizada e avisos com prévia (110, SQL
 > `20261015140000_avisos_com_tipo`), SQL
 > `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo, verde.
-> Testes: 1.419 verificações nos 51 arquivos do navegador e 377 no
+> Testes: 1.440 verificações nos 52 arquivos do navegador e 379 no
 > `banco-emails.py`, nenhuma falha.
 
 > **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o

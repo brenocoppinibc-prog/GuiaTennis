@@ -17,7 +17,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
     window.__db.academia_vinculos.push({ user_id: 'u-dono', academia_id: 'a2', papel: 'principal' });
     window.__senhas['ana@exemplo.com'] = 'senhaforte1';
     await sb.auth.signInWithPassword({ email: 'ana@exemplo.com', password: 'senhaforte1' });
-    await recarregarConta(); render();
+    await recarregarConta(); state.pcConfirmarDepois = true; render();
   });
   await page.fill('#pc-busca', 'locação');
   await page.waitForTimeout(200);

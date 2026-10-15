@@ -15,7 +15,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
     window.__db.academia_acessos.push({ user_id: 'u-rui', academia_id: null, usuario: 'rui@exemplo.com', nome_responsavel: 'Rui Dono', email: 'rui@exemplo.com', whatsapp: '11988881111', papel: 'principal', dados_completos_em: '2026-10-01', senha_trocada_em: '2026-10-01', termos_aceitos_em: '2026-10-01' });
     window.__senhas['rui@exemplo.com'] = 'senhaforte1';
     await sb.auth.signInWithPassword({ email: 'rui@exemplo.com', password: 'senhaforte1' });
-    await recarregarConta(); render();
+    await recarregarConta(); state.pcConfirmarDepois = true; render();
   });
   await page.click('#pc-nova');
   await page.waitForTimeout(300);

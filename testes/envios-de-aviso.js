@@ -51,6 +51,19 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   ok(await page.isDisabled('#pc-aviso-enviar') && corpo.includes('já mandou um aviso nesta semana'), 'no máximo 1 aviso por semana: o botão desliga');
   await browser.close();
 
+  // ---- "Chamar no WhatsApp" do e-mail: passa pela ficha, conta o contato e abre o WhatsApp com o assunto ----
+  ({ browser, page } = await abrir({ q: 'academia/quadra-locacao-a2' }));
+  await page.waitForTimeout(400);
+  await page.route('https://wa.me/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>WhatsApp</p>' }));
+  await page.evaluate(() => { history.replaceState(null, '', '/academia/quadra-locacao-a2?chamar=whatsapp&assunto=' + encodeURIComponent('o aviso "Turma nova aos sábados"') + '&utm_source=Email-aviso-da-academia'); aplicarLink(lerLink()); render(); });
+  await page.waitForTimeout(250);
+  const antes = await page.evaluate(() => ({ clique: (window.__cliques || []).some(c => c.tipo === 'whatsapp' && c.academia_id === 'a2'), busca: location.search }));
+  ok(antes.clique && !antes.busca.includes('chamar=') && antes.busca.includes('utm_source=Email-aviso-da-academia'), 'o link do e-mail conta o contato pelo WhatsApp e sai do endereço — ' + antes.busca);
+  await page.waitForTimeout(800);
+  const destino = decodeURIComponent(page.url());
+  ok(destino.startsWith('https://wa.me/55') && destino.includes('queria saber sobre o aviso "Turma nova aos sábados"'), 'e abre o WhatsApp da academia com a mensagem sobre o assunto — ' + destino);
+  await browser.close();
+
   // ---- Premium: a caixinha da promoção mostra o saldo; sem envios, pede para comprar ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'], envios: { a1: 3 } }));
   await page.waitForTimeout(400);

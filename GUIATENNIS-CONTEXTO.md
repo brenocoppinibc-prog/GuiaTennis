@@ -33,9 +33,10 @@ teste")
 > Parceiros com desmarcar, etapa do e-mail com avisos e planos organizados
 > (109); e-mail antes da academia, página Plano com dores e soluções,
 > avaliação organizada e avisos com prévia (110, SQL
-> `20261015140000_avisos_com_tipo`), SQL
+> `20261015140000_avisos_com_tipo`); "Chamar no WhatsApp" nos e-mails de
+> aviso e promoção (111, SQL `20261015150000_whatsapp_nos_avisos`), SQL
 > `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo, verde.
-> Testes: 1.440 verificações nos 52 arquivos do navegador e 379 no
+> Testes: 1.440 verificações nos 52 arquivos do navegador e 380 no
 > `banco-emails.py`, nenhuma falha.
 
 > **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o
@@ -2536,6 +2537,22 @@ cobra taxa e não fica no meio** da negociação.
     com "Comprar envios ›", e o botão apagado. Testes:
     `testes/plano-da-academia.js`, `testes/envios-de-aviso.js`,
     `testes/parceiros.js`, `testes/codigo-so-em-disputa.js` e a seção 22 do
+    `banco-emails.py`.
+111. **"Chamar no WhatsApp" nos e-mails de aviso e de promoção** (pedido de
+    15/10/2026, com print do e-mail: "crie um atalho para o whatsapp da
+    academia com base nesse assunto"). Com WhatsApp na ficha, o botão
+    principal do e-mail vira **"Chamar no WhatsApp"** e "veja a ficha da
+    academia" fica no texto (sem WhatsApp, continua "Ver a academia"). O
+    botão passa pela ficha (`/academia/…?chamar=whatsapp&assunto=o aviso
+    "…"&utm_source=Email-…`), como os links rastreados do Booking:
+    `chamarPeloLinkDoEmail` conta o contato (`trackClick`, "e-mail"), tira
+    o `chamar` do endereço e, num instante, abre o WhatsApp da academia com
+    "Olá! Vim pelo GuiaTennis e queria saber sobre o aviso/a promoção
+    "<assunto>"."; no computador, se o WhatsApp não abrir, a ficha fica na
+    tela. SQL `20261015150000_whatsapp_nos_avisos` (`url_codificada`,
+    `link_whatsapp_do_email`, `avisar_promocao` e
+    `enviar_aviso_da_academia`). A prévia do e-mail no Parceiros mostra o
+    mesmo botão. Testes: `testes/envios-de-aviso.js` e a seção 22 do
     `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.

@@ -890,12 +890,16 @@ ok(um(f"select public.avisos_da_minha_academia('{PINHEIROS}')::text", papel="aut
 certo, saida = sql(f"select public.enviar_aviso_da_academia('{PINHEIROS}', 'Aula grátis', 'Primeira aula grátis para iniciantes.', 'outro')::text", papel="authenticated", user=dono)
 ok(not certo and "Tipo de aviso inválido" in saida, "tipo de aviso que não existe é recusado")
 sql(f"delete from public.avisos_das_academias where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo = 'aviso_da_academia';"
-    f"update public.academias set envios_de_aviso = 1 where id = '{PINHEIROS}'")
+    f"update public.academias set envios_de_aviso = 1, phone = '11977776666' where id = '{PINHEIROS}'")
 certo, saida = sql(f"select public.enviar_aviso_da_academia('{PINHEIROS}', 'Aula grátis', 'Primeira aula grátis para iniciantes.', 'promocao')::text", papel="authenticated", user=dono)
 email_promo = um(f"select assunto || '|' || html from public.emails_a_enviar where tipo = 'aviso_da_academia' and para = 'paulaperto{sufixo}@exemplo.com'") or ""
 lista = json.loads(um(f"select public.avisos_da_minha_academia('{PINHEIROS}')::text", papel="authenticated", user=dono) or "{}")
 ok(certo and email_promo.startswith("Promoção da ") and "mandou uma promoção" in email_promo and ">Promoção</p>" in email_promo
    and lista.get("avisos", [{}])[0].get("tipo") == "promocao", "o aviso como promoção: assunto, etiqueta e tipo na lista — " + email_promo[:60])
+texto_promo = um(f"select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'aviso_da_academia' and para = 'paulaperto{sufixo}@exemplo.com'") or ""
+ok("?chamar=whatsapp&amp;assunto=a%20promo%C3%A7%C3%A3o%20%22Aula%20gr%C3%A1tis%22&amp;utm_source=Email-aviso-da-academia" in email_promo
+   and ">Chamar no WhatsApp</a>" in email_promo and "veja a ficha da academia" in email_promo and "Chamar no WhatsApp: " in texto_promo,
+   "o botão do e-mail chama a academia no WhatsApp, com o assunto, passando pela ficha (SQL 20261015150000) — " + texto_promo[:80])
 sql(f"update public.academias set envios_de_aviso = 1 where id = '{PINHEIROS}'")
 # Premium: a promoção também gasta 1 envio (com desconto no preço, combinado à parte).
 sql(f"delete from public.avisos_das_academias where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo in ('promocao', 'aviso_da_academia');"

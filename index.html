@@ -84,7 +84,7 @@
   .email-previa-mt { margin: 0; font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
   .email-previa-mm { margin: 5px 0 0; font-size: 13.5px; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
   .email-previa-v { margin: 7px 0 0; font-size: 12.5px; color: #6B6458; }
-  .email-previa-bt { display: inline-block; padding: 9px 16px; border-radius: 9px; background: var(--green); color: #fff; font-size: 13.5px; font-weight: 700; }
+  .email-previa-bt { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 9px; background: var(--green); color: #fff; font-size: 13.5px; font-weight: 700; }
   .email-previa-pe { margin: 12px 0 0; font-size: 11.5px; color: #6B6458; line-height: 1.4; }
   .email-previa-vazio { color: #A39C8E; font-weight: 400; font-style: italic; }
   #pc-promo-previa { margin-top: 14px; }
@@ -9133,8 +9133,12 @@ function previaDoEmail(c, f, modelo = "aviso") {
           ${daPromocao ? (mensagem ? `<p class="email-previa-mm">${esc(mensagem)}</p>` : "") : `<p class="email-previa-mm">${mensagem ? esc(mensagem) : vazio("E a mensagem, aqui.")}</p>`}
           ${daPromocao ? `<p class="email-previa-v">Válida até ${f.ate ? esc(diaPorExtenso(f.ate)) : "…"}</p>` : ""}
         </div>
+        ${(c.phone || "").replace(/\D/g, "") ? `
+        <p class="email-previa-p">${daPromocao ? "As condições são combinadas direto com a academia." : "Para combinar, chame a academia."}</p>
+        <span class="email-previa-bt">${icon('whatsapp', 14, '#fff')} Chamar no WhatsApp</span>
+        <p class="email-previa-p" style="margin:10px 0 0">Ou <u>veja a ficha da academia</u>.</p>` : `
         <p class="email-previa-p">${daPromocao ? "As condições são combinadas direto com a academia, pelo WhatsApp da ficha." : "Para combinar, chame a academia pelo WhatsApp da ficha."}</p>
-        <span class="email-previa-bt">Ver a academia</span>
+        <span class="email-previa-bt">Ver a academia</span>`}
         <p class="email-previa-pe">Recebe porque pediu avisos e promoções das academias favoritas e perto. Não quero mais receber.</p>
       </div>
     </div>`;
@@ -13264,6 +13268,7 @@ function aplicarLink(r) {
       state.selected = decorate(c);
       state.page = "court";
       state.secaoFicha = r.secao;
+      chamarPeloLinkDoEmail(c);
       return { ficha: c };
     }
     state.page = "home";
@@ -15136,6 +15141,24 @@ function modalidadesTexto(c) {
   return "";
 }
 
+// "Chamar no WhatsApp" dos e-mails de aviso e de promoção (pedido do Breno
+// em 15/10/2026: "crie um atalho para o whatsapp da academia com base nesse
+// assunto"): o botão do e-mail passa pela ficha
+// (/academia/…?chamar=whatsapp&assunto=…), que conta o contato como os
+// outros e abre o WhatsApp da academia com a mensagem sobre o assunto. Se o
+// WhatsApp não abrir (computador), a ficha fica na tela.
+function chamarPeloLinkDoEmail(c) {
+  let q;
+  try { q = new URLSearchParams(location.search); } catch { return; }
+  if (q.get("chamar") !== "whatsapp") return;
+  const assunto = String(q.get("assunto") || "").trim().slice(0, 120);
+  q.delete("chamar"); q.delete("assunto");
+  try { history.replaceState(history.state, "", location.pathname + (q.toString() ? "?" + q.toString() : "") + location.hash); } catch {}
+  if (!(c.phone || "").replace(/\D/g, "")) return;
+  trackClick(c.id, "whatsapp", "e-mail");
+  // Um instante para a ficha aparecer e o contato ser contado.
+  setTimeout(() => { location.href = waLink(c, assunto || ""); }, 600);
+}
 function waLink(c, assunto) {
   const wa = (c.phone || "").replace(/\D/g, "");
   const texto = assunto

@@ -101,7 +101,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     feito: document.querySelector('.pc-trilho i')?.style.width,
   }));
   let etapas = await barra();
-  ok(etapas.etapas === 'Dados de contato* | Sua academia | Confirmar e-mail | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'trilha de tênis em cima, com a bolinha na primeira etapa — ' + etapas.etapas);
+  ok(etapas.etapas === 'Dados de contato* | Confirmar e-mail | Sua academia | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'trilha de tênis em cima, com a bolinha na primeira etapa — ' + etapas.etapas);
   ok((await texto(page, '.pc-main .pc-card .footnote')).includes('Recebeu um usuário do GuiaTennis? Escreva o usuário aqui.'), 'quem recebeu usuário do GuiaTennis usa o mesmo campo (a dica fica, a explicação não)');
   await page.fill('#pc-email', 'joana@semponto');
   await page.click('#pc-email-continuar');
@@ -176,9 +176,16 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   }));
   ok(criada.rpc && criada.rpc.p_email === 'contato@soaulatennis.com.br' && criada.rpc.p_nome === 'Joana Dona' && criada.rpc.p_tratamento === 'Sra.' && criada.rpc.p_cargo === 'Dono(a) ou sócio(a)' && criada.rpc.p_recebe_novidades === false && criada.rpc.p_aceite === true, 'grava tratamento, nome e sobrenome, cargo, telefone e o aceite — ' + JSON.stringify(criada.conta));
   ok(criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'cria a conta e já entra com o e-mail');
+  // Confirmar o e-mail vem antes de escolher a academia (15/10/2026).
+  etapas = await barra();
+  const confirmar = await page.evaluate(() => ({ h1: document.querySelector('#parceiros h1')?.innerText, push: document.querySelector('.gt-push')?.innerText || '', codigo: !!document.getElementById('pc-codigo-email'), busca: !!document.getElementById('pc-busca') }));
+  ok(etapas.etapas === '✓ Dados de contato✓ | Confirmar e-mail* | Sua academia | Início' && confirmar.h1 === 'Confirme o seu e-mail.' && confirmar.push.includes('Conta criada! Mandamos um código para contato@soaulatennis.com.br') && confirmar.codigo && !confirmar.busca,
+    'conta criada: primeiro o e-mail, numa tela só, com o código já enviado — ' + etapas.etapas + ' / ' + confirmar.push);
+  await page.click('#pc-confirmar-depois');
+  await page.waitForTimeout(200);
   etapas = await barra();
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(etapas.etapas === '✓ Dados de contato✓ | Sua academia* | Confirmar e-mail | Início' && etapas.feito.startsWith('33.3') && (await page.evaluate(() => document.querySelector('.trilha-bola').style.left)).startsWith('33.3'), 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
+  ok(etapas.etapas === '✓ Dados de contato✓ | ✓ Confirmar e-mail✓ | Sua academia* | Início' && etapas.feito.startsWith('66.6') && (await page.evaluate(() => document.querySelector('.trilha-bola').style.left)).startsWith('66.6'), 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
   ok(corpo.includes('Declaro que estou autorizado(a) pela academia'), 'a declaração de que representa a academia vem na hora de escolher a academia');
   ok(corpo.includes('Prazer em conhecer você, Joana!') && corpo.includes('Antes de começar, vamos ver se a sua academia já está no GuiaTennis.') && corpo.includes('Dica: escreva também o bairro'), 'tela "Prazer em conhecer você", como a do trivago');
   let escolhas = await page.evaluate(() => [...document.querySelectorAll('.pc-escolha')].map(b => b.innerText.replace(/\s+/g, ' ').trim() + (b.classList.contains('on') ? '*' : '')));
@@ -227,7 +234,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   // desce no alto, o cartão pisca e o pedido mostra o alerta.
   const etapaEmail = await page.evaluate(() => ({ push: document.querySelector('.gt-push')?.innerText || '', h1: document.querySelector('#parceiros h1')?.innerText || '',
     pisca: !!document.querySelector('.pc-confirmar-email.pisca #pc-codigo-email'), alerta: document.querySelector('.pc-pedido .pc-pedido-alerta')?.innerText || '', busca: !!document.getElementById('pc-busca') }));
-  ok(etapaEmail.push.includes('Pedido feito! Mandamos um código para contato@soaulatennis.com.br') && etapaEmail.h1 === 'Confirme o seu e-mail para administrar a Só Aula Tennis.'
+  ok(etapaEmail.push.includes('Pedido feito! Falta confirmar o seu e-mail.') && etapaEmail.h1 === 'Confirme o seu e-mail para administrar a Só Aula Tennis.'
     && etapaEmail.pisca && etapaEmail.alerta.includes('Esperando você confirmar o e-mail') && !etapaEmail.busca, 'a etapa do e-mail: aviso no alto, código já enviado, cartão piscando e alerta no pedido — ' + JSON.stringify(etapaEmail));
   // O código só em disputa (07/10/2026): sem o e-mail confirmado, o pedido
   // espera a confirmação; confirmado, a ficha passa a ser da conta.
@@ -349,6 +356,9 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.check('#pc-conta-aceite');
   await page.click('#pc-criar-conta');
   await page.waitForTimeout(900);
+  ok((await texto(page, '#parceiros h1')) === 'Confirme o seu e-mail para administrar a Quadra Locação.', 'pelo link da ficha, a tela do e-mail já fala da academia');
+  await page.click('#pc-confirmar-depois');
+  await page.waitForTimeout(200);
   let direto = await page.evaluate(() => ({ marcada: [...document.querySelectorAll('.pc-escolha.on strong')].map(x => x.innerText).join(), achamos: document.querySelector('#pc-resultados')?.innerText.includes('achamos pelo seu e-mail'), pronto: !document.getElementById('pc-administrar').disabled }));
   ok(direto.marcada === 'Quadra Locação' && !direto.achamos && direto.pronto, 'conta criada pelo link da ficha já deixa aquela academia marcada (gmail não sugere nada)');
   await page.check('#pc-declaro');
@@ -654,7 +664,10 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.click('#pc-ativar-conta');
   await page.waitForTimeout(600);
   t = await page.evaluate(() => ({ conta: !!contaAcademia && contaAcademia.email === 'ana@exemplo.com', jog: !!jogador, h1: document.querySelector('#parceiros h1')?.innerText || '', db: window.__db.academia_acessos.find(x => x.user_id === 'j-ana') }));
-  ok(t.conta && t.jog && t.db && t.db.whatsapp === '11977771234' && /vamos ver se a sua academia/i.test(t.h1), 'a mesma conta passa a valer no Parceiros e segue para a academia — ' + t.h1);
+  ok(t.conta && t.jog && t.db && t.db.whatsapp === '11977771234' && t.h1 === 'Confirme o seu e-mail.', 'a mesma conta passa a valer no Parceiros e segue para confirmar o e-mail — ' + t.h1);
+  await page.click('#pc-confirmar-depois');
+  await page.waitForTimeout(200);
+  ok(/vamos ver se a sua academia/i.test(await texto(page, '#parceiros h1')), 'e depois para a academia');
   await browser.close();
 
   ({ browser, page } = await abrir({ q: 'parceiros/entrar' }));

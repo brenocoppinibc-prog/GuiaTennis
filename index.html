@@ -70,6 +70,29 @@
   .pc-promo.encerrada { opacity: 0.7; }
   .pc-promo-acoes { display: flex; gap: 16px; margin-top: 10px; }
   .pc-promo-form textarea { min-height: 84px; resize: vertical; }
+  /* Prévia do e-mail e da promoção (15/10/2026), no quadro do "Como chegar". */
+  .email-previa { margin-top: 14px; }
+  .email-previa-assunto { margin: 2px 0 8px; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .email-previa-corpo { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; color: #1F2A24; }
+  .email-previa-marca { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; font-family: 'Playfair Display', Georgia, serif; font-size: 15px; font-weight: 700; color: var(--green); }
+  .email-previa-marca svg { width: 22px; height: 22px; }
+  .email-previa-h { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+  .email-previa-p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.5; }
+  .email-previa-msg { margin: 4px 0 12px; padding: 11px 13px; border: 1px solid #DCD6C8; border-radius: 10px; background: #FAF8F3; }
+  .email-previa-msg.promo { border-color: #D8B865; background: #FBF7EC; }
+  .email-previa-tag { margin: 0 0 5px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8E6D25; }
+  .email-previa-mt { margin: 0; font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
+  .email-previa-mm { margin: 5px 0 0; font-size: 13.5px; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+  .email-previa-v { margin: 7px 0 0; font-size: 12.5px; color: #6B6458; }
+  .email-previa-bt { display: inline-block; padding: 9px 16px; border-radius: 9px; background: var(--green); color: #fff; font-size: 13.5px; font-weight: 700; }
+  .email-previa-pe { margin: 12px 0 0; font-size: 11.5px; color: #6B6458; line-height: 1.4; }
+  .email-previa-vazio { color: #A39C8E; font-weight: 400; font-style: italic; }
+  #pc-promo-previa { margin-top: 14px; }
+  #pc-promo-previa .ht-promo { margin: 0; background: #fff; }
+  .pc-aviso-tipo { margin: 0 0 4px; }
+  .pc-aviso-bloqueio { margin-top: 14px; align-items: flex-start; padding: 10px 12px; border: 1px solid #F1C4BF; border-radius: 10px; background: #FDEDEB; font-weight: 600; line-height: 1.45; }
+  .pc-aviso-bloqueio a { color: inherit; font-weight: 700; white-space: nowrap; }
+  .pc-aviso-form .cta-btn:disabled { opacity: .45; cursor: not-allowed; }
   .rcard-patrocinado { margin: 0 0 4px; font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
   .mini-patrocinado { margin: 0 0 3px; font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
   .resultados-titulo { margin: 10px 0 -4px; font-size: 15px; font-weight: 700; color: var(--text); }
@@ -111,7 +134,7 @@
   .rev-resp-t { margin: 0; font-size: 12px; font-weight: 700; color: var(--green); }
   .rev-resp-texto { margin: 4px 0 2px; font-size: 14px; line-height: 1.5; white-space: pre-line; }
   .rev-resp .inline-link { display: block; margin-top: 6px; color: var(--red); }
-  .rev-resp-links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; }
+  .rev-resp-links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
   .rev-resp-links .inline-link { font-size: 13px; font-weight: 700; }
   .rev-resp-form { margin-top: 12px; }
   .rev-resp-acoes { display: flex; gap: 8px; margin-top: 8px; }
@@ -1233,16 +1256,22 @@
   .ht-revs { display: grid; gap: 12px; margin-top: 8px; }
   @media (min-width: 720px) { .ht-revs { grid-template-columns: 1fr 1fr; } }
   .ht-rev { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 14px; display: flex; flex-direction: column; }
-  .ht-rev-top { display: flex; align-items: center; gap: 8px; }
+  /* Quem avaliou e a nota em cima, depois o texto (15/10/2026), como o
+     Booking e o Google. */
+  .ht-rev-top { display: flex; align-items: flex-start; gap: 10px; }
+  .ht-rev-top .rev-avatar { width: 34px; height: 34px; font-size: 13px; flex-shrink: 0; }
+  .ht-rev-quem { flex: 1; min-width: 0; }
+  .ht-rev-quem .rev-name { margin: 0; }
+  .ht-rev-nota { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; flex-shrink: 0; }
+  .ht-rev-nota-l { display: inline-flex; align-items: center; gap: 6px; }
+  .ht-rev-nota .rev-analise { margin-left: 0; font-size: 12.5px; }
   .acesso-qtas { font-family: Inter, sans-serif; font-size: 13px; color: var(--muted); font-weight: 400; }
   .acesso-pessoa { display: block; margin-top: 6px; }
   .rev-analise { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); text-decoration: underline; white-space: nowrap; }
   .ht-rev-badge { background: var(--green); color: #fff; border-radius: 8px 8px 8px 2px; font-size: 13px; font-weight: 700; padding: 4px 8px; line-height: 1; }
   .ht-rev-word { font-size: 13px; font-weight: 700; }
-  .ht-rev-top .delete-review-btn { margin-left: auto; }
-  .ht-rev-text { font-size: 14px; line-height: 1.5; margin: 10px 0 0; flex: 1; }
-  .ht-rev-foot { display: flex; align-items: center; gap: 9px; margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); }
-  .ht-rev-foot .rev-avatar { width: 32px; height: 32px; font-size: 13px; }
+  .ht-rev-nota .delete-review-btn { margin-left: 0; }
+  .ht-rev-text { font-size: 14px; line-height: 1.5; margin: 12px 0 0; flex: 1; }
 
   /* "bom saber", no lugar do "você precisa saber" dos hotéis */
   /* cancelamento e reposição */
@@ -1483,7 +1512,6 @@
   .ht-revs { gap: 14px; margin-top: 12px; }
   .ht-rev { padding: 18px; border-radius: 16px; }
   .ht-rev-text { font-size: 15px; line-height: 1.6; margin-top: 12px; }
-  .ht-rev-foot { margin-top: 14px; padding-top: 14px; }
   .rev-name { font-size: 14px; font-weight: 600; }
   .rev-date { font-size: 13px; }
   .court-cta { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 20px rgba(33,31,26,0.06); border-top-color: transparent; }
@@ -1547,6 +1575,24 @@
   .pc-oferta { margin-top: 20px; border-color: #E6D3A5; background: linear-gradient(180deg, #FFFBF1, var(--card)); }
   .pc-oferta-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8E6D25; margin: 0 0 8px; }
   .pc-oferta-lista { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+  /* Página Plano da academia (15/10/2026). */
+  .pc-plano-hoje { border-color: var(--green-line); }
+  .pc-plano-hoje .pc-oferta-lista li, .pc-conforto .pc-oferta-lista li { display: flex; gap: 9px; align-items: flex-start; font-size: 14px; line-height: 1.45; }
+  .pc-plano-comparar { margin: 30px 0 12px; font-size: 20px; }
+  .pc-dor-caminho + .pc-dor-caminho { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .pc-dor-cm { margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--gold-dark, #8E6D25); }
+  .pc-dor-cm span { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--muted); }
+  .pc-dor-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .pc-dor-t { margin: 0; font-size: 15px; font-weight: 600; color: var(--text); }
+  .pc-dor-s { margin: 4px 0 0; display: flex; gap: 7px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: var(--muted-dark, var(--muted)); }
+  .pc-dor-s svg { margin-top: 3px; flex-shrink: 0; }
+  .pc-conforto { background: var(--green-soft); border-color: var(--green-line); }
+  .pc-conforto .cta-btn { margin-top: 16px; }
+  .pc-oportunidades-lista { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 12px; }
+  .pc-oportunidades-lista li { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+  .pc-oportunidades-lista strong { display: block; font-size: 14.5px; }
+  .pc-oportunidades-lista span { display: block; font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .pc-oportunidades-lista .inline-link { white-space: nowrap; flex-shrink: 0; }
   .pc-oferta-lista li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; }
   .pc-oferta-lista li svg { margin-top: 2px; flex-shrink: 0; }
   .pc-sugerida { border-color: var(--green-line); background: #F4F8F6; }
@@ -6298,19 +6344,18 @@ function cartaoAvaliacao(r, c, onde) {
   return `
     <article class="ht-rev">
       <div class="ht-rev-top">
-        <span class="ht-rev-badge">${r.stars}/5</span>
-        <span class="ht-rev-word">${scoreWord(r.stars, 1)}</span>
-        ${minha ? `<a class="rev-analise" href="${linkPedirAnalise(c, r)}" target="_blank" rel="noreferrer" title="Pedir ao GuiaTennis que analise esta avaliação">${icon('warning', 13, 'currentColor')} Pedir análise</a>` : ""}
-        ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
-      </div>
-      ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>` : ""}
-      <div class="ht-rev-foot">
         <span class="rev-avatar">${esc(initials(r.nome_autor))}</span>
-        <div style="min-width:0">
+        <div class="ht-rev-quem">
           <p class="rev-name">${esc(r.nome_autor || "Jogador do GuiaTennis")}</p>
           <span class="rev-date">${formatReviewDate(r.ts)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span>
         </div>
+        <div class="ht-rev-nota">
+          <span class="ht-rev-nota-l"><span class="ht-rev-badge">${r.stars}/5</span><span class="ht-rev-word">${scoreWord(r.stars, 1)}</span></span>
+          ${minha ? `<a class="rev-analise" href="${linkPedirAnalise(c, r)}" target="_blank" rel="noreferrer" title="Pedir ao GuiaTennis que analise esta avaliação">${icon('warning', 13, 'currentColor')} Pedir análise</a>` : ""}
+          ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
+        </div>
       </div>
+      ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>` : ""}
       ${blocoResposta(r, c, onde)}
     </article>`;
 }
@@ -7547,6 +7592,101 @@ function pcFichaEscondida() {
     </div>`;
 }
 
+// A página Plano da academia (pedido do Breno em 15/10/2026: "escreva o
+// plano que a academia tem, fale melhor sobre o plano que a academia já tem
+// primeiro e depois sobre o que pode melhorar, apresente a dor para ela em
+// diversos caminhos e outras oportunidades e conforte a dor com o que
+// podemos fazer"), como a página de plano da Shopify e do Booking: primeiro
+// o que o plano de hoje entrega; depois as dores que o plano de cima
+// resolve, por caminho (ficha, busca, jogadores, equipe e números), as
+// oportunidades de agora e o que o GuiaTennis faz na mudança.
+const PC_CAMINHOS = [
+  { id: "ficha", t: "Na ficha", d: "o que convence o jogador a chamar" },
+  { id: "busca", t: "Na busca", d: "quem encontra a academia" },
+  { id: "jogadores", t: "Com os jogadores", d: "quem volta a ouvir falar de vocês" },
+  { id: "gestao", t: "Na equipe e nos números", d: "quem cuida e o que se sabe" },
+];
+const PC_DORES = [
+  { plano: "completo", caminho: "ficha", t: "O jogador quer conhecer mais e só encontra o WhatsApp", s: "o Instagram e o site aparecem na ficha" },
+  { plano: "completo", caminho: "ficha", t: "A dúvida do cancelamento trava a primeira aula", s: "a regra de cancelamento e reposição aparece antes do contato" },
+  { plano: "completo", caminho: "ficha", t: "Na primeira visita, o jogador se perde na chegada", s: "a ficha mostra a fachada, a entrada e onde estacionar" },
+  { plano: "completo", caminho: "ficha", t: "Três fotos e três comodidades contam pouco da estrutura", s: "até 5 fotos e todas as comodidades" },
+  { plano: "completo", caminho: "busca", t: "A página inicial recomenda outras academias", s: "a academia entra entre as \"Academias recomendadas\", quanto mais completa a ficha" },
+  { plano: "completo", caminho: "jogadores", t: "Quem favoritou não fica sabendo das novidades", s: "avisos e promoções por e-mail aos jogadores, por envio" },
+  { plano: "completo", caminho: "gestao", t: "Só uma pessoa cuida da ficha", s: "até 5 pessoas da equipe têm acesso" },
+  { plano: "premium", caminho: "busca", t: "Na busca da região, outras aparecem antes", s: "a academia aparece no topo, marcada como \"Patrocinado\", e em primeiro entre as recomendadas" },
+  { plano: "premium", caminho: "jogadores", t: "Horário vazio na quadra", s: "promoções na ficha e na busca, e o envio por e-mail sai mais barato" },
+  { plano: "premium", caminho: "gestao", t: "Sem saber de onde vêm os jogadores", s: "Desempenho mostra quem chamou, de onde vieram e os bairros de quem procurou" },
+  { plano: "premium", caminho: "gestao", t: "A equipe passou de 5 pessoas", s: "até 10 pessoas e o selo dourado ao lado do nome" },
+];
+function pcPlanoDeHoje(c, atual) {
+  const p = planoPorChave(atual);
+  const tem = recursosDoPlano(atual).filter(r => r.p.includes(atual));
+  return `
+    <div class="pc-card pc-plano-hoje">
+      <p class="pc-oferta-eyebrow">O plano de hoje</p>
+      <p class="pc-card-t">A ${esc(c.name)} está no ${esc(p.nome)}${atual === "premium" ? " " + seloPremium(16) : ""}</p>
+      <p class="pc-card-s">${esc(p.resumo)} ${atual === "basico" ? "É grátis e continua grátis." : ""}</p>
+      <ul class="pc-oferta-lista">
+        <li>${icon('check', 15, 'var(--green)')}<span>Até ${p.pessoas} ${plural(p.pessoas, "e-mail", "e-mails")} com acesso à academia</span></li>
+        ${tem.map(r => `<li>${r.selo ? seloPremium(15) : icon('check', 15, 'var(--green)')}<span>${esc(r.t)}</span></li>`).join("")}
+      </ul>
+    </div>`;
+}
+// O que dá para fazer agora, com o plano de hoje.
+function oportunidadesDoPlano(c, atual) {
+  const itens = [];
+  const faltas = faltasDaFicha(c);
+  if (faltas.length) itens.push({ t: `Completar a ficha: falta ${faltas.slice(0, 3).join(", ")}${faltas.length > 3 ? "…" : ""}`, d: "Ficha completa recebe mais contato" + (atual === "basico" ? "." : " e sobe entre as recomendadas."), ir: "ficha", bt: "Completar a ficha" });
+  const semResposta = getReviews(c.id).filter(r => !r.resposta).length;
+  if (semResposta) itens.push({ t: `Responder ${semResposta === 1 ? "1 avaliação" : semResposta + " avaliações"}`, d: "Quem vai escolher lê as respostas da academia.", ir: "avaliacoes", bt: "Responder" });
+  if (atual !== "basico" && !saldoDeEnvios()) itens.push({ t: "Avisar os jogadores por e-mail", d: "Turma nova, horário livre ou promoção chegam a quem favoritou ou está perto.", ir: "avisos", bt: "Avisos por e-mail" });
+  if (atual === "premium" && !(state.pcPromocoes || []).some(x => x.valendo)) itens.push({ t: "Publicar uma promoção", d: "Ela aparece na ficha e no resultado da busca.", ir: "promocoes", bt: "Promoções" });
+  if (!itens.length) itens.push({ t: "Imprimir o QR code da ficha", d: "Na recepção, quem jogou avalia a academia na hora.", ir: "ficha", bt: "Minha ficha" });
+  return itens;
+}
+function pcOQueMelhorar(c, atual) {
+  const prox = proximoPlano(atual);
+  const oportunidades = oportunidadesDoPlano(c, atual);
+  const blocoOportunidades = `
+    <div class="pc-card pc-oportunidades">
+      <p class="pc-oferta-eyebrow">Para fazer agora</p>
+      <p class="pc-card-t">${prox ? `No ${esc(nomeDoPlano(atual))} mesmo, dá para` : "Aproveitem o Premium"}</p>
+      <ul class="pc-oportunidades-lista">
+        ${oportunidades.map(o => `<li><div><strong>${esc(o.t)}</strong><span>${esc(o.d)}</span></div><button type="button" class="inline-link" data-pc="${o.ir}">${esc(o.bt)} ›</button></li>`).join("")}
+      </ul>
+    </div>`;
+  if (!prox) return blocoOportunidades;
+  // As dores dos planos de cima, por caminho; as do próximo plano primeiro.
+  const dores = PC_DORES.filter(d => planoPorChave(d.plano) && PC_PLANOS.findIndex(p => p.key === d.plano) > PC_PLANOS.findIndex(p => p.key === atual));
+  const porCaminho = PC_CAMINHOS.map(cm => ({ cm, lista: dores.filter(d => d.caminho === cm.id) })).filter(x => x.lista.length);
+  return `
+    <h2 class="pc-plano-comparar">O que pode melhorar</h2>
+    ${pcFichaEscondida()}
+    <div class="pc-card pc-dores">
+      ${porCaminho.map(({ cm, lista }) => `
+        <div class="pc-dor-caminho">
+          <p class="pc-dor-cm">${esc(cm.t)} <span>· ${esc(cm.d)}</span></p>
+          <ul class="pc-dor-lista">
+            ${lista.map(d => `<li>
+              <p class="pc-dor-t">${esc(d.t)}</p>
+              <p class="pc-dor-s">${icon('check', 14, 'var(--green)')} <span>Com o ${esc(nomeDoPlano(d.plano))}, ${esc(d.s)}.</span></p>
+            </li>`).join("")}
+          </ul>
+        </div>`).join("")}
+    </div>
+    <div class="pc-card pc-conforto">
+      <p class="pc-card-t">A mudança é simples</p>
+      <ul class="pc-oferta-lista">
+        <li>${icon('check', 15, 'var(--green)')}<span>O que vocês já preencheram aparece na hora, sem preencher de novo.</span></li>
+        <li>${icon('check', 15, 'var(--green)')}<span>O GuiaTennis ajuda a completar a ficha, as fotos e o "Como chegar".</span></li>
+        <li>${icon('check', 15, 'var(--green)')}<span>Sem comissão sobre aula ou locação, em qualquer plano.</span></li>
+      </ul>
+      <a href="${linkPlano(prox.key)}" class="cta-btn cta-primary" target="_blank" rel="noreferrer" data-pedir-plano="${prox.key}">Quero o ${esc(prox.nome)}</a>
+    </div>
+    ${blocoOportunidades}`;
+}
+
 // "Quero o …" da academia logada: o pedido fica anotado para o GuiaTennis,
 // e o link segue abrindo o WhatsApp.
 function pedirPlanoDoPainel(plano) {
@@ -8213,10 +8353,10 @@ function pcPlanos(logado) {
     <section class="pc-pagina">
       ${varias && c ? `<p class="pc-eyebrow">${esc(c.name)}</p>` : ""}
       <h1 class="display">${varias ? "Plano desta academia" : logado ? "Seu plano" : "Planos"}</h1>
-      <p class="pc-sec-sub">${logado && !proximoPlano(atual)
-        ? "Vocês estão no plano mais completo. As novidades chegam primeiro para o Premium."
-        : "Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia."}</p>
-      ${logado ? pcFichaEscondida() : ""}
+      ${logado && c ? "" : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>`}
+      ${logado && c ? pcPlanoDeHoje(c, atual) : ""}
+      ${logado && c ? pcOQueMelhorar(c, atual) : ""}
+      ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}
       ${pcCartoesDePlano(atual)}
       <p class="footnote">Para mudar de plano, <a href="${linkPlano(proximoPlano(atual) ? proximoPlano(atual).key : "premium")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.${logado ? " Cada academia tem o próprio plano." : ""}</p>
       ${varias ? `
@@ -8333,9 +8473,12 @@ function trilhaTenis(etapas, atual, rotulo) {
 }
 
 // Confirmar o e-mail é uma etapa à parte (pedido de 15/10/2026: "deixe em
-// partes diferentes para confirmar o email… para não ficar aglomerado").
+// partes diferentes para confirmar o email… para não ficar aglomerado") e
+// vem antes de escolher a academia ("coloque para confirmar o email antes de
+// escolher a academia"): confirmado, a academia sem responsável passa a ser
+// da conta na hora.
 function pcEtapas(atual) {
-  return trilhaTenis(["Dados de contato", "Sua academia", "Confirmar e-mail", "Início"], atual, "Etapas do cadastro");
+  return trilhaTenis(["Dados de contato", "Confirmar e-mail", "Sua academia", "Início"], atual, "Etapas do cadastro");
 }
 function faltaConfirmarEmail() {
   return !!(contaAcademia && !contaAcademia.emailConfirmado && recebeEmail(contaAcademia.login));
@@ -8603,7 +8746,7 @@ function pcCadastro() {
       const nome = pedidos.length === 1 ? pedidos[0].nome : "";
       return `
       <section class="pc-pagina pc-estreita">
-        ${pcEtapas(2)}
+        ${pcEtapas(1)}
         <p class="pc-eyebrow">Falta um passo</p>
         <h1 class="display pc-antes">Confirme o seu e-mail${nome ? ` para administrar a ${esc(nome)}` : ""}.</h1>
         ${pcConfirmarEmail(true)}
@@ -8618,13 +8761,26 @@ function pcCadastro() {
         ${pcPedidos()}
       </section>`;
   }
+  // Conta nova: primeiro o e-mail, numa tela só para ele ("Confirmar
+  // depois" segue sem ele; o pedido fica esperando a confirmação).
+  if (faltaConfirmarEmail() && !state.pcConfirmarDepois) {
+    return `
+    <section class="pc-pagina pc-estreita">
+      ${pcEtapas(1)}
+      <p class="pc-eyebrow">Conta criada</p>
+      <h1 class="display pc-antes">Confirme o seu e-mail${escolhida ? ` para administrar a ${esc(escolhida.name)}` : ""}.</h1>
+      <p class="pc-sec-sub">Confirmado, ${escolhida ? "a academia" : "a academia que você escolher em seguida"} passa a ser sua na hora, se ninguém mais a administra.</p>
+      ${pcConfirmarEmail(true)}
+      <p class="pc-linha"><button type="button" class="pc-linha-link pc-linha-discreta" id="pc-confirmar-depois">Confirmar depois</button></p>
+    </section>`;
+  }
   if (escolhida && !state.pcSelecionada) state.pcSelecionada = escolhida.id;
   const sugerida = academiaDoEmail(contaAcademia.email);
   if (sugerida && state.pcSelecionada === undefined && !meusPedidos().some(p => p.academiaId === sugerida.id)) state.pcSelecionada = sugerida.id;
   const primeiro = separarNome(contaAcademia.nome).nome;
   return `
     <section class="pc-pagina pc-estreita">
-      ${pcEtapas(1)}
+      ${pcEtapas(2)}
       ${emAndamento ? `
         <p class="pc-eyebrow">Adicionar outra academia</p>
         <h1 class="display pc-antes">Qual outra academia você administra?</h1>
@@ -8910,9 +9066,10 @@ function pcAvisos() {
   }
   const dados = state.pcAvisos || { saldo: 0, avisos: [], semana: false };
   const saldo = saldoDeEnvios();
-  const f = state.pcAvisoForm || { titulo: "", mensagem: "" };
+  const f = state.pcAvisoForm || { titulo: "", mensagem: "", tipo: "aviso" };
+  const promo = f.tipo === "promocao";
   const msg = state.pcAvisoMsg;
-  const bloqueio = !saldo ? "Para mandar um aviso, compre um pacote de envios." : dados.semana ? "A academia já mandou um aviso nesta semana. O próximo pode sair daqui a alguns dias." : "";
+  const bloqueio = !saldo ? "Sem envios, o aviso não sai. Compre um pacote de envios para mandar." : dados.semana ? "A academia já mandou um aviso nesta semana. O próximo pode sair daqui a alguns dias." : "";
   return `
     <section class="pc-pagina">
       ${topo}
@@ -8924,18 +9081,25 @@ function pcAvisos() {
       </div>
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
       <div class="pc-card pc-aviso-form">
-        <p class="pc-card-t">Novo aviso</p>
+        <p class="pc-card-t">${promo ? "Nova promoção por e-mail" : "Novo aviso"}</p>
+        <p class="field-label" style="margin-top:12px">O que vai mandar</p>
+        <div class="chip-row pc-aviso-tipo" role="radiogroup" aria-label="Tipo do e-mail">
+          <button type="button" class="chip small${promo ? "" : " active"}" role="radio" aria-checked="${!promo}" data-aviso-tipo="aviso">Aviso</button>
+          <button type="button" class="chip small${promo ? " active" : ""}" role="radio" aria-checked="${promo}" data-aviso-tipo="promocao">${icon('tag', 13, 'currentColor')} Promoção</button>
+        </div>
         <label class="field-label" for="pc-aviso-titulo">Assunto</label>
-        <input class="form-field" id="pc-aviso-titulo" maxlength="60" placeholder="Ex.: Turma nova aos sábados" value="${esc(f.titulo)}" style="margin-top:0" />
+        <input class="form-field pc-aviso-campo" data-campo="titulo" id="pc-aviso-titulo" maxlength="60" placeholder="${promo ? "Ex.: Primeira aula grátis" : "Ex.: Turma nova aos sábados"}" value="${esc(f.titulo)}" style="margin-top:0" />
         <label class="field-label" for="pc-aviso-mensagem">Mensagem</label>
-        <textarea class="form-field" id="pc-aviso-mensagem" maxlength="500" placeholder="Ex.: Abrimos uma turma para iniciantes aos sábados, às 9h. Chame no WhatsApp para reservar a vaga." style="margin-top:0">${esc(f.mensagem)}</textarea>
-        ${bloqueio ? `<p class="pc-card-s">${esc(bloqueio)}</p>` : ""}
-        <button type="button" class="cta-btn cta-primary" id="pc-aviso-enviar" ${state.pcAvisoEnviando || bloqueio ? "disabled" : ""}>${state.pcAvisoEnviando ? bolaGirando(15) + " Mandando..." : "Mandar o aviso"}</button>
+        <textarea class="form-field pc-aviso-campo" data-campo="mensagem" id="pc-aviso-mensagem" maxlength="500" placeholder="${promo ? "Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." : "Ex.: Abrimos uma turma para iniciantes aos sábados, às 9h. Chame no WhatsApp para reservar a vaga."}" style="margin-top:0">${esc(f.mensagem)}</textarea>
+        ${previaDoEmail(c, f)}
+        ${bloqueio ? `<div class="form-error pc-aviso-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)}${!saldo ? ` <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar envios ›</a>` : ""}</span></div>` : ""}
+        <button type="button" class="cta-btn cta-primary" id="pc-aviso-enviar" ${state.pcAvisoEnviando || bloqueio ? "disabled" : ""}>${state.pcAvisoEnviando ? bolaGirando(15) + " Mandando..." : promo ? "Mandar a promoção" : "Mandar o aviso"}</button>
       </div>
       ${(dados.avisos || []).length ? `
         <div class="pc-promo-lista">
           ${dados.avisos.map(x => `
             <div class="pc-card pc-promo">
+              ${x.tipo === "promocao" ? `<p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} Promoção por e-mail</p>` : ""}
               <p class="pc-card-t">${esc(x.titulo)}</p>
               <p class="pc-card-s">${esc(x.mensagem)}</p>
               <p class="footnote" style="margin-top:8px">${esc(diaPorExtenso(String(x.created_at || "").slice(0, 10)))} · ${x.avisados ? `chegou a ${x.avisados} ${plural(x.avisados, "jogador", "jogadores")}` : "ninguém recebeu (não gastou envio)"}</p>
@@ -8944,16 +9108,76 @@ function pcAvisos() {
     </section>`;
 }
 
+// A prévia do e-mail (pedido do Breno em 15/10/2026: "seria melhor ver uma
+// prévia de como vai a mensagem… igual sobre estacionamento, fachada"): o
+// mesmo quadro verde da prévia do "Como chegar", com o e-mail como o
+// jogador recebe (o modelo do email_montado), e muda enquanto se digita.
+// modelo "promocao" é o e-mail da promoção publicada (avisar_promocao).
+function previaDoEmail(c, f, modelo = "aviso") {
+  const daPromocao = modelo === "promocao";
+  const promo = daPromocao || f.tipo === "promocao";
+  const titulo = String(f.titulo || "").trim(), mensagem = String((daPromocao ? f.detalhes : f.mensagem) || "").trim();
+  const vazio = (t) => `<span class="email-previa-vazio">${t}</span>`;
+  const cabeca = daPromocao ? `Promoção na ${esc(c.name)}` : `${promo ? "Promoção" : "Aviso"} da ${esc(c.name)}`;
+  return `
+    <div class="est-previa email-previa" id="pc-email-previa">
+      <p class="est-previa-t">Prévia do e-mail que os jogadores recebem</p>
+      <p class="email-previa-assunto"><strong>Assunto:</strong> ${daPromocao ? `Promoção na ${esc(c.name)}` : `${promo ? "Promoção da " : ""}${esc(c.name)}`}: ${titulo ? esc(titulo) : vazio("o assunto")}</p>
+      <div class="email-previa-corpo">
+        <p class="email-previa-marca">${logoSvg()} <span>GuiaTennis</span></p>
+        <p class="email-previa-h">${cabeca}</p>
+        <p class="email-previa-p">Olá, <em>nome do jogador</em>! A <strong>${esc(c.name)}</strong>, perto de você${c.cidade ? `, em ${esc(c.cidade)}` : ""}, ${daPromocao ? "está com uma promoção" : `mandou ${promo ? "uma promoção" : "um aviso"}`}:</p>
+        <div class="email-previa-msg${promo ? " promo" : ""}">
+          ${promo && !daPromocao ? `<p class="email-previa-tag">Promoção</p>` : ""}
+          <p class="email-previa-mt">${titulo ? esc(titulo) : vazio(daPromocao ? "A promoção aparece aqui" : "O assunto aparece aqui")}</p>
+          ${daPromocao ? (mensagem ? `<p class="email-previa-mm">${esc(mensagem)}</p>` : "") : `<p class="email-previa-mm">${mensagem ? esc(mensagem) : vazio("E a mensagem, aqui.")}</p>`}
+          ${daPromocao ? `<p class="email-previa-v">Válida até ${f.ate ? esc(diaPorExtenso(f.ate)) : "…"}</p>` : ""}
+        </div>
+        <p class="email-previa-p">${daPromocao ? "As condições são combinadas direto com a academia, pelo WhatsApp da ficha." : "Para combinar, chame a academia pelo WhatsApp da ficha."}</p>
+        <span class="email-previa-bt">Ver a academia</span>
+        <p class="email-previa-pe">Recebe porque pediu avisos e promoções das academias favoritas e perto. Não quero mais receber.</p>
+      </div>
+    </div>`;
+}
+// Enquanto se digita, só a prévia muda (sem redesenhar a tela e perder o
+// cursor).
+function atualizarPreviaDoEmail(f, modelo) {
+  const c = minhaAcademia();
+  const el = document.getElementById("pc-email-previa");
+  if (c && el) el.outerHTML = previaDoEmail(c, f, modelo);
+  const naFicha = document.getElementById("pc-promo-previa");
+  if (c && naFicha && modelo === "promocao") naFicha.outerHTML = previaDaPromocao(f);
+}
+// A promoção como aparece na ficha e na busca (o mesmo quadro de htPromocoes).
+function previaDaPromocao(f) {
+  const titulo = String(f.titulo || "").trim(), detalhes = String(f.detalhes || "").trim();
+  return `
+    <div class="est-previa" id="pc-promo-previa">
+      <p class="est-previa-t">Prévia na ficha e na busca</p>
+      <div class="ht-promo">
+        <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} Promoção</p>
+        <p class="ht-promo-t">${titulo ? esc(titulo) : `<span class="email-previa-vazio">A promoção aparece aqui</span>`}</p>
+        ${detalhes ? `<p class="ht-promo-d">${esc(detalhes)}</p>` : ""}
+        <p class="ht-promo-v">Válida até ${f.ate ? esc(diaPorExtenso(f.ate)) : "…"} · combine com a academia pelo WhatsApp</p>
+      </div>
+    </div>`;
+}
+
 async function enviarAviso() {
   const c = minhaAcademia();
   if (!c || state.pcAvisoEnviando) return;
-  const f = { titulo: document.getElementById("pc-aviso-titulo")?.value || "", mensagem: document.getElementById("pc-aviso-mensagem")?.value || "" };
+  const f = { titulo: document.getElementById("pc-aviso-titulo")?.value || "", mensagem: document.getElementById("pc-aviso-mensagem")?.value || "", tipo: (state.pcAvisoForm || {}).tipo || "aviso" };
   state.pcAvisoForm = f;
   if (f.titulo.trim().length < 3) { state.pcAvisoMsg = { tipo: "erro", texto: "Escreva o assunto (por exemplo, \"Turma nova aos sábados\")." }; render(); return; }
   if (f.mensagem.trim().length < 10) { state.pcAvisoMsg = { tipo: "erro", texto: "Escreva a mensagem do aviso." }; render(); return; }
   state.pcAvisoEnviando = true; state.pcAvisoMsg = null; render();
   let r;
-  try { r = await sb.rpc('enviar_aviso_da_academia', { p_academia: c.id, p_titulo: f.titulo.trim(), p_mensagem: f.mensagem.trim() }); }
+  try {
+    const dados = { p_academia: c.id, p_titulo: f.titulo.trim(), p_mensagem: f.mensagem.trim() };
+    r = await sb.rpc('enviar_aviso_da_academia', { ...dados, p_tipo: f.tipo });
+    // Banco ainda sem o tipo (SQL 20261015140000): sai como aviso.
+    if (r.error && /p_tipo|PGRST202/i.test(`${r.error.code} ${r.error.message}`)) r = await sb.rpc('enviar_aviso_da_academia', dados);
+  }
   catch (e) { r = { error: e }; }
   state.pcAvisoEnviando = false;
   if (r.error) {
@@ -8963,7 +9187,7 @@ async function enviarAviso() {
     return;
   }
   const d = r.data || {};
-  state.pcAvisoMsg = { tipo: "ok", texto: d.aviso === "enviado" ? `Aviso mandado: chega a ${d.avisados} ${plural(d.avisados, "jogador", "jogadores")}.`
+  state.pcAvisoMsg = { tipo: "ok", texto: d.aviso === "enviado" ? `${f.tipo === "promocao" ? "Promoção mandada" : "Aviso mandado"}: chega a ${d.avisados} ${plural(d.avisados, "jogador", "jogadores")}.`
     : d.aviso === "semana" ? "A academia já mandou um aviso nesta semana. Tente de novo daqui a alguns dias."
     : "Ainda não há jogadores que pediram esses avisos perto da academia. O envio não foi gasto." };
   if (d.aviso === "enviado") state.pcAvisoForm = null;
@@ -9014,8 +9238,10 @@ function pcPromocoes() {
           <textarea class="form-field pc-promo-campo" data-campo="detalhes" id="pc-promo-detalhes" maxlength="280" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até 17h." style="margin-top:0">${esc(f.detalhes)}</textarea>
           <label class="field-label" for="pc-promo-ate">Válida até</label>
           <input class="form-field pc-promo-campo" data-campo="ate" id="pc-promo-ate" type="date" min="${hojeEmBrasilia()}" max="${hojeEmBrasilia(90)}" value="${esc(f.ate)}" style="margin-top:0" />
+          ${previaDaPromocao(f)}
           ${editando ? "" : saldoDeEnvios()
-            ? `<label class="consent-row pc-promo-avisar"><input type="checkbox" id="pc-promo-avisar" ${f.avisar === false ? "" : "checked"} /><span>Avisar por e-mail os jogadores que favoritaram a academia ou estão perto (usa 1 envio · ${esc(textoDoSaldo(saldoDeEnvios()).toLowerCase())})</span></label>`
+            ? `<label class="consent-row pc-promo-avisar"><input type="checkbox" id="pc-promo-avisar" ${f.avisar === false ? "" : "checked"} /><span>Avisar por e-mail os jogadores que favoritaram a academia ou estão perto (usa 1 envio · ${esc(textoDoSaldo(saldoDeEnvios()).toLowerCase())})</span></label>
+              ${f.avisar === false ? "" : previaDoEmail(c, f, "promocao")}`
             : `<p class="pc-card-s pc-promo-avisar">Para avisar os jogadores por e-mail, <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">compre envios</a>.</p>`}
           <button type="button" class="cta-btn cta-primary" id="pc-promo-salvar" ${state.pcPromoSalvando ? "disabled" : ""}>${state.pcPromoSalvando ? bolaGirando(15) + " Salvando..." : editando ? "Salvar a mudança" : "Publicar promoção"}</button>
           ${editando ? `<button type="button" class="inline-link" id="pc-promo-cancelar" style="margin-top:12px">Cancelar</button>` : ""}
@@ -9585,8 +9811,10 @@ async function criarContaDeParceiro() {
   state.pcEmailPasso = "email";
   state.pcSelecionada = undefined;
   await loadEverything();
+  await mandarCodigoDaContaNova();
   render();
   window.scrollTo(0, 0);
+  if (state.pcConfirmar === "enviado") document.getElementById("pc-codigo-email")?.focus({ preventScroll: true });
 }
 
 // A conta de jogador passa a valer no Parceiros (SQL 20261006160000).
@@ -9611,8 +9839,18 @@ async function ativarParceirosDoJogador() {
   state.pcEmailPasso = "email";
   state.pcSelecionada = undefined;
   await loadEverything();
+  await mandarCodigoDaContaNova();
   render();
   window.scrollTo(0, 0);
+  if (state.pcConfirmar === "enviado") document.getElementById("pc-codigo-email")?.focus({ preventScroll: true });
+}
+
+// Conta nova sem o e-mail confirmado: o código sai sozinho e o aviso desce.
+async function mandarCodigoDaContaNova() {
+  if (!faltaConfirmarEmail()) { mostrarPush("Conta criada!"); return; }
+  state.pcConfirmarErro = "";
+  state.pcConfirmar = (await enviarCodigo(contaAcademia.login)) ? "enviado" : "falhou";
+  mostrarPush(state.pcConfirmar === "enviado" ? `Conta criada! Mandamos um código para ${contaAcademia.login}.` : "Conta criada! Agora confirme o seu e-mail.");
 }
 
 async function pedirParaAdministrar(academiaId) {
@@ -9642,6 +9880,7 @@ async function pedirParaAdministrar(academiaId) {
     await loadEverything();
     const c = minhaAcademia();
     state.contaAviso = `Pronto! Agora você administra a ${c ? c.name : "academia"} no GuiaTennis Parceiros.`;
+    mostrarPush(`Pronto! Agora você administra a ${c ? c.name : "academia"}.`);
     irParceiros("painel");
     return;
   }
@@ -9650,10 +9889,10 @@ async function pedirParaAdministrar(academiaId) {
   await recarregarConta();
   // Falta o e-mail: o código sai sozinho, como no Booking e no Airbnb, e o
   // aviso conta o que aconteceu (pedido de 15/10/2026).
-  if (faltaConfirmarEmail() && state.pcConfirmar !== "enviado") {
-    state.pcConfirmarErro = "";
-    state.pcConfirmar = (await enviarCodigo(contaAcademia.login)) ? "enviado" : "falhou";
-    mostrarPush(state.pcConfirmar === "enviado" ? `Pedido feito! Mandamos um código para ${contaAcademia.login}.` : "Pedido feito! Agora confirme o seu e-mail.");
+  if (faltaConfirmarEmail()) {
+    const jaMandado = state.pcConfirmar === "enviado";
+    if (!jaMandado) { state.pcConfirmarErro = ""; state.pcConfirmar = (await enviarCodigo(contaAcademia.login)) ? "enviado" : "falhou"; }
+    mostrarPush(!jaMandado && state.pcConfirmar === "enviado" ? `Pedido feito! Mandamos um código para ${contaAcademia.login}.` : "Pedido feito! Falta confirmar o seu e-mail.");
   } else mostrarPush("Pedido feito!");
   syncUrl(false);
   render();
@@ -9921,8 +10160,12 @@ function ligarEventosParceiros() {
       return;
     }
     state.contaAviso = "E-mail confirmado.";
+    if (!temAcademia() && !meusPedidos().length) mostrarPush("E-mail confirmado! Agora escolha a sua academia.");
     render();
+    window.scrollTo(0, 0);
   };
+  const pcDepois = document.getElementById("pc-confirmar-depois");
+  if (pcDepois) pcDepois.onclick = () => { state.pcConfirmarDepois = true; render(); window.scrollTo(0, 0); };
   const pcTrocar = document.getElementById("pc-trocar-email");
   if (pcTrocar) pcTrocar.onclick = () => { state.pcEmailPasso = "email"; state.pcContaErro = ""; render(); document.getElementById("pc-email")?.focus(); };
   document.querySelectorAll(".pc-conta-campo").forEach(el => {
@@ -9955,10 +10198,17 @@ function ligarEventosParceiros() {
   const pcAdministrar = document.getElementById("pc-administrar");
   if (pcAdministrar) pcAdministrar.onclick = () => pedirParaAdministrar(state.pcSelecionada);
   // Promoções: o que foi digitado fica guardado entre um render e outro.
+  const promoAvisar = document.getElementById("pc-promo-avisar");
+  if (promoAvisar) promoAvisar.onchange = () => {
+    const f = state.pcPromoForm || { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "" };
+    state.pcPromoForm = { ...f, avisar: promoAvisar.checked };
+    render();
+  };
   document.querySelectorAll(".pc-promo-campo").forEach(el => {
     el.oninput = () => {
-      const f = state.pcPromoForm || { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "" };
+      const f = state.pcPromoForm || { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "", avisar: document.getElementById("pc-promo-avisar") ? document.getElementById("pc-promo-avisar").checked : undefined };
       state.pcPromoForm = { ...f, [el.dataset.campo]: el.value };
+      atualizarPreviaDoEmail(state.pcPromoForm, "promocao");
     };
   });
   const pcPromoSalvar = document.getElementById("pc-promo-salvar");
@@ -9970,6 +10220,13 @@ function ligarEventosParceiros() {
   document.querySelectorAll("[data-promo-avisar]").forEach(el => { el.onclick = () => avisarPromocao(el.dataset.promoAvisar); });
   const pcAvisoEnviar = document.getElementById("pc-aviso-enviar");
   if (pcAvisoEnviar) pcAvisoEnviar.onclick = enviarAviso;
+  const formDoAviso = () => state.pcAvisoForm || (state.pcAvisoForm = { titulo: document.getElementById("pc-aviso-titulo")?.value || "", mensagem: document.getElementById("pc-aviso-mensagem")?.value || "", tipo: "aviso" });
+  document.querySelectorAll(".pc-aviso-campo").forEach(el => {
+    el.oninput = () => { const f = formDoAviso(); f[el.dataset.campo] = el.value; atualizarPreviaDoEmail(f); };
+  });
+  document.querySelectorAll("[data-aviso-tipo]").forEach(el => {
+    el.onclick = () => { formDoAviso().tipo = el.dataset.avisoTipo; state.pcAvisoMsg = null; render(); };
+  });
   const pcDeclaro = document.getElementById("pc-declaro");
   if (pcDeclaro) pcDeclaro.onchange = (e) => { state.pcDeclaro = e.target.checked; if (state.pcDeclaroErro && state.pcDeclaro) { state.pcDeclaroErro = false; render(); } };
   const pcNovidades = document.getElementById("pc-conta-novidades");

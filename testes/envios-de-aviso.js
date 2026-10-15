@@ -21,17 +21,33 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   const link = await page.evaluate(() => document.querySelector('#pc-saldo a')?.getAttribute('href') || '');
   ok(corpo.includes('Nenhum envio disponível') && await page.isDisabled('#pc-aviso-enviar') && decodeURIComponent(link).includes('comprar envios de aviso'),
     'Completo sem envios: o botão fica desligado e "Comprar envios" abre o WhatsApp');
+  // Sem envios, o aviso fica em vermelho, quase um erro (15/10/2026).
+  ok(await page.evaluate(() => { const b = document.querySelector('.pc-aviso-bloqueio.form-error'); if (!b || !b.innerText.includes('Sem envios, o aviso não sai')) return false; const [r, g] = getComputedStyle(b).color.match(/\d+/g).map(Number); return r > 140 && g < 90; }),
+    'sem envios: o aviso em vermelho, como um erro');
+  // A prévia do e-mail muda enquanto se digita; o aviso também pode ser promoção.
+  await page.fill('#pc-aviso-titulo', 'Primeira aula grátis');
+  let previa = await texto(page, '#pc-email-previa');
+  ok(previa.includes('Prévia do e-mail que os jogadores recebem') && previa.includes('Assunto: Só Aula Tennis: Primeira aula grátis') && previa.includes('Aviso da Só Aula Tennis') && previa.includes('mandou um aviso')
+    && await page.evaluate(() => document.activeElement.id === 'pc-aviso-titulo'), 'a prévia do e-mail muda enquanto se digita, sem perder o cursor');
+  await page.click('[data-aviso-tipo="promocao"]');
+  await page.waitForTimeout(150);
+  previa = await texto(page, '#pc-email-previa');
+  ok(previa.includes('Assunto: Promoção da Só Aula Tennis: Primeira aula grátis') && previa.includes('mandou uma promoção') && (await texto(page, '#pc-aviso-enviar')) === 'Mandar a promoção',
+    'tipo "Promoção": a prévia e o botão mudam — ' + previa.split('\n')[1]);
   ok(await page.evaluate(() => promocoesLiberadas(minhaAcademia()) === false), 'o Completo não publica promoções');
   await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a1').envios_de_aviso = 2; await carregarAvisosDaAcademia(); });
   await page.waitForTimeout(200);
   ok((await texto(page, '#pc-saldo')).includes('2 envios disponíveis') && !(await page.isDisabled('#pc-aviso-enviar')), 'com 2 envios, o saldo aparece e o botão liga');
   await page.evaluate(() => { window.__promoAviso = { aviso: 'enviado', avisados: 9 }; });
+  await page.click('[data-aviso-tipo="aviso"]');
+  await page.waitForTimeout(150);
   await page.fill('#pc-aviso-titulo', 'Turma nova aos sábados');
   await page.fill('#pc-aviso-mensagem', 'Abrimos uma turma para iniciantes aos sábados, às 9h.');
   await page.click('#pc-aviso-enviar');
   await page.waitForTimeout(400);
   corpo = await texto(page, '#parceiros .pc-main');
   ok(corpo.includes('Aviso mandado: chega a 9 jogadores') && corpo.includes('1 envio disponível') && corpo.includes('chegou a 9 jogadores'), 'manda o aviso, gasta 1 envio e mostra na lista');
+  ok(await page.evaluate(() => (window.__rpcs.find(r => r.nome === 'enviar_aviso_da_academia') || {}).args.p_tipo === 'aviso'), 'o tipo vai junto para o banco');
   ok(await page.isDisabled('#pc-aviso-enviar') && corpo.includes('já mandou um aviso nesta semana'), 'no máximo 1 aviso por semana: o botão desliga');
   await browser.close();
 
@@ -39,6 +55,15 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'], envios: { a1: 3 } }));
   await page.waitForTimeout(400);
   ok((await texto(page, '.pc-promo-avisar')).includes('usa 1 envio · 3 envios disponíveis') && await page.isChecked('#pc-promo-avisar'), 'Premium: "Avisar por e-mail" mostra que usa 1 envio e o saldo');
+  await page.fill('#pc-promo-titulo', 'Aula experimental');
+  let previas = await page.evaluate(() => ({ ficha: document.getElementById('pc-promo-previa')?.innerText || '', email: document.getElementById('pc-email-previa')?.innerText || '' }));
+  ok(previas.ficha.includes('Prévia na ficha e na busca') && previas.ficha.includes('Aula experimental') && previas.email.includes('Promoção na Só Aula Tennis') && previas.email.includes('está com uma promoção'),
+    'promoção: a prévia na ficha e a do e-mail, enquanto se digita');
+  await page.uncheck('#pc-promo-avisar');
+  await page.waitForTimeout(150);
+  ok(!(await page.$('#pc-email-previa')) && await page.$('#pc-promo-previa'), 'sem avisar por e-mail, some a prévia do e-mail');
+  await page.check('#pc-promo-avisar');
+  await page.waitForTimeout(150);
   await page.evaluate(() => { window.__promoAviso = { aviso: 'enviado', avisados: 4 }; });
   await page.fill('#pc-promo-titulo', 'Aula experimental grátis');
   await page.fill('#pc-promo-ate', dia(15));

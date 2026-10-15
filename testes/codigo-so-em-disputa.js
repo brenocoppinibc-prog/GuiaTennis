@@ -117,6 +117,39 @@ async function pedirPelaTela(page, busca, id) {
   ok(r.aba === 'painel' && r.push.includes('E-mail confirmado!'), 'e vai direto para o painel da academia, com o aviso no alto (15/10/2026) — ' + r.aba);
   await browser.close();
 
+  // ---- conta sem academia e sem pedido: primeiro o e-mail, depois a academia, que passa a ser dela ----
+  ({ browser, page } = await abrir({ q: 'parceiros/entrar' }));
+  await page.evaluate(() => {
+    const agora = new Date().toISOString();
+    window.__db.academia_acessos.push({ user_id: 'u-rui', academia_id: null, usuario: 'rui@quadra.com.br', email: 'rui@quadra.com.br', nome_responsavel: 'Rui Primeiro', papel: 'principal', termos_aceitos_em: agora, dados_completos_em: agora, senha_trocada_em: agora });
+    window.__senhas['rui@quadra.com.br'] = 'senha12345';
+  });
+  await irSenha(page, 'rui@quadra.com.br');
+  await page.fill('#login-password', 'senha12345');
+  await page.click('#login-submit');
+  await page.waitForTimeout(800);
+  await page.evaluate(() => irParceiros('cadastro'));
+  await page.waitForTimeout(300);
+  r = await page.evaluate(() => ({ h1: document.querySelector('#parceiros h1')?.innerText || '', busca: !!document.getElementById('pc-busca'), pisca: !!document.querySelector('.pc-confirmar-email.pisca') }));
+  ok(r.h1 === 'Confirme o seu e-mail.' && !r.busca && r.pisca, 'sem academia e sem o e-mail: a tela do e-mail vem antes da busca — ' + r.h1);
+  await page.click('#pc-mandar-codigo');
+  await page.waitForTimeout(300);
+  ok((await page.evaluate(() => document.querySelector('.gt-push')?.innerText || '')).includes('Código enviado para rui@quadra.com.br'), '"Mandar o código" avisa no alto');
+  await page.fill('#pc-codigo-email', '123456');
+  await page.click('#pc-confirmar-email');
+  await page.waitForTimeout(800);
+  r = await page.evaluate(() => ({ busca: !!document.getElementById('pc-busca'), push: document.querySelector('.gt-push')?.innerText || '', h1: document.querySelector('#parceiros h1')?.innerText || '', aba: state.parceirosAba }));
+  ok(r.busca && r.push.includes('E-mail confirmado! Agora escolha a sua academia.'), 'confirmado, vem a busca da academia — ' + r.push + ' / ' + r.aba + ' / ' + r.h1);
+  await page.fill('#pc-busca', 'Só Aula');
+  await page.waitForTimeout(100);
+  await page.click('.pc-escolha[data-pc-selecionar="a1"]');
+  await page.check('#pc-declaro');
+  await page.click('#pc-administrar');
+  await page.waitForTimeout(900);
+  r = await page.evaluate(() => ({ aba: state.parceirosAba, push: document.querySelector('.gt-push')?.innerText || '', acad: (window.__db.academia_vinculos.find(v => v.user_id === 'u-rui') || {}).academia_id }));
+  ok(r.aba === 'painel' && r.acad === 'a1' && r.push.includes('Pronto! Agora você administra a Só Aula Tennis'), 'com o e-mail já confirmado, a academia sem responsável é dele na hora, direto no painel — ' + r.aba + ' ' + r.push);
+  await browser.close();
+
   // ---- admin: a disputa e o WhatsApp de antes ----
   ({ browser, page } = await abrir({ admin: true, criadaEm: diasAtras(60) }));
   await page.evaluate(async () => {

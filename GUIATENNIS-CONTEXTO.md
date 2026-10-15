@@ -31,7 +31,9 @@ teste")
 > dos jogadores com abas e "Resolvida" (107) e o chat do Parceiros que
 > leva a qualquer página e responde pelo plano (108); cadastro do
 > Parceiros com desmarcar, etapa do e-mail com avisos e planos organizados
-> (109), SQL
+> (109); e-mail antes da academia, página Plano com dores e soluções,
+> avaliação organizada e avisos com prévia (110, SQL
+> `20261015140000_avisos_com_tipo`), SQL
 > `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo, verde.
 > Testes: 1.419 verificações nos 51 arquivos do navegador e 377 no
 > `banco-emails.py`, nenhuma falha.
@@ -2499,6 +2501,42 @@ cobra taxa e não fica no meio** da negociação.
     comodidades, recomendadas, resumo do mês) mostram só a maior versão que
     o plano tem — o Completo não mostra mais "Até 3 comodidades" como
     falta. Testes: `testes/parceiros.js` e `testes/codigo-so-em-disputa.js`.
+110. **E-mail antes da academia, página Plano que vende, avaliação
+    organizada e avisos com prévia** (pedido de 15/10/2026, com prints). (a)
+    **Confirmar o e-mail vem antes de escolher a academia**: trilha Dados de
+    contato › Confirmar e-mail › Sua academia › Início. Criada a conta (ou
+    ativada a de jogador), o código sai sozinho ("Conta criada! Mandamos um
+    código para…") e vem a tela "Confirme o seu e-mail" (com o nome da
+    academia, se veio pelo link da ficha), com o cartão piscando e
+    "Confirmar depois" discreto; confirmado, "E-mail confirmado! Agora
+    escolha a sua academia" e a busca; a academia sem responsável passa a
+    ser da conta na hora, direto no painel ("Pronto! Agora você
+    administra…"). Quem pediu antes de confirmar continua na tela "Falta um
+    passo" (regra 109). (b) **Página Plano da academia**
+    (`pcPlanoDeHoje`, `pcOQueMelhorar`): primeiro "O plano de hoje" (a
+    academia, o plano e o que ele já entrega); depois "O que pode melhorar":
+    o que os jogadores não veem, as **dores por caminho** (`PC_CAMINHOS`:
+    na ficha, na busca, com os jogadores, na equipe e nos números;
+    `PC_DORES`), cada uma com "Com o Completo/Premium, …"; "A mudança é
+    simples" (o que já está preenchido aparece na hora, o GuiaTennis ajuda
+    a completar, sem comissão) com "Quero o <plano>"; "Para fazer agora"
+    (oportunidades: completar a ficha, responder avaliações, avisos,
+    promoção); e "Compare os planos". No Premium, só o plano de hoje e
+    "Aproveitem o Premium". Como a página de plano da Shopify e do
+    Booking. (c) **Cartão da avaliação** (site todo): quem avaliou (avatar,
+    nome, data) e a nota em cima, "Pedir análise" embaixo da nota, depois o
+    texto e "Responder" separado por uma linha, como o Booking e o Google.
+    (d) **Avisos por e-mail também como promoção**: "Aviso" ou "Promoção"
+    (SQL `20261015140000_avisos_com_tipo`: `avisos_das_academias.tipo`,
+    `enviar_aviso_da_academia(…, p_tipo)`, e-mail "Promoção da <academia>"
+    com a etiqueta), com a **prévia do e-mail** que muda enquanto se digita
+    (`previaDoEmail`, no quadro verde do "Estacionamento na ficha"); em
+    Promoções, a prévia na ficha e na busca e a do e-mail, se for avisar.
+    (e) Sem envios, "Sem envios, o aviso não sai…" fica **em vermelho**,
+    com "Comprar envios ›", e o botão apagado. Testes:
+    `testes/plano-da-academia.js`, `testes/envios-de-aviso.js`,
+    `testes/parceiros.js`, `testes/codigo-so-em-disputa.js` e a seção 22 do
+    `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3502,7 +3540,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce envios-de-aviso pensamento-e-home chat-parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce envios-de-aviso pensamento-e-home chat-parceiros plano-da-academia; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 ```
 

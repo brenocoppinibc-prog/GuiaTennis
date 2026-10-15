@@ -112,8 +112,9 @@ async function pedirPelaTela(page, busca, id) {
   await page.fill('#pc-codigo-email', '123456');
   await page.click('#pc-confirmar-email');
   await page.waitForTimeout(800);
-  r = await page.evaluate(() => ({ aviso: document.querySelector('.conta-aviso')?.innerText || '', acad: (window.__db.academia_vinculos.find(v => v.user_id === 'u-lia') || {}).academia_id }));
+  r = await page.evaluate(() => ({ aviso: document.querySelector('.conta-aviso')?.innerText || '', acad: (window.__db.academia_vinculos.find(v => v.user_id === 'u-lia') || {}).academia_id, aba: state.parceirosAba, push: document.querySelector('.gt-push')?.innerText || '' }));
   ok(r.acad === 'a1' && r.aviso.includes('Agora você administra a Só Aula Tennis'), 'confirmou o e-mail: a academia passa a ser dela, sozinha — ' + r.aviso);
+  ok(r.aba === 'painel' && r.push.includes('E-mail confirmado!'), 'e vai direto para o painel da academia, com o aviso no alto (15/10/2026) — ' + r.aba);
   await browser.close();
 
   // ---- admin: a disputa e o WhatsApp de antes ----

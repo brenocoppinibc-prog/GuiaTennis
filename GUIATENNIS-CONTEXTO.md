@@ -29,7 +29,9 @@ teste")
 > Depois, no chat novo: o "pensamento" do chat (regra 105), Completo nas
 > recomendadas, perto primeiro e a viagem na home (106) e o chat na conta
 > dos jogadores com abas e "Resolvida" (107) e o chat do Parceiros que
-> leva a qualquer página e responde pelo plano (108), SQL
+> leva a qualquer página e responde pelo plano (108); cadastro do
+> Parceiros com desmarcar, etapa do e-mail com avisos e planos organizados
+> (109), SQL
 > `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo, verde.
 > Testes: 1.415 verificações nos 51 arquivos do navegador e 377 no
 > `banco-emails.py`, nenhuma falha.
@@ -2477,6 +2479,26 @@ cobra taxa e não fica no meio** da negociação.
     sugerido), "A academia não aparece" (no ar, em análise ou pausada) e
     "O que tem no Parceiros" (as páginas para tocar). Teste:
     `testes/chat-parceiros.js`.
+109. **Cadastro do Parceiros: desmarcar, e-mail numa etapa à parte e planos
+    organizados** (pedido de 15/10/2026, com prints). (a) Tocar de novo na
+    academia marcada na busca do cadastro **desmarca**. (b) A trilha ganhou
+    a etapa **"Confirmar e-mail"** (Dados de contato › Sua academia ›
+    Confirmar e-mail › Início): a tela da busca não mostra mais o cartão do
+    e-mail; depois de "Administrar esta academia", o **código sai sozinho**
+    e vem a tela "Falta um passo / Confirme o seu e-mail para administrar a
+    <academia>", com o cartão **piscando** (borda dourada, 4 vezes) e, embaixo,
+    o pedido com o **alerta** "Esperando você confirmar o e-mail ·
+    Confirmar ›" (ponto dourado piscando; "Confirmar" leva ao cartão).
+    **Avisos que descem no alto** (`mostrarPush`, fora do render, somem em
+    5 s): "Pedido feito! Mandamos um código para…", "Código enviado…",
+    "E-mail confirmado!". Confirmado o e-mail e a academia passando a ser
+    da conta, vai **direto para o painel dela** (abre a academia, se a
+    conta já tinha outra). Sem animação para quem pede menos movimento. (c)
+    **Planos:** em cada plano, o que ele tem vem em cima e o que não tem,
+    embaixo (`recursosDoPlano`); itens do mesmo `grupo` (fotos e
+    comodidades, recomendadas, resumo do mês) mostram só a maior versão que
+    o plano tem — o Completo não mostra mais "Até 3 comodidades" como
+    falta. Testes: `testes/parceiros.js` e `testes/codigo-so-em-disputa.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

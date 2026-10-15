@@ -49,7 +49,13 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   t = await tela(page);
   ok(t.aba === 'planos' && t.link === '/parceiros/planos' && t.h1 === 'Planos' && !t.robots, 'Planos tem endereço próprio e entra no Google — ' + t.link);
   const tabela = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelectorAll('.pc-plano-lista li:not(.nao)').length).join());
-  ok(tabela === '8,13,22', 'cada plano mostra o que libera, um acima do outro — ' + tabela);  // + o resumo do mês (regra 87), as recomendadas (regra 101) e os avisos por e-mail no Completo e no Premium (regra 104) e o Completo nas recomendadas (regra 106)
+  const ordemPlanos = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => {
+    const li = [...p.querySelectorAll('.pc-plano-lista li')];
+    const prim = li.findIndex(l => l.classList.contains('nao'));
+    return { emCima: prim === -1 || li.slice(prim).every(l => l.classList.contains('nao')), ate3: li.some(l => l.innerText.includes('Até 3 comodidades')) };
+  }));
+  ok(ordemPlanos.every(p => p.emCima) && ordemPlanos.map(p => p.ate3).join() === 'true,false,false', 'em cada plano, o que tem em cima e o que não tem embaixo; quem tem "Todas as comodidades" não mostra "Até 3" como falta — ' + JSON.stringify(ordemPlanos));
+  ok(tabela === '8,13,20', 'cada plano mostra o que libera, um acima do outro — ' + tabela);  // + o resumo do mês (regra 87), as recomendadas (regra 101) e os avisos por e-mail no Completo e no Premium (regra 104) e o Completo nas recomendadas (regra 106); do mesmo grupo, só a maior versão (regra 109)
   const pessoasPorPlano = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-lista li').innerText.match(/\d+/)[0]).join());
   ok(pessoasPorPlano === '1,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
   ok(!/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e na busca'), 'Premium mostra as promoções, que já funcionam (sem "Em breve")');
@@ -95,7 +101,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     feito: document.querySelector('.pc-trilho i')?.style.width,
   }));
   let etapas = await barra();
-  ok(etapas.etapas === 'Dados de contato* | Sua academia | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'trilha de tênis em cima, com a bolinha na primeira etapa — ' + etapas.etapas);
+  ok(etapas.etapas === 'Dados de contato* | Sua academia | Confirmar e-mail | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'trilha de tênis em cima, com a bolinha na primeira etapa — ' + etapas.etapas);
   ok((await texto(page, '.pc-main .pc-card .footnote')).includes('Recebeu um usuário do GuiaTennis? Escreva o usuário aqui.'), 'quem recebeu usuário do GuiaTennis usa o mesmo campo (a dica fica, a explicação não)');
   await page.fill('#pc-email', 'joana@semponto');
   await page.click('#pc-email-continuar');
@@ -172,7 +178,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'cria a conta e já entra com o e-mail');
   etapas = await barra();
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(etapas.etapas === '✓ Dados de contato✓ | Sua academia* | Início' && etapas.feito === '50%' && await page.evaluate(() => document.querySelector('.trilha-bola').style.left) === '50%', 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
+  ok(etapas.etapas === '✓ Dados de contato✓ | Sua academia* | Confirmar e-mail | Início' && etapas.feito.startsWith('33.3') && (await page.evaluate(() => document.querySelector('.trilha-bola').style.left)).startsWith('33.3'), 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
   ok(corpo.includes('Declaro que estou autorizado(a) pela academia'), 'a declaração de que representa a academia vem na hora de escolher a academia');
   ok(corpo.includes('Prazer em conhecer você, Joana!') && corpo.includes('Antes de começar, vamos ver se a sua academia já está no GuiaTennis.') && corpo.includes('Dica: escreva também o bairro'), 'tela "Prazer em conhecer você", como a do trivago');
   let escolhas = await page.evaluate(() => [...document.querySelectorAll('.pc-escolha')].map(b => b.innerText.replace(/\s+/g, ' ').trim() + (b.classList.contains('on') ? '*' : '')));
@@ -196,6 +202,9 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   const linhaNova = await texto(page, '.pc-main .pc-linha');
   ok(linhaNova.includes('A sua academia ainda não está no GuiaTennis?') && linhaNova.includes('Cadastrar academia nova'), 'academia nova numa linha discreta');
   await page.click('.pc-escolha[data-pc-selecionar="a1"]');
+  await page.click('.pc-escolha[data-pc-selecionar="a1"]');
+  ok(await page.evaluate(() => !document.querySelector('.pc-escolha.on') && document.getElementById('pc-administrar').disabled), 'tocar de novo na academia marcada desmarca (15/10/2026)');
+  await page.click('.pc-escolha[data-pc-selecionar="a1"]');
   // A declaração é uma caixinha obrigatória, como o "Li e concordo" (06/10/2026).
   const decl = await texto(page, '.pc-declaro');
   ok(decl.includes('Declaro que estou autorizado(a) pela academia') && decl.includes('respondo pelas informações') && !decl.includes('dono'), 'caixinha da declaração, sem "é dono(a)" — ' + decl);
@@ -213,7 +222,13 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     codigo: !!document.getElementById('pc-codigo'),
   }));
   etapas = await barra();
-  ok(pedido.rpc && pedido.rpc.p_academia === 'a1' && /pedido enviado/i.test(pedido.card) && pedido.card.includes('Só Aula Tennis') && etapas.feito === '100%', '"Administrar esta academia" manda o pedido — ' + pedido.card.split('\n')[0]);
+  ok(pedido.rpc && pedido.rpc.p_academia === 'a1' && /pedido enviado/i.test(pedido.card) && pedido.card.includes('Só Aula Tennis') && etapas.etapas.includes('Confirmar e-mail*'), '"Administrar esta academia" manda o pedido e passa à etapa do e-mail — ' + etapas.etapas);
+  // O e-mail numa etapa à parte (15/10/2026): o código sai sozinho, o aviso
+  // desce no alto, o cartão pisca e o pedido mostra o alerta.
+  const etapaEmail = await page.evaluate(() => ({ push: document.querySelector('.gt-push')?.innerText || '', h1: document.querySelector('#parceiros h1')?.innerText || '',
+    pisca: !!document.querySelector('.pc-confirmar-email.pisca #pc-codigo-email'), alerta: document.querySelector('.pc-pedido .pc-pedido-alerta')?.innerText || '', busca: !!document.getElementById('pc-busca') }));
+  ok(etapaEmail.push.includes('Pedido feito! Mandamos um código para contato@soaulatennis.com.br') && etapaEmail.h1 === 'Confirme o seu e-mail para administrar a Só Aula Tennis.'
+    && etapaEmail.pisca && etapaEmail.alerta.includes('Esperando você confirmar o e-mail') && !etapaEmail.busca, 'a etapa do e-mail: aviso no alto, código já enviado, cartão piscando e alerta no pedido — ' + JSON.stringify(etapaEmail));
   // O código só em disputa (07/10/2026): sem o e-mail confirmado, o pedido
   // espera a confirmação; confirmado, a ficha passa a ser da conta.
   ok(!pedido.codigo && pedido.card.includes('Confirme o seu e-mail') && pedido.card.includes('passa a ser sua na hora'), 'sem o e-mail confirmado, o pedido espera a confirmação do e-mail, sem código');

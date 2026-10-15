@@ -81,6 +81,21 @@
   .conta-situacao.ok { background: var(--green-soft); color: var(--green); }
   .conta-situacao svg, .conta-aviso svg { flex-shrink: 0; margin-top: 1px; }
   .conta-aviso { display: flex; gap: 7px; align-items: center; margin: 12px 0 0; font-size: 13px; font-weight: 700; color: var(--green); }
+  /* Aviso que desce no alto e o que pisca (15/10/2026). */
+  .gt-push { position: fixed; top: 12px; left: 50%; z-index: 4000; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 32px); padding: 11px 12px 11px 14px; border-radius: 14px; background: var(--green); color: #fff; font-size: 14px; font-weight: 600; line-height: 1.35; box-shadow: 0 10px 30px rgba(0,0,0,.18); transform: translateX(-50%); animation: gt-push-entra .32s ease-out; transition: opacity .35s, transform .35s; }
+  .gt-push.sai { opacity: 0; transform: translate(-50%, -16px); }
+  .gt-push-ic { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.18); animation: gt-ponto 1.2s ease-in-out 3; }
+  .gt-push-x { flex-shrink: 0; padding: 4px 6px; border: 0; background: none; color: rgba(255,255,255,.8); font: inherit; cursor: pointer; }
+  @keyframes gt-push-entra { from { opacity: 0; transform: translate(-50%, -24px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes gt-piscar { 0%, 100% { box-shadow: 0 0 0 0 rgba(193, 154, 61, 0); } 50% { box-shadow: 0 0 0 7px rgba(193, 154, 61, .32); } }
+  @keyframes gt-ponto { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.82); } }
+  .pc-confirmar-email.pisca { border-color: var(--gold); animation: gt-piscar 1.5s ease-in-out 4; }
+  .pc-pedido-alerta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; padding: 8px 12px; border-radius: 10px; background: #FFF6E0; color: #7A5A12; font-size: 13.5px; font-weight: 600; }
+  .pc-pedido-alerta .pc-linha-link { margin-left: auto; }
+  .pc-ponto-pisca { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); flex-shrink: 0; animation: gt-ponto 1.2s ease-in-out infinite; }
+  .pc-pedido.espera-email { border-color: #E9D9A8; }
+  .pc-sub-pedidos { margin: 22px 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { .gt-push, .gt-push-ic, .pc-confirmar-email.pisca, .pc-ponto-pisca { animation: none; } }
   .conta-faltas { margin-top: 12px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
   .conta-faltas-t { margin: 0 0 8px; font-size: 13px; font-weight: 700; }
   .conta-falta { border: 1px dashed var(--muted-dark); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--muted); }
@@ -3635,6 +3650,20 @@ window.addEventListener("online", () => { FALHAS.quedaAnotada = false; mandarFil
 //            academia, soSeTecnica (só é falha se a rede ou o servidor
 //            falhou: um endereço que não existe não é), silenciosa
 //            (registra sem mostrar ajuda).
+// O aviso que desce no alto da tela e some sozinho (pedido de 15/10/2026:
+// "com aqueles push avisando"), como as notificações do Booking e do
+// Airbnb: fica fora do render, então não some quando a tela redesenha.
+function mostrarPush(texto, tipo = "ok") {
+  document.querySelectorAll(".gt-push").forEach(el => el.remove());
+  const el = document.createElement("div");
+  el.className = "gt-push" + (tipo === "ok" ? "" : " " + tipo);
+  el.setAttribute("role", "status");
+  el.innerHTML = `<span class="gt-push-ic">${icon(tipo === "ok" ? 'check' : 'info', 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}</span><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
+  el.querySelector(".gt-push-x").onclick = () => el.remove();
+  document.body.appendChild(el);
+  setTimeout(() => el.classList.add("sai"), 5000);
+  setTimeout(() => el.remove(), 5400);
+}
 // No lugar de alert("Não consegui…"): erro de regra continua no alert, com a
 // mensagem de sempre; falha de verdade vira a faixa com o código.
 function avisarFalha(acao, erro, textoDeRegra, opcoes = {}) {
@@ -7335,8 +7364,11 @@ const PC_RECURSOS = [
   { t: "O jogador chama direto no seu WhatsApp, sem comissão", p: ["basico", "completo", "premium"] },
   { t: "Responder às avaliações", p: ["basico", "completo", "premium"] },
   { t: "QR code da ficha para a recepção", p: ["basico", "completo", "premium"] },
-  { t: "Até 3 comodidades e até 3 fotos na ficha", p: ["basico"] },
-  { t: "Todas as comodidades e até 5 fotos na ficha", p: ["completo", "premium"] },
+  // grupo: a mesma coisa em versões (pedido de 15/10/2026: "se um plano tem
+  // algo melhor, não deixar o pior desmarcado"): o plano que tem a maior
+  // não mostra a menor.
+  { t: "Até 3 comodidades e até 3 fotos na ficha", p: ["basico"], grupo: "ficha" },
+  { t: "Todas as comodidades e até 5 fotos na ficha", p: ["completo", "premium"], grupo: "ficha" },
   { t: "Instagram e site na ficha, além do WhatsApp", p: ["completo", "premium"] },
   { t: "Regra de cancelamento e reposição", p: ["completo", "premium"] },
   { t: "Como chegar: fachada, entrada e onde estacionar", p: ["completo", "premium"] },
@@ -7345,8 +7377,8 @@ const PC_RECURSOS = [
   { t: "No topo da busca da região, marcada como \"Patrocinado\"", p: ["premium"] },
   // Pedido de 14/10/2026 (regra 101).
   // Pedido de 15/10/2026: o Completo também entra, pela ficha mais completa.
-  { t: "Entre as \"Academias recomendadas\" da página inicial, quanto mais completa a ficha", p: ["completo", "premium"] },
-  { t: "Primeiro entre as recomendadas, marcada como \"Patrocinado\"", p: ["premium"] },
+  { t: "Entre as \"Academias recomendadas\" da página inicial, quanto mais completa a ficha", p: ["completo", "premium"], grupo: "recomendadas" },
+  { t: "Primeiro entre as recomendadas, marcada como \"Patrocinado\"", p: ["premium"], grupo: "recomendadas" },
   // Pedido de 08/10/2026: as promoções saíram do "Em breve".
   { t: "Promoções na ficha e na busca", p: ["premium"] },
   // Regra 104: avisos por e-mail pagos por envio, mais baratos no Premium.
@@ -7358,9 +7390,18 @@ const PC_RECURSOS = [
   // Resumo do mês por e-mail para todos, com os números do plano; o
   // relatório completo é do Premium (09/10/2026, regra 87; antes, só o
   // Premium recebia). Sem caixa de "quero receber": desliga no Perfil.
-  { t: "Resumo do mês por e-mail: acessos e avaliações", p: ["basico", "completo", "premium"] },
-  { t: "Relatório completo do mês por e-mail: quem chamou e de onde vieram", p: ["premium"] },
+  { t: "Resumo do mês por e-mail: acessos e avaliações", p: ["basico", "completo", "premium"], grupo: "resumo" },
+  { t: "Relatório completo do mês por e-mail: quem chamou e de onde vieram", p: ["premium"], grupo: "resumo" },
 ];
+// O que o plano tem vem em cima e o que não tem, embaixo (pedido de
+// 15/10/2026: "deixe tudo quando tiver no plano, em cima, abaixo o que não
+// tem"), como as tabelas de planos da Shopify e do Booking. Do mesmo grupo,
+// fica só a maior versão que o plano tem.
+function recursosDoPlano(plano) {
+  const tem = (r) => r.p.includes(plano);
+  const visiveis = PC_RECURSOS.filter((r, i) => !r.grupo || !PC_RECURSOS.some((x, j) => j > i && x.grupo === r.grupo && tem(x)));
+  return [...visiveis.filter(tem), ...visiveis.filter(r => !tem(r))];
+}
 // "pessoas": quantos e-mails entram na mesma academia — o banco confere
 // (limite_de_pessoas, SQL 20261002120000).
 const PC_PLANOS = [
@@ -8142,7 +8183,7 @@ function pcCartoesDePlano(atual, revelar = false) {
           <p class="pc-card-s">${esc(p.resumo)}</p>
           <ul class="pc-plano-lista">
             <li>${icon('check', 15, 'var(--green)')}<span>Até ${p.pessoas} ${plural(p.pessoas, "e-mail", "e-mails")} com acesso à academia</span></li>
-            ${PC_RECURSOS.map(r => `<li class="${r.p.includes(p.key) ? "" : "nao"}">${r.p.includes(p.key) ? (r.selo ? seloPremium(15) : icon('check', 15, 'var(--green)')) : `<span class="pc-traco">—</span>`}<span>${esc(r.t)}</span></li>`).join("")}
+            ${recursosDoPlano(p.key).map(r => `<li class="${r.p.includes(p.key) ? "" : "nao"}">${r.p.includes(p.key) ? (r.selo ? seloPremium(15) : icon('check', 15, 'var(--green)')) : `<span class="pc-traco">—</span>`}<span>${esc(r.t)}</span></li>`).join("")}
           </ul>
           ${atual === p.key
             ? `<p class="pc-plano-ok">${icon('check', 14, 'var(--green)')} Plano atual</p>`
@@ -8291,8 +8332,13 @@ function trilhaTenis(etapas, atual, rotulo) {
     </div>`;
 }
 
+// Confirmar o e-mail é uma etapa à parte (pedido de 15/10/2026: "deixe em
+// partes diferentes para confirmar o email… para não ficar aglomerado").
 function pcEtapas(atual) {
-  return trilhaTenis(["Dados de contato", "Sua academia", "Início"], atual, "Etapas do cadastro");
+  return trilhaTenis(["Dados de contato", "Sua academia", "Confirmar e-mail", "Início"], atual, "Etapas do cadastro");
+}
+function faltaConfirmarEmail() {
+  return !!(contaAcademia && !contaAcademia.emailConfirmado && recebeEmail(contaAcademia.login));
 }
 
 // "(11) •••••-0002": o WhatsApp da ficha, sem mostrar o número inteiro.
@@ -8352,7 +8398,8 @@ function pcPedidoEnviado(p, i = 0) {
         ? "Confirme o seu e-mail: confirmado, o código de 6 números vai na hora para o WhatsApp da academia. Quem digitar o código passa a ser o responsável pela ficha."
         : "O GuiaTennis manda um código de 6 números para o WhatsApp da academia. Quem digitar o código passa a ser o responsável pela ficha. Digite aqui:";
     return `
-    <div class="pc-card pc-pedido">
+    <div class="pc-card pc-pedido${faltaConfirmarEmail() ? " espera-email" : ""}">
+      ${alertaDoEmail()}
       <p class="pc-oferta-eyebrow">Em disputa</p>
       <p class="pc-card-t">${esc(nome)}</p>
       <p class="pc-card-s">${explicacao}</p>
@@ -8367,7 +8414,8 @@ function pcPedidoEnviado(p, i = 0) {
   }
   const semEmail = !contaAcademia.emailConfirmado;
   return `
-    <div class="pc-card pc-pedido">
+    <div class="pc-card pc-pedido${faltaConfirmarEmail() ? " espera-email" : ""}">
+      ${alertaDoEmail()}
       <p class="pc-oferta-eyebrow">${temAcademia() ? "Pedido para administrar outra academia" : "Pedido enviado"}</p>
       <p class="pc-card-t">${esc(nome)}</p>
       ${!ficha ? `
@@ -8381,6 +8429,12 @@ function pcPedidoEnviado(p, i = 0) {
       <p class="pc-linha">Quer agilizar? ${falar}</p>
       ${cancelar}
     </div>`;
+}
+// O alerta no cartão do pedido enquanto o e-mail não é confirmado: o ponto
+// pisca e "Confirmar" leva ao cartão do e-mail.
+function alertaDoEmail() {
+  if (!faltaConfirmarEmail()) return "";
+  return `<p class="pc-pedido-alerta" role="status"><span class="pc-ponto-pisca" aria-hidden="true"></span> Esperando você confirmar o e-mail <button type="button" class="pc-linha-link" data-ir-confirmar>Confirmar ›</button></p>`;
 }
 // Todos os pedidos da conta, um cartão para cada.
 function pcPedidos() {
@@ -8542,9 +8596,24 @@ function pcCadastro() {
   // Conta sem academia: os pedidos feitos (com o código), ou escolher a
   // academia. Com pedido aberto, também dá para pedir outra.
   if (emAndamento && !state.pcAdicionando) {
-    return `
+    // Falta o e-mail: uma tela só para ele, com o cartão piscando e os
+    // pedidos embaixo, cada um com o alerta.
+    if (faltaConfirmarEmail()) {
+      const pedidos = meusPedidos();
+      const nome = pedidos.length === 1 ? pedidos[0].nome : "";
+      return `
       <section class="pc-pagina pc-estreita">
         ${pcEtapas(2)}
+        <p class="pc-eyebrow">Falta um passo</p>
+        <h1 class="display pc-antes">Confirme o seu e-mail${nome ? ` para administrar a ${esc(nome)}` : ""}.</h1>
+        ${pcConfirmarEmail(true)}
+        <p class="pc-sub-pedidos">${pedidos.length === 1 ? "O seu pedido" : "Os seus pedidos"}</p>
+        ${pcPedidos()}
+      </section>`;
+    }
+    return `
+      <section class="pc-pagina pc-estreita">
+        ${pcEtapas(3)}
         ${pcConfirmarEmail()}
         ${pcPedidos()}
       </section>`;
@@ -8556,7 +8625,6 @@ function pcCadastro() {
   return `
     <section class="pc-pagina pc-estreita">
       ${pcEtapas(1)}
-      ${pcConfirmarEmail()}
       ${emAndamento ? `
         <p class="pc-eyebrow">Adicionar outra academia</p>
         <h1 class="display pc-antes">Qual outra academia você administra?</h1>
@@ -9466,13 +9534,13 @@ async function pcSalvarSenhaNova() {
 
 // Conta do GuiaTennis Parceiros com o e-mail ainda não confirmado: o
 // cartão manda o código e confere, sem sair da tela.
-function pcConfirmarEmail() {
+function pcConfirmarEmail(etapa) {
   const c = contaAcademia;
   if (!c || c.emailConfirmado || !recebeEmail(c.login)) return "";
   const enviado = state.pcConfirmar === "enviado";
   return `
-    <div class="pc-card pc-confirmar-email">
-      <p class="pc-card-t">Confirme o seu e-mail</p>
+    <div class="pc-card pc-confirmar-email${etapa || meusPedidos().some(p => p.destino !== "responsavel") ? " pisca" : ""}" id="pc-confirmar-cartao">
+      <p class="pc-card-t">${etapa ? (enviado ? "Digite o código" : "Receba o código") : "Confirme o seu e-mail"}</p>
       <p class="pc-card-s">${state.pcConfirmar === "falhou"
         ? "Não consegui mandar o código agora. Tente de novo em instantes."
         : enviado ? `Mandamos um código para <strong>${esc(c.login)}</strong>. Chega em até um minuto; olhe também o spam.`
@@ -9580,9 +9648,17 @@ async function pedirParaAdministrar(academiaId) {
   state.pcPedidoFeito = academiaId;
   registrarPasso("acao", { academia: academiaId, detalhe: `Pediu para administrar · ${nomeDaAcademiaDoPasso(academiaId)}` });
   await recarregarConta();
+  // Falta o e-mail: o código sai sozinho, como no Booking e no Airbnb, e o
+  // aviso conta o que aconteceu (pedido de 15/10/2026).
+  if (faltaConfirmarEmail() && state.pcConfirmar !== "enviado") {
+    state.pcConfirmarErro = "";
+    state.pcConfirmar = (await enviarCodigo(contaAcademia.login)) ? "enviado" : "falhou";
+    mostrarPush(state.pcConfirmar === "enviado" ? `Pedido feito! Mandamos um código para ${contaAcademia.login}.` : "Pedido feito! Agora confirme o seu e-mail.");
+  } else mostrarPush("Pedido feito!");
   syncUrl(false);
   render();
   window.scrollTo(0, 0);
+  if (state.pcConfirmar === "enviado") document.getElementById("pc-codigo-email")?.focus({ preventScroll: true });
 }
 
 // Disputa (07/10/2026): "a academia é minha e não conheço quem administra".
@@ -9810,9 +9886,19 @@ function ligarEventosParceiros() {
   if (pcMandar) pcMandar.onclick = async () => {
     state.pcConfirmarErro = "";
     state.pcConfirmar = (await enviarCodigo(contaAcademia.login)) ? "enviado" : "falhou";
+    if (state.pcConfirmar === "enviado") mostrarPush(`Código enviado para ${contaAcademia.login}.`);
     render();
     document.getElementById("pc-codigo-email")?.focus();
   };
+  document.querySelectorAll("[data-ir-confirmar]").forEach(el => { el.onclick = () => {
+    const cartao = document.getElementById("pc-confirmar-cartao");
+    if (!cartao) return;
+    cartao.classList.remove("pisca");
+    void cartao.offsetWidth;
+    cartao.classList.add("pisca");
+    cartao.scrollIntoView({ behavior: "smooth", block: "center" });
+    (document.getElementById("pc-codigo-email") || document.getElementById("pc-mandar-codigo"))?.focus({ preventScroll: true });
+  }; });
   const pcConfirmarCod = document.getElementById("pc-confirmar-email");
   if (pcConfirmarCod) pcConfirmarCod.onclick = async () => {
     const sessao = await conferirCodigo(contaAcademia.login, document.getElementById("pc-codigo-email")?.value);
@@ -9824,7 +9910,17 @@ function ligarEventosParceiros() {
     await loadEverything();
     const nova = minhasAcademias().find(a => !antes.has(a.id));
     state.pcConfirmar = null;
-    state.contaAviso = nova ? `E-mail confirmado. Agora você administra a ${nomeDaMinha(nova)} no GuiaTennis Parceiros.` : "E-mail confirmado.";
+    mostrarPush("E-mail confirmado!");
+    // A academia passou a ser da conta: direto para o painel dela (pedido de
+    // 15/10/2026: "quando confirmar o email, já direcionar para o painel da
+    // academia que vai administrar").
+    if (nova) {
+      if (contaAcademia.academiaId !== nova.id) await abrirAcademia(nova.id);
+      state.contaAviso = `E-mail confirmado. Agora você administra a ${nomeDaMinha(nova)} no GuiaTennis Parceiros.`;
+      irParceiros("painel");
+      return;
+    }
+    state.contaAviso = "E-mail confirmado.";
     render();
   };
   const pcTrocar = document.getElementById("pc-trocar-email");
@@ -9847,8 +9943,10 @@ function ligarEventosParceiros() {
   if (pcCriar) pcCriar.onclick = criarContaDeParceiro;
   document.querySelectorAll("[data-pc-selecionar]").forEach(el => {
     el.onclick = () => {
-      state.pcSelecionada = el.dataset.pcSelecionar;
-      state.pcReivindicar = idCurto(el.dataset.pcSelecionar);
+      // Tocar de novo na academia marcada desmarca (pedido de 15/10/2026).
+      const desmarcar = state.pcSelecionada === el.dataset.pcSelecionar;
+      state.pcSelecionada = desmarcar ? null : el.dataset.pcSelecionar;
+      state.pcReivindicar = desmarcar ? null : idCurto(el.dataset.pcSelecionar);
       state.pedidoErro = "";
       syncUrl(false);
       render();

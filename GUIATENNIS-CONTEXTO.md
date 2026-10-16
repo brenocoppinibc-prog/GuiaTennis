@@ -30,7 +30,9 @@ teste")
 > jogadores é promoção, numa página só com as partes **Na ficha** (Premium)
 > e **Por e-mail** (Completo e Premium) (regra 113, SQL
 > `20261016120000_promocoes_na_ficha_e_por_email`). PR #5 acompanhado de
-> novo.
+> novo, verde. Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
+> falhas de texto (menu, chat, subtítulo), corrigidas e com os arquivos
+> rodados de novo sem falha; 381 no `banco-emails.py`, nenhuma falha.
 
 > **Estado (15/10/2026):** o Breno trocou de chat: leia o "Resumo (15/10/2026,
 > ao trocar de chat)" na seção 11.

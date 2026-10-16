@@ -9274,7 +9274,7 @@ function pcPromocoes() {
   return `
     <section class="pc-pagina">
       ${topo}
-      <p class="pc-sec-sub">A promoção aparece na ficha e no resultado da busca. Até 3 ao mesmo tempo, por até 90 dias. ${saibaMaisNaAjuda("promocoes")}</p>
+      <p class="pc-sec-sub">Até 3 promoções ao mesmo tempo, por até 90 dias, na ficha e no resultado da busca. ${saibaMaisNaAjuda("promocoes")}</p>
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
       ${(editando || valendo.length < 3) && state.pcPromoPasso === "revisar" ? `
         <div class="pc-card pc-promo-form pc-passo-revisar" id="pc-promo-revisao">

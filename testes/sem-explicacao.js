@@ -33,11 +33,11 @@ const { abrir, ok } = require('./harness');
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'] }));
   await page.waitForTimeout(300);
   t = await page.evaluate(() => document.querySelector('#parceiros .pc-sec-sub')?.innerText.replace(/\s+/g, ' ') || '');
-  ok(t.startsWith('Até 3 promoções ao mesmo tempo, por até 90 dias.') && t.includes('Saiba mais') && !t.includes('no máximo um por semana'), 'Promoções: uma linha e "Saiba mais" — ' + t);
+  ok(t.startsWith('Até 3 promoções ao mesmo tempo, por até 90 dias, na ficha') && t.includes('Saiba mais') && !t.includes('no máximo um por semana'), 'Promoções: uma linha e "Saiba mais" — ' + t);
   await page.click('#parceiros .pc-sec-sub [data-pc-faq="promocoes"]');
   await page.waitForTimeout(400);
   const aj = await page.evaluate(() => { const d = document.getElementById('pc-faq-promocoes'); return { aba: state.parceirosAba, aberto: !!(d && d.open), texto: d ? d.innerText : '' }; });
-  ok(aj.aba === 'ajuda' && aj.aberto && aj.texto.includes('Como funcionam as promoções?'), '"Saiba mais" abre a pergunta certa da Ajuda, já aberta');
+  ok(aj.aba === 'ajuda' && aj.aberto && aj.texto.includes('Como funcionam as promoções na ficha?'), '"Saiba mais" abre a pergunta certa da Ajuda, já aberta');
   for (const [aba, id] of [['desempenho', 'desempenho'], ['avaliacoes', 'avaliacoes']]) {
     await page.evaluate((a) => irParceiros(a), aba);
     await page.waitForTimeout(300);

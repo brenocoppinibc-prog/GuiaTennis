@@ -40,7 +40,7 @@ teste")
 > aviso e promoção (111, SQL `20261015150000_whatsapp_nos_avisos`);
 > avisos e promoções em dois passos (112), SQL
 > `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo, verde.
-> Testes: 1.442 verificações nos 52 arquivos do navegador e 380 no
+> Testes: 1.448 verificações nos 52 arquivos do navegador e 380 no
 > `banco-emails.py`, nenhuma falha.
 
 > **Estado (14/10/2026, chat novo):** a home dos jogadores não tem mais o
@@ -4309,8 +4309,8 @@ regras 98 a 112 (atualizar quando o Breno pedir ou antes do merge). Testes:
 a última bateria completa deu **1.442 verificações, nenhuma falha**, nos 52
 arquivos do navegador (comando na seção 6), mais `node testes/onde.mjs`, e
 **380 no `banco-emails.py`**; depois disso só mudaram avisos e promoções
-(regra 112), com `envios-de-aviso.js` e `promocoes.js` passando; a bateria
-completa estava rodando ao trocar de chat (rodar de novo no chat novo). Os
+(regra 112), e a bateria completa depois disso deu **1.448 verificações,
+nenhuma falha**, nos 52 arquivos. Os
 três checks do Netlify do commit `2fc00af` ficaram "em andamento" depois de
 uma prévia cancelada (só documento); os commits seguintes passaram. O banco
 local (seção 6) às vezes cai entre um pedido e outro: `pg_ctl … start` de

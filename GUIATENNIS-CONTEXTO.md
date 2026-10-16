@@ -34,7 +34,8 @@ teste")
 > (109); e-mail antes da academia, página Plano com dores e soluções,
 > avaliação organizada e avisos com prévia (110, SQL
 > `20261015140000_avisos_com_tipo`); "Chamar no WhatsApp" nos e-mails de
-> aviso e promoção (111, SQL `20261015150000_whatsapp_nos_avisos`), SQL
+> aviso e promoção (111, SQL `20261015150000_whatsapp_nos_avisos`);
+> avisos e promoções em dois passos (112), SQL
 > `20261015130000_chat_e_recomendadas`. PR #5 acompanhado de novo, verde.
 > Testes: 1.442 verificações nos 52 arquivos do navegador e 380 no
 > `banco-emails.py`, nenhuma falha.
@@ -2554,6 +2555,18 @@ cobra taxa e não fica no meio** da negociação.
     `enviar_aviso_da_academia`). A prévia do e-mail no Parceiros mostra o
     mesmo botão. Testes: `testes/envios-de-aviso.js` e a seção 22 do
     `banco-emails.py`.
+112. **Avisos e promoções em dois passos, sem barra de etapas** (pedido de
+    15/10/2026, com print: "isso aqui está muito empilhado, faça um passo a
+    passo, mas não precisa ter aquela barra de processos"), como o "Revisar
+    e enviar" do Mailchimp. Avisos por e-mail: 1) escrever (tipo, assunto,
+    mensagem) e "Ver como fica o e-mail ›" (confere assunto e mensagem
+    antes de passar); 2) "Confira antes de mandar": a prévia do e-mail, o
+    aviso vermelho de sem envios e "Mandar o aviso/a promoção", com "‹
+    Editar…" para voltar ao texto (`revisarAviso`, `state.pcAvisoPasso`).
+    Promoções: 1) escrever e "Ver como fica ›"; 2) a prévia na ficha e na
+    busca e, se for avisar, a do e-mail, com "Publicar promoção"/"Salvar a
+    mudança" (`revisarPromocao`, `state.pcPromoPasso`). Testes:
+    `testes/envios-de-aviso.js` e `testes/promocoes.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

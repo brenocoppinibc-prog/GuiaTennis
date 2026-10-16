@@ -90,6 +90,9 @@
   #pc-promo-previa { margin-top: 14px; }
   #pc-promo-previa .ht-promo { margin: 0; background: #fff; }
   .pc-aviso-tipo { margin: 0 0 4px; }
+  /* Passo de conferir (15/10/2026): "Editar" volta ao texto. */
+  .pc-passo-voltar { display: inline-flex; align-items: center; gap: 4px; margin: 0 0 10px; padding: 0; border: 0; background: none; color: var(--green); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .pc-passo-revisar .cta-btn { margin-top: 16px; }
   .pc-aviso-bloqueio { margin-top: 14px; align-items: flex-start; padding: 10px 12px; border: 1px solid #F1C4BF; border-radius: 10px; background: #FDEDEB; font-weight: 600; line-height: 1.45; }
   .pc-aviso-bloqueio a { color: inherit; font-weight: 700; white-space: nowrap; }
   .pc-aviso-form .cta-btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -9080,6 +9083,15 @@ function pcAvisos() {
         <a class="cta-btn cta-secondary" href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar envios</a>
       </div>
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
+      ${state.pcAvisoPasso === "revisar" ? `
+      <div class="pc-card pc-aviso-form pc-passo-revisar" id="pc-aviso-revisao">
+        <button type="button" class="pc-passo-voltar" id="pc-aviso-editar">${icon('chevronLeft', 15, 'currentColor')} Editar ${promo ? "a promoção" : "o aviso"}</button>
+        <p class="pc-card-t">Confira antes de mandar</p>
+        <p class="pc-card-s">Chega por e-mail a quem favoritou a academia ou está perto dela e pediu esses avisos. Cada e-mail que chega gasta 1 envio.</p>
+        ${previaDoEmail(c, f)}
+        ${bloqueio ? `<div class="form-error pc-aviso-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)}${!saldo ? ` <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar envios ›</a>` : ""}</span></div>` : ""}
+        <button type="button" class="cta-btn cta-primary" id="pc-aviso-enviar" ${state.pcAvisoEnviando || bloqueio ? "disabled" : ""}>${state.pcAvisoEnviando ? bolaGirando(15) + " Mandando..." : promo ? "Mandar a promoção" : "Mandar o aviso"}</button>
+      </div>` : `
       <div class="pc-card pc-aviso-form">
         <p class="pc-card-t">${promo ? "Nova promoção por e-mail" : "Novo aviso"}</p>
         <p class="field-label" style="margin-top:12px">O que vai mandar</p>
@@ -9091,10 +9103,8 @@ function pcAvisos() {
         <input class="form-field pc-aviso-campo" data-campo="titulo" id="pc-aviso-titulo" maxlength="60" placeholder="${promo ? "Ex.: Primeira aula grátis" : "Ex.: Turma nova aos sábados"}" value="${esc(f.titulo)}" style="margin-top:0" />
         <label class="field-label" for="pc-aviso-mensagem">Mensagem</label>
         <textarea class="form-field pc-aviso-campo" data-campo="mensagem" id="pc-aviso-mensagem" maxlength="500" placeholder="${promo ? "Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." : "Ex.: Abrimos uma turma para iniciantes aos sábados, às 9h. Chame no WhatsApp para reservar a vaga."}" style="margin-top:0">${esc(f.mensagem)}</textarea>
-        ${previaDoEmail(c, f)}
-        ${bloqueio ? `<div class="form-error pc-aviso-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)}${!saldo ? ` <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar envios ›</a>` : ""}</span></div>` : ""}
-        <button type="button" class="cta-btn cta-primary" id="pc-aviso-enviar" ${state.pcAvisoEnviando || bloqueio ? "disabled" : ""}>${state.pcAvisoEnviando ? bolaGirando(15) + " Mandando..." : promo ? "Mandar a promoção" : "Mandar o aviso"}</button>
-      </div>
+        <button type="button" class="cta-btn cta-primary" id="pc-aviso-revisar">Ver como fica o e-mail ›</button>
+      </div>`}
       ${(dados.avisos || []).length ? `
         <div class="pc-promo-lista">
           ${dados.avisos.map(x => `
@@ -9167,13 +9177,24 @@ function previaDaPromocao(f) {
     </div>`;
 }
 
-async function enviarAviso() {
-  const c = minhaAcademia();
-  if (!c || state.pcAvisoEnviando) return;
+// Passo a passo (pedido de 15/10/2026: "está muito empilhado, faça um passo a
+// passo, mas não precisa ter aquela barra de processos"), como o "Revisar e
+// enviar" do Mailchimp: primeiro escrever; depois conferir a prévia e mandar.
+function revisarAviso() {
   const f = { titulo: document.getElementById("pc-aviso-titulo")?.value || "", mensagem: document.getElementById("pc-aviso-mensagem")?.value || "", tipo: (state.pcAvisoForm || {}).tipo || "aviso" };
   state.pcAvisoForm = f;
   if (f.titulo.trim().length < 3) { state.pcAvisoMsg = { tipo: "erro", texto: "Escreva o assunto (por exemplo, \"Turma nova aos sábados\")." }; render(); return; }
   if (f.mensagem.trim().length < 10) { state.pcAvisoMsg = { tipo: "erro", texto: "Escreva a mensagem do aviso." }; render(); return; }
+  state.pcAvisoMsg = null;
+  state.pcAvisoPasso = "revisar";
+  render();
+  document.getElementById("pc-aviso-revisao")?.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+async function enviarAviso() {
+  const c = minhaAcademia();
+  if (!c || state.pcAvisoEnviando) return;
+  const f = state.pcAvisoForm || {};
+  if (String(f.titulo || "").trim().length < 3 || String(f.mensagem || "").trim().length < 10) { state.pcAvisoPasso = null; render(); return; }
   state.pcAvisoEnviando = true; state.pcAvisoMsg = null; render();
   let r;
   try {
@@ -9194,7 +9215,7 @@ async function enviarAviso() {
   state.pcAvisoMsg = { tipo: "ok", texto: d.aviso === "enviado" ? `${f.tipo === "promocao" ? "Promoção mandada" : "Aviso mandado"}: chega a ${d.avisados} ${plural(d.avisados, "jogador", "jogadores")}.`
     : d.aviso === "semana" ? "A academia já mandou um aviso nesta semana. Tente de novo daqui a alguns dias."
     : "Ainda não há jogadores que pediram esses avisos perto da academia. O envio não foi gasto." };
-  if (d.aviso === "enviado") state.pcAvisoForm = null;
+  if (d.aviso === "enviado") { state.pcAvisoForm = null; state.pcAvisoPasso = null; }
   await carregarAvisosDaAcademia(false);
   render();
 }
@@ -9233,7 +9254,15 @@ function pcPromocoes() {
       ${topo}
       <p class="pc-sec-sub">Até 3 promoções ao mesmo tempo, por até 90 dias. ${saibaMaisNaAjuda("promocoes")}</p>
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
-      ${editando || valendo.length < 3 ? `
+      ${(editando || valendo.length < 3) && state.pcPromoPasso === "revisar" ? `
+        <div class="pc-card pc-promo-form pc-passo-revisar" id="pc-promo-revisao">
+          <button type="button" class="pc-passo-voltar" id="pc-promo-editar">${icon('chevronLeft', 15, 'currentColor')} Editar a promoção</button>
+          <p class="pc-card-t">Confira antes de ${editando ? "salvar" : "publicar"}</p>
+          <p class="pc-card-s">${editando ? "É assim que a promoção fica na ficha e na busca." : f.avisar !== false && saldoDeEnvios() ? "Ela aparece na ficha e na busca, e o e-mail vai para quem favoritou a academia ou está perto (usa 1 envio)." : "Ela aparece na ficha e na busca."}</p>
+          ${previaDaPromocao(f)}
+          ${!editando && f.avisar !== false && saldoDeEnvios() ? previaDoEmail(c, f, "promocao") : ""}
+          <button type="button" class="cta-btn cta-primary" id="pc-promo-salvar" ${state.pcPromoSalvando ? "disabled" : ""}>${state.pcPromoSalvando ? bolaGirando(15) + " Salvando..." : editando ? "Salvar a mudança" : "Publicar promoção"}</button>
+        </div>` : editando || valendo.length < 3 ? `
         <div class="pc-card pc-promo-form">
           <p class="pc-card-t">${editando ? "Mudar a promoção" : "Nova promoção"}</p>
           <label class="field-label" for="pc-promo-titulo">Promoção</label>
@@ -9242,12 +9271,10 @@ function pcPromocoes() {
           <textarea class="form-field pc-promo-campo" data-campo="detalhes" id="pc-promo-detalhes" maxlength="280" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até 17h." style="margin-top:0">${esc(f.detalhes)}</textarea>
           <label class="field-label" for="pc-promo-ate">Válida até</label>
           <input class="form-field pc-promo-campo" data-campo="ate" id="pc-promo-ate" type="date" min="${hojeEmBrasilia()}" max="${hojeEmBrasilia(90)}" value="${esc(f.ate)}" style="margin-top:0" />
-          ${previaDaPromocao(f)}
           ${editando ? "" : saldoDeEnvios()
-            ? `<label class="consent-row pc-promo-avisar"><input type="checkbox" id="pc-promo-avisar" ${f.avisar === false ? "" : "checked"} /><span>Avisar por e-mail os jogadores que favoritaram a academia ou estão perto (usa 1 envio · ${esc(textoDoSaldo(saldoDeEnvios()).toLowerCase())})</span></label>
-              ${f.avisar === false ? "" : previaDoEmail(c, f, "promocao")}`
+            ? `<label class="consent-row pc-promo-avisar"><input type="checkbox" id="pc-promo-avisar" ${f.avisar === false ? "" : "checked"} /><span>Avisar por e-mail os jogadores que favoritaram a academia ou estão perto (usa 1 envio · ${esc(textoDoSaldo(saldoDeEnvios()).toLowerCase())})</span></label>`
             : `<p class="pc-card-s pc-promo-avisar">Para avisar os jogadores por e-mail, <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">compre envios</a>.</p>`}
-          <button type="button" class="cta-btn cta-primary" id="pc-promo-salvar" ${state.pcPromoSalvando ? "disabled" : ""}>${state.pcPromoSalvando ? bolaGirando(15) + " Salvando..." : editando ? "Salvar a mudança" : "Publicar promoção"}</button>
+          <button type="button" class="cta-btn cta-primary" id="pc-promo-revisar">Ver como fica ›</button>
           ${editando ? `<button type="button" class="inline-link" id="pc-promo-cancelar" style="margin-top:12px">Cancelar</button>` : ""}
         </div>` : `<p class="pc-card-s">A academia já tem 3 promoções valendo. Encerre uma para criar outra.</p>`}
       ${lista.length ? `
@@ -9268,15 +9295,24 @@ function pcPromocoes() {
     </section>`;
 }
 
-async function salvarPromocao() {
-  const c = minhaAcademia();
-  if (!c || state.pcPromoSalvando) return;
-  const editando = state.pcPromoEditando;
+// Promoção em dois passos, como o aviso: escrever, depois conferir e publicar.
+function revisarPromocao() {
   const avisar = document.getElementById("pc-promo-avisar");
   const f = { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "", avisar: avisar && avisar.type === "checkbox" ? avisar.checked : false };
   state.pcPromoForm = f;
   if (f.titulo.trim().length < 3) { state.pcPromoMsg = { tipo: "erro", texto: "Escreva a promoção (por exemplo, \"Primeira aula grátis\")." }; render(); return; }
   if (!f.ate) { state.pcPromoMsg = { tipo: "erro", texto: "Escolha até quando a promoção vale." }; render(); return; }
+  state.pcPromoMsg = null;
+  state.pcPromoPasso = "revisar";
+  render();
+  document.getElementById("pc-promo-revisao")?.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+async function salvarPromocao() {
+  const c = minhaAcademia();
+  if (!c || state.pcPromoSalvando) return;
+  const editando = state.pcPromoEditando;
+  const f = state.pcPromoForm || {};
+  if (String(f.titulo || "").trim().length < 3 || !f.ate) { state.pcPromoPasso = null; render(); return; }
   state.pcPromoSalvando = true; state.pcPromoMsg = null; render();
   let r;
   try { r = await sb.rpc('salvar_promocao', { p_academia: c.id, p_id: editando || null, p_titulo: f.titulo.trim(), p_detalhes: f.detalhes.trim(), p_valida_ate: f.ate, p_avisar: !!f.avisar }); }
@@ -9295,7 +9331,7 @@ async function salvarPromocao() {
     : d.aviso === "sem_envios" ? "Promoção publicada na ficha e na busca. Para avisar por e-mail, compre envios."
     : d.aviso === "semana" ? "Promoção publicada. A academia já mandou um aviso por e-mail nesta semana: esta aparece na ficha e na busca, sem e-mail."
     : "Promoção publicada na ficha e na busca. Quem favoritar a academia e aceitar promoções recebe as próximas por e-mail." };
-  state.pcPromoForm = null; state.pcPromoEditando = null;
+  state.pcPromoForm = null; state.pcPromoEditando = null; state.pcPromoPasso = null;
   await Promise.all([carregarPromocoes(), carregarPromocoesDaAcademia()]);
   render();
 }
@@ -10218,12 +10254,20 @@ function ligarEventosParceiros() {
   const pcPromoSalvar = document.getElementById("pc-promo-salvar");
   if (pcPromoSalvar) pcPromoSalvar.onclick = salvarPromocao;
   const pcPromoCancelar = document.getElementById("pc-promo-cancelar");
-  if (pcPromoCancelar) pcPromoCancelar.onclick = () => { state.pcPromoEditando = null; state.pcPromoForm = null; state.pcPromoMsg = null; render(); };
-  document.querySelectorAll("[data-promo-mudar]").forEach(el => { el.onclick = () => { state.pcPromoEditando = el.dataset.promoMudar; state.pcPromoForm = null; state.pcPromoMsg = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }; });
+  if (pcPromoCancelar) pcPromoCancelar.onclick = () => { state.pcPromoEditando = null; state.pcPromoForm = null; state.pcPromoMsg = null; state.pcPromoPasso = null; render(); };
+  const pcPromoRevisar = document.getElementById("pc-promo-revisar");
+  if (pcPromoRevisar) pcPromoRevisar.onclick = revisarPromocao;
+  const pcPromoEditar = document.getElementById("pc-promo-editar");
+  if (pcPromoEditar) pcPromoEditar.onclick = () => { state.pcPromoPasso = null; state.pcPromoMsg = null; render(); };
+  document.querySelectorAll("[data-promo-mudar]").forEach(el => { el.onclick = () => { state.pcPromoEditando = el.dataset.promoMudar; state.pcPromoForm = null; state.pcPromoMsg = null; state.pcPromoPasso = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }; });
   document.querySelectorAll("[data-promo-encerrar]").forEach(el => { el.onclick = () => encerrarPromocao(el.dataset.promoEncerrar); });
   document.querySelectorAll("[data-promo-avisar]").forEach(el => { el.onclick = () => avisarPromocao(el.dataset.promoAvisar); });
   const pcAvisoEnviar = document.getElementById("pc-aviso-enviar");
   if (pcAvisoEnviar) pcAvisoEnviar.onclick = enviarAviso;
+  const pcAvisoRevisar = document.getElementById("pc-aviso-revisar");
+  if (pcAvisoRevisar) pcAvisoRevisar.onclick = revisarAviso;
+  const pcAvisoEditar = document.getElementById("pc-aviso-editar");
+  if (pcAvisoEditar) pcAvisoEditar.onclick = () => { state.pcAvisoPasso = null; state.pcAvisoMsg = null; render(); };
   const formDoAviso = () => state.pcAvisoForm || (state.pcAvisoForm = { titulo: document.getElementById("pc-aviso-titulo")?.value || "", mensagem: document.getElementById("pc-aviso-mensagem")?.value || "", tipo: "aviso" });
   document.querySelectorAll(".pc-aviso-campo").forEach(el => {
     el.oninput = () => { const f = formDoAviso(); f[el.dataset.campo] = el.value; atualizarPreviaDoEmail(f); };

@@ -8,6 +8,12 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
 const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
 const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', detalhes: 'Para quem nunca fez aula aqui.', valida_ate: dia(10), avisados: 2 };
 
+// Passo a passo (15/10/2026): "Ver como fica" e, na prévia, publicar.
+async function publicar(page) {
+  await page.click('#pc-promo-revisar');
+  await page.waitForTimeout(150);
+  if (await page.$('#pc-promo-salvar')) await page.click('#pc-promo-salvar');
+}
 (async () => {
   // ---- Parceiros, fora do Premium: trancado ----
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes' });
@@ -22,13 +28,13 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'], envios: { a1: 3 } }));
   await page.waitForTimeout(400);
   ok(await page.isVisible('#pc-promo-titulo') && (await page.inputValue('#pc-promo-ate')) === dia(30), 'Premium: o formulário, valendo 30 dias de saída');
-  await page.click('#pc-promo-salvar');
+  await page.click('#pc-promo-revisar');
   await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .form-error')).includes('Escreva a promoção'), 'sem o título, pede para escrever');
+  ok((await texto(page, '#parceiros .form-error')).includes('Escreva a promoção') && await page.$('#pc-promo-titulo'), 'sem o título, pede para escrever e não passa para a prévia');
   await page.evaluate(() => { window.__promoAviso = { aviso: 'enviado', avisados: 2 }; });
   await page.fill('#pc-promo-titulo', 'Primeira aula grátis');
   await page.fill('#pc-promo-detalhes', 'Para quem nunca fez aula aqui.');
-  await page.click('#pc-promo-salvar');
+  await publicar(page);
   await page.waitForTimeout(500);
   let r = await page.evaluate(() => ({
     args: (window.__rpcs.filter(x => x.nome === 'salvar_promocao').slice(-1)[0] || {}).args,
@@ -43,8 +49,11 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   ok(r.site.join() === 'Primeira aula grátis', 'e já aparece no site');
   await page.click('[data-promo-mudar]');
   await page.waitForTimeout(200);
-  ok((await page.inputValue('#pc-promo-titulo')) === 'Primeira aula grátis' && (await texto(page, '#pc-promo-salvar')).includes('Salvar a mudança'), '"Mudar" abre o formulário com a promoção');
+  ok((await page.inputValue('#pc-promo-titulo')) === 'Primeira aula grátis' && (await texto(page, '.pc-promo-form .pc-card-t')) === 'Mudar a promoção', '"Mudar" abre o formulário com a promoção');
   await page.fill('#pc-promo-titulo', 'Primeira aula grátis às segundas');
+  await page.click('#pc-promo-revisar');
+  await page.waitForTimeout(150);
+  ok((await texto(page, '#pc-promo-salvar')).includes('Salvar a mudança') && (await texto(page, '#pc-promo-previa')).includes('Primeira aula grátis às segundas'), 'mudar também passa pela prévia');
   await page.click('#pc-promo-salvar');
   await page.waitForTimeout(500);
   r = await page.evaluate(() => ({ aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '', args: (window.__rpcs.filter(x => x.nome === 'salvar_promocao').slice(-1)[0] || {}).args, t: window.__db.promocoes[0].titulo }));
@@ -52,7 +61,7 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   // Três valendo: o formulário dá lugar ao aviso.
   for (const t of ['Aula dupla', 'Locação com desconto']) {
     await page.fill('#pc-promo-titulo', t);
-    await page.click('#pc-promo-salvar');
+    await publicar(page);
     await page.waitForTimeout(400);
   }
   corpo = await texto(page, '#parceiros .pc-main');

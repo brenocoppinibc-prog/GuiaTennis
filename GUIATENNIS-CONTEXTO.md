@@ -22,7 +22,10 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 15/10/2026
+**Atualizado em:** 16/10/2026
+
+> **Estado (16/10/2026):** o Breno trocou de chat: leia o "Resumo (16/10/2026,
+> ao trocar de chat)" na seção 11.
 
 > **Estado (15/10/2026):** o Breno trocou de chat: leia o "Resumo (15/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -4284,6 +4287,37 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (16/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 112** (último commit de código: `1c7a957`, mais este
+documento). O "aplicar" passou o SQL no banco de teste até
+`20261015150000_whatsapp_nos_avisos`. Neste chat entraram as regras 105 a
+112: o "pensamento" do chat (105); Completo nas recomendadas, perto
+primeiro e a viagem na home (106); chat na conta dos jogadores com abas e
+"Resolvida" (107); chat do Parceiros que leva a qualquer página e responde
+pelo plano (108); cadastro do Parceiros com desmarcar, etapa do e-mail e
+planos organizados (109); e-mail antes da academia, página Plano com dores
+e soluções, avaliação organizada e avisos com prévia (110); "Chamar no
+WhatsApp" nos e-mails de aviso e promoção (111); avisos e promoções em dois
+passos (112). SQL novos: `20261015130000_chat_e_recomendadas`,
+`20261015140000_avisos_com_tipo`, `20261015150000_whatsapp_nos_avisos`.
+**Pendências para o Breno decidir:** manter ou tirar o "Confirmar depois"
+na tela do e-mail do cadastro (regra 110; hoje fica, discreto). **A
+descrição do PR parou na seção 26 e no passo de teste 35**: faltam as
+regras 98 a 112 (atualizar quando o Breno pedir ou antes do merge). Testes:
+a última bateria completa deu **1.442 verificações, nenhuma falha**, nos 52
+arquivos do navegador (comando na seção 6), mais `node testes/onde.mjs`, e
+**380 no `banco-emails.py`**; depois disso só mudaram avisos e promoções
+(regra 112), com `envios-de-aviso.js` e `promocoes.js` passando; a bateria
+completa estava rodando ao trocar de chat (rodar de novo no chat novo). Os
+três checks do Netlify do commit `2fc00af` ficaram "em andamento" depois de
+uma prévia cancelada (só documento); os commits seguintes passaram. O banco
+local (seção 6) às vezes cai entre um pedido e outro: `pg_ctl … start` de
+novo. O merge espera o Breno dizer **"pode subir"**. Este chat **deixou de
+acompanhar o PR** (sem inscrição, sem conferência marcada): no chat novo,
+voltar a acompanhar o PR #5. Seguem valendo: respostas curtas, ler só o
+trecho que muda, prints só quando o pedido for de visual.
 
 **Resumo (15/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

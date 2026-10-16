@@ -29,10 +29,11 @@ teste")
 > Depois, no chat novo: **sem "avisos"**: tudo o que a academia manda aos
 > jogadores é promoção, numa página só com as partes **Na ficha** (Premium)
 > e **Por e-mail** (Completo e Premium) (regra 113, SQL
-> `20261016120000_promocoes_na_ficha_e_por_email`). PR #5 acompanhado de
-> novo, verde. Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
+> `20261016120000_promocoes_na_ficha_e_por_email`); depois, **uma promoção
+> por vez** na ficha (regra 114, SQL `20261016130000_uma_promocao_por_vez`).
+> PR #5 acompanhado de novo, verde. Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
 > falhas de texto (menu, chat, subtítulo), corrigidas e com os arquivos
-> rodados de novo sem falha; 381 no `banco-emails.py`, nenhuma falha.
+> rodados de novo sem falha; 380 no `banco-emails.py` (depois da regra 114), nenhuma falha.
 
 > **Estado (15/10/2026):** o Breno trocou de chat: leia o "Resumo (15/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -2612,6 +2613,17 @@ cobra taxa e não fica no meio** da negociação.
       avaliação nova…) e o menu "Avisos por e-mail" do jogador continuam.
     - Testes: `testes/promocoes-por-email.js` e a seção 22 do
       `banco-emails.py`.
+114. **Uma promoção por vez** (pedido de 16/10/2026: "uma promoção por
+    vez"; eram até 3). Na ficha, a academia tem **no máximo uma promoção
+    valendo**: com ela no ar, o formulário dá lugar a "Uma promoção por vez:
+    para publicar outra, mude ou encerre a de agora." "Mudar" continua
+    livre. SQL `20261016130000_uma_promocao_por_vez` (`salvar_promocao`
+    recusa a segunda: "A academia já tem uma promoção valendo…"; reabrir uma
+    encerrada também respeita). As que já estavam valendo ficam, mas o site
+    mostra só a mais nova (`promocoesDe`, por `created_at`). Por e-mail
+    segue no máximo uma por semana. Textos: subtítulo, Ajuda, chat e Termos
+    ("uma promoção por vez"); no e-mail, "Usar a promoção da ficha". Testes:
+    `testes/promocoes.js` e a seção 22 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

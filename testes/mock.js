@@ -530,7 +530,7 @@
         Object.assign(p, { titulo, detalhes: String(a.p_detalhes || "").trim() || null, valida_ate: a.p_valida_ate });
         return { data: { id: p.id, aviso: null, avisados: p.avisados || 0 }, error:null };
       }
-      if (db.promocoes.filter(y => y.academia_id === a.p_academia && y.valida_ate >= hoje).length >= 3) return erro("A academia já tem 3 promoções valendo. Encerre uma para criar outra.", "22023");
+      if (db.promocoes.some(y => y.academia_id === a.p_academia && y.valida_ate >= hoje)) return erro("A academia já tem uma promoção valendo. Mude ou encerre a de agora para publicar outra.", "22023");
       window.__ultimoAvisar = a.p_avisar;
       const aviso = a.p_avisar === false ? { aviso: "depois", avisados: 0 } : !(ac.envios_de_aviso > 0) ? { aviso: "sem_envios", avisados: 0 } : (window.__promoAviso || { aviso: "ninguem", avisados: 0 });
       if (aviso.avisados > 0) ac.envios_de_aviso -= 1;

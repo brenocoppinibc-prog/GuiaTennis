@@ -58,19 +58,18 @@ async function publicar(page) {
   await page.waitForTimeout(500);
   r = await page.evaluate(() => ({ aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '', args: (window.__rpcs.filter(x => x.nome === 'salvar_promocao').slice(-1)[0] || {}).args, t: window.__db.promocoes[0].titulo }));
   ok(r.aviso.includes('Promoção atualizada') && r.args.p_id === 'promo-1' && r.t === 'Primeira aula grátis às segundas', 'mudar salva na mesma promoção');
-  // Três valendo: o formulário dá lugar ao aviso.
-  for (const t of ['Aula dupla', 'Locação com desconto']) {
-    await page.fill('#pc-promo-titulo', t);
-    await publicar(page);
-    await page.waitForTimeout(400);
-  }
+  // Uma promoção por vez (16/10/2026; eram 3): com uma valendo, o formulário dá lugar ao recado.
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(!(await page.$('#pc-promo-titulo')) && corpo.includes('já tem 3 promoções valendo'), 'com 3 valendo, pede para encerrar uma antes de criar outra');
+  ok(!(await page.$('#pc-promo-titulo')) && corpo.includes('Uma promoção por vez: para publicar outra, mude ou encerre a de agora.'), 'com uma valendo, pede para mudar ou encerrar antes de criar outra');
+  ok((await page.evaluate(() => sb.rpc('salvar_promocao', { p_academia: 'a1', p_id: null, p_titulo: 'Aula dupla', p_detalhes: '', p_valida_ate: hojeEmBrasilia(10), p_avisar: false }))).error?.message.includes('uma promoção valendo'), 'e o banco recusa a segunda');
   page.once('dialog', d => d.accept());
   await page.click('[data-promo-encerrar]');
   await page.waitForTimeout(500);
   r = await page.evaluate(() => ({ n: window.__db.promocoes.length, aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '', form: !!document.getElementById('pc-promo-titulo') }));
-  ok(r.n === 2 && r.aviso.includes('Promoção encerrada') && r.form, '"Encerrar" pergunta, tira a promoção e o formulário volta');
+  ok(r.n === 0 && r.aviso.includes('Promoção encerrada') && r.form, '"Encerrar" pergunta, tira a promoção e o formulário volta');
+  // Se ficou mais de uma valendo de antes, o site mostra só a mais nova.
+  ok(await page.evaluate(() => { state.promocoes = { a1: [{ id: 'v', titulo: 'Velha', valida_ate: hojeEmBrasilia(20), created_at: '2026-10-01T10:00:00Z' }, { id: 'n', titulo: 'Nova', valida_ate: hojeEmBrasilia(5), created_at: '2026-10-10T10:00:00Z' }] }; const l = promocoesDe(state.allCourts.find(c => c.id === 'a1')); return l.length === 1 && l[0].titulo === 'Nova'; }),
+    'de antes com duas valendo: o site mostra só a mais nova');
   await browser.close();
 
   // ---- o jogador vê: atalho no topo, bloco com os preços e o cartão da busca ----
@@ -121,8 +120,8 @@ async function publicar(page) {
     link: AVISOS_DO_LINK.promocoes || '',
   }));
   ok(r.premium.includes('Promoções na ficha e na busca') && !/em breve/i.test(r.premium), 'o Premium mostra as promoções, sem "Em breve"');
-  ok(r.faq.includes('até 3 promoções') && r.faq.includes('90 dias') && r.faq.includes('gasta 1 envio'), 'a Ajuda explica como funcionam as promoções');
-  ok(r.termos.includes('até 3 promoções ao mesmo tempo') && r.termos.includes('responde pelo que anuncia') && r.termos.includes('remover a promoção enganosa'), 'os Termos dizem quem responde pela promoção');
+  ok(r.faq.includes('uma promoção por vez') && r.faq.includes('90 dias') && r.faq.includes('gasta 1 envio'), 'a Ajuda explica como funcionam as promoções');
+  ok(r.termos.includes('uma promoção por vez') && r.termos.includes('responde pelo que anuncia') && r.termos.includes('remover a promoção enganosa'), 'os Termos dizem quem responde pela promoção');
   ok(r.privacidade.includes('os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso') && r.privacidade.includes('a academia não recebe o seu nome nem o seu e-mail'), 'a Privacidade explica o uso dos favoritos no aviso');
   ok(r.aviso === 'Promoções das academias favoritas e perto de você' && r.link.includes('perto de você') && !/aviso/i.test(r.link), 'a conta e o link do e-mail falam das promoções das favoritas e das academias perto (regras 104 e 113)');
   await browser.close();

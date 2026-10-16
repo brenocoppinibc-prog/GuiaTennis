@@ -32,7 +32,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   ok(!(await page.$('[data-aviso-tipo]')) && !/aviso/i.test(corpo), 'Por e-mail: sem a escolha "Aviso"/"Promoção" e sem a palavra "aviso"');
   ok(!(await page.$('#pc-email-previa')) && !(await page.$('#pc-email-enviar')) && await page.$('#pc-email-revisar') && !(await page.$('.pc-progresso-etapas, .trilha')),
     'primeiro passo: só escrever, com "Ver como fica o e-mail", sem barra de etapas');
-  ok(!(await page.$('.pc-email-da-ficha')), 'no Completo, sem "Usar uma promoção da ficha"');
+  ok(!(await page.$('.pc-email-da-ficha')), 'no Completo, sem "Usar a promoção da ficha"');
   await page.click('#pc-email-revisar');
   await page.waitForTimeout(150);
   ok((await texto(page, '#parceiros .form-error')).includes('Escreva a promoção') && await page.$('#pc-email-titulo'), 'sem a promoção escrita, não passa para a prévia');
@@ -103,7 +103,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.waitForTimeout(400);
   ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email') && (await page.inputValue('#pc-email-titulo')) === 'Aula experimental grátis' && (await page.inputValue('#pc-email-mensagem')).startsWith('Para quem nunca jogou aqui. Válida até '),
     '"Mandar por e-mail" abre Por e-mail com a promoção e a validade');
-  ok((await texto(page, '.pc-email-da-ficha')).includes('Aula experimental grátis'), 'no Premium, "Usar uma promoção da ficha" mostra as que estão valendo');
+  ok((await texto(page, '.pc-email-da-ficha')).includes('Aula experimental grátis'), 'no Premium, "Usar a promoção da ficha" mostra a que está valendo');
   await page.fill('#pc-email-titulo', '');
   await page.click('.pc-email-da-ficha [data-promo-email]');
   await page.waitForTimeout(150);

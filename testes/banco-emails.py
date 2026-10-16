@@ -803,18 +803,15 @@ ok(um(f"select count(*) from public.promocoes where id = '{pid}'", papel="anon")
 ok(um(f"select count(*) from public.promocoes", papel="anon") == "1", "e só as valendo, de academia Premium no ar")
 certo, _ = sql(f"select avisados from public.promocoes", papel="anon")
 ok(not certo, "o visitante não vê quantas pessoas foram avisadas")
+# Uma promoção por vez (SQL 20261016130000; eram 3).
 certo, saida = salvar("Aula dupla com desconto")
-r2 = json.loads(saida.splitlines()[-1]) if certo else {}
-ok(certo and r2.get("aviso") == "semana" and fila("tipo = 'promocao'") == "1", "a segunda promoção da semana aparece na ficha, sem novo e-mail")
-salvar("Terceira")
-certo, saida = salvar("Quarta")
-ok(not certo and "3 promoções" in saida, "até 3 promoções valendo")
+ok(not certo and "uma promoção valendo" in saida and fila("tipo = 'promocao'") == "1", "uma promoção por vez: a segunda não entra enquanto a primeira vale")
 certo, saida = salvar("Primeira aula grátis (mudou)", pid=f"'{pid}'")
 ok(certo and um(f"select titulo from public.promocoes where id = '{pid}'") == "Primeira aula grátis (mudou)" and fila("tipo = 'promocao'") == "1",
    "mudar a promoção não manda e-mail de novo")
 velha = um(f"insert into public.promocoes (academia_id, titulo, valida_ate) values ('{PINHEIROS}', 'Velha', public.hoje_em_brasilia() - 5) returning id")
 certo, saida = salvar("Velha de volta", pid=f"'{velha}'")
-ok(not certo and "3 promoções" in saida, "trazer de volta uma vencida também respeita as 3 valendo")
+ok(not certo and "uma promoção valendo" in saida, "trazer de volta uma vencida também respeita a uma por vez")
 sql(f"delete from public.promocoes where id = '{velha}'")
 certo, saida = salvar("Longa demais", validade=um("select (public.hoje_em_brasilia() + 91)::text"))
 ok(not certo and "90 dias" in saida, "vale no máximo 90 dias")
@@ -823,7 +820,7 @@ ok(not certo and "60 letras" in saida, "título curto demais é recusado")
 certo, saida = salvar("De outra academia", user=carla)
 ok(not certo and "não administra" in saida, "quem não administra a academia não cria promoção")
 lista = um(f"select count(*) || '|' || sum(avisados) from public.promocoes_da_minha_academia('{PINHEIROS}')", papel="authenticated", user=dono)
-ok(lista == "3|1", "a academia vê as suas promoções e quantos o e-mail avisou — " + str(lista))
+ok(lista == "1|1", "a academia vê as suas promoções e quantos o e-mail avisou — " + str(lista))
 ok(um(f"select count(*) from public.promocoes_da_minha_academia('{PINHEIROS}')", papel="authenticated", user=carla) == "0", "outra conta não vê as promoções da academia")
 sql(f"update public.promocoes set valida_ate = public.hoje_em_brasilia() - 1 where id = '{pid}'")
 ok(um(f"select count(*) from public.promocoes where id = '{pid}'", papel="anon") == "0", "promoção vencida sai do site")
@@ -910,6 +907,7 @@ sql(f"delete from public.avisos_das_academias where academia_id = '{PINHEIROS}';
 certo, saida = sql(f"select public.salvar_promocao('{PINHEIROS}', null, 'Aula experimental', 'Grátis', '{ate}', true)::text", papel="authenticated", user=dono)
 r6 = json.loads(saida.splitlines()[-1]) if certo else {}
 ok(certo and r6.get("aviso") == "enviado" and saldo() == "0", "Premium: a promoção avisa e gasta o último envio — " + saida)
+sql(f"delete from public.promocoes where id = '{r6.get('id')}'")  # uma por vez: encerra antes da outra
 certo, saida = sql(f"select public.salvar_promocao('{PINHEIROS}', null, 'Outra', 'Sem envio', '{ate}', false)::text", papel="authenticated", user=dono)
 r7 = json.loads(saida.splitlines()[-1]) if certo else {}
 certo, saida = sql(f"select public.avisar_minha_promocao('{r7.get('id')}')::text", papel="authenticated", user=dono)

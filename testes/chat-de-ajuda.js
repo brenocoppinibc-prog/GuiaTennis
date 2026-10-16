@@ -108,7 +108,7 @@ async function escrever(page, texto) {
     ['quero pausar durante as férias', 'Pausar no site'],
     ['quanto custa o premium?', 'Completo e do Premium'],
     ['vocês cobram comissão?', 'não cobra comissão'],
-    ['como faço promoção de aula grátis', 'até 3 promoções'],
+    ['como faço promoção de aula grátis', 'uma promoção por vez'],
     ['outra pessoa está administrando minha academia', 'Contestar'],
     ['tem uma avaliação falsa', 'Pedir análise'],
     ['quero dar acesso para o professor', 'Em Acessos'],

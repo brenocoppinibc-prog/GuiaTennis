@@ -2629,6 +2629,22 @@ cobra taxa e não fica no meio** da negociação.
     alterar"): o botão da promoção, "Alterar a promoção", "Salvar a
     alteração" e "altere ou encerre a de agora" (o site usa o próprio texto
     quando o banco de teste ainda diz "Mude…").
+115. **Promoções mais enxutas e o nome da academia como seletor** (pedido de
+    16/10/2026, com prints). (1) O nome da academia no alto de cada página
+    do Parceiros (`pcNomeDaAcademia`, `state.pcSeletorTitulo`) abre a lista
+    das academias da conta, com "Adicionar outra academia", como o seletor
+    de empresas do Google Business Profile; no celular é o único seletor (o
+    do topo só aparece no computador). Trocar de academia ali (ou no topo)
+    **fica na mesma página** (Promoções, Avaliações…); de Suas academias,
+    vai para Atualizações (`abrirAcademia`). (2) "Ver como fica ›" virou
+    **"Ver a prévia ›"** (Na ficha e Por e-mail). (3) "Já mandadas" virou
+    **"Já enviadas"**. (4) No segundo passo, sem "Confira antes de…" e sem
+    repetir a explicação de cima: só "‹ Editar a promoção", a **"Prévia do
+    e-mail"** (ou "Prévia na ficha e na busca") e o botão. (5) Com uma
+    promoção valendo, sai o recado "Uma promoção por vez: para publicar
+    outra…", que repetia o subtítulo. "Mandar por e-mail" põe ponto entre
+    os detalhes e a validade ("Novo. Válida até…"). Testes:
+    `testes/promocoes-por-email.js` e `testes/promocoes.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

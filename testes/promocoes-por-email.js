@@ -30,8 +30,8 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   const link = await page.getAttribute('#pc-saldo a', 'href');
   ok(corpo.includes('Nenhum envio disponível') && decodeURIComponent(link).includes('comprar envios de promoção por e-mail'), 'Completo sem envios: o saldo diz e "Comprar envios" abre o WhatsApp');
   ok(!(await page.$('[data-aviso-tipo]')) && !/aviso/i.test(corpo), 'Por e-mail: sem a escolha "Aviso"/"Promoção" e sem a palavra "aviso"');
-  ok(!(await page.$('#pc-email-previa')) && !(await page.$('#pc-email-enviar')) && await page.$('#pc-email-revisar') && !(await page.$('.pc-progresso-etapas, .trilha')),
-    'primeiro passo: só escrever, com "Ver como fica o e-mail", sem barra de etapas');
+  ok(!(await page.$('#pc-email-previa')) && !(await page.$('#pc-email-enviar')) && (await texto(page, '#pc-email-revisar')) === 'Ver a prévia ›' && !(await page.$('.pc-progresso-etapas, .trilha')),
+    'primeiro passo: só escrever, com "Ver a prévia", sem barra de etapas');
   ok(!(await page.$('.pc-email-da-ficha')), 'no Completo, sem "Usar a promoção da ficha"');
   await page.click('#pc-email-revisar');
   await page.waitForTimeout(150);
@@ -41,7 +41,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.click('#pc-email-revisar');
   await page.waitForTimeout(150);
   let previa = await texto(page, '#pc-email-previa');
-  ok(!(await page.$('#pc-email-titulo')) && (await texto(page, '#pc-email-revisao')).includes('Confira antes de mandar') && previa.includes('Assunto: Promoção da Só Aula Tennis: Primeira aula grátis') && previa.includes('mandou uma promoção') && previa.includes('pediu promoções') && !/aviso/i.test(previa),
+  ok(!(await page.$('#pc-email-titulo')) && !/Confira antes|Chega por e-mail a quem/.test(await texto(page, '#pc-email-revisao')) && previa.startsWith('Prévia do e-mail\n') && (await texto(page, '#pc-email-revisar').catch(() => '')) === '' && previa.includes('Assunto: Promoção da Só Aula Tennis: Primeira aula grátis') && previa.includes('mandou uma promoção') && previa.includes('pediu promoções') && !/aviso/i.test(previa),
     'segundo passo: a prévia do e-mail como promoção — ' + previa.slice(0, 80));
   ok(await page.isDisabled('#pc-email-enviar') && (await texto(page, '#pc-email-enviar')) === 'Mandar a promoção', 'Completo sem envios: "Mandar a promoção" fica desligado');
   ok(await page.evaluate(() => { const b = document.querySelector('.pc-email-bloqueio.form-error'); if (!b || !b.innerText.includes('Sem envios, a promoção não sai')) return false; const [r, g] = getComputedStyle(b).color.match(/\d+/g).map(Number); return r > 140 && g < 90; }),
@@ -58,7 +58,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.click('#pc-email-enviar');
   await page.waitForTimeout(400);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Promoção mandada: chega a 9 jogadores') && corpo.includes('1 envio disponível') && corpo.includes('Já mandadas') && corpo.includes('chegou a 9 jogadores') && await page.$('#pc-email-titulo'), 'manda a promoção, gasta 1 envio, mostra em "Já mandadas" e volta a uma nova');
+  ok(corpo.includes('Promoção mandada: chega a 9 jogadores') && corpo.includes('1 envio disponível') && corpo.includes('Já enviadas') && corpo.includes('chegou a 9 jogadores') && await page.$('#pc-email-titulo'), 'manda a promoção, gasta 1 envio, mostra em "Já mandadas" e volta a uma nova');
   ok(await page.evaluate(() => (window.__rpcs.find(r => r.nome === 'enviar_aviso_da_academia') || {}).args.p_tipo === 'promocao'), 'vai para o banco como promoção');
   await page.fill('#pc-email-titulo', 'Pacote de aulas');
   await page.fill('#pc-email-mensagem', 'Dez aulas pelo preço de oito.');
@@ -108,6 +108,19 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.click('.pc-email-da-ficha [data-promo-email]');
   await page.waitForTimeout(150);
   ok((await page.inputValue('#pc-email-titulo')) === 'Aula experimental grátis', 'tocar numa promoção da ficha preenche o e-mail');
+  await browser.close();
+
+  // ---- O nome da academia no alto escolhe a academia, e a troca fica na mesma página (16/10/2026) ----
+  ({ browser, page } = await abrir({ academia: 'a2', outrasAcademias: ['a1'], q: 'parceiros/promocoes', w: 390 }));
+  await page.waitForTimeout(400);
+  ok(!(await page.isVisible('#pc-seletor-btn')) && await page.isVisible('#pc-seletor-titulo'), 'no celular, o nome da academia no alto é o seletor');
+  await page.click('#pc-seletor-titulo');
+  await page.waitForTimeout(150);
+  const itens = await page.evaluate(() => [...document.querySelectorAll('.pc-seletor-titulo .pc-academia-i')].map(b => b.innerText.replace(/\s+/g, ' ').trim()));
+  ok(itens.length === 3 && itens.some(i => i.startsWith('Só Aula Tennis')) && itens[2] === 'Adicionar outra academia', 'tocar no nome abre as academias da conta — ' + itens.join(' | '));
+  await page.click('.pc-seletor-titulo [data-abrir-academia="a1"]');
+  await page.waitForTimeout(600);
+  ok(await page.evaluate(() => state.parceirosAba === 'promocoes' && document.querySelector('#pc-seletor-titulo span')?.textContent === 'Só Aula Tennis' && !document.querySelector('.pc-seletor-lista')), 'escolhida a outra academia, continua em Promoções, já com ela');
   await browser.close();
 
   // ---- Planos, conta do jogador e painel do admin ----

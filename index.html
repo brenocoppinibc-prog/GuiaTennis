@@ -1768,6 +1768,11 @@
   .pc-seletor-btn { display: none; align-items: center; gap: 6px; max-width: 260px; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 8px 12px 8px 14px; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; }
   .pc-seletor-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pc-seletor-lista { position: absolute; right: 0; top: calc(100% + 8px); width: 300px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 12px 32px rgba(0,0,0,0.12); padding: 8px; z-index: 50; }
+  .pc-eyebrow-btn { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 0; border: 0; background: none; font-family: inherit; cursor: pointer; text-align: left; }
+  .pc-eyebrow-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pc-eyebrow-btn svg { flex-shrink: 0; }
+  .pc-seletor-titulo { display: block; max-width: 100%; }
+  .pc-seletor-titulo .pc-seletor-lista { left: 0; right: auto; top: calc(100% - 2px); width: min(320px, calc(100vw - 32px)); }
   .pc-seletor-t { font-size: 12px; font-weight: 600; color: var(--muted); margin: 6px 8px 4px; }
   .pc-academia-i { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-radius: 10px; padding: 10px 8px; font-family: inherit; color: var(--text); cursor: pointer; }
   .pc-academia-i:hover { background: var(--bg-alt); }
@@ -6017,7 +6022,11 @@ function nomeDaMinha(a) {
 // os dela.
 async function abrirAcademia(id) {
   state.pcSeletor = false;
+  state.pcSeletorTitulo = false;
   state.pcMenu = false;
+  // Trocada no alto de uma página da academia, continua nela (como o Google
+  // Business Profile); de Suas academias, vai para Atualizações.
+  const ficar = state.page === "parceiros" && ["painel", "ficha", "avaliacoes", "promocoes", "promocoes-email", "desempenho", "pessoas", "plano"].includes(state.parceirosAba) ? state.parceirosAba : "painel";
   if (!contaAcademia || !id || id === contaAcademia.academiaId) { if (state.page === "parceiros") render(); else irParceiros("painel"); return; }
   const r = await sb.rpc('abrir_minha_academia', { p_academia: id });
   if (r.error) { avisarFalha("abrir essa academia", r.error, "Não consegui abrir essa academia agora. Tente de novo em instantes.", { texto: "Não consegui abrir essa academia agora. Tente de novo em instantes.", academia: id, tentar: () => abrirAcademia(id) }); return; }
@@ -6029,12 +6038,13 @@ async function abrirAcademia(id) {
   const c = minhaAcademia();
   state.contaModo = "painel";
   state.contaAviso = `Agora você está na ${c ? c.name : "academia"}.`;
-  irParceiros("painel");
+  irParceiros(ficar);
 }
 
 // "Adicionar outra academia": a mesma busca do cadastro, com a conta logada.
 function adicionarOutraAcademia() {
   state.pcSeletor = false;
+  state.pcSeletorTitulo = false;
   state.pcMenu = false;
   state.pcSelecionada = null;
   state.pcBusca = "";
@@ -7985,6 +7995,23 @@ function pcListaAcademias() {
     </div>`;
 }
 
+// O nome da academia no alto de cada página também escolhe a academia (pedido
+// de 16/10/2026, com print: "quero que as academias possam ser selecionadas
+// por ali"), como o seletor de empresas do Google Business Profile e o de
+// propriedades do Booking para Parceiros. No celular, é o único seletor.
+function pcNomeDaAcademia(c) {
+  const aberto = !!state.pcSeletorTitulo;
+  return `
+    <div class="pc-seletor pc-seletor-titulo">
+      <button type="button" class="pc-eyebrow pc-eyebrow-btn" id="pc-seletor-titulo" aria-expanded="${aberto}" aria-label="Trocar de academia: ${esc(c.name)}"><span>${esc(c.name)}</span>${icon('chevronDown', 14, 'currentColor')}</button>
+      ${aberto ? `
+        <div class="pc-seletor-lista">
+          <p class="pc-seletor-t">${minhasAcademias().length > 1 ? `Suas academias (${minhasAcademias().length})` : "Sua academia"}</p>
+          ${pcListaAcademias()}
+        </div>` : ""}
+    </div>`;
+}
+
 function pcSeletor() {
   const c = minhaAcademia();
   return `
@@ -8363,7 +8390,7 @@ function pcPlanos(logado) {
   const c = logado ? minhaAcademia() : null;
   return `
     <section class="pc-pagina">
-      ${varias && c ? `<p class="pc-eyebrow">${esc(c.name)}</p>` : ""}
+      ${varias && c ? pcNomeDaAcademia(c) : ""}
       <h1 class="display">${varias ? "Plano desta academia" : logado ? "Seu plano" : "Planos"}</h1>
       ${logado && c ? "" : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>`}
       ${logado && c ? pcPlanoDeHoje(c, atual) : ""}
@@ -8899,7 +8926,7 @@ function pcPainel() {
   const primeiro = (contaAcademia.nome || "").split(" ")[0];
   return `
     <section class="pc-pagina">
-      <p class="pc-eyebrow">${esc(c.name)}</p>
+      ${pcNomeDaAcademia(c)}
       <h1 class="display">Olá${primeiro ? ", " + esc(primeiro) : ""}</h1>
       ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
       ${pcConfirmarEmail()}
@@ -8955,13 +8982,13 @@ function pcDesempenho() {
   const atual = d ? d.dias : state.numerosDias;
   if (!veNumeros()) return `
     <section class="pc-pagina">
-      <p class="pc-eyebrow">${esc(c.name)}</p>
+      ${pcNomeDaAcademia(c)}
       <h1 class="display">Desempenho</h1>
       ${vitrineDosAcessos()}
     </section>`;
   return `
     <section class="pc-pagina">
-      <p class="pc-eyebrow">${esc(c.name)}</p>
+      ${pcNomeDaAcademia(c)}
       <h1 class="display">Desempenho</h1>
       <p class="pc-sec-sub">Quantas pessoas abriram a ficha no GuiaTennis e quantas chamaram vocês. ${saibaMaisNaAjuda("desempenho")}</p>
       <div class="chip-row pc-periodos" role="group" aria-label="Período">
@@ -9012,7 +9039,7 @@ function pcAvaliacoes() {
   const r = getAppRating(c.id);
   return `
     <section class="pc-pagina">
-      <p class="pc-eyebrow">${esc(c.name)}</p>
+      ${pcNomeDaAcademia(c)}
       <h1 class="display">Avaliações</h1>
       <div class="pc-numeros">
         <div class="pc-num"><span class="pc-num-l">Nota</span><strong class="pc-num-v">${r.count ? r.avg.toFixed(1).replace(".", ",") : "—"}</strong><span class="pc-var">${r.count ? scoreWord(r.avg, r.count) : "sem avaliação"}</span></div>
@@ -9071,7 +9098,7 @@ function textoDoSaldo(n) {
 function pcTopoDasPromocoes(c, parte) {
   const aba = (k, t, ic) => `<a href="${esc(caminhoDosParceiros(k))}" role="tab" class="lista-aba${parte === k ? " on" : ""}" aria-selected="${parte === k}" data-pc="${k}">${icon(ic, 14, 'currentColor')} ${t}</a>`;
   return `
-    <p class="pc-eyebrow">${esc(c.name)}</p><h1 class="display">Promoções</h1>
+    ${pcNomeDaAcademia(c)}<h1 class="display">Promoções</h1>
     <div class="lista-abas pc-promo-partes" role="tablist" aria-label="Onde a promoção aparece">
       ${aba("promocoes", "Na ficha", "tag")}${aba("promocoes-email", "Por e-mail", "sino")}
     </div>`;
@@ -9107,8 +9134,6 @@ function pcPromocoesPorEmail() {
       ${state.pcEmailPasso === "revisar" ? `
       <div class="pc-card pc-email-form pc-passo-revisar" id="pc-email-revisao">
         <button type="button" class="pc-passo-voltar" id="pc-email-editar">${icon('chevronLeft', 15, 'currentColor')} Editar a promoção</button>
-        <p class="pc-card-t">Confira antes de mandar</p>
-        <p class="pc-card-s">Chega por e-mail a quem favoritou a academia ou está perto dela e pediu promoções. Cada promoção que chega gasta 1 envio.</p>
         ${previaDoEmail(c, f)}
         ${bloqueio ? `<div class="form-error pc-email-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)}${!saldo ? ` <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar envios ›</a>` : ""}</span></div>` : ""}
         <button type="button" class="cta-btn cta-primary" id="pc-email-enviar" ${state.pcEmailEnviando || bloqueio ? "disabled" : ""}>${state.pcEmailEnviando ? bolaGirando(15) + " Mandando..." : "Mandar a promoção"}</button>
@@ -9122,10 +9147,10 @@ function pcPromocoesPorEmail() {
         <input class="form-field pc-email-campo" data-campo="titulo" id="pc-email-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
         <label class="field-label" for="pc-email-mensagem">Mensagem</label>
         <textarea class="form-field pc-email-campo" data-campo="mensagem" id="pc-email-mensagem" maxlength="500" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." style="margin-top:0">${esc(f.mensagem)}</textarea>
-        <button type="button" class="cta-btn cta-primary" id="pc-email-revisar">Ver como fica o e-mail ›</button>
+        <button type="button" class="cta-btn cta-primary" id="pc-email-revisar">Ver a prévia ›</button>
       </div>`}
       ${(dados.avisos || []).length ? `
-        <h2 class="pc-h2">Já mandadas</h2>
+        <h2 class="pc-h2">Já enviadas</h2>
         <div class="pc-promo-lista">
           ${dados.avisos.map(x => `
             <div class="pc-card pc-promo">
@@ -9146,7 +9171,7 @@ function previaDoEmail(c, f) {
   const vazio = (t) => `<span class="email-previa-vazio">${t}</span>`;
   return `
     <div class="est-previa email-previa" id="pc-email-previa">
-      <p class="est-previa-t">Prévia do e-mail que os jogadores recebem</p>
+      <p class="est-previa-t">Prévia do e-mail</p>
       <p class="email-previa-assunto"><strong>Assunto:</strong> Promoção da ${esc(c.name)}: ${titulo ? esc(titulo) : vazio("a promoção")}</p>
       <div class="email-previa-corpo">
         <p class="email-previa-marca">${logoSvg()} <span>GuiaTennis</span></p>
@@ -9212,7 +9237,9 @@ function promocaoDaFichaNoEmail(id) {
   const x = (state.pcPromocoes || []).find(y => y.id === id);
   if (!x) return;
   const validade = `Válida até ${diaPorExtenso(x.valida_ate)}.`;
-  state.pcEmailForm = { titulo: x.titulo, mensagem: [String(x.detalhes || "").trim(), validade].filter(Boolean).join(" ").slice(0, 500) };
+  let detalhes = String(x.detalhes || "").trim();
+  if (detalhes && !/[.!?…]$/.test(detalhes)) detalhes += ".";
+  state.pcEmailForm = { titulo: x.titulo, mensagem: [detalhes, validade].filter(Boolean).join(" ").slice(0, 500) };
   state.pcEmailPasso = null; state.pcEmailMsg = null;
 }
 async function enviarPromocaoPorEmail() {
@@ -9282,8 +9309,6 @@ function pcPromocoes() {
       ${(editando || !valendo.length) && state.pcPromoPasso === "revisar" ? `
         <div class="pc-card pc-promo-form pc-passo-revisar" id="pc-promo-revisao">
           <button type="button" class="pc-passo-voltar" id="pc-promo-editar">${icon('chevronLeft', 15, 'currentColor')} Editar a promoção</button>
-          <p class="pc-card-t">Confira antes de ${editando ? "salvar" : "publicar"}</p>
-          <p class="pc-card-s">É assim que a promoção fica na ficha e na busca.</p>
           ${previaDaPromocao(f)}
           <button type="button" class="cta-btn cta-primary" id="pc-promo-salvar" ${state.pcPromoSalvando ? "disabled" : ""}>${state.pcPromoSalvando ? bolaGirando(15) + " Salvando..." : editando ? "Salvar a alteração" : "Publicar promoção"}</button>
         </div>` : editando || !valendo.length ? `
@@ -9295,9 +9320,9 @@ function pcPromocoes() {
           <textarea class="form-field pc-promo-campo" data-campo="detalhes" id="pc-promo-detalhes" maxlength="280" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até 17h." style="margin-top:0">${esc(f.detalhes)}</textarea>
           <label class="field-label" for="pc-promo-ate">Válida até</label>
           <input class="form-field pc-promo-campo" data-campo="ate" id="pc-promo-ate" type="date" min="${hojeEmBrasilia()}" max="${hojeEmBrasilia(90)}" value="${esc(f.ate)}" style="margin-top:0" />
-          <button type="button" class="cta-btn cta-primary" id="pc-promo-revisar">Ver como fica ›</button>
+          <button type="button" class="cta-btn cta-primary" id="pc-promo-revisar">Ver a prévia ›</button>
           ${editando ? `<button type="button" class="inline-link" id="pc-promo-cancelar" style="margin-top:12px">Cancelar</button>` : ""}
-        </div>` : `<p class="pc-card-s pc-promo-uma">Uma promoção por vez: para publicar outra, altere ou encerre a de agora.</p>`}
+        </div>` : ""}
       ${lista.length ? `
         <div class="pc-promo-lista">
           ${lista.map(x => `
@@ -9369,7 +9394,7 @@ function pcFicha() {
   const faltas = new Set(faltasDaFicha(c));
   return `
     <section class="pc-pagina">
-      <p class="pc-eyebrow">${esc(c.name)}</p>
+      ${pcNomeDaAcademia(c)}
       <h1 class="display">Minha ficha</h1>
       ${pcSituacao(c)}
       <div class="pc-card">
@@ -9697,7 +9722,7 @@ function pcPessoasDaAcademia() {
   const c = minhaAcademia();
   return `
     <section class="pc-pagina pc-estreita">
-      ${minhasAcademias().length > 1 && c ? `<p class="pc-eyebrow">${esc(c.name)}</p>` : ""}
+      ${minhasAcademias().length > 1 && c ? pcNomeDaAcademia(c) : ""}
       <h1 class="display">Acessos</h1>
       <p class="pc-sec-sub">${souPrincipal() ? "Você é o responsável principal: adiciona e remove quem tem acesso." : "Você, na equipe: vê quem tem acesso à academia."}</p>
       ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
@@ -10097,7 +10122,14 @@ function ligarEventosParceiros() {
   const menuBtn = document.getElementById("pc-menu-btn");
   if (menuBtn) menuBtn.onclick = () => { state.pcMenu = true; render(); };
   const seletorBtn = document.getElementById("pc-seletor-btn");
-  if (seletorBtn) seletorBtn.onclick = (e) => { e.stopPropagation(); state.pcSeletor = !state.pcSeletor; render(); };
+  if (seletorBtn) seletorBtn.onclick = (e) => { e.stopPropagation(); state.pcSeletorTitulo = false; state.pcSeletor = !state.pcSeletor; render(); };
+  const seletorTitulo = document.getElementById("pc-seletor-titulo");
+  if (seletorTitulo) seletorTitulo.onclick = (e) => { e.stopPropagation(); state.pcSeletor = false; state.pcSeletorTitulo = !state.pcSeletorTitulo; render(); };
+  if (state.pcSeletorTitulo) {
+    const fora = (e) => { if (!e.target.closest || !e.target.closest(".pc-seletor-titulo")) { state.pcSeletorTitulo = false; render(); } };
+    document.addEventListener("click", fora, { once: true });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && state.pcSeletorTitulo) { state.pcSeletorTitulo = false; render(); } }, { once: true });
+  }
   // Toque fora da lista (ou Esc) fecha o seletor.
   if (state.pcSeletor) {
     const fora = (e) => { if (!e.target.closest || !e.target.closest(".pc-seletor")) { state.pcSeletor = false; render(); } };

@@ -8,7 +8,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
 const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
 const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', detalhes: 'Para quem nunca fez aula aqui.', valida_ate: dia(10), avisados: 2 };
 
-// Passo a passo (15/10/2026): "Ver como fica" e, na prévia, publicar.
+// Passo a passo (15/10/2026): "Ver a prévia" e, nela, publicar.
 async function publicar(page) {
   await page.click('#pc-promo-revisar');
   await page.waitForTimeout(150);
@@ -60,7 +60,7 @@ async function publicar(page) {
   ok(r.aviso.includes('Promoção atualizada') && r.args.p_id === 'promo-1' && r.t === 'Primeira aula grátis às segundas', 'mudar salva na mesma promoção');
   // Uma promoção por vez (16/10/2026; eram 3): com uma valendo, o formulário dá lugar ao recado.
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(!(await page.$('#pc-promo-titulo')) && corpo.includes('Uma promoção por vez: para publicar outra, altere ou encerre a de agora.'), 'com uma valendo, pede para mudar ou encerrar antes de criar outra');
+  ok(!(await page.$('#pc-promo-titulo')) && corpo.split('Uma promoção por vez').length === 2 && corpo.includes('Alterar') && corpo.includes('Encerrar'), 'com uma valendo, sem formulário e sem repetir "uma promoção por vez" (só no alto)');
   ok((await page.evaluate(() => sb.rpc('salvar_promocao', { p_academia: 'a1', p_id: null, p_titulo: 'Aula dupla', p_detalhes: '', p_valida_ate: hojeEmBrasilia(10), p_avisar: false }))).error?.message.includes('uma promoção valendo'), 'e o banco recusa a segunda');
   page.once('dialog', d => d.accept());
   await page.click('[data-promo-encerrar]');

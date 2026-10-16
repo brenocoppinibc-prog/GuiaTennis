@@ -50,7 +50,7 @@ begin
   if v_id is null then
     if exists (select 1 from public.promocoes
                where academia_id = p_academia and valida_ate >= v_hoje) then
-      raise exception 'A academia já tem uma promoção valendo. Mude ou encerre a de agora para publicar outra.' using errcode = '22023';
+      raise exception 'A academia já tem uma promoção valendo. Altere ou encerre a de agora para publicar outra.' using errcode = '22023';
     end if;
     insert into public.promocoes (academia_id, titulo, detalhes, valida_ate, criada_por)
       values (p_academia, v_titulo, v_detalhes, p_valida_ate, auth.uid())
@@ -62,7 +62,7 @@ begin
     if not exists (select 1 from public.promocoes where id = v_id and valida_ate >= v_hoje)
        and exists (select 1 from public.promocoes
                    where academia_id = p_academia and id <> v_id and valida_ate >= v_hoje) then
-      raise exception 'A academia já tem uma promoção valendo. Mude ou encerre a de agora para publicar outra.' using errcode = '22023';
+      raise exception 'A academia já tem uma promoção valendo. Altere ou encerre a de agora para publicar outra.' using errcode = '22023';
     end if;
     update public.promocoes
       set titulo = v_titulo, detalhes = v_detalhes, valida_ate = p_valida_ate, updated_at = now()

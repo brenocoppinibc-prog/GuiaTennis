@@ -2616,14 +2616,19 @@ cobra taxa e não fica no meio** da negociação.
 114. **Uma promoção por vez** (pedido de 16/10/2026: "uma promoção por
     vez"; eram até 3). Na ficha, a academia tem **no máximo uma promoção
     valendo**: com ela no ar, o formulário dá lugar a "Uma promoção por vez:
-    para publicar outra, mude ou encerre a de agora." "Mudar" continua
+    para publicar outra, altere ou encerre a de agora." "Alterar" continua
     livre. SQL `20261016130000_uma_promocao_por_vez` (`salvar_promocao`
-    recusa a segunda: "A academia já tem uma promoção valendo…"; reabrir uma
+    recusa a segunda: "A academia já tem uma promoção valendo. Altere ou
+    encerre…"; reabrir uma
     encerrada também respeita). As que já estavam valendo ficam, mas o site
     mostra só a mais nova (`promocoesDe`, por `created_at`). Por e-mail
     segue no máximo uma por semana. Textos: subtítulo, Ajuda, chat e Termos
     ("uma promoção por vez"); no e-mail, "Usar a promoção da ficha". Testes:
-    `testes/promocoes.js` e a seção 22 do `banco-emails.py`.
+    `testes/promocoes.js` e a seção 22 do `banco-emails.py`. **"Mudar" virou
+    "Alterar"** (pedido de 16/10/2026: "mude a palavra mudar promoção para
+    alterar"): o botão da promoção, "Alterar a promoção", "Salvar a
+    alteração" e "altere ou encerre a de agora" (o site usa o próprio texto
+    quando o banco de teste ainda diz "Mude…").
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

@@ -49,18 +49,18 @@ async function publicar(page) {
   ok(r.site.join() === 'Primeira aula grátis', 'e já aparece no site');
   await page.click('[data-promo-mudar]');
   await page.waitForTimeout(200);
-  ok((await page.inputValue('#pc-promo-titulo')) === 'Primeira aula grátis' && (await texto(page, '.pc-promo-form .pc-card-t')) === 'Mudar a promoção', '"Mudar" abre o formulário com a promoção');
+  ok((await page.inputValue('#pc-promo-titulo')) === 'Primeira aula grátis' && (await texto(page, '.pc-promo-form .pc-card-t')) === 'Alterar a promoção', '"Alterar" abre o formulário com a promoção');
   await page.fill('#pc-promo-titulo', 'Primeira aula grátis às segundas');
   await page.click('#pc-promo-revisar');
   await page.waitForTimeout(150);
-  ok((await texto(page, '#pc-promo-salvar')).includes('Salvar a mudança') && (await texto(page, '#pc-promo-previa')).includes('Primeira aula grátis às segundas'), 'mudar também passa pela prévia');
+  ok((await texto(page, '#pc-promo-salvar')).includes('Salvar a alteração') && (await texto(page, '#pc-promo-previa')).includes('Primeira aula grátis às segundas'), 'mudar também passa pela prévia');
   await page.click('#pc-promo-salvar');
   await page.waitForTimeout(500);
   r = await page.evaluate(() => ({ aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '', args: (window.__rpcs.filter(x => x.nome === 'salvar_promocao').slice(-1)[0] || {}).args, t: window.__db.promocoes[0].titulo }));
   ok(r.aviso.includes('Promoção atualizada') && r.args.p_id === 'promo-1' && r.t === 'Primeira aula grátis às segundas', 'mudar salva na mesma promoção');
   // Uma promoção por vez (16/10/2026; eram 3): com uma valendo, o formulário dá lugar ao recado.
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(!(await page.$('#pc-promo-titulo')) && corpo.includes('Uma promoção por vez: para publicar outra, mude ou encerre a de agora.'), 'com uma valendo, pede para mudar ou encerrar antes de criar outra');
+  ok(!(await page.$('#pc-promo-titulo')) && corpo.includes('Uma promoção por vez: para publicar outra, altere ou encerre a de agora.'), 'com uma valendo, pede para mudar ou encerrar antes de criar outra');
   ok((await page.evaluate(() => sb.rpc('salvar_promocao', { p_academia: 'a1', p_id: null, p_titulo: 'Aula dupla', p_detalhes: '', p_valida_ate: hojeEmBrasilia(10), p_avisar: false }))).error?.message.includes('uma promoção valendo'), 'e o banco recusa a segunda');
   page.once('dialog', d => d.accept());
   await page.click('[data-promo-encerrar]');

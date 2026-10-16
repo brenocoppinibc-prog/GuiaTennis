@@ -9285,10 +9285,10 @@ function pcPromocoes() {
           <p class="pc-card-t">Confira antes de ${editando ? "salvar" : "publicar"}</p>
           <p class="pc-card-s">É assim que a promoção fica na ficha e na busca.</p>
           ${previaDaPromocao(f)}
-          <button type="button" class="cta-btn cta-primary" id="pc-promo-salvar" ${state.pcPromoSalvando ? "disabled" : ""}>${state.pcPromoSalvando ? bolaGirando(15) + " Salvando..." : editando ? "Salvar a mudança" : "Publicar promoção"}</button>
+          <button type="button" class="cta-btn cta-primary" id="pc-promo-salvar" ${state.pcPromoSalvando ? "disabled" : ""}>${state.pcPromoSalvando ? bolaGirando(15) + " Salvando..." : editando ? "Salvar a alteração" : "Publicar promoção"}</button>
         </div>` : editando || !valendo.length ? `
         <div class="pc-card pc-promo-form">
-          <p class="pc-card-t">${editando ? "Mudar a promoção" : "Nova promoção na ficha"}</p>
+          <p class="pc-card-t">${editando ? "Alterar a promoção" : "Nova promoção na ficha"}</p>
           <label class="field-label" for="pc-promo-titulo">Promoção</label>
           <input class="form-field pc-promo-campo" data-campo="titulo" id="pc-promo-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
           <label class="field-label" for="pc-promo-detalhes">Detalhes (opcional)</label>
@@ -9297,7 +9297,7 @@ function pcPromocoes() {
           <input class="form-field pc-promo-campo" data-campo="ate" id="pc-promo-ate" type="date" min="${hojeEmBrasilia()}" max="${hojeEmBrasilia(90)}" value="${esc(f.ate)}" style="margin-top:0" />
           <button type="button" class="cta-btn cta-primary" id="pc-promo-revisar">Ver como fica ›</button>
           ${editando ? `<button type="button" class="inline-link" id="pc-promo-cancelar" style="margin-top:12px">Cancelar</button>` : ""}
-        </div>` : `<p class="pc-card-s pc-promo-uma">Uma promoção por vez: para publicar outra, mude ou encerre a de agora.</p>`}
+        </div>` : `<p class="pc-card-s pc-promo-uma">Uma promoção por vez: para publicar outra, altere ou encerre a de agora.</p>`}
       ${lista.length ? `
         <div class="pc-promo-lista">
           ${lista.map(x => `
@@ -9308,7 +9308,7 @@ function pcPromocoes() {
               <p class="footnote" style="margin-top:8px">${x.valendo ? `Válida até ${esc(diaPorExtenso(x.valida_ate))}` : `Terminou em ${esc(diaPorExtenso(x.valida_ate))}`}${x.avisados ? ` · por e-mail para ${x.avisados} ${plural(x.avisados, "pessoa", "pessoas")}` : ""}</p>
               <div class="pc-promo-acoes">
                 ${x.valendo ? `<button type="button" class="inline-link" data-promo-por-email="${x.id}">Mandar por e-mail</button>` : ""}
-                ${x.valendo ? `<button type="button" class="inline-link" data-promo-mudar="${x.id}">Mudar</button>` : ""}
+                ${x.valendo ? `<button type="button" class="inline-link" data-promo-mudar="${x.id}">Alterar</button>` : ""}
                 <button type="button" class="inline-link" data-promo-encerrar="${x.id}">${x.valendo ? "Encerrar" : "Apagar"}</button>
               </div>
             </div>`).join("")}
@@ -9341,7 +9341,9 @@ async function salvarPromocao() {
   state.pcPromoSalvando = false;
   if (r.error) {
     const m = String(r.error.message || "");
-    state.pcPromoMsg = { tipo: "erro", texto: /Premium|60 letras|280 letras|90 dias|promoção valendo|em análise|não administra/.test(m) ? m : falhou("salvar a promoção", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes.", academia: c.id }) };
+    // O banco de teste pode ter o texto de antes ("Mude ou encerre…").
+    if (/promoção valendo/.test(m)) { state.pcPromoMsg = { tipo: "erro", texto: "A academia já tem uma promoção valendo. Altere ou encerre a de agora para publicar outra." }; render(); return; }
+    state.pcPromoMsg = { tipo: "erro", texto: /Premium|60 letras|280 letras|90 dias|em análise|não administra/.test(m) ? m : falhou("salvar a promoção", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes.", academia: c.id }) };
     render();
     return;
   }

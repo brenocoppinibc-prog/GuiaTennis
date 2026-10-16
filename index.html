@@ -17173,9 +17173,9 @@ const CHAT_TEMAS = [
     a: [{ t: "Suas academias", ir: "pc:academias" }] },
   { id: "promocoes", onde: "parceiros", t: "Promoções",
     p: ["promocao", "promocoes", "desconto", "oferta", "aula gratis", "cupom", "divulgar"],
-    r: "Promoções tem duas partes. Na ficha (Premium): até 3 ao mesmo tempo, por até 90 dias, na ficha e no resultado da busca. Por e-mail (Completo e Premium): a promoção chega a quem favoritou ou está perto (cada uma gasta 1 envio).",
+    r: "Promoções tem duas partes. Na ficha (Premium): até 3 promoções ao mesmo tempo, por até 90 dias, na ficha e no resultado da busca. Por e-mail (Completo e Premium): a promoção chega a quem favoritou ou está perto (cada uma gasta 1 envio).",
     a: [{ t: "Abrir Promoções", ir: "pc:promocoes" }],
-    rc: x => (x.plano === "premium" ? `A ${x.c.name} está no Premium: em Promoções › Na ficha, até 3 ao mesmo tempo, por até 90 dias; em Por e-mail, a promoção chega aos jogadores.`
+    rc: x => (x.plano === "premium" ? `A ${x.c.name} está no Premium: em Promoções › Na ficha, até 3 promoções ao mesmo tempo, por até 90 dias; em Por e-mail, a promoção chega aos jogadores.`
       : x.plano === "completo" ? `A ${x.c.name} está no Completo: manda promoções por e-mail; na ficha e na busca, só no Premium.`
       : `As promoções são do Completo (por e-mail) e do Premium (também na ficha); a ${x.c.name} está no Básico. Em Plano, veja o que muda.`),
     ac: x => (x.plano === "premium" ? [{ t: "Na ficha", ir: "pc:promocoes" }, { t: "Por e-mail", ir: "pc:promocoes-email" }] : x.plano === "completo" ? [{ t: "Promoções por e-mail", ir: "pc:promocoes-email" }] : [{ t: "Ver o meu plano", ir: "pc:plano" }]) },

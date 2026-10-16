@@ -89,13 +89,16 @@
   .email-previa-vazio { color: #A39C8E; font-weight: 400; font-style: italic; }
   #pc-promo-previa { margin-top: 14px; }
   #pc-promo-previa .ht-promo { margin: 0; background: #fff; }
-  .pc-aviso-tipo { margin: 0 0 4px; }
+  .pc-email-da-ficha { margin: 0 0 4px; }
+  /* Promoções: as partes Na ficha e Por e-mail (16/10/2026). */
+  .pc-promo-partes { margin: 4px 0 14px; }
+  .pc-promo-partes .lista-aba { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
   /* Passo de conferir (15/10/2026): "Editar" volta ao texto. */
   .pc-passo-voltar { display: inline-flex; align-items: center; gap: 4px; margin: 0 0 10px; padding: 0; border: 0; background: none; color: var(--green); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   .pc-passo-revisar .cta-btn { margin-top: 16px; }
-  .pc-aviso-bloqueio { margin-top: 14px; align-items: flex-start; padding: 10px 12px; border: 1px solid #F1C4BF; border-radius: 10px; background: #FDEDEB; font-weight: 600; line-height: 1.45; }
-  .pc-aviso-bloqueio a { color: inherit; font-weight: 700; white-space: nowrap; }
-  .pc-aviso-form .cta-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .pc-email-bloqueio { margin-top: 14px; align-items: flex-start; padding: 10px 12px; border: 1px solid #F1C4BF; border-radius: 10px; background: #FDEDEB; font-weight: 600; line-height: 1.45; }
+  .pc-email-bloqueio a { color: inherit; font-weight: 700; white-space: nowrap; }
+  .pc-email-form .cta-btn:disabled { opacity: .45; cursor: not-allowed; }
   .rcard-patrocinado { margin: 0 0 4px; font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
   .mini-patrocinado { margin: 0 0 3px; font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
   .resultados-titulo { margin: 10px 0 -4px; font-size: 15px; font-weight: 700; color: var(--text); }
@@ -4116,7 +4119,7 @@ function telaDoPercurso() {
   if (state.page === "parceiros") {
     const aba = state.parceirosAba || "inicio";
     const nomes = { inicio: "Apresentação", planos: "Planos", ajuda: "Ajuda", cadastro: "Cadastro", entrar: "Entrar", painel: "Atualizações",
-      desempenho: "Desempenho", avaliacoes: "Avaliações", promocoes: "Promoções", avisos: "Avisos por e-mail", ficha: "Minha ficha", pessoas: "Acessos", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
+      desempenho: "Desempenho", avaliacoes: "Avaliações", promocoes: "Promoções na ficha", "promocoes-email": "Promoções por e-mail", ficha: "Minha ficha", pessoas: "Acessos", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
     let texto = nomes[aba] || aba;
     if ((aba === "cadastro" || aba === "entrar") && !contaAcademia) {
       const passo = state.pcEmailPasso || "email";
@@ -4977,7 +4980,7 @@ function seoDaPagina() {
     // (?academia=) e as páginas de quem está logado ficam de fora.
     const noGoogle = titulos[aba] && !(aba === "cadastro" && state.pcReivindicar);
     return {
-      titulo: titulos[aba] || `${(PC_MENU_LOGADO.find(i => i.aba === aba) || {}).t || (aba === "ver" ? "Ver como academia" : "Entrar")} · GuiaTennis Parceiros`,
+      titulo: titulos[aba] || `${aba === "promocoes-email" ? "Promoções por e-mail" : (PC_MENU_LOGADO.find(i => i.aba === aba) || {}).t || (aba === "ver" ? "Ver como academia" : "Entrar")} · GuiaTennis Parceiros`,
       descricao: "Cadastre a sua academia de tênis no GuiaTennis: apareça para quem procura aula e quadra na região e receba contato direto no WhatsApp, sem comissão.",
       robots: noGoogle ? "" : "noindex, follow",
     };
@@ -7379,7 +7382,7 @@ function demoBusca() {
 // aparece no topo da busca, marcado "Patrocinado" (regra 71).
 
 const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar"];
-const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "promocoes", "avisos", "ficha", "pessoas", "plano", "academias", "perfil"];
+const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "ficha", "pessoas", "plano", "academias", "perfil"];
 // Só do admin: escolher a academia para ver o Parceiros como ela vê.
 const PC_ADMIN = ["ver"];
 const PC_MENU_PUBLICO = [
@@ -7395,8 +7398,8 @@ const PC_MENU_LOGADO = [
   { aba: "painel", t: "Atualizações", ic: "home" },
   { aba: "ficha", t: "Minha ficha", ic: "edit" },
   { aba: "avaliacoes", t: "Avaliações", ic: "bubble" },
+  // Uma página só, com as partes Na ficha e Por e-mail (16/10/2026).
   { aba: "promocoes", t: "Promoções", ic: "tag" },
-  { aba: "avisos", t: "Avisos por e-mail", ic: "sino" },
   { aba: "desempenho", t: "Desempenho", ic: "barchart" },
   { aba: "academias", t: "Suas academias", curto: "Academias", ic: "predio" },
   { aba: "pessoas", t: "Acessos", ic: "key" },
@@ -7429,8 +7432,9 @@ const PC_RECURSOS = [
   { t: "Primeiro entre as recomendadas, marcada como \"Patrocinado\"", p: ["premium"], grupo: "recomendadas" },
   // Pedido de 08/10/2026: as promoções saíram do "Em breve".
   { t: "Promoções na ficha e na busca", p: ["premium"] },
-  // Regra 104: avisos por e-mail pagos por envio, mais baratos no Premium.
-  { t: "Avisos e promoções por e-mail aos jogadores, por envio (mais barato no Premium)", p: ["completo", "premium"] },
+  // Regra 104: promoções por e-mail pagas por envio, mais baratas no Premium
+  // (os "avisos" viraram promoção em 16/10/2026).
+  { t: "Promoções por e-mail aos jogadores, por envio (mais barato no Premium)", p: ["completo", "premium"] },
   { t: "Visitas, contatos e o dia a dia da ficha", p: ["premium"] },
   { t: "De onde vieram (Instagram, Google…), o aparelho e os canais", p: ["premium"] },
   { t: "Bairros de quem procurou e comparação com a cidade", p: ["premium"] },
@@ -7477,8 +7481,8 @@ function perguntasParceiros() {
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
-    { id: "promocoes", q: "Como funcionam as promoções?", a: "No plano Premium, em Promoções, a academia publica até 3 promoções ao mesmo tempo, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Ao publicar, ou depois, a academia pode avisar por e-mail os jogadores que favoritaram a academia ou estão perto dela: o aviso gasta 1 envio (veja \"Como funcionam os avisos por e-mail?\"). A academia responde pelo que anuncia e combina as condições direto com o jogador." },
-    { id: "avisos", q: "Como funcionam os avisos por e-mail?", a: "Nos planos Completo e Premium, em Avisos por e-mail, a academia escreve um aviso (turma nova, horário livre, torneio) e ele chega por e-mail aos jogadores que favoritaram a academia ou estão perto dela e pediram esses avisos. No Premium, a promoção também pode ser avisada assim. Cada aviso que chega a alguém gasta 1 envio, comprado antes em pacotes pelo WhatsApp do GuiaTennis; no Premium, o envio sai mais barato. Para não cansar os jogadores, sai no máximo 1 aviso por semana por academia, e se ninguém recebe, o envio não é gasto." },
+    { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "No plano Premium, em Promoções › Na ficha, a academia publica até 3 promoções ao mesmo tempo, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" nela (veja \"Como funcionam as promoções por e-mail?\"). A academia responde pelo que anuncia e combina as condições direto com o jogador." },
+    { id: "promocoes-email", q: "Como funcionam as promoções por e-mail?", a: "Nos planos Completo e Premium, em Promoções › Por e-mail, a academia escreve a promoção (primeira aula grátis, turma nova com desconto, pacote de aulas) e ela chega por e-mail aos jogadores que favoritaram a academia ou estão perto dela e pediram promoções. No Premium, dá para usar uma promoção da ficha. Cada promoção que chega a alguém gasta 1 envio, comprado antes em pacotes pelo WhatsApp do GuiaTennis; no Premium, o envio sai mais barato. Para não cansar os jogadores, sai no máximo 1 promoção por e-mail por semana por academia, e se ninguém recebe, o envio não é gasto." },
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
     { id: "desempenho", q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
     { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha, e todos que administram a academia recebem um e-mail com o que muda." },
@@ -7492,6 +7496,8 @@ function abaDoParceiro(aba) {
   if (aba === "conta") return "perfil";
   // "Pessoas" virou "Acessos" (13/10/2026): /parceiros/acessos e o antigo /parceiros/pessoas.
   if (aba === "acessos") return "pessoas";
+  // "Avisos por e-mail" virou Promoções › Por e-mail (16/10/2026).
+  if (aba === "avisos") return "promocoes-email";
   if (PC_PUBLICAS.includes(aba) || PC_PRIVADAS.includes(aba) || PC_ADMIN.includes(aba)) return aba;
   return "inicio";
 }
@@ -7525,7 +7531,7 @@ function irParceiros(aba, opcoes = {}) {
   if ((aba === "painel" || aba === "pessoas") && temAcademia() && acessoCompleto()) { carregarPedidosDeAcesso(); carregarPessoas(); }
   if (aba === "academias" && contaAcademia) { state.pcSaindo = null; state.pcSaidaErro = ""; carregarPedidosParaSair(); }
   if (aba === "promocoes" && temAcademia() && acessoCompleto()) { state.pcPromoMsg = null; state.pcPromoEditando = null; state.pcPromoForm = null; carregarPromocoesDaAcademia(); }
-  if (aba === "avisos" && temAcademia() && acessoCompleto()) { state.pcAvisoMsg = null; state.pcAvisoForm = null; carregarAvisosDaAcademia(); }
+  if (aba === "promocoes-email" && temAcademia() && acessoCompleto()) { state.pcEmailMsg = null; if (!opcoes.manterForm) { state.pcEmailForm = null; state.pcEmailPasso = null; } carregarPromocoesDaAcademia(); }
   syncUrl(!opcoes.substituir);
   render();
   if (opcoes.ancora) {
@@ -7615,7 +7621,7 @@ const PC_DORES = [
   { plano: "completo", caminho: "ficha", t: "Na primeira visita, o jogador se perde na chegada", s: "a ficha mostra a fachada, a entrada e onde estacionar" },
   { plano: "completo", caminho: "ficha", t: "Três fotos e três comodidades contam pouco da estrutura", s: "até 5 fotos e todas as comodidades" },
   { plano: "completo", caminho: "busca", t: "A página inicial recomenda outras academias", s: "a academia entra entre as \"Academias recomendadas\", quanto mais completa a ficha" },
-  { plano: "completo", caminho: "jogadores", t: "Quem favoritou não fica sabendo das novidades", s: "avisos e promoções por e-mail aos jogadores, por envio" },
+  { plano: "completo", caminho: "jogadores", t: "Quem favoritou não fica sabendo das novidades", s: "promoções por e-mail aos jogadores, por envio" },
   { plano: "completo", caminho: "gestao", t: "Só uma pessoa cuida da ficha", s: "até 5 pessoas da equipe têm acesso" },
   { plano: "premium", caminho: "busca", t: "Na busca da região, outras aparecem antes", s: "a academia aparece no topo, marcada como \"Patrocinado\", e em primeiro entre as recomendadas" },
   { plano: "premium", caminho: "jogadores", t: "Horário vazio na quadra", s: "promoções na ficha e na busca, e o envio por e-mail sai mais barato" },
@@ -7643,8 +7649,8 @@ function oportunidadesDoPlano(c, atual) {
   if (faltas.length) itens.push({ t: `Completar a ficha: falta ${faltas.slice(0, 3).join(", ")}${faltas.length > 3 ? "…" : ""}`, d: "Ficha completa recebe mais contato" + (atual === "basico" ? "." : " e sobe entre as recomendadas."), ir: "ficha", bt: "Completar a ficha" });
   const semResposta = getReviews(c.id).filter(r => !r.resposta).length;
   if (semResposta) itens.push({ t: `Responder ${semResposta === 1 ? "1 avaliação" : semResposta + " avaliações"}`, d: "Quem vai escolher lê as respostas da academia.", ir: "avaliacoes", bt: "Responder" });
-  if (atual !== "basico" && !saldoDeEnvios()) itens.push({ t: "Avisar os jogadores por e-mail", d: "Turma nova, horário livre ou promoção chegam a quem favoritou ou está perto.", ir: "avisos", bt: "Avisos por e-mail" });
-  if (atual === "premium" && !(state.pcPromocoes || []).some(x => x.valendo)) itens.push({ t: "Publicar uma promoção", d: "Ela aparece na ficha e no resultado da busca.", ir: "promocoes", bt: "Promoções" });
+  if (atual !== "basico" && !saldoDeEnvios()) itens.push({ t: "Mandar uma promoção por e-mail", d: "Ela chega a quem favoritou a academia ou está perto.", ir: "promocoes-email", bt: "Promoções por e-mail" });
+  if (atual === "premium" && !(state.pcPromocoes || []).some(x => x.valendo)) itens.push({ t: "Publicar uma promoção", d: "Ela aparece na ficha e no resultado da busca.", ir: "promocoes", bt: "Promoções na ficha" });
   if (!itens.length) itens.push({ t: "Imprimir o QR code da ficha", d: "Na recepção, quem jogou avalia a academia na hora.", ir: "ficha", bt: "Minha ficha" });
   return itens;
 }
@@ -7915,7 +7921,7 @@ function pcTopo() {
   const logado = !!contaAcademia;
   const menuLogado = temAcademia() ? PC_MENU_LOGADO : PC_MENU_LOGADO.filter(i => ["painel", "academias", "plano", "perfil", "ajuda"].includes(i.aba));
   const itens = logado ? menuLogado.filter(i => !i.soNoMenu) : PC_MENU_PUBLICO.filter(i => i.ancora || i.aba !== "inicio");
-  const link = (i) => `<a href="/parceiros${i.aba === "inicio" ? "" : "/" + i.aba}${i.ancora ? "#" + i.ancora : ""}" class="pc-nav-i ${!i.ancora && aba === i.aba ? "on" : ""}" data-pc="${i.aba}" ${i.ancora ? `data-pc-ancora="${i.ancora}"` : ""}>${esc(i.curto || i.t)}</a>`;
+  const link = (i) => `<a href="/parceiros${i.aba === "inicio" ? "" : "/" + i.aba}${i.ancora ? "#" + i.ancora : ""}" class="pc-nav-i ${!i.ancora && (aba === "promocoes-email" ? "promocoes" : aba) === i.aba ? "on" : ""}" data-pc="${i.aba}" ${i.ancora ? `data-pc-ancora="${i.ancora}"` : ""}>${esc(i.curto || i.t)}</a>`;
   const inicial = logado ? (contaAcademia.nome || contaAcademia.usuario || "?").trim().charAt(0).toUpperCase() : "";
   const confirmar = logado && !contaAcademia.emailConfirmado && recebeEmail(contaAcademia.login);
   const avatar = logado ? `<a href="/parceiros/perfil" class="conta-topo logado pc-avatar ${aba === "perfil" ? "on" : ""} ${confirmar ? "confirmar" : ""}" data-pc="perfil" aria-label="Perfil${confirmar ? " (confirme o seu e-mail)" : ""}">${esc(inicial)}</a>` : "";
@@ -8151,7 +8157,7 @@ function renderParceiros() {
   const semAcademia = contaAcademia && acessoCompleto() && !temAcademia();
   let miolo;
   if (PC_PRIVADAS.includes(aba) && contaAcademia && !acessoCompleto()) miolo = pcPrimeiroAcesso();
-  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "promocoes", "avisos", "ficha", "pessoas"].includes(aba)) miolo = pcSemAcademia();
+  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "ficha", "pessoas"].includes(aba)) miolo = pcSemAcademia();
   else if (aba === "ver") miolo = pcVerComoAdmin();
   else if (aba === "inicio") miolo = pcInicio();
   else if (aba === "planos") miolo = pcPlanos(false);
@@ -8162,7 +8168,7 @@ function renderParceiros() {
   else if (aba === "desempenho") miolo = pcDesempenho();
   else if (aba === "avaliacoes") miolo = pcAvaliacoes();
   else if (aba === "promocoes") miolo = pcPromocoes();
-  else if (aba === "avisos") miolo = pcAvisos();
+  else if (aba === "promocoes-email") miolo = pcPromocoesPorEmail();
   else if (aba === "ficha") miolo = pcFicha();
   else if (aba === "plano") miolo = pcPlanos(temAcademia());
   else if (aba === "pessoas") miolo = pcPessoasDaAcademia();
@@ -9018,10 +9024,11 @@ function pcAvaliacoes() {
 }
 
 // Promoções (pedido de 08/10/2026: "quero colocar em ação que academias
-// com Premium divulgue promoções"): a academia Premium cria, muda e
-// encerra; aparece na ficha e na busca. A promoção nova avisa por e-mail
-// quem favoritou a academia e aceita promoções, no máximo uma vez por
-// semana (SQL 20261008140000).
+// com Premium divulgue promoções"). Desde 16/10/2026 ("quero tirar tudo
+// sobre avisos, unifique tudo como promoção, e uma parte para promoção na
+// ficha e outro por email"), uma página só, em duas partes: Na ficha (só o
+// Premium; aparece na ficha e na busca) e Por e-mail (Completo e Premium;
+// chega a quem favoritou ou está perto, pago por envio).
 async function carregarPromocoesDaAcademia() {
   const c = minhaAcademia();
   if (!c) return;
@@ -9029,87 +9036,96 @@ async function carregarPromocoesDaAcademia() {
     const r = await sb.rpc('promocoes_da_minha_academia', { p_academia: c.id });
     state.pcPromocoes = r.error ? [] : (r.data || []);
   } catch { state.pcPromocoes = []; }
-  await carregarAvisosDaAcademia(false);
+  await carregarPromocoesPorEmail(false);
   if (state.page === "parceiros") render();
 }
 
-// Avisos por e-mail (regra 104, SQL 20261015120000): no Completo e no
-// Premium, a academia escreve um aviso aos jogadores que favoritaram ou estão
-// perto; cada aviso que chega a alguém gasta 1 envio, comprado antes em
-// pacotes (como as moedas do GetNinjas; no Premium o envio sai mais barato).
-async function carregarAvisosDaAcademia(redesenhar = true) {
+// Promoções por e-mail (regra 104, SQL 20261015120000; no banco, ainda
+// "avisos_das_academias"): cada promoção que chega a alguém gasta 1 envio,
+// comprado antes em pacotes (como as moedas do GetNinjas; no Premium o
+// envio sai mais barato).
+async function carregarPromocoesPorEmail(redesenhar = true) {
   const c = minhaAcademia();
   if (!c) return;
   try {
     const r = await sb.rpc('avisos_da_minha_academia', { p_academia: c.id });
-    state.pcAvisos = r.error || !r.data ? { saldo: 0, avisos: [], semana: false } : r.data;
-  } catch { state.pcAvisos = { saldo: 0, avisos: [], semana: false }; }
+    state.pcEmails = r.error || !r.data ? { saldo: 0, avisos: [], semana: false } : r.data;
+  } catch { state.pcEmails = { saldo: 0, avisos: [], semana: false }; }
   if (redesenhar && state.page === "parceiros") render();
 }
 function linkComprarEnvios(c) {
-  return whatsappGuia(`Olá! Quero comprar envios de aviso por e-mail para a ${(c && c.name) || "minha academia"} no GuiaTennis Parceiros.`);
+  return whatsappGuia(`Olá! Quero comprar envios de promoção por e-mail para a ${(c && c.name) || "minha academia"} no GuiaTennis Parceiros.`);
 }
 function saldoDeEnvios() {
-  return Number((state.pcAvisos || {}).saldo || 0);
+  return Number((state.pcEmails || {}).saldo || 0);
 }
 function textoDoSaldo(n) {
   return n ? `${n} ${plural(n, "envio disponível", "envios disponíveis")}` : "Nenhum envio disponível";
 }
 
-function pcAvisos() {
+// O topo das duas partes, com as abas "Na ficha" e "Por e-mail" (como as
+// abas de "Minhas quadras").
+function pcTopoDasPromocoes(c, parte) {
+  const aba = (k, t, ic) => `<a href="${esc(caminhoDosParceiros(k))}" role="tab" class="lista-aba${parte === k ? " on" : ""}" aria-selected="${parte === k}" data-pc="${k}">${icon(ic, 14, 'currentColor')} ${t}</a>`;
+  return `
+    <p class="pc-eyebrow">${esc(c.name)}</p><h1 class="display">Promoções</h1>
+    <div class="lista-abas pc-promo-partes" role="tablist" aria-label="Onde a promoção aparece">
+      ${aba("promocoes", "Na ficha", "tag")}${aba("promocoes-email", "Por e-mail", "sino")}
+    </div>`;
+}
+
+function pcPromocoesPorEmail() {
   const c = minhaAcademia();
   if (!c) return pcSemFicha();
-  const topo = `<p class="pc-eyebrow">${esc(c.name)}</p><h1 class="display">Avisos por e-mail</h1>`;
+  const topo = pcTopoDasPromocoes(c, "promocoes-email");
   if ((c.plano || "basico") === "basico") {
     return `
       <section class="pc-pagina">
         ${topo}
-        ${blocoTrancado("completo", "Avise os jogadores por e-mail", "Turma nova, horário livre, torneio: o aviso chega por e-mail a quem favoritou a academia ou está perto dela e pediu esses avisos.")}
+        ${blocoTrancado("completo", "Mande promoções por e-mail", "Primeira aula grátis, turma nova com desconto, pacote de aulas: a promoção chega por e-mail a quem favoritou a academia ou está perto dela e pediu promoções.")}
       </section>`;
   }
-  const dados = state.pcAvisos || { saldo: 0, avisos: [], semana: false };
+  const dados = state.pcEmails || { saldo: 0, avisos: [], semana: false };
   const saldo = saldoDeEnvios();
-  const f = state.pcAvisoForm || { titulo: "", mensagem: "", tipo: "aviso" };
-  const promo = f.tipo === "promocao";
-  const msg = state.pcAvisoMsg;
-  const bloqueio = !saldo ? "Sem envios, o aviso não sai. Compre um pacote de envios para mandar." : dados.semana ? "A academia já mandou um aviso nesta semana. O próximo pode sair daqui a alguns dias." : "";
+  const f = state.pcEmailForm || { titulo: "", mensagem: "" };
+  const msg = state.pcEmailMsg;
+  const daFicha = promocoesLiberadas(c) ? (state.pcPromocoes || []).filter(x => x.valendo) : [];
+  const bloqueio = !saldo ? "Sem envios, a promoção não sai. Compre um pacote de envios para mandar." : dados.semana ? "A academia já mandou uma promoção por e-mail nesta semana. A próxima pode sair daqui a alguns dias." : "";
   return `
     <section class="pc-pagina">
       ${topo}
-      <p class="pc-sec-sub">O aviso chega por e-mail aos jogadores que favoritaram a academia ou estão perto dela e pediram esses avisos. ${saibaMaisNaAjuda("avisos")}</p>
+      <p class="pc-sec-sub">A promoção chega por e-mail aos jogadores que favoritaram a academia ou estão perto dela e pediram promoções. ${saibaMaisNaAjuda("promocoes-email")}</p>
       <div class="pc-card pc-saldo" id="pc-saldo">
         <p class="pc-card-t">${icon('sino', 16, 'var(--green)')} ${esc(textoDoSaldo(saldo))}</p>
-        <p class="pc-card-s">Cada aviso que chega a alguém gasta 1 envio. No Premium, o envio sai mais barato.</p>
+        <p class="pc-card-s">Cada promoção que chega a alguém gasta 1 envio. No Premium, o envio sai mais barato.</p>
         <a class="cta-btn cta-secondary" href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar envios</a>
       </div>
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
-      ${state.pcAvisoPasso === "revisar" ? `
-      <div class="pc-card pc-aviso-form pc-passo-revisar" id="pc-aviso-revisao">
-        <button type="button" class="pc-passo-voltar" id="pc-aviso-editar">${icon('chevronLeft', 15, 'currentColor')} Editar ${promo ? "a promoção" : "o aviso"}</button>
+      ${state.pcEmailPasso === "revisar" ? `
+      <div class="pc-card pc-email-form pc-passo-revisar" id="pc-email-revisao">
+        <button type="button" class="pc-passo-voltar" id="pc-email-editar">${icon('chevronLeft', 15, 'currentColor')} Editar a promoção</button>
         <p class="pc-card-t">Confira antes de mandar</p>
-        <p class="pc-card-s">Chega por e-mail a quem favoritou a academia ou está perto dela e pediu esses avisos. Cada e-mail que chega gasta 1 envio.</p>
+        <p class="pc-card-s">Chega por e-mail a quem favoritou a academia ou está perto dela e pediu promoções. Cada promoção que chega gasta 1 envio.</p>
         ${previaDoEmail(c, f)}
-        ${bloqueio ? `<div class="form-error pc-aviso-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)}${!saldo ? ` <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar envios ›</a>` : ""}</span></div>` : ""}
-        <button type="button" class="cta-btn cta-primary" id="pc-aviso-enviar" ${state.pcAvisoEnviando || bloqueio ? "disabled" : ""}>${state.pcAvisoEnviando ? bolaGirando(15) + " Mandando..." : promo ? "Mandar a promoção" : "Mandar o aviso"}</button>
+        ${bloqueio ? `<div class="form-error pc-email-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)}${!saldo ? ` <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar envios ›</a>` : ""}</span></div>` : ""}
+        <button type="button" class="cta-btn cta-primary" id="pc-email-enviar" ${state.pcEmailEnviando || bloqueio ? "disabled" : ""}>${state.pcEmailEnviando ? bolaGirando(15) + " Mandando..." : "Mandar a promoção"}</button>
       </div>` : `
-      <div class="pc-card pc-aviso-form">
-        <p class="pc-card-t">${promo ? "Nova promoção por e-mail" : "Novo aviso"}</p>
-        <p class="field-label" style="margin-top:12px">O que vai mandar</p>
-        <div class="chip-row pc-aviso-tipo" role="radiogroup" aria-label="Tipo do e-mail">
-          <button type="button" class="chip small${promo ? "" : " active"}" role="radio" aria-checked="${!promo}" data-aviso-tipo="aviso">Aviso</button>
-          <button type="button" class="chip small${promo ? " active" : ""}" role="radio" aria-checked="${promo}" data-aviso-tipo="promocao">${icon('tag', 13, 'currentColor')} Promoção</button>
-        </div>
-        <label class="field-label" for="pc-aviso-titulo">Assunto</label>
-        <input class="form-field pc-aviso-campo" data-campo="titulo" id="pc-aviso-titulo" maxlength="60" placeholder="${promo ? "Ex.: Primeira aula grátis" : "Ex.: Turma nova aos sábados"}" value="${esc(f.titulo)}" style="margin-top:0" />
-        <label class="field-label" for="pc-aviso-mensagem">Mensagem</label>
-        <textarea class="form-field pc-aviso-campo" data-campo="mensagem" id="pc-aviso-mensagem" maxlength="500" placeholder="${promo ? "Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." : "Ex.: Abrimos uma turma para iniciantes aos sábados, às 9h. Chame no WhatsApp para reservar a vaga."}" style="margin-top:0">${esc(f.mensagem)}</textarea>
-        <button type="button" class="cta-btn cta-primary" id="pc-aviso-revisar">Ver como fica o e-mail ›</button>
+      <div class="pc-card pc-email-form">
+        <p class="pc-card-t">Nova promoção por e-mail</p>
+        ${daFicha.length ? `
+        <p class="field-label" style="margin-top:12px">Usar uma promoção da ficha</p>
+        <div class="chip-row pc-email-da-ficha">${daFicha.map(x => `<button type="button" class="chip small" data-promo-email="${x.id}">${icon('tag', 13, 'currentColor')} ${esc(x.titulo)}</button>`).join("")}</div>` : ""}
+        <label class="field-label" for="pc-email-titulo">Promoção</label>
+        <input class="form-field pc-email-campo" data-campo="titulo" id="pc-email-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
+        <label class="field-label" for="pc-email-mensagem">Mensagem</label>
+        <textarea class="form-field pc-email-campo" data-campo="mensagem" id="pc-email-mensagem" maxlength="500" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." style="margin-top:0">${esc(f.mensagem)}</textarea>
+        <button type="button" class="cta-btn cta-primary" id="pc-email-revisar">Ver como fica o e-mail ›</button>
       </div>`}
       ${(dados.avisos || []).length ? `
+        <h2 class="pc-h2">Já mandadas</h2>
         <div class="pc-promo-lista">
           ${dados.avisos.map(x => `
             <div class="pc-card pc-promo">
-              ${x.tipo === "promocao" ? `<p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} Promoção por e-mail</p>` : ""}
               <p class="pc-card-t">${esc(x.titulo)}</p>
               <p class="pc-card-s">${esc(x.mensagem)}</p>
               <p class="footnote" style="margin-top:8px">${esc(diaPorExtenso(String(x.created_at || "").slice(0, 10)))} · ${x.avisados ? `chegou a ${x.avisados} ${plural(x.avisados, "jogador", "jogadores")}` : "ninguém recebeu (não gastou envio)"}</p>
@@ -9122,45 +9138,42 @@ function pcAvisos() {
 // prévia de como vai a mensagem… igual sobre estacionamento, fachada"): o
 // mesmo quadro verde da prévia do "Como chegar", com o e-mail como o
 // jogador recebe (o modelo do email_montado), e muda enquanto se digita.
-// modelo "promocao" é o e-mail da promoção publicada (avisar_promocao).
-function previaDoEmail(c, f, modelo = "aviso") {
-  const daPromocao = modelo === "promocao";
-  const promo = daPromocao || f.tipo === "promocao";
-  const titulo = String(f.titulo || "").trim(), mensagem = String((daPromocao ? f.detalhes : f.mensagem) || "").trim();
+function previaDoEmail(c, f) {
+  const titulo = String(f.titulo || "").trim(), mensagem = String(f.mensagem || "").trim();
   const vazio = (t) => `<span class="email-previa-vazio">${t}</span>`;
-  const cabeca = daPromocao ? `Promoção na ${esc(c.name)}` : `${promo ? "Promoção" : "Aviso"} da ${esc(c.name)}`;
   return `
     <div class="est-previa email-previa" id="pc-email-previa">
       <p class="est-previa-t">Prévia do e-mail que os jogadores recebem</p>
-      <p class="email-previa-assunto"><strong>Assunto:</strong> ${daPromocao ? `Promoção na ${esc(c.name)}` : `${promo ? "Promoção da " : ""}${esc(c.name)}`}: ${titulo ? esc(titulo) : vazio("o assunto")}</p>
+      <p class="email-previa-assunto"><strong>Assunto:</strong> Promoção da ${esc(c.name)}: ${titulo ? esc(titulo) : vazio("a promoção")}</p>
       <div class="email-previa-corpo">
         <p class="email-previa-marca">${logoSvg()} <span>GuiaTennis</span></p>
-        <p class="email-previa-h">${cabeca}</p>
-        <p class="email-previa-p">Olá, <em>nome do jogador</em>! A <strong>${esc(c.name)}</strong>, perto de você${c.cidade ? `, em ${esc(c.cidade)}` : ""}, ${daPromocao ? "está com uma promoção" : `mandou ${promo ? "uma promoção" : "um aviso"}`}:</p>
-        <div class="email-previa-msg${promo ? " promo" : ""}">
-          ${promo && !daPromocao ? `<p class="email-previa-tag">Promoção</p>` : ""}
-          <p class="email-previa-mt">${titulo ? esc(titulo) : vazio(daPromocao ? "A promoção aparece aqui" : "O assunto aparece aqui")}</p>
-          ${daPromocao ? (mensagem ? `<p class="email-previa-mm">${esc(mensagem)}</p>` : "") : `<p class="email-previa-mm">${mensagem ? esc(mensagem) : vazio("E a mensagem, aqui.")}</p>`}
-          ${daPromocao ? `<p class="email-previa-v">Válida até ${f.ate ? esc(diaPorExtenso(f.ate)) : "…"}</p>` : ""}
+        <p class="email-previa-h">Promoção da ${esc(c.name)}</p>
+        <p class="email-previa-p">Olá, <em>nome do jogador</em>! A <strong>${esc(c.name)}</strong>, perto de você${c.cidade ? `, em ${esc(c.cidade)}` : ""}, mandou uma promoção:</p>
+        <div class="email-previa-msg promo">
+          <p class="email-previa-tag">Promoção</p>
+          <p class="email-previa-mt">${titulo ? esc(titulo) : vazio("A promoção aparece aqui")}</p>
+          <p class="email-previa-mm">${mensagem ? esc(mensagem) : vazio("E a mensagem, aqui.")}</p>
         </div>
         ${(c.phone || "").replace(/\D/g, "") ? `
-        <p class="email-previa-p">${daPromocao ? "As condições são combinadas direto com a academia." : "Para combinar, chame a academia."}</p>
+        <p class="email-previa-p">Para combinar, chame a academia.</p>
         <span class="email-previa-bt">${icon('whatsapp', 14, '#fff')} Chamar no WhatsApp</span>
         <p class="email-previa-p" style="margin:10px 0 0">Ou <u>veja a ficha da academia</u>.</p>` : `
-        <p class="email-previa-p">${daPromocao ? "As condições são combinadas direto com a academia, pelo WhatsApp da ficha." : "Para combinar, chame a academia pelo WhatsApp da ficha."}</p>
+        <p class="email-previa-p">Para combinar, chame a academia pelo WhatsApp da ficha.</p>
         <span class="email-previa-bt">Ver a academia</span>`}
-        <p class="email-previa-pe">Recebe porque pediu avisos e promoções das academias favoritas e perto. Não quero mais receber.</p>
+        <p class="email-previa-pe">Recebe porque pediu promoções das academias favoritas e perto. Não quero mais receber.</p>
       </div>
     </div>`;
 }
 // Enquanto se digita, só a prévia muda (sem redesenhar a tela e perder o
 // cursor).
-function atualizarPreviaDoEmail(f, modelo) {
+function atualizarPreviaDoEmail(f) {
   const c = minhaAcademia();
   const el = document.getElementById("pc-email-previa");
-  if (c && el) el.outerHTML = previaDoEmail(c, f, modelo);
-  const naFicha = document.getElementById("pc-promo-previa");
-  if (c && naFicha && modelo === "promocao") naFicha.outerHTML = previaDaPromocao(f);
+  if (c && el) el.outerHTML = previaDoEmail(c, f);
+}
+function atualizarPreviaDaPromocao(f) {
+  const el = document.getElementById("pc-promo-previa");
+  if (el) el.outerHTML = previaDaPromocao(f);
 }
 // A promoção como aparece na ficha e na busca (o mesmo quadro de htPromocoes).
 function previaDaPromocao(f) {
@@ -9180,50 +9193,59 @@ function previaDaPromocao(f) {
 // Passo a passo (pedido de 15/10/2026: "está muito empilhado, faça um passo a
 // passo, mas não precisa ter aquela barra de processos"), como o "Revisar e
 // enviar" do Mailchimp: primeiro escrever; depois conferir a prévia e mandar.
-function revisarAviso() {
-  const f = { titulo: document.getElementById("pc-aviso-titulo")?.value || "", mensagem: document.getElementById("pc-aviso-mensagem")?.value || "", tipo: (state.pcAvisoForm || {}).tipo || "aviso" };
-  state.pcAvisoForm = f;
-  if (f.titulo.trim().length < 3) { state.pcAvisoMsg = { tipo: "erro", texto: "Escreva o assunto (por exemplo, \"Turma nova aos sábados\")." }; render(); return; }
-  if (f.mensagem.trim().length < 10) { state.pcAvisoMsg = { tipo: "erro", texto: "Escreva a mensagem do aviso." }; render(); return; }
-  state.pcAvisoMsg = null;
-  state.pcAvisoPasso = "revisar";
+function revisarPromocaoPorEmail() {
+  const f = { titulo: document.getElementById("pc-email-titulo")?.value || "", mensagem: document.getElementById("pc-email-mensagem")?.value || "" };
+  state.pcEmailForm = f;
+  if (f.titulo.trim().length < 3) { state.pcEmailMsg = { tipo: "erro", texto: "Escreva a promoção (por exemplo, \"Primeira aula grátis\")." }; render(); return; }
+  if (f.mensagem.trim().length < 10) { state.pcEmailMsg = { tipo: "erro", texto: "Escreva a mensagem da promoção." }; render(); return; }
+  state.pcEmailMsg = null;
+  state.pcEmailPasso = "revisar";
   render();
-  document.getElementById("pc-aviso-revisao")?.scrollIntoView({ block: "start", behavior: "smooth" });
+  document.getElementById("pc-email-revisao")?.scrollIntoView({ block: "start", behavior: "smooth" });
 }
-async function enviarAviso() {
+// "Usar uma promoção da ficha" (e "Mandar por e-mail" na promoção da ficha):
+// o texto vem pronto, com a validade.
+function promocaoDaFichaNoEmail(id) {
+  const x = (state.pcPromocoes || []).find(y => y.id === id);
+  if (!x) return;
+  const validade = `Válida até ${diaPorExtenso(x.valida_ate)}.`;
+  state.pcEmailForm = { titulo: x.titulo, mensagem: [String(x.detalhes || "").trim(), validade].filter(Boolean).join(" ").slice(0, 500) };
+  state.pcEmailPasso = null; state.pcEmailMsg = null;
+}
+async function enviarPromocaoPorEmail() {
   const c = minhaAcademia();
-  if (!c || state.pcAvisoEnviando) return;
-  const f = state.pcAvisoForm || {};
-  if (String(f.titulo || "").trim().length < 3 || String(f.mensagem || "").trim().length < 10) { state.pcAvisoPasso = null; render(); return; }
-  state.pcAvisoEnviando = true; state.pcAvisoMsg = null; render();
+  if (!c || state.pcEmailEnviando) return;
+  const f = state.pcEmailForm || {};
+  if (String(f.titulo || "").trim().length < 3 || String(f.mensagem || "").trim().length < 10) { state.pcEmailPasso = null; render(); return; }
+  state.pcEmailEnviando = true; state.pcEmailMsg = null; render();
   let r;
   try {
     const dados = { p_academia: c.id, p_titulo: f.titulo.trim(), p_mensagem: f.mensagem.trim() };
-    r = await sb.rpc('enviar_aviso_da_academia', { ...dados, p_tipo: f.tipo });
-    // Banco ainda sem o tipo (SQL 20261015140000): sai como aviso.
+    r = await sb.rpc('enviar_aviso_da_academia', { ...dados, p_tipo: "promocao" });
+    // Banco ainda sem o tipo (SQL 20261015140000).
     if (r.error && /p_tipo|PGRST202/i.test(`${r.error.code} ${r.error.message}`)) r = await sb.rpc('enviar_aviso_da_academia', dados);
   }
   catch (e) { r = { error: e }; }
-  state.pcAvisoEnviando = false;
+  state.pcEmailEnviando = false;
   if (r.error) {
     const m = String(r.error.message || "");
-    state.pcAvisoMsg = { tipo: "erro", texto: /envios|Completo|60 letras|500 letras|no ar|não administra/.test(m) ? m : falhou("mandar o aviso", r.error, { texto: "Não consegui mandar agora. Tente de novo daqui a pouco." }) };
+    state.pcEmailMsg = { tipo: "erro", texto: /envios|Completo|60 letras|500 letras|no ar|não administra/.test(m) ? m : falhou("mandar a promoção por e-mail", r.error, { texto: "Não consegui mandar agora. Tente de novo daqui a pouco." }) };
     render();
     return;
   }
   const d = r.data || {};
-  state.pcAvisoMsg = { tipo: "ok", texto: d.aviso === "enviado" ? `${f.tipo === "promocao" ? "Promoção mandada" : "Aviso mandado"}: chega a ${d.avisados} ${plural(d.avisados, "jogador", "jogadores")}.`
-    : d.aviso === "semana" ? "A academia já mandou um aviso nesta semana. Tente de novo daqui a alguns dias."
-    : "Ainda não há jogadores que pediram esses avisos perto da academia. O envio não foi gasto." };
-  if (d.aviso === "enviado") { state.pcAvisoForm = null; state.pcAvisoPasso = null; }
-  await carregarAvisosDaAcademia(false);
+  state.pcEmailMsg = { tipo: "ok", texto: d.aviso === "enviado" ? `Promoção mandada: chega a ${d.avisados} ${plural(d.avisados, "jogador", "jogadores")}.`
+    : d.aviso === "semana" ? "A academia já mandou uma promoção por e-mail nesta semana. Tente de novo daqui a alguns dias."
+    : "Ainda não há jogadores que pediram promoções perto da academia. O envio não foi gasto." };
+  if (d.aviso === "enviado") { state.pcEmailForm = null; state.pcEmailPasso = null; }
+  await carregarPromocoesPorEmail(false);
   render();
 }
 
 function pcPromocoes() {
   const c = minhaAcademia();
   if (!c) return pcSemFicha();
-  const topo = `<p class="pc-eyebrow">${esc(c.name)}</p><h1 class="display">Promoções</h1>`;
+  const topo = pcTopoDasPromocoes(c, "promocoes");
   if (!promocoesLiberadas(c)) {
     // Saiu do Premium (pedido do Breno em 09/10/2026: "ao uma academia mudar
     // do Premium para o completo precisa limitar as ações dela"): as
@@ -9238,8 +9260,8 @@ function pcPromocoes() {
             <ul class="pc-oferta-lista">${guardadas.map(x => `<li>${icon('tag', 15, 'var(--gold)')}<span><strong>${esc(x.titulo)}</strong> · válida até ${esc(diaPorExtenso(x.valida_ate))}</span></li>`).join("")}</ul>
             <p class="pc-card-s">Os jogadores não veem ${guardadas.length === 1 ? "a promoção" : "as promoções"} na ficha nem na busca. ${guardadas.length === 1 ? "Ela fica guardada e volta a aparecer, enquanto valer," : "Elas ficam guardadas e voltam a aparecer, enquanto valerem,"} se a academia voltar ao Premium.</p>
           </div>` : ""}
-        ${blocoTrancado("premium", "Divulgue promoções", "Primeira aula grátis, desconto na locação, pacote de aulas: a promoção aparece na ficha e no resultado da busca, e os jogadores que favoritaram a academia ou estão perto recebem um aviso por e-mail.")}
-
+        ${blocoTrancado("premium", "Promoções na ficha", "Primeira aula grátis, desconto na locação, pacote de aulas: a promoção aparece na ficha e no resultado da busca, com a validade.")}
+        ${(c.plano || "basico") === "completo" ? `<p class="footnote">No Completo, a academia já manda promoções por e-mail: <a href="${esc(caminhoDosParceiros("promocoes-email"))}" data-pc="promocoes-email">Por e-mail ›</a></p>` : ""}
       </section>`;
   }
   const lista = state.pcPromocoes || [];
@@ -9252,28 +9274,24 @@ function pcPromocoes() {
   return `
     <section class="pc-pagina">
       ${topo}
-      <p class="pc-sec-sub">Até 3 promoções ao mesmo tempo, por até 90 dias. ${saibaMaisNaAjuda("promocoes")}</p>
+      <p class="pc-sec-sub">A promoção aparece na ficha e no resultado da busca. Até 3 ao mesmo tempo, por até 90 dias. ${saibaMaisNaAjuda("promocoes")}</p>
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
       ${(editando || valendo.length < 3) && state.pcPromoPasso === "revisar" ? `
         <div class="pc-card pc-promo-form pc-passo-revisar" id="pc-promo-revisao">
           <button type="button" class="pc-passo-voltar" id="pc-promo-editar">${icon('chevronLeft', 15, 'currentColor')} Editar a promoção</button>
           <p class="pc-card-t">Confira antes de ${editando ? "salvar" : "publicar"}</p>
-          <p class="pc-card-s">${editando ? "É assim que a promoção fica na ficha e na busca." : f.avisar !== false && saldoDeEnvios() ? "Ela aparece na ficha e na busca, e o e-mail vai para quem favoritou a academia ou está perto (usa 1 envio)." : "Ela aparece na ficha e na busca."}</p>
+          <p class="pc-card-s">É assim que a promoção fica na ficha e na busca.</p>
           ${previaDaPromocao(f)}
-          ${!editando && f.avisar !== false && saldoDeEnvios() ? previaDoEmail(c, f, "promocao") : ""}
           <button type="button" class="cta-btn cta-primary" id="pc-promo-salvar" ${state.pcPromoSalvando ? "disabled" : ""}>${state.pcPromoSalvando ? bolaGirando(15) + " Salvando..." : editando ? "Salvar a mudança" : "Publicar promoção"}</button>
         </div>` : editando || valendo.length < 3 ? `
         <div class="pc-card pc-promo-form">
-          <p class="pc-card-t">${editando ? "Mudar a promoção" : "Nova promoção"}</p>
+          <p class="pc-card-t">${editando ? "Mudar a promoção" : "Nova promoção na ficha"}</p>
           <label class="field-label" for="pc-promo-titulo">Promoção</label>
           <input class="form-field pc-promo-campo" data-campo="titulo" id="pc-promo-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
           <label class="field-label" for="pc-promo-detalhes">Detalhes (opcional)</label>
           <textarea class="form-field pc-promo-campo" data-campo="detalhes" id="pc-promo-detalhes" maxlength="280" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até 17h." style="margin-top:0">${esc(f.detalhes)}</textarea>
           <label class="field-label" for="pc-promo-ate">Válida até</label>
           <input class="form-field pc-promo-campo" data-campo="ate" id="pc-promo-ate" type="date" min="${hojeEmBrasilia()}" max="${hojeEmBrasilia(90)}" value="${esc(f.ate)}" style="margin-top:0" />
-          ${editando ? "" : saldoDeEnvios()
-            ? `<label class="consent-row pc-promo-avisar"><input type="checkbox" id="pc-promo-avisar" ${f.avisar === false ? "" : "checked"} /><span>Avisar por e-mail os jogadores que favoritaram a academia ou estão perto (usa 1 envio · ${esc(textoDoSaldo(saldoDeEnvios()).toLowerCase())})</span></label>`
-            : `<p class="pc-card-s pc-promo-avisar">Para avisar os jogadores por e-mail, <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">compre envios</a>.</p>`}
           <button type="button" class="cta-btn cta-primary" id="pc-promo-revisar">Ver como fica ›</button>
           ${editando ? `<button type="button" class="inline-link" id="pc-promo-cancelar" style="margin-top:12px">Cancelar</button>` : ""}
         </div>` : `<p class="pc-card-s">A academia já tem 3 promoções valendo. Encerre uma para criar outra.</p>`}
@@ -9284,9 +9302,9 @@ function pcPromocoes() {
               <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} ${x.valendo ? "Valendo" : "Encerrada"}</p>
               <p class="pc-card-t" style="margin-top:6px">${esc(x.titulo)}</p>
               ${x.detalhes ? `<p class="pc-card-s">${esc(x.detalhes)}</p>` : ""}
-              <p class="footnote" style="margin-top:8px">${x.valendo ? `Válida até ${esc(diaPorExtenso(x.valida_ate))}` : `Terminou em ${esc(diaPorExtenso(x.valida_ate))}`}${x.avisados ? ` · aviso por e-mail para ${x.avisados} ${plural(x.avisados, "pessoa", "pessoas")}` : ""}</p>
+              <p class="footnote" style="margin-top:8px">${x.valendo ? `Válida até ${esc(diaPorExtenso(x.valida_ate))}` : `Terminou em ${esc(diaPorExtenso(x.valida_ate))}`}${x.avisados ? ` · por e-mail para ${x.avisados} ${plural(x.avisados, "pessoa", "pessoas")}` : ""}</p>
               <div class="pc-promo-acoes">
-                ${x.valendo && !x.avisada_em && saldoDeEnvios() ? `<button type="button" class="inline-link" data-promo-avisar="${x.id}" ${state.pcPromoAvisando ? "disabled" : ""}>Avisar os jogadores por e-mail</button>` : ""}
+                ${x.valendo ? `<button type="button" class="inline-link" data-promo-por-email="${x.id}">Mandar por e-mail</button>` : ""}
                 ${x.valendo ? `<button type="button" class="inline-link" data-promo-mudar="${x.id}">Mudar</button>` : ""}
                 <button type="button" class="inline-link" data-promo-encerrar="${x.id}">${x.valendo ? "Encerrar" : "Apagar"}</button>
               </div>
@@ -9295,10 +9313,9 @@ function pcPromocoes() {
     </section>`;
 }
 
-// Promoção em dois passos, como o aviso: escrever, depois conferir e publicar.
+// Promoção na ficha em dois passos: escrever, depois conferir e publicar.
 function revisarPromocao() {
-  const avisar = document.getElementById("pc-promo-avisar");
-  const f = { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "", avisar: avisar && avisar.type === "checkbox" ? avisar.checked : false };
+  const f = { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "" };
   state.pcPromoForm = f;
   if (f.titulo.trim().length < 3) { state.pcPromoMsg = { tipo: "erro", texto: "Escreva a promoção (por exemplo, \"Primeira aula grátis\")." }; render(); return; }
   if (!f.ate) { state.pcPromoMsg = { tipo: "erro", texto: "Escolha até quando a promoção vale." }; render(); return; }
@@ -9315,7 +9332,8 @@ async function salvarPromocao() {
   if (String(f.titulo || "").trim().length < 3 || !f.ate) { state.pcPromoPasso = null; render(); return; }
   state.pcPromoSalvando = true; state.pcPromoMsg = null; render();
   let r;
-  try { r = await sb.rpc('salvar_promocao', { p_academia: c.id, p_id: editando || null, p_titulo: f.titulo.trim(), p_detalhes: f.detalhes.trim(), p_valida_ate: f.ate, p_avisar: !!f.avisar }); }
+  // O e-mail é a outra parte (Por e-mail): publicar na ficha não manda nada.
+  try { r = await sb.rpc('salvar_promocao', { p_academia: c.id, p_id: editando || null, p_titulo: f.titulo.trim(), p_detalhes: f.detalhes.trim(), p_valida_ate: f.ate, p_avisar: false }); }
   catch (e) { r = { error: e }; }
   state.pcPromoSalvando = false;
   if (r.error) {
@@ -9324,37 +9342,9 @@ async function salvarPromocao() {
     render();
     return;
   }
-  const d = r.data || {};
-  state.pcPromoMsg = { tipo: "ok", texto: editando ? "Promoção atualizada."
-    : d.aviso === "enviado" ? `Promoção publicada. O aviso por e-mail vai para ${d.avisados} ${plural(d.avisados, "jogador", "jogadores")}.`
-    : d.aviso === "depois" ? (saldoDeEnvios() ? "Promoção publicada na ficha e na busca. Quando quiser, toque em \"Avisar os jogadores por e-mail\" nela." : "Promoção publicada na ficha e na busca.")
-    : d.aviso === "sem_envios" ? "Promoção publicada na ficha e na busca. Para avisar por e-mail, compre envios."
-    : d.aviso === "semana" ? "Promoção publicada. A academia já mandou um aviso por e-mail nesta semana: esta aparece na ficha e na busca, sem e-mail."
-    : "Promoção publicada na ficha e na busca. Quem favoritar a academia e aceitar promoções recebe as próximas por e-mail." };
+  state.pcPromoMsg = { tipo: "ok", texto: editando ? "Promoção atualizada." : "Promoção publicada na ficha e na busca. Para mandar por e-mail, toque em \"Mandar por e-mail\" nela." };
   state.pcPromoForm = null; state.pcPromoEditando = null; state.pcPromoPasso = null;
   await Promise.all([carregarPromocoes(), carregarPromocoesDaAcademia()]);
-  render();
-}
-
-// A academia avisa depois, numa promoção valendo que ainda não avisou
-// ninguém (SQL 20261014140000, avisar_minha_promocao).
-async function avisarPromocao(id) {
-  if (state.pcPromoAvisando) return;
-  state.pcPromoAvisando = true; state.pcPromoMsg = null; render();
-  let r;
-  try { r = await sb.rpc('avisar_minha_promocao', { p_id: id }); } catch (e) { r = { error: e }; }
-  state.pcPromoAvisando = false;
-  if (r.error) {
-    const m = String(r.error.message || "");
-    state.pcPromoMsg = { tipo: "erro", texto: /Premium|envios|terminou|já foi avisada|não administra/.test(m) ? m : falhou("avisar os jogadores", r.error, { texto: "Não consegui avisar agora. Tente de novo daqui a pouco." }) };
-    render();
-    return;
-  }
-  const d = r.data || {};
-  state.pcPromoMsg = { tipo: "ok", texto: d.aviso === "enviado" ? `O aviso por e-mail vai para ${d.avisados} ${plural(d.avisados, "jogador", "jogadores")}.`
-    : d.aviso === "semana" ? "A academia já mandou um aviso por e-mail nesta semana. Tente de novo daqui a alguns dias."
-    : "Ainda não há jogadores que pediram promoções perto da academia. A promoção continua na ficha e na busca." };
-  await carregarPromocoesDaAcademia();
   render();
 }
 
@@ -10238,17 +10228,11 @@ function ligarEventosParceiros() {
   const pcAdministrar = document.getElementById("pc-administrar");
   if (pcAdministrar) pcAdministrar.onclick = () => pedirParaAdministrar(state.pcSelecionada);
   // Promoções: o que foi digitado fica guardado entre um render e outro.
-  const promoAvisar = document.getElementById("pc-promo-avisar");
-  if (promoAvisar) promoAvisar.onchange = () => {
-    const f = state.pcPromoForm || { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "" };
-    state.pcPromoForm = { ...f, avisar: promoAvisar.checked };
-    render();
-  };
   document.querySelectorAll(".pc-promo-campo").forEach(el => {
     el.oninput = () => {
-      const f = state.pcPromoForm || { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "", avisar: document.getElementById("pc-promo-avisar") ? document.getElementById("pc-promo-avisar").checked : undefined };
+      const f = state.pcPromoForm || { titulo: document.getElementById("pc-promo-titulo")?.value || "", detalhes: document.getElementById("pc-promo-detalhes")?.value || "", ate: document.getElementById("pc-promo-ate")?.value || "" };
       state.pcPromoForm = { ...f, [el.dataset.campo]: el.value };
-      atualizarPreviaDoEmail(state.pcPromoForm, "promocao");
+      atualizarPreviaDaPromocao(state.pcPromoForm);
     };
   });
   const pcPromoSalvar = document.getElementById("pc-promo-salvar");
@@ -10261,19 +10245,19 @@ function ligarEventosParceiros() {
   if (pcPromoEditar) pcPromoEditar.onclick = () => { state.pcPromoPasso = null; state.pcPromoMsg = null; render(); };
   document.querySelectorAll("[data-promo-mudar]").forEach(el => { el.onclick = () => { state.pcPromoEditando = el.dataset.promoMudar; state.pcPromoForm = null; state.pcPromoMsg = null; state.pcPromoPasso = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }; });
   document.querySelectorAll("[data-promo-encerrar]").forEach(el => { el.onclick = () => encerrarPromocao(el.dataset.promoEncerrar); });
-  document.querySelectorAll("[data-promo-avisar]").forEach(el => { el.onclick = () => avisarPromocao(el.dataset.promoAvisar); });
-  const pcAvisoEnviar = document.getElementById("pc-aviso-enviar");
-  if (pcAvisoEnviar) pcAvisoEnviar.onclick = enviarAviso;
-  const pcAvisoRevisar = document.getElementById("pc-aviso-revisar");
-  if (pcAvisoRevisar) pcAvisoRevisar.onclick = revisarAviso;
-  const pcAvisoEditar = document.getElementById("pc-aviso-editar");
-  if (pcAvisoEditar) pcAvisoEditar.onclick = () => { state.pcAvisoPasso = null; state.pcAvisoMsg = null; render(); };
-  const formDoAviso = () => state.pcAvisoForm || (state.pcAvisoForm = { titulo: document.getElementById("pc-aviso-titulo")?.value || "", mensagem: document.getElementById("pc-aviso-mensagem")?.value || "", tipo: "aviso" });
-  document.querySelectorAll(".pc-aviso-campo").forEach(el => {
-    el.oninput = () => { const f = formDoAviso(); f[el.dataset.campo] = el.value; atualizarPreviaDoEmail(f); };
-  });
-  document.querySelectorAll("[data-aviso-tipo]").forEach(el => {
-    el.onclick = () => { formDoAviso().tipo = el.dataset.avisoTipo; state.pcAvisoMsg = null; render(); };
+  // "Mandar por e-mail" na promoção da ficha: abre a parte Por e-mail com o
+  // texto pronto.
+  document.querySelectorAll("[data-promo-por-email]").forEach(el => { el.onclick = () => { promocaoDaFichaNoEmail(el.dataset.promoPorEmail); irParceiros("promocoes-email", { manterForm: true }); }; });
+  document.querySelectorAll("[data-promo-email]").forEach(el => { el.onclick = () => { promocaoDaFichaNoEmail(el.dataset.promoEmail); render(); }; });
+  const pcEmailEnviar = document.getElementById("pc-email-enviar");
+  if (pcEmailEnviar) pcEmailEnviar.onclick = enviarPromocaoPorEmail;
+  const pcEmailRevisar = document.getElementById("pc-email-revisar");
+  if (pcEmailRevisar) pcEmailRevisar.onclick = revisarPromocaoPorEmail;
+  const pcEmailEditar = document.getElementById("pc-email-editar");
+  if (pcEmailEditar) pcEmailEditar.onclick = () => { state.pcEmailPasso = null; state.pcEmailMsg = null; render(); };
+  const formDoEmail = () => state.pcEmailForm || (state.pcEmailForm = { titulo: document.getElementById("pc-email-titulo")?.value || "", mensagem: document.getElementById("pc-email-mensagem")?.value || "" });
+  document.querySelectorAll(".pc-email-campo").forEach(el => {
+    el.oninput = () => { const f = formDoEmail(); f[el.dataset.campo] = el.value; atualizarPreviaDoEmail(f); };
   });
   const pcDeclaro = document.getElementById("pc-declaro");
   if (pcDeclaro) pcDeclaro.onchange = (e) => { state.pcDeclaro = e.target.checked; if (state.pcDeclaroErro && state.pcDeclaro) { state.pcDeclaroErro = false; render(); } };
@@ -11174,7 +11158,7 @@ function aplicarPreferenciaNaBusca() {
 // começam desligados (LGPD) e mudam quando ela quiser.
 const AVISOS_JOGADOR = [
   { campo: "avisos_academias", t: "Academias novas na minha cidade" },
-  { campo: "promocoes", t: "Avisos e promoções das academias favoritas e perto de você" },
+  { campo: "promocoes", t: "Promoções das academias favoritas e perto de você" },
   { campo: "novidades", t: "Novidades e dicas do GuiaTennis" },
   // Lembrete de quem não entra há 3 meses (09/10/2026, regra 86): começa
   // ligado, então não aparece no cadastro, só na conta. Banco sem a coluna:
@@ -11745,7 +11729,7 @@ async function salvarContaJogador() {
 const AVISOS_DO_LINK = {
   viagem: "os avisos de viagem",
   novas: "os avisos de academias novas (da sua cidade e das buscas salvas)",
-  promocoes: "os avisos e as promoções das academias favoritas e perto de você",
+  promocoes: "as promoções das academias favoritas e perto de você",
   volta: "o lembrete de quando você fica 3 meses sem entrar",
   todos: "todos os avisos por e-mail do GuiaTennis",
   parceiros: "os avisos de avaliação nova, de pedidos de acesso, o lembrete de conferir a ficha e o resumo do mês do GuiaTennis Parceiros",
@@ -15535,7 +15519,7 @@ function renderCourtPage(c) {
       <span>Plano: <strong>${esc((PLANO_OPTS.find(o => o.key === plano) || {}).label || "Básico")}</strong> — ${esc((PLANO_OPTS.find(o => o.key === plano) || {}).desc || "")}</span>
       <div class="chip-row">
         ${PLANO_OPTS.map(o => `<button type="button" class="chip small plano-btn ${plano === o.key ? "active" : ""}" data-court="${c.id}" data-plano="${o.key}">${o.label}</button>`).join("")}
-        ${plano !== "basico" && c.status !== "pending" ? `<span class="adm-envios">Envios de aviso: <strong data-envios-de="${c.id}">${state.enviosAdmin && state.enviosAdmin[c.id] !== undefined ? state.enviosAdmin[c.id] : "…"}</strong> <button type="button" class="chip small" data-envios-somar="${c.id}" data-q="1">+1</button><button type="button" class="chip small" data-envios-somar="${c.id}" data-q="5">+5</button><button type="button" class="chip small" data-envios-somar="${c.id}" data-q="-1">−1</button></span>` : ""}
+        ${plano !== "basico" && c.status !== "pending" ? `<span class="adm-envios">Envios por e-mail: <strong data-envios-de="${c.id}">${state.enviosAdmin && state.enviosAdmin[c.id] !== undefined ? state.enviosAdmin[c.id] : "…"}</strong> <button type="button" class="chip small" data-envios-somar="${c.id}" data-q="1">+1</button><button type="button" class="chip small" data-envios-somar="${c.id}" data-q="5">+5</button><button type="button" class="chip small" data-envios-somar="${c.id}" data-q="-1">−1</button></span>` : ""}
       </div>
     </div>
     ${c.status !== "pending" ? `
@@ -17064,9 +17048,9 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. Tirar a academia do guia é um pedido do responsável principal, feito no GuiaTennis Parceiros (Suas academias › Pedir para tirar do guia): o GuiaTennis confere quem pediu e responde por e-mail; tirada do guia, a ficha é apagada, com as avaliações. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar até 3 promoções ao mesmo tempo, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode mandar avisos e promoções por e-mail a quem pediu esses avisos e favoritou a academia ou está perto dela, no máximo uma vez por semana. Cada aviso que chega a alguém gasta 1 envio, comprado antes em pacotes (o valor é combinado com o GuiaTennis e é menor no Premium). A academia responde pelo que escreve no aviso, e o GuiaTennis pode suspender os envios de quem mandar aviso enganoso ou fora do assunto.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. Tirar a academia do guia é um pedido do responsável principal, feito no GuiaTennis Parceiros (Suas academias › Pedir para tirar do guia): o GuiaTennis confere quem pediu e responde por e-mail; tirada do guia, a ficha é apagada, com as avaliações. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar até 3 promoções ao mesmo tempo, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode mandar promoções por e-mail a quem pediu promoções e favoritou a academia ou está perto dela, no máximo uma vez por semana. Cada promoção que chega a alguém gasta 1 envio, comprado antes em pacotes (o valor é combinado com o GuiaTennis e é menor no Premium). A academia responde pelo que escreve na promoção, e o GuiaTennis pode suspender os envios de quem mandar promoção enganosa ou fora do assunto.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
-<p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, avisos e promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
+<p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
 <p style="font-size:14px">Ao avaliar uma quadra, você concorda em escrever apenas sobre experiências reais, sem conteúdo ofensivo, discriminatório, difamatório ou falso, usando seu nome verdadeiro (já que ele fica público junto da avaliação). O GuiaTennis pode remover avaliações que violem essas regras, mas não se responsabiliza pelo conteúdo publicado por usuários. A academia avaliada pode responder publicamente e pedir a análise de uma avaliação que pareça falsa ou ofensiva; quem decide se ela fica é o GuiaTennis.</p>
@@ -17087,7 +17071,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 15 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. Com a sua conta aberta, no site dos jogadores e no GuiaTennis Parceiros, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat, o título, se está em aberto ou resolvida e quando), para você ver o histórico em "Suas conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes de cada site; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar os avisos e promoções das academias, os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso: quando uma academia favorita ou perto de você manda um aviso ou uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); ao excluir, os dados da conta são apagados e as avaliações continuam com o nome, sem a ligação com ela.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. Com a sua conta aberta, no site dos jogadores e no GuiaTennis Parceiros, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat, o título, se está em aberto ou resolvida e quando), para você ver o histórico em "Suas conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes de cada site; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do app.<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente e a última busca. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar as promoções das academias, os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso: quando uma academia favorita ou perto de você manda uma promoção, mandamos um e-mail (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação, após aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e mandar o resumo do mês por e-mail (no plano Premium, o relatório completo). As pessoas da mesma academia veem o nome, o cargo e o e-mail umas das outras. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso, pessoa nova com acesso à academia (com o nome, o cargo e o e-mail dela), mudança de plano (com o que muda), a resposta do pedido para tirar a academia do guia, pedido aceito, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha (de novo a cada 3 meses enquanto ela continuar igual) e, no começo de cada mês, o resumo dos números da academia no mês anterior; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento.</p>
 <p class="field-label" style="margin-top:16px">2. O que não coletamos</p>
@@ -17189,16 +17173,17 @@ const CHAT_TEMAS = [
     a: [{ t: "Suas academias", ir: "pc:academias" }] },
   { id: "promocoes", onde: "parceiros", t: "Promoções",
     p: ["promocao", "promocoes", "desconto", "oferta", "aula gratis", "cupom", "divulgar"],
-    r: "No plano Premium, a academia publica até 3 promoções ao mesmo tempo, por até 90 dias. Elas aparecem na ficha e no resultado da busca, e a academia escolhe quando avisar por e-mail os jogadores que favoritaram ou estão perto (cada aviso gasta 1 envio).",
+    r: "Promoções tem duas partes. Na ficha (Premium): até 3 ao mesmo tempo, por até 90 dias, na ficha e no resultado da busca. Por e-mail (Completo e Premium): a promoção chega a quem favoritou ou está perto (cada uma gasta 1 envio).",
     a: [{ t: "Abrir Promoções", ir: "pc:promocoes" }],
-    rc: x => (x.plano === "premium" ? `A ${x.c.name} está no Premium: em Promoções, toque em "Nova promoção" (até 3 ao mesmo tempo, por até 90 dias). Elas aparecem na ficha e na busca.`
-      : `As promoções são do Premium; a ${x.c.name} está no ${x.nome}. Em Plano, veja o que muda.`),
-    ac: x => (x.plano === "premium" ? [{ t: "Abrir Promoções", ir: "pc:promocoes" }] : [{ t: "Ver o meu plano", ir: "pc:plano" }]) },
-  { id: "avisos", onde: "parceiros", t: "Avisos por e-mail",
-    p: ["aviso", "avisar", "notificac", "notificar", "mandar email", "mandar e-mail", "enviar email", "enviar e-mail", "envio", "creditos", "disparo"],
-    r: "Nos planos Completo e Premium, em Avisos por e-mail, a academia escreve um aviso e ele chega aos jogadores que favoritaram ou estão perto. Cada aviso gasta 1 envio, comprado antes em pacotes; no Premium, o envio sai mais barato.",
-    a: [{ t: "Abrir Avisos por e-mail", ir: "pc:avisos" }],
-    rc: x => (x.plano === "basico" ? `Os avisos por e-mail são do Completo e do Premium; a ${x.c.name} está no Básico. Em Plano, veja o que muda.` : null),
+    rc: x => (x.plano === "premium" ? `A ${x.c.name} está no Premium: em Promoções › Na ficha, até 3 ao mesmo tempo, por até 90 dias; em Por e-mail, a promoção chega aos jogadores.`
+      : x.plano === "completo" ? `A ${x.c.name} está no Completo: manda promoções por e-mail; na ficha e na busca, só no Premium.`
+      : `As promoções são do Completo (por e-mail) e do Premium (também na ficha); a ${x.c.name} está no Básico. Em Plano, veja o que muda.`),
+    ac: x => (x.plano === "premium" ? [{ t: "Na ficha", ir: "pc:promocoes" }, { t: "Por e-mail", ir: "pc:promocoes-email" }] : x.plano === "completo" ? [{ t: "Promoções por e-mail", ir: "pc:promocoes-email" }] : [{ t: "Ver o meu plano", ir: "pc:plano" }]) },
+  { id: "promocoes-email", onde: "parceiros", t: "Promoções por e-mail",
+    p: ["aviso", "avisar", "notificac", "notificar", "mandar email", "mandar e-mail", "enviar email", "enviar e-mail", "envio", "creditos", "disparo", "promocao por e"],
+    r: "Nos planos Completo e Premium, em Promoções › Por e-mail, a academia escreve a promoção e ela chega aos jogadores que favoritaram ou estão perto. Cada uma gasta 1 envio, comprado antes em pacotes; no Premium, o envio sai mais barato.",
+    a: [{ t: "Abrir Promoções por e-mail", ir: "pc:promocoes-email" }],
+    rc: x => (x.plano === "basico" ? `As promoções por e-mail são do Completo e do Premium; a ${x.c.name} está no Básico. Em Plano, veja o que muda.` : null),
     ac: x => (x.plano === "basico" ? [{ t: "Ver o meu plano", ir: "pc:plano" }] : null) },
   { id: "topo", onde: "parceiros", t: "Aparecer primeiro na busca", rcAntes: x => (x.plano === "premium" ? `A ${x.c.name} já é Premium. ` : `A ${x.c.name} está no ${x.nome}. `),
     p: ["patrocin", "primeiro", "primeiro lugar", "aparecer primeiro", "apareco em primeiro", "topo", "destaque", "ranking", "posicao", "subir na busca", "ordem da busca", "mais visto"],
@@ -17313,7 +17298,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Vou viajar", ir: "menu:viagem" }] },
   { id: "promocoes-jog", onde: "jogadores", t: "Promoções das academias",
     p: ["promocao", "promocoes", "desconto", "oferta", "aula gratis", "cupom"],
-    r: "As promoções aparecem na ficha e no resultado da busca, com a validade. Para receber por e-mail, ligue \"Avisos e promoções das academias favoritas e perto de você\" nos avisos da sua conta.",
+    r: "As promoções aparecem na ficha e no resultado da busca, com a validade. Para receber por e-mail, ligue \"Promoções das academias favoritas e perto de você\" nos avisos da sua conta.",
     a: [{ t: "Avisos por e-mail", ir: "menu:avisos" }] },
   { id: "patrocinado", onde: "jogadores", t: "\"Patrocinado\" na busca",
     p: ["patrocin", "anuncio", "propaganda", "pago", "paga", "primeiro lugar", "topo", "ordem", "recomendad"],
@@ -17777,9 +17762,9 @@ const CHAT_PAGINAS_PC = [
     r: "o que mudou na academia: avaliações novas, pedidos de acesso, lembretes e os acessos dos últimos 30 dias" },
   { aba: "ficha", t: "Minha ficha", p: ["minha ficha", "ficha"], r: "a ficha como o jogador vê, o QR code e \"Editar a ficha\"" },
   { aba: "avaliacoes", t: "Avaliações", p: ["avaliac", "comentarios", "notas"], r: "as avaliações dos jogadores, para responder ou pedir análise" },
-  { aba: "promocoes", t: "Promoções", p: ["promoc"], r: "as promoções da academia, no Premium" },
-  { aba: "avisos", t: "Avisos por e-mail", p: ["avisos por e mail", "avisos por email", "envios", "saldo de envios"],
-    r: "os avisos por e-mail aos jogadores e o saldo de envios, no Completo e no Premium" },
+  { aba: "promocoes", t: "Promoções na ficha", p: ["promoc", "promocoes na ficha"], r: "as promoções na ficha e na busca, no Premium" },
+  { aba: "promocoes-email", t: "Promoções por e-mail", p: ["promocoes por e mail", "promocoes por email", "avisos por e mail", "envios", "saldo de envios"],
+    r: "as promoções por e-mail aos jogadores e o saldo de envios, no Completo e no Premium" },
   { aba: "desempenho", t: "Desempenho", p: ["desempenho", "numeros", "estatistic", "metricas", "relatorio"],
     r: "os números da ficha: visitas, quem chamou e de onde vieram (completos no Premium)" },
   { aba: "academias", t: "Suas academias", p: ["suas academias", "minhas academias", "trocar de academia", "outra academia"],
@@ -17863,7 +17848,7 @@ function responderDirecao(pg) {
 }
 // O mapa do Parceiros: as páginas, para escolher para onde ir.
 function chipsDasPaginas() {
-  const abas = contaAcademia ? ["painel", "ficha", "avaliacoes", "promocoes", "avisos", "desempenho", "academias", "pessoas", "plano", "perfil"]
+  const abas = contaAcademia ? ["painel", "ficha", "avaliacoes", "promocoes", "promocoes-email", "desempenho", "academias", "pessoas", "plano", "perfil"]
     : ["cadastro", "entrar", "plano", "ajuda"];
   return abas.map(a => CHAT_PAGINAS_PC.find(p => p.aba === a)).map(p => ({ t: p.aba === "plano" && !contaAcademia ? "Planos" : p.t, pg: p.aba }));
 }
@@ -18695,7 +18680,7 @@ function admAcademiasHtml() {
               <button type="button" class="chip small" data-adm-qr="${c.id}">QR code</button>
             </div>
             <p class="adm-rotulo">Plano</p>
-            <div class="chip-row">${PLANO_OPTS.map(o => `<button type="button" class="chip small plano-btn ${plano === o.key ? "active" : ""}" data-court="${c.id}" data-plano="${o.key}">${o.label}</button>`).join("")}${plano !== "basico" && c.status !== "pending" ? `<span class="adm-envios">Envios de aviso: <strong data-envios-de="${c.id}">${state.enviosAdmin && state.enviosAdmin[c.id] !== undefined ? state.enviosAdmin[c.id] : "…"}</strong> <button type="button" class="chip small" data-envios-somar="${c.id}" data-q="1">+1</button><button type="button" class="chip small" data-envios-somar="${c.id}" data-q="5">+5</button><button type="button" class="chip small" data-envios-somar="${c.id}" data-q="-1">−1</button></span>` : ""}</div>
+            <div class="chip-row">${PLANO_OPTS.map(o => `<button type="button" class="chip small plano-btn ${plano === o.key ? "active" : ""}" data-court="${c.id}" data-plano="${o.key}">${o.label}</button>`).join("")}${plano !== "basico" && c.status !== "pending" ? `<span class="adm-envios">Envios por e-mail: <strong data-envios-de="${c.id}">${state.enviosAdmin && state.enviosAdmin[c.id] !== undefined ? state.enviosAdmin[c.id] : "…"}</strong> <button type="button" class="chip small" data-envios-somar="${c.id}" data-q="1">+1</button><button type="button" class="chip small" data-envios-somar="${c.id}" data-q="5">+5</button><button type="button" class="chip small" data-envios-somar="${c.id}" data-q="-1">−1</button></span>` : ""}</div>
             ${c.status !== "pending" ? `
               <p class="adm-rotulo">Na busca</p>
               ${pausadaAgora(c)
@@ -21251,7 +21236,7 @@ async function init() {
   if (state.page === "parceiros" && ["painel", "pessoas"].includes(state.parceirosAba) && temAcademia() && acessoCompleto()) carregarPedidosDeAcesso();
   if (state.page === "parceiros" && state.parceirosAba === "pessoas" && temAcademia() && acessoCompleto()) carregarPessoas();
   if (state.page === "parceiros" && state.parceirosAba === "promocoes" && temAcademia() && acessoCompleto()) carregarPromocoesDaAcademia();
-  if (state.page === "parceiros" && state.parceirosAba === "avisos" && temAcademia() && acessoCompleto()) carregarAvisosDaAcademia();
+  if (state.page === "parceiros" && state.parceirosAba === "promocoes-email" && temAcademia() && acessoCompleto()) carregarPromocoesDaAcademia();
   if (state.page === "parceiros" && state.parceirosAba === "academias" && contaAcademia) carregarPedidosParaSair();
 
   // Aberto pelo "Entenda como funciona" (/parceiros/ajuda#numeros): a

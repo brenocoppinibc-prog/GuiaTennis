@@ -564,10 +564,10 @@
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
       const ac = db.academias.find(y => y.id === a.p_academia);
-      if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("Os avisos por e-mail são do Completo e do Premium.", "42501");
-      if (!(ac.envios_de_aviso > 0)) return erro("A academia não tem envios de aviso. Compre um pacote de envios para avisar os jogadores.", "22023");
+      if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("As promoções por e-mail são do Completo e do Premium.", "42501");
+      if (!(ac.envios_de_aviso > 0)) return erro("A academia não tem envios. Compre um pacote de envios para mandar a promoção por e-mail.", "22023");
       const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
-      const novo = { id: "aviso-" + (db.avisos.length + 1), academia_id: a.p_academia, titulo: a.p_titulo, mensagem: a.p_mensagem, tipo: a.p_tipo || "aviso", avisados: aviso.avisados, created_at: new Date().toISOString() };
+      const novo = { id: "aviso-" + (db.avisos.length + 1), academia_id: a.p_academia, titulo: a.p_titulo, mensagem: a.p_mensagem, tipo: "promocao", avisados: aviso.avisados, created_at: new Date().toISOString() };
       db.avisos.push(novo);
       if (aviso.avisados > 0) ac.envios_de_aviso -= 1;
       return { data: { id: novo.id, aviso: aviso.aviso, avisados: aviso.avisados, saldo: ac.envios_de_aviso }, error:null };

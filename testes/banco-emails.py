@@ -877,8 +877,9 @@ ok(certo and r4.get("aviso") == "enviado" and r4.get("saldo") == 1 and saldo() =
 ok(f"paulaperto{sufixo}" in paras and f"betobuscou{sufixo}" in paras and f"lialonge{sufixo}" not in paras and f"ana{sufixo}" not in paras,
    "vai para quem é da cidade da academia e para quem buscou perto; não para quem é de longe nem para quem administra — " + paras)
 htmla = um(f"select html from public.emails_a_enviar where tipo = 'aviso_da_academia' and para = 'paulaperto{sufixo}@exemplo.com'") or ""
-ok("Turma nova aos sábados" in htmla and "perto de você" in htmla and "mandou um aviso" in htmla and "aviso=promocoes" in htmla,
-   "o e-mail traz o aviso, diz \"perto de você\" e tem o link para parar")
+ok("Turma nova aos sábados" in htmla and "perto de você" in htmla and "mandou uma promoção" in htmla and "aviso=promocoes" in htmla
+   and "pediu, na sua conta do GuiaTennis, promoções das academias" in htmla and "mandou um aviso" not in htmla,
+   "o e-mail traz a promoção (sem \"aviso\", 16/10/2026), diz \"perto de você\" e tem o link para parar")
 certo, saida = enviar("Outro aviso")
 r5 = json.loads(saida.splitlines()[-1]) if certo else {}
 ok(certo and r5.get("aviso") == "semana" and saldo() == "1", "no máximo 1 aviso por semana: o segundo não sai nem gasta envio")
@@ -886,9 +887,11 @@ lista = json.loads(um(f"select public.avisos_da_minha_academia('{PINHEIROS}')::t
 ok(lista.get("saldo") == 1 and len(lista.get("avisos", [])) == 1 and lista["avisos"][0]["avisados"] >= 2 and lista.get("semana") is True,
    "a academia vê o saldo, os avisos mandados e que já avisou nesta semana")
 ok(um(f"select public.avisos_da_minha_academia('{PINHEIROS}')::text", papel="authenticated", user=carla) in (None, "", "null"), "outra conta não vê os avisos da academia")
-# O aviso também pode ser uma promoção (SQL 20261015140000).
-certo, saida = sql(f"select public.enviar_aviso_da_academia('{PINHEIROS}', 'Aula grátis', 'Primeira aula grátis para iniciantes.', 'outro')::text", papel="authenticated", user=dono)
-ok(not certo and "Tipo de aviso inválido" in saida, "tipo de aviso que não existe é recusado")
+# Desde 16/10/2026 (SQL 20261016120000), tudo o que sai por e-mail é promoção.
+ok(um(f"select string_agg(distinct tipo, ',') from public.avisos_das_academias where academia_id = '{PINHEIROS}'") == "promocao",
+   "sem dizer o tipo, sai como promoção")
+certo, saida = sql(f"select public.enviar_aviso_da_academia('{PINHEIROS}', 'Aula grátis', 'Primeira aula grátis para iniciantes.', 'aviso')::text", papel="authenticated", user=dono)
+ok(certo and json.loads(saida.splitlines()[-1]).get("aviso") == "semana", "o tipo antigo (\"aviso\") não muda nada nem dá erro")
 sql(f"delete from public.avisos_das_academias where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo = 'aviso_da_academia';"
     f"update public.academias set envios_de_aviso = 1, phone = '11977776666' where id = '{PINHEIROS}'")
 certo, saida = sql(f"select public.enviar_aviso_da_academia('{PINHEIROS}', 'Aula grátis', 'Primeira aula grátis para iniciantes.', 'promocao')::text", papel="authenticated", user=dono)
@@ -897,7 +900,7 @@ lista = json.loads(um(f"select public.avisos_da_minha_academia('{PINHEIROS}')::t
 ok(certo and email_promo.startswith("Promoção da ") and "mandou uma promoção" in email_promo and ">Promoção</p>" in email_promo
    and lista.get("avisos", [{}])[0].get("tipo") == "promocao", "o aviso como promoção: assunto, etiqueta e tipo na lista — " + email_promo[:60])
 texto_promo = um(f"select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'aviso_da_academia' and para = 'paulaperto{sufixo}@exemplo.com'") or ""
-ok("?chamar=whatsapp&amp;assunto=a%20promo%C3%A7%C3%A3o%20%22Aula%20gr%C3%A1tis%22&amp;utm_source=Email-aviso-da-academia" in email_promo
+ok("?chamar=whatsapp&amp;assunto=a%20promo%C3%A7%C3%A3o%20%22Aula%20gr%C3%A1tis%22&amp;utm_source=Email-promocao-da-academia" in email_promo
    and ">Chamar no WhatsApp</a>" in email_promo and "veja a ficha da academia" in email_promo and "Chamar no WhatsApp: " in texto_promo,
    "o botão do e-mail chama a academia no WhatsApp, com o assunto, passando pela ficha (SQL 20261015150000) — " + texto_promo[:80])
 sql(f"update public.academias set envios_de_aviso = 1 where id = '{PINHEIROS}'")

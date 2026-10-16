@@ -26,6 +26,11 @@ teste")
 
 > **Estado (16/10/2026):** o Breno trocou de chat: leia o "Resumo (16/10/2026,
 > ao trocar de chat)" na seção 11.
+> Depois, no chat novo: **sem "avisos"**: tudo o que a academia manda aos
+> jogadores é promoção, numa página só com as partes **Na ficha** (Premium)
+> e **Por e-mail** (Completo e Premium) (regra 113, SQL
+> `20261016120000_promocoes_na_ficha_e_por_email`). PR #5 acompanhado de
+> novo.
 
 > **Estado (15/10/2026):** o Breno trocou de chat: leia o "Resumo (15/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -2539,7 +2544,7 @@ cobra taxa e não fica no meio** da negociação.
     Promoções, a prévia na ficha e na busca e a do e-mail, se for avisar.
     (e) Sem envios, "Sem envios, o aviso não sai…" fica **em vermelho**,
     com "Comprar envios ›", e o botão apagado. Testes:
-    `testes/plano-da-academia.js`, `testes/envios-de-aviso.js`,
+    `testes/plano-da-academia.js`, `testes/promocoes-por-email.js`,
     `testes/parceiros.js`, `testes/codigo-so-em-disputa.js` e a seção 22 do
     `banco-emails.py`.
 111. **"Chamar no WhatsApp" nos e-mails de aviso e de promoção** (pedido de
@@ -2556,7 +2561,7 @@ cobra taxa e não fica no meio** da negociação.
     tela. SQL `20261015150000_whatsapp_nos_avisos` (`url_codificada`,
     `link_whatsapp_do_email`, `avisar_promocao` e
     `enviar_aviso_da_academia`). A prévia do e-mail no Parceiros mostra o
-    mesmo botão. Testes: `testes/envios-de-aviso.js` e a seção 22 do
+    mesmo botão. Testes: `testes/promocoes-por-email.js` e a seção 22 do
     `banco-emails.py`.
 112. **Avisos e promoções em dois passos, sem barra de etapas** (pedido de
     15/10/2026, com print: "isso aqui está muito empilhado, faça um passo a
@@ -2569,7 +2574,42 @@ cobra taxa e não fica no meio** da negociação.
     Promoções: 1) escrever e "Ver como fica ›"; 2) a prévia na ficha e na
     busca e, se for avisar, a do e-mail, com "Publicar promoção"/"Salvar a
     mudança" (`revisarPromocao`, `state.pcPromoPasso`). Testes:
-    `testes/envios-de-aviso.js` e `testes/promocoes.js`.
+    `testes/promocoes-por-email.js` (era `envios-de-aviso.js`) e `testes/promocoes.js`.
+113. **Sem "avisos": tudo é promoção, na ficha e por e-mail** (pedido de
+    16/10/2026: "quero tirar tudo sobre avisos, unifique tudo como
+    promoção, e uma parte para promoção na ficha e outro por email"). Sai a
+    página "Avisos por e-mail" e a escolha "Aviso"/"Promoção". Parceiros ›
+    **Promoções** é uma página só, com duas abas no alto (o estilo das abas
+    de "Minhas quadras"; `pcTopoDasPromocoes`), e "Promoções" fica marcada
+    no menu nas duas:
+    - **Na ficha** (`/parceiros/promocoes`, `pcPromocoes`; só o Premium):
+      como antes (até 3, até 90 dias, dois passos), mas **sem e-mail**:
+      publicar não manda nada (`salvar_promocao` com `p_avisar` falso). Cada
+      promoção valendo tem **"Mandar por e-mail"**, que abre a outra parte
+      com o título e os detalhes + "Válida até …" prontos
+      (`promocaoDaFichaNoEmail`). Fora do Premium, trancada; no Completo,
+      com o atalho "No Completo, a academia já manda promoções por e-mail".
+    - **Por e-mail** (`/parceiros/promocoes-email`, `pcPromocoesPorEmail`;
+      Completo e Premium; Básico trancado): saldo de envios, "Promoção"
+      (60) e "Mensagem" (500), no Premium "Usar uma promoção da ficha"
+      (chips das valendo), "Ver como fica o e-mail ›", "Confira antes de
+      mandar" com a prévia e "Mandar a promoção"; embaixo, "Já mandadas".
+      O link antigo `/parceiros/avisos` abre esta parte.
+    - Banco (SQL `20261016120000_promocoes_na_ficha_e_por_email`): os nomes
+      ficam (`avisos_das_academias`, `envios_de_aviso`,
+      `enviar_aviso_da_academia`); `tipo` vira sempre `promocao`; o e-mail é
+      "Promoção da <academia>: …", "mandou uma promoção", rodapé "pediu…
+      promoções das academias favoritas e perto de você" e
+      `utm_source=Email-promocao-da-academia`; os erros falam de promoção.
+      `avisar_minha_promocao` fica sem uso no site.
+    - Textos: Planos ("Promoções por e-mail aos jogadores, por envio"),
+      Ajuda ("Como funcionam as promoções na ficha?" e "…por e-mail?"),
+      chat, "Para fazer agora", Termos, Privacidade, admin ("Envios por
+      e-mail") e a conta do jogador ("Promoções das academias favoritas e
+      perto de você"). Os avisos do próprio site (viagem, buscas salvas,
+      avaliação nova…) e o menu "Avisos por e-mail" do jogador continuam.
+    - Testes: `testes/promocoes-por-email.js` e a seção 22 do
+      `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3573,7 +3613,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce envios-de-aviso pensamento-e-home chat-parceiros plano-da-academia; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 ```
 

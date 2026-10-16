@@ -21,7 +21,7 @@ async function publicar(page) {
   let corpo = await texto(page, '#parceiros .pc-main');
   ok(corpo.includes('Promoções') && corpo.includes('Disponível no plano Premium') && !(await page.$('#pc-promo-titulo')), 'fora do Premium: a página mostra o que é e "Disponível no plano Premium"');
   const menu = await page.evaluate(() => PC_MENU_LOGADO.map(x => x.t).join(','));
-  ok(menu.includes('Avaliações,Promoções,Avisos por e-mail,Desempenho'), 'Promoções no menu do Parceiros, depois de Avaliações');
+  ok(menu.includes('Avaliações,Promoções,Desempenho'), 'Promoções no menu do Parceiros, depois de Avaliações (sem "Avisos por e-mail", 16/10/2026)');
   await browser.close();
 
   // ---- Premium: publicar, mudar, encerrar ----
@@ -44,8 +44,8 @@ async function publicar(page) {
   }));
   ok(r.args && r.args.p_academia === 'a1' && r.args.p_id === null && r.args.p_titulo === 'Primeira aula grátis' && r.args.p_valida_ate,
     'publica com a academia, o título, os detalhes e a validade');
-  ok(r.aviso.includes('Promoção publicada') && r.aviso.includes('2 jogadores'), 'diz para quantas pessoas vai o aviso por e-mail — ' + r.aviso);
-  ok(r.lista.length === 1 && /valendo/i.test(r.lista[0]) && /Válida até \d+ de [a-zç]+/.test(r.lista[0]) && r.lista[0].includes('aviso por e-mail para 2 pessoas'), 'a promoção aparece na lista, valendo — ' + r.lista[0]);
+  ok(r.aviso.includes('Promoção publicada na ficha e na busca') && r.args.p_avisar === false, 'publicar na ficha não manda e-mail (o e-mail é a parte Por e-mail) — ' + r.aviso);
+  ok(r.lista.length === 1 && /valendo/i.test(r.lista[0]) && /Válida até \d+ de [a-zç]+/.test(r.lista[0]) && r.lista[0].includes('Mandar por e-mail'), 'a promoção aparece na lista, valendo, com "Mandar por e-mail" — ' + r.lista[0]);
   ok(r.site.join() === 'Primeira aula grátis', 'e já aparece no site');
   await page.click('[data-promo-mudar]');
   await page.waitForTimeout(200);
@@ -115,7 +115,7 @@ async function publicar(page) {
   ({ browser, page } = await abrir({ q: 'parceiros/planos' }));
   r = await page.evaluate(() => ({
     premium: [...document.querySelectorAll('.pc-plano')].pop().innerText,
-    faq: perguntasParceiros().find(f => f.q === 'Como funcionam as promoções?')?.a || '',
+    faq: perguntasParceiros().filter(f => /^Como funcionam as promoções/.test(f.q)).map(f => f.a).join(' '),
     termos: TERMS_HTML, privacidade: PRIVACY_HTML,
     aviso: AVISOS_JOGADOR.find(x => x.campo === 'promocoes').t,
     link: AVISOS_DO_LINK.promocoes || '',
@@ -124,6 +124,6 @@ async function publicar(page) {
   ok(r.faq.includes('até 3 promoções') && r.faq.includes('90 dias') && r.faq.includes('gasta 1 envio'), 'a Ajuda explica como funcionam as promoções');
   ok(r.termos.includes('até 3 promoções ao mesmo tempo') && r.termos.includes('responde pelo que anuncia') && r.termos.includes('remover a promoção enganosa'), 'os Termos dizem quem responde pela promoção');
   ok(r.privacidade.includes('os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso') && r.privacidade.includes('a academia não recebe o seu nome nem o seu e-mail'), 'a Privacidade explica o uso dos favoritos no aviso');
-  ok(r.aviso === 'Avisos e promoções das academias favoritas e perto de você' && r.link.includes('perto de você'), 'o aviso da conta e o link do e-mail falam das favoritas e das academias perto (regra 104)');
+  ok(r.aviso === 'Promoções das academias favoritas e perto de você' && r.link.includes('perto de você') && !/aviso/i.test(r.link), 'a conta e o link do e-mail falam das promoções das favoritas e das academias perto (regras 104 e 113)');
   await browser.close();
 })();

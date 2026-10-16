@@ -491,7 +491,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     rodape: [...document.querySelectorAll('.pc-rodape a[data-pc]')].map(a => a.innerText).join(' | '),
   }));
   ok(t.h1 === 'Olá, Maria' && t.robots.includes('noindex'), 'painel cumprimenta o responsável e fica fora do Google');
-  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Promoções | Avisos por e-mail | Desempenho | Academias | Acessos | Plano | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
+  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Promoções | Desempenho | Academias | Acessos | Plano | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
   ok(!painel.barra, 'no computador, sem a barra de baixo');
   ok(!painel.rodape.includes('Cadastrar') && !painel.rodape.includes('Entrar') && painel.rodape.includes('Desempenho'), 'rodapé de quem está logado não oferece Cadastrar nem Entrar — ' + painel.rodape);
   await page.click('.pc-nav a[data-pc="desempenho"]');

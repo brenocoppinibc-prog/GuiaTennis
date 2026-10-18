@@ -120,7 +120,7 @@ async function publicar(page) {
     link: AVISOS_DO_LINK.promocoes || '',
   }));
   ok(r.premium.includes('Promoções na ficha e na busca') && !/em breve/i.test(r.premium), 'o Premium mostra as promoções, sem "Em breve"');
-  ok(r.faq.includes('uma promoção por vez') && r.faq.includes('90 dias') && r.faq.includes('gasta 1 envio'), 'a Ajuda explica como funcionam as promoções');
+  ok(r.faq.includes('uma promoção por vez') && r.faq.includes('90 dias') && r.faq.includes('Mandar por e-mail'), 'a Ajuda explica como funcionam as promoções');
   ok(r.termos.includes('uma promoção por vez') && r.termos.includes('responde pelo que anuncia') && r.termos.includes('remover a promoção enganosa'), 'os Termos dizem quem responde pela promoção');
   ok(r.privacidade.includes('os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso') && r.privacidade.includes('a academia não recebe o seu nome nem o seu e-mail'), 'a Privacidade explica o uso dos favoritos no aviso');
   ok(r.aviso === 'Promoções das academias favoritas e perto de você' && r.link.includes('perto de você') && !/aviso/i.test(r.link), 'a conta e o link do e-mail falam das promoções das favoritas e das academias perto (regras 104 e 113)');

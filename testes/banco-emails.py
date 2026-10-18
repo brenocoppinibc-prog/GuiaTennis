@@ -1348,5 +1348,106 @@ ok(eq_html.startswith("pedido_equipe|") and "Quem aceita ou recusa é o respons�
 ok(fila(f"para = 'sideq{sufixo}@exemplo.com'") == "0" and fila(f"para = 'rafaeq{sufixo}@exemplo.com'") == "0", "sem o e-mail confirmado não recebe; quem pediu não recebe o próprio pedido")
 sql(f"delete from public.academias where id = '{eq}'; truncate public.emails_a_enviar")
 
+# 31. Leilão das notificações por região (SQL 20261019120000) ------------------
+print("\n# Leilão das notificações")
+sql("truncate public.emails_a_enviar; delete from public.lances; update public.leilao_config set lance_minimo = 10, desconto_premium = 0.20, raio_km = 4")
+# Três academias no mesmo bairro, cada uma com o seu responsável.
+la = dono
+sql(f"update public.academias set plano = 'completo', envios_de_aviso = 100, bairro = 'Pinheiros', cidade = 'São Paulo', status = 'published', pausada = false where id = '{PINHEIROS}'")
+lat, lng = um(f"select lat || ',' || lng from public.academias where id = '{PINHEIROS}'").split(",")
+outras = []
+for i, (nome, plano, saldo) in enumerate([("Academia Leilão B", "premium", 100), ("Academia Leilão C", "completo", 5), ("Academia Leilão D", "basico", 100)]):
+    aid = um(f"insert into public.academias (name, bairro, cidade, lat, lng, status, plano, envios_de_aviso, phone) values "
+             f"('{nome}', 'Pinheiros', 'São Paulo', {float(lat) + 0.002 * (i + 1)}, {lng}, 'published', '{plano}', {saldo}, '1197777000{i}') returning id")
+    resp = parceiro(f"Resp {i}", f"resp{i}{sufixo}@exemplo.com", aid)
+    outras.append((aid, resp))
+(b_id, b_resp), (c_id, c_resp), (d_id, d_resp) = outras
+meu = json.loads(um(f"select public.meu_leilao('{PINHEIROS}')::text", papel="authenticated", user=la) or "{}")
+ok(meu.get("regiao") == "sao-paulo/pinheiros" and meu.get("regiao_nome") == "Pinheiros, São Paulo" and meu.get("lance_minimo") == 10 and meu.get("creditos") == 100 and len(meu.get("envios", [])) == 2,
+   "meu_leilao: a região é o bairro, com o lance mínimo, os créditos e os dois envios da semana — " + str({k: meu.get(k) for k in ("regiao", "lance_minimo", "creditos")}))
+ok(um(f"select public.meu_leilao('{PINHEIROS}')::text", papel="authenticated", user=carla) in (None, "", "null"), "outra conta não vê o leilão da academia")
+lance = lambda user, aid, valor, msg="Para quem nunca fez aula aqui, de segunda a sexta até as 17h.": sql(
+    f"select public.dar_lance('{aid}', 'Primeira aula grátis', '{msg}', {valor})::text", papel="authenticated", user=user)
+certo, saida = lance(d_resp, d_id, 20)
+ok(not certo and "Completo e do Premium" in saida, "o Básico não entra no leilão")
+certo, saida = lance(la, PINHEIROS, 5)
+ok(not certo and "lance mínimo é de R$ 10" in saida, "lance abaixo do mínimo é recusado")
+certo, saida = lance(c_resp, c_id, 20)
+ok(not certo and "tem R$ 5 de créditos" in saida, "lance maior que os créditos é recusado (pré-pago)")
+certo, saida = lance(la, PINHEIROS, 30, "Curta.")
+ok(not certo and "10 a 500" in saida, "mensagem curta é recusada")
+certo, saida = lance(la, PINHEIROS, 30)
+ok(certo and json.loads(saida.splitlines()[-1]).get("valor") == 30, "Completo dá o lance de R$ 30")
+certo, saida = lance(la, PINHEIROS, 25)
+ok(certo and um(f"select count(*) || '|' || max(valor) from public.lances where academia_id = '{PINHEIROS}'") == "1|25", "um lance por semana: dar outro muda o mesmo")
+lance(b_resp, b_id, 20, "Curta mas ok.")
+sql(f"update public.academias set envios_de_aviso = 20 where id = '{c_id}'")
+lance(c_resp, c_id, 12)
+# Quem recebe: pediu promoções e favoritou uma academia do bairro, salvou uma busca nele ou buscou perto.
+fav = jogador("Fê Favoritou", f"fe{sufixo}@exemplo.com", promocoes="true", guardados=f"jsonb_build_object('favoritas', jsonb_build_array('{c_id}'))")
+perto = jogador("Pê Perto", f"pe{sufixo}@exemplo.com", promocoes="true", guardados=f"jsonb_build_object('ultima_busca', jsonb_build_object('lat', {float(lat) + 0.01}, 'lng', {lng}))")
+longe = jogador("Lu Longe", f"lu{sufixo}@exemplo.com", promocoes="true", guardados=f"jsonb_build_object('ultima_busca', jsonb_build_object('lat', {float(lat) + 0.5}, 'lng', {lng}))")
+salvou = jogador("Sá Salvou", f"sa{sufixo}@exemplo.com", promocoes="true")
+sql(f"insert into public.buscas_salvas (user_id, termo, bairro, cidade, link) values ('{salvou}', 'pinheiros', 'Pinheiros', 'São Paulo', '/quadras/sao-paulo/pinheiros')")
+nao = jogador("Nô Não Quer", f"no{sufixo}@exemplo.com", guardados=f"jsonb_build_object('favoritas', jsonb_build_array('{c_id}'))")
+dest = um(f"select string_agg(split_part(email, '@', 1), ',' order by email) from public.destinatarios_da_regiao('sao-paulo/pinheiros', '{PINHEIROS}')") or ""
+ok(dest == ",".join(sorted([f"fe{sufixo}", f"pe{sufixo}", f"sa{sufixo}"])), "recebe quem favoritou uma academia do bairro, buscou perto ou salvou a busca do bairro; não quem está longe nem quem não pediu — " + dest)
+ok(json.loads(um(f"select public.meu_leilao('{PINHEIROS}')::text", papel="authenticated", user=la)).get("alcance") == 3, "a academia vê o alcance (quantos jogadores), sem saber quem")
+# Antes da hora, não fecha.
+ok(um("select public.fechar_leiloes()") == "0" and um("select count(*) from public.lances where situacao = 'aberto'") == "3", "antes do domingo 20h, o leilão continua aberto")
+fecha = um("select public.proximo_fechamento()::text")
+ok(um(f"select public.fechar_leiloes('{fecha}'::timestamptz + interval '1 minute')") == "1", "no domingo 20h, o leilão do bairro fecha")
+res = {r.split("|")[0]: r.split("|")[1:] for r in (um("select string_agg(academia_id || '|' || situacao || '|' || coalesce(posicao::text, '') || '|' || coalesce(preco::text, '') || '|' || qualidade::text, ';') from public.lances") or "").split(";")}
+# Notas: A 25 × 0,95 = 23,75 (fotos? sem) …  o que importa: a ordem e o preço.
+q = {k: float(v[3]) for k, v in res.items()}
+ok(res[PINHEIROS][0] == "ganhou" and res[PINHEIROS][1] == "1" and res[b_id][0] == "ganhou" and res[b_id][1] == "2" and res[c_id][0] == "perdeu",
+   "as duas maiores notas (lance × qualidade) ganham; a terceira perde — " + str({k[-4:]: v[:2] for k, v in res.items()}))
+preco_a = int(res[PINHEIROS][2]); preco_b = int(res[b_id][2])
+import math
+esperado_a = min(25, max(10, math.ceil(20 * q[b_id] / q[PINHEIROS]) + 1))
+esperado_b = max(1, math.floor(min(20, max(10, math.ceil(12 * q[c_id] / q[b_id]) + 1)) * 0.8))
+ok(preco_a == esperado_a and preco_b == esperado_b, f"cada um paga o necessário para passar o seguinte + R$ 1, no máximo o lance; o Premium paga 20% menos — A {preco_a} (esperado {esperado_a}), B {preco_b} (esperado {esperado_b})")
+ok(um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == str(100 - preco_a) and um(f"select envios_de_aviso from public.academias where id = '{c_id}'") == "20",
+   "quem ganhou paga dos créditos; quem perdeu não paga")
+envio1, envio2 = um(f"select (envio_em at time zone 'America/Sao_Paulo')::text from public.lances where academia_id = '{PINHEIROS}'"), um(f"select (envio_em at time zone 'America/Sao_Paulo')::text from public.lances where academia_id = '{b_id}'")
+ok(envio1.endswith("10:00:00") and envio2.endswith("10:00:00") and um(f"select extract(dow from '{envio1}'::timestamp)::int || ',' || extract(dow from '{envio2}'::timestamp)::int") == "2,5",
+   "o 1º sai na terça às 10h e o 2º na sexta às 10h — " + envio1 + " / " + envio2)
+ok(um(f"select public.enviar_notificacoes_do_leilao('{envio1}'::timestamp at time zone 'America/Sao_Paulo' - interval '1 hour')") == "0", "antes da hora, não manda")
+ok(um(f"select public.enviar_notificacoes_do_leilao('{envio1}'::timestamp at time zone 'America/Sao_Paulo' + interval '1 minute')") == "1", "na terça às 10h, manda a do 1º lugar")
+html = um(f"select assunto || '|' || html from public.emails_a_enviar where tipo = 'notificacao_do_leilao' and para = 'fe{sufixo}@exemplo.com'") or ""
+ok(html.startswith("Promoção em Pinheiros: Primeira aula grátis|") and "Novidade em Pinheiros" in html and "Patrocinado · Academia Exemplo Pinheiros" in html and "Promoção patrocinada" in html and "aviso=promocoes" in html and "utm_source=Email-leilao" in html,
+   "o e-mail do GuiaTennis: assunto com o bairro, \"Patrocinado\" com o nome da academia e o link para parar — " + html[:70])
+ok(fila("tipo = 'notificacao_do_leilao'") == "3" and um(f"select avisados || '|' || situacao from public.lances where academia_id = '{PINHEIROS}'") == "3|enviado", "vai para os 3 do bairro e fica marcada como enviada")
+ok(um(f"select public.enviar_notificacoes_do_leilao('{envio1}'::timestamp at time zone 'America/Sao_Paulo' + interval '2 hours')") == "0", "não manda duas vezes")
+# Ninguém para receber: devolve o que pagou.
+# (a dona da Pinheiros também favoritou e pede promoções: para a B, ela recebe; aqui, desliga também)
+sql(f"update public.jogadores set promocoes = false where user_id in ('{fav}', '{perto}', '{salvou}', '{dono}')")
+antes_b = int(um(f"select envios_de_aviso from public.academias where id = '{b_id}'"))
+um(f"select public.enviar_notificacoes_do_leilao('{envio2}'::timestamp at time zone 'America/Sao_Paulo' + interval '1 minute')")
+ok(um(f"select envios_de_aviso from public.academias where id = '{b_id}'") == str(antes_b + preco_b) and um(f"select avisados || '|' || preco from public.lances where academia_id = '{b_id}'") == "0|0",
+   "se ninguém recebe, o valor volta para os créditos — " + str((antes_b, preco_b, um(f"select envios_de_aviso from public.academias where id = '{b_id}'"), um(f"select avisados || '|' || preco || '|' || situacao from public.lances where academia_id = '{b_id}'"))))
+# Admin: vê os lances, cancela um envio marcado (devolve) e muda o lance mínimo.
+certo, _ = sql("select public.leiloes_do_admin()", papel="authenticated", user=carla)
+ok(not certo, "só o admin vê os leilões")
+adm = json.loads(um("select public.leiloes_do_admin()::text", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN) or "{}")
+ok(len(adm.get("lances", [])) == 3 and adm.get("config", {}).get("lance_minimo") == 10 and all("academia" in x and "qualidade" in x for x in adm["lances"]), "o admin vê os lances com a academia e a qualidade")
+sql("delete from public.lances")
+sql(f"update public.jogadores set promocoes = true where user_id in ('{fav}', '{perto}', '{salvou}')")
+lance(la, PINHEIROS, 20)
+um(f"select public.fechar_leiloes('{fecha}'::timestamptz + interval '1 minute')")
+lid = um(f"select id from public.lances where academia_id = '{PINHEIROS}'")
+saldo_antes = int(um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'"))
+ok(um(f"select situacao || '|' || preco from public.lances where id = '{lid}'") == "ganhou|10", "sozinho no bairro, ganha pelo lance mínimo")
+ok(um(f"select public.cancelar_envio_do_lance('{lid}')::text", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN) == "true"
+   and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == str(saldo_antes + 10) and um(f"select situacao from public.lances where id = '{lid}'") == "cancelado",
+   "\"Não enviar\" do admin cancela e devolve os créditos")
+ok(um("select public.mudar_lance_minimo(15)", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN) == "15" and not sql("select public.mudar_lance_minimo(5)", papel="authenticated", user=la)[0],
+   "só o admin muda o lance mínimo")
+sql("update public.leilao_config set lance_minimo = 10; delete from public.lances")
+ok(um(f"select public.cancelar_lance('{PINHEIROS}')::text", papel="authenticated", user=la) == "false", "cancelar sem lance aberto não faz nada")
+lance(la, PINHEIROS, 20)
+ok(um(f"select public.cancelar_lance('{PINHEIROS}')::text", papel="authenticated", user=la) == "true" and um(f"select count(*) from public.lances where situacao = 'aberto'") == "0", "a academia cancela o próprio lance antes de fechar")
+sql(f"delete from public.lances; delete from public.academias where id in ('{b_id}', '{c_id}', '{d_id}'); truncate public.emails_a_enviar")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

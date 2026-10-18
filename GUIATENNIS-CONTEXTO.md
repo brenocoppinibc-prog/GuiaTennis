@@ -31,7 +31,9 @@ teste")
 > e **Por e-mail** (Completo e Premium) (regra 113, SQL
 > `20261016120000_promocoes_na_ficha_e_por_email`); depois, **uma promoção
 > por vez** na ficha (regra 114, SQL `20261016130000_uma_promocao_por_vez`).
-> PR #5 acompanhado de novo, verde. Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
+> PR #5 acompanhado de novo, verde. Em 18/10: o **leilão das promoções no
+> e-mail do GuiaTennis do bairro** (regra 116, SQL
+> `20261019120000_leilao_das_notificacoes`). Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
 > falhas de texto (menu, chat, subtítulo), corrigidas e com os arquivos
 > rodados de novo sem falha; 380 no `banco-emails.py` (depois da regra 114), nenhuma falha.
 
@@ -2645,6 +2647,62 @@ cobra taxa e não fica no meio** da negociação.
     outra…", que repetia o subtítulo. "Mandar por e-mail" põe ponto entre
     os detalhes e a validade ("Novo. Válida até…"). Testes:
     `testes/promocoes-por-email.js` e `testes/promocoes.js`.
+116. **Leilão das promoções no e-mail do GuiaTennis do bairro** (pedido de
+    18/10/2026: "quero fazer igual o trivago que eles próprios enviam as
+    novidades, mas com novidades enviadas pelas academias e quem me pagar
+    mais eu enviarei notificação por região, como fazer isso igual a eles
+    de leiloar notificações"). Como o trivago (lance + qualidade), o Google
+    Ads (paga o necessário para passar o seguinte) e o Groupon (um e-mail
+    da plataforma por região). Escolhas do Breno: **cobra por semana
+    ganha**, a **região é o bairro**, **duas notificações por semana** no
+    começo e o e-mail da academia para os seguidores **sai** (só o
+    GuiaTennis manda). SQL `20261019120000_leilao_das_notificacoes`:
+    - Parceiros › Promoções › **Por e-mail** (Completo e Premium;
+      `pcPromocoesPorEmail`): o quadro "Leilão de Pinheiros, São Paulo"
+      (fecha domingo às 20h, os e-mails de terça e sexta às 10h, o alcance
+      "cerca de 140 jogadores", arredondado para baixo, o lance mínimo e os
+      créditos com "Comprar ›" pelo WhatsApp); o lance em dois passos
+      (promoção, mensagem e **lance máximo em reais**, "Ver a prévia ›";
+      depois a "Prévia do e-mail" com "Patrocinado · <academia>" e "Dar o
+      lance de R$ 25"); com o lance dado, "Seu lance: R$ 25" com "Alterar o
+      lance" e "Cancelar o lance"; embaixo, "Leilões anteriores" com o
+      resultado (lugar, quantos receberam, quanto pagou; "Não ganhou ·
+      nada foi cobrado"). Sem bairro na ficha: "Falta o bairro na ficha".
+      No Premium, "Usar a promoção da ficha"; na ficha, "Mandar por e-mail"
+      abre o lance com o texto pronto.
+    - Regras (`fechar_leiloes`, de hora em hora pelo pg_cron
+      `guiatennis-leiloes` → `rodar_leiloes`): um lance por academia por
+      semana, pré-pago (o lance não passa dos créditos); domingo 20h, as
+      duas maiores **notas = lance × qualidade** (`qualidade_do_lance`:
+      0,70 + fotos 0,10 + avaliações ≥ 4 ou nenhuma 0,10/0,05 + mensagem de
+      40+ letras 0,10) ganham; cada uma paga o necessário para passar a
+      seguinte **+ R$ 1**, nunca mais que o lance nem menos que o mínimo;
+      **Premium paga 20% menos**; sem créditos na hora, `sem_saldo` (passa
+      a vez). 1º lugar sai na **terça às 10h**, 2º na **sexta às 10h**
+      (`enviar_notificacoes_do_leilao`); se ninguém recebe, o valor volta.
+    - Quem recebe (`destinatarios_da_regiao`): ligou "Promoções das
+      academias favoritas e perto de você", confirmou o e-mail, não
+      administra a academia que ganhou, e favoritou uma academia do bairro,
+      salvou uma busca nele ou buscou a até 4 km do centro do bairro. O
+      e-mail: "Promoção em Pinheiros: <promoção>", "Novidade em
+      Pinheiros", a caixa "Patrocinado · <academia>" (o CDC, art. 36, pede
+      a publicidade identificada), "Chamar no WhatsApp"
+      (`utm_source=Email-leilao`) e "Não quero mais receber".
+    - Créditos: a coluna de sempre `academias.envios_de_aviso`, agora em
+      **reais inteiros**; o admin soma no painel (Academias › a academia:
+      "Créditos do leilão: R$ N" com +R$ 50, +R$ 100 e −R$ 10).
+    - Painel do admin › **Leilões** (`/admin/leiloes`): os lances da semana
+      por bairro (com a qualidade), os e-mails marcados com **"Não
+      enviar"** (devolve) e o **lance mínimo** (R$ 10 de saída;
+      `leilao_config` guarda também o desconto do Premium e o raio).
+    - Textos: Planos ("Leilão da promoção no e-mail do GuiaTennis do
+      bairro, duas por semana"), Ajuda ("Como funciona o leilão das
+      promoções por e-mail?"), chat, "Para fazer agora", Termos e
+      Privacidade. Os valores (mínimo, desconto, raio) são começo: mudar
+      em `leilao_config`.
+    - Testes: `testes/promocoes-por-email.js` e a seção 31 do
+      `banco-emails.py`. Bateria de 18/10: **1.476 verificações** nos 52
+      arquivos do navegador e **409 no `banco-emails.py`**, nenhuma falha.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

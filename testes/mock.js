@@ -57,6 +57,8 @@
   (window.__completo || []).forEach(id => { const ac = db.academias.find(y => y.id === id); if (ac) ac.plano = "completo"; });
   Object.entries(window.__envios || {}).forEach(([id, n]) => { const ac = db.academias.find(y => y.id === id); if (ac) ac.envios_de_aviso = n; });
   db.avisos = window.__db.avisos = [];
+  db.lances = window.__db.lances = [];
+  db.leilaoConfig = window.__db.leilaoConfig = { lance_minimo: 10, desconto_premium: 0.2, raio_km: 4 };
   const promocoesLiberadas = (ac) => !!ac && ac.plano === "premium";
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
@@ -550,6 +552,62 @@
       const aviso = window.__promoAviso || { aviso: "ninguem", avisados: 0 };
       if (aviso.avisados > 0) { Object.assign(p, { avisados: aviso.avisados, avisada_em: new Date().toISOString() }); acp.envios_de_aviso -= 1; }
       return { data: { aviso: aviso.aviso, avisados: aviso.avisados, saldo: acp.envios_de_aviso }, error:null };
+    }
+    // Leilão das promoções por e-mail (SQL 20261019120000). window.__alcance
+    // diz quantos jogadores o bairro alcança; window.__fechaEm, quando fecha.
+    const fechaDoLeilao = () => window.__fechaEm || (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + ((7 - d.getUTCDay()) % 7 || 7)); d.setUTCHours(23, 0, 0, 0); return d.toISOString(); })();
+    const regiaoDe = (ac) => ac && ac.bairro && ac.cidade ? { regiao: (ac.cidade + "/" + ac.bairro).toLowerCase(), nome: ac.bairro + ", " + ac.cidade } : null;
+    if (nome === "meu_leilao") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return { data:null, error:null };
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      const r = regiaoDe(ac);
+      const fecha = fechaDoLeilao();
+      const envio = (h) => new Date(new Date(fecha).getTime() + h * 3600000).toISOString();
+      return { data: { regiao: r && r.regiao, regiao_nome: r && r.nome, fecha_em: fecha, envios: [envio(38), envio(110)],
+        lance_minimo: db.leilaoConfig.lance_minimo, desconto_premium: db.leilaoConfig.desconto_premium, creditos: ac.envios_de_aviso || 0,
+        alcance: r ? (window.__alcance ?? 0) : 0,
+        lance: db.lances.find(l => l.academia_id === a.p_academia && l.situacao === "aberto") || null,
+        historico: db.lances.filter(l => l.academia_id === a.p_academia && l.situacao !== "aberto") }, error:null };
+    }
+    if (nome === "dar_lance") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("As promoções por e-mail são do Completo e do Premium.", "42501");
+      const r = regiaoDe(ac);
+      if (!r) return erro("Para entrar no leilão, a ficha precisa do bairro e da cidade.", "22023");
+      if (!(a.p_valor >= db.leilaoConfig.lance_minimo)) return erro(`O lance mínimo é de R$ ${db.leilaoConfig.lance_minimo}.`, "22023");
+      if (a.p_valor > (ac.envios_de_aviso || 0)) return erro(`A academia tem R$ ${ac.envios_de_aviso || 0} de créditos. Compre créditos ou dê um lance menor.`, "22023");
+      let l = db.lances.find(y => y.academia_id === a.p_academia && y.situacao === "aberto");
+      if (!l) { l = { id: "lance-" + (db.lances.length + 1), academia_id: a.p_academia, situacao: "aberto", created_at: new Date().toISOString(), avisados: 0 }; db.lances.push(l); }
+      Object.assign(l, { regiao: r.regiao, regiao_nome: r.nome, fecha_em: fechaDoLeilao(), titulo: a.p_titulo, mensagem: a.p_mensagem, valor: a.p_valor });
+      return { data: l, error:null };
+    }
+    if (nome === "cancelar_lance") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const antes = db.lances.length;
+      db.lances = window.__db.lances = db.lances.filter(l => !(l.academia_id === a.p_academia && l.situacao === "aberto"));
+      return { data: db.lances.length < antes, error:null };
+    }
+    if (nome === "leiloes_do_admin") {
+      if (!souAdmin()) return erro("Só o admin vê os leilões.", "42501");
+      return { data: { config: db.leilaoConfig, fecha_em: fechaDoLeilao(), lances: db.lances.map(l => ({ ...l, academia: (db.academias.find(y => y.id === l.academia_id) || {}).name, qualidade: l.qualidade || 0.8 })) }, error:null };
+    }
+    if (nome === "cancelar_envio_do_lance") {
+      if (!souAdmin()) return erro("Só o admin cancela o envio.", "42501");
+      const l = db.lances.find(y => y.id === a.p_lance && ["ganhou", "aberto"].includes(y.situacao));
+      if (!l) return { data: false, error:null };
+      if (l.situacao === "ganhou") { const ac = db.academias.find(y => y.id === l.academia_id); ac.envios_de_aviso = (ac.envios_de_aviso || 0) + (l.preco || 0); }
+      Object.assign(l, { situacao: "cancelado", preco: 0 });
+      return { data: true, error:null };
+    }
+    if (nome === "mudar_lance_minimo") {
+      if (!souAdmin()) return erro("Só o admin muda o lance mínimo.", "42501");
+      if (!(a.p_valor >= 1 && a.p_valor <= 10000)) return erro("O lance mínimo vai de R$ 1 a R$ 10.000.", "22023");
+      db.leilaoConfig.lance_minimo = a.p_valor;
+      return { data: a.p_valor, error:null };
     }
     // Avisos por e-mail (SQL 20261015120000).
     if (nome === "avisos_da_minha_academia") {

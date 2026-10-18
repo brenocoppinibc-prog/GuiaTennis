@@ -7494,7 +7494,7 @@ function perguntasParceiros() {
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
-    { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "No plano Premium, em Promoções › Na ficha, a academia publica uma promoção por vez, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" nela (veja \"Como funcionam as promoções por e-mail?\"). A academia responde pelo que anuncia e combina as condições direto com o jogador." },
+    { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "No plano Premium, em Promoções › Na ficha, a academia publica uma promoção por vez, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" (veja \"Como funcionam as promoções por e-mail?\"). A academia responde pelo que anuncia e combina as condições direto com o jogador." },
     { id: "promocoes-email", q: "Como funcionam as promoções por e-mail?", a: "Nos planos Completo e Premium, em Promoções › Por e-mail, a academia escreve a promoção (primeira aula grátis, turma nova com desconto, pacote de aulas) e ela chega por e-mail aos jogadores que favoritaram a academia ou estão perto dela e pediram promoções. No Premium, dá para usar uma promoção da ficha. Cada promoção que chega a alguém gasta 1 envio, comprado antes em pacotes pelo WhatsApp do GuiaTennis; no Premium, o envio sai mais barato. Para não cansar os jogadores, sai no máximo 1 promoção por e-mail por semana por academia, e se ninguém recebe, o envio não é gasto." },
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
     { id: "desempenho", q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
@@ -9372,7 +9372,7 @@ async function salvarPromocao() {
     render();
     return;
   }
-  state.pcPromoMsg = { tipo: "ok", texto: editando ? "Promoção atualizada." : "Promoção publicada na ficha e na busca. Para mandar por e-mail, toque em \"Mandar por e-mail\" nela." };
+  state.pcPromoMsg = { tipo: "ok", texto: editando ? "Promoção atualizada." : "Promoção publicada na ficha e na busca. Para mandar por e-mail, toque em \"Mandar por e-mail\"." };
   state.pcPromoForm = null; state.pcPromoEditando = null; state.pcPromoPasso = null;
   await Promise.all([carregarPromocoes(), carregarPromocoesDaAcademia()]);
   render();

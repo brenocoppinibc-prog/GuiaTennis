@@ -76,9 +76,14 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(faixa.comoLogoAbaixo, '"Entenda como funciona" logo abaixo dos números, antes do convite');
   await page.click('.pc-faixa-num .como-numeros button');
   await page.waitForTimeout(300);
-  let aj = await page.evaluate(() => ({ aba: state.parceirosAba, pop: document.querySelector('.info-pop')?.innerText || '', x: !!document.getElementById('info-pop-fechar') }));
+  let aj = await page.evaluate(() => {
+    const link = document.querySelector('.pc-faixa-num .como-numeros button').getBoundingClientRect(), pop = document.querySelector('.info-pop');
+    const b = pop && pop.getBoundingClientRect();
+    return { aba: state.parceirosAba, pop: pop ? pop.innerText : '', x: !!document.getElementById('info-pop-fechar'), perto: !!b && b.top - link.bottom >= 0 && b.top - link.bottom < 24, dentro: !!b && b.left >= 0 && b.right <= innerWidth };
+  });
   ok(aj.aba === 'inicio' && aj.pop.includes('Como contamos os números') && aj.pop.includes('Desde o lançamento') && aj.pop.includes('WhatsApp, no Instagram ou no site') && aj.x,
     'tocar em "Entenda como funciona" abre a explicação na própria tela, com o ✕');
+  ok(aj.perto && aj.dentro, 'o balão abre colado no link, sem sair da tela');
   await page.click('#info-pop-fechar');
   await page.waitForTimeout(200);
   ok(!(await page.$('.info-pop')), 'o ✕ fecha');

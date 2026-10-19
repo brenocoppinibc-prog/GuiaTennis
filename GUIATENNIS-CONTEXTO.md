@@ -2923,10 +2923,10 @@ cobra taxa e não fica no meio** da negociação.
     fechar" e "alinhe certinho isso e deixe pouco mais espaçado").
     - Na faixa verde dos números do Parceiros, "Entenda como funciona" fica
       logo abaixo dos três números (antes do convite) e abre "Como contamos
-      os números" numa janelinha na própria tela (`renderComoNumeros`,
-      `state.comoNumeros`), com o ✕; tocar fora ou Esc também fecha. No
-      celular, sobe de baixo; no computador, fica no meio. Antes, levava à
-      pergunta da Ajuda (regra 73), que continua lá.
+      os números" num balão colado no link, com a setinha (pedido seguinte:
+      "puxe perto da frase com o link"), `state.comoNumeros`; o ✕, tocar
+      fora ou Esc fecham. Antes, levava à pergunta da Ajuda (regra 73), que
+      continua lá.
     - Perfil do Parceiros: "Sair da conta" e "Excluir minha conta" lado a
       lado, centralizados e mais espaçados (`.pc-conta-rodape`). No site dos
       jogadores, quem administra academia lê "Para excluir a conta, use

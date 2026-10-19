@@ -2892,6 +2892,31 @@ cobra taxa e não fica no meio** da negociação.
     código e o endereço `guiatennis.com.br` não mudam. SQL
     `20261020160000_guia_com_g_maiusculo` (e-mail da academia assumida e o
     lembrete de volta do jogador). Texto novo segue a regra.
+124. **A ficha só sai do Guia quando a academia fecha as portas** (pedido de
+    19/10/2026: "a ficha publicada irá continuar no Guia se ainda houver
+    dados públicos sobre essa academia ou se permanecer aberta, se fechar
+    as portas, é excluída"). Como o "Fechado permanentemente" do Google.
+    Ajusta a regra 121. SQL `20261020170000_academia_que_fechou`:
+    - **Parceiros › Suas academias › "A academia fechou as portas?"** (só o
+      responsável principal): "Quando fechou? (opcional)" e "Avisar que
+      fechou" (`pedir_para_sair_do_guia`, agora só com o motivo `fechou`);
+      o cartão mostra o aviso em andamento, com "Cancelar o aviso". O admin
+      recebe "A academia fechou: …".
+    - **Admin › Pendências › "Academias que fecharam"** (e em "Para fazer
+      agora"): conferir (Google, Instagram, telefone) e responder
+      **"Continua aberta"** (com uma resposta; a ficha fica) ou **"Fechou:
+      tirar do Guia"** (apaga a ficha, com as avaliações). Quem avisou e a
+      equipe recebem o e-mail ("A academia saiu do Guia" / "continua no
+      Guia").
+    - **Na ficha, no modo admin: "A academia fechou: tirar do Guia"**
+      (`tirar_academia_que_fechou`, só o admin): para a academia que fechou
+      sem aviso de ninguém; pergunta "Como você conferiu?" (fica
+      registrado) e quem a administrava recebe o e-mail.
+    - Aberta, ou com informações públicas, a ficha continua no Guia, mesmo
+      sem responsável. Pausar continua para o fechamento por um tempo.
+    - Textos: Ajuda ("Posso pausar ou tirar a academia do Guia?"), chat,
+      rodapé de Minha ficha e Termos (seções 3 e 4).
+    - Testes: `sair-do-guia.js` e a seção 35 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

@@ -1,19 +1,35 @@
 // A conta sai, a academia fica (pedido do Breno em 19/10/2026: "no parceiros
 // se cancelar a conta não exclui a academia e sim volta como básica, tirar
 // opções de excluir academia do site" e "se tem mais algum acesso, o
-// responsável exclui vai para o outro acesso e será cobrado dela"). Antes
-// (08/10/2026), tirar do guia era um pedido do responsável principal.
+// responsável exclui vai para o outro acesso e será cobrado dela"). A ficha
+// só sai do Guia quando a academia fecha as portas ("se fechar as portas, é
+// excluída"): o responsável principal avisa e o admin confere.
 const { abrir, ok } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.innerText || '', sel);
 
 (async () => {
-  // ---- Suas academias: pausar, sem tirar do guia ----
+  // ---- Suas academias: pausar e avisar que fechou ----
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/academias' });
   await page.waitForTimeout(500);
   let corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Pausar no site') && !corpo.includes('Pedir para tirar do Guia') && !(await page.$('[data-pedir-saida]')), 'Suas academias: pausar continua, sem "Pedir para tirar do guia"');
-  ok(!(await page.evaluate(() => window.__rpcs.some(r => /para_sair/.test(r.nome)))), 'nem pergunta ao banco pelos pedidos para sair');
+  ok(corpo.includes('Pausar no site') && corpo.includes('A academia fechou as portas?') && !corpo.includes('Pedir para tirar do Guia'), 'Suas academias: pausar e "A academia fechou as portas?", sem tirar do Guia por outro motivo');
+  await page.click('[data-pedir-saida="a1"]');
+  await page.waitForTimeout(150);
+  corpo = await texto(page, '.pc-saida');
+  ok(corpo.includes('depois de conferir, a ficha sai do Guia') && corpo.includes('Enquanto ela estiver aberta, a ficha continua') && await page.$('#pc-saida-detalhes'), 'o aviso explica que a ficha sai só depois de conferir, e pede quando fechou (opcional)');
+  await page.fill('#pc-saida-detalhes', 'Fechamos em setembro.');
+  await page.click('#pc-saida-enviar');
+  await page.waitForTimeout(500);
+  let r = await page.evaluate(() => ({ rpc: (window.__rpcs.filter(x => x.nome === 'pedir_para_sair_do_guia').pop() || {}).args, cartao: document.querySelector('.pc-saida-aberta')?.innerText || '' }));
+  ok(r.rpc && r.rpc.p_motivo === 'fechou' && r.rpc.p_detalhes === 'Fechamos em setembro.' && r.cartao.includes('Aviso de que a academia fechou enviado'), 'avisa que fechou e o cartão mostra o aviso em andamento');
+  page.once('dialog', d => d.accept());
+  await page.click('[data-cancelar-saida="a1"]');
+  await page.waitForTimeout(500);
+  ok(!(await page.$('.pc-saida-aberta')) && (await texto(page, '#parceiros .pc-main')).includes('Aviso cancelado: a academia continua no Guia.'), '"Cancelar o aviso" volta ao normal');
+  await page.evaluate(() => { window.__db.academia_vinculos.forEach(v => { v.papel = 'equipe'; }); contaAcademia.papel = 'equipe'; minhasAcademias().forEach(a => { a.papel = 'equipe'; }); render(); });
+  await page.waitForTimeout(150);
+  ok(!(await page.$('[data-pedir-saida]')), 'a equipe não avisa que fechou (só o responsável principal)');
   await browser.close();
 
   // ---- Perfil: excluir a conta; com outro acesso, ele vira o responsável ----
@@ -36,7 +52,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   page.once('dialog', d => d.accept());
   await page.click('#pc-excluir-conta');
   await page.waitForTimeout(900);
-  let r = await page.evaluate(() => JSON.parse(localStorage.getItem('__exc') || '{}'));
+  r = await page.evaluate(() => JSON.parse(localStorage.getItem('__exc') || '{}'));
   ok(r.rpc && r.fica && r.plano === 'premium' && r.tati === 'principal' && new URL(page.url()).pathname.startsWith('/parceiros') && (await page.evaluate(() => localStorage.getItem('__saiu'))) === '1', 'excluída: sai da conta; a academia fica, a outra pessoa vira a responsável e o plano continua — ' + page.url() + ' ' + JSON.stringify(r));
   await browser.close();
 
@@ -52,15 +68,40 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   ok(r.fica && r.plano === 'basico', 'sem outro acesso, a academia fica no guia, no Básico');
   await browser.close();
 
-  // ---- o admin não apaga a academia publicada ----
+  // ---- o admin confere: "Continua aberta" ou "Fechou: tirar do Guia" ----
   ({ browser, page } = await abrir({ admin: true }));
-  await page.evaluate(async () => { await loadEverything(); irAdmin('pendencias'); });
+  await page.evaluate(async () => {
+    const agora = new Date().toISOString();
+    window.__db.academia_acessos.push({ user_id: 'u-rui', academia_id: 'a2', usuario: 'rui@exemplo.com', email: 'rui@exemplo.com', nome_responsavel: 'Rui Dono', whatsapp: '11988887777', papel: 'principal' });
+    window.__db.pedidos_para_sair.push({ id: 's1', academia_id: 'a2', academia_nome: 'Quadra Locação', user_id: 'u-rui', motivo: 'fechou', detalhes: 'Fechamos em setembro.', pedido_em: agora, resolvido_em: null });
+    window.__db.pedidos_para_sair.push({ id: 's2', academia_id: 'a1', academia_nome: 'Só Aula Tennis', user_id: 'u-rui', motivo: 'fechou', detalhes: null, pedido_em: agora, resolvido_em: null });
+    await loadEverything();
+    irAdmin('pendencias');
+  });
   await page.waitForTimeout(500);
-  corpo = await texto(page, 'body');
-  ok(!corpo.includes('Querem sair do Guia') && !(await page.$('.pedido-saida')), 'Pendências sem "Querem sair do guia"');
-  await page.evaluate(() => openCourt('a1'));
+  const bloco = await page.evaluate(() => [...document.querySelectorAll('.pedido-saida')].map(x => x.innerText.replace(/\s+/g, ' ')));
+  ok(bloco.length === 2 && bloco[0].includes('Quadra Locação') && bloco[0].includes('Detalhes: Fechamos em setembro.') && bloco[0].includes('Rui Dono') && (await texto(page, 'body')).includes('Academias que fecharam'),
+    'Pendências: "Academias que fecharam", com os detalhes e quem avisou — ' + bloco[0]);
+  ok(await page.evaluate(() => pendenciasDoAdmin() >= 2), 'os avisos contam nas pendências do admin');
+  page.once('dialog', d => d.accept('Ainda aparece aberta no Google.'));
+  await page.click('[data-saida-manter="s1"]');
   await page.waitForTimeout(400);
-  ok(await page.$('#qr-btn') && !(await page.$('#delete-court-btn')) && !(await texto(page, 'body')).includes('Excluir academia'), 'a ficha do admin não tem mais "Excluir academia"');
+  r = await page.evaluate(() => ({ p: window.__db.pedidos_para_sair.find(x => x.id === 's1'), fica: window.__db.academias.some(a => a.id === 'a2'), n: document.querySelectorAll('.pedido-saida').length }));
+  ok(r.p.resolucao === 'mantida' && r.p.resposta === 'Ainda aparece aberta no Google.' && r.fica && r.n === 1, '"Continua aberta" fecha o aviso com a resposta, e a ficha fica');
+  page.once('dialog', d => d.accept());
+  await page.click('[data-saida-tirar="s2"]');
+  await page.waitForTimeout(600);
+  r = await page.evaluate(() => ({ p: window.__db.pedidos_para_sair.find(x => x.id === 's2'), noSite: state.allCourts.some(c => c.id === 'a1') }));
+  ok(r.p.resolucao === 'removida' && !r.noSite, '"Fechou: tirar do Guia" (com confirmação) tira a ficha');
+  // Na ficha, o admin tira direto a academia que fechou.
+  await page.evaluate(() => openCourt('a2'));
+  await page.waitForTimeout(400);
+  ok(await page.$('#fechou-court-btn') && !(await page.$('#delete-court-btn')) && !(await texto(page, 'body')).includes('Excluir academia'), 'a ficha do admin tem "A academia fechou: tirar do Guia", sem "Excluir academia"');
+  page.once('dialog', d => d.accept('Google: fechado permanentemente'));
+  await page.click('#fechou-court-btn');
+  await page.waitForTimeout(600);
+  r = await page.evaluate(() => ({ rpc: (window.__rpcs.find(x => x.nome === 'tirar_academia_que_fechou') || {}).args, noSite: state.allCourts.some(c => c.id === 'a2') }));
+  ok(r.rpc && r.rpc.p_academia === 'a2' && r.rpc.p_detalhes === 'Google: fechado permanentemente' && !r.noSite, 'e a ficha sai, com o que o admin conferiu registrado');
   await browser.close();
 
   // ---- textos ----
@@ -68,8 +109,8 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(400);
   const rodape = await texto(page, '#parceiros .pc-main .footnote');
   r = await page.evaluate(() => ({ faq: perguntasParceiros().find(f => f.q === 'Posso pausar ou tirar a academia do Guia?').a, termos: TERMS_HTML }));
-  ok(!rodape.includes('Pedir para tirar do Guia') && rodape.includes('A ficha continua no Guia'), 'Minha ficha não aponta mais para o pedido');
-  ok(r.faq.includes('Tirar do Guia, não') && r.faq.includes('exclui a própria conta em Perfil') && r.faq.includes('o plano passa a ser dela'), 'a Ajuda explica que a ficha fica e o que acontece ao excluir a conta');
-  ok(r.termos.includes('A ficha da academia é pública e continua no Guia') && r.termos.includes('assume o plano, inclusive o pagamento') && !r.termos.includes('Pedir para tirar do guia'), 'os Termos dizem que a ficha fica e quem assume o plano');
+  ok(rodape.includes('A ficha continua no Guia enquanto a academia estiver aberta') && rodape.includes('se ela fechar as portas, avise'), 'Minha ficha diz que a ficha fica enquanto a academia está aberta');
+  ok(r.faq.includes('Tirar do Guia, só se a academia fechar as portas') && r.faq.includes('ou houver informações públicas sobre ela') && r.faq.includes('exclui a própria conta em Perfil'), 'a Ajuda explica quando a ficha sai e o que acontece ao excluir a conta');
+  ok(r.termos.includes('a academia que fecha as portas sai do Guia') && r.termos.includes('assume o plano, inclusive o pagamento') && !r.termos.includes('Pedir para tirar do guia'), 'os Termos dizem que só a academia que fechou sai, e quem assume o plano');
   await browser.close();
 })();

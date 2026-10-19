@@ -441,6 +441,40 @@
       ligar(ele, x.academia_id, true);
       return { data:null, error:null };
     }
+    // Plano e créditos pelo site (SQL 20261019130000). window.__compras guarda
+    // as compras; o pagamento é fingido em testes/plano-e-creditos.js.
+    if (nome === "escolher_plano") {
+      const x = meuAcesso();
+      if (!["basico", "completo", "premium"].includes(a.p_plano)) return erro("Plano inválido.", "22023");
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v || v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      ac.plano = a.p_plano;
+      const i = db.pedidos_de_plano.findIndex(y => y.academia_id === a.p_academia);
+      if (i >= 0) db.pedidos_de_plano.splice(i, 1);
+      return { data: a.p_plano, error:null };
+    }
+    if (nome === "criar_compra_de_creditos") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("Os créditos são do leilão do Completo e do Premium.", "42501");
+      if (!(a.p_valor >= 20 && a.p_valor <= 5000)) return erro("Escolha um valor de R$ 20 a R$ 5.000.", "22023");
+      const compras = window.__compras || (window.__compras = []);
+      const id = "00000000-0000-4000-8000-" + String(compras.length + 1).padStart(12, "0");
+      compras.push({ id, academia_id: a.p_academia, valor: a.p_valor, forma: a.p_forma, situacao: "aberta", created_at: new Date().toISOString() });
+      return { data: id, error:null };
+    }
+    if (nome === "minhas_compras") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return { data:null, error:null };
+      return { data: (window.__compras || []).filter(y => y.academia_id === a.p_academia).slice().reverse(), error:null };
+    }
+    if (nome === "compras_do_admin") {
+      if (!souAdmin()) return erro("Só o admin vê as compras.", "42501");
+      return { data: (window.__compras || []).map(y => ({ ...y, academia: (db.academias.find(z => z.id === y.academia_id) || {}).name })), error:null };
+    }
     if (nome === "pedir_plano") {
       const x = meuAcesso();
       if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");

@@ -197,9 +197,9 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     wa: decodeURIComponent(document.querySelector('#parceiros .pc-main .footnote a')?.getAttribute('href') || ''),
   }));
   ok(plano.h1 === 'Plano desta academia' && plano.eyebrow === 'Quadra Locação', 'com duas academias, a página de plano diz de qual academia é');
-  ok(plano.texto.includes('Cada academia tem o próprio plano e paga o próprio valor'), 'deixa claro que cada academia paga o próprio plano');
+  ok(plano.texto.includes('Cada academia tem o próprio plano'), 'deixa claro que cada academia tem o próprio plano');
   ok(plano.itens.some(i => i.startsWith('Quadra Locação') && i.includes('Plano Básico')) && plano.itens.some(i => i.startsWith('Só Aula Tennis') && i.includes('Plano Premium')), 'a lista mostra o plano de cada academia — ' + plano.itens.slice(0, 2).join(' / '));
-  ok(plano.wa.includes('para a Quadra Locação'), 'o pedido de mudar de plano pelo WhatsApp já diz qual academia');
+  ok(plano.texto.includes('o responsável principal muda aqui, na hora'), 'o plano muda ali mesmo (grátis por enquanto, 19/10/2026)');
   await page.click('#parceiros .pc-main [data-abrir-academia="a1"]');
   await page.waitForTimeout(500);
   await page.evaluate(() => irParceiros('plano'));

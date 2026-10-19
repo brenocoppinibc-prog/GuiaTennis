@@ -98,6 +98,14 @@
   .pc-leilao-dados strong { font-weight: 600; text-align: right; }
   .pc-leilao-dados a { color: var(--green); white-space: nowrap; }
   .pc-lance-resumo { margin-top: 12px; }
+  /* Comprar créditos (19/10/2026). */
+  .pc-compra { position: relative; }
+  .pc-compra-x { position: absolute; top: 10px; right: 10px; }
+  .pc-compra-qr { display: block; width: 220px; height: 220px; margin: 14px auto 10px; image-rendering: pixelated; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+  .pc-compra-copia { display: flex; gap: 8px; align-items: center; }
+  .pc-compra-copia .form-field { margin: 0; flex: 1; min-width: 0; font-size: 13px; }
+  .pc-compra-copia .cta-btn { width: auto; flex-shrink: 0; margin: 0; }
+  .pc-compra-espera { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
   /* Promoções: as partes Na ficha e Por e-mail (16/10/2026). */
   .pc-promo-partes { margin: 4px 0 14px; }
   .pc-promo-partes .lista-aba { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
@@ -2464,6 +2472,7 @@ function icon(name, size, color) {
     filter: '<path d="M3 4.5h18l-7 8.2V20l-4-2.2v-5.1z"/>',
     check: '<polyline points="4 12.5 9.5 18 20 6"/>',
     tag: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7.3 7.3a1 1 0 0 1-1.4 0z"/><circle cx="8" cy="8" r="1.4"/>',
+    pix: '<path d="M12 3.2l8.8 8.8-8.8 8.8L3.2 12z"/><path d="M8.2 12l3.8-3.8 3.8 3.8-3.8 3.8z"/>',
     whatsapp: '<path d="M3.6 20.4l1.2-3.9A8.6 8.6 0 1 1 8 19.3z"/><path d="M9.1 8.3c.2-.4.5-.5.8-.5h.4c.2 0 .4.1.5.3l.7 1.6c.1.2 0 .4-.1.6l-.5.6c.6 1.1 1.5 2 2.6 2.6l.6-.5c.2-.1.4-.2.6-.1l1.6.7c.2.1.3.3.3.5v.4c0 .3-.1.6-.5.8-1.8.8-6-2.5-7.1-4.7-.3-.8-.3-1.6.1-2.3z"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.8 6.8l8.2 6.2 8.2-6.2"/>',
     info: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.8" r="0.4"/>',
@@ -6881,6 +6890,7 @@ function ligarEventosConta() {
   document.querySelectorAll("[data-abrir-academia]").forEach(el => { el.onclick = () => abrirAcademia(el.dataset.abrirAcademia); });
   // Não segura o link: o WhatsApp abre, e o pedido fica anotado.
   document.querySelectorAll("[data-pedir-plano]").forEach(el => { el.addEventListener("click", () => pedirPlanoDoPainel(el.dataset.pedirPlano)); });
+  document.querySelectorAll("[data-escolher-plano]").forEach(el => { el.onclick = () => escolherPlano(el.dataset.escolherPlano); });
   document.querySelectorAll("[data-outra-academia]").forEach(el => { el.onclick = adicionarOutraAcademia; });
   document.querySelectorAll("[data-entrar-academia]").forEach(el => { el.onclick = abrirLoginAcademia; });
 
@@ -7482,8 +7492,10 @@ function recursosDoPlano(plano) {
 // (limite_de_pessoas, SQL 20261002120000).
 const PC_PLANOS = [
   { key: "basico", nome: "Básico", preco: "Grátis", pessoas: 1, resumo: "Para aparecer na busca e receber jogadores." },
-  { key: "completo", nome: "Completo", preco: "Fale com a gente", pessoas: 5, resumo: "Para ter a ficha completa e a equipe junto." },
-  { key: "premium", nome: "Premium", preco: "Fale com a gente", pessoas: 10, resumo: "Para aparecer primeiro, divulgar promoções e ver os números." },
+  // Por enquanto todos são grátis (pedido de 19/10/2026: "ainda não sei,
+  // vamos deixar gratuito"); o responsável principal escolhe em Plano.
+  { key: "completo", nome: "Completo", preco: "Grátis por enquanto", pessoas: 5, resumo: "Para ter a ficha completa e a equipe junto." },
+  { key: "premium", nome: "Premium", preco: "Grátis por enquanto", pessoas: 10, resumo: "Para aparecer primeiro, divulgar promoções e ver os números." },
 ];
 const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos"];
 // No Básico, "Cancelamento" e "Como chegar" não entram na conta (são do Completo).
@@ -7500,16 +7512,16 @@ function perguntasParceiros() {
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto. Com o seu e-mail confirmado, a academia entra no ar na hora e você já administra a ficha; o GuiaTennis confere depois." },
     { q: "O que quer dizer \"atualizada há…\" na ficha?", a: "Na ficha, o jogador vê \"Confirmada pela academia\" e quando ela foi atualizada pela última vez. A data muda quando vocês salvam a ficha no GuiaTennis Parceiros — salvar, mesmo sem mudar nada, confirma que está tudo certo. Pausar a ficha ou mudar o plano não mexe na data. Quando a ficha passa 3 meses sem mudar, o GuiaTennis manda um e-mail para vocês conferirem." },
     { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. Em Suas academias (ou no nome da academia, no topo do GuiaTennis Parceiros), toque em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito que a primeira, e dá para pedir uma enquanto outra ainda está em análise. Cada uma tem o próprio plano, as próprias pessoas e os próprios números." },
-    { q: "Com duas academias, pago um plano só?", a: "Não. Cada academia tem o próprio plano e paga o próprio valor. A academia que entra na conta começa no Básico, grátis, e você escolhe o plano de cada uma. Por exemplo, uma no Premium e outra no Básico. Mudar o plano de uma não muda o das outras." },
+    { q: "Com duas academias, pago um plano só?", a: "Cada academia tem o próprio plano (por enquanto, todos são grátis). A academia que entra na conta começa no Básico, grátis, e você escolhe o plano de cada uma. Por exemplo, uma no Premium e outra no Básico. Mudar o plano de uma não muda o das outras." },
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Conta, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
     { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "No plano Premium, em Promoções › Na ficha, a academia publica uma promoção por vez, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" (veja \"Como funciona o leilão das promoções por e-mail?\"). A academia responde pelo que anuncia e combina as condições direto com o jogador." },
-    { id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e favoritou uma academia de lá ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. Nos planos Completo e Premium, em Promoções › Por e-mail, a academia escreve a promoção (ou usa a da ficha) e dá um lance até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. Quem ganha paga só o necessário para passar o seguinte, mais R$ 1, nunca mais que o próprio lance; no Premium, paga 20% menos. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos, comprados antes pelo WhatsApp do GuiaTennis." },
+    { id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e favoritou uma academia de lá ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. Nos planos Completo e Premium, em Promoções › Por e-mail, a academia escreve a promoção (ou usa a da ficha) e dá um lance até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. Quem ganha paga só o necessário para passar o seguinte, mais R$ 1, nunca mais que o próprio lance; no Premium, paga 20% menos. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos, comprados antes no próprio Parceiros, com Pix ou cartão (pelo Mercado Pago)." },
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
     { id: "desempenho", q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
-    { q: "Como mudo de plano?", a: "Fale com o GuiaTennis no WhatsApp. O plano muda sem mexer na ficha, e todos que administram a academia recebem um e-mail com o que muda." },
+    { q: "Como mudo de plano?", a: "Em Plano, o responsável principal escolhe o plano e ele muda na hora, sem mexer na ficha. Por enquanto, todos os planos são grátis. Quem administra a academia recebe um e-mail com o que muda." },
     { q: "Esqueci a senha. E agora?", a: "Na tela de entrar, digite o seu e-mail e toque em \"Esqueceu a senha?\": mandamos um código para o seu e-mail, e você cria a senha nova ali mesmo. Se você entra com o usuário que o GuiaTennis mandou (sem e-mail), fale com o GuiaTennis no WhatsApp." },
     { id: "pausar", q: "Posso pausar ou tirar a academia do guia?", a: "Pausar, sim, quando quiser: em Suas academias, toque em \"Pausar no site\" na academia e escolha por quanto tempo (ou até você voltar). Cada academia pausa separada, e \"Voltar a aparecer\" traz a ficha de volta. Para tirar a academia do guia, o responsável principal toca em \"Pedir para tirar do guia\" e conta o motivo: o GuiaTennis confere e responde por e-mail. Tirada do guia, a ficha é apagada, com as avaliações." },
   ];
@@ -7715,13 +7727,53 @@ function pcOQueMelhorar(c, atual) {
         <li>${icon('check', 15, 'var(--green)')}<span>O GuiaTennis ajuda a completar a ficha, as fotos e o "Como chegar".</span></li>
         <li>${icon('check', 15, 'var(--green)')}<span>Sem comissão sobre aula ou locação, em qualquer plano.</span></li>
       </ul>
-      <a href="${linkPlano(prox.key)}" class="cta-btn cta-primary" target="_blank" rel="noreferrer" data-pedir-plano="${prox.key}">Quero o ${esc(prox.nome)}</a>
+      ${botaoDeEscolherPlano(prox.key, planoAtual(), true, `Quero o ${prox.nome}`)}
     </div>
     ${blocoOportunidades}`;
 }
 
-// "Quero o …" da academia logada: o pedido fica anotado para o GuiaTennis,
-// e o link segue abrindo o WhatsApp.
+// Escolher o plano (pedido do Breno em 19/10/2026: "quero que as academias
+// possam … selecionar o plano"): por enquanto grátis, muda na hora, como o
+// "Mudar de plano" da Shopify e do Google Workspace. Só o responsável
+// principal muda; a equipe vê o botão apagado.
+function botaoDeEscolherPlano(key, atual, destaque, texto) {
+  const sobe = ordemDoPlano(key) > ordemDoPlano(atual);
+  const rotulo = texto || (sobe ? `Mudar para o ${nomeDoPlano(key)}` : `Voltar ao ${nomeDoPlano(key)}`);
+  if (!souPrincipal()) return `<button type="button" class="cta-btn ${destaque ? "cta-primary" : "cta-secondary"}" disabled title="Só o responsável principal muda o plano">${esc(rotulo)}</button><p class="footnote" style="margin-top:6px">Só o responsável principal muda o plano.</p>`;
+  return `<button type="button" class="cta-btn ${destaque && sobe ? "cta-primary" : "cta-secondary"}" data-escolher-plano="${key}" ${state.pcPlanoMudando ? "disabled" : ""}>${state.pcPlanoMudando === key ? bolaGirando(15) + " Mudando..." : esc(rotulo)}</button>`;
+}
+async function escolherPlano(key) {
+  const c = minhaAcademia();
+  const atual = planoAtual();
+  if (!c || !souPrincipal() || key === atual || state.pcPlanoMudando) return;
+  const pergunta = ordemDoPlano(key) > ordemDoPlano(atual)
+    ? `Passar a ${c.name} para o plano ${nomeDoPlano(key)}?\n\nPor enquanto é grátis, e muda na hora. Quem administra a academia recebe um e-mail com o que muda.`
+    : oQueMudaAoBaixarOPlano(c.id, atual, key);
+  if (!confirm(pergunta)) return;
+  state.pcPlanoMudando = key; render();
+  let r;
+  try { r = await sb.rpc('escolher_plano', { p_academia: c.id, p_plano: key }); } catch (e) { r = { error: e }; }
+  state.pcPlanoMudando = null;
+  if (r.error) {
+    state.contaAviso = "";
+    state.contaErro = /responsável principal/.test(String(r.error.message || "")) ? r.error.message : falhou("mudar o plano", r.error, { texto: "Não consegui mudar o plano agora. Tente de novo em instantes.", academia: c.id });
+    render();
+    return;
+  }
+  registrarPasso("acao", { academia: c.id, detalhe: `Mudou para o plano ${nomeDoPlano(key)}` });
+  // Os números guardam o plano de antes (planoAtual lê deles primeiro).
+  state.numeros = null;
+  await recarregarConta();
+  await loadEverything();
+  if (acessoCompleto()) carregarNumeros();
+  state.contaErro = "";
+  state.contaAviso = `Pronto! A ${c.name} agora está no plano ${nomeDoPlano(key)}.`;
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// "Quero o …" de antes (o pedido ficava anotado para o GuiaTennis): segue
+// para quem não é o responsável principal.
 function pedirPlanoDoPainel(plano) {
   const c = minhaAcademia();
   if (!contaAcademia || !c) return;
@@ -8378,8 +8430,9 @@ function pcCartoesDePlano(atual, revelar = false) {
           ${atual === p.key
             ? `<p class="pc-plano-ok">${icon('check', 14, 'var(--green)')} Plano atual</p>`
             : p.key === "basico"
-              ? (atual ? "" : `<a href="/parceiros/cadastro" class="cta-btn cta-secondary" data-pc="cadastro">Começar grátis</a>`)
-              : (atual && i < ordem ? "" : `<a href="${linkPlano(p.key)}" class="cta-btn ${p.key === destaque ? "cta-primary" : "cta-secondary"}" target="_blank" rel="noreferrer" ${atual ? `data-pedir-plano="${p.key}"` : ""}>${atual ? "Aprimorar para o " : "Quero o "}${esc(p.nome)}</a>`)}
+              ? (atual ? botaoDeEscolherPlano("basico", atual, false) : `<a href="/parceiros/cadastro" class="cta-btn cta-secondary" data-pc="cadastro">Começar grátis</a>`)
+              : atual ? botaoDeEscolherPlano(p.key, atual, p.key === destaque)
+              : `<a href="/parceiros/cadastro" class="cta-btn ${p.key === destaque ? "cta-primary" : "cta-secondary"}" data-pc="cadastro">Começar com o ${esc(p.nome)}</a>`}
         </div>`).join("")}
     </div>`;
 }
@@ -8403,16 +8456,18 @@ function pcPlanos(logado) {
     <section class="pc-pagina">
       ${varias && c ? pcNomeDaAcademia(c) : ""}
       <h1 class="display">${varias ? "Plano desta academia" : logado ? "Seu plano" : "Planos"}</h1>
+      ${logado && state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
+      ${logado && state.contaErro ? `<p class="form-error">${icon('warning', 14)} ${esc(state.contaErro)}</p>` : ""}
       ${logado && c ? "" : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>`}
       ${logado && c ? pcPlanoDeHoje(c, atual) : ""}
       ${logado && c ? pcOQueMelhorar(c, atual) : ""}
       ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}
       ${pcCartoesDePlano(atual)}
-      <p class="footnote">Para mudar de plano, <a href="${linkPlano(proximoPlano(atual) ? proximoPlano(atual).key : "premium")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.${logado ? " Cada academia tem o próprio plano." : ""}</p>
+      <p class="footnote">${logado && c ? `Por enquanto, todos os planos são grátis: o responsável principal muda aqui, na hora.${varias ? " Cada academia tem o próprio plano." : ""}` : "Por enquanto, todos os planos são grátis."}</p>
       ${varias ? `
         <div class="pc-card" style="margin-top:20px">
           <p class="pc-card-t">Plano de cada academia</p>
-          <p class="pc-card-s">Cada academia tem o próprio plano e paga o próprio valor. Toque numa academia para ver o plano dela.</p>
+          <p class="pc-card-s">Cada academia tem o próprio plano. Toque numa academia para ver o plano dela.</p>
           ${pcListaAcademias()}
         </div>` : ""}
     </section>`;
@@ -9093,6 +9148,7 @@ async function carregarPromocoesDaAcademia() {
 async function carregarPromocoesPorEmail(redesenhar = true) {
   const c = minhaAcademia();
   if (!c) return;
+  if (state.page === "parceiros" && state.parceirosAba === "promocoes-email") compraDaVolta();
   try {
     const r = await sb.rpc('meu_leilao', { p_academia: c.id });
     state.pcLeilao = r.error || !r.data ? null : r.data;
@@ -9108,6 +9164,145 @@ function saldoDeEnvios() {
 function textoDoSaldo(n) {
   return n ? `R$ ${n} em créditos` : "Sem créditos";
 }
+// Comprar créditos pelo site (pedido do Breno em 19/10/2026; SQL
+// 20261019130000 e netlify/functions/pagamento.mjs): o valor com atalhos
+// (como a recarga do celular e o Google Ads), Pix com o QR code na própria
+// tela ou cartão na página do Mercado Pago. Os créditos entram quando o
+// Mercado Pago confirma; a tela confere sozinha de tempos em tempos.
+const VALORES_DE_CREDITO = [50, 100, 200];
+function pcComprarCreditos(c) {
+  const k = state.pcCompra || {};
+  const valor = k.outro ? Number(k.valorOutro || 0) : Number(k.valor || 100);
+  const fechar = `<button type="button" class="sheet-close pc-compra-x" id="pc-compra-fechar" aria-label="Fechar">✕</button>`;
+  if (k.passo === "ok") return `
+    <div class="pc-card pc-compra" id="pc-compra">${fechar}
+      <p class="pc-card-t">${icon('check', 16, 'var(--green)')} Pagamento confirmado</p>
+      <p class="pc-card-s">R$ ${esc(k.valorPago || valor)} entraram nos créditos da academia.</p>
+    </div>`;
+  if (k.passo === "desligado") return `
+    <div class="pc-card pc-compra" id="pc-compra">${fechar}
+      <p class="pc-card-t">Comprar créditos</p>
+      <p class="pc-card-s">A compra pelo site ainda não está ligada. Por enquanto, compre pelo WhatsApp do GuiaTennis: os créditos entram depois do Pix.</p>
+      <a class="cta-btn cta-primary" href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} Comprar pelo WhatsApp</a>
+    </div>`;
+  if (k.passo === "pix") return `
+    <div class="pc-card pc-compra" id="pc-compra">${fechar}
+      <p class="pc-card-t">Pague R$ ${esc(k.valorCobrado)} com Pix</p>
+      <p class="pc-card-s">No app do banco, escolha Pix e leia o QR code, ou copie o código.</p>
+      ${k.pix && k.pix.qr ? `<img class="pc-compra-qr" src="data:image/png;base64,${esc(k.pix.qr)}" alt="QR code do Pix de R$ ${esc(k.valorCobrado)}" width="220" height="220" />` : ""}
+      <div class="pc-compra-copia">
+        <input class="form-field" id="pc-compra-codigo" readonly value="${esc((k.pix || {}).copia || "")}" aria-label="Código do Pix" />
+        <button type="button" class="cta-btn cta-secondary" id="pc-compra-copiar">${k.copiado ? "Copiado" : "Copiar"}</button>
+      </div>
+      <p class="footnote pc-compra-espera">${bolaGirando(13)} Esperando o pagamento${(k.pix || {}).expira ? ` · vale até as ${esc(new Date(k.pix.expira).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }))}` : ""}. Os créditos entram sozinhos.</p>
+    </div>`;
+  if (k.passo === "volta") return `
+    <div class="pc-card pc-compra" id="pc-compra">${fechar}
+      <p class="pc-card-t">Conferindo o pagamento</p>
+      <p class="footnote pc-compra-espera">${bolaGirando(13)} Assim que o Mercado Pago confirmar, os créditos entram sozinhos.</p>
+    </div>`;
+  const chip = (attr, val, ativo, texto) => `<button type="button" class="chip small${ativo ? " active" : ""}" ${attr}="${val}" aria-pressed="${ativo}">${texto}</button>`;
+  const forma = k.forma || "pix";
+  return `
+    <div class="pc-card pc-compra" id="pc-compra">${fechar}
+      <p class="pc-card-t">Comprar créditos</p>
+      <p class="field-label" style="margin-top:12px">Valor</p>
+      <div class="chip-row">
+        ${VALORES_DE_CREDITO.map(v => chip("data-compra-valor", v, !k.outro && valor === v, `R$ ${v}`)).join("")}
+        ${chip("data-compra-valor", "outro", !!k.outro, "Outro valor")}
+      </div>
+      ${k.outro ? `<input class="form-field" id="pc-compra-outro" type="number" inputmode="numeric" min="20" max="5000" step="1" placeholder="De R$ 20 a R$ 5.000" value="${esc(k.valorOutro || "")}" style="margin-top:8px" />` : ""}
+      <p class="field-label">Como pagar</p>
+      <div class="chip-row" role="radiogroup" aria-label="Como pagar">
+        ${chip("data-compra-forma", "pix", forma === "pix", `${icon('pix', 13, 'currentColor')} Pix`)}
+        ${chip("data-compra-forma", "cartao", forma === "cartao", "Cartão de crédito")}
+      </div>
+      ${k.erro ? `<p class="form-error">${icon('warning', 14)} ${esc(k.erro)}</p>` : ""}
+      <button type="button" class="cta-btn cta-primary" id="pc-compra-pagar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(15) + " Abrindo o pagamento..." : `Pagar ${valor ? `R$ ${esc(valor)} ` : ""}${forma === "pix" ? "com Pix" : "com cartão"}`}</button>
+      <p class="footnote" style="margin-top:8px">${forma === "pix" ? "O QR code aparece aqui mesmo." : "O cartão é pago na página do Mercado Pago, e você volta para cá."} Os créditos entram assim que o pagamento é confirmado.</p>
+    </div>`;
+}
+async function chamarPagamento(acao, compra) {
+  const r = await fetch("/.netlify/functions/pagamento", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao, compra }) });
+  let d = {};
+  try { d = await r.json(); } catch { /* resposta vazia */ }
+  return { status: r.status, d };
+}
+async function pagarCreditos() {
+  const c = minhaAcademia();
+  const k = state.pcCompra || {};
+  if (!c || k.enviando) return;
+  const outro = document.getElementById("pc-compra-outro");
+  if (outro) k.valorOutro = outro.value;
+  const valor = k.outro ? Number(k.valorOutro || 0) : Number(k.valor || 100);
+  const forma = k.forma || "pix";
+  if (!Number.isInteger(valor) || valor < 20 || valor > 5000) { k.erro = "Escolha um valor de R$ 20 a R$ 5.000, em reais inteiros."; render(); return; }
+  k.erro = ""; k.enviando = true; render();
+  let compra;
+  try {
+    const r = await sb.rpc('criar_compra_de_creditos', { p_academia: c.id, p_valor: valor, p_forma: forma });
+    if (r.error) throw r.error;
+    compra = r.data;
+    const { status, d } = await chamarPagamento("cobrar", compra);
+    if (status === 503) { state.pcCompra = { passo: "desligado" }; render(); return; }
+    if (status !== 200) throw new Error(d.erro || "Não consegui abrir o pagamento.");
+    if (d.forma === "cartao" && d.link) { registrarPasso("acao", { academia: c.id, detalhe: `Foi pagar R$ ${valor} de créditos no cartão` }); location.href = d.link; return; }
+    state.pcCompra = { passo: "pix", compra, valorCobrado: d.valor || valor, pix: { qr: d.qr, copia: d.copia, expira: d.expira }, inicio: Date.now() };
+    registrarPasso("acao", { academia: c.id, detalhe: `Abriu o Pix de R$ ${valor} de créditos` });
+    render();
+    esperarPagamento();
+  } catch (e) {
+    k.enviando = false;
+    k.erro = /R\$ 20|Pix ou cartão|Completo e do Premium|não administra/.test(String(e && e.message || "")) ? e.message : falhou("abrir o pagamento", e, { texto: "Não consegui abrir o pagamento agora. Tente de novo em instantes.", academia: c.id });
+    render();
+  }
+}
+// Confere de tempos em tempos (como o Pix do iFood e do Mercado Livre): a
+// cada 4 segundos no banco e, a cada 20, também no Mercado Pago. Para em 35
+// minutos ou quando a tela fecha.
+function esperarPagamento() {
+  clearTimeout(window.__pcCompraTimer);
+  const k = state.pcCompra;
+  if (!k || !k.compra || !["pix", "volta"].includes(k.passo)) return;
+  if (Date.now() - (k.inicio || Date.now()) > 35 * 60 * 1000) return;
+  window.__pcCompraTimer = setTimeout(async () => {
+    const c = minhaAcademia();
+    const atual = state.pcCompra;
+    if (!c || !atual || atual.compra !== k.compra || state.page !== "parceiros") return;
+    atual.voltas = (atual.voltas || 0) + 1;
+    let situacao = "aberta";
+    try {
+      if (atual.voltas % 5 === 0 || atual.passo === "volta") situacao = (await chamarPagamento("consultar", k.compra)).d.situacao || "aberta";
+      if (situacao === "aberta") {
+        const r = await sb.rpc('minhas_compras', { p_academia: c.id });
+        const x = (r.data || []).find(y => y.id === k.compra);
+        if (x) situacao = x.situacao;
+      }
+    } catch { /* tenta de novo na próxima volta */ }
+    if (situacao === "paga") {
+      state.pcCompra = { passo: "ok", valorPago: atual.valorCobrado };
+      registrarPasso("acao", { academia: c.id, detalhe: "Créditos pagos" });
+      await carregarPromocoesPorEmail(false);
+      render();
+      return;
+    }
+    if (situacao === "recusada") { state.pcCompra = { erro: "O pagamento foi recusado. Tente de novo, ou com outra forma de pagamento." }; render(); return; }
+    esperarPagamento();
+  }, 4000);
+}
+// Volta da página do cartão: /parceiros/promocoes-email?compra=<id>.
+function compraDaVolta() {
+  try {
+    const id = new URLSearchParams(location.search).get("compra");
+    if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return;
+    const u = new URL(location.href);
+    u.searchParams.delete("compra");
+    history.replaceState(history.state, "", u.pathname + u.search + u.hash);
+    state.pcCompra = { passo: "volta", compra: id, inicio: Date.now(), voltas: 0 };
+    esperarPagamento();
+  } catch { /* sem a volta */ }
+}
+
 // "domingo, 25 de outubro, às 20h", no horário de Brasília.
 function quandoEmBrasilia(ts, comSemana = true) {
   if (!ts) return "";
@@ -9201,9 +9396,10 @@ function pcPromocoesPorEmail() {
           <li><span>E-mails</span><strong>1º lugar ${esc(quandoEmBrasilia(envios[0]))}; 2º ${esc(quandoEmBrasilia(envios[1]))}</strong></li>
           <li><span>Alcance</span><strong>${esc(alcanceDoLeilao(L.alcance))}</strong></li>
           <li><span>Lance mínimo</span><strong>R$ ${minimo}</strong></li>
-          <li><span>Créditos</span><strong>${saldo ? `R$ ${esc(saldo)}` : "Sem créditos"} · <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar ›</a></strong></li>
+          <li><span>Créditos</span><strong>${saldo ? `R$ ${esc(saldo)}` : "Sem créditos"} · <button type="button" class="inline-link" id="pc-comprar-creditos">Comprar ›</button></strong></li>
         </ul>
       </div>
+      ${state.pcCompra ? pcComprarCreditos(c) : ""}
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
       ${!editando ? `
       <div class="pc-card pc-promo" id="pc-lance">
@@ -9220,7 +9416,7 @@ function pcPromocoesPorEmail() {
         <button type="button" class="pc-passo-voltar" id="pc-email-editar">${icon('chevronLeft', 15, 'currentColor')} Editar o lance</button>
         ${previaDoEmail(c, f, bairro)}
         <p class="pc-card-s pc-lance-resumo">Lance máximo: <strong>R$ ${esc(valor)}</strong>. Se ganhar, paga só o necessário para passar o seguinte, mais R$ 1${premium && desconto ? `, com ${desconto}% a menos no Premium` : ""}. Se não ganhar, não paga nada.</p>
-        ${bloqueio ? `<div class="form-error pc-email-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)} <a href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">Comprar créditos ›</a></span></div>` : ""}
+        ${bloqueio ? `<div class="form-error pc-email-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)} <button type="button" class="inline-link" data-comprar-creditos>Comprar créditos ›</button></span></div>` : ""}
         <button type="button" class="cta-btn cta-primary" id="pc-email-enviar" ${state.pcEmailEnviando || bloqueio ? "disabled" : ""}>${state.pcEmailEnviando ? bolaGirando(15) + " Salvando..." : aberto ? `Salvar o lance de R$ ${esc(valor)}` : `Dar o lance de R$ ${esc(valor)}`}</button>
       </div>` : `
       <div class="pc-card pc-email-form">
@@ -10397,6 +10593,25 @@ function ligarEventosParceiros() {
   document.querySelectorAll(".pc-email-campo").forEach(el => {
     el.oninput = () => { const f = (state.pcEmailForm = formDoLance()); f[el.dataset.campo] = el.value; atualizarPreviaDoEmail(f); };
   });
+  const abrirCompra = () => { state.pcCompra = { passo: "escolher", valor: 100, forma: "pix" }; render(); document.getElementById("pc-compra")?.scrollIntoView({ block: "center", behavior: "smooth" }); };
+  const pcComprar = document.getElementById("pc-comprar-creditos");
+  if (pcComprar) pcComprar.onclick = abrirCompra;
+  document.querySelectorAll("[data-comprar-creditos]").forEach(el => { el.onclick = abrirCompra; });
+  const pcCompraFechar = document.getElementById("pc-compra-fechar");
+  if (pcCompraFechar) pcCompraFechar.onclick = () => { clearTimeout(window.__pcCompraTimer); state.pcCompra = null; render(); };
+  document.querySelectorAll("[data-compra-valor]").forEach(el => { el.onclick = () => {
+    const k = state.pcCompra || (state.pcCompra = {});
+    if (el.dataset.compraValor === "outro") k.outro = true; else { k.outro = false; k.valor = Number(el.dataset.compraValor); }
+    k.erro = ""; render();
+    if (k.outro) document.getElementById("pc-compra-outro")?.focus();
+  }; });
+  document.querySelectorAll("[data-compra-forma]").forEach(el => { el.onclick = () => { const k = state.pcCompra || (state.pcCompra = {}); const o = document.getElementById("pc-compra-outro"); if (o) k.valorOutro = o.value; k.forma = el.dataset.compraForma; render(); }; });
+  const pcCompraOutro = document.getElementById("pc-compra-outro");
+  if (pcCompraOutro) pcCompraOutro.oninput = () => { (state.pcCompra || {}).valorOutro = pcCompraOutro.value; const b = document.getElementById("pc-compra-pagar"); const v = Number(pcCompraOutro.value || 0); if (b && !state.pcCompra.enviando) b.textContent = `Pagar ${v ? `R$ ${v} ` : ""}${(state.pcCompra.forma || "pix") === "pix" ? "com Pix" : "com cartão"}`; };
+  const pcCompraPagar = document.getElementById("pc-compra-pagar");
+  if (pcCompraPagar) pcCompraPagar.onclick = pagarCreditos;
+  const pcCompraCopiar = document.getElementById("pc-compra-copiar");
+  if (pcCompraCopiar) pcCompraCopiar.onclick = async () => { const t = document.getElementById("pc-compra-codigo"); try { await navigator.clipboard.writeText(t.value); } catch { t.select(); document.execCommand && document.execCommand("copy"); } state.pcCompra.copiado = true; render(); };
   const pcLanceAlterar = document.getElementById("pc-lance-alterar");
   if (pcLanceAlterar) pcLanceAlterar.onclick = () => { state.pcEmailEditando = true; state.pcEmailForm = null; state.pcEmailPasso = null; state.pcEmailMsg = null; render(); };
   const pcLanceCancelar = document.getElementById("pc-lance-cancelar");
@@ -16400,7 +16615,7 @@ function regPlanoHtml(f) {
             <button type="button" class="cta-btn ${o.key === "premium" ? "cta-primary" : "cta-secondary"}" data-reg-plano="${o.key}">${esc(o.botao)}</button>
           </div>`).join("")}
       </div>
-      <p class="footnote">O valor é combinado com o GuiaTennis pelo WhatsApp, e nada é cobrado sem você confirmar. Cada academia tem o próprio plano.</p>
+      <p class="footnote">Por enquanto, todos os planos são grátis. Cada academia tem o próprio plano.</p>
       <button type="button" class="reg-plano-basico" data-reg-plano="${plano}">${plano === "basico"
         ? `Continuar no Básico, grátis${esconde.length ? ` (a ficha esconde ${esconde.length === 1 ? "1 item" : esconde.length + " itens"})` : ""}`
         : `Continuar no ${esc(nomeDoPlano(plano))}${esconde.length ? ` (a ficha esconde ${esconde.length === 1 ? "1 item" : esconde.length + " itens"})` : ""}`}</button>
@@ -16415,7 +16630,7 @@ function ordemDoPlano(key) {
 // aviso de que não estará visível na ficha e com opção de querer ou não
 // alterar e precisar pagar a mais"). A academia preenche tudo; a parte que o
 // plano não mostra diz isso ali mesmo e deixa escolher: pedir o plano que
-// mostra (pago, combinado pelo WhatsApp) ou manter o plano. A escolha vale
+// mostra (grátis por enquanto; muda ao salvar) ou manter o plano. A escolha vale
 // para o formulário inteiro e dispensa a tela do plano no fim.
 //   mostra(l)  o plano de limites l mostra a parte?
 //   fora(f, l) o que a academia já preencheu e fica de fora
@@ -16457,19 +16672,19 @@ function avisoDoPlanoNaParte(f, id) {
   const manteve = escolhido === plano;
   const fora = parte.fora ? parte.fora(f, l) : "";
   const aberto = state.regAvisoAberto === id;
-  const curto = pediu ? `Você pediu o plano ${nomeDoPlano(escolhido)}` : `No ${atual}, ${parte.curto(l)}`;
+  const curto = pediu ? `Você escolheu o plano ${nomeDoPlano(escolhido)}` : `No ${atual}, ${parte.curto(l)}`;
   return `
     <details class="reg-plano-aviso${pediu ? " pediu" : manteve ? " manteve" : ""}" id="reg-plano-aviso" data-aviso-parte="${id}" ${aberto ? "open" : ""}>
       <summary class="reg-plano-aviso-linha">${icon(pediu ? 'check' : 'olhoFechado', 15, pediu ? 'var(--green)' : '#8E6D25')}<span class="reg-plano-aviso-curto">${esc(curto)}</span><span class="reg-plano-aviso-mais">${aberto ? "Fechar" : "Saiba mais"}</span></summary>
       <div class="reg-plano-aviso-corpo">
       <p class="reg-plano-aviso-t"><span>No plano ${esc(atual)}, ${esc(parte.t(l))}.${fora ? ` <strong>${esc(fora.charAt(0).toUpperCase() + fora.slice(1))}.</strong>` : ""}</span></p>
       ${pediu ? `
-        <p class="reg-plano-aviso-s">Você pediu o plano ${esc(nomeDoPlano(escolhido))}. Ao salvar, o pedido vai para o GuiaTennis, que combina o valor com você pelo WhatsApp; até lá, a ficha aparece no ${esc(atual)}.</p>
-        <button type="button" class="reg-plano-aviso-link" data-reg-plano-aviso="">Desfazer o pedido</button>`
+        <p class="reg-plano-aviso-s">Você escolheu o plano ${esc(nomeDoPlano(escolhido))}. Ao salvar, a academia passa para ele (grátis por enquanto).</p>
+        <button type="button" class="reg-plano-aviso-link" data-reg-plano-aviso="">Desfazer</button>`
       : manteve ? `
         <p class="reg-plano-aviso-s">${esc(parte.d)} na ficha se a academia mudar para o ${esc(acima.nome)}. <button type="button" class="reg-plano-aviso-link" data-reg-plano-aviso="">Mudar de ideia</button></p>`
       : `
-        <p class="reg-plano-aviso-s">${esc(parte.d)} na ficha no plano ${esc(acima.nome)}. O ${esc(acima.nome)} é pago: o valor é combinado com o GuiaTennis pelo WhatsApp, e nada é cobrado sem você confirmar.</p>
+        <p class="reg-plano-aviso-s">${esc(parte.d)} na ficha no plano ${esc(acima.nome)}. Por enquanto, o ${esc(acima.nome)} é grátis e muda ao salvar.</p>
         <div class="reg-plano-aviso-acoes">
           <button type="button" class="cta-btn cta-primary" data-reg-plano-aviso="${acima.key}">Quero o ${esc(acima.nome)}</button>
           <button type="button" class="cta-btn cta-secondary" data-reg-plano-aviso="${plano}">Manter o ${esc(atual)}</button>
@@ -16502,9 +16717,12 @@ function renderRegisterSheet() {
             <p style="font-weight:600">${isEditing ? "Alterações salvas!" : (isAdmin ? "Quadra publicada com sucesso!" : f.__noAr ? "Pronto: a academia já está no GuiaTennis!" : "Cadastro enviado para análise!")}</p>
             ${isEditing && !isAdmin ? `<p class="subtitle">Já estão na ficha.</p>` : ""}
             ${(!isAdmin && !isEditing) ? `<p class="subtitle">${f.__noAr ? "Ela já aparece na busca, no plano Básico, e você administra a ficha pelo GuiaTennis Parceiros. O GuiaTennis confere os dados depois e pode fazer ajustes." : parceiro ? "Assim que o GuiaTennis aprovar, a academia aparece no site e você já administra a ficha pelo GuiaTennis Parceiros. Com o e-mail confirmado, a próxima academia nova entra no ar na hora." : "Assim que for aprovado, aparece pra todo mundo no app."}</p>` : ""}
-            ${["completo", "premium"].includes(f.__planoEscolhido) ? `
+            ${["completo", "premium"].includes(f.__planoEscolhido) && f.__planoMudou ? `
               <div class="reg-plano-ok">
-                <p><strong>Você escolheu o plano ${esc(nomeDoPlano(f.__planoEscolhido))}.</strong> ${contaAcademia ? "O pedido ficou anotado: o GuiaTennis fala com você no WhatsApp para combinar o valor." : "Fale com o GuiaTennis no WhatsApp para combinar o valor."} Até lá, a ficha aparece no plano ${esc(nomeDoPlano(f.__plano || "basico"))}.</p>
+                <p><strong>A academia agora está no plano ${esc(nomeDoPlano(f.__planoEscolhido))}.</strong> Por enquanto, é grátis.</p>
+              </div>` : ["completo", "premium"].includes(f.__planoEscolhido) ? `
+              <div class="reg-plano-ok">
+                <p><strong>Você escolheu o plano ${esc(nomeDoPlano(f.__planoEscolhido))}.</strong> ${contaAcademia ? "O pedido ficou anotado para o responsável principal da academia e o GuiaTennis." : "Fale com o GuiaTennis no WhatsApp para ligar o plano."} Até lá, a ficha aparece no plano ${esc(nomeDoPlano(f.__plano || "basico"))}.</p>
                 <a class="cta-btn cta-primary" href="${linkPlanoDaFicha(f, f.__planoEscolhido)}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} Combinar o ${esc(nomeDoPlano(f.__planoEscolhido))} agora</a>
               </div>` : ""}
             <button class="cta-btn cta-primary" id="register-close-2" style="padding:8px 20px;width:auto">Fechar</button>
@@ -17192,7 +17410,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">Qualquer pessoa pode enviar uma solicitação de cadastro. Toda solicitação passa por análise antes de ser publicada. O GuiaTennis pode recusar, editar ou remover qualquer cadastro a qualquer momento. O responsável pelo estabelecimento pode pedir a correção ou a remoção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano e paga o próprio valor: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. Tirar a academia do guia é um pedido do responsável principal, feito no GuiaTennis Parceiros (Suas academias › Pedir para tirar do guia): o GuiaTennis confere quem pediu e responde por e-mail; tirada do guia, a ficha é apagada, com as avaliações. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em "Quero o…", no painel) é um pedido: o GuiaTennis combina o valor pelo WhatsApp e nada é cobrado sem a academia confirmar. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar uma promoção por vez, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); quem ganha paga só o necessário para passar o seguinte, mais R$ 1, dos créditos comprados antes (20% menos no Premium), e quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. Tirar a academia do guia é um pedido do responsável principal, feito no GuiaTennis Parceiros (Suas academias › Pedir para tirar do guia): o GuiaTennis confere quem pediu e responde por e-mail; tirada do guia, a ficha é apagada, com as avaliações. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos do leilão são comprados à parte, com Pix ou cartão pelo Mercado Pago, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar uma promoção por vez, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); quem ganha paga só o necessário para passar o seguinte, mais R$ 1, dos créditos comprados antes (20% menos no Premium), e quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -17301,8 +17519,8 @@ const CHAT_TEMAS = [
     a: [{ t: "Suas academias", ir: "pc:academias" }] },
   { id: "planos", onde: "parceiros", t: "Planos e preços", rcAntes: x => `A ${x.c.name} está no ${x.nome}. `,
     p: ["plano", "preco", "valor", "quanto custa", "quanto e", "premium", "completo", "basico", "pagar", "pagamento", "mensalidade", "assinatura", "gratis", "gratuito"],
-    r: "O Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira, para até 5 pessoas da equipe, e entra entre as \"Academias recomendadas\", quanto mais completa a ficha. O Premium tem o selo dourado, aparece no topo da busca como \"Patrocinado\" e entre as recomendadas da página inicial, divulga promoções e mostra os números da ficha. O valor do Completo e do Premium é combinado com o GuiaTennis, e nada é cobrado sem a academia confirmar.",
-    a: [{ t: "Ver os planos", ir: "pc:planos" }, { t: "Combinar o valor no WhatsApp", ir: "whatsapp" }] },
+    r: "O Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira, para até 5 pessoas da equipe, e entra entre as \"Academias recomendadas\", quanto mais completa a ficha. O Premium tem o selo dourado, aparece no topo da busca como \"Patrocinado\" e entre as recomendadas da página inicial, divulga promoções e mostra os números da ficha. Por enquanto, todos os planos são grátis: o responsável principal escolhe em Plano, e muda na hora.",
+    a: [{ t: "Ver os planos", ir: "pc:plano" }] },
   { id: "comissao", onde: "parceiros", t: "Comissão",
     p: ["comissao", "taxa", "porcentagem", "intermedi", "repasse", "cobra", "cobram", "cobrado"],
     r: "O GuiaTennis não cobra comissão sobre aula ou locação, nem taxa por jogador. O jogador fala direto com a academia, e o valor e o pagamento são combinados entre vocês.",
@@ -18939,8 +19157,9 @@ const ADM_TIPOS_DE_EMAIL = {
 // e o lance mínimo.
 async function carregarLeiloesDoAdmin() {
   try {
-    const r = await sb.rpc('leiloes_do_admin');
+    const [r, k] = await Promise.all([sb.rpc('leiloes_do_admin'), sb.rpc('compras_do_admin')]);
     state.admLeiloes = r.error ? { erro: true } : (r.data || {});
+    state.admCompras = k && !k.error ? (k.data || []) : null;
   } catch { state.admLeiloes = { erro: true }; }
   if (state.page === "admin") render();
 }
@@ -18976,6 +19195,14 @@ function admLeiloesHtml() {
       <div class="adm-barra"><span>R$</span><input class="form-field" id="adm-lance-minimo" type="number" min="1" step="1" value="${esc(cfg.lance_minimo || 10)}" style="max-width:110px;margin:0" /><button type="button" class="chip small" id="adm-lance-minimo-salvar">Salvar</button></div>
       <p class="adm-nota">No Premium, o preço sai ${esc(Math.round(Number(cfg.desconto_premium || 0) * 100))}% menor. O bairro alcança quem buscou a até ${esc(cfg.raio_km || 4)} km.</p>
     </section>
+    ${state.admCompras ? `
+    <section class="adm-bloco">
+      <h2 class="adm-h2">Compras de créditos (30 dias)</h2>
+      ${state.admCompras.length ? state.admCompras.map(x => `
+        <div class="adm-lance"><strong>${esc(x.academia)}</strong> · R$ ${esc(x.valor)} · ${x.forma === "pix" ? "Pix" : "cartão"} · ${x.situacao === "paga" ? `paga ${esc(dataHora(x.paga_em))}` : x.situacao === "recusada" ? "recusada" : `aberta desde ${esc(dataHora(x.created_at))}`}</div>`).join("")
+        : `<p class="adm-nota">Nenhuma compra nos últimos 30 dias.</p>`}
+      <p class="adm-nota">Pagas: R$ ${esc(state.admCompras.filter(x => x.situacao === "paga").reduce((t, x) => t + Number(x.valor || 0), 0))}. O pagamento entra pelo Mercado Pago.</p>
+    </section>` : ""}
     ${feitos.length ? `
     <section class="adm-bloco">
       <h2 class="adm-h2">Últimos 30 dias</h2>
@@ -21166,11 +21393,18 @@ function enviarFormulario() {
   else ensureVisitorThen(doRegisterSubmit);
 }
 
-// Plano pago escolhido ao finalizar: fica anotado para o GuiaTennis (só
-// para quem tem conta; sem conta, o WhatsApp da tela de sucesso resolve).
+// Plano escolhido ao finalizar: por enquanto grátis, então o responsável
+// principal já passa para ele (escolher_plano, 19/10/2026); sem ser o
+// principal (ou com o banco sem a função), o pedido fica anotado para o
+// GuiaTennis, como antes. Sem conta, o WhatsApp da tela de sucesso resolve.
 async function anotarPedidoDePlano(f, academiaId, onde) {
   if (!contaAcademia || isAdmin || !academiaId || !["completo", "premium"].includes(f.__planoEscolhido)) return;
-  try { await sb.rpc('pedir_plano', { p_academia: academiaId, p_plano: f.__planoEscolhido, p_onde: onde }); }
+  f.__planoMudou = false;
+  try {
+    const r = await sb.rpc('escolher_plano', { p_academia: academiaId, p_plano: f.__planoEscolhido });
+    if (!r.error) { f.__planoMudou = true; state.numeros = null; await recarregarConta(); }
+    else await sb.rpc('pedir_plano', { p_academia: academiaId, p_plano: f.__planoEscolhido, p_onde: onde });
+  }
   catch { /* banco sem a função: o WhatsApp da tela de sucesso resolve */ }
   registrarPasso("acao", { academia: academiaId, detalhe: `Escolheu o plano ${nomeDoPlano(f.__planoEscolhido)}` });
 }

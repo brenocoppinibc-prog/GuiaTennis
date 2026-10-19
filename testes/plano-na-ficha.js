@@ -41,8 +41,8 @@ async function editarFicha(page) {
   ok(avisos.quadras.includes('a ficha mostra as 3 primeiras comodidades que você marcar') && avisos.contato.includes('a ficha mostra só o botão do WhatsApp')
     && avisos.cancelamento.includes('o cancelamento e a reposição não aparecem na ficha') && avisos.chegada.includes('como chegar não aparece na ficha'),
     'comodidades, contato, fotos, cancelamento e como chegar avisam o que não aparece no Básico');
-  ok(avisos.cancelamento.includes('Pode preencher: fica guardado e aparece na ficha no plano Completo.') && avisos.cancelamento.includes('O Completo é pago') && avisos.cancelamento.includes('nada é cobrado sem você confirmar'),
-    'o aviso diz que pode preencher, que fica guardado e que o Completo é pago — ' + avisos.cancelamento);
+  ok(avisos.cancelamento.includes('Pode preencher: fica guardado e aparece na ficha no plano Completo.') && avisos.cancelamento.includes('Por enquanto, o Completo é grátis e muda ao salvar.'),
+    'o aviso diz que pode preencher, que fica guardado e que o Completo é grátis por enquanto — ' + avisos.cancelamento);
   ok(avisos.chegada.includes('Quero o Completo') && avisos.chegada.includes('Manter o Básico'), 'e dá a escolha: "Quero o Completo" ou "Manter o Básico"');
   await irParte(page, 'quadras');
   for (const k of ['wifi', 'vestiario', 'loja']) await page.click(`.reg-amenity[data-amenity="${k}"]`);
@@ -60,15 +60,15 @@ async function editarFicha(page) {
   ok((await texto(page, '#reg-plano-aviso')).includes('O Instagram que você informou fica de fora'), 'no contato, o aviso diz que o Instagram fica de fora');
   await page.click('[data-reg-plano-aviso="completo"]');
   await page.waitForTimeout(150);
-  ok((await texto(page, '#reg-plano-aviso')) === 'Você pediu o plano Completo Saiba mais', 'escolheu: o aviso volta a ser uma linha — ' + await texto(page, '#reg-plano-aviso'));
+  ok((await texto(page, '#reg-plano-aviso')) === 'Você escolheu o plano Completo Saiba mais', 'escolheu: o aviso volta a ser uma linha — ' + await texto(page, '#reg-plano-aviso'));
   await abrirAviso(page);
-  ok((await texto(page, '#reg-plano-aviso')).includes('Você pediu o plano Completo') && await page.isVisible('[data-reg-plano-aviso=""]'), '"Quero o Completo" vira o pedido, com "Desfazer o pedido"');
+  ok((await texto(page, '#reg-plano-aviso')).includes('Você escolheu o plano Completo') && await page.isVisible('[data-reg-plano-aviso=""]'), '"Quero o Completo" vira o pedido, com "Desfazer o pedido"');
   await irParte(page, 'chegada');
-  ok((await texto(page, '#reg-plano-aviso')).includes('Você pediu o plano Completo'), 'a escolha vale nas outras partes também');
+  ok((await texto(page, '#reg-plano-aviso')).includes('Você escolheu o plano Completo'), 'a escolha vale nas outras partes também');
   await salvarFicha(page);
   await page.waitForTimeout(900);
-  let fim = await page.evaluate(() => ({ t: document.querySelector('#register-overlay')?.innerText || '', pedido: window.__db.pedidos_de_plano.map(p => p.academia_id + ':' + p.plano).join() }));
-  ok(!fim.t.includes('Quase lá') && fim.t.includes('Você escolheu o plano Completo') && fim.pedido === 'a1:completo', 'ao salvar, não pergunta o plano de novo: o pedido do Completo vai para o GuiaTennis — ' + fim.pedido);
+  let fim = await page.evaluate(() => ({ t: document.querySelector('#register-overlay')?.innerText || '', plano: window.__db.academias.find(a => a.id === 'a1').plano, pedido: window.__db.pedidos_de_plano.map(p => p.academia_id + ':' + p.plano).join() }));
+  ok(!fim.t.includes('Quase lá') && fim.t.includes('A academia agora está no plano Completo') && fim.plano === 'completo' && !fim.pedido, 'ao salvar, não pergunta o plano de novo: o responsável passa para o Completo na hora (19/10/2026) — ' + fim.plano);
   await browser.close();
 
   // "Manter o Básico": o aviso encolhe, e salvar não pergunta o plano.

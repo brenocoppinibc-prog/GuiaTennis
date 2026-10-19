@@ -29,10 +29,9 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.waitForTimeout(300);
   let corpo = await texto(page, '#parceiros .pc-main');
   const dados = await texto(page, '#pc-leilao');
-  const link = await page.getAttribute('#pc-leilao a', 'href');
   ok(dados.includes('Leilão de Pinheiros, São Paulo') && /Fecha\s+domingo, \d+ de [a-zç]+, às 20h/.test(dados) && /1º lugar terça, .*às 10h; 2º sexta, .*às 10h/.test(dados) && dados.includes('cerca de 140 jogadores') && dados.includes('R$ 10') && dados.includes('Sem créditos'),
     'o leilão do bairro: quando fecha, os dois e-mails da semana, o alcance (para baixo), o lance mínimo e os créditos — ' + dados.replace(/\s+/g, ' ').slice(0, 160));
-  ok(decodeURIComponent(link).includes('comprar créditos para o leilão'), '"Comprar créditos" abre o WhatsApp do GuiaTennis');
+  ok(await page.$('#pc-leilao #pc-comprar-creditos'), '"Comprar ›" nos créditos (a compra pelo site, 19/10/2026)');
   ok(corpo.includes('Ganham os dois maiores lances') && !/aviso/i.test(corpo), 'a explicação numa linha, sem "aviso"');
   ok(!(await page.$('#pc-email-previa')) && !(await page.$('#pc-email-enviar')) && (await texto(page, '#pc-email-revisar')) === 'Ver a prévia ›' && await page.$('#pc-email-valor') && !(await page.$('.pc-progresso-etapas, .trilha')),
     'primeiro passo: a promoção e o lance máximo, com "Ver a prévia", sem barra de etapas');

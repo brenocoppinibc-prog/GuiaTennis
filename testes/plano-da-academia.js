@@ -18,7 +18,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   ok(/NA FICHA|Na ficha/.test(corpo) && /NA BUSCA|Na busca/.test(corpo) && /COM OS JOGADORES|Com os jogadores/.test(corpo)
     && corpo.includes('A dúvida do cancelamento trava a primeira aula') && corpo.includes('Com o Completo, a regra de cancelamento') && corpo.includes('Com o Premium, a academia aparece no topo'),
     'as dores por caminho, cada uma com a solução do plano de cima');
-  ok(corpo.includes('O que vocês já preencheram aparece na hora') && await page.$('.pc-conforto a[data-pedir-plano="completo"]'), 'conforta: a mudança é simples, com "Quero o Completo"');
+  ok(corpo.includes('O que vocês já preencheram aparece na hora') && (await texto(page, '.pc-conforto [data-escolher-plano="completo"]')) === 'Quero o Completo', 'conforta: a mudança é simples, com "Quero o Completo"');
   ok(corpo.includes('No Básico mesmo, dá para') && corpo.includes('Completar a ficha'), 'e as oportunidades de agora, no plano de hoje');
   await browser.close();
 

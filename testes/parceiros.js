@@ -449,8 +449,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(t.aba === 'plano' && t.h1 === 'Seu plano', '"Ver os números no Premium" leva aos planos');
   const meu = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => (p.querySelector('.pc-plano-tag')?.innerText || '-')).join());
   ok(meu === 'Seu plano,Recomendado,-', 'Plano marca o plano atual e recomenda o próximo — ' + meu);
-  const quero = await page.evaluate(() => decodeURIComponent(document.querySelector('.pc-plano.destaque a')?.getAttribute('href') || ''));
-  ok(quero.includes('plano Completo') && quero.includes('Quadra Locação') && await texto(page, '.pc-plano.destaque a') === 'Aprimorar para o Completo', '"Aprimorar para o Completo" abre o WhatsApp do guia com a academia — ' + quero.slice(0, 80));
+  ok(await texto(page, '.pc-plano.destaque [data-escolher-plano="completo"]') === 'Mudar para o Completo', '"Mudar para o Completo" no plano recomendado (escolhe direto, 19/10/2026)');
   await browser.close();
 
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'completo' }));

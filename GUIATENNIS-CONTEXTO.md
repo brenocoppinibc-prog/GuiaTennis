@@ -33,7 +33,11 @@ teste")
 > por vez** na ficha (regra 114, SQL `20261016130000_uma_promocao_por_vez`).
 > PR #5 acompanhado de novo, verde. Em 18/10: o **leilão das promoções no
 > e-mail do GuiaTennis do bairro** (regra 116, SQL
-> `20261019120000_leilao_das_notificacoes`). Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
+> `20261019120000_leilao_das_notificacoes`). Em 19/10: **plano escolhido no
+> site (grátis por enquanto) e créditos com Pix/cartão pelo Mercado Pago**
+> (regra 117, SQL `20261019130000_plano_e_creditos_pelo_site`, função
+> `netlify/functions/pagamento.mjs`; falta o Breno ligar as variáveis no
+> Netlify). Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
 > falhas de texto (menu, chat, subtítulo), corrigidas e com os arquivos
 > rodados de novo sem falha; 380 no `banco-emails.py` (depois da regra 114), nenhuma falha.
 
@@ -2703,6 +2707,63 @@ cobra taxa e não fica no meio** da negociação.
     - Testes: `testes/promocoes-por-email.js` e a seção 31 do
       `banco-emails.py`. Bateria de 18/10: **1.476 verificações** nos 52
       arquivos do navegador e **409 no `banco-emails.py`**, nenhuma falha.
+117. **Plano e créditos pelo próprio site** (pedido de 19/10/2026: "eu quero
+    que as academias possam comprar direto no site a quantidade de
+    créditos e selecionar o plano tbm"). Escolhas do Breno: "tipo um
+    gateway" (lido como pagar sem sair do site: gateway próprio precisaria
+    de licença do Banco Central e PCI, então o gateway é o **Mercado Pago**);
+    planos **grátis por enquanto** ("ainda não sei, vamos deixar
+    gratuito"); quando tiverem preço, mensal ou anual com desconto; créditos
+    com **valor livre e atalhos**. SQL `20261019130000_plano_e_creditos_pelo_site`:
+    - **Plano**: Parceiros › Plano, cada plano com "Mudar para o …" /
+      "Voltar ao …" (`botaoDeEscolherPlano`, `escolherPlano`); pergunta antes
+      (subindo: "Por enquanto é grátis, e muda na hora"; descendo, o que
+      muda, `oQueMudaAoBaixarOPlano`) e muda na hora (`escolher_plano`, só o
+      **responsável principal**; a equipe vê o botão apagado). Preço nos
+      cartões: "Grátis por enquanto". Na ficha, "Quero o Completo" muda ao
+      salvar (`anotarPedidoDePlano` tenta `escolher_plano` e, sem ser o
+      principal, deixa o pedido de antes). O pedido de plano que esperava o
+      admin some. Quem administra recebe o e-mail do plano novo, como antes.
+    - **Créditos** (Por e-mail › "Créditos · Comprar ›", `pcComprarCreditos`):
+      R$ 50, R$ 100 (marcado), R$ 200 ou "Outro valor" (R$ 20 a R$ 5.000) e
+      Pix ou cartão. **Pix**: o QR code e o copia e cola na própria tela,
+      "Esperando o pagamento · vale até as …" (30 minutos); a tela confere
+      sozinha (a cada 4 s no banco e a cada 20 s no Mercado Pago) e mostra
+      "Pagamento confirmado · R$ 100 entraram nos créditos". **Cartão**: vai
+      para a página do Mercado Pago (Checkout Pro, sem boleto) e volta para
+      `/parceiros/promocoes-email?compra=…`, que confere sozinha. Sem o
+      Mercado Pago ligado (503), "A compra pelo site ainda não está ligada"
+      com o WhatsApp.
+    - Banco: `compras_de_creditos` (aberta, paga, recusada);
+      `criar_compra_de_creditos` (quem administra, Completo e Premium);
+      `compra_para_cobrar`, `registrar_cobranca` e `confirmar_compra` só
+      para a service_role (a função do Netlify): o **valor sai sempre do
+      banco**, e os créditos entram **uma vez só**, quando o Mercado Pago
+      diz "approved" com o valor inteiro; `minhas_compras`; `compras_do_admin`
+      (painel › Leilões › "Compras de créditos (30 dias)").
+    - Função `netlify/functions/pagamento.mjs`: "cobrar" (Pix em
+      `/v1/payments` com o QR; cartão em `/checkout/preferences`),
+      "consultar" (`/v1/payments/search` pela compra) e o aviso do Mercado
+      Pago (`?mp=1`: busca o pagamento no Mercado Pago e confirma; nunca
+      confia no aviso sozinho). Sem pacote.
+    - **Para ligar (Breno)**: 1) criar a conta no Mercado Pago (de
+      preferência com CNPJ) e, em "Suas integrações", criar uma aplicação
+      "Pagamentos online"; 2) no Netlify (Project configuration ›
+      Environment variables, "Contains secret values"): em **Deploy
+      Previews**, `MERCADOPAGO_ACCESS_TOKEN` = a credencial de teste
+      (TEST-…), `SUPABASE_URL` = https://ohvbengbujdioxdtewsy.supabase.co e
+      `SUPABASE_SERVICE_ROLE_KEY` = a chave service_role do banco de teste;
+      em **Production**, a credencial de produção (APP_USR-…), o endereço e
+      a chave do banco de verdade (eultezheqwmxyakvgyjy); 3) publicar de
+      novo. O aviso do Mercado Pago vai sozinho no endereço de cada
+      cobrança (não precisa cadastrar o webhook).
+    - Textos: Ajuda ("Como mudo de plano?", "Com duas academias…", leilão),
+      chat ("Planos e preços"), Termos (plano grátis por enquanto; aviso
+      antes de cobrar; créditos não devolvidos depois de usados).
+    - Testes: `testes/plano-e-creditos.js`, `node testes/pagamento.mjs` e a
+      seção 32 do `banco-emails.py`. Bateria de 19/10: **1.516 verificações** (53
+      arquivos do navegador, `onde.mjs` e `pagamento.mjs`) e **432 no
+      `banco-emails.py`**, nenhuma falha.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3706,8 +3767,9 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
+node testes/pagamento.mjs
 ```
 
 Em 30/09/2026 (área da academia, links, visual limpo, GuiaTennis Parceiros

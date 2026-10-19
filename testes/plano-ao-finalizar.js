@@ -42,7 +42,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   const ordem = await page.evaluate(() => [...document.querySelectorAll('[data-reg-plano]')].map(b => b.dataset.regPlano + (b.closest('.destaque') ? '*' : '')).join(','));
   ok(ordem === 'premium*,completo,basico', 'Premium primeiro e em destaque, depois Completo, e o Básico por último — ' + ordem);
   ok((await texto(page, '.reg-plano-basico')).includes('Continuar no Básico, grátis (a ficha esconde 2 itens)'), 'continuar no Básico diz quanto fica escondido');
-  ok(tela.includes('nada é cobrado sem você confirmar'), 'deixa claro que nada é cobrado sozinho');
+  ok(tela.includes('Por enquanto, todos os planos são grátis'), 'deixa claro que, por enquanto, os planos são grátis (19/10/2026)');
 
   // "Adicionar fotos" leva até a parte, e voltar a enviar mostra a tela de novo.
   await page.click('[data-reg-plano-passo]');
@@ -93,11 +93,11 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.waitForTimeout(300);
   const painel = await texto(page, '.pc-escondida');
   ok(painel.toLowerCase().includes('o que os jogadores não veem') && painel.includes('esconde 2 coisas') && painel.includes('A regra de cancelamento') && painel.includes('Como chegar'), 'a página Plano mostra o que o Básico esconde da ficha publicada — ' + painel.slice(0, 120));
-  ok(await page.isVisible('[data-pedir-plano="premium"]') && await page.isVisible('[data-pedir-plano="completo"]'), 'com o Premium e o Completo para escolher');
-  await page.evaluate(() => { window.open = () => null; });
-  await page.click('[data-pedir-plano="premium"]');
-  await page.waitForTimeout(300);
-  ok(await page.evaluate(() => window.__db.pedidos_de_plano.some(p => p.academia_id === 'a1' && p.plano === 'premium' && p.onde === 'painel')), '"Aprimorar para o Premium" na página Plano fica anotado para o GuiaTennis');
+  ok(await page.isVisible('.pc-planos [data-escolher-plano="premium"]') && await page.isVisible('.pc-planos [data-escolher-plano="completo"]'), 'com o Premium e o Completo para escolher');
+  page.once('dialog', d => d.accept());
+  await page.click('.pc-planos [data-escolher-plano="premium"]');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'premium' && planoAtual() === 'premium'), '"Mudar para o Premium" na página Plano muda na hora (grátis por enquanto, 19/10/2026)');
   await browser.close();
 
   // ---- edição sem nada escondido: salva direto ----

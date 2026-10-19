@@ -56,7 +56,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     nums: [...document.querySelectorAll('.pc-faixa-itens > div')].map(x => x.innerText.replace(/\s+/g, ' ')),
     tops: [...document.querySelectorAll('.pc-faixa-itens > div')].map(x => Math.round(x.getBoundingClientRect().top)),
     nota: document.querySelector('.pc-faixa-num')?.innerText || '',
-    resumo: document.querySelector('.pc-faixa-num .como-numeros a')?.innerText || '',
+    resumo: document.querySelector('.pc-faixa-num .como-numeros button')?.innerText || '',
   }));
   ok(pc.nums.length === 3 && pc.nums[0] === '+1.200 visitas ao GuiaTennis' && pc.nums[2].startsWith('15% das fichas abertas'), 'Parceiros: os mesmos números — ' + pc.nums.join(' | '));
   ok(!pc.nota.includes('Desde o lançamento') && pc.resumo.includes('Entenda como funciona'), 'Parceiros: o bloco verde só com os números e "Entenda como funciona" (o texto fica oculto)');
@@ -66,16 +66,27 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     const sec = document.getElementById('pc-numeros'), t = sec.querySelector('.pc-faixa-t'), s = sec.querySelector('.pc-faixa-s'),
       nums = sec.querySelector('.pc-faixa-itens'), btn = sec.querySelector('.pc-faixa-cta [data-pc="cadastro"]');
     const depois = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
-    return { t: t.innerText, s: s.innerText, btn: btn ? btn.innerText : '', ordem: depois(t, nums) && depois(s, nums) && !!btn && depois(nums, btn) };
+    const como = sec.querySelector('.como-numeros');
+    return { t: t.innerText, s: s.innerText, btn: btn ? btn.innerText : '', ordem: depois(t, nums) && depois(s, nums) && !!btn && depois(nums, btn), comoLogoAbaixo: !!como && depois(nums, como) && depois(como, btn) };
   });
   ok(faixa.t === 'Jogadores já escolhem onde jogar por aqui' && faixa.s.startsWith('Quem entra no GuiaTennis está procurando aula ou quadra') && faixa.ordem,
     'Parceiros: um título e um texto antes dos números, e o convite depois — ' + JSON.stringify(faixa));
   ok(faixa.btn === 'Cadastrar minha academia grátis', 'o convite leva ao cadastro');
-  await page.click('.pc-faixa-num .como-numeros a');
-  await page.waitForTimeout(700);
-  let aj = await page.evaluate(() => { const d = document.getElementById('pc-faq-numeros'); const b = d && d.getBoundingClientRect(); return { aba: state.parceirosAba, aberto: !!(d && d.open), texto: d ? d.innerText : '', visivel: !!b && b.top >= 0 && b.top < innerHeight }; });
-  ok(aj.aba === 'ajuda' && aj.aberto && aj.visivel && aj.texto.includes('Como são contados os números') && aj.texto.includes('Desde o lançamento') && aj.texto.includes('WhatsApp, no Instagram ou no site'),
-    'tocar em "Entenda como funciona" leva à Ajuda, com a pergunta aberta na tela');
+  // 19/10/2026: logo abaixo dos números, abrindo uma janelinha na mesma tela.
+  ok(faixa.comoLogoAbaixo, '"Entenda como funciona" logo abaixo dos números, antes do convite');
+  await page.click('.pc-faixa-num .como-numeros button');
+  await page.waitForTimeout(300);
+  let aj = await page.evaluate(() => ({ aba: state.parceirosAba, pop: document.querySelector('.info-pop')?.innerText || '', x: !!document.getElementById('info-pop-fechar') }));
+  ok(aj.aba === 'inicio' && aj.pop.includes('Como contamos os números') && aj.pop.includes('Desde o lançamento') && aj.pop.includes('WhatsApp, no Instagram ou no site') && aj.x,
+    'tocar em "Entenda como funciona" abre a explicação na própria tela, com o ✕');
+  await page.click('#info-pop-fechar');
+  await page.waitForTimeout(200);
+  ok(!(await page.$('.info-pop')), 'o ✕ fecha');
+  await page.click('.pc-faixa-num .como-numeros button');
+  await page.waitForTimeout(200);
+  await page.mouse.click(10, 10);
+  await page.waitForTimeout(200);
+  ok(!(await page.$('.info-pop')), 'tocar fora também fecha');
   await browser.close();
   ({ browser, page } = await abrir({ q: 'parceiros/ajuda#numeros' }));
   await page.waitForTimeout(400);

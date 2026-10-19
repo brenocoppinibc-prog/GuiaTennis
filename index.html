@@ -1859,8 +1859,19 @@
   .pc-faixa-num span { display: block; font-size: 12.5px; line-height: 1.35; color: rgba(255,255,255,0.82); margin-top: 6px; }
   @media (min-width: 640px) { .pc-faixa-num strong { font-size: 28px; } .pc-faixa-num span { font-size: 13.5px; } }
   /* "Entenda como funciona": leva à pergunta da Ajuda, sem abrir texto no bloco. */
-  .como-numeros { margin: 16px 0 0; font-size: 12.5px; text-align: center; }
-  .como-numeros a { display: inline-flex; gap: 6px; align-items: center; color: rgba(255,255,255,0.82); text-decoration: underline; text-underline-offset: 2px; }
+  .como-numeros { margin: 18px 0 0; font-size: 12.5px; text-align: center; }
+  .como-numeros a, .como-numeros button { display: inline-flex; gap: 6px; align-items: center; color: rgba(255,255,255,0.82); text-decoration: underline; text-underline-offset: 2px; background: none; border: 0; padding: 4px 0; font: inherit; cursor: pointer; }
+  /* Janelinha de explicação ("Entenda como funciona", 19/10/2026): no
+     celular, sobe de baixo; no computador, fica no meio. */
+  .info-pop-fundo { position: fixed; inset: 0; z-index: 400; background: rgba(20,24,20,0.45); display: flex; align-items: flex-end; justify-content: center; padding: 16px; animation: infoPopFundo .18s ease-out; }
+  .info-pop { position: relative; width: 100%; max-width: 440px; background: var(--card); color: var(--text); border-radius: 18px; padding: 22px 22px 20px; box-shadow: 0 18px 48px rgba(0,0,0,0.25); animation: infoPop .22s ease-out; }
+  .info-pop-x { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--bg-alt); color: var(--text); font-size: 15px; cursor: pointer; }
+  .info-pop-t { margin: 0 40px 10px 0; font-size: 17px; font-weight: 700; }
+  .info-pop-s { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--muted); }
+  @media (min-width: 720px) { .info-pop-fundo { align-items: center; } }
+  @keyframes infoPop { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes infoPopFundo { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .info-pop, .info-pop-fundo { animation: none; } }
   .pc-sec { padding: 52px 20px 8px; }
   .pc-sec h2, .pc-pagina h1 { font-size: 28px; line-height: 1.2; margin: 0 0 12px; }
   @media (min-width: 900px) { .pc-sec h2 { font-size: 36px; } .pc-pagina h1 { font-size: 38px; } }
@@ -2140,6 +2151,8 @@
   .jog-grupo { margin: 26px 0 0; font-size: 17px; font-weight: 700; }
   .jog-rodape { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
   .jog-excluir { color: var(--red) !important; }
+  .pc-conta-rodape { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px 32px; margin: 28px 0 8px; }
+  .pc-conta-rodape .inline-link { font-size: 14px; padding: 6px 0; }
   .pref-cidades { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 
   /* Cadastro passo a passo: progresso em cima, uma parte por tela e a barra
@@ -4854,6 +4867,7 @@ function render() {
     ${pushViagemHtml()}
     ${renderPararAvisos()}
     ${renderChat()}
+    ${renderComoNumeros()}
     ${state.page === "perfil" ? renderPerfilJogador() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
     ${state.page === "parceiros" ? renderParceiros() : ""}
@@ -4892,7 +4906,7 @@ function render() {
   attachEvents();
   // A página de trás para quando há janela aberta (no computador, o chat é
   // uma caixa no canto e não trava a página).
-  document.documentElement.classList.toggle("com-janela", !!document.querySelector(".overlay.open") || (!!document.querySelector(".chat-overlay") && innerWidth < 720));
+  document.documentElement.classList.toggle("com-janela", !!document.querySelector(".overlay.open, .info-pop-fundo") || (!!document.querySelector(".chat-overlay") && innerWidth < 720));
   if (state.lightbox) {
     const strip = document.getElementById("lightbox-strip");
     if (strip) strip.scrollLeft = strip.clientWidth * state.lightbox.index;
@@ -8332,11 +8346,11 @@ function pcNumerosDoSite(revelar = false) {
       <div class="pc-faixa-itens" style="--n:${itens.length}">
         ${itens.map(i => `<div><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
       </div>
+      ${comoFuncionamOsNumeros()}
       <div class="pc-faixa-cta">
         <p>Cada ficha aberta é um jogador conhecendo uma academia. Coloque a sua na lista.</p>
         <a href="/parceiros/cadastro" class="cta-btn pc-faixa-btn" data-pc="cadastro">Cadastrar minha academia grátis</a>
       </div>
-      ${comoFuncionamOsNumeros()}
     </section>`;
 }
 
@@ -10107,8 +10121,10 @@ function pcPerfil() {
               <a href="/parceiros/academias" class="cta-btn cta-secondary" data-pc="academias">Administrar as academias</a>
             </div>
           </div>
-          <button type="button" class="conta-sair-link" id="conta-sair">${emVisaoAdmin() ? "Sair do modo admin" : "Sair da conta"}</button>
-          ${emVisaoAdmin() || isAdmin ? "" : `<button type="button" class="inline-link jog-excluir" id="pc-excluir-conta">Excluir minha conta</button>`}`}
+          <div class="pc-conta-rodape">
+            <button type="button" class="inline-link" id="conta-sair">${emVisaoAdmin() ? "Sair do modo admin" : "Sair da conta"}</button>
+            ${emVisaoAdmin() || isAdmin ? "" : `<button type="button" class="inline-link jog-excluir" id="pc-excluir-conta">Excluir minha conta</button>`}
+          </div>`}
     </section>`;
 }
 
@@ -12520,7 +12536,7 @@ function renderPerfilJogador() {
       <div class="perfil-rodape">
         <button type="button" class="inline-link" id="jog-sair">Sair da conta</button>
         ${contaAcademia
-          ? `<p class="fgroup-note" style="margin:0">A mesma conta administra academias no GuiaTennis Parceiros. Para excluir a conta, fale com o GuiaTennis.</p>`
+          ? `<p class="fgroup-note" style="margin:0">A mesma conta administra academias no GuiaTennis Parceiros. Para excluir a conta, use Perfil › Excluir minha conta no GuiaTennis Parceiros.</p>`
           : `<button type="button" class="inline-link jog-excluir" id="jog-excluir">Excluir minha conta</button>`}
       </div>
     </main>
@@ -12808,8 +12824,23 @@ const NOTA_DOS_NUMEROS = "Desde o lançamento do site, contados pelo próprio Gu
 function saibaMaisNaAjuda(id, texto = "Saiba mais") {
   return `<a href="${esc(urlDosParceiros("ajuda"))}#${id}" class="pc-saiba-mais" data-pc-faq="${id}">${esc(texto)}</a>`;
 }
+// Desde 19/10/2026 (pedido do Breno, com print: "deixe isso em baixo dos
+// números e abrindo um push na própria tela com um x para fechar"), logo
+// abaixo dos números, abrindo a explicação numa janelinha na mesma tela,
+// como o "i" dos números do Airbnb e do Booking.
 function comoFuncionamOsNumeros() {
-  return `<p class="como-numeros"><a href="${esc(urlDosParceiros("ajuda"))}#numeros" data-pc-faq="numeros">${icon('info', 14, 'currentColor')} Entenda como funciona</a></p>`;
+  return `<p class="como-numeros"><button type="button" data-como-numeros>${icon('info', 14, 'currentColor')} Entenda como funciona</button></p>`;
+}
+function renderComoNumeros() {
+  if (!state.comoNumeros) return "";
+  return `
+    <div class="info-pop-fundo" id="info-pop-fundo">
+      <div class="info-pop" role="dialog" aria-modal="true" aria-labelledby="info-pop-t">
+        <button type="button" class="info-pop-x" id="info-pop-fechar" aria-label="Fechar">✕</button>
+        <p class="info-pop-t" id="info-pop-t">Como contamos os números</p>
+        <p class="info-pop-s">${esc(NOTA_DOS_NUMEROS)}</p>
+      </div>
+    </div>`;
 }
 function irParaPerguntaDaAjuda(id) {
   if (state.page !== "parceiros") {
@@ -20028,6 +20059,15 @@ function attachEvents() {
   const brandHome = document.getElementById("brand-home");
   if (brandHome) brandHome.onclick = goHome;
 
+  document.querySelectorAll("[data-como-numeros]").forEach(el => { el.onclick = () => { state.comoNumeros = true; render(); document.getElementById("info-pop-fechar")?.focus(); }; });
+  const infoPopFechar = document.getElementById("info-pop-fechar");
+  if (infoPopFechar) {
+    const fecharInfo = () => { state.comoNumeros = false; render(); };
+    infoPopFechar.onclick = fecharInfo;
+    const fundo = document.getElementById("info-pop-fundo");
+    if (fundo) fundo.onclick = (e) => { if (e.target === fundo) fecharInfo(); };
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && state.comoNumeros) fecharInfo(); }, { once: true });
+  }
   document.querySelectorAll("[data-pc-faq]").forEach(el => {
     el.onclick = (e) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey) return;

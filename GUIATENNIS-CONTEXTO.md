@@ -2917,6 +2917,21 @@ cobra taxa e não fica no meio** da negociação.
     - Textos: Ajuda ("Posso pausar ou tirar a academia do Guia?"), chat,
       rodapé de Minha ficha e Termos (seções 3 e 4).
     - Testes: `sair-do-guia.js` e a seção 35 do `banco-emails.py`.
+125. **"Entenda como funciona" abaixo dos números, numa janelinha; rodapé do
+    Perfil alinhado** (pedido de 19/10/2026, com prints: "deixe isso em
+    baixo dos números e abrindo um push na própria tela com um x para
+    fechar" e "alinhe certinho isso e deixe pouco mais espaçado").
+    - Na faixa verde dos números do Parceiros, "Entenda como funciona" fica
+      logo abaixo dos três números (antes do convite) e abre "Como contamos
+      os números" numa janelinha na própria tela (`renderComoNumeros`,
+      `state.comoNumeros`), com o ✕; tocar fora ou Esc também fecha. No
+      celular, sobe de baixo; no computador, fica no meio. Antes, levava à
+      pergunta da Ajuda (regra 73), que continua lá.
+    - Perfil do Parceiros: "Sair da conta" e "Excluir minha conta" lado a
+      lado, centralizados e mais espaçados (`.pc-conta-rodape`). No site dos
+      jogadores, quem administra academia lê "Para excluir a conta, use
+      Perfil › Excluir minha conta no GuiaTennis Parceiros".
+    - Teste: `confianca-na-ficha.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

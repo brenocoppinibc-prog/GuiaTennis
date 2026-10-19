@@ -89,7 +89,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     return { texto: item.innerText, wa: item.querySelector('a[href^="https://wa.me/"]')?.getAttribute('href') || '' };
   });
   ok(acoes.texto.includes('Rua Nova, 10 - Butantã - São Paulo') && acoes.texto.includes('km'), 'academia do mapa mostra endereço e distância — ' + acoes.texto.split('\n').slice(0, 3).join(' · '));
-  ok(acoes.wa.startsWith('https://wa.me/551133334444?text=') && decodeURIComponent(acoes.wa).includes('Quero colocar a Academia Nova de Tênis no guia'), 'botão de WhatsApp da academia com o convite pronto');
+  ok(acoes.wa.startsWith('https://wa.me/551133334444?text=') && decodeURIComponent(acoes.wa).includes('Quero colocar a Academia Nova de Tênis no Guia'), 'botão de WhatsApp da academia com o convite pronto');
   const credito = await page.evaluate(() => document.querySelector('.mapa-bloco')?.innerText.includes('colaboradores do OpenStreetMap'));
   ok(credito, 'lista do mapa dá o crédito ao OpenStreetMap');
   await page.click('[data-mapa-add]');

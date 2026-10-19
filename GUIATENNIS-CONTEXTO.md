@@ -2883,6 +2883,15 @@ cobra taxa e não fica no meio** da negociação.
     ficha" (regra 121) e a seção 3 dos Termos sem "a remoção da página",
     dizendo que a academia nova é cadastrada pelo Parceiros e que a ficha
     publicada continua no guia. Teste: seção 34 do `banco-emails.py`.
+123. **"Guia" com G maiúsculo, como nome** (pedido de 19/10/2026: "todos os
+    lugares que citarem 'guia' deixe com o G maiúsculo, como uma marca um
+    nome"): no site (jogadores, Parceiros, admin, Ajuda, chat, Termos e
+    Privacidade), na página 404 e nos e-mails ("no Guia", "do Guia", "o
+    Guia de quadras…"). As palavras-chave do chat (`p: [...]`) continuam em
+    minúsculas, porque a busca compara sem maiúsculas; os comentários do
+    código e o endereço `guiatennis.com.br` não mudam. SQL
+    `20261020160000_guia_com_g_maiusculo` (e-mail da academia assumida e o
+    lembrete de volta do jogador). Texto novo segue a regra.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

@@ -1803,6 +1803,7 @@
   .pc-eyebrow-btn svg { flex-shrink: 0; }
   .pc-seletor-titulo { display: block; max-width: 100%; }
   .pc-seletor-titulo .pc-seletor-lista { left: 0; right: auto; top: calc(100% - 2px); width: min(320px, calc(100vw - 32px)); }
+  .pc-seletor-menu .pc-seletor-lista { left: 0; right: 0; top: calc(100% + 2px); width: auto; }
   .pc-seletor-t { font-size: 12px; font-weight: 600; color: var(--muted); margin: 6px 8px 4px; }
   .pc-academia-i { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-radius: 10px; padding: 10px 8px; font-family: inherit; color: var(--text); cursor: pointer; }
   .pc-academia-i:hover { background: var(--bg-alt); }
@@ -6054,6 +6055,7 @@ function nomeDaMinha(a) {
 async function abrirAcademia(id) {
   state.pcSeletor = false;
   state.pcSeletorTitulo = false;
+  state.pcSeletorMenu = false;
   state.pcMenu = false;
   // Trocada no alto de uma página da academia, continua nela (como o Google
   // Business Profile); de Suas academias, vai para Atualizações.
@@ -6076,6 +6078,7 @@ async function abrirAcademia(id) {
 function adicionarOutraAcademia() {
   state.pcSeletor = false;
   state.pcSeletorTitulo = false;
+  state.pcSeletorMenu = false;
   state.pcMenu = false;
   state.pcSelecionada = null;
   state.pcBusca = "";
@@ -8038,10 +8041,7 @@ function pcTopo() {
       <div class="overlay open menu-overlay" id="pc-menu-overlay">
         <aside class="menu-drawer" role="dialog" aria-label="Menu do GuiaTennis Parceiros">
           <div class="menu-topo">${pcMarca()}<button type="button" class="menu-fechar" id="pc-menu-close" aria-label="Fechar menu">✕</button></div>
-          ${logado && temAcademia() ? `
-            <p class="menu-grupo">${minhasAcademias().length > 1 ? "Suas academias" : "Sua academia"}</p>
-            ${pcListaAcademias()}` : ""}
-          <p class="menu-grupo">${logado ? (temAcademia() ? esc((minhaAcademia() || {}).name || "Sua academia") : "Sua conta") : "GuiaTennis Parceiros"}</p>
+          ${logado && temAcademia() ? pcSeletorDoMenu() : `<p class="menu-grupo">${logado ? "Sua conta" : "GuiaTennis Parceiros"}</p>`}
           ${(logado ? menuLogado : PC_MENU_PUBLICO).map(i => `<a href="/parceiros${i.aba === "inicio" ? "" : "/" + i.aba}" class="menu-item" data-pc="${i.aba}" ${i.ancora ? `data-pc-ancora="${i.ancora}"` : ""}>${icon(i.ic, 17, 'var(--green)')}<span>${esc(i.t)}</span></a>`).join("")}
           ${logado ? "" : `
             <p class="menu-grupo">Acesso</p>
@@ -8085,6 +8085,23 @@ function pcNomeDaAcademia(c) {
   return `
     <div class="pc-seletor pc-seletor-titulo">
       <button type="button" class="pc-eyebrow pc-eyebrow-btn" id="pc-seletor-titulo" aria-expanded="${aberto}" aria-label="Trocar de academia: ${esc(c.name)}"><span>${esc(c.name)}</span>${icon('chevronDown', 14, 'currentColor')}</button>
+      ${aberto ? `
+        <div class="pc-seletor-lista">
+          <p class="pc-seletor-t">${minhasAcademias().length > 1 ? `Suas academias (${minhasAcademias().length})` : "Sua academia"}</p>
+          ${pcListaAcademias()}
+        </div>` : ""}
+    </div>`;
+}
+
+// No menu, o nome da academia também é o seletor, igual ao do alto da página
+// (pedido de 19/10/2026, com print: "deixe essa parte pra selecionar igual
+// no outro"), no lugar da lista de academias aberta.
+function pcSeletorDoMenu() {
+  const c = minhaAcademia();
+  const aberto = !!state.pcSeletorMenu;
+  return `
+    <div class="pc-seletor pc-seletor-menu">
+      <button type="button" class="menu-grupo pc-eyebrow-btn" id="pc-seletor-menu" aria-expanded="${aberto}" aria-label="Trocar de academia: ${esc((c || {}).name || "Sua academia")}"><span>${esc((c || {}).name || "Sua academia")}</span>${icon('chevronDown', 14, 'currentColor')}</button>
       ${aberto ? `
         <div class="pc-seletor-lista">
           <p class="pc-seletor-t">${minhasAcademias().length > 1 ? `Suas academias (${minhasAcademias().length})` : "Sua academia"}</p>
@@ -8484,12 +8501,6 @@ function pcPlanos(logado) {
       ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}
       ${pcCartoesDePlano(atual)}
       <p class="footnote">${logado && c && pagamentoDeTeste() ? `Site de teste: os preços são de teste e o pagamento também, sem cobrar nada. Só o responsável principal muda o plano.${varias ? " Cada academia tem o próprio plano." : ""}` : logado && c ? `Por enquanto, todos os planos são grátis: o responsável principal muda aqui, na hora.${varias ? " Cada academia tem o próprio plano." : ""}` : "Por enquanto, todos os planos são grátis."}</p>
-      ${varias ? `
-        <div class="pc-card" style="margin-top:20px">
-          <p class="pc-card-t">Plano de cada academia</p>
-          <p class="pc-card-s">Cada academia tem o próprio plano. Toque numa academia para ver o plano dela.</p>
-          ${pcListaAcademias()}
-        </div>` : ""}
     </section>`;
 }
 
@@ -10584,7 +10595,13 @@ function ligarEventosParceiros() {
     };
   });
   const menuBtn = document.getElementById("pc-menu-btn");
-  if (menuBtn) menuBtn.onclick = () => { state.pcMenu = true; render(); };
+  if (menuBtn) menuBtn.onclick = () => { state.pcMenu = true; state.pcSeletorMenu = false; render(); };
+  const seletorMenu = document.getElementById("pc-seletor-menu");
+  if (seletorMenu) seletorMenu.onclick = (e) => { e.stopPropagation(); state.pcSeletorMenu = !state.pcSeletorMenu; render(); };
+  if (state.pcSeletorMenu && state.pcMenu) {
+    const fora = (e) => { if (!e.target.closest || !e.target.closest(".pc-seletor-menu")) { state.pcSeletorMenu = false; render(); } };
+    document.addEventListener("click", fora, { once: true });
+  }
   const seletorBtn = document.getElementById("pc-seletor-btn");
   if (seletorBtn) seletorBtn.onclick = (e) => { e.stopPropagation(); state.pcSeletorTitulo = false; state.pcSeletor = !state.pcSeletor; render(); };
   const seletorTitulo = document.getElementById("pc-seletor-titulo");

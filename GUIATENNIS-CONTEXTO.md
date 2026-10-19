@@ -2804,6 +2804,16 @@ cobra taxa e não fica no meio** da negociação.
       e a etiqueta "Teste"; "Pagas" sem as de teste.
     - Testes: `testes/plano-e-creditos.js` (18 novas), `node
       testes/pagamento.mjs` e a seção 33 do `banco-emails.py` (18 novas).
+119. **No menu, o nome da academia é o seletor; sem "Plano de cada
+    academia"** (pedido de 19/10/2026, com prints: "deixe essa parte pra
+    selecionar igual no outro" e "tire isso em todas as páginas"). No menu do
+    Parceiros (celular), a lista "Suas academias" aberta saiu: o nome da
+    academia, no lugar do título do grupo, é o seletor (`pcSeletorDoMenu`,
+    `state.pcSeletorMenu`), igual ao do alto da página (regra 115): um toque
+    abre "Suas academias (N)" com o plano de cada uma e "Adicionar outra
+    academia"; tocar fora fecha. Em Plano, saiu o cartão "Plano de cada
+    academia" (o plano de cada uma aparece no seletor). Teste:
+    `varias-academias.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

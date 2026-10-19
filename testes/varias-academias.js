@@ -81,15 +81,36 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(t.aberta === 'a2' && abaDoPainel.url === 'http://guia.test/parceiros/painel' && abaDoPainel.nome === 'guiatennis-parceiros', '"Abrir no painel" troca a academia e abre o painel na aba do GuiaTennis Parceiros');
   await browser.close();
 
-  // ---- no celular: o menu tem "Suas academias" ----
+  // ---- no celular: o nome da academia no menu é o seletor (19/10) ----
   ({ browser, page } = await abrir({ academia: 'a2', outrasAcademias: ['a1'], q: 'parceiros/painel' }));
   await page.click('#pc-menu-btn');
   await page.waitForTimeout(150);
-  const menu = await page.evaluate(() => ({
-    grupos: [...document.querySelectorAll('#pc-menu-overlay .menu-grupo')].map(g => g.textContent),
+  let menu = await page.evaluate(() => ({
+    grupo: (document.querySelector('#pc-menu-overlay .menu-grupo') || {}).textContent || '',
+    itens: document.querySelectorAll('#pc-menu-overlay .pc-academia-i').length,
+  }));
+  ok(menu.grupo.trim() === (await page.evaluate(() => minhaAcademia().name)) && await page.$('#pc-menu-overlay #pc-seletor-menu') && menu.itens === 0, 'no celular, o menu começa pelo nome da academia, como seletor, sem a lista aberta — ' + menu.grupo);
+  await page.click('#pc-seletor-menu');
+  await page.waitForTimeout(150);
+  menu = await page.evaluate(() => ({
+    t: (document.querySelector('#pc-menu-overlay .pc-seletor-t') || {}).textContent || '',
     itens: [...document.querySelectorAll('#pc-menu-overlay .pc-academia-i')].map(b => b.innerText.replace(/\s+/g, ' ').trim()),
   }));
-  ok(menu.grupos[0] === 'Suas academias' && menu.itens.length === 3 && menu.itens.some(i => i.startsWith('Só Aula Tennis')), 'no celular, o menu começa por "Suas academias" — ' + menu.grupos[0] + ': ' + menu.itens.join(' / '));
+  ok(menu.t === 'Suas academias (2)' && menu.itens.length === 3 && menu.itens.some(i => i.startsWith('Só Aula Tennis')), 'tocar no nome abre "Suas academias (2)" e "Adicionar outra academia" — ' + menu.itens.join(' / '));
+  await page.evaluate(() => document.querySelector('#pc-menu-overlay .menu-drawer').click());
+  await page.waitForTimeout(150);
+  ok(!(await page.$('#pc-menu-overlay .pc-academia-i')) && await page.$('#pc-menu-overlay') && !(await page.evaluate(() => state.pcSeletorMenu)), 'tocar fora da lista fecha o seletor, com o menu aberto');
+  await browser.close();
+  // A página Plano não repete a lista das academias embaixo (19/10).
+  ({ browser, page } = await abrir({ academia: 'a2', outrasAcademias: ['a1'], q: 'parceiros/plano' }));
+  await page.waitForTimeout(400);
+  ok(!(await texto(page, '#parceiros .pc-main')).includes('Plano de cada academia') && !(await page.$('#parceiros .pc-main .pc-academias-lista')), 'Plano sem o cartão "Plano de cada academia"');
+  await browser.close();
+  ({ browser, page } = await abrir({ academia: 'a2', outrasAcademias: ['a1'], q: 'parceiros/painel' }));
+  await page.click('#pc-menu-btn');
+  await page.waitForTimeout(150);
+  await page.click('#pc-seletor-menu');
+  await page.waitForTimeout(150);
   await page.click('#pc-menu-overlay [data-outra-academia]');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.parceirosAba === 'cadastro' && !state.pcMenu), '"Adicionar outra academia" fecha o menu e abre a busca');
@@ -193,14 +214,17 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     h1: document.querySelector('#parceiros h1')?.textContent || '',
     eyebrow: document.querySelector('#parceiros .pc-pagina .pc-eyebrow')?.textContent || '',
     texto: document.querySelector('#parceiros .pc-main')?.textContent.replace(/\s+/g, ' ') || '',
-    itens: [...document.querySelectorAll('#parceiros .pc-main .pc-academia-i')].map(b => b.innerText.replace(/\s+/g, ' ').trim()),
     wa: decodeURIComponent(document.querySelector('#parceiros .pc-main .footnote a')?.getAttribute('href') || ''),
   }));
   ok(plano.h1 === 'Plano desta academia' && plano.eyebrow === 'Quadra Locação', 'com duas academias, a página de plano diz de qual academia é');
   ok(plano.texto.includes('Cada academia tem o próprio plano'), 'deixa claro que cada academia tem o próprio plano');
-  ok(plano.itens.some(i => i.startsWith('Quadra Locação') && i.includes('Plano Básico')) && plano.itens.some(i => i.startsWith('Só Aula Tennis') && i.includes('Plano Premium')), 'a lista mostra o plano de cada academia — ' + plano.itens.slice(0, 2).join(' / '));
   ok(plano.texto.includes('o responsável principal muda aqui, na hora'), 'o plano muda ali mesmo (grátis por enquanto, 19/10/2026)');
-  await page.click('#parceiros .pc-main [data-abrir-academia="a1"]');
+  // O plano de cada academia aparece no seletor do alto (o cartão com a lista saiu em 19/10).
+  await page.click('#pc-seletor-titulo');
+  await page.waitForTimeout(150);
+  const itensDoSeletor = await page.evaluate(() => [...document.querySelectorAll('#parceiros .pc-seletor-titulo .pc-academia-i')].map(b => b.innerText.replace(/\s+/g, ' ').trim()));
+  ok(itensDoSeletor.some(i => i.startsWith('Quadra Locação') && i.includes('Plano Básico')) && itensDoSeletor.some(i => i.startsWith('Só Aula Tennis') && i.includes('Plano Premium')), 'o seletor do alto mostra o plano de cada academia — ' + itensDoSeletor.slice(0, 2).join(' / '));
+  await page.click('#parceiros .pc-seletor-titulo [data-abrir-academia="a1"]');
   await page.waitForTimeout(500);
   await page.evaluate(() => irParceiros('plano'));
   await page.waitForTimeout(200);

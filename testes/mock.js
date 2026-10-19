@@ -466,6 +466,36 @@
       compras.push({ id, academia_id: a.p_academia, valor: a.p_valor, forma: a.p_forma, situacao: "aberta", created_at: new Date().toISOString() });
       return { data: id, error:null };
     }
+    // Pagamento de teste (SQL 20261020120000): window.__pagamentoDeTeste liga.
+    if (nome === "pagamento_de_teste") {
+      return { data: { ligado: !!window.__pagamentoDeTeste, precos: { completo_mensal: 49, completo_anual: 490, premium_mensal: 99, premium_anual: 990 } }, error:null };
+    }
+    if (nome === "criar_compra_de_plano") {
+      const x = meuAcesso();
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v || v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (ac && ac.plano === a.p_plano) return erro("A academia já está nesse plano.", "22023");
+      const valor = { completo_mensal: 49, completo_anual: 490, premium_mensal: 99, premium_anual: 990 }[a.p_plano + "_" + a.p_periodo];
+      if (!valor) return erro("Plano inválido.", "22023");
+      const compras = window.__compras || (window.__compras = []);
+      const id = "00000000-0000-4000-8000-" + String(compras.length + 1).padStart(12, "0");
+      compras.push({ id, academia_id: a.p_academia, valor, forma: a.p_forma, situacao: "aberta", tipo: "plano", plano: a.p_plano, periodo: a.p_periodo, created_at: new Date().toISOString() });
+      return { data: id, error:null };
+    }
+    if (nome === "simular_pagamento") {
+      if (!window.__pagamentoDeTeste) return erro("O pagamento de teste só funciona no banco de teste.", "42501");
+      const k = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!k) return erro("Compra não encontrada.", "22023");
+      if (k.situacao !== "aberta") return { data: k.situacao, error:null };
+      k.de_teste = true;
+      if (a.p_resultado !== "aprovado") { k.situacao = "recusada"; return { data: "recusada", error:null }; }
+      k.situacao = "paga"; k.paga_em = new Date().toISOString();
+      const ac = db.academias.find(y => y.id === k.academia_id);
+      if (k.tipo === "plano") ac.plano = k.plano;
+      else ac.envios_de_aviso = Number(ac.envios_de_aviso || 0) + k.valor;
+      return { data: "paga", error:null };
+    }
     if (nome === "minhas_compras") {
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return { data:null, error:null };

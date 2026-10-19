@@ -40,7 +40,10 @@ teste")
 > site (grátis por enquanto) e créditos com Pix/cartão pelo Mercado Pago**
 > (regra 117, SQL `20261019130000_plano_e_creditos_pelo_site`, função
 > `netlify/functions/pagamento.mjs`; falta o Breno ligar as variáveis no
-> Netlify). Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
+> Netlify). Ainda em 19/10, no chat novo: **pagamento de teste** (regra 118,
+> SQL `20261020120000_pagamento_de_teste`): na prévia, plano (preço de
+> teste) e créditos passam por um gateway fingido enquanto o Mercado Pago
+> não está ligado. Testes: a bateria dos 52 arquivos deu 1.456 certas e 6
 > falhas de texto (menu, chat, subtítulo), corrigidas e com os arquivos
 > rodados de novo sem falha; 380 no `banco-emails.py` (depois da regra 114), nenhuma falha.
 
@@ -2767,6 +2770,40 @@ cobra taxa e não fica no meio** da negociação.
       seção 32 do `banco-emails.py`. Bateria de 19/10: **1.516 verificações** (53
       arquivos do navegador, `onde.mjs` e `pagamento.mjs`) e **432 no
       `banco-emails.py`**, nenhuma falha.
+118. **Pagamento de teste: plano e créditos num gateway fingido** (pedido de
+    19/10/2026: "eu quero simular as transações escolhendo plano e créditos
+    com um falso Gateway, sem funcionar de vdd ainda, depois de testar eu
+    conecto"). Como o "modo de teste" do Stripe e os cartões de teste do
+    Mercado Pago. SQL `20261020120000_pagamento_de_teste`:
+    - **Só no site de teste** (`NO_SITE_DE_TESTE`) **e com o interruptor
+      ligado no banco** (`pagamento_de_teste`, uma linha, desligada; o
+      `supabase/aplicar.sh` liga no banco de teste e desliga no de verdade a
+      cada rodada; a academia não mexe). O site de verdade segue igual
+      ("Grátis por enquanto", WhatsApp sem o Mercado Pago).
+    - **Planos com preço de teste** (`precos_dos_planos`, provisórios até o
+      Breno decidir, pendência 4): Completo R$ 49/mês ou R$ 490/ano, Premium
+      R$ 99/mês ou R$ 990/ano (anual = 2 meses grátis). "Mudar para o …"
+      (subindo) abre "Assinar o …" na página Plano: Mensal/Anual e Pix/cartão
+      (`criar_compra_de_plano`, só o responsável principal; o preço sai do
+      banco). Descer de plano continua grátis, na hora.
+    - **O gateway fingido** (`pcGatewayDeTeste`, etiqueta "Teste"): entra
+      quando a função `pagamento` responde 503 (Mercado Pago desligado) ou
+      404 (sem a função). **Pix**: QR e código de teste (não são Pix; o app
+      do banco recusa), "Simular Pix pago" e "Simular Pix vencido".
+      **Cartão**: o cartão de teste já preenchido (5031 4332 1540 6351,
+      11/30, 123), nome **APRO aprova** e **OTHE recusa**, como no Mercado
+      Pago. O banco confirma como se fosse o Mercado Pago
+      (`simular_pagamento` → `confirmar_compra`): os créditos entram ou o
+      plano muda, com o e-mail do plano novo de sempre; recusado, volta à
+      compra com o aviso. Compra marcada `de_teste`, `gateway = 'teste'`.
+    - **Ligado o Mercado Pago** (as variáveis da regra 117), a compra vai
+      para ele sem mudar nada no site, inclusive a do plano na prévia (a
+      função manda "Plano Completo anual GuiaTennis · …" e volta para
+      `/parceiros/plano?compra=`).
+    - Admin › Leilões: "Compras de créditos e planos (30 dias)", com o plano
+      e a etiqueta "Teste"; "Pagas" sem as de teste.
+    - Testes: `testes/plano-e-creditos.js` (18 novas), `node
+      testes/pagamento.mjs` e a seção 33 do `banco-emails.py` (18 novas).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

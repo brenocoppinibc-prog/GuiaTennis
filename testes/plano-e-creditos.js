@@ -111,12 +111,113 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ok(corpo.includes('A compra pelo site ainda não está ligada') && decodeURIComponent(await page.getAttribute('#pc-compra a', 'href')).includes('comprar créditos para o leilão'), 'sem o Mercado Pago ligado, oferece a compra pelo WhatsApp');
   await browser.close();
 
+  // ---- Pagamento de teste (regra 118): o plano pago no gateway fingido ----
+  const PREVIA = 'deploy-preview-5--guiatennis.netlify.app';
+  const desligada = async (page, status = 503) => page.route('**/.netlify/functions/pagamento', r => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ erro: 'desligado' }) }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', host: PREVIA, pagamentoDeTeste: true }));
+  await desligada(page);
+  await page.waitForTimeout(500);
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(corpo.includes('R$ 49 por mês') && corpo.includes('ou R$ 990 por ano · 2 meses grátis · preço de teste') && corpo.includes('Site de teste: os preços são de teste e o pagamento também'), 'site de teste: os planos com preço de teste, mensal e anual');
+  await page.click('.pc-planos [data-escolher-plano="completo"]');
+  await page.waitForTimeout(200);
+  corpo = await texto(page, '#pc-compra');
+  ok(corpo.includes('Assinar o Completo') && corpo.includes('Mensal · R$ 49') && corpo.includes('Anual · R$ 490') && (await texto(page, '#pc-compra-pagar')) === 'Pagar R$ 49 com Pix', 'subir de plano abre a compra: período e forma, mensal e Pix de saída');
+  await page.click('[data-compra-periodo="anual"]');
+  await page.waitForTimeout(150);
+  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar R$ 490 com Pix' && (await texto(page, '#pc-compra')).includes('2 meses saem de graça'), 'anual: R$ 490, com os 2 meses de graça');
+  await page.click('#pc-compra-pagar');
+  await page.waitForTimeout(500);
+  corpo = await texto(page, '#pc-compra');
+  ok(await page.$('#pc-compra .pc-teste-tag') && corpo.includes('Pague R$ 490 com Pix') && corpo.includes('Plano Completo anual · R$ 490') && await page.$('.pc-compra-qr-teste svg') && (await page.inputValue('#pc-compra-codigo')).startsWith('PIX-DE-TESTE-GUIATENNIS-'),
+    'sem o Mercado Pago: o Pix de teste, com a etiqueta, o QR e o código que não é Pix');
+  ok(await page.evaluate(() => { const r = window.__rpcs.find(x => x.nome === 'criar_compra_de_plano'); return r && r.args.p_plano === 'completo' && r.args.p_periodo === 'anual' && r.args.p_forma === 'pix' && !('p_valor' in r.args); }), 'a compra do plano vai ao banco sem o valor (o preço sai do banco)');
+  await page.click('[data-simular="aprovado"]');
+  await page.waitForTimeout(800);
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(corpo.includes('Pagamento confirmado') && corpo.includes('A Só Aula Tennis agora está no plano Completo.') && await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'completo' && planoAtual() === 'completo' && window.__compras[0].de_teste),
+    '"Simular Pix pago": o plano muda e a tela confirma');
+  // Descer de plano segue sem pagamento.
+  page.once('dialog', d => d.accept());
+  await page.click('.pc-planos [data-escolher-plano="basico"]');
+  await page.waitForTimeout(600);
+  ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'basico'), 'voltar ao Básico continua sem pagamento');
+  await browser.close();
+
+  // ---- Pagamento de teste: créditos no cartão (OTHE recusa, APRO aprova) e o Pix vencido ----
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'], host: PREVIA, pagamentoDeTeste: true }));
+  await desligada(page, 404);
+  await page.waitForTimeout(500);
+  await page.click('#pc-comprar-creditos');
+  await page.click('[data-compra-valor="200"]');
+  await page.click('[data-compra-forma="cartao"]');
+  await page.waitForTimeout(150);
+  ok((await texto(page, '#pc-compra')).includes('No site de teste, sem o Mercado Pago ligado, o pagamento é de teste e nada é cobrado.'), 'a compra avisa do pagamento de teste');
+  await page.click('#pc-compra-pagar');
+  await page.waitForTimeout(500);
+  ok((await page.inputValue('#pc-cartao-numero')) === '5031 4332 1540 6351' && (await page.inputValue('#pc-cartao-nome')) === 'APRO' && (await texto(page, '#pc-compra')).includes('APRO aprova e OTHE recusa'), 'cartão de teste já preenchido, com APRO e OTHE explicados');
+  await page.fill('#pc-cartao-validade', '13/30');
+  await page.click('[data-simular="cartao"]');
+  await page.waitForTimeout(200);
+  ok((await texto(page, '#pc-compra')).includes('Escreva a validade como MM/AA.'), 'validade errada não passa');
+  await page.fill('#pc-cartao-validade', '11/30');
+  await page.fill('#pc-cartao-nome', 'othe');
+  await page.click('[data-simular="cartao"]');
+  await page.waitForTimeout(500);
+  corpo = await texto(page, '#pc-compra');
+  ok(corpo.includes('O pagamento foi recusado') && (await texto(page, '#pc-compra-pagar')) === 'Pagar R$ 200 com cartão' && await page.evaluate(() => window.__compras[0].situacao === 'recusada' && !window.__db.academias.find(a => a.id === 'a1').envios_de_aviso),
+    'OTHE recusa: volta à compra com R$ 200 e cartão, sem créditos');
+  await page.click('#pc-compra-pagar');
+  await page.waitForTimeout(500);
+  await page.click('[data-simular="cartao"]');
+  await page.waitForTimeout(800);
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(corpo.includes('Pagamento confirmado') && corpo.includes('R$ 200 entraram nos créditos') && /Créditos\s+R\$ 200/.test(await texto(page, '#pc-leilao')), 'APRO aprova: os R$ 200 entram nos créditos');
+  await page.click('#pc-compra-fechar');
+  await page.click('#pc-comprar-creditos');
+  await page.click('#pc-compra-pagar');
+  await page.waitForTimeout(500);
+  await page.click('[data-simular="recusado"]');
+  await page.waitForTimeout(500);
+  ok((await texto(page, '#pc-compra')).includes('O Pix venceu sem pagamento.') && /Créditos\s+R\$ 200/.test(await texto(page, '#pc-leilao')), '"Simular Pix vencido": recusa sem mexer nos créditos');
+  await browser.close();
+
+  // ---- Mercado Pago ligado na prévia: vai para ele, mesmo com o teste ligado ----
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', host: PREVIA, pagamentoDeTeste: true }));
+  await page.route('**/.netlify/functions/pagamento', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(JSON.parse(r.request().postData()).acao === 'consultar' ? { situacao: 'aberta' } : { forma: 'pix', valor: 99, qr: '', copia: '00020101PIXCOPIA' }) }));
+  await page.waitForTimeout(500);
+  await page.click('.pc-planos [data-escolher-plano="premium"]');
+  await page.click('#pc-compra-pagar');
+  await page.waitForTimeout(500);
+  corpo = await texto(page, '#pc-compra');
+  ok(corpo.includes('Pague R$ 99 com Pix') && !(await page.$('#pc-compra .pc-teste-tag')) && corpo.includes('O plano muda sozinho.') && (await page.inputValue('#pc-compra-codigo')) === '00020101PIXCOPIA', 'com o Mercado Pago ligado, o Pix é o dele');
+  await browser.close();
+
+  // ---- Site de verdade: nada de preço nem de pagamento de teste ----
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', pagamentoDeTeste: true }));
+  await page.waitForTimeout(500);
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(corpo.includes('Grátis por enquanto') && !corpo.includes('R$ 49') && !(await page.evaluate(() => window.__rpcs.some(r => r.nome === 'pagamento_de_teste'))), 'no site de verdade, os planos seguem grátis e nem perguntam do teste');
+  await browser.close();
+
+  // ---- Prévia com o interruptor desligado: o WhatsApp, como antes ----
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'], host: PREVIA }));
+  await desligada(page);
+  await page.waitForTimeout(400);
+  ok((await texto(page, '#parceiros .pc-main')) && !(await texto(page, '#parceiros .pc-main')).includes('preço de teste'), 'interruptor desligado: sem preço de teste');
+  await page.click('#pc-comprar-creditos');
+  await page.click('#pc-compra-pagar');
+  await page.waitForTimeout(500);
+  ok((await texto(page, '#pc-compra')).includes('A compra pelo site ainda não está ligada'), 'interruptor desligado: a compra oferece o WhatsApp');
+  await browser.close();
+
   // ---- O admin vê as compras ----
   ({ browser, page } = await abrir({ admin: true, q: 'admin', w: 1280 }));
-  await page.evaluate(() => { window.__compras = [{ id: 'k1', academia_id: 'a1', valor: 100, forma: 'pix', situacao: 'paga', created_at: '2026-10-19T12:00:00Z', paga_em: '2026-10-19T12:01:00Z' }]; });
+  await page.evaluate(() => { window.__compras = [{ id: 'k1', academia_id: 'a1', valor: 100, forma: 'pix', situacao: 'paga', created_at: '2026-10-19T12:00:00Z', paga_em: '2026-10-19T12:01:00Z' },
+    { id: 'k2', academia_id: 'a1', valor: 490, forma: 'cartao', situacao: 'paga', tipo: 'plano', plano: 'completo', periodo: 'anual', de_teste: true, created_at: '2026-10-19T13:00:00Z', paga_em: '2026-10-19T13:01:00Z' }]; });
   await page.click('.adm-nav [data-adm-aba="leiloes"]');
   await page.waitForTimeout(400);
   const adm = await texto(page, '#painel-admin');
-  ok(adm.includes('Compras de créditos (30 dias)') && adm.includes('Só Aula Tennis · R$ 100 · Pix · paga') && adm.includes('Pagas: R$ 100'), 'o admin vê as compras de créditos — ' + adm.replace(/\s+/g, ' ').match(/Compras de créditos.{0,90}/)?.[0]);
+  ok(adm.includes('Compras de créditos e planos (30 dias)') && adm.includes('Só Aula Tennis · R$ 100 · Pix · paga') && adm.includes('Pagas: R$ 100 (fora R$ 490 de teste)') && /plano Completo anual · R\$ 490 · cartão · paga .*Teste/i.test(adm.replace(/\s+/g, ' ')), 'o admin vê as compras, com o plano e as de teste à parte — ' + adm.replace(/\s+/g, ' ').match(/Compras de créditos.{0,90}/)?.[0]);
   await browser.close();
 })();

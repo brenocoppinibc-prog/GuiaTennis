@@ -1503,5 +1503,55 @@ ok(not certo and "Completo e do Premium" in saida, "no Básico não compra créd
 sql(f"delete from public.compras_de_creditos; delete from public.academia_vinculos where user_id = '{eva}';"
     f"update public.academias set envios_de_aviso = 0, plano = '{plano_antes}' where id = '{PINHEIROS}'; truncate public.emails_a_enviar")
 
+# 33. Pagamento de teste (SQL 20261020120000, regra 118) -----------------------------
+print("\n# Pagamento de teste")
+sql("truncate public.emails_a_enviar; delete from public.compras_de_creditos")
+plano_antes = um(f"select coalesce(plano, 'basico') from public.academias where id = '{PINHEIROS}'")
+sql(f"update public.academias set plano = 'basico', envios_de_aviso = 0 where id = '{PINHEIROS}'")
+eva = parceiro("Eva Teste", f"evateste{sufixo}@exemplo.com", PINHEIROS, papel="equipe")
+ok(um("select ligado::text from public.pagamento_de_teste") == "true", "o aplicar.sh teste liga o pagamento de teste")
+t = json.loads(um("select public.pagamento_de_teste()::text", papel="anon") or "{}")
+ok(t.get("ligado") is True and t.get("precos", {}).get("completo_mensal") == 49 and t.get("precos", {}).get("premium_anual") == 990, "o site lê o interruptor e os preços de teste — " + str(t))
+certo, saida = sql(f"select public.criar_compra_de_plano('{PINHEIROS}', 'completo', 'mensal', 'pix')", papel="authenticated", user=eva)
+ok(not certo and "Só o responsável principal" in saida, "só o responsável principal compra o plano")
+certo, saida = sql(f"select public.criar_compra_de_plano('{PINHEIROS}', 'basico', 'mensal', 'pix')", papel="authenticated", user=dono)
+ok(not certo and "Plano inválido" in saida, "o Básico não se compra")
+plano = um(f"select public.criar_compra_de_plano('{PINHEIROS}', 'completo', 'anual', 'pix')", papel="authenticated", user=dono)
+ok(um(f"select tipo || '|' || plano || '|' || periodo || '|' || valor || '|' || situacao from public.compras_de_creditos where id = '{plano}'") == "plano|completo|anual|490|aberta", "a compra do plano sai com o preço do banco (R$ 490 no anual)")
+cob = json.loads(um(f"select public.compra_para_cobrar('{plano}')::text", papel="service_role") or "{}")
+ok(cob.get("tipo") == "plano" and cob.get("plano") == "completo" and cob.get("periodo") == "anual", "a função do Netlify sabe que é plano")
+certo, saida = sql(f"select public.simular_pagamento('{plano}', 'aprovado')", papel="authenticated", user=carla)
+ok(not certo and "não administra" in saida, "outra conta não simula o pagamento")
+certo, saida = sql(f"select public.simular_pagamento('{plano}', 'aprovado')", papel="authenticated", user=eva)
+ok(not certo and "não administra" in saida, "a equipe não simula o pagamento do plano")
+ok(um(f"select public.simular_pagamento('{plano}', 'aprovado')", papel="authenticated", user=dono) == "paga"
+   and um(f"select plano from public.academias where id = '{PINHEIROS}'") == "completo"
+   and um(f"select de_teste::text || '|' || gateway from public.compras_de_creditos where id = '{plano}'") == "true|teste",
+   "aprovado: o plano vira Completo e a compra fica marcada como de teste")
+ok(fila("tipo = 'plano'") != "0", "quem administra recebe o e-mail do plano novo")
+ok(um(f"select public.simular_pagamento('{plano}', 'aprovado')", papel="authenticated", user=dono) == "paga", "simular de novo não muda nada")
+certo, saida = sql(f"select public.criar_compra_de_plano('{PINHEIROS}', 'completo', 'mensal', 'pix')", papel="authenticated", user=dono)
+ok(not certo and "já está nesse plano" in saida, "não compra o plano que já tem")
+cred = um(f"select public.criar_compra_de_creditos('{PINHEIROS}', 200, 'cartao')", papel="authenticated", user=eva)
+ok(um(f"select public.simular_pagamento('{cred}', 'recusado')", papel="authenticated", user=eva) == "recusada"
+   and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "0", "créditos recusados: nada entra")
+cred = um(f"select public.criar_compra_de_creditos('{PINHEIROS}', 200, 'cartao')", papel="authenticated", user=eva)
+ok(um(f"select public.simular_pagamento('{cred}', 'aprovado')", papel="authenticated", user=eva) == "paga"
+   and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "200", "créditos aprovados (a equipe também): os R$ 200 entram")
+lista = json.loads(um(f"select public.minhas_compras('{PINHEIROS}')::text", papel="authenticated", user=dono) or "[]")
+ok(any(x.get("tipo") == "plano" and x.get("de_teste") for x in lista), "a academia vê a compra do plano, marcada como de teste")
+adm = json.loads(um("select public.compras_do_admin()::text", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN) or "[]")
+ok(sum(1 for x in adm if x.get("de_teste")) == 3, "o admin vê as compras de teste marcadas")
+# Interruptor desligado (o banco de verdade): o gateway fingido recusa.
+sql("update public.pagamento_de_teste set ligado = false")
+outra = um(f"select public.criar_compra_de_creditos('{PINHEIROS}', 50, 'pix')", papel="authenticated", user=dono)
+certo, saida = sql(f"select public.simular_pagamento('{outra}', 'aprovado')", papel="authenticated", user=dono)
+ok(not certo and "só funciona no banco de teste" in saida and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "200", "desligado: o pagamento de teste recusa e nada entra")
+certo, _ = sql("update public.pagamento_de_teste set ligado = true", papel="authenticated", user=dono)
+ok(um("select ligado::text from public.pagamento_de_teste") == "false", "a academia não liga o interruptor")
+sql("update public.pagamento_de_teste set ligado = true")
+sql(f"delete from public.compras_de_creditos; delete from public.academia_vinculos where user_id = '{eva}';"
+    f"update public.academias set envios_de_aviso = 0, plano = '{plano_antes}' where id = '{PINHEIROS}'; truncate public.emails_a_enviar")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

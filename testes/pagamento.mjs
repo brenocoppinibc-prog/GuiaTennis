@@ -99,6 +99,14 @@ pagamentos[555] = { id: 555, status: "approved", transaction_amount: 100, extern
 r = await pedir({ acao: "consultar", compra: ID });
 ok((await r.json()).situacao === "paga", "consultar depois do cartão aprovado: confirma e diz \"paga\"");
 
+// Compra de plano (regra 118): o texto diz o plano e a volta é a página Plano.
+compra = { ...compra, situacao: "aberta", forma: "cartao", tipo: "plano", plano: "premium", periodo: "anual", valor: 990 };
+pedidos.length = 0;
+r = await pedir({ acao: "cobrar", compra: ID });
+const prefPlano = pedidos.find(p => p.url === "https://api.mercadopago.com/checkout/preferences");
+ok(r.status === 200 && prefPlano.corpo.items[0].title === "Plano Premium anual GuiaTennis · Só Aula Tennis" && prefPlano.corpo.items[0].unit_price === 990
+  && prefPlano.corpo.back_urls.success === `https://deploy-preview-5--x.netlify.app/parceiros/plano?compra=${ID}`, "plano: o texto diz o plano e a volta é a página Plano");
+
 ok(JSON.stringify(dadosDoPix({})) === JSON.stringify({ qr: "", copia: "", expira: null }), "Pix sem os dados não quebra");
 r = await pagar(new Request("https://x/.netlify/functions/pagamento", { method: "GET" }));
 ok(r.status === 405, "só POST");

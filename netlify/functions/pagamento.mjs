@@ -23,7 +23,9 @@
 //                              teste (TEST-…) do Mercado Pago
 //   SUPABASE_URL               https://<projeto>.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY  a chave service_role (só a função usa)
-// Sem elas, responde 503 e o site oferece a compra pelo WhatsApp.
+// Sem elas, responde 503: o site de verdade oferece a compra pelo WhatsApp,
+// e o de teste usa o pagamento de teste (SQL 20261020120000, regra 118).
+// A compra de plano (só no site de teste, por enquanto) passa igual.
 // Nada de pacote: só o que o Node do Netlify já tem (fetch).
 
 const MP = "https://api.mercadopago.com";
@@ -75,7 +77,10 @@ async function cobrar(req, compraId) {
   if (c.situacao !== "aberta") return json(409, { erro: "Essa compra já foi paga ou recusada.", situacao: c.situacao });
   const origem = origemDe(req);
   const aviso = `${origem}/.netlify/functions/pagamento?mp=1`;
-  const descricao = `Créditos do leilão GuiaTennis · ${c.academia}`;
+  const plano = c.tipo === "plano";
+  const descricao = plano
+    ? `Plano ${c.plano === "premium" ? "Premium" : "Completo"} ${c.periodo === "anual" ? "anual" : "mensal"} GuiaTennis · ${c.academia}`
+    : `Créditos do leilão GuiaTennis · ${c.academia}`;
   if (c.forma === "pix") {
     const expira = new Date(Date.now() + 30 * 60 * 1000).toISOString().replace("Z", "-00:00");
     const p = await mp("/v1/payments", {
@@ -90,7 +95,7 @@ async function cobrar(req, compraId) {
     await rpc("registrar_cobranca", { p_compra: c.id, p_gateway_id: String(p.id) });
     return json(200, { forma: "pix", valor: c.valor, ...dadosDoPix(p) });
   }
-  const volta = `${origem}/parceiros/promocoes-email?compra=${c.id}`;
+  const volta = `${origem}/parceiros/${plano ? "plano" : "promocoes-email"}?compra=${c.id}`;
   const pref = await mp("/checkout/preferences", {
     method: "POST",
     body: JSON.stringify({

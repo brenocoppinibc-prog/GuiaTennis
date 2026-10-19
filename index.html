@@ -106,6 +106,17 @@
   .pc-compra-copia .form-field { margin: 0; flex: 1; min-width: 0; font-size: 13px; }
   .pc-compra-copia .cta-btn { width: auto; flex-shrink: 0; margin: 0; }
   .pc-compra-espera { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+  /* Pagamento de teste (regra 118): a etiqueta "Teste", como o "Test mode" do Stripe. */
+  .pc-teste-tag { display: inline-block; vertical-align: 2px; margin-right: 6px; padding: 2px 8px; border-radius: 999px; background: #F6E3B4; color: #6B4E0E; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .pc-compra-qr-teste { display: flex; justify-content: center; margin: 14px 0 10px; }
+  .pc-compra-qr-teste svg { width: 200px; height: 200px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+  .pc-compra-cartao { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; margin-top: 12px; }
+  .pc-compra-cartao label { display: block; }
+  .pc-compra-cartao .inteiro { grid-column: 1 / -1; }
+  .pc-compra-cartao .form-field { margin-top: 4px; }
+  .pc-compra-botoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .pc-compra-botoes .cta-btn { flex: 1 1 160px; margin: 0; }
+  .pc-plano-anual { font-size: 13px; color: var(--muted); margin: -2px 0 8px; }
   /* Promoções: as partes Na ficha e Por e-mail (16/10/2026). */
   .pc-promo-partes { margin: 4px 0 14px; }
   .pc-promo-partes .lista-aba { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
@@ -7746,6 +7757,13 @@ async function escolherPlano(key) {
   const c = minhaAcademia();
   const atual = planoAtual();
   if (!c || !souPrincipal() || key === atual || state.pcPlanoMudando) return;
+  if (pagamentoDeTeste() && key !== "basico") {
+    state.pcCompra = { tipo: "plano", plano: key, periodo: "mensal", forma: "pix" };
+    state.contaAviso = ""; state.contaErro = "";
+    render();
+    document.getElementById("pc-compra")?.scrollIntoView({ block: "center", behavior: "smooth" });
+    return;
+  }
   const pergunta = ordemDoPlano(key) > ordemDoPlano(atual)
     ? `Passar a ${c.name} para o plano ${nomeDoPlano(key)}?\n\nPor enquanto é grátis, e muda na hora. Quem administra a academia recebe um e-mail com o que muda.`
     : oQueMudaAoBaixarOPlano(c.id, atual, key);
@@ -8421,7 +8439,8 @@ function pcCartoesDePlano(atual, revelar = false) {
         <div class="pc-plano ${atual === p.key ? "atual" : ""} ${p.key === destaque ? "destaque" : ""}" ${revelar ? revela("plano-" + p.key, i) : ""}>
           ${atual === p.key ? `<span class="pc-plano-tag">Seu plano</span>` : (p.key === destaque ? `<span class="pc-plano-tag">Recomendado</span>` : "")}
           <p class="pc-plano-n">${esc(p.nome)}${p.key === "premium" ? seloPremium(20) : ""}</p>
-          <p class="pc-plano-p">${esc(p.preco)}</p>
+          <p class="pc-plano-p">${esc(precoDoPlano(p))}</p>
+          ${precoAnualDoPlano(p) ? `<p class="pc-plano-anual">ou R$ ${esc(precoAnualDoPlano(p))} por ano · 2 meses grátis · preço de teste</p>` : ""}
           <p class="pc-card-s">${esc(p.resumo)}</p>
           <ul class="pc-plano-lista">
             <li>${icon('check', 15, 'var(--green)')}<span>Até ${p.pessoas} ${plural(p.pessoas, "e-mail", "e-mails")} com acesso à academia</span></li>
@@ -8461,9 +8480,10 @@ function pcPlanos(logado) {
       ${logado && c ? "" : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>`}
       ${logado && c ? pcPlanoDeHoje(c, atual) : ""}
       ${logado && c ? pcOQueMelhorar(c, atual) : ""}
+      ${logado && c && state.pcCompra && state.pcCompra.tipo === "plano" ? pcComprarCreditos(c) : ""}
       ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}
       ${pcCartoesDePlano(atual)}
-      <p class="footnote">${logado && c ? `Por enquanto, todos os planos são grátis: o responsável principal muda aqui, na hora.${varias ? " Cada academia tem o próprio plano." : ""}` : "Por enquanto, todos os planos são grátis."}</p>
+      <p class="footnote">${logado && c && pagamentoDeTeste() ? `Site de teste: os preços são de teste e o pagamento também, sem cobrar nada. Só o responsável principal muda o plano.${varias ? " Cada academia tem o próprio plano." : ""}` : logado && c ? `Por enquanto, todos os planos são grátis: o responsável principal muda aqui, na hora.${varias ? " Cada academia tem o próprio plano." : ""}` : "Por enquanto, todos os planos são grátis."}</p>
       ${varias ? `
         <div class="pc-card" style="margin-top:20px">
           <p class="pc-card-t">Plano de cada academia</p>
@@ -9169,15 +9189,91 @@ function textoDoSaldo(n) {
 // (como a recarga do celular e o Google Ads), Pix com o QR code na própria
 // tela ou cartão na página do Mercado Pago. Os créditos entram quando o
 // Mercado Pago confirma; a tela confere sozinha de tempos em tempos.
+// A mesma tela compra o plano no site de teste (tipo "plano", regra 118).
 const VALORES_DE_CREDITO = [50, 100, 200];
+
+// Pagamento de teste (pedido do Breno em 19/10/2026: "simular as transações
+// escolhendo plano e créditos com um falso Gateway, sem funcionar de vdd
+// ainda, depois de testar eu conecto"; SQL 20261020120000). Como o "modo de
+// teste" do Stripe: só no site de teste e com o interruptor ligado no banco
+// de teste. Com o Mercado Pago desligado (503, ou 404 sem a função), a compra
+// passa por um gateway fingido que aprova ou recusa na hora; ligado o Mercado
+// Pago, a compra vai para ele, sem mudar nada aqui.
+function pagamentoDeTeste() {
+  return NO_SITE_DE_TESTE && state.pagamentoTeste && state.pagamentoTeste.ligado ? state.pagamentoTeste : null;
+}
+async function carregarPagamentoDeTeste() {
+  if (!NO_SITE_DE_TESTE || state.pagamentoTeste !== undefined) return;
+  state.pagamentoTeste = null;
+  try {
+    const r = await sb.rpc('pagamento_de_teste');
+    state.pagamentoTeste = (!r.error && r.data) || { ligado: false };
+  } catch { state.pagamentoTeste = { ligado: false }; }
+  if (state.pagamentoTeste.ligado && state.page === "parceiros") render();
+}
+function valorDoPlano(key, periodo) {
+  const t = pagamentoDeTeste();
+  return Number(t && (t.precos || {})[`${key}_${periodo}`]) || 0;
+}
+function precoDoPlano(p) {
+  const v = p.key !== "basico" && valorDoPlano(p.key, "mensal");
+  return v ? `R$ ${v} por mês` : p.preco;
+}
+function precoAnualDoPlano(p) {
+  return p.key !== "basico" ? valorDoPlano(p.key, "anual") : 0;
+}
+// O QR e o código do Pix de teste não são Pix: o app do banco recusa.
+function codigoDoPixDeTeste(compra) {
+  return `PIX-DE-TESTE-GUIATENNIS-${String(compra || "").slice(0, 8).toUpperCase()}`;
+}
+const CARTAO_DE_TESTE = { numero: "5031 4332 1540 6351", validade: "11/30", cvv: "123", nome: "APRO" };
+function pcGatewayDeTeste(k) {
+  const v = esc(k.valorCobrado);
+  const o_que = k.tipo === "plano" ? `Plano ${esc(nomeDoPlano(k.plano))} ${k.periodo === "anual" ? "anual" : "mensal"}` : "Créditos do leilão";
+  const cabeca = `
+      <p class="pc-card-t"><span class="pc-teste-tag">Teste</span>Pague R$ ${v} ${k.forma === "cartao" ? "com cartão" : "com Pix"}</p>
+      <p class="pc-card-s">${o_que} · R$ ${v}. Pagamento de teste: nada é cobrado, e o resultado vale como se fosse de verdade.</p>`;
+  const erro = k.erro ? `<p class="form-error">${icon('warning', 14)} ${esc(k.erro)}</p>` : "";
+  if (k.forma !== "cartao") {
+    const codigo = codigoDoPixDeTeste(k.compra);
+    let svg = "";
+    try { svg = qrSvg(codigo, 200); } catch { svg = ""; }
+    return `${cabeca}
+      ${svg ? `<div class="pc-compra-qr-teste" aria-label="QR code de teste">${svg}</div>` : ""}
+      <div class="pc-compra-copia">
+        <input class="form-field" id="pc-compra-codigo" readonly value="${esc(codigo)}" aria-label="Código do Pix de teste" />
+        <button type="button" class="cta-btn cta-secondary" id="pc-compra-copiar">${k.copiado ? "Copiado" : "Copiar"}</button>
+      </div>
+      ${erro}
+      <div class="pc-compra-botoes">
+        <button type="button" class="cta-btn cta-primary" data-simular="aprovado" ${k.simulando ? "disabled" : ""}>${k.simulando === "aprovado" ? bolaGirando(15) + " Pagando..." : "Simular Pix pago"}</button>
+        <button type="button" class="cta-btn cta-secondary" data-simular="recusado" ${k.simulando ? "disabled" : ""}>${k.simulando === "recusado" ? bolaGirando(15) + " Vencendo..." : "Simular Pix vencido"}</button>
+      </div>`;
+  }
+  const t = { ...CARTAO_DE_TESTE, ...(k.cartao || {}) };
+  return `${cabeca}
+      <div class="pc-compra-cartao">
+        <label class="inteiro"><span class="field-label">Número do cartão</span><input class="form-field" id="pc-cartao-numero" inputmode="numeric" autocomplete="off" value="${esc(t.numero)}" /></label>
+        <label><span class="field-label">Validade</span><input class="form-field" id="pc-cartao-validade" inputmode="numeric" autocomplete="off" placeholder="MM/AA" value="${esc(t.validade)}" /></label>
+        <label><span class="field-label">CVV</span><input class="form-field" id="pc-cartao-cvv" inputmode="numeric" autocomplete="off" value="${esc(t.cvv)}" /></label>
+        <label class="inteiro"><span class="field-label">Nome no cartão</span><input class="form-field" id="pc-cartao-nome" autocomplete="off" value="${esc(t.nome)}" /></label>
+      </div>
+      <p class="footnote">Cartão de teste já preenchido. No nome, APRO aprova e OTHE recusa, como nos cartões de teste do Mercado Pago.</p>
+      ${erro}
+      <button type="button" class="cta-btn cta-primary" data-simular="cartao" style="margin-top:12px" ${k.simulando ? "disabled" : ""}>${k.simulando ? bolaGirando(15) + " Pagando..." : `Pagar R$ ${v}`}</button>`;
+}
 function pcComprarCreditos(c) {
   const k = state.pcCompra || {};
-  const valor = k.outro ? Number(k.valorOutro || 0) : Number(k.valor || 100);
+  const plano = k.tipo === "plano";
+  const valor = plano ? valorDoPlano(k.plano, k.periodo || "mensal") : k.outro ? Number(k.valorOutro || 0) : Number(k.valor || 100);
   const fechar = `<button type="button" class="sheet-close pc-compra-x" id="pc-compra-fechar" aria-label="Fechar">✕</button>`;
   if (k.passo === "ok") return `
     <div class="pc-card pc-compra" id="pc-compra">${fechar}
       <p class="pc-card-t">${icon('check', 16, 'var(--green)')} Pagamento confirmado</p>
-      <p class="pc-card-s">R$ ${esc(k.valorPago || valor)} entraram nos créditos da academia.</p>
+      <p class="pc-card-s">${plano ? `A ${esc(c.name)} agora está no plano ${esc(nomeDoPlano(planoAtual()))}.` : `R$ ${esc(k.valorPago || valor)} entraram nos créditos da academia.`}</p>
+    </div>`;
+  if (k.passo === "teste") return `
+    <div class="pc-card pc-compra" id="pc-compra">${fechar}${pcGatewayDeTeste(k)}
     </div>`;
   if (k.passo === "desligado") return `
     <div class="pc-card pc-compra" id="pc-compra">${fechar}
@@ -9194,24 +9290,32 @@ function pcComprarCreditos(c) {
         <input class="form-field" id="pc-compra-codigo" readonly value="${esc((k.pix || {}).copia || "")}" aria-label="Código do Pix" />
         <button type="button" class="cta-btn cta-secondary" id="pc-compra-copiar">${k.copiado ? "Copiado" : "Copiar"}</button>
       </div>
-      <p class="footnote pc-compra-espera">${bolaGirando(13)} Esperando o pagamento${(k.pix || {}).expira ? ` · vale até as ${esc(new Date(k.pix.expira).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }))}` : ""}. Os créditos entram sozinhos.</p>
+      <p class="footnote pc-compra-espera">${bolaGirando(13)} Esperando o pagamento${(k.pix || {}).expira ? ` · vale até as ${esc(new Date(k.pix.expira).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }))}` : ""}. ${plano ? "O plano muda sozinho." : "Os créditos entram sozinhos."}</p>
     </div>`;
   if (k.passo === "volta") return `
     <div class="pc-card pc-compra" id="pc-compra">${fechar}
       <p class="pc-card-t">Conferindo o pagamento</p>
-      <p class="footnote pc-compra-espera">${bolaGirando(13)} Assim que o Mercado Pago confirmar, os créditos entram sozinhos.</p>
+      <p class="footnote pc-compra-espera">${bolaGirando(13)} Assim que o Mercado Pago confirmar, ${plano ? "o plano muda sozinho" : "os créditos entram sozinhos"}.</p>
     </div>`;
   const chip = (attr, val, ativo, texto) => `<button type="button" class="chip small${ativo ? " active" : ""}" ${attr}="${val}" aria-pressed="${ativo}">${texto}</button>`;
   const forma = k.forma || "pix";
+  const periodo = k.periodo || "mensal";
   return `
     <div class="pc-card pc-compra" id="pc-compra">${fechar}
-      <p class="pc-card-t">Comprar créditos</p>
+      <p class="pc-card-t">${plano ? `Assinar o ${esc(nomeDoPlano(k.plano))}` : "Comprar créditos"}</p>
+      ${plano ? `
+      <p class="field-label" style="margin-top:12px">Período</p>
+      <div class="chip-row" role="radiogroup" aria-label="Período">
+        ${chip("data-compra-periodo", "mensal", periodo === "mensal", `Mensal · R$ ${valorDoPlano(k.plano, "mensal")}`)}
+        ${chip("data-compra-periodo", "anual", periodo === "anual", `Anual · R$ ${valorDoPlano(k.plano, "anual")}`)}
+      </div>
+      ${periodo === "anual" ? `<p class="footnote" style="margin-top:6px">No anual, 2 meses saem de graça.</p>` : ""}` : `
       <p class="field-label" style="margin-top:12px">Valor</p>
       <div class="chip-row">
         ${VALORES_DE_CREDITO.map(v => chip("data-compra-valor", v, !k.outro && valor === v, `R$ ${v}`)).join("")}
         ${chip("data-compra-valor", "outro", !!k.outro, "Outro valor")}
       </div>
-      ${k.outro ? `<input class="form-field" id="pc-compra-outro" type="number" inputmode="numeric" min="20" max="5000" step="1" placeholder="De R$ 20 a R$ 5.000" value="${esc(k.valorOutro || "")}" style="margin-top:8px" />` : ""}
+      ${k.outro ? `<input class="form-field" id="pc-compra-outro" type="number" inputmode="numeric" min="20" max="5000" step="1" placeholder="De R$ 20 a R$ 5.000" value="${esc(k.valorOutro || "")}" style="margin-top:8px" />` : ""}`}
       <p class="field-label">Como pagar</p>
       <div class="chip-row" role="radiogroup" aria-label="Como pagar">
         ${chip("data-compra-forma", "pix", forma === "pix", `${icon('pix', 13, 'currentColor')} Pix`)}
@@ -9219,7 +9323,7 @@ function pcComprarCreditos(c) {
       </div>
       ${k.erro ? `<p class="form-error">${icon('warning', 14)} ${esc(k.erro)}</p>` : ""}
       <button type="button" class="cta-btn cta-primary" id="pc-compra-pagar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(15) + " Abrindo o pagamento..." : `Pagar ${valor ? `R$ ${esc(valor)} ` : ""}${forma === "pix" ? "com Pix" : "com cartão"}`}</button>
-      <p class="footnote" style="margin-top:8px">${forma === "pix" ? "O QR code aparece aqui mesmo." : "O cartão é pago na página do Mercado Pago, e você volta para cá."} Os créditos entram assim que o pagamento é confirmado.</p>
+      <p class="footnote" style="margin-top:8px">${forma === "pix" ? "O QR code aparece aqui mesmo." : "O cartão é pago na página do Mercado Pago, e você volta para cá."} ${plano ? "O plano muda assim que o pagamento é confirmado." : "Os créditos entram assim que o pagamento é confirmado."}${pagamentoDeTeste() ? " No site de teste, sem o Mercado Pago ligado, o pagamento é de teste e nada é cobrado." : ""}</p>
     </div>`;
 }
 async function chamarPagamento(acao, compra) {
@@ -9228,34 +9332,101 @@ async function chamarPagamento(acao, compra) {
   try { d = await r.json(); } catch { /* resposta vazia */ }
   return { status: r.status, d };
 }
-async function pagarCreditos() {
+async function pagarCompra() {
   const c = minhaAcademia();
   const k = state.pcCompra || {};
   if (!c || k.enviando) return;
+  const plano = k.tipo === "plano";
   const outro = document.getElementById("pc-compra-outro");
   if (outro) k.valorOutro = outro.value;
-  const valor = k.outro ? Number(k.valorOutro || 0) : Number(k.valor || 100);
+  const periodo = k.periodo || "mensal";
+  const valor = plano ? valorDoPlano(k.plano, periodo) : k.outro ? Number(k.valorOutro || 0) : Number(k.valor || 100);
   const forma = k.forma || "pix";
-  if (!Number.isInteger(valor) || valor < 20 || valor > 5000) { k.erro = "Escolha um valor de R$ 20 a R$ 5.000, em reais inteiros."; render(); return; }
+  if (!plano && (!Number.isInteger(valor) || valor < 20 || valor > 5000)) { k.erro = "Escolha um valor de R$ 20 a R$ 5.000, em reais inteiros."; render(); return; }
   k.erro = ""; k.enviando = true; render();
+  const base = plano ? { tipo: "plano", plano: k.plano, periodo, forma } : { tipo: "creditos", forma };
+  const oQue = plano ? `o plano ${nomeDoPlano(k.plano)} ${periodo}` : `R$ ${valor} de créditos`;
   let compra;
   try {
-    const r = await sb.rpc('criar_compra_de_creditos', { p_academia: c.id, p_valor: valor, p_forma: forma });
+    const r = plano
+      ? await sb.rpc('criar_compra_de_plano', { p_academia: c.id, p_plano: k.plano, p_periodo: periodo, p_forma: forma })
+      : await sb.rpc('criar_compra_de_creditos', { p_academia: c.id, p_valor: valor, p_forma: forma });
     if (r.error) throw r.error;
     compra = r.data;
     const { status, d } = await chamarPagamento("cobrar", compra);
-    if (status === 503) { state.pcCompra = { passo: "desligado" }; render(); return; }
+    if ((status === 503 || status === 404) && pagamentoDeTeste()) {
+      state.pcCompra = { ...base, passo: "teste", compra, valorCobrado: valor };
+      registrarPasso("acao", { academia: c.id, detalhe: `Abriu o pagamento de teste de ${oQue}` });
+      render();
+      return;
+    }
+    if (status === 503) { state.pcCompra = { ...base, passo: "desligado" }; render(); return; }
     if (status !== 200) throw new Error(d.erro || "Não consegui abrir o pagamento.");
-    if (d.forma === "cartao" && d.link) { registrarPasso("acao", { academia: c.id, detalhe: `Foi pagar R$ ${valor} de créditos no cartão` }); location.href = d.link; return; }
-    state.pcCompra = { passo: "pix", compra, valorCobrado: d.valor || valor, pix: { qr: d.qr, copia: d.copia, expira: d.expira }, inicio: Date.now() };
-    registrarPasso("acao", { academia: c.id, detalhe: `Abriu o Pix de R$ ${valor} de créditos` });
+    if (d.forma === "cartao" && d.link) { registrarPasso("acao", { academia: c.id, detalhe: `Foi pagar ${oQue} no cartão` }); location.href = d.link; return; }
+    state.pcCompra = { ...base, passo: "pix", compra, valorCobrado: d.valor || valor, pix: { qr: d.qr, copia: d.copia, expira: d.expira }, inicio: Date.now() };
+    registrarPasso("acao", { academia: c.id, detalhe: `Abriu o Pix de ${oQue}` });
     render();
     esperarPagamento();
   } catch (e) {
     k.enviando = false;
-    k.erro = /R\$ 20|Pix ou cartão|Completo e do Premium|não administra/.test(String(e && e.message || "")) ? e.message : falhou("abrir o pagamento", e, { texto: "Não consegui abrir o pagamento agora. Tente de novo em instantes.", academia: c.id });
+    k.erro = /R\$ 20|Pix ou cartão|Completo e do Premium|não administra|responsável principal|já está nesse plano/.test(String(e && e.message || "")) ? e.message : falhou("abrir o pagamento", e, { texto: "Não consegui abrir o pagamento agora. Tente de novo em instantes.", academia: c.id });
     render();
   }
+}
+// O gateway fingido: o Pix pago ou vencido, ou o cartão (APRO aprova, OTHE
+// recusa). O banco confirma como se fosse o Mercado Pago (simular_pagamento).
+async function simularPagamento(qual) {
+  const c = minhaAcademia();
+  const k = state.pcCompra;
+  if (!c || !k || k.passo !== "teste" || k.simulando) return;
+  let resultado = qual;
+  if (qual === "cartao") {
+    const ler = (id) => (document.getElementById(id) || {}).value || "";
+    k.cartao = { numero: ler("pc-cartao-numero"), validade: ler("pc-cartao-validade"), cvv: ler("pc-cartao-cvv"), nome: ler("pc-cartao-nome") };
+    const digitos = k.cartao.numero.replace(/\D/g, "");
+    if (digitos.length < 13 || digitos.length > 19) { k.erro = "Confira o número do cartão."; render(); return; }
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(k.cartao.validade.trim())) { k.erro = "Escreva a validade como MM/AA."; render(); return; }
+    if (!/^\d{3,4}$/.test(k.cartao.cvv.trim())) { k.erro = "Confira o CVV, atrás do cartão."; render(); return; }
+    if (!k.cartao.nome.trim()) { k.erro = "Escreva o nome como está no cartão."; render(); return; }
+    resultado = k.cartao.nome.trim().toUpperCase() === "OTHE" ? "recusado" : "aprovado";
+  }
+  k.erro = ""; k.simulando = qual === "cartao" ? "cartao" : resultado; render();
+  let r;
+  try { r = await sb.rpc('simular_pagamento', { p_compra: k.compra, p_resultado: resultado }); } catch (e) { r = { error: e }; }
+  if (r.error) {
+    k.simulando = false;
+    k.erro = /banco de teste|não administra/.test(String(r.error.message || "")) ? r.error.message : falhou("simular o pagamento", r.error, { texto: "Não consegui simular o pagamento agora. Tente de novo em instantes.", academia: c.id });
+    render();
+    return;
+  }
+  if (r.data === "paga") { await compraPaga(c, k); return; }
+  compraRecusada(k, qual === "recusado" ? "O Pix venceu sem pagamento. Tente de novo." : undefined);
+}
+async function compraPaga(c, k) {
+  const plano = k.tipo === "plano";
+  let valor = k.valorCobrado;
+  if (!valor) {
+    // Na volta do cartão, o valor sai das compras da academia.
+    try { valor = (((await sb.rpc('minhas_compras', { p_academia: c.id })).data || []).find(y => y.id === k.compra) || {}).valor; } catch { valor = 0; }
+  }
+  state.pcCompra = { passo: "ok", tipo: k.tipo, plano: k.plano, valorPago: valor };
+  registrarPasso("acao", { academia: c.id, detalhe: plano ? `Pagou o plano ${nomeDoPlano(k.plano || planoAtual())}` : "Créditos pagos" });
+  if (plano) {
+    // Os números guardam o plano de antes (planoAtual lê deles primeiro).
+    state.numeros = null;
+    await recarregarConta();
+    await loadEverything();
+    if (acessoCompleto()) carregarNumeros();
+  } else {
+    await carregarPromocoesPorEmail(false);
+  }
+  render();
+}
+function compraRecusada(k, texto) {
+  const v = Number(k.valorCobrado || 0);
+  const valor = k.tipo === "plano" || !v ? {} : VALORES_DE_CREDITO.includes(v) ? { valor: v } : { outro: true, valorOutro: String(v) };
+  state.pcCompra = { tipo: k.tipo, plano: k.plano, periodo: k.periodo, forma: k.forma, ...valor, erro: texto || "O pagamento foi recusado. Tente de novo, ou com outra forma de pagamento." };
+  render();
 }
 // Confere de tempos em tempos (como o Pix do iFood e do Mercado Livre): a
 // cada 4 segundos no banco e, a cada 20, também no Mercado Pago. Para em 35
@@ -9279,18 +9450,13 @@ function esperarPagamento() {
         if (x) situacao = x.situacao;
       }
     } catch { /* tenta de novo na próxima volta */ }
-    if (situacao === "paga") {
-      state.pcCompra = { passo: "ok", valorPago: atual.valorCobrado };
-      registrarPasso("acao", { academia: c.id, detalhe: "Créditos pagos" });
-      await carregarPromocoesPorEmail(false);
-      render();
-      return;
-    }
-    if (situacao === "recusada") { state.pcCompra = { erro: "O pagamento foi recusado. Tente de novo, ou com outra forma de pagamento." }; render(); return; }
+    if (situacao === "paga") { await compraPaga(c, atual); return; }
+    if (situacao === "recusada") { compraRecusada(atual); return; }
     esperarPagamento();
   }, 4000);
 }
-// Volta da página do cartão: /parceiros/promocoes-email?compra=<id>.
+// Volta da página do cartão: /parceiros/promocoes-email?compra=<id> (ou
+// /parceiros/plano?compra=<id>, a compra do plano).
 function compraDaVolta() {
   try {
     const id = new URLSearchParams(location.search).get("compra");
@@ -9298,7 +9464,7 @@ function compraDaVolta() {
     const u = new URL(location.href);
     u.searchParams.delete("compra");
     history.replaceState(history.state, "", u.pathname + u.search + u.hash);
-    state.pcCompra = { passo: "volta", compra: id, inicio: Date.now(), voltas: 0 };
+    state.pcCompra = { tipo: state.parceirosAba === "plano" ? "plano" : "creditos", passo: "volta", compra: id, inicio: Date.now(), voltas: 0 };
     esperarPagamento();
   } catch { /* sem a volta */ }
 }
@@ -9399,7 +9565,7 @@ function pcPromocoesPorEmail() {
           <li><span>Créditos</span><strong>${saldo ? `R$ ${esc(saldo)}` : "Sem créditos"} · <button type="button" class="inline-link" id="pc-comprar-creditos">Comprar ›</button></strong></li>
         </ul>
       </div>
-      ${state.pcCompra ? pcComprarCreditos(c) : ""}
+      ${state.pcCompra && state.pcCompra.tipo !== "plano" ? pcComprarCreditos(c) : ""}
       ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
       ${!editando ? `
       <div class="pc-card pc-promo" id="pc-lance">
@@ -10609,7 +10775,13 @@ function ligarEventosParceiros() {
   const pcCompraOutro = document.getElementById("pc-compra-outro");
   if (pcCompraOutro) pcCompraOutro.oninput = () => { (state.pcCompra || {}).valorOutro = pcCompraOutro.value; const b = document.getElementById("pc-compra-pagar"); const v = Number(pcCompraOutro.value || 0); if (b && !state.pcCompra.enviando) b.textContent = `Pagar ${v ? `R$ ${v} ` : ""}${(state.pcCompra.forma || "pix") === "pix" ? "com Pix" : "com cartão"}`; };
   const pcCompraPagar = document.getElementById("pc-compra-pagar");
-  if (pcCompraPagar) pcCompraPagar.onclick = pagarCreditos;
+  if (pcCompraPagar) pcCompraPagar.onclick = pagarCompra;
+  document.querySelectorAll("[data-compra-periodo]").forEach(el => { el.onclick = () => { const k = state.pcCompra || (state.pcCompra = {}); k.periodo = el.dataset.compraPeriodo; k.erro = ""; render(); }; });
+  document.querySelectorAll("[data-simular]").forEach(el => { el.onclick = () => simularPagamento(el.dataset.simular); });
+  if (state.page === "parceiros" && contaAcademia) {
+    carregarPagamentoDeTeste();
+    if (state.parceirosAba === "plano") compraDaVolta();
+  }
   const pcCompraCopiar = document.getElementById("pc-compra-copiar");
   if (pcCompraCopiar) pcCompraCopiar.onclick = async () => { const t = document.getElementById("pc-compra-codigo"); try { await navigator.clipboard.writeText(t.value); } catch { t.select(); document.execCommand && document.execCommand("copy"); } state.pcCompra.copiado = true; render(); };
   const pcLanceAlterar = document.getElementById("pc-lance-alterar");
@@ -19197,11 +19369,11 @@ function admLeiloesHtml() {
     </section>
     ${state.admCompras ? `
     <section class="adm-bloco">
-      <h2 class="adm-h2">Compras de créditos (30 dias)</h2>
+      <h2 class="adm-h2">Compras de créditos e planos (30 dias)</h2>
       ${state.admCompras.length ? state.admCompras.map(x => `
-        <div class="adm-lance"><strong>${esc(x.academia)}</strong> · R$ ${esc(x.valor)} · ${x.forma === "pix" ? "Pix" : "cartão"} · ${x.situacao === "paga" ? `paga ${esc(dataHora(x.paga_em))}` : x.situacao === "recusada" ? "recusada" : `aberta desde ${esc(dataHora(x.created_at))}`}</div>`).join("")
+        <div class="adm-lance"><strong>${esc(x.academia)}</strong> · ${x.tipo === "plano" ? `plano ${esc(nomeDoPlano(x.plano))} ${x.periodo === "anual" ? "anual" : "mensal"} · ` : ""}R$ ${esc(x.valor)} · ${x.forma === "pix" ? "Pix" : "cartão"} · ${x.situacao === "paga" ? `paga ${esc(dataHora(x.paga_em))}` : x.situacao === "recusada" ? "recusada" : `aberta desde ${esc(dataHora(x.created_at))}`}${x.de_teste ? ` · <span class="pc-teste-tag">Teste</span>` : ""}</div>`).join("")
         : `<p class="adm-nota">Nenhuma compra nos últimos 30 dias.</p>`}
-      <p class="adm-nota">Pagas: R$ ${esc(state.admCompras.filter(x => x.situacao === "paga").reduce((t, x) => t + Number(x.valor || 0), 0))}. O pagamento entra pelo Mercado Pago.</p>
+      <p class="adm-nota">Pagas: R$ ${esc(state.admCompras.filter(x => x.situacao === "paga" && !x.de_teste).reduce((t, x) => t + Number(x.valor || 0), 0))}${state.admCompras.some(x => x.de_teste && x.situacao === "paga") ? ` (fora R$ ${esc(state.admCompras.filter(x => x.situacao === "paga" && x.de_teste).reduce((t, x) => t + Number(x.valor || 0), 0))} de teste)` : ""}. O pagamento entra pelo Mercado Pago.</p>
     </section>` : ""}
     ${feitos.length ? `
     <section class="adm-bloco">

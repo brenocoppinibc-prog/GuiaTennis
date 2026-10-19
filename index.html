@@ -8368,7 +8368,7 @@ function pcInicio() {
   const passos = [
     { t: "Crie a sua conta", tempo: "2 minutos", d: "Comece pelo seu e-mail e preencha os dados de contato. É grátis e não pede cartão.", ic: "key" },
     { t: "Encontre a sua academia", tempo: "Na hora", d: "Procure pelo nome e pelo bairro e toque em \"Administrar esta academia\". Se a sua ainda não estiver no GuiaTennis, cadastre em poucos minutos.", ic: "search" },
-    { t: "Declare que responde pela academia", tempo: "Na hora", d: "Marque a declaração e, com o e-mail confirmado, a ficha passa a ser sua na hora — e a academia nova entra no ar. Se a academia já tem responsável, o pedido vai para ele; se houver disputa, o GuiaTennis confirma por um código no WhatsApp da academia.", ic: "check" },
+    { t: "Declare que responde pela academia", tempo: "Na hora", d: "Marque a declaração e, com o e-mail confirmado, a ficha passa a ser sua na hora — e o cadastro novo entra no ar. Se a academia já tem responsável, o pedido vai para ele; se houver disputa, o GuiaTennis confirma por um código no WhatsApp da academia.", ic: "check" },
     { t: "Complete a ficha e receba jogadores", tempo: "Todo dia", d: "Horário, preços, fotos e como chegar. O jogador compara, chama no seu WhatsApp, e você acompanha as visitas e os contatos no GuiaTennis Parceiros.", ic: "barchart" },
   ];
   return `
@@ -8416,18 +8416,18 @@ function pcInicio() {
     </section>
     <section class="pc-sec">
       <h2 class="display" ${revela("plano-h")}>Planos</h2>
-      <p class="pc-sec-sub" ${revela("plano-s", 1)}>Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>
+      <p class="pc-sec-sub" ${revela("plano-s", 1)}>Comece grátis e aprimore quando quiser. No Completo, o jogador vê a ficha inteira: todas as fotos e comodidades, o Instagram e o site, a regra de cancelamento e como chegar, e a academia entra entre as recomendadas da página inicial. No Premium, ela aparece no topo da busca, com o selo dourado, e vocês veem os números da ficha.</p>
       ${pcCartoesDePlano(null, true)}
-    </section>
-    <section class="pc-sec" ${revela("faq")}>
-      <h2 class="display">Perguntas frequentes</h2>
-      ${pcFaq(perguntasParceiros().slice(0, 6))}
-      <a href="/parceiros/ajuda" class="pc-link-btn" data-pc="ajuda">Ver todas as perguntas ›</a>
     </section>
     <section class="pc-fim" ${revela("fim")}>
       <h2 class="display">Pronto para aparecer para quem procura?</h2>
       <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a>
       <p>Prefere conversar? <a href="${whatsappGuia("Olá! Tenho uma academia de tênis e quero aparecer no GuiaTennis.")}" target="_blank" rel="noreferrer">Chame o GuiaTennis no WhatsApp</a>.</p>
+    </section>
+    <section class="pc-sec" ${revela("faq")}>
+      <h2 class="display">Perguntas frequentes</h2>
+      ${pcFaq(perguntasParceiros().slice(0, 6))}
+      <a href="/parceiros/ajuda" class="pc-link-btn" data-pc="ajuda">Ver todas as perguntas ›</a>
     </section>`;
 }
 
@@ -8561,7 +8561,7 @@ function pcPlanos(logado) {
       <h1 class="display">${logado && c ? `Plano ${esc(nomeDoPlano(atual))}${atual === "premium" ? " " + seloPremium(22) : ""}` : "Planos"}</h1>
       ${logado && state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
       ${logado && state.contaErro ? `<p class="form-error">${icon('warning', 14)} ${esc(state.contaErro)}</p>` : ""}
-      ${logado && c ? `<p class="pc-sec-sub">${esc(planoPorChave(atual).resumo)} ${esc(precoDoPlano(planoPorChave(atual)))}.</p>` : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>`}
+      ${logado && c ? `<p class="pc-sec-sub">${esc(planoPorChave(atual).resumo)} ${esc(precoDoPlano(planoPorChave(atual)))}.</p>` : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser. No Completo, o jogador vê a ficha inteira: todas as fotos e comodidades, o Instagram e o site, a regra de cancelamento e como chegar, e a academia entra entre as recomendadas da página inicial. No Premium, ela aparece no topo da busca, com o selo dourado, e vocês veem os números da ficha.</p>`}
       ${logado && c ? pcOQueMelhorar(c, atual) : ""}
       ${logado && c && state.pcCompra && state.pcCompra.tipo === "plano" ? pcComprarCreditos(c) : ""}
       ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}

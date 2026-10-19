@@ -2932,6 +2932,17 @@ cobra taxa e não fica no meio** da negociação.
       jogadores, quem administra academia lê "Para excluir a conta, use
       Perfil › Excluir minha conta no GuiaTennis Parceiros".
     - Teste: `confianca-na-ficha.js`.
+126. **Página inicial do Parceiros: o benefício do Completo para os
+    jogadores e o convite antes das perguntas** (pedido de 19/10/2026, com
+    prints): no passo "Declare que responde pela academia", "— e o cadastro
+    novo entra no ar" (era "a academia nova"); em Planos (e na página
+    Planos), "No Completo, o jogador vê a ficha inteira: todas as fotos e
+    comodidades, o Instagram e o site, a regra de cancelamento e como
+    chegar, e a academia entra entre as recomendadas da página inicial. No
+    Premium, ela aparece no topo da busca, com o selo dourado, e vocês veem
+    os números da ficha." (antes falava das 5 pessoas da equipe); e o
+    bloco "Pronto para aparecer para quem procura?" fica **acima** das
+    Perguntas frequentes.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

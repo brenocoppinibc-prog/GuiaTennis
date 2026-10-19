@@ -22,7 +22,10 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 16/10/2026
+**Atualizado em:** 19/10/2026
+
+> **Estado (19/10/2026):** o Breno trocou de chat: leia o "Resumo (19/10/2026,
+> ao trocar de chat)" na seção 11.
 
 > **Estado (16/10/2026):** o Breno trocou de chat: leia o "Resumo (16/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -4482,6 +4485,46 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (19/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 117** (último commit de código: `1d5c3fb`, mais este
+documento). O "aplicar" passou o SQL no banco de teste até
+`20261019130000_plano_e_creditos_pelo_site`. Neste chat entraram as regras
+113 a 117: sem "avisos", tudo é promoção, com as abas **Na ficha** e **Por
+e-mail** (113); **uma promoção por vez** na ficha, "Alterar" no lugar de
+"Mudar" (114); o nome da academia no alto como seletor, "Ver a prévia",
+"Já enviadas" e sem textos repetidos (115); o **leilão das promoções no
+e-mail do GuiaTennis do bairro**, duas por semana, lance × qualidade,
+segundo preço + R$ 1, créditos pré-pagos, aba Leilões no admin (116); e o
+**plano escolhido no site** (grátis por enquanto, só o responsável
+principal) com os **créditos comprados no site** (Pix na tela e cartão no
+Mercado Pago, `netlify/functions/pagamento.mjs`) (117). SQL novos:
+`20261016120000_promocoes_na_ficha_e_por_email`,
+`20261016130000_uma_promocao_por_vez`,
+`20261019120000_leilao_das_notificacoes`,
+`20261019130000_plano_e_creditos_pelo_site`. **Pendências para o Breno:**
+(1) ligar o Mercado Pago (criar a conta e as variáveis
+`MERCADOPAGO_ACCESS_TOKEN`, `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no
+Netlify, Deploy Previews com o banco de teste e Production com o de
+verdade; regra 117); sem elas, a compra oferece o WhatsApp; (2) decidir se
+o Premium fica grátis (qualquer academia vira "Patrocinado") ou só o
+Completo, até ter preço; (3) decidir se o leilão só abre em bairro com
+público mínimo; (4) os preços dos planos (mensal e anual com desconto
+quando houver preço); (5) manter ou tirar o "Confirmar depois" na tela do
+e-mail do cadastro (regra 110). **A descrição do PR parou na seção 26 e no
+passo de teste 35**: faltam as regras 98 a 117 (atualizar quando o Breno
+pedir ou antes do merge). Testes: a última bateria completa deu **1.516
+verificações, nenhuma falha** (53 arquivos do navegador, `onde.mjs` e
+`pagamento.mjs`; comando na seção 6) e **432 no `banco-emails.py`**. O
+banco local (seção 6) precisa ser criado de novo num container novo
+(`initdb`, `banco-local-base.sql`, `aplicar.sh teste`); ele guarda estado
+entre rodadas, e a seção 32 devolve o plano da Pinheiros ao fim. O merge
+espera o Breno dizer **"pode subir"**. Este chat **deixou de acompanhar o
+PR** (sem inscrição, sem conferência marcada): no chat novo, voltar a
+acompanhar o PR #5. Seguem valendo: respostas curtas, ler só o trecho que
+muda, prints só quando o pedido for de visual, e comparar com referências
+internacionais grandes nas decisões de site, Instagram e marketing.
 
 **Resumo (16/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

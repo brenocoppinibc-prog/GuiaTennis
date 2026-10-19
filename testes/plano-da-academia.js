@@ -11,8 +11,9 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(500);
   let corpo = await texto(page, '#parceiros .pc-main');
   const pos = (t) => corpo.indexOf(t);
-  ok(corpo.includes('O PLANO DE HOJE') || corpo.includes('O plano de hoje'), 'a página começa pelo plano de hoje');
-  ok(corpo.includes('A Só Aula Tennis está no Básico') && corpo.includes('É grátis e continua grátis.') && corpo.includes('Responder às avaliações'), 'o plano de hoje: o nome do plano e o que ele já entrega');
+  // 19/10/2026: o título diz o plano, sem o cartão "O plano de hoje" repetindo.
+  ok((await texto(page, '#parceiros h1')) === 'Plano Básico' && !/O PLANO DE HOJE|O plano de hoje/.test(corpo) && !corpo.includes('A Só Aula Tennis está no'), 'a página começa pelo plano de hoje, no título, sem repetir');
+  ok(corpo.includes('Para aparecer na busca e receber jogadores. Grátis.') && corpo.includes('Responder às avaliações'), 'o resumo do plano embaixo do título, e o que ele entrega no cartão');
   ok(pos('Só Aula Tennis está no Básico') < pos('O que pode melhorar') && pos('O que pode melhorar') < pos('A mudança é simples') && pos('A mudança é simples') < pos('Compare os planos'),
     'a ordem: o plano de hoje, o que pode melhorar, a mudança e, por fim, os planos');
   ok(/NA FICHA|Na ficha/.test(corpo) && /NA BUSCA|Na busca/.test(corpo) && /COM OS JOGADORES|Com os jogadores/.test(corpo)
@@ -26,7 +27,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', premium: ['a1'] }));
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('A Só Aula Tennis está no Premium') && !corpo.includes('O que pode melhorar') && corpo.includes('Aproveitem o Premium'), 'Premium: o plano de hoje e o que aproveitar, sem dores');
+  ok((await texto(page, '#parceiros h1')).startsWith('Plano Premium') && !corpo.includes('O que pode melhorar') && corpo.includes('Aproveitem o Premium'), 'Premium: o plano de hoje e o que aproveitar, sem dores');
   await browser.close();
 
   // ---- avaliação: quem avaliou e a nota em cima ----

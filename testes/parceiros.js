@@ -55,7 +55,9 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     return { emCima: prim === -1 || li.slice(prim).every(l => l.classList.contains('nao')), ate3: li.some(l => l.innerText.includes('Até 3 comodidades')) };
   }));
   ok(ordemPlanos.every(p => p.emCima) && ordemPlanos.map(p => p.ate3).join() === 'true,false,false', 'em cada plano, o que tem em cima e o que não tem embaixo; quem tem "Todas as comodidades" não mostra "Até 3" como falta — ' + JSON.stringify(ordemPlanos));
-  ok(tabela === '8,13,20', 'cada plano mostra o que libera, um acima do outro — ' + tabela);  // + o resumo do mês (regra 87), as recomendadas (regra 101) e os avisos por e-mail no Completo e no Premium (regra 104) e o Completo nas recomendadas (regra 106); do mesmo grupo, só a maior versão (regra 109)
+  // 19/10/2026: cada plano mostra só o que soma ao de baixo ("Tudo do Básico, mais:").
+  const mais = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => (p.querySelector('.pc-plano-mais') || {}).textContent || '').join('|'));
+  ok(tabela === '8,7,7' && mais === '|Tudo do Básico, mais:|Tudo do Completo, mais:', 'cada plano mostra só o que soma ao de baixo — ' + tabela + ' · ' + mais);  // + o resumo do mês (regra 87), as recomendadas (regra 101) e os avisos por e-mail no Completo e no Premium (regra 104) e o Completo nas recomendadas (regra 106); do mesmo grupo, só a maior versão (regra 109)
   const pessoasPorPlano = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-lista li').innerText.match(/\d+/)[0]).join());
   ok(pessoasPorPlano === '1,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
   ok(!/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e na busca'), 'Premium mostra as promoções, que já funcionam (sem "Em breve")');
@@ -64,6 +66,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   corpo = await texto(page, '#parceiros .pc-main');
   const faq = await page.evaluate(() => document.querySelectorAll('#parceiros .pc-faq details').length);
   ok(faq === 18 && corpo.includes('E se outra pessoa estiver administrando a minha academia?') && corpo.includes('O que quer dizer "atualizada há…" na ficha?') && corpo.includes('Com duas academias, pago um plano só?') && corpo.includes('Tenho mais de uma academia. Preciso de outra conta?') && corpo.includes('Posso dar acesso a mais pessoas da academia?') && corpo.includes('A academia pode avaliar outras academias?') && corpo.includes('Esqueci a senha') && !corpo.includes('Pagar um plano'), 'Ajuda com as perguntas das academias — ' + faq);
+  ok(await page.$('#parceiros .pc-sec-sub [data-abrir-chat]') && (await texto(page, '#parceiros .pc-sec-sub')).includes('Não achou a sua? Fale com a gente.'), '"Fale com a gente" é um link na frase da Ajuda (19/10)');
   const contato = await page.evaluate(() => [...document.querySelectorAll('.pc-contato a')].map(a => a.getAttribute('href').slice(0, 20)).join() + '|' + !!document.querySelector('.pc-contato [data-abrir-chat]'));
   ok(!contato.includes('https://wa.me/') && contato.includes('mailto:') && contato.endsWith('|true'), 'Ajuda tem o chat de ajuda (que leva ao WhatsApp se precisar) e o e-mail do GuiaTennis');
   await page.goBack();
@@ -446,7 +449,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.click('.pc-vitrine-btn');
   await page.waitForTimeout(200);
   t = await tela(page);
-  ok(t.aba === 'plano' && t.h1 === 'Seu plano', '"Ver os números no Premium" leva aos planos');
+  ok(t.aba === 'plano' && t.h1 === 'Plano Básico', '"Ver os números no Premium" leva aos planos');
   const meu = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => (p.querySelector('.pc-plano-tag')?.innerText || '-')).join());
   ok(meu === 'Seu plano,Recomendado,-', 'Plano marca o plano atual e recomenda o próximo — ' + meu);
   ok(await texto(page, '.pc-plano.destaque [data-escolher-plano="completo"]') === 'Mudar para o Completo', '"Mudar para o Completo" no plano recomendado (escolhe direto, 19/10/2026)');

@@ -216,7 +216,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     texto: document.querySelector('#parceiros .pc-main')?.textContent.replace(/\s+/g, ' ') || '',
     wa: decodeURIComponent(document.querySelector('#parceiros .pc-main .footnote a')?.getAttribute('href') || ''),
   }));
-  ok(plano.h1 === 'Plano desta academia' && plano.eyebrow === 'Quadra Locação', 'com duas academias, a página de plano diz de qual academia é');
+  ok(plano.h1 === 'Plano Básico' && plano.eyebrow === 'Quadra Locação', 'com duas academias, o alto diz de qual academia é e o título, o plano dela');
   ok(plano.texto.includes('Cada academia tem o próprio plano'), 'deixa claro que cada academia tem o próprio plano');
   ok(plano.texto.includes('o responsável principal muda aqui, na hora'), 'o plano muda ali mesmo (grátis por enquanto, 19/10/2026)');
   // O plano de cada academia aparece no seletor do alto (o cartão com a lista saiu em 19/10).

@@ -2814,6 +2814,29 @@ cobra taxa e não fica no meio** da negociação.
     academia"; tocar fora fecha. Em Plano, saiu o cartão "Plano de cada
     academia" (o plano de cada uma aparece no seletor). Teste:
     `varias-academias.js`.
+120. **Link na frase, atalho para revisar e planos enxutos** (pedido de
+    19/10/2026, com prints: "link inserido na frase", "atalho para revisar",
+    "tudo isso indica a mesma coisa e os planos estão muito poluído… tirar
+    algumas informações que são básicas para todos os planos, ou tipo cards
+    que deslizam").
+    - Ajuda do Parceiros: "Não achou a sua? **Fale com a gente**." com o
+      link na frase (abre o chat de ajuda), `.pc-link-na-frase`.
+    - Atualizações: "No ar como ficha básica. **Revise e salve a ficha**
+      para confirmar…" com o link na frase, que abre a ficha direto na
+      prévia (`data-revisar` no `.editar-academia`).
+    - Página Plano: o título diz o plano ("Plano Premium", com o selo),
+      com o resumo e o preço embaixo; saiu o cartão "O plano de hoje" e o
+      "Plano desta academia" (o nome da academia fica no seletor do alto).
+    - Cartões dos planos (Plano, Planos e a página inicial do Parceiros):
+      só o que cada plano soma ao de baixo, "Tudo do Básico, mais:" /
+      "Tudo do Completo, mais:" (como Shopify, Notion e Slack), sem os
+      itens riscados; os números do Desempenho numa linha só
+      (`novidadesDoPlano`). No celular, deslizam de lado, um por vez, com
+      as bolinhas embaixo, abrindo no plano de hoje (ou no recomendado),
+      como os planos do Spotify e da Netflix (`ligarCartoesDePlano`); no
+      computador, os três lado a lado. Ao descer, acendem juntos.
+    - Testes: `plano-da-academia.js`, `parceiros.js`, `varias-academias.js`
+      e `confianca-na-ficha.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

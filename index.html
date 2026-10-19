@@ -1612,8 +1612,7 @@
   .pc-oferta-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8E6D25; margin: 0 0 8px; }
   .pc-oferta-lista { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
   /* Página Plano da academia (15/10/2026). */
-  .pc-plano-hoje { border-color: var(--green-line); }
-  .pc-plano-hoje .pc-oferta-lista li, .pc-conforto .pc-oferta-lista li { display: flex; gap: 9px; align-items: flex-start; font-size: 14px; line-height: 1.45; }
+  .pc-conforto .pc-oferta-lista li { display: flex; gap: 9px; align-items: flex-start; font-size: 14px; line-height: 1.45; }
   .pc-plano-comparar { margin: 30px 0 12px; font-size: 20px; }
   .pc-dor-caminho + .pc-dor-caminho { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
   .pc-dor-cm { margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--gold-dark, #8E6D25); }
@@ -1670,6 +1669,7 @@
   .reg-secoes button { flex-shrink: 0; white-space: nowrap; border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
   .reg-secoes button:hover { border-color: var(--green); color: var(--green); }
   .pc-linha { margin: 18px 4px 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .pc-link-na-frase { font-size: inherit !important; text-decoration: underline !important; text-underline-offset: 2px; }
   .pc-linha-link { display: inline; background: none; border: none; padding: 0; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--green) !important; text-decoration: none; cursor: pointer; }
   .pc-linha-link:hover { text-decoration: underline; }
   /* Barra do processo do cadastro, como a do trivago Business Studio. */
@@ -1880,8 +1880,15 @@
   .pc-passo-n { display: inline-flex; flex-shrink: 0; width: 34px; height: 34px; border-radius: 999px; background: var(--green); color: #fff; font-weight: 700; align-items: center; justify-content: center; font-size: 15px; }
   .pc-passo-n:empty { display: none; }
   .pc-passo-t { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; margin: 0 0 4px; }
-  .pc-planos { display: grid; gap: 22px; }
-  @media (min-width: 900px) { .pc-planos { grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start; } }
+  .pc-planos { display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 20px; margin: 0 -20px; padding: 14px 20px 6px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .pc-planos::-webkit-scrollbar { display: none; }
+  .pc-planos > .pc-plano { flex: 0 0 86%; scroll-snap-align: center; }
+  .pc-planos-pontos { display: flex; justify-content: center; gap: 8px; margin: 12px 0 4px; }
+  .pc-planos-pontos span { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background .2s, transform .2s; }
+  .pc-planos-pontos span.on { background: var(--green); transform: scale(1.15); }
+  @media (min-width: 900px) { .pc-planos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start; overflow: visible; margin: 0; padding: 14px 0 0; } .pc-planos > .pc-plano { flex: none; } .pc-planos-pontos { display: none; } }
+  .pc-plano-mais { margin: 16px 0 0; font-size: 13px; font-weight: 700; color: var(--text); }
+  .pc-plano-mais + .pc-plano-lista { margin-top: 10px; }
   .pc-plano { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 26px 20px 22px; }
   .pc-plano.destaque { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
   .pc-plano.atual { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
@@ -6905,6 +6912,7 @@ function ligarEventosConta() {
   // Não segura o link: o WhatsApp abre, e o pedido fica anotado.
   document.querySelectorAll("[data-pedir-plano]").forEach(el => { el.addEventListener("click", () => pedirPlanoDoPainel(el.dataset.pedirPlano)); });
   document.querySelectorAll("[data-escolher-plano]").forEach(el => { el.onclick = () => escolherPlano(el.dataset.escolherPlano); });
+  ligarCartoesDePlano();
   document.querySelectorAll("[data-outra-academia]").forEach(el => { el.onclick = adicionarOutraAcademia; });
   document.querySelectorAll("[data-entrar-academia]").forEach(el => { el.onclick = abrirLoginAcademia; });
 
@@ -7483,10 +7491,10 @@ const PC_RECURSOS = [
   // Regra 116 (18/10/2026): o leilão das promoções no e-mail do GuiaTennis
   // do bairro, duas por semana (antes, por envio).
   { t: "Leilão da promoção no e-mail do GuiaTennis do bairro, duas por semana (mais barato no Premium)", p: ["completo", "premium"] },
-  { t: "Visitas, contatos e o dia a dia da ficha", p: ["premium"] },
-  { t: "De onde vieram (Instagram, Google…), o aparelho e os canais", p: ["premium"] },
-  { t: "Bairros de quem procurou e comparação com a cidade", p: ["premium"] },
-  { t: "Histórico completo, desde o começo", p: ["premium"] },
+  { t: "Visitas, contatos e o dia a dia da ficha", p: ["premium"], numeros: true },
+  { t: "De onde vieram (Instagram, Google…), o aparelho e os canais", p: ["premium"], numeros: true },
+  { t: "Bairros de quem procurou e comparação com a cidade", p: ["premium"], numeros: true },
+  { t: "Histórico completo, desde o começo", p: ["premium"], numeros: true },
   // Resumo do mês por e-mail para todos, com os números do plano; o
   // relatório completo é do Premium (09/10/2026, regra 87; antes, só o
   // Premium recebia). Sem caixa de "quero receber": desliga no Perfil.
@@ -7678,20 +7686,6 @@ const PC_DORES = [
   { plano: "premium", caminho: "gestao", t: "Sem saber de onde vêm os jogadores", s: "Desempenho mostra quem chamou, de onde vieram e os bairros de quem procurou" },
   { plano: "premium", caminho: "gestao", t: "A equipe passou de 5 pessoas", s: "até 10 pessoas e o selo dourado ao lado do nome" },
 ];
-function pcPlanoDeHoje(c, atual) {
-  const p = planoPorChave(atual);
-  const tem = recursosDoPlano(atual).filter(r => r.p.includes(atual));
-  return `
-    <div class="pc-card pc-plano-hoje">
-      <p class="pc-oferta-eyebrow">O plano de hoje</p>
-      <p class="pc-card-t">A ${esc(c.name)} está no ${esc(p.nome)}${atual === "premium" ? " " + seloPremium(16) : ""}</p>
-      <p class="pc-card-s">${esc(p.resumo)} ${atual === "basico" ? "É grátis e continua grátis." : ""}</p>
-      <ul class="pc-oferta-lista">
-        <li>${icon('check', 15, 'var(--green)')}<span>Até ${p.pessoas} ${plural(p.pessoas, "e-mail", "e-mails")} com acesso à academia</span></li>
-        ${tem.map(r => `<li>${r.selo ? seloPremium(15) : icon('check', 15, 'var(--green)')}<span>${esc(r.t)}</span></li>`).join("")}
-      </ul>
-    </div>`;
-}
 // O que dá para fazer agora, com o plano de hoje.
 function oportunidadesDoPlano(c, atual) {
   const itens = [];
@@ -8435,9 +8429,14 @@ function ligarRevelar() {
   const obs = window.__observaRevela = new IntersectionObserver((vistos) => {
     vistos.forEach(v => {
       if (!v.isIntersecting) return;
-      v.target.classList.add("aceso");
-      BLOCOS_ACESOS.add(v.target.dataset.revela);
-      obs.unobserve(v.target);
+      // Os cartões dos planos que deslizam acendem juntos: os de fora da
+      // tela, de lado, nunca cruzariam a tela sozinhos.
+      const grupo = v.target.closest(".pc-planos");
+      (grupo ? [...grupo.querySelectorAll("[data-revela]")] : [v.target]).forEach(el => {
+        el.classList.add("aceso");
+        BLOCOS_ACESOS.add(el.dataset.revela);
+        obs.unobserve(el);
+      });
     });
   }, { rootMargin: "0px 0px -6% 0px", threshold: 0.12 });
   blocos.forEach(el => {
@@ -8446,22 +8445,47 @@ function ligarRevelar() {
   });
 }
 
+// O que cada plano soma ao de baixo (pedido de 19/10/2026, com print: "os
+// planos estão muito poluídos… tirar algumas informações que são básicas
+// para todos os planos, ou tipo cards que deslizam"), como as tabelas da
+// Shopify, do Notion e do Slack ("Tudo do Básico, mais:"). Do mesmo grupo,
+// a versão maior entra no lugar da menor.
+function novidadesDoPlano(key) {
+  const i = PC_PLANOS.findIndex(p => p.key === key);
+  const abaixo = i > 0 ? PC_PLANOS[i - 1].key : null;
+  let lista = recursosDoPlano(key).filter(r => r.p.includes(key) && (!abaixo || !r.p.includes(abaixo)));
+  // Os números do Desempenho viram uma linha só.
+  const numeros = lista.filter(r => r.numeros);
+  if (numeros.length > 1) {
+    const k = lista.indexOf(numeros[0]);
+    lista = lista.filter(r => !r.numeros);
+    lista.splice(k, 0, { t: "Desempenho: visitas, contatos, de onde vieram, os bairros de quem procurou e o histórico" });
+  }
+  const p = PC_PLANOS[i];
+  const pessoas = { t: abaixo ? `Até ${p.pessoas} e-mails com acesso à academia` : "1 e-mail com acesso à academia" };
+  return { abaixo, lista: [pessoas, ...lista] };
+}
+// No celular, os cartões deslizam de lado, um por vez, com as bolinhas
+// embaixo (como os planos do Spotify e da Netflix); no computador, os três
+// lado a lado. Abre no plano de hoje (ou no recomendado).
 function pcCartoesDePlano(atual, revelar = false) {
   const prox = atual ? proximoPlano(atual) : null;
   const destaque = atual ? (prox && prox.key) : "completo";
-  const ordem = PC_PLANOS.findIndex(p => p.key === atual);
+  const inicio = atual || destaque;
   return `
-    <div class="pc-planos">
-      ${PC_PLANOS.map((p, i) => `
-        <div class="pc-plano ${atual === p.key ? "atual" : ""} ${p.key === destaque ? "destaque" : ""}" ${revelar ? revela("plano-" + p.key, i) : ""}>
+    <div class="pc-planos" data-plano-inicio="${inicio}">
+      ${PC_PLANOS.map((p, i) => {
+        const nov = novidadesDoPlano(p.key);
+        return `
+        <div class="pc-plano ${atual === p.key ? "atual" : ""} ${p.key === destaque ? "destaque" : ""}" data-plano-cartao="${p.key}" ${revelar ? revela("plano-" + p.key, i) : ""}>
           ${atual === p.key ? `<span class="pc-plano-tag">Seu plano</span>` : (p.key === destaque ? `<span class="pc-plano-tag">Recomendado</span>` : "")}
           <p class="pc-plano-n">${esc(p.nome)}${p.key === "premium" ? seloPremium(20) : ""}</p>
           <p class="pc-plano-p">${esc(precoDoPlano(p))}</p>
           ${precoAnualDoPlano(p) ? `<p class="pc-plano-anual">ou R$ ${esc(precoAnualDoPlano(p))} por ano · 2 meses grátis · preço de teste</p>` : ""}
           <p class="pc-card-s">${esc(p.resumo)}</p>
+          ${nov.abaixo ? `<p class="pc-plano-mais">Tudo do ${esc(nomeDoPlano(nov.abaixo))}, mais:</p>` : ""}
           <ul class="pc-plano-lista">
-            <li>${icon('check', 15, 'var(--green)')}<span>Até ${p.pessoas} ${plural(p.pessoas, "e-mail", "e-mails")} com acesso à academia</span></li>
-            ${recursosDoPlano(p.key).map(r => `<li class="${r.p.includes(p.key) ? "" : "nao"}">${r.p.includes(p.key) ? (r.selo ? seloPremium(15) : icon('check', 15, 'var(--green)')) : `<span class="pc-traco">—</span>`}<span>${esc(r.t)}</span></li>`).join("")}
+            ${nov.lista.map(r => `<li>${r.selo ? seloPremium(15) : icon('check', 15, 'var(--green)')}<span>${esc(r.t)}</span></li>`).join("")}
           </ul>
           ${atual === p.key
             ? `<p class="pc-plano-ok">${icon('check', 14, 'var(--green)')} Plano atual</p>`
@@ -8469,8 +8493,30 @@ function pcCartoesDePlano(atual, revelar = false) {
               ? (atual ? botaoDeEscolherPlano("basico", atual, false) : `<a href="/parceiros/cadastro" class="cta-btn cta-secondary" data-pc="cadastro">Começar grátis</a>`)
               : atual ? botaoDeEscolherPlano(p.key, atual, p.key === destaque)
               : `<a href="/parceiros/cadastro" class="cta-btn ${p.key === destaque ? "cta-primary" : "cta-secondary"}" data-pc="cadastro">Começar com o ${esc(p.nome)}</a>`}
-        </div>`).join("")}
-    </div>`;
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="pc-planos-pontos" aria-hidden="true">${PC_PLANOS.map(p => `<span data-plano-ponto="${p.key}" class="${p.key === inicio ? "on" : ""}"></span>`).join("")}</div>`;
+}
+// Os cartões que deslizam: começam no plano certo e as bolinhas acompanham.
+function ligarCartoesDePlano() {
+  document.querySelectorAll(".pc-planos[data-plano-inicio]").forEach(lista => {
+    if (lista.scrollWidth <= lista.clientWidth + 4) return;
+    const pontos = lista.nextElementSibling;
+    const marcar = () => {
+      const meio = lista.scrollLeft + lista.clientWidth / 2;
+      let perto = null, menor = Infinity;
+      lista.querySelectorAll("[data-plano-cartao]").forEach(el => { const d = Math.abs(el.offsetLeft + el.offsetWidth / 2 - meio); if (d < menor) { menor = d; perto = el.dataset.planoCartao; } });
+      if (pontos) pontos.querySelectorAll("[data-plano-ponto]").forEach(p => p.classList.toggle("on", p.dataset.planoPonto === perto));
+    };
+    if (!lista.dataset.ligada) {
+      lista.dataset.ligada = "1";
+      const alvo = lista.querySelector(`[data-plano-cartao="${lista.dataset.planoInicio}"]`);
+      if (alvo) lista.scrollLeft = Math.max(0, alvo.offsetLeft - (lista.clientWidth - alvo.offsetWidth) / 2);
+    }
+    lista.onscroll = () => { cancelAnimationFrame(lista.__raf); lista.__raf = requestAnimationFrame(marcar); };
+    marcar();
+  });
 }
 
 function pcFaq(lista) {
@@ -8491,11 +8537,10 @@ function pcPlanos(logado) {
   return `
     <section class="pc-pagina">
       ${varias && c ? pcNomeDaAcademia(c) : ""}
-      <h1 class="display">${varias ? "Plano desta academia" : logado ? "Seu plano" : "Planos"}</h1>
+      <h1 class="display">${logado && c ? `Plano ${esc(nomeDoPlano(atual))}${atual === "premium" ? " " + seloPremium(22) : ""}` : "Planos"}</h1>
       ${logado && state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
       ${logado && state.contaErro ? `<p class="form-error">${icon('warning', 14)} ${esc(state.contaErro)}</p>` : ""}
-      ${logado && c ? "" : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>`}
-      ${logado && c ? pcPlanoDeHoje(c, atual) : ""}
+      ${logado && c ? `<p class="pc-sec-sub">${esc(planoPorChave(atual).resumo)} ${esc(precoDoPlano(planoPorChave(atual)))}.</p>` : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser: o Completo mostra a ficha inteira para até 5 pessoas da equipe, e o Premium aparece no topo da busca, com o selo dourado, e mostra os números da academia.</p>`}
       ${logado && c ? pcOQueMelhorar(c, atual) : ""}
       ${logado && c && state.pcCompra && state.pcCompra.tipo === "plano" ? pcComprarCreditos(c) : ""}
       ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}
@@ -8508,7 +8553,7 @@ function pcAjuda() {
   return `
     <section class="pc-pagina">
       <h1 class="display">Ajuda</h1>
-      <p class="pc-sec-sub">As dúvidas mais comuns das academias. Não achou a sua? Fale com a gente.</p>
+      <p class="pc-sec-sub">As dúvidas mais comuns das academias. Não achou a sua? <button type="button" class="pc-linha-link pc-link-na-frase" data-abrir-chat>Fale com a gente</button>.</p>
       ${pcFaq(perguntasParceiros())}
       <div class="pc-card pc-contato">
         <p class="pc-card-t">Fale com o GuiaTennis</p>
@@ -8977,7 +9022,7 @@ function pcSituacao(c) {
     : pausada && c.pausadaPelaAcademia ? `Pausada por vocês${ate}: não aparece na busca agora. Para voltar, use Suas academias.`
     : pausada ? "Pausada pelo GuiaTennis: não aparece na busca agora."
     : c.confirmada ? "No ar, com as informações confirmadas por vocês."
-    : "No ar como ficha básica. Revise e salve a ficha para confirmar as informações.";
+    : `No ar como ficha básica. <button type="button" class="pc-linha-link pc-link-na-frase editar-academia" data-court="${esc(c.id)}" data-revisar>Revise e salve a ficha</button> para confirmar as informações.`;
   const ok = noAr && c.confirmada;
   // Tudo certo só aparece logo depois de a ficha ir ao ar ou ser
   // atualizada (1 dia, pedido de 07/10/2026; antes 3); o que pede ação
@@ -20577,6 +20622,8 @@ function attachEvents() {
     };
     state.showRegister = true;
     state.registerStatus = "idle";
+    // "Revise e salve a ficha" (19/10/2026): abre direto na prévia.
+    if (botao.dataset.revisar !== undefined) { state.regForm = window.__form; state.regPasso = REG_PASSOS.findIndex(x => x.id === "revisar"); state.regPassoErro = ""; state.regPlanoTela = false; state.regFaltaVisivel = false; }
     render();
    };
   });

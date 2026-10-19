@@ -121,4 +121,15 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const forcada = await page.evaluate(() => window.__db.academias.find(x => x.id === 'a1').dados_atualizados_em);
   ok(!forcada.startsWith('2020'), 'a academia não escreve a data à mão — ' + forcada);
   await browser.close();
+
+  // "Revise e salve a ficha" é um atalho para a prévia (19/10/2026).
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' }));
+  await page.evaluate(() => { const c = minhaAcademia(); c.confirmada = false; c.criadaEm = null; render(); });
+  await page.waitForTimeout(200);
+  const atalho = await page.$('.conta-situacao [data-revisar]');
+  ok(atalho && (await page.evaluate(() => document.querySelector('.conta-situacao').innerText)).includes('No ar como ficha básica. Revise e salve a ficha para confirmar as informações.'), 'ficha básica: "Revise e salve a ficha" é um link na frase');
+  if (atalho) await atalho.click();
+  await page.waitForTimeout(400);
+  ok(await page.evaluate(() => state.showRegister && REG_PASSOS[state.regPasso].id === 'revisar' && window.__form.__editingId === 'a1'), 'e abre a ficha direto na prévia, para conferir e salvar');
+  await browser.close();
 })();

@@ -1560,26 +1560,13 @@ sql("update public.pagamento_de_teste set ligado = true")
 sql(f"delete from public.compras_de_creditos; delete from public.academia_vinculos where user_id = '{eva}';"
     f"update public.academias set envios_de_aviso = 0, plano = '{plano_antes}' where id = '{PINHEIROS}'; truncate public.emails_a_enviar")
 
-# 34. Conta de jogador com o e-mail confirmado publica direto (SQL 20261020140000) --
-print("\n# Academia nova pela conta de jogador")
-sql("truncate public.emails_a_enviar")
+# 34. Academia nova direto no ar só pelo Parceiros (SQL 20261020150000) ----------
+print("\n# Academia nova: só o Parceiros publica na hora")
 nome_j = f"Arena do Jogador {sufixo}"
 jog_ok = jogador("Gil Jogador", f"gil{sufixo}@exemplo.com")
-jog_sem = jogador("Hil Sem", f"hil{sufixo}@exemplo.com", confirmado=False)
-certo, saida = sql(f"insert into public.academias (name, cidade, bairro, status) values ('{nome_j}', 'São Paulo', 'Lapa', 'pending')", papel="authenticated", user=jog_ok)
-ok(certo, "o jogador manda a academia" + ("" if certo else ": " + saida))
-ok(um(f"select status || '|' || coalesce(confirmada, false)::text || '|' || (revisar_desde is not null)::text || '|' || coalesce(nome_solicitante, '') from public.academias where name = '{nome_j}'") == "published|false|true|Gil Jogador",
-   "com o e-mail confirmado, vai ao ar na hora, como ficha básica, e fica para o admin revisar")
-ok(um(f"select count(*) from public.academia_vinculos v join public.academias a on a.id = v.academia_id where a.name = '{nome_j}'") == "0", "e sem responsável: o jogador não administra a academia")
-aviso = um("select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'academia_no_ar'") or ""
-ok("Gil Jogador" in aviso and "pela conta de jogador" in aviso and um("select (html like '%pause ou corrija%')::text from public.emails_a_enviar where tipo = 'academia_no_ar'") == "true", "o admin recebe o aviso, dizendo que veio de um jogador — " + aviso[:90])
-rev = um(f"select quem || '|' || email from public.academias_para_revisar_admin() where nome = '{nome_j}'", **admin_jwt)
-ok(rev == f"Gil Jogador|gil{sufixo}@exemplo.com", "aparece em \"Foram ao ar sozinhas: revise\", com quem mandou — " + str(rev))
-sql(f"insert into public.academias (name, cidade, status) values ('{nome_j} 2', 'São Paulo', 'pending')", papel="authenticated", user=jog_sem)
-ok(um(f"select status from public.academias where name = '{nome_j} 2'") == "pending", "sem o e-mail confirmado, espera a aprovação")
-sql(f"insert into public.academias (name, cidade, status) values ('{nome_j} 3', 'São Paulo', 'pending')", papel="anon")
-ok(um(f"select status from public.academias where name = '{nome_j} 3'") == "pending", "visitante sem conta também espera")
-sql(f"delete from public.academias where name like 'Arena do Jogador {sufixo}%'; truncate public.emails_a_enviar")
+sql(f"insert into public.academias (name, cidade, bairro, status) values ('{nome_j}', 'São Paulo', 'Lapa', 'pending')", papel="authenticated", user=jog_ok)
+ok(um(f"select status from public.academias where name = '{nome_j}'") == "pending", "conta de jogador, mesmo com o e-mail confirmado, não publica academia na hora")
+sql(f"delete from public.academias where name = '{nome_j}'")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

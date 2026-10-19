@@ -2869,28 +2869,20 @@ cobra taxa e não fica no meio** da negociação.
       Perfil › Avisos ("mudança de plano e de responsável").
     - Testes: `sair-do-guia.js` (reescrito), `chat-de-ajuda.js` e a seção
       23 do `banco-emails.py` (444, nenhuma falha).
-122. **Conta com o e-mail confirmado publica a academia nova direto** (pedido
-    de 19/10/2026: "acessos que já tem o email confirmado, é autorizado
+122. **Academia nova direto no ar: só pela conta do Parceiros** (pedido de
+    19/10/2026: "acessos que já tem o email confirmado, é autorizado
     publicar academia direto no site, sem minha autorização mas aparecer
-    para mim só para checar mesmo"). A conta do Parceiros já fazia isso
-    (regra 60); agora também a **conta de jogador** com o e-mail
-    confirmado, como o "Adicionar um lugar" do Google Maps. SQL
-    `20261020140000_academia_do_jogador_no_ar`:
-    - A academia nova do jogador entra no ar na hora, como **ficha básica**
-      (sem "confirmada pela academia" e **sem responsável**: o jogador não
-      declara representar a academia), com `revisar_desde` e o nome e o
-      e-mail do jogador em `nome_solicitante`/`contato_solicitante`.
-    - O admin recebe "Academia nova no ar" ("… pela conta de jogador, com o
-      e-mail confirmado") e a vê em Pendências › "Foram ao ar sozinhas:
-      revise", marcada "nova, pela conta de jogador", só para checar. O
-      e-mail diz "pause ou corrija a ficha" (não se apaga mais, regra 121).
-    - Visitante sem conta e jogador sem o e-mail confirmado continuam
-      esperando a aprovação; a tela do jogador diz "Com o e-mail da conta
-      confirmado, a próxima academia entra no ar na hora."
-    - Termos (seção 3: quem publica na hora; a ficha publicada continua no
-      guia, sem "remoção da página") e Privacidade.
-    - Testes: `academia-do-jogador.js` (novo) e a seção 34 do
-      `banco-emails.py` (451, nenhuma falha).
+    para mim só para checar mesmo"). Já era assim desde a regra 60: a conta
+    do Parceiros com o e-mail confirmado publica na hora, e o admin confere
+    em Pendências › "Foram ao ar sozinhas: revise". Por engano, o SQL
+    `20261020140000_academia_do_jogador_no_ar` estendeu isso à conta de
+    jogador; o Breno estranhou ("como assim jogador cadastrar academia?":
+    no site dos jogadores não há cadastro de academia) e o
+    `20261020150000_academia_nova_so_pelo_parceiros` voltou o gatilho de
+    antes. Ficaram: o e-mail "Academia nova no ar" com "pause ou corrija a
+    ficha" (regra 121) e a seção 3 dos Termos sem "a remoção da página",
+    dizendo que a academia nova é cadastrada pelo Parceiros e que a ficha
+    publicada continua no guia. Teste: seção 34 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -3894,7 +3886,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos academia-do-jogador; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 node testes/pagamento.mjs
 ```

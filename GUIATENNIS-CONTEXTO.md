@@ -2837,6 +2837,38 @@ cobra taxa e não fica no meio** da negociação.
       computador, os três lado a lado. Ao descer, acendem juntos.
     - Testes: `plano-da-academia.js`, `parceiros.js`, `varias-academias.js`
       e `confianca-na-ficha.js`.
+121. **A conta sai, a academia fica** (pedido de 19/10/2026: "eu quero que o
+    usuário consiga cancelar a conta do parceiros e jogadores, no parceiros
+    se cancelar a conta não exclui a academia e sim volta como básica,
+    tirar opções de excluir academia do site pq quero que sempre há a
+    academia que tenha informações públicas" e "se tem mais algum acesso, o
+    responsável exclui vai para o outro acesso e será cobrado dela"). Como
+    o Google Business Profile e o Yelp. Substitui a regra 76. SQL
+    `20261020130000_conta_sai_academia_fica`:
+    - **Parceiros › Perfil › "Excluir minha conta"** (`excluirContaDoParceiros`,
+      `excluir_minha_conta_parceiros`), com a pergunta antes: a conta sai
+      (com a parte de jogador, que é o mesmo login), as avaliações ficam com
+      o nome e o e-mail não fica bloqueado. O jogador já tinha "Excluir
+      minha conta" em Minha conta.
+    - **A academia fica** (`soltar_academias_da_conta`, também na exclusão
+      pelo admin): onde a conta era a responsável principal, **com outro
+      acesso**, a pessoa mais antiga da equipe vira a responsável principal
+      e **o plano continua, agora em nome dela** (cobrado dela, quando
+      houver preço), com o e-mail "Agora você é o(a) responsável pela …"
+      (tipo `novo_responsavel`); **sem outro acesso**, a academia volta ao
+      **Básico** e fica sem responsável, até alguém pedir para administrá-la.
+      Quem é da equipe sai sem mexer no plano.
+    - **Sem excluir academia pelo site**: saíram "Pedir para tirar do guia"
+      (Suas academias), "Querem sair do guia" (Pendências do admin) e
+      "Excluir academia" (ficha, no modo admin). No banco, o admin só apaga
+      o cadastro **em análise** ("Admin exclui academias"); os pedidos
+      abertos ficaram "cancelado" e as funções do pedido, fechadas. Pausar
+      continua.
+    - Textos: Ajuda ("Posso pausar ou tirar a academia do guia?"), chat,
+      rodapé de Minha ficha, Termos e Privacidade (19 de outubro de 2026),
+      Perfil › Avisos ("mudança de plano e de responsável").
+    - Testes: `sair-do-guia.js` (reescrito), `chat-de-ajuda.js` e a seção
+      23 do `banco-emails.py` (444, nenhuma falha).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

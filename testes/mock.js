@@ -42,7 +42,6 @@
     // finge o banco sem a tabela; window.__promoAviso diz o que o e-mail fez.
     promocoes: JSON.parse(JSON.stringify(window.__promocoesIniciais || [])),
     // Pedidos para tirar a academia do guia (SQL 20261008150000).
-    pedidos_para_sair: [],
     // Conversas do chat de ajuda guardadas na conta (SQL 20261009120000).
     // window.__conversasIniciais começa com algumas; window.__semConversas
     // finge o banco sem a tabela.
@@ -538,45 +537,21 @@
       Object.assign(ac, { pausada: !!a.p_pausar, pausada_ate: a.p_pausar ? (a.p_ate || null) : null, pausada_pela_academia: !!a.p_pausar });
       return { data:null, error:null };
     }
-    // Pedido para tirar do guia (SQL 20261008150000).
-    if (nome === "pedir_para_sair_do_guia") {
+    // A conta sai, a academia fica (SQL 20261020130000; o pedido para tirar
+    // do guia saiu do site): com outro acesso, o mais antigo vira o
+    // responsável principal; sem outro, a academia volta ao Básico.
+    if (nome === "excluir_minha_conta_parceiros") {
       const x = meuAcesso();
-      const v = x && vinculo(x.user_id, a.p_academia);
-      if (!v || v.papel !== "principal") return erro("Quem pede para tirar a academia do guia é o responsável principal.", "42501");
-      if (!["fechou", "nao_quer", "outro"].includes(a.p_motivo)) return erro("Escolha o motivo.", "22023");
-      if (a.p_motivo === "outro" && !String(a.p_detalhes || "").trim()) return erro("Conte o motivo em poucas palavras.", "22023");
-      if (db.pedidos_para_sair.some(p => p.academia_id === a.p_academia && !p.resolvido_em)) return erro("Já existe um pedido para tirar esta academia do guia.", "22023");
-      const ac = db.academias.find(y => y.id === a.p_academia) || {};
-      const p = { id: "saida-" + (db.pedidos_para_sair.length + 1), academia_id: a.p_academia, academia_nome: ac.name, user_id: x.user_id, motivo: a.p_motivo, detalhes: String(a.p_detalhes || "").trim() || null, pedido_em: new Date().toISOString(), resolvido_em: null };
-      db.pedidos_para_sair.push(p);
-      db.emails_a_enviar.push({ id: "e-" + p.id, tipo: "pedido_para_sair", para: ADMIN, assunto: "Pedido para tirar do guia: " + ac.name, criado_em: p.pedido_em, enviado_em: null, tentativas: 0, erro: null });
-      return { data: p.id, error:null };
-    }
-    if (nome === "cancelar_pedido_para_sair") {
-      const x = meuAcesso();
-      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
-      db.pedidos_para_sair.filter(p => p.academia_id === a.p_academia && !p.resolvido_em).forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "cancelado"; });
-      return { data:null, error:null };
-    }
-    if (nome === "meus_pedidos_para_sair") {
-      const x = meuAcesso();
-      if (!x) return { data:[], error:null };
-      return { data: db.pedidos_para_sair.filter(p => !p.resolvido_em && vinculo(x.user_id, p.academia_id)).map(p => ({ academia_id: p.academia_id, motivo: p.motivo, pedido_em: p.pedido_em })), error:null };
-    }
-    if (nome === "pedidos_para_sair_admin") {
-      if (!souAdmin()) return { data:[], error:null };
-      return { data: db.pedidos_para_sair.filter(p => !p.resolvido_em).map(p => {
-        const ac = db.academias.find(y => y.id === p.academia_id) || {};
-        const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
-        return { id: p.id, academia_id: p.academia_id, nome: p.academia_nome, bairro: ac.bairro, cidade: ac.cidade, motivo: p.motivo, detalhes: p.detalhes, pedido_em: p.pedido_em, pessoa: x.nome_responsavel, email: x.email, whatsapp: x.whatsapp };
-      }), error:null };
-    }
-    if (nome === "resolver_pedido_para_sair") {
-      if (!souAdmin()) return erro("Só o GuiaTennis resolve esse pedido.", "42501");
-      const p = db.pedidos_para_sair.find(y => y.id === a.p_id && !y.resolvido_em);
-      if (!p) return erro("Pedido não encontrado ou já resolvido.", "22023");
-      Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: a.p_remover ? "removida" : "mantida", resposta: a.p_resposta || null });
-      if (a.p_remover) { db.academias = window.__db.academias = db.academias.filter(y => y.id !== p.academia_id); p.academia_id = null; }
+      if (!x) return erro("Essa conta não é do GuiaTennis Parceiros.", "42501");
+      db.academia_vinculos.filter(v => v.user_id === x.user_id && v.papel === "principal").forEach(v => {
+        const outros = db.academia_vinculos.filter(o => o.academia_id === v.academia_id && o.user_id !== x.user_id);
+        if (outros.some(o => o.papel === "principal")) return;
+        if (outros.length) outros[0].papel = "principal";
+        else { const ac = db.academias.find(y => y.id === v.academia_id); if (ac) ac.plano = "basico"; }
+      });
+      for (let k = db.academia_vinculos.length - 1; k >= 0; k--) if (db.academia_vinculos[k].user_id === x.user_id) db.academia_vinculos.splice(k, 1);
+      db.academia_acessos.splice(db.academia_acessos.indexOf(x), 1);
+      window.__contaExcluida = x.user_id;
       return { data:null, error:null };
     }
     // Promoções (SQL 20261008140000).

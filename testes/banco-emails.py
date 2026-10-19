@@ -914,56 +914,63 @@ certo, saida = sql(f"select public.avisar_minha_promocao('{r7.get('id')}')::text
 ok(not certo and "não tem envios" in saida, "sem envios, avisar depois pede para comprar um pacote")
 sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; update public.academias set plano = '{plano_antes}' where id = '{PINHEIROS}';")
 
-# 23. Tirar a academia do guia vira pedido (SQL 20261008150000) ------------------
-print("\n# Pedido para tirar do guia")
-sql("delete from public.pedidos_para_sair; delete from public.emails_a_enviar where tipo like 'pedido_para_sair%';")
-sair = um("insert into public.academias (name, status, cidade, bairro) values ('Academia Que Sai', 'published', 'São Paulo', 'Lapa') returning id")
+# 23. A conta sai, a academia fica (SQL 20261020130000; antes, o pedido para
+# tirar do guia, SQL 20261008150000, que saiu do site) --------------------------
+print("\n# A conta sai, a academia fica")
+admin_kw = admin_jwt
+sql("truncate public.emails_a_enviar")
+sair = um("insert into public.academias (name, status, cidade, bairro, plano) values ('Academia Que Fica', 'published', 'São Paulo', 'Lapa', 'premium') returning id")
 resp_sai = parceiro("Rui Sai", f"rui{sufixo}@exemplo.com", sair)
 equipe_sai = parceiro("Tati Equipe", f"tati{sufixo}@exemplo.com", sair, "equipe")
-certo, saida = sql(f"select public.pedir_para_sair_do_guia('{sair}', 'fechou')", papel="authenticated", user=equipe_sai)
-ok(not certo and "responsável principal" in saida, "só o responsável principal pede para tirar do guia")
-certo, saida = sql(f"select public.pedir_para_sair_do_guia('{sair}', 'outro', '')", papel="authenticated", user=resp_sai)
-ok(not certo and "Conte o motivo" in saida, "\"Outro motivo\" pede o motivo escrito")
-certo, saida = sql(f"select public.pedir_para_sair_do_guia('{sair}', 'fechou', 'Fechamos em setembro.')", papel="authenticated", user=resp_sai)
-ok(certo, "o responsável pede para tirar do guia" + ("" if certo else ": " + saida))
-ok(um("select count(*) from public.academias where id = '" + sair + "'") == "1", "o pedido não tira nada sozinho: a academia continua no guia")
-aviso = um("select para || '|' || assunto from public.emails_a_enviar where tipo = 'pedido_para_sair'")
-ok(aviso == "guiatennis1@gmail.com|Pedido para tirar do guia: Academia Que Sai", "o admin recebe o pedido por e-mail — " + str(aviso))
+sql(f"update public.academia_vinculos set created_at = now() - interval '1 day' where user_id = '{equipe_sai}'")
+outra_eq = parceiro("Ugo Equipe", f"ugo{sufixo}@exemplo.com", sair, "equipe")
 certo, saida = sql(f"select public.pedir_para_sair_do_guia('{sair}', 'fechou')", papel="authenticated", user=resp_sai)
-ok(not certo and "Já existe um pedido" in saida, "um pedido aberto por academia")
-ok(um("select count(*) from public.meus_pedidos_para_sair()", papel="authenticated", user=equipe_sai) == "1", "a equipe da academia vê que há um pedido aberto")
-ok(um("select count(*) from public.meus_pedidos_para_sair()", papel="authenticated", user=carla) == "0", "outra conta não vê")
-ok(um("select count(*) from public.pedidos_para_sair_admin()", papel="authenticated", user=carla) == "0", "só o admin vê a lista de pedidos")
-certo, _ = sql("select count(*) from public.pedidos_para_sair", papel="authenticated", user=resp_sai)
-ok(not certo, "a tabela não se lê direto")
-admin_kw = admin_jwt
-linha = um("select nome || '|' || motivo || '|' || pessoa from public.pedidos_para_sair_admin()", **admin_kw)
-ok(linha == "Academia Que Sai|fechou|Rui Sai", "o admin vê a academia, o motivo e quem pediu — " + str(linha))
-pid = um("select id from public.pedidos_para_sair_admin()", **admin_kw)
-certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', false, 'Que tal pausar por um tempo?')", papel="authenticated", user=resp_sai)
-ok(not certo, "quem pediu não resolve o próprio pedido")
-certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', false, 'Que tal pausar por um tempo?')", **admin_kw)
-ok(certo and um("select count(*) from public.academias where id = '" + sair + "'") == "1"
-   and um(f"select resolucao from public.pedidos_para_sair where id = '{pid}'") == "mantida", "\"Manter no guia\" fecha o pedido e a academia fica")
-html = um(f"select html from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and para = 'rui{sufixo}@exemplo.com'") or ""
-ok("continua no GuiaTennis" in html and "Que tal pausar por um tempo?" in html, "quem pediu recebe a resposta por e-mail")
-html = um(f"select html from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and para = 'tati{sufixo}@exemplo.com'") or ""
-ok("Rui Sai</strong> pediu para tirar" in html and "continua no guia" in html and "Que tal pausar por um tempo?" in html and "Não quero mais receber" in html,
-   "a equipe também recebe a resposta, dizendo quem pediu (SQL 20261013120000)")
-sql(f"select public.pedir_para_sair_do_guia('{sair}', 'nao_quer')", papel="authenticated", user=resp_sai)
-certo, _ = sql(f"select public.cancelar_pedido_para_sair('{sair}')", papel="authenticated", user=equipe_sai)
-ok(certo and um("select count(*) from public.meus_pedidos_para_sair()", papel="authenticated", user=resp_sai) == "0", "quem administra cancela o pedido")
-sql(f"select public.pedir_para_sair_do_guia('{sair}', 'nao_quer')", papel="authenticated", user=resp_sai)
-pid = um("select id from public.pedidos_para_sair_admin()", **admin_kw)
-certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', true)", **admin_kw)
-ok(certo and um("select count(*) from public.academias where id = '" + sair + "'") == "0", "\"Tirar do guia\" apaga a ficha" + ("" if certo else ": " + saida))
-ok(um(f"select resolucao || '|' || academia_nome || '|' || (academia_id is null)::text from public.pedidos_para_sair where id = '{pid}'") == "removida|Academia Que Sai|true",
-   "o pedido fica registrado, com o nome da academia")
-ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and assunto = 'A Academia Que Sai saiu do GuiaTennis' and para = 'rui{sufixo}@exemplo.com'") == "1",
-   "quem pediu recebe o aviso de que a academia saiu")
-html = um(f"select html from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and assunto = 'A Academia Que Sai saiu do GuiaTennis' and para = 'tati{sufixo}@exemplo.com'") or ""
-ok("A pedido de <strong>Rui Sai</strong>" in html and "administrava a Academia Que Sai" in html,
-   "a equipe também fica sabendo que a academia saiu (o e-mail sai antes de a ficha ser apagada)")
+ok(not certo and "permission denied" in saida, "o pedido para tirar do guia saiu do site")
+certo, saida = sql(f"delete from public.academias where id = '{sair}'", **admin_kw)
+ok(um(f"select count(*) from public.academias where id = '{sair}'") == "1", "nem o admin apaga a ficha publicada pelo site")
+pend = um("insert into public.academias (name, status, cidade) values ('Cadastro Em Análise', 'pending', 'São Paulo') returning id")
+sql(f"delete from public.academias where id = '{pend}'", **admin_kw)
+ok(um(f"select count(*) from public.academias where id = '{pend}'") == "0", "o admin ainda recusa o cadastro em análise")
+certo, saida = sql("select public.excluir_minha_conta_parceiros()", papel="authenticated", user=carla)
+ok(not certo and "não é do GuiaTennis Parceiros" in saida, "conta só de jogador não usa a exclusão do Parceiros")
+sql(f"select public.ativar_conta_de_jogador()", papel="authenticated", user=resp_sai)
+sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 4, 'Boa do Rui')", papel="authenticated", user=resp_sai)
+certo, saida = sql("select public.excluir_minha_conta_parceiros()", papel="authenticated", user=resp_sai)
+ok(certo and um(f"select count(*) from auth.users where id = '{resp_sai}'") == "0" and um(f"select count(*) from public.academia_acessos where user_id = '{resp_sai}'") == "0",
+   "o responsável exclui a própria conta" + ("" if certo else ": " + saida))
+ok(um(f"select status || '|' || plano from public.academias where id = '{sair}'") == "published|premium", "com outro acesso, a academia fica no guia e o plano continua")
+ok(um(f"select string_agg(papel, ',' order by created_at) from public.academia_vinculos where academia_id = '{sair}'") == "principal,equipe"
+   and um(f"select papel from public.academia_vinculos where academia_id = '{sair}' and user_id = '{equipe_sai}'") == "principal",
+   "o acesso mais antigo vira o responsável principal (e o plano passa a ser dele)")
+mail = um(f"select assunto || '|' || para || '|' || (texto like '%Rui Sai excluiu a conta%' and texto like '%O plano Premium continua, agora em seu nome%')::text from public.emails_a_enviar where tipo = 'novo_responsavel'")
+ok(mail == f"Agora você é o(a) responsável pela Academia Que Fica|tati{sufixo}@exemplo.com|true", "quem vira responsável recebe o e-mail, com o plano que passa a ser dele — " + str(mail))
+ok(um("select count(*) from public.emails_a_enviar where tipo = 'plano'") == "0", "o plano não muda (sem e-mail de plano novo)")
+ok(um("select count(*) from public.avaliacoes where comment = 'Boa do Rui' and user_id is null") == "1", "as avaliações ficam, com o nome")
+ok(um(f"select count(*) from public.contas_excluidas where email = 'rui{sufixo}@exemplo.com'") == "0", "o e-mail não fica bloqueado: pode voltar")
+# O último a sair: a academia volta ao Básico, sem responsável.
+sql(f"delete from public.academia_vinculos where user_id = '{outra_eq}'")
+sql("truncate public.emails_a_enviar")
+certo, saida = sql("select public.excluir_minha_conta_parceiros()", papel="authenticated", user=equipe_sai)
+ok(certo and um(f"select status || '|' || plano from public.academias where id = '{sair}'") == "published|basico"
+   and um(f"select count(*) from public.academia_vinculos where academia_id = '{sair}'") == "0",
+   "sem outro acesso, a academia fica no guia, no Básico e sem responsável" + ("" if certo else ": " + saida))
+# A equipe sai sem mexer no plano.
+sql(f"update public.academias set plano = 'completo' where id = '{sair}'")
+dono_novo = parceiro("Vera Dona", f"vera{sufixo}@exemplo.com", sair)
+eq2 = parceiro("Wil Equipe", f"wil{sufixo}@exemplo.com", sair, "equipe")
+sql("select public.excluir_minha_conta_parceiros()", papel="authenticated", user=eq2)
+ok(um(f"select plano from public.academias where id = '{sair}'") == "completo"
+   and um(f"select papel from public.academia_vinculos where academia_id = '{sair}' and user_id = '{dono_novo}'") == "principal",
+   "quem é da equipe sai e o plano e o responsável continuam")
+# O admin exclui o responsável: a academia também fica (e vai para quem sobrar).
+eq3 = parceiro("Xis Equipe", f"xis{sufixo}@exemplo.com", sair, "equipe")
+certo, saida = sql(f"select public.excluir_conta_admin('{dono_novo}', 'Pediu academia que não representa')", **admin_kw)
+ok(certo and um(f"select plano from public.academias where id = '{sair}'") == "completo"
+   and um(f"select papel from public.academia_vinculos where academia_id = '{sair}' and user_id = '{eq3}'") == "principal",
+   "o admin exclui o responsável: a academia fica, com quem sobrou como responsável" + ("" if certo else ": " + saida))
+sql(f"delete from public.academia_vinculos where academia_id = '{sair}'; update public.academias set status = 'pending' where id = '{sair}';")
+sql(f"delete from public.academias where id = '{sair}'", **admin_kw)
+sql("truncate public.emails_a_enviar")
 
 # 24. O chat de ajuda guardado na conta (SQL 20261009120000) ----------------------
 print("\n# Conversas do chat na conta")

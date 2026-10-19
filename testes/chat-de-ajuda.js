@@ -104,7 +104,7 @@ async function escrever(page, texto) {
   u = await ultima(page);
   ok(u.texto.includes('GuiaTennis Parceiros') && u.chips.includes('Cadastrar a academia') && u.chips.includes('Tirar a academia do guia'), 'no Parceiros, os assuntos são os das academias — ' + u.chips.join(' | '));
   const casos = [
-    ['quero excluir minha academia', 'Pedir para tirar do guia'],
+    ['quero excluir minha academia', 'continua no guia'],
     ['quero pausar durante as férias', 'Pausar no site'],
     ['quanto custa o premium?', 'todos os planos são grátis'],
     ['vocês cobram comissão?', 'não cobra comissão'],

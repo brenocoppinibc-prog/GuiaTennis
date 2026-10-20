@@ -2963,6 +2963,20 @@ cobra taxa e não fica no meio** da negociação.
     entrando; ao salvar Minha conta, o site pede o sobrenome. Termos e
     Privacidade dizem "nome e sobrenome" (20 de outubro de 2026). Teste:
     `jogador.js`.
+128. **O que a senha precisa ter, embaixo da senha nova** (pedido de
+    20/10/2026: "dê dicas para que a senha possa ser validada"). Como a
+    lista do Airbnb e da Microsoft: embaixo de toda senha nova (criar conta,
+    Parceiros, primeiro acesso, trocar a senha e senha nova pelo código),
+    desde antes de digitar, "Pelo menos 8 caracteres", "Nada fácil de
+    adivinhar, como 12345678 ou o seu e-mail" e "A mesma senha nos dois
+    campos", cada um com um círculo cinza que vira **check verde** quando
+    feito e **vermelho** quando errado (a senha óbvia com 8 ou mais; a
+    repetição diferente), e a dica "junte palavras e números, como
+    "saibro coberto 2026"". São as mesmas regras do `erroDaSenha`
+    (regra 34), então quem deixa tudo verde passa de primeira. A barrinha
+    da força continua em cima; saiu o placeholder "Pelo menos 8
+    caracteres", que repetia a lista. `.senha-dicas` em
+    `ligarCamposDeSenha`. Teste: `senha.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

@@ -873,6 +873,16 @@
   .senha-olho:hover { background: var(--bg-alt); }
   .senha-forca { display: flex; align-items: center; gap: 8px; margin: 6px 2px 0; font-size: 13px; color: var(--muted); min-height: 0; }
   .senha-forca:empty { display: none; }
+  /* O que a senha precisa ter (20/10/2026), como a lista do Airbnb e da
+     Microsoft: cinza com o círculo; feito, verde com o check; errado, vermelho. */
+  .senha-dicas { list-style: none; margin: 8px 2px 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+  .senha-dicas li { display: flex; align-items: flex-start; gap: 8px; }
+  .senha-dicas li i { flex: 0 0 auto; width: 14px; height: 14px; margin-top: 2px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; }
+  .senha-dicas li.ok { color: var(--green); }
+  .senha-dicas li.ok i { border-color: var(--green); background: var(--green); }
+  .senha-dicas li.nao { color: var(--red); }
+  .senha-dicas li.nao i { border-color: var(--red); }
+  .senha-dicas .senha-exemplo { display: block; margin-top: 2px; }
   .senha-barra { display: inline-flex; gap: 3px; }
   .senha-barra i { width: 22px; height: 4px; border-radius: 2px; background: var(--border); }
   .senha-barra.n0 i:nth-child(1) { background: var(--red, #C0392B); }
@@ -6478,7 +6488,7 @@ function formDadosConta(modo) {
     ${campo("cnpj", "CNPJ da academia (opcional)", 'inputmode="numeric"')}
     ${pedirSenha ? `
       <p class="field-label">Senha nova</p>
-      <input class="form-field conta-campo" data-campo="senha" id="conta-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha)}" style="margin-top:0" />
+      <input class="form-field conta-campo" data-campo="senha" id="conta-senha" type="password" autocomplete="new-password" value="${esc(f.senha)}" style="margin-top:0" />
       <input class="form-field conta-campo" data-campo="senha2" id="conta-senha2" type="password" autocomplete="new-password" placeholder="Repita a senha nova" value="${esc(f.senha2)}" />` : ""}
     ${pedirAceite ? `
       <label class="consent-row">
@@ -8923,7 +8933,7 @@ function pcCadastro() {
                 <label class="field-label" for="pc-codigo-senha">Código do e-mail</label>
                 <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-senha" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />
                 <label class="field-label" for="pc-senha-nova">Senha nova</label>
-                <input class="form-field campo-codigo" data-rascunho="senha" id="pc-senha-nova" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
+                <input class="form-field campo-codigo" data-rascunho="senha" id="pc-senha-nova" type="password" autocomplete="new-password" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
                 <label class="field-label" for="pc-senha-nova2">Repita a senha nova</label>
                 <input class="form-field campo-codigo" data-rascunho="senha2" id="pc-senha-nova2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc((window.__codigo || {}).senha2 || "")}" style="margin-top:0" />
                 ${erro(state.pcContaErro)}
@@ -8932,7 +8942,7 @@ function pcCadastro() {
           ${passo === "criar" ? `
             ${camposDeContato("pc-conta", f, "pc-conta-campo")}
             <label class="field-label" for="pc-conta-senha">Crie uma senha<span class="obrig">*</span></label>
-            <input class="form-field pc-conta-campo" data-campo="senha" id="pc-conta-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha)}" style="margin-top:0" />
+            <input class="form-field pc-conta-campo" data-campo="senha" id="pc-conta-senha" type="password" autocomplete="new-password" value="${esc(f.senha)}" style="margin-top:0" />
             <label class="field-label" for="pc-conta-senha2">Repita a senha<span class="obrig">*</span></label>
             <input class="form-field pc-conta-campo" data-campo="senha2" id="pc-conta-senha2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc(f.senha2 || "")}" style="margin-top:0" />
             <label class="consent-row">
@@ -11920,7 +11930,7 @@ function renderJogadorSheet() {
     ${state.codigoFalhou ? naoMandou : `
       ${campoCodigo}
       <label class="field-label" for="jog-senha-nova">Senha nova</label>
-      <input class="form-field campo-codigo" data-rascunho="senha" id="jog-senha-nova" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
+      <input class="form-field campo-codigo" data-rascunho="senha" id="jog-senha-nova" type="password" autocomplete="new-password" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
       <label class="field-label" for="jog-senha-nova2">Repita a senha nova</label>
       <input class="form-field campo-codigo" data-rascunho="senha2" id="jog-senha-nova2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc((window.__codigo || {}).senha2 || "")}" style="margin-top:0" />
       ${erro}
@@ -11932,7 +11942,7 @@ function renderJogadorSheet() {
     <input class="form-field jog-campo" data-campo="nome" id="jog-nome" autocomplete="name" value="${esc(f.nome || "")}" style="margin-top:0" />
     <p class="footnote" style="margin-top:6px">Aparece nas suas avaliações.</p>
     <label class="field-label" for="jog-senha">Crie uma senha</label>
-    <input class="form-field jog-campo" data-campo="senha" id="jog-senha" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" value="${esc(f.senha || "")}" style="margin-top:0" />
+    <input class="form-field jog-campo" data-campo="senha" id="jog-senha" type="password" autocomplete="new-password" value="${esc(f.senha || "")}" style="margin-top:0" />
     <label class="field-label" for="jog-senha2">Repita a senha</label>
     <input class="form-field jog-campo" data-campo="senha2" id="jog-senha2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc(f.senha2 || "")}" style="margin-top:0" />
     <label class="field-label" for="jog-cidade">Cidade (opcional)</label>
@@ -12182,18 +12192,36 @@ function ligarCamposDeSenha() {
     olho.onclick = () => { state.senhasVisiveis[el.id] = !state.senhasVisiveis[el.id]; desenhar(); el.focus(); };
     caixa.appendChild(olho);
     desenhar();
-    // Força: só na senha nova (não na confirmação nem na senha de entrar).
+    // Força e o que a senha precisa ter: só na senha nova (não na
+    // confirmação nem na senha de entrar). A lista aparece desde o começo,
+    // para a senha passar de primeira (pedido do Breno em 20/10/2026: "dê
+    // dicas para que a senha possa ser validada").
     if (el.getAttribute("autocomplete") === "new-password" && !/2$/.test(el.id)) {
       const forca = document.createElement("p");
       forca.className = "senha-forca";
       forca.setAttribute("aria-live", "polite");
       caixa.insertAdjacentElement("afterend", forca);
+      const repetir = document.getElementById(el.id + "2");
+      const dicas = document.createElement("ul");
+      dicas.className = "senha-dicas";
+      dicas.setAttribute("aria-label", "O que a senha precisa ter");
+      forca.insertAdjacentElement("afterend", dicas);
       const mostrar = () => {
         const email = (window.__jog && window.__jog.email) || state.pcEmail || state.pcLogin || (contaAcademia && contaAcademia.email) || "";
-        const f = forcaDaSenha(el.value, email);
-        forca.innerHTML = f ? `<span class="senha-barra n${f.nivel}"><i></i><i></i><i></i></span><span>Senha ${f.t.toLowerCase()}${f.nivel === 0 && el.value.length >= 8 ? ": fácil de adivinhar" : f.nivel === 0 ? ": use pelo menos 8 caracteres" : ""}</span>` : "";
+        const v = el.value;
+        const f = forcaDaSenha(v, email);
+        forca.innerHTML = f ? `<span class="senha-barra n${f.nivel}"><i></i><i></i><i></i></span><span>Senha ${f.t.toLowerCase()}${f.nivel === 0 && v.length >= 8 ? ": fácil de adivinhar" : f.nivel === 0 ? ": use pelo menos 8 caracteres" : ""}</span>` : "";
+        const obvia = !!v && senhaObvia(v, email);
+        const r = repetir ? repetir.value : "";
+        const item = (estado, texto) => `<li class="${estado}"><i>${estado === "ok" ? icon("check", 10, "#fff") : ""}</i><span>${texto}</span></li>`;
+        dicas.innerHTML = [
+          item(v.length >= 8 ? "ok" : "", "Pelo menos 8 caracteres"),
+          item(!v ? "" : obvia ? (v.length >= 8 ? "nao" : "") : "ok", "Nada fácil de adivinhar, como 12345678 ou o seu e-mail"),
+          repetir ? item(r && r === v ? "ok" : r && r.length >= v.length ? "nao" : "", "A mesma senha nos dois campos") : "",
+        ].join("") + `<li class="senha-exemplo">Dica: junte palavras e números, como "saibro coberto 2026".</li>`;
       };
       el.addEventListener("input", mostrar);
+      if (repetir) repetir.addEventListener("input", mostrar);
       mostrar();
     }
   });

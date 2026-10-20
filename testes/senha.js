@@ -24,6 +24,21 @@ const { abrir, ok } = require('./harness');
   ok((await forca('quadra2026')).includes('boa'), 'quadra2026: boa');
   ok((await forca('Saibro coberto em Moema 2026')).includes('forte'), 'frase longa com número: forte');
   ok(!(await page.evaluate(() => document.querySelectorAll('.senha-forca').length > 1)), 'a força aparece só embaixo da senha, não da confirmação');
+  // O que a senha precisa ter, desde o começo, ficando verde (pedido de 20/10/2026).
+  const dicas = () => page.evaluate(() => [...document.querySelectorAll('.senha-dicas li')].map(l => (l.className || '-') + ':' + l.innerText.trim()));
+  await page.fill('#jog-senha', ''); await page.fill('#jog-senha2', '');
+  let d = await dicas();
+  ok(d.length === 4 && d[0] === '-:Pelo menos 8 caracteres' && d[1].startsWith('-:Nada fácil de adivinhar') && d[2] === '-:A mesma senha nos dois campos' && d[3].includes('saibro coberto 2026')
+    && await page.evaluate(() => document.querySelectorAll('.senha-dicas').length === 1), 'antes de digitar: a lista do que a senha precisa ter, com a dica — ' + d.join(' | '));
+  await page.fill('#jog-senha', '12345678');
+  d = await dicas();
+  ok(d[0].startsWith('ok:') && d[1].startsWith('nao:') && d[2].startsWith('-:'), '12345678: 8 caracteres feito, "fácil de adivinhar" em vermelho');
+  await page.fill('#jog-senha', 'quadra2026'); await page.fill('#jog-senha2', 'quadra2027');
+  d = await dicas();
+  ok(d[0].startsWith('ok:') && d[1].startsWith('ok:') && d[2].startsWith('nao:'), 'repetição diferente: em vermelho');
+  await page.fill('#jog-senha2', 'quadra2026');
+  ok((await dicas()).slice(0, 3).every(x => x.startsWith('ok:')), 'tudo certo: os três verdes');
+  await page.fill('#jog-senha', ''); await page.fill('#jog-senha2', '');
 
   await page.fill('#jog-nome', 'Lia Tenista');
   await page.check('#jog-aceite');

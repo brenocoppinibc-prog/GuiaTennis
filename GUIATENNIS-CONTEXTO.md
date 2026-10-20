@@ -4716,8 +4716,10 @@ planos (os de teste são provisórios) e se o Premium fica grátis até lá;
 o "Confirmar depois" na tela do e-mail do cadastro (regra 110); (5)
 **pergunta em aberto**: quando o responsável avisa que a academia fechou,
 a ficha sai da busca enquanto o admin confere (hoje fica no ar até a
-decisão)? **A descrição do PR parou na seção 26 e no passo de teste 35**:
-faltam as regras 98 a 126 (atualizar antes do merge). Testes: a última
+decisão)? **A descrição do PR foi atualizada em 20/10** (depois deste
+resumo): seções 27 a 33 (regras 98 a 127), a lista do SQL até
+`20261020170000_academia_que_fechou`, "Para o Breno ligar" e os passos de
+teste até o 48. Daqui em diante, cada push já atualiza a descrição. Testes: a última
 bateria completa deu **1.523 verificações, nenhuma falha** (53 arquivos
 do navegador; a única falha, texto antigo em `buscas-e-avisos.js`, foi
 corrigida e rodada de novo), **4 no `onde.mjs`, 20 no `pagamento.mjs`** e

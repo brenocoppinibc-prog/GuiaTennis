@@ -56,9 +56,9 @@ const daAna = (page) => page.evaluate(() => window.__db.jogadores.find(j => j.us
   const erro = () => page.evaluate(() => (document.querySelector('#jogador-overlay .form-error')?.innerText || '').trim());
   await page.click('#jog-criar');
   await page.waitForTimeout(150);
-  ok((await erro()) === 'Falta o nome. Aceite os Termos de Uso e a Política de Privacidade.', 'sem nome e sem aceite: os dois no aviso — ' + await erro());
+  ok((await erro()) === 'Falta o nome e o sobrenome. Aceite os Termos de Uso e a Política de Privacidade.', 'sem nome e sem aceite: os dois no aviso — ' + await erro());
   await page.check('#jog-aceite');
-  ok((await erro()) === 'Falta o nome.', 'marcou o aceite: sai só essa parte do aviso, na hora — ' + await erro());
+  ok((await erro()) === 'Falta o nome e o sobrenome.', 'marcou o aceite: sai só essa parte do aviso, na hora — ' + await erro());
   await page.fill('#jog-nome', 'Nina Nova');
   await page.uncheck('#jog-aceite');
   await page.click('#jog-criar');

@@ -140,7 +140,7 @@ async function buscar(page, termo) {
   await page.evaluate(() => irPerfil());
   await page.waitForTimeout(200);
   t = await texto(page, '#perfil-jogador');
-  ok(t.includes('Olá, Maria') && !(await page.$('#jog-excluir')) && t.includes('Para excluir a conta, fale com o GuiaTennis'), 'o perfil funciona, sem "Excluir" (a conta também é do Parceiros)');
+  ok(t.includes('Olá, Maria') && !(await page.$('#jog-excluir')) && t.includes('Para excluir a conta, use Perfil › Excluir minha conta no GuiaTennis Parceiros'), 'o perfil funciona, sem o botão de excluir: a conta também é do Parceiros e se exclui por lá');
   await browser.close();
 
   // Entrar pelo site dos jogadores com o e-mail do Parceiros: segue como jogador.

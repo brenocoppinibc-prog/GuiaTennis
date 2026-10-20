@@ -22,7 +22,10 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 19/10/2026
+**Atualizado em:** 20/10/2026
+
+> **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
+> ao trocar de chat)" na seção 11.
 
 > **Estado (19/10/2026):** o Breno trocou de chat: leia o "Resumo (19/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -4661,6 +4664,54 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (20/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 126** (último commit de código: `1b3d642`, mais este
+documento). O "aplicar" passou o SQL no banco de teste até
+`20261020170000_academia_que_fechou`. Neste chat entraram as regras 118 a
+126: **pagamento de teste** (gateway fingido na prévia: plano com preço de
+teste R$ 49/99 por mês, R$ 490/990 por ano, e créditos; Pix pago/vencido,
+cartão APRO aprova e OTHE recusa; o interruptor `pagamento_de_teste` liga
+só no banco de teste pelo `aplicar.sh`) (118); no menu do Parceiros, o
+nome da academia é o seletor, e saiu "Plano de cada academia" (119); link
+na frase da Ajuda, atalho "Revise e salve a ficha" e planos enxutos ("Tudo
+do Básico, mais:", cartões que deslizam no celular, título "Plano
+Premium") (120); **a conta sai, a academia fica** (Parceiros › Perfil ›
+"Excluir minha conta"; com outro acesso, o mais antigo vira o responsável
+e o plano passa a ser dele, com e-mail; sem outro, volta ao Básico) (121);
+academia nova direto no ar **só pela conta do Parceiros** com e-mail
+confirmado (a extensão ao jogador foi desfeita) (122); **"Guia" com G
+maiúsculo** (123); **a ficha só sai do Guia quando a academia fecha as
+portas** (o responsável avisa, o admin confere em Pendências › "Academias
+que fecharam", ou tira direto pela ficha) (124); "Entenda como funciona"
+abaixo dos números, num balão colado no link, e o rodapé do Perfil
+alinhado (125); benefício do Completo para os jogadores e o convite acima
+das perguntas na página inicial do Parceiros (126). SQL novos:
+`20261020120000_pagamento_de_teste`, `20261020130000_conta_sai_academia_fica`,
+`20261020140000_academia_do_jogador_no_ar` (desfeito pelo
+`20261020150000_academia_nova_so_pelo_parceiros`),
+`20261020160000_guia_com_g_maiusculo` e `20261020170000_academia_que_fechou`.
+**Pendências para o Breno:** (1) testar o pagamento de teste na prévia e
+depois ligar o Mercado Pago (variáveis da regra 117); (2) os preços dos
+planos (os de teste são provisórios) e se o Premium fica grátis até lá;
+(3) se o leilão só abre em bairro com público mínimo; (4) manter ou tirar
+o "Confirmar depois" na tela do e-mail do cadastro (regra 110); (5)
+**pergunta em aberto**: quando o responsável avisa que a academia fechou,
+a ficha sai da busca enquanto o admin confere (hoje fica no ar até a
+decisão)? **A descrição do PR parou na seção 26 e no passo de teste 35**:
+faltam as regras 98 a 126 (atualizar antes do merge). Testes: a última
+bateria completa deu **1.523 verificações, nenhuma falha** (53 arquivos
+do navegador; a única falha, texto antigo em `buscas-e-avisos.js`, foi
+corrigida e rodada de novo), **4 no `onde.mjs`, 20 no `pagamento.mjs`** e
+**451 no `banco-emails.py`**. O banco local (seção 6) precisa ser criado de
+novo num container novo, e o Postgres cai quando o ambiente reinicia
+(subir de novo com o `pg_ctl` da seção 6). O merge espera o Breno dizer
+**"pode subir"**. Este chat **deixou de acompanhar o PR** (sem inscrição,
+sem conferência marcada): no chat novo, voltar a acompanhar o PR #5.
+Seguem valendo: respostas curtas, ler só o trecho que muda, prints só
+quando o pedido for de visual, e comparar com referências internacionais
+grandes nas decisões de site, Instagram e marketing.
 
 **Resumo (19/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

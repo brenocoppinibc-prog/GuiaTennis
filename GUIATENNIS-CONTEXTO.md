@@ -453,6 +453,11 @@ mexer:
 ### Como o Breno trabalha (importante)
 - Fala português, pelo celular, e manda print. Resposta curta, direta, em
   português, sem jargão.
+- **Tudo atualizado no mesmo push** (pedido de 20/10/2026: "deixe sempre
+  tudo atualizado, termos de uso, política de privacidade, pr"): cada
+  mudança já leva os Termos de Uso e a Política de Privacidade (o texto e a
+  "Última atualização"), quando tocam no que eles dizem, e a descrição do
+  PR aberto (seção nova, SQL e passo de teste), sem esperar o merge.
 - **Publica aprovando o PR no GitHub** (desde 28/09/2026 — seção 7). Não
   mandar mais zip, a não ser que ele peça: cada zip arrastado gasta
   crédito do Netlify.
@@ -2951,11 +2956,13 @@ cobra taxa e não fica no meio** da negociação.
     do jogador, Minha conta (e o Perfil) e "Faça seu cadastro" (nome e
     WhatsApp sem conta) não passam só com o primeiro nome; "da", "de",
     "dos"… sozinhos não contam (`temSobrenome`). O campo continua "Nome e
-    sobrenome", sem aviso antes; só quando falta aparece escrito: "Falta o
-    sobrenome." (criar conta), "Escreva também o sobrenome." (Minha conta e
-    "Faça seu cadastro"). O Parceiros já tinha o campo Sobrenome
-    obrigatório ("Escreva o sobrenome."). Quem já tem conta só com o nome
-    continua entrando; ao salvar Minha conta, o site pede o sobrenome.
+    sobrenome", sem aviso antes; só quando falta aparece escrito
+    **"Preencha o sobrenome."** (pedido seguinte: "quero que apareça
+    preencha o sobrenome"), também no campo Sobrenome do Parceiros (era
+    "Escreva o sobrenome."). Quem já tem conta só com o nome continua
+    entrando; ao salvar Minha conta, o site pede o sobrenome. Termos e
+    Privacidade dizem "nome e sobrenome" (20 de outubro de 2026). Teste:
+    `jogador.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

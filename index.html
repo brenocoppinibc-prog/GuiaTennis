@@ -5924,6 +5924,13 @@ function separarNome(completo) {
   const partes = String(completo || "").trim().split(/\s+/).filter(Boolean);
   return { nome: partes[0] || "", sobrenome: partes.slice(1).join(" ") };
 }
+// Pelo menos um sobrenome nos cadastros (pedido do Breno em 20/10/2026, como
+// o nome e sobrenome obrigatórios do Booking e do Airbnb): "Maria" não passa;
+// "Maria Silva" e "Maria da Silva" passam. "da", "de", "dos"… sozinhos não
+// contam.
+function temSobrenome(completo) {
+  return separarNome(completo).sobrenome.split(" ").some(x => x.length >= 2 && !/^(d[aeo]s?|e)$/i.test(x));
+}
 function juntarNome(f) {
   return [f.nome, f.sobrenome].map(x => (x || "").trim()).filter(Boolean).join(" ");
 }
@@ -12300,7 +12307,8 @@ async function criarContaJogador() {
   f.senha2 = document.getElementById("jog-senha2")?.value || f.senha2 || "";
   const email = String(f.email || "").trim().toLowerCase();
   const falta = [];
-  if (String(f.nome || "").trim().length < 3) falta.push("o nome");
+  if (String(f.nome || "").trim().length < 2) falta.push("o nome e o sobrenome");
+  else if (!temSobrenome(f.nome)) falta.push("o sobrenome");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) falta.push("um e-mail válido");
   // Sem o aceite, o aviso diz o nome dos dois textos (pedido do Breno em
   // 11/10/2026: "quero que apareça, aceite os termos de uso e política de
@@ -12342,7 +12350,8 @@ async function criarContaJogador() {
 
 async function salvarContaJogador() {
   const f = window.__jog || {};
-  if (String(f.nome || "").trim().length < 3) { state.jogadorErro = "Escreva o seu nome."; render(); return; }
+  if (String(f.nome || "").trim().length < 2) { state.jogadorErro = "Escreva o seu nome e sobrenome."; render(); return; }
+  if (!temSobrenome(f.nome)) { state.jogadorErro = "Escreva também o sobrenome."; render(); return; }
   const daTela = avisosDaTela(jogador, false);
   const mudou = daTela.some(a => !!f[a.campo] !== !!jogador[a.campo]);
   const dados = { nome: String(f.nome).trim(), cidade: String(f.cidade || "").trim() || null,
@@ -18938,7 +18947,7 @@ function renderVisitorSetupSheet() {
         <p class="sheet-title display">Faça seu cadastro</p>
         <p class="subtitle" style="margin-top:4px">Nome e WhatsApp pra identificar suas avaliações e solicitações. É rápido, e só pedimos uma vez.</p>
 
-        <input class="form-field" id="visitor-nome" placeholder="Seu nome" value="${esc(v.nome)}" />
+        <input class="form-field" id="visitor-nome" placeholder="Nome e sobrenome" autocomplete="name" value="${esc(v.nome)}" />
         <input class="form-field" id="visitor-contato" placeholder="WhatsApp (com DDD)" value="${esc(v.contato)}" />
 
         ${state.visitorError ? `<div class="form-error">${icon('warning',13)} ${esc(state.visitorError)}</div>` : ""}
@@ -20389,6 +20398,7 @@ function attachEvents() {
       render();
       return;
     }
+    if (!temSobrenome(nome)) { state.visitorError = "Escreva também o sobrenome."; render(); return; }
     saveVisitor({ nome, contato });
     state.showVisitorSetup = false;
     const action = state.pendingVisitorAction;

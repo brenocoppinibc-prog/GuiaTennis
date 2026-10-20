@@ -16,6 +16,16 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => state.jogadorTela === 'criar' && document.getElementById('jog-email').readOnly && document.getElementById('jog-email').value === 'bia@exemplo.com'), 'e-mail sem conta: completa o cadastro, com o e-mail já preenchido');
   const avisos = await page.evaluate(() => [...document.querySelectorAll('.jog-aviso')].map(c => c.checked));
   ok(avisos.length === 3 && avisos.every(x => !x), 'três avisos, todos começam desligados (sem "Vou viajar" no cadastro)');
+  // Pelo menos um sobrenome (pedido do Breno em 20/10/2026): só aparece escrito quando falta.
+  await page.fill('#jog-nome', 'Bia');
+  await page.check('#jog-aceite');
+  await page.click('#jog-criar');
+  await page.waitForTimeout(200);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('Falta o sobrenome.'), 'só o nome: "Falta o sobrenome."');
+  await page.fill('#jog-nome', 'Bia da');
+  await page.click('#jog-criar');
+  await page.waitForTimeout(200);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('Falta o sobrenome.'), '"da" sozinho não conta como sobrenome');
   await page.fill('#jog-nome', 'Bia Tenista');
   await page.fill('#jog-senha', 'curta');
   await page.fill('#jog-senha2', 'curta');
@@ -49,6 +59,11 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(150);
   await page.uncheck('.jog-aviso[data-campo="promocoes"]');
   await page.check('.jog-aviso[data-campo="avisos_academias"]');
+  await page.fill('#jog-nome', 'Bia');
+  await page.click('#jog-salvar');
+  await page.waitForTimeout(200);
+  ok((await page.evaluate(() => document.querySelector('#perfil-jogador .form-error')?.innerText || '')).includes('Escreva também o sobrenome.'), 'Minha conta: sem sobrenome não salva e avisa');
+  await page.fill('#jog-nome', 'Bia Tenista');
   await page.fill('#jog-cidade', 'São Paulo');
   await page.click('#jog-salvar');
   await page.waitForTimeout(300);
@@ -65,6 +80,15 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => window.__db.avaliacoes.length === 1 && window.__db.avaliacoes[0].nome_autor === 'Bia Tenista'), 'avaliação com o nome da conta');
   const segunda = await page.evaluate(async () => { try { await submitRating('a1', 3, ''); return 'foi'; } catch (e) { return e.message; } });
   ok(segunda === 'Você já avaliou essa academia.', 'uma avaliação por conta em cada academia — ' + segunda);
+  // "Faça seu cadastro" (nome e WhatsApp sem conta) também pede o sobrenome.
+  await page.evaluate(() => { state.showVisitorSetup = true; render(); });
+  await page.fill('#visitor-nome', 'Rita');
+  await page.fill('#visitor-contato', '11999999999');
+  await page.click('#visitor-submit');
+  await page.waitForTimeout(150);
+  const vis = await page.evaluate(() => ({ e: document.querySelector('#visitor-overlay .form-error')?.innerText || '', v: loadVisitor() }));
+  ok(vis.e.includes('Escreva também o sobrenome.') && !vis.v, '"Faça seu cadastro": sem sobrenome não passa');
+  await page.evaluate(() => { state.showVisitorSetup = false; render(); });
   // Excluir a conta.
   // (o botão recarrega a página; aqui confere o que o banco faz)
   await page.evaluate(() => abrirContaJogador('conta'));

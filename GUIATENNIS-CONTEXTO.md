@@ -2946,6 +2946,16 @@ cobra taxa e não fica no meio** da negociação.
     os números da ficha." (antes falava das 5 pessoas da equipe); e o
     bloco "Pronto para aparecer para quem procura?" fica **acima** das
     Perguntas frequentes.
+127. **Pelo menos um sobrenome nos cadastros** (pedido de 20/10/2026, como
+    o nome e sobrenome obrigatórios do Booking e do Airbnb): o criar conta
+    do jogador, Minha conta (e o Perfil) e "Faça seu cadastro" (nome e
+    WhatsApp sem conta) não passam só com o primeiro nome; "da", "de",
+    "dos"… sozinhos não contam (`temSobrenome`). O campo continua "Nome e
+    sobrenome", sem aviso antes; só quando falta aparece escrito: "Falta o
+    sobrenome." (criar conta), "Escreva também o sobrenome." (Minha conta e
+    "Faça seu cadastro"). O Parceiros já tinha o campo Sobrenome
+    obrigatório ("Escreva o sobrenome."). Quem já tem conta só com o nome
+    continua entrando; ao salvar Minha conta, o site pede o sobrenome.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

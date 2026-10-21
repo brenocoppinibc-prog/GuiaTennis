@@ -24,8 +24,9 @@ const tela = (page) => page.evaluate(() => ({
   const trilha = (ld['@graph'] || []).find(x => x['@type'] === 'BreadcrumbList');
   ok(trilha && trilha.itemListElement.map(i => i.name).join(' › ') === 'Início › Quadras em São Paulo › Moema › Quadra Locação'
     && trilha.itemListElement[2].item === 'http://guia.test/quadras/sao-paulo/moema', 'dados para o Google com o caminho até a academia');
-  const migalhas = await page.evaluate(() => [...document.querySelectorAll('.ht-crumbs a')].map(a => a.getAttribute('href')));
-  ok(migalhas.join(' ') === '/ /quadras/sao-paulo /quadras/sao-paulo/moema', 'caminho da ficha são links de verdade — ' + migalhas.join(' '));
+  // Sem o caminho na tela (20/10/2026): o link da região fica no fim de "Explore a região".
+  const naFicha = await page.evaluate(() => ({ caminho: !!document.querySelector('.ht-crumbs'), link: document.querySelector('#ht-local a[data-regiao-link]')?.getAttribute('href') || '', t: document.querySelector('#ht-local a[data-regiao-link]')?.innerText || '' }));
+  ok(!naFicha.caminho && naFicha.link === '/quadras/sao-paulo/moema' && naFicha.t.includes('Ver todas as academias em Moema'), 'sem o caminho no alto; "Ver todas as academias em Moema" é link de verdade — ' + naFicha.link);
 
   // Aba da ficha no link.
   await page.click('#ht-tabs button[data-goto="avaliacoes"]');
@@ -77,12 +78,12 @@ const tela = (page) => page.evaluate(() => ({
   ok(rodape.includes('/quadras/sao-paulo'), 'rodapé tem as cidades com link, como os destinos do TripAdvisor');
   await browser.close();
 
-  // Clicar no caminho da ficha leva à região com o endereço dela.
+  // O link da região na ficha leva à região com o endereço dela.
   ({ browser, page } = await abrir({ q: 'academia/quadra-locacao-a2' }));
-  await page.click('.ht-crumbs a[href="/quadras/sao-paulo/moema"]');
+  await page.click('#ht-local a[href="/quadras/sao-paulo/moema"]');
   await page.waitForTimeout(700);
   t = await tela(page);
-  ok(t.page === 'search' && t.link === '/quadras/sao-paulo/moema', 'caminho da ficha abre a região — ' + t.link);
+  ok(t.page === 'search' && t.link === '/quadras/sao-paulo/moema', 'o link da região na ficha abre a região — ' + t.link);
   await page.goBack();
   await page.waitForTimeout(400);
   t = await tela(page);

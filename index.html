@@ -531,10 +531,8 @@
   .cta-danger { border: 1px solid var(--red); color: var(--red); background: transparent; }
   .footnote { color: var(--muted-dark); font-size: 12px; margin-top: 16px; }
 
-  .como-avaliacoes { margin-top: 10px; font-size: 13px; color: var(--muted); }
-  .como-avaliacoes summary { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; list-style: none; text-decoration: underline; text-underline-offset: 2px; }
-  .como-avaliacoes summary::-webkit-details-marker { display: none; }
-  .como-avaliacoes p { margin: 8px 0 0; line-height: 1.5; }
+  .como-avaliacoes { position: relative; display: inline-block; margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .como-avaliacoes > button { display: inline-flex; gap: 6px; align-items: center; background: none; border: 0; padding: 4px 0; font: inherit; color: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   .rate-box { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 20px; text-align: center; }
   .rate-box p { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
   .star-picker { font-size: 30px; letter-spacing: 4px; cursor: pointer; }
@@ -1043,6 +1041,19 @@
   .courtbar { position: sticky; top: 0; z-index: 20; background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
   .courtbar button { background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--green); padding: 4px; }
   .courtbar-name { flex: 1; min-width: 0; font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Topo da ficha (20/10/2026), como o do Airbnb e do Booking no celular:
+     voltar, o nome e três ícones do mesmo tamanho (comparar, compartilhar e
+     favoritar), todos à vista. No computador, "Voltar" e "Comparar" com texto. */
+  .courtbar .courtbar-ic { width: 40px; height: 40px; flex-shrink: 0; justify-content: center; border-radius: 50%; padding: 0; gap: 6px; }
+  .courtbar .courtbar-ic:hover { background: var(--bg-alt); }
+  .courtbar .courtbar-ic.on { background: var(--green); }
+  .courtbar #court-back { margin-left: -6px; }
+  .courtbar-t { display: none; }
+  @media (min-width: 700px) {
+    .courtbar .courtbar-ic.com-texto { width: auto; border-radius: 999px; padding: 0 14px 0 10px; }
+    .courtbar .courtbar-ic.com-texto .courtbar-t { display: inline; }
+    .courtbar #court-back.com-texto { padding-left: 4px; }
+  }
   .courtpage { padding-bottom: 60px; }
   @media (min-width: 720px) { .courtpage-inner { max-width: 1140px; margin: 0 auto; } }
   .search-header { padding: 16px 20px 18px; border-bottom: 1px solid var(--border); background: var(--card); }
@@ -1134,16 +1145,11 @@
 
   /* ================= ficha da academia no formato das páginas de hotel ================= */
 
-  /* caminho: Início › Quadras em São Paulo › Bairro › Academia */
-  .ht-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); padding: 10px 20px 8px; }
-  .ht-crumbs button, .ht-crumbs a { background: none; border: none; padding: 0; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--green); cursor: pointer; text-decoration: underline; }
   /* Página de uma região (/quadras/sao-paulo/moema) e aviso de link antigo */
   .regiao-titulo { font-size: 22px; line-height: 1.2; margin: 14px 20px 0; }
   .aviso-link { margin: 12px 20px 0; padding: 10px 12px; background: var(--bg-alt); border-radius: 10px; font-size: 13px; color: var(--muted); }
   .cidade-link { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--green); }
   .ver-todas { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--green); background: none; border: none; padding: 0; font-family: var(--fonte-texto); cursor: pointer; }
-  .ht-crumbs .sep { color: var(--muted-dark); }
-  .ht-crumbs .cur { color: var(--muted); }
 
   /* galeria em mosaico: uma foto grande e até quatro menores */
   .ht-gal { position: relative; display: grid; gap: 3px; background: var(--border); height: 240px; grid-template-columns: 1fr; }
@@ -1321,17 +1327,14 @@
 
   /* "bom saber", no lugar do "você precisa saber" dos hotéis */
   /* cancelamento e reposição */
-  .pol-faixa { display: flex; align-items: center; gap: 14px; background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 14px; padding: 15px 17px; font-size: 15px; line-height: 1.45; }
-  .pol-faixa.sem { background: var(--bg-alt); border-color: var(--border); }
-  .pol-faixa-h { flex-shrink: 0; font-size: 32px; font-weight: 700; color: var(--green); line-height: 1; }
-  .pol-faixa-ic { flex-shrink: 0; display: flex; }
-  .pol-lados { display: grid; gap: 12px; margin-top: 12px; }
-  @media (min-width: 560px) { .pol-lados { grid-template-columns: 1fr 1fr; } }
-  .pol-lado { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 15px; }
-  .pol-lado.ok { border-color: var(--green-line); }
-  .pol-lado-ic { display: flex; margin-bottom: 9px; }
-  .pol-lado-t { font-size: 15px; font-weight: 700; margin: 0; }
-  .pol-lado-d { font-size: 14px; color: var(--muted); margin: 5px 0 0; line-height: 1.5; }
+  /* Cancelamento num cartão só, uma linha por caso (20/10/2026), como o
+     "Cancelamento grátis até…" do Booking e do Airbnb. */
+  .pol-card { border: 1px solid var(--border); border-radius: 14px; background: var(--card); }
+  .pol-linha { display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; }
+  .pol-linha + .pol-linha { border-top: 1px solid var(--border); }
+  .pol-linha-ic { flex-shrink: 0; display: flex; margin-top: 1px; }
+  .pol-linha-t { font-size: 15px; font-weight: 700; margin: 0; }
+  .pol-linha-d { font-size: 14px; color: var(--muted); margin: 2px 0 0; line-height: 1.45; }
   .pol-texto { font-size: 15px; line-height: 1.55; border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 15px 17px; }
 
   .ht-know { display: grid; gap: 10px; margin-top: 6px; }
@@ -1514,8 +1517,6 @@
   /* ficha da academia: seções separadas por espaço, não por caixas */
   .courtbar { padding: 10px 16px; }
   .courtbar-name { font-weight: 600; }
-  .ht-crumbs { font-size: 13px; padding: 14px 20px 10px; }
-  .ht-crumbs button, .ht-crumbs a { font-size: 13px; font-weight: 500; }
   .ht-head { padding: 22px 20px 0; }
   .court-name { font-size: 30px; line-height: 1.15; }
   @media (min-width: 720px) { .court-name { font-size: 38px; } }
@@ -1876,6 +1877,9 @@
   .como-numeros-wrap { position: relative; }
   .info-pop { position: absolute; z-index: 30; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); width: min(360px, calc(100vw - 48px)); text-align: left; background: var(--card); color: var(--text); border-radius: 16px; padding: 18px 18px 16px; box-shadow: 0 14px 40px rgba(0,0,0,0.28); animation: infoPop .18s ease-out; }
   .info-pop::before { content: ""; position: absolute; top: -7px; left: 50%; width: 14px; height: 14px; background: var(--card); transform: translateX(-50%) rotate(45deg); border-radius: 2px; }
+  /* Link alinhado à esquerda (ficha): o balão começa no link. */
+  .info-pop.esq { left: 0; transform: none; border: 1px solid var(--border); }
+  .info-pop.esq::before { left: 22px; border-left: 1px solid var(--border); border-top: 1px solid var(--border); }
   .info-pop-x { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--bg-alt); color: var(--text); font-size: 15px; cursor: pointer; }
   .info-pop-t { margin: 0 40px 8px 0; font-size: 16px; font-weight: 700; }
   .info-pop-s { margin: 0; font-size: 14px; line-height: 1.55; color: var(--muted); }
@@ -2562,6 +2566,7 @@ function icon(name, size, color) {
     locate: '<circle cx="12" cy="12" r="6"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>',
     heart: '<path d="M12 21s-7.5-4.6-10-9.3C0.5 8.5 2 5 5.5 5c2 0 3.3 1.1 4 2.1.7-1 2-2.1 4-2.1 3.5 0 5 3.5 3 6.7-2.5 4.7-10 9.3-10 9.3z"/>',
     heartFill: '<path d="M12 21s-7.5-4.6-10-9.3C0.5 8.5 2 5 5.5 5c2 0 3.3 1.1 4 2.1.7-1 2-2.1 4-2.1 3.5 0 5 3.5 3 6.7-2.5 4.7-10 9.3-10 9.3z" fill="' + color + '" stroke="none"/>',
+    comparar: '<rect x="3" y="4" width="7.5" height="16" rx="1.8"/><rect x="13.5" y="4" width="7.5" height="16" rx="1.8"/><line x1="5.6" y1="9" x2="7.9" y2="9"/><line x1="16.1" y1="9" x2="18.4" y2="9"/><line x1="5.6" y1="13" x2="7.9" y2="13"/><line x1="16.1" y1="13" x2="18.4" y2="13"/>',
     share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><line x1="8.2" y1="10.8" x2="15.8" y2="7.2"/><line x1="8.2" y1="13.2" x2="15.8" y2="16.8"/>',
   };
   const strokeAttrs = ["ball","instagram","clipboard","home"].includes(name) ? "" : "";
@@ -12867,13 +12872,18 @@ function saibaMaisNaAjuda(id, texto = "Saiba mais") {
 function comoFuncionamOsNumeros() {
   return `
     <div class="como-numeros-wrap">
-      <p class="como-numeros"><button type="button" data-como-numeros aria-expanded="${!!state.comoNumeros}">${icon('info', 14, 'currentColor')} Entenda como funciona</button></p>
-      ${state.comoNumeros ? `
-        <div class="info-pop" role="dialog" aria-labelledby="info-pop-t">
-          <button type="button" class="info-pop-x" id="info-pop-fechar" aria-label="Fechar">✕</button>
-          <p class="info-pop-t" id="info-pop-t">Como contamos os números</p>
-          <p class="info-pop-s">${esc(NOTA_DOS_NUMEROS)}</p>
-        </div>` : ""}
+      <p class="como-numeros"><button type="button" data-info-pop="numeros" aria-expanded="${state.infoPop === "numeros"}">${icon('info', 14, 'currentColor')} Entenda como funciona</button></p>
+      ${state.infoPop === "numeros" ? balaoDeInfo("Como contamos os números", NOTA_DOS_NUMEROS) : ""}
+    </div>`;
+}
+// O balão colado no link, com o ✕ (tocar fora ou Esc também fecham). Um
+// aberto por vez: state.infoPop diz qual ("numeros", "avaliacoes").
+function balaoDeInfo(titulo, texto, classe) {
+  return `
+    <div class="info-pop${classe ? " " + classe : ""}" role="dialog" aria-labelledby="info-pop-t">
+      <button type="button" class="info-pop-x" id="info-pop-fechar" aria-label="Fechar">✕</button>
+      <p class="info-pop-t" id="info-pop-t">${esc(titulo)}</p>
+      <p class="info-pop-s">${esc(texto)}</p>
     </div>`;
 }
 function irParaPerguntaDaAjuda(id) {
@@ -15501,16 +15511,14 @@ function htGaleria(c) {
     </div>`;
 }
 
-// O caminho até a academia, como o "Brasil › São Paulo › Hotel" das páginas de hotel.
-// São links de verdade (/quadras/sao-paulo/moema): o Google segue e a
-// pessoa pode abrir em outra aba.
-function htCaminho(c) {
-  const itens = [`<a href="/" data-crumb="home">Início</a>`];
-  if (c.cidade) itens.push(`<a href="${caminhoDaRegiao({ cidade: c.cidade })}" data-crumb="busca" data-cidade="${esc(c.cidade)}">Quadras em ${esc(c.cidade)}</a>`);
-  if (c.cidade && c.bairro) itens.push(`<a href="${caminhoDaRegiao({ cidade: c.cidade, bairro: c.bairro })}" data-crumb="busca" data-cidade="${esc(c.cidade)}" data-bairro="${esc(c.bairro)}">${esc(c.bairro)}</a>`);
-  else if (c.bairro) itens.push(`<span>${esc(c.bairro)}</span>`);
-  itens.push(`<span class="cur">${esc(c.name)}</span>`);
-  return `<nav class="ht-crumbs" aria-label="Onde você está">${itens.join(`<span class="sep">›</span>`)}</nav>`;
+// O caminho até a academia (Início › Quadras em São Paulo › Moema) não
+// aparece na tela desde 20/10/2026 (pedido do Breno): fica só nos dados para
+// o Google (BreadcrumbList), e o link da região vai para o fim de "Explore a
+// região", como o "Ver todos os hotéis em…" do Booking.
+function linkDaRegiaoNaFicha(c) {
+  if (!c.cidade) return "";
+  const r = c.bairro ? { cidade: c.cidade, bairro: c.bairro } : { cidade: c.cidade };
+  return `<a class="cidade-link" href="${caminhoDaRegiao(r)}" data-regiao-link data-cidade="${esc(c.cidade)}"${c.bairro ? ` data-bairro="${esc(c.bairro)}"` : ""}>Ver todas as academias em ${esc(c.bairro || c.cidade)} ›</a>`;
 }
 
 // Os selinhos ao lado do nome: modalidade, quadras e o que tem de melhor.
@@ -15560,13 +15568,52 @@ function descricaoAcademia(c) {
     frases.push(`A academia atende ${mod.toLowerCase()}. O valor é sob consulta: fale com a academia.`);
   }
 
+  // Com mais de 4 comodidades, diz quantas faltam, como o "Mostrar as 25
+  // comodidades" do Airbnb (pedido do Breno em 20/10/2026: "mostrando que
+  // tem mais comodidades e não só essas").
   const com = rotulosNaOrdem(AMENITY_OPTS, c.amenities).map(l => l.toLowerCase());
-  if (com.length) frases.push(`Entre as comodidades ${plural(com.length, "está", "estão")} ${listaTexto(com.slice(0, 4))}.`);
+  if (com.length > 4) frases.push(`Entre as comodidades estão ${com.slice(0, 4).join(", ")} e ${plural(com.length - 4, "mais uma", `outras ${com.length - 4}`)}.`);
+  else if (com.length) frases.push(`Entre as comodidades ${plural(com.length, "está", "estão")} ${listaTexto(com)}.`);
+
+  const elogios = elogiosDasAvaliacoes(c.id);
+  if (elogios.length) frases.push(`Quem avaliou elogia ${listaTexto(elogios)}.`);
 
   if (c.appCount) {
     frases.push(`Os jogadores deram nota ${c.appAvg.toFixed(1).replace(".", ",")} de 5, em ${c.appCount} ${plural(c.appCount, "avaliação feita", "avaliações feitas")} no GuiaTennis.`);
   }
   return frases.join(" ");
+}
+
+// O que os jogadores elogiam nas avaliações, como o "Os hóspedes adoraram"
+// do Booking e o "Pessoas mencionam" do Google Maps (pedido do Breno em
+// 20/10/2026). Sem IA (regra 13): palavras-chave nas avaliações de 4 e 5
+// estrelas, frase por frase; a frase com "não", "falta", "ruim"… não conta.
+// Os mais citados primeiro, até 3.
+const TEMAS_DAS_AVALIACOES = [
+  { t: "os professores", p: /\b(profess|instrutor|treinador|coach)/ },
+  { t: "as aulas", p: /\b(aula|treino|clinica)/ },
+  { t: "as quadras", p: /\b(quadra|piso|saibro)/ },
+  { t: "o atendimento", p: /\b(atendiment|recepc|atencios|simpatic|educad|prestativ)/ },
+  { t: "a limpeza", p: /\b(limp|organizad)/ },
+  { t: "o ambiente", p: /\b(ambiente|agradavel|acolhedor)/ },
+  { t: "a localização", p: /\b(localiza|bem localizad|facil de chegar)/ },
+  { t: "o estacionamento", p: /\bestaciona/ },
+  { t: "o vestiário", p: /\b(vestiari|banheir|chuveir)/ },
+  { t: "a iluminação", p: /\b(ilumina|refletor)/ },
+  { t: "o preço", p: /\b(preco|barat|custo.?beneficio)/ },
+  { t: "a facilidade para marcar", p: /\b(agend|reserv|marcar|horarios? (flexive|disponive))/ },
+];
+const NEGATIVO_NA_FRASE = /\b(nao|nem|sem|falta|faltou|ruim|pessim|horrivel|sujo|suja|caro|cara|demor|fraco|fraca|poderia|deveria|precisa|apertad|quebrad|mal\b)/;
+function elogiosDasAvaliacoes(courtId) {
+  const vezes = new Map();
+  getReviews(courtId).filter(r => r.stars >= 4 && r.comment).forEach(r => {
+    const frases = semAcento(String(r.comment).toLowerCase()).split(/[.!?;,\n]+|\bmas\b|\bporem\b/);
+    TEMAS_DAS_AVALIACOES.forEach(tema => {
+      if (frases.some(f => tema.p.test(f) && !NEGATIVO_NA_FRASE.test(f))) vezes.set(tema.t, (vezes.get(tema.t) || 0) + 1);
+    });
+  });
+  return TEMAS_DAS_AVALIACOES.map(x => x.t).filter(t => vezes.has(t))
+    .sort((a, b) => vezes.get(b) - vezes.get(a)).slice(0, 3);
 }
 
 // "São 8 quadras: 3 de saibro cobertas, 2 de saibro descobertas..." — a mesma
@@ -15685,7 +15732,8 @@ function htLocalizacao(c) {
     ${htPerto(c)}
     ${perto.length ? `
       <p class="field-label">Outras academias por perto</p>
-      <div class="ht-viz">${perto.map(x => cartaoVizinha(x.c, x.km)).join("")}</div>` : ""}`;
+      <div class="ht-viz">${perto.map(x => cartaoVizinha(x.c, x.km)).join("")}</div>` : ""}
+    ${linkDaRegiaoNaFicha(c)}`;
 }
 
 // Card da academia vizinha: foto, nota, estrutura e preço — dá para decidir
@@ -15794,13 +15842,16 @@ function ratingPanel(c) {
 
 // Como o "Saiba como as avaliações funcionam" do Airbnb e do Google Maps
 // (análise de 07/10/2026: "quem avaliou realmente jogou lá?"). Só o que o
-// GuiaTennis de fato faz — ele não confere se a pessoa jogou.
+// GuiaTennis de fato faz — ele não confere se a pessoa jogou. Abre no balão
+// colado no link, igual ao "Entenda como funciona" dos números do Parceiros
+// (pedido do Breno em 20/10/2026).
+const COMO_FUNCIONAM_AS_AVALIACOES = "Só quem tem conta no GuiaTennis avalia, uma vez por academia, e declara que a avaliação é verídica. Quem administra a academia não avalia ela. A academia pode responder em público, mas não apaga avaliações; o GuiaTennis só remove a que descumpre os Termos de Uso. Não importamos notas de outros sites.";
 function comoFuncionamAsAvaliacoes() {
   return `
-    <details class="como-avaliacoes">
-      <summary>${icon('info', 14, 'var(--muted)')} Como funcionam as avaliações</summary>
-      <p>Só quem tem conta no GuiaTennis avalia, uma vez por academia, e declara que a avaliação é verídica. Quem administra a academia não avalia ela. A academia pode responder em público, mas não apaga avaliações; o GuiaTennis só remove a que descumpre os Termos de Uso. Não importamos notas de outros sites.</p>
-    </details>`;
+    <div class="como-avaliacoes">
+      <button type="button" data-info-pop="avaliacoes" aria-expanded="${state.infoPop === "avaliacoes"}">${icon('info', 14, 'var(--muted)')} Como funcionam as avaliações</button>
+      ${state.infoPop === "avaliacoes" ? balaoDeInfo("Como funcionam as avaliações", COMO_FUNCIONAM_AS_AVALIACOES, "esq") : ""}
+    </div>`;
 }
 
 // As avaliações em cartões, com a nota de cada uma em destaque.
@@ -15956,38 +16007,27 @@ function htPolitica(c) {
 // O miolo, usado uma vez quando a regra é a mesma e duas quando é separada.
 function blocoPolitica(p, c, oque) {
   p = { ...p, foraDoPrazo: arrumarTexto(p.foraDoPrazo) };
+  const linha = (ic, cor, t, d) => `
+    <div class="pol-linha">
+      <span class="pol-linha-ic">${icon(ic, 18, cor)}</span>
+      <div><p class="pol-linha-t">${t}</p>${d ? `<p class="pol-linha-d">${d}</p>` : ""}</div>
+    </div>`;
   if (p.reposicao === "nao") {
-    return `
-      <div class="pol-faixa sem">
-        <span class="pol-faixa-ic">${icon('warning', 22, 'var(--gold)')}</span>
-        <span>Essa academia <strong>não faz reposição</strong> de ${esc(oque)} desmarcada.</span>
-      </div>
-      ${p.foraDoPrazo ? `<div class="pol-texto">${esc(p.foraDoPrazo)}</div>` : ""}`;
+    return `<div class="pol-card">${linha('warning', 'var(--gold)', `Sem reposição de ${esc(oque)} desmarcada`, p.foraDoPrazo ? esc(p.foraDoPrazo) : "")}</div>`;
   }
 
   // Só o texto livre, quando a academia não escolheu prazo nenhum.
   if (!p.horas) return `<div class="pol-texto">${esc(p.foraDoPrazo)}</div>`;
 
+  // Pedido do Breno em 20/10/2026 ("muita informação repetitiva, grande"):
+  // o prazo e o que acontece em duas linhas, sem repetir o número.
   const h = p.horas;
   return `
-    <div class="pol-faixa">
-      <span class="pol-faixa-h">${h}h</span>
-      <span>é a antecedência mínima para desmarcar e <strong>ter direito à reposição</strong> da ${esc(oque)}.</span>
-    </div>
-
-    <div class="pol-lados">
-      <div class="pol-lado ok">
-        <span class="pol-lado-ic">${icon('check', 20, 'var(--green)')}</span>
-        <p class="pol-lado-t">Avisou com ${h}h ou mais</p>
-        <p class="pol-lado-d">A ${esc(oque)} desmarcada gera reposição.</p>
-      </div>
-      <div class="pol-lado atencao">
-        <span class="pol-lado-ic">${icon('warning', 20, 'var(--gold)')}</span>
-        <p class="pol-lado-t">Avisou com menos de ${h}h</p>
-        <p class="pol-lado-d">${p.foraDoPrazo
-          ? esc(p.foraDoPrazo)
-          : `A academia não detalhou o que acontece nesse caso.${c.phone ? " Pergunte no WhatsApp." : ""}`}</p>
-      </div>
+    <div class="pol-card">
+      ${linha('check', 'var(--green)', `Desmarcou até ${h}h antes`, `Tem reposição da ${esc(oque)}.`)}
+      ${linha('warning', 'var(--gold)', `Com menos de ${h}h`, p.foraDoPrazo
+        ? esc(p.foraDoPrazo)
+        : `A academia não detalhou o que acontece.${c.phone ? " Pergunte no WhatsApp." : ""}`)}
     </div>`;
 }
 
@@ -16242,15 +16282,14 @@ function renderCourtPage(c) {
   return `
     <div class="courtpage">
       <div class="courtbar">
-        <button type="button" id="court-back">${icon('chevronLeft', 16, 'var(--green)')} Voltar</button>
+        <button type="button" id="court-back" class="courtbar-ic com-texto" aria-label="Voltar">${icon('chevronLeft', 20, 'var(--green)')}<span class="courtbar-t">Voltar</span></button>
         <span class="courtbar-name">${esc(c.name)}</span>
-        <button type="button" class="hero-act ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}" style="box-shadow:none;background:${isComparing(c.id) ? 'var(--green)' : 'var(--bg-alt)'}">${isComparing(c.id) ? '✓' : '+'} Comparar</button>
-        <button type="button" id="share-btn" data-court="${c.id}" aria-label="Compartilhar" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${icon('share', 19, 'var(--green)')}</button>
-        <button type="button" data-fav="${c.id}" aria-label="Favoritar" style="background:none;border:none;cursor:pointer;display:flex;padding:4px">${icon(isFavorite(c.id) ? 'heartFill' : 'heart', 20, isFavorite(c.id) ? 'var(--red)' : 'var(--muted)')}</button>
+        <button type="button" class="courtbar-ic com-texto ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}" data-compare-aviso aria-pressed="${isComparing(c.id)}" aria-label="${isComparing(c.id) ? "Na comparação: tocar tira" : "Comparar"}" title="${isComparing(c.id) ? "Na comparação" : "Comparar"}">${icon('comparar', 20, isComparing(c.id) ? '#fff' : 'var(--green)')}<span class="courtbar-t" style="${isComparing(c.id) ? "color:#fff" : ""}">${isComparing(c.id) ? "Na comparação" : "Comparar"}</span></button>
+        <button type="button" class="courtbar-ic" id="share-btn" data-court="${c.id}" aria-label="Compartilhar" title="Compartilhar">${icon('share', 20, 'var(--green)')}</button>
+        <button type="button" class="courtbar-ic" data-fav="${c.id}" aria-label="${isFavorite(c.id) ? "Tirar das favoritas" : "Favoritar"}" title="Favoritar">${icon(isFavorite(c.id) ? 'heartFill' : 'heart', 21, isFavorite(c.id) ? 'var(--red)' : 'var(--green)')}</button>
       </div>
 
       <div class="courtpage-inner">
-        ${htCaminho(c)}
         ${htGaleria(c)}
 
         <div class="ht-body">
@@ -17731,7 +17770,7 @@ function conteudoDasEstatisticas() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 20 de outubro de 2026</p>
+<p class="footnote">Última atualização: 21 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -17744,7 +17783,7 @@ const TERMS_HTML = `
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome e sobrenome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e sobrenome e o WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
-<p style="font-size:14px">Ao avaliar uma quadra, você concorda em escrever apenas sobre experiências reais, sem conteúdo ofensivo, discriminatório, difamatório ou falso, usando seu nome verdadeiro (já que ele fica público junto da avaliação). O GuiaTennis pode remover avaliações que violem essas regras, mas não se responsabiliza pelo conteúdo publicado por usuários. A academia avaliada pode responder publicamente e pedir a análise de uma avaliação que pareça falsa ou ofensiva; quem decide se ela fica é o GuiaTennis.</p>
+<p style="font-size:14px">Ao avaliar uma quadra, você concorda em escrever apenas sobre experiências reais, sem conteúdo ofensivo, discriminatório, difamatório ou falso, usando seu nome verdadeiro (já que ele fica público junto da avaliação). O GuiaTennis pode remover avaliações que violem essas regras, mas não se responsabiliza pelo conteúdo publicado por usuários. A academia avaliada pode responder publicamente e pedir a análise de uma avaliação que pareça falsa ou ofensiva; quem decide se ela fica é o GuiaTennis. O texto sobre a academia, na ficha, pode citar o que é elogiado nas avaliações de 4 e 5 estrelas (por exemplo, "Quem avaliou elogia os professores"), sem copiar a avaliação nem o nome de quem avaliou.</p>
 <p class="field-label" style="margin-top:16px">7. Uso de fotos</p>
 <p style="font-size:14px">Fotos enviadas devem pertencer a quem envia, ou ter autorização de uso. Não é permitido enviar fotos de terceiros sem permissão. As fotos devem mostrar apenas o espaço físico da academia/quadra (quadras, recepção, secretaria, vestiário, fachada) — não são permitidas fotos de promoções, tabelas de preço ou materiais informativos/publicitários.</p>
 <p class="field-label" style="margin-top:16px">8. Links e contatos externos</p>
@@ -20093,10 +20132,10 @@ function attachEvents() {
   const brandHome = document.getElementById("brand-home");
   if (brandHome) brandHome.onclick = goHome;
 
-  document.querySelectorAll("[data-como-numeros]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); state.comoNumeros = !state.comoNumeros; render(); }; });
+  document.querySelectorAll("[data-info-pop]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); state.infoPop = state.infoPop === el.dataset.infoPop ? null : el.dataset.infoPop; render(); }; });
   const infoPopFechar = document.getElementById("info-pop-fechar");
   if (infoPopFechar) {
-    const fecharInfo = () => { if (!state.comoNumeros) return; state.comoNumeros = false; render(); };
+    const fecharInfo = () => { if (!state.infoPop) return; state.infoPop = null; render(); };
     infoPopFechar.onclick = (e) => { e.stopPropagation(); fecharInfo(); };
     // Toque fora do balão (ou Esc) fecha.
     document.addEventListener("click", (e) => { if (!e.target.closest || !e.target.closest(".info-pop")) fecharInfo(); }, { once: true });
@@ -20145,11 +20184,10 @@ function attachEvents() {
   if (courtBack) courtBack.onclick = voltarDaFicha;
 
   // ---- ficha: caminho, barra de seções e perguntas frequentes ----
-  document.querySelectorAll("[data-crumb], [data-regiao-link]").forEach(el => {
+  document.querySelectorAll("[data-regiao-link]").forEach(el => {
     el.onclick = (e) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey) return; // abrir em outra aba
       e.preventDefault();
-      if (el.dataset.crumb === "home") { goHome(); return; }
       abrirRegiao({ cidade: el.dataset.cidade || "", bairro: el.dataset.bairro || "" });
     };
   });
@@ -20792,6 +20830,13 @@ function attachEvents() {
       const r = toggleCompare(el.dataset.compare);
       if (!r.ok) { alert(r.msg); return; }
       render();
+      // No topo da ficha o botão é só o ícone no celular: o aviso confirma.
+      if (el.dataset.compareAviso !== undefined) {
+        const n = state.compareList.length;
+        mostrarPush(isComparing(el.dataset.compare)
+          ? `Na comparação (${n}). Abra em Menu › Comparar academias.`
+          : "Tirada da comparação.");
+      }
     };
   });
 

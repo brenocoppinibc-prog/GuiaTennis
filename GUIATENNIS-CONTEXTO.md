@@ -2977,6 +2977,52 @@ cobra taxa e não fica no meio** da negociação.
     da força continua em cima; saiu o placeholder "Pelo menos 8
     caracteres", que repetia a lista. `.senha-dicas` em
     `ligarCamposDeSenha`. Teste: `senha.js`.
+129. **"Sobre" com as outras comodidades e o que as avaliações elogiam**
+    (pedido de 20/10/2026, com print: "deixe 'entre outras' ou algo mostrando
+    que tem mais comodidades… e faça que as qualidades da academia que já
+    foram avaliadas e comentadas nas avaliações apareçam nessa bio"). Em
+    `descricaoAcademia`: com mais de 4 comodidades, "Entre as comodidades
+    estão a, b, c, d e outras 2." ("e mais uma" com 5); e, como o "Os
+    hóspedes adoraram" do Booking e o "Pessoas mencionam" do Google Maps,
+    "Quem avaliou elogia os professores, as quadras e o atendimento."
+    (`elogiosDasAvaliacoes`, sem IA: `TEMAS_DAS_AVALIACOES` por
+    palavra-chave, só nas avaliações de 4 e 5 estrelas, frase por frase; a
+    frase com "não", "falta", "ruim"… (`NEGATIVO_NA_FRASE`) não conta; os
+    mais citados primeiro, até 3). Termos (seção 6, 21 de outubro de 2026):
+    o texto da ficha pode citar o que é elogiado, sem copiar a avaliação nem
+    o nome. Teste: `ficha-topo-e-sobre.js`.
+130. **"Como funcionam as avaliações" no balão, igual aos números do
+    Parceiros** (pedido de 20/10/2026). Era um `<details>` que abria o texto
+    embaixo; agora abre o balão colado no link, com o ✕ (tocar fora ou Esc
+    fecham), alinhado à esquerda (`.info-pop.esq`). Um balão aberto por vez:
+    `state.infoPop` ("numeros" ou "avaliacoes", no lugar de
+    `state.comoNumeros`), `balaoDeInfo` e `[data-info-pop]`. Teste:
+    `confianca-na-ficha.js`.
+131. **Cancelamento num cartão só, uma linha por caso** (pedido de
+    20/10/2026, com print: "muita informação repetitiva, grande talvez
+    desnecessária tbm faça em aula e locações"). Como o "Cancelamento grátis
+    até…" do Booking e do Airbnb: saíram a faixa "24h é a antecedência
+    mínima…" e os dois cartões grandes; cada um (aula e locação) vira um
+    cartão com "✓ Desmarcou até 24h antes · Tem reposição da aula." e "⚠ Com
+    menos de 24h · <o que a academia escreveu>"; sem reposição, "Sem
+    reposição de aula desmarcada" (`blocoPolitica`, `.pol-card`,
+    `.pol-linha`). Testes: `cadastro.js` e `ficha-topo-e-sobre.js`.
+132. **Ficha sem o caminho no alto; o topo com os três ícones à vista**
+    (pedido de 20/10/2026, com print: "esse caminho de > pode tirar, e
+    arrume o topo do site com visibilidade também ao ícone de comparar").
+    Saiu o "Início › Quadras em São Paulo › Pinheiros › Academia"
+    (`htCaminho`): o caminho fica só nos dados para o Google
+    (BreadcrumbList), e o link da região foi para o fim de "Explore a
+    região", "Ver todas as academias em Pinheiros ›" (`linkDaRegiaoNaFicha`,
+    como o "Ver todos os hotéis em…" do Booking). O topo, como o do Airbnb e
+    do Booking no celular: a seta de voltar, o nome e três ícones de 40 px
+    (comparar, com o ícone novo `comparar`, verde cheio quando está na
+    comparação; compartilhar; favoritar), todos dentro da tela (antes o
+    coração saía da tela e o "+ Comparar" ocupava o espaço). No computador,
+    "Voltar" e "Comparar" com texto. Tocar no comparar avisa "Na comparação
+    (N). Abra em Menu › Comparar academias." ou "Tirada da comparação."
+    (`mostrarPush`, `data-compare-aviso`). Testes: `links.js` e
+    `ficha-topo-e-sobre.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4736,7 +4782,10 @@ resumo): seções 27 a 33 (regras 98 a 127), a lista do SQL até
 teste até o 48 (depois, a seção 34 e o passo 49, da senha). Daqui em
 diante, cada push já atualiza a descrição. Bateria de 20/10, depois das
 regras 127 e 128: **1.532 verificações** nos 53 arquivos do navegador,
-mais `onde.mjs` e `pagamento.mjs`, nenhuma falha. Testes: a última
+mais `onde.mjs` e `pagamento.mjs`, nenhuma falha. Em 21/10 (madrugada),
+depois das regras 129 a 132 (seções 35 a 38 do PR, passos 50 a 54):
+**1.547 verificações** nos 54 arquivos (novo: `ficha-topo-e-sobre.js`),
+nenhuma falha. Testes: a última
 bateria completa deu **1.523 verificações, nenhuma falha** (53 arquivos
 do navegador; a única falha, texto antigo em `buscas-e-avisos.js`, foi
 corrigida e rodada de novo), **4 no `onde.mjs`, 20 no `pagamento.mjs`** e

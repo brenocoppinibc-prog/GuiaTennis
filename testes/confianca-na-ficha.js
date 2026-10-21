@@ -25,13 +25,25 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
 
   // ---- como funcionam as avaliações ----
   await abrirFicha(page, 'a1');
-  const como = await page.evaluate(() => {
+  let como = await page.evaluate(() => {
     const d = document.querySelector('#avaliacoes .como-avaliacoes');
-    return d ? { aberto: d.open, resumo: d.querySelector('summary').innerText, texto: d.querySelector('p').textContent } : null;
+    return d ? { link: d.querySelector('button').innerText, pop: !!document.querySelector('.info-pop') } : null;
   });
-  ok(como && !como.aberto && como.resumo.includes('Como funcionam as avaliações'), 'avaliações: "Como funcionam as avaliações", fechado');
-  ok(como && como.texto.includes('uma vez por academia') && como.texto.includes('não apaga avaliações') && como.texto.includes('Não importamos notas') && !/jogou/.test(como.texto),
-    'explica só o que o GuiaTennis faz, sem prometer que a pessoa jogou — ' + (como && como.texto.slice(0, 90)));
+  ok(como && !como.pop && como.link.includes('Como funcionam as avaliações'), 'avaliações: "Como funcionam as avaliações", fechado');
+  // Abre no balão colado no link, igual aos números do Parceiros (20/10/2026).
+  await page.click('#avaliacoes .como-avaliacoes button');
+  await page.waitForTimeout(250);
+  como = await page.evaluate(() => {
+    const link = document.querySelector('#avaliacoes .como-avaliacoes button').getBoundingClientRect(), pop = document.querySelector('#avaliacoes .info-pop');
+    const b = pop && pop.getBoundingClientRect();
+    return { texto: pop ? pop.innerText : '', x: !!document.getElementById('info-pop-fechar'), perto: !!b && b.top - link.bottom >= 0 && b.top - link.bottom < 24, dentro: !!b && b.left >= 0 && b.right <= innerWidth };
+  });
+  ok(como.texto.includes('uma vez por academia') && como.texto.includes('não apaga avaliações') && como.texto.includes('Não importamos notas') && !/jogou/.test(como.texto) && como.x,
+    'o balão explica só o que o GuiaTennis faz, sem prometer que a pessoa jogou, com o ✕ — ' + como.texto.slice(0, 90));
+  ok(como.perto && como.dentro, 'o balão das avaliações abre colado no link, sem sair da tela');
+  await page.click('#info-pop-fechar');
+  await page.waitForTimeout(200);
+  ok(!(await page.$('.info-pop')), 'o ✕ fecha o balão das avaliações');
 
   // ---- home: os números dizem o que contam ----
   await page.evaluate(() => { state.page = 'home'; state.selected = null; render(); });

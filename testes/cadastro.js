@@ -82,7 +82,7 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   // A ficha do Básico não mostra o cancelamento: confere no Completo.
   await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'completo'; await loadEverything(); state.showRegister = false; state.selected = decorate(state.allCourts.find(c => c.id === 'a2')); render(); });
   const fichaPol = await page.evaluate(() => document.getElementById('app').textContent.replace(/\s+/g, ' '));
-  ok(fichaPol.includes('36h é a antecedência mínima'), 'ficha mostra 36h');
+  ok(fichaPol.includes('Desmarcou até 36h antes') && fichaPol.includes('Com menos de 36h') && !fichaPol.includes('antecedência mínima'), 'ficha mostra 36h, em duas linhas');
   await page.evaluate(() => document.querySelector('.editar-academia[data-court="a2"]').click());
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.regPasso === 0), 'editar de novo abre na primeira parte');

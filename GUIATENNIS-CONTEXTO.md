@@ -3120,6 +3120,16 @@ cobra taxa e não fica no meio** da negociação.
     além das comodidades, cobertura, piso e dos critérios de antes. O
     texto de exemplo e o "Não identifiquei…" citam os novos. Teste:
     `comparacao-tudo.js`.
+138. **O GuiaTennis é site, não app** (pedido de 21/10/2026: "não somos um app
+    ainda, somente site ou GuiaTennis"). Nenhum texto chama o site de "app":
+    "N avaliações no GuiaTennis" (alto da ficha, quadrinho da nota, caixa do
+    preço e o selo de nota da busca), "Essa academia ainda não tem avaliação
+    no GuiaTennis.", o filtro "Avaliação no GuiaTennis", a ordem "Maior nota
+    das avaliações feitas no GuiaTennis", "aparece para todo mundo no
+    GuiaTennis" (cadastro enviado) e, na Privacidade, "visíveis para todos
+    os usuários do site" (21 de outubro de 2026). Texto novo segue a regra;
+    "app" só para o que é app de verdade (app de assinatura fitness, o
+    navegador do app do Instagram). Teste: `ficha-basica.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4875,13 +4885,10 @@ testar o pagamento de teste na prévia e depois ligar o Mercado Pago
 grátis até lá; (3) se o leilão só abre em bairro com público mínimo; (4)
 manter ou tirar o "Confirmar depois" na tela do e-mail do cadastro (regra
 110); (5) quando a academia avisa que fechou, a ficha sai da busca
-enquanto o admin confere?; (6) trocar "no app" por "no GuiaTennis" na ficha? Fica em 4 lugares:
-ao lado da nota no alto da ficha ("2 avaliações no app"), no quadrinho da
-nota dos destaques, na caixa do preço e do contato, e em "Essa academia
-ainda não tem avaliação no app" (Avaliações dos jogadores, sem nota). O
-Breno perguntou onde estava (21/10); falta ele dizer se troca. (Decidido
-em 21/10: o "como funciona" do estacionamento **não** vale para o admin,
-que segue publicando só com o nome.) O merge espera o Breno dizer
+enquanto o admin confere?; decidido em 21/10, depois deste resumo: o "como funciona" do
+estacionamento **não** vale para o admin, que segue publicando só com o
+nome; e o site não se chama de "app" (regra 138, seção 44 do PR, passo
+65; último commit de código passou a ser o da regra 138). O merge espera o Breno dizer
 **"pode subir"**. Este chat **deixou de acompanhar o PR** (sem inscrição,
 sem conferência marcada): no chat novo, voltar a acompanhar o PR #5.
 Seguem valendo: respostas curtas, ler só o trecho que muda, prints só

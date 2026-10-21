@@ -3180,9 +3180,11 @@ cobra taxa e não fica no meio** da negociação.
     "Usar como capa" continua. (f) **Cancelamento**: "Mesma regra para tudo
     / Aula e locação diferentes" vem primeiro, com espaço e uma linha
     (`.pol-modos`), antes da explicação e das horas ("deixe um pouco mais
-    separado isso do restante"). (g) Saiu "Com o seu e-mail confirmado, a
-    academia entra no ar quando você finalizar." do começo do cadastro do
-    Parceiros (fica "Os seus dados de contato já vão junto…"). Testes:
+    separado isso do restante"). (g) No começo do cadastro do Parceiros,
+    saiu "Os seus dados de contato já vão junto: não precisa digitar de
+    novo." e ficou só "Com o seu e-mail confirmado, a academia entra no ar
+    quando você finalizar." (sem o e-mail confirmado, "O GuiaTennis confere
+    antes de publicar."). Testes:
     `cadastro-sair-e-revisao.js` (novo), `plano-na-ficha.js`,
     `plano-ao-finalizar.js`, `previa-da-ficha.js` e
     `fotos-ponto-e-aviso.js`.
@@ -4409,8 +4411,8 @@ as 133 do `banco-acesso.py` no banco e login locais.
 - `cadastro-sair-e-revisao.js` — regra 139: o X pergunta antes de apagar
   (só com algo preenchido ou mudado; "Continuar" mantém; apagar zera o
   formulário), o toque fora e a tela do plano também perguntam, a escolha
-  de aula e locação separada no cancelamento e o começo sem "entra no ar
-  quando você finalizar".
+  de aula e locação separada no cancelamento e o começo só com "entra no
+  ar quando você finalizar" (sem "Os seus dados de contato já vão junto").
 - `plano-na-ficha.js` — regras 81, 82 e 139: "Continuar" à direita e o que
   falta (um toque leva à parte); nenhuma parte fala de plano; depois de
   confirmar, "4 partes não vão aparecer na ficha" com a lista, a escolha das

@@ -4,8 +4,9 @@
 //   dados)";
 // - "deixe um pouco mais separado isso do restante" (a escolha "Mesma regra
 //   para tudo / Aula e locação diferentes" no cancelamento);
-// - tirar "Com o seu e-mail confirmado, a academia entra no ar quando você
-//   finalizar." do começo do cadastro.
+// - no começo do cadastro, só "Com o seu e-mail confirmado, a academia entra
+//   no ar quando você finalizar." (sem "Os seus dados de contato já vão
+//   junto…": "na verdade eu quero que isso saia e o outro volta").
 const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
@@ -23,7 +24,7 @@ const aberto = (page) => page.evaluate(() => !!document.getElementById('register
   await page.click('#pc-nova');
   await page.waitForTimeout(300);
   const contexto = await texto(page, '.reg-contexto');
-  ok(contexto === 'Os seus dados de contato já vão junto: não precisa digitar de novo.', 'o começo não diz mais "entra no ar quando você finalizar" — ' + contexto);
+  ok(contexto === 'Com o seu e-mail confirmado, a academia entra no ar quando você finalizar.', 'o começo diz só que a academia entra no ar ao finalizar, sem "Os seus dados de contato já vão junto" — ' + contexto);
 
   // Nada preenchido: o X fecha direto.
   await page.click('#register-close');

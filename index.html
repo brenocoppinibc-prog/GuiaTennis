@@ -17467,7 +17467,7 @@ function renderRegisterSheet() {
         <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra")}</p>
         <p class="reg-progresso-t">Parte ${i + 1} de ${REG_PASSOS.length} · ${passo.t}</p>
         <div class="reg-progresso" role="progressbar" aria-valuemin="1" aria-valuemax="${REG_PASSOS.length}" aria-valuenow="${i + 1}"><i style="width:${Math.round((i + 1) / REG_PASSOS.length * 100)}%"></i></div>
-        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? `${contaAcademia && contaAcademia.emailConfirmado ? "" : "O GuiaTennis confere antes de publicar. "}Os seus dados de contato já vão junto: não precisa digitar de novo.` : "Apresentação no site mediante análise. São 9 partes curtas; só as 4 primeiras são obrigatórias."}</p>` : ""}
+        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? (contaAcademia && contaAcademia.emailConfirmado ? "Com o seu e-mail confirmado, a academia entra no ar quando você finalizar." : "O GuiaTennis confere antes de publicar.") : "Apresentação no site mediante análise. São 9 partes curtas; só as 4 primeiras são obrigatórias."}</p>` : ""}
 
         <nav class="reg-secoes" aria-label="Partes da ficha">
           ${REG_PASSOS.map((x, k) => `<button type="button" class="${k === i ? "on" : ""}" data-reg-passo="${k}" ${k === i ? 'aria-current="step"' : ""}>${regPreenchido(f, x.id) && !regFaltas(f, x.id).length ? "✓ " : ""}${x.t}</button>`).join("")}

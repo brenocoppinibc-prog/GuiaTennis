@@ -141,6 +141,7 @@
   .gt-push { position: fixed; top: 12px; left: 50%; z-index: 4000; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 32px); padding: 11px 12px 11px 14px; border-radius: 14px; background: var(--green); color: #fff; font-size: 14px; font-weight: 600; line-height: 1.35; box-shadow: 0 10px 30px rgba(0,0,0,.18); transform: translateX(-50%); animation: gt-push-entra .32s ease-out; transition: opacity .35s, transform .35s; }
   .gt-push.sai { opacity: 0; transform: translate(-50%, -16px); }
   .gt-push-ic { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.18); animation: gt-ponto 1.2s ease-in-out 3; }
+  .gt-push-acao { flex-shrink: 0; padding: 6px 10px; border: 1px solid rgba(255,255,255,.55); border-radius: 999px; background: none; color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .gt-push-x { flex-shrink: 0; padding: 4px 6px; border: 0; background: none; color: rgba(255,255,255,.8); font: inherit; cursor: pointer; }
   @keyframes gt-push-entra { from { opacity: 0; transform: translate(-50%, -24px); } to { opacity: 1; transform: translate(-50%, 0); } }
   @keyframes gt-piscar { 0%, 100% { box-shadow: 0 0 0 0 rgba(193, 154, 61, 0); } 50% { box-shadow: 0 0 0 7px rgba(193, 154, 61, .32); } }
@@ -369,7 +370,10 @@
 
   /* aba Comparar */
   .cmp-pagina { padding: 18px 20px 24px; }
-  .cmp-titulo { font-size: 26px; font-weight: 700; margin: 0; }
+  .cmp-titulo { font-size: 26px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 10px; }
+  .cmp-titulo-ic { display: inline-flex; flex-shrink: 0; }
+  .cmp-limpar { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin: 14px auto 0; }
+  .cmp-vaga-mais svg { display: block; }
   .cmp-sub-topo { font-size: 14px; color: var(--muted); margin: 6px 0 0; line-height: 1.45; }
   .cmp-vazio { font-size: 14px; color: var(--muted); background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 18px; text-align: center; }
   .cmp-add-lista { display: grid; gap: 10px; }
@@ -438,9 +442,14 @@
   .decide-tags { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
   .decide-score { font-size: 15px; font-weight: 700; color: var(--green); flex-shrink: 0; }
   .decide-notes-echo { font-size: 13px; color: var(--muted); background: var(--card); border-radius: 8px; padding: 8px 10px; margin: 4px 0 0; white-space: pre-wrap; }
-  .note-hit { display: flex; align-items: baseline; gap: 8px; padding: 7px 10px; border-radius: 8px; margin-top: 6px; background: var(--card); border-left: 3px solid var(--border); }
-  .note-hit strong { font-size: 13px; text-transform: capitalize; flex-shrink: 0; }
+  .note-hit { padding: 7px 10px; border-radius: 8px; margin-top: 6px; background: var(--card); border-left: 3px solid var(--border); }
+  .note-hit-l { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+  .note-hit strong { font-size: 13px; flex-shrink: 0; }
+  .note-hit strong::first-letter { text-transform: uppercase; }
   .note-hit span { font-size: 12px; color: var(--muted); }
+  .note-hit-cada { list-style: none; margin: 6px 0 0; padding: 0; font-size: 12.5px; line-height: 1.45; color: var(--text); }
+  .note-hit-cada li + li { margin-top: 2px; }
+  .note-hit-resumo { margin: 6px 0 0; font-size: 12.5px; font-weight: 600; color: var(--green); }
   .note-hit-some { border-left-color: var(--green); }
   .note-hit-all { border-left-color: var(--gold); }
   .note-hit-none { border-left-color: var(--red); }
@@ -2637,12 +2646,13 @@ const AMENITY_OPTS = [
 const AMENITY_MAP = Object.fromEntries(AMENITY_OPTS.map(a => [a.key, a]));
 
 // Estacionamento grátis E pago (pedido do Breno em 21/10/2026: "não faz muito
-// sentido… entender quando a academia faz isso"). Como o Booking e o Google
-// Business Profile, é uma resposta só: grátis, pago, ou grátis e pago com a
-// regra — quase sempre grátis para alunos e pago para avulsos, grátis por
-// um tempo, ou grátis até lotar. O banco guarda só "estacionamento_gratuito"
-// e a regra em acesso.estacionamentoRegra ({ tipo, horas }); "misto" é a
-// academia que marcou os dois sem dizer como funciona.
+// sentido… entender quando a academia faz isso"). Os dois chips continuam
+// (pedido seguinte: "deixe a comodidade igual estava"); com os dois
+// marcados, o cadastro pergunta como funciona, como o Booking para
+// Parceiros — quase sempre grátis para alunos e pago para avulsos, grátis
+// por um tempo, ou grátis até lotar. A regra fica em
+// acesso.estacionamentoRegra ({ tipo, horas }); "misto" é quem marcou os
+// dois sem dizer como funciona.
 const ESTAC_REGRAS = [
   { key: "alunos", label: "Grátis para alunos, pago para os outros" },
   { key: "tempo", label: "Grátis por um tempo, depois pago" },
@@ -2650,8 +2660,13 @@ const ESTAC_REGRAS = [
 ];
 function ehEstacionamento(k) { return k === "estacionamento_gratuito" || k === "estacionamento_pago"; }
 function regraDoEstacionamento(c) {
-  const r = c && c.acesso && c.acesso.estacionamentoRegra;
-  return r && r.tipo && ((c.amenities || []).includes("estacionamento_gratuito")) ? r : null;
+  const am = (c && c.amenities) || [];
+  if (!am.includes("estacionamento_gratuito")) return null;
+  const r = c.acesso && c.acesso.estacionamentoRegra;
+  if (am.includes("estacionamento_pago")) return r && r.tipo ? r : { tipo: "misto" };
+  // No Básico, o plano pode mostrar só o "grátis" do par: a regra continua
+  // valendo, para não parecer grátis para todos.
+  return r && r.tipo && r.tipo !== "misto" ? r : null;
 }
 // Para a lista de comodidades, os selos e a comparação.
 function estacionamentoRotulo(c) {
@@ -2663,7 +2678,6 @@ function estacionamentoRotulo(c) {
     if (r.tipo === "lotar") return "Estacionamento grátis até lotar";
     return "Estacionamento grátis e pago";
   }
-  if (am.includes("estacionamento_gratuito") && am.includes("estacionamento_pago")) return "Estacionamento grátis e pago";
   if (am.includes("estacionamento_gratuito")) return "Estacionamento grátis";
   if (am.includes("estacionamento_pago")) return "Estacionamento pago";
   return "";
@@ -2678,7 +2692,6 @@ function estacionamentoDetalhe(c) {
     return "Tem vaga grátis e vaga paga. Pergunte na academia como funciona.";
   }
   const am = (c && c.amenities) || [];
-  if (am.includes("estacionamento_gratuito") && am.includes("estacionamento_pago")) return "Tem vaga grátis e vaga paga. Pergunte na academia como funciona.";
   if (am.includes("estacionamento_gratuito")) return "Estacionamento grátis.";
   if (am.includes("estacionamento_pago")) return "Estacionamento pago.";
   return "";
@@ -2704,20 +2717,25 @@ function entenderRegraDoEstacionamento(acesso, extra) {
   if (/\b(lota|lotad|enche|poucas vagas|vagas limitadas|nao tiver vaga|acabar a vaga)/.test(texto)) return { tipo: "lotar" };
   return null;
 }
-// Lido do banco: os dois marcados viram um só, com a regra entendida (ou
-// "misto", que a ficha mostra como "pergunte como funciona" e o Parceiros
-// pede para a academia contar).
+// Lido do banco: com os dois marcados e sem a regra, ela sai do que a
+// academia escreveu ou fica "misto" (a ficha manda perguntar e o Parceiros
+// pede para a academia contar). Só grátis com regra (gravado em 21/10 de
+// madrugada, quando o chip era um só) volta a ter os dois.
 function arrumarEstacionamento(row) {
-  const am = Array.isArray(row.amenities) ? row.amenities : [];
+  let am = Array.isArray(row.amenities) ? row.amenities : [];
   const acesso = { ...(row.acesso || {}) };
-  const gratis = am.includes("estacionamento_gratuito"), pago = am.includes("estacionamento_pago");
-  if (gratis && pago) {
-    if (!acesso.estacionamentoRegra || !acesso.estacionamentoRegra.tipo) {
+  const r = acesso.estacionamentoRegra;
+  if (am.includes("estacionamento_gratuito") && !am.includes("estacionamento_pago") && r && r.tipo && r.tipo !== "misto") {
+    const i = am.indexOf("estacionamento_gratuito");
+    am = [...am.slice(0, i + 1), "estacionamento_pago", ...am.slice(i + 1)];
+  }
+  if (am.includes("estacionamento_gratuito") && am.includes("estacionamento_pago")) {
+    if (!r || !r.tipo || r.tipo === "misto") {
       acesso.estacionamentoRegra = entenderRegraDoEstacionamento(acesso, row.horario && row.horario.nota) || { tipo: "misto" };
     }
-    return { amenities: am.filter(k => k !== "estacionamento_pago"), acesso };
+  } else {
+    delete acesso.estacionamentoRegra;
   }
-  if (!gratis) delete acesso.estacionamentoRegra;
   return { amenities: am, acesso };
 }
 
@@ -3275,7 +3293,8 @@ function toRow(f) {
   delete acesso.estacionamento;
   delete acesso.padronizadoEm;
   if (temEstacionamentoProprio(f)) delete acesso.estacionar;
-  if (!(f.amenities || []).includes("estacionamento_gratuito")) delete acesso.estacionamentoRegra;
+  const r = acesso.estacionamentoRegra;
+  if (!(f.amenities || []).includes("estacionamento_gratuito") || !(f.amenities || []).includes("estacionamento_pago") || !r || !r.tipo || r.tipo === "misto") delete acesso.estacionamentoRegra;
   return {
     name: f.name, address: f.address, numero: f.numero, complemento: f.complemento,
     bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
@@ -3870,16 +3889,20 @@ window.addEventListener("online", () => { FALHAS.quedaAnotada = false; mandarFil
 // O aviso que desce no alto da tela e some sozinho (pedido de 15/10/2026:
 // "com aqueles push avisando"), como as notificações do Booking e do
 // Airbnb: fica fora do render, então não some quando a tela redesenha.
-function mostrarPush(texto, tipo = "ok") {
+// acao (opcional): { t, fn, ic } vira o atalho no aviso, como o "Ver" do
+// "Salvo em Favoritos" do Airbnb.
+function mostrarPush(texto, tipo = "ok", acao) {
   document.querySelectorAll(".gt-push").forEach(el => el.remove());
   const el = document.createElement("div");
   el.className = "gt-push" + (tipo === "ok" ? "" : " " + tipo);
   el.setAttribute("role", "status");
-  el.innerHTML = `<span class="gt-push-ic">${icon(tipo === "ok" ? 'check' : 'info', 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}</span><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
+  const ic = (acao && acao.ic) || (tipo === "ok" ? 'check' : 'info');
+  el.innerHTML = `<span class="gt-push-ic">${icon(ic, 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}</span>${acao ? `<button type="button" class="gt-push-acao">${esc(acao.t)}</button>` : ""}<button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
   el.querySelector(".gt-push-x").onclick = () => el.remove();
+  if (acao) el.querySelector(".gt-push-acao").onclick = () => { el.remove(); acao.fn(); };
   document.body.appendChild(el);
-  setTimeout(() => el.classList.add("sai"), 5000);
-  setTimeout(() => el.remove(), 5400);
+  setTimeout(() => el.classList.add("sai"), acao ? 7000 : 5000);
+  setTimeout(() => el.remove(), acao ? 7400 : 5400);
 }
 // No lugar de alert("Não consegui…"): erro de regra continua no alert, com a
 // mensagem de sempre; falha de verdade vira a faixa com o código.
@@ -5318,23 +5341,87 @@ function decideRanking() {
 
 // Dicionário de termos → o que a pessoa está procurando.
 // Sem acento e minúsculo; o texto é normalizado antes de comparar.
+// Pedido do Breno em 21/10/2026 ("não soube dizer sobre o tempo de aviso na
+// reposição e privacidade… esclarecer sobre estacionamento… todas as
+// informações que possam ser perguntadas sobre a ficha"): cada item pode
+// ter `atende` (quem tem) e `detalhe` (o que cada uma diz, mostrado ao lado
+// do nome), e `grupo` — o primeiro do grupo que bate cala os outros
+// ("estacionamento grátis" antes de "estacionamento").
 const NOTE_KEYWORDS = [
-  { tipo: "amenity", alvo: ["estacionamento_gratuito", "estacionamento_pago"], termos: ["estacionamento", "estacionar", "vaga", "garagem"], label: "estacionamento" },
+  { grupo: "estac", termos: ["estacionamento gratis", "estacionamento de graca", "estacionar de graca", "vaga gratis", "estacionar sem pagar", "estacionamento gratuito"], label: "estacionamento grátis",
+    atende: c => (c.amenities || []).includes("estacionamento_gratuito") && !regraDoEstacionamento(c), detalhe: textoEstacionamento },
+  { grupo: "estac", termos: ["estacionamento", "estacionar", "vaga", "garagem", "carro"], label: "estacionamento",
+    atende: c => (c.amenities || []).some(ehEstacionamento), detalhe: textoEstacionamento },
+  { grupo: "repos", termos: ["reposicao", "repor", "desmarcar", "desmarco", "cancelamento", "cancelar", "antecedencia", "tempo de aviso", "aviso previo", "remarcar", "faltar"], label: "reposição com menos aviso",
+    // Com prazos diferentes, ganha quem pede o menor aviso; com o mesmo
+    // prazo, quem faz reposição.
+    atende: (c, cs) => {
+      const h = cs.map(x => celReposicao(x).num).filter(Boolean);
+      if (h.length > 1 && Math.min(...h) < Math.max(...h)) return celReposicao(c).num === Math.min(...h);
+      return temPolitica(c) && celReposicao(c).txt !== "Sem reposição";
+    },
+    detalhe: c => celReposicao(c).txt.replace(/<br>/g, "; "),
+    melhor: cs => { const h = cs.map(c => ({ c, h: celReposicao(c).num })).filter(x => x.h); if (h.length < 2) return ""; const m = Math.min(...h.map(x => x.h)); const q = h.filter(x => x.h === m); return q.length === h.length ? "" : `O menor aviso é na ${listaPt(q.map(x => x.c.name))}: ${m}h antes.`; } },
+  { grupo: "tam", termos: ["privacidade", "privativ", "reservad", "tranquil", "calm", "menos movimento", "menos movimentad", "menos gente", "menos cheia", "vazia", "sossego", "intimista", "exclusiv", "academia menor", "academia pequena", "estrutura menor", "lugar menor"], label: "academia menor e mais reservada",
+    atende: (c, cs) => { const t = cs.map(totalQuadras).filter(Boolean); return t.length > 1 && totalQuadras(c) === Math.min(...t) && Math.min(...t) < Math.max(...t); },
+    detalhe: c => totalQuadras(c) ? `${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}` : "quadras não informadas" },
+  { grupo: "tam", termos: ["mais quadras", "academia grande", "academia maior", "estrutura maior", "estrutura grande", "lugar grande"], label: "academia maior",
+    atende: (c, cs) => { const t = cs.map(totalQuadras).filter(Boolean); return t.length > 1 && totalQuadras(c) === Math.max(...t) && Math.min(...t) < Math.max(...t); },
+    detalhe: c => totalQuadras(c) ? `${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}` : "quadras não informadas" },
+  { grupo: "hora", termos: ["fim de semana", "final de semana", "sabado", "domingo", "feriado"], label: "aberta no fim de semana",
+    atende: c => abreNoFimDeSemana(c), detalhe: c => resumoDoHorario(c) },
+  { grupo: "hora", termos: ["noite", "depois do trabalho", "fecha tarde", "noturn", "a noite"], label: "aberta à noite (até 22h ou mais)",
+    atende: c => fechaTarde(c), detalhe: c => resumoDoHorario(c) },
+  { grupo: "hora", termos: ["cedo", "de manha", "manha", "madrugada", "antes do trabalho"], label: "aberta cedo (até 7h)",
+    atende: c => abreCedo(c), detalhe: c => resumoDoHorario(c) },
+  { grupo: "hora", termos: ["horario", "abre", "fecha", "funciona", "aberta"], label: "horário",
+    atende: c => temHorario(c), detalhe: c => resumoDoHorario(c) },
+  { grupo: "aula", termos: ["aula", "professor", "aprender", "iniciante", "treino", "clinica", "instrutor"], label: "aula com professor",
+    atende: c => /Aula/.test(modalidadesTexto(c)), detalhe: c => c.priceAula ? `aula ${precoTexto(c.priceAula)}` : (modalidadesTexto(c) || "não informado") },
+  { grupo: "loc", termos: ["alugar", "aluguel", "locacao", "quadra avulsa", "com os amigos", "com amigo", "jogar com"], label: "locação de quadra",
+    atende: c => /ocação/.test(modalidadesTexto(c)), detalhe: c => c.priceLocacao ? `locação ${precoTexto(c.priceLocacao)}` : (modalidadesTexto(c) || "não informado") },
   { tipo: "amenity", alvo: ["vestiario"], termos: ["vestiario", "banho", "chuveiro", "trocar de roupa"], label: "vestiário" },
   { tipo: "amenity", alvo: ["loja"], termos: ["loja", "corda", "encordoamento", "material"], label: "loja de material" },
   { tipo: "amenity", alvo: ["wifi"], termos: ["wifi", "wi-fi", "internet"], label: "Wi-Fi" },
   { tipo: "amenity", alvo: ["lanchonete"], termos: ["lanchonete", "lanche", "comer", "comida", "bar"], label: "lanchonete" },
   { tipo: "amenity", alvo: ["agua"], termos: ["agua", "bebedouro"], label: "água grátis" },
   { tipo: "amenity", alvo: ["camera"], termos: ["camera", "gravar", "filmar", "video"], label: "câmera" },
+  { tipo: "amenity", alvo: ["raquete"], termos: ["raquete", "emprest"], label: "empréstimo de raquete" },
   { tipo: "amenity", alvo: ["assinatura_fitness"], termos: ["gympass", "wellhub", "totalpass", "assinatura", "plano fitness"], label: "app de assinatura fitness" },
   { tipo: "cobertura", alvo: ["coberta"], termos: ["coberta", "cobertura", "chuva", "sol forte", "sombra"], label: "quadra coberta" },
   { tipo: "piso", alvo: ["saibro"], termos: ["saibro"], label: "saibro" },
   { tipo: "piso", alvo: ["rapida"], termos: ["rapida", "dura", "cimento"], label: "quadra rápida" },
+  { termos: ["promocao", "desconto", "oferta"], label: "promoção valendo",
+    atende: c => promocoesDe(c).length > 0, detalhe: c => promocoesDe(c)[0] ? promocoesDe(c)[0].titulo : "sem promoção agora" },
+  { termos: ["confiavel", "confirmada", "atualizada", "verificada", "informacao certa", "dados certos"], label: "ficha confirmada pela academia",
+    atende: c => !!c.confirmada, detalhe: textoFicha },
+  { termos: ["como chegar", "fachada", "entrada", "achar o lugar", "encontrar o lugar", "dificil de achar"], label: "dicas de como chegar",
+    atende: c => { const a = acessoFicha(c); return !!(a.fachada || a.entrada); } },
+  { termos: ["foto", "imagem"], label: "fotos na ficha",
+    atende: c => courtPhotos(c).length > 0, detalhe: c => `${courtPhotos(c).length} ${plural(courtPhotos(c).length, "foto", "fotos")}` },
+  { termos: ["whatsapp", "instagram", "site", "contato", "falar com", "responde"], label: "contato pela ficha",
+    atende: c => !!(c.phone || c.instagram || c.site), detalhe: textoContato },
+  { termos: ["elogi", "professores bons", "bom atendimento", "atendimento"], label: "elogios nas avaliações",
+    atende: c => elogiosDasAvaliacoes(c.id).length > 0, detalhe: c => { const e = elogiosDasAvaliacoes(c.id); return e.length ? "elogiam " + listaPt(e) : "sem elogio registrado"; } },
   { tipo: "criterio", alvo: ["preco"], termos: ["caro", "barato", "preco", "valor", "custo", "bolso", "gastar"], label: "preço" },
   { tipo: "criterio", alvo: ["distancia"], termos: ["perto", "longe", "distancia", "transito", "deslocamento", "chegar"], label: "distância" },
   { tipo: "criterio", alvo: ["avaliacoes"], termos: ["avaliacao", "nota", "comentario", "reputacao", "recomenda"], label: "avaliações" },
   { tipo: "criterio", alvo: ["estrutura"], termos: ["estrutura", "instalacao", "espaco", "quadras"], label: "estrutura" },
 ];
+
+// Horário em poucas palavras, para cruzar com o que a pessoa anotou.
+function faixasDoHorario(c) {
+  const h = horarioDe(c);
+  const dias = h.modo === "dia" ? ["seg", "ter", "qua", "qui", "sex", "sabado", "domingo"] : ["semana", "sabado", "domingo"];
+  return dias.map(k => ({ k, f: h[k] })).filter(x => faixaVale(x.f) && !x.f.fechado);
+}
+function abreNoFimDeSemana(c) { return faixasDoHorario(c).some(x => x.k === "sabado" || x.k === "domingo"); }
+function fechaTarde(c) { return faixasDoHorario(c).some(x => x.f.ate >= "22:00" || x.f.ate === "00:00"); }
+function abreCedo(c) { return faixasDoHorario(c).some(x => x.k !== "sabado" && x.k !== "domingo" && x.f.de && x.f.de <= "07:00"); }
+function resumoDoHorario(c) {
+  const l = horarioLinhas(c);
+  return l.length ? l.map(x => `${x.label} ${x.fechado ? "fechado" : x.texto}`).join("; ") : "horário não informado";
+}
 
 function semAcento(s) {
   return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -5347,8 +5434,11 @@ function analisarAnotacoes(texto, courts) {
   const achados = [];
   const criterios = [];
 
+  const grupos = new Set();
   NOTE_KEYWORDS.forEach(k => {
+    if (k.grupo && grupos.has(k.grupo)) return;
     if (!k.termos.some(termo => t.includes(semAcento(termo)))) return;
+    if (k.grupo) grupos.add(k.grupo);
 
     if (k.tipo === "criterio") {
       criterios.push(...k.alvo);
@@ -5356,12 +5446,17 @@ function analisarAnotacoes(texto, courts) {
     }
 
     const atendem = courts.filter(c => {
+      if (k.atende) return k.atende(c, courts);
       if (k.tipo === "amenity") return k.alvo.some(a => (c.amenities||[]).includes(a));
       if (k.tipo === "cobertura") return k.alvo.some(a => (c.cobertura||[]).includes(a));
       if (k.tipo === "piso") return k.alvo.some(a => (c.pisos||[]).includes(a));
       return false;
     });
-    achados.push({ label: k.label, atendem, total: courts.length });
+    achados.push({
+      label: k.label, atendem, total: courts.length,
+      detalhes: k.detalhe ? courts.map(c => ({ nome: c.name, txt: k.detalhe(c) })) : null,
+      resumo: k.melhor ? k.melhor(courts) : "",
+    });
   });
 
   return { achados, criterios: [...new Set(criterios)] };
@@ -5386,7 +5481,7 @@ function listaDoSeletor(lista) {
               <span class="cmp-add-l">${c.appCount ? `Nota ${c.appAvg.toFixed(1).replace(".", ",")} · ${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Sem nota ainda"}</span>
               <span class="cmp-add-p ${faixa ? "" : "sem-valor"}">${faixa ? `${esc(faixa.texto)}` : SEM_PRECO}</span>
             </span>
-            <button type="button" class="cmp-add-btn" data-compare="${c.id}" aria-label="${dentro ? "Remover da comparação" : "Adicionar à comparação"}">${dentro ? "✓" : "+"}</button>
+            <button type="button" class="cmp-add-btn" data-compare="${c.id}" aria-pressed="${dentro}" aria-label="${dentro ? "Remover da comparação" : "Adicionar à comparação"}">${icon('comparar', 20, dentro ? '#fff' : 'var(--green)')}</button>
           </div>`;
       }).join("")}
     </div>`;
@@ -5439,7 +5534,7 @@ function bandejaDoSeletor() {
         }).join("")}
       </div>
       <span class="cmp-bandeja-n">${courts.length} de ${COMPARE_MAX}</span>
-      <button type="button" class="cmp-bandeja-btn ${pode ? "" : "fraco"}" id="cmp-pick-comparar" ${pode ? "" : "disabled"}>${pode ? `Comparar ${courts.length}` : "Escolha mais uma"}</button>
+      <button type="button" class="cmp-bandeja-btn ${pode ? "" : "fraco"}" id="cmp-pick-comparar" ${pode ? "" : "disabled"}>${pode ? `${icon('comparar', 16, '#fff')} Comparar ${courts.length}` : "Escolha mais uma"}</button>
     </div>`;
 }
 
@@ -5462,12 +5557,51 @@ function celPreco(faixa) {
 }
 
 function celReposicao(c) {
+  if (!temPolitica(c)) return { txt: "Não incluído" };
   const pol = politicaDe(c);
-  const p = pol.modo === "separado" ? (parteVale(pol.aula) ? pol.aula : pol.locacao) : pol.geral;
-  if (p.reposicao === "nao") return { txt: "Não faz reposição" };
-  if (p.horas) return { txt: `Avisando ${p.horas}h antes`, num: p.horas };
-  return { txt: "Não incluído" };
+  const um = (p) => p.reposicao === "nao" ? "Sem reposição" : p.horas ? `Avisando ${p.horas}h antes` : "Ver a regra na ficha";
+  // Aula e locação com regras diferentes: as duas na célula; a menor
+  // antecedência é a que ganha.
+  if (pol.modo === "separado") {
+    const partes = [parteVale(pol.aula) && ["Aula", pol.aula], parteVale(pol.locacao) && ["Locação", pol.locacao]].filter(Boolean);
+    const horas = partes.map(([, p]) => p.horas).filter(Boolean);
+    return { txt: partes.map(([n, p]) => `${n}: ${um(p).toLowerCase()}`).join("<br>"), num: horas.length ? Math.min(...horas) : null };
+  }
+  const p = pol.geral;
+  return { txt: um(p), num: p.reposicao === "nao" ? null : p.horas || null };
 }
+// Tudo o que está na ficha, para a comparação (pedido do Breno em
+// 21/10/2026: "dizendo que pode comparar tudo e precisamos entregar isso").
+function celHorario(c) {
+  const l = horarioLinhas(c);
+  return { txt: l.length ? l.map(x => `${esc(x.label)}: ${esc(x.fechado ? "fechado" : x.texto)}`).join("<br>") : "—" };
+}
+// Em texto puro (a comparação e a ajuda para decidir passam pelo esc).
+function textoEstacionamento(c) {
+  if (estacionamentoRotulo(c)) return estacionamentoDetalhe(c);
+  const fora = limitesDoPlano(c.plano).chegada && estacionarTexto(c);
+  return fora ? `Sem vaga própria. ${fora}` : "Sem estacionamento próprio";
+}
+function textoContato(c) {
+  return listaPt([c.phone && "WhatsApp", c.instagram && "Instagram", c.site && "site"].filter(Boolean)) || "—";
+}
+function textoFicha(c) {
+  if (!c.confirmada) return "Ficha básica, de dados públicos";
+  const q = quandoFoiAtualizada(c.dadosAtualizadosEm);
+  return `Confirmada pela academia${q ? ` · ${q}` : ""}`;
+}
+// Na tabela, a linha já diz "Estacionamento": a célula fica curta.
+function celEstacionamento(c) {
+  const r = regraDoEstacionamento(c), am = c.amenities || [];
+  const curto = r ? (r.tipo === "alunos" ? "Grátis para alunos; pago para os outros"
+      : r.tipo === "tempo" ? (r.horas ? `Grátis nas primeiras ${r.horas}h; depois, pago` : "Grátis por um tempo; depois, pago")
+      : r.tipo === "lotar" ? "Grátis até lotar; depois, pago" : "Grátis e pago: pergunte como funciona")
+    : am.includes("estacionamento_gratuito") ? "Grátis"
+    : am.includes("estacionamento_pago") ? "Pago" : "Sem vaga própria";
+  return { txt: esc(curto) };
+}
+function celContato(c) { const t = textoContato(c); return { txt: esc(t), num: t === "—" ? null : t.split(/, | e /).length }; }
+function celFicha(c) { return { txt: esc(textoFicha(c)) }; }
 
 function linhasComparacao(courts) {
   const ref = pontoDeReferencia();
@@ -5482,25 +5616,36 @@ function linhasComparacao(courts) {
     { titulo: "Preço por hora", linhas: [
       { rot: "Aula", melhor: "menor", vals: courts.map(c => celPreco(c.priceAula)) },
       { rot: "Locação", melhor: "menor", vals: courts.map(c => celPreco(c.priceLocacao)) },
+      ...(courts.some(c => promocoesDe(c).length) ? [{ rot: "Promoção", vals: courts.map(c => { const p = promocoesDe(c)[0]; return { txt: p ? esc(p.titulo) : "—" }; }) }] : []),
+    ]},
+    { titulo: "Localização", linhas: [
+      { rot: "Bairro", vals: courts.map(c => ({ txt: esc([c.bairro, c.cidade].filter(Boolean).join(", ")) || "—" })) },
+      { rot: "Distância", melhor: "menor", vals: courts.map((c, i) => ({
+        txt: distanceText(dists[i]) || "Busque um endereço",
+        num: typeof dists[i] === "number" ? dists[i] : null })) },
+      { rot: "Como chegar", vals: courts.map(c => { const a = acessoFicha(c); return { txt: a.fachada || a.entrada ? "Fachada e entrada na ficha" : "—" }; }) },
     ]},
     { titulo: "Estrutura", linhas: [
       { rot: "Quadras", melhor: "maior", vals: courts.map(c => ({ txt: totalQuadras(c) ? String(totalQuadras(c)) : "—", num: totalQuadras(c) || null })) },
       { rot: "Piso", vals: courts.map(c => ({ txt: esc(listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos))) || "—" })) },
       { rot: "Cobertura", vals: courts.map(c => ({ txt: esc(listaPt(rotulosNaOrdem(COBERTURA_OPTS, c.cobertura))) || "—" })) },
+      { rot: "Estaciona\u00admento", vals: courts.map(c => celEstacionamento(c)) },
       { rot: "Comodidades", melhor: "maior", vals: courts.map(c => {
-        const l = comodidadesNaOrdem(c).map(a => rotuloDaComodidade(a, c));
+        const l = comodidadesNaOrdem(c).filter(a => !ehEstacionamento(a.key)).map(a => a.label);
         return { txt: esc(listaPt(l)) || "—", num: l.length || null };
       }) },
     ]},
-    { titulo: "Onde fica", linhas: [
-      { rot: "Bairro", vals: courts.map(c => ({ txt: esc([c.bairro, c.cidade].filter(Boolean).join(", ")) || "—" })) },
-      { rot: "Distância", melhor: "menor", vals: courts.map((c, i) => ({
-        txt: distanceText(dists[i]) || "Busque um endereço",
-        num: typeof dists[i] === "number" ? dists[i] : null })) },
+    { titulo: "Horário", linhas: [
+      { rot: "Funciona", vals: courts.map(c => celHorario(c)) },
     ]},
     { titulo: "Aula e cancelamento", linhas: [
       { rot: "Atende", vals: courts.map(c => ({ txt: esc(modalidadesTexto(c)) || "—" })) },
-      { rot: "Reposição", vals: courts.map(c => celReposicao(c)) },
+      { rot: "Reposição", melhor: "menor", vals: courts.map(c => celReposicao(c)) },
+    ]},
+    { titulo: "Contato e ficha", linhas: [
+      { rot: "Contato", vals: courts.map(c => celContato(c)) },
+      { rot: "Ficha", vals: courts.map(c => celFicha(c)) },
+      { rot: "Elogios", vals: courts.map(c => { const e = elogiosDasAvaliacoes(c.id); return { txt: e.length ? esc(listaPt(e)) : "—" }; }) },
     ]},
   ];
 }
@@ -5518,15 +5663,17 @@ function cartaoDaColuna(c) {
     </div>`;
 }
 function tabelaComparacao(courts) {
-  const secoes = linhasComparacao(courts);
+  const secoes = linhasComparacao(courts)
+    .map(sec => ({ ...sec, linhas: sec.linhas.filter(l => l.vals.some(v => v.txt !== "—")) }))
+    .filter(sec => sec.linhas.length);
   return `
     <div class="ct-scroll">
       <div class="ct-grade ct-n${courts.length}" style="--cols:${courts.length}">
         <div class="ct-topo ct-canto">
           ${courts.length < COMPARE_MAX ? `
             <button type="button" class="cmp-vaga ct-escolher" data-cmp-abrir="1" aria-label="Escolher mais uma academia">
-              <span class="cmp-vaga-mais">+</span>
-              <span class="cmp-vaga-add">Escolher</span>
+              <span class="cmp-vaga-mais">${icon('comparar', 26, 'var(--green)')}</span>
+              <span class="cmp-vaga-add">+ Escolher</span>
             </button>` : ""}
         </div>
         ${courts.map(c => `<div class="ct-topo">${cartaoDaColuna(c)}</div>`).join("")}
@@ -5559,13 +5706,14 @@ function renderComparePage() {
   return `
     ${renderCabecalho()}
     <div class="cmp-pagina">
-      <h2 class="cmp-titulo display">Comparar academias</h2>
-      <p class="cmp-sub-topo">Veja lado a lado o que muda entre elas: nota, distância, estrutura e preço.</p>
+      <h2 class="cmp-titulo display"><span class="cmp-titulo-ic">${icon('comparar', 28, 'var(--green)')}</span>Comparar academias</h2>
+      <p class="cmp-sub-topo">Veja lado a lado o que muda entre elas: nota, preço, localização, estrutura, estacionamento, horário, cancelamento e tudo o que está na ficha.</p>
       ${!podeComparar ? vagasComparacao(courts) : ""}
       ${!podeComparar ? `
         <p class="cmp-dica">${courts.length === 0
-          ? `Toque no + para escolher a academia. Dá para comparar de ${COMPARE_MIN} a ${COMPARE_MAX}.`
-          : "Falta escolher mais uma para a comparação aparecer."}</p>` : `
+          ? `Toque em "Escolher" para pôr a academia. Dá para comparar de ${COMPARE_MIN} a ${COMPARE_MAX}.`
+          : "Falta escolher mais uma para a comparação aparecer."}</p>
+        ${courts.length ? `<button class="cta-btn cta-danger cmp-limpar" id="compare-clear-2">${icon('lixo', 16, 'var(--red)')} Limpar comparação</button>` : ""}` : `
         <p class="cmp-vagas-n">${courts.length} de ${COMPARE_MAX} na comparação</p>
         ${tabelaComparacao(courts)}
 
@@ -5575,7 +5723,7 @@ function renderComparePage() {
           ${icon('chevron', 18, 'var(--muted)')}
         </button>
 
-        <button class="cta-btn cta-secondary" id="compare-clear-2" style="margin-top:14px">Limpar comparação</button>
+        <button class="cta-btn cta-danger cmp-limpar" id="compare-clear-2">${icon('lixo', 16, 'var(--red)')} Limpar comparação</button>
       `}
     </div>
   `;
@@ -5600,7 +5748,7 @@ function caixaDeDecisao(courts) {
           </div>
 
           <p class="field-label" style="margin-top:14px">Seus pontos positivos e negativos (opcional)</p>
-          <textarea class="form-field" id="decide-notes" rows="3" placeholder="Ex: a primeira é mais perto mas não tem estacionamento; a segunda tem quadra coberta...">${esc(state.decideNotes)}</textarea>
+          <textarea class="form-field" id="decide-notes" rows="3" placeholder="Ex: quero estacionamento grátis, pouco tempo de aviso para repor a aula e uma academia menor, mais reservada">${esc(state.decideNotes)}</textarea>
 
           <button class="cta-btn cta-primary" id="decide-go" style="margin-top:10px">Me ajude a decidir</button>
 
@@ -5648,27 +5796,30 @@ function caixaDeDecisao(courts) {
                   if (!an.achados.length && !an.criterios.length) {
                     return `
                       <p class="field-label" style="margin-top:14px">Sobre o que você anotou</p>
-                      <p class="decide-why">Não identifiquei um ponto específico no que você escreveu. Tente citar o que importa — estacionamento, quadra coberta, saibro, preço, distância — que eu cruzo com os dados de cada academia.</p>
+                      <p class="decide-why">Não identifiquei um ponto específico no que você escreveu. Tente citar o que importa — estacionamento, reposição, horário, academia menor, aula, quadra coberta, saibro, preço, distância — que eu cruzo com a ficha de cada academia.</p>
                     `;
                   }
                   return `
                     <p class="field-label" style="margin-top:14px">Cruzando com o que você anotou</p>
                     ${an.achados.map(a => {
+                      const cada = a.detalhes ? `
+                        <ul class="note-hit-cada">${a.detalhes.map(d => `<li><b>${esc(d.nome)}:</b> ${esc(d.txt)}</li>`).join("")}</ul>
+                        ${a.resumo ? `<p class="note-hit-resumo">${esc(a.resumo)}</p>` : ""}` : "";
                       if (!a.atendem.length) {
                         return `<div class="note-hit note-hit-none">
-                          <strong>${a.label}</strong>
-                          <span>Nenhuma das selecionadas tem</span>
+                          <div class="note-hit-l"><strong>${esc(a.label)}</strong>
+                          <span>Nenhuma das selecionadas tem</span></div>${cada}
                         </div>`;
                       }
                       if (a.atendem.length === a.total) {
                         return `<div class="note-hit note-hit-all">
-                          <strong>${a.label}</strong>
-                          <span>Todas têm — não serve de desempate</span>
+                          <div class="note-hit-l"><strong>${esc(a.label)}</strong>
+                          <span>Todas têm — não serve de desempate</span></div>${cada}
                         </div>`;
                       }
                       return `<div class="note-hit note-hit-some">
-                        <strong>${a.label}</strong>
-                        <span>${listaPt(a.atendem.map(c => c.name))}</span>
+                        <div class="note-hit-l"><strong>${esc(a.label)}</strong>
+                        <span>${esc(listaPt(a.atendem.map(c => c.name)))}</span></div>${cada}
                       </div>`;
                     }).join("")}
                     ${an.criterios.length ? `<p class="decide-why" style="margin-top:8px">Você também citou ${listaPt(an.criterios.map(k => DECIDE_CRITERIA.find(x=>x.key===k)?.label.toLowerCase()).filter(Boolean))} — vale marcar isso nas prioridades acima pra entrar no cálculo.</p>` : ""}
@@ -5784,8 +5935,8 @@ function vagasComparacao(courts) {
     if (!c) {
       vagas.push(`
         <button type="button" class="cmp-vaga" data-cmp-abrir="1" aria-label="Escolher academia">
-          <span class="cmp-vaga-mais">+</span>
-          <span class="cmp-vaga-add">Escolher</span>
+          <span class="cmp-vaga-mais">${icon('comparar', 26, 'var(--green)')}</span>
+          <span class="cmp-vaga-add">+ Escolher</span>
         </button>`);
       continue;
     }
@@ -11204,7 +11355,7 @@ function renderMenu() {
         ${isAdmin ? item("painel-admin", "Painel do admin", "key", pendenciasDoAdmin() ? `${pendenciasDoAdmin()} ${pendenciasDoAdmin() === 1 ? "pendência" : "pendências"}` : "só você vê") : ""}
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
-        ${item("comparar", "Comparar academias", "list", state.compareList.length || "")}
+        ${item("comparar", "Comparar academias", "comparar", state.compareList.length || "")}
 
         <p class="menu-grupo">Minhas quadras</p>
         ${item("favoritas", "Favoritas", "heart", q.favoritas.length || "")}
@@ -14479,7 +14630,7 @@ function filterGroupsHtml() {
       <p class="fgroup-title">Suas listas</p>
       ${optBtn("f-favorites", "", state.favoritesOnly, "Favoritas",
         semOutros.filter(c => isFavorite(c.id)).length)}
-      ${optBtn("f-compareonly", "", state.compareOnly, "Comparação",
+      ${optBtn("f-compareonly", "", state.compareOnly, `${icon('comparar', 14, 'var(--green)')} Comparação`,
         semOutros.filter(c => isComparing(c.id)).length)}
     </div>
   `;
@@ -16533,42 +16684,26 @@ function renderCourtPage(c) {
 // o formulário ainda não tem nada preenchido.
 // Com estacionamento no local, a comodidade já responde; o texto de onde
 // parar só aparece para quem não tem vaga própria.
-// No cadastro, o chip "Estacionamento" abre a pergunta: grátis, pago ou
-// grátis e pago — e, nesse caso, como funciona (como a pergunta de
-// estacionamento do Booking para Parceiros).
+// No cadastro, com "Estacionamento grátis" e "Estacionamento pago" marcados,
+// embaixo de todas as comodidades vem a pergunta "como funciona", como a de
+// estacionamento do Booking para Parceiros.
 function regEstacionamentoHtml(f) {
-  const k = (f.amenities || []).find(ehEstacionamento);
-  if (!k) return "";
-  const r = (f.acesso || {}).estacionamentoRegra;
-  const modo = k === "estacionamento_pago" ? "pago" : r && r.tipo ? "misto" : "gratis";
-  const opc = (attr, v, atual, t) => `<button type="button" class="chip small ${attr} ${atual === v ? "active" : ""}" data-v="${v}" aria-pressed="${atual === v}">${t}</button>`;
+  const am = f.amenities || [];
+  if (!am.includes("estacionamento_gratuito") || !am.includes("estacionamento_pago")) return "";
+  const r = (f.acesso || {}).estacionamentoRegra || {};
+  const opc = (v, t) => `<button type="button" class="chip small reg-estac-regra ${r.tipo === v ? "active" : ""}" data-v="${v}" aria-pressed="${r.tipo === v}">${t}</button>`;
   return `
         <div class="reg-estac" id="reg-estac">
-          <p class="field-label">Estacionamento no local</p>
-          <div class="chip-row">
-            ${opc("reg-estac-modo", "gratis", modo, "Grátis")}
-            ${opc("reg-estac-modo", "pago", modo, "Pago")}
-            ${opc("reg-estac-modo", "misto", modo, "Grátis e pago")}
-          </div>
-          ${modo === "misto" ? `
-            <p class="field-label">Como funciona?</p>
-            <div class="chip-row">
-              ${ESTAC_REGRAS.map(x => opc("reg-estac-regra", x.key, r.tipo, esc(x.label))).join("")}
-            </div>
-            ${r.tipo === "tempo" ? `
-              <label class="reg-estac-horas">Grátis nas primeiras
-                <input class="form-field" id="f-estac-horas" type="number" min="1" max="12" inputmode="numeric" value="${esc(r.horas || "")}" style="margin-top:0" />
-                horas</label>` : ""}
-            ${r.tipo === "misto" ? `<p class="reg-estac-falta">${icon('warning', 13, 'var(--gold)')} Escolha como funciona: é o que o jogador vai ler na ficha.</p>` : ""}` : ""}
+          <p class="field-label">Estacionamento grátis e pago: como funciona?</p>
+          <div class="chip-row">${ESTAC_REGRAS.map(x => opc(x.key, esc(x.label))).join("")}</div>
+          ${r.tipo === "tempo" ? `
+            <label class="reg-estac-horas">Grátis nas primeiras
+              <input class="form-field" id="f-estac-horas" type="number" min="1" max="12" inputmode="numeric" value="${esc(r.horas || "")}" style="margin-top:0" />
+              horas</label>` : ""}
+          ${!r.tipo || r.tipo === "misto" ? `<p class="reg-estac-falta">${icon('warning', 13, 'var(--gold)')} Escolha como funciona: é o que o jogador vai ler na ficha.</p>` : ""}
         </div>`;
 }
-function escolherEstacionamento(f, chave, regra) {
-  const i = (f.amenities || []).findIndex(ehEstacionamento);
-  if (i < 0) return;
-  const antes = f.amenities[i];
-  f.amenities = f.amenities.slice();
-  f.amenities[i] = chave;
-  if (Array.isArray(f.__destaques)) f.__destaques = f.__destaques.map(x => x === antes ? chave : x);
+function escolherRegraDoEstacionamento(f, regra) {
   f.acesso = { ...(f.acesso || {}) };
   if (regra) f.acesso.estacionamentoRegra = regra; else delete f.acesso.estacionamentoRegra;
 }
@@ -16846,7 +16981,7 @@ function regDestaquesHtml(f) {
             ${f.amenities.map(k => {
               const a = AMENITY_OPTS.find(x => x.key === k);
               const on = f.__destaques.includes(k);
-              return `<button type="button" class="chip small reg-destaque ${on ? "active" : ""}" data-destaque="${esc(k)}" aria-pressed="${on}">${on ? "✓ " : ""}${a ? `${a.icon} ${esc(rotuloDaComodidade(a, f))}` : esc(k)}</button>`;
+              return `<button type="button" class="chip small reg-destaque ${on ? "active" : ""}" data-destaque="${esc(k)}" aria-pressed="${on}">${on ? "✓ " : ""}${a ? `${a.icon} ${esc(a.label)}` : esc(k)}</button>`;
             }).join("")}
           </div>
           <p class="reg-destaques-n">${escolhidas} de ${n} escolhidas${escolhidas < n ? ` · com menos de ${n}, a ficha completa com as próximas que você marcou` : ""}.</p>
@@ -16940,11 +17075,7 @@ function regPassoHtml(id, f, obrigatorio) {
         <p class="field-label">Comodidades</p>
         ${avisoDoPlanoNaParte(f, "quadras")}
         <div class="chip-row">
-          ${AMENITY_OPTS.filter(a => a.key !== "estacionamento_pago").map(a => {
-            if (a.key === "estacionamento_gratuito") {
-              const k = f.amenities.find(ehEstacionamento);
-              return `<button class="chip small reg-amenity ${k ? "active" : ""}" data-amenity="${k || a.key}">${a.icon} Estacionamento</button>`;
-            }
+          ${AMENITY_OPTS.map(a => {
             const marcada = f.amenities.includes(a.key);
             return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`;
           }).join("")}
@@ -18208,7 +18339,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Abrir o GuiaTennis Parceiros", ir: "pc:inicio" }] },
   { id: "comparar", onde: "jogadores", t: "Comparar academias",
     p: ["compar", "lado a lado", "qual a melhor", "qual escolher", "escolher entre"],
-    r: "Toque em \"+ Comparar\" nas fichas (ou no cartão) das academias que quer ver lado a lado e abra a comparação pelo menu: preço, quadras, comodidades, cancelamento e nota, uma ao lado da outra.",
+    r: "Na ficha, toque no ícone de comparar (os dois quadrinhos lado a lado, no alto) das academias que quer ver lado a lado e abra a comparação pelo aviso ou pelo menu: nota, preço, localização, estrutura, estacionamento, horário, cancelamento e tudo o que está na ficha, uma ao lado da outra.",
     a: [{ t: "Abrir a comparação", ir: "menu:comparar" }] },
 ];
 // Os primeiros assuntos que o chat sugere, em cada site.
@@ -20989,9 +21120,8 @@ function attachEvents() {
       // No topo da ficha o botão é só o ícone no celular: o aviso confirma.
       if (el.dataset.compareAviso !== undefined) {
         const n = state.compareList.length;
-        mostrarPush(isComparing(el.dataset.compare)
-          ? `Na comparação (${n}). Abra em Menu › Comparar academias.`
-          : "Tirada da comparação.");
+        if (isComparing(el.dataset.compare)) mostrarPush(`Na comparação (${n})`, "ok", { t: n >= COMPARE_MIN ? "Comparar ›" : "Ver comparação ›", ic: 'comparar', fn: goComparar });
+        else mostrarPush("Tirada da comparação.", "ok", { t: "Ver comparação ›", ic: 'comparar', fn: goComparar });
       }
     };
   });
@@ -21502,28 +21632,18 @@ function attachEvents() {
       f.quadras[el.dataset.combo] = Math.max(0, parseInt(e.target.value, 10) || 0);
     };
   });
-  document.querySelectorAll(".reg-estac-modo").forEach(el => {
-    el.onclick = () => {
-      const f = window.__form, v = el.dataset.v;
-      const r = (f.acesso || {}).estacionamentoRegra;
-      escolherEstacionamento(f, v === "pago" ? "estacionamento_pago" : "estacionamento_gratuito",
-        v === "misto" ? (r && r.tipo ? r : { tipo: "misto" }) : null);
-      render();
-    };
-  });
   document.querySelectorAll(".reg-estac-regra").forEach(el => {
     el.onclick = () => {
       const f = window.__form;
       const r = (f.acesso || {}).estacionamentoRegra || {};
-      escolherEstacionamento(f, "estacionamento_gratuito", el.dataset.v === "tempo" ? { tipo: "tempo", horas: r.horas || "" } : { tipo: el.dataset.v });
+      escolherRegraDoEstacionamento(f, el.dataset.v === "tempo" ? { tipo: "tempo", horas: r.horas || "" } : { tipo: el.dataset.v });
       render();
     };
   });
   const estacHoras = document.getElementById("f-estac-horas");
   if (estacHoras) estacHoras.oninput = () => {
-    const f = window.__form;
     const h = Math.round(Number(estacHoras.value));
-    escolherEstacionamento(f, "estacionamento_gratuito", { tipo: "tempo", horas: h >= 1 && h <= 12 ? h : "" });
+    escolherRegraDoEstacionamento(window.__form, { tipo: "tempo", horas: h >= 1 && h <= 12 ? h : "" });
   };
   document.querySelectorAll(".reg-amenity").forEach(el => {
     el.onclick = () => {
@@ -21531,7 +21651,7 @@ function attachEvents() {
       const f = window.__form;
       const n = limiteDeComodidades(f);
       if (n !== Infinity && !Array.isArray(f.__destaques)) f.__destaques = f.amenities.slice(0, n);
-      // Estacionamento é um chip só: desmarcar tira a vaga e a regra.
+      // Desmarcar um dos dois estacionamentos tira a regra de "como funciona".
       if (ehEstacionamento(k) && f.amenities.includes(k) && f.acesso) { f.acesso = { ...f.acesso }; delete f.acesso.estacionamentoRegra; }
       f.amenities = f.amenities.includes(k) ? f.amenities.filter(x=>x!==k) : [...f.amenities, k];
       // A nova entra entre as que aparecem enquanto houver vaga.

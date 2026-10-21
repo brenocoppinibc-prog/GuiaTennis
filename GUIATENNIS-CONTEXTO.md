@@ -3023,29 +3023,36 @@ cobra taxa e não fica no meio** da negociação.
     (N). Abra em Menu › Comparar academias." ou "Tirada da comparação."
     (`mostrarPush`, `data-compare-aviso`). Testes: `links.js` e
     `ficha-topo-e-sobre.js`.
-133. **Estacionamento: grátis, pago, ou grátis e pago com a regra** (pedido
+133. **Estacionamento grátis e pago: a pergunta "como funciona"** (pedidos
     de 21/10/2026: "não faz muito sentido uma academia marcar
     estacionamento grátis e pago… não só corrigir, mas entender quando a
-    academia faz isso"). Como a pergunta de estacionamento do Booking para
-    Parceiros e os atributos do Google Business Profile: no cadastro, um chip
-    só, **"Estacionamento"**, que abre "Estacionamento no local: Grátis ·
-    Pago · Grátis e pago"; "Grátis e pago" pergunta **"Como funciona?"**:
-    "Grátis para alunos, pago para os outros", "Grátis por um tempo, depois
-    pago" (com "Grátis nas primeiras __ horas") ou "Grátis até lotar;
-    depois, pago" (`regEstacionamentoHtml`, `escolherEstacionamento`). O
-    banco guarda uma vaga só (`estacionamento_gratuito`) e a regra em
+    academia faz isso"; depois: "deixe a comodidade igual estava,
+    estacionamento pago estacionamento grátis mas quando selecionar as duas
+    aparecer a aba para explicar e a explicação aparecer abaixo de todas as
+    comodidades"). Como a pergunta de estacionamento do Booking para
+    Parceiros: os dois chips continuam; com os dois marcados, embaixo de
+    todas as comodidades vem **"Estacionamento grátis e pago: como
+    funciona?"**: "Grátis para alunos, pago para os outros", "Grátis por um
+    tempo, depois pago" (com "Grátis nas primeiras __ horas") ou "Grátis até
+    lotar; depois, pago" (`regEstacionamentoHtml`,
+    `escolherRegraDoEstacionamento`); sem escolher, "Escolha como funciona:
+    é o que o jogador vai ler na ficha." Desmarcar um dos dois tira a
+    regra. O banco guarda os dois e a regra em
     `acesso.estacionamentoRegra` ({ tipo, horas }), que acompanha a
-    comodidade mesmo no Básico (`aplicarPlano`). **Quem já tinha os dois
-    marcados** vira um só ao ler (`arrumarEstacionamento`, em `mapRow`), com
-    a regra entendida do que a academia escreveu (`entenderRegraDoEstacionamento`:
-    "alunos/mensalistas", "primeiras 2 horas", "quando lota") ou "misto",
-    que a ficha mostra como "Tem vaga grátis e vaga paga. Pergunte na
-    academia como funciona." e o Parceiros pede em "falta na ficha" ("Como
-    funciona o estacionamento"). Na ficha, um item só ("Estacionamento
-    grátis para alunos", "…nas primeiras 2h", "…até lotar"), a pergunta
-    frequente, o "Sobre" e a comparação usam a regra
+    comodidade mesmo no Básico (`aplicarPlano`; se o plano mostrar só o
+    "grátis" do par, a regra continua). **Quem já tinha os dois marcados**
+    tem a regra entendida ao ler (`arrumarEstacionamento`, em `mapRow`) do
+    que a academia escreveu (`entenderRegraDoEstacionamento`:
+    "alunos/mensalistas", "primeiras 2 horas", "quando lota") ou fica
+    "misto": a ficha diz "Tem vaga grátis e vaga paga. Pergunte na academia
+    como funciona." e o Parceiros pede em "falta na ficha" ("Como funciona
+    o estacionamento"). Na ficha, um item só ("Estacionamento grátis para
+    alunos", "…nas primeiras 2h", "…até lotar"; `comodidadesNaOrdem`), a
+    pergunta frequente, o "Sobre" e a comparação usam a regra
     (`estacionamentoRotulo`, `estacionamentoDetalhe`); grátis com regra não
-    vira o selo "Estacionamento grátis" do cartão. Teste: `estacionamento.js`.
+    vira o selo "Estacionamento grátis" do cartão. (Entre um pedido e outro,
+    por algumas horas, foi um chip só, "Estacionamento"; o que foi gravado
+    assim volta a ter os dois.) Teste: `estacionamento.js`.
 134. **"Melhores avaliadas" de verdade** (pedido de 21/10/2026: "nas melhores
     avaliadas não estão as melhores avaliadas realmente"). Antes, a mais
     perto vinha antes da melhor nota (uma 3,0 na frente de uma 4,8) e as
@@ -3058,6 +3065,47 @@ cobra taxa e não fica no meio** da negociação.
     você". Muda a regra 106 nessa seção. Termos e a pergunta "Como funciona
     a ordem das academias?": as "Melhores avaliadas" seguem só a nota dos
     jogadores. Teste: `melhores-avaliadas.js`.
+135. **Comparação: atalho no aviso, "Limpar" em vermelho, "Localização" e o
+    ícone em todo lugar** (pedido de 21/10/2026, com print). O aviso "Na
+    comparação (N)" traz o atalho **"Ver comparação ›"** (ou "Comparar ›"
+    com 2 ou mais; `mostrarPush(texto, tipo, { t, fn, ic })`, como o "Ver"
+    do "Salvo em Favoritos" do Airbnb). **"Limpar comparação"** em
+    vermelho, com o lixo (`cta-danger`), já com uma academia. A seção "Onde
+    fica" virou **"Localização"**. O subtítulo termina com tudo: "Veja lado
+    a lado o que muda entre elas: nota, preço, localização, estrutura,
+    estacionamento, horário, cancelamento e tudo o que está na ficha." O
+    **ícone da comparação** (os dois quadrinhos do topo da ficha, `comparar`)
+    em todo lugar sobre comparar: título da página, "+ Escolher", o botão
+    de cada academia no seletor (verde cheio quando já está), "Comparar N",
+    o aviso, o menu ("Comparar academias") e o filtro "Comparação"; o chat
+    explica o ícone. Teste: `comparacao-tudo.js`.
+136. **A comparação mostra tudo da ficha** (mesmo pedido: "dizendo que pode
+    comparar tudo e precisamos entregar isso"). Além de nota, avaliações,
+    preço, bairro, distância, quadras, piso, cobertura, comodidades,
+    modalidade e reposição: **Promoção** (quando alguma tem), **Como
+    chegar**, **Estacionamento** (curto: "Grátis", "Pago", "Grátis para
+    alunos; pago para os outros"…), **Horário** ("Funciona"), a reposição
+    da aula e da locação separadas (a de menor aviso ganha o ✓),
+    **Contato** (WhatsApp, Instagram, site), **Ficha** (confirmada e quando
+    foi atualizada, ou ficha básica) e **Elogios** das avaliações
+    (`celHorario`, `celEstacionamento`, `celContato`, `celFicha`). Linha
+    sem informação em nenhuma academia some. Teste: `comparacao-tudo.js`.
+137. **"Me ajude a decidir" entende a ficha inteira** (mesmo pedido: "não
+    soube dizer sobre o tempo de aviso na reposição e privacidade, que
+    seria uma estrutura menor de academia e esclarecer sobre estacionamento
+    junto, atualize com todas as informações que possa ser perguntadas
+    sobre a ficha"). Sem IA (regra 13), `NOTE_KEYWORDS` ganhou `atende`
+    (quem tem), `detalhe` (o que cada uma diz, embaixo do achado) e
+    `grupo` (o mais específico cala o geral): estacionamento grátis (só
+    grátis para todos) e estacionamento, **reposição com menos aviso**
+    (com prazos diferentes, ganha o menor aviso, e "O menor aviso é na X:
+    12h antes."), **privacidade/tranquila/reservada/menos movimento →
+    academia menor** (menos quadras) e academia maior, fim de semana,
+    noite (até 22h), cedo (até 7h), horário, aula, locação, raquete,
+    promoção, ficha confirmada, como chegar, fotos, contato e elogios,
+    além das comodidades, cobertura, piso e dos critérios de antes. O
+    texto de exemplo e o "Não identifiquei…" citam os novos. Teste:
+    `comparacao-tudo.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4824,7 +4872,9 @@ nenhuma falha. Depois das regras 133 e 134 (seções 39 e 40 do PR, passos
 55 a 58): **1.573 verificações** nos 56 arquivos (novos:
 `estacionamento.js` e `melhores-avaliadas.js`), nenhuma falha (a única,
 em `ficha-topo-e-sobre.js`, mostrou o estacionamento repetido quando os
-dois chegam sem passar pelo `mapRow`; corrigida com `comodidadesNaOrdem`). Testes: a última
+dois chegam sem passar pelo `mapRow`; corrigida com `comodidadesNaOrdem`). Depois da regra 133 revista e das regras 135 a 137 (seções 39, 41 a 43
+do PR, passos 55 a 63): **1.589 verificações** nos 57 arquivos (novo:
+`comparacao-tudo.js`), nenhuma falha. Testes: a última
 bateria completa deu **1.523 verificações, nenhuma falha** (53 arquivos
 do navegador; a única falha, texto antigo em `buscas-e-avisos.js`, foi
 corrigida e rodada de novo), **4 no `onde.mjs`, 20 no `pagamento.mjs`** e

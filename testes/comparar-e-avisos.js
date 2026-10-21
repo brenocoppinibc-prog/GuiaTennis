@@ -49,7 +49,7 @@ const { abrir, ok } = require('./harness');
   ok(t.txt === 'Escolha mais uma' && t.off, 'uma escolhida: a bandeja pede mais uma');
   await page.click('.cmp-add-btn >> nth=1');
   await page.waitForTimeout(150);
-  ok(await page.evaluate(() => document.getElementById('cmp-pick-comparar')?.innerText) === 'Comparar 2', 'duas escolhidas: aparece "Comparar 2"');
+  ok(await page.evaluate(() => document.getElementById('cmp-pick-comparar')?.innerText.trim()) === 'Comparar 2', 'duas escolhidas: aparece "Comparar 2"');
   await page.click('#cmp-pick-comparar');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => !state.cmpPicker && document.querySelectorAll('.ct-topo').length === 3), '"Comparar" fecha o seletor e mostra a tabela');

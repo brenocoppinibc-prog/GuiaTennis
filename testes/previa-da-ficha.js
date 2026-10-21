@@ -3,8 +3,10 @@
 // confirmar". Desde 13/10/2026 ("deixe uma prévia de como vai ficar mesmo,
 // como se já estivesse e podendo editar, mas de forma limpa"): a ficha no
 // desenho da página da academia, com um lápis pequeno em cada parte, "+
-// Adicionar…" no que está vazio e uma linha discreta no que o plano esconde;
-// embaixo, "Editar" e "Confirmar".
+// Adicionar…" no que está vazio; embaixo, "Editar" e "Confirmar". Desde
+// 21/10/2026, a prévia mostra tudo o que foi preenchido, sem nada do plano
+// (o que ele esconde vem depois de confirmar), e o lápis leva à parte com um
+// "Confirmar" verde que volta para a revisão.
 const { abrir, ok, irParte } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
@@ -26,16 +28,17 @@ const rodape = (page) => page.evaluate(() => [...document.querySelectorAll('.reg
   ok(blocos === 'fotos,dados,horario,precos,quadras,cancelamento,chegada,contato', 'as partes da ficha, na ordem da página da academia — ' + blocos);
   ok((await bloco(page, 'fotos')) === 'Adicionar fotos' && await page.evaluate(() => document.querySelector('.reg-previa-mais[data-previa="fotos"]')?.tagName === 'BUTTON'), 'sem foto: só "+ Adicionar fotos", no lugar da galeria');
   t = await page.evaluate(() => ({ lapis: document.querySelectorAll('.reg-previa .reg-previa-lapis').length, titulos: [...document.querySelectorAll('.reg-previa .sec-title')].map(h => h.innerText).join(' | '), maiusculas: !!document.querySelector('.reg-previa-h'), botoes: [...document.querySelectorAll('.reg-previa button')].filter(b => /Editar/.test(b.innerText)).length }));
-  ok(t.lapis === 5 && t.titulos === 'Sobre a academia | Escolha o que você quer | Estrutura' && !t.maiusculas && t.botoes === 0,
+  ok(t.lapis === 7 && t.titulos === 'Sobre a academia | Escolha o que você quer | Estrutura | Cancelamento e reposição | Como chegar' && !t.maiusculas && t.botoes === 0,
     'como na ficha: os mesmos títulos e um lápis pequeno por parte, sem rótulo em maiúsculas nem botão "Editar" — ' + JSON.stringify(t));
   ok((await bloco(page, 'dados')).startsWith('Só Aula Tennis') && await page.evaluate(() => !!document.querySelector('.reg-previa [data-previa="dados"] .selo-confirmada:not(.selo-premium)')) && (await bloco(page, 'dados')).includes('Rua A, 1 - Pinheiros, São Paulo'),
     'nome com o selo e o endereço — ' + await bloco(page, 'dados'));
   ok((await bloco(page, 'horario')).includes('Segunda a sexta') && (await bloco(page, 'horario')).includes('6h às 22h'), 'o horário como na ficha');
   ok((await bloco(page, 'precos')).includes('R$ 120') && (await bloco(page, 'precos')).includes('Chamar no WhatsApp'), 'o preço que acabou de digitar e o botão do WhatsApp');
   const estrutura = await bloco(page, 'quadras');
-  ok(estrutura.includes('2x Saibro coberta') && estrutura.includes('2 comodidades ficam de fora no plano Básico') && !estrutura.includes('Vestiário'), 'a estrutura cortada pelo plano, numa linha discreta com quantas comodidades ficam de fora — ' + estrutura);
-  ok((await bloco(page, 'cancelamento')) === 'Cancelamento e reposição: preenchido, mas fica de fora no plano Básico.' && (await bloco(page, 'chegada')) === 'Como chegar: preenchido, mas fica de fora no plano Básico.', 'cancelamento e como chegar: preenchidos, mas fora do Básico, numa linha só');
-  ok((await bloco(page, 'contato')).includes('Chamar no WhatsApp') && (await bloco(page, 'contato')).includes('O Instagram fica de fora no plano Básico') && !(await bloco(page, 'contato')).includes('@soaula'), 'contato: o WhatsApp, e o Instagram fora do Básico');
+  ok(estrutura.includes('2x Saibro coberta') && estrutura.includes('Vestiário') && estrutura.includes('Loja de materiais') && !estrutura.includes('de fora'), 'a estrutura com todas as comodidades marcadas, sem o corte do plano — ' + estrutura);
+  ok((await bloco(page, 'cancelamento')).length > 30 && !(await bloco(page, 'cancelamento')).includes('plano') && (await bloco(page, 'chegada')).includes('Portão preto'), 'cancelamento e como chegar aparecem como foram preenchidos');
+  ok((await bloco(page, 'contato')).includes('Chamar no WhatsApp') && (await bloco(page, 'contato')).includes('@soaula'), 'contato: o WhatsApp e o Instagram');
+  ok(!/\bplano\b/i.test(await texto(page, '#reg-previa')), 'a prévia não fala de plano (21/10/2026: "tire o que aparecer de planos no cadastro")');
   ok(await page.evaluate(() => [...document.querySelectorAll('.reg-previa-conteudo')].every(x => x.inert) && !document.querySelector('.reg-previa a[href]')), 'a prévia é só para ver: nenhum botão nem link de verdade');
   ok((await rodape(page)) === 'Editar | Confirmar e salvar*' && await page.isVisible('#reg-voltar'), 'embaixo: "Editar" e "Confirmar e salvar", em destaque — ' + await rodape(page));
   ok(!(await page.$('.reg-revisao')), 'sem a lista "Partes da ficha" embaixo da prévia (as abas e os lápis levam às partes)');
@@ -44,16 +47,27 @@ const rodape = (page) => page.evaluate(() => [...document.querySelectorAll('.reg
   await page.click('.reg-previa [data-previa="precos"] .reg-previa-lapis');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo')?.dataset.passo === 'precos'), '"Editar" no bloco do preço abre a parte do preço');
-  await page.evaluate(() => { window.__form.priceAula = '150'; });
-  await irParte(page, 'revisar');
-  ok((await bloco(page, 'precos')).includes('R$ 150'), 'voltando à revisão, a prévia já mostra o que mudou');
+  // 21/10/2026: "aparecer o botão verde embaixo confirmar e já voltar para a revisão".
+  ok((await rodape(page)) === 'Confirmar*' && !(await page.$('#reg-voltar')), 'vindo do lápis, embaixo só o "Confirmar" verde — ' + await rodape(page));
+  await page.fill('#f-price-aula', '150');
+  await page.click('#reg-confirmar-revisao');
+  await page.waitForTimeout(250);
+  ok(await page.evaluate(() => regPassoAtual().passo.id === 'revisar') && (await bloco(page, 'precos')).includes('R$ 150'), '"Confirmar" volta para a revisão, que já mostra o que mudou');
+  await page.click('.reg-previa [data-previa="horario"] .reg-previa-lapis');
+  await page.waitForTimeout(200);
+  await page.click('.reg-secoes [data-reg-passo="1"]');
+  await page.waitForTimeout(200);
+  ok(await page.isVisible('#reg-confirmar-revisao'), 'trocando de aba no meio, o "Confirmar" continua levando de volta');
+  await page.click('#reg-confirmar-revisao');
+  await page.waitForTimeout(200);
   await page.click('#reg-editar');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo')?.dataset.passo === 'dados'), '"Editar" de baixo volta para a primeira parte');
+  ok((await rodape(page)) === 'Revisar e salvar | Continuar*' && await page.isVisible('#register-overlay .reg-passo'), 'e segue parte por parte, com "Continuar" (sem o atalho da revisão) — ' + await rodape(page));
   await irParte(page, 'revisar');
   await page.click('#register-submit');
   await page.waitForTimeout(500);
-  ok((await texto(page, '#register-overlay')).includes('Quase lá: escolha o plano'), '"Confirmar e salvar" segue: como o Básico esconde coisas, vem a escolha do plano');
+  ok((await texto(page, '#reg-erro .reg-titulo')).endsWith('partes não vão aparecer na ficha'), '"Confirmar e salvar" segue: como o Básico esconde coisas, vem o aviso com os planos — ' + await texto(page, '#reg-erro .reg-titulo'));
   await page.click('.reg-plano-basico');
   await page.waitForTimeout(900);
   ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').price_aula === '150' && document.getElementById('register-overlay').innerText.includes('Alterações salvas')), 'e salva a ficha');

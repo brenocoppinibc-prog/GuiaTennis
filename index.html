@@ -1757,6 +1757,21 @@
   .reg-plano-op-t { font-weight: 600; font-size: 14px; margin: 0; }
   .reg-plano-op .cta-btn { margin-top: auto; }
   .reg-plano-basico { display: block; width: 100%; margin-top: 14px; background: none; border: none; color: var(--muted); text-decoration: underline; font-family: inherit; font-size: 14px; cursor: pointer; padding: 10px; }
+  .reg-plano-perde > ul:first-child { margin-top: 0; }
+  .reg-plano-perde li .reg-plano-aviso-link { margin-top: 4px; }
+  .reg-plano-perde .reg-destaques { margin-top: 12px; }
+  .reg-erro { text-align: center; padding: 10px 4px 0; }
+  .reg-erro-ic { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 999px; background: #FFF4DE; border: 1px solid #F0DDB8; margin: 6px 0 12px; }
+  .reg-erro .reg-titulo { margin-top: 0; }
+  .reg-erro .reg-porque { margin-left: auto; margin-right: auto; max-width: 440px; }
+  .pol-modos { margin: 0 0 22px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .reg-sair-fundo { position: fixed; inset: 0; z-index: 80; background: rgba(33,31,26,0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .reg-sair { width: 100%; max-width: 340px; background: var(--card); border-radius: 18px; overflow: hidden; text-align: center; box-shadow: 0 18px 50px rgba(0,0,0,0.25); }
+  .reg-sair-t { margin: 0; padding: 22px 22px 6px; font-size: 18px; font-weight: 700; color: var(--text); }
+  .reg-sair-s { margin: 0; padding: 0 22px 18px; font-size: 14.5px; line-height: 1.5; color: var(--muted); }
+  .reg-sair-sim, .reg-sair-nao { display: block; width: 100%; min-height: 50px; padding: 12px 16px; border: 0; border-top: 1px solid var(--border); background: none; font: inherit; font-size: 15.5px; cursor: pointer; }
+  .reg-sair-sim { color: var(--red); font-weight: 700; }
+  .reg-sair-nao { color: var(--text); }
   .reg-plano-ok { margin: 14px 0; padding: 14px; border-radius: 14px; background: var(--green-soft); text-align: left; }
   .reg-plano-ok p { margin: 0 0 10px; font-size: 14px; }
   .pc-escolha { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; font-family: inherit; cursor: pointer; color: var(--text); }
@@ -2204,23 +2219,7 @@
   .pc-acima-do-plano { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 4px; padding: 12px 14px; border: 1px solid #EBD9AE; border-radius: 12px; background: #FFFBF1; }
   .pc-acima-do-plano > svg { flex-shrink: 0; margin-top: 2px; }
   .pc-acima-do-plano p { margin: 0; font-size: 14px; line-height: 1.5; }
-  .reg-plano-aviso { margin: 12px 0 10px; padding: 0; border: 1px solid #EBD9AE; border-radius: 12px; background: #FFFBF1; }
-  .reg-plano-aviso-linha { display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-size: 13.5px; line-height: 1.35; color: var(--text); cursor: pointer; list-style: none; }
-  .reg-plano-aviso-linha::-webkit-details-marker { display: none; }
-  .reg-plano-aviso-linha > svg { flex-shrink: 0; }
-  .reg-plano-aviso-curto { flex: 1; min-width: 0; }
-  .reg-plano-aviso-mais { flex-shrink: 0; font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 2px; }
-  .reg-plano-aviso-corpo { padding: 0 14px 14px; }
-  .reg-plano-aviso-corpo .reg-plano-aviso-t { padding-top: 2px; border-top: 1px solid rgba(142,109,37,0.18); padding-top: 10px; }
-  .reg-plano-aviso.pediu { border-color: var(--green-line); background: var(--green-soft); }
-  .reg-plano-aviso.manteve { background: var(--card); border-color: var(--border); }
-  .reg-plano-aviso-t { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--text); }
-  .reg-plano-aviso-t > svg { flex-shrink: 0; margin-top: 2px; }
-  .reg-plano-aviso-s { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
-  .reg-plano-aviso-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
-  .reg-plano-aviso-acoes .cta-btn { margin: 0; flex: 1 1 140px; min-height: 42px; }
   .reg-plano-aviso-link { background: none; border: 0; padding: 0; margin: 6px 0 0; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--green); text-decoration: underline; cursor: pointer; }
-  .reg-plano-aviso-s .reg-plano-aviso-link { margin: 0; }
   /* Prévia da ficha (13/10/2026): a ficha como ela é, com um lápis pequeno
      no canto de cada parte. */
   .reg-previa { margin-top: 14px; border: 1px solid var(--border); border-radius: 18px; background: var(--card); overflow: hidden; }
@@ -2242,8 +2241,6 @@
   .reg-previa-fotos .reg-previa-lapis { top: 12px; right: 12px; border-color: transparent; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
   .reg-previa-mais { display: flex; align-items: center; gap: 8px; width: 100%; padding: 15px 0; border: 0; border-top: 1px solid var(--border); background: none; color: var(--green); font: inherit; font-size: 14.5px; font-weight: 600; text-align: left; cursor: pointer; }
   .reg-previa > .reg-previa-mais { padding: 15px 18px; border-top: 0; border-bottom: 1px solid var(--border); }
-  .reg-previa-fora { display: flex; align-items: flex-start; gap: 6px; margin: 10px 0 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
-  .reg-previa-corpo > .reg-previa-fora { margin: 0; padding: 12px 0; border-top: 1px solid var(--border); }
   .reg-falta { display: flex; align-items: flex-start; gap: 7px; margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
   .reg-falta > svg { flex-shrink: 0; margin-top: 2px; }
   .reg-falta.ok { color: var(--green); font-weight: 600; }
@@ -2261,10 +2258,15 @@
   .reg-foto { position: relative; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--bg-alt); }
   .reg-foto.capa { grid-column: 1 / -1; aspect-ratio: 16 / 10; }
   .reg-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .reg-foto.fora img { opacity: 0.55; }
   .reg-foto-tag, .reg-foto-capa { position: absolute; left: 8px; bottom: 8px; padding: 5px 10px; border-radius: 999px; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; background: rgba(255,255,255,0.92); color: #1F2A24; }
   .reg-foto-capa { cursor: pointer; }
-  .reg-foto-fora { position: absolute; left: 8px; top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; background: rgba(0,0,0,0.6); }
+  .reg-fotos-dica { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+  .reg-foto { cursor: grab; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .reg-foto img { pointer-events: none; }
+  .reg-fotos.ordenando, .reg-fotos.ordenando .reg-foto { cursor: grabbing; }
+  .reg-foto.arrastando { opacity: 0.35; }
+  .reg-foto.alvo { outline: 3px solid var(--green); outline-offset: 2px; }
+  .reg-foto.reg-foto-fantasma { position: fixed; z-index: 9999; margin: 0; pointer-events: none; box-shadow: 0 14px 34px rgba(0,0,0,0.28); }
   .reg-foto-tirar { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 999px; border: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 15px; cursor: pointer; }
   .reg-ponto-mapa { height: 220px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
   .reg-ponto-s { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
@@ -17011,31 +17013,99 @@ function regDestaquesHtml(f) {
 // As fotos do formulário em tamanho de ver (pedido do Breno em 10/10/2026:
 // "quero que as fotos apareçam maiores"), como o "Fotos do anúncio" do
 // Airbnb: a primeira grande, marcada como capa, e as outras em duas colunas.
-// "Usar como capa" coloca a foto em primeiro; no plano que mostra menos fotos,
-// as que ficam de fora dizem isso em cima da própria foto.
+// "Usar como capa" coloca a foto em primeiro. Desde 21/10/2026 (pedido do
+// Breno: "faça que é possível ordenar as fotos arrastando"), segurar e
+// arrastar muda a ordem, como no Airbnb e no Instagram (arrastarFotos); o
+// que o plano mostra fica para a tela do plano, no fim.
 function regFotosHtml(f) {
-  const l = limitesDoPlano(f.__plano || "basico");
-  const limite = isAdmin ? Infinity : l.fotos;
   return `
+          ${f.photos.length > 1 ? `<p class="reg-fotos-dica">Segure e arraste uma foto para mudar a ordem. A primeira é a capa.</p>` : ""}
           <div class="reg-fotos" id="reg-fotos">
             ${f.photos.map((p, i) => `
-              <div class="reg-foto${i === 0 ? " capa" : ""}${i >= limite ? " fora" : ""}">
-                <img src="${esc(p)}" alt="Foto ${i + 1} da academia" />
+              <div class="reg-foto${i === 0 ? " capa" : ""}" data-foto-ordem="${i}">
+                <img src="${esc(p)}" alt="Foto ${i + 1} da academia" draggable="false" />
                 ${i === 0 ? `<span class="reg-foto-tag">Capa</span>` : `<button type="button" class="reg-foto-capa" data-photo-capa="${i}">Usar como capa</button>`}
-                ${i >= limite ? `<span class="reg-foto-fora">${icon('olhoFechado', 13, '#fff')} Fora da ficha no ${esc(nomeDoPlano(f.__plano || "basico"))}</span>` : ""}
                 <button type="button" class="reg-foto-tirar" data-photo-idx="${i}" aria-label="Tirar a foto ${i + 1}">✕</button>
               </div>`).join("")}
           </div>`;
 }
 
+// Segurar e arrastar uma foto do formulário muda a ordem (21/10/2026). No
+// toque, segura um instante antes (senão é a tela rolando); no mouse, basta
+// arrastar. A foto vai para o lugar da que está embaixo do dedo.
+function arrastarFotos() {
+  document.querySelectorAll(".reg-foto-fantasma").forEach(x => x.remove());
+  const grade = document.getElementById("reg-fotos");
+  if (!grade || grade.children.length < 2) return;
+  let ini = null, arrasto = null, alvo = null, timer = null;
+  const fotoEm = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest ? el.closest("#reg-fotos [data-foto-ordem]") : null; };
+  const limpar = () => {
+    clearTimeout(timer);
+    if (arrasto) { arrasto.fantasma.remove(); arrasto.el.classList.remove("arrastando"); }
+    if (alvo) alvo.classList.remove("alvo");
+    grade.classList.remove("ordenando");
+    ini = arrasto = alvo = timer = null;
+  };
+  const comecar = () => {
+    const r = ini.el.getBoundingClientRect();
+    const fantasma = ini.el.cloneNode(true);
+    fantasma.classList.add("reg-foto-fantasma");
+    fantasma.removeAttribute("data-foto-ordem");
+    fantasma.style.cssText = `width:${r.width}px;height:${r.height}px;left:${r.left}px;top:${r.top}px`;
+    document.body.appendChild(fantasma);
+    arrasto = { el: ini.el, fantasma };
+    ini.el.classList.add("arrastando");
+    grade.classList.add("ordenando");
+  };
+  grade.addEventListener("pointerdown", (e) => {
+    if (e.button > 0 || e.target.closest("button")) return;
+    const el = e.target.closest("[data-foto-ordem]");
+    if (!el) return;
+    limpar();
+    ini = { el, x: e.clientX, y: e.clientY, id: e.pointerId, toque: e.pointerType !== "mouse" };
+    if (ini.toque) timer = setTimeout(comecar, 300);
+    else { e.preventDefault(); try { grade.setPointerCapture(e.pointerId); } catch {} }
+  });
+  grade.addEventListener("pointermove", (e) => {
+    if (!ini || e.pointerId !== ini.id) return;
+    if (!arrasto) {
+      if (Math.hypot(e.clientX - ini.x, e.clientY - ini.y) < 8) return;
+      if (ini.toque) { limpar(); return; }
+      comecar();
+    }
+    e.preventDefault();
+    arrasto.fantasma.style.transform = `translate(${e.clientX - ini.x}px, ${e.clientY - ini.y}px) scale(1.03)`;
+    const sob = fotoEm(e.clientX, e.clientY);
+    const novo = sob && sob !== arrasto.el ? sob : null;
+    if (novo !== alvo) { if (alvo) alvo.classList.remove("alvo"); alvo = novo; if (alvo) alvo.classList.add("alvo"); }
+  });
+  grade.addEventListener("pointerup", (e) => {
+    if (!ini || e.pointerId !== ini.id) return;
+    const de = arrasto ? Number(arrasto.el.dataset.fotoOrdem) : -1;
+    const para = alvo ? Number(alvo.dataset.fotoOrdem) : -1;
+    limpar();
+    if (de < 0 || para < 0 || de === para) return;
+    const fotos = window.__form.photos;
+    fotos.splice(para, 0, fotos.splice(de, 1)[0]);
+    guardarRascunhoLogo();
+    render();
+  });
+  grade.addEventListener("pointercancel", (e) => { if (ini && e.pointerId === ini.id) limpar(); });
+  // Segurando, a tela não rola nem abre o menu da imagem.
+  grade.addEventListener("touchmove", (e) => { if (arrasto) e.preventDefault(); }, { passive: false });
+  grade.addEventListener("contextmenu", (e) => { if (ini) e.preventDefault(); });
+}
+
 // O miolo de cada parte.
+const TEXTO_PRAZO_REPOSICAO = "Com quantas horas de antecedência a pessoa precisa avisar para ter direito à reposição. Toque de novo na opção escolhida para desmarcar.";
 function regPassoHtml(id, f, obrigatorio) {
   const isEditing = !!f.__editingId;
   const parceiro = !isAdmin && !isEditing && !!contaAcademia;
-  // Nada trava pelo plano no meio do cadastro (pedido do Breno em
-  // 03/10/2026): a academia preenche do jeito dela e, ao finalizar, vê o
-  // que o plano esconde e escolhe o plano (regPlanoHtml). Fotos: até 5, o
-  // máximo de qualquer plano.
+  // Nada do plano no meio do cadastro (pedidos do Breno em 03/10/2026 e
+  // 21/10/2026: "tire o que aparecer de planos no cadastro"): a academia
+  // preenche do jeito dela e, ao confirmar a revisão, vê o que o plano
+  // esconde e escolhe o plano (regPlanoHtml). Fotos: até 5, o máximo de
+  // qualquer plano.
   const maxFotos = FOTOS_MAXIMO;
   if (id === "dados") return `
         <label class="field-label" for="f-name">Nome da academia</label>
@@ -17092,15 +17162,13 @@ function regPassoHtml(id, f, obrigatorio) {
           `).join("")}
         </div>
         <p class="field-label">Comodidades</p>
-        ${avisoDoPlanoNaParte(f, "quadras")}
         <div class="chip-row">
           ${AMENITY_OPTS.map(a => {
             const marcada = f.amenities.includes(a.key);
             return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`;
           }).join("")}
         </div>
-        ${regEstacionamentoHtml(f)}
-        ${regDestaquesHtml(f)}`;
+        ${regEstacionamentoHtml(f)}`;
 
   if (id === "contato") return `
         <label class="field-label" for="f-phone" style="margin-top:0">WhatsApp da academia${obrigatorio}</label>
@@ -17137,14 +17205,15 @@ function regPassoHtml(id, f, obrigatorio) {
 
   if (id === "cancelamento") return `
         <fieldset class="reg-trava">
-        <p class="footnote" style="margin-top:0;margin-bottom:8px">Com quantas horas de antecedência a pessoa precisa avisar para ter direito à reposição. Toque de novo na opção escolhida para desmarcar.</p>
         ${f.modalidades.length === 1 ? `
+          <p class="footnote" style="margin-top:0;margin-bottom:8px">${TEXTO_PRAZO_REPOSICAO}</p>
           ${blocoPoliticaForm(politicaForm2(f), politicaForm2(f).modo === "separado" ? (f.modalidades[0] === "locacao" ? "locacao" : "aula") : "", "")}
         ` : `
-          <div class="chip-row" style="margin-bottom:10px">
+          <div class="chip-row pol-modos">
             <button type="button" class="chip small pol-modo ${politicaForm2(f).modo === "igual" ? "active" : ""}" data-pol-modo="igual">Mesma regra para tudo</button>
             <button type="button" class="chip small pol-modo ${politicaForm2(f).modo === "separado" ? "active" : ""}" data-pol-modo="separado">Aula e locação diferentes</button>
           </div>
+          <p class="footnote" style="margin-top:0;margin-bottom:8px">${TEXTO_PRAZO_REPOSICAO}</p>
           ${politicaForm2(f).modo === "separado"
             ? blocoPoliticaForm(politicaForm2(f), "aula", "Aula") + blocoPoliticaForm(politicaForm2(f), "locacao", "Locação")
             : blocoPoliticaForm(politicaForm2(f), "", "")}
@@ -17258,11 +17327,10 @@ function regPlanoHtml(f) {
     <div class="reg-plano">
       ${esconde.length ? `
         <div class="reg-plano-bloco reg-plano-perde">
-          <p class="reg-plano-t">${icon('warning', 16, 'var(--gold)')} No plano ${esc(nomeDoPlano(plano))}, a ficha esconde o que você preencheu:</p>
           <ul>
-            ${esconde.map(x => `<li><strong>${esc(x.t)}</strong><span>${esc(x.d)}</span></li>`).join("")}
+            ${esconde.map(x => `<li><strong>${esc(x.t)}</strong><span>${esc(x.d)}</span>${x.passo === "fotos" ? `<button type="button" class="reg-plano-aviso-link" data-reg-plano-passo="${passoDe("fotos")}">Escolher quais vão primeiro</button>` : ""}</li>`).join("")}
           </ul>
-          <p class="footnote" style="margin:8px 0 0">Nada se perde: fica tudo guardado e aparece assim que a academia mudar de plano.</p>
+          ${regDestaquesHtml(f)}
         </div>` : `
         <div class="reg-plano-bloco">
           <p class="reg-plano-t">${icon('check', 16, 'var(--green)')} Tudo o que você preencheu cabe no plano ${esc(nomeDoPlano(plano))}.</p>
@@ -17278,7 +17346,7 @@ function regPlanoHtml(f) {
               ${icon('chevron', 16, 'var(--muted)')}
             </button>`).join("")}
         </div>` : ""}
-      <p class="reg-plano-t" style="margin-top:18px">Escolha o plano da ficha</p>
+      <p class="reg-plano-t" style="margin-top:18px">${esconde.length ? "Para mostrar tudo, mude de plano" : "Escolha o plano da ficha"}</p>
       <div class="reg-plano-opcoes">
         ${opcoes.map(o => `
           <div class="reg-plano-op ${o.key === "premium" ? "destaque" : ""}">
@@ -17290,82 +17358,20 @@ function regPlanoHtml(f) {
           </div>`).join("")}
       </div>
       <p class="footnote">Por enquanto, todos os planos são grátis. Cada academia tem o próprio plano.</p>
-      <button type="button" class="reg-plano-basico" data-reg-plano="${plano}">${plano === "basico"
-        ? `Continuar no Básico, grátis${esconde.length ? ` (a ficha esconde ${esconde.length === 1 ? "1 item" : esconde.length + " itens"})` : ""}`
-        : `Continuar no ${esc(nomeDoPlano(plano))}${esconde.length ? ` (a ficha esconde ${esconde.length === 1 ? "1 item" : esconde.length + " itens"})` : ""}`}</button>
+      <button type="button" class="reg-plano-basico" data-reg-plano="${plano}">${esconde.length
+        ? `Continuar no ${esc(nomeDoPlano(plano))} sem ${esconde.length === 1 ? "essa parte" : "essas partes"}`
+        : `Continuar no ${esc(nomeDoPlano(plano))}${plano === "basico" ? ", grátis" : ""}`}</button>
     </div>`;
 }
 function ordemDoPlano(key) {
   return Math.max(0, PC_PLANOS.findIndex(p => p.key === key));
 }
 
-// O aviso do plano dentro da própria parte (pedido do Breno em 09/10/2026:
-// "todas as informações no básico completo podem ser preenchidas mas com
-// aviso de que não estará visível na ficha e com opção de querer ou não
-// alterar e precisar pagar a mais"). A academia preenche tudo; a parte que o
-// plano não mostra diz isso ali mesmo e deixa escolher: pedir o plano que
-// mostra (grátis por enquanto; muda ao salvar) ou manter o plano. A escolha vale
-// para o formulário inteiro e dispensa a tela do plano no fim.
-//   mostra(l)  o plano de limites l mostra a parte?
-//   fora(f, l) o que a academia já preencheu e fica de fora
-// Fechado, o aviso é uma linha (pedido do Breno em 10/10/2026: "deixe esse
-// aviso menor e se clicar explica mais em todas as abas"), como os avisos
-// "Saiba mais" do Booking para parceiros; aberto, a explicação e a escolha.
-//   curto(l)  a linha do aviso fechado
-const PARTES_DO_PLANO = {
-  quadras: { mostra: l => l.comodidades === Infinity, curto: l => `a ficha mostra ${l.comodidades} comodidades`,
-    t: l => `a ficha mostra as ${l.comodidades} primeiras comodidades que você marcar`,
-    d: "Pode marcar todas: as outras ficam guardadas e aparecem",
-    fora: (f, l) => { const n = (f.amenities || []).length - l.comodidades; return n > 0 ? `${n} das ${(f.amenities || []).length} que você marcou ${n === 1 ? "fica" : "ficam"} de fora` : ""; } },
-  contato: { mostra: l => l.contatos.includes("instagram"), curto: () => "a ficha mostra só o WhatsApp",
-    t: () => "a ficha mostra só o botão do WhatsApp",
-    d: "Instagram e site ficam guardados e aparecem",
-    fora: f => { const x = [String(f.instagram || "").trim() && "o Instagram", String(f.site || "").trim() && "o site"].filter(Boolean); return x.length ? `${x.join(" e ")} que você informou ${x.length === 1 ? "fica" : "ficam"} de fora` : ""; } },
-  fotos: { mostra: l => l.fotos >= FOTOS_MAXIMO, curto: l => `a ficha mostra ${l.fotos} fotos`,
-    t: l => `a ficha mostra as ${l.fotos} primeiras fotos`,
-    d: `Pode mandar até ${FOTOS_MAXIMO}: as outras ficam guardadas e aparecem`,
-    fora: (f, l) => { const n = (f.photos || []).length - l.fotos; return n > 0 ? `${n} das ${(f.photos || []).length} fotos ${n === 1 ? "fica" : "ficam"} de fora` : ""; } },
-  cancelamento: { mostra: l => l.cancelamento, curto: () => "o cancelamento não aparece na ficha",
-    t: () => "o cancelamento e a reposição não aparecem na ficha",
-    d: "Pode preencher: fica guardado e aparece" },
-  chegada: { mostra: l => l.chegada, curto: () => "como chegar não aparece na ficha",
-    t: () => "como chegar não aparece na ficha",
-    d: "Pode preencher: fica guardado e aparece" },
-};
-function avisoDoPlanoNaParte(f, id) {
-  const parte = PARTES_DO_PLANO[id];
-  if (isAdmin || !parte) return "";
-  const plano = f.__plano || "basico";
-  const l = limitesDoPlano(plano);
-  if (parte.mostra(l)) return "";
-  const acima = PC_PLANOS.find(p => ordemDoPlano(p.key) > ordemDoPlano(plano) && parte.mostra(limitesDoPlano(p.key)));
-  if (!acima) return "";
-  const atual = nomeDoPlano(plano);
-  const escolhido = f.__planoEscolhido;
-  const pediu = ["completo", "premium"].includes(escolhido) && ordemDoPlano(escolhido) >= ordemDoPlano(acima.key);
-  const manteve = escolhido === plano;
-  const fora = parte.fora ? parte.fora(f, l) : "";
-  const aberto = state.regAvisoAberto === id;
-  const curto = pediu ? `Você escolheu o plano ${nomeDoPlano(escolhido)}` : `No ${atual}, ${parte.curto(l)}`;
-  return `
-    <details class="reg-plano-aviso${pediu ? " pediu" : manteve ? " manteve" : ""}" id="reg-plano-aviso" data-aviso-parte="${id}" ${aberto ? "open" : ""}>
-      <summary class="reg-plano-aviso-linha">${icon(pediu ? 'check' : 'olhoFechado', 15, pediu ? 'var(--green)' : '#8E6D25')}<span class="reg-plano-aviso-curto">${esc(curto)}</span><span class="reg-plano-aviso-mais">${aberto ? "Fechar" : "Saiba mais"}</span></summary>
-      <div class="reg-plano-aviso-corpo">
-      <p class="reg-plano-aviso-t"><span>No plano ${esc(atual)}, ${esc(parte.t(l))}.${fora ? ` <strong>${esc(fora.charAt(0).toUpperCase() + fora.slice(1))}.</strong>` : ""}</span></p>
-      ${pediu ? `
-        <p class="reg-plano-aviso-s">Você escolheu o plano ${esc(nomeDoPlano(escolhido))}. Ao salvar, a academia passa para ele (grátis por enquanto).</p>
-        <button type="button" class="reg-plano-aviso-link" data-reg-plano-aviso="">Desfazer</button>`
-      : manteve ? `
-        <p class="reg-plano-aviso-s">${esc(parte.d)} na ficha se a academia mudar para o ${esc(acima.nome)}. <button type="button" class="reg-plano-aviso-link" data-reg-plano-aviso="">Mudar de ideia</button></p>`
-      : `
-        <p class="reg-plano-aviso-s">${esc(parte.d)} na ficha no plano ${esc(acima.nome)}. Por enquanto, o ${esc(acima.nome)} é grátis e muda ao salvar.</p>
-        <div class="reg-plano-aviso-acoes">
-          <button type="button" class="cta-btn cta-primary" data-reg-plano-aviso="${acima.key}">Quero o ${esc(acima.nome)}</button>
-          <button type="button" class="cta-btn cta-secondary" data-reg-plano-aviso="${plano}">Manter o ${esc(atual)}</button>
-        </div>`}
-      </div>
-    </details>`;
-}
+// O aviso do plano dentro de cada parte (09/10/2026) saiu em 21/10/2026
+// (pedido do Breno: "tire o que aparecer de planos no cadastro"): o que o
+// plano esconde aparece de uma vez, depois de confirmar a revisão, na tela
+// "Isso não vai aparecer na ficha" (regPlanoHtml).
+
 // Mensagem pronta para combinar o plano pelo WhatsApp.
 function linkPlanoDaFicha(f, plano) {
   const nome = (f && f.name) || ((minhaAcademia() || {}).name) || "minha academia";
@@ -17376,7 +17382,7 @@ function renderRegisterSheet() {
   const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
   window.__form = f;
   // Formulário novo (abriu agora ou é outra academia): começa na primeira parte.
-  if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; state.regPlanoTela = false; state.regFaltaVisivel = false; state.regAvisoAberto = null; state.regPontoErro = ""; state.regDestaqueErro = ""; }
+  if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; state.regPlanoTela = false; state.regFaltaVisivel = false; state.regDaRevisao = false; state.regSairPergunta = false; state.regFormAssinatura = assinaturaDoFormulario(f); state.regPontoErro = ""; state.regDestaqueErro = ""; }
   const isEditing = !!f.__editingId;
   const parceiro = !isAdmin && !isEditing && !!contaAcademia;
   // Asterisco só para quem pede cadastro pelo site; o admin publica com o que tiver.
@@ -17405,6 +17411,14 @@ function renderRegisterSheet() {
       </div>`;
   }
   if (state.regPlanoTela) {
+    // Com o que o plano esconde, a tela é um aviso, como uma página de erro
+    // (pedido do Breno em 21/10/2026: "quero que isso apareça depois de
+    // confirmar todos os dados como uma página de erro e ali aparecer sobre
+    // os planos também"), como o "Este recurso não está no seu plano" da
+    // Shopify e do Canva: o ícone, o que fica de fora e os planos que mostram.
+    ordenarDestaques(f);
+    const plano = f.__plano || "basico";
+    const n = oQueOPlanoEsconde(f, plano).length;
     return `
     <div class="overlay open" id="register-overlay">
       <div class="sheet"><div class="sheet-content reg-passos-tela">
@@ -17412,8 +17426,14 @@ function renderRegisterSheet() {
         <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra"}</p>
         <p class="reg-progresso-t">Último passo · Plano da ficha</p>
         <div class="reg-progresso"><i style="width:100%"></i></div>
+        ${n ? `
+        <div class="reg-erro" id="reg-erro">
+          <span class="reg-erro-ic">${icon('olhoFechado', 28, '#8E6D25')}</span>
+          <h2 class="sheet-title display reg-titulo">${n === 1 ? "Uma parte não vai aparecer na ficha" : `${n} partes não vão aparecer na ficha`}</h2>
+          <p class="subtitle reg-porque">No plano ${esc(nomeDoPlano(plano))}, os jogadores não veem o que você preencheu aqui embaixo. Nada se perde: fica guardado e aparece quando a academia mudar de plano.</p>
+        </div>` : `
         <h2 class="sheet-title display reg-titulo">Quase lá: escolha o plano</h2>
-        <p class="subtitle reg-porque">Veja como a ficha ${esc(f.name || "da academia")} vai aparecer para os jogadores.</p>
+        <p class="subtitle reg-porque">Veja como a ficha ${esc(f.name || "da academia")} vai aparecer para os jogadores.</p>`}
         ${regPlanoHtml(f)}
         <div class="reg-rodape">
           <div class="reg-rodape-linha">
@@ -17421,6 +17441,7 @@ function renderRegisterSheet() {
             <span></span>
           </div>
         </div>
+        ${regSairHtml(f)}
       </div></div>
     </div>`;
   }
@@ -17434,6 +17455,11 @@ function renderRegisterSheet() {
     ? (isEditing ? "Confirmar e salvar" : isAdmin ? "Confirmar e publicar" : "Confirmar e enviar")
     : (isEditing ? "Revisar e salvar" : "Revisar e publicar");
   const vazioOpcional = !regPreenchido(f, passo.id) && !regFaltas(f, passo.id).length && passo.id !== "dados";
+  // Veio do lápis da revisão (pedido do Breno em 21/10/2026: "ao editar a
+  // academia na revisão, quando salvar o dado que gostaria de editar aparecer
+  // o botão verde embaixo confirmar e já voltar para a revisão"), como o
+  // "Salvar" de cada parte no "Revise o seu anúncio" do Airbnb.
+  const daRevisao = !!state.regDaRevisao && !ultimo;
   return `
     <div class="overlay open" id="register-overlay">
       <div class="sheet"><div class="sheet-content reg-passos-tela">
@@ -17441,7 +17467,7 @@ function renderRegisterSheet() {
         <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra")}</p>
         <p class="reg-progresso-t">Parte ${i + 1} de ${REG_PASSOS.length} · ${passo.t}</p>
         <div class="reg-progresso" role="progressbar" aria-valuemin="1" aria-valuemax="${REG_PASSOS.length}" aria-valuenow="${i + 1}"><i style="width:${Math.round((i + 1) / REG_PASSOS.length * 100)}%"></i></div>
-        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? `${contaAcademia && contaAcademia.emailConfirmado ? "Com o seu e-mail confirmado, a academia entra no ar quando você finalizar." : "O GuiaTennis confere antes de publicar."} Os seus dados de contato já vão junto: não precisa digitar de novo.` : "Apresentação no site mediante análise. São 9 partes curtas; só as 4 primeiras são obrigatórias."}</p>` : ""}
+        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? `${contaAcademia && contaAcademia.emailConfirmado ? "" : "O GuiaTennis confere antes de publicar. "}Os seus dados de contato já vão junto: não precisa digitar de novo.` : "Apresentação no site mediante análise. São 9 partes curtas; só as 4 primeiras são obrigatórias."}</p>` : ""}
 
         <nav class="reg-secoes" aria-label="Partes da ficha">
           ${REG_PASSOS.map((x, k) => `<button type="button" class="${k === i ? "on" : ""}" data-reg-passo="${k}" ${k === i ? 'aria-current="step"' : ""}>${regPreenchido(f, x.id) && !regFaltas(f, x.id).length ? "✓ " : ""}${x.t}</button>`).join("")}
@@ -17452,7 +17478,6 @@ function renderRegisterSheet() {
         ${passo.id === "dados" || (obrigatorio && ["precos", "quadras", "contato"].includes(passo.id)) ? `<p class="reg-legenda">* Obrigatório</p>` : ""}
 
         <div class="reg-passo" data-passo="${passo.id}">
-          ${passo.id === "quadras" ? "" : avisoDoPlanoNaParte(f, passo.id)}
           ${regPassoHtml(passo.id, f, obrigatorio)}
         </div>
 
@@ -17462,48 +17487,84 @@ function renderRegisterSheet() {
         <div class="reg-rodape">
           ${regAvisoDoQueFalta(f, i)}
           <div class="reg-rodape-linha">
-            ${i > 0 ? `<button type="button" class="reg-voltar" id="reg-voltar">Voltar</button>` : `<span></span>`}
+            ${i > 0 && !daRevisao ? `<button type="button" class="reg-voltar" id="reg-voltar">Voltar</button>` : `<span></span>`}
             <div class="reg-rodape-dir">
+              ${daRevisao ? `<button type="button" class="cta-btn cta-primary" id="reg-confirmar-revisao">Confirmar</button>` : `
               ${ultimo ? `<button type="button" class="cta-btn cta-secondary" id="reg-editar">Editar</button>` : ""}
               ${ultimo || salvaEmQualquerParte ? `
                 <button class="cta-btn ${ultimo ? "cta-primary" : "cta-secondary"}" id="register-submit" ${state.registerStatus==="saving"?"disabled":""}>
                   ${state.registerStatus==="saving" ? bolaGirando(16) + " Salvando..." : textoSalvar}
                 </button>` : ""}
-              ${!ultimo ? `<button type="button" class="cta-btn cta-primary" id="reg-continuar">${vazioOpcional ? "Pular" : "Continuar"}</button>` : ""}
+              ${!ultimo ? `<button type="button" class="cta-btn cta-primary" id="reg-continuar">${vazioOpcional ? "Pular" : "Continuar"}</button>` : ""}`}
             </div>
           </div>
         </div>
+        ${regSairHtml(f)}
       </div></div>
     </div>
   `;
+}
+
+// Sair do cadastro pergunta antes (pedido do Breno em 21/10/2026: "se clicar
+// no X para sair do cadastro, aparecer algum push para confirmar se é isso
+// mesmo que quer fazer e avisar do que pode acontecer (apagar os dados)"),
+// como o "Descartar publicação?" do Instagram e o "Sair sem salvar?" do
+// Airbnb. Só pergunta quando há o que perder: na academia nova, qualquer
+// coisa preenchida; na edição, alguma mudança.
+function assinaturaDoFormulario(f) {
+  if (!f) return "";
+  const g = JSON.parse(JSON.stringify({ ...f, photos: [] }));
+  horarioForm(g); politicaForm2(g); acessoForm(g);
+  const campos = Object.keys(g).filter(k => !k.startsWith("__") && !["photos", "consent", "declaro"].includes(k)).sort();
+  return JSON.stringify(campos.map(k => [k, g[k]])) + "|" + (f.photos || []).map(p => String(p).length + String(p).slice(-24)).join(",");
+}
+function cadastroTemOQuePerder(f) {
+  if (!f || state.registerStatus === "done") return false;
+  // Voltou do rascunho (recarregou a página): o que voltou também se perde.
+  if (state.regFormAssinatura === undefined) return true;
+  return assinaturaDoFormulario(f) !== state.regFormAssinatura;
+}
+function regSairHtml(f) {
+  if (!state.regSairPergunta) return "";
+  const editando = !!f.__editingId;
+  const nome = String(f.name || "").trim();
+  return `
+        <div class="reg-sair-fundo" id="reg-sair-fundo">
+          <div class="reg-sair" role="alertdialog" aria-modal="true" aria-labelledby="reg-sair-t" aria-describedby="reg-sair-s">
+            <p class="reg-sair-t" id="reg-sair-t">${editando ? "Sair sem salvar?" : "Sair do cadastro?"}</p>
+            <p class="reg-sair-s" id="reg-sair-s">${editando
+              ? `As mudanças ${nome ? `na ${esc(nome)} ` : ""}ainda não foram salvas e vão ser apagadas. A ficha continua como estava.`
+              : `O que você preencheu ${nome ? `da ${esc(nome)} ` : ""}vai ser apagado e não volta. Para publicar depois, é preciso começar de novo.`}</p>
+            <button type="button" class="reg-sair-sim" id="reg-sair-sim">${editando ? "Sair e descartar as mudanças" : "Sair e apagar"}</button>
+            <button type="button" class="reg-sair-nao" id="reg-sair-nao">${editando ? "Continuar editando" : "Continuar o cadastro"}</button>
+          </div>
+        </div>`;
 }
 
 // A prévia da ficha no fim do cadastro (pedido do Breno em 09/10/2026:
 // "quero que no final do cadastro consiga ver uma prévia da ficha com as
 // informações preenchidas e com opção de editar ou confirmar"), como o
 // "Revise o seu anúncio" do Airbnb e a prévia da propriedade do Booking: a
-// ficha montada com o que foi preenchido, cortada pelo plano, com os mesmos
-// blocos da página da academia. Cada bloco tem "Editar", que leva à parte; o
+// ficha montada com tudo o que foi preenchido, com os mesmos blocos da
+// página da academia (desde 21/10/2026, sem o corte do plano: o que ele
+// esconde vem depois de confirmar, na tela do plano). Cada bloco tem "Editar", que leva à parte; o
 // conteúdo é só para ver (inert). Confirmar fica na barra de baixo.
 function fichaDoFormulario(f) {
   const ativas = QUADRA_COMBOS.filter(q => (f.quadras || {})[q.key] > 0);
   const linha = { ...toRow({ ...f, pisos: [...new Set(ativas.map(q => q.piso))], cobertura: [...new Set(ativas.map(q => q.cobertura))] }),
     id: f.__editingId || "previa", endereco: montarEndereco(f), plano: f.__plano || "basico", status: "published",
     confirmada: isAdmin ? !!f.confirmada : !!(contaAcademia || f.__editingId) };
-  return { ...mapRow(linha), appAvg: 0, appCount: 0, distanceKm: null };
+  const c = mapRow(linha);
+  return { ...c, ...(c.integral || {}), appAvg: 0, appCount: 0, distanceKm: null };
 }
 // Desde 13/10/2026 (pedido do Breno, com print: "deixe uma prévia de como vai
 // ficar mesmo, como se já estivesse e podendo editar, mas de forma limpa a
 // opção, não muito amontoado"): a ficha no desenho da página da academia —
 // a galeria, o nome com o selo, as seções com os mesmos títulos — e só um
 // lápis pequeno no canto de cada parte, como a prévia do anúncio do Airbnb e o
-// perfil da empresa no Google. O que está vazio vira uma linha "+ Adicionar…";
-// o que o plano esconde, uma linha discreta.
+// perfil da empresa no Google. O que está vazio vira uma linha "+ Adicionar…".
 function previaDaFicha(f) {
   const c = fichaDoFormulario(f);
-  const plano = f.__plano || "basico";
-  const l = limitesDoPlano(plano);
-  const nomePlano = nomeDoPlano(plano);
   const passo = (id) => REG_PASSOS.findIndex(x => x.id === id);
   const nomes = { fotos: "Fotos", dados: "Nome e endereço", horario: "Sobre a academia e horário", precos: "Aulas, locação e preço", quadras: "Estrutura", cancelamento: "Cancelamento e reposição", chegada: "Como chegar", contato: "Contato" };
   // Links viram texto: na prévia, nada abre o WhatsApp nem conta clique.
@@ -17516,17 +17577,12 @@ function previaDaFicha(f) {
         ${extra}
       </section>`;
   const adicionar = (id, t) => `<button type="button" class="reg-previa-mais" data-previa="${id}" data-reg-passo="${passo(id)}">${icon('plus', 15, 'currentColor')} ${esc(t)}</button>`;
-  const fora = (t, id) => `<p class="reg-previa-fora"${id ? ` data-previa="${id}"` : ""}>${icon('olhoFechado', 14, '#8E6D25')} ${esc(t)}</p>`;
-  const comodidadesFora = (f.amenities || []).length - (c.amenities || []).length;
   const contatos = [
     c.phone ? `<span class="cta-btn cta-primary">${icon('phone', 15, '#fff')} Chamar no WhatsApp</span>` : "",
     c.site ? `<span class="cta-btn cta-secondary">${icon('globe', 15, 'var(--green)')} Ver site</span>` : "",
     c.instagram ? `<span class="cta-btn cta-secondary">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</span>` : "",
   ].join("");
-  const redesFora = l.contatos.includes("instagram") ? [] : [String(f.instagram || "").trim() && "Instagram", String(f.site || "").trim() && "site"].filter(Boolean);
-  const parteFora = (id, temPlano, preenchida, titulo, html, textoAdicionar) => !temPlano
-    ? (preenchida ? fora(`${nomes[id]}: preenchido, mas fica de fora no plano ${nomePlano}.`, id) : "")
-    : preenchida ? secao(id, titulo, html) : adicionar(id, textoAdicionar);
+  const parte = (id, preenchida, titulo, html, textoAdicionar) => preenchida ? secao(id, titulo, html) : adicionar(id, textoAdicionar);
   return `
     <div class="reg-previa" id="reg-previa">
       ${courtPhotos(c).length ? secao("fotos", "", htGaleria(c)) : adicionar("fotos", "Adicionar fotos")}
@@ -17538,13 +17594,12 @@ function previaDaFicha(f) {
         ${secao("horario", "Sobre a academia", `<p class="ht-about">${esc(descricaoAcademia(c))}</p>${htHorario(c)}`)}
         ${secao("precos", "Escolha o que você quer", htOpcoes(c))}
         ${(totalQuadras(c) || (c.amenities || []).length)
-          ? secao("quadras", "Estrutura", htComodidades(c), comodidadesFora > 0 ? fora(`${comodidadesFora} ${plural(comodidadesFora, "comodidade fica", "comodidades ficam")} de fora no plano ${nomePlano}.`) : "")
+          ? secao("quadras", "Estrutura", htComodidades(c))
           : adicionar("quadras", "Adicionar quadras e comodidades")}
-        ${parteFora("cancelamento", l.cancelamento, regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
-        ${parteFora("chegada", l.chegada, temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar", htAcesso(c), "Adicionar como chegar")}
+        ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
+        ${parte("chegada", temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar", htAcesso(c), "Adicionar como chegar")}
         ${contatos
-          ? secao("contato", "", `<div class="cta-col" style="margin-top:0">${contatos}</div>`,
-              redesFora.length ? fora(`${redesFora.length > 1 ? "Instagram e site ficam" : `O ${redesFora[0]} fica`} de fora no plano ${nomePlano}.`) : "")
+          ? secao("contato", "", `<div class="cta-col" style="margin-top:0">${contatos}</div>`)
           : adicionar("contato", "Adicionar o WhatsApp")}
       </div>
     </div>`;
@@ -17579,6 +17634,7 @@ function irParaPasso(k, conferir) {
   }
   state.regPasso = Math.max(0, Math.min(REG_PASSOS.length - 1, k));
   state.regPassoErro = "";
+  if (state.regPasso === REG_PASSOS.length - 1) state.regDaRevisao = false;
   if (state.registerStatus === "error") state.registerStatus = "idle";
   render();
   const folha = document.querySelector("#register-overlay .sheet");
@@ -21507,9 +21563,31 @@ function attachEvents() {
     }
     render();
   };
-  if (regClose) regClose.onclick = fecharCadastro;
+  // O X (e o toque fora) pergunta antes de apagar o que foi preenchido.
+  const pedirParaSair = (sair) => {
+    if (!cadastroTemOQuePerder(window.__form)) { sair(); return; }
+    state.regSairPergunta = true;
+    render();
+    const ficar = document.getElementById("reg-sair-nao");
+    if (ficar) ficar.focus();
+  };
+  if (regClose) regClose.onclick = () => pedirParaSair(fecharCadastro);
   if (regClose2) regClose2.onclick = fecharCadastro;
-  if (regOverlay) regOverlay.onclick = (e) => { if (e.target === regOverlay) { state.showRegister = false; render(); } };
+  if (regOverlay) regOverlay.onclick = (e) => { if (e.target === regOverlay) pedirParaSair(() => { state.showRegister = false; render(); }); };
+  const regSairSim = document.getElementById("reg-sair-sim");
+  if (regSairSim) regSairSim.onclick = () => {
+    state.regSairPergunta = false;
+    state.regForm = null;
+    window.__form = null;
+    state.showRegister = false;
+    render();
+    guardarRascunho();
+  };
+  const regSairNao = document.getElementById("reg-sair-nao");
+  const regSairFundo = document.getElementById("reg-sair-fundo");
+  const ficarNoCadastro = () => { state.regSairPergunta = false; render(); };
+  if (regSairNao) regSairNao.onclick = ficarNoCadastro;
+  if (regSairFundo) regSairFundo.onclick = (e) => { if (e.target === regSairFundo) ficarNoCadastro(); };
 
   const adminClose = document.getElementById("admin-close");
   const adminOverlay = document.getElementById("admin-overlay");
@@ -21705,8 +21783,15 @@ function attachEvents() {
   });
 
   document.querySelectorAll("[data-reg-passo]").forEach(el => {
-    el.onclick = () => irParaPasso(parseInt(el.dataset.regPasso, 10), false);
+    el.onclick = () => {
+      const k = parseInt(el.dataset.regPasso, 10);
+      // Da revisão (lápis, "+ Adicionar" ou aba), a parte volta para ela no "Confirmar".
+      if (regPassoAtual().i === REG_PASSOS.length - 1 && k < REG_PASSOS.length - 1) state.regDaRevisao = true;
+      irParaPasso(k, false);
+    };
   });
+  const regConfirmarRevisao = document.getElementById("reg-confirmar-revisao");
+  if (regConfirmarRevisao) regConfirmarRevisao.onclick = () => irParaPasso(REG_PASSOS.length - 1, true);
   // A aba da parte atual fica à vista na faixa de cima.
   const abaAtual = document.querySelector("#register-overlay .reg-secoes button.on");
   if (abaAtual) abaAtual.parentElement.scrollLeft = Math.max(0, abaAtual.offsetLeft - 22);
@@ -21724,7 +21809,7 @@ function attachEvents() {
   const regPlanoVoltar = document.getElementById("reg-plano-voltar");
   if (regPlanoVoltar) regPlanoVoltar.onclick = () => { state.regPlanoTela = false; render(); };
   document.querySelectorAll("[data-reg-plano-passo]").forEach(el => {
-    el.onclick = () => { state.regPlanoTela = false; irParaPasso(parseInt(el.dataset.regPlanoPasso, 10), false); };
+    el.onclick = () => { state.regPlanoTela = false; state.regDaRevisao = true; irParaPasso(parseInt(el.dataset.regPlanoPasso, 10), false); };
   });
   document.querySelectorAll("[data-reg-plano]").forEach(el => {
     el.onclick = () => {
@@ -21733,24 +21818,6 @@ function attachEvents() {
       enviarFormulario();
     };
   });
-  document.querySelectorAll("[data-reg-plano-aviso]").forEach(el => {
-    el.onclick = () => {
-      const plano = el.dataset.regPlanoAviso;
-      if (plano) window.__form.__planoEscolhido = plano;
-      else delete window.__form.__planoEscolhido;
-      // Escolheu: o aviso volta a ser uma linha. "Mudar de ideia" e
-      // "Desfazer" deixam aberto, com a escolha à vista.
-      if (plano) state.regAvisoAberto = null;
-      render();
-    };
-  });
-  const avisoDoPlano = document.getElementById("reg-plano-aviso");
-  if (avisoDoPlano) avisoDoPlano.ontoggle = () => {
-    state.regAvisoAberto = avisoDoPlano.open ? avisoDoPlano.dataset.avisoParte : null;
-    const mais = avisoDoPlano.querySelector(".reg-plano-aviso-mais");
-    if (mais) mais.textContent = avisoDoPlano.open ? "Fechar" : "Saiba mais";
-  };
-
   const consentBox = document.getElementById("f-consent");
   if (consentBox) consentBox.onchange = (e) => { window.__form.consent = e.target.checked; };
   const declaroBox = document.getElementById("f-declaro");
@@ -21807,6 +21874,7 @@ function attachEvents() {
       render();
     };
   });
+  arrastarFotos();
 }
 
 async function autoFillFromCep(rawCep) {

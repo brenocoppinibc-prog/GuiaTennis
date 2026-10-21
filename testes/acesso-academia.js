@@ -169,7 +169,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   await salvarFicha(page);
   await page.waitForTimeout(300);
   const tela = await texto(page, '#register-overlay');
-  ok(tela.includes('Quase lá: escolha o plano') && tela.includes('A regra de cancelamento e reposição'), 'ao salvar, mostra o que o Básico esconde (o cancelamento que a academia já tinha)');
+  ok(await page.isVisible('#reg-erro') && tela.includes('A regra de cancelamento e reposição'), 'ao salvar, mostra o que o Básico esconde (o cancelamento que a academia já tinha), como um aviso (21/10/2026)');
   await page.click('[data-reg-plano="basico"]');
   await page.waitForTimeout(900);
   const up = await page.evaluate(() => window.__ultimoUpdate || {});

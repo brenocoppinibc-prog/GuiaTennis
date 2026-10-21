@@ -1755,7 +1755,8 @@ cobra taxa e não fica no meio** da negociação.
     vista, com as partes vazias. Cada nome leva à parte. Na Revisão não
     aparece (ela já mostra cada parte).
 82. **O plano limita o que a academia faz e o que aparece; a ficha avisa
-    ali mesmo** (pedido de 09/10/2026: "ao uma academia mudar do Premium
+    ali mesmo** (o aviso em cada parte do cadastro saiu em 21/10/2026,
+    regra 139) (pedido de 09/10/2026: "ao uma academia mudar do Premium
     para o completo precisa limitar as ações dela e as informações que
     serão visualizadas para todos, todas as informações no básico completo
     podem ser preenchidas mas com aviso de que não estará visível na ficha
@@ -1799,7 +1800,8 @@ cobra taxa e não fica no meio** da negociação.
     conta", não listam mais as excluídas: um aviso leva à seção
     (`notaDasExcluidas`), e o aviso depois de excluir diz onde o e-mail
     ficou. Liberar avisa "… liberado: pode criar uma conta nova".
-84. **Prévia da ficha no fim do cadastro** (pedido de 09/10/2026: "quero
+84. **Prévia da ficha no fim do cadastro** (desde 21/10/2026, regra 139,
+    sem o corte nem as linhas do plano) (pedido de 09/10/2026: "quero
     que no final do cadastro consiga ver uma prévia da ficha com as
     informações preenchidas e com opção de editar ou confirmar"), como o
     "Revise o seu anúncio" do Airbnb. A última parte ("Confira a prévia da
@@ -1948,7 +1950,8 @@ cobra taxa e não fica no meio** da negociação.
     Testes: `testes/volta-e-resumo.js` e a seção 27 do `banco-emails.py`.
 88. **Cadastro da ficha: fotos grandes, aviso do plano numa linha, o que
     falta só ao concluir, o ponto no mapa e as comodidades do Básico**
-    (prints de 10/10/2026, cinco pedidos):
+    (o aviso do plano e a escolha das comodidades foram para a tela depois
+    de confirmar em 21/10/2026, regra 139) (prints de 10/10/2026, cinco pedidos):
     - **"quero que as fotos apareçam maiores"** (`regFotosHtml`), como o
       "Fotos do anúncio" do Airbnb: a primeira ocupa a largura, marcada
       "Capa"; as outras em duas colunas (4:3), com "Usar como capa" (coloca em
@@ -3130,6 +3133,59 @@ cobra taxa e não fica no meio** da negociação.
     os usuários do site" (21 de outubro de 2026). Texto novo segue a regra;
     "app" só para o que é app de verdade (app de assinatura fitness, o
     navegador do app do Instagram). Teste: `ficha-basica.js`.
+139. **Cadastro da ficha sem plano no meio; o plano vem depois de
+    confirmar, como uma página de erro** (pedidos de 21/10/2026, com
+    prints do celular). (a) **Nada de plano no cadastro** ("tire o que
+    aparecer de planos no cadastro"): saíram o aviso "No Básico, …/Você
+    escolheu o plano …" de cada parte (`avisoDoPlanoNaParte`,
+    `PARTES_DO_PLANO`, regras 82 e 88), o "Fora da ficha no Básico" em cima
+    das fotos, a escolha das comodidades que aparecem nas Quadras e as
+    linhas "fica de fora no plano" da prévia: a **prévia mostra tudo o que
+    foi preenchido** (`fichaDoFormulario` usa o `integral`, sem o corte do
+    plano), com um lápis em cada parte. (b) **Depois de confirmar a
+    revisão**, quem não é admin vê a tela do plano (`precisaEscolherPlano`,
+    como antes); com algo escondido, ela é **um aviso, como uma página de
+    erro** ("quero que isso apareça depois de confirmar todos os dados como
+    uma página de erro e ali aparecer sobre os planos também"), como o "Este
+    recurso não está no seu plano" da Shopify e do Canva: ícone do olho
+    riscado num círculo dourado, "N partes não vão aparecer na ficha", "No
+    plano Básico, os jogadores não veem o que você preencheu aqui embaixo.
+    Nada se perde…", a lista (com "Escolher quais vão primeiro" nas fotos e,
+    nas comodidades, a escolha das que aparecem, `regDestaquesHtml`), "Para
+    a ficha receber mais jogadores", **"Para mostrar tudo, mude de plano"**
+    com Premium e Completo e "Continuar no Básico sem essas partes". Sem
+    nada escondido, segue "Quase lá: escolha o plano". (c) **Lápis da
+    revisão → "Confirmar"** ("quando salvar o dado que gostaria de editar
+    aparecer o botão verde embaixo confirmar e já voltar para a revisão"):
+    vindo da revisão (lápis, "+ Adicionar", aba) ou de um link da tela do
+    plano, a parte mostra só o "Confirmar" verde (`state.regDaRevisao`,
+    `#reg-confirmar-revisao`), que confere o obrigatório da parte e volta
+    para a revisão, como o "Salvar" de cada parte do Airbnb; o "Editar" de
+    baixo segue parte por parte com "Continuar". (d) **O X pergunta antes
+    de apagar** ("aparecer algum push para confirmar… e avisar do que pode
+    acontecer"), como o "Descartar publicação?" do Instagram: só quando há o
+    que perder (academia nova com algo preenchido; edição com alguma mudança,
+    comparando `assinaturaDoFormulario` com a de quando abriu). "Sair do
+    cadastro? O que você preencheu da <academia> vai ser apagado e não
+    volta…" com "Sair e apagar" (vermelho) e "Continuar o cadastro" (com o
+    foco); na edição, "Sair sem salvar?… A ficha continua como estava" com
+    "Sair e descartar as mudanças" e "Continuar editando". Vale para o X, o
+    toque fora da folha e a tela do plano; a tela de pronto fecha direto.
+    Apagar zera o `window.__form` (o link da parte e o rascunho da aba não
+    trazem de volta). (e) **Fotos em qualquer ordem, arrastando** ("faça que
+    é possível ordenar as fotos arrastando"), como o Airbnb e o Instagram:
+    "Segure e arraste uma foto para mudar a ordem. A primeira é a capa."
+    (`arrastarFotos`): no toque, segura 0,3 s (deslizar direto é rolar); no
+    mouse, basta arrastar; a foto segue o dedo e a de baixo fica marcada;
+    "Usar como capa" continua. (f) **Cancelamento**: "Mesma regra para tudo
+    / Aula e locação diferentes" vem primeiro, com espaço e uma linha
+    (`.pol-modos`), antes da explicação e das horas ("deixe um pouco mais
+    separado isso do restante"). (g) Saiu "Com o seu e-mail confirmado, a
+    academia entra no ar quando você finalizar." do começo do cadastro do
+    Parceiros (fica "Os seus dados de contato já vão junto…"). Testes:
+    `cadastro-sair-e-revisao.js` (novo), `plano-na-ficha.js`,
+    `plano-ao-finalizar.js`, `previa-da-ficha.js` e
+    `fotos-ponto-e-aviso.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4133,7 +4189,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos cadastro-sair-e-revisao comparacao-tudo estacionamento ficha-topo-e-sobre melhores-avaliadas; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 node testes/pagamento.mjs
 ```
@@ -4350,10 +4406,16 @@ as 133 do `banco-acesso.py` no banco e login locais.
   conta; caminho estranho do banco não volta); sem conta fica na tela e,
   ao entrar, passa para a conta; banco sem a tabela; jogadores e admin
   não guardam; Privacidade.
-- `plano-na-ficha.js` — regras 81 e 82: "Continuar" à direita e o que
-  falta (um toque leva à parte); o aviso do plano em cada parte, contando o
-  que fica de fora; "Quero o Completo" (pedido ao salvar, sem a tela do
-  fim) e "Manter o Básico" ("Mudar de ideia"); Completo sem aviso;
+- `cadastro-sair-e-revisao.js` — regra 139: o X pergunta antes de apagar
+  (só com algo preenchido ou mudado; "Continuar" mantém; apagar zera o
+  formulário), o toque fora e a tela do plano também perguntam, a escolha
+  de aula e locação separada no cancelamento e o começo sem "entra no ar
+  quando você finalizar".
+- `plano-na-ficha.js` — regras 81, 82 e 139: "Continuar" à direita e o que
+  falta (um toque leva à parte); nenhuma parte fala de plano; depois de
+  confirmar, "4 partes não vão aparecer na ficha" com a lista, a escolha das
+  comodidades e os planos; "Quero o Completo" e "Continuar no Básico sem
+  essas partes"; Completo salva direto;
   Promoções guardadas fora do Premium; Pessoas acima do limite; o admin
   confirma ao baixar o plano e não ao subir.
 - `chat-de-ajuda.js` — regra 77: abre pela folha "Fale com a gente", pelo

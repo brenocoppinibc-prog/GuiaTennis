@@ -6,6 +6,9 @@
 // 4) "a localização no mapa não está exata conforme o número da rua";
 // 5) "em comodidades que vão aparecer se não tiver o completo, dê a opção
 //    para escolher quais serão apresentadas".
+// Em 21/10/2026: "faça que é possível ordenar as fotos arrastando" e "tire o
+// que aparecer de planos no cadastro" (o aviso do plano e a escolha das
+// comodidades foram para a tela depois de confirmar a revisão).
 const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
@@ -29,7 +32,7 @@ const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ
   await page.evaluate(() => moverPontoDaFicha(-23.5612, -46.6815));
   ok((await texto(page, '#reg-ponto-s')) === '✓ Ponto ajustado por você.', 'arrastou: "Ponto ajustado por você"');
 
-  // 1) Fotos grandes: a capa ocupa a largura; as que o Básico não mostra dizem isso.
+  // 1) Fotos grandes: a capa ocupa a largura; nada do plano em cima delas.
   await page.evaluate((foto) => { window.__form.photos = [1, 2, 3, 4, 5].map(() => foto); }, foto);
   await irParte(page, 'fotos');
   const fotos = await page.evaluate(() => {
@@ -39,29 +42,61 @@ const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ
   });
   ok(fotos.n === 5 && fotos.capa >= fotos.largura - 2 && fotos.outra >= fotos.largura / 2 - 12 && fotos.outra > 150,
     'a capa ocupa a largura e as outras ficam em duas colunas, bem maiores — ' + JSON.stringify(fotos));
-  ok(fotos.tag.includes('Capa') && fotos.fora.length === 2 && fotos.fora.every(t => t.includes('Fora da ficha no Básico')), 'a primeira é a capa; a 4ª e a 5ª dizem que ficam fora no Básico');
-  await page.evaluate(() => { window.__form.photos[3] = window.__form.photos[3] + '#quarta'; render(); });
+  ok(fotos.tag.includes('Capa') && fotos.fora.length === 0 && !/plano|Básico/.test(await texto(page, '#register-overlay .reg-passo')), 'a primeira é a capa; nada do plano em cima das fotos (21/10/2026)');
+  ok((await texto(page, '.reg-fotos-dica')) === 'Segure e arraste uma foto para mudar a ordem. A primeira é a capa.', 'diz que dá para arrastar');
+  await page.evaluate(() => { window.__form.photos = window.__form.photos.map((p, i) => p + '#' + (i + 1)); render(); });
   await page.click('[data-photo-capa="3"]');
-  ok(await page.evaluate(() => window.__form.photos[0].endsWith('#quarta')), '"Usar como capa" põe a foto em primeiro');
+  const ordem = () => page.evaluate(() => window.__form.photos.map(p => p.split('#')[1]).join(''));
+  ok((await ordem()) === '41235', '"Usar como capa" põe a foto em primeiro — ' + await ordem());
 
-  // 2) O aviso do plano: uma linha; "Saiba mais" abre a explicação e a escolha.
-  const fechado = await page.evaluate(() => { const d = document.getElementById('reg-plano-aviso'); return { open: d.open, h: d.getBoundingClientRect().height, t: d.innerText.replace(/\s+/g, ' ').trim() }; });
-  ok(!fechado.open && fechado.h < 60 && fechado.t === 'No Básico, a ficha mostra 3 fotos Saiba mais', 'fechado, o aviso é uma linha só — ' + JSON.stringify(fechado));
-  await page.click('#reg-plano-aviso summary');
-  await page.waitForTimeout(120);
-  ok(await page.isVisible('[data-reg-plano-aviso="completo"]') && (await texto(page, '#reg-plano-aviso .reg-plano-aviso-mais')) === 'Fechar', 'um toque abre a explicação, com "Quero o Completo"');
-  await irParte(page, 'cancelamento');
-  ok(await page.evaluate(() => !document.getElementById('reg-plano-aviso').open), 'em outra aba, o aviso começa fechado');
-  for (const [parte, linha] of [['quadras', 'No Básico, a ficha mostra 3 comodidades'], ['contato', 'No Básico, a ficha mostra só o WhatsApp'],
-    ['cancelamento', 'No Básico, o cancelamento não aparece na ficha'], ['chegada', 'No Básico, como chegar não aparece na ficha']]) {
-    await irParte(page, parte);
-    ok((await texto(page, '#reg-plano-aviso summary')) === linha + ' Saiba mais', `${parte}: o aviso em uma linha — ` + await texto(page, '#reg-plano-aviso summary'));
-  }
+  // Arrastar com o mouse: a 5ª vai para o lugar da 2ª.
+  const centro = (i) => page.evaluate((i) => { const r = document.querySelectorAll('.reg-foto')[i].getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 3 }; }, i);
+  let de = await centro(4), para = await centro(1);
+  await page.mouse.move(de.x, de.y);
+  await page.mouse.down();
+  await page.mouse.move(de.x + 20, de.y - 10, { steps: 3 });
+  await page.mouse.move(para.x, para.y, { steps: 8 });
+  ok(await page.evaluate(() => !!document.querySelector('.reg-foto-fantasma') && document.querySelectorAll('.reg-foto.alvo').length === 1 && !!document.querySelector('.reg-foto.arrastando')),
+    'arrastando: a foto segue o mouse e a de baixo fica marcada');
+  await page.mouse.up();
+  await page.waitForTimeout(150);
+  ok((await ordem()) === '45123' && !(await page.$('.reg-foto-fantasma')), 'soltou: a 5ª entra no lugar da 2ª — ' + await ordem());
 
-  // 5) Comodidades: escolher as 3 que aparecem no Básico.
+  // No toque: segurar um instante e arrastar; deslizar direto é rolar a tela.
+  const toque = (tipo, x, y) => page.evaluate(([tipo, x, y]) => {
+    const alvo = document.elementFromPoint(x, y) || document.body;
+    alvo.dispatchEvent(new PointerEvent(tipo, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true }));
+  }, [tipo, x, y]);
+  de = await centro(2); para = await centro(0);
+  await toque('pointerdown', de.x, de.y);
+  await toque('pointermove', de.x, de.y + 30);
+  await toque('pointermove', para.x, para.y);
+  await toque('pointerup', para.x, para.y);
+  await page.waitForTimeout(100);
+  ok((await ordem()) === '45123', 'deslizar o dedo sem segurar não muda a ordem (é a tela rolando)');
+  de = await centro(2);
+  await toque('pointerdown', de.x, de.y);
+  await page.waitForTimeout(400);
+  ok(await page.evaluate(() => !!document.querySelector('.reg-foto-fantasma')), 'segurou: a foto solta da grade para arrastar');
+  await toque('pointermove', para.x, para.y + 20);
+  await toque('pointermove', para.x, para.y);
+  await toque('pointerup', para.x, para.y);
+  await page.waitForTimeout(150);
+  ok((await ordem()) === '14523', 'soltou em cima da capa: a foto vira a capa — ' + await ordem());
+
+  // 2) Nenhuma parte tem o aviso do plano (21/10/2026).
+  let algum = [];
+  for (const parte of ['quadras', 'contato', 'cancelamento', 'chegada']) { await irParte(page, parte); if (await page.$('#reg-plano-aviso')) algum.push(parte); }
+  ok(!algum.length, 'nenhuma parte tem o aviso do plano — ' + algum.join());
+
+  // 5) Comodidades: escolher as 3 que aparecem no Básico, na tela depois de confirmar.
   await irParte(page, 'quadras');
-  ok(!(await page.$('#reg-destaques')), 'com até 3 marcadas, não há o que escolher');
   for (const k of ['wifi', 'vestiario', 'loja']) await page.click(`.reg-amenity[data-amenity="${k}"]`);
+  ok(!(await page.$('#reg-destaques')), 'nas Quadras, a escolha não aparece mais, mesmo com 5 marcadas');
+  await irParte(page, 'revisar');
+  await salvarFicha(page);
+  await page.waitForTimeout(300);
+  ok(await page.isVisible('#reg-erro') && await page.isVisible('#reg-destaques'), 'depois de confirmar, a escolha vem junto do que o Básico esconde');
   let escolhidas = await page.evaluate(() => [...document.querySelectorAll('.reg-destaque.active')].map(b => b.dataset.destaque).join());
   ok(escolhidas === 'raquete,estacionamento_gratuito,wifi' && (await texto(page, '.reg-destaques-n')) === '3 de 3 escolhidas.', 'com 5 marcadas, aparecem as 3 primeiras, para trocar — ' + escolhidas);
   await page.click('.reg-destaque[data-destaque="loja"]');
@@ -71,14 +106,22 @@ const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ
   await page.click('.reg-destaque[data-destaque="loja"]');
   escolhidas = await page.evaluate(() => window.__form.amenities.slice(0, 3).join());
   ok(escolhidas === 'estacionamento_gratuito,wifi,loja', 'as escolhidas vão para o começo da lista (a ficha mostra as primeiras) — ' + escolhidas);
+  ok((await texto(page, '.reg-plano-perde li')).includes('Ficam de fora: Empréstimo de raquete, Vestiário'), 'e a lista diz quais ficam de fora — ' + await texto(page, '.reg-plano-perde li'));
+  await page.click('#reg-plano-voltar');
+  await page.waitForTimeout(150);
+  await page.click('.reg-previa [data-previa="quadras"] .reg-previa-lapis');
+  await page.waitForTimeout(150);
   await page.click('.reg-amenity[data-amenity="wifi"]');
   ok(await page.evaluate(() => !window.__form.__destaques.includes('wifi') && window.__form.amenities.length === 4), 'desmarcar a comodidade tira das escolhidas');
   await page.click('.reg-amenity[data-amenity="wifi"]');
   ok(await page.evaluate(() => window.__form.__destaques.includes('wifi')), 'marcar de novo, com vaga, entra nas escolhidas');
 
   // Salvar: o ponto arrastado e as comodidades escolhidas vão para o banco.
-  await page.evaluate(() => { window.__form.__planoEscolhido = 'basico'; });
+  await page.click('#reg-confirmar-revisao');
+  await page.waitForTimeout(150);
   await salvarFicha(page);
+  await page.waitForTimeout(300);
+  await page.click('.reg-plano-basico');
   await page.waitForTimeout(900);
   const salvo = await page.evaluate(() => { const a = window.__db.academias.find(x => x.id === 'a1'); return { lat: a.lat, lng: a.lng, am: a.amenities.slice(0, 3).join(), ficha: (state.allCourts.find(x => x.id === 'a1') || {}).amenities.slice().sort().join() }; });
   ok(salvo.lat === -23.5612 && salvo.lng === -46.6815, 'salvou o ponto arrastado — ' + salvo.lat + ',' + salvo.lng);

@@ -1343,6 +1343,7 @@
   .reg-estac-horas { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 14px; color: var(--text); }
   .reg-estac-horas .form-field { width: 72px; text-align: center; }
   .reg-estac-falta { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+  .reg-estac-falta.erro { color: var(--red); font-weight: 600; }
   .pol-linha { display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; }
   .pol-linha + .pol-linha { border-top: 1px solid var(--border); }
   .pol-linha-ic { flex-shrink: 0; display: flex; margin-top: 1px; }
@@ -16694,14 +16695,23 @@ function regEstacionamentoHtml(f) {
   const opc = (v, t) => `<button type="button" class="chip small reg-estac-regra ${r.tipo === v ? "active" : ""}" data-v="${v}" aria-pressed="${r.tipo === v}">${t}</button>`;
   return `
         <div class="reg-estac" id="reg-estac">
-          <p class="field-label">Estacionamento grátis e pago: como funciona?</p>
+          <p class="field-label">Estacionamento grátis e pago: como funciona?${isAdmin ? "" : `<span class="obrig">*</span>`}</p>
           <div class="chip-row">${ESTAC_REGRAS.map(x => opc(x.key, esc(x.label))).join("")}</div>
           ${r.tipo === "tempo" ? `
             <label class="reg-estac-horas">Grátis nas primeiras
               <input class="form-field" id="f-estac-horas" type="number" min="1" max="12" inputmode="numeric" value="${esc(r.horas || "")}" style="margin-top:0" />
               horas</label>` : ""}
-          ${!r.tipo || r.tipo === "misto" ? `<p class="reg-estac-falta">${icon('warning', 13, 'var(--gold)')} Escolha como funciona: é o que o jogador vai ler na ficha.</p>` : ""}
+          ${!r.tipo || r.tipo === "misto"
+            ? `<p class="reg-estac-falta ${state.regFaltaVisivel || state.regPassoErro ? "erro" : ""}">${icon('warning', 13, state.regFaltaVisivel || state.regPassoErro ? 'var(--red)' : 'var(--gold)')} Obrigatório com os dois marcados: escolha como funciona, é o que o jogador vai ler na ficha.</p>`
+            : r.tipo === "tempo" && !r.horas
+              ? `<p class="reg-estac-falta ${state.regFaltaVisivel || state.regPassoErro ? "erro" : ""}">${icon('warning', 13, state.regFaltaVisivel || state.regPassoErro ? 'var(--red)' : 'var(--gold)')} Diga por quantas horas é grátis.</p>` : ""}
         </div>`;
+}
+function estacionamentoSemPorque(f) {
+  const am = (f && f.amenities) || [];
+  if (!am.includes("estacionamento_gratuito") || !am.includes("estacionamento_pago")) return false;
+  const r = (f.acesso || {}).estacionamentoRegra || {};
+  return !r.tipo || r.tipo === "misto" || (r.tipo === "tempo" && !r.horas);
 }
 function escolherRegraDoEstacionamento(f, regra) {
   f.acesso = { ...(f.acesso || {}) };
@@ -16853,6 +16863,10 @@ function regFaltas(f, passo) {
     if (!tem(f.name)) falta.push("nome");
     if (regPedeTudo(f) && !(tem(f.address) && tem(f.numero) && tem(f.bairro) && tem(f.cidade))) falta.push("endereço completo");
   }
+  // Grátis e pago marcados: dizer como funciona é obrigatório, também na
+  // edição (pedido do Breno em 21/10/2026: "deixe obrigatório explicar o
+  // porquê de dois tipos de estacionamento"). O admin segue só com o nome.
+  if (passo === "quadras" && !isAdmin && estacionamentoSemPorque(f)) falta.push("como funciona o estacionamento grátis e pago");
   if (!regPedeTudo(f)) return falta;
   if (passo === "precos" && !(f.modalidades || []).length) falta.push("modalidade");
   if (passo === "quadras" && !QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0)) falta.push("quantidade de quadras");
@@ -21645,6 +21659,7 @@ function attachEvents() {
     const h = Math.round(Number(estacHoras.value));
     escolherRegraDoEstacionamento(window.__form, { tipo: "tempo", horas: h >= 1 && h <= 12 ? h : "" });
   };
+  if (estacHoras) estacHoras.onchange = () => { state.regPassoErro = ""; render(); };
   document.querySelectorAll(".reg-amenity").forEach(el => {
     el.onclick = () => {
       const k = el.dataset.amenity;
@@ -22053,7 +22068,8 @@ function enviarFormulario() {
   if (!state.regPlanoTela && regPassoAtual().i < REG_PASSOS.length - 1) { irParaPasso(REG_PASSOS.length - 1, false); return; }
   // Faltando o obrigatório, o envio segue e cobra o que falta, como antes;
   // a tela do plano vem quando o cadastro está pronto para sair.
-  const faltaObrigatorio = regPedeTudo(f) && REG_PASSOS.some(x => regFaltas(f, x.id).length);
+  const faltaObrigatorio = (regPedeTudo(f) && REG_PASSOS.some(x => regFaltas(f, x.id).length))
+    || (!!f.__editingId && regFaltas(f, "quadras").length > 0);
   if (precisaEscolherPlano(f) && !f.__planoEscolhido && !faltaObrigatorio) {
     state.regPlanoTela = true;
     render();
@@ -22097,6 +22113,14 @@ async function doRegisterSubmit() {
       state.registerError = "O nome não pode ficar em branco.";
       state.registerStatus = "error";
       state.regPasso = 0;
+      state.regFaltaVisivel = true;
+      render();
+      return;
+    }
+    if (regFaltas(f, "quadras").length) {
+      state.registerError = "Conte como funciona o estacionamento grátis e pago.";
+      state.registerStatus = "error";
+      state.regPasso = REG_PASSOS.findIndex(x => x.id === "quadras");
       state.regFaltaVisivel = true;
       render();
       return;

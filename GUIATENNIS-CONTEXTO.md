@@ -3052,7 +3052,15 @@ cobra taxa e não fica no meio** da negociação.
     (`estacionamentoRotulo`, `estacionamentoDetalhe`); grátis com regra não
     vira o selo "Estacionamento grátis" do cartão. (Entre um pedido e outro,
     por algumas horas, foi um chip só, "Estacionamento"; o que foi gravado
-    assim volta a ter os dois.) Teste: `estacionamento.js`.
+    assim volta a ter os dois.) **Obrigatório** (pedido seguinte: "deixe
+    obrigatório explicar o porquê de dois tipos de estacionamento"): com os
+    dois marcados, sem dizer como funciona (ou, em "por um tempo", sem as
+    horas), "Continuar" não passa ("Preencha: como funciona o
+    estacionamento grátis e pago.") e salvar não salva ("Conte como funciona
+    o estacionamento grátis e pago.", de volta à parte Quadras), também na
+    edição e antes da tela do plano; o título ganha o * e o aviso fica
+    vermelho (`estacionamentoSemPorque`, em `regFaltas`). O admin segue
+    publicando só com o nome. Teste: `estacionamento.js`.
 134. **"Melhores avaliadas" de verdade** (pedido de 21/10/2026: "nas melhores
     avaliadas não estão as melhores avaliadas realmente"). Antes, a mais
     perto vinha antes da melhor nota (uma 3,0 na frente de uma 4,8) e as
@@ -4874,7 +4882,8 @@ nenhuma falha. Depois das regras 133 e 134 (seções 39 e 40 do PR, passos
 em `ficha-topo-e-sobre.js`, mostrou o estacionamento repetido quando os
 dois chegam sem passar pelo `mapRow`; corrigida com `comodidadesNaOrdem`). Depois da regra 133 revista e das regras 135 a 137 (seções 39, 41 a 43
 do PR, passos 55 a 63): **1.589 verificações** nos 57 arquivos (novo:
-`comparacao-tudo.js`), nenhuma falha. Testes: a última
+`comparacao-tudo.js`), nenhuma falha. Com o estacionamento obrigatório (passo 64):
+**1.593 verificações**, nenhuma falha. Testes: a última
 bateria completa deu **1.523 verificações, nenhuma falha** (53 arquivos
 do navegador; a única falha, texto antigo em `buscas-e-avisos.js`, foi
 corrigida e rodada de novo), **4 no `onde.mjs`, 20 no `pagamento.mjs`** e

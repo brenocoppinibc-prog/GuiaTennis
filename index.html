@@ -141,7 +141,9 @@
   .gt-push { position: fixed; top: 12px; left: 50%; z-index: 4000; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 32px); padding: 11px 12px 11px 14px; border-radius: 14px; background: var(--green); color: #fff; font-size: 14px; font-weight: 600; line-height: 1.35; box-shadow: 0 10px 30px rgba(0,0,0,.18); transform: translateX(-50%); animation: gt-push-entra .32s ease-out; transition: opacity .35s, transform .35s; }
   .gt-push.sai { opacity: 0; transform: translate(-50%, -16px); }
   .gt-push-ic { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.18); animation: gt-ponto 1.2s ease-in-out 3; }
-  .gt-push-acao { flex-shrink: 0; padding: 6px 10px; border: 1px solid rgba(255,255,255,.55); border-radius: 999px; background: none; color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .gt-push-acao { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 0; border: 0; background: none; color: #fff; font: inherit; text-align: left; cursor: pointer; }
+  .gt-push-acao .gt-push-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gt-push-ver { text-decoration: underline; text-underline-offset: 2px; font-weight: 700; }
   .gt-push-x { flex-shrink: 0; padding: 4px 6px; border: 0; background: none; color: rgba(255,255,255,.8); font: inherit; cursor: pointer; }
   @keyframes gt-push-entra { from { opacity: 0; transform: translate(-50%, -24px); } to { opacity: 1; transform: translate(-50%, 0); } }
   @keyframes gt-piscar { 0%, 100% { box-shadow: 0 0 0 0 rgba(193, 154, 61, 0); } 50% { box-shadow: 0 0 0 7px rgba(193, 154, 61, .32); } }
@@ -373,7 +375,6 @@
   .cmp-titulo { font-size: 26px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 10px; }
   .cmp-titulo-ic { display: inline-flex; flex-shrink: 0; }
   .cmp-limpar { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin: 14px auto 0; }
-  .cmp-vaga-mais svg { display: block; }
   .cmp-sub-topo { font-size: 14px; color: var(--muted); margin: 6px 0 0; line-height: 1.45; }
   .cmp-vazio { font-size: 14px; color: var(--muted); background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 18px; text-align: center; }
   .cmp-add-lista { display: grid; gap: 10px; }
@@ -3898,7 +3899,11 @@ function mostrarPush(texto, tipo = "ok", acao) {
   el.className = "gt-push" + (tipo === "ok" ? "" : " " + tipo);
   el.setAttribute("role", "status");
   const ic = (acao && acao.ic) || (tipo === "ok" ? 'check' : 'info');
-  el.innerHTML = `<span class="gt-push-ic">${icon(ic, 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}</span>${acao ? `<button type="button" class="gt-push-acao">${esc(acao.t)}</button>` : ""}<button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
+  // Com atalho, o aviso é uma linha só e todo ele leva até lá (pedido do
+  // Breno em 21/10/2026: "unifique isso").
+  el.innerHTML = acao
+    ? `<button type="button" class="gt-push-acao"><span class="gt-push-ic">${icon(ic, 15, '#fff')}</span><span class="gt-push-t">${esc(texto)} · <span class="gt-push-ver">${esc(acao.t)}</span></span></button><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`
+    : `<span class="gt-push-ic">${icon(ic, 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}</span><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
   el.querySelector(".gt-push-x").onclick = () => el.remove();
   if (acao) el.querySelector(".gt-push-acao").onclick = () => { el.remove(); acao.fn(); };
   document.body.appendChild(el);
@@ -5673,8 +5678,8 @@ function tabelaComparacao(courts) {
         <div class="ct-topo ct-canto">
           ${courts.length < COMPARE_MAX ? `
             <button type="button" class="cmp-vaga ct-escolher" data-cmp-abrir="1" aria-label="Escolher mais uma academia">
-              <span class="cmp-vaga-mais">${icon('comparar', 26, 'var(--green)')}</span>
-              <span class="cmp-vaga-add">+ Escolher</span>
+              <span class="cmp-vaga-mais">+</span>
+              <span class="cmp-vaga-add">Escolher</span>
             </button>` : ""}
         </div>
         ${courts.map(c => `<div class="ct-topo">${cartaoDaColuna(c)}</div>`).join("")}
@@ -5708,7 +5713,7 @@ function renderComparePage() {
     ${renderCabecalho()}
     <div class="cmp-pagina">
       <h2 class="cmp-titulo display"><span class="cmp-titulo-ic">${icon('comparar', 28, 'var(--green)')}</span>Comparar academias</h2>
-      <p class="cmp-sub-topo">Veja lado a lado o que muda entre elas: nota, preço, localização, estrutura, estacionamento, horário, cancelamento e tudo o que está na ficha.</p>
+      <p class="cmp-sub-topo">Veja lado a lado o que muda entre elas: nota, preço, estrutura e tudo o que está na ficha.</p>
       ${!podeComparar ? vagasComparacao(courts) : ""}
       ${!podeComparar ? `
         <p class="cmp-dica">${courts.length === 0
@@ -5936,8 +5941,8 @@ function vagasComparacao(courts) {
     if (!c) {
       vagas.push(`
         <button type="button" class="cmp-vaga" data-cmp-abrir="1" aria-label="Escolher academia">
-          <span class="cmp-vaga-mais">${icon('comparar', 26, 'var(--green)')}</span>
-          <span class="cmp-vaga-add">+ Escolher</span>
+          <span class="cmp-vaga-mais">+</span>
+          <span class="cmp-vaga-add">Escolher</span>
         </button>`);
       continue;
     }
@@ -21134,8 +21139,8 @@ function attachEvents() {
       // No topo da ficha o botão é só o ícone no celular: o aviso confirma.
       if (el.dataset.compareAviso !== undefined) {
         const n = state.compareList.length;
-        if (isComparing(el.dataset.compare)) mostrarPush(`Na comparação (${n})`, "ok", { t: n >= COMPARE_MIN ? "Comparar ›" : "Ver comparação ›", ic: 'comparar', fn: goComparar });
-        else mostrarPush("Tirada da comparação.", "ok", { t: "Ver comparação ›", ic: 'comparar', fn: goComparar });
+        if (isComparing(el.dataset.compare)) mostrarPush(`Na comparação (${n})`, "ok", { t: n >= COMPARE_MIN ? "Comparar ›" : "Ver ›", ic: 'comparar', fn: goComparar });
+        else mostrarPush("Tirada da comparação", "ok", { t: "Ver ›", ic: 'comparar', fn: goComparar });
       }
     };
   });

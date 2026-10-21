@@ -3074,16 +3074,19 @@ cobra taxa e não fica no meio** da negociação.
     a ordem das academias?": as "Melhores avaliadas" seguem só a nota dos
     jogadores. Teste: `melhores-avaliadas.js`.
 135. **Comparação: atalho no aviso, "Limpar" em vermelho, "Localização" e o
-    ícone em todo lugar** (pedido de 21/10/2026, com print). O aviso "Na
-    comparação (N)" traz o atalho **"Ver comparação ›"** (ou "Comparar ›"
-    com 2 ou mais; `mostrarPush(texto, tipo, { t, fn, ic })`, como o "Ver"
-    do "Salvo em Favoritos" do Airbnb). **"Limpar comparação"** em
+    ícone em todo lugar** (pedido de 21/10/2026, com print). O aviso vira
+    **uma linha só, toda ela o atalho** (pedido seguinte, com print:
+    "unifique isso"): "Na comparação (1) · Ver ›" ("Comparar ›" com 2 ou
+    mais; `mostrarPush(texto, tipo, { t, fn, ic })`, como o "Salvo em
+    Favoritos · Ver" do Airbnb). **"Limpar comparação"** em
     vermelho, com o lixo (`cta-danger`), já com uma academia. A seção "Onde
     fica" virou **"Localização"**. O subtítulo termina com tudo: "Veja lado
-    a lado o que muda entre elas: nota, preço, localização, estrutura,
-    estacionamento, horário, cancelamento e tudo o que está na ficha." O
-    **ícone da comparação** (os dois quadrinhos do topo da ficha, `comparar`)
-    em todo lugar sobre comparar: título da página, "+ Escolher", o botão
+    a lado o que muda entre elas: nota, preço, estrutura e tudo o que está
+    na ficha." (encurtado no pedido seguinte: "pode deixar um pouco menor
+    essa descrição"). O **ícone da comparação** (os dois quadrinhos do topo
+    da ficha, `comparar`) em todo lugar sobre comparar: título da página
+    (o "+ Escolher" ficou como era, só com o +: "no escolher não tinha
+    símbolo, tire"), o botão
     de cada academia no seletor (verde cheio quando já está), "Comparar N",
     o aviso, o menu ("Comparar academias") e o filtro "Comparação"; o chat
     explica o ícone. Teste: `comparacao-tudo.js`.

@@ -17,8 +17,11 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(200);
   await page.click('.courtbar [data-compare]');
   await page.waitForTimeout(150);
-  let push = await page.evaluate(() => ({ t: document.querySelector('.gt-push')?.innerText.replace(/\s+/g, ' ') || '', acao: document.querySelector('.gt-push .gt-push-acao')?.textContent || '', ic: !!document.querySelector('.gt-push .gt-push-ic svg rect') }));
-  ok(push.t.includes('Na comparação (1)') && push.acao === 'Ver comparação ›' && push.ic, 'o aviso traz o atalho "Ver comparação ›" e o ícone da comparação — ' + push.t);
+  let push = await page.evaluate(() => {
+    const t = document.querySelector('.gt-push .gt-push-t');
+    return { t: document.querySelector('.gt-push')?.innerText.replace(/\s+/g, ' ').trim() || '', ic: !!document.querySelector('.gt-push .gt-push-acao .gt-push-ic svg rect'), umaLinha: !!t && t.getBoundingClientRect().height < 26 };
+  });
+  ok(push.t.startsWith('Na comparação (1) · Ver ›') && push.ic && push.umaLinha, 'o aviso numa linha só, com o ícone e o "Ver ›" — ' + push.t);
   await page.click('.gt-push .gt-push-acao');
   await page.waitForTimeout(250);
   let t = await page.evaluate(() => ({
@@ -27,12 +30,13 @@ const { abrir, ok } = require('./harness');
     tituloIc: !!document.querySelector('.cmp-titulo svg rect'),
     sub: document.querySelector('.cmp-sub-topo')?.textContent || '',
     limpar: (() => { const b = document.getElementById('compare-clear-2'); return b ? { danger: b.classList.contains('cta-danger'), lixo: !!b.querySelector('svg'), txt: b.textContent.trim() } : null; })(),
-    escolherIc: !!document.querySelector('.cmp-vaga[data-cmp-abrir] .cmp-vaga-mais svg rect'),
+    escolher: document.querySelector('.cmp-vaga[data-cmp-abrir]')?.innerText.replace(/\s+/g, ' ').trim() || '',
+    escolherIc: !!document.querySelector('.cmp-vaga[data-cmp-abrir] svg'),
   }));
-  ok(t.pagina === 'comparar' && t.titulo === 'Comparar academias' && t.tituloIc, 'o atalho abre a comparação; o título com o ícone');
-  ok(t.sub.endsWith('e tudo o que está na ficha.') && t.sub.includes('estacionamento') && t.sub.includes('cancelamento'), 'o subtítulo termina dizendo que compara tudo — ' + t.sub);
+  ok(t.pagina === 'comparar' && t.titulo === 'Comparar academias' && t.tituloIc, 'tocar no aviso abre a comparação; o título com o ícone');
+  ok(t.sub === 'Veja lado a lado o que muda entre elas: nota, preço, estrutura e tudo o que está na ficha.', 'o subtítulo, mais curto, termina dizendo que compara tudo — ' + t.sub);
   ok(t.limpar && t.limpar.danger && t.limpar.lixo && t.limpar.txt === 'Limpar comparação', '"Limpar comparação" em vermelho, com o lixo, já com uma academia');
-  ok(t.escolherIc, '"Escolher" com o ícone da comparação');
+  ok(t.escolher === '+ Escolher' && !t.escolherIc, '"Escolher" como era, só com o +, sem o ícone — ' + t.escolher);
 
   // ---- a tabela com tudo da ficha ----
   await page.evaluate(() => { toggleCompare('a2'); render(); });

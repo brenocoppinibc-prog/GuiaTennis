@@ -74,6 +74,9 @@ const volta = async (page) => { await page.goBack(); await page.waitForTimeout(2
   await volta(page);
   ok(await page.evaluate(() => REG_PASSOS[state.regPasso].id === 'dados' && document.getElementById('f-name').value === 'Academia Voltar'), 'e a primeira, com o nome digitado');
   await page.click('#register-close');
+  await page.waitForTimeout(200);
+  // Com o nome digitado, o X pergunta antes de apagar (21/10/2026).
+  await page.click('#reg-sair-sim');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => !state.showRegister && location.search === ''), 'fechar o cadastro volta ao link da tela');
   await browser.close();

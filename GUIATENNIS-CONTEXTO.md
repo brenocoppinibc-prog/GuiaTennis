@@ -26,6 +26,16 @@ teste")
 
 > **Estado (21/10/2026):** o Breno trocou de chat: leia o "Resumo (21/10/2026,
 > ao trocar de chat)" na seção 11.
+> Depois, no chat novo (PR #5 acompanhado de novo): **regra 139**, o
+> cadastro da ficha sem plano no meio (a prévia mostra tudo), o plano depois
+> de confirmar como uma página de erro ("N partes não vão aparecer na
+> ficha"), o "Confirmar" verde do lápis da revisão, o X que pergunta antes
+> de apagar, as fotos arrastando e o cancelamento com a escolha de aula e
+> locação separada; no começo do cadastro do Parceiros, só "Com o seu
+> e-mail confirmado, a academia entra no ar quando você finalizar.". Testes:
+> bateria completa com **1.612 verificações** nos 58 arquivos do navegador
+> (novo: `cadastro-sair-e-revisao.js`), mais `onde.mjs` e `pagamento.mjs`,
+> nenhuma falha. Nenhum SQL novo.
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.

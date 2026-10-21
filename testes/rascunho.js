@@ -46,6 +46,9 @@ const FOTO = 'data:image/jpeg;base64,' + 'A'.repeat(4000);
   // Fechou a aba: some (o sessionStorage é da aba); sair da conta também apaga.
   await page.click('#register-close');
   await page.waitForTimeout(200);
+  // Com algo preenchido, o X pergunta antes de apagar (21/10/2026).
+  await page.click('#reg-sair-sim');
+  await page.waitForTimeout(200);
   ok(await page.evaluate(() => !document.documentElement.classList.contains('com-janela')), 'fechou a janela: a página volta a rolar');
   await browser.close();
 

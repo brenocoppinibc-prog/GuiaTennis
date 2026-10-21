@@ -3023,6 +3023,41 @@ cobra taxa e não fica no meio** da negociação.
     (N). Abra em Menu › Comparar academias." ou "Tirada da comparação."
     (`mostrarPush`, `data-compare-aviso`). Testes: `links.js` e
     `ficha-topo-e-sobre.js`.
+133. **Estacionamento: grátis, pago, ou grátis e pago com a regra** (pedido
+    de 21/10/2026: "não faz muito sentido uma academia marcar
+    estacionamento grátis e pago… não só corrigir, mas entender quando a
+    academia faz isso"). Como a pergunta de estacionamento do Booking para
+    Parceiros e os atributos do Google Business Profile: no cadastro, um chip
+    só, **"Estacionamento"**, que abre "Estacionamento no local: Grátis ·
+    Pago · Grátis e pago"; "Grátis e pago" pergunta **"Como funciona?"**:
+    "Grátis para alunos, pago para os outros", "Grátis por um tempo, depois
+    pago" (com "Grátis nas primeiras __ horas") ou "Grátis até lotar;
+    depois, pago" (`regEstacionamentoHtml`, `escolherEstacionamento`). O
+    banco guarda uma vaga só (`estacionamento_gratuito`) e a regra em
+    `acesso.estacionamentoRegra` ({ tipo, horas }), que acompanha a
+    comodidade mesmo no Básico (`aplicarPlano`). **Quem já tinha os dois
+    marcados** vira um só ao ler (`arrumarEstacionamento`, em `mapRow`), com
+    a regra entendida do que a academia escreveu (`entenderRegraDoEstacionamento`:
+    "alunos/mensalistas", "primeiras 2 horas", "quando lota") ou "misto",
+    que a ficha mostra como "Tem vaga grátis e vaga paga. Pergunte na
+    academia como funciona." e o Parceiros pede em "falta na ficha" ("Como
+    funciona o estacionamento"). Na ficha, um item só ("Estacionamento
+    grátis para alunos", "…nas primeiras 2h", "…até lotar"), a pergunta
+    frequente, o "Sobre" e a comparação usam a regra
+    (`estacionamentoRotulo`, `estacionamentoDetalhe`); grátis com regra não
+    vira o selo "Estacionamento grátis" do cartão. Teste: `estacionamento.js`.
+134. **"Melhores avaliadas" de verdade** (pedido de 21/10/2026: "nas melhores
+    avaliadas não estão as melhores avaliadas realmente"). Antes, a mais
+    perto vinha antes da melhor nota (uma 3,0 na frente de uma 4,8) e as
+    que já estavam nas recomendadas ficavam de fora. Agora, como o
+    TripAdvisor e o Booking (`melhoresAvaliadas`): só nota 4 ou mais, na
+    ordem da nota ponderada pelo número de avaliações (média bayesiana com
+    peso 3: uma 5,0 com 1 avaliação não passa na frente de uma 4,8 com 40),
+    podendo repetir as recomendadas; com 3 ou mais boas a até 50 km do ponto
+    da home, só as de perto, com o título "Melhores avaliadas perto de
+    você". Muda a regra 106 nessa seção. Termos e a pergunta "Como funciona
+    a ordem das academias?": as "Melhores avaliadas" seguem só a nota dos
+    jogadores. Teste: `melhores-avaliadas.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4785,7 +4820,11 @@ regras 127 e 128: **1.532 verificações** nos 53 arquivos do navegador,
 mais `onde.mjs` e `pagamento.mjs`, nenhuma falha. Em 21/10 (madrugada),
 depois das regras 129 a 132 (seções 35 a 38 do PR, passos 50 a 54):
 **1.547 verificações** nos 54 arquivos (novo: `ficha-topo-e-sobre.js`),
-nenhuma falha. Testes: a última
+nenhuma falha. Depois das regras 133 e 134 (seções 39 e 40 do PR, passos
+55 a 58): **1.573 verificações** nos 56 arquivos (novos:
+`estacionamento.js` e `melhores-avaliadas.js`), nenhuma falha (a única,
+em `ficha-topo-e-sobre.js`, mostrou o estacionamento repetido quando os
+dois chegam sem passar pelo `mapRow`; corrigida com `comodidadesNaOrdem`). Testes: a última
 bateria completa deu **1.523 verificações, nenhuma falha** (53 arquivos
 do navegador; a única falha, texto antigo em `buscas-e-avisos.js`, foi
 corrigida e rodada de novo), **4 no `onde.mjs`, 20 no `pagamento.mjs`** e

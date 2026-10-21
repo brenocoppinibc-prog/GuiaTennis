@@ -1330,6 +1330,10 @@
   /* Cancelamento num cartão só, uma linha por caso (20/10/2026), como o
      "Cancelamento grátis até…" do Booking e do Airbnb. */
   .pol-card { border: 1px solid var(--border); border-radius: 14px; background: var(--card); }
+  .reg-estac { margin-top: 4px; padding: 2px 0 4px; }
+  .reg-estac-horas { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 14px; color: var(--text); }
+  .reg-estac-horas .form-field { width: 72px; text-align: center; }
+  .reg-estac-falta { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 13px; color: var(--muted); }
   .pol-linha { display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; }
   .pol-linha + .pol-linha { border-top: 1px solid var(--border); }
   .pol-linha-ic { flex-shrink: 0; display: flex; margin-top: 1px; }
@@ -2632,6 +2636,91 @@ const AMENITY_OPTS = [
 ];
 const AMENITY_MAP = Object.fromEntries(AMENITY_OPTS.map(a => [a.key, a]));
 
+// Estacionamento grátis E pago (pedido do Breno em 21/10/2026: "não faz muito
+// sentido… entender quando a academia faz isso"). Como o Booking e o Google
+// Business Profile, é uma resposta só: grátis, pago, ou grátis e pago com a
+// regra — quase sempre grátis para alunos e pago para avulsos, grátis por
+// um tempo, ou grátis até lotar. O banco guarda só "estacionamento_gratuito"
+// e a regra em acesso.estacionamentoRegra ({ tipo, horas }); "misto" é a
+// academia que marcou os dois sem dizer como funciona.
+const ESTAC_REGRAS = [
+  { key: "alunos", label: "Grátis para alunos, pago para os outros" },
+  { key: "tempo", label: "Grátis por um tempo, depois pago" },
+  { key: "lotar", label: "Grátis até lotar; depois, pago" },
+];
+function ehEstacionamento(k) { return k === "estacionamento_gratuito" || k === "estacionamento_pago"; }
+function regraDoEstacionamento(c) {
+  const r = c && c.acesso && c.acesso.estacionamentoRegra;
+  return r && r.tipo && ((c.amenities || []).includes("estacionamento_gratuito")) ? r : null;
+}
+// Para a lista de comodidades, os selos e a comparação.
+function estacionamentoRotulo(c) {
+  const am = (c && c.amenities) || [];
+  const r = regraDoEstacionamento(c);
+  if (r) {
+    if (r.tipo === "alunos") return "Estacionamento grátis para alunos";
+    if (r.tipo === "tempo") return r.horas ? `Estacionamento grátis nas primeiras ${r.horas}h` : "Estacionamento grátis por um tempo";
+    if (r.tipo === "lotar") return "Estacionamento grátis até lotar";
+    return "Estacionamento grátis e pago";
+  }
+  if (am.includes("estacionamento_gratuito") && am.includes("estacionamento_pago")) return "Estacionamento grátis e pago";
+  if (am.includes("estacionamento_gratuito")) return "Estacionamento grátis";
+  if (am.includes("estacionamento_pago")) return "Estacionamento pago";
+  return "";
+}
+// A frase inteira, para a ficha e as perguntas frequentes.
+function estacionamentoDetalhe(c) {
+  const r = regraDoEstacionamento(c);
+  if (r) {
+    if (r.tipo === "alunos") return "Grátis para alunos; para quem só aluga a quadra, é pago.";
+    if (r.tipo === "tempo") return r.horas ? `Grátis nas primeiras ${r.horas}h; depois, é pago.` : "Grátis por um tempo; depois, é pago.";
+    if (r.tipo === "lotar") return "Grátis enquanto houver vaga; depois, é pago.";
+    return "Tem vaga grátis e vaga paga. Pergunte na academia como funciona.";
+  }
+  const am = (c && c.amenities) || [];
+  if (am.includes("estacionamento_gratuito") && am.includes("estacionamento_pago")) return "Tem vaga grátis e vaga paga. Pergunte na academia como funciona.";
+  if (am.includes("estacionamento_gratuito")) return "Estacionamento grátis.";
+  if (am.includes("estacionamento_pago")) return "Estacionamento pago.";
+  return "";
+}
+function rotuloDaComodidade(a, c) {
+  return ehEstacionamento(a.key) ? estacionamentoRotulo(c) : a.label;
+}
+// As comodidades na ordem, com o estacionamento uma vez só.
+function comodidadesNaOrdem(c) {
+  let est = false;
+  return naOrdem(AMENITY_OPTS, c && c.amenities).filter(a => !ehEstacionamento(a.key) || (!est && (est = true)));
+}
+// O que a academia escreveu diz a regra? Para quem marcou os dois antes de
+// existir a pergunta: "grátis para alunos", "primeiras 2 horas", "quando lota".
+function entenderRegraDoEstacionamento(acesso, extra) {
+  const a = acesso || {};
+  const texto = semAcento([a.estacionar, a.estacionamentoNota, a.fachada, a.entrada, extra].filter(Boolean).join(". "));
+  if (!texto) return null;
+  if (/\b(alunos?|mensalistas?|matriculad|socios?|associad)/.test(texto)) return { tipo: "alunos" };
+  const h = texto.match(/(?:primeir[ao]s?|ate|por)\s+(\d{1,2})\s*(?:h\b|hora)/);
+  if (h) return { tipo: "tempo", horas: Number(h[1]) };
+  if (/durante (a|as) aula|depois (de|da) \d|primeira hora|tempo limitado/.test(texto)) return { tipo: "tempo" };
+  if (/\b(lota|lotad|enche|poucas vagas|vagas limitadas|nao tiver vaga|acabar a vaga)/.test(texto)) return { tipo: "lotar" };
+  return null;
+}
+// Lido do banco: os dois marcados viram um só, com a regra entendida (ou
+// "misto", que a ficha mostra como "pergunte como funciona" e o Parceiros
+// pede para a academia contar).
+function arrumarEstacionamento(row) {
+  const am = Array.isArray(row.amenities) ? row.amenities : [];
+  const acesso = { ...(row.acesso || {}) };
+  const gratis = am.includes("estacionamento_gratuito"), pago = am.includes("estacionamento_pago");
+  if (gratis && pago) {
+    if (!acesso.estacionamentoRegra || !acesso.estacionamentoRegra.tipo) {
+      acesso.estacionamentoRegra = entenderRegraDoEstacionamento(acesso, row.horario && row.horario.nota) || { tipo: "misto" };
+    }
+    return { amenities: am.filter(k => k !== "estacionamento_pago"), acesso };
+  }
+  if (!gratis) delete acesso.estacionamentoRegra;
+  return { amenities: am, acesso };
+}
+
 // O banco guarda as escolhas na ordem em que foram clicadas. Esta função coloca
 // tudo de volta na ordem das listas acima, para que piso, cobertura,
 // modalidade e comodidades apareçam sempre na mesma sequência — na busca, no
@@ -2697,7 +2786,8 @@ function aplicarPlano(c) {
     amenities: integral.amenities.slice(0, l.comodidades),
     instagram: l.contatos.includes("instagram") ? c.instagram : "",
     site: l.contatos.includes("site") ? c.site : "",
-    acesso: l.chegada ? integral.acesso : {},
+    acesso: l.chegada ? integral.acesso
+      : (integral.acesso.estacionamentoRegra ? { estacionamentoRegra: integral.acesso.estacionamentoRegra } : {}),
     politica: l.cancelamento ? integral.politica : {},
   };
 }
@@ -2881,8 +2971,7 @@ const RUA_OPTS = [
 // sozinha.
 function estacionarLinhas(c) {
   const am = (c && c.amenities) || [];
-  if (am.includes("estacionamento_gratuito")) return [{ rot: "No local", txt: "Estacionamento grátis." }];
-  if (am.includes("estacionamento_pago")) return [{ rot: "No local", txt: "Estacionamento pago." }];
+  if (am.includes("estacionamento_gratuito") || am.includes("estacionamento_pago")) return [{ rot: "No local", txt: estacionamentoDetalhe(c) }];
   const p = entenderEstacionar(acessoFicha(c).estacionar);
   const linhas = [];
   if (p.rua || p.ruaDetalhe) {
@@ -3134,6 +3223,7 @@ function numeroOuNulo(v) {
 }
 
 function mapRow(row) {
+  const est = arrumarEstacionamento(row);
   return aplicarPlano({
     id: row.id,
     name: row.name,
@@ -3151,7 +3241,7 @@ function mapRow(row) {
     priceRange: row.price_range,
     priceAula: row.price_aula,
     priceLocacao: row.price_locacao,
-    amenities: row.amenities || [],
+    amenities: est.amenities,
     modalidades: row.modalidades || [],
     pisos: row.pisos || [],
     cobertura: row.cobertura || [],
@@ -3162,7 +3252,7 @@ function mapRow(row) {
     pago: !!row.pago,
     plano: row.plano || "basico",
     politica: row.politica || {},
-    acesso: row.acesso || {},
+    acesso: est.acesso,
     horario: row.horario || {},
     pausada: !!row.pausada,
     pausadaAte: row.pausada_ate,
@@ -3185,6 +3275,7 @@ function toRow(f) {
   delete acesso.estacionamento;
   delete acesso.padronizadoEm;
   if (temEstacionamentoProprio(f)) delete acesso.estacionar;
+  if (!(f.amenities || []).includes("estacionamento_gratuito")) delete acesso.estacionamentoRegra;
   return {
     name: f.name, address: f.address, numero: f.numero, complemento: f.complemento,
     bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
@@ -5397,7 +5488,7 @@ function linhasComparacao(courts) {
       { rot: "Piso", vals: courts.map(c => ({ txt: esc(listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos))) || "—" })) },
       { rot: "Cobertura", vals: courts.map(c => ({ txt: esc(listaPt(rotulosNaOrdem(COBERTURA_OPTS, c.cobertura))) || "—" })) },
       { rot: "Comodidades", melhor: "maior", vals: courts.map(c => {
-        const l = rotulosNaOrdem(AMENITY_OPTS, c.amenities);
+        const l = comodidadesNaOrdem(c).map(a => rotuloDaComodidade(a, c));
         return { txt: esc(listaPt(l)) || "—", num: l.length || null };
       }) },
     ]},
@@ -6371,6 +6462,7 @@ function faltasDaFicha(c) {
   if (limitesDoPlano(c.plano).cancelamento && !temPolitica(c)) faltas.push("Cancelamento");
   if (!totalQuadras(c)) faltas.push("Quadras");
   if (!(c.amenities || []).length) faltas.push("Comodidades");
+  else if ((regraDoEstacionamento(c) || {}).tipo === "misto") faltas.push("Como funciona o estacionamento");
   if (limitesDoPlano(c.plano).chegada && !temAcesso(c)) faltas.push("Como chegar");
   if (!(c.photos || []).length) faltas.push("Fotos");
   return faltas;
@@ -13004,7 +13096,7 @@ function perguntasDoSite() {
     // as patrocinadas são do Premium, sem contar como o site faz por dentro.
     {
       q: "Como funciona a ordem das academias?",
-      a: "Na busca, a lista segue a ordem que você escolher — por padrão, da mais perto para a mais longe. As marcadas \"Patrocinado\" são academias do plano Premium e aparecem em destaque no topo da busca e entre as recomendadas.",
+      a: "Na busca, a lista segue a ordem que você escolher — por padrão, da mais perto para a mais longe. As marcadas \"Patrocinado\" são academias do plano Premium e aparecem em destaque no topo da busca e entre as recomendadas. As \"Melhores avaliadas\" seguem só a nota dos jogadores.",
     },
   ];
   if (cidades.length) {
@@ -13625,6 +13717,26 @@ function renderSiteFooter() {
   `;
 }
 
+// "Melhores avaliadas" de verdade (pedido do Breno em 21/10/2026: "não estão
+// as melhores avaliadas realmente"). Antes, a mais perto vinha antes da
+// melhor nota (uma 3,0 aparecia na frente de uma 4,8) e as que já estavam
+// nas recomendadas ficavam de fora. Agora, como o TripAdvisor e o Booking:
+// só nota 4 ou mais, na ordem da nota ponderada pelo número de avaliações
+// (uma 5,0 com 1 avaliação não passa na frente de uma 4,8 com 40) e, com 3
+// ou mais perto da pessoa, só as de perto ("perto de você").
+const MELHORES_NOTA_MINIMA = 4, MELHORES_PESO = 3;
+function melhoresAvaliadas(todas, ehPerto) {
+  const avaliadas = todas.filter(c => c.appCount > 0);
+  if (!avaliadas.length) return Object.assign([], { perto: false });
+  const media = avaliadas.reduce((s, c) => s + c.appAvg * c.appCount, 0) / avaliadas.reduce((s, c) => s + c.appCount, 0);
+  const ponderada = c => (c.appCount * c.appAvg + MELHORES_PESO * media) / (c.appCount + MELHORES_PESO);
+  const boas = avaliadas.filter(c => c.appAvg >= MELHORES_NOTA_MINIMA)
+    .sort((a, b) => (ponderada(b) - ponderada(a)) || (b.appCount - a.appCount));
+  const perto = ehPerto ? boas.filter(ehPerto) : [];
+  const lista = (perto.length >= 3 ? perto : boas).slice(0, 8);
+  return Object.assign(lista, { perto: perto.length >= 3 });
+}
+
 function renderHome() {
   const todas = state.allCourts.map(decorate);
   const recentes = loadRecents().map(id => todas.find(c => c.id === id)).filter(Boolean);
@@ -13634,15 +13746,11 @@ function renderHome() {
   const parecidas = academiasParecidas(todas, ultima, recentes);
   const ponto = pontoDaHome(ultima, pref);
   const recomendadas = recomendadasGuia(todas, ponto, new Set(parecidas ? parecidas.lista.map(x => x.c.id) : []));
-  const jaRecomendada = new Set(recomendadas.map(c => c.id));
   // Cada seção começa pelas academias mais perto do ponto (pedido de
   // 15/10/2026: "o mais próximo da localização possível").
   const kmDaHome = (c) => { const d = kmDoPonto(ponto, c); return d === null ? Infinity : d; };
   const pertoDaHome = (c) => !ponto || kmDaHome(c) <= PARECIDAS_RAIO_KM;
-  const melhores = [...todas]
-    .filter(c => c.appCount > 0 && !jaRecomendada.has(c.id))
-    .sort((a, b) => (pertoDaHome(b) - pertoDaHome(a)) || (b.appAvg - a.appAvg) || (b.appCount - a.appCount))
-    .slice(0, 8);
+  const melhores = melhoresAvaliadas(todas, ponto ? pertoDaHome : null);
   const cidades = cidadesComQuadra();
   const cidadeAtiva = cidades.find(c => c.nome === state.homeCity)
     || cidades.find(c => mesmaCidade(c.nome, pref.cidade))
@@ -13692,7 +13800,7 @@ function renderHome() {
 
     ${melhores.length ? `
       <div class="home-sec">
-        <h3 class="display">Melhores avaliadas</h3>
+        <h3 class="display">Melhores avaliadas${melhores.perto ? " perto de você" : ""}</h3>
         <div class="home-strip">${melhores.map(c => renderMini(c)).join("")}</div>
       </div>` : ""}
 
@@ -14459,7 +14567,7 @@ function ofertas(c) {
 function selos(c) {
   const out = [];
   if ((c.cobertura || []).includes("coberta")) out.push({ k: "coberta", label: "Coberta" });
-  if ((c.amenities || []).includes("estacionamento_gratuito")) out.push({ k: "estacionamento_gratuito", label: "Estacionamento grátis" });
+  if ((c.amenities || []).includes("estacionamento_gratuito") && !regraDoEstacionamento(c)) out.push({ k: "estacionamento_gratuito", label: "Estacionamento grátis" });
   if (out.length < 2 && (c.amenities || []).includes("vestiario")) out.push({ k: "vestiario", label: "Vestiário" });
   if (out.length < 2 && (c.amenities || []).includes("lanchonete")) out.push({ k: "lanchonete", label: "Lanchonete" });
   return out.slice(0, 2);
@@ -14469,7 +14577,9 @@ function selos(c) {
 // Nunca repete o que já apareceu nos selos da oferta.
 function destaque(c, usados) {
   const jaUsado = new Set(usados || []);
-  const tem = k => k === "coberta" ? (c.cobertura || []).includes("coberta") : (c.amenities || []).includes(k);
+  const tem = k => k === "coberta" ? (c.cobertura || []).includes("coberta")
+    : k === "estacionamento_gratuito" ? (c.amenities || []).includes(k) && !regraDoEstacionamento(c)
+    : (c.amenities || []).includes(k);
   const opcoes = [
     { k: "camera", t: "Câmera para gravar seus pontos" },
     { k: "coberta", t: "Quadra coberta, joga mesmo com chuva" },
@@ -15571,7 +15681,7 @@ function descricaoAcademia(c) {
   // Com mais de 4 comodidades, diz quantas faltam, como o "Mostrar as 25
   // comodidades" do Airbnb (pedido do Breno em 20/10/2026: "mostrando que
   // tem mais comodidades e não só essas").
-  const com = rotulosNaOrdem(AMENITY_OPTS, c.amenities).map(l => l.toLowerCase());
+  const com = comodidadesNaOrdem(c).map(a => rotuloDaComodidade(a, c).toLowerCase());
   if (com.length > 4) frases.push(`Entre as comodidades estão ${com.slice(0, 4).join(", ")} e ${plural(com.length - 4, "mais uma", `outras ${com.length - 4}`)}.`);
   else if (com.length) frases.push(`Entre as comodidades ${plural(com.length, "está", "estão")} ${listaTexto(com)}.`);
 
@@ -15651,7 +15761,7 @@ function htDestaques(c) {
     c.appCount && { ic: 'sparkle', cor: 'var(--gold)', t: `${c.appAvg.toFixed(1).replace(".", ",")} ${scoreWord(c.appAvg, c.appCount)}`, s: `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no app` },
     faixa && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: `${faixa.opcao.nome.toLowerCase()}, por hora de quadra` },
     dist && { ic: 'pin', cor: 'var(--green)', t: `${dist} de você`, s: [c.bairro, c.cidade].filter(Boolean).join(", ") || "a partir da sua busca" },
-    tem("estacionamento_gratuito") && { ic: 'parking', cor: 'var(--green)', t: "Estacionamento grátis" },
+    tem("estacionamento_gratuito") && { ic: 'parking', cor: regraDoEstacionamento(c) ? 'var(--gold)' : 'var(--green)', t: estacionamentoRotulo(c) },
     tem("vestiario") && { ic: 'droplet', cor: 'var(--green)', t: "Vestiário" },
     tem("camera") && { ic: 'camera', cor: 'var(--green)', t: "Câmera nas quadras" },
     tem("lanchonete") && { ic: 'cup', cor: 'var(--green)', t: "Lanchonete" },
@@ -15702,7 +15812,7 @@ function htOpcoes(c) {
 // Quadras e comodidades, na grade de ícones das "Comodidades da acomodação".
 function htComodidades(c) {
   const total = totalQuadras(c);
-  const lista = naOrdem(AMENITY_OPTS, c.amenities);
+  const lista = comodidadesNaOrdem(c);
   if (!total && !lista.length) return "";
   return `
     ${total ? `
@@ -15716,7 +15826,7 @@ function htComodidades(c) {
     ${lista.length ? `
       <p class="field-label">Comodidades</p>
       <div class="ht-amen">
-        ${lista.map(a => `<div class="ht-amen-i">${a.icon}<span>${esc(a.label)}</span></div>`).join("")}
+        ${lista.map(a => `<div class="ht-amen-i">${a.icon}<span>${esc(rotuloDaComodidade(a, c))}</span></div>`).join("")}
       </div>` : ""}`;
 }
 
@@ -16080,7 +16190,8 @@ function perguntasAcademia(c) {
   if (temEstGratis || temEstPago || semVagaPropria || (c.amenities || []).length) {
     faq.push({
       q: `${c.name} tem estacionamento?`,
-      a: temEstGratis ? "Sim, estacionamento grátis no local."
+      a: regraDoEstacionamento(c) ? "Sim, no local. " + estacionamentoDetalhe(c)
+        : temEstGratis ? "Sim, estacionamento grátis no local."
         : temEstPago ? "Sim, mas o estacionamento é pago."
         : semVagaPropria ? "Não tem estacionamento próprio. " + estacionarTexto(c)
         : "O estacionamento não foi incluído. Vale perguntar na academia.",
@@ -16422,6 +16533,46 @@ function renderCourtPage(c) {
 // o formulário ainda não tem nada preenchido.
 // Com estacionamento no local, a comodidade já responde; o texto de onde
 // parar só aparece para quem não tem vaga própria.
+// No cadastro, o chip "Estacionamento" abre a pergunta: grátis, pago ou
+// grátis e pago — e, nesse caso, como funciona (como a pergunta de
+// estacionamento do Booking para Parceiros).
+function regEstacionamentoHtml(f) {
+  const k = (f.amenities || []).find(ehEstacionamento);
+  if (!k) return "";
+  const r = (f.acesso || {}).estacionamentoRegra;
+  const modo = k === "estacionamento_pago" ? "pago" : r && r.tipo ? "misto" : "gratis";
+  const opc = (attr, v, atual, t) => `<button type="button" class="chip small ${attr} ${atual === v ? "active" : ""}" data-v="${v}" aria-pressed="${atual === v}">${t}</button>`;
+  return `
+        <div class="reg-estac" id="reg-estac">
+          <p class="field-label">Estacionamento no local</p>
+          <div class="chip-row">
+            ${opc("reg-estac-modo", "gratis", modo, "Grátis")}
+            ${opc("reg-estac-modo", "pago", modo, "Pago")}
+            ${opc("reg-estac-modo", "misto", modo, "Grátis e pago")}
+          </div>
+          ${modo === "misto" ? `
+            <p class="field-label">Como funciona?</p>
+            <div class="chip-row">
+              ${ESTAC_REGRAS.map(x => opc("reg-estac-regra", x.key, r.tipo, esc(x.label))).join("")}
+            </div>
+            ${r.tipo === "tempo" ? `
+              <label class="reg-estac-horas">Grátis nas primeiras
+                <input class="form-field" id="f-estac-horas" type="number" min="1" max="12" inputmode="numeric" value="${esc(r.horas || "")}" style="margin-top:0" />
+                horas</label>` : ""}
+            ${r.tipo === "misto" ? `<p class="reg-estac-falta">${icon('warning', 13, 'var(--gold)')} Escolha como funciona: é o que o jogador vai ler na ficha.</p>` : ""}` : ""}
+        </div>`;
+}
+function escolherEstacionamento(f, chave, regra) {
+  const i = (f.amenities || []).findIndex(ehEstacionamento);
+  if (i < 0) return;
+  const antes = f.amenities[i];
+  f.amenities = f.amenities.slice();
+  f.amenities[i] = chave;
+  if (Array.isArray(f.__destaques)) f.__destaques = f.__destaques.map(x => x === antes ? chave : x);
+  f.acesso = { ...(f.acesso || {}) };
+  if (regra) f.acesso.estacionamentoRegra = regra; else delete f.acesso.estacionamentoRegra;
+}
+
 function temEstacionamentoProprio(f) {
   const am = (f && f.amenities) || [];
   return am.includes("estacionamento_gratuito") || am.includes("estacionamento_pago");
@@ -16695,7 +16846,7 @@ function regDestaquesHtml(f) {
             ${f.amenities.map(k => {
               const a = AMENITY_OPTS.find(x => x.key === k);
               const on = f.__destaques.includes(k);
-              return `<button type="button" class="chip small reg-destaque ${on ? "active" : ""}" data-destaque="${esc(k)}" aria-pressed="${on}">${on ? "✓ " : ""}${a ? `${a.icon} ${esc(a.label)}` : esc(k)}</button>`;
+              return `<button type="button" class="chip small reg-destaque ${on ? "active" : ""}" data-destaque="${esc(k)}" aria-pressed="${on}">${on ? "✓ " : ""}${a ? `${a.icon} ${esc(rotuloDaComodidade(a, f))}` : esc(k)}</button>`;
             }).join("")}
           </div>
           <p class="reg-destaques-n">${escolhidas} de ${n} escolhidas${escolhidas < n ? ` · com menos de ${n}, a ficha completa com as próximas que você marcou` : ""}.</p>
@@ -16789,11 +16940,16 @@ function regPassoHtml(id, f, obrigatorio) {
         <p class="field-label">Comodidades</p>
         ${avisoDoPlanoNaParte(f, "quadras")}
         <div class="chip-row">
-          ${AMENITY_OPTS.map(a => {
+          ${AMENITY_OPTS.filter(a => a.key !== "estacionamento_pago").map(a => {
+            if (a.key === "estacionamento_gratuito") {
+              const k = f.amenities.find(ehEstacionamento);
+              return `<button class="chip small reg-amenity ${k ? "active" : ""}" data-amenity="${k || a.key}">${a.icon} Estacionamento</button>`;
+            }
             const marcada = f.amenities.includes(a.key);
             return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`;
           }).join("")}
         </div>
+        ${regEstacionamentoHtml(f)}
         ${regDestaquesHtml(f)}`;
 
   if (id === "contato") return `
@@ -17778,7 +17934,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?) e, depois de o GuiaTennis conferir, a ficha sai do Guia, com as avaliações; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta (Perfil › Excluir minha conta): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos do leilão são comprados à parte, com Pix ou cartão pelo Mercado Pago, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar uma promoção por vez, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); quem ganha paga só o necessário para passar o seguinte, mais R$ 1, dos créditos comprados antes (20% menos no Premium), e quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?) e, depois de o GuiaTennis conferir, a ficha sai do Guia, com as avaliações; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta (Perfil › Excluir minha conta): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos do leilão são comprados à parte, com Pix ou cartão pelo Mercado Pago, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. As "Melhores avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar uma promoção por vez, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); quem ganha paga só o necessário para passar o seguinte, mais R$ 1, dos créditos comprados antes (20% menos no Premium), e quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome e sobrenome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e sobrenome e o WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -21346,12 +21502,37 @@ function attachEvents() {
       f.quadras[el.dataset.combo] = Math.max(0, parseInt(e.target.value, 10) || 0);
     };
   });
+  document.querySelectorAll(".reg-estac-modo").forEach(el => {
+    el.onclick = () => {
+      const f = window.__form, v = el.dataset.v;
+      const r = (f.acesso || {}).estacionamentoRegra;
+      escolherEstacionamento(f, v === "pago" ? "estacionamento_pago" : "estacionamento_gratuito",
+        v === "misto" ? (r && r.tipo ? r : { tipo: "misto" }) : null);
+      render();
+    };
+  });
+  document.querySelectorAll(".reg-estac-regra").forEach(el => {
+    el.onclick = () => {
+      const f = window.__form;
+      const r = (f.acesso || {}).estacionamentoRegra || {};
+      escolherEstacionamento(f, "estacionamento_gratuito", el.dataset.v === "tempo" ? { tipo: "tempo", horas: r.horas || "" } : { tipo: el.dataset.v });
+      render();
+    };
+  });
+  const estacHoras = document.getElementById("f-estac-horas");
+  if (estacHoras) estacHoras.oninput = () => {
+    const f = window.__form;
+    const h = Math.round(Number(estacHoras.value));
+    escolherEstacionamento(f, "estacionamento_gratuito", { tipo: "tempo", horas: h >= 1 && h <= 12 ? h : "" });
+  };
   document.querySelectorAll(".reg-amenity").forEach(el => {
     el.onclick = () => {
       const k = el.dataset.amenity;
       const f = window.__form;
       const n = limiteDeComodidades(f);
       if (n !== Infinity && !Array.isArray(f.__destaques)) f.__destaques = f.amenities.slice(0, n);
+      // Estacionamento é um chip só: desmarcar tira a vaga e a regra.
+      if (ehEstacionamento(k) && f.amenities.includes(k) && f.acesso) { f.acesso = { ...f.acesso }; delete f.acesso.estacionamentoRegra; }
       f.amenities = f.amenities.includes(k) ? f.amenities.filter(x=>x!==k) : [...f.amenities, k];
       // A nova entra entre as que aparecem enquanto houver vaga.
       if (n !== Infinity && f.amenities.includes(k) && f.__destaques.length < n) f.__destaques.push(k);

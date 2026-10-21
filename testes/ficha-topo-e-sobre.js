@@ -14,11 +14,13 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   const sobre = await page.evaluate(() => {
     const base = { id: 'zz', name: 'Academia Teste', bairro: 'Moema', cidade: 'São Paulo', quadras: {} };
     return {
-      muitas: descricaoAcademia({ ...base, amenities: ['estacionamento_gratuito', 'estacionamento_pago', 'vestiario', 'loja', 'wifi', 'lanchonete'] }),
+      muitas: descricaoAcademia({ ...base, amenities: ['estacionamento_gratuito', 'vestiario', 'loja', 'wifi', 'lanchonete', 'agua'] }),
+      dois: descricaoAcademia({ ...base, amenities: ['estacionamento_gratuito', 'estacionamento_pago', 'vestiario'] }),
       poucas: descricaoAcademia({ ...base, amenities: ['vestiario', 'wifi'] }),
     };
   });
-  ok(sobre.muitas.includes('Entre as comodidades estão estacionamento grátis, estacionamento pago, vestiário, loja de materiais e outras 2.'),
+  ok(sobre.dois.includes('Entre as comodidades estão estacionamento grátis e pago e vestiário.'), 'grátis e pago (sem a regra) aparecem uma vez só — ' + sobre.dois.match(/Entre as comodidades[^.]*\./)?.[0]);
+  ok(sobre.muitas.includes('Entre as comodidades estão estacionamento grátis, vestiário, loja de materiais, wi-fi e outras 2.'),
     'mais de 4 comodidades: diz quantas faltam — ' + sobre.muitas.match(/Entre as comodidades[^.]*\./)?.[0]);
   ok(sobre.poucas.includes('Entre as comodidades estão vestiário e wi-fi.'), 'até 4: todas, sem "outras" — ' + sobre.poucas.match(/Entre as comodidades[^.]*\./)?.[0]);
 

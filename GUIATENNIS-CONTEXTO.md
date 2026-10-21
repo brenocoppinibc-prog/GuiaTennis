@@ -4875,10 +4875,13 @@ testar o pagamento de teste na prévia e depois ligar o Mercado Pago
 grátis até lá; (3) se o leilão só abre em bairro com público mínimo; (4)
 manter ou tirar o "Confirmar depois" na tela do e-mail do cadastro (regra
 110); (5) quando a academia avisa que fechou, a ficha sai da busca
-enquanto o admin confere?; (6) **novas**: o "como funciona" do
-estacionamento vale também para o admin? (hoje o admin publica só com o
-nome); e trocar "no app" por "no GuiaTennis" na ficha ("2 avaliações no
-app", "ainda não tem avaliação no app")? O merge espera o Breno dizer
+enquanto o admin confere?; (6) trocar "no app" por "no GuiaTennis" na ficha? Fica em 4 lugares:
+ao lado da nota no alto da ficha ("2 avaliações no app"), no quadrinho da
+nota dos destaques, na caixa do preço e do contato, e em "Essa academia
+ainda não tem avaliação no app" (Avaliações dos jogadores, sem nota). O
+Breno perguntou onde estava (21/10); falta ele dizer se troca. (Decidido
+em 21/10: o "como funciona" do estacionamento **não** vale para o admin,
+que segue publicando só com o nome.) O merge espera o Breno dizer
 **"pode subir"**. Este chat **deixou de acompanhar o PR** (sem inscrição,
 sem conferência marcada): no chat novo, voltar a acompanhar o PR #5.
 Seguem valendo: respostas curtas, ler só o trecho que muda, prints só

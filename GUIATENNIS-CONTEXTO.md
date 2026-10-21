@@ -22,7 +22,10 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 20/10/2026
+**Atualizado em:** 21/10/2026
+
+> **Estado (21/10/2026):** o Breno trocou de chat: leia o "Resumo (21/10/2026,
+> ao trocar de chat)" na seção 11.
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -4835,6 +4838,53 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (21/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 137** (último commit de código: `e24c823`, mais este
+documento). Nenhum SQL novo neste chat (a regra do estacionamento fica no
+`acesso`, que já existia). Neste chat entraram as regras 127 a 137:
+**pelo menos um sobrenome** nos cadastros, com "Preencha o sobrenome." só
+quando falta (127); **o que a senha precisa ter**, lista que fica verde
+embaixo de toda senha nova (128); **"Sobre" da ficha** com "e outras N"
+comodidades e "Quem avaliou elogia…" (129); **"Como funcionam as
+avaliações" no balão** (`state.infoPop`, 130); **cancelamento enxuto**,
+um cartão com duas linhas para aula e locação (131); **ficha sem o caminho
+no alto** e o topo com voltar, nome e os ícones de comparar, compartilhar e
+favoritar (132); **estacionamento grátis e pago**: os dois chips de sempre
+e, com os dois, "como funciona?" obrigatório (alunos, por um tempo com as
+horas, até lotar), com o que já estava no banco entendido pelo texto ou
+"misto" (133); **"Melhores avaliadas" de verdade**, nota 4+ ponderada pelo
+número de avaliações (134); **comparação**: aviso numa linha só que leva
+até ela, "Limpar" vermelho com o lixo, "Localização", subtítulo curto, o
+ícone da comparação (menos no "+ Escolher") (135), **a tabela com tudo da
+ficha** (136) e **"Me ajude a decidir"** entendendo reposição, academia
+menor/privacidade, estacionamento, horário e o resto (137). Termos de Uso
+atualizados (21 de outubro de 2026: elogios no "Sobre" e a ordem das
+"Melhores avaliadas"); Privacidade em 20 de outubro (nome e sobrenome).
+**A descrição do PR está em dia**: seções 1 a 43, SQL, "Para o Breno
+ligar", testes e passos 1 a 64 (regra do contexto: cada push já atualiza
+Termos, Privacidade e a descrição). Testes: a última bateria completa deu
+**1.593 verificações, nenhuma falha** (57 arquivos do navegador, mais
+`onde.mjs` e `pagamento.mjs`); depois do último ajuste da comparação,
+`comparacao-tudo.js`, `ficha-topo-e-sobre.js`, `comparar-e-avisos.js`,
+`parceiros.js` e `falhas.js` rodaram de novo sem falha. `banco-emails.py`
+segue com 451 (nada do banco mudou). **Pendências para o Breno:** (1)
+testar o pagamento de teste na prévia e depois ligar o Mercado Pago
+(variáveis da regra 117); (2) os preços dos planos e se o Premium fica
+grátis até lá; (3) se o leilão só abre em bairro com público mínimo; (4)
+manter ou tirar o "Confirmar depois" na tela do e-mail do cadastro (regra
+110); (5) quando a academia avisa que fechou, a ficha sai da busca
+enquanto o admin confere?; (6) **novas**: o "como funciona" do
+estacionamento vale também para o admin? (hoje o admin publica só com o
+nome); e trocar "no app" por "no GuiaTennis" na ficha ("2 avaliações no
+app", "ainda não tem avaliação no app")? O merge espera o Breno dizer
+**"pode subir"**. Este chat **deixou de acompanhar o PR** (sem inscrição,
+sem conferência marcada): no chat novo, voltar a acompanhar o PR #5.
+Seguem valendo: respostas curtas, ler só o trecho que muda, prints só
+quando o pedido for de visual, comparar com referências internacionais
+grandes nas decisões de site, Instagram e marketing, e **tudo atualizado no
+mesmo push** (Termos, Privacidade e a descrição do PR).
 
 **Resumo (20/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

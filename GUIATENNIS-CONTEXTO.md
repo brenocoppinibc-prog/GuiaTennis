@@ -37,7 +37,8 @@ teste")
 > (novo: `cadastro-sair-e-revisao.js`), mais `onde.mjs` e `pagamento.mjs`,
 > nenhuma falha. Nenhum SQL novo. Em 22/10: **regra 140**, o código da
 > disputa com o prazo "em até 1 dia útil" enquanto o envio é à mão (sem os
-> "vai na hora").
+> "vai na hora"); **regra 141**, o "Esqueci a senha" passo a passo (o código,
+> depois a senha nova).
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3221,6 +3222,21 @@ cobra taxa e não fica no meio** da negociação.
     tem responsável **não** é disputa; o pedido vai para ele aceitar ou
     recusar, e só vira disputa se a pessoa tocar em "Contestar" (regra 65).
     Testes: `codigo-pelo-whatsapp.js` e `parceiros.js`.
+141. **"Esqueci a senha" passo a passo: o código, depois a senha nova**
+    (pedido de 22/10/2026, com print do Parceiros: "fazer passo a passo,
+    código e senha"), como o Google, a Microsoft e o Instagram. No Parceiros
+    e na conta do jogador (também "Trocar a senha" de Minha conta): (1)
+    "Mandamos um código para <e-mail>. Chega em até um minuto; olhe também
+    o spam.", o campo do código, **"Continuar"** (Enter também) e "Mandar
+    outro código"; o código é conferido na hora (`conferirCodigoDaSenha`,
+    que guarda a sessão em `state.sessaoDoCodigo`), e o errado fica ali com
+    "Código errado ou vencido…"; (2) certo, **"Código confirmado. Agora crie
+    a senha nova."** (no jogador, o título vira "Crie uma senha nova"), a
+    senha nova com a lista do que ela precisa ter, a repetição e "Salvar a
+    senha nova", sem pedir o código de novo. Se a sessão do código se perde
+    (venceu, aba recarregada), salvar volta ao passo do código. Estados:
+    `state.pcCodigoConferido` (Parceiros) e `state.codigoConferido`
+    (jogador). Testes: `codigo.js`, `jogador.js` e `senha.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

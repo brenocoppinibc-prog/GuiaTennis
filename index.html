@@ -1757,6 +1757,7 @@
   .reg-plano-op-t { font-weight: 600; font-size: 14px; margin: 0; }
   .reg-plano-op .cta-btn { margin-top: auto; }
   .reg-plano-basico { display: block; width: 100%; margin-top: 14px; background: none; border: none; color: var(--muted); text-decoration: underline; font-family: inherit; font-size: 14px; cursor: pointer; padding: 10px; }
+  .pc-codigo-ok { display: flex; align-items: center; gap: 6px; color: var(--green); font-weight: 600; }
   .reg-plano-perde > ul:first-child { margin-top: 0; }
   .reg-plano-perde li .reg-plano-aviso-link { margin-top: 4px; }
   .reg-plano-perde .reg-destaques { margin-top: 12px; }
@@ -9189,16 +9190,19 @@ function pcCadastro() {
           ${passo === "esqueci" ? `
             ${state.pcCodigoFalhou
               ? `<p class="email-sugestao">Não consegui mandar o código agora. Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>`
-              : `<p class="pc-card-s" style="margin-top:12px">${state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código para <strong>${esc(state.pcLogin)}</strong>. Digite o código e a senha nova.`}</p>
+              : !state.pcCodigoConferido ? `<p class="pc-card-s" style="margin-top:12px">${state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código para <strong>${esc(state.pcLogin)}</strong>. Chega em até um minuto; olhe também o spam.`}</p>
                 <label class="field-label" for="pc-codigo-senha">Código do e-mail</label>
                 <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-senha" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />
+                ${erro(state.pcContaErro)}
+                <button class="btn-primary pc-botao-cheio" id="pc-conferir-codigo-senha" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Conferindo..." : "Continuar"}</button>
+                <p class="footnote"><button type="button" class="pc-linha-link" id="pc-reenviar-codigo">Mandar outro código</button></p>`
+              : `<p class="pc-card-s pc-codigo-ok" style="margin-top:12px">${icon('check', 15, 'var(--green)')} Código confirmado. Agora crie a senha nova.</p>
                 <label class="field-label" for="pc-senha-nova">Senha nova</label>
                 <input class="form-field campo-codigo" data-rascunho="senha" id="pc-senha-nova" type="password" autocomplete="new-password" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
                 <label class="field-label" for="pc-senha-nova2">Repita a senha nova</label>
                 <input class="form-field campo-codigo" data-rascunho="senha2" id="pc-senha-nova2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc((window.__codigo || {}).senha2 || "")}" style="margin-top:0" />
                 ${erro(state.pcContaErro)}
-                <button class="btn-primary pc-botao-cheio" id="pc-salvar-senha-nova" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar a senha nova"}</button>
-                <p class="footnote"><button type="button" class="pc-linha-link" id="pc-reenviar-codigo">Mandar outro código</button></p>`}` : ""}
+                <button class="btn-primary pc-botao-cheio" id="pc-salvar-senha-nova" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar a senha nova"}</button>`}` : ""}
           ${passo === "criar" ? `
             ${camposDeContato("pc-conta", f, "pc-conta-campo")}
             <label class="field-label" for="pc-conta-senha">Crie uma senha<span class="obrig">*</span></label>
@@ -10624,9 +10628,14 @@ async function continuarComEmail() {
   if (campo) campo.focus();
 }
 
-// "Esqueceu a senha?" do GuiaTennis Parceiros: código no e-mail e senha nova.
+// "Esqueceu a senha?" do GuiaTennis Parceiros: código no e-mail e senha nova,
+// um passo de cada vez (pedido do Breno em 22/10/2026: "fazer passo a passo,
+// código e senha"), como o Google, a Microsoft e o Instagram: primeiro o
+// código, que é conferido; certo, a tela da senha nova.
 async function pcEsqueciSenha() {
   state.pcEmailPasso = "esqueci";
+  state.pcCodigoConferido = false;
+  state.sessaoDoCodigo = null;
   state.pcContaErro = "";
   state.pcCodigoFalhou = false;
   state.pcCodigoMandando = true;
@@ -10636,8 +10645,18 @@ async function pcEsqueciSenha() {
   render();
   document.getElementById("pc-codigo-senha")?.focus();
 }
-async function pcSalvarSenhaNova() {
+async function pcConferirCodigoDaSenha() {
   const codigo = document.getElementById("pc-codigo-senha")?.value || "";
+  state.pcContaSalvando = true; state.pcContaErro = ""; render();
+  const certo = await conferirCodigoDaSenha(state.pcLogin, codigo);
+  state.pcContaSalvando = false;
+  if (!certo) { state.pcContaErro = CODIGO_ERRADO; render(); document.getElementById("pc-codigo-senha")?.focus(); return; }
+  state.pcCodigoConferido = true;
+  render();
+  document.getElementById("pc-senha-nova")?.focus();
+}
+async function pcSalvarSenhaNova() {
+  const codigo = (window.__codigo || {}).codigo || "";
   const senha = document.getElementById("pc-senha-nova")?.value || "";
   const errSenha = erroDaSenha(senha, document.getElementById("pc-senha-nova2")?.value || "", state.pcLogin);
   if (errSenha) {
@@ -10647,6 +10666,8 @@ async function pcSalvarSenhaNova() {
   state.pcContaSalvando = true; state.pcContaErro = ""; render();
   const r = await senhaNovaPeloCodigo(state.pcLogin, codigo, senha);
   state.pcContaSalvando = false;
+  // A sessão do código se perdeu (venceu ou a aba recarregou): volta ao código.
+  if (r.erro === CODIGO_ERRADO) state.pcCodigoConferido = false;
   if (r.erro) { state.pcContaErro = r.erro; render(); return; }
   const sessao = r.sessao;
   try { await sb.rpc('marcar_senha_trocada'); } catch {}
@@ -11035,6 +11056,10 @@ function ligarEventosParceiros() {
   if (pcEsqueci) pcEsqueci.onclick = () => pcEsqueciSenha();
   const pcReenviar = document.getElementById("pc-reenviar-codigo");
   if (pcReenviar) pcReenviar.onclick = () => pcEsqueciSenha();
+  const pcConferirSenha = document.getElementById("pc-conferir-codigo-senha");
+  if (pcConferirSenha) pcConferirSenha.onclick = () => pcConferirCodigoDaSenha();
+  const pcCodigoSenha = document.getElementById("pc-codigo-senha");
+  if (pcCodigoSenha) pcCodigoSenha.onkeydown = (e) => { if (e.key === "Enter") pcConferirCodigoDaSenha(); };
   const pcSalvarNova = document.getElementById("pc-salvar-senha-nova");
   if (pcSalvarNova) pcSalvarNova.onclick = () => pcSalvarSenhaNova();
   const pcMandar = document.getElementById("pc-mandar-codigo");
@@ -12187,16 +12212,21 @@ function renderJogadorSheet() {
       : `<button type="button" class="cta-btn cta-primary" id="jog-confirmar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Confirmar"}</button>
          ${reenviar}
          ${state.codigoDeMinhaConta ? "" : `<p class="jog-troca"><button type="button" class="inline-link" id="jog-depois">Fazer isso depois</button></p>`}`}`);
-  if (tela === "esqueci") miolo = pagina("Crie uma senha nova", `Mandamos um código para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Digite o código e a senha nova.`, `
+  // "Esqueci a senha" em dois passos (22/10/2026): o código, depois a senha nova.
+  if (tela === "esqueci" && !state.codigoConferido) miolo = pagina("Digite o código", `Mandamos um código para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Chega em até um minuto; olhe também o spam.`, `
+    ${state.codigoMandando ? `<p class="footnote">${bolaGirando(16)} Mandando o código…</p>` : ""}
     ${state.codigoFalhou ? naoMandou : `
       ${campoCodigo}
+      ${erro}
+      <button type="button" class="cta-btn cta-primary" id="jog-conferir-codigo-senha" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Continuar"}</button>
+      ${reenviar}`}`);
+  else if (tela === "esqueci") miolo = pagina("Crie uma senha nova", `Código confirmado. Agora crie a senha nova de <strong>${esc(state.jogadorLogin || f.email || "")}</strong>.`, `
       <label class="field-label" for="jog-senha-nova">Senha nova</label>
       <input class="form-field campo-codigo" data-rascunho="senha" id="jog-senha-nova" type="password" autocomplete="new-password" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
       <label class="field-label" for="jog-senha-nova2">Repita a senha nova</label>
       <input class="form-field campo-codigo" data-rascunho="senha2" id="jog-senha-nova2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc((window.__codigo || {}).senha2 || "")}" style="margin-top:0" />
       ${erro}
-      <button type="button" class="cta-btn cta-primary" id="jog-salvar-senha" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Salvando") || "Salvar a senha nova"}</button>
-      ${reenviar}`}`);
+      <button type="button" class="cta-btn cta-primary" id="jog-salvar-senha" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Salvando") || "Salvar a senha nova"}</button>`);
   if (tela === "criar") miolo = pagina("Complete o seu cadastro", "Esse e-mail ainda não tem conta no GuiaTennis. É grátis e leva um minuto.", `
     ${emailFixo}
     <label class="field-label" for="jog-nome">Nome e sobrenome</label>
@@ -12335,6 +12365,13 @@ async function conferirCodigo(email, codigo) {
   } catch { return null; }
 }
 const CODIGO_ERRADO = "Código errado ou vencido. Confira o número ou peça outro.";
+// "Esqueci a senha", primeiro passo: confere o código e guarda a sessão que
+// ele abre para o segundo (a senha nova), sem pedir o código de novo.
+async function conferirCodigoDaSenha(email, codigo) {
+  const sessao = await conferirCodigo(email, codigo);
+  state.sessaoDoCodigo = sessao ? { email, sessao } : null;
+  return !!sessao;
+}
 
 // "Esqueci a senha": confere o código e salva a senha nova. O código só vale
 // uma vez: se ele deu certo e a senha não (o Supabase recusou), o "tentar de
@@ -12494,6 +12531,8 @@ async function irParaCodigoJogador(tela) {
   state.jogadorTela = tela;
   state.jogadorErro = "";
   state.codigoFalhou = false;
+  state.codigoConferido = false;
+  state.sessaoDoCodigo = null;
   state.jogadorSalvando = false;
   state.codigoMandando = true;
   render();
@@ -12521,9 +12560,20 @@ async function confirmarCodigoJogador() {
   await depoisDeEntrarJogador();
 }
 
-async function salvarSenhaNovaJogador() {
+async function conferirCodigoDaSenhaJogador() {
   const email = state.jogadorLogin || (window.__jog && window.__jog.email) || "";
   const codigo = document.getElementById("jog-codigo")?.value || "";
+  state.jogadorSalvando = true; state.jogadorErro = ""; render();
+  const certo = await conferirCodigoDaSenha(email, codigo);
+  state.jogadorSalvando = false;
+  if (!certo) { state.jogadorErro = CODIGO_ERRADO; render(); document.getElementById("jog-codigo")?.focus(); return; }
+  state.codigoConferido = true;
+  render();
+  document.getElementById("jog-senha-nova")?.focus();
+}
+async function salvarSenhaNovaJogador() {
+  const email = state.jogadorLogin || (window.__jog && window.__jog.email) || "";
+  const codigo = (window.__codigo || {}).codigo || "";
   const senha = document.getElementById("jog-senha-nova")?.value || "";
   const errSenha = erroDaSenha(senha, document.getElementById("jog-senha-nova2")?.value || "", email);
   if (errSenha) {
@@ -12533,6 +12583,7 @@ async function salvarSenhaNovaJogador() {
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const r = await senhaNovaPeloCodigo(email, codigo, senha);
   state.jogadorSalvando = false;
+  if (r.erro === CODIGO_ERRADO) state.codigoConferido = false;
   if (r.erro) { state.jogadorErro = r.erro; render(); return; }
   const sessao = r.sessao;
   await carregarConta(sessao);
@@ -12996,6 +13047,9 @@ function ligarEventosJogador() {
   if (campoCod && confirmarCod) campoCod.onkeydown = (e) => { if (e.key === "Enter") confirmarCod.click(); };
   const depois = document.getElementById("jog-depois");
   if (depois) depois.onclick = () => { state.codigoDeMinhaConta ? abrirContaJogador("conta") : depoisDeEntrarJogador(); };
+  const conferirSenha = document.getElementById("jog-conferir-codigo-senha");
+  if (conferirSenha) conferirSenha.onclick = () => conferirCodigoDaSenhaJogador();
+  if (campoCod && conferirSenha) campoCod.onkeydown = (e) => { if (e.key === "Enter") conferirSenha.click(); };
   const salvarSenha = document.getElementById("jog-salvar-senha");
   if (salvarSenha) salvarSenha.onclick = () => salvarSenhaNovaJogador();
   const confirmarAgora = document.getElementById("jog-confirmar-agora");

@@ -154,7 +154,15 @@ const { abrir, ok } = require('./harness');
   await page.click('#jog-esqueci');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.jogadorTela === 'esqueci' && (window.__codigos || {})['ze@exemplo.com'] === '123456' && location.search.includes('conta=nova-senha')), 'Esqueceu a senha: manda o código para o e-mail');
+  ok((await page.innerText('#jogador-overlay h1')).includes('Digite o código') && !(await page.$('#jog-senha-nova')), 'primeiro passo: "Digite o código", sem os campos da senha (22/10/2026)');
+  await page.fill('#jog-codigo', '999999');
+  await page.click('#jog-conferir-codigo-senha');
+  await page.waitForTimeout(300);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('Código errado') && !(await page.$('#jog-senha-nova')), 'código errado: avisa e fica no código');
   await page.fill('#jog-codigo', '123456');
+  await page.click('#jog-conferir-codigo-senha');
+  await page.waitForTimeout(300);
+  ok((await page.innerText('#jogador-overlay h1')).includes('Crie uma senha nova') && !(await page.$('#jog-codigo')) && (await page.innerText('#jogador-overlay')).includes('Código confirmado'), 'código certo: "Crie uma senha nova", só com a senha');
   await page.fill('#jog-senha-nova', 'novasenha99');
   await page.fill('#jog-senha-nova2', 'novasenha99');
   // O Supabase recusa a senha (regra do painel): diz o motivo, e o código

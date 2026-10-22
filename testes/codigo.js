@@ -12,13 +12,20 @@ const { abrir, ok, irSenha } = require('./harness');
   await page.click('#pc-esqueci');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.pcEmailPasso === 'esqueci' && (window.__codigos || {})['dona@quadra.com.br'] === '123456' && location.search.includes('passo=nova-senha')), 'Esqueceu a senha: manda o código para o e-mail, com link próprio');
+  // Passo a passo (22/10/2026): primeiro só o código, depois a senha nova.
+  ok(await page.isVisible('#pc-codigo-senha') && !(await page.$('#pc-senha-nova')) && (await page.innerText('#pc-conferir-codigo-senha')).trim() === 'Continuar',
+    'primeiro passo: só o código, com "Continuar" (sem os campos da senha)');
   await page.fill('#pc-codigo-senha', '111111');
+  await page.click('#pc-conferir-codigo-senha');
+  await page.waitForTimeout(300);
+  ok((await page.evaluate(() => document.querySelector('#parceiros .form-error')?.innerText || '')).includes('Código errado') && !(await page.$('#pc-senha-nova')), 'código errado: avisa e fica no código');
+  await page.fill('#pc-codigo-senha', '123456');
+  await page.press('#pc-codigo-senha', 'Enter');
+  await page.waitForTimeout(300);
+  ok(!(await page.$('#pc-codigo-senha')) && await page.isVisible('#pc-senha-nova') && (await page.innerText('.pc-codigo-ok')).includes('Código confirmado. Agora crie a senha nova.') && await page.evaluate(() => document.activeElement?.id === 'pc-senha-nova'),
+    'código certo (Enter também vale): segundo passo, só a senha nova, com o cursor nela');
   await page.fill('#pc-senha-nova', 'novasenha77');
   await page.fill('#pc-senha-nova2', 'novasenha77');
-  await page.click('#pc-salvar-senha-nova');
-  await page.waitForTimeout(300);
-  ok((await page.evaluate(() => document.querySelector('#parceiros .form-error')?.innerText || '')).includes('Código errado'), 'código errado: avisa');
-  await page.fill('#pc-codigo-senha', '123456');
   await page.click('#pc-salvar-senha-nova');
   await page.waitForTimeout(700);
   const entrou = await page.evaluate(() => ({ aba: state.parceirosAba, senha: window.__senhas['dona@quadra.com.br'], conta: !!contaAcademia, confirmado: contaAcademia && contaAcademia.emailConfirmado }));

@@ -3265,6 +3265,10 @@ cobra taxa e não fica no meio** da negociação.
     Plano); (3) no **Premium**, sem promoção valendo, "Publique uma
     promoção" (Promoções › Na ficha); com promoção e sem lance na semana,
     "Entre no leilão de promoções" e "Ver o leilão ›" (Leilão; regra 143).
+    Conta com mais de uma semana (`acessoAntigo`, pelo `created_at` de
+    `academia_acessos`) e a ficha ainda incompleta (o Breno, em 22/10: "sim",
+    também as dicas de plano): um dia a parte que falta, no outro a dica de
+    venda (`dicaDeVenda`: o plano de cima ou, no Premium, a promoção).
     `agendarDicaDoParceiros` (depois de cada render): só com a academia e o
     acesso completo, numa página da conta, **no máximo uma por dia e por
     academia** (a hora fica no aparelho, `guiatennis_dica_parceiros_v1`,

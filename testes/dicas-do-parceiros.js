@@ -44,6 +44,17 @@ async function pedirDica(page) {
   await pedirDica(page);
   dica = await texto(page, '#gt-dica');
   ok(dica.startsWith('Diga o preço da aula ou da locação') && dica.includes('É o que o jogador compara primeiro.'), 'com as fotos, a próxima é o preço — ' + dica);
+  // Conta de mais de uma semana com a ficha incompleta: um dia a parte que
+  // falta, no outro o plano de cima (22/10/2026: "sim").
+  const alterna = await page.evaluate(async () => {
+    const tipos = () => [10, 11, 12, 13].map(d => dicaDoParceiros(minhaAcademia(), 'basico', d).tipo).join(',');
+    const nova = tipos();
+    window.__db.academia_acessos.find(x => x.academia_id === 'a1').created_at = new Date(Date.now() - 30 * 86400000).toISOString();
+    await recarregarConta();
+    return { nova, antiga: tipos(), premium: dicaDoParceiros(minhaAcademia(), 'premium', 11).tipo };
+  });
+  ok(alterna.nova === 'ficha,ficha,ficha,ficha' && alterna.antiga === 'ficha,plano,ficha,plano' && alterna.premium === 'promocao',
+    'acesso novo: só a ficha; com mais de uma semana, um dia a ficha e no outro o plano (no Premium, a promoção) — ' + JSON.stringify(alterna));
 
   // ---- ficha completa no Básico: o plano de cima ----
   await fichaCompleta(page, foto);

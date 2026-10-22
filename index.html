@@ -6285,7 +6285,7 @@ function contaDeLinha(x) {
     pedidoAcademiaId: x.pedido_academia_id || null, pedidoNome: x.pedido_nome || "",
     pedidoEm: x.pedido_em || null, pedidoDestino: x.pedido_destino || "",
     emailConfirmado: !!x.email_confirmado_em,
-    fichaAtualizadaEm: x.ficha_atualizada_em || null,
+    fichaAtualizadaEm: x.ficha_atualizada_em || null, criadaEm: x.created_at || null,
     // Avaliação nova e pedidos de acesso por e-mail (SQL 20261005160000):
     // começam ligados; banco sem a coluna conta como ligado.
     avisosPorEmail: x.avisos_por_email !== false, temAvisos: "avisos_por_email" in x,
@@ -8054,7 +8054,10 @@ function oportunidadesDoPlano(c, atual) {
 // ficha, com o porquê, e o atalho que abre a parte; (2) com a ficha
 // completa, fora do Premium, o plano de cima (o que ele mostra do que já foi
 // preenchido, ou uma dor que ele resolve, um dia cada uma); (3) no Premium,
-// publicar uma promoção ou mandá-la por e-mail no leilão da semana.
+// publicar uma promoção ou mandá-la por e-mail no leilão da semana. Conta com
+// mais de uma semana e a ficha ainda incompleta (o Breno, em 22/10/2026:
+// "sim", também as dicas de plano): um dia a parte que falta, no outro o
+// plano de cima (ou, no Premium, a promoção).
 const DICAS_DA_FICHA = [
   { falta: "WhatsApp", passo: "contato", t: "Informe o WhatsApp da academia", s: "É o botão que o jogador toca para chamar vocês.", bt: "Informar o WhatsApp" },
   { falta: "Endereço", passo: "dados", t: "Complete o endereço", s: "É o que faz a academia aparecer para quem busca perto.", bt: "Completar o endereço" },
@@ -8067,11 +8070,21 @@ const DICAS_DA_FICHA = [
   { falta: "Cancelamento", passo: "cancelamento", t: "Explique o cancelamento e a reposição", s: "Tira a dúvida que mais trava a primeira aula.", bt: "Explicar o cancelamento" },
   { falta: "Como chegar", passo: "chegada", t: "Conte como chegar", s: "Fachada, entrada e onde estacionar: é o que mais evita o jogador passar direto.", bt: "Explicar como chegar" },
 ];
-function dicaDoParceiros(c, plano, dia = Math.floor(Date.now() / 86400000)) {
+function acessoAntigo() {
+  const desde = contaAcademia && Date.parse(contaAcademia.criadaEm || "");
+  return !!desde && Date.now() - desde >= 7 * 86400000;
+}
+function dicaDoParceiros(c, plano, dia = Math.floor(Date.now() / 86400000), antigo = acessoAntigo()) {
   if (!c) return null;
   const faltas = faltasDaFicha(c);
   const ficha = DICAS_DA_FICHA.find(x => faltas.includes(x.falta));
-  if (ficha) return { tipo: "ficha", ic: "edit", t: ficha.t, s: ficha.s, bt: ficha.bt, fn: () => abrirEdicaoDaFicha(c, { passo: ficha.passo }) };
+  const daFicha = ficha && { tipo: "ficha", ic: "edit", t: ficha.t, s: ficha.s, bt: ficha.bt, fn: () => abrirEdicaoDaFicha(c, { passo: ficha.passo }) };
+  if (!daFicha) return dicaDeVenda(c, plano, dia);
+  if (!antigo || dia % 2 === 0) return daFicha;
+  return dicaDeVenda(c, plano, Math.floor(dia / 2)) || daFicha;
+}
+// O plano de cima ou, no Premium, a promoção e o leilão.
+function dicaDeVenda(c, plano, dia) {
   const prox = proximoPlano(plano);
   if (prox) {
     const integral = c.integral || c;

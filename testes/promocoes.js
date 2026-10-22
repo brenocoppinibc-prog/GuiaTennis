@@ -44,7 +44,7 @@ async function publicar(page) {
   }));
   ok(r.args && r.args.p_academia === 'a1' && r.args.p_id === null && r.args.p_titulo === 'Primeira aula grátis' && r.args.p_valida_ate,
     'publica com a academia, o título, os detalhes e a validade');
-  ok(r.aviso.includes('Promoção publicada na ficha e na busca') && r.args.p_avisar === false, 'publicar na ficha não manda e-mail (o e-mail é a parte Por e-mail) — ' + r.aviso);
+  ok(r.aviso.includes('Promoção publicada na ficha e na busca') && r.args.p_avisar === false, 'publicar na ficha não manda e-mail (o e-mail é o Leilão) — ' + r.aviso);
   ok(r.lista.length === 1 && /valendo/i.test(r.lista[0]) && /Válida até \d+ de [a-zç]+/.test(r.lista[0]) && r.lista[0].includes('Mandar por e-mail'), 'a promoção aparece na lista, valendo, com "Mandar por e-mail" — ' + r.lista[0]);
   ok(r.site.join() === 'Primeira aula grátis', 'e já aparece no site');
   await page.click('[data-promo-mudar]');

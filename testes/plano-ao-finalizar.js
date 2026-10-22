@@ -117,4 +117,16 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   await page.waitForTimeout(800);
   ok((await texto(page, '#register-overlay')).includes('Já estão na ficha'), 'no Premium, editar salva direto, sem a tela do plano');
   await browser.close();
+
+  // ---- Academia nova no ar com o Premium: a tela de pronto diz um plano só (22/10/2026) ----
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' }));
+  await page.waitForTimeout(300);
+  const pronto = await page.evaluate(() => {
+    window.__form = { name: 'Academia Nova', quadras: {}, amenities: [], modalidades: [], photos: [], politica: {}, acesso: {}, horario: {}, __noAr: 'a9', __plano: 'basico', __planoEscolhido: 'premium', __planoMudou: true };
+    state.showRegister = true; state.registerStatus = 'done'; render();
+    return document.querySelector('#register-overlay .form-success')?.innerText || '';
+  });
+  ok(pronto.includes('Ela já aparece na busca, no plano Premium') && !pronto.includes('Básico') && !/grátis|R\$/.test(pronto),
+    'no ar com o Premium: "no plano Premium", sem falar do Básico nem de preço — ' + pronto.replace(/\s+/g, ' '));
+  await browser.close();
 })();

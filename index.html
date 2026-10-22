@@ -97,6 +97,34 @@
   .pc-leilao-dados span { color: var(--muted); flex-shrink: 0; }
   .pc-leilao-dados strong { font-weight: 600; text-align: right; }
   .pc-leilao-dados a { color: var(--green); white-space: nowrap; }
+  .pc-leilao-passo .trilha, .pc-pagina > .trilha { margin: 14px 0; }
+  .pc-leilao-como { margin: 12px 0 0; padding: 0; list-style: none; counter-reset: passo; display: grid; gap: 14px; }
+  .pc-leilao-como li { counter-increment: passo; display: grid; grid-template-columns: 28px 1fr; column-gap: 12px; font-size: 14.5px; line-height: 1.45; }
+  .pc-leilao-como li::before { content: counter(passo); grid-row: span 2; width: 28px; height: 28px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .pc-leilao-como strong { color: var(--text); }
+  .pc-leilao-como span { color: var(--muted); }
+  .pc-leilao-acoes { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
+  .pc-leilao-acoes .cta-btn { margin: 0; width: auto; padding-left: 22px; padding-right: 22px; }
+  .pc-leilao-acoes .pc-passo-voltar { margin: 0; }
+  .pc-leilao-veredito { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: var(--green-soft); color: var(--text); }
+  .pc-leilao-check { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+  .pc-leilao-check li { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: var(--muted); }
+  .pc-leilao-check li svg { flex-shrink: 0; margin-top: 3px; }
+  .pc-leilao-check strong { color: var(--text); }
+  .pc-lance-explica { margin: 12px 0 4px; padding: 12px 14px; border-radius: 12px; background: var(--bg-alt); font-size: 14px; line-height: 1.5; color: var(--text); }
+  .pc-lance-explica p { margin: 0; }
+  .pc-lance-exemplo { margin-top: 8px !important; color: var(--muted); }
+  .pc-leilao-ganhou { border-color: var(--green-line); background: var(--green-soft); }
+  .pc-leilao-linha { list-style: none; margin: 14px 0 0; padding: 0; }
+  .pc-leilao-linha li { position: relative; display: grid; grid-template-columns: 22px 1fr; column-gap: 12px; padding-bottom: 16px; }
+  .pc-leilao-linha li:not(:last-child)::after { content: ""; position: absolute; left: 10px; top: 24px; bottom: 2px; width: 2px; background: var(--border); }
+  .pc-leilao-linha li.feito:not(:last-child)::after { background: var(--green); }
+  .pc-linha-ponto { width: 22px; height: 22px; border-radius: 999px; border: 2px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+  .pc-leilao-linha li.feito .pc-linha-ponto { background: var(--green); border-color: var(--green); }
+  .pc-leilao-linha li.agora .pc-linha-ponto { border-color: var(--green); box-shadow: inset 0 0 0 4px var(--card), inset 0 0 0 11px var(--green); }
+  .pc-leilao-linha strong { display: block; font-size: 14.5px; color: var(--text); }
+  .pc-leilao-linha div span { display: block; margin-top: 2px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+  .pc-leilao-sua { margin-top: 4px; }
   .pc-lance-resumo { margin-top: 12px; }
   /* Comprar créditos (19/10/2026). */
   .pc-compra { position: relative; }
@@ -4339,7 +4367,7 @@ function telaDoPercurso() {
   if (state.page === "parceiros") {
     const aba = state.parceirosAba || "inicio";
     const nomes = { inicio: "Apresentação", planos: "Planos", ajuda: "Ajuda", cadastro: "Cadastro", entrar: "Entrar", painel: "Atualizações",
-      desempenho: "Desempenho", avaliacoes: "Avaliações", promocoes: "Promoções na ficha", "promocoes-email": "Promoções por e-mail", ficha: "Minha ficha", pessoas: "Acessos", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
+      desempenho: "Desempenho", avaliacoes: "Avaliações", promocoes: "Promoções na ficha", "promocoes-email": "Leilão de promoções", ficha: "Minha ficha", pessoas: "Acessos", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
     let texto = nomes[aba] || aba;
     if ((aba === "cadastro" || aba === "entrar") && !contaAcademia) {
       const passo = state.pcEmailPasso || "email";
@@ -5200,7 +5228,7 @@ function seoDaPagina() {
     // (?academia=) e as páginas de quem está logado ficam de fora.
     const noGoogle = titulos[aba] && !(aba === "cadastro" && state.pcReivindicar);
     return {
-      titulo: titulos[aba] || `${aba === "promocoes-email" ? "Promoções por e-mail" : (PC_MENU_LOGADO.find(i => i.aba === aba) || {}).t || (aba === "ver" ? "Ver como academia" : "Entrar")} · GuiaTennis Parceiros`,
+      titulo: titulos[aba] || `${aba === "promocoes-email" ? "Leilão de promoções" : (PC_MENU_LOGADO.find(i => i.aba === aba) || {}).t || (aba === "ver" ? "Ver como academia" : "Entrar")} · GuiaTennis Parceiros`,
       descricao: "Cadastre a sua academia de tênis no GuiaTennis: apareça para quem procura aula e quadra na região e receba contato direto no WhatsApp, sem comissão.",
       robots: noGoogle ? "" : "noindex, follow",
     };
@@ -7858,7 +7886,7 @@ function perguntasParceiros() {
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
     { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "No plano Premium, em Promoções › Na ficha, a academia publica uma promoção por vez, por até 90 dias: por exemplo, \"Primeira aula grátis\". Elas aparecem na ficha e no resultado da busca, com a validade, e somem sozinhas quando vencem. Para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" (veja \"Como funciona o leilão das promoções por e-mail?\"). A academia responde pelo que anuncia e combina as condições direto com o jogador." },
-    { id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e favoritou uma academia de lá ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. Nos planos Completo e Premium, em Promoções › Por e-mail, a academia escreve a promoção (ou usa a da ficha) e dá um lance até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. Quem ganha paga só o necessário para passar o seguinte, mais R$ 1, nunca mais que o próprio lance; no Premium, paga 20% menos. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos, comprados antes no próprio Parceiros, com Pix ou cartão (pelo Mercado Pago)." },
+    { id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e favoritou uma academia de lá ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. Nos planos Completo e Premium, em Promoções › Leilão, passo a passo, a academia vê se vale a pena, escreve a promoção (ou usa a da ficha) e dá um lance máximo até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. O lance máximo é o teto, não o preço: quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que o lance máximo; no Premium, paga 20% menos. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos, comprados antes no próprio Parceiros, com Pix ou cartão (pelo Mercado Pago)." },
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
     { id: "desempenho", q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
     { q: "Como mudo de plano?", a: "Em Plano, o responsável principal escolhe o plano e ele muda na hora, sem mexer na ficha. Por enquanto, todos os planos são grátis. Quem administra a academia recebe um e-mail com o que muda." },
@@ -7872,7 +7900,7 @@ function abaDoParceiro(aba) {
   if (aba === "conta") return "perfil";
   // "Pessoas" virou "Acessos" (13/10/2026): /parceiros/acessos e o antigo /parceiros/pessoas.
   if (aba === "acessos") return "pessoas";
-  // "Avisos por e-mail" virou Promoções › Por e-mail (16/10/2026).
+  // "Avisos por e-mail" virou Promoções › Por e-mail (16/10/2026), hoje Leilão (22/10/2026).
   if (aba === "avisos") return "promocoes-email";
   if (PC_PUBLICAS.includes(aba) || PC_PRIVADAS.includes(aba) || PC_ADMIN.includes(aba)) return aba;
   return "inicio";
@@ -7907,7 +7935,7 @@ function irParceiros(aba, opcoes = {}) {
   if ((aba === "painel" || aba === "desempenho") && temAcademia() && acessoCompleto()) carregarNumeros();
   if ((aba === "painel" || aba === "pessoas") && temAcademia() && acessoCompleto()) { carregarPedidosDeAcesso(); carregarPessoas(); }
   if (aba === "promocoes" && temAcademia() && acessoCompleto()) { state.pcPromoMsg = null; state.pcPromoEditando = null; state.pcPromoForm = null; carregarPromocoesDaAcademia(); }
-  if (aba === "promocoes-email" && temAcademia() && acessoCompleto()) { state.pcEmailMsg = null; if (!opcoes.manterForm) { state.pcEmailForm = null; state.pcEmailPasso = null; state.pcEmailEditando = false; } carregarPromocoesDaAcademia(); }
+  if (aba === "promocoes-email" && temAcademia() && acessoCompleto()) { state.pcEmailMsg = null; if (!opcoes.manterForm) { state.pcEmailForm = null; state.pcEmailEditando = false; state.pcLeilaoPasso = undefined; } carregarPromocoesDaAcademia(); }
   syncUrl(!opcoes.substituir);
   render();
   if (opcoes.ancora) {
@@ -8011,7 +8039,7 @@ function oportunidadesDoPlano(c, atual) {
   if (faltas.length) itens.push({ t: `Completar a ficha: falta ${faltas.slice(0, 3).join(", ")}${faltas.length > 3 ? "…" : ""}`, d: "Ficha completa recebe mais contato" + (atual === "basico" ? "." : " e sobe entre as recomendadas."), ir: "ficha", bt: "Completar a ficha" });
   const semResposta = getReviews(c.id).filter(r => !r.resposta).length;
   if (semResposta) itens.push({ t: `Responder ${semResposta === 1 ? "1 avaliação" : semResposta + " avaliações"}`, d: "Quem vai escolher lê as respostas da academia.", ir: "avaliacoes", bt: "Responder" });
-  if (atual !== "basico" && !saldoDeEnvios()) itens.push({ t: "Dar um lance no e-mail do bairro", d: "A promoção chega por e-mail aos jogadores perto da academia.", ir: "promocoes-email", bt: "Promoções por e-mail" });
+  if (atual !== "basico" && !saldoDeEnvios()) itens.push({ t: "Dar um lance no e-mail do bairro", d: "A promoção chega por e-mail aos jogadores perto da academia.", ir: "promocoes-email", bt: "Leilão de promoções" });
   if (atual === "premium" && !(state.pcPromocoes || []).some(x => x.valendo)) itens.push({ t: "Publicar uma promoção", d: "Ela aparece na ficha e no resultado da busca.", ir: "promocoes", bt: "Promoções na ficha" });
   if (!itens.length) itens.push({ t: "Imprimir o QR code da ficha", d: "Na recepção, quem jogou avalia a academia na hora.", ir: "ficha", bt: "Minha ficha" });
   return itens;
@@ -8056,7 +8084,7 @@ function dicaDoParceiros(c, plano, dia = Math.floor(Date.now() / 86400000)) {
     return null;
   }
   if (!promocoesDe(c).length) return { tipo: "promocao", ic: "tag", t: "Publique uma promoção", s: "Ela aparece na ficha e no resultado da busca para quem procura perto.", bt: "Publicar uma promoção", fn: () => irParceiros("promocoes") };
-  if (!(state.pcLeilao || {}).lance) return { tipo: "email", ic: "mail", t: "Mande a promoção por e-mail", s: "No leilão da semana, ela chega aos jogadores do bairro que pediram promoções.", bt: "Dar um lance", fn: () => irParceiros("promocoes-email") };
+  if (!(state.pcLeilao || {}).lance) return { tipo: "email", ic: "mail", t: "Entre no leilão de promoções", s: "Toda semana, duas promoções do bairro vão por e-mail aos jogadores que pediram promoções.", bt: "Ver o leilão", fn: () => irParceiros("promocoes-email") };
   return null;
 }
 // No máximo uma por dia e por academia (a hora da última fica no aparelho,
@@ -9942,14 +9970,14 @@ function alcanceDoLeilao(n) {
   return `cerca de ${Math.floor(n / 10) * 10} jogadores`;
 }
 
-// O topo das duas partes, com as abas "Na ficha" e "Por e-mail" (como as
+// O topo das duas partes, com as abas "Na ficha" e "Leilão" (como as
 // abas de "Minhas quadras").
 function pcTopoDasPromocoes(c, parte) {
   const aba = (k, t, ic) => `<a href="${esc(caminhoDosParceiros(k))}" role="tab" class="lista-aba${parte === k ? " on" : ""}" aria-selected="${parte === k}" data-pc="${k}">${icon(ic, 14, 'currentColor')} ${t}</a>`;
   return `
     ${pcNomeDaAcademia(c)}<h1 class="display">Promoções</h1>
     <div class="lista-abas pc-promo-partes" role="tablist" aria-label="Onde a promoção aparece">
-      ${aba("promocoes", "Na ficha", "tag")}${aba("promocoes-email", "Por e-mail", "sino")}
+      ${aba("promocoes", "Na ficha", "tag")}${aba("promocoes-email", "Leilão", "sino")}
     </div>`;
 }
 
@@ -9966,6 +9994,55 @@ function resultadoDoLance(x) {
   return "";
 }
 
+// O leilão de promoções em passos (pedido do Breno em 22/10/2026: "faça isso
+// passo a passo, se quer participar ou não… desde escolhendo a notícia até
+// comprar crédito e fazer o lance… entender como funciona o leilão, analisar
+// se vale a pena, entrar e fazer a promoção, comprar crédito ou já fazer o
+// lance, uma página de andamento do leilão"), como a criação de campanha do
+// Google Ads e o "Lances" do trivago Business Studio: como funciona › vale a
+// pena? › promoção › lance (com os créditos) › revisar. Com o lance dado, a
+// página de andamento, até o e-mail sair.
+const LEILAO_PASSOS = ["Como funciona", "Vale a pena?", "Promoção", "Lance", "Revisar"];
+function emReais(v) {
+  return "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 });
+}
+// O que a academia paga se ganhar, com fichas de qualidade igual: o
+// suficiente para passar a seguinte, mais R$ 1, entre o mínimo e o próprio
+// lance; no Premium, com o desconto (como fechar_leiloes, no banco).
+function precoDoLance(valor, seguinte, L, premium) {
+  const minimo = Number(L.lance_minimo || 10);
+  let p = Math.min(valor, Math.max(seguinte ? seguinte + 1 : minimo, minimo));
+  if (premium) p = Math.max(1, Math.floor(p * (1 - Number(L.desconto_premium || 0))));
+  return p;
+}
+function exemploDoLance(valor, L, premium) {
+  const minimo = Number(L.lance_minimo || 10);
+  const v = Number.isInteger(valor) && valor >= minimo + 2 ? valor : 85;
+  const seguinte = Math.max(minimo, Math.round(v * 0.6));
+  const desconto = Math.round(Number(L.desconto_premium || 0) * 100);
+  const paga = precoDoLance(v, seguinte, L, false);
+  return `Exemplo: você oferece até ${emReais(v)} e a academia seguinte oferece ${emReais(seguinte)}. Se as duas fichas tiverem a mesma qualidade, você ganha e paga ${emReais(paga)}${premium && desconto ? ` (${emReais(precoDoLance(v, seguinte, L, true))} com o desconto de ${desconto}% do Premium)` : ""}, não os ${emReais(v)}.`;
+}
+// O que conta na nota (qualidade_do_lance, no banco): fotos, avaliações e a
+// promoção bem explicada.
+function qualidadeDoLeilao(c, mensagem) {
+  const avs = getReviews(c.id);
+  const media = avs.length ? avs.reduce((s, r) => s + Number(r.stars || 0), 0) / avs.length : 0;
+  const fotos = ((c.integral || c).photos || []).length > 0;
+  const texto = String(mensagem || "").trim().length;
+  return [
+    { ok: fotos, t: "Fotos na ficha", d: fotos ? "A ficha tem fotos." : "Adicione fotos na ficha." },
+    { ok: avs.length ? media >= 4 : null, t: "Avaliações", d: !avs.length ? "Ainda sem avaliações: conta metade." : media >= 4 ? `Média ${media.toFixed(1).replace(".", ",")} nas avaliações.` : "A média das avaliações está abaixo de 4." },
+    { ok: mensagem === undefined ? null : texto >= 40, t: "Promoção bem explicada", d: mensagem === undefined ? "Conta no passo da promoção: 40 letras ou mais na mensagem." : texto >= 40 ? "A mensagem explica bem a promoção." : "Escreva 40 letras ou mais na mensagem." },
+  ];
+}
+function listaDeQualidade(itens) {
+  return `<ul class="pc-leilao-check">${itens.map(x => `<li class="${x.ok ? "ok" : x.ok === false ? "falta" : ""}">${icon(x.ok ? 'check' : x.ok === false ? 'warning' : 'info', 14, x.ok ? 'var(--green)' : x.ok === false ? 'var(--gold)' : 'var(--muted)')}<span><strong>${esc(x.t)}</strong> · ${esc(x.d)}</span></li>`).join("")}</ul>`;
+}
+function botoesDoPasso(voltar, seguir) {
+  return `<div class="pc-leilao-acoes">${voltar ? `<button type="button" class="pc-passo-voltar" id="pc-leilao-voltar">${icon('chevronLeft', 15, 'currentColor')} Voltar</button>` : "<span></span>"}${seguir}</div>`;
+}
+
 function pcPromocoesPorEmail() {
   const c = minhaAcademia();
   if (!c) return pcSemFicha();
@@ -9974,7 +10051,7 @@ function pcPromocoesPorEmail() {
     return `
       <section class="pc-pagina">
         ${topo}
-        ${blocoTrancado("completo", "Sua promoção no e-mail do GuiaTennis", "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro as promoções das academias de lá. As academias dão lances, e as duas maiores ganham.")}
+        ${blocoTrancado("completo", "Sua promoção no e-mail do GuiaTennis", "Toda semana, um leilão por bairro escolhe as promoções que o GuiaTennis manda por e-mail aos jogadores de lá. As duas maiores notas ganham.")}
       </section>`;
   }
   const L = state.pcLeilao;
@@ -9990,79 +10067,186 @@ function pcPromocoesPorEmail() {
         </div>
       </section>`;
   }
+  const saldo = saldoDeEnvios();
+  const resumo = `
+      <div class="pc-card pc-leilao" id="pc-leilao">
+        <p class="pc-card-t">${icon('sino', 16, 'var(--green)')} Leilão de ${esc(L.regiao_nome)}</p>
+        <ul class="pc-leilao-dados">
+          <li><span>Fecha</span><strong>${esc(quandoEmBrasilia(L.fecha_em))}</strong></li>
+          <li><span>Créditos</span><strong>${saldo ? emReais(saldo) : "Sem créditos"} · <button type="button" class="inline-link" id="pc-comprar-creditos">Comprar ›</button></strong></li>
+        </ul>
+      </div>
+      ${state.pcCompra && state.pcCompra.tipo !== "plano" ? pcComprarCreditos(c) : ""}`;
+  const meio = L.lance && !state.pcEmailEditando ? andamentoDoLeilao(c, L) : passoDoLeilao(c, L);
+  return `
+    <section class="pc-pagina">
+      ${topo}
+      ${resumo}
+      ${meio}
+      ${historicoDoLeilao(L)}
+    </section>`;
+}
+
+// O recado da última ação (lance salvo, erro do passo), dentro do cartão.
+function avisoDoLeilao() {
+  const msg = state.pcEmailMsg;
+  return msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}" ${msg.tipo === "ok" ? 'role="status"' : 'role="alert"'} style="margin-bottom:14px">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : "";
+}
+// O passo da vez (state.pcLeilaoPasso). Quem já participou começa no "Vale a
+// pena?"; quem muda o lance, na promoção.
+function passoDoLeilaoAtual(L) {
+  const p = state.pcLeilaoPasso;
+  if (Number.isInteger(p)) return Math.max(0, Math.min(LEILAO_PASSOS.length - 1, p));
+  return (L.historico || []).length ? 1 : 0;
+}
+function passoDoLeilao(c, L) {
+  const i = passoDoLeilaoAtual(L);
   const bairro = bairroDoLeilao(L);
   const saldo = saldoDeEnvios();
   const minimo = Number(L.lance_minimo || 10);
   const premium = c.plano === "premium";
   const desconto = Math.round(Number(L.desconto_premium || 0) * 100);
-  const aberto = L.lance;
-  const editando = !aberto || state.pcEmailEditando;
-  const f = state.pcEmailForm || (aberto ? { titulo: aberto.titulo, mensagem: aberto.mensagem, valor: aberto.valor } : { titulo: "", mensagem: "", valor: "" });
-  const msg = state.pcEmailMsg;
-  const daFicha = promocoesLiberadas(c) ? (state.pcPromocoes || []).filter(x => x.valendo) : [];
-  const valor = Number(f.valor || 0);
-  const bloqueio = valor > saldo ? (saldo ? `A academia tem R$ ${saldo} em créditos. Compre créditos ou dê um lance menor.` : "Sem créditos, o lance não entra. Compre créditos para dar o lance.") : "";
   const envios = L.envios || [];
-  return `
-    <section class="pc-pagina">
-      ${topo}
-      <p class="pc-sec-sub">Duas vezes por semana, o GuiaTennis manda aos jogadores de ${esc(bairro)} as promoções das academias de lá. Ganham os dois maiores lances. ${saibaMaisNaAjuda("promocoes-email")}</p>
-      <div class="pc-card pc-leilao" id="pc-leilao">
-        <p class="pc-card-t">${icon('sino', 16, 'var(--green)')} Leilão de ${esc(L.regiao_nome)}</p>
-        <ul class="pc-leilao-dados">
-          <li><span>Fecha</span><strong>${esc(quandoEmBrasilia(L.fecha_em))}</strong></li>
-          <li><span>E-mails</span><strong>1º lugar ${esc(quandoEmBrasilia(envios[0]))}; 2º ${esc(quandoEmBrasilia(envios[1]))}</strong></li>
-          <li><span>Alcance</span><strong>${esc(alcanceDoLeilao(L.alcance))}</strong></li>
-          <li><span>Lance mínimo</span><strong>R$ ${minimo}</strong></li>
-          <li><span>Créditos</span><strong>${saldo ? `R$ ${esc(saldo)}` : "Sem créditos"} · <button type="button" class="inline-link" id="pc-comprar-creditos">Comprar ›</button></strong></li>
-        </ul>
+  const aberto = L.lance;
+  const f = state.pcEmailForm || (aberto ? { titulo: aberto.titulo, mensagem: aberto.mensagem, valor: aberto.valor } : { titulo: "", mensagem: "", valor: "" });
+  const valor = Number(f.valor || 0);
+  const ultimo = (L.historico || [])[0];
+  const resultado = ultimo && ultimo.situacao === "ganhou" ? `
+      <div class="pc-card pc-leilao-ganhou">
+        <p class="pc-card-t">${icon('check', 16, 'var(--green)')} Você ganhou o ${ultimo.posicao === 2 ? "2º" : "1º"} lugar no último leilão</p>
+        <p class="pc-card-s">"${esc(ultimo.titulo)}" sai por e-mail ${esc(quandoEmBrasilia(ultimo.envio_em))}. Custo: ${emReais(Number(ultimo.preco || 0))}.</p>
+      </div>` : "";
+  let corpo = "";
+  if (i === 0) corpo = `
+      <p class="pc-card-t">Como funciona o leilão de promoções</p>
+      <ol class="pc-leilao-como">
+        <li><strong>Um leilão por bairro, toda semana</strong><span>As academias de ${esc(bairro)} dão lances até ${esc(quandoEmBrasilia(L.fecha_em))}. Ninguém vê o lance das outras.</span></li>
+        <li><strong>A nota decide, não só o valor</strong><span>A nota é o lance multiplicado pela qualidade: fotos na ficha, boas avaliações e uma promoção bem explicada. Uma ficha caprichada pode ganhar com um lance menor.</span></li>
+        <li><strong>Duas promoções por semana chegam aos jogadores</strong><span>A maior nota sai por e-mail na terça e a segunda, na sexta, às 10h, para os jogadores do bairro que pediram promoções. Ela vem marcada como patrocinada.</span></li>
+        <li><strong>Você só paga se ganhar</strong><span>Você define o máximo que aceita pagar. Se ganhar, paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1${premium && desconto ? `, com ${desconto}% de desconto no Premium` : ""}. Se não ganhar, ou se nenhum jogador receber o e-mail, nada é cobrado.</span></li>
+      </ol>
+      ${botoesDoPasso(false, `<button type="button" class="cta-btn cta-primary" id="pc-leilao-continuar">Continuar ›</button>`)}`;
+  else if (i === 1) {
+    const alcance = Number(L.alcance || 0);
+    const hist = (L.historico || []).filter(x => ["enviado", "ganhou", "perdeu"].includes(x.situacao));
+    const ganhos = hist.filter(x => x.situacao !== "perdeu");
+    const pagos = ganhos.map(x => Number(x.preco || 0)).filter(Boolean);
+    corpo = `
+      <p class="pc-card-t">Vale a pena entrar nesta semana?</p>
+      <ul class="pc-leilao-dados pc-leilao-analise">
+        <li><span>Quem recebe</span><strong>${alcance ? `${esc(alcanceDoLeilao(alcance))} de ${esc(bairro)}` : "Ainda nenhum jogador"}</strong></li>
+        <li><span>Lance mínimo</span><strong>${emReais(minimo)}</strong></li>
+        ${alcance ? `<li><span>Custo por jogador</span><strong>a partir de ${emReais(Math.round(minimo / alcance * 100) / 100)}</strong></li>` : ""}
+        <li><span>E-mails</span><strong>1º lugar ${esc(quandoEmBrasilia(envios[0]))}; 2º ${esc(quandoEmBrasilia(envios[1]))}</strong></li>
+        ${hist.length ? `<li><span>Seus leilões</span><strong>${ganhos.length} de ${hist.length} ${plural(hist.length, "ganho", "ganhos")}${pagos.length ? ` · média de ${emReais(Math.round(pagos.reduce((a, b) => a + b, 0) / pagos.length))}` : ""}</strong></li>` : ""}
+      </ul>
+      <p class="pc-card-s pc-leilao-veredito">${alcance
+        ? `A partir de ${emReais(minimo)}, a promoção da ${esc(c.name)} chega a ${esc(alcanceDoLeilao(alcance))} que procuram tênis em ${esc(bairro)}.`
+        : `Ainda não há jogadores de ${esc(bairro)} que pediram promoções. Se ganhar e ninguém receber, o valor volta para os créditos.`}</p>
+      <p class="field-label">O que soma na nota da sua academia</p>
+      ${listaDeQualidade(qualidadeDoLeilao(c))}
+      <div class="pc-leilao-acoes">
+        <button type="button" class="inline-link" id="pc-leilao-agora-nao">Agora não</button>
+        <button type="button" class="cta-btn cta-primary" id="pc-leilao-participar">Quero participar ›</button>
+      </div>`;
+  } else if (i === 2) {
+    const daFicha = promocoesLiberadas(c) ? (state.pcPromocoes || []).filter(x => x.valendo) : [];
+    corpo = `
+      <p class="pc-card-t">Qual promoção vai no e-mail?</p>
+      <p class="pc-card-s">É o que os jogadores de ${esc(bairro)} vão ler. Seja direto: o que é, para quem e até quando.</p>
+      ${daFicha.length ? `
+      <p class="field-label" style="margin-top:12px">Usar a promoção da ficha</p>
+      <div class="chip-row pc-email-da-ficha">${daFicha.map(x => `<button type="button" class="chip small" data-promo-email="${x.id}">${icon('tag', 13, 'currentColor')} ${esc(x.titulo)}</button>`).join("")}</div>` : ""}
+      <label class="field-label" for="pc-email-titulo">Promoção</label>
+      <input class="form-field pc-email-campo" data-campo="titulo" id="pc-email-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
+      <label class="field-label" for="pc-email-mensagem">Mensagem</label>
+      <textarea class="form-field pc-email-campo" data-campo="mensagem" id="pc-email-mensagem" maxlength="500" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." style="margin-top:0">${esc(f.mensagem)}</textarea>
+      <p class="footnote" style="margin-top:6px">Com 40 letras ou mais, a mensagem soma na nota.</p>
+      ${previaDoEmail(c, f, bairro)}
+      ${botoesDoPasso(true, `<button type="button" class="cta-btn cta-primary" id="pc-leilao-continuar">Continuar ›</button>`)}`;
+  } else if (i === 3) {
+    const falta = valor > saldo;
+    corpo = `
+      <p class="pc-card-t">Quanto você aceita pagar, no máximo?</p>
+      <label class="field-label" for="pc-email-valor">Seu lance máximo (R$)</label>
+      <input class="form-field pc-email-campo" data-campo="valor" id="pc-email-valor" type="number" inputmode="numeric" min="${minimo}" step="1" placeholder="A partir de R$ ${minimo}" value="${esc(f.valor)}" style="margin-top:0" />
+      <div class="pc-lance-explica">
+        <p><strong>É o teto, não o preço.</strong> Você nunca paga mais que o lance máximo. Se ganhar, paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1; se ninguém mais der lance, paga o mínimo, ${emReais(minimo)}.${premium && desconto ? ` No Premium, ${desconto}% de desconto no valor final.` : ""} Se não ganhar, nada é cobrado.</p>
+        <p class="pc-lance-exemplo" id="pc-lance-exemplo">${esc(exemploDoLance(valor, L, premium))}</p>
       </div>
-      ${state.pcCompra && state.pcCompra.tipo !== "plano" ? pcComprarCreditos(c) : ""}
-      ${msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : ""}
-      ${!editando ? `
-      <div class="pc-card pc-promo" id="pc-lance">
-        <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} Seu lance: R$ ${esc(aberto.valor)}</p>
-        <p class="pc-card-t" style="margin-top:6px">${esc(aberto.titulo)}</p>
-        <p class="pc-card-s">${esc(aberto.mensagem)}</p>
-        <p class="footnote" style="margin-top:8px">Concorre até ${esc(quandoEmBrasilia(aberto.fecha_em))}. Se ganhar, paga só o necessário para passar o seguinte, mais R$ 1${premium && desconto ? `, com ${desconto}% a menos no Premium` : ""}.</p>
+      <ul class="pc-leilao-dados">
+        <li><span>Créditos da academia</span><strong>${saldo ? emReais(saldo) : "Sem créditos"} · <button type="button" class="inline-link" data-comprar-creditos>Comprar ›</button></strong></li>
+      </ul>
+      <p class="footnote" id="pc-lance-saldo" style="margin-top:6px">${falta ? `Para dar esse lance, a academia precisa ter ${emReais(valor)} em créditos. Compre créditos ou dê um lance menor.` : "Os créditos garantem o lance: só saem se você ganhar."}</p>
+      ${botoesDoPasso(true, `<button type="button" class="cta-btn cta-primary" id="pc-leilao-continuar">Continuar ›</button>`)}`;
+  } else {
+    const bloqueio = valor > saldo ? (saldo ? `A academia tem ${emReais(saldo)} em créditos. Compre créditos ou dê um lance menor.` : "Sem créditos, o lance não entra. Compre créditos para entrar no leilão.") : "";
+    corpo = `
+      <p class="pc-card-t">Confira e entre no leilão</p>
+      ${previaDoEmail(c, f, bairro)}
+      <ul class="pc-leilao-dados pc-leilao-revisao">
+        <li><span>Promoção</span><strong>${esc(f.titulo)}</strong></li>
+        <li><span>Lance máximo</span><strong>${emReais(valor)}</strong></li>
+        <li><span>Fecha</span><strong>${esc(quandoEmBrasilia(L.fecha_em))}</strong></li>
+        <li><span>Quem recebe</span><strong>${esc(alcanceDoLeilao(L.alcance))}</strong></li>
+      </ul>
+      ${listaDeQualidade(qualidadeDoLeilao(c, f.mensagem))}
+      <p class="footnote" style="margin-top:10px">Nada é cobrado agora: os créditos só saem se você ganhar, e nunca mais que ${emReais(valor)}. Dá para alterar ou cancelar até ${esc(quandoEmBrasilia(L.fecha_em))}.</p>
+      ${bloqueio ? `<div class="form-error pc-email-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)} <button type="button" class="inline-link" data-comprar-creditos>Comprar créditos ›</button></span></div>` : ""}
+      ${botoesDoPasso(true, `<button type="button" class="cta-btn cta-primary" id="pc-email-enviar" ${state.pcEmailEnviando || bloqueio ? "disabled" : ""}>${state.pcEmailEnviando ? bolaGirando(15) + " Salvando..." : aberto ? `Salvar o lance de até ${emReais(valor)}` : `Entrar com lance de até ${emReais(valor)}`}</button>`)}`;
+  }
+  return `
+      ${resultado}
+      ${trilhaTenis(LEILAO_PASSOS, i, "Etapas do leilão")}
+      <div class="pc-card pc-email-form pc-leilao-passo" id="pc-leilao-passo" data-passo="${i}">
+        ${avisoDoLeilao()}
+        ${corpo}
+        ${aberto && state.pcEmailEditando ? `<button type="button" class="inline-link" id="pc-email-desistir" style="margin-top:14px">Manter o lance de antes</button>` : ""}
+      </div>`;
+}
+
+// Com o lance dado: o andamento, como o "Acompanhar pedido" dos grandes.
+function andamentoDoLeilao(c, L) {
+  const lance = L.lance;
+  const envios = L.envios || [];
+  const premium = c.plano === "premium";
+  const desconto = Math.round(Number(L.desconto_premium || 0) * 100);
+  const etapa = (estado, t, d) => `<li class="${estado}"><span class="pc-linha-ponto">${estado === "feito" ? icon('check', 12, '#fff') : ""}</span><div><strong>${t}</strong><span>${d}</span></div></li>`;
+  return `
+      <div class="pc-card pc-leilao-andamento" id="pc-lance">
+        ${avisoDoLeilao()}
+        <p class="pc-oferta-eyebrow">Andamento do leilão</p>
+        <p class="pc-card-t">Você está no leilão de ${esc(bairroDoLeilao(L))}</p>
+        <ol class="pc-leilao-linha">
+          ${etapa("feito", "Lance registrado", `Até ${emReais(Number(lance.valor || 0))} · "${esc(lance.titulo)}"`)}
+          ${etapa("agora", "Leilão aberto", `Fecha ${esc(quandoEmBrasilia(lance.fecha_em || L.fecha_em))}. Até lá, dá para alterar ou cancelar.`)}
+          ${etapa("", "Resultado", `As duas maiores notas ganham. Se ganhar, paga só o suficiente para ficar à frente da seguinte, mais R$ 1${premium && desconto ? `, com ${desconto}% de desconto` : ""}; se não, nada é cobrado.`)}
+          ${etapa("", "E-mail aos jogadores", `1º lugar ${esc(quandoEmBrasilia(envios[0]))}; 2º ${esc(quandoEmBrasilia(envios[1]))}, para ${esc(alcanceDoLeilao(L.alcance))}.`)}
+        </ol>
+        <div class="pc-promo pc-leilao-sua">
+          <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} Seu lance máximo: ${emReais(Number(lance.valor || 0))}</p>
+          <p class="pc-card-t" style="margin-top:6px">${esc(lance.titulo)}</p>
+          <p class="pc-card-s">${esc(lance.mensagem)}</p>
+        </div>
         <div class="pc-promo-acoes">
           <button type="button" class="inline-link" id="pc-lance-alterar">Alterar o lance</button>
-          <button type="button" class="inline-link" id="pc-lance-cancelar">Cancelar o lance</button>
+          <button type="button" class="inline-link" id="pc-lance-cancelar">Sair do leilão</button>
         </div>
-      </div>` : state.pcEmailPasso === "revisar" ? `
-      <div class="pc-card pc-email-form pc-passo-revisar" id="pc-email-revisao">
-        <button type="button" class="pc-passo-voltar" id="pc-email-editar">${icon('chevronLeft', 15, 'currentColor')} Editar o lance</button>
-        ${previaDoEmail(c, f, bairro)}
-        <p class="pc-card-s pc-lance-resumo">Lance máximo: <strong>R$ ${esc(valor)}</strong>. Se ganhar, paga só o necessário para passar o seguinte, mais R$ 1${premium && desconto ? `, com ${desconto}% a menos no Premium` : ""}. Se não ganhar, não paga nada.</p>
-        ${bloqueio ? `<div class="form-error pc-email-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)} <button type="button" class="inline-link" data-comprar-creditos>Comprar créditos ›</button></span></div>` : ""}
-        <button type="button" class="cta-btn cta-primary" id="pc-email-enviar" ${state.pcEmailEnviando || bloqueio ? "disabled" : ""}>${state.pcEmailEnviando ? bolaGirando(15) + " Salvando..." : aberto ? `Salvar o lance de R$ ${esc(valor)}` : `Dar o lance de R$ ${esc(valor)}`}</button>
-      </div>` : `
-      <div class="pc-card pc-email-form">
-        <p class="pc-card-t">${aberto ? "Alterar o lance" : "Novo lance"}</p>
-        ${daFicha.length ? `
-        <p class="field-label" style="margin-top:12px">Usar a promoção da ficha</p>
-        <div class="chip-row pc-email-da-ficha">${daFicha.map(x => `<button type="button" class="chip small" data-promo-email="${x.id}">${icon('tag', 13, 'currentColor')} ${esc(x.titulo)}</button>`).join("")}</div>` : ""}
-        <label class="field-label" for="pc-email-titulo">Promoção</label>
-        <input class="form-field pc-email-campo" data-campo="titulo" id="pc-email-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
-        <label class="field-label" for="pc-email-mensagem">Mensagem</label>
-        <textarea class="form-field pc-email-campo" data-campo="mensagem" id="pc-email-mensagem" maxlength="500" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." style="margin-top:0">${esc(f.mensagem)}</textarea>
-        <label class="field-label" for="pc-email-valor">Lance máximo (R$)</label>
-        <input class="form-field pc-email-campo" data-campo="valor" id="pc-email-valor" type="number" inputmode="numeric" min="${minimo}" step="1" placeholder="Mínimo de R$ ${minimo}" value="${esc(f.valor)}" style="margin-top:0" />
-        <p class="footnote" style="margin-top:6px">Se ganhar, paga só o necessário para passar o seguinte, mais R$ 1. Se não ganhar, não paga nada.</p>
-        <button type="button" class="cta-btn cta-primary" id="pc-email-revisar">Ver a prévia ›</button>
-        ${aberto ? `<button type="button" class="inline-link" id="pc-email-desistir" style="margin-top:12px">Cancelar</button>` : ""}
-      </div>`}
-      ${(L.historico || []).length ? `
-        <h2 class="pc-h2">Leilões anteriores</h2>
-        <div class="pc-promo-lista">
-          ${L.historico.map(x => `
-            <div class="pc-card pc-promo ${x.situacao === "enviado" || x.situacao === "ganhou" ? "" : "encerrada"}">
-              <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} ${esc(diaPorExtenso(String(x.fecha_em ? new Date(x.fecha_em).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" }) : "")))}</p>
-              <p class="pc-card-t" style="margin-top:6px">${esc(x.titulo)}</p>
-              <p class="footnote" style="margin-top:6px">${esc(resultadoDoLance(x))}</p>
-            </div>`).join("")}
-        </div>` : ""}
-    </section>`;
+      </div>`;
+}
+
+function historicoDoLeilao(L) {
+  if (!(L.historico || []).length) return "";
+  return `
+      <h2 class="pc-h2">Leilões anteriores</h2>
+      <div class="pc-promo-lista">
+        ${L.historico.map(x => `
+          <div class="pc-card pc-promo ${x.situacao === "enviado" || x.situacao === "ganhou" ? "" : "encerrada"}">
+            <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} ${esc(diaPorExtenso(String(x.fecha_em ? new Date(x.fecha_em).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" }) : "")))}</p>
+            <p class="pc-card-t" style="margin-top:6px">${esc(x.titulo)}</p>
+            <p class="footnote" style="margin-top:6px">${esc(resultadoDoLance(x))}</p>
+          </div>`).join("")}
+      </div>`;
 }
 
 // A prévia do e-mail do GuiaTennis (o modelo de enviar_notificacoes_do_leilao),
@@ -10123,25 +10307,49 @@ function previaDaPromocao(f) {
 // Passo a passo (pedido de 15/10/2026), como o "Revisar e enviar" do
 // Mailchimp: primeiro escrever e dar o lance; depois conferir a prévia.
 function formDoLance() {
-  const f = state.pcEmailForm || {};
+  const f = state.pcEmailForm || (state.pcLeilao && state.pcLeilao.lance) || {};
   return {
     titulo: document.getElementById("pc-email-titulo")?.value ?? f.titulo ?? "",
     mensagem: document.getElementById("pc-email-mensagem")?.value ?? f.mensagem ?? "",
     valor: document.getElementById("pc-email-valor")?.value ?? f.valor ?? "",
   };
 }
-function revisarPromocaoPorEmail() {
-  const f = formDoLance();
-  state.pcEmailForm = f;
-  const minimo = Number((state.pcLeilao || {}).lance_minimo || 10);
-  const valor = Number(f.valor);
-  if (f.titulo.trim().length < 3) { state.pcEmailMsg = { tipo: "erro", texto: "Escreva a promoção (por exemplo, \"Primeira aula grátis\")." }; render(); return; }
-  if (f.mensagem.trim().length < 10) { state.pcEmailMsg = { tipo: "erro", texto: "Escreva a mensagem da promoção." }; render(); return; }
-  if (!Number.isInteger(valor) || valor < minimo) { state.pcEmailMsg = { tipo: "erro", texto: `Dê um lance de pelo menos R$ ${minimo}, em reais inteiros.` }; render(); return; }
-  state.pcEmailMsg = null;
-  state.pcEmailPasso = "revisar";
+// "Continuar" de cada passo do leilão: confere o que o passo pede.
+function seguirNoLeilao() {
+  const L = state.pcLeilao || {};
+  const i = passoDoLeilaoAtual(L);
+  const f = (state.pcEmailForm = formDoLance());
+  const minimo = Number(L.lance_minimo || 10);
+  const saldo = saldoDeEnvios();
+  if (i === 2 && f.titulo.trim().length < 3) return erroNoLeilao("Escreva a promoção (por exemplo, \"Primeira aula grátis\").");
+  if (i === 2 && f.mensagem.trim().length < 10) return erroNoLeilao("Escreva a mensagem da promoção.");
+  if (i === 3) {
+    const valor = Number(f.valor);
+    if (!Number.isInteger(valor) || valor < minimo) return erroNoLeilao(`Dê um lance de pelo menos R$ ${minimo}, em reais inteiros.`);
+    if (valor > saldo) return erroNoLeilao(saldo ? `A academia tem ${emReais(saldo)} em créditos. Compre créditos ou dê um lance menor.` : "Sem créditos, o lance não entra. Compre créditos para dar o lance.");
+  }
+  irNoLeilao(i + 1);
+}
+function erroNoLeilao(texto) {
+  state.pcEmailMsg = { tipo: "erro", texto };
   render();
-  document.getElementById("pc-email-revisao")?.scrollIntoView({ block: "start", behavior: "smooth" });
+  document.querySelector("#pc-leilao-passo .form-error")?.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+function irNoLeilao(k) {
+  state.pcEmailMsg = null;
+  state.pcLeilaoPasso = Math.max(0, Math.min(LEILAO_PASSOS.length - 1, k));
+  render();
+  document.querySelector("#parceiros .pc-promo-partes")?.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+// Enquanto se digita o lance, o exemplo e o recado dos créditos acompanham.
+function atualizarExemploDoLance(f) {
+  const c = minhaAcademia(), L = state.pcLeilao;
+  if (!c || !L) return;
+  const valor = Number(f.valor || 0);
+  const ex = document.getElementById("pc-lance-exemplo");
+  if (ex) ex.textContent = exemploDoLance(valor, L, c.plano === "premium");
+  const saldo = document.getElementById("pc-lance-saldo");
+  if (saldo) saldo.textContent = valor > saldoDeEnvios() ? `Para dar esse lance, a academia precisa ter ${emReais(valor)} em créditos. Compre créditos ou dê um lance menor.` : "Os créditos garantem o lance: só saem se você ganhar.";
 }
 // "Usar a promoção da ficha" (e "Mandar por e-mail" na promoção da ficha):
 // o texto vem pronto, com a validade.
@@ -10152,7 +10360,7 @@ function promocaoDaFichaNoEmail(id) {
   let detalhes = String(x.detalhes || "").trim();
   if (detalhes && !/[.!?…]$/.test(detalhes)) detalhes += ".";
   state.pcEmailForm = { ...(state.pcEmailForm || {}), titulo: x.titulo, mensagem: [detalhes, validade].filter(Boolean).join(" ").slice(0, 500) };
-  state.pcEmailPasso = null; state.pcEmailMsg = null;
+  state.pcEmailMsg = null; state.pcLeilaoPasso = 2;
   if ((state.pcLeilao || {}).lance) state.pcEmailEditando = true;
 }
 async function enviarPromocaoPorEmail() {
@@ -10160,7 +10368,7 @@ async function enviarPromocaoPorEmail() {
   if (!c || state.pcEmailEnviando) return;
   const f = state.pcEmailForm || {};
   const valor = Number(f.valor);
-  if (String(f.titulo || "").trim().length < 3 || String(f.mensagem || "").trim().length < 10 || !Number.isInteger(valor)) { state.pcEmailPasso = null; render(); return; }
+  if (String(f.titulo || "").trim().length < 3 || String(f.mensagem || "").trim().length < 10 || !Number.isInteger(valor)) { state.pcLeilaoPasso = 2; render(); return; }
   state.pcEmailEnviando = true; state.pcEmailMsg = null; render();
   let r;
   try { r = await sb.rpc('dar_lance', { p_academia: c.id, p_titulo: f.titulo.trim(), p_mensagem: f.mensagem.trim(), p_valor: valor }); }
@@ -10172,18 +10380,18 @@ async function enviarPromocaoPorEmail() {
     render();
     return;
   }
-  state.pcEmailMsg = { tipo: "ok", texto: `Lance de R$ ${valor} salvo.` };
-  state.pcEmailForm = null; state.pcEmailPasso = null; state.pcEmailEditando = false;
+  state.pcEmailMsg = { tipo: "ok", texto: `Pronto: a ${c.name} está no leilão, com lance de até R$ ${valor}.` };
+  state.pcEmailForm = null; state.pcEmailEditando = false; state.pcLeilaoPasso = undefined;
   await carregarPromocoesPorEmail(false);
   render();
 }
 async function cancelarLance() {
   const c = minhaAcademia();
-  if (!c || !confirm("Cancelar o lance desta semana? A promoção sai do leilão.")) return;
+  if (!c || !confirm("Sair do leilão desta semana? A promoção deixa de concorrer, e nada é cobrado.")) return;
   let r;
   try { r = await sb.rpc('cancelar_lance', { p_academia: c.id }); } catch (e) { r = { error: e }; }
-  state.pcEmailMsg = r.error ? { tipo: "erro", texto: falhou("cancelar o lance", r.error, { texto: "Não consegui cancelar agora. Tente de novo.", academia: c.id }) } : { tipo: "ok", texto: "Lance cancelado." };
-  state.pcEmailForm = null; state.pcEmailPasso = null; state.pcEmailEditando = false;
+  state.pcEmailMsg = r.error ? { tipo: "erro", texto: falhou("cancelar o lance", r.error, { texto: "Não consegui cancelar agora. Tente de novo.", academia: c.id }) } : { tipo: "ok", texto: "Você saiu do leilão desta semana." };
+  state.pcEmailForm = null; state.pcEmailEditando = false; state.pcLeilaoPasso = 1;
   await carregarPromocoesPorEmail(false);
   render();
 }
@@ -10207,7 +10415,7 @@ function pcPromocoes() {
             <p class="pc-card-s">Os jogadores não veem ${guardadas.length === 1 ? "a promoção" : "as promoções"} na ficha nem na busca. ${guardadas.length === 1 ? "Ela fica guardada e volta a aparecer, enquanto valer," : "Elas ficam guardadas e voltam a aparecer, enquanto valerem,"} se a academia voltar ao Premium.</p>
           </div>` : ""}
         ${blocoTrancado("premium", "Promoções na ficha", "Primeira aula grátis, desconto na locação, pacote de aulas: a promoção aparece na ficha e no resultado da busca, com a validade.")}
-        ${(c.plano || "basico") === "completo" ? `<p class="footnote">No Completo, a academia já manda promoções por e-mail: <a href="${esc(caminhoDosParceiros("promocoes-email"))}" data-pc="promocoes-email">Por e-mail ›</a></p>` : ""}
+        ${(c.plano || "basico") === "completo" ? `<p class="footnote">No Completo, a academia já entra no leilão de promoções por e-mail: <a href="${esc(caminhoDosParceiros("promocoes-email"))}" data-pc="promocoes-email">Leilão ›</a></p>` : ""}
       </section>`;
   }
   const lista = state.pcPromocoes || [];
@@ -11250,18 +11458,24 @@ function ligarEventosParceiros() {
   if (pcPromoEditar) pcPromoEditar.onclick = () => { state.pcPromoPasso = null; state.pcPromoMsg = null; render(); };
   document.querySelectorAll("[data-promo-mudar]").forEach(el => { el.onclick = () => { state.pcPromoEditando = el.dataset.promoMudar; state.pcPromoForm = null; state.pcPromoMsg = null; state.pcPromoPasso = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }; });
   document.querySelectorAll("[data-promo-encerrar]").forEach(el => { el.onclick = () => encerrarPromocao(el.dataset.promoEncerrar); });
-  // "Mandar por e-mail" na promoção da ficha: abre a parte Por e-mail com o
-  // texto pronto.
+  // "Mandar por e-mail" na promoção da ficha: abre o Leilão na etapa da
+  // promoção, com o texto pronto.
   document.querySelectorAll("[data-promo-por-email]").forEach(el => { el.onclick = () => { promocaoDaFichaNoEmail(el.dataset.promoPorEmail); irParceiros("promocoes-email", { manterForm: true }); }; });
   document.querySelectorAll("[data-promo-email]").forEach(el => { el.onclick = () => { promocaoDaFichaNoEmail(el.dataset.promoEmail); render(); }; });
   const pcEmailEnviar = document.getElementById("pc-email-enviar");
   if (pcEmailEnviar) pcEmailEnviar.onclick = enviarPromocaoPorEmail;
-  const pcEmailRevisar = document.getElementById("pc-email-revisar");
-  if (pcEmailRevisar) pcEmailRevisar.onclick = revisarPromocaoPorEmail;
-  const pcEmailEditar = document.getElementById("pc-email-editar");
-  if (pcEmailEditar) pcEmailEditar.onclick = () => { state.pcEmailPasso = null; state.pcEmailMsg = null; render(); };
+  // Os passos do leilão (22/10/2026).
+  const pcLeilaoContinuar = document.getElementById("pc-leilao-continuar");
+  if (pcLeilaoContinuar) pcLeilaoContinuar.onclick = seguirNoLeilao;
+  const pcLeilaoVoltar = document.getElementById("pc-leilao-voltar");
+  if (pcLeilaoVoltar) pcLeilaoVoltar.onclick = () => { state.pcEmailForm = formDoLance(); irNoLeilao(passoDoLeilaoAtual(state.pcLeilao || {}) - 1); };
+  const pcLeilaoParticipar = document.getElementById("pc-leilao-participar");
+  if (pcLeilaoParticipar) pcLeilaoParticipar.onclick = () => irNoLeilao(2);
+  const pcLeilaoAgoraNao = document.getElementById("pc-leilao-agora-nao");
+  if (pcLeilaoAgoraNao) pcLeilaoAgoraNao.onclick = () => { state.pcLeilaoPasso = undefined; irParceiros("painel"); mostrarPush("Tudo bem. O leilão abre de novo toda semana."); };
   document.querySelectorAll(".pc-email-campo").forEach(el => {
-    el.oninput = () => { const f = (state.pcEmailForm = formDoLance()); f[el.dataset.campo] = el.value; atualizarPreviaDoEmail(f); };
+    el.oninput = () => { const f = (state.pcEmailForm = formDoLance()); f[el.dataset.campo] = el.value; if (el.dataset.campo === "valor") atualizarExemploDoLance(f); else atualizarPreviaDoEmail(f); };
+    if (el.tagName === "INPUT") el.onkeydown = (e) => { if (e.key === "Enter") seguirNoLeilao(); };
   });
   const abrirCompra = () => { state.pcCompra = { passo: "escolher", valor: 100, forma: "pix" }; render(); document.getElementById("pc-compra")?.scrollIntoView({ block: "center", behavior: "smooth" }); };
   const pcComprar = document.getElementById("pc-comprar-creditos");
@@ -11289,11 +11503,11 @@ function ligarEventosParceiros() {
   const pcCompraCopiar = document.getElementById("pc-compra-copiar");
   if (pcCompraCopiar) pcCompraCopiar.onclick = async () => { const t = document.getElementById("pc-compra-codigo"); try { await navigator.clipboard.writeText(t.value); } catch { t.select(); document.execCommand && document.execCommand("copy"); } state.pcCompra.copiado = true; render(); };
   const pcLanceAlterar = document.getElementById("pc-lance-alterar");
-  if (pcLanceAlterar) pcLanceAlterar.onclick = () => { state.pcEmailEditando = true; state.pcEmailForm = null; state.pcEmailPasso = null; state.pcEmailMsg = null; render(); };
+  if (pcLanceAlterar) pcLanceAlterar.onclick = () => { state.pcEmailEditando = true; state.pcEmailForm = null; irNoLeilao(2); };
   const pcLanceCancelar = document.getElementById("pc-lance-cancelar");
   if (pcLanceCancelar) pcLanceCancelar.onclick = cancelarLance;
   const pcEmailDesistir = document.getElementById("pc-email-desistir");
-  if (pcEmailDesistir) pcEmailDesistir.onclick = () => { state.pcEmailEditando = false; state.pcEmailForm = null; state.pcEmailPasso = null; state.pcEmailMsg = null; render(); };
+  if (pcEmailDesistir) pcEmailDesistir.onclick = () => { state.pcEmailEditando = false; state.pcEmailForm = null; state.pcEmailMsg = null; state.pcLeilaoPasso = undefined; render(); };
   const pcDeclaro = document.getElementById("pc-declaro");
   if (pcDeclaro) pcDeclaro.onchange = (e) => { state.pcDeclaro = e.target.checked; if (state.pcDeclaroErro && state.pcDeclaro) { state.pcDeclaroErro = false; render(); } };
   const pcNovidades = document.getElementById("pc-conta-novidades");
@@ -17007,7 +17221,7 @@ const REG_PASSOS = [
   { id: "horario", t: "Horário", titulo: "Horário de funcionamento", porque: "A ficha mostra se a academia está aberta agora." },
   { id: "cancelamento", t: "Cancelamento", titulo: "Cancelamento e reposição", porque: "Tira a dúvida antes da primeira aula." },
   { id: "chegada", t: "Como chegar", titulo: "Como chegar", porque: "Fachada, entrada e onde parar: é o que mais evita passar direto." },
-  { id: "revisar", t: "Revisar", titulo: "Confira a prévia da ficha", porque: "É assim que os jogadores vão ver. Toque no lápis para mudar uma parte." },
+  { id: "revisar", t: "Revisar", titulo: "Confira a prévia da ficha", porque: "É assim que os jogadores vão ver. Toque no lápis para editar uma seção." },
 ];
 
 // Quem pede cadastro pelo site manda o essencial; o admin publica só com o
@@ -17549,11 +17763,11 @@ function renderRegisterSheet() {
             <div style="font-size:36px;color:var(--green)">✓</div>
             <p style="font-weight:600">${isEditing ? "Alterações salvas!" : (isAdmin ? "Quadra publicada com sucesso!" : f.__noAr ? "Pronto: a academia já está no GuiaTennis!" : "Cadastro enviado para análise!")}</p>
             ${isEditing && !isAdmin ? `<p class="subtitle">Já estão na ficha.</p>` : ""}
-            ${(!isAdmin && !isEditing) ? `<p class="subtitle">${f.__noAr ? "Ela já aparece na busca, no plano Básico, e você administra a ficha pelo GuiaTennis Parceiros. O GuiaTennis confere os dados depois e pode fazer ajustes." : parceiro ? "Assim que o GuiaTennis aprovar, a academia aparece no site e você já administra a ficha pelo GuiaTennis Parceiros. Com o e-mail confirmado, a próxima academia nova entra no ar na hora." : "Assim que for aprovado, aparece para todo mundo no GuiaTennis."}</p>` : ""}
-            ${["completo", "premium"].includes(f.__planoEscolhido) && f.__planoMudou ? `
+            ${(!isAdmin && !isEditing) ? `<p class="subtitle">${f.__noAr ? `Ela já aparece na busca, no plano ${esc(nomeDoPlano(f.__planoMudou && f.__planoEscolhido ? f.__planoEscolhido : (f.__plano || "basico")))}, e você administra a ficha pelo GuiaTennis Parceiros. O GuiaTennis confere os dados depois e pode fazer ajustes.` : parceiro ? "Assim que o GuiaTennis aprovar, a academia aparece no site e você já administra a ficha pelo GuiaTennis Parceiros. Com o e-mail confirmado, a próxima academia nova entra no ar na hora." : "Assim que for aprovado, aparece para todo mundo no GuiaTennis."}</p>` : ""}
+            ${["completo", "premium"].includes(f.__planoEscolhido) && f.__planoMudou ? (f.__noAr ? "" : `
               <div class="reg-plano-ok">
-                <p><strong>A academia agora está no plano ${esc(nomeDoPlano(f.__planoEscolhido))}.</strong> Por enquanto, é grátis.</p>
-              </div>` : ["completo", "premium"].includes(f.__planoEscolhido) ? `
+                <p><strong>A academia agora está no plano ${esc(nomeDoPlano(f.__planoEscolhido))}.</strong></p>
+              </div>`) : ["completo", "premium"].includes(f.__planoEscolhido) ? `
               <div class="reg-plano-ok">
                 <p><strong>Você escolheu o plano ${esc(nomeDoPlano(f.__planoEscolhido))}.</strong> ${contaAcademia ? "O pedido ficou anotado para o responsável principal da academia e o GuiaTennis." : "Fale com o GuiaTennis no WhatsApp para ligar o plano."} Até lá, a ficha aparece no plano ${esc(nomeDoPlano(f.__plano || "basico"))}.</p>
                 <a class="cta-btn cta-primary" href="${linkPlanoDaFicha(f, f.__planoEscolhido)}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} Combinar o ${esc(nomeDoPlano(f.__planoEscolhido))} agora</a>
@@ -18285,7 +18499,7 @@ function conteudoDasEstatisticas() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 21 de outubro de 2026</p>
+<p class="footnote">Última atualização: 22 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -18293,7 +18507,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?) e, depois de o GuiaTennis conferir, a ficha sai do Guia, com as avaliações; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta (Perfil › Excluir minha conta): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos do leilão são comprados à parte, com Pix ou cartão pelo Mercado Pago, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. As "Melhores avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar uma promoção por vez, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); quem ganha paga só o necessário para passar o seguinte, mais R$ 1, dos créditos comprados antes (20% menos no Premium), e quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?) e, depois de o GuiaTennis conferir, a ficha sai do Guia, com as avaliações; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta (Perfil › Excluir minha conta): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos do leilão são comprados à parte, com Pix ou cartão pelo Mercado Pago, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a ordem da lista não depende do plano. As "Melhores avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. No plano Premium, a academia também pode divulgar uma promoção por vez, com validade de até 90 dias, na ficha e no resultado da busca. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Nos planos Completo e Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); o lance é um valor máximo, e quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que esse máximo, dos créditos comprados antes (20% menos no Premium); quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis</strong> (nome e sobrenome, e-mail e senha; a cidade é opcional), e cada conta faz uma avaliação por academia. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e sobrenome e o WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
@@ -18418,17 +18632,17 @@ const CHAT_TEMAS = [
     a: [{ t: "Suas academias", ir: "pc:academias" }, { t: "Perfil", ir: "pc:perfil" }] },
   { id: "promocoes", onde: "parceiros", t: "Promoções",
     p: ["promocao", "promocoes", "desconto", "oferta", "aula gratis", "cupom", "divulgar"],
-    r: "Promoções tem duas partes. Na ficha (Premium): uma promoção por vez, por até 90 dias, na ficha e no resultado da busca. Por e-mail (Completo e Premium): o leilão da semana; as duas maiores notas saem no e-mail do GuiaTennis do bairro.",
+    r: "Promoções tem duas partes. Na ficha (Premium): uma promoção por vez, por até 90 dias, na ficha e no resultado da busca. Leilão (Completo e Premium): toda semana, as duas maiores notas saem no e-mail do GuiaTennis do bairro.",
     a: [{ t: "Abrir Promoções", ir: "pc:promocoes" }],
-    rc: x => (x.plano === "premium" ? `A ${x.c.name} está no Premium: em Promoções › Na ficha, uma promoção por vez, por até 90 dias; em Por e-mail, a promoção chega aos jogadores.`
-      : x.plano === "completo" ? `A ${x.c.name} está no Completo: manda promoções por e-mail; na ficha e na busca, só no Premium.`
+    rc: x => (x.plano === "premium" ? `A ${x.c.name} está no Premium: em Promoções › Na ficha, uma promoção por vez, por até 90 dias; em Leilão, a promoção chega por e-mail aos jogadores.`
+      : x.plano === "completo" ? `A ${x.c.name} está no Completo: entra no leilão de promoções por e-mail; na ficha e na busca, só no Premium.`
       : `As promoções são do Completo (por e-mail) e do Premium (também na ficha); a ${x.c.name} está no Básico. Em Plano, veja o que muda.`),
-    ac: x => (x.plano === "premium" ? [{ t: "Na ficha", ir: "pc:promocoes" }, { t: "Por e-mail", ir: "pc:promocoes-email" }] : x.plano === "completo" ? [{ t: "Promoções por e-mail", ir: "pc:promocoes-email" }] : [{ t: "Ver o meu plano", ir: "pc:plano" }]) },
-  { id: "promocoes-email", onde: "parceiros", t: "Promoções por e-mail",
+    ac: x => (x.plano === "premium" ? [{ t: "Na ficha", ir: "pc:promocoes" }, { t: "Leilão", ir: "pc:promocoes-email" }] : x.plano === "completo" ? [{ t: "Leilão de promoções", ir: "pc:promocoes-email" }] : [{ t: "Ver o meu plano", ir: "pc:plano" }]) },
+  { id: "promocoes-email", onde: "parceiros", t: "Leilão de promoções",
     p: ["aviso", "avisar", "notificac", "notificar", "mandar email", "mandar e-mail", "enviar email", "enviar e-mail", "envio", "creditos", "disparo", "promocao por e", "leilao", "lance"],
-    r: "Nos planos Completo e Premium, em Promoções › Por e-mail, a academia dá um lance até domingo às 20h. As duas maiores notas (lance × qualidade) saem no e-mail do GuiaTennis do bairro, na terça e na sexta. Quem ganha paga só o necessário para passar o seguinte, mais R$ 1, dos créditos comprados antes; no Premium, 20% menos.",
-    a: [{ t: "Abrir Promoções por e-mail", ir: "pc:promocoes-email" }],
-    rc: x => (x.plano === "basico" ? `As promoções por e-mail são do Completo e do Premium; a ${x.c.name} está no Básico. Em Plano, veja o que muda.` : null),
+    r: "Nos planos Completo e Premium, em Promoções › Leilão, a academia dá um lance máximo até domingo às 20h. As duas maiores notas (lance × qualidade) saem no e-mail do GuiaTennis do bairro, na terça e na sexta. O lance máximo é o teto: quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, dos créditos comprados antes; no Premium, 20% menos.",
+    a: [{ t: "Abrir o leilão", ir: "pc:promocoes-email" }],
+    rc: x => (x.plano === "basico" ? `O leilão de promoções por e-mail é do Completo e do Premium; a ${x.c.name} está no Básico. Em Plano, veja o que muda.` : null),
     ac: x => (x.plano === "basico" ? [{ t: "Ver o meu plano", ir: "pc:plano" }] : null) },
   { id: "topo", onde: "parceiros", t: "Aparecer primeiro na busca", rcAntes: x => (x.plano === "premium" ? `A ${x.c.name} já é Premium. ` : `A ${x.c.name} está no ${x.nome}. `),
     p: ["patrocin", "primeiro", "primeiro lugar", "aparecer primeiro", "apareco em primeiro", "topo", "destaque", "ranking", "posicao", "subir na busca", "ordem da busca", "mais visto"],
@@ -19008,7 +19222,7 @@ const CHAT_PAGINAS_PC = [
   { aba: "ficha", t: "Minha ficha", p: ["minha ficha", "ficha"], r: "a ficha como o jogador vê, o QR code e \"Editar a ficha\"" },
   { aba: "avaliacoes", t: "Avaliações", p: ["avaliac", "comentarios", "notas"], r: "as avaliações dos jogadores, para responder ou pedir análise" },
   { aba: "promocoes", t: "Promoções na ficha", p: ["promoc", "promocoes na ficha"], r: "as promoções na ficha e na busca, no Premium" },
-  { aba: "promocoes-email", t: "Promoções por e-mail", p: ["promocoes por e mail", "promocoes por email", "avisos por e mail", "leilao", "lance", "creditos"],
+  { aba: "promocoes-email", t: "Leilão de promoções", p: ["promocoes por e mail", "promocoes por email", "avisos por e mail", "leilao", "lance", "creditos"],
     r: "o leilão da promoção no e-mail do GuiaTennis do bairro e os créditos, no Completo e no Premium" },
   { aba: "desempenho", t: "Desempenho", p: ["desempenho", "numeros", "estatistic", "metricas", "relatorio"],
     r: "os números da ficha: visitas, quem chamou e de onde vieram (completos no Premium)" },

@@ -180,7 +180,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ({ browser, page } = await abrir());
   const termos = await page.evaluate(() => TERMS_HTML + PRIVACY_HTML);
   ok(termos.includes('ficha básica') && termos.includes('OpenStreetMap') && termos.includes('É o responsável por esta academia?'), 'Termos explicam a ficha básica, o OpenStreetMap e o pedido de remoção');
-  ok(await page.evaluate(() => TERMS_HTML.includes('Última atualização: 21 de outubro de 2026') && PRIVACY_HTML.includes('Última atualização: 22 de outubro de 2026') && !PRIVACY_HTML.includes('usuários do app')), 'a data de cada texto legal acompanha a última mudança dele');
+  ok(await page.evaluate(() => TERMS_HTML.includes('Última atualização: 22 de outubro de 2026') && PRIVACY_HTML.includes('Última atualização: 22 de outubro de 2026') && !PRIVACY_HTML.includes('usuários do app')), 'a data de cada texto legal acompanha a última mudança dele');
   ok(await page.evaluate(() => TERMS_HTML.includes('Quem avaliou elogia os professores') && TERMS_HTML.includes('sem copiar a avaliação nem o nome')), 'Termos: o "Sobre" pode citar o que é elogiado nas avaliações');
   // Contato do guia em botões com ícone, no menu, no rodapé e no bloco para academias
   const contato = await page.evaluate(() => {

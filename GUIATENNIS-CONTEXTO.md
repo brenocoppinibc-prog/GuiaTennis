@@ -39,7 +39,10 @@ teste")
 > disputa com o prazo "em até 1 dia útil" enquanto o envio é à mão (sem os
 > "vai na hora"); **regra 141**, o "Esqueci a senha" passo a passo (o código,
 > depois a senha nova); **regra 142**, as dicas no alto do Parceiros
-> (completar a ficha, o plano de cima, as promoções no Premium).
+> (completar a ficha, o plano de cima, as promoções no Premium); **regra
+> 143**, o leilão de promoções passo a passo (aba "Leilão": como funciona,
+> vale a pena?, promoção, lance máximo como teto, revisar) e a página de
+> andamento; a tela de pronto com o plano certo.
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3261,7 +3264,7 @@ cobra taxa e não fica no meio** da negociação.
     plano de cima (uma por dia), com "Ver o Completo/Premium ›" (página
     Plano); (3) no **Premium**, sem promoção valendo, "Publique uma
     promoção" (Promoções › Na ficha); com promoção e sem lance na semana,
-    "Mande a promoção por e-mail" e "Dar um lance ›" (Por e-mail).
+    "Entre no leilão de promoções" e "Ver o leilão ›" (Leilão; regra 143).
     `agendarDicaDoParceiros` (depois de cada render): só com a academia e o
     acesso completo, numa página da conta, **no máximo uma por dia e por
     academia** (a hora fica no aparelho, `guiatennis_dica_parceiros_v1`,
@@ -3269,6 +3272,42 @@ cobra taxa e não fica no meio** da negociação.
     depois de abrir, sem cobrir outro aviso, o formulário, o menu nem o
     chat (espera até 3 vezes). Nos testes, só com `opts.dicas`. Teste:
     `dicas-do-parceiros.js`.
+143. **O leilão de promoções passo a passo, com a página de andamento**
+    (pedido de 22/10/2026: "faça isso passo a passo, se quer participar ou
+    não e renomeie a aba como leilão… entender como funciona o leilão,
+    analisar se vale a pena, entrar e fazer a promoção, comprar crédito ou
+    já fazer o lance, uma página de andamento do leilão… deixe mais
+    profissional"; e "não entendi essa frase, se o lance máximo quer dizer o
+    maior valor, especifique melhor isso"). Como o fluxo de campanha do
+    trivago Business Studio e do Google Ads (uma etapa por tela, com a
+    trilha) e o "Acompanhar pedido" dos grandes. A parte **Por e-mail virou
+    "Leilão"** (aba, menu, chat, Ajuda, dicas, Planos: "Leilão de
+    promoções"). No alto, o resumo (bairro, quando fecha, créditos com
+    "Comprar ›"); embaixo, `trilhaTenis(LEILAO_PASSOS)` e um cartão por
+    etapa (`passoDoLeilao`, `state.pcLeilaoPasso`): (1) **Como funciona**, em
+    4 pontos (um leilão por bairro e por semana, às cegas; a nota é lance ×
+    qualidade; duas promoções por semana, terça e sexta às 10h, marcadas
+    como patrocinadas; só paga se ganhar); (2) **Vale a pena?**: quem
+    recebe, lance mínimo, custo por jogador, os dois e-mails, os seus
+    leilões de antes, o que soma na nota da ficha, e "Agora não" (volta ao
+    painel com um recado) ou "Quero participar ›"; (3) **Promoção**: título
+    e mensagem (ou a da ficha, no Premium), com a prévia do e-mail; (4)
+    **Lance**: "Seu lance máximo (R$)", explicado como **"É o teto, não o
+    preço"** (nunca paga mais que ele; se ganhar, paga só o suficiente para
+    ficar à frente da seguinte, mais R$ 1; sozinho, o mínimo; sem ganhar,
+    nada), com um exemplo que muda com o valor (`exemploDoLance`) e os
+    créditos com "Comprar ›" ali mesmo (sem créditos, não passa); (5)
+    **Revisar**: a prévia, o resumo, "Nada é cobrado agora" e "Entrar com
+    lance de até R$ X" (ou "Salvar o lance de até R$ X"). Com o lance dado,
+    a página é o **Andamento do leilão** (`andamentoDoLeilao`): Lance
+    registrado ✓ › Leilão aberto (até domingo, 20h) › Resultado › E-mail aos
+    jogadores, o lance máximo, "Alterar o lance" (volta à etapa 3 com o de
+    antes) e "Sair do leilão" (volta ao "Vale a pena?"). Quem já participou
+    começa no "Vale a pena?". Também em 22/10: a tela de pronto da academia
+    nova no ar diz o plano escolhido ("no plano Premium"), sem o Básico nem
+    "Por enquanto, é grátis"; e a revisão do cadastro diz "Toque no lápis
+    para editar uma seção.". Nenhum SQL novo (o leilão é o de 19/10).
+    Testes: `promocoes-por-email.js` (reescrito), `plano-ao-finalizar.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

@@ -23,7 +23,7 @@ const rodape = (page) => page.evaluate(() => [...document.querySelectorAll('.reg
   await page.evaluate(() => { Object.assign(window.__form, { instagram: '@soaula', priceAula: '120' }); window.__form.amenities.push('wifi', 'vestiario', 'loja'); });
   await irParte(page, 'revisar');
   ok((await texto(page, '.reg-titulo')) === 'Confira a prévia da ficha' && await page.isVisible('#reg-previa'), 'a última parte abre com a prévia da ficha');
-  ok((await texto(page, '.reg-porque')).includes('Toque no lápis para mudar uma parte') && !(await page.$('.reg-previa-topo')), 'sem a caixa de explicação: só o lápis, dito embaixo do título');
+  ok((await texto(page, '.reg-porque')).includes('Toque no lápis para editar uma seção') && !(await page.$('.reg-previa-topo')), 'sem a caixa de explicação: só o lápis, dito embaixo do título');
   const blocos = await page.evaluate(() => [...document.querySelectorAll('.reg-previa [data-previa]')].map(b => b.dataset.previa).join());
   ok(blocos === 'fotos,dados,horario,precos,quadras,cancelamento,chegada,contato', 'as partes da ficha, na ordem da página da academia — ' + blocos);
   ok((await bloco(page, 'fotos')) === 'Adicionar fotos' && await page.evaluate(() => document.querySelector('.reg-previa-mais[data-previa="fotos"]')?.tagName === 'BUTTON'), 'sem foto: só "+ Adicionar fotos", no lugar da galeria');

@@ -23086,6 +23086,12 @@ function voltarComAviso() {
   if (SAIDA.liberada) { SAIDA.liberada = false; return false; }
   const p = pendenciaDeSalvar();
   if (!p) return false;
+  // Voltar uma parte do cadastro, ou ficar na mesma página do Parceiros,
+  // não é sair.
+  const destino = new URL(location.href);
+  const parte = destino.searchParams.get("parte");
+  if (p.tipo === "cadastro" && parte && parte !== "pronto") return false;
+  if ((p.tipo === "leilao" || p.tipo === "promocao") && destino.pathname === new URL(SAIDA.url, location.href).pathname) return false;
   history.pushState(SAIDA.estado, "", SAIDA.url);
   perguntarAntesDeSair(p, () => { descartarPendencia(p); SAIDA.liberada = true; history.back(); });
   return true;

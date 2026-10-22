@@ -38,7 +38,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ok(await page.isDisabled('.pc-planos .pc-plano.destaque button') && (await texto(page, '.pc-planos')).includes('Só o responsável principal muda o plano.'), 'na equipe, o botão fica apagado e diz quem muda');
   await browser.close();
 
-  // ---- Créditos: Pix na própria tela ----
+  // ---- Créditos: uma página própria, com o caminho até o pagamento (22/10/2026) ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'] }));
   const chamadas = [];
   let resposta = (corpo) => ({ status: 200, body: { forma: 'pix', valor: 100, qr: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', copia: '00020101PIXCOPIA', expira: new Date(Date.now() + 1800000).toISOString() } });
@@ -50,52 +50,74 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   });
   await page.waitForTimeout(400);
   await page.click('#pc-comprar-creditos');
-  await page.waitForTimeout(200);
-  corpo = await texto(page, '#pc-compra');
-  ok(corpo.includes('Comprar créditos') && corpo.includes('R$ 50') && corpo.includes('R$ 200') && corpo.includes('Outro valor') && (await texto(page, '#pc-compra-pagar')) === 'Pagar R$ 100 com Pix', 'comprar: atalhos de valor, R$ 100 marcado e Pix de saída');
+  await page.waitForTimeout(300);
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(await page.evaluate(() => state.parceirosAba === 'creditos' && location.pathname === '/parceiros/creditos' && !document.querySelector('.pc-nav-i') && !document.querySelector('.pc-rodape')) && (await texto(page, '.pc-checkout-seguro')) === 'Pagamento seguro',
+    '"Comprar créditos" abre uma página própria, sem o menu do Parceiros, com "Pagamento seguro" no alto');
+  ok(corpo.includes('Comprar créditos') && corpo.includes('R$ 50') && corpo.includes('R$ 200') && corpo.includes('Outro valor') && corpo.includes('Mais escolhido') && (await texto(page, '#pc-compra-pagar')) === 'Continuar para o pagamento · R$ 100',
+    'o valor (R$ 100 marcado), a forma de pagamento e "Continuar para o pagamento"');
+  ok(/Créditos\s+R\$ 100,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 100,00/.test(await texto(page, '.pc-checkout-resumo')), 'o resumo do pedido: créditos, taxas e total');
+  ok(await page.evaluate(() => [...document.querySelectorAll('.pc-checkout-trilha li')].map(l => l.className).join(',')) === 'agora,,', 'as etapas da compra, na primeira');
   await page.click('[data-compra-valor="outro"]');
   await page.waitForTimeout(150);
   await page.fill('#pc-compra-outro', '15');
+  await page.waitForTimeout(150);
+  ok(/Total\s+R\$ 15,00/.test(await texto(page, '.pc-checkout-resumo')) && (await page.evaluate(() => document.activeElement && document.activeElement.id)) === 'pc-compra-outro', 'o resumo acompanha o outro valor, sem tirar o cursor do campo');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(200);
-  ok((await texto(page, '#pc-compra')).includes('de R$ 20 a R$ 5.000') && !chamadas.length, 'outro valor abaixo de R$ 20 não passa');
+  ok((await texto(page, '#parceiros .pc-main')).includes('de R$ 20 a R$ 5.000') && !chamadas.length, 'outro valor abaixo de R$ 20 não passa');
   await page.click('[data-compra-valor="100"]');
   await page.waitForTimeout(150);
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#pc-compra');
   ok(chamadas[0] && chamadas[0].acao === 'cobrar' && chamadas[0].compra === ID(1) && !('valor' in chamadas[0]), 'abre a compra no banco e pede a cobrança só com o id (o valor sai do banco)');
-  ok(corpo.includes('Pague R$ 100 com Pix') && await page.isVisible('.pc-compra-qr') && (await page.inputValue('#pc-compra-codigo')) === '00020101PIXCOPIA' && corpo.includes('Esperando o pagamento'), 'Pix: o QR code, o copia e cola e "Esperando o pagamento"');
+  ok(corpo.includes('Pague R$ 100 com Pix') && corpo.includes('Abra o app do seu banco') && await page.isVisible('.pc-compra-qr') && (await page.inputValue('#pc-compra-codigo')) === '00020101PIXCOPIA' && corpo.includes('Esperando o pagamento'), 'Pix: o passo a passo, o QR code, o copia e cola e "Esperando o pagamento"');
+  ok(await page.evaluate(() => [...document.querySelectorAll('.pc-checkout-trilha li')].map(l => l.className).join(',')) === 'feito,agora,', 'na etapa do pagamento');
   await page.click('#pc-compra-copiar');
   await page.waitForTimeout(150);
   ok((await texto(page, '#pc-compra-copiar')) === 'Copiado', '"Copiar" copia o código');
-  // O Mercado Pago confirmou: os créditos entram e a tela confere sozinha.
+  // O Mercado Pago confirmou: os créditos entram e a página confere sozinha.
   await page.evaluate(() => { window.__compras[0].situacao = 'paga'; window.__db.academias.find(a => a.id === 'a1').envios_de_aviso = 100; });
   await page.waitForTimeout(5000);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Pagamento confirmado') && corpo.includes('R$ 100 entraram nos créditos') && /Créditos\s+R\$ 100/.test(await texto(page, '#pc-leilao')), 'pago: a tela confere sozinha e os créditos aparecem');
-  await page.click('#pc-compra-fechar');
-  await page.waitForTimeout(150);
-  ok(!(await page.$('#pc-compra')), '"✕" fecha a compra');
+  ok(corpo.includes('Pagamento confirmado') && corpo.includes('R$ 100 entraram nos créditos da Só Aula Tennis') && /Saldo de créditos\s+R\$ 100/.test(corpo), 'pago: a página confere sozinha e mostra o saldo novo');
+  await page.click('#pc-creditos-concluir');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email' && !state.pcCompra) && /Créditos\s+R\$ 100/.test(await texto(page, '#pc-leilao')), '"Voltar ao leilão" volta, com os créditos');
   // Cartão: vai para a página do Mercado Pago.
   resposta = () => ({ status: 200, body: { forma: 'cartao', valor: 50, link: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=x' } });
   await page.route('https://www.mercadopago.com.br/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>Mercado Pago</p>' }));
   await page.click('#pc-comprar-creditos');
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(200);
   await page.click('[data-compra-valor="50"]');
   await page.click('[data-compra-forma="cartao"]');
   await page.waitForTimeout(150);
-  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar R$ 50 com cartão' && (await texto(page, '#pc-compra')).includes('página do Mercado Pago'), 'cartão: diz que paga na página do Mercado Pago');
+  ok((await texto(page, '#pc-compra-pagar')) === 'Ir para o Mercado Pago · R$ 50' && (await texto(page, '#parceiros .pc-main')).includes('página segura do Mercado Pago'), 'cartão: "Ir para o Mercado Pago"');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(800);
   ok(page.url().startsWith('https://www.mercadopago.com.br/checkout/'), 'e vai para a página do Mercado Pago');
   await browser.close();
 
+  // ---- Do lance para a compra e de volta: o leilão continua onde estava ----
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'] }));
+  await page.evaluate(async () => { window.__alcance = 143; await carregarPromocoesPorEmail(); });
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { state.pcLeilaoPasso = 3; state.pcEmailForm = { titulo: 'Aula grátis', mensagem: 'Para quem nunca jogou aqui.', valor: '30' }; render(); });
+  await page.waitForTimeout(150);
+  await page.click('#pc-leilao-passo [data-comprar-creditos]');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.parceirosAba === 'creditos') && (await texto(page, '#pc-creditos-voltar')) === 'Voltar ao leilão', '"Comprar" na etapa do lance abre a compra, com "Voltar ao leilão"');
+  await page.click('#pc-creditos-fechar');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email' && document.querySelector('#pc-leilao-passo')?.dataset.passo === '3') && (await page.inputValue('#pc-email-valor')) === '30', 'o ✕ volta para a etapa do lance, com o anúncio e o valor');
+  await browser.close();
+
   // ---- A volta do cartão: confere sozinha ----
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email?compra=' + ID(1), completo: ['a1'] }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/creditos?compra=' + ID(1), completo: ['a1'] }));
   await page.route('**/.netlify/functions/pagamento', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ situacao: 'paga' }) }));
   await page.waitForTimeout(500);
-  ok((await texto(page, '#pc-compra')).includes('Conferindo o pagamento') && !(await page.evaluate(() => location.search.includes('compra='))), 'a volta do Mercado Pago confere o pagamento e tira o "compra=" do endereço');
+  ok((await texto(page, '#pc-compra')).includes('Conferindo o pagamento') && !(await page.evaluate(() => location.search.includes('compra='))), 'a volta do Mercado Pago (na página da compra) confere o pagamento e tira o "compra=" do endereço');
   await page.waitForTimeout(4500);
   ok((await texto(page, '#parceiros .pc-main')).includes('Pagamento confirmado'), 'e mostra o pagamento confirmado');
   await browser.close();
@@ -105,6 +127,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.route('**/.netlify/functions/pagamento', r => r.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ erro: 'desligado' }) }));
   await page.waitForTimeout(400);
   await page.click('#pc-comprar-creditos');
+  await page.waitForTimeout(200);
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#pc-compra');
@@ -149,10 +172,11 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await desligada(page, 404);
   await page.waitForTimeout(500);
   await page.click('#pc-comprar-creditos');
+  await page.waitForTimeout(200);
   await page.click('[data-compra-valor="200"]');
   await page.click('[data-compra-forma="cartao"]');
   await page.waitForTimeout(150);
-  ok((await texto(page, '#pc-compra')).includes('No site de teste, sem o Mercado Pago ligado, o pagamento é de teste e nada é cobrado.'), 'a compra avisa do pagamento de teste');
+  ok((await texto(page, '#parceiros .pc-main')).includes('No site de teste, sem o Mercado Pago ligado, o pagamento é de teste e nada é cobrado.'), 'a compra avisa do pagamento de teste');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   ok((await page.inputValue('#pc-cartao-numero')) === '5031 4332 1540 6351' && (await page.inputValue('#pc-cartao-nome')) === 'APRO' && (await texto(page, '#pc-compra')).includes('APRO aprova e OTHE recusa'), 'cartão de teste já preenchido, com APRO e OTHE explicados');
@@ -164,22 +188,24 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.fill('#pc-cartao-nome', 'othe');
   await page.click('[data-simular="cartao"]');
   await page.waitForTimeout(500);
-  corpo = await texto(page, '#pc-compra');
-  ok(corpo.includes('O pagamento foi recusado') && (await texto(page, '#pc-compra-pagar')) === 'Pagar R$ 200 com cartão' && await page.evaluate(() => window.__compras[0].situacao === 'recusada' && !window.__db.academias.find(a => a.id === 'a1').envios_de_aviso),
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(corpo.includes('O pagamento foi recusado') && (await texto(page, '#pc-compra-pagar')) === 'Ir para o Mercado Pago · R$ 200' && await page.evaluate(() => window.__compras[0].situacao === 'recusada' && !window.__db.academias.find(a => a.id === 'a1').envios_de_aviso),
     'OTHE recusa: volta à compra com R$ 200 e cartão, sem créditos');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   await page.click('[data-simular="cartao"]');
   await page.waitForTimeout(800);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Pagamento confirmado') && corpo.includes('R$ 200 entraram nos créditos') && /Créditos\s+R\$ 200/.test(await texto(page, '#pc-leilao')), 'APRO aprova: os R$ 200 entram nos créditos');
-  await page.click('#pc-compra-fechar');
+  ok(corpo.includes('Pagamento confirmado') && corpo.includes('R$ 200 entraram nos créditos') && /Saldo de créditos\s+R\$ 200/.test(corpo), 'APRO aprova: os R$ 200 entram nos créditos');
+  await page.click('#pc-creditos-concluir');
+  await page.waitForTimeout(300);
   await page.click('#pc-comprar-creditos');
+  await page.waitForTimeout(200);
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   await page.click('[data-simular="recusado"]');
   await page.waitForTimeout(500);
-  ok((await texto(page, '#pc-compra')).includes('O Pix venceu sem pagamento.') && /Créditos\s+R\$ 200/.test(await texto(page, '#pc-leilao')), '"Simular Pix vencido": recusa sem mexer nos créditos');
+  ok((await texto(page, '#parceiros .pc-main')).includes('O Pix venceu sem pagamento.') && (await texto(page, '.pc-checkout-resumo')).includes('Saldo atual: R$ 200'), '"Simular Pix vencido": recusa sem mexer nos créditos');
   await browser.close();
 
   // ---- Mercado Pago ligado na prévia: vai para ele, mesmo com o teste ligado ----
@@ -206,6 +232,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.waitForTimeout(400);
   ok((await texto(page, '#parceiros .pc-main')) && !(await texto(page, '#parceiros .pc-main')).includes('preço de teste'), 'interruptor desligado: sem preço de teste');
   await page.click('#pc-comprar-creditos');
+  await page.waitForTimeout(200);
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   ok((await texto(page, '#pc-compra')).includes('A compra pelo site ainda não está ligada'), 'interruptor desligado: a compra oferece o WhatsApp');

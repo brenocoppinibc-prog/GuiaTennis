@@ -91,7 +91,7 @@ r = await pedir({ acao: "cobrar", compra: ID });
 d = await r.json();
 const pref = pedidos.find(p => p.url === "https://api.mercadopago.com/checkout/preferences");
 ok(r.status === 200 && d.forma === "cartao" && d.link.startsWith("https://www.mercadopago.com.br/checkout/"), "cartão: devolve o link do Mercado Pago");
-ok(pref.corpo.items[0].unit_price === 100 && pref.corpo.back_urls.success === `https://deploy-preview-5--x.netlify.app/parceiros/promocoes-email?compra=${ID}` && pref.corpo.payment_methods.excluded_payment_types[0].id === "ticket",
+ok(pref.corpo.items[0].unit_price === 100 && pref.corpo.back_urls.success === `https://deploy-preview-5--x.netlify.app/parceiros/creditos?compra=${ID}` && pref.corpo.payment_methods.excluded_payment_types[0].id === "ticket",
   "a página do cartão volta para a compra e não oferece boleto");
 r = await pedir({ acao: "consultar", compra: ID });
 ok((await r.json()).situacao === "aberta", "consultar antes de pagar: \"aberta\"");

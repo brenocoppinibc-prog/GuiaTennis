@@ -45,7 +45,9 @@ teste")
 > andamento; a tela de pronto com o plano certo; **regra 144**, o leilão
 > com cara de painel de anúncios (como o "Turbinar" do Instagram); **regra
 > 145**, o salvamento quase imediato ("Rascunho salvo") e o aviso antes de
-> sair com algo preenchido, no site todo.
+> sair com algo preenchido, no site todo; **regra 146**, o cabeçalho do
+> leilão só na primeira e na última etapa e a compra de créditos numa
+> página de pagamento (`/parceiros/creditos`).
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3380,6 +3382,33 @@ cobra taxa e não fica no meio** da negociação.
     volta); fechar a aba ou sair do site (o aviso do próprio navegador, sem
     ele nos testes automáticos). Sem nada preenchido, nada pergunta. Teste:
     `aviso-ao-sair.js`.
+146. **O cabeçalho do leilão só na primeira e na última etapa, e a compra
+    de créditos numa página de pagamento** (pedido de 22/10/2026: "deixe
+    isso aparecendo na primeira e última etapa somente; a parte de comprar
+    crédito ser uma página separada com direcionamento para o pagamento,
+    tudo diferente"). (1) O cabeçalho da campanha (`cabecalhoDoLeilao`) só
+    em "Como funciona" e em "Revisão"; nas etapas do meio e no andamento,
+    não (os créditos seguem na etapa do lance, com "Comprar"). (2) **Comprar
+    créditos** é a página `/parceiros/creditos` (`pcCreditos`, aba privada
+    "creditos"), como o "Adicionar fundos" da Meta, o "Fazer um pagamento"
+    do Google Ads e o checkout do Stripe: sem o menu nem o rodapé do
+    Parceiros, fundo branco, no alto só a marca, "Pagamento seguro" com o
+    cadeado e o ✕ (`pcTopoCheckout`); "‹ Voltar ao leilão", "Comprar
+    créditos", as etapas (Valor e forma › Pagamento › Confirmação), o valor
+    em quatro opções (R$ 50, R$ 100 "Mais escolhido", R$ 200, Outro valor),
+    a forma (Pix, "aprovação na hora", ou cartão, "na página segura do
+    Mercado Pago") e "Continuar para o pagamento · R$ 100" (no cartão, "Ir
+    para o Mercado Pago · R$ 50"); ao lado (embaixo, no celular), o **resumo
+    do pedido** (créditos, taxas R$ 0,00, total, o saldo atual e que os
+    créditos só são usados quando a academia ganha). O Pix fica na própria
+    página, com o passo a passo; o cartão vai para o Mercado Pago e volta
+    para `/parceiros/creditos?compra=<id>` (`pagamento.mjs`); no fim,
+    "Pagamento confirmado", o saldo novo e "Voltar ao leilão". Todo "Comprar
+    créditos" do leilão abre a página (`abrirCreditos`), e voltar
+    (`voltarDosCreditos`, também o ✕) leva de volta à etapa em que estava,
+    com o anúncio. A compra do plano continua na página Plano. Testes:
+    `plano-e-creditos.js` (a compra reescrita para a página),
+    `promocoes-por-email.js` e `pagamento.mjs` (a volta do cartão).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

@@ -95,7 +95,7 @@ async function cobrar(req, compraId) {
     await rpc("registrar_cobranca", { p_compra: c.id, p_gateway_id: String(p.id) });
     return json(200, { forma: "pix", valor: c.valor, ...dadosDoPix(p) });
   }
-  const volta = `${origem}/parceiros/${plano ? "plano" : "promocoes-email"}?compra=${c.id}`;
+  const volta = `${origem}/parceiros/${plano ? "plano" : "creditos"}?compra=${c.id}`;
   const pref = await mp("/checkout/preferences", {
     method: "POST",
     body: JSON.stringify({

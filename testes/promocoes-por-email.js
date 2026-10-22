@@ -43,6 +43,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   corpo = await texto(page, '#pc-leilao-passo');
   ok(await passo() === '1' && /^Etapa 2 de 5 · Estimativa\s+Estimativa da semana/.test(corpo) && /Alcance estimado\s+140\+ jogadores\s+em Pinheiros/.test(corpo) && /Custo por jogador\s+a partir de R\$ 0,07/.test(corpo) && /1º envio\s+ter\. \d\d\/\d\d · 10:00/.test(corpo) && /2º envio\s+sex\. \d\d\/\d\d · 10:00/.test(corpo) && corpo.includes('chega a cerca de 140 jogadores que procuram tênis em Pinheiros'),
     'segunda etapa: a estimativa (alcance, custo por jogador e os dois envios) — ' + corpo.replace(/\s+/g, ' ').slice(0, 160));
+  ok(!(await page.$('#pc-leilao')), 'o cabeçalho da campanha fica só na primeira e na última etapa (22/10/2026)');
   ok(corpo.includes('Índice de qualidade da academia') && await page.$('.pc-leilao-check') && await page.$('#pc-leilao-agora-nao') && (await texto(page, '#pc-leilao-participar')) === 'Participar', 'mostra o índice de qualidade e pergunta se quer participar');
   await page.click('#pc-leilao-agora-nao');
   await page.waitForTimeout(300);
@@ -97,7 +98,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   ok(rpc && rpc.p_valor === 25 && rpc.p_titulo === 'Primeira aula grátis' && corpo.includes('Pronto: a Só Aula Tennis está no leilão, com lance de até R$ 25.') && !(await page.$('#pc-email-titulo')),
     'entra no leilão: vai para o banco e a tela confirma');
   const linha = await page.evaluate(() => [...document.querySelectorAll('.pc-leilao-linha > li')].map(l => `${l.querySelector('strong').innerText}${l.className ? ':' + l.className : ''}`).join('|'));
-  ok(linha === 'Lance registrado:feito|Leilão aberto:agora|Resultado|E-mail aos jogadores' && /Andamento do leilão\s+Lance ativo em Pinheiros/.test(await texto(page, '#pc-lance')) && /Lance máximo\s+R\$ 25/.test(await texto(page, '#pc-lance')) && (await texto(page, '#pc-leilao .pc-ads-status')) === 'Lance ativo',
+  ok(linha === 'Lance registrado:feito|Leilão aberto:agora|Resultado|E-mail aos jogadores' && /Andamento do leilão\s+Lance ativo em Pinheiros/.test(await texto(page, '#pc-lance')) && /Lance máximo\s+R\$ 25/.test(await texto(page, '#pc-lance')) && !(await page.$('#pc-leilao')),
     'a página de andamento: lance registrado, leilão aberto, resultado e e-mail — ' + linha);
   ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').envios_de_aviso === 100), 'entrar não cobra nada (só cobra se ganhar)');
   await page.click('#pc-lance-alterar');

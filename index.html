@@ -184,6 +184,63 @@
   .pc-ads-lista span { color: var(--ads-muted); }
   .pc-ads-lista li.ganhou span { color: #1E6B47; }
   .pc-ads .pc-leilao-ganhou { background: #E3F1E9; border-color: #BFDCCB; }
+  /* A compra de créditos como checkout (22/10/2026): branco, sem o menu,
+     o resumo do pedido ao lado, como o do Stripe e o "Adicionar fundos" da
+     Meta. */
+  .pc.pc-checkout-tela, .pc-checkout-tela .pc-main { background: #fff; }
+  @media (max-width: 479px) { .pc-checkout-topo .pc-selo { display: none; } }
+  .pc-checkout-topo { background: #fff; border-bottom: 1px solid #E3E5E8; }
+  .pc-checkout-seguro { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #5F6670; white-space: nowrap; }
+  .pc-checkout-topo .pc-fechar { margin-left: 12px; }
+  .pc-checkout { max-width: 980px; margin: 0 auto; color: #1C2024; }
+  .pc-checkout-voltar { color: #1C2024; margin-bottom: 14px; }
+  .pc-checkout-h { margin: 0; font-family: var(--fonte-texto); font-size: 26px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; }
+  .pc-checkout-sub { margin: 6px 0 0; font-size: 15px; color: #5F6670; }
+  .pc-checkout-trilha { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 18px 0 0; padding: 0; font-size: 13px; color: #5F6670; }
+  .pc-checkout-trilha li { display: inline-flex; align-items: center; gap: 6px; }
+  .pc-checkout-trilha li span { width: 20px; height: 20px; border: 1px solid #C9CDD2; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 600; }
+  .pc-checkout-trilha li.agora { color: #1C2024; font-weight: 600; }
+  .pc-checkout-trilha li.agora span { background: #1C2024; border-color: #1C2024; color: #fff; }
+  .pc-checkout-trilha li.feito span { background: var(--green); border-color: var(--green); color: #fff; }
+  .pc-checkout-ok .pc-checkout-trilha, .pc-checkout > .pc-checkout-trilha:first-child { justify-content: center; }
+  .pc-checkout-grade { display: grid; gap: 22px; margin-top: 22px; }
+  @media (min-width: 860px) { .pc-checkout-grade { grid-template-columns: minmax(0, 1fr) 340px; gap: 36px; align-items: start; } .pc-checkout-resumo { position: sticky; top: 90px; } }
+  .pc-checkout-bloco { padding: 18px 0; border-top: 1px solid #E3E5E8; }
+  .pc-checkout-bloco:first-child { padding-top: 0; border-top: 0; }
+  .pc-checkout-bloco-t { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+  .pc-checkout-n { width: 22px; height: 22px; border-radius: 50%; background: #1C2024; color: #fff; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+  .pc-checkout-valores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .pc-checkout-formas { display: grid; gap: 10px; }
+  .pc-checkout-opcao { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 14px; border: 1px solid #DCDFE4; border-radius: 8px; background: #fff; color: #1C2024; font: inherit; text-align: left; cursor: pointer; }
+  .pc-checkout-opcao.on { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); background: #F4F9F6; }
+  .pc-checkout-radio { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; border: 1.5px solid #9AA0A8; border-radius: 50%; box-sizing: border-box; }
+  .pc-checkout-opcao.on .pc-checkout-radio { border: 5px solid var(--green); }
+  .pc-checkout-opcao-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .pc-checkout-opcao-t strong { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .pc-checkout-opcao-t small { font-size: 12.5px; line-height: 1.4; color: #5F6670; }
+  .pc-checkout-outro { max-width: 260px; margin-top: 10px; }
+  .pc-checkout-pagar { width: 100%; min-height: 50px; margin-top: 18px; border-radius: 8px; font-size: 15.5px; }
+  .pc-checkout-seguro-nota { display: flex; align-items: flex-start; gap: 6px; margin: 10px 0 0; font-size: 12.5px; line-height: 1.5; color: #5F6670; }
+  .pc-checkout-seguro-nota svg { flex-shrink: 0; margin-top: 2px; }
+  .pc-checkout-resumo { padding: 18px; border: 1px solid #E3E5E8; border-radius: 10px; background: #F7F8FA; }
+  .pc-checkout-rotulo { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: #5F6670; }
+  .pc-checkout-item { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid #E3E5E8; }
+  .pc-checkout-ic { flex-shrink: 0; width: 38px; height: 38px; border: 1px solid #E3E5E8; border-radius: 8px; background: #fff; color: var(--green); display: flex; align-items: center; justify-content: center; }
+  .pc-checkout-item div { display: flex; flex-direction: column; font-size: 14px; }
+  .pc-checkout-item span { font-size: 13px; color: #5F6670; }
+  .pc-checkout-linhas { list-style: none; margin: 12px 0 0; padding: 0; }
+  .pc-checkout-linhas li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .pc-checkout-linhas li span { color: #5F6670; }
+  .pc-checkout-linhas li.total { margin-top: 6px; padding-top: 12px; border-top: 1px solid #E3E5E8; font-size: 16px; font-weight: 700; }
+  .pc-checkout-linhas li.total span { color: #1C2024; }
+  .pc-checkout-nota { margin: 12px 0 0; font-size: 12.5px; line-height: 1.5; color: #5F6670; }
+  .pc-checkout-como { margin: 0 0 14px; padding-left: 20px; font-size: 14px; line-height: 1.6; color: #3B4047; }
+  .pc-checkout-espera { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 13.5px; color: #5F6670; }
+  .pc-checkout .pc-compra-qr { margin: 0 0 14px; }
+  .pc-checkout .form-field { border-color: #DCDFE4; border-radius: 6px; background: #fff; }
+  .pc-checkout-ok { max-width: 440px; margin: 28px auto 0; text-align: center; }
+  .pc-checkout-ok-ic { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; }
+  .pc-checkout-saldo { margin: 18px 0 0; padding: 12px 16px; border: 1px solid #E3E5E8; border-radius: 8px; text-align: left; }
   /* Comprar créditos (19/10/2026). */
   .pc-compra { position: relative; }
   .pc-compra-x { position: absolute; top: 10px; right: 10px; }
@@ -2635,6 +2692,7 @@ function icon(name, size, color) {
     whatsapp: '<path d="M3.6 20.4l1.2-3.9A8.6 8.6 0 1 1 8 19.3z"/><path d="M9.1 8.3c.2-.4.5-.5.8-.5h.4c.2 0 .4.1.5.3l.7 1.6c.1.2 0 .4-.1.6l-.5.6c.6 1.1 1.5 2 2.6 2.6l.6-.5c.2-.1.4-.2.6-.1l1.6.7c.2.1.3.3.3.5v.4c0 .3-.1.6-.5.8-1.8.8-6-2.5-7.1-4.7-.3-.8-.3-1.6.1-2.3z"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.8 6.8l8.2 6.2 8.2-6.2"/>',
     info: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.8" r="0.4"/>',
+    cadeado: '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
     chevron: '<polyline points="9 5 16 12 9 19"/>',
     chevronDown: '<polyline points="5 9 12 16 19 9"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
@@ -4430,7 +4488,7 @@ function telaDoPercurso() {
   if (state.page === "parceiros") {
     const aba = state.parceirosAba || "inicio";
     const nomes = { inicio: "Apresentação", planos: "Planos", ajuda: "Ajuda", cadastro: "Cadastro", entrar: "Entrar", painel: "Atualizações",
-      desempenho: "Desempenho", avaliacoes: "Avaliações", promocoes: "Promoções na ficha", "promocoes-email": "Leilão de promoções", ficha: "Minha ficha", pessoas: "Acessos", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
+      desempenho: "Desempenho", avaliacoes: "Avaliações", promocoes: "Promoções na ficha", "promocoes-email": "Leilão de promoções", creditos: "Comprar créditos", ficha: "Minha ficha", pessoas: "Acessos", plano: "Plano", academias: "Suas academias", perfil: "Perfil" };
     let texto = nomes[aba] || aba;
     if ((aba === "cadastro" || aba === "entrar") && !contaAcademia) {
       const passo = state.pcEmailPasso || "email";
@@ -7847,7 +7905,7 @@ function demoBusca() {
 // aparece no topo da busca, marcado "Patrocinado" (regra 71).
 
 const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar"];
-const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "ficha", "pessoas", "plano", "academias", "perfil"];
+const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "creditos", "ficha", "pessoas", "plano", "academias", "perfil"];
 // Só do admin: escolher a academia para ver o Parceiros como ela vê.
 const PC_ADMIN = ["ver"];
 const PC_MENU_PUBLICO = [
@@ -7999,6 +8057,7 @@ function irParceiros(aba, opcoes = {}) {
   if ((aba === "painel" || aba === "pessoas") && temAcademia() && acessoCompleto()) { carregarPedidosDeAcesso(); carregarPessoas(); }
   if (aba === "promocoes" && temAcademia() && acessoCompleto()) { state.pcPromoMsg = null; state.pcPromoEditando = null; state.pcPromoForm = null; carregarPromocoesDaAcademia(); }
   if (aba === "promocoes-email" && temAcademia() && acessoCompleto()) { state.pcEmailMsg = null; if (!opcoes.manterForm) { state.pcEmailForm = null; state.pcEmailEditando = false; state.pcLeilaoPasso = undefined; } carregarPromocoesDaAcademia(); }
+  if (aba === "creditos" && temAcademia() && acessoCompleto()) { if (!state.pcCompra || state.pcCompra.tipo === "plano") state.pcCompra = { tipo: "creditos", passo: "escolher", valor: 100, forma: "pix" }; carregarPromocoesPorEmail(); }
   syncUrl(!opcoes.substituir);
   render();
   if (opcoes.ancora) {
@@ -8171,7 +8230,7 @@ function dicasMostradas() {
   try { return JSON.parse(localStorage.getItem(DICA_KEY) || "{}") || {}; } catch { return {}; }
 }
 function agendarDicaDoParceiros() {
-  if (state.page !== "parceiros" || isAdmin || !temAcademia() || !acessoCompleto() || !PC_PRIVADAS.includes(state.parceirosAba)) return;
+  if (state.page !== "parceiros" || isAdmin || !temAcademia() || !acessoCompleto() || !PC_PRIVADAS.includes(state.parceirosAba) || state.parceirosAba === "creditos") return;
   const id = contaAcademia.academiaId;
   state.pcDicas = state.pcDicas || {};
   if (state.pcDicas[id]) return;
@@ -8772,7 +8831,7 @@ function renderParceiros() {
   const semAcademia = contaAcademia && acessoCompleto() && !temAcademia();
   let miolo;
   if (PC_PRIVADAS.includes(aba) && contaAcademia && !acessoCompleto()) miolo = pcPrimeiroAcesso();
-  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "ficha", "pessoas"].includes(aba)) miolo = pcSemAcademia();
+  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "creditos", "ficha", "pessoas"].includes(aba)) miolo = pcSemAcademia();
   else if (aba === "ver") miolo = pcVerComoAdmin();
   else if (aba === "inicio") miolo = pcInicio();
   else if (aba === "planos") miolo = pcPlanos(false);
@@ -8784,18 +8843,20 @@ function renderParceiros() {
   else if (aba === "avaliacoes") miolo = pcAvaliacoes();
   else if (aba === "promocoes") miolo = pcPromocoes();
   else if (aba === "promocoes-email") miolo = pcPromocoesPorEmail();
+  else if (aba === "creditos") miolo = pcCreditos();
   else if (aba === "ficha") miolo = pcFicha();
   else if (aba === "plano") miolo = pcPlanos(temAcademia());
   else if (aba === "pessoas") miolo = pcPessoasDaAcademia();
   else if (aba === "academias") miolo = pcAcademias();
   else if (aba === "perfil") miolo = pcPerfil();
   const focado = pcFocado();
+  const checkout = aba === "creditos" && temAcademia() && acessoCompleto();
   return `
-    <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""} ${aba === "inicio" ? "pc-revelando" : ""} ${focado ? "pc-focado" : ""}" id="parceiros">
-      ${focado ? pcTopoFocado() : pcTopo()}
+    <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""} ${aba === "inicio" ? "pc-revelando" : ""} ${focado ? "pc-focado" : ""} ${checkout ? "pc-focado pc-checkout-tela" : ""}" id="parceiros">
+      ${checkout ? pcTopoCheckout() : focado ? pcTopoFocado() : pcTopo()}
       ${faixaDaVisaoAdmin()}
       <main class="pc-main">${miolo}</main>
-      ${focado ? "" : pcRodape()}
+      ${focado || checkout ? "" : pcRodape()}
     </div>`;
 }
 
@@ -9724,7 +9785,7 @@ async function carregarPromocoesDaAcademia() {
 async function carregarPromocoesPorEmail(redesenhar = true) {
   const c = minhaAcademia();
   if (!c) return;
-  if (state.page === "parceiros" && state.parceirosAba === "promocoes-email") compraDaVolta();
+  if (state.page === "parceiros" && ["promocoes-email", "creditos"].includes(state.parceirosAba)) compraDaVolta();
   try {
     const r = await sb.rpc('meu_leilao', { p_academia: c.id });
     state.pcLeilao = r.error || !r.data ? null : r.data;
@@ -9818,6 +9879,151 @@ function pcGatewayDeTeste(k) {
       ${erro}
       <button type="button" class="cta-btn cta-primary" data-simular="cartao" style="margin-top:12px" ${k.simulando ? "disabled" : ""}>${k.simulando ? bolaGirando(15) + " Pagando..." : `Pagar R$ ${v}`}</button>`;
 }
+// A compra de créditos numa página própria, com o caminho até o pagamento
+// (pedido do Breno em 22/10/2026: "a parte de comprar crédito ser uma página
+// separada com direcionamento para o pagamento, tudo diferente"), como o
+// "Adicionar fundos" do Gerenciador de Anúncios da Meta, o "Fazer um
+// pagamento" do Google Ads e o checkout do Stripe: sem o menu do Parceiros,
+// só a marca, "Pagamento seguro" e o ✕; o valor e a forma de pagamento à
+// esquerda e o resumo do pedido ao lado (embaixo, no celular); o Pix na
+// própria página, o cartão na página do Mercado Pago; no fim, a confirmação
+// com o saldo novo e a volta ao leilão, na etapa em que estava.
+const CREDITOS_PASSOS = ["Valor e forma", "Pagamento", "Confirmação"];
+function pcTopoCheckout() {
+  return `
+    <header class="pc-topo pc-checkout-topo">
+      <div class="pc-topo-in">
+        ${pcMarca()}
+        <span class="pc-checkout-seguro">${icon('cadeado', 14, 'currentColor')} Pagamento seguro</span>
+        <button type="button" class="pc-fechar" id="pc-creditos-fechar" aria-label="Fechar e voltar">✕</button>
+      </div>
+    </header>`;
+}
+function abrirCreditos() {
+  if (state.parceirosAba !== "creditos") state.pcCreditosVolta = { aba: state.parceirosAba || "promocoes-email" };
+  state.pcCompra = { tipo: "creditos", passo: "escolher", valor: 100, forma: "pix" };
+  irParceiros("creditos");
+}
+function voltarDosCreditos() {
+  clearTimeout(window.__pcCompraTimer);
+  const aba = (state.pcCreditosVolta || {}).aba || "promocoes-email";
+  state.pcCompra = null;
+  state.pcCreditosVolta = null;
+  irParceiros(aba === "creditos" ? "promocoes-email" : aba, { manterForm: true });
+}
+function pcCreditos() {
+  const c = minhaAcademia();
+  if (!c) return pcSemFicha();
+  if ((c.plano || "basico") === "basico") return `
+    <section class="pc-pagina pc-checkout">
+      ${blocoTrancado("completo", "Créditos do leilão de promoções", "Os créditos pagam o leilão das promoções por e-mail, dos planos Completo e Premium.")}
+    </section>`;
+  const k = state.pcCompra && state.pcCompra.tipo !== "plano" ? state.pcCompra : { tipo: "creditos", passo: "escolher", valor: 100, forma: "pix" };
+  const saldo = saldoDeEnvios();
+  const valor = k.passo === "ok" ? Number(k.valorPago || 0) : k.valorCobrado ? Number(k.valorCobrado) : k.outro ? Number(k.valorOutro || 0) : Number(k.valor || 100);
+  const etapa = k.passo === "ok" ? 2 : ["pix", "teste", "volta"].includes(k.passo) ? 1 : 0;
+  const voltaAba = (state.pcCreditosVolta || {}).aba;
+  const nomeDaVolta = !voltaAba || voltaAba === "promocoes-email" || voltaAba === "creditos" ? "ao leilão" : voltaAba === "plano" ? "ao plano" : "ao Parceiros";
+  const trilha = `<ol class="pc-checkout-trilha" aria-label="Etapas da compra">${CREDITOS_PASSOS.map((t, i) => `<li class="${i < etapa ? "feito" : i === etapa ? "agora" : ""}" ${i === etapa ? 'aria-current="step"' : ""}><span>${i < etapa ? icon('check', 11, 'currentColor') : i + 1}</span>${t}</li>`).join("")}</ol>`;
+  const reais = (v) => "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const resumo = `
+      <aside class="pc-checkout-resumo" aria-label="Resumo do pedido">
+        <p class="pc-checkout-rotulo">Resumo do pedido</p>
+        <div class="pc-checkout-item">
+          <span class="pc-checkout-ic">${icon('sino', 18, 'currentColor')}</span>
+          <div><strong>Créditos do leilão de promoções</strong><span>${esc(c.name)}</span></div>
+        </div>
+        <ul class="pc-checkout-linhas">
+          <li><span>Créditos</span><strong>${valor ? reais(valor) : "—"}</strong></li>
+          <li><span>Taxas</span><strong>${reais(0)}</strong></li>
+          <li class="total"><span>Total</span><strong>${valor ? reais(valor) : "—"}</strong></li>
+        </ul>
+        <p class="pc-checkout-nota">Saldo atual: ${emReais(saldo)}. Os créditos só são usados quando a academia ganha um leilão. Créditos usados não são devolvidos (Termos de Uso).</p>
+      </aside>`;
+  const voltar = `<button type="button" class="pc-passo-voltar pc-checkout-voltar" id="pc-creditos-voltar">${icon('chevronLeft', 15, 'currentColor')} Voltar ${nomeDaVolta}</button>`;
+  if (k.passo === "ok") return `
+    <section class="pc-pagina pc-checkout">
+      ${trilha}
+      <div class="pc-checkout-ok" role="status">
+        <span class="pc-checkout-ok-ic">${icon('check', 30, '#fff')}</span>
+        <h1 class="pc-checkout-h">Pagamento confirmado</h1>
+        <p class="pc-checkout-sub">${emReais(valor)} entraram nos créditos da ${esc(c.name)}.</p>
+        <ul class="pc-checkout-linhas pc-checkout-saldo">
+          <li><span>Saldo de créditos</span><strong>${emReais(saldo)}</strong></li>
+        </ul>
+        <button type="button" class="cta-btn cta-primary pc-checkout-pagar" id="pc-creditos-concluir">Voltar ${nomeDaVolta}</button>
+      </div>
+    </section>`;
+  let principal = "";
+  if (k.passo === "teste") principal = `<div class="pc-checkout-bloco pc-compra" id="pc-compra">${pcGatewayDeTeste(k)}</div>`;
+  else if (k.passo === "volta") principal = `
+      <div class="pc-checkout-bloco" id="pc-compra">
+        <p class="pc-checkout-bloco-t">Conferindo o pagamento</p>
+        <p class="pc-checkout-espera">${bolaGirando(14)} Assim que o Mercado Pago confirmar, os créditos entram sozinhos. Pode levar alguns segundos.</p>
+      </div>`;
+  else if (k.passo === "desligado") principal = `
+      <div class="pc-checkout-bloco" id="pc-compra">
+        <p class="pc-checkout-bloco-t">Pagamento pelo WhatsApp</p>
+        <p class="pc-card-s">A compra pelo site ainda não está ligada. Por enquanto, compre pelo WhatsApp do GuiaTennis: os créditos entram depois do Pix.</p>
+        <a class="cta-btn cta-primary pc-checkout-pagar" href="${esc(linkComprarEnvios(c))}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} Comprar pelo WhatsApp</a>
+      </div>`;
+  else if (k.passo === "pix") principal = `
+      <div class="pc-checkout-bloco" id="pc-compra">
+        <p class="pc-checkout-bloco-t">${icon('pix', 16, 'currentColor')} Pague ${emReais(k.valorCobrado)} com Pix</p>
+        <ol class="pc-checkout-como">
+          <li>Abra o app do seu banco e escolha Pix.</li>
+          <li>Leia o QR code ou use o Pix copia e cola.</li>
+          <li>Confira o valor e confirme. Os créditos entram sozinhos.</li>
+        </ol>
+        ${k.pix && k.pix.qr ? `<img class="pc-compra-qr" src="data:image/png;base64,${esc(k.pix.qr)}" alt="QR code do Pix de ${esc(emReais(k.valorCobrado))}" width="220" height="220" />` : ""}
+        <label class="field-label" for="pc-compra-codigo">Pix copia e cola</label>
+        <div class="pc-compra-copia">
+          <input class="form-field" id="pc-compra-codigo" readonly value="${esc((k.pix || {}).copia || "")}" />
+          <button type="button" class="cta-btn cta-secondary" id="pc-compra-copiar">${k.copiado ? "Copiado" : "Copiar"}</button>
+        </div>
+        <p class="pc-checkout-espera">${bolaGirando(14)} Esperando o pagamento${(k.pix || {}).expira ? ` · o código vale até as ${esc(new Date(k.pix.expira).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }))}` : ""}.</p>
+      </div>`;
+  else {
+    const forma = k.forma || "pix";
+    const opcao = (attr, val, ativo, titulo, sub, extra) => `
+          <button type="button" class="pc-checkout-opcao${ativo ? " on" : ""}" ${attr}="${val}" role="radio" aria-checked="${ativo}">
+            <span class="pc-checkout-radio" aria-hidden="true"></span>
+            <span class="pc-checkout-opcao-t"><strong>${titulo}</strong>${sub ? `<small>${sub}</small>` : ""}</span>
+            ${extra || ""}
+          </button>`;
+    principal = `
+      <div class="pc-checkout-bloco">
+        <p class="pc-checkout-bloco-t"><span class="pc-checkout-n">1</span> Valor</p>
+        <div class="pc-checkout-valores" role="radiogroup" aria-label="Valor">
+          ${VALORES_DE_CREDITO.map(v => opcao("data-compra-valor", v, !k.outro && valor === v, emReais(v), v === 100 ? "Mais escolhido" : "")).join("")}
+          ${opcao("data-compra-valor", "outro", !!k.outro, "Outro valor", "De R$ 20 a R$ 5.000")}
+        </div>
+        ${k.outro ? `<div class="pc-ads-moeda pc-checkout-outro"><span>R$</span><input class="form-field" id="pc-compra-outro" type="number" inputmode="numeric" min="20" max="5000" step="1" placeholder="Ex.: 150" value="${esc(k.valorOutro || "")}" aria-label="Outro valor, em reais" /></div>` : ""}
+      </div>
+      <div class="pc-checkout-bloco">
+        <p class="pc-checkout-bloco-t"><span class="pc-checkout-n">2</span> Forma de pagamento</p>
+        <div class="pc-checkout-formas" role="radiogroup" aria-label="Forma de pagamento">
+          ${opcao("data-compra-forma", "pix", forma === "pix", `${icon('pix', 15, 'currentColor')} Pix`, "Aprovação na hora. O QR code aparece nesta página.")}
+          ${opcao("data-compra-forma", "cartao", forma === "cartao", "Cartão de crédito", "Na página segura do Mercado Pago, à vista.")}
+        </div>
+      </div>
+      ${k.erro ? `<p class="form-error">${icon('warning', 14)} ${esc(k.erro)}</p>` : ""}
+      <button type="button" class="cta-btn cta-primary pc-checkout-pagar" id="pc-compra-pagar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(15) + " Abrindo o pagamento..." : forma === "pix" ? `Continuar para o pagamento${valor ? ` · ${emReais(valor)}` : ""}` : `Ir para o Mercado Pago${valor ? ` · ${emReais(valor)}` : ""}`}</button>
+      <p class="pc-checkout-seguro-nota">${icon('cadeado', 13, 'currentColor')} Pagamento processado pelo Mercado Pago. O GuiaTennis não vê os dados do cartão.${pagamentoDeTeste() ? " No site de teste, sem o Mercado Pago ligado, o pagamento é de teste e nada é cobrado." : ""}</p>`;
+  }
+  return `
+    <section class="pc-pagina pc-checkout">
+      ${voltar}
+      <h1 class="pc-checkout-h">Comprar créditos</h1>
+      <p class="pc-checkout-sub">Para o leilão de promoções da ${esc(c.name)}.</p>
+      ${trilha}
+      <div class="pc-checkout-grade">
+        <div class="pc-checkout-principal">${principal}</div>
+        ${resumo}
+      </div>
+    </section>`;
+}
+
 function pcComprarCreditos(c) {
   const k = state.pcCompra || {};
   const plano = k.tipo === "plano";
@@ -10011,7 +10217,8 @@ function esperarPagamento() {
     esperarPagamento();
   }, 4000);
 }
-// Volta da página do cartão: /parceiros/promocoes-email?compra=<id> (ou
+// Volta da página do cartão: /parceiros/creditos?compra=<id> (antes,
+// /parceiros/promocoes-email?compra=<id>, que ainda funciona; ou
 // /parceiros/plano?compra=<id>, a compra do plano).
 function compraDaVolta() {
   try {
@@ -10148,12 +10355,14 @@ function pcPromocoesPorEmail() {
         </div>
       </section>`;
   }
-  const meio = L.lance && !state.pcEmailEditando ? andamentoDoLeilao(c, L) : passoDoLeilao(c, L);
+  const andamento = L.lance && !state.pcEmailEditando;
+  const meio = andamento ? andamentoDoLeilao(c, L) : passoDoLeilao(c, L);
+  // O cabeçalho da campanha só na primeira e na última etapa (22/10/2026).
+  const cabecalho = !andamento && [0, LEILAO_PASSOS.length - 1].includes(passoDoLeilaoAtual(L));
   return `
     <section class="pc-pagina pc-ads">
       ${topo}
-      ${cabecalhoDoLeilao(L)}
-      ${state.pcCompra && state.pcCompra.tipo !== "plano" ? pcComprarCreditos(c) : ""}
+      ${cabecalho ? cabecalhoDoLeilao(L) : ""}
       ${meio}
       ${historicoDoLeilao(L)}
     </section>`;
@@ -11600,10 +11809,10 @@ function ligarEventosParceiros() {
     };
     if (el.tagName === "INPUT") el.onkeydown = (e) => { if (e.key === "Enter") seguirNoLeilao(); };
   });
-  const abrirCompra = () => { state.pcCompra = { passo: "escolher", valor: 100, forma: "pix" }; render(); document.getElementById("pc-compra")?.scrollIntoView({ block: "center", behavior: "smooth" }); };
   const pcComprar = document.getElementById("pc-comprar-creditos");
-  if (pcComprar) pcComprar.onclick = abrirCompra;
-  document.querySelectorAll("[data-comprar-creditos]").forEach(el => { el.onclick = abrirCompra; });
+  if (pcComprar) pcComprar.onclick = abrirCreditos;
+  document.querySelectorAll("[data-comprar-creditos]").forEach(el => { el.onclick = abrirCreditos; });
+  ["pc-creditos-voltar", "pc-creditos-fechar", "pc-creditos-concluir"].forEach(id => { const el = document.getElementById(id); if (el) el.onclick = voltarDosCreditos; });
   const pcCompraFechar = document.getElementById("pc-compra-fechar");
   if (pcCompraFechar) pcCompraFechar.onclick = () => { clearTimeout(window.__pcCompraTimer); state.pcCompra = null; render(); };
   document.querySelectorAll("[data-compra-valor]").forEach(el => { el.onclick = () => {
@@ -11614,7 +11823,11 @@ function ligarEventosParceiros() {
   }; });
   document.querySelectorAll("[data-compra-forma]").forEach(el => { el.onclick = () => { const k = state.pcCompra || (state.pcCompra = {}); const o = document.getElementById("pc-compra-outro"); if (o) k.valorOutro = o.value; k.forma = el.dataset.compraForma; render(); }; });
   const pcCompraOutro = document.getElementById("pc-compra-outro");
-  if (pcCompraOutro) pcCompraOutro.oninput = () => { (state.pcCompra || {}).valorOutro = pcCompraOutro.value; const b = document.getElementById("pc-compra-pagar"); const v = Number(pcCompraOutro.value || 0); if (b && !state.pcCompra.enviando) b.textContent = `Pagar ${v ? `R$ ${v} ` : ""}${(state.pcCompra.forma || "pix") === "pix" ? "com Pix" : "com cartão"}`; };
+  if (pcCompraOutro) pcCompraOutro.oninput = () => {
+    (state.pcCompra || {}).valorOutro = pcCompraOutro.value;
+    if (state.parceirosAba === "creditos") { render(); const o = document.getElementById("pc-compra-outro"); if (o) { o.focus(); const n = o.value.length; try { o.setSelectionRange(n, n); } catch {} } return; }
+    const b = document.getElementById("pc-compra-pagar"); const v = Number(pcCompraOutro.value || 0); if (b && !state.pcCompra.enviando) b.textContent = `Pagar ${v ? `R$ ${v} ` : ""}${(state.pcCompra.forma || "pix") === "pix" ? "com Pix" : "com cartão"}`;
+  };
   const pcCompraPagar = document.getElementById("pc-compra-pagar");
   if (pcCompraPagar) pcCompraPagar.onclick = pagarCompra;
   document.querySelectorAll("[data-compra-periodo]").forEach(el => { el.onclick = () => { const k = state.pcCompra || (state.pcCompra = {}); k.periodo = el.dataset.compraPeriodo; k.erro = ""; render(); }; });
@@ -23171,6 +23384,7 @@ async function init() {
   if (state.page === "parceiros" && state.parceirosAba === "pessoas" && temAcademia() && acessoCompleto()) carregarPessoas();
   if (state.page === "parceiros" && state.parceirosAba === "promocoes" && temAcademia() && acessoCompleto()) carregarPromocoesDaAcademia();
   if (state.page === "parceiros" && state.parceirosAba === "promocoes-email" && temAcademia() && acessoCompleto()) carregarPromocoesDaAcademia();
+  if (state.page === "parceiros" && state.parceirosAba === "creditos" && temAcademia() && acessoCompleto()) carregarPromocoesPorEmail();
   if (state.page === "parceiros" && state.parceirosAba === "academias" && contaAcademia) carregarPedidosParaSair();
 
   // Aberto pelo "Entenda como funciona" (/parceiros/ajuda#numeros): a

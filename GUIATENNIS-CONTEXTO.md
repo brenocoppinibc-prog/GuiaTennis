@@ -38,7 +38,8 @@ teste")
 > nenhuma falha. Nenhum SQL novo. Em 22/10: **regra 140**, o código da
 > disputa com o prazo "em até 1 dia útil" enquanto o envio é à mão (sem os
 > "vai na hora"); **regra 141**, o "Esqueci a senha" passo a passo (o código,
-> depois a senha nova).
+> depois a senha nova); **regra 142**, as dicas no alto do Parceiros
+> (completar a ficha, o plano de cima, as promoções no Premium).
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3237,6 +3238,37 @@ cobra taxa e não fica no meio** da negociação.
     (venceu, aba recarregada), salvar volta ao passo do código. Estados:
     `state.pcCodigoConferido` (Parceiros) e `state.codigoConferido`
     (jogador). Testes: `codigo.js`, `jogador.js` e `senha.js`.
+142. **Dicas no alto do Parceiros: completar a ficha, o plano de cima e,
+    no Premium, as promoções** (pedido de 22/10/2026: "novos acessos no
+    parceiros, indique com aqueles push preencher todas as informações e a
+    vantagem de ter tal informação na ficha; quando já há o acesso, indique
+    para ter um plano melhor; se já está no Premium, indique publicar
+    promoções ou enviar notificações para vender mais"), como as sugestões
+    do perfil no Google Business Profile ("Adicione fotos…") e o próximo
+    passo do Shopify. `mostrarDica`: o aviso que desce no alto (o mesmo
+    verde do `mostrarPush`), em duas linhas — o que fazer e por que vale a
+    pena — e o atalho, com o ✕; fica 12 s. `dicaDoParceiros(c, plano)`
+    escolhe, nesta ordem: (1) **a parte que falta** (`faltasDaFicha`, na
+    ordem de `DICAS_DA_FICHA`: WhatsApp, endereço, fotos, preço, horário,
+    quadras, comodidades, estacionamento grátis e pago, cancelamento e como
+    chegar), ex.: "Adicione fotos da academia · Ficha com foto recebe muito
+    mais contato. · Adicionar fotos ›", que abre a ficha na parte, com o
+    "Confirmar" que leva à revisão (`abrirEdicaoDaFicha(c, { passo })`,
+    agora uma função, também do "Editar a ficha"); (2) com a ficha
+    completa, fora do Premium, **o plano de cima**: "A ficha esconde N
+    coisas que vocês preencheram · Com o Completo, elas aparecem na hora…
+    Grátis por enquanto." ou, sem nada escondido, uma dor de `PC_DORES` do
+    plano de cima (uma por dia), com "Ver o Completo/Premium ›" (página
+    Plano); (3) no **Premium**, sem promoção valendo, "Publique uma
+    promoção" (Promoções › Na ficha); com promoção e sem lance na semana,
+    "Mande a promoção por e-mail" e "Dar um lance ›" (Por e-mail).
+    `agendarDicaDoParceiros` (depois de cada render): só com a academia e o
+    acesso completo, numa página da conta, **no máximo uma por dia e por
+    academia** (a hora fica no aparelho, `guiatennis_dica_parceiros_v1`,
+    como a do convite da conta; Privacidade de 22 de outubro de 2026), 1,8 s
+    depois de abrir, sem cobrir outro aviso, o formulário, o menu nem o
+    chat (espera até 3 vezes). Nos testes, só com `opts.dicas`. Teste:
+    `dicas-do-parceiros.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4240,7 +4272,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos cadastro-sair-e-revisao comparacao-tudo estacionamento ficha-topo-e-sobre melhores-avaliadas; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos cadastro-sair-e-revisao comparacao-tudo estacionamento ficha-topo-e-sobre melhores-avaliadas dicas-do-parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 node testes/pagamento.mjs
 ```

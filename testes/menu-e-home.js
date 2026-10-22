@@ -161,7 +161,7 @@ const fs = require('fs'), path = require('path');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => !lerUltimaBusca() && loadRecents().length === 0), 'apagar o histórico tira as vistas e a última busca');
   const priv = await page.evaluate(() => PRIVACY_HTML);
-  ok(priv.includes('ficam apenas as academias vistas recentemente e a última busca') && priv.includes('as academias que você chamou, as preferências de busca') && priv.includes('Sem conta, nada disso é guardado'), 'Política de Privacidade: no aparelho só as vistas e a última busca; o resto na conta');
+  ok(priv.includes('ficam apenas as academias vistas recentemente, a última busca e a hora em que o site mostrou um aviso ou uma dica') && priv.includes('as academias que você chamou, as preferências de busca') && priv.includes('Sem conta, nada disso é guardado'), 'Política de Privacidade: no aparelho só as vistas e a última busca; o resto na conta');
 
   // Admin sem conta de jogador: a chamada não fica guardada, e o banco não recebe nada
   await browser.close();

@@ -32,8 +32,8 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   const dados = await texto(page, '#pc-leilao');
   ok(dados.includes('Leilão de Pinheiros, São Paulo') && /Fecha\s+domingo, \d+ de [a-zç]+, às 20h/.test(dados) && dados.includes('Sem créditos') && await page.$('#pc-leilao #pc-comprar-creditos'),
     'no alto, o resumo: o bairro, quando fecha e os créditos, com "Comprar ›" — ' + dados.replace(/\s+/g, ' ').slice(0, 120));
-  ok(await passo() === '0' && (await texto(page, '#pc-leilao-passo .pc-card-t')) === 'Como funciona o leilão de promoções' && await page.evaluate(() => document.querySelectorAll('.pc-leilao-como li').length === 4) && await page.$('#pc-leilao-passo') && (await page.evaluate(() => document.querySelector('.trilha')?.getAttribute('aria-label') || '')).includes('Etapas do leilão'),
-    'primeira etapa: como funciona, em 4 pontos, com a trilha das etapas');
+  ok(await passo() === '0' && (await texto(page, '#pc-leilao-passo .pc-card-t')) === 'Como funciona o leilão de promoções' && await page.evaluate(() => document.querySelectorAll('.pc-leilao-como li').length === 4) && !(await page.$('.trilha')),
+    'primeira etapa: como funciona, em 4 pontos, sem a barra das etapas (22/10/2026: "tire a barra")');
   let corpo = await texto(page, '#pc-leilao-passo');
   ok(corpo.includes('Você só paga se ganhar') && corpo.includes('A nota decide, não só o valor') && !/aviso/i.test(corpo), 'explica a nota e que só paga se ganhar, sem "aviso"');
   ok(!(await page.$('#pc-leilao-voltar')), 'na primeira etapa, sem "Voltar"');
@@ -96,7 +96,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   const linha = await page.evaluate(() => [...document.querySelectorAll('.pc-leilao-linha > li')].map(l => `${l.querySelector('strong').innerText}${l.className ? ':' + l.className : ''}`).join('|'));
   ok(linha === 'Lance registrado:feito|Leilão aberto:agora|Resultado|E-mail aos jogadores' && /Andamento do leilão/i.test(await texto(page, '#pc-lance')) && /Seu lance máximo: R\$ 25/i.test(await texto(page, '#pc-lance')),
     'a página de andamento: lance registrado, leilão aberto, resultado e e-mail — ' + linha);
-  ok(!(await page.$('.trilha')) && await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').envios_de_aviso === 100), 'no andamento, sem a trilha; e entrar não cobra nada (só cobra se ganhar)');
+  ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').envios_de_aviso === 100), 'entrar não cobra nada (só cobra se ganhar)');
   await page.click('#pc-lance-alterar');
   await page.waitForTimeout(150);
   ok(await passo() === '2' && (await page.inputValue('#pc-email-titulo')) === 'Primeira aula grátis' && await page.$('#pc-email-desistir'), '"Alterar o lance" volta à promoção, com o lance de antes e "Manter o lance de antes"');

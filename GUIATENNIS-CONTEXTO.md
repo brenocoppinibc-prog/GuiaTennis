@@ -3279,11 +3279,11 @@ cobra taxa e não fica no meio** da negociação.
     já fazer o lance, uma página de andamento do leilão… deixe mais
     profissional"; e "não entendi essa frase, se o lance máximo quer dizer o
     maior valor, especifique melhor isso"). Como o fluxo de campanha do
-    trivago Business Studio e do Google Ads (uma etapa por tela, com a
-    trilha) e o "Acompanhar pedido" dos grandes. A parte **Por e-mail virou
+    trivago Business Studio e do Google Ads (uma etapa por tela; a barra das
+    etapas saiu no mesmo dia: "tire a barra") e o "Acompanhar pedido" dos grandes. A parte **Por e-mail virou
     "Leilão"** (aba, menu, chat, Ajuda, dicas, Planos: "Leilão de
     promoções"). No alto, o resumo (bairro, quando fecha, créditos com
-    "Comprar ›"); embaixo, `trilhaTenis(LEILAO_PASSOS)` e um cartão por
+    "Comprar ›"); embaixo, um cartão por
     etapa (`passoDoLeilao`, `state.pcLeilaoPasso`): (1) **Como funciona**, em
     4 pontos (um leilão por bairro e por semana, às cegas; a nota é lance ×
     qualidade; duas promoções por semana, terça e sexta às 10h, marcadas

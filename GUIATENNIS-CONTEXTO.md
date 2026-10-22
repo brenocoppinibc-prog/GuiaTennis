@@ -43,7 +43,9 @@ teste")
 > 143**, o leilão de promoções passo a passo (aba "Leilão": como funciona,
 > vale a pena?, promoção, lance máximo como teto, revisar) e a página de
 > andamento; a tela de pronto com o plano certo; **regra 144**, o leilão
-> com cara de painel de anúncios (como o "Turbinar" do Instagram).
+> com cara de painel de anúncios (como o "Turbinar" do Instagram); **regra
+> 145**, o salvamento quase imediato ("Rascunho salvo") e o aviso antes de
+> sair com algo preenchido, no site todo.
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3345,6 +3347,39 @@ cobra taxa e não fica no meio** da negociação.
     lista com a data (dd/mm), a promoção e o resultado (verde quando
     ganhou). A prévia do e-mail continua igual (é o que o jogador vê).
     Teste: `promocoes-por-email.js`.
+145. **Salvamento quase imediato e aviso antes de sair, no site todo**
+    (pedido de 22/10/2026: "faça em todo o site aquele salvamento quase que
+    imediato, para não sair e perder tudo, ou se for voltar em ações que
+    preencheu algo sem salvar, ter o aviso"). Como o "Rascunho salvo" do
+    Gmail, o "Alterações não salvas" do admin da Shopify e o "Descartar
+    publicação?" do Instagram. (1) **Rascunho**: o da aba (regra de 13/10,
+    `guardarRascunho`, 0,25 s depois de digitar) passou a guardar também o
+    estado (`RASCUNHO_ESTADO`: o leilão com a etapa, a promoção na ficha, o
+    aviso de que a academia fechou, as anotações do "Me ajude a decidir" e
+    as estrelas da avaliação), que volta depois de o link reabrir a tela
+    (`restaurarRascunhoDoEstado`), e o "Faça seu cadastro" (`__visitante`;
+    antes, o erro apagava o nome digitado). (2) **"Rascunho salvo"**
+    (`mostrarRascunhoSalvo`, a cada gravação e a cada render): ao lado da
+    parte do cadastro e da etapa do leilão (`[data-rascunho-aqui]`) ou no
+    fim do formulário. (3) **Aviso** (`pendenciaDeSalvar`): conta o que
+    está nas partes marcadas com `data-aviso-sair="<onde>"` (avaliação,
+    resposta, criar conta e Minha conta do jogador, "Faça seu cadastro",
+    viagem, preferências, cadastro e Perfil do Parceiros, pessoa nova,
+    "a academia fechou" e o motivo da exclusão no admin; `data-rascunho-de`
+    diz o que "Sair e descartar" apaga) — busca, filtros, comparação e o
+    Entrar ficam de fora —, com o valor de antes guardado no primeiro toque
+    (`MEXIDOS`); e, nos de várias etapas, pelo estado: o cadastro da
+    academia (`cadastroTemOQuePerder`), o leilão (`leilaoTemOQuePerder`) e a
+    promoção (`promocaoTemOQuePerder`). Pergunta "Sair sem salvar? O que você
+    preencheu <onde> ainda não foi salvo e vai ser descartado." com "Sair e
+    descartar" (vermelho) e "Continuar editando" (`perguntarAntesDeSair`, o
+    mesmo visual do X do cadastro) ao: tocar num link, menu, aba, ficha ou
+    no ✕ (e fora) da janela onde está o que se perde (captura do clique;
+    o ✕ do cadastro segue com o dele); voltar pelo navegador ou pelo gesto
+    do celular (`voltarComAviso` no popstate: a tela fica e o endereço
+    volta); fechar a aba ou sair do site (o aviso do próprio navegador, sem
+    ele nos testes automáticos). Sem nada preenchido, nada pergunta. Teste:
+    `aviso-ao-sair.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

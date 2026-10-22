@@ -1864,6 +1864,11 @@
   .reg-sair-sim, .reg-sair-nao { display: block; width: 100%; min-height: 50px; padding: 12px 16px; border: 0; border-top: 1px solid var(--border); background: none; font: inherit; font-size: 15.5px; cursor: pointer; }
   .reg-sair-sim { color: var(--red); font-weight: 700; }
   .reg-sair-nao { color: var(--text); }
+  /* "Rascunho salvo" (22/10/2026), como o do Gmail. */
+  .rascunho-salvo { display: inline-flex; align-items: center; gap: 4px; margin: 0; font-size: 12.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+  p.rascunho-salvo { display: flex; margin-top: 10px; }
+  [data-rascunho-aqui] { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  #aviso-sair { z-index: 120; }
   .reg-plano-ok { margin: 14px 0; padding: 14px; border-radius: 14px; background: var(--green-soft); text-align: left; }
   .reg-plano-ok p { margin: 0 0 10px; font-size: 14px; }
   .pc-escolha { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; font-family: inherit; cursor: pointer; color: var(--text); }
@@ -6773,7 +6778,7 @@ function blocoResposta(r, c, onde) {
   const minha = ehMinha(c) && acessoCompleto();
   if (minha && state.respondendo === r.id && state.respondendoOnde === onde) {
     return `
-      <div class="rev-resp-form">
+      <div class="rev-resp-form" data-aviso-sair="na resposta" data-rascunho-de="__respostaTexto">
         <p class="rev-resp-t">${r.resposta ? "Editar a resposta" : "Responder como " + esc(c.name)}</p>
         <textarea class="form-field" id="resposta-texto" rows="3" maxlength="2000" style="resize:none;margin-top:6px" placeholder="Agradeça, responda com educação e não exponha dados de quem avaliou.">${esc(window.__respostaTexto || "")}</textarea>
         ${state.respostaErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.respostaErro)}</div>` : ""}
@@ -9351,7 +9356,7 @@ function pcCadastro() {
             <p class="pc-card-t">Administrar a ficha da ${esc(escolhida.name)}</p>
             <p class="pc-card-s">Comece pelo seu e-mail.</p>
           </div>` : ""}
-        <div class="pc-card">
+        <div class="pc-card"${passo === "criar" ? ' data-aviso-sair="no cadastro" data-rascunho-de="__pcConta"' : ""}>
           ${passo === "email" ? `
             <label class="field-label" for="pc-email" style="margin-top:0">E-mail</label>
             <input class="form-field" id="pc-email" type="email" autocomplete="email" autocapitalize="none" placeholder="voce@suaacademia.com.br" value="${esc(state.pcEmail)}" style="margin-top:0" />` : emailEscolhido(passo === "criar")}
@@ -10304,7 +10309,7 @@ function passoDoLeilao(c, L) {
       ${resultado}
       <div class="pc-card pc-email-form pc-leilao-passo" id="pc-leilao-passo" data-passo="${i}">
         ${avisoDoLeilao()}
-        <p class="pc-ads-etapa">Etapa ${i + 1} de ${LEILAO_PASSOS.length} · ${LEILAO_PASSOS[i]}</p>
+        <p class="pc-ads-etapa" data-rascunho-aqui><span>Etapa ${i + 1} de ${LEILAO_PASSOS.length} · ${LEILAO_PASSOS[i]}</span></p>
         <p class="pc-card-t">${titulo}</p>
         ${corpo}
         ${aberto && state.pcEmailEditando ? `<button type="button" class="inline-link" id="pc-email-desistir" style="margin-top:14px">Manter o lance de antes</button>` : ""}
@@ -10746,7 +10751,7 @@ function pcPessoas() {
                <p class="pc-card-s">O plano ${esc(plano.nome)} permite até ${plano.pessoas} ${plural(plano.pessoas, "pessoa", "pessoas")}.${prox ? ` No ${esc(prox.nome)}, até ${prox.pessoas}.` : ""}</p>
                ${prox ? `<a href="/parceiros/plano" class="cta-btn cta-secondary" data-pc="plano">Ver planos</a>` : ""}
              </div>`
-          : `<div class="pc-pessoa-form">
+          : `<div class="pc-pessoa-form" data-aviso-sair="em “Adicionar pessoa”" data-rascunho-de="__pessoa">
                <p class="field-label">Adicionar pessoa</p>
                <input class="form-field pc-pessoa-campo" data-campo="nome" id="pc-pessoa-nome" placeholder="Nome" autocomplete="off" value="${esc(f.nome)}" style="margin-top:0" />
                <input class="form-field pc-pessoa-campo" data-campo="email" id="pc-pessoa-email" type="email" autocapitalize="none" autocomplete="off" placeholder="E-mail da pessoa" value="${esc(f.email)}" />
@@ -10773,7 +10778,7 @@ function pcPerfil() {
           <p class="perfil-sub">${[contaAcademia.cargo, "GuiaTennis Parceiros"].filter(Boolean).map(esc).join(" · ")}</p>
         </div>
       </div>
-      ${modo === "dados" ? `<div class="pc-card">${formDadosConta("dados")}</div>`
+      ${modo === "dados" ? `<div class="pc-card" data-aviso-sair="nos seus dados" data-rascunho-de="__conta">${formDadosConta("dados")}</div>`
         : modo === "senha" ? `<div class="pc-card">${formTrocarSenha()}</div>`
         : `
           ${state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
@@ -10886,7 +10891,7 @@ function pcAcademias() {
     if (a.papel === "equipe") return "";
     if (state.pcSaindo !== a.id) return `<p class="pc-card-s"><button type="button" class="pc-linha-link pc-linha-discreta" data-pedir-saida="${a.id}">A academia fechou as portas?</button></p>`;
     return `
-      <div class="pc-pausa pc-saida">
+      <div class="pc-pausa pc-saida" data-aviso-sair="no aviso de que a academia fechou" data-rascunho-de="pcSaidaDetalhes">
         <p class="pc-card-s"><strong>A academia fechou as portas?</strong> Avise o GuiaTennis: depois de conferir, a ficha sai do Guia, com as avaliações e os números. Enquanto ela estiver aberta, a ficha continua. Se for só por um tempo (férias, reforma), pause no site.</p>
         <textarea class="form-field" id="pc-saida-detalhes" maxlength="500" placeholder="Quando fechou? (opcional)">${esc(state.pcSaidaDetalhes || "")}</textarea>
         ${state.pcSaidaErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pcSaidaErro)}</div>` : ""}
@@ -11643,6 +11648,8 @@ function ligarEventosParceiros() {
   document.querySelectorAll("[data-pausar-cancelar]").forEach(el => { el.onclick = () => { state.pcPausando = null; render(); }; });
   document.querySelectorAll("[data-pausar-dias]").forEach(el => { el.onclick = () => pausarAcademia(el.dataset.academia, true, parseInt(el.dataset.pausarDias, 10) || 0); });
   document.querySelectorAll("[data-voltar-academia]").forEach(el => { el.onclick = () => pausarAcademia(el.dataset.voltarAcademia, false); });
+  const pcSaidaDetalhes = document.getElementById("pc-saida-detalhes");
+  if (pcSaidaDetalhes) pcSaidaDetalhes.oninput = (e) => { state.pcSaidaDetalhes = e.target.value; };
   document.querySelectorAll("[data-pedir-saida]").forEach(el => { el.onclick = () => { state.pcSaindo = el.dataset.pedirSaida; state.pcSaidaDetalhes = ""; state.pcSaidaErro = ""; state.pcPausando = null; render(); }; });
   document.querySelectorAll("[data-saida-voltar]").forEach(el => { el.onclick = () => { state.pcSaindo = null; state.pcSaidaErro = ""; render(); }; });
   document.querySelectorAll("[data-cancelar-saida]").forEach(el => { el.onclick = () => cancelarAvisoDeQueFechou(el.dataset.cancelarSaida); });
@@ -12245,7 +12252,7 @@ function renderViagemSheet() {
   const viagens = lerViagens();
   return `
     <div class="overlay open" id="viagem-overlay">
-      <div class="sheet"><div class="sheet-content">
+      <div class="sheet"><div class="sheet-content" data-aviso-sair="na viagem" data-rascunho-de="__viagem">
         <button class="sheet-close" id="viagem-close" aria-label="Fechar">✕</button>
         <p class="sheet-title display">Vou viajar</p>
         <p class="subtitle" style="margin-top:4px">Diga para onde vai e onde vai ficar.</p>
@@ -12425,7 +12432,7 @@ function renderPrefsSheet() {
   const comAcademia = doUf ? cidadesComQuadra().map(c => c.nome).filter(n => doUf.some(m => mesmaCidade(m, n))) : [];
   return `
     <div class="overlay open" id="pref-overlay">
-      <div class="sheet"><div class="sheet-content">
+      <div class="sheet"><div class="sheet-content" data-aviso-sair="nas preferências" data-rascunho-de="__pref">
         <button class="sheet-close" id="pref-close" aria-label="Fechar">✕</button>
         <p class="sheet-title display">Preferências de busca</p>
 
@@ -12602,7 +12609,7 @@ function renderJogadorSheet() {
     ${trilha}
     <h1 class="display">${titulo}</h1>
     ${sub ? `<p class="pc-sec-sub">${sub}</p>` : ""}
-    <div class="pc-card jog-card">${corpo}</div>`;
+    <div class="pc-card jog-card"${tela === "criar" || tela === "conta" ? ` data-aviso-sair="${tela === "conta" ? "na sua conta" : "no cadastro"}" data-rascunho-de="__jog"` : ""}>${corpo}</div>`;
   const subPadrao = esc(state.jogadorMotivo || "Com a conta, você avalia as academias e escolhe os avisos por e-mail.");
   const trilha = tela === "conta" || tela === "esqueci" ? "" : trilhaTenis(
     ["E-mail", tela === "entrar" ? "Senha" : tela === "criar" || tela === "codigo" ? "Seus dados" : "Senha ou cadastro", tela === "entrar" ? "Pronto" : "Confirmar"],
@@ -13130,6 +13137,7 @@ async function salvarContaJogador() {
   Object.assign(jogador, dados);
   registrarPasso("acao", { detalhe: "Salvou o perfil" });
   state.jogadorAviso = "Salvo.";
+  MEXIDOS.clear();
   render();
 }
 
@@ -13291,7 +13299,7 @@ function renderPerfilJogador() {
             ${item('data-menu="preferencias"', 'ajustes', "Preferências de busca", textoDaPreferencia(pref) || "Escolher")}
           </div>
         </section>
-        <section class="perfil-cartao perfil-largo" id="perfil-dados">
+        <section class="perfil-cartao perfil-largo" id="perfil-dados" data-aviso-sair="nos seus dados" data-rascunho-de="__jog">
           <h2>Dados pessoais</h2>
           <p>O nome aparece nas suas avaliações.</p>
           <label class="field-label" for="jog-nome">Nome e sobrenome</label>
@@ -14892,6 +14900,10 @@ window.addEventListener("popstate", () => {
     sincronizarLink();
     return;
   }
+  // Algo preenchido e não salvo: pergunta antes (22/10/2026).
+  if (voltarComAviso()) return;
+  SAIDA.url = location.href;
+  SAIDA.estado = history.state;
   state.showFilters = false;
   state.showSort = false;
   const antes = state.page, abaAntes = state.adminAba;
@@ -17109,7 +17121,7 @@ function renderCourtPage(c) {
                 ${c.appCount ? ratingPanel(c) : `<p class="ht-sec-sub">Essa academia ainda não tem avaliação no GuiaTennis. A sua pode ser a primeira.</p>`}
                 ${comoFuncionamAsAvaliacoes()}
 
-                <div class="rate-box">
+                <div class="rate-box" data-aviso-sair="na avaliação" data-rascunho-de="__rateComment,__rateConsent,pendingStar">
                   ${ehMinha(c) ? `
                     <p style="margin:0">Vocês não podem avaliar a própria academia. Respondam às avaliações dos jogadores aqui embaixo.</p>
                   ` : ehDaMinhaConta(c) ? `
@@ -17950,7 +17962,7 @@ function renderRegisterSheet() {
       <div class="sheet"><div class="sheet-content reg-passos-tela">
         <button class="sheet-close" id="register-close" aria-label="Fechar">✕</button>
         <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra")}</p>
-        <p class="reg-progresso-t">Parte ${i + 1} de ${REG_PASSOS.length} · ${passo.t}</p>
+        <p class="reg-progresso-t" data-rascunho-aqui><span>Parte ${i + 1} de ${REG_PASSOS.length} · ${passo.t}</span></p>
         <div class="reg-progresso" role="progressbar" aria-valuemin="1" aria-valuemax="${REG_PASSOS.length}" aria-valuenow="${i + 1}"><i style="width:${Math.round((i + 1) / REG_PASSOS.length * 100)}%"></i></div>
         ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? (contaAcademia && contaAcademia.emailConfirmado ? "Com o seu e-mail confirmado, a academia entra no ar quando você finalizar." : "O GuiaTennis confere antes de publicar.") : "Apresentação no site mediante análise. São 9 partes curtas; só as 4 primeiras são obrigatórias."}</p>` : ""}
 
@@ -19853,10 +19865,10 @@ function renderLegalSheet(title, contentHtml, closeId) {
 }
 
 function renderVisitorSetupSheet() {
-  const v = loadVisitor() || { nome: "", contato: "" };
+  const v = window.__visitante || loadVisitor() || { nome: "", contato: "" };
   return `
     <div class="overlay open" id="visitor-overlay">
-      <div class="sheet"><div class="sheet-content">
+      <div class="sheet"><div class="sheet-content" data-aviso-sair="no seu cadastro" data-rascunho-de="__visitante">
         <button class="sheet-close" id="visitor-close">✕</button>
         <p class="sheet-title display">Faça seu cadastro</p>
         <p class="subtitle" style="margin-top:4px">Nome e WhatsApp pra identificar suas avaliações e solicitações. É rápido, e só pedimos uma vez.</p>
@@ -20753,7 +20765,7 @@ function janelaExcluirConta() {
   if (!x) return "";
   return `
     <div class="overlay open" id="adm-excluir-overlay">
-      <div class="sheet"><div class="sheet-content">
+      <div class="sheet"><div class="sheet-content" data-aviso-sair="no motivo da exclusão">
         <button class="sheet-close" id="adm-excluir-fechar" aria-label="Fechar">✕</button>
         <p class="sheet-title display">Excluir a conta</p>
         <p class="subtitle" style="margin-top:4px"><strong>${esc(x.nome || x.email)}</strong>${x.nome ? " · " + esc(x.email) : ""}</p>
@@ -21302,6 +21314,10 @@ function attachEvents() {
   if (visitorClose) visitorClose.onclick = () => { state.showVisitorSetup = false; state.pendingVisitorAction = null; render(); };
   if (visitorOverlay) visitorOverlay.onclick = (e) => { if (e.target === visitorOverlay) { state.showVisitorSetup = false; state.pendingVisitorAction = null; render(); } };
 
+  ["visitor-nome", "visitor-contato"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.oninput = () => { window.__visitante = { nome: document.getElementById("visitor-nome").value, contato: document.getElementById("visitor-contato").value }; };
+  });
   const visitorSubmit = document.getElementById("visitor-submit");
   if (visitorSubmit) visitorSubmit.onclick = () => {
     const nome = document.getElementById("visitor-nome").value.trim();
@@ -21313,6 +21329,7 @@ function attachEvents() {
     }
     if (!temSobrenome(nome)) { state.visitorError = "Preencha o sobrenome."; render(); return; }
     saveVisitor({ nome, contato });
+    window.__visitante = null;
     state.showVisitorSetup = false;
     const action = state.pendingVisitorAction;
     state.pendingVisitorAction = null;
@@ -22837,7 +22854,10 @@ async function doRegisterSubmit() {
 // recarrega a aba sozinho (puxar a tela para baixo, voltar da galeria de
 // fotos ou do WhatsApp com pouca memória). O que estava sendo preenchido
 // (cadastro da ficha, com as fotos, conta do jogador, cadastro e perfil do
-// Parceiros, pessoa nova, viagem, preferências, avaliação e resposta) fica
+// Parceiros, pessoa nova, viagem, preferências, avaliação e resposta; desde
+// 22/10/2026, também o leilão, a promoção na ficha, o aviso de que a
+// academia fechou, o "Faça seu cadastro" e as anotações do "Me ajude a
+// decidir") fica
 // guardado só nesta aba (sessionStorage), sem senha nem código, e volta ao
 // recarregar; a tela, o link já diz qual é. Fechou a aba, some: nada fica
 // no celular (regra 70). Como o rascunho do Gmail e o "Anuncie seu espaço"
@@ -22845,7 +22865,10 @@ async function doRegisterSubmit() {
 const RASCUNHO_KEY = "guiatennis_rascunho_v1";
 const RASCUNHO_FOTOS_KEY = "guiatennis_rascunho_fotos_v1";
 const RASCUNHO_VALE_MS = 12 * 3600000;
-const RASCUNHO_GLOBAIS = ["__form", "__jog", "__pcConta", "__conta", "__pessoa", "__viagem", "__pref", "__respostaTexto", "__rateComment", "__rateConsent"];
+const RASCUNHO_GLOBAIS = ["__form", "__jog", "__pcConta", "__conta", "__pessoa", "__viagem", "__pref", "__respostaTexto", "__rateComment", "__rateConsent", "__visitante"];
+// O que fica no estado (22/10/2026): o leilão, a promoção, o aviso de que a
+// academia fechou, as anotações do "Me ajude a decidir" e as estrelas.
+const RASCUNHO_ESTADO = ["pcEmailForm", "pcLeilaoPasso", "pcEmailEditando", "pcPromoForm", "pcPromoPasso", "pcPromoEditando", "pcSaindo", "pcSaidaDetalhes", "decideNotes", "pendingStar"];
 const RASCUNHO = { pronto: false, fotos: null, timer: null, desligado: false };
 function semSenhaNoRascunho(v) {
   if (!v || typeof v !== "object" || Array.isArray(v)) return v;
@@ -22860,7 +22883,9 @@ function guardarRascunho() {
     const g = {};
     RASCUNHO_GLOBAIS.forEach(n => { if (window[n] !== undefined && window[n] !== null) g[n] = semSenhaNoRascunho(window[n]); });
     if (g.__form) g.__form = { ...g.__form, photos: undefined };
-    sessionStorage.setItem(RASCUNHO_KEY, JSON.stringify({ g, pcEmail: state.pcEmail || "", regPlanoTela: !!state.regPlanoTela, em: Date.now() }));
+    const e = {};
+    RASCUNHO_ESTADO.forEach(n => { if (state[n] !== undefined && state[n] !== null && state[n] !== "" && state[n] !== 0 && state[n] !== false) e[n] = state[n]; });
+    sessionStorage.setItem(RASCUNHO_KEY, JSON.stringify({ g, e, pcEmail: state.pcEmail || "", regPlanoTela: !!state.regPlanoTela, em: Date.now() }));
     // As fotos (até 5, já diminuídas) só quando mudam; sem espaço, vai sem elas.
     const fotos = (window.__form && window.__form.photos) || [];
     const assinatura = fotos.length + ":" + fotos.map(f => String(f).length + String(f).slice(-16)).join(",");
@@ -22869,6 +22894,7 @@ function guardarRascunho() {
       try { sessionStorage.setItem(RASCUNHO_FOTOS_KEY, JSON.stringify(fotos)); }
       catch { try { sessionStorage.removeItem(RASCUNHO_FOTOS_KEY); } catch {} }
     }
+    mostrarRascunhoSalvo();
   } catch {}
 }
 function guardarRascunhoLogo() {
@@ -22891,8 +22917,16 @@ function restaurarRascunho() {
       state.regPlanoTela = !!r.regPlanoTela;
     }
     if (r.pcEmail && !state.pcEmail) state.pcEmail = r.pcEmail;
+    RASCUNHO.estado = r.e || null;
   }
   RASCUNHO.pronto = true;
+}
+// O que estava no estado volta depois de o link reabrir a tela (abrir uma
+// aba do Parceiros ou uma ficha zera o formulário de lá).
+function restaurarRascunhoDoEstado() {
+  const e = RASCUNHO.estado;
+  RASCUNHO.estado = null;
+  if (e) RASCUNHO_ESTADO.forEach(n => { if (e[n] !== undefined) state[n] = e[n]; });
 }
 // Saiu da conta: o rascunho sai junto (a aba pode ficar com outra pessoa).
 function apagarRascunho() {
@@ -22904,6 +22938,180 @@ document.addEventListener("change", guardarRascunhoLogo);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") guardarRascunho(); });
 window.addEventListener("pagehide", () => guardarRascunho());
 try { sb.auth.onAuthStateChange((evento) => { if (evento === "SIGNED_OUT") apagarRascunho(); }); } catch {}
+
+// ---------- aviso antes de sair com algo preenchido ----------
+// Pedido do Breno em 22/10/2026: "faça em todo o site aquele salvamento quase
+// que imediato, para não sair e perder tudo, ou se for voltar em ações que
+// preencheu algo sem salvar, ter o aviso". Como o "Rascunho salvo" do Gmail,
+// o "Alterações não salvas" do admin da Shopify e o "Descartar publicação?"
+// do Instagram: o que se digita vai para o rascunho da aba (logo acima) em
+// 0,25 s e a tela diz "Rascunho salvo"; com algo preenchido e ainda não
+// salvo, voltar, trocar de página, fechar a janela ou sair do site perguntam
+// antes. Valem as partes marcadas com data-aviso-sair="<onde>" (busca,
+// filtros, comparação e o Entrar ficam de fora; data-rascunho-de diz o que o
+// rascunho guarda e o que "Sair e descartar" apaga) e, nos de várias etapas,
+// o que ficou nas etapas de antes: o cadastro da academia, o leilão e a
+// promoção na ficha.
+const MEXIDOS = new Map();
+const SAIDA = { liberada: false, url: location.href, estado: history.state };
+["pushState", "replaceState"].forEach(m => {
+  const original = history[m].bind(history);
+  history[m] = (...args) => { const r = original(...args); SAIDA.url = location.href; SAIDA.estado = history.state; return r; };
+});
+function valorDoCampo(el) { return el.type === "checkbox" || el.type === "radio" ? String(el.checked) : String(el.value); }
+function valorInicialDoCampo(el) {
+  if (el.type === "checkbox" || el.type === "radio") return String(el.defaultChecked);
+  if (el.tagName === "SELECT") { const o = [...el.options].find(x => x.defaultSelected) || el.options[0]; return o ? o.value : ""; }
+  return String(el.defaultValue);
+}
+function chaveDoCampo(el) { return el.id ? "#" + el.id : el.dataset && el.dataset.campo ? "@" + el.dataset.campo : ""; }
+function campoDaChave(k) { return k[0] === "#" ? document.getElementById(k.slice(1)) : document.querySelector(`[data-aviso-sair] [data-campo="${CSS.escape(k.slice(1))}"]`); }
+// O valor de antes fica guardado no primeiro toque: é o que veio na tela.
+function anotarCampoMexido(e) {
+  const el = e.target;
+  if (!el || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || /^(password|hidden|file|search)$/.test(el.type) || !el.closest("[data-aviso-sair]")) return;
+  const k = chaveDoCampo(el);
+  if (k && !MEXIDOS.has(k)) MEXIDOS.set(k, valorInicialDoCampo(el));
+}
+document.addEventListener("input", anotarCampoMexido, true);
+document.addEventListener("change", anotarCampoMexido, true);
+function camposNaoSalvos() {
+  const lista = [];
+  MEXIDOS.forEach((antes, k) => {
+    const el = campoDaChave(k);
+    // Saiu da tela (salvou, cancelou ou trocou de etapa): esquece.
+    if (!el || !el.closest("[data-aviso-sair]")) { MEXIDOS.delete(k); return; }
+    if (valorDoCampo(el) !== antes) lista.push(el);
+  });
+  return lista;
+}
+function leilaoTemOQuePerder() {
+  const f = state.pcEmailForm, L = state.pcLeilao;
+  if (!f || !L || (L.lance && !state.pcEmailEditando)) return false;
+  const base = L.lance || {};
+  return ["titulo", "mensagem", "valor"].some(k => String(f[k] ?? "").trim() !== String(base[k] ?? "").trim());
+}
+function promocaoTemOQuePerder() {
+  const f = state.pcPromoForm;
+  if (!f) return false;
+  const ed = state.pcPromoEditando && (state.pcPromocoes || []).find(x => x.id === state.pcPromoEditando);
+  const base = ed ? { titulo: ed.titulo, detalhes: ed.detalhes || "", ate: ed.valida_ate } : { titulo: "", detalhes: "", ate: hojeEmBrasilia(30) };
+  return ["titulo", "detalhes", "ate"].some(k => String(f[k] || "").trim() !== String(base[k] || "").trim());
+}
+// O que está preenchido e ainda não foi salvo na tela de agora, e a parte da
+// tela que se perde ao sair.
+function pendenciaDeSalvar() {
+  if (!state.loaded) return null;
+  if (state.showRegister && window.__form && cadastroTemOQuePerder(window.__form)) {
+    const f = window.__form;
+    return { tipo: "cadastro", area: document.getElementById("register-overlay"), editando: !!f.__editingId, nome: String(f.name || "").trim() };
+  }
+  if (state.page === "parceiros" && state.parceirosAba === "promocoes-email" && leilaoTemOQuePerder())
+    return { tipo: "leilao", area: document.getElementById("pc-leilao-passo"), onde: "no anúncio do leilão" };
+  if (state.page === "parceiros" && state.parceirosAba === "promocoes" && promocaoTemOQuePerder())
+    return { tipo: "promocao", area: document.querySelector(".pc-promo-form"), onde: "na promoção" };
+  const campos = camposNaoSalvos();
+  const estrelas = state.pendingStar && document.querySelector("#star-picker");
+  if (campos.length || estrelas) {
+    const area = (campos[0] || estrelas).closest("[data-aviso-sair]");
+    return { tipo: "campos", area, onde: area ? area.dataset.avisoSair : "" };
+  }
+  return null;
+}
+// "Sair e descartar": o rascunho daquela parte sai junto.
+function descartarPendencia(p) {
+  MEXIDOS.clear();
+  if (p.tipo === "cadastro") { state.regForm = null; window.__form = null; state.regSairPergunta = false; }
+  if (p.tipo === "leilao") { state.pcEmailForm = null; state.pcEmailEditando = false; state.pcEmailMsg = null; }
+  if (p.tipo === "promocao") { state.pcPromoForm = null; state.pcPromoEditando = null; state.pcPromoPasso = null; }
+  String((p.area && p.area.dataset.rascunhoDe) || "").split(",").filter(Boolean).forEach(n => {
+    if (n.startsWith("__")) window[n] = null;
+    else state[n] = typeof state[n] === "number" ? 0 : null;
+  });
+  guardarRascunho();
+}
+function perguntarAntesDeSair(p, sair) {
+  document.getElementById("aviso-sair")?.remove();
+  const cad = p.tipo === "cadastro";
+  const t = cad && !p.editando ? "Sair do cadastro?" : "Sair sem salvar?";
+  const s = cad
+    ? (p.editando ? `As mudanças ${p.nome ? `na ${esc(p.nome)} ` : ""}ainda não foram salvas e vão ser apagadas. A ficha continua como estava.`
+                  : `O que você preencheu ${p.nome ? `da ${esc(p.nome)} ` : ""}vai ser apagado e não volta. Para publicar depois, é preciso começar de novo.`)
+    : `O que você preencheu${p.onde ? " " + esc(p.onde) : ""} ainda não foi salvo e vai ser descartado.`;
+  const el = document.createElement("div");
+  el.className = "reg-sair-fundo";
+  el.id = "aviso-sair";
+  el.innerHTML = `
+    <div class="reg-sair" role="alertdialog" aria-modal="true" aria-labelledby="aviso-sair-t" aria-describedby="aviso-sair-s">
+      <p class="reg-sair-t" id="aviso-sair-t">${t}</p>
+      <p class="reg-sair-s" id="aviso-sair-s">${s}</p>
+      <button type="button" class="reg-sair-sim" id="aviso-sair-sim">${cad && !p.editando ? "Sair e apagar" : "Sair e descartar"}</button>
+      <button type="button" class="reg-sair-nao" id="aviso-sair-nao">${cad && !p.editando ? "Continuar o cadastro" : "Continuar editando"}</button>
+    </div>`;
+  document.body.appendChild(el);
+  const ficar = () => el.remove();
+  el.querySelector("#aviso-sair-nao").onclick = ficar;
+  el.onclick = (e) => { if (e.target === el) ficar(); };
+  el.querySelector("#aviso-sair-sim").onclick = () => { el.remove(); sair(); };
+  el.querySelector("#aviso-sair-nao").focus();
+}
+// Links, menus, abas, fichas e o ✕ das janelas: com algo por salvar fora
+// dali, perguntam antes. O ✕ e o toque fora do cadastro já perguntam sozinhos.
+const SELETOR_DE_SAIDA = 'a[href]:not([target="_blank"]):not([href^="#"]):not([href^="mailto:"]):not([href^="tel:"]), [data-pc], [data-menu], [data-nav], [data-adm-aba], [data-court], [data-abrir-academia], [data-ver-academia], [data-voltar-academia]';
+const SELETOR_DE_FECHAR = '.sheet-close, .pc-fechar, [id$="-close"], [id$="-fechar"]';
+document.addEventListener("click", (e) => {
+  if (SAIDA.liberada) return;
+  const alvo = e.target.closest ? e.target.closest(SELETOR_DE_SAIDA + ", " + SELETOR_DE_FECHAR) : null;
+  const fundo = e.target.classList && e.target.classList.contains("overlay") ? e.target : null;
+  const el = alvo || fundo;
+  if (!el) return;
+  const p = pendenciaDeSalvar();
+  if (!p) return;
+  if (p.tipo === "cadastro" && el.closest("#register-overlay")) return;
+  if (fundo || el.matches(SELETOR_DE_FECHAR)) {
+    // Só o ✕ da janela onde está o que se perde (o da compra de créditos, não).
+    const janela = el.closest(".overlay, .chat-overlay");
+    if (!janela || !p.area || !janela.contains(p.area)) return;
+  } else if (p.area && p.area.contains(el)) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  perguntarAntesDeSair(p, () => {
+    descartarPendencia(p);
+    SAIDA.liberada = true;
+    try { el.click(); } finally { SAIDA.liberada = false; }
+  });
+}, true);
+// Voltar do navegador (e o gesto de voltar do celular): fica na tela e pergunta.
+function voltarComAviso() {
+  if (SAIDA.liberada) { SAIDA.liberada = false; return false; }
+  const p = pendenciaDeSalvar();
+  if (!p) return false;
+  history.pushState(SAIDA.estado, "", SAIDA.url);
+  perguntarAntesDeSair(p, () => { descartarPendencia(p); SAIDA.liberada = true; history.back(); });
+  return true;
+}
+// Fechar a aba ou sair do site: o aviso do próprio navegador (o rascunho da
+// aba não sobrevive). Nos testes automáticos, sem ele.
+window.addEventListener("beforeunload", (e) => {
+  if (navigator.webdriver || !pendenciaDeSalvar()) return;
+  guardarRascunho();
+  e.preventDefault();
+  e.returnValue = "";
+});
+// "Rascunho salvo", na parte que está sendo preenchida (só onde o rascunho
+// guarda de verdade: data-rascunho-de, o cadastro, o leilão e a promoção).
+function mostrarRascunhoSalvo() {
+  const p = RASCUNHO.desligado ? null : pendenciaDeSalvar();
+  const area = p && p.area && (p.tipo !== "campos" || p.area.dataset.rascunhoDe) ? p.area : null;
+  document.querySelectorAll(".rascunho-salvo").forEach(x => { if (!area || !area.contains(x)) x.remove(); });
+  if (!area || area.querySelector(".rascunho-salvo")) return;
+  const lugar = area.querySelector("[data-rascunho-aqui]");
+  const el = document.createElement(lugar ? "span" : "p");
+  el.className = "rascunho-salvo";
+  el.setAttribute("role", "status");
+  el.innerHTML = `${icon('check', 12, 'currentColor')} Rascunho salvo`;
+  (lugar || area).appendChild(el);
+}
 
 async function init() {
   if (PARCEIROS_NO_ENDERECO_PROPRIO && noSiteDeVerdade() && /^\/parceiros(\/|$)/.test(location.pathname)) {
@@ -22930,6 +23138,7 @@ async function init() {
   const linkInicial = lerLink();
   const doLink = aplicarLink(linkInicial);
   aplicarCamadas(linkInicial.q);
+  restaurarRascunhoDoEstado();
   // /perfil sem estar logado: abre o Entrar e, depois, o perfil.
   if (doLink.entrarParaPerfil) irPerfil();
   if (state.page === "home") aplicarPreferenciaNaBusca();

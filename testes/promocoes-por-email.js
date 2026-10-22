@@ -30,18 +30,20 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   const passo = () => page.evaluate(() => document.querySelector('#pc-leilao-passo')?.dataset.passo);
   const seguir = async () => { await page.click('#pc-leilao-continuar'); await page.waitForTimeout(150); };
   const dados = await texto(page, '#pc-leilao');
-  ok(dados.includes('Leilão de Pinheiros, São Paulo') && /Fecha\s+domingo, \d+ de [a-zç]+, às 20h/.test(dados) && dados.includes('Sem créditos') && await page.$('#pc-leilao #pc-comprar-creditos'),
-    'no alto, o resumo: o bairro, quando fecha e os créditos, com "Comprar ›" — ' + dados.replace(/\s+/g, ' ').slice(0, 120));
-  ok(await passo() === '0' && (await texto(page, '#pc-leilao-passo .pc-card-t')) === 'Como funciona o leilão de promoções' && await page.evaluate(() => document.querySelectorAll('.pc-leilao-como li').length === 4) && !(await page.$('.trilha')),
+  ok(dados.includes('Leilão · e-mail patrocinado') && dados.includes('Sem lance') && dados.includes('Pinheiros, São Paulo') && /Encerra\s+dom\. \d\d\/\d\d · 20:00/.test(dados) && /Alcance estimado\s+140\+ jogadores/.test(dados) && /Lance mínimo\s+R\$ 10/.test(dados) && /Créditos\s+R\$ 0/.test(dados) && await page.$('#pc-leilao #pc-comprar-creditos'),
+    'no alto, o cabeçalho da campanha: status, bairro, encerramento, alcance, lance mínimo e créditos — ' + dados.replace(/\s+/g, ' ').slice(0, 160));
+  ok(await page.evaluate(() => getComputedStyle(document.querySelector('#parceiros .pc-main')).backgroundColor === 'rgb(242, 243, 245)' && getComputedStyle(document.querySelector('.pc-ads h1')).fontFamily.startsWith('Inter')),
+    'o leilão é um painel de anúncios: fundo neutro e título sem a fonte de revista (22/10/2026)');
+  ok(await passo() === '0' && (await texto(page, '#pc-leilao-passo .pc-ads-etapa')) === 'Etapa 1 de 5 · Como funciona' && (await texto(page, '#pc-leilao-passo .pc-card-t')) === 'Como funciona o leilão de promoções' && await page.evaluate(() => document.querySelectorAll('.pc-leilao-como li').length === 4) && !(await page.$('.trilha')),
     'primeira etapa: como funciona, em 4 pontos, sem a barra das etapas (22/10/2026: "tire a barra")');
   let corpo = await texto(page, '#pc-leilao-passo');
   ok(corpo.includes('Você só paga se ganhar') && corpo.includes('A nota decide, não só o valor') && !/aviso/i.test(corpo), 'explica a nota e que só paga se ganhar, sem "aviso"');
   ok(!(await page.$('#pc-leilao-voltar')), 'na primeira etapa, sem "Voltar"');
   await seguir();
   corpo = await texto(page, '#pc-leilao-passo');
-  ok(await passo() === '1' && corpo.startsWith('Vale a pena entrar nesta semana?') && corpo.includes('cerca de 140 jogadores de Pinheiros') && /Lance mínimo\s+R\$ 10/.test(corpo) && /Custo por jogador\s+a partir de R\$ 0,07/.test(corpo) && /1º lugar terça, .*às 10h; 2º sexta, .*às 10h/.test(corpo),
-    'segunda etapa: quem recebe, o lance mínimo, o custo por jogador e os dois e-mails — ' + corpo.replace(/\s+/g, ' ').slice(0, 160));
-  ok(corpo.includes('O que soma na nota da sua academia') && await page.$('.pc-leilao-check') && await page.$('#pc-leilao-agora-nao') && (await texto(page, '#pc-leilao-participar')) === 'Quero participar ›', 'mostra o que soma na nota e pergunta se quer participar');
+  ok(await passo() === '1' && /^Etapa 2 de 5 · Estimativa\s+Estimativa da semana/.test(corpo) && /Alcance estimado\s+140\+ jogadores\s+em Pinheiros/.test(corpo) && /Custo por jogador\s+a partir de R\$ 0,07/.test(corpo) && /1º envio\s+ter\. \d\d\/\d\d · 10:00/.test(corpo) && /2º envio\s+sex\. \d\d\/\d\d · 10:00/.test(corpo) && corpo.includes('chega a cerca de 140 jogadores que procuram tênis em Pinheiros'),
+    'segunda etapa: a estimativa (alcance, custo por jogador e os dois envios) — ' + corpo.replace(/\s+/g, ' ').slice(0, 160));
+  ok(corpo.includes('Índice de qualidade da academia') && await page.$('.pc-leilao-check') && await page.$('#pc-leilao-agora-nao') && (await texto(page, '#pc-leilao-participar')) === 'Participar', 'mostra o índice de qualidade e pergunta se quer participar');
   await page.click('#pc-leilao-agora-nao');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.parceirosAba === 'painel') && (await texto(page, '.gt-push')).includes('O leilão abre de novo toda semana'), '"Agora não" volta ao painel, com um recado');
@@ -51,19 +53,20 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await seguir();
   await page.click('#pc-leilao-participar');
   await page.waitForTimeout(150);
-  ok(await passo() === '2' && (await texto(page, '#pc-leilao-passo .pc-card-t')) === 'Qual promoção vai no e-mail?' && await page.$('#pc-email-previa') && !(await page.$('#pc-email-valor')), 'terceira etapa: a promoção, com a prévia do e-mail, ainda sem o lance');
+  ok(await passo() === '2' && (await texto(page, '#pc-leilao-passo .pc-card-t')) === 'Texto do anúncio' && await page.$('#pc-email-previa') && !(await page.$('#pc-email-valor')), 'terceira etapa: o texto do anúncio, com a prévia do e-mail, ainda sem o lance');
   ok(!(await page.$('.pc-email-da-ficha')), 'no Completo, sem "Usar a promoção da ficha"');
   await seguir();
   ok((await texto(page, '#pc-leilao-passo .form-error')).includes('Escreva a promoção') && await passo() === '2', 'sem a promoção escrita, não passa');
   await page.fill('#pc-email-titulo', 'Primeira aula grátis');
   await page.fill('#pc-email-mensagem', 'Para quem nunca fez aula aqui, de segunda a sexta.');
   await page.waitForTimeout(100);
+  ok((await texto(page, '[data-cont="titulo"]')) === '20/60' && (await texto(page, '[data-cont="mensagem"]')) === '50/500', 'os contadores de caracteres acompanham o que se digita');
   let previa = await texto(page, '#pc-email-previa');
   ok(previa.startsWith('Prévia do e-mail\n') && previa.includes('Assunto: Promoção em Pinheiros: Primeira aula grátis') && previa.includes('Novidade em Pinheiros') && /Patrocinado · Só Aula Tennis/i.test(previa) && previa.includes('Promoção patrocinada'),
     'a prévia do e-mail do GuiaTennis do bairro muda enquanto se digita, com "Patrocinado" — ' + previa.slice(0, 90));
   await seguir();
   corpo = await texto(page, '#pc-leilao-passo');
-  ok(await passo() === '3' && corpo.startsWith('Quanto você aceita pagar, no máximo?') && corpo.includes('Seu lance máximo (R$)') && corpo.includes('É o teto, não o preço. Você nunca paga mais que o lance máximo.') && corpo.includes('se ninguém mais der lance, paga o mínimo, R$ 10') && corpo.includes('Se não ganhar, nada é cobrado.'),
+  ok(await passo() === '3' && /^Etapa 4 de 5 · Lance\s+Lance máximo/.test(corpo) && corpo.includes('Lance máximo (R$)') && corpo.includes('É o teto, não o preço. Você nunca paga mais que o lance máximo.') && corpo.includes('se ninguém mais der lance, paga o mínimo, R$ 10') && corpo.includes('Se não ganhar, nada é cobrado.'),
     'quarta etapa: o lance máximo explicado como teto, não preço (22/10/2026: "especifique melhor isso")');
   await page.fill('#pc-email-valor', '85');
   await page.waitForTimeout(100);
@@ -84,7 +87,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.waitForTimeout(150);
   await seguir();
   corpo = await texto(page, '#pc-leilao-passo');
-  ok(await passo() === '4' && corpo.startsWith('Confira e entre no leilão') && /Lance máximo\s+R\$ 25/.test(corpo) && corpo.includes('Nada é cobrado agora') && await page.$('#pc-email-previa') && /Créditos\s+R\$ 100 · Comprar/.test(await texto(page, '#pc-leilao')),
+  ok(await passo() === '4' && /^Etapa 5 de 5 · Revisão\s+Revisão do anúncio/.test(corpo) && /Lance máximo\s+R\$ 25/.test(corpo) && corpo.includes('Nada é cobrado agora') && await page.$('#pc-email-previa') && /Créditos\s+R\$ 100\s+Comprar créditos/.test(await texto(page, '#pc-leilao')),
     'quinta etapa: a revisão com a prévia, o lance máximo e "Nada é cobrado agora"');
   ok(!(await page.isDisabled('#pc-email-enviar')) && (await texto(page, '#pc-email-enviar')) === 'Entrar com lance de até R$ 25', 'o botão diz o que acontece: "Entrar com lance de até R$ 25"');
   await page.click('#pc-email-enviar');
@@ -94,7 +97,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   ok(rpc && rpc.p_valor === 25 && rpc.p_titulo === 'Primeira aula grátis' && corpo.includes('Pronto: a Só Aula Tennis está no leilão, com lance de até R$ 25.') && !(await page.$('#pc-email-titulo')),
     'entra no leilão: vai para o banco e a tela confirma');
   const linha = await page.evaluate(() => [...document.querySelectorAll('.pc-leilao-linha > li')].map(l => `${l.querySelector('strong').innerText}${l.className ? ':' + l.className : ''}`).join('|'));
-  ok(linha === 'Lance registrado:feito|Leilão aberto:agora|Resultado|E-mail aos jogadores' && /Andamento do leilão/i.test(await texto(page, '#pc-lance')) && /Seu lance máximo: R\$ 25/i.test(await texto(page, '#pc-lance')),
+  ok(linha === 'Lance registrado:feito|Leilão aberto:agora|Resultado|E-mail aos jogadores' && /Andamento do leilão\s+Lance ativo em Pinheiros/.test(await texto(page, '#pc-lance')) && /Lance máximo\s+R\$ 25/.test(await texto(page, '#pc-lance')) && (await texto(page, '#pc-leilao .pc-ads-status')) === 'Lance ativo',
     'a página de andamento: lance registrado, leilão aberto, resultado e e-mail — ' + linha);
   ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').envios_de_aviso === 100), 'entrar não cobra nada (só cobra se ganhar)');
   await page.click('#pc-lance-alterar');
@@ -121,7 +124,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   });
   await page.waitForTimeout(200);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Leilões anteriores') && corpo.includes('1º lugar · chegou a 37 jogadores · pagou R$ 18') && corpo.includes('Não ganhou (lance de R$ 12) · nada foi cobrado'), 'os leilões anteriores dizem o resultado e quanto pagou');
+  ok(corpo.includes('Leilões anteriores') && corpo.includes('1º lugar · chegou a 37 jogadores · pagou R$ 18') && corpo.includes('Não ganhou (lance de R$ 12) · nada foi cobrado') && await page.evaluate(() => document.querySelectorAll('.pc-ads-lista li').length === 2), 'os leilões anteriores, numa lista: o resultado e quanto pagou');
   await page.click('.pc-promo-partes [data-pc="promocoes"]');
   await page.waitForTimeout(200);
   corpo = await texto(page, '#parceiros .pc-main');

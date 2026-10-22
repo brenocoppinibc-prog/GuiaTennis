@@ -42,7 +42,8 @@ teste")
 > (completar a ficha, o plano de cima, as promoções no Premium); **regra
 > 143**, o leilão de promoções passo a passo (aba "Leilão": como funciona,
 > vale a pena?, promoção, lance máximo como teto, revisar) e a página de
-> andamento; a tela de pronto com o plano certo.
+> andamento; a tela de pronto com o plano certo; **regra 144**, o leilão
+> com cara de painel de anúncios (como o "Turbinar" do Instagram).
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3313,6 +3314,37 @@ cobra taxa e não fica no meio** da negociação.
     "Por enquanto, é grátis"; e a revisão do cadastro diz "Toque no lápis
     para editar uma seção.". Nenhum SQL novo (o leilão é o de 19/10).
     Testes: `promocoes-por-email.js` (reescrito), `plano-ao-finalizar.js`.
+    *(Os nomes das etapas e o visual mudaram no mesmo dia: regra 144.)*
+144. **O leilão com cara de painel de anúncios** (pedido de 22/10/2026: "o
+    Instagram, em momentos de publicar algo patrocinado, o site fica um
+    pouco diferente, com um visual mais técnico, seco, formal, profissional;
+    o trivago também? Se sim, faça"). Como o "Turbinar publicação" do
+    Instagram (objetivo › público › orçamento › revisar, com o alcance
+    estimado) e a área de campanhas do trivago Business Studio: a parte paga
+    fica num painel neutro, separado do resto. Só a aba **Leilão** com o
+    leilão aberto (`.pc-ads` na seção; o Básico trancado e o "Falta o
+    bairro" ficam como o resto): fundo cinza (`.pc-main:has(.pc-ads)`), o
+    título "Promoções" em Inter, cartões de canto 8px sem sombra, botões de
+    6px, rótulos em minúsculas e cinza, números alinhados (tabular). No
+    alto, o **cabeçalho da campanha** (`cabecalhoDoLeilao`): "Leilão ·
+    e-mail patrocinado", o status ("Sem lance" / "Lance ativo", com o
+    ponto verde), o bairro e 4 métricas — Encerra ("dom. 25/10 · 20:00",
+    `quandoCurto`), Alcance estimado ("140+ jogadores", `alcanceCurto`),
+    Lance mínimo e Créditos ("Comprar créditos"). As etapas viraram
+    **Como funciona › Estimativa › Anúncio › Lance › Revisão**, com "Etapa
+    N de 5 · …" em cima do título (texto, sem barra): "Estimativa da
+    semana" (métricas: alcance, custo por jogador, 1º e 2º envio; a frase
+    de quanto chega num quadro cinza; "Índice de qualidade da academia";
+    "Agora não" em botão de contorno e "Participar"), "Texto do anúncio"
+    ("Título da promoção" e "Mensagem" com o contador 20/60 e 50/500),
+    "Lance máximo" (o campo com "R$" na frente; a explicação do teto fica
+    igual) e "Revisão do anúncio". O **andamento**: "Lance ativo em
+    <bairro>", as métricas (lance máximo, encerra, 1º e 2º envio), a linha
+    do tempo, o "Anúncio" num quadro e os botões de contorno "Alterar o
+    lance" e "Sair do leilão" (em vermelho). **Leilões anteriores** numa
+    lista com a data (dd/mm), a promoção e o resultado (verde quando
+    ganhou). A prévia do e-mail continua igual (é o que o jogador vê).
+    Teste: `promocoes-por-email.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

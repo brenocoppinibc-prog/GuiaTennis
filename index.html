@@ -97,7 +97,7 @@
   .pc-leilao-dados span { color: var(--muted); flex-shrink: 0; }
   .pc-leilao-dados strong { font-weight: 600; text-align: right; }
   .pc-leilao-dados a { color: var(--green); white-space: nowrap; }
-  .pc-leilao-passo .trilha, .pc-pagina > .trilha { margin: 14px 0; }
+  .pc-pagina > .trilha { margin: 14px 0; }
   .pc-leilao-como { margin: 12px 0 0; padding: 0; list-style: none; counter-reset: passo; display: grid; gap: 14px; }
   .pc-leilao-como li { counter-increment: passo; display: grid; grid-template-columns: 28px 1fr; column-gap: 12px; font-size: 14.5px; line-height: 1.45; }
   .pc-leilao-como li::before { content: counter(passo); grid-row: span 2; width: 28px; height: 28px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-weight: 700; display: flex; align-items: center; justify-content: center; }
@@ -124,8 +124,66 @@
   .pc-leilao-linha li.agora .pc-linha-ponto { border-color: var(--green); box-shadow: inset 0 0 0 4px var(--card), inset 0 0 0 11px var(--green); }
   .pc-leilao-linha strong { display: block; font-size: 14.5px; color: var(--text); }
   .pc-leilao-linha div span { display: block; margin-top: 2px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
-  .pc-leilao-sua { margin-top: 4px; }
-  .pc-lance-resumo { margin-top: 12px; }
+  /* O leilão como painel de anúncios (22/10/2026): neutro, seco e técnico,
+     como o "Turbinar publicação" do Instagram e as campanhas do trivago
+     Business Studio. Rótulos sem maiúsculas, números alinhados. */
+  .pc-main:has(.pc-ads) { background: #F2F3F5; }
+  .pc-ads { --ads-borda: #DCDFE4; --ads-texto: #1C2024; --ads-muted: #5F6670; --ads-cinza: #F0F2F5; color: var(--ads-texto); }
+  .pc-ads h1.display { font-family: var(--fonte-texto); font-weight: 700; letter-spacing: -0.01em; }
+  .pc-ads .pc-card { border-radius: 8px; border-color: var(--ads-borda); box-shadow: none; padding: 16px; }
+  .pc-ads .pc-card-t { font-size: 16px; font-weight: 600; }
+  .pc-ads .pc-card-s, .pc-ads .footnote { color: var(--ads-muted); }
+  .pc-ads .cta-btn { border-radius: 6px; min-height: 42px; padding: 9px 18px; font-size: 14px; }
+  .pc-ads .cta-btn[disabled] { opacity: .5; }
+  .pc-ads .form-field { border-radius: 6px; border-color: var(--ads-borda); background: #fff; }
+  .pc-ads .form-field:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(31,77,61,.12); }
+  .pc-ads .field-label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; margin: 16px 0 6px; }
+  .pc-ads .pc-h2 { font-family: var(--fonte-texto); font-size: 15px; font-weight: 600; }
+  .pc-ads-cont { font-size: 12px; font-weight: 400; color: var(--ads-muted); font-variant-numeric: tabular-nums; }
+  .pc-ads-cab-topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .pc-ads-rotulo { margin: 0; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ads-muted); }
+  .pc-ads-status { flex-shrink: 0; padding: 3px 8px; border-radius: 4px; background: #E9EBEE; color: var(--ads-muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pc-ads-status::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: currentColor; vertical-align: 1px; }
+  .pc-ads-status.ativo { background: #E3F1E9; color: #1E6B47; }
+  .pc-ads-titulo { margin: 6px 0 0; font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .pc-ads-metricas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: 14px; background: var(--ads-borda); border: 1px solid var(--ads-borda); border-radius: 6px; overflow: hidden; }
+  @media (min-width: 720px) { .pc-ads-metricas { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .pc-ads-metrica { min-width: 0; padding: 10px 12px; background: #fff; }
+  .pc-ads-metrica span { display: block; font-size: 12px; color: var(--ads-muted); }
+  .pc-ads-metrica strong { display: block; margin-top: 2px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .pc-ads-metrica small { display: block; margin-top: 2px; font-size: 12px; color: var(--ads-muted); }
+  .pc-ads-etapa { margin: 0 0 4px; font-size: 12.5px; color: var(--ads-muted); font-variant-numeric: tabular-nums; }
+  .pc-ads-sub { margin: 18px 0 6px; font-size: 13px; font-weight: 600; }
+  .pc-ads-info { display: flex; gap: 8px; align-items: flex-start; }
+  .pc-ads-info svg { flex-shrink: 0; margin-top: 2px; }
+  .pc-ads-info p { margin: 0; }
+  .pc-ads .pc-leilao-veredito, .pc-ads .pc-lance-explica, .pc-ads .est-previa { border: 1px solid var(--ads-borda); border-radius: 6px; background: var(--ads-cinza); font-size: 13.5px; }
+  .pc-ads .est-previa-t { color: var(--ads-muted); }
+  .pc-ads .pc-leilao-como li::before { width: 24px; height: 24px; border-radius: 4px; background: #E9EBEE; color: var(--ads-texto); font-size: 12.5px; }
+  .pc-ads .pc-leilao-como li { grid-template-columns: 24px 1fr; font-size: 14px; }
+  .pc-ads .pc-leilao-como span, .pc-ads .pc-leilao-check li, .pc-ads .pc-leilao-dados span, .pc-ads .pc-leilao-linha div span { color: var(--ads-muted); }
+  .pc-ads .pc-leilao-dados li { border-color: var(--ads-borda); font-size: 13.5px; }
+  .pc-ads .pc-leilao-dados strong { font-variant-numeric: tabular-nums; }
+  .pc-ads .pc-linha-ponto { border-color: var(--ads-borda); }
+  .pc-ads .pc-leilao-linha li:not(:last-child)::after { background: var(--ads-borda); }
+  .pc-ads .pc-leilao-linha li.feito:not(:last-child)::after { background: var(--green); }
+  .pc-ads .pc-leilao-linha { margin-top: 16px; }
+  .pc-ads-moeda { display: flex; }
+  .pc-ads-moeda span { display: flex; align-items: center; padding: 0 12px; border: 1px solid var(--ads-borda); border-right: 0; border-radius: 6px 0 0 6px; background: var(--ads-cinza); color: var(--ads-muted); font-weight: 600; }
+  .pc-ads-moeda .form-field { margin: 0; border-radius: 0 6px 6px 0; font-variant-numeric: tabular-nums; }
+  .pc-ads-bt2 { min-height: 42px; padding: 8px 16px; border: 1px solid var(--ads-borda); border-radius: 6px; background: #fff; color: var(--ads-texto); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .pc-ads-bt2.perigo { color: var(--red); }
+  .pc-ads .pc-passo-voltar { color: var(--ads-texto); }
+  .pc-ads-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .pc-ads-anuncio { padding: 12px; border: 1px solid var(--ads-borda); border-radius: 6px; }
+  .pc-ads-anuncio .pc-card-t { font-size: 15px; }
+  .pc-ads-lista { list-style: none; margin: 10px 0 0; padding: 0; border: 1px solid var(--ads-borda); border-radius: 8px; background: #fff; }
+  .pc-ads-lista li { display: grid; grid-template-columns: 52px 1fr; gap: 2px 12px; padding: 12px 14px; border-top: 1px solid var(--ads-borda); font-size: 13.5px; line-height: 1.45; }
+  .pc-ads-lista li:first-child { border-top: 0; }
+  .pc-ads-lista time { grid-row: span 2; color: var(--ads-muted); font-variant-numeric: tabular-nums; }
+  .pc-ads-lista span { color: var(--ads-muted); }
+  .pc-ads-lista li.ganhou span { color: #1E6B47; }
+  .pc-ads .pc-leilao-ganhou { background: #E3F1E9; border-color: #BFDCCB; }
   /* Comprar créditos (19/10/2026). */
   .pc-compra { position: relative; }
   .pc-compra-x { position: absolute; top: 10px; right: 10px; }
@@ -10012,10 +10070,10 @@ function resultadoDoLance(x) {
 // comprar crédito e fazer o lance… entender como funciona o leilão, analisar
 // se vale a pena, entrar e fazer a promoção, comprar crédito ou já fazer o
 // lance, uma página de andamento do leilão"), como a criação de campanha do
-// Google Ads e o "Lances" do trivago Business Studio: como funciona › vale a
-// pena? › promoção › lance (com os créditos) › revisar. Com o lance dado, a
-// página de andamento, até o e-mail sair.
-const LEILAO_PASSOS = ["Como funciona", "Vale a pena?", "Promoção", "Lance", "Revisar"];
+// Google Ads e o "Lances" do trivago Business Studio: como funciona ›
+// estimativa › anúncio › lance (com os créditos) › revisão. Com o lance dado,
+// a página de andamento, até o e-mail sair.
+const LEILAO_PASSOS = ["Como funciona", "Estimativa", "Anúncio", "Lance", "Revisão"];
 function emReais(v) {
   return "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 });
 }
@@ -10046,7 +10104,7 @@ function qualidadeDoLeilao(c, mensagem) {
   return [
     { ok: fotos, t: "Fotos na ficha", d: fotos ? "A ficha tem fotos." : "Adicione fotos na ficha." },
     { ok: avs.length ? media >= 4 : null, t: "Avaliações", d: !avs.length ? "Ainda sem avaliações: conta metade." : media >= 4 ? `Média ${media.toFixed(1).replace(".", ",")} nas avaliações.` : "A média das avaliações está abaixo de 4." },
-    { ok: mensagem === undefined ? null : texto >= 40, t: "Promoção bem explicada", d: mensagem === undefined ? "Conta no passo da promoção: 40 letras ou mais na mensagem." : texto >= 40 ? "A mensagem explica bem a promoção." : "Escreva 40 letras ou mais na mensagem." },
+    { ok: mensagem === undefined ? null : texto >= 40, t: "Promoção bem explicada", d: mensagem === undefined ? "Conta na etapa do anúncio: 40 caracteres ou mais na mensagem." : texto >= 40 ? "A mensagem explica bem a promoção." : "Escreva 40 caracteres ou mais na mensagem." },
   ];
 }
 function listaDeQualidade(itens) {
@@ -10056,6 +10114,11 @@ function botoesDoPasso(voltar, seguir) {
   return `<div class="pc-leilao-acoes">${voltar ? `<button type="button" class="pc-passo-voltar" id="pc-leilao-voltar">${icon('chevronLeft', 15, 'currentColor')} Voltar</button>` : "<span></span>"}${seguir}</div>`;
 }
 
+// O leilão é um anúncio pago: a página vira um painel, mais seco e técnico,
+// como o "Turbinar publicação" do Instagram, o Gerenciador de Anúncios da
+// Meta e a área de campanhas do trivago Business Studio (pedido do Breno em
+// 22/10/2026: "em momentos de publicar algo patrocinado, o site fica um pouco
+// diferente, com um visual mais técnico, seco, formal, profissional").
 function pcPromocoesPorEmail() {
   const c = minhaAcademia();
   if (!c) return pcSemFicha();
@@ -10080,24 +10143,50 @@ function pcPromocoesPorEmail() {
         </div>
       </section>`;
   }
-  const saldo = saldoDeEnvios();
-  const resumo = `
-      <div class="pc-card pc-leilao" id="pc-leilao">
-        <p class="pc-card-t">${icon('sino', 16, 'var(--green)')} Leilão de ${esc(L.regiao_nome)}</p>
-        <ul class="pc-leilao-dados">
-          <li><span>Fecha</span><strong>${esc(quandoEmBrasilia(L.fecha_em))}</strong></li>
-          <li><span>Créditos</span><strong>${saldo ? emReais(saldo) : "Sem créditos"} · <button type="button" class="inline-link" id="pc-comprar-creditos">Comprar ›</button></strong></li>
-        </ul>
-      </div>
-      ${state.pcCompra && state.pcCompra.tipo !== "plano" ? pcComprarCreditos(c) : ""}`;
   const meio = L.lance && !state.pcEmailEditando ? andamentoDoLeilao(c, L) : passoDoLeilao(c, L);
   return `
-    <section class="pc-pagina">
+    <section class="pc-pagina pc-ads">
       ${topo}
-      ${resumo}
+      ${cabecalhoDoLeilao(L)}
+      ${state.pcCompra && state.pcCompra.tipo !== "plano" ? pcComprarCreditos(c) : ""}
       ${meio}
       ${historicoDoLeilao(L)}
     </section>`;
+}
+// Data e hora como nos painéis de anúncio: "dom. 25/10 · 20:00".
+function quandoCurto(ts) {
+  const d = new Date(ts || "");
+  if (!ts || isNaN(d)) return "—";
+  const o = { timeZone: "America/Sao_Paulo" };
+  return `${d.toLocaleDateString("pt-BR", { ...o, weekday: "short" })} ${d.toLocaleDateString("pt-BR", { ...o, day: "2-digit", month: "2-digit" })} · ${d.toLocaleTimeString("pt-BR", { ...o, hour: "2-digit", minute: "2-digit", hour12: false })}`;
+}
+// O alcance arredondado para baixo, como o "1,8 mil+" dos painéis.
+function alcanceCurto(n) {
+  n = Number(n || 0);
+  if (!n) return "—";
+  return n < 10 ? `${n} ${plural(n, "jogador", "jogadores")}` : `${Math.floor(n / 10) * 10}+ jogadores`;
+}
+function metricaDoLeilao(rotulo, valor, extra) {
+  return `<div class="pc-ads-metrica"><span>${rotulo}</span><strong>${valor}</strong>${extra ? `<small>${extra}</small>` : ""}</div>`;
+}
+// O cabeçalho da campanha: o bairro, o status e os números da semana.
+function cabecalhoDoLeilao(L) {
+  const saldo = saldoDeEnvios();
+  const ativo = L.lance && !state.pcEmailEditando;
+  return `
+      <div class="pc-card pc-ads-cab" id="pc-leilao">
+        <div class="pc-ads-cab-topo">
+          <p class="pc-ads-rotulo">${icon('sino', 13, 'currentColor')} Leilão · e-mail patrocinado</p>
+          <span class="pc-ads-status${ativo ? " ativo" : ""}">${ativo ? "Lance ativo" : "Sem lance"}</span>
+        </div>
+        <p class="pc-ads-titulo">${esc(L.regiao_nome)}</p>
+        <div class="pc-ads-metricas">
+          ${metricaDoLeilao("Encerra", esc(quandoCurto(L.fecha_em)))}
+          ${metricaDoLeilao("Alcance estimado", esc(alcanceCurto(L.alcance)))}
+          ${metricaDoLeilao("Lance mínimo", emReais(Number(L.lance_minimo || 10)))}
+          ${metricaDoLeilao("Créditos", saldo ? emReais(saldo) : "R$ 0", `<button type="button" class="inline-link" id="pc-comprar-creditos">Comprar créditos</button>`)}
+        </div>
+      </div>`;
 }
 
 // O recado da última ação (lance salvo, erro do passo), dentro do cartão.
@@ -10105,8 +10194,8 @@ function avisoDoLeilao() {
   const msg = state.pcEmailMsg;
   return msg ? `<p class="${msg.tipo === "ok" ? "conta-aviso" : "form-error"}" ${msg.tipo === "ok" ? 'role="status"' : 'role="alert"'} style="margin-bottom:14px">${icon(msg.tipo === "ok" ? 'check' : 'warning', 14, msg.tipo === "ok" ? 'var(--green)' : undefined)} ${esc(msg.texto)}</p>` : "";
 }
-// O passo da vez (state.pcLeilaoPasso). Quem já participou começa no "Vale a
-// pena?"; quem muda o lance, na promoção.
+// O passo da vez (state.pcLeilaoPasso). Quem já participou começa na
+// estimativa; quem muda o lance, no anúncio.
 function passoDoLeilaoAtual(L) {
   const p = state.pcLeilaoPasso;
   if (Number.isInteger(p)) return Math.max(0, Math.min(LEILAO_PASSOS.length - 1, p));
@@ -10124,85 +10213,88 @@ function passoDoLeilao(c, L) {
   const f = state.pcEmailForm || (aberto ? { titulo: aberto.titulo, mensagem: aberto.mensagem, valor: aberto.valor } : { titulo: "", mensagem: "", valor: "" });
   const valor = Number(f.valor || 0);
   const ultimo = (L.historico || [])[0];
+  const continuar = `<button type="button" class="cta-btn cta-primary" id="pc-leilao-continuar">Continuar</button>`;
   const resultado = ultimo && ultimo.situacao === "ganhou" ? `
       <div class="pc-card pc-leilao-ganhou">
         <p class="pc-card-t">${icon('check', 16, 'var(--green)')} Você ganhou o ${ultimo.posicao === 2 ? "2º" : "1º"} lugar no último leilão</p>
         <p class="pc-card-s">"${esc(ultimo.titulo)}" sai por e-mail ${esc(quandoEmBrasilia(ultimo.envio_em))}. Custo: ${emReais(Number(ultimo.preco || 0))}.</p>
       </div>` : "";
-  let corpo = "";
-  if (i === 0) corpo = `
-      <p class="pc-card-t">Como funciona o leilão de promoções</p>
+  let titulo = "", corpo = "";
+  if (i === 0) {
+    titulo = "Como funciona o leilão de promoções";
+    corpo = `
       <ol class="pc-leilao-como">
-        <li><strong>Um leilão por bairro, toda semana</strong><span>As academias de ${esc(bairro)} dão lances até ${esc(quandoEmBrasilia(L.fecha_em))}. Ninguém vê o lance das outras.</span></li>
-        <li><strong>A nota decide, não só o valor</strong><span>A nota é o lance multiplicado pela qualidade: fotos na ficha, boas avaliações e uma promoção bem explicada. Uma ficha caprichada pode ganhar com um lance menor.</span></li>
-        <li><strong>Duas promoções por semana chegam aos jogadores</strong><span>A maior nota sai por e-mail na terça e a segunda, na sexta, às 10h, para os jogadores do bairro que pediram promoções. Ela vem marcada como patrocinada.</span></li>
-        <li><strong>Você só paga se ganhar</strong><span>Você define o máximo que aceita pagar. Se ganhar, paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1${premium && desconto ? `, com ${desconto}% de desconto no Premium` : ""}. Se não ganhar, ou se nenhum jogador receber o e-mail, nada é cobrado.</span></li>
+        <li><strong>Um leilão por bairro, toda semana</strong><span>As academias de ${esc(bairro)} dão lances até ${esc(quandoEmBrasilia(L.fecha_em))}. Os lances são sigilosos.</span></li>
+        <li><strong>A nota decide, não só o valor</strong><span>Nota = lance × índice de qualidade (fotos na ficha, avaliações e uma promoção bem explicada). Uma ficha completa pode ganhar com um lance menor.</span></li>
+        <li><strong>Duas promoções por semana</strong><span>A maior nota sai por e-mail na terça e a segunda, na sexta, às 10h, para os jogadores do bairro que pediram promoções, marcada como patrocinada.</span></li>
+        <li><strong>Você só paga se ganhar</strong><span>Você define um lance máximo. Se ganhar, paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1${premium && desconto ? `, com ${desconto}% de desconto no Premium` : ""}. Sem vitória, ou sem jogador que receba o e-mail, nada é cobrado.</span></li>
       </ol>
-      ${botoesDoPasso(false, `<button type="button" class="cta-btn cta-primary" id="pc-leilao-continuar">Continuar ›</button>`)}`;
-  else if (i === 1) {
+      ${botoesDoPasso(false, continuar)}`;
+  } else if (i === 1) {
     const alcance = Number(L.alcance || 0);
     const hist = (L.historico || []).filter(x => ["enviado", "ganhou", "perdeu"].includes(x.situacao));
     const ganhos = hist.filter(x => x.situacao !== "perdeu");
     const pagos = ganhos.map(x => Number(x.preco || 0)).filter(Boolean);
+    titulo = "Estimativa da semana";
     corpo = `
-      <p class="pc-card-t">Vale a pena entrar nesta semana?</p>
-      <ul class="pc-leilao-dados pc-leilao-analise">
-        <li><span>Quem recebe</span><strong>${alcance ? `${esc(alcanceDoLeilao(alcance))} de ${esc(bairro)}` : "Ainda nenhum jogador"}</strong></li>
-        <li><span>Lance mínimo</span><strong>${emReais(minimo)}</strong></li>
-        ${alcance ? `<li><span>Custo por jogador</span><strong>a partir de ${emReais(Math.round(minimo / alcance * 100) / 100)}</strong></li>` : ""}
-        <li><span>E-mails</span><strong>1º lugar ${esc(quandoEmBrasilia(envios[0]))}; 2º ${esc(quandoEmBrasilia(envios[1]))}</strong></li>
-        ${hist.length ? `<li><span>Seus leilões</span><strong>${ganhos.length} de ${hist.length} ${plural(hist.length, "ganho", "ganhos")}${pagos.length ? ` · média de ${emReais(Math.round(pagos.reduce((a, b) => a + b, 0) / pagos.length))}` : ""}</strong></li>` : ""}
-      </ul>
-      <p class="pc-card-s pc-leilao-veredito">${alcance
+      <div class="pc-ads-metricas">
+        ${metricaDoLeilao("Alcance estimado", esc(alcanceCurto(alcance)), alcance ? `em ${esc(bairro)}` : "")}
+        ${metricaDoLeilao("Custo por jogador", alcance ? `a partir de ${emReais(Math.round(minimo / alcance * 100) / 100)}` : "—")}
+        ${metricaDoLeilao("1º envio", esc(quandoCurto(envios[0])))}
+        ${metricaDoLeilao("2º envio", esc(quandoCurto(envios[1])))}
+      </div>
+      ${hist.length ? `<ul class="pc-leilao-dados"><li><span>Seus leilões</span><strong>${ganhos.length} de ${hist.length} ${plural(hist.length, "ganho", "ganhos")}${pagos.length ? ` · média de ${emReais(Math.round(pagos.reduce((a, b) => a + b, 0) / pagos.length))}` : ""}</strong></li></ul>` : ""}
+      <div class="pc-ads-info pc-leilao-veredito">${icon('info', 15, 'var(--ads-muted)')}<p>${alcance
         ? `A partir de ${emReais(minimo)}, a promoção da ${esc(c.name)} chega a ${esc(alcanceDoLeilao(alcance))} que procuram tênis em ${esc(bairro)}.`
-        : `Ainda não há jogadores de ${esc(bairro)} que pediram promoções. Se ganhar e ninguém receber, o valor volta para os créditos.`}</p>
-      <p class="field-label">O que soma na nota da sua academia</p>
+        : `Ainda não há jogadores de ${esc(bairro)} que pediram promoções. Se ganhar e ninguém receber, o valor volta para os créditos.`}</p></div>
+      <p class="pc-ads-sub">Índice de qualidade da academia</p>
       ${listaDeQualidade(qualidadeDoLeilao(c))}
       <div class="pc-leilao-acoes">
-        <button type="button" class="inline-link" id="pc-leilao-agora-nao">Agora não</button>
-        <button type="button" class="cta-btn cta-primary" id="pc-leilao-participar">Quero participar ›</button>
+        <button type="button" class="pc-ads-bt2" id="pc-leilao-agora-nao">Agora não</button>
+        <button type="button" class="cta-btn cta-primary" id="pc-leilao-participar">Participar</button>
       </div>`;
   } else if (i === 2) {
     const daFicha = promocoesLiberadas(c) ? (state.pcPromocoes || []).filter(x => x.valendo) : [];
+    titulo = "Texto do anúncio";
     corpo = `
-      <p class="pc-card-t">Qual promoção vai no e-mail?</p>
-      <p class="pc-card-s">É o que os jogadores de ${esc(bairro)} vão ler. Seja direto: o que é, para quem e até quando.</p>
+      <p class="pc-card-s">É o que os jogadores de ${esc(bairro)} recebem por e-mail. Diga o que é, para quem e até quando.</p>
       ${daFicha.length ? `
       <p class="field-label" style="margin-top:12px">Usar a promoção da ficha</p>
       <div class="chip-row pc-email-da-ficha">${daFicha.map(x => `<button type="button" class="chip small" data-promo-email="${x.id}">${icon('tag', 13, 'currentColor')} ${esc(x.titulo)}</button>`).join("")}</div>` : ""}
-      <label class="field-label" for="pc-email-titulo">Promoção</label>
+      <label class="field-label" for="pc-email-titulo">Título da promoção <span class="pc-ads-cont" data-cont="titulo">${String(f.titulo || "").length}/60</span></label>
       <input class="form-field pc-email-campo" data-campo="titulo" id="pc-email-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
-      <label class="field-label" for="pc-email-mensagem">Mensagem</label>
+      <label class="field-label" for="pc-email-mensagem">Mensagem <span class="pc-ads-cont" data-cont="mensagem">${String(f.mensagem || "").length}/500</span></label>
       <textarea class="form-field pc-email-campo" data-campo="mensagem" id="pc-email-mensagem" maxlength="500" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." style="margin-top:0">${esc(f.mensagem)}</textarea>
-      <p class="footnote" style="margin-top:6px">Com 40 letras ou mais, a mensagem soma na nota.</p>
+      <p class="footnote" style="margin-top:6px">Com 40 caracteres ou mais, a mensagem soma no índice de qualidade.</p>
       ${previaDoEmail(c, f, bairro)}
-      ${botoesDoPasso(true, `<button type="button" class="cta-btn cta-primary" id="pc-leilao-continuar">Continuar ›</button>`)}`;
+      ${botoesDoPasso(true, continuar)}`;
   } else if (i === 3) {
     const falta = valor > saldo;
+    titulo = "Lance máximo";
     corpo = `
-      <p class="pc-card-t">Quanto você aceita pagar, no máximo?</p>
-      <label class="field-label" for="pc-email-valor">Seu lance máximo (R$)</label>
-      <input class="form-field pc-email-campo" data-campo="valor" id="pc-email-valor" type="number" inputmode="numeric" min="${minimo}" step="1" placeholder="A partir de R$ ${minimo}" value="${esc(f.valor)}" style="margin-top:0" />
+      <label class="field-label" for="pc-email-valor">Lance máximo (R$)</label>
+      <div class="pc-ads-moeda"><span>R$</span><input class="form-field pc-email-campo" data-campo="valor" id="pc-email-valor" type="number" inputmode="numeric" min="${minimo}" step="1" placeholder="Mínimo: ${minimo}" value="${esc(f.valor)}" /></div>
       <div class="pc-lance-explica">
         <p><strong>É o teto, não o preço.</strong> Você nunca paga mais que o lance máximo. Se ganhar, paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1; se ninguém mais der lance, paga o mínimo, ${emReais(minimo)}.${premium && desconto ? ` No Premium, ${desconto}% de desconto no valor final.` : ""} Se não ganhar, nada é cobrado.</p>
         <p class="pc-lance-exemplo" id="pc-lance-exemplo">${esc(exemploDoLance(valor, L, premium))}</p>
       </div>
       <ul class="pc-leilao-dados">
-        <li><span>Créditos da academia</span><strong>${saldo ? emReais(saldo) : "Sem créditos"} · <button type="button" class="inline-link" data-comprar-creditos>Comprar ›</button></strong></li>
+        <li><span>Créditos disponíveis</span><strong>${saldo ? emReais(saldo) : "R$ 0"} · <button type="button" class="inline-link" data-comprar-creditos>Comprar</button></strong></li>
       </ul>
       <p class="footnote" id="pc-lance-saldo" style="margin-top:6px">${falta ? `Para dar esse lance, a academia precisa ter ${emReais(valor)} em créditos. Compre créditos ou dê um lance menor.` : "Os créditos garantem o lance: só saem se você ganhar."}</p>
-      ${botoesDoPasso(true, `<button type="button" class="cta-btn cta-primary" id="pc-leilao-continuar">Continuar ›</button>`)}`;
+      ${botoesDoPasso(true, continuar)}`;
   } else {
     const bloqueio = valor > saldo ? (saldo ? `A academia tem ${emReais(saldo)} em créditos. Compre créditos ou dê um lance menor.` : "Sem créditos, o lance não entra. Compre créditos para entrar no leilão.") : "";
+    titulo = "Revisão do anúncio";
     corpo = `
-      <p class="pc-card-t">Confira e entre no leilão</p>
       ${previaDoEmail(c, f, bairro)}
       <ul class="pc-leilao-dados pc-leilao-revisao">
         <li><span>Promoção</span><strong>${esc(f.titulo)}</strong></li>
         <li><span>Lance máximo</span><strong>${emReais(valor)}</strong></li>
-        <li><span>Fecha</span><strong>${esc(quandoEmBrasilia(L.fecha_em))}</strong></li>
-        <li><span>Quem recebe</span><strong>${esc(alcanceDoLeilao(L.alcance))}</strong></li>
+        <li><span>Encerra</span><strong>${esc(quandoCurto(L.fecha_em))}</strong></li>
+        <li><span>Alcance estimado</span><strong>${esc(alcanceCurto(L.alcance))}</strong></li>
       </ul>
+      <p class="pc-ads-sub">Índice de qualidade</p>
       ${listaDeQualidade(qualidadeDoLeilao(c, f.mensagem))}
       <p class="footnote" style="margin-top:10px">Nada é cobrado agora: os créditos só saem se você ganhar, e nunca mais que ${emReais(valor)}. Dá para alterar ou cancelar até ${esc(quandoEmBrasilia(L.fecha_em))}.</p>
       ${bloqueio ? `<div class="form-error pc-email-bloqueio" role="alert">${icon('warning', 14)} <span>${esc(bloqueio)} <button type="button" class="inline-link" data-comprar-creditos>Comprar créditos ›</button></span></div>` : ""}
@@ -10212,6 +10304,8 @@ function passoDoLeilao(c, L) {
       ${resultado}
       <div class="pc-card pc-email-form pc-leilao-passo" id="pc-leilao-passo" data-passo="${i}">
         ${avisoDoLeilao()}
+        <p class="pc-ads-etapa">Etapa ${i + 1} de ${LEILAO_PASSOS.length} · ${LEILAO_PASSOS[i]}</p>
+        <p class="pc-card-t">${titulo}</p>
         ${corpo}
         ${aberto && state.pcEmailEditando ? `<button type="button" class="inline-link" id="pc-email-desistir" style="margin-top:14px">Manter o lance de antes</button>` : ""}
       </div>`;
@@ -10227,38 +10321,45 @@ function andamentoDoLeilao(c, L) {
   return `
       <div class="pc-card pc-leilao-andamento" id="pc-lance">
         ${avisoDoLeilao()}
-        <p class="pc-oferta-eyebrow">Andamento do leilão</p>
-        <p class="pc-card-t">Você está no leilão de ${esc(bairroDoLeilao(L))}</p>
+        <p class="pc-ads-etapa">Andamento do leilão</p>
+        <p class="pc-card-t">Lance ativo em ${esc(bairroDoLeilao(L))}</p>
+        <div class="pc-ads-metricas">
+          ${metricaDoLeilao("Lance máximo", emReais(Number(lance.valor || 0)))}
+          ${metricaDoLeilao("Encerra", esc(quandoCurto(lance.fecha_em || L.fecha_em)))}
+          ${metricaDoLeilao("1º envio", esc(quandoCurto(envios[0])))}
+          ${metricaDoLeilao("2º envio", esc(quandoCurto(envios[1])))}
+        </div>
         <ol class="pc-leilao-linha">
           ${etapa("feito", "Lance registrado", `Até ${emReais(Number(lance.valor || 0))} · "${esc(lance.titulo)}"`)}
-          ${etapa("agora", "Leilão aberto", `Fecha ${esc(quandoEmBrasilia(lance.fecha_em || L.fecha_em))}. Até lá, dá para alterar ou cancelar.`)}
+          ${etapa("agora", "Leilão aberto", `Encerra ${esc(quandoEmBrasilia(lance.fecha_em || L.fecha_em))}. Até lá, dá para alterar ou cancelar.`)}
           ${etapa("", "Resultado", `As duas maiores notas ganham. Se ganhar, paga só o suficiente para ficar à frente da seguinte, mais R$ 1${premium && desconto ? `, com ${desconto}% de desconto` : ""}; se não, nada é cobrado.`)}
-          ${etapa("", "E-mail aos jogadores", `1º lugar ${esc(quandoEmBrasilia(envios[0]))}; 2º ${esc(quandoEmBrasilia(envios[1]))}, para ${esc(alcanceDoLeilao(L.alcance))}.`)}
+          ${etapa("", "E-mail aos jogadores", `Para ${esc(alcanceDoLeilao(L.alcance))}, na terça (1º lugar) ou na sexta (2º), às 10h.`)}
         </ol>
-        <div class="pc-promo pc-leilao-sua">
-          <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} Seu lance máximo: ${emReais(Number(lance.valor || 0))}</p>
-          <p class="pc-card-t" style="margin-top:6px">${esc(lance.titulo)}</p>
+        <p class="pc-ads-sub">Anúncio</p>
+        <div class="pc-ads-anuncio">
+          <p class="pc-card-t">${esc(lance.titulo)}</p>
           <p class="pc-card-s">${esc(lance.mensagem)}</p>
         </div>
-        <div class="pc-promo-acoes">
-          <button type="button" class="inline-link" id="pc-lance-alterar">Alterar o lance</button>
-          <button type="button" class="inline-link" id="pc-lance-cancelar">Sair do leilão</button>
+        <div class="pc-ads-acoes">
+          <button type="button" class="pc-ads-bt2" id="pc-lance-alterar">Alterar o lance</button>
+          <button type="button" class="pc-ads-bt2 perigo" id="pc-lance-cancelar">Sair do leilão</button>
         </div>
       </div>`;
 }
 
 function historicoDoLeilao(L) {
   if (!(L.historico || []).length) return "";
+  const data = (x) => x.fecha_em ? new Date(x.fecha_em).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" }) : "—";
   return `
       <h2 class="pc-h2">Leilões anteriores</h2>
-      <div class="pc-promo-lista">
+      <ul class="pc-ads-lista">
         ${L.historico.map(x => `
-          <div class="pc-card pc-promo ${x.situacao === "enviado" || x.situacao === "ganhou" ? "" : "encerrada"}">
-            <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} ${esc(diaPorExtenso(String(x.fecha_em ? new Date(x.fecha_em).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" }) : "")))}</p>
-            <p class="pc-card-t" style="margin-top:6px">${esc(x.titulo)}</p>
-            <p class="footnote" style="margin-top:6px">${esc(resultadoDoLance(x))}</p>
-          </div>`).join("")}
-      </div>`;
+          <li class="${x.situacao === "enviado" || x.situacao === "ganhou" ? "ganhou" : ""}">
+            <time>${esc(data(x))}</time>
+            <strong>${esc(x.titulo)}</strong>
+            <span>${esc(resultadoDoLance(x))}</span>
+          </li>`).join("")}
+      </ul>`;
 }
 
 // A prévia do e-mail do GuiaTennis (o modelo de enviar_notificacoes_do_leilao),
@@ -11486,7 +11587,12 @@ function ligarEventosParceiros() {
   const pcLeilaoAgoraNao = document.getElementById("pc-leilao-agora-nao");
   if (pcLeilaoAgoraNao) pcLeilaoAgoraNao.onclick = () => { state.pcLeilaoPasso = undefined; irParceiros("painel"); mostrarPush("Tudo bem. O leilão abre de novo toda semana."); };
   document.querySelectorAll(".pc-email-campo").forEach(el => {
-    el.oninput = () => { const f = (state.pcEmailForm = formDoLance()); f[el.dataset.campo] = el.value; if (el.dataset.campo === "valor") atualizarExemploDoLance(f); else atualizarPreviaDoEmail(f); };
+    el.oninput = () => {
+      const f = (state.pcEmailForm = formDoLance()); f[el.dataset.campo] = el.value;
+      const cont = document.querySelector(`[data-cont="${el.dataset.campo}"]`);
+      if (cont) cont.textContent = `${el.value.length}/${el.maxLength}`;
+      if (el.dataset.campo === "valor") atualizarExemploDoLance(f); else atualizarPreviaDoEmail(f);
+    };
     if (el.tagName === "INPUT") el.onkeydown = (e) => { if (e.key === "Enter") seguirNoLeilao(); };
   });
   const abrirCompra = () => { state.pcCompra = { passo: "escolher", valor: 100, forma: "pix" }; render(); document.getElementById("pc-compra")?.scrollIntoView({ block: "center", behavior: "smooth" }); };

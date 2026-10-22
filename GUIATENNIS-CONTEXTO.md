@@ -3201,7 +3201,8 @@ cobra taxa e não fica no meio** da negociação.
     saiu "Os seus dados de contato já vão junto: não precisa digitar de
     novo." e ficou só "Com o seu e-mail confirmado, a academia entra no ar
     quando você finalizar." (sem o e-mail confirmado, "O GuiaTennis confere
-    antes de publicar."). Testes:
+    antes de publicar."). Na Ajuda ("Como cadastro uma academia nova?"), a
+    frase dos dados de contato fica (o Breno, em 22/10: "não" tirar). Testes:
     `cadastro-sair-e-revisao.js` (novo), `plano-na-ficha.js`,
     `plano-ao-finalizar.js`, `previa-da-ficha.js` e
     `fotos-ponto-e-aviso.js`.

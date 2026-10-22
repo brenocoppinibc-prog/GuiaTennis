@@ -270,7 +270,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     alto: Math.round(document.querySelector('#register-overlay .sheet').getBoundingClientRect().height),
     tela: innerHeight,
   }));
-  ok(form.titulo === 'Cadastrar academia nova' && form.sub.includes('não precisa digitar de novo') && !form.aceite, 'formulário da academia nova não pede de novo os dados nem o aceite');
+  ok(form.titulo === 'Cadastrar academia nova' && /entra no ar quando você finalizar\.|O GuiaTennis confere antes de publicar\./.test(form.sub) && !form.sub.includes('não precisa digitar de novo') && !form.aceite, 'formulário da academia nova não pede de novo os dados nem o aceite (e, desde 21/10/2026, sem "Os seus dados de contato já vão junto") — ' + form.sub);
   ok(form.alto === form.tela, 'formulário em tela cheia — ' + form.alto + ' de ' + form.tela);
   ok(form.atalhos === 'Nome e endereço | Modalidade e preço | Quadras | Contato | Fotos | Horário | Cancelamento | Como chegar | Revisar', 'uma aba para cada parte, na ordem do que mais importa — ' + form.atalhos);
   // Pedido do Breno em 01/10/2026: uma parte por tela, com Voltar e Continuar.

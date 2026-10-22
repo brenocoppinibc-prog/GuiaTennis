@@ -56,7 +56,7 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   await page.click('[data-contestar="a3"]');
   await page.waitForTimeout(500);
   cartao = await texto(page, '#parceiros .pc-pedido');
-  ok(cartao.includes('Confirme o seu e-mail: confirmado, o código de 6 números vai na hora') && !(await page.$('[data-pedido-codigo="a3"]')) && !(await page.evaluate(() => (window.__whatsapps || []).length)),
+  ok(cartao.includes('Confirme o seu e-mail: confirmado, o GuiaTennis manda o código de 6 números para o WhatsApp da academia') && !(await page.$('[data-pedido-codigo="a3"]')) && !(await page.evaluate(() => (window.__whatsapps || []).length)),
     'sem o e-mail confirmado, o código espera a confirmação — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await browser.close();
 
@@ -67,8 +67,8 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   await page.click('[data-contestar="a3"]');
   await page.waitForTimeout(500);
   cartao = await texto(page, '#parceiros .pc-pedido');
-  ok(cartao.includes('O GuiaTennis manda um código de 6 números') && cartao.includes('O GuiaTennis manda o código em breve') && !(await page.$('[data-outro-codigo="a3"]')),
-    'WhatsApp desligado: o GuiaTennis manda, como antes — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
+  ok(cartao.includes('O GuiaTennis manda um código de 6 números para o WhatsApp da academia em até 1 dia útil.') && cartao.includes('O GuiaTennis manda o código em até 1 dia útil.') && !(await page.$('[data-outro-codigo="a3"]')),
+    'WhatsApp desligado: o GuiaTennis manda, com o prazo de 1 dia útil (22/10/2026) — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await browser.close();
 
   // ---- banco antes do SQL: contestar continua funcionando ----
@@ -119,8 +119,8 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   // ---- textos ----
   ({ browser, page } = await abrir({ q: 'parceiros/ajuda' }));
   const ajuda = await page.evaluate(() => document.querySelector('#parceiros .pc-main')?.textContent || '');
-  ok(ajuda.includes('vai na hora para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp') && ajuda.includes('toque em "Esqueceu a senha?": mandamos um código para o seu e-mail'),
-    'Ajuda: o código da disputa vai na hora; "Esqueci a senha" pelo e-mail');
+  ok(ajuda.includes('o GuiaTennis manda um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp') && !ajuda.includes('vai na hora para o WhatsApp') && ajuda.includes('toque em "Esqueceu a senha?": mandamos um código para o seu e-mail'),
+    'Ajuda: o GuiaTennis manda o código da disputa (sem prometer "na hora"); "Esqueci a senha" pelo e-mail');
   await page.evaluate(() => { state.showPrivacy = true; render(); });
   const politica = await page.evaluate(() => document.body.innerText);
   ok(politica.includes('WhatsApp Business Platform, da Meta') && politica.includes('até 3 códigos em 3 dias'), 'Política: a Meta entrega o código, e o limite de pedidos');

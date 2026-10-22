@@ -7824,7 +7824,7 @@ function perguntasParceiros() {
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe e entra entre as \"Academias recomendadas\" da página inicial, quanto mais completa a ficha. O Premium ganha o selo dourado, aparece no topo da busca da região, marcado como \"Patrocinado\", e entre as \"Academias recomendadas\" da página inicial, e mostra os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
     { q: "Minha academia já aparece no Guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia, marque a declaração e toque em \"Administrar esta academia\": com o e-mail confirmado, a ficha passa a ser sua na hora, e o GuiaTennis confere depois. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode incluir você diretamente em Acessos." },
-    { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\". Na disputa, um código de 6 números vai na hora para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia." },
+    { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\". Na disputa, o GuiaTennis manda um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto. Com o seu e-mail confirmado, a academia entra no ar na hora e você já administra a ficha; o GuiaTennis confere depois." },
     { q: "O que quer dizer \"atualizada há…\" na ficha?", a: "Na ficha, o jogador vê \"Confirmada pela academia\" e quando ela foi atualizada pela última vez. A data muda quando vocês salvam a ficha no GuiaTennis Parceiros — salvar, mesmo sem mudar nada, confirma que está tudo certo. Pausar a ficha ou mudar o plano não mexe na data. Quando a ficha passa 3 meses sem mudar, o GuiaTennis manda um e-mail para vocês conferirem." },
     { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. Em Suas academias (ou no nome da academia, no topo do GuiaTennis Parceiros), toque em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito que a primeira, e dá para pedir uma enquanto outra ainda está em análise. Cada uma tem o próprio plano, as próprias pessoas e os próprios números." },
@@ -8996,7 +8996,7 @@ function pcPedidoEnviado(p, i = 0) {
       <p class="pc-card-s">Conhece o responsável? Peça para ele aceitar no GuiaTennis Parceiros ou incluir você diretamente em Acessos, com o e-mail <strong>${esc(contaAcademia.email || contaAcademia.usuario)}</strong>.</p>
       ${erroAqui}
       <p class="pc-linha">A academia é sua e você não conhece quem administra, ou ele saiu da academia? <button type="button" class="pc-linha-link" data-contestar="${p.academiaId}">Contestar ›</button></p>
-      <p class="pc-nota-pequena">Na disputa, um código vai na hora para o WhatsApp da academia: quem digitar passa a ser o responsável.</p>
+      <p class="pc-nota-pequena">Na disputa, o GuiaTennis manda um código para o WhatsApp da academia: quem digitar passa a ser o responsável.</p>
       ${cancelar}
     </div>`;
   }
@@ -9010,11 +9010,15 @@ function pcPedidoEnviado(p, i = 0) {
   if (p.destino === "disputa") {
     const avisoAqui = state.pedidoAviso && state.pedidoErroEm === p.academiaId
       ? `<p class="pc-nota-pequena" role="status">${esc(state.pedidoAviso)}</p>` : "";
+    // Sem o código ainda, com o e-mail confirmado, é o envio à mão (o
+    // automático manda ao contestar): o prazo, como o "o código chega em
+    // até 5 dias" da carta do Google Business Profile (pedido do Breno em
+    // 22/10/2026).
     const explicacao = p.codigoEm
       ? "Mandamos um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp. Quem digitar o código passa a ser o responsável pela ficha. Digite aqui:"
       : !contaAcademia.emailConfirmado
-        ? "Confirme o seu e-mail: confirmado, o código de 6 números vai na hora para o WhatsApp da academia. Quem digitar o código passa a ser o responsável pela ficha."
-        : "O GuiaTennis manda um código de 6 números para o WhatsApp da academia. Quem digitar o código passa a ser o responsável pela ficha. Digite aqui:";
+        ? "Confirme o seu e-mail: confirmado, o GuiaTennis manda o código de 6 números para o WhatsApp da academia. Quem digitar o código passa a ser o responsável pela ficha."
+        : "O GuiaTennis manda um código de 6 números para o WhatsApp da academia em até 1 dia útil. Quem digitar o código passa a ser o responsável pela ficha. Digite aqui:";
     return `
     <div class="pc-card pc-pedido${faltaConfirmarEmail() ? " espera-email" : ""}">
       ${alertaDoEmail()}
@@ -10824,8 +10828,8 @@ const AVISOS_DO_CODIGO = {
   espere: "Um código acabou de ser mandado. Para pedir outro, espere uma hora.",
   limite: "Você já pediu 3 códigos. Fale com o GuiaTennis no WhatsApp.",
   sem_whatsapp: "A ficha não tem WhatsApp para receber o código. Fale com o GuiaTennis no WhatsApp.",
-  desligado: "O GuiaTennis manda o código em breve.",
-  confirme_email: "Confirme o seu e-mail: confirmado, o código vai na hora.",
+  desligado: "O GuiaTennis manda o código em até 1 dia útil.",
+  confirme_email: "Confirme o seu e-mail: confirmado, o GuiaTennis manda o código.",
 };
 // "Mandar outro código", no cartão da disputa: um por hora, até 3 em 3 dias.
 async function pedirOutroCodigo(academiaId) {
@@ -10841,7 +10845,8 @@ async function pedirOutroCodigo(academiaId) {
     render();
     return;
   }
-  state.pedidoAviso = AVISOS_DO_CODIGO[r.data] || "";
+  // Sem o envio automático, outro código não avisa o admin: o WhatsApp sim.
+  state.pedidoAviso = r.data === "desligado" ? "Para mandar outro código, fale com o GuiaTennis no WhatsApp." : AVISOS_DO_CODIGO[r.data] || "";
   if (r.data === "mandado") registrarPasso("acao", { site: "parceiros", academia: academiaId, detalhe: `Pediu outro código · ${nomeDaAcademiaDoPasso(academiaId)}` });
   await recarregarConta();
   render();

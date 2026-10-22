@@ -35,7 +35,9 @@ teste")
 > e-mail confirmado, a academia entra no ar quando você finalizar.". Testes:
 > bateria completa com **1.612 verificações** nos 58 arquivos do navegador
 > (novo: `cadastro-sair-e-revisao.js`), mais `onde.mjs` e `pagamento.mjs`,
-> nenhuma falha. Nenhum SQL novo.
+> nenhuma falha. Nenhum SQL novo. Em 22/10: **regra 140**, o código da
+> disputa com o prazo "em até 1 dia útil" enquanto o envio é à mão (sem os
+> "vai na hora").
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3198,6 +3200,27 @@ cobra taxa e não fica no meio** da negociação.
     `cadastro-sair-e-revisao.js` (novo), `plano-na-ficha.js`,
     `plano-ao-finalizar.js`, `previa-da-ficha.js` e
     `fotos-ponto-e-aviso.js`.
+140. **Código da disputa com prazo enquanto o envio é à mão** (pedido de
+    22/10/2026, com print do cartão "Em disputa": "como eu vou colocar isso
+    em prática? não existe ainda"). Enquanto o WhatsApp automático espera o
+    CNPJ (seção 11, item 0), o código sai pelo Breno: e-mail "Disputa" →
+    `/admin` › Pendências › "Mandar código ao WhatsApp da academia" (gera e
+    mostra o botão que abre o WhatsApp dele com a mensagem pronta para o
+    número de antes) → a pessoa digita no cartão e vira a responsável. Para
+    não prometer o que não acontece, como o "o código chega em até 5 dias"
+    da carta do Google Business Profile: o cartão sem código, com o e-mail
+    confirmado, diz **"O GuiaTennis manda um código de 6 números para o
+    WhatsApp da academia em até 1 dia útil."** (com o automático, o código
+    sai ao contestar e o cartão já mostra "Mandamos um código…", sem nada
+    para ligar); o aviso de "desligado" diz "O GuiaTennis manda o código em
+    até 1 dia útil."; "Mandar outro código" desligado diz "Para mandar outro
+    código, fale com o GuiaTennis no WhatsApp." (não avisa o admin); e
+    saíram os "vai na hora" (cartão do pedido ao responsável, e-mail sem
+    confirmar, aviso `confirme_email` e a Ajuda "E se outra pessoa estiver
+    administrando a minha academia?"). Lembrete: pedir uma academia que já
+    tem responsável **não** é disputa; o pedido vai para ele aceitar ou
+    recusar, e só vira disputa se a pessoa tocar em "Contestar" (regra 65).
+    Testes: `codigo-pelo-whatsapp.js` e `parceiros.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

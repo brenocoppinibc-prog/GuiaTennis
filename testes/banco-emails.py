@@ -372,11 +372,10 @@ certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, contato_
 ok(not certo and "própria academia" in saida, "o contato de quem administra a academia também não avalia ela")
 certo, _ = sql(busca.replace(f"('{hugo}'", f"('{dono}'"), papel="authenticated", user=dono)
 ok(certo, "salva busca como qualquer jogador")
-certo, _ = sql("select public.excluir_minha_conta_jogador()", papel="authenticated", user=dono)
-ok(certo and um(f"select count(*) from public.jogadores where user_id = '{dono}'") == "0"
-   and um(f"select count(*) from public.academia_acessos where user_id = '{dono}'") == "1"
-   and um(f"select count(*) from auth.users where id = '{dono}'") == "1", "excluir a parte de jogador mantém o login e as academias")
-ok(um(f"select count(*) from public.buscas_salvas where user_id = '{dono}'") == "0", "e apaga as buscas dela")
+# Desde 23/10/2026 (SQL 20261023120000), excluir pelo site dos jogadores
+# exclui a conta inteira, também no Parceiros (seção 23). Aqui a parte de
+# jogador sai direto no banco, para os testes seguintes seguirem com a dona.
+sql(f"delete from public.buscas_salvas where user_id = '{dono}'; delete from public.jogadores where user_id = '{dono}'")
 
 # 11. Painel do admin (SQL 20261006120000) --------------------------------------
 print("\n# Painel do admin")
@@ -1006,6 +1005,14 @@ sql("select public.excluir_minha_conta_parceiros()", papel="authenticated", user
 ok(um(f"select plano from public.academias where id = '{sair}'") == "completo"
    and um(f"select papel from public.academia_vinculos where academia_id = '{sair}' and user_id = '{dono_novo}'") == "principal",
    "quem é da equipe sai e o plano e o responsável continuam")
+# Desde 23/10/2026 (SQL 20261023120000), excluir pelo site dos jogadores
+# exclui a mesma conta do Parceiros: o login sai e a academia fica.
+eq_jog = parceiro("Yara Equipe", f"yara{sufixo}@exemplo.com", sair, "equipe")
+sql("select public.ativar_conta_de_jogador()", papel="authenticated", user=eq_jog)
+certo, saida = sql("select public.excluir_minha_conta_jogador()", papel="authenticated", user=eq_jog)
+ok(certo and um(f"select count(*) from auth.users where id = '{eq_jog}'") == "0" and um(f"select count(*) from public.academia_acessos where user_id = '{eq_jog}'") == "0"
+   and um(f"select count(*) from public.academia_vinculos where user_id = '{eq_jog}'") == "0" and um(f"select plano from public.academias where id = '{sair}'") == "completo",
+   "excluir pelo site dos jogadores exclui também o Parceiros (o login inteiro); a academia e o plano ficam" + ("" if certo else ": " + saida))
 # O admin exclui o responsável: a academia também fica (e vai para quem sobrar).
 eq3 = parceiro("Xis Equipe", f"xis{sufixo}@exemplo.com", sair, "equipe")
 certo, saida = sql(f"select public.excluir_conta_admin('{dono_novo}', 'Pediu academia que não representa')", **admin_kw)

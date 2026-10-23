@@ -1,6 +1,7 @@
 // Conta do jogador (pedido do Breno em 02/10/2026): avaliar exige conta, e a
 // conta escolhe os avisos por e-mail (academias, promoções, novidades).
 const { abrir, ok } = require('./harness');
+const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.innerText || '', sel);
 (async () => {
   let { browser, page } = await abrir();
   // Menu (regra 68): "Entrar ou criar conta" no topo; os avisos só com conta.
@@ -94,6 +95,13 @@ const { abrir, ok } = require('./harness');
   // (o botão recarrega a página; aqui confere o que o banco faz)
   await page.evaluate(() => abrirContaJogador('conta'));
   ok(await page.evaluate(() => !!document.getElementById('jog-excluir') && !!document.getElementById('jog-sair')), 'Minha conta tem Sair e Excluir minha conta');
+  // O aviso de antes (23/10/2026): só jogador, sem falar de academias.
+  await page.click('#jog-excluir');
+  await page.waitForTimeout(150);
+  const aviso = (await texto(page, '#excluir-conta')).replace(/\s+/g, ' ');
+  ok(aviso.includes('O seu perfil, as favoritas, as buscas salvas') && aviso.includes('As avaliações que você escreveu continuam publicadas') && !aviso.includes('O que acontece com') && !aviso.includes('O seu acesso ao GuiaTennis Parceiros'),
+    'o aviso de excluir, só de jogador: o que sai e o que fica, sem academias — ' + aviso.slice(0, 80));
+  await page.click('#excluir-conta-nao');
   await page.evaluate(() => sb.rpc('excluir_minha_conta_jogador'));
   ok(await page.evaluate(() => !window.__db.jogadores.some(j => j.email === 'bia@exemplo.com') && window.__db.avaliacoes[0].user_id === null), 'excluir a conta apaga os dados e solta as avaliações');
   await browser.close();

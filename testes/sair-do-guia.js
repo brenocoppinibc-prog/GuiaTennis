@@ -40,17 +40,20 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
     window.__db.academia_vinculos.push({ user_id: 'u-tati', academia_id: 'a1', papel: 'equipe' });
   });
   ok((await texto(page, '#pc-excluir-conta')) === 'Excluir minha conta', 'o Perfil tem "Excluir minha conta"');
-  let pergunta = '';
-  page.once('dialog', d => { pergunta = d.message(); d.dismiss(); });
+  // Desde 23/10/2026, o aviso é o mesmo nos dois lados (a conta é uma só).
   await page.click('#pc-excluir-conta');
   await page.waitForTimeout(200);
-  ok(pergunta.includes('As academias continuam no Guia, com a ficha pública.') && pergunta.includes('a pessoa mais antiga da equipe passa a ser a responsável, e o plano passa a ser dela') && pergunta.includes('volta ao plano Básico') && pergunta.includes('não pode ser desfeito'),
-    'pergunta antes, dizendo que a academia fica e quem assume — ' + pergunta.split('\n')[0]);
+  const pergunta = (await texto(page, '#excluir-conta')).replace(/\s+/g, ' ');
+  ok(pergunta.includes('excluir aqui exclui nos dois') && pergunta.includes('A ficha continua no Guia, pública.') && pergunta.includes('a pessoa mais antiga da equipe passa a ser a responsável, e o plano passa a ser dela') && pergunta.includes('volta ao plano Básico')
+    && pergunta.includes('O seu perfil, as favoritas, as buscas salvas') && pergunta.includes('Entendi que a exclusão não pode ser desfeita.'),
+    'pergunta antes, dizendo que a conta de jogador sai junto, que a academia fica e quem assume — ' + pergunta.slice(0, 90));
+  await page.click('#excluir-conta-nao');
+  await page.waitForTimeout(150);
   ok(!(await page.evaluate(() => window.__rpcs.some(r => r.nome === 'excluir_minha_conta_parceiros'))), 'sem confirmar, nada muda');
+  const confirmar = async () => { await page.click('#pc-excluir-conta'); await page.waitForTimeout(150); await page.check('#excluir-conta-ok'); await page.click('#excluir-conta-sim'); };
   // A página recarrega depois de excluir: o resultado fica guardado antes.
   await page.evaluate(() => { const o = sb.rpc.bind(sb); sb.rpc = async (n, a) => { const r = await o(n, a); if (n === 'excluir_minha_conta_parceiros') localStorage.setItem('__exc', JSON.stringify({ rpc: true, plano: (window.__db.academias.find(x => x.id === 'a1') || {}).plano, tati: (window.__db.academia_vinculos.find(v => v.user_id === 'u-tati') || {}).papel, fica: window.__db.academias.some(x => x.id === 'a1') })); return r; }; const so = sb.auth.signOut.bind(sb.auth); sb.auth.signOut = async () => { localStorage.setItem('__saiu', '1'); return so(); }; });
-  page.once('dialog', d => d.accept());
-  await page.click('#pc-excluir-conta');
+  await confirmar();
   await page.waitForTimeout(900);
   r = await page.evaluate(() => JSON.parse(localStorage.getItem('__exc') || '{}'));
   ok(r.rpc && r.fica && r.plano === 'premium' && r.tati === 'principal' && new URL(page.url()).pathname.startsWith('/parceiros') && (await page.evaluate(() => localStorage.getItem('__saiu'))) === '1', 'excluída: sai da conta; a academia fica, a outra pessoa vira a responsável e o plano continua — ' + page.url() + ' ' + JSON.stringify(r));
@@ -61,8 +64,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(400);
   // A página recarrega depois de excluir: o resultado fica guardado antes.
   await page.evaluate(() => { const o = sb.rpc.bind(sb); sb.rpc = async (n, a) => { const r = await o(n, a); if (n === 'excluir_minha_conta_parceiros') localStorage.setItem('__exc', JSON.stringify({ rpc: true, plano: (window.__db.academias.find(x => x.id === 'a1') || {}).plano, tati: (window.__db.academia_vinculos.find(v => v.user_id === 'u-tati') || {}).papel, fica: window.__db.academias.some(x => x.id === 'a1') })); return r; }; const so = sb.auth.signOut.bind(sb.auth); sb.auth.signOut = async () => { localStorage.setItem('__saiu', '1'); return so(); }; });
-  page.once('dialog', d => d.accept());
-  await page.click('#pc-excluir-conta');
+  await page.click('#pc-excluir-conta'); await page.waitForTimeout(150); await page.check('#excluir-conta-ok'); await page.click('#excluir-conta-sim');
   await page.waitForTimeout(900);
   r = await page.evaluate(() => JSON.parse(localStorage.getItem('__exc') || '{}'));
   ok(r.fica && r.plano === 'basico', 'sem outro acesso, a academia fica no guia, no Básico');

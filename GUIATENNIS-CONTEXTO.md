@@ -52,7 +52,10 @@ teste")
 > cheio) e no Premium (20% menos), e o leilão só do Premium (SQL
 > `20261022120000_promocao_paga_e_leilao_premium`; o preço começa em R$ 0,
 > o admin muda em Leilões); depois, fora do Premium, nenhum detalhe do
-> leilão: a aba mostra só "Disponível no plano Premium", como o Desempenho.
+> leilão: a aba mostra só "Disponível no plano Premium", como o Desempenho;
+> **regra 148**, excluir a conta nos dois lados (jogador e Parceiros), com
+> o aviso do que sai e do que acontece com as academias (SQL
+> `20261023120000_excluir_conta_nos_dois_lados`).
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3463,6 +3466,29 @@ cobra taxa e não fica no meio** da negociação.
     pergunta do leilão e a das promoções não cita o leilão
     (`perguntasParceiros`); a compra de créditos no Básico fala só da
     promoção na ficha. Teste: `promocoes-por-email.js`.
+148. **Excluir a conta nos dois lados** (pedido de 23/10/2026: "crie a
+    opção de pode excluir a conta no jogadores, deixe como algo mútuo e
+    crie esse aviso, excluir a conta dos jogadores irá excluir dos
+    parceiros e poderá afetar algo assim"). É o mesmo login no site dos
+    jogadores e no Parceiros: "Excluir minha conta" fica nos dois (Minha
+    conta/perfil e Perfil do Parceiros; antes, a conta do Parceiros não
+    tinha o botão no site dos jogadores) e exclui nos dois. O aviso é um
+    só (`perguntarExcluirConta`), como a exclusão da Conta do Google e a
+    Central de Contas da Meta: "Excluir a sua conta do GuiaTennis?", "É a
+    mesma conta no site dos jogadores e no GuiaTennis Parceiros: excluir
+    aqui exclui nos dois.", O QUE SAI (perfil, favoritas, buscas salvas,
+    viagens, avisos, conversas; com o Parceiros, o acesso e o nome de cada
+    academia), O QUE ACONTECE COM A ACADEMIA (a ficha continua no Guia; o
+    mais antigo da equipe vira o responsável e o plano passa a ser dele;
+    sem ninguém, volta ao Básico; da equipe, só sai), O QUE FICA (as
+    avaliações, com o nome), a caixa "Entendi que a exclusão não pode ser
+    desfeita." e "Excluir a conta" (vermelho, só com a caixa marcada) ou
+    "Cancelar". SQL `20261023120000_excluir_conta_nos_dois_lados`:
+    `excluir_minha_conta_jogador` com acesso ao Parceiros chama
+    `excluir_minha_conta_parceiros` (antes, só a parte de jogador saía e o
+    login ficava). Termos, Privacidade (23 de outubro de 2026) e o chat
+    acompanham. Testes: `buscas-e-avisos.js`, `sair-do-guia.js`,
+    `jogador.js` e `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

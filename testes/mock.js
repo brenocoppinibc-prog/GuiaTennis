@@ -1052,6 +1052,8 @@
       return { data:null, error:null };
     }
     if (nome === "excluir_minha_conta_jogador") {
+      // A mesma conta do Parceiros sai inteira (SQL 20261023120000).
+      if (meuAcesso()) return rodarRpc("excluir_minha_conta_parceiros", a);
       const j = euJogador();
       if (!j) return erro("Essa conta não é de jogador.", "42501");
       db.jogadores.splice(db.jogadores.indexOf(j), 1);

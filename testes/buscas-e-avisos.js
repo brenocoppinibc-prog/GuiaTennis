@@ -140,7 +140,27 @@ async function buscar(page, termo) {
   await page.evaluate(() => irPerfil());
   await page.waitForTimeout(200);
   t = await texto(page, '#perfil-jogador');
-  ok(t.includes('Olá, Maria') && !(await page.$('#jog-excluir')) && t.includes('Para excluir a conta, use Perfil › Excluir minha conta no GuiaTennis Parceiros'), 'o perfil funciona, sem o botão de excluir: a conta também é do Parceiros e se exclui por lá');
+  ok(t.includes('Olá, Maria') && (await texto(page, '#jog-excluir')) === 'Excluir minha conta', 'o perfil funciona, com "Excluir minha conta" (23/10/2026: a conta se exclui dos dois lados)');
+  // Excluir pelo site dos jogadores: o aviso diz que sai do Parceiros e o que acontece com a academia.
+  await page.click('#jog-excluir');
+  await page.waitForTimeout(200);
+  const aviso = (await texto(page, '#excluir-conta')).replace(/\s+/g, ' ');
+  ok(aviso.startsWith('Excluir a sua conta do GuiaTennis?') && aviso.includes('É a mesma conta no site dos jogadores e no GuiaTennis Parceiros: excluir aqui exclui nos dois.')
+    && aviso.includes('O seu acesso ao GuiaTennis Parceiros e à academia: Só Aula Tennis.') && aviso.includes('A ficha continua no Guia, pública.')
+    && aviso.includes('a pessoa mais antiga da equipe passa a ser a responsável') && aviso.includes('As avaliações que você escreveu continuam publicadas'),
+    'o aviso: a mesma conta nos dois lados, o acesso à academia que sai e o que acontece com ela — ' + aviso.slice(0, 120));
+  ok(await page.evaluate(() => document.getElementById('excluir-conta-sim').disabled), '"Excluir a conta" só depois de marcar "Entendi"');
+  await page.click('#excluir-conta-nao');
+  await page.waitForTimeout(150);
+  ok(!(await page.$('#excluir-conta')) && !(await page.evaluate(() => window.__rpcs.some(r => /excluir_minha_conta/.test(r.nome)))), '"Cancelar" fecha e nada muda');
+  await page.evaluate(() => { const so = sb.auth.signOut.bind(sb.auth); sb.auth.signOut = async () => { localStorage.setItem('__exc', JSON.stringify({ rpc: window.__rpcs.filter(r => /excluir_minha_conta/.test(r.nome)).map(r => r.nome), acesso: window.__db.academia_acessos.some(x => x.usuario === 'maria@exemplo.com'), ficha: window.__db.academias.some(x => x.id === 'a1') })); return so(); }; });
+  await page.click('#jog-excluir');
+  await page.waitForTimeout(150);
+  await page.check('#excluir-conta-ok');
+  await page.click('#excluir-conta-sim');
+  await page.waitForTimeout(900);
+  const exc = await page.evaluate(() => JSON.parse(localStorage.getItem('__exc') || '{}'));
+  ok(exc.rpc && exc.rpc[0] === 'excluir_minha_conta_parceiros' && exc.ficha, 'excluir pelo site dos jogadores exclui também o Parceiros; a ficha fica no Guia — ' + JSON.stringify(exc));
   await browser.close();
 
   // Entrar pelo site dos jogadores com o e-mail do Parceiros: segue como jogador.

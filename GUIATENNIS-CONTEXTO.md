@@ -3657,7 +3657,10 @@ cobra taxa e não fica no meio** da negociação.
     piscando é o do campo, não enfeite), "Confirmar" e o resto em texto.
     **Regra para as próximas telas: sem ilustração decorativa (ícone grande
     em círculo, selos, bolinhas), sem animação de entrada ou de progresso;
-    só tipografia, cor da marca e o que a pessoa usa.** Termos e Privacidade
+    só tipografia, cor da marca e o que a pessoa usa.** **As caixas de
+    número ficam** (o Breno, ao ver as telas sem desenho: "mas deixe os slots
+    de número, ficou legal"): uma caixa por número, com a borda verde na de
+    agora, em toda tela de código. Termos e Privacidade
     não mudam. Teste: `contestar-passo-a-passo.js` (confere que não há
     desenho nem animação na apresentação e que as telas de código não têm
     desenho).

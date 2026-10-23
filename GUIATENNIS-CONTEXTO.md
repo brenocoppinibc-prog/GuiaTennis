@@ -28,8 +28,10 @@ teste")
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
 > Depois, no chat novo (PR #5 acompanhado de novo, com inscrição e
 > conferência marcada): **regra 150**, nenhum "Rascunho salvo" na tela (o
-> rascunho segue guardado calado); seção 56 do PR, passo 82. Testes:
-> bateria completa com **1.730 verificações** nos 61 arquivos do
+> rascunho segue guardado calado); seção 56 do PR, passo 82. Depois,
+> **regra 151**, a patrocinada também no lugar dela na lista, sem
+> "Patrocinado" (seção 57, passo 83). Testes:
+> bateria completa com **1.735 verificações** (depois da regra 151) nos 61 arquivos do
 > navegador, mais `onde.mjs` e `pagamento.mjs`, e 467 no
 > `banco-emails.py`, nenhuma falha. Nenhum SQL novo.
 
@@ -1577,7 +1579,8 @@ cobra taxa e não fica no meio** da negociação.
       Premium, confirmada pela academia"; no fim da ficha, "Confirmada pela
       academia · Academia Premium · atualizada há…". Premium com ficha
       básica não tem selo.
-    - **Topo:** `comPatrocinadas` (no fim do `getResults`) coloca **no
+    - **Topo:** `patrocinadasDoTopo` (antes `comPatrocinadas`, no fim do
+      `getResults`; desde a regra 151, só nos cartões) coloca **no
       máximo 2** (`PATROCINADAS_MAX`) academias Premium no topo, com
       "Patrocinado" em cima do nome e a borda dourada. Só as que passaram
       pelos filtros, não pausadas e, com ponto de partida, a até **10 km**
@@ -1585,8 +1588,10 @@ cobra taxa e não fica no meio** da negociação.
       cidade), na ordem da lista. Vale em qualquer ordem escolhida; não
       vale em "só favoritas" e "só as da comparação".
     - **Abaixo:** um título com a ordem ("Mais perto de você", por padrão
-      com endereço; "Recomendadas", "Menor preço"…) e as outras, sem
-      repetir as do topo (`cartoesDaBusca`). A Premium que não coube no
+      com endereço; "Recomendadas", "Menor preço"…) e as outras
+      (`cartoesDaBusca`); ~~sem repetir as do topo~~: desde 23/10/2026, as
+      do topo aparecem de novo no lugar delas, sem o "Patrocinado" (regra
+      151). A Premium que não coube no
       topo (a terceira, ou a mais de 10 km) fica no lugar dela, com o selo.
       Sem patrocinada, a lista é a de sempre, com a etiqueta da ordem no
       primeiro cartão.
@@ -3529,6 +3534,27 @@ cobra taxa e não fica no meio** da negociação.
     de volta nenhum aviso de rascunho (nem "Salvo", nem o ícone). Termos e
     Privacidade não mudam. Testes: `aviso-ao-sair.js` (`semRascunhoNaTela`
     em cada formulário) e `promocoes-por-email.js`.
+151. **A patrocinada também no lugar dela, sem "Patrocinado"** (pedido de
+    23/10/2026: "academias que são patrocinadas também aparecerem na ordem
+    certa de mais próximas, mas nesse caso sem patrocinado"). Como o
+    anúncio do Google (o site pago aparece em cima e de novo no resultado
+    normal) e o "Patrocinado" da Amazon e do Mercado Livre, que não tiram o
+    produto da lista: no topo, as até 2 Premium com "Patrocinado" e a borda
+    dourada (regra 71, igual); embaixo do título da ordem, **todas** na
+    ordem escolhida, as do topo também, no lugar delas, com o selo dourado
+    e sem o "Patrocinado" nem a borda. `getResults` voltou a ser só a lista
+    (a contagem "N quadras encontradas", o "Ver N" dos filtros, o mapa e o
+    `openCourt` não contam a repetida); `patrocinadasDoTopo` (antes
+    `comPatrocinadas`) entra só em `cartoesDaBusca`. Se a busca só tem as
+    patrocinadas (por exemplo, uma academia só), a lista é a de sempre, sem
+    topo, para não repetir tudo. Os pontinhos das fotos do cartão passaram
+    a ser os do próprio cartão (a mesma academia aparece duas vezes).
+    Termos (seção 4: "Abaixo delas, a lista mostra todas as academias na
+    ordem escolhida pelo jogador, inclusive as do topo, de novo no lugar
+    delas e sem a marcação"), a pergunta "Como funciona a ordem das
+    academias?" e o chat (as duas respostas do "Patrocinado") acompanham;
+    Privacidade não muda. Só no site, sem SQL. Teste:
+    `premium-patrocinado.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4777,7 +4803,9 @@ as 133 do `banco-acesso.py` no banco e login locais.
   tabela; Planos, Ajuda, Termos, Privacidade e o aviso da conta.
 - `premium-patrocinado.js` — regra 71: a Premium perto no topo com
   "Patrocinado" e o selo dourado, o título "Mais perto de você" e as
-  outras da mais perto para a mais longe, sem repetir; no máximo 2; a mais
+  outras da mais perto para a mais longe, com a do topo de novo no lugar
+  dela, sem "Patrocinado" (regra 151); a contagem e o mapa sem a repetida;
+  os pontinhos das fotos de cada cartão; no máximo 2; a mais
   de 10 km, sem topo; outra ordem; comparação e filtros; página da cidade;
   Premium com ficha básica ou pausada; selo na ficha; textos.
 - `guardados-na-conta.js` — regra 70: sem conta, no celular só as vistas

@@ -2,7 +2,10 @@
 // tenha um símbolo de verificado diferente e aparece mais bem recomendada e
 // algo avisando que é patrocínio e abaixo delas aparecerem as mais próximas
 // mesmo". Selo dourado, no máximo 2 "Patrocinado" no topo (até 10 km), e
-// abaixo as outras da mais perto para a mais longe, sem repetir.
+// abaixo todas da mais perto para a mais longe. Desde 23/10/2026 ("academias
+// que são patrocinadas também aparecerem na ordem certa de mais próximas, mas
+// nesse caso sem patrocinado"), a do topo aparece de novo no lugar dela, sem
+// o "Patrocinado".
 const { abrir, ok } = require('./harness');
 
 const MOEMA = { lat: -23.601, lng: -46.661, bairro: 'Moema', cidade: 'São Paulo' };
@@ -40,9 +43,28 @@ const buscar = (page, origem, extra) => page.evaluate(({ origem, extra }) => {
   ok(lista[0] === '[P] Só Aula Tennis ★' && lista[1] === '# Mais perto de você',
     'a Premium perto vai para o topo, marcada "Patrocinado" e com o selo dourado; depois, "Mais perto de você" — ' + lista.join(' | '));
   const organicas = lista.slice(2).map(x => x.replace(/ [★✓]$/, ''));
-  ok(organicas.join(',') === 'Tênis Vizinho,Quadra Locação,Premium Longe',
-    'abaixo, as outras da mais perto para a mais longe, sem repetir a do topo — ' + organicas.join(' | '));
+  ok(organicas.join(',') === 'Tênis Vizinho,Quadra Locação,Só Aula Tennis,Premium Longe',
+    'abaixo, todas da mais perto para a mais longe, a do topo também, no lugar dela e sem "Patrocinado" — ' + organicas.join(' | '));
+  ok(await page.evaluate(() => document.querySelectorAll('.results .rcard.patrocinada').length === 1 && document.querySelectorAll('.results .rcard-patrocinado').length === 1
+    && document.querySelectorAll('.results [data-open="a1"]').length === 2),
+    'a patrocinada aparece duas vezes, e só a do topo tem o "Patrocinado" e a borda dourada');
+  ok(await page.evaluate(() => document.querySelector('.toolbar-count').innerText.trim() === '4 quadras encontradas' && mapCourts(getResults()).length === 4),
+    'a contagem e o mapa não contam a repetida — ' + await page.evaluate(() => document.querySelector('.toolbar-count').innerText.trim()));
   ok(lista.includes('Premium Longe ★') && !lista.includes('[P] Premium Longe ★'), 'Premium a mais de 10 km: selo dourado, mas sem o topo patrocinado');
+  const pontinhos = await page.evaluate(async () => {
+    const px = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+    state.allCourts.find(x => x.id === 'a1').photos = [px, px];
+    render();
+    const strips = [...document.querySelectorAll('.results [data-strip="a1"]')];
+    const s2 = strips[1];
+    s2.scrollLeft = s2.clientWidth;
+    s2.dispatchEvent(new Event('scroll'));
+    const dots = (s) => [...s.parentElement.querySelectorAll('.rcard-dots i')].map(i => i.classList.contains('on') ? 1 : 0).join('');
+    const r = { cartoes: strips.length, topo: dots(strips[0]), lista: dots(s2) };
+    state.allCourts.find(x => x.id === 'a1').photos = [];
+    return r;
+  });
+  ok(pontinhos.cartoes === 2 && pontinhos.topo === '10' && pontinhos.lista === '01', 'deslizar as fotos da repetida mexe só nos pontinhos dela — ' + JSON.stringify(pontinhos));
   ok(await page.evaluate(() => !document.querySelector('.results .rcard-tag')), 'com patrocinada, o título da ordem substitui a etiqueta "Mais perto" do primeiro cartão');
   const estilo = await page.evaluate(() => {
     const rot = document.querySelector('.rcard-patrocinado');
@@ -60,6 +82,10 @@ const buscar = (page, origem, extra) => page.evaluate(({ origem, extra }) => {
   ok(patro.length === 2 && lista[0] === '[P] Premium Dois ★' && lista[1] === '[P] Premium Três ★' && lista[2] === '# Mais perto de você',
     'no máximo duas no topo, as Premium mais perto — ' + lista.slice(0, 3).join(' | '));
   ok(lista.includes('Só Aula Tennis ★'), 'a terceira Premium fica na lista normal, no lugar da distância dela');
+  const depoisDoTitulo = lista.slice(3).map(x => x.replace(/ [★✓]$/, ''));
+  const naDistancia = await page.evaluate(() => getResults().map(c => c.name).join(','));
+  ok(depoisDoTitulo.join(',') === naDistancia && depoisDoTitulo.includes('Premium Dois') && depoisDoTitulo.includes('Premium Três') && !lista.slice(3).some(x => x.startsWith('[P]')),
+    'as duas do topo também aparecem na ordem da distância, sem "Patrocinado" — ' + depoisDoTitulo.join(' | '));
 
   // ---- outra ordem: as patrocinadas continuam no topo, o resto na ordem escolhida ----
   lista = await buscar(page, MOEMA, { sortBy: 'price' });
@@ -71,6 +97,10 @@ const buscar = (page, origem, extra) => page.evaluate(({ origem, extra }) => {
   ok(lista.length === 2 && !lista.some(x => x.startsWith('[P]') || x.startsWith('#')), 'só as da comparação: sem patrocínio — ' + lista.join(' | '));
   lista = await buscar(page, MOEMA, { compareOnly: false, modalidadeFilters: ['locacao'] });
   ok(!lista.some(x => x.startsWith('[P]')) && lista.join() === 'Quadra Locação', 'Premium fora do filtro não entra no topo — ' + lista.join(' | '));
+  await page.evaluate(() => { const a2 = state.allCourts.find(x => x.id === 'a2'); a2.__antes = { plano: a2.plano, confirmada: a2.confirmada }; Object.assign(a2, { plano: 'premium', confirmada: true }); });
+  lista = await buscar(page, MOEMA, { modalidadeFilters: ['locacao'] });
+  ok(lista.join() === 'Quadra Locação ★', 'só a Premium na busca: um cartão só, sem topo nem repetição — ' + lista.join(' | '));
+  await page.evaluate(() => { const a2 = state.allCourts.find(x => x.id === 'a2'); Object.assign(a2, a2.__antes); state.modalidadeFilters = []; });
   await page.evaluate(() => { state.modalidadeFilters = []; });
 
   // ---- sem ponto de partida (página da cidade): a Premium da cidade no topo ----

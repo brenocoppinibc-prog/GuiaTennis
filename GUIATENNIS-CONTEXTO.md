@@ -3498,8 +3498,10 @@ cobra taxa e não fica no meio** da negociação.
     proposto foi este convite). Como o "Entre para salvar" do Airbnb e do
     Booking: buscar, ver a ficha e chamar continuam sem conta. Sem conta, as
     academias chamadas ficam só na aba (`chamadasDaAba`, sessionStorage
-    `guiatennis_chamadas_aba_v1`); depois da segunda, o aviso verde desce
-    no alto (`mostrarDica`): "Crie sua conta para guardar as academias que
+    `guiatennis_chamadas_aba_v1`); depois da segunda, aparece no alto o
+    balão dos avisos da conta do site dos jogadores (`push-conta`: branco,
+    com a borda amarela; o Breno pediu "deixe daquela cor", em vez do verde
+    do Parceiros): "Crie sua conta para guardar as academias que
     você chamou" · "Você chamou N academias. Com a conta grátis, elas ficam
     em "Academias que você chamou", em qualquer aparelho." · "Criar conta
     ›" (abre o cadastro com o motivo). Se a pessoa está no WhatsApp (a

@@ -12117,7 +12117,7 @@ function ligarPushesDaConta() {
     if (isAdmin || contaAcademia || jogador || state.page === "parceiros" || state.pushAvaliar) return false;
     const fechado = lerLocal(PUSH_CONTA_KEY, 0);
     if (fechado && Date.now() - fechado < 3 * 864e5) return false;
-    if (document.querySelector(".overlay.open, .drawer-overlay.open, .convite-conta")) return false;
+    if (document.querySelector(".overlay.open, .drawer-overlay.open, .convite-conta, #convite-chamadas")) return false;
     const a = document.activeElement;
     return !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
   };
@@ -14353,8 +14353,10 @@ function lembrarChamada(id, tipo) {
 // "Crie sua conta para guardar as academias que você chamou" (pedido do
 // Breno em 23/10/2026), como o "Entre para salvar" do Airbnb e do Booking:
 // nada fica trancado; depois da segunda academia chamada sem conta, o aviso
-// desce no alto com "Criar conta". O WhatsApp abre outro app ou outra aba:
-// o aviso espera a pessoa voltar. Uma vez por aba; o ✕ guarda por 14 dias.
+// aparece no alto com "Criar conta", com a cara dos outros avisos da conta
+// do site dos jogadores (o balão branco com a borda amarela, pedido do
+// mesmo dia). O WhatsApp abre outro app ou outra aba: o aviso espera a
+// pessoa voltar. Uma vez por aba; o ✕ guarda por 14 dias.
 const CHAMADAS_DA_ABA_KEY = "guiatennis_chamadas_aba_v1";
 const CONVITE_CHAMADAS_KEY = "guiatennis_convite_chamadas_v1";
 function chamadasDaAba() {
@@ -14391,18 +14393,28 @@ function agendarConviteDasChamadas() {
 function mostrarConviteDasChamadas() {
   const n = chamadasDaAba().length;
   try { sessionStorage.setItem(CONVITE_CHAMADAS_KEY, "1"); } catch {}
-  mostrarDica({
-    ic: 'phone',
-    t: "Crie sua conta para guardar as academias que você chamou",
-    s: `Você chamou ${n} academias. Com a conta grátis, elas ficam em "Academias que você chamou", em qualquer aparelho.`,
-    bt: "Criar conta",
-    fn: () => abrirContaJogador("entrar", "Crie a sua conta para guardar as academias que você chamou. É grátis."),
-  });
-  const el = document.getElementById("gt-dica");
-  if (el) {
-    el.classList.add("gt-convite-chamadas");
-    el.querySelector(".gt-push-x").onclick = () => { gravarLocal(CONVITE_CHAMADAS_KEY, Date.now()); el.remove(); };
-  }
+  document.getElementById("convite-chamadas")?.remove();
+  // Um balão por vez: o aviso da conta que estiver aberto sai.
+  if (state.pushConta != null) { state.pushConta = null; render(); }
+  const el = document.createElement("div");
+  el.className = "push-conta push-chamadas";
+  el.id = "convite-chamadas";
+  el.setAttribute("role", "status");
+  el.innerHTML = `
+      <span class="push-conta-ic">${icon('phone', 18, '#B58900')}</span>
+      <span>
+        <p class="push-conta-t">Crie sua conta para guardar as academias que você chamou</p>
+        <p class="push-conta-s">Você chamou ${n} academias. Com a conta grátis, elas ficam em "Academias que você chamou", em qualquer aparelho.</p>
+        <span class="push-conta-cta">Criar conta ›</span>
+      </span>
+      <button type="button" class="push-conta-x" aria-label="Fechar o aviso">✕</button>`;
+  el.onclick = (e) => {
+    if (e.target.closest(".push-conta-x")) { gravarLocal(CONVITE_CHAMADAS_KEY, Date.now()); el.remove(); return; }
+    el.remove();
+    abrirContaJogador("entrar", "Crie a sua conta para guardar as academias que você chamou. É grátis.");
+  };
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 12000);
 }
 const NOME_DO_CONTATO = { whatsapp: "WhatsApp", instagram: "Instagram", site: "site" };
 

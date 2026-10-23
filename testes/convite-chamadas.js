@@ -12,17 +12,18 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(400);
   await page.evaluate(() => trackClick('a1', 'whatsapp'));
   await page.waitForTimeout(1800);
-  ok(!(await page.$('#gt-dica')) && await page.evaluate(() => chamadasDaAba().length === 1), 'a primeira academia chamada fica na aba, sem convite');
+  ok(!(await page.$('#convite-chamadas')) && await page.evaluate(() => chamadasDaAba().length === 1), 'a primeira academia chamada fica na aba, sem convite');
   await page.evaluate(() => trackClick('a2', 'instagram'));
   await page.waitForTimeout(1800);
-  let dica = (await texto(page, '#gt-dica')).replace(/\s+/g, ' ');
-  ok(dica.startsWith('Crie sua conta para guardar as academias que você chamou') && dica.includes('Você chamou 2 academias') && dica.includes('Criar conta ›'),
-    'a segunda chamada: o convite desce no alto — ' + dica);
+  let dica = (await texto(page, '#convite-chamadas')).replace(/\s+/g, ' ');
+  ok(dica.startsWith('Crie sua conta para guardar as academias que você chamou') && dica.includes('Você chamou 2 academias') && dica.includes('Criar conta ›')
+    && await page.evaluate(() => { const st = getComputedStyle(document.getElementById('convite-chamadas')); return st.backgroundColor === 'rgb(255, 255, 255)' && st.borderLeftColor === 'rgb(242, 183, 5)'; }),
+    'a segunda chamada: o convite aparece no alto, com a cara dos outros avisos da conta (balão branco, borda amarela) — ' + dica);
   ok(await page.evaluate(() => JSON.parse(sessionStorage.getItem('guiatennis_chamadas_aba_v1')).map(x => x.id).join() === 'a2,a1' && !localStorage.getItem('guiatennis_chamadas_v1')),
     'as chamadas ficam só na aba (sessionStorage), não no aparelho');
-  await page.evaluate(() => { document.getElementById('gt-dica')?.remove(); trackClick('a3', 'site'); });
+  await page.evaluate(() => { document.getElementById('convite-chamadas')?.remove(); trackClick('a3', 'site'); });
   await page.waitForTimeout(1800);
-  ok(!(await page.$('#gt-dica')), 'uma vez por aba: a terceira chamada não convida de novo');
+  ok(!(await page.$('#convite-chamadas')), 'uma vez por aba: a terceira chamada não convida de novo');
   await browser.close();
 
   // ---- "Criar conta": a conta nasce com as academias chamadas ----
@@ -30,7 +31,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(400);
   await page.evaluate(() => { trackClick('a1', 'whatsapp'); trackClick('a2', 'whatsapp'); });
   await page.waitForTimeout(1800);
-  await page.click('#gt-dica .gt-dica-acao');
+  await page.click('#convite-chamadas .push-conta-cta');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => state.jogadorTela === 'email' && state.jogadorMotivo.includes('guardar as academias que você chamou')), '"Criar conta" abre o cadastro, dizendo o motivo');
   await page.fill('#jog-email', 'lia@exemplo.com');
@@ -51,11 +52,11 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(400);
   await page.evaluate(() => { trackClick('a1', 'whatsapp'); trackClick('a2', 'whatsapp'); });
   await page.waitForTimeout(1800);
-  await page.click('#gt-dica .gt-push-x');
-  ok(await page.evaluate(() => !document.getElementById('gt-dica') && Number(localStorage.getItem('guiatennis_convite_chamadas_v1')) > 0), 'o ✕ fecha e guarda a data');
+  await page.click('#convite-chamadas .push-conta-x');
+  ok(await page.evaluate(() => !document.getElementById('convite-chamadas') && Number(localStorage.getItem('guiatennis_convite_chamadas_v1')) > 0), 'o ✕ fecha e guarda a data');
   await page.evaluate(() => { sessionStorage.clear(); window.__conviteChamadas = false; trackClick('a1', 'whatsapp'); trackClick('a3', 'whatsapp'); });
   await page.waitForTimeout(1800);
-  ok(!(await page.$('#gt-dica')), 'fechado, não volta por 14 dias, nem noutra aba');
+  ok(!(await page.$('#convite-chamadas')), 'fechado, não volta por 14 dias, nem noutra aba');
   await browser.close();
 
   // ---- Fora do site (WhatsApp aberto), o convite espera a volta ----
@@ -67,10 +68,10 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
     trackClick('a1', 'whatsapp'); trackClick('a2', 'whatsapp');
   });
   await page.waitForTimeout(1800);
-  ok(!(await page.$('#gt-dica')), 'com a pessoa no WhatsApp, o convite não aparece');
+  ok(!(await page.$('#convite-chamadas')), 'com a pessoa no WhatsApp, o convite não aparece');
   await page.evaluate(() => { window.__visivel = true; document.dispatchEvent(new Event('visibilitychange')); });
   await page.waitForTimeout(900);
-  ok(!!(await page.$('#gt-dica')), 'ao voltar ao site, o convite desce');
+  ok(!!(await page.$('#convite-chamadas')), 'ao voltar ao site, o convite desce');
   await browser.close();
 
   // ---- Com conta: nada de convite, a chamada vai para a conta ----
@@ -78,7 +79,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(400);
   await page.evaluate(() => { trackClick('a1', 'whatsapp'); trackClick('a2', 'whatsapp'); });
   await page.waitForTimeout(1800);
-  ok(!(await page.$('#gt-dica')) && await page.evaluate(() => lerChamadas().length === 2 && !sessionStorage.getItem('guiatennis_chamadas_aba_v1')), 'com conta, sem convite: as chamadas vão direto para a conta');
+  ok(!(await page.$('#convite-chamadas')) && await page.evaluate(() => lerChamadas().length === 2 && !sessionStorage.getItem('guiatennis_chamadas_aba_v1')), 'com conta, sem convite: as chamadas vão direto para a conta');
   await browser.close();
 
   // ---- Privacidade ----

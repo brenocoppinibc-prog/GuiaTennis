@@ -31,8 +31,11 @@ teste")
 > rascunho segue guardado calado); seção 56 do PR, passo 82. Depois,
 > **regra 151**, a patrocinada também no lugar dela na lista, sem
 > "Patrocinado" (seção 57, passo 83); **regra 152**, contestar numa
-> página própria, passo a passo (seção 58, passo 84). Testes:
-> bateria completa com **1.753 verificações** (depois da regra 152) nos 62 arquivos do
+> página própria, passo a passo (seção 58, passo 84); **regra 153**, a
+> explicação como a apresentação do Nubank e as telas de código como a do
+> WhatsApp (seção 59, passo 85); **regra 154**, sem "cara de IA": sem
+> desenhos decorativos nem animações nessas telas (seção 60, passo 86). Testes:
+> bateria completa com **1.761 verificações** (depois da regra 154) nos 62 arquivos do
 > navegador, mais `onde.mjs` e `pagamento.mjs`, e 467 no
 > `banco-emails.py`, nenhuma falha. Nenhum SQL novo.
 
@@ -3593,6 +3596,71 @@ cobra taxa e não fica no meio** da negociação.
     disputa continua igual). Só no site, sem SQL. Testes:
     `contestar-passo-a-passo.js` (novo), `codigo-so-em-disputa.js` e
     `codigo-pelo-whatsapp.js` (pelo `contestar` do `harness.js`).
+    **Mudou na regra 153** (a apresentação do Nubank e a tela do código).
+153. **Contestar como a apresentação do Nubank e as telas de código como a
+    do WhatsApp** (pedido de 23/10/2026: "mas explicando como funciona faça
+    tipo o nubank que explica para conta nova como funciona o cartão e não
+    de opção de pular e depois com abertura para colocar o código. deixe as
+    páginas de código mais bonitas como a do whatsapp, mais interessante,
+    menos seca"). (1) **Apresentação** (`pcContestarExplicar`, modo
+    "explicar" de `modoDoContestar`): a tela toda no verde da marca (classe
+    `pc-onb-tela` no `.pc`, sem cabeçalho nem rodapé), a seta de voltar e as
+    quatro barrinhas de história no alto (a de agora enche), o desenho grande
+    (`CONTESTAR_DESENHOS`: anéis, o ícone branco, o selo amarelo de bola de
+    tênis), "N de 4 · <etapa>", o título, pouco texto e um só botão branco
+    "Continuar" (na última, "Contestar e receber o código"). **Sem "Pular"**,
+    sem ✕ e sem "Agora não": só a seta, que na primeira tela sai. (2)
+    **Contestado, a página vira a tela do código** (`pcContestarCodigo`, modo
+    "codigo", `data-modo="codigo"`), com o cursor já nas caixas: o desenho do
+    celular com o balão do WhatsApp, "Digite o código", para onde foi
+    ("Mandamos um código de 6 números para o WhatsApp da <academia>…"; em
+    até 1 dia útil sem o envio automático; sem o e-mail confirmado, o cartão
+    do e-mail no lugar das caixas), o aviso do envio, as 6 caixas,
+    "Confirmar", "Não chegou? Mandar outro código", a ajuda sem código
+    (documento e "Fale com o GuiaTennis ›") e "Digitar depois". O cartão "Em
+    disputa" ficou só com a situação e "Digitar o código" (link para a
+    mesma página, que abre direto na tela do código). (3) **Todas as telas
+    de código** (o código da disputa, o e-mail do Parceiros no cartão
+    `pcConfirmarEmail`, o "Esqueci a senha" do Parceiros e dos jogadores e o
+    "Confirme o seu e-mail" dos jogadores): `cabecaDeCodigo` (desenho
+    `ilustracaoDeCodigo`: celular com o balão verde do WhatsApp ou envelope
+    com o balão dourado, o ✓ e a bola de tênis; título e para onde foi),
+    `caixasDeCodigo(n, …)` (6 caixas na disputa, `DIGITOS_DO_EMAIL` = 8 no
+    e-mail; um campo só por baixo, então colar, o código sugerido pelo
+    celular e o leitor de tela continuam funcionando; espaço e traço viram
+    só números antes dos outros "input") e `botaoDeReenviar` ("Mandar outro
+    código em 0:59", `ESPERA_DO_REENVIO` = 60 s, o minuto que o Supabase
+    exige; `state.codigoMandadoEm` vem do `enviarCodigo`), mais "Chega em
+    até um minuto. Olhe também o spam e a aba Promoções.". Os ids de sempre
+    ficaram (`pc-codigo`, `pc-codigo-email`, `pc-codigo-senha`,
+    `jog-codigo`). O chat deixou de dizer "código de 6 números" para o
+    e-mail (são 8). Termos e Privacidade não mudam. Só no site, sem SQL.
+    Testes: `contestar-passo-a-passo.js` (reescrito: a tela cheia, as
+    barrinhas, sem "Pular", a seta, a tela do código com o foco, as caixas,
+    "Digitar depois", o cartão "Em disputa", o código certo e o painel, os
+    jogadores com 8 caixas e a contagem), `codigo-so-em-disputa.js` e
+    `codigo-pelo-whatsapp.js` (leem a tela do código). **Os desenhos e as
+    animações saíram na regra 154.**
+154. **Sem "cara de IA": nada de desenho decorativo nem animação** (pedido de
+    23/10/2026, ao ver as telas da regra 153: "essas telas estão com muita
+    cara de ia por aparecer algo muito animado"). Saíram: na apresentação da
+    disputa, o desenho de cada tela (anéis, ícone grande, selo amarelo,
+    bolinha), a lista com ✓ amarelos, o "1 DE 4" em maiúsculas amarelas, a
+    barrinha enchendo e o texto entrando de lado; nas telas de código, o
+    desenho do celular/envelope (`ilustracaoDeCodigo`), o fundo verde nas
+    caixas preenchidas, a sombra da caixa de agora, o ✓ do aviso e o ícone da
+    ajuda. Ficou como as telas de texto do Nubank e a verificação do
+    WhatsApp: o verde da marca, as barrinhas paradas (a de agora e as de
+    antes em branco), "1 de 4 · Quando contestar" discreto, o título grande,
+    parágrafos curtos, a dica num quadro liso e o botão branco; no código, o
+    título, o texto, as caixas com a borda verde na de agora (o cursor
+    piscando é o do campo, não enfeite), "Confirmar" e o resto em texto.
+    **Regra para as próximas telas: sem ilustração decorativa (ícone grande
+    em círculo, selos, bolinhas), sem animação de entrada ou de progresso;
+    só tipografia, cor da marca e o que a pessoa usa.** Termos e Privacidade
+    não mudam. Teste: `contestar-passo-a-passo.js` (confere que não há
+    desenho nem animação na apresentação e que as telas de código não têm
+    desenho).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4859,11 +4927,12 @@ as 133 do `banco-acesso.py` no banco e login locais.
   como antes; admin manda pelo WhatsApp do GuiaTennis, vê se saiu ou o
   erro (e gera à mão), e a situação em E-mails; Ajuda e Política. Desde a
   regra 152, contesta pela página (`contestar` do `harness.js`).
-- `contestar-passo-a-passo.js` — regra 152: o cartão só com "Contestar ›",
-  a página `/parceiros/contestar` sem menu, as quatro telas com
-  "Continuar" e "Voltar", ler sem contestar, "Agora não" e o ✕, contestar
-  e voltar com "Em disputa", o link direto, a disputa já aberta, sem
-  pedido e sem o e-mail confirmado.
+- `contestar-passo-a-passo.js` — regras 152 e 153: o cartão só com
+  "Contestar ›", a apresentação em tela cheia (as barrinhas, sem "Pular",
+  a seta), ler sem contestar, a tela do código com o cursor nas caixas, os
+  números colados, "Digitar depois", o cartão "Em disputa" com "Digitar o
+  código", o código certo, o link sem pedido, sem o e-mail confirmado e,
+  nos jogadores, as 8 caixas e a contagem de um minuto.
 - `receber-email.mjs` — regra 67, roda sozinho, sem internet: `node
   testes/receber-email.mjs`. Assinatura do webhook (certa, errada, velha,
   corpo mexido), encaminha para o Gmail com o nome de quem escreveu, o

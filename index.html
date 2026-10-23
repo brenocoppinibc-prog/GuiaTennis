@@ -1952,18 +1952,52 @@
   .pc-escolha-txt span { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
   #pc-administrar[disabled] { background: #DDE9E3; color: #fff; border-color: #DDE9E3; cursor: not-allowed; opacity: 1; }
   .pc-nota-pequena { margin: 4px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
-  /* A página da disputa (23/10/2026): uma ideia por tela, com "Continuar". */
-  .pc-contestar .pc-progresso-etapas { margin: 4px 0 22px; }
-  .pc-contestar-ic { width: 52px; height: 52px; border-radius: 50%; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; margin: 0 0 14px; }
-  .pc-contestar-t { font-size: 26px; line-height: 1.2; margin: 0 0 14px; }
-  .pc-contestar-p { margin: 0 0 12px; font-size: 15px; line-height: 1.6; color: var(--text); }
-  .pc-contestar-dica { display: flex; gap: 8px; align-items: flex-start; margin: 16px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--bg-alt); font-size: 14px; line-height: 1.5; color: var(--text); }
-  .pc-contestar-dica svg { flex-shrink: 0; margin-top: 3px; color: var(--green); }
-  .pc-contestar-lista { list-style: none; margin: 0; padding: 0; }
-  .pc-contestar-lista li { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 12px; font-size: 15px; line-height: 1.55; }
-  .pc-contestar-lista svg { flex-shrink: 0; margin-top: 4px; }
-  .pc-contestar-acoes { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
-  .pc-contestar-acoes .cta-btn { width: 100%; justify-content: center; }
+  /* A explicação da disputa como a apresentação do Nubank (23/10/2026): a
+     tela toda na cor da marca, as barrinhas no alto, o desenho grande, o
+     título, pouco texto e só "Continuar". */
+  .pc.pc-onb-tela, .pc-onb-tela .pc-main { background: var(--green); }
+  .pc-onb { box-sizing: border-box; max-width: 480px; min-height: 100vh; min-height: 100dvh; margin: 0 auto; padding: 14px 20px 28px; display: flex; flex-direction: column; color: #fff; }
+  .pc-onb-topo { display: flex; align-items: center; gap: 12px; }
+  .pc-onb-voltar { flex-shrink: 0; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(255,255,255,0.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .pc-onb-barras { flex: 1; display: flex; gap: 6px; }
+  .pc-onb-barras i { position: relative; flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25); overflow: hidden; }
+  .pc-onb-barras i.feito { background: #fff; }
+  .pc-onb-barras i.agora { background: #fff; }
+  .pc-onb-miolo { flex: 1; padding: 13vh 0 24px; }
+  .pc-onb-etapa { margin: 0 0 12px; font-size: 14px; color: rgba(255,255,255,0.7); }
+  .pc-onb h1.pc-onb-t { margin: 0 0 18px; font-size: 32px; line-height: 1.15; color: #fff; }
+  .pc-onb-p { margin: 0 0 12px; font-size: 16px; line-height: 1.6; color: rgba(255,255,255,0.88); }
+  .pc-onb-dica { margin: 20px 0 0; padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.1); font-size: 15px; line-height: 1.5; color: #fff; }
+  .pc-onb-link { color: #fff !important; font-weight: 700; text-decoration: underline; white-space: nowrap; }
+  .pc-onb-pe .form-error { margin-bottom: 12px; }
+  .pc-onb-botao { width: 100%; min-height: 54px; border: 0; border-radius: 28px; background: #fff; color: var(--green); font: inherit; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+  .pc-onb-botao:disabled { opacity: 0.7; cursor: default; }
+  /* As telas de código (23/10/2026), como a verificação do WhatsApp: o
+     título no meio, as caixas de cada número e a contagem do "Mandar outro
+     código"; sem desenho nem animação. */
+  .cod-cabeca { text-align: center; margin: 0 0 6px; }
+  .cod-cabeca .cod-t { margin: 0 0 8px; font-size: 26px; line-height: 1.2; }
+  .pc-pagina .cod-cabeca h1.cod-t { font-size: 28px; }
+  .cod-s { margin: 0 auto; max-width: 400px; font-size: 15px; line-height: 1.55; color: var(--muted); }
+  .cod-s strong { color: var(--text); }
+  .otp { position: relative; max-width: 420px; margin: 20px auto 8px; }
+  .otp-campo { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: transparent; color: transparent; -webkit-text-fill-color: transparent; caret-color: transparent; font-size: 16px; outline: none; cursor: text; }
+  .otp-campo::selection { background: transparent; }
+  .otp-caixas { display: flex; justify-content: center; gap: 8px; }
+  .otp-caixas span { flex: 1 1 0; min-width: 0; max-width: 48px; height: 58px; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .otp-caixas span.meio { margin-right: 10px; }
+  .otp:focus-within .otp-caixas span.agora { border-color: var(--green); }
+  .otp:focus-within .otp-caixas span.agora:empty::after { content: ""; width: 2px; height: 26px; background: var(--green); animation: otp-pisca 1s steps(1) infinite; }
+  @keyframes otp-pisca { 50% { opacity: 0; } }
+  .cod-botao { width: 100%; justify-content: center; margin-top: 16px; }
+  .cod-reenviar { margin: 14px 0 0; text-align: center; font-size: 14px; color: var(--muted); }
+  .cod-reenviar button:disabled { color: var(--muted) !important; cursor: default; font-weight: 500; text-decoration: none; }
+  .cod-dica { margin: 6px 0 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+  .cod-aviso { margin: 14px auto 0; max-width: 400px; font-size: 14px; line-height: 1.45; color: var(--green); text-align: center; }
+  .cod-ajuda { margin: 26px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--bg-alt); font-size: 14px; line-height: 1.5; color: var(--text); }
+  .cod-ajuda p { margin: 0; }
+  .cod-depois { margin: 16px 0 0; text-align: center; }
+  .pc-pedido-codigo { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; text-decoration: none; }
   .pc-codigo { display: flex; gap: 8px; margin-top: 14px; }
   .pc-codigo .form-field { flex: 1; margin-top: 0; font-size: 20px; letter-spacing: 0.25em; text-align: center; font-variant-numeric: tabular-nums; }
   .pc-codigo .cta-btn { flex-shrink: 0; margin: 0; width: auto; padding: 0 20px; }
@@ -8033,7 +8067,7 @@ function perguntasParceiros() {
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe e entra entre as \"Academias recomendadas\" da página inicial, quanto mais completa a ficha. O Premium ganha o selo dourado, aparece no topo da busca da região, marcado como \"Patrocinado\", e entre as \"Academias recomendadas\" da página inicial, e mostra os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
     { q: "Minha academia já aparece no Guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia, marque a declaração e toque em \"Administrar esta academia\": com o e-mail confirmado, a ficha passa a ser sua na hora, e o GuiaTennis confere depois. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode incluir você diretamente em Acessos." },
-    { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo. Na disputa, o GuiaTennis manda um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia." },
+    { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo e, no fim, abre o lugar para digitar o código. Na disputa, o GuiaTennis manda um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto. Com o seu e-mail confirmado, a academia entra no ar na hora e você já administra a ficha; o GuiaTennis confere depois." },
     { q: "O que quer dizer \"atualizada há…\" na ficha?", a: "Na ficha, o jogador vê \"Confirmada pela academia\" e quando ela foi atualizada pela última vez. A data muda quando vocês salvam a ficha no GuiaTennis Parceiros — salvar, mesmo sem mudar nada, confirma que está tudo certo. Pausar a ficha ou mudar o plano não mexe na data. Quando a ficha passa 3 meses sem mudar, o GuiaTennis manda um e-mail para vocês conferirem." },
     { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra quantas academias você responder, em qualquer plano, até no Básico. Em Suas academias (ou no nome da academia, no topo do GuiaTennis Parceiros), toque em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito que a primeira, e dá para pedir uma enquanto outra ainda está em análise. Cada uma tem o próprio plano, as próprias pessoas e os próprios números." },
@@ -8890,11 +8924,13 @@ function renderParceiros() {
   else if (aba === "academias") miolo = pcAcademias();
   else if (aba === "perfil") miolo = pcPerfil();
   const contestando = aba === "contestar" && contaAcademia && acessoCompleto();
+  // A explicação da disputa ocupa a tela toda, como a apresentação do Nubank.
+  const apresentacao = contestando && modoDoContestar() === "explicar";
   const focado = pcFocado() || contestando;
   const checkout = aba === "creditos" && temAcademia() && acessoCompleto();
   return `
-    <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""} ${aba === "inicio" ? "pc-revelando" : ""} ${focado ? "pc-focado" : ""} ${checkout ? "pc-focado pc-checkout-tela" : ""}" id="parceiros">
-      ${checkout ? pcTopoCheckout() : contestando ? pcTopoContestar() : focado ? pcTopoFocado() : pcTopo()}
+    <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""} ${aba === "inicio" ? "pc-revelando" : ""} ${focado ? "pc-focado" : ""} ${checkout ? "pc-focado pc-checkout-tela" : ""} ${apresentacao ? "pc-onb-tela" : ""}" id="parceiros">
+      ${checkout ? pcTopoCheckout() : apresentacao ? "" : contestando ? pcTopoContestar() : focado ? pcTopoFocado() : pcTopo()}
       ${faixaDaVisaoAdmin()}
       <main class="pc-main">${miolo}</main>
       ${focado || checkout ? "" : pcRodape()}
@@ -9282,10 +9318,8 @@ function pcPedidoEnviado(p, i = 0) {
   const falar = `<a class="pc-linha-link" href="${whatsappGuia(`Olá! Sou ${contaAcademia.nome || "responsável"} e pedi para administrar a ${nome} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis ›</a>`;
   const cancelar = `<p class="pc-linha"><button type="button" class="pc-linha-link pc-linha-discreta" ${id("pc-cancelar-pedido")} data-cancelar-pedido="${p.academiaId}">Cancelar o pedido</button></p>`;
   const caixaDoCodigo = `
-    <div class="pc-codigo">
-      <input class="form-field" ${id("pc-codigo")} data-pedido-codigo="${p.academiaId}" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000" value="${esc((state.pcCodigos || {})[p.academiaId] || "")}" aria-label="Código de 6 números" />
-      <button type="button" class="cta-btn cta-primary" ${id("pc-confirmar-codigo")} data-confirmar-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) : "Confirmar"}</button>
-    </div>`;
+    ${caixasDeCodigo(6, `${id("pc-codigo")} data-pedido-codigo="${p.academiaId}"`, (state.pcCodigos || {})[p.academiaId], "Código de 6 números")}
+    <button type="button" class="cta-btn cta-primary cod-botao" ${id("pc-confirmar-codigo")} data-confirmar-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) : "Confirmar"}</button>`;
   // Academia que já tem responsável (03/10/2026): o pedido vai para ele,
   // como o "Solicitar acesso" do Google Business Profile.
   if (p.destino === "responsavel") {
@@ -9301,36 +9335,25 @@ function pcPedidoEnviado(p, i = 0) {
     </div>`;
   }
   // Disputa: o código vai para o WhatsApp da academia (o de antes de quem
-  // administra assumir, que pode não ser o da ficha: por isso o cartão não
-  // mostra o número) — sozinho, pela conta
-  // oficial do GuiaTennis no WhatsApp (SQL 20261007140000), como o código
-  // por telefone do Google Business Profile; sem o envio ligado, o
-  // GuiaTennis manda. Sem como receber o código, o GuiaTennis pode pedir
-  // documento.
+  // administra assumir, que pode não ser o da ficha: por isso o número não
+  // aparece) — sozinho, pela conta oficial do GuiaTennis no WhatsApp (SQL
+  // 20261007140000); sem o envio ligado, o GuiaTennis manda em até 1 dia
+  // útil. Desde 23/10/2026, o código é digitado na página da disputa, na
+  // tela do código (como a do WhatsApp); o cartão diz em que pé está e leva
+  // até ela.
   if (p.destino === "disputa") {
-    const avisoAqui = state.pedidoAviso && state.pedidoErroEm === p.academiaId
-      ? `<p class="pc-nota-pequena" role="status">${esc(state.pedidoAviso)}</p>` : "";
-    // Sem o código ainda, com o e-mail confirmado, é o envio à mão (o
-    // automático manda ao contestar): o prazo, como o "o código chega em
-    // até 5 dias" da carta do Google Business Profile (pedido do Breno em
-    // 22/10/2026).
-    const explicacao = p.codigoEm
-      ? "Mandamos um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp. Quem digitar o código passa a ser o responsável pela ficha. Digite aqui:"
+    const situacao = p.codigoEm
+      ? "O código de 6 números foi para o WhatsApp da academia."
       : !contaAcademia.emailConfirmado
-        ? "Confirme o seu e-mail: confirmado, o GuiaTennis manda o código de 6 números para o WhatsApp da academia. Quem digitar o código passa a ser o responsável pela ficha."
-        : "O GuiaTennis manda um código de 6 números para o WhatsApp da academia em até 1 dia útil. Quem digitar o código passa a ser o responsável pela ficha. Digite aqui:";
+        ? "Confirme o seu e-mail: confirmado, o GuiaTennis manda o código de 6 números para o WhatsApp da academia."
+        : "O GuiaTennis manda o código de 6 números para o WhatsApp da academia em até 1 dia útil.";
     return `
     <div class="pc-card pc-pedido${faltaConfirmarEmail() ? " espera-email" : ""}">
       ${alertaDoEmail()}
       <p class="pc-oferta-eyebrow">Em disputa</p>
       <p class="pc-card-t">${esc(nome)}</p>
-      <p class="pc-card-s">${explicacao}</p>
-      ${p.codigoEm || contaAcademia.emailConfirmado ? caixaDoCodigo : ""}
-      ${erroAqui}
-      ${avisoAqui}
-      ${p.codigoEm ? `<p class="pc-linha">Não chegou? <button type="button" class="pc-linha-link" data-outro-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>Mandar outro código</button></p>` : ""}
-      <p class="pc-linha">Não tem como receber o código? ${falar}</p>
-      <p class="pc-nota-pequena">Sem o código, o GuiaTennis pode pedir um documento que mostre que você responde pela academia.</p>
+      <p class="pc-card-s">${situacao}</p>
+      <a href="/parceiros/contestar?academia=${idCurto(p.academiaId)}" class="cta-btn cta-primary pc-pedido-codigo" data-contestar="${p.academiaId}">${icon('whatsapp', 16, '#fff')} ${p.codigoEm || contaAcademia.emailConfirmado ? "Digitar o código" : "Ver a disputa"}</a>
       ${cancelar}
     </div>`;
   }
@@ -9489,12 +9512,13 @@ function pcCadastro() {
           ${passo === "esqueci" ? `
             ${state.pcCodigoFalhou
               ? `<p class="email-sugestao">Não consegui mandar o código agora. Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>`
-              : !state.pcCodigoConferido ? `<p class="pc-card-s" style="margin-top:12px">${state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código para <strong>${esc(state.pcLogin)}</strong>. Chega em até um minuto; olhe também o spam.`}</p>
-                <label class="field-label" for="pc-codigo-senha">Código do e-mail</label>
-                <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-senha" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />
+              : !state.pcCodigoConferido ? `
+                ${cabecaDeCodigo("email", "Digite o código", state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(state.pcLogin)}</strong>.`, "h2")}
+                ${caixasDeCodigo(DIGITOS_DO_EMAIL, `data-rascunho="codigo" id="pc-codigo-senha"`, (window.__codigo || {}).codigo, "Código do e-mail", "campo-codigo")}
                 ${erro(state.pcContaErro)}
                 <button class="btn-primary pc-botao-cheio" id="pc-conferir-codigo-senha" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Conferindo..." : "Continuar"}</button>
-                <p class="footnote"><button type="button" class="pc-linha-link" id="pc-reenviar-codigo">Mandar outro código</button></p>`
+                <p class="cod-reenviar">Não chegou? ${botaoDeReenviar("pc-reenviar-codigo", "pc-linha-link")}</p>
+                <p class="cod-dica">Chega em até um minuto. Olhe também o spam e a aba Promoções.</p>`
               : `<p class="pc-card-s pc-codigo-ok" style="margin-top:12px">${icon('check', 15, 'var(--green)')} Código confirmado. Agora crie a senha nova.</p>
                 <label class="field-label" for="pc-senha-nova">Senha nova</label>
                 <input class="form-field campo-codigo" data-rascunho="senha" id="pc-senha-nova" type="password" autocomplete="new-password" value="${esc((window.__codigo || {}).senha || "")}" style="margin-top:0" />
@@ -11496,21 +11520,20 @@ function pcConfirmarEmail(etapa) {
   const c = contaAcademia;
   if (!c || c.emailConfirmado || !recebeEmail(c.login)) return "";
   const enviado = state.pcConfirmar === "enviado";
+  const sub = state.pcConfirmar === "falhou"
+    ? "Não consegui mandar o código agora. Tente de novo em instantes."
+    : enviado ? `Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(c.login)}</strong>.`
+    : `O código vai para <strong>${esc(c.login)}</strong>.`;
   return `
-    <div class="pc-card pc-confirmar-email${etapa || meusPedidos().some(p => p.destino !== "responsavel") ? " pisca" : ""}" id="pc-confirmar-cartao">
-      <p class="pc-card-t">${etapa ? (enviado ? "Digite o código" : "Receba o código") : "Confirme o seu e-mail"}</p>
-      <p class="pc-card-s">${state.pcConfirmar === "falhou"
-        ? "Não consegui mandar o código agora. Tente de novo em instantes."
-        : enviado ? `Mandamos um código para <strong>${esc(c.login)}</strong>. Chega em até um minuto; olhe também o spam.`
-        : `O código vai para <strong>${esc(c.login)}</strong>.`}</p>
+    <div class="pc-card pc-confirmar-email cod-cartao${etapa || meusPedidos().some(p => p.destino !== "responsavel") ? " pisca" : ""}" id="pc-confirmar-cartao">
+      ${cabecaDeCodigo("email", etapa ? (enviado ? "Digite o código" : "Receba o código") : "Confirme o seu e-mail", sub, "h2")}
       ${enviado ? `
-        <input class="form-field campo-codigo" data-rascunho="codigo" id="pc-codigo-email" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" />
+        ${caixasDeCodigo(DIGITOS_DO_EMAIL, `data-rascunho="codigo" id="pc-codigo-email"`, (window.__codigo || {}).codigo, "Código do e-mail", "campo-codigo")}
         ${state.pcConfirmarErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pcConfirmarErro)}</div>` : ""}
-        <div class="pc-acoes">
-          <button type="button" class="cta-btn cta-primary" id="pc-confirmar-email">Confirmar</button>
-          <button type="button" class="cta-btn cta-secondary" id="pc-mandar-codigo">Mandar outro código</button>
-        </div>` : `
-        <div class="pc-acoes"><button type="button" class="cta-btn cta-primary" id="pc-mandar-codigo">Mandar o código</button></div>`}
+        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-email">Confirmar</button>
+        <p class="cod-reenviar">Não chegou? ${botaoDeReenviar("pc-mandar-codigo", "pc-linha-link")}</p>
+        <p class="cod-dica">Chega em até um minuto. Olhe também o spam e a aba Promoções.</p>` : `
+        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-mandar-codigo">Mandar o código</button>`}
     </div>`;
 }
 
@@ -11632,13 +11655,15 @@ async function pedirParaAdministrar(academiaId) {
   if (state.pcConfirmar === "enviado") document.getElementById("pc-codigo-email")?.focus({ preventScroll: true });
 }
 
-// A disputa numa página só dela, lida passo a passo (pedido do Breno em
-// 23/10/2026: "abra uma página nova para contestar e explique como funciona
-// somente nessa página com passo a passo de ler e prosseguir"), como o
-// "Solicitar propriedade" do Perfil da Empresa no Google e a recuperação de
-// conta da Meta: sem o menu do Parceiros, a marca e o ✕; uma ideia por tela,
-// com "Continuar"; só na última, "Contestar quem administra". O cartão do
-// pedido fica só com o link; a explicação mora aqui.
+// A disputa numa página só dela (pedido do Breno em 23/10/2026: "abra uma
+// página nova para contestar e explique como funciona somente nessa página
+// com passo a passo de ler e prosseguir"). Depois, no mesmo dia: "faça tipo
+// o nubank que explica para conta nova como funciona o cartão e não de opção
+// de pular e depois com abertura para colocar o código". Então: a explicação
+// é a apresentação do Nubank (tela cheia na cor da marca, as barrinhas de
+// história no alto, uma ilustração grande, um título e pouco texto, só
+// "Continuar", sem "Pular"); contestado, a mesma página vira a tela do código
+// (como a verificação do WhatsApp). O cartão do pedido fica só com o link.
 const CONTESTAR_PASSOS = ["Quando contestar", "O código", "O que muda", "Contestar"];
 function abrirContestar(academiaId) {
   const volta = state.parceirosAba && state.parceirosAba !== "contestar" ? state.parceirosAba : null;
@@ -11661,6 +11686,12 @@ function pedidoDoContestar() {
   const id = (state.pcContestar || {}).academia;
   return id ? meusPedidos().find(p => p.academiaId === id || idCurto(p.academiaId) === id) || null : null;
 }
+// "explicar" (o pedido ainda está com quem administra), "codigo" (em
+// disputa) ou "vazio" (sem pedido para contestar).
+function modoDoContestar() {
+  const p = pedidoDoContestar();
+  return !p ? "vazio" : p.destino === "responsavel" ? "explicar" : p.destino === "disputa" ? "codigo" : "vazio";
+}
 function pcTopoContestar() {
   return `
     <header class="pc-topo">
@@ -11671,71 +11702,103 @@ function pcTopoContestar() {
     </header>`;
 }
 function pcContestar() {
+  const modo = modoDoContestar();
   const p = pedidoDoContestar();
-  const voltarAs = `<button type="button" class="cta-btn cta-primary" id="pc-contestar-sair">Voltar a Suas academias</button>`;
-  if (!p || p.destino !== "responsavel") return `
+  if (modo === "explicar") return pcContestarExplicar(p);
+  if (modo === "codigo") return pcContestarCodigo(p);
+  return `
     <section class="pc-pagina pc-estreita pc-contestar" id="pc-contestar">
-      <h1 class="display pc-antes">${p && p.destino === "disputa" ? `A disputa da ${esc(p.nome || "academia")} já está aberta` : "Não há pedido para contestar"}</h1>
-      <p class="pc-sec-sub">${p && p.destino === "disputa" ? "O código e o que fazer com ele estão no cartão do pedido." : "Só dá para contestar uma academia que você pediu para administrar e que já tem responsável."}</p>
-      ${voltarAs}
+      <h1 class="display pc-antes">Não há pedido para contestar</h1>
+      <p class="pc-sec-sub">Só dá para contestar uma academia que você pediu para administrar e que já tem responsável.</p>
+      <button type="button" class="cta-btn cta-primary" id="pc-contestar-sair">Voltar a Suas academias</button>
     </section>`;
+}
+// Sem desenho e sem animação (pedido de 23/10/2026: "essas telas estão com
+// muita cara de ia por aparecer algo muito animado"): como as telas de texto
+// do Nubank, só a cor, as barrinhas, o título grande e pouco texto.
+function pcContestarExplicar(p) {
   const nome = esc(p.nome || "academia");
   const k = state.pcContestar;
   const passo = Math.max(0, Math.min(k.passo || 0, CONTESTAR_PASSOS.length - 1));
-  const item = (t) => `<li>${icon('check', 15, 'var(--green)')}<span>${t}</span></li>`;
-  const falar = `<a class="pc-linha-link" href="${whatsappGuia(`Olá! Sou ${contaAcademia.nome || "responsável"} e quero contestar quem administra a ${p.nome || "minha academia"} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis ›</a>`;
+  const falar = `<a class="pc-onb-link" href="${whatsappGuia(`Olá! Sou ${contaAcademia.nome || "responsável"} e quero contestar quem administra a ${p.nome || "minha academia"} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis ›</a>`;
   const telas = [
     {
-      ic: 'pessoa',
-      t: "A academia é sua e outra pessoa administra?",
+      t: "A academia é sua, mas outra pessoa administra?",
       corpo: `
-        <p class="pc-contestar-p">Contestar é para quando a ${nome} é sua, ou você responde por ela, e quem administra hoje no GuiaTennis Parceiros é alguém que você não conhece ou que saiu da academia.</p>
-        <p class="pc-contestar-dica">${icon('info', 15, 'currentColor')}<span>Conhece quem administra? É mais rápido pedir para essa pessoa aceitar o seu pedido ou incluir você em Acessos.</span></p>`,
+        <p class="pc-onb-p">Contestar é para quando a ${nome} é sua e quem administra no GuiaTennis Parceiros é alguém que você não conhece, ou que saiu da academia.</p>
+        <p class="pc-onb-dica">Conhece essa pessoa? Peça para ela aceitar o seu pedido: é mais rápido.</p>`,
     },
     {
-      ic: 'whatsapp',
       t: "O código vai para o WhatsApp da academia",
       corpo: `
-        <p class="pc-contestar-p">O GuiaTennis manda um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp, em até 1 dia útil${contaAcademia.emailConfirmado ? "" : " depois que você confirmar o seu e-mail"}.</p>
-        <p class="pc-contestar-p">Ele vai para o WhatsApp que a academia tinha antes de a pessoa de hoje assumir, que pode não ser o que está na ficha agora. Por isso o número não aparece aqui.</p>`,
+        <p class="pc-onb-p">São 6 números, mandados pela conta do GuiaTennis no WhatsApp em até 1 dia útil${contaAcademia.emailConfirmado ? "" : " depois que você confirmar o seu e-mail"}.</p>
+        <p class="pc-onb-p">Vão para o WhatsApp que a academia tinha antes de a pessoa de hoje assumir, que pode não ser o que está na ficha agora. Por isso o número não aparece aqui.</p>`,
     },
     {
-      ic: 'key',
       t: "Quem digitar o código passa a ser o responsável",
       corpo: `
-        <ul class="pc-contestar-lista">
-          ${item("O código é digitado no cartão do pedido, em Suas academias. Se não chegar, dá para pedir outro ali.")}
-          ${item(`Digitado o código, você passa a administrar a ${nome}: edita a ficha, responde às avaliações e cuida de Acessos.`)}
-          ${item("Quem administra hoje sai da academia. A conta dessa pessoa continua.")}
-          ${item("Enquanto isso, a ficha continua no ar, do jeito que está.")}
-        </ul>`,
+        <p class="pc-onb-p">Você passa a administrar a ${nome}: edita a ficha, responde às avaliações e cuida de Acessos.</p>
+        <p class="pc-onb-p">Quem administra hoje sai da academia. A conta dessa pessoa continua.</p>
+        <p class="pc-onb-p">Enquanto isso, a ficha continua no ar, do jeito que está.</p>`,
     },
     {
-      ic: 'cadeado',
-      t: `Contestar quem administra a ${nome}?`,
+      t: "Tudo certo para contestar?",
       corpo: `
-        <p class="pc-contestar-p">O pedido deixa de esperar quem administra e vai para o GuiaTennis, que manda o código para o WhatsApp da academia.</p>
-        <p class="pc-contestar-dica">${icon('info', 15, 'currentColor')}<span>Sem como receber o código no WhatsApp da academia? O GuiaTennis pode pedir um documento que mostre que você responde pela academia. ${falar}</span></p>`,
+        <p class="pc-onb-p">O pedido deixa de esperar quem administra e vai para o GuiaTennis, que manda o código. Logo em seguida, abre aqui o lugar para digitar.</p>
+        <p class="pc-onb-dica">Sem como receber o código no WhatsApp da academia? O GuiaTennis pode pedir um documento que mostre que você responde por ela. ${falar}</p>`,
     },
   ];
   const tela = telas[passo];
   const ultimo = passo === CONTESTAR_PASSOS.length - 1;
   const erro = state.pedidoErro && state.pedidoErroEm === p.academiaId ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pedidoErro)}</div>` : "";
   return `
-    <section class="pc-pagina pc-estreita pc-contestar" id="pc-contestar" data-passo="${passo}">
-      <button type="button" class="pc-passo-voltar" id="pc-contestar-voltar">${icon('chevronLeft', 15, 'currentColor')} Voltar</button>
-      ${trilhaTenis(CONTESTAR_PASSOS, passo, "Etapas da disputa")}
-      <p class="pc-eyebrow">Contestar · ${nome}</p>
-      <span class="pc-contestar-ic" aria-hidden="true">${icon(tela.ic, 24, 'var(--green)')}</span>
-      <h1 class="display pc-contestar-t">${tela.t}</h1>
-      ${tela.corpo}
-      ${erro}
-      <div class="pc-contestar-acoes">
-        ${ultimo
-          ? `<button type="button" class="cta-btn cta-primary" id="pc-contestar-enviar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(15) + " Contestando..." : "Contestar quem administra"}</button>
-             <button type="button" class="cta-btn cta-secondary" id="pc-contestar-desistir">Agora não</button>`
-          : `<button type="button" class="cta-btn cta-primary" id="pc-contestar-continuar">Continuar</button>`}
+    <section class="pc-onb" id="pc-contestar" data-passo="${passo}">
+      <div class="pc-onb-topo">
+        <button type="button" class="pc-onb-voltar" id="pc-contestar-voltar" aria-label="${passo ? "Voltar" : "Sair"}">${icon('chevronLeft', 20, 'currentColor')}</button>
+        <div class="pc-onb-barras" role="progressbar" aria-label="Etapas da disputa" aria-valuemin="1" aria-valuemax="${CONTESTAR_PASSOS.length}" aria-valuenow="${passo + 1}">
+          ${CONTESTAR_PASSOS.map((_, i) => `<i class="${i < passo ? "feito" : i === passo ? "agora" : ""}"></i>`).join("")}
+        </div>
       </div>
+      <div class="pc-onb-miolo">
+        <p class="pc-onb-etapa">${passo + 1} de ${CONTESTAR_PASSOS.length} · ${CONTESTAR_PASSOS[passo]}</p>
+        <h1 class="display pc-onb-t">${tela.t}</h1>
+        ${tela.corpo}
+      </div>
+      <div class="pc-onb-pe">
+        ${erro}
+        ${ultimo
+          ? `<button type="button" class="pc-onb-botao" id="pc-contestar-enviar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(16) + " Contestando..." : "Contestar e receber o código"}</button>`
+          : `<button type="button" class="pc-onb-botao" id="pc-contestar-continuar">Continuar</button>`}
+      </div>
+    </section>`;
+}
+// A tela do código da disputa, como a verificação do WhatsApp: o desenho, o
+// título, para onde o código foi, as caixas dos 6 números, "Confirmar" e o
+// "Mandar outro código"; sem o código, o WhatsApp do GuiaTennis.
+function pcContestarCodigo(p) {
+  const nome = esc(p.nome || "academia");
+  const semEmail = !contaAcademia.emailConfirmado;
+  const erro = state.pedidoErro && state.pedidoErroEm === p.academiaId ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pedidoErro)}</div>` : "";
+  const aviso = state.pedidoAviso && state.pedidoErroEm === p.academiaId ? `<p class="cod-aviso" role="status">${esc(state.pedidoAviso)}</p>` : "";
+  const sub = p.codigoEm
+    ? `Mandamos um código de 6 números para o WhatsApp da <strong>${nome}</strong>, pela conta do GuiaTennis no WhatsApp.`
+    : semEmail
+      ? `Confirme o seu e-mail: confirmado, o GuiaTennis manda o código de 6 números para o WhatsApp da <strong>${nome}</strong>.`
+      : `O GuiaTennis manda um código de 6 números para o WhatsApp da <strong>${nome}</strong> em até 1 dia útil. Quando chegar, digite aqui.`;
+  const falar = `<a class="pc-linha-link" href="${whatsappGuia(`Olá! Sou ${contaAcademia.nome || "responsável"} e contestei quem administra a ${p.nome || "minha academia"} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis ›</a>`;
+  return `
+    <section class="pc-pagina pc-estreita cod-pagina" id="pc-contestar" data-modo="codigo">
+      ${cabecaDeCodigo("whatsapp", "Digite o código", sub)}
+      ${aviso}
+      ${semEmail && !p.codigoEm ? pcConfirmarEmail(true) : `
+        ${caixasDeCodigo(6, `id="pc-codigo" data-pedido-codigo="${p.academiaId}"`, (state.pcCodigos || {})[p.academiaId], "Código de 6 números")}
+        ${erro}
+        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-codigo" data-confirmar-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) + " Conferindo..." : "Confirmar"}</button>
+        ${p.codigoEm ? `<p class="cod-reenviar">Não chegou? <button type="button" class="pc-linha-link" data-outro-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>Mandar outro código</button></p>` : ""}`}
+      <div class="cod-ajuda">
+        <p>Sem como receber o código no WhatsApp da academia? O GuiaTennis pode pedir um documento que mostre que você responde por ela. ${falar}</p>
+      </div>
+      <p class="cod-depois"><button type="button" class="pc-linha-link pc-linha-discreta" id="pc-contestar-depois">Digitar depois</button></p>
     </section>`;
 }
 
@@ -11759,15 +11822,9 @@ async function contestarAcademia(academiaId) {
   state.pedidoAviso = AVISOS_DO_CODIGO[r.data] || "";
   registrarPasso("acao", { site: "parceiros", academia: academiaId, detalhe: `Contestou quem administra · ${nomeDaAcademiaDoPasso(academiaId)}${r.data === "mandado" ? " · código no WhatsApp" : ""}` });
   await recarregarConta();
-  // Da página da disputa, volta para onde estava, com o cartão "Em disputa".
-  if (state.parceirosAba === "contestar") {
-    const aba = abaDaVoltaDoContestar();
-    state.pcContestar = null;
-    mostrarPush("Disputa aberta. O código vai para o WhatsApp da academia.");
-    irParceiros(aba);
-    return;
-  }
+  // Na página da disputa, a apresentação dá lugar à tela do código.
   render();
+  if (state.parceirosAba === "contestar") { window.scrollTo(0, 0); document.getElementById("pc-codigo")?.focus({ preventScroll: true }); }
 }
 
 // O que aconteceu com o código da disputa (SQL 20261007140000).
@@ -12167,7 +12224,7 @@ function ligarEventosParceiros() {
   if (contestarSeguir) contestarSeguir.onclick = () => { state.pcContestar.passo = (state.pcContestar.passo || 0) + 1; state.pedidoErro = ""; render(); window.scrollTo(0, 0); };
   const contestarVoltar = document.getElementById("pc-contestar-voltar");
   if (contestarVoltar) contestarVoltar.onclick = () => { if (state.pcContestar.passo > 0) { state.pcContestar.passo -= 1; state.pedidoErro = ""; render(); window.scrollTo(0, 0); } else voltarDoContestar(); };
-  ["pc-contestar-fechar", "pc-contestar-desistir", "pc-contestar-sair"].forEach(id => { const el = document.getElementById(id); if (el) el.onclick = voltarDoContestar; });
+  ["pc-contestar-fechar", "pc-contestar-sair", "pc-contestar-depois"].forEach(id => { const el = document.getElementById(id); if (el) el.onclick = voltarDoContestar; });
   const contestarEnviar = document.getElementById("pc-contestar-enviar");
   if (contestarEnviar) contestarEnviar.onclick = () => { const p = pedidoDoContestar(); if (p) contestarAcademia(p.academiaId); };
   document.querySelectorAll("[data-outro-codigo]").forEach(el => { el.onclick = () => pedirOutroCodigo(el.dataset.outroCodigo); });
@@ -13158,27 +13215,34 @@ function renderJogadorSheet() {
     <p class="jog-troca">${recebeEmail(state.jogadorLogin || f.email)
       ? `<button type="button" class="inline-link" id="jog-esqueci">Esqueceu a senha?</button>`
       : `Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.`}</p>`);
-  const campoCodigo = `
-    <label class="field-label" for="jog-codigo">Código do e-mail</label>
-    <input class="form-field jog-codigo campo-codigo" data-rascunho="codigo" id="jog-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Código do e-mail" value="${esc((window.__codigo || {}).codigo || "")}" style="margin-top:0" />`;
-  const reenviar = `<p class="jog-troca"><button type="button" class="inline-link" id="jog-reenviar">Mandar outro código</button></p>`;
+  const campoCodigo = caixasDeCodigo(DIGITOS_DO_EMAIL, `data-rascunho="codigo" id="jog-codigo"`, (window.__codigo || {}).codigo, "Código do e-mail", "campo-codigo");
+  const reenviar = `<p class="cod-reenviar">Não chegou? ${botaoDeReenviar("jog-reenviar", "inline-link")}</p>
+    <p class="cod-dica">Chega em até um minuto. Olhe também o spam e a aba Promoções.</p>`;
+  // As telas de código (23/10/2026), como a verificação do WhatsApp: o
+  // desenho, o título e para onde o código foi, num cartão só.
+  const paginaDeCodigo = (titulo, sub, corpo) => `
+    ${trilha}
+    <div class="pc-card jog-card cod-cartao cod-tela">
+      ${cabecaDeCodigo("email", titulo, sub)}
+      ${corpo}
+    </div>`;
   const naoMandou = `<p class="email-sugestao" role="alert">Não consegui mandar o código agora. ${tela === "codigo" ? "Você pode confirmar depois, em Minha conta." : `Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.`}</p>`;
-  if (tela === "codigo") miolo = pagina("Confirme o seu e-mail", `Mandamos um código para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Chega em até um minuto; olhe também o spam.`, `
+  if (tela === "codigo") miolo = paginaDeCodigo("Confirme o seu e-mail", `Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>.`, `
     ${state.codigoMandando ? `<p class="footnote">${bolaGirando(16)} Mandando o código…</p>` : ""}
     ${state.codigoFalhou ? naoMandou : campoCodigo}
     ${erro}
     ${state.codigoFalhou
       ? `<button type="button" class="cta-btn cta-primary" id="jog-depois" style="margin-top:18px;width:100%">Continuar</button>`
-      : `<button type="button" class="cta-btn cta-primary" id="jog-confirmar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Confirmar"}</button>
+      : `<button type="button" class="cta-btn cta-primary cod-botao" id="jog-confirmar" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Confirmar"}</button>
          ${reenviar}
          ${state.codigoDeMinhaConta ? "" : `<p class="jog-troca"><button type="button" class="inline-link" id="jog-depois">Fazer isso depois</button></p>`}`}`);
   // "Esqueci a senha" em dois passos (22/10/2026): o código, depois a senha nova.
-  if (tela === "esqueci" && !state.codigoConferido) miolo = pagina("Digite o código", `Mandamos um código para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>. Chega em até um minuto; olhe também o spam.`, `
+  if (tela === "esqueci" && !state.codigoConferido) miolo = paginaDeCodigo("Digite o código", `Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>.`, `
     ${state.codigoMandando ? `<p class="footnote">${bolaGirando(16)} Mandando o código…</p>` : ""}
     ${state.codigoFalhou ? naoMandou : `
       ${campoCodigo}
       ${erro}
-      <button type="button" class="cta-btn cta-primary" id="jog-conferir-codigo-senha" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Continuar"}</button>
+      <button type="button" class="cta-btn cta-primary cod-botao" id="jog-conferir-codigo-senha" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Continuar"}</button>
       ${reenviar}`}`);
   else if (tela === "esqueci") miolo = pagina("Crie uma senha nova", `Código confirmado. Agora crie a senha nova de <strong>${esc(state.jogadorLogin || f.email || "")}</strong>.`, `
       <label class="field-label" for="jog-senha-nova">Senha nova</label>
@@ -13302,11 +13366,75 @@ function blocoSugestaoEmail(email) {
 function recebeEmail(login) {
   return !!login && login.includes("@") && !login.endsWith("@" + DOMINIO_ACESSO);
 }
+// ---------- as telas de código, como a verificação do WhatsApp ----------
+// Pedido do Breno em 23/10/2026: "deixe as páginas de código mais bonitas
+// como a do whatsapp, mais interessante, menos seca". Como o WhatsApp: o
+// título, para onde o código foi, as caixas de cada número e o "Mandar outro
+// código" com a contagem. Um campo só
+// por baixo das caixas: colar, o código que o celular sugere e o leitor de
+// tela seguem funcionando; espaço ou traço colado viram só números.
+const DIGITOS_DO_EMAIL = 8; // o tamanho do código do e-mail no painel do Supabase
+const ESPERA_DO_REENVIO = 60; // segundos; o Supabase recusa outro e-mail antes disso
+function caixasDoValor(n, v) {
+  const agora = Math.min(v.length, n - 1);
+  return Array.from({ length: n }, (_, i) =>
+    `<span class="${[i < v.length ? "cheia" : "", i === agora ? "agora" : "", i === Math.ceil(n / 2) - 1 ? "meio" : ""].filter(Boolean).join(" ")}">${v[i] || ""}</span>`).join("");
+}
+function caixasDeCodigo(n, attrs, valor, rotulo, classe = "") {
+  const v = String(valor || "").replace(/\D/g, "").slice(0, n);
+  return `
+    <div class="otp${v.length === n ? " completo" : ""}" data-otp="${n}">
+      <input class="otp-campo${classe ? " " + classe : ""}" ${attrs} inputmode="numeric" autocomplete="one-time-code" maxlength="${n + 4}" value="${esc(v)}" aria-label="${esc(rotulo)}" spellcheck="false" />
+      <div class="otp-caixas" aria-hidden="true">${caixasDoValor(n, v)}</div>
+    </div>`;
+}
+// Antes dos outros "input": as caixas acompanham e o campo fica só com números.
+document.addEventListener("input", (e) => {
+  const el = e.target;
+  if (!el || !el.classList || !el.classList.contains("otp-campo")) return;
+  const caixa = el.closest(".otp");
+  const n = Number(caixa.dataset.otp) || 6;
+  const limpo = el.value.replace(/\D/g, "").slice(0, n);
+  if (limpo !== el.value) el.value = limpo;
+  caixa.querySelector(".otp-caixas").innerHTML = caixasDoValor(n, limpo);
+  caixa.classList.toggle("completo", limpo.length === n);
+}, true);
+// Sem desenho (pedido de 23/10/2026: "essas telas estão com muita cara de ia
+// por aparecer algo muito animado"): como no WhatsApp, o título e o texto.
+function cabecaDeCodigo(tipo, titulo, sub, nivel = "h1") {
+  return `
+    <div class="cod-cabeca">
+      <${nivel} class="display cod-t">${titulo}</${nivel}>
+      ${sub ? `<p class="cod-s">${sub}</p>` : ""}
+    </div>`;
+}
+// "Mandar outro código" espera o minuto do Supabase, com a contagem na tela
+// (como o "Reenviar SMS em 0:59" do WhatsApp).
+function faltaParaReenviar() {
+  return Math.max(0, Math.ceil(((state.codigoMandadoEm || 0) + ESPERA_DO_REENVIO * 1000 - Date.now()) / 1000));
+}
+function textoDoReenvio(falta) {
+  return falta ? `Mandar outro código em ${Math.floor(falta / 60)}:${String(falta % 60).padStart(2, "0")}` : "Mandar outro código";
+}
+function botaoDeReenviar(id, classe) {
+  const falta = faltaParaReenviar();
+  return `<button type="button" class="${classe}" id="${id}" data-reenvio ${falta ? "disabled" : ""}>${textoDoReenvio(falta)}</button>`;
+}
+setInterval(() => {
+  document.querySelectorAll("[data-reenvio]").forEach(b => {
+    const falta = faltaParaReenviar();
+    const t = textoDoReenvio(falta);
+    if (b.textContent !== t) b.textContent = t;
+    b.disabled = !!falta;
+  });
+}, 1000);
+
 async function enviarCodigo(email) {
   window.__codigo = {};
   try {
     const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
     if (error) { diag(`código por e-mail: ${error.message}`); falhou("mandar o código por e-mail", error, { texto: "Não consegui mandar o código agora." }); }
+    else state.codigoMandadoEm = Date.now();
     return !error;
   } catch (e) { diag(`código por e-mail: ${e.message}`); falhou("mandar o código por e-mail", e, { texto: "Não consegui mandar o código agora." }); return false; }
 }
@@ -19344,7 +19472,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Ir para o cadastro", ir: "pc:cadastro" }] },
   { id: "disputa", onde: "parceiros", t: "Outra pessoa administra a academia",
     p: ["outra pessoa", "outro administra", "outra conta", "contestar", "disputa", "nao reconheco", "nao conheco", "ex funcionario", "ex socio", "saiu da academia", "roubaram", "tomaram"],
-    r: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo. Na disputa, um código de 6 números vai para o WhatsApp da academia: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia.",
+    r: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo e, no fim, abre o lugar para digitar o código. Na disputa, um código de 6 números vai para o WhatsApp da academia: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia.",
     a: [{ t: "Suas academias", ir: "pc:academias" }] },
   { id: "planos", onde: "parceiros", t: "Planos e preços", rcAntes: x => `A ${x.c.name} está no ${x.nome}. `,
     p: ["plano", "preco", "valor", "quanto custa", "quanto e", "premium", "completo", "basico", "pagar", "pagamento", "mensalidade", "assinatura", "gratis", "gratuito"],
@@ -19433,7 +19561,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Entrar", ir: "entrar" }] },
   { id: "codigo", onde: "todos", t: "O código não chegou",
     p: ["codigo", "nao chegou", "nao recebi", "confirmar e mail", "confirmar email", "confirmacao", "verificar e mail", "spam", "6 numeros", "seis numeros"],
-    r: "O código de 6 números vai para o e-mail da conta e chega em até alguns minutos. Confira a caixa de spam e a aba Promoções.",
+    r: "O código vai para o e-mail da conta e chega em até alguns minutos. Confira a caixa de spam e a aba Promoções.",
     d: "Peça outro código na mesma tela e confira se o e-mail foi digitado certo. Às vezes ele demora uns minutinhos.",
     a: [{ t: "Entrar", ir: "entrar" }] },
   // Algo não funcionou (11/10/2026): o que costuma resolver e o código do

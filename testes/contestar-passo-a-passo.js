@@ -1,16 +1,22 @@
 // Pedido do Breno em 23/10/2026: "abra uma página nova para contestar e
 // explique como funciona somente nessa página com passo a passo de ler e
-// prosseguir". O cartão do pedido fica só com "Contestar ›"; a página
-// /parceiros/contestar explica a disputa numa tela por vez, com "Continuar",
-// e só a última contesta.
+// prosseguir"; depois, "faça tipo o nubank que explica para conta nova como
+// funciona o cartão e não de opção de pular e depois com abertura para
+// colocar o código". O cartão do pedido fica só com "Contestar ›"; a página
+// /parceiros/contestar é a apresentação do Nubank (tela cheia, as barrinhas,
+// só "Continuar", sem "Pular") e, contestado, vira a tela do código, como a
+// do WhatsApp. No mesmo dia, "essas telas estão com muita cara de ia por
+// aparecer algo muito animado": sem desenho e sem animação.
 const { abrir, ok } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
 const titulo = (page) => texto(page, '#pc-contestar h1');
-const etapa = (page) => texto(page, '#pc-contestar .pc-progresso-etapas li[aria-current="step"]');
+// textContent: na tela, a etapa vem em maiúsculas pelo CSS.
+const etapa = (page) => page.evaluate(() => (document.querySelector('#pc-contestar .pc-onb-etapa')?.textContent || '').trim());
 
 async function pedidoComResponsavel(page, { confirmado = true } = {}) {
   await page.evaluate(async (confirmado) => {
+    window.__whatsappLigado = true;
     const agora = new Date().toISOString();
     window.__db.academia_acessos[0].email_confirmado_em = confirmado ? agora : null;
     window.__db.academia_acessos[0].dados_completos_em = agora;
@@ -27,7 +33,7 @@ const continuar = async (page) => { await page.click('#pc-contestar-continuar');
 const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome === 'contestar_academia'));
 
 (async () => {
-  // ---- o cartão só com o link; a página, uma tela por vez ----
+  // ---- o cartão só com o link; a apresentação, uma tela por vez ----
   let { browser, page } = await abrir({ academia: 'a2', q: 'parceiros/academias' });
   await pedidoComResponsavel(page);
   const cartao = await texto(page, '#parceiros .pc-pedido');
@@ -36,64 +42,84 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
     'o cartão do pedido tem só "Contestar ›", que é um link para a página, sem explicar a disputa — ' + cartao.slice(-160));
   await page.click('[data-contestar="a3"]');
   await page.waitForTimeout(250);
-  let r = await page.evaluate(() => ({ url: location.pathname + location.search, menu: !!document.querySelector('#parceiros .pc-nav'), rodape: !!document.querySelector('.pc-rodape'), fechar: !!document.getElementById('pc-contestar-fechar') }));
-  ok(r.url === '/parceiros/contestar?academia=a3' && !r.menu && !r.rodape && r.fechar, 'abre /parceiros/contestar, sem o menu nem o rodapé, com o ✕ — ' + r.url);
-  ok(await etapa(page) === 'Quando contestar' && await titulo(page) === 'A academia é sua e outra pessoa administra?'
-    && (await texto(page, '#pc-contestar')).includes('Conhece quem administra? É mais rápido pedir')
-    && await page.$('#pc-contestar-continuar') && !(await page.$('#pc-contestar-enviar')),
-    '1ª tela: quando contestar, a dica de pedir a quem administra e só "Continuar"');
+  let r = await page.evaluate(() => ({
+    url: location.pathname + location.search, topo: !!document.querySelector('#parceiros .pc-topo'), rodape: !!document.querySelector('.pc-rodape'),
+    tela: document.getElementById('parceiros').classList.contains('pc-onb-tela'), fundo: getComputedStyle(document.getElementById('parceiros')).backgroundColor,
+    barras: [...document.querySelectorAll('.pc-onb-barras i')].map(i => i.className || '-').join(','),
+  }));
+  ok(r.url === '/parceiros/contestar?academia=a3' && !r.topo && !r.rodape && r.tela && r.fundo === 'rgb(31, 77, 61)',
+    'abre /parceiros/contestar em tela cheia, na cor da marca, sem o cabeçalho nem o rodapé, como a apresentação do Nubank — ' + r.fundo);
+  ok(r.barras === 'agora,-,-,-' && await etapa(page) === '1 de 4 · Quando contestar' && await titulo(page) === 'A academia é sua, mas outra pessoa administra?',
+    '1ª tela: as quatro barrinhas no alto, a primeira acendendo, e o título — ' + r.barras);
+  r = await page.evaluate(() => ({ corpo: document.getElementById('pc-contestar').innerText, pular: /pular/i.test(document.getElementById('pc-contestar').innerText), desenho: !!document.querySelector('#pc-contestar svg:not(.pc-onb-voltar svg)'),
+    animado: [...document.querySelectorAll('#pc-contestar, #pc-contestar *')].some(el => { const a = getComputedStyle(el); const p = getComputedStyle(el, '::after'); return a.animationName !== 'none' || p.animationName !== 'none'; }) }));
+  ok(r.corpo.includes('Conhece essa pessoa? Peça para ela aceitar o seu pedido') && !r.pular && !r.desenho && !r.animado && await page.$('#pc-contestar-continuar') && !(await page.$('#pc-contestar-enviar')),
+    'a dica de pedir a quem administra, só "Continuar", nada de "Pular" e nenhum desenho ou animação — ' + JSON.stringify({ desenho: r.desenho, animado: r.animado }));
   await continuar(page);
   let corpo = await texto(page, '#pc-contestar');
-  ok(await etapa(page) === 'O código' && await titulo(page) === 'O código vai para o WhatsApp da academia' && corpo.includes('código de 6 números') && corpo.includes('em até 1 dia útil.') && corpo.includes('pode não ser o que está na ficha') && !corpo.includes('•••') && !corpo.includes('2222'),
-    '2ª tela: o código no WhatsApp da academia, o prazo e por que o número não aparece — ' + corpo.slice(0, 120));
+  ok(await etapa(page) === '2 de 4 · O código' && await titulo(page) === 'O código vai para o WhatsApp da academia' && corpo.includes('São 6 números') && corpo.includes('em até 1 dia útil.') && corpo.includes('pode não ser o que está na ficha') && !corpo.includes('•••') && !corpo.includes('2222')
+    && await page.evaluate(() => [...document.querySelectorAll('.pc-onb-barras i')].map(i => i.className || '-').join(',')) === 'feito,agora,-,-',
+    '2ª tela: o código no WhatsApp da academia, o prazo, por que o número não aparece e a segunda barrinha — ' + corpo.slice(0, 120));
   await continuar(page);
   corpo = await texto(page, '#pc-contestar');
-  ok(await etapa(page) === 'O que muda' && await titulo(page) === 'Quem digitar o código passa a ser o responsável' && corpo.includes('cartão do pedido') && corpo.includes('Quem administra hoje sai da academia') && corpo.includes('a ficha continua no ar'),
+  ok(await etapa(page) === '3 de 4 · O que muda' && await titulo(page) === 'Quem digitar o código passa a ser o responsável' && corpo.includes('Você passa a administrar a Tênis Terceira') && corpo.includes('Quem administra hoje sai da academia') && corpo.includes('a ficha continua no ar'),
     '3ª tela: quem digitar vira o responsável, quem administra sai e a ficha segue no ar');
   await page.click('#pc-contestar-voltar');
   await page.waitForTimeout(120);
-  ok(await etapa(page) === 'O código', '"Voltar" volta uma tela');
+  ok(await etapa(page) === '2 de 4 · O código', 'a seta volta uma tela');
   await continuar(page);
   await continuar(page);
   corpo = await texto(page, '#pc-contestar');
-  ok(await etapa(page) === 'Contestar' && await titulo(page) === 'Contestar quem administra a Tênis Terceira?' && corpo.includes('Fale com o GuiaTennis') && corpo.includes('documento')
-    && await texto(page, '#pc-contestar-enviar') === 'Contestar quem administra' && await texto(page, '#pc-contestar-desistir') === 'Agora não' && !(await page.$('#pc-contestar-continuar')),
-    '4ª tela: sem o código, o GuiaTennis; e só aqui "Contestar quem administra" e "Agora não"');
+  ok(await etapa(page) === '4 de 4 · Contestar' && await titulo(page) === 'Tudo certo para contestar?' && corpo.includes('Fale com o GuiaTennis') && corpo.includes('documento')
+    && await texto(page, '#pc-contestar-enviar') === 'Contestar e receber o código' && !(await page.$('#pc-contestar-continuar')),
+    '4ª tela: sem o código, o GuiaTennis; e só aqui "Contestar e receber o código"');
   ok(!(await contestou(page)), 'ler as telas não contesta nada');
 
-  // ---- "Agora não" e o ✕: volta sem contestar ----
-  await page.click('#pc-contestar-desistir');
+  // ---- a seta na primeira tela sai, sem contestar ----
+  for (let k = 0; k < 3; k++) { await page.click('#pc-contestar-voltar'); await page.waitForTimeout(100); }
+  ok(await etapa(page) === '1 de 4 · Quando contestar', 'voltando, chega à primeira tela');
+  await page.click('#pc-contestar-voltar');
   await page.waitForTimeout(250);
-  ok(await page.evaluate(() => state.parceirosAba === 'academias' && location.pathname === '/parceiros/academias') && !(await contestou(page)), '"Agora não" volta a Suas academias, sem contestar');
+  ok(await page.evaluate(() => state.parceirosAba === 'academias' && location.pathname === '/parceiros/academias') && !(await contestou(page)), 'na primeira tela, a seta volta a Suas academias, sem contestar');
   await page.click('[data-contestar="a3"]');
   await page.waitForTimeout(200);
-  ok(await etapa(page) === 'Quando contestar', 'abrir de novo começa da primeira tela');
-  await page.click('#pc-contestar-fechar');
-  await page.waitForTimeout(250);
-  ok(await page.evaluate(() => state.parceirosAba === 'academias') && !(await contestou(page)), 'o ✕ também volta, sem contestar');
+  ok(await etapa(page) === '1 de 4 · Quando contestar', 'abrir de novo começa da primeira tela, sem pular nada');
 
-  // ---- contestar: volta com o cartão "Em disputa" ----
-  await page.click('[data-contestar="a3"]');
-  await page.waitForTimeout(200);
+  // ---- contestar: a página vira a tela do código, como a do WhatsApp ----
   for (let k = 0; k < 3; k++) await continuar(page);
   await page.click('#pc-contestar-enviar');
   await page.waitForTimeout(600);
   r = await page.evaluate(() => ({
-    aba: state.parceirosAba,
+    aba: state.parceirosAba, modo: document.getElementById('pc-contestar')?.dataset.modo,
     destino: (window.__db.pedidos_de_acesso.find(p => p.user_id === 'u-a2' && p.academia_id === 'a3') || {}).destino,
-    cartao: (document.querySelector('#parceiros .pc-pedido')?.innerText || '').toLowerCase(),
-    push: document.querySelector('.push')?.innerText || document.body.innerText,
+    topo: !!document.getElementById('pc-contestar-fechar'), caixas: document.querySelectorAll('#pc-contestar .otp-caixas span').length,
+    foco: document.activeElement && document.activeElement.id, desenho: !!document.querySelector('#pc-contestar .cod-cabeca svg'),
   }));
-  ok(r.aba === 'academias' && r.destino === 'disputa' && r.cartao.includes('em disputa') && r.push.includes('Disputa aberta'),
-    'contestar abre a disputa e volta a Suas academias, com o cartão "Em disputa" e o aviso — ' + r.aba);
+  corpo = await texto(page, '#pc-contestar');
+  ok(r.aba === 'contestar' && r.modo === 'codigo' && r.destino === 'disputa' && r.topo && !r.desenho && r.caixas === 6 && r.foco === 'pc-codigo',
+    'contestado, a página vira a tela do código: o título sem desenho, as 6 caixas já com o cursor e o ✕ no alto — ' + JSON.stringify(r));
+  ok(await titulo(page) === 'Digite o código' && corpo.includes('Mandamos um código de 6 números para o WhatsApp da Tênis Terceira') && corpo.includes('Mandar outro código') && corpo.includes('Digitar depois') && corpo.includes('documento'),
+    'a tela diz para onde o código foi, com "Mandar outro código", a ajuda sem código e "Digitar depois"');
+  await page.fill('#pc-codigo', '48 29');
+  await page.waitForTimeout(100);
+  r = await page.evaluate(() => ({ valor: document.getElementById('pc-codigo').value, caixas: [...document.querySelectorAll('#pc-contestar .otp-caixas span')].map(x => x.textContent || '_').join('') }));
+  ok(r.valor === '4829' && r.caixas === '4829__', 'cada número numa caixa; o espaço colado some — ' + JSON.stringify(r));
+  await page.click('#pc-contestar-depois');
+  await page.waitForTimeout(250);
+  const disputa = await texto(page, '#parceiros .pc-pedido');
+  ok(await page.evaluate(() => state.parceirosAba === 'academias') && disputa.toLowerCase().includes('em disputa') && disputa.includes('Digitar o código'),
+    '"Digitar depois" volta a Suas academias, e o cartão "Em disputa" leva de volta ao código — ' + disputa);
+  await page.click('[data-contestar="a3"]');
+  await page.waitForTimeout(250);
+  ok(await page.evaluate(() => document.getElementById('pc-contestar')?.dataset.modo === 'codigo'), '"Digitar o código" abre a tela do código, sem a apresentação de novo');
+  const codigo = await page.evaluate(() => window.__whatsapps[0].codigo);
+  await page.fill('#pc-codigo', codigo);
+  await page.click('#pc-confirmar-codigo');
+  await page.waitForTimeout(700);
+  r = await page.evaluate(() => ({ aba: state.parceirosAba, vinc: window.__db.academia_vinculos.filter(v => v.academia_id === 'a3').map(v => v.user_id + ':' + v.papel).join(',') }));
+  ok(r.aba === 'painel' && r.vinc === 'u-a2:principal', 'o código certo: passa a administrar e vai para o painel — ' + JSON.stringify(r));
 
-  // ---- o link aberto direto (ou recarregado) ----
-  await page.evaluate(() => { history.pushState({}, '', '/parceiros/contestar?academia=a3'); aplicarLink(lerLink()); render(); });
-  await page.waitForTimeout(150);
-  ok((await titulo(page)).includes('A disputa da Tênis Terceira já está aberta') && await page.$('#pc-contestar-sair'), 'pedido já em disputa: a página diz que a disputa está aberta');
-  await page.click('#pc-contestar-sair');
-  await page.waitForTimeout(200);
-  ok(await page.evaluate(() => state.parceirosAba === 'academias'), 'e volta a Suas academias');
+  // ---- o link aberto direto ----
   await page.evaluate(() => { history.pushState({}, '', '/parceiros/contestar?academia=zzz'); aplicarLink(lerLink()); render(); });
   await page.waitForTimeout(150);
   ok(await titulo(page) === 'Não há pedido para contestar', 'link de um pedido que não existe: "Não há pedido para contestar"');
@@ -104,11 +130,41 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   await pedidoComResponsavel(page, { confirmado: false });
   await page.evaluate(() => { history.pushState({}, '', '/parceiros/contestar?academia=a3'); aplicarLink(lerLink()); render(); });
   await page.waitForTimeout(150);
-  ok(await etapa(page) === 'Quando contestar', 'o link abre a página na primeira tela');
+  ok(await etapa(page) === '1 de 4 · Quando contestar', 'o link abre a apresentação na primeira tela');
   await continuar(page);
   ok((await texto(page, '#pc-contestar')).includes('em até 1 dia útil depois que você confirmar o seu e-mail'), 'sem o e-mail confirmado, a 2ª tela diz que o código espera a confirmação');
-  await page.click('#pc-contestar-fechar');
-  await page.waitForTimeout(250);
-  ok(await page.evaluate(() => state.parceirosAba === 'academias'), 'aberta pelo link, o ✕ leva a Suas academias');
+  await continuar(page);
+  await continuar(page);
+  await page.click('#pc-contestar-enviar');
+  await page.waitForTimeout(600);
+  r = await page.evaluate(() => ({ modo: document.getElementById('pc-contestar')?.dataset.modo, caixas: !!document.querySelector('#pc-contestar [data-pedido-codigo]') }));
+  ok(r.modo === 'codigo' && !r.caixas && (await texto(page, '#pc-contestar')).includes('Confirme o seu e-mail: confirmado, o GuiaTennis manda o código'),
+    'contestado sem o e-mail confirmado: a tela pede para confirmar o e-mail antes do código, sem as caixas — ' + JSON.stringify(r));
+  await browser.close();
+
+  // ---- o código do e-mail no site dos jogadores ----
+  ({ browser, page } = await abrir());
+  await page.evaluate(() => { window.__db.jogadores.push({ user_id: 'j-z', nome: 'Zé', email: 'ze@exemplo.com' }); window.__senhas['ze@exemplo.com'] = 'antiga1234'; abrirContaJogador('entrar'); });
+  await page.fill('#jog-email', 'ze@exemplo.com');
+  await page.click('#jog-continuar');
+  await page.waitForTimeout(300);
+  await page.click('#jog-esqueci');
+  await page.waitForTimeout(300);
+  r = await page.evaluate(() => ({
+    h1: document.querySelector('#jogador-overlay h1')?.innerText || '', desenho: !!document.querySelector('#jogador-overlay .cod-cabeca svg'),
+    caixas: document.querySelectorAll('#jogador-overlay .otp-caixas span').length, sub: document.querySelector('#jogador-overlay .cod-s')?.innerText || '',
+    reenvio: document.getElementById('jog-reenviar')?.innerText || '',
+  }));
+  ok(r.h1 === 'Digite o código' && !r.desenho && r.caixas === 8 && r.sub === 'Mandamos um código de 8 números para ze@exemplo.com.' && r.reenvio.startsWith('Mandar outro código em'),
+    'jogadores: a tela do código sem desenho, com as 8 caixas e a contagem — ' + JSON.stringify(r));
+  await page.fill('#jog-codigo', '1234 56');
+  await page.waitForTimeout(100);
+  ok(await page.evaluate(() => document.getElementById('jog-codigo').value === '123456' && window.__codigo.codigo === '123456'), 'o código colado com espaço vira só números, também no rascunho');
+  r = await page.evaluate(() => ({ reenvio: document.getElementById('jog-reenviar')?.innerText || '', parado: document.getElementById('jog-reenviar')?.disabled }));
+  ok(/^Mandar outro código em (1:00|0:5\d)$/.test(r.reenvio) && r.parado, '"Mandar outro código" espera um minuto, com a contagem, como o WhatsApp — ' + JSON.stringify(r));
+  await page.evaluate(() => { state.codigoMandadoEm = Date.now() - 61000; });
+  await page.waitForTimeout(1200);
+  r = await page.evaluate(() => ({ reenvio: document.getElementById('jog-reenviar')?.innerText || '', parado: document.getElementById('jog-reenviar')?.disabled }));
+  ok(r.reenvio === 'Mandar outro código' && !r.parado, 'passado o minuto, "Mandar outro código" volta a funcionar');
   await browser.close();
 })();

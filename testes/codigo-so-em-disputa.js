@@ -55,7 +55,8 @@ async function pedirPelaTela(page, busca, id) {
     'com responsável: o pedido vai para ele, com "Contestar" (a explicação da disputa fica na página dela, 23/10/2026) — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await contestar(page, 'a3');
   await page.waitForTimeout(500);
-  cartao = await texto(page, '#parceiros .pc-pedido');
+  // Desde 23/10/2026, contestar abre a tela do código na própria página.
+  cartao = await texto(page, '#pc-contestar');
   r = await page.evaluate(() => ({
     rpc: (window.__rpcs.filter(x => x.nome === 'contestar_academia').slice(-1)[0] || {}).args,
     destino: (window.__db.pedidos_de_acesso.find(p => p.user_id === 'u-a2' && p.academia_id === 'a3') || {}).destino,
@@ -64,8 +65,8 @@ async function pedirPelaTela(page, busca, id) {
   }));
   ok(r.rpc && r.rpc.p_academia === 'a3' && r.destino === 'disputa' && r.email, 'contestar vira disputa e avisa o admin por e-mail');
   // O número não aparece: na disputa, o código vai para o WhatsApp de antes, que pode não ser o da ficha.
-  ok(cartao.toLowerCase().includes('em disputa') && cartao.includes('WhatsApp da academia') && !cartao.includes('•••') && r.campo && cartao.includes('documento'),
-    'o cartão da disputa pede o código mandado ao WhatsApp da academia e diz que, sem ele, pode ser documento — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
+  ok(cartao.includes('Digite o código') && cartao.includes('WhatsApp da Tênis Terceira') && !cartao.includes('•••') && r.campo && cartao.includes('documento'),
+    'a tela do código pede o código mandado ao WhatsApp da academia e diz que, sem ele, pode ser documento — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await page.evaluate(async () => { window.__codigos = { 'u-a2|a3': { codigo: '246810', academia: 'a3', tentativas: 0, em: new Date().toISOString() } }; await recarregarConta(); render(); });
   await page.fill('[data-pedido-codigo="a3"]', '246810');
   await page.click('[data-confirmar-codigo="a3"]');

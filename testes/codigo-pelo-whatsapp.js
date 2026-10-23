@@ -29,15 +29,16 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   await disputaPronta(page);
   await contestar(page, 'a3');
   await page.waitForTimeout(500);
-  let cartao = await texto(page, '#parceiros .pc-pedido');
+  // Desde 23/10/2026, contestar abre a tela do código na própria página.
+  let cartao = await texto(page, '#pc-contestar');
   let r = await page.evaluate(() => ({ zap: window.__whatsapps || [], campo: !!document.querySelector('[data-pedido-codigo="a3"]'), outro: !!document.querySelector('[data-outro-codigo="a3"]') }));
   ok(r.zap.length === 1 && r.zap[0].para === '5511977770003' && r.zap[0].origem === 'conta',
     'contestar manda o código na hora, para o WhatsApp que a academia tinha antes — ' + JSON.stringify(r.zap.map(z => z.para)));
-  ok(cartao.includes('Mandamos um código de 6 números para o WhatsApp da academia') && !cartao.includes('2222') && cartao.includes('pela conta do GuiaTennis no WhatsApp') && cartao.includes('Código mandado. Chega em instantes') && r.campo && r.outro,
-    'o cartão diz que o código já foi, com a caixa para digitar e "Mandar outro código" — ' + cartao.replace(/\s+/g, ' ').slice(0, 200));
+  ok(cartao.includes('Mandamos um código de 6 números para o WhatsApp da Tênis Terceira') && !cartao.includes('2222') && cartao.includes('pela conta do GuiaTennis no WhatsApp') && cartao.includes('Código mandado. Chega em instantes') && r.campo && r.outro,
+    'a tela do código diz que ele já foi, com as caixas para digitar e "Mandar outro código" — ' + cartao.replace(/\s+/g, ' ').slice(0, 200));
   await page.click('[data-outro-codigo="a3"]');
   await page.waitForTimeout(500);
-  cartao = await texto(page, '#parceiros .pc-pedido');
+  cartao = await texto(page, '#pc-contestar');
   ok(cartao.includes('espere uma hora') && (await page.evaluate(() => window.__whatsapps.length)) === 1, 'outro código logo em seguida: pede para esperar uma hora');
   const codigo = await page.evaluate(() => window.__whatsapps[0].codigo);
   await page.fill('[data-pedido-codigo="a3"]', codigo);
@@ -55,8 +56,8 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   await disputaPronta(page, { confirmado: false });
   await contestar(page, 'a3');
   await page.waitForTimeout(500);
-  cartao = await texto(page, '#parceiros .pc-pedido');
-  ok(cartao.includes('Confirme o seu e-mail: confirmado, o GuiaTennis manda o código de 6 números para o WhatsApp da academia') && !(await page.$('[data-pedido-codigo="a3"]')) && !(await page.evaluate(() => (window.__whatsapps || []).length)),
+  cartao = await texto(page, '#pc-contestar');
+  ok(cartao.includes('Confirme o seu e-mail: confirmado, o GuiaTennis manda o código de 6 números para o WhatsApp da Tênis Terceira') && !(await page.$('[data-pedido-codigo="a3"]')) && !(await page.evaluate(() => (window.__whatsapps || []).length)),
     'sem o e-mail confirmado, o código espera a confirmação — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await browser.close();
 
@@ -66,8 +67,8 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   await page.evaluate(() => { window.__whatsappLigado = false; });
   await contestar(page, 'a3');
   await page.waitForTimeout(500);
-  cartao = await texto(page, '#parceiros .pc-pedido');
-  ok(cartao.includes('O GuiaTennis manda um código de 6 números para o WhatsApp da academia em até 1 dia útil.') && cartao.includes('O GuiaTennis manda o código em até 1 dia útil.') && !(await page.$('[data-outro-codigo="a3"]')),
+  cartao = await texto(page, '#pc-contestar');
+  ok(cartao.includes('O GuiaTennis manda um código de 6 números para o WhatsApp da Tênis Terceira em até 1 dia útil.') && cartao.includes('O GuiaTennis manda o código em até 1 dia útil.') && !(await page.$('[data-outro-codigo="a3"]')),
     'WhatsApp desligado: o GuiaTennis manda, com o prazo de 1 dia útil (22/10/2026) — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await browser.close();
 
@@ -77,8 +78,7 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   await page.evaluate(() => { window.__semCodigoPeloWhatsapp = true; });
   await contestar(page, 'a3');
   await page.waitForTimeout(500);
-  cartao = await texto(page, '#parceiros .pc-pedido');
-  ok(cartao.toLowerCase().includes('em disputa') && !(await page.$('#parceiros .pc-pedido .form-error')), 'banco sem o SQL novo: contestar continua, sem erro');
+  ok(await page.$('#pc-contestar[data-modo="codigo"]') && !(await page.$('#pc-contestar .form-error')), 'banco sem o SQL novo: contestar continua, sem erro, na tela do código');
   await browser.close();
 
   // ---- admin: manda pelo WhatsApp do GuiaTennis e vê o que aconteceu ----

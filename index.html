@@ -10830,7 +10830,7 @@ function pcPromocoes() {
   const total = p.semana * f.semanas, saldo = saldoDeEnvios();
   const premium = c.plano === "premium";
   const msg = state.pcPromoMsg;
-  const chips = semanasDaPromocao(editando).map(n => `<button type="button" class="chip small${f.semanas === n ? " on" : ""}" role="radio" aria-checked="${f.semanas === n}" data-promo-semanas="${n}">${n ? nSemanas(n) : "Não somar"}</button>`).join("");
+  const chips = semanasDaPromocao(editando).map(n => `<button type="button" class="chip small${f.semanas === n ? " active" : ""}" role="radio" aria-checked="${f.semanas === n}" data-promo-semanas="${n}">${n ? nSemanas(n) : "Não somar"}</button>`).join("");
   const bloqueio = total > saldo;
   return `
     <section class="pc-pagina">

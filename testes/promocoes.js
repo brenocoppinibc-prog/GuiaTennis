@@ -23,7 +23,7 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   // ---- Premium, preço ainda em R$ 0: publicar, mudar, encerrar ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'], envios: { a1: 3 } }));
   await page.waitForTimeout(400);
-  const semanas = () => page.evaluate(() => [...document.querySelectorAll('[data-promo-semanas]')].map(x => x.innerText.trim() + (x.classList.contains('on') ? '*' : '')).join(','));
+  const semanas = () => page.evaluate(() => [...document.querySelectorAll('[data-promo-semanas]')].map(x => x.innerText.trim() + (x.classList.contains('active') ? '*' : '')).join(','));
   ok(await page.isVisible('#pc-promo-titulo') && await semanas() === '1 semana,2 semanas,4 semanas*,8 semanas,12 semanas', 'Premium: o formulário com as semanas, 4 de saída — ' + await semanas());
   corpo = await texto(page, '.pc-promo-form');
   ok(corpo.includes(`Vale até ${await page.evaluate((d) => diaPorExtenso(d), dia(27))}`) && corpo.includes('Por enquanto, a promoção na ficha não tem custo.'), 'diz até quando vale e que, por enquanto, não tem custo');

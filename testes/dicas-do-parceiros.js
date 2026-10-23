@@ -72,12 +72,14 @@ async function pedirDica(page) {
   }), 'sem nada escondido, a dica é uma dor que o Completo resolve, uma por dia');
   await browser.close();
 
-  // ---- Completo: o Premium ----
+  // ---- Completo: o Premium e, desde 22/10/2026, a promoção na ficha (um dia cada) ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel', completo: ['a1'] }));
   await fichaCompleta(page, foto);
   await pedirDica(page);
   dica = await texto(page, '#gt-dica');
-  ok(dica.includes('Com o Premium, ') && dica.includes('Ver o Premium ›'), 'no Completo, a dica é o Premium — ' + dica);
+  ok((dica.includes('Com o Premium, ') && dica.includes('Ver o Premium ›')) || dica.startsWith('Publique uma promoção'), 'no Completo, a dica é o Premium ou a promoção na ficha — ' + dica);
+  const completo = await page.evaluate(() => [10, 11].map(d => { const x = dicaDoParceiros(minhaAcademia(), 'completo', d); return x.tipo + ':' + x.t; }));
+  ok(completo[0].startsWith('plano:') && completo[1] === 'promocao:Publique uma promoção', 'um dia o Premium, no outro publicar uma promoção — ' + completo.join(' / '));
   await browser.close();
 
   // ---- Premium sem promoção: publicar uma ----

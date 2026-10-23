@@ -773,11 +773,15 @@ ok(um(f"select count(*) from public.buscas_salvas where user_id = '{hugo}'") == 
 print("\n# Promoções")
 sql(f"delete from public.promocoes where academia_id in ('{PINHEIROS}', '{MOEMA}'); delete from public.emails_a_enviar where tipo = 'promocao';"
     f"update public.academias set plano = 'completo' where id = '{PINHEIROS}';")
-ate = um("select (public.hoje_em_brasilia() + 10)::text")
-salvar = lambda titulo, user=dono, academia=PINHEIROS, pid="null", detalhes="Na primeira aula, sem custo.", validade=None: sql(
-    f"select public.salvar_promocao('{academia}', {pid}, '{titulo}', '{detalhes}', '{validade or ate}')::text", papel="authenticated", user=user)
+# Desde 22/10/2026 (SQL 20261022120000): Completo e Premium, de 1 a 12 semanas,
+# pagas com os créditos; o e-mail é à parte (avisar_minha_promocao).
+sql("update public.leilao_config set preco_promocao_semana = 0, desconto_premium = 0.20")
+dia_br = lambda n: um(f"select (public.hoje_em_brasilia() + {n})::text")
+salvar = lambda titulo, user=dono, academia=PINHEIROS, pid="null", detalhes="Na primeira aula, sem custo.", semanas=2: sql(
+    f"select public.salvar_promocao('{academia}', {pid}, '{titulo}', '{detalhes}', {semanas})::text", papel="authenticated", user=user)
+sql(f"update public.academias set plano = 'basico' where id = '{PINHEIROS}'")
 certo, saida = salvar("Primeira aula grátis")
-ok(not certo and "plano Premium" in saida, "fora do Premium, não cria promoção")
+ok(not certo and "Completo e Premium" in saida, "no Básico, não cria promoção")
 # Desde 14/10/2026 (SQL 20261015120000), cada aviso por e-mail gasta 1 envio comprado.
 sql(f"update public.academias set plano = 'premium', envios_de_aviso = 3 where id = '{PINHEIROS}'")
 fa = jogador("Fabi Fã", f"fabi{sufixo}@exemplo.com", promocoes="true")
@@ -791,7 +795,11 @@ sql(f"insert into public.jogadores (user_id, nome, email, email_confirmado_em, p
     f"('{dono}', 'Ana Dona', 'ana{sufixo}@exemplo.com', now(), true, jsonb_build_object('favoritas', jsonb_build_array('{PINHEIROS}'))) on conflict (user_id) do update set promocoes = true, guardados = excluded.guardados")
 certo, saida = salvar("Primeira aula grátis")
 r = json.loads(saida.splitlines()[-1]) if certo else {}
-ok(certo and r.get("aviso") == "enviado" and r.get("avisados") == 1, "Premium cria a promoção e avisa quem favoritou e quer promoções — " + saida)
+ok(certo and r.get("pago") == 0 and r.get("valida_ate") == dia_br(13) and r.get("creditos") == 3 and fila("tipo = 'promocao'") == "0",
+   "Premium cria a promoção por 2 semanas (até hoje + 13), sem custo com o preço em R$ 0, e sem mandar e-mail — " + saida)
+certo, saida = sql(f"select public.avisar_minha_promocao('{r.get('id')}')::text", papel="authenticated", user=dono)
+r2 = json.loads(saida.splitlines()[-1]) if certo else {}
+ok(certo and r2.get("aviso") == "enviado" and r2.get("avisados") == 1, "mandar por e-mail avisa quem favoritou e quer promoções — " + saida)
 ok(um("select string_agg(para, ',') from public.emails_a_enviar where tipo = 'promocao'") == f"fabi{sufixo}@exemplo.com",
    "só quem favoritou, ligou promoções e confirmou o e-mail; nunca quem administra a academia")
 html = um("select html from public.emails_a_enviar where tipo = 'promocao'") or ""
@@ -806,28 +814,34 @@ ok(not certo, "o visitante não vê quantas pessoas foram avisadas")
 # Uma promoção por vez (SQL 20261016130000; eram 3).
 certo, saida = salvar("Aula dupla com desconto")
 ok(not certo and "uma promoção valendo" in saida and fila("tipo = 'promocao'") == "1", "uma promoção por vez: a segunda não entra enquanto a primeira vale")
-certo, saida = salvar("Primeira aula grátis (mudou)", pid=f"'{pid}'")
-ok(certo and um(f"select titulo from public.promocoes where id = '{pid}'") == "Primeira aula grátis (mudou)" and fila("tipo = 'promocao'") == "1",
-   "mudar a promoção não manda e-mail de novo")
+certo, saida = salvar("Primeira aula grátis (mudou)", pid=f"'{pid}'", semanas=0)
+ok(certo and um(f"select titulo || '|' || valida_ate from public.promocoes where id = '{pid}'") == f"Primeira aula grátis (mudou)|{dia_br(13)}" and fila("tipo = 'promocao'") == "1",
+   "mudar o texto (0 semanas) mantém a validade e não manda e-mail de novo")
 velha = um(f"insert into public.promocoes (academia_id, titulo, valida_ate) values ('{PINHEIROS}', 'Velha', public.hoje_em_brasilia() - 5) returning id")
 certo, saida = salvar("Velha de volta", pid=f"'{velha}'")
 ok(not certo and "uma promoção valendo" in saida, "trazer de volta uma vencida também respeita a uma por vez")
 sql(f"delete from public.promocoes where id = '{velha}'")
-certo, saida = salvar("Longa demais", validade=um("select (public.hoje_em_brasilia() + 91)::text"))
-ok(not certo and "90 dias" in saida, "vale no máximo 90 dias")
+certo, saida = salvar("Longa demais", semanas=13)
+ok(not certo and "de 1 a 12 semanas" in saida, "de 1 a 12 semanas")
+certo, saida = salvar("Longa demais", pid=f"'{pid}'", semanas=11)
+ok(not certo and "12 semanas à frente" in saida, "somar semanas: no máximo 12 semanas à frente")
+certo, saida = salvar("Sem semanas", semanas=0)
+ok(not certo and "de 1 a 12 semanas" in saida, "a nova precisa de pelo menos 1 semana")
 certo, saida = salvar("x", pid=f"'{pid}'")
 ok(not certo and "60 letras" in saida, "título curto demais é recusado")
 certo, saida = salvar("De outra academia", user=carla)
 ok(not certo and "não administra" in saida, "quem não administra a academia não cria promoção")
-lista = um(f"select count(*) || '|' || sum(avisados) from public.promocoes_da_minha_academia('{PINHEIROS}')", papel="authenticated", user=dono)
-ok(lista == "1|1", "a academia vê as suas promoções e quantos o e-mail avisou — " + str(lista))
+lista = um(f"select count(*) || '|' || sum(avisados) || '|' || max(semanas) || '|' || max(pago) from public.promocoes_da_minha_academia('{PINHEIROS}')", papel="authenticated", user=dono)
+ok(lista == "1|1|2|0", "a academia vê as suas promoções, quantos o e-mail avisou, as semanas e o pago — " + str(lista))
 ok(um(f"select count(*) from public.promocoes_da_minha_academia('{PINHEIROS}')", papel="authenticated", user=carla) == "0", "outra conta não vê as promoções da academia")
 sql(f"update public.promocoes set valida_ate = public.hoje_em_brasilia() - 1 where id = '{pid}'")
 ok(um(f"select count(*) from public.promocoes where id = '{pid}'", papel="anon") == "0", "promoção vencida sai do site")
 ok(um(f"select valendo::text from public.promocoes_da_minha_academia('{PINHEIROS}') where id = '{pid}'", papel="authenticated", user=dono) == "false",
    "e continua na lista da academia, como encerrada")
-sql(f"update public.academias set plano = 'completo' where id = '{PINHEIROS}'")
-ok(um("select count(*) from public.promocoes", papel="anon") == "0", "academia que sai do Premium: as promoções somem do site")
+sql(f"update public.promocoes set valida_ate = public.hoje_em_brasilia() + 3 where id = '{pid}'; update public.academias set plano = 'completo' where id = '{PINHEIROS}'")
+ok(um(f"select count(*) from public.promocoes where id = '{pid}'", papel="anon") == "1", "no Completo, a promoção continua no site (22/10/2026)")
+sql(f"update public.academias set plano = 'basico' where id = '{PINHEIROS}'")
+ok(um("select count(*) from public.promocoes", papel="anon") == "0", "academia que volta ao Básico: as promoções somem do site")
 sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
 certo, _ = sql(f"select public.apagar_promocao('{pid}')", papel="authenticated", user=carla)
 ok(not certo, "outra conta não apaga a promoção")
@@ -842,9 +856,40 @@ ok(um(f"select public.parar_avisos('{token}', 'promocoes')", papel="anon") == "p
 sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo in ('promocao', 'aviso_da_academia');"
     f"delete from public.avisos_das_academias where academia_id = '{PINHEIROS}';"
     f"update public.academias set plano = 'completo', envios_de_aviso = 0 where id = '{PINHEIROS}'")
-certo, saida = salvar("Aula experimental")
-ok(not certo and "plano Premium" in saida, "o Completo não publica promoção: só o Premium")
 saldo = lambda: um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'")
+# A promoção na ficha paga por semana (SQL 20261022120000): R$ 10 no Completo,
+# 20% menos no Premium; encerrar devolve as semanas que não começaram.
+sql(f"update public.leilao_config set preco_promocao_semana = 10; update public.academias set envios_de_aviso = 25 where id = '{PINHEIROS}'")
+certo, saida = salvar("Aula paga", semanas=4)
+ok(not certo and "tem R$ 25 de créditos" in saida and "menos semanas" in saida and saldo() == "25", "Completo: 4 semanas (R$ 40) não cabem em R$ 25 de créditos, e nada é cobrado")
+certo, saida = salvar("Aula paga", semanas=2)
+rp = json.loads(saida.splitlines()[-1]) if certo else {}
+ok(certo and rp.get("pago") == 20 and rp.get("creditos") == 5 and saldo() == "5"
+   and um(f"select semanas || '|' || pago || '|' || valida_ate from public.promocoes where id = '{rp.get('id')}'") == f"2|20|{dia_br(13)}",
+   "Completo publica 2 semanas: R$ 20 saem dos créditos — " + saida)
+ok(um(f"select count(*) from public.promocoes where id = '{rp.get('id')}'", papel="anon") == "1", "e a promoção do Completo aparece no site")
+certo, saida = salvar("Aula paga", pid=f"'{rp.get('id')}'", semanas=1)
+ok(not certo and "tem R$ 5 de créditos" in saida, "somar 1 semana sem créditos é recusado")
+certo, saida = salvar("Aula paga (texto novo)", pid=f"'{rp.get('id')}'", semanas=0)
+ok(certo and saldo() == "5", "mudar só o texto não custa nada")
+sql(f"select public.somar_envios('{PINHEIROS}', 10)", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+certo, saida = salvar("Aula paga (texto novo)", pid=f"'{rp.get('id')}'", semanas=1)
+ok(certo and saldo() == "5" and um(f"select semanas || '|' || pago || '|' || valida_ate from public.promocoes where id = '{rp.get('id')}'") == f"3|30|{dia_br(20)}",
+   "somar 1 semana: R$ 10, a validade anda 7 dias")
+certo, saida = sql(f"select public.apagar_promocao('{rp.get('id')}')", papel="authenticated", user=dono)
+ok(certo and saida.strip().splitlines()[-1] == "20" and saldo() == "25", "encerrar devolve as 2 semanas que ainda não começaram (R$ 20) — " + saida)
+sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
+meu = json.loads(um(f"select public.meu_leilao('{PINHEIROS}')::text", papel="authenticated", user=dono) or "{}")
+ok(meu.get("preco_promocao") == 8 and meu.get("preco_promocao_semana") == 10, "o Parceiros lê o preço da semana: R$ 10, e R$ 8 no Premium — " + str({k: meu.get(k) for k in ("preco_promocao", "preco_promocao_semana")}))
+certo, saida = salvar("Aula Premium", semanas=1)
+ok(certo and json.loads(saida.splitlines()[-1]).get("pago") == 8 and saldo() == "17", "o Premium paga 20% menos: R$ 8 a semana")
+certo, saida = sql("select public.mudar_preco_da_promocao(5)", papel="authenticated", user=dono)
+ok(not certo and "Só o admin" in saida, "só o admin muda o preço da semana")
+certo, saida = sql("select public.mudar_preco_da_promocao(-1)", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+ok(not certo and "R$ 0 a R$ 10.000" in saida, "o preço vai de R$ 0 a R$ 10.000")
+ok(um("select public.mudar_preco_da_promocao(0)", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN) == "0"
+   and um("select preco_promocao_semana from public.leilao_config") == "0", "o admin volta o preço a R$ 0")
+sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; update public.academias set plano = 'completo', envios_de_aviso = 0 where id = '{PINHEIROS}'")
 enviar = lambda titulo="Turma nova aos sábados", msg="Abrimos uma turma para iniciantes aos sábados, às 9h.", user=dono: sql(
     f"select public.enviar_aviso_da_academia('{PINHEIROS}', '{titulo}', '{msg}')::text", papel="authenticated", user=user)
 certo, saida = enviar()
@@ -904,11 +949,12 @@ sql(f"update public.academias set envios_de_aviso = 1 where id = '{PINHEIROS}'")
 # Premium: a promoção também gasta 1 envio (com desconto no preço, combinado à parte).
 sql(f"delete from public.avisos_das_academias where academia_id = '{PINHEIROS}'; delete from public.emails_a_enviar where tipo in ('promocao', 'aviso_da_academia');"
     f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
-certo, saida = sql(f"select public.salvar_promocao('{PINHEIROS}', null, 'Aula experimental', 'Grátis', '{ate}', true)::text", papel="authenticated", user=dono)
+certo, saida = salvar("Aula experimental", detalhes="Grátis")
 r6 = json.loads(saida.splitlines()[-1]) if certo else {}
-ok(certo and r6.get("aviso") == "enviado" and saldo() == "0", "Premium: a promoção avisa e gasta o último envio — " + saida)
+certo, saida = sql(f"select public.avisar_minha_promocao('{r6.get('id')}')::text", papel="authenticated", user=dono)
+ok(certo and json.loads(saida.splitlines()[-1]).get("aviso") == "enviado" and saldo() == "0", "Premium: mandar a promoção por e-mail gasta o último envio — " + saida)
 sql(f"delete from public.promocoes where id = '{r6.get('id')}'")  # uma por vez: encerra antes da outra
-certo, saida = sql(f"select public.salvar_promocao('{PINHEIROS}', null, 'Outra', 'Sem envio', '{ate}', false)::text", papel="authenticated", user=dono)
+certo, saida = salvar("Outra", detalhes="Sem envio")
 r7 = json.loads(saida.splitlines()[-1]) if certo else {}
 certo, saida = sql(f"select public.avisar_minha_promocao('{r7.get('id')}')::text", papel="authenticated", user=dono)
 ok(not certo and "não tem envios" in saida, "sem envios, avisar depois pede para comprar um pacote")
@@ -1358,10 +1404,11 @@ print("\n# Leilão das notificações")
 sql("truncate public.emails_a_enviar; delete from public.lances; update public.leilao_config set lance_minimo = 10, desconto_premium = 0.20, raio_km = 4")
 # Três academias no mesmo bairro, cada uma com o seu responsável.
 la = dono
-sql(f"update public.academias set plano = 'completo', envios_de_aviso = 100, bairro = 'Pinheiros', cidade = 'São Paulo', status = 'published', pausada = false where id = '{PINHEIROS}'")
+# Desde 22/10/2026 (SQL 20261022120000), o leilão é só do Premium, sem desconto.
+sql(f"update public.academias set plano = 'premium', envios_de_aviso = 100, bairro = 'Pinheiros', cidade = 'São Paulo', status = 'published', pausada = false where id = '{PINHEIROS}'")
 lat, lng = um(f"select lat || ',' || lng from public.academias where id = '{PINHEIROS}'").split(",")
 outras = []
-for i, (nome, plano, saldo) in enumerate([("Academia Leilão B", "premium", 100), ("Academia Leilão C", "completo", 5), ("Academia Leilão D", "basico", 100)]):
+for i, (nome, plano, saldo) in enumerate([("Academia Leilão B", "premium", 100), ("Academia Leilão C", "premium", 5), ("Academia Leilão D", "completo", 100)]):
     aid = um(f"insert into public.academias (name, bairro, cidade, lat, lng, status, plano, envios_de_aviso, phone) values "
              f"('{nome}', 'Pinheiros', 'São Paulo', {float(lat) + 0.002 * (i + 1)}, {lng}, 'published', '{plano}', {saldo}, '1197777000{i}') returning id")
     resp = parceiro(f"Resp {i}", f"resp{i}{sufixo}@exemplo.com", aid)
@@ -1374,7 +1421,10 @@ ok(um(f"select public.meu_leilao('{PINHEIROS}')::text", papel="authenticated", u
 lance = lambda user, aid, valor, msg="Para quem nunca fez aula aqui, de segunda a sexta até as 17h.": sql(
     f"select public.dar_lance('{aid}', 'Primeira aula grátis', '{msg}', {valor})::text", papel="authenticated", user=user)
 certo, saida = lance(d_resp, d_id, 20)
-ok(not certo and "Completo e do Premium" in saida, "o Básico não entra no leilão")
+ok(not certo and "plano Premium" in saida, "o Completo não entra no leilão: só o Premium")
+sql(f"update public.academias set plano = 'basico' where id = '{d_id}'")
+certo, saida = lance(d_resp, d_id, 20)
+ok(not certo and "plano Premium" in saida, "nem o Básico")
 certo, saida = lance(la, PINHEIROS, 5)
 ok(not certo and "lance mínimo é de R$ 10" in saida, "lance abaixo do mínimo é recusado")
 certo, saida = lance(c_resp, c_id, 20)
@@ -1382,7 +1432,7 @@ ok(not certo and "tem R$ 5 de créditos" in saida, "lance maior que os créditos
 certo, saida = lance(la, PINHEIROS, 30, "Curta.")
 ok(not certo and "10 a 500" in saida, "mensagem curta é recusada")
 certo, saida = lance(la, PINHEIROS, 30)
-ok(certo and json.loads(saida.splitlines()[-1]).get("valor") == 30, "Completo dá o lance de R$ 30")
+ok(certo and json.loads(saida.splitlines()[-1]).get("valor") == 30, "Premium dá o lance de R$ 30")
 certo, saida = lance(la, PINHEIROS, 25)
 ok(certo and um(f"select count(*) || '|' || max(valor) from public.lances where academia_id = '{PINHEIROS}'") == "1|25", "um lance por semana: dar outro muda o mesmo")
 lance(b_resp, b_id, 20, "Curta mas ok.")
@@ -1410,8 +1460,8 @@ ok(res[PINHEIROS][0] == "ganhou" and res[PINHEIROS][1] == "1" and res[b_id][0] =
 preco_a = int(res[PINHEIROS][2]); preco_b = int(res[b_id][2])
 import math
 esperado_a = min(25, max(10, math.ceil(20 * q[b_id] / q[PINHEIROS]) + 1))
-esperado_b = max(1, math.floor(min(20, max(10, math.ceil(12 * q[c_id] / q[b_id]) + 1)) * 0.8))
-ok(preco_a == esperado_a and preco_b == esperado_b, f"cada um paga o necessário para passar o seguinte + R$ 1, no máximo o lance; o Premium paga 20% menos — A {preco_a} (esperado {esperado_a}), B {preco_b} (esperado {esperado_b})")
+esperado_b = min(20, max(10, math.ceil(12 * q[c_id] / q[b_id]) + 1))
+ok(preco_a == esperado_a and preco_b == esperado_b, f"cada um paga o necessário para passar o seguinte + R$ 1, no máximo o lance, sem desconto (só o Premium entra) — A {preco_a} (esperado {esperado_a}), B {preco_b} (esperado {esperado_b})")
 ok(um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == str(100 - preco_a) and um(f"select envios_de_aviso from public.academias where id = '{c_id}'") == "20",
    "quem ganhou paga dos créditos; quem perdeu não paga")
 envio1, envio2 = um(f"select (envio_em at time zone 'America/Sao_Paulo')::text from public.lances where academia_id = '{PINHEIROS}'"), um(f"select (envio_em at time zone 'America/Sao_Paulo')::text from public.lances where academia_id = '{b_id}'")
@@ -1452,6 +1502,12 @@ sql("update public.leilao_config set lance_minimo = 10; delete from public.lance
 ok(um(f"select public.cancelar_lance('{PINHEIROS}')::text", papel="authenticated", user=la) == "false", "cancelar sem lance aberto não faz nada")
 lance(la, PINHEIROS, 20)
 ok(um(f"select public.cancelar_lance('{PINHEIROS}')::text", papel="authenticated", user=la) == "true" and um(f"select count(*) from public.lances where situacao = 'aberto'") == "0", "a academia cancela o próprio lance antes de fechar")
+lance(la, PINHEIROS, 20)
+saldo_antes = um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'")
+sql(f"update public.academias set plano = 'completo' where id = '{PINHEIROS}'")
+um(f"select public.fechar_leiloes('{fecha}'::timestamptz + interval '1 minute')")
+ok(um(f"select situacao from public.lances where academia_id = '{PINHEIROS}'") == "cancelado" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == saldo_antes,
+   "quem sai do Premium antes de fechar sai do leilão, sem pagar")
 sql(f"delete from public.lances; delete from public.academias where id in ('{b_id}', '{c_id}', '{d_id}'); truncate public.emails_a_enviar")
 
 # 32. Plano e créditos pelo site (SQL 20261019130000) ------------------------------

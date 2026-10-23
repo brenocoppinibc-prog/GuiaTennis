@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 21/10/2026
+**Atualizado em:** 23/10/2026
 
 > **Estado (21/10/2026):** o Breno trocou de chat: leia o "Resumo (21/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -47,7 +47,11 @@ teste")
 > 145**, o salvamento quase imediato ("Rascunho salvo") e o aviso antes de
 > sair com algo preenchido, no site todo; **regra 146**, o cabeçalho do
 > leilão só na primeira e na última etapa e a compra de créditos numa
-> página de pagamento (`/parceiros/creditos`).
+> página de pagamento (`/parceiros/creditos`). Em 23/10: **regra 147**, a
+> promoção na ficha paga por semana com os créditos, no Completo (preço
+> cheio) e no Premium (20% menos), e o leilão só do Premium (SQL
+> `20261022120000_promocao_paga_e_leilao_premium`; o preço começa em R$ 0,
+> o admin muda em Leilões).
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3409,6 +3413,44 @@ cobra taxa e não fica no meio** da negociação.
     com o anúncio. A compra do plano continua na página Plano. Testes:
     `plano-e-creditos.js` (a compra reescrita para a página),
     `promocoes-por-email.js` e `pagamento.mjs` (a volta do cartão).
+147. **A promoção na ficha paga por semana, no Completo e no Premium, e o
+    leilão só do Premium** (pedido de 22/10/2026: "eu quero cobrar para ter
+    promoção na ficha tbm" e "completo tbm pode ter promoção mas não tem
+    desconto nessa parte pagar mais doq o Premium e completo não pode ter
+    acesso ao leilão somente Premium"; nas perguntas: os créditos do site
+    valem para o leilão e para a ficha, "um valor único por semana", o
+    preço "não sei ainda" e o Completo ainda sem lances). Como o Destaque
+    da OLX e o "Turbinar" do Instagram: (1) **Na ficha** (Promoções › Na
+    ficha, `pcPromocoes`): Completo e Premium (`promocoes_liberadas`); o
+    Básico vê "Disponível no plano Completo". Uma por vez, com "Por quanto
+    tempo" em chips (1, 2, 4 de saída, 8 e 12 semanas, `PROMO_SEMANAS`),
+    "Vale até <dia>" e o preço (`precoNaPromocao`): por semana (no Premium,
+    com a etiqueta "20% menos no Premium"), o total, os créditos com
+    "Comprar" e o que falta; no Completo, "No Premium, a semana sai por R$
+    X (20% menos). Ver os planos ›". Com o preço em R$ 0: "Por enquanto, a
+    promoção na ficha não tem custo.". A prévia mostra a duração e o custo,
+    e o botão diz o valor ("Publicar promoção · R$ 20"); sem créditos, trava
+    com "Comprar créditos ›" (a página de pagamento volta "à promoção", com
+    o que foi escrito). Alterar: o texto é de graça e dá para somar semanas
+    ("Não somar" de saída), até 12 semanas à frente. Encerrar devolve as
+    semanas que ainda não começaram ("R$ 10 voltaram para os créditos").
+    "Mandar por e-mail" só no Premium. (2) **Leilão**: só o Premium; o
+    Completo e o Básico veem "Disponível no plano Premium" (`dar_lance` e
+    `fechar_leiloes` também conferem); o desconto do Premium saiu do leilão
+    (só o Premium entra) e foi para a semana da promoção na ficha. (3)
+    **Créditos**: "Créditos de promoções", para a ficha e o leilão (o
+    checkout, o admin e a descrição do Mercado Pago). (4) **Admin › Leilões**:
+    "Promoção na ficha · preço da semana" (`mudar_preco_da_promocao`, de R$
+    0 a R$ 10.000; mostra quanto paga cada plano). (5) Planos, Ajuda, chat,
+    dicas (no Completo, um dia o Premium, no outro "Publique uma
+    promoção"), o que muda ao baixar o plano e os Termos acompanham. SQL
+    `20261022120000_promocao_paga_e_leilao_premium` (`preco_promocao_semana`
+    em `leilao_config`, `semanas` e `pago` em `promocoes`,
+    `preco_da_promocao`, `salvar_promocao(p_academia, p_id, p_titulo,
+    p_detalhes, p_semanas)` cobra com `mexer_creditos`, `apagar_promocao`
+    devolve e diz quanto). Testes: `promocoes.js` (reescrito, com o preço),
+    `promocoes-por-email.js`, `plano-e-creditos.js`, `aviso-ao-sair.js`,
+    `dicas-do-parceiros.js`, `chat-parceiros.js` e `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

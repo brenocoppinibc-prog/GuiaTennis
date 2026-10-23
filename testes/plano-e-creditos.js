@@ -39,7 +39,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await browser.close();
 
   // ---- Créditos: uma página própria, com o caminho até o pagamento (22/10/2026) ----
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'] }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'] }));
   const chamadas = [];
   let resposta = (corpo) => ({ status: 200, body: { forma: 'pix', valor: 100, qr: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', copia: '00020101PIXCOPIA', expira: new Date(Date.now() + 1800000).toISOString() } });
   await page.route('**/.netlify/functions/pagamento', async (rota) => {
@@ -100,7 +100,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await browser.close();
 
   // ---- Do lance para a compra e de volta: o leilão continua onde estava ----
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'] }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'] }));
   await page.evaluate(async () => { window.__alcance = 143; await carregarPromocoesPorEmail(); });
   await page.waitForTimeout(300);
   await page.evaluate(() => { state.pcLeilaoPasso = 3; state.pcEmailForm = { titulo: 'Aula grátis', mensagem: 'Para quem nunca jogou aqui.', valor: '30' }; render(); });
@@ -123,7 +123,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await browser.close();
 
   // ---- Sem o Mercado Pago ligado: o WhatsApp ----
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'] }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'] }));
   await page.route('**/.netlify/functions/pagamento', r => r.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ erro: 'desligado' }) }));
   await page.waitForTimeout(400);
   await page.click('#pc-comprar-creditos');
@@ -131,7 +131,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#pc-compra');
-  ok(corpo.includes('A compra pelo site ainda não está ligada') && decodeURIComponent(await page.getAttribute('#pc-compra a', 'href')).includes('comprar créditos para o leilão'), 'sem o Mercado Pago ligado, oferece a compra pelo WhatsApp');
+  ok(corpo.includes('A compra pelo site ainda não está ligada') && decodeURIComponent(await page.getAttribute('#pc-compra a', 'href')).includes('comprar créditos de promoções'), 'sem o Mercado Pago ligado, oferece a compra pelo WhatsApp');
   await browser.close();
 
   // ---- Pagamento de teste (regra 118): o plano pago no gateway fingido ----
@@ -168,7 +168,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await browser.close();
 
   // ---- Pagamento de teste: créditos no cartão (OTHE recusa, APRO aprova) e o Pix vencido ----
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'], host: PREVIA, pagamentoDeTeste: true }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'], host: PREVIA, pagamentoDeTeste: true }));
   await desligada(page, 404);
   await page.waitForTimeout(500);
   await page.click('#pc-comprar-creditos');
@@ -227,7 +227,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await browser.close();
 
   // ---- Prévia com o interruptor desligado: o WhatsApp, como antes ----
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'], host: PREVIA }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'], host: PREVIA }));
   await desligada(page);
   await page.waitForTimeout(400);
   ok((await texto(page, '#parceiros .pc-main')) && !(await texto(page, '#parceiros .pc-main')).includes('preço de teste'), 'interruptor desligado: sem preço de teste');

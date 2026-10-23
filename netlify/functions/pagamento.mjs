@@ -1,4 +1,4 @@
-// Compra de créditos do leilão pelo próprio site (pedido do Breno em
+// Compra de créditos de promoções (a semana da promoção na ficha e o leilão) pelo próprio site (pedido do Breno em
 // 19/10/2026: "eu quero que as academias possam comprar direto no site a
 // quantidade de créditos"). O gateway é o Mercado Pago: Pix com o QR code
 // na própria tela (como o "checkout transparente") e cartão na página do
@@ -80,7 +80,7 @@ async function cobrar(req, compraId) {
   const plano = c.tipo === "plano";
   const descricao = plano
     ? `Plano ${c.plano === "premium" ? "Premium" : "Completo"} ${c.periodo === "anual" ? "anual" : "mensal"} GuiaTennis · ${c.academia}`
-    : `Créditos do leilão GuiaTennis · ${c.academia}`;
+    : `Créditos de promoções GuiaTennis · ${c.academia}`;
   if (c.forma === "pix") {
     const expira = new Date(Date.now() + 30 * 60 * 1000).toISOString().replace("Z", "-00:00");
     const p = await mp("/v1/payments", {

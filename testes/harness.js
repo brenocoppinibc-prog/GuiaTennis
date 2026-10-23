@@ -35,6 +35,7 @@ async function abrir(opts = {}) {
     if (o.premium) window.__premium = o.premium;
     if (o.completo) window.__completo = o.completo;
     if (o.envios) window.__envios = o.envios;
+    if (o.precoPromocao) window.__precoPromocao = o.precoPromocao;
     if (o.conversas) window.__conversasIniciais = o.conversas;
     if (o.semConversas) window.__semConversas = true;
     if (o.falhas) window.__falhasIniciais = o.falhas;

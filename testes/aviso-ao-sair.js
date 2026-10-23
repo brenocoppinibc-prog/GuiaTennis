@@ -11,7 +11,7 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
 
 (async () => {
   // ---- Leilão: "Rascunho salvo", trocar de aba, voltar e recarregar ----
-  let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel', completo: ['a1'] });
+  let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel', premium: ['a1'] });
   await page.waitForTimeout(400);
   await page.evaluate(() => { window.__alcance = 143; window.__db.academias.find(a => a.id === 'a1').envios_de_aviso = 100; irParceiros('promocoes-email'); });
   await page.waitForTimeout(300);
@@ -51,7 +51,7 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await browser.close();
 
   // Recarregar a página no meio: o anúncio e a etapa voltam.
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'] }));
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'] }));
   await page.evaluate(async () => { window.__alcance = 143; await carregarPromocoesPorEmail(); });
   await page.waitForTimeout(200);
   await page.click('#pc-leilao-continuar');
@@ -75,6 +75,9 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await page.fill('#pc-promo-titulo', 'Aula experimental');
   await page.waitForTimeout(400);
   ok((await texto(page, '.pc-promo-form .rascunho-salvo')) === 'Rascunho salvo', 'na promoção, "Rascunho salvo" no fim do formulário');
+  await page.click('[data-promo-semanas="8"]');
+  await page.waitForTimeout(400);
+  ok(await page.evaluate(() => JSON.parse(sessionStorage.getItem('guiatennis_rascunho_v1')).e.pcPromoForm.semanas === 8) && (await page.inputValue('#pc-promo-titulo')) === 'Aula experimental', 'as semanas escolhidas também vão para o rascunho');
   await page.click('.pc-promo-partes [data-pc="promocoes-email"]');
   await page.waitForTimeout(200);
   ok((await texto(page, '#aviso-sair')).includes('O que você preencheu na promoção ainda não foi salvo'), 'sair da promoção escrita pergunta');

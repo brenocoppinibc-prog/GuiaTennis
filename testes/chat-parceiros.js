@@ -43,7 +43,7 @@ async function abrirOChat(page) {
   ok(u.texto.includes('Aparece no Completo e no Premium; a Só Aula Tennis está no Básico'), 'tocar na parte responde pelo plano da academia — ' + u.texto);
   await escrever(page, 'quero fazer uma promoção');
   u = await ultima(page);
-  ok(u.texto.startsWith('As promoções são do Completo (por e-mail) e do Premium (também na ficha); a Só Aula Tennis está no Básico') && u.ir.join() === 'pc:plano', 'promoção no Básico: diz os planos de cada parte e leva ao plano');
+  ok(u.texto.startsWith('As promoções na ficha são do Completo e do Premium, e o leilão por e-mail, do Premium; a Só Aula Tennis está no Básico') && u.ir.join() === 'pc:plano', 'promoção no Básico: diz os planos de cada parte e leva ao plano');
   await escrever(page, 'quanto custa o premium');
   u = await ultima(page);
   ok(u.texto.startsWith('A Só Aula Tennis está no Básico. O Básico é grátis'), 'planos: começa pelo plano de agora — ' + u.texto.slice(0, 60));

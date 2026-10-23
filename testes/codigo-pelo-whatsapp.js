@@ -2,7 +2,7 @@
 // conflitos de acesso com a academia". Na disputa, o código sai sozinho pela
 // API oficial do WhatsApp (SQL 20261007140000), como o código por telefone do
 // Google Business Profile; desligado, o admin gera e manda, como antes.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, contestar } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.innerText || '', sel);
 
@@ -27,7 +27,7 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   // ---- contestar manda o código na hora; quem digita vence ----
   let { browser, page } = await abrir({ academia: 'a2', q: 'parceiros/academias' });
   await disputaPronta(page);
-  await page.click('[data-contestar="a3"]');
+  await contestar(page, 'a3');
   await page.waitForTimeout(500);
   let cartao = await texto(page, '#parceiros .pc-pedido');
   let r = await page.evaluate(() => ({ zap: window.__whatsapps || [], campo: !!document.querySelector('[data-pedido-codigo="a3"]'), outro: !!document.querySelector('[data-outro-codigo="a3"]') }));
@@ -53,7 +53,7 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   // ---- sem o e-mail confirmado: o código espera ----
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/academias' }));
   await disputaPronta(page, { confirmado: false });
-  await page.click('[data-contestar="a3"]');
+  await contestar(page, 'a3');
   await page.waitForTimeout(500);
   cartao = await texto(page, '#parceiros .pc-pedido');
   ok(cartao.includes('Confirme o seu e-mail: confirmado, o GuiaTennis manda o código de 6 números para o WhatsApp da academia') && !(await page.$('[data-pedido-codigo="a3"]')) && !(await page.evaluate(() => (window.__whatsapps || []).length)),
@@ -64,7 +64,7 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/academias' }));
   await disputaPronta(page);
   await page.evaluate(() => { window.__whatsappLigado = false; });
-  await page.click('[data-contestar="a3"]');
+  await contestar(page, 'a3');
   await page.waitForTimeout(500);
   cartao = await texto(page, '#parceiros .pc-pedido');
   ok(cartao.includes('O GuiaTennis manda um código de 6 números para o WhatsApp da academia em até 1 dia útil.') && cartao.includes('O GuiaTennis manda o código em até 1 dia útil.') && !(await page.$('[data-outro-codigo="a3"]')),
@@ -75,7 +75,7 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/academias' }));
   await disputaPronta(page);
   await page.evaluate(() => { window.__semCodigoPeloWhatsapp = true; });
-  await page.click('[data-contestar="a3"]');
+  await contestar(page, 'a3');
   await page.waitForTimeout(500);
   cartao = await texto(page, '#parceiros .pc-pedido');
   ok(cartao.toLowerCase().includes('em disputa') && !(await page.$('#parceiros .pc-pedido .form-error')), 'banco sem o SQL novo: contestar continua, sem erro');

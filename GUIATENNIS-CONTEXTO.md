@@ -30,8 +30,9 @@ teste")
 > conferência marcada): **regra 150**, nenhum "Rascunho salvo" na tela (o
 > rascunho segue guardado calado); seção 56 do PR, passo 82. Depois,
 > **regra 151**, a patrocinada também no lugar dela na lista, sem
-> "Patrocinado" (seção 57, passo 83). Testes:
-> bateria completa com **1.735 verificações** (depois da regra 151) nos 61 arquivos do
+> "Patrocinado" (seção 57, passo 83); **regra 152**, contestar numa
+> página própria, passo a passo (seção 58, passo 84). Testes:
+> bateria completa com **1.753 verificações** (depois da regra 152) nos 62 arquivos do
 > navegador, mais `onde.mjs` e `pagamento.mjs`, e 467 no
 > `banco-emails.py`, nenhuma falha. Nenhum SQL novo.
 
@@ -3555,6 +3556,43 @@ cobra taxa e não fica no meio** da negociação.
     academias?" e o chat (as duas respostas do "Patrocinado") acompanham;
     Privacidade não muda. Só no site, sem SQL. Teste:
     `premium-patrocinado.js`.
+152. **Contestar numa página própria, passo a passo** (pedido de 23/10/2026,
+    com o print do cartão "Pedido enviado ao responsável": "abra uma página
+    nova para contestar e explique como funciona somente nessa página com
+    passo a passo de ler e prosseguir"). Como o "Solicitar propriedade" do
+    Perfil da Empresa no Google e a recuperação de conta da Meta: uma ideia
+    por tela, com "Continuar". (1) **Cartão do pedido**: fica só "A academia
+    é sua e você não conhece quem administra, ou ele saiu da academia?
+    Contestar ›" (link `/parceiros/contestar?academia=<idCurto>`); saiu o
+    "Na disputa, o GuiaTennis manda um código…". (2) **Página**
+    `/parceiros/contestar` (`pcContestar`, aba privada "contestar", estado
+    `state.pcContestar` = { academia, passo, volta, enviando }): sem o menu
+    nem o rodapé, a marca e o ✕ (`pcTopoContestar`), "‹ Voltar" (uma tela
+    para trás; na primeira, sai), a trilha de tênis (`trilhaTenis`) com
+    `CONTESTAR_PASSOS` (Quando contestar · O código · O que muda ·
+    Contestar), "CONTESTAR · <academia>", um ícone, o título e o texto:
+    1) "A academia é sua e outra pessoa administra?" e a dica de pedir a
+    quem administra; 2) "O código vai para o WhatsApp da academia" (6
+    números, pela conta do GuiaTennis no WhatsApp, em até 1 dia útil, "depois
+    que você confirmar o seu e-mail" se falta; o WhatsApp de antes de a
+    pessoa de hoje assumir, por isso o número não aparece); 3) "Quem digitar
+    o código passa a ser o responsável" (o código no cartão do pedido e o
+    "pedir outro", o que passa a administrar, quem administra sai e a conta
+    dela continua, a ficha segue no ar); 4) "Contestar quem administra a
+    <academia>?" (o pedido vai para o GuiaTennis; sem como receber o código,
+    o documento e "Fale com o GuiaTennis ›"), com "Contestar quem
+    administra" e "Agora não". Só a última tela chama `contestar_academia`;
+    deu certo, volta para onde estava (Suas academias, o painel sem academia
+    ou "Adicionar outra academia", `abaDaVoltaDoContestar`) com "Disputa
+    aberta. O código vai para o WhatsApp da academia." e o cartão "Em
+    disputa"; erro fica na página. Aberta pelo link (ou recarregada), começa
+    da primeira tela; pedido já em disputa: "A disputa da <academia> já está
+    aberta"; sem pedido: "Não há pedido para contestar". A dica do alto do
+    Parceiros não aparece nela. Ajuda e chat dizem que "uma página explica a
+    disputa passo a passo". Termos e Privacidade não mudam (o que dizem da
+    disputa continua igual). Só no site, sem SQL. Testes:
+    `contestar-passo-a-passo.js` (novo), `codigo-so-em-disputa.js` e
+    `codigo-pelo-whatsapp.js` (pelo `contestar` do `harness.js`).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4819,7 +4857,13 @@ as 133 do `banco-acesso.py` no banco e login locais.
   para o WhatsApp de antes, "Mandar outro código" pede para esperar, quem
   digita vence; sem e-mail confirmado, espera; desligado e banco sem o SQL,
   como antes; admin manda pelo WhatsApp do GuiaTennis, vê se saiu ou o
-  erro (e gera à mão), e a situação em E-mails; Ajuda e Política.
+  erro (e gera à mão), e a situação em E-mails; Ajuda e Política. Desde a
+  regra 152, contesta pela página (`contestar` do `harness.js`).
+- `contestar-passo-a-passo.js` — regra 152: o cartão só com "Contestar ›",
+  a página `/parceiros/contestar` sem menu, as quatro telas com
+  "Continuar" e "Voltar", ler sem contestar, "Agora não" e o ✕, contestar
+  e voltar com "Em disputa", o link direto, a disputa já aberta, sem
+  pedido e sem o e-mail confirmado.
 - `receber-email.mjs` — regra 67, roda sozinho, sem internet: `node
   testes/receber-email.mjs`. Assinatura do webhook (certa, errada, velha,
   corpo mexido), encaminha para o Gmail com o nome de quem escreveu, o

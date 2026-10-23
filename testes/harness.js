@@ -125,4 +125,16 @@ async function abasAbertas(page) {
   return page.evaluate(() => window.__abas || []);
 }
 
-module.exports = { abrir, ok, irParte, irSenha, salvarFicha, vigiarAbas, abasAbertas };
+// Contestar (23/10/2026): o "Contestar ›" do cartão abre a página da disputa,
+// lida passo a passo; contestar segue os "Continuar" até o fim e confirma.
+async function contestar(page, academia) {
+  await page.click(`[data-contestar="${academia}"]`);
+  await page.waitForTimeout(200);
+  for (let k = 0; k < 6 && await page.$('#pc-contestar-continuar'); k++) {
+    await page.click('#pc-contestar-continuar');
+    await page.waitForTimeout(80);
+  }
+  await page.click('#pc-contestar-enviar');
+}
+
+module.exports = { abrir, ok, irParte, irSenha, salvarFicha, vigiarAbas, abasAbertas, contestar };

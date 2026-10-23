@@ -2,7 +2,7 @@
 // disputa, para novas não". Academia do guia sem responsável passa a ser da
 // conta na hora; o código no WhatsApp da academia só na disputa; o selo de
 // confirmada ao lado do nome; "No ar" por 1 dia.
-const { abrir, ok, irSenha } = require('./harness');
+const { abrir, ok, irSenha, contestar } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.innerText || '', sel);
 const diasAtras = (n) => new Date(Date.now() - n * 86400000).toISOString();
@@ -51,9 +51,9 @@ async function pedirPelaTela(page, busca, id) {
   // ---- academia com responsável: o pedido vai para ele; dá para contestar ----
   await pedirPelaTela(page, 'terceira', 'a3');
   let cartao = await texto(page, '#parceiros .pc-pedido');
-  ok(cartao.toLowerCase().includes('pedido enviado ao responsável') && cartao.includes('Tênis Terceira') && await page.isVisible('[data-contestar="a3"]') && cartao.includes('quem digitar passa a ser o responsável'),
-    'com responsável: o pedido vai para ele, com "Contestar" e o aviso do código na disputa — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
-  await page.click('[data-contestar="a3"]');
+  ok(cartao.toLowerCase().includes('pedido enviado ao responsável') && cartao.includes('Tênis Terceira') && await page.isVisible('[data-contestar="a3"]') && !cartao.includes('Na disputa'),
+    'com responsável: o pedido vai para ele, com "Contestar" (a explicação da disputa fica na página dela, 23/10/2026) — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
+  await contestar(page, 'a3');
   await page.waitForTimeout(500);
   cartao = await texto(page, '#parceiros .pc-pedido');
   r = await page.evaluate(() => ({
@@ -88,9 +88,9 @@ async function pedirPelaTela(page, busca, id) {
     await loadEverything(); render();
   });
   await pedirPelaTela(page, 'terceira', 'a3');
-  await page.click('[data-contestar="a3"]');
+  await contestar(page, 'a3');
   await page.waitForTimeout(400);
-  ok((await texto(page, '#parceiros .pc-pedido .form-error')).includes('Fale com o GuiaTennis no WhatsApp'), 'banco sem o SQL novo: contestar manda falar com o GuiaTennis');
+  ok((await texto(page, '#pc-contestar .form-error')).includes('Fale com o GuiaTennis no WhatsApp'), 'banco sem o SQL novo: contestar manda falar com o GuiaTennis, na página da disputa');
   await browser.close();
 
   // ---- sem o e-mail confirmado: espera; confirmou, a academia é dela ----

@@ -94,7 +94,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
     'a prévia do e-mail do GuiaTennis do bairro muda enquanto se digita, com "Patrocinado" — ' + previa.slice(0, 90));
   await seguir();
   corpo = await texto(page, '#pc-leilao-passo');
-  ok(await passo() === '3' && /^Etapa 4 de 5 · Lance\s+(Rascunho salvo\s+)?Lance máximo/.test(corpo) && corpo.includes('Lance máximo (R$)') && corpo.includes('É o teto, não o preço. Você nunca paga mais que o lance máximo.') && corpo.includes('se ninguém mais der lance, paga o mínimo, R$ 10') && corpo.includes('Se não ganhar, nada é cobrado.'),
+  ok(await passo() === '3' && /^Etapa 4 de 5 · Lance\s+Lance máximo/.test(corpo) && corpo.includes('Lance máximo (R$)') && corpo.includes('É o teto, não o preço. Você nunca paga mais que o lance máximo.') && corpo.includes('se ninguém mais der lance, paga o mínimo, R$ 10') && corpo.includes('Se não ganhar, nada é cobrado.'),
     'quarta etapa: o lance máximo explicado como teto, não preço (22/10/2026: "especifique melhor isso")');
   await page.fill('#pc-email-valor', '85');
   await page.waitForTimeout(100);
@@ -115,7 +115,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.waitForTimeout(150);
   await seguir();
   corpo = await texto(page, '#pc-leilao-passo');
-  ok(await passo() === '4' && /^Etapa 5 de 5 · Revisão\s+(Rascunho salvo\s+)?Revisão do anúncio/.test(corpo) && /Lance máximo\s+R\$ 25/.test(corpo) && corpo.includes('Nada é cobrado agora') && await page.$('#pc-email-previa') && /Créditos\s+R\$ 100\s+Comprar créditos/.test(await texto(page, '#pc-leilao')),
+  ok(await passo() === '4' && /^Etapa 5 de 5 · Revisão\s+Revisão do anúncio/.test(corpo) && /Lance máximo\s+R\$ 25/.test(corpo) && corpo.includes('Nada é cobrado agora') && await page.$('#pc-email-previa') && /Créditos\s+R\$ 100\s+Comprar créditos/.test(await texto(page, '#pc-leilao')),
     'quinta etapa: a revisão com a prévia, o lance máximo e "Nada é cobrado agora"');
   ok(!(await page.isDisabled('#pc-email-enviar')) && (await texto(page, '#pc-email-enviar')) === 'Entrar com lance de até R$ 25', 'o botão diz o que acontece: "Entrar com lance de até R$ 25"');
   await page.click('#pc-email-enviar');

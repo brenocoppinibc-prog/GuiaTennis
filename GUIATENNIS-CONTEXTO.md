@@ -26,6 +26,12 @@ teste")
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
+> Depois, no chat novo (PR #5 acompanhado de novo, com inscrição e
+> conferência marcada): **regra 150**, nenhum "Rascunho salvo" na tela (o
+> rascunho segue guardado calado); seção 56 do PR, passo 82. Testes:
+> bateria completa com **1.730 verificações** nos 61 arquivos do
+> navegador, mais `onde.mjs` e `pagamento.mjs`, e 467 no
+> `banco-emails.py`, nenhuma falha. Nenhum SQL novo.
 
 > **Estado (21/10/2026):** o Breno trocou de chat: leia o "Resumo (21/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3373,10 +3379,9 @@ cobra taxa e não fica no meio** da negociação.
     aviso de que a academia fechou, as anotações do "Me ajude a decidir" e
     as estrelas da avaliação), que volta depois de o link reabrir a tela
     (`restaurarRascunhoDoEstado`), e o "Faça seu cadastro" (`__visitante`;
-    antes, o erro apagava o nome digitado). (2) **"Rascunho salvo"**
-    (`mostrarRascunhoSalvo`, a cada gravação e a cada render): ao lado da
-    parte do cadastro e da etapa do leilão (`[data-rascunho-aqui]`) ou no
-    fim do formulário. (3) **Aviso** (`pendenciaDeSalvar`): conta o que
+    antes, o erro apagava o nome digitado). (2) ~~"Rascunho salvo"~~ na
+    tela: saiu em 23/10/2026 (regra 150); o rascunho é guardado calado.
+    (3) **Aviso** (`pendenciaDeSalvar`): conta o que
     está nas partes marcadas com `data-aviso-sair="<onde>"` (avaliação,
     resposta, criar conta e Minha conta do jogador, "Faça seu cadastro",
     viagem, preferências, cadastro e Perfil do Parceiros, pessoa nova,
@@ -3513,6 +3518,17 @@ cobra taxa e não fica no meio** da negociação.
     criar a conta ou entrar, as chamadas da aba vão para a conta
     (`levarParaAConta`) e saem da aba. Com conta, do Parceiros ou admin,
     nada muda. Privacidade explica a aba. Teste: `convite-chamadas.js`.
+150. **Nenhum "Rascunho salvo" na tela** (pedido de 23/10/2026: "não quero
+    que apareça rascunho salvo em nenhum lugar"). Como o Airbnb (o anúncio
+    que está sendo criado) e o Booking (a reserva começada), que guardam
+    sem avisar: o rascunho da aba (regra 145, `guardarRascunho` 0,25 s
+    depois de digitar, `RASCUNHO_ESTADO`, `restaurarRascunho`) continua
+    igual, calado. Saíram `mostrarRascunhoSalvo`, o `.rascunho-salvo` e o
+    `[data-rascunho-aqui]` (a parte do cadastro e a etapa do leilão voltaram
+    a ser só o texto). O "Sair sem salvar?" fica como estava. Não colocar
+    de volta nenhum aviso de rascunho (nem "Salvo", nem o ícone). Termos e
+    Privacidade não mudam. Testes: `aviso-ao-sair.js` (`semRascunhoNaTela`
+    em cada formulário) e `promocoes-por-email.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

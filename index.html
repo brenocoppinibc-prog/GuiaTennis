@@ -1941,10 +1941,6 @@
   .conta-excluir-r { margin: 12px 0 4px !important; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .conta-excluir-ok { margin-top: 14px; }
   .reg-sair-sim:disabled { opacity: 0.45; cursor: not-allowed; }
-  /* "Rascunho salvo" (22/10/2026), como o do Gmail. */
-  .rascunho-salvo { display: inline-flex; align-items: center; gap: 4px; margin: 0; font-size: 12.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
-  p.rascunho-salvo { display: flex; margin-top: 10px; }
-  [data-rascunho-aqui] { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
   #aviso-sair { z-index: 120; }
   .reg-plano-ok { margin: 14px 0; padding: 14px; border-radius: 14px; background: var(--green-soft); text-align: left; }
   .reg-plano-ok p { margin: 0 0 10px; font-size: 14px; }
@@ -10556,7 +10552,7 @@ function passoDoLeilao(c, L) {
       ${resultado}
       <div class="pc-card pc-email-form pc-leilao-passo" id="pc-leilao-passo" data-passo="${i}">
         ${avisoDoLeilao()}
-        <p class="pc-ads-etapa" data-rascunho-aqui><span>Etapa ${i + 1} de ${LEILAO_PASSOS.length} · ${LEILAO_PASSOS[i]}</span></p>
+        <p class="pc-ads-etapa">Etapa ${i + 1} de ${LEILAO_PASSOS.length} · ${LEILAO_PASSOS[i]}</p>
         <p class="pc-card-t">${titulo}</p>
         ${corpo}
         ${aberto && state.pcEmailEditando ? `<button type="button" class="inline-link" id="pc-email-desistir" style="margin-top:14px">Manter o lance de antes</button>` : ""}
@@ -18424,7 +18420,7 @@ function renderRegisterSheet() {
       <div class="sheet"><div class="sheet-content reg-passos-tela">
         <button class="sheet-close" id="register-close" aria-label="Fechar">✕</button>
         <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra")}</p>
-        <p class="reg-progresso-t" data-rascunho-aqui><span>Parte ${i + 1} de ${REG_PASSOS.length} · ${passo.t}</span></p>
+        <p class="reg-progresso-t">Parte ${i + 1} de ${REG_PASSOS.length} · ${passo.t}</p>
         <div class="reg-progresso" role="progressbar" aria-valuemin="1" aria-valuemax="${REG_PASSOS.length}" aria-valuenow="${i + 1}"><i style="width:${Math.round((i + 1) / REG_PASSOS.length * 100)}%"></i></div>
         ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? (contaAcademia && contaAcademia.emailConfirmado ? "Com o seu e-mail confirmado, a academia entra no ar quando você finalizar." : "O GuiaTennis confere antes de publicar.") : "Apresentação no site mediante análise. São 9 partes curtas; só as 4 primeiras são obrigatórias."}</p>` : ""}
 
@@ -23368,7 +23364,6 @@ function guardarRascunho() {
       try { sessionStorage.setItem(RASCUNHO_FOTOS_KEY, JSON.stringify(fotos)); }
       catch { try { sessionStorage.removeItem(RASCUNHO_FOTOS_KEY); } catch {} }
     }
-    mostrarRascunhoSalvo();
   } catch {}
 }
 function guardarRascunhoLogo() {
@@ -23416,10 +23411,11 @@ try { sb.auth.onAuthStateChange((evento) => { if (evento === "SIGNED_OUT") apaga
 // ---------- aviso antes de sair com algo preenchido ----------
 // Pedido do Breno em 22/10/2026: "faça em todo o site aquele salvamento quase
 // que imediato, para não sair e perder tudo, ou se for voltar em ações que
-// preencheu algo sem salvar, ter o aviso". Como o "Rascunho salvo" do Gmail,
-// o "Alterações não salvas" do admin da Shopify e o "Descartar publicação?"
-// do Instagram: o que se digita vai para o rascunho da aba (logo acima) em
-// 0,25 s e a tela diz "Rascunho salvo"; com algo preenchido e ainda não
+// preencheu algo sem salvar, ter o aviso". Como o "Alterações não salvas" do
+// admin da Shopify e o "Descartar publicação?" do Instagram: o que se digita
+// vai para o rascunho da aba (logo acima) em 0,25 s, sem nada na tela (pedido
+// de 23/10/2026: "não quero que apareça rascunho salvo em nenhum lugar", como
+// o Airbnb e o Booking, que guardam calados); com algo preenchido e ainda não
 // salvo, voltar, trocar de página, fechar a janela ou sair do site perguntam
 // antes. Valem as partes marcadas com data-aviso-sair="<onde>" (busca,
 // filtros, comparação e o Entrar ficam de fora; data-rascunho-de diz o que o
@@ -23578,20 +23574,6 @@ window.addEventListener("beforeunload", (e) => {
   e.preventDefault();
   e.returnValue = "";
 });
-// "Rascunho salvo", na parte que está sendo preenchida (só onde o rascunho
-// guarda de verdade: data-rascunho-de, o cadastro, o leilão e a promoção).
-function mostrarRascunhoSalvo() {
-  const p = RASCUNHO.desligado ? null : pendenciaDeSalvar();
-  const area = p && p.area && (p.tipo !== "campos" || p.area.dataset.rascunhoDe) ? p.area : null;
-  document.querySelectorAll(".rascunho-salvo").forEach(x => { if (!area || !area.contains(x)) x.remove(); });
-  if (!area || area.querySelector(".rascunho-salvo")) return;
-  const lugar = area.querySelector("[data-rascunho-aqui]");
-  const el = document.createElement(lugar ? "span" : "p");
-  el.className = "rascunho-salvo";
-  el.setAttribute("role", "status");
-  el.innerHTML = `${icon('check', 12, 'currentColor')} Rascunho salvo`;
-  (lugar || area).appendChild(el);
-}
 
 async function init() {
   if (PARCEIROS_NO_ENDERECO_PROPRIO && noSiteDeVerdade() && /^\/parceiros(\/|$)/.test(location.pathname)) {

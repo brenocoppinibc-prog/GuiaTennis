@@ -1,16 +1,18 @@
 // Pedido do Breno em 22/10/2026: "faça em todo o site aquele salvamento quase
 // que imediato, para não sair e perder tudo, ou se for voltar em ações que
 // preencheu algo sem salvar, ter o aviso". O que se digita vai para o
-// rascunho da aba na hora, com "Rascunho salvo" na tela; com algo preenchido
-// e não salvo, trocar de página, voltar pelo navegador ou fechar a janela
-// pergunta antes ("Sair sem salvar?").
+// rascunho da aba na hora, sem nada na tela (pedido de 23/10/2026: "não quero
+// que apareça rascunho salvo em nenhum lugar"); com algo preenchido e não
+// salvo, trocar de página, voltar pelo navegador ou fechar a janela pergunta
+// antes ("Sair sem salvar?").
 const { abrir, ok } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
 const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-sair'));
+const semRascunhoNaTela = (page) => page.evaluate(() => !/rascunho salvo/i.test(document.body.innerText) && !document.querySelector('.rascunho-salvo'));
 
 (async () => {
-  // ---- Leilão: "Rascunho salvo", trocar de aba, voltar e recarregar ----
+  // ---- Leilão: o rascunho calado, trocar de aba, voltar e recarregar ----
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel', premium: ['a1'] });
   await page.waitForTimeout(400);
   await page.evaluate(() => { window.__alcance = 143; window.__db.academias.find(a => a.id === 'a1').envios_de_aviso = 100; irParceiros('promocoes-email'); });
@@ -21,7 +23,7 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await page.waitForTimeout(150);
   await page.click('#pc-leilao-participar');
   await page.waitForTimeout(150);
-  ok(!(await page.$('.rascunho-salvo')), 'sem nada digitado, sem "Rascunho salvo"');
+  ok(await semRascunhoNaTela(page), 'sem nada digitado, nada de "Rascunho salvo"');
   await page.click('.pc-promo-partes [data-pc="promocoes"]');
   await page.waitForTimeout(200);
   ok(!(await temAviso(page)) && await page.evaluate(() => state.parceirosAba === 'promocoes'), 'sem nada preenchido, trocar de aba não pergunta');
@@ -30,7 +32,7 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await page.evaluate(() => { state.pcLeilaoPasso = 2; render(); });
   await page.fill('#pc-email-titulo', 'Primeira aula grátis');
   await page.waitForTimeout(400);
-  ok((await texto(page, '#pc-leilao-passo .pc-ads-etapa')).endsWith('Rascunho salvo'), 'digitou: "Rascunho salvo" ao lado da etapa, como no Gmail — ' + await texto(page, '#pc-leilao-passo .pc-ads-etapa'));
+  ok(await texto(page, '#pc-leilao-passo .pc-ads-etapa') === 'Etapa 3 de 5 · Anúncio' && await semRascunhoNaTela(page), 'digitou: a etapa sem "Rascunho salvo" ao lado (regra 150) — ' + await texto(page, '#pc-leilao-passo .pc-ads-etapa'));
   ok(await page.evaluate(() => JSON.parse(sessionStorage.getItem('guiatennis_rascunho_v1')).e.pcEmailForm.titulo === 'Primeira aula grátis'), 'o rascunho da aba já tem o anúncio');
   await page.click('.pc-promo-partes [data-pc="promocoes"]');
   await page.waitForTimeout(200);
@@ -74,7 +76,7 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await page.waitForTimeout(400);
   await page.fill('#pc-promo-titulo', 'Aula experimental');
   await page.waitForTimeout(400);
-  ok((await texto(page, '.pc-promo-form .rascunho-salvo')) === 'Rascunho salvo', 'na promoção, "Rascunho salvo" no fim do formulário');
+  ok(await semRascunhoNaTela(page) && await page.evaluate(() => JSON.parse(sessionStorage.getItem('guiatennis_rascunho_v1')).e.pcPromoForm.titulo === 'Aula experimental'), 'na promoção, o rascunho guardado sem "Rascunho salvo" na tela');
   await page.click('[data-promo-semanas="8"]');
   await page.waitForTimeout(400);
   ok(await page.evaluate(() => JSON.parse(sessionStorage.getItem('guiatennis_rascunho_v1')).e.pcPromoForm.semanas === 8) && (await page.inputValue('#pc-promo-titulo')) === 'Aula experimental', 'as semanas escolhidas também vão para o rascunho');
@@ -96,7 +98,7 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await page.waitForTimeout(300);
   await page.fill('#viagem-cidade', 'Campinas');
   await page.waitForTimeout(400);
-  ok((await texto(page, '#viagem-overlay .rascunho-salvo')) === 'Rascunho salvo', 'na viagem, "Rascunho salvo"');
+  ok(await semRascunhoNaTela(page), 'na viagem, sem "Rascunho salvo"');
   await page.click('#viagem-close');
   await page.waitForTimeout(200);
   ok((await texto(page, '#aviso-sair')).includes('O que você preencheu na viagem') && await page.evaluate(() => state.showViagem), 'o ✕ da viagem preenchida pergunta antes de fechar');
@@ -108,7 +110,7 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await page.click('#star-picker [data-star="4"]');
   await page.fill('#rate-comment', 'Muito bom');
   await page.waitForTimeout(400);
-  ok((await texto(page, '.rate-box .rascunho-salvo')) === 'Rascunho salvo', 'na avaliação, "Rascunho salvo"');
+  ok(await semRascunhoNaTela(page), 'na avaliação, sem "Rascunho salvo"');
   await page.goBack();
   await page.waitForTimeout(400);
   ok(await temAviso(page) && await page.evaluate(() => state.page === 'court'), 'voltar com a avaliação escrita pergunta e fica na ficha');
@@ -131,14 +133,14 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await page.waitForTimeout(400);
   await page.fill('#jog-nome', 'Maria Souza Lima');
   await page.waitForTimeout(400);
-  ok((await texto(page, '#perfil-dados .rascunho-salvo')) === 'Rascunho salvo', 'no perfil, "Rascunho salvo" nos dados pessoais');
+  ok(await semRascunhoNaTela(page), 'no perfil, sem "Rascunho salvo" nos dados pessoais');
   await page.click('[data-menu="favoritas"]');
   await page.waitForTimeout(200);
   ok((await texto(page, '#aviso-sair')).includes('O que você preencheu nos seus dados'), 'trocar o nome e ir para as favoritas pergunta');
   await page.click('#aviso-sair-nao');
   await page.click('#jog-salvar');
   await page.waitForTimeout(500);
-  ok(!(await page.$('#perfil-dados .rascunho-salvo')) && await page.evaluate(() => !pendenciaDeSalvar()), 'salvou: o "Rascunho salvo" sai e não há o que perder');
+  ok(await semRascunhoNaTela(page) && await page.evaluate(() => !pendenciaDeSalvar()), 'salvou: não há o que perder');
   await page.click('[data-menu="favoritas"]');
   await page.waitForTimeout(300);
   ok(!(await temAviso(page)), 'e as favoritas abrem sem perguntar');
@@ -151,7 +153,7 @@ const temAviso = (page) => page.evaluate(() => !!document.getElementById('aviso-
   await page.waitForTimeout(400);
   await page.fill('#f-name', 'Outro nome');
   await page.waitForTimeout(400);
-  ok((await texto(page, '.reg-progresso-t')).endsWith('Rascunho salvo'), 'no cadastro, "Rascunho salvo" ao lado da parte');
+  ok(!(await texto(page, '.reg-progresso-t')).includes('Rascunho') && await semRascunhoNaTela(page), 'no cadastro, a parte sem "Rascunho salvo" ao lado — ' + await texto(page, '.reg-progresso-t'));
   ok(await page.evaluate(() => (pendenciaDeSalvar() || {}).tipo === 'cadastro'), 'fechar a aba agora tem o que perder (o navegador pergunta)');
   await page.goBack();
   await page.waitForTimeout(400);

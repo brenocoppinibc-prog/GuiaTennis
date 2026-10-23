@@ -33,7 +33,7 @@ const { abrir, ok } = require('./harness');
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'] }));
   await page.waitForTimeout(300);
   t = await page.evaluate(() => document.querySelector('#parceiros .pc-sec-sub')?.innerText.replace(/\s+/g, ' ') || '');
-  ok(t.startsWith('Uma promoção por vez, por até 90 dias, na ficha') && t.includes('Saiba mais') && !t.includes('no máximo um por semana'), 'Promoções: uma linha e "Saiba mais" — ' + t);
+  ok(t.startsWith('Uma promoção por vez, na ficha e no resultado da busca, de 1 a 12 semanas') && t.includes('Saiba mais') && !t.includes('no máximo um por semana'), 'Promoções: uma linha e "Saiba mais" — ' + t);
   await page.click('#parceiros .pc-sec-sub [data-pc-faq="promocoes"]');
   await page.waitForTimeout(400);
   const aj = await page.evaluate(() => { const d = document.getElementById('pc-faq-promocoes'); return { aba: state.parceirosAba, aberto: !!(d && d.open), texto: d ? d.innerText : '' }; });

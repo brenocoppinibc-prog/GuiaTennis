@@ -100,17 +100,25 @@ async function editarFicha(page) {
     await loadEverything(); await recarregarConta(); render();
   });
   await page.waitForTimeout(300);
+  // Desde 22/10/2026 (regra 147), o Completo também tem promoção na ficha: ela continua.
   await page.evaluate(() => irParceiros('promocoes'));
   await page.waitForTimeout(400);
-  ok((await texto(page, '#pc-promo-guardadas')).includes('A promoção de vocês não aparece no plano Completo') && (await texto(page, '#pc-promo-guardadas')).includes('Primeira aula grátis') && !(await page.$('#pc-promo-titulo')),
-    'fora do Premium, Promoções mostra a promoção guardada que não aparece e não deixa publicar outra');
-  await page.evaluate(() => { state.page = 'home'; state.selected = null; render(); openCourt('a1'); });
-  await page.waitForTimeout(300);
-  ok(await page.evaluate(() => !document.querySelector('#ir-promocoes') && !document.body.innerText.includes('Primeira aula grátis')), 'e a ficha não mostra a promoção');
+  ok(!(await page.$('#pc-promo-guardadas')) && (await texto(page, '.pc-promo')).includes('Primeira aula grátis') && /valendo/i.test(await texto(page, '.pc-promo')),
+    'do Premium para o Completo, a promoção na ficha continua valendo');
   await page.evaluate(() => irParceiros('pessoas', { mesmaAba: true }));
   await page.waitForTimeout(400);
   ok((await texto(page, '#pc-acima-do-plano')).includes('O plano Completo é para até 5 pessoas, e a academia tem 7. Tire 2 pessoas para ficar no limite do plano'), 'Pessoas avisa que passou do limite do plano e quantas tirar — ' + await texto(page, '#pc-acima-do-plano') + ' / ' + await page.evaluate(() => planoAtual() + ':' + JSON.stringify(state.numeros && state.numeros.dados && state.numeros.dados.plano)));
   ok(!(await page.$('#pc-pessoa-adicionar')), 'e não deixa adicionar ninguém');
+  // No Básico, a promoção fica guardada: não aparece nem deixa publicar outra.
+  await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a1').plano = 'basico'; await loadEverything(); await recarregarConta(); render(); });
+  await page.waitForTimeout(300);
+  await page.evaluate(() => irParceiros('promocoes'));
+  await page.waitForTimeout(400);
+  ok((await texto(page, '#pc-promo-guardadas')).includes('A promoção de vocês não aparece no plano Básico') && (await texto(page, '#pc-promo-guardadas')).includes('Primeira aula grátis') && !(await page.$('#pc-promo-titulo')),
+    'no Básico, Promoções mostra a promoção guardada que não aparece e não deixa publicar outra');
+  await page.evaluate(() => { state.page = 'home'; state.selected = null; render(); openCourt('a1'); });
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => !document.querySelector('#ir-promocoes') && !document.body.innerText.includes('Primeira aula grátis')), 'e a ficha não mostra a promoção');
   await browser.close();
 
   // ---- admin baixa o plano: confirma vendo o que muda ----
@@ -124,12 +132,12 @@ async function editarFicha(page) {
   page.once('dialog', d => { pergunta = d.message(); d.dismiss(); });
   await page.click('.adm-acad.aberta .plano-btn[data-plano="completo"]');
   await page.waitForTimeout(400);
-  ok(pergunta.includes('do Premium para o Completo') && pergunta.includes('sai o selo dourado') && pergunta.includes('as promoções saem da ficha') && pergunta.includes('Nada é apagado'), 'baixar o plano pergunta antes, dizendo o que muda — ' + pergunta.split('\n')[0]);
+  ok(pergunta.includes('do Premium para o Completo') && pergunta.includes('sai o selo dourado') && pergunta.includes('sai do leilão de promoções por e-mail') && !pergunta.includes('as promoções saem da ficha') && pergunta.includes('Nada é apagado'), 'baixar o plano pergunta antes, dizendo o que muda (no Completo, a promoção na ficha fica) — ' + pergunta.split('\n')[0]);
   ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'premium'), '"Cancelar" não muda o plano');
   page.once('dialog', d => { pergunta = d.message(); d.accept(); });
   await page.click('.adm-acad.aberta .plano-btn[data-plano="basico"]');
   await page.waitForTimeout(600);
-  ok(pergunta.includes('a ficha mostra só o WhatsApp') && pergunta.includes('como chegar sai da ficha') && pergunta.includes('até 1 pessoa'), 'para o Básico, a pergunta inclui o que sai da ficha');
+  ok(pergunta.includes('a ficha mostra só o WhatsApp') && pergunta.includes('como chegar sai da ficha') && pergunta.includes('as promoções saem da ficha') && pergunta.includes('até 1 pessoa'), 'para o Básico, a pergunta inclui o que sai da ficha, também a promoção');
   ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'basico'), 'confirmou: o plano muda');
   let semPergunta = true;
   page.once('dialog', d => { semPergunta = false; d.accept(); });

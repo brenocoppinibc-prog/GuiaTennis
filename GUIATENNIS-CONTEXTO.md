@@ -24,6 +24,9 @@ teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
 **Atualizado em:** 23/10/2026
 
+> **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
+> ao trocar de chat)" na seção 11 (regras 139 a 149).
+
 > **Estado (21/10/2026):** o Breno trocou de chat: leia o "Resumo (21/10/2026,
 > ao trocar de chat)" na seção 11.
 > Depois, no chat novo (PR #5 acompanhado de novo): **regra 139**, o
@@ -5234,6 +5237,55 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 149** (último commit de código: `3f92ac5`, mais este
+documento). O "aplicar" passou no banco de teste até
+`20261023120000_excluir_conta_nos_dois_lados`. Neste chat entraram as
+regras 139 a 149: o **cadastro sem plano no meio** e o plano depois de
+confirmar como uma página de erro, o "Confirmar" verde do lápis, o X que
+pergunta, as fotos arrastando (139); o **código da disputa "em até 1 dia
+útil"** enquanto o envio é à mão (140); **"Esqueci a senha" em dois
+passos** (141); as **dicas no alto do Parceiros** (142); o **leilão de
+promoções passo a passo** com a página de andamento (143), **com cara de
+painel de anúncios** (144) e o cabeçalho só na primeira e na última etapa
+(146); o **"Rascunho salvo" e o "Sair sem salvar?"** no site todo (145);
+a **compra de créditos numa página de pagamento** `/parceiros/creditos`
+(146); a **promoção na ficha paga por semana** com os créditos, no
+Completo (cheio) e no Premium (20% menos), o preço começando em R$ 0 (o
+admin muda em Leilões › "Promoção na ficha · preço da semana"), e o
+**leilão só do Premium**, sem nenhum detalhe para quem não é Premium
+(147); **excluir a conta nos dois lados** (jogador e Parceiros), com o
+aviso do que sai e do que acontece com as academias (148); e o convite
+**"Crie sua conta para guardar as academias que você chamou"**, depois da
+segunda academia chamada sem conta, no balão branco com a borda amarela
+dos avisos da conta dos jogadores (149). Na pergunta "tenho que colocar
+login para fazer buscas ou entrar em contato?", a resposta foi **não**
+(como trivago, Booking, Airbnb e Google Maps; login só para avaliar e
+guardar), e o convite foi o meio-termo. SQL novos:
+`20261022120000_promocao_paga_e_leilao_premium` e
+`20261023120000_excluir_conta_nos_dois_lados`. Termos e Privacidade em 23
+de outubro de 2026. **A descrição do PR está em dia**: seções 1 a 55, SQL,
+"Para o Breno ligar", testes e passos 1 a 81. Testes: a última bateria
+completa deu **1.730 verificações, nenhuma falha** (61 arquivos do
+navegador, mais `onde.mjs` e `pagamento.mjs`); `banco-emails.py` com
+**467**, num Postgres local (`/var/lib/postgresql/gt`, porta 5433; se o
+chat novo quiser, `pg_ctl … start` e `BANCO_URL=… supabase/aplicar.sh
+teste`). **Pendências para o Breno:** (1) testar o pagamento de teste na
+prévia e depois ligar o Mercado Pago (variáveis da regra 117); (2) os
+preços dos planos e o **preço da semana da promoção na ficha** (hoje R$
+0, sem custo); (3) se, ao voltar ao Básico, a promoção paga na ficha deve
+**devolver** as semanas que faltavam (hoje não devolve, e os Termos dizem
+isso); (4) as pendências 3 a 5 do resumo de 21/10 (público mínimo do
+leilão, o "Confirmar depois" do cadastro e a ficha de quem avisou que
+fechou). O merge espera o Breno dizer **"pode subir"**. Este chat
+**deixou de acompanhar o PR** (sem inscrição, sem conferência marcada): no
+chat novo, voltar a acompanhar o PR #5. Seguem valendo: respostas curtas,
+dizer o que foi feito (sem narrar), prints só quando o pedido for de
+visual, comparar com referências internacionais grandes nas decisões de
+site, Instagram e marketing, e **tudo atualizado no mesmo push** (Termos,
+Privacidade e a descrição do PR).
 
 **Resumo (21/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

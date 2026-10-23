@@ -55,7 +55,9 @@ teste")
 > leilão: a aba mostra só "Disponível no plano Premium", como o Desempenho;
 > **regra 148**, excluir a conta nos dois lados (jogador e Parceiros), com
 > o aviso do que sai e do que acontece com as academias (SQL
-> `20261023120000_excluir_conta_nos_dois_lados`).
+> `20261023120000_excluir_conta_nos_dois_lados`); **regra 149**, o convite
+> "Crie sua conta para guardar as academias que você chamou", depois da
+> segunda academia chamada sem conta (sem login para buscar nem chamar).
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3489,6 +3491,23 @@ cobra taxa e não fica no meio** da negociação.
     login ficava). Termos, Privacidade (23 de outubro de 2026) e o chat
     acompanham. Testes: `buscas-e-avisos.js`, `sair-do-guia.js`,
     `jogador.js` e `banco-emails.py`.
+149. **"Crie sua conta para guardar as academias que você chamou"**
+    (pedido de 23/10/2026, depois da pergunta "você acha que eu tenho que
+    colocar login para fazer buscas ou entrar em contato?": a resposta foi
+    não, como trivago, Booking, Airbnb e Google Maps, e o meio-termo
+    proposto foi este convite). Como o "Entre para salvar" do Airbnb e do
+    Booking: buscar, ver a ficha e chamar continuam sem conta. Sem conta, as
+    academias chamadas ficam só na aba (`chamadasDaAba`, sessionStorage
+    `guiatennis_chamadas_aba_v1`); depois da segunda, o aviso verde desce
+    no alto (`mostrarDica`): "Crie sua conta para guardar as academias que
+    você chamou" · "Você chamou N academias. Com a conta grátis, elas ficam
+    em "Academias que você chamou", em qualquer aparelho." · "Criar conta
+    ›" (abre o cadastro com o motivo). Se a pessoa está no WhatsApp (a
+    página escondida), espera ela voltar (`visibilitychange`). Uma vez por
+    aba; o ✕ guarda por 14 dias (`guiatennis_convite_chamadas_v1`). Ao
+    criar a conta ou entrar, as chamadas da aba vão para a conta
+    (`levarParaAConta`) e saem da aba. Com conta, do Parceiros ou admin,
+    nada muda. Privacidade explica a aba. Teste: `convite-chamadas.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

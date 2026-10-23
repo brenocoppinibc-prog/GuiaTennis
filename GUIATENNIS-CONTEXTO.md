@@ -51,7 +51,8 @@ teste")
 > promoção na ficha paga por semana com os créditos, no Completo (preço
 > cheio) e no Premium (20% menos), e o leilão só do Premium (SQL
 > `20261022120000_promocao_paga_e_leilao_premium`; o preço começa em R$ 0,
-> o admin muda em Leilões).
+> o admin muda em Leilões); depois, fora do Premium, nenhum detalhe do
+> leilão: a aba mostra só "Disponível no plano Premium", como o Desempenho.
 
 > **Estado (20/10/2026):** o Breno trocou de chat: leia o "Resumo (20/10/2026,
 > ao trocar de chat)" na seção 11.
@@ -3451,6 +3452,17 @@ cobra taxa e não fica no meio** da negociação.
     devolve e diz quanto). Testes: `promocoes.js` (reescrito, com o preço),
     `promocoes-por-email.js`, `plano-e-creditos.js`, `aviso-ao-sair.js`,
     `dicas-do-parceiros.js`, `chat-parceiros.js` e `banco-emails.py`.
+    **Em 23/10/2026** ("O completo não pode ver nenhum detalhe sobre o
+    leilão. Só quando ele clicar no leilão aparecer disponível no premium.
+    Igual com os desempenhos"): fora do Premium, a aba Leilão mostra só o
+    cartão do Desempenho (`pc-vitrine`): "Leilão de promoções", "Disponível
+    no plano Premium" e "Ver o plano Premium", sem explicar o leilão. Nos
+    Planos, só o nome ("Leilão de promoções por e-mail"); a dor do Premium
+    no Plano e nas dicas virou "A promoção toda semana pesa no caixa" (a
+    semana mais barata); logado fora do Premium, a Ajuda some com a
+    pergunta do leilão e a das promoções não cita o leilão
+    (`perguntasParceiros`); a compra de créditos no Básico fala só da
+    promoção na ficha. Teste: `promocoes-por-email.js`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

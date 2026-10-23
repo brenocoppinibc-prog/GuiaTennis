@@ -7970,7 +7970,7 @@ const PC_RECURSOS = [
   { t: "Promoções na ficha e na busca, com a semana mais barata", p: ["premium"], grupo: "promocao" },
   // Regra 116 (18/10/2026): o leilão das promoções no e-mail do GuiaTennis
   // do bairro, duas por semana (antes, por envio).
-  { t: "Leilão da promoção no e-mail do GuiaTennis do bairro, duas por semana", p: ["premium"] },
+  { t: "Leilão de promoções por e-mail", p: ["premium"] },
   { t: "Visitas, contatos e o dia a dia da ficha", p: ["premium"], numeros: true },
   { t: "De onde vieram (Instagram, Google…), o aparelho e os canais", p: ["premium"], numeros: true },
   { t: "Bairros de quem procurou e comparação com a cidade", p: ["premium"], numeros: true },
@@ -7997,7 +7997,7 @@ const PC_PLANOS = [
   // Por enquanto todos são grátis (pedido de 19/10/2026: "ainda não sei,
   // vamos deixar gratuito"); o responsável principal escolhe em Plano.
   { key: "completo", nome: "Completo", preco: "Grátis por enquanto", pessoas: 5, resumo: "Para ter a ficha completa e a equipe junto." },
-  { key: "premium", nome: "Premium", preco: "Grátis por enquanto", pessoas: 10, resumo: "Para aparecer primeiro, entrar no leilão de promoções e ver os números." },
+  { key: "premium", nome: "Premium", preco: "Grátis por enquanto", pessoas: 10, resumo: "Para aparecer primeiro, divulgar promoções e ver os números." },
 ];
 const PC_ITENS_FICHA = ["Endereço", "WhatsApp", "Horário", "Preço", "Cancelamento", "Quadras", "Comodidades", "Como chegar", "Fotos"];
 // No Básico, "Cancelamento" e "Como chegar" não entram na conta (são do Completo).
@@ -8007,6 +8007,8 @@ function itensDaFicha(c) {
 }
 
 function perguntasParceiros() {
+  // Logado fora do Premium, a Ajuda não fala do leilão (23/10/2026).
+  const leilao = !contaAcademia || !temAcademia() || (minhaAcademia() || {}).plano === "premium";
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe e entra entre as \"Academias recomendadas\" da página inicial, quanto mais completa a ficha. O Premium ganha o selo dourado, aparece no topo da busca da região, marcado como \"Patrocinado\", e entre as \"Academias recomendadas\" da página inicial, e mostra os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
     { q: "Minha academia já aparece no Guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia, marque a declaração e toque em \"Administrar esta academia\": com o e-mail confirmado, a ficha passa a ser sua na hora, e o GuiaTennis confere depois. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode incluir você diretamente em Acessos." },
@@ -8019,8 +8021,8 @@ function perguntasParceiros() {
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
-    { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "Nos planos Completo e Premium, em Promoções › Na ficha, a academia publica uma promoção por vez, por exemplo \"Primeira aula grátis\", e escolhe por quantas semanas ela vale (de 1 a 12). Antes de publicar, a tela mostra o preço por semana e o total, que sai dos créditos (os mesmos do leilão); no Premium, a semana sai mais barata. A promoção aparece na ficha e no resultado da busca, com a validade, e some sozinha quando vence. Mudar o texto não custa nada, e dá para somar semanas; encerrar antes devolve as semanas que ainda não começaram. No Premium, para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" (veja \"Como funciona o leilão das promoções por e-mail?\"). A academia responde pelo que anuncia e combina as condições direto com o jogador." },
-    { id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e favoritou uma academia de lá ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. No plano Premium, em Promoções › Leilão, passo a passo, a academia vê se vale a pena, escreve a promoção (ou usa a da ficha) e dá um lance máximo até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. O lance máximo é o teto, não o preço: quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que o lance máximo. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos (os mesmos da promoção na ficha), comprados antes no próprio Parceiros, com Pix ou cartão (pelo Mercado Pago)." },
+    { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "Nos planos Completo e Premium, em Promoções › Na ficha, a academia publica uma promoção por vez, por exemplo \"Primeira aula grátis\", e escolhe por quantas semanas ela vale (de 1 a 12). Antes de publicar, a tela mostra o preço por semana e o total, que sai dos créditos" + (leilao ? " (os mesmos do leilão)" : "") + "; no Premium, a semana sai mais barata. A promoção aparece na ficha e no resultado da busca, com a validade, e some sozinha quando vence. Mudar o texto não custa nada, e dá para somar semanas; encerrar antes devolve as semanas que ainda não começaram." + (leilao ? " No Premium, para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" (veja \"Como funciona o leilão das promoções por e-mail?\")." : "") + " A academia responde pelo que anuncia e combina as condições direto com o jogador." },
+    ...(leilao ? [{ id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e favoritou uma academia de lá ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. No plano Premium, em Promoções › Leilão, passo a passo, a academia vê se vale a pena, escreve a promoção (ou usa a da ficha) e dá um lance máximo até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. O lance máximo é o teto, não o preço: quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que o lance máximo. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos (os mesmos da promoção na ficha), comprados antes no próprio Parceiros, com Pix ou cartão (pelo Mercado Pago)." }] : []),
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
     { id: "desempenho", q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
     { q: "Como mudo de plano?", a: "Em Plano, o responsável principal escolhe o plano e ele muda na hora, sem mexer na ficha. Por enquanto, todos os planos são grátis. Quem administra a academia recebe um e-mail com o que muda." },
@@ -8163,7 +8165,7 @@ const PC_DORES = [
   { plano: "completo", caminho: "jogadores", t: "Horário vazio na quadra", s: "uma promoção aparece na ficha e no resultado da busca, pelas semanas que vocês escolherem" },
   { plano: "completo", caminho: "gestao", t: "Só uma pessoa cuida da ficha", s: "até 5 pessoas da equipe têm acesso" },
   { plano: "premium", caminho: "busca", t: "Na busca da região, outras aparecem antes", s: "a academia aparece no topo, marcada como \"Patrocinado\", e em primeiro entre as recomendadas" },
-  { plano: "premium", caminho: "jogadores", t: "Quem favoritou não fica sabendo das novidades", s: "a promoção vai no e-mail do GuiaTennis do bairro, pelo leilão da semana, e a semana da promoção na ficha sai mais barata" },
+  { plano: "premium", caminho: "jogadores", t: "A promoção toda semana pesa no caixa", s: "a semana da promoção na ficha sai mais barata" },
   { plano: "premium", caminho: "gestao", t: "Sem saber de onde vêm os jogadores", s: "Desempenho mostra quem chamou, de onde vieram e os bairros de quem procurou" },
   { plano: "premium", caminho: "gestao", t: "A equipe passou de 5 pessoas", s: "até 10 pessoas e o selo dourado ao lado do nome" },
 ];
@@ -9937,7 +9939,7 @@ function pcCreditos() {
   if (!c) return pcSemFicha();
   if ((c.plano || "basico") === "basico") return `
     <section class="pc-pagina pc-checkout">
-      ${blocoTrancado("completo", "Créditos de promoções", "Os créditos pagam a promoção na ficha (Completo e Premium) e o leilão das promoções por e-mail (Premium).")}
+      ${blocoTrancado("completo", "Créditos de promoções", "Os créditos pagam a promoção na ficha, nos planos Completo e Premium.")}
     </section>`;
   const k = state.pcCompra && state.pcCompra.tipo !== "plano" ? state.pcCompra : { tipo: "creditos", passo: "escolher", valor: 100, forma: "pix" };
   const saldo = saldoDeEnvios();
@@ -10354,12 +10356,19 @@ function pcPromocoesPorEmail() {
   if (!c) return pcSemFicha();
   const topo = pcTopoDasPromocoes(c, "promocoes-email");
   // Só o Premium entra no leilão (pedido do Breno em 22/10/2026: "completo
-  // não pode ter acesso ao leilão somente Premium").
+  // não pode ter acesso ao leilão somente Premium"). Fora dele, nenhum
+  // detalhe: só "Disponível no plano Premium", no cartão do Desempenho
+  // (pedido de 23/10/2026: "Só quando ele clicar no leilão aparecer
+  // disponível no premium. Igual com os desempenhos").
   if (c.plano !== "premium") {
     return `
       <section class="pc-pagina">
         ${topo}
-        ${blocoTrancado("premium", "Sua promoção no e-mail do GuiaTennis", "Toda semana, um leilão por bairro escolhe as promoções que o GuiaTennis manda por e-mail aos jogadores de lá. As duas maiores notas ganham. O leilão é do plano Premium.")}
+        <div class="pc-card pc-vitrine" id="pc-leilao-trancado">
+          <p class="pc-vitrine-eyebrow">Leilão de promoções</p>
+          <p class="pc-vitrine-t pc-leilao-trancado-t">${icon('key', 16, 'var(--gold)')} Disponível no plano Premium</p>
+          <a href="/parceiros/plano" class="pc-vitrine-btn" data-pc="plano">Ver o plano Premium</a>
+        </div>
       </section>`;
   }
   const L = state.pcLeilao;

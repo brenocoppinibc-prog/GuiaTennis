@@ -31,11 +31,23 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', completo: ['a1'] }));
   await page.waitForTimeout(400);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Disponível no plano Premium') && corpo.includes('O leilão é do plano Premium.') && !(await page.$('#pc-leilao-passo')), 'Completo: Leilão trancado, "Disponível no plano Premium"');
+  // 23/10/2026: "O completo não pode ver nenhum detalhe sobre o leilão. Só quando ele clicar no leilão aparecer disponível no premium. Igual com os desempenhos."
+  const trancado = (await texto(page, '#pc-leilao-trancado')).replace(/\s+/g, ' ').trim();
+  ok(trancado.toLowerCase() === 'leilão de promoções disponível no plano premium ver o plano premium' && await page.$('#pc-leilao-trancado.pc-vitrine') && !(await page.$('#pc-leilao-passo')),
+    'Completo: Leilão trancado como o Desempenho, só "Disponível no plano Premium", sem detalhe — ' + trancado);
   ok((await page.evaluate(() => sb.rpc('dar_lance', { p_academia: 'a1', p_titulo: 'Aula grátis', p_mensagem: 'Para quem nunca jogou aqui.', p_valor: 10 }))).error?.message === 'O leilão de promoções é do plano Premium.', 'e o banco recusa o lance do Completo');
   await page.click('.pc-promo-partes [data-pc="promocoes"]');
   await page.waitForTimeout(300);
   ok(await page.$('#pc-promo-titulo') && !/Disponível no plano/.test(await texto(page, '#parceiros .pc-main')), 'Completo: Na ficha, o formulário da promoção');
+  ok(!/leil|lance/i.test(await texto(page, '#parceiros .pc-main .pc-promo-form')), 'e a promoção na ficha não fala do leilão');
+  await page.evaluate(() => irParceiros('ajuda'));
+  await page.waitForTimeout(300);
+  const ajuda = await page.evaluate(() => ({ ids: perguntasParceiros().map(x => x.id).join(','), promo: perguntasParceiros().find(x => x.id === 'promocoes').a }));
+  ok(!ajuda.ids.includes('promocoes-email') && !/leil/i.test(ajuda.promo), 'na Ajuda, logado no Completo, sem a pergunta do leilão');
+  await page.evaluate(() => irParceiros('plano'));
+  await page.waitForTimeout(400);
+  const plano = await texto(page, '#parceiros .pc-main');
+  ok(!/leilão da semana|e-mail do GuiaTennis do bairro|duas por semana|lance/i.test(plano), 'na página Plano, o leilão aparece só pelo nome, sem detalhes');
   await browser.close();
 
   // ---- Premium: o leilão do e-mail do bairro (regra 116), passo a passo (regra 143) ----
@@ -207,7 +219,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   ({ browser, page } = await abrir({ q: 'parceiros/planos' }));
   await page.waitForTimeout(300);
   const planos = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('.pc-plano')].map(p => [p.querySelector('.pc-plano-n')?.innerText.trim(), [...p.querySelectorAll('li:not(.nao)')].map(l => l.innerText).join(' | ')])));
-  ok(planos['Completo'].includes('Promoções na ficha e na busca, pagas por semana') && !planos['Completo'].includes('Leilão da promoção') && planos['Premium'].includes('Leilão da promoção no e-mail do GuiaTennis do bairro')
+  ok(planos['Completo'].includes('Promoções na ficha e na busca, pagas por semana') && !/leil/i.test(planos['Completo']) && planos['Premium'].includes('Leilão de promoções por e-mail')
     && planos['Premium'].includes('Promoções na ficha e na busca, com a semana mais barata') && !/aviso/i.test(planos['Completo'] + planos['Premium']),
     'Planos: na ficha no Completo e no Premium (mais barata no Premium); o leilão do e-mail, só no Premium; sem "aviso"');
   ok(await page.evaluate(() => { const f = perguntasParceiros().map(x => x.q).join(' | '); return f.includes('Como funcionam as promoções na ficha?') && f.includes('Como funciona o leilão das promoções por e-mail?') && !/avisos por e-mail/i.test(f); }), 'Ajuda: as duas perguntas de promoções, sem "avisos por e-mail"');

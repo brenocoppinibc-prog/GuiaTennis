@@ -32,13 +32,52 @@ else
   exit 1
 fi
 
+# Área da academia: o visitante lê as respostas, e nunca os logins.
+ler_respostas() {
+  codigo="$(curl -sS -o "$tmp/respostas.json" -w '%{http_code}' \
+    "$api/rest/v1/respostas?select=avaliacao_id,texto,created_at&limit=1" -H "apikey: $chave")"
+  [ "$codigo" = 200 ]
+}
+if tentar ler_respostas; then
+  echo "visitante lê as respostas das academias"
+else
+  echo "::error::O visitante não consegue ler as respostas das academias (resposta $codigo): $(head -c 300 "$tmp/respostas.json")"
+  exit 1
+fi
+codigo="$(curl -sS -o "$tmp/acessos.json" -w '%{http_code}' \
+  "$api/rest/v1/academia_acessos?select=usuario&limit=1" -H "apikey: $chave")"
+if [ "$codigo" = 200 ]; then
+  echo "::error::O visitante conseguiu ler a tabela de acessos das academias: $(head -c 300 "$tmp/acessos.json")"
+  exit 1
+fi
+echo "visitante não lê os acessos das academias (resposta $codigo)"
+
+# Cadastro do GuiaTennis Parceiros: o visitante confere se um e-mail já tem
+# conta (e não recebe nada para um e-mail que não tem).
+conferir_email() {
+  codigo="$(curl -sS -o "$tmp/email.json" -w '%{http_code}' -X POST \
+    "$api/rest/v1/rpc/login_do_email" -H "apikey: $chave" -H "Content-Type: application/json" \
+    -d '{"p_email":"ninguem@exemplo.invalid"}')"
+  [ "$codigo" = 200 ] && grep -q '^null$' "$tmp/email.json"
+}
+if tentar conferir_email; then
+  echo "visitante confere o e-mail no cadastro do GuiaTennis Parceiros"
+else
+  echo "::error::O cadastro do GuiaTennis Parceiros não consegue conferir o e-mail (resposta $codigo): $(head -c 300 "$tmp/email.json")"
+  exit 1
+fi
+
 ler_sitemap() {
   # Sem pedir formato, como o Google: tem de vir XML mesmo assim.
   curl -sS -o "$tmp/sitemap.xml" "$api/rest/v1/rpc/sitemap" -H "apikey: $chave" \
     && grep -q "<urlset" "$tmp/sitemap.xml"
 }
 if tentar ler_sitemap; then
-  echo "sitemap: $(grep -o '<loc>' "$tmp/sitemap.xml" | wc -l | tr -d ' ') endereços"
+  echo "sitemap: $(grep -o '<loc>' "$tmp/sitemap.xml" | wc -l | tr -d ' ') endereços ($(grep -o '/academia/' "$tmp/sitemap.xml" | wc -l | tr -d ' ') fichas, $(grep -o '/quadras/' "$tmp/sitemap.xml" | wc -l | tr -d ' ') regiões, $(grep -o '/parceiros' "$tmp/sitemap.xml" | wc -l | tr -d ' ') do GuiaTennis Parceiros)"
+  if grep -q '?court=' "$tmp/sitemap.xml"; then
+    echo "::error::O sitemap ainda usa o endereço antigo das fichas (?court=)."
+    exit 1
+  fi
 else
   echo "::error::O sitemap não saiu em XML: $(head -c 300 "$tmp/sitemap.xml")"
   exit 1

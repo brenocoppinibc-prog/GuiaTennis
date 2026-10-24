@@ -1952,51 +1952,50 @@
   .pc-escolha-txt span { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
   #pc-administrar[disabled] { background: #DDE9E3; color: #fff; border-color: #DDE9E3; cursor: not-allowed; opacity: 1; }
   .pc-nota-pequena { margin: 4px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
-  /* A explicação da disputa como a apresentação do Nubank (23/10/2026): a
-     tela toda na cor da marca, as barrinhas no alto, o desenho grande, o
-     título, pouco texto e só "Continuar". */
-  .pc.pc-onb-tela, .pc-onb-tela .pc-main { background: var(--green); }
-  .pc-onb { box-sizing: border-box; max-width: 480px; min-height: 100vh; min-height: 100dvh; margin: 0 auto; padding: 14px 20px 28px; display: flex; flex-direction: column; color: #fff; }
-  .pc-onb-topo { display: flex; align-items: center; gap: 12px; }
-  .pc-onb-voltar { flex-shrink: 0; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(255,255,255,0.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  /* A explicação da disputa (23/10/2026), uma tela por vez com as
+     barrinhas, como a apresentação do Nubank, e com a cara do GuiaTennis
+     (24/10/2026): o creme do site, a etapa em dourado, o título em Playfair,
+     o texto num cartão branco e o botão verde logo abaixo. Sem desenho e sem
+     animação. */
+  .pc-onb-topo { display: flex; align-items: center; gap: 12px; margin: 0 0 26px; }
+  .pc-onb-voltar { flex-shrink: 0; width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 50%; background: var(--card); color: var(--green); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .pc-onb-barras { flex: 1; display: flex; gap: 6px; }
-  .pc-onb-barras i { position: relative; flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25); overflow: hidden; }
-  .pc-onb-barras i.feito { background: #fff; }
-  .pc-onb-barras i.agora { background: #fff; }
-  .pc-onb-miolo { flex: 1; padding: 13vh 0 24px; }
-  .pc-onb-etapa { margin: 0 0 12px; font-size: 14px; color: rgba(255,255,255,0.7); }
-  .pc-onb h1.pc-onb-t { margin: 0 0 18px; font-size: 32px; line-height: 1.15; color: #fff; }
-  .pc-onb-p { margin: 0 0 12px; font-size: 16px; line-height: 1.6; color: rgba(255,255,255,0.88); }
-  .pc-onb-dica { margin: 20px 0 0; padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.1); font-size: 15px; line-height: 1.5; color: #fff; }
-  .pc-onb-link { color: #fff !important; font-weight: 700; text-decoration: underline; white-space: nowrap; }
-  .pc-onb-pe .form-error { margin-bottom: 12px; }
-  .pc-onb-botao { width: 100%; min-height: 54px; border: 0; border-radius: 28px; background: #fff; color: var(--green); font: inherit; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-  .pc-onb-botao:disabled { opacity: 0.7; cursor: default; }
-  /* As telas de código (23/10/2026), como a verificação do WhatsApp: o
-     título no meio, as caixas de cada número e a contagem do "Mandar outro
-     código"; sem desenho nem animação. */
-  .cod-cabeca { text-align: center; margin: 0 0 6px; }
-  .cod-cabeca .cod-t { margin: 0 0 8px; font-size: 26px; line-height: 1.2; }
-  .pc-pagina .cod-cabeca h1.cod-t { font-size: 28px; }
-  .cod-s { margin: 0 auto; max-width: 400px; font-size: 15px; line-height: 1.55; color: var(--muted); }
+  .pc-onb-barras i { flex: 1; height: 6px; border-radius: 999px; background: #E3DFD6; }
+  .pc-onb-barras i.feito, .pc-onb-barras i.agora { background: var(--green); }
+  .pc-onb .pc-onb-etapa { margin: 0 0 10px; }
+  .pc-pagina h1.pc-onb-t { margin: 0 0 18px; font-size: 30px; line-height: 1.18; }
+  .pc-onb-p { margin: 0 0 12px; font-size: 15.5px; line-height: 1.6; color: var(--text); }
+  .pc-onb-dica { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--bg-alt); font-size: 14.5px; line-height: 1.5; color: var(--text); }
+  .pc-onb-link { color: var(--green) !important; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .pc-onb-cartao .form-error { margin-top: 14px; }
+  .pc-onb-botao { width: 100%; justify-content: center; margin-top: 20px; }
+  /* As telas de código (23/10/2026), como a verificação do WhatsApp, com a
+     cara do GuiaTennis (24/10/2026): a página de sempre do site (o título em
+     Playfair e o texto à esquerda) e, no cartão, uma caixa por número e a
+     contagem do "Mandar outro código". Sem desenho e sem animação. */
+  .cod-cabeca { margin: 0 0 4px; }
+  .cod-cabeca .cod-t { margin: 0 0 8px; }
+  .pc-card .cod-cabeca .cod-t { font-size: 22px; line-height: 1.25; }
+  .cod-s { margin: 0; font-size: 15px; line-height: 1.55; color: var(--muted); }
   .cod-s strong { color: var(--text); }
-  .otp { position: relative; max-width: 420px; margin: 20px auto 8px; }
+  .cod-pagina .cod-cartao { margin-top: 18px; }
+  .otp { position: relative; max-width: 420px; margin: 16px 0 6px; }
   .otp-campo { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: transparent; color: transparent; -webkit-text-fill-color: transparent; caret-color: transparent; font-size: 16px; outline: none; cursor: text; }
   .otp-campo::selection { background: transparent; }
-  .otp-caixas { display: flex; justify-content: center; gap: 8px; }
-  .otp-caixas span { flex: 1 1 0; min-width: 0; max-width: 48px; height: 58px; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .otp-caixas { display: flex; gap: 8px; }
+  .otp-caixas span { flex: 1 1 0; min-width: 0; max-width: 48px; height: 58px; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 10px; background: var(--card); display: flex; align-items: center; justify-content: center; font-family: var(--fonte-texto); font-size: 24px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
   .otp-caixas span.meio { margin-right: 10px; }
   .otp:focus-within .otp-caixas span.agora { border-color: var(--green); }
   .otp:focus-within .otp-caixas span.agora:empty::after { content: ""; width: 2px; height: 26px; background: var(--green); animation: otp-pisca 1s steps(1) infinite; }
   @keyframes otp-pisca { 50% { opacity: 0; } }
   .cod-botao { width: 100%; justify-content: center; margin-top: 16px; }
-  .cod-reenviar { margin: 14px 0 0; text-align: center; font-size: 14px; color: var(--muted); }
+  .cod-reenviar { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
   .cod-reenviar button:disabled { color: var(--muted) !important; cursor: default; font-weight: 500; text-decoration: none; }
-  .cod-dica { margin: 6px 0 0; text-align: center; font-size: 12.5px; color: var(--muted); }
-  .cod-aviso { margin: 14px auto 0; max-width: 400px; font-size: 14px; line-height: 1.45; color: var(--green); text-align: center; }
-  .cod-ajuda { margin: 26px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--bg-alt); font-size: 14px; line-height: 1.5; color: var(--text); }
+  .cod-dica { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); }
+  .cod-aviso { margin: 0 0 4px; font-size: 14px; line-height: 1.45; color: var(--green); font-weight: 600; }
+  .cod-ajuda { margin: 18px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--bg-alt); font-size: 14px; line-height: 1.5; color: var(--text); }
   .cod-ajuda p { margin: 0; }
-  .cod-depois { margin: 16px 0 0; text-align: center; }
+  .cod-depois { margin: 16px 0 0; }
   .pc-pedido-codigo { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; text-decoration: none; }
   .pc-codigo { display: flex; gap: 8px; margin-top: 14px; }
   .pc-codigo .form-field { flex: 1; margin-top: 0; font-size: 20px; letter-spacing: 0.25em; text-align: center; font-variant-numeric: tabular-nums; }
@@ -8924,13 +8923,13 @@ function renderParceiros() {
   else if (aba === "academias") miolo = pcAcademias();
   else if (aba === "perfil") miolo = pcPerfil();
   const contestando = aba === "contestar" && contaAcademia && acessoCompleto();
-  // A explicação da disputa ocupa a tela toda, como a apresentação do Nubank.
+  // A explicação da disputa: só a marca no alto, sem ✕ (nada de pular).
   const apresentacao = contestando && modoDoContestar() === "explicar";
   const focado = pcFocado() || contestando;
   const checkout = aba === "creditos" && temAcademia() && acessoCompleto();
   return `
-    <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""} ${aba === "inicio" ? "pc-revelando" : ""} ${focado ? "pc-focado" : ""} ${checkout ? "pc-focado pc-checkout-tela" : ""} ${apresentacao ? "pc-onb-tela" : ""}" id="parceiros">
-      ${checkout ? pcTopoCheckout() : apresentacao ? "" : contestando ? pcTopoContestar() : focado ? pcTopoFocado() : pcTopo()}
+    <div class="pc ${temAcademia() && acessoCompleto() ? "pc-logado" : ""} ${aba === "inicio" ? "pc-revelando" : ""} ${focado ? "pc-focado" : ""} ${checkout ? "pc-focado pc-checkout-tela" : ""} " id="parceiros">
+      ${checkout ? pcTopoCheckout() : apresentacao ? pcTopoSoMarca() : contestando ? pcTopoContestar() : focado ? pcTopoFocado() : pcTopo()}
       ${faixaDaVisaoAdmin()}
       <main class="pc-main">${miolo}</main>
       ${focado || checkout ? "" : pcRodape()}
@@ -11692,6 +11691,12 @@ function modoDoContestar() {
   const p = pedidoDoContestar();
   return !p ? "vazio" : p.destino === "responsavel" ? "explicar" : p.destino === "disputa" ? "codigo" : "vazio";
 }
+function pcTopoSoMarca() {
+  return `
+    <header class="pc-topo">
+      <div class="pc-topo-in">${pcMarca()}</div>
+    </header>`;
+}
 function pcTopoContestar() {
   return `
     <header class="pc-topo">
@@ -11714,8 +11719,12 @@ function pcContestar() {
     </section>`;
 }
 // Sem desenho e sem animação (pedido de 23/10/2026: "essas telas estão com
-// muita cara de ia por aparecer algo muito animado"): como as telas de texto
-// do Nubank, só a cor, as barrinhas, o título grande e pouco texto.
+// muita cara de ia por aparecer algo muito animado") e com a cara do
+// GuiaTennis (24/10/2026: "deixe todas essas telas com uma cara um pouco mais
+// do GuiaTennis, com fonte e cor", com os vãos vazios marcados no print): o
+// creme do site, a marca no alto, a etapa em dourado, o título em Playfair, o
+// texto num cartão branco e o botão verde logo abaixo dele. Segue uma tela
+// por vez, com as barrinhas e sem "Pular".
 function pcContestarExplicar(p) {
   const nome = esc(p.nome || "academia");
   const k = state.pcContestar;
@@ -11752,29 +11761,29 @@ function pcContestarExplicar(p) {
   const ultimo = passo === CONTESTAR_PASSOS.length - 1;
   const erro = state.pedidoErro && state.pedidoErroEm === p.academiaId ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pedidoErro)}</div>` : "";
   return `
-    <section class="pc-onb" id="pc-contestar" data-passo="${passo}">
+    <section class="pc-pagina pc-estreita pc-onb" id="pc-contestar" data-passo="${passo}">
       <div class="pc-onb-topo">
-        <button type="button" class="pc-onb-voltar" id="pc-contestar-voltar" aria-label="${passo ? "Voltar" : "Sair"}">${icon('chevronLeft', 20, 'currentColor')}</button>
+        <button type="button" class="pc-onb-voltar" id="pc-contestar-voltar" aria-label="${passo ? "Voltar" : "Sair"}">${icon('chevronLeft', 18, 'currentColor')}</button>
         <div class="pc-onb-barras" role="progressbar" aria-label="Etapas da disputa" aria-valuemin="1" aria-valuemax="${CONTESTAR_PASSOS.length}" aria-valuenow="${passo + 1}">
           ${CONTESTAR_PASSOS.map((_, i) => `<i class="${i < passo ? "feito" : i === passo ? "agora" : ""}"></i>`).join("")}
         </div>
       </div>
-      <div class="pc-onb-miolo">
-        <p class="pc-onb-etapa">${passo + 1} de ${CONTESTAR_PASSOS.length} · ${CONTESTAR_PASSOS[passo]}</p>
-        <h1 class="display pc-onb-t">${tela.t}</h1>
+      <p class="pc-eyebrow pc-onb-etapa">${passo + 1} de ${CONTESTAR_PASSOS.length} · ${CONTESTAR_PASSOS[passo]}</p>
+      <h1 class="display pc-onb-t">${tela.t}</h1>
+      <div class="pc-card pc-onb-cartao">
         ${tela.corpo}
-      </div>
-      <div class="pc-onb-pe">
         ${erro}
         ${ultimo
-          ? `<button type="button" class="pc-onb-botao" id="pc-contestar-enviar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(16) + " Contestando..." : "Contestar e receber o código"}</button>`
-          : `<button type="button" class="pc-onb-botao" id="pc-contestar-continuar">Continuar</button>`}
+          ? `<button type="button" class="cta-btn cta-primary pc-onb-botao" id="pc-contestar-enviar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(16) + " Contestando..." : "Contestar e receber o código"}</button>`
+          : `<button type="button" class="cta-btn cta-primary pc-onb-botao" id="pc-contestar-continuar">Continuar</button>`}
       </div>
     </section>`;
 }
-// A tela do código da disputa, como a verificação do WhatsApp: o desenho, o
-// título, para onde o código foi, as caixas dos 6 números, "Confirmar" e o
-// "Mandar outro código"; sem o código, o WhatsApp do GuiaTennis.
+// A tela do código da disputa, como a verificação do WhatsApp, com a cara do
+// GuiaTennis (como o "Entrar" do Parceiros): a etiqueta dourada, o título,
+// para onde o código foi e, num cartão branco, as caixas dos 6 números,
+// "Confirmar" e o "Mandar outro código"; sem o código, o WhatsApp do
+// GuiaTennis.
 function pcContestarCodigo(p) {
   const nome = esc(p.nome || "academia");
   const semEmail = !contaAcademia.emailConfirmado;
@@ -11788,13 +11797,16 @@ function pcContestarCodigo(p) {
   const falar = `<a class="pc-linha-link" href="${whatsappGuia(`Olá! Sou ${contaAcademia.nome || "responsável"} e contestei quem administra a ${p.nome || "minha academia"} no GuiaTennis Parceiros.`)}" target="_blank" rel="noreferrer">Fale com o GuiaTennis ›</a>`;
   return `
     <section class="pc-pagina pc-estreita cod-pagina" id="pc-contestar" data-modo="codigo">
+      <p class="pc-eyebrow">Contestar · ${nome}</p>
       ${cabecaDeCodigo("whatsapp", "Digite o código", sub)}
-      ${aviso}
       ${semEmail && !p.codigoEm ? pcConfirmarEmail(true) : `
+      <div class="pc-card cod-cartao">
+        ${aviso}
         ${caixasDeCodigo(6, `id="pc-codigo" data-pedido-codigo="${p.academiaId}"`, (state.pcCodigos || {})[p.academiaId], "Código de 6 números")}
         ${erro}
         <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-codigo" data-confirmar-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) + " Conferindo..." : "Confirmar"}</button>
-        ${p.codigoEm ? `<p class="cod-reenviar">Não chegou? <button type="button" class="pc-linha-link" data-outro-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>Mandar outro código</button></p>` : ""}`}
+        ${p.codigoEm ? `<p class="cod-reenviar">Não chegou? <button type="button" class="pc-linha-link" data-outro-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>Mandar outro código</button></p>` : ""}
+      </div>`}
       <div class="cod-ajuda">
         <p>Sem como receber o código no WhatsApp da academia? O GuiaTennis pode pedir um documento que mostre que você responde por ela. ${falar}</p>
       </div>
@@ -13218,14 +13230,9 @@ function renderJogadorSheet() {
   const campoCodigo = caixasDeCodigo(DIGITOS_DO_EMAIL, `data-rascunho="codigo" id="jog-codigo"`, (window.__codigo || {}).codigo, "Código do e-mail", "campo-codigo");
   const reenviar = `<p class="cod-reenviar">Não chegou? ${botaoDeReenviar("jog-reenviar", "inline-link")}</p>
     <p class="cod-dica">Chega em até um minuto. Olhe também o spam e a aba Promoções.</p>`;
-  // As telas de código (23/10/2026), como a verificação do WhatsApp: o
-  // desenho, o título e para onde o código foi, num cartão só.
-  const paginaDeCodigo = (titulo, sub, corpo) => `
-    ${trilha}
-    <div class="pc-card jog-card cod-cartao cod-tela">
-      ${cabecaDeCodigo("email", titulo, sub)}
-      ${corpo}
-    </div>`;
+  // As telas de código (23/10/2026): a página de sempre do site (o título em
+  // Playfair, para onde o código foi e o cartão), com as caixas.
+  const paginaDeCodigo = pagina;
   const naoMandou = `<p class="email-sugestao" role="alert">Não consegui mandar o código agora. ${tela === "codigo" ? "Você pode confirmar depois, em Minha conta." : `Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.`}</p>`;
   if (tela === "codigo") miolo = paginaDeCodigo("Confirme o seu e-mail", `Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>.`, `
     ${state.codigoMandando ? `<p class="footnote">${bolaGirando(16)} Mandando o código…</p>` : ""}

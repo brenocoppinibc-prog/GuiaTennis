@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 23/10/2026
+**Atualizado em:** 24/10/2026
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -34,8 +34,11 @@ teste")
 > página própria, passo a passo (seção 58, passo 84); **regra 153**, a
 > explicação como a apresentação do Nubank e as telas de código como a do
 > WhatsApp (seção 59, passo 85); **regra 154**, sem "cara de IA": sem
-> desenhos decorativos nem animações nessas telas (seção 60, passo 86). Testes:
-> bateria completa com **1.761 verificações** (depois da regra 154) nos 62 arquivos do
+> desenhos decorativos nem animações nessas telas (seção 60, passo 86). Em
+> 24/10: **regra 155**, essas telas com a cara do GuiaTennis (o creme, a
+> marca, o dourado, o Playfair e o cartão com o botão logo abaixo; seção 61,
+> passo 87). Testes:
+> bateria completa com **1.762 verificações** (depois da regra 155) nos 62 arquivos do
 > navegador, mais `onde.mjs` e `pagamento.mjs`, e 467 no
 > `banco-emails.py`, nenhuma falha. Nenhum SQL novo.
 
@@ -3660,10 +3663,37 @@ cobra taxa e não fica no meio** da negociação.
     só tipografia, cor da marca e o que a pessoa usa.** **As caixas de
     número ficam** (o Breno, ao ver as telas sem desenho: "mas deixe os slots
     de número, ficou legal"): uma caixa por número, com a borda verde na de
-    agora, em toda tela de código. Termos e Privacidade
+    agora, em toda tela de código. (O verde em tela cheia e o título no
+    meio mudaram na regra 155.) Termos e Privacidade
     não mudam. Teste: `contestar-passo-a-passo.js` (confere que não há
     desenho nem animação na apresentação e que as telas de código não têm
     desenho).
+155. **Essas telas com a cara do GuiaTennis, na fonte e na cor** (pedido de
+    24/10/2026, com o print das telas da regra 154 e os vãos vazios
+    marcados em vermelho: "deixe todas essas telas com uma cara um pouco
+    mais do GuiaTennis, com fonte e cor"). Como o "Entrar" e o cadastro do
+    Parceiros: (1) **Contestar**: saiu o verde em tela cheia; fica o creme do
+    site com a marca no alto (`pcTopoSoMarca`: o logo e "Parceiros", sem ✕
+    nem menu, para não ter como pular), a seta de voltar num círculo branco
+    e as quatro barrinhas em verde sobre o bege (`#E3DFD6`, como o trilho do
+    cadastro, sem a bola que rola), "1 DE 4 · QUANDO CONTESTAR" no dourado
+    das etiquetas (`pc-eyebrow`, #8E6D25), o título em Playfair e o texto num
+    **cartão branco** (`pc-card pc-onb-cartao`) com a dica no bege e o botão
+    verde do site **logo abaixo do texto**, dentro do cartão (acabou o vão
+    entre o texto e o botão). (2) **Tela do código da disputa**: "CONTESTAR ·
+    <ACADEMIA>" em dourado, "Digite o código" em Playfair e o texto à
+    esquerda, e o cartão branco com o aviso, as caixas, "Confirmar" e
+    "Mandar outro código"; a ajuda sem código e "Digitar depois" embaixo.
+    (3) **Telas de código do e-mail**: nos jogadores, voltou a página de
+    sempre (`paginaDeCodigo = pagina`: o título em Playfair, o texto em
+    `pc-sec-sub` e o cartão com as caixas); no Parceiros, o título do cartão
+    em Playfair (22px) e tudo à esquerda. As caixas: números em verde na
+    fonte do texto (Inter), a borda verde na de agora. Fotos de tela com a
+    letra de verdade: `opts.fontes` do `harness.js` (pasta com o
+    `fontes.css`, os `.woff2` e o `mapa.txt`, baixados do Google Fonts).
+    Termos e Privacidade não mudam. Teste: `contestar-passo-a-passo.js` (o
+    creme, a marca sem ✕ nem menu, a etiqueta dourada, o título em Playfair
+    e o "Continuar" no cartão; nos jogadores, o texto em `pc-sec-sub`).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

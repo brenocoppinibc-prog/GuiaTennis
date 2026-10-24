@@ -6,7 +6,10 @@
 // /parceiros/contestar é a apresentação do Nubank (tela cheia, as barrinhas,
 // só "Continuar", sem "Pular") e, contestado, vira a tela do código, como a
 // do WhatsApp. No mesmo dia, "essas telas estão com muita cara de ia por
-// aparecer algo muito animado": sem desenho e sem animação.
+// aparecer algo muito animado": sem desenho e sem animação. Em 24/10/2026,
+// "deixe todas essas telas com uma cara um pouco mais do GuiaTennis, com fonte
+// e cor": o creme do site, a marca, a etapa em dourado, o título em Playfair e
+// o texto num cartão com o botão verde logo abaixo.
 const { abrir, ok } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
@@ -43,12 +46,16 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   await page.click('[data-contestar="a3"]');
   await page.waitForTimeout(250);
   let r = await page.evaluate(() => ({
-    url: location.pathname + location.search, topo: !!document.querySelector('#parceiros .pc-topo'), rodape: !!document.querySelector('.pc-rodape'),
-    tela: document.getElementById('parceiros').classList.contains('pc-onb-tela'), fundo: getComputedStyle(document.getElementById('parceiros')).backgroundColor,
+    url: location.pathname + location.search, marca: !!document.querySelector('#parceiros .pc-topo .pc-marca, #parceiros .pc-topo [class*="marca"]'), rodape: !!document.querySelector('.pc-rodape'),
+    sair: !!document.querySelector('#pc-contestar-fechar, #parceiros .pc-topo .pc-fechar, #parceiros .pc-nav'), fundo: getComputedStyle(document.getElementById('parceiros')).backgroundColor,
+    etiqueta: getComputedStyle(document.querySelector('.pc-onb-etapa')).color, titulo: getComputedStyle(document.querySelector('#pc-contestar h1')).fontFamily,
+    botao: (document.getElementById('pc-contestar-continuar')?.closest('.pc-card') || {}).className || '',
     barras: [...document.querySelectorAll('.pc-onb-barras i')].map(i => i.className || '-').join(','),
   }));
-  ok(r.url === '/parceiros/contestar?academia=a3' && !r.topo && !r.rodape && r.tela && r.fundo === 'rgb(31, 77, 61)',
-    'abre /parceiros/contestar em tela cheia, na cor da marca, sem o cabeçalho nem o rodapé, como a apresentação do Nubank — ' + r.fundo);
+  ok(r.url === '/parceiros/contestar?academia=a3' && r.marca && !r.sair && !r.rodape && r.fundo === 'rgb(247, 244, 236)',
+    'abre /parceiros/contestar com o creme do site e só a marca no alto: sem menu, sem ✕ e sem rodapé — ' + JSON.stringify({ fundo: r.fundo, marca: r.marca, sair: r.sair }));
+  ok(r.etiqueta === 'rgb(142, 109, 37)' && r.titulo.includes('Playfair') && r.botao.includes('pc-card'),
+    'a cara do GuiaTennis: a etapa em dourado, o título em Playfair e o texto num cartão com o "Continuar" logo abaixo — ' + JSON.stringify({ etiqueta: r.etiqueta, titulo: r.titulo }));
   ok(r.barras === 'agora,-,-,-' && await etapa(page) === '1 de 4 · Quando contestar' && await titulo(page) === 'A academia é sua, mas outra pessoa administra?',
     '1ª tela: as quatro barrinhas no alto, a primeira acendendo, e o título — ' + r.barras);
   r = await page.evaluate(() => ({ corpo: document.getElementById('pc-contestar').innerText, pular: /pular/i.test(document.getElementById('pc-contestar').innerText), desenho: !!document.querySelector('#pc-contestar svg:not(.pc-onb-voltar svg)'),
@@ -152,7 +159,7 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   await page.waitForTimeout(300);
   r = await page.evaluate(() => ({
     h1: document.querySelector('#jogador-overlay h1')?.innerText || '', desenho: !!document.querySelector('#jogador-overlay .cod-cabeca svg'),
-    caixas: document.querySelectorAll('#jogador-overlay .otp-caixas span').length, sub: document.querySelector('#jogador-overlay .cod-s')?.innerText || '',
+    caixas: document.querySelectorAll('#jogador-overlay .otp-caixas span').length, sub: document.querySelector('#jogador-overlay .pc-sec-sub')?.innerText || '',
     reenvio: document.getElementById('jog-reenviar')?.innerText || '',
   }));
   ok(r.h1 === 'Digite o código' && !r.desenho && r.caixas === 8 && r.sub === 'Mandamos um código de 8 números para ze@exemplo.com.' && r.reenvio.startsWith('Mandar outro código em'),

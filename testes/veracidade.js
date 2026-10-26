@@ -32,7 +32,7 @@ const mudarAcademia = (page, id, campos) => page.evaluate(async ({ id, campos })
   let r = await page.evaluate(() => ({ db: window.__db.academias.find(a => a.id === 'a2'), tela: (document.getElementById('register-overlay')?.innerText || '').replace(/\s+/g, ' ') }));
   ok(r.db.phone === '11999990002' && r.db.whatsapp_a_confirmar === '(11) 96666-2222' && r.db.whatsapp_antes === '11999990002',
     'salvar com outro número: a ficha continua com o de antes, e o novo espera o código');
-  ok(r.tela.includes('menos o WhatsApp novo, que espera o código') && r.tela.includes('Confirme o WhatsApp (11) 96666-2222') && r.tela.includes('e o GuiaTennis conferir a troca') && !!(await page.$('#register-ir-whatsapp')),
+  ok(r.tela.includes('menos o WhatsApp novo, que espera o código') && r.tela.includes('Confirme o WhatsApp (11) 96666-2222') && r.tela.includes('e o GuiaTennis conferir') && !!(await page.$('#register-ir-whatsapp')),
     'a tela de pronto diz o que falta e tem "Digitar o código" — ' + r.tela.slice(0, 160));
   ok(await page.evaluate(() => window.__db.emails_a_enviar.some(e => e.tipo === 'whatsapp_para_confirmar')), 'sem o WhatsApp da Meta ligado, o admin fica sabendo para mandar o código');
   await page.click('#register-ir-whatsapp');
@@ -61,9 +61,9 @@ const mudarAcademia = (page, id, campos) => page.evaluate(async ({ id, campos })
   await page.fill('#pc-codigo-whatsapp', '654321');
   await page.click('#pc-confirmar-whatsapp');
   await page.waitForTimeout(400);
-  r = await page.evaluate(() => ({ h1: document.querySelector('#pc-whatsapp h1')?.innerText || '', s: document.querySelector('#pc-whatsapp')?.innerText || '', db: window.__db.academias.find(a => a.id === 'a2') }));
-  ok(r.h1 === 'Código confirmado' && r.s.includes('o GuiaTennis confere a troca') && r.db.phone === '11999990002' && !!r.db.whatsapp_codigo_ok_em,
-    'troca: o código certo leva à conferência do GuiaTennis, e a ficha segue com o número de antes');
+  r = await page.evaluate(() => ({ h1: document.querySelector('#pc-whatsapp h1')?.innerText || '', s: (document.querySelector('#pc-whatsapp')?.innerText || '').replace(/\s+/g, ' '), db: window.__db.academias.find(a => a.id === 'a2') }));
+  ok(r.h1 === 'Código confirmado' && r.s.includes('GuiaTennis confere se o (11) 96666-2222 é da academia') && r.s.includes('a ficha mostra o número de antes') && r.db.phone === '11999990002' && !!r.db.whatsapp_codigo_ok_em,
+    'troca: o código certo leva à conferência do GuiaTennis, e a ficha segue com o número de antes — ' + r.s.replace(/\s+/g, ' ').slice(0, 220));
   await page.click('#pc-whatsapp-sair');
   await page.waitForTimeout(300);
   let cartao = await texto(page, '#parceiros .pc-whatsapp-novo');
@@ -73,13 +73,13 @@ const mudarAcademia = (page, id, campos) => page.evaluate(async ({ id, campos })
   await page.waitForTimeout(300);
   r = await page.evaluate(() => ({ db: window.__db.academias.find(a => a.id === 'a2'), cartao: !!document.querySelector('#parceiros .pc-whatsapp-novo'), aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '' }));
   ok(!r.db.whatsapp_a_confirmar && !r.cartao && r.aviso.includes('Troca cancelada'), '"Cancelar a troca": o número novo sai e a ficha fica como estava');
-  // Academia sem WhatsApp: o código certo põe o número na ficha na hora.
+  // Academia sem WhatsApp: o código certo também espera o GuiaTennis (regra 157).
   await mudarAcademia(page, 'a2', { phone: null });
   await page.evaluate(() => { window.__whatsappLigado = true; abrirEdicaoDaFicha(state.allCourts.find(c => c.id === 'a2')); });
   await page.waitForTimeout(300);
   await irParte(page, 'contato');
   dica = await texto(page, '.reg-whatsapp-dica');
-  ok(dica.includes('só aparece na ficha depois do código de 6 números'), 'ficha sem WhatsApp: o número aparece depois do código — ' + dica);
+  ok(dica.includes('só aparece na ficha depois do código de 6 números mandado a ele e da conferência do GuiaTennis'), 'ficha sem WhatsApp: o número aparece depois do código e da conferência — ' + dica);
   await page.fill('#f-phone', '11955554444');
   await salvarFicha(page);
   await page.waitForTimeout(700);
@@ -90,29 +90,43 @@ const mudarAcademia = (page, id, campos) => page.evaluate(async ({ id, campos })
   await page.fill('#pc-codigo-whatsapp', '654321');
   await page.click('#pc-confirmar-whatsapp');
   await page.waitForTimeout(500);
-  r = await page.evaluate(() => ({ db: window.__db.academias.find(a => a.id === 'a2'), aba: state.parceirosAba, aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '' }));
-  ok(r.db.phone === '11955554444' && !r.db.whatsapp_a_confirmar && r.aba === 'painel' && r.aviso.includes('o WhatsApp já aparece na ficha'),
-    'sem número antes: o código certo põe o WhatsApp na ficha na hora e volta a Atualizações');
+  r = await page.evaluate(() => ({ db: window.__db.academias.find(a => a.id === 'a2'), h1: document.querySelector('#pc-whatsapp h1')?.innerText || '', s: document.querySelector('#pc-whatsapp')?.innerText || '',
+    email: (window.__db.emails_a_enviar.filter(e => e.tipo === 'whatsapp_para_aprovar').pop() || {}).assunto || '' }));
+  ok(!r.db.phone && !!r.db.whatsapp_codigo_ok_em && r.h1 === 'Código confirmado' && r.s.includes('a ficha fica sem o botão do WhatsApp'),
+    'sem número antes: o código certo também leva à conferência do GuiaTennis, e a ficha fica sem o botão (regra 157)');
+  ok(r.email.startsWith('WhatsApp para aprovar: '), 'o admin recebe o número para aprovar — ' + r.email);
   await browser.close();
 
-  // ---- a ficha pública: sem o botão, diz por quê ----
+  // ---- a ficha pública: sem o botão, sem dizer que há número esperando ----
+  // Regra 157: como o Google Business Profile, nada de "em confirmação".
   ({ browser, page } = await abrir({}));
-  await mudarAcademia(page, 'a1', { phone: null, whatsapp_situacao: 'confirmando' });
+  await mudarAcademia(page, 'a1', { phone: null, whatsapp_a_confirmar: '(11) 95555-1111' });
   await abrirFicha(page, 'a1');
-  r = await page.evaluate(() => ({ wa: !!document.querySelector('.courtpage a[data-track="whatsapp"]'), contato: (document.getElementById('ht-contato')?.innerText || ''), cartao: document.querySelector('.ht-book')?.innerText || '' }));
-  ok(!r.wa && r.contato.includes('O WhatsApp da academia está sendo confirmado.') && r.cartao.includes('sendo confirmado'), 'WhatsApp esperando o código: nenhum botão, e a ficha diz que está sendo confirmado');
-  await mudarAcademia(page, 'a1', { phone: null, whatsapp_situacao: 'revisao' });
+  r = await page.evaluate(() => ({ wa: !!document.querySelector('.courtpage a[data-track="whatsapp"]'), pagina: (document.querySelector('.courtpage')?.innerText || '') }));
+  ok(!r.wa && !/confirmad[oa] o WhatsApp|sendo confirmado|em confirmação|em revisão|95555/i.test(r.pagina.replace('Confirmada pela academia', '')),
+    'WhatsApp esperando o código: nenhum botão, e a ficha não diz que há um número esperando');
+  await mudarAcademia(page, 'a1', { phone: null, whatsapp_a_confirmar: null, whatsapp_em_revisao_desde: diasAtras(1), whatsapp_em_revisao_numero: '11999990001' });
   await abrirFicha(page, 'a1');
-  ok((await texto(page, '#ht-contato')).includes('em revisão pelo GuiaTennis'), 'WhatsApp em revisão: a ficha diz');
-  // A academia avisou que fechou; a ficha com mais de um ano.
-  await mudarAcademia(page, 'a1', { phone: '11999990001', whatsapp_situacao: null, avisou_que_fechou_em: diasAtras(1), dados_atualizados_em: diasAtras(400) });
+  ok(!/em revisão/.test(await texto(page, '.courtpage')), 'WhatsApp em revisão: a ficha também não diz');
+  // A ficha com mais de um ano.
+  await mudarAcademia(page, 'a1', { phone: '11999990001', whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null, dados_atualizados_em: diasAtras(400) });
   await abrirFicha(page, 'a1');
-  r = await page.evaluate(() => ({ topo: document.querySelector('.ht-head .ficha-fechou')?.innerText || '', conf: document.querySelector('.ficha-confirmada')?.innerText || '' }));
-  ok(r.topo.includes('A academia avisou que fechou as portas') && r.topo.includes('O GuiaTennis está confirmando'), 'a academia que avisou que fechou: o aviso no alto da ficha, como o "Fechado permanentemente"');
-  ok(r.conf.includes('Faz mais de um ano: confirme horário e preço'), 'ficha com mais de um ano: pede para confirmar com a academia — ' + r.conf);
+  ok((await texto(page, '.ficha-confirmada')).includes('Faz mais de um ano: confirme horário e preço'), 'ficha com mais de um ano: pede para confirmar com a academia');
+  // A academia que avisou que fechou sai do site (regra 157): nem com o banco
+  // antigo, que ainda não a pausa, o jogador a vê.
+  await mudarAcademia(page, 'a1', { avisou_que_fechou_em: diasAtras(1) });
   await page.evaluate(() => { state.page = 'search'; state.searchStatus = 'done'; state.selected = null; render(); });
   await page.waitForTimeout(200);
-  ok(await page.evaluate(() => [...document.querySelectorAll('.rcard')].some(c => c.innerText.includes('A academia avisou que fechou'))), 'no resultado da busca também');
+  ok(await page.evaluate(() => !state.allCourts.some(c => c.id === 'a1') && ![...document.querySelectorAll('.rcard')].some(c => c.innerText.includes('Só Aula Tennis'))),
+    'a academia que avisou que fechou não aparece para o jogador');
+  await browser.close();
+
+  // ---- o admin ainda vê a ficha, com o aviso de que está fora do site ----
+  ({ browser, page } = await abrir({ admin: true }));
+  await mudarAcademia(page, 'a1', { avisou_que_fechou_em: diasAtras(1), pausada: true });
+  await abrirFicha(page, 'a1');
+  r = await texto(page, '.ht-head .ficha-fechou');
+  ok(r.includes('Fora do site: a academia avisou que fechou as portas') && r.includes('Os jogadores não veem esta ficha'), 'admin: o aviso no alto da ficha diz que ela está fora do site — ' + r);
   await browser.close();
 
   // ---- "Informar um problema": entra, confirma o e-mail e envia ----

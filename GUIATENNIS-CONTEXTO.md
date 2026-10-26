@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 26/10/2026 (regra 156)
+**Atualizado em:** 26/10/2026 (regra 157)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -40,6 +40,19 @@ teste")
 > (novo: `veracidade.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`
 > (novo), nenhuma falha (antes da regra 156, a mesma contagem dava 1.786);
 > **537** no `banco-emails.py` (467 + 70 da seção 36), nenhuma falha.
+>
+> Depois, no mesmo dia: **regra 157, a ficha só mostra o que está certo** —
+> nada de "em confirmação" na ficha pública (sai `whatsapp_situacao`), todo
+> número novo espera o admin depois do código (não só a troca), a academia
+> que avisou que fechou sai do site na hora (pausada pelo GuiaTennis, volta
+> como estava se continuar aberta) e o controle das fichas paradas há 3
+> meses no admin (Pendências, Para fazer agora e o filtro em Academias; SQL
+> `20261026180000_so_o_que_esta_certo`); seção 63 do PR, passo 89. Testes:
+> bateria completa com **1.864 verificações** nos 64 arquivos do navegador
+> (novo: `so-o-que-esta-certo.js`), mais `onde.mjs`, `pagamento.mjs` e
+> `cnpj.mjs`, nenhuma falha; **562** no `banco-emails.py` (seção 36
+> atualizada e a 37 nova), nenhuma falha; todas as migrações também entram
+> num banco novo, do zero.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -3745,9 +3758,10 @@ cobra taxa e não fica no meio** da negociação.
       ficha. Embaixo do campo do WhatsApp, no cadastro e na edição pela
       conta, a dica diz isso (`dicaDoWhatsappNoCadastro`), sem citar marcas.
       Código cifrado, 72 horas, 5 tentativas; "Mandar outro código" (com o
-      WhatsApp ligado) um por hora, até 3 em 3 dias. Na ficha sem o botão:
-      "O WhatsApp da academia está sendo confirmado." (`whatsapp_situacao`,
-      coluna calculada que o visitante lê).
+      WhatsApp ligado) um por hora, até 3 em 3 dias. Na ficha sem o botão
+      dizia "O WhatsApp da academia está sendo confirmado."
+      (`whatsapp_situacao`): **a regra 157 tirou** (nada de "em confirmação"
+      para o visitante) e fez o primeiro número também esperar o admin.
     - **"Informar um problema" na ficha** (como o "Sugerir uma alteração" do
       Google Maps e o "Denunciar este anúncio" do Airbnb): no fim da ficha,
       "Algo errado nesta ficha? Informar um problema" abre a janela com 5
@@ -3786,6 +3800,7 @@ cobra taxa e não fica no meio** da negociação.
       "Fechado permanentemente" do Google, que vale assim que o dono marca).
       Cancelar o aviso ou "Continua aberta" tira. Coluna
       `avisou_que_fechou_em`, mantida por gatilho em `pedidos_para_sair`.
+      **Mudou na regra 157:** o aviso já tira a ficha do site.
     - **Ficha com mais de um ano sem atualizar**: a linha "Confirmada pela
       academia · atualizada em …" ganha "Faz mais de um ano: confirme horário
       e preço direto com a academia." (`fichaVelha`).
@@ -3824,6 +3839,71 @@ cobra taxa e não fica no meio** da negociação.
     Guia"). Testes: `veracidade.js` (novo), `cnpj.mjs` (novo), seção 36 do
     `banco-emails.py`; `seguranca.js` e `buscas-e-avisos.js` passaram a
     confirmar o e-mail antes de avaliar (`abrir({ jogadorConfirmado })`).
+157. **A ficha só mostra o que está certo** (pedido de 26/10/2026: "não
+    acho legal aparecer publicamente whatsapp em confirmação, algum grande
+    faz isso? mas ainda sim se colocar um número falso, verificado, não pode
+    dar erro? quando uma academia avisar que ele fechou, pausar no site, os
+    jogadores não querem ver academia fechada; eu quero ter um controle para
+    se manter os dados atualizados, algo há 3 meses e aparecer no meu
+    perfil"). SQL `20261026180000_so_o_que_esta_certo`.
+    - **Nada de "em confirmação" na ficha.** Nenhum grande faz: o Google
+      Business Profile só mostra o telefone aprovado e não anuncia o que
+      está em análise; o Booking e o Airbnb, idem. A ficha sem número diz só
+      "O telefone não foi incluído." (como qualquer ficha sem WhatsApp); a
+      ficha com troca mostra o número de antes; a do WhatsApp em revisão
+      (2 contas) fica sem o botão, calada. A coluna `whatsapp_situacao` saiu
+      do banco (o visitante nem consegue saber).
+    - **Número falso "verificado": o código não basta.** O código prova que
+      a pessoa tem o número, não que ele é da academia: quem cadastra uma
+      academia nova (ou assume uma ficha sem responsável) com o próprio
+      celular passaria. Agora **todo número novo** espera o admin depois do
+      código (`confirmar_whatsapp_da_ficha` devolve sempre `'revisao'`), não
+      só a troca, como o Google revisa o perfil novo antes de mostrar o
+      telefone. O admin recebe "WhatsApp para aprovar" (tipo
+      `whatsapp_para_aprovar`; "Troca de WhatsApp para aprovar" na troca),
+      confere (Conferir: Google Maps, mapa aberto e Receita) e toca em
+      "Aprovar o número" (ou "Aprovar a troca") ou "Recusar". Até lá, a
+      ficha fica sem o botão (ou com o número de antes). Se ainda assim
+      passar um número errado, os jogadores avisam ("Informar um problema";
+      2 contas tiram o botão na hora).
+    - **A academia que avisou que fechou sai do site na hora** (como o
+      Booking fecha o anúncio para reservas: o jogador não vê academia
+      fechada). O gatilho `sincronizar_aviso_de_fechou` pausa a ficha pelo
+      GuiaTennis (`pausada`, sem data, `pausada_pela_academia = false`) e
+      guarda a pausa de antes no aviso (`pedidos_para_sair.pausa_antes`);
+      "Continua aberta", ou o aviso cancelado, devolve a pausa de antes;
+      "Fechou: tirar do Guia" apaga, como antes. Enquanto isso, a academia
+      não pausa nem volta (`pausar_minha_academia` recusa: "Vocês avisaram
+      que a academia fechou…"). No site, mesmo com o banco antigo, o
+      jogador não vê a academia com `avisou_que_fechou_em`; o admin e quem
+      administra veem "Fora do site: a academia avisou que fechou as
+      portas." No Parceiros: "Fora do site" na situação, sem "Pausar no
+      site", e o aviso diz que a ficha saiu na hora e volta se a academia
+      continuar aberta. No admin: "A ficha saiu do site quando a academia
+      avisou" e "(já fora do site)" em Para fazer agora.
+    - **O controle das fichas paradas, no admin** (Pendências › **Fichas
+      paradas há 3 meses**, "Para fazer agora" e o filtro "Paradas há 3
+      meses" em Academias), como o Google, que pede ao dono para confirmar o
+      perfil e confere ele mesmo as fichas sem dono: as fichas no ar sem
+      mudar há mais de 3 meses, a mais parada primeiro, com "parada desde
+      junho de 2026 (4 meses)", ficha básica ou confirmada, fichas abertas
+      em 30 dias e o lembrete: o e-mail automático "Está tudo certo na
+      ficha?" (regra do SQL 20261009130000, aos 3 meses e a cada 3 meses),
+      "Sem responsável: ninguém para lembrar" ou "Ninguém da academia recebe
+      os e-mails". Ações: Abrir a ficha, Editar, Conferir, **Lembrar agora**
+      (o mesmo e-mail, na hora, um por dia: `lembrar_ficha_admin`) e
+      **Conferi: está certo** (sai da lista por 3 meses sem mudar a data que
+      o jogador vê, que é a da academia: `ficha_conferida_admin`, coluna
+      `lembretes_de_ficha.conferida_em`). Lista: `fichas_paradas_admin`.
+      Sem o SQL, o bloco avisa.
+    Termos (seções 2 e 4) e Privacidade (o WhatsApp só aparece confirmado e
+    conferido, sem o site dizer que há um esperando), Ajuda do Parceiros
+    ("Por que o WhatsApp novo não aparece na ficha?" e "Posso pausar ou
+    tirar a academia do Guia?") e o chat ("Confirmar o WhatsApp da ficha",
+    "Tirar a academia do Guia" e a situação da academia). Rótulos dos
+    e-mails novos na lista do admin. Testes: `so-o-que-esta-certo.js`
+    (novo), `veracidade.js` e `sair-do-guia.js` atualizados, seções 36 e 37
+    do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4755,6 +4835,20 @@ Funções do Parceiros: `whatsapp_das_minhas_academias`,
 conta sem o e-mail confirmado. Os e-mails da equipe saem por
 `aviso_para_a_equipe` (o mesmo rodapé dos outros, com o "?abrir=").
 
+**Regra 157** (SQL `20261026180000_so_o_que_esta_certo`): `whatsapp_situacao`
+saiu de `academias`; `confirmar_whatsapp_da_ficha` devolve `'revisao'`
+também no primeiro número (e-mail `whatsapp_para_aprovar`);
+`pedidos_para_sair.pausa_antes` (jsonb: `pausada`, `ate`, `pela_academia`)
+e o gatilho `sincronizar_aviso_de_fechou` pausam a ficha quando quem
+administra avisa que fechou e devolvem a pausa de antes quando o aviso
+fecha sem tirar a academia; `pausar_minha_academia` recusa enquanto o aviso
+está aberto; `lembretes_de_ficha.conferida_em` ("Conferi: está certo";
+`lembrada_em` pode ficar vazia); do admin: `fichas_paradas_admin` (no ar,
+sem mudar há 3 meses e sem conferência nos últimos 3 meses: `academia_id,
+nome, atualizada_em, lembrada_em, conferida_em, com_responsavel, recebem`),
+`lembrar_ficha_admin` (um por dia; devolve quantos recebem) e
+`ficha_conferida_admin`.
+
 ### Falhas do site (11/10/2026, regra 91)
 - `falhas_do_site` (SQL `20261011120000`): `id, codigo` (6, sem 0/O/1/I),
   `grupo` (md5 da ação, do tipo e da mensagem sem números), `visita`,
@@ -4829,6 +4923,7 @@ de novo sem estragar.
 
 **PR #5 (até 26/10/2026):** o SQL do PR entra no banco de teste a cada push
 e no de verdade com o merge, sozinho; o último é
+`20261026180000_so_o_que_esta_certo` (regra 157), depois de
 `20261026120000_veracidade` (regra 156).
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
@@ -5142,6 +5237,16 @@ as 133 do `banco-acesso.py` no banco e login locais.
   em Atualizações e salvar resolve; o admin (Pendências, Para fazer agora,
   "Gerar código", "Aprovar a troca", "Conferir" com o Google Maps, o mapa
   aberto e a Receita, problemas e denúncias); banco sem o SQL.
+  Desde a regra 157: o primeiro número também espera o admin, a ficha não
+  diz que há número esperando, e o jogador não vê a academia que avisou que
+  fechou (o admin vê "Fora do site").
+- `so-o-que-esta-certo.js` — regra 157: avisar que fechou pausa a ficha e
+  guarda a pausa de antes ("Fora do site", sem "Pausar no site", o banco
+  recusa voltar, Minha ficha), cancelar devolve; no admin, "Continua
+  aberta" devolve a pausa de antes; o controle das fichas paradas (a ordem,
+  a ficha básica sem responsável, "Lembrar agora" e o limite de um por dia,
+  "Conferi: está certo" sem mudar a data, "Conferir", o filtro em
+  Academias, Para fazer agora); banco sem o SQL (`abrir({ semForaDoAr })`).
 - `cnpj.mjs` — regra 156, roda sozinho, sem internet: `node
   testes/cnpj.mjs`. O CNPJ (dígitos), o resumo, a BrasilAPI, a Minha
   Receita de reserva, as duas fora do ar, CNPJ que não existe e inválido.
@@ -5690,8 +5795,13 @@ promoção ao voltar ao Básico; (4) o mínimo de jogadores do leilão; (5) o
 o e-mail confirmado: o "depois" vale só para entrar); (8) testar na prévia
 os passos 82 a 88. Novo: ligar o envio automático do WhatsApp (espera o
 CNPJ, item 0) deixa o código do WhatsApp da ficha sair na hora, sem o
-admin. Próximos números: **regra 157**, **seção 63** da descrição do PR e
-**passo 89**.
+admin. Depois, a **regra 157** (a ficha só mostra o que está certo; seção
+63 do PR, passo 89; SQL `20261026180000_so_o_que_esta_certo`): nada de "em
+confirmação" na ficha pública, todo número novo espera o admin depois do
+código, a academia que avisou que fechou sai do site na hora (resolve de vez
+a pendência 6) e o controle das fichas paradas há 3 meses no admin.
+Próximos números: **regra 158**, **seção 64** da descrição do PR e **passo
+90**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

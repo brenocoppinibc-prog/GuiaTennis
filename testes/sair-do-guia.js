@@ -17,7 +17,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.click('[data-pedir-saida="a1"]');
   await page.waitForTimeout(150);
   corpo = await texto(page, '.pc-saida');
-  ok(corpo.includes('depois de conferir, a ficha sai do Guia') && corpo.includes('Enquanto ela estiver aberta, a ficha continua') && await page.$('#pc-saida-detalhes'), 'o aviso explica que a ficha sai só depois de conferir, e pede quando fechou (opcional)');
+  ok(corpo.includes('a ficha sai do site na hora') && corpo.includes('Depois de conferir, o GuiaTennis tira a ficha do Guia') && await page.$('#pc-saida-detalhes'), 'o aviso explica que a ficha sai do site na hora e do Guia depois de conferir (regra 157), e pede quando fechou (opcional)');
   await page.fill('#pc-saida-detalhes', 'Fechamos em setembro.');
   await page.click('#pc-saida-enviar');
   await page.waitForTimeout(500);
@@ -26,7 +26,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   page.once('dialog', d => d.accept());
   await page.click('[data-cancelar-saida="a1"]');
   await page.waitForTimeout(500);
-  ok(!(await page.$('.pc-saida-aberta')) && (await texto(page, '#parceiros .pc-main')).includes('Aviso cancelado: a academia continua no Guia.'), '"Cancelar o aviso" volta ao normal');
+  ok(!(await page.$('.pc-saida-aberta')) && (await texto(page, '#parceiros .pc-main')).includes('Aviso cancelado: a ficha volta ao site como estava.'), '"Cancelar o aviso" volta ao normal');
   await page.evaluate(() => { window.__db.academia_vinculos.forEach(v => { v.papel = 'equipe'; }); contaAcademia.papel = 'equipe'; minhasAcademias().forEach(a => { a.papel = 'equipe'; }); render(); });
   await page.waitForTimeout(150);
   ok(!(await page.$('[data-pedir-saida]')), 'a equipe não avisa que fechou (só o responsável principal)');

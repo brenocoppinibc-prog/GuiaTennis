@@ -130,10 +130,14 @@
     return lista.length === 1 ? lista[0] : null;
   };
   const vinculo = (userId, academiaId) => db.academia_vinculos.find(v => v.user_id === userId && v.academia_id === academiaId);
+  // O aviso de que fechou acabou sem tirar a academia: a pausa de antes volta.
+  const voltaAPausa = (ac, p) => {
+    if (!ac || !p || !p.pausa_antes) return;
+    Object.assign(ac, { pausada: !!p.pausa_antes.pausada, pausada_ate: p.pausa_antes.ate || null, pausada_pela_academia: !!p.pausa_antes.pela_academia });
+  };
   // O WhatsApp da ficha confirmado por código (SQL 20261026120000).
   const numeroValido = (t) => { const d = tel(t); return d.length >= 10 && d.length <= 11 && d[0] !== "0"; };
   const mesmoNumero = (x, y) => (numeroValido(x) && numeroValido(y) && tel(x) === tel(y)) || String(x || "").trim() === String(y || "").trim();
-  const situacaoDoWhatsapp = (ac) => { ac.whatsapp_situacao = ac.whatsapp_em_revisao_desde ? "revisao" : ac.whatsapp_a_confirmar && !ac.phone ? "confirmando" : null; };
   const codigoDoWhatsapp = (ac, origem) => {
     window.__codigosDoWhatsapp = window.__codigosDoWhatsapp || {};
     const c = { codigo: "654321", numero: ac.whatsapp_a_confirmar, criado_em: new Date().toISOString(), tentativas: 0, origem };
@@ -149,16 +153,14 @@
       window.__whatsapps = window.__whatsapps || [];
       window.__whatsapps.push({ academia_id: ac.id, para: "55" + tel(numero), codigo: "654321", origem: "automatico", tipo: "whatsapp_da_ficha", criado_em: new Date().toISOString() });
     } else db.emails_a_enviar.push({ id: "e-whats-" + ac.id + "-" + tel(numero), tipo: "whatsapp_para_confirmar", para: ADMIN, assunto: "WhatsApp para confirmar: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
-    situacaoDoWhatsapp(ac);
-  };
+      };
   const whatsappEntra = (ac) => {
     Object.assign(ac, { phone: ac.whatsapp_a_confirmar, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null,
       whatsapp_codigo_ok_em: null, whatsapp_confirmado_em: new Date().toISOString(), whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null,
       dados_atualizados_em: new Date().toISOString() });
     if (window.__codigosDoWhatsapp) delete window.__codigosDoWhatsapp[ac.id];
     db.problemas_na_ficha.filter(p => p.academia_id === ac.id && p.motivo === "whatsapp" && !p.resolvido_em).forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "whatsapp_novo"; });
-    situacaoDoWhatsapp(ac);
-  };
+      };
   // ligar_conta_a_academia: abrir = a academia passa a ser a aberta (pedido
   // da própria pessoa); sem ele, só abre se a conta não tinha nenhuma.
   const ligar = (x, academiaId, abrir = true) => {
@@ -351,7 +353,7 @@
         const atualizou = (r) => table === "academias" && ((sessao && !souAdmin() && vinculo(sessao.user.id, r.id))
           || Object.keys(mudanca).some(k => !FORA_DA_FICHA.includes(k) && JSON.stringify(r[k] ?? null) !== JSON.stringify(mudanca[k] ?? null)));
         // O que o gatilho do banco faz quando quem salva é a academia.
-        const COLUNAS_DO_WHATSAPP = ["whatsapp_a_confirmar", "whatsapp_antes", "whatsapp_pedido_em", "whatsapp_pedido_por", "whatsapp_codigo_ok_em", "whatsapp_confirmado_em", "whatsapp_em_revisao_desde", "whatsapp_em_revisao_numero", "avisou_que_fechou_em", "whatsapp_situacao"];
+        const COLUNAS_DO_WHATSAPP = ["whatsapp_a_confirmar", "whatsapp_antes", "whatsapp_pedido_em", "whatsapp_pedido_por", "whatsapp_codigo_ok_em", "whatsapp_confirmado_em", "whatsapp_em_revisao_desde", "whatsapp_em_revisao_numero", "avisou_que_fechou_em"];
         if (table === "academias" && sessao && !souAdmin()) {
           ["status", "pago", "plano", "pausada", "pausada_ate", "source", "nome_solicitante", "contato_solicitante", ...COLUNAS_DO_WHATSAPP].forEach(k => delete mudanca[k]);
           mudanca.confirmada = true;
@@ -369,7 +371,6 @@
             delete mudanca.phone;
             if (!txt) { if (r.phone || r.whatsapp_a_confirmar) Object.assign(r, { phone: null, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_codigo_ok_em: null, whatsapp_confirmado_em: null }); }
             else if (!mesmoNumero(txt, r.phone) && !mesmoNumero(txt, r.whatsapp_a_confirmar)) whatsappNovoPedido(r, txt, r.phone || r.whatsapp_em_revisao_numero);
-            situacaoDoWhatsapp(r);
           }
           if (table === "academias" && souAdmin() && "phone" in mudanca && !mesmoNumero(mudanca.phone, r.phone)) Object.assign(r, { whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_codigo_ok_em: null });
           if (table === "academias" && sessao && !souAdmin() && vinculo(sessao.user.id, r.id))
@@ -382,7 +383,6 @@
           // Gatilho liberar_pedidos_da_academia.
           if (table === "academias" && r.status === "published" && antes !== "published")
             pedidosPara(r.id).map(p => db.academia_acessos.find(x => x.user_id === p.user_id)).filter(Boolean).forEach(x => ligar(x, r.id));
-          if (table === "academias") situacaoDoWhatsapp(r);
         });
         return { data:null, error:null };
       }
@@ -598,6 +598,7 @@
       const ac = db.academias.find(y => y.id === a.p_academia);
       if (!ac) return erro("Academia não encontrada.", "22023");
       if (ac.status !== "published") return erro("A academia ainda está em análise: ela só aparece no site depois que o GuiaTennis publicar.", "22023");
+      if (ac.avisou_que_fechou_em && !window.__semForaDoAr) return erro("Vocês avisaram que a academia fechou: ela fica fora do site até o GuiaTennis conferir. Para ela voltar, cancele o aviso em Suas academias.", "22023");
       if (a.p_pausar && a.p_ate && new Date(a.p_ate) <= new Date()) return erro("Escolha uma data depois de hoje.", "22023");
       if (!a.p_pausar && ac.pausada && !ac.pausada_pela_academia && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date())) return erro("Essa academia foi pausada pelo GuiaTennis. Fale com a gente para ela voltar a aparecer.", "42501");
       Object.assign(ac, { pausada: !!a.p_pausar, pausada_ate: a.p_pausar ? (a.p_ate || null) : null, pausada_pela_academia: !!a.p_pausar });
@@ -615,13 +616,18 @@
       const p = { id: "saida-" + (db.pedidos_para_sair.length + 1), academia_id: a.p_academia, academia_nome: ac.name, user_id: x.user_id, motivo: "fechou", detalhes: String(a.p_detalhes || "").trim() || null, pedido_em: new Date().toISOString(), resolvido_em: null };
       db.pedidos_para_sair.push(p);
       ac.avisou_que_fechou_em = p.pedido_em;
+      // Fora do site na hora; a pausa de antes fica no aviso (SQL 20261026180000).
+      if (!window.__semForaDoAr) {
+        p.pausa_antes = { pausada: !!ac.pausada, ate: ac.pausada_ate || null, pela_academia: !!ac.pausada_pela_academia };
+        Object.assign(ac, { pausada: true, pausada_ate: null, pausada_pela_academia: false });
+      }
       return { data: p.id, error:null };
     }
     if (nome === "cancelar_pedido_para_sair") {
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
-      db.pedidos_para_sair.filter(p => p.academia_id === a.p_academia && !p.resolvido_em).forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "cancelado"; });
       const acSaida = db.academias.find(y => y.id === a.p_academia);
+      db.pedidos_para_sair.filter(p => p.academia_id === a.p_academia && !p.resolvido_em).forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "cancelado"; voltaAPausa(acSaida, p); });
       if (acSaida) acSaida.avisou_que_fechou_em = null;
       return { data:null, error:null };
     }
@@ -653,6 +659,7 @@
       const remover = nome === "tirar_academia_que_fechou" || a.p_remover;
       Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: remover ? "removida" : "mantida", resposta: a.p_resposta || null });
       const acResolvida = db.academias.find(y => y.id === p.academia_id);
+      voltaAPausa(acResolvida, p);
       if (acResolvida) acResolvida.avisou_que_fechou_em = null;
       if (remover) { db.academias = window.__db.academias = db.academias.filter(y => y.id !== p.academia_id); }
       return { data:null, error:null };
@@ -1327,16 +1334,17 @@
       if (!k || !mesmoNumero(k.numero, ac.whatsapp_a_confirmar)) return { data:"sem_codigo", error:null };
       if (k.tentativas >= 5) return { data:"tentativas", error:null };
       if (String(a.p_codigo || "").replace(/\D/g, "") !== k.codigo) { k.tentativas++; return { data:"errado", error:null }; }
-      if (!ac.whatsapp_antes) { whatsappEntra(ac); return { data:"ok", error:null }; }
+      // Banco sem o SQL 20261026180000: o primeiro número entrava na hora.
+      if (!ac.whatsapp_antes && window.__semForaDoAr) { whatsappEntra(ac); return { data:"ok", error:null }; }
       ac.whatsapp_codigo_ok_em = new Date().toISOString();
       delete window.__codigosDoWhatsapp[ac.id];
-      db.emails_a_enviar.push({ id: "e-troca-" + ac.id, tipo: "whatsapp_troca", para: ADMIN, assunto: "Troca de WhatsApp para aprovar: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      db.emails_a_enviar.push({ id: "e-aprovar-" + ac.id, tipo: "whatsapp_para_aprovar", para: ADMIN, assunto: (ac.whatsapp_antes ? "Troca de WhatsApp para aprovar: " : "WhatsApp para aprovar: ") + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
       return { data:"revisao", error:null };
     }
     if (nome === "desistir_do_whatsapp_novo") {
       if (!administro(a.p_academia)) return erro("Só quem administra a academia muda o WhatsApp.", "42501");
       const ac = academiaDe(a.p_academia);
-      if (ac) { Object.assign(ac, { whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null }); situacaoDoWhatsapp(ac); }
+      if (ac) { Object.assign(ac, { whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null }); }
       if (window.__codigosDoWhatsapp) delete window.__codigosDoWhatsapp[a.p_academia];
       return { data:null, error:null };
     }
@@ -1370,8 +1378,46 @@
       if (!ac || !ac.whatsapp_a_confirmar) return erro("Essa academia não tem WhatsApp esperando.", "22023");
       const numero = ac.whatsapp_a_confirmar;
       if (nome === "aprovar_whatsapp_admin") whatsappEntra(ac);
-      else { Object.assign(ac, { whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null }); situacaoDoWhatsapp(ac); }
+      else { Object.assign(ac, { whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null }); }
       db.emails_a_enviar.push({ id: "e-" + nome + "-" + ac.id, tipo: nome === "aprovar_whatsapp_admin" ? "whatsapp_aprovado" : "whatsapp_recusado", para: "equipe", assunto: (nome === "aprovar_whatsapp_admin" ? "O WhatsApp novo está na ficha da " : "O WhatsApp novo não entrou na ficha da ") + ac.name, texto: a.p_motivo || numero, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:null, error:null };
+    }
+    // O controle das fichas paradas no admin (SQL 20261026180000).
+    // window.__semForaDoAr finge o banco sem o SQL novo.
+    if (["fichas_paradas_admin", "lembrar_ficha_admin", "ficha_conferida_admin"].includes(nome) && window.__semForaDoAr) return semFuncao;
+    if (nome === "fichas_paradas_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      const lembretes = window.__lembretesDeFicha = window.__lembretesDeFicha || {};
+      const tres = Date.now() - 91 * 86400000;
+      const noAr = (ac) => ac.status === "published" && !(ac.pausada && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date()));
+      return { data: db.academias.filter(ac => noAr(ac) && new Date(ac.dados_atualizados_em || ac.created_at || 0).getTime() < tres
+          && !(lembretes[ac.id] && lembretes[ac.id].conferida_em && new Date(lembretes[ac.id].conferida_em).getTime() > tres))
+        .map(ac => {
+          const equipe = db.academia_vinculos.filter(v => v.academia_id === ac.id);
+          const recebem = equipe.map(v => db.academia_acessos.find(x => x.user_id === v.user_id)).filter(x => x && x.email_confirmado_em && x.avisos_por_email !== false).length;
+          return { academia_id: ac.id, nome: ac.name, atualizada_em: ac.dados_atualizados_em || ac.created_at || null, lembrada_em: (lembretes[ac.id] || {}).lembrada_em || null,
+            conferida_em: (lembretes[ac.id] || {}).conferida_em || null, com_responsavel: equipe.length > 0, recebem };
+        })
+        .sort((p, q) => String(p.atualizada_em).localeCompare(String(q.atualizada_em))), error:null };
+    }
+    if (nome === "lembrar_ficha_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis manda esse lembrete.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac) return erro("Academia não encontrada.", "22023");
+      const lembretes = window.__lembretesDeFicha = window.__lembretesDeFicha || {};
+      const l = lembretes[ac.id] || {};
+      if (l.lembrada_em && new Date(l.lembrada_em).toDateString() === new Date().toDateString()) return erro("A academia já recebeu o lembrete hoje.", "22023");
+      const quem = db.academia_vinculos.filter(v => v.academia_id === ac.id).map(v => db.academia_acessos.find(x => x.user_id === v.user_id)).filter(x => x && x.email_confirmado_em && x.avisos_por_email !== false);
+      if (!quem.length) return erro("Ninguém da academia recebe os e-mails do GuiaTennis (e-mail não confirmado ou avisos desligados). Fale pelo WhatsApp.", "22023");
+      quem.forEach(x => db.emails_a_enviar.push({ id: "e-parada-" + ac.id + "-" + x.user_id, tipo: "ficha_parada", para: x.email, assunto: "Confira a ficha da " + ac.name + " no GuiaTennis", criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null }));
+      lembretes[ac.id] = { ...l, lembrada_em: new Date().toISOString() };
+      return { data: quem.length, error:null };
+    }
+    if (nome === "ficha_conferida_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis marca a ficha como conferida.", "42501");
+      if (!academiaDe(a.p_academia)) return erro("Academia não encontrada.", "22023");
+      const lembretes = window.__lembretesDeFicha = window.__lembretesDeFicha || {};
+      lembretes[a.p_academia] = { ...(lembretes[a.p_academia] || {}), conferida_em: new Date().toISOString() };
       return { data:null, error:null };
     }
     if (nome === "informar_problema") {
@@ -1393,8 +1439,7 @@
       if (a.p_motivo === "whatsapp" && ac.phone && !ac.whatsapp_em_revisao_desde
           && new Set(db.problemas_na_ficha.filter(x => x.academia_id === ac.id && x.motivo === "whatsapp" && !x.resolvido_em).map(x => x.user_id)).size >= 2) {
         Object.assign(ac, { whatsapp_em_revisao_desde: new Date().toISOString(), whatsapp_em_revisao_numero: ac.phone, phone: null });
-        situacaoDoWhatsapp(ac);
-        return { data:"whatsapp_em_revisao", error:null };
+                return { data:"whatsapp_em_revisao", error:null };
       }
       return { data:"ok", error:null };
     }
@@ -1423,8 +1468,7 @@
       if (ac) {
         if (nome === "manter_whatsapp_admin") Object.assign(ac, { phone: ac.whatsapp_em_revisao_numero || ac.phone, whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null });
         else Object.assign(ac, { phone: null, whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null, whatsapp_confirmado_em: null });
-        situacaoDoWhatsapp(ac);
-      }
+              }
       db.problemas_na_ficha.filter(p => p.academia_id === a.p_academia && p.motivo === "whatsapp" && !p.resolvido_em)
         .forEach(p => Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: nome === "manter_whatsapp_admin" ? "whatsapp_mantido" : "whatsapp_tirado" }));
       return { data:null, error:null };

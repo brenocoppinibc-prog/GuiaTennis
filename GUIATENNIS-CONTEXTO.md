@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 26/10/2026 (regra 158)
+**Atualizado em:** 26/10/2026 (regra 159)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -64,6 +64,19 @@ teste")
 > do navegador (novo: `fechada-guardada.js`), mais `onde.mjs`,
 > `pagamento.mjs` e `cnpj.mjs`, nenhuma falha; **596** no `banco-emails.py`
 > (seção 38 nova), nenhuma falha; as 71 migrações entram num banco novo.
+>
+> Depois, no chat novo (PR #5 acompanhado de novo, com inscrição e
+> conferência marcada): **regra 159, a ficha no jeito do hoteis.com** — a
+> ordem, o tamanho das fotos e os atalhos da página de hotel do hoteis.com
+> no celular, com as nossas letras e cores e sem tirar nada da ficha (capa
+> quadrada que passa com o dedo, nome no meio, destaques em círculos,
+> estrutura em duas colunas, região, "Sobre" com uma foto grande e duas
+> empilhadas, opções em cartões lado a lado, avaliações em cartões creme,
+> academias por perto, horário, cancelamento, dúvidas e contato; barra de
+> baixo com o anel dourado). Sem SQL; seção 65 do PR, passo 91. Testes:
+> **1.924 verificações** nos 66 arquivos do navegador (novo:
+> `ficha-hoteis.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
+> nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -3983,6 +3996,68 @@ cobra taxa e não fica no meio** da negociação.
     `banco-emails.py`; `veracidade.js`, `parceiros.js` (21 perguntas),
     `painel-admin.js` (14 seções) e `acesso-academia.js` ("Pedir análise"
     pelo site) atualizados.
+159. **A ficha no jeito do hoteis.com** (pedido de 26/10/2026, com 7 prints
+    da página do Grand Hyatt no hoteis.com pelo celular: "deixe as fichas
+    das academias exatamente com esse layout, com ordem, tamanho das fotos e
+    atalhos. adaptando com as nossas fontes, cores e conteúdo, sem tirar
+    nenhum da ficha, mas deixar todas informações"). Sem SQL. Camada CSS
+    "Ficha no jeito do hoteis.com", no fim do `<style>`.
+    - **Ordem** (`renderCourtPage`): capa; topo; destaques; Estrutura
+      (Comodidades); Explore a região; Sobre a academia (o "Na praia");
+      Escolha o que você quer (Opções de quarto); Avaliações; Outras
+      academias por perto (Propriedades semelhantes); Horário (Destaques);
+      Cancelamento e reposição (Taxas e políticas); Perguntas frequentes;
+      Contato, com "Algo errado nesta ficha? [Informar um problema]" no
+      meio, no lugar do "Como podemos melhorar nosso site? [Compartilhar
+      opinião]". As abas (`htSecoesDisponiveis`) seguem a mesma ordem e só
+      aparecem no computador; `SECOES_FICHA` ganhou `horario`.
+    - **Capa no celular** (`htCapa`, abaixo de 720px; no computador continua
+      o mosaico `htGaleria`): foto quadrada de ponta a ponta, todas as fotos
+      passando com o dedo; por cima, o ← (`data-voltar-ficha`) num botão
+      branco à esquerda e comparar, compartilhar (`data-share-court`) e
+      favoritar num botão branco à direita; embaixo, até 5 pontinhos
+      (`pontosDaCapa`) e o número de fotos, que abre a foto da vez. A
+      barra de cima (voltar, nome e atalhos) fica escondida enquanto a capa
+      está na tela e desce depois (`ligarCapaDaFicha`, `__capaSpy`). Sem
+      foto, sem capa: a barra fica como antes.
+    - **Topo no meio:** estrelas com o ⓘ ("Como funcionam as avaliações"),
+      nome com o selo, endereço · distância, "Ver no mapa ›", a nota verde
+      com "N avaliações ›" e os ✓ verdes em duas colunas (`htEtiquetas`:
+      modalidade, quadras, piso e cobertura). Links do jeito do hoteis.com:
+      sublinhados, com › (`.ht-link`).
+    - **Destaques** (`htDestaques`) com o ícone num círculo creme;
+      **Estrutura** em duas colunas, com tudo à vista; **Explore a região**
+      com o mapa largo e o botão de abrir (`.ht-map-abrir`), o que tem por
+      perto, como chegar, o endereço, "Ver no mapa e direções ›" e "Ver
+      todas as academias em … ›"; **Sobre a academia** com uma foto grande e
+      duas empilhadas (`htMosaico`; com 4 fotos ou mais, as que vêm depois
+      da capa), o texto e "Ver as N fotos ›".
+    - **Escolha o que você quer:** as caixas "Horário" (aberto agora e o de
+      hoje; leva ao horário da semana) e "A academia oferece"
+      (`htCaixasDaEscolha`), a promoção no cartão do "Este é o preço
+      normal", os filtros "Todas / Aula / Locação" com "Mostrando N de N
+      opções" (`state.opcaoDaFicha`) e as opções nos cartões dos quartos
+      (`htOpcoes`): dois lado a lado que passam com o dedo, foto em cima,
+      "Menor preço" no mais em conta, "Reposição até 24h antes" em verde (o
+      "Totalmente reembolsável"), o valor à direita e um "Chamar no
+      WhatsApp" por cartão, que já abre a conversa sobre aquela opção. O
+      cartão "Contato para…" (`blocoContato`) saiu: o WhatsApp está em cada
+      cartão, na barra de baixo e no Contato.
+    - **Avaliações:** "Avaliações" com "Excelente 4,7" à direita, as barras
+      das estrelas, os cartões creme que passam (nota em cima, texto com
+      "Mostrar mais", quem e quando embaixo; `cartaoAvaliacao(…, "ficha")`)
+      e "Ver todas as N avaliações ›", que põe uma embaixo da outra; depois,
+      "Como funcionam as avaliações" e a caixa de avaliar.
+    - **Outras academias por perto** (`htVizinhas`, até 6): cartões com a
+      foto em cima, dois por vez, com a seta.
+    - **Barra de baixo:** o valor à esquerda e "Chamar no WhatsApp" com o
+      anel dourado; o compartilhar saiu dela (fica no alto).
+    - A rolagem de lado (capa, cartões e avaliações, `data-rolagem-x`) não
+      volta ao começo quando a tela redesenha.
+    - A prévia do cadastro segue a ordem nova (fotos, nome, estrutura, como
+      chegar, sobre, opções, cancelamento, contato).
+    Testes: `ficha-hoteis.js` (novo); `links.js` (as abas só no
+    computador) e `previa-da-ficha.js` (a ordem nova) atualizados.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4273,7 +4348,7 @@ grátis") subiram para junto do endereço e das quadras (`.rcard-selos`).
 | 6625 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
 | 6785 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
 | 7767 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia`, `htCaminho` (links das regiões) |
-| 8136 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono) |
+| 8136 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`, bloco do dono); desde a regra 159, na ordem do hoteis.com, com `htCapa`, `htMosaico`, `htCaixasDaEscolha`, `htVizinhas` e `ligarCapaDaFicha` |
 | 8428 | formulário de cadastro (`blocoPoliticaForm`, `REG_PASSOS`, `regFaltas`, `regPreenchido`, `regPassoHtml`, `renderRegisterSheet`, `irParaPasso`) |
 | 8693 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
 | 8795 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
@@ -5053,7 +5128,7 @@ fixo.
 
 ```
 testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos cadastro-sair-e-revisao comparacao-tudo estacionamento ficha-topo-e-sobre melhores-avaliadas dicas-do-parceiros; do NODE_PATH=$(npm root -g) node $t.js; done
+cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica acesso-academia links parceiros tempo menu-e-home planos jogador voltar codigo varias-academias plano-ao-finalizar pedido-ao-responsavel convite-conta senha viagem comparar-e-avisos perfil-e-avaliar percurso buscas-e-avisos admin-parceiros painel-admin confianca-na-ficha codigo-so-em-disputa codigo-pelo-whatsapp acessos-em-destaque guardados-na-conta premium-patrocinado promocoes sair-do-guia chat-de-ajuda parceiros-acender chat-na-conta plano-na-ficha previa-da-ficha lembrete-da-ficha volta-e-resumo fotos-ponto-e-aviso falhas sem-explicacao rascunho perto-de-voce promocoes-por-email pensamento-e-home chat-parceiros plano-da-academia plano-e-creditos cadastro-sair-e-revisao comparacao-tudo estacionamento ficha-topo-e-sobre melhores-avaliadas dicas-do-parceiros ficha-hoteis; do NODE_PATH=$(npm root -g) node $t.js; done
 node testes/onde.mjs
 node testes/pagamento.mjs
 ```
@@ -5343,6 +5418,15 @@ as 133 do `banco-acesso.py` no banco e login locais.
   a ficha básica sem responsável, "Lembrar agora" e o limite de um por dia,
   "Conferi: está certo" sem mudar a data, "Conferir", o filtro em
   Academias, Para fazer agora); banco sem o SQL (`abrir({ semForaDoAr })`).
+- `ficha-hoteis.js` — regra 159: a capa quadrada de ponta a ponta no
+  celular (todas as fotos, pontinhos, número de fotos, botões brancos, a
+  barra de cima escondida até a capa sair), o topo no meio com os atalhos e
+  os ✓, a ordem das seções e nada faltando, destaques, estrutura em duas
+  colunas, o mapa com o botão de abrir, o mosaico do "Sobre", as caixas, os
+  cartões das opções (lado a lado, "Menor preço", a reposição, o WhatsApp de
+  cada um e os filtros), as avaliações em cartões (o "Mostrar mais", a
+  rolagem que fica e "Ver todas"), a barra de baixo, o ← da capa, o
+  computador com o mosaico e as abas, e a ficha sem foto.
 - `fechada-guardada.js` — regra 158: o WhatsApp para a academia (a dica,
   a prévia, a tela de pronto, o cartão e a própria ficha; o jogador não vê);
   o mesmo e-mail reabre (a pergunta, a declaração, a volta ao site); outro
@@ -5491,8 +5575,12 @@ arredonda ou corta em círculo).
 
 ## 8. Referências de design
 
-- **Ficha da academia:** hoteis.com — galeria, abas, cartão de contato
-  fixo na direita, "Explore a região", perguntas frequentes.
+- **Ficha da academia:** hoteis.com — no celular, desde 26/10/2026 (regra
+  159), a página de hotel inteira: capa quadrada com botões brancos,
+  nome no meio, destaques em círculos, comodidades em duas colunas,
+  "Explore a região", o bloco de fotos "Na praia", os cartões dos quartos,
+  as avaliações em cartões e as "Propriedades semelhantes"; no computador,
+  galeria em mosaico, abas e o cartão de contato fixo na direita.
 - **Busca e home:** Trivago — card com oferta, mapa com pino de preço,
   filtros em gaveta, blocos da home.
 - **Comparação:** TudoCelular — vagas no topo, tabela alinhada de uma
@@ -5909,8 +5997,10 @@ WhatsApp precisa de confirmação e não fica público até ser confirmado; a
 academia que fechou fica guardada (cadastro inativo) e pode reabrir (o mesmo
 e-mail na hora; outro e-mail pede ao admin); e todas as pendências e avisos
 no painel (o número certo em Pendências, a seção Avisos com o sino e o
-"Pedir análise" pelo site). Próximos números: **regra 159**, **seção 65** da
-descrição do PR e **passo 91**.
+"Pedir análise" pelo site). Depois, no chat novo, a **regra 159** (a
+ficha no jeito do hoteis.com; seção 65 do PR, passo 91; sem SQL).
+Próximos números: **regra 160**, **seção 66** da descrição do PR e
+**passo 92**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

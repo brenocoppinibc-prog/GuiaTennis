@@ -28,7 +28,11 @@ const tela = (page) => page.evaluate(() => ({
   const naFicha = await page.evaluate(() => ({ caminho: !!document.querySelector('.ht-crumbs'), link: document.querySelector('#ht-local a[data-regiao-link]')?.getAttribute('href') || '', t: document.querySelector('#ht-local a[data-regiao-link]')?.innerText || '' }));
   ok(!naFicha.caminho && naFicha.link === '/quadras/sao-paulo/moema' && naFicha.t.includes('Ver todas as academias em Moema'), 'sem o caminho no alto; "Ver todas as academias em Moema" é link de verdade — ' + naFicha.link);
 
-  // Aba da ficha no link.
+  // Aba da ficha no link. No celular a barra de abas não aparece, como no
+  // hoteis.com (26/10/2026); no computador continua.
+  ok(!(await page.isVisible('#ht-tabs')), 'no celular, sem a barra de abas');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.waitForTimeout(150);
   await page.click('#ht-tabs button[data-goto="avaliacoes"]');
   await page.waitForTimeout(300);
   t = await tela(page);

@@ -882,10 +882,6 @@
   .sec-title { font-family: var(--fonte-titulo); font-size: 19px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
 
   .rating-panel { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
-  .rp-score { text-align: center; flex-shrink: 0; }
-  .rp-num { font-family: var(--fonte-texto); font-size: 36px; font-weight: 700; color: var(--green); line-height: 1; }
-  .rp-word { font-size: 13px; font-weight: 700; margin-top: 4px; }
-  .rp-count { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); padding: 2px 0; }
   .bar-row .bar-lbl { width: 26px; flex-shrink: 0; color: var(--gold); font-weight: 600; }
   .bar-track { flex: 1; height: 7px; border-radius: 999px; background: var(--border); overflow: hidden; }
@@ -896,7 +892,6 @@
   .rev-name { font-size: 13px; font-weight: 700; margin: 0; }
   .rev-date { font-size: 12px; color: var(--muted-dark); }
   .rev-text { font-size: 13px; margin: 5px 0 0; line-height: 1.45; color: var(--text); }
-  .rev-more { width: 100%; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 9px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--green); font-family: var(--fonte-texto); cursor: pointer; }
 
 
   /* ---- barra de busca no formato do Trivago ---- */
@@ -1259,7 +1254,6 @@
   @media (min-width: 720px) { .court-name { font-size: 34px; } }
   .court-stars { color: var(--gold); font-size: 15px; letter-spacing: 1px; margin-top: 6px; }
   .court-addr { display: flex; align-items: flex-start; gap: 6px; font-size: 14px; color: var(--muted); margin: 12px 0 0; line-height: 1.4; }
-  .court-addr button { background: none; border: none; padding: 0; color: var(--green); font-weight: 700; font-size: 14px; cursor: pointer; text-decoration: underline; font-family: inherit; }
 
   .opt-nota { font-size: 12px; color: var(--muted); margin: 10px 0 0; line-height: 1.45; }
 
@@ -1294,11 +1288,6 @@
   .offer-contact { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; font-weight: 700; color: var(--green); text-decoration: none; }
   .offer-contact:hover { text-decoration: underline; }
   .offer-contact .mod { font-weight: 500; color: var(--muted); }
-  .contato-card { border: 1px solid var(--green-line); background: var(--green-soft); border-radius: 12px; padding: 14px; margin-top: 12px; }
-  .contato-card p { margin: 0; font-size: 14px; }
-  .contato-card .contato-mod { font-weight: 700; font-size: 15px; }
-  .contato-card .contato-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
-  .contato-card .cta-btn { margin-top: 12px; }
 
   /* ---- animação "como funciona a busca" ---- */
   .demo { width: 100%; height: 100%; display: block; }
@@ -1379,13 +1368,9 @@
 
   .ht-head { padding: 18px 20px 0; }
   @media (min-width: 1000px) { .ht-head { padding: 22px 0 0; } }
-  .ht-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .ht-tag { font-size: 12px; font-weight: 600; color: var(--green); background: var(--green-soft); border: 1px solid var(--green-line); border-radius: 999px; padding: 4px 10px; }
   .ht-score { display: inline-flex; align-items: center; gap: 10px; margin-top: 12px; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
   .ht-score-num { background: var(--green); color: #fff; border-radius: 10px 10px 10px 3px; font-size: 20px; font-weight: 700; padding: 8px 11px; line-height: 1; flex-shrink: 0; }
   .ht-score-num.empty { background: var(--bg-alt); color: var(--muted); }
-  .ht-score-txt strong { font-size: 15px; display: block; }
-  .ht-score-txt span { font-size: 13px; color: var(--muted); text-decoration: underline; }
 
   /* barra de seções que acompanha a rolagem */
   .ht-tabs { position: sticky; top: 54px; z-index: 15; display: flex; gap: 2px; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--border); padding: 0 20px; margin-top: 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
@@ -1404,25 +1389,10 @@
   .ht-about { font-size: 15px; line-height: 1.55; margin: 0; color: var(--text); }
 
   /* destaques do topo, no lugar das "informações populares" dos hotéis */
-  .ht-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-  @media (min-width: 720px) { .ht-tiles { grid-template-columns: repeat(4, 1fr); } }
-  .ht-tile { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 13px; }
-  .ht-tile-ic { display: block; margin-bottom: 7px; }
-  .ht-tile-t { font-size: 14px; font-weight: 700; margin: 0; line-height: 1.25; }
-  .ht-tile-s { font-size: 12px; color: var(--muted); margin: 3px 0 0; line-height: 1.35; }
 
   /* opções de preço, no formato da lista de quartos */
-  .ht-room { display: grid; grid-template-columns: 1fr; border: 1px solid var(--border); border-radius: 14px; background: var(--card); box-shadow: var(--shadow); overflow: hidden; margin-top: 12px; }
-  @media (min-width: 720px) { .ht-room { grid-template-columns: minmax(0, 1fr) 210px; } }
-  .ht-room-info { padding: 15px 16px; }
-  .ht-room-name { font-size: 19px; font-weight: 700; margin: 0; }
-  .ht-room-desc { font-size: 13px; color: var(--muted); margin: 3px 0 0; }
-  .ht-room-price { background: var(--green-soft); border-top: 1px solid var(--green-line); padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
-  @media (min-width: 720px) { .ht-room-price { border-top: none; border-left: 1px solid var(--green-line); align-items: flex-end; text-align: right; } }
-  .ht-room-val { font-size: 24px; font-weight: 700; line-height: 1.05; white-space: nowrap; }
   .sem-valor { font-size: 16px; font-weight: 700; color: var(--muted); white-space: nowrap; }
   .court-cta-val.sem-valor { font-size: 15px; }
-  .ht-room-unit { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
   /* comodidades em grade de ícones */
   .ht-amen { display: grid; grid-template-columns: 1fr; gap: 9px; margin-top: 8px; }
@@ -1498,7 +1468,6 @@
   .ht-viz-l span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ht-viz-p { font-size: 16px; font-weight: 700; margin-top: 3px; color: var(--text); }
   .ht-viz-p small { font-size: 11px; font-weight: 500; color: var(--muted); }
-  .ht-viz-seta { display: flex; }
 
   /* avaliações em cartões */
   .ht-revs { display: grid; gap: 12px; margin-top: 8px; }
@@ -1721,11 +1690,8 @@
   .ht-head { padding: 22px 20px 0; }
   .court-name { font-size: 30px; line-height: 1.15; }
   @media (min-width: 720px) { .court-name { font-size: 38px; } }
-  .ht-tags { gap: 8px; margin-top: 14px; }
-  .ht-tag { font-size: 13px; font-weight: 500; padding: 5px 12px; }
   .ht-score { margin-top: 16px; }
   .ht-score-num { font-weight: 700; }
-  .ht-score-txt strong { font-weight: 600; }
   .court-addr { font-size: 15px; margin-top: 14px; }
   .ficha-basica { font-size: 13.5px; padding: 11px 13px; margin-top: 16px; border-radius: 12px; line-height: 1.5; }
   .ht-tabs { margin-top: 22px; }
@@ -1736,25 +1702,13 @@
   .ht-sec .sec-title { font-size: 24px; margin-bottom: 14px; }
   .ht-sec-sub { font-size: 14px; line-height: 1.5; margin-bottom: 14px; }
   .ht-about { font-size: 16px; line-height: 1.7; }
-  .ht-tiles { gap: 12px; margin-top: 22px; }
-  .ht-tile { padding: 16px; border-radius: 14px; }
-  .ht-tile-t { font-weight: 600; font-size: 15px; }
-  .ht-tile-s { font-size: 13px; margin-top: 4px; }
-  .ht-room { border-radius: 16px; margin-top: 14px; }
-  .ht-room-info { padding: 18px 18px; }
-  .ht-room-name { font-size: 20px; font-weight: 600; }
-  .ht-room-desc { font-size: 14px; margin-top: 4px; }
-  .ht-room-price { padding: 16px 18px; background: #F4F8F6; }
-  .ht-room-val { font-weight: 700; }
   .ht-amen { gap: 12px; margin-top: 12px; }
   .ht-amen-i { font-size: 15px; gap: 11px; }
   .hr-linha { padding: 13px 16px; font-size: 15px; }
   .hr-linha strong { font-weight: 600; }
   .ht-poi-t { font-weight: 600; }
   .ht-poi-i { padding: 9px 0; }
-  .contato-card { padding: 18px; border-radius: 14px; margin-top: 16px; background: #F4F8F6; border-color: #DCE9E2; }
   .rating-panel { padding: 18px 20px; border-radius: 16px; gap: 22px; }
-  .rp-num { font-weight: 700; }
   .rate-box { padding: 20px; border-radius: 14px; margin-top: 22px; }
   .rate-box p { font-size: 14px; }
   .ht-revs { gap: 14px; margin-top: 12px; }
@@ -2691,6 +2645,181 @@
   .jog-card .pc-aviso-conta + .field-label { margin-top: 18px; }
   /* Cadastro e Entrar do Parceiros sem menu e sem rodapé: só a marca e o ✕. */
   .pc-fechar { margin-left: auto; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); display: inline-flex; align-items: center; justify-content: center; font-size: 18px; text-decoration: none; }
+
+  /* ================= Ficha no jeito do hoteis.com (26/10/2026) =================
+     Pedido do Breno, com prints da página de hotel do hoteis.com no celular:
+     "deixe as fichas das academias exatamente com esse layout, com ordem,
+     tamanho das fotos e atalhos", com as nossas letras e cores e sem tirar
+     nada da ficha. Capa quadrada de ponta a ponta com botões brancos por
+     cima; nome no meio; links sublinhados com ›; destaques com o ícone num
+     círculo creme; estrutura em duas colunas; mapa largo com o botão de
+     abrir; fotos em uma grande e duas empilhadas; opções e academias por
+     perto em cartões lado a lado que passam com o dedo; avaliações em
+     cartões creme; barra de baixo com o botão de anel dourado. */
+  .ht-capa { display: none; }
+  .ht-head.ht-head-previa { padding: 0 44px 0 0; }
+  @media (max-width: 719px) {
+    .ht-gal { display: none; }
+    .reg-previa .ht-gal { display: grid; }
+    .ht-head.ht-head-previa { padding: 0 44px; }
+    .ht-capa { display: block; position: relative; background: var(--bg-alt); }
+    .courtpage.com-capa .courtbar { position: fixed; top: 0; left: 0; right: 0; transform: translateY(-105%); transition: transform 0.18s ease; box-shadow: 0 2px 12px rgba(33,31,26,0.08); }
+    .courtpage.com-capa .courtbar.visivel { transform: none; }
+  }
+  .ht-capa-fotos { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; aspect-ratio: 1 / 1; max-height: 78vh; }
+  .ht-capa-fotos::-webkit-scrollbar { display: none; }
+  .ht-capa-foto { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; cursor: pointer; }
+  .ht-capa-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ht-capa-bt { position: absolute; top: 14px; z-index: 3; display: flex; align-items: center; height: 42px; background: #fff; border: 0; border-radius: 999px; box-shadow: 0 2px 10px rgba(0,0,0,0.16); }
+  .ht-capa-voltar { left: 12px; width: 54px; justify-content: center; cursor: pointer; }
+  .ht-capa-acoes { right: 12px; padding: 0 5px; gap: 2px; }
+  .ht-capa-acoes button { width: 38px; height: 34px; display: inline-flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 999px; cursor: pointer; padding: 0; }
+  .ht-capa-acoes button.on { background: var(--green); }
+  .ht-capa-pontos { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 9px; padding: 10px 14px; border-radius: 999px; background: rgba(20,51,42,0.78); pointer-events: none; }
+  .ht-capa-pontos span { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.55); }
+  .ht-capa-pontos span.on { width: 13px; height: 13px; background: #fff; }
+  .ht-capa-pontos span.menor { width: 6px; height: 6px; }
+  .ht-capa-total { position: absolute; right: 12px; bottom: 12px; z-index: 3; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 0; border-radius: 999px; background: rgba(20,51,42,0.78); color: #fff; font: 600 15px var(--fonte-texto); cursor: pointer; }
+
+  /* Topo: estrelas com o ⓘ, nome, endereço e os atalhos, no meio da tela. */
+  .ht-estrelas { position: relative; display: flex; align-items: center; gap: 10px; }
+  .ht-estrelas .court-stars { margin: 0; font-size: 19px; letter-spacing: 2px; }
+  .ht-estrelas-info { display: inline-flex; background: none; border: 0; padding: 2px; cursor: pointer; }
+  .ht-head .court-addr { display: block; font-size: 15px; color: var(--muted); margin: 10px 0 0; line-height: 1.45; }
+  .ht-atalhos { margin: 14px 0 0; }
+  .ht-link { display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; padding: 0; font: 600 15px var(--fonte-texto); color: var(--green); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
+  .ht-head .ht-score { margin-top: 14px; gap: 12px; }
+  .ht-head .ht-score-num { border-radius: 7px; font-size: 17px; padding: 8px 10px; }
+  .ht-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; margin-top: 24px; text-align: left; }
+  .ht-check { display: flex; align-items: flex-start; gap: 10px; font-size: 16px; line-height: 1.3; color: var(--green); }
+  @media (max-width: 719px) {
+    .ht-head { text-align: center; padding-top: 24px; }
+    .ht-estrelas { justify-content: center; }
+    .ht-head .ht-score { display: inline-flex; }
+    .ht-head .ht-promo-atalho, .ht-head .ficha-basica { text-align: left; }
+    .ht-tabs { display: none; }
+  }
+
+  /* Destaques: o ícone num círculo creme e o texto do lado. */
+  .ht-destaques { display: grid; gap: 18px; }
+  @media (min-width: 720px) { .ht-destaques { grid-template-columns: 1fr 1fr; } }
+  .ht-destaque { display: flex; align-items: center; gap: 16px; }
+  .ht-destaque-ic { width: 54px; height: 54px; border-radius: 50%; background: #EAE3D2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ht-destaque-t { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .ht-destaque-s { margin: 3px 0 0; font-size: 15px; line-height: 1.4; color: var(--text); }
+
+  /* Estrutura: duas colunas de ícone e nome. */
+  #ht-comodidades .ht-amen { grid-template-columns: 1fr 1fr; gap: 16px 14px; }
+  #ht-comodidades .ht-amen-i { align-items: flex-start; font-size: 16px; line-height: 1.3; gap: 12px; }
+  #ht-comodidades .ht-amen-i svg { width: 22px; height: 22px; }
+  @media (min-width: 1000px) { #ht-comodidades .ht-amen { grid-template-columns: 1fr 1fr 1fr; } }
+
+  /* Explore a região: o mapa largo com o botão de abrir; os lugares por perto
+     em linhas, o nome de um lado e a distância do outro. */
+  .ht-map-caixa { position: relative; }
+  .ht-map-caixa .ht-map { height: auto; aspect-ratio: 2.35 / 1; min-height: 150px; border-radius: 16px; margin-bottom: 0; }
+  .ht-map-abrir { position: absolute; right: 12px; bottom: 12px; z-index: 2; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.12); cursor: pointer; }
+  #ht-local .ht-poi-i { border-top: 0; padding: 7px 0; font-size: 16px; }
+  #ht-local .ht-poi-d { font-size: 14px; color: var(--text); }
+  #ht-local .ht-addr-line { margin-top: 18px; font-size: 15px; }
+  #ht-local .ht-atalhos { margin-top: 12px; }
+  #ht-local .cidade-link { display: inline-flex; margin-top: 12px; font-size: 15px; font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* "Sobre a academia": uma foto grande e duas empilhadas. */
+  .ht-mosaico { display: grid; grid-template-columns: 2.1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; aspect-ratio: 1.53 / 1; margin: 4px 0 18px; }
+  .ht-mosaico.duo { grid-template-rows: 1fr; }
+  .ht-mosaico-f { border-radius: 16px; overflow: hidden; background: var(--bg-alt); cursor: pointer; }
+  .ht-mosaico-f:first-child { grid-row: span 2; }
+  .ht-mosaico.duo .ht-mosaico-f:first-child { grid-row: auto; }
+  .ht-mosaico-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (min-width: 720px) { .ht-mosaico { max-height: 420px; } }
+
+  /* "Escolha o que você quer": as caixas, a promoção, os filtros e os
+     cartões das opções. */
+  .ht-caixas { display: grid; gap: 12px; margin: 4px 0 16px; }
+  @media (min-width: 720px) { .ht-caixas { grid-template-columns: 1fr 1fr; } }
+  .ht-caixa { display: flex; align-items: center; gap: 16px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--muted-dark); border-radius: 12px; padding: 12px 18px; font-family: var(--fonte-texto); color: var(--text); }
+  button.ht-caixa { cursor: pointer; }
+  .ht-caixa-l { display: block; font-size: 14px; font-weight: 700; }
+  .ht-caixa-v { display: block; font-size: 17px; margin-top: 2px; line-height: 1.3; }
+  #ht-opcoes .ht-promos { margin: 0 0 6px; }
+  #ht-opcoes .ht-promo { display: flex; align-items: center; gap: 18px; padding: 20px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); }
+  .ht-promo-ic { width: 58px; height: 58px; border-radius: 50%; background: #F3E9CC; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  #ht-opcoes .ht-promo-tag { font-size: 12px; }
+  #ht-opcoes .ht-promo-t { margin-top: 3px; font-size: 18px; }
+  .ht-opcoes-filtro { margin-top: 18px; }
+  .ht-opcoes-n { margin: 16px 0 0; font-size: 16px; }
+  .ht-quartos { display: grid; grid-auto-flow: column; grid-auto-columns: calc(50% - 6px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; margin-top: 14px; padding-bottom: 4px; }
+  .ht-quartos::-webkit-scrollbar { display: none; }
+  @media (min-width: 720px) { .ht-quartos { grid-auto-columns: calc(33.333% - 8px); } }
+  .ht-quarto { scroll-snap-align: start; display: flex; flex-direction: column; min-width: 0; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .ht-quarto-foto { position: relative; aspect-ratio: 4 / 3; background: var(--bg-alt); }
+  .ht-quarto-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ht-quarto-tag { display: inline-block; align-self: flex-start; background: rgba(20,51,42,0.92); color: #fff; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 5px 8px; margin-bottom: 8px; }
+  .ht-quarto-foto .ht-quarto-tag { position: absolute; left: 10px; top: 10px; margin: 0; }
+  .ht-quarto-corpo { display: flex; flex-direction: column; flex: 1; padding: 14px 10px; }
+  .ht-quarto-n { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.25; }
+  .ht-quarto-d { margin: 4px 0 0; font-size: 14px; line-height: 1.4; color: var(--text); }
+  .ht-quarto-verde { margin: 8px 0 0; font-size: 14px; line-height: 1.35; color: var(--green-light); font-weight: 600; }
+  .ht-quarto-sem { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+  .ht-quarto-preco { display: flex; flex-direction: column; align-items: flex-end; text-align: right; margin-top: auto; padding-top: 14px; }
+  .ht-quarto-val { font-size: 21px; font-weight: 700; line-height: 1.15; }
+  .ht-quarto-val.sem-valor { font-size: 17px; }
+  .ht-quarto-unit { font-size: 13px; color: var(--text); margin-top: 2px; }
+  .ht-quarto-bt { display: flex; align-items: center; justify-content: center; min-height: 44px; margin-top: 14px; padding: 8px 6px; border-radius: 999px; background: var(--green); color: #fff; font: 600 13px/1.2 var(--fonte-texto); text-align: center; text-decoration: none; }
+
+  /* Avaliações: a nota no alto da seção e os cartões creme que passam. */
+  .ht-sec-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .ht-sec .ht-sec-topo .sec-title { margin: 0; }
+  .ht-sec-topo .hr-agora { margin: 0; font-size: 13px; padding: 4px 11px; }
+  .ht-sec-nota { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; flex-shrink: 0; }
+  .ht-sec-nota strong { font-weight: 600; }
+  .ht-sec-nota .sbadge { font-size: 16px; padding: 7px 9px; }
+  .rating-panel.so-barras { grid-template-columns: minmax(0, 1fr); margin-bottom: 14px; }
+  .ht-revs.ht-revs-carrossel { display: grid; grid-auto-flow: column; grid-auto-columns: 84%; grid-template-columns: none; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .ht-revs-carrossel::-webkit-scrollbar { display: none; }
+  @media (min-width: 720px) { .ht-revs.ht-revs-carrossel { grid-auto-columns: calc(50% - 6px); } }
+  .ht-rev.ht-rev-ficha { background: var(--bg-alt); border: 0; border-radius: 18px; padding: 20px; scroll-snap-align: start; }
+  .ht-rev-ficha .ht-rev-top { align-items: center; flex-wrap: wrap; gap: 8px; }
+  .ht-rev-ficha .ht-rev-badge { border-radius: 6px; font-size: 15px; padding: 6px 9px; }
+  .ht-rev-ficha .ht-rev-word { font-size: 14px; font-weight: 600; }
+  .ht-rev-ficha .rev-analise, .ht-rev-ficha .delete-review-btn { margin-left: auto; }
+  .ht-rev-ficha .ht-rev-text { flex: 0 0 auto; margin: 14px 0 0; font-size: 16px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .ht-rev-ficha.aberta .ht-rev-text { display: block; -webkit-line-clamp: unset; }
+  .ht-rev-mais { align-self: flex-start; margin-top: 10px; background: none; border: 0; padding: 0; font: 600 15px var(--fonte-texto); color: var(--green); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .ht-rev-autor { margin: auto 0 0; padding-top: 18px; font-size: 14px; color: var(--muted); }
+  .ht-rev-autor .rev-name, .ht-rev-autor .rev-date { font-size: 14px; font-weight: 400; color: var(--muted); }
+  #avaliacoes > .ht-atalhos { margin-top: 18px; }
+
+  /* Outras academias por perto: cartões com a foto em cima e a seta. */
+  .ht-carrossel { position: relative; }
+  .ht-viz { display: grid; grid-auto-flow: column; grid-auto-columns: calc(50% - 6px); grid-template-columns: none; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .ht-viz::-webkit-scrollbar { display: none; }
+  @media (min-width: 1000px) { .ht-viz { grid-template-columns: none; grid-auto-columns: calc(33.333% - 8px); } }
+  .ht-viz-c, .ht-viz-c.sem-foto { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0; overflow: hidden; border-radius: 16px; scroll-snap-align: start; box-shadow: none; }
+  .ht-viz-foto { width: 100%; height: auto; aspect-ratio: 16 / 10; border-radius: 0; }
+  .ht-viz-txt { flex: 1; gap: 6px; padding: 14px 12px; }
+  .ht-viz-n { font-size: 16px; }
+  .ht-viz-b { font-size: 14px; color: var(--text); }
+  .ht-viz-l { align-items: flex-start; gap: 8px; font-size: 14px; color: var(--text); }
+  .ht-viz-l span { white-space: normal; }
+  .ht-viz-nota { margin-top: 6px; gap: 8px; font-size: 13px; color: var(--text); line-height: 1.3; }
+  .ht-viz-nota .sbadge { font-size: 15px; padding: 6px 8px; }
+  .ht-viz-p { display: flex; flex-direction: column; align-items: flex-end; text-align: right; margin-top: auto; padding-top: 10px; font-size: 18px; }
+  .ht-carrossel-seta { position: absolute; right: -8px; top: 38%; z-index: 2; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.14); cursor: pointer; }
+
+  /* Contato: "Algo errado nesta ficha?" no meio, com o botão de contorno do
+     "Como podemos melhorar nosso site?". */
+  .ficha-problema { margin-top: 30px; text-align: center; }
+  .ficha-problema p { margin: 0 0 12px; font-size: 15px; font-weight: 700; }
+  .ht-bt-contorno { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 30px; border: 1px solid var(--text); border-radius: 999px; background: var(--card); font: 500 17px var(--fonte-texto); color: var(--text); cursor: pointer; }
+
+  /* Barra de baixo: o valor à esquerda e o botão com o anel dourado. */
+  .court-cta { align-items: center; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); border-top: 0; border-radius: 18px 18px 0 0; box-shadow: 0 -6px 22px rgba(33,31,26,0.10); }
+  .court-cta-val { font-size: 22px; }
+  .court-cta-val.sem-valor { font-size: 18px; }
+  .court-cta-unit { font-size: 13px; color: var(--text); }
+  .court-cta .cta-btn.cta-primary { flex: 0 0 auto; width: auto; margin-left: auto; min-height: 50px; padding: 0 22px; border-radius: 999px; font-size: 16px; box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--gold); }
 </style>
 </head>
 <body>
@@ -2836,6 +2965,12 @@ function icon(name, size, color) {
     heartFill: '<path d="M12 21s-7.5-4.6-10-9.3C0.5 8.5 2 5 5.5 5c2 0 3.3 1.1 4 2.1.7-1 2-2.1 4-2.1 3.5 0 5 3.5 3 6.7-2.5 4.7-10 9.3-10 9.3z" fill="' + color + '" stroke="none"/>',
     comparar: '<rect x="3" y="4" width="7.5" height="16" rx="1.8"/><rect x="13.5" y="4" width="7.5" height="16" rx="1.8"/><line x1="5.6" y1="9" x2="7.9" y2="9"/><line x1="16.1" y1="9" x2="18.4" y2="9"/><line x1="5.6" y1="13" x2="7.9" y2="13"/><line x1="16.1" y1="13" x2="18.4" y2="13"/>',
     share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><line x1="8.2" y1="10.8" x2="15.8" y2="7.2"/><line x1="8.2" y1="13.2" x2="15.8" y2="16.8"/>',
+    // Os da ficha no jeito do hoteis.com (26/10/2026): voltar, abrir o mapa,
+    // número de fotos e o horário.
+    seta: '<line x1="20" y1="12" x2="4.5" y2="12"/><polyline points="11 5 4 12 11 19"/>',
+    expandir: '<polyline points="14 4 20 4 20 10"/><line x1="20" y1="4" x2="13.5" y2="10.5"/><polyline points="10 20 4 20 4 14"/><line x1="4" y1="20" x2="10.5" y2="13.5"/>',
+    fotos: '<rect x="7" y="3.5" width="13.5" height="13.5" rx="2"/><path d="M4 7.5v11a2 2 0 0 0 2 2h11"/><path d="M7.5 14.5l3.6-3.6 2.6 2.6 2-2 4.3 4.3"/><circle cx="16" cy="7.8" r="1.1"/>',
+    relogio: '<circle cx="12" cy="12" r="8.5"/><polyline points="12 7.5 12 12 15 14"/>',
   };
   const strokeAttrs = ["ball","instagram","clipboard","home"].includes(name) ? "" : "";
   const filled = name === "bolt" || name === "warning-fill";
@@ -4674,6 +4809,8 @@ let state = {
   cardPhoto: {},
   reviewsExpanded: false,
   faqOpen: {},
+  // O filtro "Todas / Aula / Locação" das opções da ficha: { id, nome }.
+  opcaoDaFicha: null,
   faqSiteOpen: {},
   showMenu: false,
   // Folhas do menu: "Minhas quadras" (favoritas, vistas, chamadas) e as
@@ -5255,6 +5392,7 @@ function render() {
   if (contaAcademia && contaAcademia.visaoAdmin && state.page !== "parceiros") contaAcademia = null;
   const scrollTargets = document.querySelectorAll(".sheet, .sheet-scroll, .drawer-body");
   const savedScrolls = Array.from(scrollTargets).map(el => ({ id: el.id, cls: el.className, top: el.scrollTop }));
+  const rolagensDeLado = Array.from(document.querySelectorAll("[data-rolagem-x]")).map(el => [el.id, el.scrollLeft]);
   const pageScroll = window.scrollY;
 
   const app = document.getElementById("app");
@@ -5333,7 +5471,9 @@ function render() {
     const el = document.querySelector(selector);
     if (el) el.scrollTop = saved.top;
   });
+  rolagensDeLado.forEach(([id, x]) => { const el = id && document.getElementById(id); if (el && el.hasAttribute("data-rolagem-x")) el.scrollLeft = x; });
   window.scrollTo(0, pageScroll);
+  if (__capaSpy) __capaSpy();
 
   if (state.page === "search" && state.view === "map") mountMap(results);
   else if (__map) { __map.remove(); __map = null; __markers = []; }
@@ -7376,6 +7516,20 @@ function blocoResposta(r, c, onde) {
 // não sobre a resposta da academia.
 function cartaoAvaliacao(r, c, onde) {
   const minha = ehMinha(c) && acessoCompleto();
+  // Na ficha, o cartão das avaliações do hoteis.com (26/10/2026): a nota em
+  // cima, o texto (o longo abre em "Mostrar mais") e quem avaliou embaixo.
+  if (onde === "ficha") return `
+    <article class="ht-rev ht-rev-ficha">
+      <div class="ht-rev-top">
+        <span class="ht-rev-badge">${r.stars}/5</span><span class="ht-rev-word">${scoreWord(r.stars, 1)}</span>
+        ${minha ? `<button type="button" class="rev-analise" data-pedir-analise="${r.id}" data-court="${c.id}" title="Pedir ao GuiaTennis que analise esta avaliação">${icon('warning', 13, 'currentColor')} Pedir análise</button>` : ""}
+        ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
+      </div>
+      ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>${r.comment.length > 120 ? `<button type="button" class="ht-rev-mais" data-rev-mais>Mostrar mais</button>` : ""}` : ""}
+      <p class="ht-rev-autor"><span class="rev-name">${esc(r.nome_autor || "Jogador do GuiaTennis")}</span>, <span class="rev-date">${formatReviewDate(r.ts)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span></p>
+      ${blocoResposta(r, c, onde)}
+      ${minha || isAdmin || ehDaMinhaConta(c) || !r.id ? "" : `<p class="rev-denunciar-l"><button type="button" class="rev-denunciar" data-denunciar="${r.id}" data-court="${c.id}">Denunciar</button></p>`}
+    </article>`;
   return `
     <article class="ht-rev">
       <div class="ht-rev-top">
@@ -8103,6 +8257,8 @@ let __markers = [];
 let __mapSig = "";
 let __miniMap = null;   // mapinha da ficha da academia
 let __htSpy = null;     // marca a seção atual na barra da ficha
+let __capaSpy = null;   // a barra de cima da ficha desce quando a capa sai da tela
+let __barraDaCapa = false;
 
 function mapCourts(results) {
   return results.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
@@ -16100,7 +16256,7 @@ function aplicarCamadas(q) {
 const ORDEM_NO_LINK = { recomendados: "recomendadas", distance: "distancia", rating: "nota", price: "preco", reviews: "avaliacoes", courts: "quadras" };
 // Seções da ficha no link (#avaliacoes), com os nomes que a pessoa lê.
 const SECOES_FICHA = { visao: "ht-visao", precos: "ht-opcoes", cancelamento: "ht-politica", estrutura: "ht-comodidades",
-  localizacao: "ht-local", avaliacoes: "avaliacoes", duvidas: "ht-duvidas", contato: "ht-contato" };
+  localizacao: "ht-local", avaliacoes: "avaliacoes", duvidas: "ht-duvidas", contato: "ht-contato", horario: "ht-horario" };
 
 // Sem busca feita, a lista começa nas recomendadas; com busca, na mais perto.
 function ordemPadrao() {
@@ -16357,6 +16513,36 @@ function aplicarLink(r) {
   }
   state.page = "home";
   return {};
+}
+
+// A capa da ficha no celular (26/10/2026): os pontinhos e o número de fotos
+// acompanham a foto da vez, e a barra de cima (voltar, nome e atalhos) só
+// desce depois que a capa sai da tela, como no hoteis.com.
+function ligarCapaDaFicha() {
+  if (__capaSpy) { window.removeEventListener("scroll", __capaSpy); __capaSpy = null; }
+  const capa = document.querySelector(".ht-capa");
+  const barra = document.getElementById("courtbar");
+  if (!capa || !barra) return;
+  const fotos = document.getElementById("ht-capa-fotos");
+  const pontos = document.getElementById("ht-capa-pontos");
+  const total = document.getElementById("ht-capa-total");
+  const n = fotos ? fotos.children.length : 0;
+  let atual = -1;
+  const acompanhar = () => {
+    const i = Math.max(0, Math.min(n - 1, Math.round(fotos.scrollLeft / Math.max(1, fotos.clientWidth))));
+    if (i === atual) return;
+    atual = i;
+    if (pontos) pontos.innerHTML = pontosDaCapa(n, i);
+    if (total) total.dataset.lightboxOpen = String(i);
+  };
+  if (fotos) { fotos.onscroll = acompanhar; acompanhar(); }
+  __capaSpy = () => {
+    if (!document.body.contains(capa)) { window.removeEventListener("scroll", __capaSpy); __capaSpy = null; return; }
+    __barraDaCapa = capa.getBoundingClientRect().bottom < barra.offsetHeight;
+    barra.classList.toggle("visivel", __barraDaCapa);
+  };
+  window.addEventListener("scroll", __capaSpy, { passive: true });
+  __capaSpy();
 }
 
 // Rola até a seção do link (#avaliacoes) depois de desenhar a ficha.
@@ -17832,6 +18018,59 @@ function htGaleria(c) {
     </div>`;
 }
 
+// A capa da ficha no celular (pedido do Breno em 26/10/2026, com prints da
+// página de hotel do hoteis.com: "exatamente com esse layout, com ordem,
+// tamanho das fotos e atalhos"): a foto quadrada de ponta a ponta, que passa
+// com o dedo; o voltar e os atalhos em botões brancos por cima; os pontinhos
+// e o número de fotos embaixo. No computador continua o mosaico (htGaleria).
+function htCapa(c) {
+  const photos = courtPhotos(c);
+  if (!photos.length) return "";
+  const comparando = isComparing(c.id);
+  const favorita = isFavorite(c.id);
+  return `
+    <div class="ht-capa">
+      <div class="ht-capa-fotos" id="ht-capa-fotos" data-rolagem-x>
+        ${photos.map((p, i) => `
+          <div class="ht-capa-foto" data-lightbox-open="${i}">
+            <img src="${esc(p)}" alt="Foto ${i + 1} da ${esc(c.name)}" ${i ? 'loading="lazy"' : ""} />
+          </div>`).join("")}
+      </div>
+      <button type="button" class="ht-capa-bt ht-capa-voltar" data-voltar-ficha aria-label="Voltar">${icon('seta', 20, 'var(--text)')}</button>
+      <div class="ht-capa-bt ht-capa-acoes">
+        <button type="button" class="${comparando ? "on" : ""}" data-compare="${c.id}" data-compare-aviso aria-pressed="${comparando}" aria-label="${comparando ? "Na comparação: tocar tira" : "Comparar"}" title="${comparando ? "Na comparação" : "Comparar"}">${icon('comparar', 19, comparando ? '#fff' : 'var(--text)')}</button>
+        <button type="button" data-share-court="${c.id}" aria-label="Compartilhar" title="Compartilhar">${icon('share', 19, 'var(--text)')}</button>
+        <button type="button" data-fav="${c.id}" aria-label="${favorita ? "Tirar das favoritas" : "Favoritar"}" title="Favoritar">${icon(favorita ? 'heartFill' : 'heart', 20, favorita ? 'var(--red)' : 'var(--text)')}</button>
+      </div>
+      ${photos.length > 1 ? `<div class="ht-capa-pontos" id="ht-capa-pontos" aria-hidden="true">${pontosDaCapa(photos.length, 0)}</div>` : ""}
+      <button type="button" class="ht-capa-total" id="ht-capa-total" data-lightbox-open="0" aria-label="${photos.length === 1 ? "Ver a foto" : `Ver as ${photos.length} fotos`}">${icon('fotos', 17, '#fff')} ${photos.length}</button>
+    </div>`;
+}
+// Até 5 pontinhos, como no hoteis.com: com mais fotos, a janela anda junto
+// e os das pontas ficam menores.
+function pontosDaCapa(total, atual) {
+  const n = Math.min(total, 5);
+  const ini = Math.max(0, Math.min(atual - 2, total - n));
+  return Array.from({ length: n }, (_, k) => {
+    const i = ini + k;
+    const ponta = total > 5 && ((k === 0 && ini > 0) || (k === n - 1 && i < total - 1));
+    return `<span class="${i === atual ? "on" : ""}${ponta ? " menor" : ""}"></span>`;
+  }).join("");
+}
+
+// As fotos de "Sobre a academia", como o bloco "Na praia" do hoteis.com: uma
+// grande e duas empilhadas. Com 4 fotos ou mais, as que vêm depois da capa.
+function htMosaico(c) {
+  const photos = courtPhotos(c);
+  if (photos.length < 2) return "";
+  const ini = photos.length >= 4 ? 1 : 0;
+  const tres = photos.slice(ini, ini + 3);
+  return `
+    <div class="ht-mosaico ${tres.length === 2 ? "duo" : ""}">
+      ${tres.map((p, k) => `<div class="ht-mosaico-f" data-lightbox-open="${ini + k}"><img src="${esc(p)}" alt="Foto ${ini + k + 1} da ${esc(c.name)}" loading="lazy" /></div>`).join("")}
+    </div>`;
+}
+
 // O caminho até a academia (Início › Quadras em São Paulo › Moema) não
 // aparece na tela desde 20/10/2026 (pedido do Breno): fica só nos dados para
 // o Google (BreadcrumbList), e o link da região vai para o fim de "Explore a
@@ -17842,7 +18081,8 @@ function linkDaRegiaoNaFicha(c) {
   return `<a class="cidade-link" href="${caminhoDaRegiao(r)}" data-regiao-link data-cidade="${esc(c.cidade)}"${c.bairro ? ` data-bairro="${esc(c.bairro)}"` : ""}>Ver todas as academias em ${esc(c.bairro || c.cidade)} ›</a>`;
 }
 
-// Os selinhos ao lado do nome: modalidade, quadras e o que tem de melhor.
+// Embaixo do nome, com o ✓ verde do "Totalmente reembolsável" do hoteis.com
+// (26/10/2026): modalidade, quadras, piso e cobertura, duas por linha.
 function htEtiquetas(c) {
   const out = [];
   const mod = modalidadesTexto(c);
@@ -17854,7 +18094,7 @@ function htEtiquetas(c) {
   const cobs = rotulosNaOrdem(COBERTURA_OPTS, c.cobertura);
   if (cobs.length) out.push(listaTexto(cobs));
   if (!out.length) return "";
-  return `<div class="ht-tags">${out.slice(0, 4).map(t => `<span class="ht-tag">${esc(t)}</span>`).join("")}</div>`;
+  return `<div class="ht-checks">${out.slice(0, 4).map(t => `<span class="ht-check">${icon('check', 19, 'var(--green)')}<span>${esc(t)}</span></span>`).join("")}</div>`;
 }
 
 // O menor e o maior valor considerando todas as opções de preço da academia.
@@ -17962,7 +18202,8 @@ function listaTexto(itens) {
   return itens.slice(0, -1).join(", ") + " e " + itens[itens.length - 1];
 }
 
-// Os quatro destaques do topo, como as "Informações populares" dos hotéis.
+// Os quatro destaques do topo, na lista com o ícone num círculo creme do
+// hoteis.com (26/10/2026).
 function htDestaques(c) {
   const faixa = faixaGeral(c);
   const total = totalQuadras(c);
@@ -17984,40 +18225,83 @@ function htDestaques(c) {
     total && { ic: 'ball', cor: 'var(--green)', t: `${total} ${plural(total, "quadra", "quadras")}` },
   ].filter(Boolean).slice(0, 4);
   if (!candidatos.length) return "";
-  return `<div class="ht-tiles">${candidatos.map(d => `
-    <div class="ht-tile">
-      <span class="ht-tile-ic">${icon(d.ic, 20, d.cor)}</span>
-      <p class="ht-tile-t">${esc(d.t)}</p>
-      ${d.s ? `<p class="ht-tile-s">${esc(d.s)}</p>` : ""}
+  return `<div class="ht-destaques">${candidatos.map(d => `
+    <div class="ht-destaque">
+      <span class="ht-destaque-ic">${icon(d.ic, 22, d.cor)}</span>
+      <div>
+        <p class="ht-destaque-t">${esc(d.t)}</p>
+        ${d.s ? `<p class="ht-destaque-s">${esc(d.s)}</p>` : ""}
+      </div>
     </div>`).join("")}</div>`;
 }
 
-// As opções de preço viram cartões parecidos com a lista de quartos de um hotel:
-// o que é de um lado, o valor do outro. O contato é um só, logo abaixo.
+// As opções de preço nos cartões dos quartos do hoteis.com (26/10/2026): dois
+// lado a lado, que passam com o dedo, com a foto em cima, o que é, a reposição
+// em verde (o "Totalmente reembolsável"), o valor à direita e o WhatsApp de
+// cada um, que já abre a conversa sobre aquela opção. Com aula e locação, os
+// filtros "Todas", "Aula" e "Locação" e o "Mostrando 2 de 2 opções".
 function htOpcoes(c) {
   const opcoes = opcoesPreco(c);
-  if (!opcoes.length) {
+  const lista = opcoes.length ? opcoes : [{ nome: "Valores", desc: "Fale com a academia no WhatsApp para saber o valor.", faixa: "", assunto: "os valores" }];
+  const filtro = state.opcaoDaFicha && state.opcaoDaFicha.id === c.id && opcoes.some(o => o.nome === state.opcaoDaFicha.nome) ? state.opcaoDaFicha.nome : "";
+  const visiveis = filtro ? lista.filter(o => o.nome === filtro) : lista;
+  const fotos = courtPhotos(c);
+  const pol = politicaDe(c);
+  const valores = opcoes.filter(o => temPreco(o.faixa)).map(o => parseInt(priceMin(o.faixa), 10));
+  const menor = valores.length > 1 && new Set(valores).size > 1 ? Math.min(...valores) : null;
+  const reposicao = (o) => {
+    if (!temPolitica(c)) return "";
+    const p = pol.modo === "separado" ? (o.nome === "Aula" ? pol.aula : o.nome === "Locação" ? pol.locacao : null) : pol.geral;
+    if (!p) return "";
+    if (p.reposicao === "nao") return `<p class="ht-quarto-sem">Sem reposição</p>`;
+    return p.horas ? `<p class="ht-quarto-verde">Reposição até ${p.horas}h antes</p>` : "";
+  };
+  const cartao = (o) => {
+    const i = lista.indexOf(o);
+    const foto = fotos.length ? fotos[(i + (fotos.length > 1 ? 1 : 0)) % fotos.length] : "";
+    const tag = menor !== null && parseInt(priceMin(o.faixa), 10) === menor ? `<span class="ht-quarto-tag">Menor preço</span>` : "";
     return `
-      <div class="ht-room">
-        <div class="ht-room-info">
-          <p class="ht-room-name">${SEM_PRECO}</p>
-          <p class="ht-room-desc">Fale com a academia no WhatsApp para saber o valor.</p>
+      <article class="ht-quarto">
+        ${foto ? `<div class="ht-quarto-foto"><img src="${esc(foto)}" alt="Foto da ${esc(c.name)}" loading="lazy" />${tag}</div>` : ""}
+        <div class="ht-quarto-corpo">
+          ${foto ? "" : tag}
+          <p class="ht-quarto-n">${esc(o.nome)}</p>
+          <p class="ht-quarto-d">${esc(o.desc)}</p>
+          ${reposicao(o)}
+          <div class="ht-quarto-preco">
+            <span class="ht-quarto-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${esc(precoTexto(o.faixa))}</span>
+            <span class="ht-quarto-unit">${temPreco(o.faixa) ? "por hora" : SEM_PRECO_SUB}</span>
+          </div>
+          ${c.phone ? `<a class="ht-quarto-bt" data-track="whatsapp" data-court="${c.id}" href="${waLink(c, o.assunto)}" target="_blank" rel="noreferrer">Chamar no WhatsApp</a>` : ""}
         </div>
+      </article>`;
+  };
+  return `
+    ${opcoes.length > 1 ? `
+      <div class="chip-row ht-opcoes-filtro">
+        ${["", ...opcoes.map(o => o.nome)].map(n => `<button type="button" class="chip ${filtro === n ? "active" : ""}" data-opcao-filtro="${esc(n)}" data-court="${c.id}" aria-pressed="${filtro === n}">${n ? esc(n) : "Todas"}</button>`).join("")}
       </div>
-      ${blocoContato(c)}`;
+      <p class="ht-opcoes-n">Mostrando ${visiveis.length} de ${opcoes.length} opções</p>` : ""}
+    <div class="ht-quartos" id="ht-quartos" data-rolagem-x>${visiveis.map(cartao).join("")}</div>
+    ${c.phone ? "" : `<p class="ht-sec-sub" style="margin-top:12px">O telefone não foi incluído.</p>`}`;
+}
+
+// As duas caixas do alto de "Escolha o que você quer", no lugar de "Datas" e
+// "Viajantes" do hoteis.com: o horário de hoje (leva ao horário da semana) e
+// o que a academia oferece.
+function htCaixasDaEscolha(c) {
+  const caixas = [];
+  if (temHorario(c)) {
+    const aberto = abertoAgora(c);
+    const hoje = faixaTexto(faixaDeHoje(c, new Date()));
+    const texto = [aberto === null ? "" : aberto ? "Aberto agora" : "Fechado agora", hoje ? `hoje, ${hoje.toLowerCase()}` : ""].filter(Boolean).join(" · ") || "Ver os dias e horários";
+    caixas.push(`<button type="button" class="ht-caixa" id="ir-horario">${icon('relogio', 22, 'var(--text)')}<span><span class="ht-caixa-l">Horário</span><span class="ht-caixa-v">${esc(texto)}</span></span></button>`);
   }
-  const cartoes = opcoes.map(o => `
-    <div class="ht-room">
-      <div class="ht-room-info">
-        <p class="ht-room-name">${esc(o.nome)}</p>
-        <p class="ht-room-desc">${esc(o.desc)}</p>
-      </div>
-      <div class="ht-room-price">
-        <div class="ht-room-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${esc(precoTexto(o.faixa))}</div>
-        <div class="ht-room-unit">${temPreco(o.faixa) ? "por hora" : SEM_PRECO_SUB}</div>
-      </div>
-    </div>`).join("");
-  return cartoes + blocoContato(c);
+  const mod = modalidadesTexto(c);
+  const total = totalQuadras(c);
+  const oferece = [mod, total ? `${total} ${plural(total, "quadra", "quadras")}` : ""].filter(Boolean).join(" · ");
+  if (oferece) caixas.push(`<div class="ht-caixa">${icon('pessoa', 22, 'var(--text)')}<span><span class="ht-caixa-l">A academia oferece</span><span class="ht-caixa-v">${esc(oferece)}</span></span></div>`);
+  return caixas.length ? `<div class="ht-caixas">${caixas.join("")}</div>` : "";
 }
 
 // Quadras e comodidades, na grade de ícones das "Comodidades da acomodação".
@@ -18041,24 +18325,41 @@ function htComodidades(c) {
       </div>` : ""}`;
 }
 
-// "Explore a região": mapinha, endereço, direções e as academias mais próximas.
+// "Explore a região" como no hoteis.com (26/10/2026): o mapinha com o botão
+// de abrir, o que tem por perto, como chegar e, no fim, os atalhos. As
+// academias vizinhas vão para "Outras academias por perto" (htVizinhas).
 function htLocalizacao(c) {
   const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
-  const perto = academiasPerto(c, 3);
   return `
-    <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">Essa academia ainda não tem ponto no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
-    <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
-    ${navLinks(c)}
-    ${htAcesso(c)}
+    <div class="ht-map-caixa">
+      <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">Essa academia ainda não tem ponto no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
+      <button type="button" class="ht-map-abrir" data-nav="${c.id}" aria-label="Ver no mapa e direções" title="Ver no mapa e direções">${icon('expandir', 20, 'var(--text)')}</button>
+    </div>
     ${htPerto(c)}
-    ${perto.length ? `
-      <p class="field-label">Outras academias por perto</p>
-      <div class="ht-viz">${perto.map(x => cartaoVizinha(x.c, x.km)).join("")}</div>` : ""}
+    ${htAcesso(c)}
+    <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
+    <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa e direções ${icon('chevron', 16, 'currentColor')}</button></p>
     ${linkDaRegiaoNaFicha(c)}`;
 }
 
+// "Outras academias por perto", nos cartões das "Propriedades semelhantes" do
+// hoteis.com: dois por vez, que passam com o dedo ou pela seta.
+function htVizinhas(c) {
+  const perto = academiasPerto(c, 6);
+  if (!perto.length) return "";
+  return `
+    <section class="ht-sec" id="ht-perto">
+      <h3 class="sec-title">Outras academias por perto</h3>
+      <div class="ht-carrossel">
+        <div class="ht-viz" id="ht-viz" data-rolagem-x>${perto.map(x => cartaoVizinha(x.c, x.km)).join("")}</div>
+        ${perto.length > 2 ? `<button type="button" class="ht-carrossel-seta" data-rolar="ht-viz" aria-label="Ver mais academias">${icon('chevron', 18, 'var(--text)')}</button>` : ""}
+      </div>
+    </section>`;
+}
+
 // Card da academia vizinha: foto, nota, estrutura e preço — dá para decidir
-// sem sair da ficha, como as sugestões de hotel no fim da página.
+// sem sair da ficha. Foto em cima, como as "Propriedades semelhantes" do
+// hoteis.com (26/10/2026).
 function cartaoVizinha(v, km) {
   const foto = courtPhotos(v)[0];
   const faixa = faixaGeral(v);
@@ -18070,15 +18371,15 @@ function cartaoVizinha(v, km) {
       ${foto ? `<span class="ht-viz-foto"><img src="${esc(foto)}" alt="Foto da ${esc(v.name)}" loading="lazy" /></span>` : ""}
       <span class="ht-viz-txt">
         <span class="ht-viz-n">${esc(v.name)}</span>
+        ${lugar ? `<span class="ht-viz-b">${esc(lugar)}</span>` : ""}
+        ${quadras ? `<span class="ht-viz-l">${icon('ball', 16, 'var(--text)')}<span>${quadras} ${plural(quadras, "quadra", "quadras")}${mod ? ` · ${esc(mod.toLowerCase())}` : ""}</span></span>` : ""}
+        <span class="ht-viz-l">${icon('pin', 16, 'var(--text)')}<span>${distanceText(km)} daqui</span></span>
         <span class="ht-viz-nota">
           <span class="sbadge ${v.appCount ? "" : "none"}">${v.appCount ? v.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
-          <span>${scoreWord(v.appAvg, v.appCount)}${v.appCount ? ` · ${v.appCount} ${plural(v.appCount, "avaliação", "avaliações")}` : ""}</span>
+          <span><strong>${scoreWord(v.appAvg, v.appCount)}</strong>${v.appCount ? `<br>${v.appCount} ${plural(v.appCount, "avaliação", "avaliações")}` : ""}</span>
         </span>
-        <span class="ht-viz-l">${icon('pin', 12, 'var(--muted)')}<span>${esc(lugar)} · ${distanceText(km)} daqui</span></span>
-        ${quadras ? `<span class="ht-viz-l">${icon('ball', 12, 'var(--muted)')}<span>${quadras} ${plural(quadras, "quadra", "quadras")}${mod ? ` · ${esc(mod.toLowerCase())}` : ""}</span></span>` : ""}
-        <span class="ht-viz-p">${faixa ? `${esc(faixa.texto)} <small>${esc(faixa.opcao.nome.toLowerCase())}, por hora</small>` : `<span class="sem-valor">${SEM_PRECO}</span>`}</span>
+        <span class="ht-viz-p">${faixa ? `${esc(faixa.texto)} <small>${esc(faixa.opcao.nome.toLowerCase())}, por hora</small>` : `<span class="sem-valor">${SEM_PRECO}</span> <small>${SEM_PRECO_SUB}</small>`}</span>
       </span>
-      <span class="ht-viz-seta">${icon('chevron', 16, 'var(--green)')}</span>
     </button>`;
 }
 
@@ -18108,15 +18409,23 @@ function htEstacionarLinhas(linhas) {
   return linhas.map(l => `<span class="est-linha">${l.rot ? `<b>${esc(l.rot)}</b> ` : ""}${l.tag ? `<span class="est-tag">${esc(l.tag)}</span> ` : ""}${esc(l.txt)}</span>`).join("");
 }
 
-// O horário fica logo abaixo do resumo: é a segunda coisa que se pergunta,
-// depois do preço.
+// O horário com o "Aberto agora" (na prévia do cadastro, embaixo do "Sobre a
+// academia"). Na ficha ele tem seção própria, e a caixa "Horário" do alto de
+// "Escolha o que você quer" leva até ela (26/10/2026).
 function htHorario(c) {
   if (!temHorario(c)) return "";
-  const h = horarioDe(c);
-  const aberto = abertoAgora(c);
   return `
-    <p class="field-label" style="margin-top:18px">Horário${aberto === null ? "" : `
-      <span class="hr-agora ${aberto ? "sim" : "nao"}">${aberto ? "Aberto agora" : "Fechado agora"}</span>`}</p>
+    <p class="field-label" style="margin-top:18px">Horário${seloAbertoAgora(c)}</p>
+    ${htHorarioTabela(c)}`;
+}
+function seloAbertoAgora(c) {
+  const aberto = abertoAgora(c);
+  return aberto === null ? "" : `
+      <span class="hr-agora ${aberto ? "sim" : "nao"}">${aberto ? "Aberto agora" : "Fechado agora"}</span>`;
+}
+function htHorarioTabela(c) {
+  const h = horarioDe(c);
+  return `
     <div class="hr-lista">
       ${horarioLinhas(c).map(l => `
         <div class="hr-linha ${l.fechado ? "fechado" : ""}">
@@ -18135,17 +18444,13 @@ function academiasPerto(c, quantas) {
     .slice(0, quantas);
 }
 
-// Painel de nota com a distribuição de estrelas, como o resumo dos hotéis.
+// A distribuição de estrelas, como o resumo dos hotéis. A nota e a palavra
+// ficam no alto da seção, como o "Extraordinária 9,4" do hoteis.com.
 function ratingPanel(c) {
   const dist = ratingDistribution(c.id);
   const total = c.appCount || 0;
   return `
-    <div class="rating-panel">
-      <div class="rp-score">
-        <div class="rp-num">${total ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</div>
-        <div class="rp-word">${scoreWord(c.appAvg, total)}</div>
-        <div class="rp-count">${total ? `${total} ${plural(total, "avaliação", "avaliações")}` : "ainda sem nota"}</div>
-      </div>
+    <div class="rating-panel so-barras">
       <div>
         ${[5, 4, 3, 2, 1].map(n => {
           const qtd = dist[n];
@@ -18175,18 +18480,17 @@ function comoFuncionamAsAvaliacoes() {
     </div>`;
 }
 
-// As avaliações em cartões, com a nota de cada uma em destaque.
+// As avaliações nos cartões do hoteis.com (26/10/2026): passam com o dedo, e
+// "Ver todas as N avaliações" abre a lista inteira, uma embaixo da outra.
 function reviewsSection(c) {
   const reviews = getReviews(c.id);
   if (!reviews.length) return "";
-  const limite = state.reviewsExpanded ? reviews.length : 4;
-  const visiveis = reviews.slice(0, limite);
+  const lista = state.reviewsExpanded;
   return `
-    <p class="field-label">O que dizem os jogadores</p>
-    <div class="ht-revs">
-      ${visiveis.map(r => cartaoAvaliacao(r, c, "ficha")).join("")}
+    <div class="ht-revs ${lista ? "ht-revs-lista" : "ht-revs-carrossel"}" id="ht-revs"${lista ? "" : " data-rolagem-x"}>
+      ${reviews.map(r => cartaoAvaliacao(r, c, "ficha")).join("")}
     </div>
-    ${reviews.length > 4 ? `<button type="button" class="rev-more" id="reviews-more">${state.reviewsExpanded ? "Mostrar menos" : `Ver todas as ${reviews.length} avaliações`}</button>` : ""}
+    <p class="ht-atalhos"><button type="button" class="ht-link" id="reviews-more">${lista ? "Mostrar menos" : `Ver ${reviews.length === 1 ? "a avaliação" : `todas as ${reviews.length} avaliações`}`} ${icon('chevron', 16, 'currentColor')}</button></p>
   `;
 }
 
@@ -18253,18 +18557,6 @@ function waLink(c, assunto) {
     ? `Olá! Vim pelo GuiaTennis e queria saber sobre ${assunto}.`
     : "Olá! Vim pelo GuiaTennis e gostaria de saber mais informações sobre a academia.";
   return `https://wa.me/55${wa.replace(/^55/, "")}?text=${encodeURIComponent(texto)}`;
-}
-
-function blocoContato(c) {
-  const quem = modalidadesTexto(c);
-  return `
-    <div class="contato-card">
-      <p class="contato-mod">${quem ? `Contato para ${esc(quem.toLowerCase())}` : "Contato da academia"}</p>
-      ${c.phone
-        ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
-        : `<p class="contato-sub" style="margin-top:10px">O telefone não foi incluído.</p>`}
-    </div>
-  `;
 }
 
 // O cartão fixo da direita, no lugar do "Ver disponibilidade" dos hotéis.
@@ -18460,16 +18752,18 @@ function htPerguntas(c) {
     </details>`).join("")}</div>`;
 }
 
-// A barra de seções que acompanha a rolagem, como o menu das páginas de hotel.
+// A barra de seções que acompanha a rolagem no computador, como o menu das
+// páginas de hotel, na ordem da ficha (no celular ela não aparece, como no
+// hoteis.com).
 function htSecoesDisponiveis(c) {
-  const secs = [
-    { id: "ht-visao", label: "Visão geral" },
-    { id: "ht-opcoes", label: "Preços" },
-    { id: "ht-politica", label: "Cancelamento" },
-  ];
+  const secs = [];
   if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Estrutura" });
   secs.push({ id: "ht-local", label: "Localização" });
+  secs.push({ id: "ht-visao", label: "Visão geral" });
+  secs.push({ id: "ht-opcoes", label: "Preços" });
   secs.push({ id: "avaliacoes", label: "Avaliações" });
+  if (temHorario(c)) secs.push({ id: "ht-horario", label: "Horário" });
+  secs.push({ id: "ht-politica", label: "Cancelamento" });
   if (perguntasAcademia(c).length) secs.push({ id: "ht-duvidas", label: "Dúvidas" });
   return secs;
 }
@@ -18556,11 +18850,14 @@ function htPromocoes(c) {
     <div class="ht-promos" id="ht-promocoes">
       ${lista.map(x => `
         <div class="ht-promo">
-          <p class="ht-promo-tag">${icon('tag', 14, 'var(--gold)')} Promoção</p>
-          <p class="ht-promo-t">${esc(x.titulo)}</p>
-          ${x.detalhes ? `<p class="ht-promo-d">${esc(x.detalhes)}</p>` : ""}
-          <p class="ht-promo-v">Válida até ${esc(diaPorExtenso(x.valida_ate))} · combine com a academia pelo WhatsApp</p>
-          ${isAdmin ? `<button type="button" class="inline-link" data-apagar-promo="${x.id}">Remover promoção</button>` : ""}
+          <span class="ht-promo-ic">${icon('tag', 24, 'var(--gold)')}</span>
+          <div>
+            <p class="ht-promo-tag">Promoção</p>
+            <p class="ht-promo-t">${esc(x.titulo)}</p>
+            ${x.detalhes ? `<p class="ht-promo-d">${esc(x.detalhes)}</p>` : ""}
+            <p class="ht-promo-v">Válida até ${esc(diaPorExtenso(x.valida_ate))} · combine com a academia pelo WhatsApp</p>
+            ${isAdmin ? `<button type="button" class="inline-link" data-apagar-promo="${x.id}">Remover promoção</button>` : ""}
+          </div>
         </div>`).join("")}
     </div>`;
 }
@@ -18614,9 +18911,14 @@ function renderCourtPage(c) {
     ${blocoAcessoAdmin(c)}
   `;
 
+  // A ficha na ordem da página de hotel do hoteis.com (pedido do Breno em
+  // 26/10/2026, com prints): capa, nome no meio, destaques, estrutura,
+  // região, "Sobre" com fotos, opções, avaliações, academias por perto e, no
+  // fim, horário, cancelamento, dúvidas e contato. Nada saiu da ficha.
+  const capa = courtPhotos(c).length > 0;
   return `
-    <div class="courtpage">
-      <div class="courtbar">
+    <div class="courtpage ${capa ? "com-capa" : ""}">
+      <div class="courtbar ${capa && __barraDaCapa ? "visivel" : ""}" id="courtbar">
         <button type="button" id="court-back" class="courtbar-ic com-texto" aria-label="Voltar">${icon('chevronLeft', 20, 'var(--green)')}<span class="courtbar-t">Voltar</span></button>
         <span class="courtbar-name">${esc(c.name)}</span>
         <button type="button" class="courtbar-ic com-texto ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}" data-compare-aviso aria-pressed="${isComparing(c.id)}" aria-label="${isComparing(c.id) ? "Na comparação: tocar tira" : "Comparar"}" title="${isComparing(c.id) ? "Na comparação" : "Comparar"}">${icon('comparar', 20, isComparing(c.id) ? '#fff' : 'var(--green)')}<span class="courtbar-t" style="${isComparing(c.id) ? "color:#fff" : ""}">${isComparing(c.id) ? "Na comparação" : "Comparar"}</span></button>
@@ -18625,25 +18927,26 @@ function renderCourtPage(c) {
       </div>
 
       <div class="courtpage-inner">
+        ${htCapa(c)}
         ${htGaleria(c)}
 
         <div class="ht-body">
           <div class="ht-main">
             <header class="ht-head">
+              ${estrelas ? `
+                <div class="ht-estrelas">
+                  <span class="court-stars" aria-label="${estrelas} de 5 estrelas">${"★".repeat(estrelas)}${"☆".repeat(5 - estrelas)}</span>
+                  <button type="button" class="ht-estrelas-info" data-info-pop="estrelas" aria-expanded="${state.infoPop === "estrelas"}" aria-label="Como funcionam as avaliações">${icon('info', 19, 'var(--text)')}</button>
+                  ${state.infoPop === "estrelas" ? balaoDeInfo("Como funcionam as avaliações", COMO_FUNCIONAM_AS_AVALIACOES) : ""}
+                </div>` : ""}
               <h2 class="court-name display">${esc(c.name)}${seloDaAcademia(c, 22, true)}</h2>
-              ${estrelas ? `<div class="court-stars" aria-label="${estrelas} de 5 estrelas">${"★".repeat(estrelas)}${"☆".repeat(5 - estrelas)}</div>` : ""}
-              ${htEtiquetas(c)}
+              <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}${dist ? ` · ${dist} de você` : ""}</p>
+              <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button></p>
               <button type="button" class="ht-score" id="ir-avaliacoes">
                 <span class="ht-score-num ${c.appCount ? "" : "empty"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
-                <span class="ht-score-txt">
-                  <strong>${scoreWord(c.appAvg, c.appCount)}</strong>
-                  <span>${c.appCount ? `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no GuiaTennis` : "seja o primeiro a avaliar"}</span>
-                </span>
+                <span class="ht-link">${c.appCount ? `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Seja o primeiro a avaliar"} ${icon('chevron', 16, 'currentColor')}</span>
               </button>
-              <p class="court-addr">
-                <span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span>
-                <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}${dist ? ` · ${dist} de você` : ""} — <button type="button" data-nav="${c.id}">Ver no mapa</button></span>
-              </p>
+              ${htEtiquetas(c)}
               ${avisoDeQueFechou(c)}
               ${atalhoDaPromocao(c)}
             </header>
@@ -18656,23 +18959,7 @@ function renderCourtPage(c) {
               ${isAdmin ? `<div class="ht-sec">${adminBlock}</div>` : ""}
               ${blocoDono(c)}
 
-              <section class="ht-sec" id="ht-visao">
-                <h3 class="sec-title">Sobre a academia</h3>
-                <p class="ht-about">${esc(descricaoAcademia(c))}</p>
-                ${htDestaques(c)}
-                ${htHorario(c)}
-              </section>
-
-              <section class="ht-sec" id="ht-opcoes">
-                <h3 class="sec-title">Escolha o que você quer</h3>
-                ${htPromocoes(c)}
-                ${htOpcoes(c)}
-              </section>
-
-              <section class="ht-sec" id="ht-politica">
-                <h3 class="sec-title">Cancelamento e reposição</h3>
-                ${htPolitica(c)}
-              </section>
+              ${htDestaques(c) ? `<div class="ht-sec ht-sec-destaques">${htDestaques(c)}</div>` : ""}
 
               ${(totalQuadras(c) || (c.amenities || []).length) ? `
                 <section class="ht-sec" id="ht-comodidades">
@@ -18685,14 +18972,32 @@ function renderCourtPage(c) {
                 ${htLocalizacao(c)}
               </section>
 
+              <section class="ht-sec" id="ht-visao">
+                <h3 class="sec-title">Sobre a academia</h3>
+                ${htMosaico(c)}
+                <p class="ht-about">${esc(descricaoAcademia(c))}</p>
+                ${courtPhotos(c).length > 1 ? `<p class="ht-atalhos"><button type="button" class="ht-link" data-lightbox-open="0">Ver as ${courtPhotos(c).length} fotos ${icon('chevron', 16, 'currentColor')}</button></p>` : ""}
+              </section>
+
+              <section class="ht-sec" id="ht-opcoes">
+                <h3 class="sec-title">Escolha o que você quer</h3>
+                ${htCaixasDaEscolha(c)}
+                ${htPromocoes(c)}
+                ${htOpcoes(c)}
+              </section>
+
               <section class="ht-sec" id="avaliacoes">
-                <h3 class="sec-title">Avaliações dos jogadores</h3>
+                <div class="ht-sec-topo">
+                  <h3 class="sec-title">Avaliações</h3>
+                  ${c.appCount ? `<span class="ht-sec-nota"><strong>${scoreWord(c.appAvg, c.appCount)}</strong><span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span></span>` : ""}
+                </div>
                 ${c.appCount ? ratingPanel(c) : `<p class="ht-sec-sub">Essa academia ainda não tem avaliação no GuiaTennis. A sua pode ser a primeira.</p>`}
+                ${reviewsSection(c)}
                 ${comoFuncionamAsAvaliacoes()}
 
                 <div class="rate-box" data-aviso-sair="na avaliação" data-rascunho-de="__rateComment,__rateConsent,pendingStar">
                   ${ehMinha(c) ? `
-                    <p style="margin:0">Vocês não podem avaliar a própria academia. Respondam às avaliações dos jogadores aqui embaixo.</p>
+                    <p style="margin:0">Vocês não podem avaliar a própria academia. Respondam às avaliações dos jogadores aqui em cima.</p>
                   ` : ehDaMinhaConta(c) ? `
                     <p style="margin:0">Você administra esta academia no GuiaTennis Parceiros, então não avalia ela. As outras academias você avalia normalmente.</p>
                   ` : state.justRated ? `
@@ -18712,8 +19017,22 @@ function renderCourtPage(c) {
                     <button class="btn-primary" id="rate-submit" style="width:100%;justify-content:center;margin-top:10px;padding:10px 0" ${(state.pendingStar && window.__rateConsent) ? "" : "disabled"}>${jogador ? "Enviar avaliação" : "Entrar e enviar avaliação"}</button>
                   `}
                 </div>
+              </section>
 
-                ${reviewsSection(c)}
+              ${htVizinhas(c)}
+
+              ${temHorario(c) ? `
+                <section class="ht-sec" id="ht-horario">
+                  <div class="ht-sec-topo">
+                    <h3 class="sec-title">Horário</h3>
+                    ${seloAbertoAgora(c)}
+                  </div>
+                  ${htHorarioTabela(c)}
+                </section>` : ""}
+
+              <section class="ht-sec" id="ht-politica">
+                <h3 class="sec-title">Cancelamento e reposição</h3>
+                ${htPolitica(c)}
               </section>
 
               ${perguntasAcademia(c).length ? `
@@ -18733,8 +19052,12 @@ function renderCourtPage(c) {
                 ${(ehMinha(c) || ehDaMinhaConta(c)) && whatsappNovoDe(c.id) && whatsappNovoDe(c.id).numero ? `<p class="footnote ficha-whatsapp-novo">Só vocês veem isto: o WhatsApp ${esc(telefoneBonito(whatsappNovoDe(c.id).numero))} precisa de confirmação e não fica público até ser confirmado. <a href="/parceiros/whatsapp" data-pc="whatsapp">Ver ›</a></p>` : ""}
                 <div id="ficha-confirmacao">${c.confirmada ? linhaDaFichaConfirmada(c) : avisoDaFichaBasica()}</div>
                 ${ehMinha(c) || ehDaMinhaConta(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="/parceiros/cadastro?academia=${idCurto(c.id)}" data-pc-reivindicar="${idCurto(c.id)}">Gerencie a ficha no GuiaTennis Parceiros</a>: atualize os dados, responda às avaliações e veja quem viu a academia.</p>`}
-                ${ehMinha(c) || ehDaMinhaConta(c) || isAdmin ? "" : `<p class="footnote ficha-problema">Algo errado nesta ficha? <button type="button" class="inline-link" id="informar-problema" data-court="${c.id}">Informar um problema</button></p>`}
                 ${c.source === "osm" ? `<p class="footnote">Nome e localização: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>.</p>` : ""}
+                ${ehMinha(c) || ehDaMinhaConta(c) || isAdmin ? "" : `
+                  <div class="ficha-problema">
+                    <p>Algo errado nesta ficha?</p>
+                    <button type="button" class="ht-bt-contorno" id="informar-problema" data-court="${c.id}">Informar um problema</button>
+                  </div>`}
               </section>
             </div>
           </div>
@@ -18744,13 +19067,12 @@ function renderCourtPage(c) {
       </div>
 
       ${c.phone ? `
-        <div class="court-cta ">
+        <div class="court-cta">
           <div class="court-cta-price">
             <span class="court-cta-val ${faixa ? "" : "sem-valor"}">${faixa ? esc(faixa.texto) : SEM_PRECO}</span>
             <span class="court-cta-unit">${faixa ? `${esc(faixa.opcao.nome.toLowerCase())}, por hora` : SEM_PRECO_SUB}</span>
           </div>
-          <a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>
-          <button type="button" class="cta-btn cta-secondary" id="share-btn-2" data-court="${c.id}" aria-label="Compartilhar">${icon('share', 15, 'var(--green)')}</button>
+          <a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">Chamar no WhatsApp</a>
         </div>` : ""}
     </div>
   `;
@@ -19678,17 +20000,17 @@ function previaDaFicha(f) {
     <div class="reg-previa" id="reg-previa">
       ${courtPhotos(c).length ? secao("fotos", "", htGaleria(c)) : adicionar("fotos", "Adicionar fotos")}
       <div class="reg-previa-corpo">
-        ${secao("dados", "", `
+        ${secao("dados", "", `<div class="ht-head ht-head-previa">
           <h2 class="court-name display">${esc(c.name || "Nome da academia")}${seloDaAcademia(c, 20, false)}</h2>
-          ${htEtiquetas(c)}
-          <p class="court-addr"><span style="flex-shrink:0;margin-top:2px">${icon('pin', 14, 'var(--muted)')}</span><span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>`)}
-        ${secao("horario", "Sobre a academia", `<p class="ht-about">${esc(descricaoAcademia(c))}</p>${htHorario(c)}`)}
-        ${secao("precos", "Escolha o que você quer", htOpcoes(c))}
+          <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</p>
+          ${htEtiquetas(c)}</div>`)}
         ${(totalQuadras(c) || (c.amenities || []).length)
           ? secao("quadras", "Estrutura", htComodidades(c))
           : adicionar("quadras", "Adicionar quadras e comodidades")}
-        ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
         ${parte("chegada", temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar", htAcesso(c), "Adicionar como chegar")}
+        ${secao("horario", "Sobre a academia", `<p class="ht-about">${esc(descricaoAcademia(c))}</p>${htHorario(c)}`)}
+        ${secao("precos", "Escolha o que você quer", htCaixasDaEscolha(c) + htOpcoes(c))}
+        ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
         ${contatos
           ? secao("contato", "", `<div class="cta-col" style="margin-top:0">${contatos}</div>`,
             whatsappAConfirmar ? `<p class="reg-previa-nota">${icon('info', 13, 'var(--muted)')} <span>Precisa de confirmação: o WhatsApp ${esc(telefoneBonito(c.phone))} não fica público até ser confirmado (o código de 6 números mandado a ele e a conferência do GuiaTennis).</span></p>` : "")
@@ -22879,8 +23201,29 @@ function attachEvents() {
     irParaSecao("avaliacoes", true);
   };
 
-  const shareBtn2 = document.getElementById("share-btn-2");
-  if (shareBtn2) shareBtn2.onclick = () => shareCourt(shareBtn2.dataset.court);
+  // Ficha no jeito do hoteis.com (26/10/2026): os botões brancos da capa, a
+  // caixa "Horário", os filtros das opções, o "Mostrar mais" das avaliações e
+  // a seta dos cartões que passam com o dedo.
+  document.querySelectorAll("[data-share-court]").forEach(el => { el.onclick = () => shareCourt(el.dataset.shareCourt); });
+  document.querySelectorAll("[data-voltar-ficha]").forEach(el => { el.onclick = voltarDaFicha; });
+  const irHorario = document.getElementById("ir-horario");
+  if (irHorario) irHorario.onclick = () => irParaSecao("horario", true);
+  document.querySelectorAll("[data-opcao-filtro]").forEach(el => {
+    el.onclick = () => { state.opcaoDaFicha = { id: el.dataset.court, nome: el.dataset.opcaoFiltro }; render(); };
+  });
+  document.querySelectorAll("[data-rev-mais]").forEach(el => {
+    el.onclick = () => {
+      const aberta = el.closest(".ht-rev").classList.toggle("aberta");
+      el.textContent = aberta ? "Mostrar menos" : "Mostrar mais";
+    };
+  });
+  document.querySelectorAll("[data-rolar]").forEach(el => {
+    el.onclick = () => {
+      const alvo = document.getElementById(el.dataset.rolar);
+      if (alvo) alvo.scrollBy({ left: alvo.clientWidth * 0.9, behavior: "smooth" });
+    };
+  });
+  ligarCapaDaFicha();
 
   const courtBack = document.getElementById("court-back");
   if (courtBack) courtBack.onclick = voltarDaFicha;

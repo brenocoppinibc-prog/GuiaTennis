@@ -22,7 +22,10 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 24/10/2026
+**Atualizado em:** 26/10/2026
+
+> **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
+> ao trocar de chat)" na seção 11 (regras 150 a 155).
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -5427,6 +5430,76 @@ c9ade31 Configuração de publicação do Netlify
 ```
 
 ## 11. Em aberto
+
+**Resumo (26/10/2026, ao trocar de chat).** O PR #5 (branch
+`ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo
+até a **regra 155** (último commit de código: `39a4260`, mais este
+documento). Nenhum SQL novo neste chat. Entraram as regras 150 a 155:
+**nenhum "Rascunho salvo" na tela**, com o rascunho guardado calado (150);
+**a patrocinada também no lugar dela** na lista, sem "Patrocinado", e a
+contagem e o mapa sem a repetida (151); **contestar numa página própria**,
+`/parceiros/contestar`, e o cartão do pedido só com "Contestar ›" (152);
+a explicação como a **apresentação do Nubank** (uma tela por vez, as
+barrinhas, só "Continuar", **sem "Pular"**) e, contestado, a **tela do
+código** na mesma página; todas as telas de código (disputa, e-mail do
+Parceiros, "Esqueci a senha" e "Confirme o seu e-mail" dos dois sites) com
+**uma caixa por número** e "Mandar outro código em 0:59" (153); **sem "cara
+de IA"**: sem desenho decorativo e sem animação, e **as caixas de número
+ficam** ("ficou legal") (154); e essas telas com **a cara do GuiaTennis**:
+o creme, a marca no alto (sem ✕ na apresentação), a etapa em dourado, o
+título em Playfair e o texto num cartão com o botão verde logo abaixo
+(155). **A descrição do PR está em dia**: seções 1 a 61, SQL, "Para o Breno
+ligar", testes e passos 1 a 87. Termos e Privacidade sem mudança neste chat
+(continuam em 23 de outubro de 2026; os Termos ganharam, na seção 4, a
+frase da patrocinada que aparece de novo no lugar dela). Testes: a última
+bateria completa deu **1.762 verificações, nenhuma falha** (62 arquivos do
+navegador, novo: `contestar-passo-a-passo.js`, mais `onde.mjs` e
+`pagamento.mjs`); `banco-emails.py` com **467** num Postgres local
+(`/var/lib/postgresql/gt`, porta 5433; ele **cai entre um pedido e outro**:
+`su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D
+/var/lib/postgresql/gt/data -o '-p 5433 -k /var/lib/postgresql/gt/sock' -l
+/var/lib/postgresql/gt/log start"` antes de rodar; num chat novo, montar do
+zero como diz o `testes/banco-local-base.sql`). Fotos de tela com a letra
+de verdade: `abrir({ fontes: <pasta> })` do `harness.js`, com a pasta feita
+assim: `curl -A "Mozilla/5.0 … Chrome/120" "<o link do Google Fonts do
+index.html>" -o fontes.css`, cada `https://fonts.gstatic.com/…` baixado
+como `fN.woff2` e anotado em `mapa.txt` ("url arquivo"); sem isso, as fotos
+saem com a letra substituta (o Breno estranhou a fonte). **Pergunta em
+aberto deste chat, para o Breno decidir: o WhatsApp falso.** Hoje, a
+academia **nova** (que não estava no guia) entra no ar com o WhatsApp que
+quem cadastrou escolheu, sem conferência; na disputa, o código vai para esse
+mesmo número (o `telefone_da_ficha` só guarda o número de antes quando
+alguém assume uma academia que já estava no guia), então, se o golpista
+cadastrou primeiro, o dono de verdade só ganha pelo documento. Proposta
+(com o Google, o WhatsApp, o Airbnb e o Booking como referência): (1)
+**confirmar o WhatsApp da academia nova por código** (e de novo quando o
+número da ficha mudar), na mesma tela de caixas; o botão "Chamar no
+WhatsApp" só aparece depois de confirmado (ou aparece com "ainda não
+confirmado": o Breno escolhe), e, enquanto o envio automático da Meta não
+está ligado, o código vai à mão em até 1 dia útil; limite: prova quem tem o
+número, não que o número é da academia; (2) **"Informar um problema" na
+ficha**, com "O WhatsApp não é da academia" (como o "Sugerir uma alteração"
+do Google): o aviso vai ao admin e, com 2 avisos, o botão do WhatsApp sai
+até ele conferir; (3) segue o que existe (revisar "Foram ao ar sozinhas" e
+o documento na disputa); (4) mais tarde, se precisar, vídeo na academia
+para o selo. Recomendação: 1 e 2. **Pendências para o Breno:** (1) testar
+o pagamento de teste na prévia e depois ligar o Mercado Pago (variáveis da
+regra 117); (2) os preços dos planos e o preço da semana da promoção na
+ficha (hoje R$ 0); (3) se, ao voltar ao Básico, a promoção paga na ficha
+devolve as semanas que faltavam (hoje não devolve); (4) se o leilão só abre
+em bairro com um mínimo de jogadores; (5) se o "Confirmar depois" fica no
+cadastro; (6) o que acontece com a ficha da academia que avisou que fechou,
+enquanto o admin confere; (7) o WhatsApp falso (acima); (8) testar na
+prévia os passos 82 a 87. O merge espera o Breno dizer **"pode subir"**.
+Este chat **deixou de acompanhar o PR** (sem inscrição, sem conferência
+marcada): no chat novo, voltar a acompanhar o PR #5. Próximos números:
+**regra 156**, **seção 62** da descrição do PR e **passo 88**. Seguem
+valendo: respostas curtas, dizer o que foi feito (sem narrar), prints só
+quando o pedido for de visual (com a fonte de verdade), comparar com
+referências internacionais grandes nas decisões de site, Instagram e
+marketing, **tudo atualizado no mesmo push** (Termos, Privacidade e a
+descrição do PR, conferida depois de salva) e telas novas **sem desenho
+decorativo nem animação**, com a cara do GuiaTennis.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

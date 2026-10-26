@@ -1,7 +1,8 @@
 // Senha (pedido do Breno em 04/10/2026): olhinho para mostrar o que foi
 // digitado, "repita a senha" em toda senha nova, força enquanto digita e
 // recusa das senhas óbvias — como Google e Microsoft. E o código do e-mail
-// aceita 6 a 8 números (o tamanho vem do painel do Supabase).
+// tem uma caixa por número, no tamanho que o banco.yml grava no Supabase
+// (DIGITOS_DO_EMAIL), e só confirma com todas preenchidas (26/10/2026).
 const { abrir, ok } = require('./harness');
 
 (async () => {
@@ -60,12 +61,20 @@ const { abrir, ok } = require('./harness');
   await page.click('#jog-criar'); await page.waitForTimeout(600);
   ok(await page.evaluate(() => jogador && jogador.nome === 'Lia Tenista'), 'senhas iguais e boas: a conta é criada');
 
-  // Código de 8 números (como o que o Supabase mandou) é aceito.
-  await page.evaluate(() => { window.__codigos['liana@exemplo.com'] = '03618040'; });
-  await page.fill('#jog-codigo', '0361 8040');
+  // Uma caixa por número do código, e "Confirmar" só com todas preenchidas.
+  await page.evaluate(() => { window.__codigos['liana@exemplo.com'] = '036180'; });
+  let cod = await page.evaluate(() => ({ caixas: document.querySelectorAll('#jogador-overlay .otp-caixas span').length, digitos: DIGITOS_DO_EMAIL, travado: document.getElementById('jog-confirmar').disabled }));
+  ok(cod.caixas === 6 && cod.digitos === 6 && cod.travado, 'o código do e-mail tem 6 caixas, uma por número, e "Confirmar" começa travado — ' + JSON.stringify(cod));
+  await page.fill('#jog-codigo', '0361 8');
+  await page.press('#jog-codigo', 'Enter');
+  await page.waitForTimeout(300);
+  cod = await page.evaluate(() => ({ travado: document.getElementById('jog-confirmar').disabled, mandou: window.__rpcs.some(r => r.nome === 'confirmar_meu_email'), erro: document.querySelector('#jogador-overlay .form-error')?.innerText || '' }));
+  ok(cod.travado && !cod.mandou && !cod.erro, 'com 5 números, nem o botão nem o Enter confirmam — ' + JSON.stringify(cod));
+  await page.fill('#jog-codigo', '0361 80');
+  ok(await page.evaluate(() => !document.getElementById('jog-confirmar').disabled), 'com os 6, "Confirmar" libera');
   await page.click('#jog-confirmar');
   await page.waitForTimeout(500);
-  ok(await page.evaluate(() => !document.querySelector('#jogador-overlay .form-error') && window.__rpcs.some(r => r.nome === 'confirmar_meu_email')), 'código de 8 números (até com espaço) confirma o e-mail');
+  ok(await page.evaluate(() => !document.querySelector('#jogador-overlay .form-error') && window.__rpcs.some(r => r.nome === 'confirmar_meu_email')), 'código de 6 números (até com espaço) confirma o e-mail');
   await browser.close();
 
   // Cadastro do GuiaTennis Parceiros: senhas diferentes apagam só a repetição.

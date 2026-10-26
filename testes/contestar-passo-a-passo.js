@@ -111,6 +111,12 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   await page.waitForTimeout(100);
   r = await page.evaluate(() => ({ valor: document.getElementById('pc-codigo').value, caixas: [...document.querySelectorAll('#pc-contestar .otp-caixas span')].map(x => x.textContent || '_').join('') }));
   ok(r.valor === '4829' && r.caixas === '4829__', 'cada número numa caixa; o espaço colado some — ' + JSON.stringify(r));
+  // "Confirmar" só com as 6 caixas preenchidas (26/10/2026).
+  ok(await page.evaluate(() => document.getElementById('pc-confirmar-codigo').disabled), 'com 4 números, "Confirmar" fica travado');
+  await page.fill('#pc-codigo', '482917');
+  ok(await page.evaluate(() => !document.getElementById('pc-confirmar-codigo').disabled), 'com os 6, "Confirmar" libera');
+  await page.fill('#pc-codigo', '48 29');
+  ok(await page.evaluate(() => document.getElementById('pc-confirmar-codigo').disabled), 'apagando um número, trava de novo');
   await page.click('#pc-contestar-depois');
   await page.waitForTimeout(250);
   const disputa = await texto(page, '#parceiros .pc-pedido');
@@ -162,8 +168,8 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
     caixas: document.querySelectorAll('#jogador-overlay .otp-caixas span').length, sub: document.querySelector('#jogador-overlay .pc-sec-sub')?.innerText || '',
     reenvio: document.getElementById('jog-reenviar')?.innerText || '',
   }));
-  ok(r.h1 === 'Digite o código' && !r.desenho && r.caixas === 8 && r.sub === 'Mandamos um código de 8 números para ze@exemplo.com.' && r.reenvio.startsWith('Mandar outro código em'),
-    'jogadores: a tela do código sem desenho, com as 8 caixas e a contagem — ' + JSON.stringify(r));
+  ok(r.h1 === 'Digite o código' && !r.desenho && r.caixas === 6 && r.sub === 'Mandamos um código de 6 números para ze@exemplo.com.' && r.reenvio.startsWith('Mandar outro código em'),
+    'jogadores: a tela do código sem desenho, com as 6 caixas (o tamanho do código) e a contagem — ' + JSON.stringify(r));
   await page.fill('#jog-codigo', '1234 56');
   await page.waitForTimeout(100);
   ok(await page.evaluate(() => document.getElementById('jog-codigo').value === '123456' && window.__codigo.codigo === '123456'), 'o código colado com espaço vira só números, também no rascunho');

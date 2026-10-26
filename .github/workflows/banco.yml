@@ -113,7 +113,11 @@ jobs:
       # dois projetos. Na prévia, a logo vem da prévia do PR (o
       # email-logo.png só chega ao site de verdade com o merge). A resposta
       # do Supabase traz a configuração inteira (com a senha do SMTP): não
-      # vai para o registro, só a mensagem de erro, se houver.
+      # vai para o registro, só a mensagem de erro, se houver. Junto vai o
+      # tamanho do código (mailer_otp_length), lido do DIGITOS_DO_EMAIL do
+      # index.html: as caixas da tela e o código do e-mail ficam sempre do
+      # mesmo tamanho (pedido de 26/10/2026). Mudou o número no index.html?
+      # Rode este fluxo de novo (Actions › Banco › Run workflow).
       - name: Modelo do e-mail do código no Supabase ${{ env.DESTINO }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -134,14 +138,18 @@ jobs:
           html = re.sub(r"^\s*<!--.*?-->\s*", "", html, count=1, flags=re.S)  # o comentário de instruções fica só no repositório
           html = html.replace("https://guiatennis.com.br/email-logo.png", os.environ["SITE"] + "/email-logo.png")
           assert "{{ .Token }}" in html and "<!--" not in html
-          print(json.dumps({"mailer_subjects_magic_link": "Seu código do GuiaTennis", "mailer_templates_magic_link_content": html}))
+          corpo = {"mailer_subjects_magic_link": "Seu código do GuiaTennis", "mailer_templates_magic_link_content": html}
+          digitos = re.search(r"const DIGITOS_DO_EMAIL = (\d+);", open("index.html", encoding="utf-8").read())
+          assert digitos and 6 <= int(digitos.group(1)) <= 10, "DIGITOS_DO_EMAIL do index.html (6 a 10)"
+          corpo["mailer_otp_length"] = int(digitos.group(1))
+          print(json.dumps(corpo))
           PY
           code=$(curl -sS -o "$RUNNER_TEMP/resposta.json" -w '%{http_code}' -X PATCH \
             "https://api.supabase.com/v1/projects/$REF/config/auth" \
             -H "Authorization: Bearer $(printf '%s' "$SUPABASE_ACCESS_TOKEN" | tr -d '\r\n ')" \
             -H "Content-Type: application/json" --data @"$RUNNER_TEMP/modelo.json" || echo 000)
           if [ "$code" -ge 200 ] && [ "$code" -lt 300 ]; then
-            echo "Modelo do e-mail do código trocado no Supabase $DESTINO (logo de $SITE)."
+            echo "Modelo do e-mail do código trocado no Supabase $DESTINO (logo de $SITE; código de $(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["mailer_otp_length"])' "$RUNNER_TEMP/modelo.json") números)."
           else
             erro=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(str(d.get("message") or d.get("error") or "")[:200])' "$RUNNER_TEMP/resposta.json" 2>/dev/null)
             echo "::warning::O Supabase $DESTINO não aceitou o modelo do e-mail do código (HTTP $code): $erro"

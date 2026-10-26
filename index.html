@@ -2837,6 +2837,11 @@
   #viagem-overlay .viagem-aviso { margin-top: 30px; font-size: 14px; line-height: 1.55; color: var(--text); }
   #viagem-overlay .viagem-aviso + .fgroup-note { margin-top: 10px; padding-left: 35px; }
   #viagem-overlay .cta-col { margin-top: 30px !important; }
+
+  /* Telas de código: "Confirmar" apagado até a última caixa (26/10/2026),
+     como o "Avançar" cinza do WhatsApp; com a bolinha girando, fica como
+     está. */
+  [data-precisa-codigo]:disabled:not(:has(.bola)) { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 </style>
 </head>
 <body>
@@ -9957,7 +9962,7 @@ function pcPedidoEnviado(p, i = 0) {
   const cancelar = `<p class="pc-linha"><button type="button" class="pc-linha-link pc-linha-discreta" ${id("pc-cancelar-pedido")} data-cancelar-pedido="${p.academiaId}">Cancelar o pedido</button></p>`;
   const caixaDoCodigo = `
     ${caixasDeCodigo(6, `${id("pc-codigo")} data-pedido-codigo="${p.academiaId}"`, (state.pcCodigos || {})[p.academiaId], "Código de 6 números")}
-    <button type="button" class="cta-btn cta-primary cod-botao" ${id("pc-confirmar-codigo")} data-confirmar-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) : "Confirmar"}</button>`;
+    <button type="button" class="cta-btn cta-primary cod-botao" ${id("pc-confirmar-codigo")} data-confirmar-codigo="${p.academiaId}" ${travaDoCodigo(6, (state.pcCodigos || {})[p.academiaId], state.pcContaSalvando)}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) : "Confirmar"}</button>`;
   // Academia que já tem responsável (03/10/2026): o pedido vai para ele,
   // como o "Solicitar acesso" do Google Business Profile.
   if (p.destino === "responsavel") {
@@ -10154,7 +10159,7 @@ function pcCadastro() {
                 ${cabecaDeCodigo("email", "Digite o código", state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(state.pcLogin)}</strong>.`, "h2")}
                 ${caixasDeCodigo(DIGITOS_DO_EMAIL, `data-rascunho="codigo" id="pc-codigo-senha"`, (window.__codigo || {}).codigo, "Código do e-mail", "campo-codigo")}
                 ${erro(state.pcContaErro)}
-                <button class="btn-primary pc-botao-cheio" id="pc-conferir-codigo-senha" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Conferindo..." : "Continuar"}</button>
+                <button class="btn-primary pc-botao-cheio" id="pc-conferir-codigo-senha" ${travaDoCodigo(DIGITOS_DO_EMAIL, (window.__codigo || {}).codigo, state.pcContaSalvando)}>${state.pcContaSalvando ? bolaGirando(16) + " Conferindo..." : "Continuar"}</button>
                 <p class="cod-reenviar">Não chegou? ${botaoDeReenviar("pc-reenviar-codigo", "pc-linha-link")}</p>
                 <p class="cod-dica">Chega em até um minuto. Olhe também o spam e a aba Promoções.</p>`
               : `<p class="pc-card-s pc-codigo-ok" style="margin-top:12px">${icon('check', 15, 'var(--green)')} Código confirmado. Agora crie a senha nova.</p>
@@ -12256,7 +12261,7 @@ function pcConfirmarEmail(etapa) {
       ${enviado ? `
         ${caixasDeCodigo(DIGITOS_DO_EMAIL, `data-rascunho="codigo" id="pc-codigo-email"`, (window.__codigo || {}).codigo, "Código do e-mail", "campo-codigo")}
         ${state.pcConfirmarErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.pcConfirmarErro)}</div>` : ""}
-        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-email">Confirmar</button>
+        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-email" ${travaDoCodigo(DIGITOS_DO_EMAIL, (window.__codigo || {}).codigo)}>Confirmar</button>
         <p class="cod-reenviar">Não chegou? ${botaoDeReenviar("pc-mandar-codigo", "pc-linha-link")}</p>
         <p class="cod-dica">Chega em até um minuto. Olhe também o spam e a aba Promoções.</p>` : `
         <button type="button" class="cta-btn cta-primary cod-botao" id="pc-mandar-codigo">Mandar o código</button>`}
@@ -12531,7 +12536,7 @@ function pcContestarCodigo(p) {
         ${aviso}
         ${caixasDeCodigo(6, `id="pc-codigo" data-pedido-codigo="${p.academiaId}"`, (state.pcCodigos || {})[p.academiaId], "Código de 6 números")}
         ${erro}
-        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-codigo" data-confirmar-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) + " Conferindo..." : "Confirmar"}</button>
+        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-codigo" data-confirmar-codigo="${p.academiaId}" ${travaDoCodigo(6, (state.pcCodigos || {})[p.academiaId], state.pcContaSalvando)}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) + " Conferindo..." : "Confirmar"}</button>
         ${p.codigoEm ? `<p class="cod-reenviar">Não chegou? <button type="button" class="pc-linha-link" data-outro-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>Mandar outro código</button></p>` : ""}
       </div>`}
       <div class="cod-ajuda">
@@ -12642,7 +12647,7 @@ function pcWhatsapp() {
         ${aviso}
         ${caixasDeCodigo(6, `id="pc-codigo-whatsapp"`, state.pcCodigoWhatsapp, "Código de 6 números")}
         ${erro}
-        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-whatsapp" ${state.pcWhatsappSalvando ? "disabled" : ""}>${state.pcWhatsappSalvando ? bolaGirando(15) + " Conferindo..." : "Confirmar"}</button>
+        <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-whatsapp" ${travaDoCodigo(6, state.pcCodigoWhatsapp, state.pcWhatsappSalvando)}>${state.pcWhatsappSalvando ? bolaGirando(15) + " Conferindo..." : "Confirmar"}</button>
         ${w.ligado ? `<p class="cod-reenviar">${w.codigoEm ? "Não chegou? " : ""}<button type="button" class="pc-linha-link" id="pc-whatsapp-outro" ${state.pcWhatsappSalvando ? "disabled" : ""}>${w.codigoEm ? "Mandar outro código" : "Mandar o código"}</button></p>` : ""}
       </div>
       <div class="cod-ajuda">
@@ -14228,7 +14233,7 @@ function renderJogadorSheet() {
     ${erro}
     ${state.codigoFalhou
       ? `<button type="button" class="cta-btn cta-primary" id="jog-depois" style="margin-top:18px;width:100%">Continuar</button>`
-      : `<button type="button" class="cta-btn cta-primary cod-botao" id="jog-confirmar" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Confirmar"}</button>
+      : `<button type="button" class="cta-btn cta-primary cod-botao" id="jog-confirmar" ${travaDoCodigo(DIGITOS_DO_EMAIL, (window.__codigo || {}).codigo, state.jogadorSalvando)}>${salvando("Conferindo") || "Confirmar"}</button>
          ${reenviar}
          ${state.codigoDeMinhaConta ? "" : `<p class="jog-troca"><button type="button" class="inline-link" id="jog-depois">Fazer isso depois</button></p>`}`}`);
   // "Esqueci a senha" em dois passos (22/10/2026): o código, depois a senha nova.
@@ -14237,7 +14242,7 @@ function renderJogadorSheet() {
     ${state.codigoFalhou ? naoMandou : `
       ${campoCodigo}
       ${erro}
-      <button type="button" class="cta-btn cta-primary cod-botao" id="jog-conferir-codigo-senha" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Conferindo") || "Continuar"}</button>
+      <button type="button" class="cta-btn cta-primary cod-botao" id="jog-conferir-codigo-senha" ${travaDoCodigo(DIGITOS_DO_EMAIL, (window.__codigo || {}).codigo, state.jogadorSalvando)}>${salvando("Conferindo") || "Continuar"}</button>
       ${reenviar}`}`);
   else if (tela === "esqueci") miolo = pagina("Crie uma senha nova", `Código confirmado. Agora crie a senha nova de <strong>${esc(state.jogadorLogin || f.email || "")}</strong>.`, `
       <label class="field-label" for="jog-senha-nova">Senha nova</label>
@@ -14370,12 +14375,27 @@ function recebeEmail(login) {
 // código" com a contagem. Um campo só
 // por baixo das caixas: colar, o código que o celular sugere e o leitor de
 // tela seguem funcionando; espaço ou traço colado viram só números.
-const DIGITOS_DO_EMAIL = 8; // o tamanho do código do e-mail no painel do Supabase
+// O tamanho do código do e-mail. O banco.yml lê este número e grava no
+// Supabase (mailer_otp_length), então as caixas da tela e o código do e-mail
+// têm sempre o mesmo tamanho (pedido do Breno em 26/10/2026: "deixe as
+// páginas de código com a quantidade de slots do código"; antes, 8 caixas
+// para o código de 6 números que ele ligou em 05/10/2026).
+const DIGITOS_DO_EMAIL = 6;
 const ESPERA_DO_REENVIO = 60; // segundos; o Supabase recusa outro e-mail antes disso
 function caixasDoValor(n, v) {
   const agora = Math.min(v.length, n - 1);
   return Array.from({ length: n }, (_, i) =>
     `<span class="${[i < v.length ? "cheia" : "", i === agora ? "agora" : "", i === Math.ceil(n / 2) - 1 ? "meio" : ""].filter(Boolean).join(" ")}">${v[i] || ""}</span>`).join("");
+}
+// O botão de confirmar só libera com todas as caixas preenchidas, como o
+// WhatsApp e o Google (pedido de 26/10/2026: "só conseguir confirmar quando
+// tudo for preenchido"). O botão leva data-precisa-codigo e fica junto das
+// caixas; o "input" de baixo acende e apaga ele enquanto a pessoa digita.
+function codigoCompleto(n, valor) {
+  return String(valor || "").replace(/\D/g, "").length === n;
+}
+function travaDoCodigo(n, valor, ocupado) {
+  return `data-precisa-codigo ${ocupado || !codigoCompleto(n, valor) ? "disabled" : ""}`;
 }
 function caixasDeCodigo(n, attrs, valor, rotulo, classe = "") {
   const v = String(valor || "").replace(/\D/g, "").slice(0, n);
@@ -14395,6 +14415,16 @@ document.addEventListener("input", (e) => {
   if (limpo !== el.value) el.value = limpo;
   caixa.querySelector(".otp-caixas").innerHTML = caixasDoValor(n, limpo);
   caixa.classList.toggle("completo", limpo.length === n);
+  caixa.parentElement.querySelectorAll("[data-precisa-codigo]").forEach(b => {
+    if (!b.querySelector(".bola")) b.disabled = limpo.length !== n;
+  });
+}, true);
+// Enter com caixa vazia também não confirma.
+document.addEventListener("keydown", (e) => {
+  const el = e.target;
+  if (e.key !== "Enter" || !el || !el.classList || !el.classList.contains("otp-campo")) return;
+  const n = Number(el.closest(".otp").dataset.otp) || 6;
+  if (el.value.replace(/\D/g, "").length !== n) { e.preventDefault(); e.stopPropagation(); }
 }, true);
 // Sem desenho (pedido de 23/10/2026: "essas telas estão com muita cara de ia
 // por aparecer algo muito animado"): como no WhatsApp, o título e o texto.

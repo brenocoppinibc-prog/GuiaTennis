@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 26/10/2026 (regra 160)
+**Atualizado em:** 26/10/2026 (regra 161)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -82,6 +82,12 @@ teste")
 > nome (nem descendo) e quase transparente, no creme da ficha com desfoque;
 > e o "Vou viajar" com mais ar entre as frases. Sem SQL; seção 66 do PR,
 > passo 92. Testes: **1.927 verificações**, nenhuma falha.
+>
+> Depois: **regra 161** — as telas de código com uma caixa por número do
+> código (o do e-mail voltou a 6, como o Breno ligou em 05/10, e o
+> `banco.yml` grava o mesmo número no Supabase) e "Confirmar" só com todas
+> as caixas preenchidas. Seção 67 do PR, passo 93. Testes: **1.933
+> verificações**, nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4080,6 +4086,31 @@ cobra taxa e não fica no meio** da negociação.
       mais espaço antes de "Guardar a viagem". Os textos não mudaram.
     Testes: `ficha-hoteis.js` (a barra sem o nome e quase transparente) e
     `viagem.js` (o espaço das frases).
+161. **Telas de código: uma caixa por número e "Confirmar" só com todas
+    preenchidas** (pedido de 26/10/2026: "deixe as páginas de código com a
+    quantidade de slots do código e só conseguir confirmar quando tudo for
+    preenchido").
+    - **O tamanho certo:** o código do e-mail tinha 8 caixas
+      (`DIGITOS_DO_EMAIL` = 8, da regra 153), mas o Breno ligou o código de
+      6 números no Supabase em 05/10/2026. Agora `DIGITOS_DO_EMAIL` = 6 e o
+      `banco.yml`, no mesmo passo do modelo do e-mail, lê esse número do
+      `index.html` e grava no Supabase (`mailer_otp_length`, pela API de
+      gerenciamento, com o `SUPABASE_ACCESS_TOKEN`): as caixas e o código
+      do e-mail têm sempre o mesmo tamanho. O teste na abertura do PR, o de
+      verdade no merge. Mudou o número? Rodar o fluxo Banco de novo (Actions
+      › Run workflow). Disputa e WhatsApp da ficha seguem com 6 (o banco
+      gera os dois com 6 números).
+    - **"Confirmar"/"Continuar" travado até a última caixa**, como o
+      "Avançar" cinza do WhatsApp: `codigoCompleto` e `travaDoCodigo` no
+      botão (`data-precisa-codigo`), aceso e apagado pelo mesmo "input" que
+      desenha as caixas; o Enter com caixa vazia também não confirma. Vale
+      para as 7 telas: disputa (cartão e página de contestar), WhatsApp da
+      ficha, confirmar o e-mail e "Esqueci a senha" no Parceiros e nos
+      jogadores. Apagado com 40% de opacidade; com a bolinha girando, fica
+      como está.
+    Testes: `senha.js` (6 caixas, travado com 5, nem o Enter, libera com 6)
+    e `contestar-passo-a-passo.js` (as 6 caixas no e-mail dos jogadores e o
+    "Confirmar" da disputa que trava e libera).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -6023,8 +6054,10 @@ no painel (o número certo em Pendências, a seção Avisos com o sino e o
 ficha no jeito do hoteis.com; seção 65 do PR, passo 91; sem SQL).
 Depois, a **regra 160** (a barra de cima da ficha sem o nome e quase
 transparente, e o "Vou viajar" com mais ar; seção 66 do PR, passo 92).
-Próximos números: **regra 161**, **seção 67** da descrição do PR e
-**passo 93**.
+Depois, a **regra 161** (telas de código com uma caixa por número e
+"Confirmar" só com todas preenchidas; o código do e-mail com 6, gravado no
+Supabase pelo `banco.yml`; seção 67 do PR, passo 93). Próximos números:
+**regra 162**, **seção 68** da descrição do PR e **passo 94**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

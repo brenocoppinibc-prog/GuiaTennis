@@ -16,6 +16,17 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.click('[data-menu="viagem"]');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => state.showViagem && document.getElementById('viagem-cidade').disabled), 'a folha abre, com a cidade esperando o estado');
+  // Mais ar entre as frases (pedido de 26/10/2026): as notas com linhas soltas
+  // e afastadas dos campos, e a do aviso por e-mail alinhada ao texto da caixinha.
+  const ar = await page.evaluate(() => {
+    const datas = document.querySelector('.viagem-datas + .fgroup-note');
+    const caixa = document.querySelector('.viagem-aviso');
+    const nota = caixa.nextElementSibling;
+    const n = getComputedStyle(datas);
+    return { altura: parseFloat(n.lineHeight) / parseFloat(n.fontSize), acima: parseFloat(n.marginTop), caixa: parseFloat(getComputedStyle(caixa).marginTop),
+      alinhada: Math.abs(nota.getBoundingClientRect().left + parseFloat(getComputedStyle(nota).paddingLeft) - caixa.querySelector('span').getBoundingClientRect().left) < 2 };
+  });
+  ok(ar.altura >= 1.55 && ar.acima >= 12 && ar.caixa >= 28 && ar.alinhada, 'as frases da viagem com espaço: linhas soltas, afastadas dos campos e o aviso alinhado ao texto da caixinha — ' + JSON.stringify(ar));
   await page.selectOption('#viagem-uf', 'SP');
   await page.waitForTimeout(300);
   await page.fill('#viagem-cidade', 'Rio de Janeiro');

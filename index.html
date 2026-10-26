@@ -1231,10 +1231,11 @@
   /* ---- página da academia ---- */
   .courtbar { position: sticky; top: 0; z-index: 20; background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
   .courtbar button { background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--green); padding: 4px; }
-  .courtbar-name { flex: 1; min-width: 0; font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .courtbar-espaco { flex: 1; }
   /* Topo da ficha (20/10/2026), como o do Airbnb e do Booking no celular:
-     voltar, o nome e três ícones do mesmo tamanho (comparar, compartilhar e
-     favoritar), todos à vista. No computador, "Voltar" e "Comparar" com texto. */
+     voltar e três ícones do mesmo tamanho (comparar, compartilhar e
+     favoritar), todos à vista; sem o nome desde 26/10/2026. No computador,
+     "Voltar" e "Comparar" com texto. */
   .courtbar .courtbar-ic { width: 40px; height: 40px; flex-shrink: 0; justify-content: center; border-radius: 50%; padding: 0; gap: 6px; }
   .courtbar .courtbar-ic:hover { background: var(--bg-alt); }
   .courtbar .courtbar-ic.on { background: var(--green); }
@@ -1686,7 +1687,6 @@
 
   /* ficha da academia: seções separadas por espaço, não por caixas */
   .courtbar { padding: 10px 16px; }
-  .courtbar-name { font-weight: 600; }
   .ht-head { padding: 22px 20px 0; }
   .court-name { font-size: 30px; line-height: 1.15; }
   @media (min-width: 720px) { .court-name { font-size: 38px; } }
@@ -2663,7 +2663,7 @@
     .reg-previa .ht-gal { display: grid; }
     .ht-head.ht-head-previa { padding: 0 44px; }
     .ht-capa { display: block; position: relative; background: var(--bg-alt); }
-    .courtpage.com-capa .courtbar { position: fixed; top: 0; left: 0; right: 0; transform: translateY(-105%); transition: transform 0.18s ease; box-shadow: 0 2px 12px rgba(33,31,26,0.08); }
+    .courtpage.com-capa .courtbar { position: fixed; top: 0; left: 0; right: 0; transform: translateY(-105%); transition: transform 0.18s ease; }
     .courtpage.com-capa .courtbar.visivel { transform: none; }
   }
   .ht-capa-fotos { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; aspect-ratio: 1 / 1; max-height: 78vh; }
@@ -2820,6 +2820,23 @@
   .court-cta-val.sem-valor { font-size: 18px; }
   .court-cta-unit { font-size: 13px; color: var(--text); }
   .court-cta .cta-btn.cta-primary { flex: 0 0 auto; width: auto; margin-left: auto; min-height: 50px; padding: 0 22px; border-radius: 999px; font-size: 16px; box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--gold); }
+
+  /* Barra de cima da ficha sem o nome, nem descendo, e quase transparente
+     (pedido do Breno em 26/10/2026: "deixe ela com pouca diferença de cor na
+     ficha, para ficar quase transparente mas visível"), como a barra do
+     Safari e a do Airbnb: o creme da página, com o que passa embaixo
+     desfocado, e uma linha fina. */
+  .courtbar { background: rgba(247,244,236,0.8); -webkit-backdrop-filter: saturate(160%) blur(14px); backdrop-filter: saturate(160%) blur(14px); border-bottom: 1px solid rgba(33,31,26,0.06); }
+  .courtbar .courtbar-ic:hover { background: rgba(33,31,26,0.06); }
+
+  /* "Vou viajar" com mais ar entre as frases (pedido de 26/10/2026): letra
+     um pouco maior, linhas mais soltas, a frase das datas separada dos campos
+     e o aviso por e-mail alinhado ao texto da caixinha. */
+  #viagem-overlay .fgroup-note { margin-top: 10px; font-size: 13px; line-height: 1.6; color: var(--muted); }
+  #viagem-overlay .viagem-datas + .fgroup-note { margin-top: 12px; }
+  #viagem-overlay .viagem-aviso { margin-top: 30px; font-size: 14px; line-height: 1.55; color: var(--text); }
+  #viagem-overlay .viagem-aviso + .fgroup-note { margin-top: 10px; padding-left: 35px; }
+  #viagem-overlay .cta-col { margin-top: 30px !important; }
 </style>
 </head>
 <body>
@@ -18920,7 +18937,7 @@ function renderCourtPage(c) {
     <div class="courtpage ${capa ? "com-capa" : ""}">
       <div class="courtbar ${capa && __barraDaCapa ? "visivel" : ""}" id="courtbar">
         <button type="button" id="court-back" class="courtbar-ic com-texto" aria-label="Voltar">${icon('chevronLeft', 20, 'var(--green)')}<span class="courtbar-t">Voltar</span></button>
-        <span class="courtbar-name">${esc(c.name)}</span>
+        <span class="courtbar-espaco" aria-hidden="true"></span>
         <button type="button" class="courtbar-ic com-texto ${isComparing(c.id) ? 'on' : ''}" data-compare="${c.id}" data-compare-aviso aria-pressed="${isComparing(c.id)}" aria-label="${isComparing(c.id) ? "Na comparação: tocar tira" : "Comparar"}" title="${isComparing(c.id) ? "Na comparação" : "Comparar"}">${icon('comparar', 20, isComparing(c.id) ? '#fff' : 'var(--green)')}<span class="courtbar-t" style="${isComparing(c.id) ? "color:#fff" : ""}">${isComparing(c.id) ? "Na comparação" : "Comparar"}</span></button>
         <button type="button" class="courtbar-ic" id="share-btn" data-court="${c.id}" aria-label="Compartilhar" title="Compartilhar">${icon('share', 20, 'var(--green)')}</button>
         <button type="button" class="courtbar-ic" data-fav="${c.id}" aria-label="${isFavorite(c.id) ? "Tirar das favoritas" : "Favoritar"}" title="Favoritar">${icon(isFavorite(c.id) ? 'heartFill' : 'heart', 21, isFavorite(c.id) ? 'var(--red)' : 'var(--green)')}</button>

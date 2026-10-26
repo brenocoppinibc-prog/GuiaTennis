@@ -55,8 +55,11 @@ async function fichaCheia(page, extra) {
 
   await page.evaluate(() => window.scrollTo(0, 900));
   await page.waitForTimeout(350);
-  r = await page.evaluate(() => { const b = document.getElementById('courtbar'); return { visivel: b.classList.contains('visivel'), topo: Math.round(b.getBoundingClientRect().top), nome: b.querySelector('.courtbar-name').innerText }; });
-  ok(r.visivel && r.topo === 0 && r.nome === 'Só Aula Tennis', 'depois da capa, a barra com voltar, nome e atalhos desce');
+  r = await page.evaluate(() => { const b = document.getElementById('courtbar'); const cs = getComputedStyle(b); return { visivel: b.classList.contains('visivel'), topo: Math.round(b.getBoundingClientRect().top), texto: b.innerText.trim(), fundo: cs.backgroundColor, desfoque: cs.backdropFilter || cs.webkitBackdropFilter || '' }; });
+  ok(r.visivel && r.topo === 0, 'depois da capa, a barra com voltar e os atalhos desce');
+  // Pedido de 26/10/2026: sem o nome na barra, nem descendo, e quase transparente.
+  ok(!r.texto.includes('Só Aula Tennis') && !(await page.$('.courtbar-name')), 'a barra de cima não tem o nome da academia — "' + r.texto + '"');
+  ok(/rgba\(247, 244, 236, 0\.8\)/.test(r.fundo) && r.desfoque.includes('blur'), 'a barra quase transparente, no creme da ficha, com o desfoque — ' + r.fundo + ' ' + r.desfoque);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(200);
 

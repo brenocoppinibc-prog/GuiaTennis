@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 26/10/2026 (regra 159)
+**Atualizado em:** 26/10/2026 (regra 160)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -77,6 +77,11 @@ teste")
 > **1.924 verificações** nos 66 arquivos do navegador (novo:
 > `ficha-hoteis.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
 > nenhuma falha.
+>
+> Depois, no mesmo chat: **regra 160** — a barra de cima da ficha sem o
+> nome (nem descendo) e quase transparente, no creme da ficha com desfoque;
+> e o "Vou viajar" com mais ar entre as frases. Sem SQL; seção 66 do PR,
+> passo 92. Testes: **1.927 verificações**, nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4058,6 +4063,23 @@ cobra taxa e não fica no meio** da negociação.
       chegar, sobre, opções, cancelamento, contato).
     Testes: `ficha-hoteis.js` (novo); `links.js` (as abas só no
     computador) e `previa-da-ficha.js` (a ordem nova) atualizados.
+160. **A barra de cima da ficha sem o nome e quase transparente; o "Vou
+    viajar" com mais ar** (pedido de 26/10/2026: "tire a nome da barra do
+    topo da ficha, até quando for descendo, e deixe ela com pouca diferença
+    de cor na ficha, para ficar quase transparente mas visível"; "deixar um
+    espaçamento melhor nessas frases em vou viajar").
+    - **Barra (`#courtbar`):** voltar à esquerda e comparar, compartilhar e
+      favoritar à direita, sem o nome (no lugar, `.courtbar-espaco`), em
+      todo tamanho de tela e também quando desce depois da capa (regra 159).
+      Fundo no creme da ficha a 80% (`rgba(247,244,236,0.8)`) com o desfoque
+      do que passa embaixo (`backdrop-filter`) e uma linha fina, como a
+      barra do Safari e a do Airbnb.
+    - **Vou viajar:** as notas com letra de 13px e linhas mais soltas (1,6),
+      a das datas afastada dos campos, a caixinha do aviso por e-mail mais
+      longe da nota de cima e a nota dela alinhada ao texto da caixinha;
+      mais espaço antes de "Guardar a viagem". Os textos não mudaram.
+    Testes: `ficha-hoteis.js` (a barra sem o nome e quase transparente) e
+    `viagem.js` (o espaço das frases).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -5999,8 +6021,10 @@ e-mail na hora; outro e-mail pede ao admin); e todas as pendências e avisos
 no painel (o número certo em Pendências, a seção Avisos com o sino e o
 "Pedir análise" pelo site). Depois, no chat novo, a **regra 159** (a
 ficha no jeito do hoteis.com; seção 65 do PR, passo 91; sem SQL).
-Próximos números: **regra 160**, **seção 66** da descrição do PR e
-**passo 92**.
+Depois, a **regra 160** (a barra de cima da ficha sem o nome e quase
+transparente, e o "Vou viajar" com mais ar; seção 66 do PR, passo 92).
+Próximos números: **regra 161**, **seção 67** da descrição do PR e
+**passo 93**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

@@ -24,6 +24,7 @@ async function abrir(opts = {}) {
     if (o.academia) window.__academia = o.academia;
     if (o.outrasAcademias) window.__outrasAcademias = o.outrasAcademias;
     if (o.jogador) window.__jogador = true;
+    if (o.jogadorConfirmado) window.__jogadorConfirmado = true;
     if (o.lembreteDeVolta) window.__lembreteDeVolta = true;
     if (o.acessoNovo) window.__acessoNovo = true;
     if (o.semAcesso) window.__semAcesso = true;
@@ -56,6 +57,8 @@ async function abrir(opts = {}) {
     // opts.onde: a cidade aproximada da conexão (netlify/functions/onde.mjs);
     // sem ela, a função responde vazio, como fora do Brasil.
     if (u.includes('/.netlify/functions/onde')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify(opts.onde || {}) });
+    // opts.cnpj: o que a consulta da Receita responde (netlify/functions/cnpj.mjs).
+    if (u.includes('/.netlify/functions/cnpj')) return route.fulfill({ status: opts.cnpj ? 200 : 502, contentType: 'application/json', body: JSON.stringify(opts.cnpj || { erro: 'Não consegui falar com a Receita agora. Tente de novo em instantes.' }) });
     if (u.startsWith(base)) return route.fulfill({ contentType: 'text/html', body: pagina });
     if (u.includes('supabase-js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'mock.js'), 'utf8') });
     if (u.includes('leaflet') && u.endsWith('.js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'leaflet-stub.js'), 'utf8') });

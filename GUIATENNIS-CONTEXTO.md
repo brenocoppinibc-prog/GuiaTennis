@@ -22,10 +22,24 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 26/10/2026
+**Atualizado em:** 26/10/2026 (regra 156)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
+> Depois, no chat novo (PR #5 acompanhado de novo, com inscrição e
+> conferência marcada): **regra 156, veracidade como os grandes** — o
+> WhatsApp da ficha só entra confirmado por código (a troca, também
+> conferida pelo admin), "Informar um problema" na ficha (2 contas tiram o
+> botão do WhatsApp até o admin conferir), avaliar só com o e-mail
+> confirmado, "Denunciar" nas avaliações, o aviso da academia que avisou
+> que fechou e da ficha com mais de um ano, e o "Conferir" do admin com o
+> Google Maps, o mapa aberto e a Receita Federal (SQL
+> `20261026120000_veracidade`, função `netlify/functions/cnpj.mjs`); seção
+> 62 do PR, passo 88. Resolve as pendências 6 e 7 do resumo. Testes:
+> bateria completa com **1.844 verificações** nos 63 arquivos do navegador
+> (novo: `veracidade.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`
+> (novo), nenhuma falha (antes da regra 156, a mesma contagem dava 1.786);
+> **537** no `banco-emails.py` (467 + 70 da seção 36), nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -3697,6 +3711,119 @@ cobra taxa e não fica no meio** da negociação.
     Termos e Privacidade não mudam. Teste: `contestar-passo-a-passo.js` (o
     creme, a marca sem ✕ nem menu, a etiqueta dourada, o título em Playfair
     e o "Continuar" no cartão; nos jogadores, o texto em `pc-sec-sub`).
+156. **Veracidade como os grandes** (pedido de 26/10/2026: "faça o que for
+    possível como os grandes fazem em tudo para sempre garantir a
+    veracidade, pegue os melhores dados que garantem isso atualizados
+    também"). Resolve a pergunta em aberto do "WhatsApp falso" (resumo de
+    26/10, propostas 1 e 2) e a pendência da ficha de quem avisou que fechou.
+    SQL `20261026120000_veracidade`, função `netlify/functions/cnpj.mjs`.
+    - **O WhatsApp da ficha só entra confirmado por código** (como o Google
+      Business Profile, que verifica pelo telefone da empresa e pede nova
+      verificação quando ela muda dados importantes, e o Booking e o Airbnb,
+      que confirmam o telefone antes de o anúncio ir ao ar). O número que uma
+      conta do Parceiros escreve (academia nova ou troca) vai para
+      `academias.whatsapp_a_confirmar` (o visitante não lê) e a ficha
+      continua com o de antes (`phone`); academia nova fica sem botão. O
+      código de 6 números vai ao número novo: sozinho, pela conta oficial do
+      GuiaTennis no WhatsApp, quando ligada (regra 66); desligada, o admin
+      recebe "WhatsApp para confirmar" e manda do WhatsApp dele (Pendências ›
+      "Gerar código", com o link que abre o WhatsApp com a mensagem pronta),
+      em até 1 dia útil. Quem administra digita na página
+      **`/parceiros/whatsapp`** (`pcWhatsapp`: a tela de código das regras
+      153 a 155, sem desenho, com a etiqueta dourada, o título em Playfair e
+      as 6 caixas no cartão), aberta pelo cartão **"Confirme o WhatsApp da
+      academia"** em Atualizações e Minha ficha (`pcWhatsappNovo`) e pela tela
+      de pronto do cadastro ("Digitar o código"). Sem número antes, o código
+      certo põe o número na ficha na hora (`whatsapp_confirmado_em`). **Na
+      troca** (a ficha já tinha WhatsApp, ou ele estava em revisão), o código
+      certo leva a "Código confirmado" e o GuiaTennis ainda confere ("Troca de
+      WhatsApp para aprovar", Pendências › "Aprovar a troca" ou "Recusar",
+      com o motivo no e-mail), como o Google revisa a troca de telefone de um
+      perfil verificado: o código prova que a pessoa tem o número, não que
+      ele é da academia. "Cancelar a troca" no cartão. O admin também pode
+      "Aprovar sem código" (pergunta antes) e escrever o número direto na
+      ficha. Embaixo do campo do WhatsApp, no cadastro e na edição pela
+      conta, a dica diz isso (`dicaDoWhatsappNoCadastro`), sem citar marcas.
+      Código cifrado, 72 horas, 5 tentativas; "Mandar outro código" (com o
+      WhatsApp ligado) um por hora, até 3 em 3 dias. Na ficha sem o botão:
+      "O WhatsApp da academia está sendo confirmado." (`whatsapp_situacao`,
+      coluna calculada que o visitante lê).
+    - **"Informar um problema" na ficha** (como o "Sugerir uma alteração" do
+      Google Maps e o "Denunciar este anúncio" do Airbnb): no fim da ficha,
+      "Algo errado nesta ficha? Informar um problema" abre a janela com 5
+      opções (o WhatsApp não é desta academia, a academia fechou, endereço
+      ou mapa, preço ou horário, outro problema) e o texto (obrigatório só em
+      "Outro"). Pede a conta **com o e-mail confirmado** (sem conta, entra;
+      sem confirmar, o código primeiro e o aviso sai sozinho depois:
+      `jogadorConfirmadoEntaoFaz`); quem administra a academia não informa
+      (corrige em Minha ficha); até 10 por dia por conta. O admin recebe
+      "Problema informado" e vê em Pendências › "Problemas informados nas
+      fichas" (com quem informou), com "Corrigido" ou "Está certo". **A
+      academia fica sabendo** (como o Google avisa o dono): e-mail e o cartão
+      em Atualizações e Minha ficha, sem dizer quem informou
+      (`pcProblemasDaFicha`); **salvar a ficha**, mesmo sem mudar nada,
+      resolve os avisos de dados. **Duas contas** dizendo que o WhatsApp não
+      é da academia tiram o botão da ficha na hora (o número vai para
+      `whatsapp_em_revisao_numero`, a ficha diz "O WhatsApp desta academia
+      está em revisão pelo GuiaTennis.", e a data "atualizada há…" não
+      muda); o admin decide "O WhatsApp é da academia: manter" ou "Tirar o
+      WhatsApp da ficha", e a academia recebe o e-mail. Esse aviso só o
+      GuiaTennis resolve (o golpista poderia salvar a ficha).
+    - **Avaliar só com o e-mail confirmado** (como o Tripadvisor e o Yelp): o
+      banco recusa ("Confirme o seu e-mail para avaliar."); no site, enviar a
+      avaliação abre o código e ela sai depois; "Fazer isso depois" não
+      avalia e diz por quê. "Como funcionam as avaliações" diz isso.
+    - **"Denunciar" em cada avaliação** (como o Google, o Booking e o
+      Airbnb), menos na da própria academia (que tem "Pedir análise"):
+      falsa, ofensiva, propaganda, escrita pela academia ou concorrente, ou
+      dados pessoais; pede só a conta. Pendências › "Avaliações denunciadas"
+      ("Manter" ou "Remover a avaliação"). Quem escreveu não sabe quem
+      denunciou.
+    - **A academia que avisou que fechou** (pendência 6): enquanto o
+      GuiaTennis confere, a ficha mostra no alto "A academia avisou que fechou
+      as portas. O GuiaTennis está confirmando. Antes de ir, fale com a
+      academia." e o cartão da busca, "A academia avisou que fechou" (como o
+      "Fechado permanentemente" do Google, que vale assim que o dono marca).
+      Cancelar o aviso ou "Continua aberta" tira. Coluna
+      `avisou_que_fechou_em`, mantida por gatilho em `pedidos_para_sair`.
+    - **Ficha com mais de um ano sem atualizar**: a linha "Confirmada pela
+      academia · atualizada em …" ganha "Faz mais de um ano: confirme horário
+      e preço direto com a academia." (`fichaVelha`).
+    - **"Conferir" no admin, com os melhores dados de fora** (em "Foram ao ar
+      sozinhas", "WhatsApp para confirmar" e "Problemas informados"): o
+      **Google Maps** (o cadastro de empresas mais atualizado; pelo link,
+      porque a API é paga e não deixa guardar), o **mapa aberto**
+      (OpenStreetMap, atualizado todo dia: lugares com nome e telefone a até
+      300 m, marcando "✓ o mesmo número da ficha") e a **Receita Federal**
+      pelo CNPJ (o cadastro oficial, atualizado todo mês: situação, abertura,
+      atividade, endereço, telefone e e-mail que a empresa deu à Receita,
+      marcando o telefone e a cidade que batem), pela função
+      `/.netlify/functions/cnpj?numero=` (BrasilAPI, com a Minha Receita de
+      reserva; guarda um dia em cache; nada no banco). O CNPJ vem da conta,
+      se ela deu, ou o admin digita (procura no site ou no Instagram da
+      academia). Como os marketplaces brasileiros (Mercado Livre, iFood)
+      conferem o CNPJ. Só no admin: as telas da academia continuam sem falar
+      de CNPJ ou documento (regra 44).
+    - **Por que não entrou:** confirmar o WhatsApp da academia que já estava
+      no Guia antes desta regra (os números de hoje ficam; vale para o que
+      mudar daqui em diante); carta pelos Correios e vídeo na academia (os
+      grandes usam, mas dependem de trabalho à mão; ficam para quando o
+      volume pedir); "Chamou pelo GuiaTennis" nas avaliações (como o "compra
+      verificada" da Amazon: o chamado é guardado pelo próprio navegador e
+      poderia ser forjado, então não garante; regra 64 já diz que o Guia não
+      confere se a pessoa jogou); a API do Google Places (paga e não deixa
+      guardar os dados).
+    Termos (seções 2, 4, 5, 6 e 9) e Privacidade (o WhatsApp guardado até o
+    código, problemas e denúncias, as fontes consultadas e a BrasilAPI e a
+    Minha Receita em serviços de terceiros) em 26 de outubro de 2026; Ajuda
+    do Parceiros ("Por que o WhatsApp novo não aparece na ficha?", "Um
+    jogador informou um problema na ficha. E agora?" e a de "atualizada
+    há…") e o chat (jogadores: "Informação errada numa academia",
+    "Denunciar uma avaliação", "Avaliar"; Parceiros: "Confirmar o WhatsApp
+    da ficha", "Um jogador informou um problema", "Tirar a academia do
+    Guia"). Testes: `veracidade.js` (novo), `cnpj.mjs` (novo), seção 36 do
+    `banco-emails.py`; `seguranca.js` e `buscas-e-avisos.js` passaram a
+    confirmar o e-mail antes de avaliar (`abrir({ jogadorConfirmado })`).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4597,6 +4724,37 @@ colocados pelo Breno). Aqui:
   (chave, apaga junto com a academia) e `lembrada_em`. Sem acesso do site
   (RLS ligada, sem regra); só `preparar_lembretes_de_ficha()` escreve.
 
+### Veracidade (26/10/2026, regra 156)
+SQL `20261026120000_veracidade`. Em `academias`: `whatsapp_a_confirmar`
+(o número que a conta escreveu e espera o código), `whatsapp_antes` (na
+troca, o número de antes), `whatsapp_pedido_em`, `whatsapp_pedido_por`,
+`whatsapp_codigo_ok_em` (código certo numa troca: falta o admin),
+`whatsapp_confirmado_em`, `whatsapp_em_revisao_desde` e
+`whatsapp_em_revisao_numero` (2 contas disseram que não é da academia: o
+número sai de `phone` e fica aqui), `avisou_que_fechou_em` (o visitante lê)
+e `whatsapp_situacao` (calculada: `'revisao'`, `'confirmando'` ou nula; o
+visitante lê). O gatilho `proteger_ficha_da_academia` protege essas colunas
+e desvia o número novo da conta para `whatsapp_a_confirmar` (o admin
+escreve direto); `whatsapp_da_academia_nova` (antes do insert) faz o mesmo
+na academia nova da conta; `whatsapp_novo_manda_codigo` (depois) manda o
+código ou avisa o admin. `guiatennis.mudanca_do_guia` = id: mudança do
+próprio GuiaTennis (passa pela proteção e não mexe na data, a não ser
+quando a função escreve a data). Tabelas fechadas: `codigos_do_whatsapp`
+(um por academia, cifrado), `problemas_na_ficha` (um aberto por conta,
+academia e motivo) e `denuncias_de_avaliacao` (uma por conta e avaliação).
+Funções do Parceiros: `whatsapp_das_minhas_academias`,
+`pedir_codigo_do_whatsapp`, `confirmar_whatsapp_da_ficha` ('ok',
+'revisao', 'errado', 'tentativas', 'venceu', 'sem_codigo', 'sem_numero'),
+`desistir_do_whatsapp_novo`, `problemas_da_minha_academia`; dos jogadores:
+`informar_problema` ('ok' ou 'whatsapp_em_revisao'),
+`denunciar_avaliacao`; do admin: `whatsapps_para_confirmar_admin`,
+`gerar_codigo_do_whatsapp_admin`, `mandar_codigo_do_whatsapp_admin`,
+`aprovar_whatsapp_admin`, `recusar_whatsapp_admin`, `problemas_admin`,
+`resolver_problema_admin`, `manter_whatsapp_admin`, `tirar_whatsapp_admin`,
+`denuncias_admin`, `resolver_denuncia_admin`. `avaliacao_do_jogador` recusa
+conta sem o e-mail confirmado. Os e-mails da equipe saem por
+`aviso_para_a_equipe` (o mesmo rodapé dos outros, com o "?abrir=").
+
 ### Falhas do site (11/10/2026, regra 91)
 - `falhas_do_site` (SQL `20261011120000`): `id, codigo` (6, sem 0/O/1/I),
   `grupo` (md5 da ação, do tipo e da mensagem sem números), `visita`,
@@ -4668,6 +4826,10 @@ pedidos por conta: `pedidos_de_acesso`, `meus_pedidos_de_acesso`,
 `20261005130000_academia_pausa` e `20261005140000_percurso_das_visitas`. Entra no
 banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
+
+**PR #5 (até 26/10/2026):** o SQL do PR entra no banco de teste a cada push
+e no de verdade com o merge, sozinho; o último é
+`20261026120000_veracidade` (regra 156).
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
 
@@ -4969,6 +5131,20 @@ as 133 do `banco-acesso.py` no banco e login locais.
   números colados, "Digitar depois", o cartão "Em disputa" com "Digitar o
   código", o código certo, o link sem pedido, sem o e-mail confirmado e,
   nos jogadores, as 8 caixas e a contagem de um minuto.
+- `veracidade.js` — regra 156: o número novo espera o código (a dica, a
+  tela de pronto, a página `/parceiros/whatsapp` sem desenho, código
+  errado, a troca em conferência, "Cancelar a troca", o número que entra na
+  hora sem número antes, o envio sozinho com o WhatsApp ligado); a ficha
+  sem o botão diz por quê; o aviso de que fechou (ficha e busca) e a ficha
+  com mais de um ano; "Informar um problema" com o código do e-mail no
+  meio, e o segundo aviso de WhatsApp que tira o botão; avaliar pede o
+  e-mail confirmado ("Fazer isso depois" não avalia); "Denunciar"; o cartão
+  em Atualizações e salvar resolve; o admin (Pendências, Para fazer agora,
+  "Gerar código", "Aprovar a troca", "Conferir" com o Google Maps, o mapa
+  aberto e a Receita, problemas e denúncias); banco sem o SQL.
+- `cnpj.mjs` — regra 156, roda sozinho, sem internet: `node
+  testes/cnpj.mjs`. O CNPJ (dígitos), o resumo, a BrasilAPI, a Minha
+  Receita de reserva, as duas fora do ar, CNPJ que não existe e inválido.
 - `receber-email.mjs` — regra 67, roda sozinho, sem internet: `node
   testes/receber-email.mjs`. Assinatura do webhook (certa, errada, velha,
   corpo mexido), encaminha para o Gmail com o nome de quem escreveu, o
@@ -5054,7 +5230,7 @@ pelas ferramentas do GitHub (PR, checks, Actions).
 `index.html`, `404.html`, `netlify.toml`, `robots.txt`, `sitemap.xml`,
 `favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png`,
 `og-image.png`, `email-logo.png` (o ícone dos e-mails),
-`google7b66589ffc303f37.html` (verificação do Search Console) e a função `netlify/functions/receber-email.mjs` (regra 67; o
+`google7b66589ffc303f37.html` (verificação do Search Console), a função `netlify/functions/cnpj.mjs` (regra 156: a Receita pelo CNPJ, para o "Conferir" do admin) e a função `netlify/functions/receber-email.mjs` (regra 67; o
 código dela não fica visível: `/netlify/*` dá 404, e ela roda em
 `/.netlify/functions/receber-email`).
 
@@ -5500,6 +5676,22 @@ referências internacionais grandes nas decisões de site, Instagram e
 marketing, **tudo atualizado no mesmo push** (Termos, Privacidade e a
 descrição do PR, conferida depois de salva) e telas novas **sem desenho
 decorativo nem animação**, com a cara do GuiaTennis.
+
+**Depois do resumo de 26/10/2026, no chat novo.** Entrou a **regra 156**
+(veracidade como os grandes; seção 62 do PR, passo 88; SQL
+`20261026120000_veracidade` e a função `netlify/functions/cnpj.mjs`). Ela
+resolve as pendências **6** (a ficha de quem avisou que fechou mostra o aviso
+enquanto o admin confere) e **7** (o WhatsApp falso: o número novo só entra
+com o código, a troca também passa pelo admin, e "Informar um problema"
+tira o botão com 2 avisos). Continuam para o Breno: (1) testar o pagamento
+de teste e ligar o Mercado Pago; (2) os preços; (3) devolver as semanas da
+promoção ao voltar ao Básico; (4) o mínimo de jogadores do leilão; (5) o
+"Confirmar depois" do cadastro (agora avaliar e informar um problema pedem
+o e-mail confirmado: o "depois" vale só para entrar); (8) testar na prévia
+os passos 82 a 88. Novo: ligar o envio automático do WhatsApp (espera o
+CNPJ, item 0) deixa o código do WhatsApp da ficha sair na hora, sem o
+admin. Próximos números: **regra 157**, **seção 63** da descrição do PR e
+**passo 89**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

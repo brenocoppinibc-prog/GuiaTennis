@@ -1658,5 +1658,187 @@ aviso_eq = um(f"select replace(texto, E'\\n', ' ') from public.emails_a_enviar w
 ok(aviso_eq.startswith("O GuiaTennis confirmou que a Academia Que Fechou fechou as portas"), "quem administrava recebe o e-mail de que ela saiu — " + aviso_eq[:80])
 sql("truncate public.emails_a_enviar; delete from public.pedidos_para_sair")
 
+# 36. Veracidade como os grandes (SQL 20261026120000) -------------------------------
+print("\n# WhatsApp da ficha confirmado por código")
+sql("truncate public.emails_a_enviar; delete from public.whatsapp_a_enviar; delete from vault.secrets where name = 'whatsapp_token';"
+    "update public.whatsapp_configuracao set numero_id = null, real = false, numero_de_teste = null;")
+vera = parceiro("Vera Verdade", f"verdade{sufixo}@exemplo.com")
+sql(f"update public.academia_acessos set dados_completos_em = now() where user_id = '{vera}'")
+nome_v = f"Arena Verdade {sufixo}"
+# O site manda sem pedir a linha de volta (em análise, ela ainda não é da conta).
+sql(f"insert into public.academias (name, cidade, bairro, phone, status) values ('{nome_v}', 'São Paulo', 'Lapa', '(11) 97777-1111', 'pending')",
+    papel="authenticated", user=vera, email=f"verdade{sufixo}@exemplo.com")
+av = um(f"select id from public.academias where name = '{nome_v}'")
+ok(bool(av) and um(f"select status || '|' || coalesce(phone, '-') || '|' || whatsapp_a_confirmar || '|' || whatsapp_situacao from public.academias where id = '{av}'")
+   == "published|-|(11) 97777-1111|confirmando",
+   "academia nova vai ao ar, mas o WhatsApp espera o código (fora da ficha)")
+ok(um(f"select whatsapp_situacao from public.academias where id = '{av}'", papel="anon") == "confirmando", "o visitante lê só a situação")
+certo, _ = sql(f"select whatsapp_a_confirmar from public.academias where id = '{av}'", papel="anon")
+ok(not certo, "o visitante não lê o número que espera o código")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'whatsapp_para_confirmar'") == f"WhatsApp para confirmar: {nome_v}",
+   "sem o WhatsApp da Meta, o admin recebe o aviso para mandar o código")
+ok(um(f"select numero || '|' || troca from public.whatsapp_das_minhas_academias()", papel="authenticated", user=vera) == "(11) 97777-1111|false",
+   "o Parceiros vê o número que espera o código")
+ok(um("select count(*) from public.whatsapp_das_minhas_academias()", papel="authenticated", user=carla) == "0", "outra conta não vê")
+ok(um(f"select public.confirmar_whatsapp_da_ficha('{av}', '123456')", papel="authenticated", user=vera) == "sem_codigo", "sem código gerado: 'sem_codigo'")
+certo, saida = sql(f"select public.confirmar_whatsapp_da_ficha('{av}', '123456')", papel="authenticated", user=carla)
+ok(not certo and "Só quem administra" in saida, "só quem administra confirma")
+certo, _ = sql(f"select public.gerar_codigo_do_whatsapp_admin('{av}')", papel="authenticated", user=vera)
+ok(not certo, "só o admin gera o código")
+cod = um(f"select public.gerar_codigo_do_whatsapp_admin('{av}')", **admin_jwt)
+ok(cod is not None and len(cod) == 6 and um(f"select codigo_em is not null from public.whatsapps_para_confirmar_admin() where academia_id = '{av}'", **admin_jwt) == "t",
+   "o admin gera o código de 6 números e vê que foi gerado")
+errado = "000000" if cod != "000000" else "111111"
+ok(um(f"select public.confirmar_whatsapp_da_ficha('{av}', '{errado}')", papel="authenticated", user=vera) == "errado", "código errado conta a tentativa")
+sql(f"set local session_replication_role = replica; update public.academias set dados_atualizados_em = now() - interval '10 days' where id = '{av}'")
+ok(um(f"select public.confirmar_whatsapp_da_ficha('{av}', '{cod}')", papel="authenticated", user=vera) == "ok", "código certo: 'ok'")
+ok(um(f"select phone || '|' || coalesce(whatsapp_a_confirmar, '-') || '|' || coalesce(whatsapp_situacao, '-') || '|' || (whatsapp_confirmado_em is not null) || '|' || (dados_atualizados_em > now() - interval '1 minute') from public.academias where id = '{av}'")
+   == "(11) 97777-1111|-|-|true|true", "o número entra na ficha, confirmado, e a ficha fica atualizada hoje")
+
+print("\n# Troca do WhatsApp")
+sql("truncate public.emails_a_enviar")
+sql(f"update public.academias set phone = '(11) 96666-2222', name = '{nome_v}' where id = '{av}'", papel="authenticated", user=vera)
+ok(um(f"select phone || '|' || whatsapp_a_confirmar || '|' || whatsapp_antes || '|' || coalesce(whatsapp_situacao, '-') from public.academias where id = '{av}'")
+   == "(11) 97777-1111|(11) 96666-2222|(11) 97777-1111|-", "trocar o número: a ficha continua com o de antes até confirmar")
+ok(fila("tipo = 'whatsapp_para_confirmar'") == "1", "o admin fica sabendo da troca")
+sql(f"update public.academias set phone = '11966662222', price_aula = '100' where id = '{av}'", papel="authenticated", user=vera)
+cod1 = um(f"select public.gerar_codigo_do_whatsapp_admin('{av}')", **admin_jwt)
+sql(f"update public.academias set phone = '(11) 96666-2222', price_aula = '120' where id = '{av}'", papel="authenticated", user=vera)
+ok(um(f"select codigo_em is not null from public.whatsapp_das_minhas_academias() where academia_id = '{av}'", papel="authenticated", user=vera) == "t",
+   "salvar a ficha de novo com o mesmo número (escrito de outro jeito) não perde o código")
+certo, _ = sql(f"update public.academias set whatsapp_a_confirmar = null, whatsapp_confirmado_em = null, whatsapp_em_revisao_desde = now() where id = '{av}'",
+               papel="authenticated", user=vera)
+ok(um(f"select whatsapp_a_confirmar || '|' || (whatsapp_confirmado_em is not null) || '|' || (whatsapp_em_revisao_desde is null) from public.academias where id = '{av}'")
+   == "(11) 96666-2222|true|true", "a academia não mexe nas colunas do WhatsApp por fora das funções")
+ok(um(f"select public.confirmar_whatsapp_da_ficha('{av}', '{cod1}')", papel="authenticated", user=vera) == "revisao", "na troca, o código certo devolve 'revisao'")
+ok(um(f"select phone || '|' || (whatsapp_codigo_ok_em is not null) from public.academias where id = '{av}'") == "(11) 97777-1111|true",
+   "a ficha continua com o número de antes até o GuiaTennis aprovar")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'whatsapp_troca'") == f"Troca de WhatsApp para aprovar: {nome_v}", "o admin recebe a troca para aprovar")
+certo, _ = sql(f"select public.aprovar_whatsapp_admin('{av}')", papel="authenticated", user=vera)
+ok(not certo, "só o admin aprova a troca")
+certo, saida = sql(f"select public.aprovar_whatsapp_admin('{av}')", **admin_jwt)
+ok(certo and um(f"select phone || '|' || coalesce(whatsapp_a_confirmar, '-') from public.academias where id = '{av}'") == "(11) 96666-2222|-",
+   "o admin aprova: o número novo entra" + ("" if certo else ": " + saida))
+ok(um(f"select assunto from public.emails_a_enviar where tipo = 'whatsapp_aprovado' and para = 'verdade{sufixo}@exemplo.com'") == f"O WhatsApp novo está na ficha da {nome_v}",
+   "quem administra recebe o e-mail")
+sql(f"update public.academias set phone = '(21) 95555-3333' where id = '{av}'", papel="authenticated", user=vera)
+sql(f"select public.recusar_whatsapp_admin('{av}', 'O número é de outra empresa.')", **admin_jwt)
+ok(um(f"select phone || '|' || coalesce(whatsapp_a_confirmar, '-') from public.academias where id = '{av}'") == "(11) 96666-2222|-",
+   "recusado: o número novo sai e a ficha fica como estava")
+ok(um("select position('O número é de outra empresa.' in texto) > 0 and position('O número é de outra empresa.' in html) > 0 from public.emails_a_enviar where tipo = 'whatsapp_recusado'") == "t",
+   "o e-mail da recusa leva o motivo")
+sql(f"update public.academias set phone = '(21) 94444-4444' where id = '{av}'", papel="authenticated", user=vera)
+sql(f"select public.desistir_do_whatsapp_novo('{av}')", papel="authenticated", user=vera)
+ok(um(f"select coalesce(whatsapp_a_confirmar, '-') from public.academias where id = '{av}'") == "-", "\"Cancelar\": o número novo sai")
+certo, saida = sql(f"update public.academias set phone = '1234' where id = '{av}'", papel="authenticated", user=vera)
+ok(not certo and "DDD e número" in saida, "número sem DDD é recusado")
+sql(f"update public.academias set phone = '' where id = '{av}'", papel="authenticated", user=vera)
+ok(um(f"select coalesce(phone, '-') || '|' || (whatsapp_confirmado_em is null) from public.academias where id = '{av}'") == "-|true", "tirar o WhatsApp vale na hora")
+sql(f"update public.academias set phone = '(11) 93333-5555' where id = '{av}'", **admin_jwt)
+ok(um(f"select phone || '|' || coalesce(whatsapp_a_confirmar, '-') from public.academias where id = '{av}'") == "(11) 93333-5555|-",
+   "o admin escreve o número direto, sem código")
+# Com o WhatsApp da Meta ligado (banco de teste: só o número de teste recebe).
+sql("select public.configurar_whatsapp('tok_teste', '123456', '(11) 98888-7777', false)")
+sql(f"update public.academias set phone = '(11) 92222-6666' where id = '{av}'", papel="authenticated", user=vera)
+ok(um(f"select para || '|' || origem from public.whatsapp_a_enviar where academia_id = '{av}' and tipo = 'whatsapp_da_ficha'") == "5511988887777|automatico",
+   "com o WhatsApp ligado, o código sai sozinho (no teste, para o número de teste)")
+ok(um(f"select public.pedir_codigo_do_whatsapp('{av}')", papel="authenticated", user=vera) == "espere", "\"Mandar outro código\": um por hora")
+ok(um(f"select ligado from public.whatsapp_das_minhas_academias() where academia_id = '{av}'", papel="authenticated", user=vera) == "t", "o Parceiros sabe que o envio está ligado")
+sql("delete from vault.secrets where name = 'whatsapp_token'; update public.whatsapp_configuracao set numero_id = null, real = false, numero_de_teste = null; delete from public.whatsapp_a_enviar")
+ok(um(f"select public.pedir_codigo_do_whatsapp('{av}')", papel="authenticated", user=vera) == "desligado", "desligado: 'desligado' (o admin manda)")
+sql(f"select public.desistir_do_whatsapp_novo('{av}')", papel="authenticated", user=vera)
+
+print("\n# Informar um problema")
+sql("truncate public.emails_a_enviar")
+certo, saida = sql(f"select public.informar_problema('{av}', 'preco_horario')", papel="anon")
+ok(not certo, "sem conta, não informa")
+nina = jogador("Nina Sem Confirmar", f"nina{sufixo}@exemplo.com", confirmado=False)
+certo, saida = sql(f"select public.informar_problema('{av}', 'preco_horario')", papel="authenticated", user=nina)
+ok(not certo and "Confirme o seu e-mail" in saida, "sem o e-mail confirmado, não informa")
+certo, saida = sql(f"select public.informar_problema('{av}', 'preco_horario')", papel="authenticated", user=vera)
+ok(not certo and "Vocês administram esta academia" in saida, "quem administra corrige em Minha ficha")
+certo, saida = sql(f"select public.informar_problema('{av}', 'outro')", papel="authenticated", user=carla)
+ok(not certo and "Conte o que está errado" in saida, "\"Outro problema\" pede o texto")
+ok(um(f"select public.informar_problema('{av}', 'preco_horario', 'A aula custa R$ 150, não R$ 120.')", papel="authenticated", user=carla) == "ok",
+   "o jogador informa o problema")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'problema_na_ficha' and para = 'guiatennis1@gmail.com'") == f"Problema informado: {nome_v}", "o admin recebe")
+ok(um(f"select assunto from public.emails_a_enviar where tipo = 'problema_na_ficha' and para = 'verdade{sufixo}@exemplo.com'")
+   == f"Um jogador informou um problema na ficha da {nome_v}", "quem administra também recebe, sem saber quem informou")
+ok(um(f"select motivo || '|' || detalhes from public.problemas_da_minha_academia('{av}')", papel="authenticated", user=vera)
+   == "preco_horario|A aula custa R$ 150, não R$ 120.", "o Parceiros vê o que foi informado")
+ok(um(f"select count(*) from public.problemas_da_minha_academia('{av}')", papel="authenticated", user=carla) == "0", "outra conta não vê")
+ok(um(f"select quem from public.problemas_admin() where academia_id = '{av}'", **admin_jwt) == "Carla Jogadora", "o admin vê quem informou")
+sql(f"update public.academias set price_aula = '150' where id = '{av}'", papel="authenticated", user=vera)
+ok(um(f"select resolucao from public.problemas_na_ficha where academia_id = '{av}' and motivo = 'preco_horario'") == "academia_salvou",
+   "salvar a ficha resolve o aviso de dados")
+davi_v = jogador("Davi Avisa", f"daviv{sufixo}@exemplo.com")
+sql(f"update public.academias set phone = '(11) 91111-7777' where id = '{av}'", **admin_jwt)
+sql(f"set local session_replication_role = replica; update public.academias set dados_atualizados_em = now() - interval '10 days' where id = '{av}'")
+ok(um(f"select public.informar_problema('{av}', 'whatsapp')", papel="authenticated", user=carla) == "ok", "um aviso de WhatsApp: o botão continua")
+ok(um(f"select phone from public.academias where id = '{av}'") == "(11) 91111-7777", "com um aviso só, o número fica")
+ok(um(f"select public.informar_problema('{av}', 'whatsapp', 'Atendeu outra empresa.')", papel="authenticated", user=davi_v) == "whatsapp_em_revisao",
+   "dois avisos de contas diferentes: o botão sai")
+ok(um(f"select coalesce(phone, '-') || '|' || whatsapp_situacao || '|' || whatsapp_em_revisao_numero || '|' || (dados_atualizados_em < now() - interval '9 days') from public.academias where id = '{av}'")
+   == "-|revisao|(11) 91111-7777|true", "o número fica guardado, a ficha diz 'em revisão' e a data não muda")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'whatsapp_em_revisao' and para = 'guiatennis1@gmail.com'") == f"WhatsApp em revisão: {nome_v}", "o admin recebe")
+ok(um(f"select assunto from public.emails_a_enviar where tipo = 'whatsapp_em_revisao' and para = 'verdade{sufixo}@exemplo.com'") == f"O WhatsApp da {nome_v} está em revisão",
+   "quem administra também")
+sql(f"update public.academias set phone = '(11) 91111-7777', price_aula = '160' where id = '{av}'", papel="authenticated", user=vera)
+ok(um(f"select coalesce(phone, '-') || '|' || whatsapp_antes from public.academias where id = '{av}'") == "-|(11) 91111-7777",
+   "em revisão, a academia escrever o número de novo vira troca (código e conferência)")
+ok(um(f"select count(*) from public.problemas_na_ficha where academia_id = '{av}' and motivo = 'whatsapp' and resolvido_em is null") == "2",
+   "salvar a ficha não resolve o aviso do WhatsApp")
+sql(f"select public.desistir_do_whatsapp_novo('{av}')", papel="authenticated", user=vera)
+certo, _ = sql(f"select public.manter_whatsapp_admin('{av}')", papel="authenticated", user=vera)
+ok(not certo, "só o admin decide")
+sql(f"select public.manter_whatsapp_admin('{av}')", **admin_jwt)
+ok(um(f"select phone || '|' || coalesce(whatsapp_situacao, '-') from public.academias where id = '{av}'") == "(11) 91111-7777|-", "\"Manter\": o número volta")
+ok(um(f"select count(*) from public.problemas_na_ficha where academia_id = '{av}' and motivo = 'whatsapp' and resolvido_em is null") == "0", "e os avisos se resolvem")
+sql(f"select public.informar_problema('{av}', 'whatsapp')", papel="authenticated", user=carla)
+sql(f"select public.informar_problema('{av}', 'whatsapp')", papel="authenticated", user=davi_v)
+sql(f"select public.tirar_whatsapp_admin('{av}')", **admin_jwt)
+ok(um(f"select coalesce(phone, '-') || '|' || coalesce(whatsapp_situacao, '-') || '|' || coalesce(whatsapp_em_revisao_numero, '-') from public.academias where id = '{av}'") == "-|-|-",
+   "\"Tirar da ficha\": o número sai de vez")
+certo, saida = sql(f"select public.informar_problema('{av}', 'whatsapp')", papel="authenticated", user=carla)
+ok(not certo and "não tem WhatsApp" in saida, "sem WhatsApp na ficha, não há o que informar dele")
+pid = um(f"select public.informar_problema('{av}', 'endereco', 'O número é 120.')", papel="authenticated", user=carla)
+pid = um(f"select id from public.problemas_admin() where academia_id = '{av}' and motivo = 'endereco'", **admin_jwt)
+sql(f"select public.resolver_problema_admin('{pid}', 'corrigido')", **admin_jwt)
+ok(um(f"select resolucao from public.problemas_na_ficha where id = '{pid}'") == "corrigido", "o admin resolve")
+
+print("\n# Avaliar só com o e-mail confirmado")
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars) values ('{av}', 5)", papel="authenticated", user=nina)
+ok(not certo and "Confirme o seu e-mail para avaliar" in saida, "sem o e-mail confirmado, não avalia")
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{av}', 1, 'Péssimo, não vão!')", papel="authenticated", user=carla)
+ok(certo, "com o e-mail confirmado, avalia" + ("" if certo else ": " + saida))
+
+print("\n# Denunciar avaliação")
+sql("truncate public.emails_a_enviar")
+rid = um(f"select id from public.avaliacoes where academia_id = '{av}' and user_id = '{carla}'")
+certo, saida = sql(f"select public.denunciar_avaliacao('{rid}', 'falsa')", papel="authenticated", user=carla)
+ok(not certo and "é sua" in saida, "não denuncia a própria avaliação")
+certo, saida = sql(f"select public.denunciar_avaliacao('{rid}', 'falsa')", papel="anon")
+ok(not certo, "sem conta, não denuncia")
+ok(um(f"select public.denunciar_avaliacao('{rid}', 'conflito')", papel="authenticated", user=davi_v) == "ok", "outra conta denuncia")
+ok(um(f"select public.denunciar_avaliacao('{rid}', 'falsa')", papel="authenticated", user=davi_v) == "ok", "denunciar de novo troca o motivo (uma por conta)")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'avaliacao_denunciada'") == f"Avaliação denunciada: {nome_v}", "o admin recebe")
+ok(um(f"select denuncias || '|' || array_to_string(motivos, ',') from public.denuncias_admin() where avaliacao_id = '{rid}'", **admin_jwt) == "1|falsa",
+   "o admin vê a avaliação com as denúncias")
+sql(f"select public.resolver_denuncia_admin('{rid}', false)", **admin_jwt)
+ok(um(f"select count(*) from public.denuncias_admin() where avaliacao_id = '{rid}'", **admin_jwt) == "0"
+   and um(f"select count(*) from public.avaliacoes where id = '{rid}'") == "1", "\"Manter\": a avaliação fica")
+sql(f"select public.denunciar_avaliacao('{rid}', 'ofensiva')", papel="authenticated", user=nina)
+sql(f"select public.resolver_denuncia_admin('{rid}', true)", **admin_jwt)
+ok(um(f"select count(*) from public.avaliacoes where id = '{rid}'") == "0", "\"Remover\": a avaliação sai")
+
+print("\n# A academia que avisou que fechou")
+sql(f"update public.academia_acessos set academia_id = '{av}' where user_id = '{vera}'")
+sql(f"select public.pedir_para_sair_do_guia('{av}', 'fechou')", papel="authenticated", user=vera)
+ok(um(f"select avisou_que_fechou_em is not null from public.academias where id = '{av}'", papel="anon") == "t", "a ficha mostra que a academia avisou que fechou")
+pid = um(f"select id from public.pedidos_para_sair where academia_id = '{av}' and resolvido_em is null")
+sql(f"select public.resolver_pedido_para_sair('{pid}', false, null)", **admin_jwt)
+ok(um(f"select avisou_que_fechou_em is null from public.academias where id = '{av}'") == "t", "\"Continua aberta\": o aviso some da ficha")
+sql(f"delete from public.academias where id = '{av}'; truncate public.emails_a_enviar; delete from public.pedidos_para_sair")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

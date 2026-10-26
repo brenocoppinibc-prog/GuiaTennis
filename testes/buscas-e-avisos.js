@@ -133,7 +133,8 @@ async function buscar(page, termo) {
   await page.evaluate(() => openCourt('a2'));
   await page.waitForTimeout(200);
   ok(!!(await page.$('#star-picker')) && !(await texto(page, '.rate-box')).includes('Parceiros não avaliam'), 'nas outras academias, avalia normalmente');
-  await page.evaluate(async () => { await submitRating('a2', 5, 'Muito boa'); });
+  // Avaliar pede o e-mail confirmado (26/10/2026, regra 156).
+  await page.evaluate(async () => { const agora = new Date().toISOString(); window.__db.jogadores.forEach(j => { j.email_confirmado_em = agora; }); jogador.email_confirmado_em = agora; await submitRating('a2', 5, 'Muito boa'); });
   ok(await page.evaluate(() => window.__db.avaliacoes.some(r => r.academia_id === 'a2' && r.nome_autor === 'Maria Teste')), 'a avaliação entra com o nome da conta');
   let erro = await page.evaluate(async () => { try { await submitRating('a1', 5, ''); return ''; } catch (e) { return e.message; } });
   ok(/administra essa academia/.test(erro), 'o banco também barra a própria academia — ' + erro);

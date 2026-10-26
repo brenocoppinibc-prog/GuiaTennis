@@ -547,6 +547,9 @@ mexer:
 ### Como o Breno trabalha (importante)
 - Fala português, pelo celular, e manda print. Resposta curta, direta, em
   português, sem jargão.
+- **Limite curto (26/10/2026):** o Breno está com pouco limite. Mensagens
+  pequenas, sem narrar o que está sendo feito; só o resultado e o que
+  depende dele.
 - **Tudo atualizado no mesmo push** (pedido de 20/10/2026: "deixe sempre
   tudo atualizado, termos de uso, política de privacidade, pr"): cada
   mudança já leva os Termos de Uso e a Política de Privacidade (o texto e a
@@ -5950,7 +5953,9 @@ preços dos planos e o **preço da semana da promoção na ficha** (hoje R$
 **devolver** as semanas que faltavam (hoje não devolve, e os Termos dizem
 isso); (4) as pendências 3 a 5 do resumo de 21/10 (público mínimo do
 leilão, o "Confirmar depois" do cadastro e a ficha de quem avisou que
-fechou). O merge espera o Breno dizer **"pode subir"**. Este chat
+fechou). O merge espera o Breno dizer **"pode subir"**. Troca de chat em
+26/10/2026, depois da regra 158 (commit d8bc505, descrição do PR conferida,
+checks verdes, prévia pronta para o passo 90). Este chat
 **deixou de acompanhar o PR** (sem inscrição, sem conferência marcada): no
 chat novo, voltar a acompanhar o PR #5. Seguem valendo: respostas curtas,
 dizer o que foi feito (sem narrar), prints só quando o pedido for de

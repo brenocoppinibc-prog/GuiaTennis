@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 26/10/2026 (regra 157)
+**Atualizado em:** 26/10/2026 (regra 158)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -53,6 +53,17 @@ teste")
 > `cnpj.mjs`, nenhuma falha; **562** no `banco-emails.py` (seção 36
 > atualizada e a 37 nova), nenhuma falha; todas as migrações também entram
 > num banco novo, do zero.
+>
+> Depois, no mesmo dia: **regra 158** — a academia vê que o WhatsApp
+> precisa de confirmação e não fica público até ser confirmado; a academia
+> que fechou fica guardada (cadastro inativo) e pode reabrir (o mesmo e-mail
+> na hora; outro e-mail pede ao admin); todas as pendências e avisos no
+> painel (o número certo em Pendências, a seção Avisos com o sino e o "Pedir
+> análise" pelo site). SQL `20261026200000_academia_fechada_fica_guardada`;
+> seção 64 do PR, passo 90. Testes: **1.892 verificações** nos 65 arquivos
+> do navegador (novo: `fechada-guardada.js`), mais `onde.mjs`,
+> `pagamento.mjs` e `cnpj.mjs`, nenhuma falha; **596** no `banco-emails.py`
+> (seção 38 nova), nenhuma falha; as 71 migrações entram num banco novo.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -3904,6 +3915,71 @@ cobra taxa e não fica no meio** da negociação.
     e-mails novos na lista do admin. Testes: `so-o-que-esta-certo.js`
     (novo), `veracidade.js` e `sair-do-guia.js` atualizados, seções 36 e 37
     do `banco-emails.py`.
+158. **A academia que fechou fica guardada, a academia vê que o WhatsApp
+    precisa de confirmação e todas as pendências chegam ao painel** (pedido
+    de 26/10/2026: "mas para academias aparecer que o whatsapp precisa de
+    confirmação e que ele não ficará público até ser confirmado"; "não quero
+    que academias sejam excluídas por completo do site, manter no sistema
+    para possível reinauguração ou ter o controle de quantas academia já
+    tivemos no site, e se um email que já possuío uma academia, retornar,
+    aparecer uma pergunta se ele deseja administrar aquela academia
+    novamente ou um novo email pesquisar o nome daquela academia e aparecer
+    algo como fechado permanente/ cadastro inativo"; "eu preciso que todas
+    notificações de pendências chegue ao meu perfil, sobre tudo que devo
+    fazer"). SQL `20261026200000_academia_fechada_fica_guardada`.
+    - **O WhatsApp, para a academia:** o público continua sem saber (regra
+      157), mas a academia vê, com todas as letras, "Precisa de
+      confirmação… não fica público até ser confirmado": embaixo do campo
+      (`dicaDoWhatsappNoCadastro`), na prévia embaixo do botão
+      (`reg-previa-nota`), na tela de pronto, no cartão de Atualizações e na
+      própria ficha, que só ela vê ("Só vocês veem isto: o WhatsApp … precisa
+      de confirmação e não fica público até ser confirmado. Ver ›").
+    - **"Fechou: tirar do Guia" não apaga mais** (como o "Fechado
+      permanentemente" do Google e a propriedade desativada do Booking): a
+      academia passa a `status = 'fechada'` (cadastro inativo), fora do site,
+      com as avaliações, `fechada_em` e os e-mails de quem administrava
+      (`fechada_emails`, que só as funções leem); os acessos saem e o plano
+      volta ao Básico (`guardar_academia_fechada`). Ninguém passa a
+      administrar uma fechada sem reabrir (gatilho
+      `vinculo_com_academia_aberta`). Os e-mails dizem "O cadastro fica
+      guardado, com as avaliações".
+    - **Reabrir:** quem administrava, com o mesmo e-mail, vê no Parceiros
+      (sem academia e em Suas academias) o cartão "Fechada permanentemente ·
+      cadastro inativo · A … reabriu?", marca a declaração e toca em
+      "Reabrir e administrar": a ficha volta na hora, ele administra de
+      novo, e o admin recebe "Academia reaberta" e revisa ("· reaberta" em
+      "Foram ao ar"), como o "Marcar como aberta" do Google. Outro e-mail
+      acha a academia na busca do cadastro como "Fechada permanentemente ·
+      cadastro inativo", toca nela e em "A academia reabriu? Pedir para
+      reabrir": o admin recebe "Pedido para reabrir", confere e responde em
+      Pendências ("Reabriu: voltar ao Guia", e a conta administra, ou
+      "Recusar", com resposta por e-mail). O admin também reabre direto
+      (Academias › filtro **Fechadas** › "Reabrir (voltar ao Guia)", sem
+      responsável). Funções: `academias_fechadas` (com `minha` e o pedido
+      aberto), `reabrir_academia` ('reaberta' ou 'pedido'),
+      `cancelar_reabertura`, `academias_fechadas_admin`,
+      `pedidos_de_reabertura_admin`, `resolver_reabertura_admin`,
+      `reabrir_academia_admin`; tabela `pedidos_de_reabertura`. O controle:
+      Visão geral › "Fechadas (cadastro inativo)" e "Já passaram pelo Guia".
+    - **Tudo o que espera o admin, no painel:** o número de Pendências no
+      menu passou a contar tudo (deixava de fora o WhatsApp, os problemas e
+      as denúncias); seção nova **Avisos** (`/admin/avisos`, o sino com o
+      número no alto do painel), como o sino do Google Business Profile e as
+      notificações da Shopify: "Para fazer agora" e todos os e-mails que o
+      GuiaTennis mandou ao admin nos últimos 30 dias (`avisos_do_admin`), cada
+      um levando aonde se resolve. O **"Pedir análise"** da academia, que ia
+      pelo WhatsApp, virou uma janela no site (`pedir_analise_da_avaliacao`)
+      e aparece em "Avaliações denunciadas ou com análise pedida", com "A
+      academia pediu análise" e o texto (banco antigo: o WhatsApp de antes).
+      Rótulos dos e-mails novos na lista de e-mails.
+    Termos (seções 2 e 4: o cadastro guardado e a reabertura) e Privacidade
+    (os e-mails de quem administrava, o pedido para reabrir e o pedido de
+    análise); Ajuda do Parceiros (pergunta nova "A academia reabriu. Como ela
+    volta ao Guia?" e a de pausar) e o chat ("A academia reabriu", "Tirar a
+    academia do Guia"). Testes: `fechada-guardada.js` (novo), seção 38 do
+    `banco-emails.py`; `veracidade.js`, `parceiros.js` (21 perguntas),
+    `painel-admin.js` (14 seções) e `acesso-academia.js` ("Pedir análise"
+    pelo site) atualizados.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4849,6 +4925,22 @@ nome, atualizada_em, lembrada_em, conferida_em, com_responsavel, recebem`),
 `lembrar_ficha_admin` (um por dia; devolve quantos recebem) e
 `ficha_conferida_admin`.
 
+**Regra 158** (SQL `20261026200000_academia_fechada_fica_guardada`): em
+`academias`, `status` ganha `'fechada'` (cadastro inativo, fora do site),
+`fechada_em` e `reaberta_em` (o admin lê) e `fechada_emails` (só as funções);
+`guardar_academia_fechada` (chamada por `resolver_pedido_para_sair` no
+"Fechou", no lugar do `delete`), `academia_volta_ao_guia`, o gatilho
+`vinculo_com_academia_aberta` em `academia_vinculos`; tabela fechada
+`pedidos_de_reabertura` (um aberto por academia e conta); funções
+`academias_fechadas`, `reabrir_academia`, `cancelar_reabertura`,
+`academias_fechadas_admin`, `pedidos_de_reabertura_admin`,
+`resolver_reabertura_admin`, `reabrir_academia_admin`,
+`academias_para_revisar_admin` (com `reaberta_em`), `avisos_do_admin` (os
+e-mails ao admin, 30 dias) e `pedir_analise_da_avaliacao`;
+`denuncias_de_avaliacao` ganha `da_academia` e `detalhes`, e
+`denuncias_admin` devolve os dois. E-mails novos: `academia_reaberta`,
+`pedido_de_reabertura`, `reabertura_resposta`, `analise_pedida`.
+
 ### Falhas do site (11/10/2026, regra 91)
 - `falhas_do_site` (SQL `20261011120000`): `id, codigo` (6, sem 0/O/1/I),
   `grupo` (md5 da ação, do tipo e da mensagem sem números), `visita`,
@@ -4923,7 +5015,8 @@ de novo sem estragar.
 
 **PR #5 (até 26/10/2026):** o SQL do PR entra no banco de teste a cada push
 e no de verdade com o merge, sozinho; o último é
-`20261026180000_so_o_que_esta_certo` (regra 157), depois de
+`20261026200000_academia_fechada_fica_guardada` (regra 158), depois de
+`20261026180000_so_o_que_esta_certo` (regra 157) e
 `20261026120000_veracidade` (regra 156).
 
 **Falta confirmar / rodar** (tudo seguro para rodar de novo):
@@ -5247,6 +5340,13 @@ as 133 do `banco-acesso.py` no banco e login locais.
   a ficha básica sem responsável, "Lembrar agora" e o limite de um por dia,
   "Conferi: está certo" sem mudar a data, "Conferir", o filtro em
   Academias, Para fazer agora); banco sem o SQL (`abrir({ semForaDoAr })`).
+- `fechada-guardada.js` — regra 158: o WhatsApp para a academia (a dica,
+  a prévia, a tela de pronto, o cartão e a própria ficha; o jogador não vê);
+  o mesmo e-mail reabre (a pergunta, a declaração, a volta ao site); outro
+  e-mail acha "Fechada permanentemente · cadastro inativo" e pede; o admin
+  (o número de Pendências e o sino, "Fechou" que guarda, o filtro Fechadas,
+  a Visão geral, Avisos e "Reabriu: voltar ao Guia"); "Pedir análise" pelo
+  site e no painel; banco sem o SQL (`abrir({ semFechadaGuardada })`).
 - `cnpj.mjs` — regra 156, roda sozinho, sem internet: `node
   testes/cnpj.mjs`. O CNPJ (dígitos), o resumo, a BrasilAPI, a Minha
   Receita de reserva, as duas fora do ar, CNPJ que não existe e inválido.
@@ -5800,8 +5900,14 @@ admin. Depois, a **regra 157** (a ficha só mostra o que está certo; seção
 confirmação" na ficha pública, todo número novo espera o admin depois do
 código, a academia que avisou que fechou sai do site na hora (resolve de vez
 a pendência 6) e o controle das fichas paradas há 3 meses no admin.
-Próximos números: **regra 158**, **seção 64** da descrição do PR e **passo
-90**.
+Depois, a **regra 158** (seção 64 do PR, passo 90; SQL
+`20261026200000_academia_fechada_fica_guardada`): a academia vê que o
+WhatsApp precisa de confirmação e não fica público até ser confirmado; a
+academia que fechou fica guardada (cadastro inativo) e pode reabrir (o mesmo
+e-mail na hora; outro e-mail pede ao admin); e todas as pendências e avisos
+no painel (o número certo em Pendências, a seção Avisos com o sino e o
+"Pedir análise" pelo site). Próximos números: **regra 159**, **seção 65** da
+descrição do PR e **passo 91**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

@@ -42,7 +42,7 @@ const tela = (page) => page.evaluate(() => ({
   ok(t.painel && t.h1 === 'Visão geral' && t.link === '/admin', 'admin em /admin: o painel, na visão geral');
   ok(t.robots.includes('noindex') && t.robots.includes('nofollow') && t.titulo.includes('Painel do admin'), 'fora do Google, com título próprio — ' + t.titulo);
   ok(await page.evaluate(() => !document.querySelector('.admin-banner') && !document.getElementById('menu-btn') && !document.querySelector('.fab')), 'separado do site: sem a faixa, o menu e os botões do site dos jogadores');
-  ok(await page.evaluate(() => document.querySelectorAll('.adm-nav [data-adm-aba]').length === 13), 'treze seções na barra do lado (com Falhas do site e Leilões)');
+  ok(await page.evaluate(() => document.querySelectorAll('.adm-nav [data-adm-aba]').length === 14), 'catorze seções na barra do lado (com Avisos, Falhas do site e Leilões)');
   let inicio = await texto(page, '#painel-admin');
   ok(inicio.includes('Para fazer agora') && inicio.includes('1 academia nova esperando aprovação'), 'Para fazer agora: a academia nova esperando');
   ok(await page.evaluate(() => document.querySelectorAll('.adm-kpi').length === 4 && document.querySelectorAll('.adm-kpi svg.adm-linha').length === 4), 'últimos 30 dias: acessos, buscas, fichas e contatos, com a linha das 12 semanas');

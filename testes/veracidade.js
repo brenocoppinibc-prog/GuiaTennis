@@ -24,7 +24,7 @@ const mudarAcademia = (page, id, campos) => page.evaluate(async ({ id, campos })
   await page.waitForTimeout(300);
   await irParte(page, 'contato');
   let dica = await texto(page, '.reg-whatsapp-dica');
-  ok(dica.includes('Trocou de número? O novo só entra na ficha depois do código') && !/Google|Booking|Airbnb/.test(dica),
+  ok(dica.includes('Trocou de número? O novo precisa de confirmação e não fica público até ser confirmado') && !/Google|Booking|Airbnb/.test(dica),
     'embaixo do WhatsApp: a troca passa pelo código e pelo GuiaTennis, sem citar marcas — ' + dica);
   await page.fill('#f-phone', '(11) 96666-2222');
   await salvarFicha(page);
@@ -79,7 +79,7 @@ const mudarAcademia = (page, id, campos) => page.evaluate(async ({ id, campos })
   await page.waitForTimeout(300);
   await irParte(page, 'contato');
   dica = await texto(page, '.reg-whatsapp-dica');
-  ok(dica.includes('só aparece na ficha depois do código de 6 números mandado a ele e da conferência do GuiaTennis'), 'ficha sem WhatsApp: o número aparece depois do código e da conferência — ' + dica);
+  ok(dica.includes('não fica público até ser confirmado: o código de 6 números mandado a ele e a conferência do GuiaTennis'), 'ficha sem WhatsApp: o número aparece depois do código e da conferência — ' + dica);
   await page.fill('#f-phone', '11955554444');
   await salvarFicha(page);
   await page.waitForTimeout(700);

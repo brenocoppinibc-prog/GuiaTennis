@@ -130,6 +130,25 @@
     return lista.length === 1 ? lista[0] : null;
   };
   const vinculo = (userId, academiaId) => db.academia_vinculos.find(v => v.user_id === userId && v.academia_id === academiaId);
+  // O e-mail de entrar da conta (o que o banco guarda em fechada_emails).
+  const emailDeEntrar = (x) => !x ? "" : String(x.loginEmail || x.usuario ? loginDe(x) : x.email || "").toLowerCase();
+  // A academia que fechou fica guardada (SQL 20261026200000).
+  const guardarFechada = (ac) => {
+    const equipe = db.academia_vinculos.filter(v => v.academia_id === ac.id);
+    const emails = equipe.map(v => emailDeEntrar(db.academia_acessos.find(x => x.user_id === v.user_id))).filter(Boolean);
+    db.academia_vinculos = window.__db.academia_vinculos = db.academia_vinculos.filter(v => v.academia_id !== ac.id);
+    db.academia_acessos.filter(x => x.academia_id === ac.id).forEach(x => { const outra = db.academia_vinculos.find(v => v.user_id === x.user_id); x.academia_id = outra ? outra.academia_id : null; });
+    Object.assign(ac, { status: "fechada", fechada_em: new Date().toISOString(), fechada_emails: [...new Set([...(ac.fechada_emails || []), ...emails])], plano: "basico",
+      pausada: false, pausada_ate: null, pausada_pela_academia: false, avisou_que_fechou_em: null, revisar_desde: null, whatsapp_a_confirmar: null });
+  };
+  const voltaAoGuia = (ac, userId, revisar) => {
+    Object.assign(ac, { status: "published", fechada_em: null, fechada_emails: null, reaberta_em: new Date().toISOString(), revisar_desde: revisar ? new Date().toISOString() : null });
+    if (userId && db.academia_acessos.some(x => x.user_id === userId)) {
+      if (!vinculo(userId, ac.id)) db.academia_vinculos.push({ user_id: userId, academia_id: ac.id, papel: db.academia_vinculos.some(v => v.academia_id === ac.id && v.papel === "principal") ? "equipe" : "principal", created_at: new Date().toISOString() });
+      db.academia_acessos.filter(x => x.user_id === userId && !x.academia_id).forEach(x => { x.academia_id = ac.id; });
+    }
+    (db.pedidos_de_reabertura || []).filter(p => p.academia_id === ac.id && !p.resolvido_em && p.user_id !== userId).forEach(p => Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: "cancelado" }));
+  };
   // O aviso de que fechou acabou sem tirar a academia: a pausa de antes volta.
   const voltaAPausa = (ac, p) => {
     if (!ac || !p || !p.pausa_antes) return;
@@ -661,7 +680,9 @@
       const acResolvida = db.academias.find(y => y.id === p.academia_id);
       voltaAPausa(acResolvida, p);
       if (acResolvida) acResolvida.avisou_que_fechou_em = null;
-      if (remover) { db.academias = window.__db.academias = db.academias.filter(y => y.id !== p.academia_id); }
+      // Regra 158 (SQL 20261026200000): o cadastro fica guardado como fechado.
+      if (remover && window.__semFechadaGuardada) { db.academias = window.__db.academias = db.academias.filter(y => y.id !== p.academia_id); }
+      else if (remover && acResolvida) guardarFechada(acResolvida);
       return { data:null, error:null };
     }
     // A conta sai, a academia fica (SQL 20261020130000; o pedido para tirar
@@ -1234,7 +1255,7 @@
       return { data: db.academias.filter(a => a.revisar_desde).map(a => {
         const v = db.academia_vinculos.find(y => y.academia_id === a.id && y.papel === "principal");
         const x = v && db.academia_acessos.find(y => y.user_id === v.user_id);
-        return { id: a.id, nome: a.name, bairro: a.bairro, cidade: a.cidade, no_ar_desde: a.revisar_desde, quem: x ? x.nome_responsavel : null, email: x ? (x.email || x.usuario) : null, whatsapp: x ? x.whatsapp : null, declarou_em: v ? v.declarou_em || null : null };
+        return { id: a.id, nome: a.name, bairro: a.bairro, cidade: a.cidade, no_ar_desde: a.revisar_desde, quem: x ? x.nome_responsavel : null, email: x ? (x.email || x.usuario) : null, whatsapp: x ? x.whatsapp : null, declarou_em: v ? v.declarou_em || null : null, reaberta_em: a.reaberta_em || null };
       }), error: null };
     }
     if (nome === "marcar_academia_revisada") {
@@ -1493,8 +1514,89 @@
         const v = db.avaliacoes.find(r => r.id === id) || {};
         const ds = abertas.filter(d => d.avaliacao_id === id);
         return { avaliacao_id: id, academia_id: v.academia_id, academia: (academiaDe(v.academia_id) || {}).name, stars: v.stars, comentario: v.comment, autor: v.nome_autor,
-          avaliada_em: v.created_at, denuncias: ds.length, motivos: [...new Set(ds.map(d => d.motivo))], primeira_em: ds[0].criado_em };
+          avaliada_em: v.created_at, denuncias: ds.length, motivos: [...new Set(ds.map(d => d.motivo))], primeira_em: ds[0].criado_em,
+          da_academia: ds.some(d => d.da_academia), detalhes: ds.map(d => d.detalhes).filter(Boolean) };
       }), error:null };
+    }
+    // Regra 158 (SQL 20261026200000). window.__semFechadaGuardada finge o banco sem o SQL novo.
+    const REGRA_158 = ["academias_fechadas", "reabrir_academia", "cancelar_reabertura", "academias_fechadas_admin", "pedidos_de_reabertura_admin",
+      "resolver_reabertura_admin", "reabrir_academia_admin", "avisos_do_admin", "pedir_analise_da_avaliacao"];
+    if (REGRA_158.includes(nome) && window.__semFechadaGuardada) return semFuncao;
+    db.pedidos_de_reabertura = window.__db.pedidos_de_reabertura = db.pedidos_de_reabertura || [];
+    if (nome === "academias_fechadas") {
+      if (!sessao) return erro("permission denied for function academias_fechadas", "42501");
+      const email = String(sessao.user.email || "").toLowerCase();
+      return { data: db.academias.filter(ac => ac.status === "fechada").map(ac => ({ academia_id: ac.id, nome: ac.name, bairro: ac.bairro, cidade: ac.cidade, fechada_em: ac.fechada_em,
+        minha: (ac.fechada_emails || []).includes(email),
+        pedido_em: (db.pedidos_de_reabertura.find(p => p.academia_id === ac.id && p.user_id === sessao.user.id && !p.resolvido_em) || {}).criado_em || null })), error:null };
+    }
+    if (nome === "reabrir_academia") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre com a sua conta do GuiaTennis Parceiros.", "42501");
+      if (!x.email_confirmado_em) return erro("Confirme o seu e-mail para reabrir a academia.", "42501");
+      if (!a.p_declaro) return erro("Marque a declaração de que você responde pela academia.", "22023");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || ac.status !== "fechada") return erro("Essa academia não está fechada no GuiaTennis.", "22023");
+      const email = String(sessao.user.email || "").toLowerCase();
+      if ((ac.fechada_emails || []).includes(email)) {
+        voltaAoGuia(ac, x.user_id, true);
+        db.emails_a_enviar.push({ id: "e-reaberta-" + ac.id, tipo: "academia_reaberta", para: ADMIN, assunto: "Academia reaberta: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+        return { data:"reaberta", error:null };
+      }
+      let p = db.pedidos_de_reabertura.find(y => y.academia_id === ac.id && y.user_id === x.user_id && !y.resolvido_em);
+      if (!p) db.pedidos_de_reabertura.push(p = { id: "reab-" + (db.pedidos_de_reabertura.length + 1), academia_id: ac.id, user_id: x.user_id, criado_em: new Date().toISOString(), resolvido_em: null });
+      p.detalhes = a.p_detalhes || null;
+      db.emails_a_enviar.push({ id: "e-reab-" + p.id, tipo: "pedido_de_reabertura", para: ADMIN, assunto: "Pedido para reabrir: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"pedido", error:null };
+    }
+    if (nome === "cancelar_reabertura") {
+      db.pedidos_de_reabertura.filter(p => p.academia_id === a.p_academia && sessao && p.user_id === sessao.user.id && !p.resolvido_em).forEach(p => Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: "cancelado" }));
+      return { data:null, error:null };
+    }
+    if (nome === "academias_fechadas_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.academias.filter(ac => ac.status === "fechada").map(ac => ({ academia_id: ac.id, nome: ac.name, bairro: ac.bairro, cidade: ac.cidade, fechada_em: ac.fechada_em,
+        emails: ac.fechada_emails || [], avaliacoes: db.avaliacoes.filter(v => v.academia_id === ac.id).length, publicada_em: ac.publicada_em || ac.created_at || null })), error:null };
+    }
+    if (nome === "pedidos_de_reabertura_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.pedidos_de_reabertura.filter(p => !p.resolvido_em).map(p => {
+        const ac = academiaDe(p.academia_id) || {};
+        const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
+        return { id: p.id, academia_id: ac.id, nome: ac.name, bairro: ac.bairro, cidade: ac.cidade, fechada_em: ac.fechada_em, quem: x.nome_responsavel || null, email: x.email || null,
+          whatsapp: x.whatsapp || null, detalhes: p.detalhes, criado_em: p.criado_em, emails_antes: ac.fechada_emails || [] };
+      }), error:null };
+    }
+    if (nome === "resolver_reabertura_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis decide.", "42501");
+      const p = db.pedidos_de_reabertura.find(y => y.id === a.p_id && !y.resolvido_em);
+      if (!p) return erro("Pedido não encontrado ou já resolvido.", "22023");
+      Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: a.p_aprovar ? "reaberta" : "recusada", resposta: a.p_resposta || null });
+      const ac = academiaDe(p.academia_id);
+      if (a.p_aprovar && ac && ac.status === "fechada") voltaAoGuia(ac, p.user_id, false);
+      return { data:null, error:null };
+    }
+    if (nome === "reabrir_academia_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis reabre uma academia.", "42501");
+      const ac = academiaDe(a.p_academia);
+      if (!ac || ac.status !== "fechada") return erro("Essa academia não está fechada.", "22023");
+      voltaAoGuia(ac, null, false);
+      return { data:null, error:null };
+    }
+    if (nome === "avisos_do_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: db.emails_a_enviar.filter(e => e.para === ADMIN).slice().reverse().map(e => ({ id: e.id, tipo: e.tipo, assunto: e.assunto, criado_em: e.criado_em, enviado_em: e.enviado_em, erro: e.erro })), error:null };
+    }
+    if (nome === "pedir_analise_da_avaliacao") {
+      const v = db.avaliacoes.find(r => r.id === a.p_avaliacao);
+      if (!v) return erro("Avaliação não encontrada.", "22023");
+      if (!sessao || !vinculo(sessao.user.id, v.academia_id)) return erro("Só quem administra a academia pede a análise.", "42501");
+      if (!["falsa", "ofensiva", "propaganda", "conflito", "pessoal"].includes(a.p_motivo)) return erro("Escolha o motivo.", "22023");
+      let d = db.denuncias_de_avaliacao.find(x => x.avaliacao_id === v.id && x.user_id === sessao.user.id);
+      if (d) Object.assign(d, { motivo: a.p_motivo, da_academia: true, detalhes: a.p_detalhes || null, resolvido_em: null });
+      else db.denuncias_de_avaliacao.push({ avaliacao_id: v.id, user_id: sessao.user.id, motivo: a.p_motivo, da_academia: true, detalhes: a.p_detalhes || null, criado_em: new Date().toISOString(), resolvido_em: null });
+      db.emails_a_enviar.push({ id: "e-analise-" + v.id, tipo: "analise_pedida", para: ADMIN, assunto: "A academia pediu análise de uma avaliação: " + ((academiaDe(v.academia_id) || {}).name || "academia"), criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"ok", error:null };
     }
     if (nome === "resolver_denuncia_admin") {
       if (!souAdmin()) return erro("Só o GuiaTennis decide.", "42501");

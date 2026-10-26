@@ -1651,9 +1651,11 @@ certo, saida = sql(f"select public.tirar_academia_que_fechou('{fechou}')", papel
 ok(not certo and "Só o GuiaTennis" in saida, "só o admin tira direto a academia que fechou")
 sql("truncate public.emails_a_enviar")
 certo, saida = sql(f"select public.tirar_academia_que_fechou('{fechou}', 'Google: fechado permanentemente')", **admin_jwt)
-ok(certo and um(f"select count(*) from public.academias where id = '{fechou}'") == "0"
+# Regra 158: a ficha sai do site, mas o cadastro fica guardado como fechado.
+ok(certo and um(f"select status from public.academias where id = '{fechou}'") == "fechada"
+   and um(f"select count(*) from public.academias where id = '{fechou}'", papel="anon") == "0"
    and um("select resolucao || '|' || motivo from public.pedidos_para_sair where academia_nome = 'Academia Que Fechou' order by pedido_em desc limit 1") == "removida|fechou",
-   "o admin tira a academia que fechou: a ficha sai, e fica registrado" + ("" if certo else ": " + saida))
+   "o admin tira a academia que fechou: a ficha sai do site, o cadastro fica guardado e fica registrado" + ("" if certo else ": " + saida))
 aviso_eq = um(f"select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and para = 'saulo{sufixo}@exemplo.com'") or ""
 ok(aviso_eq.startswith("O GuiaTennis confirmou que a Academia Que Fechou fechou as portas"), "quem administrava recebe o e-mail de que ela saiu — " + aviso_eq[:80])
 sql("truncate public.emails_a_enviar; delete from public.pedidos_para_sair")
@@ -1876,7 +1878,9 @@ ok(um(f"select count(*) from public.academias where id = '{av}'", papel="anon") 
 sql(f"select public.pedir_para_sair_do_guia('{av}', 'fechou')", papel="authenticated", user=vera)
 pid = um(f"select id from public.pedidos_para_sair where academia_id = '{av}' and resolvido_em is null")
 certo, saida = sql(f"select public.resolver_pedido_para_sair('{pid}', true, null)", **admin_jwt)
-ok(certo and um(f"select count(*) from public.academias where id = '{av}'") == "0", "\"Fechou: tirar do Guia\": a ficha sai de vez" + ("" if certo else ": " + saida))
+ok(certo and um(f"select status from public.academias where id = '{av}'") == "fechada"
+   and um(f"select count(*) from public.academias where id = '{av}'", papel="anon") == "0",
+   "\"Fechou: tirar do Guia\": a ficha sai do site e o cadastro fica guardado (regra 158)" + ("" if certo else ": " + saida))
 sql("truncate public.emails_a_enviar; delete from public.pedidos_para_sair")
 
 # 37. O controle das fichas paradas no admin (regra 157) ----------------------------
@@ -1912,6 +1916,98 @@ ok(um(f"select count(*) from public.fichas_paradas_admin() where academia_id = '
 sql(f"update public.academias set price_aula = '90' where id = '{parada}'", papel="authenticated", user=paulo)
 ok(um(f"select count(*) from public.fichas_paradas_admin() where academia_id = '{parada}'", **admin_jwt) == "0", "a academia salvou a ficha: sai da lista")
 sql(f"delete from public.academias where id in ('{parada}', '{basica}', '{nova}', '{fora}'); truncate public.emails_a_enviar")
+
+# 38. A academia fechada fica guardada e pode reabrir; tudo no painel (regra 158) --
+print("\n# Academia fechada fica guardada")
+sql("truncate public.emails_a_enviar; delete from public.pedidos_para_sair")
+nome_r = f"Arena Reabre {sufixo}"
+reab = um(f"insert into public.academias (name, status, cidade, bairro, phone, plano) values ('{nome_r}', 'published', 'São Paulo', 'Lapa', '(11) 95555-0000', 'premium') returning id")
+email_rita2 = f"ritar{sufixo}@exemplo.com"
+rita2 = parceiro("Rita Reabre", email_rita2, reab)
+jog_r = jogador("Jonas Joga", f"jonas{sufixo}@exemplo.com")
+sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{reab}', 5, 'Ótimas quadras')", papel="authenticated", user=jog_r, email=f"jonas{sufixo}@exemplo.com")
+sql(f"select public.pedir_para_sair_do_guia('{reab}', 'fechou', 'Fechamos em outubro.')", papel="authenticated", user=rita2)
+pid = um(f"select id from public.pedidos_para_sair where academia_id = '{reab}' and resolvido_em is null")
+sql(f"select public.resolver_pedido_para_sair('{pid}', true, null)", **admin_jwt)
+ok(um(f"select status || '|' || plano || '|' || (fechada_em is not null) || '|' || array_to_string(fechada_emails, ',') || '|' || pausada from public.academias where id = '{reab}'")
+   == f"fechada|basico|true|{email_rita2}|false", "\"Fechou\": cadastro guardado como fechado, no Básico, com o e-mail de quem administrava")
+ok(um(f"select count(*) from public.avaliacoes where academia_id = '{reab}'") == "1", "as avaliações ficam guardadas")
+ok(um(f"select count(*) from public.academia_vinculos where academia_id = '{reab}'") == "0"
+   and um(f"select coalesce(academia_id::text, '-') from public.academia_acessos where user_id = '{rita2}'") == "-", "quem administrava sai da academia")
+ok(um(f"select count(*) from public.academias where id = '{reab}'", papel="anon") == "0", "o jogador não vê a academia fechada")
+certo, _ = sql(f"select fechada_emails from public.academias where id = '{reab}'", **admin_jwt)
+ok(not certo, "nem o admin lê os e-mails pela tabela (só pelas funções)")
+email_resp = um(f"select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'pedido_para_sair_resposta' and para = '{email_rita2}'") or ""
+ok("O cadastro fica guardado" in email_resp and "apagada" not in email_resp, "o e-mail de quem avisou diz que o cadastro fica guardado")
+ok(um(f"select fechada_em is not null from public.academias where id = '{reab}'", **admin_jwt) == "t"
+   and um(f"select emails[1] || '|' || avaliacoes from public.academias_fechadas_admin() where academia_id = '{reab}'", **admin_jwt) == f"{email_rita2}|1",
+   "o admin vê as fechadas, com quem administrava e as avaliações")
+ok(um("select count(*) from public.academias_fechadas_admin()", papel="authenticated", user=jog_r) == "0", "quem não é admin não vê essa lista")
+
+print("\n# O mesmo e-mail reabre")
+ok(um(f"select minha || '|' || nome from public.academias_fechadas() where academia_id = '{reab}'", papel="authenticated", user=rita2, email=email_rita2) == f"true|{nome_r}",
+   "a conta que administrava vê a academia fechada como dela")
+certo, saida = sql(f"select public.reabrir_academia('{reab}', null, false)", papel="authenticated", user=rita2, email=email_rita2)
+ok(not certo and "declaração" in saida, "reabrir pede a declaração")
+sql("truncate public.emails_a_enviar")
+ok(um(f"select public.reabrir_academia('{reab}', 'Reabrimos em novembro.', true)", papel="authenticated", user=rita2, email=email_rita2) == "reaberta",
+   "o mesmo e-mail reabre na hora ('reaberta')")
+ok(um(f"select status || '|' || (reaberta_em is not null) || '|' || (revisar_desde is not null) || '|' || coalesce(array_to_string(fechada_emails, ','), '-') from public.academias where id = '{reab}'")
+   == "published|true|true|-", "a academia volta ao site, para o admin revisar")
+ok(um(f"select papel from public.academia_vinculos where academia_id = '{reab}' and user_id = '{rita2}'") == "principal"
+   and um(f"select academia_id from public.academia_acessos where user_id = '{rita2}'") == reab, "e a conta volta a administrar, como responsável")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'academia_reaberta'") == f"Academia reaberta: {nome_r}", "o admin recebe")
+ok(um(f"select reaberta_em is not null from public.academias_para_revisar_admin() where id = '{reab}'", **admin_jwt) == "t", "e vê em \"Foram ao ar\", como reaberta")
+ok(um(f"select count(*) from public.avaliacoes where academia_id = '{reab}'", papel="anon") == "1", "as avaliações voltam junto")
+
+print("\n# Outro e-mail pede para reabrir")
+sql(f"select public.tirar_academia_que_fechou('{reab}')", **admin_jwt)
+email_nova = f"nina{sufixo}nova@exemplo.com"
+nova_conta = parceiro("Nina Nova", email_nova)
+ok(um(f"select minha from public.academias_fechadas() where academia_id = '{reab}'", papel="authenticated", user=nova_conta, email=email_nova) == "f",
+   "outra conta vê a academia como fechada (cadastro inativo), não como dela")
+certo, _ = sql("select count(*) from public.academias_fechadas()", papel="anon")
+ok(not certo, "sem conta, a lista não sai")
+certo, saida = sql(f"select public.pedir_para_administrar('{reab}', true)", papel="authenticated", user=nova_conta, email=email_nova)
+ok(not certo or um(f"select count(*) from public.academia_vinculos where academia_id = '{reab}'") == "0", "\"Administrar esta academia\" não pega a academia fechada")
+sql("truncate public.emails_a_enviar")
+ok(um(f"select public.reabrir_academia('{reab}', 'Somos os novos donos.', true)", papel="authenticated", user=nova_conta, email=email_nova) == "pedido",
+   "outra conta pede ao GuiaTennis ('pedido')")
+ok(um(f"select status from public.academias where id = '{reab}'") == "fechada", "a academia continua fechada até o admin decidir")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'pedido_de_reabertura'") == f"Pedido para reabrir: {nome_r}", "o admin recebe o pedido")
+ok(um(f"select pedido_em is not null from public.academias_fechadas() where academia_id = '{reab}'", papel="authenticated", user=nova_conta, email=email_nova) == "t",
+   "a conta vê que o pedido está em andamento")
+rid = um(f"select id from public.pedidos_de_reabertura_admin() where academia_id = '{reab}'", **admin_jwt)
+ok(bool(rid) and um(f"select email || '|' || detalhes || '|' || emails_antes[1] from public.pedidos_de_reabertura_admin() where id = '{rid}'", **admin_jwt)
+   == f"{email_nova}|Somos os novos donos.|{email_rita2}", "o admin vê o pedido, os detalhes e quem administrava antes")
+certo, _ = sql(f"select public.resolver_reabertura_admin('{rid}', true)", papel="authenticated", user=nova_conta, email=email_nova)
+ok(not certo, "só o admin decide")
+sql(f"select public.resolver_reabertura_admin('{rid}', true, null)", **admin_jwt)
+ok(um(f"select status || '|' || (revisar_desde is null) from public.academias where id = '{reab}'") == "published|true"
+   and um(f"select papel from public.academia_vinculos where academia_id = '{reab}' and user_id = '{nova_conta}'") == "principal",
+   "aprovado: a academia volta e a conta nova administra")
+ok(um(f"select assunto from public.emails_a_enviar where tipo = 'reabertura_resposta' and para = '{email_nova}'") == f"A {nome_r} voltou ao GuiaTennis", "quem pediu recebe o e-mail")
+sql(f"select public.tirar_academia_que_fechou('{reab}')", **admin_jwt)
+sql(f"select public.reabrir_academia_admin('{reab}')", **admin_jwt)
+ok(um(f"select status || '|' || (select count(*) from public.academia_vinculos where academia_id = '{reab}')::text from public.academias where id = '{reab}'") == "published|0",
+   "o admin também reabre direto (sem responsável)")
+
+print("\n# Tudo o que chega ao admin, no painel")
+ok(int(um("select count(*) from public.avisos_do_admin(30)", **admin_jwt) or 0) >= 1
+   and um("select count(*) from public.avisos_do_admin(30) where tipo = 'pedido_de_reabertura'", **admin_jwt) == "1",
+   "os e-mails mandados ao admin aparecem como avisos no painel")
+ok(um("select count(*) from public.avisos_do_admin(30)", papel="authenticated", user=jog_r) == "0", "quem não é admin não vê")
+rev = um(f"select id from public.avaliacoes where academia_id = '{reab}' limit 1")
+certo, saida = sql(f"select public.pedir_analise_da_avaliacao('{rev}', 'falsa')", papel="authenticated", user=jog_r)
+ok(not certo and "Só quem administra" in saida, "só quem administra a academia pede análise")
+sql(f"insert into public.academia_vinculos (user_id, academia_id, papel) values ('{nova_conta}', '{reab}', 'principal') on conflict do nothing")
+sql("truncate public.emails_a_enviar")
+ok(um(f"select public.pedir_analise_da_avaliacao('{rev}', 'conflito', 'Quem escreveu é de outra academia.')", papel="authenticated", user=nova_conta, email=email_nova) == "ok",
+   "a academia pede análise pelo site (não mais pelo WhatsApp)")
+ok(um(f"select da_academia || '|' || detalhes[1] from public.denuncias_admin() where avaliacao_id = '{rev}'", **admin_jwt) == "true|Quem escreveu é de outra academia.",
+   "o admin vê em Avaliações denunciadas, como pedido da academia, com o motivo")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'analise_pedida'") == f"A academia pediu análise de uma avaliação: {nome_r}", "e recebe o aviso")
+sql(f"delete from public.academias where id = '{reab}'; truncate public.emails_a_enviar")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

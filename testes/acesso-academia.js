@@ -134,8 +134,10 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   await page.waitForTimeout(200);
   const semApagar = await page.evaluate(() => document.querySelectorAll('#parceiros .delete-review-btn').length);
   ok(semApagar === 0, 'academia não tem botão de apagar avaliação');
-  const analise = await page.evaluate(() => ({ href: document.querySelector('#parceiros .ht-rev-top .rev-analise')?.getAttribute('href') || '', naResposta: !!document.querySelector('#parceiros .rev-resp-links a[href*="wa.me"]') }));
-  ok(decodeURIComponent(analise.href).includes('peço a análise de uma avaliação') && decodeURIComponent(analise.href).includes('Carla') && !analise.naResposta, '"Pedir análise" fica na própria avaliação (não na resposta) e abre o WhatsApp do guia com ela');
+  // Desde a regra 158, "Pedir análise" abre a janela no site e chega ao painel
+  // do admin (antes, o WhatsApp do Breno).
+  const analise = await page.evaluate(() => ({ botao: !!document.querySelector('#parceiros .ht-rev-top [data-pedir-analise]'), naResposta: !!document.querySelector('#parceiros .rev-resp-links [data-pedir-analise], #parceiros .rev-resp-links a[href*="wa.me"]') }));
+  ok(analise.botao && !analise.naResposta, '"Pedir análise" fica na própria avaliação (não na resposta) e vai para o painel do GuiaTennis');
   await page.click('#parceiros [data-responder="r1"]');
   await page.fill('#resposta-texto', 'Obrigado, Carla! Estamos reformando o vestiário.');
   await page.click('#resposta-publicar');

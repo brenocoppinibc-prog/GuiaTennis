@@ -95,8 +95,9 @@ teste")
 > opção; um cartão por opção na ficha, com filtros por tipo e por
 > cobrança), o contato logo depois das opções e a ficha sem o nome do
 > plano. SQL `20261026220000_catalogo`; seção 68 do PR,
-> passo 94. Testes: `catalogo.js` com 44 verificações; a bateria completa dos 67
-> arquivos do navegador entra no próximo commit.
+> passo 94. Testes: **1.978 verificações** nos 67 arquivos do navegador
+> (novo: `catalogo.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
+> nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4207,8 +4208,10 @@ cobra taxa e não fica no meio** da negociação.
     resumo, perguntas, Google, computador, busca, comparação, ficha sem
     catálogo, preço antigo na edição e banco sem a coluna);
     `ficha-hoteis.js` (a ordem com o contato depois das opções e o fim),
-    `premium-patrocinado.js` (o selo e a linha sem o plano) e
-    `previa-da-ficha.js` (o preço pelo catálogo).
+    `premium-patrocinado.js` (o selo e a linha sem o plano),
+    `previa-da-ficha.js` (o preço pelo catálogo), `parceiros.js` (o
+    Premium com 9 itens na tabela de planos) e `ficha-basica.js` (a data
+    dos Termos).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 

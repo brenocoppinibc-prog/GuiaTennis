@@ -102,10 +102,12 @@ async function fichaCheia(page, extra) {
     destaques: document.querySelectorAll('.ht-destaque .ht-destaque-ic').length,
     colunas: getComputedStyle(document.querySelector('#ht-comodidades .ht-amen')).gridTemplateColumns.split(' ').length,
     mapa: !!document.querySelector('.ht-map-caixa .ht-map-abrir[data-nav="a1"]'),
-    mosaico: document.querySelectorAll('#ht-visao .ht-mosaico-f').length, fotos: document.querySelector('#ht-visao [data-lightbox-open]:not(.ht-mosaico-f)')?.innerText.trim(),
+    fotosNoMeio: document.querySelectorAll('#ht-visao img, #ht-visao [data-lightbox-open], #ht-local img, #avaliacoes img').length, sobre: !!document.querySelector('#ht-visao .ht-about'),
   }));
   ok(r.destaques === 4 && r.colunas === 2 && r.mapa, 'destaques com o ícone no círculo, estrutura em duas colunas e o mapa com o botão de abrir');
-  ok(r.mosaico === 3 && r.fotos === 'Ver as 5 fotos', '"Sobre a academia" com uma foto grande, duas empilhadas e "Ver as 5 fotos"');
+  // Sem foto no meio da ficha (27/10/2026: "igual na ficha dos hotéis.com,
+  // não tem foto no meio da ficha, só tem foto em cima e sobre os quartos").
+  ok(r.fotosNoMeio === 0 && r.sobre, '"Sobre a academia" só com o texto: foto só na capa e nos cartões das opções');
 
   // ---- opções: os cartões dos quartos, lado a lado ----
   r = await page.evaluate(() => {
@@ -122,7 +124,9 @@ async function fichaCheia(page, extra) {
   ok(r.n === 2 && r.ladoALado && r.nomes === 'Locação,Aula' && r.contagem === 'Mostrando 2 de 2 opções', 'locação e aula em dois cartões lado a lado, com o "Mostrando 2 de 2 opções"');
   ok(r.tag === 'Menor preço,' && r.verde === 'Reposição até 12h antes,Reposição até 24h antes', 'o mais em conta com "Menor preço" e a reposição de cada um em verde — ' + r.verde);
   ok(r.wa[0].includes('queria saber sobre alugar a quadra') && r.wa[1].includes('queria saber sobre as aulas'), 'o WhatsApp de cada cartão já fala daquela opção');
-  ok(r.caixas[0].startsWith('Horário') && r.caixas[1] === 'A academia oferece Aula e locação · 5 quadras', 'as caixas de horário e do que a academia oferece — ' + r.caixas.join(' | '));
+  // Sem a caixa de horário (27/10/2026: "não precisa selecionar um horário certo").
+  ok(r.caixas.length === 1 && r.caixas[0] === 'A academia oferece Aula e locação · 5 quadras' && !(await page.$('#ir-horario')), 'só a caixa do que a academia oferece, sem a de horário — ' + r.caixas.join(' | '));
+  ok(await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')].every(x => x.querySelector('.ht-quarto-foto img'))), 'os cartões das opções continuam com foto');
   await page.click('[data-opcao-filtro="Aula"]');
   await page.waitForTimeout(100);
   r = await page.evaluate(() => ({ n: document.querySelectorAll('#ht-quartos .ht-quarto').length, nome: document.querySelector('#ht-quartos .ht-quarto-n').innerText, contagem: document.querySelector('.ht-opcoes-n').innerText }));
@@ -130,9 +134,6 @@ async function fichaCheia(page, extra) {
   await page.click('[data-opcao-filtro=""]');
   await page.waitForTimeout(100);
   ok(await page.evaluate(() => document.querySelectorAll('#ht-quartos .ht-quarto').length === 2), '"Todas" volta as duas');
-  await page.click('#ir-horario');
-  await page.waitForTimeout(700);
-  ok(await page.evaluate(() => { const b = document.getElementById('ht-horario').getBoundingClientRect(); return b.top >= 0 && b.top < innerHeight / 2; }), 'a caixa "Horário" leva ao horário da semana');
 
   // ---- avaliações: a nota no alto e os cartões que passam ----
   r = await page.evaluate(() => {

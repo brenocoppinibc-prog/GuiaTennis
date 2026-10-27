@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 27/10/2026 (regra 163)
+**Atualizado em:** 27/10/2026 (regra 164)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -106,6 +106,13 @@ teste")
 > Testes: **1.990 verificações** nos 68 arquivos do navegador (novo:
 > `regras-de-conteudo.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
 > nenhuma falha.
+>
+> Depois: **regra 164** — ajustar o enquadramento de cada foto ao escolher
+> (e pelo "Ajustar"), num quadro 4:3; foto só na capa e nos cartões das
+> opções (saiu o mosaico do "Sobre a academia"); sem a caixa "Horário" em
+> "Escolha o que você quer". Sem SQL; seção 70 do PR, passo 96. Testes:
+> `enquadramento.js` (novo) com 14 verificações; a bateria completa dos 69
+> arquivos do navegador entra no próximo commit.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4269,6 +4276,39 @@ cobra taxa e não fica no meio** da negociação.
       `avaliacoes.nome_autor`) — ainda sem botão no painel.
     Testes: `regras-de-conteudo.js` (novo) e `ficha-basica.js` (a data da
     Privacidade).
+164. **Ajustar o enquadramento das fotos; foto só em cima e nas opções;
+    sem horário para escolher** (pedido de 27/10/2026: "eu quero que as
+    fotos, quando for selecionadas, possam ajustar o enquadramento. E,
+    igual na ficha dos hotéis.com, não tem foto no meio da ficha, só tem
+    foto em cima e sobre os quartos… que no caso do site seria nas aulas,
+    locação e os tipos das aulas. Eu não quero colocar que a aula pode ser
+    de 6 pessoas ou não… E não a duração das aulas também… Não precisa
+    selecionar um horário certo").
+    - **Enquadramento**, como o "Cortar" do Instagram e das fotos do
+      anúncio do Airbnb: escolhidas, as fotos abrem uma de cada vez
+      ("Foto 1 de 2", "Próxima"/"Pronto") num quadro 4:3 (o formato dos
+      cartões e da galeria); arrastar move, o controle −/+, os dois dedos
+      ou a rodinha do mouse aproximam (até 4x), e a foto sempre cobre o
+      quadro. "Pronto" grava o recorte (JPEG, até 1280 de largura; 960 na
+      foto do catálogo, sem aumentar a foto); "Usar como está" deixa a foto
+      inteira. Na capa, o quadrado tracejado mostra o que a capa do
+      celular mostra. Cada foto no cadastro tem "Ajustar" (canto de cima) e
+      a foto de cada opção do catálogo também. Código:
+      `abrirEnquadramento`, `renderEnquadrar`, `ligarEnquadramento`
+      (`__enq` = zoom e o ponto da foto no meio do quadro),
+      `recorteDoEnquadramento`, `avancarEnquadramento`; `state.enquadrar`.
+    - **Foto só em cima e nas opções:** saíram o mosaico do "Sobre a
+      academia" (`htMosaico`) e o "Ver as N fotos" de lá; ficam a capa (e o
+      mosaico de cima no computador) e as fotos dos cartões das aulas e da
+      locação. "Outras academias por perto" continua com a foto de cada
+      academia, como as "Propriedades semelhantes" do hoteis.com.
+    - **Sem horário para escolher:** saiu a caixa "Horário" de "Escolha o
+      que você quer" (parecia um campo de escolher horário); fica "A
+      academia oferece", e o horário da academia segue na seção Horário. O
+      catálogo já era só modalidade e valor (regra 162: sem alunos,
+      duração ou vezes por semana).
+    Testes: `enquadramento.js` (novo) e `ficha-hoteis.js` (sem foto no
+    meio, sem a caixa de horário).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -6227,8 +6267,10 @@ depois das opções; a ficha sem o nome do plano; SQL
 `20261026220000_catalogo`; seção 68 do PR, passo 94). Depois, a **regra
 163** (nomes e conteúdo sem ofensa nem discriminação nos Termos e na
 Privacidade; o GuiaTennis altera o nome ou pede a troca; seção 69 do PR,
-passo 95). Próximos números: **regra 164**, **seção 70** da descrição do
-PR e **passo 96**.
+passo 95). Depois, a **regra 164** (ajustar o enquadramento das fotos;
+foto só na capa e nas opções; sem a caixa de horário; seção 70 do PR,
+passo 96). Próximos números: **regra 165**, **seção 71** da descrição do
+PR e **passo 97**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

@@ -2490,6 +2490,25 @@
   .reg-foto.arrastando { opacity: 0.35; }
   .reg-foto.alvo { outline: 3px solid var(--green); outline-offset: 2px; }
   .reg-foto.reg-foto-fantasma { position: fixed; z-index: 9999; margin: 0; pointer-events: none; box-shadow: 0 14px 34px rgba(0,0,0,0.28); }
+  .reg-foto-ajustar { position: absolute; left: 8px; top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; background: rgba(255,255,255,0.92); color: #1F2A24; cursor: pointer; }
+  /* Ajustar o enquadramento (27/10/2026). */
+  .enq-overlay { z-index: 140; }
+  .enq-sheet { padding: 18px 16px 20px; max-width: 560px; }
+  .enq-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .enq-titulo { margin: 0; font-family: var(--fonte-titulo); font-size: 22px; }
+  .enq-conta { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .enq-quadro { position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 12px; background: #111; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+  .enq-quadro:active { cursor: grabbing; }
+  .enq-quadro img { position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0; pointer-events: none; -webkit-user-drag: none; }
+  .enq-guia { position: absolute; top: 0; bottom: 0; left: 12.5%; right: 12.5%; border-left: 2px dashed rgba(255,255,255,0.85); border-right: 2px dashed rgba(255,255,255,0.85); pointer-events: none; }
+  .enq-nota { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+  .enq-zoom { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 20px; color: var(--muted); }
+  .enq-zoom input { flex: 1; accent-color: var(--green); }
+  .enq-bts { display: flex; gap: 10px; margin-top: 16px; }
+  .enq-bts button { flex: 1; min-height: 46px; border-radius: 999px; font: 600 15px var(--fonte-texto); cursor: pointer; }
+  .enq-pronto { background: var(--green); color: #fff; border: 0; }
+  .enq-pular { background: none; border: 1px solid var(--muted-dark); color: var(--text); }
+  .cat-foto-ajustar { display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; padding: 0; font: 600 13px var(--fonte-texto); color: var(--green); cursor: pointer; }
   .reg-foto-tirar { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 999px; border: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 15px; cursor: pointer; }
   .reg-ponto-mapa { height: 220px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
   .reg-ponto-s { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
@@ -2749,15 +2768,6 @@
   #ht-local .ht-addr-line { margin-top: 18px; font-size: 15px; }
   #ht-local .ht-atalhos { margin-top: 12px; }
   #ht-local .cidade-link { display: inline-flex; margin-top: 12px; font-size: 15px; font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
-
-  /* "Sobre a academia": uma foto grande e duas empilhadas. */
-  .ht-mosaico { display: grid; grid-template-columns: 2.1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; aspect-ratio: 1.53 / 1; margin: 4px 0 18px; }
-  .ht-mosaico.duo { grid-template-rows: 1fr; }
-  .ht-mosaico-f { border-radius: 16px; overflow: hidden; background: var(--bg-alt); cursor: pointer; }
-  .ht-mosaico-f:first-child { grid-row: span 2; }
-  .ht-mosaico.duo .ht-mosaico-f:first-child { grid-row: auto; }
-  .ht-mosaico-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  @media (min-width: 720px) { .ht-mosaico { max-height: 420px; } }
 
   /* "Escolha o que você quer": as caixas, a promoção, os filtros e os
      cartões das opções. */
@@ -4890,6 +4900,8 @@ let state = {
   faqOpen: {},
   // O filtro "Todas / Aula / Locação" das opções da ficha: { id, nome }.
   opcaoDaFicha: null,
+  // A foto aberta para ajustar o enquadramento: { fila: [{ tipo, indice | chave }], i }.
+  enquadrar: null,
   faqSiteOpen: {},
   showMenu: false,
   // Folhas do menu: "Minhas quadras" (favoritas, vistas, chamadas) e as
@@ -5528,6 +5540,7 @@ function render() {
     ${renderAvisoFichaSheet()}
     ${renderJogadorSheet()}
     ${renderLightbox()}
+    ${renderEnquadrar()}
   `;
 
   try { window.name = state.page === "parceiros" ? ABA_PARCEIROS : ABA_JOGADORES; } catch {}
@@ -18217,19 +18230,6 @@ function pontosDaCapa(total, atual) {
   }).join("");
 }
 
-// As fotos de "Sobre a academia", como o bloco "Na praia" do hoteis.com: uma
-// grande e duas empilhadas. Com 4 fotos ou mais, as que vêm depois da capa.
-function htMosaico(c) {
-  const photos = courtPhotos(c);
-  if (photos.length < 2) return "";
-  const ini = photos.length >= 4 ? 1 : 0;
-  const tres = photos.slice(ini, ini + 3);
-  return `
-    <div class="ht-mosaico ${tres.length === 2 ? "duo" : ""}">
-      ${tres.map((p, k) => `<div class="ht-mosaico-f" data-lightbox-open="${ini + k}"><img src="${esc(p)}" alt="Foto ${ini + k + 1} da ${esc(c.name)}" loading="lazy" /></div>`).join("")}
-    </div>`;
-}
-
 // O caminho até a academia (Início › Quadras em São Paulo › Moema) não
 // aparece na tela desde 20/10/2026 (pedido do Breno): fica só nos dados para
 // o Google (BreadcrumbList), e o link da região vai para o fim de "Explore a
@@ -18494,17 +18494,12 @@ function htOpcoes(c) {
     ${c.phone ? "" : `<p class="ht-sec-sub" style="margin-top:12px">O telefone não foi incluído.</p>`}`;
 }
 
-// As duas caixas do alto de "Escolha o que você quer", no lugar de "Datas" e
-// "Viajantes" do hoteis.com: o horário de hoje (leva ao horário da semana) e
-// o que a academia oferece.
+// A caixa do alto de "Escolha o que você quer", no lugar de "Viajantes" do
+// hoteis.com: o que a academia oferece. Sem a caixa de horário desde
+// 27/10/2026 ("não precisa selecionar um horário certo"): o jogador não
+// escolhe horário, e o horário da academia fica na seção Horário.
 function htCaixasDaEscolha(c) {
   const caixas = [];
-  if (temHorario(c)) {
-    const aberto = abertoAgora(c);
-    const hoje = faixaTexto(faixaDeHoje(c, new Date()));
-    const texto = [aberto === null ? "" : aberto ? "Aberto agora" : "Fechado agora", hoje ? `hoje, ${hoje.toLowerCase()}` : ""].filter(Boolean).join(" · ") || "Ver os dias e horários";
-    caixas.push(`<button type="button" class="ht-caixa" id="ir-horario">${icon('relogio', 22, 'var(--text)')}<span><span class="ht-caixa-l">Horário</span><span class="ht-caixa-v">${esc(texto)}</span></span></button>`);
-  }
   const mod = modalidadesTexto(c);
   const total = totalQuadras(c);
   const oferece = [mod, total ? `${total} ${plural(total, "quadra", "quadras")}` : ""].filter(Boolean).join(" · ");
@@ -19335,11 +19330,13 @@ function renderCourtPage(c) {
                 ${htLocalizacao(c)}
               </section>
 
+              ${/* Sem foto no meio da ficha (pedido de 27/10/2026: "igual na
+                   ficha dos hotéis.com, não tem foto no meio da ficha, só tem
+                   foto em cima e sobre os quartos"): as fotos ficam na capa e
+                   nos cartões das aulas e da locação. */ ""}
               <section class="ht-sec" id="ht-visao">
                 <h3 class="sec-title">Sobre a academia</h3>
-                ${htMosaico(c)}
                 <p class="ht-about">${esc(descricaoAcademia(c))}</p>
-                ${courtPhotos(c).length > 1 ? `<p class="ht-atalhos"><button type="button" class="ht-link" data-lightbox-open="0">Ver as ${courtPhotos(c).length} fotos ${icon('chevron', 16, 'currentColor')}</button></p>` : ""}
               </section>
 
               <section class="ht-sec" id="ht-opcoes">
@@ -19650,7 +19647,7 @@ function editorDoCatalogo(f) {
   // plano esconde, como as fotos e as comodidades a mais.
   const premium = isAdmin || (f.__plano || "basico") === "premium";
   const fotoDaOpcao = (i, chave, t, k) => fotoDoCatalogoValida(i.foto)
-    ? `<div class="cat-foto"><img src="${esc(i.foto)}" alt="Foto da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}" /><button type="button" class="cat-foto-tirar" data-cat-foto-tirar="${chave}" aria-label="Tirar a foto da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}">✕</button>${premium ? "" : `<span class="cat-premium">Aparece no Premium</span>`}</div>`
+    ? `<div class="cat-foto"><img src="${esc(i.foto)}" alt="Foto da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}" /><button type="button" class="cat-foto-ajustar" data-cat-foto-ajustar="${chave}">${icon('expandir', 13, 'currentColor')} Ajustar</button><button type="button" class="cat-foto-tirar" data-cat-foto-tirar="${chave}" aria-label="Tirar a foto da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}">✕</button>${premium ? "" : `<span class="cat-premium">Aparece no Premium</span>`}</div>`
     : `<label class="cat-foto-bt">${icon('camera', 15, 'currentColor')} Foto desta opção${premium ? "" : ` <span class="cat-premium">Premium</span>`}<input type="file" accept="image/*" data-cat-foto="${chave}" /></label>`;
   return `
     <p class="field-label">Catálogo de preços</p>
@@ -19830,6 +19827,156 @@ function regDestaquesHtml(f) {
         </div>`;
 }
 
+// Ajustar o enquadramento da foto (pedido do Breno em 27/10/2026: "eu quero
+// que as fotos, quando for selecionadas, possam ajustar o enquadramento"),
+// como o "Cortar" do Instagram e das fotos do anúncio do Airbnb: a foto num
+// quadro 4:3 (o formato dos cartões e da galeria); arrastar move, e o
+// controle, os dois dedos ou a rodinha do mouse aproximam. "Pronto" grava a
+// foto recortada; "Usar como está" deixa a foto inteira. Escolhendo várias,
+// uma de cada vez ("Foto 1 de 3"). Na capa, o quadrado tracejado mostra o
+// que a capa do celular mostra. Vale também para a foto de cada opção do
+// catálogo (Premium) e, depois, pelo "Ajustar" de cada foto.
+const ENQ_PROPORCAO = 4 / 3;
+const ENQ_ZOOM_MAX = 4;
+// A foto aberta: o zoom e o ponto da foto no meio do quadro (de 0 a 1).
+let __enq = null;
+function abrirEnquadramento(fila) {
+  const validos = (fila || []).filter(a => fotoDoEnquadramento(a));
+  if (!validos.length) { render(); return; }
+  state.enquadrar = { fila: validos, i: 0 };
+  __enq = null;
+  render();
+}
+function itemDoCatalogoPelaChave(chave) {
+  return catalogoDoForm(window.__form || {}).find(x => x.tipo + ":" + x.cobranca === chave);
+}
+function fotoDoEnquadramento(alvo) {
+  const f = window.__form || {};
+  if (alvo.tipo === "foto") return (f.photos || [])[alvo.indice] || "";
+  if (alvo.tipo === "catalogo") { const i = itemDoCatalogoPelaChave(alvo.chave); return (i && i.foto) || ""; }
+  return "";
+}
+function guardarEnquadramento(alvo, dataUrl) {
+  const f = window.__form || {};
+  if (alvo.tipo === "foto" && f.photos && alvo.indice < f.photos.length) f.photos[alvo.indice] = dataUrl;
+  if (alvo.tipo === "catalogo") { const i = itemDoCatalogoPelaChave(alvo.chave); if (i && fotoDoCatalogoValida(dataUrl)) i.foto = dataUrl; }
+}
+function renderEnquadrar() {
+  const e = state.enquadrar;
+  const alvo = e && e.fila[e.i];
+  const src = alvo ? fotoDoEnquadramento(alvo) : "";
+  if (!src) return "";
+  const capa = alvo.tipo === "foto" && alvo.indice === 0;
+  const total = e.fila.length;
+  return `
+    <div class="overlay open enq-overlay" id="enq-overlay" role="dialog" aria-modal="true" aria-labelledby="enq-titulo">
+      <div class="sheet enq-sheet">
+        <div class="enq-topo">
+          <p class="enq-titulo" id="enq-titulo">Ajuste o enquadramento</p>
+          ${total > 1 ? `<span class="enq-conta">Foto ${e.i + 1} de ${total}</span>` : ""}
+        </div>
+        <div class="enq-quadro" id="enq-quadro">
+          <img src="${esc(src)}" alt="" id="enq-img" draggable="false" />
+          ${capa ? `<span class="enq-guia" aria-hidden="true"></span>` : ""}
+        </div>
+        ${capa ? `<p class="enq-nota">É a capa: no celular, ela mostra o quadrado tracejado.</p>` : ""}
+        <label class="enq-zoom"><span aria-hidden="true">−</span><input type="range" id="enq-zoom" min="1" max="${ENQ_ZOOM_MAX}" step="0.01" value="1" aria-label="Aproximar" /><span aria-hidden="true">+</span></label>
+        <div class="enq-bts">
+          <button type="button" class="enq-pular" id="enq-pular">Usar como está</button>
+          <button type="button" class="enq-pronto" id="enq-pronto">${e.i + 1 < total ? "Próxima" : "Pronto"}</button>
+        </div>
+      </div>
+    </div>`;
+}
+function ligarEnquadramento() {
+  const quadro = document.getElementById("enq-quadro");
+  const img = document.getElementById("enq-img");
+  const zoomEl = document.getElementById("enq-zoom");
+  const pular = document.getElementById("enq-pular");
+  const pronto = document.getElementById("enq-pronto");
+  if (pular) pular.onclick = () => avancarEnquadramento(false);
+  if (pronto) pronto.onclick = () => avancarEnquadramento(true);
+  if (!quadro || !img) return;
+  const medir = () => {
+    const W = quadro.clientWidth, H = quadro.clientHeight, iw = img.naturalWidth, ih = img.naturalHeight;
+    if (!W || !H || !iw || !ih) return null;
+    if (!__enq || __enq.iw !== iw || __enq.ih !== ih) __enq = { zoom: 1, cx: 0.5, cy: 0.5, iw, ih };
+    return { W, H, s: Math.max(W / iw, H / ih) * __enq.zoom };
+  };
+  // A foto sempre cobre o quadro: o meio só vai até onde a borda deixa.
+  const desenhar = () => {
+    const m = medir();
+    if (!m) return;
+    const dw = __enq.iw * m.s, dh = __enq.ih * m.s;
+    const ox = Math.min(0, Math.max(m.W - dw, m.W / 2 - __enq.cx * dw));
+    const oy = Math.min(0, Math.max(m.H - dh, m.H / 2 - __enq.cy * dh));
+    __enq.cx = (m.W / 2 - ox) / dw;
+    __enq.cy = (m.H / 2 - oy) / dh;
+    img.style.width = dw + "px";
+    img.style.height = dh + "px";
+    img.style.transform = `translate(${ox}px, ${oy}px)`;
+    if (zoomEl) zoomEl.value = String(__enq.zoom);
+  };
+  const mudarZoom = (z) => { if (!__enq) return; __enq.zoom = Math.min(ENQ_ZOOM_MAX, Math.max(1, z)); desenhar(); };
+  const toques = new Map();
+  let pinca = null;
+  quadro.onpointerdown = (ev) => {
+    try { quadro.setPointerCapture(ev.pointerId); } catch {}
+    toques.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if (toques.size === 2 && __enq) { const [a, b] = [...toques.values()]; pinca = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, z: __enq.zoom }; }
+  };
+  quadro.onpointermove = (ev) => {
+    const ant = toques.get(ev.pointerId);
+    if (!ant || !__enq) return;
+    const atual = { x: ev.clientX, y: ev.clientY };
+    toques.set(ev.pointerId, atual);
+    if (toques.size >= 2 && pinca) { const [a, b] = [...toques.values()]; mudarZoom(pinca.z * Math.hypot(a.x - b.x, a.y - b.y) / pinca.d); return; }
+    const m = medir();
+    if (!m) return;
+    __enq.cx -= (atual.x - ant.x) / (__enq.iw * m.s);
+    __enq.cy -= (atual.y - ant.y) / (__enq.ih * m.s);
+    desenhar();
+  };
+  const soltar = (ev) => { toques.delete(ev.pointerId); if (toques.size < 2) pinca = null; };
+  quadro.onpointerup = soltar;
+  quadro.onpointercancel = soltar;
+  quadro.onwheel = (ev) => { ev.preventDefault(); if (__enq) mudarZoom(__enq.zoom * (ev.deltaY < 0 ? 1.08 : 1 / 1.08)); };
+  if (zoomEl) zoomEl.oninput = () => mudarZoom(parseFloat(zoomEl.value));
+  if (img.complete && img.naturalWidth) desenhar(); else img.onload = desenhar;
+}
+// O pedaço da foto que está no quadro, no tamanho de guardar (1280 de largura
+// nas fotos da academia, 960 nas do catálogo).
+function recorteDoEnquadramento(alvo) {
+  const quadro = document.getElementById("enq-quadro");
+  const img = document.getElementById("enq-img");
+  if (!__enq || !quadro || !img || !img.naturalWidth) return "";
+  const W = quadro.clientWidth, H = quadro.clientHeight;
+  const s = Math.max(W / __enq.iw, H / __enq.ih) * __enq.zoom;
+  const sw = W / s, sh = H / s;
+  const sx = Math.max(0, __enq.cx * __enq.iw - sw / 2), sy = Math.max(0, __enq.cy * __enq.ih - sh / 2);
+  const larg = Math.max(1, Math.round(Math.min(alvo.tipo === "catalogo" ? 960 : 1280, sw)));
+  const cv = document.createElement("canvas");
+  cv.width = larg;
+  cv.height = Math.max(1, Math.round(larg / ENQ_PROPORCAO));
+  cv.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+  let url = cv.toDataURL("image/jpeg", 0.8);
+  if (alvo.tipo === "catalogo" && !fotoDoCatalogoValida(url)) url = cv.toDataURL("image/jpeg", 0.6);
+  return url;
+}
+function avancarEnquadramento(recortar) {
+  const e = state.enquadrar;
+  if (!e) return;
+  const alvo = e.fila[e.i];
+  if (recortar && alvo) {
+    try { const url = recorteDoEnquadramento(alvo); if (url) guardarEnquadramento(alvo, url); } catch { /* fica a foto inteira */ }
+  }
+  __enq = null;
+  e.i++;
+  if (e.i >= e.fila.length) state.enquadrar = null;
+  guardarRascunhoLogo();
+  render();
+}
+
 // As fotos do formulário em tamanho de ver (pedido do Breno em 10/10/2026:
 // "quero que as fotos apareçam maiores"), como o "Fotos do anúncio" do
 // Airbnb: a primeira grande, marcada como capa, e as outras em duas colunas.
@@ -19845,6 +19992,7 @@ function regFotosHtml(f) {
               <div class="reg-foto${i === 0 ? " capa" : ""}" data-foto-ordem="${i}">
                 <img src="${esc(p)}" alt="Foto ${i + 1} da academia" draggable="false" />
                 ${i === 0 ? `<span class="reg-foto-tag">Capa</span>` : `<button type="button" class="reg-foto-capa" data-photo-capa="${i}">Usar como capa</button>`}
+                <button type="button" class="reg-foto-ajustar" data-photo-ajustar="${i}" aria-label="Ajustar o enquadramento da foto ${i + 1}">${icon('expandir', 13, 'currentColor')} Ajustar</button>
                 <button type="button" class="reg-foto-tirar" data-photo-idx="${i}" aria-label="Tirar a foto ${i + 1}">✕</button>
               </div>`).join("")}
           </div>`;
@@ -23615,8 +23763,6 @@ function attachEvents() {
   // a seta dos cartões que passam com o dedo.
   document.querySelectorAll("[data-share-court]").forEach(el => { el.onclick = () => shareCourt(el.dataset.shareCourt); });
   document.querySelectorAll("[data-voltar-ficha]").forEach(el => { el.onclick = voltarDaFicha; });
-  const irHorario = document.getElementById("ir-horario");
-  if (irHorario) irHorario.onclick = () => irParaSecao("horario", true);
   document.querySelectorAll("[data-ir-secao]").forEach(el => { el.onclick = () => irParaSecao(el.dataset.irSecao, true); });
   document.querySelectorAll("[data-opcao-filtro]").forEach(el => {
     el.onclick = () => { state.opcaoDaFicha = { id: el.dataset.court, nome: el.dataset.opcaoFiltro, cobranca: el.dataset.opcaoCobranca || "" }; render(); };
@@ -24893,8 +25039,10 @@ function attachEvents() {
       if (!file) return;
       compressImage(file, 960, 0.7).then((dataUrl) => {
         const { cat, k } = opcaoDoCatalogo(el.dataset.catFoto);
-        if (k >= 0 && fotoDoCatalogoValida(dataUrl)) cat[k].foto = dataUrl;
-        render();
+        if (k >= 0 && fotoDoCatalogoValida(dataUrl)) {
+          cat[k].foto = dataUrl;
+          abrirEnquadramento([{ tipo: "catalogo", chave: el.dataset.catFoto }]);
+        } else render();
       }).catch(() => render());
     };
   });
@@ -24979,19 +25127,32 @@ function attachEvents() {
       const room = Math.max(0, FOTOS_MAXIMO - f.photos.length);
       const toAdd = files.slice(0, room);
       let pending = toAdd.length;
+      const antes = f.photos.length;
+      // Escolhidas, cada foto abre para ajustar o enquadramento (27/10/2026).
+      const fim = () => {
+        const novas = f.photos.slice(antes).map((_, k) => ({ tipo: "foto", indice: antes + k }));
+        if (novas.length) abrirEnquadramento(novas); else render();
+      };
       toAdd.forEach((file) => {
         compressImage(file, 1280, 0.72).then((dataUrl) => {
           f.photos.push(dataUrl);
           pending--;
-          if (pending === 0) render();
+          if (pending === 0) fim();
         }).catch(() => {
           pending--;
-          if (pending === 0) render();
+          if (pending === 0) fim();
         });
       });
     };
   }
 
+  document.querySelectorAll("[data-photo-ajustar]").forEach(el => {
+    el.onclick = () => abrirEnquadramento([{ tipo: "foto", indice: parseInt(el.dataset.photoAjustar, 10) }]);
+  });
+  document.querySelectorAll("[data-cat-foto-ajustar]").forEach(el => {
+    el.onclick = () => abrirEnquadramento([{ tipo: "catalogo", chave: el.dataset.catFotoAjustar }]);
+  });
+  ligarEnquadramento();
   document.querySelectorAll("[data-photo-idx]").forEach(el => {
     el.onclick = () => {
       window.__form.photos.splice(parseInt(el.dataset.photoIdx, 10), 1);

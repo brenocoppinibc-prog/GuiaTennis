@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 26/10/2026 (regra 161)
+**Atualizado em:** 26/10/2026 (regra 162)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -88,6 +88,15 @@ teste")
 > `banco.yml` grava o mesmo número no Supabase) e "Confirmar" só com todas
 > as caixas preenchidas. Seção 67 do PR, passo 93. Testes: **1.933
 > verificações**, nenhuma falha.
+>
+> Depois: **regra 162** — o catálogo de aulas e locação (aula individual,
+> em dupla e em grupo e locação, avulsa ou mensal, com alunos, valor e
+> observação, sem duração; um cartão por opção na ficha, com filtros por tipo e
+> por cobrança), o contato logo depois das opções e a ficha sem o nome do
+> plano. SQL `20261026220000_catalogo`; seção 68 do PR, passo 94. Testes:
+> `catalogo.js` com 41 verificações; a bateria completa (67 arquivos do
+> navegador, novo:
+> `catalogo.js`) roda antes do próximo commit.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4111,6 +4120,78 @@ cobra taxa e não fica no meio** da negociação.
     Testes: `senha.js` (6 caixas, travado com 5, nem o Enter, libera com 6)
     e `contestar-passo-a-passo.js` (as 6 caixas no e-mail dos jogadores e o
     "Confirmar" da disputa que trava e libera).
+162. **O catálogo de aulas e locação; o contato mais acima; a ficha sem o
+    nome do plano** (pedido de 26/10/2026, com print do fim da ficha: "os
+    contatos pode deixar mais acima tire a escrita de qual plano academia
+    é, independente do plano"; "quero criar catálogos melhores para aulas
+    em grupo, individuais, dupla e locações avulsas, mensal"; depois, em
+    27/10/2026: "duração de aula e locação eu não quero colocar").
+    - **Contato:** a seção Contato (WhatsApp, site, Instagram, compartilhar
+      e a linha "Confirmada pela academia") vem logo depois de "Escolha o
+      que você quer"; "É o responsável por esta academia?", o crédito do
+      OpenStreetMap e "Algo errado nesta ficha?" ficam no fim
+      (`.ht-sec-fim`).
+    - **Sem o plano:** a linha da confirmação não diz mais "· Academia
+      Premium" e o selo dourado diz só "Confirmada pela academia" (título
+      e leitor de tela), na ficha, na busca e na home. O dourado continua
+      (Termos: "No plano Premium, a academia ganha o selo dourado"); o
+      "Patrocinado" continua (aviso de anúncio).
+    - **Catálogo** (`academias.catalogo`, jsonb, SQL
+      `20261026220000_catalogo`), como os tipos de quarto do Booking e as
+      opções de preço do Mindbody e do Playtomic. Cada item: `tipo`
+      (`individual`, `dupla`, `grupo`, `locacao`; `aula` é o preço antigo
+      sem tipo), `cobranca` (`avulsa` ou `mensal`), `vezes` por semana
+      (mensal, 1 a 5), `alunos` (grupo, até quantos), `preco` (número ou
+      faixa, como "280-320") e `obs` (até 60 letras). **Sem duração** (o
+      Breno não quer): a aula avulsa é "por aula", a locação avulsa "por
+      hora"; uma `duracao` que venha de antes é ignorada. Dupla e grupo:
+      valor por pessoa. Até 30 itens.
+      `CATALOGO_TIPOS`, `itemDoCatalogo`, `catalogoDe`, `unidadeDoItem`
+      ("por hora", "por aula", "por pessoa, por aula", "por
+      mês", "por pessoa, por mês"), `rotuloCurto` (barra de baixo: "por
+      aula individual", "por pessoa, na dupla", "por hora de quadra").
+    - **Cadastro (parte "Modalidade e preço"):** `editorDoCatalogo` — a
+      lista das opções (tipo, Avulsa/Mensal, vezes, alunos, valor
+      com o que ele paga, observação) com Editar, Duplicar e Remover, e "+
+      Aula individual / + Aula em dupla / + Aula em grupo / + Locação"
+      conforme a modalidade marcada. O que se escreve vai direto para a
+      opção (`state.catItem`); "Pronto" fecha, "Desfazer" volta ao que era,
+      "Remover" na nova tira. A turma nova começa mensal 1x por semana; as
+      outras, avulsas. Os preços de antes (`price_aula`,
+      `price_locacao`) viram itens na primeira vez que a parte abre
+      (`catalogoAntigo`). Ao salvar, só vão as opções das modalidades
+      marcadas, na ordem do catálogo, e `price_aula`/`price_locacao` passam
+      a ser a faixa das opções **avulsas** (ordem por preço, filtro de
+      preço, comparação, banco sem a coluna).
+    - **Ficha:** um cartão por opção em "Escolha o que você quer", com a
+      lista de ícones do quarto (avulsa ou "Mensal, 2x por semana", "Você
+      e o professor"/"2 alunos com o professor"/"Até 6 alunos"), a
+      observação, a reposição da aula ou da locação, o valor e o que ele
+      paga, e o WhatsApp que já abre sobre aquela opção ("a aula em grupo
+      mensal, 2x por semana (Turma de iniciantes)"). Filtros: Todas, os
+      tipos e, com as duas cobranças, Avulsas e Mensais
+      (`state.opcaoDaFicha` = {id, nome, cobranca}); combinação vazia diz
+      "A academia não tem … no catálogo" com "Ver todas". "Menor preço" só
+      quando todos os valores pagam a mesma coisa. Sem catálogo, tudo como
+      antes (aula e locação por hora).
+    - **No resto do site:** a barra de baixo, os destaques e as vizinhas
+      com a opção avulsa mais em conta (`faixaGeral`, `maisEmConta`); a
+      busca com uma oferta por modalidade e a unidade ("R$ 90/aula", "R$
+      130/h", "/mês"); o cartão do mapa e o da direita no computador ("A
+      partir de", um por tipo, "Ver as N opções"); a comparação com uma
+      linha por tipo (o "melhor" só entre valores com a mesma unidade); o
+      "Sobre" ("No catálogo da academia: …; e locação a partir de …"), as
+      perguntas ("Que aulas … tem?", "Quanto custa", com cada opção) e o
+      Google (`hasOfferCatalog`, uma `Offer` por opção com valor).
+    - **Banco sem a coluna:** o site lê sem ela (`COLUNAS_ACADEMIA_NOVAS`)
+      e salva sem ela (`faltaColunaNova`), com o preço avulso da aula e da
+      locação.
+    Testes: `catalogo.js` (novo: editor, banco, ficha, filtros, WhatsApp,
+    resumo, perguntas, Google, computador, busca, comparação, ficha sem
+    catálogo, preço antigo na edição e banco sem a coluna);
+    `ficha-hoteis.js` (a ordem com o contato depois das opções e o fim),
+    `premium-patrocinado.js` (o selo e a linha sem o plano) e
+    `previa-da-ficha.js` (o preço pelo catálogo).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4424,8 +4505,14 @@ lat, lng, phone, instagram, site, price_range, price_aula,
 price_locacao, amenities[], modalidades[], pisos[], cobertura[],
 quadras(jsonb), photos[], source, status ('published'|'pending'),
 pago, plano, politica(jsonb), acesso(jsonb), horario(jsonb),
-pausada, pausada_ate, confirmada, dados_atualizados_em, nome_solicitante,
-contato_solicitante`
+pausada, pausada_ate, confirmada, dados_atualizados_em, catalogo(jsonb),
+nome_solicitante, contato_solicitante`
+
+**`catalogo`** (26/10/2026, regra 162; SQL `20261026220000_catalogo`): a
+lista das opções de aula e locação que o site monta (tipo, avulsa ou
+mensal, vezes, alunos, valor, observação; sem duração), até 30, sempre uma
+lista (`catalogo_e_uma_lista`). Visitante lê. `price_aula` e
+`price_locacao` continuam, com a faixa das opções avulsas.
 
 **`dados_atualizados_em`** (07/10/2026, regra 64): quando a informação da
 ficha mudou ou a academia salvou a ficha. Só o gatilho
@@ -5145,7 +5232,8 @@ banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
 **PR #5 (até 26/10/2026):** o SQL do PR entra no banco de teste a cada push
-e no de verdade com o merge, sozinho; o último é
+e no de verdade com o merge, sozinho; o último é `20261026220000_catalogo`
+(regra 162), depois de
 `20261026200000_academia_fechada_fica_guardada` (regra 158), depois de
 `20261026180000_so_o_que_esta_certo` (regra 157) e
 `20261026120000_veracidade` (regra 156).
@@ -6056,8 +6144,11 @@ Depois, a **regra 160** (a barra de cima da ficha sem o nome e quase
 transparente, e o "Vou viajar" com mais ar; seção 66 do PR, passo 92).
 Depois, a **regra 161** (telas de código com uma caixa por número e
 "Confirmar" só com todas preenchidas; o código do e-mail com 6, gravado no
-Supabase pelo `banco.yml`; seção 67 do PR, passo 93). Próximos números:
-**regra 162**, **seção 68** da descrição do PR e **passo 94**.
+Supabase pelo `banco.yml`; seção 67 do PR, passo 93). Depois, a **regra
+162** (o catálogo de aulas e locação, avulsa ou mensal; o contato logo
+depois das opções; a ficha sem o nome do plano; SQL
+`20261026220000_catalogo`; seção 68 do PR, passo 94). Próximos números:
+**regra 163**, **seção 69** da descrição do PR e **passo 95**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

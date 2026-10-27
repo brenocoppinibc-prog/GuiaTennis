@@ -601,6 +601,7 @@
   .ct-wa { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; border-radius: 999px; padding: 8px 13px; font-size: 12px; font-weight: 700; text-decoration: none; }
   .ct-sem { font-size: 12px; color: var(--muted); }
   .ct-cel-sem { color: var(--muted); font-weight: 400; }
+  .ct-cel-unid { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
 
   /* seletor de academia (folha) */
   .cmp-abas { display: flex; gap: 6px; margin-top: 14px; }
@@ -747,6 +748,29 @@
   .price-input-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
   .price-input-row span { font-size: 13px; color: var(--muted); white-space: nowrap; }
   .price-input-row .price-input-label { min-width: 52px; color: var(--text); font-weight: 600; }
+  /* O catálogo de aulas e locação no cadastro (26/10/2026). */
+  .cat-lista { display: flex; flex-direction: column; gap: 10px; }
+  .cat-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+  .cat-item-n { margin: 0; font-weight: 700; font-size: 15px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .cat-item-cob { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 2px 8px; background: var(--bg-alt); color: var(--text); }
+  .cat-item-cob.mensal { background: #E3EFE7; color: var(--green); }
+  .cat-item-d, .cat-item-obs { margin: 3px 0 0; font-size: 13px; line-height: 1.35; color: var(--muted); }
+  .cat-item-obs { font-style: italic; }
+  .cat-item-preco { margin: 0; text-align: right; font-weight: 700; font-size: 16px; white-space: nowrap; }
+  .cat-item-preco small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+  .cat-item-preco.sem-valor { color: var(--muted); font-weight: 600; font-size: 14px; }
+  .cat-item-acoes { grid-column: 1 / -1; display: flex; gap: 16px; margin-top: 6px; padding-top: 9px; border-top: 1px solid var(--border); }
+  .cat-item-acoes button { display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; padding: 0; font: 600 13px var(--fonte-texto); color: var(--green); cursor: pointer; }
+  .cat-item-acoes button[data-cat-remover] { color: var(--red); margin-left: auto; }
+  .cat-form { padding: 14px; border: 1.5px solid var(--green); border-radius: 12px; background: var(--card); }
+  .cat-form-t { margin: 0 0 -4px; font-weight: 700; font-size: 15px; }
+  .cat-form .price-input-row .cat-unidade { white-space: normal; line-height: 1.25; }
+  .cat-form-bts { display: flex; gap: 10px; margin-top: 16px; }
+  .cat-form-bts button { flex: 1; min-height: 44px; border-radius: 999px; font: 600 14px var(--fonte-texto); cursor: pointer; }
+  .cat-pronto { background: var(--green); color: #fff; border: 0; }
+  .cat-cancelar { background: none; border: 1px solid var(--muted-dark); color: var(--text); }
+  .cat-add { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .cat-add-bt { display: inline-flex; align-items: center; gap: 5px; padding: 9px 13px; border-radius: 999px; border: 1px dashed var(--green); background: none; color: var(--green); font: 600 13px var(--fonte-texto); cursor: pointer; }
   .price-input-row input { margin-top: 0 !important; flex: 1; text-align: center; }
   .form-error { color: var(--red); font-size: 13px; display: flex; align-items: center; gap: 6px; margin-top: 10px; }
   .consent-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--muted); }
@@ -1534,6 +1558,8 @@
   .ht-book-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 4px 0; }
   .ht-book-opt { font-size: 14px; color: var(--muted); }
   .ht-book-val { font-size: 19px; font-weight: 700; white-space: nowrap; }
+  .ht-book-val small { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 1px; }
+  .ht-book-ver { display: inline-flex; align-items: center; gap: 4px; margin-top: 10px; font-size: 14px; }
   .ht-book-div { border-top: 1px solid var(--border); margin: 12px 0; }
   .ht-book-score { display: flex; align-items: center; gap: 9px; font-size: 14px; }
   .ht-book-sub { font-size: 12px; color: var(--muted); }
@@ -2747,7 +2773,15 @@
   .ht-promo-ic { width: 58px; height: 58px; border-radius: 50%; background: #F3E9CC; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   #ht-opcoes .ht-promo-tag { font-size: 12px; }
   #ht-opcoes .ht-promo-t { margin-top: 3px; font-size: 18px; }
-  .ht-opcoes-filtro { margin-top: 18px; }
+  .ht-opcoes-filtro { margin-top: 18px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+  .ht-opcoes-filtro::-webkit-scrollbar { display: none; }
+  .ht-opcoes-filtro .chip { flex-shrink: 0; }
+  .ht-opcoes-sep { flex: 0 0 1px; align-self: stretch; margin: 4px 2px; background: var(--border); }
+  .ht-opcoes-vazio { margin-top: 14px; }
+  .ht-quarto-itens { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .ht-quarto-itens li { display: flex; align-items: flex-start; gap: 7px; font-size: 13.5px; line-height: 1.35; }
+  .ht-quarto-itens svg { flex-shrink: 0; margin-top: 1px; }
+  .ht-quarto-obs { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--muted); font-style: italic; }
   .ht-opcoes-n { margin: 16px 0 0; font-size: 16px; }
   .ht-quartos { display: grid; grid-auto-flow: column; grid-auto-columns: calc(50% - 6px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; margin-top: 14px; padding-bottom: 4px; }
   .ht-quartos::-webkit-scrollbar { display: none; }
@@ -3595,7 +3629,7 @@ const SORT_OPTS = [
   { key: "recomendados", label: "Recomendados", hint: "Equilibra distância, nota, preço e estrutura" },
   { key: "distance", label: "Mais perto", hint: "Precisa de CEP, endereço ou GPS" },
   { key: "rating", label: "Melhor avaliado", hint: "Maior nota das avaliações feitas no GuiaTennis" },
-  { key: "price", label: "Menor preço", hint: "Pelo menor valor por hora informado" },
+  { key: "price", label: "Menor preço", hint: "Pelo menor valor avulso informado (aula ou hora de quadra)" },
   { key: "reviews", label: "Mais avaliados", hint: "Quem já recebeu mais avaliações" },
   { key: "courts", label: "Mais quadras", hint: "Academias com mais quadras cadastradas" },
 ];
@@ -3671,6 +3705,9 @@ function mapRow(row) {
     priceRange: row.price_range,
     priceAula: row.price_aula,
     priceLocacao: row.price_locacao,
+    // O catálogo de aulas e locações (SQL 20261026220000); banco sem a
+    // coluna fica com o preço por hora de antes.
+    catalogo: Array.isArray(row.catalogo) ? row.catalogo : [],
     amenities: est.amenities,
     modalidades: row.modalidades || [],
     pisos: row.pisos || [],
@@ -3711,20 +3748,37 @@ function toRow(f) {
   if (temEstacionamentoProprio(f)) delete acesso.estacionar;
   const r = acesso.estacionamentoRegra;
   if (!(f.amenities || []).includes("estacionamento_gratuito") || !(f.amenities || []).includes("estacionamento_pago") || !r || !r.tipo || r.tipo === "misto") delete acesso.estacionamentoRegra;
+  // O catálogo só com as modalidades marcadas; o price_aula e o
+  // price_locacao saem dele (a faixa das opções avulsas), para a ordem por
+  // preço, o filtro e a comparação, e para o banco ainda sem a coluna.
+  const modalidades = f.modalidades || [];
+  const catalogo = catalogoDoForm(f).map(itemDoCatalogo).filter(Boolean)
+    .filter(i => modalidades.includes(tipoDoItem(i).grupo === "aula" ? "aulas_proprias" : "locacao"))
+    .sort(ordemDoCatalogo).slice(0, CATALOGO_MAX);
+  const avulsas = (grupo) => faixaDosPrecos(catalogo.filter(i => tipoDoItem(i).grupo === grupo && i.cobranca === "avulsa").map(i => i.preco));
   return {
     name: f.name, address: f.address, numero: f.numero, complemento: f.complemento,
     bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
     phone: f.phone, instagram: f.instagram, site: f.site,
     price_range: f.priceRange,
-    price_aula: f.priceAula,
-    price_locacao: f.priceLocacao,
-    amenities: f.amenities || [], modalidades: f.modalidades || [],
+    price_aula: avulsas("aula"),
+    price_locacao: avulsas("locacao"),
+    catalogo,
+    amenities: f.amenities || [], modalidades,
     pisos: f.pisos || [], cobertura: f.cobertura || [],
     quadras: f.quadras || {}, photos: f.photos || [],
     politica: f.politica ? politicaParaSalvar(f) : {},
     acesso,
     horario: f.horario || {},
   };
+}
+
+// "90-140" a partir de vários preços ("90", "100-140"): do menor ao maior.
+function faixaDosPrecos(precos) {
+  const ns = precos.flatMap(p => [priceMin(p), priceMax(p)]).filter(Boolean).map(Number).filter(isFinite);
+  if (!ns.length) return "";
+  const de = Math.min(...ns), ate = Math.max(...ns);
+  return de === ate ? String(de) : `${de}-${ate}`;
 }
 
 // Totais dos últimos 30 dias, só os agregados. A tabela de cliques continua
@@ -3763,11 +3817,11 @@ async function carregarEstatisticasPublicas() {
 
 // O visitante só lê as colunas públicas. Quem pediu o cadastro e o WhatsApp
 // de quem avaliou ficam fechados no banco (SQL-SEGURANCA.sql) e só o admin vê.
-const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, dados_atualizados_em, created_at, avisou_que_fechou_em";
+const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, dados_atualizados_em, created_at, avisou_que_fechou_em, catalogo";
 // Colunas que chegam ao banco pelo SQL automático. Na publicação, o site
 // pode ir para o ar um pouco antes do SQL: aí lê sem elas, em vez de cair
 // no "*", que o visitante não pode ler.
-const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia", "dados_atualizados_em", "avisou_que_fechou_em"];
+const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia", "dados_atualizados_em", "avisou_que_fechou_em", "catalogo"];
 const COLUNAS_AVALIACAO_PUBLICAS = "id, academia_id, stars, comment, nome_autor, created_at";
 
 // Enquanto o banco não tiver alguma dessas colunas, a lista falha; aí lê
@@ -4833,6 +4887,8 @@ let state = {
   faqOpen: {},
   // O filtro "Todas / Aula / Locação" das opções da ficha: { id, nome }.
   opcaoDaFicha: null,
+  // A opção do catálogo aberta no cadastro: { i, nova, antes }.
+  catItem: null,
   faqSiteOpen: {},
   showMenu: false,
   // Folhas do menu: "Minhas quadras" (favoritas, vistas, chamadas) e as
@@ -5687,6 +5743,28 @@ function atualizarSeo(c) {
   if (redes.length) lugar.sameAs = redes;
   const faixa = faixaGeral(c);
   if (faixa) lugar.priceRange = faixa.texto;
+  // O catálogo para o Google (hasOfferCatalog, como as academias e os
+  // estúdios no Mindbody e no ClassPass): cada opção com valor vira uma oferta.
+  const comValor = temCatalogo(c) ? opcoesPreco(c).filter(o => o.item && temPreco(o.faixa)) : [];
+  if (comValor.length) {
+    lugar.hasOfferCatalog = {
+      "@type": "OfferCatalog",
+      name: "Aulas e locação",
+      itemListElement: comValor.map(o => ({
+        "@type": "Offer",
+        name: nomeDaOpcao(o),
+        description: [o.desc, o.obs].filter(Boolean).join(". "),
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          priceCurrency: "BRL",
+          ...(priceMax(o.faixa) && priceMax(o.faixa) !== priceMin(o.faixa)
+            ? { minPrice: Number(priceMin(o.faixa)), maxPrice: Number(priceMax(o.faixa)) }
+            : { price: Number(priceMin(o.faixa)) }),
+          unitText: o.unidade,
+        },
+      })),
+    };
+  }
   if (c.appCount) {
     lugar.aggregateRating = {
       "@type": "AggregateRating",
@@ -6006,6 +6084,30 @@ function celPreco(faixa) {
   return { txt: esc(precoTexto(faixa)), num: parseInt(min, 10) };
 }
 
+// Uma linha por tipo do catálogo (sem ele, a aula e a locação por hora): a
+// opção mais em conta de cada academia, com o que o valor paga. O "melhor
+// preço" só entre valores que pagam a mesma coisa.
+function linhasDePrecoDaComparacao(courts) {
+  const opcoes = courts.map(opcoesPreco);
+  const tipos = CATALOGO_TIPOS.filter(t => opcoes.some(l => l.some(o => o.tipo === t.key)));
+  const linhas = tipos.map(t => {
+    const vals = opcoes.map(l => {
+      const doTipo = l.filter(o => o.tipo === t.key);
+      if (!doTipo.length) return { txt: "—" };
+      const o = maisEmConta(doTipo);
+      if (!o) return celPreco("");
+      return { txt: `${esc(precoTexto(o.faixa))} <small class="ct-cel-unid">${esc(o.unidade)}</small>`, num: parseInt(priceMin(o.faixa), 10), u: o.unidade };
+    });
+    if (new Set(vals.filter(v => v.u).map(v => v.u)).size > 1) vals.forEach(v => { delete v.num; });
+    return { rot: t.nome, melhor: "menor", vals };
+  });
+  if (!linhas.length) {
+    linhas.push({ rot: "Aula", melhor: "menor", vals: courts.map(c => celPreco(c.priceAula)) });
+    linhas.push({ rot: "Locação", melhor: "menor", vals: courts.map(c => celPreco(c.priceLocacao)) });
+  }
+  return linhas;
+}
+
 function celReposicao(c) {
   if (!temPolitica(c)) return { txt: "Não incluído" };
   const pol = politicaDe(c);
@@ -6063,9 +6165,8 @@ function linhasComparacao(courts) {
         : { txt: "Sem nota ainda" }) },
       { rot: "Avaliações", melhor: "maior", vals: courts.map(c => ({ txt: c.appCount ? String(c.appCount) : "—", num: c.appCount || null })) },
     ]},
-    { titulo: "Preço por hora", linhas: [
-      { rot: "Aula", melhor: "menor", vals: courts.map(c => celPreco(c.priceAula)) },
-      { rot: "Locação", melhor: "menor", vals: courts.map(c => celPreco(c.priceLocacao)) },
+    { titulo: "Preço", linhas: [
+      ...linhasDePrecoDaComparacao(courts),
       ...(courts.some(c => promocoesDe(c).length) ? [{ rot: "Promoção", vals: courts.map(c => { const p = promocoesDe(c)[0]; return { txt: p ? esc(p.titulo) : "—" }; }) }] : []),
     ]},
     { titulo: "Localização", linhas: [
@@ -8310,7 +8411,8 @@ function mapCardHtml(id) {
   const c = getResults().find(x => x.id === id);
   if (!c) return "";
   const photos = courtPhotos(c);
-  const pv = parsePriceValue(c);
+  // A opção mais em conta, com o que o valor paga (por hora, por aula…).
+  const faixa = faixaGeral(c);
   const dist = distanceText(c.distanceKm);
   return `
     <div class="map-card" data-open="${c.id}">
@@ -8321,8 +8423,8 @@ function mapCardHtml(id) {
         ${scoreBox(c.appAvg, c.appCount, true)}
       </div>
       <div style="text-align:right;flex-shrink:0">
-        ${isFinite(pv)
-          ? `<div class="map-card-price">R$ ${pv}</div><div class="rail-unit">por hora</div>`
+        ${faixa
+          ? `<div class="map-card-price">R$ ${esc(priceMin(faixa.opcao.faixa))}</div><div class="rail-unit">${esc(faixa.opcao.unidade)}</div>`
           : `<div class="rail-unit">preço a<br>consultar</div>`}
       </div>
       <button type="button" class="map-close" id="map-card-close" aria-label="Fechar">✕</button>
@@ -16994,10 +17096,17 @@ function renderActiveChips() {
 // O que o card mostra depende do que a pessoa procurou: buscando aula,
 // aparece o valor da aula; buscando locação, o da locação; buscando as duas
 // (ou sem filtro), aparecem as duas, cada uma pelo menor valor.
+// Com o catálogo, uma oferta por modalidade (aula e locação), pela opção mais
+// em conta (a avulsa antes da mensal), com o que o valor paga: "/aula",
+// "/h", "/mês".
 function ofertas(c) {
-  const opcoes = opcoesPreco(c)
-    .map(o => ({ label: o.nome, faixa: o.faixa, min: parseInt(priceMin(o.faixa) || "0", 10) }))
-    .sort((a, b) => (a.min || 1e9) - (b.min || 1e9));
+  const todas = opcoesPreco(c);
+  const grupos = [...new Set(todas.map(o => o.grupo))];
+  const opcoes = grupos.map(g => {
+    const doGrupo = todas.filter(o => o.grupo === g);
+    const o = maisEmConta(doGrupo) || doGrupo[0];
+    return { label: g === "aula" ? "Aula" : g === "locacao" ? "Locação" : o.nome, faixa: o.faixa, curto: o.curto, min: parseInt(priceMin(o.faixa) || "0", 10) };
+  }).sort((a, b) => (a.min || 1e9) - (b.min || 1e9));
 
   const so = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : null;
   const alvo = so === "aulas_proprias" ? "Aula" : (so === "locacao" ? "Locação" : null);
@@ -17117,7 +17226,7 @@ function renderCard(c, badge) {
               ${(precos.length ? precos : [{ label: "Preço", min: null }]).map(o => `
                 <div class="offer-um">
                   <span class="offer-um-lbl">${esc(o.label)}</span>
-                  <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}<span class="offer-por-hora">/h</span>` : SEM_PRECO}</span>
+                  <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}<span class="offer-por-hora">${esc(o.curto || "/h")}</span>` : SEM_PRECO}</span>
                 </div>`).join("")}
             </div>
             <div class="offer-sub">${precos.some(o => o.min) ? "a partir de" : SEM_PRECO_SUB}</div>
@@ -18144,14 +18253,22 @@ function htEtiquetas(c) {
   return `<div class="ht-checks">${out.slice(0, 4).map(t => `<span class="ht-check">${icon('check', 19, 'var(--green)')}<span>${esc(t)}</span></span>`).join("")}</div>`;
 }
 
-// O menor e o maior valor considerando todas as opções de preço da academia.
+// A opção mais em conta da academia (a avulsa antes da mensal) e o que o
+// valor paga, curto para caber na barra de baixo: "aula, por hora", "por
+// aula individual", "por pessoa, na dupla", "por hora de quadra".
 function faixaGeral(c) {
-  const opcoes = opcoesPreco(c);
-  if (!opcoes.length) return null;
-  const mins = opcoes.map(o => parseInt(priceMin(o.faixa) || "0", 10)).filter(Boolean);
-  if (!mins.length) return null;
-  const barata = opcoes.find(o => parseInt(priceMin(o.faixa) || "0", 10) === Math.min(...mins)) || opcoes[0];
-  return { opcao: barata, texto: precoTexto(barata.faixa) };
+  const barata = maisEmConta(opcoesPreco(c));
+  if (!barata) return null;
+  return { opcao: barata, texto: precoTexto(barata.faixa), rotulo: rotuloCurto(barata) };
+}
+function rotuloCurto(o) {
+  if (!o.item) return `${o.nome.toLowerCase()}, ${o.unidade}`;
+  const i = o.item;
+  const mensal = i.cobranca === "mensal";
+  if (tipoDoItem(i).grupo === "locacao") return mensal ? "por mês, horário fixo" : `${unidadeDoItem(i)} de quadra`;
+  const onde = { individual: "aula individual", dupla: "na dupla", grupo: "na turma", aula: "aula" }[i.tipo];
+  if (tipoDoItem(i).porPessoa) return `${mensal ? "por pessoa/mês" : "por pessoa"}, ${onde}`;
+  return mensal ? `por mês, ${onde}` : `por ${onde}`;
 }
 
 // Texto corrido sobre a academia, montado a partir do que ela cadastrou —
@@ -18168,7 +18285,18 @@ function descricaoAcademia(c) {
   const mod = modalidadesTexto(c);
   const opcoes = opcoesPreco(c);
   const comValor = opcoes.filter(o => temPreco(o.faixa));
-  if (comValor.length) {
+  if (comValor.length && temCatalogo(c)) {
+    // Com o catálogo, o "a partir de" de cada tipo, com o que o valor paga.
+    const tipos = [...new Set(opcoes.map(o => o.tipo))];
+    const partes = tipos.map(t => maisEmConta(opcoes.filter(o => o.tipo === t))).filter(Boolean)
+      .map(o => `${o.nome.toLowerCase()} a partir de ${precoTexto(o.faixa).replace(/ a \d+$/, "")} ${o.unidade}`);
+    // Ponto e vírgula entre os tipos: a unidade já tem vírgula ("por pessoa, por aula").
+    const lista = partes.length > 1 ? `${partes.slice(0, -1).join("; ")}; e ${partes[partes.length - 1]}` : partes[0];
+    frases.push(`No catálogo da academia: ${lista}.`);
+    if (opcoes.some(o => o.cobranca === "mensal") && opcoes.some(o => o.cobranca !== "mensal" && temPreco(o.faixa))) frases.push("Também há planos mensais.");
+    const semValor = [...new Set(opcoes.filter(o => !temPreco(o.faixa) && !comValor.some(x => x.tipo === o.tipo)).map(o => o.nome.toLowerCase()))];
+    if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(n => "da " + n))} é sob consulta: fale com a academia.`);
+  } else if (comValor.length) {
     frases.push(`A academia cobra, por hora de quadra, ${listaTexto(comValor.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
     const semValor = opcoes.filter(o => !temPreco(o.faixa));
     if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} é sob consulta: fale com a academia.`);
@@ -18258,7 +18386,7 @@ function htDestaques(c) {
   const tem = k => (c.amenities || []).includes(k);
   const candidatos = [
     c.appCount && { ic: 'sparkle', cor: 'var(--gold)', t: `${c.appAvg.toFixed(1).replace(".", ",")} ${scoreWord(c.appAvg, c.appCount)}`, s: `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no GuiaTennis` },
-    faixa && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: `${faixa.opcao.nome.toLowerCase()}, por hora de quadra` },
+    faixa && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: faixa.rotulo },
     dist && { ic: 'pin', cor: 'var(--green)', t: `${dist} de você`, s: [c.bairro, c.cidade].filter(Boolean).join(", ") || "a partir da sua busca" },
     tem("estacionamento_gratuito") && { ic: 'parking', cor: regraDoEstacionamento(c) ? 'var(--gold)' : 'var(--green)', t: estacionamentoRotulo(c) },
     tem("vestiario") && { ic: 'droplet', cor: 'var(--green)', t: "Vestiário" },
@@ -18285,23 +18413,47 @@ function htDestaques(c) {
 // As opções de preço nos cartões dos quartos do hoteis.com (26/10/2026): dois
 // lado a lado, que passam com o dedo, com a foto em cima, o que é, a reposição
 // em verde (o "Totalmente reembolsável"), o valor à direita e o WhatsApp de
-// cada um, que já abre a conversa sobre aquela opção. Com aula e locação, os
-// filtros "Todas", "Aula" e "Locação" e o "Mostrando 2 de 2 opções".
+// cada um, que já abre a conversa sobre aquela opção. Com mais de uma opção,
+// os filtros e o "Mostrando 2 de 2 opções". Com o catálogo (26/10/2026), um
+// cartão por item, com a lista de ícones do quarto (avulsa ou mensal,
+// quantos alunos) e os filtros por tipo e por cobrança (avulsa ou mensal),
+// como os do Booking e as abas do Playtomic. Sem duração (27/10/2026: "duração
+// de aula e locação eu não quero colocar").
 function htOpcoes(c) {
   const opcoes = opcoesPreco(c);
-  const lista = opcoes.length ? opcoes : [{ nome: "Valores", desc: "Fale com a academia no WhatsApp para saber o valor.", faixa: "", assunto: "os valores" }];
-  const filtro = state.opcaoDaFicha && state.opcaoDaFicha.id === c.id && opcoes.some(o => o.nome === state.opcaoDaFicha.nome) ? state.opcaoDaFicha.nome : "";
-  const visiveis = filtro ? lista.filter(o => o.nome === filtro) : lista;
+  const lista = opcoes.length ? opcoes : [{ nome: "Valores", desc: "Fale com a academia no WhatsApp para saber o valor.", faixa: "", assunto: "os valores", unidade: "por hora" }];
+  const tipos = [...new Set(opcoes.map(o => o.nome))];
+  const cobrancas = CATALOGO_COBRANCAS.filter(k => opcoes.some(o => o.cobranca === k.key));
+  const escolha = state.opcaoDaFicha && state.opcaoDaFicha.id === c.id ? state.opcaoDaFicha : {};
+  const filtro = tipos.includes(escolha.nome) ? escolha.nome : "";
+  const filtroCob = cobrancas.length > 1 && cobrancas.some(k => k.key === escolha.cobranca) ? escolha.cobranca : "";
+  const visiveis = lista.filter(o => (!filtro || o.nome === filtro) && (!filtroCob || o.cobranca === filtroCob));
   const fotos = courtPhotos(c);
   const pol = politicaDe(c);
-  const valores = opcoes.filter(o => temPreco(o.faixa)).map(o => parseInt(priceMin(o.faixa), 10));
-  const menor = valores.length > 1 && new Set(valores).size > 1 ? Math.min(...valores) : null;
+  // "Menor preço" só entre valores que pagam a mesma coisa (todos por hora,
+  // por exemplo): mensal e avulsa não se comparam.
+  const comValor = opcoes.filter(o => temPreco(o.faixa));
+  const valores = comValor.map(o => parseInt(priceMin(o.faixa), 10));
+  const menor = valores.length > 1 && new Set(valores).size > 1 && new Set(comValor.map(o => o.unidade)).size === 1 ? Math.min(...valores) : null;
   const reposicao = (o) => {
     if (!temPolitica(c)) return "";
-    const p = pol.modo === "separado" ? (o.nome === "Aula" ? pol.aula : o.nome === "Locação" ? pol.locacao : null) : pol.geral;
+    const p = pol.modo === "separado" ? (o.grupo === "aula" ? pol.aula : o.grupo === "locacao" ? pol.locacao : null) : pol.geral;
     if (!p) return "";
     if (p.reposicao === "nao") return `<p class="ht-quarto-sem">Sem reposição</p>`;
     return p.horas ? `<p class="ht-quarto-verde">Reposição até ${p.horas}h antes</p>` : "";
+  };
+  // A lista com ícones do cartão do quarto ("1 cama queen", "Dorme 2").
+  const itens = (o) => {
+    const i = o.item;
+    if (!i) return `<p class="ht-quarto-d">${esc(o.desc)}</p>`;
+    const t = tipoDoItem(i);
+    const quem = i.tipo === "individual" ? "Você e o professor" : i.tipo === "dupla" ? "2 alunos com o professor" : i.tipo === "grupo" ? (i.alunos ? `Até ${i.alunos} alunos` : "Turma com professor") : "";
+    const linhas = [
+      [i.cobranca === "mensal" ? 'historico' : 'ball', i.cobranca === "mensal" ? `Mensal, ${i.vezes}x por semana${t.grupo === "locacao" ? " (horário fixo)" : ""}` : t.grupo === "locacao" ? "Avulsa, quando quiser" : "Aula avulsa"],
+      quem && ['pessoa', quem],
+    ].filter(Boolean);
+    return `<ul class="ht-quarto-itens">${linhas.map(([ic, txt]) => `<li>${icon(ic, 15, 'var(--text)')}<span>${esc(txt)}</span></li>`).join("")}</ul>
+      ${i.obs ? `<p class="ht-quarto-obs">${esc(i.obs)}</p>` : ""}`;
   };
   const cartao = (o) => {
     const i = lista.indexOf(o);
@@ -18313,23 +18465,30 @@ function htOpcoes(c) {
         <div class="ht-quarto-corpo">
           ${foto ? "" : tag}
           <p class="ht-quarto-n">${esc(o.nome)}</p>
-          <p class="ht-quarto-d">${esc(o.desc)}</p>
+          ${itens(o)}
           ${reposicao(o)}
           <div class="ht-quarto-preco">
             <span class="ht-quarto-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${esc(precoTexto(o.faixa))}</span>
-            <span class="ht-quarto-unit">${temPreco(o.faixa) ? "por hora" : SEM_PRECO_SUB}</span>
+            <span class="ht-quarto-unit">${temPreco(o.faixa) ? esc(o.unidade) : SEM_PRECO_SUB}</span>
           </div>
           ${c.phone ? `<a class="ht-quarto-bt" data-track="whatsapp" data-court="${c.id}" href="${waLink(c, o.assunto)}" target="_blank" rel="noreferrer">Chamar no WhatsApp</a>` : ""}
         </div>
       </article>`;
   };
-  return `
-    ${opcoes.length > 1 ? `
-      <div class="chip-row ht-opcoes-filtro">
-        ${["", ...opcoes.map(o => o.nome)].map(n => `<button type="button" class="chip ${filtro === n ? "active" : ""}" data-opcao-filtro="${esc(n)}" data-court="${c.id}" aria-pressed="${filtro === n}">${n ? esc(n) : "Todas"}</button>`).join("")}
+  const curto = (nome) => (CATALOGO_TIPOS.find(t => t.nome === nome) || {}).curto || nome;
+  const chip = (rotulo, ativo, attrs) => `<button type="button" class="chip ${ativo ? "active" : ""}" ${attrs} data-court="${c.id}" aria-pressed="${ativo}">${esc(rotulo)}</button>`;
+  const filtros = (tipos.length > 1 || cobrancas.length > 1) ? `
+      <div class="chip-row ht-opcoes-filtro" id="ht-opcoes-filtro" data-rolagem-x>
+        ${chip("Todas", !filtro && !filtroCob, `data-opcao-filtro="" data-opcao-cobranca=""`)}
+        ${tipos.length > 1 ? tipos.map(n => chip(curto(n), filtro === n, `data-opcao-filtro="${esc(n)}" data-opcao-cobranca="${filtroCob}"`)).join("") : ""}
+        ${cobrancas.length > 1 ? `<span class="ht-opcoes-sep" aria-hidden="true"></span>${cobrancas.map(k => chip(k.plural, filtroCob === k.key, `data-opcao-filtro="${esc(filtro)}" data-opcao-cobranca="${filtroCob === k.key ? "" : k.key}"`)).join("")}` : ""}
       </div>
-      <p class="ht-opcoes-n">Mostrando ${visiveis.length} de ${opcoes.length} opções</p>` : ""}
-    <div class="ht-quartos" id="ht-quartos" data-rolagem-x>${visiveis.map(cartao).join("")}</div>
+      <p class="ht-opcoes-n">Mostrando ${visiveis.length} de ${opcoes.length} opções</p>` : "";
+  return `
+    ${filtros}
+    ${visiveis.length
+      ? `<div class="ht-quartos" id="ht-quartos" data-rolagem-x>${visiveis.map(cartao).join("")}</div>`
+      : `<p class="ht-sec-sub ht-opcoes-vazio">A academia não tem ${esc(filtro.toLowerCase())} ${filtroCob === "mensal" ? "mensal" : "avulsa"} no catálogo. <button type="button" class="ht-link" data-opcao-filtro="" data-opcao-cobranca="" data-court="${c.id}">Ver todas</button></p>`}
     ${c.phone ? "" : `<p class="ht-sec-sub" style="margin-top:12px">O telefone não foi incluído.</p>`}`;
 }
 
@@ -18425,7 +18584,7 @@ function cartaoVizinha(v, km) {
           <span class="sbadge ${v.appCount ? "" : "none"}">${v.appCount ? v.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
           <span><strong>${scoreWord(v.appAvg, v.appCount)}</strong>${v.appCount ? `<br>${v.appCount} ${plural(v.appCount, "avaliação", "avaliações")}` : ""}</span>
         </span>
-        <span class="ht-viz-p">${faixa ? `${esc(faixa.texto)} <small>${esc(faixa.opcao.nome.toLowerCase())}, por hora</small>` : `<span class="sem-valor">${SEM_PRECO}</span> <small>${SEM_PRECO_SUB}</small>`}</span>
+        <span class="ht-viz-p">${faixa ? `${esc(faixa.texto)} <small>${esc(faixa.rotulo)}</small>` : `<span class="sem-valor">${SEM_PRECO}</span> <small>${SEM_PRECO_SUB}</small>`}</span>
       </span>
     </button>`;
 }
@@ -18541,7 +18700,8 @@ function reviewsSection(c) {
   `;
 }
 
-// O texto de preço é um só no site inteiro: faixa completa, sempre por hora.
+// O texto de preço é um só no site inteiro: faixa completa; o que o valor
+// paga (por hora, por aula, por pessoa, por mês) vem ao lado, do catálogo.
 // Sem valor, a tela diz "Sob consulta" e manda falar com a academia (regra
 // 3). Sem explicar o motivo: quem chega quer saber o que fazer.
 const SEM_PRECO = "Sob consulta";
@@ -18558,22 +18718,150 @@ function temPreco(faixa) {
   return !!priceMin(faixa);
 }
 
-// Cada preço vira uma opção que a pessoa escolhe, como os quartos de um hotel.
-function opcoesPreco(c) {
+// O catálogo de aulas e locações (pedido do Breno em 26/10/2026: "quero
+// criar catálogos melhores para aulas em grupo, individuais, dupla e locações
+// avulsas, mensal"; SQL 20261026220000). Como os tipos de quarto do Booking e
+// as opções de preço do Mindbody e do Playtomic: cada item é uma opção que a
+// academia vende, avulsa (a aula ou a hora de quadra) ou mensal (com quantas
+// vezes por semana), com até quantos alunos (no grupo), o valor e uma
+// observação curta. Sem duração (27/10/2026: "duração de aula e locação eu
+// não quero colocar"). Dupla e grupo: o valor é por pessoa. "Aula" sem tipo é
+// a do preço antigo (price_aula), que continua até a academia escolher o tipo.
+const CATALOGO_TIPOS = [
+  { key: "individual", nome: "Aula individual", curto: "Individual", grupo: "aula", desc: "Só você e o professor" },
+  { key: "dupla", nome: "Aula em dupla", curto: "Dupla", grupo: "aula", porPessoa: true, desc: "Você, mais uma pessoa e o professor" },
+  { key: "grupo", nome: "Aula em grupo", curto: "Grupo", grupo: "aula", porPessoa: true, desc: "Turma com professor" },
+  { key: "aula", nome: "Aula", curto: "Aula", grupo: "aula", antigo: true, desc: "Aula com professor da academia" },
+  { key: "locacao", nome: "Locação", curto: "Locação", grupo: "locacao", desc: "Aluguel da quadra" },
+];
+const CATALOGO_COBRANCAS = [
+  { key: "avulsa", nome: "Avulsa", plural: "Avulsas" },
+  { key: "mensal", nome: "Mensal", plural: "Mensais" },
+];
+const CATALOGO_VEZES = [1, 2, 3, 4, 5];
+const CATALOGO_MAX = 30;
+const CATALOGO_OBS_MAX = 60;
+
+// O item como o site usa, sem o que veio estranho (o banco guarda a lista
+// que o site monta).
+function itemDoCatalogo(x) {
+  if (!x || typeof x !== "object") return null;
+  const tipo = CATALOGO_TIPOS.find(t => t.key === x.tipo);
+  if (!tipo) return null;
+  const inteiro = (v, de, ate) => { const n = parseInt(v, 10); return isFinite(n) && n >= de && n <= ate ? n : null; };
+  const cobranca = x.cobranca === "mensal" ? "mensal" : "avulsa";
+  return {
+    tipo: tipo.key,
+    cobranca,
+    vezes: cobranca === "mensal" ? (inteiro(x.vezes, 1, 7) || 1) : null,
+    alunos: tipo.key === "grupo" ? inteiro(x.alunos, 3, 30) : null,
+    preco: String(x.preco || "").replace(/[^0-9-]/g, "").replace(/^-+|-+$/g, "").slice(0, 20),
+    obs: String(x.obs || "").replace(/\s+/g, " ").trim().slice(0, CATALOGO_OBS_MAX),
+  };
+}
+function tipoDoItem(i) { return CATALOGO_TIPOS.find(t => t.key === i.tipo) || CATALOGO_TIPOS[0]; }
+function catalogoDe(c) {
+  return (Array.isArray(c && c.catalogo) ? c.catalogo : []).map(itemDoCatalogo).filter(Boolean).slice(0, CATALOGO_MAX);
+}
+// Os preços de antes do catálogo viram itens na primeira vez que a academia
+// abre a parte do preço (sem perder o que já estava na ficha).
+function catalogoAntigo(c) {
   const out = [];
-  const temAula = !!c.priceAula || (c.modalidades || []).includes("aulas_proprias");
-  const temLoc = !!c.priceLocacao || (c.modalidades || []).includes("locacao");
-  if (temAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula || "", assunto: "as aulas" });
-  if (temLoc) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao || "", assunto: "alugar a quadra" });
-  if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor por hora de quadra", faixa: c.priceRange, assunto: "os valores" });
+  if (priceMin(c.priceAula)) out.push(itemDoCatalogo({ tipo: "aula", cobranca: "avulsa", preco: c.priceAula }));
+  if (priceMin(c.priceLocacao)) out.push(itemDoCatalogo({ tipo: "locacao", cobranca: "avulsa", preco: c.priceLocacao }));
+  return out;
+}
+function catalogoDoForm(f) {
+  if (!Array.isArray(f.catalogo)) f.catalogo = catalogoAntigo(f);
+  return f.catalogo;
+}
+// Na ordem do catálogo: individual, dupla, grupo, aula, locação; avulsa antes
+// da mensal; menos vezes por semana primeiro; o menor valor primeiro.
+function ordemDoCatalogo(a, b) {
+  const t = x => CATALOGO_TIPOS.findIndex(k => k.key === x.tipo);
+  return t(a) - t(b) || (a.cobranca === "mensal") - (b.cobranca === "mensal") || (a.vezes || 0) - (b.vezes || 0)
+    || (parseInt(priceMin(a.preco), 10) || 1e9) - (parseInt(priceMin(b.preco), 10) || 1e9);
+}
+// Por hora, por aula, por pessoa, por mês…
+function unidadeDoItem(i) {
+  const t = tipoDoItem(i);
+  if (i.cobranca === "mensal") return t.porPessoa ? "por pessoa, por mês" : "por mês";
+  if (t.grupo === "locacao") return "por hora";
+  return t.porPessoa ? "por pessoa, por aula" : "por aula";
+}
+function unidadeCurta(i) {
+  if (i.cobranca === "mensal") return "/mês";
+  if (tipoDoItem(i).grupo === "locacao") return "/h";
+  return "/aula";
+}
+// "Mensal, 2x por semana · até 6 alunos".
+function detalheDoItem(i) {
+  const t = tipoDoItem(i);
+  return [
+    i.cobranca === "mensal" ? `Mensal, ${i.vezes}x por semana${t.grupo === "locacao" ? ", horário fixo" : ""}` : t.grupo === "locacao" ? "Avulsa" : "Aula avulsa",
+    i.alunos ? `até ${i.alunos} alunos` : "",
+  ].filter(Boolean).join(" · ");
+}
+// O assunto do WhatsApp daquela opção.
+function assuntoDoItem(i) {
+  const t = tipoDoItem(i);
+  const quando = i.cobranca === "mensal" ? `mensal, ${i.vezes}x por semana` : "avulsa";
+  const base = t.grupo === "locacao"
+    ? (i.cobranca === "mensal" ? `alugar a quadra por mês (${i.vezes}x por semana)` : "alugar a quadra")
+    : `a ${t.nome.toLowerCase()} ${quando}`;
+  return base + (i.obs ? ` (${i.obs})` : "");
+}
+
+// Cada preço vira uma opção que a pessoa escolhe, como os quartos de um
+// hotel: com o catálogo, um item por opção; sem ele, a aula e a locação do
+// preço por hora de antes.
+function opcoesPreco(c) {
+  const cat = catalogoDe(c);
+  const mods = c.modalidades || [];
+  if (cat.length) {
+    const out = cat.slice().sort(ordemDoCatalogo).map(i => ({
+      nome: tipoDoItem(i).nome, desc: detalheDoItem(i), obs: i.obs, faixa: i.preco, assunto: assuntoDoItem(i),
+      unidade: unidadeDoItem(i), curto: unidadeCurta(i), grupo: tipoDoItem(i).grupo, tipo: i.tipo, cobranca: i.cobranca, item: i,
+    }));
+    // A modalidade marcada sem item continua aparecendo, sob consulta.
+    if (mods.includes("aulas_proprias") && !cat.some(i => tipoDoItem(i).grupo === "aula"))
+      out.unshift({ nome: "Aula", desc: "Aula com professor da academia", faixa: "", assunto: "as aulas", unidade: "por aula", curto: "/aula", grupo: "aula", tipo: "aula", cobranca: "avulsa" });
+    if (mods.includes("locacao") && !cat.some(i => tipoDoItem(i).grupo === "locacao"))
+      out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: "", assunto: "alugar a quadra", unidade: "por hora", curto: "/h", grupo: "locacao", tipo: "locacao", cobranca: "avulsa" });
+    return out;
+  }
+  const out = [];
+  const temAula = !!c.priceAula || mods.includes("aulas_proprias");
+  const temLoc = !!c.priceLocacao || mods.includes("locacao");
+  const porHora = { unidade: "por hora", curto: "/h", cobranca: "avulsa" };
+  if (temAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula || "", assunto: "as aulas", grupo: "aula", tipo: "aula", ...porHora });
+  if (temLoc) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao || "", assunto: "alugar a quadra", grupo: "locacao", tipo: "locacao", ...porHora });
+  if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor por hora de quadra", faixa: c.priceRange, assunto: "os valores", grupo: "", tipo: "", ...porHora });
   // Quem tem valor aparece primeiro; quem não tem vai para o fim.
   return out.sort((a, b) => (parseInt(priceMin(a.faixa), 10) || 1e9) - (parseInt(priceMin(b.faixa), 10) || 1e9));
+}
+function temCatalogo(c) { return catalogoDe(c).length > 0; }
+// "Aula em grupo mensal (2x por semana)", para as listas em texto.
+function nomeDaOpcao(o) {
+  if (!o.item) return o.nome;
+  return o.cobranca === "mensal" ? `${o.nome} mensal (${o.item.vezes}x por semana)` : `${o.nome} avulsa`;
+}
+// A opção mais em conta de cada grupo de opções (avulsa antes da mensal),
+// para o "a partir de" da busca, do resumo e das perguntas.
+function maisEmConta(opcoes) {
+  const comValor = opcoes.filter(o => temPreco(o.faixa));
+  const avulsas = comValor.filter(o => o.cobranca !== "mensal");
+  const base = avulsas.length ? avulsas : comValor;
+  if (!base.length) return null;
+  const min = o => parseInt(priceMin(o.faixa), 10);
+  return base.reduce((a, b) => min(b) < min(a) ? b : a);
 }
 
 // "Aula e locação", "Só aula"... — o que a academia atende, em texto curto.
 function modalidadesTexto(c) {
-  const temAula = !!c.priceAula || (c.modalidades || []).includes("aulas_proprias");
-  const temLoc = !!c.priceLocacao || (c.modalidades || []).includes("locacao");
+  const cat = catalogoDe(c);
+  const temAula = !!c.priceAula || (c.modalidades || []).includes("aulas_proprias") || cat.some(i => tipoDoItem(i).grupo === "aula");
+  const temLoc = !!c.priceLocacao || (c.modalidades || []).includes("locacao") || cat.some(i => tipoDoItem(i).grupo === "locacao");
   if (temAula && temLoc) return "Aula e locação";
   if (temAula) return "Aula";
   if (temLoc) return "Locação";
@@ -18611,7 +18899,15 @@ function htCartaoContato(c) {
   const opcoes = opcoesPreco(c);
   return `
     <div class="ht-book">
-      ${opcoes.length ? `
+      ${opcoes.length && temCatalogo(c) ? `
+        <p class="ht-book-lbl">A partir de</p>
+        ${[...new Set(opcoes.map(o => o.tipo))].map(t => maisEmConta(opcoes.filter(o => o.tipo === t)) || opcoes.find(o => o.tipo === t)).map(o => `
+          <div class="ht-book-row">
+            <span class="ht-book-opt">${esc(o.nome)}</span>
+            <span class="ht-book-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${temPreco(o.faixa) ? `R$ ${esc(priceMin(o.faixa))}<small>${esc(o.curto)}</small>` : SEM_PRECO}</span>
+          </div>`).join("")}
+        <button type="button" class="ht-link ht-book-ver" data-ir-secao="precos">Ver as ${opcoes.length} opções ${icon('chevron', 14, 'currentColor')}</button>
+      ` : opcoes.length ? `
         <p class="ht-book-lbl">Preço por hora de quadra</p>
         ${opcoes.map(o => `
           <div class="ht-book-row">
@@ -18701,8 +18997,8 @@ function perguntasAcademia(c) {
   const opcoes = opcoesPreco(c);
   if (opcoes.some(o => temPreco(o.faixa))) {
     const linhas = opcoes.map(o => temPreco(o.faixa)
-      ? `${o.nome}: ${precoTexto(o.faixa)} por hora`
-      : `${o.nome}: sob consulta`);
+      ? `${nomeDaOpcao(o)}: ${precoTexto(o.faixa)} ${o.unidade}`
+      : `${nomeDaOpcao(o)}: sob consulta`);
     faq.push({
       q: `Quanto custa jogar em ${c.name}?`,
       a: linhas.join(". ") + ". O valor pode mudar conforme horário e professor — confirme no WhatsApp.",
@@ -18711,6 +19007,17 @@ function perguntasAcademia(c) {
     faq.push({
       q: `Quanto custa jogar em ${c.name}?`,
       a: "O valor é sob consulta: fale com a academia pelo botão do WhatsApp aqui na ficha.",
+    });
+  }
+  // Que tipos de aula, com o catálogo: individual, em dupla, em grupo.
+  const tiposDeAula = CATALOGO_TIPOS.filter(t => t.grupo === "aula" && !t.antigo && opcoes.some(o => o.tipo === t.key));
+  if (tiposDeAula.length) {
+    const nomes = tiposDeAula.map((t, i) => i ? t.nome.replace(/^Aula /, "") : t.nome.toLowerCase());
+    const mensal = opcoes.some(o => o.grupo === "aula" && o.cobranca === "mensal");
+    const avulsa = opcoes.some(o => o.grupo === "aula" && o.cobranca !== "mensal");
+    faq.push({
+      q: `Que aulas ${c.name} tem?`,
+      a: `${listaTexto(nomes).replace(/^./, x => x.toUpperCase())}${mensal && avulsa ? ", avulsas e em planos mensais" : mensal ? ", em planos mensais" : ", avulsas"}. ${tiposDeAula.some(t => t.porPessoa) ? "Na dupla e no grupo, o valor é por pessoa. " : ""}Os detalhes de cada uma estão em "Escolha o que você quer".`,
     });
   }
   const mod = modalidadesTexto(c);
@@ -18834,7 +19141,9 @@ function quandoFoiAtualizada(iso) {
 function linhaDaFichaConfirmada(c) {
   const quando = quandoFoiAtualizada(c.dadosAtualizadosEm);
   const premium = ehPremium(c);
-  return `<p class="ficha-confirmada ${premium ? "premium" : ""}">${premium ? seloPremium(15) : seloConfirmada(15)} <span><strong>Confirmada pela academia</strong>${premium ? " · Academia Premium" : ""}${quando ? ` · ${esc(quando)}` : ""}${fichaVelha(c) ? `. <span class="ficha-velha">Faz mais de um ano: confirme horário e preço direto com a academia.</span>` : ""}</span></p>`;
+  // Sem dizer o plano (pedido do Breno em 26/10/2026: "tire a escrita de qual
+  // plano academia é, independente do plano"): só o selo dourado muda.
+  return `<p class="ficha-confirmada ${premium ? "premium" : ""}">${premium ? seloPremium(15) : seloConfirmada(15)} <span><strong>Confirmada pela academia</strong>${quando ? ` · ${esc(quando)}` : ""}${fichaVelha(c) ? `. <span class="ficha-velha">Faz mais de um ano: confirme horário e preço direto com a academia.</span>` : ""}</span></p>`;
 }
 // Mais de um ano sem a academia atualizar (pedido de 26/10/2026, veracidade):
 // a data já aparece, e a ficha avisa para confirmar, como faz com a ficha
@@ -18867,7 +19176,7 @@ function seloPremium(tam = 16, botao = false) {
     pontos.push(`${(12 + r * Math.cos(a)).toFixed(2)},${(12 + r * Math.sin(a)).toFixed(2)}`);
   }
   const desenho = `<svg width="${tam}" height="${tam}" viewBox="0 0 24 24" aria-hidden="true"><polygon points="${pontos.join(" ")}" fill="var(--gold)" stroke="var(--gold)" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.4 12.4l3.1 3L16.6 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const rotulo = "Academia Premium, confirmada pela academia";
+  const rotulo = "Confirmada pela academia";
   return botao
     ? `<button type="button" class="selo-confirmada selo-premium" id="ir-confirmacao" title="${rotulo}" aria-label="${rotulo}: ver detalhes">${desenho}</button>`
     : `<span class="selo-confirmada selo-premium" title="${rotulo}" role="img" aria-label="${rotulo}">${desenho}</span>`;
@@ -19033,6 +19342,21 @@ function renderCourtPage(c) {
                 ${htOpcoes(c)}
               </section>
 
+              ${/* O contato logo depois das opções (pedido de 26/10/2026: "os
+                   contatos pode deixar mais acima"); o "é o responsável?" e o
+                   "Algo errado nesta ficha?" seguem no fim. */ ""}
+              <section class="ht-sec" id="ht-contato">
+                <h3 class="sec-title">Contato</h3>
+                <div class="cta-col" style="margin-top:0">
+                  ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
+                  ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
+                  ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
+                  <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
+                </div>
+                ${(ehMinha(c) || ehDaMinhaConta(c)) && whatsappNovoDe(c.id) && whatsappNovoDe(c.id).numero ? `<p class="footnote ficha-whatsapp-novo">Só vocês veem isto: o WhatsApp ${esc(telefoneBonito(whatsappNovoDe(c.id).numero))} precisa de confirmação e não fica público até ser confirmado. <a href="/parceiros/whatsapp" data-pc="whatsapp">Ver ›</a></p>` : ""}
+                <div id="ficha-confirmacao">${c.confirmada ? linhaDaFichaConfirmada(c) : avisoDaFichaBasica()}</div>
+              </section>
+
               <section class="ht-sec" id="avaliacoes">
                 <div class="ht-sec-topo">
                   <h3 class="sec-title">Avaliações</h3>
@@ -19088,16 +19412,7 @@ function renderCourtPage(c) {
                   ${htPerguntas(c)}
                 </section>` : ""}
 
-              <section class="ht-sec" id="ht-contato">
-                <h3 class="sec-title">Contato</h3>
-                <div class="cta-col" style="margin-top:0">
-                  ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
-                  ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
-                  ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
-                  <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
-                </div>
-                ${(ehMinha(c) || ehDaMinhaConta(c)) && whatsappNovoDe(c.id) && whatsappNovoDe(c.id).numero ? `<p class="footnote ficha-whatsapp-novo">Só vocês veem isto: o WhatsApp ${esc(telefoneBonito(whatsappNovoDe(c.id).numero))} precisa de confirmação e não fica público até ser confirmado. <a href="/parceiros/whatsapp" data-pc="whatsapp">Ver ›</a></p>` : ""}
-                <div id="ficha-confirmacao">${c.confirmada ? linhaDaFichaConfirmada(c) : avisoDaFichaBasica()}</div>
+              <div class="ht-sec ht-sec-fim">
                 ${ehMinha(c) || ehDaMinhaConta(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="/parceiros/cadastro?academia=${idCurto(c.id)}" data-pc-reivindicar="${idCurto(c.id)}">Gerencie a ficha no GuiaTennis Parceiros</a>: atualize os dados, responda às avaliações e veja quem viu a academia.</p>`}
                 ${c.source === "osm" ? `<p class="footnote">Nome e localização: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>.</p>` : ""}
                 ${ehMinha(c) || ehDaMinhaConta(c) || isAdmin ? "" : `
@@ -19105,7 +19420,7 @@ function renderCourtPage(c) {
                     <p>Algo errado nesta ficha?</p>
                     <button type="button" class="ht-bt-contorno" id="informar-problema" data-court="${c.id}">Informar um problema</button>
                   </div>`}
-              </section>
+              </div>
             </div>
           </div>
 
@@ -19117,7 +19432,7 @@ function renderCourtPage(c) {
         <div class="court-cta">
           <div class="court-cta-price">
             <span class="court-cta-val ${faixa ? "" : "sem-valor"}">${faixa ? esc(faixa.texto) : SEM_PRECO}</span>
-            <span class="court-cta-unit">${faixa ? `${esc(faixa.opcao.nome.toLowerCase())}, por hora` : SEM_PRECO_SUB}</span>
+            <span class="court-cta-unit">${faixa ? esc(faixa.rotulo) : SEM_PRECO_SUB}</span>
           </div>
           <a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">Chamar no WhatsApp</a>
         </div>` : ""}
@@ -19295,9 +19610,88 @@ function politicaParaSalvar(f) {
 // (contato) e o que o GuiaTennis precisa para aprovar —, depois o que
 // completa a ficha. Na edição, as partes viram abas, como o "Editar perfil"
 // do Google, e dá para salvar em qualquer uma.
+// O editor do catálogo, na parte "Modalidade e preço" (26/10/2026), como o
+// "Opções de preço" do Mindbody e os tipos de quarto da extranet do Booking:
+// a lista das opções, cada uma com Editar, Duplicar e Remover, e os botões
+// de adicionar de cada tipo. O que se escreve vai direto para a opção (nada
+// se perde ao continuar sem tocar em "Pronto").
+function editorDoCatalogo(f) {
+  const cat = catalogoDoForm(f);
+  const aula = f.modalidades.includes("aulas_proprias");
+  const loc = f.modalidades.includes("locacao");
+  const visivel = (i) => tipoDoItem(i).grupo === "aula" ? aula : loc;
+  const aberto = state.catItem && cat[state.catItem.i] ? state.catItem.i : -1;
+  const linha = (i, k) => {
+    if (k === aberto) return formDoItemDoCatalogo(i, k, f);
+    const t = tipoDoItem(i);
+    return `
+      <div class="cat-item" data-cat-item="${k}">
+        <div class="cat-item-txt">
+          <p class="cat-item-n">${esc(t.nome)} <span class="cat-item-cob ${i.cobranca}">${i.cobranca === "mensal" ? "Mensal" : "Avulsa"}</span></p>
+          ${i.cobranca === "mensal" || i.alunos ? `<p class="cat-item-d">${esc([i.cobranca === "mensal" ? `${i.vezes}x por semana` : "", i.alunos ? `até ${i.alunos} alunos` : ""].filter(Boolean).join(" · "))}</p>` : ""}
+          ${i.obs ? `<p class="cat-item-obs">${esc(i.obs)}</p>` : ""}
+        </div>
+        <p class="cat-item-preco ${temPreco(i.preco) ? "" : "sem-valor"}">${temPreco(i.preco) ? `${esc(precoTexto(i.preco))}<small>${esc(unidadeDoItem(i))}</small>` : SEM_PRECO}</p>
+        <div class="cat-item-acoes">
+          <button type="button" data-cat-editar="${k}">${icon('edit', 14, 'currentColor')} Editar</button>
+          ${cat.length < CATALOGO_MAX ? `<button type="button" data-cat-duplicar="${k}">${icon('plus', 14, 'currentColor')} Duplicar</button>` : ""}
+          <button type="button" data-cat-remover="${k}">${icon('lixo', 14, 'currentColor')} Remover</button>
+        </div>
+      </div>`;
+  };
+  const tipos = CATALOGO_TIPOS.filter(t => !t.antigo && (t.grupo === "aula" ? aula : loc));
+  return `
+    <p class="field-label">Catálogo de aulas e locação</p>
+    <p class="footnote" style="margin:0 0 10px">Cada opção vira um cartão na ficha, com o valor e o botão do WhatsApp já sobre ela. Sem valor, a opção mostra "Sob consulta".</p>
+    <div class="cat-lista" id="cat-lista">
+      ${cat.map((i, k) => visivel(i) ? linha(i, k) : "").join("")}
+    </div>
+    ${cat.length < CATALOGO_MAX ? `
+      <div class="cat-add">
+        ${tipos.map(t => `<button type="button" class="cat-add-bt" data-cat-novo="${t.key}">${icon('plus', 14, 'currentColor')} ${esc(t.nome)}</button>`).join("")}
+      </div>` : `<p class="footnote">O catálogo chegou a ${CATALOGO_MAX} opções. Remova uma para incluir outra.</p>`}`;
+}
+function formDoItemDoCatalogo(i, k, f) {
+  const t = tipoDoItem(i);
+  const chips = (lista, atual, attr) => lista.map(([v, rot]) => `<button type="button" class="chip small ${String(atual) === String(v) ? "active" : ""}" ${attr}="${v}" aria-pressed="${String(atual) === String(v)}">${esc(rot)}</button>`).join("");
+  const tipos = CATALOGO_TIPOS.filter(x => (!x.antigo || x.key === i.tipo) && (x.grupo === "aula" ? f.modalidades.includes("aulas_proprias") : f.modalidades.includes("locacao")));
+  return `
+    <div class="cat-form" id="cat-form" data-cat-item="${k}">
+      <p class="cat-form-t">${state.catItem && state.catItem.nova ? "Nova opção" : "Editar a opção"}</p>
+      <p class="field-label">Tipo</p>
+      <div class="chip-row">${chips(tipos.map(x => [x.key, x.nome]), i.tipo, "data-cat-tipo")}</div>
+      <p class="field-label">Cobrança</p>
+      <div class="chip-row">${chips([["avulsa", t.grupo === "locacao" ? "Avulsa (por hora)" : "Avulsa (por aula)"], ["mensal", "Mensal"]], i.cobranca, "data-cat-cobranca")}</div>
+      ${i.cobranca === "mensal" ? `
+        <p class="field-label">Vezes por semana</p>
+        <div class="chip-row">${chips(CATALOGO_VEZES.map(v => [v, `${v}x`]), i.vezes, "data-cat-vezes")}</div>` : ""}
+      ${i.tipo === "grupo" ? `
+        <label class="field-label" for="cat-alunos">Até quantos alunos na turma (opcional)</label>
+        <input class="form-field cat-alunos" id="cat-alunos" type="number" min="3" max="30" inputmode="numeric" placeholder="Ex.: 6" value="${i.alunos || ""}" style="margin-top:0" />` : ""}
+      <label class="field-label" for="cat-preco">Valor (opcional)</label>
+      <div class="price-input-row">
+        <span>R$</span>
+        <input class="form-field" id="cat-preco" placeholder="${i.cobranca === "mensal" ? "300 ou 280-320" : "120 ou 100-140"}" inputmode="numeric" value="${esc(i.preco || "")}" />
+        <span class="cat-unidade">${esc(unidadeDoItem(i))}</span>
+      </div>
+      ${t.porPessoa ? `<p class="footnote" style="margin:4px 0 0">Na dupla e no grupo, o valor é por pessoa.</p>` : ""}
+      <label class="field-label" for="cat-obs">Observação (opcional)</label>
+      <input class="form-field" id="cat-obs" maxlength="${CATALOGO_OBS_MAX}" placeholder="${t.grupo === "locacao" ? "Ex.: com iluminação, à noite" : "Ex.: turma infantil, aos sábados de manhã"}" value="${esc(i.obs || "")}" style="margin-top:0" />
+      <div class="cat-form-bts">
+        <button type="button" class="cat-cancelar" data-cat-cancelar="${k}">${state.catItem && state.catItem.nova ? "Remover" : "Desfazer"}</button>
+        <button type="button" class="cat-pronto" data-cat-pronto="${k}">Pronto</button>
+      </div>
+    </div>`;
+}
+// Novo item de cada tipo, como a academia mais vende: aula individual e em
+// dupla avulsas, turma mensal 1x por semana, locação por hora.
+function itemNovoDoCatalogo(tipo) {
+  return itemDoCatalogo({ tipo, cobranca: tipo === "grupo" ? "mensal" : "avulsa", vezes: 1 });
+}
+
 const REG_PASSOS = [
   { id: "dados", t: "Nome e endereço", titulo: "Onde fica a academia?", porque: "É o que faz a academia aparecer para quem busca perto." },
-  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "O que o jogador compara primeiro é se tem aula ou locação e o preço por hora." },
+  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "Monte o catálogo: aula individual, em dupla e em grupo e locação, avulsa ou mensal. Cada opção vira um cartão na ficha, com o valor e o WhatsApp." },
   { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
   { id: "contato", t: "Contato", titulo: "Como os jogadores falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa iniciada." },
   { id: "fotos", t: "Fotos", titulo: "Fotos da academia", porque: "Ficha com foto recebe muito mais contato." },
@@ -19580,26 +19974,7 @@ function regPassoHtml(id, f, obrigatorio) {
         <div class="chip-row">
           ${MODALIDADE_OPTS.map(m => `<button class="chip small reg-modalidade ${f.modalidades.includes(m.key)?"active":""}" data-modalidade="${m.key}">${m.icon} ${m.label}</button>`).join("")}
         </div>
-        ${(f.modalidades.includes("aulas_proprias") || f.modalidades.includes("locacao")) ? `
-          <p class="field-label">Faixa de preço por hora (opcional)</p>
-          <p class="footnote" style="margin:0 0 8px">Deixe em branco se preferir não publicar valores — a ficha mostra "Sob consulta".</p>` : ""}
-        ${f.modalidades.includes("aulas_proprias") ? `
-          <div class="price-input-row">
-            <span class="price-input-label">Aula</span>
-            <span>R$</span>
-            <input class="form-field" id="f-price-aula" placeholder="90-140" inputmode="numeric" value="${esc(f.priceAula || '')}" />
-            <span>/hora</span>
-          </div>
-        ` : ""}
-        ${f.modalidades.includes("locacao") ? `
-          <div class="price-input-row">
-            <span class="price-input-label">Locação</span>
-            <span>R$</span>
-            <input class="form-field" id="f-price-locacao" placeholder="80-120" inputmode="numeric" value="${esc(f.priceLocacao || '')}" />
-            <span>/hora</span>
-          </div>
-        ` : ""}
-        ${!f.modalidades.length ? `<p class="footnote">Escolha a modalidade para informar o preço.</p>` : ""}`;
+        ${f.modalidades.length ? editorDoCatalogo(f) : `<p class="footnote">Escolha a modalidade para montar o catálogo de aulas e locação.</p>`}`;
 
   if (id === "quadras") return `
         <p class="field-label" style="margin-top:0">Quantas quadras de cada tipo${obrigatorio}</p>
@@ -19748,7 +20123,7 @@ function oQueMelhorar(f) {
   const tem = v => !!String(v || "").trim();
   const itens = [];
   if (!(f.photos || []).length) itens.push({ passo: "fotos", t: "Adicionar fotos", d: "Ficha com foto recebe muito mais contato." });
-  if (!tem(f.priceAula) && !tem(f.priceLocacao)) itens.push({ passo: "precos", t: "Dizer o preço", d: "É o que o jogador compara primeiro." });
+  if (!catalogoDoForm(f).some(i => priceMin(i.preco))) itens.push({ passo: "precos", t: "Dizer o preço", d: "Monte o catálogo com o valor de cada aula e da locação: é o que o jogador compara primeiro." });
   if (!regPreenchido(f, "horario")) itens.push({ passo: "horario", t: "Informar o horário", d: "A ficha mostra se a academia está aberta agora." });
   if (!(f.amenities || []).length) itens.push({ passo: "quadras", t: "Marcar as comodidades", d: "Viram filtro na busca: quem procura estacionamento acha vocês." });
   if (!regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "Explicar o cancelamento", d: "Tira a dúvida antes da primeira aula." });
@@ -19833,7 +20208,7 @@ function renderRegisterSheet() {
   const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
   window.__form = f;
   // Formulário novo (abriu agora ou é outra academia): começa na primeira parte.
-  if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; state.regPlanoTela = false; state.regFaltaVisivel = false; state.regDaRevisao = false; state.regSairPergunta = false; state.regFormAssinatura = assinaturaDoFormulario(f); state.regPontoErro = ""; state.regDestaqueErro = ""; }
+  if (state.regForm !== f) { state.regForm = f; state.catItem = null; state.regPasso = 0; state.regPassoErro = ""; state.regPlanoTela = false; state.regFaltaVisivel = false; state.regDaRevisao = false; state.regSairPergunta = false; state.regFormAssinatura = assinaturaDoFormulario(f); state.regPontoErro = ""; state.regDestaqueErro = ""; }
   const isEditing = !!f.__editingId;
   const parceiro = !isAdmin && !isEditing && !!contaAcademia;
   // Asterisco só para quem pede cadastro pelo site; o admin publica com o que tiver.
@@ -20597,7 +20972,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
-<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
+<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo e locação, avulsas ou mensais, por hora, por aula, por pessoa ou por mês) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir, e o cadastro dela fica guardado como fechado (cadastro inativo), com as avaliações, fora do site. Se ela reabrir, quem a administrava volta a administrá-la pelo GuiaTennis Parceiros, com o mesmo e-mail; uma conta nova pede a reabertura ao GuiaTennis, que confere antes. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
@@ -20844,7 +21219,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "preco-jog", onde: "jogadores", t: "Preço e \"Sob consulta\"",
     p: ["preco", "valor", "quanto custa", "quanto e", "sob consulta", "barato", "caro", "pagar", "pagamento", "cobra"],
-    r: "O preço por hora aparece na ficha quando a academia informa. \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
+    r: "O preço aparece na ficha quando a academia informa, em \"Escolha o que você quer\": aula individual, em dupla e em grupo e locação, avulsa ou mensal, cada uma com o que o valor paga (por hora, por aula, por pessoa, por mês). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "avaliar", onde: "jogadores", t: "Avaliar uma academia",
     p: ["avali", "nota", "comentar", "comentario", "estrelas", "opiniao"],
@@ -21370,7 +21745,7 @@ const CHAT_DETALHES_PC = [
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
   { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidade e preço: o valor por hora da aula e da locação. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidade e preço, monte o catálogo: aula individual, em dupla e em grupo e locação, avulsa ou mensal (com quantas vezes por semana), até quantos alunos e o valor. Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a opção mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -23255,8 +23630,9 @@ function attachEvents() {
   document.querySelectorAll("[data-voltar-ficha]").forEach(el => { el.onclick = voltarDaFicha; });
   const irHorario = document.getElementById("ir-horario");
   if (irHorario) irHorario.onclick = () => irParaSecao("horario", true);
+  document.querySelectorAll("[data-ir-secao]").forEach(el => { el.onclick = () => irParaSecao(el.dataset.irSecao, true); });
   document.querySelectorAll("[data-opcao-filtro]").forEach(el => {
-    el.onclick = () => { state.opcaoDaFicha = { id: el.dataset.court, nome: el.dataset.opcaoFiltro }; render(); };
+    el.onclick = () => { state.opcaoDaFicha = { id: el.dataset.court, nome: el.dataset.opcaoFiltro, cobranca: el.dataset.opcaoCobranca || "" }; render(); };
   });
   document.querySelectorAll("[data-rev-mais]").forEach(el => {
     el.onclick = () => {
@@ -24507,6 +24883,80 @@ function attachEvents() {
     };
   });
 
+  // O catálogo de aulas e locação (26/10/2026): o que se escreve vai direto
+  // para a opção aberta; "Pronto" só fecha, "Desfazer" volta ao que era.
+  const catalogo = () => catalogoDoForm(window.__form);
+  const arrumarCatalogo = () => { const cat = catalogo(); cat.forEach((x, k) => { cat[k] = itemDoCatalogo(x) || x; }); };
+  const abrirNoCatalogo = (aberto) => {
+    state.catItem = aberto;
+    render();
+    const form = document.getElementById("cat-form");
+    if (form && form.scrollIntoView) form.scrollIntoView({ block: "nearest" });
+  };
+  document.querySelectorAll("[data-cat-novo]").forEach(el => {
+    el.onclick = () => {
+      arrumarCatalogo();
+      const cat = catalogo();
+      if (cat.length >= CATALOGO_MAX) return;
+      cat.push(itemNovoDoCatalogo(el.dataset.catNovo));
+      abrirNoCatalogo({ i: cat.length - 1, nova: true });
+    };
+  });
+  document.querySelectorAll("[data-cat-editar]").forEach(el => {
+    el.onclick = () => {
+      arrumarCatalogo();
+      const k = parseInt(el.dataset.catEditar, 10);
+      abrirNoCatalogo({ i: k, antes: { ...catalogo()[k] } });
+    };
+  });
+  document.querySelectorAll("[data-cat-duplicar]").forEach(el => {
+    el.onclick = () => {
+      arrumarCatalogo();
+      const cat = catalogo();
+      const k = parseInt(el.dataset.catDuplicar, 10);
+      if (cat.length >= CATALOGO_MAX || !cat[k]) return;
+      cat.splice(k + 1, 0, { ...cat[k] });
+      abrirNoCatalogo({ i: k + 1, nova: true });
+    };
+  });
+  document.querySelectorAll("[data-cat-remover]").forEach(el => {
+    el.onclick = () => { catalogo().splice(parseInt(el.dataset.catRemover, 10), 1); state.catItem = null; render(); };
+  });
+  const itemAberto = () => state.catItem && catalogo()[state.catItem.i];
+  const mudarItem = (campo, valor) => {
+    const i = itemAberto();
+    if (!i) return;
+    Object.assign(i, itemDoCatalogo({ ...i, [campo]: valor }));
+    render();
+  };
+  document.querySelectorAll("[data-cat-tipo]").forEach(el => { el.onclick = () => mudarItem("tipo", el.dataset.catTipo); });
+  document.querySelectorAll("[data-cat-cobranca]").forEach(el => { el.onclick = () => mudarItem("cobranca", el.dataset.catCobranca); });
+  document.querySelectorAll("[data-cat-vezes]").forEach(el => { el.onclick = () => mudarItem("vezes", parseInt(el.dataset.catVezes, 10)); });
+  const catPreco = document.getElementById("cat-preco");
+  if (catPreco) catPreco.oninput = (e) => {
+    const v = e.target.value.replace(/[^0-9-]/g, "");
+    e.target.value = v;
+    const i = itemAberto();
+    if (i) i.preco = v;
+  };
+  const catObs = document.getElementById("cat-obs");
+  if (catObs) catObs.oninput = (e) => { const i = itemAberto(); if (i) i.obs = e.target.value.slice(0, CATALOGO_OBS_MAX); };
+  const catAlunos = document.getElementById("cat-alunos");
+  if (catAlunos) catAlunos.oninput = (e) => { const i = itemAberto(); if (i) i.alunos = parseInt(e.target.value, 10) || null; };
+  document.querySelectorAll("[data-cat-pronto]").forEach(el => {
+    el.onclick = () => { arrumarCatalogo(); state.catItem = null; render(); };
+  });
+  document.querySelectorAll("[data-cat-cancelar]").forEach(el => {
+    el.onclick = () => {
+      const cat = catalogo();
+      const aberto = state.catItem;
+      if (aberto && aberto.nova) cat.splice(aberto.i, 1);
+      else if (aberto && aberto.antes && cat[aberto.i]) cat[aberto.i] = aberto.antes;
+      state.catItem = null;
+      render();
+    };
+  });
+
   document.querySelectorAll("[data-reg-passo]").forEach(el => {
     el.onclick = () => {
       const k = parseInt(el.dataset.regPasso, 10);
@@ -24631,6 +25081,7 @@ function abrirEdicaoDaFicha(c, opcoes = {}) {
     modalidades: [...(c.modalidades || [])],
     priceAula: c.priceAula || "",
     priceLocacao: c.priceLocacao || "",
+    catalogo: catalogoDe(c).length ? catalogoDe(c) : catalogoAntigo(c),
     // O número que espera o código fica no campo (SQL 20261026120000): salvar
     // de novo não o perde; trocar por outro manda um código novo.
     phone: (!isAdmin && (whatsappNovoDe(c.id) || {}).numero) || c.phone || "",
@@ -24887,7 +25338,7 @@ async function doSearch(opcoes = {}) {
 // falhar — e avisa o admin com o SQL que resolve. Mesmo caminho do "plano".
 function faltaColunaNova(erro) {
   const m = ((erro && erro.message) || "").toLowerCase();
-  return m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada");
+  return m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada") || m.includes("catalogo");
 }
 
 function avisarSqlColunas() {
@@ -25003,6 +25454,7 @@ async function doRegisterSubmit() {
         delete semNovas.acesso;
         delete semNovas.horario;
         delete semNovas.confirmada;
+        delete semNovas.catalogo;
         ({ error } = await sb.from('academias').update(semNovas).eq('id', f.__editingId));
         if (!error) avisarSqlColunas();
       }
@@ -25089,6 +25541,7 @@ async function doRegisterSubmit() {
       delete semNovas.acesso;
       delete semNovas.horario;
       delete semNovas.confirmada;
+      delete semNovas.catalogo;
       ({ data, error } = await enviar(semNovas));
       if (!error) avisarSqlColunas();
     }
@@ -25137,7 +25590,7 @@ const RASCUNHO_VALE_MS = 12 * 3600000;
 const RASCUNHO_GLOBAIS = ["__form", "__jog", "__pcConta", "__conta", "__pessoa", "__viagem", "__pref", "__respostaTexto", "__rateComment", "__rateConsent", "__visitante"];
 // O que fica no estado (22/10/2026): o leilão, a promoção, o aviso de que a
 // academia fechou, as anotações do "Me ajude a decidir" e as estrelas.
-const RASCUNHO_ESTADO = ["pcEmailForm", "pcLeilaoPasso", "pcEmailEditando", "pcPromoForm", "pcPromoPasso", "pcPromoEditando", "pcSaindo", "pcSaidaDetalhes", "decideNotes", "pendingStar"];
+const RASCUNHO_ESTADO = ["catItem", "pcEmailForm", "pcLeilaoPasso", "pcEmailEditando", "pcPromoForm", "pcPromoPasso", "pcPromoEditando", "pcSaindo", "pcSaidaDetalhes", "decideNotes", "pendingStar"];
 const RASCUNHO = { pronto: false, fotos: null, timer: null, desligado: false };
 function semSenhaNoRascunho(v) {
   if (!v || typeof v !== "object" || Array.isArray(v)) return v;

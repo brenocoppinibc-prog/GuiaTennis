@@ -83,8 +83,13 @@ async function fichaCheia(page, extra) {
 
   // ---- a ordem do hoteis.com, sem tirar nada ----
   r = await page.evaluate(() => [...document.querySelectorAll('.ht-sections > .ht-sec')].map(s => s.id || s.className.replace('ht-sec ', '')).join(','));
-  ok(r === 'ht-sec-destaques,ht-comodidades,ht-local,ht-visao,ht-opcoes,avaliacoes,ht-perto,ht-horario,ht-politica,ht-duvidas,ht-contato',
-    'destaques, estrutura, região, "Sobre" com fotos, opções, avaliações, academias por perto, horário, cancelamento, dúvidas e contato — ' + r);
+  // O contato logo depois das opções (26/10/2026: "os contatos pode deixar
+  // mais acima"); o "é o responsável?" e o "Algo errado" seguem no fim.
+  ok(r === 'ht-sec-destaques,ht-comodidades,ht-local,ht-visao,ht-opcoes,ht-contato,avaliacoes,ht-perto,ht-horario,ht-politica,ht-duvidas,ht-sec-fim',
+    'destaques, estrutura, região, "Sobre" com fotos, opções, contato, avaliações, academias por perto, horário, cancelamento, dúvidas e o fim — ' + r);
+  const fim = await page.evaluate(() => ({ fim: document.querySelector('.ht-sec-fim')?.innerText || '', contato: document.getElementById('ht-contato').innerText }));
+  ok(fim.fim.includes('É o responsável por esta academia?') && fim.fim.includes('Algo errado nesta ficha?') && fim.contato.includes('Chamar no WhatsApp') && fim.contato.includes('Confirmada pela academia') && !/Premium/.test(fim.contato),
+    'o contato com os botões e a confirmação, sem o nome do plano; o fim com "é o responsável?" e "Algo errado"');
   r = await page.evaluate(() => document.querySelector('.courtpage').innerText);
   const tudo = ['Estacionamento grátis', 'Vestiário', 'Loja de materiais', 'Wi-Fi', 'Lanchonete', 'Água grátis', 'Empréstimo de raquete', '2x Saibro coberta', '3x Rápida descoberta',
     'Portão preto', 'Avise na portaria', 'Ver todas as academias em Pinheiros', 'Quem avaliou elogia', 'Primeira aula grátis', 'Segunda a sexta', 'Domingo',

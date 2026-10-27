@@ -70,7 +70,9 @@ const buscar = (page, origem, extra) => page.evaluate(({ origem, extra }) => {
     const rot = document.querySelector('.rcard-patrocinado');
     return { titulo: rot.getAttribute('title') || '', visivel: rot.getBoundingClientRect().height > 0, selo: document.querySelector('.rcard.patrocinada .selo-premium')?.getAttribute('aria-label') || '' };
   });
-  ok(estilo.visivel && estilo.titulo.includes('patrocínio') && estilo.selo.includes('Academia Premium'), 'o aviso de patrocínio aparece no cartão, e o selo diz "Academia Premium"');
+  // Sem dizer o plano (26/10/2026: "tire a escrita de qual plano academia é,
+  // independente do plano"): o selo dourado diz só que a academia confirmou.
+  ok(estilo.visivel && estilo.titulo.includes('patrocínio') && estilo.selo === 'Confirmada pela academia' && !estilo.selo.includes('Premium'), 'o aviso de patrocínio aparece no cartão, e o selo diz "Confirmada pela academia", sem o plano — ' + estilo.selo);
 
   // ---- no máximo duas patrocinadas ----
   await comAcademias(page, [
@@ -137,8 +139,8 @@ const buscar = (page, origem, extra) => page.evaluate(({ origem, extra }) => {
       fim: document.querySelector('#ficha-confirmacao')?.innerText || '',
     };
   });
-  ok(r.premium && !r.verde && r.fim.includes('Confirmada pela academia') && r.fim.includes('Academia Premium'),
-    'na ficha, o selo dourado no lugar do verde, e o fim diz "Academia Premium" — ' + r.fim);
+  ok(r.premium && !r.verde && r.fim.includes('Confirmada pela academia') && !/Premium|plano/i.test(r.fim),
+    'na ficha, o selo dourado no lugar do verde, e o contato diz só "Confirmada pela academia", sem o plano — ' + r.fim);
   r = await page.evaluate(() => {
     state.selected = decorate(state.allCourts.find(x => x.id === 'a2')); render();
     return !!document.querySelector('.court-name .selo-confirmada');

@@ -20,7 +20,7 @@ const rodape = (page) => page.evaluate(() => [...document.querySelectorAll('.reg
   await page.waitForTimeout(400);
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
-  await page.evaluate(() => { Object.assign(window.__form, { instagram: '@soaula', priceAula: '120' }); window.__form.amenities.push('wifi', 'vestiario', 'loja'); });
+  await page.evaluate(() => { Object.assign(window.__form, { instagram: '@soaula', catalogo: [{ tipo: 'aula', cobranca: 'avulsa', duracao: 60, preco: '120' }] }); window.__form.amenities.push('wifi', 'vestiario', 'loja'); });
   await irParte(page, 'revisar');
   ok((await texto(page, '.reg-titulo')) === 'Confira a prévia da ficha' && await page.isVisible('#reg-previa'), 'a última parte abre com a prévia da ficha');
   ok((await texto(page, '.reg-porque')).includes('Toque no lápis para editar uma seção') && !(await page.$('.reg-previa-topo')), 'sem a caixa de explicação: só o lápis, dito embaixo do título');
@@ -51,7 +51,9 @@ const rodape = (page) => page.evaluate(() => [...document.querySelectorAll('.reg
   ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo')?.dataset.passo === 'precos'), '"Editar" no bloco do preço abre a parte do preço');
   // 21/10/2026: "aparecer o botão verde embaixo confirmar e já voltar para a revisão".
   ok((await rodape(page)) === 'Confirmar*' && !(await page.$('#reg-voltar')), 'vindo do lápis, embaixo só o "Confirmar" verde — ' + await rodape(page));
-  await page.fill('#f-price-aula', '150');
+  // O preço no catálogo (26/10/2026, regra 162).
+  await page.click('[data-cat-editar="0"]');
+  await page.fill('#cat-preco', '150');
   await page.click('#reg-confirmar-revisao');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => regPassoAtual().passo.id === 'revisar') && (await bloco(page, 'precos')).includes('R$ 150'), '"Confirmar" volta para a revisão, que já mostra o que mudou');

@@ -1,6 +1,6 @@
 // Finge o Supabase para os testes: tabelas em memória (window.__db), e as
 // funções do banco. Chaves: __admin, __semDetalhe, __semCep, __semTempo, __colunasFechadas,
-// __semPlano, __semConfirmada, __semDataDaFicha, __a1AtualizadaEm, __a1CriadaEm,
+// __semPlano, __semConfirmada, __semDataDaFicha, __semCatalogo, __a1AtualizadaEm, __a1CriadaEm,
 // __academia (id da academia logada),
 // __semAcesso (banco sem o SQL do acesso das academias). O que o site grava
 // em cliques fica em __cliques, o banco que o site abriu fica em __banco, as
@@ -297,6 +297,7 @@
         if (table === "cliques" && window.__semCep && "cep" in payload) return { data:null, error:{ message:"column cep does not exist" } };
         if (table === "cliques" && window.__semTempo && ("segundos" in payload || "segundos_ficha" in payload)) return { data:null, error:{ message:"column segundos does not exist" } };
         if (table === "academias" && window.__semConfirmada && "confirmada" in payload) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
+        if (table === "academias" && window.__semCatalogo && "catalogo" in payload) return { data:null, error:{ message:"Could not find the 'catalogo' column of 'academias' in the schema cache" } };
         if (table === "avaliacoes" && !souAdmin()) {
           // Gatilho avaliacao_de_parceiro (SQL 20261005170000): quem
           // administra a academia não avalia ela; as outras, avalia.
@@ -357,6 +358,7 @@
       }
       if (op === "update") {
         window.__ultimoUpdate = JSON.parse(JSON.stringify(payload));
+        if (table === "academias" && window.__semCatalogo && "catalogo" in payload) return { data:null, error:{ message:"Could not find the 'catalogo' column of 'academias' in the schema cache" } };
         if (table === "jogadores" && !(euJogador() && filtros.every(([k, v]) => k === "user_id" && v === euJogador().user_id))) return { data:null, error:{ message:"permission denied" } };
         if (table === "buscas_salvas") {
           const j = euJogador();
@@ -419,6 +421,7 @@
       if (window.__semPlano && table === "academias" && colunas.includes("plano")) return { data:null, error:{ message:"column academias.plano does not exist" } };
       // Banco sem a coluna da ficha básica: a lista com ela falha, e o "*" não traz o campo.
       if (window.__semConfirmada && table === "academias" && colunas.includes("confirmada")) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
+      if (window.__semCatalogo && table === "academias" && colunas.includes("catalogo")) return { data:null, error:{ message:"column academias.catalogo does not exist" } };
       // Banco antes do SQL 20261007120000 (a data da ficha).
       if (window.__semDataDaFicha && table === "academias" && colunas.includes("dados_atualizados_em")) return { data:null, error:{ message:"column academias.dados_atualizados_em does not exist" } };
       if (window.__semDataDaFicha && table === "academias") { const out = JSON.parse(JSON.stringify(t.filter(pass))).map(r => { delete r.dados_atualizados_em; return r; }); return { data: single ? out[0] : out, error:null }; }

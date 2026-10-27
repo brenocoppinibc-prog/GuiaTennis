@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 27/10/2026 (regra 164)
+**Atualizado em:** 27/10/2026 (regra 165)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -114,6 +114,15 @@ teste")
 > **2.004 verificações** nos 69 arquivos do navegador (novo:
 > `enquadramento.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
 > nenhuma falha.
+>
+> Depois: **regra 165** — o corte das fotos no jeito do Instagram; o aceite
+> da avaliação só com "segue os Termos de Uso"; o nome da conta suspenso
+> por 15 dias (e-mails, lembrete, exclusão automática); a avaliação de
+> conta excluída como "Usuário do GuiaTennis"; o e-mail quando o admin
+> troca o nome de uma academia. SQL `20261027120000_nome_suspenso`; seção 71
+> do PR, passo 97. Testes: `nome-suspenso.js` (novo) com 28 verificações e
+> `banco-emails.py` com **647 conferências**, nenhuma falha; a bateria
+> completa dos 70 arquivos do navegador entra no próximo commit.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4264,7 +4273,8 @@ cobra taxa e não fica no meio** da negociação.
       judicial (Marco Civil da Internet). Termos e Privacidade em 27 de
       outubro de 2026.
     - **No site:** o aceite da avaliação diz "Minha avaliação é verídica,
-      sem ofensa nem discriminação, e segue os Termos de Uso."; "Como
+      sem ofensa nem discriminação, e segue os Termos de Uso." (desde a
+      regra 165, de novo só "verídica e segue os Termos de Uso"); "Como
       funcionam as avaliações" diz que ofensa e discriminação não são
       toleradas; o motivo da denúncia virou "É ofensiva, discriminatória
       (racismo, homofobia, xenofobia…) ou tem ameaça" (a chave continua
@@ -4310,6 +4320,73 @@ cobra taxa e não fica no meio** da negociação.
       duração ou vezes por semana).
     Testes: `enquadramento.js` (novo) e `ficha-hoteis.js` (sem foto no
     meio, sem a caixa de horário).
+    (O corte mudou para o jeito do Instagram na regra 165.)
+165. **O corte no jeito do Instagram, o aceite sem repetir os Termos, o
+    nome suspenso por 15 dias e o "Usuário do GuiaTennis"** (pedido de
+    27/10/2026: "não, quero que seja estilo do Instagram o enquadramento";
+    "se a avaliação segue os termos quer dizer que não pode ter conteúdo
+    oposto do que os termos não permite, então [não] precisa dizer
+    novamente isso"; "será enviado email quando isso do nome for
+    solicitado ou já alterado? e quando eu ver algo que não condiz com os
+    termos, suspenda o nome por 15 dias e se não, a conta será excluída, e
+    avaliação aparece tipo no Instagram quando a conta é excluída mas ainda
+    permanece a avaliação").
+    - **Corte como o "Cortar" do Instagram:** no celular, a tela toda; no
+      computador, a janela no meio (fundo escuro). No alto, ✕, "Cortar" e
+      "Concluir" (o verde da marca); a foto na largura, no quadro 4:3;
+      arrastar move, dois dedos (ou a rodinha) aproximam, e a grade de
+      3 × 3 aparece enquanto a foto se mexe. No canto da foto, os botões
+      redondos escuros do Instagram: expandir (a foto inteira, o
+      "Original", que não corta) e, só com mouse, a lupa com o controle de
+      zoom. Escolhendo várias, as miniaturas numeradas embaixo trocam de
+      foto (cada uma guarda o seu ajuste) e "Concluir" grava todas; só a
+      foto mexida é cortada. O ✕ sai sem cortar; se algo foi mexido,
+      pergunta "Descartar as edições?" (Descartar em vermelho / Cancelar).
+      Saíram o "Foto 1 de 2", "Próxima", "Usar como está", o controle
+      −/+ embaixo e o quadrado tracejado da capa. Código:
+      `renderEnquadrar`, `ligarEnquadramento`, `guardarAjusteDaVez`,
+      `recorteDaFoto`, `concluirEnquadramento`, `sairDoEnquadramento`;
+      `state.enquadrar = { fila, i, ajustes, lupa, descartar, salvando }`.
+    - **Aceite da avaliação:** volta a ser "Minha avaliação é verídica e
+      segue os Termos de Uso." (seguir os Termos já diz que não tem ofensa
+      nem discriminação, como o "Ao postar, você concorda com as políticas"
+      do Google).
+    - **Nome suspenso por 15 dias** (como a suspensão do Instagram,
+      "restam N dias", e o pedido de troca de nome do Facebook): o admin
+      toca em "Suspender o nome" (Contas de jogador, Acessos ao Parceiros,
+      Avaliações do painel e Avaliações denunciadas) e escreve o motivo, que
+      vai no e-mail. Na hora, o nome sai das avaliações ("Usuário do
+      GuiaTennis") e a conta não avalia; a pessoa recebe "O seu nome no
+      GuiaTennis foi suspenso" (o nome, o motivo, até quando, o que
+      acontece e "Trocar o nome"), e um lembrete 3 dias antes do fim. Ao
+      abrir o site (os dois), a conta vê uma tela como a do Instagram
+      ("Restam 15 dias", "O seu nome foi suspenso", "Trocar o nome" /
+      "Agora não", uma vez por aba), e em Minha conta e no Perfil do
+      Parceiros o aviso fica em cima do nome. Trocou (em qualquer um dos
+      dois: o mesmo login troca o nome suspenso no outro), a suspensão
+      acaba na hora, o nome volta às avaliações, a pessoa recebe a
+      confirmação e o admin confere o nome novo em Pendências › "Nomes
+      suspensos" ("Está certo" / "Suspender de novo"; também em "Para fazer
+      agora"). O admin pode "Cancelar a suspensão" (com e-mail). Sem a troca
+      em 15 dias, o relógio do banco (de hora em hora) exclui a conta, como
+      a exclusão pelo admin (o e-mail fica em Contas excluídas), manda "A
+      sua conta do GuiaTennis foi excluída" e avisa o admin.
+    - **"Usuário do GuiaTennis":** a avaliação de conta excluída (pela
+      pessoa, pelo admin, pelos 15 dias ou direto no Supabase) fica no site
+      sem o nome e sem o e-mail, com o avatar cinza sem iniciais, como o
+      "Usuário do Instagram"; o mesmo enquanto o nome está suspenso. Trocar o
+      nome da conta troca o nome nas avaliações (antes, ficava o nome da
+      hora em que avaliou). O aviso de excluir a conta, o chat e os textos
+      legais dizem isso.
+    - **Nome da academia ("já alterado"):** quando o admin troca o nome de
+      uma academia no ar, quem a administra (com o e-mail confirmado)
+      recebe "O GuiaTennis alterou o nome da …", com o nome de antes e o
+      novo, como o "o Google atualizou o seu perfil".
+    - Termos (seções 2, 5 e 9) e Privacidade (a conta, as avaliações e
+      "Nomes e conteúdo") em 27/10/2026; o chat ("Meu nome foi suspenso" e
+      o nome ofensivo no "Denunciar"). SQL `20261027120000_nome_suspenso`.
+    Testes: `nome-suspenso.js` (novo), `enquadramento.js` (reescrito),
+    `regras-de-conteudo.js` e a seção 39 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4700,7 +4777,28 @@ Cada faixa é `{ de: "06:00", ate: "22:00", fechado: false }`. No modo
 ("Seg a qua 6h às 22h").
 
 ### `avaliacoes`
-`id, academia_id, stars, comment, nome_autor, contato_autor, created_at`
+`id, academia_id, stars, comment, nome_autor, contato_autor, created_at,
+user_id, autor_oculto`
+
+**`autor_oculto`** (27/10/2026, regra 165; SQL `20261027120000_nome_suspenso`):
+a avaliação fica sem o nome ("Usuário do GuiaTennis" no site): a conta
+saiu (o gatilho `ocultar_autor_sem_conta` apaga também o nome e o e-mail
+quando `user_id` vira nulo, por qualquer caminho) ou o nome está suspenso.
+Visitante lê. O nome da avaliação segue o da conta (`nome_da_conta_mudou`).
+
+### `nomes_suspensos` (27/10/2026, regra 165)
+`id, user_id, email, nome, motivo, suspenso_em, prazo (15 dias),
+lembrete_em, resolvido_em, resolucao ('trocou'|'cancelada'|'excluida'),
+nome_novo, conferido_em`. Uma suspensão aberta por conta. Ninguém de fora
+lê. Funções: `suspender_nome_admin(user, motivo, nome)`,
+`suspender_nome_pela_avaliacao_admin`, `cancelar_suspensao_admin`,
+`nome_trocado_conferido_admin`, `nomes_suspensos_admin`,
+`meu_nome_suspenso` (a conta: o nome, o motivo, o prazo e `trocar_em`:
+`minha_conta` e/ou `parceiros`), `aplicar_suspensoes_de_nome` (o relógio
+`guiatennis-nomes-suspensos`, de hora em hora: o lembrete a 3 dias e a
+exclusão no fim, `excluir_conta_pelo_nome`). Gatilho
+`avaliacao_com_nome_suspenso` (a conta suspensa não avalia) e
+`aviso_de_nome_da_academia` (o admin troca o nome da academia: e-mail).
 
 ### `respostas` (30/09/2026)
 `avaliacao_id (chave, uma resposta por avaliação), texto, user_id,
@@ -5350,8 +5448,8 @@ banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
 **PR #5 (até 26/10/2026):** o SQL do PR entra no banco de teste a cada push
-e no de verdade com o merge, sozinho; o último é `20261026220000_catalogo`
-(regra 162), depois de
+e no de verdade com o merge, sozinho; o último é `20261027120000_nome_suspenso`
+(regra 165), depois de `20261026220000_catalogo` (regra 162), depois de
 `20261026200000_academia_fechada_fica_guardada` (regra 158), depois de
 `20261026180000_so_o_que_esta_certo` (regra 157) e
 `20261026120000_veracidade` (regra 156).
@@ -6270,8 +6368,12 @@ depois das opções; a ficha sem o nome do plano; SQL
 Privacidade; o GuiaTennis altera o nome ou pede a troca; seção 69 do PR,
 passo 95). Depois, a **regra 164** (ajustar o enquadramento das fotos;
 foto só na capa e nas opções; sem a caixa de horário; seção 70 do PR,
-passo 96). Próximos números: **regra 165**, **seção 71** da descrição do
-PR e **passo 97**.
+passo 96). Depois, a **regra 165** (o corte no jeito do Instagram; o aceite
+sem repetir os Termos; o nome suspenso por 15 dias, com os e-mails e a
+exclusão automática; "Usuário do GuiaTennis" nas avaliações de contas
+excluídas; o e-mail do nome da academia trocado pelo admin; SQL
+`20261027120000_nome_suspenso`; seção 71 do PR, passo 97). Próximos
+números: **regra 166**, **seção 72** da descrição do PR e **passo 98**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

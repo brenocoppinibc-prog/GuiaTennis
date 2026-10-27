@@ -98,7 +98,7 @@ create or replace function net.http_post(url text, body jsonb default '{}', para
   returns bigint language sql as $$ insert into net.pedidos (url, body, headers) values (url, body, headers) returning id $$;
 """)
 # O que uma rodada anterior deixou: contas, academias e avaliações do teste.
-sql("delete from public.avaliacoes where contato_autor like '%@exemplo.com';"
+sql("delete from public.avaliacoes where contato_autor like '%@exemplo.com' or (user_id is null and autor_oculto);"
     "delete from auth.users where email like '%@exemplo.com';"
     "delete from public.academias where id::text not like '00000000-0000-4000-8000-%';")
 sql("delete from vault.secrets; truncate net.pedidos, net._http_response; truncate public.emails_a_enviar;"
@@ -466,7 +466,8 @@ ok(not certo and "motivo" in saida, "sem motivo, não exclui")
 certo, saida = sql(f"select public.excluir_conta_admin('{zeca}', 'Avaliação ofensiva', false)", **admin_jwt)
 ok(certo and um(f"select count(*) from auth.users where id = '{zeca}'") == "0" and um(f"select count(*) from public.jogadores where user_id = '{zeca}'") == "0",
    "admin exclui a conta do jogador" + ("" if certo else ": " + saida))
-ok(um("select count(*) from public.avaliacoes where comment = 'Ofensa' and user_id is null") == "1", "sem marcar, a avaliação fica, com o nome e sem a ligação")
+ok(um("select count(*) from public.avaliacoes where comment = 'Ofensa' and user_id is null and autor_oculto and nome_autor is null and contato_autor is null") == "1",
+   "sem marcar, a avaliação fica, sem a ligação, sem o nome e sem o e-mail: \"Usuário do GuiaTennis\" (SQL 20261027120000)")
 ok(um(f"select tipo || '|' || motivo from public.contas_excluidas_admin() where email = '{zeca_email}'", **admin_jwt) == "jogador|Avaliação ofensiva",
    "fica guardado o e-mail, o tipo e o motivo (só o admin vê)")
 certo, saida = sql(f"select public.criar_conta_jogador('{zeca_email}', 'senha boa 123', 'Zeca de Novo', true)", papel="anon")
@@ -988,7 +989,7 @@ ok(um(f"select string_agg(papel, ',' order by created_at) from public.academia_v
 mail = um(f"select assunto || '|' || para || '|' || (texto like '%Rui Sai excluiu a conta%' and texto like '%O plano Premium continua, agora em seu nome%')::text from public.emails_a_enviar where tipo = 'novo_responsavel'")
 ok(mail == f"Agora você é o(a) responsável pela Academia Que Fica|tati{sufixo}@exemplo.com|true", "quem vira responsável recebe o e-mail, com o plano que passa a ser dele — " + str(mail))
 ok(um("select count(*) from public.emails_a_enviar where tipo = 'plano'") == "0", "o plano não muda (sem e-mail de plano novo)")
-ok(um("select count(*) from public.avaliacoes where comment = 'Boa do Rui' and user_id is null") == "1", "as avaliações ficam, com o nome")
+ok(um("select count(*) from public.avaliacoes where comment = 'Boa do Rui' and user_id is null and autor_oculto and nome_autor is null") == "1", "as avaliações ficam, como \"Usuário do GuiaTennis\"")
 ok(um(f"select count(*) from public.contas_excluidas where email = 'rui{sufixo}@exemplo.com'") == "0", "o e-mail não fica bloqueado: pode voltar")
 # O último a sair: a academia volta ao Básico, sem responsável.
 sql(f"delete from public.academia_vinculos where user_id = '{outra_eq}'")
@@ -2008,6 +2009,146 @@ ok(um(f"select da_academia || '|' || detalhes[1] from public.denuncias_admin() w
    "o admin vê em Avaliações denunciadas, como pedido da academia, com o motivo")
 ok(um("select assunto from public.emails_a_enviar where tipo = 'analise_pedida'") == f"A academia pediu análise de uma avaliação: {nome_r}", "e recebe o aviso")
 sql(f"delete from public.academias where id = '{reab}'; truncate public.emails_a_enviar")
+
+# 39. Nome suspenso por 15 dias e "Usuário do GuiaTennis" (regra 165) ---------------
+print("\n# Nome suspenso por 15 dias")
+sql("truncate public.emails_a_enviar")
+xs_email = f"xingo{sufixo}@exemplo.com"
+xs = jogador("Nome Feio", xs_email)
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 4, 'Quadra boa do Feio')", papel="authenticated", user=xs, email=xs_email)
+ok(certo, "o jogador avalia" + ("" if certo else ": " + saida))
+AV_XS = "select coalesce(nome_autor, '-') || '|' || autor_oculto from public.avaliacoes where comment = 'Quadra boa do Feio'"
+ok(um(AV_XS) == "Nome Feio|false", "a avaliação com o nome")
+certo, _ = sql(f"select public.suspender_nome_admin('{xs}', 'Palavrão no nome')", papel="authenticated", user=carla)
+ok(not certo, "só o admin suspende o nome")
+certo, saida = sql(f"select public.suspender_nome_admin('{xs}', 'x')", **admin_jwt)
+ok(not certo and "motivo" in saida, "sem motivo, não suspende")
+rev_xs = um("select id from public.avaliacoes where comment = 'Quadra boa do Feio'")
+sid = um(f"select public.suspender_nome_pela_avaliacao_admin('{rev_xs}', 'Palavrão no nome')", **admin_jwt)
+ok(bool(sid) and len(sid) == 36, "o admin suspende pela avaliação")
+ok(um(AV_XS) == "-|true", "na hora, a avaliação fica sem o nome (\"Usuário do GuiaTennis\")")
+ok(um(AV_XS, papel="anon") == "-|true", "o visitante lê a avaliação sem o nome, com a marca")
+ok(um("select para || '|' || assunto from public.emails_a_enviar where tipo = 'nome_suspenso'") == f"{xs_email}|O seu nome no GuiaTennis foi suspenso", "a pessoa recebe o e-mail")
+texto = um("select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'nome_suspenso'") or ""
+ok("Nome Feio" in texto and "Motivo: Palavrão no nome." in texto and "(15 dias)" in texto and "a conta será excluída" in texto
+   and "Usuário do GuiaTennis" in texto and "/perfil?utm_source=Email-nome" in texto,
+   "o e-mail diz o nome, o motivo, o prazo de 15 dias, o que acontece e onde trocar — " + texto[:90])
+ok("Trocar o nome" in (um("select html from public.emails_a_enviar where tipo = 'nome_suspenso'") or ""), "com o botão \"Trocar o nome\"")
+ok(um("select nome || '|' || trocar_em[1] || '|' || (prazo::date - suspenso_em::date) from public.meu_nome_suspenso()", papel="authenticated", user=xs) == "Nome Feio|minha_conta|15",
+   "a conta vê o nome suspenso, onde trocar e o prazo")
+ok(um("select count(*) from public.meu_nome_suspenso()", papel="authenticated", user=carla) == "0", "as outras contas, não")
+certo, saida = sql(f"select public.suspender_nome_admin('{xs}', 'De novo o nome')", **admin_jwt)
+ok(not certo and "já está suspenso" in saida, "não suspende duas vezes")
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{PINHEIROS}', 5, 'Outra do Feio')", papel="authenticated", user=xs, email=xs_email)
+ok(not certo and "suspenso" in saida, "com o nome suspenso, não avalia")
+sql(f"update public.jogadores set nome = 'nome  FEIO' where user_id = '{xs}'", papel="authenticated", user=xs)
+ok(um("select count(*) from public.meu_nome_suspenso()", papel="authenticated", user=xs) == "1" and um(AV_XS) == "-|true",
+   "o mesmo nome com outras maiúsculas e espaços continua suspenso")
+sql("truncate public.emails_a_enviar")
+certo, saida = sql(f"update public.jogadores set nome = 'Nome Bom' where user_id = '{xs}'", papel="authenticated", user=xs)
+ok(certo and um("select count(*) from public.meu_nome_suspenso()", papel="authenticated", user=xs) == "0", "trocou: a suspensão acaba na hora" + ("" if certo else ": " + saida))
+ok(um(AV_XS) == "Nome Bom|false", "e a avaliação volta, com o nome novo")
+ok(um("select para || '|' || assunto from public.emails_a_enviar where tipo = 'nome_trocado'") == f"{xs_email}|O seu nome voltou a aparecer no GuiaTennis", "a pessoa recebe a confirmação")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'nome_para_conferir'") == "Nome trocado: de Nome Feio para Nome Bom", "o admin recebe o nome novo para conferir")
+ok(um(f"select resolucao || '|' || nome_novo || '|' || (conferido_em is null) from public.nomes_suspensos_admin() where id = '{sid}'", **admin_jwt) == "trocou|Nome Bom|true",
+   "no painel, o nome trocado espera o admin")
+sql(f"select public.nome_trocado_conferido_admin('{sid}')", **admin_jwt)
+ok(um(f"select conferido_em is not null from public.nomes_suspensos where id = '{sid}'") == "t", "\"Está certo\" tira o nome de Pendências")
+sql(f"update public.jogadores set nome = 'Nome Bom Silva' where user_id = '{xs}'", papel="authenticated", user=xs)
+ok(um(AV_XS) == "Nome Bom Silva|false", "trocar o nome muda o nome nas avaliações, como o perfil nos comentários do Instagram")
+
+print("\n# Cancelar a suspensão e o nome do Parceiros")
+sql("truncate public.emails_a_enviar")
+sid2 = um(f"select public.suspender_nome_admin('{xs}', 'Engano do admin')", **admin_jwt)
+certo, _ = sql(f"select public.cancelar_suspensao_admin('{sid2}')", papel="authenticated", user=carla)
+ok(not certo, "só o admin cancela")
+certo, saida = sql(f"select public.cancelar_suspensao_admin('{sid2}')", **admin_jwt)
+ok(certo and um(AV_XS) == "Nome Bom Silva|false" and um("select count(*) from public.meu_nome_suspenso()", papel="authenticated", user=xs) == "0",
+   "cancelar devolve o nome às avaliações" + ("" if certo else ": " + saida))
+ok(um("select assunto from public.emails_a_enviar where tipo = 'nome_suspensao_cancelada'") == "A suspensão do seu nome no GuiaTennis foi cancelada", "e avisa a pessoa")
+certo, saida = sql(f"select public.cancelar_suspensao_admin('{sid2}')", **admin_jwt)
+ok(not certo and "já terminou" in saida, "não cancela o que já terminou")
+pz_email = f"pz{sufixo}@exemplo.com"
+pz = parceiro("Dono Feio", pz_email)
+sql("truncate public.emails_a_enviar")
+sid3 = um(f"select public.suspender_nome_admin('{pz}', 'Ofensa no nome', 'Dono Feio')", **admin_jwt)
+ok(um("select trocar_em[1] from public.meu_nome_suspenso()", papel="authenticated", user=pz) == "parceiros", "o nome do Parceiros: trocar no Perfil")
+ok("/parceiros/perfil?utm_source=Email-nome" in (um("select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'nome_suspenso'") or ""), "o e-mail leva ao Perfil do Parceiros")
+sql(f"update public.academia_acessos set nome_responsavel = 'Dono Bom' where user_id = '{pz}'")
+ok(um("select count(*) from public.meu_nome_suspenso()", papel="authenticated", user=pz) == "0", "trocar o nome no Perfil do Parceiros acaba a suspensão")
+# A mesma conta nos dois sites, com o mesmo nome: uma troca basta.
+dz_email = f"dz{sufixo}@exemplo.com"
+dz = parceiro("Dupla Feia", dz_email)
+sql(f"insert into public.jogadores (user_id, nome, email, email_confirmado_em) values ('{dz}', 'Dupla Feia', '{dz_email}', now())")
+sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 4, 'Da Dupla')", papel="authenticated", user=dz, email=dz_email)
+sql(f"select public.suspender_nome_admin('{dz}', 'Nome ofensivo', 'Dupla Feia')", **admin_jwt)
+ok(um("select array_to_string(trocar_em, ',') from public.meu_nome_suspenso()", papel="authenticated", user=dz) == "minha_conta,parceiros", "o nome está em Minha conta e no Perfil do Parceiros")
+sql(f"update public.academia_acessos set nome_responsavel = 'Dupla Boa' where user_id = '{dz}'")
+ok(um("select count(*) from public.meu_nome_suspenso()", papel="authenticated", user=dz) == "0"
+   and um(f"select nome from public.jogadores where user_id = '{dz}'") == "Dupla Boa"
+   and um("select nome_autor || '|' || autor_oculto from public.avaliacoes where comment = 'Da Dupla'") == "Dupla Boa|false",
+   "trocar num lugar troca no outro: a suspensão acaba, e a avaliação volta com o nome novo")
+ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'nome_trocado' and para = '{dz_email}'") == "1", "uma confirmação só")
+
+print("\n# O lembrete e o fim do prazo")
+fe_email = f"fe{sufixo}@exemplo.com"
+fe = jogador("Feio Final", fe_email)
+sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 3, 'Avaliação do Final')", papel="authenticated", user=fe, email=fe_email)
+sid4 = um(f"select public.suspender_nome_admin('{fe}', 'Nome racista')", **admin_jwt)
+sql("truncate public.emails_a_enviar")
+sql("select public.aplicar_suspensoes_de_nome()")
+ok(fila("tipo in ('nome_lembrete', 'conta_excluida_nome')") == "0", "no começo do prazo, nada acontece")
+sql(f"update public.nomes_suspensos set prazo = now() + interval '2 days 12 hours' where id = '{sid4}'")
+sql("select public.aplicar_suspensoes_de_nome()")
+ok(um("select para || '|' || assunto from public.emails_a_enviar where tipo = 'nome_lembrete'") == f"{fe_email}|Faltam 3 dias para trocar o seu nome no GuiaTennis", "a 3 dias do fim, o lembrete")
+sql("select public.aplicar_suspensoes_de_nome()")
+ok(fila("tipo = 'nome_lembrete'") == "1", "o lembrete vai uma vez só")
+sql(f"update public.nomes_suspensos set prazo = now() - interval '1 minute' where id = '{sid4}'")
+sql("truncate public.emails_a_enviar")
+sql("select public.aplicar_suspensoes_de_nome()")
+ok(um(f"select count(*) from auth.users where id = '{fe}'") == "0" and um(f"select count(*) from public.jogadores where user_id = '{fe}'") == "0", "no fim do prazo, a conta é excluída")
+ok(um("select coalesce(nome_autor, '-') || '|' || coalesce(contato_autor, '-') || '|' || autor_oculto || '|' || (user_id is null) from public.avaliacoes where comment = 'Avaliação do Final'") == "-|-|true|true",
+   "a avaliação fica, como \"Usuário do GuiaTennis\": sem o nome e sem o e-mail")
+ok(um("select para || '|' || assunto from public.emails_a_enviar where tipo = 'conta_excluida_nome' and para not like 'guiatennis%'") == f"{fe_email}|A sua conta do GuiaTennis foi excluída", "a pessoa recebe o aviso da exclusão")
+ok(um("select count(*) from public.emails_a_enviar where tipo = 'conta_excluida_nome' and assunto = 'Conta excluída: o nome Feio Final não foi trocado'") == "1", "o admin também")
+ok((um(f"select motivo from public.contas_excluidas where email = '{fe_email}'") or "").startswith("Nome suspenso e não trocado em 15 dias: Nome racista"), "o e-mail fica em Contas excluídas, com o motivo")
+ok(um(f"select resolucao from public.nomes_suspensos where id = '{sid4}'") == "excluida", "a suspensão termina como excluída")
+certo, saida = sql(f"select public.criar_conta_jogador('{fe_email}', 'senha boa 123', 'Feio de Novo', true)", papel="anon")
+ok(not certo, "esse e-mail não cria outra conta até o admin liberar")
+
+print("\n# A conta que sai: \"Usuário do GuiaTennis\"")
+so_email = f"so{sufixo}@exemplo.com"
+so = jogador("Saiu Sozinho", so_email)
+sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 5, 'Do que saiu')", papel="authenticated", user=so, email=so_email)
+sql("select public.excluir_minha_conta_jogador()", papel="authenticated", user=so)
+ok(um("select coalesce(nome_autor, '-') || '|' || coalesce(contato_autor, '-') || '|' || autor_oculto from public.avaliacoes where comment = 'Do que saiu'") == "-|-|true",
+   "quem exclui a própria conta: a avaliação fica, sem o nome e sem o e-mail")
+sb_email = f"sb{sufixo}@exemplo.com"
+sb = jogador("Saiu Pelo Supabase", sb_email)
+sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{MOEMA}', 2, 'Do Supabase')", papel="authenticated", user=sb, email=sb_email)
+sql(f"delete from auth.users where id = '{sb}'")
+ok(um("select coalesce(nome_autor, '-') || '|' || autor_oculto || '|' || (user_id is null) from public.avaliacoes where comment = 'Do Supabase'") == "-|true|true",
+   "conta apagada direto no Supabase: a avaliação também fica oculta")
+sql(f"set local session_replication_role = replica; insert into public.avaliacoes (academia_id, stars, comment, nome_autor, contato_autor) values ('{MOEMA}', 1, 'Antiga do Zeca', 'Zeca Viola', '{zeca_email}'), ('{MOEMA}', 4, 'Antiga sem conta', 'Lia', 'lia antiga');")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261027120000_nome_suspenso.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+ok(um("select coalesce(nome_autor, '-') || '|' || autor_oculto from public.avaliacoes where comment = 'Antiga do Zeca'") == "-|true"
+   and um("select nome_autor || '|' || autor_oculto from public.avaliacoes where comment = 'Antiga sem conta'") == "Lia|false",
+   "as avaliações antigas de contas excluídas também ficam ocultas; as de antes das contas, não")
+
+print("\n# O nome da academia, trocado pelo admin")
+sql("truncate public.emails_a_enviar")
+nome_antes = um(f"select name from public.academias where id = '{PINHEIROS}'")
+certo, saida = sql(f"update public.academias set name = 'Academia Exemplo Pinheiros Nova' where id = '{PINHEIROS}'", **admin_jwt)
+ok(certo, "o admin troca o nome da academia" + ("" if certo else ": " + saida))
+mail = um(f"select assunto from public.emails_a_enviar where tipo = 'academia_nome_alterado' and para = 'ana{sufixo}@exemplo.com'")
+ok(mail == "O GuiaTennis alterou o nome da Academia Exemplo Pinheiros Nova", "quem administra (com o e-mail confirmado) recebe o e-mail — " + str(mail))
+ok(fila(f"tipo = 'academia_nome_alterado' and para = 'beto{sufixo}@exemplo.com'") == "0", "quem não confirmou o e-mail, não")
+ok(f"de {nome_antes} para Academia Exemplo Pinheiros Nova" in (um(f"select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'academia_nome_alterado' and para = 'ana{sufixo}@exemplo.com'") or ""), "com o nome de antes e o novo")
+sql("truncate public.emails_a_enviar")
+sql(f"update public.academias set name = '{nome_antes}' where id = '{PINHEIROS}'")
+ok(fila("tipo = 'academia_nome_alterado'") == "0", "quem não é o admin (a academia, o banco) trocando o nome não manda o e-mail")
+sql("truncate public.emails_a_enviar")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

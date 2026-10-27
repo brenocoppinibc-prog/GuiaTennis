@@ -17,6 +17,7 @@
         politica:{ modo:"igual", reposicao:"48", foraDoPrazo:"" }, acesso:{}, horario:{} },
     ],
     avaliacoes: JSON.parse(JSON.stringify(window.__avaliacoesIniciais || [])), cliques: [],
+    nomes_suspensos: JSON.parse(JSON.stringify(window.__nomesSuspensosIniciais || [])),
     // Login de cada academia (a senha fica em __senhas, pelo e-mail do login).
     academia_acessos: [],
     // Uma conta, várias academias (SQL 20261003120000): quem administra
@@ -313,6 +314,7 @@
           if (!j) return { data:null, error:{ message:"Entre na sua conta para avaliar.", code:"42501" } };
           if (!j.email_confirmado_em) return { data:null, error:{ message:"Confirme o seu e-mail para avaliar.", code:"42501" } };
           if (t.some(r => r.academia_id === payload.academia_id && r.user_id === j.user_id)) return { data:null, error:{ message:"Você já avaliou essa academia.", code:"23505" } };
+          if (suspensaoAtiva(j.user_id)) return { data:null, error:{ message:"O seu nome está suspenso: troque o nome em Minha conta para avaliar.", code:"42501" } };
           Object.assign(payload, { user_id: j.user_id, nome_autor: j.nome, contato_autor: j.email });
         }
         // Gatilho arrumar_busca_salva e regras da tabela (SQL 20261005150000).
@@ -397,7 +399,9 @@
           if (table === "academias" && sessao && !souAdmin() && vinculo(sessao.user.id, r.id))
             db.problemas_na_ficha.filter(p => p.academia_id === r.id && !p.resolvido_em && p.motivo !== "whatsapp").forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "academia_salvou"; });
           if (atualizou(r)) r.dados_atualizados_em = new Date().toISOString();
+          const nomeAntes = r.nome;
           Object.assign(r, mudanca);
+          if (table === "jogadores" && "nome" in mudanca && mudanca.nome !== nomeAntes) nomeDaContaMudou(r.user_id, mudanca.nome, true);
           // Gatilho pedido_de_plano_atendido.
           if (table === "academias" && "plano" in mudanca)
             db.pedidos_de_plano.filter(x => x.academia_id === r.id && ordem(x.plano) <= ordem(r.plano)).forEach(x => db.pedidos_de_plano.splice(db.pedidos_de_plano.indexOf(x), 1));
@@ -434,6 +438,35 @@
   }
   const semFuncao = { data:null, error:{ message:"Could not find the function", code:"PGRST202" } };
   const erro = (message, code) => ({ data:null, error:{ message, code } });
+  // Nome suspenso e "Usuário do GuiaTennis" (regra 165, SQL 20261027120000):
+  // os gatilhos ocultar_autor_sem_conta e nome_da_conta_mudou.
+  const mesmoNomeM = (x, y) => String(x || "").trim().replace(/\s+/g, " ").toLowerCase() === String(y || "").trim().replace(/\s+/g, " ").toLowerCase();
+  function suspensaoAtiva(uid) { return (db.nomes_suspensos || []).find(n => n.user_id === uid && !n.resolvido_em); }
+  function ondeEstaONome(uid, nm) {
+    const j = db.jogadores.find(y => y.user_id === uid), x = db.academia_acessos.find(y => y.user_id === uid);
+    return [j && mesmoNomeM(j.nome, nm) ? "minha_conta" : null, x && mesmoNomeM(x.nome_responsavel, nm) ? "parceiros" : null].filter(Boolean);
+  }
+  function ocultarAutor(uid) {
+    db.avaliacoes.filter(r => r.user_id === uid).forEach(r => Object.assign(r, { user_id: null, autor_oculto: true, nome_autor: null, contato_autor: null }));
+  }
+  function mostrarNomeNasAvaliacoes(uid) {
+    const j = db.jogadores.find(y => y.user_id === uid);
+    db.avaliacoes.filter(r => r.user_id === uid && r.autor_oculto).forEach(r => Object.assign(r, { nome_autor: j ? j.nome : r.nome_autor, autor_oculto: false }));
+  }
+  function nomeDaContaMudou(uid, novo, deJogador) {
+    if (deJogador) db.avaliacoes.filter(r => r.user_id === uid && !r.autor_oculto).forEach(r => { r.nome_autor = novo; });
+    const n = suspensaoAtiva(uid);
+    if (!n) return;
+    // O mesmo login: a troca num lugar troca o nome suspenso no outro.
+    const j = db.jogadores.find(y => y.user_id === uid), x = db.academia_acessos.find(y => y.user_id === uid);
+    if (deJogador && x && mesmoNomeM(x.nome_responsavel, n.nome)) x.nome_responsavel = String(novo).trim();
+    if (!deJogador && j && mesmoNomeM(j.nome, n.nome)) { j.nome = String(novo).trim(); db.avaliacoes.filter(r => r.user_id === uid && !r.autor_oculto).forEach(r => { r.nome_autor = j.nome; }); }
+    if (ondeEstaONome(uid, n.nome).length) return;
+    Object.assign(n, { resolvido_em: new Date().toISOString(), resolucao: "trocou", nome_novo: String(novo).trim() });
+    mostrarNomeNasAvaliacoes(uid);
+    db.emails_a_enviar.push({ id: "e-nome-trocado-" + n.id, tipo: "nome_trocado", para: n.email, assunto: "O seu nome voltou a aparecer no GuiaTennis", criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+    db.emails_a_enviar.push({ id: "e-nome-conferir-" + n.id, tipo: "nome_para_conferir", para: ADMIN, assunto: "Nome trocado: de " + n.nome + " para " + n.nome_novo, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+  }
   let seqConversa = 0;
   function rodarRpc(nome, a){
     window.__rpcs.push({ nome, args: JSON.parse(JSON.stringify(a || {})) });
@@ -701,6 +734,7 @@
         else { const ac = db.academias.find(y => y.id === v.academia_id); if (ac) ac.plano = "basico"; }
       });
       for (let k = db.academia_vinculos.length - 1; k >= 0; k--) if (db.academia_vinculos[k].user_id === x.user_id) db.academia_vinculos.splice(k, 1);
+      ocultarAutor(x.user_id);
       db.academia_acessos.splice(db.academia_acessos.indexOf(x), 1);
       window.__contaExcluida = x.user_id;
       return { data:null, error:null };
@@ -912,8 +946,10 @@
         delete window.__senhas[loginDe(x)];
         x.loginEmail = novoEmail;
       }
+      const nomeAntes = x.nome_responsavel;
       Object.assign(x, { nome_responsavel:a.p_nome, cargo:a.p_cargo, tratamento:a.p_tratamento || x.tratamento || null, email:a.p_email.toLowerCase(), whatsapp:a.p_whatsapp, cnpj:a.p_cnpj || null, recebe_relatorio:!!a.p_recebe_relatorio,
         termos_aceitos_em: x.termos_aceitos_em || new Date().toISOString(), dados_completos_em: x.dados_completos_em || new Date().toISOString() });
+      if (x.nome_responsavel !== nomeAntes) nomeDaContaMudou(x.user_id, x.nome_responsavel, false);
       return { data:null, error:null };
     }
     if (nome === "login_do_usuario") {
@@ -1156,7 +1192,7 @@
       const j = euJogador();
       if (!j) return erro("Essa conta não é de jogador.", "42501");
       db.jogadores.splice(db.jogadores.indexOf(j), 1);
-      db.avaliacoes.filter(r => r.user_id === j.user_id).forEach(r => { r.user_id = null; });
+      ocultarAutor(j.user_id);
       delete window.__senhas[j.email];
       return { data:null, error:null };
     }
@@ -1233,7 +1269,7 @@
       const tipo = j && x ? "jogador e GuiaTennis Parceiros" : x ? "GuiaTennis Parceiros" : "jogador";
       emails.forEach(e => { db.contas_excluidas = db.contas_excluidas.filter(c => c.email !== e); db.contas_excluidas.push({ email: e, nome: (j && j.nome) || (x && x.nome_responsavel), tipo, motivo: a.p_motivo.trim(), avaliacoes_apagadas: !!a.p_apagar_avaliacoes, excluida_em: new Date().toISOString() }); });
       if (a.p_apagar_avaliacoes) db.avaliacoes = db.avaliacoes.filter(r => r.user_id !== a.p_user);
-      else db.avaliacoes.forEach(r => { if (r.user_id === a.p_user) r.user_id = null; });
+      else ocultarAutor(a.p_user);
       window.__db.avaliacoes = db.avaliacoes;
       db.jogadores = db.jogadores.filter(y => y.user_id !== a.p_user); window.__db.jogadores = db.jogadores;
       db.academia_acessos = db.academia_acessos.filter(y => y.user_id !== a.p_user); window.__db.academia_acessos = db.academia_acessos;
@@ -1242,6 +1278,57 @@
       db.pedidos_de_acesso = db.pedidos_de_acesso.filter(y => y.user_id !== a.p_user); window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
       window.__db.contas_excluidas = db.contas_excluidas;
       return { data: null, error: null };
+    }
+    // Nome suspenso por 15 dias (regra 165). window.__semNomeSuspenso finge o banco sem o SQL.
+    const REGRA_165 = ["meu_nome_suspenso", "nomes_suspensos_admin", "suspender_nome_admin", "suspender_nome_pela_avaliacao_admin", "cancelar_suspensao_admin", "nome_trocado_conferido_admin"];
+    if (REGRA_165.includes(nome) && window.__semNomeSuspenso) return semFuncao;
+    db.nomes_suspensos = window.__db.nomes_suspensos = db.nomes_suspensos || [];
+    if (nome === "meu_nome_suspenso") {
+      if (!sessao) return erro("permission denied for function meu_nome_suspenso", "42501");
+      const n = suspensaoAtiva(sessao.user.id);
+      return { data: n ? [{ nome: n.nome, motivo: n.motivo, suspenso_em: n.suspenso_em, prazo: n.prazo, trocar_em: ondeEstaONome(n.user_id, n.nome) }] : [], error:null };
+    }
+    if (nome === "nomes_suspensos_admin") {
+      if (!souAdmin()) return { data:[], error:null };
+      return { data: JSON.parse(JSON.stringify(db.nomes_suspensos)), error:null };
+    }
+    if (nome === "suspender_nome_admin" || nome === "suspender_nome_pela_avaliacao_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      let uid = a.p_user, visto = a.p_nome;
+      if (nome === "suspender_nome_pela_avaliacao_admin") {
+        const v = db.avaliacoes.find(r => r.id === a.p_avaliacao);
+        if (!v) return erro("Avaliação não encontrada.", "22023");
+        if (!v.user_id) return erro("Essa avaliação não tem conta ligada: a conta saiu ou é de antes das contas. Exclua a avaliação, se for o caso.", "22023");
+        uid = v.user_id; visto = v.nome_autor;
+      }
+      const motivo = String(a.p_motivo || "").trim();
+      if (motivo.length < 5) return erro("Escreva o motivo (vai no e-mail para a pessoa).", "22023");
+      const j = db.jogadores.find(y => y.user_id === uid), x = db.academia_acessos.find(y => y.user_id === uid);
+      if (!j && !x) return erro("Conta não encontrada.", "22023");
+      if (suspensaoAtiva(uid)) return erro("O nome dessa conta já está suspenso.", "22023");
+      const nm = visto && (mesmoNomeM(j && j.nome, visto) || mesmoNomeM(x && x.nome_responsavel, visto)) ? String(visto).trim() : ((j && j.nome) || (x && x.nome_responsavel));
+      const agora = new Date();
+      const n = { id: "ns-" + (db.nomes_suspensos.length + 1), user_id: uid, email: (j && j.email) || (x && loginDe(x)), nome: nm, motivo, suspenso_em: agora.toISOString(),
+        prazo: new Date(agora.getTime() + 15 * 864e5).toISOString(), lembrete_em: null, resolvido_em: null, resolucao: null, nome_novo: null, conferido_em: null };
+      db.nomes_suspensos.filter(o => o.user_id === uid && o.resolucao === "trocou" && !o.conferido_em).forEach(o => { o.conferido_em = agora.toISOString(); });
+      db.nomes_suspensos.push(n);
+      db.avaliacoes.filter(r => r.user_id === uid).forEach(r => Object.assign(r, { nome_autor: null, autor_oculto: true }));
+      db.emails_a_enviar.push({ id: "e-nome-" + n.id, tipo: "nome_suspenso", para: n.email, assunto: "O seu nome no GuiaTennis foi suspenso", criado_em: agora.toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data: n.id, error:null };
+    }
+    if (nome === "cancelar_suspensao_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      const n = db.nomes_suspensos.find(o => o.id === a.p_id && !o.resolvido_em);
+      if (!n) return erro("Essa suspensão já terminou.", "22023");
+      Object.assign(n, { resolvido_em: new Date().toISOString(), resolucao: "cancelada" });
+      mostrarNomeNasAvaliacoes(n.user_id);
+      db.emails_a_enviar.push({ id: "e-nome-cancelado-" + n.id, tipo: "nome_suspensao_cancelada", para: n.email, assunto: "A suspensão do seu nome no GuiaTennis foi cancelada", criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:null, error:null };
+    }
+    if (nome === "nome_trocado_conferido_admin") {
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      db.nomes_suspensos.filter(o => o.id === a.p_id && o.resolucao === "trocou" && !o.conferido_em).forEach(o => { o.conferido_em = new Date().toISOString(); });
+      return { data:null, error:null };
     }
     if (nome === "contas_excluidas_admin") {
       if (!souAdmin()) return { data: [], error: null };

@@ -13,24 +13,29 @@ const ultima = (page) => page.evaluate(() => { const l = [...document.querySelec
 
   // ---- Termos de Uso e Política de Privacidade ----
   const legal = await page.evaluate(() => ({ termos: TERMS_HTML.replace(/<[^>]+>/g, ''), priv: PRIVACY_HTML.replace(/<[^>]+>/g, '') }));
+  // Desde a regra 165 (27/10), o nome da conta fica suspenso por 15 dias
+  // (nome-suspenso.js), e o da academia o GuiaTennis altera, com e-mail.
   ok(legal.termos.includes('Nomes. O nome da conta (de jogador ou do GuiaTennis Parceiros) e o nome da academia não podem ter palavrão, ofensa')
-    && legal.termos.includes('nada que a lei brasileira proíba') && legal.termos.includes('O GuiaTennis pode alterar um nome assim (na conta, na ficha e nas avaliações já publicadas) ou pedir que a pessoa ou a academia o troque'),
-    'Termos, seção 5: nomes sem ofensa, discriminação ou o que a lei proíbe; o GuiaTennis altera ou pede a troca');
+    && legal.termos.includes('nada que a lei brasileira proíba') && legal.termos.includes('O nome da conta que desrespeitar essas regras fica suspenso por 15 dias')
+    && legal.termos.includes('O nome da academia, o GuiaTennis pode alterar na ficha'),
+    'Termos, seção 5: nomes sem ofensa, discriminação ou o que a lei proíbe; o da conta fica suspenso, o da academia o GuiaTennis altera');
   ok(legal.termos.includes('Racismo, homofobia, xenofobia e qualquer discriminação não são tolerados no GuiaTennis')
     && legal.termos.includes('Lei 7.716/1989') && legal.termos.includes('homofobia e a transfobia') && legal.termos.includes('xenofobia')
     && legal.termos.includes('respostas das academias') && legal.termos.includes('entregues às autoridades'),
     'Termos, seção 6: avaliações, comentários e respostas sem ofensa nem discriminação, com a lei brasileira e o que acontece');
   ok(legal.termos.includes('usar nome ou publicar conteúdo ofensivo ou discriminatório') && !/\bpôr\b/.test(legal.termos), 'Termos, seção 9: o uso aceitável cita nomes e conteúdo ofensivo');
-  ok(legal.priv.includes('Nomes e conteúdo que desrespeitam as regras') && legal.priv.includes('troca o nome na conta e nas avaliações já publicadas, ou pede a troca')
+  ok(legal.priv.includes('Nomes e conteúdo que desrespeitam as regras') && legal.priv.includes('Quando o nome da conta é suspenso, guardamos')
     && legal.priv.includes('Marco Civil da Internet') && legal.priv.includes('ordem judicial'),
-    'Privacidade: o registro do que foi trocado ou removido, e só às autoridades quando a lei exigir');
+    'Privacidade: o registro do nome suspenso e do que foi removido, e só às autoridades quando a lei exigir');
   ok(await page.evaluate(() => TERMS_HTML.includes('Última atualização: 27 de outubro de 2026') && PRIVACY_HTML.includes('Última atualização: 27 de outubro de 2026')), 'os dois textos com a data de hoje');
 
   // ---- na ficha: o aceite, o "Como funcionam" e a denúncia ----
   await page.evaluate(() => openCourt('a1'));
   await page.waitForTimeout(400);
   const aceite = await page.evaluate(() => document.querySelector('.rate-box .consent-row')?.innerText.replace(/\s+/g, ' ').trim() || '');
-  ok(aceite === 'Minha avaliação é verídica, sem ofensa nem discriminação, e segue os Termos de Uso.', 'o aceite da avaliação diz "sem ofensa nem discriminação" — ' + aceite);
+  // Seguir os Termos já diz que não tem ofensa nem discriminação (27/10:
+  // "se a avaliação segue os termos... não precisa dizer novamente").
+  ok(aceite === 'Minha avaliação é verídica e segue os Termos de Uso.', 'o aceite da avaliação só diz que segue os Termos, sem repetir o que eles proíbem — ' + aceite);
   ok(await page.evaluate(() => COMO_FUNCIONAM_AS_AVALIACOES.includes('Ofensa e discriminação, como racismo, homofobia e xenofobia, não são toleradas.')), '"Como funcionam as avaliações" diz que não são toleradas');
   await page.evaluate(() => abrirAvisoFicha('denuncia', 'a1', 'r1'));
   await page.waitForTimeout(200);
@@ -49,7 +54,7 @@ const ultima = (page) => page.evaluate(() => { const l = [...document.querySelec
     await page.click('.chat-enviar');
     await page.waitForTimeout(250);
     const u = await ultima(page);
-    ok(u.texto.includes('Denunciar') && u.texto.includes('não são toleradas') && u.texto.includes('troca o nome ou pede a troca') && u.acoes.includes('Avisar pelo WhatsApp'), `o chat entende "${frase}" — ` + u.texto.slice(0, 80));
+    ok(u.texto.includes('Denunciar') && u.texto.includes('não são toleradas') && u.texto.includes('o nome fica suspenso, e a conta tem 15 dias para trocar') && u.acoes.includes('Avisar pelo WhatsApp'), `o chat entende "${frase}" — ` + u.texto.slice(0, 80));
     await browser.close();
   }
 })();

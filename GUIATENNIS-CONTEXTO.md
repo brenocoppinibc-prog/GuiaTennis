@@ -90,13 +90,12 @@ teste")
 > verificações**, nenhuma falha.
 >
 > Depois: **regra 162** — o catálogo de aulas e locação (aula individual,
-> em dupla e em grupo e locação, avulsa ou mensal, com alunos, valor e
-> observação, sem duração; um cartão por opção na ficha, com filtros por tipo e
-> por cobrança), o contato logo depois das opções e a ficha sem o nome do
-> plano. SQL `20261026220000_catalogo`; seção 68 do PR, passo 94. Testes:
-> `catalogo.js` com 41 verificações; a bateria completa (67 arquivos do
-> navegador, novo:
-> `catalogo.js`) roda antes do próximo commit.
+> em dupla e em grupo e locação, avulsa ou mensal, só modalidade e valor,
+> numa tabela de preços no cadastro; um cartão por opção na ficha, com
+> filtros por tipo e por cobrança), o contato logo depois das opções e a
+> ficha sem o nome do plano. SQL `20261026220000_catalogo`; seção 68 do PR,
+> passo 94. Testes: `catalogo.js` com 35 verificações; a bateria completa dos 67
+> arquivos do navegador entra no próximo commit.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4125,7 +4124,9 @@ cobra taxa e não fica no meio** da negociação.
     contatos pode deixar mais acima tire a escrita de qual plano academia
     é, independente do plano"; "quero criar catálogos melhores para aulas
     em grupo, individuais, dupla e locações avulsas, mensal"; depois, em
-    27/10/2026: "duração de aula e locação eu não quero colocar").
+    27/10/2026: "duração de aula e locação eu não quero colocar" e "eu não
+    quero que o catálogo seja oferecendo aulas em tal horário e duração, e
+    sim qual modalidade e valor").
     - **Contato:** a seção Contato (WhatsApp, site, Instagram, compartilhar
       e a linha "Confirmada pela academia") vem logo depois de "Escolha o
       que você quer"; "É o responsável por esta academia?", o crédito do
@@ -4138,37 +4139,37 @@ cobra taxa e não fica no meio** da negociação.
       "Patrocinado" continua (aviso de anúncio).
     - **Catálogo** (`academias.catalogo`, jsonb, SQL
       `20261026220000_catalogo`), como os tipos de quarto do Booking e as
-      opções de preço do Mindbody e do Playtomic. Cada item: `tipo`
-      (`individual`, `dupla`, `grupo`, `locacao`; `aula` é o preço antigo
-      sem tipo), `cobranca` (`avulsa` ou `mensal`), `vezes` por semana
-      (mensal, 1 a 5), `alunos` (grupo, até quantos), `preco` (número ou
-      faixa, como "280-320") e `obs` (até 60 letras). **Sem duração** (o
-      Breno não quer): a aula avulsa é "por aula", a locação avulsa "por
-      hora"; uma `duracao` que venha de antes é ignorada. Dupla e grupo:
-      valor por pessoa. Até 30 itens.
+      opções de preço do Mindbody e do Playtomic. **Só modalidade e
+      valor** (o Breno não quer horário, duração, vezes por semana, alunos
+      nem observação): cada item tem `tipo` (`individual`, `dupla`,
+      `grupo`, `locacao`; `aula` é o preço antigo sem tipo), `cobranca`
+      (`avulsa` ou `mensal`) e `preco` (número ou faixa, como "280-320");
+      o resto que vier é ignorado. Uma de cada (tipo e cobrança,
+      `semRepetir`). A aula avulsa é "por aula", a locação avulsa "por
+      hora"; dupla e grupo, por pessoa.
       `CATALOGO_TIPOS`, `itemDoCatalogo`, `catalogoDe`, `unidadeDoItem`
       ("por hora", "por aula", "por pessoa, por aula", "por
       mês", "por pessoa, por mês"), `rotuloCurto` (barra de baixo: "por
       aula individual", "por pessoa, na dupla", "por hora de quadra").
-    - **Cadastro (parte "Modalidade e preço"):** `editorDoCatalogo` — a
-      lista das opções (tipo, Avulsa/Mensal, vezes, alunos, valor
-      com o que ele paga, observação) com Editar, Duplicar e Remover, e "+
-      Aula individual / + Aula em dupla / + Aula em grupo / + Locação"
-      conforme a modalidade marcada. O que se escreve vai direto para a
-      opção (`state.catItem`); "Pronto" fecha, "Desfazer" volta ao que era,
-      "Remover" na nova tira. A turma nova começa mensal 1x por semana; as
-      outras, avulsas. Os preços de antes (`price_aula`,
+    - **Cadastro (parte "Modalidade e preço"):** `editorDoCatalogo` — uma
+      tabela de preços, como a lista de preços do clube no Playtomic: cada
+      modalidade da modalidade marcada (aula individual, em dupla, em grupo;
+      locação) com as linhas Avulsa e Mensal; marcar (`data-cat-marcar`)
+      cria a opção e põe o cursor no valor (`data-cat-valor`, só números e
+      o traço da faixa, com o que ele paga ao lado); desmarcar tira. "Aula"
+      (preço antigo sem tipo) só aparece quando existe, com a dica de
+      marcar o tipo certo e desmarcar ali. Os preços de antes (`price_aula`,
       `price_locacao`) viram itens na primeira vez que a parte abre
       (`catalogoAntigo`). Ao salvar, só vão as opções das modalidades
       marcadas, na ordem do catálogo, e `price_aula`/`price_locacao` passam
       a ser a faixa das opções **avulsas** (ordem por preço, filtro de
       preço, comparação, banco sem a coluna).
     - **Ficha:** um cartão por opção em "Escolha o que você quer", com a
-      lista de ícones do quarto (avulsa ou "Mensal, 2x por semana", "Você
-      e o professor"/"2 alunos com o professor"/"Até 6 alunos"), a
-      observação, a reposição da aula ou da locação, o valor e o que ele
-      paga, e o WhatsApp que já abre sobre aquela opção ("a aula em grupo
-      mensal, 2x por semana (Turma de iniciantes)"). Filtros: Todas, os
+      lista de ícones do quarto ("Aula avulsa"/"Locação avulsa"/"Plano
+      mensal" e "Você e o professor"/"Duas pessoas com o professor"/"Turma
+      com o professor"/"Aluguel da quadra"), a reposição da aula ou da
+      locação, o valor e o que ele paga, e o WhatsApp que já abre sobre
+      aquela opção ("o plano mensal de aula em grupo"). Filtros: Todas, os
       tipos e, com as duas cobranças, Avulsas e Mensais
       (`state.opcaoDaFicha` = {id, nome, cobranca}); combinação vazia diz
       "A academia não tem … no catálogo" com "Ver todas". "Menor preço" só
@@ -4186,7 +4187,7 @@ cobra taxa e não fica no meio** da negociação.
     - **Banco sem a coluna:** o site lê sem ela (`COLUNAS_ACADEMIA_NOVAS`)
       e salva sem ela (`faltaColunaNova`), com o preço avulso da aula e da
       locação.
-    Testes: `catalogo.js` (novo: editor, banco, ficha, filtros, WhatsApp,
+    Testes: `catalogo.js` (novo: tabela de preços, banco, ficha, filtros, WhatsApp,
     resumo, perguntas, Google, computador, busca, comparação, ficha sem
     catálogo, preço antigo na edição e banco sem a coluna);
     `ficha-hoteis.js` (a ordem com o contato depois das opções e o fim),
@@ -4510,7 +4511,7 @@ nome_solicitante, contato_solicitante`
 
 **`catalogo`** (26/10/2026, regra 162; SQL `20261026220000_catalogo`): a
 lista das opções de aula e locação que o site monta (tipo, avulsa ou
-mensal, vezes, alunos, valor, observação; sem duração), até 30, sempre uma
+mensal, valor; só modalidade e valor), até 30, sempre uma
 lista (`catalogo_e_uma_lista`). Visitante lê. `price_aula` e
 `price_locacao` continuam, com a faixa das opções avulsas.
 

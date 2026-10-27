@@ -4,10 +4,10 @@
 -- locações avulsas, mensal")
 -- ============================================================
 -- Como os tipos de quarto do Booking e as opções de preço do Mindbody e do
--- Playtomic: cada item é uma opção que a academia vende — aula individual,
--- em dupla, em grupo ou locação, avulsa ou mensal (com quantas vezes por
--- semana), até quantos alunos, o valor e uma observação curta (sem duração:
--- "duração de aula e locação eu não quero colocar", 27/10/2026).
+-- Playtomic: cada item é uma modalidade que a academia vende — aula
+-- individual, em dupla, em grupo ou locação, avulsa ou mensal — e o valor.
+-- Só modalidade e valor (27/10/2026: "eu não quero que o catálogo seja
+-- oferecendo aulas em tal horário e duração, e sim qual modalidade e valor").
 -- Fica em academias.catalogo, uma lista (jsonb) que o site monta; o
 -- price_aula e o price_locacao continuam, com o menor valor avulso de cada
 -- um, para a ordem por preço, o filtro e a comparação.

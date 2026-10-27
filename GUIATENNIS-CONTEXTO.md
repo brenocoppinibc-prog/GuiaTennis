@@ -103,8 +103,9 @@ teste")
 > (racismo, homofobia, xenofobia não são tolerados), com a lei brasileira,
 > nos Termos (seções 5, 6 e 9) e na Privacidade (27/10/2026); o GuiaTennis
 > altera um nome ou pede a troca. Sem SQL; seção 69 do PR, passo 95.
-> Testes: `regras-de-conteudo.js` (novo) com 12 verificações; a bateria
-> completa dos 68 arquivos do navegador entra no próximo commit.
+> Testes: **1.990 verificações** nos 68 arquivos do navegador (novo:
+> `regras-de-conteudo.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
+> nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).

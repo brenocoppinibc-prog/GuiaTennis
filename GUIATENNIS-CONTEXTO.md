@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 26/10/2026 (regra 162)
+**Atualizado em:** 27/10/2026 (regra 163)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -98,6 +98,13 @@ teste")
 > passo 94. Testes: **1.978 verificações** nos 67 arquivos do navegador
 > (novo: `catalogo.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
 > nenhuma falha.
+>
+> Depois: **regra 163** — nomes e conteúdo sem ofensa nem discriminação
+> (racismo, homofobia, xenofobia não são tolerados), com a lei brasileira,
+> nos Termos (seções 5, 6 e 9) e na Privacidade (27/10/2026); o GuiaTennis
+> altera um nome ou pede a troca. Sem SQL; seção 69 do PR, passo 95.
+> Testes: `regras-de-conteudo.js` (novo) com 12 verificações; a bateria
+> completa dos 68 arquivos do navegador entra no próximo commit.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4212,6 +4219,55 @@ cobra taxa e não fica no meio** da negociação.
     `previa-da-ficha.js` (o preço pelo catálogo), `parceiros.js` (o
     Premium com 9 itens na tabela de planos) e `ficha-basica.js` (a data
     dos Termos).
+163. **Nomes e conteúdo sem ofensa nem discriminação** (pedido de
+    27/10/2026: "coloque em política de privacidade, em termos de uso, que
+    não pode ter ofensas no nome, avaliações não pode ser ofensivas ou ser
+    contra as leis do Brasil, algo sobre discriminação... Os nomes também
+    não. Coloque que eu posso alterar os nomes ou pedir a troca... E
+    comentários que sejam xenofóbicos, homofóbicos, racistas, eu não vou
+    tolerar no site"). Como as políticas de conteúdo do Google Maps, as
+    diretrizes do Booking e do Tripadvisor e a política de não
+    discriminação do Airbnb.
+    - **Termos, seção 5 ("Nomes."):** o nome da conta (jogador ou
+      Parceiros) e o nome da academia sem palavrão, ofensa, apelido que
+      humilhe, discriminação ou ódio, nada que a lei proíba, nem se passar
+      por outra pessoa ou empresa; a academia usa o nome com que atende. O
+      GuiaTennis pode **alterar o nome** (na conta, na ficha e nas
+      avaliações já publicadas) **ou pedir a troca**; até lá, o nome pode
+      ficar oculto, e a conta que não trocar pode ser suspensa ou excluída.
+    - **Termos, seção 6:** não são aceitos, em avaliações, comentários,
+      respostas das academias, promoções ou nomes: ofensa, xingamento,
+      ameaça, humilhação; discriminação ou ódio por raça, cor, etnia,
+      origem, nacionalidade ou região (xenofobia), religião, sexo,
+      orientação sexual ou identidade de gênero (homofobia e transfobia),
+      deficiência, idade ou condição social; e o que a lei brasileira
+      proíbe (Lei 7.716/1989, que o STF estendeu à homofobia e à
+      transfobia; injúria racial; calúnia, difamação e injúria).
+      **"Racismo, homofobia, xenofobia e qualquer discriminação não são
+      tolerados no GuiaTennis"**: o conteúdo sai, a conta pode ser
+      suspensa ou excluída sem aviso, e os dados vão às autoridades quando
+      a lei ou uma ordem judicial exigir. Seção 9 cita nomes e conteúdo
+      ofensivo.
+    - **Privacidade (seção 1, "Nomes e conteúdo que desrespeitam as
+      regras"):** o GuiaTennis troca o nome na conta e nas avaliações ou
+      pede a troca, pode guardar o registro do que foi trocado ou removido
+      (conta, data, motivo) e só o entrega às autoridades por lei ou ordem
+      judicial (Marco Civil da Internet). Termos e Privacidade em 27 de
+      outubro de 2026.
+    - **No site:** o aceite da avaliação diz "Minha avaliação é verídica,
+      sem ofensa nem discriminação, e segue os Termos de Uso."; "Como
+      funcionam as avaliações" diz que ofensa e discriminação não são
+      toleradas; o motivo da denúncia virou "É ofensiva, discriminatória
+      (racismo, homofobia, xenofobia…) ou tem ameaça" (a chave continua
+      `ofensiva`, que o banco confere); o chat de ajuda entende racismo,
+      homofobia, xenofobia, preconceito, discriminação e "nome ofensivo"
+      (assunto "Denunciar uma avaliação", com "Avisar pelo WhatsApp" para
+      nome ofensivo).
+    - **Trocar um nome hoje:** academia, pela edição da ficha no admin;
+      jogador e avaliação, no Supabase (`jogadores.nome` e
+      `avaliacoes.nome_autor`) — ainda sem botão no painel.
+    Testes: `regras-de-conteudo.js` (novo) e `ficha-basica.js` (a data da
+    Privacidade).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -6167,8 +6223,11 @@ Depois, a **regra 161** (telas de código com uma caixa por número e
 Supabase pelo `banco.yml`; seção 67 do PR, passo 93). Depois, a **regra
 162** (o catálogo de aulas e locação, avulsa ou mensal; o contato logo
 depois das opções; a ficha sem o nome do plano; SQL
-`20261026220000_catalogo`; seção 68 do PR, passo 94). Próximos números:
-**regra 163**, **seção 69** da descrição do PR e **passo 95**.
+`20261026220000_catalogo`; seção 68 do PR, passo 94). Depois, a **regra
+163** (nomes e conteúdo sem ofensa nem discriminação nos Termos e na
+Privacidade; o GuiaTennis altera o nome ou pede a troca; seção 69 do PR,
+passo 95). Próximos números: **regra 164**, **seção 70** da descrição do
+PR e **passo 96**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

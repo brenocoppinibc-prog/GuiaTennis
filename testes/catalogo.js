@@ -192,4 +192,56 @@ const CATALOGO = [
   banco = await page.evaluate(() => { const a = window.__db.academias.find(x => x.id === 'a1'); return { aula: a.price_aula, cat: a.catalogo, ok: document.getElementById('register-overlay')?.innerText.includes('Alterações salvas') }; });
   ok(banco.aula === '160' && banco.cat === undefined && banco.ok, 'banco sem a coluna: salva sem o catálogo, com o preço da aula — ' + JSON.stringify(banco));
   await browser.close();
+
+  // ---- a foto de cada opção, no Premium (27/10/2026: "podendo adicionar
+  // imagens para cada aulas no Premium") ----
+  const PNG = { name: 'aula.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64') };
+  ({ browser, page } = await abrir({ academia: 'a1', premium: ['a1'], q: 'parceiros/ficha' }));
+  await page.waitForTimeout(400);
+  await page.click('.editar-academia');
+  await page.waitForTimeout(400);
+  await irParte(page, 'precos');
+  ok(!(await page.$('[data-cat-foto]')), 'sem opção marcada, sem campo de foto');
+  await page.click('[data-cat-marcar="grupo:mensal"]');
+  await page.fill('[data-cat-valor="grupo:mensal"]', '300');
+  ok((await texto(page, '.cat-tipo[data-cat-tipo="grupo"] .cat-foto-bt')) === 'Foto desta opção', 'no Premium, cada opção marcada tem "Foto desta opção", sem etiqueta');
+  await page.setInputFiles('[data-cat-foto="grupo:mensal"]', PNG);
+  await page.waitForFunction(() => !!document.querySelector('.cat-tipo[data-cat-tipo="grupo"] .cat-foto img'));
+  ok((await page.inputValue('[data-cat-valor="grupo:mensal"]')) === '300', 'a foto entra sem perder o valor escrito');
+  await irParte(page, 'revisar');
+  await salvarFicha(page);
+  await page.waitForTimeout(700);
+  banco = await page.evaluate(() => (window.__db.academias.find(x => x.id === 'a1').catalogo || [])[0] || {});
+  ok(banco.tipo === 'grupo' && /^data:image\/jpeg;base64,/.test(banco.foto || '') && banco.preco === '300', 'a foto (diminuída) vai para o banco junto da opção');
+  const fotoDaAula = banco.foto;
+  await page.evaluate(() => { state.page = 'court'; state.selected = decorate(state.allCourts.find(x => x.id === 'a1')); render(); });
+  await page.waitForTimeout(300);
+  let src = await page.evaluate(() => document.querySelector('#ht-quartos .ht-quarto-foto img')?.getAttribute('src') || '');
+  ok(src === fotoDaAula, 'na ficha da academia Premium, o cartão mostra a foto da própria opção');
+  await browser.close();
+
+  // Fora do Premium: a ficha não mostra a foto da opção, e o cadastro avisa.
+  ({ browser, page } = await abrir({ academia: 'a1', completo: ['a1'], q: 'parceiros/ficha' }));
+  await page.evaluate(async (foto) => {
+    const a = window.__db.academias.find(x => x.id === 'a1');
+    a.catalogo = [{ tipo: 'grupo', cobranca: 'mensal', preco: '300', foto }];
+    a.photos = [foto.replace('base64,', 'base64,AA')];
+    await loadEverything();
+    state.page = 'court'; state.selected = decorate(state.allCourts.find(x => x.id === 'a1')); render();
+  }, fotoDaAula);
+  await page.waitForTimeout(300);
+  src = await page.evaluate(() => document.querySelector('#ht-quartos .ht-quarto-foto img')?.getAttribute('src') || '');
+  ok(src && src !== fotoDaAula, 'no Completo, o cartão usa a foto da academia, não a da opção');
+  await page.evaluate(() => abrirEdicaoDaFicha(state.allCourts.find(x => x.id === 'a1')));
+  await page.waitForTimeout(300);
+  await irParte(page, 'precos');
+  const fora = await texto(page, '.cat-tipo[data-cat-tipo="grupo"] .cat-foto');
+  ok(fora.includes('Aparece no Premium') && await page.$('.cat-tipo[data-cat-tipo="grupo"] .cat-foto img'), 'a foto guardada continua no cadastro, com "Aparece no Premium" — ' + fora);
+  ok((await texto(page, '.cat-tipo[data-cat-tipo="dupla"]')).includes('Não oferece'), 'opção não marcada: sem foto');
+  await irParte(page, 'revisar');
+  await salvarFicha(page);
+  await page.waitForTimeout(600);
+  const esconde = await texto(page, '#register-overlay');
+  ok(esconde.includes('A foto do catálogo') && esconde.includes('No Premium, cada opção de aula e locação mostra a própria foto na ficha.'), 'ao salvar fora do Premium, o que o plano esconde inclui a foto do catálogo');
+  await browser.close();
 })();

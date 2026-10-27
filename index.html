@@ -754,15 +754,22 @@
   .cat-tipo-n { margin: 0 0 4px; font-weight: 700; font-size: 15px; }
   .cat-tipo-n span { font-weight: 400; font-size: 12px; color: var(--muted); margin-left: 4px; }
   .cat-tipo-dica { margin: 0 0 4px; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
-  .cat-linha { display: flex; align-items: center; gap: 8px; min-height: 52px; border-top: 1px solid var(--border); }
+  .cat-linha { display: grid; grid-template-columns: 92px auto 88px minmax(0, 1fr); align-items: center; column-gap: 8px; min-height: 52px; border-top: 1px solid var(--border); }
   .cat-tipo-n + .cat-linha, .cat-tipo-dica + .cat-linha { border-top: 0; }
-  .cat-marcar { display: inline-flex; align-items: center; gap: 8px; min-width: 96px; min-height: 44px; background: none; border: 0; padding: 0; font: 600 14px var(--fonte-texto); color: var(--text); cursor: pointer; }
+  .cat-marcar { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; background: none; border: 0; padding: 0; font: 600 14px var(--fonte-texto); color: var(--text); cursor: pointer; }
   .cat-caixa { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--muted-dark); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cat-linha.on .cat-caixa { background: var(--green); border-color: var(--green); }
   .cat-rs { font-size: 13px; color: var(--muted); }
-  .form-field.cat-valor { width: 92px; flex: 0 0 auto; margin: 0; padding: 9px 10px; text-align: right; }
+  .form-field.cat-valor { width: 100%; margin: 0; padding: 9px 10px; text-align: right; }
   .cat-unidade { font-size: 12.5px; line-height: 1.25; color: var(--muted); }
-  .cat-nao { font-size: 13px; color: var(--muted); }
+  .cat-nao { grid-column: 2 / -1; font-size: 13px; color: var(--muted); }
+  .cat-linha.on { padding-bottom: 10px; }
+  .cat-foto-bt { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: 6px; margin-left: 28px; min-height: 36px; font: 600 13px var(--fonte-texto); color: var(--green); cursor: pointer; }
+  .cat-foto-bt input[type="file"] { display: none; }
+  .cat-foto { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-left: 28px; }
+  .cat-foto img { width: 72px; height: 54px; object-fit: cover; border-radius: 8px; display: block; }
+  .cat-foto-tirar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 12px; cursor: pointer; }
+  .cat-premium { font-size: 11px; font-weight: 600; color: var(--gold); border: 1px solid var(--gold); border-radius: 999px; padding: 1px 7px; }
   .price-input-row input { margin-top: 0 !important; flex: 1; text-align: center; }
   .form-error { color: var(--red); font-size: 13px; display: flex; align-items: center; gap: 6px; margin-top: 10px; }
   .consent-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--muted); }
@@ -3218,10 +3225,12 @@ const PLANO_OPTS = [
 // cancelamento e sem "como chegar" (fachada, entrada e onde estacionar); o
 // Completo e o Premium mostram tudo. Números (Desempenho)
 // só no Premium — o banco confere (SQL 20261002120000).
+// A foto de cada opção do catálogo é do Premium (pedido do Breno em
+// 27/10/2026: "podendo adicionar imagens para cada aulas no Premium").
 const LIMITES_DO_PLANO = {
-  basico: { fotos: 3, comodidades: 3, contatos: ["whatsapp"], cancelamento: false, chegada: false, numeros: false },
-  completo: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: false },
-  premium: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: true },
+  basico: { fotos: 3, comodidades: 3, contatos: ["whatsapp"], cancelamento: false, chegada: false, numeros: false, fotosDoCatalogo: false },
+  completo: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: false, fotosDoCatalogo: false },
+  premium: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: true, fotosDoCatalogo: true },
 };
 // O máximo de fotos de qualquer plano: o cadastro aceita até aqui, e a ficha
 // mostra o que o plano da academia libera.
@@ -3234,7 +3243,7 @@ function limitesDoPlano(plano) {
 // aprimorar o plano; o formulário de edição usa o integral.
 function aplicarPlano(c) {
   const l = limitesDoPlano(c.plano);
-  const integral = { photos: c.photos || [], amenities: c.amenities || [], instagram: c.instagram, site: c.site, acesso: c.acesso || {}, politica: c.politica || {} };
+  const integral = { photos: c.photos || [], amenities: c.amenities || [], instagram: c.instagram, site: c.site, acesso: c.acesso || {}, politica: c.politica || {}, catalogo: c.catalogo || [] };
   return {
     ...c,
     integral,
@@ -3245,6 +3254,7 @@ function aplicarPlano(c) {
     acesso: l.chegada ? integral.acesso
       : (integral.acesso.estacionamentoRegra ? { estacionamentoRegra: integral.acesso.estacionamentoRegra } : {}),
     politica: l.cancelamento ? integral.politica : {},
+    catalogo: l.fotosDoCatalogo ? integral.catalogo : integral.catalogo.map(i => i && typeof i === "object" ? { ...i, foto: undefined } : i),
   };
 }
 
@@ -3982,6 +3992,7 @@ function oQueMudaAoBaixarOPlano(id, de, para) {
   if (b.contatos.length < a.contatos.length) muda.push("a ficha mostra só o WhatsApp (sem Instagram e site)");
   if (a.cancelamento && !b.cancelamento) muda.push("o cancelamento sai da ficha");
   if (a.chegada && !b.chegada) muda.push("como chegar sai da ficha");
+  if (a.fotosDoCatalogo && !b.fotosDoCatalogo) muda.push("as fotos do catálogo de aulas e locação saem da ficha");
   const pessoas = planoPorChave(para).pessoas;
   muda.push(`até ${pessoas} ${plural(pessoas, "pessoa", "pessoas")} com acesso (quem passar do limite, o responsável principal precisa tirar)`);
   return `Passar a ${c.name || "academia"} do ${nomeDoPlano(de)} para o ${nomeDoPlano(para)}?\n\nNa hora:\n- ${muda.join("\n- ")}\n\nNada é apagado: tudo volta se o plano subir de novo. Quem administra a academia recebe um e-mail com o que muda.`;
@@ -8727,6 +8738,8 @@ const PC_RECURSOS = [
   { t: "Instagram e site na ficha, além do WhatsApp", p: ["completo", "premium"] },
   { t: "Regra de cancelamento e reposição", p: ["completo", "premium"] },
   { t: "Como chegar: fachada, entrada e onde estacionar", p: ["completo", "premium"] },
+  // Pedido de 27/10/2026 (regra 162).
+  { t: "Uma foto para cada aula e locação do catálogo", p: ["premium"] },
   // Pedido de 08/10/2026 (regra 71): selo dourado e topo da busca.
   { t: "Selo Premium dourado ao lado do nome", p: ["premium"], selo: true },
   { t: "No topo da busca da região, marcada como \"Patrocinado\"", p: ["premium"] },
@@ -8907,7 +8920,7 @@ function pcFichaEscondida() {
   const plano = planoAtual();
   if (!c || plano === "premium") return "";
   const integral = c.integral || c;
-  const esconde = oQueOPlanoEsconde({ amenities: integral.amenities, photos: integral.photos, instagram: integral.instagram, site: integral.site, politica: integral.politica, acesso: integral.acesso }, plano);
+  const esconde = oQueOPlanoEsconde({ amenities: integral.amenities, photos: integral.photos, instagram: integral.instagram, site: integral.site, politica: integral.politica, acesso: integral.acesso, catalogo: integral.catalogo }, plano);
   if (!esconde.length) return "";
   return `
     <div class="pc-card pc-escondida">
@@ -9004,7 +9017,7 @@ function dicaDeVenda(c, plano, dia) {
   if (plano === "completo" && promocao && dia % 2 === 1) return promocao;
   if (prox) {
     const integral = c.integral || c;
-    const esconde = oQueOPlanoEsconde({ amenities: integral.amenities, photos: integral.photos, instagram: integral.instagram, site: integral.site, politica: integral.politica, acesso: integral.acesso }, plano);
+    const esconde = oQueOPlanoEsconde({ amenities: integral.amenities, photos: integral.photos, instagram: integral.instagram, site: integral.site, politica: integral.politica, acesso: integral.acesso, catalogo: integral.catalogo }, plano);
     const ver = { tipo: "plano", ic: "sparkle", bt: `Ver o ${prox.nome}`, fn: () => irParceiros("plano") };
     if (esconde.length) return { ...ver, t: `A ficha esconde ${esconde.length === 1 ? "1 coisa" : esconde.length + " coisas"} que vocês preencheram`, s: `Com o ${prox.nome}, ${esconde.length === 1 ? "ela aparece" : "elas aparecem"} na hora para os jogadores. Grátis por enquanto.` };
     const dores = PC_DORES.filter(d => d.plano === prox.key);
@@ -18445,7 +18458,8 @@ function htOpcoes(c) {
   };
   const cartao = (o) => {
     const i = lista.indexOf(o);
-    const foto = fotos.length ? fotos[(i + (fotos.length > 1 ? 1 : 0)) % fotos.length] : "";
+    // A foto da própria opção (Premium); sem ela, uma das fotos da academia.
+    const foto = o.item && o.item.foto ? o.item.foto : fotos.length ? fotos[(i + (fotos.length > 1 ? 1 : 0)) % fotos.length] : "";
     const tag = menor !== null && parseInt(priceMin(o.faixa), 10) === menor ? `<span class="ht-quarto-tag">Menor preço</span>` : "";
     return `
       <article class="ht-quarto">
@@ -18737,11 +18751,18 @@ function itemDoCatalogo(x) {
   if (!x || typeof x !== "object") return null;
   const tipo = CATALOGO_TIPOS.find(t => t.key === x.tipo);
   if (!tipo) return null;
-  return {
+  const item = {
     tipo: tipo.key,
     cobranca: x.cobranca === "mensal" ? "mensal" : "avulsa",
     preco: String(x.preco || "").replace(/[^0-9-]/g, "").replace(/^-+|-+$/g, "").slice(0, 20),
   };
+  if (fotoDoCatalogoValida(x.foto)) item.foto = x.foto;
+  return item;
+}
+// A foto da opção (no Premium): a imagem já diminuída no cadastro.
+const FOTO_DO_CATALOGO_MAX = 400000;
+function fotoDoCatalogoValida(v) {
+  return typeof v === "string" && v.length <= FOTO_DO_CATALOGO_MAX && /^(data:image\/(jpeg|png|webp);base64,|https:\/\/)/.test(v);
 }
 function tipoDoItem(i) { return CATALOGO_TIPOS.find(t => t.key === i.tipo) || CATALOGO_TIPOS[0]; }
 // Uma de cada: a primeira de cada tipo e cobrança vale.
@@ -19619,12 +19640,21 @@ function editorDoCatalogo(f) {
         ${i ? `
           <span class="cat-rs">R$</span>
           <input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="numeric" placeholder="${k.key === "mensal" ? "300" : "120"}" value="${esc(i.preco || "")}" aria-label="Valor da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}" />
-          <span class="cat-unidade">${esc(unidadeDoItem(i))}</span>` : `<span class="cat-nao">Não oferece</span>`}
+          <span class="cat-unidade">${esc(unidadeDoItem(i))}</span>
+          ${fotoDaOpcao(i, chave, t, k)}` : `<span class="cat-nao">Não oferece</span>`}
       </div>`;
   };
+  // A foto de cada opção marcada (27/10/2026, "podendo adicionar imagens
+  // para cada aulas no Premium"): todo plano preenche, e a ficha mostra no
+  // Premium; fora dele, a etiqueta avisa, e o fim do cadastro diz o que o
+  // plano esconde, como as fotos e as comodidades a mais.
+  const premium = isAdmin || (f.__plano || "basico") === "premium";
+  const fotoDaOpcao = (i, chave, t, k) => fotoDoCatalogoValida(i.foto)
+    ? `<div class="cat-foto"><img src="${esc(i.foto)}" alt="Foto da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}" /><button type="button" class="cat-foto-tirar" data-cat-foto-tirar="${chave}" aria-label="Tirar a foto da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}">✕</button>${premium ? "" : `<span class="cat-premium">Aparece no Premium</span>`}</div>`
+    : `<label class="cat-foto-bt">${icon('camera', 15, 'currentColor')} Foto desta opção${premium ? "" : ` <span class="cat-premium">Premium</span>`}<input type="file" accept="image/*" data-cat-foto="${chave}" /></label>`;
   return `
     <p class="field-label">Catálogo de preços</p>
-    <p class="footnote" style="margin:0 0 10px">Marque o que a academia oferece e escreva o valor. Cada opção marcada vira um cartão na ficha, com o botão do WhatsApp; sem valor, mostra "Sob consulta".</p>
+    <p class="footnote" style="margin:0 0 10px">Marque o que a academia oferece e escreva o valor. Cada opção marcada vira um cartão na ficha, com o botão do WhatsApp; sem valor, mostra "Sob consulta". No Premium, cada opção pode ter a própria foto: a aula ou a quadra (com pessoas, só com a autorização delas), sem promoção nem tabela de preço.</p>
     <div class="cat-tabela" id="cat-tabela">
       ${tipos.map(t => `
         <div class="cat-tipo" data-cat-tipo="${t.key}">
@@ -20061,6 +20091,8 @@ function oQueOPlanoEsconde(f, plano) {
   if (redes.length) itens.push({ passo: "contato", t: redes.join(" e "), d: "O jogador só vê o botão do WhatsApp." });
   if (!l.cancelamento && regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "A regra de cancelamento e reposição", d: "É a dúvida que mais trava a primeira aula." });
   if (!l.chegada && regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Como chegar", d: "Fachada, entrada e onde estacionar ficam escondidos." });
+  const fotosDoCatalogo = (f.catalogo || []).filter(i => i && fotoDoCatalogoValida(i.foto)).length;
+  if (!l.fotosDoCatalogo && fotosDoCatalogo) itens.push({ passo: "precos", t: fotosDoCatalogo === 1 ? "A foto do catálogo" : `As ${fotosDoCatalogo} fotos do catálogo`, d: "No Premium, cada opção de aula e locação mostra a própria foto na ficha." });
   return itens;
 }
 
@@ -20914,7 +20946,7 @@ function conteudoDasEstatisticas() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 26 de outubro de 2026</p>
+<p class="footnote">Última atualização: 27 de outubro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
@@ -20922,14 +20954,14 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir, e o cadastro dela fica guardado como fechado (cadastro inativo), com as avaliações, fora do site. Se ela reabrir, quem a administrava volta a administrá-la pelo GuiaTennis Parceiros, com o mesmo e-mail; uma conta nova pede a reabertura ao GuiaTennis, que confere antes. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. O WhatsApp da academia que a conta escreve na ficha (no cadastro ou depois) só aparece depois que alguém da academia digita o código de 6 números mandado a ele, pela conta oficial do GuiaTennis no WhatsApp ou, enquanto ela não está disponível, pelo GuiaTennis em até 1 dia útil, e depois que o GuiaTennis confere que o número é da academia (o código mostra que a pessoa tem o número; a conferência, que ele é da academia). Até lá, a ficha mostra o número de antes, ou fica sem o botão do WhatsApp. O código vale 72 horas e 5 tentativas. A academia vê, em Atualizações, o que os jogadores informaram sobre a ficha (sem saber quem informou); salvar a ficha, mesmo sem mudar nada, mostra que a academia conferiu. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?): a ficha sai do site na hora e, depois de o GuiaTennis conferir, sai do Guia, e o cadastro fica guardado como fechado (cadastro inativo), com as avaliações; se a academia continuar aberta, ou se o aviso for cancelado, a ficha volta ao site como estava; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta, no Perfil do GuiaTennis Parceiros ou em "Minha conta", no site dos jogadores (é a mesma conta, e excluir num lugar exclui nos dois): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos de promoções são comprados à parte, com Pix ou cartão pelo Mercado Pago, valem para a promoção na ficha e para o leilão, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a lista mostra todas as academias na ordem escolhida pelo jogador, inclusive as do topo, de novo no lugar delas e sem a marcação; essa ordem não depende do plano. As "Melhores avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. Nos planos Completo e Premium, a academia também pode divulgar uma promoção por vez na ficha e no resultado da busca, por 1 a 12 semanas, paga por semana com os créditos, pelo preço mostrado antes de publicar (menor no Premium; enquanto o preço for zero, sem custo). Mudar o texto da promoção não custa nada; encerrar a promoção antes do fim devolve aos créditos as semanas que ainda não começaram. Se a academia voltar ao Básico, a promoção sai da ficha e da busca, sem devolução. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. No plano Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); o lance é um valor máximo, e quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que esse máximo, dos créditos comprados antes; quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. O WhatsApp da academia que a conta escreve na ficha (no cadastro ou depois) só aparece depois que alguém da academia digita o código de 6 números mandado a ele, pela conta oficial do GuiaTennis no WhatsApp ou, enquanto ela não está disponível, pelo GuiaTennis em até 1 dia útil, e depois que o GuiaTennis confere que o número é da academia (o código mostra que a pessoa tem o número; a conferência, que ele é da academia). Até lá, a ficha mostra o número de antes, ou fica sem o botão do WhatsApp. O código vale 72 horas e 5 tentativas. A academia vê, em Atualizações, o que os jogadores informaram sobre a ficha (sem saber quem informou); salvar a ficha, mesmo sem mudar nada, mostra que a academia conferiu. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?): a ficha sai do site na hora e, depois de o GuiaTennis conferir, sai do Guia, e o cadastro fica guardado como fechado (cadastro inativo), com as avaliações; se a academia continuar aberta, ou se o aviso for cancelado, a ficha volta ao site como estava; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta, no Perfil do GuiaTennis Parceiros ou em "Minha conta", no site dos jogadores (é a mesma conta, e excluir num lugar exclui nos dois): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas, uma foto para cada opção do catálogo de aulas e locação e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos de promoções são comprados à parte, com Pix ou cartão pelo Mercado Pago, valem para a promoção na ficha e para o leilão, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a lista mostra todas as academias na ordem escolhida pelo jogador, inclusive as do topo, de novo no lugar delas e sem a marcação; essa ordem não depende do plano. As "Melhores avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. Nos planos Completo e Premium, a academia também pode divulgar uma promoção por vez na ficha e no resultado da busca, por 1 a 12 semanas, paga por semana com os créditos, pelo preço mostrado antes de publicar (menor no Premium; enquanto o preço for zero, sem custo). Mudar o texto da promoção não custa nada; encerrar a promoção antes do fim devolve aos créditos as semanas que ainda não começaram. Se a academia voltar ao Básico, a promoção sai da ficha e da busca, sem devolução. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. No plano Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); o lance é um valor máximo, e quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que esse máximo, dos créditos comprados antes; quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis com o e-mail confirmado</strong> (nome e sobrenome, e-mail e senha; a cidade é opcional; o e-mail é confirmado por um código mandado a ele), e cada conta faz uma avaliação por academia. Informar um problema numa ficha também pede a conta com o e-mail confirmado; denunciar uma avaliação pede a conta. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, com o nome, sem a ligação com a conta. A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px">Antes de enviar uma solicitação de cadastro de academia, pedimos seu nome e sobrenome e o WhatsApp — só uma vez; da próxima vez o site já reconhece você automaticamente. <strong>Seu nome fica visível publicamente</strong> junto de qualquer avaliação que você publicar. Seu WhatsApp não é exibido a outros usuários — fica visível apenas para a administração do GuiaTennis, para verificar que a avaliação ou o cadastro são legítimos.</p>
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
 <p style="font-size:14px">Ao avaliar uma quadra, você concorda em escrever apenas sobre experiências reais, sem conteúdo ofensivo, discriminatório, difamatório ou falso, usando seu nome verdadeiro (já que ele fica público junto da avaliação). O GuiaTennis pode remover avaliações que violem essas regras, mas não se responsabiliza pelo conteúdo publicado por usuários. A academia avaliada pode responder publicamente e pedir a análise de uma avaliação que pareça falsa ou ofensiva, e quem tem conta pode <strong>denunciar</strong> uma avaliação (falsa ou que não é sobre a academia, ofensiva, propaganda, escrita pela própria academia ou por um concorrente, ou com dados pessoais); quem decide se ela fica é o GuiaTennis, que só remove a avaliação que descumpre estes Termos. Quem escreveu não fica sabendo quem denunciou. O texto sobre a academia, na ficha, pode citar o que é elogiado nas avaliações de 4 e 5 estrelas (por exemplo, "Quem avaliou elogia os professores"), sem copiar a avaliação nem o nome de quem avaliou.</p>
 <p class="field-label" style="margin-top:16px">7. Uso de fotos</p>
-<p style="font-size:14px">Fotos enviadas devem pertencer a quem envia, ou ter autorização de uso. Não é permitido enviar fotos de terceiros sem permissão. As fotos devem mostrar apenas o espaço físico da academia/quadra (quadras, recepção, secretaria, vestiário, fachada) — não são permitidas fotos de promoções, tabelas de preço ou materiais informativos/publicitários.</p>
+<p style="font-size:14px">Fotos enviadas devem pertencer a quem envia, ou ter autorização de uso. Não é permitido enviar fotos de terceiros sem permissão. As fotos devem mostrar apenas o espaço físico da academia/quadra (quadras, recepção, secretaria, vestiário, fachada) — não são permitidas fotos de promoções, tabelas de preço ou materiais informativos/publicitários. No plano Premium, cada opção do catálogo de aulas e locação pode ter a própria foto, que mostra aquela aula ou a quadra; se aparecerem pessoas, a academia precisa ter a autorização delas. Valem as mesmas regras: nada de promoções, tabelas de preço ou material publicitário.</p>
 <p class="field-label" style="margin-top:16px">8. Links e contatos externos</p>
 <p style="font-size:14px">O GuiaTennis direciona usuários para WhatsApp, Instagram e sites das academias. Não temos controle sobre esses canais externos e não nos responsabilizamos por eles.</p>
 <p class="field-label" style="margin-top:16px">9. Uso aceitável</p>
@@ -24846,6 +24878,24 @@ function attachEvents() {
       if (campo) campo.focus({ preventScroll: true });
     };
   });
+  document.querySelectorAll("[data-cat-foto]").forEach(el => {
+    el.onchange = (e) => {
+      const file = (e.target.files || [])[0];
+      if (!file) return;
+      compressImage(file, 960, 0.7).then((dataUrl) => {
+        const { cat, k } = opcaoDoCatalogo(el.dataset.catFoto);
+        if (k >= 0 && fotoDoCatalogoValida(dataUrl)) cat[k].foto = dataUrl;
+        render();
+      }).catch(() => render());
+    };
+  });
+  document.querySelectorAll("[data-cat-foto-tirar]").forEach(el => {
+    el.onclick = () => {
+      const { cat, k } = opcaoDoCatalogo(el.dataset.catFotoTirar);
+      if (k >= 0) delete cat[k].foto;
+      render();
+    };
+  });
   document.querySelectorAll("[data-cat-valor]").forEach(el => {
     el.oninput = (e) => {
       const v = e.target.value.replace(/[^0-9-]/g, "");
@@ -24979,7 +25029,7 @@ function abrirEdicaoDaFicha(c, opcoes = {}) {
     modalidades: [...(c.modalidades || [])],
     priceAula: c.priceAula || "",
     priceLocacao: c.priceLocacao || "",
-    catalogo: catalogoDe(c).length ? catalogoDe(c) : catalogoAntigo(c),
+    catalogo: catalogoDe(integral).length ? catalogoDe(integral) : catalogoAntigo(c),
     // O número que espera o código fica no campo (SQL 20261026120000): salvar
     // de novo não o perde; trocar por outro manda um código novo.
     phone: (!isAdmin && (whatsappNovoDe(c.id) || {}).numero) || c.phone || "",

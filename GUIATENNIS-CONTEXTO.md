@@ -91,10 +91,11 @@ teste")
 >
 > Depois: **regra 162** — o catálogo de aulas e locação (aula individual,
 > em dupla e em grupo e locação, avulsa ou mensal, só modalidade e valor,
-> numa tabela de preços no cadastro; um cartão por opção na ficha, com
-> filtros por tipo e por cobrança), o contato logo depois das opções e a
-> ficha sem o nome do plano. SQL `20261026220000_catalogo`; seção 68 do PR,
-> passo 94. Testes: `catalogo.js` com 35 verificações; a bateria completa dos 67
+> numa tabela de preços no cadastro, e no Premium uma foto para cada
+> opção; um cartão por opção na ficha, com filtros por tipo e por
+> cobrança), o contato logo depois das opções e a ficha sem o nome do
+> plano. SQL `20261026220000_catalogo`; seção 68 do PR,
+> passo 94. Testes: `catalogo.js` com 44 verificações; a bateria completa dos 67
 > arquivos do navegador entra no próximo commit.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
@@ -4126,7 +4127,8 @@ cobra taxa e não fica no meio** da negociação.
     em grupo, individuais, dupla e locações avulsas, mensal"; depois, em
     27/10/2026: "duração de aula e locação eu não quero colocar" e "eu não
     quero que o catálogo seja oferecendo aulas em tal horário e duração, e
-    sim qual modalidade e valor").
+    sim qual modalidade e valor"; "podendo adicionar imagens para cada
+    aulas no Premium").
     - **Contato:** a seção Contato (WhatsApp, site, Instagram, compartilhar
       e a linha "Confirmada pela academia") vem logo depois de "Escolha o
       que você quer"; "É o responsável por esta academia?", o crédito do
@@ -4184,6 +4186,20 @@ cobra taxa e não fica no meio** da negociação.
       "Sobre" ("No catálogo da academia: …; e locação a partir de …"), as
       perguntas ("Que aulas … tem?", "Quanto custa", com cada opção) e o
       Google (`hasOfferCatalog`, uma `Offer` por opção com valor).
+    - **Foto de cada opção, no Premium:** cada linha marcada da tabela tem
+      "Foto desta opção" (a imagem diminuída para 960px em `item.foto`,
+      `fotoDoCatalogoValida`: JPEG/PNG/WebP em base64 ou https, até 400
+      mil letras) com ✕ para tirar. Todo plano preenche; a ficha mostra a
+      foto da opção só no Premium (`LIMITES_DO_PLANO.fotosDoCatalogo`;
+      `aplicarPlano` tira a `foto` dos outros planos e guarda em
+      `integral.catalogo`, que a edição usa); sem foto, o cartão usa uma
+      foto da academia. Fora do Premium, a linha tem a etiqueta "Premium" /
+      "Aparece no Premium", e o fim do cadastro e a página Plano dizem "A
+      foto do catálogo" no que o plano esconde; a tabela de planos tem "Uma
+      foto para cada aula e locação do catálogo" e baixar do Premium avisa
+      que as fotos saem. Termos: a foto mostra a aula ou a quadra, com
+      autorização de quem aparece, sem promoção nem tabela de preço; o
+      Premium inclui a foto de cada opção.
     - **Banco sem a coluna:** o site lê sem ela (`COLUNAS_ACADEMIA_NOVAS`)
       e salva sem ela (`faltaColunaNova`), com o preço avulso da aula e da
       locação.
@@ -4511,7 +4527,7 @@ nome_solicitante, contato_solicitante`
 
 **`catalogo`** (26/10/2026, regra 162; SQL `20261026220000_catalogo`): a
 lista das opções de aula e locação que o site monta (tipo, avulsa ou
-mensal, valor; só modalidade e valor), até 30, sempre uma
+mensal, valor e, no Premium, a foto; só modalidade e valor), até 30, sempre uma
 lista (`catalogo_e_uma_lista`). Visitante lê. `price_aula` e
 `price_locacao` continuam, com a faixa das opções avulsas.
 

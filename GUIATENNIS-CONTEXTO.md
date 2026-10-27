@@ -111,8 +111,9 @@ teste")
 > (e pelo "Ajustar"), num quadro 4:3; foto só na capa e nos cartões das
 > opções (saiu o mosaico do "Sobre a academia"); sem a caixa "Horário" em
 > "Escolha o que você quer". Sem SQL; seção 70 do PR, passo 96. Testes:
-> `enquadramento.js` (novo) com 14 verificações; a bateria completa dos 69
-> arquivos do navegador entra no próximo commit.
+> **2.004 verificações** nos 69 arquivos do navegador (novo:
+> `enquadramento.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
+> nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).

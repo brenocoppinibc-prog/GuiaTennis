@@ -176,7 +176,8 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.click('#jog-continuar');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.jogadorTela === 'criar' && !document.getElementById('viagem-aviso') && !document.querySelector('[data-campo="avisos_viagem"]')), 'o cadastro não pergunta de viagem');
-  await page.fill('#jog-nome', 'Vai Viajar');
+  await page.fill('#jog-nome', 'Vai');
+  await page.fill('#jog-sobrenome', 'Viajar');
   await page.fill('#jog-senha', 'quadra de saibro');
   await page.fill('#jog-senha2', 'quadra de saibro');
   await page.check('#jog-aceite');

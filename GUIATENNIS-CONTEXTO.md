@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 27/10/2026 (regra 165)
+**Atualizado em:** 28/10/2026 (regra 166)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -121,8 +121,16 @@ teste")
 > conta excluída como "Usuário do GuiaTennis"; o e-mail quando o admin
 > troca o nome de uma academia. SQL `20261027120000_nome_suspenso`; seção 71
 > do PR, passo 97. Testes: `nome-suspenso.js` (novo) com 28 verificações e
-> `banco-emails.py` com **647 conferências**, nenhuma falha; a bateria
-> completa dos 70 arquivos do navegador entra no próximo commit.
+> `banco-emails.py` com **647 conferências**, nenhuma falha.
+>
+> Depois: **regra 166** — a busca "bairro, cidade" fica na cidade digitada
+> (antes, "Vila Suzana, São Paulo" ia para Jundiaí); o "Confirmada pela
+> academia" volta para o fim da ficha (só o contato fica mais acima); nome
+> e sobrenome em dois campos obrigatórios, como no Parceiros (criar conta,
+> Minha conta e "Faça seu cadastro"). Sem SQL; seção 72 do PR, passo 98.
+> Testes: `busca-bairro-cidade.js` (novo) e os afetados, sem falha; a
+> bateria completa das regras 165 e 166 (71 arquivos do navegador) entra no
+> próximo commit.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4159,7 +4167,8 @@ cobra taxa e não fica no meio** da negociação.
       e a linha "Confirmada pela academia") vem logo depois de "Escolha o
       que você quer"; "É o responsável por esta academia?", o crédito do
       OpenStreetMap e "Algo errado nesta ficha?" ficam no fim
-      (`.ht-sec-fim`).
+      (`.ht-sec-fim`). (Desde a regra 166, a linha "Confirmada pela
+      academia" voltou para o fim; o Contato fica só com os botões.)
     - **Sem o plano:** a linha da confirmação não diz mais "· Academia
       Premium" e o selo dourado diz só "Confirmada pela academia" (título
       e leitor de tela), na ficha, na busca e na home. O dourado continua
@@ -4387,6 +4396,38 @@ cobra taxa e não fica no meio** da negociação.
       o nome ofensivo no "Denunciar"). SQL `20261027120000_nome_suspenso`.
     Testes: `nome-suspenso.js` (novo), `enquadramento.js` (reescrito),
     `regras-de-conteudo.js` e a seção 39 do `banco-emails.py`.
+166. **A busca por bairro e cidade, a confirmação no fim e o sobrenome
+    separado** (pedidos de 27/10/2026, com prints: "não funcionou colocando
+    bairro e cidade" — "Vila Suzana, São Paulo" mostrava "A partir de
+    Hortolândia, Jundiaí"; "deixe isso no final, era só os contatos mais
+    para cima" — o "Confirmada pela academia · atualizada há 5 dias"; "deixe
+    a separação do sobrenome igual no parceiros e obrigatório" — o "Nome e
+    sobrenome" num campo só no criar conta).
+    - **Busca "bairro, cidade"**, como o Google Maps e o Booking: o último
+      pedaço é a cidade ("São Paulo, SP" e "São Paulo - SP" também valem;
+      `cidadeDoTermo`). Entre os resultados do mapa (até 10), só os que ficam
+      nessa cidade, ou num bairro, distrito ou vila com esse nome
+      (`estaNoLugar`; o estado não conta, porque "São Paulo" é também o
+      estado), e o do bairro digitado primeiro. Sem nenhum, procura a cidade
+      no mapa (`city=`) e o bairro dentro dos limites dela (`viewbox`,
+      `bounded=1`; `geocodeNaCidade`). Sem vírgula, ou se nada disso achar,
+      a busca segue como antes. A causa: o mapa devolvia primeiro uma Vila
+      Suzana de Jundiaí (estado de São Paulo), e a busca ficava com o
+      primeiro resultado.
+    - **"Confirmada pela academia" no fim da ficha** (`#ficha-confirmacao`,
+      o primeiro item de `.ht-sec-fim`, antes do "É o responsável?"); o
+      Contato, logo depois das opções, fica só com os botões (regra 162).
+    - **Nome e sobrenome em dois campos**, os dois com *, lado a lado, como
+      no Parceiros (`camposNomeESobrenome`, `partesDoNome`,
+      `mudarParteDoNome`, `erroDoNome`): criar conta, Minha conta (a folha e
+      a página `/perfil`) e "Faça seu cadastro". O formulário guarda o nome
+      inteiro em `nome`, como antes; o sobrenome é obrigatório no campo dele
+      ("Preencha o sobrenome.", e "da"/"de" sozinhos não contam).
+    Testes: `busca-bairro-cidade.js` (novo), `ficha-hoteis.js` (a
+    confirmação no fim), `jogador.js` (os dois campos, o sobrenome
+    obrigatório e o "Faça seu cadastro") e os que preenchem o nome
+    (`aviso-ao-sair`, `convite-chamadas`, `nome-suspenso`, `parceiros`,
+    `rascunho`, `senha`, `viagem`, `volta-e-resumo`).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -6372,8 +6413,11 @@ passo 96). Depois, a **regra 165** (o corte no jeito do Instagram; o aceite
 sem repetir os Termos; o nome suspenso por 15 dias, com os e-mails e a
 exclusão automática; "Usuário do GuiaTennis" nas avaliações de contas
 excluídas; o e-mail do nome da academia trocado pelo admin; SQL
-`20261027120000_nome_suspenso`; seção 71 do PR, passo 97). Próximos
-números: **regra 166**, **seção 72** da descrição do PR e **passo 98**.
+`20261027120000_nome_suspenso`; seção 71 do PR, passo 97). Depois, a
+**regra 166** (a busca "bairro, cidade" na cidade digitada; o "Confirmada
+pela academia" de volta ao fim da ficha; nome e sobrenome em dois campos
+obrigatórios, como no Parceiros; seção 72 do PR, passo 98). Próximos
+números: **regra 167**, **seção 73** da descrição do PR e **passo 99**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

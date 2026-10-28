@@ -131,7 +131,8 @@ const semRascunhoNaTela = (page) => page.evaluate(() => !/rascunho salvo/i.test(
   await page.waitForTimeout(400);
   await page.evaluate(() => irPerfil());
   await page.waitForTimeout(400);
-  await page.fill('#jog-nome', 'Maria Souza Lima');
+  await page.fill('#jog-nome', 'Maria');
+  await page.fill('#jog-sobrenome', 'Souza Lima');
   await page.waitForTimeout(400);
   ok(await semRascunhoNaTela(page), 'no perfil, sem "Rascunho salvo" nos dados pessoais');
   await page.click('[data-menu="favoritas"]');

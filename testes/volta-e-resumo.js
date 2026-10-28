@@ -59,13 +59,14 @@ const daAna = (page) => page.evaluate(() => window.__db.jogadores.find(j => j.us
   ok((await erro()) === 'Falta o nome e o sobrenome. Aceite os Termos de Uso e a Política de Privacidade.', 'sem nome e sem aceite: os dois no aviso — ' + await erro());
   await page.check('#jog-aceite');
   ok((await erro()) === 'Falta o nome e o sobrenome.', 'marcou o aceite: sai só essa parte do aviso, na hora — ' + await erro());
-  await page.fill('#jog-nome', 'Nina Nova');
+  await page.fill('#jog-nome', 'Nina');
+  await page.fill('#jog-sobrenome', 'Nova');
   await page.uncheck('#jog-aceite');
   await page.click('#jog-criar');
   await page.waitForTimeout(150);
   ok((await erro()) === 'Aceite os Termos de Uso e a Política de Privacidade.', 'só falta o aceite: "Aceite os Termos de Uso e a Política de Privacidade." — ' + await erro());
   await page.check('#jog-aceite');
-  ok((await erro()) === '' && await page.evaluate(() => window.__jog.aceite === true && document.getElementById('jog-nome').value === 'Nina Nova'),
+  ok((await erro()) === '' && await page.evaluate(() => window.__jog.aceite === true && document.getElementById('jog-nome').value === 'Nina' && document.getElementById('jog-sobrenome').value === 'Nova' && window.__jog.nome === 'Nina Nova'),
     'marcou: o aviso some na hora, sem apagar o que foi digitado');
   await browser.close();
 

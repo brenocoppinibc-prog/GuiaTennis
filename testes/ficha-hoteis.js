@@ -88,8 +88,12 @@ async function fichaCheia(page, extra) {
   ok(r === 'ht-sec-destaques,ht-comodidades,ht-local,ht-visao,ht-opcoes,ht-contato,avaliacoes,ht-perto,ht-horario,ht-politica,ht-duvidas,ht-sec-fim',
     'destaques, estrutura, região, "Sobre" com fotos, opções, contato, avaliações, academias por perto, horário, cancelamento, dúvidas e o fim — ' + r);
   const fim = await page.evaluate(() => ({ fim: document.querySelector('.ht-sec-fim')?.innerText || '', contato: document.getElementById('ht-contato').innerText }));
-  ok(fim.fim.includes('É o responsável por esta academia?') && fim.fim.includes('Algo errado nesta ficha?') && fim.contato.includes('Chamar no WhatsApp') && fim.contato.includes('Confirmada pela academia') && !/Premium/.test(fim.contato),
-    'o contato com os botões e a confirmação, sem o nome do plano; o fim com "é o responsável?" e "Algo errado"');
+  // O "Confirmada pela academia" volta para o fim (27/10/2026: "deixe isso no
+  // final, era só os contatos mais para cima").
+  ok(fim.fim.includes('Confirmada pela academia') && fim.fim.includes('É o responsável por esta academia?') && fim.fim.includes('Algo errado nesta ficha?')
+    && fim.contato.includes('Chamar no WhatsApp') && !fim.contato.includes('Confirmada pela academia') && !/Premium/.test(fim.fim),
+    'o contato só com os botões; no fim, "Confirmada pela academia" (sem o nome do plano), "é o responsável?" e "Algo errado"');
+  ok(await page.evaluate(() => document.querySelector('.ht-sec-fim')?.firstElementChild?.id === 'ficha-confirmacao'), 'a confirmação abre o fim da ficha, como antes');
   r = await page.evaluate(() => document.querySelector('.courtpage').innerText);
   const tudo = ['Estacionamento grátis', 'Vestiário', 'Loja de materiais', 'Wi-Fi', 'Lanchonete', 'Água grátis', 'Empréstimo de raquete', '2x Saibro coberta', '3x Rápida descoberta',
     'Portão preto', 'Avise na portaria', 'Ver todas as academias em Pinheiros', 'Quem avaliou elogia', 'Primeira aula grátis', 'Segunda a sexta', 'Domingo',

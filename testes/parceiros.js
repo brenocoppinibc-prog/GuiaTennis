@@ -631,7 +631,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.fill('#jog-email', 'rafa@exemplo.com');
   await page.click('#jog-continuar');
   await page.waitForTimeout(300);
-  await page.fill('#jog-nome', 'Rafa Jogador');
+  await page.fill('#jog-nome', 'Rafa');
+  await page.fill('#jog-sobrenome', 'Jogador');
   await page.fill('#jog-senha', 'senhaboa12');
   await page.fill('#jog-senha2', 'senhaboa12');
   await page.check('#jog-aceite');

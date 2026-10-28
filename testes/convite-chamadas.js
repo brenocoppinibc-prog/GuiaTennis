@@ -37,7 +37,8 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.fill('#jog-email', 'lia@exemplo.com');
   await page.click('#jog-continuar');
   await page.waitForTimeout(300);
-  await page.fill('#jog-nome', 'Lia Tenista');
+  await page.fill('#jog-nome', 'Lia');
+  await page.fill('#jog-sobrenome', 'Tenista');
   await page.fill('#jog-senha', 'senhaboa12');
   await page.fill('#jog-senha2', 'senhaboa12');
   await page.check('#jog-aceite');

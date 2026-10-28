@@ -49,7 +49,8 @@ const suspensao = (extra) => ({ id: 'ns-1', email: 'ana@exemplo.com', nome: 'Ana
   t = await page.evaluate(() => ({ pagina: state.page, foco: document.activeElement && document.activeElement.id, caixa: document.querySelector('#perfil-dados .nome-suspenso-caixa')?.innerText.replace(/\s+/g, ' ') || '' }));
   ok(t.pagina === 'perfil' && t.foco === 'jog-nome', '"Trocar o nome" abre Minha conta, no campo do nome');
   ok(t.caixa.includes('Nome suspenso') && t.caixa.includes('Ana Jogadora') && t.caixa.includes('faltam 15 dias') && t.caixa.includes('a conta será excluída'), 'em cima do nome, o aviso com o prazo — ' + t.caixa);
-  await page.fill('#jog-nome', 'Ana Souza');
+  await page.fill('#jog-nome', 'Ana');
+  await page.fill('#jog-sobrenome', 'Souza');
   await page.click('#jog-salvar');
   await page.waitForTimeout(600);
   t = await page.evaluate(() => ({ suspenso: !!state.nomeSuspenso, aviso: document.querySelector('.conta-aviso')?.innerText.trim() || '', caixa: !!document.querySelector('.nome-suspenso-caixa'),

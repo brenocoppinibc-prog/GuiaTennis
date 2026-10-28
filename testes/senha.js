@@ -41,7 +41,8 @@ const { abrir, ok } = require('./harness');
   ok((await dicas()).slice(0, 3).every(x => x.startsWith('ok:')), 'tudo certo: os três verdes');
   await page.fill('#jog-senha', ''); await page.fill('#jog-senha2', '');
 
-  await page.fill('#jog-nome', 'Lia Tenista');
+  await page.fill('#jog-nome', 'Lia');
+  await page.fill('#jog-sobrenome', 'Tenista');
   await page.check('#jog-aceite');
   await page.fill('#jog-senha', '12345678'); await page.fill('#jog-senha2', '12345678');
   await page.click('#jog-criar'); await page.waitForTimeout(200);

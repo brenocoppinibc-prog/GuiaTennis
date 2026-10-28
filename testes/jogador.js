@@ -17,17 +17,28 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   ok(await page.evaluate(() => state.jogadorTela === 'criar' && document.getElementById('jog-email').readOnly && document.getElementById('jog-email').value === 'bia@exemplo.com'), 'e-mail sem conta: completa o cadastro, com o e-mail já preenchido');
   const avisos = await page.evaluate(() => [...document.querySelectorAll('.jog-aviso')].map(c => c.checked));
   ok(avisos.length === 3 && avisos.every(x => !x), 'três avisos, todos começam desligados (sem "Vou viajar" no cadastro)');
+  // Nome e sobrenome em dois campos, os dois obrigatórios, como no Parceiros
+  // (pedido do Breno em 27/10/2026, regra 166).
+  const rotulos = await page.evaluate(() => [...document.querySelectorAll('#jogador-overlay .campos-dois .field-label')].map(l => l.innerText.trim()));
+  ok(JSON.stringify(rotulos) === '["Nome*","Sobrenome*"]' && !!(await page.$('#jog-sobrenome')), 'criar conta: "Nome*" e "Sobrenome*" lado a lado, como no Parceiros — ' + JSON.stringify(rotulos));
+  await page.fill('#jog-nome', 'Bia Tenista');
+  await page.check('#jog-aceite');
+  await page.click('#jog-criar');
+  await page.waitForTimeout(200);
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('Preencha o sobrenome.'), 'o sobrenome é obrigatório no campo dele (o nome inteiro no primeiro não passa)');
   // Pelo menos um sobrenome (pedido do Breno em 20/10/2026): só aparece escrito quando falta.
   await page.fill('#jog-nome', 'Bia');
   await page.check('#jog-aceite');
   await page.click('#jog-criar');
   await page.waitForTimeout(200);
   ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('Preencha o sobrenome.'), 'só o nome: "Preencha o sobrenome."');
-  await page.fill('#jog-nome', 'Bia da');
+  await page.fill('#jog-nome', 'Bia');
+  await page.fill('#jog-sobrenome', 'da');
   await page.click('#jog-criar');
   await page.waitForTimeout(200);
   ok((await page.evaluate(() => document.querySelector('#jogador-overlay .form-error')?.innerText || '')).includes('Preencha o sobrenome.'), '"da" sozinho não conta como sobrenome');
-  await page.fill('#jog-nome', 'Bia Tenista');
+  await page.fill('#jog-nome', 'Bia');
+  await page.fill('#jog-sobrenome', 'Tenista');
   await page.fill('#jog-senha', 'curta');
   await page.fill('#jog-senha2', 'curta');
   await page.check('#jog-aceite');
@@ -61,10 +72,12 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.uncheck('.jog-aviso[data-campo="promocoes"]');
   await page.check('.jog-aviso[data-campo="avisos_academias"]');
   await page.fill('#jog-nome', 'Bia');
+  await page.fill('#jog-sobrenome', '');
   await page.click('#jog-salvar');
   await page.waitForTimeout(200);
   ok((await page.evaluate(() => document.querySelector('#perfil-jogador .form-error')?.innerText || '')).includes('Preencha o sobrenome.'), 'Minha conta: sem sobrenome não salva e avisa');
-  await page.fill('#jog-nome', 'Bia Tenista');
+  await page.fill('#jog-nome', 'Bia');
+  await page.fill('#jog-sobrenome', 'Tenista');
   await page.fill('#jog-cidade', 'São Paulo');
   await page.click('#jog-salvar');
   await page.waitForTimeout(300);
@@ -89,6 +102,11 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(150);
   const vis = await page.evaluate(() => ({ e: document.querySelector('#visitor-overlay .form-error')?.innerText || '', v: loadVisitor() }));
   ok(vis.e.includes('Preencha o sobrenome.') && !vis.v, '"Faça seu cadastro": sem sobrenome não passa');
+  ok(await page.$('#visitor-sobrenome') && await page.evaluate(() => [...document.querySelectorAll('#visitor-overlay .campos-dois .field-label')].map(l => l.innerText.trim()).join('|')) === 'Nome*|Sobrenome*', '"Faça seu cadastro" também com os dois campos');
+  await page.fill('#visitor-sobrenome', 'Souza');
+  await page.click('#visitor-submit');
+  await page.waitForTimeout(150);
+  ok(await page.evaluate(() => (loadVisitor() || {}).nome === 'Rita Souza'), 'com o sobrenome, guarda o nome inteiro');
   await page.evaluate(() => { state.showVisitorSetup = false; render(); });
   ok(await page.evaluate(() => erroDoContato({ tratamento: 'Sr.', nome: 'Rui', sobrenome: '' })) === 'Preencha o sobrenome.', 'Parceiros: sem sobrenome, "Preencha o sobrenome."');
   // Excluir a conta.
@@ -192,7 +210,8 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.fill('#jog-email', 'semmail@exemplo.com');
   await page.click('#jog-continuar');
   await page.waitForTimeout(300);
-  await page.fill('#jog-nome', 'Sem Mail');
+  await page.fill('#jog-nome', 'Sem');
+  await page.fill('#jog-sobrenome', 'Mail');
   await page.fill('#jog-senha', 'senhaboa12');
   await page.fill('#jog-senha2', 'senhaboa12');
   await page.check('#jog-aceite');

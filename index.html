@@ -5150,16 +5150,61 @@ function numeroDoTexto(q) {
   const m = String(q || "").replace(/\b\d{5}-?\d{3}\b/g, "").match(/(?:^|[\s,])(\d{1,5})(?=[\s,]|$)/);
   return m ? m[1] : "";
 }
-async function geocodeAddress(query, numero) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&countrycodes=br&q=${encodeURIComponent(query)}`;
+async function geocodeAddress(query, numero, naCidade) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=${naCidade ? 10 : 5}&addressdetails=1&countrycodes=br&q=${encodeURIComponent(query)}`;
   const res = await fetch(url, { headers: { "Accept": "application/json" } });
   if (!res.ok) throw new Error("Não consegui localizar esse endereço no mapa.");
-  const data = await res.json();
+  let data = await res.json();
   if (!data.length) throw new Error("Endereço não encontrado. Tente incluir bairro e cidade.");
+  // Com a cidade digitada, só vale o lugar dessa cidade (ou desse bairro).
+  if (naCidade) {
+    data = data.filter(d => estaNoLugar(d, naCidade.cidade));
+    if (!data.length) throw new Error("Não achei esse lugar nessa cidade.");
+    const doBairro = data.find(d => estaNoLugar(d, naCidade.lugar));
+    if (doBairro) data = [doBairro, ...data.filter(d => d !== doBairro)];
+  }
   const n = String(numero !== undefined ? numero || "" : numeroDoTexto(query)).trim();
   const daPorta = n ? data.find(d => d.address && String(d.address.house_number || "").split(/[;,]/).map(x => x.trim()).includes(n)) : null;
   const d = daPorta || data[0];
   return { lat: parseFloat(d.lat), lng: parseFloat(d.lon), exato: !!daPorta };
+}
+
+// "Vila Suzana, São Paulo": o último pedaço é a cidade (pedido do Breno em
+// 27/10/2026: "não funcionou colocando bairro e cidade" — o mapa devolvia
+// primeiro uma Vila Suzana de outra cidade do estado de São Paulo, e a busca
+// ficava com ela). Como no Google Maps e no Booking, o lugar fica na cidade
+// digitada: entre os resultados, só os dessa cidade; sem nenhum, procura o
+// bairro dentro dos limites da cidade. "São Paulo, SP" e "São Paulo - SP"
+// também valem.
+const UFS_DO_BRASIL = ["ac", "al", "ap", "am", "ba", "ce", "df", "es", "go", "ma", "mt", "ms", "mg", "pa", "pb", "pr", "pe", "pi", "rj", "rn", "rs", "ro", "rr", "sc", "sp", "se", "to"];
+const nomeDeLugar = (t) => stripAccents(String(t || "")).toLowerCase().replace(/\s+/g, " ").trim();
+function cidadeDoTermo(termo) {
+  const partes = String(termo || "").split(",").map(p => p.replace(/\s*[-\/]\s*[A-Za-z]{2}$/, "").trim()).filter(Boolean);
+  if (partes.length && UFS_DO_BRASIL.includes(nomeDeLugar(partes[partes.length - 1]))) partes.pop();
+  if (partes.length < 2 || /\d/.test(partes[partes.length - 1])) return null;
+  return { cidade: partes[partes.length - 1], lugar: partes.slice(0, -1).join(", ") };
+}
+// O resultado do mapa fica nesse lugar (a cidade, ou o bairro, distrito ou
+// vila com esse nome)? O estado não conta: "São Paulo" é também o estado.
+function estaNoLugar(d, nome) {
+  const a = (d && d.address) || {};
+  const alvo = nomeDeLugar(nome);
+  return !!alvo && [a.city, a.town, a.municipality, a.village, a.suburb, a.neighbourhood, a.quarter, a.city_district, a.borough]
+    .some(x => x && nomeDeLugar(x) === alvo);
+}
+async function geocodeNaCidade(lugar, cidade) {
+  const base = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=br";
+  const rc = await fetch(`${base}&limit=5&city=${encodeURIComponent(cidade)}`, { headers: { "Accept": "application/json" } });
+  if (!rc.ok) throw new Error("Não consegui localizar essa cidade no mapa.");
+  const c = (await rc.json()).find(d => d.boundingbox && [d.address && (d.address.city || d.address.town || d.address.municipality), d.name].some(x => nomeDeLugar(x) === nomeDeLugar(cidade)));
+  if (!c) throw new Error("Não achei essa cidade.");
+  const [sul, norte, oeste, leste] = c.boundingbox.map(Number);
+  const rl = await fetch(`${base}&limit=10&bounded=1&viewbox=${oeste},${norte},${leste},${sul}&q=${encodeURIComponent(lugar)}`, { headers: { "Accept": "application/json" } });
+  if (!rl.ok) throw new Error("Não consegui localizar esse lugar no mapa.");
+  const lista = (await rl.json()).filter(d => estaNoLugar(d, cidade));
+  const d = lista.find(x => estaNoLugar(x, lugar)) || lista[0];
+  if (!d) throw new Error("Não achei esse lugar nessa cidade.");
+  return { lat: parseFloat(d.lat), lng: parseFloat(d.lon), exato: false };
 }
 
 // O CEP que ficou no fim do endereço completo ("... - São Paulo - 05422-000").
@@ -6807,6 +6852,40 @@ function temSobrenome(completo) {
 }
 function juntarNome(f) {
   return [f.nome, f.sobrenome].map(x => (x || "").trim()).filter(Boolean).join(" ");
+}
+// Nome e sobrenome em dois campos, os dois obrigatórios, como no Parceiros
+// (pedido do Breno em 27/10/2026: "deixe a separação do sobrenome igual no
+// parceiros e obrigatório"): criar conta, Minha conta e "Faça seu cadastro".
+// O formulário continua guardando o nome inteiro em "nome".
+function partesDoNome(f) {
+  return f.primeiro !== undefined || f.sobrenome !== undefined ? { nome: f.primeiro || "", sobrenome: f.sobrenome || "" } : separarNome(f.nome);
+}
+function camposNomeESobrenome(p, f) {
+  const partes = partesDoNome(f), ob = `<span class="obrig">*</span>`;
+  return `
+    <div class="campos-dois">
+      <div>
+        <label class="field-label" for="${p}-nome">Nome${ob}</label>
+        <input class="form-field nome-parte" data-parte="nome" data-de="${p}" id="${p}-nome" autocomplete="given-name" value="${esc(partes.nome)}" style="margin-top:0" />
+      </div>
+      <div>
+        <label class="field-label" for="${p}-sobrenome">Sobrenome${ob}</label>
+        <input class="form-field nome-parte" data-parte="sobrenome" data-de="${p}" id="${p}-sobrenome" autocomplete="family-name" value="${esc(partes.sobrenome)}" style="margin-top:0" />
+      </div>
+    </div>`;
+}
+// O nome digitado nos dois campos vai para o formulário (f.nome inteiro).
+function mudarParteDoNome(f, parte, valor) {
+  const partes = partesDoNome(f);
+  partes[parte] = valor;
+  return Object.assign(f, { primeiro: partes.nome, sobrenome: partes.sobrenome, nome: juntarNome(partes) });
+}
+function erroDoNome(f) {
+  const partes = partesDoNome(f);
+  if (!partes.nome.trim() && !partes.sobrenome.trim()) return "Falta o nome e o sobrenome.";
+  if (partes.nome.trim().length < 2) return "Escreva o nome.";
+  if (!partes.sobrenome.trim() || !temSobrenome(juntarNome(partes))) return "Preencha o sobrenome.";
+  return "";
 }
 function erroDoContato(f) {
   if (!f.tratamento) return "Escolha o tratamento.";
@@ -14507,8 +14586,7 @@ function renderJogadorSheet() {
       <button type="button" class="cta-btn cta-primary" id="jog-salvar-senha" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Salvando") || "Salvar a senha nova"}</button>`);
   if (tela === "criar") miolo = pagina("Complete o seu cadastro", "Esse e-mail ainda não tem conta no GuiaTennis. É grátis e leva um minuto.", `
     ${emailFixo}
-    <label class="field-label" for="jog-nome">Nome e sobrenome</label>
-    <input class="form-field jog-campo" data-campo="nome" id="jog-nome" autocomplete="name" value="${esc(f.nome || "")}" style="margin-top:0" />
+    ${camposNomeESobrenome("jog", f)}
     <p class="footnote" style="margin-top:6px">Aparece nas suas avaliações.</p>
     <label class="field-label" for="jog-senha">Crie uma senha</label>
     <input class="form-field jog-campo" data-campo="senha" id="jog-senha" type="password" autocomplete="new-password" value="${esc(f.senha || "")}" style="margin-top:0" />
@@ -14530,8 +14608,8 @@ function renderJogadorSheet() {
     ${jogador.email_confirmado_em ? "" : `<p class="email-sugestao">E-mail ainda não confirmado: os avisos só chegam depois de confirmar. <button type="button" class="inline-link" id="jog-confirmar-agora">Confirmar agora</button></p>`}
     ${state.jogadorAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.jogadorAviso)}</p>` : ""}
     <p class="jog-grupo">Dados pessoais</p>
-    <label class="field-label" for="jog-nome">Nome e sobrenome</label>
-    <input class="form-field jog-campo" data-campo="nome" id="jog-nome" autocomplete="name" value="${esc(f.nome || "")}" style="margin-top:0" />
+    ${avisoDoNomeSuspenso("minha_conta")}
+    ${camposNomeESobrenome("jog", f)}
     <label class="field-label" for="jog-cidade">Cidade</label>
     <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" value="${esc(f.cidade || "")}" style="margin-top:0" />
     <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
@@ -15016,8 +15094,9 @@ async function criarContaJogador() {
   f.senha2 = document.getElementById("jog-senha2")?.value || f.senha2 || "";
   const email = String(f.email || "").trim().toLowerCase();
   const falta = [];
-  if (String(f.nome || "").trim().length < 2) falta.push("o nome e o sobrenome");
-  const semSobrenome = !falta.length && !temSobrenome(f.nome) ? "Preencha o sobrenome." : "";
+  const erroNome = erroDoNome(f);
+  if (erroNome === "Falta o nome e o sobrenome.") falta.push("o nome e o sobrenome");
+  const semSobrenome = erroNome && !falta.length ? erroNome : "";
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) falta.push("um e-mail válido");
   // Sem o aceite, o aviso diz o nome dos dois textos (pedido do Breno em
   // 11/10/2026: "quero que apareça, aceite os termos de uso e política de
@@ -15059,8 +15138,8 @@ async function criarContaJogador() {
 
 async function salvarContaJogador() {
   const f = window.__jog || {};
-  if (String(f.nome || "").trim().length < 2) { state.jogadorErro = "Escreva o seu nome e sobrenome."; render(); return; }
-  if (!temSobrenome(f.nome)) { state.jogadorErro = "Preencha o sobrenome."; render(); return; }
+  const erroNome = erroDoNome(f);
+  if (erroNome) { state.jogadorErro = erroNome; render(); return; }
   const daTela = avisosDaTela(jogador, false);
   const mudou = daTela.some(a => !!f[a.campo] !== !!jogador[a.campo]);
   const dados = { nome: String(f.nome).trim(), cidade: String(f.cidade || "").trim() || null,
@@ -15248,8 +15327,7 @@ function renderPerfilJogador() {
           <h2>Dados pessoais</h2>
           <p>O nome aparece nas suas avaliações.</p>
           ${avisoDoNomeSuspenso("minha_conta")}
-          <label class="field-label" for="jog-nome">Nome e sobrenome</label>
-          <input class="form-field jog-campo" data-campo="nome" id="jog-nome" autocomplete="name" value="${esc(f.nome || "")}" style="margin-top:0" />
+          ${camposNomeESobrenome("jog", f)}
           <label class="field-label" for="jog-cidade">Cidade</label>
           <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" value="${esc(f.cidade || "")}" style="margin-top:0" />
           <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
@@ -15444,6 +15522,9 @@ function ligarEventosJogador() {
   if (overlay) overlay.onclick = (e) => { if (e.target === overlay) fechar(); };
   document.querySelectorAll(".jog-campo").forEach(el => {
     el.oninput = (e) => { window.__jog = { ...(window.__jog || {}), [el.dataset.campo]: e.target.value }; };
+  });
+  document.querySelectorAll('.nome-parte[data-de="jog"]').forEach(el => {
+    el.oninput = (e) => { window.__jog = mudarParteDoNome({ ...(window.__jog || {}) }, el.dataset.parte, e.target.value); };
   });
   document.querySelectorAll(".jog-aviso").forEach(el => {
     el.onchange = (e) => { window.__jog = { ...(window.__jog || {}), [el.dataset.campo]: e.target.checked }; };
@@ -19505,8 +19586,10 @@ function renderCourtPage(c) {
               </section>
 
               ${/* O contato logo depois das opções (pedido de 26/10/2026: "os
-                   contatos pode deixar mais acima"); o "é o responsável?" e o
-                   "Algo errado nesta ficha?" seguem no fim. */ ""}
+                   contatos pode deixar mais acima"); o "Confirmada pela
+                   academia", o "é o responsável?" e o "Algo errado nesta
+                   ficha?" seguem no fim (27/10/2026: "deixe isso no final,
+                   era só os contatos mais para cima"). */ ""}
               <section class="ht-sec" id="ht-contato">
                 <h3 class="sec-title">Contato</h3>
                 <div class="cta-col" style="margin-top:0">
@@ -19516,7 +19599,6 @@ function renderCourtPage(c) {
                   <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
                 </div>
                 ${(ehMinha(c) || ehDaMinhaConta(c)) && whatsappNovoDe(c.id) && whatsappNovoDe(c.id).numero ? `<p class="footnote ficha-whatsapp-novo">Só vocês veem isto: o WhatsApp ${esc(telefoneBonito(whatsappNovoDe(c.id).numero))} precisa de confirmação e não fica público até ser confirmado. <a href="/parceiros/whatsapp" data-pc="whatsapp">Ver ›</a></p>` : ""}
-                <div id="ficha-confirmacao">${c.confirmada ? linhaDaFichaConfirmada(c) : avisoDaFichaBasica()}</div>
               </section>
 
               <section class="ht-sec" id="avaliacoes">
@@ -19575,6 +19657,7 @@ function renderCourtPage(c) {
                 </section>` : ""}
 
               <div class="ht-sec ht-sec-fim">
+                <div id="ficha-confirmacao">${c.confirmada ? linhaDaFichaConfirmada(c) : avisoDaFichaBasica()}</div>
                 ${ehMinha(c) || ehDaMinhaConta(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="/parceiros/cadastro?academia=${idCurto(c.id)}" data-pc-reivindicar="${idCurto(c.id)}">Gerencie a ficha no GuiaTennis Parceiros</a>: atualize os dados, responda às avaliações e veja quem viu a academia.</p>`}
                 ${c.source === "osm" ? `<p class="footnote">Nome e localização: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>.</p>` : ""}
                 ${ehMinha(c) || ehDaMinhaConta(c) || isAdmin ? "" : `
@@ -22718,8 +22801,9 @@ function renderVisitorSetupSheet() {
         <p class="sheet-title display">Faça seu cadastro</p>
         <p class="subtitle" style="margin-top:4px">Nome e WhatsApp pra identificar suas avaliações e solicitações. É rápido, e só pedimos uma vez.</p>
 
-        <input class="form-field" id="visitor-nome" placeholder="Nome e sobrenome" autocomplete="name" value="${esc(v.nome)}" />
-        <input class="form-field" id="visitor-contato" placeholder="WhatsApp (com DDD)" value="${esc(v.contato)}" />
+        ${camposNomeESobrenome("visitor", v)}
+        <label class="field-label" for="visitor-contato">WhatsApp (com DDD)<span class="obrig">*</span></label>
+        <input class="form-field" id="visitor-contato" placeholder="11 90000-0000" inputmode="tel" value="${esc(v.contato)}" style="margin-top:0" />
 
         ${state.visitorError ? `<div class="form-error">${icon('warning',13)} ${esc(state.visitorError)}</div>` : ""}
 
@@ -24429,20 +24513,25 @@ function attachEvents() {
   if (visitorClose) visitorClose.onclick = () => { state.showVisitorSetup = false; state.pendingVisitorAction = null; render(); };
   if (visitorOverlay) visitorOverlay.onclick = (e) => { if (e.target === visitorOverlay) { state.showVisitorSetup = false; state.pendingVisitorAction = null; render(); } };
 
-  ["visitor-nome", "visitor-contato"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.oninput = () => { window.__visitante = { nome: document.getElementById("visitor-nome").value, contato: document.getElementById("visitor-contato").value }; };
+  const visitanteDaTela = () => window.__visitante || { ...(loadVisitor() || { nome: "", contato: "" }) };
+  document.querySelectorAll('.nome-parte[data-de="visitor"]').forEach(el => {
+    el.oninput = (e) => { window.__visitante = mudarParteDoNome({ ...visitanteDaTela() }, el.dataset.parte, e.target.value); };
   });
+  const visitorContato = document.getElementById("visitor-contato");
+  if (visitorContato) visitorContato.oninput = (e) => { window.__visitante = { ...visitanteDaTela(), contato: e.target.value }; };
   const visitorSubmit = document.getElementById("visitor-submit");
   if (visitorSubmit) visitorSubmit.onclick = () => {
-    const nome = document.getElementById("visitor-nome").value.trim();
+    const v = visitanteDaTela();
+    const nome = String(v.nome || "").trim();
     const contato = document.getElementById("visitor-contato").value.trim();
-    if (!nome || !contato) {
-      state.visitorError = "Preencha nome e WhatsApp.";
+    const erroNome = erroDoNome(v);
+    if (erroNome === "Falta o nome e o sobrenome." && !contato) {
+      state.visitorError = "Preencha nome, sobrenome e WhatsApp.";
       render();
       return;
     }
-    if (!temSobrenome(nome)) { state.visitorError = "Preencha o sobrenome."; render(); return; }
+    if (erroNome) { state.visitorError = erroNome; render(); return; }
+    if (!contato) { state.visitorError = "Preencha o WhatsApp."; render(); return; }
     saveVisitor({ nome, contato });
     window.__visitante = null;
     state.showVisitorSetup = false;
@@ -25789,7 +25878,15 @@ async function doSearch(opcoes = {}) {
       ].filter(Boolean);
 
       let result = null;
-      for (const q of tentativas) {
+      // "Bairro, cidade": primeiro, só o que fica na cidade digitada.
+      const naCidade = cidadeDoTermo(termo);
+      if (naCidade) {
+        for (const q of [`${termo}, Brasil`, termo]) {
+          try { result = await geocodeAddress(q, undefined, naCidade); break; } catch (e) { /* tenta a próxima */ }
+        }
+        if (!result) { try { result = await geocodeNaCidade(naCidade.lugar, naCidade.cidade); } catch (e) { /* segue como antes */ } }
+      }
+      for (const q of result ? [] : tentativas) {
         try { result = await geocodeAddress(q); break; } catch (e) { /* tenta a próxima */ }
       }
       if (!result) throw new Error("Não achei esse endereço ou local. Tente incluir o bairro e a cidade.");

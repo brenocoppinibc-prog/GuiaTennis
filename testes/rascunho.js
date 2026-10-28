@@ -86,11 +86,12 @@ const FOTO = 'data:image/jpeg;base64,' + 'A'.repeat(4000);
   await page.fill('#jog-email', 'nova@exemplo.com');
   await page.click('#jog-continuar');
   await page.waitForTimeout(400);
-  await page.fill('#jog-nome', 'Nova Jogadora');
+  await page.fill('#jog-nome', 'Nova');
+  await page.fill('#jog-sobrenome', 'Jogadora');
   await page.waitForTimeout(400);
   await page.reload();
   await page.waitForTimeout(900);
-  t = await page.evaluate(() => ({ tela: state.jogadorTela, nome: document.getElementById('jog-nome')?.value, link: location.search }));
+  t = await page.evaluate(() => ({ tela: state.jogadorTela, nome: [document.getElementById('jog-nome')?.value, document.getElementById('jog-sobrenome')?.value].join(' '), link: location.search }));
   ok(t.tela === 'criar' && t.nome === 'Nova Jogadora', 'recarregou no criar conta: volta no mesmo passo, com o nome — ' + JSON.stringify(t));
   await browser.close();
 

@@ -128,9 +128,10 @@ teste")
 > academia" volta para o fim da ficha (só o contato fica mais acima); nome
 > e sobrenome em dois campos obrigatórios, como no Parceiros (criar conta,
 > Minha conta e "Faça seu cadastro"). Sem SQL; seção 72 do PR, passo 98.
-> Testes: `busca-bairro-cidade.js` (novo) e os afetados, sem falha; a
-> bateria completa das regras 165 e 166 (71 arquivos do navegador) entra no
-> próximo commit.
+> Testes depois das regras 165 e 166: **2.054 verificações** nos 71
+> arquivos do navegador (novos: `nome-suspenso.js` e
+> `busca-bairro-cidade.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
+> nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4425,7 +4426,8 @@ cobra taxa e não fica no meio** da negociação.
       ("Preencha o sobrenome.", e "da"/"de" sozinhos não contam).
     Testes: `busca-bairro-cidade.js` (novo), `ficha-hoteis.js` (a
     confirmação no fim), `jogador.js` (os dois campos, o sobrenome
-    obrigatório e o "Faça seu cadastro") e os que preenchem o nome
+    obrigatório e o "Faça seu cadastro"), `codigo-so-em-disputa.js` (o
+    texto da confirmação no fim) e os que preenchem o nome
     (`aviso-ao-sair`, `convite-chamadas`, `nome-suspenso`, `parceiros`,
     `rascunho`, `senha`, `viagem`, `volta-e-resumo`).
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")

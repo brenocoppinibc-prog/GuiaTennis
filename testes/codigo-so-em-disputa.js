@@ -189,10 +189,10 @@ async function pedirPelaTela(page, busca, id) {
     selo: !!document.querySelector('.court-name .selo-confirmada'),
     rotulo: document.querySelector('.court-name .selo-confirmada')?.getAttribute('aria-label') || '',
     topo: !!document.querySelector('.ht-head .ficha-confirmada, .ht-head .ficha-basica'),
-    fim: document.querySelector('#ht-contato #ficha-confirmacao')?.innerText || '',
+    fim: document.querySelector('.ht-sec-fim #ficha-confirmacao')?.innerText || '',
   }));
   ok(r.selo && r.rotulo.includes('Confirmada pela academia') && !r.topo, 'ficha confirmada: o selo ao lado do nome, sem o texto no topo');
-  ok(r.fim.includes('Confirmada pela academia') && r.fim.includes('atualizada há 4 dias'), 'o texto fica no fim da ficha, em Contato — ' + r.fim);
+  ok(r.fim.includes('Confirmada pela academia') && r.fim.includes('atualizada há 4 dias'), 'o texto fica no fim da ficha (regra 166) — ' + r.fim);
   await page.click('#ir-confirmacao');
   await page.waitForTimeout(700);
   const visivel = await page.evaluate(() => { const b = document.getElementById('ficha-confirmacao').getBoundingClientRect(); return b.top >= 0 && b.bottom <= innerHeight; });

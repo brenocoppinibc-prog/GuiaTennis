@@ -22,7 +22,7 @@ o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
 `ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
 teste")
 **Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** contato@guiatennis.com.br (desde 08/10/2026, regra 67; chega no Gmail guiatennis1@gmail.com, que continua sendo o login do admin)
-**Atualizado em:** 28/10/2026 (regra 166)
+**Atualizado em:** 28/10/2026 (regra 167)
 
 > **Estado (26/10/2026):** o Breno trocou de chat: leia o "Resumo (26/10/2026,
 > ao trocar de chat)" na seção 11 (regras 150 a 155).
@@ -132,6 +132,16 @@ teste")
 > arquivos do navegador (novos: `nome-suspenso.js` e
 > `busca-bairro-cidade.js`), mais `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`,
 > nenhuma falha.
+>
+> Depois: **regra 167** — a avaliação editada, como o Google Maps e o
+> Instagram: cada conta avalia uma vez cada academia e edita a nota e o
+> texto quando quiser ("Sua avaliação" com "Editar avaliação" na ficha, e
+> "Editar" no próprio cartão); a avaliação e a resposta da academia
+> editadas mostram "editada"; a academia recebe um e-mail quando uma
+> avaliação é editada. SQL `20261028120000_avaliacao_editada`; seção 73 do
+> PR, passo 99. Testes: `avaliacao-editada.js` (novo) com 34 verificações e
+> `banco-emails.py` com **679 conferências**, nenhuma falha; a bateria
+> completa rodando.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).
@@ -4430,6 +4440,39 @@ cobra taxa e não fica no meio** da negociação.
     texto da confirmação no fim) e os que preenchem o nome
     (`aviso-ao-sair`, `convite-chamadas`, `nome-suspenso`, `parceiros`,
     `rascunho`, `senha`, `viagem`, `volta-e-resumo`).
+167. **A avaliação editada e a resposta editada** (pedido de 28/10/2026:
+    "Avaliações em academias podem ser feitas uma vez e podem ser editadas.
+    E aparecer que foi editada. o mesmo pode ser feito com as academias").
+    Como o Google Maps (a sua avaliação em cima, com "Editar") e o "Editado"
+    do Instagram.
+    - **Uma vez, editável:** cada conta continua avaliando uma vez cada
+      academia (`avaliacoes_uma_por_conta`). Quem já avaliou vê, no lugar do
+      formulário, a caixa "Sua avaliação" (a nota, o texto, a data e
+      "Editar avaliação"; `caixaDaMinhaAvaliacao`); o próprio cartão vem
+      primeiro na lista, com "Sua avaliação · Editar" e sem "Denunciar".
+      Editando, as estrelas e o texto voltam preenchidos, o aceite ("Minha
+      avaliação é verídica e segue os Termos de Uso.") é marcado de novo, e
+      "Salvar alterações" ou "Cancelar". Salvar sem mudar nada não marca
+      "editada". O rascunho da edição volta se a página recarregar
+      (`editandoAvaliacao` no rascunho), e sair com a nota mudada pergunta
+      antes; abrir a edição sem mexer, não.
+    - **"editada":** a avaliação editada mostra "· editada" depois da data
+      (que continua a de quando avaliou), na ficha, no painel do Parceiros e
+      no admin. A resposta da academia, uma por avaliação, segue a mesma
+      regra: "Editar resposta", e "editada" só quando o texto muda (antes, o
+      site comparava `updated_at` com `created_at`).
+    - **Quem não edita:** com o nome suspenso (regra 165), a conta não avalia
+      nem edita; quem passou a administrar a academia não edita a avaliação
+      dela. A academia não mexe na avaliação.
+    - **E-mail à academia:** "<academia>: uma avaliação foi editada (N de
+      5)", com a nota nova, a de antes (se mudou) e o texto; se a academia já
+      respondeu, lembra que a resposta continua embaixo e o botão é "Ver a
+      avaliação". No máximo um por avaliação por dia.
+    - Termos (a conta do jogador e as respostas da academia) e Privacidade
+      (avaliações), com a data de 28/10/2026; "Como funcionam as avaliações", o "Por que confiar" e o
+      chat ("Editar a minha avaliação"; "Avaliações da academia" no
+      Parceiros). SQL `20261028120000_avaliacao_editada`.
+    Testes: `avaliacao-editada.js` (novo) e a seção 40 do `banco-emails.py`.
 20. **Contato do GuiaTennis fica por último** no menu ("Fale com a gente")
     e no rodapé (última coluna) — pedido de 01/10/2026.
 
@@ -4821,7 +4864,16 @@ Cada faixa é `{ de: "06:00", ate: "22:00", fechado: false }`. No modo
 
 ### `avaliacoes`
 `id, academia_id, stars, comment, nome_autor, contato_autor, created_at,
-user_id, autor_oculto`
+user_id, autor_oculto, editada_em`
+
+**`editada_em`** (28/10/2026, regra 167; SQL `20261028120000_avaliacao_editada`):
+a última vez que o autor mudou a nota ou o texto; o site mostra "editada".
+Só `editar_minha_avaliacao(p_avaliacao, p_stars, p_comment)` escreve (o
+site não muda a linha direto); as outras mudanças (o nome da conta, a conta
+excluída) não contam. `minhas_avaliacoes()` devolve as avaliações da conta
+(`user_id` não é público). O gatilho `aviso_de_avaliacao_editada` manda o
+e-mail `avaliacao_editada` a quem administra a academia (um por avaliação
+por dia). Visitante lê.
 
 **`autor_oculto`** (27/10/2026, regra 165; SQL `20261027120000_nome_suspenso`):
 a avaliação fica sem o nome ("Usuário do GuiaTennis" no site): a conta
@@ -4845,8 +4897,10 @@ exclusão no fim, `excluir_conta_pelo_nome`). Gatilho
 
 ### `respostas` (30/09/2026)
 `avaliacao_id (chave, uma resposta por avaliação), texto, user_id,
-created_at, updated_at`. Resposta pública da academia embaixo da avaliação
-("Resposta da academia"). O visitante lê tudo menos `user_id`.
+created_at, updated_at, editada_em`. Resposta pública da academia embaixo da avaliação
+("Resposta da academia"). O visitante lê tudo menos `user_id`. `editada_em`
+(regra 167): o gatilho `resposta_editada` marca quando o texto muda; o site
+mostra "editada".
 
 ### `academia_acessos` (30/09/2026)
 `user_id (auth.users), academia_id, usuario, nome_responsavel, cargo,
@@ -5348,7 +5402,8 @@ colocados pelo Breno). Aqui:
   A lista das contas de jogador o painel lê direto de `jogadores` (o admin
   já podia ler, pela regra da tabela). Tipos de e-mail na fila:
   `avaliacao`, `pedido_responsavel`, `pedido_guiatennis`, `pedido_aceito`,
-  `viagem`, `academias_novas` (e, depois, `ficha_parada`, regra 85).
+  `viagem`, `academias_novas` (e, depois, `ficha_parada`, regra 85, e
+  `avaliacao_editada`, regra 167).
 - `jogadores` ganhou (SQL `20261009140000`, regra 86) `visto_em` (só o
   banco escreve, por `marcar_visita_da_conta`), `lembrete_de_volta`
   (começa ligado; a conta muda) e `lembrado_de_volta_em`. Tipos novos na
@@ -5491,8 +5546,8 @@ banco de teste com o PR e no de verdade com o merge, sozinho. Pode rodar
 de novo sem estragar.
 
 **PR #5 (até 26/10/2026):** o SQL do PR entra no banco de teste a cada push
-e no de verdade com o merge, sozinho; o último é `20261027120000_nome_suspenso`
-(regra 165), depois de `20261026220000_catalogo` (regra 162), depois de
+e no de verdade com o merge, sozinho; o último é `20261028120000_avaliacao_editada`
+(regra 167), depois de `20261027120000_nome_suspenso` (regra 165), depois de `20261026220000_catalogo` (regra 162), depois de
 `20261026200000_academia_fechada_fica_guardada` (regra 158), depois de
 `20261026180000_so_o_que_esta_certo` (regra 157) e
 `20261026120000_veracidade` (regra 156).
@@ -6418,8 +6473,12 @@ excluídas; o e-mail do nome da academia trocado pelo admin; SQL
 `20261027120000_nome_suspenso`; seção 71 do PR, passo 97). Depois, a
 **regra 166** (a busca "bairro, cidade" na cidade digitada; o "Confirmada
 pela academia" de volta ao fim da ficha; nome e sobrenome em dois campos
-obrigatórios, como no Parceiros; seção 72 do PR, passo 98). Próximos
-números: **regra 167**, **seção 73** da descrição do PR e **passo 99**.
+obrigatórios, como no Parceiros; seção 72 do PR, passo 98). Depois, a
+**regra 167** (a avaliação feita uma vez e editável, com "editada", e a
+resposta da academia do mesmo jeito; o e-mail à academia quando uma
+avaliação é editada; SQL `20261028120000_avaliacao_editada`; seção 73 do
+PR, passo 99). Próximos números: **regra 168**, **seção 74** da descrição
+do PR e **passo 100**.
 
 **Resumo (23/10/2026, ao trocar de chat).** O PR #5 (branch
 `ccr-0a610d86-k6plx0` → `main`) está **verde e sem conflito**, com tudo

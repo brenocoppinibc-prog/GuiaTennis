@@ -368,6 +368,16 @@
           t.filter(pass).filter(r => r.user_id === j.user_id).forEach(r => { r.avisar = !!payload.avisar; });
           return { data:null, error:null };
         }
+        // Gatilho resposta_editada (SQL 20261028120000): "editada" só quando o texto muda.
+        if (table === "respostas") {
+          t.filter(pass).forEach(r => {
+            const agora = new Date().toISOString();
+            if ("texto" in payload && String(payload.texto).trim() !== String(r.texto).trim()) r.editada_em = agora;
+            if ("texto" in payload) r.texto = payload.texto;
+            r.updated_at = agora;
+          });
+          return { data:null, error:null };
+        }
         const mudanca = JSON.parse(JSON.stringify(payload));
         // Gatilho marcar_dados_atualizados (SQL 20261007120000): só o banco
         // escreve a data; muda quando a informação muda ou a academia salva.
@@ -419,6 +429,8 @@
         if (table === "avaliacoes") { if (!souAdmin()) return { data:null, error:{ message:"permission denied" } }; t.filter(pass).forEach(r => t.splice(t.indexOf(r), 1)); }
         return { data:null, error:null };
       }
+      // Banco antes do SQL 20261028120000 (a avaliação editada).
+      if (window.__semAvaliacaoEditada && (table === "avaliacoes" || table === "respostas") && colunas.includes("editada_em")) return { data:null, error:{ message:`column ${table}.editada_em does not exist` } };
       // Depois do SQL-SEGURANCA.sql, o visitante não lê a linha inteira.
       if (window.__colunasFechadas && !window.__admin && colunas === "*" && (table === "academias" || table === "avaliacoes")) return { data:null, error:{ message:"permission denied for table " + table } };
       // Antes do SQL, pode faltar coluna nova.
@@ -1278,6 +1290,28 @@
       db.pedidos_de_acesso = db.pedidos_de_acesso.filter(y => y.user_id !== a.p_user); window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
       window.__db.contas_excluidas = db.contas_excluidas;
       return { data: null, error: null };
+    }
+    // Avaliação editada (regra 167). window.__semAvaliacaoEditada finge o banco sem o SQL 20261028120000.
+    if ((nome === "minhas_avaliacoes" || nome === "editar_minha_avaliacao") && window.__semAvaliacaoEditada) return semFuncao;
+    const daConta = v => ({ id: v.id, academia_id: v.academia_id, stars: v.stars, comment: v.comment, created_at: v.created_at, editada_em: v.editada_em || null });
+    if (nome === "minhas_avaliacoes") {
+      if (!sessao) return erro("permission denied for function minhas_avaliacoes", "42501");
+      return { data: db.avaliacoes.filter(v => v.user_id && v.user_id === sessao.user.id).map(daConta), error:null };
+    }
+    if (nome === "editar_minha_avaliacao") {
+      if (!sessao) return erro("permission denied for function editar_minha_avaliacao", "42501");
+      const v = db.avaliacoes.find(r => r.id === a.p_avaliacao && r.user_id === sessao.user.id);
+      if (!v) return erro("Essa avaliação não é da sua conta.", "42501");
+      if (!(a.p_stars >= 1 && a.p_stars <= 5)) return erro("Escolha de 1 a 5 estrelas.", "22023");
+      const texto = String(a.p_comment || "").trim();
+      if (texto.length > 2000) return erro("O texto passa de 2.000 letras.", "22023");
+      if (suspensaoAtiva(sessao.user.id)) return erro("O seu nome está suspenso: troque o nome em Minha conta para editar a avaliação.", "42501");
+      if (vinculo(sessao.user.id, v.academia_id)) return erro("Você administra essa academia: responda às avaliações pelo painel do GuiaTennis Parceiros.", "42501");
+      if (a.p_stars !== v.stars || texto !== String(v.comment || "").trim()) {
+        Object.assign(v, { stars: a.p_stars, comment: texto, editada_em: new Date().toISOString() });
+        window.__editadas = (window.__editadas || 0) + 1;
+      }
+      return { data: [daConta(v)], error:null };
     }
     // Nome suspenso por 15 dias (regra 165). window.__semNomeSuspenso finge o banco sem o SQL.
     const REGRA_165 = ["meu_nome_suspenso", "nomes_suspensos_admin", "suspender_nome_admin", "suspender_nome_pela_avaliacao_admin", "cancelar_suspensao_admin", "nome_trocado_conferido_admin"];

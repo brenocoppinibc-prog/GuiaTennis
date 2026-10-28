@@ -35,6 +35,7 @@ async function abrir(opts = {}) {
     // Nomes suspensos já no banco (regra 165) e o banco sem o SQL 20261027120000.
     if (o.nomesSuspensos) window.__nomesSuspensosIniciais = o.nomesSuspensos;
     if (o.semNomeSuspenso) window.__semNomeSuspenso = true;
+    if (o.semAvaliacaoEditada) window.__semAvaliacaoEditada = true;
     if (o.respostas) window.__respostasIniciais = o.respostas;
     if (o.promocoes) window.__promocoesIniciais = o.promocoes;
     if (o.semPromocoes) window.__semPromocoes = true;

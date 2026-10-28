@@ -2150,5 +2150,93 @@ sql(f"update public.academias set name = '{nome_antes}' where id = '{PINHEIROS}'
 ok(fila("tipo = 'academia_nome_alterado'") == "0", "quem não é o admin (a academia, o banco) trocando o nome não manda o e-mail")
 sql("truncate public.emails_a_enviar")
 
+# 40. Avaliação editada e resposta editada (regra 167) -----------------------------
+print("\n# Avaliação editada")
+sql("truncate public.emails_a_enviar")
+ed_email = f"ed{sufixo}@exemplo.com"
+ed = jogador("Edu Editor", ed_email)
+certo, saida = sql(f"insert into public.avaliacoes (academia_id, stars, comment) values ('{PINHEIROS}', 3, 'Primeira versão do Edu')", papel="authenticated", user=ed, email=ed_email)
+ok(certo, "o jogador avalia" + ("" if certo else ": " + saida))
+rev_ed = um("select id from public.avaliacoes where comment = 'Primeira versão do Edu'")
+criada = um(f"select created_at from public.avaliacoes where id = '{rev_ed}'")
+ok(um("select academia_id || '|' || stars || '|' || comment || '|' || (editada_em is null) from public.minhas_avaliacoes()", papel="authenticated", user=ed) == f"{PINHEIROS}|3|Primeira versão do Edu|true",
+   "minhas_avaliacoes() devolve a avaliação da conta, sem \"editada\"")
+ok(um("select count(*) from public.minhas_avaliacoes()", papel="authenticated", user=carla) == "1", "cada conta vê só as dela (a Carla tem a dela)")
+certo, saida = sql("select count(*) from public.minhas_avaliacoes()", papel="anon")
+ok(not certo, "o visitante não chama minhas_avaliacoes()")
+ok(um(f"select editada_em is null from public.avaliacoes where id = '{rev_ed}'", papel="anon") == "t", "o visitante lê a coluna editada_em")
+EDITAR = "select stars || '|' || comment || '|' || (editada_em is not null) from public.editar_minha_avaliacao('{id}', {n}, '{t}')"
+certo, saida = sql(EDITAR.format(id=rev_ed, n=1, t="Da Carla"), papel="authenticated", user=carla)
+ok(not certo and "não é da sua conta" in saida, "outra conta não edita a avaliação")
+certo, saida = sql(EDITAR.format(id=rev_ed, n=1, t="Do visitante"), papel="anon")
+ok(not certo, "o visitante não edita")
+certo, saida = sql(f"update public.avaliacoes set stars = 1 where id = '{rev_ed}'", papel="authenticated", user=ed)
+ok(um(f"select stars from public.avaliacoes where id = '{rev_ed}'") == "3", "mudar a linha direto não passa (só pela função)")
+ok(um(EDITAR.format(id=rev_ed, n=3, t="  Primeira versão do Edu  "), papel="authenticated", user=ed) == "3|Primeira versão do Edu|false",
+   "salvar sem mudar nada não marca \"editada\"")
+ok(fila("tipo = 'avaliacao_editada'") == "0", "e não manda e-mail")
+certo, saida = sql(EDITAR.format(id=rev_ed, n=0, t="x"), papel="authenticated", user=ed)
+ok(not certo and "1 a 5" in saida, "sem estrela, não salva")
+certo, saida = sql(EDITAR.format(id=rev_ed, n=4, t="x" * 2001), papel="authenticated", user=ed)
+ok(not certo and "2.000" in saida, "texto acima de 2.000 letras, não salva")
+ok(um(EDITAR.format(id=rev_ed, n=5, t="Segunda versão: <b>melhorou</b> & muito"), papel="authenticated", user=ed) == "5|Segunda versão: <b>melhorou</b> & muito|true",
+   "o autor muda a nota e o texto, e fica \"editada\"")
+ok(um(f"select created_at = '{criada}'::timestamptz and user_id = '{ed}' and nome_autor = 'Edu Editor' from public.avaliacoes where id = '{rev_ed}'") == "t",
+   "a data, a conta e o nome continuam os mesmos")
+mail = um(f"select assunto from public.emails_a_enviar where tipo = 'avaliacao_editada' and para = 'ana{sufixo}@exemplo.com'")
+ok(mail == "Academia Exemplo Pinheiros: uma avaliação foi editada (5 de 5)", "quem administra a academia recebe o e-mail — " + str(mail))
+ok(fila(f"tipo = 'avaliacao_editada' and para = 'beto{sufixo}@exemplo.com'") == "0", "quem não confirmou o e-mail, não")
+texto = um(f"select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'avaliacao_editada'") or ""
+ok("Edu Editor editou a avaliação" in texto and "★★★★★ (5 de 5) (antes, 3 de 5)" in texto and "Segunda versão" in texto and "aparece como editada" in texto,
+   "o e-mail diz quem editou, a nota nova, a de antes e o texto — " + texto[:100])
+html = um("select html from public.emails_a_enviar where tipo = 'avaliacao_editada'") or ""
+ok("&lt;b&gt;melhorou&lt;/b&gt; &amp; muito" in html and "<b>melhorou" not in html, "o texto vai escapado no HTML")
+ok("Responder a avaliação" in html and "utm_source=Email-avaliacao-editada" in html, "sem resposta, o botão é \"Responder a avaliação\"")
+antes = fila("tipo = 'avaliacao_editada'")
+um(EDITAR.format(id=rev_ed, n=4, t="Terceira versão"), papel="authenticated", user=ed)
+ok(um(f"select stars || '|' || comment from public.avaliacoes where id = '{rev_ed}'") == "4|Terceira versão" and fila("tipo = 'avaliacao_editada'") == antes,
+   "editar de novo no mesmo dia muda a avaliação, sem outro e-mail")
+sql(f"update public.jogadores set nome = 'Edu Editor Silva' where user_id = '{ed}'", papel="authenticated", user=ed)
+editada = um(f"select editada_em from public.avaliacoes where id = '{rev_ed}'")
+sql("truncate public.emails_a_enviar")
+sql(f"update public.jogadores set nome = 'Edu Editor' where user_id = '{ed}'", papel="authenticated", user=ed)
+ok(um(f"select editada_em = '{editada}'::timestamptz from public.avaliacoes where id = '{rev_ed}'") == "t" and fila("tipo = 'avaliacao_editada'") == "0",
+   "trocar o nome da conta não marca a avaliação como editada")
+
+print("\n# Resposta da academia editada")
+certo, saida = sql(f"insert into public.respostas (avaliacao_id, texto) values ('{rev_ed}', 'Obrigado, Edu!')", papel="authenticated", user=dono, email=f"ana{sufixo}@exemplo.com")
+ok(certo, "a academia responde" + ("" if certo else ": " + saida))
+RESP = f"select '[' || texto || ']' || (editada_em is not null) from public.respostas where avaliacao_id = '{rev_ed}'"
+ok(um(RESP, papel="anon") == "[Obrigado, Edu!]false", "a resposta nova, sem \"editada\" (o visitante lê editada_em)")
+certo, saida = sql(f"insert into public.respostas (avaliacao_id, texto) values ('{rev_ed}', 'Outra resposta')", papel="authenticated", user=dono, email=f"ana{sufixo}@exemplo.com")
+ok(not certo, "uma resposta por avaliação")
+sql(f"update public.respostas set texto = ' Obrigado, Edu! ' where avaliacao_id = '{rev_ed}'", papel="authenticated", user=dono, email=f"ana{sufixo}@exemplo.com")
+ok(um(RESP) == "[ Obrigado, Edu! ]false", "salvar o mesmo texto não marca \"editada\"")
+sql(f"update public.respostas set texto = 'Obrigado, Edu! Volte sempre.' where avaliacao_id = '{rev_ed}'", papel="authenticated", user=dono, email=f"ana{sufixo}@exemplo.com")
+ok(um(RESP) == "[Obrigado, Edu! Volte sempre.]true", "mudar o texto marca \"editada\"")
+certo, saida = sql(f"update public.respostas set editada_em = null where avaliacao_id = '{rev_ed}'", papel="authenticated", user=dono, email=f"ana{sufixo}@exemplo.com")
+ok(not certo and um(RESP) == "[Obrigado, Edu! Volte sempre.]true", "a academia não apaga a marca")
+sql("truncate public.emails_a_enviar")
+um(EDITAR.format(id=rev_ed, n=2, t="Quarta versão"), papel="authenticated", user=ed)
+html = um("select html from public.emails_a_enviar where tipo = 'avaliacao_editada'") or ""
+ok("A resposta da academia continua embaixo dela" in html and "Ver a avaliação" in html and "(antes, 4 de 5)" in html,
+   "respondida, o e-mail lembra que a resposta continua e o botão é \"Ver a avaliação\"")
+
+print("\n# Quem não edita")
+sid5 = um(f"select public.suspender_nome_admin('{ed}', 'Nome a revisar')", **admin_jwt)
+certo, saida = sql(EDITAR.format(id=rev_ed, n=5, t="Com o nome suspenso"), papel="authenticated", user=ed)
+ok(not certo and "nome está suspenso" in saida, "com o nome suspenso, não edita")
+sql(f"select public.cancelar_suspensao_admin('{sid5}')", **admin_jwt)
+sql(f"set local session_replication_role = replica; insert into public.avaliacoes (academia_id, stars, comment, nome_autor, contato_autor, user_id) values ('{PINHEIROS}', 5, 'Antes de administrar', 'Ana Dona', 'ana{sufixo}@exemplo.com', '{dono}')")
+rev_ana = um("select id from public.avaliacoes where comment = 'Antes de administrar'")
+certo, saida = sql(EDITAR.format(id=rev_ana, n=5, t="Agora administro"), papel="authenticated", user=dono)
+ok(not certo and "administra essa academia" in saida, "quem passou a administrar a academia não edita a avaliação dela")
+sql(f"delete from public.avaliacoes where id = '{rev_ana}'")
+sql(f"set local session_replication_role = replica; update public.respostas set texto = 'Antiga editada', created_at = now() - interval '2 days', updated_at = now() - interval '1 day', editada_em = null where avaliacao_id = '{rev_ed}'")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261028120000_avaliacao_editada.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+ok(um(RESP) == "[Antiga editada]true", "as respostas que o site já mostrava como editadas continuam editadas")
+sql("truncate public.emails_a_enviar")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

@@ -139,12 +139,12 @@ const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ
   await salvarFicha(page);
   await page.waitForTimeout(300);
   const aviso = await texto(page, '#reg-falta-caixa');
-  ok(aviso.startsWith('Para concluir, falta preencher: Nome e endereço*, Modalidade e preço* e Quadras*') && aviso.includes('* Obrigatório: sem isso, a ficha não pode ser enviada.'),
+  ok(aviso.startsWith('Para concluir, falta preencher: Nome e endereço* e Quadras*') && aviso.includes('* Obrigatório: sem isso, a ficha não pode ser enviada.'),
     'tentou concluir sem o obrigatório: o aviso lista só o obrigatório, com a legenda do * — ' + aviso);
   ok(!aviso.includes('Fotos') && !aviso.includes('Horário'), 'as partes opcionais não entram no aviso');
-  await page.click('#reg-falta [data-reg-passo="1"]');
+  await page.click('#reg-falta [data-reg-passo="3"]');
   await page.waitForTimeout(150);
-  ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo').dataset.passo === 'precos'), 'um toque leva até a parte');
+  ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo').dataset.passo === 'quadras'), 'um toque leva até a parte');
   await page.evaluate(() => { window.__form.modalidades = ['locacao']; window.__form.quadras = { saibro_coberta: 1 }; Object.assign(window.__form, { address: 'Rua A', numero: '10', bairro: 'Pinheiros', cidade: 'São Paulo' }); render(); });
   ok(!(await page.$('#reg-falta')), 'preencheu o obrigatório: o aviso some');
 

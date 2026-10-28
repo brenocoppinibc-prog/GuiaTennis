@@ -12,20 +12,13 @@
 const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
-// A grade de um bloco: "Individual=150/520 Grupo=·/300" (· = em branco).
+// Os cartões de um bloco: "individual=150/520 grupo=·/300" (· = em branco).
 const grade = (page, bloco) => page.evaluate((bloco) => {
-  const g = document.querySelector(`[data-cat-grade="${bloco}"]`);
-  if (!g) return '';
-  const linhas = {};
-  g.querySelectorAll('[data-cat-valor], [data-cat-oferece]').forEach(x => {
-    const chave = (x.dataset.catValor || x.dataset.catOferece).split(':');
-    const linha = chave.slice(0, -1).join(':');
-    const v = x.dataset.catValor !== undefined ? (x.value || '·') : (x.getAttribute('aria-pressed') === 'true' ? '✓' : '·');
-    (linhas[linha] = linhas[linha] || []).push(v);
-  });
-  return Object.keys(linhas).map(l => l.split(':').pop() + '=' + linhas[l].join('/')).join(' ');
+  const b = document.querySelector(`[data-cat-bloco="${bloco}"]`) || document.getElementById(bloco);
+  if (!b) return '';
+  return [...b.querySelectorAll('[data-cat-opcao]')].map(c => c.dataset.catOpcao.split(':').pop() + '=' + [...c.querySelectorAll('[data-cat-valor]')].map(x => x.value || '·').join('/')).join(' ');
 }, bloco);
-const chipsDe = (page, bloco) => page.evaluate((bloco) => [...document.querySelectorAll(`[data-cat-bloco="${bloco}"] [data-cat-formato]`)].map(b => (b.getAttribute('aria-pressed') === 'true' ? '✓' : '') + b.innerText.trim()).join(','), bloco);
+const chipsDe = (page, sel) => page.evaluate((sel) => [...document.querySelectorAll(sel)].map(b => (b.getAttribute('aria-pressed') === 'true' ? '✓' : '') + b.innerText.trim()).join(','), sel);
 
 const CATALOGO = [
   // Duração, vezes, alunos e observação que vierem de antes são ignorados, e
@@ -35,73 +28,79 @@ const CATALOGO = [
   { tipo: 'grupo', cobranca: 'mensal', preco: '999' },
   { tipo: 'individual', cobranca: 'avulsa', preco: '150' },
   { tipo: 'dupla', cobranca: 'avulsa', preco: '90' },
-  // As aulas das crianças, com a idade (regra 168).
+  // As aulas das crianças, com a idade (regra 168), em duas faixas (regra 169).
+  { tipo: 'grupo', cobranca: 'mensal', preco: '250', publico: 'crianca', idadeDe: 13, idadeAte: 17 },
   { tipo: 'grupo', cobranca: 'mensal', preco: '220', publico: 'crianca', idadeDe: 6, idadeAte: 12 },
   { tipo: 'individual', cobranca: 'avulsa', preco: '110', publico: 'crianca', idadeDe: 6, idadeAte: 12 },
 ];
 
 (async () => {
-  // ---- a grade de preços, no cadastro da academia ----
+  // ---- o caminho das aulas, no cadastro da academia ----
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha' });
   await page.waitForTimeout(400);
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
   await irParte(page, 'precos');
-  let blocos = await page.evaluate(() => [...document.querySelectorAll('#cat-tabela .cat-bloco')].map(b => b.dataset.catBloco + ':' + b.querySelector('.cat-bloco-n').innerText).join(' | '));
-  ok(blocos === 'adulto:Aulas para adultos | crianca:Aulas para crianças', 'só com Aulas marcada: um bloco para as aulas de adultos e um para as das crianças — ' + blocos);
-  ok((await chipsDe(page, 'adulto')) === 'Individual,Dupla,Grupo' && (await chipsDe(page, 'crianca')) === 'Individual,Dupla,Grupo', 'cada bloco começa com os formatos para escolher, nenhum marcado');
-  ok(!(await page.$('[data-cat-grade]')) && !(await page.$('[data-cat-idade]')) && !(await page.$('[data-cat-copiar]')), 'sem formato escolhido, sem grade, sem idade e sem "Copiar"');
-
-  // Escolher os formatos abre as linhas da grade, com a avulsa e a mensal lado a lado.
+  ok((await texto(page, '.reg-titulo')) === 'Aulas' && (await chipsDe(page, '[data-cat-publico]')) === '✓Adultos,Crianças', 'a parte Aulas começa por "para quem": a academia que já dá aula vem com Adultos — ' + await chipsDe(page, '[data-cat-publico]'));
+  ok((await chipsDe(page, '[data-cat-bloco="adulto"] [data-cat-formato]')) === 'Individual,Dupla,Grupo' && !(await page.$('[data-cat-opcao]')), 'depois, quais aulas: os formatos, nenhum marcado, e nenhum cartão ainda');
   await page.click('[data-cat-formato="adulto:individual"]');
-  ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'adulto:individual:avulsa'), 'o formato escolhido já põe o cursor no valor avulso');
+  ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'adulto:individual:avulsa'), 'o formato escolhido abre o cartão, com o cursor no valor avulso');
   await page.click('[data-cat-formato="adulto:grupo"]');
-  ok((await grade(page, 'adulto')) === 'individual=·/· grupo=·/·', 'uma linha por formato escolhido, na ordem — ' + await grade(page, 'adulto'));
-  const cabecalho = await page.evaluate(() => [...document.querySelectorAll('[data-cat-grade="adulto"] .cat-col')].map(x => x.innerText.replace(/\s+/g, ' ')).join(' | '));
-  ok(cabecalho === 'Avulsa por aula | Mensal por mês', 'as colunas: avulsa por aula e mensal por mês — ' + cabecalho);
-  const rotulos = await page.evaluate(() => [...document.querySelectorAll('[data-cat-grade="adulto"] .cat-lin')].map(x => x.innerText.replace(/\s+/g, ' ')).join(' | '));
-  ok(rotulos === 'Individual | Grupo por pessoa', 'no grupo (e na dupla), o valor é por pessoa — ' + rotulos);
+  ok((await grade(page, 'adulto')) === 'individual=·/· grupo=·/·', 'um cartão por formato escolhido, na ordem — ' + await grade(page, 'adulto'));
+  const cartaoGrupo = await texto(page, '[data-cat-opcao="adulto:grupo"]');
+  ok(cartaoGrupo.startsWith('Aula em grupo valor por pessoa Avulsa por aula R$ Mensal por mês R$') && cartaoGrupo.includes('Foto desta aula'), 'cada cartão: o nome, a avulsa e a mensal e a foto daquela aula — ' + cartaoGrupo);
   const so = await texto(page, '#cat-tabela');
   ok(!/Duração|vezes por semana|alunos|Observação|horário/i.test(so), 'só modalidade e valor: sem duração, vezes, alunos, observação ou horário');
   await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '150');
   await page.fill('[data-cat-valor="adulto:individual:mensal"]', '520');
   await page.fill('[data-cat-valor="adulto:grupo:mensal"]', '3a00');
   ok((await page.inputValue('[data-cat-valor="adulto:grupo:mensal"]')) === '300', 'o valor só aceita números (e o traço da faixa)');
-  ok((await grade(page, 'adulto')) === 'individual=150/520 grupo=·/300', 'os valores ficam na grade — ' + await grade(page, 'adulto'));
 
-  // As aulas das crianças: "Copiar das aulas para adultos" e a idade.
-  ok((await texto(page, '[data-cat-copiar]')) === 'Copiar das aulas para adultos', 'com as aulas de adultos escolhidas, as das crianças oferecem "Copiar das aulas para adultos"');
-  await page.click('[data-cat-copiar]');
-  await page.waitForTimeout(150);
-  ok((await chipsDe(page, 'crianca')) === '✓Individual,Dupla,✓Grupo' && (await grade(page, 'crianca')) === 'individual=150/520 grupo=·/300', '"Copiar" traz os mesmos formatos e valores, para ajustar — ' + await grade(page, 'crianca'));
-  ok(!(await page.$('[data-cat-copiar]')), 'depois de copiar, o "Copiar" sai');
+  // As crianças: uma faixa de idade para cada turma.
+  await page.click('[data-cat-publico="crianca"]');
+  ok(await page.$('[data-cat-bloco="f1"]') && (await texto(page, '[data-cat-bloco="f1"] .cat-bloco-n')) === 'Aulas para crianças' && !(await page.$('[data-cat-faixa-tirar]')), '"Crianças" abre a primeira faixa de idade, sem o ✕ (é a única)');
   const idade = await page.evaluate(() => {
-    const el = document.querySelector('.cat-idade');
+    const el = document.querySelector('[data-cat-bloco="f1"] .cat-idade');
     const sel = [...el.querySelectorAll('select')];
     return { t: [...el.childNodes].map(n => n.tagName === 'SELECT' ? '[ ]' : n.textContent).join('').replace(/\s+/g, ' ').trim(), de: [...sel[0].options].map(o => o.value).join(',') };
   });
   ok(idade.t === 'Idade de [ ] a [ ] anos' && idade.de === ',' + Array.from({ length: 15 }, (_, i) => i + 3).join(','), 'a idade: "de … a … anos", de 3 a 17 — ' + JSON.stringify(idade));
-  await page.selectOption('[data-cat-idade="de"]', '12');
-  await page.selectOption('[data-cat-idade="ate"]', '6');
+  ok((await texto(page, '[data-cat-copiar="f1"]')) === 'Copiar das aulas para adultos', 'a faixa sem formato oferece "Copiar das aulas para adultos"');
+  await page.click('[data-cat-copiar="f1"]');
+  ok((await chipsDe(page, '[data-cat-bloco="f1"] [data-cat-formato]')) === '✓Individual,Dupla,✓Grupo' && (await grade(page, 'f1')) === 'individual=150/520 grupo=·/300' && !(await page.$('[data-cat-copiar]')), '"Copiar" traz os mesmos formatos e valores, para ajustar — ' + await grade(page, 'f1'));
+  ok((await texto(page, '[data-cat-opcao="f1:grupo"] .cat-opcao-n')) === 'Aula infantil em grupo valor por pessoa', 'o cartão das crianças diz "Aula infantil"');
+  await page.selectOption('[data-cat-idade="f1:de"]', '12');
+  await page.selectOption('[data-cat-idade="f1:ate"]', '6');
   await page.waitForTimeout(150);
-  ok((await page.inputValue('[data-cat-idade="de"]')) === '6' && (await page.inputValue('[data-cat-idade="ate"]')) === '12', '"de 12 a 6" vira "de 6 a 12"');
-  await page.fill('[data-cat-valor="crianca:individual:avulsa"]', '110');
-  await page.fill('[data-cat-valor="crianca:individual:mensal"]', '');
-  await page.fill('[data-cat-valor="crianca:grupo:mensal"]', '220');
+  ok((await page.inputValue('[data-cat-idade="f1:de"]')) === '6' && (await page.inputValue('[data-cat-idade="f1:ate"]')) === '12', '"de 12 a 6" vira "de 6 a 12"');
+  await page.fill('[data-cat-valor="f1:individual:avulsa"]', '110');
+  await page.fill('[data-cat-valor="f1:individual:mensal"]', '');
+  await page.fill('[data-cat-valor="f1:grupo:mensal"]', '220');
+  await page.click('[data-cat-faixa-mais]');
+  ok(await page.$('[data-cat-bloco="f2"]') && await page.evaluate(() => document.activeElement?.dataset.catIdade === 'f2:de') && (await page.$$('[data-cat-faixa-tirar]')).length === 2, '"Outra faixa de idade" abre a segunda faixa, com o cursor na idade, e cada faixa ganha o ✕');
+  await page.selectOption('[data-cat-idade="f2:de"]', '13');
+  await page.selectOption('[data-cat-idade="f2:ate"]', '17');
+  await page.click('[data-cat-formato="f2:grupo"]');
+  await page.fill('[data-cat-valor="f2:grupo:mensal"]', '250');
   // Tirar um formato e trazer de novo não perde o valor escrito.
   await page.click('[data-cat-formato="adulto:grupo"]');
-  ok((await grade(page, 'adulto')) === 'individual=150/520', 'tirar o formato tira a linha');
+  ok((await grade(page, 'adulto')) === 'individual=150/520', 'tirar o formato tira o cartão');
   await page.click('[data-cat-formato="adulto:grupo"]');
   ok((await grade(page, 'adulto')) === 'individual=150/520 grupo=·/300', 'e trazer de novo volta com o valor — ' + await grade(page, 'adulto'));
 
-  // A locação, embaixo, do mesmo jeito.
-  await page.click('.reg-modalidade[data-modalidade="locacao"]');
-  ok((await grade(page, 'locacao')) === 'locacao=·/·' && (await page.evaluate(() => [...document.querySelectorAll('[data-cat-grade="locacao"] .cat-col')].map(x => x.innerText.replace(/\s+/g, ' ')).join(' | '))) === 'Avulsa por hora | Mensal por mês', 'marcando Locação, aparece o bloco da locação: avulsa por hora e mensal por mês');
+  // A locação, numa parte só dela: "não oferece" ou o caminho da avulsa e da mensal.
+  await irParte(page, 'locacao');
+  ok((await texto(page, '.reg-titulo')) === 'Locação de quadra' && (await page.getAttribute('[data-cat-sem-locacao]', 'aria-pressed')) === 'true' && !(await page.$('[data-cat-cobranca]')), 'a parte Locação: a academia que só dá aula vem com "não oferece" marcado, sem o caminho');
+  await page.click('[data-cat-sem-locacao]');
+  ok((await chipsDe(page, '[data-cat-cobranca]')) === 'Avulsa (por hora),Mensal' && !(await page.$('#cat-tabela-locacao [data-cat-opcao]')), 'desmarcado, abre a escolha: avulsa ou mensal');
+  await page.click('[data-cat-cobranca="avulsa"]');
+  ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'locacao:avulsa') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).startsWith('Locação avulsa Valor por hora R$') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).includes('Foto da quadra'), 'a avulsa abre o cartão: o valor por hora e a foto');
   await page.fill('[data-cat-valor="locacao:avulsa"]', '130');
+  ok(await page.evaluate(() => window.__form.modalidades.join()) === 'aulas_proprias,locacao', 'a modalidade acompanha: aula e locação');
 
   await irParte(page, 'revisar');
   const previa = await texto(page, '.reg-previa [data-previa="precos"]');
-  ok(previa.includes('Aula infantil em grupo') && previa.includes('Mostrando 6 de 6 opções'), 'a prévia já mostra o catálogo — ' + previa.slice(0, 140));
+  ok(previa.includes('Aula infantil em grupo') && previa.includes('Mostrando 7 de 7 opções'), 'a prévia já mostra o catálogo — ' + previa.slice(0, 140));
   await salvarFicha(page);
   await page.waitForTimeout(500);
   if (await page.$('.reg-plano-basico')) { await page.click('.reg-plano-basico'); await page.waitForTimeout(800); }
@@ -111,33 +110,42 @@ const CATALOGO = [
     { tipo: 'grupo', cobranca: 'mensal', preco: '300' },
     { tipo: 'individual', cobranca: 'avulsa', preco: '110', publico: 'crianca', idadeDe: 6, idadeAte: 12 },
     { tipo: 'grupo', cobranca: 'mensal', preco: '220', publico: 'crianca', idadeDe: 6, idadeAte: 12 },
-    { tipo: 'locacao', cobranca: 'avulsa', preco: '130' }]), 'vai para o banco o que tem valor, com a idade nas aulas das crianças, na ordem do catálogo; o que ficou em branco não vai — ' + JSON.stringify(banco.cat));
-  ok(banco.aula === '150' && banco.loc === '130' && banco.mods.includes('locacao'), 'o preço da aula sai das avulsas de adultos (a infantil não entra), e o da locação, das avulsas dela — ' + banco.aula + ' / ' + banco.loc);
+    { tipo: 'grupo', cobranca: 'mensal', preco: '250', publico: 'crianca', idadeDe: 13, idadeAte: 17 },
+    { tipo: 'locacao', cobranca: 'avulsa', preco: '130' }]), 'vai para o banco o que tem valor, com a idade de cada faixa, na ordem do catálogo; o que ficou em branco não vai — ' + JSON.stringify(banco.cat));
+  ok(banco.aula === '150' && banco.loc === '130' && banco.mods.join() === 'aulas_proprias,locacao', 'o preço da aula sai das avulsas de adultos (a infantil não entra), e o da locação, das avulsas dela — ' + banco.aula + ' / ' + banco.loc);
+  ok(await page.evaluate(() => !!document.querySelector('#register-overlay.reg-pronto-fundo .reg-pronto') && !document.getElementById('register-close-2')), 'salvou: o cartão de "Alterações salvas", com um X só');
   await browser.close();
 
-  // ---- "Não divulgar os valores": a grade vira "Oferece" ----
+  // ---- sem valor: "Sob consulta" ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha' }));
   await page.waitForTimeout(400);
   await page.evaluate(async (cat) => { window.__db.academias.find(x => x.id === 'a1').catalogo = cat; await loadEverything(); render(); }, CATALOGO);
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
   await irParte(page, 'precos');
-  ok((await chipsDe(page, 'adulto')) === '✓Individual,✓Dupla,✓Grupo' && (await grade(page, 'adulto')) === 'individual=150/· dupla=90/· grupo=·/300' && (await grade(page, 'crianca')) === 'individual=110/· grupo=·/220', 'a ficha salva volta para a grade, nos blocos certos — ' + await grade(page, 'adulto') + ' | ' + await grade(page, 'crianca'));
-  ok((await page.inputValue('[data-cat-idade="de"]')) === '6' && (await page.inputValue('[data-cat-idade="ate"]')) === '12', 'com a idade das crianças');
-  await page.click('[data-cat-consulta="crianca"]');
-  ok((await grade(page, 'crianca')) === 'individual=✓/· grupo=·/✓' && (await texto(page, '[data-cat-oferece="crianca:grupo:mensal"]')) === 'Oferece', '"Não divulgar os valores" troca os valores por "Oferece", já marcado no que tinha valor — ' + await grade(page, 'crianca'));
-  await page.click('[data-cat-oferece="crianca:grupo:avulsa"]');
-  ok((await grade(page, 'crianca')) === 'individual=✓/· grupo=✓/✓', 'e marca o que mais oferece');
+  ok((await chipsDe(page, '[data-cat-publico]')) === '✓Adultos,✓Crianças' && (await grade(page, 'adulto')) === 'individual=150/· dupla=90/· grupo=·/300' && (await grade(page, 'f1')) === 'individual=110/· grupo=·/220' && (await grade(page, 'f2')) === 'grupo=·/250', 'a ficha salva volta para o caminho: adultos e as duas faixas, da mais nova para a mais velha — ' + await grade(page, 'f1') + ' | ' + await grade(page, 'f2'));
+  ok((await page.inputValue('[data-cat-idade="f1:de"]')) === '6' && (await page.inputValue('[data-cat-idade="f2:ate"]')) === '17', 'com a idade de cada faixa');
+  await page.click('[data-cat-faixa-tirar="f2"]');
+  ok(!(await page.$('[data-cat-bloco="f2"]')), 'o ✕ tira a faixa');
+  await page.fill('[data-cat-valor="f1:individual:avulsa"]', '');
+  await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', '');
+  await irParte(page, 'locacao');
+  await page.click('[data-cat-sem-locacao]');
+  await page.click('[data-cat-cobranca="mensal"]');
   await irParte(page, 'revisar');
   await salvarFicha(page);
   await page.waitForTimeout(500);
   if (await page.$('.reg-plano-basico')) { await page.click('.reg-plano-basico'); await page.waitForTimeout(800); }
-  banco = await page.evaluate(() => window.__db.academias.find(x => x.id === 'a1').catalogo.filter(i => i.publico === 'crianca').map(i => `${i.tipo}:${i.cobranca}=${i.preco || 'consulta'}`).join(' '));
-  ok(banco === 'individual:avulsa=consulta grupo:avulsa=consulta grupo:mensal=consulta', 'sem os valores, vai o que oferece, sob consulta — ' + banco);
+  banco = await page.evaluate(() => window.__db.academias.find(x => x.id === 'a1').catalogo.map(i => `${i.publico ? 'crianca:' : ''}${i.tipo}:${i.cobranca || 'sem cobrança'}=${i.preco || 'consulta'}`).join(' '));
+  ok(banco === 'individual:avulsa=150 dupla:sem cobrança=consulta grupo:mensal=300 crianca:individual:sem cobrança=consulta crianca:grupo:mensal=220 locacao:avulsa=130 locacao:mensal=consulta', 'sem valor nenhum, a aula vai sob consulta, sem a cobrança; a locação mensal sem valor, sob consulta — ' + banco);
   await page.evaluate(() => { state.page = 'court'; state.selected = decorate(state.allCourts.find(x => x.id === 'a1')); render(); });
   await page.waitForTimeout(300);
-  const consulta = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')].find(x => x.innerText.includes('Aula infantil individual'))?.innerText.replace(/\s+/g, ' ') || '');
-  ok(consulta.includes('Sob consulta'), 'na ficha, a aula das crianças sem valor diz "Sob consulta" — ' + consulta);
+  const consulta = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')].map(x => x.innerText.replace(/\s+/g, ' ')));
+  const dupla = consulta.find(x => x.startsWith('Aula em dupla')) || '', locMensal = consulta.find(x => x.includes('Plano mensal') && x.includes('Aluguel da quadra')) || '';
+  ok(dupla.includes('Sob consulta') && !dupla.includes('Aula avulsa') && !dupla.includes('Plano mensal'), 'na ficha, a aula sem valor diz "Sob consulta", sem inventar a cobrança — ' + dupla);
+  ok(locMensal.includes('Sob consulta'), 'e a locação mensal sem valor também — ' + locMensal);
+  const waDupla = await page.evaluate(() => decodeURIComponent([...document.querySelectorAll('#ht-quartos .ht-quarto')].find(x => x.innerText.startsWith('Aula em dupla')).querySelector('.ht-quarto-bt').getAttribute('href')));
+  ok(waDupla.includes('queria saber sobre a aula em dupla.'), 'o WhatsApp pergunta da aula, sem a cobrança — ' + waDupla.split('text=')[1]);
   await browser.close();
 
   // ---- a ficha ----
@@ -151,7 +159,7 @@ const CATALOGO = [
   await page.waitForTimeout(400);
   const cartoes = () => page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')].map(x => x.querySelector('.ht-quarto-n').innerText));
   let nomes = await cartoes();
-  ok(nomes.join(',') === 'Aula individual,Aula em dupla,Aula em grupo,Aula infantil individual,Aula infantil em grupo,Locação', 'um cartão por opção, na ordem do catálogo (as das crianças depois das de adultos), sem repetir — ' + nomes.join(','));
+  ok(nomes.join(',') === 'Aula individual,Aula em dupla,Aula em grupo,Aula infantil individual,Aula infantil em grupo,Aula infantil em grupo,Locação', 'um cartão por opção, na ordem do catálogo (as das crianças depois das de adultos, da faixa mais nova para a mais velha), sem repetir — ' + nomes.join(','));
   const chips = await page.evaluate(() => [...document.querySelectorAll('#ht-opcoes-filtro .chip')].map(b => b.innerText.trim()).join(','));
   ok(chips === 'Todas,Individual,Dupla,Grupo,Crianças,Locação,Avulsas,Mensais' && await page.$('.ht-opcoes-sep'), 'filtros por tipo (as aulas das crianças juntas, em "Crianças") e por cobrança — ' + chips);
   const grupo = await page.evaluate(() => {
@@ -167,19 +175,21 @@ const CATALOGO = [
   });
   ok(infantil.t.includes('Aula infantil em grupo') && infantil.t.includes('Plano mensal') && infantil.t.includes('Turma de crianças com o professor') && infantil.t.includes('De 6 a 12 anos') && infantil.t.includes('R$ 220') && infantil.t.includes('por pessoa, por mês'), 'o cartão da aula das crianças: o formato, a idade e o valor — ' + infantil.t);
   ok(infantil.wa.includes('queria saber sobre o plano mensal de aula infantil em grupo.'), 'o WhatsApp da aula das crianças — ' + infantil.wa.split('text=')[1]);
-  const loc = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][5].innerText.replace(/\s+/g, ' '));
+  const loc = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][6].innerText.replace(/\s+/g, ' '));
+  const maiores = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][5].innerText.replace(/\s+/g, ' '));
+  ok(maiores.includes('De 13 a 17 anos') && maiores.includes('R$ 250'), 'a outra faixa de idade no seu cartão — ' + maiores);
   const individual = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][0].innerText.replace(/\s+/g, ' '));
   ok(loc.includes('Locação avulsa') && loc.includes('Aluguel da quadra') && !loc.includes('1h30') && loc.includes('por hora') && loc.includes('Reposição até 12h antes') && individual.includes('Reposição até 24h antes'), 'a locação: avulsa, por hora (a duração de antes não aparece), com a reposição da locação (a aula, com a da aula) — ' + loc);
 
   await page.click('#ht-opcoes-filtro [data-opcao-filtro="Crianças"]');
-  ok((await cartoes()).join(',') === 'Aula infantil individual,Aula infantil em grupo', '"Crianças" mostra só as aulas das crianças');
+  ok((await cartoes()).join(',') === 'Aula infantil individual,Aula infantil em grupo,Aula infantil em grupo', '"Crianças" mostra só as aulas das crianças, das duas faixas');
   await page.click('#ht-opcoes-filtro [data-opcao-cobranca="mensal"]');
   nomes = await cartoes();
-  ok(nomes.join(',') === 'Aula infantil em grupo' && (await texto(page, '.ht-opcoes-n')) === 'Mostrando 1 de 6 opções', '"Crianças" e "Mensais" juntos');
+  ok(nomes.join(',') === 'Aula infantil em grupo,Aula infantil em grupo' && (await texto(page, '.ht-opcoes-n')) === 'Mostrando 2 de 7 opções', '"Crianças" e "Mensais" juntos');
   await page.click('#ht-opcoes-filtro [data-opcao-filtro="Individual"]');
   ok((await texto(page, '.ht-opcoes-vazio')).startsWith('A academia não tem aula individual mensal no catálogo.'), 'individual e mensal, sem opção: diz que não tem e oferece "Ver todas"');
   await page.click('.ht-opcoes-vazio [data-opcao-filtro]');
-  ok((await cartoes()).length === 6, '"Ver todas" volta às seis opções');
+  ok((await cartoes()).length === 7, '"Ver todas" volta às sete opções');
   await page.click('#ht-opcoes-filtro [data-opcao-filtro="Locação"]');
   ok((await cartoes()).join() === 'Locação', 'o filtro do tipo');
 
@@ -192,23 +202,23 @@ const CATALOGO = [
   ok(resumo.barra === 'por pessoa, na dupla', 'a barra de baixo: a opção avulsa mais em conta dos adultos e o que o valor paga, curto — ' + resumo.barra);
   ok(resumo.oferece.startsWith('Aula e locação · Aula infantil'), '"A academia oferece" diz que tem aula infantil — ' + resumo.oferece);
   const curtos = await page.evaluate(() => opcoesPreco(state.selected).map(rotuloCurto).join(' | '));
-  ok(curtos === 'por aula individual | por pessoa, na dupla | por pessoa/mês, na turma | por aula individual infantil | por pessoa/mês, na turma infantil | por hora de quadra', 'o rótulo curto de cada opção — ' + curtos);
+  ok(curtos === 'por aula individual | por pessoa, na dupla | por pessoa/mês, na turma | por aula individual infantil | por pessoa/mês, na turma infantil | por pessoa/mês, na turma infantil | por hora de quadra', 'o rótulo curto de cada opção — ' + curtos);
   ok(resumo.sobre.includes('No catálogo da academia: aula individual a partir de R$ 150 por aula; aula em dupla a partir de R$ 90 por pessoa, por aula; aula em grupo a partir de R$ 300 por pessoa, por mês; aula infantil a partir de R$ 110 por aula; e locação a partir de R$ 130 por hora. Também há planos mensais.'), 'o "Sobre" resume o catálogo, com as aulas das crianças juntas — ' + resumo.sobre);
   ok(resumo.faq.includes('Que aulas Só Aula Tennis tem? Aula individual, em dupla e em grupo, avulsas e em planos mensais.') && resumo.faq.includes('Aula em grupo mensal: R$ 300 por pessoa, por mês'), 'as perguntas frequentes com os tipos de aula e os valores');
-  ok(resumo.faq.includes('Só Aula Tennis tem aula de tênis para crianças? Sim: aula infantil individual e em grupo, avulsas e em planos mensais, para crianças de 6 a 12 anos.') && resumo.faq.includes('Aula infantil em grupo mensal: R$ 220 por pessoa, por mês'), 'e a pergunta das aulas para crianças, com a idade — ' + resumo.faq.split(' | ').find(x => x.includes('crianças')));
+  ok(resumo.faq.includes('Só Aula Tennis tem aula de tênis para crianças? Sim: aula infantil individual e em grupo, avulsas e em planos mensais, para crianças de 6 a 12 anos e de 13 a 17 anos.') && resumo.faq.includes('Aula infantil em grupo mensal: R$ 220 por pessoa, por mês'), 'e a pergunta das aulas para crianças, com a idade — ' + resumo.faq.split(' | ').find(x => x.includes('crianças')));
   const ofertas = resumo.ld && resumo.ld.hasOfferCatalog.itemListElement;
-  ok(ofertas && ofertas.length === 6 && ofertas[0].name === 'Aula individual avulsa' && ofertas[0].description === 'Aula avulsa · Você e o professor' && ofertas[0].priceSpecification.price === 150 && ofertas[0].priceSpecification.priceCurrency === 'BRL' && ofertas[0].priceSpecification.unitText === 'por aula', 'o Google lê o catálogo (hasOfferCatalog) — ' + JSON.stringify(ofertas && ofertas[0]));
+  ok(ofertas && ofertas.length === 7 && ofertas[0].name === 'Aula individual avulsa' && ofertas[0].description === 'Aula avulsa · Você e o professor' && ofertas[0].priceSpecification.price === 150 && ofertas[0].priceSpecification.priceCurrency === 'BRL' && ofertas[0].priceSpecification.unitText === 'por aula', 'o Google lê o catálogo (hasOfferCatalog) — ' + JSON.stringify(ofertas && ofertas[0]));
   ok(ofertas && ofertas[4].name === 'Aula infantil em grupo mensal' && ofertas[4].description === 'Plano mensal · Turma de crianças com o professor · De 6 a 12 anos', 'e a aula das crianças, com a idade — ' + JSON.stringify(ofertas && ofertas[4]));
 
   // No computador, o cartão da direita: o "a partir de" de cada tipo.
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.waitForTimeout(200);
   const aside = await page.evaluate(() => document.querySelector('.ht-aside .ht-book').textContent.replace(/\s+/g, ' ').trim());
-  ok(aside.startsWith('A partir de Aula individual R$ 150/aula Aula em dupla R$ 90/aula Aula em grupo R$ 300/mês Aula infantil R$ 110/aula Locação R$ 130/h Ver as 6 opções'), 'no computador, o "a partir de" de cada tipo (as aulas das crianças numa linha) e o atalho para as opções — ' + aside.slice(0, 160));
+  ok(aside.startsWith('A partir de Aula individual R$ 150/aula Aula em dupla R$ 90/aula Aula em grupo R$ 300/mês Aula infantil R$ 110/aula Locação R$ 130/h Ver as 7 opções'), 'no computador, o "a partir de" de cada tipo (as aulas das crianças numa linha) e o atalho para as opções — ' + aside.slice(0, 160));
   await page.click('.ht-book-ver');
   await page.waitForTimeout(500);
   const topo = await page.evaluate(() => document.getElementById('ht-opcoes').getBoundingClientRect().top);
-  ok(topo < 300, '"Ver as 6 opções" leva às opções — ' + Math.round(topo));
+  ok(topo < 300, '"Ver as 7 opções" leva às opções — ' + Math.round(topo));
   await browser.close();
 
   // ---- busca e comparação ----
@@ -251,13 +261,13 @@ const CATALOGO = [
   await page.waitForTimeout(400);
   await page.evaluate(() => abrirEdicaoDaFicha(state.allCourts.find(x => x.id === 'a2')));
   await page.waitForTimeout(300);
-  await irParte(page, 'precos');
-  ok((await grade(page, 'locacao')) === 'locacao=100-120/·', 'o preço por hora de antes aparece na locação avulsa — ' + await grade(page, 'locacao'));
+  await irParte(page, 'locacao');
+  ok((await page.getAttribute('[data-cat-sem-locacao]', 'aria-pressed')) === 'false' && (await chipsDe(page, '[data-cat-cobranca]')) === '✓Avulsa (por hora),Mensal' && (await grade(page, 'cat-tabela-locacao')) === 'avulsa=100-120', 'o preço por hora de antes aparece na locação avulsa — ' + await grade(page, 'cat-tabela-locacao'));
   // A aula do preço antigo, sem formato: a linha "Aula", com a dica de escrever no formato certo.
   await page.evaluate(() => { state.regForm = null; abrirEdicaoDaFicha({ ...state.allCourts.find(x => x.id === 'a1'), priceAula: '120', catalogo: [] }); });
   await page.waitForTimeout(300);
   await irParte(page, 'precos');
-  ok((await grade(page, 'adulto')) === 'aula=120/·' && (await texto(page, '.cat-tipo-dica')).startsWith('"Aula" é o preço de antes, sem o formato'), 'a aula do preço antigo aparece como "Aula", com a dica de escrever no formato certo — ' + await grade(page, 'adulto'));
+  ok((await grade(page, 'adulto')) === 'aula=120/·' && (await texto(page, '.cat-tipo-dica')).startsWith('É o preço de antes, sem o formato'), 'a aula do preço antigo aparece como "Aula", com a dica de escrever no formato certo — ' + await grade(page, 'adulto'));
   await page.click('[data-cat-formato="adulto:individual"]');
   await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '120');
   await page.fill('[data-cat-valor="adulto:aula:avulsa"]', '');
@@ -292,20 +302,40 @@ const CATALOGO = [
   await page.click('[data-cat-formato="adulto:grupo"]');
   await page.fill('[data-cat-valor="adulto:grupo:avulsa"]', '80');
   await page.fill('[data-cat-valor="adulto:grupo:mensal"]', '300');
-  ok((await texto(page, '[data-cat-bloco="adulto"] .cat-fotos')) === 'Foto de cada aula Grupo', 'no Premium, cada formato escolhido tem a própria foto, sem etiqueta — ' + await texto(page, '[data-cat-bloco="adulto"] .cat-fotos'));
+  ok((await texto(page, '[data-cat-opcao="adulto:grupo"] .cat-foto-bt')) === 'Foto desta aula', 'no Premium, o cartão de cada aula tem a própria foto, sem etiqueta — ' + await texto(page, '[data-cat-opcao="adulto:grupo"] .cat-foto-bt'));
   await page.setInputFiles('[data-cat-foto="adulto:grupo"]', PNG);
-  await page.waitForFunction(() => !!document.querySelector('[data-cat-bloco="adulto"] .cat-foto img'));
+  await page.waitForFunction(() => !!document.querySelector('[data-cat-opcao="adulto:grupo"] .cat-foto img'));
   ok((await page.inputValue('[data-cat-valor="adulto:grupo:mensal"]')) === '300', 'a foto entra sem perder o valor escrito');
+  await page.click('#enq-concluir');
+  await page.waitForTimeout(400);
+  // A locação: a avulsa e a mensal, cada uma com a própria foto.
+  await irParte(page, 'locacao');
+  await page.click('[data-cat-sem-locacao]');
+  await page.click('[data-cat-cobranca="avulsa"]');
+  await page.click('[data-cat-cobranca="mensal"]');
+  await page.fill('[data-cat-valor="locacao:avulsa"]', '130');
+  await page.fill('[data-cat-valor="locacao:mensal"]', '900');
+  await page.setInputFiles('[data-cat-foto="locacao:avulsa"]', PNG);
+  await page.waitForSelector('#enq-concluir');
+  await page.click('#enq-concluir');
+  await page.waitForTimeout(400);
+  const PNG2 = { name: 'quadra.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVR42mNk+M9QzwAEjDAGNzYAAEuEBADyJgzLAAAAAElFTkSuQmCC', 'base64') };
+  await page.setInputFiles('[data-cat-foto="locacao:mensal"]', PNG2);
+  await page.waitForSelector('#enq-concluir');
+  await page.click('#enq-concluir');
+  await page.waitForTimeout(400);
+  ok((await page.$$('#cat-tabela-locacao .cat-foto img')).length === 2, 'na locação, a avulsa e a mensal com a foto de cada uma');
   await irParte(page, 'revisar');
   await salvarFicha(page);
   await page.waitForTimeout(700);
   banco = await page.evaluate(() => window.__db.academias.find(x => x.id === 'a1').catalogo || []);
-  ok(banco.length === 2 && banco[0].tipo === 'grupo' && /^data:image\/jpeg;base64,/.test(banco[0].foto || '') && banco[0].preco === '80' && banco[1].preco === '300' && !banco[1].foto, 'a foto (diminuída) vai para o banco uma vez só, no primeiro item da aula — ' + JSON.stringify(banco.map(i => ({ ...i, foto: !!i.foto }))));
+  ok(banco.length === 4 && banco[0].tipo === 'grupo' && /^data:image\/jpeg;base64,/.test(banco[0].foto || '') && banco[0].preco === '80' && banco[1].preco === '300' && !banco[1].foto, 'a foto da aula (diminuída) vai para o banco uma vez só, no primeiro item dela — ' + JSON.stringify(banco.map(i => ({ ...i, foto: !!i.foto }))));
+  ok(banco[2].tipo === 'locacao' && banco[3].tipo === 'locacao' && banco[2].foto && banco[3].foto && banco[2].foto !== banco[3].foto, 'e a locação avulsa e a mensal, cada uma com a sua');
   const fotoDaAula = banco[0].foto;
   await page.evaluate(() => { state.page = 'court'; state.selected = decorate(state.allCourts.find(x => x.id === 'a1')); render(); });
   await page.waitForTimeout(300);
   let srcs = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto-foto img')].map(x => x.getAttribute('src') || ''));
-  ok(srcs.length === 2 && srcs.every(s => s === fotoDaAula), 'na ficha da academia Premium, a avulsa e a mensal da aula mostram a foto dela');
+  ok(srcs.length === 4 && srcs[0] === fotoDaAula && srcs[1] === fotoDaAula && srcs[2] !== srcs[3], 'na ficha da academia Premium, a avulsa e a mensal da aula mostram a foto dela; a locação, uma foto para cada');
   await browser.close();
 
   // Fora do Premium: a ficha não mostra a foto da aula, e o cadastro avisa.
@@ -323,8 +353,8 @@ const CATALOGO = [
   await page.evaluate(() => abrirEdicaoDaFicha(state.allCourts.find(x => x.id === 'a1')));
   await page.waitForTimeout(300);
   await irParte(page, 'precos');
-  const fora = await texto(page, '[data-cat-bloco="adulto"] .cat-fotos');
-  ok(fora.includes('Premium') && fora.includes('Aparece no Premium') && await page.$('[data-cat-bloco="adulto"] .cat-foto img'), 'a foto guardada continua no cadastro, com "Aparece no Premium" — ' + fora);
+  const fora = await texto(page, '[data-cat-opcao="adulto:grupo"] .cat-foto');
+  ok(fora.includes('Aparece no Premium') && await page.$('[data-cat-opcao="adulto:grupo"] .cat-foto img'), 'a foto guardada continua no cadastro, com "Aparece no Premium" — ' + fora);
   await irParte(page, 'revisar');
   await salvarFicha(page);
   await page.waitForTimeout(600);

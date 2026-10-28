@@ -68,7 +68,7 @@ const volta = async (page) => { await page.goBack(); await page.waitForTimeout(2
   await page.waitForTimeout(200);
   await page.click('#reg-continuar');
   await page.waitForTimeout(200);
-  ok((await onde(page)).endsWith('parte=quadras'), 'cada parte do cadastro tem link — ' + await onde(page));
+  ok((await onde(page)).endsWith('parte=locacao'), 'cada parte do cadastro tem link — ' + await onde(page));
   await volta(page);
   ok(await page.evaluate(() => REG_PASSOS[state.regPasso].id === 'precos' && state.showRegister), 'voltar: a parte anterior');
   await volta(page);

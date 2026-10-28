@@ -177,7 +177,7 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   const up = await page.evaluate(() => window.__ultimoUpdate || {});
   ok(up.phone === '11911112222' && !('status' in up) && !('plano' in up) && !('pausada' in up) && !('confirmada' in up), 'salva sem mandar status, plano, pausa nem confirmada — ' + Object.keys(up).join(','));
   ok((await texto(page, '#register-overlay')).includes('Já estão na ficha'), 'avisa que as mudanças já estão na ficha');
-  await page.click('#register-close-2');
+  await page.click('#register-close');
   await page.waitForTimeout(200);
   folha = await texto(page, '#parceiros .pc-main');
   ok(folha.includes('confirmadas por vocês'), 'depois de salvar, Minha ficha mostra a ficha confirmada');

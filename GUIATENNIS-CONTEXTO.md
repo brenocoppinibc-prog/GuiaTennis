@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 28/10/2026 (regra 167)
+**Atualizado em:** 28/10/2026 (regra 168)
 
 | | |
 |---|---|
@@ -172,8 +172,14 @@ Produto (o que já foi decidido)
   Contato, Avaliações, Outras academias por perto, Horário, Cancelamento,
   Perguntas, e no fim "Confirmada pela academia", "É o responsável?" e
   "Algo errado nesta ficha?"). Fotos só na capa e nos cartões das opções.
-  **Catálogo** só com modalidade e valor (aula individual, dupla, grupo e
-  locação; avulsa ou mensal). Corte das fotos como o "Cortar" do Instagram.
+  **Catálogo** só com modalidade e valor, em blocos: **aulas para adultos**
+  e **aulas para crianças** (com a idade, de 3 a 17 anos), cada uma
+  individual, em dupla ou em grupo, avulsa ou mensal, e a locação. No
+  cadastro, os formatos se escolhem uma vez e a grade mostra a avulsa e a
+  mensal lado a lado (em branco = não oferece; "Não divulgar os valores" =
+  "Sob consulta"); uma foto por aula no Premium. Na ficha, as aulas das
+  crianças são "Aula infantil …" e têm o filtro "Crianças". Corte das fotos
+  como o "Cortar" do Instagram.
 - **Busca** "bairro, cidade" fica na cidade digitada. Telas de código com
   uma caixa por número e "Confirmar" só com todas preenchidas.
 
@@ -247,7 +253,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (28/10/2026): **2.088 verificações** nos
+  segundo plano). Último resultado (28/10/2026): **2.109 verificações** nos
   72 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -313,15 +319,18 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (28/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 167**
-(último commit de código `bb08f2a`). A descrição do PR foi encurtada em
-28/10/2026; o texto longo ficou no histórico. Testes: 2.088 no navegador e
-679 no banco, nenhuma falha.
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 168** (o
+catálogo com aulas para adultos e para crianças, numa grade mais rápida de
+preencher; sem SQL novo: o item da aula das crianças leva `publico`,
+`idadeDe` e `idadeAte` dentro do `catalogo`). A descrição do PR foi
+encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.109
+no navegador e 679 no banco, nenhuma falha.
 
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26 a 28/10 (veracidade, ficha no
-   jeito do hoteis.com, catálogo, corte das fotos, nome suspenso, busca
-   "bairro, cidade", sobrenome, avaliação editada) e dizer "pode subir".
+   jeito do hoteis.com, catálogo com adultos e crianças, corte das fotos,
+   nome suspenso, busca "bairro, cidade", sobrenome, avaliação editada) e
+   dizer "pode subir".
 2. Ligar o Mercado Pago na Netlify (variáveis da seção 5) depois de testar
    o pagamento de teste na prévia.
 3. Definir os preços dos planos e o preço da semana da promoção na ficha
@@ -340,7 +349,7 @@ O PR #5 está **verde e sem conflito**, com tudo até a **regra 167**
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 168.
+**Próximo número:** regra 169.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -369,6 +378,11 @@ O PR #5 está **verde e sem conflito**, com tudo até a **regra 167**
 - 167 (28/10) Avaliação uma vez e editável, com "editada"; a resposta da
   academia do mesmo jeito; e-mail à academia quando uma avaliação é
   editada. SQL `20261028120000_avaliacao_editada`.
+- 168 (28/10) Catálogo em blocos: aulas para adultos e para crianças (com a
+  idade), formatos escolhidos uma vez e a grade com avulsa e mensal; "Não
+  divulgar os valores"; "Copiar das aulas para adultos"; uma foto por aula;
+  "Aula infantil" e o filtro "Crianças" na ficha, na busca e na comparação.
+  Sem SQL. Teste: `catalogo.js` (refeito).
 
 ## 11. WhatsApp e mensagem para as academias
 

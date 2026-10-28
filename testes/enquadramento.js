@@ -129,8 +129,9 @@ const arrastar = async (page, dx) => {
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
   await irParte(page, 'precos');
-  await page.click('[data-cat-marcar="individual:avulsa"]');
-  await page.setInputFiles('[data-cat-foto="individual:avulsa"]', { name: 'c.png', mimeType: 'image/png', buffer: await fotoDeTeste(page, 900, 300) });
+  await page.click('[data-cat-formato="adulto:individual"]');
+  await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '150');
+  await page.setInputFiles('[data-cat-foto="adulto:individual"]', { name: 'c.png', mimeType: 'image/png', buffer: await fotoDeTeste(page, 900, 300) });
   await page.waitForSelector('#enq-overlay', { timeout: 5000 });
   await page.waitForTimeout(200);
   ok(!(await page.$('.enq-miniaturas')), 'a foto da opção também abre o corte');
@@ -140,7 +141,7 @@ const arrastar = async (page, dx) => {
   const foto = await page.evaluate(() => catalogoDoForm(window.__form)[0].foto);
   const fc = await medirFoto(page, foto);
   ok(fc.jpeg && Math.abs(fc.w / fc.h - 4 / 3) < 0.02 && fc.w <= 960 && await page.evaluate((f) => fotoDoCatalogoValida(f), foto), 'a foto da opção fica cortada em 4:3, até 960 de largura — ' + JSON.stringify(fc));
-  ok(await page.$('[data-cat-foto-ajustar="individual:avulsa"]'), 'e tem "Ajustar" ao lado do ✕');
+  ok(await page.$('[data-cat-foto-ajustar="adulto:individual"]'), 'e tem "Ajustar" ao lado do ✕');
   await browser.close();
 
   // ---- no celular (toque), sem a lupa: os dedos aproximam ----

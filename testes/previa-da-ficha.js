@@ -52,7 +52,7 @@ const rodape = (page) => page.evaluate(() => [...document.querySelectorAll('.reg
   // 21/10/2026: "aparecer o botão verde embaixo confirmar e já voltar para a revisão".
   ok((await rodape(page)) === 'Confirmar*' && !(await page.$('#reg-voltar')), 'vindo do lápis, embaixo só o "Confirmar" verde — ' + await rodape(page));
   // O preço no catálogo (26/10/2026, regra 162).
-  await page.fill('[data-cat-valor="aula:avulsa"]', '150');
+  await page.fill('[data-cat-valor="adulto:aula:avulsa"]', '150');
   await page.click('#reg-confirmar-revisao');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => regPassoAtual().passo.id === 'revisar') && (await bloco(page, 'precos')).includes('R$ 150'), '"Confirmar" volta para a revisão, que já mostra o que mudou');

@@ -777,26 +777,38 @@
   .price-input-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
   .price-input-row span { font-size: 13px; color: var(--muted); white-space: nowrap; }
   .price-input-row .price-input-label { min-width: 52px; color: var(--text); font-weight: 600; }
-  /* O catálogo no cadastro: a tabela de preços (27/10/2026). */
-  .cat-tabela { display: flex; flex-direction: column; gap: 10px; }
-  .cat-tipo { padding: 12px 14px 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
-  .cat-tipo-n { margin: 0 0 4px; font-weight: 700; font-size: 15px; }
-  .cat-tipo-n span { font-weight: 400; font-size: 12px; color: var(--muted); margin-left: 4px; }
-  .cat-tipo-dica { margin: 0 0 4px; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
-  .cat-linha { display: grid; grid-template-columns: 92px auto 88px minmax(0, 1fr); align-items: center; column-gap: 8px; min-height: 52px; border-top: 1px solid var(--border); }
-  .cat-tipo-n + .cat-linha, .cat-tipo-dica + .cat-linha { border-top: 0; }
-  .cat-marcar { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; background: none; border: 0; padding: 0; font: 600 14px var(--fonte-texto); color: var(--text); cursor: pointer; }
-  .cat-caixa { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--muted-dark); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cat-linha.on .cat-caixa { background: var(--green); border-color: var(--green); }
+  /* O catálogo no cadastro: um bloco para as aulas de adultos, um para as
+     das crianças e um para a locação, cada um com a grade de preços
+     (27/10/2026; em blocos desde 28/10/2026, regra 168). */
+  .cat-tabela { display: flex; flex-direction: column; gap: 12px; }
+  .cat-bloco { padding: 14px 14px 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+  .cat-bloco-n { margin: 0 0 10px; font-weight: 700; font-size: 15px; }
+  .cat-formatos .chip { min-height: 44px; }
+  .cat-grade { display: grid; grid-template-columns: minmax(64px, auto) minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 8px 10px; margin-top: 14px; }
+  .cat-col { font-size: 13px; font-weight: 600; line-height: 1.2; }
+  .cat-col small, .cat-lin small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+  .cat-lin { font-size: 14px; font-weight: 600; line-height: 1.2; }
+  .cat-cel { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .cat-rs { font-size: 13px; color: var(--muted); }
-  .form-field.cat-valor { width: 100%; margin: 0; padding: 9px 10px; text-align: right; }
-  .cat-unidade { font-size: 12.5px; line-height: 1.25; color: var(--muted); }
-  .cat-nao { grid-column: 2 / -1; font-size: 13px; color: var(--muted); }
-  .cat-linha.on { padding-bottom: 10px; }
-  .cat-foto-bt { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: 6px; margin-left: 28px; min-height: 36px; font: 600 13px var(--fonte-texto); color: var(--green); cursor: pointer; }
+  .form-field.cat-valor { width: 100%; min-width: 0; margin: 0; padding: 10px; text-align: right; font-size: 16px; }
+  .cat-caixa { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--muted-dark); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cat-oferece, .cat-consulta { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; background: none; border: 0; padding: 0; font: 600 14px var(--fonte-texto); color: var(--muted); cursor: pointer; text-align: left; }
+  .cat-oferece.on, .cat-consulta { color: var(--text); }
+  .cat-consulta { font-weight: 500; margin-top: 6px; }
+  .cat-oferece.on .cat-caixa, .cat-consulta.on .cat-caixa { background: var(--green); border-color: var(--green); }
+  .cat-idade { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 14px; }
+  .cat-idade-n { font-weight: 600; margin-right: 2px; }
+  .form-field.cat-idade-sel { width: auto; min-width: 76px; margin: 0; padding: 10px; font-size: 16px; }
+  .cat-copiar { display: inline-flex; align-items: center; min-height: 44px; margin-top: 2px; background: none; border: 0; padding: 0; font: 600 14px var(--fonte-texto); color: var(--green); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .cat-tipo-dica { margin: 8px 0 0; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+  .cat-fotos { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .cat-fotos-n { margin: 0 0 2px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .cat-fotos-lista { display: flex; flex-wrap: wrap; gap: 0 18px; }
+  .cat-foto-bt { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font: 600 13px var(--fonte-texto); color: var(--green); cursor: pointer; }
   .cat-foto-bt input[type="file"] { display: none; }
-  .cat-foto { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-left: 28px; }
+  .cat-foto { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%; padding: 6px 0; }
   .cat-foto img { width: 72px; height: 54px; object-fit: cover; border-radius: 8px; display: block; }
+  .cat-foto-n { font-size: 13px; font-weight: 600; }
   .cat-foto-tirar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 12px; cursor: pointer; }
   .cat-premium { font-size: 11px; font-weight: 600; color: var(--gold); border: 1px solid var(--gold); border-radius: 999px; padding: 1px 7px; }
   .price-input-row input { margin-top: 0 !important; flex: 1; text-align: center; }
@@ -3825,10 +3837,14 @@ function toRow(f) {
   // price_locacao saem dele (a faixa das opções avulsas), para a ordem por
   // preço, o filtro e a comparação, e para o banco ainda sem a coluna.
   const modalidades = f.modalidades || [];
-  const catalogo = semRepetir(catalogoDoForm(f).map(itemDoCatalogo))
+  const catalogo = fotoUmaVezPorLinha(semRepetir(catalogoDoForm(f).map(itemDoCatalogo))
     .filter(i => modalidades.includes(tipoDoItem(i).grupo === "aula" ? "aulas_proprias" : "locacao"))
-    .sort(ordemDoCatalogo).slice(0, CATALOGO_MAX);
-  const avulsas = (grupo) => faixaDosPrecos(catalogo.filter(i => tipoDoItem(i).grupo === grupo && i.cobranca === "avulsa").map(i => i.preco));
+    .sort(ordemDoCatalogo).slice(0, CATALOGO_MAX));
+  const avulsas = (grupo) => {
+    const doGrupo = catalogo.filter(i => tipoDoItem(i).grupo === grupo && i.cobranca === "avulsa" && priceMin(i.preco));
+    const adultos = doGrupo.filter(i => i.publico !== "crianca");
+    return faixaDosPrecos((adultos.length ? adultos : doGrupo).map(i => i.preco));
+  };
   return {
     name: f.name, address: f.address, numero: f.numero, complemento: f.complemento,
     bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
@@ -6309,17 +6325,17 @@ function celPreco(faixa) {
 // preço" só entre valores que pagam a mesma coisa.
 function linhasDePrecoDaComparacao(courts) {
   const opcoes = courts.map(opcoesPreco);
-  const tipos = CATALOGO_TIPOS.filter(t => opcoes.some(l => l.some(o => o.tipo === t.key)));
-  const linhas = tipos.map(t => {
+  const grupos = ["individual", "dupla", "grupo", "aula", "crianca", "locacao"].filter(r => opcoes.some(l => l.some(o => o.resumo === r)));
+  const linhas = grupos.map(r => {
     const vals = opcoes.map(l => {
-      const doTipo = l.filter(o => o.tipo === t.key);
+      const doTipo = l.filter(o => o.resumo === r);
       if (!doTipo.length) return { txt: "—" };
       const o = maisEmConta(doTipo);
       if (!o) return celPreco("");
       return { txt: `${esc(precoTexto(o.faixa))} <small class="ct-cel-unid">${esc(o.unidade)}</small>`, num: parseInt(priceMin(o.faixa), 10), u: o.unidade };
     });
     if (new Set(vals.filter(v => v.u).map(v => v.u)).size > 1) vals.forEach(v => { delete v.num; });
-    return { rot: t.nome, melhor: "menor", vals };
+    return { rot: r === "crianca" ? "Aula infantil" : CATALOGO_TIPOS.find(t => t.key === r).nome, melhor: "menor", vals };
   });
   if (!linhas.length) {
     linhas.push({ rot: "Aula", melhor: "menor", vals: courts.map(c => celPreco(c.priceAula)) });
@@ -17471,17 +17487,18 @@ function renderActiveChips() {
 // "/h", "/mês".
 function ofertas(c) {
   const todas = opcoesPreco(c);
-  const grupos = [...new Set(todas.map(o => o.grupo))];
+  const grupoDe = o => o.publico === "crianca" ? "crianca" : o.grupo;
+  const grupos = [...new Set(todas.map(grupoDe))];
   const opcoes = grupos.map(g => {
-    const doGrupo = todas.filter(o => o.grupo === g);
+    const doGrupo = todas.filter(o => grupoDe(o) === g);
     const o = maisEmConta(doGrupo) || doGrupo[0];
-    return { label: g === "aula" ? "Aula" : g === "locacao" ? "Locação" : o.nome, faixa: o.faixa, curto: o.curto, min: parseInt(priceMin(o.faixa) || "0", 10) };
+    return { label: g === "aula" ? "Aula" : g === "crianca" ? "Aula infantil" : g === "locacao" ? "Locação" : o.nome, faixa: o.faixa, curto: o.curto, min: parseInt(priceMin(o.faixa) || "0", 10) };
   }).sort((a, b) => (a.min || 1e9) - (b.min || 1e9));
 
   const so = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : null;
-  const alvo = so === "aulas_proprias" ? "Aula" : (so === "locacao" ? "Locação" : null);
+  const alvo = so === "aulas_proprias" ? ["Aula", "Aula infantil"] : (so === "locacao" ? ["Locação"] : null);
   if (!alvo) return opcoes;
-  const filtrado = opcoes.filter(o => o.label === alvo);
+  const filtrado = opcoes.filter(o => alvo.includes(o.label));
   return filtrado.length ? filtrado : opcoes;
 }
 
@@ -18614,7 +18631,9 @@ function htEtiquetas(c) {
 // valor paga, curto para caber na barra de baixo: "aula, por hora", "por
 // aula individual", "por pessoa, na dupla", "por hora de quadra".
 function faixaGeral(c) {
-  const barata = maisEmConta(opcoesPreco(c));
+  const opcoes = opcoesPreco(c);
+  const semCriancas = opcoes.filter(o => o.publico !== "crianca");
+  const barata = maisEmConta(semCriancas.some(o => temPreco(o.faixa)) ? semCriancas : opcoes);
   if (!barata) return null;
   return { opcao: barata, texto: precoTexto(barata.faixa), rotulo: rotuloCurto(barata) };
 }
@@ -18623,7 +18642,7 @@ function rotuloCurto(o) {
   const i = o.item;
   const mensal = i.cobranca === "mensal";
   if (tipoDoItem(i).grupo === "locacao") return mensal ? "por mês, locação" : "por hora de quadra";
-  const onde = { individual: "aula individual", dupla: "na dupla", grupo: "na turma", aula: "aula" }[i.tipo];
+  const onde = { individual: "aula individual", dupla: "na dupla", grupo: "na turma", aula: "aula" }[i.tipo] + (i.publico === "crianca" ? " infantil" : "");
   if (tipoDoItem(i).porPessoa) return `${mensal ? "por pessoa/mês" : "por pessoa"}, ${onde}`;
   return mensal ? `por mês, ${onde}` : `por ${onde}`;
 }
@@ -18644,14 +18663,14 @@ function descricaoAcademia(c) {
   const comValor = opcoes.filter(o => temPreco(o.faixa));
   if (comValor.length && temCatalogo(c)) {
     // Com o catálogo, o "a partir de" de cada tipo, com o que o valor paga.
-    const tipos = [...new Set(opcoes.map(o => o.tipo))];
-    const partes = tipos.map(t => maisEmConta(opcoes.filter(o => o.tipo === t))).filter(Boolean)
-      .map(o => `${o.nome.toLowerCase()} a partir de ${precoTexto(o.faixa).replace(/ a \d+$/, "")} ${o.unidade}`);
+    const grupos = [...new Set(opcoes.map(o => o.resumo))];
+    const partes = grupos.map(r => maisEmConta(opcoes.filter(o => o.resumo === r))).filter(Boolean)
+      .map(o => `${o.nomeResumo.toLowerCase()} a partir de ${precoTexto(o.faixa).replace(/ a \d+$/, "")} ${o.unidade}`);
     // Ponto e vírgula entre os tipos: a unidade já tem vírgula ("por pessoa, por aula").
     const lista = partes.length > 1 ? `${partes.slice(0, -1).join("; ")}; e ${partes[partes.length - 1]}` : partes[0];
     frases.push(`No catálogo da academia: ${lista}.`);
     if (opcoes.some(o => o.cobranca === "mensal") && opcoes.some(o => o.cobranca !== "mensal" && temPreco(o.faixa))) frases.push("Também há planos mensais.");
-    const semValor = [...new Set(opcoes.filter(o => !temPreco(o.faixa) && !comValor.some(x => x.tipo === o.tipo)).map(o => o.nome.toLowerCase()))];
+    const semValor = [...new Set(opcoes.filter(o => !temPreco(o.faixa) && !comValor.some(x => x.resumo === o.resumo)).map(o => o.nomeResumo.toLowerCase()))];
     if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(n => "da " + n))} é sob consulta: fale com a academia.`);
   } else if (comValor.length) {
     frases.push(`A academia cobra, por hora de quadra, ${listaTexto(comValor.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
@@ -18779,12 +18798,14 @@ function htDestaques(c) {
 function htOpcoes(c) {
   const opcoes = opcoesPreco(c);
   const lista = opcoes.length ? opcoes : [{ nome: "Valores", desc: "Fale com a academia no WhatsApp para saber o valor.", faixa: "", assunto: "os valores", unidade: "por hora" }];
-  const tipos = [...new Set(opcoes.map(o => o.nome))];
+  const tipos = [...new Set(opcoes.map(o => o.filtro))];
   const cobrancas = CATALOGO_COBRANCAS.filter(k => opcoes.some(o => o.cobranca === k.key));
   const escolha = state.opcaoDaFicha && state.opcaoDaFicha.id === c.id ? state.opcaoDaFicha : {};
   const filtro = tipos.includes(escolha.nome) ? escolha.nome : "";
   const filtroCob = cobrancas.length > 1 && cobrancas.some(k => k.key === escolha.cobranca) ? escolha.cobranca : "";
-  const visiveis = lista.filter(o => (!filtro || o.nome === filtro) && (!filtroCob || o.cobranca === filtroCob));
+  const visiveis = lista.filter(o => (!filtro || o.filtro === filtro) && (!filtroCob || o.cobranca === filtroCob));
+  // "A academia não tem aula individual mensal", "… aula infantil mensal".
+  const nomeDoFiltro = (() => { const o = opcoes.find(x => x.filtro === filtro); return !o ? "" : o.publico === "crianca" ? "aula infantil" : o.nome.toLowerCase(); })();
   const fotos = courtPhotos(c);
   const pol = politicaDe(c);
   // "Menor preço" só entre valores que pagam a mesma coisa (todos por hora,
@@ -18800,14 +18821,16 @@ function htOpcoes(c) {
     return p.horas ? `<p class="ht-quarto-verde">Reposição até ${p.horas}h antes</p>` : "";
   };
   // A lista com ícones do cartão do quarto ("1 cama queen", "Dorme 2"): só
-  // a modalidade, sem horário nem duração.
+  // a modalidade, sem horário nem duração; na aula das crianças, a idade.
   const itens = (o) => {
     const i = o.item;
     if (!i) return `<p class="ht-quarto-d">${esc(o.desc)}</p>`;
     const t = tipoDoItem(i);
+    const idade = idadeTexto(i);
     return `<ul class="ht-quarto-itens">
         <li>${icon(i.cobranca === "mensal" ? 'historico' : 'ball', 15, 'var(--text)')}<span>${i.cobranca === "mensal" ? "Plano mensal" : t.grupo === "locacao" ? "Locação avulsa" : "Aula avulsa"}</span></li>
-        <li>${icon(t.grupo === "locacao" ? 'key' : 'pessoa', 15, 'var(--text)')}<span>${esc(t.desc)}</span></li>
+        <li>${icon(t.grupo === "locacao" ? 'key' : 'pessoa', 15, 'var(--text)')}<span>${esc(descDoItem(i))}</span></li>
+        ${idade ? `<li>${icon('info', 15, 'var(--text)')}<span>${esc(idade)}</span></li>` : ""}
       </ul>`;
   };
   const cartao = (o) => {
@@ -18831,12 +18854,11 @@ function htOpcoes(c) {
         </div>
       </article>`;
   };
-  const curto = (nome) => (CATALOGO_TIPOS.find(t => t.nome === nome) || {}).curto || nome;
   const chip = (rotulo, ativo, attrs) => `<button type="button" class="chip ${ativo ? "active" : ""}" ${attrs} data-court="${c.id}" aria-pressed="${ativo}">${esc(rotulo)}</button>`;
   const filtros = (tipos.length > 1 || cobrancas.length > 1) ? `
       <div class="chip-row ht-opcoes-filtro" id="ht-opcoes-filtro" data-rolagem-x>
         ${chip("Todas", !filtro && !filtroCob, `data-opcao-filtro="" data-opcao-cobranca=""`)}
-        ${tipos.length > 1 ? tipos.map(n => chip(curto(n), filtro === n, `data-opcao-filtro="${esc(n)}" data-opcao-cobranca="${filtroCob}"`)).join("") : ""}
+        ${tipos.length > 1 ? tipos.map(n => chip(n, filtro === n, `data-opcao-filtro="${esc(n)}" data-opcao-cobranca="${filtroCob}"`)).join("") : ""}
         ${cobrancas.length > 1 ? `<span class="ht-opcoes-sep" aria-hidden="true"></span>${cobrancas.map(k => chip(k.plural, filtroCob === k.key, `data-opcao-filtro="${esc(filtro)}" data-opcao-cobranca="${filtroCob === k.key ? "" : k.key}"`)).join("")}` : ""}
       </div>
       <p class="ht-opcoes-n">Mostrando ${visiveis.length} de ${opcoes.length} opções</p>` : "";
@@ -18844,7 +18866,7 @@ function htOpcoes(c) {
     ${filtros}
     ${visiveis.length
       ? `<div class="ht-quartos" id="ht-quartos" data-rolagem-x>${visiveis.map(cartao).join("")}</div>`
-      : `<p class="ht-sec-sub ht-opcoes-vazio">A academia não tem ${esc(filtro.toLowerCase())} ${filtroCob === "mensal" ? "mensal" : "avulsa"} no catálogo. <button type="button" class="ht-link" data-opcao-filtro="" data-opcao-cobranca="" data-court="${c.id}">Ver todas</button></p>`}
+      : `<p class="ht-sec-sub ht-opcoes-vazio">A academia não tem ${esc(nomeDoFiltro)} ${filtroCob === "mensal" ? "mensal" : "avulsa"} no catálogo. <button type="button" class="ht-link" data-opcao-filtro="" data-opcao-cobranca="" data-court="${c.id}">Ver todas</button></p>`}
     ${c.phone ? "" : `<p class="ht-sec-sub" style="margin-top:12px">O telefone não foi incluído.</p>`}`;
 }
 
@@ -18856,7 +18878,8 @@ function htCaixasDaEscolha(c) {
   const caixas = [];
   const mod = modalidadesTexto(c);
   const total = totalQuadras(c);
-  const oferece = [mod, total ? `${total} ${plural(total, "quadra", "quadras")}` : ""].filter(Boolean).join(" · ");
+  const infantil = catalogoDe(c).some(i => i.publico === "crianca") ? "Aula infantil" : "";
+  const oferece = [mod, infantil, total ? `${total} ${plural(total, "quadra", "quadras")}` : ""].filter(Boolean).join(" · ");
   if (oferece) caixas.push(`<div class="ht-caixa">${icon('pessoa', 22, 'var(--text)')}<span><span class="ht-caixa-l">A academia oferece</span><span class="ht-caixa-v">${esc(oferece)}</span></span></div>`);
   return caixas.length ? `<div class="ht-caixas">${caixas.join("")}</div>` : "";
 }
@@ -19115,18 +19138,37 @@ function temPreco(faixa) {
 // observação. Uma de cada (tipo e cobrança). Dupla e grupo: o valor é por
 // pessoa. "Aula" sem tipo é a do preço antigo (price_aula), que continua até
 // a academia escolher o tipo.
+// Aulas para adultos e para crianças (pedido do Breno em 28/10/2026, regra
+// 168: "aulas de adulto, podendo selecionar individual, dupla, grupo mensal
+// ou avulsa; aulas de crianças selecionando a idade, individual, dupla,
+// grupo sendo avulsa ou mensal"): a aula das crianças é o mesmo item com
+// publico "crianca" e a idade (idadeDe, idadeAte), como os programas
+// "Juniors" do Mindbody e do ClassPass, separados dos de adultos.
 const CATALOGO_TIPOS = [
-  { key: "individual", nome: "Aula individual", curto: "Individual", grupo: "aula", desc: "Você e o professor" },
-  { key: "dupla", nome: "Aula em dupla", curto: "Dupla", grupo: "aula", porPessoa: true, desc: "Duas pessoas com o professor" },
-  { key: "grupo", nome: "Aula em grupo", curto: "Grupo", grupo: "aula", porPessoa: true, desc: "Turma com o professor" },
+  { key: "individual", nome: "Aula individual", infantil: "Aula infantil individual", curto: "Individual", grupo: "aula", desc: "Você e o professor", descCrianca: "A criança e o professor" },
+  { key: "dupla", nome: "Aula em dupla", infantil: "Aula infantil em dupla", curto: "Dupla", grupo: "aula", porPessoa: true, desc: "Duas pessoas com o professor", descCrianca: "Duas crianças com o professor" },
+  { key: "grupo", nome: "Aula em grupo", infantil: "Aula infantil em grupo", curto: "Grupo", grupo: "aula", porPessoa: true, desc: "Turma com o professor", descCrianca: "Turma de crianças com o professor" },
   { key: "aula", nome: "Aula", curto: "Aula", grupo: "aula", antigo: true, desc: "Com professor da academia" },
   { key: "locacao", nome: "Locação", curto: "Locação", grupo: "locacao", desc: "Aluguel da quadra" },
 ];
+// Os formatos de aula que a academia escolhe (para adultos e para crianças).
+const CATALOGO_FORMATOS = CATALOGO_TIPOS.filter(t => t.grupo === "aula" && !t.antigo);
 const CATALOGO_COBRANCAS = [
   { key: "avulsa", nome: "Avulsa", plural: "Avulsas" },
   { key: "mensal", nome: "Mensal", plural: "Mensais" },
 ];
 const CATALOGO_MAX = 30;
+// A idade das aulas para crianças: de 3 a 17 anos.
+const CATALOGO_IDADE_MIN = 3;
+const CATALOGO_IDADE_MAX = 17;
+function idadeDoCatalogo(v) {
+  const n = parseInt(v, 10);
+  return n >= CATALOGO_IDADE_MIN && n <= CATALOGO_IDADE_MAX ? n : null;
+}
+// A linha de cada item: o tipo (e "crianca:" antes, na aula das crianças).
+// Uma de cada por linha e cobrança; a foto é uma por linha.
+function linhaDoItem(i) { return (i.publico === "crianca" ? "crianca:" : "") + i.tipo; }
+const CATALOGO_LINHAS = ["individual", "dupla", "grupo", "aula", "crianca:individual", "crianca:dupla", "crianca:grupo", "locacao"];
 
 // O item como o site usa, sem o que veio estranho (o banco guarda a lista
 // que o site monta).
@@ -19139,6 +19181,13 @@ function itemDoCatalogo(x) {
     cobranca: x.cobranca === "mensal" ? "mensal" : "avulsa",
     preco: String(x.preco || "").replace(/[^0-9-]/g, "").replace(/^-+|-+$/g, "").slice(0, 20),
   };
+  if (x.publico === "crianca" && tipo.infantil) {
+    item.publico = "crianca";
+    let de = idadeDoCatalogo(x.idadeDe), ate = idadeDoCatalogo(x.idadeAte);
+    if (de && ate && ate < de) [de, ate] = [ate, de];
+    if (de) item.idadeDe = de;
+    if (ate) item.idadeAte = ate;
+  }
   if (fotoDoCatalogoValida(x.foto)) item.foto = x.foto;
   return item;
 }
@@ -19148,17 +19197,33 @@ function fotoDoCatalogoValida(v) {
   return typeof v === "string" && v.length <= FOTO_DO_CATALOGO_MAX && /^(data:image\/(jpeg|png|webp);base64,|https:\/\/)/.test(v);
 }
 function tipoDoItem(i) { return CATALOGO_TIPOS.find(t => t.key === i.tipo) || CATALOGO_TIPOS[0]; }
-// Uma de cada: a primeira de cada tipo e cobrança vale.
+// Uma de cada: a primeira de cada linha e cobrança vale.
 function semRepetir(itens) {
   const vistos = new Set();
   return itens.filter(i => {
-    if (!i || vistos.has(i.tipo + ":" + i.cobranca)) return false;
-    vistos.add(i.tipo + ":" + i.cobranca);
+    if (!i || vistos.has(linhaDoItem(i) + ":" + i.cobranca)) return false;
+    vistos.add(linhaDoItem(i) + ":" + i.cobranca);
     return true;
   });
 }
 function catalogoDe(c) {
-  return semRepetir((Array.isArray(c && c.catalogo) ? c.catalogo : []).map(itemDoCatalogo)).slice(0, CATALOGO_MAX);
+  return comFotoNaLinha(semRepetir((Array.isArray(c && c.catalogo) ? c.catalogo : []).map(itemDoCatalogo)).slice(0, CATALOGO_MAX));
+}
+// A foto é uma por aula (28/10/2026): a avulsa e a mensal da mesma linha
+// mostram a mesma. O banco guarda a foto só no primeiro item da linha.
+function comFotoNaLinha(itens) {
+  const fotos = {};
+  itens.forEach(i => { if (i.foto && !fotos[linhaDoItem(i)]) fotos[linhaDoItem(i)] = i.foto; });
+  return itens.map(i => !i.foto && fotos[linhaDoItem(i)] ? { ...i, foto: fotos[linhaDoItem(i)] } : i);
+}
+function fotoUmaVezPorLinha(itens) {
+  const vistas = new Set();
+  return itens.map(i => {
+    if (!i.foto) return i;
+    if (!vistas.has(linhaDoItem(i))) { vistas.add(linhaDoItem(i)); return i; }
+    const { foto, ...semFoto } = i;
+    return semFoto;
+  });
 }
 // Os preços de antes do catálogo viram itens na primeira vez que a academia
 // abre a parte do preço (sem perder o que já estava na ficha).
@@ -19172,10 +19237,82 @@ function catalogoDoForm(f) {
   if (!Array.isArray(f.catalogo)) f.catalogo = catalogoAntigo(f);
   return f.catalogo;
 }
-// Na ordem do catálogo: individual, dupla, grupo, aula, locação; avulsa antes
-// da mensal.
+// A grade do cadastro (28/10/2026, regra 168: "tente deixar isso um pouco
+// mais fácil de ser preenchido, sem precisar fazer um por um"), como as
+// variantes do Shopify: a academia escolhe os formatos uma vez (individual,
+// em dupla, em grupo), para adultos e para crianças, e a grade já mostra uma
+// linha para cada, com a avulsa e a mensal lado a lado; é só escrever os
+// valores. O que fica em branco não é oferecido. "Não divulgar os valores"
+// troca os campos por "Oferece", e a ficha mostra "Sob consulta". A grade
+// fica guardada junto do formulário (fora do rascunho) e monta o
+// f.catalogo a cada mudança; um catálogo novo no formulário refaz a grade.
+const GRADE_DO_CATALOGO = new WeakMap();
+function gradeDoCatalogo(f) {
+  const itens = catalogoDoForm(f);
+  let g = GRADE_DO_CATALOGO.get(f);
+  if (!g || g.de !== itens) { g = gradeDosItens(itens); g.de = itens; GRADE_DO_CATALOGO.set(f, g); }
+  return g;
+}
+// O bloco de cada linha da grade: "adulto", "crianca" ou "locacao".
+function blocoDaLinha(linha) { return linha === "locacao" ? "locacao" : linha.startsWith("crianca:") ? "crianca" : "adulto"; }
+function linhaDaGrade(i) { return tipoDoItem(i).grupo === "locacao" ? "locacao" : (i.publico === "crianca" ? "crianca:" : "adulto:") + i.tipo; }
+function gradeDosItens(itens) {
+  const g = { adulto: { formatos: [], consulta: false }, crianca: { formatos: [], consulta: false, de: "", ate: "" }, locacao: { consulta: false }, valores: {}, marcadas: {}, fotos: {}, antiga: false };
+  comFotoNaLinha(semRepetir(itens.map(itemDoCatalogo))).forEach(i => {
+    const linha = linhaDaGrade(i);
+    const bloco = blocoDaLinha(linha);
+    const chave = linha + ":" + i.cobranca;
+    if (i.tipo === "aula") g.antiga = true;
+    else if (bloco !== "locacao" && !g[bloco].formatos.includes(i.tipo)) g[bloco].formatos.push(i.tipo);
+    g.valores[chave] = i.preco || "";
+    g.marcadas[chave] = true;
+    if (i.foto && !g.fotos[linha]) g.fotos[linha] = i.foto;
+    if (bloco === "crianca") {
+      if (i.idadeDe && !g.crianca.de) g.crianca.de = String(i.idadeDe);
+      if (i.idadeAte && !g.crianca.ate) g.crianca.ate = String(i.idadeAte);
+    }
+  });
+  // O bloco que veio todo sem valor está com os valores sob consulta.
+  ["adulto", "crianca", "locacao"].forEach(b => {
+    const chaves = Object.keys(g.marcadas).filter(k => blocoDaLinha(k.replace(/:(avulsa|mensal)$/, "")) === b);
+    g[b].consulta = chaves.length > 0 && chaves.every(k => !priceMin(g.valores[k]));
+  });
+  return g;
+}
+// As linhas de cada bloco, na ordem dos formatos (a "Aula" do preço de
+// antes, sem formato, fica no fim das aulas para adultos).
+function linhasDaGrade(g, bloco) {
+  if (bloco === "locacao") return [{ linha: "locacao", tipo: CATALOGO_TIPOS.find(t => t.key === "locacao") }];
+  const tipos = CATALOGO_FORMATOS.filter(t => g[bloco].formatos.includes(t.key));
+  if (bloco === "adulto" && g.antiga) tipos.push(CATALOGO_TIPOS.find(t => t.key === "aula"));
+  return tipos.map(t => ({ linha: bloco + ":" + t.key, tipo: t }));
+}
+function itensDaGrade(g) {
+  const out = [];
+  ["adulto", "crianca", "locacao"].forEach(bloco => {
+    linhasDaGrade(g, bloco).forEach(l => CATALOGO_COBRANCAS.forEach(k => {
+      const chave = l.linha + ":" + k.key;
+      const preco = String(g.valores[chave] || "");
+      if (g[bloco].consulta ? !g.marcadas[chave] : !priceMin(preco)) return;
+      out.push(itemDoCatalogo({
+        tipo: l.tipo.key, cobranca: k.key, preco: g[bloco].consulta ? "" : preco,
+        ...(bloco === "crianca" ? { publico: "crianca", idadeDe: g.crianca.de, idadeAte: g.crianca.ate } : {}),
+        foto: g.fotos[l.linha],
+      }));
+    }));
+  });
+  return fotoUmaVezPorLinha(out.filter(Boolean)).slice(0, CATALOGO_MAX);
+}
+// Depois de cada mudança na grade, o catálogo do formulário acompanha.
+function catalogoDaGrade(f) {
+  const g = gradeDoCatalogo(f);
+  f.catalogo = itensDaGrade(g);
+  g.de = f.catalogo;
+}
+// Na ordem do catálogo: individual, dupla, grupo e aula, para adultos e
+// depois para crianças, e a locação; avulsa antes da mensal.
 function ordemDoCatalogo(a, b) {
-  const t = x => CATALOGO_TIPOS.findIndex(k => k.key === x.tipo);
+  const t = x => CATALOGO_LINHAS.indexOf(linhaDoItem(x));
   return t(a) - t(b) || (a.cobranca === "mensal") - (b.cobranca === "mensal");
 }
 // Por hora, por aula, por pessoa, por mês…
@@ -19190,43 +19327,69 @@ function unidadeCurta(i) {
   if (tipoDoItem(i).grupo === "locacao") return "/h";
   return "/aula";
 }
-// "Plano mensal · Turma com o professor".
+// "Aula em grupo" ou, para as crianças, "Aula infantil em grupo".
+function nomeDoItem(i) {
+  const t = tipoDoItem(i);
+  return i.publico === "crianca" && t.infantil ? t.infantil : t.nome;
+}
+function descDoItem(i) {
+  const t = tipoDoItem(i);
+  return i.publico === "crianca" && t.descCrianca ? t.descCrianca : t.desc;
+}
+// "De 6 a 12 anos", "A partir de 6 anos", "Até 12 anos".
+function idadeTexto(i) {
+  if (!i || i.publico !== "crianca") return "";
+  if (i.idadeDe && i.idadeAte) return i.idadeDe === i.idadeAte ? `${i.idadeDe} anos` : `De ${i.idadeDe} a ${i.idadeAte} anos`;
+  if (i.idadeDe) return `A partir de ${i.idadeDe} anos`;
+  if (i.idadeAte) return `Até ${i.idadeAte} anos`;
+  return "";
+}
+// "Plano mensal · Turma com o professor" (e a idade, na aula das crianças).
 function detalheDoItem(i) {
   const t = tipoDoItem(i);
-  return `${i.cobranca === "mensal" ? "Plano mensal" : t.grupo === "locacao" ? "Locação avulsa" : "Aula avulsa"} · ${t.desc}`;
+  return [i.cobranca === "mensal" ? "Plano mensal" : t.grupo === "locacao" ? "Locação avulsa" : "Aula avulsa", descDoItem(i), idadeTexto(i)].filter(Boolean).join(" · ");
 }
 // O assunto do WhatsApp daquela opção.
 function assuntoDoItem(i) {
   const t = tipoDoItem(i);
   if (t.grupo === "locacao") return i.cobranca === "mensal" ? "o plano mensal de locação da quadra" : "alugar a quadra";
-  return i.cobranca === "mensal" ? `o plano mensal de ${t.nome.toLowerCase()}` : `a ${t.nome.toLowerCase()} avulsa`;
+  const nome = nomeDoItem(i).toLowerCase();
+  return i.cobranca === "mensal" ? `o plano mensal de ${nome}` : `a ${nome} avulsa`;
 }
 
 // Cada preço vira uma opção que a pessoa escolhe, como os quartos de um
 // hotel: com o catálogo, um item por opção; sem ele, a aula e a locação do
-// preço por hora de antes.
+// preço por hora de antes. Cada opção diz o filtro da ficha a que pertence
+// ("Individual", "Crianças", "Locação"…) e o grupo dos resumos ("a partir
+// de" da ficha, da busca e da comparação), em que as aulas das crianças
+// ficam juntas, como "Aula infantil".
 function opcoesPreco(c) {
   const cat = catalogoDe(c);
   const mods = c.modalidades || [];
   if (cat.length) {
-    const out = cat.slice().sort(ordemDoCatalogo).map(i => ({
-      nome: tipoDoItem(i).nome, desc: detalheDoItem(i), faixa: i.preco, assunto: assuntoDoItem(i),
-      unidade: unidadeDoItem(i), curto: unidadeCurta(i), grupo: tipoDoItem(i).grupo, tipo: i.tipo, cobranca: i.cobranca, item: i,
-    }));
+    const out = cat.slice().sort(ordemDoCatalogo).map(i => {
+      const crianca = i.publico === "crianca";
+      return {
+        nome: nomeDoItem(i), desc: detalheDoItem(i), faixa: i.preco, assunto: assuntoDoItem(i),
+        unidade: unidadeDoItem(i), curto: unidadeCurta(i), grupo: tipoDoItem(i).grupo, tipo: i.tipo, cobranca: i.cobranca, item: i,
+        publico: crianca ? "crianca" : "", filtro: crianca ? "Crianças" : tipoDoItem(i).curto,
+        resumo: crianca ? "crianca" : i.tipo, nomeResumo: crianca ? "Aula infantil" : nomeDoItem(i),
+      };
+    });
     // A modalidade marcada sem item continua aparecendo, sob consulta.
     if (mods.includes("aulas_proprias") && !cat.some(i => tipoDoItem(i).grupo === "aula"))
-      out.unshift({ nome: "Aula", desc: "Aula com professor da academia", faixa: "", assunto: "as aulas", unidade: "por aula", curto: "/aula", grupo: "aula", tipo: "aula", cobranca: "avulsa" });
+      out.unshift({ nome: "Aula", desc: "Aula com professor da academia", faixa: "", assunto: "as aulas", unidade: "por aula", curto: "/aula", grupo: "aula", tipo: "aula", cobranca: "avulsa", publico: "", filtro: "Aula", resumo: "aula", nomeResumo: "Aula" });
     if (mods.includes("locacao") && !cat.some(i => tipoDoItem(i).grupo === "locacao"))
-      out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: "", assunto: "alugar a quadra", unidade: "por hora", curto: "/h", grupo: "locacao", tipo: "locacao", cobranca: "avulsa" });
+      out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: "", assunto: "alugar a quadra", unidade: "por hora", curto: "/h", grupo: "locacao", tipo: "locacao", cobranca: "avulsa", publico: "", filtro: "Locação", resumo: "locacao", nomeResumo: "Locação" });
     return out;
   }
   const out = [];
   const temAula = !!c.priceAula || mods.includes("aulas_proprias");
   const temLoc = !!c.priceLocacao || mods.includes("locacao");
-  const porHora = { unidade: "por hora", curto: "/h", cobranca: "avulsa" };
-  if (temAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula || "", assunto: "as aulas", grupo: "aula", tipo: "aula", ...porHora });
-  if (temLoc) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao || "", assunto: "alugar a quadra", grupo: "locacao", tipo: "locacao", ...porHora });
-  if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor por hora de quadra", faixa: c.priceRange, assunto: "os valores", grupo: "", tipo: "", ...porHora });
+  const porHora = { unidade: "por hora", curto: "/h", cobranca: "avulsa", publico: "" };
+  if (temAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula || "", assunto: "as aulas", grupo: "aula", tipo: "aula", filtro: "Aula", resumo: "aula", nomeResumo: "Aula", ...porHora });
+  if (temLoc) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao || "", assunto: "alugar a quadra", grupo: "locacao", tipo: "locacao", filtro: "Locação", resumo: "locacao", nomeResumo: "Locação", ...porHora });
+  if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor por hora de quadra", faixa: c.priceRange, assunto: "os valores", grupo: "", tipo: "", filtro: "Preço", resumo: "", nomeResumo: "Preço", ...porHora });
   // Quem tem valor aparece primeiro; quem não tem vai para o fim.
   return out.sort((a, b) => (parseInt(priceMin(a.faixa), 10) || 1e9) - (parseInt(priceMin(b.faixa), 10) || 1e9));
 }
@@ -19291,9 +19454,9 @@ function htCartaoContato(c) {
     <div class="ht-book">
       ${opcoes.length && temCatalogo(c) ? `
         <p class="ht-book-lbl">A partir de</p>
-        ${[...new Set(opcoes.map(o => o.tipo))].map(t => maisEmConta(opcoes.filter(o => o.tipo === t)) || opcoes.find(o => o.tipo === t)).map(o => `
+        ${[...new Set(opcoes.map(o => o.resumo))].map(r => maisEmConta(opcoes.filter(o => o.resumo === r)) || opcoes.find(o => o.resumo === r)).map(o => `
           <div class="ht-book-row">
-            <span class="ht-book-opt">${esc(o.nome)}</span>
+            <span class="ht-book-opt">${esc(o.nomeResumo)}</span>
             <span class="ht-book-val ${temPreco(o.faixa) ? "" : "sem-valor"}">${temPreco(o.faixa) ? `R$ ${esc(priceMin(o.faixa))}<small>${esc(o.curto)}</small>` : SEM_PRECO}</span>
           </div>`).join("")}
         <button type="button" class="ht-link ht-book-ver" data-ir-secao="precos">Ver as ${opcoes.length} opções ${icon('chevron', 14, 'currentColor')}</button>
@@ -19399,15 +19562,30 @@ function perguntasAcademia(c) {
       a: "O valor é sob consulta: fale com a academia pelo botão do WhatsApp aqui na ficha.",
     });
   }
-  // Que tipos de aula, com o catálogo: individual, em dupla, em grupo.
-  const tiposDeAula = CATALOGO_TIPOS.filter(t => t.grupo === "aula" && !t.antigo && opcoes.some(o => o.tipo === t.key));
+  // Que tipos de aula, com o catálogo: individual, em dupla, em grupo; as
+  // das crianças numa pergunta à parte, com a idade (regra 168).
+  const tiposDe = (publico) => CATALOGO_FORMATOS.filter(t => opcoes.some(o => o.item && o.tipo === t.key && o.publico === publico));
+  const cobrancasDe = (publico) => {
+    const doPublico = opcoes.filter(o => o.item && o.grupo === "aula" && o.publico === publico);
+    const mensal = doPublico.some(o => o.cobranca === "mensal");
+    const avulsa = doPublico.some(o => o.cobranca !== "mensal");
+    return mensal && avulsa ? ", avulsas e em planos mensais" : mensal ? ", em planos mensais" : ", avulsas";
+  };
+  const tiposDeAula = tiposDe("");
   if (tiposDeAula.length) {
     const nomes = tiposDeAula.map((t, i) => i ? t.nome.replace(/^Aula /, "") : t.nome.toLowerCase());
-    const mensal = opcoes.some(o => o.grupo === "aula" && o.cobranca === "mensal");
-    const avulsa = opcoes.some(o => o.grupo === "aula" && o.cobranca !== "mensal");
     faq.push({
       q: `Que aulas ${c.name} tem?`,
-      a: `${listaTexto(nomes).replace(/^./, x => x.toUpperCase())}${mensal && avulsa ? ", avulsas e em planos mensais" : mensal ? ", em planos mensais" : ", avulsas"}. ${tiposDeAula.some(t => t.porPessoa) ? "Na dupla e no grupo, o valor é por pessoa. " : ""}Os detalhes de cada uma estão em "Escolha o que você quer".`,
+      a: `${listaTexto(nomes).replace(/^./, x => x.toUpperCase())}${cobrancasDe("")}. ${tiposDeAula.some(t => t.porPessoa) ? "Na dupla e no grupo, o valor é por pessoa. " : ""}Os detalhes de cada uma estão em "Escolha o que você quer".`,
+    });
+  }
+  const tiposInfantis = tiposDe("crianca");
+  if (tiposInfantis.length) {
+    const idade = idadeTexto((opcoes.find(o => o.publico === "crianca") || {}).item);
+    const nomes = tiposInfantis.map(t => t.nome.replace(/^Aula /, ""));
+    faq.push({
+      q: `${c.name} tem aula de tênis para crianças?`,
+      a: `Sim: aula infantil ${listaTexto(nomes)}${cobrancasDe("crianca")}${idade ? `, para crianças ${idade.replace(/^De /, "de ").replace(/^A partir/, "a partir").replace(/^Até/, "até").replace(/^(\d)/, "de $1")}` : ""}. Os valores estão em "Escolha o que você quer".`,
     });
   }
   const mod = modalidadesTexto(c);
@@ -20006,55 +20184,104 @@ function politicaParaSalvar(f) {
 // do Google, e dá para salvar em qualquer uma.
 // O catálogo no cadastro, na parte "Modalidade e preço": uma tabela de
 // preços, como a lista de preços do clube no Playtomic e as opções de preço
-// do Mindbody. Cada modalidade (aula individual, em dupla, em grupo ou
-// locação) tem Avulsa e Mensal: marca o que a academia oferece e escreve o
-// valor. Só modalidade e valor (27/10/2026: "eu não quero que o catálogo
-// seja oferecendo aulas em tal horário e duração, e sim qual modalidade e
-// valor").
+// do Mindbody. Só modalidade e valor (27/10/2026: "eu não quero que o
+// catálogo seja oferecendo aulas em tal horário e duração, e sim qual
+// modalidade e valor"). Desde 28/10/2026 (regra 168), em blocos: aulas para
+// adultos, aulas para crianças (com a idade) e locação. Em cada bloco de
+// aulas, os formatos se escolhem uma vez e a grade aparece com a avulsa e a
+// mensal de cada formato lado a lado (como as variantes do Shopify): é só
+// escrever os valores, e o que fica em branco não é oferecido.
 function editorDoCatalogo(f) {
-  const cat = catalogoDoForm(f);
+  const g = gradeDoCatalogo(f);
   const aula = f.modalidades.includes("aulas_proprias");
   const loc = f.modalidades.includes("locacao");
-  const tipos = CATALOGO_TIPOS.filter(t => (t.grupo === "aula" ? aula : loc) && (!t.antigo || cat.some(i => i.tipo === t.key)));
-  const linha = (t, k) => {
-    const i = cat.find(x => x.tipo === t.key && x.cobranca === k.key);
-    const chave = `${t.key}:${k.key}`;
-    return `
-      <div class="cat-linha ${i ? "on" : ""}">
-        <button type="button" class="cat-marcar" data-cat-marcar="${chave}" aria-pressed="${!!i}">
-          <span class="cat-caixa">${i ? icon('check', 13, '#fff') : ""}</span>${k.nome}
-        </button>
-        ${i ? `
-          <span class="cat-rs">R$</span>
-          <input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="numeric" placeholder="${k.key === "mensal" ? "300" : "120"}" value="${esc(i.preco || "")}" aria-label="Valor da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}" />
-          <span class="cat-unidade">${esc(unidadeDoItem(i))}</span>
-          ${fotoDaOpcao(i, chave, t, k)}` : `<span class="cat-nao">Não oferece</span>`}
-      </div>`;
-  };
-  // A foto de cada opção marcada (27/10/2026, "podendo adicionar imagens
-  // para cada aulas no Premium"): todo plano preenche, e a ficha mostra no
-  // Premium; fora dele, a etiqueta avisa, e o fim do cadastro diz o que o
-  // plano esconde, como as fotos e as comodidades a mais.
+  // A foto de cada aula e da locação (27/10/2026, "podendo adicionar imagens
+  // para cada aulas no Premium"; uma por aula desde 28/10/2026): todo plano
+  // preenche, e a ficha mostra no Premium; fora dele, a etiqueta avisa, e o
+  // fim do cadastro diz o que o plano esconde.
   const premium = isAdmin || (f.__plano || "basico") === "premium";
-  const fotoDaOpcao = (i, chave, t, k) => fotoDoCatalogoValida(i.foto)
-    ? `<div class="cat-foto"><img src="${esc(i.foto)}" alt="Foto da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}" /><button type="button" class="cat-foto-ajustar" data-cat-foto-ajustar="${chave}">${icon('expandir', 13, 'currentColor')} Ajustar</button><button type="button" class="cat-foto-tirar" data-cat-foto-tirar="${chave}" aria-label="Tirar a foto da ${esc(t.nome.toLowerCase())} ${k.nome.toLowerCase()}">✕</button>${premium ? "" : `<span class="cat-premium">Aparece no Premium</span>`}</div>`
-    : `<label class="cat-foto-bt">${icon('camera', 15, 'currentColor')} Foto desta opção${premium ? "" : ` <span class="cat-premium">Premium</span>`}<input type="file" accept="image/*" data-cat-foto="${chave}" /></label>`;
+  const nomeDaLinha = (l, bloco) => bloco === "crianca" ? l.tipo.infantil : l.tipo.nome;
+  const celula = (bloco, l, k) => {
+    const chave = `${l.linha}:${k.key}`;
+    const nome = `${nomeDaLinha(l, bloco).toLowerCase()} ${k.nome.toLowerCase()}`;
+    if (g[bloco].consulta) {
+      const on = !!g.marcadas[chave];
+      return `<button type="button" class="cat-cel cat-oferece ${on ? "on" : ""}" data-cat-oferece="${chave}" aria-pressed="${on}" aria-label="Oferece a ${esc(nome)}"><span class="cat-caixa">${on ? icon('check', 13, '#fff') : ""}</span>Oferece</button>`;
+    }
+    return `<label class="cat-cel"><span class="cat-rs">R$</span><input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="numeric" placeholder="—" value="${esc(g.valores[chave] || "")}" aria-label="Valor da ${esc(nome)}" /></label>`;
+  };
+  const grade = (bloco) => {
+    const linhas = linhasDaGrade(g, bloco);
+    if (!linhas.length) return "";
+    const porAula = bloco !== "locacao";
+    return `
+      <div class="cat-grade" data-cat-grade="${bloco}">
+        <span></span>
+        ${CATALOGO_COBRANCAS.map(k => `<span class="cat-col">${k.nome}<small>${k.key === "mensal" ? "por mês" : porAula ? "por aula" : "por hora"}</small></span>`).join("")}
+        ${linhas.map(l => `
+          <span class="cat-lin">${esc(porAula ? l.tipo.curto : "Locação")}${l.tipo.porPessoa ? `<small>por pessoa</small>` : ""}</span>
+          ${CATALOGO_COBRANCAS.map(k => celula(bloco, l, k)).join("")}`).join("")}
+      </div>
+      ${g.antiga && bloco === "adulto" ? `<p class="cat-tipo-dica">"Aula" é o preço de antes, sem o formato: escreva o valor no formato certo e apague o de "Aula".</p>` : ""}
+      <button type="button" class="cat-consulta ${g[bloco].consulta ? "on" : ""}" data-cat-consulta="${bloco}" aria-pressed="${g[bloco].consulta}"><span class="cat-caixa">${g[bloco].consulta ? icon('check', 13, '#fff') : ""}</span>Não divulgar os valores</button>
+      ${fotos(bloco, linhas)}`;
+  };
+  const fotos = (bloco, linhas) => `
+    <div class="cat-fotos">
+      <p class="cat-fotos-n">${bloco === "locacao" ? "Foto da locação" : "Foto de cada aula"}${premium ? "" : ` <span class="cat-premium">Premium</span>`}</p>
+      <div class="cat-fotos-lista">
+        ${linhas.map(l => {
+          const rotulo = bloco === "locacao" ? "Locação" : l.tipo.curto;
+          const nome = nomeDaLinha(l, bloco).toLowerCase();
+          return fotoDoCatalogoValida(g.fotos[l.linha])
+            ? `<div class="cat-foto"><img src="${esc(g.fotos[l.linha])}" alt="Foto da ${esc(nome)}" /><span class="cat-foto-n">${esc(rotulo)}</span><button type="button" class="cat-foto-ajustar" data-cat-foto-ajustar="${l.linha}">${icon('expandir', 13, 'currentColor')} Ajustar</button><button type="button" class="cat-foto-tirar" data-cat-foto-tirar="${l.linha}" aria-label="Tirar a foto da ${esc(nome)}">✕</button>${premium ? "" : `<span class="cat-premium">Aparece no Premium</span>`}</div>`
+            : `<label class="cat-foto-bt">${icon('camera', 15, 'currentColor')} ${esc(rotulo)}<input type="file" accept="image/*" data-cat-foto="${l.linha}" aria-label="Foto da ${esc(nome)}" /></label>`;
+        }).join("")}
+      </div>
+    </div>`;
+  const formatos = (bloco) => `
+    <div class="chip-row cat-formatos" role="group" aria-label="Formatos das ${bloco === "crianca" ? "aulas para crianças" : "aulas para adultos"}">
+      ${CATALOGO_FORMATOS.map(t => {
+        const on = g[bloco].formatos.includes(t.key);
+        return `<button type="button" class="chip ${on ? "active" : ""}" data-cat-formato="${bloco}:${t.key}" aria-pressed="${on}">${esc(t.curto)}</button>`;
+      }).join("")}
+    </div>`;
+  const idades = (lado) => {
+    const v = g.crianca[lado];
+    const opcoes = [];
+    for (let n = CATALOGO_IDADE_MIN; n <= CATALOGO_IDADE_MAX; n++) opcoes.push(`<option value="${n}" ${String(n) === v ? "selected" : ""}>${n}</option>`);
+    return `<select class="form-field cat-idade-sel" data-cat-idade="${lado}" aria-label="${lado === "de" ? "Idade a partir de" : "Idade até"}"><option value="">—</option>${opcoes.join("")}</select>`;
+  };
+  const copiar = g.adulto.formatos.length && !g.crianca.formatos.length
+    ? `<button type="button" class="cat-copiar" data-cat-copiar>Copiar das aulas para adultos</button>` : "";
   return `
     <p class="field-label">Catálogo de preços</p>
-    <p class="footnote" style="margin:0 0 10px">Marque o que a academia oferece e escreva o valor. Cada opção marcada vira um cartão na ficha, com o botão do WhatsApp; sem valor, mostra "Sob consulta". No Premium, cada opção pode ter a própria foto: a aula ou a quadra (com pessoas, só com a autorização delas), sem promoção nem tabela de preço.</p>
+    <p class="footnote" style="margin:0 0 10px">O que ficar em branco não aparece na ficha. No Premium, cada aula e a locação podem ter a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>
     <div class="cat-tabela" id="cat-tabela">
-      ${tipos.map(t => `
-        <div class="cat-tipo" data-cat-tipo="${t.key}">
-          <p class="cat-tipo-n">${esc(t.nome)}${t.porPessoa ? ` <span>valor por pessoa</span>` : ""}</p>
-          ${t.antigo ? `<p class="cat-tipo-dica">É o preço de antes, sem o tipo da aula: marque acima o tipo certo e desmarque aqui.</p>` : ""}
-          ${CATALOGO_COBRANCAS.map(k => linha(t, k)).join("")}
-        </div>`).join("")}
+      ${aula ? `
+        <section class="cat-bloco" data-cat-bloco="adulto">
+          <p class="cat-bloco-n">Aulas para adultos</p>
+          ${formatos("adulto")}
+          ${grade("adulto")}
+        </section>
+        <section class="cat-bloco" data-cat-bloco="crianca">
+          <p class="cat-bloco-n">Aulas para crianças</p>
+          ${formatos("crianca")}
+          ${copiar}
+          ${g.crianca.formatos.length ? `<div class="cat-idade"><span class="cat-idade-n">Idade</span> de ${idades("de")} a ${idades("ate")} anos</div>` : ""}
+          ${grade("crianca")}
+        </section>` : ""}
+      ${loc ? `
+        <section class="cat-bloco" data-cat-bloco="locacao">
+          <p class="cat-bloco-n">Locação da quadra</p>
+          ${grade("locacao")}
+        </section>` : ""}
     </div>`;
 }
 
 const REG_PASSOS = [
   { id: "dados", t: "Nome e endereço", titulo: "Onde fica a academia?", porque: "É o que faz a academia aparecer para quem busca perto." },
-  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "Monte o catálogo: aula individual, em dupla e em grupo e locação, avulsa ou mensal. Cada opção vira um cartão na ficha, com o valor e o WhatsApp." },
+  { id: "precos", t: "Modalidade e preço", titulo: "O que a academia oferece?", porque: "Escolha as aulas para adultos e para crianças (individual, em dupla e em grupo) e a locação, e escreva o valor avulso e o mensal. Cada opção vira um cartão na ficha, com o valor e o WhatsApp." },
   { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
   { id: "contato", t: "Contato", titulo: "Como os jogadores falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa iniciada." },
   { id: "fotos", t: "Fotos", titulo: "Fotos da academia", porque: "Ficha com foto recebe muito mais contato." },
@@ -20240,19 +20467,17 @@ function abrirEnquadramento(fila) {
   __enq = null;
   render();
 }
-function itemDoCatalogoPelaChave(chave) {
-  return catalogoDoForm(window.__form || {}).find(x => x.tipo + ":" + x.cobranca === chave);
-}
+// A foto do catálogo é a da linha da grade ("adulto:grupo", "locacao").
 function fotoDoEnquadramento(alvo) {
   const f = window.__form || {};
   if (alvo.tipo === "foto") return (f.photos || [])[alvo.indice] || "";
-  if (alvo.tipo === "catalogo") { const i = itemDoCatalogoPelaChave(alvo.chave); return (i && i.foto) || ""; }
+  if (alvo.tipo === "catalogo") return gradeDoCatalogo(f).fotos[alvo.chave] || "";
   return "";
 }
 function guardarEnquadramento(alvo, dataUrl) {
   const f = window.__form || {};
   if (alvo.tipo === "foto" && f.photos && alvo.indice < f.photos.length) f.photos[alvo.indice] = dataUrl;
-  if (alvo.tipo === "catalogo") { const i = itemDoCatalogoPelaChave(alvo.chave); if (i && fotoDoCatalogoValida(dataUrl)) i.foto = dataUrl; }
+  if (alvo.tipo === "catalogo" && fotoDoCatalogoValida(dataUrl)) { gradeDoCatalogo(f).fotos[alvo.chave] = dataUrl; catalogoDaGrade(f); }
 }
 const ENQ_ICONES = {
   expandir: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3h7v7M10 21H3v-7M21 3l-7 7M3 21l7-7"/></svg>`,
@@ -21565,11 +21790,11 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
-<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo e locação, avulsas ou mensais, por hora, por aula, por pessoa ou por mês) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
+<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo, para adultos e para crianças, com a idade informada pela academia, e locação, avulsas ou mensais, por hora, por aula, por pessoa ou por mês) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir, e o cadastro dela fica guardado como fechado (cadastro inativo), com as avaliações, fora do site. Se ela reabrir, quem a administrava volta a administrá-la pelo GuiaTennis Parceiros, com o mesmo e-mail; uma conta nova pede a reabertura ao GuiaTennis, que confere antes. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. O WhatsApp da academia que a conta escreve na ficha (no cadastro ou depois) só aparece depois que alguém da academia digita o código de 6 números mandado a ele, pela conta oficial do GuiaTennis no WhatsApp ou, enquanto ela não está disponível, pelo GuiaTennis em até 1 dia útil, e depois que o GuiaTennis confere que o número é da academia (o código mostra que a pessoa tem o número; a conferência, que ele é da academia). Até lá, a ficha mostra o número de antes, ou fica sem o botão do WhatsApp. O código vale 72 horas e 5 tentativas. A academia vê, em Atualizações, o que os jogadores informaram sobre a ficha (sem saber quem informou); salvar a ficha, mesmo sem mudar nada, mostra que a academia conferiu. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?): a ficha sai do site na hora e, depois de o GuiaTennis conferir, sai do Guia, e o cadastro fica guardado como fechado (cadastro inativo), com as avaliações; se a academia continuar aberta, ou se o aviso for cancelado, a ficha volta ao site como estava; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta, no Perfil do GuiaTennis Parceiros ou em "Minha conta", no site dos jogadores (é a mesma conta, e excluir num lugar exclui nos dois): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, uma por avaliação, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. A academia pode editar a resposta quando quiser; a resposta editada passa a mostrar "editada". Se quem avaliou editar a avaliação, a resposta continua embaixo dela, e a academia recebe um e-mail para conferir. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas, uma foto para cada opção do catálogo de aulas e locação e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos de promoções são comprados à parte, com Pix ou cartão pelo Mercado Pago, valem para a promoção na ficha e para o leilão, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a lista mostra todas as academias na ordem escolhida pelo jogador, inclusive as do topo, de novo no lugar delas e sem a marcação; essa ordem não depende do plano. As "Melhores avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. Nos planos Completo e Premium, a academia também pode divulgar uma promoção por vez na ficha e no resultado da busca, por 1 a 12 semanas, paga por semana com os créditos, pelo preço mostrado antes de publicar (menor no Premium; enquanto o preço for zero, sem custo). Mudar o texto da promoção não custa nada; encerrar a promoção antes do fim devolve aos créditos as semanas que ainda não começaram. Se a academia voltar ao Básico, a promoção sai da ficha e da busca, sem devolução. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. No plano Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); o lance é um valor máximo, e quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que esse máximo, dos créditos comprados antes; quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, o GuiaTennis manda um código ao WhatsApp da academia (o que estava na ficha quando o responsável atual passou a administrá-la), na hora e pela conta oficial do GuiaTennis no WhatsApp, quando disponível: quem digita o código passa a ser o responsável e quem administrava perde o acesso; sem como usar o código, o GuiaTennis pode pedir documentos que mostrem quem responde pela academia e decide. O WhatsApp da academia que a conta escreve na ficha (no cadastro ou depois) só aparece depois que alguém da academia digita o código de 6 números mandado a ele, pela conta oficial do GuiaTennis no WhatsApp ou, enquanto ela não está disponível, pelo GuiaTennis em até 1 dia útil, e depois que o GuiaTennis confere que o número é da academia (o código mostra que a pessoa tem o número; a conferência, que ele é da academia). Até lá, a ficha mostra o número de antes, ou fica sem o botão do WhatsApp. O código vale 72 horas e 5 tentativas. A academia vê, em Atualizações, o que os jogadores informaram sobre a ficha (sem saber quem informou); salvar a ficha, mesmo sem mudar nada, mostra que a academia conferiu. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode criar para cada academia um acesso — usuário e senha provisória, enviados ao responsável pelo WhatsApp; no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia pelo e-mail delas, até o número de pessoas do plano, e responde pelo que elas fazem. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?): a ficha sai do site na hora e, depois de o GuiaTennis conferir, sai do Guia, e o cadastro fica guardado como fechado (cadastro inativo), com as avaliações; se a academia continuar aberta, ou se o aviso for cancelado, a ficha volta ao site como estava; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta, no Perfil do GuiaTennis Parceiros ou em "Minha conta", no site dos jogadores (é a mesma conta, e excluir num lugar exclui nos dois): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. As respostas são públicas, uma por avaliação, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. A academia pode editar a resposta quando quiser; a resposta editada passa a mostrar "editada". Se quem avaliou editar a avaliação, a resposta continua embaixo dela, e a academia recebe um e-mail para conferir. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo e Premium, combinados diretamente com o GuiaTennis) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar) e até 5 pessoas; no Premium, o mesmo, até 10 pessoas, uma foto para cada aula do catálogo e para a locação e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ou o Premium ali (ou em Plano, pelo responsável principal) muda o plano da academia. Por enquanto, todos os planos são grátis; se um dia passarem a ter preço, a academia é avisada antes, e nada é cobrado sem ela confirmar. Os créditos de promoções são comprados à parte, com Pix ou cartão pelo Mercado Pago, valem para a promoção na ficha e para o leilão, e não são devolvidos depois de usados. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a lista mostra todas as academias na ordem escolhida pelo jogador, inclusive as do topo, de novo no lugar delas e sem a marcação; essa ordem não depende do plano. As "Melhores avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. Nos planos Completo e Premium, a academia também pode divulgar uma promoção por vez na ficha e no resultado da busca, por 1 a 12 semanas, paga por semana com os créditos, pelo preço mostrado antes de publicar (menor no Premium; enquanto o preço for zero, sem custo). Mudar o texto da promoção não custa nada; encerrar a promoção antes do fim devolve aos créditos as semanas que ainda não começaram. Se a academia voltar ao Básico, a promoção sai da ficha e da busca, sem devolução. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. No plano Premium, a academia pode dar lances no leilão semanal das promoções por e-mail: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção da academia que ganhou, marcada como patrocinada. Ganham as duas maiores notas (o lance vezes a qualidade da ficha e da promoção); o lance é um valor máximo, e quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que esse máximo, dos créditos comprados antes; quem não ganha não paga. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar, devolvendo o valor, e suspender os lances de quem mandar promoção enganosa ou fora do assunto.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis com o e-mail confirmado</strong> (nome e sobrenome, e-mail e senha; a cidade é opcional; o e-mail é confirmado por um código mandado a ele), e cada conta faz uma avaliação por academia. Quem avaliou pode editar a nota e o texto da própria avaliação quando quiser, com a mesma declaração de que ela é verídica e segue estes Termos; a avaliação continua com a data de quando foi feita e passa a mostrar "editada", e quem administra a academia recebe um e-mail com a avaliação editada. Enquanto o nome estiver suspenso, a conta não avalia nem edita avaliações. Informar um problema numa ficha também pede a conta com o e-mail confirmado; denunciar uma avaliação pede a conta. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, sem o nome e sem a ligação com a conta: aparecem como "Usuário do GuiaTennis". A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px"><strong>Nomes.</strong> O nome da conta (de jogador ou do GuiaTennis Parceiros) e o nome da academia não podem ter palavrão, ofensa, apelido que humilhe alguém, conteúdo discriminatório ou de ódio, nada que a lei brasileira proíba, nem se passar por outra pessoa, academia ou empresa. A academia usa o nome com que atende os alunos. <strong>O nome da conta que desrespeitar essas regras fica suspenso por 15 dias:</strong> sai do site na hora (nas avaliações, aparece "Usuário do GuiaTennis"), a conta não avalia enquanto isso, e a pessoa recebe um e-mail com o motivo e o prazo para trocar, e um lembrete 3 dias antes do fim. Trocou, o nome volta a aparecer; não trocou em 15 dias, a conta é excluída, o e-mail dela não cria outra conta, e as avaliações continuam publicadas como "Usuário do GuiaTennis". O nome da academia, o GuiaTennis pode alterar na ficha, e quem administra a academia recebe um e-mail com o nome de antes e o novo.</p>
@@ -21577,7 +21802,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">6. Avaliações e comentários</p>
 <p style="font-size:14px">Ao avaliar uma quadra, você concorda em escrever apenas sobre experiências reais, sem conteúdo ofensivo, discriminatório, difamatório ou falso, usando seu nome verdadeiro (já que ele fica público junto da avaliação). <strong>Não são aceitos</strong>, em avaliações, comentários, respostas das academias, promoções ou nomes: ofensa, xingamento, ameaça ou humilhação; discriminação ou discurso de ódio por raça, cor, etnia, origem, nacionalidade ou região (xenofobia), religião, sexo, orientação sexual ou identidade de gênero (homofobia e transfobia), deficiência, idade ou condição social; e nada que a lei brasileira proíba, como os crimes de racismo e de discriminação (Lei 7.716/1989, que, segundo o Supremo Tribunal Federal, vale também para a homofobia e a transfobia), a injúria racial, a calúnia, a difamação e a injúria. <strong>Racismo, homofobia, xenofobia e qualquer discriminação não são tolerados no GuiaTennis:</strong> o conteúdo é removido, a conta pode ser suspensa ou excluída sem aviso, e, quando a lei ou uma ordem judicial exigir, os dados de quem publicou são entregues às autoridades. O GuiaTennis pode remover avaliações que violem essas regras, mas não se responsabiliza pelo conteúdo publicado por usuários. A academia avaliada pode responder publicamente e pedir a análise de uma avaliação que pareça falsa ou ofensiva, e quem tem conta pode <strong>denunciar</strong> uma avaliação (falsa ou que não é sobre a academia, ofensiva, propaganda, escrita pela própria academia ou por um concorrente, ou com dados pessoais); quem decide se ela fica é o GuiaTennis, que só remove a avaliação que descumpre estes Termos. Quem escreveu não fica sabendo quem denunciou. O texto sobre a academia, na ficha, pode citar o que é elogiado nas avaliações de 4 e 5 estrelas (por exemplo, "Quem avaliou elogia os professores"), sem copiar a avaliação nem o nome de quem avaliou.</p>
 <p class="field-label" style="margin-top:16px">7. Uso de fotos</p>
-<p style="font-size:14px">Fotos enviadas devem pertencer a quem envia, ou ter autorização de uso. Não é permitido enviar fotos de terceiros sem permissão. As fotos devem mostrar apenas o espaço físico da academia/quadra (quadras, recepção, secretaria, vestiário, fachada) — não são permitidas fotos de promoções, tabelas de preço ou materiais informativos/publicitários. No plano Premium, cada opção do catálogo de aulas e locação pode ter a própria foto, que mostra aquela aula ou a quadra; se aparecerem pessoas, a academia precisa ter a autorização delas. Valem as mesmas regras: nada de promoções, tabelas de preço ou material publicitário.</p>
+<p style="font-size:14px">Fotos enviadas devem pertencer a quem envia, ou ter autorização de uso. Não é permitido enviar fotos de terceiros sem permissão. As fotos devem mostrar apenas o espaço físico da academia/quadra (quadras, recepção, secretaria, vestiário, fachada) — não são permitidas fotos de promoções, tabelas de preço ou materiais informativos/publicitários. No plano Premium, cada aula do catálogo e a locação podem ter a própria foto, que mostra aquela aula ou a quadra; se aparecerem pessoas, a academia precisa ter a autorização delas e, se aparecerem crianças ou adolescentes, a autorização dos pais ou responsáveis. Valem as mesmas regras: nada de promoções, tabelas de preço ou material publicitário.</p>
 <p class="field-label" style="margin-top:16px">8. Links e contatos externos</p>
 <p style="font-size:14px">O GuiaTennis direciona usuários para WhatsApp, Instagram e sites das academias. Não temos controle sobre esses canais externos e não nos responsabilizamos por eles.</p>
 <p class="field-label" style="margin-top:16px">9. Uso aceitável</p>
@@ -22357,8 +22582,8 @@ const CHAT_DETALHES_PC = [
   { id: "pc-fotos", t: "Fotos", p: ["foto", "fotos", "imagem", "imagens", "capa"],
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
-  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidade e preço, monte o catálogo: aula individual, em dupla e em grupo e locação, marcando o que oferecem, avulsa ou mensal, e o valor de cada uma. Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a opção mostra \"Sob consulta\" e o jogador combina com vocês." },
+  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidade e preço: nas aulas para adultos e nas aulas para crianças, toque nos formatos que oferecem (individual, em dupla, em grupo) e escreva o valor avulso e o mensal de cada um, lado a lado; nas crianças, escolha também a idade. A locação vem embaixo, do mesmo jeito. O que ficar em branco não aparece. Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Prefere não divulgar os valores? Marque \"Não divulgar os valores\" e o que oferecem: a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -25660,21 +25885,75 @@ function attachEvents() {
     };
   });
 
-  // O catálogo (tabela de preços): marcar cria a opção, desmarcar tira; o
-  // valor vai direto para ela.
-  const opcaoDoCatalogo = (chave) => {
-    const [tipo, cobranca] = chave.split(":");
-    const cat = catalogoDoForm(window.__form);
-    return { cat, tipo, cobranca, k: cat.findIndex(i => i.tipo === tipo && i.cobranca === cobranca) };
-  };
-  document.querySelectorAll("[data-cat-marcar]").forEach(el => {
+  // O catálogo (a grade de preços, regra 168): os formatos abrem as linhas,
+  // o valor vai direto para a grade e o catálogo do formulário acompanha.
+  const gradeDoForm = () => gradeDoCatalogo(window.__form);
+  const mudouCatalogo = (redesenhar) => { catalogoDaGrade(window.__form); if (redesenhar) render(); };
+  document.querySelectorAll("[data-cat-formato]").forEach(el => {
     el.onclick = () => {
-      const { cat, tipo, cobranca, k } = opcaoDoCatalogo(el.dataset.catMarcar);
-      if (k >= 0) cat.splice(k, 1);
-      else cat.push(itemDoCatalogo({ tipo, cobranca }));
-      render();
-      const campo = document.querySelector(`[data-cat-valor="${el.dataset.catMarcar}"]`);
+      const [bloco, tipo] = el.dataset.catFormato.split(":");
+      const g = gradeDoForm();
+      const lista = g[bloco].formatos;
+      const entrou = !lista.includes(tipo);
+      g[bloco].formatos = entrou ? [...lista, tipo] : lista.filter(x => x !== tipo);
+      mudouCatalogo(true);
+      // O formato que entrou já fica com o cursor no valor avulso.
+      const campo = entrou && document.querySelector(`[data-cat-valor="${bloco}:${tipo}:avulsa"]`);
       if (campo) campo.focus({ preventScroll: true });
+    };
+  });
+  document.querySelectorAll("[data-cat-valor]").forEach(el => {
+    el.oninput = (e) => {
+      const v = e.target.value.replace(/[^0-9-]/g, "");
+      e.target.value = v;
+      gradeDoForm().valores[el.dataset.catValor] = v;
+      mudouCatalogo(false);
+    };
+  });
+  document.querySelectorAll("[data-cat-oferece]").forEach(el => {
+    el.onclick = () => {
+      const g = gradeDoForm();
+      g.marcadas[el.dataset.catOferece] = !g.marcadas[el.dataset.catOferece];
+      mudouCatalogo(true);
+    };
+  });
+  // "Não divulgar os valores": o que tinha valor já entra marcado como
+  // oferecido; desmarcando, os valores escritos voltam.
+  document.querySelectorAll("[data-cat-consulta]").forEach(el => {
+    el.onclick = () => {
+      const bloco = el.dataset.catConsulta;
+      const g = gradeDoForm();
+      g[bloco].consulta = !g[bloco].consulta;
+      if (g[bloco].consulta) {
+        const chaves = linhasDaGrade(g, bloco).flatMap(l => CATALOGO_COBRANCAS.map(k => `${l.linha}:${k.key}`));
+        if (chaves.some(k => priceMin(g.valores[k]))) chaves.forEach(k => { g.marcadas[k] = !!priceMin(g.valores[k]); });
+      }
+      mudouCatalogo(true);
+    };
+  });
+  document.querySelectorAll("[data-cat-idade]").forEach(el => {
+    el.onchange = () => {
+      const g = gradeDoForm();
+      g.crianca[el.dataset.catIdade] = el.value;
+      // "De 12 a 6" vira "de 6 a 12".
+      const de = parseInt(g.crianca.de, 10), ate = parseInt(g.crianca.ate, 10);
+      const trocou = de && ate && ate < de;
+      if (trocou) [g.crianca.de, g.crianca.ate] = [g.crianca.ate, g.crianca.de];
+      mudouCatalogo(trocou);
+    };
+  });
+  // "Copiar das aulas para adultos": os mesmos formatos e valores, para
+  // ajustar o que for diferente.
+  document.querySelectorAll("[data-cat-copiar]").forEach(el => {
+    el.onclick = () => {
+      const g = gradeDoForm();
+      g.crianca.formatos = [...g.adulto.formatos];
+      g.crianca.consulta = g.adulto.consulta;
+      g.adulto.formatos.forEach(t => CATALOGO_COBRANCAS.forEach(k => {
+        g.valores[`crianca:${t}:${k.key}`] = g.valores[`adulto:${t}:${k.key}`] || "";
+        g.marcadas[`crianca:${t}:${k.key}`] = !!g.marcadas[`adulto:${t}:${k.key}`];
+      }));
+      mudouCatalogo(true);
     };
   });
   document.querySelectorAll("[data-cat-foto]").forEach(el => {
@@ -25682,9 +25961,9 @@ function attachEvents() {
       const file = (e.target.files || [])[0];
       if (!file) return;
       compressImage(file, 960, 0.7).then((dataUrl) => {
-        const { cat, k } = opcaoDoCatalogo(el.dataset.catFoto);
-        if (k >= 0 && fotoDoCatalogoValida(dataUrl)) {
-          cat[k].foto = dataUrl;
+        if (fotoDoCatalogoValida(dataUrl)) {
+          gradeDoForm().fotos[el.dataset.catFoto] = dataUrl;
+          mudouCatalogo(false);
           abrirEnquadramento([{ tipo: "catalogo", chave: el.dataset.catFoto }]);
         } else render();
       }).catch(() => render());
@@ -25692,17 +25971,8 @@ function attachEvents() {
   });
   document.querySelectorAll("[data-cat-foto-tirar]").forEach(el => {
     el.onclick = () => {
-      const { cat, k } = opcaoDoCatalogo(el.dataset.catFotoTirar);
-      if (k >= 0) delete cat[k].foto;
-      render();
-    };
-  });
-  document.querySelectorAll("[data-cat-valor]").forEach(el => {
-    el.oninput = (e) => {
-      const v = e.target.value.replace(/[^0-9-]/g, "");
-      e.target.value = v;
-      const { cat, k } = opcaoDoCatalogo(el.dataset.catValor);
-      if (k >= 0) cat[k].preco = v;
+      delete gradeDoForm().fotos[el.dataset.catFotoTirar];
+      mudouCatalogo(true);
     };
   });
 
@@ -25843,7 +26113,7 @@ function abrirEdicaoDaFicha(c, opcoes = {}) {
     modalidades: [...(c.modalidades || [])],
     priceAula: c.priceAula || "",
     priceLocacao: c.priceLocacao || "",
-    catalogo: catalogoDe(integral).length ? catalogoDe(integral) : catalogoAntigo(c),
+    catalogo: catalogoDe(integral).length ? fotoUmaVezPorLinha(catalogoDe(integral).sort(ordemDoCatalogo)) : catalogoAntigo(c),
     // O número que espera o código fica no campo (SQL 20261026120000): salvar
     // de novo não o perde; trocar por outro manda um código novo.
     phone: (!isAdmin && (whatsappNovoDe(c.id) || {}).numero) || c.phone || "",

@@ -153,6 +153,13 @@
   to = "/404.html"
   status = 404
 
+# O histórico do projeto (o contexto e a descrição do PR #5 completos, até
+# 28/10/2026), guardado para consulta.
+[[redirects]]
+  from = "/historico/*"
+  to = "/404.html"
+  status = 404
+
 [[redirects]]
   from = "/SQL-ESTATISTICAS.sql"
   to = "/404.html"

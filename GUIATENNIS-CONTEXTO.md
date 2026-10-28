@@ -140,8 +140,9 @@ teste")
 > editadas mostram "editada"; a academia recebe um e-mail quando uma
 > avaliação é editada. SQL `20261028120000_avaliacao_editada`; seção 73 do
 > PR, passo 99. Testes: `avaliacao-editada.js` (novo) com 34 verificações e
-> `banco-emails.py` com **679 conferências**, nenhuma falha; a bateria
-> completa rodando.
+> `banco-emails.py` com **679 conferências**; bateria completa depois da
+> regra 167: **2.088 verificações** nos 72 arquivos do navegador, mais
+> `onde.mjs`, `pagamento.mjs` e `cnpj.mjs`, nenhuma falha.
 
 > **Estado (23/10/2026):** o Breno trocou de chat: leia o "Resumo (23/10/2026,
 > ao trocar de chat)" na seção 11 (regras 139 a 149).

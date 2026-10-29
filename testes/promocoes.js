@@ -31,13 +31,13 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('Escreva a promoção') && await page.$('#pc-promo-titulo'), 'sem o título, pede para escrever e não passa para a prévia');
   await page.fill('#pc-promo-titulo', 'Primeira aula grátis');
-  // O limite dos textos, com o contador (regra 176): título até 60, detalhes até 500.
+  // Textos curtos, com o contador (regras 176 e 177): título até 40, detalhes até 150.
   const longo = 'Para quem nunca fez aula aqui. '.repeat(20);
   await page.fill('#pc-promo-detalhes', longo);
   const limites = await page.evaluate(() => ({ t: document.getElementById('pc-promo-titulo').maxLength, d: document.getElementById('pc-promo-detalhes').maxLength, n: document.getElementById('pc-promo-detalhes').value.length }));
-  ok(limites.t === 60 && limites.d === 500 && limites.n === 500 && (await texto(page, '[data-cont-promo="titulo"]')) === '20/60' && (await texto(page, '[data-cont-promo="detalhes"]')) === '500/500', 'o título vai até 60 letras e os detalhes até 500, com o contador de cada um — ' + JSON.stringify(limites));
+  ok(limites.t === 40 && limites.d === 150 && limites.n === 150 && (await texto(page, '[data-cont-promo="titulo"]')) === '20/40' && (await texto(page, '[data-cont-promo="detalhes"]')) === '150/150', 'o título vai até 40 letras e os detalhes até 150, com o contador de cada um — ' + JSON.stringify(limites));
   await page.fill('#pc-promo-detalhes', 'Para quem nunca fez aula aqui.');
-  ok((await texto(page, '[data-cont-promo="detalhes"]')) === '30/500', 'o contador acompanha o que se digita');
+  ok((await texto(page, '[data-cont-promo="detalhes"]')) === '30/150', 'o contador acompanha o que se digita');
   await page.click('[data-promo-semanas="2"]');
   await page.waitForTimeout(150);
   ok((await page.inputValue('#pc-promo-titulo')) === 'Primeira aula grátis' && await semanas() === '1 semana,2 semanas*,4 semanas,8 semanas,12 semanas'

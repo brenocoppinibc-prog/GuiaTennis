@@ -761,9 +761,9 @@
       const mais = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
       const hoje = dia(0);
       const titulo = String(a.p_titulo || "").trim();
-      if (titulo.length < 3 || titulo.length > 60) return erro('Escreva a promoção em até 60 letras (por exemplo, "Primeira aula grátis").', "22023");
-      // Os detalhes em até 500 letras (SQL 20261029120000).
-      if (String(a.p_detalhes || "").trim().length > 500) return erro("Os detalhes cabem em até 500 letras.", "22023");
+      // O título em até 40 letras e os detalhes em até 150 (SQL 20261029150000).
+      if (titulo.length < 3 || titulo.length > 40) return erro('Escreva a promoção em até 40 letras (por exemplo, "Primeira aula grátis").', "22023");
+      if (String(a.p_detalhes || "").trim().length > 150) return erro("Os detalhes cabem em até 150 letras.", "22023");
       const semanas = Number(a.p_semanas || 0);
       if (!(semanas >= 0 && semanas <= 12)) return erro("Escolha de 1 a 12 semanas.", "22023");
       const p = a.p_id ? db.promocoes.find(y => y.id === a.p_id && y.academia_id === a.p_academia) : null;
@@ -825,10 +825,10 @@
       if (!ac || ac.plano !== "premium") return erro("O leilão de promoções é do plano Premium.", "42501");
       const r = regiaoDe(ac);
       if (!r) return erro("Para entrar no leilão, a ficha precisa do bairro e da cidade.", "22023");
-      // O título em até 60 letras e a mensagem de 10 a 1.000 (SQL 20261029120000).
+      // O título em até 40 letras e a mensagem de 10 a 300 (SQL 20261029150000).
       const tituloDoLance = String(a.p_titulo || "").trim(), mensagemDoLance = String(a.p_mensagem || "").trim();
-      if (tituloDoLance.length < 3 || tituloDoLance.length > 60) return erro('Escreva a promoção em até 60 letras (por exemplo, "Primeira aula grátis").', "22023");
-      if (mensagemDoLance.length < 10 || mensagemDoLance.length > 1000) return erro("A mensagem precisa ter de 10 a 1.000 letras.", "22023");
+      if (tituloDoLance.length < 3 || tituloDoLance.length > 40) return erro('Escreva a promoção em até 40 letras (por exemplo, "Primeira aula grátis").', "22023");
+      if (mensagemDoLance.length < 10 || mensagemDoLance.length > 300) return erro("A mensagem precisa ter de 10 a 300 letras.", "22023");
       if (!(a.p_valor >= db.leilaoConfig.lance_minimo)) return erro(`O lance mínimo é de R$ ${db.leilaoConfig.lance_minimo}.`, "22023");
       if (a.p_valor > (ac.envios_de_aviso || 0)) return erro(`A academia tem R$ ${ac.envios_de_aviso || 0} de créditos. Compre créditos ou dê um lance menor.`, "22023");
       let l = db.lances.find(y => y.academia_id === a.p_academia && y.situacao === "aberto");

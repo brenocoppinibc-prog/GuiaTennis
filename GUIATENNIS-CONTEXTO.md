@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 173)
+**Atualizado em:** 29/10/2026 (regra 174)
 
 | | |
 |---|---|
@@ -264,7 +264,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (29/10/2026): **2.138 verificações** nos
+  segundo plano). Último resultado (29/10/2026): **2.141 verificações** nos
   73 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -330,13 +330,13 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (28/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 173** (as
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 174** (as
 Modalidades antes das partes Aulas e Locação, pelo menos uma obrigatória, e
 o "Ver no mapa" no mapa do GuiaTennis, os exemplos de valor no cadastro e
 o "Como chegar" pelo próprio celular; sem SQL novo desde a 167: o item da aula das crianças leva
 `publico`, `idadeDe` e `idadeAte` dentro do `catalogo`, e a aula sem valor
 vai com `cobranca: ""`). A descrição do PR foi
-encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.138
+encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.141
 no navegador e 679 no banco, nenhuma falha.
 
 **Pendências do Breno:**
@@ -362,7 +362,7 @@ no navegador e 679 no banco, nenhuma falha.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 174.
+**Próximo número:** regra 175.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -415,6 +415,9 @@ no navegador e 679 no banco, nenhuma falha.
 - 173 (29/10) "Como chegar" sem a tela de Google Maps e Waze: link direto
   que o celular resolve (Android "geo:" com a escolha do aplicativo;
   iPhone, o Mapas; computador, Google Maps). Teste: `ver-no-mapa.js`.
+- 174 (29/10) Perguntas do caminho num tom formal sem exagero: "Para quem
+  são as aulas que vocês oferecem?", "Quais formatos de aula vocês
+  oferecem?" e "Como vocês alugam a quadra?". Teste: `catalogo.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

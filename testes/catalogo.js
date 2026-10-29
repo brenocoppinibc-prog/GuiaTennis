@@ -42,7 +42,9 @@ const CATALOGO = [
   await page.waitForTimeout(400);
   await irParte(page, 'precos');
   ok((await texto(page, '.reg-titulo')) === 'Aulas' && (await chipsDe(page, '[data-cat-publico]')) === 'Adultos,Crianças' && !(await page.$('[data-cat-bloco]')), 'a parte Aulas começa por "para quem", nada marcado — ' + await chipsDe(page, '[data-cat-publico]'));
+  ok((await texto(page, '.reg-passo .field-label')) === 'Para quem são as aulas que vocês oferecem?', 'a pergunta do começo, num tom formal sem exagero (regra 174)');
   await page.click('[data-cat-publico="adulto"]');
+  ok((await texto(page, '[data-cat-bloco="adulto"] .cat-passo')) === 'Quais formatos de aula vocês oferecem?', 'e a dos formatos');
   ok((await chipsDe(page, '[data-cat-bloco="adulto"] [data-cat-formato]')) === 'Individual,Dupla,Grupo' && !(await page.$('[data-cat-opcao]')), 'depois, quais aulas: os formatos, nenhum marcado, e nenhum cartão ainda');
   await page.click('[data-cat-formato="adulto:individual"]');
   ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'adulto:individual:avulsa'), 'o formato escolhido abre o cartão, com o cursor no valor avulso');
@@ -98,6 +100,7 @@ const CATALOGO = [
   await irParte(page, 'modalidades');
   await page.click('[data-reg-mod="locacao"]');
   await irParte(page, 'locacao');
+  ok((await texto(page, '.reg-passo .field-label')) === 'Como vocês alugam a quadra?', 'na locação, a pergunta no mesmo tom');
   ok((await texto(page, '.reg-titulo')) === 'Locação de quadra' && (await chipsDe(page, '[data-cat-cobranca]')) === 'Avulsa (por hora),Mensal' && !(await page.$('#cat-tabela-locacao [data-cat-opcao]')), 'marcando Locação nas Modalidades, a parte Locação aparece, com a escolha: avulsa ou mensal');
   await page.click('[data-cat-cobranca="avulsa"]');
   ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'locacao:avulsa') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).startsWith('Locação avulsa Valor por hora R$') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).includes('Foto da quadra'), 'a avulsa abre o cartão: o valor por hora e a foto');

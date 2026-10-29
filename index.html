@@ -20352,7 +20352,7 @@ function editorDasAulas(f) {
       </div>`;
   };
   const formatos = (bloco, lista, rotulo) => `
-    <p class="cat-passo">Quais aulas?</p>
+    <p class="cat-passo">Quais formatos de aula vocês oferecem?</p>
     <div class="chip-row cat-formatos" role="group" aria-label="${esc(rotulo)}">
       ${CATALOGO_FORMATOS.map(t => {
         const on = lista.includes(t.key);
@@ -20371,7 +20371,7 @@ function editorDasAulas(f) {
   };
   const faixas = g.crianca.faixas;
   return `
-    <p class="field-label" style="margin-top:0">Para quem são as aulas?</p>
+    <p class="field-label" style="margin-top:0">Para quem são as aulas que vocês oferecem?</p>
     <div class="chip-row cat-publicos">${publico("adulto", "Adultos")}${publico("crianca", "Crianças")}</div>
     <div class="cat-tabela" id="cat-tabela">
       ${g.adulto.on ? `
@@ -20401,8 +20401,8 @@ function editorDasAulas(f) {
 function editorDaLocacao(f) {
   const g = gradeDoCatalogo(f);
   return `
-      <p class="field-label" style="margin-top:0">Como a quadra é alugada?</p>
-      <div class="chip-row cat-formatos" role="group" aria-label="Como a quadra é alugada">
+      <p class="field-label" style="margin-top:0">Como vocês alugam a quadra?</p>
+      <div class="chip-row cat-formatos" role="group" aria-label="Como vocês alugam a quadra">
         ${CATALOGO_COBRANCAS.map(k => {
           const on = g.locacao.cobrancas.includes(k.key);
           return `<button type="button" class="chip ${on ? "active" : ""}" data-cat-cobranca="${k.key}" aria-pressed="${on}">${k.key === "mensal" ? "Mensal" : "Avulsa (por hora)"}</button>`;

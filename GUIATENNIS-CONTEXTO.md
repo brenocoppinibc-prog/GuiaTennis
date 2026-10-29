@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 171)
+**Atualizado em:** 29/10/2026 (regra 172)
 
 | | |
 |---|---|
@@ -180,7 +180,9 @@ Produto (o que já foi decidido)
   anos, uma para cada turma > formatos individual, dupla, grupo > um cartão
   por formato com a avulsa, a mensal e a foto; em branco não é oferecida,
   sem valor nenhum = "Sob consulta" sem cobrança) e **Locação** (avulsa e/ou
-  mensal, cada uma com o valor e a foto). Foto no Premium. Na ficha, as
+  mensal, cada uma com o valor e a foto). Cada valor vazio mostra um
+  exemplo ("ex.: 180", `EXEMPLOS_DE_VALOR`) e cada cartão, embaixo, como
+  fica na ficha (o exemplo, ou o valor escrito). Foto no Premium. Na ficha, as
   aulas das crianças são "Aula infantil …", com a idade, e têm o filtro
   "Crianças". Corte das fotos como o "Cortar" do Instagram.
 - **"Ver no mapa"** da ficha abre o mapa da busca do GuiaTennis já na
@@ -259,7 +261,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (29/10/2026): **2.130 verificações** nos
+  segundo plano). Último resultado (29/10/2026): **2.135 verificações** nos
   73 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -325,12 +327,12 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (28/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 171** (as
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 172** (as
 Modalidades antes das partes Aulas e Locação, pelo menos uma obrigatória, e
-o "Ver no mapa" no mapa do GuiaTennis; sem SQL novo desde a 167: o item da aula das crianças leva
+o "Ver no mapa" no mapa do GuiaTennis, e os exemplos de valor no cadastro; sem SQL novo desde a 167: o item da aula das crianças leva
 `publico`, `idadeDe` e `idadeAte` dentro do `catalogo`, e a aula sem valor
 vai com `cobranca: ""`). A descrição do PR foi
-encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.130
+encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.135
 no navegador e 679 no banco, nenhuma falha.
 
 **Pendências do Breno:**
@@ -356,7 +358,7 @@ no navegador e 679 no banco, nenhuma falha.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 172.
+**Próximo número:** regra 173.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -403,6 +405,9 @@ no navegador e 679 no banco, nenhuma falha.
 - 171 (29/10) Pelo menos uma modalidade (Aulas ou Locação) é obrigatória,
   também na edição ("Continuar" e salvar não passam); o admin segue só com
   o nome. Teste: `cadastro.js`.
+- 172 (29/10) Exemplo em cada valor do catálogo ("ex.: 180") e, embaixo
+  de cada cartão, como fica na ficha (o exemplo ou o valor escrito); exemplo
+  da idade das crianças. Teste: `catalogo.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -813,6 +813,8 @@
   .cat-copiar, .cat-mais-faixa { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 2px; background: none; border: 0; padding: 0; font: 600 14px var(--fonte-texto); color: var(--green); cursor: pointer; }
   .cat-copiar { text-decoration: underline; text-underline-offset: 3px; }
   .cat-mais-faixa { align-self: flex-start; }
+  .cat-exemplo { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+  .cat-exemplo-r { font-weight: 600; color: var(--text); }
   .cat-tipo-dica { margin: -2px 0 8px; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
   .cat-foto-bt { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 4px; font: 600 13px var(--fonte-texto); color: var(--green); cursor: pointer; }
   .cat-foto-bt input[type="file"] { display: none; }
@@ -20282,8 +20284,39 @@ function fotoDoCartao(f, g, chave, nome, rotulo) {
     ? `<div class="cat-foto"><img src="${esc(g.fotos[chave])}" alt="Foto da ${esc(nome)}" /><button type="button" class="cat-foto-ajustar" data-cat-foto-ajustar="${chave}">${icon('expandir', 13, 'currentColor')} Ajustar</button><button type="button" class="cat-foto-tirar" data-cat-foto-tirar="${chave}" aria-label="Tirar a foto da ${esc(nome)}">✕</button>${premium ? "" : `<span class="cat-premium">Aparece no Premium</span>`}</div>`
     : `<label class="cat-foto-bt">${icon('camera', 15, 'currentColor')} ${esc(rotulo)}${premium ? "" : ` <span class="cat-premium">Premium</span>`}<input type="file" accept="image/*" data-cat-foto="${chave}" aria-label="Foto da ${esc(nome)}" /></label>`;
 }
+// Um exemplo em cada valor (pedido do Breno em 29/10/2026, regra 172:
+// "deixe um exemplo como é para fazer em cada valor, simulando os valores na
+// hora de fazer o cadastro nas modalidades"), como o preço sugerido do
+// Airbnb e os exemplos do Booking para Parceiros: o campo vazio mostra
+// "ex.: 180" e, embaixo do cartão, como fica na ficha — com o exemplo
+// enquanto não há valor e com o valor escrito depois.
+const EXEMPLOS_DE_VALOR = {
+  adulto: { individual: { avulsa: 180, mensal: 650 }, dupla: { avulsa: 110, mensal: 400 }, grupo: { avulsa: 70, mensal: 300 }, aula: { avulsa: 150, mensal: 550 } },
+  crianca: { individual: { avulsa: 150, mensal: 550 }, dupla: { avulsa: 90, mensal: 340 }, grupo: { avulsa: 60, mensal: 260 } },
+  locacao: { avulsa: 120, mensal: 450 },
+};
+// As cobranças de um cartão ("adulto:grupo", "f1:dupla", "locacao:avulsa"):
+// a chave do valor, o exemplo e o que o valor paga.
+function valoresDoCartao(opcao) {
+  if (opcao.startsWith("locacao:")) {
+    const cob = opcao.split(":")[1];
+    return [{ chave: opcao, exemplo: EXEMPLOS_DE_VALOR.locacao[cob], unidade: unidadeDoItem({ tipo: "locacao", cobranca: cob }) }];
+  }
+  const [bloco, tipo] = opcao.split(":");
+  const crianca = bloco !== "adulto";
+  const ex = (EXEMPLOS_DE_VALOR[crianca ? "crianca" : "adulto"][tipo]) || EXEMPLOS_DE_VALOR.adulto.aula;
+  return CATALOGO_COBRANCAS.map(k => ({ chave: `${opcao}:${k.key}`, exemplo: ex[k.key], unidade: unidadeDoItem({ tipo, cobranca: k.key, publico: crianca ? "crianca" : "" }) }));
+}
+function exemploDoCartao(g, opcao) {
+  const lista = valoresDoCartao(opcao);
+  const escritos = lista.filter(v => priceMin(g.valores[v.chave]));
+  if (escritos.length) return `<span class="cat-exemplo-r">Na ficha:</span> ${escritos.map(v => `${esc(precoTexto(g.valores[v.chave]))} ${esc(v.unidade)}`).join(" · ")}`;
+  return `<span class="cat-exemplo-r">Exemplo:</span> ${lista.map(v => `R$ ${v.exemplo} ${esc(v.unidade)}`).join(" · ")}`;
+}
 function campoDoValor(g, chave, nome) {
-  return `<label class="cat-cel"><span class="cat-rs">R$</span><input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="numeric" placeholder="—" value="${esc(g.valores[chave] || "")}" aria-label="Valor da ${esc(nome)}" /></label>`;
+  const opcao = chave.startsWith("locacao:") ? chave : chave.replace(/:(avulsa|mensal)$/, "");
+  const exemplo = (valoresDoCartao(opcao).find(v => v.chave === chave) || {}).exemplo;
+  return `<label class="cat-cel"><span class="cat-rs">R$</span><input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="numeric" placeholder="${exemplo ? `ex.: ${exemplo}` : "—"}" value="${esc(g.valores[chave] || "")}" aria-label="Valor da ${esc(nome)}" /></label>`;
 }
 // A parte "Aulas": para quem > formatos (em cada faixa de idade das
 // crianças) > a foto e os valores de cada formato, num cartão.
@@ -20302,6 +20335,7 @@ function editorDasAulas(f) {
               ${campoDoValor(g, `${c.chave}:${k.key}`, `${nome.toLowerCase()} ${k.nome.toLowerCase()}`)}
             </div>`).join("")}
         </div>
+        <p class="cat-exemplo" data-cat-exemplo="${c.chave}">${exemploDoCartao(g, c.chave)}</p>
         ${fotoDoCartao(f, g, c.chave, nome.toLowerCase(), "Foto desta aula")}
       </div>`;
   };
@@ -20341,6 +20375,7 @@ function editorDasAulas(f) {
             ${faixas.length > 1 ? `<button type="button" class="cat-faixa-tirar" data-cat-faixa-tirar="${x.id}" aria-label="Tirar esta faixa de idade">✕</button>` : ""}
           </div>
           <div class="cat-idade"><span class="cat-idade-n">Idade</span> de ${idades(x, "de")} a ${idades(x, "ate")} anos</div>
+          ${!x.de && !x.ate ? `<p class="cat-exemplo"><span class="cat-exemplo-r">Exemplo:</span> de 6 a 12 anos</p>` : ""}
           ${formatos(x.id, x.formatos, "Formatos das aulas para crianças")}
           ${!x.formatos.length && g.adulto.formatos.length ? `<button type="button" class="cat-copiar" data-cat-copiar="${x.id}">Copiar das aulas para adultos</button>` : ""}
           ${cartoesDaGrade(g, x.id).map(c => cartao(x.id, c, true)).join("")}
@@ -20370,6 +20405,7 @@ function editorDaLocacao(f) {
             <div class="cat-valores">
               <div class="cat-valor-col"><span class="cat-col">Valor<small>${k.key === "mensal" ? "por mês" : "por hora"}</small></span>${campoDoValor(g, "locacao:" + k.key, nome.toLowerCase())}</div>
             </div>
+            <p class="cat-exemplo" data-cat-exemplo="locacao:${k.key}">${exemploDoCartao(g, "locacao:" + k.key)}</p>
             ${fotoDoCartao(f, g, "locacao:" + k.key, nome.toLowerCase(), "Foto da quadra")}
           </div>`;
         }).join("")}
@@ -26059,8 +26095,12 @@ function attachEvents() {
     el.oninput = (e) => {
       const v = e.target.value.replace(/[^0-9-]/g, "");
       e.target.value = v;
-      gradeDoForm().valores[el.dataset.catValor] = v;
+      const g = gradeDoForm();
+      g.valores[el.dataset.catValor] = v;
       mudouCatalogo(false);
+      const opcao = el.closest("[data-cat-opcao]");
+      const linha = opcao && opcao.querySelector("[data-cat-exemplo]");
+      if (linha) linha.innerHTML = exemploDoCartao(g, opcao.dataset.catOpcao);
     };
   });
   document.querySelectorAll("[data-cat-idade]").forEach(el => {

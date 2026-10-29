@@ -56,6 +56,9 @@ const CATALOGO = [
   await page.fill('[data-cat-valor="adulto:individual:mensal"]', '520');
   await page.fill('[data-cat-valor="adulto:grupo:mensal"]', '3a00');
   ok((await page.inputValue('[data-cat-valor="adulto:grupo:mensal"]')) === '300', 'o valor só aceita números (e o traço da faixa)');
+  // Um exemplo em cada valor e, embaixo, como fica na ficha (regra 172).
+  ok((await page.getAttribute('[data-cat-valor="adulto:grupo:avulsa"]', 'placeholder')) === 'ex.: 70' && (await page.getAttribute('[data-cat-valor="adulto:individual:mensal"]', 'placeholder')) === 'ex.: 650', 'cada valor vazio mostra um exemplo ("ex.: 70")');
+  ok((await texto(page, '[data-cat-exemplo="adulto:individual"]')) === 'Na ficha: R$ 150 por aula · R$ 520 por mês' && (await texto(page, '[data-cat-exemplo="adulto:grupo"]')) === 'Na ficha: R$ 300 por pessoa, por mês', 'embaixo do cartão, como os valores escritos aparecem na ficha — ' + await texto(page, '[data-cat-exemplo="adulto:grupo"]'));
 
   // As crianças: uma faixa de idade para cada turma.
   await page.click('[data-cat-publico="crianca"]');
@@ -70,6 +73,7 @@ const CATALOGO = [
   await page.click('[data-cat-copiar="f1"]');
   ok((await chipsDe(page, '[data-cat-bloco="f1"] [data-cat-formato]')) === '✓Individual,Dupla,✓Grupo' && (await grade(page, 'f1')) === 'individual=150/520 grupo=·/300' && !(await page.$('[data-cat-copiar]')), '"Copiar" traz os mesmos formatos e valores, para ajustar — ' + await grade(page, 'f1'));
   ok((await texto(page, '[data-cat-opcao="f1:grupo"] .cat-opcao-n')) === 'Aula infantil em grupo valor por pessoa', 'o cartão das crianças diz "Aula infantil"');
+  ok((await texto(page, '[data-cat-bloco="f1"] .cat-idade + .cat-exemplo')) === 'Exemplo: de 6 a 12 anos', 'sem idade escolhida, o exemplo da idade');
   await page.selectOption('[data-cat-idade="f1:de"]', '12');
   await page.selectOption('[data-cat-idade="f1:ate"]', '6');
   await page.waitForTimeout(150);
@@ -97,7 +101,9 @@ const CATALOGO = [
   ok((await texto(page, '.reg-titulo')) === 'Locação de quadra' && (await chipsDe(page, '[data-cat-cobranca]')) === 'Avulsa (por hora),Mensal' && !(await page.$('#cat-tabela-locacao [data-cat-opcao]')), 'marcando Locação nas Modalidades, a parte Locação aparece, com a escolha: avulsa ou mensal');
   await page.click('[data-cat-cobranca="avulsa"]');
   ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'locacao:avulsa') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).startsWith('Locação avulsa Valor por hora R$') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).includes('Foto da quadra'), 'a avulsa abre o cartão: o valor por hora e a foto');
+  ok((await texto(page, '[data-cat-exemplo="locacao:avulsa"]')) === 'Exemplo: R$ 120 por hora' && (await page.getAttribute('[data-cat-valor="locacao:avulsa"]', 'placeholder')) === 'ex.: 120', 'na locação, o exemplo do valor por hora');
   await page.fill('[data-cat-valor="locacao:avulsa"]', '130');
+  ok((await texto(page, '[data-cat-exemplo="locacao:avulsa"]')) === 'Na ficha: R$ 130 por hora', 'e, escrito o valor, como fica na ficha');
   ok(await page.evaluate(() => window.__form.modalidades.join()) === 'aulas_proprias,locacao', 'a modalidade acompanha: aula e locação');
 
   await irParte(page, 'revisar');

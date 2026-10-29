@@ -24,6 +24,9 @@ async function abrir(opts = {}) {
     if (o.criadaEm) window.__a1CriadaEm = o.criadaEm;
     if (o.semDataDaFicha) window.__semDataDaFicha = true;
     if (o.academia) window.__academia = o.academia;
+    // A conta da equipe, com as funções liberadas (regra 180), e o banco sem as funções.
+    if (o.equipe) window.__equipe = o.equipe;
+    if (o.semFuncoes) window.__semFuncoes = true;
     if (o.outrasAcademias) window.__outrasAcademias = o.outrasAcademias;
     if (o.jogador) window.__jogador = true;
     if (o.jogadorConfirmado) window.__jogadorConfirmado = true;

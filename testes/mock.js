@@ -84,6 +84,14 @@
     db.academia_vinculos.push({ user_id: "u-" + window.__academia, academia_id: window.__academia, papel: "principal", created_at: agora });
     // window.__outrasAcademias: a mesma conta administra também essas.
     (window.__outrasAcademias || []).forEach(id => db.academia_vinculos.push({ user_id: "u-" + window.__academia, academia_id: id, papel: "principal", created_at: agora }));
+    // window.__equipe: a conta é da equipe, com essas funções (regra 180), e
+    // a academia tem outro responsável principal.
+    if (window.__equipe) {
+      Object.assign(db.academia_acessos[db.academia_acessos.length - 1], { papel: "equipe" });
+      Object.assign(db.academia_vinculos.find(v => v.user_id === "u-" + window.__academia && v.academia_id === window.__academia), { papel: "equipe", funcoes: window.__equipe });
+      db.academia_acessos.push({ user_id: "u-dono", academia_id: window.__academia, usuario: "dono@quadra.com", nome_responsavel: "Dono da Quadra", email: "dono@quadra.com", papel: "principal", dados_completos_em: agora, email_confirmado_em: agora });
+      db.academia_vinculos.push({ user_id: "u-dono", academia_id: window.__academia, papel: "principal", created_at: agora });
+    }
   }
   if (window.__jogador) {
     db.jogadores.push({ user_id: "j-ana", nome: "Ana Jogadora", email: "ana@exemplo.com", cidade: "São Paulo", avisos_academias: false, promocoes: false, novidades: false, termos_aceitos_em: agora, created_at: agora, token_avisos: "tok-j-ana" });
@@ -131,6 +139,18 @@
     return lista.length === 1 ? lista[0] : null;
   };
   const vinculo = (userId, academiaId) => db.academia_vinculos.find(v => v.user_id === userId && v.academia_id === academiaId);
+  // As funções da equipe (SQL 20261029190000): quem entra começa com ficha,
+  // avaliações e promoções; o principal pode tudo. window.__semFuncoes finge
+  // o banco sem o SQL.
+  const FUNCOES = ["ficha", "avaliacoes", "promocoes", "pagamentos"];
+  const funcoesDe = (v) => Array.isArray(v.funcoes) ? v.funcoes : ["ficha", "avaliacoes", "promocoes"];
+  const possoNa = (userId, academiaId, funcao) => {
+    const v = vinculo(userId, academiaId);
+    // Conta de cenário só com o acesso (no banco, o gatilho vinculo_do_acesso cria o vínculo com o mesmo papel).
+    if (!v) { const x = db.academia_acessos.find(z => z.user_id === userId); return !!x && x.academia_id === academiaId && (x.papel || "principal") === "principal"; }
+    return window.__semFuncoes || v.papel === "principal" || funcoesDe(v).includes(funcao);
+  };
+  const funcaoNegada = (funcao) => erro(`Na sua conta, "${{ ficha: "Editar a ficha", avaliacoes: "Responder avaliações", promocoes: "Promoções e leilão", pagamentos: "Pagamentos" }[funcao]}" não está liberado. Fale com o responsável principal da academia.`, "42501");
   // O e-mail de entrar da conta (o que o banco guarda em fechada_emails).
   const emailDeEntrar = (x) => !x ? "" : String(x.loginEmail || x.usuario ? loginDe(x) : x.email || "").toLowerCase();
   // A academia que fechou fica guardada (SQL 20261026200000).
@@ -294,6 +314,10 @@
       // Banco sem a tabela do percurso (SQL 20261005140000).
       if (table === "passos_das_visitas" && window.__semPercurso) return { data:null, error:{ message:'relation "public.passos_das_visitas" does not exist' } };
       if (op === "insert") {
+        if (table === "respostas" && sessao && !souAdmin()) {
+          const av = db.avaliacoes.find(x => x.id === payload.avaliacao_id);
+          if (av && !possoNa(sessao.user.id, av.academia_id, "avaliacoes")) return { data:null, error:{ message:'new row violates row-level security policy for table "respostas"', code:"42501" } };
+        }
         if (table === "cliques" && window.__semDetalhe && "detalhe" in payload) return { data:null, error:{ message:"column detalhe does not exist" } };
         if (table === "cliques" && window.__semCep && "cep" in payload) return { data:null, error:{ message:"column cep does not exist" } };
         if (table === "cliques" && window.__semTempo && ("segundos" in payload || "segundos_ficha" in payload)) return { data:null, error:{ message:"column segundos does not exist" } };
@@ -360,6 +384,10 @@
       }
       if (op === "update") {
         window.__ultimoUpdate = JSON.parse(JSON.stringify(payload));
+        // Regra da ficha (SQL 20261029190000): sem "Editar a ficha", nada muda.
+        if (table === "academias" && sessao && !souAdmin() && t.filter(pass).some(r => vinculo(sessao.user.id, r.id) && !possoNa(sessao.user.id, r.id, "ficha"))) return { data:null, error:null };
+        if (table === "respostas" && sessao && !souAdmin() && t.filter(pass).some(r => { const av = db.avaliacoes.find(x => x.id === r.avaliacao_id); return av && !possoNa(sessao.user.id, av.academia_id, "avaliacoes"); }))
+          return { data:null, error:{ message:'new row violates row-level security policy for table "respostas"', code:"42501" } };
         if (table === "academias" && window.__semCatalogo && "catalogo" in payload) return { data:null, error:{ message:"Could not find the 'catalogo' column of 'academias' in the schema cache" } };
         if (table === "jogadores" && !(euJogador() && filtros.every(([k, v]) => k === "user_id" && v === euJogador().user_id))) return { data:null, error:{ message:"permission denied" } };
         if (table === "buscas_salvas") {
@@ -590,12 +618,13 @@
     if (nome === "criar_compra_de_creditos") {
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      if (!possoNa(x.user_id, a.p_academia, "pagamentos")) return funcaoNegada("pagamentos");
       const ac = db.academias.find(y => y.id === a.p_academia);
       if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("Os créditos são do leilão do Completo e do Premium.", "42501");
       if (!(a.p_valor >= 20 && a.p_valor <= 5000)) return erro("Escolha um valor de R$ 20 a R$ 5.000.", "22023");
       const compras = window.__compras || (window.__compras = []);
       const id = "00000000-0000-4000-8000-" + String(compras.length + 1).padStart(12, "0");
-      compras.push({ id, academia_id: a.p_academia, valor: a.p_valor, forma: a.p_forma, situacao: "aberta", created_at: new Date().toISOString() });
+      compras.push({ id, academia_id: a.p_academia, valor: a.p_valor, forma: a.p_forma, situacao: "aberta", created_at: new Date().toISOString(), user_id: x.user_id });
       return { data: id, error:null };
     }
     // Pagamento de teste (SQL 20261020120000): window.__pagamentoDeTeste liga.
@@ -630,8 +659,10 @@
     }
     if (nome === "minhas_compras") {
       const x = meuAcesso();
-      if (!x || !vinculo(x.user_id, a.p_academia)) return { data:null, error:null };
-      return { data: (window.__compras || []).filter(y => y.academia_id === a.p_academia).slice().reverse(), error:null };
+      if (!x || !possoNa(x.user_id, a.p_academia, "pagamentos")) return { data:null, error:null };
+      const quem = (uid) => { const y = db.academia_acessos.find(z => z.user_id === uid); return y ? (y.nome_responsavel || y.email) : null; };
+      return { data: (window.__compras || []).filter(y => y.academia_id === a.p_academia).slice().reverse()
+        .map(y => window.__semFuncoes ? y : { ...y, quem: y.quem || quem(y.user_id) }), error:null };
     }
     if (nome === "compras_do_admin") {
       if (!souAdmin()) return erro("Só o admin vê as compras.", "42501");
@@ -755,6 +786,7 @@
     if (nome === "salvar_promocao") {
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      if (!possoNa(x.user_id, a.p_academia, "promocoes")) return funcaoNegada("promocoes");
       const ac = db.academias.find(y => y.id === a.p_academia);
       if (!promocoesLiberadas(ac)) return erro("As promoções na ficha são dos planos Completo e Premium.", "42501");
       const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
@@ -821,6 +853,7 @@
     if (nome === "dar_lance") {
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      if (!possoNa(x.user_id, a.p_academia, "promocoes")) return funcaoNegada("promocoes");
       const ac = db.academias.find(y => y.id === a.p_academia);
       if (!ac || ac.plano !== "premium") return erro("O leilão de promoções é do plano Premium.", "42501");
       const r = regiaoDe(ac);
@@ -921,7 +954,7 @@
         const ac = db.academias.find(y => y.id === v.academia_id) || {};
         const pausada = !!ac.pausada && (!ac.pausada_ate || new Date(ac.pausada_ate) > new Date());
         return { academia_id: v.academia_id, nome: ac.name, papel: v.papel, status: ac.status, pausada, plano: ac.plano || "basico", bairro: ac.bairro, cidade: ac.cidade, aberta: v.academia_id === x.academia_id,
-          pausada_ate: ac.pausada_ate || null, pausada_pela_academia: !!ac.pausada_pela_academia };
+          pausada_ate: ac.pausada_ate || null, pausada_pela_academia: !!ac.pausada_pela_academia, ...(window.__semFuncoes ? {} : { funcoes: funcoesDe(v) }) };
       }).sort((p, q) => String(p.nome).localeCompare(String(q.nome)));
       return { data: lista, error:null };
     }
@@ -1113,8 +1146,35 @@
       const lista = db.academia_vinculos.filter(v => v.academia_id === x.academia_id)
         .sort((p, q) => (q.papel === "principal") - (p.papel === "principal"))
         .map(v => { const y = db.academia_acessos.find(z => z.user_id === v.user_id) || {};
-          return { user_id:v.user_id, nome:y.nome_responsavel || null, email:y.email || y.usuario, papel:v.papel, dados_completos_em:y.dados_completos_em || null, ultimo_acesso:null, sou_eu:v.user_id === x.user_id }; });
+          return { user_id:v.user_id, nome:y.nome_responsavel || null, email:y.email || y.usuario, papel:v.papel, dados_completos_em:y.dados_completos_em || null, ultimo_acesso:null, sou_eu:v.user_id === x.user_id,
+            ...(window.__semFuncoes ? {} : { funcoes: funcoesDe(v) }) }; });
       return { data:lista, error:null };
+    }
+    // As funções da equipe e os responsáveis principais (SQL 20261029190000).
+    if (["mudar_funcoes_da_pessoa", "tornar_principal", "deixar_de_ser_principal"].includes(nome)) {
+      if (window.__semFuncoes) return erro(`Could not find the function public.${nome}`, "PGRST202");
+      const x = meuAcesso();
+      const eu = x && x.academia_id && vinculo(x.user_id, x.academia_id);
+      if (!eu || eu.papel !== "principal") return erro("Só o responsável principal muda o que cada pessoa pode fazer.", "42501");
+      if (nome === "deixar_de_ser_principal") {
+        if (!db.academia_vinculos.some(v => v.academia_id === x.academia_id && v.papel === "principal" && v.user_id !== x.user_id))
+          return erro("A academia precisa de um responsável principal: torne outra pessoa principal antes.", "22023");
+        Object.assign(eu, { papel: "equipe", funcoes: FUNCOES.slice() });
+        x.papel = "equipe";
+        return { data:null, error:null };
+      }
+      const ele = vinculo(a.p_user, x.academia_id);
+      if (!ele) return erro("Pessoa não encontrada.", "22023");
+      if (nome === "tornar_principal") {
+        if (ele.papel === "principal") return erro("Essa pessoa já é responsável principal.", "22023");
+        ele.papel = "principal";
+        const y = db.academia_acessos.find(z => z.user_id === a.p_user);
+        if (y && y.academia_id === x.academia_id) y.papel = "principal";
+        return { data:null, error:null };
+      }
+      if (ele.papel === "principal") return erro("O responsável principal pode tudo: não tem funções para escolher.", "22023");
+      ele.funcoes = FUNCOES.filter(f => (a.p_funcoes || []).includes(f));
+      return { data: ele.funcoes.slice(), error:null };
     }
     if (nome === "adicionar_pessoa") {
       const x = meuAcesso();

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 179)
+**Atualizado em:** 29/10/2026 (regra 180)
 
 | | |
 |---|---|
@@ -134,6 +134,14 @@ Produto (o que já foi decidido)
 - **Contas:** uma conta só para jogador e Parceiros (o mesmo e-mail e
   senha); e-mail confirmado por código de 6 números; nome e sobrenome em
   **dois campos obrigatórios**; excluir num lado exclui nos dois.
+- **Pessoas da academia (regra 180):** pode haver **vários responsáveis
+  principais** (podem tudo; o principal torna alguém da equipe principal;
+  só o GuiaTennis tira um principal, ou ele mesmo deixa de ser, havendo
+  outro). A **equipe** faz só as **funções** que o principal liga em Acessos
+  (`academia_vinculos.funcoes`, `posso()` no site e no banco): Editar a
+  ficha, Responder avaliações, Promoções e leilão, Pagamentos (quem entra
+  começa com as três primeiras). Aba **Pagamentos**: saldo, compra e cada
+  compra com quem comprou; a cada compra paga, e-mail aos principais.
   Buscar, ver e chamar não pedem login; depois da segunda academia chamada
   sem conta, o convite para criar conta.
 - **Avaliações:** só com conta de e-mail confirmado, **uma por academia,
@@ -226,7 +234,7 @@ Produto (o que já foi decidido)
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261029170000_textos_curtos_das_promocoes` (75 arquivos na pasta; 72 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261029190000_funcoes_e_pagamentos` (76 arquivos na pasta; 73 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -267,11 +275,11 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (29/10/2026): **2.150 verificações** nos
-  73 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
+  segundo plano). Último resultado (29/10/2026): **2.175 verificações** nos
+  74 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**687 conferências**,
+- **Banco local** para o `testes/banco-emails.py` (**716 conferências**,
   nenhuma falha): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
@@ -333,10 +341,11 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (29/10/2026)
 
-O PR #5 tem tudo até a **regra 179** (o lance explicado em parágrafos, sem
-"Os créditos garantem o lance"; antes, os textos das promoções curtos:
-título 30, detalhes 150, e-mail 300, SQL
-`20261029170000_textos_curtos_das_promocoes`). De 28 a 29/10 entraram
+O PR #5 tem tudo até a **regra 180** (funções da equipe, vários
+responsáveis principais, aba Pagamentos e e-mail de cada compra; SQL
+`20261029190000_funcoes_e_pagamentos`; Termos e Privacidade em 29/10).
+Antes: o lance em parágrafos e os textos das promoções curtos (título 30,
+detalhes 150, e-mail 300, SQL `20261029170000_textos_curtos_das_promocoes`). De 28 a 29/10 entraram
 (o item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro do
 `catalogo`; a aula sem valor vai com `cobranca: ""`; o intervalo vai no
 `preco` como "150-200"): os limites dos textos das promoções; o catálogo com aulas para adultos e para crianças;
@@ -344,7 +353,7 @@ a parte "Modalidades", pelo menos uma obrigatória; o valor em intervalo;
 "Alterações salvas" num cartão; "Pedir análise" em vermelho; o "Ver no
 mapa" no mapa do GuiaTennis e o "Como chegar" pelo próprio celular. A
 descrição do PR tem uma linha por regra em "Pedidos depois de 28/10".
-Testes: 2.150 no navegador e 687 no banco, nenhuma falha.
+Testes: 2.175 no navegador e 716 no banco, nenhuma falha.
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26 a 29/10 (veracidade, ficha no
    jeito do hoteis.com, catálogo com Modalidades, Aulas, Locação e valor em
@@ -369,7 +378,7 @@ Testes: 2.150 no navegador e 687 no banco, nenhuma falha.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 180.
+**Próximo número:** regra 181.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -445,6 +454,13 @@ Testes: 2.150 no navegador e 687 no banco, nenhuma falha.
   regra (teto; se ganhar; se ninguém mais der lance; se não ganhar); sai "Os
   créditos garantem o lance: só saem se você ganhar." (o recado dos créditos
   só aparece quando faltam). Sem SQL. Teste: `promocoes-por-email.js`.
+- 180 (29/10) Funções da equipe (Editar a ficha, Responder avaliações,
+  Promoções e leilão, Pagamentos) ligadas pelo principal em Acessos; vários
+  responsáveis principais ("Tornar responsável principal", "Deixar de ser");
+  menu e páginas conforme a função; aba Pagamentos com quem comprou; e-mail
+  aos principais a cada compra paga e quando alguém vira principal. Termos e
+  Privacidade em 29/10. SQL `20261029190000_funcoes_e_pagamentos`. Testes:
+  `funcoes-da-equipe.js` (novo), `banco-emails.py`.
 
 ## 11. WhatsApp e mensagem para as academias
 

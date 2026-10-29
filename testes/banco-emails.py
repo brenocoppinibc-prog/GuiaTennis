@@ -828,7 +828,7 @@ ok(not certo and "12 semanas à frente" in saida, "somar semanas: no máximo 12 
 certo, saida = salvar("Sem semanas", semanas=0)
 ok(not certo and "de 1 a 12 semanas" in saida, "a nova precisa de pelo menos 1 semana")
 certo, saida = salvar("x", pid=f"'{pid}'")
-ok(not certo and "40 letras" in saida, "título curto demais é recusado")
+ok(not certo and "30 letras" in saida, "título curto demais é recusado")
 certo, saida = salvar("De outra academia", user=carla)
 ok(not certo and "não administra" in saida, "quem não administra a academia não cria promoção")
 lista = um(f"select count(*) || '|' || sum(avisados) || '|' || max(semanas) || '|' || max(pago) from public.promocoes_da_minha_academia('{PINHEIROS}')", papel="authenticated", user=dono)
@@ -2238,31 +2238,31 @@ ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode
 ok(um(RESP) == "[Antiga editada]true", "as respostas que o site já mostrava como editadas continuam editadas")
 sql("truncate public.emails_a_enviar")
 
-# Os textos das promoções curtos (regras 176 e 177, SQL 20261029150000): o
-# título até 40 letras; os detalhes da ficha até 150; a mensagem do e-mail do
+# Os textos das promoções curtos (regras 176 a 178, SQL 20261029170000): o
+# título até 30 letras; os detalhes da ficha até 150; a mensagem do e-mail do
 # leilão até 300. A tabela segue com o teto antigo (60 e 280).
 print("\n# Textos das promoções")
 sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; delete from public.lances where academia_id = '{PINHEIROS}';"
     f"update public.academias set plano = 'premium', status = 'published', pausada = false, envios_de_aviso = 100 where id = '{PINHEIROS}'")
 # O banco tira os espaços das pontas: cada texto termina com ponto.
-t40 = ("Primeira aula grátis para iniciantes " * 2)[:39] + "."
+t30 = ("Primeira aula grátis para iniciantes " * 2)[:29] + "."
 d150 = ("Para quem nunca fez aula aqui, de segunda a sexta até 17h. " * 3)[:149] + "."
-certo, saida = salvar(t40, detalhes=d150)
-ok(certo, "a promoção da ficha aceita o título com 40 letras e os detalhes com 150" + ("" if certo else ": " + saida[-160:]))
+certo, saida = salvar(t30, detalhes=d150)
+ok(certo, "a promoção da ficha aceita o título com 30 letras e os detalhes com 150" + ("" if certo else ": " + saida[-160:]))
 pid = json.loads(saida.splitlines()[-1]).get("id") if certo else None
-certo, saida = salvar(t40 + "x", pid=f"'{pid}'", detalhes=d150, semanas=0)
-ok(not certo and "até 40 letras" in saida, "o título com 41 letras não passa e diz o limite")
-certo, saida = salvar(t40, pid=f"'{pid}'", detalhes=d150 + "x", semanas=0)
+certo, saida = salvar(t30 + "x", pid=f"'{pid}'", detalhes=d150, semanas=0)
+ok(not certo and "até 30 letras" in saida, "o título com 31 letras não passa e diz o limite")
+certo, saida = salvar(t30, pid=f"'{pid}'", detalhes=d150 + "x", semanas=0)
 ok(not certo and "até 150 letras" in saida, "os detalhes com 151 letras não passam e dizem o limite")
 ok(um("select pg_get_constraintdef(oid) from pg_constraint where conname = 'promocoes_texto_ok'").count("280") == 1, "a tabela segue com o teto antigo (as promoções já publicadas continuam)")
 m300 = ("Para quem nunca fez aula aqui, de segunda a sexta até as 17h. " * 5)[:299] + "."
-certo, saida = sql(f"select public.dar_lance('{PINHEIROS}', '{t40}', '{m300}', 30)::text", papel="authenticated", user=la)
-ok(certo and um(f"select char_length(titulo) || '|' || char_length(mensagem) from public.lances where academia_id = '{PINHEIROS}'") == "40|300", "o lance aceita o título com 40 letras e a mensagem com 300" + ("" if certo else ": " + saida[-160:]))
+certo, saida = sql(f"select public.dar_lance('{PINHEIROS}', '{t30}', '{m300}', 30)::text", papel="authenticated", user=la)
+ok(certo and um(f"select char_length(titulo) || '|' || char_length(mensagem) from public.lances where academia_id = '{PINHEIROS}'") == "30|300", "o lance aceita o título com 30 letras e a mensagem com 300" + ("" if certo else ": " + saida[-160:]))
 certo, saida = lance(la, PINHEIROS, 30, m300 + "x")
 ok(not certo and "10 a 300" in saida, "a mensagem com 301 letras não passa e diz o limite")
-certo, saida = sql(f"select public.dar_lance('{PINHEIROS}', '{t40}x', '{m300}', 30)::text", papel="authenticated", user=la)
-ok(not certo and "até 40 letras" in saida, "no lance, o título com 41 letras também não passa")
-r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261029150000_textos_curtos_das_promocoes.sql"], capture_output=True, text=True)
+certo, saida = sql(f"select public.dar_lance('{PINHEIROS}', '{t30}x', '{m300}', 30)::text", papel="authenticated", user=la)
+ok(not certo and "até 30 letras" in saida, "no lance, o título com 31 letras também não passa")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261029170000_textos_curtos_das_promocoes.sql"], capture_output=True, text=True)
 ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
 sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; delete from public.lances where academia_id = '{PINHEIROS}'")
 

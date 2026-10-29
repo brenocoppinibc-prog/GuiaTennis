@@ -88,7 +88,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.fill('#pc-email-titulo', 'Primeira aula grátis');
   await page.fill('#pc-email-mensagem', 'Para quem nunca fez aula aqui, de segunda a sexta.');
   await page.waitForTimeout(100);
-  ok((await texto(page, '[data-cont="titulo"]')) === '20/40' && (await texto(page, '[data-cont="mensagem"]')) === '50/300' && await page.evaluate(() => document.getElementById('pc-email-mensagem').maxLength) === 300, 'os contadores de caracteres acompanham o que se digita; o título vai até 40 letras e a mensagem até 300 (regra 177)');
+  ok((await texto(page, '[data-cont="titulo"]')) === '20/30' && (await texto(page, '[data-cont="mensagem"]')) === '50/300' && await page.evaluate(() => document.getElementById('pc-email-mensagem').maxLength) === 300, 'os contadores de caracteres acompanham o que se digita; o título vai até 30 letras e a mensagem até 300 (regras 177 e 178)');
   let previa = await texto(page, '#pc-email-previa');
   ok(previa.startsWith('Prévia do e-mail\n') && previa.includes('Assunto: Promoção em Pinheiros: Primeira aula grátis') && previa.includes('Novidade em Pinheiros') && /Patrocinado · Só Aula Tennis/i.test(previa) && previa.includes('Promoção patrocinada'),
     'a prévia do e-mail do GuiaTennis do bairro muda enquanto se digita, com "Patrocinado" — ' + previa.slice(0, 90));

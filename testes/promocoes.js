@@ -31,11 +31,11 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('Escreva a promoção') && await page.$('#pc-promo-titulo'), 'sem o título, pede para escrever e não passa para a prévia');
   await page.fill('#pc-promo-titulo', 'Primeira aula grátis');
-  // Textos curtos, com o contador (regras 176 e 177): título até 40, detalhes até 150.
+  // Textos curtos, com o contador (regras 176 a 178): título até 30, detalhes até 150.
   const longo = 'Para quem nunca fez aula aqui. '.repeat(20);
   await page.fill('#pc-promo-detalhes', longo);
   const limites = await page.evaluate(() => ({ t: document.getElementById('pc-promo-titulo').maxLength, d: document.getElementById('pc-promo-detalhes').maxLength, n: document.getElementById('pc-promo-detalhes').value.length }));
-  ok(limites.t === 40 && limites.d === 150 && limites.n === 150 && (await texto(page, '[data-cont-promo="titulo"]')) === '20/40' && (await texto(page, '[data-cont-promo="detalhes"]')) === '150/150', 'o título vai até 40 letras e os detalhes até 150, com o contador de cada um — ' + JSON.stringify(limites));
+  ok(limites.t === 30 && limites.d === 150 && limites.n === 150 && (await texto(page, '[data-cont-promo="titulo"]')) === '20/30' && (await texto(page, '[data-cont-promo="detalhes"]')) === '150/150', 'o título vai até 30 letras e os detalhes até 150, com o contador de cada um — ' + JSON.stringify(limites));
   await page.fill('#pc-promo-detalhes', 'Para quem nunca fez aula aqui.');
   ok((await texto(page, '[data-cont-promo="detalhes"]')) === '30/150', 'o contador acompanha o que se digita');
   await page.click('[data-promo-semanas="2"]');
@@ -64,14 +64,14 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   await page.waitForTimeout(200);
   ok((await page.inputValue('#pc-promo-titulo')) === 'Primeira aula grátis' && (await texto(page, '.pc-promo-form .pc-card-t')) === 'Alterar a promoção'
     && (await semanas()).startsWith('Não somar*,1 semana') && (await texto(page, '.pc-promo-form')).includes('Mudar o texto não custa nada.'), '"Alterar" abre o formulário com a promoção, sem somar semanas — ' + await semanas());
-  await page.fill('#pc-promo-titulo', 'Primeira aula grátis às segundas');
+  await page.fill('#pc-promo-titulo', 'Primeira aula grátis às 2ª');
   await page.click('#pc-promo-revisar');
   await page.waitForTimeout(150);
-  ok((await texto(page, '#pc-promo-salvar')).includes('Salvar a alteração') && (await texto(page, '#pc-promo-previa')).includes('Primeira aula grátis às segundas'), 'mudar também passa pela prévia');
+  ok((await texto(page, '#pc-promo-salvar')).includes('Salvar a alteração') && (await texto(page, '#pc-promo-previa')).includes('Primeira aula grátis às 2ª'), 'mudar também passa pela prévia');
   await page.click('#pc-promo-salvar');
   await page.waitForTimeout(500);
   r = await page.evaluate(() => ({ aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '', args: (window.__rpcs.filter(x => x.nome === 'salvar_promocao').slice(-1)[0] || {}).args, p: window.__db.promocoes[0] }));
-  ok(r.aviso.includes('Promoção atualizada') && r.args.p_id === 'promo-1' && r.args.p_semanas === 0 && r.p.titulo === 'Primeira aula grátis às segundas' && r.p.valida_ate === dia(13), 'mudar salva na mesma promoção, com a mesma validade');
+  ok(r.aviso.includes('Promoção atualizada') && r.args.p_id === 'promo-1' && r.args.p_semanas === 0 && r.p.titulo === 'Primeira aula grátis às 2ª' && r.p.valida_ate === dia(13), 'mudar salva na mesma promoção, com a mesma validade');
   // Uma promoção por vez (16/10/2026; eram 3): com uma valendo, o formulário dá lugar ao recado.
   corpo = await texto(page, '#parceiros .pc-main');
   ok(!(await page.$('#pc-promo-titulo')) && corpo.split('Uma promoção por vez').length === 2 && corpo.includes('Alterar') && corpo.includes('Encerrar'), 'com uma valendo, sem formulário e sem repetir "uma promoção por vez" (só no alto)');

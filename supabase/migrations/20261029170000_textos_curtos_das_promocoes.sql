@@ -1,9 +1,10 @@
 -- Os textos das promoções curtos e resumidos (pedidos do Breno em 29/10/2026,
--- regras 176 e 177: "deixe um limite de caracteres que são o suficiente para
+-- regras 176 a 178: "deixe um limite de caracteres que são o suficiente para
 -- poder explicar sobre as promoções no leilão e na ficha"; depois, "achei
--- muita coisa nos conteúdos, precisa ser algo pequeno e resumido"), como os
--- anúncios da Meta (título até 40, texto de ~125 que aparece sem o "ver mais"):
---   título (ficha e leilão): de 60 para 40 letras;
+-- muita coisa nos conteúdos, precisa ser algo pequeno e resumido" e "títulos
+-- também está muito grande"), como o título do Google Ads (até 30) e o texto
+-- dos anúncios da Meta (~125 aparecem sem o "ver mais"):
+--   título (ficha e leilão): de 60 para 30 letras;
 --   detalhes da promoção na ficha: de 280 para 150;
 --   mensagem do e-mail do leilão: de 500 para 300.
 -- Vale para o que for salvo daqui em diante: a regra da tabela continua com
@@ -43,8 +44,8 @@ begin
   if a.status <> 'published' then
     raise exception 'A academia ainda está em análise: a promoção pode ser criada quando ela estiver no ar.' using errcode = '22023';
   end if;
-  if char_length(v_titulo) < 3 or char_length(v_titulo) > 40 then
-    raise exception 'Escreva a promoção em até 40 letras (por exemplo, "Primeira aula grátis").' using errcode = '22023';
+  if char_length(v_titulo) < 3 or char_length(v_titulo) > 30 then
+    raise exception 'Escreva a promoção em até 30 letras (por exemplo, "Primeira aula grátis").' using errcode = '22023';
   end if;
   if char_length(coalesce(v_detalhes, '')) > 150 then
     raise exception 'Os detalhes cabem em até 150 letras.' using errcode = '22023';
@@ -136,8 +137,8 @@ begin
   if v_regiao is null then
     raise exception 'Para entrar no leilão, a ficha precisa do bairro e da cidade.' using errcode = '22023';
   end if;
-  if char_length(v_titulo) < 3 or char_length(v_titulo) > 40 then
-    raise exception 'Escreva a promoção em até 40 letras (por exemplo, "Primeira aula grátis").' using errcode = '22023';
+  if char_length(v_titulo) < 3 or char_length(v_titulo) > 30 then
+    raise exception 'Escreva a promoção em até 30 letras (por exemplo, "Primeira aula grátis").' using errcode = '22023';
   end if;
   if char_length(v_mensagem) < 10 or char_length(v_mensagem) > 300 then
     raise exception 'A mensagem precisa ter de 10 a 300 letras.' using errcode = '22023';

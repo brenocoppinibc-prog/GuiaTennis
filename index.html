@@ -5120,7 +5120,6 @@ let state = {
   showDecideResult: false,
   decideNotes: "",
   decidida: null,
-  navCourt: null,
   cmpPicker: null,
   cmpBusca: "",
   compareList: loadCompare(),
@@ -5776,7 +5775,6 @@ function render() {
     ${state.showLogin ? renderLoginSheet() : ""}
     ${state.showVisitorSetup ? renderVisitorSetupSheet() : ""}
     ${state.page === "search" ? renderFilterDrawer(results.length) : ""}
-    ${renderNavSheet()}
     ${renderCmpPicker()}
     ${renderQrSheet()}
     ${renderMenu()}
@@ -5840,7 +5838,7 @@ function mountMiniMap(c) {
   const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
   if (!temCoord) { if (__miniMap) { __miniMap.remove(); __miniMap = null; } return; }
   if (!window.L) {
-    el.innerHTML = `<div class="ht-map-empty">Não consegui carregar o mapa agora. O endereço abaixo abre no Google Maps e no Waze.</div>`;
+    el.innerHTML = `<div class="ht-map-empty">Não consegui carregar o mapa agora. Toque em "Como chegar" para abrir no aplicativo de mapas.</div>`;
     mapaNaoCarregou();
     return;
   }
@@ -8692,28 +8690,40 @@ function baixarQr(c, formato) {
   img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
-function renderNavSheet() {
-  if (!state.navCourt) return "";
-  const c = state.allCourts.find(x => x.id === state.navCourt)
-        || (state.pending || []).find(x => x.id === state.navCourt);
-  if (!c) return "";
-  const destino = c.endereco || `${c.lat},${c.lng}`;
-  const q = encodeURIComponent(destino);
+// "Como chegar" (pedido do Breno em 29/10/2026, regra 173: "tire as opções
+// de como chegar e faça que o celular ofereça as opções a ela pelo
+// navegador"): sem a tela com Google Maps e Waze, o link vai direto para o
+// aparelho. No Android, o endereço "geo:" faz o celular perguntar com qual
+// aplicativo abrir (Google Maps, Waze, Uber…), como o "Abrir com" do
+// sistema; no iPhone, abre o Mapas do aparelho; no computador, a rota no
+// Google Maps, numa aba nova.
+function celularDoVisitante() {
+  const ua = navigator.userAgent || "";
+  if (/Android/i.test(ua)) return "android";
+  if (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+  return "";
+}
+function linkComoChegar(c) {
   const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
-  const waze = temCoord
-    ? `https://www.waze.com/ul?ll=${c.lat}%2C${c.lng}&navigate=yes&zoom=17`
-    : `https://www.waze.com/ul?q=${q}&navigate=yes`;
-  return `
-    <div class="overlay open" id="nav-overlay">
-      <div class="sheet"><div class="sheet-content">
-        <button class="sheet-close" id="nav-close">✕</button>
-        <p class="sheet-title display">Como chegar</p>
-        <p class="subtitle" style="margin-top:4px">${esc(c.name)}</p>
-        <a class="cta-btn cta-primary" href="https://www.google.com/maps/dir/?api=1&destination=${q}" target="_blank" rel="noreferrer" style="margin-top:14px">${icon('pin',15,'#fff')} Google Maps</a>
-        <a class="cta-btn cta-secondary" href="${waze}" target="_blank" rel="noreferrer" style="margin-top:8px">${icon('pin',15,'var(--green)')} Waze</a>
-      </div></div>
-    </div>
-  `;
+  const endereco = c.endereco || [c.address, c.numero, c.bairro, c.cidade].filter(Boolean).join(", ") || c.name || "";
+  const destino = temCoord ? `${c.lat},${c.lng}` : endereco;
+  const aparelho = celularDoVisitante();
+  if (aparelho === "android") return temCoord
+    ? `geo:${c.lat},${c.lng}?q=${c.lat},${c.lng}(${encodeURIComponent(c.name || "")})`
+    : `geo:0,0?q=${encodeURIComponent(endereco)}`;
+  if (aparelho === "ios") return `https://maps.apple.com/?daddr=${encodeURIComponent(destino)}${c.name ? `&q=${encodeURIComponent(c.name)}` : ""}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}`;
+}
+// O link pronto: no celular, na mesma aba (o sistema abre o aplicativo); no
+// computador, numa aba nova.
+function linkComoChegarHtml(c, cls, conteudo) {
+  const noComputador = !celularDoVisitante();
+  return `<a class="${cls}" data-como-chegar="${c.id}" href="${esc(linkComoChegar(c))}"${noComputador ? ' target="_blank" rel="noreferrer"' : ""}>${conteudo}</a>`;
+}
+function abrirComoChegar(c) {
+  const url = linkComoChegar(c);
+  if (celularDoVisitante()) location.href = url;
+  else window.open(url, "_blank", "noopener");
 }
 
 function totalQuadras(c) {
@@ -8792,11 +8802,12 @@ function renderMapView(results) {
 // o mapa da busca do GuiaTennis já na academia — o pino marcado, o cartão
 // dela embaixo e as outras academias em volta —, como o "Ver no mapa" do
 // hoteis.com e do Booking, que abre o mapa do próprio site com os outros
-// hotéis. O "Como chegar" (Google Maps e Waze) fica no cartão do mapa e na
-// ficha. Sem ponto no mapa, abre o "Como chegar".
+// hotéis. O "Como chegar" fica no cartão do mapa e na ficha. Sem ponto no
+// mapa, abre o "Como chegar" do celular.
 function verNoMapaDoGuia(id) {
   const c = state.allCourts.find(x => x.id === id);
-  if (!c || typeof c.lat !== "number" || typeof c.lng !== "number" || c.status === "pending") { state.navCourt = id; render(); return; }
+  if (!c) return;
+  if (typeof c.lat !== "number" || typeof c.lng !== "number" || c.status === "pending") { abrirComoChegar(c); return; }
   // A academia precisa aparecer: filtro ou página de cidade que a esconde sai.
   if (!applyFilters([c]).length) { clearAllFilters(); state.cidadeDaPagina = null; }
   state.page = "search";
@@ -8833,7 +8844,7 @@ function mapCardHtml(id) {
           : `<div class="rail-unit">preço a<br>consultar</div>`}
       </div>
       <button type="button" class="map-close" id="map-card-close" aria-label="Fechar">✕</button>
-      <button type="button" class="map-como-chegar" data-como-chegar="${c.id}">${icon('pin', 14, 'currentColor')} Como chegar</button>
+      ${linkComoChegarHtml(c, "map-como-chegar", `${icon('pin', 14, 'currentColor')} Como chegar`)}
     </div>
   `;
 }
@@ -8858,8 +8869,9 @@ function attachMapCardEvents() {
   if (!holder) return;
   const close = holder.querySelector("#map-card-close");
   if (close) close.onclick = (e) => { e.stopPropagation(); selectOnMap(null); };
+  // O link abre o aplicativo de mapas, sem abrir a ficha do cartão.
   holder.querySelectorAll("[data-como-chegar]").forEach(el => {
-    el.onclick = (e) => { e.stopPropagation(); state.navCourt = el.dataset.comoChegar; render(); };
+    el.onclick = (e) => { e.stopPropagation(); };
   });
   holder.querySelectorAll("[data-open]").forEach(el => {
     el.onclick = () => openCourt(el.dataset.open);
@@ -18970,13 +18982,13 @@ function htLocalizacao(c) {
   const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
   return `
     <div class="ht-map-caixa">
-      <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">Essa academia ainda não tem ponto no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
+      <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">Essa academia ainda não tem ponto no mapa. Toque em "Como chegar" para abrir no aplicativo de mapas.</div>`}</div>
       <button type="button" class="ht-map-abrir" data-nav="${c.id}" aria-label="Ver no mapa do GuiaTennis" title="Ver no mapa do GuiaTennis">${icon('expandir', 20, 'var(--text)')}</button>
     </div>
     ${htPerto(c)}
     ${htAcesso(c)}
     <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
-    <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button> <button type="button" class="ht-link" data-como-chegar="${c.id}">Como chegar ${icon('chevron', 16, 'currentColor')}</button></p>
+    <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button> ${linkComoChegarHtml(c, "ht-link", `Como chegar ${icon('chevron', 16, 'currentColor')}`)}</p>
     ${linkDaRegiaoNaFicha(c)}`;
 }
 
@@ -25460,13 +25472,8 @@ function attachEvents() {
     el.onclick = (e) => { e.stopPropagation(); verNoMapaDoGuia(el.dataset.nav); };
   });
   document.querySelectorAll("[data-como-chegar]").forEach(el => {
-    el.onclick = (e) => { e.stopPropagation(); state.navCourt = el.dataset.comoChegar; render(); };
+    el.onclick = (e) => { e.stopPropagation(); };
   });
-
-  const navClose = document.getElementById("nav-close");
-  const navOverlay = document.getElementById("nav-overlay");
-  if (navClose) navClose.onclick = () => { state.navCourt = null; render(); };
-  if (navOverlay) navOverlay.onclick = (e) => { if (e.target === navOverlay) { state.navCourt = null; render(); } };
 
   document.querySelectorAll("[data-decidir]").forEach(el => {
     el.onclick = () => { state.decidida = el.dataset.decidir; render(); };
@@ -27037,7 +27044,7 @@ function perguntarAntesDeSair(p, sair) {
 }
 // Links, menus, abas, fichas e o ✕ das janelas: com algo por salvar fora
 // dali, perguntam antes. O ✕ e o toque fora do cadastro já perguntam sozinhos.
-const SELETOR_DE_SAIDA = 'a[href]:not([target="_blank"]):not([href^="#"]):not([href^="mailto:"]):not([href^="tel:"]), [data-pc], [data-menu], [data-nav], [data-adm-aba], [data-court], [data-abrir-academia], [data-ver-academia], [data-voltar-academia]';
+const SELETOR_DE_SAIDA = 'a[href]:not([target="_blank"]):not([href^="#"]):not([href^="mailto:"]):not([href^="tel:"]):not([data-como-chegar]), [data-pc], [data-menu], [data-nav], [data-adm-aba], [data-court], [data-abrir-academia], [data-ver-academia], [data-voltar-academia]';
 const SELETOR_DE_FECHAR = '.sheet-close, .pc-fechar, [id$="-close"], [id$="-fechar"]';
 document.addEventListener("click", (e) => {
   if (SAIDA.liberada) return;

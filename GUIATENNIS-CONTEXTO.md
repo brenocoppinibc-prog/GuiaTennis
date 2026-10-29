@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 172)
+**Atualizado em:** 29/10/2026 (regra 173)
 
 | | |
 |---|---|
@@ -186,8 +186,11 @@ Produto (o que já foi decidido)
   aulas das crianças são "Aula infantil …", com a idade, e têm o filtro
   "Crianças". Corte das fotos como o "Cortar" do Instagram.
 - **"Ver no mapa"** da ficha abre o mapa da busca do GuiaTennis já na
-  academia (`verNoMapaDoGuia`); o "Como chegar" (Google Maps e Waze) fica
-  no cartão do mapa e na localização da ficha.
+  academia (`verNoMapaDoGuia`); o **"Como chegar"** fica no cartão do mapa
+  e na localização da ficha, como link direto, sem tela de opções
+  (`linkComoChegar`): no Android, "geo:" (o celular pergunta com qual
+  aplicativo abrir); no iPhone, o Mapas; no computador, a rota no Google
+  Maps numa aba nova.
 - **Busca** "bairro, cidade" fica na cidade digitada. Telas de código com
   uma caixa por número e "Confirmar" só com todas preenchidas.
 
@@ -261,7 +264,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (29/10/2026): **2.135 verificações** nos
+  segundo plano). Último resultado (29/10/2026): **2.138 verificações** nos
   73 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -327,12 +330,13 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (28/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 172** (as
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 173** (as
 Modalidades antes das partes Aulas e Locação, pelo menos uma obrigatória, e
-o "Ver no mapa" no mapa do GuiaTennis, e os exemplos de valor no cadastro; sem SQL novo desde a 167: o item da aula das crianças leva
+o "Ver no mapa" no mapa do GuiaTennis, os exemplos de valor no cadastro e
+o "Como chegar" pelo próprio celular; sem SQL novo desde a 167: o item da aula das crianças leva
 `publico`, `idadeDe` e `idadeAte` dentro do `catalogo`, e a aula sem valor
 vai com `cobranca: ""`). A descrição do PR foi
-encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.135
+encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.138
 no navegador e 679 no banco, nenhuma falha.
 
 **Pendências do Breno:**
@@ -358,7 +362,7 @@ no navegador e 679 no banco, nenhuma falha.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 173.
+**Próximo número:** regra 174.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -408,6 +412,9 @@ no navegador e 679 no banco, nenhuma falha.
 - 172 (29/10) Exemplo em cada valor do catálogo ("ex.: 180") e, embaixo
   de cada cartão, como fica na ficha (o exemplo ou o valor escrito); exemplo
   da idade das crianças. Teste: `catalogo.js`.
+- 173 (29/10) "Como chegar" sem a tela de Google Maps e Waze: link direto
+  que o celular resolve (Android "geo:" com a escolha do aplicativo;
+  iPhone, o Mapas; computador, Google Maps). Teste: `ver-no-mapa.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -88,7 +88,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   await page.fill('#pc-email-titulo', 'Primeira aula grátis');
   await page.fill('#pc-email-mensagem', 'Para quem nunca fez aula aqui, de segunda a sexta.');
   await page.waitForTimeout(100);
-  ok((await texto(page, '[data-cont="titulo"]')) === '20/60' && (await texto(page, '[data-cont="mensagem"]')) === '50/500', 'os contadores de caracteres acompanham o que se digita');
+  ok((await texto(page, '[data-cont="titulo"]')) === '20/60' && (await texto(page, '[data-cont="mensagem"]')) === '50/1000' && await page.evaluate(() => document.getElementById('pc-email-mensagem').maxLength) === 1000, 'os contadores de caracteres acompanham o que se digita; a mensagem vai até 1.000 letras (regra 176)');
   let previa = await texto(page, '#pc-email-previa');
   ok(previa.startsWith('Prévia do e-mail\n') && previa.includes('Assunto: Promoção em Pinheiros: Primeira aula grátis') && previa.includes('Novidade em Pinheiros') && /Patrocinado · Só Aula Tennis/i.test(previa) && previa.includes('Promoção patrocinada'),
     'a prévia do e-mail do GuiaTennis do bairro muda enquanto se digita, com "Patrocinado" — ' + previa.slice(0, 90));

@@ -1438,7 +1438,7 @@ ok(not certo and "lance mínimo é de R$ 10" in saida, "lance abaixo do mínimo 
 certo, saida = lance(c_resp, c_id, 20)
 ok(not certo and "tem R$ 5 de créditos" in saida, "lance maior que os créditos é recusado (pré-pago)")
 certo, saida = lance(la, PINHEIROS, 30, "Curta.")
-ok(not certo and "10 a 500" in saida, "mensagem curta é recusada")
+ok(not certo and "10 a 1.000" in saida, "mensagem curta é recusada")
 certo, saida = lance(la, PINHEIROS, 30)
 ok(certo and json.loads(saida.splitlines()[-1]).get("valor") == 30, "Premium dá o lance de R$ 30")
 certo, saida = lance(la, PINHEIROS, 25)
@@ -2237,6 +2237,30 @@ r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "s
 ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
 ok(um(RESP) == "[Antiga editada]true", "as respostas que o site já mostrava como editadas continuam editadas")
 sql("truncate public.emails_a_enviar")
+
+# Os textos das promoções com espaço para explicar (regra 176, SQL
+# 20261029120000): os detalhes da ficha até 500 letras; a mensagem do e-mail
+# do leilão até 1.000.
+print("\n# Textos das promoções")
+sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; delete from public.lances where academia_id = '{PINHEIROS}';"
+    f"update public.academias set plano = 'premium', status = 'published', pausada = false, envios_de_aviso = 100 where id = '{PINHEIROS}'")
+# O banco tira os espaços das pontas: o texto termina com ponto.
+d500 = ("Vale para aula individual ou em dupla, com a raquete emprestada. " * 9)[:499] + "."
+certo, saida = salvar("Primeira aula grátis", detalhes=d500)
+ok(certo, "os detalhes da promoção na ficha cabem em 500 letras" + ("" if certo else ": " + saida[-160:]))
+pid = json.loads(saida.splitlines()[-1]).get("id") if certo else None
+certo, saida = salvar("Primeira aula grátis", pid=f"'{pid}'", detalhes=d500 + "x", semanas=0)
+ok(not certo and "até 500 letras" in saida, "com 501 letras, não passa e diz o limite")
+certo, saida = sql(f"update public.promocoes set detalhes = repeat('x', 501) where id = '{pid}'")
+ok(not certo and um(f"select char_length(detalhes) from public.promocoes where id = '{pid}'") == "500", "a tabela também não guarda mais de 500")
+m1000 = ("Para quem nunca fez aula aqui, de segunda a sexta até as 17h. " * 17)[:999] + "."
+certo, saida = lance(la, PINHEIROS, 30, m1000)
+ok(certo and um(f"select char_length(mensagem) from public.lances where academia_id = '{PINHEIROS}'") == "1000", "a mensagem do e-mail do leilão cabe em 1.000 letras" + ("" if certo else ": " + saida[-160:]))
+certo, saida = lance(la, PINHEIROS, 30, m1000 + "x")
+ok(not certo and "10 a 1.000" in saida, "com 1.001 letras, não passa e diz o limite")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261029120000_textos_das_promocoes.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+sql(f"delete from public.promocoes where academia_id = '{PINHEIROS}'; delete from public.lances where academia_id = '{PINHEIROS}'")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

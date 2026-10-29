@@ -170,7 +170,7 @@
   .pc-ads .form-field:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(31,77,61,.12); }
   .pc-ads .field-label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; margin: 16px 0 6px; }
   .pc-ads .pc-h2 { font-family: var(--fonte-texto); font-size: 15px; font-weight: 600; }
-  .pc-ads-cont { font-size: 12px; font-weight: 400; color: var(--ads-muted); font-variant-numeric: tabular-nums; }
+  .pc-ads-cont { font-size: 12px; font-weight: 400; color: var(--ads-muted, var(--muted)); font-variant-numeric: tabular-nums; }
   .pc-ads-cab-topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .pc-ads-rotulo { margin: 0; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ads-muted); }
   .pc-ads-status { flex-shrink: 0; padding: 3px 8px; border-radius: 4px; background: #E9EBEE; color: var(--ads-muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
@@ -2986,6 +2986,11 @@
      como o "Avançar" cinza do WhatsApp; com a bolinha girando, fica como
      está. */
   [data-precisa-codigo]:disabled:not(:has(.bola)) { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+  /* A promoção da ficha com os detalhes mais longos (regra 176): o ícone no
+     alto, ao lado do título; no celular, sai, e o texto usa a largura toda. */
+  #ht-opcoes .ht-promo { align-items: flex-start; }
+  @media (max-width: 560px) { #ht-opcoes .ht-promo-ic { display: none; } }
 </style>
 </head>
 <body>
@@ -9237,8 +9242,8 @@ function perguntasParceiros() {
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
     { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não avalia ela: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
-    { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "Nos planos Completo e Premium, em Promoções › Na ficha, a academia publica uma promoção por vez, por exemplo \"Primeira aula grátis\", e escolhe por quantas semanas ela vale (de 1 a 12). Antes de publicar, a tela mostra o preço por semana e o total, que sai dos créditos" + (leilao ? " (os mesmos do leilão)" : "") + "; no Premium, a semana sai mais barata. A promoção aparece na ficha e no resultado da busca, com a validade, e some sozinha quando vence. Mudar o texto não custa nada, e dá para somar semanas; encerrar antes devolve as semanas que ainda não começaram." + (leilao ? " No Premium, para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" (veja \"Como funciona o leilão das promoções por e-mail?\")." : "") + " A academia responde pelo que anuncia e combina as condições direto com o jogador." },
-    ...(leilao ? [{ id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e favoritou uma academia de lá ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. No plano Premium, em Promoções › Leilão, passo a passo, a academia vê se vale a pena, escreve a promoção (ou usa a da ficha) e dá um lance máximo até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. O lance máximo é o teto, não o preço: quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que o lance máximo. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos (os mesmos da promoção na ficha), comprados antes no próprio Parceiros, com Pix ou cartão (pelo Mercado Pago)." }] : []),
+    { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "Nos planos Completo e Premium, em Promoções › Na ficha, a academia publica uma promoção por vez, por exemplo \"Primeira aula grátis\", e escolhe por quantas semanas ela vale (de 1 a 12). O título tem até 60 letras e os detalhes, até 500: dá para dizer o que é, para quem, quando e as condições. Antes de publicar, a tela mostra o preço por semana e o total, que sai dos créditos" + (leilao ? " (os mesmos do leilão)" : "") + "; no Premium, a semana sai mais barata. A promoção aparece na ficha e no resultado da busca, com a validade, e some sozinha quando vence. Mudar o texto não custa nada, e dá para somar semanas; encerrar antes devolve as semanas que ainda não começaram." + (leilao ? " No Premium, para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" (veja \"Como funciona o leilão das promoções por e-mail?\")." : "") + " A academia responde pelo que anuncia e combina as condições direto com o jogador." },
+    ...(leilao ? [{ id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e favoritou uma academia de lá ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. No plano Premium, em Promoções › Leilão, passo a passo, a academia vê se vale a pena, escreve a promoção (o título em até 60 letras e a mensagem em até 1.000, ou usa a da ficha) e dá um lance máximo até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. O lance máximo é o teto, não o preço: quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que o lance máximo. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos (os mesmos da promoção na ficha), comprados antes no próprio Parceiros, com Pix ou cartão (pelo Mercado Pago)." }] : []),
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
     { id: "desempenho", q: "O que aparece em Desempenho?", a: "Quantas pessoas abriram a ficha e quantas chamaram vocês. Conforme o plano, também o dia a dia, de onde vieram, o aparelho e os bairros de quem procurou. São contagens: ninguém é identificado. No começo de cada mês, chega por e-mail o resumo do mês anterior (acessos e avaliações; no Premium, também quem chamou e de onde vieram)." },
     { q: "Como mudo de plano?", a: "Em Plano, o responsável principal escolhe o plano e ele muda na hora, sem mexer na ficha. Por enquanto, todos os planos são grátis. Quem administra a academia recebe um e-mail com o que muda." },
@@ -11803,10 +11808,10 @@ function passoDoLeilao(c, L) {
       ${daFicha.length ? `
       <p class="field-label" style="margin-top:12px">Usar a promoção da ficha</p>
       <div class="chip-row pc-email-da-ficha">${daFicha.map(x => `<button type="button" class="chip small" data-promo-email="${x.id}">${icon('tag', 13, 'currentColor')} ${esc(x.titulo)}</button>`).join("")}</div>` : ""}
-      <label class="field-label" for="pc-email-titulo">Título da promoção <span class="pc-ads-cont" data-cont="titulo">${String(f.titulo || "").length}/60</span></label>
-      <input class="form-field pc-email-campo" data-campo="titulo" id="pc-email-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
-      <label class="field-label" for="pc-email-mensagem">Mensagem <span class="pc-ads-cont" data-cont="mensagem">${String(f.mensagem || "").length}/500</span></label>
-      <textarea class="form-field pc-email-campo" data-campo="mensagem" id="pc-email-mensagem" maxlength="500" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." style="margin-top:0">${esc(f.mensagem)}</textarea>
+      <label class="field-label" for="pc-email-titulo">Título da promoção <span class="pc-ads-cont" data-cont="titulo">${String(f.titulo || "").length}/${PROMO_TITULO_MAX}</span></label>
+      <input class="form-field pc-email-campo" data-campo="titulo" id="pc-email-titulo" maxlength="${PROMO_TITULO_MAX}" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
+      <label class="field-label" for="pc-email-mensagem">Mensagem <span class="pc-ads-cont" data-cont="mensagem">${String(f.mensagem || "").length}/${LANCE_MENSAGEM_MAX}</span></label>
+      <textarea class="form-field pc-email-campo" data-campo="mensagem" id="pc-email-mensagem" maxlength="${LANCE_MENSAGEM_MAX}" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até as 17h. Chame no WhatsApp para marcar." style="margin-top:0">${esc(f.mensagem)}</textarea>
       <p class="footnote" style="margin-top:6px">Com 40 caracteres ou mais, a mensagem soma no índice de qualidade.</p>
       ${previaDoEmail(c, f, bairro)}
       ${botoesDoPasso(true, continuar)}`;
@@ -11938,6 +11943,16 @@ function atualizarPreviaDoEmail(f) {
   const el = document.getElementById("pc-email-previa");
   if (c && el) el.outerHTML = previaDoEmail(c, f);
 }
+// O tamanho dos textos das promoções (pedido do Breno em 29/10/2026, regra
+// 176: "deixe um limite de caracteres que são o suficiente para poder
+// explicar sobre as promoções no leilão e na ficha"), como a oferta do
+// Perfil da Empresa no Google (título até 58, detalhes até 1.500): o título
+// curto, que cabe inteiro no celular e no assunto do e-mail; os detalhes da
+// ficha dizem o que é, para quem, quando e as condições; o e-mail do leilão
+// tem mais espaço. O banco confere o mesmo (SQL 20261029120000).
+const PROMO_TITULO_MAX = 60;
+const PROMO_DETALHES_MAX = 500;
+const LANCE_MENSAGEM_MAX = 1000;
 // A promoção como aparece na ficha e na busca (o mesmo quadro de htPromocoes).
 function previaDaPromocao(f) {
   const titulo = String(f.titulo || "").trim(), detalhes = String(f.detalhes || "").trim();
@@ -12008,7 +12023,7 @@ function promocaoDaFichaNoEmail(id) {
   const validade = `Válida até ${diaPorExtenso(x.valida_ate)}.`;
   let detalhes = String(x.detalhes || "").trim();
   if (detalhes && !/[.!?…]$/.test(detalhes)) detalhes += ".";
-  state.pcEmailForm = { ...(state.pcEmailForm || {}), titulo: x.titulo, mensagem: [detalhes, validade].filter(Boolean).join(" ").slice(0, 500) };
+  state.pcEmailForm = { ...(state.pcEmailForm || {}), titulo: x.titulo, mensagem: [detalhes, validade].filter(Boolean).join(" ").slice(0, LANCE_MENSAGEM_MAX) };
   state.pcEmailMsg = null; state.pcLeilaoPasso = 2;
   if ((state.pcLeilao || {}).lance) state.pcEmailEditando = true;
 }
@@ -12025,7 +12040,7 @@ async function enviarPromocaoPorEmail() {
   state.pcEmailEnviando = false;
   if (r.error) {
     const m = String(r.error.message || "");
-    state.pcEmailMsg = { tipo: "erro", texto: /créditos|lance|Completo|60 letras|500 letras|no ar|bairro|fechou|não administra/.test(m) ? m : falhou("dar o lance", r.error, { texto: "Não consegui salvar o lance agora. Tente de novo daqui a pouco.", academia: c.id }) };
+    state.pcEmailMsg = { tipo: "erro", texto: /créditos|lance|Completo| letras|no ar|bairro|fechou|não administra/.test(m) ? m : falhou("dar o lance", r.error, { texto: "Não consegui salvar o lance agora. Tente de novo daqui a pouco.", academia: c.id }) };
     render();
     return;
   }
@@ -12160,10 +12175,10 @@ function pcPromocoes() {
         </div>` : editando || !valendo.length ? `
         <div class="pc-card pc-promo-form">
           <p class="pc-card-t">${editando ? "Alterar a promoção" : "Nova promoção na ficha"}</p>
-          <label class="field-label" for="pc-promo-titulo">Promoção</label>
-          <input class="form-field pc-promo-campo" data-campo="titulo" id="pc-promo-titulo" maxlength="60" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
-          <label class="field-label" for="pc-promo-detalhes">Detalhes (opcional)</label>
-          <textarea class="form-field pc-promo-campo" data-campo="detalhes" id="pc-promo-detalhes" maxlength="280" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até 17h." style="margin-top:0">${esc(f.detalhes)}</textarea>
+          <label class="field-label" for="pc-promo-titulo">Promoção <span class="pc-ads-cont" data-cont-promo="titulo">${String(f.titulo || "").length}/${PROMO_TITULO_MAX}</span></label>
+          <input class="form-field pc-promo-campo" data-campo="titulo" id="pc-promo-titulo" maxlength="${PROMO_TITULO_MAX}" placeholder="Ex.: Primeira aula grátis" value="${esc(f.titulo)}" style="margin-top:0" />
+          <label class="field-label" for="pc-promo-detalhes">Detalhes (opcional) <span class="pc-ads-cont" data-cont-promo="detalhes">${String(f.detalhes || "").length}/${PROMO_DETALHES_MAX}</span></label>
+          <textarea class="form-field pc-promo-campo" data-campo="detalhes" id="pc-promo-detalhes" maxlength="${PROMO_DETALHES_MAX}" rows="4" placeholder="Ex.: Para quem nunca fez aula aqui, de segunda a sexta até 17h. Vale para aula individual ou em dupla, com a raquete emprestada." style="margin-top:0">${esc(f.detalhes)}</textarea>
           <p class="field-label" id="pc-promo-semanas-t">${editando ? `Vale até ${esc(diaPorExtenso(editando.valida_ate))}. Somar semanas?` : "Por quanto tempo"}</p>
           <div class="chip-row pc-promo-semanas" role="radiogroup" aria-labelledby="pc-promo-semanas-t">${chips}</div>
           <p class="footnote" style="margin-top:8px">${editando && !f.semanas ? "Mudar o texto não custa nada." : `Vale até ${esc(diaPorExtenso(ate))}.`}</p>
@@ -12218,7 +12233,7 @@ async function salvarPromocao() {
     const m = String(r.error.message || "");
     // O banco de teste pode ter o texto de antes ("Mude ou encerre…").
     if (/promoção valendo/.test(m)) { state.pcPromoMsg = { tipo: "erro", texto: "A academia já tem uma promoção valendo. Altere ou encerre a de agora para publicar outra." }; render(); return; }
-    state.pcPromoMsg = { tipo: "erro", texto: /créditos|semanas|Completo|Premium|60 letras|280 letras|em análise|não administra/.test(m) ? m : falhou("salvar a promoção", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes.", academia: c.id }) };
+    state.pcPromoMsg = { tipo: "erro", texto: /créditos|semanas|Completo|Premium| letras|em análise|não administra/.test(m) ? m : falhou("salvar a promoção", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes.", academia: c.id }) };
     render();
     return;
   }
@@ -13639,6 +13654,8 @@ function ligarEventosParceiros() {
     el.oninput = () => {
       const ed = state.pcPromoEditando && (state.pcPromocoes || []).find(x => x.id === state.pcPromoEditando);
       state.pcPromoForm = { ...formDaPromocao(ed), [el.dataset.campo]: el.value };
+      const cont = document.querySelector(`[data-cont-promo="${el.dataset.campo}"]`);
+      if (cont) cont.textContent = `${el.value.length}/${el.maxLength}`;
     };
   });
   // As semanas da promoção: o preço e a validade mudam junto.

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 175)
+**Atualizado em:** 29/10/2026 (regra 176)
 
 | | |
 |---|---|
@@ -152,7 +152,9 @@ Produto (o que já foi decidido)
   números da ficha, selo dourado, até 2 "Patrocinado" no topo da busca a
   até 10 km e de novo no lugar delas sem a marcação, primeiro nas
   recomendadas, leilão de promoções por e-mail, a semana da promoção 20%
-  menos). O plano aparece num lugar só (página Plano); fora dela,
+  menos). Textos das promoções (`PROMO_*_MAX`, `LANCE_MENSAGEM_MAX`): título
+  até 60 letras; detalhes da ficha até 500; mensagem do e-mail do leilão até
+  1.000, com contador. O plano aparece num lugar só (página Plano); fora dela,
   "Disponível no plano …". Posição paga sempre escrita "Patrocinado"
   (CDC, art. 36). "Melhores avaliadas" seguem só a nota.
 - **Quem administra a academia:** academia nova de conta com e-mail
@@ -224,7 +226,7 @@ Produto (o que já foi decidido)
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261028120000_avaliacao_editada` (74 arquivos na pasta; 71 deles entraram neste PR).
+- **Último SQL:** `20261029120000_textos_das_promocoes` (75 arquivos na pasta; 72 deles entraram neste PR).
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -265,11 +267,11 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (29/10/2026): **2.146 verificações** nos
+  segundo plano). Último resultado (29/10/2026): **2.148 verificações** nos
   73 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**679 conferências**,
+- **Banco local** para o `testes/banco-emails.py` (**685 conferências**,
   nenhuma falha): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
@@ -331,16 +333,16 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (29/10/2026)
 
-O PR #5 tem tudo até a **regra 175** (valor do catálogo em intervalo, com
-o exemplo só dentro do campo). De 28 a 29/10 entraram, sem SQL novo (o
-item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro do
+O PR #5 tem tudo até a **regra 176** (textos das promoções maiores, com
+contador; SQL `20261029120000_textos_das_promocoes`). De 28 a 29/10 entraram
+(o item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro do
 `catalogo`; a aula sem valor vai com `cobranca: ""`; o intervalo vai no
-`preco` como "150-200"): o catálogo com aulas para adultos e para crianças;
+`preco` como "150-200"): os limites dos textos das promoções; o catálogo com aulas para adultos e para crianças;
 a parte "Modalidades", pelo menos uma obrigatória; o valor em intervalo;
 "Alterações salvas" num cartão; "Pedir análise" em vermelho; o "Ver no
 mapa" no mapa do GuiaTennis e o "Como chegar" pelo próprio celular. A
 descrição do PR tem uma linha por regra em "Pedidos depois de 28/10".
-Testes: 2.146 no navegador e 679 no banco, nenhuma falha.
+Testes: 2.148 no navegador e 685 no banco, nenhuma falha.
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26 a 29/10 (veracidade, ficha no
    jeito do hoteis.com, catálogo com Modalidades, Aulas, Locação e valor em
@@ -365,7 +367,7 @@ Testes: 2.146 no navegador e 679 no banco, nenhuma falha.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 176.
+**Próximo número:** regra 177.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -427,6 +429,12 @@ Testes: 2.146 no navegador e 679 no banco, nenhuma falha.
   grava "150-200", o menor primeiro; Avulsa e Mensal numa linha cada; o
   chat do Parceiros responde "intervalo de preço". Testes: `catalogo.js`,
   `chat-parceiros.js`.
+- 176 (29/10) Textos das promoções com espaço para explicar, como a oferta
+  do Perfil da Empresa no Google: título até 60; detalhes da ficha de 280
+  para 500; mensagem do e-mail do leilão de 500 para 1.000; contador nos
+  campos da ficha; na ficha, o ícone da promoção no alto (some no celular).
+  SQL `20261029120000_textos_das_promocoes`. Testes: `promocoes.js`,
+  `promocoes-por-email.js`, `banco-emails.py`.
 
 ## 11. WhatsApp e mensagem para as academias
 

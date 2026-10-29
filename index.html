@@ -20421,6 +20421,7 @@ function passoVisivelDe(f, k, paraTras) {
 function regPedeTudo(f) {
   return !isAdmin && !f.__editingId;
 }
+const FALTA_MODALIDADE = "pelo menos uma modalidade (Aulas ou Locação de quadra)";
 function regFaltas(f, passo) {
   const falta = [];
   const tem = v => !!String(v || "").trim();
@@ -20432,8 +20433,11 @@ function regFaltas(f, passo) {
   // edição (pedido do Breno em 21/10/2026: "deixe obrigatório explicar o
   // porquê de dois tipos de estacionamento"). O admin segue só com o nome.
   if (passo === "quadras" && !isAdmin && estacionamentoSemPorque(f)) falta.push("como funciona o estacionamento grátis e pago");
+  // Pelo menos uma modalidade, também na edição (pedido do Breno em
+  // 29/10/2026, regra 171: "obrigatório selecionar entre aula ou locação,
+  // pelo menos um"). O admin segue só com o nome.
+  if (passo === "modalidades" && !isAdmin && !(f.modalidades || []).length) falta.push(FALTA_MODALIDADE);
   if (!regPedeTudo(f)) return falta;
-  if (passo === "modalidades" && !(f.modalidades || []).length) falta.push("modalidade");
   if (passo === "quadras" && !QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0)) falta.push("quantidade de quadras");
   if (passo === "contato" && !tem(f.phone)) falta.push("WhatsApp");
   if (passo === "revisar" && !f.consent && !contaAcademia) falta.push("aceite dos Termos de Uso e da Política de Privacidade");
@@ -20912,7 +20916,7 @@ function regPassoHtml(id, f, obrigatorio) {
         ${regPontoHtml(f)}`;
 
   if (id === "modalidades") return `
-        <p class="field-label" style="margin-top:0">Modalidades${obrigatorio}</p>
+        <p class="field-label" style="margin-top:0">Modalidades${isAdmin ? "" : " *"}</p>
         <div class="reg-mods" role="group" aria-label="Modalidades">
           ${[
             { key: "aulas_proprias", t: "Aulas", d: "Com professor da academia, para adultos e crianças" },
@@ -21270,7 +21274,7 @@ function renderRegisterSheet() {
 
         <h2 class="sheet-title display reg-titulo">${passo.titulo}</h2>
         <p class="subtitle reg-porque">${passo.porque}</p>
-        ${passo.id === "dados" || (obrigatorio && ["modalidades", "quadras", "contato"].includes(passo.id)) ? `<p class="reg-legenda">* Obrigatório</p>` : ""}
+        ${passo.id === "dados" || (passo.id === "modalidades" && !isAdmin) || (obrigatorio && ["quadras", "contato"].includes(passo.id)) ? `<p class="reg-legenda">* Obrigatório</p>` : ""}
 
         <div class="reg-passo" data-passo="${passo.id}">
           ${regPassoHtml(passo.id, f, obrigatorio)}
@@ -26574,7 +26578,7 @@ function enviarFormulario() {
   // Faltando o obrigatório, o envio segue e cobra o que falta, como antes;
   // a tela do plano vem quando o cadastro está pronto para sair.
   const faltaObrigatorio = (regPedeTudo(f) && REG_PASSOS.some(x => regFaltas(f, x.id).length))
-    || (!!f.__editingId && regFaltas(f, "quadras").length > 0);
+    || (!!f.__editingId && (regFaltas(f, "quadras").length > 0 || regFaltas(f, "modalidades").length > 0));
   if (precisaEscolherPlano(f) && !f.__planoEscolhido && !faltaObrigatorio) {
     state.regPlanoTela = true;
     render();
@@ -26618,6 +26622,15 @@ async function doRegisterSubmit() {
       state.registerError = "O nome não pode ficar em branco.";
       state.registerStatus = "error";
       state.regPasso = 0;
+      state.regFaltaVisivel = true;
+      render();
+      return;
+    }
+    if (regFaltas(f, "modalidades").length) {
+      state.registerError = "Escolha pelo menos uma modalidade: Aulas ou Locação de quadra.";
+      state.registerStatus = "error";
+      state.regPassoErro = "";
+      state.regPasso = REG_PASSOS.findIndex(x => x.id === "modalidades");
       state.regFaltaVisivel = true;
       render();
       return;

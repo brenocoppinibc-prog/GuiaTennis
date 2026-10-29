@@ -109,4 +109,29 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   n = await page.evaluate(() => document.querySelectorAll('.pol-modo').length);
   ok(n === 2, 'cadastro novo, aula e locação: com escolha');
   await browser.close();
+
+  // Pelo menos uma modalidade, também na edição (regra 171: "obrigatório
+  // selecionar entre aula ou locação, pelo menos um").
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha' }));
+  await page.waitForTimeout(400);
+  await page.click('.editar-academia');
+  await page.waitForTimeout(400);
+  await irParte(page, 'modalidades');
+  await page.click('[data-reg-mod="aulas_proprias"]');
+  const semNada = await page.evaluate(() => ({ rotulo: document.querySelector('.reg-passo .field-label')?.innerText, legenda: !!document.querySelector('.reg-legenda'), botao: document.getElementById('reg-continuar')?.innerText }));
+  ok(/^modalidades \*$/i.test(semNada.rotulo) && semNada.legenda && semNada.botao === 'Continuar', 'na edição, "Modalidades" também é obrigatória, com o * — ' + JSON.stringify(semNada));
+  await page.click('#reg-continuar');
+  await page.waitForTimeout(200);
+  const travou = await page.evaluate(() => ({ passo: regPassoAtual().passo.id, erro: document.querySelector('.form-error')?.innerText || '' }));
+  ok(travou.passo === 'modalidades' && travou.erro.includes('pelo menos uma modalidade (Aulas ou Locação de quadra)'), 'sem nenhuma, "Continuar" não passa e diz o que falta — ' + travou.erro);
+  await irParte(page, 'revisar');
+  await salvarFicha(page);
+  await page.waitForTimeout(500);
+  const naoSalvou = await page.evaluate(() => ({ passo: regPassoAtual().passo.id, erro: [...document.querySelectorAll('.form-error')].map(x => x.innerText).join(' | '), salvou: !!window.__ultimoUpdate }));
+  ok(naoSalvou.passo === 'modalidades' && naoSalvou.erro.includes('Escolha pelo menos uma modalidade') && !naoSalvou.salvou, 'e salvar também não passa: volta para as Modalidades — ' + naoSalvou.erro);
+  await page.click('[data-reg-mod="locacao"]');
+  await page.click('#reg-continuar');
+  await page.waitForTimeout(200);
+  ok(await page.evaluate(() => regPassoAtual().passo.id === 'locacao'), 'com a locação marcada, segue para a parte Locação');
+  await browser.close();
 })();

@@ -94,8 +94,12 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
     'a prévia do e-mail do GuiaTennis do bairro muda enquanto se digita, com "Patrocinado" — ' + previa.slice(0, 90));
   await seguir();
   corpo = await texto(page, '#pc-leilao-passo');
-  ok(await passo() === '3' && /^Etapa 4 de 5 · Lance\s+Lance máximo/.test(corpo) && corpo.includes('Lance máximo (R$)') && corpo.includes('É o teto, não o preço. Você nunca paga mais que o lance máximo.') && corpo.includes('se ninguém mais der lance, paga o mínimo, R$ 10') && corpo.includes('Se não ganhar, nada é cobrado.'),
+  ok(await passo() === '3' && /^Etapa 4 de 5 · Lance\s+Lance máximo/.test(corpo) && corpo.includes('Lance máximo (R$)') && corpo.includes('É o teto, não o preço. Você nunca paga mais que o lance máximo.') && corpo.includes('Se ninguém mais der lance, paga o mínimo, R$ 10.') && corpo.includes('Se não ganhar, nada é cobrado.'),
     'quarta etapa: o lance máximo explicado como teto, não preço (22/10/2026: "especifique melhor isso")');
+  // Um parágrafo para cada regra, sem o recado dos créditos (regra 179).
+  const paragrafos = await page.evaluate(() => [...document.querySelectorAll('.pc-lance-explica p:not(.pc-lance-exemplo)')].map(p => p.innerText.trim()));
+  ok(paragrafos.join(' | ') === 'É o teto, não o preço. Você nunca paga mais que o lance máximo. | Se ganhar, paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1. | Se ninguém mais der lance, paga o mínimo, R$ 10. | Se não ganhar, nada é cobrado.', 'o lance explicado em parágrafos — ' + paragrafos.join(' | '));
+  ok(!corpo.includes('Os créditos garantem o lance') && !(await page.isVisible('#pc-lance-saldo')), 'sem "Os créditos garantem o lance"');
   await page.fill('#pc-email-valor', '85');
   await page.waitForTimeout(100);
   ok((await texto(page, '#pc-lance-exemplo')) === 'Exemplo: você oferece até R$ 85 e a academia seguinte oferece R$ 51. Se as duas fichas tiverem a mesma qualidade, você ganha e paga R$ 52, não os R$ 85.', 'o exemplo acompanha o valor digitado — ' + await texto(page, '#pc-lance-exemplo'));

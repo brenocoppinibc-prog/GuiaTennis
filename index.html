@@ -144,6 +144,8 @@
   .pc-leilao-check strong { color: var(--text); }
   .pc-lance-explica { margin: 12px 0 4px; padding: 12px 14px; border-radius: 12px; background: var(--bg-alt); font-size: 14px; line-height: 1.5; color: var(--text); }
   .pc-lance-explica p { margin: 0; }
+  /* Um parágrafo para cada regra do lance (pedido de 29/10/2026, regra 179). */
+  .pc-lance-explica p + p { margin-top: 8px; }
   .pc-lance-exemplo { margin-top: 8px !important; color: var(--muted); }
   .pc-leilao-ganhou { border-color: var(--green-line); background: var(--green-soft); }
   .pc-leilao-linha { list-style: none; margin: 14px 0 0; padding: 0; }
@@ -11817,13 +11819,16 @@ function passoDoLeilao(c, L) {
       <label class="field-label" for="pc-email-valor">Lance máximo (R$)</label>
       <div class="pc-ads-moeda"><span>R$</span><input class="form-field pc-email-campo" data-campo="valor" id="pc-email-valor" type="number" inputmode="numeric" min="${minimo}" step="1" placeholder="Mínimo: ${minimo}" value="${esc(f.valor)}" /></div>
       <div class="pc-lance-explica">
-        <p><strong>É o teto, não o preço.</strong> Você nunca paga mais que o lance máximo. Se ganhar, paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1; se ninguém mais der lance, paga o mínimo, ${emReais(minimo)}. Se não ganhar, nada é cobrado.</p>
+        <p><strong>É o teto, não o preço.</strong> Você nunca paga mais que o lance máximo.</p>
+        <p>Se ganhar, paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1.</p>
+        <p>Se ninguém mais der lance, paga o mínimo, ${emReais(minimo)}.</p>
+        <p>Se não ganhar, nada é cobrado.</p>
         <p class="pc-lance-exemplo" id="pc-lance-exemplo">${esc(exemploDoLance(valor, L))}</p>
       </div>
       <ul class="pc-leilao-dados">
         <li><span>Créditos disponíveis</span><strong>${saldo ? emReais(saldo) : "R$ 0"} · <button type="button" class="inline-link" data-comprar-creditos>Comprar</button></strong></li>
       </ul>
-      <p class="footnote" id="pc-lance-saldo" style="margin-top:6px">${falta ? `Para dar esse lance, a academia precisa ter ${emReais(valor)} em créditos. Compre créditos ou dê um lance menor.` : "Os créditos garantem o lance: só saem se você ganhar."}</p>
+      <p class="footnote" id="pc-lance-saldo" style="margin-top:6px"${falta ? "" : " hidden"}>${falta ? `Para dar esse lance, a academia precisa ter ${emReais(valor)} em créditos. Compre créditos ou dê um lance menor.` : ""}</p>
       ${botoesDoPasso(true, continuar)}`;
   } else {
     const bloqueio = valor > saldo ? (saldo ? `A academia tem ${emReais(saldo)} em créditos. Compre créditos ou dê um lance menor.` : "Sem créditos, o lance não entra. Compre créditos para entrar no leilão.") : "";
@@ -12002,7 +12007,8 @@ function irNoLeilao(k) {
   render();
   document.querySelector("#parceiros .pc-promo-partes")?.scrollIntoView({ block: "start", behavior: "smooth" });
 }
-// Enquanto se digita o lance, o exemplo e o recado dos créditos acompanham.
+// Enquanto se digita o lance, o exemplo e o recado dos créditos acompanham
+// (o recado só aparece quando faltam créditos, pedido de 29/10/2026).
 function atualizarExemploDoLance(f) {
   const c = minhaAcademia(), L = state.pcLeilao;
   if (!c || !L) return;
@@ -12010,7 +12016,10 @@ function atualizarExemploDoLance(f) {
   const ex = document.getElementById("pc-lance-exemplo");
   if (ex) ex.textContent = exemploDoLance(valor, L);
   const saldo = document.getElementById("pc-lance-saldo");
-  if (saldo) saldo.textContent = valor > saldoDeEnvios() ? `Para dar esse lance, a academia precisa ter ${emReais(valor)} em créditos. Compre créditos ou dê um lance menor.` : "Os créditos garantem o lance: só saem se você ganhar.";
+  if (saldo) {
+    saldo.textContent = valor > saldoDeEnvios() ? `Para dar esse lance, a academia precisa ter ${emReais(valor)} em créditos. Compre créditos ou dê um lance menor.` : "";
+    saldo.hidden = !saldo.textContent;
+  }
 }
 // "Usar a promoção da ficha" (e "Mandar por e-mail" na promoção da ficha):
 // o texto vem pronto, com a validade.

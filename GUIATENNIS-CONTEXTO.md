@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 178)
+**Atualizado em:** 29/10/2026 (regra 179)
 
 | | |
 |---|---|
@@ -267,7 +267,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (29/10/2026): **2.148 verificações** nos
+  segundo plano). Último resultado (29/10/2026): **2.150 verificações** nos
   73 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -333,8 +333,9 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (29/10/2026)
 
-O PR #5 tem tudo até a **regra 178** (textos das promoções curtos: título
-30, detalhes 150, e-mail 300, com contador; SQL
+O PR #5 tem tudo até a **regra 179** (o lance explicado em parágrafos, sem
+"Os créditos garantem o lance"; antes, os textos das promoções curtos:
+título 30, detalhes 150, e-mail 300, SQL
 `20261029170000_textos_curtos_das_promocoes`). De 28 a 29/10 entraram
 (o item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro do
 `catalogo`; a aula sem valor vai com `cobranca: ""`; o intervalo vai no
@@ -343,7 +344,7 @@ a parte "Modalidades", pelo menos uma obrigatória; o valor em intervalo;
 "Alterações salvas" num cartão; "Pedir análise" em vermelho; o "Ver no
 mapa" no mapa do GuiaTennis e o "Como chegar" pelo próprio celular. A
 descrição do PR tem uma linha por regra em "Pedidos depois de 28/10".
-Testes: 2.148 no navegador e 687 no banco, nenhuma falha.
+Testes: 2.150 no navegador e 687 no banco, nenhuma falha.
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26 a 29/10 (veracidade, ficha no
    jeito do hoteis.com, catálogo com Modalidades, Aulas, Locação e valor em
@@ -368,7 +369,7 @@ Testes: 2.148 no navegador e 687 no banco, nenhuma falha.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 179.
+**Próximo número:** regra 180.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -440,6 +441,10 @@ Testes: 2.148 no navegador e 687 no banco, nenhuma falha.
 - 178 (29/10) "Títulos também está muito grande": título da promoção (ficha
   e leilão) de 60 para 30 letras, como o do Google Ads. SQL
   `20261029170000_textos_curtos_das_promocoes` (com a 177).
+- 179 (29/10) Leilão, etapa do lance: a explicação em um parágrafo por
+  regra (teto; se ganhar; se ninguém mais der lance; se não ganhar); sai "Os
+  créditos garantem o lance: só saem se você ganhar." (o recado dos créditos
+  só aparece quando faltam). Sem SQL. Teste: `promocoes-por-email.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

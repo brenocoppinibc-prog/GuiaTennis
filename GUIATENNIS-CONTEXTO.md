@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 28/10/2026 (regra 169)
+**Atualizado em:** 29/10/2026 (regra 170)
 
 | | |
 |---|---|
@@ -172,16 +172,20 @@ Produto (o que já foi decidido)
   Contato, Avaliações, Outras academias por perto, Horário, Cancelamento,
   Perguntas, e no fim "Confirmada pela academia", "É o responsável?" e
   "Algo errado nesta ficha?"). Fotos só na capa e nos cartões das opções.
-  **Catálogo** só com modalidade e valor. No cadastro, duas partes em
-  caminho: **Aulas** (para quem: adultos e/ou crianças, as crianças em
-  faixas de idade de 3 a 17 anos, uma para cada turma > formatos individual,
-  dupla, grupo > um cartão por formato com a avulsa, a mensal e a foto; em
-  branco não é oferecida, sem valor nenhum = "Sob consulta" sem cobrança) e
-  **Locação** (quadrado "A academia não oferece locação de quadra"; sem ele,
-  avulsa e/ou mensal, cada uma com o valor e a foto; academia nova começa
-  oferecendo). As modalidades saem das duas partes. Foto no Premium. Na
-  ficha, as aulas das crianças são "Aula infantil …", com a idade, e têm o
-  filtro "Crianças". Corte das fotos como o "Cortar" do Instagram.
+  **Catálogo** só com modalidade e valor. No cadastro, a parte
+  **Modalidades** (Aulas e/ou Locação de quadra; obrigatória para quem pede
+  pelo site) abre as partes de cada uma, que só aparecem se escolhidas
+  (`passoVisivel`; os índices continuam os de `REG_PASSOS`): **Aulas** (para
+  quem: adultos e/ou crianças, as crianças em faixas de idade de 3 a 17
+  anos, uma para cada turma > formatos individual, dupla, grupo > um cartão
+  por formato com a avulsa, a mensal e a foto; em branco não é oferecida,
+  sem valor nenhum = "Sob consulta" sem cobrança) e **Locação** (avulsa e/ou
+  mensal, cada uma com o valor e a foto). Foto no Premium. Na ficha, as
+  aulas das crianças são "Aula infantil …", com a idade, e têm o filtro
+  "Crianças". Corte das fotos como o "Cortar" do Instagram.
+- **"Ver no mapa"** da ficha abre o mapa da busca do GuiaTennis já na
+  academia (`verNoMapaDoGuia`); o "Como chegar" (Google Maps e Waze) fica
+  no cartão do mapa e na localização da ficha.
 - **Busca** "bairro, cidade" fica na cidade digitada. Telas de código com
   uma caixa por número e "Confirmar" só com todas preenchidas.
 
@@ -255,8 +259,8 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (28/10/2026): **2.117 verificações** nos
-  72 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
+  segundo plano). Último resultado (29/10/2026): **2.126 verificações** nos
+  73 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
 - **Banco local** para o `testes/banco-emails.py` (**679 conferências**,
@@ -321,11 +325,12 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (28/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 169** (o
-catálogo em caminho: Aulas e Locação em partes separadas; sem SQL novo: o
-item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro do
-`catalogo`, e a aula sem valor vai com `cobranca: ""`). A descrição do PR foi
-encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.117
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 170** (as
+Modalidades antes das partes Aulas e Locação, e o "Ver no mapa" no mapa do
+GuiaTennis; sem SQL novo desde a 167: o item da aula das crianças leva
+`publico`, `idadeDe` e `idadeAte` dentro do `catalogo`, e a aula sem valor
+vai com `cobranca: ""`). A descrição do PR foi
+encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.126
 no navegador e 679 no banco, nenhuma falha.
 
 **Pendências do Breno:**
@@ -351,7 +356,7 @@ no navegador e 679 no banco, nenhuma falha.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 170.
+**Próximo número:** regra 171.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -391,6 +396,10 @@ no navegador e 679 no banco, nenhuma falha.
   cartão sobre o painel, com um X só e o agradecimento; "Pedir análise" em
   vermelho. Sem SQL. Testes: `catalogo.js`, `cadastro.js` e as listas de
   partes.
+- 170 (29/10) Parte "Modalidades" antes das Aulas e da Locação, que só
+  aparecem se escolhidas (sai o quadrado "não oferece locação"); "Ver no
+  mapa" abre o mapa do GuiaTennis na academia, com "Como chegar" no cartão.
+  Sem SQL. Teste novo: `ver-no-mapa.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

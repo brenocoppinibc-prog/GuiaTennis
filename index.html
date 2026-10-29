@@ -799,9 +799,14 @@
   .cat-rs { font-size: 13px; color: var(--muted); }
   .form-field.cat-valor { width: 100%; min-width: 0; margin: 0; padding: 10px; text-align: right; font-size: 16px; }
   .cat-caixa { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--muted-dark); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cat-nao-oferece { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); font: 600 15px var(--fonte-texto); color: var(--text); text-align: left; cursor: pointer; }
-  .cat-nao-oferece.on { border-color: var(--green); }
-  .cat-nao-oferece.on .cat-caixa { background: var(--green); border-color: var(--green); }
+  /* A parte "Modalidades" (regra 170): uma caixa grande para cada uma. */
+  .reg-mods { display: flex; flex-direction: column; gap: 10px; }
+  .reg-mod { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); text-align: left; cursor: pointer; font-family: var(--fonte-texto); color: var(--text); }
+  .reg-mod.on { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .reg-mod.on .cat-caixa { background: var(--green); border-color: var(--green); }
+  .reg-mod-txt { display: flex; flex-direction: column; gap: 2px; }
+  .reg-mod-t { font-weight: 700; font-size: 16px; }
+  .reg-mod-d { font-size: 13px; color: var(--muted); }
   .cat-idade { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 4px; font-size: 14px; }
   .cat-idade-n { font-weight: 600; margin-right: 2px; }
   .form-field.cat-idade-sel { width: auto; min-width: 76px; margin: 0; padding: 10px; font-size: 16px; }
@@ -1004,6 +1009,9 @@
   .map-card-name { font-family: var(--fonte-texto); font-size: 16px; font-weight: 700; margin: 0; line-height: 1.15; }
   .map-card-meta { font-size: 12px; color: var(--muted); margin: 2px 0 4px; }
   .map-card-price { font-size: 17px; font-weight: 700; color: var(--green); line-height: 1.1; white-space: nowrap; }
+  /* O "Como chegar" no cartão do mapa (regra 170), embaixo, de ponta a ponta. */
+  .map-card { flex-wrap: wrap; }
+  .map-como-chegar { flex: 1 0 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); font: 600 14px var(--fonte-texto); color: var(--green); cursor: pointer; }
   .map-close { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 14px; color: var(--muted); cursor: pointer; padding: 2px 4px; line-height: 1; }
   .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 28px; color: var(--muted); font-size: 14px; background: var(--bg-alt); z-index: 900; }
   .map-fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 45; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-family: var(--fonte-texto); font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 24px rgba(31,77,61,0.35); display: inline-flex; align-items: center; gap: 8px; }
@@ -2853,7 +2861,7 @@
   #ht-local .ht-poi-i { border-top: 0; padding: 7px 0; font-size: 16px; }
   #ht-local .ht-poi-d { font-size: 14px; color: var(--text); }
   #ht-local .ht-addr-line { margin-top: 18px; font-size: 15px; }
-  #ht-local .ht-atalhos { margin-top: 12px; }
+  #ht-local .ht-atalhos { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 4px 22px; }
   #ht-local .cidade-link { display: inline-flex; margin-top: 12px; font-size: 15px; font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
 
   /* "Escolha o que você quer": as caixas, a promoção, os filtros e os
@@ -6784,7 +6792,7 @@ function navLinks(c, opts) {
   const dark = opts && opts.dark;
   const cls = dark ? "cta-btn cta-secondary nav-link-dark" : "cta-btn cta-secondary";
   const cor = dark ? "#fff" : "var(--green)";
-  return `<button type="button" class="${cls}" data-nav="${c.id}" style="margin-top:8px">${icon('pin',15,cor)} Ver no mapa e direções</button>`;
+  return `<button type="button" class="${cls}" data-nav="${c.id}" style="margin-top:8px">${icon('pin',15,cor)} Ver no mapa</button>`;
 }
 
 // Tela do QR code da academia, só no modo admin. O código é gerado aqui no
@@ -8777,6 +8785,30 @@ function renderMapView(results) {
   `;
 }
 
+// "Ver no mapa" (pedido do Breno em 29/10/2026, regra 170: "o botão ver no
+// mapa deve direcionar para o mapa do GuiaTennis onde tem as quadras"): abre
+// o mapa da busca do GuiaTennis já na academia — o pino marcado, o cartão
+// dela embaixo e as outras academias em volta —, como o "Ver no mapa" do
+// hoteis.com e do Booking, que abre o mapa do próprio site com os outros
+// hotéis. O "Como chegar" (Google Maps e Waze) fica no cartão do mapa e na
+// ficha. Sem ponto no mapa, abre o "Como chegar".
+function verNoMapaDoGuia(id) {
+  const c = state.allCourts.find(x => x.id === id);
+  if (!c || typeof c.lat !== "number" || typeof c.lng !== "number" || c.status === "pending") { state.navCourt = id; render(); return; }
+  // A academia precisa aparecer: filtro ou página de cidade que a esconde sai.
+  if (!applyFilters([c]).length) { clearAllFilters(); state.cidadeDaPagina = null; }
+  state.page = "search";
+  state.view = "map";
+  state.selected = null;
+  state.showSort = false;
+  state.avisoLink = "";
+  state.mapSelected = id;
+  state.mapFoco = id;
+  syncUrl(true);
+  render();
+  window.scrollTo(0, 0);
+}
+
 function mapCardHtml(id) {
   if (!id) return "";
   const c = getResults().find(x => x.id === id);
@@ -8799,6 +8831,7 @@ function mapCardHtml(id) {
           : `<div class="rail-unit">preço a<br>consultar</div>`}
       </div>
       <button type="button" class="map-close" id="map-card-close" aria-label="Fechar">✕</button>
+      <button type="button" class="map-como-chegar" data-como-chegar="${c.id}">${icon('pin', 14, 'currentColor')} Como chegar</button>
     </div>
   `;
 }
@@ -8823,6 +8856,9 @@ function attachMapCardEvents() {
   if (!holder) return;
   const close = holder.querySelector("#map-card-close");
   if (close) close.onclick = (e) => { e.stopPropagation(); selectOnMap(null); };
+  holder.querySelectorAll("[data-como-chegar]").forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); state.navCourt = el.dataset.comoChegar; render(); };
+  });
   holder.querySelectorAll("[data-open]").forEach(el => {
     el.onclick = () => openCourt(el.dataset.open);
   });
@@ -8899,7 +8935,13 @@ function mountMap(results) {
   }
 
   const sig = comCoord.map(c => c.id).join(",") + "|" + (state.origin ? `${state.origin.lat},${state.origin.lng}` : "");
-  if (sig !== __mapSig || !state.mapCenter) {
+  // Vindo do "Ver no mapa" da ficha: o mapa abre na academia.
+  const foco = state.mapFoco && comCoord.find(c => c.id === state.mapFoco);
+  state.mapFoco = null;
+  if (foco) {
+    __mapSig = sig;
+    __map.setView([foco.lat, foco.lng], 15);
+  } else if (sig !== __mapSig || !state.mapCenter) {
     __mapSig = sig;
     const pts = comCoord.map(c => [c.lat, c.lng]);
     if (state.origin) pts.push([state.origin.lat, state.origin.lng]);
@@ -13720,7 +13762,7 @@ function ligarEventosParceiros() {
 
   const nova = document.getElementById("pc-nova");
   if (nova) nova.onclick = () => {
-    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:["locacao"], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
     state.showRegister = true;
     state.registerStatus = "idle";
     render();
@@ -18927,12 +18969,12 @@ function htLocalizacao(c) {
   return `
     <div class="ht-map-caixa">
       <div class="ht-map" id="court-mini-map">${temCoord ? "" : `<div class="ht-map-empty">Essa academia ainda não tem ponto no mapa. O endereço abaixo abre no Google Maps e no Waze.</div>`}</div>
-      <button type="button" class="ht-map-abrir" data-nav="${c.id}" aria-label="Ver no mapa e direções" title="Ver no mapa e direções">${icon('expandir', 20, 'var(--text)')}</button>
+      <button type="button" class="ht-map-abrir" data-nav="${c.id}" aria-label="Ver no mapa do GuiaTennis" title="Ver no mapa do GuiaTennis">${icon('expandir', 20, 'var(--text)')}</button>
     </div>
     ${htPerto(c)}
     ${htAcesso(c)}
     <p class="ht-addr-line">${icon('pin', 15, 'var(--green)')} <span>${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</span></p>
-    <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa e direções ${icon('chevron', 16, 'currentColor')}</button></p>
+    <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button> <button type="button" class="ht-link" data-como-chegar="${c.id}">Como chegar ${icon('chevron', 16, 'currentColor')}</button></p>
     ${linkDaRegiaoNaFicha(c)}`;
 }
 
@@ -19285,7 +19327,7 @@ function novaFaixa(g, de, ate) {
   return faixa;
 }
 function gradeDosItens(itens, modalidades) {
-  const g = { adulto: { on: false, formatos: [] }, crianca: { on: false, faixas: [] }, locacao: { nao: !modalidades.includes("locacao"), cobrancas: [] }, valores: {}, fotos: {}, antiga: false, proxima: 1 };
+  const g = { adulto: { on: false, formatos: [] }, crianca: { on: false, faixas: [] }, locacao: { cobrancas: [] }, valores: {}, fotos: {}, antiga: false, proxima: 1 };
   const cat = comFotoNaLinha(semRepetir(itens.map(itemDoCatalogo))).sort(ordemDoCatalogo);
   cat.forEach(i => {
     let base;
@@ -19309,8 +19351,6 @@ function gradeDosItens(itens, modalidades) {
     if (i.cobranca) g.valores[`${base}:${i.tipo}:${i.cobranca}`] = i.preco || "";
     if (i.foto && !g.fotos[`${base}:${i.tipo}`]) g.fotos[`${base}:${i.tipo}`] = i.foto;
   });
-  // A academia que dá aula, sem o catálogo ainda, fica com as aulas para adultos.
-  if (modalidades.includes("aulas_proprias") && !g.adulto.on && !g.crianca.on) g.adulto.on = true;
   return g;
 }
 // Os cartões de cada bloco: os formatos escolhidos, na ordem (a "Aula" do
@@ -19333,19 +19373,19 @@ function itensDaGrade(g) {
   });
   if (g.adulto.on) aula("adulto", {});
   if (g.crianca.on) g.crianca.faixas.forEach(x => aula(x.id, { publico: "crianca", idadeDe: x.de, idadeAte: x.ate }));
-  if (!g.locacao.nao) CATALOGO_COBRANCAS.filter(k => g.locacao.cobrancas.includes(k.key)).forEach(k => out.push(itemDoCatalogo({
+  CATALOGO_COBRANCAS.filter(k => g.locacao.cobrancas.includes(k.key)).forEach(k => out.push(itemDoCatalogo({
     tipo: "locacao", cobranca: k.key, preco: g.valores["locacao:" + k.key] || "", foto: g.fotos["locacao:" + k.key],
   })));
   return fotoUmaVezPorLinha(semRepetir(out.filter(Boolean)).sort(ordemDoCatalogo)).slice(0, CATALOGO_MAX);
 }
-// Depois de cada mudança na grade, o catálogo e as modalidades do formulário
-// acompanham: dá aula quem escolheu adultos ou crianças; aluga quem não
-// marcou "não oferece".
+// Depois de cada mudança na grade, o catálogo do formulário acompanha. As
+// modalidades vêm da parte "Modalidades" (regra 170); o que for de uma
+// modalidade desmarcada fica guardado no formulário e não vai para o banco
+// (toRow), para voltar se ela for marcada de novo.
 function catalogoDaGrade(f) {
   const g = gradeDoCatalogo(f);
   f.catalogo = itensDaGrade(g);
   g.de = f.catalogo;
-  f.modalidades = [(g.adulto.on || g.crianca.on) && "aulas_proprias", !g.locacao.nao && "locacao"].filter(Boolean);
 }
 // Na ordem do catálogo: as aulas para adultos, as das crianças (da faixa
 // mais nova para a mais velha) e a locação; em cada uma, individual, dupla,
@@ -19523,7 +19563,7 @@ function htCartaoContato(c) {
       ${c.phone
         ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer" style="margin-top:12px">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
         : `<p class="ht-book-sub" style="margin-top:12px">O telefone não foi incluído.</p>`}
-      <button type="button" class="cta-btn cta-secondary" data-nav="${c.id}" style="margin-top:8px">${icon('pin', 15, 'var(--green)')} Ver no mapa e direções</button>
+      <button type="button" class="cta-btn cta-secondary" data-nav="${c.id}" style="margin-top:8px">${icon('pin', 15, 'var(--green)')} Ver no mapa</button>
       <p class="ht-book-note">Você fala direto com a academia.</p>
     </div>`;
 }
@@ -20287,7 +20327,6 @@ function editorDasAulas(f) {
   return `
     <p class="field-label" style="margin-top:0">Para quem são as aulas?</p>
     <div class="chip-row cat-publicos">${publico("adulto", "Adultos")}${publico("crianca", "Crianças")}</div>
-    ${!g.adulto.on && !g.crianca.on ? `<p class="footnote">Não dão aula? Siga para a locação.</p>` : ""}
     <div class="cat-tabela" id="cat-tabela">
       ${g.adulto.on ? `
         <section class="cat-bloco" data-cat-bloco="adulto">
@@ -20310,15 +20349,12 @@ function editorDasAulas(f) {
     </div>
     ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor do que oferecem: avulsa, mensal ou as duas. Sem valor nenhum, a aula mostra "Sob consulta". No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
 }
-// A parte "Locação": o quadrado "não oferece"; sem ele, a avulsa e a mensal,
-// cada uma com a foto e o valor.
+// A parte "Locação" (só para quem escolheu a locação nas Modalidades, regra
+// 170): a avulsa e a mensal, cada uma com a foto e o valor.
 function editorDaLocacao(f) {
   const g = gradeDoCatalogo(f);
-  const nao = g.locacao.nao;
   return `
-    <button type="button" class="cat-nao-oferece ${nao ? "on" : ""}" data-cat-sem-locacao aria-pressed="${nao}"><span class="cat-caixa">${nao ? icon('check', 13, '#fff') : ""}</span>A academia não oferece locação de quadra</button>
-    ${nao ? "" : `
-      <p class="field-label">Como a quadra é alugada?</p>
+      <p class="field-label" style="margin-top:0">Como a quadra é alugada?</p>
       <div class="chip-row cat-formatos" role="group" aria-label="Como a quadra é alugada">
         ${CATALOGO_COBRANCAS.map(k => {
           const on = g.locacao.cobrancas.includes(k.key);
@@ -20338,11 +20374,12 @@ function editorDaLocacao(f) {
           </div>`;
         }).join("")}
       </div>
-      ${g.locacao.cobrancas.length ? `<p class="footnote" style="margin-top:12px">Sem valor, aparece "Sob consulta". No Premium, cada uma mostra a própria foto.</p>` : ""}`}`;
+      ${g.locacao.cobrancas.length ? `<p class="footnote" style="margin-top:12px">Sem valor, aparece "Sob consulta". No Premium, cada uma mostra a própria foto.</p>` : ""}`;
 }
 
 const REG_PASSOS = [
   { id: "dados", t: "Nome e endereço", titulo: "Onde fica a academia?", porque: "É o que faz a academia aparecer para quem busca perto." },
+  { id: "modalidades", t: "Modalidades", titulo: "O que a academia oferece?", porque: "Escolha as modalidades. A parte de cada uma aparece em seguida." },
   { id: "precos", t: "Aulas", titulo: "Aulas", porque: "Para quem são, os formatos e, em cada um, a foto e os valores. Cada aula vira um cartão na ficha, com o WhatsApp." },
   { id: "locacao", t: "Locação", titulo: "Locação de quadra", porque: "Avulsa ou mensal, com a foto e o valor de cada uma." },
   { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
@@ -20353,6 +20390,30 @@ const REG_PASSOS = [
   { id: "chegada", t: "Como chegar", titulo: "Como chegar", porque: "Fachada, entrada e onde parar: é o que mais evita passar direto." },
   { id: "revisar", t: "Revisar", titulo: "Confira a prévia da ficha", porque: "É assim que os jogadores vão ver. Toque no lápis para editar uma seção." },
 ];
+
+// As partes de cada modalidade só aparecem para quem a escolheu (pedido do
+// Breno em 29/10/2026, regra 170: "unifique as modalidades em uma aba
+// anterior e depois de selecionar aparecer essas páginas, se não selecionar
+// alguma, não abre a desse assunto"), como o cadastro do Booking para
+// Parceiros, que só pergunta do café da manhã a quem disse que serve.
+// Os índices das partes continuam os de REG_PASSOS; a navegação pula as
+// que não aparecem.
+function passoVisivel(f, id) {
+  const mods = (f && f.modalidades) || [];
+  if (id === "precos") return mods.includes("aulas_proprias");
+  if (id === "locacao") return mods.includes("locacao");
+  return true;
+}
+function passosVisiveis(f) {
+  return REG_PASSOS.map((passo, k) => ({ passo, k })).filter(x => passoVisivel(f, x.passo.id));
+}
+// A parte visível mais perto de k, para a frente (ou para trás).
+function passoVisivelDe(f, k, paraTras) {
+  const lista = passosVisiveis(f).map(x => x.k);
+  if (lista.includes(k)) return k;
+  const frente = lista.find(x => x > k), tras = [...lista].reverse().find(x => x < k);
+  return paraTras ? (tras !== undefined ? tras : frente) : (frente !== undefined ? frente : tras);
+}
 
 // Quem pede cadastro pelo site manda o essencial; o admin publica só com o
 // nome; na edição, só o nome não pode ficar em branco (doRegisterSubmit
@@ -20372,7 +20433,7 @@ function regFaltas(f, passo) {
   // porquê de dois tipos de estacionamento"). O admin segue só com o nome.
   if (passo === "quadras" && !isAdmin && estacionamentoSemPorque(f)) falta.push("como funciona o estacionamento grátis e pago");
   if (!regPedeTudo(f)) return falta;
-  if (passo === "locacao" && !(f.modalidades || []).length) falta.push("aula ou locação");
+  if (passo === "modalidades" && !(f.modalidades || []).length) falta.push("modalidade");
   if (passo === "quadras" && !QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0)) falta.push("quantidade de quadras");
   if (passo === "contato" && !tem(f.phone)) falta.push("WhatsApp");
   if (passo === "revisar" && !f.consent && !contaAcademia) falta.push("aceite dos Termos de Uso e da Política de Privacidade");
@@ -20387,8 +20448,9 @@ function regPreenchido(f, passo) {
   const a = f.acesso || {};
   switch (passo) {
     case "dados": return tem(f.name) && (tem(f.address) || tem(f.bairro) || tem(f.cidade));
-    case "precos": return (f.modalidades || []).includes("aulas_proprias");
-    case "locacao": return !(f.modalidades || []).includes("locacao") || (Array.isArray(f.catalogo) ? f.catalogo : catalogoAntigo(f)).some(i => i && i.tipo === "locacao");
+    case "modalidades": return (f.modalidades || []).length > 0;
+    case "precos": return (f.modalidades || []).includes("aulas_proprias") && (Array.isArray(f.catalogo) ? f.catalogo : catalogoAntigo(f)).some(i => i && i.tipo !== "locacao");
+    case "locacao": return (f.modalidades || []).includes("locacao") && (Array.isArray(f.catalogo) ? f.catalogo : catalogoAntigo(f)).some(i => i && i.tipo === "locacao");
     case "quadras": return QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0);
     case "contato": return tem(f.phone) || tem(f.instagram) || tem(f.site);
     case "fotos": return (f.photos || []).length > 0;
@@ -20399,7 +20461,7 @@ function regPreenchido(f, passo) {
   }
 }
 function regPassoAtual() {
-  const i = Math.max(0, Math.min(REG_PASSOS.length - 1, state.regPasso || 0));
+  const i = passoVisivelDe(window.__form, Math.max(0, Math.min(REG_PASSOS.length - 1, state.regPasso || 0)), false);
   return { i, passo: REG_PASSOS[i] };
 }
 
@@ -20849,6 +20911,17 @@ function regPassoHtml(id, f, obrigatorio) {
         ${state.cepStatus === "error" ? `<p class="footnote" style="color:var(--red)">CEP não encontrado — preencha manualmente.</p>` : ""}
         ${regPontoHtml(f)}`;
 
+  if (id === "modalidades") return `
+        <p class="field-label" style="margin-top:0">Modalidades${obrigatorio}</p>
+        <div class="reg-mods" role="group" aria-label="Modalidades">
+          ${[
+            { key: "aulas_proprias", t: "Aulas", d: "Com professor da academia, para adultos e crianças" },
+            { key: "locacao", t: "Locação de quadra", d: "Avulsa (por hora) ou mensal" },
+          ].map(m => {
+            const on = (f.modalidades || []).includes(m.key);
+            return `<button type="button" class="reg-mod ${on ? "on" : ""}" data-reg-mod="${m.key}" aria-pressed="${on}"><span class="cat-caixa">${on ? icon('check', 13, '#fff') : ""}</span><span class="reg-mod-txt"><span class="reg-mod-t">${m.t}</span><span class="reg-mod-d">${m.d}</span></span></button>`;
+          }).join("")}
+        </div>`;
   if (id === "precos") return editorDasAulas(f);
   if (id === "locacao") return editorDaLocacao(f);
 
@@ -21083,7 +21156,7 @@ function linkPlanoDaFicha(f, plano) {
 }
 
 function renderRegisterSheet() {
-  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:["locacao"], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
+  const f = window.__form || { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
   window.__form = f;
   // Formulário novo (abriu agora ou é outra academia): começa na primeira parte.
   if (state.regForm !== f) { state.regForm = f; state.regPasso = 0; state.regPassoErro = ""; state.regPlanoTela = false; state.regFaltaVisivel = false; state.regDaRevisao = false; state.regSairPergunta = false; state.regFormAssinatura = assinaturaDoFormulario(f); state.regPontoErro = ""; state.regDestaqueErro = ""; }
@@ -21167,6 +21240,8 @@ function renderRegisterSheet() {
   }
   const { i, passo } = regPassoAtual();
   const ultimo = i === REG_PASSOS.length - 1;
+  const visiveis = passosVisiveis(f);
+  const posicao = visiveis.findIndex(x => x.k === i) + 1;
   // Admin e edição têm o atalho em qualquer parte, mas ele leva à revisão:
   // só lá se salva (pedido do Breno em 14/10/2026: "sempre que uma academia
   // for enviar a publicação, redirecionar para a revisão, só ali salvar").
@@ -21185,17 +21260,17 @@ function renderRegisterSheet() {
       <div class="sheet"><div class="sheet-content reg-passos-tela">
         <button class="sheet-close" id="register-close" aria-label="Fechar">✕</button>
         <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra")}</p>
-        <p class="reg-progresso-t">Parte ${i + 1} de ${REG_PASSOS.length} · ${passo.t}</p>
-        <div class="reg-progresso" role="progressbar" aria-valuemin="1" aria-valuemax="${REG_PASSOS.length}" aria-valuenow="${i + 1}"><i style="width:${Math.round((i + 1) / REG_PASSOS.length * 100)}%"></i></div>
-        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? (contaAcademia && contaAcademia.emailConfirmado ? "Com o seu e-mail confirmado, a academia entra no ar quando você finalizar." : "O GuiaTennis confere antes de publicar.") : "Apresentação no site mediante análise. São 9 partes curtas; só as 4 primeiras são obrigatórias."}</p>` : ""}
+        <p class="reg-progresso-t">Parte ${posicao} de ${visiveis.length} · ${passo.t}</p>
+        <div class="reg-progresso" role="progressbar" aria-valuemin="1" aria-valuemax="${visiveis.length}" aria-valuenow="${posicao}"><i style="width:${Math.round(posicao / visiveis.length * 100)}%"></i></div>
+        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? (contaAcademia && contaAcademia.emailConfirmado ? "Com o seu e-mail confirmado, a academia entra no ar quando você finalizar." : "O GuiaTennis confere antes de publicar.") : "Apresentação no site mediante análise. São partes curtas; as obrigatórias têm *."}</p>` : ""}
 
         <nav class="reg-secoes" aria-label="Partes da ficha">
-          ${REG_PASSOS.map((x, k) => `<button type="button" class="${k === i ? "on" : ""}" data-reg-passo="${k}" ${k === i ? 'aria-current="step"' : ""}>${regPreenchido(f, x.id) && !regFaltas(f, x.id).length ? "✓ " : ""}${x.t}</button>`).join("")}
+          ${visiveis.map(({ passo: x, k }) => `<button type="button" class="${k === i ? "on" : ""}" data-reg-passo="${k}" ${k === i ? 'aria-current="step"' : ""}>${regPreenchido(f, x.id) && !regFaltas(f, x.id).length ? "✓ " : ""}${x.t}</button>`).join("")}
         </nav>
 
         <h2 class="sheet-title display reg-titulo">${passo.titulo}</h2>
         <p class="subtitle reg-porque">${passo.porque}</p>
-        ${passo.id === "dados" || (obrigatorio && ["quadras", "contato"].includes(passo.id)) ? `<p class="reg-legenda">* Obrigatório</p>` : ""}
+        ${passo.id === "dados" || (obrigatorio && ["modalidades", "quadras", "contato"].includes(passo.id)) ? `<p class="reg-legenda">* Obrigatório</p>` : ""}
 
         <div class="reg-passo" data-passo="${passo.id}">
           ${regPassoHtml(passo.id, f, obrigatorio)}
@@ -21357,7 +21432,7 @@ function irParaPasso(k, conferir) {
     const falta = regFaltas(f, passo.id);
     if (falta.length) { state.regPassoErro = `Preencha: ${falta.join(", ")}.`; render(); return; }
   }
-  state.regPasso = Math.max(0, Math.min(REG_PASSOS.length - 1, k));
+  state.regPasso = passoVisivelDe(f, Math.max(0, Math.min(REG_PASSOS.length - 1, k)), k < i);
   state.regPassoErro = "";
   if (state.regPasso === REG_PASSOS.length - 1) state.regDaRevisao = false;
   if (state.registerStatus === "error") state.registerStatus = "idle";
@@ -22654,7 +22729,7 @@ const CHAT_DETALHES_PC = [
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
   { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Outra faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal e a foto. Na parte Locação: marque \"A academia não oferece locação de quadra\" ou escolha avulsa e mensal, com o valor e a foto de cada uma. Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Outra faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor e a foto de cada uma. Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -24566,7 +24641,7 @@ function ligarEventosDoPainel() {
   ligarFalhasDoAdmin();
   const nova = document.getElementById("adm-nova-academia");
   if (nova) nova.onclick = () => {
-    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:["locacao"], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
     state.showRegister = true;
     state.registerStatus = "idle";
     render();
@@ -25342,7 +25417,10 @@ function attachEvents() {
   if (decideNotes) decideNotes.oninput = (e) => { state.decideNotes = e.target.value; };
 
   document.querySelectorAll("[data-nav]").forEach(el => {
-    el.onclick = (e) => { e.stopPropagation(); state.navCourt = el.dataset.nav; render(); };
+    el.onclick = (e) => { e.stopPropagation(); verNoMapaDoGuia(el.dataset.nav); };
+  });
+  document.querySelectorAll("[data-como-chegar]").forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); state.navCourt = el.dataset.comoChegar; render(); };
   });
 
   const navClose = document.getElementById("nav-close");
@@ -26020,15 +26098,7 @@ function attachEvents() {
       mudouCatalogo(true);
     };
   });
-  // A locação: "não oferece" fecha o caminho; a avulsa e a mensal abrem o
-  // cartão de cada uma.
-  document.querySelectorAll("[data-cat-sem-locacao]").forEach(el => {
-    el.onclick = () => {
-      const g = gradeDoForm();
-      g.locacao.nao = !g.locacao.nao;
-      mudouCatalogo(true);
-    };
-  });
+  // A locação: a avulsa e a mensal abrem o cartão de cada uma.
   document.querySelectorAll("[data-cat-cobranca]").forEach(el => {
     el.onclick = () => {
       const g = gradeDoForm();
@@ -26074,6 +26144,16 @@ function attachEvents() {
   if (abaAtual) abaAtual.parentElement.scrollLeft = Math.max(0, abaAtual.offsetLeft - 22);
   const regContinuar = document.getElementById("reg-continuar");
   if (regContinuar) regContinuar.onclick = () => irParaPasso(regPassoAtual().i + 1, true);
+  // As modalidades (regra 170): escolher abre a parte de cada uma.
+  document.querySelectorAll("[data-reg-mod]").forEach(el => {
+    el.onclick = () => {
+      const f = window.__form;
+      const k = el.dataset.regMod;
+      f.modalidades = f.modalidades.includes(k) ? f.modalidades.filter(x => x !== k) : [...f.modalidades, k];
+      f.modalidades = MODALIDADE_OPTS.map(m => m.key).filter(x => f.modalidades.includes(x));
+      render();
+    };
+  });
   const regVoltar = document.getElementById("reg-voltar");
   if (regVoltar) regVoltar.onclick = () => irParaPasso(regPassoAtual().i - 1, false);
   // "Editar" da prévia: volta ao começo da ficha.

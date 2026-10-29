@@ -68,9 +68,9 @@ const volta = async (page) => { await page.goBack(); await page.waitForTimeout(2
   await page.waitForTimeout(200);
   await page.click('#reg-continuar');
   await page.waitForTimeout(200);
-  ok((await onde(page)).endsWith('parte=locacao'), 'cada parte do cadastro tem link — ' + await onde(page));
+  ok((await onde(page)).endsWith('parte=quadras'), 'cada parte do cadastro tem link (sem modalidade escolhida, as Aulas e a Locação não aparecem) — ' + await onde(page));
   await volta(page);
-  ok(await page.evaluate(() => REG_PASSOS[state.regPasso].id === 'precos' && state.showRegister), 'voltar: a parte anterior');
+  ok(await page.evaluate(() => REG_PASSOS[state.regPasso].id === 'modalidades' && state.showRegister), 'voltar: a parte anterior');
   await volta(page);
   ok(await page.evaluate(() => REG_PASSOS[state.regPasso].id === 'dados' && document.getElementById('f-name').value === 'Academia Voltar'), 'e a primeira, com o nome digitado');
   await page.click('#register-close');

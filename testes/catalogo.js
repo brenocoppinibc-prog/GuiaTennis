@@ -41,7 +41,8 @@ const CATALOGO = [
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
   await irParte(page, 'precos');
-  ok((await texto(page, '.reg-titulo')) === 'Aulas' && (await chipsDe(page, '[data-cat-publico]')) === '✓Adultos,Crianças', 'a parte Aulas começa por "para quem": a academia que já dá aula vem com Adultos — ' + await chipsDe(page, '[data-cat-publico]'));
+  ok((await texto(page, '.reg-titulo')) === 'Aulas' && (await chipsDe(page, '[data-cat-publico]')) === 'Adultos,Crianças' && !(await page.$('[data-cat-bloco]')), 'a parte Aulas começa por "para quem", nada marcado — ' + await chipsDe(page, '[data-cat-publico]'));
+  await page.click('[data-cat-publico="adulto"]');
   ok((await chipsDe(page, '[data-cat-bloco="adulto"] [data-cat-formato]')) === 'Individual,Dupla,Grupo' && !(await page.$('[data-cat-opcao]')), 'depois, quais aulas: os formatos, nenhum marcado, e nenhum cartão ainda');
   await page.click('[data-cat-formato="adulto:individual"]');
   ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'adulto:individual:avulsa'), 'o formato escolhido abre o cartão, com o cursor no valor avulso');
@@ -88,11 +89,12 @@ const CATALOGO = [
   await page.click('[data-cat-formato="adulto:grupo"]');
   ok((await grade(page, 'adulto')) === 'individual=150/520 grupo=·/300', 'e trazer de novo volta com o valor — ' + await grade(page, 'adulto'));
 
-  // A locação, numa parte só dela: "não oferece" ou o caminho da avulsa e da mensal.
+  // A locação, numa parte só dela, que aparece só para quem escolheu a locação (regra 170).
+  ok(!(await page.$('.reg-secoes [data-reg-passo="3"]')), 'a academia que só dá aula não tem a parte Locação');
+  await irParte(page, 'modalidades');
+  await page.click('[data-reg-mod="locacao"]');
   await irParte(page, 'locacao');
-  ok((await texto(page, '.reg-titulo')) === 'Locação de quadra' && (await page.getAttribute('[data-cat-sem-locacao]', 'aria-pressed')) === 'true' && !(await page.$('[data-cat-cobranca]')), 'a parte Locação: a academia que só dá aula vem com "não oferece" marcado, sem o caminho');
-  await page.click('[data-cat-sem-locacao]');
-  ok((await chipsDe(page, '[data-cat-cobranca]')) === 'Avulsa (por hora),Mensal' && !(await page.$('#cat-tabela-locacao [data-cat-opcao]')), 'desmarcado, abre a escolha: avulsa ou mensal');
+  ok((await texto(page, '.reg-titulo')) === 'Locação de quadra' && (await chipsDe(page, '[data-cat-cobranca]')) === 'Avulsa (por hora),Mensal' && !(await page.$('#cat-tabela-locacao [data-cat-opcao]')), 'marcando Locação nas Modalidades, a parte Locação aparece, com a escolha: avulsa ou mensal');
   await page.click('[data-cat-cobranca="avulsa"]');
   ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'locacao:avulsa') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).startsWith('Locação avulsa Valor por hora R$') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).includes('Foto da quadra'), 'a avulsa abre o cartão: o valor por hora e a foto');
   await page.fill('[data-cat-valor="locacao:avulsa"]', '130');
@@ -129,8 +131,9 @@ const CATALOGO = [
   ok(!(await page.$('[data-cat-bloco="f2"]')), 'o ✕ tira a faixa');
   await page.fill('[data-cat-valor="f1:individual:avulsa"]', '');
   await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', '');
+  await irParte(page, 'modalidades');
+  await page.click('[data-reg-mod="locacao"]');
   await irParte(page, 'locacao');
-  await page.click('[data-cat-sem-locacao]');
   await page.click('[data-cat-cobranca="mensal"]');
   await irParte(page, 'revisar');
   await salvarFicha(page);
@@ -262,7 +265,7 @@ const CATALOGO = [
   await page.evaluate(() => abrirEdicaoDaFicha(state.allCourts.find(x => x.id === 'a2')));
   await page.waitForTimeout(300);
   await irParte(page, 'locacao');
-  ok((await page.getAttribute('[data-cat-sem-locacao]', 'aria-pressed')) === 'false' && (await chipsDe(page, '[data-cat-cobranca]')) === '✓Avulsa (por hora),Mensal' && (await grade(page, 'cat-tabela-locacao')) === 'avulsa=100-120', 'o preço por hora de antes aparece na locação avulsa — ' + await grade(page, 'cat-tabela-locacao'));
+  ok((await chipsDe(page, '[data-cat-cobranca]')) === '✓Avulsa (por hora),Mensal' && (await grade(page, 'cat-tabela-locacao')) === 'avulsa=100-120', 'o preço por hora de antes aparece na locação avulsa — ' + await grade(page, 'cat-tabela-locacao'));
   // A aula do preço antigo, sem formato: a linha "Aula", com a dica de escrever no formato certo.
   await page.evaluate(() => { state.regForm = null; abrirEdicaoDaFicha({ ...state.allCourts.find(x => x.id === 'a1'), priceAula: '120', catalogo: [] }); });
   await page.waitForTimeout(300);
@@ -280,6 +283,7 @@ const CATALOGO = [
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
   await irParte(page, 'precos');
+  await page.click('[data-cat-publico="adulto"]');
   await page.click('[data-cat-formato="adulto:individual"]');
   await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '160');
   await irParte(page, 'revisar');
@@ -298,6 +302,7 @@ const CATALOGO = [
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
   await irParte(page, 'precos');
+  await page.click('[data-cat-publico="adulto"]');
   ok(!(await page.$('[data-cat-foto]')), 'sem formato escolhido, sem campo de foto');
   await page.click('[data-cat-formato="adulto:grupo"]');
   await page.fill('[data-cat-valor="adulto:grupo:avulsa"]', '80');
@@ -309,8 +314,9 @@ const CATALOGO = [
   await page.click('#enq-concluir');
   await page.waitForTimeout(400);
   // A locação: a avulsa e a mensal, cada uma com a própria foto.
+  await irParte(page, 'modalidades');
+  await page.click('[data-reg-mod="locacao"]');
   await irParte(page, 'locacao');
-  await page.click('[data-cat-sem-locacao]');
   await page.click('[data-cat-cobranca="avulsa"]');
   await page.click('[data-cat-cobranca="mensal"]');
   await page.fill('[data-cat-valor="locacao:avulsa"]', '130');

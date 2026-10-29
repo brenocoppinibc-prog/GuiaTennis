@@ -20,7 +20,7 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   ok(f.rep.join() === '24@aula' && f.fora.length === 1 && f.fora[0].includes('Perde a aula'), 'só aula: um bloco, com a regra da aula carregada — ' + f.rep + ' ' + f.fora);
   ok(f.horas.startsWith('06:00,22:00'), 'edição carrega o horário — ' + f.horas);
   ok(!f.estacionar, 'com estacionamento grátis: sem "Onde estacionar"');
-  ok(ordem === 'dados,precos,locacao,quadras,contato,fotos,horario,cancelamento,chegada,revisar', 'partes na ordem: primeiro o que o jogador e o GuiaTennis precisam (as aulas e a locação em partes separadas, regra 169), fachada/chegada depois do cancelamento');
+  ok(ordem === 'dados,modalidades,precos,locacao,quadras,contato,fotos,horario,cancelamento,chegada,revisar', 'partes na ordem: primeiro o que o jogador e o GuiaTennis precisam (as modalidades e, depois, as aulas e a locação em partes separadas, regras 169 e 170), fachada/chegada depois do cancelamento');
 
   // Tira o estacionamento: aparece o campo com o texto antigo
   await irParte(page, 'quadras');
@@ -29,25 +29,24 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   const est = await parte('chegada', () => document.getElementById('f-acesso-estacionar')?.value);
   ok(est === 'Rua de trás', 'sem estacionamento: aparece "Onde estacionar" — ' + est);
 
-  // Desmarca "não oferece locação": aparece a escolha, com as duas regras antigas
-  await irParte(page, 'locacao');
-  await page.evaluate(() => document.querySelector('[data-cat-sem-locacao]').click());
+  // Marca a locação nas Modalidades: aparece a escolha, com as duas regras antigas
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => document.querySelector('[data-reg-mod="locacao"]').click());
   await page.waitForTimeout(200);
   await irParte(page, 'cancelamento');
   const f2 = await page.evaluate(() => ({ polModo: document.querySelectorAll('.pol-modo').length, rep: [...document.querySelectorAll('.reg-reposicao.active')].map(e => e.dataset.reposicao + '@' + e.dataset.alvo).join() }));
   ok(f2.polModo === 2 && f2.rep === '24@aula,12@locacao', 'aula + locação: volta a escolha, regras preservadas — ' + f2.rep);
-  // Tira as aulas (nem adultos nem crianças): fica só a de locação
-  await irParte(page, 'precos');
-  await page.evaluate(() => document.querySelector('[data-cat-publico="adulto"]').click());
+  // Desmarca as aulas nas Modalidades: fica só a de locação
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => document.querySelector('[data-reg-mod="aulas_proprias"]').click());
   await page.waitForTimeout(200);
   await irParte(page, 'cancelamento');
   const f3 = await page.evaluate(() => ({ polModo: document.querySelectorAll('.pol-modo').length, rep: [...document.querySelectorAll('.reg-reposicao.active')].map(e => e.dataset.reposicao + '@' + e.dataset.alvo).join() }));
   ok(f3.polModo === 0 && f3.rep === '12@locacao', 'só locação: um bloco, regra de locação — ' + f3.rep);
   // Volta para só aula e salva
-  await irParte(page, 'precos');
-  await page.evaluate(() => document.querySelector('[data-cat-publico="adulto"]').click());
-  await irParte(page, 'locacao');
-  await page.evaluate(() => document.querySelector('[data-cat-sem-locacao]').click());
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => document.querySelector('[data-reg-mod="aulas_proprias"]').click());
+  await page.evaluate(() => document.querySelector('[data-reg-mod="locacao"]').click());
   await irParte(page, 'quadras');
   await page.evaluate(() => document.querySelector('.reg-amenity[data-amenity="estacionamento_gratuito"]').click());
   await salvarFicha(page);
@@ -97,16 +96,15 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
   // Cadastro novo com as duas modalidades mostra a escolha
   await page.evaluate(() => { window.__form = null; state.showRegister = true; state.registerStatus = 'idle'; render(); });
-  ok(await page.evaluate(() => window.__form.modalidades.join()) === 'locacao', 'cadastro novo: a locação começa oferecida ("não oferece" desmarcado)');
-  await irParte(page, 'precos');
-  await page.evaluate(() => { document.querySelector('[data-cat-publico="adulto"]').click(); });
-  await irParte(page, 'locacao');
-  await page.evaluate(() => { document.querySelector('[data-cat-sem-locacao]').click(); });
+  ok(await page.evaluate(() => window.__form.modalidades.length === 0 && ![...document.querySelectorAll('.reg-secoes [data-reg-passo]')].some(b => /^(✓ )?(Aulas|Locação)$/.test(b.innerText))), 'cadastro novo: nenhuma modalidade escolhida, e as partes Aulas e Locação não aparecem');
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => { document.querySelector('[data-reg-mod="aulas_proprias"]').click(); });
+  ok(await page.evaluate(() => [...document.querySelectorAll('.reg-secoes [data-reg-passo]')].map(b => b.innerText.replace('✓ ', '')).join() === 'Nome e endereço,Modalidades,Aulas,Quadras,Contato,Fotos,Horário,Cancelamento,Como chegar,Revisar'), 'escolhendo Aulas, a parte Aulas aparece logo depois das Modalidades');
   await irParte(page, 'cancelamento');
   let n = await page.evaluate(() => document.querySelectorAll('.pol-modo').length);
   ok(n === 0, 'cadastro novo, só aula: sem escolha');
-  await irParte(page, 'locacao');
-  await page.evaluate(() => { document.querySelector('[data-cat-sem-locacao]').click(); });
+  await irParte(page, 'modalidades');
+  await page.evaluate(() => { document.querySelector('[data-reg-mod="locacao"]').click(); });
   await irParte(page, 'cancelamento');
   n = await page.evaluate(() => document.querySelectorAll('.pol-modo').length);
   ok(n === 2, 'cadastro novo, aula e locação: com escolha');

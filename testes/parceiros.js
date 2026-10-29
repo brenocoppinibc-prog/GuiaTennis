@@ -274,7 +274,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   }));
   ok(form.titulo === 'Cadastrar academia nova' && /entra no ar quando você finalizar\.|O GuiaTennis confere antes de publicar\./.test(form.sub) && !form.sub.includes('não precisa digitar de novo') && !form.aceite, 'formulário da academia nova não pede de novo os dados nem o aceite (e, desde 21/10/2026, sem "Os seus dados de contato já vão junto") — ' + form.sub);
   ok(form.alto === form.tela, 'formulário em tela cheia — ' + form.alto + ' de ' + form.tela);
-  ok(form.atalhos === 'Nome e endereço | Aulas | Locação | Quadras | Contato | Fotos | Horário | Cancelamento | Como chegar | Revisar', 'uma aba para cada parte, na ordem do que mais importa — ' + form.atalhos);
+  ok(form.atalhos === 'Nome e endereço | Modalidades | Quadras | Contato | Fotos | Horário | Cancelamento | Como chegar | Revisar', 'uma aba para cada parte, na ordem do que mais importa — ' + form.atalhos);
   // Pedido do Breno em 01/10/2026: uma parte por tela, com Voltar e Continuar.
   const telaUm = await page.evaluate(() => ({
     partes: document.querySelectorAll('#register-overlay .reg-passo').length,
@@ -283,8 +283,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     continuar: !!document.getElementById('reg-continuar'),
     voltar: !!document.getElementById('reg-voltar'),
   }));
-  ok(telaUm.partes === 1 && telaUm.progresso === 'Parte 1 de 10 · Nome e endereço' && telaUm.continuar && !telaUm.voltar && !telaUm.enviar, 'cadastro abre na primeira parte, com Continuar e sem o envio — ' + telaUm.progresso);
-  await page.click('[data-reg-passo="7"]');
+  ok(telaUm.partes === 1 && telaUm.progresso === 'Parte 1 de 9 · Nome e endereço' && telaUm.continuar && !telaUm.voltar && !telaUm.enviar, 'cadastro abre na primeira parte, com Continuar e sem o envio — ' + telaUm.progresso);
+  await page.click('[data-reg-passo="8"]');
   await page.waitForTimeout(300);
   const aba = await page.evaluate(() => ({ passo: document.querySelector('#register-overlay .reg-passo')?.dataset.passo, rolou: document.querySelector('#register-overlay .sheet').scrollTop, titulo: document.querySelector('.reg-titulo')?.innerText }));
   ok(aba.passo === 'cancelamento' && aba.rolou === 0 && aba.titulo === 'Cancelamento e reposição', 'a aba leva direto à parte, do começo da tela — ' + aba.titulo);

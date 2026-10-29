@@ -129,6 +129,7 @@ const arrastar = async (page, dx) => {
   await page.click('.editar-academia');
   await page.waitForTimeout(400);
   await irParte(page, 'precos');
+  await page.click('[data-cat-publico="adulto"]');
   await page.click('[data-cat-formato="adulto:individual"]');
   await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '150');
   await page.setInputFiles('[data-cat-foto="adulto:individual"]', { name: 'c.png', mimeType: 'image/png', buffer: await fotoDeTeste(page, 900, 300) });

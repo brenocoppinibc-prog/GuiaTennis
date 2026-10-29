@@ -173,7 +173,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   await page.waitForTimeout(800);
   const pedido = await page.evaluate(() => ({ erro: document.querySelector('.form-error')?.innerText || '', gravou: window.__db.academias.some(a => a.name === 'Pedido Só Nome'), passo: state.regPasso, falta: (document.getElementById('reg-falta')?.innerText || '').replace(/\s+/g, ' ') }));
   ok(!pedido.gravou && pedido.erro.includes('endereço completo') && pedido.erro.includes('WhatsApp') && pedido.passo === 0, 'pedido pelo site ainda cobra o essencial e volta para a parte que falta — ' + pedido.erro);
-  ok(pedido.falta.includes('Nome e endereço*, Locação*, Quadras* e Contato*'), 'e diz as partes obrigatórias que faltam (desde 13/10, no lugar da lista embaixo da prévia) — ' + pedido.falta);
+  ok(pedido.falta.includes('Nome e endereço*, Modalidades*, Quadras* e Contato*'), 'e diz as partes obrigatórias que faltam (desde 13/10, no lugar da lista embaixo da prévia) — ' + pedido.falta);
   await browser.close();
 
   // Termos e Privacidade

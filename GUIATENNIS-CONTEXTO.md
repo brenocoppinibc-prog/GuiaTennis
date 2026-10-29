@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 174)
+**Atualizado em:** 29/10/2026 (regra 174, troca de chat)
 
 | | |
 |---|---|
@@ -328,22 +328,26 @@ Produto (o que já foi decidido)
 - Android força modo escuro: `color-scheme: light` no site.
 - `pkill -f` com texto do próprio comando mata o terminal.
 
-## 9. Estado atual e pendências (28/10/2026)
+## 9. Estado atual e pendências (29/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 174** (as
-Modalidades antes das partes Aulas e Locação, pelo menos uma obrigatória, e
-o "Ver no mapa" no mapa do GuiaTennis, os exemplos de valor no cadastro e
-o "Como chegar" pelo próprio celular; sem SQL novo desde a 167: o item da aula das crianças leva
-`publico`, `idadeDe` e `idadeAte` dentro do `catalogo`, e a aula sem valor
-vai com `cobranca: ""`). A descrição do PR foi
-encurtada em 28/10/2026; o texto longo ficou no histórico. Testes: 2.141
-no navegador e 679 no banco, nenhuma falha.
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 174**
+(último commit de código `175b3be`). De 28 a 29/10 entraram, sem SQL novo
+(o item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro
+do `catalogo`, e a aula sem valor vai com `cobranca: ""`): o catálogo com
+aulas para adultos e para crianças (faixas de idade); a parte
+"Modalidades" antes das partes Aulas e Locação, pelo menos uma
+obrigatória; os exemplos de valor; "Alterações salvas" num cartão; "Pedir
+análise" em vermelho; o "Ver no mapa" no mapa do GuiaTennis e o "Como
+chegar" pelo próprio celular. A descrição do PR tem uma linha por regra em
+"Pedidos depois de 28/10". Testes: 2.141 no navegador e 679 no banco,
+nenhuma falha. **Chat trocado em 29/10/2026:** o chat novo volta a
+acompanhar o PR #5 (o anterior deixou de acompanhar).
 
 **Pendências do Breno:**
-1. Testar na prévia o que entrou de 26 a 28/10 (veracidade, ficha no
-   jeito do hoteis.com, catálogo com adultos e crianças, corte das fotos,
-   nome suspenso, busca "bairro, cidade", sobrenome, avaliação editada) e
-   dizer "pode subir".
+1. Testar na prévia o que entrou de 26 a 29/10 (veracidade, ficha no
+   jeito do hoteis.com, catálogo com Modalidades, Aulas e Locação, corte
+   das fotos, nome suspenso, busca "bairro, cidade", sobrenome, avaliação
+   editada, "Ver no mapa" e "Como chegar") e dizer "pode subir".
 2. Ligar o Mercado Pago na Netlify (variáveis da seção 5) depois de testar
    o pagamento de teste na prévia.
 3. Definir os preços dos planos e o preço da semana da promoção na ficha

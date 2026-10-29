@@ -56,11 +56,29 @@ const CATALOGO = [
   ok(!/Duração|vezes por semana|alunos|Observação|horário/i.test(so), 'só modalidade e valor: sem duração, vezes, alunos, observação ou horário');
   await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '150');
   await page.fill('[data-cat-valor="adulto:individual:mensal"]', '520');
-  await page.fill('[data-cat-valor="adulto:grupo:mensal"]', '3a00');
-  ok((await page.inputValue('[data-cat-valor="adulto:grupo:mensal"]')) === '300', 'o valor só aceita números (e o traço da faixa)');
-  // Um exemplo em cada valor e, embaixo, como fica na ficha (regra 172).
-  ok((await page.getAttribute('[data-cat-valor="adulto:grupo:avulsa"]', 'placeholder')) === 'ex.: 70' && (await page.getAttribute('[data-cat-valor="adulto:individual:mensal"]', 'placeholder')) === 'ex.: 650', 'cada valor vazio mostra um exemplo ("ex.: 70")');
-  ok((await texto(page, '[data-cat-exemplo="adulto:individual"]')) === 'Na ficha: R$ 150 por aula · R$ 520 por mês' && (await texto(page, '[data-cat-exemplo="adulto:grupo"]')) === 'Na ficha: R$ 300 por pessoa, por mês', 'embaixo do cartão, como os valores escritos aparecem na ficha — ' + await texto(page, '[data-cat-exemplo="adulto:grupo"]'));
+  // Um valor ou um intervalo (regra 175): o que separa os dois números vira
+  // " a " na hora, e apagar tira o " a " de volta.
+  const gm = '[data-cat-valor="adulto:grupo:mensal"]';
+  await page.fill(gm, 'R$ 300');
+  ok((await page.inputValue(gm)) === '300', 'o valor só fica com os números — ' + await page.inputValue(gm));
+  await page.fill(gm, '250-350');
+  const traco = await page.inputValue(gm);
+  await page.fill(gm, '250,350');
+  ok(traco === '250 a 350' && (await page.inputValue(gm)) === '250 a 350', 'dois números, com traço ou vírgula, viram o intervalo "250 a 350"');
+  await page.fill(gm, '');
+  await page.type(gm, '250 ');
+  const aberto = await page.inputValue(gm);
+  await page.keyboard.type('350');
+  const fechado = await page.inputValue(gm);
+  for (let i = 0; i < 3; i++) await page.keyboard.press('Backspace');
+  const apagado = await page.inputValue(gm);
+  await page.keyboard.press('Backspace');
+  ok(aberto === '250 a ' && fechado === '250 a 350' && apagado === '250 a ' && (await page.inputValue(gm)) === '250', 'digitando: o espaço abre o " a ", e apagar volta ao valor só — ' + JSON.stringify([aberto, fechado, apagado, await page.inputValue(gm)]));
+  ok((await page.getAttribute(gm, 'inputmode')) === 'decimal', 'o teclado de números com a vírgula, para o intervalo também no iPhone');
+  await page.fill(gm, '300');
+  // O exemplo fica só dentro do campo, em intervalo (regra 175; era a regra 172).
+  ok((await page.getAttribute('[data-cat-valor="adulto:grupo:avulsa"]', 'placeholder')) === 'ex.: 60 a 80' && (await page.getAttribute('[data-cat-valor="adulto:individual:mensal"]', 'placeholder')) === 'ex.: 550 a 750', 'cada valor vazio mostra o exemplo em intervalo ("ex.: 60 a 80")');
+  ok(!(await page.$('[data-cat-exemplo]')) && !/Exemplo:|Na ficha:/.test(await texto(page, '[data-cat-bloco="adulto"]')), 'nada escrito embaixo dos valores');
 
   // As crianças: uma faixa de idade para cada turma.
   await page.click('[data-cat-publico="crianca"]');
@@ -104,9 +122,8 @@ const CATALOGO = [
   ok((await texto(page, '.reg-titulo')) === 'Locação de quadra' && (await chipsDe(page, '[data-cat-cobranca]')) === 'Avulsa (por hora),Mensal' && !(await page.$('#cat-tabela-locacao [data-cat-opcao]')), 'marcando Locação nas Modalidades, a parte Locação aparece, com a escolha: avulsa ou mensal');
   await page.click('[data-cat-cobranca="avulsa"]');
   ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'locacao:avulsa') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).startsWith('Locação avulsa Valor por hora R$') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).includes('Foto da quadra'), 'a avulsa abre o cartão: o valor por hora e a foto');
-  ok((await texto(page, '[data-cat-exemplo="locacao:avulsa"]')) === 'Exemplo: R$ 120 por hora' && (await page.getAttribute('[data-cat-valor="locacao:avulsa"]', 'placeholder')) === 'ex.: 120', 'na locação, o exemplo do valor por hora');
+  ok((await page.getAttribute('[data-cat-valor="locacao:avulsa"]', 'placeholder')) === 'ex.: 100 a 150' && !(await page.$('[data-cat-exemplo]')), 'na locação, o exemplo do valor por hora, só dentro do campo');
   await page.fill('[data-cat-valor="locacao:avulsa"]', '130');
-  ok((await texto(page, '[data-cat-exemplo="locacao:avulsa"]')) === 'Na ficha: R$ 130 por hora', 'e, escrito o valor, como fica na ficha');
   ok(await page.evaluate(() => window.__form.modalidades.join()) === 'aulas_proprias,locacao', 'a modalidade acompanha: aula e locação');
 
   await irParte(page, 'revisar');
@@ -274,7 +291,7 @@ const CATALOGO = [
   await page.evaluate(() => abrirEdicaoDaFicha(state.allCourts.find(x => x.id === 'a2')));
   await page.waitForTimeout(300);
   await irParte(page, 'locacao');
-  ok((await chipsDe(page, '[data-cat-cobranca]')) === '✓Avulsa (por hora),Mensal' && (await grade(page, 'cat-tabela-locacao')) === 'avulsa=100-120', 'o preço por hora de antes aparece na locação avulsa — ' + await grade(page, 'cat-tabela-locacao'));
+  ok((await chipsDe(page, '[data-cat-cobranca]')) === '✓Avulsa (por hora),Mensal' && (await grade(page, 'cat-tabela-locacao')) === 'avulsa=100 a 120', 'o preço por hora de antes aparece na locação avulsa, como intervalo — ' + await grade(page, 'cat-tabela-locacao'));
   // A aula do preço antigo, sem formato: a linha "Aula", com a dica de escrever no formato certo.
   await page.evaluate(() => { state.regForm = null; abrirEdicaoDaFicha({ ...state.allCourts.find(x => x.id === 'a1'), priceAula: '120', catalogo: [] }); });
   await page.waitForTimeout(300);
@@ -284,6 +301,11 @@ const CATALOGO = [
   await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '120');
   await page.fill('[data-cat-valor="adulto:aula:avulsa"]', '');
   ok(await page.evaluate(() => JSON.stringify(window.__form.catalogo)) === JSON.stringify([{ tipo: 'individual', cobranca: 'avulsa', preco: '120' }]), 'com o valor no formato certo e o de "Aula" apagado, o catálogo fica só com o formato');
+  // O intervalo vai para o banco com o menor primeiro (regra 175).
+  await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '180 a 120');
+  ok(await page.evaluate(() => JSON.stringify(window.__form.catalogo)) === JSON.stringify([{ tipo: 'individual', cobranca: 'avulsa', preco: '120-180' }]) && await page.evaluate(() => precoTexto(window.__form.catalogo[0].preco)) === 'R$ 120 a 180', 'o intervalo "180 a 120" vai como "120-180" e aparece "R$ 120 a 180" — ' + await page.evaluate(() => JSON.stringify(window.__form.catalogo)));
+  await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '150 a 150');
+  ok(await page.evaluate(() => window.__form.catalogo[0].preco) === '150', 'os dois números iguais ficam um valor só');
   await browser.close();
 
   // ---- banco ainda sem a coluna ----

@@ -31,6 +31,10 @@ async function abrirOChat(page) {
   await escrever(page, 'como coloco mais fotos');
   u = await ultima(page);
   ok(u.texto.includes('parte Fotos') && u.texto.includes('No Básico, a ficha mostra até 3 fotos; no Completo e no Premium, 5.'), 'a parte da ficha, com o que o plano libera — ' + u.texto);
+  // O valor do catálogo em intervalo (regra 175).
+  await escrever(page, 'posso colocar um intervalo de preço na aula?');
+  u = await ultima(page);
+  ok(u.texto.includes('Cada valor pode ser um número ou um intervalo (ex.: 150 a 200'), 'o intervalo de preço, na resposta do preço — ' + u.texto.slice(0, 120));
   await escrever(page, 'e o horário?');
   u = await ultima(page);
   ok(u.texto.includes('parte Horário') && !u.texto.includes('ainda não deu certo'), 'segue a conversa na ficha: "e o horário?"');

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 174, troca de chat)
+**Atualizado em:** 29/10/2026 (regra 175)
 
 | | |
 |---|---|
@@ -180,9 +180,10 @@ Produto (o que já foi decidido)
   anos, uma para cada turma > formatos individual, dupla, grupo > um cartão
   por formato com a avulsa, a mensal e a foto; em branco não é oferecida,
   sem valor nenhum = "Sob consulta" sem cobrança) e **Locação** (avulsa e/ou
-  mensal, cada uma com o valor e a foto). Cada valor vazio mostra um
-  exemplo ("ex.: 180", `EXEMPLOS_DE_VALOR`) e cada cartão, embaixo, como
-  fica na ficha (o exemplo, ou o valor escrito). Foto no Premium. Na ficha, as
+  mensal, cada uma com o valor e a foto). Cada valor é um número ou um
+  intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), numa linha
+  com o nome à esquerda; o exemplo fica **só dentro do campo**, em intervalo
+  ("ex.: 150 a 200", `EXEMPLOS_DE_VALOR`), nada escrito embaixo. Foto no Premium. Na ficha, as
   aulas das crianças são "Aula infantil …", com a idade, e têm o filtro
   "Crianças". Corte das fotos como o "Cortar" do Instagram.
 - **"Ver no mapa"** da ficha abre o mapa da busca do GuiaTennis já na
@@ -264,7 +265,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (29/10/2026): **2.141 verificações** nos
+  segundo plano). Último resultado (29/10/2026): **2.146 verificações** nos
   73 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -330,22 +331,20 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (29/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 174**
-(último commit de código `175b3be`). De 28 a 29/10 entraram, sem SQL novo
-(o item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro
-do `catalogo`, e a aula sem valor vai com `cobranca: ""`): o catálogo com
-aulas para adultos e para crianças (faixas de idade); a parte
-"Modalidades" antes das partes Aulas e Locação, pelo menos uma
-obrigatória; os exemplos de valor; "Alterações salvas" num cartão; "Pedir
-análise" em vermelho; o "Ver no mapa" no mapa do GuiaTennis e o "Como
-chegar" pelo próprio celular. A descrição do PR tem uma linha por regra em
-"Pedidos depois de 28/10". Testes: 2.141 no navegador e 679 no banco,
-nenhuma falha. **Chat trocado em 29/10/2026:** o chat novo volta a
-acompanhar o PR #5 (o anterior deixou de acompanhar).
-
+O PR #5 tem tudo até a **regra 175** (valor do catálogo em intervalo, com
+o exemplo só dentro do campo). De 28 a 29/10 entraram, sem SQL novo (o
+item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro do
+`catalogo`; a aula sem valor vai com `cobranca: ""`; o intervalo vai no
+`preco` como "150-200"): o catálogo com aulas para adultos e para crianças;
+a parte "Modalidades", pelo menos uma obrigatória; o valor em intervalo;
+"Alterações salvas" num cartão; "Pedir análise" em vermelho; o "Ver no
+mapa" no mapa do GuiaTennis e o "Como chegar" pelo próprio celular. A
+descrição do PR tem uma linha por regra em "Pedidos depois de 28/10".
+Testes: 2.146 no navegador e 679 no banco, nenhuma falha.
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26 a 29/10 (veracidade, ficha no
-   jeito do hoteis.com, catálogo com Modalidades, Aulas e Locação, corte
+   jeito do hoteis.com, catálogo com Modalidades, Aulas, Locação e valor em
+   intervalo, corte
    das fotos, nome suspenso, busca "bairro, cidade", sobrenome, avaliação
    editada, "Ver no mapa" e "Como chegar") e dizer "pode subir".
 2. Ligar o Mercado Pago na Netlify (variáveis da seção 5) depois de testar
@@ -366,7 +365,7 @@ acompanhar o PR #5 (o anterior deixou de acompanhar).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 175.
+**Próximo número:** regra 176.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -422,6 +421,12 @@ acompanhar o PR #5 (o anterior deixou de acompanhar).
 - 174 (29/10) Perguntas do caminho num tom formal sem exagero: "Para quem
   são as aulas que vocês oferecem?", "Quais formatos de aula vocês
   oferecem?" e "Como vocês alugam a quadra?". Teste: `catalogo.js`.
+- 175 (29/10) Valor do catálogo em intervalo: o exemplo só dentro do campo
+  ("ex.: 150 a 200"), sem o "Exemplo:"/"Na ficha:" embaixo; espaço, traço
+  ou vírgula viram " a " (teclado `decimal`, com a vírgula no iPhone);
+  grava "150-200", o menor primeiro; Avulsa e Mensal numa linha cada; o
+  chat do Parceiros responde "intervalo de preço". Testes: `catalogo.js`,
+  `chat-parceiros.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

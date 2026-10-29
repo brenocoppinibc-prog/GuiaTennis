@@ -791,8 +791,12 @@
   .cat-opcao { margin-top: 12px; padding: 12px 0 8px; border-top: 1px solid var(--border); }
   .cat-opcao-n { margin: 0 0 8px; font-weight: 700; font-size: 15px; }
   .cat-opcao-n span { font-weight: 400; font-size: 12px; color: var(--muted); margin-left: 4px; }
-  .cat-valores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .cat-valor-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  /* Uma linha por valor, o nome à esquerda e o campo à direita, para o
+     intervalo caber no campo (regra 175). */
+  .cat-valores { display: flex; flex-direction: column; gap: 8px; }
+  .cat-valor-col { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
+  .cat-valor-col .cat-col { flex: 0 0 72px; white-space: nowrap; }
+  .cat-valor-col .cat-cel { flex: 1 1 auto; max-width: 220px; }
   .cat-col { font-size: 13px; font-weight: 600; line-height: 1.2; }
   .cat-col small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
   .cat-cel { display: flex; align-items: center; gap: 6px; min-width: 0; }
@@ -19245,6 +19249,17 @@ function linhaDoItem(i) {
   return (i.publico === "crianca" ? "crianca:" + faixaDoItem(i) : "adulto") + ":" + i.tipo;
 }
 
+// O preço gravado: "150" ou o intervalo "150-200" (regra 175), com o menor
+// primeiro; "200 a 150" vira "150-200" e "150 a 150" ou "150 a 0", "150".
+function precoDoCatalogo(v) {
+  const nums = (String(v || "").match(/\d+/g) || []).slice(0, 2).map(n => n.slice(0, 9));
+  if (nums.length < 2) return nums[0] || "";
+  let [de, ate] = nums.map(Number);
+  if (!ate || ate === de) return nums[0];
+  if (!de) return nums[1];
+  if (ate < de) [de, ate] = [ate, de];
+  return `${de}-${ate}`;
+}
 // O item como o site usa, sem o que veio estranho (o banco guarda a lista
 // que o site monta).
 function itemDoCatalogo(x) {
@@ -19254,7 +19269,7 @@ function itemDoCatalogo(x) {
   const item = {
     tipo: tipo.key,
     cobranca: x.cobranca === "mensal" ? "mensal" : "avulsa",
-    preco: String(x.preco || "").replace(/[^0-9-]/g, "").replace(/^-+|-+$/g, "").slice(0, 20),
+    preco: precoDoCatalogo(x.preco),
   };
   // A aula sem valor nenhum vai sob consulta, sem a cobrança (regra 169).
   if (x.cobranca === "" && !item.preco && tipo.grupo === "aula") item.cobranca = "";
@@ -20299,36 +20314,38 @@ function fotoDoCartao(f, g, chave, nome, rotulo) {
 // Um exemplo em cada valor (pedido do Breno em 29/10/2026, regra 172:
 // "deixe um exemplo como é para fazer em cada valor, simulando os valores na
 // hora de fazer o cadastro nas modalidades"), como o preço sugerido do
-// Airbnb e os exemplos do Booking para Parceiros: o campo vazio mostra
-// "ex.: 180" e, embaixo do cartão, como fica na ficha — com o exemplo
-// enquanto não há valor e com o valor escrito depois.
+// Airbnb e os exemplos do Booking para Parceiros. Desde a regra 175
+// (29/10/2026: "tire a escrita de exemplo que está abaixo de escrever o
+// preço, só dentro do quadrado e quero que deixe em exemplo dois preços para
+// fazer intervalo"), o exemplo fica só dentro do campo e é um intervalo
+// ("ex.: 150 a 200"); o campo aceita um valor ou um intervalo.
 const EXEMPLOS_DE_VALOR = {
-  adulto: { individual: { avulsa: 180, mensal: 650 }, dupla: { avulsa: 110, mensal: 400 }, grupo: { avulsa: 70, mensal: 300 }, aula: { avulsa: 150, mensal: 550 } },
-  crianca: { individual: { avulsa: 150, mensal: 550 }, dupla: { avulsa: 90, mensal: 340 }, grupo: { avulsa: 60, mensal: 260 } },
-  locacao: { avulsa: 120, mensal: 450 },
+  adulto: { individual: { avulsa: "150 a 200", mensal: "550 a 750" }, dupla: { avulsa: "90 a 130", mensal: "350 a 450" }, grupo: { avulsa: "60 a 80", mensal: "250 a 350" }, aula: { avulsa: "120 a 180", mensal: "450 a 650" } },
+  crianca: { individual: { avulsa: "120 a 170", mensal: "450 a 600" }, dupla: { avulsa: "80 a 110", mensal: "300 a 400" }, grupo: { avulsa: "50 a 70", mensal: "220 a 300" } },
+  locacao: { avulsa: "100 a 150", mensal: "400 a 550" },
 };
-// As cobranças de um cartão ("adulto:grupo", "f1:dupla", "locacao:avulsa"):
-// a chave do valor, o exemplo e o que o valor paga.
-function valoresDoCartao(opcao) {
-  if (opcao.startsWith("locacao:")) {
-    const cob = opcao.split(":")[1];
-    return [{ chave: opcao, exemplo: EXEMPLOS_DE_VALOR.locacao[cob], unidade: unidadeDoItem({ tipo: "locacao", cobranca: cob }) }];
-  }
-  const [bloco, tipo] = opcao.split(":");
-  const crianca = bloco !== "adulto";
-  const ex = (EXEMPLOS_DE_VALOR[crianca ? "crianca" : "adulto"][tipo]) || EXEMPLOS_DE_VALOR.adulto.aula;
-  return CATALOGO_COBRANCAS.map(k => ({ chave: `${opcao}:${k.key}`, exemplo: ex[k.key], unidade: unidadeDoItem({ tipo, cobranca: k.key, publico: crianca ? "crianca" : "" }) }));
+// O exemplo de um valor ("adulto:grupo:mensal", "f1:dupla:avulsa",
+// "locacao:avulsa").
+function exemploDoValor(chave) {
+  const partes = chave.split(":");
+  if (partes[0] === "locacao") return EXEMPLOS_DE_VALOR.locacao[partes[1]];
+  const ex = EXEMPLOS_DE_VALOR[partes[0] === "adulto" ? "adulto" : "crianca"][partes[1]] || EXEMPLOS_DE_VALOR.adulto.aula;
+  return ex[partes[2]];
 }
-function exemploDoCartao(g, opcao) {
-  const lista = valoresDoCartao(opcao);
-  const escritos = lista.filter(v => priceMin(g.valores[v.chave]));
-  if (escritos.length) return `<span class="cat-exemplo-r">Na ficha:</span> ${escritos.map(v => `${esc(precoTexto(g.valores[v.chave]))} ${esc(v.unidade)}`).join(" · ")}`;
-  return `<span class="cat-exemplo-r">Exemplo:</span> ${lista.map(v => `R$ ${v.exemplo} ${esc(v.unidade)}`).join(" · ")}`;
+// O que a academia digita no valor: um número ou dois (o intervalo). O que
+// separa os dois (espaço, traço, vírgula, ponto) vira " a " na hora, e
+// "apagando" deixa tirar o " a " de volta.
+function valorNoCampo(texto, apagando) {
+  const t = String(texto || "");
+  const nums = (t.match(/\d+/g) || []).slice(0, 2);
+  if (!nums.length) return "";
+  if (nums.length === 2) return `${nums[0]} a ${nums[1]}`;
+  if (apagando) return /^\d+ a $/.test(t) ? t : nums[0];
+  return /\d\D/.test(t) ? `${nums[0]} a ` : nums[0];
 }
 function campoDoValor(g, chave, nome) {
-  const opcao = chave.startsWith("locacao:") ? chave : chave.replace(/:(avulsa|mensal)$/, "");
-  const exemplo = (valoresDoCartao(opcao).find(v => v.chave === chave) || {}).exemplo;
-  return `<label class="cat-cel"><span class="cat-rs">R$</span><input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="numeric" placeholder="${exemplo ? `ex.: ${exemplo}` : "—"}" value="${esc(g.valores[chave] || "")}" aria-label="Valor da ${esc(nome)}" /></label>`;
+  const exemplo = exemploDoValor(chave);
+  return `<label class="cat-cel"><span class="cat-rs">R$</span><input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="decimal" placeholder="${exemplo ? `ex.: ${exemplo}` : "—"}" value="${esc(valorNoCampo(g.valores[chave]))}" aria-label="Valor da ${esc(nome)}" /></label>`;
 }
 // A parte "Aulas": para quem > formatos (em cada faixa de idade das
 // crianças) > a foto e os valores de cada formato, num cartão.
@@ -20347,7 +20364,6 @@ function editorDasAulas(f) {
               ${campoDoValor(g, `${c.chave}:${k.key}`, `${nome.toLowerCase()} ${k.nome.toLowerCase()}`)}
             </div>`).join("")}
         </div>
-        <p class="cat-exemplo" data-cat-exemplo="${c.chave}">${exemploDoCartao(g, c.chave)}</p>
         ${fotoDoCartao(f, g, c.chave, nome.toLowerCase(), "Foto desta aula")}
       </div>`;
   };
@@ -20417,7 +20433,6 @@ function editorDaLocacao(f) {
             <div class="cat-valores">
               <div class="cat-valor-col"><span class="cat-col">Valor<small>${k.key === "mensal" ? "por mês" : "por hora"}</small></span>${campoDoValor(g, "locacao:" + k.key, nome.toLowerCase())}</div>
             </div>
-            <p class="cat-exemplo" data-cat-exemplo="locacao:${k.key}">${exemploDoCartao(g, "locacao:" + k.key)}</p>
             ${fotoDoCartao(f, g, "locacao:" + k.key, nome.toLowerCase(), "Foto da quadra")}
           </div>`;
         }).join("")}
@@ -22780,8 +22795,8 @@ const CHAT_DETALHES_PC = [
   { id: "pc-fotos", t: "Fotos", p: ["foto", "fotos", "imagem", "imagens", "capa"],
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
-  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Outra faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor e a foto de cada uma. Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Outra faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -22807,7 +22822,9 @@ function detalhePorId(id) {
 function detalhePcDaDuvida(txt, palavras, r) {
   const det = CHAT_DETALHES_PC.find(d => pontosDoTema(d, txt, palavras) >= 2 && !(d.nao || []).some(w => palavras.includes(w)));
   if (!det) return null;
-  return r.tipo !== "tema" || det.temas.includes(r.tema.id) ? det : null;
+  // A parte da ficha que acerta mais palavras do que o assunto vale mais:
+  // "intervalo de preço na aula" é do catálogo, não dos planos (regra 175).
+  return r.tipo !== "tema" || det.temas.includes(r.tema.id) || pontosDoTema(det, txt, palavras) > pontosDoTema(r.tema, txt, palavras) ? det : null;
 }
 function responderDetalhePc(det) {
   const ch = state.chat;
@@ -26100,14 +26117,10 @@ function attachEvents() {
   });
   document.querySelectorAll("[data-cat-valor]").forEach(el => {
     el.oninput = (e) => {
-      const v = e.target.value.replace(/[^0-9-]/g, "");
-      e.target.value = v;
-      const g = gradeDoForm();
-      g.valores[el.dataset.catValor] = v;
+      const v = valorNoCampo(e.target.value, (e.inputType || "").startsWith("delete"));
+      if (e.target.value !== v) e.target.value = v;
+      gradeDoForm().valores[el.dataset.catValor] = v;
       mudouCatalogo(false);
-      const opcao = el.closest("[data-cat-opcao]");
-      const linha = opcao && opcao.querySelector("[data-cat-exemplo]");
-      if (linha) linha.innerHTML = exemploDoCartao(g, opcao.dataset.catOpcao);
     };
   });
   document.querySelectorAll("[data-cat-idade]").forEach(el => {

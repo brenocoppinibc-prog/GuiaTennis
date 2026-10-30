@@ -90,6 +90,7 @@ async function abrirOChat(page) {
   await escrever(page, 'o valor mensal da aula é por mês?');
   u = await ultima(page);
   ok(u.texto.includes('os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano)') && u.texto.includes('"Adicionar faixa de idade"'), 'o valor mensal da aula: por aula — ' + u.texto.slice(0, 120));
+  ok(u.texto.includes('com o valor por hora (na mensal, o valor de cada hora no plano)'), 'e a locação mensal, por hora (regra 183)');
   await browser.close();
 
   // ---- sem conta ----

@@ -17828,7 +17828,8 @@ function renderActiveChips() {
 // (ou sem filtro), aparecem as duas, cada uma pelo menor valor.
 // Com o catálogo, uma oferta por modalidade (aula e locação), pela opção mais
 // em conta (a avulsa antes da mensal), com o que o valor paga: "/aula"
-// (também na aula mensal, regra 182), "/h", "/mês" (locação mensal).
+// (também na aula mensal, regra 182), "/h" (também na locação mensal,
+// regra 183).
 function ofertas(c) {
   const todas = opcoesPreco(c);
   const grupoDe = o => o.publico === "crianca" ? "crianca" : o.grupo;
@@ -18985,7 +18986,7 @@ function rotuloCurto(o) {
   if (!o.item) return `${o.nome.toLowerCase()}, ${o.unidade}`;
   const i = o.item;
   const mensal = i.cobranca === "mensal";
-  if (tipoDoItem(i).grupo === "locacao") return mensal ? "por mês, locação" : "por hora de quadra";
+  if (tipoDoItem(i).grupo === "locacao") return mensal ? "por hora de quadra, no plano mensal" : "por hora de quadra";
   const onde = { individual: "aula individual", dupla: "na dupla", grupo: "na turma", aula: "aula" }[i.tipo] + (i.publico === "crianca" ? " infantil" : "");
   const plano = mensal ? ", no plano mensal" : "";
   if (tipoDoItem(i).porPessoa) return `por pessoa, ${onde}${plano}`;
@@ -19010,7 +19011,7 @@ function descricaoAcademia(c) {
     // Com o catálogo, o "a partir de" de cada tipo, com o que o valor paga.
     const grupos = [...new Set(opcoes.map(o => o.resumo))];
     const partes = grupos.map(r => maisEmConta(opcoes.filter(o => o.resumo === r))).filter(Boolean)
-      .map(o => `${o.nomeResumo.toLowerCase()} a partir de ${precoTexto(o.faixa).replace(/ a \d+$/, "")} ${o.unidade}${o.grupo === "aula" && o.cobranca === "mensal" ? ", no plano mensal" : ""}`);
+      .map(o => `${o.nomeResumo.toLowerCase()} a partir de ${precoTexto(o.faixa).replace(/ a \d+$/, "")} ${o.unidade}${o.item && o.cobranca === "mensal" ? ", no plano mensal" : ""}`);
     // Ponto e vírgula entre os tipos: a unidade já tem vírgula ("por pessoa, por aula").
     const lista = partes.length > 1 ? `${partes.slice(0, -1).join("; ")}; e ${partes[partes.length - 1]}` : partes[0];
     frases.push(`No catálogo da academia: ${lista}.`);
@@ -19154,7 +19155,7 @@ function htOpcoes(c) {
   const fotos = courtPhotos(c);
   const pol = politicaDe(c);
   // "Menor preço" só entre valores que pagam a mesma coisa (todos por aula,
-  // por exemplo; a locação, por hora ou por mês, não se compara com a aula).
+  // por exemplo; a locação, por hora, não se compara com a aula).
   const comValor = opcoes.filter(o => temPreco(o.faixa));
   const valores = comValor.map(o => parseInt(priceMin(o.faixa), 10));
   const menor = valores.length > 1 && new Set(valores).size > 1 && new Set(comValor.map(o => o.unidade)).size === 1 ? Math.min(...valores) : null;
@@ -19454,7 +19455,7 @@ function reviewsSection(c) {
 }
 
 // O texto de preço é um só no site inteiro: faixa completa; o que o valor
-// paga (por hora, por aula, por pessoa, por mês) vem ao lado, do catálogo.
+// paga (por hora, por aula, por pessoa) vem ao lado, do catálogo.
 // Sem valor, a tela diz "Sob consulta" e manda falar com a academia (regra
 // 3). Sem explicar o motivo: quem chega quer saber o que fazer.
 const SEM_PRECO = "Sob consulta";
@@ -19696,15 +19697,16 @@ function ordemDoCatalogo(a, b) {
   const t = x => CATALOGO_TIPOS.findIndex(k => k.key === x.tipo);
   return publico(a) - publico(b) || idade(a) - idade(b) || t(a) - t(b) || (a.cobranca === "mensal") - (b.cobranca === "mensal");
 }
-// Por hora, por aula, por pessoa, por mês… A aula mensal também é por aula
-// (regra 182); só a locação mensal é por mês.
+// Por hora, por aula, por pessoa… A mensal paga o mesmo que a avulsa: a
+// aula mensal é por aula (regra 182) e a locação mensal, por hora (regra
+// 183, 30/10/2026: "locação avulsa e mensal valores por hora").
 function unidadeDoItem(i) {
   const t = tipoDoItem(i);
-  if (t.grupo === "locacao") return i.cobranca === "mensal" ? "por mês" : "por hora";
+  if (t.grupo === "locacao") return "por hora";
   return t.porPessoa ? "por pessoa, por aula" : "por aula";
 }
 function unidadeCurta(i) {
-  if (tipoDoItem(i).grupo === "locacao") return i.cobranca === "mensal" ? "/mês" : "/h";
+  if (tipoDoItem(i).grupo === "locacao") return "/h";
   return "/aula";
 }
 // "Aula em grupo" ou, para as crianças, "Aula infantil em grupo".
@@ -20590,11 +20592,12 @@ function fotoDoCartao(f, g, chave, nome, rotulo) {
 // fazer intervalo"), o exemplo fica só dentro do campo e é um intervalo
 // ("ex.: 150 a 200"); o campo aceita um valor ou um intervalo. Desde a
 // regra 182 (30/10/2026: "o valor mensal também será por aula"), a mensal
-// da aula é o valor de cada aula no plano mensal, abaixo da avulsa.
+// da aula é o valor de cada aula no plano mensal, abaixo da avulsa; desde a
+// regra 183, a locação mensal é o valor de cada hora no plano.
 const EXEMPLOS_DE_VALOR = {
   adulto: { individual: { avulsa: "150 a 200", mensal: "130 a 170" }, dupla: { avulsa: "90 a 130", mensal: "80 a 110" }, grupo: { avulsa: "60 a 80", mensal: "50 a 70" }, aula: { avulsa: "120 a 180", mensal: "100 a 150" } },
   crianca: { individual: { avulsa: "120 a 170", mensal: "100 a 140" }, dupla: { avulsa: "80 a 110", mensal: "70 a 90" }, grupo: { avulsa: "50 a 70", mensal: "40 a 60" } },
-  locacao: { avulsa: "100 a 150", mensal: "400 a 550" },
+  locacao: { avulsa: "100 a 150", mensal: "80 a 120" },
 };
 // O exemplo de um valor ("adulto:grupo:mensal", "f1:dupla:avulsa",
 // "locacao:avulsa").
@@ -20693,7 +20696,7 @@ function editorDaLocacao(f) {
       <div class="chip-row cat-formatos" role="group" aria-label="Como vocês alugam a quadra">
         ${CATALOGO_COBRANCAS.map(k => {
           const on = g.locacao.cobrancas.includes(k.key);
-          return `<button type="button" class="chip ${on ? "active" : ""}" data-cat-cobranca="${k.key}" aria-pressed="${on}">${k.key === "mensal" ? "Mensal" : "Avulsa (por hora)"}</button>`;
+          return `<button type="button" class="chip ${on ? "active" : ""}" data-cat-cobranca="${k.key}" aria-pressed="${on}">${k.nome}</button>`;
         }).join("")}
       </div>
       <div class="cat-tabela" id="cat-tabela-locacao">
@@ -20703,13 +20706,13 @@ function editorDaLocacao(f) {
           <div class="cat-opcao" data-cat-opcao="locacao:${k.key}">
             <p class="cat-opcao-n">${nome}</p>
             <div class="cat-valores">
-              <div class="cat-valor-col"><span class="cat-col">Valor<small>${k.key === "mensal" ? "por mês" : "por hora"}</small></span>${campoDoValor(g, "locacao:" + k.key, nome.toLowerCase())}</div>
+              <div class="cat-valor-col"><span class="cat-col">Valor<small>por hora</small></span>${campoDoValor(g, "locacao:" + k.key, nome.toLowerCase())}</div>
             </div>
             ${fotoDoCartao(f, g, "locacao:" + k.key, nome.toLowerCase(), "Foto da quadra")}
           </div>`;
         }).join("")}
       </div>
-      ${g.locacao.cobrancas.length ? `<p class="footnote" style="margin-top:12px">Sem valor, aparece "Sob consulta". No Premium, cada uma mostra a própria foto.</p>` : ""}`;
+      ${g.locacao.cobrancas.length ? `<p class="footnote" style="margin-top:12px">Escreva o valor por hora: na mensal, o valor de cada hora no plano. Sem valor, aparece "Sob consulta". No Premium, cada uma mostra a própria foto.</p>` : ""}`;
 }
 
 const REG_PASSOS = [
@@ -21255,7 +21258,7 @@ function regPassoHtml(id, f, obrigatorio) {
         <div class="reg-mods" role="group" aria-label="Modalidades">
           ${[
             { key: "aulas_proprias", t: "Aulas", d: "Com professor da academia, para adultos e crianças" },
-            { key: "locacao", t: "Locação de quadra", d: "Avulsa (por hora) ou mensal" },
+            { key: "locacao", t: "Locação de quadra", d: "Avulsa ou mensal, por hora" },
           ].map(m => {
             const on = (f.modalidades || []).includes(m.key);
             return `<button type="button" class="reg-mod ${on ? "on" : ""}" data-reg-mod="${m.key}" aria-pressed="${on}"><span class="cat-caixa">${on ? icon('check', 13, '#fff') : ""}</span><span class="reg-mod-txt"><span class="reg-mod-t">${m.t}</span><span class="reg-mod-d">${m.d}</span></span></button>`;
@@ -22275,7 +22278,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
-<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo, para adultos e para crianças, com a idade informada pela academia, e locação, avulsas ou mensais, por hora, por aula, por pessoa ou por mês) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
+<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo, para adultos e para crianças, com a idade informada pela academia, e locação, avulsas ou mensais, por aula, por pessoa ou por hora; no plano mensal, o valor de cada aula ou de cada hora) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir, e o cadastro dela fica guardado como fechado (cadastro inativo), com as avaliações, fora do site. Se ela reabrir, quem a administrava volta a administrá-la pelo GuiaTennis Parceiros, com o mesmo e-mail; uma conta nova pede a reabertura ao GuiaTennis, que confere antes. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
@@ -22524,7 +22527,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "preco-jog", onde: "jogadores", t: "Preço e \"Sob consulta\"",
     p: ["preco", "valor", "quanto custa", "quanto e", "sob consulta", "barato", "caro", "pagar", "pagamento", "cobra"],
-    r: "O preço aparece na ficha quando a academia informa, em \"Escolha o que você quer\": aula individual, em dupla e em grupo e locação, avulsa ou mensal, cada uma com o que o valor paga (por hora, por aula, por pessoa, por mês). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
+    r: "O preço aparece na ficha quando a academia informa, em \"Escolha o que você quer\": aula individual, em dupla e em grupo e locação, avulsa ou mensal, cada uma com o que o valor paga (por aula, por pessoa ou por hora; no plano mensal, o valor de cada aula ou de cada hora). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "avaliar", onde: "jogadores", t: "Avaliar uma academia",
     p: ["avali", "nota", "comentar", "comentario", "estrelas", "opiniao"],
@@ -23068,8 +23071,8 @@ const CHAT_DETALHES_PC = [
   { id: "pc-fotos", t: "Fotos", p: ["foto", "fotos", "imagem", "imagens", "capa"],
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
-  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco", "valor mensal", "aula mensal"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano), e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco", "valor mensal", "aula mensal", "locacao mensal"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano), e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora (na mensal, o valor de cada hora no plano) e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],

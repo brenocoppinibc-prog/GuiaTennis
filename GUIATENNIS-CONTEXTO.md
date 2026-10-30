@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 30/10/2026 (regra 182)
+**Atualizado em:** 30/10/2026 (regra 183)
 
 | | |
 |---|---|
@@ -192,7 +192,8 @@ Produto (o que já foi decidido)
   a foto; **as duas por aula** (a mensal é o valor de cada aula no plano;
   na ficha, "por aula" e, no resumo, "no plano mensal"); em branco não é oferecida,
   sem valor nenhum = "Sob consulta" sem cobrança) e **Locação** (avulsa e/ou
-  mensal, cada uma com o valor e a foto; a locação mensal segue "por mês"). Cada valor é um número ou um
+  mensal, cada uma com o valor e a foto; **as duas por hora**, a mensal é o
+  valor de cada hora no plano). Nada no catálogo é "por mês". Cada valor é um número ou um
   intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), numa linha
   com o nome à esquerda; o exemplo fica **só dentro do campo**, em intervalo
   ("ex.: 150 a 200", `EXEMPLOS_DE_VALOR`), nada escrito embaixo. Foto no Premium. Na ficha, as
@@ -347,7 +348,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 182**. De 28 a 30/10 entraram: o catálogo com aulas
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 183**. De 28 a 30/10 entraram: o catálogo com aulas
 para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
 e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
 a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
@@ -359,7 +360,8 @@ GuiaTennis e o "Como chegar" pelo celular; os textos das promoções curtos
 funções da equipe, vários responsáveis principais e a aba Pagamentos (SQL
 `20261029190000_funcoes_e_pagamentos`); e a ajuda depois de cinco buscas
 seguidas (sem SQL; Termos e Privacidade em 30/10); e "Adicionar faixa de
-idade" com a aula mensal por aula (sem SQL). A descrição do PR tem
+idade", a aula mensal por aula e a locação mensal por hora (sem SQL;
+Termos em 30/10). A descrição do PR tem
 uma linha por regra em "Pedidos depois de 28/10". Testes: 2.187 no
 navegador e 716 no banco, nenhuma falha. **Chat trocado em 30/10/2026:** o
 chat novo volta a acompanhar o PR #5 (o anterior deixou de acompanhar e
@@ -394,7 +396,7 @@ cancelou as conferências automáticas).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 183.
+**Próximo número:** regra 184.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -486,8 +488,12 @@ cancelou as conferências automáticas).
   mensal da aula é por aula (o valor de cada aula no plano): cadastro com
   "por aula" nas duas e exemplos da mensal abaixo da avulsa; ficha, busca,
   comparação, perguntas e Google com "por aula" ("/aula"); rótulo curto e
-  "Sobre" com "no plano mensal". A locação mensal segue por mês. Sem SQL.
-  Teste: `catalogo.js`.
+  "Sobre" com "no plano mensal". Sem SQL. Teste: `catalogo.js`.
+- 183 (30/10) "Locação avulsa e mensal valores por hora": a locação mensal
+  é o valor de cada hora no plano ("por hora", "/h", rótulo "no plano
+  mensal"); botões "Avulsa" e "Mensal"; exemplo da mensal "80 a 120";
+  Termos (o que o valor paga) e chat dos jogadores e do Parceiros sem "por
+  mês". Sem SQL. Testes: `catalogo.js`, `chat-parceiros.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

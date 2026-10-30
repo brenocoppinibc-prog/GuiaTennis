@@ -9,7 +9,8 @@
 // precisar fazer um por um". A grade de preços no cadastro, os cartões e os
 // filtros da ficha, o "a partir de" da busca, a comparação, o Google e o
 // banco ainda sem a coluna. Em 30/10/2026 (regra 182): "Outra faixa de idade
-// coloque adicionar faixa de idade e o valor mensal também será por aula".
+// coloque adicionar faixa de idade e o valor mensal também será por aula";
+// e (regra 183) "locação avulsa e mensal valores por hora".
 const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
@@ -121,7 +122,7 @@ const CATALOGO = [
   await page.click('[data-reg-mod="locacao"]');
   await irParte(page, 'locacao');
   ok((await texto(page, '.reg-passo .field-label')) === 'Como vocês alugam a quadra?', 'na locação, a pergunta no mesmo tom');
-  ok((await texto(page, '.reg-titulo')) === 'Locação de quadra' && (await chipsDe(page, '[data-cat-cobranca]')) === 'Avulsa (por hora),Mensal' && !(await page.$('#cat-tabela-locacao [data-cat-opcao]')), 'marcando Locação nas Modalidades, a parte Locação aparece, com a escolha: avulsa ou mensal');
+  ok((await texto(page, '.reg-titulo')) === 'Locação de quadra' && (await chipsDe(page, '[data-cat-cobranca]')) === 'Avulsa,Mensal' && !(await page.$('#cat-tabela-locacao [data-cat-opcao]')), 'marcando Locação nas Modalidades, a parte Locação aparece, com a escolha: avulsa ou mensal');
   await page.click('[data-cat-cobranca="avulsa"]');
   ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'locacao:avulsa') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).startsWith('Locação avulsa Valor por hora R$') && (await texto(page, '[data-cat-opcao="locacao:avulsa"]')).includes('Foto da quadra'), 'a avulsa abre o cartão: o valor por hora e a foto');
   ok((await page.getAttribute('[data-cat-valor="locacao:avulsa"]', 'placeholder')) === 'ex.: 100 a 150' && !(await page.$('[data-cat-exemplo]')), 'na locação, o exemplo do valor por hora, só dentro do campo');
@@ -163,6 +164,7 @@ const CATALOGO = [
   await page.click('[data-reg-mod="locacao"]');
   await irParte(page, 'locacao');
   await page.click('[data-cat-cobranca="mensal"]');
+  ok((await texto(page, '[data-cat-opcao="locacao:mensal"]')).startsWith('Locação mensal Valor por hora R$') && (await page.getAttribute('[data-cat-valor="locacao:mensal"]', 'placeholder')) === 'ex.: 80 a 120', 'a locação mensal também por hora, com o exemplo abaixo do da avulsa (regra 183)');
   await irParte(page, 'revisar');
   await salvarFicha(page);
   await page.waitForTimeout(500);
@@ -293,7 +295,7 @@ const CATALOGO = [
   await page.evaluate(() => abrirEdicaoDaFicha(state.allCourts.find(x => x.id === 'a2')));
   await page.waitForTimeout(300);
   await irParte(page, 'locacao');
-  ok((await chipsDe(page, '[data-cat-cobranca]')) === '✓Avulsa (por hora),Mensal' && (await grade(page, 'cat-tabela-locacao')) === 'avulsa=100 a 120', 'o preço por hora de antes aparece na locação avulsa, como intervalo — ' + await grade(page, 'cat-tabela-locacao'));
+  ok((await chipsDe(page, '[data-cat-cobranca]')) === '✓Avulsa,Mensal' && (await grade(page, 'cat-tabela-locacao')) === 'avulsa=100 a 120', 'o preço por hora de antes aparece na locação avulsa, como intervalo — ' + await grade(page, 'cat-tabela-locacao'));
   // A aula do preço antigo, sem formato: a linha "Aula", com a dica de escrever no formato certo.
   await page.evaluate(() => { state.regForm = null; abrirEdicaoDaFicha({ ...state.allCourts.find(x => x.id === 'a1'), priceAula: '120', catalogo: [] }); });
   await page.waitForTimeout(300);
@@ -376,7 +378,9 @@ const CATALOGO = [
   let srcs = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto-foto img')].map(x => x.getAttribute('src') || ''));
   ok(srcs.length === 4 && srcs[0] === fotoDaAula && srcs[1] === fotoDaAula && srcs[2] !== srcs[3], 'na ficha da academia Premium, a avulsa e a mensal da aula mostram a foto dela; a locação, uma foto para cada');
   const unidades = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto-unit')].map(x => x.innerText.trim()).join(' | '));
-  ok(unidades === 'por pessoa, por aula | por pessoa, por aula | por hora | por mês', 'a aula mensal também por aula; só a locação mensal por mês (regra 182) — ' + unidades);
+  ok(unidades === 'por pessoa, por aula | por pessoa, por aula | por hora | por hora', 'a mensal paga o mesmo que a avulsa: a aula por aula (regra 182), a locação por hora (regra 183) — ' + unidades);
+  const curtosLoc = await page.evaluate(() => opcoesPreco(state.selected).filter(o => o.grupo === 'locacao').map(o => rotuloCurto(o) + ' ' + o.curto).join(' | '));
+  ok(curtosLoc === 'por hora de quadra /h | por hora de quadra, no plano mensal /h', 'a locação mensal: por hora, no plano mensal — ' + curtosLoc);
   await browser.close();
 
   // Fora do Premium: a ficha não mostra a foto da aula, e o cadastro avisa.

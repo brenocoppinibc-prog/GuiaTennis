@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 30/10/2026 (regra 181)
+**Atualizado em:** 30/10/2026 (regra 182)
 
 | | |
 |---|---|
@@ -187,10 +187,12 @@ Produto (o que já foi decidido)
   também na edição; o admin segue só com o nome) abre as partes de cada uma, que só aparecem se escolhidas
   (`passoVisivel`; os índices continuam os de `REG_PASSOS`): **Aulas** (para
   quem: adultos e/ou crianças, as crianças em faixas de idade de 3 a 17
-  anos, uma para cada turma > formatos individual, dupla, grupo > um cartão
-  por formato com a avulsa, a mensal e a foto; em branco não é oferecida,
+  anos, uma para cada turma, com "Adicionar faixa de idade" > formatos
+  individual, dupla, grupo > um cartão por formato com a avulsa, a mensal e
+  a foto; **as duas por aula** (a mensal é o valor de cada aula no plano;
+  na ficha, "por aula" e, no resumo, "no plano mensal"); em branco não é oferecida,
   sem valor nenhum = "Sob consulta" sem cobrança) e **Locação** (avulsa e/ou
-  mensal, cada uma com o valor e a foto). Cada valor é um número ou um
+  mensal, cada uma com o valor e a foto; a locação mensal segue "por mês"). Cada valor é um número ou um
   intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), numa linha
   com o nome à esquerda; o exemplo fica **só dentro do campo**, em intervalo
   ("ex.: 150 a 200", `EXEMPLOS_DE_VALOR`), nada escrito embaixo. Foto no Premium. Na ficha, as
@@ -345,8 +347,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 181** (último
-commit de código `9a8bc21`). De 28 a 30/10 entraram: o catálogo com aulas
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 182**. De 28 a 30/10 entraram: o catálogo com aulas
 para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
 e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
 a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
@@ -357,7 +358,8 @@ GuiaTennis e o "Como chegar" pelo celular; os textos das promoções curtos
 `20261029170000_textos_curtos_das_promocoes`); o lance em parágrafos; as
 funções da equipe, vários responsáveis principais e a aba Pagamentos (SQL
 `20261029190000_funcoes_e_pagamentos`); e a ajuda depois de cinco buscas
-seguidas (sem SQL; Termos e Privacidade em 30/10). A descrição do PR tem
+seguidas (sem SQL; Termos e Privacidade em 30/10); e "Adicionar faixa de
+idade" com a aula mensal por aula (sem SQL). A descrição do PR tem
 uma linha por regra em "Pedidos depois de 28/10". Testes: 2.187 no
 navegador e 716 no banco, nenhuma falha. **Chat trocado em 30/10/2026:** o
 chat novo volta a acompanhar o PR #5 (o anterior deixou de acompanhar e
@@ -392,7 +394,7 @@ cancelou as conferências automáticas).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 182.
+**Próximo número:** regra 183.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -480,6 +482,12 @@ cancelou as conferências automáticas).
   com "Usar minha localização" (o melhor caminho) e "Falar com o chat de
   ajuda". Conta na aba, sem IP (Privacidade em 30/10). Sem SQL. Teste:
   `ajuda-na-busca.js` (novo).
+- 182 (30/10) "Outra faixa de idade" vira "Adicionar faixa de idade"; a
+  mensal da aula é por aula (o valor de cada aula no plano): cadastro com
+  "por aula" nas duas e exemplos da mensal abaixo da avulsa; ficha, busca,
+  comparação, perguntas e Google com "por aula" ("/aula"); rótulo curto e
+  "Sobre" com "no plano mensal". A locação mensal segue por mês. Sem SQL.
+  Teste: `catalogo.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

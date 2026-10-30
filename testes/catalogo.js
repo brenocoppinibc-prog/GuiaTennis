@@ -8,7 +8,8 @@
 // ou mensal; tente deixar isso um pouco mais fácil de ser preenchido, sem
 // precisar fazer um por um". A grade de preços no cadastro, os cartões e os
 // filtros da ficha, o "a partir de" da busca, a comparação, o Google e o
-// banco ainda sem a coluna.
+// banco ainda sem a coluna. Em 30/10/2026 (regra 182): "Outra faixa de idade
+// coloque adicionar faixa de idade e o valor mensal também será por aula".
 const { abrir, ok, irParte, salvarFicha } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
@@ -51,7 +52,7 @@ const CATALOGO = [
   await page.click('[data-cat-formato="adulto:grupo"]');
   ok((await grade(page, 'adulto')) === 'individual=·/· grupo=·/·', 'um cartão por formato escolhido, na ordem — ' + await grade(page, 'adulto'));
   const cartaoGrupo = await texto(page, '[data-cat-opcao="adulto:grupo"]');
-  ok(cartaoGrupo.startsWith('Aula em grupo valor por pessoa Avulsa por aula R$ Mensal por mês R$') && cartaoGrupo.includes('Foto desta aula'), 'cada cartão: o nome, a avulsa e a mensal e a foto daquela aula — ' + cartaoGrupo);
+  ok(cartaoGrupo.startsWith('Aula em grupo valor por pessoa Avulsa por aula R$ Mensal por aula R$') && cartaoGrupo.includes('Foto desta aula'), 'cada cartão: o nome, a avulsa e a mensal (as duas por aula, regra 182) e a foto daquela aula — ' + cartaoGrupo);
   const so = await texto(page, '#cat-tabela');
   ok(!/Duração|vezes por semana|alunos|Observação|horário/i.test(so), 'só modalidade e valor: sem duração, vezes, alunos, observação ou horário');
   await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '150');
@@ -77,7 +78,7 @@ const CATALOGO = [
   ok((await page.getAttribute(gm, 'inputmode')) === 'decimal', 'o teclado de números com a vírgula, para o intervalo também no iPhone');
   await page.fill(gm, '300');
   // O exemplo fica só dentro do campo, em intervalo (regra 175; era a regra 172).
-  ok((await page.getAttribute('[data-cat-valor="adulto:grupo:avulsa"]', 'placeholder')) === 'ex.: 60 a 80' && (await page.getAttribute('[data-cat-valor="adulto:individual:mensal"]', 'placeholder')) === 'ex.: 550 a 750', 'cada valor vazio mostra o exemplo em intervalo ("ex.: 60 a 80")');
+  ok((await page.getAttribute('[data-cat-valor="adulto:grupo:avulsa"]', 'placeholder')) === 'ex.: 60 a 80' && (await page.getAttribute('[data-cat-valor="adulto:individual:mensal"]', 'placeholder')) === 'ex.: 130 a 170', 'cada valor vazio mostra o exemplo em intervalo ("ex.: 60 a 80"); o da mensal, por aula, abaixo da avulsa');
   ok(!(await page.$('[data-cat-exemplo]')) && !/Exemplo:|Na ficha:/.test(await texto(page, '[data-cat-bloco="adulto"]')), 'nada escrito embaixo dos valores');
 
   // As crianças: uma faixa de idade para cada turma.
@@ -101,8 +102,9 @@ const CATALOGO = [
   await page.fill('[data-cat-valor="f1:individual:avulsa"]', '110');
   await page.fill('[data-cat-valor="f1:individual:mensal"]', '');
   await page.fill('[data-cat-valor="f1:grupo:mensal"]', '220');
+  ok((await texto(page, '[data-cat-faixa-mais]')) === 'Adicionar faixa de idade', 'o botão da outra turma diz "Adicionar faixa de idade"');
   await page.click('[data-cat-faixa-mais]');
-  ok(await page.$('[data-cat-bloco="f2"]') && await page.evaluate(() => document.activeElement?.dataset.catIdade === 'f2:de') && (await page.$$('[data-cat-faixa-tirar]')).length === 2, '"Outra faixa de idade" abre a segunda faixa, com o cursor na idade, e cada faixa ganha o ✕');
+  ok(await page.$('[data-cat-bloco="f2"]') && await page.evaluate(() => document.activeElement?.dataset.catIdade === 'f2:de') && (await page.$$('[data-cat-faixa-tirar]')).length === 2, '"Adicionar faixa de idade" abre a segunda faixa, com o cursor na idade, e cada faixa ganha o ✕');
   await page.selectOption('[data-cat-idade="f2:de"]', '13');
   await page.selectOption('[data-cat-idade="f2:ate"]', '17');
   await page.click('[data-cat-formato="f2:grupo"]');
@@ -195,14 +197,14 @@ const CATALOGO = [
     const c = [...document.querySelectorAll('#ht-quartos .ht-quarto')][2];
     return { t: c.innerText.replace(/\s+/g, ' '), wa: decodeURIComponent(c.querySelector('.ht-quarto-bt').getAttribute('href')), menor: !!document.querySelector('.ht-quarto-tag') };
   });
-  ok(grupo.t.includes('Plano mensal') && grupo.t.includes('Turma com o professor') && grupo.t.includes('R$ 300') && grupo.t.includes('por pessoa, por mês') && !/por semana|alunos|iniciantes|hora de aula|999/.test(grupo.t), 'o cartão da turma: só a modalidade e o valor — ' + grupo.t);
+  ok(grupo.t.includes('Plano mensal') && grupo.t.includes('Turma com o professor') && grupo.t.includes('R$ 300') && grupo.t.includes('por pessoa, por aula') && !grupo.t.includes('por mês') && !/por semana|alunos|iniciantes|hora de aula|999/.test(grupo.t), 'o cartão da turma: só a modalidade e o valor — ' + grupo.t);
   ok(grupo.wa.includes('queria saber sobre o plano mensal de aula em grupo.'), 'o WhatsApp já abre sobre aquela opção — ' + grupo.wa.split('text=')[1]);
   ok(!grupo.menor, 'sem "Menor preço": avulsa e mensal não se comparam');
   const infantil = await page.evaluate(() => {
     const c = [...document.querySelectorAll('#ht-quartos .ht-quarto')][4];
     return { t: c.innerText.replace(/\s+/g, ' '), wa: decodeURIComponent(c.querySelector('.ht-quarto-bt').getAttribute('href')) };
   });
-  ok(infantil.t.includes('Aula infantil em grupo') && infantil.t.includes('Plano mensal') && infantil.t.includes('Turma de crianças com o professor') && infantil.t.includes('De 6 a 12 anos') && infantil.t.includes('R$ 220') && infantil.t.includes('por pessoa, por mês'), 'o cartão da aula das crianças: o formato, a idade e o valor — ' + infantil.t);
+  ok(infantil.t.includes('Aula infantil em grupo') && infantil.t.includes('Plano mensal') && infantil.t.includes('Turma de crianças com o professor') && infantil.t.includes('De 6 a 12 anos') && infantil.t.includes('R$ 220') && infantil.t.includes('por pessoa, por aula'), 'o cartão da aula das crianças: o formato, a idade e o valor — ' + infantil.t);
   ok(infantil.wa.includes('queria saber sobre o plano mensal de aula infantil em grupo.'), 'o WhatsApp da aula das crianças — ' + infantil.wa.split('text=')[1]);
   const loc = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][6].innerText.replace(/\s+/g, ' '));
   const maiores = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][5].innerText.replace(/\s+/g, ' '));
@@ -231,10 +233,10 @@ const CATALOGO = [
   ok(resumo.barra === 'por pessoa, na dupla', 'a barra de baixo: a opção avulsa mais em conta dos adultos e o que o valor paga, curto — ' + resumo.barra);
   ok(resumo.oferece.startsWith('Aula e locação · Aula infantil'), '"A academia oferece" diz que tem aula infantil — ' + resumo.oferece);
   const curtos = await page.evaluate(() => opcoesPreco(state.selected).map(rotuloCurto).join(' | '));
-  ok(curtos === 'por aula individual | por pessoa, na dupla | por pessoa/mês, na turma | por aula individual infantil | por pessoa/mês, na turma infantil | por pessoa/mês, na turma infantil | por hora de quadra', 'o rótulo curto de cada opção — ' + curtos);
-  ok(resumo.sobre.includes('No catálogo da academia: aula individual a partir de R$ 150 por aula; aula em dupla a partir de R$ 90 por pessoa, por aula; aula em grupo a partir de R$ 300 por pessoa, por mês; aula infantil a partir de R$ 110 por aula; e locação a partir de R$ 130 por hora. Também há planos mensais.'), 'o "Sobre" resume o catálogo, com as aulas das crianças juntas — ' + resumo.sobre);
-  ok(resumo.faq.includes('Que aulas Só Aula Tennis tem? Aula individual, em dupla e em grupo, avulsas e em planos mensais.') && resumo.faq.includes('Aula em grupo mensal: R$ 300 por pessoa, por mês'), 'as perguntas frequentes com os tipos de aula e os valores');
-  ok(resumo.faq.includes('Só Aula Tennis tem aula de tênis para crianças? Sim: aula infantil individual e em grupo, avulsas e em planos mensais, para crianças de 6 a 12 anos e de 13 a 17 anos.') && resumo.faq.includes('Aula infantil em grupo mensal: R$ 220 por pessoa, por mês'), 'e a pergunta das aulas para crianças, com a idade — ' + resumo.faq.split(' | ').find(x => x.includes('crianças')));
+  ok(curtos === 'por aula individual | por pessoa, na dupla | por pessoa, na turma, no plano mensal | por aula individual infantil | por pessoa, na turma infantil, no plano mensal | por pessoa, na turma infantil, no plano mensal | por hora de quadra', 'o rótulo curto de cada opção — ' + curtos);
+  ok(resumo.sobre.includes('No catálogo da academia: aula individual a partir de R$ 150 por aula; aula em dupla a partir de R$ 90 por pessoa, por aula; aula em grupo a partir de R$ 300 por pessoa, por aula, no plano mensal; aula infantil a partir de R$ 110 por aula; e locação a partir de R$ 130 por hora. Também há planos mensais.'), 'o "Sobre" resume o catálogo, com as aulas das crianças juntas — ' + resumo.sobre);
+  ok(resumo.faq.includes('Que aulas Só Aula Tennis tem? Aula individual, em dupla e em grupo, avulsas e em planos mensais.') && resumo.faq.includes('Aula em grupo mensal: R$ 300 por pessoa, por aula'), 'as perguntas frequentes com os tipos de aula e os valores');
+  ok(resumo.faq.includes('Só Aula Tennis tem aula de tênis para crianças? Sim: aula infantil individual e em grupo, avulsas e em planos mensais, para crianças de 6 a 12 anos e de 13 a 17 anos.') && resumo.faq.includes('Aula infantil em grupo mensal: R$ 220 por pessoa, por aula'), 'e a pergunta das aulas para crianças, com a idade — ' + resumo.faq.split(' | ').find(x => x.includes('crianças')));
   const ofertas = resumo.ld && resumo.ld.hasOfferCatalog.itemListElement;
   ok(ofertas && ofertas.length === 7 && ofertas[0].name === 'Aula individual avulsa' && ofertas[0].description === 'Aula avulsa · Você e o professor' && ofertas[0].priceSpecification.price === 150 && ofertas[0].priceSpecification.priceCurrency === 'BRL' && ofertas[0].priceSpecification.unitText === 'por aula', 'o Google lê o catálogo (hasOfferCatalog) — ' + JSON.stringify(ofertas && ofertas[0]));
   ok(ofertas && ofertas[4].name === 'Aula infantil em grupo mensal' && ofertas[4].description === 'Plano mensal · Turma de crianças com o professor · De 6 a 12 anos', 'e a aula das crianças, com a idade — ' + JSON.stringify(ofertas && ofertas[4]));
@@ -243,7 +245,7 @@ const CATALOGO = [
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.waitForTimeout(200);
   const aside = await page.evaluate(() => document.querySelector('.ht-aside .ht-book').textContent.replace(/\s+/g, ' ').trim());
-  ok(aside.startsWith('A partir de Aula individual R$ 150/aula Aula em dupla R$ 90/aula Aula em grupo R$ 300/mês Aula infantil R$ 110/aula Locação R$ 130/h Ver as 7 opções'), 'no computador, o "a partir de" de cada tipo (as aulas das crianças numa linha) e o atalho para as opções — ' + aside.slice(0, 160));
+  ok(aside.startsWith('A partir de Aula individual R$ 150/aula Aula em dupla R$ 90/aula Aula em grupo R$ 300/aula Aula infantil R$ 110/aula Locação R$ 130/h Ver as 7 opções'), 'no computador, o "a partir de" de cada tipo (as aulas das crianças numa linha) e o atalho para as opções — ' + aside.slice(0, 160));
   await page.click('.ht-book-ver');
   await page.waitForTimeout(500);
   const topo = await page.evaluate(() => document.getElementById('ht-opcoes').getBoundingClientRect().top);
@@ -373,6 +375,8 @@ const CATALOGO = [
   await page.waitForTimeout(300);
   let srcs = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto-foto img')].map(x => x.getAttribute('src') || ''));
   ok(srcs.length === 4 && srcs[0] === fotoDaAula && srcs[1] === fotoDaAula && srcs[2] !== srcs[3], 'na ficha da academia Premium, a avulsa e a mensal da aula mostram a foto dela; a locação, uma foto para cada');
+  const unidades = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto-unit')].map(x => x.innerText.trim()).join(' | '));
+  ok(unidades === 'por pessoa, por aula | por pessoa, por aula | por hora | por mês', 'a aula mensal também por aula; só a locação mensal por mês (regra 182) — ' + unidades);
   await browser.close();
 
   // Fora do Premium: a ficha não mostra a foto da aula, e o cadastro avisa.

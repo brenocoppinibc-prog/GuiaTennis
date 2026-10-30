@@ -17827,8 +17827,8 @@ function renderActiveChips() {
 // aparece o valor da aula; buscando locação, o da locação; buscando as duas
 // (ou sem filtro), aparecem as duas, cada uma pelo menor valor.
 // Com o catálogo, uma oferta por modalidade (aula e locação), pela opção mais
-// em conta (a avulsa antes da mensal), com o que o valor paga: "/aula",
-// "/h", "/mês".
+// em conta (a avulsa antes da mensal), com o que o valor paga: "/aula"
+// (também na aula mensal, regra 182), "/h", "/mês" (locação mensal).
 function ofertas(c) {
   const todas = opcoesPreco(c);
   const grupoDe = o => o.publico === "crianca" ? "crianca" : o.grupo;
@@ -18987,8 +18987,9 @@ function rotuloCurto(o) {
   const mensal = i.cobranca === "mensal";
   if (tipoDoItem(i).grupo === "locacao") return mensal ? "por mês, locação" : "por hora de quadra";
   const onde = { individual: "aula individual", dupla: "na dupla", grupo: "na turma", aula: "aula" }[i.tipo] + (i.publico === "crianca" ? " infantil" : "");
-  if (tipoDoItem(i).porPessoa) return `${mensal ? "por pessoa/mês" : "por pessoa"}, ${onde}`;
-  return mensal ? `por mês, ${onde}` : `por ${onde}`;
+  const plano = mensal ? ", no plano mensal" : "";
+  if (tipoDoItem(i).porPessoa) return `por pessoa, ${onde}${plano}`;
+  return `por ${onde}${plano}`;
 }
 
 // Texto corrido sobre a academia, montado a partir do que ela cadastrou —
@@ -19009,7 +19010,7 @@ function descricaoAcademia(c) {
     // Com o catálogo, o "a partir de" de cada tipo, com o que o valor paga.
     const grupos = [...new Set(opcoes.map(o => o.resumo))];
     const partes = grupos.map(r => maisEmConta(opcoes.filter(o => o.resumo === r))).filter(Boolean)
-      .map(o => `${o.nomeResumo.toLowerCase()} a partir de ${precoTexto(o.faixa).replace(/ a \d+$/, "")} ${o.unidade}`);
+      .map(o => `${o.nomeResumo.toLowerCase()} a partir de ${precoTexto(o.faixa).replace(/ a \d+$/, "")} ${o.unidade}${o.grupo === "aula" && o.cobranca === "mensal" ? ", no plano mensal" : ""}`);
     // Ponto e vírgula entre os tipos: a unidade já tem vírgula ("por pessoa, por aula").
     const lista = partes.length > 1 ? `${partes.slice(0, -1).join("; ")}; e ${partes[partes.length - 1]}` : partes[0];
     frases.push(`No catálogo da academia: ${lista}.`);
@@ -19152,8 +19153,8 @@ function htOpcoes(c) {
   const nomeDoFiltro = (() => { const o = opcoes.find(x => x.filtro === filtro); return !o ? "" : o.publico === "crianca" ? "aula infantil" : o.nome.toLowerCase(); })();
   const fotos = courtPhotos(c);
   const pol = politicaDe(c);
-  // "Menor preço" só entre valores que pagam a mesma coisa (todos por hora,
-  // por exemplo): mensal e avulsa não se comparam.
+  // "Menor preço" só entre valores que pagam a mesma coisa (todos por aula,
+  // por exemplo; a locação, por hora ou por mês, não se compara com a aula).
   const comValor = opcoes.filter(o => temPreco(o.faixa));
   const valores = comValor.map(o => parseInt(priceMin(o.faixa), 10));
   const menor = valores.length > 1 && new Set(valores).size > 1 && new Set(comValor.map(o => o.unidade)).size === 1 ? Math.min(...valores) : null;
@@ -19695,16 +19696,15 @@ function ordemDoCatalogo(a, b) {
   const t = x => CATALOGO_TIPOS.findIndex(k => k.key === x.tipo);
   return publico(a) - publico(b) || idade(a) - idade(b) || t(a) - t(b) || (a.cobranca === "mensal") - (b.cobranca === "mensal");
 }
-// Por hora, por aula, por pessoa, por mês…
+// Por hora, por aula, por pessoa, por mês… A aula mensal também é por aula
+// (regra 182); só a locação mensal é por mês.
 function unidadeDoItem(i) {
   const t = tipoDoItem(i);
-  if (i.cobranca === "mensal") return t.porPessoa ? "por pessoa, por mês" : "por mês";
-  if (t.grupo === "locacao") return "por hora";
+  if (t.grupo === "locacao") return i.cobranca === "mensal" ? "por mês" : "por hora";
   return t.porPessoa ? "por pessoa, por aula" : "por aula";
 }
 function unidadeCurta(i) {
-  if (i.cobranca === "mensal") return "/mês";
-  if (tipoDoItem(i).grupo === "locacao") return "/h";
+  if (tipoDoItem(i).grupo === "locacao") return i.cobranca === "mensal" ? "/mês" : "/h";
   return "/aula";
 }
 // "Aula em grupo" ou, para as crianças, "Aula infantil em grupo".
@@ -20588,10 +20588,12 @@ function fotoDoCartao(f, g, chave, nome, rotulo) {
 // (29/10/2026: "tire a escrita de exemplo que está abaixo de escrever o
 // preço, só dentro do quadrado e quero que deixe em exemplo dois preços para
 // fazer intervalo"), o exemplo fica só dentro do campo e é um intervalo
-// ("ex.: 150 a 200"); o campo aceita um valor ou um intervalo.
+// ("ex.: 150 a 200"); o campo aceita um valor ou um intervalo. Desde a
+// regra 182 (30/10/2026: "o valor mensal também será por aula"), a mensal
+// da aula é o valor de cada aula no plano mensal, abaixo da avulsa.
 const EXEMPLOS_DE_VALOR = {
-  adulto: { individual: { avulsa: "150 a 200", mensal: "550 a 750" }, dupla: { avulsa: "90 a 130", mensal: "350 a 450" }, grupo: { avulsa: "60 a 80", mensal: "250 a 350" }, aula: { avulsa: "120 a 180", mensal: "450 a 650" } },
-  crianca: { individual: { avulsa: "120 a 170", mensal: "450 a 600" }, dupla: { avulsa: "80 a 110", mensal: "300 a 400" }, grupo: { avulsa: "50 a 70", mensal: "220 a 300" } },
+  adulto: { individual: { avulsa: "150 a 200", mensal: "130 a 170" }, dupla: { avulsa: "90 a 130", mensal: "80 a 110" }, grupo: { avulsa: "60 a 80", mensal: "50 a 70" }, aula: { avulsa: "120 a 180", mensal: "100 a 150" } },
+  crianca: { individual: { avulsa: "120 a 170", mensal: "100 a 140" }, dupla: { avulsa: "80 a 110", mensal: "70 a 90" }, grupo: { avulsa: "50 a 70", mensal: "40 a 60" } },
   locacao: { avulsa: "100 a 150", mensal: "400 a 550" },
 };
 // O exemplo de um valor ("adulto:grupo:mensal", "f1:dupla:avulsa",
@@ -20630,7 +20632,7 @@ function editorDasAulas(f) {
         <div class="cat-valores">
           ${CATALOGO_COBRANCAS.map(k => `
             <div class="cat-valor-col">
-              <span class="cat-col">${k.nome}<small>${k.key === "mensal" ? "por mês" : "por aula"}</small></span>
+              <span class="cat-col">${k.nome}<small>por aula</small></span>
               ${campoDoValor(g, `${c.chave}:${k.key}`, `${nome.toLowerCase()} ${k.nome.toLowerCase()}`)}
             </div>`).join("")}
         </div>
@@ -20678,9 +20680,9 @@ function editorDasAulas(f) {
           ${!x.formatos.length && g.adulto.formatos.length ? `<button type="button" class="cat-copiar" data-cat-copiar="${x.id}">Copiar das aulas para adultos</button>` : ""}
           ${cartoesDaGrade(g, x.id).map(c => cartao(x.id, c, true)).join("")}
         </section>`).join("") + `
-        <button type="button" class="cat-mais-faixa" data-cat-faixa-mais>${icon('plus', 15, 'currentColor')} Outra faixa de idade</button>` : ""}
+        <button type="button" class="cat-mais-faixa" data-cat-faixa-mais>${icon('plus', 15, 'currentColor')} Adicionar faixa de idade</button>` : ""}
     </div>
-    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor do que oferecem: avulsa, mensal ou as duas. Sem valor nenhum, a aula mostra "Sob consulta". No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
+    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor por aula do que oferecem: avulsa, mensal (o valor de cada aula no plano) ou as duas. Sem valor nenhum, a aula mostra "Sob consulta". No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
 }
 // A parte "Locação" (só para quem escolheu a locação nas Modalidades, regra
 // 170): a avulsa e a mensal, cada uma com a foto e o valor.
@@ -23066,8 +23068,8 @@ const CHAT_DETALHES_PC = [
   { id: "pc-fotos", t: "Fotos", p: ["foto", "fotos", "imagem", "imagens", "capa"],
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
-  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Outra faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+  { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco", "valor mensal", "aula mensal"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano), e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],

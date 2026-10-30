@@ -86,6 +86,10 @@ async function abrirOChat(page) {
   await escrever(page, 'quantas pessoas posso colocar');
   u = await ultima(page);
   ok(u.texto.includes('No Premium, a Só Aula Tennis tem até 10 pessoas.'), 'acessos: o limite do plano da academia — ' + u.texto);
+  // A aula mensal também é por aula (regra 182).
+  await escrever(page, 'o valor mensal da aula é por mês?');
+  u = await ultima(page);
+  ok(u.texto.includes('os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano)') && u.texto.includes('"Adicionar faixa de idade"'), 'o valor mensal da aula: por aula — ' + u.texto.slice(0, 120));
   await browser.close();
 
   // ---- sem conta ----

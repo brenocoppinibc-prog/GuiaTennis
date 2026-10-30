@@ -343,32 +343,41 @@ Produto (o que já foi decidido)
 - Android força modo escuro: `color-scheme: light` no site.
 - `pkill -f` com texto do próprio comando mata o terminal.
 
-## 9. Estado atual e pendências (29/10/2026)
+## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 tem tudo até a **regra 181** (ajuda depois de cinco buscas
-seguidas, sem SQL; Termos e Privacidade em 30/10). Antes, a regra 180 (funções da equipe, vários
-responsáveis principais, aba Pagamentos e e-mail de cada compra; SQL
-`20261029190000_funcoes_e_pagamentos`).
-Antes: o lance em parágrafos e os textos das promoções curtos (título 30,
-detalhes 150, e-mail 300, SQL `20261029170000_textos_curtos_das_promocoes`). De 28 a 29/10 entraram
-(o item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro do
-`catalogo`; a aula sem valor vai com `cobranca: ""`; o intervalo vai no
-`preco` como "150-200"): os limites dos textos das promoções; o catálogo com aulas para adultos e para crianças;
-a parte "Modalidades", pelo menos uma obrigatória; o valor em intervalo;
-"Alterações salvas" num cartão; "Pedir análise" em vermelho; o "Ver no
-mapa" no mapa do GuiaTennis e o "Como chegar" pelo próprio celular. A
-descrição do PR tem uma linha por regra em "Pedidos depois de 28/10".
-Testes: 2.187 no navegador e 716 no banco, nenhuma falha.
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 181** (último
+commit de código `9a8bc21`). De 28 a 30/10 entraram: o catálogo com aulas
+para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
+e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
+a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
+gravado "150-200") com o exemplo só dentro do campo; "Alterações salvas"
+num cartão; "Pedir análise" em vermelho; o "Ver no mapa" no mapa do
+GuiaTennis e o "Como chegar" pelo celular; os textos das promoções curtos
+(título 30, detalhes 150, e-mail 300; SQL
+`20261029170000_textos_curtos_das_promocoes`); o lance em parágrafos; as
+funções da equipe, vários responsáveis principais e a aba Pagamentos (SQL
+`20261029190000_funcoes_e_pagamentos`); e a ajuda depois de cinco buscas
+seguidas (sem SQL; Termos e Privacidade em 30/10). A descrição do PR tem
+uma linha por regra em "Pedidos depois de 28/10". Testes: 2.187 no
+navegador e 716 no banco, nenhuma falha. **Chat trocado em 30/10/2026:** o
+chat novo volta a acompanhar o PR #5 (o anterior deixou de acompanhar e
+cancelou as conferências automáticas).
+
 **Pendências do Breno:**
-1. Testar na prévia o que entrou de 26 a 29/10 (veracidade, ficha no
+1. Testar na prévia o que entrou de 26 a 30/10 (veracidade, ficha no
    jeito do hoteis.com, catálogo com Modalidades, Aulas, Locação e valor em
-   intervalo, corte
-   das fotos, nome suspenso, busca "bairro, cidade", sobrenome, avaliação
-   editada, "Ver no mapa" e "Como chegar") e dizer "pode subir".
+   intervalo, corte das fotos, nome suspenso, busca "bairro, cidade",
+   sobrenome, avaliação editada, "Ver no mapa" e "Como chegar", textos
+   curtos das promoções, funções da equipe e Pagamentos, ajuda depois de
+   cinco buscas) e dizer "pode subir".
 2. Ligar o Mercado Pago na Netlify (variáveis da seção 5) depois de testar
    o pagamento de teste na prévia.
 3. Definir os preços dos planos e o preço da semana da promoção na ficha
-   (hoje R$ 0, o admin muda em Leilões).
+   (hoje R$ 0, o admin muda em Leilões). Sugerido na conversa de 29/10
+   (comparando com o trivago e a Shopify): preço à vista, primeiro mês
+   grátis no Completo e no Premium, plano anual com desconto; não cobrar
+   por clique por enquanto. A nota sai por academia; o imposto é de quem
+   emite (confirmar com o contador o código do serviço e as retenções).
 4. Decidir: a promoção paga na ficha devolve as semanas que faltam se a
    academia voltar ao Básico (hoje não); o leilão só abre em bairro com um
    mínimo de jogadores; o "Confirmar depois" fica na tela do e-mail do

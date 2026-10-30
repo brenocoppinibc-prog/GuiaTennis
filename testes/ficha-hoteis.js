@@ -44,14 +44,14 @@ async function fichaCheia(page, extra) {
     };
   });
   ok(r.visivel && r.galeria === 'none' && r.left === 0 && Math.round(r.w) === 412 && Math.abs(r.h - r.w) < 2, 'no celular, a capa quadrada de ponta a ponta no lugar do mosaico — ' + Math.round(r.w) + 'x' + Math.round(r.h));
-  ok(r.fotos === 5 && r.pontos === 5 && r.total === '5', 'todas as fotos passam na capa, com os pontinhos e o número de fotos');
+  ok(r.fotos === 5 && r.pontos === 0 && r.total === '5', 'todas as fotos passam na capa, com o número de fotos e sem os pontinhos (30/10/2026)');
   ok(r.voltar && r.comparar && r.compartilhar && r.favoritar, 'voltar, comparar, compartilhar e favoritar em cima da foto');
   ok(r.barraFora, 'com a capa na tela, a barra de cima fica escondida');
 
   await page.evaluate(() => { const f = document.getElementById('ht-capa-fotos'); f.scrollLeft = f.clientWidth * 2; });
   await page.waitForTimeout(200);
-  r = await page.evaluate(() => ({ on: [...document.querySelectorAll('#ht-capa-pontos span')].findIndex(s => s.classList.contains('on')), abre: document.getElementById('ht-capa-total').dataset.lightboxOpen }));
-  ok(r.on === 2 && r.abre === '2', 'passar a foto acende o pontinho dela, e o número de fotos abre nela');
+  r = await page.evaluate(() => ({ abre: document.getElementById('ht-capa-total').dataset.lightboxOpen }));
+  ok(r.abre === '2', 'passar a foto faz o número de fotos abrir nela');
 
   await page.evaluate(() => window.scrollTo(0, 900));
   await page.waitForTimeout(350);
@@ -85,8 +85,10 @@ async function fichaCheia(page, extra) {
   r = await page.evaluate(() => [...document.querySelectorAll('.ht-sections > .ht-sec')].map(s => s.id || s.className.replace('ht-sec ', '')).join(','));
   // O contato logo depois das opções (26/10/2026: "os contatos pode deixar
   // mais acima"); o "é o responsável?" e o "Algo errado" seguem no fim.
-  ok(r === 'ht-sec-destaques,ht-comodidades,ht-local,ht-visao,ht-opcoes,ht-contato,avaliacoes,ht-perto,ht-horario,ht-politica,ht-duvidas,ht-sec-fim',
-    'destaques, estrutura, região, "Sobre" com fotos, opções, contato, avaliações, academias por perto, horário, cancelamento, dúvidas e o fim — ' + r);
+  // Regra 189 (30/10/2026): o "Sobre" logo depois da estrutura, e a região
+  // ("o que tem por perto") logo depois das opções.
+  ok(r === 'ht-sec-destaques,ht-comodidades,ht-visao,ht-opcoes,ht-local,ht-contato,avaliacoes,ht-perto,ht-horario,ht-politica,ht-duvidas,ht-sec-fim',
+    'destaques, estrutura, "Sobre", opções, região, contato, avaliações, academias por perto, horário, cancelamento, dúvidas e o fim — ' + r);
   const fim = await page.evaluate(() => ({ fim: document.querySelector('.ht-sec-fim')?.innerText || '', contato: document.getElementById('ht-contato').innerText }));
   // O "Confirmada pela academia" volta para o fim (27/10/2026: "deixe isso no
   // final, era só os contatos mais para cima").
@@ -129,15 +131,16 @@ async function fichaCheia(page, extra) {
   ok(r.tag === 'Menor preço,' && r.verde === 'Reposição até 12h antes,Reposição até 24h antes', 'o mais em conta com "Menor preço" e a reposição de cada um em verde — ' + r.verde);
   ok(r.wa[0].includes('queria saber sobre alugar a quadra') && r.wa[1].includes('queria saber sobre as aulas'), 'o WhatsApp de cada cartão já fala daquela opção');
   // Sem a caixa de horário (27/10/2026: "não precisa selecionar um horário certo").
-  ok(r.caixas.length === 1 && r.caixas[0] === 'Modalidade Todas as modalidades' && !(await page.$('#ir-horario')), 'regra 185: a caixa da modalidade, como a de "Datas" das opções de quarto, sem a de horário — ' + r.caixas.join(' | '));
+  const mods = await page.evaluate(() => [...document.querySelectorAll('[data-opcao-modalidade]')].map(b => b.innerText.replace(/\s+/g, ' ').trim()).join(' | '));
+  ok(mods === 'Aula Com professor | Locação de quadra Avulsa' && !(await page.$('select')) && !(await page.$('#ir-horario')), 'regra 189: um cartão por modalidade, sem as caixas do hoteis.com, sem a de horário — ' + mods);
   ok(await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')].every(x => x.querySelector('.ht-quarto-foto img'))), 'os cartões das opções continuam com foto');
-  await page.selectOption('[data-opcao-modalidade]', 'aula');
+  await page.click('[data-opcao-modalidade="aula"]');
   await page.waitForTimeout(100);
   r = await page.evaluate(() => ({ n: document.querySelectorAll('#ht-quartos .ht-quarto').length, nome: document.querySelector('#ht-quartos .ht-quarto-n').innerText, contagem: document.querySelector('.ht-opcoes-n').innerText }));
   ok(r.n === 1 && r.nome === 'Aula' && r.contagem === 'Mostrando 1 de 2 opções', 'a modalidade "Aula" deixa só a aula');
-  await page.selectOption('[data-opcao-modalidade]', '');
+  await page.click('[data-opcao-modalidade="aula"]');
   await page.waitForTimeout(100);
-  ok(await page.evaluate(() => document.querySelectorAll('#ht-quartos .ht-quarto').length === 2), '"Todas as modalidades" volta as duas');
+  ok(await page.evaluate(() => document.querySelectorAll('#ht-quartos .ht-quarto').length === 2), 'tocar de novo na modalidade volta as duas');
 
   // ---- avaliações: a nota no alto e os cartões que passam ----
   r = await page.evaluate(() => {
@@ -172,7 +175,7 @@ async function fichaCheia(page, extra) {
   await page.setViewportSize({ width: 1280, height: 900 });
   await fichaCheia(page);
   r = await page.evaluate(() => ({ capa: getComputedStyle(document.querySelector('.ht-capa')).display, galeria: getComputedStyle(document.querySelector('.ht-gal')).display, abas: [...document.querySelectorAll('#ht-tabs button')].map(b => b.innerText).join(',') }));
-  ok(r.capa === 'none' && r.galeria === 'grid' && r.abas === 'Estrutura,Localização,Visão geral,Preços,Avaliações,Horário,Cancelamento,Dúvidas', 'no computador, o mosaico e as abas na ordem da ficha — ' + r.abas);
+  ok(r.capa === 'none' && r.galeria === 'grid' && r.abas === 'Estrutura,Visão geral,Preços,Localização,Avaliações,Horário,Cancelamento,Dúvidas', 'no computador, o mosaico e as abas na ordem da ficha — ' + r.abas);
   await browser.close();
 
   // ---- sem foto: sem capa, e a barra de cima à vista ----

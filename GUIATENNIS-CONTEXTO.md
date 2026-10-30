@@ -186,30 +186,32 @@ Produto (o que já foi decidido)
   2 contas dizendo que o WhatsApp não é da academia tiram o botão. A
   academia que avisa que fechou sai do site na hora; "Fechou" guarda como
   cadastro inativo, que pode reabrir.
-- **Ficha** no jeito da página de hotel do hoteis.com (capa, nome no meio,
-  destaques, Estrutura, Explore a região, Sobre, Opções para jogar,
+- **Ficha** (ordem da regra 189): capa (sem os pontinhos), nome no meio,
+  destaques, Estrutura, **Sobre** (o texto da própria academia, até 750
+  letras, sem telefone, link ou preço, `academias.sobre`, mais o resumo
+  automático), Opções para jogar, **Explore a região**,
   Contato, Avaliações, Outras academias por perto, Horário, Cancelamento,
   Perguntas, e no fim "Confirmada pela academia", "É o responsável?" e
   "Algo errado nesta ficha?"). Fotos só na capa e nos cartões das opções.
   Os cartões das opções ficam **em grade que desce**, dois por linha no
   celular, como os quartos do hoteis.com (três no computador), na ficha e
   na prévia do cadastro; sem rolar para o lado. No alto de "Opções para
-  jogar", duas caixas como "Datas" e "Viajantes" do hoteis.com (regra 185,
-  `escolhaDaFicha`): **Modalidade** (aula para adultos, para crianças,
-  locação; só o que a academia tem) e, embaixo, o **formato** que segue a
-  de cima (individual/dupla/grupo avulsa ou mensal; na locação, avulsa ou
-  mensal). Nenhuma escolha leva a lista vazia; nada fala de quantidade
-  ("não quero cara de pouca disponibilidade").
+  jogar" (regra 189, `escolhaDaFicha`), um **cartão por modalidade**
+  (Aulas para adultos, Aulas para crianças, Locação de quadra; só o que a
+  academia tem, com o resumo; tocar de novo volta a todas) e, embaixo, os
+  **formatos sublinhados** como as abas da ficha (aulas: individual, dupla,
+  grupo; locação: avulsa, mensal). Nenhuma escolha leva a lista vazia;
+  nada fala de quantidade.
   **Catálogo** só com modalidade e valor. No cadastro, a parte
   **Modalidades** (Aulas e/ou Locação de quadra; pelo menos uma, obrigatória
   também na edição; o admin segue só com o nome) abre as partes de cada uma, que só aparecem se escolhidas
   (`passoVisivel`; os índices continuam os de `REG_PASSOS`): **Aulas** (para
   quem: adultos e/ou crianças, as crianças em faixas de idade de 3 a 17
   anos, uma para cada turma, com "Adicionar faixa de idade" > formatos
-  individual, dupla, grupo > um cartão por formato com a avulsa, a mensal e
-  a foto; **as duas por aula** (a mensal é o valor de cada aula no plano;
-  na ficha, "por aula" e, no resumo, "no plano mensal"); em branco não é oferecida,
-  sem valor nenhum = "Sob consulta" sem cobrança) e **Locação** (avulsa e/ou
+  individual, dupla, grupo > um cartão por formato com **um valor só, por
+  aula** (regra 189: a aula não é avulsa nem mensal; `cobranca: ""`; a aula
+  antiga com avulsa e mensal vira uma) e a foto; em branco não é oferecida,
+  sem valor = "Sob consulta") e **Locação** (avulsa e/ou
   mensal, cada uma com o valor e a foto; **as duas por hora**, a mensal é o
   valor de cada hora no plano). Nada no catálogo é "por mês". Cada valor é um número ou um
   intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), numa linha
@@ -259,7 +261,7 @@ Produto (o que já foi decidido)
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261030120000_convite_por_email` (77 arquivos na pasta; 74 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261030130000_sobre_da_academia` (78 arquivos na pasta; 75 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -366,7 +368,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 188**. De 28 a 30/10 entraram: o catálogo com aulas
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 189**. De 28 a 30/10 entraram: o catálogo com aulas
 para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
 e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
 a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
@@ -415,7 +417,7 @@ cancelou as conferências automáticas).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 189.
+**Próximo número:** regra 190.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -542,6 +544,15 @@ cancelou as conferências automáticas).
   escondidas até tocar nela (a linha abre e fecha, com a seta), como a
   equipe da Shopify e os usuários do Google Business Profile. Sem SQL.
   Testes: `funcoes-da-equipe.js`, `parceiros.js`.
+- 189 (30/10) Ficha reorganizada: sem os pontinhos da capa; "Sobre" logo
+  depois da Estrutura, com o texto da academia (cadastro, parte Quadras:
+  "O que a academia tem de diferente", até 750 letras como o Google, sem
+  telefone, link ou preço); "Explore a região" logo depois das opções;
+  escolha das opções em cartões por modalidade + formatos sublinhados (sai
+  a cara do hoteis.com); aulas sem avulsa/mensal (só a locação), no
+  cadastro, na ficha, nas perguntas, nos Termos e no chat. SQL
+  `20261030130000_sobre_da_academia`. Testes: `catalogo.js`,
+  `ficha-hoteis.js`, `cadastro.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

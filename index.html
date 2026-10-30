@@ -2885,12 +2885,19 @@
   .ht-promo-ic { width: 58px; height: 58px; border-radius: 50%; background: #F3E9CC; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   #ht-opcoes .ht-promo-tag { font-size: 12px; }
   #ht-opcoes .ht-promo-t { margin-top: 3px; font-size: 18px; }
-  /* As caixas que escolhem (regra 185): a caixa inteira abre a lista do
-     aparelho, como "Datas" e "Viajantes" do hoteis.com. */
-  .ht-caixa-sel { position: relative; cursor: pointer; }
-  .ht-caixa-sel > span { flex: 1; min-width: 0; }
-  .ht-caixa-sel:focus-within { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
-  .ht-caixa-select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; cursor: pointer; }
+  /* A escolha das opções (regra 189): um cartão por modalidade e os
+     formatos sublinhados, como as abas da ficha. */
+  .ht-escolha { margin: 4px 0 6px; }
+  .ht-escolha-mods { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(118px, 1fr); gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .ht-escolha-mods::-webkit-scrollbar { display: none; }
+  .ht-mod { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 68px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); font-family: var(--fonte-texto); color: var(--text); text-align: left; cursor: pointer; }
+  .ht-mod.on { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); background: #F1F6F3; }
+  .ht-mod-n { font-size: 14px; font-weight: 700; line-height: 1.25; }
+  .ht-mod-s { font-size: 12.5px; color: var(--muted); line-height: 1.3; }
+  .ht-escolha-fmts { display: flex; gap: 22px; margin-top: 12px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .ht-escolha-fmts::-webkit-scrollbar { display: none; }
+  .ht-escolha-fmts button { min-height: 44px; padding: 0; border: 0; border-bottom: 2px solid transparent; background: none; font: 600 14px var(--fonte-texto); color: var(--muted); white-space: nowrap; cursor: pointer; }
+  .ht-escolha-fmts button.on { color: var(--text); border-bottom-color: var(--green); }
   .ht-quarto-itens { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   .ht-quarto-itens li { display: flex; align-items: flex-start; gap: 7px; font-size: 13.5px; line-height: 1.35; }
   .ht-quarto-itens svg { flex-shrink: 0; margin-top: 1px; }
@@ -3843,6 +3850,8 @@ function mapRow(row) {
     // O catálogo de aulas e locações (SQL 20261026220000); banco sem a
     // coluna fica com o preço por hora de antes.
     catalogo: Array.isArray(row.catalogo) ? row.catalogo : [],
+    // O texto da academia em "Sobre a academia" (SQL 20261030130000).
+    sobre: typeof row.sobre === "string" ? row.sobre : "",
     amenities: est.amenities,
     modalidades: row.modalidades || [],
     pisos: row.pisos || [],
@@ -3891,7 +3900,7 @@ function toRow(f) {
     .filter(i => modalidades.includes(tipoDoItem(i).grupo === "aula" ? "aulas_proprias" : "locacao"))
     .sort(ordemDoCatalogo).slice(0, CATALOGO_MAX));
   const avulsas = (grupo) => {
-    const doGrupo = catalogo.filter(i => tipoDoItem(i).grupo === grupo && i.cobranca === "avulsa" && priceMin(i.preco));
+    const doGrupo = catalogo.filter(i => tipoDoItem(i).grupo === grupo && (grupo === "aula" || i.cobranca === "avulsa") && priceMin(i.preco));
     const adultos = doGrupo.filter(i => i.publico !== "crianca");
     return faixaDosPrecos((adultos.length ? adultos : doGrupo).map(i => i.preco));
   };
@@ -3903,6 +3912,7 @@ function toRow(f) {
     price_aula: avulsas("aula"),
     price_locacao: avulsas("locacao"),
     catalogo,
+    sobre: String(f.sobre || "").trim().slice(0, SOBRE_MAX) || null,
     amenities: f.amenities || [], modalidades,
     pisos: f.pisos || [], cobertura: f.cobertura || [],
     quadras: f.quadras || {}, photos: f.photos || [],
@@ -3956,11 +3966,11 @@ async function carregarEstatisticasPublicas() {
 
 // O visitante só lê as colunas públicas. Quem pediu o cadastro e o WhatsApp
 // de quem avaliou ficam fechados no banco (SQL-SEGURANCA.sql) e só o admin vê.
-const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, dados_atualizados_em, created_at, avisou_que_fechou_em, catalogo";
+const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, dados_atualizados_em, created_at, avisou_que_fechou_em, catalogo, sobre";
 // Colunas que chegam ao banco pelo SQL automático. Na publicação, o site
 // pode ir para o ar um pouco antes do SQL: aí lê sem elas, em vez de cair
 // no "*", que o visitante não pode ler.
-const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia", "dados_atualizados_em", "avisou_que_fechou_em", "catalogo"];
+const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia", "dados_atualizados_em", "avisou_que_fechou_em", "catalogo", "sobre"];
 const COLUNAS_AVALIACAO_PUBLICAS = "id, academia_id, stars, comment, nome_autor, created_at, autor_oculto, editada_em";
 
 // Enquanto o banco não tiver alguma dessas colunas, a lista falha; aí lê
@@ -18994,7 +19004,8 @@ function htCapa(c) {
         <button type="button" data-share-court="${c.id}" aria-label="Compartilhar" title="Compartilhar">${icon('share', 19, 'var(--text)')}</button>
         <button type="button" data-fav="${c.id}" aria-label="${favorita ? "Tirar das favoritas" : "Favoritar"}" title="Favoritar">${icon(favorita ? 'heartFill' : 'heart', 20, favorita ? 'var(--red)' : 'var(--text)')}</button>
       </div>
-      ${photos.length > 1 ? `<div class="ht-capa-pontos" id="ht-capa-pontos" aria-hidden="true">${pontosDaCapa(photos.length, 0)}</div>` : ""}
+      ${/* Sem os pontinhos em cima da foto (30/10/2026: "tire isso"): o número
+           de fotos no canto já diz quantas são. */ ""}
       <button type="button" class="ht-capa-total" id="ht-capa-total" data-lightbox-open="0" aria-label="${photos.length === 1 ? "Ver a foto" : `Ver as ${photos.length} fotos`}">${icon('fotos', 17, '#fff')} ${photos.length}</button>
     </div>`;
 }
@@ -19079,7 +19090,7 @@ function descricaoAcademia(c) {
     // Ponto e vírgula entre os tipos: a unidade já tem vírgula ("por pessoa, por aula").
     const lista = partes.length > 1 ? `${partes.slice(0, -1).join("; ")}; e ${partes[partes.length - 1]}` : partes[0];
     frases.push(`No catálogo da academia: ${lista}.`);
-    if (opcoes.some(o => o.cobranca === "mensal") && opcoes.some(o => o.cobranca !== "mensal" && temPreco(o.faixa))) frases.push("Também há planos mensais.");
+    if (opcoes.some(o => o.grupo === "locacao" && o.cobranca === "mensal") && opcoes.some(o => o.grupo === "locacao" && o.cobranca !== "mensal" && temPreco(o.faixa))) frases.push("A locação também tem plano mensal.");
     const semValor = [...new Set(opcoes.filter(o => !temPreco(o.faixa) && !comValor.some(x => x.resumo === o.resumo)).map(o => o.nomeResumo.toLowerCase()))];
     if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(n => "da " + n))} é sob consulta: fale com a academia.`);
   } else if (comValor.length) {
@@ -19264,35 +19275,39 @@ function htOpcoes(c) {
     ${c.phone ? "" : `<p class="ht-sec-sub" style="margin-top:12px">O telefone não foi incluído.</p>`}`;
 }
 
-// As duas caixas do alto de "Opções para jogar", no lugar de "Datas" e
-// "Viajantes" das "Opções de quarto" do hoteis.com (regra 185, 30/10/2026:
-// "o primeiro quadrado em cima de aula para adultos ou para crianças ou
-// locação se tiver e no debaixo opção de individual dupla grupo avulsa ou
-// mensal seguindo cada opção anterior e disponibilidade"). Cada caixa só
-// oferece o que a academia tem, e a de baixo segue a de cima: nenhuma
-// escolha leva a uma lista vazia, e nada fala de quantidade ("não quero
-// deixar com cara de pouca disponibilidade").
+// A escolha no alto de "Opções para jogar". Regra 185 (30/10/2026): a
+// modalidade em cima e, embaixo, o formato que segue a de cima, só com o que
+// a academia tem ("não quero deixar com cara de pouca disponibilidade").
+// Regra 189 (30/10/2026: "deixe para selecionar as opções para jogar de
+// outra forma, mas que combine com a ficha, para tirar essa cara do
+// hotéis.com"): no lugar das caixas, um cartão por modalidade (com o resumo
+// do que tem nela) e, embaixo, os formatos sublinhados como as abas da
+// ficha. Nas aulas, o formato é individual, dupla ou grupo; avulsa e mensal
+// só na locação.
 const MODALIDADES_DA_FICHA = [
-  { key: "adulto", nome: "Aula para adultos" }, { key: "aula", nome: "Aula" },
-  { key: "crianca", nome: "Aula para crianças" }, { key: "locacao", nome: "Locação de quadra" },
+  { key: "adulto", nome: "Aulas para adultos" }, { key: "aula", nome: "Aula" },
+  { key: "crianca", nome: "Aulas para crianças" }, { key: "locacao", nome: "Locação de quadra" },
 ];
 function modalidadeDaOpcao(o) {
   if (o.grupo === "locacao") return "locacao";
   if (o.publico === "crianca") return "crianca";
   return o.item ? "adulto" : o.grupo === "aula" ? "aula" : "";
 }
-// "individual:mensal" nas aulas; "mensal" na locação e com todas as
-// modalidades; "" quando a opção não tem formato (o preço de antes).
+// O formato da opção dentro da modalidade escolhida: o tipo nas aulas, a
+// cobrança na locação; com todas as modalidades, nenhum.
 function formatoDaOpcao(o, mod) {
-  if (!o.item) return "";
-  if (!mod || mod === "locacao") return o.cobranca || "";
-  return `${o.tipo}:${o.cobranca || ""}`;
+  if (!o.item || !mod) return "";
+  return mod === "locacao" ? o.cobranca || "" : o.tipo;
 }
 function nomeDoFormato(chave) {
-  const [tipo, cob] = chave.includes(":") ? chave.split(":") : ["", chave];
-  const t = CATALOGO_FORMATOS.find(x => x.key === tipo);
-  const k = CATALOGO_COBRANCAS.find(x => x.key === cob);
-  return [t ? t.curto : "", k ? (t ? k.nome.toLowerCase() : k.nome) : ""].filter(Boolean).join(" ");
+  const t = CATALOGO_FORMATOS.find(x => x.key === chave);
+  if (t) return t.curto;
+  const k = CATALOGO_COBRANCAS.find(x => x.key === chave);
+  return k ? k.nome : "";
+}
+function ordemDoFormato(chave) {
+  const t = CATALOGO_FORMATOS.findIndex(x => x.key === chave);
+  return t >= 0 ? t : 10 + CATALOGO_COBRANCAS.findIndex(x => x.key === chave);
 }
 function escolhaDaFicha(c) {
   const opcoes = opcoesPreco(c);
@@ -19300,27 +19315,38 @@ function escolhaDaFicha(c) {
   const mods = MODALIDADES_DA_FICHA.filter(m => opcoes.some(o => modalidadeDaOpcao(o) === m.key));
   const mod = mods.length === 1 ? mods[0].key : mods.some(m => m.key === a.modalidade) ? a.modalidade : "";
   const daMod = opcoes.filter(o => !mod || modalidadeDaOpcao(o) === mod);
-  const ordem = k => { const [t, cob] = k.includes(":") ? k.split(":") : ["", k]; return CATALOGO_FORMATOS.findIndex(x => x.key === t) * 10 + CATALOGO_COBRANCAS.findIndex(x => x.key === cob); };
-  const formatos = [...new Set(daMod.map(o => formatoDaOpcao(o, mod)).filter(Boolean))].sort((x, y) => ordem(x) - ordem(y));
+  const formatos = [...new Set(daMod.map(o => formatoDaOpcao(o, mod)).filter(Boolean))].sort((x, y) => ordemDoFormato(x) - ordemDoFormato(y));
   const formato = formatos.length > 1 && formatos.includes(a.formato) ? a.formato : "";
   const visiveis = daMod.filter(o => !formato || formatoDaOpcao(o, mod) === formato);
   return { opcoes, mods, mod, formatos, formato, visiveis };
 }
+// O resumo de cada modalidade, embaixo do nome no cartão: os formatos das
+// aulas, as idades das crianças, a cobrança da locação.
+function resumoDaModalidade(opcoes, mod) {
+  const doMod = opcoes.filter(o => modalidadeDaOpcao(o) === mod);
+  if (mod === "crianca") {
+    const idades = [...new Set(doMod.map(o => idadeTexto(o.item)).filter(Boolean))];
+    if (idades.length) return listaTexto(idades.map((t, i) => i ? t.replace(/^De /, "de ") : t));
+  }
+  if (mod === "locacao") return listaTexto(CATALOGO_COBRANCAS.filter(k => doMod.some(o => o.cobranca === k.key)).map((k, i) => i ? k.nome.toLowerCase() : k.nome)) || "Por hora";
+  const tipos = CATALOGO_FORMATOS.filter(t => doMod.some(o => o.tipo === t.key));
+  return tipos.length ? listaTexto(tipos.map((t, i) => i ? t.curto.toLowerCase() : t.curto)) : "Com professor";
+}
 function htCaixasDaEscolha(c) {
   const e = escolhaDaFicha(c);
   if (!e.opcoes.length) return "";
-  const caixa = (rotulo, valor, ic, attr, lista, atual) => lista.length > 1
-    ? `<label class="ht-caixa ht-caixa-sel">${icon(ic, 22, 'var(--text)')}<span><span class="ht-caixa-l">${rotulo}</span><span class="ht-caixa-v">${esc(valor)}</span></span>
-        <select class="ht-caixa-select" ${attr} data-court="${c.id}" aria-label="${rotulo}">${lista.map(([k, n]) => `<option value="${esc(k)}" ${k === atual ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>`
-    : `<div class="ht-caixa">${icon(ic, 22, 'var(--text)')}<span><span class="ht-caixa-l">${rotulo}</span><span class="ht-caixa-v">${esc(valor)}</span></span></div>`;
-  const nomeMod = k => (MODALIDADES_DA_FICHA.find(m => m.key === k) || {}).nome || "";
-  const listaMods = [["", "Todas as modalidades"], ...e.mods.map(m => [m.key, m.nome])];
-  const rotuloFmt = e.mod === "locacao" ? "Como alugar" : !e.mod ? "Avulsa ou mensal" : "Formato";
-  const todos = !e.mod ? "Avulsas e mensais" : e.mod === "locacao" ? "Avulsa e mensal" : "Todos os formatos";
-  const listaFmts = [["", todos], ...e.formatos.map(k => [k, nomeDoFormato(k)])];
-  return `<div class="ht-caixas">
-      ${caixa("Modalidade", e.mod ? nomeMod(e.mod) : "Todas as modalidades", 'pessoa', "data-opcao-modalidade", e.mods.length > 1 ? listaMods : [], e.mod)}
-      ${e.formatos.length > 1 ? caixa(rotuloFmt, e.formato ? nomeDoFormato(e.formato) : todos, 'ball', "data-opcao-formato", listaFmts, e.formato) : ""}
+  const todos = e.mod === "locacao" ? "Todas" : "Todos";
+  return `
+    <div class="ht-escolha">
+      ${e.mods.length > 1 ? `
+        <div class="ht-escolha-mods" role="group" aria-label="Modalidade">
+          ${e.mods.map(m => `<button type="button" class="ht-mod ${e.mod === m.key ? "on" : ""}" data-opcao-modalidade="${m.key}" data-court="${c.id}" aria-pressed="${e.mod === m.key}"><span class="ht-mod-n">${esc(m.nome)}</span><span class="ht-mod-s">${esc(resumoDaModalidade(e.opcoes, m.key))}</span></button>`).join("")}
+        </div>` : ""}
+      ${e.formatos.length > 1 ? `
+        <div class="ht-escolha-fmts" role="group" aria-label="${e.mod === "locacao" ? "Avulsa ou mensal" : "Formato"}">
+          <button type="button" class="${e.formato ? "" : "on"}" data-opcao-formato="" data-court="${c.id}" aria-pressed="${!e.formato}">${todos}</button>
+          ${e.formatos.map(k => `<button type="button" class="${e.formato === k ? "on" : ""}" data-opcao-formato="${k}" data-court="${c.id}" aria-pressed="${e.formato === k}">${esc(nomeDoFormato(k))}</button>`).join("")}
+        </div>` : ""}
     </div>`;
 }
 
@@ -19632,13 +19658,15 @@ function itemDoCatalogo(x) {
   if (!x || typeof x !== "object") return null;
   const tipo = CATALOGO_TIPOS.find(t => t.key === x.tipo);
   if (!tipo) return null;
+  // A aula não é avulsa nem mensal (regra 189, 30/10/2026: "tire as opções
+  // de aula serem avulsas ou mensal, só para locação"): o valor é por aula.
+  // A aula que vinha avulsa e mensal fica uma só (semRepetir guarda a
+  // primeira, a avulsa).
   const item = {
     tipo: tipo.key,
-    cobranca: x.cobranca === "mensal" ? "mensal" : "avulsa",
+    cobranca: tipo.grupo === "aula" ? "" : x.cobranca === "mensal" ? "mensal" : "avulsa",
     preco: precoDoCatalogo(x.preco),
   };
-  // A aula sem valor nenhum vai sob consulta, sem a cobrança (regra 169).
-  if (x.cobranca === "" && !item.preco && tipo.grupo === "aula") item.cobranca = "";
   if (x.publico === "crianca" && tipo.infantil) {
     item.publico = "crianca";
     let de = idadeDoCatalogo(x.idadeDe), ate = idadeDoCatalogo(x.idadeAte);
@@ -19743,7 +19771,7 @@ function gradeDosItens(itens, modalidades) {
       else if (!g.adulto.formatos.includes(i.tipo)) g.adulto.formatos.push(i.tipo);
       base = "adulto";
     }
-    if (i.cobranca) g.valores[`${base}:${i.tipo}:${i.cobranca}`] = i.preco || "";
+    g.valores[`${base}:${i.tipo}`] = i.preco || "";
     if (i.foto && !g.fotos[`${base}:${i.tipo}`]) g.fotos[`${base}:${i.tipo}`] = i.foto;
   });
   return g;
@@ -19758,13 +19786,12 @@ function cartoesDaGrade(g, bloco) {
 }
 function itensDaGrade(g) {
   const out = [];
+  // Um valor por aula (regra 189); sem valor, a aula vai sob consulta (a
+  // "Aula" do preço de antes, apagada, sai).
   const aula = (bloco, extra) => cartoesDaGrade(g, bloco).forEach(c => {
-    const foto = g.fotos[c.chave];
-    const comValor = CATALOGO_COBRANCAS.filter(k => priceMin(g.valores[`${c.chave}:${k.key}`]));
-    // Sem valor nenhum, a aula vai sob consulta, sem dizer a cobrança (a
-    // "Aula" do preço de antes, apagada, sai).
-    if (!comValor.length && !c.tipo.antigo) out.push(itemDoCatalogo({ tipo: c.tipo.key, cobranca: "", preco: "", ...extra, foto }));
-    comValor.forEach(k => out.push(itemDoCatalogo({ tipo: c.tipo.key, cobranca: k.key, preco: g.valores[`${c.chave}:${k.key}`], ...extra, foto })));
+    const preco = g.valores[c.chave] || "";
+    if (c.tipo.antigo && !priceMin(preco)) return;
+    out.push(itemDoCatalogo({ tipo: c.tipo.key, preco, ...extra, foto: g.fotos[c.chave] }));
   });
   if (g.adulto.on) aula("adulto", {});
   if (g.crianca.on) g.crianca.faixas.forEach(x => aula(x.id, { publico: "crianca", idadeDe: x.de, idadeAte: x.ate }));
@@ -20159,9 +20186,11 @@ function htPerguntas(c) {
 function htSecoesDisponiveis(c) {
   const secs = [];
   if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Estrutura" });
-  secs.push({ id: "ht-local", label: "Localização" });
+  // Regra 189: o "Sobre" logo depois da estrutura e a região logo depois
+  // das opções.
   secs.push({ id: "ht-visao", label: "Visão geral" });
   secs.push({ id: "ht-opcoes", label: "Preços" });
+  secs.push({ id: "ht-local", label: "Localização" });
   secs.push({ id: "avaliacoes", label: "Avaliações" });
   if (temHorario(c)) secs.push({ id: "ht-horario", label: "Horário" });
   secs.push({ id: "ht-politica", label: "Cancelamento" });
@@ -20370,17 +20399,9 @@ function renderCourtPage(c) {
                   ${htComodidades(c)}
                 </section>` : ""}
 
-              <section class="ht-sec" id="ht-local">
-                <h3 class="sec-title">Explore a região</h3>
-                ${htLocalizacao(c)}
-              </section>
-
-              ${/* Sem foto no meio da ficha (pedido de 27/10/2026: "igual na
-                   ficha dos hotéis.com, não tem foto no meio da ficha, só tem
-                   foto em cima e sobre os quartos"): as fotos ficam na capa e
-                   nos cartões das aulas e da locação. */ ""}
               <section class="ht-sec" id="ht-visao">
                 <h3 class="sec-title">Sobre a academia</h3>
+                ${c.sobre ? `<p class="ht-about ht-about-academia">${esc(c.sobre)}</p>` : ""}
                 <p class="ht-about">${esc(descricaoAcademia(c))}</p>
               </section>
 
@@ -20391,6 +20412,15 @@ function renderCourtPage(c) {
                 ${htOpcoes(c)}
               </section>
 
+              <section class="ht-sec" id="ht-local">
+                <h3 class="sec-title">Explore a região</h3>
+                ${htLocalizacao(c)}
+              </section>
+
+              ${/* Sem foto no meio da ficha (pedido de 27/10/2026: "igual na
+                   ficha dos hotéis.com, não tem foto no meio da ficha, só tem
+                   foto em cima e sobre os quartos"): as fotos ficam na capa e
+                   nos cartões das aulas e da locação. */ ""}
               ${/* O contato logo depois das opções (pedido de 26/10/2026: "os
                    contatos pode deixar mais acima"); o "Confirmada pela
                    academia", o "é o responsável?" e o "Algo errado nesta
@@ -20700,18 +20730,17 @@ function fotoDoCartao(f, g, chave, nome, rotulo) {
 // regra 182 (30/10/2026: "o valor mensal também será por aula"), a mensal
 // da aula é o valor de cada aula no plano mensal, abaixo da avulsa; desde a
 // regra 183, a locação mensal é o valor de cada hora no plano.
+// Desde a regra 189, a aula tem um valor só (sem avulsa e mensal).
 const EXEMPLOS_DE_VALOR = {
-  adulto: { individual: { avulsa: "150 a 200", mensal: "130 a 170" }, dupla: { avulsa: "90 a 130", mensal: "80 a 110" }, grupo: { avulsa: "60 a 80", mensal: "50 a 70" }, aula: { avulsa: "120 a 180", mensal: "100 a 150" } },
-  crianca: { individual: { avulsa: "120 a 170", mensal: "100 a 140" }, dupla: { avulsa: "80 a 110", mensal: "70 a 90" }, grupo: { avulsa: "50 a 70", mensal: "40 a 60" } },
+  adulto: { individual: "150 a 200", dupla: "90 a 130", grupo: "60 a 80", aula: "120 a 180" },
+  crianca: { individual: "120 a 170", dupla: "80 a 110", grupo: "50 a 70" },
   locacao: { avulsa: "100 a 150", mensal: "80 a 120" },
 };
-// O exemplo de um valor ("adulto:grupo:mensal", "f1:dupla:avulsa",
-// "locacao:avulsa").
+// O exemplo de um valor ("adulto:grupo", "f1:dupla", "locacao:avulsa").
 function exemploDoValor(chave) {
   const partes = chave.split(":");
   if (partes[0] === "locacao") return EXEMPLOS_DE_VALOR.locacao[partes[1]];
-  const ex = EXEMPLOS_DE_VALOR[partes[0] === "adulto" ? "adulto" : "crianca"][partes[1]] || EXEMPLOS_DE_VALOR.adulto.aula;
-  return ex[partes[2]];
+  return EXEMPLOS_DE_VALOR[partes[0] === "adulto" ? "adulto" : "crianca"][partes[1]] || EXEMPLOS_DE_VALOR.adulto.aula;
 }
 // O que a academia digita no valor: um número ou dois (o intervalo). O que
 // separa os dois (espaço, traço, vírgula, ponto) vira " a " na hora, e
@@ -20739,11 +20768,10 @@ function editorDasAulas(f) {
         <p class="cat-opcao-n">${esc(nome)}${c.tipo.porPessoa ? ` <span>valor por pessoa</span>` : ""}</p>
         ${c.tipo.antigo ? `<p class="cat-tipo-dica">É o preço de antes, sem o formato: escreva o valor no formato certo e apague este.</p>` : ""}
         <div class="cat-valores">
-          ${CATALOGO_COBRANCAS.map(k => `
-            <div class="cat-valor-col">
-              <span class="cat-col">${k.nome}<small>por aula</small></span>
-              ${campoDoValor(g, `${c.chave}:${k.key}`, `${nome.toLowerCase()} ${k.nome.toLowerCase()}`)}
-            </div>`).join("")}
+          <div class="cat-valor-col">
+            <span class="cat-col">Valor<small>por aula</small></span>
+            ${campoDoValor(g, c.chave, nome.toLowerCase())}
+          </div>
         </div>
         ${fotoDoCartao(f, g, c.chave, nome.toLowerCase(), "Foto desta aula")}
       </div>`;
@@ -20791,7 +20819,7 @@ function editorDasAulas(f) {
         </section>`).join("") + `
         <button type="button" class="cat-mais-faixa" data-cat-faixa-mais>${icon('plus', 15, 'currentColor')} Adicionar faixa de idade</button>` : ""}
     </div>
-    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor por aula do que oferecem: avulsa, mensal (o valor de cada aula no plano) ou as duas. Sem valor nenhum, a aula mostra "Sob consulta". No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
+    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor de cada aula. Sem valor, a aula mostra "Sob consulta". No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
 }
 // A parte "Locação" (só para quem escolheu a locação nas Modalidades, regra
 // 170): a avulsa e a mensal, cada uma com a foto e o valor.
@@ -20826,7 +20854,7 @@ const REG_PASSOS = [
   { id: "modalidades", t: "Modalidades", titulo: "O que a academia oferece?", porque: "Escolha as modalidades. A parte de cada uma aparece em seguida." },
   { id: "precos", t: "Aulas", titulo: "Aulas", porque: "Para quem são, os formatos e, em cada um, a foto e os valores. Cada aula vira um cartão na ficha, com o WhatsApp." },
   { id: "locacao", t: "Locação", titulo: "Locação de quadra", porque: "Avulsa ou mensal, com a foto e o valor por hora de cada uma." },
-  { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
+  { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca. No fim, o que a academia tem de diferente." },
   { id: "contato", t: "Contato", titulo: "Como os jogadores falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa iniciada." },
   { id: "fotos", t: "Fotos", titulo: "Fotos da academia", porque: "Ficha com foto recebe muito mais contato." },
   { id: "horario", t: "Horário", titulo: "Horário de funcionamento", porque: "A ficha mostra se a academia está aberta agora." },
@@ -20866,8 +20894,22 @@ function regPedeTudo(f) {
   return !isAdmin && !f.__editingId;
 }
 const FALTA_MODALIDADE = "pelo menos uma modalidade (Aulas ou Locação de quadra)";
+// O texto de "Sobre a academia" (regra 189, 30/10/2026: "a academia conte
+// o diferencial delas junto a estrutura que eles possuem com um limite de
+// caracteres, acho que 750 está bom"): 750, como a descrição do Perfil da
+// Empresa no Google, que também não aceita telefone, link nem preço. Aqui,
+// além disso, o WhatsApp só entra pelo código (regra 156).
+const SOBRE_MAX = 750;
+function problemaNoSobre(t) {
+  const x = String(t || "");
+  if (/(https?:\/\/|www\.|\b[\w-]+\.(com|br|net|org)\b|@\w)/i.test(x)) return "link ou @ no texto sobre a academia";
+  if (/\d[\d\s().-]{7,}\d/.test(x)) return "telefone no texto sobre a academia";
+  if (/R\$\s*\d/i.test(x)) return "preço no texto sobre a academia (vai no catálogo)";
+  return "";
+}
 function regFaltas(f, passo) {
   const falta = [];
+  if (passo === "quadras" && problemaNoSobre(f.sobre)) falta.push("tirar o " + problemaNoSobre(f.sobre));
   const tem = v => !!String(v || "").trim();
   if (passo === "dados") {
     if (!tem(f.name)) falta.push("nome");
@@ -21390,7 +21432,11 @@ function regPassoHtml(id, f, obrigatorio) {
             return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`;
           }).join("")}
         </div>
-        ${regEstacionamentoHtml(f)}`;
+        ${regEstacionamentoHtml(f)}
+        <label class="field-label" for="f-sobre">O que a academia tem de diferente</label>
+        <p class="footnote" style="margin:0 0 6px">Conte o diferencial e a estrutura: é o texto de "Sobre a academia" na ficha. Sem telefone, link ou preço, que já têm lugar próprio.</p>
+        <textarea class="form-field" id="f-sobre" rows="5" maxlength="${SOBRE_MAX}" style="resize:none;margin-top:0" placeholder="Ex.: quadras de saibro cobertas e iluminadas, turmas de até 4 alunos, professores que jogam torneios e vestiário com chuveiro.">${esc(f.sobre || "")}</textarea>
+        <p class="footnote" id="f-sobre-conta" style="text-align:right;margin-top:4px">${String(f.sobre || "").length}/${SOBRE_MAX}</p>`;
 
   if (id === "contato") return `
         <label class="field-label" for="f-phone" style="margin-top:0">WhatsApp da academia${obrigatorio}</label>
@@ -22384,7 +22430,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
-<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo, para adultos e para crianças, com a idade informada pela academia, e locação, avulsas ou mensais, por aula, por pessoa ou por hora; no plano mensal, o valor de cada aula ou de cada hora) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
+<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo, para adultos e para crianças, com a idade informada pela academia, por aula ou por pessoa, e locação, avulsa ou mensal, por hora; na mensal, o valor de cada hora no plano) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir, e o cadastro dela fica guardado como fechado (cadastro inativo), com as avaliações, fora do site. Se ela reabrir, quem a administrava volta a administrá-la pelo GuiaTennis Parceiros, com o mesmo e-mail; uma conta nova pede a reabertura ao GuiaTennis, que confere antes. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
@@ -22633,7 +22679,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "preco-jog", onde: "jogadores", t: "Preço e \"Sob consulta\"",
     p: ["preco", "valor", "quanto custa", "quanto e", "sob consulta", "barato", "caro", "pagar", "pagamento", "cobra"],
-    r: "O preço aparece na ficha quando a academia informa, em \"Opções para jogar\": aula individual, em dupla e em grupo e locação, avulsa ou mensal, cada uma com o que o valor paga (por aula, por pessoa ou por hora; no plano mensal, o valor de cada aula ou de cada hora). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
+    r: "O preço aparece na ficha quando a academia informa, em \"Opções para jogar\": aula individual, em dupla e em grupo (por aula ou por pessoa) e locação, avulsa ou mensal (por hora; na mensal, o valor de cada hora no plano). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "avaliar", onde: "jogadores", t: "Avaliar uma academia",
     p: ["avali", "nota", "comentar", "comentario", "estrelas", "opiniao"],
@@ -23178,7 +23224,7 @@ const CHAT_DETALHES_PC = [
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
   { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco", "valor mensal", "aula mensal", "locacao mensal"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano), e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora (na mensal, o valor de cada hora no plano) e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, o valor por aula e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora (na mensal, o valor de cada hora no plano) e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -25198,11 +25244,12 @@ function attachEvents() {
   document.querySelectorAll("[data-voltar-ficha]").forEach(el => { el.onclick = voltarDaFicha; });
   document.querySelectorAll("[data-ir-secao]").forEach(el => { el.onclick = () => irParaSecao(el.dataset.irSecao, true); });
   // As caixas de "Opções para jogar" (regra 185): a de baixo segue a de cima.
+  // Tocar de novo no cartão da modalidade escolhida volta a mostrar todas.
   document.querySelectorAll("[data-opcao-modalidade]").forEach(el => {
-    el.onchange = () => { state.opcaoDaFicha = { id: el.dataset.court, modalidade: el.value, formato: "" }; render(); };
+    el.onclick = () => { const a = state.opcaoDaFicha && state.opcaoDaFicha.id === el.dataset.court ? state.opcaoDaFicha : {}; const m = el.dataset.opcaoModalidade; state.opcaoDaFicha = { id: el.dataset.court, modalidade: a.modalidade === m ? "" : m, formato: "" }; render(); };
   });
   document.querySelectorAll("[data-opcao-formato]").forEach(el => {
-    el.onchange = () => { const a = state.opcaoDaFicha && state.opcaoDaFicha.id === el.dataset.court ? state.opcaoDaFicha : {}; state.opcaoDaFicha = { id: el.dataset.court, modalidade: a.modalidade || "", formato: el.value }; render(); };
+    el.onclick = () => { const a = state.opcaoDaFicha && state.opcaoDaFicha.id === el.dataset.court ? state.opcaoDaFicha : {}; state.opcaoDaFicha = { id: el.dataset.court, modalidade: a.modalidade || "", formato: el.dataset.opcaoFormato }; render(); };
   });
   document.querySelectorAll("[data-rev-mais]").forEach(el => {
     el.onclick = () => {
@@ -26403,6 +26450,12 @@ function attachEvents() {
   };
   // Ao sair do campo, a prévia mostra como o texto foi entendido.
   if (acessoEst) acessoEst.onchange = () => render();
+  const sobre = document.getElementById("f-sobre");
+  if (sobre) sobre.oninput = (e) => {
+    window.__form.sobre = e.target.value.slice(0, SOBRE_MAX);
+    const conta = document.getElementById("f-sobre-conta");
+    if (conta) conta.textContent = `${window.__form.sobre.length}/${SOBRE_MAX}`;
+  };
   const horarioNota = document.getElementById("f-horario-nota");
   if (horarioNota) horarioNota.oninput = (e) => { horarioForm(window.__form).nota = e.target.value; };
   document.querySelectorAll(".hr-time").forEach(el => {
@@ -26503,8 +26556,8 @@ function attachEvents() {
       const entrou = !dono.formatos.includes(tipo);
       dono.formatos = entrou ? [...dono.formatos, tipo] : dono.formatos.filter(x => x !== tipo);
       mudouCatalogo(true);
-      // O formato que entrou já fica com o cursor no valor avulso.
-      if (entrou) focar(`[data-cat-valor="${bloco}:${tipo}:avulsa"]`);
+      // O formato que entrou já fica com o cursor no valor.
+      if (entrou) focar(`[data-cat-valor="${bloco}:${tipo}"]`);
     };
   });
   document.querySelectorAll("[data-cat-valor]").forEach(el => {
@@ -26536,7 +26589,7 @@ function attachEvents() {
       const faixa = g.crianca.faixas.find(x => x.id === el.dataset.catCopiar);
       if (!faixa) return;
       faixa.formatos = [...g.adulto.formatos];
-      g.adulto.formatos.forEach(t => CATALOGO_COBRANCAS.forEach(k => { g.valores[`${faixa.id}:${t}:${k.key}`] = g.valores[`adulto:${t}:${k.key}`] || ""; }));
+      g.adulto.formatos.forEach(t => { g.valores[`${faixa.id}:${t}`] = g.valores[`adulto:${t}`] || ""; });
       mudouCatalogo(true);
     };
   });
@@ -26746,6 +26799,7 @@ function abrirEdicaoDaFicha(c, opcoes = {}) {
     priceAula: c.priceAula || "",
     priceLocacao: c.priceLocacao || "",
     catalogo: catalogoDe(integral).length ? fotoUmaVezPorLinha(catalogoDe(integral).sort(ordemDoCatalogo)) : catalogoAntigo(c),
+    sobre: integral.sobre || c.sobre || "",
     // O número que espera o código fica no campo (SQL 20261026120000): salvar
     // de novo não o perde; trocar por outro manda um código novo.
     phone: (!isAdmin && (whatsappNovoDe(c.id) || {}).numero) || c.phone || "",
@@ -27010,7 +27064,7 @@ async function doSearch(opcoes = {}) {
 // falhar — e avisa o admin com o SQL que resolve. Mesmo caminho do "plano".
 function faltaColunaNova(erro) {
   const m = ((erro && erro.message) || "").toLowerCase();
-  return m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada") || m.includes("catalogo");
+  return m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada") || m.includes("catalogo") || m.includes("sobre");
 }
 
 function avisarSqlColunas() {
@@ -27136,6 +27190,7 @@ async function doRegisterSubmit() {
         delete semNovas.horario;
         delete semNovas.confirmada;
         delete semNovas.catalogo;
+        delete semNovas.sobre;
         ({ error } = await sb.from('academias').update(semNovas).eq('id', f.__editingId));
         if (!error) avisarSqlColunas();
       }
@@ -27223,6 +27278,7 @@ async function doRegisterSubmit() {
       delete semNovas.horario;
       delete semNovas.confirmada;
       delete semNovas.catalogo;
+      delete semNovas.sobre;
       ({ data, error } = await enviar(semNovas));
       if (!error) avisarSqlColunas();
     }

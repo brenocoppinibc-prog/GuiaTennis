@@ -144,5 +144,21 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   await page.click('#reg-continuar');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => regPassoAtual().passo.id === 'locacao'), 'com a locação marcada, segue para a parte Locação');
+  // Regra 189: a academia conta o diferencial e a estrutura, até 750 letras,
+  // sem telefone, link ou preço; a ficha mostra em "Sobre a academia".
+  await irParte(page, 'quadras');
+  ok((await page.getAttribute('#f-sobre', 'maxlength')) === '750' && (await page.innerText('label[for="f-sobre"]')) === 'O que a academia tem de diferente', 'na parte Quadras e estrutura, o texto da academia, até 750 letras');
+  await page.fill('#f-sobre', 'Chame no 11 99999-0000 ou em www.academia.com.br');
+  let falta = await page.evaluate(() => regFaltas(window.__form, 'quadras').join(' | '));
+  ok(falta.includes('link ou @'), 'link no texto não passa — ' + falta);
+  await page.fill('#f-sobre', 'Chame no 11 99999-0000');
+  falta = await page.evaluate(() => regFaltas(window.__form, 'quadras').join(' | '));
+  ok(falta.includes('telefone no texto'), 'telefone no texto não passa (o WhatsApp entra pelo código) — ' + falta);
+  const sobre = 'Quadras de saibro cobertas e turmas de até 4 alunos.';
+  await page.fill('#f-sobre', sobre);
+  ok(!(await page.evaluate(() => regFaltas(window.__form, 'quadras').join())).includes('texto') && (await page.innerText('#f-sobre-conta')) === sobre.length + '/750' && (await page.evaluate(() => toRow(window.__form).sobre)) === sobre, 'o texto certo passa, com o contador, e vai para o banco');
+  await page.evaluate((t) => { state.showRegister = false; state.page = 'court'; state.selected = decorate({ ...state.allCourts.find(x => x.id === 'a1'), sobre: t }); render(); }, sobre);
+  await page.waitForTimeout(200);
+  ok((await page.innerText('#ht-visao .ht-about-academia')) === sobre, 'a ficha mostra o texto da academia em "Sobre a academia"');
   await browser.close();
 })();

@@ -30,7 +30,7 @@ const rodape = (page) => page.evaluate(() => [...document.querySelectorAll('.reg
   ok(blocos === 'fotos,dados,quadras,chegada,horario,precos,cancelamento,contato', 'as partes da ficha, na ordem da página da academia — ' + blocos);
   ok((await bloco(page, 'fotos')) === 'Adicionar fotos' && await page.evaluate(() => document.querySelector('.reg-previa-mais[data-previa="fotos"]')?.tagName === 'BUTTON'), 'sem foto: só "+ Adicionar fotos", no lugar da galeria');
   t = await page.evaluate(() => ({ lapis: document.querySelectorAll('.reg-previa .reg-previa-lapis').length, titulos: [...document.querySelectorAll('.reg-previa .sec-title')].map(h => h.innerText).join(' | '), maiusculas: !!document.querySelector('.reg-previa-h'), botoes: [...document.querySelectorAll('.reg-previa button')].filter(b => /Editar/.test(b.innerText)).length }));
-  ok(t.lapis === 7 && t.titulos === 'Estrutura | Como chegar | Sobre a academia | Escolha o que você quer | Cancelamento e reposição' && !t.maiusculas && t.botoes === 0,
+  ok(t.lapis === 7 && t.titulos === 'Estrutura | Como chegar | Sobre a academia | Opções para jogar | Cancelamento e reposição' && !t.maiusculas && t.botoes === 0,
     'como na ficha: os mesmos títulos e um lápis pequeno por parte, sem rótulo em maiúsculas nem botão "Editar" — ' + JSON.stringify(t));
   ok((await bloco(page, 'dados')).startsWith('Só Aula Tennis') && await page.evaluate(() => !!document.querySelector('.reg-previa [data-previa="dados"] .selo-confirmada:not(.selo-premium)')) && (await bloco(page, 'dados')).includes('Rua A, 1 - Pinheiros, São Paulo'),
     'nome com o selo e o endereço — ' + await bloco(page, 'dados'));

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 30/10/2026 (regra 184)
+**Atualizado em:** 30/10/2026 (regra 185)
 
 | | |
 |---|---|
@@ -178,13 +178,19 @@ Produto (o que já foi decidido)
   academia que avisa que fechou sai do site na hora; "Fechou" guarda como
   cadastro inativo, que pode reabrir.
 - **Ficha** no jeito da página de hotel do hoteis.com (capa, nome no meio,
-  destaques, Estrutura, Explore a região, Sobre, Escolha o que você quer,
+  destaques, Estrutura, Explore a região, Sobre, Opções para jogar,
   Contato, Avaliações, Outras academias por perto, Horário, Cancelamento,
   Perguntas, e no fim "Confirmada pela academia", "É o responsável?" e
   "Algo errado nesta ficha?"). Fotos só na capa e nos cartões das opções.
   Os cartões das opções ficam **em grade que desce**, dois por linha no
   celular, como os quartos do hoteis.com (três no computador), na ficha e
-  na prévia do cadastro; sem rolar para o lado.
+  na prévia do cadastro; sem rolar para o lado. No alto de "Opções para
+  jogar", duas caixas como "Datas" e "Viajantes" do hoteis.com (regra 185,
+  `escolhaDaFicha`): **Modalidade** (aula para adultos, para crianças,
+  locação; só o que a academia tem) e, embaixo, o **formato** que segue a
+  de cima (individual/dupla/grupo avulsa ou mensal; na locação, avulsa ou
+  mensal). Nenhuma escolha leva a lista vazia; nada fala de quantidade
+  ("não quero cara de pouca disponibilidade").
   **Catálogo** só com modalidade e valor. No cadastro, a parte
   **Modalidades** (Aulas e/ou Locação de quadra; pelo menos uma, obrigatória
   também na edição; o admin segue só com o nome) abre as partes de cada uma, que só aparecem se escolhidas
@@ -351,7 +357,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 184**. De 28 a 30/10 entraram: o catálogo com aulas
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 185**. De 28 a 30/10 entraram: o catálogo com aulas
 para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
 e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
 a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
@@ -400,7 +406,7 @@ cancelou as conferências automáticas).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 185.
+**Próximo número:** regra 186.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -506,6 +512,11 @@ cancelou as conferências automáticas).
   reposição?"); "Pular" vira "Continuar" assim que a parte ganha algo (a
   observação do horário também conta). Sem SQL. Testes: `cadastro.js`,
   `ficha-hoteis.js`.
+- 185 (30/10) "Escolha o que você quer" vira "Opções para jogar"; no lugar
+  da caixa "A academia oferece" e dos filtros em botões, duas caixas que
+  abrem a lista do aparelho: Modalidade e, embaixo, o formato que segue a
+  de cima e só oferece o que existe (sem lista vazia, sem "não tem"). Sem
+  SQL. Testes: `catalogo.js`, `ficha-hoteis.js`, `previa-da-ficha.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

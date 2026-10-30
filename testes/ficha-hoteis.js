@@ -122,22 +122,22 @@ async function fichaCheia(page, extra) {
       nomes: c.map(x => x.querySelector('.ht-quarto-n').innerText).join(','), tag: c.map(x => x.querySelector('.ht-quarto-tag')?.innerText || '').join(','),
       verde: c.map(x => x.querySelector('.ht-quarto-verde')?.innerText || '').join(','),
       wa: c.map(x => decodeURIComponent(x.querySelector('a[data-track="whatsapp"]').getAttribute('href'))),
-      contagem: document.querySelector('.ht-opcoes-n')?.innerText, caixas: [...document.querySelectorAll('.ht-caixa')].map(x => x.innerText.replace(/\s+/g, ' ').trim()),
+      contagem: document.querySelector('.ht-opcoes-n')?.innerText, caixas: [...document.querySelectorAll('.ht-caixa')].map(x => x.querySelector('.ht-caixa-l').innerText + ' ' + x.querySelector('.ht-caixa-v').innerText.replace(/\s+/g, ' ').trim()),
     };
   });
   ok(r.n === 2 && r.ladoALado && r.semRolar && r.nomes === 'Locação,Aula' && r.contagem === 'Mostrando 2 de 2 opções', 'no celular, locação e aula lado a lado na grade (sem rolar para o lado), com o "Mostrando 2 de 2 opções"');
   ok(r.tag === 'Menor preço,' && r.verde === 'Reposição até 12h antes,Reposição até 24h antes', 'o mais em conta com "Menor preço" e a reposição de cada um em verde — ' + r.verde);
   ok(r.wa[0].includes('queria saber sobre alugar a quadra') && r.wa[1].includes('queria saber sobre as aulas'), 'o WhatsApp de cada cartão já fala daquela opção');
   // Sem a caixa de horário (27/10/2026: "não precisa selecionar um horário certo").
-  ok(r.caixas.length === 1 && r.caixas[0] === 'A academia oferece Aula e locação · 5 quadras' && !(await page.$('#ir-horario')), 'só a caixa do que a academia oferece, sem a de horário — ' + r.caixas.join(' | '));
+  ok(r.caixas.length === 1 && r.caixas[0] === 'Modalidade Todas as modalidades' && !(await page.$('#ir-horario')), 'regra 185: a caixa da modalidade, como a de "Datas" das opções de quarto, sem a de horário — ' + r.caixas.join(' | '));
   ok(await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')].every(x => x.querySelector('.ht-quarto-foto img'))), 'os cartões das opções continuam com foto');
-  await page.click('[data-opcao-filtro="Aula"]');
+  await page.selectOption('[data-opcao-modalidade]', 'aula');
   await page.waitForTimeout(100);
   r = await page.evaluate(() => ({ n: document.querySelectorAll('#ht-quartos .ht-quarto').length, nome: document.querySelector('#ht-quartos .ht-quarto-n').innerText, contagem: document.querySelector('.ht-opcoes-n').innerText }));
-  ok(r.n === 1 && r.nome === 'Aula' && r.contagem === 'Mostrando 1 de 2 opções', 'o filtro "Aula" deixa só a aula');
-  await page.click('[data-opcao-filtro=""]');
+  ok(r.n === 1 && r.nome === 'Aula' && r.contagem === 'Mostrando 1 de 2 opções', 'a modalidade "Aula" deixa só a aula');
+  await page.selectOption('[data-opcao-modalidade]', '');
   await page.waitForTimeout(100);
-  ok(await page.evaluate(() => document.querySelectorAll('#ht-quartos .ht-quarto').length === 2), '"Todas" volta as duas');
+  ok(await page.evaluate(() => document.querySelectorAll('#ht-quartos .ht-quarto').length === 2), '"Todas as modalidades" volta as duas');
 
   // ---- avaliações: a nota no alto e os cartões que passam ----
   r = await page.evaluate(() => {

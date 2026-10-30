@@ -193,8 +193,9 @@ const CATALOGO = [
   const cartoes = () => page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')].map(x => x.querySelector('.ht-quarto-n').innerText));
   let nomes = await cartoes();
   ok(nomes.join(',') === 'Aula individual,Aula em dupla,Aula em grupo,Aula infantil individual,Aula infantil em grupo,Aula infantil em grupo,Locação', 'um cartão por opção, na ordem do catálogo (as das crianças depois das de adultos, da faixa mais nova para a mais velha), sem repetir — ' + nomes.join(','));
-  const chips = await page.evaluate(() => [...document.querySelectorAll('#ht-opcoes-filtro .chip')].map(b => b.innerText.trim()).join(','));
-  ok(chips === 'Todas,Individual,Dupla,Grupo,Crianças,Locação,Avulsas,Mensais' && await page.$('.ht-opcoes-sep'), 'filtros por tipo (as aulas das crianças juntas, em "Crianças") e por cobrança — ' + chips);
+  const opcoesDe = (sel) => page.evaluate((sel) => [...document.querySelectorAll(sel + ' option')].map(o => o.textContent).join(','), sel);
+  const caixas = { mods: await opcoesDe('[data-opcao-modalidade]'), fmts: await opcoesDe('[data-opcao-formato]'), chips: !!(await page.$('#ht-opcoes-filtro')) };
+  ok(caixas.mods === 'Todas as modalidades,Aula para adultos,Aula para crianças,Locação de quadra' && caixas.fmts === 'Avulsas e mensais,Avulsa,Mensal' && !caixas.chips, 'regra 185: as duas caixas, a modalidade em cima (só o que a academia tem) e, embaixo, avulsa ou mensal — ' + JSON.stringify(caixas));
   const grupo = await page.evaluate(() => {
     const c = [...document.querySelectorAll('#ht-quartos .ht-quarto')][2];
     return { t: c.innerText.replace(/\s+/g, ' '), wa: decodeURIComponent(c.querySelector('.ht-quarto-bt').getAttribute('href')), menor: !!document.querySelector('.ht-quarto-tag') };
@@ -214,26 +215,30 @@ const CATALOGO = [
   const individual = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][0].innerText.replace(/\s+/g, ' '));
   ok(loc.includes('Locação avulsa') && loc.includes('Aluguel da quadra') && !loc.includes('1h30') && loc.includes('por hora') && loc.includes('Reposição até 12h antes') && individual.includes('Reposição até 24h antes'), 'a locação: avulsa, por hora (a duração de antes não aparece), com a reposição da locação (a aula, com a da aula) — ' + loc);
 
-  await page.click('#ht-opcoes-filtro [data-opcao-filtro="Crianças"]');
-  ok((await cartoes()).join(',') === 'Aula infantil individual,Aula infantil em grupo,Aula infantil em grupo', '"Crianças" mostra só as aulas das crianças, das duas faixas');
-  await page.click('#ht-opcoes-filtro [data-opcao-cobranca="mensal"]');
-  nomes = await cartoes();
-  ok(nomes.join(',') === 'Aula infantil em grupo,Aula infantil em grupo' && (await texto(page, '.ht-opcoes-n')) === 'Mostrando 2 de 7 opções', '"Crianças" e "Mensais" juntos');
-  await page.click('#ht-opcoes-filtro [data-opcao-filtro="Individual"]');
-  ok((await texto(page, '.ht-opcoes-vazio')).startsWith('A academia não tem aula individual mensal no catálogo.'), 'individual e mensal, sem opção: diz que não tem e oferece "Ver todas"');
-  await page.click('.ht-opcoes-vazio [data-opcao-filtro]');
-  ok((await cartoes()).length === 7, '"Ver todas" volta às sete opções');
-  await page.click('#ht-opcoes-filtro [data-opcao-filtro="Locação"]');
-  ok((await cartoes()).join() === 'Locação', 'o filtro do tipo');
+  await page.selectOption('[data-opcao-modalidade]', 'crianca');
+  await page.waitForTimeout(150);
+  ok((await cartoes()).join(',') === 'Aula infantil individual,Aula infantil em grupo,Aula infantil em grupo' && (await opcoesDe('[data-opcao-formato]')) === 'Todos os formatos,Individual avulsa,Grupo mensal', '"Aula para crianças" mostra só as aulas das crianças, das duas faixas, e a caixa de baixo segue: só os formatos que existem');
+  await page.selectOption('[data-opcao-formato]', 'grupo:mensal');
+  await page.waitForTimeout(150);
+  ok((await cartoes()).join(',') === 'Aula infantil em grupo,Aula infantil em grupo' && (await texto(page, '.ht-opcoes-n')) === 'Mostrando 2 de 7 opções' && (await texto(page, '[data-opcao-formato]')) !== '' && (await page.evaluate(() => document.querySelectorAll('.ht-caixa-v')[1].innerText)) === 'Grupo mensal', '"Grupo mensal" das crianças, com a caixa dizendo o que foi escolhido');
+  ok(!(await page.$('.ht-opcoes-vazio')), 'nenhuma escolha leva a uma lista vazia');
+  await page.selectOption('[data-opcao-modalidade]', 'locacao');
+  await page.waitForTimeout(150);
+  ok((await cartoes()).join() === 'Locação' && !(await page.$('[data-opcao-formato]')), 'a locação só avulsa: o cartão dela, sem a caixa de baixo (não há o que escolher)');
+  await page.selectOption('[data-opcao-modalidade]', '');
+  await page.waitForTimeout(150);
+  ok((await cartoes()).length === 7, '"Todas as modalidades" volta às sete opções');
+  await page.selectOption('[data-opcao-modalidade]', 'locacao');
+  await page.waitForTimeout(150);
 
   const resumo = await page.evaluate(() => ({
     barra: document.querySelector('.court-cta-unit')?.innerText || '', sobre: document.querySelector('.ht-about')?.innerText || '',
-    oferece: document.querySelector('.ht-caixa-v')?.innerText || '',
+    oferece: document.querySelector('.ht-caixa-v')?.innerText || '', titulo: document.querySelector('#ht-opcoes .sec-title')?.innerText || '',
     faq: perguntasAcademia(state.selected).map(x => x.q + ' ' + x.a).join(' | '),
     ld: (JSON.parse(document.getElementById('ld-academia').textContent)['@graph'] || []).find(x => x.hasOfferCatalog),
   }));
   ok(resumo.barra === 'por pessoa, na dupla', 'a barra de baixo: a opção avulsa mais em conta dos adultos e o que o valor paga, curto — ' + resumo.barra);
-  ok(resumo.oferece.startsWith('Aula e locação · Aula infantil'), '"A academia oferece" diz que tem aula infantil — ' + resumo.oferece);
+  ok(resumo.oferece === 'Locação de quadra' && resumo.titulo === 'Opções para jogar', 'a seção é "Opções para jogar", e a caixa de cima diz a modalidade escolhida — ' + resumo.oferece);
   const curtos = await page.evaluate(() => opcoesPreco(state.selected).map(rotuloCurto).join(' | '));
   ok(curtos === 'por aula individual | por pessoa, na dupla | por pessoa, na turma, no plano mensal | por aula individual infantil | por pessoa, na turma infantil, no plano mensal | por pessoa, na turma infantil, no plano mensal | por hora de quadra', 'o rótulo curto de cada opção — ' + curtos);
   ok(resumo.sobre.includes('No catálogo da academia: aula individual a partir de R$ 150 por aula; aula em dupla a partir de R$ 90 por pessoa, por aula; aula em grupo a partir de R$ 300 por pessoa, por aula, no plano mensal; aula infantil a partir de R$ 110 por aula; e locação a partir de R$ 130 por hora. Também há planos mensais.'), 'o "Sobre" resume o catálogo, com as aulas das crianças juntas — ' + resumo.sobre);

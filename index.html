@@ -2872,7 +2872,7 @@
   #ht-local .ht-atalhos { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 4px 22px; }
   #ht-local .cidade-link { display: inline-flex; margin-top: 12px; font-size: 15px; font-weight: 600; color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
 
-  /* "Escolha o que você quer": as caixas, a promoção, os filtros e os
+  /* "Opções para jogar": as caixas, a promoção e os
      cartões das opções. */
   .ht-caixas { display: grid; gap: 12px; margin: 4px 0 16px; }
   @media (min-width: 720px) { .ht-caixas { grid-template-columns: 1fr 1fr; } }
@@ -2885,11 +2885,12 @@
   .ht-promo-ic { width: 58px; height: 58px; border-radius: 50%; background: #F3E9CC; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   #ht-opcoes .ht-promo-tag { font-size: 12px; }
   #ht-opcoes .ht-promo-t { margin-top: 3px; font-size: 18px; }
-  .ht-opcoes-filtro { margin-top: 18px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
-  .ht-opcoes-filtro::-webkit-scrollbar { display: none; }
-  .ht-opcoes-filtro .chip { flex-shrink: 0; }
-  .ht-opcoes-sep { flex: 0 0 1px; align-self: stretch; margin: 4px 2px; background: var(--border); }
-  .ht-opcoes-vazio { margin-top: 14px; }
+  /* As caixas que escolhem (regra 185): a caixa inteira abre a lista do
+     aparelho, como "Datas" e "Viajantes" do hoteis.com. */
+  .ht-caixa-sel { position: relative; cursor: pointer; }
+  .ht-caixa-sel > span { flex: 1; min-width: 0; }
+  .ht-caixa-sel:focus-within { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
+  .ht-caixa-select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; cursor: pointer; }
   .ht-quarto-itens { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   .ht-quarto-itens li { display: flex; align-items: flex-start; gap: 7px; font-size: 13.5px; line-height: 1.35; }
   .ht-quarto-itens svg { flex-shrink: 0; margin-top: 1px; }
@@ -19146,14 +19147,8 @@ function htDestaques(c) {
 function htOpcoes(c) {
   const opcoes = opcoesPreco(c);
   const lista = opcoes.length ? opcoes : [{ nome: "Valores", desc: "Fale com a academia no WhatsApp para saber o valor.", faixa: "", assunto: "os valores", unidade: "por hora" }];
-  const tipos = [...new Set(opcoes.map(o => o.filtro))];
-  const cobrancas = CATALOGO_COBRANCAS.filter(k => opcoes.some(o => o.cobranca === k.key));
-  const escolha = state.opcaoDaFicha && state.opcaoDaFicha.id === c.id ? state.opcaoDaFicha : {};
-  const filtro = tipos.includes(escolha.nome) ? escolha.nome : "";
-  const filtroCob = cobrancas.length > 1 && cobrancas.some(k => k.key === escolha.cobranca) ? escolha.cobranca : "";
-  const visiveis = lista.filter(o => (!filtro || o.filtro === filtro) && (!filtroCob || o.cobranca === filtroCob));
-  // "A academia não tem aula individual mensal", "… aula infantil mensal".
-  const nomeDoFiltro = (() => { const o = opcoes.find(x => x.filtro === filtro); return !o ? "" : o.publico === "crianca" ? "aula infantil" : o.nome.toLowerCase(); })();
+  const esc2 = escolhaDaFicha(c);
+  const visiveis = esc2.visiveis.length ? esc2.visiveis : lista;
   const fotos = courtPhotos(c);
   const pol = politicaDe(c);
   // "Menor preço" só entre valores que pagam a mesma coisa (todos por aula,
@@ -19202,34 +19197,70 @@ function htOpcoes(c) {
         </div>
       </article>`;
   };
-  const chip = (rotulo, ativo, attrs) => `<button type="button" class="chip ${ativo ? "active" : ""}" ${attrs} data-court="${c.id}" aria-pressed="${ativo}">${esc(rotulo)}</button>`;
-  const filtros = (tipos.length > 1 || cobrancas.length > 1) ? `
-      <div class="chip-row ht-opcoes-filtro" id="ht-opcoes-filtro" data-rolagem-x>
-        ${chip("Todas", !filtro && !filtroCob, `data-opcao-filtro="" data-opcao-cobranca=""`)}
-        ${tipos.length > 1 ? tipos.map(n => chip(n, filtro === n, `data-opcao-filtro="${esc(n)}" data-opcao-cobranca="${filtroCob}"`)).join("") : ""}
-        ${cobrancas.length > 1 ? `<span class="ht-opcoes-sep" aria-hidden="true"></span>${cobrancas.map(k => chip(k.plural, filtroCob === k.key, `data-opcao-filtro="${esc(filtro)}" data-opcao-cobranca="${filtroCob === k.key ? "" : k.key}"`)).join("")}` : ""}
-      </div>
-      <p class="ht-opcoes-n">Mostrando ${visiveis.length} de ${opcoes.length} opções</p>` : "";
   return `
-    ${filtros}
-    ${visiveis.length
-      ? `<div class="ht-quartos" id="ht-quartos" data-rolagem-x>${visiveis.map(cartao).join("")}</div>`
-      : `<p class="ht-sec-sub ht-opcoes-vazio">A academia não tem ${esc(nomeDoFiltro)} ${filtroCob === "mensal" ? "mensal" : "avulsa"} no catálogo. <button type="button" class="ht-link" data-opcao-filtro="" data-opcao-cobranca="" data-court="${c.id}">Ver todas</button></p>`}
+    ${opcoes.length > 1 ? `<p class="ht-opcoes-n">Mostrando ${visiveis.length} de ${opcoes.length} opções</p>` : ""}
+    <div class="ht-quartos" id="ht-quartos">${visiveis.map(cartao).join("")}</div>
     ${c.phone ? "" : `<p class="ht-sec-sub" style="margin-top:12px">O telefone não foi incluído.</p>`}`;
 }
 
-// A caixa do alto de "Escolha o que você quer", no lugar de "Viajantes" do
-// hoteis.com: o que a academia oferece. Sem a caixa de horário desde
-// 27/10/2026 ("não precisa selecionar um horário certo"): o jogador não
-// escolhe horário, e o horário da academia fica na seção Horário.
+// As duas caixas do alto de "Opções para jogar", no lugar de "Datas" e
+// "Viajantes" das "Opções de quarto" do hoteis.com (regra 185, 30/10/2026:
+// "o primeiro quadrado em cima de aula para adultos ou para crianças ou
+// locação se tiver e no debaixo opção de individual dupla grupo avulsa ou
+// mensal seguindo cada opção anterior e disponibilidade"). Cada caixa só
+// oferece o que a academia tem, e a de baixo segue a de cima: nenhuma
+// escolha leva a uma lista vazia, e nada fala de quantidade ("não quero
+// deixar com cara de pouca disponibilidade").
+const MODALIDADES_DA_FICHA = [
+  { key: "adulto", nome: "Aula para adultos" }, { key: "aula", nome: "Aula" },
+  { key: "crianca", nome: "Aula para crianças" }, { key: "locacao", nome: "Locação de quadra" },
+];
+function modalidadeDaOpcao(o) {
+  if (o.grupo === "locacao") return "locacao";
+  if (o.publico === "crianca") return "crianca";
+  return o.item ? "adulto" : o.grupo === "aula" ? "aula" : "";
+}
+// "individual:mensal" nas aulas; "mensal" na locação e com todas as
+// modalidades; "" quando a opção não tem formato (o preço de antes).
+function formatoDaOpcao(o, mod) {
+  if (!o.item) return "";
+  if (!mod || mod === "locacao") return o.cobranca || "";
+  return `${o.tipo}:${o.cobranca || ""}`;
+}
+function nomeDoFormato(chave) {
+  const [tipo, cob] = chave.includes(":") ? chave.split(":") : ["", chave];
+  const t = CATALOGO_FORMATOS.find(x => x.key === tipo);
+  const k = CATALOGO_COBRANCAS.find(x => x.key === cob);
+  return [t ? t.curto : "", k ? (t ? k.nome.toLowerCase() : k.nome) : ""].filter(Boolean).join(" ");
+}
+function escolhaDaFicha(c) {
+  const opcoes = opcoesPreco(c);
+  const a = state.opcaoDaFicha && state.opcaoDaFicha.id === c.id ? state.opcaoDaFicha : {};
+  const mods = MODALIDADES_DA_FICHA.filter(m => opcoes.some(o => modalidadeDaOpcao(o) === m.key));
+  const mod = mods.length === 1 ? mods[0].key : mods.some(m => m.key === a.modalidade) ? a.modalidade : "";
+  const daMod = opcoes.filter(o => !mod || modalidadeDaOpcao(o) === mod);
+  const ordem = k => { const [t, cob] = k.includes(":") ? k.split(":") : ["", k]; return CATALOGO_FORMATOS.findIndex(x => x.key === t) * 10 + CATALOGO_COBRANCAS.findIndex(x => x.key === cob); };
+  const formatos = [...new Set(daMod.map(o => formatoDaOpcao(o, mod)).filter(Boolean))].sort((x, y) => ordem(x) - ordem(y));
+  const formato = formatos.length > 1 && formatos.includes(a.formato) ? a.formato : "";
+  const visiveis = daMod.filter(o => !formato || formatoDaOpcao(o, mod) === formato);
+  return { opcoes, mods, mod, formatos, formato, visiveis };
+}
 function htCaixasDaEscolha(c) {
-  const caixas = [];
-  const mod = modalidadesTexto(c);
-  const total = totalQuadras(c);
-  const infantil = catalogoDe(c).some(i => i.publico === "crianca") ? "Aula infantil" : "";
-  const oferece = [mod, infantil, total ? `${total} ${plural(total, "quadra", "quadras")}` : ""].filter(Boolean).join(" · ");
-  if (oferece) caixas.push(`<div class="ht-caixa">${icon('pessoa', 22, 'var(--text)')}<span><span class="ht-caixa-l">A academia oferece</span><span class="ht-caixa-v">${esc(oferece)}</span></span></div>`);
-  return caixas.length ? `<div class="ht-caixas">${caixas.join("")}</div>` : "";
+  const e = escolhaDaFicha(c);
+  if (!e.opcoes.length) return "";
+  const caixa = (rotulo, valor, ic, attr, lista, atual) => lista.length > 1
+    ? `<label class="ht-caixa ht-caixa-sel">${icon(ic, 22, 'var(--text)')}<span><span class="ht-caixa-l">${rotulo}</span><span class="ht-caixa-v">${esc(valor)}</span></span>
+        <select class="ht-caixa-select" ${attr} data-court="${c.id}" aria-label="${rotulo}">${lista.map(([k, n]) => `<option value="${esc(k)}" ${k === atual ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>`
+    : `<div class="ht-caixa">${icon(ic, 22, 'var(--text)')}<span><span class="ht-caixa-l">${rotulo}</span><span class="ht-caixa-v">${esc(valor)}</span></span></div>`;
+  const nomeMod = k => (MODALIDADES_DA_FICHA.find(m => m.key === k) || {}).nome || "";
+  const listaMods = [["", "Todas as modalidades"], ...e.mods.map(m => [m.key, m.nome])];
+  const rotuloFmt = e.mod === "locacao" ? "Como alugar" : !e.mod ? "Avulsa ou mensal" : "Formato";
+  const todos = !e.mod ? "Avulsas e mensais" : e.mod === "locacao" ? "Avulsa e mensal" : "Todos os formatos";
+  const listaFmts = [["", todos], ...e.formatos.map(k => [k, nomeDoFormato(k)])];
+  return `<div class="ht-caixas">
+      ${caixa("Modalidade", e.mod ? nomeMod(e.mod) : "Todas as modalidades", 'pessoa', "data-opcao-modalidade", e.mods.length > 1 ? listaMods : [], e.mod)}
+      ${e.formatos.length > 1 ? caixa(rotuloFmt, e.formato ? nomeDoFormato(e.formato) : todos, 'ball', "data-opcao-formato", listaFmts, e.formato) : ""}
+    </div>`;
 }
 
 // Quadras e comodidades, na grade de ícones das "Comodidades da acomodação".
@@ -19339,7 +19370,7 @@ function htEstacionarLinhas(linhas) {
 
 // O horário com o "Aberto agora" (na prévia do cadastro, embaixo do "Sobre a
 // academia"). Na ficha ele tem seção própria, e a caixa "Horário" do alto de
-// "Escolha o que você quer" leva até ela (26/10/2026).
+// "Opções para jogar" leva até ela (26/10/2026).
 function htHorario(c) {
   if (!temHorario(c)) return "";
   return `
@@ -19961,7 +19992,7 @@ function perguntasAcademia(c) {
     const nomes = tiposDeAula.map((t, i) => i ? t.nome.replace(/^Aula /, "") : t.nome.toLowerCase());
     faq.push({
       q: `Que aulas ${c.name} tem?`,
-      a: `${listaTexto(nomes).replace(/^./, x => x.toUpperCase())}${cobrancasDe("")}. ${tiposDeAula.some(t => t.porPessoa) ? "Na dupla e no grupo, o valor é por pessoa. " : ""}Os detalhes de cada uma estão em "Escolha o que você quer".`,
+      a: `${listaTexto(nomes).replace(/^./, x => x.toUpperCase())}${cobrancasDe("")}. ${tiposDeAula.some(t => t.porPessoa) ? "Na dupla e no grupo, o valor é por pessoa. " : ""}Os detalhes de cada uma estão em "Opções para jogar".`,
     });
   }
   const tiposInfantis = tiposDe("crianca");
@@ -19972,7 +20003,7 @@ function perguntasAcademia(c) {
     const nomes = tiposInfantis.map(t => t.nome.replace(/^Aula /, ""));
     faq.push({
       q: `${c.name} tem aula de tênis para crianças?`,
-      a: `Sim: aula infantil ${listaTexto(nomes)}${cobrancasDe("crianca")}${idades.length ? `, para crianças ${listaTexto(idades)}` : ""}. Os valores estão em "Escolha o que você quer".`,
+      a: `Sim: aula infantil ${listaTexto(nomes)}${cobrancasDe("crianca")}${idades.length ? `, para crianças ${listaTexto(idades)}` : ""}. Os valores estão em "Opções para jogar".`,
     });
   }
   const mod = modalidadesTexto(c);
@@ -20293,7 +20324,7 @@ function renderCourtPage(c) {
               </section>
 
               <section class="ht-sec" id="ht-opcoes">
-                <h3 class="sec-title">Escolha o que você quer</h3>
+                <h3 class="sec-title">Opções para jogar</h3>
                 ${htCaixasDaEscolha(c)}
                 ${htPromocoes(c)}
                 ${htOpcoes(c)}
@@ -21751,7 +21782,7 @@ function previaDaFicha(f) {
           : adicionar("quadras", "Adicionar quadras e comodidades")}
         ${parte("chegada", temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar", htAcesso(c), "Adicionar como chegar")}
         ${secao("horario", "Sobre a academia", `<p class="ht-about">${esc(descricaoAcademia(c))}</p>${htHorario(c)}`)}
-        ${secao("precos", "Escolha o que você quer", htCaixasDaEscolha(c) + htOpcoes(c))}
+        ${secao("precos", "Opções para jogar", htCaixasDaEscolha(c) + htOpcoes(c))}
         ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
         ${contatos
           ? secao("contato", "", `<div class="cta-col" style="margin-top:0">${contatos}</div>`,
@@ -22541,7 +22572,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "preco-jog", onde: "jogadores", t: "Preço e \"Sob consulta\"",
     p: ["preco", "valor", "quanto custa", "quanto e", "sob consulta", "barato", "caro", "pagar", "pagamento", "cobra"],
-    r: "O preço aparece na ficha quando a academia informa, em \"Escolha o que você quer\": aula individual, em dupla e em grupo e locação, avulsa ou mensal, cada uma com o que o valor paga (por aula, por pessoa ou por hora; no plano mensal, o valor de cada aula ou de cada hora). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
+    r: "O preço aparece na ficha quando a academia informa, em \"Opções para jogar\": aula individual, em dupla e em grupo e locação, avulsa ou mensal, cada uma com o que o valor paga (por aula, por pessoa ou por hora; no plano mensal, o valor de cada aula ou de cada hora). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "avaliar", onde: "jogadores", t: "Avaliar uma academia",
     p: ["avali", "nota", "comentar", "comentario", "estrelas", "opiniao"],
@@ -25105,8 +25136,12 @@ function attachEvents() {
   document.querySelectorAll("[data-share-court]").forEach(el => { el.onclick = () => shareCourt(el.dataset.shareCourt); });
   document.querySelectorAll("[data-voltar-ficha]").forEach(el => { el.onclick = voltarDaFicha; });
   document.querySelectorAll("[data-ir-secao]").forEach(el => { el.onclick = () => irParaSecao(el.dataset.irSecao, true); });
-  document.querySelectorAll("[data-opcao-filtro]").forEach(el => {
-    el.onclick = () => { state.opcaoDaFicha = { id: el.dataset.court, nome: el.dataset.opcaoFiltro, cobranca: el.dataset.opcaoCobranca || "" }; render(); };
+  // As caixas de "Opções para jogar" (regra 185): a de baixo segue a de cima.
+  document.querySelectorAll("[data-opcao-modalidade]").forEach(el => {
+    el.onchange = () => { state.opcaoDaFicha = { id: el.dataset.court, modalidade: el.value, formato: "" }; render(); };
+  });
+  document.querySelectorAll("[data-opcao-formato]").forEach(el => {
+    el.onchange = () => { const a = state.opcaoDaFicha && state.opcaoDaFicha.id === el.dataset.court ? state.opcaoDaFicha : {}; state.opcaoDaFicha = { id: el.dataset.court, modalidade: a.modalidade || "", formato: el.value }; render(); };
   });
   document.querySelectorAll("[data-rev-mais]").forEach(el => {
     el.onclick = () => {

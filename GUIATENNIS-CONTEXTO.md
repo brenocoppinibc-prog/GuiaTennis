@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 30/10/2026 (regra 183)
+**Atualizado em:** 30/10/2026 (regra 184)
 
 | | |
 |---|---|
@@ -182,6 +182,8 @@ Produto (o que já foi decidido)
   Contato, Avaliações, Outras academias por perto, Horário, Cancelamento,
   Perguntas, e no fim "Confirmada pela academia", "É o responsável?" e
   "Algo errado nesta ficha?"). Fotos só na capa e nos cartões das opções.
+  Os cartões das opções ficam **um embaixo do outro** no celular (dois por
+  linha no computador), na ficha e na prévia do cadastro.
   **Catálogo** só com modalidade e valor. No cadastro, a parte
   **Modalidades** (Aulas e/ou Locação de quadra; pelo menos uma, obrigatória
   também na edição; o admin segue só com o nome) abre as partes de cada uma, que só aparecem se escolhidas
@@ -348,7 +350,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 183**. De 28 a 30/10 entraram: o catálogo com aulas
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 184**. De 28 a 30/10 entraram: o catálogo com aulas
 para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
 e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
 a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
@@ -361,7 +363,8 @@ funções da equipe, vários responsáveis principais e a aba Pagamentos (SQL
 `20261029190000_funcoes_e_pagamentos`); e a ajuda depois de cinco buscas
 seguidas (sem SQL; Termos e Privacidade em 30/10); e "Adicionar faixa de
 idade", a aula mensal por aula e a locação mensal por hora (sem SQL;
-Termos em 30/10). A descrição do PR tem
+Termos em 30/10); os cartões do catálogo em lista, o título do campo de
+cancelamento fora do prazo e o "Pular" que vira "Continuar" na hora. A descrição do PR tem
 uma linha por regra em "Pedidos depois de 28/10". Testes: 2.193 no
 navegador e 716 no banco, nenhuma falha. **Chat trocado em 30/10/2026:** o
 chat novo volta a acompanhar o PR #5 (o anterior deixou de acompanhar e
@@ -396,7 +399,7 @@ cancelou as conferências automáticas).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 184.
+**Próximo número:** regra 185.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -494,6 +497,14 @@ cancelou as conferências automáticas).
   mensal"); botões "Avulsa" e "Mensal"; exemplo da mensal "80 a 120";
   Termos (o que o valor paga) e chat dos jogadores e do Parceiros sem "por
   mês". Sem SQL. Testes: `catalogo.js`, `chat-parceiros.js`.
+- 184 (30/10) Cartões do catálogo na ficha (e na prévia) um embaixo do
+  outro, como os quartos do hoteis.com no celular (foto 16:9, botão de
+  48px; dois por linha no computador); no cancelamento, título em cima do
+  campo do que acontece fora do prazo (`tituloForaDoPrazo`: "O que acontece
+  com a aula se a pessoa cancelar com menos de 24h de antecedência? Há
+  reposição?"); "Pular" vira "Continuar" assim que a parte ganha algo (a
+  observação do horário também conta). Sem SQL. Testes: `cadastro.js`,
+  `ficha-hoteis.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

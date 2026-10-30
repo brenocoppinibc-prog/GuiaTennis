@@ -2895,15 +2895,17 @@
   .ht-quarto-itens svg { flex-shrink: 0; margin-top: 1px; }
   .ht-quarto-obs { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--muted); font-style: italic; }
   .ht-opcoes-n { margin: 16px 0 0; font-size: 16px; }
-  .ht-quartos { display: grid; grid-auto-flow: column; grid-auto-columns: calc(50% - 6px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; margin-top: 14px; padding-bottom: 4px; }
-  .ht-quartos::-webkit-scrollbar { display: none; }
-  @media (min-width: 720px) { .ht-quartos { grid-auto-columns: calc(33.333% - 8px); } }
-  .ht-quarto { scroll-snap-align: start; display: flex; flex-direction: column; min-width: 0; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-  .ht-quarto-foto { position: relative; aspect-ratio: 4 / 3; background: var(--bg-alt); }
+  /* Um cartão embaixo do outro, como os quartos do hoteis.com no celular
+     (regra 184); no computador, dois por linha. A prévia do cadastro usa a
+     mesma regra. */
+  .ht-quartos { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 14px; }
+  @media (min-width: 720px) { .ht-quartos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .ht-quarto { display: flex; flex-direction: column; min-width: 0; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .ht-quarto-foto { position: relative; aspect-ratio: 16 / 9; background: var(--bg-alt); }
   .ht-quarto-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ht-quarto-tag { display: inline-block; align-self: flex-start; background: rgba(20,51,42,0.92); color: #fff; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 5px 8px; margin-bottom: 8px; }
   .ht-quarto-foto .ht-quarto-tag { position: absolute; left: 10px; top: 10px; margin: 0; }
-  .ht-quarto-corpo { display: flex; flex-direction: column; flex: 1; padding: 14px 10px; }
+  .ht-quarto-corpo { display: flex; flex-direction: column; flex: 1; padding: 16px; }
   .ht-quarto-n { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.25; }
   .ht-quarto-d { margin: 4px 0 0; font-size: 14px; line-height: 1.4; color: var(--text); }
   .ht-quarto-verde { margin: 8px 0 0; font-size: 14px; line-height: 1.35; color: var(--green-light); font-weight: 600; }
@@ -2912,7 +2914,7 @@
   .ht-quarto-val { font-size: 21px; font-weight: 700; line-height: 1.15; }
   .ht-quarto-val.sem-valor { font-size: 17px; }
   .ht-quarto-unit { font-size: 13px; color: var(--text); margin-top: 2px; }
-  .ht-quarto-bt { display: flex; align-items: center; justify-content: center; min-height: 44px; margin-top: 14px; padding: 8px 6px; border-radius: 999px; background: var(--green); color: #fff; font: 600 13px/1.2 var(--fonte-texto); text-align: center; text-decoration: none; }
+  .ht-quarto-bt { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 14px; padding: 8px 12px; border-radius: 999px; background: var(--green); color: #fff; font: 600 15px/1.2 var(--fonte-texto); text-align: center; text-decoration: none; }
 
   /* Avaliações: a nota no alto da seção e os cartões creme que passam. */
   .ht-sec-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
@@ -20507,6 +20509,17 @@ function politicaForm2(f) {
 
 // Um bloco de cancelamento no cadastro. `alvo` é "" para a regra única, ou
 // "aula"/"locacao" quando a academia separa as duas.
+// O título do campo do que acontece fora do prazo (regra 184, 30/10/2026:
+// "nos conte o que acontece com a aula se cancelar depois do horário
+// marcado e se há reposição"), como as perguntas da política de
+// cancelamento do Airbnb e do Booking para Parceiros.
+function tituloForaDoPrazo(alvo, horas, semReposicao) {
+  const mods = (window.__form && window.__form.modalidades) || [];
+  const oQue = alvo === "locacao" || (!alvo && mods.length === 1 && mods[0] === "locacao") ? "a locação"
+    : alvo === "aula" || !mods.includes("locacao") ? "a aula" : "a aula ou a locação";
+  const quando = horas ? `com menos de ${horas}h de antecedência` : "depois do horário marcado";
+  return semReposicao ? `O que acontece com ${oQue} se a pessoa cancelar?` : `O que acontece com ${oQue} se a pessoa cancelar ${quando}? Há reposição?`;
+}
 function blocoPoliticaForm(pol, alvo, titulo) {
   const p = alvo ? pol[alvo] : pol;
   const horas = horasDaReposicao(p.reposicao);
@@ -20531,8 +20544,9 @@ function blocoPoliticaForm(pol, alvo, titulo) {
         <input type="number" inputmode="numeric" min="1" max="${REPOSICAO_MAX_HORAS}" class="form-field pol-horas-campo" id="f-politica-horas-${id}" data-alvo="${esc(alvo)}" value="${padrao ? "" : esc(p.reposicao)}" placeholder="36" />
         <span>horas de antecedência</span>
       </div>` : ""}
-    <textarea class="form-field" id="f-politica-fora-${id}" data-alvo="${esc(alvo)}" rows="3" style="resize:none"
-      placeholder="${horas ? `O que acontece avisando com menos de ${horas}h` : "Como funcionam os cancelamentos"}">${esc(p.foraDoPrazo)}</textarea>`;
+    <label class="field-label" for="f-politica-fora-${id}">${esc(tituloForaDoPrazo(alvo, horas, p.reposicao === "nao"))}</label>
+    <textarea class="form-field" id="f-politica-fora-${id}" data-alvo="${esc(alvo)}" rows="3" style="resize:none;margin-top:0"
+      placeholder="${alvo === "locacao" ? "Ex.: a hora é cobrada normalmente." : "Ex.: a aula é cobrada e pode ser reposta em até 30 dias."}">${esc(p.foraDoPrazo)}</textarea>`;
 }
 
 // Para editar: a regra como a academia gravou, sem esconder a da modalidade
@@ -20796,7 +20810,7 @@ function regPreenchido(f, passo) {
     case "quadras": return QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0);
     case "contato": return tem(f.phone) || tem(f.instagram) || tem(f.site);
     case "fotos": return (f.photos || []).length > 0;
-    case "horario": return HORARIO_CHAVES.some(k => h[k] && (h[k].fechado || tem(h[k].de) || tem(h[k].ate)));
+    case "horario": return HORARIO_CHAVES.some(k => h[k] && (h[k].fechado || tem(h[k].de) || tem(h[k].ate))) || tem(h.nota);
     case "cancelamento": return [pol, pol.aula || {}, pol.locacao || {}].some(x => tem(x.reposicao) || tem(x.foraDoPrazo));
     case "chegada": return tem(a.fachada) || tem(a.entrada) || tem(a.estacionar);
     default: return false;
@@ -26489,7 +26503,20 @@ function attachEvents() {
   const abaAtual = document.querySelector("#register-overlay .reg-secoes button.on");
   if (abaAtual) abaAtual.parentElement.scrollLeft = Math.max(0, abaAtual.offsetLeft - 22);
   const regContinuar = document.getElementById("reg-continuar");
-  if (regContinuar) regContinuar.onclick = () => irParaPasso(regPassoAtual().i + 1, true);
+  if (regContinuar) {
+    regContinuar.onclick = () => irParaPasso(regPassoAtual().i + 1, true);
+    // "Pular" vira "Continuar" assim que a parte ganha alguma coisa, sem
+    // esperar o redesenho (regra 184: "o botão continuar no cadastro está
+    // tendo um leve delay e fica como pular").
+    const tela = document.getElementById("register-overlay");
+    const acertar = () => setTimeout(() => {
+      const { passo } = regPassoAtual();
+      const f = window.__form;
+      if (!f || !document.body.contains(regContinuar)) return;
+      regContinuar.textContent = !regPreenchido(f, passo.id) && !regFaltas(f, passo.id).length && passo.id !== "dados" ? "Pular" : "Continuar";
+    }, 0);
+    if (tela) { tela.addEventListener("input", acertar); tela.addEventListener("change", acertar); }
+  }
   // As modalidades (regra 170): escolher abre a parte de cada uma.
   document.querySelectorAll("[data-reg-mod]").forEach(el => {
     el.onclick = () => {

@@ -36,6 +36,17 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   await irParte(page, 'cancelamento');
   const f2 = await page.evaluate(() => ({ polModo: document.querySelectorAll('.pol-modo').length, rep: [...document.querySelectorAll('.reg-reposicao.active')].map(e => e.dataset.reposicao + '@' + e.dataset.alvo).join() }));
   ok(f2.polModo === 2 && f2.rep === '24@aula,12@locacao', 'aula + locação: volta a escolha, regras preservadas — ' + f2.rep);
+  // Regra 184: o título em cima do campo do que acontece fora do prazo.
+  const titulos = await page.evaluate(() => [...document.querySelectorAll('label[for^="f-politica-fora-"]')].map(e => e.innerText.trim()));
+  ok(titulos.join(' | ') === 'O que acontece com a aula se a pessoa cancelar com menos de 24h de antecedência? Há reposição? | O que acontece com a locação se a pessoa cancelar com menos de 12h de antecedência? Há reposição?', 'cada campo do cancelamento com o título em cima — ' + titulos.join(' | '));
+  // Regra 184: "Pular" vira "Continuar" na hora em que a parte ganha algo.
+  await page.evaluate(() => { window.__horarioGuardado = JSON.stringify(window.__form.horario); window.__form.horario = {}; });
+  await irParte(page, 'horario');
+  const antes = await page.innerText('#reg-continuar');
+  await page.fill('#f-horario-nota', 'Fechado aos feriados');
+  await page.waitForTimeout(50);
+  ok(antes === 'Pular' && (await page.innerText('#reg-continuar')) === 'Continuar', '"Pular" vira "Continuar" assim que se escreve, sem esperar — ' + antes);
+  await page.evaluate(() => { window.__form.horario = JSON.parse(window.__horarioGuardado); });
   // Desmarca as aulas nas Modalidades: fica só a de locação
   await irParte(page, 'modalidades');
   await page.evaluate(() => document.querySelector('[data-reg-mod="aulas_proprias"]').click());

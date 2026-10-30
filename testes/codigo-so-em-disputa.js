@@ -65,8 +65,8 @@ async function pedirPelaTela(page, busca, id) {
   }));
   ok(r.rpc && r.rpc.p_academia === 'a3' && r.destino === 'disputa' && r.email, 'contestar vira disputa e avisa o admin por e-mail');
   // O número não aparece: na disputa, o código vai para o WhatsApp de antes, que pode não ser o da ficha.
-  ok(cartao.includes('Digite o código') && cartao.includes('WhatsApp da Tênis Terceira') && !cartao.includes('•••') && r.campo && cartao.includes('documento'),
-    'a tela do código pede o código mandado ao WhatsApp da academia e diz que, sem ele, pode ser documento — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
+  ok(cartao.includes('Digite o código') && cartao.includes('WhatsApp da Tênis Terceira') && !cartao.includes('•••') && r.campo && !cartao.includes('documento') && !cartao.includes('Sem como receber'),
+    'a tela do código pede o código mandado ao WhatsApp da academia sem outro caminho: o WhatsApp precisa receber (30/10/2026) — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await page.evaluate(async () => { window.__codigos = { 'u-a2|a3': { codigo: '246810', academia: 'a3', tentativas: 0, em: new Date().toISOString() } }; await recarregarConta(); render(); });
   await page.fill('[data-pedido-codigo="a3"]', '246810');
   await page.click('[data-confirmar-codigo="a3"]');

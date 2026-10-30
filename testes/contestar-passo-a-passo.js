@@ -77,9 +77,9 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   await continuar(page);
   await continuar(page);
   corpo = await texto(page, '#pc-contestar');
-  ok(await etapa(page) === '4 de 4 · Contestar' && await titulo(page) === 'Tudo certo para contestar?' && corpo.includes('Fale com o GuiaTennis') && corpo.includes('documento')
+  ok(await etapa(page) === '4 de 4 · Contestar' && await titulo(page) === 'Tudo certo para contestar?' && !corpo.includes('Sem como receber') && !corpo.includes('documento')
     && await texto(page, '#pc-contestar-enviar') === 'Contestar e receber o código' && !(await page.$('#pc-contestar-continuar')),
-    '4ª tela: sem o código, o GuiaTennis; e só aqui "Contestar e receber o código"');
+    '4ª tela: sem o "Sem como receber?" (o WhatsApp precisa receber, 30/10/2026); e só aqui "Contestar e receber o código"');
   ok(!(await contestou(page)), 'ler as telas não contesta nada');
 
   // ---- a seta na primeira tela sai, sem contestar ----
@@ -105,8 +105,8 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   corpo = await texto(page, '#pc-contestar');
   ok(r.aba === 'contestar' && r.modo === 'codigo' && r.destino === 'disputa' && r.topo && !r.desenho && r.caixas === 6 && r.foco === 'pc-codigo',
     'contestado, a página vira a tela do código: o título sem desenho, as 6 caixas já com o cursor e o ✕ no alto — ' + JSON.stringify(r));
-  ok(await titulo(page) === 'Digite o código' && corpo.includes('Mandamos um código de 6 números para o WhatsApp da Tênis Terceira') && corpo.includes('Mandar outro código') && corpo.includes('Digitar depois') && corpo.includes('documento'),
-    'a tela diz para onde o código foi, com "Mandar outro código", a ajuda sem código e "Digitar depois"');
+  ok(await titulo(page) === 'Digite o código' && corpo.includes('Mandamos um código de 6 números para o WhatsApp da Tênis Terceira') && corpo.includes('Mandar outro código') && corpo.includes('Digitar depois') && !corpo.includes('documento'),
+    'a tela diz para onde o código foi, com "Mandar outro código" e "Digitar depois", sem outro caminho sem o código');
   await page.fill('#pc-codigo', '48 29');
   await page.waitForTimeout(100);
   r = await page.evaluate(() => ({ valor: document.getElementById('pc-codigo').value, caixas: [...document.querySelectorAll('#pc-contestar .otp-caixas span')].map(x => x.textContent || '_').join('') }));

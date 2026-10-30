@@ -9281,7 +9281,7 @@ function perguntasParceiros() {
   return [
     { q: "Quanto custa estar no GuiaTennis?", a: "No plano Básico é grátis: a academia aparece na busca, recebe contato no WhatsApp, edita a ficha e responde às avaliações. O Completo mostra a ficha inteira (todas as comodidades, 5 fotos, Instagram, site, cancelamento e como chegar) para até 5 pessoas da equipe e entra entre as \"Academias recomendadas\" da página inicial, quanto mais completa a ficha. O Premium ganha o selo dourado, aparece no topo da busca da região, marcado como \"Patrocinado\", e entre as \"Academias recomendadas\" da página inicial, e mostra os números da ficha: visitas, contatos, de onde vêm os jogadores e a comparação com a região." },
     { q: "Minha academia já aparece no Guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia, marque a declaração e toque em \"Administrar esta academia\": com o e-mail confirmado, a ficha passa a ser sua na hora, e o GuiaTennis confere depois. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode incluir você diretamente em Acessos." },
-    { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo e, no fim, abre o lugar para digitar o código. Na disputa, o GuiaTennis manda um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia." },
+    { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo e, no fim, abre o lugar para digitar o código. Na disputa, o GuiaTennis manda um código de 6 números para o WhatsApp da academia, pela conta do GuiaTennis no WhatsApp: quem digitar o código passa a ser o responsável, e quem administrava sai." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto. Com o seu e-mail confirmado, a academia entra no ar na hora e você já administra a ficha; o GuiaTennis confere depois." },
     { q: "O que quer dizer \"atualizada há…\" na ficha?", a: "Na ficha, o jogador vê \"Confirmada pela academia\" e quando ela foi atualizada pela última vez. A data muda quando vocês salvam a ficha no GuiaTennis Parceiros — salvar, mesmo sem mudar nada, confirma que está tudo certo. Pausar a ficha ou mudar o plano não mexe na data. Quando a ficha passa 3 meses sem mudar, o GuiaTennis manda um e-mail para vocês conferirem. Depois de um ano sem mudar, a ficha pede ao jogador para confirmar horário e preço direto com vocês." },
     { id: "whatsapp", q: "Por que o WhatsApp novo não aparece na ficha?", a: "Para garantir que o número é da academia, o WhatsApp que vocês escrevem na ficha só aparece depois do código de 6 números mandado a ele: em Atualizações, toque em \"Digitar o código\". O código chega pela conta do GuiaTennis no WhatsApp (ou é mandado pelo GuiaTennis em até 1 dia útil) e vale 72 horas. Depois do código, o GuiaTennis ainda confere se o número é da academia, em até 1 dia útil: o código mostra que vocês têm o número, a conferência, que ele é da academia. Até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp), sem dizer aos jogadores que há um número esperando." },
@@ -13197,8 +13197,7 @@ function pcContestarExplicar(p) {
     {
       t: "Tudo certo para contestar?",
       corpo: `
-        <p class="pc-onb-p">O pedido deixa de esperar quem administra e vai para o GuiaTennis, que manda o código. Logo em seguida, abre aqui o lugar para digitar.</p>
-        <p class="pc-onb-dica">Sem como receber o código no WhatsApp da academia? O GuiaTennis pode pedir um documento que mostre que você responde por ela. ${falar}</p>`,
+        <p class="pc-onb-p">O pedido deixa de esperar quem administra e vai para o GuiaTennis, que manda o código. Logo em seguida, abre aqui o lugar para digitar.</p>`,
     },
   ];
   const tela = telas[passo];
@@ -13251,9 +13250,6 @@ function pcContestarCodigo(p) {
         <button type="button" class="cta-btn cta-primary cod-botao" id="pc-confirmar-codigo" data-confirmar-codigo="${p.academiaId}" ${travaDoCodigo(6, (state.pcCodigos || {})[p.academiaId], state.pcContaSalvando)}>${state.pcContaSalvando === p.academiaId ? bolaGirando(15) + " Conferindo..." : "Confirmar"}</button>
         ${p.codigoEm ? `<p class="cod-reenviar">Não chegou? <button type="button" class="pc-linha-link" data-outro-codigo="${p.academiaId}" ${state.pcContaSalvando ? "disabled" : ""}>Mandar outro código</button></p>` : ""}
       </div>`}
-      <div class="cod-ajuda">
-        <p>Sem como receber o código no WhatsApp da academia? O GuiaTennis pode pedir um documento que mostre que você responde por ela. ${falar}</p>
-      </div>
       <p class="cod-depois"><button type="button" class="pc-linha-link pc-linha-discreta" id="pc-contestar-depois">Digitar depois</button></p>
     </section>`;
 }
@@ -13364,7 +13360,7 @@ function pcWhatsapp() {
       </div>
       <div class="cod-ajuda">
         <p>O número está errado? <button type="button" class="pc-linha-link editar-academia" data-court="${c.id}" data-passo="contato">Corrigir na ficha ›</button></p>
-        <p>O código vai só para o número novo: é ele que mostra que o WhatsApp é de vocês. Sem como receber? ${falar}</p>
+        <p>O código vai só para o número novo: é ele que mostra que o WhatsApp é de vocês.</p>
       </div>
       <p class="cod-depois"><button type="button" class="pc-linha-link pc-linha-discreta" id="pc-whatsapp-depois">Digitar depois</button></p>
     </section>`;
@@ -22436,7 +22432,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Ir para o cadastro", ir: "pc:cadastro" }] },
   { id: "disputa", onde: "parceiros", t: "Outra pessoa administra a academia",
     p: ["outra pessoa", "outro administra", "outra conta", "contestar", "disputa", "nao reconheco", "nao conheco", "ex funcionario", "ex socio", "saiu da academia", "roubaram", "tomaram"],
-    r: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo e, no fim, abre o lugar para digitar o código. Na disputa, um código de 6 números vai para o WhatsApp da academia: quem digitar o código passa a ser o responsável, e quem administrava sai. Sem como receber o código, o GuiaTennis pode pedir um documento que mostre quem responde pela academia.",
+    r: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo e, no fim, abre o lugar para digitar o código. Na disputa, um código de 6 números vai para o WhatsApp da academia: quem digitar o código passa a ser o responsável, e quem administrava sai.",
     a: [{ t: "Suas academias", ir: "pc:academias" }] },
   { id: "planos", onde: "parceiros", t: "Planos e preços", rcAntes: x => `A ${x.c.name} está no ${x.nome}. `,
     p: ["plano", "preco", "valor", "quanto custa", "quanto e", "premium", "completo", "basico", "pagar", "pagamento", "mensalidade", "assinatura", "gratis", "gratuito"],

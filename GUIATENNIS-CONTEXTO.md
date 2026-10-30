@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 30/10/2026 (regra 185)
+**Atualizado em:** 30/10/2026 (regra 186)
 
 | | |
 |---|---|
@@ -170,7 +170,8 @@ Produto (o que já foi decidido)
   conta na hora (com a declaração); com responsável, o pedido vai a ele;
   "Contestar" vira disputa com código ao WhatsApp antigo da academia (à
   mão pelo admin, em até 1 dia útil, até a Meta liberar o envio
-  automático).
+  automático). **O WhatsApp precisa receber o código; senão, não
+  finaliza** (regra 186: sem "Sem como receber?" nem documento no site).
 - **Veracidade:** o WhatsApp novo da ficha só entra depois do código **e**
   da aprovação do admin; a ficha pública nunca diz "em confirmação" (a
   academia vê "precisa de confirmação"). "Informar um problema" na ficha;
@@ -357,7 +358,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 185**. De 28 a 30/10 entraram: o catálogo com aulas
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 186**. De 28 a 30/10 entraram: o catálogo com aulas
 para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
 e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
 a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
@@ -406,7 +407,7 @@ cancelou as conferências automáticas).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 186.
+**Próximo número:** regra 187.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -517,6 +518,10 @@ cancelou as conferências automáticas).
   abrem a lista do aparelho: Modalidade e, embaixo, o formato que segue a
   de cima e só oferece o que existe (sem lista vazia, sem "não tem"). Sem
   SQL. Testes: `catalogo.js`, `ficha-hoteis.js`, `previa-da-ficha.js`.
+- 186 (30/10) Sai o "Sem como receber? Fale com o GuiaTennis ›" (troca do
+  WhatsApp da ficha) e o "pode pedir um documento" (contestar, tela do
+  código, Ajuda e chat): "o WhatsApp precisa receber, senão não finaliza".
+  Sem SQL. Testes: `codigo-so-em-disputa.js`, `contestar-passo-a-passo.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

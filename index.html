@@ -2995,6 +2995,12 @@
   /* Acessos com as funções de cada pessoa e Pagamentos (regra 180). */
   .pc-pessoas li.pc-pessoa { display: block; }
   .pc-pessoa-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pc-pessoas .pc-pessoa-quem { display: block; min-width: 0; margin: 0; font-size: inherit; color: inherit; }
+  .pc-pessoa-abrir { width: 100%; min-height: 48px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .pc-pessoa-abrir svg { flex-shrink: 0; }
+  .pc-pessoa.aberta .pc-pessoa-abrir svg { transform: rotate(90deg); }
+  .pc-pessoa-mais { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 6px; }
+  .pc-pessoa-mais .pc-remover { margin-top: 10px; }
   .pc-funcoes { margin-top: 10px; gap: 8px; }
   .pc-funcoes .chip { display: inline-flex; align-items: center; gap: 4px; }
   .pc-pessoas .pc-funcoes-txt { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
@@ -12527,6 +12533,22 @@ function funcoesDaPessoa(x, lista) {
               </div>
               <button type="button" class="pc-link-btn pc-tornar" data-pc-principal="${x.user_id}" data-nome="${esc(nome)}">Tornar responsável principal</button>`;
 }
+// Cada pessoa da lista de Acessos: o nome e o e-mail; o que ela pode fazer
+// (e "Remover", "Tornar responsável principal"…) só aparece ao tocar nela
+// (regra 188, 30/10/2026: "as opções de ações que ele pode fazer fiquem
+// escondidas até ele clicar na pessoa"), como a lista da equipe da Shopify
+// e os usuários do Google Business Profile.
+function pessoaNaLista(chave, quem, mais, classe = "") {
+  const tem = !!String(mais || "").trim();
+  const aberta = tem && state.pessoaAberta === chave;
+  return `
+            <li class="pc-pessoa ${classe} ${aberta ? "aberta" : ""}">
+              ${tem
+                ? `<button type="button" class="pc-pessoa-topo pc-pessoa-abrir" data-pc-pessoa="${esc(chave)}" aria-expanded="${aberta}"><span class="pc-pessoa-quem">${quem}</span>${icon('chevron', 16, 'var(--muted)')}</button>`
+                : `<div class="pc-pessoa-topo"><span class="pc-pessoa-quem">${quem}</span></div>`}
+              ${aberta ? `<div class="pc-pessoa-mais">${mais}</div>` : ""}
+            </li>`;
+}
 function pcPessoas() {
   const plano = planoPorChave(planoAtual());
   const prox = proximoPlano(plano.key);
@@ -12552,26 +12574,15 @@ function pcPessoas() {
       ${lista === null ? `<p class="pc-vazio">${bolaGirando(16)} Carregando…</p>` : `
         <ul class="pc-pessoas">
           ${lista.map(x => `
-            <li class="pc-pessoa">
-              <div class="pc-pessoa-topo">
-                <div>
+            ${pessoaNaLista(x.user_id, `
                   <strong>${esc(x.nome || "Aguardando o primeiro acesso")}${x.sou_eu ? " (você)" : ""}</strong>
-                  <span>${esc(x.email || "")} · ${x.papel === "principal" ? "Responsável principal" : "Equipe"}${x.dados_completos_em ? "" : " · ainda não entrou"}</span>
-                </div>
-                ${souPrincipal() && !x.sou_eu && x.papel !== "principal" ? `<button type="button" class="pc-link-btn pc-remover" data-pc-remover="${x.user_id}" data-nome="${esc(x.nome || x.email || "")}">Remover</button>` : ""}
-              </div>
-              ${funcoesDaPessoa(x, lista)}
-            </li>`).join("")}
-          ${convites.map(x => `
-            <li class="pc-pessoa pc-convite">
-              <div class="pc-pessoa-topo">
-                <div>
+                  <span>${esc(x.email || "")} · ${x.papel === "principal" ? "Responsável principal" : "Equipe"}${x.dados_completos_em ? "" : " · ainda não entrou"}</span>`,
+              funcoesDaPessoa(x, lista)
+              + (souPrincipal() && !x.sou_eu && x.papel !== "principal" ? `<button type="button" class="pc-link-btn pc-remover" data-pc-remover="${x.user_id}" data-nome="${esc(x.nome || x.email || "")}">Remover</button>` : ""))}`).join("")}
+          ${convites.map(x => pessoaNaLista("convite:" + x.email, `
                   <strong>${esc(x.nome || x.email)}</strong>
-                  <span>${x.nome ? esc(x.email) + " · " : ""}Convite enviado em ${dataCurta(x.created_at)}</span>
-                </div>
-                ${souPrincipal() ? `<button type="button" class="pc-link-btn pc-remover" data-pc-cancelar-convite="${esc(x.email)}">Cancelar convite</button>` : ""}
-              </div>
-            </li>`).join("")}
+                  <span>${x.nome ? esc(x.email) + " · " : ""}Convite enviado em ${dataCurta(x.created_at)}</span>`,
+              souPrincipal() ? `<button type="button" class="pc-link-btn pc-remover" data-pc-cancelar-convite="${esc(x.email)}">Cancelar convite</button>` : "", "pc-convite")).join("")}
         </ul>`}
       ${nova ? `
         <div class="acesso-novo pc-pessoa-nova">
@@ -14036,6 +14047,9 @@ function ligarEventosParceiros() {
   if (pcDeixar) pcDeixar.onclick = deixarDeSerPrincipal;
   const pcPagTentar = document.getElementById("pc-pag-tentar");
   if (pcPagTentar) pcPagTentar.onclick = carregarComprasDaAcademia;
+  document.querySelectorAll("[data-pc-pessoa]").forEach(el => {
+    el.onclick = () => { state.pessoaAberta = state.pessoaAberta === el.dataset.pcPessoa ? null : el.dataset.pcPessoa; render(); };
+  });
   document.querySelectorAll("[data-pc-cancelar-convite]").forEach(el => {
     el.onclick = async () => {
       if (!confirm(`Cancelar o convite de ${el.dataset.pcCancelarConvite}?`)) return;

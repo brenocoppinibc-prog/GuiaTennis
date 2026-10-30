@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 30/10/2026 (regra 187)
+**Atualizado em:** 30/10/2026 (regra 188)
 
 | | |
 |---|---|
@@ -147,6 +147,9 @@ Produto (o que já foi decidido)
   e-mail (`convites_de_acesso`); a pessoa cria a conta com esse e-mail e a
   própria senha e, ao confirmar o e-mail, o gatilho `convites_ao_confirmar`
   liga a academia. O convite conta no limite do plano e pode ser cancelado.
+  Na lista de Acessos, o que cada pessoa pode fazer (funções, "Remover",
+  "Tornar responsável principal", "Cancelar convite") só aparece ao tocar
+  nela (regra 188, `pessoaNaLista`).
   Buscar, ver e chamar não pedem login; depois da segunda academia chamada
   sem conta, o convite para criar conta.
 - **Avaliações:** só com conta de e-mail confirmado, **uma por academia,
@@ -363,7 +366,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 187**. De 28 a 30/10 entraram: o catálogo com aulas
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 188**. De 28 a 30/10 entraram: o catálogo com aulas
 para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
 e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
 a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
@@ -412,7 +415,7 @@ cancelou as conferências automáticas).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 188.
+**Próximo número:** regra 189.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -535,6 +538,10 @@ cancelou as conferências automáticas).
   e Privacidade. SQL `20261030120000_convite_por_email`. Testes:
   `parceiros.js`, `acesso-academia.js` (o banco local não existe neste
   contêiner: o SQL foi conferido pelo Actions).
+- 188 (30/10) Acessos: as funções e as ações de cada pessoa ficam
+  escondidas até tocar nela (a linha abre e fecha, com a seta), como a
+  equipe da Shopify e os usuários do Google Business Profile. Sem SQL.
+  Testes: `funcoes-da-equipe.js`, `parceiros.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

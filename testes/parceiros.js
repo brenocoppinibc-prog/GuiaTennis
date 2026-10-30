@@ -551,6 +551,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(add.lista.includes('Carlos Recepção') && add.lista.includes('Convite enviado em'), 'o convite aparece na lista, com a data — ' + add.lista);
   conta = await texto(page, '#parceiros .pc-main');
   ok(conta.includes('2 de 5 no plano Completo') && await page.isVisible('#pc-pessoa-email'), 'Completo com 2 pessoas: ainda dá para adicionar');
+  await page.click('[data-pc-pessoa="convite:carlos@quadralocacao.com.br"]');
+  await page.waitForTimeout(150);
   page.once('dialog', d => d.accept());
   await page.click('[data-pc-cancelar-convite]');
   await page.waitForTimeout(500);

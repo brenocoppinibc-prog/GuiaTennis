@@ -7,6 +7,8 @@ const { abrir, ok } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)?.innerText || '').replace(/\s+/g, ' ').trim(), sel);
 const chips = (page, uid) => page.evaluate((uid) => [...document.querySelectorAll(`[data-pc-funcao="${uid}"]`)].map(b => (b.getAttribute('aria-pressed') === 'true' ? '✓' : '') + b.innerText.trim()).join(','), uid);
+// Regra 188: o que a pessoa pode fazer só aparece ao tocar nela.
+const abrirPessoa = async (page, chave) => { if (await page.$(`[data-pc-pessoa="${chave}"][aria-expanded="false"]`)) { await page.click(`[data-pc-pessoa="${chave}"]`); await page.waitForTimeout(150); } };
 const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-menu a, #pc-menu a, .menu-item[data-pc]')].map(a => a.dataset.pc).filter((v, i, t) => v && t.indexOf(v) === i).join(','));
 
 (async () => {
@@ -19,6 +21,8 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
     await carregarPessoas();
   });
   await page.waitForTimeout(200);
+  ok(!(await page.$('[data-pc-funcao]')) && !(await page.$('[data-pc-remover]')) && await page.$('[data-pc-pessoa="u-eq"][aria-expanded="false"]'), 'regra 188: as funções e o "Remover" ficam escondidos até tocar na pessoa');
+  await abrirPessoa(page, 'u-eq');
   ok((await chips(page, 'u-eq')) === '✓Editar a ficha,✓Responder avaliações,✓Promoções e leilão,Pagamentos', 'quem entra na equipe começa com a ficha, as avaliações e as promoções; Pagamentos, o principal libera — ' + await chips(page, 'u-eq'));
   ok((await texto(page, '.pc-sec-sub')).includes('escolhe o que cada pessoa pode fazer'), 'o principal vê que escolhe o que cada pessoa faz');
   await page.click('[data-pc-funcao="u-eq"][data-funcao="pagamentos"]');
@@ -37,6 +41,7 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
   ok(await page.evaluate(() => window.__db.academia_vinculos.find(v => v.user_id === 'u-eq').papel) === 'principal' && /Carlos Recepção carlos@quadra\.com · Responsável principal/.test(lista) && !(await page.$('[data-pc-funcao="u-eq"]')),
     'o principal torna alguém da equipe responsável principal (sem funções para escolher, pode tudo) — ' + lista.slice(0, 160));
   ok((await texto(page, '.conta-aviso')).includes('Carlos Recepção agora é responsável principal'), 'e o aviso diz que deu certo');
+  await abrirPessoa(page, 'u-a1');
   ok(await page.$('#pc-deixar-principal') && !(await page.$('[data-pc-remover="u-eq"]')), 'com outro principal, aparece "Deixar de ser responsável principal"; o outro principal não tem "Remover"');
   page.once('dialog', d => d.accept());
   await page.click('#pc-deixar-principal');
@@ -44,6 +49,7 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
   r = await page.evaluate(() => ({ papel: window.__db.academia_vinculos.find(v => v.user_id === 'u-a1').papel, funcoes: (window.__db.academia_vinculos.find(v => v.user_id === 'u-a1').funcoes || []).join(','), principal: souPrincipal() }));
   ok(r.papel === 'equipe' && r.funcoes === 'ficha,avaliacoes,promocoes,pagamentos' && !r.principal && (await texto(page, '.pc-sec-sub')).startsWith('Você, na equipe'),
     'quem era principal volta para a equipe, com todas as funções — ' + JSON.stringify(r));
+  await abrirPessoa(page, 'u-a1');
   ok((await texto(page, '.pc-pessoas')).includes('Pode: Editar a ficha, Responder avaliações, Promoções e leilão, Pagamentos') && !(await page.$('[data-pc-funcao]')), 'na equipe, vê o que pode fazer, sem mudar');
   await browser.close();
 
@@ -63,6 +69,7 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
   ok((await texto(page, '#parceiros .pc-main')).includes('"Pagamentos" não está liberado'), 'a compra de créditos também pede Pagamentos');
   await page.evaluate(() => irParceiros('acessos'));
   await page.waitForTimeout(300);
+  await abrirPessoa(page, 'u-a1');
   ok((await texto(page, '.pc-pessoas')).includes('Pode: Responder avaliações') && !(await page.$('[data-pc-funcao]')) && !(await page.$('[data-pc-principal]')), 'em Acessos, a equipe vê só o que pode, sem mexer');
   await page.evaluate(async () => {
     window.__db.avaliacoes.push({ id: 'rev-eq', academia_id: 'a1', stars: 5, comment: 'Ótima', nome_autor: 'Gil', created_at: new Date().toISOString() });
@@ -129,6 +136,7 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
     await carregarPessoas();
   });
   await page.waitForTimeout(200);
+  await abrirPessoa(page, 'u-eq');
   ok(!(await page.$('[data-pc-funcao]')) && !(await page.$('[data-pc-principal]')) && await page.$('[data-pc-remover="u-eq"]'), 'banco sem as funções: Acessos fica como antes (adicionar e remover)');
   m = await page.evaluate(() => PC_MENU_LOGADO.filter(i => !i.funcao || posso(i.funcao)).map(i => i.aba).join(','));
   ok(m.includes('ficha') && m.includes('promocoes') && m.includes('pagamentos'), 'e o menu mostra tudo');

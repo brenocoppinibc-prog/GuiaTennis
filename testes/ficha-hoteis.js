@@ -113,19 +113,19 @@ async function fichaCheia(page, extra) {
   // não tem foto no meio da ficha, só tem foto em cima e sobre os quartos").
   ok(r.fotosNoMeio === 0 && r.sobre, '"Sobre a academia" só com o texto: foto só na capa e nos cartões das opções');
 
-  // ---- opções: os cartões dos quartos, um embaixo do outro (regra 184) ----
+  // ---- opções: os cartões dos quartos em grade, dois por linha (regra 184) ----
   r = await page.evaluate(() => {
     const c = [...document.querySelectorAll('#ht-quartos .ht-quarto')];
     const b = c.map(x => x.getBoundingClientRect());
     return {
-      n: c.length, emLista: b.length === 2 && b[1].top >= b[0].bottom && Math.abs(b[0].left - b[1].left) < 1 && b[0].width > innerWidth * 0.8,
+      n: c.length, ladoALado: b.length === 2 && Math.abs(b[0].top - b[1].top) < 1 && b[1].left > b[0].right, semRolar: document.getElementById('ht-quartos').scrollWidth <= document.getElementById('ht-quartos').clientWidth,
       nomes: c.map(x => x.querySelector('.ht-quarto-n').innerText).join(','), tag: c.map(x => x.querySelector('.ht-quarto-tag')?.innerText || '').join(','),
       verde: c.map(x => x.querySelector('.ht-quarto-verde')?.innerText || '').join(','),
       wa: c.map(x => decodeURIComponent(x.querySelector('a[data-track="whatsapp"]').getAttribute('href'))),
       contagem: document.querySelector('.ht-opcoes-n')?.innerText, caixas: [...document.querySelectorAll('.ht-caixa')].map(x => x.innerText.replace(/\s+/g, ' ').trim()),
     };
   });
-  ok(r.n === 2 && r.emLista && r.nomes === 'Locação,Aula' && r.contagem === 'Mostrando 2 de 2 opções', 'no celular, locação e aula em dois cartões um embaixo do outro, na largura toda, com o "Mostrando 2 de 2 opções"');
+  ok(r.n === 2 && r.ladoALado && r.semRolar && r.nomes === 'Locação,Aula' && r.contagem === 'Mostrando 2 de 2 opções', 'no celular, locação e aula lado a lado na grade (sem rolar para o lado), com o "Mostrando 2 de 2 opções"');
   ok(r.tag === 'Menor preço,' && r.verde === 'Reposição até 12h antes,Reposição até 24h antes', 'o mais em conta com "Menor preço" e a reposição de cada um em verde — ' + r.verde);
   ok(r.wa[0].includes('queria saber sobre alugar a quadra') && r.wa[1].includes('queria saber sobre as aulas'), 'o WhatsApp de cada cartão já fala daquela opção');
   // Sem a caixa de horário (27/10/2026: "não precisa selecionar um horário certo").

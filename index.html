@@ -2895,17 +2895,17 @@
   .ht-quarto-itens svg { flex-shrink: 0; margin-top: 1px; }
   .ht-quarto-obs { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--muted); font-style: italic; }
   .ht-opcoes-n { margin: 16px 0 0; font-size: 16px; }
-  /* Um cartão embaixo do outro, como os quartos do hoteis.com no celular
-     (regra 184); no computador, dois por linha. A prévia do cadastro usa a
-     mesma regra. */
-  .ht-quartos { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 14px; }
-  @media (min-width: 720px) { .ht-quartos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* Em grade que desce, dois por linha no celular, como os quartos do
+     hoteis.com (regra 184, com o print do Breno); três no computador. A
+     prévia do cadastro usa a mesma regra. */
+  .ht-quartos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+  @media (min-width: 960px) { .ht-quartos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   .ht-quarto { display: flex; flex-direction: column; min-width: 0; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-  .ht-quarto-foto { position: relative; aspect-ratio: 16 / 9; background: var(--bg-alt); }
+  .ht-quarto-foto { position: relative; aspect-ratio: 4 / 3; background: var(--bg-alt); }
   .ht-quarto-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ht-quarto-tag { display: inline-block; align-self: flex-start; background: rgba(20,51,42,0.92); color: #fff; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 5px 8px; margin-bottom: 8px; }
   .ht-quarto-foto .ht-quarto-tag { position: absolute; left: 10px; top: 10px; margin: 0; }
-  .ht-quarto-corpo { display: flex; flex-direction: column; flex: 1; padding: 16px; }
+  .ht-quarto-corpo { display: flex; flex-direction: column; flex: 1; padding: 14px 12px; }
   .ht-quarto-n { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.25; }
   .ht-quarto-d { margin: 4px 0 0; font-size: 14px; line-height: 1.4; color: var(--text); }
   .ht-quarto-verde { margin: 8px 0 0; font-size: 14px; line-height: 1.35; color: var(--green-light); font-weight: 600; }
@@ -2914,7 +2914,7 @@
   .ht-quarto-val { font-size: 21px; font-weight: 700; line-height: 1.15; }
   .ht-quarto-val.sem-valor { font-size: 17px; }
   .ht-quarto-unit { font-size: 13px; color: var(--text); margin-top: 2px; }
-  .ht-quarto-bt { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 14px; padding: 8px 12px; border-radius: 999px; background: var(--green); color: #fff; font: 600 15px/1.2 var(--fonte-texto); text-align: center; text-decoration: none; }
+  .ht-quarto-bt { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 14px; padding: 8px 10px; border-radius: 999px; background: var(--green); color: #fff; font: 600 14px/1.2 var(--fonte-texto); text-align: center; text-decoration: none; }
 
   /* Avaliações: a nota no alto da seção e os cartões creme que passam. */
   .ht-sec-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }

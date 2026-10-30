@@ -379,6 +379,8 @@ const CATALOGO = [
   ok(srcs.length === 4 && srcs[0] === fotoDaAula && srcs[1] === fotoDaAula && srcs[2] !== srcs[3], 'na ficha da academia Premium, a avulsa e a mensal da aula mostram a foto dela; a locação, uma foto para cada');
   const unidades = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto-unit')].map(x => x.innerText.trim()).join(' | '));
   ok(unidades === 'por pessoa, por aula | por pessoa, por aula | por hora | por hora', 'a mensal paga o mesmo que a avulsa: a aula por aula (regra 182), a locação por hora (regra 183) — ' + unidades);
+  const grade4 = await page.evaluate(() => { const b = [...document.querySelectorAll('#ht-quartos .ht-quarto')].map(x => x.getBoundingClientRect()); return b.length === 4 && Math.abs(b[0].top - b[1].top) < 1 && b[2].top >= b[0].bottom && Math.abs(b[2].left - b[0].left) < 1; });
+  ok(grade4, 'as opções em grade que desce, dois por linha, como os quartos do hoteis.com (regra 184)');
   const curtosLoc = await page.evaluate(() => opcoesPreco(state.selected).filter(o => o.grupo === 'locacao').map(o => rotuloCurto(o) + ' ' + o.curto).join(' | '));
   ok(curtosLoc === 'por hora de quadra /h | por hora de quadra, no plano mensal /h', 'a locação mensal: por hora, no plano mensal — ' + curtosLoc);
   await browser.close();

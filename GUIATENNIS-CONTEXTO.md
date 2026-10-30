@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 29/10/2026 (regra 180)
+**Atualizado em:** 30/10/2026 (regra 181)
 
 | | |
 |---|---|
@@ -202,7 +202,11 @@ Produto (o que já foi decidido)
   (`linkComoChegar`): no Android, "geo:" (o celular pergunta com qual
   aplicativo abrir); no iPhone, o Mapas; no computador, a rota no Google
   Maps numa aba nova.
-- **Busca** "bairro, cidade" fica na cidade digitada. Telas de código com
+- **Busca** "bairro, cidade" fica na cidade digitada. Cinco buscas
+  seguidas na mesma aba sem abrir ficha nem ir a outra página: aviso "Está
+  precisando de ajuda para encontrar as quadras mais perto?", com "Usar minha
+  localização" e o chat de ajuda (conta no `sessionStorage`, nunca IP;
+  usado ou fechado, não volta na aba). Telas de código com
   uma caixa por número e "Confirmar" só com todas preenchidas.
 
 ## 4. Como é feito
@@ -275,8 +279,8 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (29/10/2026): **2.175 verificações** nos
-  74 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
+  segundo plano). Último resultado (29/10/2026): **2.187 verificações** nos
+  75 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
 - **Banco local** para o `testes/banco-emails.py` (**716 conferências**,
@@ -341,9 +345,10 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (29/10/2026)
 
-O PR #5 tem tudo até a **regra 180** (funções da equipe, vários
+O PR #5 tem tudo até a **regra 181** (ajuda depois de cinco buscas
+seguidas, sem SQL; Termos e Privacidade em 30/10). Antes, a regra 180 (funções da equipe, vários
 responsáveis principais, aba Pagamentos e e-mail de cada compra; SQL
-`20261029190000_funcoes_e_pagamentos`; Termos e Privacidade em 29/10).
+`20261029190000_funcoes_e_pagamentos`).
 Antes: o lance em parágrafos e os textos das promoções curtos (título 30,
 detalhes 150, e-mail 300, SQL `20261029170000_textos_curtos_das_promocoes`). De 28 a 29/10 entraram
 (o item da aula das crianças leva `publico`, `idadeDe` e `idadeAte` dentro do
@@ -353,7 +358,7 @@ a parte "Modalidades", pelo menos uma obrigatória; o valor em intervalo;
 "Alterações salvas" num cartão; "Pedir análise" em vermelho; o "Ver no
 mapa" no mapa do GuiaTennis e o "Como chegar" pelo próprio celular. A
 descrição do PR tem uma linha por regra em "Pedidos depois de 28/10".
-Testes: 2.175 no navegador e 716 no banco, nenhuma falha.
+Testes: 2.187 no navegador e 716 no banco, nenhuma falha.
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26 a 29/10 (veracidade, ficha no
    jeito do hoteis.com, catálogo com Modalidades, Aulas, Locação e valor em
@@ -378,7 +383,7 @@ Testes: 2.175 no navegador e 716 no banco, nenhuma falha.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 181.
+**Próximo número:** regra 182.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -461,6 +466,11 @@ Testes: 2.175 no navegador e 716 no banco, nenhuma falha.
   aos principais a cada compra paga e quando alguém vira principal. Termos e
   Privacidade em 29/10. SQL `20261029190000_funcoes_e_pagamentos`. Testes:
   `funcoes-da-equipe.js` (novo), `banco-emails.py`.
+- 181 (30/10) Cinco buscas seguidas na aba sem abrir ficha nem navegar:
+  aviso "Está precisando de ajuda para encontrar as quadras mais perto?",
+  com "Usar minha localização" (o melhor caminho) e "Falar com o chat de
+  ajuda". Conta na aba, sem IP (Privacidade em 30/10). Sem SQL. Teste:
+  `ajuda-na-busca.js` (novo).
 
 ## 11. WhatsApp e mensagem para as academias
 

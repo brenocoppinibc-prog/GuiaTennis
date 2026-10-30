@@ -112,7 +112,7 @@ const caixa = (page) => page.evaluate(() => document.querySelector('.rate-box')?
   ok(t.termos.includes('Quem avaliou pode editar a nota e o texto da própria avaliação quando quiser') && t.termos.includes('passa a mostrar "editada"') && t.termos.includes('não avalia nem edita avaliações'),
     'Termos: a conta edita a própria avaliação, que mostra "editada"; com o nome suspenso, não edita');
   ok(t.termos.includes('uma por avaliação') && t.termos.includes('A academia pode editar a resposta quando quiser'), 'Termos: a resposta da academia, uma por avaliação, editável');
-  ok(t.priv.includes('guardamos a data da última edição') && t.termos.includes('Última atualização: 29 de outubro de 2026') && t.priv.includes('Última atualização: 29 de outubro de 2026'), 'Privacidade: a data da edição; os dois com a data da última mudança (29/10, regra 180)');
+  ok(t.priv.includes('guardamos a data da última edição') && t.termos.includes('Última atualização: 30 de outubro de 2026') && t.priv.includes('Última atualização: 30 de outubro de 2026'), 'Privacidade: a data da edição; os dois com a data da última mudança (30/10, regra 181)');
   ok(t.como.includes('Quem avaliou pode editar a nota e o texto quando quiser') && t.como.includes('editar a resposta'), '"Como funcionam as avaliações" explica a edição');
   await browser.close();
 

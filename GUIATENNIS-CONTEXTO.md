@@ -284,7 +284,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (30/10/2026): **2.193 verificações** nos
+  segundo plano). Último resultado (30/10/2026): **2.195 verificações** nos
   75 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -365,7 +365,7 @@ seguidas (sem SQL; Termos e Privacidade em 30/10); e "Adicionar faixa de
 idade", a aula mensal por aula e a locação mensal por hora (sem SQL;
 Termos em 30/10); os cartões do catálogo em lista, o título do campo de
 cancelamento fora do prazo e o "Pular" que vira "Continuar" na hora. A descrição do PR tem
-uma linha por regra em "Pedidos depois de 28/10". Testes: 2.193 no
+uma linha por regra em "Pedidos depois de 28/10". Testes: 2.195 no
 navegador e 716 no banco, nenhuma falha. **Chat trocado em 30/10/2026:** o
 chat novo volta a acompanhar o PR #5 (o anterior deixou de acompanhar e
 cancelou as conferências automáticas).

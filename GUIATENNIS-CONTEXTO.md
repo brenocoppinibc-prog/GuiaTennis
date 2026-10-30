@@ -182,8 +182,9 @@ Produto (o que já foi decidido)
   Contato, Avaliações, Outras academias por perto, Horário, Cancelamento,
   Perguntas, e no fim "Confirmada pela academia", "É o responsável?" e
   "Algo errado nesta ficha?"). Fotos só na capa e nos cartões das opções.
-  Os cartões das opções ficam **um embaixo do outro** no celular (dois por
-  linha no computador), na ficha e na prévia do cadastro.
+  Os cartões das opções ficam **em grade que desce**, dois por linha no
+  celular, como os quartos do hoteis.com (três no computador), na ficha e
+  na prévia do cadastro; sem rolar para o lado.
   **Catálogo** só com modalidade e valor. No cadastro, a parte
   **Modalidades** (Aulas e/ou Locação de quadra; pelo menos uma, obrigatória
   também na edição; o admin segue só com o nome) abre as partes de cada uma, que só aparecem se escolhidas
@@ -363,7 +364,7 @@ funções da equipe, vários responsáveis principais e a aba Pagamentos (SQL
 `20261029190000_funcoes_e_pagamentos`); e a ajuda depois de cinco buscas
 seguidas (sem SQL; Termos e Privacidade em 30/10); e "Adicionar faixa de
 idade", a aula mensal por aula e a locação mensal por hora (sem SQL;
-Termos em 30/10); os cartões do catálogo em lista, o título do campo de
+Termos em 30/10); os cartões do catálogo em grade (dois por linha, para baixo), o título do campo de
 cancelamento fora do prazo e o "Pular" que vira "Continuar" na hora. A descrição do PR tem
 uma linha por regra em "Pedidos depois de 28/10". Testes: 2.195 no
 navegador e 716 no banco, nenhuma falha. **Chat trocado em 30/10/2026:** o
@@ -497,9 +498,9 @@ cancelou as conferências automáticas).
   mensal"); botões "Avulsa" e "Mensal"; exemplo da mensal "80 a 120";
   Termos (o que o valor paga) e chat dos jogadores e do Parceiros sem "por
   mês". Sem SQL. Testes: `catalogo.js`, `chat-parceiros.js`.
-- 184 (30/10) Cartões do catálogo na ficha (e na prévia) um embaixo do
-  outro, como os quartos do hoteis.com no celular (foto 16:9, botão de
-  48px; dois por linha no computador); no cancelamento, título em cima do
+- 184 (30/10) Cartões do catálogo na ficha (e na prévia) em grade que
+  desce, dois por linha no celular, como os quartos do hoteis.com (print
+  do Breno; três no computador; botão de 48px), sem rolar para o lado; no cancelamento, título em cima do
   campo do que acontece fora do prazo (`tituloForaDoPrazo`: "O que acontece
   com a aula se a pessoa cancelar com menos de 24h de antecedência? Há
   reposição?"); "Pular" vira "Continuar" assim que a parte ganha algo (a

@@ -25,7 +25,8 @@ const semTeste = html => html.replace(LINHA, 'const BANCO_DE_TESTE = { url: "", 
     const { browser, page } = await abrir(opts);
     const r = await page.evaluate(() => ({ url: window.__banco && window.__banco.url, faixa: !!document.querySelector('.faixa-banco-teste'), n: state.allCourts.length }));
     ok(r.url === esperado, `${nome}: abre ${r.url}`);
-    ok(r.faixa === faixa, `${nome}: faixa amarela ${faixa ? 'aparece' : 'não aparece'}`);
+    // Sem faixa nenhuma, nem na prévia (pedido de 08/10/2026).
+    ok(!r.faixa, `${nome}: sem a faixa do banco de teste`);
     ok(r.n === 2, `${nome}: academias carregam`);
     await browser.close();
   }

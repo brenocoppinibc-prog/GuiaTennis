@@ -1,1029 +1,565 @@
 # GuiaTennis — contexto do projeto
 
-Documento para abrir um chat novo sem perder nada. Quem chegar aqui deve
-conseguir continuar o trabalho lendo só este arquivo e o `index.html`.
+Versão enxuta (28/10/2026). Basta ler este arquivo para continuar o
+trabalho. O texto antigo completo (regras 1 a 167, resumos de cada chat,
+todas as seções) está em `historico/CONTEXTO-completo-ate-28-10-2026.md`;
+a descrição completa do PR #5 (seções 1 a 73, passos 1 a 99), em
+`historico/PR5-descricao-completa-ate-28-10-2026.md`. **Não ler esses dois
+inteiros:** procurar com `grep` só quando precisar de um detalhe
+("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
+para o histórico).
 
-**Dono:** Breno (brenocoppini.bc@gmail.com)
-**Repositório:** `brenocoppinibc-prog/GuiaTennis`
-**Branches:** `main` = o que está no ar e branch padrão do GitHub (criada
-em 28/09/2026). O trabalho novo entra por pedido de mudança (PR) de uma
-branch `claude/…` para a `main`. Já entraram: **PR #2** (banco de teste e
-publicação pelo GitHub, 28/09) e **PR #3** (SQL automático, ficha básica,
-WhatsApp, buscador do mapa e sitemap, 29/09, merge `92e5685`), os dois da
-`claude/github-supabase-connection-n1w3rr`. O **PR #1** (`new-session` →
-`trivago`) ficou velho e segue aberto; pode ser fechado. As outras
-`claude/…` são antigas.
-**No ar:** guiatennis.com.br (Netlify, publica a `main` sozinho) · teste na
-prévia de cada PR, `deploy-preview-N--….netlify.app` (seção 7). Cada um com
-o seu banco: o de verdade `eultezheqwmxyakvgyjy` e o de teste
-`ohvbengbujdioxdtewsy`, projeto `guiatennis-teste` (seção 4, "Banco de
-teste")
-**Instagram:** @guiatennis · **WhatsApp Business:** (11) 92745-6457 (`WHATSAPP_GUIA`) · **E-mail:** guiatennis1@gmail.com
-**Atualizado em:** 30/09/2026
+**Atualizado em:** 30/10/2026 (regra 188)
 
-> **Estado (30/09/2026):** tudo publicado. Não há PR aberto de trabalho
-> nem SQL esperando. O banco de verdade recebeu sozinho a ficha básica e o
-> sitemap em 29/09 (seção 5). Falta o Breno conferir o site publicado
-> (seção 11, primeiro item). O próximo passo sugerido é o Google Search
-> Console.
+| | |
+|---|---|
+| Dono | Breno (brenocoppini.bc@gmail.com) |
+| Repositório | `brenocoppinibc-prog/GuiaTennis` (público) |
+| No ar | guiatennis.com.br (Netlify publica a `main` sozinho) |
+| PR aberto | **#5**, branch `ccr-0a610d86-k6plx0` → `main`, com tudo desde 30/09/2026 |
+| Prévia do PR | https://deploy-preview-5--stately-salamander-652f72.netlify.app (banco de teste) |
+| Banco de verdade | Supabase `eultezheqwmxyakvgyjy` |
+| Banco de teste | Supabase `ohvbengbujdioxdtewsy` (projeto `guiatennis-teste`) |
+| Admin | entra com o e-mail `guiatennis1@gmail.com` (`isAdmin` é pelo e-mail) |
+| Contatos | WhatsApp Business (11) 92745-6457 (`WHATSAPP_GUIA`), Instagram @guiatennis, contato@guiatennis.com.br (chega no Gmail do admin) |
 
-### Como abrir o chat novo
-Anexe este arquivo e diga em qual branch trabalhar. No chat novo, antes de
-mexer:
-1. `git fetch origin main` e começar a branch do chat a partir dela
-   (`git checkout -B <branch> origin/main`). Se houver PR aberto para a
-   `main`, continuar na branch dele. PR que já entrou na `main` não recebe
-   mais nada: trabalho novo vai num PR novo.
-2. Rodar `testes/check-js.sh` e os testes da seção 6.
-3. Ler a seção 11 (em aberto) e a seção 2 (regras fixas).
+## 0. Chat novo: por onde começar
 
-### Como o Breno trabalha (importante)
-- Fala português, pelo celular, e manda print. Resposta curta, direta, em
-  português, sem jargão.
-- **Publica aprovando o PR no GitHub** (desde 28/09/2026 — seção 7). Não
-  mandar mais zip, a não ser que ele peça: cada zip arrastado gasta
-  crédito do Netlify.
-- **Cadastro pelo admin: só o nome é obrigatório** (pedido de 29/09/2026;
-  o banco não aceita academia sem nome). Sem asteriscos e sem o aceite dos
-  Termos; o endereço é montado só com o que foi preenchido
-  (`montarEndereco`). Quem pede cadastro pelo site continua mandando
-  endereço, WhatsApp, quadras, modalidade e o aceite.
-- **Nunca subir (merge) sem ele confirmar na hora.** Ele diz "pode subir"
-  depois de ver a prévia; se pedir mais alguma mudança depois disso, a
-  mudança vai para a prévia e ele confirma de novo antes do merge.
-- **SQL entra sozinho pelo GitHub** (desde 28/09/2026 — seção 4,
-  "Automação do banco"). Mostrar o SQL novo na conversa mesmo assim, para
-  ele saber o que vai mudar. Consulta que só lê (e o bloco manual, se a
-  automação estiver sem os segredos) continua em bloco pronto para
-  copiar; ele roda no SQL Editor e manda o resultado em tabela.
-- Testa no celular, muitas vezes **logado como admin** — o que não grava
-  estatística. Para testar como visitante: aba anônima.
-- Quer comparação com referências internacionais grandes (site,
-  Instagram, marketing) quando o assunto é GuiaTennis.
-- Não gosta de depender de botão para o que o site pode fazer sozinho
-  ("ele deveria consultar direito").
-- **Senha e endereço do banco nunca pelo chat.** Vão direto nos segredos do
-  GitHub (seção 4, "Automação do banco"). No código só entram as chaves
-  públicas (anon e publishable).
-- **Só coisa certa e legal** ("se não for legal eu não quero"). Dados de
-  academia: seção 4, "Academias do mapa aberto".
-- Não gosta de mensagem automática no WhatsApp (seção 12) nem de botão em
-  pílula para contato. Prefere texto com logo pequeno.
-- Mensagem de erro tem de ser simples, dizendo o que fazer ("O mapa está
-  lento agora. Espere um pouco…"). O motivo técnico vai para o
+1. `git fetch origin` e trabalhar na branch do PR aberto
+   (`ccr-0a610d86-k6plx0`). Se o PR #5 já entrou na `main`, trabalho novo
+   vai numa branch nova a partir da `main`, com PR novo.
+2. Voltar a acompanhar o PR #5 (inscrição nos eventos do PR).
+3. `bash testes/check-js.sh` antes de qualquer outra coisa.
+4. Ler a seção 9 (estado e pendências) deste arquivo.
+
+## 1. Como o Breno trabalha (importante)
+
+- Fala português, pelo celular, manda print. **Respostas curtas**, em
+  português, sem jargão e **sem narrar** o que está sendo feito: dizer o
+  que foi feito e o que depende dele. Ele está com pouco limite de uso.
+- Quer **comparação com referências internacionais grandes** (Google,
+  Booking, Airbnb, hoteis.com, trivago, Instagram, Nubank, Shopify…) nas
+  decisões de site, Instagram e marketing — **na conversa**. No site,
+  nenhuma comparação com outros sites.
+- **Tudo atualizado no mesmo push:** código, Termos e Privacidade (texto e
+  "Última atualização", quando tocam no assunto), chat de ajuda, este
+  arquivo e a descrição do PR (seção 2).
+- **Nunca fazer o merge sem ele dizer "pode subir"** na hora, depois de ver
+  a prévia. Mudança pedida depois disso volta para a prévia. **Não lembrar
+  disso no fim das respostas.**
+- **Senha e endereço do banco nunca pelo chat:** vão nos segredos do GitHub.
+  No código, só chaves públicas.
+- SQL entra sozinho pelo GitHub; mesmo assim, contar na conversa o que o
+  SQL novo muda. Consulta só de leitura vai em bloco pronto para copiar.
+- Testa no celular, muitas vezes logado como admin (admin não grava
+  estatística; visitante = aba anônima).
+- Só coisa certa e legal ("se não for legal eu não quero").
+- Não gosta de mensagem automática no WhatsApp nem de botão em pílula para
+  contato. Não gosta de depender de botão para o que o site faz sozinho.
+- **Sem a palavra "pôr"** (nem "põe", "ponha"): usar adicionar, incluir,
+  informar, colocar ou cadastrar.
+- Prints de tela só quando o pedido é de visual, e com a fonte de verdade
+  (seção 6).
+- Mensagem de erro simples, dizendo o que fazer; o técnico vai para o
   `?diagnostico`.
 
----
-
-## 1. O que é
-
-Guia online de **quadras e academias de tênis**. A pessoa diz onde está,
-vê as academias mais perto, compara preço/estrutura/nota e fala direto
-com a academia pelo WhatsApp. O GuiaTennis **não reserva horário, não
-cobra taxa e não fica no meio** da negociação.
-
-## 2. Regras fixas (não mudar sem o Breno pedir)
-
-1. **Só quadra e academia. Sem clube.** Nenhum texto do site pode falar
-   em clube.
-2. **O site não narra o que "a gente faz".** O texto responde dúvida de
-   quem está chegando. Nada de "a academia nos enviou", "arredondamos
-   para baixo", "atualiza sozinho" fora do bloco que fala com academias.
-3. **Sem preço = "Não incluído" + "consulte com a academia"** (`SEM_PRECO` /
-   `SEM_PRECO_SUB`). Nunca explicar o motivo de faltar o valor.
-4. **Número público sempre arredondado para baixo**, com `+` e ponto de
-   milhar (`numeroRedondo`). São **totais do site desde o começo**, nunca
-   uma janela de 30 dias. O site nunca promete mais do que aconteceu.
-5. **Filtro e lista de opções na mesma ordem no site inteiro.** Use
-   `naOrdem()` / `rotulosNaOrdem()` com a constante `*_OPTS`, nunca a
-   ordem que veio do banco.
-6. **Nenhuma dependência nova.** Um arquivo, sem build, sem framework. O
-   QR code foi escrito do zero justamente para não depender de serviço de
-   terceiro. As únicas coisas de fora são Supabase, Leaflet/OSM, Overpass
-   e as fontes do Google. Nada de IA: o texto da academia é entendido por
-   palavras-chave, no próprio site (seção 4, `acesso`).
-7. **Coluna nova no banco degrada com elegância:** se o `insert`/`update`
-   falhar por a coluna não existir, salva sem ela e avisa o admin com o
-   SQL exato (`faltaColunaNova` / `avisarSqlColunas`). O mesmo vale para
-   a função de estatísticas: sem ela, o bloco de números some, e nada
-   quebra.
-8. **Commits, comentários e nomes de função em português.**
-9. **Privacidade:** de uma busca fica guardado **bairro, cidade, CEP (o
-   digitado ou o da região achada) e o ponto arredondado para ~100 m**
-   (`pontoAproximado`, 3 casas decimais). De cada acesso, **origem**
-   (Instagram, Google, Direto…) e **aparelho** (celular, tablet,
-   computador). Cada clique de academia (ficha aberta, WhatsApp, Instagram,
-   site, compartilhar) leva também a origem, o aparelho e a região da
-   última busca (`state.ultimaBusca`), para o painel mostrar o público de
-   cada academia e o "Copiar resumo pra mandar" incluir isso. Admin
-   conectado não grava nada (`trackClick` sai no começo). Nunca o endereço digitado, a coordenada exata, IP ou
-   identificador do aparelho. Pedido do Breno em 28/09/2026. Qualquer
-   mudança nisso obriga a mexer na Política de Privacidade — e a data de
-   "Última atualização" dos dois textos legais tem de acompanhar.
-10. **SQL novo vira um arquivo em `supabase/migrations/`** e o GitHub
-    aplica: no banco de teste com o PR, no de verdade com o merge (pedido
-    do Breno em 28/09/2026). O SQL também vai escrito na conversa. Se a
-    automação não puder rodar, o bloco pronto para copiar volta a ser o
-    caminho — o Breno roda à mão no SQL Editor.
-11. **Campo vazio não desenha bloco.** Academia que não preencheu
-    horário, política ou acesso tem a ficha limpa, sem caixa vazia.
-    **Academia sem foto não mostra nada no lugar da foto** (pedido de
-    29/09/2026): nem "Foto em breve", nem bolinha, nem quadrado cinza — na
-    página inicial, na busca, no mapa, na comparação, em "outras academias
-    por perto" e na ficha (sem foto, a ficha começa direto no nome). O
-    selo do cartão da busca, que ficava em cima da foto, vai para cima do
-    nome (`rcard-tag solto`).
-12. **Informação da mesma natureza mora no mesmo lugar.** Fachada,
-    chegada e estacionamento ficam juntos, no mesmo formato.
-13. **Sem IA.** O Breno pediu e depois recusou IA para padronizar textos
-    ("não precisa de IA, é tipo como acontece na comparação"). O site
-    entende por palavra-chave (seção 4, "Entendimento dos textos").
-14. **Números públicos da home:** só acessos, "1 em N abre a ficha" e "% de
-    quem abre chama a academia", **lado a lado** em colunas iguais, também
-    no celular. **Não mostrar total de buscas** no site (fica no painel).
-15. **Textos pedidos pelo Breno:** frase embaixo da busca "Compare preço,
-    estrutura e comodidades de academias de tênis — e fale direto com
-    elas."; filtro "Empréstimo de raquete"; "consulte com a academia";
-    "aula com professor da academia". Nunca "lista alfabética" nem "quem
-    pagou mais".
-
-## 3. Como é feito
-
-Página única: **`index.html`** (~422 KB, ~8.000 linhas) com HTML, CSS e JS num arquivo
-só. Sem build, sem npm, sem framework. Abrir o arquivo já é rodar o site.
-
-- **Render:** `render()` reescreve `#app.innerHTML` inteiro e depois
-  chama `attachEvents()`. Guarda e devolve `window.scrollY` e o
-  `scrollTop` das folhas, então re-renderizar não faz a tela pular.
-- **Estado:** um objeto global `state`. `let isAdmin` fica fora dele.
-- **Rotas:** `history.pushState` com `?court=ID`, `?busca=…`,
-  `?comparar=1`. Páginas: `home`, `search`, `court`, `comparar`.
-- **Navegador (`localStorage`):** favoritos (`guiatennis_favorites_v1`),
-  comparação (`guiatennis_compare_v1`), vistas recentemente
-  (`guiatennis_recentes_v1`), quem está avaliando
-  (`guiatennis_visitor_v1`) e o cache do "o que tem por perto"
-  (`guiatennis_perto_v1`).
-
-### Mapa do `index.html` (linhas de 30/09/2026, aproximadas)
-
-| Linha | O quê |
-|---|---|
-| topo | `<meta>`, canonical, JSON-LD (com `telephone`), CSS inteiro dentro de `<style>` |
-| 967 | `BANCO_DE_TESTE`, `NO_SITE_DE_TESTE`, `USANDO_BANCO_DE_TESTE`, Supabase |
-| 1041 | `LOGO_SVG`, ícones (inclui `whatsapp`, `mail`, `info`), `bolaGirando` |
-| 1072 | constantes `*_OPTS` (comodidade, piso, cobertura, modalidade, reposição, plano) |
-| 1136 | `horasDaReposicao` — prazo 12/24/48 ou personalizado |
-| 1150 | `acessoDe`, `arrumarTexto`, `entenderEstacionar`, `acessoFicha`, `estacionarLinhas` |
-| 1343 | `horarioDe`, `agruparDias`, `horarioLinhas`, `abertoAgora` |
-| 1452 | `politicaDe` — cancelamento, igual ou separado por modalidade |
-| 1552 | `mapRow` / `toRow` (banco ↔ objeto; `confirmada`) |
-| 1651 | `COLUNAS_*_PUBLICAS`, `COLUNAS_ACADEMIA_NOVAS`, `lerPublico`, `loadEverything` |
-| 1801 | `DIAGNOSTICO`/`diag`, `trackClick`, `origemDoAcesso`, `registrarBusca` |
-| 1916 | `state` |
-| 2001 | geocodificação: `geocodeCep`, `localizarAcademia`, `completarCoordenadas`, `geocodeFormAddress`, `reverseGeocode` |
-| 2305 | `getResults`, `render()` |
-| 2438 | mapa Leaflet da busca (pinos empilhados) |
-| 3076 | `WHATSAPP_GUIA`, `whatsappGuia`, `CONTATOS_GUIA`, `linksContato`, `linkResponsavel` |
-| 3172 | página de busca, filtros, card da academia |
-| 3465 | `renderCabecalho`, menu, blocos da home, `blocoMediasAcademias` |
-| 4346 | "o que tem por perto" (`POI_SERVIDORES`, `pedirOverpass`) |
-| 4500 | academias do mapa aberto no painel: `MAPA_*`, `consultaMapa`, `carregarMapaAberto`, `adicionarDoMapa`, `conviteAcademia`, `blocoMapaAberto` |
-| 5485 | `htAcesso`, `htHorario`, `htPolitica`, `perguntasAcademia` |
-| 5869 | `renderCourtPage` — a ficha inteira (aviso de ficha básica, `.ficha-dono`) |
-| 6106 | formulário de cadastro (`blocoPoliticaForm`, `renderRegisterSheet`) |
-| 6343 | estatísticas do admin (`statsAgregado`, `renderStatsPanel`) |
-| 6523 | Termos de Uso (`TERMS_HTML`) e Política de Privacidade (`PRIVACY_HTML`) |
-| 6658 | `attachEvents()` |
-| 7786 | `doSearch`, `faltaColunaNova`, `montarEndereco`, `doRegisterSubmit` |
-| 7992 | `init()` |
-
-## 4. Banco (Supabase)
-
-`SUPABASE_URL` e `SUPABASE_ANON_KEY` estão no `index.html` (chave
-pública, é assim mesmo). Admin entra por e-mail/senha do Supabase Auth;
-`isAdmin = !!session`.
-
-### `academias`
-`id, name, address, numero, complemento, bairro, cidade, endereco,
-lat, lng, phone, instagram, site, price_range, price_aula,
-price_locacao, amenities[], modalidades[], pisos[], cobertura[],
-quadras(jsonb), photos[], source, status ('published'|'pending'),
-pago, plano, politica(jsonb), acesso(jsonb), horario(jsonb),
-pausada, pausada_ate, confirmada, nome_solicitante, contato_solicitante`
-
-**`confirmada`** (desde 29/09/2026): `false` = **ficha básica**, listada
-com dados públicos e ainda não confirmada pela academia. A ficha mostra
-"Ficha básica. Informações públicas, ainda não confirmadas pela academia —
-confirme horário e preço direto com ela." Toda ficha tem, no fim, o
-link "É o responsável por esta academia? Fale com o GuiaTennis no
-WhatsApp" (`linkResponsavel`): abre o WhatsApp do guia com a mensagem
-"Sou responsável pela [academia] e quero atualizar a ficha (ou pedir a
-remoção): [link]". O admin marca "Informações confirmadas pela academia"
-no formulário. As 8 academias que já estavam no guia viraram `true` na
-migração (29/09/2026, no banco de verdade). Banco sem a coluna conta como
-confirmada (`row.confirmada !== false`).
-
-**`politica`** — a academia escolhe uma regra para tudo ou uma para cada
-modalidade:
-```json
-{ "modo": "igual",
-  "reposicao": "24", "foraDoPrazo": "texto" }
-
-{ "modo": "separado",
-  "aula":    { "reposicao": "24", "foraDoPrazo": "texto" },
-  "locacao": { "reposicao": "12", "foraDoPrazo": "texto" } }
-```
-`reposicao` é `"12" | "24" | "48" | "nao"` ou um número de horas de 1 a 720, quando a academia usa "Personalizar" (`horasDaReposicao`). A escolha "Aula e locação
-diferentes" só aparece para quem marcou as duas modalidades; quem só dá
-aula (ou só aluga) tem um bloco só, e salva só a regra do que oferece
-(`politicaParaSalvar`). Na ficha, `politicaDe` também esconde a regra da
-modalidade que a academia não oferece.
-
-**`acesso`** — `{ fachada, entrada, estacionar }`, os três em texto
-livre. "Empréstimo de raquete" **não** mora aqui: é a comodidade `raquete`.
-`estacionar` só existe para quem **não** marcou estacionamento grátis ou
-pago: com vaga própria o campo some do cadastro e o texto não é salvo.
-No cadastro, esses três campos ficam depois do cancelamento.
-
-**Entendimento dos textos, sem IA.** O banco guarda o texto como a
-academia escreveu; quem arruma é a ficha, na hora de mostrar:
-- `arrumarTexto` — tira emoji e caixa alta, troca "!!!" por ponto, põe
-  horas como 19h/19h30 e valores como R$ 15, corrige acentos comuns
-  (até, não, tênis, às 19h…), maiúscula no começo e ponto no fim. Vale
-  para fachada, chegada, observação do horário e texto do cancelamento.
-- `entenderEstacionar` — quebra o texto em trechos e classifica cada um
-  por palavra-chave (`TERMOS_ESTACIONAR`), como a comparação faz nas
-  anotações: manobrista, convênio, zona azul, difícil parar, pago perto,
-  livre. Trecho sem palavra-chave segue o anterior ("zona azul até 19h,
-  depois libera").
-- `acessoFicha` — frase sobre estacionamento escrita na fachada ou na
-  chegada muda para o bloco de estacionamento.
-- `estacionarLinhas` — o modelo único, sempre na mesma ordem: No local ·
-  Na rua (Livre / Zona azul / Difícil parar) · Pago perto · Manobrista ·
-  Convênio. Com vaga própria, só "No local". O cadastro mostra a prévia
-  ao sair do campo "Onde estacionar".
-
-**`horario`** — dois modos de preenchimento:
-```json
-{ "modo": "igual", "semana": {...}, "sabado": {...}, "domingo": {...}, "nota": "" }
-{ "modo": "dia", "seg": {...}, "ter": {...}, ..., "sabado": {...}, "domingo": {...} }
-```
-Cada faixa é `{ de: "06:00", ate: "22:00", fechado: false }`. No modo
-`dia`, dias seguidos com o mesmo horário viram uma linha na ficha
-("Seg a qua 6h às 22h").
-
-### `avaliacoes`
-`id, academia_id, stars, comment, nome_autor, contato_autor, created_at`
-
-### `cliques`
-`id, academia_id, tipo, detalhe, cep, lat, lng, origem, dispositivo, created_at`
-
-`tipo`: `acesso_site`, `busca`, `visualizacao`, `whatsapp`, `site`,
-`instagram`, `compartilhar`. `detalhe` e `cep` só são usados em `busca`:
-`detalhe` guarda "Bairro, Cidade" e `cep` o CEP digitado ("05422-000"),
-da busca (digitado ou achado no mapa). `lat`/`lng` são o ponto da busca
-arredondado; `origem` e `dispositivo` vêm do `acesso_site` (e o aparelho
-também da busca). O painel do admin mostra de onde vieram, aparelho, mapa
-das buscas, regiões e CEPs. A trava `cliques_tipo_valido` lista os tipos.
-
-**RLS:** a tabela é fechada para leitura — só o admin lê. O envio só
-aceita os `tipo` da lista acima (`SQL-SEGURANCA.sql`). Quem responde
-ao visitante é a **função** `estatisticas_publicas()`, que devolve quatro
-totais somados e nada por academia.
-
-### `estatisticas_publicas()` — função, não visão
-Devolve `acessos_total, buscas_total, fichas_total, contatos_total`,
-todos desde o começo do site.
-
-Era uma visão, e o Supabase marcava como **"Security Definer View —
-CRITICAL"**: uma visão pertence ao `postgres` e passa por cima do RLS.
-Ligar `security_invoker` **não** resolve — a visão passaria a rodar como
-o visitante, o RLS bloquearia `cliques` e os números viriam vazios. A
-função `security definer` com `search_path` fixo faz o mesmo de um jeito
-que o Supabase reconhece. O site tenta a função e, se ela não existir,
-cai na visão antiga; sem nenhuma das duas, o bloco de números some.
-
-### Segurança (`SQL-SEGURANCA.sql`)
-- Admin é quem tem o e-mail `guiatennis1@gmail.com` no login: as regras
-  de editar, apagar e ver pendentes/cliques conferem `auth.jwt() ->> 'email'`.
-  O cadastro de novos usuários no Supabase Auth está **desligado**.
-- O visitante (`anon`) lê **só colunas liberadas uma a uma**: tudo menos
-  `nome_solicitante`/`contato_solicitante` (academias) e `contato_autor`
-  (avaliações). O site pede essas colunas pelo nome
-  (`COLUNAS_ACADEMIA_PUBLICAS`, `COLUNAS_AVALIACAO_PUBLICAS`, `lerPublico`);
-  se a lista falhar, tenta `*`, que funciona antes do SQL.
-- Envio de avaliação só com nota de 1 a 5; clique só com `tipo` conhecido;
-  cadastro só como `pending`, sem plano pago.
-- Avisos do Security Advisor que ficam, de propósito:
-  `estatisticas_publicas` como `SECURITY DEFINER` executável por anon e
-  authenticated — é assim que o visitante vê os quatro totais sem ler a
-  tabela `cliques` (ver acima).
-
-### GitHub ↔ Supabase
-O Breno ligou o repositório pelo painel do Supabase (Project Settings →
-Integrations → GitHub) em 28/09/2026, e ela aponta para o projeto de
-**teste** (`ohvbengbujdioxdtewsy`). O site **não depende** disso: ele fala
-com o banco pela chave do `index.html`, e quem aplica o SQL é a esteira do
-GitHub ("Automação do banco", abaixo).
-
-Em cada PR aparece o check "Supabase Preview" como `skipped` ("This git
-branch is not associated with any Supabase Branch"). É normal: ele só
-agiria com o Branching (plano Pro) e com um `supabase/config.toml`, que
-não existe de propósito (ver "Banco de teste"). Não é erro e não bloqueia
-nada.
-
-### Banco de teste (pedido do Breno em 28/09/2026)
-O Breno quer testar como os sites grandes: um ambiente de teste com banco
-próprio ("staging"), separado do de verdade. Até aqui o site de teste
-(lucky-liger-1c29a3.netlify.app) gravava no banco de verdade, e o teste
-em aba anônima inflava os números da home.
-
-- **Caminho escolhido: grátis.** Um segundo projeto no Supabase
-  (`guiatennis-teste`, plano grátis permite dois). O Branching (banco
-  novo a cada PR) exige o plano Pro (US$ 25/mês) mais US$ 0,01344 por hora
-  de cada banco de teste, e o crédito do plano não cobre isso. Pode entrar
-  depois, sem refazer nada.
-- **No site:** `BANCO_DE_TESTE = { url, chave }` no começo do `<script>`.
-  Preenchido, a prévia de PR (`deploy-preview-N--….netlify.app`), o site
-  de teste antigo (`lucky-liger-1c29a3.netlify.app` e as versões de deploy
-  dele) e o `localhost` usam esse banco e mostram uma faixa amarela "Banco
-  de teste" (`NO_SITE_DE_TESTE`). Qualquer outro endereço usa
-  sempre o de verdade. O banco nunca é escolhido por parâmetro no link: isso
-  deixaria alguém apontar o guiatennis.com.br para um banco falso com
-  WhatsApp de golpe. Teste: `testes/banco-de-teste.js`.
-- **Chave:** só a "publishable" ou "anon public". Nunca a "secret" nem a
-  "service_role".
-- **Estrutura:** `SQL-RETRATO.sql` só lê e devolve colunas, regras (RLS),
-  travas, índices, funções e permissões. O Breno rodou no banco de verdade
-  em 28/09/2026 e mandou o CSV (Export → Download CSV — colar a tabela no
-  chat corta no meio). Rodar de novo sempre que quiser conferir se o
-  banco de verdade e a pasta `supabase/` continuam iguais.
-- **Pasta `supabase/`:**
-  - `migrations/20260928150000_estrutura_inicial.sql` — a estrutura igual
-    à do banco de verdade. Pode rodar de novo, até no banco de verdade,
-    sem mudar nada.
-  - `migrations/20260929120000_ficha_basica.sql` — coluna `confirmada`
-    (as academias que já existiam viram `true`; a de exemplo `…0002` do
-    banco de teste fica `false`) e a leitura dela para o visitante.
-  - `migrations/20260929120100_sitemap.sql` — domínio `"*/*"` e a função
-    `sitemap()`.
-  - `seed.sql` — cinco academias inventadas ("Exemplo", telefones que
-    não existem): aula e locação, só locação, só aula com horário por dia
-    e prazo de 36h, uma pausada e uma pendente; mais avaliações e
-    cliques. Para antes de gravar se o banco tiver academia de verdade. No
-    fim marca todas como confirmadas, menos a `…0002` (ficha básica).
-  - `aplicar.sh` e `conferir.sh` — a esteira (ver "Automação do banco").
-  - **Sem `config.toml` de propósito.** Sem ele a integração do GitHub
-    não age. Com ele, as configurações de login iriam junto (valores
-    padrão do Supabase, como cadastro de usuários ligado). Só criar
-    quando for ligar o Branching ou o "Deploy to production", e com
-    `enable_signup = false` em `[auth]` e `[auth.email]`.
-  - Mudança nova no banco vira um arquivo novo em `migrations/`
-    (`AAAAMMDDhhmmss_nome.sql`), além do bloco na conversa para o Breno.
-- **Conferido aqui (28/09/2026):** banco zerado + migração + seed dá o
-  mesmo retrato do banco de verdade (84 de 84 linhas); migração e seed
-  rodam duas vezes sem erro nem duplicar; como visitante, vê 3 academias
-  (sem a pausada e a pendente), não lê contato, não lê cliques, só grava
-  clique conhecido, nota de 1 a 5 e cadastro pendente; o admin vê as 5 e
-  os cliques; outra conta logada vê como visitante; o site abre as fichas
-  de exemplo sem erro.
-- **Projeto de teste:** `guiatennis-teste`, URL
-  `https://ohvbengbujdioxdtewsy.supabase.co`, chave publishable
-  `sb_publishable_NEF5wHWslCi3Uu9GfbHruQ_Ut3r_BBT` já no `BANCO_DE_TESTE`
-  (28/09/2026). Estrutura e exemplos: o Breno colou a migração + `seed.sql`
-  no SQL Editor em 28/09 (em três blocos de linhas curtas: o colar pelo
-  celular com tudo junto deu "syntax error at or near ')'"). Desde então a
-  esteira mantém o banco de teste em dia (29/09: "visitante lê as
-  academias: 3 publicadas"). Login de admin no site de teste é o usuário
-  do projeto de teste, não o do de verdade.
-- **Onde se testa:** na prévia do PR (seção 7), que abre o banco de teste
-  por causa do endereço `deploy-preview-N--….netlify.app`. O lucky-liger
-  também abriria, mas ficou aposentado para não gastar crédito.
-- **A conferir com o Breno:** se o usuário admin
-  (`guiatennis1@gmail.com`) foi criado no projeto de teste (Authentication
-  → Users → Add user) e se o cadastro de usuários está desligado lá
-  (Authentication → Sign In / Providers → "Allow new users to sign up").
-
-### Academias do mapa aberto (pedido do Breno em 29/09/2026)
-O guia tinha 8 academias e precisava de mais para atrair público (o "ovo e
-a galinha" dos sites de dois lados — Yelp, TripAdvisor e Doctoralia
-listaram com dados públicos e depois convidaram o dono a assumir). Regra
-combinada: **nome, endereço, telefone comercial e horário, um por um, pode;
-copiar do Google em massa, fotos, avaliações, textos e logo, não.**
-- O Breno perguntou (29/09) se pode pegar do Google Maps ou do Instagram
-  nome, endereço e WhatsApp. **Pode**, olhando e digitando à mão, uma
-  academia por vez, e a ficha entra como básica (`confirmada = false`).
-  Fato básico não tem dono. Não pode: robô ou programa que copia do Google
-  (os termos do Google Maps proíbem), foto, avaliação, nota, texto de
-  descrição e logo. Na dúvida sobre foto, pedir à academia (mensagem da
-  seção 13).
-- No painel do admin (botão da prancheta), no fim, **"Academias no mapa
-  que ainda não estão no guia"**, do OpenStreetMap (licença ODbL: uso
-  livre, até comercial, com crédito). O admin digita uma região (bairro,
-  cidade ou CEP, pelo mesmo caminho da busca do site) e escolhe até 3, 5
-  ou 10 km; o mapa procura só em volta dela, nos mesmos 3 servidores do
-  "o que tem por perto". A primeira versão consultava a cidade inteira ao
-  abrir o painel e não voltava no celular do Breno; a segunda procurava
-  "tênis" no nome de tudo o que tinha `leisure` e também não voltava.
-  Hoje: etiqueta `sport~tennis` com nome, mais centros esportivos com
-  "tênis" no nome; se os servidores não responderem, tenta de novo
-  sozinho uma vez. Mensagens simples: "Não achei essa região…" ou "O mapa
-  está lento agora…". O motivo técnico vai só para o `?diagnostico`.
-- Cada academia mostra nome, endereço, distância e o telefone do mapa.
-  Com telefone: botão "Chamar no WhatsApp" com o convite escrito
-  (`conviteAcademia`) — o Breno manda ele mesmo. Sem telefone: "Procurar o
-  telefone" abre a busca do Google com o nome e o bairro (consulta manual,
-  um por um).
-- Fica de fora o que não é academia pela regra do guia (`MAPA_FORA`:
-  clube, country, condomínio, colégio, SESC, hotel…) e o que já está no
-  guia (a menos de 200 m ou com o mesmo nome).
-- "Adicionar como pendente" grava com `source = 'osm'`, `confirmada =
-  false`, endereço das etiquetas do mapa (ou do Nominatim, se faltar) e o
-  telefone só com dígitos. O admin confere, completa e aprova como sempre.
-- Ficha com `source = 'osm'` mostra "Nome e localização: © colaboradores
-  do OpenStreetMap". Termos (item 2 e 3) e Privacidade (item 1, 3 e 5)
-  explicam a ficha básica, as fontes públicas e o pedido de remoção.
-
-### Sitemap automático (29/09/2026)
-`/sitemap.xml` não é mais o arquivo do repositório: o `netlify.toml`
-repassa (proxy, `force = true`) para a função `sitemap()` do banco de
-verdade, com a chave pública no cabeçalho. Ela lista a home e a ficha de
-cada academia publicada e em exibição — academia nova entra sozinha, sem
-publicar o site. A função devolve o tipo `"*/*"` (domínio sobre `bytea`)
-e põe o `Content-Type: application/xml` ela mesma: com o tipo
-`"text/xml"`, o PostgREST só devolve XML puro quando o pedido diz
-`Accept: text/xml`, e o Google pede `text/html, …, */*` (viria JSON).
-Conferido num PostgREST 12.2.3 local. A prévia do Netlify também aponta
-para o banco de verdade. **No ar desde 29/09/2026:** a esteira conferiu no
-banco de verdade "sitemap: 9 endereços" (a home e as 8 fichas). O
-`sitemap.xml` do repositório fica de reserva, só vale se a regra do
-`netlify.toml` sair.
-
-### Automação do banco (pedido do Breno em 28/09/2026)
-Os sites grandes guardam o SQL junto com o código e deixam a esteira
-aplicar. **Funcionando nos dois bancos desde 29/09/2026** (segredos
-colocados pelo Breno). Aqui:
-- **`.github/workflows/banco.yml`** roda `supabase/aplicar.sh`:
-  PR para a `main` que mexe em `supabase/` → banco de **teste**; merge na
-  `main` → banco de **verdade**. Também roda à mão (Actions → Banco de
-  dados → Run workflow, escolhendo teste ou real). Grátis: repositório
-  público.
-- **`supabase/aplicar.sh`** roda, na ordem, cada arquivo de
-  `supabase/migrations/` que ainda não está no histórico
-  (`supabase_migrations.schema_migrations`, a mesma tabela do Supabase),
-  numa transação só junto com a anotação: entra inteiro ou nada. SQL com
-  erro deixa a esteira vermelha e não muda o banco.
-- A estrutura inicial (`20260928150000`) veio do banco de verdade: lá ela
-  é só anotada, sem rodar (`JA_NO_BANCO_REAL` no script). No banco de
-  teste ela roda (pode rodar de novo sem mudar nada).
-- As academias de exemplo (`seed.sql`) só entram no banco de teste, e só
-  se ele estiver sem nenhuma academia.
-- **Segredos** (GitHub → Settings → Secrets and variables → Actions):
-  `BANCO_TESTE_URL` e `BANCO_REAL_URL`, cada um com o endereço **Session
-  pooler** do projeto (Supabase → Connect), com a senha do banco no lugar
-  de `[YOUR-PASSWORD]`. O endereço direto (`db.<ref>.supabase.co`) é só
-  IPv6 e o GitHub não alcança. Sem o segredo, a esteira avisa e não faz
-  nada. Senha só com letras e números (caractere especial precisa ser
-  codificado na URL).
-- **SQL novo:** arquivo `supabase/migrations/AAAAMMDDhhmmss_nome.sql`,
-  que pode rodar de novo sem estragar (`if not exists`, `drop … if
-  exists`). Coluna nova em `academias`/`avaliacoes` entra também no
-  `grant select (…)` para o visitante enxergar (ver seção 9).
-- Testado num Postgres local: banco de teste como o Breno deixou, banco
-  novo, banco igual ao de verdade (a estrutura inicial não roda lá) e SQL
-  com erro (nada entra, saída com erro).
-- Antes de conectar, o script mostra usuário, servidor, porta e o tamanho
-  da senha, e avisa colchete, porta errada, endereço direto ou caractere
-  especial — sem mostrar a senha. Tira espaço e quebra de linha colados.
-  Na primeira vez, a senha recém-trocada no Supabase levou uns minutos
-  para valer no pooler ("password authentication failed").
-- Depois do SQL, `supabase/conferir.sh` testa pela API, com a chave
-  pública, o que o site lê: as academias com as colunas do `index.html` e
-  o sitemap sem pedir formato (tem de vir XML).
-- **Onde ver o resultado:** GitHub → Actions → "Banco de dados" → a
-  execução → passo "Aplicar…". Linhas esperadas: `aplicada: <arquivo>`,
-  `anotada sem rodar…`, `visitante lê as academias: N publicadas`,
-  `sitemap: N endereços`. Do chat, o Claude lê pela ferramenta do GitHub
-  (lista as execuções do `banco.yml` e lê o registro do job). É o jeito de
-  conferir produção daqui, já que a rede deste ambiente não alcança o site
-  nem o Supabase.
-- **Coluna nova que o visitante lê** entra também em
-  `COLUNAS_ACADEMIA_NOVAS`: na publicação, o site pode ir para o ar antes
-  do SQL; aí ele lê sem as colunas novas em vez de cair no `*`, que o
-  visitante não pode ler (o site ficaria vazio).
-
-- **Postgres na máquina:** `/usr/lib/postgresql/16/bin`, como usuário
-  `postgres`, com os dados em `/var/lib/postgresql/…` (no scratchpad o
-  ambiente fecha as permissões de tempos em tempos e o Postgres cai):
-  `initdb -D <dir>/data -A trust -U postgres` e
-  `pg_ctl -D <dir>/data -o '-p 5433 -k <dir>/sock' start`. Antes da
-  migração, criar os papéis `anon`, `authenticated` e a função
-  `auth.jwt()` que o Supabase já traz.
-
-## 5. Banco: o que já rodou e o que falta
-
-**Já rodado pelo Breno (confirmado):**
-- colunas `politica`, `acesso`, `horario` em `academias`;
-- colunas `detalhe` e `cep` em `cliques`;
-- função `estatisticas_publicas()`;
-- trava `cliques_tipo_valido` com "busca" — trocou a `cliques_tipo_check`
-  antiga, que recusava toda busca (confirmado em 28/09/2026);
-- cadastro de novos usuários desligado no Supabase Auth;
-- colunas do público em `cliques` (`lat`, `lng`, `origem`, `dispositivo`)
-  e o `SQL-SEGURANCA.sql` inteiro — confirmados pelo retrato de
-  28/09/2026: o visitante não lê `nome_solicitante`,
-  `contato_solicitante` nem `contato_autor`, e as regras de envio estão
-  fechadas.
-
-**Estrutura do banco de verdade** (retrato de 28/09/2026, igual à
-`supabase/migrations/`): as listas de `academias` (`amenities`,
-`modalidades`, `pisos`, `cobertura`, `photos`) são **jsonb**, não
-`text[]`; `lat`/`lng` de academias são `float8` e os de cliques,
-`numeric`; os `id` são todos `uuid`. Regras: "Ver academias publicadas"
-(publicada e não pausada, ou pausa vencida), "Admin ve pendentes",
-"Enviar academia para analise", "Admin edita academias", "Admin exclui
-academias", "Ver avaliacoes", "Enviar avaliacao", "Admin exclui
-avaliacoes", "Admin ve cliques", "Registrar clique". Sem gatilhos e sem
-índices além das chaves.
-
-**Aplicado pela esteira no banco de verdade (29/09/2026, merge do PR #3):**
-```
-anotada sem rodar (veio do banco de verdade): 20260928150000_estrutura_inicial
-aplicada: 20260929120000_ficha_basica
-aplicada: 20260929120100_sitemap
-visitante lê as academias: 8 publicadas
-sitemap: 9 endereços
-```
-O histórico fica em `supabase_migrations.schema_migrations` nos dois
-bancos. Não há SQL esperando.
-
-**Falta confirmar / rodar** (tudo seguro para rodar de novo):
-
-1. Morumbi Tennis, se ainda estiver fora do lugar no mapa:
-```sql
-update academias set lat = null, lng = null where name = 'Morumbi Tennis';
-```
-   e o admin abrir o site — ele localiza de novo, pelo nome.
-
-**Consultas úteis (só leitura):**
-```sql
--- últimos registros
-select tipo, detalhe, cep, origem, dispositivo, created_at
-from cliques order by created_at desc limit 20;
-
--- total por tipo desde o começo
-select tipo, count(*), max(created_at) from cliques group by tipo;
-
--- travas da tabela cliques
-select conname, pg_get_constraintdef(oid) from pg_constraint
-where conrelid = 'public.cliques'::regclass and contype = 'c';
-```
-
-## 6. Como testar
-
-Os testes estão em `testes/` e não vão para o ar. Rodam sem internet: o
-`harness.js` abre o `index.html` no Chromium com o Supabase trocado pelo
-`mock.js`, o Leaflet por um stub e as APIs de CEP/endereço respondendo
-fixo.
-
-```
-testes/check-js.sh
-cd testes && for t in busca-e-ficha cadastro entendimento seguranca publico banco-de-teste ficha-basica; do NODE_PATH=$(npm root -g) node $t.js; done
-```
-
-Em 29/09/2026 (último commit do PR #3): **159 verificações, todas
-passando**.
-
-- `check-js.sh` — tira o `<script>` e roda `node --check`. **Rodar sempre
-  antes de qualquer outra coisa.**
-
-- `busca-e-ficha.js` — frase da home, busca registrada com região e CEP
-  (e sem as colunas novas), admin não conta, política por modalidade na
-  ficha, textos fixos.
-- `cadastro.js` — cancelamento por modalidade, "Onde estacionar" só sem
-  vaga própria, ordem dos campos, edição que não apaga horário nem regra.
-- `publico.js` — origem e aparelho do acesso, link compartilhado com a
-  etiqueta `Compartilhado`, CEP e ponto aproximado da busca, painel do
-  admin e Política de Privacidade.
-- `seguranca.js` — site funciona com o banco fechado (depois do
-  `SQL-SEGURANCA.sql`), com o banco antigo e com o de hoje.
-- `entendimento.js` — ficha e pergunta frequente com o texto arrumado e o
-  estacionamento no modelo, frase trocando de lugar, prévia no cadastro.
-- `ficha-basica.js` — aviso da ficha básica e link do responsável no
-  WhatsApp, banco sem a coluna nova, caixa do admin, busca do mapa aberto
-  por região (sem clube, sem o que já está no guia, adicionar como
-  pendente, mensagens de região não achada e de mapa lento), contatos em
-  texto com logo e sem os dados, nada no lugar da foto, admin publica só
-  com o nome (o visitante continua com os campos essenciais) e textos
-  legais.
-- `banco-de-teste.js` — a prévia do Netlify e o site de teste abrem o
-  banco de teste; o guiatennis.com.br, o endereço do Netlify do site de
-  verdade, link com `?banco=` e endereço parecido, nunca.
-
-O `mock.js` tem as academias `a1` (só aula, estacionamento grátis, regra
-separada) e `a2` (só locação, regra única). Chaves: `__admin`,
-`__semDetalhe`, `__semCep`, `__colunasFechadas`, `__semPlano`,
-`__semConfirmada` (a `a2` é ficha básica). `abrir({ overpass })` responde o
-OpenStreetMap com um JSON fixo; `abrir({ host })` finge outro endereço
-(prévia, guiatennis.com.br) e o `createClient` do mock anota em
-`window.__banco` qual banco o site escolheu. Teste de cadastro como
-visitante precisa preencher antes a folha "quem está avaliando"
-(`saveVisitor`), que abre primeiro. O que o site
-grava fica em `window.__db` e `window.__cliques`; o último `update` em
-`window.__ultimoUpdate`.
-
-Playwright + Chromium já estão na máquina, mas **em `npm root -g`** — por
-isso o `NODE_PATH`. A suíte inteira passa de 2 minutos: rode em segundo
-plano ou um arquivo por vez.
-
-**No site de verdade:** `guiatennis.com.br/?diagnostico` mostra uma caixa
-preta com cada passo da busca e a resposta do banco a cada gravação
-("gravado no banco" ou "o banco recusou … motivo"). Só aparece para quem
-abre com `?diagnostico`, até fechar a aba. Foi assim que se achou a trava
-que recusava as buscas.
-
-**Daqui não se alcança o Supabase nem o site** (a rede do ambiente
-bloqueia, "CONNECT tunnel failed, response 403"). Diagnóstico de produção
-depende de print do Breno, das consultas da seção 5 e do registro da
-esteira do banco (seção 4, "Onde ver o resultado"). O GitHub se alcança
-pelas ferramentas do GitHub (PR, checks, Actions).
-
-## 7. Arquivos que vão para o ar
-
-`index.html`, `404.html`, `netlify.toml`, `robots.txt`, `sitemap.xml`,
-`favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png`,
-`og-image.png`, `google7b66589ffc303f37.html` (verificação do Search
-Console).
-
-O `GUIATENNIS-CONTEXTO.md`, o `SQL-ESTATISTICAS.sql`, o
-`SQL-SEGURANCA.sql`, o `SQL-RETRATO.sql` e as pastas `testes/`,
-`supabase/`, `divulgacao/` e `.github/`
-ficam no repositório mas fora do ar —
-`netlify.toml` devolve 404 para eles. Arquivo novo na raiz vai para o ar
-sozinho: se não for do site, ganha uma regra de 404 no `netlify.toml`.
-
-**Como publicar (desde 28/09/2026):** o projeto guiatennis.com.br do Netlify
-está ligado ao GitHub, com a `main` como branch de produção.
-1. O trabalho vai para uma branch `claude/…` com PR para a `main`.
-2. O Netlify monta a **prévia** do PR (`deploy-preview-N--….netlify.app`,
-   o link aparece no PR). Ela usa o **banco de teste** e mostra a faixa
-   amarela. Cada push atualiza a prévia.
-3. O Breno testa na prévia e diz "pode subir". Aí o Claude faz o merge
-   pela ferramenta do GitHub (ou o Breno aprova no próprio GitHub). O
-   Netlify publica a `main` no guiatennis.com.br sozinho, e a esteira do
-   banco aplica o SQL novo no banco de verdade.
-4. Depois do merge: conferir o registro da esteira do banco e pedir ao
-   Breno para abrir o site numa aba anônima.
-
-**Créditos do Netlify** (plano grátis, 28/09/2026): 300 por mês, com
-**teto**: acabou, os sites saem do ar até o mês virar. Cada publicação na
-`main` gasta **15** (máximo de 20 por mês, menos o que for de tráfego:
-20 por GB e 2 por 10 mil acessos). Prévia de PR e branch deploy gastam
-**0**. Por isso:
-- juntar várias mudanças num PR só, em vez de aprovar um por um;
-- o `ignore` do `netlify.toml` pula a publicação quando o merge não mexe
-  em nenhum arquivo do site (contexto, SQL, testes, `supabase/`);
-- "Branch deploys" fica em "Deploy only the production branch";
-- não arrastar zip no lucky-liger nem no guiatennis.com.br — zip no
-  projeto é publicação de produção e, pelo jeito, gasta os mesmos 15.
-  O lucky-liger ficou aposentado (a prévia do PR faz o papel dele);
-- o consumo aparece no Netlify em Team → Usage.
-- publicações pelo GitHub até aqui: merge do PR #2 (28/09) e do PR #3
-  (29/09), 15 cada. Os zips arrastados antes disso também contaram.
-
-**Emergência (Netlify fora ou sem crédito):** o zip com os 10 arquivos
-acima ainda funciona — **só o `index.html` não basta**, porque ele aponta
-para os ícones e a imagem de compartilhamento.
-
-As imagens do site (favicons, ícone do iPhone, `og-image.png`) foram
-geradas a partir do `LOGO_SVG` com Playwright, num script que ficou num
-chat antigo e se perdeu. Para refazer, usar `divulgacao/gerar-imagens.js`
-como modelo (seção 12).
-
-## 8. Referências de design
-
-- **Ficha da academia:** hoteis.com — galeria, abas, cartão de contato
-  fixo na direita, "Explore a região", perguntas frequentes.
-- **Busca e home:** Trivago — card com oferta, mapa com pino de preço,
-  filtros em gaveta, blocos da home.
-- **Comparação:** TudoCelular — vagas no topo, tabela alinhada de uma
-  linha por característica e ✓ verde em quem ganha cada linha.
-- **Ficha básica e "É o responsável?":** Yelp, TripAdvisor e Google
-  Business Profile ("Claim this business" / "Reivindicar esta empresa") —
-  listar com dado público e convidar o dono a assumir a página.
-- **Publicação e teste:** o fluxo dos sites grandes — prévia por PR com
-  banco de teste (staging), SQL guardado no repositório e aplicado pela
-  esteira, merge publica.
-
-## 9. Armadilhas já pisadas (não repetir)
-
-- **`position: sticky` em item de grid** só gruda dentro da própria área
-  do grid. Em coluna única, vira nada.
-- **Sticky só funciona se o elemento vier antes do conteúdo que ele deve
-  cobrir.** A barra de vagas da comparação ficou inútil enquanto estava
-  abaixo do painel.
-- **Re-render mata o scroll.** Quando só um pedaço muda (o "o que tem por
-  perto"), atualize o slot (`#ht-poi-slot`) em vez de chamar `render()`.
-- **`render()` a cada tecla tira o foco do campo.** Campos de texto e de
-  hora usam `oninput`/`onchange` que só gravam no estado, sem redesenhar.
-- **Overpass é lento.** São 3 espelhos em paralelo com `Promise.any` e 12
-  segundos de orçamento total, consulta por `bbox`. Sequencial dava dois
-  minutos.
-- **Nominatim aceita uma busca por segundo.** O "gerar as coordenadas que
-  faltam" espera 1,1s entre cada uma.
-- **Academia sem `lat`/`lng` não aparece no mapa** e some da busca por
-  distância. Foi o caso do Morumbi Tennis. Hoje o site resolve sozinho:
-  `completarCoordenadas` roda quando o admin abre o site ou entra, a
-  aprovação e a edição de endereço localizam de novo, e o cadastro novo
-  entra mesmo sem achar a coordenada. `localizarAcademia` usa o CEP e o
-  endereço completo quando rua/bairro/cidade não estão em campos
-  separados. O que não achar aparece numa faixa amarela para o admin.
-- **Tipo novo em `cliques` precisa entrar na trava `cliques_tipo_valido`.**
-  A tabela nasceu com `cliques_tipo_check` sem "busca", e toda busca foi
-  recusada em silêncio até 27/09/2026 — o site tentava três vezes e as
-  três batiam na mesma trava. Criou tipo novo? Troque a trava. Para ver na
-  hora o que o banco responde, abra o site com `?diagnostico`.
-- **Link com `?busca=` precisa refazer a busca.** Recarregar, link salvo
-  e aba reaberta pelo celular chegam assim; sem `doSearch()` no `init`, a
-  página aparece sem buscar e nada é gravado.
-- **Android força modo escuro** e destroi a paleta. Resolvido com
-  `<meta name="color-scheme" content="light">` e `color-scheme: light`.
-- **`lat`/`lng` vêm como texto do banco** às vezes. `numeroOuNulo()`
-  normaliza — sem isso o mapa e a distância falham em silêncio.
-- **QR code:** os bits de formato são linha/coluna trocados nas duas
-  cópias, e o polinômio gerador de Reed-Solomon é montado em ordem
-  decrescente. Errar isso gera um código que parece certo e não lê.
-- **Botão de menu:** `.menu-btn > span:not(.menu-conta)` — sem o `:not`,
-  o contador da comparação vira uma barrinha verde.
-- **Os cards são `<button>`, não link.** Sem `<a href="?court=…">` o
-  Google não chega em ficha nenhuma. Os minis da home são âncoras com
-  `preventDefault` no clique; se criar card novo, faça igual.
-- **`innerText` respeita `text-transform`**, então `.field-label` sai em
-  maiúsculas nos testes. Compare com o texto transformado.
-- **Admin conectado não conta nas estatísticas.** `registrarBusca` e o
-  `acesso_site` saem se `isAdmin`. Quem testa logado (a sessão fica no
-  celular) acha que a busca "não registrou". O painel avisa isso.
-- **Editar academia tem de carregar tudo o que o formulário salva.** A
-  edição não carregava `horario` (salvar apagava o horário) e carregava a
-  política já transformada por `politicaDe` (a regra única sumia). Hoje usa
-  `politicaParaForm` e uma cópia de `c.horario`.
-- **Coluna nova em `academias` ou `avaliacoes` não aparece para o
-  visitante sozinha.** A leitura do `anon` é liberada coluna por coluna.
-  Depois de `alter table ... add column`, rode de novo o
-  `SQL-SEGURANCA.sql` (ele libera todas menos as de contato) **antes** de
-  pôr a coluna em `COLUNAS_ACADEMIA_PUBLICAS`; senão o site fica vazio
-  para quem não é admin.
-- **Localizar academia nunca pode gravar o centro da cidade.** O
-  endereço da Morumbi não era achado com o bairro ("Vila Progredior"), a
-  busca generalizava até "São Paulo" e gravava o marco zero. Hoje:
-  rua+cidade antes de rua+bairro; resultado só de bairro/cidade vem
-  marcado `grosso` e nunca é gravado; a busca pelo nome da academia no
-  OpenStreetMap vale se estiver perto (1,5 km, ou 20 km quando o endereço
-  foi grosso).
-- **Duas academias no mesmo ponto: um pino escondia o outro** (Morumbi
-  atrás da Mesqtennis). Pinos com a mesma coordenada (4 casas) ficam
-  empilhados, um acima do outro.
-- **Entendimento de texto não pode apagar informação.** Com vaga própria,
-  a frase da fachada que falava de "estacionamento" ia para o bloco de
-  estacionamento, que só mostra "No local", e sumia. Hoje nada sai da
-  fachada/chegada com vaga própria, "garagem" e "vaga" não movem frase, e
-  a fachada nunca fica vazia por causa disso.
-- **Admin não grava nenhum clique** (`trackClick` sai no começo), nem de
-  academia. Quem testa logado vê a faixa "Essa busca não foi gravada".
-- **Netlify ligado ao GitHub publica a branch de produção sozinho.** O
-  Breno ligou o Netlify ao GitHub em 28/09/2026 (app `netlify` aparece nos
-  commits a partir do 556753c). A branch padrão do GitHub era a
-  `claude/trivago-style-court-interface-fvd0v6` (b972d53, de 21/09), cujo
-  `index.html` lê `select('*')`: depois do `SQL-SEGURANCA.sql` isso é
-  negado ao visitante e o site fica **sem academias para quem não é
-  admin** — e o admin logado vê tudo normal. Conferir sempre em aba
-  anônima. Socorro: Netlify → Deploys → deploy anterior → "Publish
-  deploy", e "Stop auto publishing" até a branch de produção estar certa. Desde
-  28/09/2026 a branch de produção é a `main`.
-- **`pkill -f` com um texto que aparece no próprio comando mata o
-  terminal.** Para parar o PostgREST local: `kill $(pgrep -x postgrest)`.
-- **`create or replace view` só aceita colunas novas no fim.** Mudar
-  nome, ordem ou tipo exige `drop` antes — o mesmo vale para
-  `create or replace function` com outro `returns table`.
-- **XML pelo PostgREST:** função que devolve o domínio `"text/xml"` só sai
-  como XML se o pedido mandar `Accept: text/xml`; o Google não manda e
-  receberia um texto dentro de JSON. Use o domínio `"*/*"` e ponha o
-  `Content-Type` com `set_config('response.headers', …)`.
-- **Overpass com área grande não volta no celular.** A cidade inteira, ou
-  "tênis" no nome de tudo o que é esporte, estourava o tempo dos
-  servidores grátis. Consulta pequena (região + raio), etiqueta
-  `sport~tennis`, uma nova tentativa automática e 20 segundos de espera
-  (`MAPA_ESPERA`). O "o que tem por perto" da ficha continua com 12
-  segundos (`POI_ESPERA`).
-- **SQL longo colado pelo celular quebra** ("syntax error at or near ')'"
-  numa linha que não existe no arquivo: sobrou texto no editor). Blocos
-  curtos, linhas curtas, e o SQL Editor limpo antes de colar. Hoje a
-  esteira aplica sozinha e isso quase não é mais preciso.
-- **Senha nova do banco demora uns minutos para valer no pooler.** A
-  primeira execução da esteira depois de trocar a senha deu "password
-  authentication failed"; a seguinte passou.
-- **Seed em banco novo marcava os exemplos como ficha básica** (a
-  migração da coluna só marca `true` o que já existia antes dela). O fim
-  do `seed.sql` acerta isso.
-- **Postgres local no scratchpad cai** (as permissões do scratchpad são
-  refeitas de tempos em tempos). Dados em `/var/lib/postgresql/…`. Papel
-  que já existe dá erro em `create role`: criar dentro de um bloco `do`
-  que confere antes.
-
-## 10. Histórico
-
-```
-92e5685 SQL automático, ficha básica, WhatsApp, buscador do mapa e sitemap (#3)   ← merge na main, 29/09
-d86bc8d Admin publica academia só com o nome
-16b2e5c Academia sem foto não mostra nada no lugar da foto
-f5b5ec1 Contatos em texto com logo pequeno e busca do mapa mais leve
-d86117f Capa do WhatsApp sem a bola do canto
-0267ad2 Foto de perfil com a raquete completa e capa com a quadra reta
-3701f0b Contato em botões com ícone e academias do mapa procuradas por região
-955441f WhatsApp do GuiaTennis no site, e imagens do perfil comercial
-b27c20a Ficha básica, academias do mapa aberto, textos legais e sitemap automático
-39b6e34 Esteira do banco confere o endereço antes de conectar, sem mostrar a senha
-f70a090 Esteira do banco usa a versão nova do checkout
-c89c544 SQL entra sozinho nos bancos, e link compartilhado ganha etiqueta
-3ac3884 Banco de teste e publicação automática pelo GitHub (#2)                    ← merge na main, 28/09
-34a7dd6 SQL do banco de teste com linhas curtas, para colar pelo celular
-d4a2ffb Estrutura do banco dá as próprias permissões, para projeto novo do Supabase
-30a301b Diagnóstico mostra quantas academias vieram do banco e o motivo da recusa
-ddd18f0 Registra a main como branch de produção do Netlify
-39ab44d Publicação automática pelo GitHub, gastando o mínimo de crédito
-658e22b Anota o risco do Netlify publicar a branch antiga do GitHub
-c0bbe76 Site de teste passa a usar o banco guiatennis-teste
-556753c Banco de teste igual ao de verdade: estrutura e academias de exemplo
-9774d30 Site de teste pronto para usar um banco só dele
-6720791 Registra que a ligação GitHub ↔ Supabase está ativa
-ff7a761 Anota como a ligação GitHub ↔ Supabase funciona e como conferir
-1660c6b Documento de contexto completo para continuar em outro chat               ← início da main
-ff03015 Público por academia: origem, região e aparelho de quem abre a ficha
-799a269 Dados do público: CEP e ponto aproximado de toda busca, origem e aparelho
-da675ca Registra a causa das buscas não gravadas: trava antiga no tipo de cliques
-535b46b Modo diagnóstico: ?diagnostico mostra cada passo da busca e a resposta do banco
-dbe7243 Cancelamento ganha "Personalizar": a academia escreve o prazo em horas
-5dcc6b2 Academia nunca mais é gravada no centro da cidade
-dd35e2f Pinos no mesmo ponto ficam empilhados, e academia é localizada pelo nome
-69644fc Fachada deixa de sumir quando fala de garagem ou estacionamento
-f3f9914 Números da home lado a lado também no celular
-03a7d2e Números da home alinhados e sem o total de buscas
-4f3729b Coordenada da academia é buscada sozinha, sem depender de botão
-e11a5cb Link com busca no endereço refaz a busca, e ela conta
-25b4d04 Visitante deixa de ler contatos e envios abertos ficam fechados
-ecde3ed Tira "não é lista alfabética nem quem pagou mais" da home
-1e0c58d Tira funções que não eram mais usadas
-ed6095a Página de busca ganha o botão de menu, com o mesmo cabeçalho da home
-98a3e6d Admin fica sabendo por que a busca não entrou no banco
-64d54b7 Estacionamento e textos entendidos pelo próprio site, sem IA
-68db9d3 IA padroniza os textos da academia (desfeito no commit seguinte)
-3234102 Cadastro por modalidade, estacionamento só sem vaga e textos da home
-51024d9 SQL pendente fica escrito dentro do documento de contexto
-f40d81e Horário por dia, cancelamento por modalidade e acesso num bloco só
-7788d7b Tira o "hoje" de quem procura onde jogar
-c95fd53 Horário de funcionamento, e estacionamento vira texto da academia
-9ea5587 Fachada, estacionamento e o que levar na ficha
-246bc80 Números da academia passam a ser o total do site
-9318ac4 Total de acessos vai para o bloco das academias
-198c3b2 Ignora o zip de publicação
-ed632b6 Números públicos saem de uma função, e verificação do Google
-8993346 SQL do banco fica só com o que ainda falta rodar
-e24d548 Data dos Termos e da Privacidade passa a bater com o texto
-dd01743 Documento de contexto para continuar o projeto em outro chat
-9a897ec Limpeza para o lançamento: menos explicação, mais site
-30c6f94 Guarda o SQL das estatísticas no repositório
-18c41da Total de acessos no topo e estatística de buscas para o admin
-7c67807 Busca só na aba Todas, escrita "Procure pelo nome"
-021482a Comparação vira tabela alinhada, no formato de comparador de produto
-528acc1 Comparação sobe para o topo e ganha coluna própria no computador
-f9a2403 Sem preço passa a ser "Não incluído · consulte a academia"
-01d2980 Legenda dos números fica curta
-592b2d7 Números da academia saem do banco e se atualizam sozinhos
-c6f0f5f Recomendadas sem subtítulo e médias no bloco das academias
-97bf1ac Tira a barra de navegação do rodapé
-667ac1b Tira "clubes" dos textos: o guia é de quadras e academias
-02cbe92 Menu de três barras e página inicial no padrão do Trivago
-8eb38cc Abas de Início, Buscar e Comparar
-4053ba2 Ordem única das opções, Estrutura, e como chegar na academia
-1f52106 QR code do site inteiro no painel admin
-98925ce QR code passa a usar o logo de verdade, centralizado
-f159ef5 Preço do card segue a busca, e QR code de cada academia
-756a819 Tira as comodidades repetidas nos cartões de preço
-4516a3c Preço deixa de ser obrigatório
-311f743 Cancelamento: a hora vira o prazo da reposição
-fe8eb44 "O que tem por perto" deixa de ficar pendurado no carregando
-513d377 Aba de cancelamento, menu de ordenar arrumado
-056b135 Bola de tênis na espera, cards maiores
-f16ee52 "Explore a região" mostra o que tem em volta da academia
-c3512bf Ficha da academia no formato da página de hotel
-b972d53 Planos básico, completo e premium no painel admin
-d0dcf9b Contato único para aula e locação
-6bd8c27 Bola de tênis de verdade, só o menor valor no card
-2018b7d Página da academia no formato do hoteis.com
-c9ade31 Configuração de publicação do Netlify
-```
-
-## 11. Em aberto
-
-- **Conferir o site depois do merge do PR #3** (pedido ao Breno em
-  29/09/2026, sem resposta ainda): em aba anônima, guiatennis.com.br com o
-  WhatsApp e o logo pequeno no menu e no rodapé; uma ficha com "É o
-  responsável…"; guiatennis.com.br/sitemap.xml com a lista de endereços; no
-  painel do admin, a busca do mapa por região (ex.: "Moema, São Paulo").
-- **Google Search Console (próximo passo sugerido):** o site já está
-  verificado (`google7b66589ffc303f37.html`). Falta, em Sitemaps, enviar
-  `sitemap.xml` e ver as fichas entrarem em Páginas. É o que TripAdvisor e
-  Booking fazem para cada página nova aparecer no Google sozinha.
-- **PR #1** (`claude/new-session-qevg66` → `claude/trivago-…`): velho,
-  pode ser fechado sem merge.
-- **Projeto de teste do Supabase:** criar o admin e desligar o cadastro
-  de usuários (seção 4, "Banco de teste", "A conferir").
-- **Crescer as academias** (plano de 29/09/2026): escolher uma região,
-  completar todas as academias dela com ficha básica (lista do mapa no
-  painel + busca manual, um por um), mandar a mensagem "sua academia já
-  está no GuiaTennis" e usar QR code, Collab no Instagram e o relatório do
-  mês para cada academia trazer os próprios alunos.
-- **Academias:** mandar a mensagem da seção 13 às que não preencheram
-  horário, preço, cancelamento, como chegar e fotos.
-- **Marketing:** links com etiqueta (28/09/2026), que aparecem em "De
-  onde vieram" no painel e no card de cada academia:
-  `?utm_source=Instagram-bio`, `Instagram-stories`, `Instagram-direct`,
-  `WhatsApp` (status, grupos, amigos) e `WhatsApp-academias`. O botão
-  Compartilhar da ficha põe `&utm_source=Compartilhado` sozinho. O site
-  só lê o `utm_source`.
-- **Links para Instagram e WhatsApp** (passados em 28/09/2026):
-  bio do Instagram `https://guiatennis.com.br/?utm_source=Instagram-bio`;
-  perfil do WhatsApp `https://guiatennis.com.br/?utm_source=WhatsApp-perfil`;
-  mensagens para academias `…/?utm_source=WhatsApp-academias`.
-- **Backup:** uma vez por mês, Table Editor → Export → CSV de cada tabela
-  (o plano grátis do Supabase não guarda backup restaurável).
-- Segurança das contas: 2 etapas em Supabase, Netlify, GitHub e Gmail.
-  "Leaked password protection" só existe no plano pago; senha forte basta.
-  **Não ligar o Captcha do Supabase** — o login do site não tem captcha e
-  o admin ficaria trancado.
-- Ideias no ar: posição do bloco "Por que estar no GuiaTennis"; tirar o
-  contador da comparação do botão do menu.
-
-## 12. WhatsApp Business do GuiaTennis (29/09/2026)
-
-Número (11) 92745-6457. No site, o contato do guia aparece **só com o nome
-e o logo pequeno, sem os dados** (`linksContato`): "WhatsApp", "Instagram"
-e "E-mail" no menu (Contato, no formato dos outros itens) e no rodapé (no
-formato dos outros links) — pedido do Breno, que não gostou dos botões em
-pílula. O número e o e-mail por escrito ficam só nos Termos e na
-Privacidade. O bloco "Por que estar no GuiaTennis" tem o link pequeno
-"Prefere conversar? Chame o GuiaTennis no WhatsApp", em dourado e
-sublinhado (o azul padrão ficava ilegível no verde). O link "É o
-responsável por esta academia?" abre o WhatsApp do guia com o nome e o
-link da academia. Tudo sai de `WHATSAPP_GUIA` e `whatsappGuia(texto)`.
-Os dados para o Google levam o `telephone`.
-
-**Sem mensagens automáticas** (saudação, ausência, respostas rápidas): o
-Breno não gosta, responde ele mesmo.
-
-Imagens em `divulgacao/` (fora do ar), geradas do `LOGO_SVG` por
-`divulgacao/gerar-imagens.js`: `whatsapp-perfil.png` (1080×1080, raquete
-no meio para o corte redondo) e `whatsapp-capa.png` (1600×900; texto em
-cima e nas laterais, porque a foto redonda cobre o meio de baixo). No
-perfil a raquete é redesenhada para tamanho grande — encordoamento
-completo e pescoço com os dois braços; o logo pequeno tem só três cordas
-de cada lado, e o Breno achou que faltavam traços. Na capa, a quadra é
-reta, vista de trás da linha de fundo, em perspectiva com as medidas
-oficiais (a primeira versão, inclinada, pareceu torta). O
-gerador busca a fonte do Google pelo `curl`, que passa pelo proxy daqui.
-
-Textos do perfil (combinados em 29/09/2026 — para o público e para as
-academias, sem pedir palavra-chave):
-- **Descrição:** "🎾 GuiaTennis — o guia de quadras e academias de tênis. /
-  Vai jogar? Ache as academias mais perto, compare preço, estrutura e
-  avaliações e fale direto com elas. Sem taxa. / Tem academia? Apareça de
-  graça para quem procura aula ou quadra na sua região: o aluno chama
-  direto no seu WhatsApp, sem comissão. Página completa, QR code para a
-  recepção e relatório de quem viu vocês. / guiatennis.com.br"
-- **Recado:** "Quer jogar tênis? Compare academias perto de você. Tem
-  academia? Apareça grátis 🎾"
-- **Site no perfil:** `https://guiatennis.com.br/?utm_source=WhatsApp-perfil`.
-
-## 13. Mensagem para as academias (WhatsApp)
-
-> Oi, tudo bem? Aqui é o Breno, do **GuiaTennis** (guiatennis.com.br), o
-> guia de quadras e academias de tênis onde a [NOME DA ACADEMIA] já
-> aparece.
->
-> A ficha de vocês ganhou espaço para mais informações — e isso ajuda muito
-> quem está procurando onde jogar a escolher vocês e chamar direto no
-> WhatsApp. Não tem custo nenhum.
->
-> Se puderem me responder só o que fizer sentido:
-> 1. Horário de funcionamento (segunda a sexta, sábado e domingo).
-> 2. Preço por hora da aula e da locação (se preferirem não divulgar, tudo bem).
-> 3. Cancelamento: com quantas horas de antecedência o aluno precisa avisar
->    para ter reposição? E o que acontece se avisar depois?
-> 4. Como chegar: como é a fachada, o que fazer ao chegar e onde estacionar.
-> 5. Quadras: quantas de saibro ou rápida, cobertas ou descobertas.
-> 6. Comodidades: vestiário, Wi-Fi, lanchonete, água, loja, empréstimo de
->    raquete, câmera para gravar pontos, app de assinatura fitness.
-> 7. Até 5 fotos do espaço.
->
-> Assim que eu atualizar, mando o link da ficha. Também posso mandar um QR
-> code da página de vocês para deixar na recepção. Obrigado!
+## 2. Como entregar cada pedido (checklist)
+
+1. Código no `index.html` (e SQL novo em `supabase/migrations/`, seção 5).
+2. Teste: criar ou ajustar `testes/<tema>.js`; rodar os afetados; no fim,
+   a bateria completa (`bash testes/rodar-todos.sh`, seção 6). SQL novo:
+   seção nova no `testes/banco-emails.py`.
+3. Termos/Privacidade quando o pedido toca no que eles dizem, com a data
+   de "Última atualização" nos dois (`ficha-basica.js` e
+   `regras-de-conteudo.js` conferem a data). Chat de ajuda (`CHAT_TEMAS`,
+   `CHAT_DETALHES*`) e "Como funcionam as avaliações" quando for o caso.
+4. **Este arquivo:** trocar o parágrafo da seção 9 (não acumular),
+   acrescentar uma linha na seção 10 e os números de teste.
+5. **Descrição do PR (curta):** uma linha em "Pedidos depois de 28/10", o
+   SQL novo na lista e um passo em "Para testar". Salvar com
+   `update_pull_request` e conferir (ler o PR e comparar o `body` com o
+   arquivo local com `jq -r .body` + `diff`).
+6. Commit em português, com as linhas finais de autoria pedidas pela
+   sessão; push; conferir o "Banco de dados" (Actions) e a prévia do
+   Netlify. Sem identificador de modelo em commit, PR ou código.
+7. Resposta curta ao Breno: o que mudou e o link da prévia.
+
+## 3. O que é e regras que valem sempre
+
+Guia de **quadras e academias de tênis**: a pessoa diz onde está, vê as
+academias mais perto, compara preço, estrutura e nota e fala direto com a
+academia pelo WhatsApp. O GuiaTennis **não reserva, não cobra taxa e não
+fica no meio**. Dois sites no mesmo `index.html`: o dos **jogadores** e o
+**GuiaTennis Parceiros** (`/parceiros`, das academias), mais o **painel do
+admin** (`/admin`, só o admin vê).
+
+Texto e visual
+- Só quadra e academia, **nunca clube**. "Guia" com G maiúsculo. O
+  GuiaTennis é **site, não app**.
+- O site **não narra o que faz**; opção pequena não se explica; o
+  complexo vai para a Ajuda ("Saiba mais"); dica que facilita fica.
+- Sem preço = **"Sob consulta"** + "fale com a academia" (`SEM_PRECO`).
+- Botão que desconecta diz **"Sair da conta"**.
+- Visual limpo e espaçado: Inter no texto (`--fonte-texto`), Playfair só
+  nos títulos (`--fonte-titulo`), creme, verde e dourado; nada abaixo de
+  12px, campos com 16px, botões com 48px; sem caixa dentro de caixa. Regra
+  nova de visual vai na camada "Acabamento limpo", no fim do `<style>`.
+- **Telas novas sem desenho decorativo e sem animação** de entrada ou de
+  progresso ("cara de IA"), com a cara do GuiaTennis.
+- Campo vazio não desenha bloco; academia sem foto não mostra nada no
+  lugar da foto.
+- Filtros e listas sempre na mesma ordem (`naOrdem`, constantes `*_OPTS`).
+- Números públicos arredondados para baixo (`numeroRedondo`), totais desde
+  o começo.
+- O logo é um desenho só (`logoDesenho`); as imagens saem dele por
+  `divulgacao/gerar-imagens.js`.
+- No celular, janela aberta ocupa a tela toda. O que se digita vai calado
+  para o rascunho da aba (sem "Rascunho salvo") e sair com algo não salvo
+  pergunta "Sair sem salvar?" (`data-aviso-sair`, `data-rascunho-de`).
+
+Técnica
+- **Um arquivo, sem build, sem framework, sem dependência nova e sem IA**
+  (o site entende textos por palavras-chave). De fora só Supabase,
+  Leaflet/OpenStreetMap, Nominatim, Overpass, ViaCEP/awesomeapi e as
+  fontes do Google.
+- Coluna nova no banco **degrada com elegância** (o site funciona com o
+  banco antigo: `lerPublico` com a lista de colunas novas, `faltaColunaNova`).
+- Commits, comentários e nomes de função em português.
+- **Privacidade:** de uma busca guarda só bairro, cidade, CEP e o ponto
+  arredondado (~100 m); de cada acesso, origem e aparelho; nunca IP,
+  endereço digitado ou identificador do aparelho. Admin não grava nada.
+  Mudou isso, muda a Política de Privacidade.
+
+Produto (o que já foi decidido)
+- **Contas:** uma conta só para jogador e Parceiros (o mesmo e-mail e
+  senha); e-mail confirmado por código de 6 números; nome e sobrenome em
+  **dois campos obrigatórios**; excluir num lado exclui nos dois.
+- **Pessoas da academia (regra 180):** pode haver **vários responsáveis
+  principais** (podem tudo; o principal torna alguém da equipe principal;
+  só o GuiaTennis tira um principal, ou ele mesmo deixa de ser, havendo
+  outro). A **equipe** faz só as **funções** que o principal liga em Acessos
+  (`academia_vinculos.funcoes`, `posso()` no site e no banco): Editar a
+  ficha, Responder avaliações, Promoções e leilão, Pagamentos (quem entra
+  começa com as três primeiras). Aba **Pagamentos**: saldo, compra e cada
+  compra com quem comprou; a cada compra paga, e-mail aos principais.
+  **Acesso por convite (regra 187):** sem senha provisória; o admin
+  (painel, "Convidar pelo e-mail") ou o principal (Acessos) convida pelo
+  e-mail (`convites_de_acesso`); a pessoa cria a conta com esse e-mail e a
+  própria senha e, ao confirmar o e-mail, o gatilho `convites_ao_confirmar`
+  liga a academia. O convite conta no limite do plano e pode ser cancelado.
+  Na lista de Acessos, o que cada pessoa pode fazer (funções, "Remover",
+  "Tornar responsável principal", "Cancelar convite") só aparece ao tocar
+  nela (regra 188, `pessoaNaLista`).
+  Buscar, ver e chamar não pedem login; depois da segunda academia chamada
+  sem conta, o convite para criar conta.
+- **Avaliações:** só com conta de e-mail confirmado, **uma por academia,
+  editável** (mostra "editada"); aceite "Minha avaliação é verídica e
+  segue os Termos de Uso."; qualquer conta denuncia; quem administra a
+  academia não avalia ela (o banco garante); a academia responde (uma
+  resposta por avaliação, editável, "editada") e pede análise, mas não
+  apaga. Conta excluída ou nome suspenso: "Usuário do GuiaTennis".
+- **Nome que desrespeita os Termos:** o admin suspende por 15 dias
+  (e-mails, lembrete a 3 dias); sem troca, a conta é excluída sozinha.
+  Racismo, homofobia, xenofobia e qualquer discriminação não são tolerados.
+- **Planos** (todos grátis por enquanto; a academia é avisada antes de
+  cobrar): **Básico** (3 comodidades, 3 fotos, só WhatsApp, 1 pessoa),
+  **Completo** (ficha inteira, 5 fotos, 5 pessoas, promoção na ficha paga
+  por semana), **Premium** (10 pessoas, foto de cada opção do catálogo,
+  números da ficha, selo dourado, até 2 "Patrocinado" no topo da busca a
+  até 10 km e de novo no lugar delas sem a marcação, primeiro nas
+  recomendadas, leilão de promoções por e-mail, a semana da promoção 20%
+  menos). Textos das promoções **curtos e resumidos** (`PROMO_*_MAX`,
+  `LANCE_MENSAGEM_MAX`): título até 30 letras; detalhes da ficha até 150;
+  mensagem do e-mail do leilão até 300, com contador. O plano aparece num lugar só (página Plano); fora dela,
+  "Disponível no plano …". Posição paga sempre escrita "Patrocinado"
+  (CDC, art. 36). "Melhores avaliadas" seguem só a nota.
+- **Quem administra a academia:** academia nova de conta com e-mail
+  confirmado entra no ar na hora; academia do Guia sem responsável passa à
+  conta na hora (com a declaração); com responsável, o pedido vai a ele;
+  "Contestar" vira disputa com código ao WhatsApp antigo da academia (à
+  mão pelo admin, em até 1 dia útil, até a Meta liberar o envio
+  automático). **O WhatsApp precisa receber o código; senão, não
+  finaliza** (regra 186: sem "Sem como receber?" nem documento no site).
+- **Veracidade:** o WhatsApp novo da ficha só entra depois do código **e**
+  da aprovação do admin; a ficha pública nunca diz "em confirmação" (a
+  academia vê "precisa de confirmação"). "Informar um problema" na ficha;
+  2 contas dizendo que o WhatsApp não é da academia tiram o botão. A
+  academia que avisa que fechou sai do site na hora; "Fechou" guarda como
+  cadastro inativo, que pode reabrir.
+- **Ficha** (ordem da regra 189): capa (sem os pontinhos), nome no meio,
+  destaques, Estrutura, **Sobre** (o texto da própria academia, até 750
+  letras, sem telefone, link ou preço, `academias.sobre`, mais o resumo
+  automático), Opções para jogar, **Explore a região**,
+  Contato, Avaliações, Outras academias por perto, Horário, Cancelamento,
+  Perguntas, e no fim "Confirmada pela academia", "É o responsável?" e
+  "Algo errado nesta ficha?"). Fotos só na capa e nos cartões das opções.
+  Os cartões das opções ficam **em grade que desce**, dois por linha no
+  celular, como os quartos do hoteis.com (três no computador), na ficha e
+  na prévia do cadastro; sem rolar para o lado. No alto de "Opções para
+  jogar" (regra 189, `escolhaDaFicha`), um **cartão por modalidade**
+  (Aulas para adultos, Aulas para crianças, Locação de quadra; só o que a
+  academia tem, com o resumo; tocar de novo volta a todas) e, embaixo, os
+  **formatos sublinhados** como as abas da ficha (aulas: individual, dupla,
+  grupo; locação: avulsa, mensal). Nenhuma escolha leva a lista vazia;
+  nada fala de quantidade.
+  **Catálogo** só com modalidade e valor. No cadastro, a parte
+  **Modalidades** (Aulas e/ou Locação de quadra; pelo menos uma, obrigatória
+  também na edição; o admin segue só com o nome) abre as partes de cada uma, que só aparecem se escolhidas
+  (`passoVisivel`; os índices continuam os de `REG_PASSOS`): **Aulas** (para
+  quem: adultos e/ou crianças, as crianças em faixas de idade de 3 a 17
+  anos, uma para cada turma, com "Adicionar faixa de idade" > formatos
+  individual, dupla, grupo > um cartão por formato com **um valor só, por
+  aula** (regra 189: a aula não é avulsa nem mensal; `cobranca: ""`; a aula
+  antiga com avulsa e mensal vira uma) e a foto; em branco não é oferecida,
+  sem valor = "Sob consulta") e **Locação** (avulsa e/ou
+  mensal, cada uma com o valor e a foto; **as duas por hora**, a mensal é o
+  valor de cada hora no plano). Nada no catálogo é "por mês". Cada valor é um número ou um
+  intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), numa linha
+  com o nome à esquerda; o exemplo fica **só dentro do campo**, em intervalo
+  ("ex.: 150 a 200", `EXEMPLOS_DE_VALOR`), nada escrito embaixo. Foto no Premium. Na ficha, as
+  aulas das crianças são "Aula infantil …", com a idade, e têm o filtro
+  "Crianças". Corte das fotos como o "Cortar" do Instagram.
+- **"Ver no mapa"** da ficha abre o mapa da busca do GuiaTennis já na
+  academia (`verNoMapaDoGuia`); o **"Como chegar"** fica no cartão do mapa
+  e na localização da ficha, como link direto, sem tela de opções
+  (`linkComoChegar`): no Android, "geo:" (o celular pergunta com qual
+  aplicativo abrir); no iPhone, o Mapas; no computador, a rota no Google
+  Maps numa aba nova.
+- **Busca** "bairro, cidade" fica na cidade digitada. Cinco buscas
+  seguidas na mesma aba sem abrir ficha nem ir a outra página: aviso "Está
+  precisando de ajuda para encontrar as quadras mais perto?", com "Usar minha
+  localização" e o chat de ajuda (conta no `sessionStorage`, nunca IP;
+  usado ou fechado, não volta na aba). Telas de código com
+  uma caixa por número e "Confirmar" só com todas preenchidas.
+
+## 4. Como é feito
+
+- **`index.html`** (~26.700 linhas, ~1,7 MB): HTML, CSS e JS. `render()`
+  reescreve `#app` inteiro e chama `attachEvents()`; estado no objeto
+  global `state`; `isAdmin`, `contaAcademia` e `jogador` fora dele.
+  Rotas com endereços de verdade (`/academia/<nome>-<id>`, `/quadras/…`,
+  `/busca?…`, `/comparar`, `/perfil`, `/parceiros/…`, `/admin/…`), lidas
+  por `lerLink`/`aplicarLink` e escritas por `syncUrl`.
+- **Achar código:** `grep -n "function nome"` (as linhas mudam muito). Os
+  blocos novos começam com um comentário `// ---------- … (regra N) ----------`
+  e trazem o pedido do Breno entre aspas.
+- **O que fica no aparelho:** quase tudo da conta vai para o banco
+  (`lerDaConta`/`gravarNaConta`); no navegador, só o que é da aba ou de
+  conveniência (vistas recentes, última busca, hora das dicas).
+- **Funções da Netlify** (`netlify/functions/`): `onde.mjs` (cidade da
+  conexão), `pagamento.mjs` (Mercado Pago e o pagamento de teste da
+  prévia), `cnpj.mjs` (Receita, para o "Conferir" do admin),
+  `receber-email.mjs` (encaminha os e-mails do domínio, pelo Resend).
+- **E-mails** saem do banco pela fila `emails_a_enviar` (Resend, pg_net e
+  pg_cron).
+
+## 5. Banco (Supabase)
+
+- **SQL novo** = arquivo `supabase/migrations/AAAAMMDDhhmmss_nome.sql`,
+  que pode rodar de novo sem estragar (`if not exists`, `create or
+  replace`, `drop … if exists`). `.github/workflows/banco.yml` roda
+  `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
+  banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
+  o site lê. Resultado: Actions → "Banco de dados".
+- **Último SQL:** `20261030130000_sobre_da_academia` (78 arquivos na pasta; 75 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Coluna nova que o site lê:** `grant select (coluna) … to anon,
+  authenticated` (a leitura é liberada coluna por coluna) e a coluna na
+  lista de colunas novas do `lerPublico`. Função chamada pelo visitante
+  nunca usa `select *` em `academias`/`avaliacoes`. Em função
+  `returns table` de plpgsql, usar apelido nas tabelas (o nome da coluna de
+  saída vira variável e fica ambíguo).
+- **E-mails no SQL:** `por_na_fila(chave, tipo, para, assunto, html,
+  texto)` (a chave evita repetir), `email_montado`, `email_p`,
+  `html_texto`, `aviso_ao_admin`, `quem_recebe_da_academia`,
+  `link_parar_avisos`, `hoje_em_brasilia()`. pg_cron só se a extensão
+  existir.
+- **Tabelas principais:** `academias` (ficha; `plano`, `status`
+  published/pending/fechada, `catalogo`, `politica`, `acesso`, `horario`,
+  colunas do WhatsApp a confirmar), `avaliacoes` (`user_id`, `autor_oculto`,
+  `editada_em`; `user_id` não é público: a conta lê as dela por
+  `minhas_avaliacoes()`), `respostas` (uma por avaliação, `editada_em`),
+  `jogadores`, `academia_acessos` e `academia_vinculos` (contas do
+  Parceiros e as academias de cada uma), `pedidos_de_acesso`, `cliques`
+  (estatísticas; tipo novo entra na trava `cliques_tipo_valido`),
+  `passos_das_visitas`, `buscas_salvas`, `promocoes`, `lances` e
+  `leilao_config` (leilão), `compras_de_creditos`, `precos_dos_planos`,
+  `pedidos_de_plano`, `pedidos_para_sair`, `pedidos_de_reabertura`,
+  `codigos_do_whatsapp`, `denuncias_de_avaliacao`, `problemas_na_ficha`,
+  `nomes_suspensos`, `contas_excluidas`, `lembretes_de_ficha`,
+  `falhas_do_site`, `conversas_de_ajuda`, `emails_a_enviar` e
+  `whatsapp_a_enviar`.
+- **Segredos do GitHub** (só os nomes): `BANCO_TESTE_URL`,
+  `BANCO_REAL_URL` (endereço Session pooler), `RESEND_API_KEY`,
+  `SUPABASE_ACCESS_TOKEN`. Na Netlify (ainda por ligar):
+  `MERCADOPAGO_ACCESS_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+
+## 6. Testes
+
+- `bash testes/check-js.sh` (sintaxe do `<script>`): sempre primeiro.
+- Navegador: `cd testes && NODE_PATH=$(npm root -g) node <tema>.js`. O
+  `harness.js` abre o `index.html` no Chromium com o Supabase trocado pelo
+  `mock.js` (sem internet). `abrir({ jogador, jogadorConfirmado, admin,
+  academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
+  banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
+- **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
+  segundo plano). Último resultado (30/10/2026): **2.202 verificações** nos
+  75 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
+  `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
+  erros de propósito).
+- **Banco local** para o `testes/banco-emails.py` (**716 conferências**,
+  nenhuma falha): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
+  pedido e outro; para subir:
+  `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
+  Aplicar o SQL novo: `psql postgresql://postgres@127.0.0.1:5433/postgres -f <arquivo>`.
+  Rodar: `BANCO_URL=postgresql://postgres@127.0.0.1:5433/postgres python3 testes/banco-emails.py`.
+  Contêiner novo sem o banco: montar do zero como diz
+  `testes/banco-local-base.sql` e aplicar `supabase/aplicar.sh teste`.
+- `testes/banco-acesso.py` precisa do GoTrue; tem 11 falhas antigas
+  conhecidas.
+- **Prints com a letra de verdade:** `abrir({ fontes: <pasta> })`, com o
+  CSS do Google Fonts baixado por `curl` e os `.woff2` anotados em
+  `mapa.txt`; sem isso, a letra sai trocada.
+- A rede deste ambiente não alcança o Supabase nem o Nominatim (403): a
+  produção se confere pelos registros do Actions e pela prévia.
+
+## 7. Publicação
+
+- Vão para o ar: `index.html`, `404.html`, `netlify.toml`, `robots.txt`,
+  `sitemap.xml`, os `.png`, `google7b66589ffc303f37.html` e
+  `netlify/functions/`. O resto (este arquivo, `historico/`, `testes/`,
+  `supabase/`, `divulgacao/`, `SQL-*.sql`, `.github/`) devolve 404 pelo
+  `netlify.toml`. **Arquivo ou pasta nova na raiz vai para o ar sozinho**:
+  se não for do site, ganha uma regra de 404.
+- Netlify grátis: 300 créditos por mês, **15 por publicação na `main`**,
+  prévia de PR não gasta. O `ignore` do `netlify.toml` pula a publicação
+  quando o merge não mexe em arquivo do site. Por isso, juntar mudanças
+  num PR só. Não arrastar zip.
+- Merge só com "pode subir" (pela ferramenta do GitHub). Depois: conferir a
+  execução do "Banco de dados" da `main` e pedir ao Breno para abrir o
+  site em aba anônima.
+
+## 8. Armadilhas já pisadas
+
+- `render()` a cada tecla tira o foco: campos gravam no estado em
+  `oninput` sem redesenhar. Re-render mata o scroll de pedaços que
+  carregam sozinhos: atualizar só o pedaço.
+- Logado e visitante não leem `select('*')` em `academias`/`avaliacoes`;
+  coluna nova sem `grant select` deixa o site vazio para o visitante (a
+  esteira fica vermelha no `conferir.sh`).
+- Links e arquivos sempre com caminho absoluto (`/academia/…`): a página
+  roda em caminhos.
+- Nominatim: uma busca por segundo. Overpass: consulta pequena, 3 espelhos
+  em paralelo, tempo curto.
+- `lat`/`lng` às vezes vêm como texto (`numeroOuNulo`). Localizar academia
+  nunca grava o centro da cidade (resultado "grosso" não é gravado).
+- `innerText` respeita `text-transform` (testes comparam com o texto da
+  tela). Teste que lê opacidade logo depois de mexer pega a transição no
+  meio: esperar ~250 ms.
+- No `banco-emails.py`, `um()` devolve a última linha da saída: texto com
+  quebra de linha precisa de `replace(texto, E'\n', ' ')`; `strip()` come
+  espaços nas pontas. Academia de teste tem mais de um responsável.
+- Gatilho `before update` reescreve datas: um `update` de correção de
+  dados em migração precisa de `alter table … disable trigger` em volta.
+- `create or replace function` com outro `returns table` exige `drop`
+  antes; `create or replace view` só aceita coluna nova no fim.
+- Login do Supabase quebra com token nulo em `auth.users` (gravar `''`).
+- Android força modo escuro: `color-scheme: light` no site.
+- `pkill -f` com texto do próprio comando mata o terminal.
+
+## 9. Estado atual e pendências (30/10/2026)
+
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 189**. De 28 a 30/10 entraram: o catálogo com aulas
+para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
+e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
+a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
+gravado "150-200") com o exemplo só dentro do campo; "Alterações salvas"
+num cartão; "Pedir análise" em vermelho; o "Ver no mapa" no mapa do
+GuiaTennis e o "Como chegar" pelo celular; os textos das promoções curtos
+(título 30, detalhes 150, e-mail 300; SQL
+`20261029170000_textos_curtos_das_promocoes`); o lance em parágrafos; as
+funções da equipe, vários responsáveis principais e a aba Pagamentos (SQL
+`20261029190000_funcoes_e_pagamentos`); e a ajuda depois de cinco buscas
+seguidas (sem SQL; Termos e Privacidade em 30/10); e "Adicionar faixa de
+idade", a aula mensal por aula e a locação mensal por hora (sem SQL;
+Termos em 30/10); os cartões do catálogo em grade (dois por linha, para baixo), o título do campo de
+cancelamento fora do prazo e o "Pular" que vira "Continuar" na hora. A descrição do PR tem
+uma linha por regra em "Pedidos depois de 28/10". Testes: 2.202 no
+navegador e 716 no banco, nenhuma falha. **Chat trocado em 30/10/2026:** o
+chat novo volta a acompanhar o PR #5 (o anterior deixou de acompanhar e
+cancelou as conferências automáticas).
+
+**Pendências do Breno:**
+1. Testar na prévia o que entrou de 26 a 30/10 (veracidade, ficha no
+   jeito do hoteis.com, catálogo com Modalidades, Aulas, Locação e valor em
+   intervalo, corte das fotos, nome suspenso, busca "bairro, cidade",
+   sobrenome, avaliação editada, "Ver no mapa" e "Como chegar", textos
+   curtos das promoções, funções da equipe e Pagamentos, ajuda depois de
+   cinco buscas) e dizer "pode subir".
+2. Ligar o Mercado Pago na Netlify (variáveis da seção 5) depois de testar
+   o pagamento de teste na prévia.
+3. Definir os preços dos planos e o preço da semana da promoção na ficha
+   (hoje R$ 0, o admin muda em Leilões). Sugerido na conversa de 29/10
+   (comparando com o trivago e a Shopify): preço à vista, primeiro mês
+   grátis no Completo e no Premium, plano anual com desconto; não cobrar
+   por clique por enquanto. A nota sai por academia; o imposto é de quem
+   emite (confirmar com o contador o código do serviço e as retenções).
+4. Decidir: a promoção paga na ficha devolve as semanas que faltam se a
+   academia voltar ao Básico (hoje não); o leilão só abre em bairro com um
+   mínimo de jogadores; o "Confirmar depois" fica na tela do e-mail do
+   cadastro.
+5. **WhatsApp automático do código: esperando o CNPJ** (a Meta só libera o
+   modelo de autenticação para empresa verificada). **Não puxar o assunto
+   antes de o Breno avisar.** Até lá, o admin manda o código à mão.
+6. Depois do merge: enviar o `sitemap.xml` no Google Search Console,
+   trocar o webhook do Resend para o site de verdade, criar o acesso de
+   cada academia e mandar a mensagem (seção 11), trocar a foto do perfil
+   do WhatsApp Business pela de `divulgacao/`.
+7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
+   aberto; backup mensal; 2 etapas nas contas.
+
+**Próximo número:** regra 190.
+
+## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
+
+- 156 (26/10) Veracidade: WhatsApp por código, "Informar um problema",
+  avaliar com e-mail confirmado, "Denunciar", "Conferir" do admin
+  (Google Maps, mapa aberto, Receita). SQL `20261026120000_veracidade`.
+- 157 (26/10) A ficha só mostra o que está certo; todo número novo espera o
+  admin; a academia que avisou que fechou sai do site; fichas paradas há
+  3 meses no painel. SQL `20261026180000_so_o_que_esta_certo`.
+- 158 (26/10) A academia vê "precisa de confirmação"; "Fechou" guarda
+  (cadastro inativo) e reabre; todas as pendências e o sino no painel.
+  SQL `20261026200000_academia_fechada_fica_guardada`.
+- 159 (26/10) A ficha no jeito do hoteis.com.
+- 160 (26/10) Barra de cima da ficha sem o nome, quase transparente.
+- 161 (26/10) Uma caixa por número do código; "Confirmar" só completo.
+- 162 (26/10) Catálogo de aulas e locação; contato depois das opções;
+  ficha sem o nome do plano. SQL `20261026220000_catalogo`.
+- 163 (27/10) Nomes e conteúdo sem ofensa nem discriminação (Termos e
+  Privacidade).
+- 164 (27/10) Enquadramento das fotos; foto só na capa e nas opções.
+- 165 (27/10) Corte no jeito do Instagram; nome suspenso por 15 dias;
+  "Usuário do GuiaTennis"; e-mail do nome da academia trocado pelo admin.
+  SQL `20261027120000_nome_suspenso`.
+- 166 (27/10) Busca "bairro, cidade"; "Confirmada pela academia" no fim;
+  nome e sobrenome em dois campos obrigatórios.
+- 167 (28/10) Avaliação uma vez e editável, com "editada"; a resposta da
+  academia do mesmo jeito; e-mail à academia quando uma avaliação é
+  editada. SQL `20261028120000_avaliacao_editada`.
+- 168 (28/10) Catálogo em blocos: aulas para adultos e para crianças (com a
+  idade), formatos escolhidos uma vez e a grade com avulsa e mensal; "Não
+  divulgar os valores"; "Copiar das aulas para adultos"; uma foto por aula;
+  "Aula infantil" e o filtro "Crianças" na ficha, na busca e na comparação.
+  Sem SQL. Teste: `catalogo.js` (refeito).
+- 169 (28/10) Catálogo em caminho: parte Aulas (para quem > formatos por
+  faixa de idade > cartão com valores e foto) e parte Locação ("não
+  oferece" ou avulsa/mensal com valor e foto); "Alterações salvas" num
+  cartão sobre o painel, com um X só e o agradecimento; "Pedir análise" em
+  vermelho. Sem SQL. Testes: `catalogo.js`, `cadastro.js` e as listas de
+  partes.
+- 170 (29/10) Parte "Modalidades" antes das Aulas e da Locação, que só
+  aparecem se escolhidas (sai o quadrado "não oferece locação"); "Ver no
+  mapa" abre o mapa do GuiaTennis na academia, com "Como chegar" no cartão.
+  Sem SQL. Teste novo: `ver-no-mapa.js`.
+- 171 (29/10) Pelo menos uma modalidade (Aulas ou Locação) é obrigatória,
+  também na edição ("Continuar" e salvar não passam); o admin segue só com
+  o nome. Teste: `cadastro.js`.
+- 172 (29/10) Exemplo em cada valor do catálogo ("ex.: 180") e, embaixo
+  de cada cartão, como fica na ficha (o exemplo ou o valor escrito); exemplo
+  da idade das crianças. Teste: `catalogo.js`.
+- 173 (29/10) "Como chegar" sem a tela de Google Maps e Waze: link direto
+  que o celular resolve (Android "geo:" com a escolha do aplicativo;
+  iPhone, o Mapas; computador, Google Maps). Teste: `ver-no-mapa.js`.
+- 174 (29/10) Perguntas do caminho num tom formal sem exagero: "Para quem
+  são as aulas que vocês oferecem?", "Quais formatos de aula vocês
+  oferecem?" e "Como vocês alugam a quadra?". Teste: `catalogo.js`.
+- 175 (29/10) Valor do catálogo em intervalo: o exemplo só dentro do campo
+  ("ex.: 150 a 200"), sem o "Exemplo:"/"Na ficha:" embaixo; espaço, traço
+  ou vírgula viram " a " (teclado `decimal`, com a vírgula no iPhone);
+  grava "150-200", o menor primeiro; Avulsa e Mensal numa linha cada; o
+  chat do Parceiros responde "intervalo de preço". Testes: `catalogo.js`,
+  `chat-parceiros.js`.
+- 176 (29/10) Limite nos textos das promoções, com contador nos campos da
+  ficha (os limites maiores, 500 e 1.000, foram trocados pela regra 177).
+- 177 (29/10) "Algo pequeno e resumido": detalhes da ficha de 280 para
+  150; mensagem do e-mail do leilão de 500 para 300 (como o texto dos
+  anúncios da Meta). Só para o que for salvo depois: a tabela segue com o
+  teto antigo. Testes: `promocoes.js`, `promocoes-por-email.js`,
+  `banco-emails.py`.
+- 178 (29/10) "Títulos também está muito grande": título da promoção (ficha
+  e leilão) de 60 para 30 letras, como o do Google Ads. SQL
+  `20261029170000_textos_curtos_das_promocoes` (com a 177).
+- 179 (29/10) Leilão, etapa do lance: a explicação em um parágrafo por
+  regra (teto; se ganhar; se ninguém mais der lance; se não ganhar); sai "Os
+  créditos garantem o lance: só saem se você ganhar." (o recado dos créditos
+  só aparece quando faltam). Sem SQL. Teste: `promocoes-por-email.js`.
+- 180 (29/10) Funções da equipe (Editar a ficha, Responder avaliações,
+  Promoções e leilão, Pagamentos) ligadas pelo principal em Acessos; vários
+  responsáveis principais ("Tornar responsável principal", "Deixar de ser");
+  menu e páginas conforme a função; aba Pagamentos com quem comprou; e-mail
+  aos principais a cada compra paga e quando alguém vira principal. Termos e
+  Privacidade em 29/10. SQL `20261029190000_funcoes_e_pagamentos`. Testes:
+  `funcoes-da-equipe.js` (novo), `banco-emails.py`.
+- 181 (30/10) Cinco buscas seguidas na aba sem abrir ficha nem navegar:
+  aviso "Está precisando de ajuda para encontrar as quadras mais perto?",
+  com "Usar minha localização" (o melhor caminho) e "Falar com o chat de
+  ajuda". Conta na aba, sem IP (Privacidade em 30/10). Sem SQL. Teste:
+  `ajuda-na-busca.js` (novo).
+- 182 (30/10) "Outra faixa de idade" vira "Adicionar faixa de idade"; a
+  mensal da aula é por aula (o valor de cada aula no plano): cadastro com
+  "por aula" nas duas e exemplos da mensal abaixo da avulsa; ficha, busca,
+  comparação, perguntas e Google com "por aula" ("/aula"); rótulo curto e
+  "Sobre" com "no plano mensal". Sem SQL. Teste: `catalogo.js`.
+- 183 (30/10) "Locação avulsa e mensal valores por hora": a locação mensal
+  é o valor de cada hora no plano ("por hora", "/h", rótulo "no plano
+  mensal"); botões "Avulsa" e "Mensal"; exemplo da mensal "80 a 120";
+  Termos (o que o valor paga) e chat dos jogadores e do Parceiros sem "por
+  mês". Sem SQL. Testes: `catalogo.js`, `chat-parceiros.js`.
+- 184 (30/10) Cartões do catálogo na ficha (e na prévia) em grade que
+  desce, dois por linha no celular, como os quartos do hoteis.com (print
+  do Breno; três no computador; botão de 48px), sem rolar para o lado; no cancelamento, título em cima do
+  campo do que acontece fora do prazo (`tituloForaDoPrazo`: "O que acontece
+  com a aula se a pessoa cancelar com menos de 24h de antecedência? Há
+  reposição?"); "Pular" vira "Continuar" assim que a parte ganha algo (a
+  observação do horário também conta). Sem SQL. Testes: `cadastro.js`,
+  `ficha-hoteis.js`.
+- 185 (30/10) "Escolha o que você quer" vira "Opções para jogar"; no lugar
+  da caixa "A academia oferece" e dos filtros em botões, duas caixas que
+  abrem a lista do aparelho: Modalidade e, embaixo, o formato que segue a
+  de cima e só oferece o que existe (sem lista vazia, sem "não tem"). Sem
+  SQL. Testes: `catalogo.js`, `ficha-hoteis.js`, `previa-da-ficha.js`.
+- 186 (30/10) Sai o "Sem como receber? Fale com o GuiaTennis ›" (troca do
+  WhatsApp da ficha) e o "pode pedir um documento" (contestar, tela do
+  código, Ajuda e chat): "o WhatsApp precisa receber, senão não finaliza".
+  Sem SQL. Testes: `codigo-so-em-disputa.js`, `contestar-passo-a-passo.js`.
+- 187 (30/10) Acesso por convite no e-mail, sem senha provisória (como a
+  Shopify e o Google Business Profile): o admin convida a academia no
+  painel e o principal convida a equipe em Acessos; a pessoa cria a conta
+  com o e-mail e a própria senha e, com o e-mail confirmado, a academia já
+  está na conta. E-mail "Convite para a … no GuiaTennis Parceiros". Termos
+  e Privacidade. SQL `20261030120000_convite_por_email`. Testes:
+  `parceiros.js`, `acesso-academia.js` (o banco local não existe neste
+  contêiner: o SQL foi conferido pelo Actions).
+- 188 (30/10) Acessos: as funções e as ações de cada pessoa ficam
+  escondidas até tocar nela (a linha abre e fecha, com a seta), como a
+  equipe da Shopify e os usuários do Google Business Profile. Sem SQL.
+  Testes: `funcoes-da-equipe.js`, `parceiros.js`.
+- 189 (30/10) Ficha reorganizada: sem os pontinhos da capa; "Sobre" logo
+  depois da Estrutura, com o texto da academia (cadastro, parte Quadras:
+  "O que a academia tem de diferente", até 750 letras como o Google, sem
+  telefone, link ou preço); "Explore a região" logo depois das opções;
+  escolha das opções em cartões por modalidade + formatos sublinhados (sai
+  a cara do hoteis.com); aulas sem avulsa/mensal (só a locação), no
+  cadastro, na ficha, nas perguntas, nos Termos e no chat. SQL
+  `20261030130000_sobre_da_academia`. Testes: `catalogo.js`,
+  `ficha-hoteis.js`, `cadastro.js`.
+
+## 11. WhatsApp e mensagem para as academias
+
+- No site, o contato do GuiaTennis aparece só com o nome e o logo pequeno
+  ("Chat de ajuda", Instagram, E-mail); o WhatsApp do Breno fica atrás do
+  chat de ajuda. Número e e-mail por escrito, só nos Termos e na
+  Privacidade. **Sem mensagens automáticas** no WhatsApp Business.
+- Mensagem para as academias (pedir horário, preços, cancelamento, como
+  chegar, quadras, comodidades e até 5 fotos, oferecendo o QR code da
+  ficha): o texto pronto está no histórico, seção 13.

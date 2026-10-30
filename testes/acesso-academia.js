@@ -282,24 +282,23 @@ const texto = (page, sel) => page.evaluate((sel) => document.querySelector(sel)?
   ({ browser, page } = await abrir({ admin: true, colunasFechadas: true, avaliacoes: AVALIACOES }));
   await abrirFicha(page, 'a2');
   let caixa = await texto(page, '.acesso-admin');
-  const sugestao = await page.evaluate(() => document.getElementById('acesso-usuario')?.value);
-  ok(caixa.includes('Acesso da academia') && sugestao === 'quadra.locacao', 'ficha do admin sugere o usuário pelo nome — ' + sugestao);
-  await page.click('#acesso-criar');
+  // Regra 187 (30/10/2026): o convite pelo e-mail, sem usuário nem senha
+  // provisória; a academia cria a própria senha.
+  ok(caixa.includes('Acesso da academia') && await page.$('#acesso-email') && !(await page.$('#acesso-criar')), 'ficha do admin: o convite pelo e-mail da academia, sem senha provisória');
+  await page.fill('#acesso-email', 'Contato@QuadraLocacao.com.br');
+  await page.click('#acesso-convidar');
   await page.waitForTimeout(600);
   const criado = await page.evaluate(() => ({
-    rpc: (window.__rpcs.find(r => r.nome === 'criar_acesso_academia') || {}).args,
+    rpc: (window.__rpcs.find(r => r.nome === 'convidar_academia') || {}).args,
     caixa: document.querySelector('.acesso-admin')?.innerText || '',
-    wa: document.querySelector('.acesso-novo a')?.getAttribute('href') || '',
   }));
-  ok(criado.rpc && criado.rpc.p_academia === 'a2' && criado.rpc.p_usuario === 'quadra.locacao' && /^[a-z2-9]{4}-[a-z2-9]{4}$/.test(criado.rpc.p_senha), 'cria o usuário com senha provisória fácil de digitar — ' + (criado.rpc && criado.rpc.p_senha));
-  const msg = decodeURIComponent(criado.wa);
-  ok(criado.wa.startsWith('https://wa.me/5511999990002?text=') && msg.includes('Usuário: quadra.locacao') && msg.includes('Senha provisória: ' + criado.rpc.p_senha) && msg.includes('guiatennis.com.br/parceiros/entrar?utm_source=WhatsApp-academias') && msg.includes('guiatennis.com.br/academia/quadra-locacao-a2'), 'mensagem pronta para o WhatsApp da academia, com o link, usuário e senha');
-  ok(criado.caixa.includes('Esperando o primeiro acesso') && criado.caixa.includes('ainda não entrou'), 'caixa mostra que a academia ainda não entrou');
+  ok(criado.rpc && criado.rpc.p_academia === 'a2' && criado.rpc.p_email === 'contato@quadralocacao.com.br', 'convida a academia pelo e-mail — ' + JSON.stringify(criado.rpc));
+  ok(criado.caixa.includes('Convite enviado para contato@quadralocacao.com.br') && criado.caixa.includes('já entra administrando a ficha'), 'a caixa mostra o convite enviado — ' + criado.caixa.replace(/\s+/g, ' ').slice(0, 200));
   const contato = await page.evaluate(() => document.querySelector('.ht-revs .rev-date')?.innerText || '');
   ok(contato.includes('11955550001'), 'admin continua vendo o WhatsApp de quem avaliou (pela função do banco) — ' + contato);
   await page.evaluate(() => { state.showAdminPanel = true; render(); });
   const painel = await texto(page, '#admin-overlay');
-  ok(painel.includes('Acessos das academias') && painel.includes('quadra.locacao'), 'painel do admin lista os acessos');
+  ok(painel.includes('Acessos das academias'), 'painel do admin lista os acessos');
   await browser.close();
 
   // ---- admin vê e apaga resposta (moderação) ----

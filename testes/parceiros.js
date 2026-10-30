@@ -545,16 +545,33 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     wa: decodeURIComponent(document.querySelector('.pc-pessoa-nova a')?.getAttribute('href') || ''),
     lista: [...document.querySelectorAll('.pc-pessoas li')].map(l => l.innerText.replace(/\s+/g, ' ')).join(' / '),
   }));
-  ok(add.rpc && add.rpc.p_email === 'carlos@quadralocacao.com.br' && /^[a-z2-9]{4}-[a-z2-9]{4}$/.test(add.rpc.p_senha), 'adiciona a pessoa pelo e-mail, com senha provisória fácil de digitar');
-  ok(add.caixa.includes(add.rpc.p_senha) && add.wa.startsWith('https://wa.me/?text=') && add.wa.includes('Senha provisória: ' + add.rpc.p_senha) && add.wa.includes('parceiros/entrar') && add.wa.includes('carlos@quadralocacao.com.br'), 'mensagem pronta para mandar à pessoa pelo WhatsApp');
-  ok(add.lista.includes('Carlos Recepção') && add.lista.includes('Equipe · ainda não entrou'), 'a pessoa nova aparece na lista, como equipe — ' + add.lista);
+  // Regra 187: convite pelo e-mail, sem senha provisória.
+  ok(add.rpc && add.rpc.p_email === 'carlos@quadralocacao.com.br' && add.rpc.p_senha === '', 'adiciona a pessoa pelo e-mail, sem senha provisória (regra 187)');
+  ok(add.caixa.includes('Convite enviado para carlos@quadralocacao.com.br') && add.caixa.includes('a própria senha') && add.wa.startsWith('https://wa.me/?text=') && !add.wa.includes('Senha') && add.wa.includes('Crie a sua conta com este e-mail: carlos@quadralocacao.com.br') && add.wa.includes('parceiros/entrar'), 'o convite: a pessoa cria a própria senha, e a mensagem do WhatsApp não tem senha — ' + add.caixa);
+  ok(add.lista.includes('Carlos Recepção') && add.lista.includes('Convite enviado em'), 'o convite aparece na lista, com a data — ' + add.lista);
   conta = await texto(page, '#parceiros .pc-main');
   ok(conta.includes('2 de 5 no plano Completo') && await page.isVisible('#pc-pessoa-email'), 'Completo com 2 pessoas: ainda dá para adicionar');
   page.once('dialog', d => d.accept());
-  await page.click('[data-pc-remover]');
+  await page.click('[data-pc-cancelar-convite]');
   await page.waitForTimeout(500);
   conta = await texto(page, '#parceiros .pc-main');
-  ok(conta.includes('1 de 5 no plano Completo') && !conta.includes('Carlos Recepção'), 'o responsável principal remove a pessoa');
+  ok(conta.includes('1 de 5 no plano Completo') && !conta.includes('Carlos Recepção'), 'o responsável principal cancela o convite');
+  // Convidado de novo, o Carlos cria a conta com o e-mail do convite e, ao
+  // confirmar o e-mail, a academia já está na conta dele (regra 187).
+  await page.fill('#pc-pessoa-nome', 'Carlos Recepção');
+  await page.fill('#pc-pessoa-email', 'carlos@quadralocacao.com.br');
+  await page.click('#pc-pessoa-adicionar');
+  await page.waitForTimeout(400);
+  const aceito = await page.evaluate(async () => {
+    const db = window.__db;
+    db.academia_acessos.push({ user_id:'u-carlos', academia_id:null, usuario:'carlos@quadralocacao.com.br', email:'carlos@quadralocacao.com.br', created_at:new Date().toISOString() });
+    const antes = window.__trocarSessao({ user:{ id:'u-carlos', email:'carlos@quadralocacao.com.br' }, otp:true });
+    let r; try { r = await sb.rpc('confirmar_meu_email'); } finally { window.__trocarSessao(antes); }
+    const v = db.academia_vinculos.find(x => x.user_id === 'u-carlos' && x.academia_id === 'a2');
+    return { erro: r && r.error && r.error.message, papel: v && v.papel, sobrou: (db.convites || []).length };
+  });
+  ok(aceito.papel === 'equipe' && aceito.sobrou === 0, 'com o e-mail confirmado, a academia já está na conta do convidado, como equipe — ' + JSON.stringify(aceito));
+  await page.evaluate(async () => { const db = window.__db; db.academia_vinculos = db.academia_vinculos.filter(x => x.user_id !== 'u-carlos'); await carregarPessoas(); render(); });
   // Uma conta, várias academias (03/10/2026): quem já administra outra
   // academia entra nesta também, sem perder a dela.
   await page.evaluate(() => {

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 30/10/2026 (regra 186)
+**Atualizado em:** 30/10/2026 (regra 187)
 
 | | |
 |---|---|
@@ -142,6 +142,11 @@ Produto (o que já foi decidido)
   ficha, Responder avaliações, Promoções e leilão, Pagamentos (quem entra
   começa com as três primeiras). Aba **Pagamentos**: saldo, compra e cada
   compra com quem comprou; a cada compra paga, e-mail aos principais.
+  **Acesso por convite (regra 187):** sem senha provisória; o admin
+  (painel, "Convidar pelo e-mail") ou o principal (Acessos) convida pelo
+  e-mail (`convites_de_acesso`); a pessoa cria a conta com esse e-mail e a
+  própria senha e, ao confirmar o e-mail, o gatilho `convites_ao_confirmar`
+  liga a academia. O convite conta no limite do plano e pode ser cancelado.
   Buscar, ver e chamar não pedem login; depois da segunda academia chamada
   sem conta, o convite para criar conta.
 - **Avaliações:** só com conta de e-mail confirmado, **uma por academia,
@@ -251,7 +256,7 @@ Produto (o que já foi decidido)
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261029190000_funcoes_e_pagamentos` (76 arquivos na pasta; 73 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261030120000_convite_por_email` (77 arquivos na pasta; 74 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -358,7 +363,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (30/10/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 186**. De 28 a 30/10 entraram: o catálogo com aulas
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 187**. De 28 a 30/10 entraram: o catálogo com aulas
 para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
 e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
 a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
@@ -407,7 +412,7 @@ cancelou as conferências automáticas).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 187.
+**Próximo número:** regra 188.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -522,6 +527,14 @@ cancelou as conferências automáticas).
   WhatsApp da ficha) e o "pode pedir um documento" (contestar, tela do
   código, Ajuda e chat): "o WhatsApp precisa receber, senão não finaliza".
   Sem SQL. Testes: `codigo-so-em-disputa.js`, `contestar-passo-a-passo.js`.
+- 187 (30/10) Acesso por convite no e-mail, sem senha provisória (como a
+  Shopify e o Google Business Profile): o admin convida a academia no
+  painel e o principal convida a equipe em Acessos; a pessoa cria a conta
+  com o e-mail e a própria senha e, com o e-mail confirmado, a academia já
+  está na conta. E-mail "Convite para a … no GuiaTennis Parceiros". Termos
+  e Privacidade. SQL `20261030120000_convite_por_email`. Testes:
+  `parceiros.js`, `acesso-academia.js` (o banco local não existe neste
+  contêiner: o SQL foi conferido pelo Actions).
 
 ## 11. WhatsApp e mensagem para as academias
 

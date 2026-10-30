@@ -104,6 +104,8 @@
   let sessao = window.__admin ? { user: { id: "admin", email: ADMIN } }
     : window.__jogador ? { user: { id: "j-ana", email: "ana@exemplo.com" } }
     : window.__academia ? { user: { id: "u-" + window.__academia, email: "quadra." + window.__academia + DOMINIO } } : null;
+  // Para os testes trocarem de conta sem passar pelo login.
+  window.__trocarSessao = (nova) => { const antes = sessao; sessao = nova; return antes; };
   const souAdmin = () => !!(sessao && sessao.user.email === ADMIN);
   const meuAcesso = () => sessao && db.academia_acessos.find(a => a.user_id === sessao.user.id);
   const euJogador = () => sessao && db.jogadores.find(j => j.user_id === sessao.user.id);
@@ -1182,18 +1184,38 @@
       if ((vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal adiciona pessoas.", "42501");
       const e = String(a.p_email || "").trim().toLowerCase();
       const lim = limite(planoDe(x.academia_id));
-      if (db.academia_vinculos.filter(v => v.academia_id === x.academia_id).length >= lim) return erro(`O seu plano permite até ${lim} ${lim === 1 ? "pessoa" : "pessoas"}. Aprimore o plano para adicionar mais.`, "22023");
+      const convites = db.convites || (db.convites = []);
+      if (convites.some(c => c.academia_id === x.academia_id && c.email === e)) return erro("Essa pessoa já foi convidada.", "23505");
+      if (db.academia_vinculos.filter(v => v.academia_id === x.academia_id).length + convites.filter(c => c.academia_id === x.academia_id).length >= lim) return erro(`O seu plano permite até ${lim} ${lim === 1 ? "pessoa" : "pessoas"}. Aprimore o plano para adicionar mais.`, "22023");
       const outro = db.academia_acessos.find(y => loginDe(y) === e || (y.email || "").toLowerCase() === e);
       if (outro) {
         if (vinculo(outro.user_id, x.academia_id)) return erro("Essa pessoa já tem acesso a esta academia.", "23505");
         ligar(outro, x.academia_id, false);
         return { data:"ligada", error:null };
       }
-      const id = novoLogin(e, a.p_senha);
-      db.academia_acessos.push({ user_id:id, academia_id:x.academia_id, usuario:e, nome_responsavel:a.p_nome || null, email:e, papel:"equipe", created_at:new Date().toISOString() });
-      db.academia_vinculos.push({ user_id:id, academia_id:x.academia_id, papel:"equipe", created_at:new Date().toISOString() });
-      return { data:"criada", error:null };
+      // Convite por e-mail (SQL 20261030120000): sem senha provisória.
+      convites.push({ academia_id:x.academia_id, email:e, nome:a.p_nome || null, created_at:new Date().toISOString() });
+      return { data:"convidada", error:null };
     }
+    if (nome === "convites_da_minha_academia") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id) return { data:[], error:null };
+      return { data:(db.convites || []).filter(c => c.academia_id === x.academia_id).map(c => ({ email:c.email, nome:c.nome, created_at:c.created_at })), error:null };
+    }
+    if (nome === "cancelar_convite") {
+      const x = meuAcesso();
+      if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal cancela convites.", "42501");
+      db.convites = (db.convites || []).filter(c => !(c.academia_id === x.academia_id && c.email === String(a.p_email || "").toLowerCase()));
+      return { data:null, error:null };
+    }
+    if (nome === "convidar_academia") {
+      const e = String(a.p_email || "").trim().toLowerCase();
+      const outro = db.academia_acessos.find(y => loginDe(y) === e || (y.email || "").toLowerCase() === e);
+      if (outro) { ligar(outro, a.p_academia, false); return { data:"ligada", error:null }; }
+      (db.convites || (db.convites = [])).push({ academia_id:a.p_academia, email:e, nome:null, created_at:new Date().toISOString() });
+      return { data:"convidada", error:null };
+    }
+    if (nome === "convites_pendentes") return { data:(db.convites || []).map(c => ({ academia_id:c.academia_id, email:c.email, created_at:c.created_at })), error:null };
     if (nome === "remover_pessoa") {
       const x = meuAcesso();
       if (!x || !x.academia_id || (vinculo(x.user_id, x.academia_id) || {}).papel !== "principal") return erro("Só o responsável principal remove pessoas.", "42501");
@@ -1240,6 +1262,12 @@
       const agora2 = new Date().toISOString();
       db.jogadores.filter(j => j.user_id === sessao.user.id).forEach(j => { j.email_confirmado_em = j.email_confirmado_em || agora2; });
       db.academia_acessos.filter(x => x.user_id === sessao.user.id).forEach(x => { x.email_confirmado_em = x.email_confirmado_em || agora2; });
+      // aceitar_convites (SQL 20261030120000): o e-mail confirmado ganha as
+      // academias para as quais foi convidado.
+      { const eu = db.academia_acessos.find(y => y.user_id === sessao.user.id);
+        const meuEmail = String((eu && eu.email) || sessao.user.email || "").toLowerCase();
+        if (eu) (db.convites || []).filter(c => c.email === meuEmail).forEach((c, i) => ligar(eu, c.academia_id, i === 0));
+        db.convites = (db.convites || []).filter(c => !eu || c.email !== meuEmail); }
       // assumir_pedidos_da_conta (SQL 20261007130000).
       const x = meuAcesso();
       if (x && x.dados_completos_em) pedidosDe(x.user_id).filter(p => p.destino === "guiatennis" && p.declarou_em).forEach(p => {

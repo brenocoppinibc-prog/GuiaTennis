@@ -6,7 +6,9 @@
 // (no Android, "geo:", que faz o celular perguntar com qual aplicativo abrir;
 // no iPhone, o Mapas; no computador, a rota no Google Maps). Regra 191
 // (01/11/2026): "no mapa uma miniatura completa como está na lista" e "na
-// lista, a partir de acima da escrita sobre a modalidade".
+// lista, a partir de acima da escrita sobre a modalidade". Regra 192
+// (01/11/2026): "tire o como chegar da prévia do mapa e deixe a apresentação
+// mais de lado, inferior da tela como trivago, hoteis.com, booking".
 const { abrir, ok } = require('./harness');
 
 (async () => {
@@ -32,9 +34,9 @@ const { abrir, ok } = require('./harness');
   await page.evaluate(() => { state.modalidadeFilters = ['locacao']; });
   await page.evaluate(() => document.querySelector('.ht-atalhos [data-nav="a1"]').click());
   await page.waitForTimeout(600);
-  const mapa = await page.evaluate(() => ({ page: state.page, view: state.view, sel: state.mapSelected, url: location.pathname + location.search, filtros: state.modalidadeFilters.length, card: document.querySelector('#map-card .rcard')?.innerText.replace(/\s+/g, ' ').trim(), pino: !!document.getElementById('map'), link: document.querySelector('#map-card a[data-como-chegar="a1"]')?.getAttribute('href') || '' }));
+  const mapa = await page.evaluate(() => ({ page: state.page, view: state.view, sel: state.mapSelected, url: location.pathname + location.search, filtros: state.modalidadeFilters.length, card: document.querySelector('#map-card [data-map-card="a1"]')?.innerText.replace(/\s+/g, ' ').trim(), pino: !!document.getElementById('map'), link: !!document.querySelector('#map-card [data-como-chegar]') }));
   ok(mapa.page === 'search' && mapa.view === 'map' && mapa.url === '/busca?ver=mapa' && mapa.pino, 'abre o mapa do GuiaTennis, com as quadras — ' + mapa.url);
-  ok(mapa.sel === 'a1' && mapa.card.startsWith('Só Aula Tennis') && mapa.card.endsWith('Como chegar') && mapa.link.startsWith('https://www.google.com/maps/dir/'), 'já na academia: o cartão dela embaixo, com o link "Como chegar" — ' + mapa.card);
+  ok(mapa.sel === 'a1' && mapa.card.startsWith('Só Aula Tennis') && !mapa.card.includes('Como chegar') && !mapa.link, 'já na academia: o cartão dela embaixo, sem o "Como chegar" (regra 192) — ' + mapa.card);
   ok(mapa.filtros === 0, 'o filtro que escondia a academia saiu');
   ok(!(await page.$('#nav-overlay')), 'sem a tela com Google Maps e Waze');
   await page.goBack();
@@ -42,32 +44,56 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => state.page === 'court' && location.pathname === '/academia/so-aula-tennis-a1'), 'voltar leva de novo à ficha');
   await browser.close();
 
-  // Regra 191: o cartão do mapa é o mesmo da lista.
+  // Regra 192: os cartões deitados no rodapé do mapa, em carrossel.
   ({ browser, page } = await abrir({ q: 'busca?q=Pinheiros', w: 390 }));
   await page.waitForTimeout(600);
-  await page.evaluate(() => verNoMapaDoGuia('a1'));
-  await page.waitForTimeout(600);
-  const cheio = await page.evaluate(() => {
-    const c = document.querySelector('#map-card .rcard');
-    const x = document.getElementById('map-card-close').getBoundingClientRect();
-    const lista = renderCard(getResults().find(r => r.id === 'a1'), '');
-    const tmp = document.createElement('div'); tmp.innerHTML = lista;
-    return { igual: c && c.querySelector('.offer').innerHTML === tmp.querySelector('.offer').innerHTML && c.querySelector('.rcard-info').innerHTML === tmp.querySelector('.rcard-info').innerHTML,
-      partes: c && ['.rcard-name', '.rcard-score', '.offer-btn', '.offer-contact', '[data-fav]', '[data-share-card]'].every(s => c.querySelector(s)),
-      xFora: x.bottom <= c.getBoundingClientRect().top };
+  await page.evaluate(async () => {
+    const cv = document.createElement('canvas'); cv.width = 60; cv.height = 40;
+    const g = cv.getContext('2d'); g.fillStyle = '#2E6B4F'; g.fillRect(0, 0, 60, 40);
+    Object.assign(window.__db.academias.find(x => x.id === 'a1'), { photos: [cv.toDataURL('image/jpeg')], modalidades: ['aulas_proprias', 'locacao'], catalogo: [{ tipo: 'individual', cobranca: 'avulsa', preco: '150' }, { tipo: 'locacao', cobranca: 'avulsa', preco: '130' }] });
+    await loadEverything();
+    verNoMapaDoGuia('a1');
   });
-  ok(cheio.igual && cheio.partes && cheio.xFora, 'no mapa, o cartão completo da lista (nota, endereço, estrutura, preço, "Ver academia", WhatsApp, favoritar e compartilhar), com o ✕ em cima, fora dele — ' + JSON.stringify(cheio));
-  await page.evaluate(() => { window.open = () => {}; window.__db.cliques = []; document.querySelector('#map-card .offer-contact').addEventListener('click', e => e.preventDefault()); });
-  await page.click('#map-card .offer-contact');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(700);
+  const deitado = await page.evaluate(() => {
+    const car = document.getElementById('map-carrossel');
+    const c = car.querySelector('[data-map-card="a1"]');
+    const foto = c.querySelector('.mcard-foto').getBoundingClientRect(), info = c.querySelector('.mcard-info').getBoundingClientRect(), r = c.getBoundingClientRect();
+    const mapa = document.querySelector('.mapwrap').getBoundingClientRect();
+    return { cartoes: car.querySelectorAll('[data-map-card]').length, comPonto: mapCourts(getResults()).length, on: c.classList.contains('on'),
+      deitado: foto.right <= info.left + 1 && r.width > r.height, embaixo: mapa.bottom - r.bottom < 120 && r.top > mapa.top + mapa.height / 2,
+      espia: car.scrollWidth > car.clientWidth, texto: c.innerText.replace(/\s+/g, ' ').trim(), comoChegar: !!car.querySelector('[data-como-chegar]'), fechar: !!document.getElementById('map-card-close') };
+  });
+  ok(deitado.cartoes === deitado.comPonto && deitado.cartoes > 1 && deitado.on && deitado.deitado && deitado.embaixo && deitado.espia, 'no mapa, um cartão deitado por academia, no rodapé, em carrossel (o próximo aparece na borda), com o da escolhida aceso — ' + JSON.stringify({ ...deitado, texto: undefined }));
+  ok(deitado.texto === 'Só Aula Tennis — Sem nota ainda Pinheiros, São Paulo · 0 m de você a partir de Locação R$ 130/h Aula R$ 150/aula Falar no WhatsApp' && !deitado.comoChegar && !deitado.fechar, 'o cartão: a foto à esquerda e o nome, a nota, o endereço, o "a partir de" com os preços e o WhatsApp; sem o "Como chegar" — ' + deitado.texto);
+  // Deslizar para o lado passa para a próxima academia e acende o pino dela.
+  const outra = await page.evaluate(() => mapCourts(getResults()).find(c => c.id !== 'a1').id);
+  await page.evaluate((id) => { const car = document.getElementById('map-carrossel'); const el = car.querySelector(`[data-map-card="${id}"]`); car.scrollLeft = el.offsetLeft - (car.clientWidth - el.offsetWidth) / 2; }, outra);
+  await page.waitForTimeout(500);
+  ok(await page.evaluate((id) => state.mapSelected === id && document.querySelector(`[data-map-card="${id}"]`).classList.contains('on') && !document.querySelector('[data-map-card="a1"]').classList.contains('on'), outra), 'deslizar para o lado escolhe a academia seguinte (o pino e o cartão dela acendem)');
+  // Tocar no pino de outra academia leva o carrossel até o cartão dela.
+  await page.evaluate(() => selectOnMap('a1'));
+  await page.waitForTimeout(700);
+  ok(await page.evaluate(() => { const car = document.getElementById('map-carrossel'); const el = car.querySelector('[data-map-card="a1"]'); return state.mapSelected === 'a1' && Math.abs(Math.max(0, el.offsetLeft - (car.clientWidth - el.offsetWidth) / 2) - car.scrollLeft) < 4; }), 'tocar no pino leva o carrossel até o cartão daquela academia');
+  await page.evaluate(() => { window.open = () => {}; window.__db.cliques = []; document.querySelector('[data-map-card="a1"] .mcard-wa')?.addEventListener('click', e => e.preventDefault()); });
+  const temWa = await page.$('[data-map-card="a1"] .mcard-wa');
+  if (temWa) {
+    await page.click('[data-map-card="a1"] .mcard-wa');
+    await page.waitForTimeout(300);
+  }
   const wa = await page.evaluate(() => ({ cliques: (window.__db.cliques || []).filter(x => x.tipo === 'whatsapp' && x.academia_id === 'a1').length, page: state.page }));
-  ok(wa.cliques === 1 && wa.page === 'search', 'o WhatsApp do cartão do mapa conta uma vez só e não abre a ficha — ' + JSON.stringify(wa));
-  await page.click('#map-card [data-fav="a1"]');
+  ok(temWa && wa.cliques === 1 && wa.page === 'search', 'o WhatsApp do cartão do mapa conta uma vez só e não abre a ficha — ' + JSON.stringify(wa));
+  await page.click('[data-map-card="a1"] [data-fav="a1"]');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => (isFavorite('a1') || !!document.querySelector('#jogador-overlay.open')) && state.page === 'search' && state.view === 'map'), 'favoritar no cartão do mapa faz o mesmo que na lista (sem conta, pede para entrar), sem sair do mapa');
-  await page.evaluate(() => document.getElementById('map-card-close').click());
+  await page.evaluate(() => selectOnMap(null));
   await page.waitForTimeout(200);
-  ok(!(await page.$('#map-card .rcard')), 'o ✕ fecha o cartão');
+  ok(!(await page.$('#map-carrossel')), 'tocar no mapa (fora dos pinos) fecha os cartões');
+  await page.evaluate(() => selectOnMap('a1'));
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('[data-map-card="a1"] .mcard-nome').click());
+  await page.waitForTimeout(400);
+  ok(await page.evaluate(() => state.page === 'court' && state.selected && state.selected.id === 'a1'), 'tocar no cartão abre a ficha');
   await browser.close();
 
   // Regra 191: na lista, o "a partir de" vem em cima da modalidade.

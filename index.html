@@ -1021,13 +1021,33 @@
   .map-card { flex-wrap: wrap; }
   .map-como-chegar { flex: 1 0 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); font: 600 14px var(--fonte-texto); color: var(--green); cursor: pointer; }
   .map-close { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 14px; color: var(--muted); cursor: pointer; padding: 2px 4px; line-height: 1; }
-  /* O cartão do mapa igual ao da lista (regra 191): o cartão rola por dentro
-     se não couber, e o ✕ fica em cima dele, num círculo. */
-  .map-card.map-card-cheio { display: block; padding: 0; background: none; border: 0; box-shadow: none; cursor: default; }
-  .map-card-cheio .rcard { max-height: calc(100dvh - 98px - 160px); overflow-y: auto; box-shadow: var(--shadow-lg); }
-  .map-card-cheio .map-close { top: -46px; right: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); font-size: 14px; color: var(--text); display: flex; align-items: center; justify-content: center; padding: 0; }
-  .map-card-rodape { padding: 0 12px 12px; }
-  .map-card-rodape .map-como-chegar { display: flex; width: 100%; }
+  /* O cartão do mapa deitado, no rodapé, em carrossel (regra 192), como os
+     do trivago, do hoteis.com e do Booking: a foto à esquerda, o resto à
+     direita, e o próximo cartão aparecendo na borda. */
+  .map-card-holder { left: 0; right: 0; bottom: 80px; }
+  @media (min-width: 720px) { .map-card-holder { left: 12px; right: auto; width: 560px; max-width: calc(100% - 24px); } }
+  .map-carrossel { position: relative; display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px 16px 18px; scrollbar-width: none; }
+  .map-carrossel::-webkit-scrollbar { display: none; }
+  .mcard { flex: 0 0 calc(100% - 44px); scroll-snap-align: center; display: flex; min-height: 136px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 14px rgba(33,31,26,0.16); overflow: hidden; cursor: pointer; text-align: left; }
+  .mcard.on { border-color: var(--green); box-shadow: 0 4px 14px rgba(33,31,26,0.16), inset 0 0 0 1px var(--green); }
+  .mcard-foto { flex: 0 0 112px; background: var(--bg-alt); }
+  .mcard-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mcard-info { flex: 1; min-width: 0; padding: 10px 10px 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+  .mcard-info .rcard-patrocinado { margin: 0; }
+  .mcard-topo { display: flex; align-items: flex-start; gap: 4px; }
+  .mcard-nome { flex: 1; min-width: 0; margin: 0; font: 700 15px/1.25 var(--fonte-texto); color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mcard-fav { flex-shrink: 0; width: 32px; height: 32px; margin: -6px -6px 0 0; display: flex; align-items: center; justify-content: center; background: none; border: 0; padding: 0; cursor: pointer; }
+  .mcard-info .rcard-score { margin: 0; }
+  .mcard-linha { margin: 0; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mcard-preco { margin-top: 2px; }
+  .mcard-apartir { display: block; font-size: 12px; color: var(--muted); line-height: 1.3; margin-bottom: 1px; }
+  .mcard-valores { display: flex; flex-wrap: wrap; gap: 2px 14px; }
+  .mcard-valores > span { display: flex; flex-direction: column; white-space: nowrap; }
+  .mcard-valores small { font-size: 12px; color: var(--muted); line-height: 1.3; }
+  .mcard-valores b { font-size: 17px; font-weight: 700; line-height: 1.15; color: var(--text); }
+  .mcard-valores em { font-style: normal; font-size: 12.5px; font-weight: 500; color: var(--muted); margin-left: 1px; }
+  .mcard-valores .sem-valor { font-size: 14px; font-weight: 600; color: var(--muted); }
+  .mcard-wa { align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; min-height: 30px; margin-top: 2px; font: 600 13px var(--fonte-texto); color: var(--green); text-decoration: none; }
   /* "a partir de" em cima da modalidade, na lista (regra 191). */
   .offer-sub.offer-sub-topo { margin: 0 0 2px; }
   .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 28px; color: var(--muted); font-size: 14px; background: var(--bg-alt); z-index: 900; }
@@ -8916,7 +8936,7 @@ function renderMapView(results) {
 // o mapa da busca do GuiaTennis já na academia — o pino marcado, o cartão
 // dela embaixo e as outras academias em volta —, como o "Ver no mapa" do
 // hoteis.com e do Booking, que abre o mapa do próprio site com os outros
-// hotéis. O "Como chegar" fica no cartão do mapa e na ficha. Sem ponto no
+// hotéis. O "Como chegar" fica na ficha (regra 192). Sem ponto no
 // mapa, abre o "Como chegar" do celular.
 function verNoMapaDoGuia(id) {
   const c = state.allCourts.find(x => x.id === id);
@@ -8936,72 +8956,121 @@ function verNoMapaDoGuia(id) {
   window.scrollTo(0, 0);
 }
 
-// O cartão do mapa é o mesmo da lista (regra 191, 01/11/2026: "no mapa uma
-// miniatura completa como está na lista"), como o cartão que o Airbnb e o
-// Booking abrem ao tocar no pino: fotos, nome, nota, endereço, estrutura,
-// preços e WhatsApp, mais o "Como chegar" (regra 170). O ✕ fica fora do
-// cartão, em cima, para não cobrir o compartilhar e o favoritar.
+// O cartão do mapa (regra 192, 01/11/2026: "tire o como chegar da prévia do
+// mapa e deixe a apresentação mais de lado, inferior da tela como trivago,
+// hoteis.com, booking"): no rodapé do mapa, os cartões deitados em
+// carrossel, como os do trivago, do hoteis.com e do Booking: a foto à
+// esquerda e, à direita, o nome, a nota, o endereço, o "a partir de" com os
+// preços e o WhatsApp. Deslizar para o lado passa para a academia seguinte
+// e acende o pino dela; tocar no pino leva ao cartão dela; tocar no mapa
+// fecha. O "Como chegar" fica só na ficha.
 function mapCardHtml(id) {
   if (!id) return "";
-  const c = getResults().find(x => x.id === id);
-  if (!c) return "";
-  return `
-    <div class="map-card map-card-cheio">
-      <button type="button" class="map-close" id="map-card-close" aria-label="Fechar">✕</button>
-      ${renderCard(c, "", `<div class="map-card-rodape">${linkComoChegarHtml(c, "map-como-chegar", `${icon('pin', 14, 'currentColor')} Como chegar`)}</div>`)}
-    </div>
-  `;
+  const lista = mapCourts(getResults());
+  if (!lista.some(c => c.id === id)) return "";
+  return `<div class="map-carrossel" id="map-carrossel" role="list" aria-label="Academias do mapa">${lista.map(cartaoDoMapa).join("")}</div>`;
 }
-
-function selectOnMap(id) {
+function cartaoDoMapa(c) {
+  const foto = courtPhotos(c)[0];
+  const fav = isFavorite(c.id);
+  const precos = ofertas(c).filter(o => o.min).slice(0, 2);
+  return `
+    <div class="mcard ${c.id === state.mapSelected ? "on" : ""}" role="listitem" data-open="${c.id}" data-map-card="${c.id}">
+      ${foto ? `<div class="mcard-foto"><img src="${esc(foto)}" alt="${esc(c.name)}" loading="lazy" /></div>` : ""}
+      <div class="mcard-info">
+        ${c.patrocinada ? `<p class="rcard-patrocinado">Patrocinado</p>` : ""}
+        <div class="mcard-topo">
+          <p class="mcard-nome">${esc(c.name)}${seloDaAcademia(c, 14)}</p>
+          <button type="button" class="mcard-fav" data-fav="${c.id}" aria-label="Favoritar">${icon(fav ? 'heartFill' : 'heart', 18, fav ? 'var(--red)' : 'var(--muted)')}</button>
+        </div>
+        <div class="rcard-score">
+          <span class="sbadge ${c.appCount ? "" : "none"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
+          <span class="sword">${scoreWord(c.appAvg, c.appCount)}</span>
+          ${c.appCount ? `<span class="scount">${icon('bubble', 13, 'var(--muted)')} ${c.appCount}</span>` : ""}
+        </div>
+        <p class="mcard-linha">${esc(localLine(c))}</p>
+        <div class="mcard-preco">
+          ${precos.length
+            ? `<span class="mcard-apartir">a partir de</span><span class="mcard-valores">${precos.map(o => `<span><small>${esc(o.label)}</small><b>R$ ${esc(priceMin(o.faixa))}<em>${esc(o.curto || "/h")}</em></b></span>`).join("")}</span>`
+            : `<span class="mcard-valores"><span class="sem-valor">${SEM_PRECO}</span></span>`}
+        </div>
+        ${c.phone ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 13, 'var(--green)')} Falar no WhatsApp</a>` : ""}
+      </div>
+    </div>`;
+}
+// Acende o pino e o cartão da academia escolhida; "mover" leva o mapa até
+// ela se o pino estiver fora da tela (deslizando o carrossel).
+function marcarNoMapa(id, mover) {
   state.mapSelected = id;
   __markers.forEach(m => {
     if (!m._courtId) return;
-    const el = m.getElement();
-    const span = el && el.querySelector(".pin");
+    const el = m.getElement && m.getElement();
+    const span = el && el.querySelector && el.querySelector(".pin");
     if (span) span.classList.toggle("on", m._courtId === id);
   });
-  const holder = document.getElementById("map-card");
-  if (holder) {
-    holder.innerHTML = mapCardHtml(id);
-    attachMapCardEvents();
+  document.querySelectorAll("#map-carrossel [data-map-card]").forEach(el => el.classList.toggle("on", el.dataset.mapCard === id));
+  if (mover && __map && id) {
+    const c = getResults().find(x => x.id === id);
+    try { if (c && !__map.getBounds().contains([c.lat, c.lng])) __map.panTo([c.lat, c.lng]); } catch (e) {}
   }
+}
+function irAoCartao(id, suave) {
+  const car = document.getElementById("map-carrossel");
+  const el = car && car.querySelector(`[data-map-card="${id}"]`);
+  if (!el) return;
+  const x = el.offsetLeft - (car.clientWidth - el.offsetWidth) / 2;
+  if (car.scrollTo) car.scrollTo({ left: x, behavior: suave ? "smooth" : "auto" });
+  else car.scrollLeft = x;
+}
+function selectOnMap(id) {
+  const holder = document.getElementById("map-card");
+  if (!id) {
+    marcarNoMapa(null, false);
+    if (holder) holder.innerHTML = "";
+    return;
+  }
+  marcarNoMapa(id, false);
+  if (!holder) return;
+  if (holder.querySelector(`#map-carrossel [data-map-card="${id}"]`)) irAoCartao(id, true);
+  else { holder.innerHTML = mapCardHtml(id); attachMapCardEvents(); }
 }
 
 function attachMapCardEvents() {
   const holder = document.getElementById("map-card");
   if (!holder) return;
-  const close = holder.querySelector("#map-card-close");
-  if (close) close.onclick = (e) => { e.stopPropagation(); selectOnMap(null); };
-  // O link abre o aplicativo de mapas, sem abrir a ficha do cartão.
-  holder.querySelectorAll("[data-como-chegar]").forEach(el => {
-    el.onclick = (e) => { e.stopPropagation(); };
-  });
   holder.querySelectorAll("[data-open]").forEach(el => {
     el.onclick = () => openCourt(el.dataset.open);
   });
-  // O cartão completo (regra 191): WhatsApp, compartilhar, favoritar e as
-  // fotos, como na lista.
   holder.querySelectorAll("[data-stop]").forEach(el => {
     if (el.__semAbrir) return;
     el.__semAbrir = true;
     el.addEventListener("click", (e) => e.stopPropagation());
   });
   holder.querySelectorAll("[data-track]").forEach(ligarRastreio);
-  holder.querySelectorAll("[data-share-card]").forEach(el => {
-    el.onclick = (e) => { e.stopPropagation(); shareCourt(el.dataset.shareCard); };
-  });
   holder.querySelectorAll("[data-fav]").forEach(el => {
-    el.onclick = (e) => { e.stopPropagation(); toggleFavorite(el.dataset.fav); selectOnMap(el.dataset.fav); };
-  });
-  holder.querySelectorAll("[data-strip]").forEach(strip => {
-    strip.onscroll = () => {
-      const dots = strip.parentElement.querySelector("[data-dots]");
-      if (!dots || !strip.clientWidth) return;
-      const i = Math.round(strip.scrollLeft / strip.clientWidth);
-      dots.querySelectorAll("i").forEach((d, n) => d.classList.toggle("on", n === i));
+    el.onclick = (e) => {
+      e.stopPropagation();
+      toggleFavorite(el.dataset.fav);
+      const fav = isFavorite(el.dataset.fav);
+      el.innerHTML = icon(fav ? 'heartFill' : 'heart', 18, fav ? 'var(--red)' : 'var(--muted)');
     };
   });
+  const car = holder.querySelector("#map-carrossel");
+  if (!car) return;
+  irAoCartao(state.mapSelected, false);
+  // Deslizou: a academia do cartão do meio fica escolhida, com o pino aceso.
+  car.onscroll = () => {
+    clearTimeout(car.__parou);
+    car.__parou = setTimeout(() => {
+      const meio = car.scrollLeft + car.clientWidth / 2;
+      let perto = null, dist = Infinity;
+      car.querySelectorAll("[data-map-card]").forEach(el => {
+        const d = Math.abs(el.offsetLeft + el.offsetWidth / 2 - meio);
+        if (d < dist) { dist = d; perto = el; }
+      });
+      if (perto && perto.dataset.mapCard !== state.mapSelected) marcarNoMapa(perto.dataset.mapCard, true);
+    }, 120);
+  };
 }
 
 // O render() troca todo o HTML do app, então o mapa é remontado a cada
@@ -9031,6 +9100,7 @@ function mountMap(results) {
       maxZoom: 19,
       attribution: '© colaboradores do OpenStreetMap',
     }).addTo(__map);
+    __map.on("click", () => selectOnMap(null));
     __map.on("moveend", () => {
       if (!__map) return;
       const c = __map.getCenter();
@@ -17993,7 +18063,7 @@ function localLine(c) {
   return d ? `${lugar} · ${d} de você` : lugar;
 }
 
-function renderCard(c, badge, rodape = "") {
+function renderCard(c, badge) {
   const photos = courtPhotos(c);
   const fav = isFavorite(c.id);
   const precos = ofertas(c);
@@ -18079,7 +18149,6 @@ function renderCard(c, badge, rodape = "") {
             ? (modalidadesTexto(c) ? `<p class="offer-note">${esc(modalidadesTexto(c))}</p>` : "")
             : `<p class="offer-note">${modalidadesTexto(c) ? `${esc(modalidadesTexto(c))} — confirme os valores com a academia.` : "Confirme o valor direto com a academia."}</p>`}
       </div>
-      ${rodape}
     </div>
   `;
 }

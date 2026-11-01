@@ -366,35 +366,46 @@ Produto (o que já foi decidido)
 - Android força modo escuro: `color-scheme: light` no site.
 - `pkill -f` com texto do próprio comando mata o terminal.
 
-## 9. Estado atual e pendências (30/10/2026)
+## 9. Estado atual e pendências (01/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 189**. De 28 a 30/10 entraram: o catálogo com aulas
-para adultos e para crianças (a aula das crianças leva `publico`, `idadeDe`
-e `idadeAte` dentro do `catalogo`; a aula sem valor vai com `cobranca: ""`);
-a parte "Modalidades", pelo menos uma; o valor em intervalo ("150 a 200",
-gravado "150-200") com o exemplo só dentro do campo; "Alterações salvas"
-num cartão; "Pedir análise" em vermelho; o "Ver no mapa" no mapa do
-GuiaTennis e o "Como chegar" pelo celular; os textos das promoções curtos
-(título 30, detalhes 150, e-mail 300; SQL
-`20261029170000_textos_curtos_das_promocoes`); o lance em parágrafos; as
-funções da equipe, vários responsáveis principais e a aba Pagamentos (SQL
-`20261029190000_funcoes_e_pagamentos`); e a ajuda depois de cinco buscas
-seguidas (sem SQL; Termos e Privacidade em 30/10); e "Adicionar faixa de
-idade", a aula mensal por aula e a locação mensal por hora (sem SQL;
-Termos em 30/10); os cartões do catálogo em grade (dois por linha, para baixo), o título do campo de
-cancelamento fora do prazo e o "Pular" que vira "Continuar" na hora. A descrição do PR tem
-uma linha por regra em "Pedidos depois de 28/10". Testes: 2.202 no
-navegador e 716 no banco, nenhuma falha. **Chat trocado em 30/10/2026:** o
-chat novo volta a acompanhar o PR #5 (o anterior deixou de acompanhar e
-cancelou as conferências automáticas).
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 189**
+(último commit de código `7277074`). De 28/10 a 01/11 entraram: o catálogo
+com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
+no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
+intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
+cartão; o "Ver no mapa" no mapa do GuiaTennis e o "Como chegar" pelo
+celular; textos curtos das promoções (SQL
+`20261029170000_textos_curtos_das_promocoes`); funções da equipe, vários
+principais e Pagamentos (SQL `20261029190000_funcoes_e_pagamentos`); ajuda
+depois de cinco buscas; "Adicionar faixa de idade"; locação avulsa e
+mensal por hora; catálogo em grade (dois por linha); título do
+cancelamento fora do prazo; "Continuar" na hora; "Opções para jogar";
+sem o "Sem como receber?" (o WhatsApp precisa receber o código); acesso
+por **convite no e-mail**, sem senha provisória (SQL
+`20261030120000_convite_por_email`); Acessos com as ações escondidas até
+tocar na pessoa; e a regra 189: ficha reorganizada (sem pontinhos na capa,
+"Sobre" com o texto da academia até 750 letras logo depois da Estrutura,
+"Explore a região" logo depois das opções, escolha das opções em cartões
+por modalidade + formatos sublinhados) e **aula sem avulsa/mensal** (só a
+locação tem; SQL `20261030130000_sobre_da_academia`). A descrição do PR tem
+uma linha por regra e os passos 1 a 23. Testes: 2.202 no navegador,
+nenhuma falha; o banco local do `banco-emails.py` não existe neste
+contêiner (última rodada 29/10: 716, nenhuma falha), e o SQL novo foi
+conferido pelo Actions ("Banco de dados" verde). Layouts da ficha em
+estudo (A Editorial, B Quadra, C Placar), no quadro de design
+https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2. **Chat trocado em
+01/11/2026:** o chat novo volta a acompanhar o PR #5 (o anterior deixou de
+acompanhar).
 
 **Pendências do Breno:**
-1. Testar na prévia o que entrou de 26 a 30/10 (veracidade, ficha no
-   jeito do hoteis.com, catálogo com Modalidades, Aulas, Locação e valor em
-   intervalo, corte das fotos, nome suspenso, busca "bairro, cidade",
-   sobrenome, avaliação editada, "Ver no mapa" e "Como chegar", textos
-   curtos das promoções, funções da equipe e Pagamentos, ajuda depois de
-   cinco buscas) e dizer "pode subir".
+1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1 a 23 da
+   descrição do PR: veracidade, ficha reorganizada, catálogo sem
+   avulsa/mensal nas aulas, "Sobre" da academia, escolha das opções,
+   convite por e-mail, Acessos, promoções, funções e Pagamentos, ajuda
+   depois de cinco buscas) e dizer "pode subir".
+1a. Decidir: o texto "Sobre" da academia vale em todos os planos (hoje)
+   ou só no Completo e no Premium; tirar ou não o "Decidir a disputa a
+   favor de quem pediu" do painel do admin.
 2. Ligar o Mercado Pago na Netlify (variáveis da seção 5) depois de testar
    o pagamento de teste na prévia.
 3. Definir os preços dos planos e o preço da semana da promoção na ficha

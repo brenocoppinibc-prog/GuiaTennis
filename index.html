@@ -1010,7 +1010,7 @@
   .pin-me { display: block; transform: translate(-50%, -50%); width: 16px; height: 16px; border-radius: 999px; background: #fff; border: 4px solid var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
   .map-card-holder { position: absolute; left: 12px; right: 12px; bottom: 90px; z-index: 900; }
   .map-card-holder.up { bottom: 152px; }
-  @media (min-width: 720px) { .map-card-holder { max-width: 440px; right: auto; } }
+  @media (min-width: 720px) { .map-card-holder { max-width: 520px; right: auto; } }
   .map-card { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); display: flex; gap: 12px; padding: 10px 32px 10px 10px; align-items: center; cursor: pointer; text-align: left; }
   .map-card-photo { width: 84px; height: 72px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; }
   .map-card-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -1021,6 +1021,15 @@
   .map-card { flex-wrap: wrap; }
   .map-como-chegar { flex: 1 0 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); font: 600 14px var(--fonte-texto); color: var(--green); cursor: pointer; }
   .map-close { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 14px; color: var(--muted); cursor: pointer; padding: 2px 4px; line-height: 1; }
+  /* O cartão do mapa igual ao da lista (regra 191): o cartão rola por dentro
+     se não couber, e o ✕ fica em cima dele, num círculo. */
+  .map-card.map-card-cheio { display: block; padding: 0; background: none; border: 0; box-shadow: none; cursor: default; }
+  .map-card-cheio .rcard { max-height: calc(100dvh - 98px - 160px); overflow-y: auto; box-shadow: var(--shadow-lg); }
+  .map-card-cheio .map-close { top: -46px; right: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); font-size: 14px; color: var(--text); display: flex; align-items: center; justify-content: center; padding: 0; }
+  .map-card-rodape { padding: 0 12px 12px; }
+  .map-card-rodape .map-como-chegar { display: flex; width: 100%; }
+  /* "a partir de" em cima da modalidade, na lista (regra 191). */
+  .offer-sub.offer-sub-topo { margin: 0 0 2px; }
   .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 28px; color: var(--muted); font-size: 14px; background: var(--bg-alt); z-index: 900; }
   .map-fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 45; background: var(--green); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-family: var(--fonte-texto); font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 24px rgba(31,77,61,0.35); display: inline-flex; align-items: center; gap: 8px; }
   .map-fab { bottom: 26px; }
@@ -4754,6 +4763,13 @@ function tempoAteAgir(courtId, type) {
   return t;
 }
 
+// Liga a contagem do clique uma vez por elemento (o cartão do mapa é ligado
+// pelo attachEvents e de novo pelo attachMapCardEvents).
+function ligarRastreio(el) {
+  if (el.__rastreio) return;
+  el.__rastreio = true;
+  el.addEventListener("click", () => trackClick(el.dataset.court, el.dataset.track));
+}
 function trackClick(courtId, type, detalhe, extras) {
   // A academia chamada fica na lista do próprio aparelho ("Academias que você
   // chamou"), mesmo com o admin conectado: isso não vai para o banco.
@@ -8920,29 +8936,19 @@ function verNoMapaDoGuia(id) {
   window.scrollTo(0, 0);
 }
 
+// O cartão do mapa é o mesmo da lista (regra 191, 01/11/2026: "no mapa uma
+// miniatura completa como está na lista"), como o cartão que o Airbnb e o
+// Booking abrem ao tocar no pino: fotos, nome, nota, endereço, estrutura,
+// preços e WhatsApp, mais o "Como chegar" (regra 170). O ✕ fica fora do
+// cartão, em cima, para não cobrir o compartilhar e o favoritar.
 function mapCardHtml(id) {
   if (!id) return "";
   const c = getResults().find(x => x.id === id);
   if (!c) return "";
-  const photos = courtPhotos(c);
-  // A opção mais em conta, com o que o valor paga (por hora, por aula…).
-  const faixa = faixaGeral(c);
-  const dist = distanceText(c.distanceKm);
   return `
-    <div class="map-card" data-open="${c.id}">
-      ${photos.length ? `<div class="map-card-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>` : ""}
-      <div style="min-width:0;flex:1">
-        <p class="map-card-name">${esc(c.name)}</p>
-        <p class="map-card-meta">${esc(c.bairro)}${dist ? ` · ${dist}` : ""}</p>
-        ${scoreBox(c.appAvg, c.appCount, true)}
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        ${faixa
-          ? `<div class="map-card-price">R$ ${esc(priceMin(faixa.opcao.faixa))}</div><div class="rail-unit">${esc(faixa.opcao.unidade)}</div>`
-          : `<div class="rail-unit">preço a<br>consultar</div>`}
-      </div>
+    <div class="map-card map-card-cheio">
       <button type="button" class="map-close" id="map-card-close" aria-label="Fechar">✕</button>
-      ${linkComoChegarHtml(c, "map-como-chegar", `${icon('pin', 14, 'currentColor')} Como chegar`)}
+      ${renderCard(c, "", `<div class="map-card-rodape">${linkComoChegarHtml(c, "map-como-chegar", `${icon('pin', 14, 'currentColor')} Como chegar`)}</div>`)}
     </div>
   `;
 }
@@ -8973,6 +8979,28 @@ function attachMapCardEvents() {
   });
   holder.querySelectorAll("[data-open]").forEach(el => {
     el.onclick = () => openCourt(el.dataset.open);
+  });
+  // O cartão completo (regra 191): WhatsApp, compartilhar, favoritar e as
+  // fotos, como na lista.
+  holder.querySelectorAll("[data-stop]").forEach(el => {
+    if (el.__semAbrir) return;
+    el.__semAbrir = true;
+    el.addEventListener("click", (e) => e.stopPropagation());
+  });
+  holder.querySelectorAll("[data-track]").forEach(ligarRastreio);
+  holder.querySelectorAll("[data-share-card]").forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); shareCourt(el.dataset.shareCard); };
+  });
+  holder.querySelectorAll("[data-fav]").forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); toggleFavorite(el.dataset.fav); selectOnMap(el.dataset.fav); };
+  });
+  holder.querySelectorAll("[data-strip]").forEach(strip => {
+    strip.onscroll = () => {
+      const dots = strip.parentElement.querySelector("[data-dots]");
+      if (!dots || !strip.clientWidth) return;
+      const i = Math.round(strip.scrollLeft / strip.clientWidth);
+      dots.querySelectorAll("i").forEach((d, n) => d.classList.toggle("on", n === i));
+    };
   });
 }
 
@@ -17965,7 +17993,7 @@ function localLine(c) {
   return d ? `${lugar} · ${d} de você` : lugar;
 }
 
-function renderCard(c, badge) {
+function renderCard(c, badge, rodape = "") {
   const photos = courtPhotos(c);
   const fav = isFavorite(c.id);
   const precos = ofertas(c);
@@ -18028,6 +18056,10 @@ function renderCard(c, badge) {
       <div class="offer">
         <div class="offer-body">
           <div class="offer-precos">
+            ${/* O "a partir de" em cima da modalidade (regra 191, 01/11/2026: "na
+                 lista, a partir de acima da escrita sobre a modalidade"), como o
+                 "a partir de" do Booking e do hoteis.com, que vem antes do preço. */
+              precos.some(o => o.min) ? `<div class="offer-sub offer-sub-topo">a partir de</div>` : ""}
             <div class="offer-dois">
               ${(precos.length ? precos : [{ label: "Preço", min: null }]).map(o => `
                 <div class="offer-um">
@@ -18035,7 +18067,7 @@ function renderCard(c, badge) {
                   <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}<span class="offer-por-hora">${esc(o.curto || "/h")}</span>` : SEM_PRECO}</span>
                 </div>`).join("")}
             </div>
-            <div class="offer-sub">${precos.some(o => o.min) ? "a partir de" : SEM_PRECO_SUB}</div>
+            ${precos.some(o => o.min) ? "" : `<div class="offer-sub">${SEM_PRECO_SUB}</div>`}
           </div>
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>
@@ -18047,6 +18079,7 @@ function renderCard(c, badge) {
             ? (modalidadesTexto(c) ? `<p class="offer-note">${esc(modalidadesTexto(c))}</p>` : "")
             : `<p class="offer-note">${modalidadesTexto(c) ? `${esc(modalidadesTexto(c))} — confirme os valores com a academia.` : "Confirme o valor direto com a academia."}</p>`}
       </div>
+      ${rodape}
     </div>
   `;
 }
@@ -26486,9 +26519,7 @@ function attachEvents() {
   bindFormField("f-phone", "phone"); bindFormField("f-instagram", "instagram");
   bindFormField("f-site", "site");
 
-  document.querySelectorAll("[data-track]").forEach(el => {
-    el.addEventListener("click", () => trackClick(el.dataset.court, el.dataset.track));
-  });
+  document.querySelectorAll("[data-track]").forEach(ligarRastreio);
 
   document.querySelectorAll(".reg-quadra-count").forEach(el => {
     el.oninput = (e) => {

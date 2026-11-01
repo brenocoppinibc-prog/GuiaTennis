@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 01/11/2026 (regra 190)
+**Atualizado em:** 01/11/2026 (regra 191)
 
 | | |
 |---|---|
@@ -221,6 +221,10 @@ Produto (o que já foi decidido)
   ("ex.: 150 a 200", `EXEMPLOS_DE_VALOR`), nada escrito embaixo. Foto no Premium. Na ficha, as
   aulas das crianças são "Aula infantil …", com a idade, e têm o filtro
   "Crianças". Corte das fotos como o "Cortar" do Instagram.
+- **Lista e mapa da busca (regra 191):** no cartão da lista, o "a partir de"
+  fica em cima da modalidade e do preço; ao tocar no pino, o mapa mostra o
+  **mesmo cartão da lista** (`renderCard` com o "Como chegar" no rodapé), com
+  o ✕ num círculo em cima dele.
 - **"Ver no mapa"** da ficha abre o mapa da busca do GuiaTennis já na
   academia (`verNoMapaDoGuia`); o **"Como chegar"** fica no cartão do mapa
   e na localização da ficha, como link direto, sem tela de opções
@@ -304,7 +308,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (01/11/2026): **2.206 verificações** nos
+  segundo plano). Último resultado (01/11/2026): **2.212 verificações** nos
   75 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -370,7 +374,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (01/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 190**. De 28/10 a 01/11 entraram: o catálogo
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 191**. De 28/10 a 01/11 entraram: o catálogo
 com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
 no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
 intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
@@ -390,8 +394,9 @@ tocar na pessoa; e a regra 189: ficha reorganizada (sem pontinhos na capa,
 por modalidade + formatos sublinhados; SQL
 `20261030130000_sobre_da_academia`); e a regra 190: a aula volta a ter
 avulsa e mensal nos cartões da ficha e no cadastro, mas a escolha das
-opções segue só com individual, dupla e grupo. A descrição do PR tem uma
-linha por regra e os passos 1 a 24. Testes: 2.206 no navegador,
+opções segue só com individual, dupla e grupo; e a regra 191: na lista, o
+"a partir de" em cima da modalidade, e no mapa o cartão completo da lista.
+A descrição do PR tem uma linha por regra e os passos 1 a 25. Testes: 2.212 no navegador,
 nenhuma falha; o banco local do `banco-emails.py` não existe neste
 contêiner (última rodada 29/10: 716, nenhuma falha), e o SQL novo foi
 conferido pelo Actions ("Banco de dados" verde). Layouts da ficha em
@@ -401,8 +406,8 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2. **Chat trocado em
 acompanhar).
 
 **Pendências do Breno:**
-1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1 a 23
-   e 24 da descrição do PR: veracidade, ficha reorganizada, aula avulsa e
+1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1
+   a 25 da descrição do PR: veracidade, ficha reorganizada, aula avulsa e
    mensal nos cartões (regra 190), "Sobre" da academia, escolha das opções,
    convite por e-mail, Acessos, promoções, funções e Pagamentos, ajuda
    depois de cinco buscas) e dizer "pode subir".
@@ -430,8 +435,14 @@ acompanhar).
    do WhatsApp Business pela de `divulgacao/`.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
+8. Decidir o **acompanhamento do jogador** depois de chamar a academia
+   (proposto em 01/11, ainda não feito): e-mail no dia seguinte perguntando
+   se marcou (aula ou locação, dia e hora), lembrete 2h antes com como
+   chegar, estacionamento e a regra de cancelamento/reposição; WhatsApp do
+   jogador opcional, pedido só nessa hora, com o aceite; envio pelo WhatsApp
+   só depois da liberação da Meta (CNPJ).
 
-**Próximo número:** regra 191.
+**Próximo número:** regra 192.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -574,6 +585,13 @@ acompanhar).
   seguem só com individual, dupla e grupo ("Individual" mostra a avulsa e a
   mensal), e só a locação escolhe avulsa ou mensal. A aula gravada na 189
   com um valor só vale como avulsa. Sem SQL. Teste: `catalogo.js`.
+- 191 (01/11) Lista: "a partir de" em cima da modalidade e do preço (sem
+  preço, "Sob consulta" e "fale com a academia" como antes). Mapa: o pino
+  abre o cartão completo da lista (fotos, nota, endereço, estrutura,
+  preços, "Ver academia", WhatsApp, favoritar, compartilhar) mais o "Como
+  chegar", com o ✕ num círculo em cima; rola por dentro se não couber; o
+  clique no WhatsApp conta uma vez (`ligarRastreio`). Sem SQL. Teste:
+  `ver-no-mapa.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

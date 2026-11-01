@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 30/10/2026 (regra 188)
+**Atualizado em:** 01/11/2026 (regra 190)
 
 | | |
 |---|---|
@@ -200,18 +200,20 @@ Produto (o que já foi decidido)
   (Aulas para adultos, Aulas para crianças, Locação de quadra; só o que a
   academia tem, com o resumo; tocar de novo volta a todas) e, embaixo, os
   **formatos sublinhados** como as abas da ficha (aulas: individual, dupla,
-  grupo; locação: avulsa, mensal). Nenhuma escolha leva a lista vazia;
-  nada fala de quantidade.
+  grupo; locação: avulsa, mensal). A aula avulsa e a mensal **aparecem nos
+  cartões** (cada uma com o seu valor), mas **não se escolhem** (regra 190).
+  Nenhuma escolha leva a lista vazia; nada fala de quantidade.
   **Catálogo** só com modalidade e valor. No cadastro, a parte
   **Modalidades** (Aulas e/ou Locação de quadra; pelo menos uma, obrigatória
   também na edição; o admin segue só com o nome) abre as partes de cada uma, que só aparecem se escolhidas
   (`passoVisivel`; os índices continuam os de `REG_PASSOS`): **Aulas** (para
   quem: adultos e/ou crianças, as crianças em faixas de idade de 3 a 17
   anos, uma para cada turma, com "Adicionar faixa de idade" > formatos
-  individual, dupla, grupo > um cartão por formato com **um valor só, por
-  aula** (regra 189: a aula não é avulsa nem mensal; `cobranca: ""`; a aula
-  antiga com avulsa e mensal vira uma) e a foto; em branco não é oferecida,
-  sem valor = "Sob consulta") e **Locação** (avulsa e/ou
+  individual, dupla, grupo > um cartão por formato com os valores **avulso
+  e mensal, os dois por aula** (a mensal é o valor de cada aula no plano;
+  regra 190 desfez o "um valor só" da 189; a aula gravada com `cobranca: ""`
+  e valor vale como avulsa) e a foto; em branco não é oferecida, sem valor
+  nenhum = "Sob consulta", sem cobrança) e **Locação** (avulsa e/ou
   mensal, cada uma com o valor e a foto; **as duas por hora**, a mensal é o
   valor de cada hora no plano). Nada no catálogo é "por mês". Cada valor é um número ou um
   intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), numa linha
@@ -302,7 +304,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (30/10/2026): **2.202 verificações** nos
+  segundo plano). Último resultado (01/11/2026): **2.206 verificações** nos
   75 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -368,8 +370,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (01/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 189**
-(último commit de código `7277074`). De 28/10 a 01/11 entraram: o catálogo
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 190**. De 28/10 a 01/11 entraram: o catálogo
 com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
 no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
 intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
@@ -386,9 +387,11 @@ por **convite no e-mail**, sem senha provisória (SQL
 tocar na pessoa; e a regra 189: ficha reorganizada (sem pontinhos na capa,
 "Sobre" com o texto da academia até 750 letras logo depois da Estrutura,
 "Explore a região" logo depois das opções, escolha das opções em cartões
-por modalidade + formatos sublinhados) e **aula sem avulsa/mensal** (só a
-locação tem; SQL `20261030130000_sobre_da_academia`). A descrição do PR tem
-uma linha por regra e os passos 1 a 23. Testes: 2.202 no navegador,
+por modalidade + formatos sublinhados; SQL
+`20261030130000_sobre_da_academia`); e a regra 190: a aula volta a ter
+avulsa e mensal nos cartões da ficha e no cadastro, mas a escolha das
+opções segue só com individual, dupla e grupo. A descrição do PR tem uma
+linha por regra e os passos 1 a 24. Testes: 2.206 no navegador,
 nenhuma falha; o banco local do `banco-emails.py` não existe neste
 contêiner (última rodada 29/10: 716, nenhuma falha), e o SQL novo foi
 conferido pelo Actions ("Banco de dados" verde). Layouts da ficha em
@@ -398,9 +401,9 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2. **Chat trocado em
 acompanhar).
 
 **Pendências do Breno:**
-1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1 a 23 da
-   descrição do PR: veracidade, ficha reorganizada, catálogo sem
-   avulsa/mensal nas aulas, "Sobre" da academia, escolha das opções,
+1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1 a 23
+   e 24 da descrição do PR: veracidade, ficha reorganizada, aula avulsa e
+   mensal nos cartões (regra 190), "Sobre" da academia, escolha das opções,
    convite por e-mail, Acessos, promoções, funções e Pagamentos, ajuda
    depois de cinco buscas) e dizer "pode subir".
 1a. Decidir: o texto "Sobre" da academia vale em todos os planos (hoje)
@@ -428,7 +431,7 @@ acompanhar).
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
 
-**Próximo número:** regra 190.
+**Próximo número:** regra 191.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -561,9 +564,16 @@ acompanhar).
   telefone, link ou preço); "Explore a região" logo depois das opções;
   escolha das opções em cartões por modalidade + formatos sublinhados (sai
   a cara do hoteis.com); aulas sem avulsa/mensal (só a locação), no
-  cadastro, na ficha, nas perguntas, nos Termos e no chat. SQL
-  `20261030130000_sobre_da_academia`. Testes: `catalogo.js`,
+  cadastro, na ficha, nas perguntas, nos Termos e no chat (desfeito pela
+  190). SQL `20261030130000_sobre_da_academia`. Testes: `catalogo.js`,
   `ficha-hoteis.js`, `cadastro.js`.
+- 190 (01/11) "Aulas avulsas ou mensais devem sim aparecerem na ficha, só
+  não selecionar nas opções": a aula volta a ter avulsa e mensal (as duas
+  por aula) no cadastro, nos cartões da ficha, no "Sobre", nas perguntas, no
+  Google, nos Termos (01/11) e no chat; em "Opções para jogar", as aulas
+  seguem só com individual, dupla e grupo ("Individual" mostra a avulsa e a
+  mensal), e só a locação escolhe avulsa ou mensal. A aula gravada na 189
+  com um valor só vale como avulsa. Sem SQL. Teste: `catalogo.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

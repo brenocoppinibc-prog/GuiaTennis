@@ -3900,7 +3900,7 @@ function toRow(f) {
     .filter(i => modalidades.includes(tipoDoItem(i).grupo === "aula" ? "aulas_proprias" : "locacao"))
     .sort(ordemDoCatalogo).slice(0, CATALOGO_MAX));
   const avulsas = (grupo) => {
-    const doGrupo = catalogo.filter(i => tipoDoItem(i).grupo === grupo && (grupo === "aula" || i.cobranca === "avulsa") && priceMin(i.preco));
+    const doGrupo = catalogo.filter(i => tipoDoItem(i).grupo === grupo && i.cobranca === "avulsa" && priceMin(i.preco));
     const adultos = doGrupo.filter(i => i.publico !== "crianca");
     return faixaDosPrecos((adultos.length ? adultos : doGrupo).map(i => i.preco));
   };
@@ -19090,7 +19090,7 @@ function descricaoAcademia(c) {
     // Ponto e vírgula entre os tipos: a unidade já tem vírgula ("por pessoa, por aula").
     const lista = partes.length > 1 ? `${partes.slice(0, -1).join("; ")}; e ${partes[partes.length - 1]}` : partes[0];
     frases.push(`No catálogo da academia: ${lista}.`);
-    if (opcoes.some(o => o.grupo === "locacao" && o.cobranca === "mensal") && opcoes.some(o => o.grupo === "locacao" && o.cobranca !== "mensal" && temPreco(o.faixa))) frases.push("A locação também tem plano mensal.");
+    if (opcoes.some(o => o.cobranca === "mensal") && opcoes.some(o => o.cobranca !== "mensal" && temPreco(o.faixa))) frases.push("Também há planos mensais.");
     const semValor = [...new Set(opcoes.filter(o => !temPreco(o.faixa) && !comValor.some(x => x.resumo === o.resumo)).map(o => o.nomeResumo.toLowerCase()))];
     if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(n => "da " + n))} é sob consulta: fale com a academia.`);
   } else if (comValor.length) {
@@ -19283,7 +19283,10 @@ function htOpcoes(c) {
 // hotéis.com"): no lugar das caixas, um cartão por modalidade (com o resumo
 // do que tem nela) e, embaixo, os formatos sublinhados como as abas da
 // ficha. Nas aulas, o formato é individual, dupla ou grupo; avulsa e mensal
-// só na locação.
+// só se escolhem na locação. Regra 190 (01/11/2026: "aulas avulsas ou
+// mensais devem sim aparecerem na ficha, só não selecionar nas opções"): a
+// aula avulsa e a mensal aparecem nos cartões, cada uma com o seu valor, e
+// "Individual" mostra as duas.
 const MODALIDADES_DA_FICHA = [
   { key: "adulto", nome: "Aulas para adultos" }, { key: "aula", nome: "Aula" },
   { key: "crianca", nome: "Aulas para crianças" }, { key: "locacao", nome: "Locação de quadra" },
@@ -19658,13 +19661,12 @@ function itemDoCatalogo(x) {
   if (!x || typeof x !== "object") return null;
   const tipo = CATALOGO_TIPOS.find(t => t.key === x.tipo);
   if (!tipo) return null;
-  // A aula não é avulsa nem mensal (regra 189, 30/10/2026: "tire as opções
-  // de aula serem avulsas ou mensal, só para locação"): o valor é por aula.
-  // A aula que vinha avulsa e mensal fica uma só (semRepetir guarda a
-  // primeira, a avulsa).
+  // A aula volta a ser avulsa e/ou mensal (regra 190, 01/11/2026: "aulas
+  // avulsas ou mensais devem sim aparecerem na ficha"). A aula gravada com um
+  // valor só (regra 189, cobrança "") vale como avulsa.
   const item = {
     tipo: tipo.key,
-    cobranca: tipo.grupo === "aula" ? "" : x.cobranca === "mensal" ? "mensal" : "avulsa",
+    cobranca: x.cobranca === "mensal" ? "mensal" : "avulsa",
     preco: precoDoCatalogo(x.preco),
   };
   if (x.publico === "crianca" && tipo.infantil) {
@@ -19674,6 +19676,8 @@ function itemDoCatalogo(x) {
     if (de) item.idadeDe = de;
     if (ate) item.idadeAte = ate;
   }
+  // A aula sem valor nenhum vai sob consulta, sem a cobrança (regra 169).
+  if (x.cobranca === "" && !item.preco && tipo.grupo === "aula") item.cobranca = "";
   if (fotoDoCatalogoValida(x.foto)) item.foto = x.foto;
   return item;
 }
@@ -19771,7 +19775,7 @@ function gradeDosItens(itens, modalidades) {
       else if (!g.adulto.formatos.includes(i.tipo)) g.adulto.formatos.push(i.tipo);
       base = "adulto";
     }
-    g.valores[`${base}:${i.tipo}`] = i.preco || "";
+    if (i.cobranca) g.valores[`${base}:${i.tipo}:${i.cobranca}`] = i.preco || "";
     if (i.foto && !g.fotos[`${base}:${i.tipo}`]) g.fotos[`${base}:${i.tipo}`] = i.foto;
   });
   return g;
@@ -19786,12 +19790,13 @@ function cartoesDaGrade(g, bloco) {
 }
 function itensDaGrade(g) {
   const out = [];
-  // Um valor por aula (regra 189); sem valor, a aula vai sob consulta (a
-  // "Aula" do preço de antes, apagada, sai).
   const aula = (bloco, extra) => cartoesDaGrade(g, bloco).forEach(c => {
-    const preco = g.valores[c.chave] || "";
-    if (c.tipo.antigo && !priceMin(preco)) return;
-    out.push(itemDoCatalogo({ tipo: c.tipo.key, preco, ...extra, foto: g.fotos[c.chave] }));
+    const foto = g.fotos[c.chave];
+    const comValor = CATALOGO_COBRANCAS.filter(k => priceMin(g.valores[`${c.chave}:${k.key}`]));
+    // Sem valor nenhum, a aula vai sob consulta, sem dizer a cobrança (a
+    // "Aula" do preço de antes, apagada, sai).
+    if (!comValor.length && !c.tipo.antigo) out.push(itemDoCatalogo({ tipo: c.tipo.key, cobranca: "", preco: "", ...extra, foto }));
+    comValor.forEach(k => out.push(itemDoCatalogo({ tipo: c.tipo.key, cobranca: k.key, preco: g.valores[`${c.chave}:${k.key}`], ...extra, foto })));
   });
   if (g.adulto.on) aula("adulto", {});
   if (g.crianca.on) g.crianca.faixas.forEach(x => aula(x.id, { publico: "crianca", idadeDe: x.de, idadeAte: x.ate }));
@@ -20730,17 +20735,20 @@ function fotoDoCartao(f, g, chave, nome, rotulo) {
 // regra 182 (30/10/2026: "o valor mensal também será por aula"), a mensal
 // da aula é o valor de cada aula no plano mensal, abaixo da avulsa; desde a
 // regra 183, a locação mensal é o valor de cada hora no plano.
-// Desde a regra 189, a aula tem um valor só (sem avulsa e mensal).
+// A regra 189 deixou a aula com um valor só; a regra 190 (01/11/2026)
+// trouxe de volta a avulsa e a mensal.
 const EXEMPLOS_DE_VALOR = {
-  adulto: { individual: "150 a 200", dupla: "90 a 130", grupo: "60 a 80", aula: "120 a 180" },
-  crianca: { individual: "120 a 170", dupla: "80 a 110", grupo: "50 a 70" },
+  adulto: { individual: { avulsa: "150 a 200", mensal: "130 a 170" }, dupla: { avulsa: "90 a 130", mensal: "80 a 110" }, grupo: { avulsa: "60 a 80", mensal: "50 a 70" }, aula: { avulsa: "120 a 180", mensal: "100 a 150" } },
+  crianca: { individual: { avulsa: "120 a 170", mensal: "100 a 140" }, dupla: { avulsa: "80 a 110", mensal: "70 a 90" }, grupo: { avulsa: "50 a 70", mensal: "40 a 60" } },
   locacao: { avulsa: "100 a 150", mensal: "80 a 120" },
 };
-// O exemplo de um valor ("adulto:grupo", "f1:dupla", "locacao:avulsa").
+// O exemplo de um valor ("adulto:grupo:mensal", "f1:dupla:avulsa",
+// "locacao:avulsa").
 function exemploDoValor(chave) {
   const partes = chave.split(":");
   if (partes[0] === "locacao") return EXEMPLOS_DE_VALOR.locacao[partes[1]];
-  return EXEMPLOS_DE_VALOR[partes[0] === "adulto" ? "adulto" : "crianca"][partes[1]] || EXEMPLOS_DE_VALOR.adulto.aula;
+  const ex = EXEMPLOS_DE_VALOR[partes[0] === "adulto" ? "adulto" : "crianca"][partes[1]] || EXEMPLOS_DE_VALOR.adulto.aula;
+  return ex[partes[2]];
 }
 // O que a academia digita no valor: um número ou dois (o intervalo). O que
 // separa os dois (espaço, traço, vírgula, ponto) vira " a " na hora, e
@@ -20768,10 +20776,11 @@ function editorDasAulas(f) {
         <p class="cat-opcao-n">${esc(nome)}${c.tipo.porPessoa ? ` <span>valor por pessoa</span>` : ""}</p>
         ${c.tipo.antigo ? `<p class="cat-tipo-dica">É o preço de antes, sem o formato: escreva o valor no formato certo e apague este.</p>` : ""}
         <div class="cat-valores">
-          <div class="cat-valor-col">
-            <span class="cat-col">Valor<small>por aula</small></span>
-            ${campoDoValor(g, c.chave, nome.toLowerCase())}
-          </div>
+          ${CATALOGO_COBRANCAS.map(k => `
+            <div class="cat-valor-col">
+              <span class="cat-col">${k.nome}<small>por aula</small></span>
+              ${campoDoValor(g, `${c.chave}:${k.key}`, `${nome.toLowerCase()} ${k.nome.toLowerCase()}`)}
+            </div>`).join("")}
         </div>
         ${fotoDoCartao(f, g, c.chave, nome.toLowerCase(), "Foto desta aula")}
       </div>`;
@@ -20819,7 +20828,7 @@ function editorDasAulas(f) {
         </section>`).join("") + `
         <button type="button" class="cat-mais-faixa" data-cat-faixa-mais>${icon('plus', 15, 'currentColor')} Adicionar faixa de idade</button>` : ""}
     </div>
-    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor de cada aula. Sem valor, a aula mostra "Sob consulta". No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
+    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor por aula do que oferecem: avulsa, mensal (o valor de cada aula no plano) ou as duas. Sem valor nenhum, a aula mostra "Sob consulta". No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
 }
 // A parte "Locação" (só para quem escolheu a locação nas Modalidades, regra
 // 170): a avulsa e a mensal, cada uma com a foto e o valor.
@@ -22426,11 +22435,11 @@ function conteudoDasEstatisticas() {
 }
 
 const TERMS_HTML = `
-<p class="footnote">Última atualização: 30 de outubro de 2026</p>
+<p class="footnote">Última atualização: 1 de novembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
 <p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
-<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo, para adultos e para crianças, com a idade informada pela academia, por aula ou por pessoa, e locação, avulsa ou mensal, por hora; na mensal, o valor de cada hora no plano) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
+<p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo, para adultos e para crianças, com a idade informada pela academia, avulsa ou mensal, por aula ou por pessoa, e locação, avulsa ou mensal, por hora; na mensal, o valor de cada aula ou de cada hora no plano) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir, e o cadastro dela fica guardado como fechado (cadastro inativo), com as avaliações, fora do site. Se ela reabrir, quem a administrava volta a administrá-la pelo GuiaTennis Parceiros, com o mesmo e-mail; uma conta nova pede a reabertura ao GuiaTennis, que confere antes. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
@@ -22456,7 +22465,7 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 30 de outubro de 2026</p>
+<p class="footnote">Última atualização: 1 de novembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
 <p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome e o sobrenome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); a conta é a mesma do GuiaTennis Parceiros, e excluir num lugar exclui nos dois (com o acesso às academias que ela administra); ao excluir, os dados da conta são apagados, e as avaliações continuam publicadas sem o nome, sem o e-mail e sem a ligação com ela (aparecem como "Usuário do GuiaTennis").<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e sobrenome e o WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. Com a sua conta aberta, no site dos jogadores e no GuiaTennis Parceiros, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat, o título, se está em aberto ou resolvida e quando), para você ver o histórico em "Suas conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes de cada site; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do site. Se você editar a avaliação, a nota e o texto novos ficam no lugar dos de antes, e guardamos a data da última edição (a avaliação mostra "editada"); quem administra a academia recebe um e-mail com a avaliação editada. A resposta da academia editada também guarda a data da edição. O nome é o da conta, e trocar o nome da conta troca o nome nas avaliações. Se a conta for excluída, ou enquanto o nome estiver suspenso, a avaliação aparece como "Usuário do GuiaTennis".<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente, a última busca, a hora em que o site mostrou um aviso ou uma dica (para não repetir no mesmo dia) e, só enquanto a aba estiver aberta, quantas buscas seguidas você fez sem abrir uma academia (depois de cinco, o site oferece ajuda para encontrar as quadras mais perto). Nada disso usa o seu IP. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar as promoções das academias, os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso: até duas vezes por semana, mandamos um e-mail com a promoção patrocinada de uma academia do seu bairro ou perto de você (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra. Sem conta, as academias que você chama ficam só na aba aberta do navegador, para irem para a sua conta se você criar uma (o site convida depois da segunda academia chamada); fechou a aba, somem.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação: na hora, quando a conta do GuiaTennis Parceiros tem o e-mail confirmado; senão, depois da aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome e o sobrenome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e mandar o resumo do mês por e-mail (no plano Premium, o relatório completo). As pessoas da mesma academia veem o nome, o cargo e o e-mail umas das outras e o que cada uma pode fazer. Quando a academia ou o GuiaTennis convida alguém pelo e-mail, o GuiaTennis guarda esse e-mail (e o nome, se informado) até a pessoa criar a conta ou o convite ser cancelado, e manda a ela um único e-mail com o convite. Nas compras da academia, quem cuida dos pagamentos vê quem comprou, e os responsáveis principais recebem por e-mail o nome de quem comprou, o que foi comprado, o valor e a forma de pagamento. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. Do mesmo jeito, o WhatsApp que a conta escreve na ficha fica guardado fora do site até ser confirmado por um código de 6 números mandado a ele (guardado só de forma cifrada, vale 72 horas e 5 tentativas), junto da data, de quem pediu e, na troca, do número de antes; confirmado e conferido pelo GuiaTennis, ele passa a aparecer na ficha. Enquanto isso, o site não mostra aos visitantes que há um número esperando. Quando jogadores informam que o WhatsApp não é da academia, o número fica guardado fora do site enquanto o GuiaTennis confere. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. A pessoa exclui a própria conta em Perfil › Excluir minha conta, no Parceiros, ou em "Minha conta", no site dos jogadores (é o mesmo login): os dados da conta, dos dois lados, são apagados, as avaliações continuam com o nome, e a ficha da academia, que é pública, continua no Guia. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso, pessoa nova com acesso à academia (com o nome, o cargo e o e-mail dela), responsável principal novo, mudança de plano (com o que muda), a resposta do pedido para tirar a academia do Guia, pedido aceito, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha (de novo a cada 3 meses enquanto ela continuar igual) e, no começo de cada mês, o resumo dos números da academia no mês anterior; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
@@ -22679,7 +22688,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "preco-jog", onde: "jogadores", t: "Preço e \"Sob consulta\"",
     p: ["preco", "valor", "quanto custa", "quanto e", "sob consulta", "barato", "caro", "pagar", "pagamento", "cobra"],
-    r: "O preço aparece na ficha quando a academia informa, em \"Opções para jogar\": aula individual, em dupla e em grupo (por aula ou por pessoa) e locação, avulsa ou mensal (por hora; na mensal, o valor de cada hora no plano). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
+    r: "O preço aparece na ficha quando a academia informa, em \"Opções para jogar\": aula individual, em dupla e em grupo, avulsa ou mensal (por aula ou por pessoa), e locação, avulsa ou mensal (por hora; na mensal, o valor de cada aula ou de cada hora no plano). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "avaliar", onde: "jogadores", t: "Avaliar uma academia",
     p: ["avali", "nota", "comentar", "comentario", "estrelas", "opiniao"],
@@ -23224,7 +23233,7 @@ const CHAT_DETALHES_PC = [
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
   { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco", "valor mensal", "aula mensal", "locacao mensal"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, o valor por aula e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora (na mensal, o valor de cada hora no plano) e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano), e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora (na mensal, o valor de cada hora no plano) e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -26556,8 +26565,8 @@ function attachEvents() {
       const entrou = !dono.formatos.includes(tipo);
       dono.formatos = entrou ? [...dono.formatos, tipo] : dono.formatos.filter(x => x !== tipo);
       mudouCatalogo(true);
-      // O formato que entrou já fica com o cursor no valor.
-      if (entrou) focar(`[data-cat-valor="${bloco}:${tipo}"]`);
+      // O formato que entrou já fica com o cursor no valor avulso.
+      if (entrou) focar(`[data-cat-valor="${bloco}:${tipo}:avulsa"]`);
     };
   });
   document.querySelectorAll("[data-cat-valor]").forEach(el => {
@@ -26589,7 +26598,7 @@ function attachEvents() {
       const faixa = g.crianca.faixas.find(x => x.id === el.dataset.catCopiar);
       if (!faixa) return;
       faixa.formatos = [...g.adulto.formatos];
-      g.adulto.formatos.forEach(t => { g.valores[`${faixa.id}:${t}`] = g.valores[`adulto:${t}`] || ""; });
+      g.adulto.formatos.forEach(t => CATALOGO_COBRANCAS.forEach(k => { g.valores[`${faixa.id}:${t}:${k.key}`] = g.valores[`adulto:${t}:${k.key}`] || ""; }));
       mudouCatalogo(true);
     };
   });

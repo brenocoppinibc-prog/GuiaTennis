@@ -1048,6 +1048,9 @@
   .mcard-valores em { font-style: normal; font-size: 12.5px; font-weight: 500; color: var(--muted); margin-left: 1px; }
   .mcard-valores .sem-valor { font-size: 14px; font-weight: 600; color: var(--muted); }
   .mcard-wa { align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; min-height: 30px; margin-top: 2px; font: 600 13px var(--fonte-texto); color: var(--green); text-decoration: none; }
+  /* O dia e a hora do acompanhamento (regra 193), lado a lado. */
+  .marquei-quando { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .marquei-quando .form-field { margin-top: 0; width: 100%; }
   /* "a partir de" em cima da modalidade, na lista (regra 191). */
   .offer-sub.offer-sub-topo { margin: 0 0 2px; }
   .map-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 28px; color: var(--muted); font-size: 14px; background: var(--bg-alt); z-index: 900; }
@@ -4796,6 +4799,7 @@ function trackClick(courtId, type, detalhe, extras) {
   if (courtId && TIPOS_DE_CONTATO.includes(type)) lembrarChamada(courtId, type);
   if (courtId && TIPOS_DE_CONTATO.includes(type)) registrarPasso("contato", { academia: courtId, detalhe: `${NOME_DO_CONTATO[type] || type} · ${nomeDaAcademiaDoPasso(courtId)}` });
   if (courtId && type === "compartilhar") registrarPasso("acao", { academia: courtId, detalhe: `Compartilhou a ficha · ${nomeDaAcademiaDoPasso(courtId)}` });
+  if (courtId && type === "whatsapp") registrarAcompanhamento(courtId);
   // Quem está logado não entra na conta: nem acesso, nem busca, nem clique
   // na ficha — o admin testando e a academia olhando a própria ficha.
   if (naoConta()) return;
@@ -5835,6 +5839,7 @@ function render() {
     ${pushViagemHtml()}
     ${pushAjudaBuscaHtml()}
     ${renderPararAvisos()}
+    ${renderMarquei()}
     ${renderChat()}
     ${state.page === "perfil" ? renderPerfilJogador() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
@@ -7230,6 +7235,7 @@ async function carregarConta(session) {
     } catch { /* banco sem a função: segue só como academia */ }
   }
   if (jogador) await carregarBuscasSalvas();
+  if (jogador) await carregarMeusHorarios();
   if (jogador) levarParaAConta();
   await carregarNomeSuspenso();
   await carregarMinhasAvaliacoes();
@@ -15087,6 +15093,8 @@ const AVISOS_JOGADOR = [
   // ligado, então não aparece no cadastro, só na conta. Banco sem a coluna:
   // não aparece nem é salvo.
   { campo: "lembrete_de_volta", t: "Lembrete se eu ficar 3 meses sem entrar, com as academias novas da minha cidade", soNaConta: true },
+  // Acompanhamento depois de chamar uma academia (regra 193): começa ligado.
+  { campo: "acompanhamento", t: "Depois de chamar uma academia: perguntar se marquei e lembrar 2h antes, com como chegar", soNaConta: true },
 ];
 // Os avisos que a tela mostra: no cadastro, sem os que já começam ligados.
 function avisosDaTela(j, cadastro) {
@@ -15789,6 +15797,14 @@ async function salvarContaJogador() {
   const dados = { nome: String(f.nome).trim(), cidade: String(f.cidade || "").trim() || null,
     ...Object.fromEntries(daTela.map(a => [a.campo, !!f[a.campo]])) };
   if (mudou) dados.avisos_mudados_em = new Date().toISOString();
+  // O WhatsApp opcional vai pela função do banco, que confere o número e
+  // guarda a hora do aceite (regra 193).
+  if ("whatsapp" in jogador && "whatsapp" in f) {
+    const numero = String(f.whatsapp || "").replace(/\D/g, "");
+    if (numero !== String(jogador.whatsapp || "") || (!!numero && !!f.whatsappAceite !== !!jogador.whatsapp_aceite_em)) {
+      if (!(await salvarWhatsappDoJogador())) return;
+    }
+  }
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const { error } = await sb.from('jogadores').update(dados).eq('user_id', jogador.user_id);
   state.jogadorSalvando = false;
@@ -15809,6 +15825,234 @@ async function salvarContaJogador() {
   render();
 }
 
+// ---------- Acompanhamento depois de chamar a academia (regra 193) ----------
+// Pedido do Breno em 01/11/2026: "quero criar um sistema de acompanhamento
+// ao jogador que vai para academia depois de ter entrado em contato, dar as
+// instruções novamente de como chegar e reposições por whatsapp ou email.
+// confirmando se ele fez um agendamento, se aula ou locação e avisando 2h
+// antes de como fazer". Como os e-mails do Booking e do Airbnb antes da
+// chegada e o lembrete do OpenTable: a conta com o e-mail confirmado chama
+// uma academia pelo WhatsApp; no dia seguinte, o e-mail pergunta se marcou
+// (o GuiaTennis não reserva). O link do e-mail (/?marquei=<chave>&r=…)
+// abre esta folha, sem precisar entrar: aula ou locação, o dia e a hora, e
+// o WhatsApp opcional (com o aceite; por enquanto, os lembretes chegam por
+// e-mail). Duas horas antes, o e-mail com como chegar, o estacionamento e o
+// cancelamento e a reposição — o texto que a ficha mostra, guardado aqui.
+function registrarAcompanhamento(id) {
+  if (!jogador || !jogador.email_confirmado_em || isAdmin || jogador.acompanhamento === false) return;
+  try { sb.rpc('registrar_chamada', { p_academia: id }).then(() => {}, () => {}); } catch {}
+}
+function enderecoDaAcademia(c) {
+  return [[c.address, c.numero].filter(Boolean).join(", "), c.bairro, c.cidade].filter(Boolean).join(", ") || c.endereco || "";
+}
+// O cancelamento e a reposição em uma frase (a mesma das perguntas da ficha).
+function fraseDaPolitica(p, oque) {
+  const partes = [];
+  if (p.reposicao === "nao") partes.push(`A academia informou que não faz reposição de ${oque} desmarcada.`);
+  else if (p.horas) partes.push(`Desmarcando a ${oque} com ${p.horas} horas de antecedência ou mais, gera reposição. Com menos que isso, não.`);
+  if (p.foraDoPrazo) partes.push(arrumarTexto(p.foraDoPrazo));
+  return partes.join(" ");
+}
+function textoDoEstacionamento(c) {
+  const am = c.amenities || [];
+  if (regraDoEstacionamento(c)) return "No local. " + estacionamentoDetalhe(c);
+  if (am.includes("estacionamento_gratuito")) return "Grátis, no local.";
+  if (am.includes("estacionamento_pago")) return "Pago, no local.";
+  return estacionarLinhas(c).length ? "Sem estacionamento próprio. " + estacionarTexto(c) : "";
+}
+function instrucoesDoAcompanhamento(c, tipo) {
+  if (!c) return {};
+  const a = acessoFicha(c);
+  const oque = tipo === "locacao" ? "reserva" : "aula";
+  let cancelamento = "";
+  if (temPolitica(c)) {
+    const pol = politicaDe(c);
+    const parte = pol.modo === "separado" ? (tipo === "locacao" ? pol.locacao : pol.aula) : pol.geral;
+    cancelamento = parteVale(parte) ? fraseDaPolitica(parte, oque) : "";
+  }
+  return { endereco: enderecoDaAcademia(c), chegada: [a.fachada, a.entrada].filter(Boolean).join(" "), estacionamento: textoDoEstacionamento(c), cancelamento };
+}
+function lerMarqueiDoLink() {
+  try {
+    const q = new URLSearchParams(location.search);
+    const chave = q.get("marquei");
+    if (!chave) return;
+    const r = q.get("r");
+    state.marquei = { chave, r: ["aula", "locacao", "nao", "cancelar"].includes(r) ? r : "", carregando: true, escolha: ["aula", "locacao"].includes(r) ? r : "", dia: "", hora: "", whatsapp: "", aceite: false, erro: "" };
+    q.delete("marquei"); q.delete("r");
+    const resto = q.toString();
+    history.replaceState(history.state, "", location.pathname + (resto ? "?" + resto : "") + location.hash);
+    carregarMarquei();
+  } catch {}
+}
+async function carregarMarquei() {
+  const m = state.marquei;
+  if (!m) return;
+  let r;
+  try { r = await sb.rpc('acompanhamento_por_chave', { p_chave: m.chave }); } catch (e) { r = { error: e }; }
+  m.carregando = false;
+  const info = r && !r.error ? (Array.isArray(r.data) ? r.data[0] : r.data) : null;
+  const invalido = r && r.error && (r.error.code === "22P02" || /invalid input syntax/i.test(r.error.message || ""));
+  if (r && r.error && !invalido) { m.erro = falhou("abrir o acompanhamento", r.error, { texto: "Não consegui abrir agora. Tente de novo em instantes." }); render(); return; }
+  if (!info) { m.invalido = true; render(); return; }
+  m.info = info;
+  // "Ainda não" no e-mail: anota na hora (um toque, como o "Não" do Booking).
+  if (m.r === "nao") { await responderMarquei("nao"); return; }
+  render();
+}
+async function responderMarquei(resposta) {
+  const m = state.marquei;
+  if (!m || !m.info) return;
+  const args = { p_chave: m.chave, p_resposta: resposta };
+  if (resposta === "aula" || resposta === "locacao") {
+    if (!m.dia || !m.hora) { m.erro = "Escolha o dia e a hora."; render(); return; }
+    const c = state.allCourts.find(x => x.id === m.info.academia_id);
+    Object.assign(args, { p_dia: m.dia, p_hora: m.hora, p_instrucoes: instrucoesDoAcompanhamento(c ? decorate(c) : null, resposta) });
+    if (String(m.whatsapp || "").replace(/\D/g, "")) Object.assign(args, { p_whatsapp: m.whatsapp, p_aceite_whatsapp: !!m.aceite });
+  }
+  m.salvando = true; m.erro = ""; render();
+  let r;
+  try { r = await sb.rpc('responder_acompanhamento', args); } catch (e) { r = { error: e }; }
+  m.salvando = false;
+  if (r.error) {
+    m.erro = r.error.code === "22023" ? r.error.message : falhou("responder o acompanhamento", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes." });
+    render();
+    return;
+  }
+  m.feito = r.data;
+  if (jogador && args.p_whatsapp && args.p_aceite_whatsapp) { jogador.whatsapp = String(args.p_whatsapp).replace(/\D/g, ""); jogador.whatsapp_aceite_em = new Date().toISOString(); }
+  registrarPasso("acao", { academia: m.info.academia_id, detalhe: resposta === "nao" ? "Ainda não marcou" : resposta === "cancelar" ? "Tirou o lembrete" : `Marcou ${resposta === "locacao" ? "locação" : "aula"}` });
+  carregarMeusHorarios();
+  render();
+}
+function dataEHora(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  const dia = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", weekday: "long", day: "numeric", month: "long" });
+  const hora = d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }).replace(":00", "h").replace(":", "h");
+  return `${dia}, às ${hora}`;
+}
+function renderMarquei() {
+  const m = state.marquei;
+  if (!m) return "";
+  const info = m.info || {};
+  const c = info.academia_id && state.allCourts.find(x => x.id === info.academia_id);
+  const temAula = !c || ofereceModalidade(c, "aulas_proprias") || !ofereceModalidade(c, "locacao");
+  const temLoc = !c || ofereceModalidade(c, "locacao") || !ofereceModalidade(c, "aulas_proprias");
+  const escolha = (k, t) => `<button type="button" class="chip ${m.escolha === k ? "active" : ""}" data-marquei-escolha="${k}" aria-pressed="${m.escolha === k}">${t}</button>`;
+  let corpo;
+  if (m.carregando) corpo = `<p class="subtitle" style="margin-top:6px">${bolaGirando(16)} Abrindo</p>`;
+  else if (m.invalido) corpo = `
+    <p class="sheet-title display">Este link não vale mais</p>
+    <button type="button" class="cta-btn cta-primary" id="marquei-ok" style="margin-top:16px;width:100%">Continuar no GuiaTennis</button>`;
+  else if (m.feito === "marcou") corpo = `
+    <p class="sheet-title display">Pronto</p>
+    <p class="subtitle" style="margin-top:6px">${m.escolha === "locacao" ? "Locação" : "Aula"} na ${esc(info.academia)}: ${esc(dataEHora(new Date(m.dia + "T" + m.hora + ":00-03:00").toISOString()))}. Duas horas antes, você recebe por e-mail como chegar e a regra de cancelamento e reposição.</p>
+    ${c ? `<button type="button" class="cta-btn cta-primary" data-marquei-ficha="${c.id}" style="margin-top:16px;width:100%">Ver a ficha da academia</button>` : ""}
+    <button type="button" class="inline-link" id="marquei-ok" style="margin-top:12px">Fechar</button>`;
+  else if (m.feito === "nao_marcou") corpo = `
+    <p class="sheet-title display">Tudo bem</p>
+    <p class="subtitle" style="margin-top:6px">Se marcar depois, use o mesmo link do e-mail.</p>
+    <button type="button" class="cta-btn cta-primary" id="marquei-ok" style="margin-top:16px;width:100%">Continuar no GuiaTennis</button>`;
+  else if (m.feito === "cancelado") corpo = `
+    <p class="sheet-title display">Lembrete tirado</p>
+    <button type="button" class="cta-btn cta-primary" id="marquei-ok" style="margin-top:16px;width:100%">Continuar no GuiaTennis</button>`;
+  else if (m.r === "cancelar") corpo = `
+    <p class="sheet-title display">Tirar o lembrete?</p>
+    <p class="subtitle" style="margin-top:6px">${info.quando ? `${info.tipo === "locacao" ? "Locação" : "Aula"} na ${esc(info.academia)}: ${esc(dataEHora(info.quando))}.` : esc(info.academia)}</p>
+    ${m.erro ? `<div class="form-error">${icon('warning', 13)} ${esc(m.erro)}</div>` : ""}
+    <button type="button" class="cta-btn cta-primary" data-marquei-responder="cancelar" style="margin-top:16px;width:100%" ${m.salvando ? "disabled" : ""}>${m.salvando ? bolaGirando(16) + " Tirando" : "Tirar o lembrete"}</button>
+    <button type="button" class="inline-link" id="marquei-ok" style="margin-top:12px">Manter o lembrete</button>`;
+  else corpo = `
+    <p class="sheet-title display">Você marcou na ${esc(info.academia || "academia")}?</p>
+    ${info.status === "marcou" && info.quando && !m.escolha ? `<p class="subtitle" style="margin-top:6px">Está anotado: ${info.tipo === "locacao" ? "locação" : "aula"}, ${esc(dataEHora(info.quando))}.</p>` : ""}
+    <div class="chip-row" role="group" aria-label="O que você marcou" style="margin-top:14px">
+      ${temAula ? escolha("aula", "Marquei aula") : ""}${temLoc ? escolha("locacao", "Marquei locação") : ""}
+      <button type="button" class="chip" data-marquei-responder="nao">Ainda não</button>
+    </div>
+    ${m.escolha ? `
+      <div class="marquei-quando">
+        <label><span class="field-label">Dia</span><input type="date" class="form-field" id="marquei-dia" min="${hojeEmBrasilia()}" max="${hojeEmBrasilia(60)}" value="${esc(m.dia)}" /></label>
+        <label><span class="field-label">Hora</span><input type="time" class="form-field" id="marquei-hora" step="300" value="${esc(m.hora)}" /></label>
+      </div>
+      ${info.tem_whatsapp ? "" : `
+        <label class="field-label" for="marquei-whatsapp">WhatsApp (opcional)</label>
+        <input type="tel" class="form-field" id="marquei-whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${esc(m.whatsapp)}" style="margin-top:0" />
+        <label class="consent-row"><input type="checkbox" id="marquei-aceite" ${m.aceite ? "checked" : ""} /><span>Aceito receber os lembretes no WhatsApp</span></label>
+        <p class="footnote" style="margin:4px 0 0">Por enquanto, os lembretes chegam por e-mail.</p>`}
+      ${m.erro ? `<div class="form-error">${icon('warning', 13)} ${esc(m.erro)}</div>` : ""}
+      <button type="button" class="cta-btn cta-primary" data-marquei-responder="${m.escolha}" style="margin-top:16px;width:100%" ${m.salvando ? "disabled" : ""}>${m.salvando ? bolaGirando(16) + " Salvando" : "Confirmar"}</button>
+    ` : (m.erro ? `<div class="form-error">${icon('warning', 13)} ${esc(m.erro)}</div>` : "")}`;
+  return `
+    <div class="overlay open" id="marquei-overlay">
+      <div class="sheet"><div class="sheet-content" role="dialog" aria-label="Acompanhamento">
+        <button type="button" class="sheet-close" id="marquei-fechar" aria-label="Fechar">✕</button>
+        ${corpo}
+      </div></div>
+    </div>`;
+}
+function ligarEventosMarquei() {
+  if (!state.marquei) return;
+  const m = state.marquei;
+  ["marquei-ok", "marquei-fechar"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.onclick = () => { state.marquei = null; render(); };
+  });
+  document.querySelectorAll("[data-marquei-escolha]").forEach(el => {
+    el.onclick = () => { m.escolha = el.dataset.marqueiEscolha; m.erro = ""; render(); };
+  });
+  document.querySelectorAll("[data-marquei-responder]").forEach(el => {
+    el.onclick = () => responderMarquei(el.dataset.marqueiResponder);
+  });
+  document.querySelectorAll("[data-marquei-ficha]").forEach(el => {
+    el.onclick = () => { const id = el.dataset.marqueiFicha; state.marquei = null; openCourt(id); };
+  });
+  const dia = document.getElementById("marquei-dia");
+  if (dia) dia.oninput = dia.onchange = () => { m.dia = dia.value; };
+  const hora = document.getElementById("marquei-hora");
+  if (hora) hora.oninput = hora.onchange = () => { m.hora = hora.value; };
+  const whats = document.getElementById("marquei-whatsapp");
+  if (whats) whats.oninput = () => { m.whatsapp = whats.value; };
+  const aceite = document.getElementById("marquei-aceite");
+  if (aceite) aceite.onchange = () => { m.aceite = aceite.checked; };
+}
+// Os horários marcados, na conta (Minha conta › Seus horários).
+async function carregarMeusHorarios() {
+  if (!jogador) { state.meusHorarios = []; return; }
+  try {
+    const { data, error } = await sb.from('acompanhamentos').select('id, chave, academia_id, status, tipo, quando').eq('status', 'marcou').gte('quando', new Date(Date.now() - 2 * 3600000).toISOString());
+    state.meusHorarios = !error && Array.isArray(data) ? data.sort((a, b) => String(a.quando).localeCompare(String(b.quando))) : [];
+  } catch { state.meusHorarios = []; }
+}
+async function tirarHorario(chave) {
+  let r;
+  try { r = await sb.rpc('responder_acompanhamento', { p_chave: chave, p_resposta: 'cancelar' }); } catch (e) { r = { error: e }; }
+  if (r.error) { state.jogadorErro = falhou("tirar o lembrete", r.error, { texto: "Não consegui tirar o lembrete agora. Tente de novo em instantes." }); render(); return; }
+  state.meusHorarios = (state.meusHorarios || []).filter(h => h.chave !== chave);
+  state.jogadorAviso = "Lembrete tirado.";
+  render();
+}
+async function salvarWhatsappDoJogador() {
+  const f = window.__jog || {};
+  const numero = String(f.whatsapp || "").replace(/\D/g, "");
+  state.jogadorSalvando = true; state.jogadorErro = ""; render();
+  let r;
+  try { r = await sb.rpc('salvar_whatsapp_do_jogador', { p_whatsapp: numero, p_aceite: !!f.whatsappAceite }); } catch (e) { r = { error: e }; }
+  state.jogadorSalvando = false;
+  if (r.error) {
+    state.jogadorErro = r.error.code === "22023" ? r.error.message : falhou("salvar o WhatsApp", r.error, { texto: "Não consegui salvar o WhatsApp agora. Tente de novo em instantes." });
+    render();
+    return false;
+  }
+  jogador.whatsapp = r.data || null;
+  jogador.whatsapp_aceite_em = r.data ? (jogador.whatsapp_aceite_em || new Date().toISOString()) : null;
+  return true;
+}
+function whatsappNaTela(n) {
+  const d = String(n || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  return d.length === 11 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : d.length === 10 ? `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}` : d;
+}
+
 // ---------- "Não quero mais receber" dos e-mails (05/10/2026) ----------
 // Como o "Cancelar inscrição" do Booking e do Google: o link do rodapé de
 // cada aviso (?parar-avisos=<número da conta>&aviso=…) abre uma folha que
@@ -15819,6 +16063,7 @@ const AVISOS_DO_LINK = {
   novas: "os avisos de academias novas (da sua cidade e das buscas salvas)",
   promocoes: "as promoções das academias favoritas e perto de você",
   volta: "o lembrete de quando você fica 3 meses sem entrar",
+  acompanhamento: "o acompanhamento depois de chamar uma academia (a pergunta se marcou, o lembrete 2h antes e o \"Como foi?\")",
   todos: "todos os avisos por e-mail do GuiaTennis",
   parceiros: "os avisos de avaliação nova, de pedidos de acesso, o lembrete de conferir a ficha e o resumo do mês do GuiaTennis Parceiros",
 };
@@ -15854,7 +16099,8 @@ async function confirmarPararAvisos() {
   if (jogador && r.data === "viagem") jogador.avisos_viagem = false;
   if (jogador && r.data === "novas") { jogador.avisos_academias = false; buscasSalvas.forEach(b => { b.avisar = false; }); }
   if (jogador && r.data === "volta") jogador.lembrete_de_volta = false;
-  if (jogador && r.data === "todos") { ["avisos_academias", "promocoes", "novidades", "avisos_viagem"].forEach(k => { jogador[k] = false; }); if ("lembrete_de_volta" in jogador) jogador.lembrete_de_volta = false; buscasSalvas.forEach(b => { b.avisar = false; }); }
+  if (jogador && r.data === "acompanhamento") jogador.acompanhamento = false;
+  if (jogador && r.data === "todos") { ["avisos_academias", "promocoes", "novidades", "avisos_viagem"].forEach(k => { jogador[k] = false; }); ["lembrete_de_volta", "acompanhamento"].forEach(k => { if (k in jogador) jogador[k] = false; }); buscasSalvas.forEach(b => { b.avisar = false; }); }
   if (contaAcademia && r.data === "parceiros") contaAcademia.avisosPorEmail = false;
   render();
 }
@@ -15887,7 +16133,9 @@ function renderPararAvisos() {
 // tudo o que é da pessoa — as quadras dela, o que falta avaliar, os dados,
 // os avisos por e-mail e o login. Endereço próprio: /perfil.
 function formDoJogador() {
-  return { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(avisosDaTela(jogador, false).map(a => [a.campo, !!jogador[a.campo]])) };
+  return { nome: jogador.nome || "", cidade: jogador.cidade || "", ...Object.fromEntries(avisosDaTela(jogador, false).map(a => [a.campo, !!jogador[a.campo]])),
+    // O WhatsApp opcional (regra 193), com o aceite.
+    ...("whatsapp" in jogador ? { whatsapp: whatsappNaTela(jogador.whatsapp), whatsappAceite: !!jogador.whatsapp_aceite_em } : {}) };
 }
 function irPerfil(ancora) {
   if (!jogador) {
@@ -15943,6 +16191,15 @@ function renderPerfilJogador() {
       ${jogador.email_confirmado_em ? "" : `<p class="email-sugestao">E-mail ainda não confirmado: os avisos só chegam depois de confirmar. <button type="button" class="inline-link" id="jog-confirmar-agora">Confirmar agora</button></p>`}
       ${state.jogadorAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.jogadorAviso)}</p>` : ""}
       <div class="perfil-grade">
+        ${(state.meusHorarios || []).length ? `
+        <section class="perfil-cartao perfil-largo" id="perfil-horarios">
+          <h2>Seus horários</h2>
+          <p>Duas horas antes, você recebe por e-mail como chegar e a regra de cancelamento e reposição.</p>
+          <div class="perfil-lista">${state.meusHorarios.map(h => {
+            const ac = state.allCourts.find(x => x.id === h.academia_id);
+            return `<div class="perfil-item" style="cursor:default">${icon('relogio', 20, 'var(--text)')}<span>${esc(ac ? ac.name : "Academia")}<small>${h.tipo === "locacao" ? "Locação" : "Aula"} · ${esc(dataEHora(h.quando))}</small></span><button type="button" class="inline-link" data-tirar-horario="${esc(h.chave)}">Não vou mais</button></div>`;
+          }).join("")}</div>
+        </section>` : ""}
         ${paraAvaliar.length ? `
         <section class="perfil-cartao perfil-largo" id="perfil-avaliar">
           <h2>Jogou nessas academias?</h2>
@@ -15975,6 +16232,11 @@ function renderPerfilJogador() {
           <label class="field-label" for="jog-cidade">Cidade</label>
           <input class="form-field jog-campo" data-campo="cidade" id="jog-cidade" list="jog-cidades" value="${esc(f.cidade || "")}" style="margin-top:0" />
           <datalist id="jog-cidades">${cidadesComQuadra().map(c => `<option value="${esc(c.nome)}"></option>`).join("")}</datalist>
+          ${"whatsapp" in jogador ? `
+          <label class="field-label" for="jog-whatsapp">WhatsApp (opcional)</label>
+          <input class="form-field jog-campo" data-campo="whatsapp" id="jog-whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${esc(f.whatsapp || "")}" style="margin-top:0" />
+          <label class="consent-row"><input type="checkbox" id="jog-whatsapp-aceite" ${f.whatsappAceite ? "checked" : ""} /><span>Aceito receber os lembretes no WhatsApp</span></label>
+          <p class="footnote" style="margin:4px 0 0">Por enquanto, os lembretes chegam por e-mail.</p>` : ""}
           <h2 id="perfil-avisos" style="margin-top:24px">Avisos por e-mail</h2>
           <p>${buscasSalvas.length ? "Cada busca salva tem o próprio aviso, em Buscas salvas. " : ""}O aviso da viagem fica em Vou viajar.</p>
           ${avisos}
@@ -16077,6 +16339,8 @@ function avaliarAcademiaChamada(id, estrelas) {
 }
 
 function ligarEventosJogador() {
+  ligarEventosMarquei();
+  document.querySelectorAll("[data-tirar-horario]").forEach(el => { el.onclick = () => tirarHorario(el.dataset.tirarHorario); });
   const pararSim = document.getElementById("parar-sim");
   if (pararSim) pararSim.onclick = () => confirmarPararAvisos();
   ["parar-nao", "parar-ok", "parar-fechar"].forEach(id => {
@@ -16173,6 +16437,8 @@ function ligarEventosJogador() {
   document.querySelectorAll(".jog-aviso").forEach(el => {
     el.onchange = (e) => { window.__jog = { ...(window.__jog || {}), [el.dataset.campo]: e.target.checked }; };
   });
+  const whatsAceite = document.getElementById("jog-whatsapp-aceite");
+  if (whatsAceite) whatsAceite.onchange = (e) => { window.__jog = { ...(window.__jog || {}), whatsappAceite: e.target.checked }; };
   const aceite = document.getElementById("jog-aceite");
   if (aceite) aceite.onchange = (e) => {
     window.__jog = { ...(window.__jog || {}), aceite: e.target.checked };
@@ -20260,13 +20526,7 @@ function perguntasAcademia(c) {
 
   if (temPolitica(c)) {
     const pol = politicaDe(c);
-    const frase = (p, oque) => {
-      const partes = [];
-      if (p.reposicao === "nao") partes.push(`A academia informou que não faz reposição de ${oque} desmarcada.`);
-      else if (p.horas) partes.push(`Desmarcando a ${oque} com ${p.horas} horas de antecedência ou mais, gera reposição. Com menos que isso, não.`);
-      if (p.foraDoPrazo) partes.push(arrumarTexto(p.foraDoPrazo));
-      return partes.join(" ");
-    };
+    const frase = fraseDaPolitica;
     const texto = pol.modo === "separado"
       ? [parteVale(pol.aula) ? "Aula: " + frase(pol.aula, "aula") : "",
          parteVale(pol.locacao) ? "Locação: " + frase(pol.locacao, "reserva") : ""].filter(Boolean).join(" ")
@@ -22539,7 +22799,7 @@ function conteudoDasEstatisticas() {
 const TERMS_HTML = `
 <p class="footnote">Última atualização: 1 de novembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Sobre o GuiaTennis</p>
-<p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
+<p style="font-size:14px">O GuiaTennis é um Guia online que reúne informações sobre quadras e academias de tênis, permitindo buscar por localização, comparar comodidades e preços, e entrar em contato diretamente com os estabelecimentos. O GuiaTennis não é dono, operador ou representante de nenhuma academia ou quadra listada, e não realiza reservas, cobranças ou intermediação de pagamentos. Toda negociação é feita diretamente entre o usuário e o estabelecimento. Depois que uma conta chama uma academia, o GuiaTennis pode perguntar por e-mail se ela marcou e, com a resposta dela, lembrar do horário duas horas antes, com como chegar, o estacionamento e o cancelamento e a reposição que a ficha mostra; o horário é o que o usuário informou, sem confirmação da academia, e vale o que foi combinado com ela. O GuiaTennis publica na página inicial os totais somados de uso do site desde o começo, arredondados para baixo e sem identificar ninguém.</p>
 <p class="field-label" style="margin-top:16px">2. Precisão das informações</p>
 <p style="font-size:14px">As informações exibidas são fornecidas pelas próprias academias, ou coletadas de fontes públicas quando o estabelecimento ainda não confirmou os dados — nesse caso a página mostra que é uma <strong>ficha básica</strong>. Das fontes públicas vêm só dados de identificação e localização (nome, endereço, telefone comercial, site e redes sociais), do OpenStreetMap (© colaboradores do OpenStreetMap, licença ODbL) ou do site e perfil público da própria academia; fotos, textos e avaliações de outros sites não são copiados. O GuiaTennis não garante que preços, disponibilidade, comodidades ou regras de cancelamento e reposição estejam sempre exatos — confirme diretamente com a academia antes de fechar um horário. Os valores do catálogo de aulas e locação (aula individual, em dupla e em grupo, para adultos e para crianças, com a idade informada pela academia, avulsa ou mensal, por aula ou por pessoa, e locação, avulsa ou mensal, por hora; na mensal, o valor de cada aula ou de cada hora no plano) são os que a academia informou; a matrícula, o plano mensal, a reposição e o pagamento são combinados direto com ela. A política de cancelamento e reposição mostrada é da academia, que pode mudá-la a qualquer momento; o GuiaTennis apenas reproduz o que ela informou e não participa dessa combinação. A ficha confirmada mostra quando a academia a atualizou pela última vez e, depois de um ano sem atualização, pede para confirmar os dados com ela; a cada 3 meses sem mudança, a academia recebe um lembrete para conferir a ficha, e o GuiaTennis acompanha as fichas paradas e pode conferi-las por conta própria. O WhatsApp que a academia põe na ficha pelo GuiaTennis Parceiros só aparece depois de confirmado por um código mandado a ele e da conferência do GuiaTennis; até lá, a ficha mostra o número de antes (ou fica sem o botão do WhatsApp). Quem tem conta, com o e-mail confirmado, pode <strong>informar um problema</strong> na ficha (o WhatsApp não é da academia, ela fechou, o endereço, o preço ou o horário estão errados, ou outro): a academia fica sabendo, sem saber quem informou, e o GuiaTennis confere. Quando duas contas diferentes informam que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir. Quando a própria academia avisa que fechou, a ficha sai do site na hora, enquanto o GuiaTennis confere; se a academia continuar aberta, ela volta como estava.</p>
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
@@ -22569,7 +22829,7 @@ const TERMS_HTML = `
 const PRIVACY_HTML = `
 <p class="footnote">Última atualização: 1 de novembro de 2026</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
-<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome e o sobrenome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); a conta é a mesma do GuiaTennis Parceiros, e excluir num lugar exclui nos dois (com o acesso às academias que ela administra); ao excluir, os dados da conta são apagados, e as avaliações continuam publicadas sem o nome, sem o e-mail e sem a ligação com ela (aparecem como "Usuário do GuiaTennis").<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e sobrenome e o WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. Com a sua conta aberta, no site dos jogadores e no GuiaTennis Parceiros, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat, o título, se está em aberto ou resolvida e quando), para você ver o histórico em "Suas conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes de cada site; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do site. Se você editar a avaliação, a nota e o texto novos ficam no lugar dos de antes, e guardamos a data da última edição (a avaliação mostra "editada"); quem administra a academia recebe um e-mail com a avaliação editada. A resposta da academia editada também guarda a data da edição. O nome é o da conta, e trocar o nome da conta troca o nome nas avaliações. Se a conta for excluída, ou enquanto o nome estiver suspenso, a avaliação aparece como "Usuário do GuiaTennis".<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente, a última busca, a hora em que o site mostrou um aviso ou uma dica (para não repetir no mesmo dia) e, só enquanto a aba estiver aberta, quantas buscas seguidas você fez sem abrir uma academia (depois de cinco, o site oferece ajuda para encontrar as quadras mais perto). Nada disso usa o seu IP. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar as promoções das academias, os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso: até duas vezes por semana, mandamos um e-mail com a promoção patrocinada de uma academia do seu bairro ou perto de você (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra. Sem conta, as academias que você chama ficam só na aba aberta do navegador, para irem para a sua conta se você criar uma (o site convida depois da segunda academia chamada); fechou a aba, somem.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação: na hora, quando a conta do GuiaTennis Parceiros tem o e-mail confirmado; senão, depois da aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
+<p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome e o sobrenome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); a conta é a mesma do GuiaTennis Parceiros, e excluir num lugar exclui nos dois (com o acesso às academias que ela administra); ao excluir, os dados da conta são apagados, e as avaliações continuam publicadas sem o nome, sem o e-mail e sem a ligação com ela (aparecem como "Usuário do GuiaTennis").<br><br><strong>Acompanhamento depois de chamar uma academia:</strong> quando você, com a conta e o e-mail confirmado, chama uma academia pelo WhatsApp do GuiaTennis, guardamos qual academia e quando, para perguntar por e-mail, no dia seguinte, se você marcou. Se responder, guardamos se é aula ou locação, o dia e a hora e o texto da ficha sobre como chegar, o estacionamento e o cancelamento e a reposição, para mandar esse texto por e-mail duas horas antes; depois do horário, mandamos o convite para avaliar (não sai se você já avaliou a academia). O GuiaTennis não reserva nem avisa a academia: só pergunta a você. O acompanhamento vem ligado; você desliga em Minha conta › Avisos por e-mail ou pelo link de cada e-mail, e tira cada lembrete em Minha conta › Seus horários. Tudo é apagado 60 dias depois da chamada. <strong>WhatsApp (opcional):</strong> se você informar o seu WhatsApp, com o aceite, guardamos o número e a data do aceite para mandar os lembretes também por lá quando esse envio estiver ligado (por enquanto, eles chegam por e-mail); o número não aparece no site e não vai para a academia, e você apaga quando quiser em Minha conta.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e sobrenome e o WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. Com a sua conta aberta, no site dos jogadores e no GuiaTennis Parceiros, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat, o título, se está em aberto ou resolvida e quando), para você ver o histórico em "Suas conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes de cada site; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do site. Se você editar a avaliação, a nota e o texto novos ficam no lugar dos de antes, e guardamos a data da última edição (a avaliação mostra "editada"); quem administra a academia recebe um e-mail com a avaliação editada. A resposta da academia editada também guarda a data da edição. O nome é o da conta, e trocar o nome da conta troca o nome nas avaliações. Se a conta for excluída, ou enquanto o nome estiver suspenso, a avaliação aparece como "Usuário do GuiaTennis".<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente, a última busca, a hora em que o site mostrou um aviso ou uma dica (para não repetir no mesmo dia) e, só enquanto a aba estiver aberta, quantas buscas seguidas você fez sem abrir uma academia (depois de cinco, o site oferece ajuda para encontrar as quadras mais perto). Nada disso usa o seu IP. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar as promoções das academias, os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso: até duas vezes por semana, mandamos um e-mail com a promoção patrocinada de uma academia do seu bairro ou perto de você (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra. Sem conta, as academias que você chama ficam só na aba aberta do navegador, para irem para a sua conta se você criar uma (o site convida depois da segunda academia chamada); fechou a aba, somem.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação: na hora, quando a conta do GuiaTennis Parceiros tem o e-mail confirmado; senão, depois da aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome e o sobrenome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e mandar o resumo do mês por e-mail (no plano Premium, o relatório completo). As pessoas da mesma academia veem o nome, o cargo e o e-mail umas das outras e o que cada uma pode fazer. Quando a academia ou o GuiaTennis convida alguém pelo e-mail, o GuiaTennis guarda esse e-mail (e o nome, se informado) até a pessoa criar a conta ou o convite ser cancelado, e manda a ela um único e-mail com o convite. Nas compras da academia, quem cuida dos pagamentos vê quem comprou, e os responsáveis principais recebem por e-mail o nome de quem comprou, o que foi comprado, o valor e a forma de pagamento. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. Do mesmo jeito, o WhatsApp que a conta escreve na ficha fica guardado fora do site até ser confirmado por um código de 6 números mandado a ele (guardado só de forma cifrada, vale 72 horas e 5 tentativas), junto da data, de quem pediu e, na troca, do número de antes; confirmado e conferido pelo GuiaTennis, ele passa a aparecer na ficha. Enquanto isso, o site não mostra aos visitantes que há um número esperando. Quando jogadores informam que o WhatsApp não é da academia, o número fica guardado fora do site enquanto o GuiaTennis confere. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. A pessoa exclui a própria conta em Perfil › Excluir minha conta, no Parceiros, ou em "Minha conta", no site dos jogadores (é o mesmo login): os dados da conta, dos dois lados, são apagados, as avaliações continuam com o nome, e a ficha da academia, que é pública, continua no Guia. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso, pessoa nova com acesso à academia (com o nome, o cargo e o e-mail dela), responsável principal novo, mudança de plano (com o que muda), a resposta do pedido para tirar a academia do Guia, pedido aceito, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha (de novo a cada 3 meses enquanto ela continuar igual) e, no começo de cada mês, o resumo dos números da academia no mês anterior; dá para desligar no Perfil do GuiaTennis Parceiros ou pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
 <p style="font-size:14px"><strong>Academias:</strong> nome, endereço, telefone ou WhatsApp comercial, site e redes sociais — enviados pela própria academia ou vindos de fontes públicas (OpenStreetMap e o site ou perfil público da academia). Se um telefone publicado for de uma pessoa, e não da empresa, ela pode pedir a remoção a qualquer momento. Para conferir uma ficha, o GuiaTennis pode consultar fontes públicas sobre a academia (o Google Maps, o OpenStreetMap, o site e as redes dela e o cadastro público de empresas da Receita Federal), sem guardar o que consultou.</p>
 <p style="font-size:14px"><strong>Problemas informados e denúncias:</strong> quando você informa um problema numa ficha ou denuncia uma avaliação, guardamos a sua conta, a academia (ou a avaliação), o motivo, o que você escreveu (se escreveu) e a data, até o GuiaTennis resolver e depois, como registro. A academia vê o motivo e o texto do problema, nunca quem informou; quem escreveu a avaliação não fica sabendo quem denunciou. Só a administração do GuiaTennis vê quem avisou, para conferir e evitar abuso. Excluir a conta apaga a ligação com ela: o aviso fica, sem a conta. O pedido de análise de uma avaliação, feito pela academia, guarda do mesmo jeito a conta, o motivo e o texto.</p>
@@ -22788,6 +23048,11 @@ const CHAT_TEMAS = [
     p: ["reserv", "agendar", "agenda", "marcar", "alugar", "locar", "locacao", "horario livre", "disponivel", "disponibilidade", "aula experimental"],
     r: "O GuiaTennis não faz reservas: na ficha da academia, toque em \"Chamar no WhatsApp\" e combine o horário, a aula ou a locação direto com ela. A conversa já abre iniciada.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
+  // Acompanhamento depois de chamar a academia (regra 193).
+  { id: "lembrete", onde: "jogadores", t: "Lembrete do horário marcado",
+    p: ["lembrete", "lembrar", "me avisa", "avisar antes", "2h antes", "duas horas antes", "ja marquei", "marquei", "acompanhamento", "horario marcado", "nao vou mais", "tirar o lembrete"],
+    r: "Com a sua conta e o e-mail confirmado, depois de chamar uma academia pelo WhatsApp do GuiaTennis, no dia seguinte chega um e-mail perguntando se você marcou. Conte se é aula ou locação, o dia e a hora: duas horas antes, mandamos como chegar, o estacionamento e a regra de cancelamento e reposição. O WhatsApp é opcional; por enquanto, os lembretes chegam por e-mail. Os horários ficam em Minha conta › Seus horários, com \"Não vou mais\".",
+    a: [{ t: "Avisos por e-mail", ir: "menu:avisos" }] },
   { id: "preco-jog", onde: "jogadores", t: "Preço e \"Sob consulta\"",
     p: ["preco", "valor", "quanto custa", "quanto e", "sob consulta", "barato", "caro", "pagar", "pagamento", "cobra"],
     r: "O preço aparece na ficha quando a academia informa, em \"Opções para jogar\": aula individual, em dupla e em grupo, avulsa ou mensal (por aula ou por pessoa), e locação, avulsa ou mensal (por hora; na mensal, o valor de cada aula ou de cada hora no plano). \"Sob consulta\" quer dizer que você combina o valor direto com a academia, pelo WhatsApp. Para quem joga, o GuiaTennis é grátis.",
@@ -27696,6 +27961,7 @@ async function init() {
   const q = new URLSearchParams(location.search);
   // O link manda na tela: ficha, região, busca com filtros, comparação.
   lerPararAvisosDoLink();
+  lerMarqueiDoLink();
   restaurarRascunho();
   const linkInicial = lerLink();
   const doLink = aplicarLink(linkInicial);

@@ -2350,5 +2350,116 @@ r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "s
 ok(r.returncode == 0 and FUNCOES(p1) == "equipe|ficha", "a migração roda de novo sem erro e sem mexer nas funções" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
 sql("truncate public.emails_a_enviar")
 
+# Acompanhamento depois de chamar a academia (regra 193) ---------------------
+print("\n# Acompanhamento depois de chamar a academia")
+sql("truncate public.emails_a_enviar")
+
+
+def as_hora(h, dias=0):
+    """Um horário de Brasília, hoje + dias, como timestamptz."""
+    return f"((((now() at time zone 'America/Sao_Paulo')::date + {dias}) + time '{h}') at time zone 'America/Sao_Paulo')"
+
+
+NOME_P = um(f"select name from public.academias where id = '{PINHEIROS}'")
+rui = jogador("Rui Raquete", f"rui{sufixo}@exemplo.com")
+sil = jogador("Sil Semconf", f"sil{sufixo}@exemplo.com", confirmado=False)
+vera = jogador("Vera Dona", f"vera{sufixo}@exemplo.com")
+sql(f"insert into public.academia_vinculos (user_id, academia_id, papel) values ('{vera}', '{MOEMA}', 'principal') on conflict do nothing")
+a1 = um(f"select public.registrar_chamada('{PINHEIROS}')", papel="authenticated", user=rui)
+ok(bool(a1) and len(a1) == 36, "a conta com o e-mail confirmado chama a academia: o acompanhamento começa — " + str(a1))
+ok(um(f"select public.registrar_chamada('{PINHEIROS}')", papel="authenticated", user=rui) == a1, "chamar de novo na mesma semana não abre outro")
+ok(um(f"select public.registrar_chamada('{PINHEIROS}')", papel="authenticated", user=sil) == "", "conta sem o e-mail confirmado fica de fora")
+ok(um(f"select public.registrar_chamada('{MOEMA}')", papel="authenticated", user=vera) == "", "quem administra a academia fica de fora")
+ok(um(f"select public.registrar_chamada('{MOEMA}')", papel="authenticated", user=rui, email=ADMIN) == "", "o admin fica de fora")
+ok(um(f"select public.registrar_chamada('{PINHEIROS}')", papel="anon") in ("", None), "sem conta, nada")
+chave = um(f"select chave from public.acompanhamentos where id = '{a1}'")
+sql(f"update public.acompanhamentos set criado_em = now() - interval '1 day' where id = '{a1}'")
+um(f"select public.rodar_acompanhamentos({as_hora('09:00')})")
+ok(fila("tipo = 'acompanhamento'") == "0", "antes das 10h, a pergunta espera")
+um(f"select public.rodar_acompanhamentos({as_hora('11:00')})")
+email = um("select assunto || '|' || replace(html, E'\\n', ' ') from public.emails_a_enviar where tipo = 'acompanhamento'") or ""
+ok(email.startswith(f"Você marcou na {NOME_P}?|") and f"?marquei={chave}&amp;r=aula" in email and f"?marquei={chave}&amp;r=locacao" in email
+   and f"?marquei={chave}&amp;r=nao" in email and "aviso=acompanhamento" in email and "Ainda não" in email,
+   "no dia seguinte, depois das 10h, o e-mail \"Você marcou na …?\" com aula, locação, ainda não e o link para parar — " + email[:120])
+um(f"select public.rodar_acompanhamentos({as_hora('15:00')})")
+ok(fila("tipo = 'acompanhamento'") == "1", "a pergunta sai uma vez só")
+info = um(f"select academia || '|' || status from public.acompanhamento_por_chave('{chave}')", papel="anon")
+ok(info == f"{NOME_P}|aguardando", "o link do e-mail mostra a academia, sem entrar na conta — " + str(info))
+certo, saida = sql(f"select public.responder_acompanhamento('{chave}', 'aula', (now() at time zone 'America/Sao_Paulo')::date + 1, '25:00')", papel="anon")
+ok(not certo and "dia e a hora" in saida, "hora que não existe não passa")
+certo, saida = sql(f"select public.responder_acompanhamento('{chave}', 'aula', (now() at time zone 'America/Sao_Paulo')::date - 2, '18:30')", papel="anon")
+ok(not certo and "já passou" in saida, "horário que já passou não passa")
+certo, saida = sql(f"select public.responder_acompanhamento('{chave}', 'aula', (now() at time zone 'America/Sao_Paulo')::date + 1, '18:30', '{{}}', '11988887777', false)", papel="anon")
+ok(not certo and "aceita receber" in saida, "WhatsApp sem o aceite não é guardado")
+inst = json.dumps({"endereco": "Rua A, 1 - Pinheiros", "chegada": "Portão azul <b>ao lado</b> da padaria.", "estacionamento": "Na rua, livre.", "cancelamento": "Desmarcando até 24h antes, tem reposição.", "outro": "x"})
+r = um(f"select public.responder_acompanhamento('{chave}', 'aula', (now() at time zone 'America/Sao_Paulo')::date + 1, '18:30', '{inst}'::jsonb, '(11) 98888-7777', true)", papel="anon")
+ok(r == "marcou", "\"Marquei aula\" com o dia, a hora e o WhatsApp com o aceite — " + str(r))
+ok(um(f"select tipo || '|' || to_char(quando at time zone 'America/Sao_Paulo', 'HH24:MI') || '|' || (instrucoes ? 'outro')::text from public.acompanhamentos where id = '{a1}'") == "aula|18:30|false",
+   "guarda aula, a hora de Brasília e só as instruções conhecidas")
+ok(um(f"select whatsapp || '|' || (whatsapp_aceite_em is not null)::text from public.jogadores where user_id = '{rui}'") == "11988887777|true", "o WhatsApp opcional fica na conta, com a hora do aceite")
+sql("truncate public.emails_a_enviar")
+um(f"select public.rodar_acompanhamentos({as_hora('16:00', 1)})")
+ok(fila("tipo = 'acompanhamento'") == "0", "mais de duas horas antes, o lembrete espera")
+um(f"select public.rodar_acompanhamentos({as_hora('16:35', 1)})")
+lembrete = um("select assunto || '|' || replace(html, E'\\n', ' ') from public.emails_a_enviar where tipo = 'acompanhamento'") or ""
+ok(lembrete.startswith(f"Aula hoje às 18h30: {NOME_P}|") and "Rua A, 1 - Pinheiros" in lembrete and "Na chegada:" in lembrete and "&lt;b&gt;ao lado&lt;/b&gt;" in lembrete
+   and "Estacionamento:</strong> Na rua, livre." in lembrete and "Cancelamento e reposição:</strong> Desmarcando até 24h antes" in lembrete
+   and "google.com/maps/dir/?api=1&amp;destination=" in lembrete and "Como chegar" in lembrete and f"marquei={chave}&amp;r=cancelar" in lembrete,
+   "duas horas antes, o lembrete: endereço, chegada, estacionamento, cancelamento e reposição, \"Como chegar\" e \"Tirar o lembrete\" (o texto vai escapado) — " + lembrete[:110])
+um(f"select public.rodar_acompanhamentos({as_hora('17:00', 1)})")
+ok(fila("tipo = 'acompanhamento'") == "1", "o lembrete sai uma vez só")
+sql("truncate public.emails_a_enviar")
+um(f"select public.rodar_acompanhamentos({as_hora('22:30', 1)})")
+ok(fila("tipo = 'acompanhamento'") == "0", "à noite, o \"Como foi?\" espera")
+um(f"select public.rodar_acompanhamentos({as_hora('10:30', 2)})")
+comofoi = um("select assunto || '|' || replace(html, E'\\n', ' ') from public.emails_a_enviar where tipo = 'acompanhamento'") or ""
+ok(comofoi.startswith(f"Como foi na {NOME_P}?|") and "#avaliacoes" in comofoi and "Avaliar a academia" in comofoi, "no dia seguinte, \"Como foi?\" com o convite para avaliar — " + comofoi[:80])
+# Quem já avaliou não recebe o "Como foi?".
+a2 = um(f"select public.registrar_chamada('{MOEMA}')", papel="authenticated", user=carla)
+c2 = um(f"select chave from public.acompanhamentos where id = '{a2}'")
+sql(f"update public.acompanhamentos set status = 'marcou', tipo = 'locacao', quando = {as_hora('08:00', 1)} where id = '{a2}'")
+sql(f"insert into public.avaliacoes (academia_id, stars) values ('{MOEMA}', 5)", papel="authenticated", user=carla)
+sql("truncate public.emails_a_enviar")
+um(f"select public.rodar_acompanhamentos({as_hora('14:00', 1)})")
+ok(a2 and um(f"select count(*) from public.avaliacoes where user_id = '{carla}' and academia_id = '{MOEMA}'") == "1" and fila(f"para = 'carla{sufixo}@exemplo.com'") == "0", "quem já avaliou a academia não recebe o \"Como foi?\"")
+# "Não vou mais" tira o lembrete.
+a3 = um(f"select public.registrar_chamada('{MOEMA}')", papel="authenticated", user=rui)
+c3 = um(f"select chave from public.acompanhamentos where id = '{a3}'")
+um(f"select public.responder_acompanhamento('{c3}', 'locacao', (now() at time zone 'America/Sao_Paulo')::date + 3, '09:00')", papel="anon")
+ok(um(f"select public.responder_acompanhamento('{c3}', 'cancelar')", papel="anon") == "cancelado", "\"Tirar o lembrete\" cancela")
+sql("truncate public.emails_a_enviar")
+um(f"select public.rodar_acompanhamentos({as_hora('07:30', 3)})")
+ok(fila("tipo = 'acompanhamento'") == "0", "cancelado, o lembrete não sai")
+ok(um(f"select public.responder_acompanhamento('00000000-0000-4000-8000-0000000000ff', 'nao')", papel="anon") is None, "link que não existe não vale")
+# A conta vê só os dela; o visitante não lê a tabela.
+ok(um("select count(*) from public.acompanhamentos", papel="authenticated", user=rui) == "2", "a conta vê os próprios acompanhamentos")
+ok(um("select count(*) from public.acompanhamentos", papel="authenticated", user=sil) == "0", "e não os dos outros")
+certo, _ = sql("select count(*) from public.acompanhamentos", papel="anon")
+ok(not certo, "o visitante não lê a tabela")
+certo, _ = sql("select instrucoes from public.acompanhamentos", papel="authenticated", user=rui)
+ok(not certo, "as instruções não saem pela leitura da tabela")
+# O WhatsApp na conta.
+ok(um("select public.salvar_whatsapp_do_jogador('(21) 3333-4444', true)", papel="authenticated", user=sil) == "2133334444", "na conta, o WhatsApp opcional com o aceite")
+certo, saida = sql("select public.salvar_whatsapp_do_jogador('(21) 3333-4444', false)", papel="authenticated", user=sil)
+ok(not certo and "aceita receber" in saida, "sem o aceite, não guarda")
+certo, saida = sql("select public.salvar_whatsapp_do_jogador('123', true)", papel="authenticated", user=sil)
+ok(not certo and "DDD" in saida, "número curto não passa")
+ok(um("select public.salvar_whatsapp_do_jogador('', false)", papel="authenticated", user=sil) == "" and um(f"select coalesce(whatsapp, 'vazio') from public.jogadores where user_id = '{sil}'") == "vazio", "apagar o WhatsApp tira o número e o aceite")
+# Parar pelo link.
+tok = um(f"select token_avisos from public.jogadores where user_id = '{rui}'")
+ok(um(f"select public.parar_avisos('{tok}', 'acompanhamento')", papel="anon") == "acompanhamento" and um(f"select acompanhamento::text from public.jogadores where user_id = '{rui}'") == "false", "\"Não quero mais esse acompanhamento\" desliga")
+sql(f"delete from public.acompanhamentos where user_id = '{rui}'")
+ok(um(f"select public.registrar_chamada('{PINHEIROS}')", papel="authenticated", user=rui) == "", "desligado, chamar não abre acompanhamento")
+sql(f"update public.jogadores set acompanhamento = true where user_id = '{rui}'")
+um(f"select public.parar_avisos('{tok}', 'todos')", papel="anon")
+ok(um(f"select acompanhamento::text from public.jogadores where user_id = '{rui}'") == "false", "\"todos\" desliga também o acompanhamento")
+# Nada fica depois de 60 dias.
+sql(f"update public.acompanhamentos set criado_em = now() - interval '61 days' where id = '{a2}'")
+um(f"select public.rodar_acompanhamentos({as_hora('12:00')})")
+ok(um(f"select count(*) from public.acompanhamentos where id = '{a2}'") == "0", "depois de 60 dias, o acompanhamento é apagado")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261101120000_acompanhamento.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração do acompanhamento roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+sql("truncate public.emails_a_enviar")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

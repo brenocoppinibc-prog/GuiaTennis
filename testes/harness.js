@@ -31,6 +31,8 @@ async function abrir(opts = {}) {
     if (o.jogador) window.__jogador = true;
     if (o.jogadorConfirmado) window.__jogadorConfirmado = true;
     if (o.lembreteDeVolta) window.__lembreteDeVolta = true;
+    // O acompanhamento depois de chamar a academia (regra 193, SQL 20261101120000).
+    if (o.acompanhamento) window.__acompanhamento = o.acompanhamento;
     if (o.acessoNovo) window.__acessoNovo = true;
     if (o.semAcesso) window.__semAcesso = true;
     if (o.plano) window.__plano = o.plano;

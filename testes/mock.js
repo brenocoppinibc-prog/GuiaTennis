@@ -38,6 +38,9 @@
     buscas_salvas: [],
     // Fila dos avisos por e-mail (SQL 20261005160000), vista pelo painel do admin.
     emails_a_enviar: [],
+    // Acompanhamento depois de chamar a academia (regra 193). window.__acompanhamento
+    // liga o SQL; pode ser uma lista com os acompanhamentos iniciais.
+    acompanhamentos: Array.isArray(window.__acompanhamento) ? JSON.parse(JSON.stringify(window.__acompanhamento)) : [],
     // Contas excluídas pelo admin (SQL 20261006150000): o e-mail fica bloqueado.
     contas_excluidas: [],
     // Promoções das academias Premium (SQL 20261008140000). window.__semPromocoes
@@ -97,6 +100,8 @@
     db.jogadores.push({ user_id: "j-ana", nome: "Ana Jogadora", email: "ana@exemplo.com", cidade: "São Paulo", avisos_academias: false, promocoes: false, novidades: false, termos_aceitos_em: agora, created_at: agora, token_avisos: "tok-j-ana" });
     // Banco com o lembrete de volta (SQL 20261009140000): a coluna existe e começa ligada.
     if (window.__lembreteDeVolta) Object.assign(db.jogadores[db.jogadores.length - 1], { lembrete_de_volta: true, visto_em: null });
+    // Banco com o acompanhamento (regra 193): começa ligado, sem WhatsApp.
+    if (window.__acompanhamento) Object.assign(db.jogadores[db.jogadores.length - 1], { acompanhamento: true, whatsapp: null, whatsapp_aceite_em: null });
     // window.__jogadorConfirmado: com o e-mail confirmado (avaliar pede isso desde 26/10/2026).
     if (window.__jogadorConfirmado) db.jogadores[db.jogadores.length - 1].email_confirmado_em = agora;
     window.__senhas["ana@exemplo.com"] = "senhadaana";
@@ -312,6 +317,13 @@
         if (op === "select") return { data: JSON.parse(JSON.stringify(minhas)).sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em))), error:null };
         if (op === "delete") { minhas.forEach(r => t.splice(t.indexOf(r), 1)); return { data:null, error:null }; }
         return { data:null, error:{ message:"permission denied for table conversas_de_ajuda", code:"42501" } };
+      }
+      // Acompanhamentos (regra 193): só os da conta; sem o SQL, a tabela não existe.
+      if (table === "acompanhamentos") {
+        if (!window.__acompanhamento) return { data:null, error:{ message:'relation "public.acompanhamentos" does not exist' } };
+        if (op !== "select") return { data:null, error:{ message:"permission denied for table acompanhamentos", code:"42501" } };
+        const eu = sessao && sessao.user.id;
+        return { data: JSON.parse(JSON.stringify(t.filter(r => r.user_id === eu).filter(pass).map(({ instrucoes, user_id, ...r }) => r))), error:null };
       }
       // Banco sem a tabela do percurso (SQL 20261005140000).
       if (table === "passos_das_visitas" && window.__semPercurso) return { data:null, error:{ message:'relation "public.passos_das_visitas" does not exist' } };
@@ -1323,15 +1335,61 @@
       j.visto_em = new Date().toISOString();
       return { data: null, error: null };
     }
+    // Acompanhamento depois de chamar a academia (regra 193, SQL 20261101120000).
+    if (["registrar_chamada", "acompanhamento_por_chave", "responder_acompanhamento", "salvar_whatsapp_do_jogador"].includes(nome) && !window.__acompanhamento) return semFuncao;
+    if (nome === "registrar_chamada") {
+      const j = sessao && db.jogadores.find(y => y.user_id === sessao.user.id);
+      if (!j || !j.email_confirmado_em || j.acompanhamento === false || souAdmin()) return { data: null, error: null };
+      const ja = db.acompanhamentos.find(x => x.user_id === j.user_id && x.academia_id === a.p_academia);
+      if (ja) return { data: ja.id, error: null };
+      const x = { id: "acomp-" + (db.acompanhamentos.length + 1), chave: "chave-" + (db.acompanhamentos.length + 1), user_id: j.user_id, academia_id: a.p_academia, criado_em: new Date().toISOString(), status: "aguardando", tipo: null, quando: null, instrucoes: {} };
+      db.acompanhamentos.push(x);
+      return { data: x.id, error: null };
+    }
+    if (nome === "acompanhamento_por_chave") {
+      const x = db.acompanhamentos.find(y => y.chave === a.p_chave);
+      if (!x) return { data: [], error: null };
+      const ac = db.academias.find(y => y.id === x.academia_id) || {};
+      const j = db.jogadores.find(y => y.user_id === x.user_id) || {};
+      return { data: [{ academia_id: x.academia_id, academia: ac.name, status: x.status, tipo: x.tipo, quando: x.quando, tem_whatsapp: !!j.whatsapp }], error: null };
+    }
+    if (nome === "responder_acompanhamento") {
+      const x = db.acompanhamentos.find(y => y.chave === a.p_chave);
+      if (!x) return erro("Este link não vale mais.", "22023");
+      window.__respostaDoAcompanhamento = JSON.parse(JSON.stringify(a));
+      if (a.p_resposta === "nao") { x.status = "nao_marcou"; return { data: "nao_marcou", error: null }; }
+      if (a.p_resposta === "cancelar") { x.status = "cancelado"; return { data: "cancelado", error: null }; }
+      if (!a.p_dia || !/^([01]\d|2[0-3]):[0-5]\d$/.test(a.p_hora || "")) return erro("Escolha o dia e a hora.", "22023");
+      const quando = new Date(a.p_dia + "T" + a.p_hora + ":00-03:00");
+      if (quando < new Date(Date.now() - 30 * 60000)) return erro("Esse horário já passou. Confira o dia e a hora.", "22023");
+      const whats = String(a.p_whatsapp || "").replace(/\D/g, "");
+      if (whats && !a.p_aceite_whatsapp) return erro("Para guardar o WhatsApp, marque que aceita receber os lembretes nele.", "22023");
+      if (whats && !/^\d{10,13}$/.test(whats)) return erro("Confira o WhatsApp: DDD e número.", "22023");
+      Object.assign(x, { status: "marcou", tipo: a.p_resposta, quando: quando.toISOString(), instrucoes: a.p_instrucoes || {} });
+      if (whats) { const j = db.jogadores.find(y => y.user_id === x.user_id); if (j) Object.assign(j, { whatsapp: whats, whatsapp_aceite_em: new Date().toISOString() }); }
+      return { data: "marcou", error: null };
+    }
+    if (nome === "salvar_whatsapp_do_jogador") {
+      const j = sessao && db.jogadores.find(y => y.user_id === sessao.user.id);
+      if (!j) return erro("Entre na sua conta.", "42501");
+      const whats = String(a.p_whatsapp || "").replace(/\D/g, "");
+      if (!whats) { Object.assign(j, { whatsapp: null, whatsapp_aceite_em: null }); return { data: null, error: null }; }
+      if (!/^\d{10,13}$/.test(whats)) return erro("Confira o WhatsApp: DDD e número.", "22023");
+      if (!a.p_aceite) return erro("Para guardar o WhatsApp, marque que aceita receber os lembretes nele.", "22023");
+      Object.assign(j, { whatsapp: whats, whatsapp_aceite_em: j.whatsapp === whats && j.whatsapp_aceite_em ? j.whatsapp_aceite_em : new Date().toISOString() });
+      return { data: whats, error: null };
+    }
     if (nome === "parar_avisos") {
       const j = db.jogadores.find(y => y.token_avisos === a.p_token);
       if (j) {
         const buscas = db.buscas_salvas.filter(b => b.user_id === j.user_id);
+        if (a.p_aviso === "acompanhamento" && "acompanhamento" in j) { j.acompanhamento = false; return { data: "acompanhamento", error: null }; }
         if (a.p_aviso === "viagem") { j.avisos_viagem = false; return { data: "viagem", error: null }; }
         if (a.p_aviso === "novas") { j.avisos_academias = false; buscas.forEach(b => { b.avisar = false; }); return { data: "novas", error: null }; }
         if (a.p_aviso === "volta" && "lembrete_de_volta" in j) { j.lembrete_de_volta = false; return { data: "volta", error: null }; }
         Object.assign(j, { avisos_academias: false, promocoes: false, novidades: false, avisos_viagem: false });
         if ("lembrete_de_volta" in j) j.lembrete_de_volta = false;
+        if ("acompanhamento" in j) j.acompanhamento = false;
         buscas.forEach(b => { b.avisar = false; });
         return { data: "todos", error: null };
       }

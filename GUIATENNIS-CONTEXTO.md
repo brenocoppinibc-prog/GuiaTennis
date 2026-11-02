@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 02/11/2026 (regra 196)
+**Atualizado em:** 02/11/2026 (regra 197)
 
 | | |
 |---|---|
@@ -397,7 +397,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (01/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 196**. De 28/10 a 01/11 entraram: o catálogo
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 197**. De 28/10 a 01/11 entraram: o catálogo
 com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
 no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
 intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
@@ -427,7 +427,8 @@ mapa; e a regra 195: o cartão do mapa no jeito do hoteis.com (uma foto
 à esquerda, comodidades em cima, "Falar no WhatsApp" embaixo do "Ver
 academia", sem o diferencial); e a regra 196: o Completo vê quantos
 chamaram a academia nos últimos 30 dias (SQL
-`20261102120000_contatos_no_completo`). A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
+`20261102120000_contatos_no_completo`); e a regra 197: "Me ajude a decidir"
+passo a passo. A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
 nenhuma falha; o banco local foi montado de novo neste contêiner e o
 `banco-emails.py` deu 754 conferências, nenhuma falha (01/11). Layouts da ficha em
 estudo (A Editorial, B Quadra, C Placar), no quadro de design
@@ -469,7 +470,7 @@ acompanhar).
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 197.
+**Próximo número:** regra 198.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -654,6 +655,13 @@ acompanhar).
   `20261102120000_contatos_no_completo`. Testes: `acessos-em-destaque.js`,
   `parceiros.js`, `banco-emails.py` (755, nenhuma falha). Bateria completa
   não rodou (economia).
+- 197 (02/11) "Me ajude a decidir" da comparação passo a passo
+  (`state.decidePasso`): 1) "O que mais ajuda na sua escolha?" (prioridades
+  e anotações) > "Ver o resultado"; a bola girando (1,2 s); 2) o resultado,
+  com "Confirmar a …" e "Prefiro a …" embaixo ("Mudar o que ajuda" volta);
+  3) noutra tela, "O que fazer agora": "Falar no WhatsApp" direto, "Ver a
+  ficha no site" e "Escolher novamente". Sem SQL. Teste:
+  `comparar-e-avisos.js` (bateria completa não rodou, economia).
 
 ## 11. WhatsApp e mensagem para as academias
 

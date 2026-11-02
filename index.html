@@ -684,6 +684,9 @@
   .stat-taxa.media { background: var(--gold); color: #1F4D3D; }
   .stat-taxa.zero { background: var(--bg-alt); color: var(--muted); }
   .stat-copy { margin-top: 8px; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--green); font-weight: 700; cursor: pointer; }
+  .decide-passo-n { margin: 0 0 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  .decide-carregando { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 240px; text-align: center; }
+  .decide-feita #decidida-voltar { display: block; margin-left: auto; margin-right: auto; }
   .decidida-voltar { width: 100%; background: none; border: none; color: rgba(255,255,255,0.75); text-decoration: underline; font-size: 13px; padding: 12px 0 2px; cursor: pointer; }
   .card-photo-caption { font-size: 12px; color: var(--muted-dark); }
   .card-badge { position: absolute; top: 10px; left: 10px; background: var(--gold); color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 4px 10px; border-radius: 999px; }
@@ -6639,11 +6642,28 @@ function renderComparePage() {
 // em preço, nota e distância (como os "destaques" dos comparadores da
 // Amazon e do Google); "Me ajude a decidir" abre a mesma ajuda numa folha.
 const DECIDE_PUSH_SEGUNDOS = 15;
+// Regra 197 (02/11/2026: "faça a tela de ajudar a comparar de passo a
+// passo, primeiro perguntando o que ajuda, aí vem a bolinha carregando e o
+// resultado, embaixo confirmando a escolha e em outra tela aparecer o que
+// fazer, indo direto ao WhatsApp, escolher novamente ou ver a ficha no
+// site"): como o "Ajude-me a escolher" dos comparadores do Google e da
+// Amazon, um passo por tela (state.decidePasso): "perguntar" > "carregando"
+// (a bola girando) > "resultado" (com "Confirmar" embaixo) > "feito" (o que
+// fazer agora).
+const DECIDE_CARREGANDO_MS = 1200;
 function caixaDeDecisao(courts) {
+  const passo = state.decidePasso || "perguntar";
+  if (passo === "carregando") return `
+        <div class="decide-box decide-carregando" aria-live="polite">
+          ${bolaGirando(34)}
+          <p class="decide-sub">Comparando ${courts.length} academias</p>
+        </div>`;
+  if (passo === "feito") return decisaoFeita(courts);
+  if (passo === "resultado") return resultadoDaDecisao(courts);
   return `
         <div class="decide-box">
-          <p class="decide-title">Ainda em dúvida?</p>
-          <p class="decide-sub">Marque o que mais pesa na sua escolha e eu te ajudo a decidir.</p>
+          <p class="decide-passo-n">Passo 1 de 3</p>
+          <p class="decide-title">O que mais ajuda na sua escolha?</p>
 
           <div class="chip-row" style="margin-top:10px">
             ${DECIDE_CRITERIA.map(cr => `
@@ -6654,9 +6674,15 @@ function caixaDeDecisao(courts) {
           <p class="field-label" style="margin-top:14px">Seus pontos positivos e negativos (opcional)</p>
           <textarea class="form-field" id="decide-notes" rows="3" placeholder="Ex: quero estacionamento grátis, pouco tempo de aviso para repor a aula e uma academia menor, mais reservada">${esc(state.decideNotes)}</textarea>
 
-          <button class="cta-btn cta-primary" id="decide-go" style="margin-top:10px">Me ajude a decidir</button>
-
-          ${state.showDecideResult ? (() => {
+          <button class="cta-btn cta-primary" id="decide-go" style="margin-top:10px">Ver o resultado</button>
+        </div>`;
+}
+// 2. O resultado, com a escolha confirmada embaixo.
+function resultadoDaDecisao(courts) {
+  return `
+        <div class="decide-box">
+          <p class="decide-passo-n">Passo 2 de 3</p>
+          ${(() => {
             const rank = decideRanking();
             const top = rank[0];
             const empate = rank.length > 1 && Math.abs(rank[0].total - rank[1].total) < 4;
@@ -6730,41 +6756,32 @@ function caixaDeDecisao(courts) {
                   `;
                 })()}
 
-                ${(() => {
-                  if (state.decidida) {
-                    const c = courts.find(x => x.id === state.decidida);
-                    if (!c) return "";
-                    const wa = (c.phone||"").replace(/\D/g,"");
-                    const ig = (c.instagram||"").replace(/^@/, "");
-                    return `
-                      <div class="decidida-box">
-                        <p class="decidida-eyebrow">Decisão tomada</p>
-                        <p class="decidida-name">${esc(c.name)}</p>
-                        ${c.endereco ? `<p class="decidida-end">${esc(c.endereco)}</p>` : ""}
-
-                        <p class="field-label" style="margin-top:14px">Fale com a academia</p>
-                        ${wa ? `<a class="cta-btn cta-primary" href="https://wa.me/${wa}?text=${encodeURIComponent("Olá! Vim pelo GuiaTennis e gostaria de saber mais informações sobre a academia.")}" target="_blank" rel="noreferrer" data-track-wa="${c.id}">${icon('phone',15,'#fff')} WhatsApp</a>` : ""}
-                        ${ig ? `<a class="cta-btn cta-secondary" href="https://instagram.com/${encodeURIComponent(ig)}" target="_blank" rel="noreferrer" data-track-ig="${c.id}" style="margin-top:8px">${icon('instagram',15,'var(--green)')} @${esc(ig)}</a>` : ""}
-                        ${c.site ? `<a class="cta-btn cta-secondary" href="${esc(c.site)}" target="_blank" rel="noreferrer" data-track-site="${c.id}" style="margin-top:8px">${icon('globe',15,'var(--green)')} Site</a>` : ""}
-                        ${navLinks(c, { dark: true })}
-
-                        <button type="button" class="decidida-voltar" id="decidida-voltar">Voltar e escolher outra</button>
-                      </div>
-                    `;
-                  }
-                  const sugerida = empate ? null : top.court;
-                  return `
-                    <div class="confirmar-box">
-                      <p class="confirmar-txt">${sugerida ? `Vai fechar com a ${esc(sugerida.name)}?` : "Já decidiu qual vai ser?"}</p>
-                      <div class="confirmar-acoes">
-                        ${rank.map(r => `<button type="button" class="chip small" data-decidir="${r.court.id}">${esc(r.court.name)}</button>`).join("")}
-                      </div>
-                    </div>
-                  `;
-                })()}
+                <div class="confirmar-box">
+                  <p class="confirmar-txt">${empate ? "Com qual vai ficar?" : `Vai fechar com a ${esc(top.court.name)}?`}</p>
+                  ${empate ? "" : `<button type="button" class="cta-btn cta-primary" data-decidir="${top.court.id}" style="width:100%">Confirmar a ${esc(top.court.name)}</button>`}
+                  <div class="confirmar-acoes">
+                    ${(empate ? rank : rank.slice(1)).map(r => `<button type="button" class="chip small" data-decidir="${r.court.id}">${empate ? "" : "Prefiro a "}${esc(r.court.name)}</button>`).join("")}
+                  </div>
+                  <button type="button" class="inline-link" id="decide-mudar" style="margin-top:12px">Mudar o que ajuda</button>
+                </div>
               </div>
             `;
-          })() : ""}
+          })()}
+        </div>`;
+}
+// 3. O que fazer agora: o WhatsApp direto, a ficha ou escolher de novo.
+function decisaoFeita(courts) {
+  const c = courts.find(x => x.id === state.decidida);
+  if (!c) return "";
+  return `
+        <div class="decide-box decide-feita">
+          <p class="decide-passo-n">Passo 3 de 3 · Sua escolha</p>
+          <p class="decide-verdict">${esc(c.name)}</p>
+          ${localLine(c) ? `<p class="decide-why">${esc(localLine(c))}</p>` : ""}
+          <p class="field-label" style="margin-top:16px">O que fazer agora</p>
+          ${c.phone ? `<a class="cta-btn cta-primary" href="${waLink(c)}" target="_blank" rel="noreferrer" data-track-wa="${c.id}" style="width:100%">${icon('phone', 15, '#fff')} Falar no WhatsApp</a>` : ""}
+          <button type="button" class="cta-btn cta-secondary" data-decide-ficha="${c.id}" style="width:100%;margin-top:8px">Ver a ficha no site</button>
+          <button type="button" class="inline-link" id="decidida-voltar" style="margin-top:12px">Escolher novamente</button>
         </div>`;
 }
 function destaquesDaComparacao(courts) {
@@ -26350,18 +26367,28 @@ function attachEvents() {
   });
 
   document.querySelectorAll("[data-decidir]").forEach(el => {
-    el.onclick = () => { state.decidida = el.dataset.decidir; render(); };
+    el.onclick = () => { state.decidida = el.dataset.decidir; state.decidePasso = "feito"; registrarPasso("acao", { academia: el.dataset.decidir, detalhe: "Escolheu na ajuda para decidir" }); render(); };
   });
 
   const decidiaVoltar = document.getElementById("decidida-voltar");
-  if (decidiaVoltar) decidiaVoltar.onclick = () => { state.decidida = null; render(); };
+  if (decidiaVoltar) decidiaVoltar.onclick = () => { state.decidida = null; state.decidePasso = "perguntar"; render(); };
+  const decideMudar = document.getElementById("decide-mudar");
+  if (decideMudar) decideMudar.onclick = () => { state.decidePasso = "perguntar"; render(); };
+  document.querySelectorAll("[data-decide-ficha]").forEach(el => {
+    el.onclick = () => { state.showDecide = false; openCourt(el.dataset.decideFicha); };
+  });
 
   document.querySelectorAll("[data-track-wa]").forEach(el => { el.onclick = () => trackClick(el.dataset.trackWa, "whatsapp"); });
   document.querySelectorAll("[data-track-ig]").forEach(el => { el.onclick = () => trackClick(el.dataset.trackIg, "instagram"); });
   document.querySelectorAll("[data-track-site]").forEach(el => { el.onclick = () => trackClick(el.dataset.trackSite, "site"); });
 
   const decideGo = document.getElementById("decide-go");
-  if (decideGo) decideGo.onclick = () => { state.showDecideResult = true; render(); };
+  if (decideGo) decideGo.onclick = () => {
+    state.showDecideResult = true;
+    state.decidePasso = "carregando";
+    render();
+    setTimeout(() => { if (state.decidePasso === "carregando") { state.decidePasso = "resultado"; render(); } }, DECIDE_CARREGANDO_MS);
+  };
 
   const contaTopo = document.getElementById("conta-topo");
   if (contaTopo) contaTopo.onclick = () => { state.pushConta = null; abrirContaJogador(jogador ? "conta" : "entrar"); };
@@ -26552,7 +26579,7 @@ function attachEvents() {
   armarAvisoDeDecisao();
 
   const compareClear2 = document.getElementById("compare-clear-2");
-  if (compareClear2) compareClear2.onclick = () => { setCompareList([]); state.compareOnly = false; state.decidida = null; state.showDecideResult = false; render(); };
+  if (compareClear2) compareClear2.onclick = () => { setCompareList([]); state.compareOnly = false; state.decidida = null; state.showDecideResult = false; state.decidePasso = "perguntar"; render(); };
 
   document.querySelectorAll("[data-cmp-remove]").forEach(el => {
     el.onclick = () => {

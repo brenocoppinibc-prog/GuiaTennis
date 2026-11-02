@@ -73,9 +73,22 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(150);
   ok(await page.evaluate(() => state.showDecide && !!document.querySelector('#decide-overlay #decide-go') && !document.getElementById('decide-push')), 'abre a mesma ajuda numa folha');
   await page.click('#decide-overlay [data-prio="distance"], #decide-overlay .decide-prio >> nth=0');
+  // Regra 197: passo a passo — pergunta, a bola girando, o resultado com
+  // "Confirmar" embaixo e, em outra tela, o que fazer.
+  ok((await page.innerText('#decide-overlay .decide-title')) === 'O que mais ajuda na sua escolha?' && (await page.innerText('#decide-go')) === 'Ver o resultado', 'passo 1: pergunta o que ajuda');
   await page.click('#decide-go');
   await page.waitForTimeout(150);
-  ok(await page.evaluate(() => !!document.querySelector('#decide-overlay .decide-result')), 'e a ajuda funciona dentro da folha');
+  ok(await page.evaluate(() => !!document.querySelector('#decide-overlay .decide-carregando .bola-girando, #decide-overlay .decide-carregando svg, #decide-overlay .decide-carregando span') && !document.querySelector('#decide-overlay .decide-result')), 'depois, a bola girando, sem o resultado ainda');
+  await page.waitForTimeout(1300);
+  const res = await page.evaluate(() => ({ r: !!document.querySelector('#decide-overlay .decide-result'), conf: document.querySelector('#decide-overlay .confirmar-box')?.innerText.replace(/\s+/g, ' ') || '' }));
+  ok(res.r && /Confirmar a |Com qual vai ficar\?/.test(res.conf), 'passo 2: o resultado e, embaixo, confirmar a escolha — ' + res.conf.slice(0, 80));
+  await page.click('#decide-overlay [data-decidir] >> nth=0');
+  await page.waitForTimeout(150);
+  const feita = await page.evaluate(() => ({ t: document.querySelector('#decide-overlay .decide-feita')?.innerText.replace(/\s+/g, ' ') || '', wa: !!document.querySelector('#decide-overlay .decide-feita [data-track-wa]'), ficha: !!document.querySelector('#decide-overlay [data-decide-ficha]'), resultado: !!document.querySelector('#decide-overlay .decide-result') }));
+  ok(feita.t.includes('O que fazer agora') && feita.wa && feita.ficha && feita.t.includes('Escolher novamente') && !feita.resultado, 'passo 3, noutra tela: o WhatsApp direto, ver a ficha ou escolher de novo — ' + feita.t.slice(0, 120));
+  await page.click('#decidida-voltar');
+  await page.waitForTimeout(100);
+  ok(await page.evaluate(() => !!document.querySelector('#decide-overlay #decide-go') && state.decidida === null), '"Escolher novamente" volta ao começo');
   await page.click('#decide-close');
   await page.evaluate(() => render());
   ok(await page.evaluate(() => !document.getElementById('decide-push')), 'depois de usado, o aviso não volta');

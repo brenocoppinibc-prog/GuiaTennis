@@ -1030,12 +1030,9 @@
   .map-carrossel::-webkit-scrollbar { display: none; }
   .mcard { flex: 0 0 calc(100% - 40px); scroll-snap-align: center; display: flex; min-height: 136px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 14px rgba(33,31,26,0.16); overflow: hidden; cursor: pointer; text-align: left; }
   .mcard.on { border-color: var(--green); box-shadow: 0 4px 14px rgba(33,31,26,0.16), inset 0 0 0 1px var(--green); }
-  /* As fotos em mosaico à esquerda (regra 195): uma grande e duas pequenas. */
-  .mcard-fotos { position: relative; flex: 0 0 36%; max-width: 170px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 2fr 1fr; gap: 2px; background: var(--card); }
-  .mcard-fotos img { width: 100%; height: 100%; min-height: 0; object-fit: cover; display: block; background: var(--bg-alt); }
-  .mcard-fotos img.grande { grid-column: 1 / -1; }
-  .mcard-fotos.n1 { grid-template-rows: 1fr; }
-  .mcard-fotos.n2 img:nth-child(2) { grid-column: 1 / -1; }
+  /* Uma foto à esquerda, na altura do cartão (regra 195). */
+  .mcard-fotos { position: relative; flex: 0 0 36%; max-width: 170px; background: var(--bg-alt); }
+  .mcard-fotos img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .mcard-tag { position: absolute; left: 6px; top: 6px; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.94); font: 600 12px var(--fonte-texto); color: var(--text); }
   .mcard-selos { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 1px 0; font-size: 13px; font-weight: 500; color: var(--green); }
   .mcard-selos span { display: inline-flex; align-items: center; gap: 4px; }
@@ -1059,8 +1056,6 @@
   .mcard-wa-t { display: block; white-space: nowrap; }
   /* "Ver academia" e o diferencial ao lado do WhatsApp (regra 194). */
   .mcard-btn { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 6px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--green); color: #fff; font: 600 14px var(--fonte-texto); cursor: pointer; }
-  .mcard-dif { display: block; font-size: 12.5px; font-weight: 400; color: var(--muted); }
-  .mcard-dif-solto { cursor: inherit; }
   /* O dia e a hora do acompanhamento (regra 193), lado a lado. */
   .marquei-quando { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
   .marquei-quando .form-field { margin-top: 0; width: 100%; }
@@ -8989,47 +8984,20 @@ function mapCardHtml(id) {
   if (!lista.some(c => c.id === id)) return "";
   return `<div class="map-carrossel" id="map-carrossel" role="list" aria-label="Academias do mapa">${lista.map(cartaoDoMapa).join("")}</div>`;
 }
-// Regra 194 (02/11/2026: "coloque nos cards do mapa o botão ver academia e
-// embaixo falar no WhatsApp com algum diferencial dessa academia"): o
-// botão "Ver academia", como o da lista, e embaixo "Falar no WhatsApp ·
-// quadra coberta", com o que a academia tem de melhor, curto, como as
-// etiquetas do trivago e do Booking no cartão do mapa. Sem nada na
-// estrutura, a modalidade ("aula e locação").
-const DIFERENCIAIS_CURTOS = [
-  { k: "camera", t: "câmera para gravar" },
-  { k: "coberta", t: "quadra coberta" },
-  { k: "estacionamento_gratuito", t: "estacionamento grátis" },
-  { k: "loja", t: "loja no local" },
-  { k: "raquete", t: "empresta raquete" },
-  { k: "vestiario", t: "vestiário" },
-  { k: "lanchonete", t: "lanchonete" },
-  { k: "assinatura_fitness", t: "aceita app fitness" },
-  { k: "wifi", t: "Wi-Fi" },
-  { k: "agua", t: "água grátis" },
-];
-// "usados": o que o cartão já mostra (as comodidades), para não repetir.
-function diferencialCurto(c, usados) {
-  const jaTem = new Set(usados || []);
-  const tem = k => k === "coberta" ? (c.cobertura || []).includes("coberta")
-    : k === "estacionamento_gratuito" ? (c.amenities || []).includes(k) && !regraDoEstacionamento(c)
-    : (c.amenities || []).includes(k);
-  const achou = DIFERENCIAIS_CURTOS.find(d => !jaTem.has(d.k) && tem(d.k));
-  return achou ? achou.t : (modalidadesTexto(c) || "").toLowerCase();
-}
+// Regra 194 (02/11/2026): o botão "Ver academia" e, embaixo, "Falar no
+// WhatsApp". O diferencial que vinha ao lado saiu no mesmo dia ("tire isso").
 // Regra 195 (02/11/2026, print do hoteis.com: "deixe tipo assim, fotos ao
 // lado esquerdo, comodidade mais acima como aparecem na lista e escrita do
-// whatsapp embaixo de ver academia"): à esquerda, as fotos em mosaico (uma
-// grande em cima e duas pequenas embaixo, como o cartão do mapa do
-// hoteis.com); à direita, o nome, o endereço, as comodidades com o ✓ verde
+// whatsapp embaixo de ver academia"): à esquerda, uma foto só (02/11/2026:
+// "deve aparecer uma foto somente"); à direita, o nome, o endereço, as comodidades com o ✓ verde
 // da lista, a nota, o "a partir de" com os preços, "Ver academia" e, logo
-// embaixo, "Falar no WhatsApp" com o diferencial (sem repetir as
-// comodidades). "Patrocinado" fica em cima da foto, como o "Anúncio" dele.
+// embaixo, "Falar no WhatsApp". "Patrocinado" fica em cima da foto, como o "Anúncio" dele.
 function fotosDoCartaoDoMapa(c) {
-  const fotos = courtPhotos(c).slice(0, 3);
-  if (!fotos.length) return "";
+  const foto = courtPhotos(c)[0];
+  if (!foto) return "";
   return `
-      <div class="mcard-fotos n${fotos.length}">
-        ${fotos.map((f, i) => `<img src="${esc(f)}" alt="${i ? "" : esc(c.name)}" loading="lazy"${i ? "" : ` class="grande"`} />`).join("")}
+      <div class="mcard-fotos">
+        <img src="${esc(foto)}" alt="${esc(c.name)}" loading="lazy" />
         ${c.patrocinada ? `<span class="mcard-tag">Patrocinado</span>` : ""}
       </div>`;
 }
@@ -9038,7 +9006,6 @@ function cartaoDoMapa(c) {
   const fav = isFavorite(c.id);
   const precos = ofertas(c).filter(o => o.min).slice(0, 2);
   const marcas = selos(c);
-  const dif = diferencialCurto(c, marcas.map(m => m.k));
   return `
     <div class="mcard ${c.id === state.mapSelected ? "on" : ""}" role="listitem" data-open="${c.id}" data-map-card="${c.id}">
       ${fotos}
@@ -9061,9 +9028,7 @@ function cartaoDoMapa(c) {
             : `<span class="mcard-valores"><span class="sem-valor">${SEM_PRECO}</span></span>`}
         </div>
         <button type="button" class="mcard-btn">Ver academia ${icon('chevron', 14, '#fff')}</button>
-        ${c.phone
-          ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')}<span><span class="mcard-wa-t">Falar no WhatsApp</span>${dif ? `<small class="mcard-dif">${esc(dif)}</small>` : ""}</span></a>`
-          : dif ? `<p class="mcard-wa mcard-dif-solto">${icon('check', 14, 'var(--green)')}<span><small class="mcard-dif">${esc(dif)}</small></span></p>` : ""}
+        ${c.phone ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')}<span class="mcard-wa-t">Falar no WhatsApp</span></a>` : ""}
       </div>
     </div>`;
 }

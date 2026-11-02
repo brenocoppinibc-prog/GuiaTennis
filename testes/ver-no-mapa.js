@@ -70,24 +70,21 @@ const { abrir, ok } = require('./harness');
       espia: car.scrollWidth > car.clientWidth, texto: c.innerText.replace(/\s+/g, ' ').trim(), comoChegar: !!car.querySelector('[data-como-chegar]'), fechar: !!document.getElementById('map-card-close') };
   });
   ok(deitado.cartoes === deitado.comPonto && deitado.cartoes > 1 && deitado.on && deitado.deitado && deitado.embaixo && deitado.espia, 'no mapa, um cartão deitado por academia, no rodapé, em carrossel (o próximo aparece na borda), com o da escolhida aceso — ' + JSON.stringify({ ...deitado, texto: undefined }));
-  ok(deitado.texto === 'Só Aula Tennis Pinheiros, São Paulo · 0 m de você Coberta Estacionamento grátis — Sem nota ainda a partir de Locação R$ 130/h Aula R$ 150/aula Ver academia Falar no WhatsApp empresta raquete' && !deitado.comoChegar && !deitado.fechar,
-    'o cartão (regra 195, como o do hoteis.com): o nome, o endereço, as comodidades com o ✓ da lista, a nota, o "a partir de" com os preços, "Ver academia" e, embaixo, "Falar no WhatsApp" com um diferencial que não repete as comodidades; sem o "Como chegar" — ' + deitado.texto);
-  const linhaWa = await page.evaluate(() => { const c = document.querySelector('[data-map-card="a1"]'); const w = c.querySelector('.mcard-wa').getBoundingClientRect(), t = c.querySelector('.mcard-wa-t').getBoundingClientRect(), b = c.querySelector('.mcard-btn').getBoundingClientRect(), d = c.querySelector('.mcard-dif').getBoundingClientRect(), sel = c.querySelector('.mcard-selos').getBoundingClientRect(), nota = c.querySelector('.rcard-score').getBoundingClientRect(); return { embaixo: w.top >= b.bottom - 1 && Math.abs(w.left - b.left) < 2, umaLinha: t.height < 24, difEmbaixo: d.top >= t.bottom - 1, botao: b.height >= 44, comodidadesEmCima: sel.bottom <= nota.top + 1 }; });
-  ok(linhaWa.embaixo && linhaWa.umaLinha && linhaWa.difEmbaixo && linhaWa.botao && linhaWa.comodidadesEmCima, '"Ver academia" (44px) e, logo embaixo, "Falar no WhatsApp" com o diferencial na linha de baixo; as comodidades em cima da nota — ' + JSON.stringify(linhaWa));
-  const difs = await page.evaluate(() => [diferencialCurto({ amenities: ['camera', 'wifi'], cobertura: ['coberta'] }), diferencialCurto({ amenities: ['estacionamento_gratuito'] }), diferencialCurto({ amenities: [], modalidades: ['locacao'] }), diferencialCurto({ amenities: ['raquete'], cobertura: ['coberta'] }, ['coberta'])].join(' | '));
-  ok(difs === 'câmera para gravar | estacionamento grátis | locação | empresta raquete', 'o diferencial é o melhor que a academia tem, curto, sem repetir as comodidades do cartão; sem nada, a modalidade — ' + difs);
-  // As fotos em mosaico, como no hoteis.com: uma grande em cima e duas pequenas embaixo.
-  const mosaico = await page.evaluate(async () => {
-    const cor = (c) => { const k = document.createElement('canvas'); k.width = 30; k.height = 20; const x = k.getContext('2d'); x.fillStyle = c; x.fillRect(0, 0, 30, 20); return k.toDataURL('image/jpeg'); };
+  ok(deitado.texto === 'Só Aula Tennis Pinheiros, São Paulo · 0 m de você Coberta Estacionamento grátis — Sem nota ainda a partir de Locação R$ 130/h Aula R$ 150/aula Ver academia Falar no WhatsApp' && !deitado.comoChegar && !deitado.fechar,
+    'o cartão (regra 195, como o do hoteis.com): o nome, o endereço, as comodidades com o ✓ da lista, a nota, o "a partir de" com os preços, "Ver academia" e, embaixo, "Falar no WhatsApp", sem o diferencial ("tire isso") e sem o "Como chegar" — ' + deitado.texto);
+  const linhaWa = await page.evaluate(() => { const c = document.querySelector('[data-map-card="a1"]'); const w = c.querySelector('.mcard-wa').getBoundingClientRect(), t = c.querySelector('.mcard-wa-t').getBoundingClientRect(), b = c.querySelector('.mcard-btn').getBoundingClientRect(), sel = c.querySelector('.mcard-selos').getBoundingClientRect(), nota = c.querySelector('.rcard-score').getBoundingClientRect(); return { embaixo: w.top >= b.bottom - 1 && Math.abs(w.left - b.left) < 2, umaLinha: t.height < 24, semDif: !c.querySelector('.mcard-dif'), botao: b.height >= 44, comodidadesEmCima: sel.bottom <= nota.top + 1 }; });
+  ok(linhaWa.embaixo && linhaWa.umaLinha && linhaWa.semDif && linhaWa.botao && linhaWa.comodidadesEmCima, '"Ver academia" (44px) e, logo embaixo, "Falar no WhatsApp"; as comodidades em cima da nota — ' + JSON.stringify(linhaWa));
+  // Uma foto só, à esquerda, mesmo com várias (02/11/2026: "deve aparecer uma foto somente").
+  const foto1 = await page.evaluate(async () => {
     const a = window.__db.academias.find(x => x.id === 'a1');
-    a.photos = [cor('#2E6B4F'), cor('#3B7EA1'), cor('#C9A46A'), cor('#000000')];
+    a.photos = [a.photos[0], a.photos[0], a.photos[0]];
     await loadEverything(); selectOnMap(null); selectOnMap('a1');
     await new Promise(r => setTimeout(r, 300));
-    const imgs = [...document.querySelectorAll('[data-map-card="a1"] .mcard-fotos img')].map(i => i.getBoundingClientRect());
-    const info = document.querySelector('[data-map-card="a1"] .mcard-info').getBoundingClientRect();
-    return { n: imgs.length, grandeEmCima: imgs[0].width > imgs[1].width * 1.8 && imgs[0].bottom <= imgs[1].top + 1, pequenasLadoALado: Math.abs(imgs[1].top - imgs[2].top) < 1 && imgs[1].right <= imgs[2].left + 1, esquerda: imgs[0].right <= info.left + 1 };
+    const c = document.querySelector('[data-map-card="a1"]');
+    const f = c.querySelector('.mcard-fotos').getBoundingClientRect(), r = c.getBoundingClientRect();
+    return { n: c.querySelectorAll('.mcard-fotos img').length, altura: Math.abs(f.height - r.height) < 3 };
   });
-  ok(mosaico.n === 3 && mosaico.grandeEmCima && mosaico.pequenasLadoALado && mosaico.esquerda, 'à esquerda, as fotos em mosaico: uma grande em cima e duas pequenas embaixo (no máximo três) — ' + JSON.stringify(mosaico));
+  ok(foto1.n === 1 && foto1.altura, 'à esquerda, uma foto só, na altura do cartão — ' + JSON.stringify(foto1));
   // Deslizar para o lado passa para a próxima academia e acende o pino dela.
   const outra = await page.evaluate(() => mapCourts(getResults()).find(c => c.id !== 'a1').id);
   await page.evaluate((id) => { const car = document.getElementById('map-carrossel'); const el = car.querySelector(`[data-map-card="${id}"]`); car.scrollLeft = el.offsetLeft - (car.clientWidth - el.offsetWidth) / 2; }, outra);

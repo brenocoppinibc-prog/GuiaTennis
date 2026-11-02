@@ -225,11 +225,10 @@ Produto (o que já foi decidido)
   cima da modalidade e do preço (regra 191). No mapa (regra 192), os
   **cartões deitados no rodapé, em carrossel**, como trivago, hoteis.com e
   Booking. O cartão (`cartaoDoMapa`, regra 195, no jeito do hoteis.com):
-  à esquerda, as fotos em mosaico (uma grande e duas pequenas,
-  "Patrocinado" em cima da foto); à direita, nome, endereço, as comodidades
-  com o ✓ da lista (`selos`), a nota, o "a partir de" com os preços, "Ver
-  academia" e, logo embaixo, "Falar no WhatsApp" com o diferencial curto na
-  linha de baixo (`diferencialCurto`, sem repetir as comodidades). Deslizar
+  à esquerda, **uma foto só** ("Patrocinado" em cima dela); à direita,
+  nome, endereço, as comodidades com o ✓ da lista (`selos`), a nota, o "a
+  partir de" com os preços, "Ver academia" e, logo embaixo, "Falar no
+  WhatsApp" (sem diferencial: "tire isso"). Deslizar
   para o lado acende o pino da seguinte, tocar no pino leva ao cartão dela,
   tocar no mapa fecha. Sem o "Como chegar" no mapa (fica na ficha).
 - **Acompanhamento do jogador (regra 193):** a conta com o e-mail
@@ -422,9 +421,9 @@ deitados no rodapé, em carrossel, sem o "Como chegar"; e a regra 193: o
 **acompanhamento do jogador** por e-mail (SQL
 `20261101120000_acompanhamento`), com o WhatsApp opcional; e a regra 194:
 "Ver academia" e "Falar no WhatsApp" com um diferencial nos cartões do
-mapa; e a regra 195: o cartão do mapa no jeito do hoteis.com (fotos em
-mosaico à esquerda, comodidades em cima, WhatsApp embaixo do "Ver
-academia"). A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
+mapa; e a regra 195: o cartão do mapa no jeito do hoteis.com (uma foto
+à esquerda, comodidades em cima, "Falar no WhatsApp" embaixo do "Ver
+academia", sem o diferencial). A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
 nenhuma falha; o banco local foi montado de novo neste contêiner e o
 `banco-emails.py` deu 754 conferências, nenhuma falha (01/11). Layouts da ficha em
 estudo (A Editorial, B Quadra, C Placar), no quadro de design
@@ -633,13 +632,14 @@ acompanhar).
   e, embaixo, de ponta a ponta, "Falar no WhatsApp · quadra coberta", com o
   diferencial curto da academia (câmera, coberta, estacionamento grátis,
   loja, empresta raquete, vestiário…; sem nada, a modalidade). Sem SQL.
-  Teste: `ver-no-mapa.js`.
-- 195 (02/11) Cartão do mapa no jeito do print do hoteis.com: fotos em
-  mosaico à esquerda (uma grande e duas pequenas; "Patrocinado" em cima da
-  foto, como o "Anúncio" dele), comodidades com o ✓ verde logo abaixo do
+  Teste: `ver-no-mapa.js`. (O diferencial saiu na 195.)
+- 195 (02/11) Cartão do mapa no jeito do print do hoteis.com: uma foto só
+  à esquerda ("deve aparecer uma foto somente"; "Patrocinado" em cima dela,
+  como o "Anúncio" dele), comodidades com o ✓ verde logo abaixo do
   endereço, nota, preços, "Ver academia" e, embaixo dele, "Falar no
-  WhatsApp" com o diferencial na linha de baixo, sem repetir as
-  comodidades. Sem SQL. Teste: `ver-no-mapa.js`.
+  WhatsApp", sem o diferencial ("tire isso"). Sem SQL. Teste:
+  `ver-no-mapa.js` (a bateria completa não rodou de novo, a pedido de
+  economia; a última, de 02/11, deu 2.249).
 
 ## 11. WhatsApp e mensagem para as academias
 

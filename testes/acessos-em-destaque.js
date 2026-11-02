@@ -48,6 +48,22 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   ok((await texto(page, '#parceiros .pc-desempenho-mini')).includes('42 acessos'), 'Completo: o cartão também');
   await browser.close();
 
+  // ---- Regra 196: o Completo vê também quantos chamaram vocês ----
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'completo' }));
+  await page.waitForTimeout(400);
+  const mini = (await texto(page, '#parceiros .pc-desempenho-mini')).replace(/\s+/g, ' ');
+  ok(mini.includes('42 acessos à ficha nos últimos 30 dias · 7 contatos'), 'Completo: o cartão pequeno com os acessos e os contatos dos 30 dias — ' + mini);
+  await page.evaluate(() => document.querySelector('#parceiros .pc-desempenho-mini').click());
+  await page.waitForTimeout(400);
+  const vit = (await texto(page, '#parceiros .pc-vitrine')).replace(/\s+/g, ' ');
+  ok(vit.includes('7 contatos pelo WhatsApp, Instagram ou site') && vit.includes('No plano Premium, vocês veem também:') && !vit.includes('Quantos chamaram vocês') && vit.includes('Por qual canal'), 'Completo: no Desempenho, os contatos; o canal e o resto seguem no Premium — ' + vit);
+  await browser.close();
+  ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'basico' }));
+  await page.waitForTimeout(500);
+  const vitB = (await texto(page, '#parceiros .pc-vitrine')).replace(/\s+/g, ' ');
+  ok(!vitB.includes('contatos pelo') && vitB.includes('Nos planos Completo e Premium, vocês veem também:') && vitB.includes('Quantos chamaram vocês · Completo') && vitB.includes('Por qual canal · Premium'), 'Básico: os contatos aparecem como "Completo", o resto como "Premium" — ' + vitB);
+  await browser.close();
+
   // ---- Premium: os números de sempre, sem o cartão ----
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/painel', plano: 'premium' }));
   await page.waitForTimeout(400);

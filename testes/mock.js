@@ -1251,7 +1251,8 @@
       // Desde 02/10/2026, números só no Premium (SQL 20261002120000).
       // Desde 07/10/2026, os acessos de 30 dias em todo plano (SQL 20261007160000).
       // window.__semAcessos finge o banco antes dele; window.__acessos troca o número.
-      if (plano !== "premium") return { data: window.__semAcessos ? { plano, trancado: true } : { plano, trancado: true, dias: 30, acessos: window.__acessos ?? 42 }, error: null };
+      // Regra 196: o Completo vê também os contatos dos 30 dias.
+      if (plano !== "premium") return { data: window.__semAcessos ? { plano, trancado: true } : { plano, trancado: true, dias: 30, acessos: window.__acessos ?? 42, ...(plano === "completo" ? { contatos: window.__contatos ?? 7 } : {}) }, error: null };
       const base = { plano, dias, visitas: 42, contatos: 9 };
       if (plano === "basico") return { data: base, error: null };
       const n = dias || 120;

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 02/11/2026 (regra 195)
+**Atualizado em:** 02/11/2026 (regra 196)
 
 | | |
 |---|---|
@@ -166,7 +166,7 @@ Produto (o que já foi decidido)
 - **Planos** (todos grátis por enquanto; a academia é avisada antes de
   cobrar): **Básico** (3 comodidades, 3 fotos, só WhatsApp, 1 pessoa),
   **Completo** (ficha inteira, 5 fotos, 5 pessoas, promoção na ficha paga
-  por semana), **Premium** (10 pessoas, foto de cada opção do catálogo,
+  por semana, **quantos chamaram nos últimos 30 dias**, regra 196), **Premium** (10 pessoas, foto de cada opção do catálogo,
   números da ficha, selo dourado, até 2 "Patrocinado" no topo da busca a
   até 10 km e de novo no lugar delas sem a marcação, primeiro nas
   recomendadas, leilão de promoções por e-mail, a semana da promoção 20%
@@ -290,7 +290,7 @@ Produto (o que já foi decidido)
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261101120000_acompanhamento` (79 arquivos na pasta; 76 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261102120000_contatos_no_completo` (80 arquivos na pasta; 77 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -397,7 +397,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (01/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 195**. De 28/10 a 01/11 entraram: o catálogo
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 196**. De 28/10 a 01/11 entraram: o catálogo
 com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
 no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
 intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
@@ -425,7 +425,9 @@ deitados no rodapé, em carrossel, sem o "Como chegar"; e a regra 193: o
 "Ver academia" e "Falar no WhatsApp" com um diferencial nos cartões do
 mapa; e a regra 195: o cartão do mapa no jeito do hoteis.com (uma foto
 à esquerda, comodidades em cima, "Falar no WhatsApp" embaixo do "Ver
-academia", sem o diferencial). A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
+academia", sem o diferencial); e a regra 196: o Completo vê quantos
+chamaram a academia nos últimos 30 dias (SQL
+`20261102120000_contatos_no_completo`). A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
 nenhuma falha; o banco local foi montado de novo neste contêiner e o
 `banco-emails.py` deu 754 conferências, nenhuma falha (01/11). Layouts da ficha em
 estudo (A Editorial, B Quadra, C Placar), no quadro de design
@@ -467,7 +469,7 @@ acompanhar).
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 196.
+**Próximo número:** regra 197.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -642,6 +644,16 @@ acompanhar).
   WhatsApp", sem o diferencial ("tire isso"). Sem SQL. Teste:
   `ver-no-mapa.js` (a bateria completa não rodou de novo, a pedido de
   economia; a última, de 02/11, deu 2.249).
+- 196 (02/11) "Mostrar para o completo quantos entraram em contato é bom
+  para tentar vender mais": no Completo, o Desempenho e o cartão pequeno
+  mostram os acessos e os contatos (WhatsApp, Instagram e site) dos 30
+  dias, como o Google Business Profile; canal, dia a dia, de onde vieram e
+  bairros seguem no Premium. No Básico, a vitrine marca "Quantos chamaram
+  vocês · Completo" e o resto "· Premium". Linha nova na tabela dos
+  planos; Ajuda, chat e Termos (02/11). SQL
+  `20261102120000_contatos_no_completo`. Testes: `acessos-em-destaque.js`,
+  `parceiros.js`, `banco-emails.py` (755, nenhuma falha). Bateria completa
+  não rodou (economia).
 
 ## 11. WhatsApp e mensagem para as academias
 

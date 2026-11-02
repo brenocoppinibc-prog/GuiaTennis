@@ -733,6 +733,10 @@ plano_antes = "completo"  # o do seed.sql; volta no fim
 num = json.loads(um("select public.numeros_da_academia(30)::text", papel="authenticated", user=dono) or "{}")
 ok(num.get("trancado") is True and num.get("acessos") == 3 and num.get("dias") == 30, "Básico vê os acessos dos últimos 30 dias — " + json.dumps(num))
 ok("contatos" not in num and "origens" not in num and "visitas" not in num, "e só isso: quem chamou e de onde vieram continuam no Premium")
+sql(f"update public.academias set plano = 'completo' where id = '{PINHEIROS}'")
+num = json.loads(um("select public.numeros_da_academia(30)::text", papel="authenticated", user=dono) or "{}")
+ok(num.get("trancado") is True and num.get("acessos") == 3 and num.get("contatos") == 1 and "origens" not in num and "visitas" not in num,
+   "Completo vê também quantos chamaram (regra 196), sem o resto do Premium — " + json.dumps(num))
 sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
 num = json.loads(um("select public.numeros_da_academia(30)::text", papel="authenticated", user=dono) or "{}")
 ok(num.get("visitas") == 3 and num.get("contatos") == 1 and not num.get("trancado"), "Premium continua vendo tudo, com os mesmos acessos")

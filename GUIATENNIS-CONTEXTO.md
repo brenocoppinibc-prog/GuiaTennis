@@ -75,8 +75,10 @@ para o histórico).
    `CHAT_DETALHES*`) e "Como funcionam as avaliações" quando for o caso.
 4. **Este arquivo:** trocar o parágrafo da seção 9 (não acumular),
    acrescentar uma linha na seção 10 e os números de teste.
-5. **Descrição do PR (curta):** uma linha em "Pedidos depois de 28/10", o
-   SQL novo na lista e um passo em "Para testar". Salvar com
+5. **Descrição do PR (curta):** desde 02/11, só as regras e os passos
+   novos (o detalhe de 168 a 195 e os passos 1 a 29 estão em
+   `historico/PR5-descricao-28-10-a-02-11-2026.md`); uma linha por regra
+   nova, o SQL novo e um passo em "Para testar". Salvar com
    `update_pull_request` e conferir (ler o PR e comparar o `body` com o
    arquivo local com `jq -r .body` + `diff`).
 6. Commit em português, com as linhas finais de autoria pedidas pela

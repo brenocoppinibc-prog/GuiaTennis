@@ -8,7 +8,9 @@
 // (01/11/2026): "no mapa uma miniatura completa como está na lista" e "na
 // lista, a partir de acima da escrita sobre a modalidade". Regra 192
 // (01/11/2026): "tire o como chegar da prévia do mapa e deixe a apresentação
-// mais de lado, inferior da tela como trivago, hoteis.com, booking".
+// mais de lado, inferior da tela como trivago, hoteis.com, booking". Regra
+// 194 (02/11/2026): "coloque nos cards do mapa o botão ver academia e
+// embaixo falar no WhatsApp com algum diferencial dessa academia".
 const { abrir, ok } = require('./harness');
 
 (async () => {
@@ -65,7 +67,12 @@ const { abrir, ok } = require('./harness');
       espia: car.scrollWidth > car.clientWidth, texto: c.innerText.replace(/\s+/g, ' ').trim(), comoChegar: !!car.querySelector('[data-como-chegar]'), fechar: !!document.getElementById('map-card-close') };
   });
   ok(deitado.cartoes === deitado.comPonto && deitado.cartoes > 1 && deitado.on && deitado.deitado && deitado.embaixo && deitado.espia, 'no mapa, um cartão deitado por academia, no rodapé, em carrossel (o próximo aparece na borda), com o da escolhida aceso — ' + JSON.stringify({ ...deitado, texto: undefined }));
-  ok(deitado.texto === 'Só Aula Tennis — Sem nota ainda Pinheiros, São Paulo · 0 m de você a partir de Locação R$ 130/h Aula R$ 150/aula Falar no WhatsApp' && !deitado.comoChegar && !deitado.fechar, 'o cartão: a foto à esquerda e o nome, a nota, o endereço, o "a partir de" com os preços e o WhatsApp; sem o "Como chegar" — ' + deitado.texto);
+  ok(deitado.texto === 'Só Aula Tennis — Sem nota ainda Pinheiros, São Paulo · 0 m de você a partir de Locação R$ 130/h Aula R$ 150/aula Ver academia Falar no WhatsApp · quadra coberta' && !deitado.comoChegar && !deitado.fechar, 'o cartão: a foto à esquerda e o nome, a nota, o endereço, o "a partir de" com os preços, "Ver academia" e, embaixo, "Falar no WhatsApp" com um diferencial (regra 194); sem o "Como chegar" — ' + deitado.texto);
+  // Regra 194: o botão e o diferencial, numa linha só, de ponta a ponta do cartão.
+  const linhaWa = await page.evaluate(() => { const c = document.querySelector('[data-map-card="a1"]'); const w = c.querySelector('.mcard-wa').getBoundingClientRect(), r = c.getBoundingClientRect(), t = c.querySelector('.mcard-wa-t').getBoundingClientRect(), b = c.querySelector('.mcard-btn').getBoundingClientRect(); return { ponta: Math.abs(w.left - r.left) < 2 && Math.abs(w.right - r.right) < 2, umaLinha: t.height < 24, botaoEmCima: b.bottom <= w.top + 1, botao: b.height >= 44 }; });
+  ok(linhaWa.ponta && linhaWa.umaLinha && linhaWa.botaoEmCima && linhaWa.botao, '"Ver academia" (44px) em cima e o WhatsApp numa linha só, na largura do cartão — ' + JSON.stringify(linhaWa));
+  const difs = await page.evaluate(() => [diferencialCurto({ amenities: ['camera', 'wifi'], cobertura: ['coberta'] }), diferencialCurto({ amenities: ['estacionamento_gratuito'] }), diferencialCurto({ amenities: [], modalidades: ['locacao'] })].join(' | '));
+  ok(difs === 'câmera para gravar | estacionamento grátis | locação', 'o diferencial é o melhor que a academia tem, curto; sem nada, a modalidade — ' + difs);
   // Deslizar para o lado passa para a próxima academia e acende o pino dela.
   const outra = await page.evaluate(() => mapCourts(getResults()).find(c => c.id !== 'a1').id);
   await page.evaluate((id) => { const car = document.getElementById('map-carrossel'); const el = car.querySelector(`[data-map-card="${id}"]`); car.scrollLeft = el.offsetLeft - (car.clientWidth - el.offsetWidth) / 2; }, outra);

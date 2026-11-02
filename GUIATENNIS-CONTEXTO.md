@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 02/11/2026 (regra 194)
+**Atualizado em:** 02/11/2026 (regra 195)
 
 | | |
 |---|---|
@@ -224,12 +224,14 @@ Produto (o que já foi decidido)
 - **Lista e mapa da busca:** no cartão da lista, o "a partir de" fica em
   cima da modalidade e do preço (regra 191). No mapa (regra 192), os
   **cartões deitados no rodapé, em carrossel**, como trivago, hoteis.com e
-  Booking (`cartaoDoMapa`: foto à esquerda; nome, nota, endereço, "a partir
-  de" com os preços e o botão "Ver academia"; embaixo, de ponta a ponta,
-  "Falar no WhatsApp · quadra coberta", com o diferencial curto da academia,
-  `diferencialCurto`, regra 194): deslizar para o lado acende o pino da
-  seguinte, tocar no pino leva ao cartão dela, tocar no mapa fecha. Sem o
-  "Como chegar" no mapa (fica na ficha).
+  Booking. O cartão (`cartaoDoMapa`, regra 195, no jeito do hoteis.com):
+  à esquerda, as fotos em mosaico (uma grande e duas pequenas,
+  "Patrocinado" em cima da foto); à direita, nome, endereço, as comodidades
+  com o ✓ da lista (`selos`), a nota, o "a partir de" com os preços, "Ver
+  academia" e, logo embaixo, "Falar no WhatsApp" com o diferencial curto na
+  linha de baixo (`diferencialCurto`, sem repetir as comodidades). Deslizar
+  para o lado acende o pino da seguinte, tocar no pino leva ao cartão dela,
+  tocar no mapa fecha. Sem o "Como chegar" no mapa (fica na ficha).
 - **Acompanhamento do jogador (regra 193):** a conta com o e-mail
   confirmado que chama uma academia pelo WhatsApp (`registrar_chamada`) recebe
   no dia seguinte, das 10h às 21h, o e-mail "Você marcou na …?" (Marquei
@@ -328,7 +330,7 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (02/11/2026): **2.248 verificações** nos
+  segundo plano). Último resultado (02/11/2026): **2.249 verificações** nos
   76 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
@@ -394,7 +396,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (01/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 194**. De 28/10 a 01/11 entraram: o catálogo
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 195**. De 28/10 a 01/11 entraram: o catálogo
 com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
 no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
 intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
@@ -420,7 +422,9 @@ deitados no rodapé, em carrossel, sem o "Como chegar"; e a regra 193: o
 **acompanhamento do jogador** por e-mail (SQL
 `20261101120000_acompanhamento`), com o WhatsApp opcional; e a regra 194:
 "Ver academia" e "Falar no WhatsApp" com um diferencial nos cartões do
-mapa. A descrição do PR tem uma linha por regra e os passos 1 a 28. Testes: 2.248 no navegador,
+mapa; e a regra 195: o cartão do mapa no jeito do hoteis.com (fotos em
+mosaico à esquerda, comodidades em cima, WhatsApp embaixo do "Ver
+academia"). A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
 nenhuma falha; o banco local foi montado de novo neste contêiner e o
 `banco-emails.py` deu 754 conferências, nenhuma falha (01/11). Layouts da ficha em
 estudo (A Editorial, B Quadra, C Placar), no quadro de design
@@ -430,7 +434,7 @@ acompanhar).
 
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1
-   a 28 da descrição do PR: veracidade, ficha reorganizada, aula avulsa e
+   a 29 da descrição do PR: veracidade, ficha reorganizada, aula avulsa e
    mensal nos cartões (regra 190), "Sobre" da academia, escolha das opções,
    convite por e-mail, Acessos, promoções, funções e Pagamentos, ajuda
    depois de cinco buscas) e dizer "pode subir".
@@ -462,7 +466,7 @@ acompanhar).
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 195.
+**Próximo número:** regra 196.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -630,6 +634,12 @@ acompanhar).
   diferencial curto da academia (câmera, coberta, estacionamento grátis,
   loja, empresta raquete, vestiário…; sem nada, a modalidade). Sem SQL.
   Teste: `ver-no-mapa.js`.
+- 195 (02/11) Cartão do mapa no jeito do print do hoteis.com: fotos em
+  mosaico à esquerda (uma grande e duas pequenas; "Patrocinado" em cima da
+  foto, como o "Anúncio" dele), comodidades com o ✓ verde logo abaixo do
+  endereço, nota, preços, "Ver academia" e, embaixo dele, "Falar no
+  WhatsApp" com o diferencial na linha de baixo, sem repetir as
+  comodidades. Sem SQL. Teste: `ver-no-mapa.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

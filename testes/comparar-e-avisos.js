@@ -75,6 +75,9 @@ const { abrir, ok } = require('./harness');
   await page.click('#decide-overlay [data-prio="distance"], #decide-overlay .decide-prio >> nth=0');
   // Regra 197: passo a passo — pergunta, a bola girando, o resultado com
   // "Confirmar" embaixo e, em outra tela, o que fazer.
+  // Regra 198: cada passo é uma tela com o cabeçalho do GuiaTennis e o passo no meio.
+  const tela = await page.evaluate(() => { const m = document.querySelector('main.decide-tela'); const r = m.getBoundingClientRect(); return { cab: !!document.querySelector('.home-head'), comparacao: !!document.querySelector('.cmp-pagina'), meio: Math.abs((r.left + r.right) / 2 - innerWidth / 2) < 2, titulo: getComputedStyle(document.querySelector('.decide-meio .decide-title')).textAlign }; });
+  ok(tela.cab && !tela.comparacao && tela.meio && tela.titulo === 'center', 'a ajuda é uma tela com o cabeçalho do GuiaTennis, no lugar da comparação, com o passo no meio — ' + JSON.stringify(tela));
   ok((await page.innerText('#decide-overlay .decide-title')) === 'O que mais ajuda na sua escolha?' && (await page.innerText('#decide-go')) === 'Ver o resultado', 'passo 1: pergunta o que ajuda');
   await page.click('#decide-go');
   await page.waitForTimeout(150);

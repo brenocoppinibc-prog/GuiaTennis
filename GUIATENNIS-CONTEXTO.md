@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 02/11/2026 (regra 197)
+**Atualizado em:** 02/11/2026 (regra 198)
 
 | | |
 |---|---|
@@ -397,7 +397,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (01/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 197**. De 28/10 a 01/11 entraram: o catálogo
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 198**. De 28/10 a 01/11 entraram: o catálogo
 com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
 no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
 intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
@@ -427,8 +427,8 @@ mapa; e a regra 195: o cartão do mapa no jeito do hoteis.com (uma foto
 à esquerda, comodidades em cima, "Falar no WhatsApp" embaixo do "Ver
 academia", sem o diferencial); e a regra 196: o Completo vê quantos
 chamaram a academia nos últimos 30 dias (SQL
-`20261102120000_contatos_no_completo`); e a regra 197: "Me ajude a decidir"
-passo a passo. A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
+`20261102120000_contatos_no_completo`); e as regras 197 e 198: "Me ajude
+a decidir" passo a passo, em telas com o cabeçalho e o passo no meio. A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
 nenhuma falha; o banco local foi montado de novo neste contêiner e o
 `banco-emails.py` deu 754 conferências, nenhuma falha (01/11). Layouts da ficha em
 estudo (A Editorial, B Quadra, C Placar), no quadro de design
@@ -470,7 +470,7 @@ acompanhar).
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 198.
+**Próximo número:** regra 199.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -662,6 +662,12 @@ acompanhar).
   3) noutra tela, "O que fazer agora": "Falar no WhatsApp" direto, "Ver a
   ficha no site" e "Escolher novamente". Sem SQL. Teste:
   `comparar-e-avisos.js` (bateria completa não rodou, economia).
+- 198 (02/11) "Faça as telas com o cabeçalho do GuiaTennis e as atividades
+  mais centralizadas": o "Me ajude a decidir" deixa de ser folha e vira
+  tela no lugar da comparação, com o cabeçalho, "Voltar à comparação" e o
+  passo no meio, numa coluna de 520px (títulos, chips e botões
+  centralizados; a bola girando no meio). Sem SQL. Teste:
+  `comparar-e-avisos.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

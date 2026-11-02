@@ -684,6 +684,16 @@
   .stat-taxa.media { background: var(--gold); color: #1F4D3D; }
   .stat-taxa.zero { background: var(--bg-alt); color: var(--muted); }
   .stat-copy { margin-top: 8px; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--green); font-weight: 700; cursor: pointer; }
+  /* As telas do "Me ajude a decidir" (regra 198): o cabeçalho e o passo no meio. */
+  .decide-tela { max-width: 520px; margin: 0 auto; padding: 12px 16px 48px; min-height: calc(100dvh - 72px); display: flex; flex-direction: column; }
+  .decide-voltar { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0; border: 0; background: none; font: 600 14px var(--fonte-texto); color: var(--green); cursor: pointer; }
+  .decide-meio { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .decide-meio .decide-box { margin-top: 0; background: none; border: 0; padding: 8px 0; }
+  .decide-meio .decide-title, .decide-meio .decide-passo-n, .decide-meio .decide-sub, .decide-meio .decide-verdict, .decide-meio .confirmar-txt { text-align: center; }
+  .decide-meio .decide-title { font-size: 22px; }
+  .decide-meio .chip-row, .decide-meio .confirmar-acoes { justify-content: center; }
+  .decide-meio .cta-btn { width: 100%; }
+  .decide-meio .inline-link { display: block; margin-left: auto; margin-right: auto; }
   .decide-passo-n { margin: 0 0 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
   .decide-carregando { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 240px; text-align: center; }
   .decide-feita #decidida-voltar { display: block; margin-left: auto; margin-right: auto; }
@@ -5845,7 +5855,7 @@ function render() {
 
     ${state.page === "home" ? renderHome() : ""}
     ${state.page === "search" ? renderSearchPage(results, activeFilters, topBadge) : ""}
-    ${state.page === "comparar" ? renderComparePage() + avisoDeDecisao() + renderDecideSheet() : ""}
+    ${state.page === "comparar" ? (state.showDecide && renderDecideSheet() ? renderDecideSheet() : renderComparePage() + avisoDeDecisao()) : ""}
     ${pushContaHtml()}
     ${renderNomeSuspenso()}
     ${pushAvaliarHtml()}
@@ -6821,17 +6831,20 @@ function avisoDeDecisao() {
       </div>
     </aside>`;
 }
+// Regra 198 (02/11/2026: "faça as telas com o cabeçalho do GuiaTennis e as
+// atividades mais centralizadas"): cada passo do "Me ajude a decidir" é uma
+// tela do site, com o cabeçalho de sempre e o passo no meio, numa coluna
+// estreita, como as telas de escolha do Booking e do Airbnb.
 function renderDecideSheet() {
   if (!state.showDecide || state.page !== "comparar") return "";
   const courts = compareCourts();
   if (courts.length < COMPARE_MIN) return "";
   return `
-    <div class="overlay open" id="decide-overlay">
-      <div class="sheet"><div class="sheet-content">
-        <button class="sheet-close" id="decide-close" aria-label="Fechar">✕</button>
-        ${caixaDeDecisao(courts)}
-      </div></div>
-    </div>`;
+    ${renderCabecalho()}
+    <main class="decide-tela" id="decide-overlay">
+      <button type="button" class="decide-voltar" id="decide-close">${icon('chevronLeft', 16, 'currentColor')} Voltar à comparação</button>
+      <div class="decide-meio">${caixaDeDecisao(courts)}</div>
+    </main>`;
 }
 // Arma o aviso quando a comparação aparece; vale uma vez por visita.
 function armarAvisoDeDecisao() {
@@ -26568,12 +26581,10 @@ function attachEvents() {
     window.scrollTo(0, 0);
   };
   document.querySelectorAll("[data-decide-abrir]").forEach(el => {
-    el.onclick = () => { state.showDecide = true; state.decidePushFechado = true; render(); };
+    el.onclick = () => { state.showDecide = true; state.decidePushFechado = true; render(); window.scrollTo(0, 0); };
   });
   const decideClose = document.getElementById("decide-close");
-  if (decideClose) decideClose.onclick = () => { state.showDecide = false; render(); };
-  const decideOverlay = document.getElementById("decide-overlay");
-  if (decideOverlay) decideOverlay.onclick = (e) => { if (e.target === decideOverlay) { state.showDecide = false; render(); } };
+  if (decideClose) decideClose.onclick = () => { state.showDecide = false; render(); window.scrollTo(0, 0); };
   const decidePushFechar = document.getElementById("decide-push-fechar");
   if (decidePushFechar) decidePushFechar.onclick = () => { state.decidePushFechado = true; render(); };
   armarAvisoDeDecisao();

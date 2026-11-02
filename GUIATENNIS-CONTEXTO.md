@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 02/11/2026 (regra 199)
+**Atualizado em:** 02/11/2026 (regra 200)
 
 | | |
 |---|---|
@@ -397,7 +397,7 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (01/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 199**. De 28/10 a 01/11 entraram: o catálogo
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 200**. De 28/10 a 01/11 entraram: o catálogo
 com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
 no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
 intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
@@ -430,7 +430,8 @@ chamaram a academia nos últimos 30 dias (SQL
 `20261102120000_contatos_no_completo`); e as regras 197 e 198: "Me ajude
 a decidir" passo a passo, em telas com o cabeçalho; e a regra 199: a
 pergunta no alto, "Mudar a preferência" no resultado e a mini prévia da
-academia na escolha. A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
+academia na escolha; e a regra 200: sair da ficha aberta pela ajuda
+volta à tela da escolha. A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
 nenhuma falha; o banco local foi montado de novo neste contêiner e o
 `banco-emails.py` deu 754 conferências, nenhuma falha (01/11). Layouts da ficha em
 estudo (A Editorial, B Quadra, C Placar), no quadro de design
@@ -472,7 +473,7 @@ acompanhar).
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 200.
+**Próximo número:** regra 201.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -675,6 +676,13 @@ acompanhar).
   resultado; passo 3 com "Sua escolha" no alto, a mini prévia da academia
   (o cartão do mapa sem favoritar, botão e WhatsApp, `cartaoDoMapa(c,
   true)`; tocar abre a ficha) e os contatos embaixo. Sem SQL. Teste:
+  `comparar-e-avisos.js`.
+- 200 (02/11) "Quando clicar em ver a ficha depois da comparação e clicar
+  para sair da ficha, voltar à tela de decisão da escolha": a ficha aberta
+  pela ajuda deixa `state.showDecide` ligado, e `voltarDaFicha` (e o voltar
+  do celular) volta à comparação, que mostra a tela da escolha; da
+  comparação comum, sair da ficha volta à comparação (antes ia à busca);
+  `goComparar` (menu) desliga a ajuda. Sem SQL. Teste:
   `comparar-e-avisos.js`.
 
 ## 11. WhatsApp e mensagem para as academias

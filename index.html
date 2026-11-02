@@ -17951,6 +17951,7 @@ function goHome() {
 
 function goComparar() {
   state.page = "comparar";
+  state.showDecide = false;
   state.selected = null;
   state.avisoLink = "";
   state.showSort = false;
@@ -18010,7 +18011,11 @@ function openCourt(id) {
 
 function voltarDaFicha() {
   if (state.backTo === "admin" && isAdmin) { irAdmin(state.adminAba); return; }
-  state.page = state.backTo === "home" ? "home" : "search";
+  // Regra 200 (02/11/2026: "quando clicar em ver a ficha depois da
+  // comparação e clicar para sair da ficha voltar a tela de decisão da
+  // escolha"): da comparação, volta à comparação; aberta pela ajuda para
+  // decidir, à tela da escolha (state.showDecide continua ligado).
+  state.page = state.backTo === "home" ? "home" : state.backTo === "comparar" ? "comparar" : "search";
   state.selected = null;
   syncUrl(true);
   render();
@@ -26393,7 +26398,8 @@ function attachEvents() {
   const decideMudar = document.getElementById("decide-mudar");
   if (decideMudar) decideMudar.onclick = () => { state.decidePasso = "perguntar"; render(); };
   document.querySelectorAll("[data-decide-ficha]").forEach(el => {
-    el.onclick = () => { state.showDecide = false; openCourt(el.dataset.decideFicha); };
+    // A ajuda fica aberta por trás: sair da ficha volta à escolha (regra 200).
+    el.onclick = () => { openCourt(el.dataset.decideFicha); };
   });
 
   document.querySelectorAll("[data-track-wa]").forEach(el => { el.onclick = () => trackClick(el.dataset.trackWa, "whatsapp"); });

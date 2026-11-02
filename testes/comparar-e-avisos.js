@@ -95,6 +95,18 @@ const { abrir, ok } = require('./harness');
   // Regra 199: o título no alto, a mini prévia da academia e os contatos embaixo dela.
   const p3 = await page.evaluate(() => { const t = document.querySelector('.decide-feita .decide-title').getBoundingClientRect(), pv = document.querySelector('.decide-feita .mcard-previa'), wa = document.querySelector('.decide-feita [data-track-wa]').getBoundingClientRect(); return { titulo: document.querySelector('.decide-feita .decide-title').innerText, alto: t.top < innerHeight * 0.35, previa: !!pv && !!pv.querySelector('.mcard-nome') && !pv.querySelector('.mcard-btn, .mcard-wa, .mcard-fav'), ordem: t.bottom <= pv.getBoundingClientRect().top + 1 && pv.getBoundingClientRect().bottom <= wa.top + 1 }; });
   ok(p3.titulo === 'Sua escolha' && p3.alto && p3.previa && p3.ordem, 'passo 3: "Sua escolha" no alto, a mini prévia da academia e, embaixo, os contatos — ' + JSON.stringify(p3));
+  // Regra 200: ver a ficha e sair dela volta à tela da escolha (pelo botão do site e pelo voltar do celular).
+  await page.click('#decide-overlay [data-decide-ficha] >> nth=0');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.page === 'court'), '"Ver a ficha no site" abre a ficha');
+  await page.evaluate(() => document.getElementById('court-back')?.click() || document.querySelector('[data-voltar-ficha]')?.click());
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => state.page === 'comparar' && !!document.querySelector('.decide-feita .mcard-previa')), 'sair da ficha volta à tela da escolha');
+  await page.click('#decide-overlay [data-decide-ficha] >> nth=0');
+  await page.waitForTimeout(300);
+  await page.goBack();
+  await page.waitForTimeout(400);
+  ok(await page.evaluate(() => state.page === 'comparar' && !!document.querySelector('.decide-feita')), 'o voltar do celular também volta à tela da escolha');
   await page.click('#decidida-voltar');
   await page.waitForTimeout(100);
   ok(await page.evaluate(() => !!document.querySelector('#decide-overlay #decide-go') && state.decidida === null), '"Escolher novamente" volta ao começo');

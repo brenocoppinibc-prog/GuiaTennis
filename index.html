@@ -9019,7 +9019,7 @@ function mapCardHtml(id) {
   if (!id) return "";
   const lista = mapCourts(getResults());
   if (!lista.some(c => c.id === id)) return "";
-  return `<div class="map-carrossel" id="map-carrossel" role="list" aria-label="Academias do mapa">${lista.map(cartaoDoMapa).join("")}</div>`;
+  return `<div class="map-carrossel" id="map-carrossel" role="list" aria-label="Academias do mapa">${lista.map(c => cartaoDoMapa(c)).join("")}</div>`;
 }
 // Regra 194 (02/11/2026): o botão "Ver academia" e, embaixo, "Falar no
 // WhatsApp". O diferencial que vinha ao lado saiu no mesmo dia ("tire isso").

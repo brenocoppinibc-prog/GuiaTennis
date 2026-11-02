@@ -687,7 +687,12 @@
   /* As telas do "Me ajude a decidir" (regra 198): o cabeçalho e o passo no meio. */
   .decide-tela { max-width: 520px; margin: 0 auto; padding: 12px 16px 48px; min-height: calc(100dvh - 72px); display: flex; flex-direction: column; }
   .decide-voltar { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0; border: 0; background: none; font: 600 14px var(--fonte-texto); color: var(--green); cursor: pointer; }
-  .decide-meio { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .decide-meio { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 4px; }
+  .decide-meio .decide-carregando { flex: 1; min-height: 50vh; }
+  .decide-mudar { margin: 0 auto 6px; }
+  .decide-previa { margin-top: 12px; }
+  .mcard.mcard-previa { flex: none; width: 100%; min-height: 0; }
+  .mcard-previa .mcard-fotos { max-width: 130px; }
   .decide-meio .decide-box { margin-top: 0; background: none; border: 0; padding: 8px 0; }
   .decide-meio .decide-title, .decide-meio .decide-passo-n, .decide-meio .decide-sub, .decide-meio .decide-verdict, .decide-meio .confirmar-txt { text-align: center; }
   .decide-meio .decide-title { font-size: 22px; }
@@ -6692,6 +6697,7 @@ function resultadoDaDecisao(courts) {
   return `
         <div class="decide-box">
           <p class="decide-passo-n">Passo 2 de 3</p>
+          <button type="button" class="inline-link decide-mudar" id="decide-mudar">Mudar a preferência</button>
           ${(() => {
             const rank = decideRanking();
             const top = rank[0];
@@ -6772,7 +6778,6 @@ function resultadoDaDecisao(courts) {
                   <div class="confirmar-acoes">
                     ${(empate ? rank : rank.slice(1)).map(r => `<button type="button" class="chip small" data-decidir="${r.court.id}">${empate ? "" : "Prefiro a "}${esc(r.court.name)}</button>`).join("")}
                   </div>
-                  <button type="button" class="inline-link" id="decide-mudar" style="margin-top:12px">Mudar o que ajuda</button>
                 </div>
               </div>
             `;
@@ -6785,10 +6790,10 @@ function decisaoFeita(courts) {
   if (!c) return "";
   return `
         <div class="decide-box decide-feita">
-          <p class="decide-passo-n">Passo 3 de 3 · Sua escolha</p>
-          <p class="decide-verdict">${esc(c.name)}</p>
-          ${localLine(c) ? `<p class="decide-why">${esc(localLine(c))}</p>` : ""}
-          <p class="field-label" style="margin-top:16px">O que fazer agora</p>
+          <p class="decide-passo-n">Passo 3 de 3</p>
+          <p class="decide-title">Sua escolha</p>
+          <div class="decide-previa">${cartaoDoMapa(c, true)}</div>
+          <p class="field-label" style="margin-top:18px">O que fazer agora</p>
           ${c.phone ? `<a class="cta-btn cta-primary" href="${waLink(c)}" target="_blank" rel="noreferrer" data-track-wa="${c.id}" style="width:100%">${icon('phone', 15, '#fff')} Falar no WhatsApp</a>` : ""}
           <button type="button" class="cta-btn cta-secondary" data-decide-ficha="${c.id}" style="width:100%;margin-top:8px">Ver a ficha no site</button>
           <button type="button" class="inline-link" id="decidida-voltar" style="margin-top:12px">Escolher novamente</button>
@@ -9033,19 +9038,19 @@ function fotosDoCartaoDoMapa(c) {
         ${c.patrocinada ? `<span class="mcard-tag">Patrocinado</span>` : ""}
       </div>`;
 }
-function cartaoDoMapa(c) {
+function cartaoDoMapa(c, previa) {
   const fotos = fotosDoCartaoDoMapa(c);
   const fav = isFavorite(c.id);
   const precos = ofertas(c).filter(o => o.min).slice(0, 2);
   const marcas = selos(c);
   return `
-    <div class="mcard ${c.id === state.mapSelected ? "on" : ""}" role="listitem" data-open="${c.id}" data-map-card="${c.id}">
+    <div class="mcard ${previa ? "mcard-previa" : c.id === state.mapSelected ? "on" : ""}" ${previa ? `data-decide-ficha="${c.id}"` : `role="listitem" data-open="${c.id}" data-map-card="${c.id}"`}>
       ${fotos}
       <div class="mcard-info">
         ${c.patrocinada && !fotos ? `<p class="rcard-patrocinado">Patrocinado</p>` : ""}
         <div class="mcard-topo">
           <p class="mcard-nome">${esc(c.name)}${seloDaAcademia(c, 14)}</p>
-          <button type="button" class="mcard-fav" data-fav="${c.id}" aria-label="Favoritar">${icon(fav ? 'heartFill' : 'heart', 18, fav ? 'var(--red)' : 'var(--muted)')}</button>
+          ${previa ? "" : `<button type="button" class="mcard-fav" data-fav="${c.id}" aria-label="Favoritar">${icon(fav ? 'heartFill' : 'heart', 18, fav ? 'var(--red)' : 'var(--muted)')}</button>`}
         </div>
         <p class="mcard-linha">${esc(localLine(c))}</p>
         ${marcas.length ? `<p class="mcard-selos">${marcas.map(m => `<span>${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</p>` : ""}
@@ -9059,8 +9064,8 @@ function cartaoDoMapa(c) {
             ? `<span class="mcard-apartir">a partir de</span><span class="mcard-valores">${precos.map(o => `<span><small>${esc(o.label)}</small><b>R$ ${esc(priceMin(o.faixa))}<em>${esc(o.curto || "/h")}</em></b></span>`).join("")}</span>`
             : `<span class="mcard-valores"><span class="sem-valor">${SEM_PRECO}</span></span>`}
         </div>
-        <button type="button" class="mcard-btn">Ver academia ${icon('chevron', 14, '#fff')}</button>
-        ${c.phone ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')}<span class="mcard-wa-t">Falar no WhatsApp</span></a>` : ""}
+        ${previa ? "" : `<button type="button" class="mcard-btn">Ver academia ${icon('chevron', 14, '#fff')}</button>`}
+        ${c.phone && !previa ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')}<span class="mcard-wa-t">Falar no WhatsApp</span></a>` : ""}
       </div>
     </div>`;
 }

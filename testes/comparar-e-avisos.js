@@ -77,6 +77,7 @@ const { abrir, ok } = require('./harness');
   // "Confirmar" embaixo e, em outra tela, o que fazer.
   // Regra 198: cada passo é uma tela com o cabeçalho do GuiaTennis e o passo no meio.
   const tela = await page.evaluate(() => { const m = document.querySelector('main.decide-tela'); const r = m.getBoundingClientRect(); return { cab: !!document.querySelector('.home-head'), comparacao: !!document.querySelector('.cmp-pagina'), meio: Math.abs((r.left + r.right) / 2 - innerWidth / 2) < 2, titulo: getComputedStyle(document.querySelector('.decide-meio .decide-title')).textAlign }; });
+  ok(await page.evaluate(() => document.querySelector('.decide-meio .decide-title').getBoundingClientRect().top < innerHeight * 0.35), 'passo 1: a pergunta no alto da tela');
   ok(tela.cab && !tela.comparacao && tela.meio && tela.titulo === 'center', 'a ajuda é uma tela com o cabeçalho do GuiaTennis, no lugar da comparação, com o passo no meio — ' + JSON.stringify(tela));
   ok((await page.innerText('#decide-overlay .decide-title')) === 'O que mais ajuda na sua escolha?' && (await page.innerText('#decide-go')) === 'Ver o resultado', 'passo 1: pergunta o que ajuda');
   await page.click('#decide-go');
@@ -85,10 +86,15 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(1300);
   const res = await page.evaluate(() => ({ r: !!document.querySelector('#decide-overlay .decide-result'), conf: document.querySelector('#decide-overlay .confirmar-box')?.innerText.replace(/\s+/g, ' ') || '' }));
   ok(res.r && /Confirmar a |Com qual vai ficar\?/.test(res.conf), 'passo 2: o resultado e, embaixo, confirmar a escolha — ' + res.conf.slice(0, 80));
+  // Regra 199: "Mudar a preferência" no alto do passo 2.
+  ok(await page.evaluate(() => { const b = document.getElementById('decide-mudar'); return b && b.innerText.trim() === 'Mudar a preferência' && b.getBoundingClientRect().bottom < document.querySelector('.decide-result').getBoundingClientRect().top + 1; }), 'passo 2: "Mudar a preferência" em cima do resultado');
   await page.click('#decide-overlay [data-decidir] >> nth=0');
   await page.waitForTimeout(150);
   const feita = await page.evaluate(() => ({ t: document.querySelector('#decide-overlay .decide-feita')?.innerText.replace(/\s+/g, ' ') || '', wa: !!document.querySelector('#decide-overlay .decide-feita [data-track-wa]'), ficha: !!document.querySelector('#decide-overlay [data-decide-ficha]'), resultado: !!document.querySelector('#decide-overlay .decide-result') }));
   ok(feita.t.includes('O que fazer agora') && feita.wa && feita.ficha && feita.t.includes('Escolher novamente') && !feita.resultado, 'passo 3, noutra tela: o WhatsApp direto, ver a ficha ou escolher de novo — ' + feita.t.slice(0, 120));
+  // Regra 199: o título no alto, a mini prévia da academia e os contatos embaixo dela.
+  const p3 = await page.evaluate(() => { const t = document.querySelector('.decide-feita .decide-title').getBoundingClientRect(), pv = document.querySelector('.decide-feita .mcard-previa'), wa = document.querySelector('.decide-feita [data-track-wa]').getBoundingClientRect(); return { titulo: document.querySelector('.decide-feita .decide-title').innerText, alto: t.top < innerHeight * 0.35, previa: !!pv && !!pv.querySelector('.mcard-nome') && !pv.querySelector('.mcard-btn, .mcard-wa, .mcard-fav'), ordem: t.bottom <= pv.getBoundingClientRect().top + 1 && pv.getBoundingClientRect().bottom <= wa.top + 1 }; });
+  ok(p3.titulo === 'Sua escolha' && p3.alto && p3.previa && p3.ordem, 'passo 3: "Sua escolha" no alto, a mini prévia da academia e, embaixo, os contatos — ' + JSON.stringify(p3));
   await page.click('#decidida-voltar');
   await page.waitForTimeout(100);
   ok(await page.evaluate(() => !!document.querySelector('#decide-overlay #decide-go') && state.decidida === null), '"Escolher novamente" volta ao começo');

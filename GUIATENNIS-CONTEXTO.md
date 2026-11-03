@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 02/11/2026 (regra 200)
+**Atualizado em:** 03/11/2026 (regra 200, troca de chat)
 
 | | |
 |---|---|
@@ -395,49 +395,34 @@ Produto (o que já foi decidido)
 - Android força modo escuro: `color-scheme: light` no site.
 - `pkill -f` com texto do próprio comando mata o terminal.
 
-## 9. Estado atual e pendências (01/11/2026)
+## 9. Estado atual e pendências (03/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 200**. De 28/10 a 01/11 entraram: o catálogo
-com aulas para adultos e para crianças (`publico`, `idadeDe`, `idadeAte`
-no `catalogo`); a parte "Modalidades", pelo menos uma; o valor em
-intervalo ("150 a 200", gravado "150-200"); "Alterações salvas" num
-cartão; o "Ver no mapa" no mapa do GuiaTennis e o "Como chegar" pelo
-celular; textos curtos das promoções (SQL
-`20261029170000_textos_curtos_das_promocoes`); funções da equipe, vários
-principais e Pagamentos (SQL `20261029190000_funcoes_e_pagamentos`); ajuda
-depois de cinco buscas; "Adicionar faixa de idade"; locação avulsa e
-mensal por hora; catálogo em grade (dois por linha); título do
-cancelamento fora do prazo; "Continuar" na hora; "Opções para jogar";
-sem o "Sem como receber?" (o WhatsApp precisa receber o código); acesso
-por **convite no e-mail**, sem senha provisória (SQL
-`20261030120000_convite_por_email`); Acessos com as ações escondidas até
-tocar na pessoa; e a regra 189: ficha reorganizada (sem pontinhos na capa,
-"Sobre" com o texto da academia até 750 letras logo depois da Estrutura,
-"Explore a região" logo depois das opções, escolha das opções em cartões
-por modalidade + formatos sublinhados; SQL
-`20261030130000_sobre_da_academia`); e a regra 190: a aula volta a ter
-avulsa e mensal nos cartões da ficha e no cadastro, mas a escolha das
-opções segue só com individual, dupla e grupo; e a regra 191: na lista, o
-"a partir de" em cima da modalidade; a regra 192: no mapa, os cartões
-deitados no rodapé, em carrossel, sem o "Como chegar"; e a regra 193: o
-**acompanhamento do jogador** por e-mail (SQL
-`20261101120000_acompanhamento`), com o WhatsApp opcional; e a regra 194:
-"Ver academia" e "Falar no WhatsApp" com um diferencial nos cartões do
-mapa; e a regra 195: o cartão do mapa no jeito do hoteis.com (uma foto
-à esquerda, comodidades em cima, "Falar no WhatsApp" embaixo do "Ver
-academia", sem o diferencial); e a regra 196: o Completo vê quantos
-chamaram a academia nos últimos 30 dias (SQL
-`20261102120000_contatos_no_completo`); e as regras 197 e 198: "Me ajude
-a decidir" passo a passo, em telas com o cabeçalho; e a regra 199: a
-pergunta no alto, "Mudar a preferência" no resultado e a mini prévia da
-academia na escolha; e a regra 200: sair da ficha aberta pela ajuda
-volta à tela da escolha. A descrição do PR tem uma linha por regra e os passos 1 a 29. Testes: 2.249 no navegador,
-nenhuma falha; o banco local foi montado de novo neste contêiner e o
-`banco-emails.py` deu 754 conferências, nenhuma falha (01/11). Layouts da ficha em
-estudo (A Editorial, B Quadra, C Placar), no quadro de design
-https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2. **Chat trocado em
-01/11/2026:** o chat novo volta a acompanhar o PR #5 (o anterior deixou de
-acompanhar).
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 200** (último
+commit `c218819`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
+`historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
+catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
+cima e o cartão do mapa no jeito do hoteis.com, uma foto só, comodidades,
+"Ver academia" e "Falar no WhatsApp" (191 a 195); o **acompanhamento do
+jogador** por e-mail, com o WhatsApp opcional (193, SQL
+`20261101120000_acompanhamento`); o Completo vê quantos chamaram (196, SQL
+`20261102120000_contatos_no_completo`); e o "Me ajude a decidir" passo a
+passo, em telas com o cabeçalho, a mini prévia da academia e a volta da
+ficha para a escolha (197 a 200).
+
+**Testes:** a última bateria completa (02/11, regra 195) deu 2.249, nenhuma
+falha. Depois, a pedido do Breno ("use os modos de economia"), só os
+testes afetados de cada pedido, todos verdes; **a bateria completa precisa
+rodar antes do "pode subir"**. O `banco-emails.py` deu 755 no banco local
+(02/11); contêiner novo não tem o banco: montar como diz a seção 6.
+
+**Modo de economia (02/11):** o Breno pediu para gastar menos limite:
+rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
+e a descrição do PR curta (só as regras e os passos novos; seção 2).
+
+**Chat trocado em 03/11/2026:** o chat novo volta a acompanhar o PR #5 (o
+anterior deixou de acompanhar). Layouts da ficha em estudo (A Editorial, B
+Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
 
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1

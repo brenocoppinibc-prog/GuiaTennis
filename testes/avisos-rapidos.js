@@ -44,6 +44,23 @@ const tempos = (page, codigo) => page.evaluate((codigo) => {
   ok(r.dica && r.push && r.embaixo, 'um aviso rápido não tira a dica: desce embaixo dela — ' + JSON.stringify(r));
   await page.waitForTimeout(5200);
   ok(!!(await page.$('#gt-dica')) && !(await page.$('.gt-push:not(.gt-dica)')), 'o aviso sai e a dica continua');
+
+  // ---- Nenhum aviso cobre outro (regra 203) ----
+  const cruzam = () => page.evaluate(() => {
+    const r = [...document.querySelectorAll('.gt-push, .push-conta')].filter(e => e.getClientRects().length).map(e => { const b = e.getBoundingClientRect(); return { t: e.offsetTop, b: e.offsetTop + e.offsetHeight, id: e.id || e.className }; });
+    return { n: r.length, cruza: r.some((a, i) => r.some((b, j) => i < j && a.t < b.b && b.t < a.b)) };
+  });
+  await page.evaluate(() => { state.pushConta = 0; render(); mostrarPush('Agora você está na Academia de Tênis com um nome bem comprido para quebrar a linha.'); });
+  await page.waitForTimeout(450);
+  r = await cruzam();
+  ok(r.n === 3 && !r.cruza, 'a dica, o balão da conta e o aviso rápido, um embaixo do outro — ' + JSON.stringify(r));
+  await page.evaluate(() => { state.pushAjudaBusca = true; state.page = 'search'; render(); });
+  await page.waitForTimeout(100);
+  r = await cruzam();
+  ok(r.n === 4 && !r.cruza, 'com o balão de ajuda da busca também, nada se cobre — ' + JSON.stringify(r));
+  await page.evaluate(() => { state.pushConta = null; state.pushAjudaBusca = false; state.page = 'home'; render(); document.querySelectorAll('.gt-push:not(.gt-dica)').forEach(e => e.remove()); });
+  await page.waitForTimeout(100);
+  ok(await page.evaluate(() => document.querySelector('#gt-dica').style.top === ''), 'fechados os outros, a dica volta ao lugar dela');
   await page.click('#gt-dica .gt-push-x');
   ok(!(await page.$('#gt-dica')), 'o ✕ fecha a dica');
 

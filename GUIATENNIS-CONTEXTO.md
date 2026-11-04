@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 04/11/2026 (regra 202)
+**Atualizado em:** 04/11/2026 (regra 203)
 
 | | |
 |---|---|
@@ -113,7 +113,7 @@ Texto e visual
   troca de academia, comparação, "Conta criada!"…) fica 5 segundos, com a
   barra dourada embaixo; a dica de ajuda ou de venda (`mostrarDica`), o balão
   da conta e o convite das academias chamadas só saem pelo ✕ (ou pelo toque
-  no atalho).
+  no atalho). Nenhum cobre outro (`empilharAvisos`, regra 203).
 - Campo vazio não desenha bloco; academia sem foto não mostra nada no
   lugar da foto.
 - Filtros e listas sempre na mesma ordem (`naOrdem`, constantes `*_OPTS`).
@@ -406,7 +406,8 @@ Produto (o que já foi decidido)
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
 avisos por e-mail do Parceiros um por um, SQL
 `20261104120000_avisos_um_por_um`; o aviso rápido de 5 segundos com a barra
-do tempo e as dicas e convites que só saem pelo ✕). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+do tempo e as dicas e convites que só saem pelo ✕; regra 203, nenhum aviso
+cobre outro). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -466,7 +467,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 203.
+**Próximo número:** regra 204.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -703,6 +704,12 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   saem sozinhos; o aviso rápido não tira a dica e desce embaixo dela. Sem SQL.
   Testes: `avisos-rapidos.js` (novo), `varias-academias.js`,
   `comparar-e-avisos.js`.
+- 203 (04/11) "Não deixe eles se sobreporem": `empilharAvisos` (depois de
+  cada `render()` e quando um aviso entra ou sai do `<body>`) põe os avisos do
+  alto um embaixo do outro (o que já estava fica em cima; o aviso rápido, por
+  último) e os de baixo um em cima do outro; fechado um, os outros voltam ao
+  lugar. O balão da conta espera o da viagem e o da ajuda na busca. Sem SQL.
+  Teste: `avisos-rapidos.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

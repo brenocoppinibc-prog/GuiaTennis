@@ -4602,8 +4602,6 @@ function mostrarPush(texto, tipo = "ok", acao) {
   el.insertAdjacentHTML("beforeend", `<span class="gt-push-tempo" aria-hidden="true"></span>`);
   el.querySelector(".gt-push-x").onclick = () => el.remove();
   if (acao) el.querySelector(".gt-push-acao").onclick = () => { el.remove(); acao.fn(); };
-  const dica = document.getElementById("gt-dica");
-  if (dica) el.style.top = (dica.offsetTop + dica.offsetHeight + 8) + "px"; // sem a animação de entrada
   document.body.appendChild(el);
   setTimeout(() => el.classList.add("sai"), PUSH_DURA_MS);
   setTimeout(() => el.remove(), PUSH_DURA_MS + 400);
@@ -4626,6 +4624,29 @@ function mostrarDica(d) {
   el.querySelector(".gt-dica-acao").onclick = () => { el.remove(); d.fn(); };
   document.body.appendChild(el);
 }
+// Nenhum aviso cobre outro (regra 203: "não deixe eles se sobreporem"): os do
+// alto ficam um embaixo do outro (o que já estava fica em cima; o aviso rápido,
+// por último) e os de baixo, um em cima do outro. Roda depois de cada render()
+// e quando um aviso entra ou sai do <body>.
+function empilharAvisos() {
+  const visiveis = [...document.querySelectorAll(".gt-push, .push-conta")].filter(el => el.getClientRects().length);
+  const deBaixo = el => el.classList.contains("push-avaliar") && !el.classList.contains("no-alto");
+  visiveis.forEach(el => { el.style.top = ""; el.style.bottom = ""; });
+  const ordem = (a, b) => (a.offsetTop - b.offsetTop) || ((a.classList.contains("gt-push") && !a.classList.contains("gt-dica")) - (b.classList.contains("gt-push") && !b.classList.contains("gt-dica")));
+  let y = 0;
+  visiveis.filter(el => !deBaixo(el)).sort(ordem).forEach(el => {
+    if (el.offsetTop < y) el.style.top = y + "px";
+    y = el.offsetTop + el.offsetHeight + 8;
+  });
+  let fundo = 0;
+  visiveis.filter(deBaixo).forEach(el => {
+    const b = innerHeight - el.offsetTop - el.offsetHeight;
+    if (b < fundo) el.style.bottom = fundo + "px";
+    fundo = innerHeight - el.offsetTop + 8;
+  });
+}
+new MutationObserver(() => requestAnimationFrame(empilharAvisos)).observe(document.body, { childList: true });
+
 // No lugar de alert("Não consegui…"): erro de regra continua no alert, com a
 // mensagem de sempre; falha de verdade vira a faixa com o código.
 function avisarFalha(acao, erro, textoDeRegra, opcoes = {}) {
@@ -5918,6 +5939,7 @@ function render() {
   app.className = state.page === "parceiros" ? "container pc-cheio" : noPainel ? "container adm-cheio" : "container";
 
   attachEvents();
+  empilharAvisos();
   // A página de trás para quando há janela aberta (no computador, o chat é
   // uma caixa no canto e não trava a página).
   document.documentElement.classList.toggle("com-janela", !!document.querySelector(".overlay.open") || (!!document.querySelector(".chat-overlay") && innerWidth < 720));
@@ -14366,7 +14388,7 @@ function pushContaHtml() {
 // com o clique no x"); um por visita, e a mensagem muda a cada dia.
 function ligarPushesDaConta() {
   const podeMostrar = () => {
-    if (isAdmin || contaAcademia || jogador || state.page === "parceiros" || state.pushAvaliar) return false;
+    if (isAdmin || contaAcademia || jogador || state.page === "parceiros" || state.pushAvaliar || state.pushViagem || state.pushAjudaBusca) return false;
     const fechado = lerLocal(PUSH_CONTA_KEY, 0);
     if (fechado && Date.now() - fechado < 3 * 864e5) return false;
     if (document.querySelector(".overlay.open, .drawer-overlay.open, .convite-conta, #convite-chamadas")) return false;

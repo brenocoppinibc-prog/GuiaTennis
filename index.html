@@ -22434,12 +22434,31 @@ function renderRegisterSheet() {
 // como o "Descartar publicação?" do Instagram e o "Sair sem salvar?" do
 // Airbnb. Só pergunta quando há o que perder: na academia nova, qualquer
 // coisa preenchida; na edição, alguma mudança.
+// Só conta mudança de verdade (regra 207, 04/11/2026: "o site só deve avisar
+// quando for sair de uma página que pode descartar alterações, quando
+// realmente tiver alteração"): vazio, nulo, 0 e desmarcado são a mesma coisa,
+// espaço nas pontas não conta e o catálogo é comparado já arrumado (a aula
+// "Sob consulta" de antes, sem cobrança, vira a avulsa ao mexer na grade).
+function semVazios(v) {
+  if (Array.isArray(v)) { const a = v.map(semVazios).filter(x => x !== undefined); return a.length ? a : undefined; }
+  if (v && typeof v === "object") {
+    const o = {};
+    Object.keys(v).sort().forEach(k => { const x = semVazios(v[k]); if (x !== undefined) o[k] = x; });
+    return Object.keys(o).length ? o : undefined;
+  }
+  if (v === null || v === undefined || v === false || v === 0) return undefined;
+  if (typeof v === "string") return v.trim() || undefined;
+  return v;
+}
 function assinaturaDoFormulario(f) {
   if (!f) return "";
   const g = JSON.parse(JSON.stringify({ ...f, photos: [] }));
   horarioForm(g); politicaForm2(g); acessoForm(g);
+  if (Array.isArray(g.catalogo)) {
+    try { g.catalogo = itensDaGrade(gradeDosItens(g.catalogo, g.modalidades || [])).map(i => ({ ...i, foto: i.foto ? String(i.foto).length : undefined })); } catch {}
+  }
   const campos = Object.keys(g).filter(k => !k.startsWith("__") && !["photos", "consent", "declaro"].includes(k)).sort();
-  return JSON.stringify(campos.map(k => [k, g[k]])) + "|" + (f.photos || []).map(p => String(p).length + String(p).slice(-24)).join(",");
+  return JSON.stringify(campos.map(k => [k, semVazios(g[k]) ?? null])) + "|" + (f.photos || []).map(p => String(p).length + String(p).slice(-24)).join(",");
 }
 function cadastroTemOQuePerder(f) {
   if (!f || state.registerStatus === "done") return false;
@@ -28023,7 +28042,7 @@ function guardarRascunho() {
     if (g.__form) g.__form = { ...g.__form, photos: undefined };
     const e = {};
     RASCUNHO_ESTADO.forEach(n => { if (state[n] !== undefined && state[n] !== null && state[n] !== "" && state[n] !== 0 && state[n] !== false) e[n] = state[n]; });
-    sessionStorage.setItem(RASCUNHO_KEY, JSON.stringify({ g, e, pcEmail: state.pcEmail || "", regPlanoTela: !!state.regPlanoTela, em: Date.now() }));
+    sessionStorage.setItem(RASCUNHO_KEY, JSON.stringify({ g, e, pcEmail: state.pcEmail || "", regPlanoTela: !!state.regPlanoTela, regAssinatura: state.regFormAssinatura, em: Date.now() }));
     // As fotos (até 5, já diminuídas) só quando mudam; sem espaço, vai sem elas.
     const fotos = (window.__form && window.__form.photos) || [];
     const assinatura = fotos.length + ":" + fotos.map(f => String(f).length + String(f).slice(-16)).join(",");
@@ -28052,6 +28071,8 @@ function restaurarRascunho() {
       // O cadastro continua na parte do link, sem voltar para a primeira.
       state.regForm = window.__form;
       state.regPlanoTela = !!r.regPlanoTela;
+      // Recarregou sem mudar nada: não pergunta ao sair (regra 207).
+      if (typeof r.regAssinatura === "string") state.regFormAssinatura = r.regAssinatura;
     }
     if (r.pcEmail && !state.pcEmail) state.pcEmail = r.pcEmail;
     RASCUNHO.estado = r.e || null;
@@ -28119,7 +28140,7 @@ function camposNaoSalvos() {
     const el = campoDaChave(k);
     // Saiu da tela (salvou, cancelou ou trocou de etapa): esquece.
     if (!el || !el.closest("[data-aviso-sair]")) { MEXIDOS.delete(k); return; }
-    if (valorDoCampo(el) !== antes) lista.push(el);
+    if (valorDoCampo(el).trim() !== String(antes).trim()) lista.push(el);
   });
   return lista;
 }

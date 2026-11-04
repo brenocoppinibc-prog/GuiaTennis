@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 04/11/2026 (regra 206)
+**Atualizado em:** 04/11/2026 (regra 207)
 
 | | |
 |---|---|
@@ -409,7 +409,8 @@ do tempo e as dicas e convites que só saem pelo ✕; regra 203, nenhum aviso
 cobre outro; regra 204, o "Sobre a academia" por plano: no Premium o texto
 da academia, no Completo o resumo completo do site, até 750 letras; regra
 205, a parte "Apresentação" antes de Revisar; regra 206, valor em branco
-não entra no catálogo e 0 ou - é "Sob consulta"). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+não entra no catálogo e 0 ou - é "Sob consulta"; regra 207, "Sair sem
+salvar?" só com mudança de verdade). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -467,7 +468,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 207.
+**Próximo número:** regra 208.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -746,6 +747,15 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   (`valoresEmBranco`) mostra o erro "Sem valor: …" com "Seguir assim". Aulas:
   "Com quais formatos?"; Modalidades: "para adultos ou crianças". Sem SQL.
   Teste: `catalogo.js`.
+- 207 (04/11) "O site só deve avisar quando for sair de uma página que pode
+  descartar alterações, quando realmente tiver alteração": a
+  `assinaturaDoFormulario` compara sem vazios (`semVazios`: vazio, nulo, 0 e
+  desmarcado iguais; espaço nas pontas não conta) e com o catálogo já
+  arrumado pela grade (a aula sob consulta sem cobrança não conta como
+  mudança); o rascunho guarda a assinatura de quando o formulário abriu
+  (`regAssinatura`), então recarregar a página sem mudar nada não pergunta; os
+  campos comuns (`camposNaoSalvos`) também ignoram espaço nas pontas. Sem SQL.
+  Teste: `cadastro-sair-e-revisao.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

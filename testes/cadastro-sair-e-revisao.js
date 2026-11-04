@@ -114,5 +114,25 @@ const aberto = (page) => page.evaluate(() => !!document.getElementById('register
   await page.waitForTimeout(200);
   ok(!(await aberto(page)) && !(await page.$('#reg-sair-fundo')), 'depois de salvar, o X fecha sem perguntar');
   await browser.close();
+
+  // Regra 207: só pergunta com mudança de verdade.
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/ficha' }));
+  await page.waitForTimeout(400);
+  await page.evaluate(async () => { const a = window.__db.academias.find(x => x.id === 'a1'); a.catalogo = [{ tipo: 'individual', cobranca: 'avulsa', preco: '150' }, { tipo: 'dupla', cobranca: '', preco: '' }]; a.modalidades = ['aulas_proprias']; await loadEverything(); render(); });
+  await page.click('.editar-academia');
+  await page.waitForTimeout(400);
+  const pendente = () => page.evaluate(() => !!pendenciaDeSalvar());
+  await irParte(page, 'contato');
+  await page.fill('#f-instagram', 'x'); await page.fill('#f-instagram', '');
+  await irParte(page, 'precos');
+  await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '1500'); await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '150');
+  await page.click('[data-cat-formato="adulto:grupo"]'); await page.click('[data-cat-formato="adulto:grupo"]');
+  ok(!(await pendente()), 'escrever e apagar, mexer num valor e voltar, ligar e desligar um formato: não pergunta ao sair');
+  await page.reload();
+  await page.waitForTimeout(1200);
+  ok(await page.evaluate(() => state.showRegister && !pendenciaDeSalvar()), 'recarregou a página sem mudar nada: não pergunta ao sair');
+  await page.fill('[data-cat-valor="adulto:individual:avulsa"]', '180');
+  ok(await pendente(), 'com mudança de verdade, pergunta');
+  await browser.close();
   console.log('cadastro-sair-e-revisao.js: fim');
 })();

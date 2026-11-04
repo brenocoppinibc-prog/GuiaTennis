@@ -3078,6 +3078,10 @@
   /* Aviso rápido com a barra do tempo (regra 202: "um push rápido ficando 5
      segundos … com uma barra embaixo deslizando indicando o tempo"). */
   .gt-push { overflow: hidden; }
+  /* Apresentação (regra 205): os planos embaixo do quadrado. */
+  .reg-sobre-planos { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  .reg-sobre-planos li { margin: 2px 0; }
+  .reg-sobre-planos li.reg-sobre-atual { color: var(--text); }
   .gt-push-tempo { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--gold-light); transform-origin: left center; animation: gt-push-tempo 5s linear forwards; }
   @keyframes gt-push-tempo { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 </style>
@@ -21446,12 +21450,17 @@ const REG_PASSOS = [
   { id: "modalidades", t: "Modalidades", titulo: "O que a academia oferece?", porque: "Escolha as modalidades. A parte de cada uma aparece em seguida." },
   { id: "precos", t: "Aulas", titulo: "Aulas", porque: "Para quem são, os formatos e, em cada um, a foto e os valores. Cada aula vira um cartão na ficha, com o WhatsApp." },
   { id: "locacao", t: "Locação", titulo: "Locação de quadra", porque: "Avulsa ou mensal, com a foto e o valor por hora de cada uma." },
-  { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca. No fim, o que a academia tem de diferente." },
+  { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
   { id: "contato", t: "Contato", titulo: "Como os jogadores falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa iniciada." },
   { id: "fotos", t: "Fotos", titulo: "Fotos da academia", porque: "Ficha com foto recebe muito mais contato." },
   { id: "horario", t: "Horário", titulo: "Horário de funcionamento", porque: "A ficha mostra se a academia está aberta agora." },
   { id: "cancelamento", t: "Cancelamento", titulo: "Cancelamento e reposição", porque: "Tira a dúvida antes da primeira aula." },
   { id: "chegada", t: "Como chegar", titulo: "Como chegar", porque: "Fachada, entrada e onde parar: é o que mais evita passar direto." },
+  // Regra 205 (04/11/2026: "deixe como o último slot antes de revisar com
+  // algum nome legal … com subtítulo, agora nos conte um pouco mais sobre
+  // vocês"), como o "Descreva o seu espaço" do Airbnb e a descrição do Perfil
+  // da Empresa no Google, que também ficam no fim do cadastro.
+  { id: "sobre", t: "Apresentação", titulo: "Apresentação da academia", porque: "Agora nos conte um pouco mais sobre vocês." },
   { id: "revisar", t: "Revisar", titulo: "Confira a prévia da ficha", porque: "É assim que os jogadores vão ver. Toque no lápis para editar uma seção." },
 ];
 
@@ -21501,7 +21510,7 @@ function problemaNoSobre(t) {
 }
 function regFaltas(f, passo) {
   const falta = [];
-  if (passo === "quadras" && problemaNoSobre(f.sobre)) falta.push("tirar o " + problemaNoSobre(f.sobre));
+  if (passo === "sobre" && problemaNoSobre(f.sobre)) falta.push("tirar o " + problemaNoSobre(f.sobre));
   const tem = v => !!String(v || "").trim();
   if (passo === "dados") {
     if (!tem(f.name)) falta.push("nome");
@@ -21539,6 +21548,7 @@ function regPreenchido(f, passo) {
     case "horario": return HORARIO_CHAVES.some(k => h[k] && (h[k].fechado || tem(h[k].de) || tem(h[k].ate))) || tem(h.nota);
     case "cancelamento": return [pol, pol.aula || {}, pol.locacao || {}].some(x => tem(x.reposicao) || tem(x.foraDoPrazo));
     case "chegada": return tem(a.fachada) || tem(a.entrada) || tem(a.estacionar);
+    case "sobre": return tem(f.sobre);
     default: return false;
   }
 }
@@ -22024,11 +22034,25 @@ function regPassoHtml(id, f, obrigatorio) {
             return `<button class="chip small reg-amenity ${marcada ? "active" : ""}" data-amenity="${a.key}">${a.icon} ${a.label}</button>`;
           }).join("")}
         </div>
-        ${regEstacionamentoHtml(f)}
-        <label class="field-label" for="f-sobre">O que a academia tem de diferente${catalogoPremium(f) ? "" : ` <span class="cat-premium">Premium</span>`}</label>
-        <p class="footnote" style="margin:0 0 6px">${catalogoPremium(f) ? "Conte o diferencial, a estrutura e com o que vocês trabalham" : "No Premium, o diferencial, a estrutura e com o que vocês trabalham, escritos por vocês, ficam"} no "Sobre a academia" da ficha${catalogoPremium(f) ? "" : "; no Completo, o site faz um resumo completo"}. Sem telefone, link ou preço, que já têm lugar próprio.</p>
-        <textarea class="form-field" id="f-sobre" rows="5" maxlength="${SOBRE_MAX}" style="resize:none;margin-top:0" placeholder="Ex.: quadras de saibro cobertas e iluminadas, turmas de até 4 alunos, professores que jogam torneios e vestiário com chuveiro.">${esc(f.sobre || "")}</textarea>
-        <p class="footnote" id="f-sobre-conta" style="text-align:right;margin-top:4px">${String(f.sobre || "").length}/${SOBRE_MAX}</p>`;
+        ${regEstacionamentoHtml(f)}`;
+
+  // Apresentação (regra 205): o quadrado com as dicas do que escrever e,
+  // embaixo, o que cada plano mostra na ficha.
+  if (id === "sobre") {
+    const plano = isAdmin ? (f.__plano || "basico") : (f.__plano || "basico");
+    const linha = (k, txt) => `<li${k === plano ? ' class="reg-sobre-atual"' : ""}><strong>${nomeDoPlano(k)}${k === plano ? " (o plano de vocês)" : ""}:</strong> ${txt}</li>`;
+    return `
+        <label class="field-label" for="f-sobre" style="margin-top:0">O que vocês querem que o jogador saiba${catalogoPremium(f) ? "" : ` <span class="cat-premium">Premium</span>`}</label>
+        <textarea class="form-field" id="f-sobre" rows="8" maxlength="${SOBRE_MAX}" style="resize:none;margin-top:6px" placeholder="Dicas do que escrever:&#10;• a história da academia e há quanto tempo existe;&#10;• a estrutura: quadras, piso, iluminação, vestiário;&#10;• como são as aulas e os professores;&#10;• para quem é: iniciantes, crianças, quem joga torneio;&#10;• o que vocês têm de diferente.">${esc(f.sobre || "")}</textarea>
+        <p class="footnote" id="f-sobre-conta" style="text-align:right;margin-top:4px">${String(f.sobre || "").length}/${SOBRE_MAX}</p>
+        <p class="footnote" style="margin:10px 0 6px">Onde este texto aparece, em "Sobre a academia" na ficha:</p>
+        <ul class="reg-sobre-planos">
+          ${linha("premium", "a ficha mostra este texto, do jeito que vocês escreveram.")}
+          ${linha("completo", "a ficha mostra um resumo completo, que o GuiaTennis monta com os dados da ficha.")}
+          ${linha("basico", "a ficha mostra um resumo curto, montado pelo GuiaTennis.")}
+        </ul>
+        <p class="footnote" style="margin-top:8px">${catalogoPremium(f) ? "" : "O texto fica guardado e aparece na ficha assim que a academia passar para o Premium. "}Sem telefone, link ou preço: eles já têm lugar próprio na ficha.</p>`;
+  }
 
   if (id === "contato") return `
         <label class="field-label" for="f-phone" style="margin-top:0">WhatsApp da academia${obrigatorio}</label>
@@ -22151,7 +22175,7 @@ function oQueOPlanoEsconde(f, plano) {
   if (!l.cancelamento && regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "A regra de cancelamento e reposição", d: "É a dúvida que mais trava a primeira aula." });
   if (!l.chegada && regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Como chegar", d: "Fachada, entrada e onde estacionar ficam escondidos." });
   const fotosDoCatalogo = (f.catalogo || []).filter(i => i && fotoDoCatalogoValida(i.foto)).length;
-  if (l.sobre !== "academia" && tem(f.sobre)) itens.push({ passo: "quadras", t: "O texto de \"Sobre a academia\"", d: "No Premium, a ficha mostra o texto de vocês; no Completo, o resumo que o site faz." });
+  if (l.sobre !== "academia" && tem(f.sobre)) itens.push({ passo: "sobre", t: "O texto de \"Sobre a academia\"", d: "No Premium, a ficha mostra o texto de vocês; no Completo, o resumo que o site faz." });
   if (!l.fotosDoCatalogo && fotosDoCatalogo) itens.push({ passo: "precos", t: fotosDoCatalogo === 1 ? "A foto do catálogo" : `As ${fotosDoCatalogo} fotos do catálogo`, d: "No Premium, cada opção de aula e locação mostra a própria foto na ficha." });
   return itens;
 }
@@ -22448,7 +22472,7 @@ function fichaDoFormulario(f) {
 function previaDaFicha(f) {
   const c = fichaDoFormulario(f);
   const passo = (id) => REG_PASSOS.findIndex(x => x.id === id);
-  const nomes = { fotos: "Fotos", dados: "Nome e endereço", horario: "Sobre a academia e horário", precos: "Aulas, locação e preço", quadras: "Estrutura", cancelamento: "Cancelamento e reposição", chegada: "Como chegar", contato: "Contato" };
+  const nomes = { fotos: "Fotos", dados: "Nome e endereço", horario: "Horário", sobre: "Apresentação", precos: "Aulas, locação e preço", quadras: "Estrutura", cancelamento: "Cancelamento e reposição", chegada: "Como chegar", contato: "Contato" };
   // Links viram texto: na prévia, nada abre o WhatsApp nem conta clique.
   const soParaVer = (html) => html.replace(/<a\b/g, "<span").replace(/<\/a>/g, "</span>").replace(/ (href|target|rel|data-track|data-court|data-lightbox-open)="[^"]*"/g, "");
   const lapis = (id) => `<button type="button" class="reg-previa-lapis" data-reg-passo="${passo(id)}" aria-label="Editar: ${esc(nomes[id])}">${icon('edit', 15, 'currentColor')}</button>`;
@@ -22481,7 +22505,8 @@ function previaDaFicha(f) {
           ? secao("quadras", "Estrutura", htComodidades(c))
           : adicionar("quadras", "Adicionar quadras e comodidades")}
         ${parte("chegada", temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar", htAcesso(c), "Adicionar como chegar")}
-        ${secao("horario", "Sobre a academia", `${htSobre(c)}${htHorario(c)}`)}
+        ${secao("sobre", "Sobre a academia", htSobre(c))}
+        ${parte("horario", regPreenchido(f, "horario"), "Horário", htHorario(c), "Adicionar o horário")}
         ${secao("precos", "Opções para jogar", htCaixasDaEscolha(c) + htOpcoes(c))}
         ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
         ${contatos

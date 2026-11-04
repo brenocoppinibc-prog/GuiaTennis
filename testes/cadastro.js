@@ -20,7 +20,7 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   ok(f.rep.join() === '24@aula' && f.fora.length === 1 && f.fora[0].includes('Perde a aula'), 'só aula: um bloco, com a regra da aula carregada — ' + f.rep + ' ' + f.fora);
   ok(f.horas.startsWith('06:00,22:00'), 'edição carrega o horário — ' + f.horas);
   ok(!f.estacionar, 'com estacionamento grátis: sem "Onde estacionar"');
-  ok(ordem === 'dados,modalidades,precos,locacao,quadras,contato,fotos,horario,cancelamento,chegada,revisar', 'partes na ordem: primeiro o que o jogador e o GuiaTennis precisam (as modalidades e, depois, as aulas e a locação em partes separadas, regras 169 e 170), fachada/chegada depois do cancelamento');
+  ok(ordem === 'dados,modalidades,precos,locacao,quadras,contato,fotos,horario,cancelamento,chegada,sobre,revisar', 'partes na ordem (a Apresentação antes de Revisar, regra 205): primeiro o que o jogador e o GuiaTennis precisam (as modalidades e, depois, as aulas e a locação em partes separadas, regras 169 e 170), fachada/chegada depois do cancelamento');
 
   // Tira o estacionamento: aparece o campo com o texto antigo
   await irParte(page, 'quadras');
@@ -110,7 +110,7 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   ok(await page.evaluate(() => window.__form.modalidades.length === 0 && ![...document.querySelectorAll('.reg-secoes [data-reg-passo]')].some(b => /^(✓ )?(Aulas|Locação)$/.test(b.innerText))), 'cadastro novo: nenhuma modalidade escolhida, e as partes Aulas e Locação não aparecem');
   await irParte(page, 'modalidades');
   await page.evaluate(() => { document.querySelector('[data-reg-mod="aulas_proprias"]').click(); });
-  ok(await page.evaluate(() => [...document.querySelectorAll('.reg-secoes [data-reg-passo]')].map(b => b.innerText.replace('✓ ', '')).join() === 'Nome e endereço,Modalidades,Aulas,Quadras,Contato,Fotos,Horário,Cancelamento,Como chegar,Revisar'), 'escolhendo Aulas, a parte Aulas aparece logo depois das Modalidades');
+  ok(await page.evaluate(() => [...document.querySelectorAll('.reg-secoes [data-reg-passo]')].map(b => b.innerText.replace('✓ ', '')).join() === 'Nome e endereço,Modalidades,Aulas,Quadras,Contato,Fotos,Horário,Cancelamento,Como chegar,Apresentação,Revisar'), 'escolhendo Aulas, a parte Aulas aparece logo depois das Modalidades');
   await irParte(page, 'cancelamento');
   let n = await page.evaluate(() => document.querySelectorAll('.pol-modo').length);
   ok(n === 0, 'cadastro novo, só aula: sem escolha');
@@ -146,17 +146,24 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   ok(await page.evaluate(() => regPassoAtual().passo.id === 'locacao'), 'com a locação marcada, segue para a parte Locação');
   // Regra 189: a academia conta o diferencial e a estrutura, até 750 letras,
   // sem telefone, link ou preço; a ficha mostra em "Sobre a academia".
-  await irParte(page, 'quadras');
-  ok((await page.getAttribute('#f-sobre', 'maxlength')) === '750' && (await page.innerText('label[for="f-sobre"]')).startsWith('O que a academia tem de diferente'), 'na parte Quadras e estrutura, o texto da academia, até 750 letras');
+  // Regra 205: a parte "Apresentação", a última antes de Revisar.
+  await irParte(page, 'sobre');
+  let ap = await page.evaluate(() => ({
+    ordem: REG_PASSOS.map(x => x.id).slice(-2).join(), titulo: document.querySelector('#reg-sheet, .sheet')?.innerText || '',
+    dica: document.getElementById('f-sobre')?.placeholder || '', planos: [...document.querySelectorAll('.reg-sobre-planos li')].map(l => l.innerText),
+  }));
+  ok(ap.ordem === 'sobre,revisar' && ap.titulo.includes('Apresentação da academia') && ap.titulo.includes('Agora nos conte um pouco mais sobre vocês.'), 'a Apresentação é a última parte antes de Revisar, com o subtítulo');
+  ok(ap.dica.startsWith('Dicas do que escrever') && ap.dica.includes('o que vocês têm de diferente') && ap.planos.length === 3 && ap.planos[0].startsWith('Premium') && ap.planos.some(l => l.includes('(o plano de vocês)')), 'o quadrado com as dicas e, embaixo, o que cada plano mostra — ' + ap.planos.join(' | '));
+  ok((await page.getAttribute('#f-sobre', 'maxlength')) === '750' && (await page.innerText('label[for="f-sobre"]')).startsWith('O que vocês querem que o jogador saiba'), 'o texto da academia, até 750 letras');
   await page.fill('#f-sobre', 'Chame no 11 99999-0000 ou em www.academia.com.br');
-  let falta = await page.evaluate(() => regFaltas(window.__form, 'quadras').join(' | '));
+  let falta = await page.evaluate(() => regFaltas(window.__form, 'sobre').join(' | '));
   ok(falta.includes('link ou @'), 'link no texto não passa — ' + falta);
   await page.fill('#f-sobre', 'Chame no 11 99999-0000');
-  falta = await page.evaluate(() => regFaltas(window.__form, 'quadras').join(' | '));
+  falta = await page.evaluate(() => regFaltas(window.__form, 'sobre').join(' | '));
   ok(falta.includes('telefone no texto'), 'telefone no texto não passa (o WhatsApp entra pelo código) — ' + falta);
   const sobre = 'Quadras de saibro cobertas e turmas de até 4 alunos.';
   await page.fill('#f-sobre', sobre);
-  ok(!(await page.evaluate(() => regFaltas(window.__form, 'quadras').join())).includes('texto') && (await page.innerText('#f-sobre-conta')) === sobre.length + '/750' && (await page.evaluate(() => toRow(window.__form).sobre)) === sobre, 'o texto certo passa, com o contador, e vai para o banco');
+  ok(!(await page.evaluate(() => regFaltas(window.__form, 'sobre').join())).includes('texto') && (await page.innerText('#f-sobre-conta')) === sobre.length + '/750' && (await page.evaluate(() => toRow(window.__form).sobre)) === sobre, 'o texto certo passa, com o contador, e vai para o banco');
   // Regra 204: o texto da academia é do Premium; o Completo tem o resumo
   // completo do site (até 750) e o Básico, o resumo curto.
   const sobreNoPlano = (plano) => page.evaluate(([t, plano]) => {

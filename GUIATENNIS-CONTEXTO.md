@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 04/11/2026 (regra 204)
+**Atualizado em:** 04/11/2026 (regra 205)
 
 | | |
 |---|---|
@@ -408,7 +408,8 @@ avisos por e-mail do Parceiros um por um, SQL
 `20261104120000_avisos_um_por_um`; o aviso rápido de 5 segundos com a barra
 do tempo e as dicas e convites que só saem pelo ✕; regra 203, nenhum aviso
 cobre outro; regra 204, o "Sobre a academia" por plano: no Premium o texto
-da academia, no Completo o resumo completo do site, até 750 letras). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+da academia, no Completo o resumo completo do site, até 750 letras; regra
+205, a parte "Apresentação" antes de Revisar). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -467,7 +468,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 205.
+**Próximo número:** regra 206.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -722,6 +723,18 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   campo; tabela dos planos, "o que o plano esconde" e a troca de plano.
   Como a descrição do Perfil da Empresa no Google (750) e o resumo do Booking.
   Sem SQL. Testes: `cadastro.js`, `parceiros.js` (8,9,10).
+- 205 (04/11) "Para o resumo deixe como o último slot antes de revisar com
+  algum nome legal sem ser resumo, com subtítulo 'agora nos conte um pouco
+  mais sobre vocês', no quadrado com dicas do que escreverem e explicando
+  abaixo do quadrado sobre os planos e consequências": parte nova
+  `sobre` ("Apresentação" / "Apresentação da academia", subtítulo "Agora nos
+  conte um pouco mais sobre vocês."), a última antes de Revisar (sai do fim de
+  Quadras); o campo com as dicas dentro (história, estrutura, aulas e
+  professores, para quem é, o diferencial) e, embaixo, o que cada plano
+  mostra, com o plano da academia marcado. Na prévia, "Sobre a academia" e
+  "Horário" viram duas partes, cada uma com o seu lápis. Como o "Descreva o
+  seu espaço" do Airbnb. Sem SQL. Testes: `cadastro.js`, `previa-da-ficha.js`,
+  `parceiros.js` (10 partes).
 
 ## 11. WhatsApp e mensagem para as academias
 

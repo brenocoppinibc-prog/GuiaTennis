@@ -3078,6 +3078,10 @@
   /* Aviso rápido com a barra do tempo (regra 202: "um push rápido ficando 5
      segundos … com uma barra embaixo deslizando indicando o tempo"). */
   .gt-push { overflow: hidden; }
+  /* Valor "Sob consulta" (regra 206). */
+  .cat-sob { display: block; margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--green); }
+  .cat-sob[hidden] { display: none; }
+  .reg-seguir-sem-valor { display: block; margin-top: 6px; font-weight: 700; }
   /* Apresentação (regra 205): os planos embaixo do quadrado. */
   .reg-sobre-planos { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--muted); }
   .reg-sobre-planos li { margin: 2px 0; }
@@ -20354,7 +20358,7 @@ function gradeDosItens(itens, modalidades) {
     let base;
     if (i.tipo === "locacao") {
       if (!g.locacao.cobrancas.includes(i.cobranca)) g.locacao.cobrancas.push(i.cobranca);
-      g.valores["locacao:" + i.cobranca] = i.preco || "";
+      g.valores["locacao:" + i.cobranca] = i.preco || "-";
       if (i.foto && !g.fotos["locacao:" + i.cobranca]) g.fotos["locacao:" + i.cobranca] = i.foto;
       return;
     }
@@ -20369,7 +20373,10 @@ function gradeDosItens(itens, modalidades) {
       else if (!g.adulto.formatos.includes(i.tipo)) g.adulto.formatos.push(i.tipo);
       base = "adulto";
     }
-    if (i.cobranca) g.valores[`${base}:${i.tipo}:${i.cobranca}`] = i.preco || "";
+    // Sem valor gravado é "Sob consulta" (regra 206): volta como "-"; a aula
+    // sob consulta sem cobrança (regra 169) vira a avulsa.
+    if (i.cobranca) g.valores[`${base}:${i.tipo}:${i.cobranca}`] = i.preco || "-";
+    else if (i.tipo !== "aula" && !i.preco) g.valores[`${base}:${i.tipo}:avulsa`] = "-";
     if (i.foto && !g.fotos[`${base}:${i.tipo}`]) g.fotos[`${base}:${i.tipo}`] = i.foto;
   });
   return g;
@@ -20386,17 +20393,21 @@ function itensDaGrade(g) {
   const out = [];
   const aula = (bloco, extra) => cartoesDaGrade(g, bloco).forEach(c => {
     const foto = g.fotos[c.chave];
-    const comValor = CATALOGO_COBRANCAS.filter(k => priceMin(g.valores[`${c.chave}:${k.key}`]));
-    // Sem valor nenhum, a aula vai sob consulta, sem dizer a cobrança (a
-    // "Aula" do preço de antes, apagada, sai).
-    if (!comValor.length && !c.tipo.antigo) out.push(itemDoCatalogo({ tipo: c.tipo.key, cobranca: "", preco: "", ...extra, foto }));
-    comValor.forEach(k => out.push(itemDoCatalogo({ tipo: c.tipo.key, cobranca: k.key, preco: g.valores[`${c.chave}:${k.key}`], ...extra, foto })));
+    // Regra 206 (04/11/2026: "se não colocar valor nenhum não aparece no
+    // catálogo, se colocar 0 ou - aparecer sob consulta"): só entra o que tem
+    // valor ou "Sob consulta".
+    const valor = k => g.valores[`${c.chave}:${k.key}`];
+    CATALOGO_COBRANCAS.filter(k => priceMin(valor(k)) || valorSobConsulta(valor(k)))
+      .forEach(k => out.push(itemDoCatalogo({ tipo: c.tipo.key, cobranca: k.key, preco: valorSobConsulta(valor(k)) ? "" : valor(k), ...extra, foto })));
   });
   if (g.adulto.on) aula("adulto", {});
   if (g.crianca.on) g.crianca.faixas.forEach(x => aula(x.id, { publico: "crianca", idadeDe: x.de, idadeAte: x.ate }));
-  CATALOGO_COBRANCAS.filter(k => g.locacao.cobrancas.includes(k.key)).forEach(k => out.push(itemDoCatalogo({
-    tipo: "locacao", cobranca: k.key, preco: g.valores["locacao:" + k.key] || "", foto: g.fotos["locacao:" + k.key],
-  })));
+  // A locação do mesmo jeito (regra 206).
+  CATALOGO_COBRANCAS.filter(k => g.locacao.cobrancas.includes(k.key))
+    .filter(k => priceMin(g.valores["locacao:" + k.key]) || valorSobConsulta(g.valores["locacao:" + k.key]))
+    .forEach(k => out.push(itemDoCatalogo({
+      tipo: "locacao", cobranca: k.key, preco: valorSobConsulta(g.valores["locacao:" + k.key]) ? "" : g.valores["locacao:" + k.key], foto: g.fotos["locacao:" + k.key],
+    })));
   return fotoUmaVezPorLinha(semRepetir(out.filter(Boolean)).sort(ordemDoCatalogo)).slice(0, CATALOGO_MAX);
 }
 // Depois de cada mudança na grade, o catálogo do formulário acompanha. As
@@ -21340,8 +21351,14 @@ function exemploDoValor(chave) {
 // O que a academia digita no valor: um número ou dois (o intervalo). O que
 // separa os dois (espaço, traço, vírgula, ponto) vira " a " na hora, e
 // "apagando" deixa tirar o " a " de volta.
+// "0" ou "-" é "Sob consulta" (regra 206); em branco, a opção não entra no
+// catálogo.
+function valorSobConsulta(v) {
+  return /^\s*(-+|0+)\s*$/.test(String(v || ""));
+}
 function valorNoCampo(texto, apagando) {
   const t = String(texto || "");
+  if (/^\s*-+\s*$/.test(t)) return "-";
   const nums = (t.match(/\d+/g) || []).slice(0, 2);
   if (!nums.length) return "";
   if (nums.length === 2) return `${nums[0]} a ${nums[1]}`;
@@ -21350,7 +21367,7 @@ function valorNoCampo(texto, apagando) {
 }
 function campoDoValor(g, chave, nome) {
   const exemplo = exemploDoValor(chave);
-  return `<label class="cat-cel"><span class="cat-rs">R$</span><input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="decimal" placeholder="${exemplo ? `ex.: ${exemplo}` : "—"}" value="${esc(valorNoCampo(g.valores[chave]))}" aria-label="Valor da ${esc(nome)}" /></label>`;
+  return `<label class="cat-cel"><span class="cat-rs">R$</span><input class="form-field cat-valor" data-cat-valor="${chave}" inputmode="decimal" placeholder="${exemplo ? `ex.: ${exemplo}` : "—"}" value="${esc(valorNoCampo(g.valores[chave]))}" aria-label="Valor da ${esc(nome)}" /><span class="cat-sob" data-cat-sob="${chave}"${valorSobConsulta(g.valores[chave]) ? "" : " hidden"}>Sob consulta</span></label>`;
 }
 // A parte "Aulas": para quem > formatos (em cada faixa de idade das
 // crianças) > a foto e os valores de cada formato, num cartão.
@@ -21373,7 +21390,7 @@ function editorDasAulas(f) {
       </div>`;
   };
   const formatos = (bloco, lista, rotulo) => `
-    <p class="cat-passo">Quais formatos de aula vocês oferecem?</p>
+    <p class="cat-passo">Com quais formatos?</p>
     <div class="chip-row cat-formatos" role="group" aria-label="${esc(rotulo)}">
       ${CATALOGO_FORMATOS.map(t => {
         const on = lista.includes(t.key);
@@ -21415,7 +21432,7 @@ function editorDasAulas(f) {
         </section>`).join("") + `
         <button type="button" class="cat-mais-faixa" data-cat-faixa-mais>${icon('plus', 15, 'currentColor')} Adicionar faixa de idade</button>` : ""}
     </div>
-    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor por aula do que oferecem: avulsa, mensal (o valor de cada aula no plano) ou as duas. Sem valor nenhum, a aula mostra "Sob consulta". No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
+    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor por aula: avulsa, mensal (o valor de cada aula no plano) ou as duas. <strong>Em branco, não entra no catálogo. Escreva 0 ou - para aparecer "Sob consulta".</strong> No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
 }
 // A parte "Locação" (só para quem escolheu a locação nas Modalidades, regra
 // 170): a avulsa e a mensal, cada uma com a foto e o valor.
@@ -21442,7 +21459,7 @@ function editorDaLocacao(f) {
           </div>`;
         }).join("")}
       </div>
-      ${g.locacao.cobrancas.length ? `<p class="footnote" style="margin-top:12px">Escreva o valor por hora: na mensal, o valor de cada hora no plano. Sem valor, aparece "Sob consulta". No Premium, cada uma mostra a própria foto.</p>` : ""}`;
+      ${g.locacao.cobrancas.length ? `<p class="footnote" style="margin-top:12px">Escreva o valor por hora: na mensal, o valor de cada hora no plano. <strong>Em branco, não entra no catálogo. Escreva 0 ou - para aparecer "Sob consulta".</strong> No Premium, cada uma mostra a própria foto.</p>` : ""}`;
 }
 
 const REG_PASSOS = [
@@ -22007,7 +22024,7 @@ function regPassoHtml(id, f, obrigatorio) {
         <p class="field-label" style="margin-top:0">Modalidades${isAdmin ? "" : " *"}</p>
         <div class="reg-mods" role="group" aria-label="Modalidades">
           ${[
-            { key: "aulas_proprias", t: "Aulas", d: "Com professor da academia, para adultos e crianças" },
+            { key: "aulas_proprias", t: "Aulas", d: "Com professor da academia, para adultos ou crianças" },
             { key: "locacao", t: "Locação de quadra", d: "Avulsa ou mensal, por hora" },
           ].map(m => {
             const on = (f.modalidades || []).includes(m.key);
@@ -22387,7 +22404,7 @@ function renderRegisterSheet() {
           ${regPassoHtml(passo.id, f, obrigatorio)}
         </div>
 
-        ${state.regPassoErro ? `<div class="form-error">${icon('warning',13)} ${esc(state.regPassoErro)}</div>` : ""}
+        ${state.regPassoErro ? `<div class="form-error">${icon('warning',13)} ${esc(state.regPassoErro)}${state.regSemValor ? `<button type="button" class="inline-link reg-seguir-sem-valor" id="reg-seguir-sem-valor">Seguir assim</button>` : ""}</div>` : ""}
         ${state.registerStatus === "error" ? `<div class="form-error">${icon('warning',13)} ${esc(state.registerError)}</div>` : ""}
 
         <div class="reg-rodape">
@@ -22537,13 +22554,40 @@ function regAvisoDoQueFalta(f, i) {
 
 // Anda entre as partes. Para a frente, a parte obrigatória precisa estar
 // completa (só para quem pede cadastro); para trás e pelas abas, livre.
-function irParaPasso(k, conferir) {
+// Os valores em branco de Aulas e Locação (regra 206: "se não preencher
+// avisar como um erro e ter confirmação de seguir").
+function valoresEmBranco(f, passo) {
+  if (!passoVisivel(f, passo) || !["precos", "locacao"].includes(passo)) return [];
+  const g = gradeDoCatalogo(f);
+  const vazio = v => !String(v || "").trim();
+  const out = [];
+  if (passo === "precos") {
+    const blocos = [...(g.adulto.on ? [{ b: "adulto", crianca: false }] : []), ...(g.crianca.on ? g.crianca.faixas.map(x => ({ b: x.id, crianca: true })) : [])];
+    blocos.forEach(({ b, crianca }) => cartoesDaGrade(g, b).forEach(c => {
+      if (c.tipo.antigo) return;
+      const nome = crianca && c.tipo.infantil ? c.tipo.infantil : c.tipo.nome;
+      CATALOGO_COBRANCAS.forEach(k => { if (vazio(g.valores[`${c.chave}:${k.key}`])) out.push(`${nome} ${k.nome.toLowerCase()}`); });
+    }));
+  } else {
+    CATALOGO_COBRANCAS.filter(k => g.locacao.cobrancas.includes(k.key)).forEach(k => { if (vazio(g.valores["locacao:" + k.key])) out.push(`Locação ${k.nome.toLowerCase()}`); });
+  }
+  return [...new Set(out)];
+}
+function irParaPasso(k, conferir, semValorOk) {
   const f = window.__form || {};
   const { i, passo } = regPassoAtual();
   if (conferir && k > i) {
     const falta = regFaltas(f, passo.id);
     if (falta.length) { state.regPassoErro = `Preencha: ${falta.join(", ")}.`; render(); return; }
+    const brancos = semValorOk ? [] : valoresEmBranco(f, passo.id);
+    if (brancos.length) {
+      state.regPassoErro = `Sem valor: ${brancos.join(", ")}. Em branco, não entra no catálogo. Para aparecer "Sob consulta", escreva 0 ou -.`;
+      state.regSemValor = String(k);
+      render();
+      return;
+    }
   }
+  state.regSemValor = "";
   state.regPasso = passoVisivelDe(f, Math.max(0, Math.min(REG_PASSOS.length - 1, k)), k < i);
   state.regPassoErro = "";
   if (state.regPasso === REG_PASSOS.length - 1) state.regDaRevisao = false;
@@ -27195,6 +27239,9 @@ function attachEvents() {
       const v = valorNoCampo(e.target.value, (e.inputType || "").startsWith("delete"));
       if (e.target.value !== v) e.target.value = v;
       gradeDoForm().valores[el.dataset.catValor] = v;
+      const sob = document.querySelector(`[data-cat-sob="${el.dataset.catValor}"]`);
+      if (sob) sob.hidden = !valorSobConsulta(v);
+      state.regSemValor = "";
       mudouCatalogo(false);
     };
   });
@@ -27281,6 +27328,8 @@ function attachEvents() {
   // A aba da parte atual fica à vista na faixa de cima.
   const abaAtual = document.querySelector("#register-overlay .reg-secoes button.on");
   if (abaAtual) abaAtual.parentElement.scrollLeft = Math.max(0, abaAtual.offsetLeft - 22);
+  const regSeguirSemValor = document.getElementById("reg-seguir-sem-valor");
+  if (regSeguirSemValor) regSeguirSemValor.onclick = () => irParaPasso(Number(state.regSemValor), true, true);
   const regContinuar = document.getElementById("reg-continuar");
   if (regContinuar) {
     regContinuar.onclick = () => irParaPasso(regPassoAtual().i + 1, true);

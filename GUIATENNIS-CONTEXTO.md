@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 04/11/2026 (regra 205)
+**Atualizado em:** 04/11/2026 (regra 206)
 
 | | |
 |---|---|
@@ -220,8 +220,7 @@ Produto (o que já foi decidido)
   individual, dupla, grupo > um cartão por formato com os valores **avulso
   e mensal, os dois por aula** (a mensal é o valor de cada aula no plano;
   regra 190 desfez o "um valor só" da 189; a aula gravada com `cobranca: ""`
-  e valor vale como avulsa) e a foto; em branco não é oferecida, sem valor
-  nenhum = "Sob consulta", sem cobrança) e **Locação** (avulsa e/ou
+  e valor vale como avulsa) e a foto; em branco não entra no catálogo, 0 ou - = "Sob consulta", regra 206) e **Locação** (avulsa e/ou
   mensal, cada uma com o valor e a foto; **as duas por hora**, a mensal é o
   valor de cada hora no plano). Nada no catálogo é "por mês". Cada valor é um número ou um
   intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), numa linha
@@ -409,7 +408,8 @@ avisos por e-mail do Parceiros um por um, SQL
 do tempo e as dicas e convites que só saem pelo ✕; regra 203, nenhum aviso
 cobre outro; regra 204, o "Sobre a academia" por plano: no Premium o texto
 da academia, no Completo o resumo completo do site, até 750 letras; regra
-205, a parte "Apresentação" antes de Revisar). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+205, a parte "Apresentação" antes de Revisar; regra 206, valor em branco
+não entra no catálogo e 0 ou - é "Sob consulta"). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -468,7 +468,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 206.
+**Próximo número:** regra 207.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -735,6 +735,18 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   "Horário" viram duas partes, cada uma com o seu lápis. Como o "Descreva o
   seu espaço" do Airbnb. Sem SQL. Testes: `cadastro.js`, `previa-da-ficha.js`,
   `parceiros.js` (10 partes).
+- 206 (04/11) "Preenchendo os valores das aulas, se não colocar valor nenhum
+  não aparece no catálogo, se colocar 0 ou - aparecer sob consulta e deixe
+  isso claro na hora de preencher, se não preencher avisar como um erro e ter
+  confirmação de seguir; 'Com quais formatos?'; adultos 'ou' crianças no
+  subtítulo de modalidade; o mesmo vale para as locações": `itensDaGrade` só
+  leva o valor (ou "Sob consulta", `valorSobConsulta`: 0 ou -, gravado com
+  preço vazio; na volta ao formulário, vira "-"); a aula sob consulta sem
+  cobrança da regra 169 vira a avulsa; o campo mostra "Sob consulta" na hora
+  (`.cat-sob`) e o texto embaixo explica; Continuar com valor em branco
+  (`valoresEmBranco`) mostra o erro "Sem valor: …" com "Seguir assim". Aulas:
+  "Com quais formatos?"; Modalidades: "para adultos ou crianças". Sem SQL.
+  Teste: `catalogo.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

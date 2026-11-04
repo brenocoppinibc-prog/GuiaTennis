@@ -49,7 +49,7 @@ const CATALOGO = [
   ok((await texto(page, '.reg-titulo')) === 'Aulas' && (await chipsDe(page, '[data-cat-publico]')) === 'Adultos,Crianças' && !(await page.$('[data-cat-bloco]')), 'a parte Aulas começa por "para quem", nada marcado — ' + await chipsDe(page, '[data-cat-publico]'));
   ok((await texto(page, '.reg-passo .field-label')) === 'Para quem são as aulas que vocês oferecem?', 'a pergunta do começo, num tom formal sem exagero (regra 174)');
   await page.click('[data-cat-publico="adulto"]');
-  ok((await texto(page, '[data-cat-bloco="adulto"] .cat-passo')) === 'Quais formatos de aula vocês oferecem?', 'e a dos formatos');
+  ok((await texto(page, '[data-cat-bloco="adulto"] .cat-passo')) === 'Com quais formatos?', 'e a dos formatos');
   ok((await chipsDe(page, '[data-cat-bloco="adulto"] [data-cat-formato]')) === 'Individual,Dupla,Grupo' && !(await page.$('[data-cat-opcao]')), 'depois, quais aulas: os formatos, nenhum marcado, e nenhum cartão ainda');
   await page.click('[data-cat-formato="adulto:individual"]');
   ok(await page.evaluate(() => document.activeElement?.dataset.catValor === 'adulto:individual:avulsa'), 'o formato escolhido abre o cartão, com o cursor no valor avulso');
@@ -161,27 +161,38 @@ const CATALOGO = [
   ok((await page.inputValue('[data-cat-idade="f1:de"]')) === '6' && (await page.inputValue('[data-cat-idade="f2:ate"]')) === '17', 'com a idade de cada faixa');
   await page.click('[data-cat-faixa-tirar="f2"]');
   ok(!(await page.$('[data-cat-bloco="f2"]')), 'o ✕ tira a faixa');
+  // Regra 206: em branco, não entra no catálogo; 0 ou - é "Sob consulta".
   await page.fill('[data-cat-valor="f1:individual:avulsa"]', '');
-  await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', '');
+  await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', '-');
+  ok(await page.isVisible('[data-cat-sob="adulto:dupla:avulsa"]') && !(await page.isVisible('[data-cat-sob="adulto:individual:avulsa"]')) && (await texto(page, '#cat-tabela ~ .footnote')).includes('Em branco, não entra no catálogo. Escreva 0 ou - para aparecer "Sob consulta".'), 'o "-" mostra "Sob consulta" na hora, e o texto embaixo explica');
+  // Continuar com valor em branco: o aviso de erro, com "Seguir assim".
+  await page.click('#reg-continuar');
+  await page.waitForTimeout(200);
+  let aviso = await page.evaluate(() => ({ passo: regPassoAtual().passo.id, erro: document.querySelector('.form-error')?.innerText || '', seguir: !!document.getElementById('reg-seguir-sem-valor') }));
+  ok(aviso.passo === 'precos' && aviso.erro.includes('Sem valor: Aula individual mensal') && aviso.erro.includes('Em branco, não entra no catálogo') && aviso.seguir, 'Continuar com valor em branco avisa como erro e pede confirmação — ' + aviso.erro);
+  await page.click('#reg-seguir-sem-valor');
+  await page.waitForTimeout(200);
+  ok(await page.evaluate(() => regPassoAtual().passo.id !== 'precos'), '"Seguir assim" passa para a próxima parte');
   await irParte(page, 'modalidades');
   await page.click('[data-reg-mod="locacao"]');
   await irParte(page, 'locacao');
   await page.click('[data-cat-cobranca="mensal"]');
+  await page.fill('[data-cat-valor="locacao:mensal"]', '0');
   ok((await texto(page, '[data-cat-opcao="locacao:mensal"]')).startsWith('Locação mensal Valor por hora R$') && (await page.getAttribute('[data-cat-valor="locacao:mensal"]', 'placeholder')) === 'ex.: 80 a 120', 'a locação mensal também por hora, com o exemplo abaixo do da avulsa (regra 183)');
   await irParte(page, 'revisar');
   await salvarFicha(page);
   await page.waitForTimeout(500);
   if (await page.$('.reg-plano-basico')) { await page.click('.reg-plano-basico'); await page.waitForTimeout(800); }
   banco = await page.evaluate(() => window.__db.academias.find(x => x.id === 'a1').catalogo.map(i => `${i.publico ? 'crianca:' : ''}${i.tipo}:${i.cobranca || 'sem cobrança'}=${i.preco || 'consulta'}`).join(' '));
-  ok(banco === 'individual:avulsa=150 dupla:sem cobrança=consulta grupo:mensal=300 crianca:individual:sem cobrança=consulta crianca:grupo:mensal=220 locacao:avulsa=130 locacao:mensal=consulta', 'sem valor nenhum, a aula vai sob consulta, sem a cobrança; a locação mensal sem valor, sob consulta — ' + banco);
+  ok(banco === 'individual:avulsa=150 dupla:avulsa=consulta grupo:mensal=300 crianca:grupo:mensal=220 locacao:avulsa=130 locacao:mensal=consulta', 'em branco não entra (a aula infantil individual sai); o "-" da dupla e o "0" da locação mensal ficam "Sob consulta" — ' + banco);
   await page.evaluate(() => { state.page = 'court'; state.selected = decorate(state.allCourts.find(x => x.id === 'a1')); render(); });
   await page.waitForTimeout(300);
   const consulta = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')].map(x => x.innerText.replace(/\s+/g, ' ')));
   const dupla = consulta.find(x => x.startsWith('Aula em dupla')) || '', locMensal = consulta.find(x => x.includes('Plano mensal') && x.includes('Aluguel da quadra')) || '';
-  ok(dupla.includes('Sob consulta') && !dupla.includes('Aula avulsa') && !dupla.includes('Plano mensal'), 'na ficha, a aula sem valor diz "Sob consulta", sem inventar a cobrança — ' + dupla);
-  ok(locMensal.includes('Sob consulta'), 'e a locação mensal sem valor também — ' + locMensal);
+  ok(dupla.includes('Sob consulta') && !consulta.some(x => x.startsWith('Aula infantil individual')), 'na ficha, a dupla diz "Sob consulta", e a infantil individual em branco não aparece — ' + dupla);
+  ok(locMensal.includes('Sob consulta'), 'e a locação mensal com 0 também — ' + locMensal);
   const waDupla = await page.evaluate(() => decodeURIComponent([...document.querySelectorAll('#ht-quartos .ht-quarto')].find(x => x.innerText.startsWith('Aula em dupla')).querySelector('.ht-quarto-bt').getAttribute('href')));
-  ok(waDupla.includes('queria saber sobre a aula em dupla.'), 'o WhatsApp pergunta da aula, sem a cobrança — ' + waDupla.split('text=')[1]);
+  ok(waDupla.includes('queria saber sobre a aula em dupla'), 'o WhatsApp pergunta da aula em dupla — ' + waDupla.split('text=')[1]);
   await browser.close();
 
   // ---- a ficha ----

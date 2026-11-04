@@ -195,9 +195,9 @@ Produto (o que já foi decidido)
   academia que avisa que fechou sai do site na hora; "Fechou" guarda como
   cadastro inativo, que pode reabrir.
 - **Ficha** (ordem da regra 189): capa (sem os pontinhos), nome no meio,
-  destaques, Estrutura, **Sobre** (o texto da própria academia, até 750
-  letras, sem telefone, link ou preço, `academias.sobre`, mais o resumo
-  automático), Opções para jogar, **Explore a região**,
+  destaques, Estrutura, **Sobre** (Premium: o texto da própria academia,
+  até 750 letras, sem telefone, link ou preço, `academias.sobre`; Completo: o
+  resumo completo do site, até 750; Básico: o resumo curto; regra 204), Opções para jogar, **Explore a região**,
   Contato, Avaliações, Outras academias por perto, Horário, Cancelamento,
   Perguntas, e no fim "Confirmada pela academia", "É o responsável?" e
   "Algo errado nesta ficha?"). Fotos só na capa e nos cartões das opções.

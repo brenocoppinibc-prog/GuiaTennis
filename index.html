@@ -3433,9 +3433,9 @@ const PLANO_OPTS = [
 // A foto de cada opção do catálogo é do Premium (pedido do Breno em
 // 27/10/2026: "podendo adicionar imagens para cada aulas no Premium").
 const LIMITES_DO_PLANO = {
-  basico: { fotos: 3, comodidades: 3, contatos: ["whatsapp"], cancelamento: false, chegada: false, numeros: false, fotosDoCatalogo: false },
-  completo: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: false, fotosDoCatalogo: false },
-  premium: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: true, fotosDoCatalogo: true },
+  basico: { fotos: 3, comodidades: 3, contatos: ["whatsapp"], cancelamento: false, chegada: false, numeros: false, fotosDoCatalogo: false, sobre: "curto" },
+  completo: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: false, fotosDoCatalogo: false, sobre: "resumo" },
+  premium: { fotos: 5, comodidades: Infinity, contatos: ["whatsapp", "instagram", "site"], cancelamento: true, chegada: true, numeros: true, fotosDoCatalogo: true, sobre: "academia" },
 };
 // O máximo de fotos de qualquer plano: o cadastro aceita até aqui, e a ficha
 // mostra o que o plano da academia libera.
@@ -3448,7 +3448,7 @@ function limitesDoPlano(plano) {
 // aprimorar o plano; o formulário de edição usa o integral.
 function aplicarPlano(c) {
   const l = limitesDoPlano(c.plano);
-  const integral = { photos: c.photos || [], amenities: c.amenities || [], instagram: c.instagram, site: c.site, acesso: c.acesso || {}, politica: c.politica || {}, catalogo: c.catalogo || [] };
+  const integral = { photos: c.photos || [], amenities: c.amenities || [], instagram: c.instagram, site: c.site, acesso: c.acesso || {}, politica: c.politica || {}, catalogo: c.catalogo || [], sobre: c.sobre || "" };
   return {
     ...c,
     integral,
@@ -3460,6 +3460,8 @@ function aplicarPlano(c) {
       : (integral.acesso.estacionamentoRegra ? { estacionamentoRegra: integral.acesso.estacionamentoRegra } : {}),
     politica: l.cancelamento ? integral.politica : {},
     catalogo: l.fotosDoCatalogo ? integral.catalogo : integral.catalogo.map(i => i && typeof i === "object" ? { ...i, foto: undefined } : i),
+    // O texto da própria academia é do Premium (regra 204).
+    sobre: l.sobre === "academia" ? integral.sobre : "",
   };
 }
 
@@ -4210,6 +4212,7 @@ function oQueMudaAoBaixarOPlano(id, de, para) {
   if (a.cancelamento && !b.cancelamento) muda.push("o cancelamento sai da ficha");
   if (a.chegada && !b.chegada) muda.push("como chegar sai da ficha");
   if (a.fotosDoCatalogo && !b.fotosDoCatalogo) muda.push("as fotos do catálogo de aulas e locação saem da ficha");
+  if (a.sobre !== b.sobre) muda.push(b.sobre === "resumo" ? "o texto de vocês em \"Sobre a academia\" dá lugar ao resumo que o site faz" : "\"Sobre a academia\" fica com o resumo curto que o site faz");
   const pessoas = planoPorChave(para).pessoas;
   muda.push(`até ${pessoas} ${plural(pessoas, "pessoa", "pessoas")} com acesso (quem passar do limite, o responsável principal precisa tirar)`);
   return `Passar a ${c.name || "academia"} do ${nomeDoPlano(de)} para o ${nomeDoPlano(para)}?\n\nNa hora:\n- ${muda.join("\n- ")}\n\nNada é apagado: tudo volta se o plano subir de novo. Quem administra a academia recebe um e-mail com o que muda.`;
@@ -9507,6 +9510,9 @@ const PC_RECURSOS = [
   { t: "Como chegar: fachada, entrada e onde estacionar", p: ["completo", "premium"] },
   // Pedido de 27/10/2026 (regra 162).
   { t: "Uma foto para cada aula e locação do catálogo", p: ["premium"] },
+  // Regra 204 (04/11/2026): o "Sobre a academia" por plano.
+  { t: "\"Sobre a academia\" com o resumo completo feito pelo site", p: ["completo", "premium"], grupo: "sobre" },
+  { t: "\"Sobre a academia\" escrito por vocês, até 750 letras", p: ["premium"], grupo: "sobre" },
   // Pedido de 08/10/2026 (regra 71): selo dourado e topo da busca.
   { t: "Selo Premium dourado ao lado do nome", p: ["premium"], selo: true },
   { t: "No topo da busca da região, marcada como \"Patrocinado\"", p: ["premium"] },
@@ -19597,7 +19603,7 @@ function rotuloCurto(o) {
 
 // Texto corrido sobre a academia, montado a partir do que ela cadastrou —
 // o equivalente ao "Sobre esta acomodação" das páginas de hotel.
-function descricaoAcademia(c) {
+function descricaoAcademia(c, todas) {
   const frases = [];
   const local = [c.bairro, c.cidade].filter(Boolean).join(", ");
   const dist = distanceText(c.distanceKm);
@@ -19632,7 +19638,7 @@ function descricaoAcademia(c) {
   // comodidades" do Airbnb (pedido do Breno em 20/10/2026: "mostrando que
   // tem mais comodidades e não só essas").
   const com = comodidadesNaOrdem(c).map(a => rotuloDaComodidade(a, c).toLowerCase());
-  if (com.length > 4) frases.push(`Entre as comodidades estão ${com.slice(0, 4).join(", ")} e ${plural(com.length - 4, "mais uma", `outras ${com.length - 4}`)}.`);
+  if (com.length > 4 && !todas) frases.push(`Entre as comodidades estão ${com.slice(0, 4).join(", ")} e ${plural(com.length - 4, "mais uma", `outras ${com.length - 4}`)}.`);
   else if (com.length) frases.push(`Entre as comodidades ${plural(com.length, "está", "estão")} ${listaTexto(com)}.`);
 
   const elogios = elogiosDasAvaliacoes(c.id);
@@ -19642,6 +19648,63 @@ function descricaoAcademia(c) {
     frases.push(`Os jogadores deram nota ${c.appAvg.toFixed(1).replace(".", ",")} de 5, em ${c.appCount} ${plural(c.appCount, "avaliação feita", "avaliações feitas")} no GuiaTennis.`);
   }
   return frases.join(" ");
+}
+
+// "Sobre a academia" por plano (regra 204, 04/11/2026: "no Premium a academia
+// pode escrever uma biografia sobre a academia, falando sobre a estrutura, o
+// diferencial de trabalho deles, com o que trabalham e tudo mais com limite de
+// caracteres, algo como 750 caracteres e o site faça o resumo com o mesmo
+// tamanho para o completo"). Como o Perfil da Empresa no Google (a descrição
+// escrita pela empresa, até 750) e o resumo que o Booking monta da ficha do
+// hotel: no Premium, o texto da academia (sem ele, o resumo completo); no
+// Completo, o resumo completo, até 750 letras, com tudo o que a ficha tem; no
+// Básico, o resumo curto de sempre. Sem IA (regra 13): frases montadas com os
+// dados da ficha e as respostas das perguntas frequentes.
+function resumoCompleto(c) {
+  const frases = t => String(t || "").split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
+  const base = frases(descricaoAcademia(c, true));
+  const fim = base.filter(x => /^(Quem avaliou|Os jogadores deram nota)/.test(x));
+  const extras = frases(frasesDoResumoCompleto(c).join(" "));
+  // Cabe primeiro o resumo de sempre (com o que os jogadores elogiam e a nota,
+  // que fecham o texto); as respostas das perguntas entram no espaço que sobra.
+  const escolhidas = [];
+  let tamanho = -1;
+  for (const f of [...base, ...extras]) {
+    if (escolhidas.includes(f) || tamanho + 1 + f.length > SOBRE_MAX) continue;
+    escolhidas.push(f);
+    tamanho += 1 + f.length;
+  }
+  return [...escolhidas.filter(x => !fim.includes(x)), ...escolhidas.filter(x => fim.includes(x))].join(" ");
+}
+// O que o resumo completo soma ao curto, em texto corrido: as aulas (e as das
+// crianças, com a idade), onde estacionar sem vaga própria, o horário e o
+// cancelamento.
+function frasesDoResumoCompleto(c) {
+  const out = [];
+  const opcoes = opcoesPreco(c);
+  const formatos = (publico) => CATALOGO_FORMATOS.filter(t => opcoes.some(o => o.item && o.tipo === t.key && o.publico === publico))
+    .map(t => t.nome.replace(/^Aula /i, "").toLowerCase());
+  const adultos = formatos(""), criancas = formatos("crianca");
+  if (adultos.length) out.push(`Tem aula ${listaTexto(adultos)}${criancas.length ? " para adultos" : ""}.`);
+  if (criancas.length) {
+    const idades = [...new Set(opcoes.filter(o => o.item && o.publico === "crianca").map(o => idadeTexto(o.item).toLowerCase()).filter(Boolean))];
+    out.push(`Para crianças, aula ${listaTexto(criancas)}${idades.length ? `, ${listaTexto(idades)}` : ""}.`);
+  }
+  const am = c.amenities || [];
+  if (!am.includes("estacionamento_gratuito") && !am.includes("estacionamento_pago")) {
+    const est = estacionarLinhas(c).map(l => `${l.rot.toLowerCase()}${l.tag ? ` (${l.tag.toLowerCase()})` : ""}${l.txt ? `, ${l.txt.replace(/\.$/, "").replace(/^./, x => x.toLowerCase())}` : ""}`);
+    if (est.length) out.push(`Para estacionar: ${est.join("; ")}.`);
+  }
+  const horario = horarioLinhas(c).map(l => `${l.label.toLowerCase()}, ${l.texto.toLowerCase()}`);
+  if (horario.length) out.push(`Horário: ${horario.join("; ")}.`);
+  const cancelamento = perguntasAcademia(c).find(p => /cancelamento e a reposição/.test(p.q));
+  if (cancelamento) out.push(cancelamento.a);
+  return out;
+}
+function htSobre(c) {
+  const tipo = limitesDoPlano(c.plano).sobre;
+  if (tipo === "academia" && c.sobre) return `<p class="ht-about ht-about-academia">${esc(c.sobre)}</p>`;
+  return `<p class="ht-about">${esc(tipo === "curto" ? descricaoAcademia(c) : resumoCompleto(c))}</p>`;
 }
 
 // O que os jogadores elogiam nas avaliações, como o "Os hóspedes adoraram"
@@ -20927,8 +20990,7 @@ function renderCourtPage(c) {
 
               <section class="ht-sec" id="ht-visao">
                 <h3 class="sec-title">Sobre a academia</h3>
-                ${c.sobre ? `<p class="ht-about ht-about-academia">${esc(c.sobre)}</p>` : ""}
-                <p class="ht-about">${esc(descricaoAcademia(c))}</p>
+                ${htSobre(c)}
               </section>
 
               <section class="ht-sec" id="ht-opcoes">
@@ -21963,8 +22025,8 @@ function regPassoHtml(id, f, obrigatorio) {
           }).join("")}
         </div>
         ${regEstacionamentoHtml(f)}
-        <label class="field-label" for="f-sobre">O que a academia tem de diferente</label>
-        <p class="footnote" style="margin:0 0 6px">Conte o diferencial e a estrutura: é o texto de "Sobre a academia" na ficha. Sem telefone, link ou preço, que já têm lugar próprio.</p>
+        <label class="field-label" for="f-sobre">O que a academia tem de diferente${catalogoPremium(f) ? "" : ` <span class="cat-premium">Premium</span>`}</label>
+        <p class="footnote" style="margin:0 0 6px">${catalogoPremium(f) ? "Conte o diferencial, a estrutura e com o que vocês trabalham" : "No Premium, o diferencial, a estrutura e com o que vocês trabalham, escritos por vocês, ficam"} no "Sobre a academia" da ficha${catalogoPremium(f) ? "" : "; no Completo, o site faz um resumo completo"}. Sem telefone, link ou preço, que já têm lugar próprio.</p>
         <textarea class="form-field" id="f-sobre" rows="5" maxlength="${SOBRE_MAX}" style="resize:none;margin-top:0" placeholder="Ex.: quadras de saibro cobertas e iluminadas, turmas de até 4 alunos, professores que jogam torneios e vestiário com chuveiro.">${esc(f.sobre || "")}</textarea>
         <p class="footnote" id="f-sobre-conta" style="text-align:right;margin-top:4px">${String(f.sobre || "").length}/${SOBRE_MAX}</p>`;
 
@@ -22089,6 +22151,7 @@ function oQueOPlanoEsconde(f, plano) {
   if (!l.cancelamento && regPreenchido(f, "cancelamento")) itens.push({ passo: "cancelamento", t: "A regra de cancelamento e reposição", d: "É a dúvida que mais trava a primeira aula." });
   if (!l.chegada && regPreenchido(f, "chegada")) itens.push({ passo: "chegada", t: "Como chegar", d: "Fachada, entrada e onde estacionar ficam escondidos." });
   const fotosDoCatalogo = (f.catalogo || []).filter(i => i && fotoDoCatalogoValida(i.foto)).length;
+  if (l.sobre !== "academia" && tem(f.sobre)) itens.push({ passo: "quadras", t: "O texto de \"Sobre a academia\"", d: "No Premium, a ficha mostra o texto de vocês; no Completo, o resumo que o site faz." });
   if (!l.fotosDoCatalogo && fotosDoCatalogo) itens.push({ passo: "precos", t: fotosDoCatalogo === 1 ? "A foto do catálogo" : `As ${fotosDoCatalogo} fotos do catálogo`, d: "No Premium, cada opção de aula e locação mostra a própria foto na ficha." });
   return itens;
 }
@@ -22418,7 +22481,7 @@ function previaDaFicha(f) {
           ? secao("quadras", "Estrutura", htComodidades(c))
           : adicionar("quadras", "Adicionar quadras e comodidades")}
         ${parte("chegada", temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar", htAcesso(c), "Adicionar como chegar")}
-        ${secao("horario", "Sobre a academia", `<p class="ht-about">${esc(descricaoAcademia(c))}</p>${htHorario(c)}`)}
+        ${secao("horario", "Sobre a academia", `${htSobre(c)}${htHorario(c)}`)}
         ${secao("precos", "Opções para jogar", htCaixasDaEscolha(c) + htOpcoes(c))}
         ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
         ${contatos

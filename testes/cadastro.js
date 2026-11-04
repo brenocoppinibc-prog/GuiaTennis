@@ -147,7 +147,7 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   // Regra 189: a academia conta o diferencial e a estrutura, até 750 letras,
   // sem telefone, link ou preço; a ficha mostra em "Sobre a academia".
   await irParte(page, 'quadras');
-  ok((await page.getAttribute('#f-sobre', 'maxlength')) === '750' && (await page.innerText('label[for="f-sobre"]')) === 'O que a academia tem de diferente', 'na parte Quadras e estrutura, o texto da academia, até 750 letras');
+  ok((await page.getAttribute('#f-sobre', 'maxlength')) === '750' && (await page.innerText('label[for="f-sobre"]')).startsWith('O que a academia tem de diferente'), 'na parte Quadras e estrutura, o texto da academia, até 750 letras');
   await page.fill('#f-sobre', 'Chame no 11 99999-0000 ou em www.academia.com.br');
   let falta = await page.evaluate(() => regFaltas(window.__form, 'quadras').join(' | '));
   ok(falta.includes('link ou @'), 'link no texto não passa — ' + falta);
@@ -157,8 +157,22 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   const sobre = 'Quadras de saibro cobertas e turmas de até 4 alunos.';
   await page.fill('#f-sobre', sobre);
   ok(!(await page.evaluate(() => regFaltas(window.__form, 'quadras').join())).includes('texto') && (await page.innerText('#f-sobre-conta')) === sobre.length + '/750' && (await page.evaluate(() => toRow(window.__form).sobre)) === sobre, 'o texto certo passa, com o contador, e vai para o banco');
-  await page.evaluate((t) => { state.showRegister = false; state.page = 'court'; state.selected = decorate({ ...state.allCourts.find(x => x.id === 'a1'), sobre: t }); render(); }, sobre);
-  await page.waitForTimeout(200);
-  ok((await page.innerText('#ht-visao .ht-about-academia')) === sobre, 'a ficha mostra o texto da academia em "Sobre a academia"');
+  // Regra 204: o texto da academia é do Premium; o Completo tem o resumo
+  // completo do site (até 750) e o Básico, o resumo curto.
+  const sobreNoPlano = (plano) => page.evaluate(([t, plano]) => {
+    state.showRegister = false; state.page = 'court';
+    state.selected = decorate(aplicarPlano({ ...state.allCourts.find(x => x.id === 'a1'), plano, sobre: t }));
+    render();
+    const el = document.querySelector('#ht-visao');
+    return { academia: el.querySelector('.ht-about-academia')?.innerText || '', texto: el.querySelector('.ht-about')?.innerText || '', curto: descricaoAcademia(state.selected) };
+  }, [sobre, plano]);
+  let ps = await sobreNoPlano('premium');
+  ok(ps.academia === sobre, 'Premium: a ficha mostra o texto da academia em "Sobre a academia"');
+  ps = await sobreNoPlano('completo');
+  ok(!ps.academia && !ps.texto.includes(sobre) && ps.texto.includes('Horário: segunda a sexta') && ps.texto.length > ps.curto.length && ps.texto.length <= 750, 'Completo: sem o texto da academia, o resumo completo do site, até 750 letras — ' + ps.texto.length + ' letras: ' + ps.texto.slice(0, 120));
+  ps = await sobreNoPlano('basico');
+  ok(!ps.academia && ps.texto === ps.curto, 'Básico: o resumo curto de sempre');
+  ps = await page.evaluate(() => { const c = decorate(aplicarPlano({ ...state.allCourts.find(x => x.id === 'a1'), plano: 'premium', sobre: '' })); return { r: esc(resumoCompleto(c)), h: htSobre(c) }; });
+  ok(ps.r && ps.h.includes(ps.r) && !ps.h.includes('ht-about-academia'), 'Premium sem texto: o resumo completo');
   await browser.close();
 })();

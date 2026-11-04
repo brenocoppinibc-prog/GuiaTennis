@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 04/11/2026 (regra 203)
+**Atualizado em:** 04/11/2026 (regra 204)
 
 | | |
 |---|---|
@@ -407,7 +407,8 @@ O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
 avisos por e-mail do Parceiros um por um, SQL
 `20261104120000_avisos_um_por_um`; o aviso rápido de 5 segundos com a barra
 do tempo e as dicas e convites que só saem pelo ✕; regra 203, nenhum aviso
-cobre outro). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+cobre outro; regra 204, o "Sobre a academia" por plano: no Premium o texto
+da academia, no Completo o resumo completo do site, até 750 letras). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -439,9 +440,8 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    mensal nos cartões (regra 190), "Sobre" da academia, escolha das opções,
    convite por e-mail, Acessos, promoções, funções e Pagamentos, ajuda
    depois de cinco buscas) e dizer "pode subir".
-1a. Decidir: o texto "Sobre" da academia vale em todos os planos (hoje)
-   ou só no Completo e no Premium; tirar ou não o "Decidir a disputa a
-   favor de quem pediu" do painel do admin.
+1a. Decidir: tirar ou não o "Decidir a disputa a favor de quem pediu" do
+   painel do admin. (O "Sobre" por plano foi decidido na regra 204.)
 2. Ligar o Mercado Pago na Netlify (variáveis da seção 5) depois de testar
    o pagamento de teste na prévia.
 3. Definir os preços dos planos e o preço da semana da promoção na ficha
@@ -467,7 +467,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 204.
+**Próximo número:** regra 205.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -710,6 +710,18 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   último) e os de baixo um em cima do outro; fechado um, os outros voltam ao
   lugar. O balão da conta espera o da viagem e o da ajuda na busca. Sem SQL.
   Teste: `avisos-rapidos.js`.
+- 204 (04/11) "No Premium a academia pode escrever uma biografia sobre a
+  academia (…) com limite de caracteres, algo como 750, e o site faça o resumo
+  com o mesmo tamanho para o completo": `LIMITES_DO_PLANO.sobre` (Básico
+  "curto", Completo "resumo", Premium "academia"); `aplicarPlano` só deixa o
+  `sobre` no Premium (fica no `integral`); `htSobre` na ficha e na prévia;
+  `resumoCompleto` (até `SOBRE_MAX`, sem IA): o resumo de sempre com todas as
+  comodidades, mais aulas e as das crianças com a idade, onde estacionar sem
+  vaga própria, horário e cancelamento; o elogio e a nota sempre cabem.
+  Premium sem texto: o resumo completo. Cadastro com a etiqueta "Premium" no
+  campo; tabela dos planos, "o que o plano esconde" e a troca de plano.
+  Como a descrição do Perfil da Empresa no Google (750) e o resumo do Booking.
+  Sem SQL. Testes: `cadastro.js`, `parceiros.js` (8,9,10).
 
 ## 11. WhatsApp e mensagem para as academias
 

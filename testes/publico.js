@@ -17,7 +17,7 @@ const { abrir, ok } = require('./harness');
     shareCourt('a1');
     return enviado && enviado.url;
   });
-  ok(/\?court=a1&utm_source=Compartilhado$/.test(link || ''), 'link compartilhado leva a etiqueta — ' + link);
+  ok(/\/academia\/so-aula-tennis-a1\?utm_source=Compartilhado$/.test(link || ''), 'link compartilhado leva a etiqueta — ' + link);
   await browser.close();
   ({ browser, page } = await abrir({ q: '?court=a1&utm_source=Compartilhado' }));
   cl = await page.evaluate(() => window.__cliques.map(c => c.tipo + ':' + c.origem));
@@ -60,9 +60,9 @@ const { abrir, ok } = require('./harness');
     state.showStatsPanel = true; render();
   });
   const painel = await page.evaluate(() => document.getElementById('stats-overlay').innerText.replace(/\s+/g, ' '));
-  ok(painel.includes('DE ONDE VIERAM OS ACESSOS') && /Instagram 2 50%/.test(painel) && /Google 1 25%/.test(painel), 'painel: de onde vieram, com porcentagem');
+  ok(painel.includes('De onde vieram os acessos') && /Instagram 2 50%/.test(painel) && /Google 1 25%/.test(painel), 'painel: de onde vieram, com porcentagem');
   ok(/Celular 2 50%/.test(painel) && /Computador 1 25%/.test(painel), 'painel: aparelho');
-  ok(painel.includes('MAPA DAS BUSCAS (1)') && !!(await page.$('#stats-mapa')), 'painel: mapa das buscas');
+  ok(painel.includes('Mapa das buscas (1)') && !!(await page.$('#stats-mapa')), 'painel: mapa das buscas');
   ok(painel.includes('04077-000'), 'painel: CEPs buscados');
   await browser.close();
 
@@ -102,6 +102,6 @@ const { abrir, ok } = require('./harness');
   // Política de Privacidade conta o que é guardado
   ({ browser, page } = await abrir());
   const pol = await page.evaluate(() => PRIVACY_HTML);
-  ok(pol.includes('arredondado para cerca de 100 metros') && pol.includes('29 de setembro de 2026') && pol.includes('fontes públicas'), 'Política de Privacidade atualizada');
+  ok(pol.includes('arredondado para cerca de 100 metros') && pol.includes('8 de outubro de 2026') && pol.includes('fontes públicas'), 'Política de Privacidade atualizada');
   await browser.close();
 })();

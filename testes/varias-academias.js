@@ -48,9 +48,11 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     topo: document.querySelector('.pc-seletor-btn')?.innerText.trim() || '',
     aba: state.parceirosAba,
     aberta: window.__db.academia_acessos[0].academia_id,
+    push: document.querySelector('.gt-push')?.innerText.trim() || '',
+    barra: !!document.querySelector('.gt-push .gt-push-tempo'),
   }));
   ok(t.aberta === 'a1' && t.aba === 'painel' && t.eyebrow === 'Só Aula Tennis' && t.topo === 'Só Aula Tennis', 'trocar abre o painel da outra academia — ' + t.eyebrow);
-  ok(!t.aviso.includes('Agora você está na'), 'sem o "Agora você está na …" (regra 201)');
+  ok(!t.aviso.includes('Agora você está na') && t.push.includes('Agora você está na Só Aula Tennis.') && t.barra, 'a troca avisa no aviso rápido de 5 segundos, com a barra, e não na faixa da página (regra 202) — ' + t.push);
   ok((await rpcs(page, 'abrir_minha_academia')).some(a => a.p_academia === 'a1'), 'a troca fica gravada no banco (abrir_minha_academia)');
 
   // "Suas academias" (05/10/2026): todas, com plano, situação e papel.

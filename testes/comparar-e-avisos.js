@@ -15,11 +15,13 @@ const { abrir, ok } = require('./harness');
   ok(t.cls.includes('destaque') && t.anim === 'contaPisca' && t.selo.includes('!'), 'o ícone da conta pisca em amarelo, com o "!" de alerta — ' + t.anim);
   ok(!(await page.isVisible('#push-conta')), 'quem acabou de chegar ainda não vê o balão');
   await page.waitForTimeout(10600);
+  // A mensagem do balão muda a cada dia (regra 202: um por visita, fica até o ✕).
+  const doDia = await page.evaluate(() => PUSHES_CONTA[Math.floor(Date.now() / 864e5) % PUSHES_CONTA.length]);
   t = await page.evaluate(() => document.getElementById('push-conta')?.innerText.replace(/\s+/g, ' ') || '');
-  ok(t.includes('Novidades das academias') && t.includes('Entrar ou criar conta'), 'uns segundos depois, o balão chama para entrar — ' + t.slice(0, 70));
+  ok(t.includes(doDia.t) && t.includes('Entrar ou criar conta'), 'uns segundos depois, o balão chama para entrar — ' + t.slice(0, 70));
   await page.click('#push-conta');
   await page.waitForTimeout(200);
-  ok(await page.evaluate(() => state.jogadorTela === 'email' && /avisos por e-mail/.test(state.jogadorMotivo) && !document.getElementById('push-conta')), 'tocar no balão abre o Entrar, explicando o porquê');
+  ok(await page.evaluate((m) => state.jogadorTela === 'email' && state.jogadorMotivo === m && !document.getElementById('push-conta'), doDia.motivo), 'tocar no balão abre o Entrar, explicando o porquê');
   await page.evaluate(() => { state.jogadorTela = null; state.pushConta = 1; render(); });
   await page.click('#push-conta-x');
   await page.waitForTimeout(150);

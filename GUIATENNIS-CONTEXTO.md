@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 04/11/2026 (regra 201)
+**Atualizado em:** 04/11/2026 (regra 202)
 
 | | |
 |---|---|
@@ -107,7 +107,13 @@ Texto e visual
   12px, campos com 16px, botões com 48px; sem caixa dentro de caixa. Regra
   nova de visual vai na camada "Acabamento limpo", no fim do `<style>`.
 - **Telas novas sem desenho decorativo e sem animação** de entrada ou de
-  progresso ("cara de IA"), com a cara do GuiaTennis.
+  progresso ("cara de IA"), com a cara do GuiaTennis. Exceção pedida: a
+  barra do tempo do aviso rápido (regra 202).
+- **Avisos flutuantes (regra 202):** a confirmação rápida (`mostrarPush`:
+  troca de academia, comparação, "Conta criada!"…) fica 5 segundos, com a
+  barra dourada embaixo; a dica de ajuda ou de venda (`mostrarDica`), o balão
+  da conta e o convite das academias chamadas só saem pelo ✕ (ou pelo toque
+  no atalho).
 - Campo vazio não desenha bloco; academia sem foto não mostra nada no
   lugar da foto.
 - Filtros e listas sempre na mesma ordem (`naOrdem`, constantes `*_OPTS`).
@@ -397,9 +403,10 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (03/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 201** (os
-avisos por e-mail do Parceiros um por um e sem o "Agora você está na …", SQL
-`20261104120000_avisos_um_por_um`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
+avisos por e-mail do Parceiros um por um, SQL
+`20261104120000_avisos_um_por_um`; o aviso rápido de 5 segundos com a barra
+do tempo e as dicas e convites que só saem pelo ✕). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -459,7 +466,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 202.
+**Próximo número:** regra 203.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -684,6 +691,18 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `20261104120000_avisos_um_por_um` (`avisos_desligados`,
   `mudar_aviso_dos_parceiros`). Testes: `buscas-e-avisos.js`,
   `varias-academias.js`, `banco-emails.py` (770).
+- 202 (04/11) "Quero que apareça com um push rápido ficando 5 segundos
+  falando que agora está em tal academia, com uma barra embaixo deslizando
+  indicando o tempo; todos os pushs de ajuda com o site ou aqueles que tentam
+  vender mais, só sair com o clique no x; os de que a academia está em
+  comparação, faça o mesmo de troca de academia": trocar de academia mostra
+  "Agora você está na …" no `mostrarPush`, que agora dura 5 segundos (também
+  com atalho, antes 7) com a barra dourada (`.gt-push-tempo`), como o snackbar
+  do Google; a `mostrarDica`, o balão da conta (`ligarPushesDaConta`: um por
+  visita, a mensagem muda por dia) e o convite das academias chamadas não
+  saem sozinhos; o aviso rápido não tira a dica e desce embaixo dela. Sem SQL.
+  Testes: `avisos-rapidos.js` (novo), `varias-academias.js`,
+  `comparar-e-avisos.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

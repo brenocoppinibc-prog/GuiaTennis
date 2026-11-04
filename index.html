@@ -3075,6 +3075,11 @@
   .pc-pag-saldo { font-size: 20px; font-weight: 700; }
   .pc-pag-comprar { margin-top: 14px; }
   .pc-compras li { display: block; }
+  /* Aviso rápido com a barra do tempo (regra 202: "um push rápido ficando 5
+     segundos … com uma barra embaixo deslizando indicando o tempo"). */
+  .gt-push { overflow: hidden; }
+  .gt-push-tempo { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--gold-light); transform-origin: left center; animation: gt-push-tempo 5s linear forwards; }
+  @keyframes gt-push-tempo { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 </style>
 </head>
 <body>
@@ -4579,8 +4584,12 @@ window.addEventListener("online", () => { FALHAS.quedaAnotada = false; mandarFil
 // Airbnb: fica fora do render, então não some quando a tela redesenha.
 // acao (opcional): { t, fn, ic } vira o atalho no aviso, como o "Ver" do
 // "Salvo em Favoritos" do Airbnb.
+// Aviso rápido (regra 202): fica 5 segundos, com a barra embaixo mostrando o
+// tempo, como o snackbar do Google e o toast da Shopify. A dica de ajuda ou de
+// venda (mostrarDica) só sai pelo ✕: o aviso novo não a tira e desce embaixo dela.
+const PUSH_DURA_MS = 5000;
 function mostrarPush(texto, tipo = "ok", acao) {
-  document.querySelectorAll(".gt-push").forEach(el => el.remove());
+  document.querySelectorAll(".gt-push:not(.gt-dica)").forEach(el => el.remove());
   const el = document.createElement("div");
   el.className = "gt-push" + (tipo === "ok" ? "" : " " + tipo);
   el.setAttribute("role", "status");
@@ -4590,15 +4599,20 @@ function mostrarPush(texto, tipo = "ok", acao) {
   el.innerHTML = acao
     ? `<button type="button" class="gt-push-acao"><span class="gt-push-ic">${icon(ic, 15, '#fff')}</span><span class="gt-push-t">${esc(texto)} · <span class="gt-push-ver">${esc(acao.t)}</span></span></button><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`
     : `<span class="gt-push-ic">${icon(ic, 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}</span><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
+  el.insertAdjacentHTML("beforeend", `<span class="gt-push-tempo" aria-hidden="true"></span>`);
   el.querySelector(".gt-push-x").onclick = () => el.remove();
   if (acao) el.querySelector(".gt-push-acao").onclick = () => { el.remove(); acao.fn(); };
+  const dica = document.getElementById("gt-dica");
+  if (dica) el.style.top = (dica.offsetTop + dica.offsetHeight + 8) + "px"; // sem a animação de entrada
   document.body.appendChild(el);
-  setTimeout(() => el.classList.add("sai"), acao ? 7000 : 5000);
-  setTimeout(() => el.remove(), acao ? 7400 : 5400);
+  setTimeout(() => el.classList.add("sai"), PUSH_DURA_MS);
+  setTimeout(() => el.remove(), PUSH_DURA_MS + 400);
 }
 // A dica que desce no alto (22/10/2026): o mesmo aviso, em duas linhas (o
 // que fazer e por que vale a pena) e o atalho, como as sugestões do perfil
-// no Google Business Profile. Fica mais tempo que o aviso comum.
+// no Google Business Profile. Só sai pelo ✕ ou pelo atalho (regra 202: "todos
+// os pushs de ajuda com o site ou aqueles que tentam vender mais, só sair com
+// o clique no x").
 function mostrarDica(d) {
   document.querySelectorAll(".gt-push").forEach(el => el.remove());
   const el = document.createElement("div");
@@ -4611,8 +4625,6 @@ function mostrarDica(d) {
   el.querySelector(".gt-push-x").onclick = () => el.remove();
   el.querySelector(".gt-dica-acao").onclick = () => { el.remove(); d.fn(); };
   document.body.appendChild(el);
-  setTimeout(() => el.classList.add("sai"), 12000);
-  setTimeout(() => el.remove(), 12400);
 }
 // No lugar de alert("Não consegui…"): erro de regra continua no alert, com a
 // mensagem de sempre; falha de verdade vira a faixa com o código.
@@ -7460,11 +7472,13 @@ async function abrirAcademia(id) {
   state.pessoaNova = null;
   await recarregarConta();
   await loadEverything();
+  const c = minhaAcademia();
   state.contaModo = "painel";
-  // Sem o "Agora você está na …" (regra 201: "tire isso de onde aparece do
-  // site"): o nome da academia no alto já diz em qual ela está.
+  // O "Agora você está na …" saiu da faixa da página (regra 201) e virou o
+  // aviso rápido de 5 segundos com a barra do tempo (regra 202).
   state.contaAviso = "";
   irParceiros(ficar);
+  mostrarPush(`Agora você está na ${c ? c.name : "academia"}.`);
 }
 
 // "Adicionar outra academia": a mesma busca do cadastro, com a conta logada.
@@ -14332,7 +14346,7 @@ const PUSHES_CONTA = [
   { t: "Avalie onde você joga", d: "Dê nota às academias em que você joga e ajude outros jogadores a escolher.", motivo: "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto." },
   { t: "Salve as suas buscas", d: "Guarde o lugar e os filtros na conta e receba por e-mail as academias novas onde você procura — no celular e no computador.", motivo: "Entre para salvar as suas buscas. Se ainda não tiver conta, o cadastro leva um minuto." },
 ];
-const PUSH_CONTA_PRIMEIRO = 10, PUSH_CONTA_DURA = 9, PUSH_CONTA_INTERVALO = 40, PUSH_CONTA_MAX = 3;
+const PUSH_CONTA_PRIMEIRO = 10, PUSH_CONTA_INTERVALO = 40;
 function pushContaHtml() {
   if (state.pushConta == null || isAdmin || contaAcademia || jogador || state.page === "parceiros") return "";
   const m = PUSHES_CONTA[state.pushConta];
@@ -14348,8 +14362,9 @@ function pushContaHtml() {
       <button type="button" class="push-conta-x" id="push-conta-x" aria-label="Fechar os avisos">✕</button>
     </div>`;
 }
+// O balão fica até o ✕ ou o toque (regra 202: o que tenta vender "só sair
+// com o clique no x"); um por visita, e a mensagem muda a cada dia.
 function ligarPushesDaConta() {
-  let mostrados = 0;
   const podeMostrar = () => {
     if (isAdmin || contaAcademia || jogador || state.page === "parceiros" || state.pushAvaliar) return false;
     const fechado = lerLocal(PUSH_CONTA_KEY, 0);
@@ -14359,15 +14374,9 @@ function ligarPushesDaConta() {
     return !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
   };
   const proximo = (seg) => setTimeout(() => {
-    if (mostrados >= PUSH_CONTA_MAX) return;
     if (!podeMostrar()) { proximo(PUSH_CONTA_INTERVALO); return; }
-    state.pushConta = mostrados % PUSHES_CONTA.length;
-    mostrados++;
+    state.pushConta = Math.floor(Date.now() / 864e5) % PUSHES_CONTA.length;
     render();
-    setTimeout(() => {
-      if (state.pushConta != null) { state.pushConta = null; const a = document.activeElement; if (!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) render(); }
-      proximo(PUSH_CONTA_INTERVALO);
-    }, PUSH_CONTA_DURA * 1000);
   }, seg * 1000);
   proximo(PUSH_CONTA_PRIMEIRO);
 }
@@ -17082,8 +17091,8 @@ function mostrarConviteDasChamadas() {
     el.remove();
     abrirContaJogador("entrar", "Crie a sua conta para guardar as academias que você chamou. É grátis.");
   };
+  // Só sai pelo ✕ ou pelo toque (regra 202).
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 12000);
 }
 const NOME_DO_CONTATO = { whatsapp: "WhatsApp", instagram: "Instagram", site: "site" };
 

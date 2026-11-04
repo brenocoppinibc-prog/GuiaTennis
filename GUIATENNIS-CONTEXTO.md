@@ -336,8 +336,8 @@ Produto (o que já foi decidido)
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (02/11/2026): **2.249 verificações** nos
-  76 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
+  segundo plano). Último resultado (04/11/2026, regra 206): **2.289
+  verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
 - **Banco local** para o `testes/banco-emails.py` (**770 conferências**,
@@ -421,11 +421,10 @@ jogador** por e-mail, com o WhatsApp opcional (193, SQL
 passo, em telas com o cabeçalho, a mini prévia da academia e a volta da
 ficha para a escolha (197 a 200).
 
-**Testes:** a última bateria completa (02/11, regra 195) deu 2.249, nenhuma
-falha. Depois, a pedido do Breno ("use os modos de economia"), só os
-testes afetados de cada pedido, todos verdes; **a bateria completa precisa
-rodar antes do "pode subir"**. O `banco-emails.py` deu 770 no banco local
-(04/11); contêiner novo não tem o banco: montar como diz a seção 6.
+**Testes:** a bateria completa de 04/11 (regra 206) deu **2.289
+verificações, nenhuma falha**; o `banco-emails.py` deu 770 no banco local
+(04/11). Pedido novo depois disso: só os testes afetados, e a bateria completa
+de novo antes do "pode subir".
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas

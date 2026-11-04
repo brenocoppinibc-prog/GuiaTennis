@@ -2465,5 +2465,39 @@ r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "s
 ok(r.returncode == 0, "a migração do acompanhamento roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
 sql("truncate public.emails_a_enviar")
 
+# Avisos do Parceiros um por um (regra 201, 20261104120000_avisos_um_por_um) --
+print("\nAvisos do Parceiros um por um")
+ana = parceiro("Ana Avisos", f"anaavisos{sufixo}@exemplo.com")
+def na_fila(tipo, para=None, n=[0]):
+    n[0] += 1
+    return um(f"select public.por_na_fila('um-por-um:{sufixo}:{n[0]}', '{tipo}', '{para or f'anaavisos{sufixo}@exemplo.com'}', 'a', '<p>a</p>', 'a')")
+ok(um(f"select array_length(avisos_desligados, 1) is null from public.academia_acessos where user_id = '{ana}'") == "t", "conta nova começa com todos os avisos ligados")
+ok(na_fila("resumo_do_mes") == "t" and na_fila("avaliacao") == "t", "ligados: o resumo e a avaliação entram na fila")
+um("select public.mudar_aviso_dos_parceiros('resumo_do_mes', false)", papel="authenticated", user=ana)
+ok(um(f"select array_to_string(avisos_desligados, ',') || ':' || avisos_por_email from public.academia_acessos where user_id = '{ana}'") == "resumo_do_mes:true", "desligar o resumo guarda só ele")
+ok(na_fila("resumo_do_mes") == "f" and na_fila("resumo_do_mes", f"AnaAvisos{sufixo}@Exemplo.com ") == "f", "o resumo desligado não entra na fila (nem com o e-mail em outra caixa)")
+ok(na_fila("avaliacao") == "t" and na_fila("avaliacao_editada") == "t" and na_fila("ficha_parada") == "t", "os outros avisos continuam")
+ok(na_fila("pedido_para_sair_resposta") == "t" and na_fila("convite") == "t", "e-mail de serviço não depende dos avisos")
+um("select public.mudar_aviso_dos_parceiros('resumo_do_mes', false)", papel="authenticated", user=ana)
+ok(um(f"select array_to_string(avisos_desligados, ',') from public.academia_acessos where user_id = '{ana}'") == "resumo_do_mes", "desligar de novo não repete")
+um("select public.mudar_aviso_dos_parceiros('avaliacoes', false)", papel="authenticated", user=ana)
+ok(na_fila("avaliacao") == "f" and na_fila("avaliacao_editada") == "f", "\"Avaliação nova ou editada\" desliga as duas")
+um("select public.mudar_aviso_dos_parceiros('resumo_do_mes', true)", papel="authenticated", user=ana)
+ok(na_fila("resumo_do_mes") == "t" and na_fila("avaliacao") == "f", "ligar de novo volta só ele")
+# Parado pelo link do e-mail: nada da academia; ligar um liga só ele.
+sql(f"update public.academia_acessos set avisos_por_email = false where user_id = '{ana}'")
+ok(na_fila("compra_paga") == "f" and na_fila("plano") == "f", "parado pelo link: nenhum aviso da academia")
+um("select public.mudar_aviso_dos_parceiros('pagamentos', true)", papel="authenticated", user=ana)
+ok(na_fila("compra_paga") == "t" and na_fila("plano") == "f" and na_fila("resumo_do_mes") == "f", "depois do link, ligar \"Compras pagas\" volta só ele")
+# Um jogador com o mesmo tipo de e-mail não é afetado; quem não tem conta do Parceiros também não.
+ok(na_fila("resumo_do_mes", f"outra{sufixo}@exemplo.com") == "t", "e-mail sem conta do Parceiros: sem filtro")
+certo, saida = sql("select public.mudar_aviso_dos_parceiros('inventado', false)", papel="authenticated", user=ana)
+ok(not certo and "desconhecido" in saida, "aviso inventado não passa")
+certo, saida = sql("select public.mudar_aviso_dos_parceiros('plano', false)", papel="anon")
+ok(not certo, "o visitante não muda os avisos")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261104120000_avisos_um_por_um.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração dos avisos um por um roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+sql("truncate public.emails_a_enviar")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

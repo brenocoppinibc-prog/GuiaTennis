@@ -27,7 +27,7 @@ const ultima = (page) => page.evaluate(() => { const l = [...document.querySelec
   ok(legal.priv.includes('Nomes e conteúdo que desrespeitam as regras') && legal.priv.includes('Quando o nome da conta é suspenso, guardamos')
     && legal.priv.includes('Marco Civil da Internet') && legal.priv.includes('ordem judicial'),
     'Privacidade: o registro do nome suspenso e do que foi removido, e só às autoridades quando a lei exigir');
-  ok(await page.evaluate(() => TERMS_HTML.includes('Última atualização: 2 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 2 de novembro de 2026')), 'os dois textos com a data da última mudança (02/11: os contatos no Completo)');
+  ok(await page.evaluate(() => TERMS_HTML.includes('Última atualização: 4 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 4 de novembro de 2026')), 'os dois textos com a data da última mudança (04/11: os avisos do Parceiros um por um)');
 
   // ---- na ficha: o aceite, o "Como funcionam" e a denúncia ----
   await page.evaluate(() => openCourt('a1'));

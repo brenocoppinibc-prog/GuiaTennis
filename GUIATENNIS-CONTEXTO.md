@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 03/11/2026 (regra 200, troca de chat)
+**Atualizado em:** 04/11/2026 (regra 201)
 
 | | |
 |---|---|
@@ -290,7 +290,7 @@ Produto (o que já foi decidido)
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261102120000_contatos_no_completo` (80 arquivos na pasta; 77 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261104120000_avisos_um_por_um` (81 arquivos na pasta; 78 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -335,8 +335,8 @@ Produto (o que já foi decidido)
   76 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**754 conferências**,
-  nenhuma falha, 01/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
+- **Banco local** para o `testes/banco-emails.py` (**770 conferências**,
+  nenhuma falha, 04/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
   Aplicar o SQL novo: `psql postgresql://postgres@127.0.0.1:5433/postgres -f <arquivo>`.
@@ -397,8 +397,9 @@ Produto (o que já foi decidido)
 
 ## 9. Estado atual e pendências (03/11/2026)
 
-O PR #5 está **verde e sem conflito**, com tudo até a **regra 200** (último
-commit `c218819`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+O PR #5 está **verde e sem conflito**, com tudo até a **regra 201** (os
+avisos por e-mail do Parceiros um por um e sem o "Agora você está na …", SQL
+`20261104120000_avisos_um_por_um`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -413,8 +414,8 @@ ficha para a escolha (197 a 200).
 **Testes:** a última bateria completa (02/11, regra 195) deu 2.249, nenhuma
 falha. Depois, a pedido do Breno ("use os modos de economia"), só os
 testes afetados de cada pedido, todos verdes; **a bateria completa precisa
-rodar antes do "pode subir"**. O `banco-emails.py` deu 755 no banco local
-(02/11); contêiner novo não tem o banco: montar como diz a seção 6.
+rodar antes do "pode subir"**. O `banco-emails.py` deu 770 no banco local
+(04/11); contêiner novo não tem o banco: montar como diz a seção 6.
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
@@ -458,7 +459,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 201.
+**Próximo número:** regra 202.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -669,6 +670,20 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   comparação comum, sair da ficha volta à comparação (antes ia à busca);
   `goComparar` (menu) desliga a ajuda. Sem SQL. Teste:
   `comparar-e-avisos.js`.
+- 201 (04/11) "Avisos por e-mail no parceiros selecionar um por um" e "Agora
+  você está na Play. tire isso de onde aparece do site": no Perfil do
+  Parceiros, uma caixa por aviso (Avaliação nova ou editada, Pedidos de
+  acesso, Pessoa nova na equipe, Mudança de plano e de responsável principal,
+  Compras pagas, Lembrete de conferir a ficha, Resumo do mês), que grava na
+  hora, como o Google Business Profile e a Shopify (`AVISOS_DOS_PARCEIROS`);
+  o link do e-mail continua parando todos, e depois dele ligar um liga só ele.
+  O filtro fica no `por_na_fila` (tipo do e-mail > `aviso_dos_parceiros`);
+  e-mail de serviço não depende disso. Banco sem a coluna: a caixa única.
+  Trocar de academia não mostra mais "Agora você está na …". Privacidade
+  (04/11), chat e a folha "Parar os avisos". SQL
+  `20261104120000_avisos_um_por_um` (`avisos_desligados`,
+  `mudar_aviso_dos_parceiros`). Testes: `buscas-e-avisos.js`,
+  `varias-academias.js`, `banco-emails.py` (770).
 
 ## 11. WhatsApp e mensagem para as academias
 

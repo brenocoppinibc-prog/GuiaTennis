@@ -82,7 +82,8 @@
     db.academia_acessos.push({ user_id: "u-" + window.__academia, academia_id: window.__academia, usuario: "quadra." + window.__academia,
       nome_responsavel: novo ? null : "Maria Teste", cargo: novo ? null : "Gerente", email: novo ? null : "maria@teste.com", whatsapp: novo ? null : "11900000001", cnpj: null,
       recebe_relatorio: false, termos_aceitos_em: novo ? null : agora, dados_completos_em: novo ? null : agora, senha_trocada_em: novo ? null : agora,
-      avisos_por_email: true, token_avisos: "tok-u-" + window.__academia });
+      avisos_por_email: true, token_avisos: "tok-u-" + window.__academia,
+      ...(window.__semAvisosUmPorUm ? {} : { avisos_desligados: [] }) });
     window.__senhas["quadra." + window.__academia + DOMINIO] = "provisoria1";
     db.academia_vinculos.push({ user_id: "u-" + window.__academia, academia_id: window.__academia, papel: "principal", created_at: agora });
     // window.__outrasAcademias: a mesma conta administra também essas.
@@ -1396,6 +1397,17 @@
       }
       const x = db.academia_acessos.find(y => y.token_avisos === a.p_token);
       if (x) { x.avisos_por_email = false; return { data: "parceiros", error: null }; }
+      return { data: null, error: null };
+    }
+    // Um por um (regra 201, SQL 20261104120000).
+    if (nome === "mudar_aviso_dos_parceiros") {
+      const x = meuAcesso();
+      if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
+      const todos = ["avaliacoes", "acessos", "equipe", "plano", "pagamentos", "ficha_parada", "resumo_do_mes"];
+      if (!todos.includes(a.p_aviso)) return erro("Aviso desconhecido.", "22023");
+      const fora = (x.avisos_desligados || []).filter(y => y !== a.p_aviso);
+      x.avisos_desligados = a.p_ligado ? (x.avisos_por_email === false ? todos.filter(y => y !== a.p_aviso) : fora) : [...fora, a.p_aviso];
+      if (a.p_ligado) x.avisos_por_email = true;
       return { data: null, error: null };
     }
     if (nome === "mudar_avisos_dos_parceiros") {

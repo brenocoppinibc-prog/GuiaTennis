@@ -206,7 +206,25 @@ async function buscar(page, termo) {
   // ---- Avisos da conta do Parceiros (Perfil) ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/perfil' }));
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => document.getElementById('pc-avisos-email')?.checked === true), 'Perfil do Parceiros: avaliação nova e pedidos por e-mail, ligados');
+  // Um por um (regra 201): uma caixa por aviso, todas ligadas no começo.
+  t = await page.evaluate(() => [...document.querySelectorAll('#pc-avisos .pc-aviso-um')].map(x => x.dataset.aviso + ':' + x.checked + ':' + x.closest('label').innerText.trim()).concat(document.getElementById('pc-avisos-email') ? ['caixa única'] : []));
+  ok(t.length === 7 && t.every(x => x.includes(':true:')) && t[0].endsWith('Avaliação nova ou editada') && t[6].endsWith('Resumo do mês'), 'Perfil do Parceiros: sete avisos, cada um com a sua caixa, ligados — ' + t.join(' | '));
+  await page.click('.pc-aviso-um[data-aviso="resumo_do_mes"]');
+  await page.waitForTimeout(250);
+  t = await page.evaluate(() => ({ rpc: window.__rpcs.some(r => r.nome === 'mudar_aviso_dos_parceiros' && r.args.p_aviso === 'resumo_do_mes' && r.args.p_ligado === false), banco: window.__db.academia_acessos[0], outros: [...document.querySelectorAll('.pc-aviso-um')].filter(x => x.checked).length, aviso: document.body.innerText.includes('Avisos por e-mail desligados') }));
+  ok(t.rpc && t.banco.avisos_desligados.join() === 'resumo_do_mes' && t.banco.avisos_por_email === true && t.outros === 6 && !t.aviso, 'desmarcar o resumo do mês desliga só ele, sem aviso no alto');
+  // Tudo parado pelo link do e-mail: as caixas aparecem desligadas; ligar uma liga só ela.
+  await page.evaluate(() => { window.__db.academia_acessos[0].avisos_por_email = false; contaAcademia.avisosPorEmail = false; render(); });
+  ok(await page.evaluate(() => [...document.querySelectorAll('.pc-aviso-um')].every(x => !x.checked)), 'parado pelo link: todas desligadas');
+  await page.click('.pc-aviso-um[data-aviso="avaliacoes"]');
+  await page.waitForTimeout(250);
+  t = await page.evaluate(() => ({ banco: window.__db.academia_acessos[0], ligadas: [...document.querySelectorAll('.pc-aviso-um')].filter(x => x.checked).map(x => x.dataset.aviso) }));
+  ok(t.banco.avisos_por_email === true && !t.banco.avisos_desligados.includes('avaliacoes') && t.banco.avisos_desligados.length === 6 && t.ligadas.join() === 'avaliacoes', 'ligar uma volta só ela — ' + t.ligadas.join());
+  await browser.close();
+  // Banco sem a coluna nova: a caixa única de antes.
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/perfil', semAvisosUmPorUm: true }));
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => document.getElementById('pc-avisos-email')?.checked === true && !document.querySelector('.pc-aviso-um')), 'banco sem a coluna: a caixa única, ligada');
   await page.click('#pc-avisos-email');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => window.__rpcs.some(r => r.nome === 'mudar_avisos_dos_parceiros' && r.args.p_ligado === false) && window.__db.academia_acessos[0].avisos_por_email === false), 'desmarcar desliga os avisos');

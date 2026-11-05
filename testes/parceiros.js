@@ -610,7 +610,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     await recarregarConta(); await carregarPessoas();
   });
   conta = await texto(page, '#parceiros .pc-main');
-  ok(conta.includes('Você, na equipe') && conta.includes('Quem adiciona e remove pessoas é o responsável principal') && !(await page.isVisible('#pc-pessoa-email')) && !(await page.isVisible('[data-pc-remover]')), 'quem é da equipe vê a lista, sem adicionar nem remover');
+  ok(conta.includes('Você, na equipe') && !conta.includes('Quem adiciona e remove pessoas') && !(await page.isVisible('#pc-pessoa-email')) && !(await page.isVisible('[data-pc-remover]')), 'quem é da equipe vê a lista, sem adicionar nem remover');
   await browser.close();
 
   // Painel: QR da ficha e aprimorar; Premium mostra o que vem aí.

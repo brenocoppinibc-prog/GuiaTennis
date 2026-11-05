@@ -35,7 +35,8 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano' }));
   await page.evaluate(() => { window.__db.academia_vinculos.forEach(v => { v.papel = 'equipe'; }); contaAcademia.papel = 'equipe'; render(); });
   await page.waitForTimeout(200);
-  ok(await page.isDisabled('.pc-planos .pc-plano.destaque button') && (await texto(page, '.pc-planos')).includes('Só o responsável principal muda o plano.'), 'na equipe, o botão fica apagado e diz quem muda');
+  // Regra 213: na equipe, o botão de mudar o plano não aparece.
+  ok(!(await page.$('.pc-planos [data-escolher-plano]')) && !(await page.$('.pc-planos button[disabled]')) && !(await texto(page, '#parceiros')).includes('Só o responsável principal muda o plano'), 'na equipe, o botão de mudar o plano não aparece');
   await browser.close();
 
   // ---- Créditos: uma página própria, com o caminho até o pagamento (22/10/2026) ----

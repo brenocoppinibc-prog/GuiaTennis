@@ -59,6 +59,11 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
   let m = await page.evaluate(() => PC_MENU_LOGADO.filter(i => !i.funcao || posso(i.funcao)).map(i => i.aba).join(','));
   ok(m === 'painel,avaliacoes,desempenho,academias,pessoas,plano,perfil,ajuda', 'o menu mostra só o que a pessoa pode fazer — ' + m);
   ok(await page.evaluate(() => [...document.querySelectorAll('[data-pc]')].every(a => !['ficha', 'promocoes', 'pagamentos'].includes(a.dataset.pc) || !a.closest('nav, .menu, .pc-menu, .pc-rodape-cols'))), 'nem no menu nem no rodapé aparecem Minha ficha, Promoções e Pagamentos');
+  // Regra 213: em Atualizações, o que não é liberado não aparece.
+  let at = await page.evaluate(() => ({ editar: !!document.querySelector('#parceiros .editar-academia'), avaliacoes: !!document.querySelector('#parceiros .pc-main [data-pc="avaliacoes"]'),
+    dicaFicha: dicaPermitida({ tipo: 'ficha' }), dicaPlano: dicaPermitida({ tipo: 'plano' }), dicaPromo: dicaPermitida({ tipo: 'promocao' }),
+    chat: [acaoPermitida({ ir: 'pc:ficha' }), acaoPermitida({ ir: 'pc:avaliacoes' }), acaoPermitida({ ir: 'pc:plano' })].join() }));
+  ok(!at.editar && at.avaliacoes && !at.dicaFicha && !at.dicaPlano && !at.dicaPromo && at.chat === 'false,true,true', 'Atualizações sem "Editar a ficha"; dicas e atalhos do chat só do que a pessoa pode fazer — ' + JSON.stringify(at));
   await page.evaluate(() => irParceiros('ficha'));
   await page.waitForTimeout(200);
   let sem = await texto(page, '#parceiros .pc-main');
@@ -113,7 +118,8 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
   // ---- sem Pagamentos, o "Comprar" some e a página diz com quem falar ----
   ({ browser, page } = await abrir({ academia: 'a1', premium: ['a1'], envios: { a1: 0 }, equipe: ['promocoes'], q: 'parceiros/promocoes-email' }));
   await page.waitForTimeout(400);
-  ok(await page.evaluate(() => botaoDeComprarCreditos()) === 'Quem cuida dos pagamentos da academia compra os créditos.', 'sem Pagamentos, no lugar de "Comprar créditos", com quem falar');
+  // Regra 213: o que a função não libera não aparece.
+  ok(await page.evaluate(() => botaoDeComprarCreditos()) === '' && !(await page.$('[data-comprar-creditos]')), 'sem Pagamentos, nenhum "Comprar créditos" nem aviso no lugar');
   await browser.close();
 
   // ---- Termos, Privacidade e Ajuda ----

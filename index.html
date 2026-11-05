@@ -4059,7 +4059,7 @@ function toRow(f) {
 
 // "90-140" a partir de vários preços ("90", "100-140"): do menor ao maior.
 function faixaDosPrecos(precos) {
-  const ns = precos.flatMap(p => [priceMin(p), priceMax(p)]).filter(Boolean).map(Number).filter(isFinite);
+  const ns = precos.flatMap(p => [priceMin(p), priceMax(p)]).filter(Boolean).map(numeroDoPreco).filter(isFinite);
   if (!ns.length) return "";
   const de = Math.min(...ns), ate = Math.max(...ns);
   return de === ate ? String(de) : `${de}-${ate}`;
@@ -6371,8 +6371,8 @@ function atualizarSeo(c) {
           "@type": "UnitPriceSpecification",
           priceCurrency: "BRL",
           ...(priceMax(o.faixa) && priceMax(o.faixa) !== priceMin(o.faixa)
-            ? { minPrice: Number(priceMin(o.faixa)), maxPrice: Number(priceMax(o.faixa)) }
-            : { price: Number(priceMin(o.faixa)) }),
+            ? { minPrice: numeroDoPreco(priceMin(o.faixa)), maxPrice: numeroDoPreco(priceMax(o.faixa)) }
+            : { price: numeroDoPreco(priceMin(o.faixa)) }),
           unitText: o.unidade,
         },
       })),
@@ -6709,7 +6709,7 @@ function linhasDePrecoDaComparacao(courts) {
       if (!doTipo.length) return { txt: "—" };
       const o = maisEmConta(doTipo);
       if (!o) return celPreco("");
-      return { txt: `${esc(precoTexto(o.faixa))} <small class="ct-cel-unid">${esc(o.unidade)}</small>`, num: parseInt(priceMin(o.faixa), 10), u: o.unidade };
+      return { txt: `${esc(precoTexto(o.faixa))} <small class="ct-cel-unid">${esc(o.unidade)}</small>`, num: numeroDoPreco(priceMin(o.faixa)), u: o.unidade };
     });
     if (new Set(vals.filter(v => v.u).map(v => v.u)).size > 1) vals.forEach(v => { delete v.num; });
     return { rot: r === "crianca" ? "Aula infantil" : CATALOGO_TIPOS.find(t => t.key === r).nome, melhor: "menor", vals };
@@ -7156,8 +7156,9 @@ function renderLightbox() {
 }
 
 
+// Com os centavos, quando há (regra 213: "150,50").
 function priceMin(priceStr) {
-  const m = (priceStr || "").match(/\d+/);
+  const m = (priceStr || "").match(/\d+(?:,\d{1,2}(?!\d))?/);
   return m ? m[0] : null;
 }
 
@@ -7494,6 +7495,22 @@ const FUNCOES_DA_EQUIPE = [
 // A página de cada função (a compra de créditos e a confirmação do WhatsApp
 // vão junto).
 const FUNCAO_DA_ABA = { ficha: "ficha", whatsapp: "ficha", avaliacoes: "avaliacoes", promocoes: "promocoes", "promocoes-email": "promocoes", pagamentos: "pagamentos", creditos: "pagamentos" };
+// ---------- O que a função não libera não aparece (regra 213) ----------
+// Pedido do Breno em 05/11/2026: "não aparecer opção de fazer pagamento se o
+// acesso não permite e outras ações tbm, deixe como algo que não se vê". Como
+// as permissões da Shopify e do Google Business Profile: a pessoa da equipe
+// não vê o botão do que não pode fazer (antes, apagado ou com aviso). A
+// página sem a função (`pcSemFuncao`) fica só para quem chega pelo link.
+function acaoPermitida(a) {
+  const aba = a && typeof a.ir === "string" && a.ir.startsWith("pc:") ? a.ir.slice(3) : "";
+  return !aba || !FUNCAO_DA_ABA[aba] || !temAcademia() || posso(FUNCAO_DA_ABA[aba]);
+}
+function dicaPermitida(d) {
+  if (d.tipo === "ficha") return posso("ficha");
+  if (d.tipo === "plano") return souPrincipal();
+  if (d.tipo === "promocao" || d.tipo === "email") return posso("promocoes");
+  return true;
+}
 function nomeDaFuncao(funcao) {
   return (FUNCOES_DA_EQUIPE.find(f => f.key === funcao) || {}).t || funcao;
 }
@@ -8566,7 +8583,7 @@ function blocoDono(c) {
         ? "Esta é a ficha de vocês. Edite o que quiser e responda às avaliações aqui embaixo."
         : "Esta é a ficha de vocês. Complete o primeiro acesso para editar e responder às avaliações."}</p>
       <div class="conta-acoes">
-        ${acessoCompleto() ? `<button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>` : ""}
+        ${podeEditar(c) ? `<button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>` : ""}
         <button type="button" class="cta-btn cta-secondary" data-abrir-conta>${acessoCompleto() ? "Abrir o GuiaTennis Parceiros" : "Completar o acesso"}</button>
       </div>
     </div>`;
@@ -10032,7 +10049,8 @@ function agendarDicaDoParceiros() {
     const ocupado = state.page !== "parceiros" || state.showRegister || state.showMenu || state.pcMenu || (state.chat && state.chat.aberto) || document.querySelector(".gt-push");
     if (ocupado && ++tentativas <= 3) { setTimeout(mostrar, 6000); return; }
     if (ocupado || !contaAcademia || contaAcademia.academiaId !== id) { state.pcDicas[id] = null; return; }
-    const d = dicaDoParceiros(minhaAcademia(), planoAtual());
+    const d0 = dicaDoParceiros(minhaAcademia(), planoAtual());
+    const d = d0 && dicaPermitida(d0) ? d0 : null;
     state.pcDicas[id] = d ? d.tipo : "nenhuma";
     if (!d) return;
     mostrarDica(d);
@@ -10089,7 +10107,8 @@ function pcOQueMelhorar(c, atual) {
 function botaoDeEscolherPlano(key, atual, destaque, texto) {
   const sobe = ordemDoPlano(key) > ordemDoPlano(atual);
   const rotulo = texto || (sobe ? `Mudar para o ${nomeDoPlano(key)}` : `Voltar ao ${nomeDoPlano(key)}`);
-  if (!souPrincipal()) return `<button type="button" class="cta-btn ${destaque ? "cta-primary" : "cta-secondary"}" disabled title="Só o responsável principal muda o plano">${esc(rotulo)}</button><p class="footnote" style="margin-top:6px">Só o responsável principal muda o plano.</p>`;
+  // Regra 213: na equipe, o botão não aparece (antes, apagado).
+  if (!souPrincipal()) return "";
   return `<button type="button" class="cta-btn ${destaque && sobe ? "cta-primary" : "cta-secondary"}" data-escolher-plano="${key}" ${state.pcPlanoMudando ? "disabled" : ""}>${state.pcPlanoMudando === key ? bolaGirando(15) + " Mudando..." : esc(rotulo)}</button>`;
 }
 async function escolherPlano(key) {
@@ -10918,7 +10937,7 @@ function pcPlanos(logado) {
       ${logado && c && state.pcCompra && state.pcCompra.tipo === "plano" ? pcComprarCreditos(c) : ""}
       ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}
       ${pcCartoesDePlano(atual)}
-      <p class="footnote">${logado && c && pagamentoDeTeste() ? `Site de teste: os preços são de teste e o pagamento também, sem cobrar nada. Só o responsável principal muda o plano.${varias ? " Cada academia tem o próprio plano." : ""}` : logado && c ? `Por enquanto, todos os planos são grátis: o responsável principal muda aqui, na hora.${varias ? " Cada academia tem o próprio plano." : ""}` : "Por enquanto, todos os planos são grátis."}</p>
+      <p class="footnote">${logado && c && pagamentoDeTeste() ? `Site de teste: os preços são de teste e o pagamento também, sem cobrar nada.${varias ? " Cada academia tem o próprio plano." : ""}` : logado && c ? `Por enquanto, todos os planos são grátis${souPrincipal() ? ": o responsável principal muda aqui, na hora" : ""}.${varias ? " Cada academia tem o próprio plano." : ""}` : "Por enquanto, todos os planos são grátis."}</p>
     </section>`;
 }
 
@@ -11396,7 +11415,8 @@ function pcSituacao(c) {
     : pausada && c.pausadaPelaAcademia ? `Pausada por vocês${ate}: não aparece na busca agora. Para voltar, use Suas academias.`
     : pausada ? "Pausada pelo GuiaTennis: não aparece na busca agora."
     : c.confirmada ? "No ar, com as informações confirmadas por vocês."
-    : `No ar como ficha básica. <button type="button" class="pc-linha-link pc-link-na-frase editar-academia" data-court="${esc(c.id)}" data-revisar>Revise e salve a ficha</button> para confirmar as informações.`;
+    : podeEditar(c) ? `No ar como ficha básica. <button type="button" class="pc-linha-link pc-link-na-frase editar-academia" data-court="${esc(c.id)}" data-revisar>Revise e salve a ficha</button> para confirmar as informações.`
+    : "No ar como ficha básica.";
   const ok = noAr && c.confirmada;
   // Tudo certo só aparece logo depois de a ficha ir ao ar ou ser
   // atualizada (1 dia, pedido de 07/10/2026; antes 3); o que pede ação
@@ -11534,19 +11554,20 @@ function pcPainel() {
         ${d ? blocosDeNumeros(d) : ""}
       </div>` : ""}
 
-      <div class="pc-duas">
-        <div class="pc-card">
+      ${podeEditar(c) || posso("avaliacoes") ? `
+      <div class="${podeEditar(c) && posso("avaliacoes") ? "pc-duas" : ""}">
+        ${podeEditar(c) ? `<div class="pc-card">
           <p class="pc-card-t">${faltas.length ? `Ficha ${itensDaFicha(c).length - faltas.length} de ${itensDaFicha(c).length} completa` : "Ficha completa"}</p>
           <div class="pc-progresso"><i style="width:${Math.round(((itensDaFicha(c).length - faltas.length) / itensDaFicha(c).length) * 100)}%"></i></div>
           <p class="pc-card-s">${faltas.length ? `Falta: ${esc(faltas.join(", "))}.` : "Tudo preenchido. Mantenha horário e preço em dia."}</p>
           <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} ${faltas.length ? "Completar a ficha" : "Editar a ficha"}</button>
-        </div>
-        <div class="pc-card">
+        </div>` : ""}
+        ${posso("avaliacoes") ? `<div class="pc-card">
           <p class="pc-card-t">${semResposta ? `${semResposta} ${plural(semResposta, "avaliação sem resposta", "avaliações sem resposta")}` : "Avaliações em dia"}</p>
           <p class="pc-card-s">${semResposta ? "Responder mostra para quem procura que a academia está presente." : "Todas as avaliações têm resposta."}</p>
           <a href="/parceiros/avaliacoes" class="cta-btn cta-secondary" data-pc="avaliacoes">${semResposta ? "Responder" : "Ver avaliações"}</a>
-        </div>
-      </div>
+        </div>` : ""}
+      </div>` : ""}
 
       ${veNumeros() ? "" : cartaoDeDesempenho()}
 
@@ -11797,10 +11818,11 @@ function abaDosCreditos() {
 }
 // "Comprar créditos ›" para quem tem Pagamentos; para o resto da equipe,
 // com quem falar (regra 180).
+// Regra 213: sem a função Pagamentos, nada no lugar.
 function botaoDeComprarCreditos() {
   return posso("pagamentos")
     ? `<button type="button" class="inline-link" data-comprar-creditos>Comprar créditos ›</button>`
-    : "Quem cuida dos pagamentos da academia compra os créditos.";
+    : "";
 }
 function abrirCreditos() {
   if (state.parceirosAba !== "creditos") state.pcCreditosVolta = { aba: state.parceirosAba || abaDosCreditos() };
@@ -12324,7 +12346,7 @@ function pcPromocoesPorEmail() {
         <div class="pc-card">
           <p class="pc-card-t">Falta o bairro na ficha</p>
           <p class="pc-card-s">O leilão é por bairro: com o bairro e a cidade na ficha, a academia entra no leilão de lá.</p>
-          <button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>
+          ${podeEditar(c) ? `<button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}">${icon('edit', 15, '#fff')} Editar a ficha</button>` : ""}
         </div>
       </section>`;
   }
@@ -13069,7 +13091,7 @@ function pcPessoas() {
                <button type="button" class="cta-btn cta-secondary" id="pc-copiar-pessoa">Copiar mensagem</button>`}
         </div>` : ""}
       ${!souPrincipal()
-        ? `<p class="pc-card-s" style="margin-top:12px">Quem adiciona e remove pessoas é o responsável principal.</p>`
+        ? ""
         : cheio
           ? `<div class="pc-lotado">
                <p class="pc-card-s">O plano ${esc(plano.nome)} permite até ${plano.pessoas} ${plural(plano.pessoas, "pessoa", "pessoas")}.${prox ? ` No ${esc(prox.nome)}, até ${prox.pessoas}.` : ""}</p>
@@ -13998,7 +14020,7 @@ function pcProblemasDaFicha(c) {
       <p class="pc-card-s">${soWhatsapp
         ? "O número está certo? Não precisa fazer nada: o GuiaTennis confere. Mudou de número? Escreva o novo na ficha."
         : "Confira a ficha e salve: salvar, mesmo sem mudar nada, mostra que está tudo certo."}</p>
-      ${soWhatsapp ? "" : `<button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}" data-revisar>${icon('edit', 15, '#fff')} Conferir a ficha</button>`}
+      ${soWhatsapp || !podeEditar(c) ? "" : `<button type="button" class="cta-btn cta-primary editar-academia" data-court="${c.id}" data-revisar>${icon('edit', 15, '#fff')} Conferir a ficha</button>`}
     </div>`;
 }
 
@@ -18630,7 +18652,7 @@ function ofertas(c) {
   const opcoes = grupos.map(g => {
     const doGrupo = todas.filter(o => grupoDe(o) === g);
     const o = maisEmConta(doGrupo) || doGrupo[0];
-    return { label: g === "aula" ? "Aula" : g === "crianca" ? "Aula infantil" : g === "locacao" ? "Locação" : o.nome, faixa: o.faixa, curto: o.curto, min: parseInt(priceMin(o.faixa) || "0", 10) };
+    return { label: g === "aula" ? "Aula" : g === "crianca" ? "Aula infantil" : g === "locacao" ? "Locação" : o.nome, faixa: o.faixa, curto: o.curto, min: numeroDoPreco(priceMin(o.faixa) || "0") };
   }).sort((a, b) => (a.min || 1e9) - (b.min || 1e9));
 
   const so = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : null;
@@ -18674,7 +18696,7 @@ function destaque(c, usados) {
 
 // O maior valor da faixa, quando a academia informou um intervalo.
 function priceMax(faixa) {
-  const nums = (faixa || "").match(/\d+/g) || [];
+  const nums = (faixa || "").match(/\d+(?:,\d{1,2}(?!\d))?/g) || [];
   return nums.length > 1 ? nums[nums.length - 1] : null;
 }
 
@@ -20006,7 +20028,7 @@ function htOpcoes(c) {
   // "Menor preço" só entre valores que pagam a mesma coisa (todos por aula,
   // por exemplo; a locação, por hora, não se compara com a aula).
   const comValor = opcoes.filter(o => temPreco(o.faixa));
-  const valores = comValor.map(o => parseInt(priceMin(o.faixa), 10));
+  const valores = comValor.map(o => numeroDoPreco(priceMin(o.faixa)));
   const menor = valores.length > 1 && new Set(valores).size > 1 && new Set(comValor.map(o => o.unidade)).size === 1 ? Math.min(...valores) : null;
   const reposicao = (o) => {
     if (!temPolitica(c)) return "";
@@ -20032,7 +20054,7 @@ function htOpcoes(c) {
     const i = lista.indexOf(o);
     // A foto da própria opção (Premium); sem ela, uma das fotos da academia.
     const foto = o.item && o.item.foto ? o.item.foto : fotos.length ? fotos[(i + (fotos.length > 1 ? 1 : 0)) % fotos.length] : "";
-    const tag = menor !== null && parseInt(priceMin(o.faixa), 10) === menor ? `<span class="ht-quarto-tag">Menor preço</span>` : "";
+    const tag = menor !== null && numeroDoPreco(priceMin(o.faixa)) === menor ? `<span class="ht-quarto-tag">Menor preço</span>` : "";
     return `
       <article class="ht-quarto">
         ${foto ? `<div class="ht-quarto-foto"><img src="${esc(foto)}" alt="Foto da ${esc(c.name)}" loading="lazy" />${tag}</div>` : ""}
@@ -20427,13 +20449,15 @@ function linhaDoItem(i) {
 // O preço gravado: "150" ou o intervalo "150-200" (regra 175), com o menor
 // primeiro; "200 a 150" vira "150-200" e "150 a 150" ou "150 a 0", "150".
 function precoDoCatalogo(v) {
-  const nums = (String(v || "").match(/\d+/g) || []).slice(0, 2).map(n => n.slice(0, 9));
-  if (nums.length < 2) return nums[0] || "";
-  let [de, ate] = nums.map(Number);
-  if (!ate || ate === de) return nums[0];
-  if (!de) return nums[1];
+  // Regra 213: com centavos ("150,50"); ",00" sai.
+  const nums = numerosDoValor(v).map(n => Math.min(numeroDoPreco(n.replace(/,$/, "")) || 0, 999999999));
+  const txt = n => Number.isInteger(n) ? String(n) : n.toFixed(2).replace(".", ",");
+  if (nums.length < 2) return nums.length ? txt(nums[0]) : "";
+  let [de, ate] = nums;
+  if (!ate || ate === de) return txt(de);
+  if (!de) return txt(ate);
   if (ate < de) [de, ate] = [ate, de];
-  return `${de}-${ate}`;
+  return `${txt(de)}-${txt(ate)}`;
 }
 // O item como o site usa, sem o que veio estranho (o banco guarda a lista
 // que o site monta).
@@ -20687,7 +20711,7 @@ function opcoesPreco(c) {
   if (temLoc) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao || "", assunto: "alugar a quadra", grupo: "locacao", tipo: "locacao", filtro: "Locação", resumo: "locacao", nomeResumo: "Locação", ...porHora });
   if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor por hora de quadra", faixa: c.priceRange, assunto: "os valores", grupo: "", tipo: "", filtro: "Preço", resumo: "", nomeResumo: "Preço", ...porHora });
   // Quem tem valor aparece primeiro; quem não tem vai para o fim.
-  return out.sort((a, b) => (parseInt(priceMin(a.faixa), 10) || 1e9) - (parseInt(priceMin(b.faixa), 10) || 1e9));
+  return out.sort((a, b) => (numeroDoPreco(priceMin(a.faixa)) || 1e9) - (numeroDoPreco(priceMin(b.faixa)) || 1e9));
 }
 function temCatalogo(c) { return catalogoDe(c).length > 0; }
 // "Aula em grupo mensal", para as listas em texto.
@@ -20702,7 +20726,7 @@ function maisEmConta(opcoes) {
   const avulsas = comValor.filter(o => o.cobranca !== "mensal");
   const base = avulsas.length ? avulsas : comValor;
   if (!base.length) return null;
-  const min = o => parseInt(priceMin(o.faixa), 10);
+  const min = o => numeroDoPreco(priceMin(o.faixa));
   return base.reduce((a, b) => min(b) < min(a) ? b : a);
 }
 
@@ -21556,21 +21580,36 @@ function exemploDoValor(chave) {
   return ex[partes[2]];
 }
 // O que a academia digita no valor: um número ou dois (o intervalo). O que
-// separa os dois (espaço, traço, vírgula, ponto) vira " a " na hora, e
-// "apagando" deixa tirar o " a " de volta.
-// "0" ou "-" é "Sob consulta" (regra 206); em branco, a opção não entra no
-// catálogo.
+// separa os dois (espaço, traço, "a") vira " a " na hora, e "apagando" deixa
+// tirar o " a " de volta. Desde a regra 213 (05/11/2026: "deixe a vírgula
+// funcionando para colocar os valores"), a vírgula (ou o ponto) é a dos
+// centavos, até duas casas ("150,50"); "1.500" com três casas é mil e
+// quinhentos.
+// "0", "-" ou espaço é "Sob consulta" (regras 206 e 213; o espaço vira "-",
+// que se vê); em branco, a opção não entra no catálogo.
 function valorSobConsulta(v) {
-  return /^\s*(-+|0+)\s*$/.test(String(v || ""));
+  return /^\s*(-+|0+(,0*)?)\s*$/.test(String(v || "")) || /^\s+$/.test(String(v || ""));
+}
+function numerosDoValor(texto) {
+  return (String(texto || "").match(/\d+(?:[.,]\d*)*/g) || []).slice(0, 2).map(n => {
+    if (/^\d{1,3}(?:\.\d{3})+(?:,\d*)?$/.test(n)) n = n.replace(/\./g, "");
+    const [inteiro, centavos] = n.split(/[.,]/);
+    return (centavos === undefined ? inteiro : `${inteiro},${centavos.slice(0, 2)}`).replace(/^0+(?=\d)/, "");
+  });
+}
+// "150,50" → 150.5 (para comparar e ordenar).
+function numeroDoPreco(v) {
+  return v === null || v === undefined || v === "" ? NaN : Number(String(v).replace(",", "."));
 }
 function valorNoCampo(texto, apagando) {
   const t = String(texto || "");
-  if (/^\s*-+\s*$/.test(t)) return "-";
-  const nums = (t.match(/\d+/g) || []).slice(0, 2);
+  if (/^\s*-+\s*$/.test(t) || /^\s+$/.test(t)) return "-";
+  const nums = numerosDoValor(t);
   if (!nums.length) return "";
-  if (nums.length === 2) return `${nums[0]} a ${nums[1]}`;
-  if (apagando) return /^\d+ a $/.test(t) ? t : nums[0];
-  return /\d\D/.test(t) ? `${nums[0]} a ` : nums[0];
+  const n0 = nums[0].replace(/,$/, "");
+  if (nums.length === 2) return `${n0} a ${nums[1]}`;
+  if (apagando) return /^\d+(,\d{1,2})? a $/.test(t) ? t : nums[0];
+  return /\d[^\d.,]|[.,][^\d.,]/.test(t) ? `${n0} a ` : nums[0];
 }
 function campoDoValor(g, chave, nome) {
   const exemplo = exemploDoValor(chave);
@@ -21639,7 +21678,7 @@ function editorDasAulas(f) {
         </section>`).join("") + `
         <button type="button" class="cat-mais-faixa" data-cat-faixa-mais>${icon('plus', 15, 'currentColor')} Adicionar faixa de idade</button>` : ""}
     </div>
-    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">Escreva o valor por aula: avulsa, mensal (o valor de cada aula no plano) ou as duas. <strong>Em branco, não entra no catálogo. Escreva 0 ou - para aparecer "Sob consulta".</strong> No Premium, cada aula mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
+    ${g.adulto.on || g.crianca.on ? `<p class="footnote" style="margin-top:12px">No catálogo, as aulas aparecem com o valor por aula, avulsa e mensal (na mensal, o valor de cada aula no plano). <strong>Valor em branco: a opção não aparece no catálogo. Com 0 (zero), - ou espaço: aparece "Sob consulta".</strong> Centavos com vírgula (ex.: 150,50). Com o Premium, cada formato mostra a própria foto (com pessoas, só com a autorização delas; com crianças, a dos pais ou responsáveis), sem promoção nem tabela de preço.</p>` : ""}`;
 }
 // A parte "Locação" (só para quem escolheu a locação nas Modalidades, regra
 // 170): a avulsa e a mensal, cada uma com a foto e o valor.
@@ -21666,7 +21705,7 @@ function editorDaLocacao(f) {
           </div>`;
         }).join("")}
       </div>
-      ${g.locacao.cobrancas.length ? `<p class="footnote" style="margin-top:12px">Escreva o valor por hora: na mensal, o valor de cada hora no plano. <strong>Em branco, não entra no catálogo. Escreva 0 ou - para aparecer "Sob consulta".</strong> No Premium, cada uma mostra a própria foto.</p>` : ""}`;
+      ${g.locacao.cobrancas.length ? `<p class="footnote" style="margin-top:12px">No catálogo, as duas opções aparecem com o valor por hora (na mensal, o valor de cada hora no plano). <strong>Valor em branco: a opção não aparece no catálogo. Com 0 (zero), - ou espaço: aparece "Sob consulta".</strong> Centavos com vírgula (ex.: 120,50). Com o Premium, cada formato mostra a própria foto.</p>` : ""}`;
 }
 
 const REG_PASSOS = [
@@ -22807,7 +22846,7 @@ function irParaPasso(k, conferir, semValorOk) {
     if (falta.length) { state.regPassoErro = `Preencha: ${falta.join(", ")}.`; render(); return; }
     const brancos = semValorOk ? [] : valoresEmBranco(f, passo.id);
     if (brancos.length) {
-      state.regPassoErro = `Sem valor: ${brancos.join(", ")}. Em branco, não entra no catálogo. Para aparecer "Sob consulta", escreva 0 ou -.`;
+      state.regPassoErro = `Sem valor: ${brancos.join(", ")}. Em branco, a opção não aparece no catálogo. Para aparecer "Sob consulta", escreva 0 (zero), - ou espaço.`;
       state.regSemValor = String(k);
       render();
       return;
@@ -24122,7 +24161,7 @@ const CHAT_DETALHES_PC = [
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
   { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco", "valor mensal", "aula mensal", "locacao mensal"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano), e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora (na mensal, o valor de cada hora no plano) e a foto de cada uma. Cada valor pode ser um número ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Sem valor, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula (na mensal, o valor de cada aula no plano), e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora (na mensal, o valor de cada hora no plano) e a foto de cada uma. Cada valor pode ser um número, com os centavos depois da vírgula (ex.: 150,50), ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Valor em branco: a opção não aparece na ficha. Com 0 (zero), - ou espaço, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -24486,7 +24525,7 @@ function renderChat() {
           ${ch.msgs.map((m, i) => `
             <div class="chat-msg ${m.de}">
               <div class="chat-bolha">${quebras(m.texto)}</div>
-              ${m.acoes && m.acoes.length ? `<div class="chat-acoes">${m.acoes.map(a => a.ir === "whatsapp"
+              ${m.acoes && m.acoes.filter(acaoPermitida).length ? `<div class="chat-acoes">${m.acoes.filter(acaoPermitida).map(a => a.ir === "whatsapp"
                 ? `<a class="chat-acao whats" href="${esc(linkWhatsDoChat())}" target="_blank" rel="noreferrer">${icon('whatsapp', 15, '#fff')} ${esc(a.t)}</a>`
                 : `<button type="button" class="chat-acao" data-chat-ir="${esc(a.ir)}">${esc(a.t)} ${icon('chevron', 13, 'currentColor')}</button>`).join("")}</div>` : ""}
               ${i === ultima && m.chips && m.chips.length ? `<div class="chat-chips">${m.chips.map(c => `<button type="button" class="chip small" ${c.tema ? `data-chat-tema="${esc(c.tema)}"` : c.det ? `data-chat-det="${esc(c.det)}"` : c.pg ? `data-chat-pg="${esc(c.pg)}"` : `data-chat-resp="${esc(c.resp)}"`}>${esc(c.t)}</button>`).join("")}</div>` : ""}

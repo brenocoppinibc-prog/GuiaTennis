@@ -129,7 +129,8 @@ async function fichaCheia(page, extra) {
   });
   ok(r.n === 2 && r.ladoALado && r.semRolar && r.nomes === 'Locação,Aula' && r.contagem === 'Mostrando 2 de 2 opções', 'no celular, locação e aula lado a lado na grade (sem rolar para o lado), com o "Mostrando 2 de 2 opções"');
   ok(r.tag === 'Menor preço,' && r.verde === 'Reposição até 12h antes,Reposição até 24h antes', 'o mais em conta com "Menor preço" e a reposição de cada um em verde — ' + r.verde);
-  ok(r.wa[0].includes('queria saber sobre alugar a quadra') && r.wa[1].includes('queria saber sobre as aulas'), 'o WhatsApp de cada cartão já fala daquela opção');
+  // Desde a regra 209, a mensagem de cada opção vem quase pronta.
+  ok(r.wa[0].includes('quero alugar a quadra') && r.wa[0].includes('Dia e horário:') && r.wa[1].includes('tenho interesse') && r.wa[1].includes('Melhor dia e horário:'), 'o WhatsApp de cada cartão já fala daquela opção — ' + r.wa.map(x => x.split('?text=')[1] || x).join(' / ').slice(0, 200));
   // Sem a caixa de horário (27/10/2026: "não precisa selecionar um horário certo").
   const mods = await page.evaluate(() => [...document.querySelectorAll('[data-opcao-modalidade]')].map(b => b.innerText.replace(/\s+/g, ' ').trim()).join(' | '));
   ok(mods === 'Aula Com professor | Locação de quadra Avulsa' && !(await page.$('select')) && !(await page.$('#ir-horario')), 'regra 189: um cartão por modalidade, sem as caixas do hoteis.com, sem a de horário — ' + mods);

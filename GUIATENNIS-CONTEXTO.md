@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 212)
+**Atualizado em:** 05/11/2026 (regra 213)
 
 | | |
 |---|---|
@@ -150,7 +150,8 @@ Produto (o que já foi decidido)
   principais** (podem tudo; o principal torna alguém da equipe principal;
   só o GuiaTennis tira um principal, ou ele mesmo deixa de ser, havendo
   outro). A **equipe** faz só as **funções** que o principal liga em Acessos
-  (`academia_vinculos.funcoes`, `posso()` no site e no banco): Editar a
+  (`academia_vinculos.funcoes`, `posso()` no site e no banco; o que não
+  está liberado **não aparece**, regra 213): Editar a
   ficha, Responder avaliações, Promoções e leilão, Pagamentos (quem entra
   começa com as três primeiras). Aba **Pagamentos**: saldo, compra e cada
   compra com quem comprou; a cada compra paga, e-mail aos principais.
@@ -227,7 +228,9 @@ Produto (o que já foi decidido)
   e valor vale como avulsa) e a foto; em branco não entra no catálogo, 0 ou - = "Sob consulta", regra 206) e **Locação** (avulsa e/ou
   mensal, cada uma com o valor e a foto; **as duas por hora**, a mensal é o
   valor de cada hora no plano). Nada no catálogo é "por mês". Cada valor é um número ou um
-  intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), numa linha
+  intervalo ("150 a 200", gravado "150-200", `precoDoCatalogo`), com centavos
+na vírgula ("150,50", regra 213: `numerosDoValor`, `numeroDoPreco`; espaço
+sozinho vira "-", "Sob consulta"), numa linha
   com o nome à esquerda; o exemplo fica **só dentro do campo**, em intervalo
   ("ex.: 150 a 200", `EXEMPLOS_DE_VALOR`), nada escrito embaixo. Foto no Premium. Na ficha, as
   aulas das crianças são "Aula infantil …", com a idade, e têm o filtro
@@ -423,7 +426,8 @@ para a academia e a mensagem de cada opção vem quase pronta; regra 210, o Comp
 fica só com acessos e contatos; SQL `20261105130000_lista_e_contato_salvo`;
 regra 211, o painel do admin mais espaçoso e com o menu em grupos; regra 212,
 a conta nova pelo Parceiros começa pelo cadastro normal e depois mostra o
-pedido da academia). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+pedido da academia; regra 213, o que a função não libera não aparece, os
+textos novos dos valores de Aulas e Locação e os centavos com vírgula). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -439,7 +443,7 @@ ficha para a escolha (197 a 200).
 verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
 (05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
-novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`). **Falta a bateria completa antes do "pode
+novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
@@ -452,7 +456,7 @@ commit de código: `c6f40e4` (regra 211); o SQL mais novo
 (`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
 mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
 Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
-Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 212)
+Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 213)
 estão todos na prévia.
 
 **Pendências do Breno:**
@@ -488,7 +492,7 @@ estão todos na prévia.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 213.
+**Próximo número:** regra 214.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -840,6 +844,24 @@ estão todos na prévia.
   o Google Business Profile e o Airbnb. Sem SQL. Testes:
   `cadastro-normal-parceiros.js` (novo), `parceiros.js`, `percurso.js`,
   `voltar.js`, `senha.js`, `rascunho.js`.
+- 213 (05/11) "Não aparecer opção de fazer pagamento se o acesso não permite
+  e outras ações tbm, deixe como algo que não se vê" e os textos dos valores
+  ("No catálogo serão apresentados os valores por hora de ambas opções"; em
+  branco não aparece; 0, - ou espaço = "Sob consulta"; "deixe a vírgula
+  funcionando"; "Com o Premium, cada formato mostra a própria foto"; o mesmo
+  nas aulas): na equipe, somem o botão de mudar o plano
+  (`botaoDeEscolherPlano`), o "Comprar créditos" e o aviso no lugar
+  (`botaoDeComprarCreditos`), "Quem adiciona e remove pessoas…", os cartões
+  de Atualizações sem a função, os "Editar/Conferir a ficha" sem `podeEditar`,
+  as dicas (`dicaPermitida`) e os atalhos do chat (`acaoPermitida`); a
+  `pcSemFuncao` fica só para quem chega pelo link. Valores: a vírgula (ou o
+  ponto) é a dos centavos, até 2 casas; "1.500" é mil e quinhentos; o
+  intervalo sai com espaço, traço ou "a"; espaço sozinho vira "-";
+  `priceMin`/`priceMax` leem os centavos e `numeroDoPreco` compara. Rodapés
+  novos de Aulas e Locação, erro "Sem valor" e chat. Como as permissões da
+  Shopify e do Google Business Profile. Sem SQL. Testes: `catalogo.js`,
+  `funcoes-da-equipe.js`, `plano-e-creditos.js`, `parceiros.js`,
+  `chat-parceiros.js` e os de preço e ficha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -68,8 +68,8 @@ const CATALOGO = [
   ok((await page.inputValue(gm)) === '300', 'o valor só fica com os números — ' + await page.inputValue(gm));
   await page.fill(gm, '250-350');
   const traco = await page.inputValue(gm);
-  await page.fill(gm, '250,350');
-  ok(traco === '250 a 350' && (await page.inputValue(gm)) === '250 a 350', 'dois números, com traço ou vírgula, viram o intervalo "250 a 350"');
+  await page.fill(gm, '250,50');
+  ok(traco === '250 a 350' && (await page.inputValue(gm)) === '250,50', 'traço vira o intervalo "250 a 350"; a vírgula é a dos centavos (regra 213)');
   await page.fill(gm, '');
   await page.type(gm, '250 ');
   const aberto = await page.inputValue(gm);
@@ -164,12 +164,22 @@ const CATALOGO = [
   // Regra 206: em branco, não entra no catálogo; 0 ou - é "Sob consulta".
   await page.fill('[data-cat-valor="f1:individual:avulsa"]', '');
   await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', '-');
-  ok(await page.isVisible('[data-cat-sob="adulto:dupla:avulsa"]') && !(await page.isVisible('[data-cat-sob="adulto:individual:avulsa"]')) && (await texto(page, '#cat-tabela ~ .footnote')).includes('Em branco, não entra no catálogo. Escreva 0 ou - para aparecer "Sob consulta".'), 'o "-" mostra "Sob consulta" na hora, e o texto embaixo explica');
+  ok(await page.isVisible('[data-cat-sob="adulto:dupla:avulsa"]') && !(await page.isVisible('[data-cat-sob="adulto:individual:avulsa"]')) && (await texto(page, '#cat-tabela ~ .footnote')).includes('Valor em branco: a opção não aparece no catálogo. Com 0 (zero), - ou espaço: aparece "Sob consulta".') && (await texto(page, '#cat-tabela ~ .footnote')).includes('Com o Premium, cada formato mostra a própria foto'), 'o "-" mostra "Sob consulta" na hora, e o texto embaixo explica (regra 213)');
+  // Regra 213: espaço sozinho também é "Sob consulta" (vira "-"), e a vírgula é a dos centavos.
+  await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', ' ');
+  ok(await page.inputValue('[data-cat-valor="adulto:dupla:avulsa"]') === '-' && await page.isVisible('[data-cat-sob="adulto:dupla:avulsa"]'), 'espaço vira "-" e mostra "Sob consulta"');
+  await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', '');
+  await page.type('[data-cat-valor="adulto:dupla:avulsa"]', '150,5');
+  ok(await page.inputValue('[data-cat-valor="adulto:dupla:avulsa"]') === '150,5', 'a vírgula fica: 150,5 — ' + await page.inputValue('[data-cat-valor="adulto:dupla:avulsa"]'));
+  await page.type('[data-cat-valor="adulto:dupla:avulsa"]', '0 200');
+  ok(await page.inputValue('[data-cat-valor="adulto:dupla:avulsa"]') === '150,50 a 200', 'com centavos e intervalo: 150,50 a 200 — ' + await page.inputValue('[data-cat-valor="adulto:dupla:avulsa"]'));
+  ok(await page.evaluate(() => [precoDoCatalogo('150,50 a 200'), precoDoCatalogo('150,00'), precoDoCatalogo('1.500'), precoTexto('150,50-200'), String(numeroDoPreco(priceMin('150,50-200')))].join(' | ')) === '150,50-200 | 150 | 1500 | R$ 150,50 a 200 | 150.5', 'grava e mostra os centavos');
+  await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', '-');
   // Continuar com valor em branco: o aviso de erro, com "Seguir assim".
   await page.click('#reg-continuar');
   await page.waitForTimeout(200);
   let aviso = await page.evaluate(() => ({ passo: regPassoAtual().passo.id, erro: document.querySelector('.form-error')?.innerText || '', seguir: !!document.getElementById('reg-seguir-sem-valor') }));
-  ok(aviso.passo === 'precos' && aviso.erro.includes('Sem valor: Aula individual mensal') && aviso.erro.includes('Em branco, não entra no catálogo') && aviso.seguir, 'Continuar com valor em branco avisa como erro e pede confirmação — ' + aviso.erro);
+  ok(aviso.passo === 'precos' && aviso.erro.includes('Sem valor: Aula individual mensal') && aviso.erro.includes('Em branco, a opção não aparece no catálogo') && aviso.erro.includes('0 (zero), - ou espaço') && aviso.seguir, 'Continuar com valor em branco avisa como erro e pede confirmação — ' + aviso.erro);
   await page.click('#reg-seguir-sem-valor');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => regPassoAtual().passo.id !== 'precos'), '"Seguir assim" passa para a próxima parte');

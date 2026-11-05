@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 209)
+**Atualizado em:** 05/11/2026 (regra 210)
 
 | | |
 |---|---|
@@ -295,7 +295,7 @@ Produto (o que já foi decidido)
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261105120000_lista_e_contato_salvo` (82 arquivos na pasta; 79 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261105130000_lista_e_contato_salvo` (82 arquivos na pasta; 79 deles entraram neste PR). O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -415,8 +415,8 @@ da academia, no Completo o resumo completo do site, até 750 letras; regra
 não entra no catálogo e 0 ou - é "Sob consulta"; regra 207, "Sair sem
 salvar?" só com mudança de verdade; regra 208, as academias no WhatsApp: a
 lista, falar com várias e salvar os contatos; regra 209, esses cliques contam
-para a academia e a mensagem de cada opção vem quase pronta, SQL
-`20261105120000_lista_e_contato_salvo`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+para a academia e a mensagem de cada opção vem quase pronta; regra 210, o Completo
+fica só com acessos e contatos; SQL `20261105130000_lista_e_contato_salvo`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -474,7 +474,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 210.
+**Próximo número:** regra 211.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -792,7 +792,15 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   locação, "Dia e horário:"/"Quantas horas:"), e as do "Falar com todas" com
   as linhas para completar. Privacidade (05/11). SQL
   `20261105120000_lista_e_contato_salvo`. Testes: `whatsapp-das-academias.js`,
-  `catalogo.js`, `banco-emails.py` (777).
+  `catalogo.js`, `banco-emails.py` (777). (O "guardaram" do Completo saiu na
+  210.)
+- 210 (05/11) "Não aparecer no completo informações mais complexas, somente
+  comuns": o Completo fica com acessos e contatos dos 30 dias; quantos
+  salvaram o contato e mandaram para o próprio WhatsApp ficam só no Premium
+  (na vitrine do Completo, "Quantos salvaram o contato" entre o que é do
+  Premium). A migração virou `20261105130000_lista_e_contato_salvo`
+  (substitui a `20261105120000`, que só rodou no teste). Testes:
+  `whatsapp-das-academias.js`, `banco-emails.py` (777).
 
 ## 11. WhatsApp e mensagem para as academias
 

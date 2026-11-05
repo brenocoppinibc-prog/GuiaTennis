@@ -92,7 +92,11 @@ const { abrir, ok } = require('./harness');
     ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano }));
     await page.waitForTimeout(700);
     t = await page.evaluate(() => document.querySelector('#parceiros .pc-main, #parceiros')?.innerText || '');
-    ok(plano === 'completo' ? t.includes('2 pessoas salvaram o contato no celular') && t.includes('3 mandaram a academia para o próprio WhatsApp') : t.includes('Salvaram o contato') && t.includes('Mandaram para o próprio WhatsApp'), `${plano}: o Desempenho mostra quantos salvaram o contato e mandaram para o próprio WhatsApp`);
+    // Regra 210: no Completo, só o comum (acessos e contatos); o resto é do Premium.
+    ok(plano === 'completo'
+      ? !/salvaram o contato no celular|Salvaram o contato|Mandaram para o próprio WhatsApp/.test(t) && t.includes('Quantos salvaram o contato') && t.includes('contatos pelo WhatsApp')
+      : t.includes('Salvaram o contato') && t.includes('Mandaram para o próprio WhatsApp'),
+      plano === 'completo' ? 'Completo: só acessos e contatos; quantos salvaram o contato aparece como do Premium' : 'Premium: o Desempenho mostra quantos salvaram o contato e mandaram para o próprio WhatsApp');
     await browser.close();
   }
 

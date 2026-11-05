@@ -4726,7 +4726,7 @@ function textoDaListaNoWhatsapp(origem) {
 }
 function mandarListaParaMeuWhatsapp(origem) {
   registrarPasso("acao", { detalhe: `Mandou a lista para o WhatsApp · ${origem}` });
-  // Cada academia da lista conta 'lista_whatsapp' (SQL 20261105120000).
+  // Cada academia da lista conta 'lista_whatsapp' (SQL 20261105130000).
   academiasDaOrigem(origem).slice(0, VARIAS_MAX).forEach(c => trackClick(c.id, "lista_whatsapp", origem));
   window.open("https://wa.me/?text=" + encodeURIComponent(textoDaListaNoWhatsapp(origem)), "_blank", "noopener");
   mostrarPush("No WhatsApp, escolha \u201cVocê\u201d para guardar a lista na sua conversa.");
@@ -10246,19 +10246,13 @@ function cartaoDeDesempenho() {
       <span class="pc-desempenho-ver">Ver detalhes ${icon('chevron', 14, 'var(--green)')}</span>
     </a>`;
 }
-// Quantos guardaram a academia (regra 209): salvaram o contato no celular e
-// mandaram a lista para o próprio WhatsApp.
-function textoDoGuardaram(g) {
-  if (!g || !(g.contato || g.lista)) return "";
-  return [g.contato ? `${numeroBonito(g.contato)} ${g.contato === 1 ? "pessoa salvou" : "pessoas salvaram"} o contato no celular` : "",
-    g.lista ? `${numeroBonito(g.lista)} ${g.lista === 1 ? "mandou" : "mandaram"} a academia para o próprio WhatsApp` : ""].filter(Boolean).join(" · ") + ".";
-}
 function vitrineDosAcessos() {
   const n = state.numeros || {};
   const acessos = acessosDe30Dias();
   const contatos = contatosDe30Dias();
   const basico = planoAtual() === "basico";
-  const trancados = [...(contatos === null ? ["Quantos chamaram vocês"] : []), "Por qual canal", "Dia a dia", "De onde vieram", "Bairros de quem procurou", "Comparação com a cidade"];
+  // Quantos salvaram o contato é do Premium (regra 210: o Completo fica com o comum).
+  const trancados = [...(contatos === null ? ["Quantos chamaram vocês"] : []), "Por qual canal", "Quantos salvaram o contato", "Dia a dia", "De onde vieram", "Bairros de quem procurou", "Comparação com a cidade"];
   return `
     <div class="pc-card pc-vitrine">
       <p class="pc-vitrine-eyebrow">Últimos 30 dias</p>
@@ -10269,7 +10263,6 @@ function vitrineDosAcessos() {
           : `<p class="pc-vitrine-t">Nenhum acesso ainda.</p>
              <p class="pc-card-s">Coloque o QR code da ficha na recepção e no Instagram: os alunos chegam por ele.</p>`}
       ${contatos !== null ? `<p class="pc-vitrine-t pc-vitrine-contatos"><strong class="pc-vitrine-n">${numeroBonito(contatos)}</strong> ${contatos === 1 ? "contato" : "contatos"} pelo WhatsApp, Instagram ou site</p>` : ""}
-      ${textoDoGuardaram((n.dados || {}).guardaram) ? `<p class="pc-card-s pc-vitrine-guardaram">${textoDoGuardaram((n.dados || {}).guardaram)}</p>` : ""}
       <p class="pc-vitrine-sub">${basico ? "Nos planos Completo e Premium, vocês veem também:" : "No plano Premium, vocês veem também:"}</p>
       <ul class="pc-vitrine-trancados">${trancados.map(t => `<li>${icon('key', 12, 'var(--gold)')}<span>${t}${basico ? `<small>${t === "Quantos chamaram vocês" ? " · Completo" : " · Premium"}</small>` : ""}</span></li>`).join("")}</ul>
       <a href="/parceiros/plano" class="pc-vitrine-btn" data-pc="plano">Ver os números no Premium</a>

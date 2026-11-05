@@ -3,8 +3,10 @@
 -- WhatsApp" conta 'lista_whatsapp' para cada academia da lista, e "Salvar os
 -- contatos" conta 'contato_salvo' para cada uma, como o Perfil da Empresa do
 -- Google, que mostra quantos salvaram e compartilharam o perfil. Os números
--- entram em "guardaram" no Desempenho do Completo (30 dias) e do Premium (o
--- período escolhido). Pode rodar de novo sem estragar nada.
+-- entram em "guardaram" no Desempenho do Premium (o período escolhido); o
+-- Completo fica só com o comum, acessos e contatos ("não aparecer no completo
+-- informações mais complexas, somente comuns"). Substitui o 20261105120000,
+-- que rodou só no banco de teste. Pode rodar de novo sem estragar nada.
 
 -- A trava e a regra de envio aceitam os dois tipos novos.
 alter table public.cliques drop constraint if exists cliques_tipo_valido;
@@ -34,7 +36,7 @@ as $$
   where c.academia_id = p_academia and c.created_at >= p_desde;
 $$;
 
--- Os números da academia (SQL 20261102120000) com o "guardaram".
+-- Os números da academia (SQL 20261102120000) com o "guardaram" no Premium.
 create or replace function public.numeros_da_academia(
   p_dias int default 30, p_academia uuid default null)
 returns jsonb
@@ -66,10 +68,9 @@ begin
     return jsonb_build_object('plano', v_plano, 'trancado', true, 'dias', 30,
       'acessos', (select count(*) from public.cliques c
                   where c.academia_id = v_id and c.tipo = 'visualizacao' and c.created_at >= v_desde))
-      || case when v_plano = 'completo' then jsonb_build_object(
-           'contatos', (select count(*) from public.cliques c
-             where c.academia_id = v_id and c.tipo in ('whatsapp', 'instagram', 'site') and c.created_at >= v_desde),
-           'guardaram', public.guardaram_da_academia(v_id, v_desde))
+      || case when v_plano = 'completo' then jsonb_build_object('contatos',
+           (select count(*) from public.cliques c
+            where c.academia_id = v_id and c.tipo in ('whatsapp', 'instagram', 'site') and c.created_at >= v_desde))
          else '{}'::jsonb end;
   end if;
   r := public.numeros_completos_da_academia(p_dias, p_academia);

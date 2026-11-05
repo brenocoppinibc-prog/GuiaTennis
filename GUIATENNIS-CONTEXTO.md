@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 214)
+**Atualizado em:** 05/11/2026 (regra 215)
 
 | | |
 |---|---|
@@ -428,7 +428,8 @@ regra 211, o painel do admin mais espaçoso e com o menu em grupos; regra 212,
 a conta nova pelo Parceiros começa pelo cadastro normal e depois mostra o
 pedido da academia; regra 213, o que a função não libera não aparece, os
 textos novos dos valores de Aulas e Locação e os centavos com vírgula; regra 214,
-avaliação e resposta aparecem meio cinza com "Publicando…" enquanto salvam). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+avaliação e resposta aparecem meio cinza com "Publicando…" enquanto salvam; regra 215, a bola girando mais realista e em
+todo carregamento). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -444,7 +445,7 @@ ficha para a escolha (197 a 200).
 verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
 (05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
-novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 e a 214 (lista na descrição do PR). **Falta a bateria completa antes do "pode
+novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 215 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
@@ -457,7 +458,7 @@ commit de código: `c6f40e4` (regra 211); o SQL mais novo
 (`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
 mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
 Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
-Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 214)
+Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 215)
 estão todos na prévia.
 
 **Pendências do Breno:**
@@ -493,7 +494,7 @@ estão todos na prévia.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 215.
+**Próximo número:** regra 216.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -871,6 +872,14 @@ estão todos na prévia.
   no lugar da data; deu erro, somem e volta o de antes (a resposta volta ao
   formulário com o erro). A nota não conta a que está publicando; "Enviar
   avaliação" fica travado. Sem SQL. Teste: `publicando-cinza.js` (novo).
+- 215 (05/11) "Exceto nas avaliações, toda parte do site que for carregar e
+  demorar um pouco, mostrar a bolinha rodando, tente deixar ela mais
+  realista": `bolaGirando` virou uma bola de tênis de verdade (feltro com
+  degradê e textura, borda escura, brilho e sombra parados; só as costuras
+  giram, `.bola-giro`; ids únicos por bola, `bolaSeq`). Ganharam a bolinha o
+  CEP do cadastro, o botão da localização na busca e os "Procurando…" do
+  admin (o resto já tinha). Sem SQL. Testes: `comparar-e-avisos.js`,
+  `jogador.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

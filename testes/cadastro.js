@@ -153,7 +153,9 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
     dica: document.getElementById('f-sobre')?.placeholder || '', planos: [...document.querySelectorAll('.reg-sobre-planos li')].map(l => l.innerText),
   }));
   ok(ap.ordem === 'sobre,revisar' && ap.titulo.includes('Apresentação da academia') && ap.titulo.includes('Agora nos conte um pouco mais sobre vocês.'), 'a Apresentação é a última parte antes de Revisar, com o subtítulo');
-  ok(ap.dica.startsWith('Dicas do que escrever') && ap.dica.includes('o que vocês têm de diferente') && ap.planos.length === 3 && ap.planos[0].startsWith('Premium') && ap.planos.some(l => l.includes('(o plano de vocês)')), 'o quadrado com as dicas e, embaixo, o que cada plano mostra — ' + ap.planos.join(' | '));
+  // Regra 216: menos informação (sem a lista dos planos), uma linha só embaixo.
+  const nota = await page.evaluate(() => document.getElementById('f-sobre-conta')?.nextElementSibling?.innerText || '');
+  ok(ap.dica.startsWith('Dicas do que escrever') && ap.dica.includes('o que vocês têm de diferente') && ap.planos.length === 0 && nota.includes('Sem telefone, link ou preço.') && nota.length < 120, 'o quadrado com as dicas e uma linha só embaixo — ' + nota);
   ok((await page.getAttribute('#f-sobre', 'maxlength')) === '750' && (await page.innerText('label[for="f-sobre"]')).startsWith('O que vocês querem que o jogador saiba'), 'o texto da academia, até 750 letras');
   await page.fill('#f-sobre', 'Chame no 11 99999-0000 ou em www.academia.com.br');
   let falta = await page.evaluate(() => regFaltas(window.__form, 'sobre').join(' | '));

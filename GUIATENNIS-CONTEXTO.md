@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 215)
+**Atualizado em:** 05/11/2026 (regra 216)
 
 | | |
 |---|---|
@@ -430,7 +430,7 @@ a conta nova pelo Parceiros começa pelo cadastro normal e depois mostra o
 pedido da academia; regra 213, o que a função não libera não aparece, os
 textos novos dos valores de Aulas e Locação e os centavos com vírgula; regra 214,
 avaliação e resposta aparecem meio cinza com "Publicando…" enquanto salvam; regra 215, a bola girando mais realista e em
-todo carregamento). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+todo carregamento; regra 216, a Apresentação do cadastro mais enxuta). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -446,7 +446,7 @@ ficha para a escolha (197 a 200).
 verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
 (05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
-novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 215 (lista na descrição do PR). **Falta a bateria completa antes do "pode
+novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 216 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
@@ -459,7 +459,7 @@ commit de código: `c6f40e4` (regra 211); o SQL mais novo
 (`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
 mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
 Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
-Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 215)
+Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 216)
 estão todos na prévia.
 
 **Pendências do Breno:**
@@ -495,7 +495,10 @@ estão todos na prévia.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 216.
+**Próximo número:** regra 217.
+
+**Descrição do PR:** a regra 216 ainda não entrou nela (economia de limite):
+incluir junto com a próxima mudança.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -881,6 +884,13 @@ estão todos na prévia.
   CEP do cadastro, o botão da localização na busca e os "Procurando…" do
   admin (o resto já tinha). Sem SQL. Testes: `comparar-e-avisos.js`,
   `jogador.js`.
+- 216 (05/11) "A aba de apresentação está com muita informação": a parte
+  `sobre` do cadastro ficou com o campo (dicas mais curtas dentro: a
+  história e a estrutura, as aulas e os professores, o diferencial), o
+  contador e uma linha só ("Aparece na ficha no Premium; nos outros planos,
+  a ficha mostra um resumo do GuiaTennis. Sem telefone, link ou preço."); saiu
+  a lista do que cada plano mostra. Como o "Descreva o seu espaço" do Airbnb,
+  que tem só o campo. Sem SQL. Teste: `cadastro.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

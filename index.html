@@ -22367,19 +22367,13 @@ function regPassoHtml(id, f, obrigatorio) {
   // Apresentação (regra 205): o quadrado com as dicas do que escrever e,
   // embaixo, o que cada plano mostra na ficha.
   if (id === "sobre") {
-    const plano = isAdmin ? (f.__plano || "basico") : (f.__plano || "basico");
-    const linha = (k, txt) => `<li${k === plano ? ' class="reg-sobre-atual"' : ""}><strong>${nomeDoPlano(k)}${k === plano ? " (o plano de vocês)" : ""}:</strong> ${txt}</li>`;
+    // Regra 216 (05/11/2026: "a aba de apresentação está com muita
+    // informação"): o campo com as dicas dentro, o contador e uma linha só.
     return `
         <label class="field-label" for="f-sobre" style="margin-top:0">O que vocês querem que o jogador saiba${catalogoPremium(f) ? "" : ` <span class="cat-premium">Premium</span>`}</label>
-        <textarea class="form-field" id="f-sobre" rows="8" maxlength="${SOBRE_MAX}" style="resize:none;margin-top:6px" placeholder="Dicas do que escrever:&#10;• a história da academia e há quanto tempo existe;&#10;• a estrutura: quadras, piso, iluminação, vestiário;&#10;• como são as aulas e os professores;&#10;• para quem é: iniciantes, crianças, quem joga torneio;&#10;• o que vocês têm de diferente.">${esc(f.sobre || "")}</textarea>
+        <textarea class="form-field" id="f-sobre" rows="8" maxlength="${SOBRE_MAX}" style="resize:none;margin-top:6px" placeholder="Dicas do que escrever:&#10;• a história e a estrutura;&#10;• as aulas e os professores;&#10;• o que vocês têm de diferente.">${esc(f.sobre || "")}</textarea>
         <p class="footnote" id="f-sobre-conta" style="text-align:right;margin-top:4px">${String(f.sobre || "").length}/${SOBRE_MAX}</p>
-        <p class="footnote" style="margin:10px 0 6px">Onde este texto aparece, em "Sobre a academia" na ficha:</p>
-        <ul class="reg-sobre-planos">
-          ${linha("premium", "a ficha mostra este texto, do jeito que vocês escreveram.")}
-          ${linha("completo", "a ficha mostra um resumo completo, que o GuiaTennis monta com os dados da ficha.")}
-          ${linha("basico", "a ficha mostra um resumo curto, montado pelo GuiaTennis.")}
-        </ul>
-        <p class="footnote" style="margin-top:8px">${catalogoPremium(f) ? "" : "O texto fica guardado e aparece na ficha assim que a academia passar para o Premium. "}Sem telefone, link ou preço: eles já têm lugar próprio na ficha.</p>`;
+        <p class="footnote" style="margin-top:8px">${catalogoPremium(f) ? "" : "Aparece na ficha no Premium; nos outros planos, a ficha mostra um resumo do GuiaTennis. "}Sem telefone, link ou preço.</p>`;
   }
 
   if (id === "contato") return `

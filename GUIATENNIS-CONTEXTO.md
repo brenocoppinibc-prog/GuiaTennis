@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 211, troca de chat)
+**Atualizado em:** 05/11/2026 (regra 212)
 
 | | |
 |---|---|
@@ -141,7 +141,11 @@ Técnica
 Produto (o que já foi decidido)
 - **Contas:** uma conta só para jogador e Parceiros (o mesmo e-mail e
   senha); e-mail confirmado por código de 6 números; nome e sobrenome em
-  **dois campos obrigatórios**; excluir num lado exclui nos dois.
+  **dois campos obrigatórios**; excluir num lado exclui nos dois. **Conta
+  nova pelo Parceiros (regra 212):** e-mail novo abre o cadastro normal (a
+  tela do site dos jogadores) e o código; depois o Parceiros pede só
+  tratamento, cargo e WhatsApp e mostra o pedido da academia. O
+  `criar_minha_conta` do banco ficou sem uso no site.
 - **Pessoas da academia (regra 180):** pode haver **vários responsáveis
   principais** (podem tudo; o principal torna alguém da equipe principal;
   só o GuiaTennis tira um principal, ou ele mesmo deixa de ser, havendo
@@ -417,7 +421,9 @@ salvar?" só com mudança de verdade; regra 208, as academias no WhatsApp: a
 lista, falar com várias e salvar os contatos; regra 209, esses cliques contam
 para a academia e a mensagem de cada opção vem quase pronta; regra 210, o Completo
 fica só com acessos e contatos; SQL `20261105130000_lista_e_contato_salvo`;
-regra 211, o painel do admin mais espaçoso e com o menu em grupos). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+regra 211, o painel do admin mais espaçoso e com o menu em grupos; regra 212,
+a conta nova pelo Parceiros começa pelo cadastro normal e depois mostra o
+pedido da academia). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -432,7 +438,8 @@ ficha para a escolha (197 a 200).
 **Testes:** a bateria completa de 04/11 (regra 206) deu **2.289
 verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
 (05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
-lista está na descrição do PR). **Falta a bateria completa antes do "pode
+lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
+novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
@@ -445,7 +452,7 @@ commit de código: `c6f40e4` (regra 211); o SQL mais novo
 (`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
 mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
 Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
-Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 211)
+Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 212)
 estão todos na prévia.
 
 **Pendências do Breno:**
@@ -481,7 +488,7 @@ estão todos na prévia.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 212.
+**Próximo número:** regra 213.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -818,6 +825,21 @@ estão todos na prévia.
   "Ver o site", "Ver como academia" e "Sair da conta" vão para o fim do menu
   (`data-adm-acao`). Sem SQL. Testes: `painel-admin.js`, `falhas.js`,
   `ficha-basica.js`, `fechada-guardada.js`, `publico.js`.
+
+- 212 (05/11) "Ficou confuso esse primeiro acesso no parceiros direto,
+  deixe que ele primeiro faça o cadastro normal e depois já aparece a
+  solicitação": no Parceiros, e-mail novo (`continuarComEmail`) abre o
+  cadastro normal (`cadastroNormalPeloParceiros`: a folha do jogador direto
+  no "criar", com o e-mail); criada a conta (`state.pcContaCriadaAqui`) e
+  confirmado o código, a tela "Use a sua conta…" vira "Conta criada!" /
+  "Agora, os seus dados de contato na academia", só com tratamento, cargo e
+  WhatsApp (`camposDeContato(…, semNome)`; nome e aceite vêm do cadastro
+  normal), sem o aviso "Conta criada!" de novo, e segue para o pedido. Saiu o
+  passo "criar" do Parceiros (`criarContaDeParceiro`, `?passo=dados`). Trilha
+  "Sua conta · Confirmar e-mail · Sua academia · Início". Ajuda e chat. Como
+  o Google Business Profile e o Airbnb. Sem SQL. Testes:
+  `cadastro-normal-parceiros.js` (novo), `parceiros.js`, `percurso.js`,
+  `voltar.js`, `senha.js`, `rascunho.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

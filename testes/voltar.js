@@ -11,14 +11,14 @@ const volta = async (page) => { await page.goBack(); await page.waitForTimeout(2
   await page.fill('#pc-email', 'errado@exemplo.com');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(300);
-  ok(await onde(page) === '/parceiros/cadastro?passo=dados' && await page.isVisible('#pc-conta-nome'), 'e-mail novo: o cadastro tem link próprio — ' + await onde(page));
+  ok(await onde(page) === '/parceiros/cadastro?conta=cadastro' && await page.isVisible('#jog-nome'), 'e-mail novo: o cadastro normal tem link próprio (regra 212) — ' + await onde(page));
   await volta(page);
   const depois = await page.evaluate(() => ({ link: location.pathname + location.search, email: document.getElementById('pc-email')?.value, editavel: !document.getElementById('pc-email')?.readOnly }));
   ok(depois.link === '/parceiros/cadastro' && depois.email === 'errado@exemplo.com' && depois.editavel, 'voltar leva ao passo do e-mail, com o e-mail para corrigir — ' + JSON.stringify(depois));
   await page.fill('#pc-email', 'certo@exemplo.com');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(300);
-  ok(await onde(page) === '/parceiros/cadastro?passo=dados', 'corrigiu e seguiu');
+  ok(await onde(page) === '/parceiros/cadastro?conta=cadastro', 'corrigiu e seguiu');
   await volta(page);
   await volta(page);
   ok(await onde(page) === '/parceiros', 'mais um voltar: a página de antes do cadastro, não uma antiga — ' + await onde(page));

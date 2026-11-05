@@ -47,7 +47,7 @@ const passos = (page) => page.evaluate(() => JSON.parse(JSON.stringify(window.__
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(400);
   p = await passos(page);
-  ok(p.map(x => x.detalhe).join(' | ') === 'Parceiros · Cadastro: o e-mail | Parceiros · Cadastro: dados de contato' && p.every(x => x.site === 'parceiros'), 'no Parceiros, cada etapa do cadastro é um passo — ' + p.map(x => x.detalhe).join(' | '));
+  ok(p.map(x => x.detalhe).join(' | ') === 'Parceiros · Cadastro: o e-mail | Criar conta de jogador' && p.every(x => x.site === 'parceiros'), 'no Parceiros, cada etapa do cadastro é um passo (o e-mail novo abre o cadastro normal, regra 212) — ' + p.map(x => x.detalhe).join(' | '));
   await browser.close();
 
   // ---- quem não entra ----

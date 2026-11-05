@@ -5268,7 +5268,9 @@ function telaDoPercurso() {
     let texto = nomes[aba] || aba;
     if ((aba === "cadastro" || aba === "entrar") && !contaAcademia) {
       const passo = state.pcEmailPasso || "email";
-      texto = { email: "Cadastro: o e-mail", existe: "Entrar: a senha", criar: "Cadastro: dados de contato", esqueci: "Esqueci a senha" }[passo] || texto;
+      texto = { email: "Cadastro: o e-mail", existe: "Entrar: a senha", esqueci: "Esqueci a senha" }[passo] || texto;
+    } else if (aba === "cadastro" && jogador && !contaAcademia) {
+      texto = "Cadastro: dados de contato";
     } else if (aba === "cadastro" && contaAcademia) {
       texto = !temAcademia() && meusPedidos().length && !state.pcAdicionando ? "Pedidos em andamento" : "Cadastro: escolher a academia";
     }
@@ -7327,7 +7329,7 @@ const TRATAMENTO_OPTS = ["Sr.", "Sra.", "Prefiro não informar"];
 // Dados de contato no modelo do trivago Business Studio: tratamento, nome e
 // sobrenome, cargo e telefone com o país. Servem ao cadastro (prefixo
 // "pc-conta") e ao primeiro acesso / "Editar dados" (prefixo "conta").
-function camposDeContato(p, f, classe) {
+function camposDeContato(p, f, classe, semNome = false) {
   const ob = `<span class="obrig">*</span>`;
   const sel = (campo, rotulo, opcoes) => `
     <label class="field-label" for="${p}-${campo}">${rotulo}${ob}</label>
@@ -7338,7 +7340,7 @@ function camposDeContato(p, f, classe) {
   return `
     ${p === "conta" ? avisoDoNomeSuspenso("parceiros") : ""}
     ${sel("tratamento", "Tratamento", TRATAMENTO_OPTS)}
-    <div class="campos-dois">
+    ${semNome ? "" : `<div class="campos-dois">
       <div>
         <label class="field-label" for="${p}-nome">Nome${ob}</label>
         <input class="form-field ${classe}" data-campo="nome" id="${p}-nome" autocomplete="given-name" value="${esc(f.nome || "")}" style="margin-top:0" />
@@ -7347,7 +7349,7 @@ function camposDeContato(p, f, classe) {
         <label class="field-label" for="${p}-sobrenome">Sobrenome${ob}</label>
         <input class="form-field ${classe}" data-campo="sobrenome" id="${p}-sobrenome" autocomplete="family-name" value="${esc(f.sobrenome || "")}" style="margin-top:0" />
       </div>
-    </div>
+    </div>`}
     ${sel("cargo", "Seu cargo", CARGO_OPTS)}
     <label class="field-label" for="${p}-whatsapp">Telefone (WhatsApp)${ob}</label>
     <div class="campo-telefone">
@@ -10716,7 +10718,7 @@ function pcInicio() {
   ];
   // Como funciona, em etapas, como as páginas de parceiro dos sites grandes.
   const passos = [
-    { t: "Crie a sua conta", tempo: "2 minutos", d: "Comece pelo seu e-mail e preencha os dados de contato. É grátis e não pede cartão.", ic: "key" },
+    { t: "Crie a sua conta", tempo: "2 minutos", d: "Comece pelo seu e-mail, crie a conta do GuiaTennis e confirme o e-mail. É grátis e não pede cartão.", ic: "key" },
     { t: "Encontre a sua academia", tempo: "Na hora", d: "Procure pelo nome e pelo bairro e toque em \"Administrar esta academia\". Se a sua ainda não estiver no GuiaTennis, cadastre em poucos minutos.", ic: "search" },
     { t: "Declare que responde pela academia", tempo: "Na hora", d: "Marque a declaração e, com o e-mail confirmado, a ficha passa a ser sua na hora — e o cadastro novo entra no ar. Se a academia já tem responsável, o pedido vai para ele; se houver disputa, o GuiaTennis confirma por um código no WhatsApp da academia.", ic: "check" },
     { t: "Complete a ficha e receba jogadores", tempo: "Todo dia", d: "Horário, preços, fotos e como chegar. O jogador compara, chama no seu WhatsApp, e você acompanha as visitas e os contatos no GuiaTennis Parceiros.", ic: "barchart" },
@@ -11042,7 +11044,7 @@ function trilhaTenis(etapas, atual, rotulo) {
 // escolher a academia"): confirmado, a academia sem responsável passa a ser
 // da conta na hora.
 function pcEtapas(atual) {
-  return trilhaTenis(["Dados de contato", "Confirmar e-mail", "Sua academia", "Início"], atual, "Etapas do cadastro");
+  return trilhaTenis(["Sua conta", "Confirmar e-mail", "Sua academia", "Início"], atual, "Etapas do cadastro");
 }
 function faltaConfirmarEmail() {
   return !!(contaAcademia && !contaAcademia.emailConfirmado && recebeEmail(contaAcademia.login));
@@ -11198,18 +11200,26 @@ function pcCadastro() {
   // os dados de contato e segue para a academia.
   if (!contaAcademia && jogador) {
     const f = window.__pcConta || (window.__pcConta = { tratamento: "", ...separarNome(jogador.nome || ""), cargo: "", whatsapp: "", novidades: false, aceite: false });
+    // Regra 212: a conta acabou de ser criada aqui, no cadastro normal. O
+    // nome e o aceite já vieram dele; falta só o que é da academia.
+    const novaAqui = state.pcContaCriadaAqui === jogador.user_id;
     return `
       <section class="pc-pagina pc-estreita">
-        ${pcEtapas(0)}
+        ${pcEtapas(jogador.email_confirmado_em ? 2 : 0)}
+        ${novaAqui ? `
+        <p class="pc-prazer">Conta criada!</p>
+        <h1 class="display pc-antes">Agora, os seus dados de contato na academia</h1>
+        <p class="pc-sec-sub">Para o GuiaTennis falar com você sobre a academia. Nada disso aparece no site.</p>` : `
         <h1 class="display">Use a sua conta do GuiaTennis no Parceiros</h1>
-        <p class="pc-sec-sub">Você já tem conta com o e-mail <strong>${esc(jogador.email)}</strong>. Complete os dados de contato para usá-la no GuiaTennis Parceiros.</p>
+        <p class="pc-sec-sub">Você já tem conta com o e-mail <strong>${esc(jogador.email)}</strong>. Complete os dados de contato para usá-la no GuiaTennis Parceiros.</p>`}
         <p class="footnote" style="margin:6px 0 0"><span class="obrig">*</span> Informação obrigatória</p>
         <div class="pc-card">
-          ${camposDeContato("pc-conta", f, "pc-conta-campo")}
+          ${camposDeContato("pc-conta", f, "pc-conta-campo", novaAqui)}
+          ${novaAqui ? "" : `
           <label class="consent-row">
             <input type="checkbox" id="pc-conta-aceite" ${f.aceite ? "checked" : ""} />
             <span>Li e concordo com os <button type="button" class="inline-link" id="pc-conta-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="pc-conta-privacidade">Política de Privacidade</button> do GuiaTennis.<span class="obrig">*</span></span>
-          </label>
+          </label>`}
           ${erro(state.pcContaErro)}
           <button class="btn-primary pc-botao-cheio" id="pc-ativar-conta" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar e continuar"}</button>
           <p class="footnote">Não é você? <button type="button" class="pc-linha-link" data-sair-conta>Sair da conta e usar outro e-mail</button></p>
@@ -11217,25 +11227,23 @@ function pcCadastro() {
       </section>`;
   }
 
-  // Sem conta: começa pelo e-mail; e-mail novo vai para os dados de contato.
+  // Sem conta: começa pelo e-mail; e-mail novo abre o cadastro normal
+  // (regra 212, `cadastroNormalPeloParceiros`).
   if (!contaAcademia) {
     const passo = state.pcEmailPasso;
-    const f = window.__pcConta || (window.__pcConta = { tratamento: "", nome: "", sobrenome: "", cargo: "", whatsapp: "", senha: "", novidades: false, aceite: false });
     return `
       <section class="pc-pagina pc-estreita">
         ${pcEtapas(0)}
-        ${passo === "criar" ? `
-          <h1 class="display">Informe os seus dados de contato</h1>
-          <p class="footnote" style="margin:6px 0 0"><span class="obrig">*</span> Informação obrigatória</p>` : cabeca}
+        ${cabeca}
         ${escolhida ? `
           <div class="pc-card pc-reivindicar">
             <p class="pc-card-t">Administrar a ficha da ${esc(escolhida.name)}</p>
             <p class="pc-card-s">Comece pelo seu e-mail.</p>
           </div>` : ""}
-        <div class="pc-card"${passo === "criar" ? ' data-aviso-sair="no cadastro" data-rascunho-de="__pcConta"' : ""}>
+        <div class="pc-card">
           ${passo === "email" ? `
             <label class="field-label" for="pc-email" style="margin-top:0">E-mail</label>
-            <input class="form-field" id="pc-email" type="email" autocomplete="email" autocapitalize="none" placeholder="voce@suaacademia.com.br" value="${esc(state.pcEmail)}" style="margin-top:0" />` : emailEscolhido(passo === "criar")}
+            <input class="form-field" id="pc-email" type="email" autocomplete="email" autocapitalize="none" placeholder="voce@suaacademia.com.br" value="${esc(state.pcEmail)}" style="margin-top:0" />` : emailEscolhido(false)}
           ${passo === "email" ? `
             ${blocoSugestaoEmail(state.pcEmail)}
             ${erro(state.pcContaErro)}
@@ -11278,18 +11286,6 @@ function pcCadastro() {
                 <input class="form-field campo-codigo" data-rascunho="senha2" id="pc-senha-nova2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc((window.__codigo || {}).senha2 || "")}" style="margin-top:0" />
                 ${erro(state.pcContaErro)}
                 <button class="btn-primary pc-botao-cheio" id="pc-salvar-senha-nova" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar a senha nova"}</button>`}` : ""}
-          ${passo === "criar" ? `
-            ${camposDeContato("pc-conta", f, "pc-conta-campo")}
-            <label class="field-label" for="pc-conta-senha">Crie uma senha<span class="obrig">*</span></label>
-            <input class="form-field pc-conta-campo" data-campo="senha" id="pc-conta-senha" type="password" autocomplete="new-password" value="${esc(f.senha)}" style="margin-top:0" />
-            <label class="field-label" for="pc-conta-senha2">Repita a senha<span class="obrig">*</span></label>
-            <input class="form-field pc-conta-campo" data-campo="senha2" id="pc-conta-senha2" type="password" autocomplete="new-password" placeholder="A mesma senha de novo" value="${esc(f.senha2 || "")}" style="margin-top:0" />
-            <label class="consent-row">
-              <input type="checkbox" id="pc-conta-aceite" ${f.aceite ? "checked" : ""} />
-              <span>Li e concordo com os <button type="button" class="inline-link" id="pc-conta-termos">Termos de Uso</button> e a <button type="button" class="inline-link" id="pc-conta-privacidade">Política de Privacidade</button> do GuiaTennis.<span class="obrig">*</span></span>
-            </label>
-            ${erro(state.pcContaErro)}
-            <button class="btn-primary pc-botao-cheio" id="pc-criar-conta" ${state.pcContaSalvando ? "disabled" : ""}>${state.pcContaSalvando ? bolaGirando(16) + " Salvando..." : "Salvar e continuar"}</button>` : ""}
         </div>
       </section>`;
   }
@@ -13432,13 +13428,30 @@ async function continuarComEmail() {
     // entra com a mesma senha e completa os dados de contato.
     state.pcContaDeJogador = !!(r.data && r.data.tipo === "jogador");
     state.pcLogin = r.data ? r.data.login : "";
-    state.pcEmailPasso = r.data ? "existe" : "criar";
+    if (!r.data) { cadastroNormalPeloParceiros(email); return; }
+    state.pcEmailPasso = "existe";
     // Veio do "Administrar" de uma ficha: depois de entrar, volta ao pedido.
-    if (r.data && state.pcReivindicar) state.parceirosDepois = "cadastro";
+    if (state.pcReivindicar) state.parceirosDepois = "cadastro";
   }
   render();
-  const campo = document.getElementById(state.pcEmailPasso === "criar" ? "pc-conta-tratamento" : "login-password");
-  if (campo) campo.focus();
+  document.getElementById("login-password")?.focus();
+}
+
+// ---------- Conta nova pelo Parceiros: o cadastro normal primeiro (regra 212) ----------
+// Pedido do Breno em 05/11/2026: "ficou confuso esse primeiro acesso no
+// parceiros direto, deixe que ele primeiro faça o cadastro normal e depois já
+// aparece a solicitação". Como o Google Business Profile e o Airbnb: primeiro
+// a conta de sempre do GuiaTennis (a mesma tela do site dos jogadores) e o
+// código do e-mail; fechada essa tela, o Parceiros já mostra o que falta da
+// academia (tratamento, cargo e WhatsApp) e, em seguida, o pedido.
+function cadastroNormalPeloParceiros(email) {
+  // Como o abrirContaJogador, mas direto no "criar" (sem passar pelo e-mail
+  // de novo, nem no link nem no percurso).
+  const pref = lerPreferencias();
+  window.__jog = { ...(window.__jog || {}), email, cidade: (window.__jog && window.__jog.cidade) || pref.cidade || "" };
+  Object.assign(state, { showMenu: false, jogadorTela: "criar", jogadorMotivo: "", jogadorErro: "", jogadorAviso: "", jogadorSalvando: false, jogadorLogin: email, pcEmailPasso: "email" });
+  render();
+  document.getElementById("jog-nome")?.focus();
 }
 
 // "Esqueceu a senha?" do GuiaTennis Parceiros: código no e-mail e senha nova,
@@ -13517,48 +13530,16 @@ function pcConfirmarEmail(etapa) {
     </div>`;
 }
 
-async function criarContaDeParceiro() {
-  const f = window.__pcConta || {};
-  const email = state.pcEmail;
-  const erro = (t) => { state.pcContaErro = t; state.pcContaSalvando = false; render(); };
-  const falta = erroDoContato(f);
-  if (falta) return erro(falta);
-  const errSenha = erroDaSenha(f.senha, f.senha2, email);
-  if (errSenha) { f.senha2 = ""; erro(errSenha); focarDepoisDaSenha("pc-conta-senha", "pc-conta-senha2", errSenha); return; }
-  if (!f.aceite) return erro("Aceite os Termos de Uso e a Política de Privacidade.");
-  state.pcContaErro = "";
-  state.pcContaSalvando = true;
-  render();
-  const r = await sb.rpc('criar_minha_conta', {
-    p_email: email, p_senha: f.senha, p_nome: juntarNome(f), p_whatsapp: f.whatsapp, p_aceite: true,
-    p_tratamento: f.tratamento, p_cargo: f.cargo, p_recebe_novidades: !!f.novidades,
-  });
-  if (r.error) {
-    if (/senha/i.test(r.error.message || "")) f.senha2 = "";
-    return erro(falhou("criar a conta do Parceiros", r.error, { texto: "Não consegui criar a conta agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui criar a conta agora." }));
-  }
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: f.senha });
-  if (error) return erro("A conta foi criada, mas não consegui entrar. Tente em Entrar.");
-  await carregarConta(data && data.session);
-  registrarPasso("acao", { site: "parceiros", detalhe: "Criou a conta no GuiaTennis Parceiros" });
-  window.__pcConta = null;
-  state.pcContaSalvando = false;
-  state.pcEmailPasso = "email";
-  state.pcSelecionada = undefined;
-  await loadEverything();
-  await mandarCodigoDaContaNova();
-  render();
-  window.scrollTo(0, 0);
-  if (state.pcConfirmar === "enviado") document.getElementById("pc-codigo-email")?.focus({ preventScroll: true });
-}
-
 // A conta de jogador passa a valer no Parceiros (SQL 20261006160000).
 async function ativarParceirosDoJogador() {
   const f = window.__pcConta || {};
+  const novaAqui = !!jogador && state.pcContaCriadaAqui === jogador.user_id;
   const erro = (t) => { state.pcContaErro = t; state.pcContaSalvando = false; render(); };
   const falta = erroDoContato(f);
   if (falta) return erro(falta);
-  if (!f.aceite) return erro("Aceite os Termos de Uso e a Política de Privacidade.");
+  // Conta criada agora no cadastro normal: o aceite dos mesmos Termos e da
+  // mesma Política já foi dado lá (regra 212).
+  if (!f.aceite && !novaAqui) return erro("Aceite os Termos de Uso e a Política de Privacidade.");
   state.pcContaErro = "";
   state.pcContaSalvando = true;
   render();
@@ -13573,16 +13554,17 @@ async function ativarParceirosDoJogador() {
   state.pcContaSalvando = false;
   state.pcEmailPasso = "email";
   state.pcSelecionada = undefined;
+  // A tela já disse "Conta criada!" (regra 212): sem o aviso de novo.
   await loadEverything();
-  await mandarCodigoDaContaNova();
+  await mandarCodigoDaContaNova(novaAqui);
   render();
   window.scrollTo(0, 0);
   if (state.pcConfirmar === "enviado") document.getElementById("pc-codigo-email")?.focus({ preventScroll: true });
 }
 
 // Conta nova sem o e-mail confirmado: o código sai sozinho e o aviso desce.
-async function mandarCodigoDaContaNova() {
-  if (!faltaConfirmarEmail()) { mostrarPush("Conta criada!"); return; }
+async function mandarCodigoDaContaNova(semAviso = false) {
+  if (!faltaConfirmarEmail()) { if (!semAviso) mostrarPush("Conta criada!"); return; }
   state.pcConfirmarErro = "";
   state.pcConfirmar = (await enviarCodigo(contaAcademia.login)) ? "enviado" : "falhou";
   mostrarPush(state.pcConfirmar === "enviado" ? `Conta criada! Mandamos um código para ${contaAcademia.login}.` : "Conta criada! Agora confirme o seu e-mail.");
@@ -14364,8 +14346,6 @@ function ligarEventosParceiros() {
   if (pcPrivacidade) pcPrivacidade.onclick = () => { state.showPrivacy = true; render(); };
   const pcAtivar = document.getElementById("pc-ativar-conta");
   if (pcAtivar) pcAtivar.onclick = ativarParceirosDoJogador;
-  const pcCriar = document.getElementById("pc-criar-conta");
-  if (pcCriar) pcCriar.onclick = criarContaDeParceiro;
   document.querySelectorAll("[data-pc-selecionar]").forEach(el => {
     el.onclick = () => {
       // Tocar de novo na academia marcada desmarca (pedido de 15/10/2026).
@@ -16151,6 +16131,7 @@ async function criarContaJogador() {
   }
   // Conta criada e logada: agora confirma o e-mail pelo código.
   registrarPasso("acao", { detalhe: "Criou a conta de jogador" });
+  if (state.page === "parceiros") state.pcContaCriadaAqui = jogador.user_id;
   state.jogadorLogin = email;
   await irParaCodigoJogador("codigo");
 }
@@ -17872,7 +17853,7 @@ const CONTA_NO_LINK = { email: "email", entrar: "senha", criar: "cadastro", cont
 function camadasDoEstado() {
   const c = [];
   if (state.page === "parceiros" && !contaAcademia && ["cadastro", "entrar"].includes(state.parceirosAba) && state.pcEmailPasso !== "email")
-    c.push(["passo", { existe: "senha", criar: "dados", esqueci: "nova-senha" }[state.pcEmailPasso] || "senha"]);
+    c.push(["passo", { existe: "senha", esqueci: "nova-senha" }[state.pcEmailPasso] || "senha"]);
   if (state.showMenu || state.pcMenu) c.push(["menu", "1"]);
   if (state.lista) c.push(["lista", state.lista]);
   if (state.showPrefs) c.push(["preferencias", "1"]);
@@ -17919,7 +17900,7 @@ function aplicarCamadas(q) {
   state.showPrivacy = q.get("privacidade") === "1";
   if (state.page === "parceiros" && ["cadastro", "entrar"].includes(state.parceirosAba)) {
     const passo = q.get("passo");
-    state.pcEmailPasso = !state.pcEmail ? "email" : passo === "senha" ? "existe" : passo === "dados" ? "criar" : passo === "nova-senha" ? "esqueci" : "email";
+    state.pcEmailPasso = !state.pcEmail ? "email" : passo === "senha" ? "existe" : passo === "nova-senha" ? "esqueci" : "email";
     state.loginError = "";
     state.pcContaErro = "";
   }
@@ -23442,7 +23423,7 @@ const CHAT_TEMAS = [
     a: [] },
   { id: "cadastrar", onde: "parceiros", t: "Cadastrar a academia",
     p: ["cadastr", "registr", "anunciar", "incluir minha academia", "colocar minha academia", "aparecer no guia", "aparecer no site", "academia nova", "nova academia", "como entro no guia"],
-    r: "Toque em \"Cadastrar academia\" e comece pelo seu e-mail. Depois procure a academia: se ela já estiver no Guia, toque em \"Administrar esta academia\"; se não, em \"Cadastrar academia nova\". Com o e-mail confirmado, a academia vai ao ar na hora, no plano Básico, que é grátis.",
+    r: "Toque em \"Cadastrar academia\" e comece pelo seu e-mail: crie a conta do GuiaTennis, confirme o e-mail e informe os seus dados de contato. Depois procure a academia: se ela já estiver no Guia, toque em \"Administrar esta academia\"; se não, em \"Cadastrar academia nova\". Com o e-mail confirmado, a academia vai ao ar na hora, no plano Básico, que é grátis.",
     a: [{ t: "Cadastrar minha academia", ir: "pc:cadastro" }] },
   { id: "assumir", onde: "parceiros", t: "Minha academia já está no Guia",
     p: ["ja esta no guia", "ja aparece", "ja esta no site", "assumir", "reivindicar", "sou o dono", "sou dona", "sou dono", "sou responsavel", "administrar a minha", "administrar minha"],

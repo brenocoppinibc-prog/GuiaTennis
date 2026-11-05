@@ -78,18 +78,13 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => !document.querySelector('#jogador-overlay .form-error') && window.__rpcs.some(r => r.nome === 'confirmar_meu_email')), 'código de 6 números (até com espaço) confirma o e-mail');
   await browser.close();
 
-  // Cadastro do GuiaTennis Parceiros: senhas diferentes apagam só a repetição.
+  // Cadastro do GuiaTennis Parceiros (regra 212): a conta nova é o cadastro
+  // normal, com a mesma senha, a repetição e o olhinho.
   ({ browser, page } = await abrir({ q: 'parceiros/cadastro' }));
   await page.fill('#pc-email', 'nova@quadra.com.br');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(300);
-  await page.evaluate(() => { Object.assign(window.__pcConta = window.__pcConta || {}, { tratamento: 'Sra.', nome: 'Rita', sobrenome: 'Dona', cargo: 'Dono(a)', whatsapp: '11988887777', aceite: true }); render(); });
-  await page.fill('#pc-conta-senha', 'saibro coberto 2026');
-  await page.fill('#pc-conta-senha2', 'saibro coberto 2025');
-  await page.evaluate(() => criarContaDeParceiro());
-  await page.waitForTimeout(250);
-  t = await page.evaluate(() => ({ erro: state.pcContaErro, senha: document.getElementById('pc-conta-senha').value, repetir: document.getElementById('pc-conta-senha2').value }));
-  ok(t.erro.includes('não estão iguais') && t.senha === 'saibro coberto 2026' && t.repetir === '', 'Parceiros: senhas diferentes apagam só a repetição — ' + JSON.stringify(t));
+  ok(await page.isVisible('#jogador-overlay #jog-senha2') && await page.isVisible('.senha-caixa #jog-senha + .senha-olho') && !(await page.$('#pc-conta-senha')), 'Parceiros: a senha da conta nova é a do cadastro normal, com a repetição e o olhinho');
   await browser.close();
 
   // Login (senha de entrar): olhinho, sem confirmação nem força.

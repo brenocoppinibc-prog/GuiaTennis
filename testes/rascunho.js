@@ -102,14 +102,18 @@ const FOTO = 'data:image/jpeg;base64,' + 'A'.repeat(4000);
   await page.fill('#pc-email', 'dono@academianova.com.br');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(400);
-  const noDados = await page.evaluate(() => state.pcEmailPasso);
-  await page.evaluate(() => { const c = document.querySelector('[data-campo="cargo"]'); if (c) { c.value = 'Gerente'; c.dispatchEvent(new Event('input', { bubbles: true })); c.dispatchEvent(new Event('change', { bubbles: true })); } const n = document.querySelector('[data-campo="nome"]'); if (n) { n.value = 'Rui'; n.dispatchEvent(new Event('input', { bubbles: true })); } });
+  // Regra 212: e-mail novo abre o cadastro normal por cima do Parceiros.
+  const noDados = await page.evaluate(() => state.jogadorTela);
+  await page.fill('#jog-nome', 'Rui');
+  await page.fill('#jog-sobrenome', 'Dono');
   await page.waitForTimeout(400);
   await page.reload();
   await page.waitForTimeout(900);
-  t = await page.evaluate(() => ({ passo: state.pcEmailPasso, email: state.pcEmail, nome: document.querySelector('[data-campo="nome"]')?.value, cargo: document.querySelector('[data-campo="cargo"]')?.value }));
-  ok(noDados === 'criar' && t.passo === 'criar' && t.email === 'dono@academianova.com.br' && t.nome === 'Rui' && t.cargo === 'Gerente',
-    'recarregou nos dados de contato do Parceiros: volta lá, com o e-mail, o nome e o cargo — ' + JSON.stringify(t));
+  t = await page.evaluate(() => ({ tela: state.jogadorTela, pagina: state.page, email: document.getElementById('jog-email-escolhido')?.innerText, nome: [document.getElementById('jog-nome')?.value, document.getElementById('jog-sobrenome')?.value].join(' ') }));
+  ok(noDados === 'criar' && t.tela === 'criar' && t.pagina === 'parceiros' && t.email === 'dono@academianova.com.br' && t.nome === 'Rui Dono',
+    'recarregou no cadastro normal aberto pelo Parceiros: volta lá, com o e-mail e o nome — ' + JSON.stringify(t));
+  await page.click('#jogador-close');
+  await page.waitForTimeout(300);
   await page.click('.pc-fechar');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.parceirosAba === 'inicio' && !!document.querySelector('.pc-rodape') && !!document.getElementById('pc-menu-btn')), 'o ✕ volta para o início do Parceiros, com menu e rodapé');

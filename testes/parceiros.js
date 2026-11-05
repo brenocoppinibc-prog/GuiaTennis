@@ -107,7 +107,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     feito: document.querySelector('.pc-trilho i')?.style.width,
   }));
   let etapas = await barra();
-  ok(etapas.etapas === 'Dados de contato* | Confirmar e-mail | Sua academia | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'trilha de tênis em cima, com a bolinha na primeira etapa — ' + etapas.etapas);
+  ok(etapas.etapas === 'Sua conta* | Confirmar e-mail | Sua academia | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'trilha de tênis em cima, com a bolinha na primeira etapa — ' + etapas.etapas);
   ok((await texto(page, '.pc-main .pc-card .footnote')).includes('Recebeu um usuário do GuiaTennis? Escreva o usuário aqui.'), 'quem recebeu usuário do GuiaTennis usa o mesmo campo (a dica fica, a explicação não)');
   await page.fill('#pc-email', 'joana@semponto');
   await page.click('#pc-email-continuar');
@@ -143,55 +143,53 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.fill('#pc-email', 'Contato@SoAulaTennis.com.br');
   await page.press('#pc-email', 'Enter');
   await page.waitForTimeout(300);
-  ok((await texto(page, '#parceiros h1')) === 'Informe os seus dados de contato' && await page.isVisible('#pc-conta-tratamento') && await page.isVisible('#pc-conta-sobrenome') && await page.isVisible('#pc-conta-cargo') && (await texto(page, '.campo-ddi')) === 'Brasil (+55)', 'e-mail novo: dados de contato completos, como no trivago (tratamento, nome, sobrenome, cargo, telefone com o país)');
-  ok(await page.evaluate(() => document.activeElement.id === 'pc-conta-tratamento'), 'o cursor já vai para o primeiro campo');
-  const dadosDeContato = await page.evaluate(() => ({ cargo: document.querySelector('label[for="pc-conta-cargo"]')?.innerText || '', aceite: document.getElementById('pc-conta-aceite')?.closest('label')?.innerText || '' }));
-  ok(dadosDeContato.cargo.startsWith('Seu cargo') && dadosDeContato.aceite.startsWith('Li e concordo com os Termos de Uso') && !/academia/i.test(dadosDeContato.cargo + dadosDeContato.aceite), 'dados de contato não falam da academia, que ainda não foi escolhida — ' + dadosDeContato.cargo + ' / ' + dadosDeContato.aceite);
-  await page.click('#pc-criar-conta');
+  // Regra 212: e-mail novo abre o cadastro normal do GuiaTennis (o mesmo do
+  // site dos jogadores); os dados da academia vêm depois.
+  t = await page.evaluate(() => ({ tela: state.jogadorTela, h1: document.querySelector('#jogador-overlay h1')?.innerText, email: document.getElementById('jog-email-escolhido')?.innerText, foco: document.activeElement.id, tratamento: !!document.getElementById('pc-conta-tratamento'), cargo: !!document.querySelector('#jogador-overlay [data-campo="cargo"]') }));
+  ok(t.tela === 'criar' && t.h1 === 'Complete o seu cadastro' && t.email === 'contato@soaulatennis.com.br' && t.foco === 'jog-nome' && !t.tratamento && !t.cargo, 'e-mail novo no Parceiros: primeiro o cadastro normal, já com o e-mail e sem os dados da academia — ' + JSON.stringify(t));
+  await page.fill('#jog-nome', 'Joana');
+  await page.fill('#jog-sobrenome', 'Dona');
+  await page.fill('#jog-senha', 'senhaforte1');
+  await page.fill('#jog-senha2', 'senhaforte1');
+  await page.check('#jog-aceite');
+  await page.click('#jog-criar');
+  await page.waitForTimeout(800);
+  ok(await page.evaluate(() => state.jogadorTela === 'codigo' && !!jogador && !contaAcademia), 'conta normal criada: o código do e-mail, como no site dos jogadores');
+  await page.click('#jog-depois');
+  await page.waitForTimeout(500);
+  t = await page.evaluate(() => ({ h1: document.querySelector('#parceiros h1')?.innerText || '', prazer: document.querySelector('#parceiros .pc-prazer')?.innerText || '', overlay: !!document.getElementById('jogador-overlay'), nome: !!document.getElementById('pc-conta-nome'), aceite: !!document.getElementById('pc-conta-aceite'), senha: !!document.getElementById('pc-conta-senha') }));
+  ok(!t.overlay && t.prazer === 'Conta criada!' && t.h1 === 'Agora, os seus dados de contato na academia' && !t.nome && !t.aceite && !t.senha && await page.isVisible('#pc-conta-tratamento') && await page.isVisible('#pc-conta-cargo') && (await texto(page, '.campo-ddi')) === 'Brasil (+55)', 'fechado o cadastro normal, o Parceiros pede só tratamento, cargo e WhatsApp (sem nome, senha e aceite de novo) — ' + JSON.stringify(t));
+  const dadosDeContato = await page.evaluate(() => document.querySelector('label[for="pc-conta-cargo"]')?.innerText || '');
+  ok(dadosDeContato.startsWith('Seu cargo'), 'o cargo é o da pessoa — ' + dadosDeContato);
+  await page.click('#pc-ativar-conta');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('tratamento'), 'sem tratamento: pede');
   await page.selectOption('#pc-conta-tratamento', 'Sra.');
-  await page.fill('#pc-conta-nome', 'Joana');
-  await page.click('#pc-criar-conta');
-  await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .form-error')).includes('sobrenome'), 'sem sobrenome: pede');
-  await page.fill('#pc-conta-sobrenome', 'Dona');
-  await page.click('#pc-criar-conta');
+  await page.click('#pc-ativar-conta');
   await page.waitForTimeout(200);
   ok((await texto(page, '#parceiros .form-error')).includes('cargo'), 'sem cargo: pede');
   await page.selectOption('#pc-conta-cargo', 'Dono(a) ou sócio(a)');
   await page.fill('#pc-conta-whatsapp', '(11) 98888-0001');
-  await page.fill('#pc-conta-senha', 'curta');
-  await page.fill('#pc-conta-senha2', 'curta');
-  await page.click('#pc-criar-conta');
-  await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .form-error')).includes('8 caracteres'), 'senha curta: avisa');
-  await page.fill('#pc-conta-senha', 'senhaforte1');
-  await page.fill('#pc-conta-senha2', 'senhaforte1');
-  await page.click('#pc-criar-conta');
-  await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .form-error')).includes('Aceite os Termos de Uso e a Política de Privacidade.'), 'sem o aceite: avisa com o nome dos dois textos');
   ok(!(await page.$('#pc-conta-novidades')) && !(await texto(page, '#parceiros')).includes('Quero receber por e-mail'), 'sem a caixa de receber e-mail (o relatório do mês é do Premium)');
-  await page.check('#pc-conta-aceite');
-  await page.click('#pc-criar-conta');
+  await page.click('#pc-ativar-conta');
   await page.waitForTimeout(800);
   const criada = await page.evaluate(() => ({
-    rpc: (window.__rpcs.find(r => r.nome === 'criar_minha_conta') || {}).args,
+    rpc: (window.__rpcs.find(r => r.nome === 'ativar_conta_do_parceiros') || {}).args,
     conta: contaAcademia && { academia: contaAcademia.academiaId, nome: contaAcademia.nome, tratamento: contaAcademia.tratamento, cargo: contaAcademia.cargo, novidades: contaAcademia.recebeRelatorio },
     login: window.__ultimoLogin,
   }));
-  ok(criada.rpc && criada.rpc.p_email === 'contato@soaulatennis.com.br' && criada.rpc.p_nome === 'Joana Dona' && criada.rpc.p_tratamento === 'Sra.' && criada.rpc.p_cargo === 'Dono(a) ou sócio(a)' && criada.rpc.p_recebe_novidades === false && criada.rpc.p_aceite === true, 'grava tratamento, nome e sobrenome, cargo, telefone e o aceite — ' + JSON.stringify(criada.conta));
-  ok(criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'cria a conta e já entra com o e-mail');
+  ok(criada.rpc && criada.rpc.p_nome === 'Joana Dona' && criada.rpc.p_tratamento === 'Sra.' && criada.rpc.p_cargo === 'Dono(a) ou sócio(a)' && criada.rpc.p_recebe_novidades === false && criada.rpc.p_aceite === true, 'grava tratamento, o nome do cadastro normal, cargo, telefone e o aceite já dado — ' + JSON.stringify(criada.conta));
+  ok(criada.conta && criada.conta.academia === null && criada.login === 'contato@soaulatennis.com.br', 'a mesma conta passa a valer no Parceiros');
   // Confirmar o e-mail vem antes de escolher a academia (15/10/2026).
   etapas = await barra();
   const confirmar = await page.evaluate(() => ({ h1: document.querySelector('#parceiros h1')?.innerText, push: document.querySelector('.gt-push')?.innerText || '', codigo: !!document.getElementById('pc-codigo-email'), busca: !!document.getElementById('pc-busca') }));
-  ok(etapas.etapas === '✓ Dados de contato✓ | Confirmar e-mail* | Sua academia | Início' && confirmar.h1 === 'Confirme o seu e-mail.' && confirmar.push.includes('Conta criada! Mandamos um código para contato@soaulatennis.com.br') && confirmar.codigo && !confirmar.busca,
+  ok(etapas.etapas === '✓ Sua conta✓ | Confirmar e-mail* | Sua academia | Início' && confirmar.h1 === 'Confirme o seu e-mail.' && confirmar.push.includes('Conta criada! Mandamos um código para contato@soaulatennis.com.br') && confirmar.codigo && !confirmar.busca,
     'conta criada: primeiro o e-mail, numa tela só, com o código já enviado — ' + etapas.etapas + ' / ' + confirmar.push);
   await page.click('#pc-confirmar-depois');
   await page.waitForTimeout(200);
   etapas = await barra();
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(etapas.etapas === '✓ Dados de contato✓ | ✓ Confirmar e-mail✓ | Sua academia* | Início' && etapas.feito.startsWith('66.6') && (await page.evaluate(() => document.querySelector('.trilha-bola').style.left)).startsWith('66.6'), 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
+  ok(etapas.etapas === '✓ Sua conta✓ | ✓ Confirmar e-mail✓ | Sua academia* | Início' && etapas.feito.startsWith('66.6') && (await page.evaluate(() => document.querySelector('.trilha-bola').style.left)).startsWith('66.6'), 'a bolinha anda: segunda etapa, sua academia — ' + etapas.etapas);
   ok(corpo.includes('Declaro que estou autorizado(a) pela academia'), 'a declaração de que representa a academia vem na hora de escolher a academia');
   ok(corpo.includes('Prazer em conhecer você, Joana!') && corpo.includes('Antes de começar, vamos ver se a sua academia já está no GuiaTennis.') && corpo.includes('Dica: escreva também o bairro'), 'tela "Prazer em conhecer você", como a do trivago');
   let escolhas = await page.evaluate(() => [...document.querySelectorAll('.pc-escolha')].map(b => b.innerText.replace(/\s+/g, ' ').trim() + (b.classList.contains('on') ? '*' : '')));
@@ -352,15 +350,19 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.fill('#pc-email', 'dono@gmail.com');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(300);
+  await page.fill('#jog-nome', 'Dono');
+  await page.fill('#jog-sobrenome', 'Moema');
+  await page.fill('#jog-senha', 'senhaforte1');
+  await page.fill('#jog-senha2', 'senhaforte1');
+  await page.check('#jog-aceite');
+  await page.click('#jog-criar');
+  await page.waitForTimeout(800);
+  await page.click('#jog-depois');
+  await page.waitForTimeout(400);
   await page.selectOption('#pc-conta-tratamento', 'Sr.');
-  await page.fill('#pc-conta-nome', 'Dono');
-  await page.fill('#pc-conta-sobrenome', 'Moema');
   await page.selectOption('#pc-conta-cargo', 'Gerente');
   await page.fill('#pc-conta-whatsapp', '11988880009');
-  await page.fill('#pc-conta-senha', 'senhaforte1');
-  await page.fill('#pc-conta-senha2', 'senhaforte1');
-  await page.check('#pc-conta-aceite');
-  await page.click('#pc-criar-conta');
+  await page.click('#pc-ativar-conta');
   await page.waitForTimeout(900);
   ok((await texto(page, '#parceiros h1')) === 'Confirme o seu e-mail para administrar a Quadra Locação.', 'pelo link da ficha, a tela do e-mail já fala da academia');
   await page.click('#pc-confirmar-depois');

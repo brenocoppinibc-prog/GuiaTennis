@@ -77,7 +77,8 @@ para o histórico).
    acrescentar uma linha na seção 10 e os números de teste.
 5. **Descrição do PR (curta):** desde 02/11, só as regras e os passos
    novos (o detalhe de 168 a 195 e os passos 1 a 29 estão em
-   `historico/PR5-descricao-28-10-a-02-11-2026.md`); uma linha por regra
+   `historico/PR5-descricao-28-10-a-02-11-2026.md`; o de 193 a 211 e os passos
+   27 a 41, em `historico/PR5-descricao-02-11-a-05-11-2026.md`); uma linha por regra
    nova, o SQL novo e um passo em "Para testar". Salvar com
    `update_pull_request` e conferir (ler o PR e comparar o `body` com o
    arquivo local com `jq -r .body` + `diff`).

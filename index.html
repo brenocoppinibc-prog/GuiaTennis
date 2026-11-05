@@ -23,9 +23,12 @@
 <meta name="twitter:image" content="https://guiatennis.com.br/og-image.png">
 <meta property="og:url" content="https://guiatennis.com.br">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://eultezheqwmxyakvgyjy.supabase.co" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script type="application/ld+json" id="ld-academia"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -3151,6 +3154,8 @@
   @keyframes gt-push-tempo { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   /* Regra 214: publicando, meio cinza, como o comentário do Instagram. */
   .gt-enviando { opacity: .5; filter: grayscale(1); pointer-events: none; }
+  /* Regra 217: o fim da lista, enquanto as próximas academias entram. */
+  .lista-mais { display: flex; justify-content: center; padding: 18px 0 26px; }
 </style>
 </head>
 <body>
@@ -7192,7 +7197,7 @@ function renderLightbox() {
       <button class="lightbox-close" id="lightbox-close">✕</button>
       ${photos.length > 1 ? `<p class="lightbox-counter">${index + 1} / ${photos.length}</p>` : ""}
       <div class="lightbox-strip" id="lightbox-strip">
-        ${photos.map(p => `<div class="lightbox-item"><img src="${esc(p)}" /></div>`).join("")}
+        ${photos.map(p => `<div class="lightbox-item"><img src="${esc(p)}" alt="" loading="lazy" decoding="async" /></div>`).join("")}
       </div>
       ${photos.length > 1 ? `
         <button class="lightbox-nav lightbox-prev" id="lightbox-prev">‹</button>
@@ -17464,7 +17469,7 @@ function renderMini(c, selo, extra, patrocinado) {
   return `
     <a class="mini ${photos.length ? "" : "sem-foto"}" href="${caminhoDaFicha(c)}" data-open="${c.id}">
       ${selo ? `<span class="mini-badge">${esc(selo)}</span>` : ""}
-      ${photos.length ? `<div class="mini-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" /></div>` : ""}
+      ${photos.length ? `<div class="mini-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" loading="lazy" decoding="async" /></div>` : ""}
       <div class="mini-body">
         ${patrocinado ? `<p class="mini-patrocinado">Patrocinado</p>` : ""}
         <p class="mini-name">${esc(c.name)}${seloDaAcademia(c, 14)}</p>
@@ -18471,11 +18476,39 @@ function renderSearchPage(results, activeFilters, topBadge) {
 // perto de você") e todas, as do topo também, no lugar delas e sem o
 // "Patrocinado". Sem patrocinada (ou só com elas na busca, que seria repetir
 // tudo), a lista de sempre, com a etiqueta da ordem na primeira.
+// ---------- A lista de 20 em 20 (regra 217) ----------
+// Pedido do Breno em 05/11/2026: "deixe o site mais rápido, sinto meio lento
+// às vezes". Como o Booking, o Airbnb e o Instagram: a lista desenha 20
+// academias e, chegando perto do fim, as próximas 20 entram sozinhas (sem
+// botão), com a bolinha. Mudou a busca, a ordem ou os filtros, volta a 20.
+const LISTA_PASSO = 20;
+function limiteDaLista(results) {
+  const assinatura = `${effectiveSort()}|${results.length}|${results.slice(0, 5).map(c => c.id).join()}`;
+  if (state.listaAssinatura !== assinatura) { state.listaAssinatura = assinatura; state.listaLimite = LISTA_PASSO; }
+  return typeof IntersectionObserver === "undefined" ? Infinity : (state.listaLimite || LISTA_PASSO);
+}
+function maisDaLista(results, n) {
+  return results.length > n ? `<div class="lista-mais" id="lista-mais" aria-label="Carregando mais academias">${bolaGirando(24)}</div>` : "";
+}
+function ligarListaQueCresce() {
+  if (window.__listaIO) { window.__listaIO.disconnect(); window.__listaIO = null; }
+  const mais = document.getElementById("lista-mais");
+  if (!mais || typeof IntersectionObserver === "undefined") return;
+  const io = new IntersectionObserver((es) => {
+    if (!es.some(e => e.isIntersecting)) return;
+    io.disconnect();
+    state.listaLimite = (state.listaLimite || LISTA_PASSO) + LISTA_PASSO;
+    render();
+  }, { rootMargin: "900px 0px" });
+  io.observe(mais);
+  window.__listaIO = io;
+}
 function cartoesDaBusca(results, topBadge) {
+  const n = limiteDaLista(results);
   const topo = patrocinadasDoTopo(results);
-  if (!topo.length || results.length <= topo.length) return results.map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")).join("");
+  if (!topo.length || results.length <= topo.length) return results.slice(0, n).map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")).join("") + maisDaLista(results, n);
   const titulo = { distance: "Mais perto de você", recomendados: "Recomendadas", price: "Menor preço", rating: "Melhor avaliadas", reviews: "Mais avaliadas", courts: "Mais quadras" }[effectiveSort()] || "Outras academias";
-  return topo.map(c => renderCard(c, "")).join("") + `<p class="resultados-titulo">${esc(titulo)}</p>` + results.map(c => renderCard(c, "")).join("");
+  return topo.map(c => renderCard(c, "")).join("") + `<p class="resultados-titulo">${esc(titulo)}</p>` + results.slice(0, n).map(c => renderCard(c, "")).join("") + maisDaLista(results, n);
 }
 
 // ---------- componentes da interface de busca (estilo Trivago) ----------
@@ -18789,7 +18822,7 @@ function renderCard(c, badge) {
         ${photos.length ? `
         <div class="rcard-photo">
           <div class="rcard-strip" data-strip="${c.id}">
-            ${photos.map(p => `<img src="${esc(p)}" alt="${esc(c.name)}" />`).join("")}
+            ${photos.map(p => `<img src="${esc(p)}" alt="${esc(c.name)}" loading="lazy" decoding="async" />`).join("")}
           </div>
           ${photos.length > 1 ? `<div class="rcard-dots" data-dots="${c.id}">${photos.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
           ${badge ? `<span class="rcard-tag">${esc(badge)}</span>` : ""}
@@ -26172,6 +26205,7 @@ function ligarEventosDoPainel() {
 // ---------- events ----------
 
 function attachEvents() {
+  ligarListaQueCresce();
   ligarCamposDeSenha();
   ligarAjudaDasFalhas();
   ligarNomeSuspenso();

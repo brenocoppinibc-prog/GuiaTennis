@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 216)
+**Atualizado em:** 05/11/2026 (regra 217)
 
 | | |
 |---|---|
@@ -392,6 +392,9 @@ sozinho vira "-", "Sob consulta"), numa linha
   roda em caminhos.
 - Nominatim: uma busca por segundo. Overpass: consulta pequena, 3 espelhos
   em paralelo, tempo curto.
+- A biblioteca do Supabase tem **versão fixa** (`supabase-js@2.118.0`, regra
+  217): o "@2" sem versão custava um redirecionamento a cada abertura. Subir de
+  versão só de propósito, testando na prévia.
 - `lat`/`lng` às vezes vêm como texto (`numeroOuNulo`). Localizar academia
   nunca grava o centro da cidade (resultado "grosso" não é gravado).
 - `innerText` respeita `text-transform` (testes comparam com o texto da
@@ -430,7 +433,9 @@ a conta nova pelo Parceiros começa pelo cadastro normal e depois mostra o
 pedido da academia; regra 213, o que a função não libera não aparece, os
 textos novos dos valores de Aulas e Locação e os centavos com vírgula; regra 214,
 avaliação e resposta aparecem meio cinza com "Publicando…" enquanto salvam; regra 215, a bola girando mais realista e em
-todo carregamento; regra 216, a Apresentação do cadastro mais enxuta). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 217, o site mais
+rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
+versão fixa). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -446,7 +451,7 @@ ficha para a escolha (197 a 200).
 verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
 (05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
-novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 216 (lista na descrição do PR). **Falta a bateria completa antes do "pode
+novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 217 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
@@ -459,7 +464,7 @@ commit de código: `c6f40e4` (regra 211); o SQL mais novo
 (`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
 mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
 Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
-Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 216)
+Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 217)
 estão todos na prévia.
 
 **Pendências do Breno:**
@@ -495,10 +500,7 @@ estão todos na prévia.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 217.
-
-**Descrição do PR:** a regra 216 ainda não entrou nela (economia de limite):
-incluir junto com a próxima mudança.
+**Próximo número:** regra 218.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -891,6 +893,16 @@ incluir junto com a próxima mudança.
   a ficha mostra um resumo do GuiaTennis. Sem telefone, link ou preço."); saiu
   a lista do que cada plano mostra. Como o "Descreva o seu espaço" do Airbnb,
   que tem só o campo. Sem SQL. Teste: `cadastro.js`.
+- 217 (05/11) "Deixe o site mais rápido, sinto meio lento às vezes": a lista
+  da busca desenha 20 academias (`LISTA_PASSO`, `limiteDaLista`) e as
+  próximas 20 entram sozinhas ao chegar perto do fim (`ligarListaQueCresce`,
+  IntersectionObserver, com a bolinha); mudou a ordem, os filtros ou a busca,
+  volta a 20. Com 150 academias, cada toque caiu de 162 ms e 9.000 elementos
+  para 20 ms e 1.400. As fotos dos cartões, da mini prévia e da galeria com
+  `loading="lazy"`; `supabase-js@2.118.0` fixo (sem o redirecionamento do
+  "@2") e `preconnect` para o Google Fonts, o unpkg e o Supabase. Como o
+  Booking, o Airbnb e o Instagram. Sem SQL. Testes: `lista-de-20.js` (novo) e
+  15 da busca e da ficha.
 
 ## 11. WhatsApp e mensagem para as academias
 

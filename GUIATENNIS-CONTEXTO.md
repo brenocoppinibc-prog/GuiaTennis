@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 210)
+**Atualizado em:** 05/11/2026 (regra 211)
 
 | | |
 |---|---|
@@ -416,7 +416,8 @@ não entra no catálogo e 0 ou - é "Sob consulta"; regra 207, "Sair sem
 salvar?" só com mudança de verdade; regra 208, as academias no WhatsApp: a
 lista, falar com várias e salvar os contatos; regra 209, esses cliques contam
 para a academia e a mensagem de cada opção vem quase pronta; regra 210, o Completo
-fica só com acessos e contatos; SQL `20261105130000_lista_e_contato_salvo`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+fica só com acessos e contatos; SQL `20261105130000_lista_e_contato_salvo`;
+regra 211, o painel do admin mais espaçoso e com o menu em grupos). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -474,7 +475,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 211.
+**Próximo número:** regra 212.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -801,6 +802,16 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Premium). A migração virou `20261105130000_lista_e_contato_salvo`
   (substitui a `20261105120000`, que só rodou no teste). Testes:
   `whatsapp-das-academias.js`, `banco-emails.py` (777).
+- 211 (05/11) "Deixa o site do admin mais organizado em tudo, estar muito
+  bagunçado e muito aglomerado as coisas. Deixe mais espaçoso": camada no fim
+  do `<style>` (como a Stripe e a Shopify): página com mais margem, blocos com
+  24px por dentro e entre eles, títulos maiores, listas e números sem caixa
+  dentro de caixa (só linhas), seções das Estatísticas separadas por linha; o
+  menu em grupos (`GRUPOS_DO_ADMIN`: Dia a dia, Cadastros, Números,
+  Comunicação, Site); no celular, o topo fica com o menu, o logo e o sino, e
+  "Ver o site", "Ver como academia" e "Sair da conta" vão para o fim do menu
+  (`data-adm-acao`). Sem SQL. Testes: `painel-admin.js`, `falhas.js`,
+  `ficha-basica.js`, `fechada-guardada.js`, `publico.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -3078,6 +3078,56 @@
   /* Aviso rápido com a barra do tempo (regra 202: "um push rápido ficando 5
      segundos … com uma barra embaixo deslizando indicando o tempo"). */
   .gt-push { overflow: hidden; }
+  /* Painel do admin mais espaçoso e organizado (regra 211, 05/11/2026: "deixa o
+     site do admin mais organizado em tudo, estar muito bagunçado e muito
+     aglomerado as coisas. Deixe mais espaçoso"), como o painel da Stripe e o
+     admin da Shopify: mais respiro entre os blocos e dentro deles, títulos
+     maiores, o menu em grupos e nada de caixa dentro de caixa. */
+  .adm-main { padding: 28px 20px 72px; max-width: 1080px; }
+  .adm-h1 { font-size: 26px; }
+  .adm-sub { margin: 6px 0 28px; font-size: 15px; line-height: 1.5; }
+  .adm-bloco { padding: 24px; margin-bottom: 24px; border-radius: 16px; }
+  .adm-h2 { font-size: 17px; margin: 0 0 16px; }
+  .adm-bloco .sheet-title { font-size: 17px !important; margin: 32px 0 8px !important; padding-top: 28px; border-top: 1px solid var(--border); }
+  .adm-bloco > .sheet-title:first-child { padding-top: 0; border-top: 0; }
+  .adm-bloco .subtitle { font-size: 14px; line-height: 1.55; margin-bottom: 12px !important; }
+  .adm-nota { margin-top: 14px; line-height: 1.55; }
+  .adm-lista-num { border: 0; border-radius: 0; }
+  .adm-linha-num { padding: 14px 2px; }
+  .adm-kpis { gap: 24px 0; }
+  .adm-kpi { border: 0; border-radius: 0; padding: 4px 20px; border-left: 1px solid var(--border); background: none; }
+  .adm-kpi:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .adm-colunas { column-gap: 24px; }
+  .adm-filtros { gap: 8px; margin: 16px 0 20px; }
+  .adm-avisos { gap: 10px; margin-top: 14px; }
+  .adm-aviso { padding: 14px 16px; }
+  .adm-bloco .stats-grid { gap: 16px; margin-top: 20px; }
+  .adm-bloco .stat-card { padding: 20px 12px; }
+  .adm-acads { margin-top: 16px; border: 0; border-radius: 0; border-top: 1px solid var(--border); }
+  .adm-acad-cab { padding: 16px 2px; }
+  .adm-estat .field-label { margin-top: 32px !important; padding-top: 24px; border-top: 1px solid var(--border); }
+  .adm-estat .chip-row + .stats-grid { margin-top: 20px; }
+  .adm-nav { gap: 2px; }
+  .adm-nav-i { padding: 10px 12px; }
+  .adm-nav-g { margin: 20px 12px 6px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .adm-nav-g:first-child { margin-top: 4px; }
+  .adm-nav-mais { display: flex; flex-direction: column; gap: 2px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .adm-nav-mais .adm-nav-i { width: 100%; background: none; border: 0; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; text-align: left; }
+  @media (min-width: 720px) {
+    .adm-kpi:nth-child(odd) { border-left: 1px solid var(--border); padding-left: 20px; }
+    .adm-kpi:first-child { border-left: 0; padding-left: 0; }
+  }
+  @media (max-width: 959px) {
+    /* No celular, o topo fica com o menu, o logo e o sino; o resto vai para o menu. */
+    #adm-ver-site, #adm-ver-como, #adm-sair { display: none; }
+    .adm-nav { padding: 12px 12px 20px; }
+  }
+  @media (min-width: 960px) {
+    .adm-corpo { grid-template-columns: 256px minmax(0, 1fr); }
+    .adm-nav { padding: 24px 12px; }
+    .adm-nav-mais { display: none; }
+    .adm-main { padding: 40px 48px 96px; }
+  }
   /* As academias no WhatsApp (regra 208). */
   .wa-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
   .cmp-pagina .wa-acoes, .lista-titulo + .wa-acoes { margin: 10px 0 14px; }
@@ -25836,6 +25886,8 @@ async function excluirContaAgora() {
   render();
 }
 
+// O menu do painel em grupos (regra 211), como a barra do admin da Shopify.
+const GRUPOS_DO_ADMIN = { inicio: "Dia a dia", academias: "Cadastros", estatisticas: "Números", emails: "Comunicação", falhas: "Site" };
 function renderPainelAdmin() {
   const aba = abaDoAdmin(state.adminAba);
   const atual = ADMIN_ABAS.find(x => x.aba === aba);
@@ -25845,7 +25897,7 @@ function renderPainelAdmin() {
   const contagem = { pendencias: pendenciasDoAdmin(), falhas: falhasNovasParaOAdmin(), avisos: tarefasDoAdmin() };
   const conteudo = {
     inicio: admInicioHtml, avisos: admAvisosHtml, pendencias: admPendenciasHtml, academias: admAcademiasHtml,
-    jogadores: admJogadoresHtml, excluidas: admExcluidasHtml, avaliacoes: admAvaliacoesHtml, acessos: admAcessosHtml, estatisticas: () => `<section class="adm-bloco">${conteudoDasEstatisticas()}</section>`,
+    jogadores: admJogadoresHtml, excluidas: admExcluidasHtml, avaliacoes: admAvaliacoesHtml, acessos: admAcessosHtml, estatisticas: () => `<section class="adm-bloco adm-estat">${conteudoDasEstatisticas()}</section>`,
     percursos: () => `<section class="adm-bloco">${conteudoDosPercursos()}</section>`, emails: admEmailsHtml, leiloes: admLeiloesHtml, falhas: admFalhasHtml, ferramentas: admFerramentasHtml,
   }[aba]();
   const item = (x) => `<a href="/admin${x.aba === "inicio" ? "" : "/" + x.aba}" class="adm-nav-i ${x.aba === aba ? "ativo" : ""}" data-adm-aba="${x.aba}" ${x.aba === aba ? 'aria-current="page"' : ""}>${icon(x.ic, 18, 'currentColor')}<span>${x.t}</span>${contagem[x.aba] ? `<span class="adm-nav-n">${contagem[x.aba]}</span>` : ""}</a>`;
@@ -25863,7 +25915,12 @@ function renderPainelAdmin() {
       </header>
       <div class="adm-corpo">
         <nav class="adm-nav ${state.admMenu ? "aberta" : ""}" aria-label="Seções do painel">
-          ${ADMIN_ABAS.map(item).join("")}
+          ${ADMIN_ABAS.map(x => (GRUPOS_DO_ADMIN[x.aba] ? `<p class="adm-nav-g">${GRUPOS_DO_ADMIN[x.aba]}</p>` : "") + item(x)).join("")}
+          <div class="adm-nav-mais">
+            <button type="button" class="adm-nav-i" data-adm-acao="adm-ver-site">${icon('globe', 16, 'currentColor')} Ver o site</button>
+            <button type="button" class="adm-nav-i" data-adm-acao="adm-ver-como">${icon('predio', 16, 'currentColor')} Ver como academia</button>
+            <button type="button" class="adm-nav-i" data-adm-acao="adm-sair">Sair da conta</button>
+          </div>
           <p class="adm-nav-pe">Só você vê este painel.</p>
         </nav>
         <main class="adm-main">
@@ -25939,6 +25996,8 @@ function ligarEventosDoPainel() {
   if (verComo) verComo.onclick = () => irParceiros("ver", { mesmaAba: true });
   const sair = document.getElementById("adm-sair");
   if (sair) sair.onclick = () => sb.auth.signOut().then(() => { try { history.replaceState(null, "", "/"); } catch {} location.reload(); });
+  // No celular, os mesmos botões do topo ficam no fim do menu (regra 211).
+  document.querySelectorAll("[data-adm-acao]").forEach(el => { el.onclick = () => { state.admMenu = false; document.getElementById(el.dataset.admAcao)?.click(); }; });
   document.querySelectorAll("[data-adm-ver-como]").forEach(el => { el.onclick = () => verComoAcademia(el.dataset.admVerComo); });
   document.querySelectorAll("[data-adm-qr]").forEach(el => { el.onclick = () => { state.qrCourt = el.dataset.admQr; render(); }; });
   document.querySelectorAll("[data-adm-academia]").forEach(el => {

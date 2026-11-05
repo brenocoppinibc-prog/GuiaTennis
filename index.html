@@ -3078,6 +3078,16 @@
   /* Aviso rápido com a barra do tempo (regra 202: "um push rápido ficando 5
      segundos … com uma barra embaixo deslizando indicando o tempo"). */
   .gt-push { overflow: hidden; }
+  /* As academias no WhatsApp (regra 208). */
+  .wa-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cmp-pagina .wa-acoes, .lista-titulo + .wa-acoes { margin: 10px 0 14px; }
+  .wa-prontas { margin-top: 14px; }
+  .wa-varias-conta { margin: 14px 0 8px; font-size: 13px; color: var(--muted); }
+  .wa-varias-lista { display: flex; flex-direction: column; }
+  .wa-varias-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+  .wa-varias-n { display: flex; flex-direction: column; min-width: 0; }
+  .wa-varias-n small { color: var(--muted); font-size: 13px; }
+  .wa-varias-bt { flex-shrink: 0; min-width: 104px; }
   /* Valor "Sob consulta" (regra 206). */
   .cat-sob { display: block; margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--green); }
   .cat-sob[hidden] { display: none; }
@@ -4658,6 +4668,133 @@ function empilharAvisos() {
 }
 new MutationObserver(() => requestAnimationFrame(empilharAvisos)).observe(document.body, { childList: true });
 
+// ---------- As academias no WhatsApp (regra 208) ----------
+// Pedido do Breno em 05/11/2026: "salvar no whatsapp as quadras de
+// determinado endereço", "enviar mensagens iguais para academias da região e
+// salvar as academias no WhatsApp", "encaixando junto com buscas salvas".
+// Três botões ao lado do "Salvar busca", na comparação e nas Favoritas:
+// - "Mandar para o meu WhatsApp": a lista (até 5) com o link de cada ficha,
+//   como o "Compartilhar lista" do Google Maps; a pessoa escolhe "Você".
+// - "Falar com todas": uma mensagem só, enviada academia por academia (o
+//   WhatsApp abre uma conversa por vez e não permite disparo), como o pedir
+//   orçamento a vários da GetNinjas e do Thumbtack.
+// - "Salvar os contatos": um cartão de contato (.vcf) com as academias, que o
+//   celular importa de uma vez.
+// Nada novo é guardado: o envio conta como o WhatsApp de sempre.
+const VARIAS_MAX = 5;
+const MENSAGENS_PRONTAS = [
+  { t: "Aula para iniciante", m: "Queria saber os horários e os valores das aulas para iniciante." },
+  { t: "Aula para criança", m: "Queria saber os horários e os valores das aulas para crianças." },
+  { t: "Locação de quadra", m: "Queria saber os horários livres e o valor da locação de quadra." },
+  { t: "Aula experimental", m: "Queria saber se vocês têm aula experimental e como funciona." },
+];
+function academiasDaOrigem(origem) {
+  if (origem === "comparar") return compareCourts();
+  if (origem === "favoritas") return ordenarPorPerto(minhasQuadras().favoritas.map(decorate), c => c);
+  return getResults();
+}
+function comWhatsappDaOrigem(courts) { return courts.filter(c => whatsappDe(c.phone)).slice(0, VARIAS_MAX); }
+function acoesDoWhatsapp(origem) {
+  const courts = academiasDaOrigem(origem);
+  if (!courts.length) return "";
+  const comWa = comWhatsappDaOrigem(courts);
+  return `
+    <div class="wa-acoes" data-wa-origem="${origem}">
+      <button type="button" class="tbtn" data-wa-lista="${origem}">${icon('whatsapp', 14, 'currentColor')} Mandar para o meu WhatsApp</button>
+      ${comWa.length >= 2 ? `<button type="button" class="tbtn" data-wa-varias="${origem}">${icon('phone', 14, 'currentColor')} Falar com ${comWa.length === courts.length && comWa.length < VARIAS_MAX ? "todas" : `as ${comWa.length}`}</button>` : ""}
+      ${comWa.length ? `<button type="button" class="tbtn" data-wa-contatos="${origem}">${icon('pessoa', 14, 'currentColor')} Salvar ${comWa.length === 1 ? "o contato" : "os contatos"}</button>` : ""}
+    </div>`;
+}
+function urlDoSite(caminho) { return location.origin + caminho; }
+function textoDaListaNoWhatsapp(origem) {
+  const courts = academiasDaOrigem(origem).slice(0, VARIAS_MAX);
+  const b = origem === "busca" && typeof buscaAtualParaSalvar === "function" ? buscaAtualParaSalvar() : null;
+  const titulo = origem === "comparar" ? "Academias de tênis que estou comparando"
+    : origem === "favoritas" ? "Minhas academias de tênis favoritas"
+    : `Quadras de tênis${b && b.termo ? ` perto de ${b.termo}` : state.origin && (state.origin.bairro || state.origin.cidade) ? ` perto de ${state.origin.bairro || state.origin.cidade}` : ""}`;
+  const linhas = courts.map((c, i) => {
+    const preco = ofertas(c).filter(o => o.min)[0];
+    const partes = [c.bairro, distanceText(c.distanceKm), preco ? `a partir de R$ ${priceMin(preco.faixa)}${preco.curto || ""}` : ""].filter(Boolean);
+    return `${i + 1}. ${c.name}${partes.length ? " · " + partes.join(" · ") : ""}\n${urlDoSite(caminhoDaFicha(c))}`;
+  });
+  const fim = origem === "favoritas" ? "" : `\n\n${origem === "busca" ? "Ver todas, atualizadas" : "Ver a comparação"}: ${location.href}`;
+  return `${titulo} (GuiaTennis):\n\n${linhas.join("\n\n")}${fim}`;
+}
+function mandarListaParaMeuWhatsapp(origem) {
+  registrarPasso("acao", { detalhe: `Mandou a lista para o WhatsApp · ${origem}` });
+  window.open("https://wa.me/?text=" + encodeURIComponent(textoDaListaNoWhatsapp(origem)), "_blank", "noopener");
+  mostrarPush("No WhatsApp, escolha \u201cVocê\u201d para guardar a lista na sua conversa.");
+}
+function mensagemParaAcademia(c, texto) {
+  return `Olá, ${c.name}! Vim pelo GuiaTennis. ${String(texto || "").trim()}`.trim();
+}
+function linkParaAcademia(c, texto) {
+  return `https://wa.me/55${whatsappDe(c.phone)}?text=${encodeURIComponent(mensagemParaAcademia(c, texto))}`;
+}
+function abrirFalarComVarias(origem) {
+  const ids = comWhatsappDaOrigem(academiasDaOrigem(origem)).map(c => c.id);
+  state.waVarias = { origem, ids, texto: MENSAGENS_PRONTAS[0].m, enviadas: [] };
+  registrarPasso("acao", { detalhe: `Falar com várias · ${origem} · ${ids.length}` });
+  render();
+}
+function renderFalarComVarias() {
+  const v = state.waVarias;
+  if (!v) return "";
+  const courts = v.ids.map(id => state.allCourts.find(c => c.id === id)).filter(Boolean).map(decorate);
+  const feitas = v.enviadas.length;
+  return `
+    <div class="overlay open" id="wa-varias-overlay">
+      <div class="sheet"><div class="sheet-content" role="dialog" aria-label="Falar com várias academias">
+        <button class="sheet-close" id="wa-varias-close" aria-label="Fechar">✕</button>
+        <p class="sheet-title display">Falar com ${courts.length} academias</p>
+        <p class="subtitle" style="margin-top:4px">Uma mensagem só para todas. Cada academia recebe com o nome dela no começo.</p>
+        <div class="chip-row wa-prontas">${MENSAGENS_PRONTAS.map((x, i) => `<button type="button" class="chip small ${v.texto === x.m ? "active" : ""}" data-wa-pronta="${i}">${esc(x.t)}</button>`).join("")}</div>
+        <label class="field-label" for="wa-varias-texto">Mensagem</label>
+        <textarea class="form-field" id="wa-varias-texto" rows="3" maxlength="500" style="resize:none;margin-top:6px">${esc(v.texto)}</textarea>
+        <p class="footnote" style="margin-top:4px">Cada uma recebe: "Olá, [academia]! Vim pelo GuiaTennis." e a sua mensagem.</p>
+        <p class="wa-varias-conta" id="wa-varias-conta">${feitas ? `${feitas} de ${courts.length} enviadas` : "Toque em Enviar em cada uma: o WhatsApp abre a conversa com a mensagem pronta."}</p>
+        <div class="wa-varias-lista">
+          ${courts.map(c => {
+            const ok = v.enviadas.includes(c.id);
+            return `
+            <div class="wa-varias-linha ${ok ? "ok" : ""}">
+              <span class="wa-varias-n"><strong>${esc(c.name)}</strong><small>${esc([c.bairro, distanceText(c.distanceKm)].filter(Boolean).join(" · "))}</small></span>
+              <a class="cta-btn ${ok ? "cta-secondary" : "cta-primary"} wa-varias-bt" data-wa-enviar="${c.id}" data-track="whatsapp" data-court="${c.id}" href="${linkParaAcademia(c, v.texto)}" target="_blank" rel="noreferrer">${ok ? `${icon('check', 14, 'currentColor')} Enviada` : "Enviar"}</a>
+            </div>`;
+          }).join("")}
+        </div>
+      </div></div>
+    </div>`;
+}
+// O cartão de contato (vCard 3.0), um por academia, no mesmo arquivo.
+function campoDoVcard(v) { return String(v || "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/([,;])/g, "\\$1"); }
+function vcardDaAcademia(c) {
+  const nome = `${c.name} · GuiaTennis`;
+  const rua = [c.address, c.numero].filter(Boolean).join(", ");
+  return [
+    "BEGIN:VCARD", "VERSION:3.0",
+    `FN:${campoDoVcard(nome)}`, `N:;${campoDoVcard(nome)};;;`, `ORG:${campoDoVcard(c.name)}`,
+    `TEL;TYPE=CELL:+55${whatsappDe(c.phone)}`,
+    (rua || c.bairro || c.cidade) ? `ADR;TYPE=WORK:;;${campoDoVcard(rua)};${campoDoVcard(c.cidade)};;;Brasil` : "",
+    `URL:${urlDoSite(caminhoDaFicha(c))}`,
+    `NOTE:${campoDoVcard("Academia de tênis no GuiaTennis" + (c.bairro ? ` · ${c.bairro}` : ""))}`,
+    "END:VCARD",
+  ].filter(Boolean).join("\r\n");
+}
+function salvarContatosDaOrigem(origem) {
+  const courts = comWhatsappDaOrigem(academiasDaOrigem(origem));
+  if (!courts.length) return;
+  const arquivo = new Blob([courts.map(vcardDaAcademia).join("\r\n") + "\r\n"], { type: "text/vcard;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(arquivo);
+  a.download = courts.length === 1 ? `${slugTexto(courts[0].name) || "academia"}.vcf` : "academias-guiatennis.vcf";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  registrarPasso("acao", { detalhe: `Salvou os contatos · ${origem} · ${courts.length}` });
+  mostrarPush(courts.length === 1 ? "Abra o arquivo para salvar o contato no celular." : `Abra o arquivo para salvar os ${courts.length} contatos no celular.`);
+}
+
 // No lugar de alert("Não consegui…"): erro de regra continua no alert, com a
 // mensagem de sempre; falha de verdade vira a faixa com o código.
 function avisarFalha(acao, erro, textoDeRegra, opcoes = {}) {
@@ -5936,6 +6073,7 @@ function render() {
     ${renderQrSheet()}
     ${renderMenu()}
     ${renderListaSheet()}
+    ${renderFalarComVarias()}
     ${renderPrefsSheet()}
     ${renderViagemSheet()}
     ${renderAvisoFichaSheet()}
@@ -6682,6 +6820,7 @@ function renderComparePage() {
           : "Falta escolher mais uma para a comparação aparecer."}</p>
         ${courts.length ? `<button class="cta-btn cta-danger cmp-limpar" id="compare-clear-2">${icon('lixo', 16, 'var(--red)')} Limpar comparação</button>` : ""}` : `
         <p class="cmp-vagas-n">${courts.length} de ${COMPARE_MAX} na comparação</p>
+        ${acoesDoWhatsapp("comparar")}
         ${tabelaComparacao(courts)}
 
         <button type="button" class="decide-abrir" data-decide-abrir>
@@ -14601,6 +14740,7 @@ function renderListaSheet() {
           ${Object.keys(LISTAS).map(k => `<button type="button" role="tab" class="lista-aba ${k === qual ? "on" : ""}" aria-selected="${k === qual}" data-lista="${k}">${LISTAS[k].aba}</button>`).join("")}
         </div>
         <p class="lista-titulo">${LISTAS[qual].titulo}</p>
+        ${qual === "favoritas" && linhas.length ? acoesDoWhatsapp("favoritas") : ""}
         ${ref && linhas.length > 1 ? `<p class="lista-ordem">${icon('pin', 13, 'var(--muted)')} Da mais perto para a mais longe</p>` : ""}
         ${ultima ? `<a class="lista-linha lista-busca" href="${esc(linkDaUltimaBusca(ultima))}" data-refazer-busca>
             <span class="lista-busca-ic">${icon('search', 20, 'var(--text)')}</span>
@@ -17358,9 +17498,10 @@ function abrirBuscaSalva(id) {
 }
 // Na busca: "Salvar busca" (ou "Busca salva"), e o aviso depois de salvar.
 function linhaSalvarBusca() {
-  if (isAdmin || semBuscasSalvas) return "";
+  const acoes = acoesDoWhatsapp("busca");
+  if (isAdmin || semBuscasSalvas) return acoes ? `<div class="busca-salvar">${acoes}</div>` : "";
   const b = buscaAtualParaSalvar();
-  if (!b) return "";
+  if (!b) return acoes ? `<div class="busca-salvar">${acoes}</div>` : "";
   const salva = buscaSalvaIgual(b);
   const aviso = salva && state.buscaSalvaAviso === salva.id;
   const confirmar = jogador && !jogador.email_confirmado_em;
@@ -17369,6 +17510,7 @@ function linhaSalvarBusca() {
       <button type="button" class="tbtn ${salva ? "on" : ""}" id="salvar-busca" ${state.salvandoBusca ? "disabled" : ""}>
         ${icon(salva ? 'check' : 'sino', 14, 'currentColor')} ${state.salvandoBusca ? "Salvando" : salva ? "Busca salva" : "Salvar busca"}
       </button>
+      ${acoes}
       ${salva ? "" : `<span class="busca-salvar-dica">Guarde o lugar e os filtros na sua conta e receba as academias novas daqui.</span>`}
     </div>
     ${state.buscaSalvaErro ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.buscaSalvaErro)}</div>` : ""}
@@ -23401,6 +23543,11 @@ const CHAT_TEMAS = [
     p: ["patrocin", "anuncio", "propaganda", "pago", "paga", "primeiro lugar", "topo", "ordem", "recomendad"],
     r: "\"Patrocinado\" identifica as academias que aparecem em destaque por patrocínio, no topo. Abaixo, todas seguem a ordem que você escolher na busca, as patrocinadas também, no lugar delas e sem a marcação.",
     a: [] },
+  // Regra 208 (05/11/2026): as academias no WhatsApp.
+  { id: "whatsapp-varias", onde: "jogadores", t: "Mandar para o WhatsApp e falar com várias",
+    p: ["mandar para o whatsapp", "salvar no whatsapp", "salvar contato", "salvar os contatos", "varias academias", "mesma mensagem", "falar com todas", "lista no whatsapp", "compartilhar lista"],
+    r: "Na busca (ao lado de \"Salvar busca\"), na comparação e nas Favoritas: \"Mandar para o meu WhatsApp\" abre o WhatsApp com a lista das academias e o link de cada ficha (escolha \"Você\" para guardar na sua conversa); \"Falar com todas\" manda a mesma mensagem para até 5 academias, uma por uma; e \"Salvar os contatos\" baixa um cartão de contato com o WhatsApp delas, para salvar no celular de uma vez.",
+    a: [] },
   { id: "avisos-jog", onde: "jogadores", t: "Avisos por e-mail",
     p: ["parar de receber", "nao quero receber", "receber emails", "receber e mails", "notificac", "avisos", "aviso por e mail", "newsletter"],
     r: "Os avisos por e-mail começam desligados e você escolhe quais quer: academias novas na sua cidade, promoções das favoritas, viagem e novidades. Mude no menu › Avisos por e-mail. Todo e-mail também tem o link \"Não quero mais receber\".",
@@ -26575,6 +26722,28 @@ function attachEvents() {
     const i = Math.round(lightboxStrip.scrollLeft / lightboxStrip.clientWidth);
     if (state.lightbox) state.lightbox.index = i;
   };
+
+  // As academias no WhatsApp (regra 208).
+  document.querySelectorAll("[data-wa-lista]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); mandarListaParaMeuWhatsapp(el.dataset.waLista); }; });
+  document.querySelectorAll("[data-wa-varias]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); abrirFalarComVarias(el.dataset.waVarias); }; });
+  document.querySelectorAll("[data-wa-contatos]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); salvarContatosDaOrigem(el.dataset.waContatos); }; });
+  const waVariasFechar = document.getElementById("wa-varias-close");
+  if (waVariasFechar) waVariasFechar.onclick = () => { state.waVarias = null; render(); };
+  const waVariasFundo = document.getElementById("wa-varias-overlay");
+  if (waVariasFundo) waVariasFundo.onclick = (e) => { if (e.target === waVariasFundo) { state.waVarias = null; render(); } };
+  const waVariasTexto = document.getElementById("wa-varias-texto");
+  if (waVariasTexto) waVariasTexto.oninput = (e) => { if (state.waVarias) state.waVarias.texto = e.target.value; };
+  document.querySelectorAll("[data-wa-pronta]").forEach(el => { el.onclick = () => { if (!state.waVarias) return; state.waVarias.texto = MENSAGENS_PRONTAS[+el.dataset.waPronta].m; render(); }; });
+  document.querySelectorAll("[data-wa-enviar]").forEach(el => {
+    el.addEventListener("click", () => {
+      const v = state.waVarias, c = v && state.allCourts.find(x => x.id === el.dataset.waEnviar);
+      if (!c) return;
+      el.href = linkParaAcademia(c, v.texto);
+      if (!v.enviadas.includes(c.id)) v.enviadas.push(c.id);
+      // Marca sem redesenhar agora: o WhatsApp está abrindo.
+      setTimeout(() => render(), 300);
+    });
+  });
 
   document.querySelectorAll("[data-compare]").forEach(el => {
     el.onclick = (e) => {

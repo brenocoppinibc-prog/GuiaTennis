@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 04/11/2026 (regra 207)
+**Atualizado em:** 05/11/2026 (regra 208)
 
 | | |
 |---|---|
@@ -410,7 +410,8 @@ cobre outro; regra 204, o "Sobre a academia" por plano: no Premium o texto
 da academia, no Completo o resumo completo do site, até 750 letras; regra
 205, a parte "Apresentação" antes de Revisar; regra 206, valor em branco
 não entra no catálogo e 0 ou - é "Sob consulta"; regra 207, "Sair sem
-salvar?" só com mudança de verdade). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+salvar?" só com mudança de verdade; regra 208, as academias no WhatsApp: a
+lista, falar com várias e salvar os contatos). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -468,7 +469,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 208.
+**Próximo número:** regra 209.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -756,6 +757,21 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   (`regAssinatura`), então recarregar a página sem mudar nada não pergunta; os
   campos comuns (`camposNaoSalvos`) também ignoram espaço nas pontas. Sem SQL.
   Teste: `cadastro-sair-e-revisao.js`.
+- 208 (05/11) "Salvar no WhatsApp as quadras de determinado endereço",
+  "enviar mensagens iguais para academias da região e salvar as academias no
+  WhatsApp", "encaixando junto com buscas salvas": `acoesDoWhatsapp(origem)`
+  na linha do "Salvar busca", na comparação e nas Favoritas (até 5, as com
+  WhatsApp): "Mandar para o meu WhatsApp" (`wa.me/?text=` com a lista, o
+  link de cada ficha e o da busca; o aviso diz para escolher "Você"), "Falar
+  com todas"/"Falar com as N" (folha `renderFalarComVarias`: mensagens
+  prontas, uma mensagem só com "Olá, [academia]! Vim pelo GuiaTennis." no
+  começo, "Enviar" por academia, ✓ "Enviada" e "N de M enviadas"; conta como
+  o WhatsApp da academia) e "Salvar os contatos" (vCard 3.0, `.vcf`, nome "…
+  · GuiaTennis", WhatsApp, endereço e link). Sem disparo automático (o
+  WhatsApp abre uma conversa por vez). Nada novo guardado. Chat de ajuda
+  ("whatsapp-varias"). Como o "Compartilhar lista" do Google Maps e o pedir
+  orçamento a vários da GetNinjas. Sem SQL. Teste: `whatsapp-das-academias.js`
+  (novo).
 
 ## 11. WhatsApp e mensagem para as academias
 

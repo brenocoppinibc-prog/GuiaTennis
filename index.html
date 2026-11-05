@@ -3148,6 +3148,8 @@
   .reg-sobre-planos li.reg-sobre-atual { color: var(--text); }
   .gt-push-tempo { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--gold-light); transform-origin: left center; animation: gt-push-tempo 5s linear forwards; }
   @keyframes gt-push-tempo { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  /* Regra 214: publicando, meio cinza, como o comentário do Instagram. */
+  .gt-enviando { opacity: .5; filter: grayscale(1); pointer-events: none; }
 </style>
 </head>
 <body>
@@ -5761,7 +5763,7 @@ function getReviews(courtId) {
   return state.reviewsCache[courtId] || [];
 }
 function getAppRating(courtId) {
-  const reviews = getReviews(courtId);
+  const reviews = getReviews(courtId).filter(r => !r.enviando);
   if (!reviews.length) return { avg: 0, count: 0 };
   const sum = reviews.reduce((s, r) => s + r.stars, 0);
   return { avg: sum / reviews.length, count: reviews.length };
@@ -5771,7 +5773,20 @@ async function submitRating(courtId, stars, comment) {
   if (state.nomeSuspenso) throw new Error(NOME_SUSPENSO_AO_AVALIAR);
   // Avaliar exige a conta do jogador: o banco preenche o nome e o e-mail dela.
   const v = { nome: (jogador && jogador.nome) || "", contato: (jogador && jogador.email) || "" };
-  const { data, error } = await sb.from('avaliacoes').insert({ academia_id: courtId, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato }).select('id').single();
+  // Regra 214: como o comentário do Instagram, a avaliação já aparece na
+  // lista, meio cinza e com "Publicando…", até o banco responder.
+  if (!state.reviewsCache[courtId]) state.reviewsCache[courtId] = [];
+  const agora = new Date().toISOString();
+  const provisoria = { id: null, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato, ts: agora, editadaEm: null, enviando: true };
+  state.reviewsCache[courtId].unshift(provisoria);
+  state.rateEnviando = true;
+  render();
+  let resposta;
+  try { resposta = await sb.from('avaliacoes').insert({ academia_id: courtId, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato }).select('id').single(); }
+  catch (e) { resposta = { data: null, error: e }; }
+  state.rateEnviando = false;
+  const { data, error } = resposta;
+  if (error) state.reviewsCache[courtId] = state.reviewsCache[courtId].filter(x => x !== provisoria);
   // Quem administra a academia não avalia ela (o banco confere).
   if (error) {
     const m = error.message || "";
@@ -5786,9 +5801,8 @@ async function submitRating(courtId, stars, comment) {
   }
   marcarAvaliada(courtId);
   registrarPasso("acao", { academia: courtId, detalhe: `Avaliou com ${stars} ${stars === 1 ? "estrela" : "estrelas"} · ${nomeDaAcademiaDoPasso(courtId)}` });
-  if (!state.reviewsCache[courtId]) state.reviewsCache[courtId] = [];
-  const agora = new Date().toISOString();
-  state.reviewsCache[courtId].unshift({ id: data && data.id, stars, comment: trimmed, nome_autor: v.nome, contato_autor: v.contato, ts: agora, editadaEm: null });
+  provisoria.id = data && data.id;
+  delete provisoria.enviando;
   if (state.minhasAvaliacoes && data && data.id) state.minhasAvaliacoes[courtId] = { id: data.id, stars, comment: trimmed, ts: agora, editadaEm: null };
 }
 
@@ -5858,8 +5872,15 @@ async function salvarEdicaoDaAvaliacao(courtId, stars, comment) {
   if (state.nomeSuspenso) throw new Error(NOME_SUSPENSO_AO_EDITAR);
   const texto = (comment || "").trim();
   if (stars === m.stars && texto === (m.comment || "").trim()) return false;
-  const { data, error } = await sb.rpc('editar_minha_avaliacao', { p_avaliacao: m.id, p_stars: stars, p_comment: texto });
+  const naLista = getReviews(courtId).find(v => v.id === m.id);
+  const antes = naLista && { stars: naLista.stars, comment: naLista.comment };
+  if (naLista) { Object.assign(naLista, { stars, comment: texto, enviando: true }); render(); }
+  let res;
+  try { res = await sb.rpc('editar_minha_avaliacao', { p_avaliacao: m.id, p_stars: stars, p_comment: texto }); } catch (e) { res = { data: null, error: e }; }
+  const { data, error } = res;
   const x = !error ? (Array.isArray(data) ? data[0] : data) : null;
+  if (naLista) delete naLista.enviando;
+  if ((error || !x) && naLista) Object.assign(naLista, antes);
   if (error || !x) {
     const t = (error && error.message) || "";
     throw new Error(/nome está suspenso/.test(t) ? NOME_SUSPENSO_AO_EDITAR
@@ -8444,6 +8465,12 @@ function blocoResposta(r, c, onde) {
         </div>
       </div>`;
   }
+  if (r.respostaEnviando) return `
+    <div class="rev-resp gt-enviando" aria-busy="true">
+      <p class="rev-resp-t">Resposta da academia</p>
+      <p class="rev-resp-texto">${esc(r.respostaEnviando)}</p>
+      <span class="rev-date">Publicando…</span>
+    </div>`;
   const resp = r.resposta ? `
     <div class="rev-resp">
       <p class="rev-resp-t">Resposta da academia</p>
@@ -8467,25 +8494,25 @@ function cartaoAvaliacao(r, c, onde) {
   // Na ficha, o cartão das avaliações do hoteis.com (26/10/2026): a nota em
   // cima, o texto (o longo abre em "Mostrar mais") e quem avaliou embaixo.
   if (onde === "ficha") return `
-    <article class="ht-rev ht-rev-ficha">
+    <article class="ht-rev ht-rev-ficha${r.enviando ? " gt-enviando" : ""}"${r.enviando ? ' aria-busy="true"' : ""}>
       <div class="ht-rev-top">
         <span class="ht-rev-badge">${r.stars}/5</span><span class="ht-rev-word">${scoreWord(r.stars, 1)}</span>
         ${minha ? `<button type="button" class="rev-analise" data-pedir-analise="${r.id}" data-court="${c.id}" title="Pedir ao GuiaTennis que analise esta avaliação">${icon('warning', 13, 'currentColor')} Pedir análise</button>` : ""}
         ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
       </div>
       ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>${r.comment.length > 120 ? `<button type="button" class="ht-rev-mais" data-rev-mais>Mostrar mais</button>` : ""}` : ""}
-      <p class="ht-rev-autor"><span class="rev-name ${r.autor_oculto ? "rev-oculto" : ""}">${esc(nomeDoAutor(r))}</span>, <span class="rev-date">${formatReviewDate(r.ts)}${marcaDeEditada(r.editadaEm)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span></p>
-      ${ehMinhaAvaliacao(r, c) ? `<p class="rev-minha"><span>Sua avaliação</span><button type="button" class="inline-link" data-editar-avaliacao="${c.id}">Editar</button></p>` : ""}
+      <p class="ht-rev-autor"><span class="rev-name ${r.autor_oculto ? "rev-oculto" : ""}">${esc(nomeDoAutor(r))}</span>, <span class="rev-date">${r.enviando ? "Publicando…" : formatReviewDate(r.ts) + marcaDeEditada(r.editadaEm)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span></p>
+      ${ehMinhaAvaliacao(r, c) && !r.enviando ? `<p class="rev-minha"><span>Sua avaliação</span><button type="button" class="inline-link" data-editar-avaliacao="${c.id}">Editar</button></p>` : ""}
       ${blocoResposta(r, c, onde)}
       ${minha || isAdmin || ehDaMinhaConta(c) || !r.id || ehMinhaAvaliacao(r, c) ? "" : `<p class="rev-denunciar-l"><button type="button" class="rev-denunciar" data-denunciar="${r.id}" data-court="${c.id}">Denunciar</button></p>`}
     </article>`;
   return `
-    <article class="ht-rev">
+    <article class="ht-rev${r.enviando ? " gt-enviando" : ""}"${r.enviando ? ' aria-busy="true"' : ""}>
       <div class="ht-rev-top">
         ${avatarDoAutor(r)}
         <div class="ht-rev-quem">
           <p class="rev-name ${r.autor_oculto ? "rev-oculto" : ""}">${esc(nomeDoAutor(r))}</p>
-          <span class="rev-date">${formatReviewDate(r.ts)}${marcaDeEditada(r.editadaEm)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span>
+          <span class="rev-date">${r.enviando ? "Publicando…" : formatReviewDate(r.ts) + marcaDeEditada(r.editadaEm)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span>
         </div>
         <div class="ht-rev-nota">
           <span class="ht-rev-nota-l"><span class="ht-rev-badge">${r.stars}/5</span><span class="ht-rev-word">${scoreWord(r.stars, 1)}</span></span>
@@ -8889,11 +8916,23 @@ async function publicarResposta(avaliacaoId) {
   if (!texto) { state.respostaErro = "Escreva a resposta."; render(); return; }
   const c = minhaAcademia();
   const r = c && getReviews(c.id).find(x => x.id === avaliacaoId);
-  if (!r) return;
-  const { error } = r.resposta
-    ? await sb.from('respostas').update({ texto }).eq('avaliacao_id', avaliacaoId)
-    : await sb.from('respostas').insert({ avaliacao_id: avaliacaoId, texto });
+  if (!r || r.respostaEnviando) return;
+  // Regra 214: a resposta já aparece embaixo da avaliação, meio cinza.
+  const onde = state.respondendoOnde;
+  r.respostaEnviando = texto;
+  state.respondendo = null;
+  render();
+  let res;
+  try {
+    res = r.resposta
+      ? await sb.from('respostas').update({ texto }).eq('avaliacao_id', avaliacaoId)
+      : await sb.from('respostas').insert({ avaliacao_id: avaliacaoId, texto });
+  } catch (e) { res = { error: e }; }
+  delete r.respostaEnviando;
+  const { error } = res;
   if (error) {
+    state.respondendo = avaliacaoId;
+    state.respondendoOnde = onde;
     state.respostaErro = falhou("publicar a resposta", error, { texto: "Não consegui publicar a resposta agora. Tente de novo em instantes." });
     render();
     return;
@@ -21299,7 +21338,7 @@ function renderCourtPage(c) {
                       <span>Minha avaliação é verídica e segue os <button type="button" class="inline-link" id="open-terms-from-rating">Termos de Uso</button>.</span>
                     </label>
                     ${state.rateErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.rateErro)}</div>` : ""}
-                    <button class="btn-primary" id="rate-submit" style="width:100%;justify-content:center;margin-top:10px;padding:10px 0" ${(state.pendingStar && window.__rateConsent) ? "" : "disabled"}>${jogador ? "Enviar avaliação" : "Entrar e enviar avaliação"}</button>
+                    <button class="btn-primary" id="rate-submit" style="width:100%;justify-content:center;margin-top:10px;padding:10px 0" ${(state.pendingStar && window.__rateConsent && !state.rateEnviando) ? "" : "disabled"}>${jogador ? "Enviar avaliação" : "Entrar e enviar avaliação"}</button>
                   `}
                 </div>
               </section>

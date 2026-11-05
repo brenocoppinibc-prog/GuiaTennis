@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 211)
+**Atualizado em:** 05/11/2026 (regra 211, troca de chat)
 
 | | |
 |---|---|
@@ -431,16 +431,22 @@ ficha para a escolha (197 a 200).
 
 **Testes:** a bateria completa de 04/11 (regra 206) deu **2.289
 verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
-(05/11). Pedido novo depois disso: só os testes afetados, e a bateria completa
-de novo antes do "pode subir".
+(05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
+lista está na descrição do PR). **Falta a bateria completa antes do "pode
+subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**Chat trocado em 03/11/2026:** o chat novo volta a acompanhar o PR #5 (o
-anterior deixou de acompanhar). Layouts da ficha em estudo (A Editorial, B
+**Chat trocado em 05/11/2026:** o chat novo volta a acompanhar o PR #5 (o
+anterior deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
+commit de código: `c6f40e4` (regra 211); o SQL mais novo
+(`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
+mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
 Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
+Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 211)
+estão todos na prévia.
 
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1

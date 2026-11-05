@@ -1253,12 +1253,12 @@
       // Desde 07/10/2026, os acessos de 30 dias em todo plano (SQL 20261007160000).
       // window.__semAcessos finge o banco antes dele; window.__acessos troca o número.
       // Regra 196: o Completo vê também os contatos dos 30 dias.
-      if (plano !== "premium") return { data: window.__semAcessos ? { plano, trancado: true } : { plano, trancado: true, dias: 30, acessos: window.__acessos ?? 42, ...(plano === "completo" ? { contatos: window.__contatos ?? 7 } : {}) }, error: null };
+      if (plano !== "premium") return { data: window.__semAcessos ? { plano, trancado: true } : { plano, trancado: true, dias: 30, acessos: window.__acessos ?? 42, ...(plano === "completo" ? { contatos: window.__contatos ?? 7 , guardaram: window.__guardaram ?? { lista: 3, contato: 2 }} : {}) }, error: null };
       const base = { plano, dias, visitas: 42, contatos: 9 };
       if (plano === "basico") return { data: base, error: null };
       const n = dias || 120;
       const por_dia = Array.from({ length: n }, (_, i) => ({ dia: new Date(Date.UTC(2026, 8, 30) - (n - 1 - i) * 864e5).toISOString().slice(0, 10), visitas: (i * 7) % 5, contatos: i % 4 === 0 ? 1 : 0 }));
-      const completo = { ...base, canais: { whatsapp: 7, instagram: 2, site: 0, compartilhar: 1 }, anterior: { visitas: 30, contatos: 9 }, por_dia,
+      const completo = { ...base, canais: { whatsapp: 7, instagram: 2, site: 0, compartilhar: 1 }, guardaram: { lista: 3, contato: 2 }, anterior: { visitas: 30, contatos: 9 }, por_dia,
         origens: [{ nome: "Instagram", n: 20 }, { nome: "Google", n: 15 }, { nome: "Direto", n: 7 }], aparelhos: [{ nome: "Celular", n: 35 }, { nome: "Computador", n: 7 }] };
       if (plano === "completo") return { data: completo, error: null };
       return { data: { ...completo, regioes: [{ nome: "Pinheiros, São Paulo", n: 12 }, { nome: "Vila Madalena, São Paulo", n: 5 }], media_cidade: { cidade: "São Paulo", academias: 2, visitas: 30, contatos: 5 } }, error: null };

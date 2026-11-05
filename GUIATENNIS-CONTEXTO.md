@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 208)
+**Atualizado em:** 05/11/2026 (regra 209)
 
 | | |
 |---|---|
@@ -295,7 +295,7 @@ Produto (o que já foi decidido)
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261104120000_avisos_um_por_um` (81 arquivos na pasta; 78 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261105120000_lista_e_contato_salvo` (82 arquivos na pasta; 79 deles entraram neste PR). Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -340,8 +340,8 @@ Produto (o que já foi decidido)
   verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**770 conferências**,
-  nenhuma falha, 04/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
+- **Banco local** para o `testes/banco-emails.py` (**777 conferências**,
+  nenhuma falha, 05/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
   Aplicar o SQL novo: `psql postgresql://postgres@127.0.0.1:5433/postgres -f <arquivo>`.
@@ -411,7 +411,9 @@ da academia, no Completo o resumo completo do site, até 750 letras; regra
 205, a parte "Apresentação" antes de Revisar; regra 206, valor em branco
 não entra no catálogo e 0 ou - é "Sob consulta"; regra 207, "Sair sem
 salvar?" só com mudança de verdade; regra 208, as academias no WhatsApp: a
-lista, falar com várias e salvar os contatos). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+lista, falar com várias e salvar os contatos; regra 209, esses cliques contam
+para a academia e a mensagem de cada opção vem quase pronta, SQL
+`20261105120000_lista_e_contato_salvo`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -424,8 +426,8 @@ passo, em telas com o cabeçalho, a mini prévia da academia e a volta da
 ficha para a escolha (197 a 200).
 
 **Testes:** a bateria completa de 04/11 (regra 206) deu **2.289
-verificações, nenhuma falha**; o `banco-emails.py` deu 770 no banco local
-(04/11). Pedido novo depois disso: só os testes afetados, e a bateria completa
+verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
+(05/11). Pedido novo depois disso: só os testes afetados, e a bateria completa
 de novo antes do "pode subir".
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
@@ -469,7 +471,7 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 209.
+**Próximo número:** regra 210.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -772,6 +774,22 @@ Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   ("whatsapp-varias"). Como o "Compartilhar lista" do Google Maps e o pedir
   orçamento a vários da GetNinjas. Sem SQL. Teste: `whatsapp-das-academias.js`
   (novo).
+- 209 (05/11) "O site precisa poder contabilizar o clique nos contatos e
+  tudo mais" e "faça que as mensagens direcionadas por tal produto já estarem
+  quase prontas": tipos novos em `cliques`, `lista_whatsapp` (cada academia da
+  lista mandada para o próprio WhatsApp) e `contato_salvo` (cada uma do
+  .vcf), na trava e na regra "Registrar clique"; os links da lista e do
+  contato levam `utm_source=WhatsApp-lista` / `Contato-salvo` (a visita conta
+  com essa origem); `numeros_da_academia` devolve `guardaram` {lista,
+  contato} no Completo (30 dias, na vitrine: "N pessoas salvaram o contato no
+  celular · N mandaram a academia para o próprio WhatsApp") e no Premium (o
+  período; linhas em "Contatos por canal"). Mensagens quase prontas:
+  `mensagemDaOpcao` no "Chamar no WhatsApp" de cada opção (a opção com o valor,
+  a pergunta e "Meu nível:"/"Idade da criança:"/"Melhor dia e horário:" ou, na
+  locação, "Dia e horário:"/"Quantas horas:"), e as do "Falar com todas" com
+  as linhas para completar. Privacidade (05/11). SQL
+  `20261105120000_lista_e_contato_salvo`. Testes: `whatsapp-das-academias.js`,
+  `catalogo.js`, `banco-emails.py` (777).
 
 ## 11. WhatsApp e mensagem para as academias
 

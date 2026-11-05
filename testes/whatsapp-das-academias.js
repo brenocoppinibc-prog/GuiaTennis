@@ -27,6 +27,9 @@ const { abrir, ok } = require('./harness');
   t = await page.evaluate(() => ({ url: decodeURIComponent((window.__abertos[0] || '').replace('https://wa.me/?text=', '')), push: document.querySelector('.gt-push')?.innerText || '' }));
   ok(t.url.startsWith('Quadras de tênis') && t.url.includes('(GuiaTennis)') && t.url.includes('1. ') && t.url.includes('/academia/') && t.url.includes('Ver todas, atualizadas:'), 'a lista vai para o WhatsApp com o link de cada ficha e o da busca — ' + t.url.slice(0, 140).replace(/\n/g, ' / '));
   ok(t.push.includes('escolha') && t.push.includes('Você'), 'o aviso diz para escolher "Você" no WhatsApp');
+  // Regra 209: cada academia da lista conta, e o link leva a origem.
+  t = await page.evaluate(() => ({ n: (window.__cliques || []).filter(c => c.tipo === 'lista_whatsapp').length, url: decodeURIComponent(window.__abertos[0] || '') }));
+  ok(t.n >= 2 && t.url.includes('utm_source=WhatsApp-lista'), 'cada academia da lista conta "lista_whatsapp", e o link da ficha leva a origem — ' + t.n);
 
   // ---- Falar com todas ----
   const varias = await page.$('.busca-salvar [data-wa-varias]');
@@ -39,7 +42,7 @@ const { abrir, ok } = require('./harness');
       texto: document.getElementById('wa-varias-texto')?.value || '',
       prontas: [...document.querySelectorAll('[data-wa-pronta]')].map(b => b.innerText),
     }));
-    ok(t.titulo.startsWith('Falar com') && t.linhas >= 2 && t.linhas <= 5 && t.texto.includes('iniciante') && t.prontas.length === 4, 'a folha "Falar com…": até 5 academias, a mensagem pronta e as opções — ' + t.titulo);
+    ok(t.titulo.startsWith('Falar com') && t.linhas >= 2 && t.linhas <= 5 && t.texto.includes('iniciante') && t.texto.includes('Melhor dia e horário: ') && t.prontas.length === 4, 'a folha "Falar com…": até 5 academias, a mensagem pronta e as opções — ' + t.titulo);
     await page.click('[data-wa-pronta="2"]');
     ok((await page.inputValue('#wa-varias-texto')).includes('locação'), 'a opção pronta troca a mensagem');
     await page.fill('#wa-varias-texto', 'Tem horário no sábado de manhã?');
@@ -64,6 +67,8 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(300);
   t = await page.evaluate(() => window.__vcf || '');
   ok((t.match(/BEGIN:VCARD/g) || []).length >= 1 && /TEL;TYPE=CELL:\+55\d{10,11}/.test(t) && /FN:.+ · GuiaTennis/.test(t) && t.includes('/academia/') && t.includes('END:VCARD'), 'o cartão de contato (.vcf) com o WhatsApp, o nome e o link da ficha de cada academia');
+  t = await page.evaluate(() => (window.__cliques || []).filter(c => c.tipo === 'contato_salvo').length);
+  ok(t >= 1 && (await page.evaluate(() => (window.__vcf || '').includes('utm_source=Contato-salvo'))), 'cada contato salvo conta "contato_salvo", e o link do contato leva a origem');
   await browser.close();
 
   // ---- Na comparação e nas Favoritas ----
@@ -81,6 +86,15 @@ const { abrir, ok } = require('./harness');
   ok(t.cmp.lista && t.cmp.varias && t.cmp.contatos, 'na comparação, os três botões');
   ok(t.fav.lista && t.fav.varias && t.texto.startsWith('Minhas academias de tênis favoritas'), 'nas Favoritas também');
   await browser.close();
+
+  // ---- O Desempenho mostra quantos guardaram (regra 209) ----
+  for (const plano of ['completo', 'premium']) {
+    ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano }));
+    await page.waitForTimeout(700);
+    t = await page.evaluate(() => document.querySelector('#parceiros .pc-main, #parceiros')?.innerText || '');
+    ok(plano === 'completo' ? t.includes('2 pessoas salvaram o contato no celular') && t.includes('3 mandaram a academia para o próprio WhatsApp') : t.includes('Salvaram o contato') && t.includes('Mandaram para o próprio WhatsApp'), `${plano}: o Desempenho mostra quantos salvaram o contato e mandaram para o próprio WhatsApp`);
+    await browser.close();
+  }
 
   console.log('\nwhatsapp-das-academias.js: fim');
 })();

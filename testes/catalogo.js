@@ -192,7 +192,8 @@ const CATALOGO = [
   ok(dupla.includes('Sob consulta') && !consulta.some(x => x.startsWith('Aula infantil individual')), 'na ficha, a dupla diz "Sob consulta", e a infantil individual em branco não aparece — ' + dupla);
   ok(locMensal.includes('Sob consulta'), 'e a locação mensal com 0 também — ' + locMensal);
   const waDupla = await page.evaluate(() => decodeURIComponent([...document.querySelectorAll('#ht-quartos .ht-quarto')].find(x => x.innerText.startsWith('Aula em dupla')).querySelector('.ht-quarto-bt').getAttribute('href')));
-  ok(waDupla.includes('queria saber sobre a aula em dupla'), 'o WhatsApp pergunta da aula em dupla — ' + waDupla.split('text=')[1]);
+  // Regra 209: a mensagem da opção já vem quase pronta.
+  ok(waDupla.includes('Olá, Só Aula Tennis! Vim pelo GuiaTennis e tenho interesse na aula em dupla') && waDupla.includes('Queria saber o valor e os horários disponíveis.') && waDupla.includes('Meu nível: ') && waDupla.includes('Melhor dia e horário: '), 'o WhatsApp da opção vem quase pronto: a aula, a pergunta e o que completar — ' + waDupla.split('text=')[1]);
   await browser.close();
 
   // ---- a ficha ----
@@ -216,14 +217,14 @@ const CATALOGO = [
     return { t: c.innerText.replace(/\s+/g, ' '), wa: decodeURIComponent(c.querySelector('.ht-quarto-bt').getAttribute('href')), menor: !!document.querySelector('.ht-quarto-tag') };
   });
   ok(grupo.t.includes('Plano mensal') && grupo.t.includes('Turma com o professor') && grupo.t.includes('R$ 300') && grupo.t.includes('por pessoa, por aula') && !grupo.t.includes('por mês') && !/por semana|alunos|iniciantes|hora de aula|999/.test(grupo.t), 'o cartão da turma: a modalidade, o plano mensal (regra 190) e o valor — ' + grupo.t);
-  ok(grupo.wa.includes('queria saber sobre o plano mensal de aula em grupo.'), 'o WhatsApp já abre sobre aquela opção — ' + grupo.wa.split('text=')[1]);
+  ok(grupo.wa.includes('tenho interesse no plano mensal de aula em grupo (R$ 300 por pessoa, por aula). Queria saber os horários disponíveis.') && grupo.wa.includes('Meu nível: '), 'o WhatsApp já abre sobre aquela opção — ' + grupo.wa.split('text=')[1]);
   ok(!grupo.menor, 'sem "Menor preço": avulsa e mensal não se comparam');
   const infantil = await page.evaluate(() => {
     const c = [...document.querySelectorAll('#ht-quartos .ht-quarto')][4];
     return { t: c.innerText.replace(/\s+/g, ' '), wa: decodeURIComponent(c.querySelector('.ht-quarto-bt').getAttribute('href')) };
   });
   ok(infantil.t.includes('Aula infantil em grupo') && infantil.t.includes('Plano mensal') && infantil.t.includes('Turma de crianças com o professor') && infantil.t.includes('De 6 a 12 anos') && infantil.t.includes('R$ 220') && infantil.t.includes('por pessoa, por aula'), 'o cartão da aula das crianças: o formato, a idade e o valor — ' + infantil.t);
-  ok(infantil.wa.includes('queria saber sobre o plano mensal de aula infantil em grupo.'), 'o WhatsApp da aula das crianças — ' + infantil.wa.split('text=')[1]);
+  ok(infantil.wa.includes('tenho interesse no plano mensal de aula infantil em grupo') && infantil.wa.includes('Idade da criança: '), 'o WhatsApp da aula das crianças — ' + infantil.wa.split('text=')[1]);
   const loc = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][6].innerText.replace(/\s+/g, ' '));
   const maiores = await page.evaluate(() => [...document.querySelectorAll('#ht-quartos .ht-quarto')][5].innerText.replace(/\s+/g, ' '));
   ok(maiores.includes('De 13 a 17 anos') && maiores.includes('R$ 250'), 'a outra faixa de idade no seu cartão — ' + maiores);

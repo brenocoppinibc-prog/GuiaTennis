@@ -399,6 +399,9 @@ Produto (o que já foi decidido)
 - Login do Supabase quebra com token nulo em `auth.users` (gravar `''`).
 - Android força modo escuro: `color-scheme: light` no site.
 - `pkill -f` com texto do próprio comando mata o terminal.
+- O "Banco de dados" do PR às vezes não roda sozinho depois de um push com
+  SQL novo (05/11: o da regra 209 não rodou). Conferir em Actions e, se faltar,
+  rodar à mão no banco de teste (`banco.yml`, `destino: teste`, na branch do PR).
 
 ## 9. Estado atual e pendências (03/11/2026)
 

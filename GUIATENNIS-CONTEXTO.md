@@ -512,6 +512,9 @@ estão todos na prévia.
 
 **Próximo número:** regra 220.
 
+**Descrição do PR:** a regra 219 ainda não entrou nela (economia de limite):
+incluir junto com a próxima mudança (o rascunho fica no scratchpad, `corpo.md`).
+
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
 - 156 (26/10) Veracidade: WhatsApp por código, "Informar um problema",

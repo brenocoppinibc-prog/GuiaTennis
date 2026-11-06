@@ -45,6 +45,18 @@ function celula(v) {
   const t = String(v === undefined || v === null ? "" : v).replace(/[\r\n]+/g, " ");
   return /[",]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t;
 }
+// A foto guardada no banco como "data:image/…" (o site recorta e grava
+// assim) não serve para a Meta, que pede um link de imagem: ela sai por esta
+// mesma função, em ?foto=<id da academia> (06/11/2026).
+export function linkDaFoto(c, site) {
+  const foto = String((c.photos || [])[0] || "");
+  if (foto.startsWith("data:")) return `${site}/.netlify/functions/catalogo-meta?foto=${encodeURIComponent(c.id)}`;
+  return foto.startsWith("/") ? site + foto : foto;
+}
+export function imagemDoDataUrl(foto) {
+  const m = String(foto || "").match(/^data:(image\/[a-z+.-]+);base64,(.+)$/i);
+  return m ? { tipo: m[1], bytes: Buffer.from(m[2], "base64") } : null;
+}
 export function entraNoCatalogo(c, agora = Date.now()) {
   if (!c || c.status !== "published" || c.avisou_que_fechou_em) return false;
   if (c.pausada && (!c.pausada_ate || new Date(c.pausada_ate).getTime() > agora)) return false;
@@ -64,7 +76,7 @@ export function csvDoCatalogo(academias, site, agora = Date.now()) {
       "in stock", "new",
       `${menorPreco(c).toFixed(2)} BRL`,
       `${site}${caminhoDaFicha(c)}?utm_source=Meta-anuncio&utm_medium=catalogo`,
-      foto.startsWith("/") ? site + foto : foto,
+      linkDaFoto(c, site),
       "GuiaTennis",
       c.cidade || "", c.bairro || "", c.plano || "basico", mod,
     ].map(celula).join(",");
@@ -77,6 +89,19 @@ export default async (req) => {
   const real = host === "guiatennis.com.br" || host === "www.guiatennis.com.br";
   const b = real ? BANCOS.real : BANCOS.teste;
   const site = real ? "https://guiatennis.com.br" : `https://${host}`;
+  const idDaFoto = new URL(req.url).searchParams.get("foto");
+  if (idDaFoto) {
+    if (!/^[0-9a-f-]{8,40}$/i.test(idDaFoto)) return new Response("Foto não encontrada.", { status: 404 });
+    try {
+      const r = await fetch(`${b.url}/rest/v1/academias?select=photos&status=eq.published&id=eq.${idDaFoto}`, { headers: { apikey: b.chave, Authorization: `Bearer ${b.chave}` } });
+      const linha = r.ok ? (await r.json())[0] : null;
+      const foto = linha && Array.isArray(linha.photos) ? linha.photos[0] : "";
+      const img = imagemDoDataUrl(foto);
+      if (img) return new Response(img.bytes, { headers: { "content-type": img.tipo, "cache-control": "public, max-age=86400" } });
+      if (/^https?:\/\//.test(foto || "")) return Response.redirect(foto, 302);
+    } catch {}
+    return new Response("Foto não encontrada.", { status: 404 });
+  }
   let academias = [];
   try {
     const r = await fetch(`${b.url}/rest/v1/academias?select=${COLUNAS}&status=eq.published`, { headers: { apikey: b.chave, Authorization: `Bearer ${b.chave}` } });

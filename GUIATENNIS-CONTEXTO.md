@@ -512,9 +512,6 @@ estão todos na prévia.
 
 **Próximo número:** regra 220.
 
-**Descrição do PR:** a regra 219 ainda não entrou nela (economia de limite):
-incluir junto com a próxima mudança (o rascunho fica no scratchpad, `corpo.md`).
-
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
 - 156 (26/10) Veracidade: WhatsApp por código, "Informar um problema",
@@ -943,7 +940,9 @@ incluir junto com a próxima mudança (o rascunho fica no scratchpad, `corpo.md`
   desligada). Termos (a academia autoriza as fichas nos anúncios; quem
   preferir fica de fora) e Privacidade em 6 de novembro; o aviso de cookies
   cita o e-mail cifrado. Como os anúncios dinâmicos do Booking e do
-  hoteis.com. Sem SQL. Testes: `catalogo-meta.mjs` (novo, no
+  hoteis.com. As fotos ficam no banco como `data:image` (o recorte do site):
+  o feed leva `/.netlify/functions/catalogo-meta?foto=<id>`, que devolve a
+  imagem (a Meta só aceita link). Sem SQL. Testes: `catalogo-meta.mjs` (novo, no
   `rodar-todos.sh`), `pixel-da-meta.js`, `ficha-basica.js`,
   `regras-de-conteudo.js`.
 

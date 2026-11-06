@@ -3156,6 +3156,11 @@
   .gt-enviando { opacity: .5; filter: grayscale(1); pointer-events: none; }
   /* Regra 217: o fim da lista, enquanto as próximas academias entram. */
   .lista-mais { display: flex; justify-content: center; padding: 18px 0 26px; }
+  /* Regra 218: o aviso de cookies (só com o Pixel ligado). */
+  .gt-cookies { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 70; max-width: 560px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.16); }
+  .gt-cookies-t { margin: 0 0 12px; font-size: 14px; line-height: 1.45; color: var(--text); }
+  .gt-cookies-bts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gt-cookies-bts .cta-btn { width: 100%; justify-content: center; }
 </style>
 </head>
 <body>
@@ -5092,6 +5097,57 @@ function ligarRastreio(el) {
   el.__rastreio = true;
   el.addEventListener("click", () => trackClick(el.dataset.court, el.dataset.track));
 }
+// ---------- Pixel da Meta, desligado até o anúncio (regra 218) ----------
+// Pedido do Breno em 06/11/2026 ("sim", para deixar pronto, desligado, para
+// ligar quando anunciar no Instagram). Como o Booking e o Airbnb: com o
+// Pixel ligado, a primeira visita mostra o aviso de cookies, com "Aceitar" e
+// "Recusar" do mesmo tamanho (LGPD e guia de cookies da ANPD); só depois do
+// "Aceitar" o site carrega o Pixel e conta a visita (PageView), o contato com
+// uma academia (Contact) e a conta criada (CompleteRegistration), sem nome,
+// e-mail ou telefone. "Cookies", no rodapé, deixa mudar a escolha. O admin e
+// quem entra numa conta da academia não contam. PARA LIGAR: o número do
+// Pixel em `id` e a data por extenso em `ligadoEm` (vira a "Última
+// atualização" da Privacidade, que ganha o parágrafo do Pixel sozinha).
+const META_PIXEL = { id: "", ligadoEm: "" };
+const COOKIES_KEY = "guiatennis_cookies_v1";
+function escolhaDeCookies() {
+  const v = lerLocal(COOKIES_KEY, null);
+  return v === "aceitou" || v === "recusou" ? v : null;
+}
+function precisaDoAvisoDeCookies() {
+  return !!META_PIXEL.id && !isAdmin && !escolhaDeCookies() && !state.marquei;
+}
+function carregarPixel() {
+  if (!META_PIXEL.id || window.fbq || escolhaDeCookies() !== "aceitou" || isAdmin || naoConta()) return;
+  const n = window.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+  if (!window._fbq) window._fbq = n;
+  n.push = n; n.loaded = true; n.version = "2.0"; n.queue = [];
+  const t = document.createElement("script");
+  t.async = true; t.src = "https://connect.facebook.net/en_US/fbevents.js";
+  document.head.appendChild(t);
+  window.fbq("init", META_PIXEL.id);
+  window.fbq("track", "PageView");
+}
+function eventoDoPixel(nome, dados) {
+  if (window.fbq && escolhaDeCookies() === "aceitou" && !isAdmin && !naoConta()) window.fbq("track", nome, dados || {});
+}
+function escolherCookies(v) {
+  gravarLocal(COOKIES_KEY, v);
+  if (v === "aceitou") carregarPixel();
+  render();
+}
+function renderAvisoDeCookies() {
+  if (!precisaDoAvisoDeCookies()) return "";
+  return `
+    <aside class="gt-cookies" role="dialog" aria-label="Cookies">
+      <p class="gt-cookies-t">Com a sua permissão, usamos cookies da Meta para saber se os nossos anúncios no Instagram e no Facebook funcionam. Sem eles, o site funciona igual. <button type="button" class="inline-link" id="cookies-privacidade">Política de Privacidade</button></p>
+      <div class="gt-cookies-bts">
+        <button type="button" class="cta-btn cta-secondary" data-cookies="recusou">Recusar</button>
+        <button type="button" class="cta-btn cta-primary" data-cookies="aceitou">Aceitar</button>
+      </div>
+    </aside>`;
+}
+
 function trackClick(courtId, type, detalhe, extras) {
   // A academia chamada fica na lista do próprio aparelho ("Academias que você
   // chamou"), mesmo com o admin conectado: isso não vai para o banco.
@@ -5099,6 +5155,7 @@ function trackClick(courtId, type, detalhe, extras) {
   if (courtId && TIPOS_DE_CONTATO.includes(type)) registrarPasso("contato", { academia: courtId, detalhe: `${NOME_DO_CONTATO[type] || type} · ${nomeDaAcademiaDoPasso(courtId)}` });
   if (courtId && type === "compartilhar") registrarPasso("acao", { academia: courtId, detalhe: `Compartilhou a ficha · ${nomeDaAcademiaDoPasso(courtId)}` });
   if (courtId && type === "whatsapp") registrarAcompanhamento(courtId);
+  if (courtId && TIPOS_DE_CONTATO.includes(type)) eventoDoPixel("Contact", { content_category: type });
   // Quem está logado não entra na conta: nem acesso, nem busca, nem clique
   // na ficha — o admin testando e a academia olhando a própria ficha.
   if (naoConta()) return;
@@ -6189,6 +6246,7 @@ function render() {
     ${renderViagemSheet()}
     ${renderAvisoFichaSheet()}
     ${renderJogadorSheet()}
+    ${renderAvisoDeCookies()}
     ${renderLightbox()}
     ${renderEnquadrar()}
   `;
@@ -16223,6 +16281,7 @@ async function criarContaJogador() {
   }
   // Conta criada e logada: agora confirma o e-mail pelo código.
   registrarPasso("acao", { detalhe: "Criou a conta de jogador" });
+  eventoDoPixel("CompleteRegistration");
   if (state.page === "parceiros") state.pcContaCriadaAqui = jogador.user_id;
   state.jogadorLogin = email;
   await irParaCodigoJogador("codigo");
@@ -17802,6 +17861,7 @@ function renderSiteFooter() {
           <h4>Termos e políticas</h4>
           <button type="button" id="terms-link">Termos de Uso</button>
           <button type="button" id="privacy-link">Política de Privacidade</button>
+          ${META_PIXEL.id ? `<button type="button" id="footer-cookies">Cookies</button>` : ""}
         </div>
         <div class="sf-col">
           <h4>Suporte</h4>
@@ -23475,7 +23535,7 @@ const TERMS_HTML = `
 `;
 
 const PRIVACY_HTML = `
-<p class="footnote">Última atualização: 5 de novembro de 2026</p>
+<p class="footnote">Última atualização: ${META_PIXEL.id && META_PIXEL.ligadoEm ? META_PIXEL.ligadoEm : "5 de novembro de 2026"}</p>
 <p class="field-label" style="margin-top:16px">1. Quais dados coletamos</p>
 <p style="font-size:14px"><strong>Conta do jogador:</strong> para avaliar, guardamos o nome e o sobrenome, o e-mail, a cidade (se você informar), os avisos por e-mail que você escolheu (e quando escolheu), a data da sua última visita com a conta aberta, a viagem do aviso "Vou viajar" (estado, cidade e datas), se você ligar esse aviso, as <strong>buscas que você salvar</strong> (o que você digitou, o bairro e a cidade encontrados, um ponto aproximado de cerca de 100 metros e os filtros, e se cada uma avisa por e-mail), a sua última busca (do mesmo jeito, para mostrar na página inicial as academias perto dela em qualquer aparelho), a data do aceite dos Termos e a ligação de cada avaliação com a conta. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. O e-mail não aparece no site e só é usado para entrar e para mandar os avisos que você ligou: academias novas na sua cidade ou nas buscas salvas (no máximo um e-mail por dia) e as academias da cidade da viagem (uma vez por viagem, 7 dias antes da ida). Se você ficar 3 meses sem entrar, mandamos também um lembrete com as academias novas da sua cidade — este vem ligado, sai uma vez a cada ausência e você desliga em Minha conta ou pelo link do próprio e-mail. Os avisos só saem depois de você confirmar o e-mail pelo código, e cada e-mail traz um link para parar de receber, que funciona sem entrar na conta. Quem tem conta no GuiaTennis Parceiros usa a mesma conta no site dos jogadores: a parte de jogador é criada com o nome e o e-mail do Parceiros, e não avalia a academia que administra. Do mesmo jeito, quem tem conta de jogador pode usar a mesma conta (o mesmo e-mail e a mesma senha) no GuiaTennis Parceiros, informando os dados de contato. Você muda os avisos ou exclui a conta quando quiser, em "Minha conta" (o seu perfil, em guiatennis.com.br/perfil); a conta é a mesma do GuiaTennis Parceiros, e excluir num lugar exclui nos dois (com o acesso às academias que ela administra); ao excluir, os dados da conta são apagados, e as avaliações continuam publicadas sem o nome, sem o e-mail e sem a ligação com ela (aparecem como "Usuário do GuiaTennis").<br><br><strong>Acompanhamento depois de chamar uma academia:</strong> quando você, com a conta e o e-mail confirmado, chama uma academia pelo WhatsApp do GuiaTennis, guardamos qual academia e quando, para perguntar por e-mail, no dia seguinte, se você marcou. Se responder, guardamos se é aula ou locação, o dia e a hora e o texto da ficha sobre como chegar, o estacionamento e o cancelamento e a reposição, para mandar esse texto por e-mail duas horas antes; depois do horário, mandamos o convite para avaliar (não sai se você já avaliou a academia). O GuiaTennis não reserva nem avisa a academia: só pergunta a você. O acompanhamento vem ligado; você desliga em Minha conta › Avisos por e-mail ou pelo link de cada e-mail, e tira cada lembrete em Minha conta › Seus horários. Tudo é apagado 60 dias depois da chamada. <strong>WhatsApp (opcional):</strong> se você informar o seu WhatsApp, com o aceite, guardamos o número e a data do aceite para mandar os lembretes também por lá quando esse envio estiver ligado (por enquanto, eles chegam por e-mail); o número não aparece no site e não vai para a academia, e você apaga quando quiser em Minha conta.<br><br><strong>Nome e WhatsApp (identificação):</strong> ao enviar uma solicitação de cadastro de academia, pedimos seu nome e sobrenome e o WhatsApp — usados pra identificar suas próximas avaliações/cadastros automaticamente, sem pedir de novo. <strong>Seu nome fica público</strong>, exibido junto de cada avaliação sua. Seu WhatsApp <strong>não é exibido publicamente</strong> — fica visível apenas para a administração do GuiaTennis, para confirmar que a avaliação ou cadastro é legítimo.<br><br><strong>Localização:</strong> ao buscar por CEP ou usar "minha localização atual", o endereço/coordenada é enviado a serviços externos (ViaCEP e OpenStreetMap/Nominatim) só para calcular distância. De cada busca guardamos o <strong>bairro, a cidade e o CEP</strong> (o digitado ou o da região encontrada) e um <strong>ponto aproximado, arredondado para cerca de 100 metros</strong> — sem ligar a nenhuma pessoa, para saber em que regiões há procura por quadra. Não guardamos o endereço digitado nem a localização exata. O lugar onde você vai ficar numa viagem (hotel ou endereço) também vai ao OpenStreetMap só para achar o ponto no mapa, e fica guardado só na sua conta, junto da viagem.<br><br><strong>Origem e aparelho:</strong> em cada acesso registramos de onde a pessoa chegou (por exemplo Instagram, Google ou acesso direto) e se usou celular, tablet ou computador. Não guardamos IP, nome de usuário nem identificador do aparelho.<br><br><strong>Tempo até agir:</strong> em cada visita, guardamos quantos segundos a pessoa levou desde que chegou ao site até a primeira busca e até chamar uma academia pela primeira vez, e quanto tempo olhou a ficha antes de chamar. São só números, sem ligar a ninguém, para entender se o site ajuda a achar quadra rápido.<br><br><strong>Chat de ajuda:</strong> sem entrar na conta, a conversa fica só na sua tela: o GuiaTennis não grava o que você escreve. Com a sua conta aberta, no site dos jogadores e no GuiaTennis Parceiros, cada conversa fica guardada na conta (o que você escreveu, as respostas do chat, o título, se está em aberto ou resolvida e quando), para você ver o histórico em "Suas conversas" e continuar depois, em qualquer aparelho. Ficam as 50 conversas mais recentes de cada site; você apaga cada uma quando quiser, e excluir a conta apaga todas. Se você escolher falar no WhatsApp, a sua dúvida vai escrita na mensagem, e você decide se envia.<br><br><strong>Avaliações:</strong> nota, comentário e nome ficam guardados em nosso banco de dados e são visíveis para todos os usuários do site. Se você editar a avaliação, a nota e o texto novos ficam no lugar dos de antes, e guardamos a data da última edição (a avaliação mostra "editada"); quem administra a academia recebe um e-mail com a avaliação editada. A resposta da academia editada também guarda a data da edição. O nome é o da conta, e trocar o nome da conta troca o nome nas avaliações. Se a conta for excluída, ou enquanto o nome estiver suspenso, a avaliação aparece como "Usuário do GuiaTennis".<br><br><strong>Favoritos, buscas e preferências:</strong> no navegador do seu próprio aparelho ficam apenas as academias vistas recentemente, a última busca, a hora em que o site mostrou um aviso ou uma dica (para não repetir no mesmo dia) e, só enquanto a aba estiver aberta, quantas buscas seguidas você fez sem abrir uma academia (depois de cinco, o site oferece ajuda para encontrar as quadras mais perto). Nada disso usa o seu IP. Com a sua conta, ficam guardados nela — e aparecem em qualquer aparelho em que você entrar — os favoritos, as academias que você chamou, as preferências de busca (estado, cidade e o que você costuma procurar), as viagens que você guardar (cidade, onde vai ficar e datas) e as buscas que você salvar. Sem conta, nada disso é guardado. Se você ligar as promoções das academias, os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso: até duas vezes por semana, mandamos um e-mail com a promoção patrocinada de uma academia do seu bairro ou perto de você (a academia não recebe o seu nome nem o seu e-mail, só quantas pessoas foram avisadas). A lista de comparação fica só na tela e no link da comparação. O que você está preenchendo num formulário (sem senha nem código) fica guardado só na aba aberta, para não se perder se a página recarregar, e some ao fechar a aba ou sair da conta. Um dia depois de você chamar uma academia, o site pergunta se você jogou lá e quer avaliar; a resposta ("Agora não", "Não joguei aqui") e as academias que você já avaliou também ficam na sua conta. Você apaga cada item no próprio site (favoritos, academias chamadas, viagens, preferências e buscas salvas), e excluir a conta apaga tudo. O que estava guardado no aparelho antes de 8 de outubro de 2026 passa para a sua conta quando você entra. Sem conta, as academias que você chama ficam só na aba aberta do navegador, para irem para a sua conta se você criar uma (o site convida depois da segunda academia chamada); fechou a aba, somem.<br><br><strong>Percurso da visita:</strong> para entender como o site é usado e melhorar o caminho de quem procura academia (e de quem cadastra uma), guardamos os passos de cada visita: as telas abertas, a região das buscas (bairro e cidade, nunca o endereço digitado), as fichas vistas, os contatos com as academias, as etapas do cadastro do GuiaTennis Parceiros e o tempo entre um passo e outro, junto com a origem do acesso (Instagram, Google, Direto…), o meio (bio, stories, link compartilhado, busca do Google…) e o tipo de aparelho. Cada visita recebe um número sorteado que vale só para ela — some ao fechar a aba ou depois de 30 minutos parada —, então o percurso não identifica você, o seu aparelho nem a sua conta, e não guardamos IP. Só a administração do GuiaTennis vê esses dados, em conjunto e visita por visita. Não vão para o nosso banco de dados. Você apaga o histórico e a lista de academias chamadas pelo menu, em "Minhas quadras", e as preferências em "Preferências de busca".<br><br><strong>Falhas do site:</strong> quando algo do site não funciona (a internet caiu, o banco ou um serviço de fora não respondeu, ou o próprio site deu erro), guardamos o que falhou: a ação (por exemplo, "enviar a avaliação"), a mensagem técnica sem dados pessoais (tiramos e-mails, telefones e números longos), a tela, o tipo de aparelho, o navegador e o sistema (só o nome e a versão principal, como "Safari 17"), se foi um visitante, um jogador com conta ou uma conta do GuiaTennis Parceiros, o número sorteado da visita (o mesmo do percurso) e um código de 6 letras e números. O código aparece para você no aviso da falha: mandando ele ao GuiaTennis, dá para achar exatamente o que aconteceu. Não guardamos a sua conta, o seu e-mail, o que você digitou, IP nem identificador do aparelho. Sem internet, o registro espera na própria aba e vai quando a conexão voltar. Só a administração do GuiaTennis vê, e tudo é apagado depois de 90 dias.<br><br><strong>Cadastro de academia:</strong> nome da academia, endereço, WhatsApp, preço e demais dados enviados no formulário ficam armazenados para permitir a publicação: na hora, quando a conta do GuiaTennis Parceiros tem o e-mail confirmado; senão, depois da aprovação.<br><br><strong>Fotos:</strong> armazenadas para exibição no site.<br><br><strong>Cliques e acessos:</strong> contamos, de forma agregada, cliques em WhatsApp/site/Instagram/compartilhar de cada academia, quando ela vai numa lista para o próprio WhatsApp ou tem o contato salvo pelo site e visualizações de cada ficha — junto com a origem do acesso, o aparelho e a região da busca feita antes, quando houver — buscas feitas (com bairro, cidade, CEP e ponto aproximado) e acessos totais ao site — sem identificar quem gerou o acesso. Na página inicial e no GuiaTennis Parceiros aparecem publicamente, arredondados, os totais do site desde o começo: quantas visitas o site teve, quantas fichas de academia foram abertas e quantos contatos as academias receberam. Os números de cada academia aparecem também para a própria academia, no GuiaTennis Parceiros: só contagens da ficha dela (visitas, contatos, origem, aparelho e, conforme o plano, os bairros de quem procurou antes de abrir a ficha), sem identificar ninguém. A lista de CEPs buscados continua visível só para a administração.</p>
 <p style="font-size:14px"><strong>Responsável pela academia (GuiaTennis Parceiros):</strong> na conta de cada pessoa que responde pela academia guardamos o nome e o sobrenome, o cargo, o e-mail, o WhatsApp, o CNPJ (se informado), a data do aceite dos Termos, a data do último acesso e os pedidos para administrar academias (podem ser vários ao mesmo tempo), com a data em que a pessoa declarou estar autorizada pela academia. Nada disso aparece no site: serve para o GuiaTennis falar com a academia sobre a ficha e mandar o resumo do mês por e-mail (no plano Premium, o relatório completo). As pessoas da mesma academia veem o nome, o cargo e o e-mail umas das outras e o que cada uma pode fazer. Quando a academia ou o GuiaTennis convida alguém pelo e-mail, o GuiaTennis guarda esse e-mail (e o nome, se informado) até a pessoa criar a conta ou o convite ser cancelado, e manda a ela um único e-mail com o convite. Nas compras da academia, quem cuida dos pagamentos vê quem comprou, e os responsáveis principais recebem por e-mail o nome de quem comprou, o que foi comprado, o valor e a forma de pagamento. Em caso de disputa sobre quem administra uma academia, o GuiaTennis manda ao WhatsApp da academia um código de 6 números — pela conta oficial do GuiaTennis no WhatsApp (a WhatsApp Business Platform, da Meta, que recebe o número da academia e o código para entregar a mensagem) ou, quando ela não está disponível, pelo WhatsApp do GuiaTennis, com o nome de quem pediu; o código fica guardado só de forma cifrada e vale 72 horas. Quem contesta pode pedir até 3 códigos em 3 dias, um por hora. Para isso, quando uma conta passa a administrar uma ficha sem código, guardamos o WhatsApp que a ficha tinha naquele momento. Do mesmo jeito, o WhatsApp que a conta escreve na ficha fica guardado fora do site até ser confirmado por um código de 6 números mandado a ele (guardado só de forma cifrada, vale 72 horas e 5 tentativas), junto da data, de quem pediu e, na troca, do número de antes; confirmado e conferido pelo GuiaTennis, ele passa a aparecer na ficha. Enquanto isso, o site não mostra aos visitantes que há um número esperando. Quando jogadores informam que o WhatsApp não é da academia, o número fica guardado fora do site enquanto o GuiaTennis confere. O e-mail e o WhatsApp de quem administra a academia (e o WhatsApp dela) também servem para impedir que a academia avalie a si mesma: quem avaliar a academia com um desses contatos tem a avaliação recusada. A pessoa exclui a própria conta em Perfil › Excluir minha conta, no Parceiros, ou em "Minha conta", no site dos jogadores (é o mesmo login): os dados da conta, dos dois lados, são apagados, as avaliações continuam com o nome, e a ficha da academia, que é pública, continua no Guia. Ao e-mail confirmado mandamos avisos da conta: avaliação nova nas suas academias, pedido de acesso, pessoa nova com acesso à academia (com o nome, o cargo e o e-mail dela), responsável principal novo, mudança de plano (com o que muda), a resposta do pedido para tirar a academia do Guia, pedido aceito, quando a ficha passa 3 meses sem mudar, o lembrete de conferir a ficha (de novo a cada 3 meses enquanto ela continuar igual) e, no começo de cada mês, o resumo dos números da academia no mês anterior; dá para desligar cada um no Perfil do GuiaTennis Parceiros (guardamos quais você desligou) ou todos pelo link do próprio e-mail. No cadastro, o site diz se um e-mail já tem conta, para a pessoa entrar em vez de criar outra. A senha fica guardada cifrada pelo Supabase — nem o GuiaTennis consegue vê-la. A academia não vê o WhatsApp de quem a avaliou nem os dados de quem pediu cadastro.</p>
@@ -23493,7 +23553,8 @@ const PRIVACY_HTML = `
 <p style="font-size:14px">Se uma conta for excluída pelo GuiaTennis por descumprir os Termos de Uso, guardamos o e-mail, o nome, a data e o motivo, só para impedir um novo cadastro com o mesmo e-mail e para a defesa do GuiaTennis. Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. O histórico (academias vistas recentemente e a última busca) fica só no seu aparelho: dá para apagar pelo menu do site ou limpando os dados do site nas configurações do navegador. Favoritos, academias chamadas, viagens e preferências ficam na sua conta: você apaga cada um pelo menu, e excluir a conta apaga tudo. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
 <p class="field-label" style="margin-top:16px">6. Cookies</p>
 <p style="font-size:14px"><strong>Cidade aproximada:</strong> antes de qualquer busca, para mostrar academias perto de você, o site pergunta à hospedagem (Netlify) a cidade aproximada da sua conexão — só a cidade, o estado e um ponto de cerca de 1 km, sem pedir o GPS. Ela fica só na aba aberta e não é guardada pelo GuiaTennis.</p>
-<p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (as academias vistas recentemente e a última busca, sua identificação, formulários, os avisos que você já fechou e a sessão de quem entra na conta) é estritamente técnico.</p>
+${META_PIXEL.id ? `<p style="font-size:14px"><strong>Cookies da Meta (só com a sua permissão):</strong> para saber se os nossos anúncios no Instagram e no Facebook funcionam, o site usa o Pixel da Meta, que guarda cookies no seu navegador e conta, sem o seu nome, o e-mail ou o telefone, quando você abre o site e quando chama uma academia. Ele só liga depois de você tocar em "Aceitar" no aviso de cookies; em "Recusar", nada é enviado à Meta. Você muda a escolha quando quiser, em "Cookies", no rodapé do site. O que a Meta faz com esses dados segue a política de privacidade dela.</p>
+<p style="font-size:14px">Fora isso, o armazenamento local (as academias vistas recentemente e a última busca, sua identificação, formulários, os avisos que você já fechou, a sua escolha sobre os cookies e a sessão de quem entra na conta) é estritamente técnico.</p>` : `<p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (as academias vistas recentemente e a última busca, sua identificação, formulários, os avisos que você já fechou e a sessão de quem entra na conta) é estritamente técnico.</p>`}
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
 <p style="font-size:14px">O GuiaTennis não é direcionado a menores de 18 anos e não coleta intencionalmente dados de crianças ou adolescentes.</p>
 <p class="field-label" style="margin-top:16px">8. Contato</p>
@@ -26206,6 +26267,12 @@ function ligarEventosDoPainel() {
 
 function attachEvents() {
   ligarListaQueCresce();
+  carregarPixel();
+  document.querySelectorAll("[data-cookies]").forEach(el => { el.onclick = () => escolherCookies(el.dataset.cookies); });
+  const cookiesPriv = document.getElementById("cookies-privacidade");
+  if (cookiesPriv) cookiesPriv.onclick = () => { state.showPrivacy = true; render(); };
+  const cookiesRodape = document.getElementById("footer-cookies");
+  if (cookiesRodape) cookiesRodape.onclick = () => { try { localStorage.removeItem(COOKIES_KEY); } catch {} render(); };
   ligarCamposDeSenha();
   ligarAjudaDasFalhas();
   ligarNomeSuspenso();

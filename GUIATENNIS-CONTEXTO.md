@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 05/11/2026 (regra 217)
+**Atualizado em:** 06/11/2026 (regra 218)
 
 | | |
 |---|---|
@@ -435,7 +435,7 @@ textos novos dos valores de Aulas e Locação e os centavos com vírgula; regra 
 avaliação e resposta aparecem meio cinza com "Publicando…" enquanto salvam; regra 215, a bola girando mais realista e em
 todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 217, o site mais
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
-versão fixa). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+versão fixa; regra 218, o Pixel da Meta pronto e desligado). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -451,7 +451,7 @@ ficha para a escolha (197 a 200).
 verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
 (05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
-novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 217 (lista na descrição do PR). **Falta a bateria completa antes do "pode
+novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 218 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
@@ -464,7 +464,7 @@ commit de código: `c6f40e4` (regra 211); o SQL mais novo
 (`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
 mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
 Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
-Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 217)
+Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 218)
 estão todos na prévia.
 
 **Pendências do Breno:**
@@ -496,11 +496,20 @@ estão todos na prévia.
    do WhatsApp Business pela de `divulgacao/`.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
+7a. **Pixel da Meta (regra 218): ligar quando começar a anunciar no
+   Instagram.** Pedir ao Breno o número do Pixel (Gerenciador de Eventos da
+   Meta) e preencher `META_PIXEL = { id: "…", ligadoEm: "<data por extenso>" }`
+   no `index.html`; o aviso de cookies, o "Cookies" do rodapé e o parágrafo da
+   Privacidade (com a data nova) aparecem sozinhos. Conferir os testes
+   `pixel-da-meta.js`, `ficha-basica.js` e `regras-de-conteudo.js` (a data).
 8. Acompanhamento do jogador: o lembrete pelo WhatsApp entra quando a Meta
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 218.
+**Próximo número:** regra 219.
+
+**Descrição do PR:** a regra 218 ainda não entrou nela (economia de limite):
+incluir junto com a próxima mudança.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -903,6 +912,15 @@ estão todos na prévia.
   "@2") e `preconnect` para o Google Fonts, o unpkg e o Supabase. Como o
   Booking, o Airbnb e o Instagram. Sem SQL. Testes: `lista-de-20.js` (novo) e
   15 da busca e da ficha.
+- 218 (06/11) Pixel da Meta pronto e desligado ("sim", para ligar quando
+  anunciar): `META_PIXEL` vazio = nada muda. Com o `id`, a primeira visita mostra
+  o aviso `.gt-cookies` ("Recusar" e "Aceitar" do mesmo tamanho, como pede a
+  ANPD); só com "Aceitar" (`COOKIES_KEY` no navegador) o `carregarPixel` traz o
+  fbevents.js e conta PageView, Contact (WhatsApp, Instagram e site da
+  academia, em `trackClick`) e CompleteRegistration (conta de jogador), sem
+  dado pessoal; admin e conta da academia não contam; "Cookies" no rodapé
+  reabre a escolha; a Privacidade (seção 6) troca o texto e a data sozinha.
+  Como o Booking e o Airbnb. Sem SQL. Teste: `pixel-da-meta.js` (novo).
 
 ## 11. WhatsApp e mensagem para as academias
 

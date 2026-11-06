@@ -47,10 +47,11 @@ function celula(v) {
 }
 // A foto guardada no banco como "data:image/…" (o site recorta e grava
 // assim) não serve para a Meta, que pede um link de imagem: ela sai por esta
-// mesma função, em ?foto=<id da academia> (06/11/2026).
+// mesma função, em /catalogo-foto?foto=<id da academia> (06/11/2026; com o
+// `config.path`, o endereço /.netlify/functions/… deixa de valer).
 export function linkDaFoto(c, site) {
   const foto = String((c.photos || [])[0] || "");
-  if (foto.startsWith("data:")) return `${site}/.netlify/functions/catalogo-meta?foto=${encodeURIComponent(c.id)}`;
+  if (foto.startsWith("data:")) return `${site}/catalogo-foto?foto=${encodeURIComponent(c.id)}`;
   return foto.startsWith("/") ? site + foto : foto;
 }
 export function imagemDoDataUrl(foto) {
@@ -62,7 +63,31 @@ export function entraNoCatalogo(c, agora = Date.now()) {
   if (c.pausada && (!c.pausada_ate || new Date(c.pausada_ate).getTime() > agora)) return false;
   return !!(Array.isArray(c.photos) && c.photos[0]) && menorPreco(c) > 0;
 }
-export function csvDoCatalogo(academias, site, agora = Date.now()) {
+// Em todo lugar (06/11/2026: "mas só da meta? quero usar em todos os
+// lugares"): a mesma lista, com a origem certa no link de cada plataforma.
+// Meta, TikTok e Pinterest leem estas mesmas colunas; o Google Ads, no
+// formato "Personalizado" do remarketing dinâmico (csvDoGoogle).
+export const PLATAFORMAS = { meta: "Meta", tiktok: "TikTok", pinterest: "Pinterest", google: "Google" };
+export function plataformaDoPedido(url) {
+  const u = new URL(url);
+  if (/google/.test(u.pathname)) return "google";
+  const p = String(u.searchParams.get("para") || "").toLowerCase();
+  return PLATAFORMAS[p] ? p : "meta";
+}
+function linkDoAnuncio(c, site, plataforma) {
+  return `${site}${caminhoDaFicha(c)}?utm_source=${PLATAFORMAS[plataforma] || "Meta"}-anuncio&utm_medium=catalogo`;
+}
+export function csvDoGoogle(academias, site, agora = Date.now()) {
+  const cab = ["ID", "Item title", "Item subtitle", "Final URL", "Image URL", "Item description", "Item category", "Price", "Item address"];
+  const linhas = (academias || []).filter(c => entraNoCatalogo(c, agora)).map(c => {
+    const lugar = [c.bairro, c.cidade].filter(Boolean).join(", ");
+    return [c.id, String(c.name || "").slice(0, 25), lugar.slice(0, 25), linkDoAnuncio(c, site, "google"), linkDaFoto(c, site),
+      `Tênis em ${lugar || "São Paulo"}. Compare e chame no WhatsApp.`.slice(0, 25), modalidadesDe(c), `${menorPreco(c).toFixed(2)} BRL`,
+      [c.bairro, c.cidade, "Brasil"].filter(Boolean).join(", ")].map(celula).join(",");
+  });
+  return [cab.join(","), ...linhas].join("\n") + "\n";
+}
+export function csvDoCatalogo(academias, site, agora = Date.now(), plataforma = "meta") {
   const cab = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3"];
   const linhas = (academias || []).filter(c => entraNoCatalogo(c, agora)).map(c => {
     const lugar = [c.bairro, c.cidade].filter(Boolean).join(", ");
@@ -75,7 +100,7 @@ export function csvDoCatalogo(academias, site, agora = Date.now()) {
       `${oQue}${lugar ? " em " + lugar : ""}. Compare e fale direto com a academia pelo WhatsApp no GuiaTennis.`,
       "in stock", "new",
       `${menorPreco(c).toFixed(2)} BRL`,
-      `${site}${caminhoDaFicha(c)}?utm_source=Meta-anuncio&utm_medium=catalogo`,
+      linkDoAnuncio(c, site, plataforma),
       linkDaFoto(c, site),
       "GuiaTennis",
       c.cidade || "", c.bairro || "", c.plano || "basico", mod,
@@ -108,7 +133,12 @@ export default async (req) => {
     if (r.ok) academias = await r.json();
     else return new Response("Catálogo indisponível agora.", { status: 503 });
   } catch { return new Response("Catálogo indisponível agora.", { status: 503 }); }
-  return new Response(csvDoCatalogo(academias, site), {
+  const plataforma = plataformaDoPedido(req.url);
+  return new Response(plataforma === "google" ? csvDoGoogle(academias, site) : csvDoCatalogo(academias, site, Date.now(), plataforma), {
     headers: { "content-type": "text/csv; charset=utf-8", "cache-control": "public, max-age=3600" },
   });
 };
+
+// Os endereços (no lugar de um redirecionamento no netlify.toml): o da Meta,
+// o geral (?para=tiktok, ?para=pinterest) e o do Google Ads.
+export const config = { path: ["/catalogo-meta.csv", "/catalogo.csv", "/catalogo-google.csv", "/catalogo-foto"] };

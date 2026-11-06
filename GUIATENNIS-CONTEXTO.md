@@ -512,6 +512,9 @@ estão todos na prévia.
 
 **Próximo número:** regra 220.
 
+**Descrição do PR:** os catálogos de todas as plataformas (fim da regra 219)
+ainda não entraram nela: incluir junto com a próxima mudança.
+
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
 - 156 (26/10) Veracidade: WhatsApp por código, "Informar um problema",
@@ -941,8 +944,14 @@ estão todos na prévia.
   preferir fica de fora) e Privacidade em 6 de novembro; o aviso de cookies
   cita o e-mail cifrado. Como os anúncios dinâmicos do Booking e do
   hoteis.com. As fotos ficam no banco como `data:image` (o recorte do site):
-  o feed leva `/.netlify/functions/catalogo-meta?foto=<id>`, que devolve a
-  imagem (a Meta só aceita link). Sem SQL. Testes: `catalogo-meta.mjs` (novo, no
+  o feed leva `/catalogo-foto?foto=<id>`, que devolve a imagem (a Meta só
+  aceita link). Em todo lugar ("mas só da meta? quero usar em todos os
+  lugares"): `/catalogo.csv?para=tiktok|pinterest` (as mesmas colunas, com a
+  origem de cada um) e `/catalogo-google.csv` (formato "Personalizado" do
+  remarketing dinâmico do Google Ads); os endereços ficam no `config.path` da
+  função (com ele, o `/.netlify/functions/catalogo-meta` deixa de valer). O
+  remarketing no Google e no TikTok ainda pede a tag de cada um, com o mesmo
+  aviso de cookies (pedir o id ao Breno quando criar as contas). Sem SQL. Testes: `catalogo-meta.mjs` (novo, no
   `rodar-todos.sh`), `pixel-da-meta.js`, `ficha-basica.js`,
   `regras-de-conteudo.js`.
 

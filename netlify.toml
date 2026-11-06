@@ -49,12 +49,9 @@
 # Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
 # endereço) e o site monta a tela pelo link. Os links antigos (?court=,
 # ?busca=) continuam funcionando, porque abrem a própria home.
-# Catálogo das academias para os anúncios da Meta (regra 219): o
-# Gerenciador de Comércio lê este endereço todo dia.
-[[redirects]]
-  from = "/catalogo-meta.csv"
-  to = "/.netlify/functions/catalogo-meta"
-  status = 200
+# Catálogo das academias para os anúncios (regra 219): os endereços
+# /catalogo-meta.csv, /catalogo.csv e /catalogo-google.csv ficam no
+# `config.path` da própria função (netlify/functions/catalogo-meta.mjs).
 
 [[redirects]]
   from = "/academia/*"

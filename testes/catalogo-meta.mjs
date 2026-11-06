@@ -33,13 +33,23 @@ ok(pedido.startsWith('https://ohvbengbujdioxdtewsy.supabase.co/') && txt.include
 // A foto guardada no banco como data:image sai por um link da própria função.
 const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 const comData = { ...boa, photos: ['data:image/png;base64,' + PNG] };
-ok(linkDaFoto(comData, 'https://guiatennis.com.br') === 'https://guiatennis.com.br/.netlify/functions/catalogo-meta?foto=' + boa.id && !csvDoCatalogo([comData], 'https://guiatennis.com.br').includes('data:image'), 'foto guardada no banco: o catálogo leva um link de imagem, sem o arquivo dentro');
+ok(linkDaFoto(comData, 'https://guiatennis.com.br') === 'https://guiatennis.com.br/catalogo-foto?foto=' + boa.id && !csvDoCatalogo([comData], 'https://guiatennis.com.br').includes('data:image'), 'foto guardada no banco: o catálogo leva um link de imagem, sem o arquivo dentro');
 globalThis.fetch = async (url) => { pedido = url; return new Response(JSON.stringify([{ photos: comData.photos }]), { status: 200 }); };
-r = await funcao(new Request('https://guiatennis.com.br/.netlify/functions/catalogo-meta?foto=' + boa.id));
+r = await funcao(new Request('https://guiatennis.com.br/catalogo-foto?foto=' + boa.id));
 const bytes = new Uint8Array(await r.arrayBuffer());
 ok(r.status === 200 && r.headers.get('content-type') === 'image/png' && bytes[1] === 0x50 && pedido.includes('id=eq.' + boa.id) && pedido.includes('status=eq.published'), 'o link da foto devolve a imagem da academia no ar');
-r = await funcao(new Request('https://guiatennis.com.br/.netlify/functions/catalogo-meta?foto=x%27%3Bdrop'));
+r = await funcao(new Request('https://guiatennis.com.br/catalogo-foto?foto=x%27%3Bdrop'));
 ok(r.status === 404, 'id estranho na foto: 404, sem consultar o banco');
+// Em todo lugar: a origem de cada plataforma e o formato do Google Ads.
+globalThis.fetch = async () => new Response(JSON.stringify([boa]), { status: 200 });
+r = await funcao(new Request('https://guiatennis.com.br/catalogo.csv?para=tiktok'));
+txt = await r.text();
+ok(txt.includes('utm_source=TikTok-anuncio') && txt.startsWith('id,title,'), 'o geral com ?para=tiktok: as mesmas colunas, com a origem TikTok');
+r = await funcao(new Request('https://guiatennis.com.br/catalogo-google.csv'));
+txt = await r.text();
+ok(txt.startsWith('ID,Item title,Item subtitle,Final URL,Image URL,Item description,Item category,Price,Item address') && txt.includes('utm_source=Google-anuncio') && txt.includes('120.50 BRL') && txt.includes('"Moema, São Paulo, Brasil"'), 'o do Google Ads: o formato Personalizado do remarketing dinâmico, com a origem Google');
+const { config } = await import('../netlify/functions/catalogo-meta.mjs');
+ok(config.path.join() === '/catalogo-meta.csv,/catalogo.csv,/catalogo-google.csv,/catalogo-foto', 'os endereços na própria função');
 globalThis.fetch = async () => new Response('x', { status: 500 });
 r = await funcao(new Request('https://guiatennis.com.br/catalogo-meta.csv'));
 ok(r.status === 503, 'banco fora do ar: responde 503, e a Meta tenta de novo no dia seguinte');

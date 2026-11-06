@@ -4,9 +4,13 @@
 const { abrir, ok } = require('./harness');
 
 (async () => {
-  let { browser, page } = await abrir({ w: 390 });
-  let t = await page.evaluate(() => ({ aviso: !!document.querySelector('.gt-cookies'), fbq: !!window.fbq, rodape: !!document.getElementById('footer-cookies'), priv: PRIVACY_HTML.includes('Não usamos cookies de rastreamento') }));
-  ok(!t.aviso && !t.fbq && !t.rodape && t.priv, 'desligado: sem aviso, sem Pixel, sem "Cookies" no rodapé e a Privacidade como antes — ' + JSON.stringify(t));
+  let { browser, page } = await abrir({ w: 390, cookies: true });
+  // Ligado em 06/11/2026 com o Pixel do GuiaTennis.
+  let t = await page.evaluate(() => ({ id: META_PIXEL.id, priv: PRIVACY_HTML.includes('Cookies da Meta (só com a sua permissão)') && PRIVACY_HTML.includes('Última atualização: 6 de novembro de 2026') }));
+  ok(t.id === '2565402353955968' && t.priv, 'o Pixel do GuiaTennis ligado, com a Privacidade nova e a data de 06/11');
+  await page.evaluate(() => { META_PIXEL.id = ''; render(); });
+  t = await page.evaluate(() => ({ aviso: !!document.querySelector('.gt-cookies'), fbq: !!window.fbq, rodape: !!document.getElementById('footer-cookies') }));
+  ok(!t.aviso && !t.fbq && !t.rodape, 'sem o número do Pixel: sem aviso, sem Pixel e sem "Cookies" no rodapé — ' + JSON.stringify(t));
 
   await page.evaluate(() => { META_PIXEL.id = '123'; render(); });
   t = await page.evaluate(() => ({ aviso: document.querySelector('.gt-cookies')?.innerText || '', bts: [...document.querySelectorAll('[data-cookies]')].map(b => b.innerText + ':' + Math.round(b.getBoundingClientRect().width)), fbq: !!window.fbq }));
@@ -25,7 +29,7 @@ const { abrir, ok } = require('./harness');
   ok(t.fbq && t.script && t.fila.includes('init:123') && t.fila.includes('track:PageView') && t.fila.includes('track:Contact'), '"Aceitar": o Pixel carrega e conta a visita e o contato com a academia — ' + t.fila.join(', '));
   await browser.close();
 
-  ({ browser, page } = await abrir({ admin: true }));
+  ({ browser, page } = await abrir({ admin: true, cookies: true }));
   await page.evaluate(() => { META_PIXEL.id = '123'; render(); });
   ok(!(await page.$('.gt-cookies')) && !(await page.evaluate(() => !!window.fbq)), 'o admin não vê o aviso nem carrega o Pixel');
   await browser.close();

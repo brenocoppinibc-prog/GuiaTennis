@@ -63,6 +63,9 @@ async function abrir(opts = {}) {
     if (!o.pushes) { try { localStorage.setItem('guiatennis_push_conta_v1', String(Date.now())); } catch (e) {} }
     // A dica do Parceiros (22/10/2026) só aparece com opts.dicas, pelo mesmo motivo.
     if (!o.dicas) { try { localStorage.setItem('guiatennis_dica_parceiros_v1', JSON.stringify({ '*': Date.now() + 864e5 })); } catch (e) {} }
+    // O aviso de cookies (regra 218, Pixel ligado em 06/11) só aparece com
+    // opts.cookies, para não cobrir os botões nos outros testes.
+    if (!o.cookies) { try { localStorage.setItem('guiatennis_cookies_v1', JSON.stringify('recusou')); } catch (e) {} }
   }, opts);
   // opts.host abre o site num endereço de verdade (o de teste do Netlify, por
   // exemplo) e opts.trocar mexe no index.html antes de servir.

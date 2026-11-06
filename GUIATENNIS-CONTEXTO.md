@@ -435,7 +435,7 @@ textos novos dos valores de Aulas e Locação e os centavos com vírgula; regra 
 avaliação e resposta aparecem meio cinza com "Publicando…" enquanto salvam; regra 215, a bola girando mais realista e em
 todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 217, o site mais
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
-versão fixa; regra 218, o Pixel da Meta pronto e desligado). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -496,20 +496,16 @@ estão todos na prévia.
    do WhatsApp Business pela de `divulgacao/`.
 7. Antigos: fechar o PR #1; no Supabase de teste, desligar o cadastro
    aberto; backup mensal; 2 etapas nas contas.
-7a. **Pixel da Meta (regra 218): ligar quando começar a anunciar no
-   Instagram.** Pedir ao Breno o número do Pixel (Gerenciador de Eventos da
-   Meta) e preencher `META_PIXEL = { id: "…", ligadoEm: "<data por extenso>" }`
-   no `index.html`; o aviso de cookies, o "Cookies" do rodapé e o parágrafo da
-   Privacidade (com a data nova) aparecem sozinhos. Conferir os testes
-   `pixel-da-meta.js`, `ficha-basica.js` e `regras-de-conteudo.js` (a data).
+7a. **Pixel da Meta ligado (06/11/2026):** `META_PIXEL.id = "2565402353955968"`
+   (o Pixel "GuiaTennis" do Gerenciador de Eventos). Os testes não veem o aviso
+   de cookies (o `harness.js` grava "recusou"; `abrir({ cookies: true })` mostra).
+   Depois do merge: verificar o domínio guiatennis.com.br no Meta Business e
+   configurar o evento "Contact" como conversão dos anúncios.
 8. Acompanhamento do jogador: o lembrete pelo WhatsApp entra quando a Meta
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
 **Próximo número:** regra 219.
-
-**Descrição do PR:** a regra 218 ainda não entrou nela (economia de limite):
-incluir junto com a próxima mudança.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -920,7 +916,11 @@ incluir junto com a próxima mudança.
   academia, em `trackClick`) e CompleteRegistration (conta de jogador), sem
   dado pessoal; admin e conta da academia não contam; "Cookies" no rodapé
   reabre a escolha; a Privacidade (seção 6) troca o texto e a data sozinha.
-  Como o Booking e o Airbnb. Sem SQL. Teste: `pixel-da-meta.js` (novo).
+  Como o Booking e o Airbnb. Ligado no mesmo dia ("eu quero ativar os
+  cookies"), com o Pixel 2565402353955968: Privacidade em 6 de novembro (os
+  Termos seguem em 5). Sem o `<noscript>` do código da Meta (contaria sem o
+  aceite). Sem SQL. Testes: `pixel-da-meta.js` (novo), `ficha-basica.js` e
+  `regras-de-conteudo.js` (a data).
 
 ## 11. WhatsApp e mensagem para as academias
 

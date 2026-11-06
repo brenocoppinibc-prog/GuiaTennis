@@ -24,9 +24,22 @@ const { abrir, ok } = require('./harness');
   await page.evaluate(() => { localStorage.removeItem(COOKIES_KEY); render(); });
   await page.click('[data-cookies="aceitou"]');
   await page.waitForTimeout(150);
-  await page.evaluate(() => trackClick('a1', 'whatsapp'));
+  await page.evaluate(() => { trackClick('a1', 'visualizacao'); trackClick('a1', 'whatsapp'); });
   t = await page.evaluate(() => ({ fbq: !!window.fbq, script: !!document.querySelector('script[src*="connect.facebook.net"]'), fila: (window.fbq && window.fbq.queue || []).map(a => a[0] + ':' + a[1]) }));
-  ok(t.fbq && t.script && t.fila.includes('init:123') && t.fila.includes('track:PageView') && t.fila.includes('track:Contact'), '"Aceitar": o Pixel carrega e conta a visita e o contato com a academia — ' + t.fila.join(', '));
+  ok(t.fbq && t.script && t.fila.includes('init:123') && t.fila.includes('track:PageView') && t.fila.includes('track:Contact') && t.fila.includes('track:ViewContent'), '"Aceitar": o Pixel carrega e conta a visita, a ficha vista e o contato com a academia — ' + t.fila.join(', '));
+  const ids = await page.evaluate(() => window.fbq.queue.filter(a => a[1] === 'Contact' || a[1] === 'ViewContent').map(a => (a[2].content_ids || []).join()).join('|'));
+  ok(ids === 'a1|a1', 'a ficha vista e o contato levam o id da academia, o mesmo do catálogo (regra 219) — ' + ids);
+  await browser.close();
+
+  // A correspondência controlada: o e-mail só do jogador logado, nunca da academia.
+  ({ browser, page } = await abrir({ jogador: true, cookies: true }));
+  await page.click('[data-cookies="aceitou"]');
+  await page.waitForTimeout(150);
+  t = await page.evaluate(() => JSON.stringify((window.fbq.queue.find(a => a[0] === 'init') || [])[2] || {}));
+  ok(t === '{"em":"ana@exemplo.com"}', 'jogador logado que aceitou: o e-mail vai na correspondência (o Pixel cifra) — ' + t);
+  await browser.close();
+  ({ browser, page } = await abrir({ academia: 'a1', cookies: true }));
+  ok(await page.evaluate(() => JSON.stringify(correspondenciaDoPixel()) === '{}' && !window.fbq), 'conta de academia: nem e-mail, nem Pixel');
   await browser.close();
 
   ({ browser, page } = await abrir({ admin: true, cookies: true }));

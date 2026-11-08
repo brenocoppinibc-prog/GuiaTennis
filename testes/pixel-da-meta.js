@@ -6,13 +6,13 @@ const { abrir, ok } = require('./harness');
 (async () => {
   let { browser, page } = await abrir({ w: 390, cookies: true });
   // Ligado em 06/11/2026 com o Pixel do GuiaTennis.
-  let t = await page.evaluate(() => ({ id: META_PIXEL.id, priv: PRIVACY_HTML.includes('Cookies da Meta (só com a sua permissão)') && PRIVACY_HTML.includes('Última atualização: 6 de novembro de 2026') }));
-  ok(t.id === '2565402353955968' && t.priv, 'o Pixel do GuiaTennis ligado, com a Privacidade nova e a data de 06/11');
-  await page.evaluate(() => { META_PIXEL.id = ''; render(); });
+  let t = await page.evaluate(() => ({ id: META_PIXEL.id, priv: PRIVACY_HTML.includes('Cookies de anúncio da Meta e do Google (só com a sua permissão)') && PRIVACY_HTML.includes('Última atualização: 8 de novembro de 2026') }));
+  ok(t.id === '2565402353955968' && t.priv, 'o Pixel do GuiaTennis ligado, com a Privacidade nova e a data de 08/11');
+  await page.evaluate(() => { META_PIXEL.id = ''; GOOGLE_ADS.id = ''; render(); });
   t = await page.evaluate(() => ({ aviso: !!document.querySelector('.gt-cookies'), fbq: !!window.fbq, rodape: !!document.getElementById('footer-cookies') }));
   ok(!t.aviso && !t.fbq && !t.rodape, 'sem o número do Pixel: sem aviso, sem Pixel e sem "Cookies" no rodapé — ' + JSON.stringify(t));
 
-  await page.evaluate(() => { META_PIXEL.id = '123'; render(); });
+  await page.evaluate(() => { META_PIXEL.id = '123'; GOOGLE_ADS.id = 'AW-1'; render(); });
   t = await page.evaluate(() => ({ aviso: document.querySelector('.gt-cookies')?.innerText || '', bts: [...document.querySelectorAll('[data-cookies]')].map(b => b.innerText + ':' + Math.round(b.getBoundingClientRect().width)), fbq: !!window.fbq }));
   const [rec, ace] = t.bts.map(x => x.split(':'));
   ok(t.aviso.includes('Com a sua permissão') && rec[0] === 'Recusar' && ace[0] === 'Aceitar' && rec[1] === ace[1] && !t.fbq, 'ligado: o aviso com "Recusar" e "Aceitar" do mesmo tamanho, e o Pixel ainda não carrega — ' + t.bts.join(' / '));
@@ -29,6 +29,9 @@ const { abrir, ok } = require('./harness');
   ok(t.fbq && t.script && t.fila.includes('init:123') && t.fila.includes('track:PageView') && t.fila.includes('track:Contact') && t.fila.includes('track:ViewContent'), '"Aceitar": o Pixel carrega e conta a visita, a ficha vista e o contato com a academia — ' + t.fila.join(', '));
   const ids = await page.evaluate(() => window.fbq.queue.filter(a => a[1] === 'Contact' || a[1] === 'ViewContent').map(a => (a[2].content_ids || []).join()).join('|'));
   ok(ids === 'a1|a1', 'a ficha vista e o contato levam o id da academia, o mesmo do catálogo (regra 219) — ' + ids);
+  // A tag do Google Ads (08/11), atrás do mesmo aviso.
+  const g = await page.evaluate(() => ({ script: !!document.querySelector('script[src*="googletagmanager.com/gtag/js?id=AW-1"]'), ev: (window.dataLayer || []).map(a => a[0] + ':' + a[1]).join(', '), item: JSON.stringify(((window.dataLayer || []).find(a => a[1] === 'generate_lead') || [])[2]) }));
+  ok(g.script && g.ev.includes('config:AW-1') && g.ev.includes('event:view_item') && g.ev.includes('event:generate_lead') && g.item.includes('"id":"a1"'), 'a tag do Google carrega junto e conta a ficha vista e o contato, com o id da academia — ' + g.ev);
   await browser.close();
 
   // A correspondência controlada: o e-mail só do jogador logado, nunca da academia.

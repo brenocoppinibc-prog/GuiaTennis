@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 06/11/2026 (regra 219)
+**Atualizado em:** 08/11/2026 (regra 220)
 
 | | |
 |---|---|
@@ -437,7 +437,7 @@ todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 21
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
 versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11; regra 219,
 o catálogo das academias para os anúncios da Meta e a correspondência
-controlada). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+controlada; regra 220, a tag do Google Ads atrás do mesmo aviso). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -453,7 +453,7 @@ ficha para a escolha (197 a 200).
 verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
 (05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
-novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 219 (lista na descrição do PR). **Falta a bateria completa antes do "pode
+novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 220 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
@@ -466,7 +466,7 @@ commit de código: `c6f40e4` (regra 211); o SQL mais novo
 (`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
 mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
 Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
-Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 219)
+Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 220)
 estão todos na prévia.
 
 **Pendências do Breno:**
@@ -506,14 +506,19 @@ estão todos na prévia.
    catálogo com o feed programado https://guiatennis.com.br/catalogo-meta.csv
    (todo dia), ligado ao Pixel. A "Correspondência avançada automática" do
    Pixel fica **desligada** na Meta (o site manda só o e-mail do jogador).
+   **Google Ads (08/11):** tag `AW-18561506462` ligada (`GOOGLE_ADS`); falta o
+   `rotuloContato` (o "…/AbC" do send_to da ação "Chamou uma academia", que o
+   Breno não conseguiu criar no celular: pedir quando ele criar no computador).
+   Campanha criada por ele (palavras: aula de tênis, aluguel de quadra…; só
+   São Paulo; idioma português), para rodar depois do "pode subir".
 8. Acompanhamento do jogador: o lembrete pelo WhatsApp entra quando a Meta
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 220.
+**Próximo número:** regra 221.
 
 **Descrição do PR:** os catálogos de todas as plataformas (fim da regra 219)
-ainda não entraram nela: incluir junto com a próxima mudança.
+e a regra 220 ainda não entraram nela: incluir junto com a próxima mudança.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -953,6 +958,15 @@ ainda não entraram nela: incluir junto com a próxima mudança.
   remarketing no Google e no TikTok ainda pede a tag de cada um, com o mesmo
   aviso de cookies (pedir o id ao Breno quando criar as contas). Sem SQL. Testes: `catalogo-meta.mjs` (novo, no
   `rodar-todos.sh`), `pixel-da-meta.js`, `ficha-basica.js`,
+  `regras-de-conteudo.js`.
+- 220 (08/11) A tag do Google Ads (`AW-18561506462`, `GOOGLE_ADS`) atrás do
+  mesmo aviso de cookies (`carregarGoogle`): `config` (visita), `view_item` e
+  `generate_lead` com o id da academia (o mesmo do `/catalogo-google.csv`,
+  `google_business_vertical: "custom"`), `sign_up`; a conversão
+  ("conversion" com o `rotuloContato`) só quando o rótulo existir. Sem e-mail
+  para o Google. Aviso de cookies "da Meta e do Google"; Privacidade (seção 6)
+  e Termos (as fichas nos anúncios do Google e de outras plataformas) em 8 de
+  novembro. Sem SQL. Testes: `pixel-da-meta.js`, `ficha-basica.js`,
   `regras-de-conteudo.js`.
 
 ## 11. WhatsApp e mensagem para as academias

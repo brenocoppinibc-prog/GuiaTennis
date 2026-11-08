@@ -511,6 +511,8 @@ estão todos na prévia.
    Breno não conseguiu criar no celular: pedir quando ele criar no computador).
    Campanha criada por ele (palavras: aula de tênis, aluguel de quadra…; só
    São Paulo; idioma português), para rodar depois do "pode subir".
+   O Gerenciador de Tags (GTM-WSWBDLTM) **não** entra no site (08/11, decisão
+   do Breno): contaria tudo duas vezes com a tag direta.
 8. Acompanhamento do jogador: o lembrete pelo WhatsApp entra quando a Meta
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.

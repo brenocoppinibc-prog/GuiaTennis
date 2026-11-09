@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 08/11/2026 (regra 220)
+**Atualizado em:** 09/11/2026 (regra 220, troca de chat)
 
 | | |
 |---|---|
@@ -414,7 +414,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   SQL novo (05/11: o da regra 209 não rodou). Conferir em Actions e, se faltar,
   rodar à mão no banco de teste (`banco.yml`, `destino: teste`, na branch do PR).
 
-## 9. Estado atual e pendências (03/11/2026)
+## 9. Estado atual e pendências (09/11/2026)
 
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
 avisos por e-mail do Parceiros um por um, SQL
@@ -460,14 +460,20 @@ subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**Chat trocado em 05/11/2026:** o chat novo volta a acompanhar o PR #5 (o
+**Chat trocado em 09/11/2026:** o chat novo volta a acompanhar o PR #5 (o
 anterior deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
-commit de código: `c6f40e4` (regra 211); o SQL mais novo
-(`20261105130000_lista_e_contato_salvo`) já está no banco de teste, aplicado à
-mão pelo "Banco de dados" (seção 8). Layouts da ficha em estudo (A Editorial, B
-Quadra, C Placar) no quadro https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
-Nada em aberto da conversa: os pedidos de 03/11 a 05/11 (regras 201 a 220)
-estão todos na prévia.
+commit de código: `0db20ee` (regra 220, a conversão do Google). O SQL mais novo
+continua `20261105130000_lista_e_contato_salvo` (nada de SQL de 212 a 220). A
+descrição do PR está em dia até a regra 220 (passos 42 a 50). Nada em aberto da
+conversa: os pedidos de 05/11 a 09/11 (regras 212 a 220) estão todos na prévia.
+Marketing combinado nesse chat (detalhe nas regras 218 a 220 e no item 7a):
+Pixel da Meta e tag do Google ligados atrás do aviso de cookies; catálogos em
+`/catalogo-meta.csv`, `/catalogo-google.csv` e `/catalogo.csv?para=…`; a
+campanha do Google Ads foi montada pelo Breno (títulos, palavras e só São
+Paulo) e só deve rodar depois do "pode subir". TikTok e Pinterest: só quando o
+Breno mandar o número da tag de cada um. Layouts da ficha em estudo (A
+Editorial, B Quadra, C Placar) no quadro
+https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
 
 **Pendências do Breno:**
 1. Testar na prévia o que entrou de 26/10 a 01/11 (passos 1

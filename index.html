@@ -3008,10 +3008,12 @@
   .ht-revs-carrossel::-webkit-scrollbar { display: none; }
   @media (min-width: 720px) { .ht-revs.ht-revs-carrossel { grid-auto-columns: calc(50% - 6px); } }
   .ht-rev.ht-rev-ficha { background: var(--bg-alt); border: 0; border-radius: 18px; padding: 20px; scroll-snap-align: start; }
-  .ht-rev-ficha .ht-rev-top { align-items: center; flex-wrap: wrap; gap: 8px; }
+  .ht-rev-ficha .ht-rev-top { align-items: flex-start; gap: 10px; }
+  .ht-rev-ficha .rev-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .ht-rev-ficha .rev-date { display: block; margin-top: 2px; font-size: 12.5px; color: var(--muted); }
   .ht-rev-ficha .ht-rev-badge { border-radius: 6px; font-size: 15px; padding: 6px 9px; }
   .ht-rev-ficha .ht-rev-word { font-size: 14px; font-weight: 600; }
-  .ht-rev-ficha .rev-analise, .ht-rev-ficha .delete-review-btn { margin-left: auto; }
+  .ht-rev-ficha .rev-analise, .ht-rev-ficha .delete-review-btn { margin-left: 0; }
   .ht-rev-ficha .ht-rev-text { flex: 0 0 auto; margin: 14px 0 0; font-size: 16px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
   .ht-rev-ficha.aberta .ht-rev-text { display: block; -webkit-line-clamp: unset; }
   .ht-rev-mais { align-self: flex-start; margin-top: 10px; background: none; border: 0; padding: 0; font: 600 15px var(--fonte-texto); color: var(--green); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -8724,17 +8726,23 @@ function blocoResposta(r, c, onde) {
 // não sobre a resposta da academia.
 function cartaoAvaliacao(r, c, onde) {
   const minha = ehMinha(c) && acessoCompleto() && posso("avaliacoes");
-  // Na ficha, o cartão das avaliações do hoteis.com (26/10/2026): a nota em
-  // cima, o texto (o longo abre em "Mostrar mais") e quem avaliou embaixo.
+  // Na ficha (regra 228, pedido do Breno em 09/11/2026), como o Google Maps e
+  // o Booking: o nome de quem avaliou em cima, a nota à direita, a data menor
+  // embaixo do nome e o texto maior embaixo (o longo abre em "Mostrar mais").
   if (onde === "ficha") return `
     <article class="ht-rev ht-rev-ficha${r.enviando ? " gt-enviando" : ""}"${r.enviando ? ' aria-busy="true"' : ""}>
       <div class="ht-rev-top">
-        <span class="ht-rev-badge">${r.stars}/5</span><span class="ht-rev-word">${scoreWord(r.stars, 1)}</span>
-        ${minha ? `<button type="button" class="rev-analise" data-pedir-analise="${r.id}" data-court="${c.id}" title="Pedir ao GuiaTennis que analise esta avaliação">${icon('warning', 13, 'currentColor')} Pedir análise</button>` : ""}
-        ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
+        <div class="ht-rev-quem">
+          <p class="rev-name ${r.autor_oculto ? "rev-oculto" : ""}">${esc(nomeDoAutor(r))}</p>
+          <span class="rev-date">${r.enviando ? "Publicando…" : formatReviewDate(r.ts) + marcaDeEditada(r.editadaEm)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span>
+        </div>
+        <div class="ht-rev-nota">
+          <span class="ht-rev-nota-l"><span class="ht-rev-badge">${r.stars}/5</span><span class="ht-rev-word">${scoreWord(r.stars, 1)}</span></span>
+          ${minha ? `<button type="button" class="rev-analise" data-pedir-analise="${r.id}" data-court="${c.id}" title="Pedir ao GuiaTennis que analise esta avaliação">${icon('warning', 13, 'currentColor')} Pedir análise</button>` : ""}
+          ${isAdmin ? `<button type="button" class="delete-review-btn" data-review="${r.id}" title="Excluir avaliação">${icon('warning', 13, 'var(--red)')}</button>` : ""}
+        </div>
       </div>
       ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>${r.comment.length > 120 ? `<button type="button" class="ht-rev-mais" data-rev-mais>Mostrar mais</button>` : ""}` : ""}
-      <p class="ht-rev-autor"><span class="rev-name ${r.autor_oculto ? "rev-oculto" : ""}">${esc(nomeDoAutor(r))}</span>, <span class="rev-date">${r.enviando ? "Publicando…" : formatReviewDate(r.ts) + marcaDeEditada(r.editadaEm)}${isAdmin && r.contato_autor ? ` · ${esc(r.contato_autor)}` : ""}</span></p>
       ${ehMinhaAvaliacao(r, c) && !r.enviando ? `<p class="rev-minha"><span>Sua avaliação</span><button type="button" class="inline-link" data-editar-avaliacao="${c.id}">Editar</button></p>` : ""}
       ${blocoResposta(r, c, onde)}
       ${minha || isAdmin || ehDaMinhaConta(c) || !r.id || ehMinhaAvaliacao(r, c) ? "" : `<p class="rev-denunciar-l"><button type="button" class="rev-denunciar" data-denunciar="${r.id}" data-court="${c.id}">Denunciar</button></p>`}

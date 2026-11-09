@@ -156,6 +156,8 @@ async function contestar(page, academia) {
     await page.click('#pc-contestar-continuar');
     await page.waitForTimeout(80);
   }
+  // Regra 222: quem contesta informa o WhatsApp da academia.
+  if (await page.$('#pc-contestar-numero')) await page.fill('#pc-contestar-numero', '11 98888-7777');
   await page.click('#pc-contestar-enviar');
 }
 

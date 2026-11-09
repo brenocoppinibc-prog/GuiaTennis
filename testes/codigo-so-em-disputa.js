@@ -65,7 +65,7 @@ async function pedirPelaTela(page, busca, id) {
   }));
   ok(r.rpc && r.rpc.p_academia === 'a3' && r.destino === 'disputa' && r.email, 'contestar vira disputa e avisa o admin por e-mail');
   // O número não aparece: na disputa, o código vai para o WhatsApp de antes, que pode não ser o da ficha.
-  ok(cartao.includes('Digite o código') && cartao.includes('WhatsApp da Tênis Terceira') && !cartao.includes('•••') && r.campo && !cartao.includes('documento') && !cartao.includes('Sem como receber'),
+  ok(cartao.includes('Digite o código') && cartao.includes('WhatsApp que você informou, (11) 98888-7777') && !cartao.includes('•••') && r.campo && !cartao.includes('documento') && !cartao.includes('Sem como receber'),
     'a tela do código pede o código mandado ao WhatsApp da academia sem outro caminho: o WhatsApp precisa receber (30/10/2026) — ' + cartao.replace(/\s+/g, ' ').slice(0, 160));
   await page.evaluate(async () => { window.__codigos = { 'u-a2|a3': { codigo: '246810', academia: 'a3', tentativas: 0, em: new Date().toISOString() } }; await recarregarConta(); render(); });
   await page.fill('[data-pedido-codigo="a3"]', '246810');
@@ -172,8 +172,8 @@ async function pedirPelaTela(page, busca, id) {
   });
   await page.waitForTimeout(400);
   let painel = await page.evaluate(() => document.body.innerText);
-  ok(painel.includes('Só Aula Tennis · em disputa') && painel.includes('Em disputa com Tito Tomou') && painel.includes('O código vai para o WhatsApp que a academia tinha antes de Tito Tomou assumir, (11) 99999-0001') && painel.includes('o da ficha agora é (11) 91111-2222'),
-    'admin vê a disputa e o WhatsApp que a academia tinha antes de quem administra assumir');
+  ok(painel.includes('Só Aula Tennis · em disputa') && painel.includes('Em disputa com Tito Tomou') && painel.includes('Quem contestou informou: (11) 99999-0001') && painel.includes('WhatsApp da ficha (Tito Tomou): (11) 91111-2222'),
+    'admin vê os dois lados da disputa: o número de quem contestou (aqui, o de antes) e o WhatsApp da ficha (regra 222)');
   ok(painel.includes('Foram ao ar ou foram assumidas sozinhas: revise') && painel.includes('Só Aula Tennis · assumida') && painel.includes('Assumiu: '), 'em Pendências, a academia assumida aparece como "assumida"');
   // WhatsApp do GuiaTennis desligado: "Mandar código" gera, e o Breno manda do WhatsApp dele.
   await page.click('[data-mandar-codigo="u-dona"]');

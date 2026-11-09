@@ -204,7 +204,7 @@
       };
   const whatsappEntra = (ac) => {
     Object.assign(ac, { phone: ac.whatsapp_a_confirmar, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null,
-      whatsapp_codigo_ok_em: null, whatsapp_confirmado_em: new Date().toISOString(), whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null,
+      whatsapp_codigo_ok_em: null, whatsapp_em_confirmacao: false, whatsapp_confirmado_em: new Date().toISOString(), whatsapp_em_revisao_desde: null, whatsapp_em_revisao_numero: null,
       dados_atualizados_em: new Date().toISOString() });
     if (window.__codigosDoWhatsapp) delete window.__codigosDoWhatsapp[ac.id];
     db.problemas_na_ficha.filter(p => p.academia_id === ac.id && p.motivo === "whatsapp" && !p.resolvido_em).forEach(p => { p.resolvido_em = new Date().toISOString(); p.resolucao = "whatsapp_novo"; });
@@ -243,7 +243,8 @@
     if (!window.__whatsappLigado) return "desligado";
     const ac = db.academias.find(y => y.id === academiaId) || {};
     const disputa = db.pedidos_de_acesso.some(p => p.user_id === x.user_id && p.academia_id === academiaId && p.destino === "disputa");
-    const antes = disputa && (db.academia_vinculos.find(v => v.academia_id === academiaId && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha;
+    const contestado = disputa && (db.pedidos_de_acesso.find(p => p.user_id === x.user_id && p.academia_id === academiaId) || {}).numero_contestado;
+    const antes = disputa && (contestado || (db.academia_vinculos.find(v => v.academia_id === academiaId && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha);
     const para = tel(antes || ac.phone || "");
     if (para.length < 10) return "sem_whatsapp";
     const codigo = String(100000 + Math.floor(Math.random() * 900000));
@@ -577,7 +578,7 @@
       return { data: pedidosDe(x.user_id).map(p => {
         const ac = db.academias.find(y => y.id === p.academia_id) || {};
         const c = (window.__codigos || {})[x.user_id + "|" + p.academia_id] || ((window.__codigos || {})[x.user_id] || {}).academia === p.academia_id && (window.__codigos || {})[x.user_id];
-        return { academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, status: ac.status || null, codigo_em: c ? (c.em || p.pedido_em) : null, codigo_ok_em: p.codigo_ok_em || null };
+        return { academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, status: ac.status || null, codigo_em: c ? (c.em || p.pedido_em) : null, codigo_ok_em: p.codigo_ok_em || null, numero_contestado: p.numero_contestado || null };
       }), error:null };
     }
     if (nome === "pedidos_de_acesso_admin") {
@@ -588,7 +589,9 @@
         const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
         const ac = db.academias.find(y => y.id === p.academia_id) || {};
         const c = (window.__codigos || {})[p.user_id + "|" + p.academia_id];
-        return { user_id: p.user_id, academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, codigo_em: c ? c.em : null, codigo_ok_em: p.codigo_ok_em || null,
+        return { user_id: p.user_id, academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, codigo_em: c ? c.em : null, codigo_ok_em: p.codigo_ok_em || null, numero_contestado: p.numero_contestado || null,
+          responsavel_codigo_em: p.destino === "disputa" && (window.__codigosResp || {})[p.academia_id] ? window.__codigosResp[p.academia_id].em : null,
+          responsavel_codigo_ok_em: p.responsavel_codigo_ok_em || null, responsavel_numero: p.responsavel_numero || null,
           nome_responsavel: x.nome_responsavel || null, tratamento: x.tratamento || null, cargo: x.cargo || null, email: x.email || null, usuario: x.usuario, whatsapp: x.whatsapp || null,
           telefone_antes: (db.academia_vinculos.find(v => v.academia_id === p.academia_id && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha || null,
           ...(() => {
@@ -1065,12 +1068,56 @@
       window.__db.pedidos_de_acesso = db.pedidos_de_acesso;
       return { data:"pedido", error:null };
     }
+    // A disputa com dois códigos (regra 222, SQL 20261109130000): o código de
+    // quem administra fica em window.__codigosResp[academia].
+    const principalDe = (id) => sessao && db.academia_vinculos.some(v => v.user_id === sessao.user.id && v.academia_id === id && v.papel === "principal");
+    const disputaDe = (id) => db.pedidos_de_acesso.filter(p => p.academia_id === id && p.destino === "disputa");
+    const codigoResp = (id, codigo) => { window.__codigosResp = window.__codigosResp || {}; window.__codigosResp[id] = { codigo, tentativas: 0, em: new Date().toISOString() }; return codigo; };
+    if (nome === "disputas_das_minhas_academias") {
+      if (window.__semDisputa) return semFuncao;
+      return { data: db.academias.filter(ac => principalDe(ac.id) && disputaDe(ac.id).length).map(ac => ({
+        academia_id: ac.id, nome: ac.name, numero: ac.phone || null, codigo_em: ((window.__codigosResp || {})[ac.id] || {}).em || null,
+        codigo_ok_em: disputaDe(ac.id).map(p => p.responsavel_codigo_ok_em).filter(Boolean).sort().pop() || null })), error:null };
+    }
+    if (nome === "confirmar_codigo_do_responsavel") {
+      if (!principalDe(a.p_academia)) return erro("Só o responsável principal confirma o WhatsApp da academia.", "42501");
+      const ps = disputaDe(a.p_academia);
+      if (!ps.length) return { data:"sem_disputa", error:null };
+      if (ps.some(p => p.responsavel_codigo_ok_em)) return { data:"analise", error:null };
+      const k = (window.__codigosResp || {})[a.p_academia];
+      if (!k) return { data:"sem_codigo", error:null };
+      if (k.tentativas >= 5) return { data:"tentativas", error:null };
+      if (String(a.p_codigo || "").replace(/\D/g, "") !== k.codigo) { k.tentativas++; return { data:"errado", error:null }; }
+      const ac = db.academias.find(y => y.id === a.p_academia) || {};
+      ps.forEach(p => Object.assign(p, { responsavel_codigo_ok_em: new Date().toISOString(), responsavel_numero: ac.phone || null }));
+      delete window.__codigosResp[a.p_academia];
+      db.emails_a_enviar.push({ id: "e-disputa-resp-" + ac.id, tipo: "disputa", para: ADMIN, assunto: "Disputa: quem administra confirmou o WhatsApp da " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"analise", error:null };
+    }
+    if (nome === "pedir_codigo_do_responsavel") {
+      if (!principalDe(a.p_academia)) return erro("Só o responsável principal confirma o WhatsApp da academia.", "42501");
+      if (!window.__whatsappLigado) return { data:"desligado", error:null };
+      codigoResp(a.p_academia, "135790");
+      return { data:"mandado", error:null };
+    }
+    if (nome === "gerar_codigo_do_responsavel") {
+      if (!souAdmin()) return erro("Só o GuiaTennis gera o código.", "42501");
+      if (!disputaDe(a.p_academia).length) return erro("Essa academia não está em disputa.", "22023");
+      return { data: codigoResp(a.p_academia, "112233"), error:null };
+    }
+    if (nome === "mandar_codigo_do_responsavel_admin") {
+      if (!souAdmin()) return erro("Só o GuiaTennis manda o código.", "42501");
+      if (!window.__whatsappLigado) return { data:"desligado", error:null };
+      codigoResp(a.p_academia, "135790");
+      return { data:"mandado", error:null };
+    }
     if (nome === "contestar_academia") {
       if (window.__semDisputa) return semFuncao;
       const x = meuAcesso();
       const p = x && pedidosDe(x.user_id).find(q => q.academia_id === a.p_academia && q.destino === "responsavel");
       if (!p) return erro("Peça para administrar a academia antes de contestar.", "22023");
-      Object.assign(p, { destino: "disputa", pedido_em: new Date().toISOString() });
+      if (String(a.p_numero || "").replace(/\D/g, "").length < 10) return erro("Informe o WhatsApp da academia com DDD.", "22023");
+      Object.assign(p, { destino: "disputa", pedido_em: new Date().toISOString(), numero_contestado: a.p_numero, codigo_ok_em: null, responsavel_codigo_ok_em: null, responsavel_numero: null });
       const ac = db.academias.find(y => y.id === a.p_academia) || {};
       db.emails_a_enviar.push({ id: "e-disputa-" + a.p_academia + x.user_id, tipo: "disputa", para: ADMIN, assunto: "Disputa: " + ac.name, criado_em: p.pedido_em, enviado_em: null, tentativas: 0, erro: null });
       // Banco antes do SQL 20261007140000: não devolve nada.
@@ -1119,7 +1166,15 @@
       const x = db.academia_acessos.find(y => y.user_id === a.p_user);
       const p = x && pedidoDaConta(x.user_id, a.p_academia);
       if (!p) return erro("Pedido não encontrado.", "22023");
-      if (nome === "aprovar_pedido_de_acesso") { if (p.destino === "disputa") vencerDisputa(x, p.academia_id); else ligar(x, p.academia_id); }
+      if (nome === "aprovar_pedido_de_acesso") {
+        if (p.destino === "disputa") {
+          const numero = p.codigo_ok_em && p.numero_contestado;
+          vencerDisputa(x, p.academia_id);
+          const ac = db.academias.find(y => y.id === p.academia_id);
+          if (numero && ac) ac.phone = numero;
+          if (window.__codigosResp) delete window.__codigosResp[p.academia_id];
+        } else ligar(x, p.academia_id);
+      }
       else fecharPedido(x.user_id, p.academia_id);
       return { data:null, error:null };
     }
@@ -1647,22 +1702,24 @@
       if (!administro(a.p_academia)) return erro("Só quem administra a academia confirma o WhatsApp.", "42501");
       const ac = academiaDe(a.p_academia);
       if (!ac || !ac.whatsapp_a_confirmar) return { data:"sem_numero", error:null };
-      if (ac.whatsapp_codigo_ok_em) return { data:"revisao", error:null };
+      if (ac.whatsapp_codigo_ok_em) return { data:"publicado", error:null };
       const k = (window.__codigosDoWhatsapp || {})[ac.id];
       if (!k || !mesmoNumero(k.numero, ac.whatsapp_a_confirmar)) return { data:"sem_codigo", error:null };
       if (k.tentativas >= 5) return { data:"tentativas", error:null };
       if (String(a.p_codigo || "").replace(/\D/g, "") !== k.codigo) { k.tentativas++; return { data:"errado", error:null }; }
       // Banco sem o SQL 20261026180000: o primeiro número entrava na hora.
       if (!ac.whatsapp_antes && window.__semForaDoAr) { whatsappEntra(ac); return { data:"ok", error:null }; }
-      ac.whatsapp_codigo_ok_em = new Date().toISOString();
+      // Regra 222 (SQL 20261109130000): o número entra na ficha na hora,
+      // com "WhatsApp em confirmação pelo GuiaTennis" até o admin conferir.
+      Object.assign(ac, { phone: ac.whatsapp_a_confirmar, whatsapp_codigo_ok_em: new Date().toISOString(), whatsapp_em_confirmacao: true, dados_atualizados_em: new Date().toISOString() });
       delete window.__codigosDoWhatsapp[ac.id];
-      db.emails_a_enviar.push({ id: "e-aprovar-" + ac.id, tipo: "whatsapp_para_aprovar", para: ADMIN, assunto: (ac.whatsapp_antes ? "Troca de WhatsApp para aprovar: " : "WhatsApp para aprovar: ") + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
-      return { data:"revisao", error:null };
+      db.emails_a_enviar.push({ id: "e-aprovar-" + ac.id, tipo: "whatsapp_para_aprovar", para: ADMIN, assunto: "WhatsApp em confirmação: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+      return { data:"publicado", error:null };
     }
     if (nome === "desistir_do_whatsapp_novo") {
       if (!administro(a.p_academia)) return erro("Só quem administra a academia muda o WhatsApp.", "42501");
       const ac = academiaDe(a.p_academia);
-      if (ac) { Object.assign(ac, { whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null }); }
+      if (ac) { Object.assign(ac, { phone: ac.whatsapp_em_confirmacao ? (ac.whatsapp_antes || null) : ac.phone, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null, whatsapp_em_confirmacao: false }); }
       if (window.__codigosDoWhatsapp) delete window.__codigosDoWhatsapp[a.p_academia];
       return { data:null, error:null };
     }
@@ -1696,7 +1753,7 @@
       if (!ac || !ac.whatsapp_a_confirmar) return erro("Essa academia não tem WhatsApp esperando.", "22023");
       const numero = ac.whatsapp_a_confirmar;
       if (nome === "aprovar_whatsapp_admin") whatsappEntra(ac);
-      else { Object.assign(ac, { whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null }); }
+      else { Object.assign(ac, { phone: ac.whatsapp_em_confirmacao ? (ac.whatsapp_antes || null) : ac.phone, whatsapp_a_confirmar: null, whatsapp_antes: null, whatsapp_pedido_em: null, whatsapp_pedido_por: null, whatsapp_codigo_ok_em: null, whatsapp_em_confirmacao: false }); }
       db.emails_a_enviar.push({ id: "e-" + nome + "-" + ac.id, tipo: nome === "aprovar_whatsapp_admin" ? "whatsapp_aprovado" : "whatsapp_recusado", para: "equipe", assunto: (nome === "aprovar_whatsapp_admin" ? "O WhatsApp novo está na ficha da " : "O WhatsApp novo não entrou na ficha da ") + ac.name, texto: a.p_motivo || numero, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
       return { data:null, error:null };
     }

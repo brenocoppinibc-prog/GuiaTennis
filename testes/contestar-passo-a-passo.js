@@ -64,9 +64,9 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
     'a dica de pedir a quem administra, só "Continuar", nada de "Pular" e nenhum desenho ou animação — ' + JSON.stringify({ desenho: r.desenho, animado: r.animado }));
   await continuar(page);
   let corpo = await texto(page, '#pc-contestar');
-  ok(await etapa(page) === '2 de 4 · O código' && await titulo(page) === 'O código vai para o WhatsApp da academia' && corpo.includes('São 6 números') && corpo.includes('em até 1 dia útil.') && corpo.includes('pode não ser o que está na ficha') && !corpo.includes('•••') && !corpo.includes('2222')
+  ok(await etapa(page) === '2 de 4 · O código' && await titulo(page) === 'Você informa o WhatsApp da academia' && corpo.includes('código de 6 números') && corpo.includes('em até 1 dia útil.') && corpo.includes('Quem administra hoje também confirma, com outro código, o WhatsApp que está na ficha') && !corpo.includes('•••') && !corpo.includes('2222')
     && await page.evaluate(() => [...document.querySelectorAll('.pc-onb-barras i')].map(i => i.className || '-').join(',')) === 'feito,agora,-,-',
-    '2ª tela: o código no WhatsApp da academia, o prazo, por que o número não aparece e a segunda barrinha — ' + corpo.slice(0, 120));
+    '2ª tela (regra 222): você informa o WhatsApp, o prazo, o código de quem administra e a segunda barrinha — ' + corpo.slice(0, 120));
   await continuar(page);
   corpo = await texto(page, '#pc-contestar');
   ok(await etapa(page) === '3 de 4 · O que muda' && await titulo(page) === 'O GuiaTennis analisa e decide' && corpo.includes('O código mostra que você tem o WhatsApp da academia') && corpo.includes('Se a decisão for sua, você passa a administrar a Tênis Terceira') && corpo.includes('a ficha continua no ar'),
@@ -77,9 +77,12 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   await continuar(page);
   await continuar(page);
   corpo = await texto(page, '#pc-contestar');
-  ok(await etapa(page) === '4 de 4 · Contestar' && await titulo(page) === 'Tudo certo para contestar?' && !corpo.includes('Sem como receber') && !corpo.includes('documento')
+  ok(await etapa(page) === '4 de 4 · Contestar' && await titulo(page) === 'Qual é o WhatsApp da academia?' && !!(await page.$('#pc-contestar-numero')) && !corpo.includes('Sem como receber') && !corpo.includes('documento')
     && await texto(page, '#pc-contestar-enviar') === 'Contestar e receber o código' && !(await page.$('#pc-contestar-continuar')),
-    '4ª tela: sem o "Sem como receber?" (o WhatsApp precisa receber, 30/10/2026); e só aqui "Contestar e receber o código"');
+    '4ª tela (regra 222): pede o WhatsApp da academia; só aqui "Contestar e receber o código"');
+  await page.click('#pc-contestar-enviar');
+  await page.waitForTimeout(200);
+  ok((await texto(page, '#pc-contestar')).includes('Escreva o WhatsApp da academia com DDD.') && !(await contestou(page)), 'sem o número, não contesta e pede o WhatsApp com DDD');
   ok(!(await contestou(page)), 'ler as telas não contesta nada');
 
   // ---- a seta na primeira tela sai, sem contestar ----
@@ -94,6 +97,7 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
 
   // ---- contestar: a página vira a tela do código, como a do WhatsApp ----
   for (let k = 0; k < 3; k++) await continuar(page);
+  await page.fill('#pc-contestar-numero', '11 98888-7777');
   await page.click('#pc-contestar-enviar');
   await page.waitForTimeout(600);
   r = await page.evaluate(() => ({
@@ -105,7 +109,7 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   corpo = await texto(page, '#pc-contestar');
   ok(r.aba === 'contestar' && r.modo === 'codigo' && r.destino === 'disputa' && r.topo && !r.desenho && r.caixas === 6 && r.foco === 'pc-codigo',
     'contestado, a página vira a tela do código: o título sem desenho, as 6 caixas já com o cursor e o ✕ no alto — ' + JSON.stringify(r));
-  ok(await titulo(page) === 'Digite o código' && corpo.includes('Mandamos um código de 6 números para o WhatsApp da Tênis Terceira') && corpo.includes('Mandar outro código') && corpo.includes('Digitar depois') && !corpo.includes('documento'),
+  ok(await titulo(page) === 'Digite o código' && corpo.includes('Mandamos um código de 6 números para o WhatsApp que você informou, (11) 98888-7777') && corpo.includes('Mandar outro código') && corpo.includes('Digitar depois') && !corpo.includes('documento'),
     'a tela diz para onde o código foi, com "Mandar outro código" e "Digitar depois", sem outro caminho sem o código');
   await page.fill('#pc-codigo', '48 29');
   await page.waitForTimeout(100);
@@ -148,6 +152,7 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   ok((await texto(page, '#pc-contestar')).includes('em até 1 dia útil depois que você confirmar o seu e-mail'), 'sem o e-mail confirmado, a 2ª tela diz que o código espera a confirmação');
   await continuar(page);
   await continuar(page);
+  await page.fill('#pc-contestar-numero', '11 98888-7777');
   await page.click('#pc-contestar-enviar');
   await page.waitForTimeout(600);
   r = await page.evaluate(() => ({ modo: document.getElementById('pc-contestar')?.dataset.modo, caixas: !!document.querySelector('#pc-contestar [data-pedido-codigo]') }));

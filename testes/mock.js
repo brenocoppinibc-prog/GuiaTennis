@@ -1879,6 +1879,35 @@
         .forEach(p => Object.assign(p, { resolvido_em: new Date().toISOString(), resolucao: nome === "manter_whatsapp_admin" ? "whatsapp_mantido" : "whatsapp_tirado" }));
       return { data:null, error:null };
     }
+    // Denunciar a conta de quem escreveu (regra 224, SQL 20261109150000).
+    if (["denunciar_conta", "denuncias_de_conta_admin", "resolver_denuncia_de_conta"].includes(nome)) {
+      db.denuncias_de_conta = db.denuncias_de_conta || [];
+      if (nome === "denunciar_conta") {
+        const j = euJogador();
+        if (!j) return erro("Entre na sua conta para denunciar.", "42501");
+        if (!["nome", "falsa", "academia", "outro"].includes(a.p_motivo)) return erro("Escolha o motivo.", "22023");
+        if (a.p_motivo === "outro" && !a.p_detalhes) return erro("Conte o que está errado na conta.", "22023");
+        const v = db.avaliacoes.find(r => r.id === a.p_avaliacao);
+        if (!v || !v.user_id) return erro("Avaliação não encontrada.", "22023");
+        if (v.user_id === j.user_id) return erro("Essa conta é sua.", "22023");
+        if (db.denuncias_de_conta.some(d => d.denunciado === v.user_id && d.denunciou === j.user_id && !d.resolvido_em)) return { data:"ja_enviada", error:null };
+        db.denuncias_de_conta.push({ denunciado: v.user_id, denunciou: j.user_id, avaliacao_id: v.id, nome_visto: v.nome_autor, motivo: a.p_motivo, detalhes: a.p_detalhes || null, criado_em: new Date().toISOString(), resolvido_em: null });
+        db.emails_a_enviar.push({ id: "e-dc-" + v.id, tipo: "conta_denunciada", para: ADMIN, assunto: "Conta denunciada: " + (v.nome_autor || "jogador"), criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+        return { data:"enviada", error:null };
+      }
+      if (!souAdmin()) return nome === "denuncias_de_conta_admin" ? { data:[], error:null } : erro("Só o GuiaTennis decide a denúncia.", "42501");
+      const abertas = db.denuncias_de_conta.filter(d => !d.resolvido_em);
+      if (nome === "denuncias_de_conta_admin") return { data: [...new Set(abertas.map(d => d.denunciado))].map(u => {
+        const ds = abertas.filter(d => d.denunciado === u);
+        return { denunciado: u, nome: ds[ds.length - 1].nome_visto, email: u + "@exemplo.com", nome_visto: ds[ds.length - 1].nome_visto, denuncias: ds.length,
+          motivos: [...new Set(ds.map(d => d.motivo))], detalhes: ds.map(d => d.detalhes).filter(Boolean),
+          academias: [...new Set(ds.map(d => ((academiaDe((db.avaliacoes.find(r => r.id === d.avaliacao_id) || {}).academia_id) || {}).name)).filter(Boolean))],
+          avaliacoes: db.avaliacoes.filter(r => r.user_id === u).length, nome_suspenso: false, primeira: ds[0].criado_em };
+      }), error:null };
+      abertas.filter(d => d.denunciado === a.p_user).forEach(d => { d.resolvido_em = new Date().toISOString(); d.resolucao = a.p_suspender ? "suspendeu" : "manteve"; });
+      if (a.p_suspender) { window.__suspensosPelaConta = (window.__suspensosPelaConta || []).concat([{ user: a.p_user, motivo: a.p_motivo }]); }
+      return { data:null, error:null };
+    }
     if (nome === "denunciar_avaliacao") {
       const j = euJogador();
       if (!j) return erro("Entre na sua conta para denunciar.", "42501");

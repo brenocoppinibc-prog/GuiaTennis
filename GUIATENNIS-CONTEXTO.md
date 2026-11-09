@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 09/11/2026 (regra 223)
+**Atualizado em:** 09/11/2026 (regra 224)
 
 | | |
 |---|---|
@@ -348,7 +348,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**815 conferências**,
+- **Banco local** para o `testes/banco-emails.py` (**827 conferências**,
   nenhuma falha, 09/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
@@ -437,7 +437,7 @@ todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 21
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
 versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11; regra 219,
 o catálogo das academias para os anúncios da Meta e a correspondência
-controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -450,8 +450,8 @@ passo, em telas com o cabeçalho, a mini prévia da academia e a volta da
 ficha para a escolha (197 a 200).
 
 **Testes:** a bateria completa de 04/11 (regra 206) deu **2.289
-verificações, nenhuma falha**; o `banco-emails.py` deu 815 no banco local
-(09/11, regra 223). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
+verificações, nenhuma falha**; o `banco-emails.py` deu 827 no banco local
+(09/11, regra 224). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
 novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 220 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
@@ -462,11 +462,13 @@ e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
 **Chat trocado em 09/11/2026:** o chat novo volta a acompanhar o PR #5 (o
 anterior deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
-pedido: regra 223 (contestar o acesso de outra pessoa), com o SQL
-`20261109140000_contestar_acesso` (entra sozinho no banco de teste com o push;
-conferir em Actions). A descrição do PR está em dia até a regra 223 (passos 42
-a 54). Nada em aberto da conversa: os pedidos de 05/11 a 09/11 (regras 212 a
-223) estão todos na prévia.
+pedido: regra 224 (denunciar a conta de quem escreveu a avaliação), com o SQL
+`20261109150000_denunciar_conta`. **O "Banco de dados" não roda sozinho com os
+pushes do Claude** (desde 05/11): depois de cada SQL novo, disparar à mão
+(`banco.yml`, `destino: teste`, na branch do PR) e conferir em Actions; em 09/11
+foi disparado para os SQLs de 221 a 224. A descrição do PR está em dia até a
+regra 224 (passos 42 a 55). Nada em aberto da conversa: os pedidos de 05/11 a
+09/11 (regras 212 a 224) estão todos na prévia.
 Marketing combinado nesse chat (detalhe nas regras 218 a 220 e no item 7a):
 Pixel da Meta e tag do Google ligados atrás do aviso de cookies; catálogos em
 `/catalogo-meta.csv`, `/catalogo-google.csv` e `/catalogo.csv?para=…`; a
@@ -1024,6 +1026,21 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `contestacoes_de_acesso_admin`, `resolver_contestacao_de_acesso`). Termos,
   Privacidade e chat. Testes: `contestar-acesso.js` (novo) e mais 8 (374
   verificações), `banco-emails.py` (815).
+- **224 (09/11) — denunciar a conta de quem escreveu a avaliação.** O
+  "Denunciar" da avaliação virou "Denunciar" com dois grupos: "A avaliação" (os
+  5 motivos de antes) e "A conta de quem escreveu" (nome ofensivo ou impróprio,
+  conta falsa ou se passando por outra pessoa, conta da academia ou de
+  concorrente, outro — este pede o que viu). Precisa estar logado; nada muda;
+  quem foi denunciado não sabe quem denunciou; o admin recebe "Conta denunciada:
+  …" e, em Pendências › Contas denunciadas (uma linha por conta), "Manter" ou
+  "Suspender o nome" (o motivo já vem escrito; usa o `suspender_nome_admin`).
+  SQL `20261109150000_denunciar_conta` (tabela `denuncias_de_conta`,
+  `denunciar_conta`, `denuncias_de_conta_admin`, `resolver_denuncia_de_conta`).
+  Termos, Privacidade e chat ("Denunciar uma conta ou um nome"). Testes:
+  `denunciar-conta.js` (novo), `veracidade.js`, `regras-de-conteudo.js`,
+  `avaliacao-editada.js` (a data da Privacidade estava velha desde 06/11),
+  `ficha-basica.js`, `nome-suspenso.js`, `perfil-e-avaliar.js`,
+  `chat-parceiros.js`, `banco-emails.py` (827).
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -199,7 +199,7 @@ const mudarAcademia = (page, id, campos) => page.evaluate(async ({ id, campos })
   await page.click('[data-denunciar="r9"]');
   await page.waitForTimeout(200);
   r = await page.evaluate(() => ({ t: document.querySelector('#aviso-ficha-close-overlay .sheet-title')?.innerText || '', n: document.querySelectorAll('.aviso-opcao').length }));
-  ok(r.t === 'Denunciar a avaliação' && r.n === 5, '"Denunciar": a janela com os motivos');
+  ok(r.t === 'Denunciar' && r.n === 9, '"Denunciar": a janela com os motivos da avaliação e da conta (regra 224)');
   await page.click('.aviso-opcao input[value="propaganda"]');
   await page.click('#aviso-ficha-enviar');
   await page.waitForTimeout(300);

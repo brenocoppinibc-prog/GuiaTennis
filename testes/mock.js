@@ -1219,21 +1219,32 @@
       return { data:"ok", error:null };
     }
     // Contestar o acesso de outra pessoa (regra 223, SQL 20261109140000).
-    if (["contestar_acesso", "minhas_contestacoes_de_acesso", "contestacoes_de_acesso_admin", "resolver_contestacao_de_acesso"].includes(nome)) {
+    if (["contestar_acesso", "minhas_contestacoes_de_acesso", "contestacoes_de_acesso_admin", "resolver_contestacao_de_acesso", "verificacoes_do_meu_acesso", "responder_verificacao_de_acesso"].includes(nome)) {
       if (window.__semContestarAcesso) return semFuncao;
       db.contestacoes_de_acesso = db.contestacoes_de_acesso || [];
       const x = meuAcesso();
       if (nome === "contestar_acesso") {
         if (!x || !db.academia_vinculos.some(v => v.user_id === x.user_id && v.academia_id === a.p_academia)) return erro("Só quem tem acesso à academia contesta um acesso.", "42501");
         if (a.p_user === x.user_id) return erro("Você não pode contestar o próprio acesso.", "22023");
-        if (a.p_conhece == null || !a.p_quem_e || !a.p_motivo) return erro("Responda às perguntas.", "22023");
+        if (!a.p_meu_quem_e || !a.p_meu_desde || String(a.p_meu_o_que_faz || "").trim().length < 3) return erro("Conte quem você é na academia, o que faz e há quanto tempo está lá.", "22023");
+        if (a.p_conhece == null || !a.p_quem_e || !a.p_motivo || !a.p_suspeita) return erro("Responda às perguntas.", "22023");
         if (a.p_quem_e !== "nao_sei" && String(a.p_o_que_faz || "").trim().length < 3) return erro("Conte o que essa pessoa faz (ou fazia) na academia.", "22023");
         if (db.contestacoes_de_acesso.some(c => c.academia_id === a.p_academia && c.contestado === a.p_user && c.contestou === x.user_id && !c.resolvido_em)) return { data:"ja_enviada", error:null };
         const ac = db.academias.find(y => y.id === a.p_academia) || {};
         db.contestacoes_de_acesso.push({ id: "ca-" + db.contestacoes_de_acesso.length, academia_id: a.p_academia, contestado: a.p_user, contestou: x.user_id, conhece: !!a.p_conhece,
-          quem_e: a.p_quem_e, o_que_faz: a.p_o_que_faz || null, motivo: a.p_motivo, detalhes: a.p_detalhes || null, criado_em: new Date().toISOString(), resolvido_em: null });
+          quem_e: a.p_quem_e, o_que_faz: a.p_o_que_faz || null, motivo: a.p_motivo, detalhes: a.p_detalhes || null, criado_em: new Date().toISOString(), resolvido_em: null,
+          contestou_quem_e: a.p_meu_quem_e, contestou_o_que_faz: a.p_meu_o_que_faz, contestou_desde: a.p_meu_desde, suspeita: a.p_suspeita });
         db.emails_a_enviar.push({ id: "e-ca-" + db.contestacoes_de_acesso.length, tipo: "acesso_contestado", para: ADMIN, assunto: "Acesso contestado: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
         return { data:"enviada", error:null };
+      }
+      if (nome === "verificacoes_do_meu_acesso") return { data: x ? db.contestacoes_de_acesso.filter(c => c.contestado === x.user_id && !c.resolvido_em)
+        .map(c => ({ id: c.id, academia_id: c.academia_id, academia: (db.academias.find(z => z.id === c.academia_id) || {}).name, criado_em: c.criado_em, respondido_em: c.respondido_em || null })) : [], error:null };
+      if (nome === "responder_verificacao_de_acesso") {
+        const cs = x ? db.contestacoes_de_acesso.filter(c => c.contestado === x.user_id && c.academia_id === a.p_academia && !c.resolvido_em) : [];
+        if (!cs.length) return { data:"sem_verificacao", error:null };
+        if (!a.p_quem_e || !a.p_desde || String(a.p_o_que_faz || "").trim().length < 3) return erro("Conte quem você é na academia, o que faz e há quanto tempo está lá.", "22023");
+        cs.forEach(c => Object.assign(c, { resposta_quem_e: a.p_quem_e, resposta_o_que_faz: a.p_o_que_faz, resposta_desde: a.p_desde, resposta_texto: a.p_texto || null, respondido_em: new Date().toISOString() }));
+        return { data:"respondida", error:null };
       }
       if (nome === "minhas_contestacoes_de_acesso") return { data: x ? db.contestacoes_de_acesso.filter(c => c.academia_id === a.p_academia && c.contestou === x.user_id && !c.resolvido_em).map(c => c.contestado) : [], error:null };
       if (!souAdmin()) return nome === "contestacoes_de_acesso_admin" ? { data:[], error:null } : erro("Só o GuiaTennis decide a contestação.", "42501");

@@ -1218,6 +1218,37 @@
       ligar(x, c.academia);
       return { data:"ok", error:null };
     }
+    // Contestar o acesso de outra pessoa (regra 223, SQL 20261109140000).
+    if (["contestar_acesso", "minhas_contestacoes_de_acesso", "contestacoes_de_acesso_admin", "resolver_contestacao_de_acesso"].includes(nome)) {
+      if (window.__semContestarAcesso) return semFuncao;
+      db.contestacoes_de_acesso = db.contestacoes_de_acesso || [];
+      const x = meuAcesso();
+      if (nome === "contestar_acesso") {
+        if (!x || !db.academia_vinculos.some(v => v.user_id === x.user_id && v.academia_id === a.p_academia)) return erro("Só quem tem acesso à academia contesta um acesso.", "42501");
+        if (a.p_user === x.user_id) return erro("Você não pode contestar o próprio acesso.", "22023");
+        if (a.p_conhece == null || !a.p_quem_e || !a.p_motivo) return erro("Responda às perguntas.", "22023");
+        if (a.p_quem_e !== "nao_sei" && String(a.p_o_que_faz || "").trim().length < 3) return erro("Conte o que essa pessoa faz (ou fazia) na academia.", "22023");
+        if (db.contestacoes_de_acesso.some(c => c.academia_id === a.p_academia && c.contestado === a.p_user && c.contestou === x.user_id && !c.resolvido_em)) return { data:"ja_enviada", error:null };
+        const ac = db.academias.find(y => y.id === a.p_academia) || {};
+        db.contestacoes_de_acesso.push({ id: "ca-" + db.contestacoes_de_acesso.length, academia_id: a.p_academia, contestado: a.p_user, contestou: x.user_id, conhece: !!a.p_conhece,
+          quem_e: a.p_quem_e, o_que_faz: a.p_o_que_faz || null, motivo: a.p_motivo, detalhes: a.p_detalhes || null, criado_em: new Date().toISOString(), resolvido_em: null });
+        db.emails_a_enviar.push({ id: "e-ca-" + db.contestacoes_de_acesso.length, tipo: "acesso_contestado", para: ADMIN, assunto: "Acesso contestado: " + ac.name, criado_em: new Date().toISOString(), enviado_em: null, tentativas: 0, erro: null });
+        return { data:"enviada", error:null };
+      }
+      if (nome === "minhas_contestacoes_de_acesso") return { data: x ? db.contestacoes_de_acesso.filter(c => c.academia_id === a.p_academia && c.contestou === x.user_id && !c.resolvido_em).map(c => c.contestado) : [], error:null };
+      if (!souAdmin()) return nome === "contestacoes_de_acesso_admin" ? { data:[], error:null } : erro("Só o GuiaTennis decide a contestação.", "42501");
+      if (nome === "contestacoes_de_acesso_admin") return { data: db.contestacoes_de_acesso.filter(c => !c.resolvido_em).map(c => {
+        const y = db.academia_acessos.find(z => z.user_id === c.contestado) || {}, w = db.academia_acessos.find(z => z.user_id === c.contestou) || {};
+        const vy = db.academia_vinculos.find(v => v.user_id === c.contestado && v.academia_id === c.academia_id) || {}, vw = db.academia_vinculos.find(v => v.user_id === c.contestou && v.academia_id === c.academia_id) || {};
+        return { ...c, academia: (db.academias.find(z => z.id === c.academia_id) || {}).name, contestado_nome: y.nome_responsavel, contestado_email: y.email, contestado_cargo: y.cargo || null,
+          contestado_papel: vy.papel, contestado_desde: vy.created_at || null, contestou_nome: w.nome_responsavel, contestou_email: w.email, contestou_cargo: w.cargo || null, contestou_papel: vw.papel };
+      }), error:null };
+      const c = db.contestacoes_de_acesso.find(z => z.id === a.p_id);
+      if (!c) return erro("Contestação não encontrada.", "22023");
+      if (a.p_tirar) db.academia_vinculos = db.academia_vinculos.filter(v => !(v.user_id === c.contestado && v.academia_id === c.academia_id));
+      db.contestacoes_de_acesso.filter(z => z.academia_id === c.academia_id && z.contestado === c.contestado && !z.resolvido_em).forEach(z => { z.resolvido_em = new Date().toISOString(); z.resolucao = a.p_tirar ? "tirou" : "manteve"; });
+      return { data:null, error:null };
+    }
     if (nome === "pessoas_da_minha_academia") {
       const x = meuAcesso();
       if (!x || !x.academia_id) return { data:[], error:null };

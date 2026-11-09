@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 09/11/2026 (regra 222)
+**Atualizado em:** 09/11/2026 (regra 223)
 
 | | |
 |---|---|
@@ -348,7 +348,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**800 conferências**,
+- **Banco local** para o `testes/banco-emails.py` (**815 conferências**,
   nenhuma falha, 09/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
@@ -437,7 +437,7 @@ todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 21
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
 versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11; regra 219,
 o catálogo das academias para os anúncios da Meta e a correspondência
-controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -450,8 +450,8 @@ passo, em telas com o cabeçalho, a mini prévia da academia e a volta da
 ficha para a escolha (197 a 200).
 
 **Testes:** a bateria completa de 04/11 (regra 206) deu **2.289
-verificações, nenhuma falha**; o `banco-emails.py` deu 800 no banco local
-(09/11, regra 222). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
+verificações, nenhuma falha**; o `banco-emails.py` deu 815 no banco local
+(09/11, regra 223). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
 novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 220 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
@@ -462,11 +462,11 @@ e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
 **Chat trocado em 09/11/2026:** o chat novo volta a acompanhar o PR #5 (o
 anterior deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
-pedido: regra 222 (o WhatsApp no ar em confirmação e a disputa com dois
-códigos), com o SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`
-(entra sozinho no banco de teste com o push; conferir em Actions). A descrição
-do PR está em dia até a regra 222 (passos 42 a 53). Nada em aberto da conversa:
-os pedidos de 05/11 a 09/11 (regras 212 a 222) estão todos na prévia.
+pedido: regra 223 (contestar o acesso de outra pessoa), com o SQL
+`20261109140000_contestar_acesso` (entra sozinho no banco de teste com o push;
+conferir em Actions). A descrição do PR está em dia até a regra 223 (passos 42
+a 54). Nada em aberto da conversa: os pedidos de 05/11 a 09/11 (regras 212 a
+223) estão todos na prévia.
 Marketing combinado nesse chat (detalhe nas regras 218 a 220 e no item 7a):
 Pixel da Meta e tag do Google ligados atrás do aviso de cookies; catálogos em
 `/catalogo-meta.csv`, `/catalogo-google.csv` e `/catalogo.csv?para=…`; a
@@ -1010,6 +1010,20 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   (novo), `veracidade.js`, `fechada-guardada.js`, `contestar-passo-a-passo.js`,
   `codigo-so-em-disputa.js`, `codigo-pelo-whatsapp.js` e mais 12 (598
   verificações), `banco-emails.py` (800).
+- **223 (09/11) — contestar o acesso de outra pessoa.** Em Acessos, tocar na
+  pessoa e em "Contestar o acesso" abre um pré-questionário (conhece a pessoa?
+  quem ela é: funcionário(a), professor(a), sócio(a)/dono(a), ex ou não sei;
+  o que faz ou fazia — obrigatório se sabe quem é; o motivo: saiu, não
+  trabalha, não deveria mexer na ficha, outro; detalhes opcionais). Nada muda,
+  a pessoa não é avisada, a linha fica "em verificação pelo GuiaTennis" para
+  quem contestou e o admin recebe o e-mail "Acesso contestado: …". Em
+  Pendências, "Acessos contestados" mostra os dois lados (nome, cargo, e-mail,
+  papel) e as respostas: "Manter o acesso" ou "Tirar o acesso" (só desta
+  academia; a conta continua). SQL `20261109140000_contestar_acesso` (tabela
+  `contestacoes_de_acesso`, `contestar_acesso`, `minhas_contestacoes_de_acesso`,
+  `contestacoes_de_acesso_admin`, `resolver_contestacao_de_acesso`). Termos,
+  Privacidade e chat. Testes: `contestar-acesso.js` (novo) e mais 8 (374
+  verificações), `banco-emails.py` (815).
 
 ## 11. WhatsApp e mensagem para as academias
 

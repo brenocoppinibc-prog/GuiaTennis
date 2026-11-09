@@ -453,8 +453,7 @@ ficha para a escolha (197 a 200).
 verificações, nenhuma falha**; o `banco-emails.py` deu 835 no banco local
 (09/11, regra 225). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
-novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 220 (lista na descrição do PR). **Falta a bateria completa antes do "pode
-subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
+novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 220 (lista na descrição do PR). Bateria completa de 09/11 (até a regra 230): 2.369 verificações, as 4 falhas corrigidas.
 
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
@@ -1090,7 +1089,9 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   um teste no site montado (os que usam `trocar` ou procuram texto do código no
   `innerHTML` só valem na fonte). (2) O mapa (Leaflet) saiu do carregamento:
   `carregarLeaflet()` na primeira vez que um mapa aparece ("Carregando o
-  mapa…") ou em segundo plano 2,5 s depois de abrir. (3) As fontes do Google
+  mapa…") ou em segundo plano uma vez só (`agendarLeaflet`, depois do `load`,
+  com o celular livre); só redesenha a tela quando um mapa está esperando
+  (`__mapaEsperando`), para não tirar o cursor de quem está digitando. (3) As fontes do Google
   não seguram mais a primeira pintura (`media="print"` + `onload`). Medido com o
   celular simulado (CPU 4× mais lenta): pronto em ~950 ms → ~480 ms; HTML de
   503 KB → 43 KB (compactado), mais o `app.*.js` de 330 KB (compactado), que o
@@ -1103,6 +1104,11 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   da Política de Privacidade, que continua dizendo quais são (o que a LGPD e o
   guia da ANPD pedem: a finalidade no aviso e o detalhe na política). "Recusar"
   e "Aceitar" do mesmo tamanho, como antes. Teste: `pixel-da-meta.js`.
+- **Bateria completa (09/11, regras 221 a 230):** 2.369 verificações; as 4
+  falhas que deu foram corrigidas e os testes rodaram de novo sem falha (3
+  vinham do mapa em segundo plano, agendado a cada redesenho; 1 era o
+  `painel-admin.js` desatualizado desde a regra 217, que procurava o endereço
+  antigo da biblioteca do banco).
 
 ## 11. WhatsApp e mensagem para as academias
 

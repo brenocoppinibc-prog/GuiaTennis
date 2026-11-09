@@ -225,7 +225,7 @@ const tela = (page) => page.evaluate(() => ({
   await browser.close();
 
   // ---- Banco sem o SQL do painel: avisa, sem quebrar ----
-  ({ browser, page } = await abrir({ admin: true, q: 'admin/emails', trocar: h => h.replace('<script src="https://unpkg.com/@supabase/supabase-js@2"></script>', '<script>window.__semPainelAdmin = true;</script><script src="https://unpkg.com/@supabase/supabase-js@2"></script>') }));
+  ({ browser, page } = await abrir({ admin: true, q: 'admin/emails', trocar: h => h.replace(/<script src="https:\/\/unpkg\.com\/@supabase\/supabase-js@[^"]*"><\/script>/, m => '<script>window.__semPainelAdmin = true;</script>' + m) }));
   await page.waitForTimeout(300);
   ok((await texto(page, '#painel-admin')).includes('O banco ainda não tem a lista dos e-mails'), 'banco sem o SQL novo: a lista dos e-mails explica que entra com o PR');
   await browser.close();

@@ -9788,10 +9788,20 @@ function carregarLeaflet() {
     document.head.appendChild(js);
   }).then(certo => {
     if (!certo) { FALHAS.leafletFalhou = true; mapaNaoCarregou(); }
-    render();
+    // Só redesenha se algum mapa está esperando: o carregamento em segundo
+    // plano não mexe na tela (nem tira o cursor de quem está digitando).
+    if (__mapaEsperando) { __mapaEsperando = false; render(); }
     return certo;
   });
   return __leaflet;
+}
+let __mapaEsperando = false;
+// Uma vez só, depois que a página terminou de abrir e o celular está livre.
+function agendarLeaflet() {
+  if (window.__leafletAgendado) return;
+  window.__leafletAgendado = true;
+  const depois = () => (window.requestIdleCallback || ((f) => f()))(() => carregarLeaflet(), { timeout: 5000 });
+  if (document.readyState === "complete") depois(); else window.addEventListener("load", depois, { once: true });
 }
 // Enquanto o mapa chega: "Carregando o mapa…"; se não chegar, o aviso de antes.
 function esperarLeaflet(el, classe, aviso) {
@@ -9800,6 +9810,7 @@ function esperarLeaflet(el, classe, aviso) {
     return;
   }
   el.innerHTML = `<div class="${classe}">${bolaGirando(18)} Carregando o mapa…</div>`;
+  __mapaEsperando = true;
   carregarLeaflet();
 }
 function mapaNaoCarregou() {
@@ -22546,7 +22557,7 @@ function montarMapaDoPonto() {
   if (__mapaPonto) { try { __mapaPonto.remove(); } catch (e) {} __mapaPonto = null; }
   const f = window.__form;
   if (!el || !f || typeof f.__lat !== "number") return;
-  if (!window.L) { carregarLeaflet(); return; }
+  if (!window.L) { __mapaEsperando = true; carregarLeaflet(); return; }
   __mapaPonto = L.map(el, { zoomControl: true, scrollWheelZoom: false });
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© colaboradores do OpenStreetMap" }).addTo(__mapaPonto);
   const alfinete = L.marker([f.__lat, f.__lng], { draggable: true, autoPan: true,
@@ -26815,8 +26826,7 @@ function attachEvents() {
   carregarPixel();
   carregarGoogle();
   carregarPinterest();
-  // O mapa em segundo plano, depois que a página abriu (regra 229).
-  setTimeout(() => (window.requestIdleCallback || (f => f()))(() => carregarLeaflet(), { timeout: 4000 }), 2500);
+  agendarLeaflet();
   document.querySelectorAll("[data-cookies]").forEach(el => { el.onclick = () => escolherCookies(el.dataset.cookies); });
   const cookiesPriv = document.getElementById("cookies-privacidade");
   if (cookiesPriv) cookiesPriv.onclick = () => { state.showPrivacy = true; render(); };
@@ -27969,7 +27979,7 @@ function attachEvents() {
   });
 
   const statsMapa = document.getElementById("stats-mapa");
-  if (statsMapa && !window.L && (state.statsPontos || []).length) carregarLeaflet();
+  if (statsMapa && !window.L && (state.statsPontos || []).length) { __mapaEsperando = true; carregarLeaflet(); }
   if (statsMapa && window.L && (state.statsPontos || []).length) {
     try {
       const m = L.map(statsMapa, { zoomControl: true, attributionControl: true });

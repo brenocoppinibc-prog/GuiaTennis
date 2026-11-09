@@ -5125,13 +5125,20 @@ const META_PIXEL = { id: "2565402353955968", ligadoEm: "9 de novembro de 2026" }
 // não conta a conversão, mas já monta o público de quem visitou). Sem
 // correspondência de e-mail no Google (os termos de dados ficam recusados).
 const GOOGLE_ADS = { id: "AW-18561506462", rotuloContato: "uUlSCMKeibUdEJ656JJF" };
+// A tag do Pinterest (regra 226, 09/11/2026), atrás do mesmo aviso: a visita
+// (page), a ficha vista (pagevisit) e o contato (lead) com o id da academia
+// do catálogo (/catalogo.csv?para=pinterest) e a conta criada (signup). A
+// correspondência é a mesma da Meta (só o e-mail do jogador logado que
+// aceitou), cifrada em SHA-256 no aparelho antes de ir; a automática do
+// Pinterest não é usada.
+const PINTEREST_TAG = { id: "2614435484797" };
 const COOKIES_KEY = "guiatennis_cookies_v1";
 function escolhaDeCookies() {
   const v = lerLocal(COOKIES_KEY, null);
   return v === "aceitou" || v === "recusou" ? v : null;
 }
 function precisaDoAvisoDeCookies() {
-  return !!(META_PIXEL.id || GOOGLE_ADS.id) && !isAdmin && !escolhaDeCookies() && !state.marquei;
+  return !!(META_PIXEL.id || GOOGLE_ADS.id || PINTEREST_TAG.id) && !isAdmin && !escolhaDeCookies() && !state.marquei;
 }
 function carregarPixel() {
   if (!META_PIXEL.id || window.fbq || escolhaDeCookies() !== "aceitou" || isAdmin || naoConta()) return;
@@ -5163,9 +5170,28 @@ function carregarGoogle() {
   t.async = true; t.src = "https://www.googletagmanager.com/gtag/js?id=" + GOOGLE_ADS.id;
   document.head.appendChild(t);
 }
+function carregarPinterest() {
+  if (!PINTEREST_TAG.id || window.pintrk || escolhaDeCookies() !== "aceitou" || isAdmin || naoConta()) return;
+  const n = window.pintrk = function () { n.queue.push(Array.prototype.slice.call(arguments)); };
+  n.queue = []; n.version = "3.0";
+  const t = document.createElement("script");
+  t.async = true; t.src = "https://s.pinimg.com/ct/core.js";
+  document.head.appendChild(t);
+  const ligar = (em) => { window.pintrk("load", PINTEREST_TAG.id, em ? { em } : {}); window.pintrk("page"); window.__pinterestPronto = true; };
+  const em = correspondenciaDoPixel().em;
+  if (!em || !(window.crypto && crypto.subtle)) { ligar(null); return; }
+  crypto.subtle.digest("SHA-256", new TextEncoder().encode(em))
+    .then(b => ligar([...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("")), () => ligar(null));
+}
 function eventoDoPixel(nome, dados) {
   if (escolhaDeCookies() !== "aceitou" || isAdmin || naoConta()) return;
   if (window.fbq) window.fbq("track", nome, dados || {});
+  if (window.pintrk && window.__pinterestPronto) {
+    const line_items = ((dados && dados.content_ids) || []).map(id => ({ product_id: id }));
+    if (nome === "ViewContent") window.pintrk("track", "pagevisit", { line_items });
+    if (nome === "Contact") window.pintrk("track", "lead", { lead_type: "contato com a academia", line_items });
+    if (nome === "CompleteRegistration") window.pintrk("track", "signup");
+  }
   if (window.gtag && GOOGLE_ADS.id) {
     const items = ((dados && dados.content_ids) || []).map(id => ({ id, google_business_vertical: "custom" }));
     if (nome === "ViewContent") window.gtag("event", "view_item", { send_to: GOOGLE_ADS.id, items });
@@ -5178,14 +5204,14 @@ function eventoDoPixel(nome, dados) {
 }
 function escolherCookies(v) {
   gravarLocal(COOKIES_KEY, v);
-  if (v === "aceitou") { carregarPixel(); carregarGoogle(); }
+  if (v === "aceitou") { carregarPixel(); carregarGoogle(); carregarPinterest(); }
   render();
 }
 function renderAvisoDeCookies() {
   if (!precisaDoAvisoDeCookies()) return "";
   return `
     <aside class="gt-cookies" role="dialog" aria-label="Cookies">
-      <p class="gt-cookies-t">Com a sua permissão, usamos cookies da Meta e do Google (e, com a conta aberta, o seu e-mail cifrado, só para a Meta) para saber se os nossos anúncios funcionam. Sem eles, o site funciona igual. <button type="button" class="inline-link" id="cookies-privacidade">Política de Privacidade</button></p>
+      <p class="gt-cookies-t">Com a sua permissão, usamos cookies da Meta, do Google e do Pinterest (e, com a conta aberta, o seu e-mail cifrado, só para a Meta e o Pinterest) para saber se os nossos anúncios funcionam. Sem eles, o site funciona igual. <button type="button" class="inline-link" id="cookies-privacidade">Política de Privacidade</button></p>
       <div class="gt-cookies-bts">
         <button type="button" class="cta-btn cta-secondary" data-cookies="recusou">Recusar</button>
         <button type="button" class="cta-btn cta-primary" data-cookies="aceitou">Aceitar</button>
@@ -18303,7 +18329,7 @@ function renderSiteFooter() {
           <h4>Termos e políticas</h4>
           <button type="button" id="terms-link">Termos de Uso</button>
           <button type="button" id="privacy-link">Política de Privacidade</button>
-          ${META_PIXEL.id || GOOGLE_ADS.id ? `<button type="button" id="footer-cookies">Cookies</button>` : ""}
+          ${META_PIXEL.id || GOOGLE_ADS.id || PINTEREST_TAG.id ? `<button type="button" id="footer-cookies">Cookies</button>` : ""}
         </div>
         <div class="sf-col">
           <h4>Suporte</h4>
@@ -23996,7 +24022,7 @@ const PRIVACY_HTML = `
 <p style="font-size:14px">Se uma conta for excluída pelo GuiaTennis por descumprir os Termos de Uso, guardamos o e-mail, o nome, a data e o motivo, só para impedir um novo cadastro com o mesmo e-mail e para a defesa do GuiaTennis. Você pode saber quais dados seus estão armazenados, pedir correção ou exclusão do seu nome, avaliação ou cadastro. O histórico (academias vistas recentemente e a última busca) fica só no seu aparelho: dá para apagar pelo menu do site ou limpando os dados do site nas configurações do navegador. Favoritos, academias chamadas, viagens e preferências ficam na sua conta: você apaga cada um pelo menu, e excluir a conta apaga tudo. Pra avaliação, cadastro de academia, ou seu nome/WhatsApp guardado, entre em contato pelo e-mail abaixo — conseguimos localizar e remover pelo painel administrativo. O responsável por uma academia pode pedir a correção ou a remoção da página dela pelo WhatsApp (11) 92745-6457, pelo mesmo e-mail ou pelo link na própria página. Quem tem a área da academia vê e corrige os próprios dados em "Editar dados" e pode pedir a exclusão do acesso pelos mesmos canais.</p>
 <p class="field-label" style="margin-top:16px">6. Cookies</p>
 <p style="font-size:14px"><strong>Cidade aproximada:</strong> antes de qualquer busca, para mostrar academias perto de você, o site pergunta à hospedagem (Netlify) a cidade aproximada da sua conexão — só a cidade, o estado e um ponto de cerca de 1 km, sem pedir o GPS. Ela fica só na aba aberta e não é guardada pelo GuiaTennis.</p>
-${META_PIXEL.id ? `<p style="font-size:14px"><strong>Cookies de anúncio da Meta e do Google (só com a sua permissão):</strong> para saber se os nossos anúncios no Instagram, no Facebook e no Google funcionam, o site usa o Pixel da Meta e a tag do Google Ads, que guardam cookies no seu navegador e contam, sem o seu nome ou o telefone, quando você abre o site, qual ficha de academia você abre e quando chama uma academia; assim, os anúncios do GuiaTennis mostram academias parecidas com as que você viu. Com a conta de jogador aberta, vai junto o seu e-mail, cifrado no seu aparelho antes de sair, para a Meta reconhecer a sua conta no Instagram e no Facebook; o e-mail de quem administra academia nunca vai, e ao Google não vai e-mail nenhum. Os dois só ligam depois de você tocar em "Aceitar" no aviso de cookies; em "Recusar", nada é enviado à Meta nem ao Google. Você muda a escolha quando quiser, em "Cookies", no rodapé do site. O que a Meta e o Google fazem com esses dados segue a política de privacidade de cada um.</p>
+${META_PIXEL.id ? `<p style="font-size:14px"><strong>Cookies de anúncio da Meta, do Google e do Pinterest (só com a sua permissão):</strong> para saber se os nossos anúncios no Instagram, no Facebook, no Google e no Pinterest funcionam, o site usa o Pixel da Meta, a tag do Google Ads e a tag do Pinterest, que guardam cookies no seu navegador e contam, sem o seu nome ou o telefone, quando você abre o site, qual ficha de academia você abre e quando chama uma academia; assim, os anúncios do GuiaTennis mostram academias parecidas com as que você viu. Com a conta de jogador aberta, vai junto o seu e-mail, cifrado no seu aparelho antes de sair, para a Meta e o Pinterest reconhecerem a sua conta no Instagram, no Facebook e no Pinterest; o e-mail de quem administra academia nunca vai, e ao Google não vai e-mail nenhum. Os três só ligam depois de você tocar em "Aceitar" no aviso de cookies; em "Recusar", nada é enviado à Meta, ao Google nem ao Pinterest. Você muda a escolha quando quiser, em "Cookies", no rodapé do site. O que a Meta, o Google e o Pinterest fazem com esses dados segue a política de privacidade de cada um.</p>
 <p style="font-size:14px">Fora isso, o armazenamento local (as academias vistas recentemente e a última busca, sua identificação, formulários, os avisos que você já fechou, a sua escolha sobre os cookies e a sessão de quem entra na conta) é estritamente técnico.</p>` : `<p style="font-size:14px">Não usamos cookies de rastreamento ou publicidade. O armazenamento local (as academias vistas recentemente e a última busca, sua identificação, formulários, os avisos que você já fechou e a sessão de quem entra na conta) é estritamente técnico.</p>`}
 <p class="field-label" style="margin-top:16px">7. Menores de idade</p>
 <p style="font-size:14px">O GuiaTennis não é direcionado a menores de 18 anos e não coleta intencionalmente dados de crianças ou adolescentes.</p>
@@ -26746,6 +26772,7 @@ function attachEvents() {
   ligarListaQueCresce();
   carregarPixel();
   carregarGoogle();
+  carregarPinterest();
   document.querySelectorAll("[data-cookies]").forEach(el => { el.onclick = () => escolherCookies(el.dataset.cookies); });
   const cookiesPriv = document.getElementById("cookies-privacidade");
   if (cookiesPriv) cookiesPriv.onclick = () => { state.showPrivacy = true; render(); };

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 09/11/2026 (regra 225)
+**Atualizado em:** 09/11/2026 (regra 226)
 
 | | |
 |---|---|
@@ -437,7 +437,7 @@ todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 21
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
 versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11; regra 219,
 o catálogo das academias para os anúncios da Meta e a correspondência
-controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`; regra 225, o questionário da contestação de acesso em duas partes e a resposta da pessoa contestada, SQL `20261109160000_contestar_acesso_questionario`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`; regra 225, o questionário da contestação de acesso em duas partes e a resposta da pessoa contestada, SQL `20261109160000_contestar_acesso_questionario`; regra 226, a tag do Pinterest atrás do mesmo aviso de cookies). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -468,8 +468,9 @@ resposta da pessoa contestada), com o SQL
 pushes do Claude** (desde 05/11): depois de cada SQL novo, disparar à mão
 (`banco.yml`, `destino: teste`, na branch do PR) e conferir em Actions; em 09/11
 foi disparado para os SQLs de 221 a 225. A descrição do PR está em dia até a
-regra 225 (passos 42 a 56). Nada em aberto da conversa: os pedidos de 05/11 a
-09/11 (regras 212 a 225) estão todos na prévia.
+regra 226 (passos 42 a 57). Nada em aberto da conversa: os pedidos de 05/11 a
+09/11 (regras 212 a 226) estão todos na prévia. TikTok: só quando o Breno
+mandar o número da tag.
 Marketing combinado nesse chat (detalhe nas regras 218 a 220 e no item 7a):
 Pixel da Meta e tag do Google ligados atrás do aviso de cookies; catálogos em
 `/catalogo-meta.csv`, `/catalogo-google.csv` e `/catalogo.csv?para=…`; a
@@ -1055,6 +1056,17 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   parâmetros, `verificacoes_do_meu_acesso`, `responder_verificacao_de_acesso`).
   Termos, Privacidade e chat. Testes: `contestar-acesso.js` e mais 6 (282
   verificações), `banco-emails.py` (835).
+- **226 (09/11) — tag do Pinterest.** `PINTEREST_TAG.id = "2614435484797"`,
+  atrás do mesmo aviso de cookies (agora "da Meta, do Google e do Pinterest"):
+  `page` na visita, `pagevisit` na ficha e `lead` no contato, com
+  `line_items: [{ product_id }]` = o id do catálogo `/catalogo.csv?para=pinterest`,
+  e `signup`. Correspondência: só o e-mail do jogador logado que aceitou,
+  cifrado em SHA-256 no aparelho (`crypto.subtle`) antes do `load`; nunca de
+  academia. Privacidade (seção 6) com o Pinterest. Sem SQL. Teste:
+  `pixel-da-meta.js` (o core.js de verdade fica bloqueado no teste, senão
+  esvazia a fila), `ficha-basica.js`, `regras-de-conteudo.js`, `menu-e-home.js`.
+  Depois do merge: no Pinterest, criar o catálogo com o feed
+  `https://guiatennis.com.br/catalogo.csv?para=pinterest` e reivindicar o site.
 
 ## 11. WhatsApp e mensagem para as academias
 

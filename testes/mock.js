@@ -577,7 +577,7 @@
       return { data: pedidosDe(x.user_id).map(p => {
         const ac = db.academias.find(y => y.id === p.academia_id) || {};
         const c = (window.__codigos || {})[x.user_id + "|" + p.academia_id] || ((window.__codigos || {})[x.user_id] || {}).academia === p.academia_id && (window.__codigos || {})[x.user_id];
-        return { academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, status: ac.status || null, codigo_em: c ? (c.em || p.pedido_em) : null };
+        return { academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, status: ac.status || null, codigo_em: c ? (c.em || p.pedido_em) : null, codigo_ok_em: p.codigo_ok_em || null };
       }), error:null };
     }
     if (nome === "pedidos_de_acesso_admin") {
@@ -588,7 +588,7 @@
         const x = db.academia_acessos.find(y => y.user_id === p.user_id) || {};
         const ac = db.academias.find(y => y.id === p.academia_id) || {};
         const c = (window.__codigos || {})[p.user_id + "|" + p.academia_id];
-        return { user_id: p.user_id, academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, codigo_em: c ? c.em : null,
+        return { user_id: p.user_id, academia_id: p.academia_id, nome: ac.name || p.nome, destino: p.destino, pedido_em: p.pedido_em, codigo_em: c ? c.em : null, codigo_ok_em: p.codigo_ok_em || null,
           nome_responsavel: x.nome_responsavel || null, tratamento: x.tratamento || null, cargo: x.cargo || null, email: x.email || null, usuario: x.usuario, whatsapp: x.whatsapp || null,
           telefone_antes: (db.academia_vinculos.find(v => v.academia_id === p.academia_id && v.papel === "principal" && v.telefone_da_ficha) || {}).telefone_da_ficha || null,
           ...(() => {
@@ -1150,9 +1150,17 @@
       if (!c || !pedidosDe(x.user_id).some(p => p.academia_id === c.academia)) return { data:"sem_codigo", error:null };
       if (c.tentativas >= 5) return { data:"tentativas", error:null };
       if (String(a.p_codigo || "").replace(/\D/g, "") !== c.codigo) { c.tentativas++; return { data:"errado", error:null }; }
-      const naDisputa = pedidosDe(x.user_id).some(p => p.academia_id === c.academia && p.destino === "disputa");
-      if (naDisputa) vencerDisputa(x, c.academia); else ligar(x, c.academia);
+      // Na disputa (SQL 20261109120000), o código é a prova: guarda a data,
+      // avisa o admin e a academia não muda sozinha.
+      const pd = pedidosDe(x.user_id).find(p => p.academia_id === c.academia && p.destino === "disputa");
       delete cs[x.user_id + "|" + c.academia];
+      if (pd) {
+        pd.codigo_ok_em = new Date().toISOString();
+        const ac = db.academias.find(y => y.id === c.academia) || {};
+        db.emails_a_enviar.push({ id: "e-disputa-codigo-" + c.academia + x.user_id, tipo: "disputa", para: ADMIN, assunto: "Disputa: código confirmado na " + ac.name, criado_em: pd.codigo_ok_em, enviado_em: null, tentativas: 0, erro: null });
+        return { data:"analise", error:null };
+      }
+      ligar(x, c.academia);
       return { data:"ok", error:null };
     }
     if (nome === "pessoas_da_minha_academia") {

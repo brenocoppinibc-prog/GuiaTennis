@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 09/11/2026 (regra 220, troca de chat)
+**Atualizado em:** 09/11/2026 (regra 221)
 
 | | |
 |---|---|
@@ -348,8 +348,8 @@ sozinho vira "-", "Sob consulta"), numa linha
   verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**777 conferências**,
-  nenhuma falha, 05/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
+- **Banco local** para o `testes/banco-emails.py` (**783 conferências**,
+  nenhuma falha, 09/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
   Aplicar o SQL novo: `psql postgresql://postgres@127.0.0.1:5433/postgres -f <arquivo>`.
@@ -437,7 +437,7 @@ todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 21
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
 versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11; regra 219,
 o catálogo das academias para os anúncios da Meta e a correspondência
-controlada; regra 220, a tag do Google Ads atrás do mesmo aviso). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -450,8 +450,8 @@ passo, em telas com o cabeçalho, a mini prévia da academia e a volta da
 ficha para a escolha (197 a 200).
 
 **Testes:** a bateria completa de 04/11 (regra 206) deu **2.289
-verificações, nenhuma falha**; o `banco-emails.py` deu 777 no banco local
-(05/11). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
+verificações, nenhuma falha**; o `banco-emails.py` deu 783 no banco local
+(09/11, regra 221). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
 novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 220 (lista na descrição do PR). **Falta a bateria completa antes do "pode
 subir"** (`bash testes/rodar-todos.sh`, ~10 minutos, em segundo plano).
@@ -462,10 +462,11 @@ e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
 **Chat trocado em 09/11/2026:** o chat novo volta a acompanhar o PR #5 (o
 anterior deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
-commit de código: `0db20ee` (regra 220, a conversão do Google). O SQL mais novo
-continua `20261105130000_lista_e_contato_salvo` (nada de SQL de 212 a 220). A
-descrição do PR está em dia até a regra 220 (passos 42 a 50). Nada em aberto da
-conversa: os pedidos de 05/11 a 09/11 (regras 212 a 220) estão todos na prévia.
+pedido: regra 221 (a disputa decidida pelo admin), com o SQL
+`20261109120000_disputa_decidida_pelo_admin` (entra sozinho no banco de teste
+com o push; conferir em Actions). A descrição do PR está em dia até a regra 221
+(passos 42 a 51). Nada em aberto da conversa: os pedidos de 05/11 a 09/11
+(regras 212 a 221) estão todos na prévia.
 Marketing combinado nesse chat (detalhe nas regras 218 a 220 e no item 7a):
 Pixel da Meta e tag do Google ligados atrás do aviso de cookies; catálogos em
 `/catalogo-meta.csv`, `/catalogo-google.csv` e `/catalogo.csv?para=…`; a
@@ -481,8 +482,6 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    mensal nos cartões (regra 190), "Sobre" da academia, escolha das opções,
    convite por e-mail, Acessos, promoções, funções e Pagamentos, ajuda
    depois de cinco buscas) e dizer "pode subir".
-1a. Decidir: tirar ou não o "Decidir a disputa a favor de quem pediu" do
-   painel do admin. (O "Sobre" por plano foi decidido na regra 204.)
 2. Ligar o Mercado Pago na Netlify (variáveis da seção 5) depois de testar
    o pagamento de teste na prévia.
 3. Definir os preços dos planos e o preço da semana da promoção na ficha
@@ -974,6 +973,23 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   novembro. Em 09/11, a conversão "Chamou uma academia" (rótulo
   `uUlSCMKeibUdEJ656JJF`). Sem SQL. Testes: `pixel-da-meta.js`,
   `ficha-basica.js`, `regras-de-conteudo.js`.
+
+- **221 (09/11) — a disputa decidida pelo admin.** Pedido do Breno: "não deve
+  ganhar quem contestou e sim eu analisar o que é certo ou não" (como o Booking
+  e o Tripadvisor). O código no WhatsApp da academia virou prova: digitado
+  certo, guarda `pedidos_de_acesso.codigo_ok_em`, devolve `analise` e avisa o
+  admin por e-mail ("Disputa: código confirmado na …"); a academia não muda
+  sozinha. Em Pendências, os botões da disputa são "Dar a academia a quem
+  contestou" (`aprovar_pedido_de_acesso`) e "Manter com quem administra"
+  (`recusar_pedido_de_acesso`). Quem contestou vê "Em análise". Fora da
+  disputa, o código continua liberando na hora. Termos, Privacidade (guarda a
+  data do código certo), chat de ajuda e a 3ª tela do "Contestar" ("O
+  GuiaTennis analisa e decide") em 9 de novembro (`META_PIXEL.ligadoEm` é a
+  data da Privacidade). SQL `20261109120000_disputa_decidida_pelo_admin`.
+  Testes: `codigo-so-em-disputa.js`, `codigo-pelo-whatsapp.js`,
+  `contestar-passo-a-passo.js`, `parceiros.js`, `varias-academias.js`,
+  `ficha-basica.js`, `regras-de-conteudo.js`, `pixel-da-meta.js`,
+  `banco-emails.py` (783).
 
 ## 11. WhatsApp e mensagem para as academias
 

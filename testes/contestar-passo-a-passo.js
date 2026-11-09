@@ -69,8 +69,8 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
     '2ª tela: o código no WhatsApp da academia, o prazo, por que o número não aparece e a segunda barrinha — ' + corpo.slice(0, 120));
   await continuar(page);
   corpo = await texto(page, '#pc-contestar');
-  ok(await etapa(page) === '3 de 4 · O que muda' && await titulo(page) === 'Quem digitar o código passa a ser o responsável' && corpo.includes('Você passa a administrar a Tênis Terceira') && corpo.includes('Quem administra hoje sai da academia') && corpo.includes('a ficha continua no ar'),
-    '3ª tela: quem digitar vira o responsável, quem administra sai e a ficha segue no ar');
+  ok(await etapa(page) === '3 de 4 · O que muda' && await titulo(page) === 'O GuiaTennis analisa e decide' && corpo.includes('O código mostra que você tem o WhatsApp da academia') && corpo.includes('Se a decisão for sua, você passa a administrar a Tênis Terceira') && corpo.includes('a ficha continua no ar'),
+    '3ª tela (regra 221): o código é a prova, o GuiaTennis analisa e decide, e a ficha segue no ar');
   await page.click('#pc-contestar-voltar');
   await page.waitForTimeout(120);
   ok(await etapa(page) === '2 de 4 · O código', 'a seta volta uma tela');
@@ -129,8 +129,8 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   await page.fill('#pc-codigo', codigo);
   await page.click('#pc-confirmar-codigo');
   await page.waitForTimeout(700);
-  r = await page.evaluate(() => ({ aba: state.parceirosAba, vinc: window.__db.academia_vinculos.filter(v => v.academia_id === 'a3').map(v => v.user_id + ':' + v.papel).join(',') }));
-  ok(r.aba === 'painel' && r.vinc === 'u-a2:principal', 'o código certo: passa a administrar e vai para o painel — ' + JSON.stringify(r));
+  r = await page.evaluate(() => ({ aba: state.parceirosAba, vinc: window.__db.academia_vinculos.filter(v => v.academia_id === 'a3').map(v => v.user_id + ':' + v.papel).join(','), aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '' }));
+  ok(r.aba === 'painel' && r.vinc === 'u-outro:principal' && r.aviso.includes('Código confirmado'), 'o código certo vai para a análise do GuiaTennis (regra 221): a academia segue com quem administra — ' + JSON.stringify(r));
 
   // ---- o link aberto direto ----
   await page.evaluate(() => { history.pushState({}, '', '/parceiros/contestar?academia=zzz'); aplicarLink(lerLink()); render(); });

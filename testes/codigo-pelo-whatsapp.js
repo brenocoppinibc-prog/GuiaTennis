@@ -48,7 +48,7 @@ async function disputaPronta(page, { confirmado = true } = {}) {
     vinc: window.__db.academia_vinculos.filter(v => v.academia_id === 'a3').map(v => v.user_id + ':' + v.papel).join(','),
     aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '',
   }));
-  ok(r.vinc === 'u-a2:principal' && r.aviso.includes('Agora você administra a Tênis Terceira'), 'quem digita o código do WhatsApp vence a disputa — ' + r.vinc);
+  ok(!r.vinc.includes('u-a2') && r.aviso.includes('Código confirmado. O GuiaTennis vai analisar'), 'o código do WhatsApp na disputa vai para a análise do GuiaTennis (regra 221) — ' + r.vinc);
   await browser.close();
 
   // ---- sem o e-mail confirmado: o código espera ----

@@ -74,8 +74,14 @@ async function pedirPelaTela(page, busca, id) {
   r = await page.evaluate(() => ({
     vinc: window.__db.academia_vinculos.filter(v => v.academia_id === 'a3').map(v => v.user_id + ':' + v.papel).join(','),
     aviso: document.querySelector('#parceiros .conta-aviso')?.innerText || '',
+    okEm: !!(window.__db.pedidos_de_acesso.find(p => p.user_id === 'u-a2' && p.academia_id === 'a3') || {}).codigo_ok_em,
+    email: window.__db.emails_a_enviar.some(e => e.tipo === 'disputa' && e.assunto === 'Disputa: código confirmado na Tênis Terceira'),
+    cartao: document.body.innerText,
   }));
-  ok(r.vinc === 'u-a2:principal' && r.aviso.includes('Agora você administra a Tênis Terceira'), 'quem digita o código vence a disputa: vira o responsável e quem administrava sai — ' + r.vinc);
+  ok(!r.vinc.includes('u-a2') && r.okEm && r.email && r.aviso.includes('Código confirmado. O GuiaTennis vai analisar quem responde pela Tênis Terceira'),
+    'regra 221: o código certo na disputa não passa a academia sozinho; guarda a prova e avisa o admin — ' + r.vinc + ' · ' + r.aviso);
+  r = await page.evaluate(() => { const p = meusPedidos().find(x => x.academiaId === 'a3'); return { tela: pcContestarCodigo(p), okEm: !!p.codigoOkEm }; });
+  ok(r.okEm && r.tela.includes('Em análise') && !r.tela.includes('data-confirmar-codigo'), 'depois do código, a página da disputa mostra "Em análise", sem a caixa do código');
   await browser.close();
 
   // ---- banco antes do SQL: contestar avisa para falar com o GuiaTennis ----
@@ -179,7 +185,9 @@ async function pedirPelaTela(page, busca, id) {
   await page.click('[data-aprovar-pedido="u-dona"][data-academia="a1"]');
   await page.waitForTimeout(500);
   const vinc = await page.evaluate(() => window.__db.academia_vinculos.filter(v => v.academia_id === 'a1').map(v => v.user_id + ':' + v.papel).join(','));
-  ok(pergunta.includes('Decidir a disputa') && vinc === 'u-dona:principal', 'aprovar a disputa (decidida por documento) pergunta antes; quem pediu vira o responsável e quem administrava sai — ' + vinc);
+  ok(painel.includes('Dar a academia a quem contestou') && painel.includes('Manter com quem administra') && painel.includes('a academia não muda sozinha'),
+    'regra 221: na disputa, o admin decide com "Dar a academia a quem contestou" ou "Manter com quem administra"');
+  ok(pergunta.includes('Dar a academia a quem contestou') && vinc === 'u-dona:principal', 'o admin dá a academia a quem contestou: pergunta antes; quem pediu vira o responsável e quem administrava sai — ' + vinc);
   await browser.close();
 
   // ---- o selo de confirmada no nome; o texto no fim da ficha ----

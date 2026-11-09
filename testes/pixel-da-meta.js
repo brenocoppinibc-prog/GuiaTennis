@@ -6,7 +6,7 @@ const { abrir, ok } = require('./harness');
 (async () => {
   let { browser, page } = await abrir({ w: 390, cookies: true });
   // Ligado em 06/11/2026 com o Pixel do GuiaTennis.
-  let t = await page.evaluate(() => ({ id: META_PIXEL.id, priv: PRIVACY_HTML.includes('Cookies de anúncio da Meta e do Google (só com a sua permissão)') && PRIVACY_HTML.includes('Última atualização: 8 de novembro de 2026') }));
+  let t = await page.evaluate(() => ({ id: META_PIXEL.id, priv: PRIVACY_HTML.includes('Cookies de anúncio da Meta e do Google (só com a sua permissão)') && PRIVACY_HTML.includes('Última atualização: 9 de novembro de 2026') }));
   ok(t.id === '2565402353955968' && t.priv, 'o Pixel do GuiaTennis ligado, com a Privacidade nova e a data de 08/11');
   await page.evaluate(() => { META_PIXEL.id = ''; GOOGLE_ADS.id = ''; render(); });
   t = await page.evaluate(() => ({ aviso: !!document.querySelector('.gt-cookies'), fbq: !!window.fbq, rodape: !!document.getElementById('footer-cookies') }));

@@ -563,9 +563,18 @@ ok(not certo and "Peça para administrar" in saida, "sem pedido, não contesta")
 codigo = um(f"select public.gerar_codigo_do_pedido('{gil}', '{livre}')", **admin_jwt)
 ok(codigo and len(codigo) == 6, "na disputa, o admin gera o código mesmo com responsável")
 certo, saida = sql(f"select public.confirmar_meu_codigo('{codigo}', '{livre}')", papel="authenticated", user=gil)
-ok(certo and saida.splitlines()[-1] == "ok", "quem digita o código vence a disputa" + ("" if certo else ": " + saida))
-ok(um(f"select string_agg(user_id::text || ':' || papel, ',') from public.academia_vinculos where academia_id = '{livre}'") == f"{gil}:principal",
-   "e vira o responsável; quem administrava sai da academia")
+ok(certo and saida.splitlines()[-1] == "analise", "regra 221: o código certo na disputa vai para a análise do admin" + ("" if certo else ": " + saida))
+ok(um(f"select string_agg(user_id::text || ':' || papel, ',') from public.academia_vinculos where academia_id = '{livre}'") == f"{fabio}:principal",
+   "a academia não muda sozinha: quem administra continua")
+ok(um(f"select codigo_ok_em is not null from public.pedidos_de_acesso where user_id = '{gil}' and academia_id = '{livre}'") == "t"
+   and um(f"select codigo_ok_em is not null from public.meus_pedidos_de_acesso() where academia_id = '{livre}'", papel="authenticated", user=gil) == "t"
+   and um(f"select codigo_ok_em is not null from public.pedidos_de_acesso_admin() where user_id = '{gil}' and academia_id = '{livre}'", **admin_jwt) == "t",
+   "guarda quando o código foi confirmado, e a conta e o admin veem")
+ok(um("select count(*) from public.emails_a_enviar where tipo = 'disputa' and assunto like 'Disputa: código confirmado%'") == "1", "o admin recebe o aviso para decidir")
+ok(um(f"select public.confirmar_meu_codigo('{codigo}', '{livre}')", papel="authenticated", user=gil) == "analise", "digitar de novo continua em análise")
+certo, saida = sql(f"select public.aprovar_pedido_de_acesso('{gil}', '{livre}')", **admin_jwt)
+ok(certo and um(f"select string_agg(user_id::text || ':' || papel, ',') from public.academia_vinculos where academia_id = '{livre}'") == f"{gil}:principal",
+   "o admin dá a academia a quem contestou: vira o responsável; quem administrava sai da academia" + ("" if certo else ": " + saida))
 ok(um(f"select count(*) from public.academia_acessos where user_id = '{fabio}'") == "1", "a conta de quem perdeu continua")
 sql(f"select public.pedir_para_administrar('{livre}', true)", papel="authenticated", user=fabio)
 sql(f"select public.contestar_academia('{livre}')", papel="authenticated", user=fabio)
@@ -695,8 +704,11 @@ cod_mel = codigo_de(ultimo_whatsapp()[1])
 ok(um(f"select codigo_em is not null from public.meus_pedidos_de_acesso() where academia_id = '{livre3}'", papel="authenticated", user=mel) == "t",
    "o cartão de quem pediu sabe que o código saiu")
 saida = resposta(f"select public.confirmar_meu_codigo('{cod_mel}', '{livre3}')", papel="authenticated", user=mel)
-ok(saida == "ok" and um(f"select string_agg(user_id::text || ':' || papel, ',') from public.academia_vinculos where academia_id = '{livre3}'") == f"{mel}:principal",
-   "quem digita o código do WhatsApp vence a disputa: " + saida)
+ok(saida == "analise" and mel not in (um(f"select string_agg(user_id::text, ',') from public.academia_vinculos where academia_id = '{livre3}'") or ""),
+   "o código do WhatsApp na disputa vai para a análise (regra 221): " + saida)
+sql(f"select public.aprovar_pedido_de_acesso('{mel}', '{livre3}')", **admin_jwt)
+ok(um(f"select string_agg(user_id::text || ':' || papel, ',') from public.academia_vinculos where academia_id = '{livre3}'") == f"{mel}:principal",
+   "o admin decide a favor de quem contestou")
 # Sem o e-mail confirmado: espera; confirmou, o código sai sozinho.
 nina = parceiro("Nina Depois", f"nina{sufixo}@exemplo.com", confirmado=False)
 contas_completas(nina)
@@ -2520,6 +2532,9 @@ ok(not certo, "a conta não chama a função de dentro direto")
 sql(f"update public.academias set plano = 'completo' where id = '{PINHEIROS}'; delete from public.cliques where academia_id = '{PINHEIROS}';")
 r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261105130000_lista_e_contato_salvo.sql"], capture_output=True, text=True)
 ok(r.returncode == 0, "a migração da lista e do contato salvo roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261109120000_disputa_decidida_pelo_admin.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração da disputa decidida pelo admin roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

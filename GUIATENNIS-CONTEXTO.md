@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 09/11/2026 (regra 230)
+**Atualizado em:** 09/11/2026 (regra 230, troca de chat)
 
 | | |
 |---|---|
@@ -459,24 +459,29 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**Chat trocado em 09/11/2026:** o chat novo volta a acompanhar o PR #5 (o
-anterior deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
-pedido: regra 225 (o questionário da contestação de acesso ampliado e a
-resposta da pessoa contestada), com o SQL
-`20261109160000_contestar_acesso_questionario`. **O "Banco de dados" não roda sozinho com os
-pushes do Claude** (desde 05/11): depois de cada SQL novo, disparar à mão
-(`banco.yml`, `destino: teste`, na branch do PR) e conferir em Actions; em 09/11
-foi disparado para os SQLs de 221 a 225. A descrição do PR está em dia até a
-regra 228 (passos 42 a 58). Nada em aberto da conversa: os pedidos de 05/11 a
-09/11 (regras 212 a 228) estão todos na prévia. TikTok: só quando o Breno
-mandar o número da tag.
-Marketing combinado nesse chat (detalhe nas regras 218 a 220 e no item 7a):
-Pixel da Meta e tag do Google ligados atrás do aviso de cookies; catálogos em
-`/catalogo-meta.csv`, `/catalogo-google.csv` e `/catalogo.csv?para=…`; a
-campanha do Google Ads foi montada pelo Breno (títulos, palavras e só São
-Paulo) e só deve rodar depois do "pode subir". TikTok e Pinterest: só quando o
-Breno mandar o número da tag de cada um. Layouts da ficha em estudo (A
-Editorial, B Quadra, C Placar) no quadro
+**Chat trocado em 09/11/2026 (à noite):** o chat novo volta a acompanhar o
+PR #5 (o anterior deixou de acompanhar e cancelou a conferência agendada;
+inscrever com `subscribe_pr_activity`). Último commit: `f3e0a1d` (regra 229
+corrigida; a 230 é o texto do aviso de cookies). O PR está verde e a prévia
+no ar. **A Netlify agora monta o site** (regra 229: `scripts/montar.mjs`,
+`publish = "_site"`): continuar editando e testando o `index.html`; para ver o
+site montado, `npm install` (uma vez) e `node scripts/montar.mjs`. **O "Banco de
+dados" não roda sozinho com os pushes do Claude** (desde 05/11): depois de cada
+SQL novo, disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e
+conferir em Actions; em 09/11 rodou para os SQLs de 221 a 225 (o mais novo,
+`20261109160000_contestar_acesso_questionario`). A descrição do PR está em dia
+até a regra 230 (passos 42 a 60); a bateria completa de 09/11 deu 2.369
+verificações, com as 4 falhas corrigidas. Nada em aberto da conversa: os pedidos
+de 05/11 a 09/11 (regras 212 a 230) estão todos na prévia.
+Marketing combinado (detalhe nas regras 218 a 220, 226, 227 e no item 7a): Pixel
+da Meta, tag do Google e tag do Pinterest (`2614435484797`) atrás do aviso de
+cookies; catálogos em `/catalogo-meta.csv`, `/catalogo-google.csv` e
+`/catalogo.csv?para=…`; a campanha do Google Ads (montada pelo Breno) e a do
+Pinterest só rodam depois do "pode subir"; depois do merge, no Pinterest,
+"Verificar" o domínio (a meta `p:domain_verify` já está no site) e criar o
+catálogo. TikTok: só quando o Breno mandar o número da tag. O número do chip
+novo para os códigos do WhatsApp não está anotado (o Breno não informou).
+Layouts da ficha em estudo (A Editorial, B Quadra, C Placar) no quadro
 https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
 
 **Pendências do Breno:**

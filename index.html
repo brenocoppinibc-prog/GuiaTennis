@@ -28,11 +28,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://eultezheqwmxyakvgyjy.supabase.co" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<!-- Site mais rápido (regra 229): as fontes não seguram a primeira pintura (o texto aparece na hora e troca de fonte quando ela chega) e o mapa (Leaflet) só carrega quando é usado ou em segundo plano, depois que a página abre. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"></noscript>
 <script type="application/ld+json" id="ld-academia"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
     color-scheme: light;
@@ -6381,8 +6382,7 @@ function mountMiniMap(c) {
   const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
   if (!temCoord) { if (__miniMap) { __miniMap.remove(); __miniMap = null; } return; }
   if (!window.L) {
-    el.innerHTML = `<div class="ht-map-empty">Não consegui carregar o mapa agora. Toque em "Como chegar" para abrir no aplicativo de mapas.</div>`;
-    mapaNaoCarregou();
+    esperarLeaflet(el, "ht-map-empty", `Não consegui carregar o mapa agora. Toque em "Como chegar" para abrir no aplicativo de mapas.`);
     return;
   }
   if (__miniMap && __miniMap.getContainer() !== el) { __miniMap.remove(); __miniMap = null; }
@@ -9770,6 +9770,38 @@ function attachMapCardEvents() {
 // O render() troca todo o HTML do app, então o mapa é remontado a cada
 // desenho — guardamos centro e zoom pra ele voltar onde estava.
 // O mapa (Leaflet, do unpkg.com) não carregou: uma falha por página.
+// O mapa (Leaflet) fora do carregamento da página (regra 229): carrega na
+// primeira vez que um mapa aparece, ou em segundo plano logo depois que a
+// página abre; quando chega, a tela é desenhada de novo com o mapa.
+let __leaflet = null;
+function carregarLeaflet() {
+  if (window.L) return Promise.resolve(true);
+  if (__leaflet) return __leaflet;
+  __leaflet = new Promise(ok => {
+    const css = document.createElement("link");
+    css.rel = "stylesheet"; css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(css);
+    const js = document.createElement("script");
+    js.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    js.onload = () => ok(true);
+    js.onerror = () => ok(false);
+    document.head.appendChild(js);
+  }).then(certo => {
+    if (!certo) { FALHAS.leafletFalhou = true; mapaNaoCarregou(); }
+    render();
+    return certo;
+  });
+  return __leaflet;
+}
+// Enquanto o mapa chega: "Carregando o mapa…"; se não chegar, o aviso de antes.
+function esperarLeaflet(el, classe, aviso) {
+  if (FALHAS.leafletFalhou) {
+    el.innerHTML = `<div class="${classe}">${aviso}</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="${classe}">${bolaGirando(18)} Carregando o mapa…</div>`;
+  carregarLeaflet();
+}
 function mapaNaoCarregou() {
   if (FALHAS.semMapa) return;
   FALHAS.semMapa = true;
@@ -9782,8 +9814,7 @@ function mountMap(results) {
     return;
   }
   if (!window.L) {
-    el.innerHTML = `<div class="map-empty">Não consegui carregar o mapa agora. Confira a conexão e recarregue a página.</div>`;
-    mapaNaoCarregou();
+    esperarLeaflet(el, "map-empty", "Não consegui carregar o mapa agora. Confira a conexão e recarregue a página.");
     return;
   }
   if (__map && __map.getContainer() !== el) { __map.remove(); __map = null; __markers = []; }
@@ -22514,7 +22545,8 @@ function montarMapaDoPonto() {
   const el = document.getElementById("reg-ponto-mapa");
   if (__mapaPonto) { try { __mapaPonto.remove(); } catch (e) {} __mapaPonto = null; }
   const f = window.__form;
-  if (!el || !f || typeof f.__lat !== "number" || !window.L) return;
+  if (!el || !f || typeof f.__lat !== "number") return;
+  if (!window.L) { carregarLeaflet(); return; }
   __mapaPonto = L.map(el, { zoomControl: true, scrollWheelZoom: false });
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© colaboradores do OpenStreetMap" }).addTo(__mapaPonto);
   const alfinete = L.marker([f.__lat, f.__lng], { draggable: true, autoPan: true,
@@ -26783,6 +26815,8 @@ function attachEvents() {
   carregarPixel();
   carregarGoogle();
   carregarPinterest();
+  // O mapa em segundo plano, depois que a página abriu (regra 229).
+  setTimeout(() => (window.requestIdleCallback || (f => f()))(() => carregarLeaflet(), { timeout: 4000 }), 2500);
   document.querySelectorAll("[data-cookies]").forEach(el => { el.onclick = () => escolherCookies(el.dataset.cookies); });
   const cookiesPriv = document.getElementById("cookies-privacidade");
   if (cookiesPriv) cookiesPriv.onclick = () => { state.showPrivacy = true; render(); };
@@ -27935,6 +27969,7 @@ function attachEvents() {
   });
 
   const statsMapa = document.getElementById("stats-mapa");
+  if (statsMapa && !window.L && (state.statsPontos || []).length) carregarLeaflet();
   if (statsMapa && window.L && (state.statsPontos || []).length) {
     try {
       const m = L.map(statsMapa, { zoomControl: true, attributionControl: true });

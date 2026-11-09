@@ -4,7 +4,9 @@
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const DIR = __dirname;
-const html = fs.readFileSync(path.join(DIR, '..', 'index.html'), 'utf8');
+// GT_SITE=_site roda os testes no site montado para publicar (scripts/montar.mjs, regra 229).
+const SITE = process.env.GT_SITE ? path.resolve(DIR, '..', process.env.GT_SITE) : null;
+const html = fs.readFileSync(path.join(SITE || path.join(DIR, '..'), 'index.html'), 'utf8');
 
 async function abrir(opts = {}) {
   const browser = await chromium.launch();
@@ -78,6 +80,7 @@ async function abrir(opts = {}) {
     if (u.includes('/.netlify/functions/onde')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify(opts.onde || {}) });
     // opts.cnpj: o que a consulta da Receita responde (netlify/functions/cnpj.mjs).
     if (u.includes('/.netlify/functions/cnpj')) return route.fulfill({ status: opts.cnpj ? 200 : 502, contentType: 'application/json', body: JSON.stringify(opts.cnpj || { erro: 'Não consegui falar com a Receita agora. Tente de novo em instantes.' }) });
+    if (SITE && /\/app\.[a-f0-9]+\.js$/.test(u)) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(SITE, u.split('/').pop()), 'utf8') });
     if (u.startsWith(base)) return route.fulfill({ contentType: 'text/html', body: pagina });
     if (u.includes('supabase-js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'mock.js'), 'utf8') });
     if (u.includes('leaflet') && u.endsWith('.js')) return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(path.join(DIR, 'leaflet-stub.js'), 'utf8') });

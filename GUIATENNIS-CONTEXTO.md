@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 09/11/2026 (regra 228)
+**Atualizado em:** 09/11/2026 (regra 229)
 
 | | |
 |---|---|
@@ -437,7 +437,7 @@ todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 21
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
 versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11; regra 219,
 o catálogo das academias para os anúncios da Meta e a correspondência
-controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`; regra 225, o questionário da contestação de acesso em duas partes e a resposta da pessoa contestada, SQL `20261109160000_contestar_acesso_questionario`; regra 226, a tag do Pinterest atrás do mesmo aviso de cookies; regra 227, a meta de verificação do domínio no Pinterest; regra 228, o cartão da avaliação na ficha com o nome em cima e a nota à direita). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`; regra 225, o questionário da contestação de acesso em duas partes e a resposta da pessoa contestada, SQL `20261109160000_contestar_acesso_questionario`; regra 226, a tag do Pinterest atrás do mesmo aviso de cookies; regra 227, a meta de verificação do domínio no Pinterest; regra 228, o cartão da avaliação na ficha com o nome em cima e a nota à direita; regra 229, o site mais rápido: a Netlify monta o site com o código num arquivo compactado e guardado pelo navegador). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -1078,6 +1078,23 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `nome-suspenso.js`, `plano-da-academia.js`, `perfil-e-avaliar.js`,
   `avaliacao-editada.js`, `publicando-cinza.js`, `busca-e-ficha.js`,
   `ficha-hoteis.js`, `veracidade.js`, `denunciar-conta.js` (305 verificações).
+- **229 (09/11) — site mais rápido.** (1) **A Netlify agora monta o site**:
+  `netlify.toml` com `command = "node scripts/montar.mjs"` e `publish = "_site"`.
+  O `scripts/montar.mjs` tira o `<script>` principal do `index.html` para
+  `_site/app.<hash>.js`, compactado pelo terser (sem comentários; nomes de
+  funções e de tudo no nível de cima mantidos), tira os comentários do CSS e do
+  HTML e copia o resto (menos `testes`, `historico`, `scripts`, `node_modules`).
+  O `app.*.js` tem `Cache-Control` de um ano (`immutable`). `package.json` com o
+  `terser` (a Netlify instala sozinha). **A fonte continua sendo o `index.html`**:
+  editar e testar nele, como sempre. `GT_SITE=_site node testes/<teste>.js` roda
+  um teste no site montado (os que usam `trocar` ou procuram texto do código no
+  `innerHTML` só valem na fonte). (2) O mapa (Leaflet) saiu do carregamento:
+  `carregarLeaflet()` na primeira vez que um mapa aparece ("Carregando o
+  mapa…") ou em segundo plano 2,5 s depois de abrir. (3) As fontes do Google
+  não seguram mais a primeira pintura (`media="print"` + `onload`). Medido com o
+  celular simulado (CPU 4× mais lenta): pronto em ~950 ms → ~480 ms; HTML de
+  503 KB → 43 KB (compactado), mais o `app.*.js` de 330 KB (compactado), que o
+  navegador guarda entre as visitas. Sem SQL.
 
 ## 11. WhatsApp e mensagem para as academias
 

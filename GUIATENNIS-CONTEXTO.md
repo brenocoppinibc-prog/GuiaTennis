@@ -506,9 +506,9 @@ estão todos na prévia.
    catálogo com o feed programado https://guiatennis.com.br/catalogo-meta.csv
    (todo dia), ligado ao Pixel. A "Correspondência avançada automática" do
    Pixel fica **desligada** na Meta (o site manda só o e-mail do jogador).
-   **Google Ads (08/11):** tag `AW-18561506462` ligada (`GOOGLE_ADS`); falta o
-   `rotuloContato` (o "…/AbC" do send_to da ação "Chamou uma academia", que o
-   Breno não conseguiu criar no celular: pedir quando ele criar no computador).
+   **Google Ads (08/11):** tag `AW-18561506462` ligada (`GOOGLE_ADS`), com a
+   conversão "Chamou uma academia" (`rotuloContato: "uUlSCMKeibUdEJ656JJF"`,
+   09/11; categoria Contato, valor R$ 1, contagem "Uma").
    Campanha criada por ele (palavras: aula de tênis, aluguel de quadra…; só
    São Paulo; idioma português), para rodar depois do "pode subir".
    O Gerenciador de Tags (GTM-WSWBDLTM) **não** entra no site (08/11, decisão
@@ -518,9 +518,6 @@ estão todos na prévia.
    o aceite já ficam guardados.
 
 **Próximo número:** regra 221.
-
-**Descrição do PR:** os catálogos de todas as plataformas (fim da regra 219)
-e a regra 220 ainda não entraram nela: incluir junto com a próxima mudança.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -968,8 +965,9 @@ e a regra 220 ainda não entraram nela: incluir junto com a próxima mudança.
   ("conversion" com o `rotuloContato`) só quando o rótulo existir. Sem e-mail
   para o Google. Aviso de cookies "da Meta e do Google"; Privacidade (seção 6)
   e Termos (as fichas nos anúncios do Google e de outras plataformas) em 8 de
-  novembro. Sem SQL. Testes: `pixel-da-meta.js`, `ficha-basica.js`,
-  `regras-de-conteudo.js`.
+  novembro. Em 09/11, a conversão "Chamou uma academia" (rótulo
+  `uUlSCMKeibUdEJ656JJF`). Sem SQL. Testes: `pixel-da-meta.js`,
+  `ficha-basica.js`, `regras-de-conteudo.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -32,6 +32,8 @@ const { abrir, ok } = require('./harness');
   // A tag do Google Ads (08/11), atrás do mesmo aviso.
   const g = await page.evaluate(() => ({ script: !!document.querySelector('script[src*="googletagmanager.com/gtag/js?id=AW-1"]'), ev: (window.dataLayer || []).map(a => a[0] + ':' + a[1]).join(', '), item: JSON.stringify(((window.dataLayer || []).find(a => a[1] === 'generate_lead') || [])[2]) }));
   ok(g.script && g.ev.includes('config:AW-1') && g.ev.includes('event:view_item') && g.ev.includes('event:generate_lead') && g.item.includes('"id":"a1"'), 'a tag do Google carrega junto e conta a ficha vista e o contato, com o id da academia — ' + g.ev);
+  const conv = await page.evaluate(() => JSON.stringify(((window.dataLayer || []).find(a => a[1] === 'conversion') || [])[2] || {}));
+  ok(conv === '{"send_to":"AW-1/uUlSCMKeibUdEJ656JJF"}', 'o contato também conta como a conversão "Chamou uma academia" — ' + conv);
   await browser.close();
 
   // A correspondência controlada: o e-mail só do jogador logado, nunca da academia.

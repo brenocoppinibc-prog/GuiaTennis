@@ -15,7 +15,7 @@ const { abrir, ok } = require('./harness');
   await page.evaluate(() => { META_PIXEL.id = '123'; GOOGLE_ADS.id = 'AW-1'; PINTEREST_TAG.id = '2614435484797'; render(); });
   t = await page.evaluate(() => ({ aviso: document.querySelector('.gt-cookies')?.innerText || '', bts: [...document.querySelectorAll('[data-cookies]')].map(b => b.innerText + ':' + Math.round(b.getBoundingClientRect().width)), fbq: !!window.fbq }));
   const [rec, ace] = t.bts.map(x => x.split(':'));
-  ok(t.aviso.includes('Com a sua permissão') && rec[0] === 'Recusar' && ace[0] === 'Aceitar' && rec[1] === ace[1] && !t.fbq, 'ligado: o aviso com "Recusar" e "Aceitar" do mesmo tamanho, e o Pixel ainda não carrega — ' + t.bts.join(' / '));
+  ok(t.aviso.includes('Para uma experiência melhor, usamos cookies de marketing') && !/Meta|Google|Pinterest/.test(t.aviso) && rec[0] === 'Recusar' && ace[0] === 'Aceitar' && rec[1] === ace[1] && !t.fbq, 'ligado: o aviso com "Recusar" e "Aceitar" do mesmo tamanho, e o Pixel ainda não carrega — ' + t.bts.join(' / '));
   await page.click('[data-cookies="recusou"]');
   await page.waitForTimeout(150);
   t = await page.evaluate(() => ({ aviso: !!document.querySelector('.gt-cookies'), fbq: !!window.fbq, escolha: escolhaDeCookies() }));

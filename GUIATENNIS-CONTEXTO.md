@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 09/11/2026 (regra 229)
+**Atualizado em:** 09/11/2026 (regra 230)
 
 | | |
 |---|---|
@@ -1095,6 +1095,14 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   celular simulado (CPU 4× mais lenta): pronto em ~950 ms → ~480 ms; HTML de
   503 KB → 43 KB (compactado), mais o `app.*.js` de 330 KB (compactado), que o
   navegador guarda entre as visitas. Sem SQL.
+- **230 (09/11) — o texto do aviso de cookies.** Sem citar a Meta, o Google ou
+  o Pinterest (pedido do Breno): "Para uma experiência melhor, usamos cookies
+  de marketing: eles ajudam o GuiaTennis a chegar a mais gente que procura onde
+  jogar tênis e a saber se os nossos anúncios funcionam (com a conta aberta,
+  vai também o seu e-mail cifrado). Sem eles, o site funciona igual." e o link
+  da Política de Privacidade, que continua dizendo quais são (o que a LGPD e o
+  guia da ANPD pedem: a finalidade no aviso e o detalhe na política). "Recusar"
+  e "Aceitar" do mesmo tamanho, como antes. Teste: `pixel-da-meta.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

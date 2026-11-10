@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 10/11/2026 (regra 233)
+**Atualizado em:** 10/11/2026 (regra 234)
 
 | | |
 |---|---|
@@ -303,7 +303,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261110130000_comprador_no_pagamento` (89 arquivos na pasta). Antes dele, `20261110120000_dados_para_a_nota`. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261110140000_nota_do_guiatennis` (90 arquivos na pasta). Antes dele, `20261110130000_comprador_no_pagamento`. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -542,7 +542,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 234.
+**Próximo número:** regra 235.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1188,6 +1188,35 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `#nota-salvar`. Pagamentos continua mostrando "nota fiscal enviada para …" em
   cada compra. Ajuda e Privacidade ajustadas ("muda no começo de cada compra").
   Sem SQL. Teste: `dados-para-nota.js` (29).
+- **234 (10/11) — "Sair da conta" em vermelho e a nota do GuiaTennis.** "Deixe
+  todos os sair da conta escrito em vermelho" e "criar algo para avaliarem,
+  darem feedback e mostrar essa nota aos jogadores e principalmente aos
+  parceiros para vender mais ... smp ser uma via de mão dupla". (1) Todo "Sair
+  da conta" (menus, Minha conta, Perfil do Parceiros, painel do admin) com a
+  classe `sair-vermelho` (`--red`). (2) **Nota do GuiaTennis**, como a nota de
+  app na App Store/Google Play e o Trustpilot: 1 a 5 estrelas, "O que mais
+  ajuda?"/"O que faltou?" em botões (`PONTOS_DO_GUIA`, como o iFood e o Uber),
+  comentário opcional, "Pode mostrar" (jogador: "Gabi L."; parceiro: o nome
+  da academia) e, com nota até 3, "Quero que o GuiaTennis fale comigo". Uma
+  por conta e lado, que a pessoa muda quando quiser. Onde se avalia: Minha
+  conta e Perfil do Parceiros ("Sua nota para o GuiaTennis", com a resposta e
+  o "Você pediu, nós fizemos"), o pedido no Painel com as estrelas ali mesmo e
+  "Agora não" (60 dias, `gt-nota-guia-adiada`), o link depois de avaliar uma
+  academia e o rodapé. Onde aparece (a partir de 3 avaliações,
+  `NOTA_DO_GUIA_MINIMO`): rodapé do site (jogadores), página de venda do
+  Parceiros ("O que as academias acham do GuiaTennis", até 3 comentários com
+  a resposta) e a página Plano (linha curta). Carrega sem segurar a página
+  (`agendarNotaDoGuia`, troca só os pedaços `[data-nota-do-guia]`). Mão dupla:
+  o obrigado diz o que acontece depois; nota alta do parceiro ganha a dica do
+  QR code da ficha. Admin: aba **"Nota do GuiaTennis"** (`/admin/nota`): a média
+  de cada lado, filtros (Sem resposta, Notas de 1 a 3), "Responder" (e-mail
+  `resposta_do_guia`), "Você pediu, nós fizemos" (e-mail `feito_do_guia`) e
+  "Tirar do site" (só o comentário; a nota continua contando); cada avaliação
+  nova avisa o admin (`avaliacao_do_guia`). SQL `20261110140000_nota_do_guiatennis`.
+  Termos e Privacidade (10 de novembro): nota sem filtro, sem pagamento nem
+  vantagem por avaliação. Ajuda do Parceiros: "Como avalio o GuiaTennis?".
+  Testes: `nota-do-guia.js` (novo), `banco-emails.py` (891), `painel-admin.js`
+  (16 seções), `parceiros.js` (24 perguntas).
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -660,6 +660,54 @@
       (window.__notasSalvas = window.__notasSalvas || {})[a.p_academia] = d;
       return { data: d, error:null };
     }
+    // A nota do GuiaTennis (regra 234). window.__notaDoGuia é a nota pública;
+    // as avaliações ficam em window.__avaliacoesDoGuia; window.__semNotaDoGuia
+    // finge o banco sem o SQL.
+    if (["avaliar_o_guia", "minha_avaliacao_do_guia", "nota_do_guia", "avaliacoes_do_guia_admin", "responder_avaliacao_do_guia"].includes(nome) && window.__semNotaDoGuia)
+      return { data:null, error:{ code:"PGRST202", message:"Could not find the function public." + nome + " in the schema cache" } };
+    if (nome === "nota_do_guia") {
+      const vazio = { media: null, total: 0, comentarios: [] };
+      return { data: window.__notaDoGuia || { jogador: vazio, parceiro: vazio }, error:null };
+    }
+    if (nome === "avaliar_o_guia" || nome === "minha_avaliacao_do_guia") {
+      if (!sessao) return erro("Entre na sua conta para avaliar o GuiaTennis.", "42501");
+      const lista = window.__avaliacoesDoGuia || (window.__avaliacoesDoGuia = []);
+      const minha = lista.find(y => y.user_id === sessao.user.id && y.publico === a.p_publico);
+      if (nome === "minha_avaliacao_do_guia") return { data: minha ? { ...minha, user_id: undefined } : null, error:null };
+      if (souAdmin()) return erro("O admin não avalia o GuiaTennis.", "42501");
+      if (!(a.p_nota >= 1 && a.p_nota <= 5)) return erro("Escolha de 1 a 5 estrelas.", "22023");
+      let nomePublico;
+      if (a.p_publico === "parceiro") {
+        const x = meuAcesso();
+        if (!x || !(vinculo(x.user_id, a.p_academia) || x.academia_id === a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+        nomePublico = (db.academias.find(y => y.id === a.p_academia) || {}).name;
+      } else {
+        const j = euJogador();
+        if (!j) return erro("Entre na sua conta para avaliar o GuiaTennis.", "42501");
+        if (!j.email_confirmado_em) return erro("Confirme o seu e-mail para avaliar o GuiaTennis.", "42501");
+        const partes = String(j.nome || "").trim().split(/\s+/);
+        nomePublico = partes[0] + (partes[1] ? " " + partes[1][0] + "." : "");
+      }
+      const linha = Object.assign(minha || { id: "g" + (lista.length + 1), user_id: sessao.user.id, publico: a.p_publico, created_at: new Date().toISOString() }, {
+        nota: a.p_nota, pontos: [...new Set(a.p_pontos || [])], comentario: String(a.p_comentario || "").replace(/\s+/g, " ").trim() || null,
+        pode_mostrar: !!a.p_pode_mostrar, quer_contato: !!a.p_quer_contato && a.p_nota <= 3, momento: a.p_momento, nome_publico: nomePublico,
+        academia_id: a.p_academia || null, updated_at: new Date().toISOString() });
+      if (!minha) lista.push(linha);
+      return { data: { ...linha, user_id: undefined }, error:null };
+    }
+    if (nome === "avaliacoes_do_guia_admin") {
+      if (!souAdmin()) return erro("Só o admin vê as avaliações do GuiaTennis.", "42501");
+      return { data: (window.__avaliacoesDoGuia || []).map(y => ({ ...y, email: y.email || "pessoa@exemplo.com" })), error:null };
+    }
+    if (nome === "responder_avaliacao_do_guia") {
+      if (!souAdmin()) return erro("Só o admin responde.", "42501");
+      const y = (window.__avaliacoesDoGuia || []).find(z => z.id === a.p_id);
+      if (!y) return erro("Avaliação não encontrada.", "22023");
+      if (a.p_resposta && a.p_resposta.trim()) { y.resposta = a.p_resposta.trim(); y.respondida_em = new Date().toISOString(); }
+      if (a.p_feito && a.p_feito.trim() && !y.feito_em) { y.feito_texto = a.p_feito.trim(); y.feito_em = new Date().toISOString(); }
+      if (a.p_oculta !== null && a.p_oculta !== undefined) y.oculta = a.p_oculta;
+      return { data: { ...y }, error:null };
+    }
     if (nome === "marcar_nota_emitida") {
       if (!souAdmin()) return erro("Só o admin marca a nota.", "42501");
       const k = (window.__compras || []).find(y => y.id === a.p_compra && y.situacao === "paga");

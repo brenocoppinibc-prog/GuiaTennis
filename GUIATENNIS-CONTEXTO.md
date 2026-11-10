@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 10/11/2026 (regra 234, troca de chat)
+**Atualizado em:** 10/11/2026 (regra 235)
 
 | | |
 |---|---|
@@ -303,7 +303,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261110140000_nota_do_guiatennis` (90 arquivos na pasta). Antes dele, `20261110130000_comprador_no_pagamento`. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261110150000_pagina_das_avaliacoes_do_guia` (91 arquivos na pasta; também refaz o `sitemap()` com `/avaliacoes`). Antes dele, `20261110140000_nota_do_guiatennis`. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -348,8 +348,8 @@ sozinho vira "-", "Sob consulta"), numa linha
   verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**869 conferências**,
-  nenhuma falha, 10/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
+- **Banco local** para o `testes/banco-emails.py` (**898 conferências**,
+  nenhuma falha, 10/11/2026, regra 235): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
   Aplicar o SQL novo: `psql postgresql://postgres@127.0.0.1:5433/postgres -f <arquivo>`.
@@ -459,17 +459,17 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**Chat trocado em 10/11/2026 (à tarde):** o chat novo volta a acompanhar o
-PR #5 (o anterior deixou de acompanhar e cancelou a conferência agendada;
-inscrever com `subscribe_pr_activity`). Último commit de código: `4797822`
-(regra 234). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
+**Chat trocado em 10/11/2026 (à tarde):** este chat acompanha o PR #5
+(inscrito com `subscribe_pr_activity`, com conferência agendada). Depois da
+troca entrou a **regra 235** (as avaliações do GuiaTennis abertas sem login em
+`/avaliacoes`, SQL `20261110150000_pagina_das_avaliacoes_do_guia`). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
 o site** (regra 229): continuar editando e testando o `index.html`. **O "Banco
 de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
-Actions; em 10/11 rodou para os SQLs das regras 231, 232 e 234 (o mais novo,
-`20261110140000_nota_do_guiatennis`). A descrição do PR está em dia até a regra
-234 (passos 57 a 64). Os pedidos de 10/11 (regras 231 a 234) estão todos na
-prévia; nada em aberto da conversa. Banco local (Postgres 16 em
+Actions; em 10/11 rodou para os SQLs das regras 231, 232, 234 e 235 (o mais
+novo, `20261110150000_pagina_das_avaliacoes_do_guia`). A descrição do PR está em
+dia até a regra 235 (passos 57 a 65). Os pedidos de 10/11 (regras 231 a 235)
+estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
 Decisões de 10/11 (detalhe nas regras 231 a 234): a nota fiscal sai à mão pelo
@@ -548,7 +548,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 235.
+**Próximo número:** regra 236.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1223,6 +1223,24 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   vantagem por avaliação. Ajuda do Parceiros: "Como avalio o GuiaTennis?".
   Testes: `nota-do-guia.js` (novo), `banco-emails.py` (891), `painel-admin.js`
   (16 seções), `parceiros.js` (24 perguntas).
+- **235 (10/11) — as avaliações do GuiaTennis abertas sem login** ("quero que
+  aparece sem login sobre as avaliações"; escolhida a página pública, como a
+  página de uma empresa no Trustpilot e as "Notas e avaliações" das lojas de
+  apps). `/avaliacoes` (`renderPaginaDaNota`, `state.pagNota`): a nota de
+  jogadores e de academias (a partir de 3), quantas de cada estrela (tocar na
+  barra filtra), "% respondidas", "Avaliar o GuiaTennis" (pede conta), o
+  "Você pediu, nós fizemos" sem dizer quem pediu, os comentários liberados de
+  20 em 20 com a resposta, filtros por lado e estrela no link
+  (`?de=jogadores|academias&estrelas=N`) e "Como funcionam estas avaliações".
+  O "Ver mais" troca só o miolo. Links: "Ver as avaliações" no rodapé e "Ver
+  todas as avaliações" na página de venda do Parceiros (abre em Academias).
+  No Google: título próprio, canônico e no `sitemap()`; rota no
+  `netlify.toml`. Privacidade (mesma data): onde o comentário aparece. Ajuda
+  do Parceiros: o link da página. SQL `20261110150000_pagina_das_avaliacoes_do_guia`
+  (`pagina_das_avaliacoes_do_guia`, pública, sem e-mail, conta, academia nem
+  o que a pessoa marcou). Testes: `pagina-das-avaliacoes.js` (novo, 24, também
+  no site montado), `banco-emails.py` (898), `nota-do-guia.js`, `parceiros.js`,
+  `ficha-basica.js`, `regras-de-conteudo.js`, `voltar.js`, `chat-de-ajuda.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

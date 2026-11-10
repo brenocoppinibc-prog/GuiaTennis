@@ -53,6 +53,7 @@
 #   /busca?q=…&piso=…              busca com filtros
 #   /comparar?academias=…          comparação
 #   /perfil                        perfil da conta do jogador
+#   /avaliacoes                    avaliações do GuiaTennis (sem login)
 #   /admin/…                       painel do admin (só o admin vê)
 #   /parceiros/…                   GuiaTennis Parceiros (site das academias)
 # Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
@@ -102,6 +103,13 @@
 # Perfil da conta do jogador (05/10/2026), como o "Meu trivago".
 [[redirects]]
   from = "/perfil"
+  to = "/index.html"
+  status = 200
+
+# As avaliações do GuiaTennis, abertas sem login (10/11/2026, regra 235),
+# como a página de uma empresa no Trustpilot: /avaliacoes?de=…&estrelas=….
+[[redirects]]
+  from = "/avaliacoes"
   to = "/index.html"
   status = 200
 

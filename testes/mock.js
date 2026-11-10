@@ -663,8 +663,17 @@
     // A nota do GuiaTennis (regra 234). window.__notaDoGuia é a nota pública;
     // as avaliações ficam em window.__avaliacoesDoGuia; window.__semNotaDoGuia
     // finge o banco sem o SQL.
-    if (["avaliar_o_guia", "minha_avaliacao_do_guia", "nota_do_guia", "avaliacoes_do_guia_admin", "responder_avaliacao_do_guia"].includes(nome) && window.__semNotaDoGuia)
+    if (["avaliar_o_guia", "minha_avaliacao_do_guia", "nota_do_guia", "avaliacoes_do_guia_admin", "responder_avaliacao_do_guia", "pagina_das_avaliacoes_do_guia"].includes(nome) && window.__semNotaDoGuia)
       return { data:null, error:{ code:"PGRST202", message:"Could not find the function public." + nome + " in the schema cache" } };
+    // A página pública das avaliações (regra 235): window.__paginaDaNota tem o
+    // resumo, os feitos e todos os comentários; aqui filtra e corta de 20 em 20.
+    if (nome === "pagina_das_avaliacoes_do_guia") {
+      (window.__pedidosDaPaginaDaNota = window.__pedidosDaPaginaDaNota || []).push(a);
+      const base = window.__paginaDaNota || { resumo: {}, feitos: [], comentarios: [] };
+      const todos = (base.comentarios || []).filter(x => (!a.p_publico || x.publico === a.p_publico) && (!a.p_nota || x.nota === a.p_nota));
+      const pular = a.p_pular || 0, lim = a.p_limite || 20;
+      return { data: { resumo: base.resumo, feitos: base.feitos || [], encontradas: todos.length, comentarios: todos.slice(pular, pular + lim), mais: todos.length > pular + lim }, error:null };
+    }
     if (nome === "nota_do_guia") {
       const vazio = { media: null, total: 0, comentarios: [] };
       return { data: window.__notaDoGuia || { jogador: vazio, parceiro: vazio }, error:null };

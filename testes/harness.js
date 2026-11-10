@@ -33,6 +33,7 @@ async function abrir(opts = {}) {
     if (o.semDadosParaNota) window.__semDadosParaNota = true;
     if (o.semNotaNoBanco) window.__semNotaNoBanco = true;
     if (o.notaDoGuia) window.__notaDoGuia = o.notaDoGuia;
+    if (o.paginaDaNota) window.__paginaDaNota = o.paginaDaNota;
     if (o.avaliacoesDoGuia) window.__avaliacoesDoGuia = o.avaliacoesDoGuia;
     if (o.semNotaDoGuia) window.__semNotaDoGuia = true;
     if (o.outrasAcademias) window.__outrasAcademias = o.outrasAcademias;

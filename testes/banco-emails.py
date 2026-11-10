@@ -2766,5 +2766,25 @@ ok(n["jogador"]["total"] == 2 and len(n["jogador"]["comentarios"]) == 0, "coment
 lista = json.loads(um("select public.avaliacoes_do_guia_admin()::text", **admin_jwt) or "[]")
 ok(len(lista) == 3 and any(x.get("email") == f"pedroguia{sufixo}@exemplo.com" and x.get("academia") == "Academia Nota Guia" for x in lista), "o admin vê todas, com o e-mail e a academia")
 
+# ---- A página pública das avaliações do GuiaTennis (regra 235): sem login ----
+pg = json.loads(um("select public.pagina_das_avaliacoes_do_guia()::text", papel="anon") or "{}")
+rj = pg.get("resumo", {}).get("jogador", {})
+ok(rj.get("total") == 2 and rj.get("estrelas", {}).get("4") == 1 and rj["estrelas"].get("2") == 1 and rj.get("respondidas") == 1,
+   "a página: o resumo dos jogadores com as estrelas e as respondidas, contando todas — " + str(rj)[:160])
+ok(pg.get("encontradas") == 1 and len(pg.get("comentarios", [])) == 1 and pg["comentarios"][0]["nome"] == "Academia Nota Guia" and pg.get("mais") is False,
+   "só aparece o comentário liberado e não tirado do site — " + str(pg.get("comentarios"))[:160])
+ok(not any(k in pg["comentarios"][0] for k in ("email", "user_id", "academia_id", "quer_contato", "pontos")), "sem e-mail, conta, academia ou pedido de contato")
+ok([f.get("texto") for f in pg.get("feitos", [])] == ["12 academias novas em Moema e Vila Mariana."] and set(pg["feitos"][0]) == {"texto", "quando"},
+   "\"Você pediu, nós fizemos\" aparece sem dizer quem pediu")
+ok(json.loads(um("select public.pagina_das_avaliacoes_do_guia('jogador')::text", papel="anon"))["encontradas"] == 0
+   and json.loads(um("select public.pagina_das_avaliacoes_do_guia(null, 4)::text", papel="anon"))["encontradas"] == 1
+   and json.loads(um("select public.pagina_das_avaliacoes_do_guia(null, 5)::text", papel="anon"))["encontradas"] == 0, "filtra por lado e por estrela")
+sql(f"select public.responder_avaliacao_do_guia('{gid}', null, null, false)", **admin_jwt)
+p1 = json.loads(um("select public.pagina_das_avaliacoes_do_guia(null, null, 1, 0)::text", papel="anon"))
+p2 = json.loads(um("select public.pagina_das_avaliacoes_do_guia(null, null, 1, 1)::text", papel="anon"))
+ok(len(p1["comentarios"]) == 1 and p1["mais"] is True and len(p2["comentarios"]) == 1 and p2["mais"] is False
+   and p1["comentarios"][0]["id"] != p2["comentarios"][0]["id"] and p1["encontradas"] == 2, "carrega aos poucos, sem repetir")
+ok("<loc>https://guiatennis.com.br/avaliacoes</loc>" in (um("select convert_from(public.sitemap()::bytea, 'UTF8')", papel="anon") or ""), "a página entra no sitemap")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

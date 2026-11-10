@@ -19,6 +19,7 @@ async function abrir(opts = {}) {
     if (o.semTempo) window.__semTempo = true;
     if (o.colunasFechadas) window.__colunasFechadas = true;
     if (o.semPlano) window.__semPlano = true;
+    if (o.semReserva) window.__semReserva = true;
     if (o.semConfirmada) window.__semConfirmada = true;
     if (o.semAvisosUmPorUm) window.__semAvisosUmPorUm = true;
     // O banco sem o SQL 20261026220000 (o catálogo, regra 162).

@@ -340,6 +340,7 @@
         if (table === "cliques" && window.__semDetalhe && "detalhe" in payload) return { data:null, error:{ message:"column detalhe does not exist" } };
         if (table === "cliques" && window.__semCep && "cep" in payload) return { data:null, error:{ message:"column cep does not exist" } };
         if (table === "cliques" && window.__semTempo && ("segundos" in payload || "segundos_ficha" in payload)) return { data:null, error:{ message:"column segundos does not exist" } };
+        if (table === "academias" && window.__semReserva && "reserva_link" in payload) return { data:null, error:{ message:"Could not find the 'reserva_link' column of 'academias' in the schema cache" } };
         if (table === "academias" && window.__semConfirmada && "confirmada" in payload) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
         if (table === "academias" && window.__semCatalogo && "catalogo" in payload) return { data:null, error:{ message:"Could not find the 'catalogo' column of 'academias' in the schema cache" } };
         if (table === "avaliacoes" && !souAdmin()) {
@@ -408,6 +409,7 @@
         if (table === "respostas" && sessao && !souAdmin() && t.filter(pass).some(r => { const av = db.avaliacoes.find(x => x.id === r.avaliacao_id); return av && !possoNa(sessao.user.id, av.academia_id, "avaliacoes"); }))
           return { data:null, error:{ message:'new row violates row-level security policy for table "respostas"', code:"42501" } };
         if (table === "academias" && window.__semCatalogo && "catalogo" in payload) return { data:null, error:{ message:"Could not find the 'catalogo' column of 'academias' in the schema cache" } };
+        if (table === "academias" && window.__semReserva && "reserva_link" in payload) return { data:null, error:{ message:"Could not find the 'reserva_link' column of 'academias' in the schema cache" } };
         if (table === "jogadores" && !(euJogador() && filtros.every(([k, v]) => k === "user_id" && v === euJogador().user_id))) return { data:null, error:{ message:"permission denied" } };
         if (table === "buscas_salvas") {
           const j = euJogador();
@@ -485,6 +487,7 @@
       // Banco sem a coluna da ficha básica: a lista com ela falha, e o "*" não traz o campo.
       if (window.__semConfirmada && table === "academias" && colunas.includes("confirmada")) return { data:null, error:{ message:"column academias.confirmada does not exist" } };
       if (window.__semCatalogo && table === "academias" && colunas.includes("catalogo")) return { data:null, error:{ message:"column academias.catalogo does not exist" } };
+      if (window.__semReserva && table === "academias" && colunas.includes("reserva_link")) return { data:null, error:{ message:"column academias.reserva_link does not exist" } };
       // Banco antes do SQL 20261007120000 (a data da ficha).
       if (window.__semDataDaFicha && table === "academias" && colunas.includes("dados_atualizados_em")) return { data:null, error:{ message:"column academias.dados_atualizados_em does not exist" } };
       if (window.__semDataDaFicha && table === "academias") { const out = JSON.parse(JSON.stringify(t.filter(pass))).map(r => { delete r.dados_atualizados_em; return r; }); return { data: single ? out[0] : out, error:null }; }
@@ -1460,7 +1463,7 @@
       if (plano === "basico") return { data: base, error: null };
       const n = dias || 120;
       const por_dia = Array.from({ length: n }, (_, i) => ({ dia: new Date(Date.UTC(2026, 8, 30) - (n - 1 - i) * 864e5).toISOString().slice(0, 10), visitas: (i * 7) % 5, contatos: i % 4 === 0 ? 1 : 0 }));
-      const completo = { ...base, canais: { whatsapp: 7, instagram: 2, site: 0, compartilhar: 1 }, guardaram: { lista: 3, contato: 2 }, anterior: { visitas: 30, contatos: 9 }, por_dia,
+      const completo = { ...base, canais: { whatsapp: 7, instagram: 2, site: 0, reserva: 4, compartilhar: 1 }, guardaram: { lista: 3, contato: 2 }, anterior: { visitas: 30, contatos: 9 }, por_dia,
         origens: [{ nome: "Instagram", n: 20 }, { nome: "Google", n: 15 }, { nome: "Direto", n: 7 }], aparelhos: [{ nome: "Celular", n: 35 }, { nome: "Computador", n: 7 }] };
       if (plano === "completo") return { data: completo, error: null };
       return { data: { ...completo, regioes: [{ nome: "Pinheiros, São Paulo", n: 12 }, { nome: "Vila Madalena, São Paulo", n: 5 }], media_cidade: { cidade: "São Paulo", academias: 2, visitas: 30, contatos: 5 } }, error: null };

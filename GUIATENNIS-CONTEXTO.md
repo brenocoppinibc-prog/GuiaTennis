@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 10/11/2026 (regra 236)
+**Atualizado em:** 10/11/2026 (regra 237)
 
 | | |
 |---|---|
@@ -303,7 +303,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261110150000_pagina_das_avaliacoes_do_guia` (91 arquivos na pasta; também refaz o `sitemap()` com `/avaliacoes`). Antes dele, `20261110140000_nota_do_guiatennis`. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261110160000_reserva_online` (92 arquivos na pasta; coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). Antes dele, `20261110150000_pagina_das_avaliacoes_do_guia` (também refaz o `sitemap()` com `/avaliacoes`). O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -348,8 +348,11 @@ sozinho vira "-", "Sob consulta"), numa linha
   verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**898 conferências**,
-  nenhuma falha, 10/11/2026, regra 235): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
+- **Banco local** para o `testes/banco-emails.py` (**908 conferências**,
+  nenhuma falha, 10/11/2026, regra 237; o teste roda de novo SQLs antigos, e o
+  `20261105130000` recoloca a trava dos cliques de antes: SQL que mexe em
+  `cliques_tipo_valido` ou em `numeros_da_academia` é rodado de novo no começo
+  da seção dele): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
   Aplicar o SQL novo: `psql postgresql://postgres@127.0.0.1:5433/postgres -f <arquivo>`.
@@ -462,13 +465,18 @@ e a descrição do PR curta (só as regras e os passos novos; seção 2).
 **Chat trocado em 10/11/2026 (à tarde):** este chat acompanha o PR #5
 (inscrito com `subscribe_pr_activity`, com conferência agendada). Depois da
 troca entraram as **regras 235 e 236** (as avaliações do GuiaTennis em
-`/avaliacoes`, abertas com e sem login, SQL `20261110150000_pagina_das_avaliacoes_do_guia`). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
+`/avaliacoes`, abertas com e sem login, SQL `20261110150000_pagina_das_avaliacoes_do_guia`)
+e a **regra 237** (reserva online na ficha: o botão e a agenda numa janela, SQL
+`20261110160000_reserva_online`; o Breno ainda não disse qual sistema as
+academias usam: quando disser, conferir se ele oferece a agenda para
+incorporar e incluir em `SISTEMAS_COM_AGENDA`; a reserva própria do
+GuiaTennis, opção 3, ficou para depois de ver os cliques). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
 o site** (regra 229): continuar editando e testando o `index.html`. **O "Banco
 de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
-Actions; em 10/11 rodou para os SQLs das regras 231, 232, 234 e 235 (o mais
-novo, `20261110150000_pagina_das_avaliacoes_do_guia`). A descrição do PR está em
-dia até a regra 236 (passos 57 a 66). Os pedidos de 10/11 (regras 231 a 236)
+Actions; em 10/11 rodou para os SQLs das regras 231, 232, 234, 235 e 237 (o mais
+novo, `20261110160000_reserva_online`). A descrição do PR está em
+dia até a regra 237 (passos 57 a 67). Os pedidos de 10/11 (regras 231 a 237)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -548,7 +556,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 237.
+**Próximo número:** regra 238.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1253,6 +1261,35 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   linha da nota em Plano. Sem SQL. Testes: `pagina-das-avaliacoes.js` (37),
   `nota-do-guia.js`, `parceiros.js`, `jogador.js`, `perfil-e-avaliar.js`,
   `plano-e-creditos.js`, `painel-admin.js`, `voltar.js`, `chat-de-ajuda.js`.
+- **237 (10/11) — reserva online na ficha** ("eu queria poder implementar
+  sistema de reserva para não perder para concorrentes, eu consigo trazer outro
+  sistema e fazer que consigam visualizar no site?"; das três opções, "começar
+  pelo 1 e 2"). (1) A academia cola em Minha ficha › Contato o **link do sistema
+  de reservas** que já usa (`f-reserva`, `linkDeReserva`: só https, até 300;
+  coluna `reserva_link`), e a ficha ganha **"Reservar online"** (`botaoReservar`:
+  primeiro botão do Contato e do cartão ao lado, e "Reservar" na barra de baixo,
+  com o WhatsApp como segundo botão), como o trivago e o "Reservar" do Perfil da
+  Empresa no Google. (2) Se o sistema está em `SISTEMAS_COM_AGENDA` (Calendly,
+  Cal.com, Google Agenda, Acuity, Setmore, SimplyBook.me: os que oferecem a
+  agenda para incorporar; a rede daqui não deixou conferir os cabeçalhos,
+  **testar na prévia com um link de verdade**), a agenda abre numa **janela
+  dentro do site** (`janelaDaReserva`, `#reserva-janela`, **fora do `#app`**
+  para o `render()` não recarregar a agenda; `sandbox` sem sair do site; só
+  carrega no toque; camada `?reserva=1`, o "voltar" fecha; "Abrir em outra
+  aba" sempre); nos outros sistemas, o link abre em outra aba. **Só Completo e
+  Premium** (`LIMITES_DO_PLANO.contatos` com `"reserva"`, como Instagram e
+  site; a revisão do cadastro avisa no Básico). O GuiaTennis não faz a reserva
+  nem recebe o pagamento (dito na ficha, na janela, nos Termos e na
+  Privacidade, mesma data). Clique `reserva` (`TIPOS_DE_CONTATO`): conta como
+  contato, canal "Reserva online" no Desempenho, no admin e no resumo do mês
+  do Premium, e entra em "Academias que você chamou". Chat: `reservar`
+  (jogador) e `reserva-pc` (Parceiros); ajuda do Parceiros "Como mostro a
+  reserva online na ficha?"; linha nova na tabela dos planos. SQL
+  `20261110160000_reserva_online` (coluna, trava e regra dos cliques,
+  `numeros_completos_da_academia`, `numeros_da_academia`,
+  `estatisticas_publicas` e `preparar_resumos_do_mes` refeitas a partir do que
+  estava no banco). Testes: `reserva-online.js` (novo, 23), `banco-emails.py`
+  (908) e os afetados (lista na descrição do PR).
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -2786,5 +2786,37 @@ ok(len(p1["comentarios"]) == 1 and p1["mais"] is True and len(p2["comentarios"])
    and p1["comentarios"][0]["id"] != p2["comentarios"][0]["id"] and p1["encontradas"] == 2, "carrega aos poucos, sem repetir")
 ok("<loc>https://guiatennis.com.br/avaliacoes</loc>" in (um("select convert_from(public.sitemap()::bytea, 'UTF8')", papel="anon") or ""), "a página entra no sitemap")
 
+# ---- Reserva online na ficha (regra 237, 20261110160000_reserva_online) ----
+print("\nReserva online")
+# O teste roda de novo SQLs antigos (o 20261105130000 recoloca a trava dos cliques de antes): o da reserva vem por último, como no banco de verdade.
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261110160000_reserva_online.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL da reserva online roda de novo sem estragar — " + r.stderr[-200:])
+certo, _ = sql(f"update public.academias set reserva_link = 'https://calendly.com/arena/quadra' where id = '{PINHEIROS}'")
+ok(certo and um(f"select reserva_link from public.academias where id = '{PINHEIROS}'") == "https://calendly.com/arena/quadra", "a ficha guarda o link de reserva")
+certo, _ = sql("select count(reserva_link) from public.academias", papel="anon")
+ok(certo, "o visitante lê a coluna do link")
+ruins = ["http://sem-https.com/a", "javascript:alert(1)", "https://com espaco.com", "https://a.com/" + "x" * 300]
+ok(not any(sql(f"update public.academias set reserva_link = '{r}' where id = '{PINHEIROS}'")[0] for r in ruins), "só link https, sem espaço e até 300 letras")
+sql(f"update public.academias set reserva_link = 'https://playtomic.io/arena' where id = '{PINHEIROS}'", papel="authenticated", user=dono)
+ok(um(f"select reserva_link from public.academias where id = '{PINHEIROS}'") == "https://playtomic.io/arena", "quem administra a academia troca o link")
+antes = int(um("select contatos_total from public.estatisticas_publicas()") or 0)
+sql(f"delete from public.cliques where academia_id = '{PINHEIROS}'")
+certo, _ = sql(f"insert into public.cliques (academia_id, tipo) values ('{PINHEIROS}', 'reserva'), ('{PINHEIROS}', 'reserva'), ('{PINHEIROS}', 'whatsapp'), ('{PINHEIROS}', 'visualizacao')", papel="anon")
+ok(certo, "o visitante grava o clique 'reserva'")
+sql(f"update public.academias set plano = 'completo' where id = '{PINHEIROS}'")
+num = json.loads(um("select public.numeros_da_academia(30)::text", papel="authenticated", user=dono) or "{}")
+ok(num.get("contatos") == 3, "no Completo, a reserva entra nos contatos — " + json.dumps(num))
+sql(f"update public.academias set plano = 'premium' where id = '{PINHEIROS}'")
+num = json.loads(um("select public.numeros_da_academia(30)::text", papel="authenticated", user=dono) or "{}")
+ok(num.get("contatos") == 3 and num.get("canais", {}).get("reserva") == 2 and num["canais"].get("whatsapp") == 1 and sum(d["contatos"] for d in num.get("por_dia", [])) == 3,
+   "no Premium, a reserva é um canal próprio e entra no total e no dia a dia — " + json.dumps(num.get("canais")))
+ok(int(um("select contatos_total from public.estatisticas_publicas()") or 0) >= antes + 2, "os totais do site contam a reserva como contato")
+# O resumo do mês (datas fixas, para o teste não depender do dia em que roda).
+sql(f"insert into public.cliques (academia_id, tipo, created_at) values ('{PINHEIROS}', 'visualizacao', '2027-03-05 15:00+00'), ('{PINHEIROS}', 'reserva', '2027-03-05 15:10+00'), ('{PINHEIROS}', 'reserva', '2027-03-06 15:10+00'), ('{PINHEIROS}', 'site', '2027-03-06 15:20+00')")
+mes("2027-04-02")
+html = um(f"select replace(html, E'\\n', ' ') from public.emails_a_enviar where para = 'ana{sufixo}@exemplo.com' and tipo = 'resumo_do_mes' and assunto like 'Março%'") or ""
+ok("site 1 · reserva online 2" in html, "o resumo do mês do Premium diz quantos abriram a reserva — " + html[html.find("Quem chamou"):][:110])
+sql(f"update public.academias set plano = 'completo', reserva_link = null where id = '{PINHEIROS}'; delete from public.cliques where academia_id = '{PINHEIROS}';")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

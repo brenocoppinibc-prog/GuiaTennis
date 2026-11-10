@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 10/11/2026 (regra 234)
+**Atualizado em:** 10/11/2026 (regra 234, troca de chat)
 
 | | |
 |---|---|
@@ -414,7 +414,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   SQL novo (05/11: o da regra 209 não rodou). Conferir em Actions e, se faltar,
   rodar à mão no banco de teste (`banco.yml`, `destino: teste`, na branch do PR).
 
-## 9. Estado atual e pendências (09/11/2026)
+## 9. Estado atual e pendências (10/11/2026)
 
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
 avisos por e-mail do Parceiros um por um, SQL
@@ -459,20 +459,26 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**Chat trocado em 09/11/2026 (à noite):** o chat novo volta a acompanhar o
+**Chat trocado em 10/11/2026 (à tarde):** o chat novo volta a acompanhar o
 PR #5 (o anterior deixou de acompanhar e cancelou a conferência agendada;
-inscrever com `subscribe_pr_activity`). Último commit: `f3e0a1d` (regra 229
-corrigida; a 230 é o texto do aviso de cookies). O PR está verde e a prévia
-no ar. **A Netlify agora monta o site** (regra 229: `scripts/montar.mjs`,
-`publish = "_site"`): continuar editando e testando o `index.html`; para ver o
-site montado, `npm install` (uma vez) e `node scripts/montar.mjs`. **O "Banco de
-dados" não roda sozinho com os pushes do Claude** (desde 05/11): depois de cada
-SQL novo, disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e
-conferir em Actions; em 09/11 rodou para os SQLs de 221 a 225 (o mais novo,
-`20261109160000_contestar_acesso_questionario`). A descrição do PR está em dia
-até a regra 230 (passos 42 a 60); a bateria completa de 09/11 deu 2.369
-verificações, com as 4 falhas corrigidas. Nada em aberto da conversa: os pedidos
-de 05/11 a 09/11 (regras 212 a 230) estão todos na prévia.
+inscrever com `subscribe_pr_activity`). Último commit de código: `4797822`
+(regra 234). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
+o site** (regra 229): continuar editando e testando o `index.html`. **O "Banco
+de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
+disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
+Actions; em 10/11 rodou para os SQLs das regras 231, 232 e 234 (o mais novo,
+`20261110140000_nota_do_guiatennis`). A descrição do PR está em dia até a regra
+234 (passos 57 a 64). Os pedidos de 10/11 (regras 231 a 234) estão todos na
+prévia; nada em aberto da conversa. Banco local (Postgres 16 em
+`/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
+não ter: ver seção 6.
+Decisões de 10/11 (detalhe nas regras 231 a 234): a nota fiscal sai à mão pelo
+Emissor Nacional enquanto o volume for pequeno (item 3 abaixo); a compra é uma
+tela só (dados do comprador › pagamento › confirmação), e o CPF ou CNPJ vai ao
+Mercado Pago como o do pagador; a Nota do GuiaTennis só aparece no site a partir
+de 3 avaliações. Sugestão dada ao Breno: pedir a 3 academias parceiras que
+avaliem o GuiaTennis pelo Painel. A bateria completa não rodou depois da 230
+(só os testes afetados de 231 a 234, todos verdes).
 Marketing combinado (detalhe nas regras 218 a 220, 226, 227 e no item 7a): Pixel
 da Meta, tag do Google e tag do Pinterest (`2614435484797`) atrás do aviso de
 cookies; catálogos em `/catalogo-meta.csv`, `/catalogo-google.csv` e

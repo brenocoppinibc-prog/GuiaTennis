@@ -2589,6 +2589,11 @@
   .pag-nota-feito-l { display: flex; gap: 6px; align-items: flex-start; }
   .pag-nota-feito-l svg { flex-shrink: 0; margin-top: 2px; }
   .pag-nota-como { margin-top: 22px; line-height: 1.55; }
+  .pag-nota-minhas { display: grid; gap: 12px; margin: 16px 0 6px; }
+  @media (min-width: 640px) { .pag-nota-minhas { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } }
+  .pag-nota-minha { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 16px; }
+  .pag-nota-minha h2 { font-size: 15px; margin: 0 0 6px; }
+  .pag-nota-minha .cta-btn { margin-top: 12px; }
   .menu-links { display: flex; flex-wrap: wrap; gap: 0 14px; margin: 16px 10px 0; }
   .menu-links button { background: none; border: none; padding: 3px 0; font-family: inherit; font-size: 12px; color: var(--muted); cursor: pointer; }
   .menu-links button:hover { color: var(--text); text-decoration: underline; }
@@ -6221,7 +6226,7 @@ function blocoNotaDoGuia(publico, formato) {
       </div>`;
   if (!tem) return "";
   const comentarios = (d.comentarios || []).slice(0, formato === "curto" ? 0 : 3);
-  if (formato === "curto") return `<p class="nota-guia-curta">Nota das academias para o GuiaTennis: ${resumo}</p>`;
+  if (formato === "curto") return `<p class="nota-guia-curta">Nota das academias para o GuiaTennis: ${resumo} · <a href="/avaliacoes?de=academias" data-ir-avaliacoes="academias">Ver as avaliações</a></p>`;
   return `
     <section class="pc-sec nota-guia-sec" id="pc-nota-guia-sec">
       <h2 class="display">O que as academias acham do GuiaTennis</h2>
@@ -6315,6 +6320,9 @@ function ligarPaginaDaNota(raiz) {
   (raiz || document).querySelectorAll("[data-rev-mais]").forEach(b => { b.onclick = () => { const a = b.closest(".ht-rev"); a.classList.toggle("aberta"); b.textContent = a.classList.contains("aberta") ? "Mostrar menos" : "Mostrar mais"; }; });
   const mais = (raiz || document).querySelector("#pag-nota-mais");
   if (mais) mais.onclick = () => carregarPaginaDaNota(true);
+  const adm = (raiz || document).querySelector("[data-pag-nota-admin]");
+  if (adm) adm.onclick = () => irAdmin("nota");
+  (raiz || document).querySelectorAll("[data-ir-avaliacoes]").length && ligarLinksDasAvaliacoes(raiz);
   const tentar = (raiz || document).querySelector("[data-pag-nota-tentar]");
   if (tentar) tentar.onclick = () => carregarPaginaDaNota();
 }
@@ -6338,6 +6346,19 @@ function renderPaginaDaNota() {
     </div>
     ${renderSiteFooter()}
   `;
+}
+// Sem login: "Avaliar o GuiaTennis" (pede para entrar). Com login, como o
+// "Sua avaliação" da App Store e do Google Maps: a própria nota (mesmo que não
+// esteja liberada para aparecer), com a resposta e "Mudar a avaliação"; a
+// conta da academia vê também a nota como academia. O admin vai responder.
+function acoesDaPaginaDaNota() {
+  if (isAdmin) return `<div class="pag-nota-acoes"><button type="button" class="cta-btn cta-secondary" data-pag-nota-admin>Responder no painel do admin</button></div>`;
+  const lados = [jogador ? "jogador" : null, contaAcademia && minhaAcademia() && acessoCompleto() ? "parceiro" : null].filter(Boolean);
+  if (!lados.length) return `<div class="pag-nota-acoes"><button type="button" class="cta-btn cta-primary" data-avaliar-guia="jogador" data-momento="pagina-avaliacoes">Avaliar o GuiaTennis</button></div>`;
+  const m = state.minhaNotaGuia || {};
+  lados.forEach(l => { if (m[l] === undefined && !m["carregando_" + l]) setTimeout(() => carregarMinhaNotaDoGuia(l), 0); });
+  return `<div class="pag-nota-minhas">${lados.map(l => cartaoMinhaNotaDoGuia(l, "pag-nota-minha" + (l === "parceiro" ? " pag-nota-minha-pc" : ""), "pagina-avaliacoes")
+    .replace(/<p class="pc-card-t">Sua nota para o GuiaTennis<\/p>|<h2>Sua nota para o GuiaTennis<\/h2>/, `<h2>${l === "parceiro" ? `Sua nota como ${esc((minhaAcademia() || {}).name || "academia")}` : "Sua nota para o GuiaTennis"}</h2>`)).join("")}</div>`;
 }
 function corpoDaPaginaDaNota() {
   const p = paginaDaNota();
@@ -6390,10 +6411,7 @@ function corpoDaPaginaDaNota() {
       ${lado("jogador", "Jogadores", "jogadores")}
       ${lado("parceiro", "Academias", "academias")}
     </div>
-    <div class="pag-nota-acoes">
-      <button type="button" class="cta-btn cta-primary" data-avaliar-guia="jogador" data-momento="pagina-avaliacoes">Avaliar o GuiaTennis</button>
-      ${contaAcademia && minhaAcademia() ? `<button type="button" class="cta-btn cta-secondary" data-avaliar-guia="parceiro" data-momento="pagina-avaliacoes">Avaliar como academia</button>` : ""}
-    </div>
+    ${acoesDaPaginaDaNota()}
     ${feitos.length ? `
       <section class="pag-nota-feitos">
         <h2 class="sec-title">Você pediu, nós fizemos</h2>
@@ -6426,7 +6444,8 @@ async function carregarMinhaNotaDoGuia(publico) {
     m[publico] = r.error ? (/PGRST202|schema cache|does not exist/i.test(String(r.error.code || "") + String(r.error.message || "")) ? "sem-banco" : null) : (r.data || null);
   } catch { m[publico] = null; }
   m["carregando_" + publico] = false;
-  if ((publico === "jogador" && state.page === "perfil") || (publico === "parceiro" && state.page === "parceiros" && ["painel", "perfil"].includes(state.parceirosAba))) render();
+  if (state.page === "avaliacoes") atualizarPaginaDaNota();
+  else if ((publico === "jogador" && state.page === "perfil") || (publico === "parceiro" && state.page === "parceiros" && ["painel", "perfil"].includes(state.parceirosAba))) render();
 }
 function minhaNotaDoGuia(publico) {
   const v = (state.minhaNotaGuia || {})[publico];
@@ -6516,6 +6535,7 @@ async function enviarNotaDoGuia() {
     try { localStorage.removeItem("gt-nota-guia-adiada"); } catch { /* sem armazenamento */ }
     registrarPasso("acao", { academia: c ? c.id : undefined, detalhe: `Avaliou o GuiaTennis com ${k.nota} de 5` });
     carregarNotaDoGuia();
+    if (state.pagNota) { state.pagNota.dados = null; state.pagNota.chave = ""; if (state.page === "avaliacoes") setTimeout(() => carregarPaginaDaNota(), 0); }
   } catch (e) {
     k.enviando = false;
     const m = String(e && e.message || "");
@@ -6524,8 +6544,11 @@ async function enviarNotaDoGuia() {
   render();
 }
 // O cartão com a avaliação da própria conta (Minha conta e o Perfil do Parceiros).
-function cartaoMinhaNotaDoGuia(publico, classe) {
+function cartaoMinhaNotaDoGuia(publico, classe, momento) {
   const m = minhaNotaDoGuia(publico);
+  const mo = momento || "minha-conta";
+  // Regra 235: de onde a conta vê a própria nota, o caminho para a página de todas.
+  const ver = state.page === "avaliacoes" ? "" : `<p class="nota-guia-ver"><a href="/avaliacoes${publico === "parceiro" ? "?de=academias" : ""}" data-ir-avaliacoes="${publico === "parceiro" ? "academias" : ""}">Ver as avaliações do GuiaTennis ${icon('chevron', 14, 'currentColor')}</a></p>`;
   if ((state.minhaNotaGuia || {})[publico] === "sem-banco") return "";
   const quando = (ts) => ts ? diaPorExtenso(String(ts).slice(0, 10)) : "";
   const tag = publico === "parceiro" ? "div" : "section";
@@ -6538,10 +6561,10 @@ function cartaoMinhaNotaDoGuia(publico, classe) {
         ${m.comentario ? `<p class="nota-guia-meu-texto">“${esc(m.comentario)}”</p>` : ""}
         ${m.resposta ? `<p class="nota-guia-resposta"><strong>Resposta do GuiaTennis:</strong> ${esc(m.resposta)}</p>` : `<p class="footnote">O GuiaTennis lê e responde cada avaliação: a resposta chega no seu e-mail.</p>`}
         ${m.feito_texto ? `<p class="nota-guia-feito">${icon('check', 14, 'var(--green)')} <strong>Você pediu, nós fizemos:</strong> ${esc(m.feito_texto)}</p>` : ""}
-        <button type="button" class="cta-btn cta-secondary" data-avaliar-guia="${publico}" data-momento="minha-conta">Mudar a avaliação</button>`
+        <button type="button" class="cta-btn cta-secondary" data-avaliar-guia="${publico}" data-momento="${mo}">Mudar a avaliação</button>${ver}`
       : `
         <p>${publico === "parceiro" ? "Conte como o GuiaTennis está ajudando a sua academia e o que pode melhorar." : "Conte como o GuiaTennis está te ajudando e o que pode melhorar."} O GuiaTennis responde cada avaliação e avisa quando o que você pediu entrar no ar.</p>
-        <button type="button" class="cta-btn cta-primary" data-avaliar-guia="${publico}" data-momento="minha-conta">Avaliar o GuiaTennis</button>`}
+        <button type="button" class="cta-btn cta-primary" data-avaliar-guia="${publico}" data-momento="${mo}">Avaliar o GuiaTennis</button>${ver}`}
     </${tag}>`;
 }
 // No painel da academia: o pedido, com as estrelas ali mesmo e "Agora não"
@@ -16111,6 +16134,7 @@ function renderMenu() {
                 : ""}
           <p class="menu-links">
             <button type="button" data-menu="porque">Por que o GuiaTennis</button>
+            <button type="button" data-menu="avaliacoes">Avaliações</button>
             <button type="button" data-menu="termos">Termos de Uso</button>
             <button type="button" data-menu="privacidade">Privacidade</button>
           </p>
@@ -27577,6 +27601,7 @@ function acaoDoMenu(alvo) {
   if (alvo === "parceiros") { irParceiros("inicio"); return; }
   if (alvo === "parceiros-admin") { irParceiros("ver"); return; }
   if (alvo === "painel-admin") { irAdmin("inicio"); return; }
+  if (alvo === "avaliacoes") { goAvaliacoesDoGuia(); return; }
   if (alvo === "termos") { state.showTerms = true; render(); return; }
   if (alvo === "privacidade") { state.showPrivacy = true; render(); return; }
   if (alvo === "contato") { state.showContato = true; render(); return; }

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 10/11/2026 (regra 235)
+**Atualizado em:** 10/11/2026 (regra 236)
 
 | | |
 |---|---|
@@ -461,14 +461,14 @@ e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
 **Chat trocado em 10/11/2026 (à tarde):** este chat acompanha o PR #5
 (inscrito com `subscribe_pr_activity`, com conferência agendada). Depois da
-troca entrou a **regra 235** (as avaliações do GuiaTennis abertas sem login em
-`/avaliacoes`, SQL `20261110150000_pagina_das_avaliacoes_do_guia`). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
+troca entraram as **regras 235 e 236** (as avaliações do GuiaTennis em
+`/avaliacoes`, abertas com e sem login, SQL `20261110150000_pagina_das_avaliacoes_do_guia`). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
 o site** (regra 229): continuar editando e testando o `index.html`. **O "Banco
 de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
 Actions; em 10/11 rodou para os SQLs das regras 231, 232, 234 e 235 (o mais
 novo, `20261110150000_pagina_das_avaliacoes_do_guia`). A descrição do PR está em
-dia até a regra 235 (passos 57 a 65). Os pedidos de 10/11 (regras 231 a 235)
+dia até a regra 236 (passos 57 a 66). Os pedidos de 10/11 (regras 231 a 236)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -548,7 +548,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 236.
+**Próximo número:** regra 237.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1241,6 +1241,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   o que a pessoa marcou). Testes: `pagina-das-avaliacoes.js` (novo, 24, também
   no site montado), `banco-emails.py` (898), `nota-do-guia.js`, `parceiros.js`,
   `ficha-basica.js`, `regras-de-conteudo.js`, `voltar.js`, `chat-de-ajuda.js`.
+- **236 (10/11) — as avaliações do GuiaTennis com e sem login** ("com e sem
+  login"). A mesma página para todos; com conta, em cima, "Sua nota para o
+  GuiaTennis" (`acoesDaPaginaDaNota`, como o "Sua avaliação" da App Store e do
+  Google Maps), com a resposta e "Mudar a avaliação"; a conta da academia vê
+  também "Sua nota como <academia>"; o admin vê "Responder no painel do admin"
+  (`irAdmin("nota")`), sem "Avaliar". Depois de avaliar na página, o resumo e a
+  lista vêm de novo. Caminhos: "Avaliações" no menu (`data-menu="avaliacoes"`,
+  todos), "Ver as avaliações do GuiaTennis" na Minha conta e no Perfil do
+  Parceiros (`cartaoMinhaNotaDoGuia`, com `momento`) e "Ver as avaliações" na
+  linha da nota em Plano. Sem SQL. Testes: `pagina-das-avaliacoes.js` (37),
+  `nota-do-guia.js`, `parceiros.js`, `jogador.js`, `perfil-e-avaliar.js`,
+  `plano-e-creditos.js`, `painel-admin.js`, `voltar.js`, `chat-de-ajuda.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

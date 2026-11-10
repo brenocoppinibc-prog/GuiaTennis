@@ -57,6 +57,11 @@ const NOTA = { jogador: { media: 4.4, total: 30, comentarios: [] }, parceiro: { 
   const pedido = await page.evaluate(() => window.__pedidosDaPaginaDaNota.pop());
   ok(pedido.p_publico === 'jogador' && pedido.p_nota === 2 && pedido.p_limite === 20, 'vai ao banco com o lado e a estrela');
 
+  await page.evaluate(() => { state.showMenu = true; render(); });
+  await page.waitForTimeout(200);
+  ok(await page.$('[data-menu="avaliacoes"]'), 'o menu tem "Avaliações" (sem login)');
+  await page.evaluate(() => { state.showMenu = false; render(); });
+  await page.waitForTimeout(200);
   // Avaliar continua pedindo conta.
   await page.click('.pag-nota-acoes [data-avaliar-guia="jogador"]');
   await page.waitForTimeout(300);
@@ -85,6 +90,63 @@ const NOTA = { jogador: { media: 4.4, total: 30, comentarios: [] }, parceiro: { 
   await page.click('#pc-nota-guia-sec a[data-ir-avaliacoes]');
   await page.waitForTimeout(600);
   ok(await page.evaluate(() => state.page === 'avaliacoes' && state.pagNota.lado === 'parceiro'), 'abre já no filtro "Academias"');
+  await browser.close();
+
+  // ---- Com login (pedido seguinte: "com e sem login") ----
+  // Jogador: a página é a mesma, com "Sua nota para o GuiaTennis" em cima, e o menu leva até ela.
+  ({ browser, page } = await abrir({ jogador: true, jogadorConfirmado: true, paginaDaNota: PAGINA, notaDoGuia: NOTA }));
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { state.showMenu = true; render(); });
+  await page.waitForTimeout(200);
+  ok(await page.$('[data-menu="avaliacoes"]'), 'o menu tem "Avaliações" (com login)');
+  await page.click('[data-menu="avaliacoes"]');
+  await page.waitForTimeout(800);
+  corpo = await texto(page, '.pag-nota');
+  ok(await page.evaluate(() => state.page === 'avaliacoes' && location.pathname === '/avaliacoes') && corpo.includes('4,4') && await page.$$eval('.pag-nota-rev', c => c.length) === 20,
+    'logado, a página mostra o mesmo que sem login');
+  ok(corpo.includes('Sua nota para o GuiaTennis') && await page.$('.pag-nota-minha [data-avaliar-guia="jogador"]') && !(await page.$('.pag-nota-minha a[data-ir-avaliacoes]')),
+    'logado: "Sua nota para o GuiaTennis" em cima, sem o link para a própria página');
+  await page.click('.pag-nota-minha [data-avaliar-guia="jogador"]');
+  await page.waitForTimeout(300);
+  ok((await texto(page, '#nota-guia-overlay')).includes('Como o GuiaTennis está te ajudando?'), 'logado, "Avaliar o GuiaTennis" abre as estrelas direto, sem pedir para entrar');
+  await page.click('[data-nota-guia-estrela="5"]');
+  await page.fill('#nota-guia-texto', 'Muito bom para achar quadra');
+  const antesDe = await page.evaluate(() => window.__pedidosDaPaginaDaNota.length);
+  await page.click('#nota-guia-enviar');
+  await page.waitForTimeout(500);
+  await page.click('#nota-guia-ok');
+  await page.waitForTimeout(500);
+  corpo = await texto(page, '.pag-nota');
+  ok(corpo.includes('Muito bom para achar quadra') && corpo.includes('Mudar a avaliação') && await page.evaluate((n) => window.__pedidosDaPaginaDaNota.length > n, antesDe),
+    'depois de avaliar: a própria avaliação aparece e a página busca a nota de novo');
+  await page.evaluate(() => { state.page = 'perfil'; window.__jog = formDoJogador(); render(); });
+  await page.waitForTimeout(500);
+  ok(await page.$('#perfil-nota a[data-ir-avaliacoes][href="/avaliacoes"]'), 'Minha conta: "Ver as avaliações do GuiaTennis"');
+  await browser.close();
+
+  // Academia: a nota como academia e os links do Painel e do Plano.
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'avaliacoes', paginaDaNota: PAGINA, notaDoGuia: { ...NOTA, parceiro: { media: 4.8, total: 5, comentarios: [] } } }));
+  await page.waitForTimeout(1200);
+  corpo = await texto(page, '.pag-nota');
+  ok(await page.evaluate(() => state.page === 'avaliacoes') && corpo.includes('Sua nota como') && await page.$('.pag-nota-minha [data-avaliar-guia="parceiro"]'), 'a conta da academia vê a página e a própria nota como academia — ' + corpo.slice(0, 120));
+  await page.evaluate(() => { state.page = 'parceiros'; state.parceirosAba = 'perfil'; render(); });
+  await page.waitForTimeout(700);
+  ok(await page.$('#pc-nota-guia a[data-ir-avaliacoes="academias"]'), 'Perfil do Parceiros: "Ver as avaliações do GuiaTennis"');
+  await page.evaluate(() => { state.parceirosAba = 'plano'; render(); });
+  await page.waitForTimeout(700);
+  const plano = await page.$('.nota-guia-curta a[data-ir-avaliacoes="academias"]');
+  ok(plano, 'Plano: a nota das academias com "Ver as avaliações"');
+  if (plano) { await plano.click(); await page.waitForTimeout(600); }
+  ok(await page.evaluate(() => state.page === 'avaliacoes' && state.pagNota.lado === 'parceiro'), 'do Plano, abre em Academias');
+  await browser.close();
+
+  // Admin: vê tudo e vai responder no painel (o admin não avalia).
+  ({ browser, page } = await abrir({ admin: true, q: 'avaliacoes', paginaDaNota: PAGINA, notaDoGuia: NOTA }));
+  await page.waitForTimeout(1200);
+  ok(await page.$$eval('.pag-nota-rev', c => c.length) === 20 && !(await page.$('.pag-nota [data-avaliar-guia]')) && await page.$('[data-pag-nota-admin]'), 'admin: a página, sem "Avaliar", com "Responder no painel do admin"');
+  await page.click('[data-pag-nota-admin]');
+  await page.waitForTimeout(600);
+  ok(await page.evaluate(() => state.page === 'admin' && state.adminAba === 'nota'), '"Responder no painel" abre a Nota do GuiaTennis no admin');
   await browser.close();
 
   // ---- Banco sem o SQL novo: avisa sem quebrar ----

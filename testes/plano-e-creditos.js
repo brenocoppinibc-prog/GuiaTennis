@@ -243,7 +243,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ({ browser, page } = await abrir({ admin: true, q: 'admin', w: 1280 }));
   await page.evaluate(() => { window.__compras = [{ id: 'k1', academia_id: 'a1', valor: 100, forma: 'pix', situacao: 'paga', created_at: '2026-10-19T12:00:00Z', paga_em: '2026-10-19T12:01:00Z' },
     { id: 'k2', academia_id: 'a1', valor: 490, forma: 'cartao', situacao: 'paga', tipo: 'plano', plano: 'completo', periodo: 'anual', de_teste: true, created_at: '2026-10-19T13:00:00Z', paga_em: '2026-10-19T13:01:00Z' }]; });
-  await page.click('.adm-nav [data-adm-aba="leiloes"]');
+  await page.click('.adm-nav [data-adm-aba="compras"]');
   await page.waitForTimeout(400);
   const adm = await texto(page, '#painel-admin');
   ok(adm.includes('Compras de créditos e planos (30 dias)') && adm.includes('Só Aula Tennis · R$ 100 · Pix · paga') && adm.includes('Pagas: R$ 100 (fora R$ 490 de teste)') && /plano Completo anual · R\$ 490 · cartão · paga .*Teste/i.test(adm.replace(/\s+/g, ' ')), 'o admin vê as compras, com o plano e as de teste à parte — ' + adm.replace(/\s+/g, ' ').match(/Compras de créditos.{0,90}/)?.[0]);

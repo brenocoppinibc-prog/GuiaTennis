@@ -1576,7 +1576,8 @@ ok(fila("tipo = 'plano'") != "0", "quem administra recebe o e-mail do plano novo
 # A academia não muda o plano nem os créditos por fora da função.
 sql(f"update public.academias set plano = 'basico', envios_de_aviso = 999 where id = '{PINHEIROS}'", papel="authenticated", user=dono)
 ok(um(f"select plano || '|' || envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "premium|0", "por fora da função, o plano e os créditos não mudam")
-# Compra de créditos.
+# Compra de créditos. Desde a regra 231 (SQL 20261110120000), a compra pede os dados para a nota.
+sql(f"insert into public.dados_para_nota (academia_id, documento, nome, email) values ('{PINHEIROS}', '11222333000181', 'Pinheiros Tênis Ltda', 'nota@exemplo.com') on conflict (academia_id) do nothing")
 certo, saida = sql(f"select public.criar_compra_de_creditos('{PINHEIROS}', 10, 'pix')", papel="authenticated", user=dono)
 ok(not certo and "R$ 20 a R$ 5.000" in saida, "valor abaixo de R$ 20 é recusado")
 certo, saida = sql(f"select public.criar_compra_de_creditos('{PINHEIROS}', 100, 'boleto')", papel="authenticated", user=dono)
@@ -2635,6 +2636,72 @@ r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "s
 ok(r.returncode == 0, "a migração da denúncia de conta roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
 r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261109160000_contestar_acesso_questionario.sql"], capture_output=True, text=True)
 ok(r.returncode == 0, "a migração do questionário da contestação roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+
+print("\n# Dados para a nota fiscal (regra 231)")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261110120000_dados_para_a_nota.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração dos dados para a nota roda (de novo) sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+for doc, esperado, msg in [("11.222.333/0001-81", "11222333000181", "CNPJ com pontos e barra vale"),
+                           ("11.222.333/0001-82", "", "CNPJ com o dígito errado não vale"),
+                           ("12ABC34501DE35", "12ABC34501DE35", "CNPJ com letras (julho de 2026) vale"),
+                           ("12abc34501de36", "", "CNPJ com letras e o dígito errado não vale"),
+                           ("529.982.247-25", "52998224725", "CPF vale"),
+                           ("111.111.111-11", "", "CPF de números repetidos não vale"),
+                           ("123", "", "número curto não vale")]:
+    ok(um(f"select coalesce(public.documento_valido('{doc}'), '')") == esperado, msg)
+N = um("insert into public.academias (name, bairro, cidade, status, plano, phone) values "
+       "('Academia Nota', 'Pinheiros', 'São Paulo', 'published', 'completo', '11955550000') returning id")
+n_dono = parceiro("Nina Nota", f"ninanota{sufixo}@exemplo.com", N)
+n_eq = parceiro("Ivo Equipe", f"ivonota{sufixo}@exemplo.com", N, "equipe")
+n_fora = parceiro("Olga Fora", f"olganota{sufixo}@exemplo.com", MOEMA)
+certo, saida = sql(f"select public.criar_compra_de_creditos('{N}', 50, 'pix')", papel="authenticated", user=n_dono)
+ok(not certo and "dados para a nota fiscal" in saida, "sem os dados para a nota, a compra de créditos é recusada")
+certo, saida = sql(f"select public.criar_compra_de_plano('{N}', 'premium', 'mensal', 'pix')", papel="authenticated", user=n_dono)
+ok(not certo and ("dados para a nota fiscal" in saida or "sem preço" in saida), "e a de plano também — " + saida[-80:])
+certo, saida = sql(f"select public.salvar_dados_para_nota('{N}', '11.222.333/0001-82', 'Academia Nota Ltda', 'fin@nota.com')", papel="authenticated", user=n_dono)
+ok(not certo and "CNPJ ou o CPF" in saida, "CNPJ errado é recusado")
+certo, saida = sql(f"select public.salvar_dados_para_nota('{N}', '11222333000181', ' ', 'fin@nota.com')", papel="authenticated", user=n_dono)
+ok(not certo and "razão social" in saida, "sem a razão social é recusado")
+certo, saida = sql(f"select public.salvar_dados_para_nota('{N}', '11222333000181', 'Academia Nota Ltda', 'fin@')", papel="authenticated", user=n_dono)
+ok(not certo and "e-mail" in saida, "e-mail errado é recusado")
+certo, saida = sql(f"select public.salvar_dados_para_nota('{N}', '11222333000181', 'Academia Nota Ltda', 'fin@nota.com')", papel="authenticated", user=n_fora)
+ok(not certo and "não administra" in saida, "quem não administra a academia não grava")
+certo, saida = sql(f"select public.salvar_dados_para_nota('{N}', '11222333000181', 'Academia Nota Ltda', 'fin@nota.com')", papel="authenticated", user=n_eq)
+ok(not certo and '"Pagamentos" não está liberado' in saida, "a equipe sem Pagamentos não grava")
+ok(um(f"select public.dados_para_nota_da_academia('{N}')::text", papel="authenticated", user=n_eq) == "", "nem lê")
+ok(um(f"select public.salvar_dados_para_nota('{N}', '11.222.333/0001-81', '  Academia   Nota Ltda ', 'Fin@Nota.com')->>'documento'", papel="authenticated", user=n_dono) == "11222333000181",
+   "o responsável grava: só os números, o nome sem espaços sobrando e o e-mail em minúsculas")
+d = json.loads(um(f"select public.dados_para_nota_da_academia('{N}')::text", papel="authenticated", user=n_dono) or "{}")
+ok(d.get("nome") == "Academia Nota Ltda" and d.get("email") == "fin@nota.com", "e lê os dados — " + str(d))
+certo, _ = sql("select count(*) from public.dados_para_nota", papel="authenticated", user=n_dono)
+ok(not certo, "ninguém lê a tabela direto")
+compra = um(f"select public.criar_compra_de_creditos('{N}', 50, 'pix')", papel="authenticated", user=n_dono)
+ok(um(f"select nota_documento || '|' || nota_nome || '|' || nota_email from public.compras_de_creditos where id = '{compra}'") == "11222333000181|Academia Nota Ltda|fin@nota.com",
+   "a compra guarda uma cópia dos dados")
+sql(f"select public.salvar_dados_para_nota('{N}', '529.982.247-25', 'Nina Nota', 'nina@nota.com')", papel="authenticated", user=n_dono)
+ok(um(f"select nota_documento from public.compras_de_creditos where id = '{compra}'") == "11222333000181", "mudar os dados depois não muda a compra feita")
+sql("truncate public.emails_a_enviar")
+ok(um(f"select public.confirmar_compra('{compra}', 'mpn1', 50, 'approved')", papel="service_role") == "paga", "a compra é paga")
+ok(um("select count(*) from public.emails_a_enviar where tipo = 'nota_a_emitir'") == "1", "o admin recebe o aviso da nota para emitir")
+ok(um("select (position('11222333000181' in texto) > 0 and position('Academia Nota Ltda' in texto) > 0 and position('/admin/compras' in texto) > 0)::text from public.emails_a_enviar where tipo = 'nota_a_emitir'") == "true",
+   "com o CNPJ, a razão social e o link para Compras e notas")
+lista = json.loads(um("select public.compras_do_admin()::text", **admin_jwt) or "[]")
+x = next((y for y in lista if y.get("id") == compra), {})
+ok(x.get("nota_documento") == "11222333000181" and x.get("nota_email") == "fin@nota.com" and x.get("nota_emitida_em") is None, "o admin vê os dados para copiar — " + str(x)[:160])
+certo, _ = sql(f"select public.marcar_nota_emitida('{compra}', true)", papel="authenticated", user=n_dono)
+ok(not certo, "só o admin marca a nota")
+ok(um(f"select public.marcar_nota_emitida('{compra}', true) is not null", **admin_jwt) == "t", "o admin marca \"Nota emitida\"")
+ok(json.loads(um(f"select public.minhas_compras('{N}')::text", papel="authenticated", user=n_dono) or "[]")[0].get("nota_emitida_em") is not None, "a academia vê que a nota foi emitida")
+ok(um(f"select public.marcar_nota_emitida('{compra}', false) is null", **admin_jwt) == "t", "e desmarca, se marcou errado")
+sql(f"update public.compras_de_creditos set created_at = now() - interval '40 days', paga_em = now() - interval '40 days' where id = '{compra}'")
+ok(any(y.get("id") == compra for y in json.loads(um("select public.compras_do_admin()::text", **admin_jwt) or "[]")), "paga e sem nota, continua na lista depois de 30 dias")
+sql(f"update public.compras_de_creditos set nota_emitida_em = now() where id = '{compra}'")
+ok(not any(y.get("id") == compra for y in json.loads(um("select public.compras_do_admin()::text", **admin_jwt) or "[]")), "com a nota emitida, sai da lista depois de 30 dias")
+aberta = um(f"select public.criar_compra_de_creditos('{N}', 60, 'pix')", papel="authenticated", user=n_dono)
+certo, saida = sql(f"select public.marcar_nota_emitida('{aberta}', true)", **admin_jwt)
+ok(not certo and "Compra paga" in saida, "compra que não foi paga não tem nota")
+sql("truncate public.emails_a_enviar")
+ok(um(f"select public.simular_pagamento('{aberta}', 'aprovado')", papel="authenticated", user=n_dono) == "paga", "o pagamento de teste paga a compra")
+ok(um("select assunto from public.emails_a_enviar where tipo = 'nota_a_emitir'").startswith("Teste: "), "a compra de teste também avisa o admin, com \"Teste:\" no assunto (para testar na prévia)")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

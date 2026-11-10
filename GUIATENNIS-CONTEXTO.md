@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 09/11/2026 (regra 230, troca de chat)
+**Atualizado em:** 10/11/2026 (regra 231)
 
 | | |
 |---|---|
@@ -303,7 +303,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261105130000_lista_e_contato_salvo` (82 arquivos na pasta; 79 deles entraram neste PR). O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261110120000_dados_para_a_nota` (88 arquivos na pasta). Antes dele, `20261105130000_lista_e_contato_salvo`. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -348,8 +348,8 @@ sozinho vira "-", "Sob consulta"), numa linha
   verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
   `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
   erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**835 conferências**,
-  nenhuma falha, 09/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
+- **Banco local** para o `testes/banco-emails.py` (**869 conferências**,
+  nenhuma falha, 10/11/2026): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
   pedido e outro; para subir:
   `D=/var/lib/postgresql/gt; su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $D/data -o '-p 5433 -k $D/sock' -l $D/log start"`.
   Aplicar o SQL novo: `psql postgresql://postgres@127.0.0.1:5433/postgres -f <arquivo>`.
@@ -437,7 +437,7 @@ todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 21
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
 versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11; regra 219,
 o catálogo das academias para os anúncios da Meta e a correspondência
-controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`; regra 225, o questionário da contestação de acesso em duas partes e a resposta da pessoa contestada, SQL `20261109160000_contestar_acesso_questionario`; regra 226, a tag do Pinterest atrás do mesmo aviso de cookies; regra 227, a meta de verificação do domínio no Pinterest; regra 228, o cartão da avaliação na ficha com o nome em cima e a nota à direita; regra 229, o site mais rápido: a Netlify monta o site com o código num arquivo compactado e guardado pelo navegador). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`; regra 225, o questionário da contestação de acesso em duas partes e a resposta da pessoa contestada, SQL `20261109160000_contestar_acesso_questionario`; regra 226, a tag do Pinterest atrás do mesmo aviso de cookies; regra 227, a meta de verificação do domínio no Pinterest; regra 228, o cartão da avaliação na ficha com o nome em cima e a nota à direita; regra 229, o site mais rápido: a Netlify monta o site com o código num arquivo compactado e guardado pelo navegador; regra 231, os dados para a nota fiscal na compra e em Pagamentos e "Compras e notas" no painel do admin, SQL `20261110120000_dados_para_a_nota`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -450,8 +450,8 @@ passo, em telas com o cabeçalho, a mini prévia da academia e a volta da
 ficha para a escolha (197 a 200).
 
 **Testes:** a bateria completa de 04/11 (regra 206) deu **2.289
-verificações, nenhuma falha**; o `banco-emails.py` deu 835 no banco local
-(09/11, regra 225). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
+verificações, nenhuma falha**; o `banco-emails.py` deu 869 no banco local
+(10/11, regra 231). As regras 207 a 211 rodaram só os testes afetados, todos verdes (a
 lista está na descrição do PR); a 212 também (`cadastro-normal-parceiros.js`
 novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a 213 a 220 (lista na descrição do PR). Bateria completa de 09/11 (até a regra 230): 2.369 verificações, as 4 falhas corrigidas.
 
@@ -542,7 +542,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 231.
+**Próximo número:** regra 232.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1126,6 +1126,36 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   vinham do mapa em segundo plano, agendado a cada redesenho; 1 era o
   `painel-admin.js` desatualizado desde a regra 217, que procurava o endereço
   antigo da biblioteca do banco).
+- **231 (10/11) — dados para a nota fiscal.** "Mas como saber o cnpj da
+  academia" / "sim". Como os "dados de faturamento" do Google Ads e da Meta:
+  antes da primeira compra (créditos ou plano), a parte "3 Nota fiscal" pede
+  CNPJ ou CPF, razão social ou nome e o e-mail que recebe a nota (o CNPJ e o
+  e-mail já vêm da conta; com um CNPJ de números, a razão social vem da Receita
+  pelo `cnpj.mjs`); o "Pagar" grava e abre a compra. Com os dados, só o resumo
+  com "Alterar". Em Pagamentos, o cartão "Dados para a nota fiscal" (Salvar,
+  Alterar, Cancelar) e, em cada compra, "nota fiscal enviada para …". Aceita o
+  CNPJ com letras (julho de 2026). Admin: aba nova **"Compras e notas"**
+  (`/admin/compras`, grupo Financeiro, saiu de Leilões): "Notas para emitir"
+  com cada dado num botão que copia (CNPJ só os números, razão social, e-mail,
+  valor com vírgula), o link do Emissor Nacional e "Nota emitida"
+  (Desmarcar, se errar); o número no menu é o de notas que faltam; a compra
+  paga sem nota continua na lista depois de 30 dias; a compra de teste (só no
+  banco de teste) aparece com "Teste" e o e-mail sai com "Teste:", para testar
+  na prévia. A compra paga manda ao admin o e-mail "Nota fiscal para emitir" (com
+  os dados), que leva a Compras e notas. SQL `20261110120000_dados_para_a_nota`:
+  tabela `dados_para_nota` (só pelas funções), `documento_valido`,
+  `dados_para_nota_da_academia`, `salvar_dados_para_nota` (função Pagamentos),
+  `criar_compra_de_creditos`/`criar_compra_de_plano` recusam sem os dados e
+  copiam na compra (`nota_documento`, `nota_nome`, `nota_email`),
+  `nota_emitida_em`, `marcar_nota_emitida` (admin), `minhas_compras`,
+  `compras_do_admin` e `avisar_compra_paga` com a nota. Banco sem o SQL: a
+  compra segue como antes. Privacidade e Termos em 10 de novembro (a data da
+  Privacidade agora é escrita à mão, não vem do `META_PIXEL.ligadoEm`); ajuda
+  do Parceiros: "Como recebo a nota fiscal das compras?". Testes:
+  `dados-para-nota.js` (novo, 26), `plano-e-creditos.js` (as compras do admin em
+  Compras e notas), `painel-admin.js` (15 seções), `parceiros.js` (23 perguntas), as datas em `ficha-basica.js`, `regras-de-conteudo.js`,
+  `pixel-da-meta.js` e `avaliacao-editada.js`; `banco-emails.py` com a seção
+  nova (869 conferências).
 
 ## 11. WhatsApp e mensagem para as academias
 

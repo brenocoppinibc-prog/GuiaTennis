@@ -7,6 +7,9 @@
 // funções chamadas em __rpcs e a última senha trocada em __senhaNova.
 (function(){
   const agora = new Date().toISOString();
+  // Os dados para a nota de uma academia (regra 231): os salvos, ou os de exemplo.
+  const notaDe = (id) => (window.__notasSalvas || {})[id]
+    || (window.__semDadosParaNota || window.__semNotaNoBanco ? null : { documento: "11222333000181", nome: "Academia Teste Ltda", email: "financeiro@academiateste.com.br" });
   const db = window.__db = {
     academias: [
       { id:"a1", name:"Só Aula Tennis", address:"Rua A", numero:"1", bairro:"Pinheiros", cidade:"São Paulo", endereco:"Rua A, 1 - Pinheiros, São Paulo", lat:-23.56, lng:-46.68, phone:"11999990001", instagram:"", site:"", price_aula:"", price_locacao:"", amenities:["raquete","estacionamento_gratuito"], modalidades:["aulas_proprias"], quadras:{saibro_coberta:2}, pisos:["saibro"], cobertura:["coberta"], photos:[], status:"published", created_at: window.__a1CriadaEm || agora, dados_atualizados_em: window.__a1AtualizadaEm || null,
@@ -633,6 +636,37 @@
       if (i >= 0) db.pedidos_de_plano.splice(i, 1);
       return { data: a.p_plano, error:null };
     }
+    // Dados para a nota fiscal (regra 231, SQL 20261110120000). Toda academia
+    // começa com dados de exemplo; window.__semDadosParaNota começa sem eles e
+    // window.__semNotaNoBanco finge o banco sem o SQL.
+    if (["dados_para_nota_da_academia", "salvar_dados_para_nota", "marcar_nota_emitida"].includes(nome) && window.__semNotaNoBanco)
+      return { data:null, error:{ code:"PGRST202", message:"Could not find the function public." + nome + " in the schema cache" } };
+    if (nome === "dados_para_nota_da_academia") {
+      const x = meuAcesso();
+      if (!x || !possoNa(x.user_id, a.p_academia, "pagamentos")) return { data:null, error:null };
+      return { data: notaDe(a.p_academia), error:null };
+    }
+    if (nome === "salvar_dados_para_nota") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
+      if (!possoNa(x.user_id, a.p_academia, "pagamentos")) return funcaoNegada("pagamentos");
+      const doc = String(a.p_documento || "").toUpperCase().replace(/[^0-9A-Z]/g, "");
+      if (!(doc.length === 11 || doc.length === 14) || /^(.)\1+$/.test(doc)) return erro("Confira o CNPJ ou o CPF.", "22023");
+      const nomeNota = String(a.p_nome || "").replace(/\s+/g, " ").trim();
+      if (nomeNota.length < 2) return erro("Escreva a razão social ou o nome.", "22023");
+      const email = String(a.p_email || "").trim().toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return erro("Confira o e-mail que recebe a nota.", "22023");
+      const d = { documento: doc, nome: nomeNota, email };
+      (window.__notasSalvas = window.__notasSalvas || {})[a.p_academia] = d;
+      return { data: d, error:null };
+    }
+    if (nome === "marcar_nota_emitida") {
+      if (!souAdmin()) return erro("Só o admin marca a nota.", "42501");
+      const k = (window.__compras || []).find(y => y.id === a.p_compra && y.situacao === "paga");
+      if (!k) return erro("Compra paga não encontrada.", "22023");
+      k.nota_emitida_em = a.p_emitida ? (k.nota_emitida_em || new Date().toISOString()) : null;
+      return { data: k.nota_emitida_em, error:null };
+    }
     if (nome === "criar_compra_de_creditos") {
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");
@@ -640,9 +674,12 @@
       const ac = db.academias.find(y => y.id === a.p_academia);
       if (!ac || !["completo", "premium"].includes(ac.plano)) return erro("Os créditos são do leilão do Completo e do Premium.", "42501");
       if (!(a.p_valor >= 20 && a.p_valor <= 5000)) return erro("Escolha um valor de R$ 20 a R$ 5.000.", "22023");
+      const nota = notaDe(a.p_academia);
+      if (!nota && !window.__semNotaNoBanco) return erro("Informe os dados para a nota fiscal.", "22023");
       const compras = window.__compras || (window.__compras = []);
       const id = "00000000-0000-4000-8000-" + String(compras.length + 1).padStart(12, "0");
-      compras.push({ id, academia_id: a.p_academia, valor: a.p_valor, forma: a.p_forma, situacao: "aberta", created_at: new Date().toISOString(), user_id: x.user_id });
+      compras.push({ id, academia_id: a.p_academia, valor: a.p_valor, forma: a.p_forma, situacao: "aberta", created_at: new Date().toISOString(), user_id: x.user_id,
+        ...(nota ? { nota_documento: nota.documento, nota_nome: nota.nome, nota_email: nota.email } : {}) });
       return { data: id, error:null };
     }
     // Pagamento de teste (SQL 20261020120000): window.__pagamentoDeTeste liga.
@@ -657,9 +694,12 @@
       if (ac && ac.plano === a.p_plano) return erro("A academia já está nesse plano.", "22023");
       const valor = { completo_mensal: 49, completo_anual: 490, premium_mensal: 99, premium_anual: 990 }[a.p_plano + "_" + a.p_periodo];
       if (!valor) return erro("Plano inválido.", "22023");
+      const nota = notaDe(a.p_academia);
+      if (!nota && !window.__semNotaNoBanco) return erro("Informe os dados para a nota fiscal.", "22023");
       const compras = window.__compras || (window.__compras = []);
       const id = "00000000-0000-4000-8000-" + String(compras.length + 1).padStart(12, "0");
-      compras.push({ id, academia_id: a.p_academia, valor, forma: a.p_forma, situacao: "aberta", tipo: "plano", plano: a.p_plano, periodo: a.p_periodo, created_at: new Date().toISOString() });
+      compras.push({ id, academia_id: a.p_academia, valor, forma: a.p_forma, situacao: "aberta", tipo: "plano", plano: a.p_plano, periodo: a.p_periodo, created_at: new Date().toISOString(),
+        ...(nota ? { nota_documento: nota.documento, nota_nome: nota.nome, nota_email: nota.email } : {}) });
       return { data: id, error:null };
     }
     if (nome === "simular_pagamento") {

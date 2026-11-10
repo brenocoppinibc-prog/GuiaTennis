@@ -55,10 +55,10 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   corpo = await texto(page, '#parceiros .pc-main');
   ok(await page.evaluate(() => state.parceirosAba === 'creditos' && location.pathname === '/parceiros/creditos' && !document.querySelector('.pc-nav-i') && !document.querySelector('.pc-rodape')) && (await texto(page, '.pc-checkout-seguro')) === 'Pagamento seguro',
     '"Comprar créditos" abre uma página própria, sem o menu do Parceiros, com "Pagamento seguro" no alto');
-  ok(corpo.includes('Comprar créditos') && corpo.includes('R$ 50') && corpo.includes('R$ 200') && corpo.includes('Outro valor') && corpo.includes('Mais escolhido') && (await texto(page, '#pc-compra-pagar')) === 'Continuar para o pagamento · R$ 100',
-    'o valor (R$ 100 marcado), a forma de pagamento e "Continuar para o pagamento"');
+  ok(corpo.includes('Comprar créditos') && corpo.includes('R$ 50') && corpo.includes('R$ 200') && corpo.includes('Outro valor') && corpo.includes('Mais escolhido') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 100',
+    'o valor (R$ 100 marcado), a forma de pagamento e "Pagar com Pix" (regra 232)');
   ok(/Créditos\s+R\$ 100,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 100,00/.test(await texto(page, '.pc-checkout-resumo')), 'o resumo do pedido: créditos, taxas e total');
-  ok(await page.evaluate(() => [...document.querySelectorAll('.pc-checkout-trilha li')].map(l => l.className).join(',')) === 'agora,,', 'as etapas da compra, na primeira');
+  ok(await page.evaluate(() => [...document.querySelectorAll('.pc-checkout-trilha li')].map(l => l.className).join(',')) === 'feito,agora,', 'com os dados do comprador salvos, a compra abre na etapa do pagamento (regra 232)');
   await page.click('[data-compra-valor="outro"]');
   await page.waitForTimeout(150);
   await page.fill('#pc-compra-outro', '15');
@@ -144,12 +144,13 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   corpo = await texto(page, '#parceiros .pc-main');
   ok(corpo.includes('R$ 49 por mês') && corpo.includes('ou R$ 990 por ano · 2 meses grátis · preço de teste') && corpo.includes('Site de teste: os preços são de teste e o pagamento também'), 'site de teste: os planos com preço de teste, mensal e anual');
   await page.click('.pc-planos [data-escolher-plano="completo"]');
-  await page.waitForTimeout(200);
-  corpo = await texto(page, '#pc-compra');
-  ok(corpo.includes('Assinar o Completo') && corpo.includes('Mensal · R$ 49') && corpo.includes('Anual · R$ 490') && (await texto(page, '#pc-compra-pagar')) === 'Pagar R$ 49 com Pix', 'subir de plano abre a compra: período e forma, mensal e Pix de saída');
+  await page.waitForTimeout(500);
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(await page.evaluate(() => location.pathname === '/parceiros/creditos') && corpo.includes('Assinar o Completo') && corpo.includes('Comprador') && corpo.includes('Mensal · R$ 49') && corpo.includes('Anual · R$ 490') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 49',
+    'subir de plano abre a mesma tela da compra (regra 232): o comprador, o período e a forma, mensal e Pix de saída');
   await page.click('[data-compra-periodo="anual"]');
   await page.waitForTimeout(150);
-  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar R$ 490 com Pix' && (await texto(page, '#pc-compra')).includes('2 meses saem de graça'), 'anual: R$ 490, com os 2 meses de graça');
+  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 490' && (await texto(page, '#parceiros .pc-main')).includes('2 meses saem de graça') && /Anual\s+R\$ 490,00/.test(await texto(page, '.pc-checkout-resumo')), 'anual: R$ 490, com os 2 meses de graça no período e no resumo');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#pc-compra');
@@ -161,6 +162,9 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   corpo = await texto(page, '#parceiros .pc-main');
   ok(corpo.includes('Pagamento confirmado') && corpo.includes('A Só Aula Tennis agora está no plano Completo.') && await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'completo' && planoAtual() === 'completo' && window.__compras[0].de_teste),
     '"Simular Pix pago": o plano muda e a tela confirma');
+  await page.click('#pc-creditos-concluir');
+  await page.waitForTimeout(400);
+  ok(await page.evaluate(() => location.pathname === '/parceiros/plano'), '"Voltar ao plano" volta à página Plano');
   // Descer de plano segue sem pagamento.
   page.once('dialog', d => d.accept());
   await page.click('.pc-planos [data-escolher-plano="basico"]');

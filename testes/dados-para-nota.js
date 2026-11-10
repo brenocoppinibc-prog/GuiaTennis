@@ -18,50 +18,76 @@ const desligada = async (page) => page.route('**/.netlify/functions/pagamento', 
     'CNPJ (também com letras) e CPF com os dígitos certos; errado ou repetido não vale — ' + JSON.stringify(docs));
   await browser.close();
 
-  // ---- Na primeira compra, sem os dados: os campos aparecem e a razão social vem da Receita ----
+  // ---- Regra 232: a compra começa pelos dados do comprador; a máscara do CPF ou CNPJ ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'], host: PREVIA, pagamentoDeTeste: true, semDadosParaNota: true,
     cnpj: { cnpj: '11222333000181', razao_social: 'SO AULA TENNIS LTDA', situacao: 'ATIVA' } }));
   await desligada(page);
   await page.waitForTimeout(500);
   await page.click('#pc-comprar-creditos');
   await page.waitForTimeout(500);
+  const etapaAgora = () => page.evaluate(() => (document.querySelector('.pc-checkout-trilha li.agora') || {}).innerText || '');
   let corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('3\nNota fiscal') || corpo.includes('Nota fiscal'), 'a compra tem a parte "Nota fiscal"');
-  ok(await page.$('#nota-doc') && await page.$('#nota-nome') && await page.$('#nota-email'), 'sem os dados, os campos aparecem na compra');
+  ok(corpo.includes('Dados do comprador') && await page.$('#nota-doc') && await page.$('#pc-compra-dados') && !(await page.$('#pc-compra-pagar')) && (await etapaAgora()).includes('Dados do comprador'),
+    'a compra começa pelos dados do comprador, antes do pagamento');
   ok((await page.inputValue('#nota-email')).includes('@'), 'o e-mail já vem com o da conta — ' + await page.inputValue('#nota-email'));
-  await page.click('#pc-compra-pagar');
+  await page.click('#pc-compra-dados');
   await page.waitForTimeout(400);
-  ok((await texto(page, '#pc-nota')).length && (await texto(page, '#parceiros .pc-main')).includes('Confira o CNPJ ou o CPF da nota fiscal.') && await page.evaluate(() => !(window.__compras || []).length),
-    'sem o CNPJ, não abre a compra e diz o que falta');
-  await page.fill('#nota-doc', '11.222.333/0001-81');
-  await page.waitForTimeout(500);
+  ok((await texto(page, '#parceiros .pc-main')).includes('Confira o CNPJ ou o CPF da nota fiscal.') && await page.evaluate(() => !(window.__notasSalvas || {}).a1 && !(window.__compras || []).length),
+    'sem o CNPJ, não passa ao pagamento e diz o que falta');
+  await page.fill('#nota-doc', '');
+  await page.type('#nota-doc', '1122233300018');
+  await page.click('#nota-email');
+  await page.waitForTimeout(150);
+  ok((await texto(page, '#nota-receita')).includes('Faltam números: o CPF tem 11 e o CNPJ tem 14.'), 'faltando um número, avisa ao sair do campo');
+  await page.click('#nota-doc');
+  await page.press('#nota-doc', 'End');
+  await page.type('#nota-doc', '1');
+  await page.waitForTimeout(600);
+  ok((await page.inputValue('#nota-doc')) === '11.222.333/0001-81', 'digitando só os números, o site coloca os pontos, a barra e o traço — ' + await page.inputValue('#nota-doc'));
   ok((await page.inputValue('#nota-nome')) === 'SO AULA TENNIS LTDA' && (await texto(page, '#nota-receita')).includes('Receita Federal'), 'com o CNPJ, a razão social vem da Receita');
   await page.fill('#nota-email', 'financeiro@soaula.com.br');
+  await page.click('#pc-compra-dados');
+  await page.waitForTimeout(600);
+  let salvo = await page.evaluate(() => (window.__notasSalvas || {}).a1);
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(salvo && salvo.documento === '11222333000181' && salvo.nome === 'SO AULA TENNIS LTDA' && salvo.email === 'financeiro@soaula.com.br', '"Continuar para o pagamento" grava os dados do comprador — ' + JSON.stringify(salvo));
+  ok(corpo.includes('Comprador') && corpo.includes('SO AULA TENNIS LTDA') && corpo.includes('CNPJ 11.222.333/0001-81') && await page.$('#pc-compra-pagar') && (await etapaAgora()).includes('Pagamento'),
+    'e passa ao pagamento, com o comprador em cima');
+  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 100' && corpo.includes('com o CPF ou CNPJ do comprador'), '"Pagar com Pix · R$ 100", processado com o CPF ou CNPJ do comprador');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(800);
-  const salvo = await page.evaluate(() => ({ nota: (window.__notasSalvas || {}).a1, compra: (window.__compras || [])[0] || {} }));
-  ok(salvo.nota && salvo.nota.documento === '11222333000181' && salvo.nota.nome === 'SO AULA TENNIS LTDA' && salvo.nota.email === 'financeiro@soaula.com.br', 'o "Pagar" grava os dados para a nota — ' + JSON.stringify(salvo.nota));
-  ok(salvo.compra.nota_documento === '11222333000181' && salvo.compra.nota_email === 'financeiro@soaula.com.br', 'e a compra sai com uma cópia deles');
-  await page.click('[data-simular="pix"]').catch(() => {});
-  await page.waitForTimeout(300);
+  const compra = await page.evaluate(() => (window.__compras || [])[0] || {});
+  ok(compra.nota_documento === '11222333000181' && compra.nota_email === 'financeiro@soaula.com.br', 'a compra sai com o comprador');
   await browser.close();
 
-  // ---- Com os dados: o resumo e "Alterar" ----
+  // ---- Com os dados salvos: a compra abre no pagamento; "Alterar" volta aos dados ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'], host: PREVIA, pagamentoDeTeste: true }));
   await desligada(page);
   await page.waitForTimeout(500);
   await page.click('#pc-comprar-creditos');
   await page.waitForTimeout(500);
   let nota = await texto(page, '#pc-nota');
-  ok(nota.includes('Academia Teste Ltda') && nota.includes('CNPJ 11.222.333/0001-81') && nota.includes('financeiro@academiateste.com.br') && !(await page.$('#nota-doc')), 'com os dados, a compra mostra só o resumo — ' + nota.replace(/\s+/g, ' '));
+  ok(nota.includes('Comprador') && nota.includes('Academia Teste Ltda') && nota.includes('CNPJ 11.222.333/0001-81') && nota.includes('financeiro@academiateste.com.br') && !(await page.$('#nota-doc')) && await page.$('#pc-compra-pagar'),
+    'com os dados salvos, a compra abre direto no pagamento, com o comprador em cima — ' + nota.replace(/\s+/g, ' '));
   await page.click('[data-nota-alterar]');
   await page.waitForTimeout(200);
-  ok((await page.inputValue('#nota-doc')) === '11.222.333/0001-81' && (await page.inputValue('#nota-nome')) === 'Academia Teste Ltda', '"Alterar" abre os campos com os dados');
+  ok((await page.inputValue('#nota-doc')) === '11.222.333/0001-81' && (await page.inputValue('#nota-nome')) === 'Academia Teste Ltda' && await page.$('#nota-cancelar') && !(await page.$('#pc-compra-pagar')),
+    '"Alterar" volta aos dados do comprador, preenchidos, com "Cancelar"');
+  await page.click('#nota-cancelar');
+  await page.waitForTimeout(200);
+  ok(await page.$('#pc-compra-pagar') && !(await page.$('#nota-doc')), '"Cancelar" volta ao pagamento sem mudar nada');
+  await page.click('[data-nota-alterar]');
+  await page.waitForTimeout(200);
   await page.fill('#nota-doc', '529.982.247-25');
   await page.fill('#nota-nome', 'Ana Professora');
+  await page.click('#pc-compra-dados');
+  await page.waitForTimeout(500);
+  ok((await texto(page, '#pc-nota')).includes('CPF 529.982.247-25'), 'com pontos e traço, o CPF também vale');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(800);
   ok(await page.evaluate(() => (window.__notasSalvas || {}).a1?.documento === '52998224725' && window.__compras[0].nota_nome === 'Ana Professora'), 'muda para o CPF e a compra sai com os dados novos');
+  ok(await page.evaluate(() => mascaraDoDocumento('529 982 247 25') === '529.982.247-25' && mascaraDoDocumento('12abc34501de35') === '12.ABC.345/01DE-35' && mascaraDoDocumento('112223330001810') === '11.222.333/0001-81'),
+    'a máscara aceita espaços, letras do CNPJ novo e não passa de 14');
   await browser.close();
 
   // ---- Pagamentos: o cartão "Dados para a nota fiscal" e a nota enviada ----
@@ -126,7 +152,7 @@ const desligada = async (page) => page.route('**/.netlify/functions/pagamento', 
   // ---- Privacidade, Termos e ajuda ----
   ({ browser, page } = await abrir({}));
   ok(await page.evaluate(() => PRIVACY_HTML.includes('Para a nota fiscal das compras, guardamos os dados que a academia informa') && PRIVACY_HTML.includes('Do visitante e do jogador, não coletamos CPF')
-    && TERMS_HTML.includes('Antes da primeira compra, a academia informa os dados para a nota fiscal') && TERMS_HTML.includes('Última atualização: 10 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 10 de novembro de 2026')),
+    && TERMS_HTML.includes('Toda compra, de créditos ou do plano, começa pelos dados do comprador') && PRIVACY_HTML.includes('o CPF ou CNPJ, o nome e o e-mail do comprador vão ao Mercado Pago') && TERMS_HTML.includes('Última atualização: 10 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 10 de novembro de 2026')),
     'Privacidade e Termos falam dos dados para a nota, com a data nova');
   await browser.close();
 })();

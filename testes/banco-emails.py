@@ -2703,5 +2703,14 @@ sql("truncate public.emails_a_enviar")
 ok(um(f"select public.simular_pagamento('{aberta}', 'aprovado')", papel="authenticated", user=n_dono) == "paga", "o pagamento de teste paga a compra")
 ok(um("select assunto from public.emails_a_enviar where tipo = 'nota_a_emitir'").startswith("Teste: "), "a compra de teste também avisa o admin, com \"Teste:\" no assunto (para testar na prévia)")
 
+print("\n# O comprador no pagamento (regra 232)")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261110130000_comprador_no_pagamento.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração do comprador no pagamento roda (de novo) sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+cob = json.loads(um(f"select public.compra_para_cobrar('{aberta}')::text", papel="service_role") or "{}")
+ok(cob.get("nota_documento") == "52998224725" and cob.get("nota_nome") == "Nina Nota" and cob.get("nota_email") == "nina@nota.com" and cob.get("valor") == 60,
+   "a função do Netlify lê o CPF ou CNPJ, o nome e o e-mail do comprador — " + str(cob)[:140])
+certo, _ = sql(f"select public.compra_para_cobrar('{aberta}')", papel="authenticated", user=n_dono)
+ok(not certo, "o site continua sem ler a compra para cobrar")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

@@ -105,7 +105,25 @@ pedidos.length = 0;
 r = await pedir({ acao: "cobrar", compra: ID });
 const prefPlano = pedidos.find(p => p.url === "https://api.mercadopago.com/checkout/preferences");
 ok(r.status === 200 && prefPlano.corpo.items[0].title === "Plano Premium anual GuiaTennis · Só Aula Tennis" && prefPlano.corpo.items[0].unit_price === 990
-  && prefPlano.corpo.back_urls.success === `https://deploy-preview-5--x.netlify.app/parceiros/plano?compra=${ID}`, "plano: o texto diz o plano e a volta é a página Plano");
+  && prefPlano.corpo.back_urls.success === `https://deploy-preview-5--x.netlify.app/parceiros/creditos?compra=${ID}&tipo=plano`, "plano: o texto diz o plano e a volta é a tela da compra (regra 232)");
+
+// O comprador (regra 232): o CPF ou CNPJ, o nome e o e-mail da nota vão como os do pagador.
+compra = { ...compra, situacao: "aberta", forma: "pix", tipo: "creditos", valor: 100, nota_documento: "11222333000181", nota_nome: "Só Aula Tennis Ltda", nota_email: "fin@soaula.com.br" };
+pedidos.length = 0;
+r = await pedir({ acao: "cobrar", compra: ID });
+const pixComprador = pedidos.find(p => p.url === "https://api.mercadopago.com/v1/payments");
+ok(r.status === 200 && pixComprador.corpo.payer.email === "fin@soaula.com.br" && pixComprador.corpo.payer.first_name === "Só Aula Tennis Ltda"
+  && pixComprador.corpo.payer.identification.type === "CNPJ" && pixComprador.corpo.payer.identification.number === "11222333000181", "Pix: o pagador é o comprador, com o CNPJ");
+compra = { ...compra, forma: "cartao", nota_documento: "52998224725", nota_nome: "Ana Professora", nota_email: "ana@prof.com" };
+pedidos.length = 0;
+r = await pedir({ acao: "cobrar", compra: ID });
+const prefComprador = pedidos.find(p => p.url === "https://api.mercadopago.com/checkout/preferences");
+ok(r.status === 200 && prefComprador.corpo.payer.name === "Ana Professora" && prefComprador.corpo.payer.email === "ana@prof.com" && prefComprador.corpo.payer.identification.type === "CPF",
+  "cartão: a página do Mercado Pago já abre com o CPF e o nome do comprador");
+compra = { ...compra, forma: "pix", nota_documento: "12ABC34501DE35" };
+pedidos.length = 0;
+r = await pedir({ acao: "cobrar", compra: ID });
+ok(r.status === 200 && !pedidos.find(p => p.url === "https://api.mercadopago.com/v1/payments").corpo.payer.identification, "CNPJ com letras: vai sem o número, até o Mercado Pago aceitar");
 
 ok(JSON.stringify(dadosDoPix({})) === JSON.stringify({ qr: "", copia: "", expira: null }), "Pix sem os dados não quebra");
 r = await pagar(new Request("https://x/.netlify/functions/pagamento", { method: "GET" }));

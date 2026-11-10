@@ -71,6 +71,22 @@ async function confirmar(compra, pagamento) {
   });
 }
 
+// O comprador (regra 232): os dados que a academia informa no começo da
+// compra (os mesmos da nota fiscal) vão ao Mercado Pago como os do pagador,
+// com o CPF ou o CNPJ, como no checkout da Shopify e do Mercado Livre. O
+// CNPJ com letras (julho de 2026) vai sem o número, até o Mercado Pago aceitar.
+export function pagadorDe(c, onde = "pix") {
+  const doc = String(c.nota_documento || "");
+  const email = c.nota_email || c.email || "";
+  const nome = String(c.nota_nome || "").slice(0, 100);
+  const identificacao = /^\d{11}$/.test(doc) ? { type: "CPF", number: doc } : /^\d{14}$/.test(doc) ? { type: "CNPJ", number: doc } : null;
+  const p = {};
+  if (email) p.email = email;
+  if (nome) p[onde === "pix" ? "first_name" : "name"] = nome;
+  if (identificacao) p.identification = identificacao;
+  return p;
+}
+
 async function cobrar(req, compraId) {
   const c = await rpc("compra_para_cobrar", { p_compra: compraId });
   if (!c || !c.id) return json(404, { erro: "Compra não encontrada." });
@@ -88,14 +104,14 @@ async function cobrar(req, compraId) {
       headers: { "X-Idempotency-Key": `pix-${c.id}` },
       body: JSON.stringify({
         transaction_amount: c.valor, description: descricao, payment_method_id: "pix",
-        payer: { email: c.email || "parceiros@guiatennis.com.br" },
+        payer: { email: "parceiros@guiatennis.com.br", ...pagadorDe(c, "pix") },
         external_reference: c.id, notification_url: aviso, date_of_expiration: expira,
       }),
     });
     await rpc("registrar_cobranca", { p_compra: c.id, p_gateway_id: String(p.id) });
     return json(200, { forma: "pix", valor: c.valor, ...dadosDoPix(p) });
   }
-  const volta = `${origem}/parceiros/${plano ? "plano" : "creditos"}?compra=${c.id}`;
+  const volta = `${origem}/parceiros/creditos?compra=${c.id}${plano ? "&tipo=plano" : ""}`;
   const pref = await mp("/checkout/preferences", {
     method: "POST",
     body: JSON.stringify({
@@ -103,7 +119,7 @@ async function cobrar(req, compraId) {
       external_reference: c.id, notification_url: aviso,
       back_urls: { success: volta, pending: volta, failure: volta }, auto_return: "approved",
       payment_methods: { excluded_payment_types: [{ id: "ticket" }], installments: 1 },
-      payer: c.email ? { email: c.email } : undefined,
+      payer: Object.keys(pagadorDe(c, "preferencia")).length ? pagadorDe(c, "preferencia") : undefined,
     }),
   });
   await rpc("registrar_cobranca", { p_compra: c.id, p_gateway_id: String(pref.id) });

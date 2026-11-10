@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 10/11/2026 (regra 231)
+**Atualizado em:** 10/11/2026 (regra 232)
 
 | | |
 |---|---|
@@ -303,7 +303,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261110120000_dados_para_a_nota` (88 arquivos na pasta). Antes dele, `20261105130000_lista_e_contato_salvo`. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261110130000_comprador_no_pagamento` (89 arquivos na pasta). Antes dele, `20261110120000_dados_para_a_nota`. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -437,7 +437,7 @@ todo carregamento; regra 216, a Apresentação do cadastro mais enxuta; regra 21
 rápido: a lista de 20 em 20, fotos só perto da tela, biblioteca do banco com
 versão fixa; regra 218, o Pixel da Meta com o aviso de cookies, ligado em 06/11; regra 219,
 o catálogo das academias para os anúncios da Meta e a correspondência
-controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`; regra 225, o questionário da contestação de acesso em duas partes e a resposta da pessoa contestada, SQL `20261109160000_contestar_acesso_questionario`; regra 226, a tag do Pinterest atrás do mesmo aviso de cookies; regra 227, a meta de verificação do domínio no Pinterest; regra 228, o cartão da avaliação na ficha com o nome em cima e a nota à direita; regra 229, o site mais rápido: a Netlify monta o site com o código num arquivo compactado e guardado pelo navegador; regra 231, os dados para a nota fiscal na compra e em Pagamentos e "Compras e notas" no painel do admin, SQL `20261110120000_dados_para_a_nota`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
+controlada; regra 220, a tag do Google Ads atrás do mesmo aviso; regra 221, a disputa decidida pelo admin, SQL `20261109120000_disputa_decidida_pelo_admin`; regra 222, o WhatsApp no ar "em confirmação pelo GuiaTennis" e a disputa com dois códigos, SQL `20261109130000_whatsapp_em_confirmacao_e_disputa_com_dois_codigos`; regra 223, contestar o acesso de outra pessoa com um pré-questionário, SQL `20261109140000_contestar_acesso`; regra 224, os jogadores denunciam a conta de quem escreveu a avaliação, SQL `20261109150000_denunciar_conta`; regra 225, o questionário da contestação de acesso em duas partes e a resposta da pessoa contestada, SQL `20261109160000_contestar_acesso_questionario`; regra 226, a tag do Pinterest atrás do mesmo aviso de cookies; regra 227, a meta de verificação do domínio no Pinterest; regra 228, o cartão da avaliação na ficha com o nome em cima e a nota à direita; regra 229, o site mais rápido: a Netlify monta o site com o código num arquivo compactado e guardado pelo navegador; regra 231, os dados para a nota fiscal na compra e em Pagamentos e "Compras e notas" no painel do admin, SQL `20261110120000_dados_para_a_nota`; regra 232, a compra numa tela só, de créditos e do plano, começando pelos dados do comprador, e o CPF ou CNPJ indo ao Mercado Pago, SQL `20261110130000_comprador_no_pagamento`). De 28/10 a 02/11 entraram as regras 168 a 200 (uma linha
 de cada na seção 10; o detalhe de 168 a 195 e os passos 1 a 29 em
 `historico/PR5-descricao-28-10-a-02-11-2026.md`). As mais recentes: o
 catálogo com aula avulsa e mensal (190); a lista com o "a partir de" em
@@ -542,7 +542,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 232.
+**Próximo número:** regra 233.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1155,7 +1155,33 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `dados-para-nota.js` (novo, 26), `plano-e-creditos.js` (as compras do admin em
   Compras e notas), `painel-admin.js` (15 seções), `parceiros.js` (23 perguntas), as datas em `ficha-basica.js`, `regras-de-conteudo.js`,
   `pixel-da-meta.js` e `avaliacao-editada.js`; `banco-emails.py` com a seção
-  nova (869 conferências).
+  nova (872 com a regra 232).
+- **232 (10/11) — a compra numa tela só, começando pelos dados do comprador.**
+  "Quero que o site entenda digitando o cpf ou cnpj sem ou com traços e
+  pontos" / "unificar toda essa parte de pagamento? primeiro perguntando os
+  dados do comprador e depois realiza o pagamento com o gateway conectado com
+  o cpf ou cnpj". Como o checkout da Shopify e do Mercado Livre: créditos e
+  plano usam a mesma tela (`pcCreditos`, aba `creditos`; o cartão do plano na
+  página Plano saiu, `pcComprarCreditos` e `blocoDaNotaNaCompra` também), com
+  as etapas "Dados do comprador", "Pagamento" e "Confirmação". Sem os dados
+  salvos, a primeira tela pede CPF ou CNPJ, razão social ou nome e e-mail
+  (`#pc-compra-dados`, "Continuar para o pagamento", `continuarDosDados`); com
+  eles, a tela já abre no pagamento, com "1 Comprador" em cima e "Alterar"
+  (volta aos dados, com "Cancelar e manter os dados de antes"). Depois, "2 Valor"
+  (ou "2 Período", no plano) e "3 Forma de pagamento"; o botão virou "Pagar
+  com Pix · R$ …". Máscara do CPF/CNPJ (`mascaraDoDocumento`): enquanto
+  digita, coloca pontos, barra e traço (até 11 números, CPF; depois, CNPJ;
+  aceita letras do CNPJ novo); ao sair do campo, avisa "Faltam números" ou
+  "Confira os números" (`avisoDoDocumento`). `pagamento.mjs` manda ao Mercado
+  Pago o pagador (`pagadorDe`): e-mail, nome e `identification` CPF/CNPJ (o
+  CNPJ com letras vai sem o número); a volta do cartão é sempre
+  `/parceiros/creditos?compra=…` (`&tipo=plano` no plano; a volta antiga pela
+  página Plano abre a tela da compra). SQL `20261110130000_comprador_no_pagamento`:
+  `compra_para_cobrar` traz `nota_documento`, `nota_nome` e `nota_email`.
+  Termos e Privacidade (ainda 10 de novembro): os dados do comprador vão ao
+  Mercado Pago; ajuda do Parceiros atualizada. Testes: `dados-para-nota.js`
+  (32), `plano-e-creditos.js` (46), `pagamento.mjs` (23), `banco-emails.py`
+  (872), e os afetados sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

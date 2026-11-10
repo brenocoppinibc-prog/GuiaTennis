@@ -498,6 +498,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    grátis no Completo e no Premium, plano anual com desconto; não cobrar
    por clique por enquanto. A nota sai por academia; o imposto é de quem
    emite (confirmar com o contador o código do serviço e as retenções).
+   **Nota fiscal (decidido em 10/11/2026):** o CNPJ está sendo aberto pela
+   Contabilizei (SLU, Simples Nacional, CNAE 6319-4/00). O Mercado Pago só
+   recebe; a NFS-e sai pelo Emissor Nacional (gov.br/nfse, obrigatório para
+   o Simples desde 01/11/2026). **No começo, o Breno emite à mão** (de graça),
+   uma nota por compra paga, para o CNPJ da academia, com o valor cheio.
+   Se o volume crescer: ligar o site direto na API gratuita do Emissor
+   Nacional (só o certificado A1, guardado como segredo na Netlify), ao
+   confirmar o pagamento, com a nota na aba Pagamentos e por e-mail (como
+   Google Ads, Shopify e Booking). Serviço pago (NFE.io a partir de R$ 190/mês)
+   só se ele não quiser manutenção. Perguntas para a Contabilizei: se o plano
+   inclui emissor, o código do serviço e se a nota dos créditos sai no
+   pagamento ou no uso.
 4. Decidir: a promoção paga na ficha devolve as semanas que faltam se a
    academia voltar ao Básico (hoje não); o leilão só abre em bairro com um
    mínimo de jogadores; o "Confirmar depois" fica na tela do e-mail do
@@ -530,7 +542,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 221.
+**Próximo número:** regra 231.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 

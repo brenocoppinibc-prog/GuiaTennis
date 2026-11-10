@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 10/11/2026 (regra 232)
+**Atualizado em:** 10/11/2026 (regra 233)
 
 | | |
 |---|---|
@@ -542,7 +542,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 233.
+**Próximo número:** regra 234.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1182,6 +1182,12 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Mercado Pago; ajuda do Parceiros atualizada. Testes: `dados-para-nota.js`
   (32), `plano-e-creditos.js` (46), `pagamento.mjs` (23), `banco-emails.py`
   (872), e os afetados sem falha.
+- **233 (10/11) — sai o cartão "Dados para a nota fiscal" de Pagamentos** ("tire
+  isso", com o print). Os dados do comprador ficam só no começo da compra
+  (regra 232), com "Alterar"; saíram `cartaoDaNota`, `salvarNotaDaAba` e o
+  `#nota-salvar`. Pagamentos continua mostrando "nota fiscal enviada para …" em
+  cada compra. Ajuda e Privacidade ajustadas ("muda no começo de cada compra").
+  Sem SQL. Teste: `dados-para-nota.js` (29).
 
 ## 11. WhatsApp e mensagem para as academias
 

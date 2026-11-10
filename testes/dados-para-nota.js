@@ -90,35 +90,22 @@ const desligada = async (page) => page.route('**/.netlify/functions/pagamento', 
     'a máscara aceita espaços, letras do CNPJ novo e não passa de 14');
   await browser.close();
 
-  // ---- Pagamentos: o cartão "Dados para a nota fiscal" e a nota enviada ----
+  // ---- Pagamentos: sem o cartão dos dados (regra 233) e com a nota enviada ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/pagamentos', completo: ['a1'], semDadosParaNota: true }));
   await page.evaluate(() => { window.__compras = [{ id: 'k1', academia_id: 'a1', valor: 100, forma: 'pix', situacao: 'paga', created_at: '2026-11-10T12:00:00Z', paga_em: '2026-11-10T12:01:00Z', nota_emitida_em: '2026-11-10T15:00:00Z', nota_email: 'fin@soaula.com.br' }]; });
   await page.evaluate(() => carregarComprasDaAcademia());
   await page.waitForTimeout(600);
-  corpo = await texto(page, '#pc-pag-nota');
-  ok(corpo.includes('Dados para a nota fiscal') && corpo.includes('Informe antes da primeira compra.') && await page.$('#nota-salvar'), 'Pagamentos: sem os dados, o cartão pede e tem "Salvar"');
+  ok(!(await page.$('#pc-pag-nota')) && !(await page.$('#nota-doc')) && !(await texto(page, '#parceiros .pc-main')).includes('Dados para a nota fiscal'),
+    'regra 233: Pagamentos não tem mais o cartão "Dados para a nota fiscal" (os dados ficam no começo da compra)');
   ok((await texto(page, '#pc-pag-compras')).includes('nota fiscal enviada para fin@soaula.com.br'), 'a compra mostra que a nota foi enviada');
-  await page.fill('#nota-doc', '11222333000181');
-  await page.fill('#nota-nome', 'Só Aula Tennis Ltda');
-  await page.fill('#nota-email', 'fin@');
-  await page.click('#nota-salvar');
-  await page.waitForTimeout(400);
-  ok((await texto(page, '#pc-pag-nota')).includes('Confira o e-mail que recebe a nota.'), 'e-mail errado: diz o que fazer');
-  await page.fill('#nota-email', 'fin@soaula.com.br');
-  await page.click('#nota-salvar');
-  await page.waitForTimeout(500);
-  corpo = await texto(page, '#pc-pag-nota');
-  ok(corpo.includes('Só Aula Tennis Ltda') && corpo.includes('CNPJ 11.222.333/0001-81 · fin@soaula.com.br') && corpo.includes('Alterar') && !(await page.$('#nota-doc')), 'salvo: o resumo com "Alterar"');
-  await page.click('[data-nota-alterar]');
-  await page.click('#nota-cancelar');
-  await page.waitForTimeout(200);
-  ok(!(await page.$('#nota-doc')) && (await texto(page, '#pc-pag-nota')).includes('Só Aula Tennis Ltda'), '"Cancelar" volta ao resumo');
   await browser.close();
 
   // ---- Banco sem o SQL: a compra segue como antes ----
-  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/pagamentos', completo: ['a1'], semNotaNoBanco: true }));
-  await page.waitForTimeout(600);
-  ok(!(await page.$('#pc-pag-nota')) && (await texto(page, '#parceiros .pc-main')).includes('Compras'), 'banco sem o SQL: sem o cartão da nota, o resto igual');
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'], semNotaNoBanco: true }));
+  await page.waitForTimeout(500);
+  await page.click('#pc-comprar-creditos');
+  await page.waitForTimeout(500);
+  ok(!(await page.$('#pc-nota')) && !(await page.$('#nota-doc')) && await page.$('#pc-compra-pagar'), 'banco sem o SQL: a compra abre no pagamento, sem os dados do comprador');
   await browser.close();
 
   // ---- Admin: Compras e notas ----

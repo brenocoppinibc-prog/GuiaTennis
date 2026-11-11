@@ -5,7 +5,7 @@
 // mais simples algo com uma cara mais técnica e a nota não mostrar por agr em
 // nenhum lugar e só quem vê sou eu e entrando na página de feedback ver a que
 // fez e a minha resposta") e o "Sair da conta" em vermelho.
-const { abrir, ok } = require('./harness');
+const { abrir, ok, vigiarAbas, abasAbertas } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.innerText || '').replace(/\s+/g, ' '), sel);
 const cor = (page, sel) => page.evaluate((s) => { const el = document.querySelector(s); return el ? getComputedStyle(el).color : ''; }, sel);
@@ -119,7 +119,18 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   await page.evaluate(() => goFeedback());
   await page.waitForTimeout(500);
   pag = await texto(page, '.pag-feedback');
-  ok(pag.includes('Feedback da Só Aula Tennis') && pag.includes('★★★★★'), 'a conta da academia vê o feedback da academia na página — ' + pag);
+  ok(!pag.includes('Feedback da Só Aula Tennis') && pag.includes('O feedback da academia fica no GuiaTennis Parceiros › Feedback') && await page.$('.pag-feedback a[data-pc="feedback"]'),
+    'regra 246: no site dos jogadores, o feedback da academia não aparece, só o link para o Parceiros — ' + pag);
+  await vigiarAbas(page);
+  await page.click('.pag-feedback a[data-pc="feedback"]');
+  await page.waitForTimeout(300);
+  const aberta = (await abasAbertas(page)).pop() || {};
+  ok(/\/parceiros\/feedback$/.test(aberta.url || ''), 'o link abre o Parceiros › Feedback na aba do Parceiros — ' + aberta.url);
+  await page.evaluate(() => irParceiros('feedback', { mesmaAba: true }));
+  await page.waitForTimeout(600);
+  pag = await texto(page, '#app');
+  ok(await page.evaluate(() => state.page === 'parceiros' && state.parceirosAba === 'feedback') && pag.includes('Feedback da Só Aula Tennis') && pag.includes('★★★★★') && !pag.includes('Seu feedback para o GuiaTennis'),
+    'no Parceiros › Feedback, só o feedback da academia');
   await browser.close();
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' }));
   await page.waitForTimeout(800);

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 245)
+**Atualizado em:** 11/11/2026 (regra 246)
 
 | | |
 |---|---|
@@ -477,7 +477,7 @@ de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
 Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
 novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
-dia até a regra 245 (passos 57 a 70; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 245)
+dia até a regra 246 (passos 57 a 70; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 246)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -557,7 +557,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 246.
+**Próximo número:** regra 247.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1389,6 +1389,14 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   coluna "Sua academia" e o coloca na coluna "GuiaTennis", depois de "Site para
   jogadores" (só com a conta da academia). Sem SQL. Testes: `nota-do-guia.js`
   (45), `parceiros.js`, `funcoes-da-equipe.js`.
+- **246 (11/11) — o feedback de cada lado no seu site** ("feedback de jogadores
+  ou parceiros aparecer em cada site separados"): `/feedback` (site dos
+  jogadores, `corpoDoFeedback`) mostra só o feedback do jogador; a conta da
+  academia vê ali só o link "O feedback da academia fica no GuiaTennis Parceiros
+  › Feedback" (abre na aba do Parceiros, como os outros links para lá). O
+  Parceiros › Feedback já mostrava só o da academia. Termos e Privacidade dizem
+  onde cada um vê (mesma data, 11/11). Sem SQL. Testes: `nota-do-guia.js` (47),
+  `parceiros.js`, `ficha-basica.js`, `regras-de-conteudo.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

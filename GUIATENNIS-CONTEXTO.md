@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 243)
+**Atualizado em:** 11/11/2026 (regra 244)
 
 | | |
 |---|---|
@@ -477,7 +477,7 @@ de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
 Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
 novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
-dia até a regra 243 (passos 57 a 69; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 243)
+dia até a regra 244 (passos 57 a 70; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 244)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -557,7 +557,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 244.
+**Próximo número:** regra 245.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1362,6 +1362,25 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `nota-do-guia.js` (40), `parceiros.js` e `funcoes-da-equipe.js` (menu com
   Feedback), `chat-parceiros.js`, `acesso-academia.js`, `dicas-do-parceiros.js`,
   `varias-academias.js`, `voltar.js`, `links.js`, `sem-explicacao.js`.
+- **244 (11/11) — a autorização para usar o feedback na divulgação** (o Breno
+  perguntou se a Privacidade dizia que o feedback podia ser usado para divulgar
+  o site; não dizia, e pela LGPD precisa do consentimento da pessoa; "sim, pode
+  fazer"). Na folha do feedback, depois do comentário, a caixa **opcional e
+  desmarcada** `#nota-guia-mostrar` ("Autorizo o GuiaTennis a usar o meu
+  comentário na divulgação do site e das redes sociais, com o meu primeiro nome e
+  a inicial do sobrenome (opcional)"; na academia, com o nome dela), gravada em
+  `pode_mostrar` (coluna que já existia; na edição vem como estava). O cartão do
+  próprio feedback diz "Você autorizou… Para tirar a autorização, toque em
+  Editar avaliação". No admin (aba Feedback), cada comentário mostra **"Pode
+  divulgar"** (com o nome que vai junto) ou "Não autorizou a divulgação", e a
+  nota no fim diz para usar só os marcados. Termos e Privacidade (**11 de
+  novembro de 2026**): o comentário só vai para a divulgação (site, redes,
+  anúncios) com essa autorização (base legal: consentimento), retirável em
+  "Editar avaliação"; a nota média, sem nomes, pode aparecer no site no futuro.
+  Ajuda do Parceiros também. Sem SQL. Testes: `nota-do-guia.js` (44) e os que
+  conferem a data (`avaliacao-editada.js`, `ficha-basica.js`,
+  `regras-de-conteudo.js`, `pixel-da-meta.js`, `dados-para-nota.js`),
+  `parceiros.js`, `painel-admin.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

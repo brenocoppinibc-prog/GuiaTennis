@@ -139,7 +139,7 @@ const desligada = async (page) => page.route('**/.netlify/functions/pagamento', 
   // ---- Privacidade, Termos e ajuda ----
   ({ browser, page } = await abrir({}));
   ok(await page.evaluate(() => PRIVACY_HTML.includes('Para a nota fiscal das compras, guardamos os dados que a academia informa') && PRIVACY_HTML.includes('Do visitante e do jogador, não coletamos CPF')
-    && TERMS_HTML.includes('Toda compra, de créditos ou do plano, começa pelos dados do comprador') && PRIVACY_HTML.includes('o CPF ou CNPJ, o nome e o e-mail do comprador vão ao Mercado Pago') && TERMS_HTML.includes('Última atualização: 10 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 10 de novembro de 2026')),
+    && TERMS_HTML.includes('Toda compra, de créditos ou do plano, começa pelos dados do comprador') && PRIVACY_HTML.includes('o CPF ou CNPJ, o nome e o e-mail do comprador vão ao Mercado Pago') && TERMS_HTML.includes('Última atualização: 11 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 11 de novembro de 2026')),
     'Privacidade e Termos falam dos dados para a nota, com a data nova');
   await browser.close();
 })();

@@ -58,8 +58,9 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   await page.click('[data-nota-guia-estrela="2"]');
   await page.waitForTimeout(150);
   folha = await texto(page, '#nota-guia-overlay');
-  ok(await page.$$eval('#nota-guia-overlay .nota-guia-estrela.on', b => b.length) === 2 && folha.includes('2 de 5 · Ruim') && /O QUE FALTOU/i.test(folha) && folha.includes('Mais academias na minha região') && await page.$('#nota-guia-contato') && !(await page.$('#nota-guia-mostrar')),
-    'nota baixa: "O que faltou", o pedido de contato e nenhuma pergunta sobre mostrar no site');
+  ok(await page.$$eval('#nota-guia-overlay .nota-guia-estrela.on', b => b.length) === 2 && folha.includes('2 de 5 · Ruim') && /O QUE FALTOU/i.test(folha) && folha.includes('Mais academias na minha região') && await page.$('#nota-guia-contato') && await page.$('#nota-guia-mostrar') && !(await page.isChecked('#nota-guia-mostrar'))
+    && folha.includes('Autorizo o GuiaTennis a usar o meu comentário na divulgação do site e das redes sociais, com o meu primeiro nome e a inicial do sobrenome (opcional)'),
+    'nota baixa: "O que faltou", o pedido de contato e a autorização para a divulgação, opcional e desmarcada (regra 244)');
   await page.click('[data-nota-guia-ponto="mais_academias"]');
   await page.fill('#nota-guia-texto', 'Faltam academias no meu bairro');
   await page.click('[data-nota-guia-estrela="2"]');
@@ -82,7 +83,14 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   await page.waitForTimeout(200);
   folha = await texto(page, '#nota-guia-overlay');
   ok(folha.includes('Editar avaliação') && folha.includes('2 de 5 · Ruim') && (await texto(page, '#nota-guia-enviar')) === 'Salvar', 'editar: a folha abre com "Editar avaliação", a nota marcada e "Salvar"');
-  await page.click('#nota-guia-fechar');
+  ok(!(await page.isChecked('#nota-guia-mostrar')), 'editando, a autorização vem como estava (desmarcada)');
+  await page.check('#nota-guia-mostrar');
+  await page.click('#nota-guia-enviar');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => (window.__rpcs.filter(r => r.nome === 'avaliar_o_guia').pop() || {}).args.p_pode_mostrar === true), 'marcar a autorização vai ao banco');
+  await page.click('#nota-guia-ok');
+  await page.waitForTimeout(200);
+  ok((await texto(page, '#perfil-nota')).includes('Você autorizou o uso deste comentário na divulgação do GuiaTennis.'), 'o cartão diz que a pessoa autorizou e como tirar');
   await page.evaluate(() => { window.__avaliacoesDoGuia[0].resposta = 'Obrigado! Estamos cadastrando o seu bairro.'; window.__avaliacoesDoGuia[0].feito_texto = '12 academias novas em Moema.'; state.minhaNotaGuia = {}; goFeedback(); });
   await page.waitForTimeout(600);
   pag = await texto(page, '.pag-feedback');
@@ -152,6 +160,7 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   ok(await page.evaluate(() => location.pathname === '/admin/nota') && (await texto(page, '.adm-nav [data-adm-aba="nota"]')).includes('Feedback') && adm.includes('A nota (só você vê)') && adm.includes('Jogadores: ★★★★★ 4,7 · 12 avaliações') && /quer contato/i.test(adm) && adm.includes('hugo@exemplo.com'),
     'o admin vê a aba "Feedback", a nota de cada lado e cada feedback — ' + adm.slice(adm.indexOf('A nota'), adm.indexOf('A nota') + 160));
   ok(!(await page.$('[data-nota-guia-ocultar]')) && adm.includes('Por enquanto, a nota e os comentários não aparecem no site: só você vê.'), 'sem "Tirar do site": nada aparece no site');
+  ok(adm.includes('Pode divulgar (autorizou, com "Hugo P.")') && adm.includes('Pode divulgar (autorizou, com o nome da academia)') && adm.includes('use só os comentários marcados "Pode divulgar"'), 'o admin vê quem autorizou a divulgação e com que nome');
   await page.fill('#nr-g1', 'Obrigado, Hugo! Já estamos cadastrando o seu bairro.');
   await page.fill('#nf-g1', '12 academias novas em Moema.');
   await page.click('[data-nota-guia-salvar="g1"]');
@@ -169,7 +178,8 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   ({ browser, page } = await abrir({ jogador: true, jogadorConfirmado: true, q: 'perfil', semNotaDoGuia: true }));
   await page.waitForTimeout(1200);
   ok(!(await page.$('#perfil-nota')) && (await texto(page, '.sitefooter')).includes('Enviar feedback'), 'banco sem o SQL: Minha conta sem o cartão, o resto igual');
-  ok(await page.evaluate(() => TERMS_HTML.includes('Feedback ao GuiaTennis:') && TERMS_HTML.includes('não aparecem no site') && TERMS_HTML.includes('não paga nem dá vantagem') && PRIVACY_HTML.includes('Quem manda feedback ao GuiaTennis') && PRIVACY_HTML.includes('página Feedback')),
+  ok(await page.evaluate(() => TERMS_HTML.includes('Feedback ao GuiaTennis:') && TERMS_HTML.includes('não aparecem no site') && TERMS_HTML.includes('não paga nem dá vantagem') && PRIVACY_HTML.includes('Quem manda feedback ao GuiaTennis') && PRIVACY_HTML.includes('página Feedback')
+    && TERMS_HTML.includes('O comentário só é usado na divulgação do GuiaTennis') && PRIVACY_HTML.includes('se a pessoa autorizar, numa caixa opcional ao enviar o feedback (base legal: o consentimento)') && PRIVACY_HTML.includes('a autorização pode ser retirada a qualquer momento em "Editar avaliação"')),
     'Termos e Privacidade: o feedback, a nota só para o GuiaTennis e a página Feedback');
   await browser.close();
 })();

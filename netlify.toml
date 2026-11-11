@@ -53,7 +53,7 @@
 #   /busca?q=…&piso=…              busca com filtros
 #   /comparar?academias=…          comparação
 #   /perfil                        perfil da conta do jogador
-#   /avaliacoes                    avaliações do GuiaTennis (sem login)
+#   /feedback                      o feedback da conta e a resposta
 #   /admin/…                       painel do admin (só o admin vê)
 #   /parceiros/…                   GuiaTennis Parceiros (site das academias)
 # Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
@@ -106,8 +106,13 @@
   to = "/index.html"
   status = 200
 
-# As avaliações do GuiaTennis, abertas sem login (10/11/2026, regra 235),
-# como a página de uma empresa no Trustpilot: /avaliacoes?de=…&estrelas=….
+# Feedback (11/11/2026, regra 238): quem tem conta vê o feedback que mandou e
+# a resposta do GuiaTennis. O /avaliacoes antigo (regra 235) abre a mesma tela.
+[[redirects]]
+  from = "/feedback"
+  to = "/index.html"
+  status = 200
+
 [[redirects]]
   from = "/avaliacoes"
   to = "/index.html"

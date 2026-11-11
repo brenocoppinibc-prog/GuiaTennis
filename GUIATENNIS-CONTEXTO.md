@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 10/11/2026 (regra 237)
+**Atualizado em:** 11/11/2026 (regra 238)
 
 | | |
 |---|---|
@@ -303,7 +303,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261110160000_reserva_online` (92 arquivos na pasta; coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). Antes dele, `20261110150000_pagina_das_avaliacoes_do_guia` (também refaz o `sitemap()` com `/avaliacoes`). O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261111120000_feedback_so_o_admin_ve` (92 arquivos na pasta; `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -465,8 +465,9 @@ e a descrição do PR curta (só as regras e os passos novos; seção 2).
 **Chat trocado em 10/11/2026 (à tarde):** este chat acompanha o PR #5
 (inscrito com `subscribe_pr_activity`, com conferência agendada). Depois da
 troca entraram as **regras 235 e 236** (as avaliações do GuiaTennis em
-`/avaliacoes`, abertas com e sem login, SQL `20261110150000_pagina_das_avaliacoes_do_guia`)
-e a **regra 237** (reserva online na ficha: o botão e a agenda numa janela, SQL
+`/avaliacoes`, abertas com e sem login; **desfeitas pela regra 238**, que virou
+a página **Feedback** só com o da própria conta e a resposta, e a nota só para o
+admin, SQL `20261111120000_feedback_so_o_admin_ve`) e a **regra 237** (reserva online na ficha: o botão e a agenda numa janela, SQL
 `20261110160000_reserva_online`; o Breno ainda não disse qual sistema as
 academias usam: quando disser, conferir se ele oferece a agenda para
 incorporar e incluir em `SISTEMAS_COM_AGENDA`; a reserva própria do
@@ -474,9 +475,9 @@ GuiaTennis, opção 3, ficou para depois de ver os cliques). O PR está verde, s
 o site** (regra 229): continuar editando e testando o `index.html`. **O "Banco
 de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
-Actions; em 10/11 rodou para os SQLs das regras 231, 232, 234, 235 e 237 (o mais
-novo, `20261110160000_reserva_online`). A descrição do PR está em
-dia até a regra 237 (passos 57 a 67). Os pedidos de 10/11 (regras 231 a 237)
+Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
+novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
+dia até a regra 238 (passos 57 a 67; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 238)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -556,7 +557,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 238.
+**Próximo número:** regra 239.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1290,6 +1291,32 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `estatisticas_publicas` e `preparar_resumos_do_mes` refeitas a partir do que
   estava no banco). Testes: `reserva-online.js` (novo, 23), `banco-emails.py`
   (908) e os afetados (lista na descrição do PR).
+- **238 (11/11) — Feedback no lugar das avaliações do GuiaTennis** ("renomeie a
+  página de avaliação para feedback, a página de obrigado deixar mais
+  centralizada e mudar avaliação para editar avaliação, deixe a primeira página
+  mais simples algo com uma cara mais técnica e a nota não mostrar por agr em
+  nenhum lugar e só quem vê sou eu e entrando na página de feedback ver a que
+  fez e a minha resposta, não precisa falar como elas funcionam nessa página").
+  Desfaz a parte pública das regras 234 a 236. (1) **`/feedback`**
+  (`renderPaginaDeFeedback`, `corpoDoFeedback`; o `/avaliacoes` abre ela; menu e
+  rodapé "Feedback"; `noindex`): sem login, "Enviar feedback" (pede para
+  entrar); com conta, o próprio feedback (`cartaoMinhaNotaDoGuia`, "Seu feedback
+  para o GuiaTennis"; na academia, "Feedback da <academia>") com a resposta, o
+  "Você pediu, nós fizemos" e **"Editar avaliação"**; o admin, "Ver os feedbacks
+  no painel do admin". Sem lista dos outros, sem nota, sem explicação. (2) **A
+  nota não aparece em lugar nenhum** (rodapé, página de venda do Parceiros,
+  Plano): `carregarNotaDoGuia` só para o admin, e o banco só a devolve ao admin.
+  Sem "Pode mostrar o meu comentário" (vai `false`); sem "Tirar do site" no
+  admin. Admin: a aba virou **"Feedback"**, com "A nota (só você vê)". (3) **A
+  primeira tela da folha** (`renderNotaGuiaSheet`): "Enviar feedback" (ou
+  "Editar avaliação"), de quem é, rótulos em maiúsculas, a **escala de 1 a 5 com
+  números** (`escalaDaNota`, também no pedido do Painel), "O que mais ajuda"/"O
+  que faltou", "Comentário (opcional)", "Enviar" (ou "Salvar"). (4) **O obrigado
+  centralizado** (`.nota-guia-fim`, com o ✓). Termos ("Feedback ao
+  GuiaTennis"), Privacidade e ajuda do Parceiros ("Como mando feedback ao
+  GuiaTennis?"), mesma data. SQL `20261111120000_feedback_so_o_admin_ve`.
+  Testes: `nota-do-guia.js` (reescrito, 37), `banco-emails.py` (908; a seção da
+  regra 235 virou a da 238); `pagina-das-avaliacoes.js` saiu.
 
 ## 11. WhatsApp e mensagem para as academias
 

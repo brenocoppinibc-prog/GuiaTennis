@@ -2740,7 +2740,7 @@ sql("select public.avaliar_o_guia('jogador', 2, array['mais_academias'], 'Faltam
 d2 = json.loads(um("select public.minha_avaliacao_do_guia('jogador')::text", papel="authenticated", user=gj2) or "{}")
 ok(d2.get("nota") == 2 and d2.get("quer_contato") is True and d2.get("pode_mostrar") is False, "nota baixa pode pedir contato; a pessoa lê a própria avaliação")
 sql(f"select public.avaliar_o_guia('parceiro', 4, array['contatos'], 'Chegaram alunos novos', true, false, 'painel', '{G}')", papel="authenticated", user=gp)
-n = json.loads(um("select public.nota_do_guia()::text", papel="anon") or "{}")
+n = json.loads(um("select public.nota_do_guia()::text", **admin_jwt) or "{}")
 ok(n.get("jogador", {}).get("total") == 2 and float(n["jogador"]["media"]) == 3.5 and len(n["jogador"]["comentarios"]) == 1 and n["jogador"]["comentarios"][0]["nome"] == "Gabi L.",
    "a nota pública: média de todas (3,5), só o comentário liberado aparece — " + str(n.get("jogador"))[:160])
 ok(n.get("parceiro", {}).get("total") == 1 and n["parceiro"]["comentarios"][0]["nome"] == "Academia Nota Guia", "o comentário do parceiro aparece com o nome da academia")
@@ -2761,30 +2761,23 @@ ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'feito_do_guia'
    "\"Você pediu, nós fizemos\": e-mail e o texto na avaliação de quem pediu")
 gid = um(f"select id from public.avaliacoes_do_guia where user_id = '{gj1}'")
 sql(f"select public.responder_avaliacao_do_guia('{gid}', null, null, true)", **admin_jwt)
-n = json.loads(um("select public.nota_do_guia()::text", papel="anon") or "{}")
+n = json.loads(um("select public.nota_do_guia()::text", **admin_jwt) or "{}")
 ok(n["jogador"]["total"] == 2 and len(n["jogador"]["comentarios"]) == 0, "comentário tirado do site sai da lista, mas a nota continua contando")
 lista = json.loads(um("select public.avaliacoes_do_guia_admin()::text", **admin_jwt) or "[]")
 ok(len(lista) == 3 and any(x.get("email") == f"pedroguia{sufixo}@exemplo.com" and x.get("academia") == "Academia Nota Guia" for x in lista), "o admin vê todas, com o e-mail e a academia")
 
-# ---- A página pública das avaliações do GuiaTennis (regra 235): sem login ----
-pg = json.loads(um("select public.pagina_das_avaliacoes_do_guia()::text", papel="anon") or "{}")
-rj = pg.get("resumo", {}).get("jogador", {})
-ok(rj.get("total") == 2 and rj.get("estrelas", {}).get("4") == 1 and rj["estrelas"].get("2") == 1 and rj.get("respondidas") == 1,
-   "a página: o resumo dos jogadores com as estrelas e as respondidas, contando todas — " + str(rj)[:160])
-ok(pg.get("encontradas") == 1 and len(pg.get("comentarios", [])) == 1 and pg["comentarios"][0]["nome"] == "Academia Nota Guia" and pg.get("mais") is False,
-   "só aparece o comentário liberado e não tirado do site — " + str(pg.get("comentarios"))[:160])
-ok(not any(k in pg["comentarios"][0] for k in ("email", "user_id", "academia_id", "quer_contato", "pontos")), "sem e-mail, conta, academia ou pedido de contato")
-ok([f.get("texto") for f in pg.get("feitos", [])] == ["12 academias novas em Moema e Vila Mariana."] and set(pg["feitos"][0]) == {"texto", "quando"},
-   "\"Você pediu, nós fizemos\" aparece sem dizer quem pediu")
-ok(json.loads(um("select public.pagina_das_avaliacoes_do_guia('jogador')::text", papel="anon"))["encontradas"] == 0
-   and json.loads(um("select public.pagina_das_avaliacoes_do_guia(null, 4)::text", papel="anon"))["encontradas"] == 1
-   and json.loads(um("select public.pagina_das_avaliacoes_do_guia(null, 5)::text", papel="anon"))["encontradas"] == 0, "filtra por lado e por estrela")
-sql(f"select public.responder_avaliacao_do_guia('{gid}', null, null, false)", **admin_jwt)
-p1 = json.loads(um("select public.pagina_das_avaliacoes_do_guia(null, null, 1, 0)::text", papel="anon"))
-p2 = json.loads(um("select public.pagina_das_avaliacoes_do_guia(null, null, 1, 1)::text", papel="anon"))
-ok(len(p1["comentarios"]) == 1 and p1["mais"] is True and len(p2["comentarios"]) == 1 and p2["mais"] is False
-   and p1["comentarios"][0]["id"] != p2["comentarios"][0]["id"] and p1["encontradas"] == 2, "carrega aos poucos, sem repetir")
-ok("<loc>https://guiatennis.com.br/avaliacoes</loc>" in (um("select convert_from(public.sitemap()::bytea, 'UTF8')", papel="anon") or ""), "a página entra no sitemap")
+# ---- Feedback (regra 238, 20261111120000_feedback_so_o_admin_ve): a nota só para o admin ----
+print("\nFeedback: a nota só para o admin")
+# A seção da regra 234 roda de novo o SQL dela (a nota aberta a todos): o do feedback vem depois, como no banco de verdade.
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261111120000_feedback_so_o_admin_ve.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL do feedback roda de novo sem estragar — " + r.stderr[-200:])
+ok(um("select coalesce(public.nota_do_guia()::text, 'nada')", papel="anon") == "nada", "o visitante não lê a nota do GuiaTennis")
+ok(um("select coalesce(public.nota_do_guia()::text, 'nada')", papel="authenticated", user=gj1) == "nada", "quem tem conta também não")
+ok(json.loads(um("select public.nota_do_guia()::text", **admin_jwt) or "{}").get("jogador", {}).get("total") == 2, "o admin lê a nota de cada lado")
+ok(um("select count(*) from pg_proc where proname = 'pagina_das_avaliacoes_do_guia'") == "0", "a consulta pública da página de avaliações saiu")
+ok("/avaliacoes" not in (um("select convert_from(public.sitemap()::bytea, 'UTF8')", papel="anon") or "x/avaliacoes"), "o sitemap volta sem /avaliacoes")
+minha = json.loads(um("select public.minha_avaliacao_do_guia('jogador')::text", papel="authenticated", user=gj2) or "{}")
+ok(minha.get("resposta", "").startswith("Obrigado, Hugo!") and minha.get("feito_texto"), "na página Feedback, a conta vê o próprio feedback com a resposta e o \"Você pediu, nós fizemos\"")
 
 # ---- Reserva online na ficha (regra 237, 20261110160000_reserva_online) ----
 print("\nReserva online")

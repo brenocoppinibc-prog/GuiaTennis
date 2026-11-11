@@ -36,7 +36,9 @@ para o histórico).
 
 - Fala português, pelo celular, manda print. **Respostas curtas**, em
   português, sem jargão e **sem narrar** o que está sendo feito: dizer o
-  que foi feito e o que depende dele. Ele está com pouco limite de uso.
+  que foi feito e o que depende dele. **Sempre economizar o limite de uso**
+  (pedido fixo de 11/11/2026): ler só o trecho necessário, rodar só os testes
+  afetados, sem print nem ferramenta extra sem pedido, resposta curta.
 - Quer **comparação com referências internacionais grandes** (Google,
   Booking, Airbnb, hoteis.com, trivago, Instagram, Nubank, Shopify…) nas
   decisões de site, Instagram e marketing — **na conversa**. No site,

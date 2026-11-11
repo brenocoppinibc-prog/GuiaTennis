@@ -6372,7 +6372,7 @@ async function carregarMinhaNotaDoGuia(publico) {
   } catch { m[publico] = null; }
   m["carregando_" + publico] = false;
   if (state.page === "feedback") render();
-  else if ((publico === "jogador" && state.page === "perfil") || (publico === "parceiro" && state.page === "parceiros" && ["painel", "perfil"].includes(state.parceirosAba))) render();
+  else if ((publico === "jogador" && state.page === "perfil") || (publico === "parceiro" && state.page === "parceiros" && ["painel", "feedback"].includes(state.parceirosAba))) render();
 }
 function minhaNotaDoGuia(publico) {
   const v = (state.minhaNotaGuia || {})[publico];
@@ -6480,7 +6480,7 @@ function cartaoMinhaNotaDoGuia(publico, classe, momento) {
   const titulo = publico === "parceiro" && mo === "pagina-feedback" ? `Feedback da ${esc((minhaAcademia() || {}).name || "academia")}` : "Seu feedback para o GuiaTennis";
   return `
     <${tag} class="${classe}" id="${publico === "parceiro" ? "pc-nota-guia" : "perfil-nota"}">
-      ${publico === "parceiro" && mo !== "pagina-feedback" ? `<p class="pc-card-t">${titulo}</p>` : `<h2>${titulo}</h2>`}
+      ${publico === "parceiro" && state.page === "parceiros" ? `<p class="pc-card-t">${titulo}</p>` : `<h2>${titulo}</h2>`}
       ${m === undefined ? `<p>${bolaGirando(14)} Carregando…</p>` : m ? `
         <p class="nota-guia-minha"><span class="nota-guia-estrelas" aria-label="${m.nota} de 5">${starsHtml(m.nota)}</span> ${esc(NOMES_DAS_NOTAS[m.nota] || "")}${m.updated_at ? ` · ${esc(quando(m.updated_at))}` : ""}</p>
         ${(m.pontos || []).length ? `<p class="footnote" style="margin:4px 0 0">${esc(m.pontos.map(x => rotuloDoPonto(publico, x)).join(" · "))}</p>` : ""}
@@ -6528,7 +6528,7 @@ function eventosDaNotaDoGuia() {
   // A avaliação da conta, quando a página que mostra abre.
   const m = state.minhaNotaGuia || {};
   if (state.page === "perfil" && jogador && m.jogador === undefined && !m.carregando_jogador) carregarMinhaNotaDoGuia("jogador");
-  if (state.page === "parceiros" && ["painel", "perfil"].includes(state.parceirosAba) && contaAcademia && acessoCompleto() && minhaAcademia() && m.parceiro === undefined && !m.carregando_parceiro) carregarMinhaNotaDoGuia("parceiro");
+  if (state.page === "parceiros" && ["painel", "feedback"].includes(state.parceirosAba) && contaAcademia && acessoCompleto() && minhaAcademia() && m.parceiro === undefined && !m.carregando_parceiro) carregarMinhaNotaDoGuia("parceiro");
 }
 
 // ---------- derived results ----------
@@ -10525,7 +10525,7 @@ function demoBusca() {
 // aparece no topo da busca, marcado "Patrocinado" (regra 71).
 
 const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar"];
-const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "creditos", "ficha", "pessoas", "plano", "pagamentos", "academias", "perfil", "contestar", "whatsapp"];
+const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "creditos", "ficha", "pessoas", "plano", "pagamentos", "feedback", "academias", "perfil", "contestar", "whatsapp"];
 // Só do admin: escolher a academia para ver o Parceiros como ela vê.
 const PC_ADMIN = ["ver"];
 const PC_MENU_PUBLICO = [
@@ -10550,6 +10550,8 @@ const PC_MENU_LOGADO = [
   // Os créditos e as compras da academia (regra 180), como a aba Finanças da
   // extranet da Booking.
   { aba: "pagamentos", t: "Pagamentos", ic: "pix", funcao: "pagamentos" },
+  // O feedback da academia para o GuiaTennis (regra 243).
+  { aba: "feedback", t: "Feedback", ic: "enviar" },
   { aba: "perfil", t: "Perfil", ic: "key", soNoMenu: true },
   { aba: "ajuda", t: "Ajuda", ic: "info" },
 ];
@@ -10643,7 +10645,7 @@ function perguntasParceiros() {
     { q: "Posso dar acesso a mais pessoas da academia?", a: "Pode. Em Acessos, o responsável principal adiciona pessoas pelo e-mail: só 1 no Básico, até 5 no Completo e até 10 no Premium. Embaixo de cada pessoa, ele escolhe o que ela pode fazer: Editar a ficha, Responder avaliações, Promoções e leilão e Pagamentos (quem entra começa com as três primeiras). Em \"Tornar responsável principal\", a pessoa passa a poder tudo, como ele; só o GuiaTennis tira um responsável principal, ou ele mesmo deixa de ser, se houver outro." },
     { q: "Quem vê os pagamentos da academia?", a: "Em Pagamentos ficam os créditos de promoções, a compra e cada compra, com quem comprou. Vê e compra quem é responsável principal e quem da equipe tem a função Pagamentos. A cada compra paga, os responsáveis principais recebem um e-mail com quem comprou, o que foi e o valor." },
     { id: "reserva-online", q: "Como mostro a reserva online na ficha?", a: "Em Minha ficha › Editar a ficha, na parte Contato, cole o link do sistema de reservas que vocês já usam. No Completo e no Premium, a ficha ganha o botão \"Reservar online\": com " + listaPt(SISTEMAS_COM_AGENDA.map(x => x.nome)) + ", a agenda abre dentro do GuiaTennis; com os outros sistemas, o botão abre a página de reserva em outra aba. O GuiaTennis não faz a reserva, não recebe o pagamento e não cobra comissão: tudo continua no sistema de vocês. Os cliques em \"Reservar online\" entram nos contatos do Desempenho." },
-    { id: "nota-do-guia", q: "Como mando feedback ao GuiaTennis?", a: "No Perfil, em \"Seu feedback para o GuiaTennis\", no cartão do Painel ou na página Feedback (guiatennis.com.br/feedback): uma nota de 1 a 5, o que mais ajuda ou o que faltou e um comentário, se quiser. O GuiaTennis responde cada feedback por e-mail e avisa quando o que vocês pediram entrar no ar; o feedback e a resposta ficam na página Feedback. Com nota baixa, dá para pedir que o GuiaTennis fale com vocês. Por enquanto, a nota e os comentários não aparecem no site." },
+    { id: "nota-do-guia", q: "Como mando feedback ao GuiaTennis?", a: "Na aba Feedback do Parceiros (ou no cartão do Painel): uma nota de 1 a 5, o que mais ajuda ou o que faltou e um comentário, se quiser. O GuiaTennis responde cada feedback por e-mail e avisa quando o que vocês pediram entrar no ar; o feedback e a resposta ficam na aba Feedback, com \"Editar avaliação\". Com nota baixa, dá para pedir que o GuiaTennis fale com vocês. Por enquanto, a nota e os comentários não aparecem no site." },
     { id: "nota-fiscal", q: "Como recebo a nota fiscal das compras?", a: "Toda compra, de créditos ou do plano, começa pelos dados do comprador: o CNPJ (ou o CPF), a razão social e o e-mail que recebe a nota; com o CNPJ, o site busca a razão social na Receita. Nas compras seguintes, eles já vêm preenchidos, com \"Alterar\". O CPF ou CNPJ vai ao Mercado Pago como o de quem paga. O GuiaTennis emite a nota de cada compra paga e ela chega nesse e-mail; em Pagamentos, a compra mostra quando a nota foi enviada." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
@@ -11512,7 +11514,7 @@ function renderParceiros() {
   const semAcademia = contaAcademia && acessoCompleto() && !temAcademia();
   let miolo;
   if (PC_PRIVADAS.includes(aba) && contaAcademia && !acessoCompleto()) miolo = pcPrimeiroAcesso();
-  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "creditos", "ficha", "pessoas", "pagamentos"].includes(aba)) miolo = pcSemAcademia();
+  else if (semAcademia && ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "creditos", "ficha", "pessoas", "pagamentos", "feedback"].includes(aba)) miolo = pcSemAcademia();
   else if (temAcademia() && acessoCompleto() && FUNCAO_DA_ABA[aba] && !posso(FUNCAO_DA_ABA[aba])) miolo = pcSemFuncao(aba);
   else if (aba === "ver") miolo = pcVerComoAdmin();
   else if (aba === "inicio") miolo = pcInicio();
@@ -11531,6 +11533,7 @@ function renderParceiros() {
   else if (aba === "ficha") miolo = pcFicha();
   else if (aba === "plano") miolo = pcPlanos(temAcademia());
   else if (aba === "pagamentos") miolo = pcPagamentos();
+  else if (aba === "feedback") miolo = pcFeedback();
   else if (aba === "pessoas") miolo = pcPessoasDaAcademia();
   else if (aba === "academias") miolo = pcAcademias();
   else if (aba === "perfil") miolo = pcPerfil();
@@ -12697,6 +12700,25 @@ function voltarDosCreditos() {
 // Booking: o saldo de créditos, a compra e cada compra com quem comprou. A
 // cada compra paga, os responsáveis principais recebem um e-mail (SQL
 // 20261029190000).
+// ---------- Feedback no Parceiros (regra 243) ----------
+// Pedido do Breno em 11/11/2026: "faça a aba de feedback no parceiros". Como a
+// página Feedback do site (regra 238): o feedback da academia para o GuiaTennis,
+// com a resposta e o "Você pediu, nós fizemos", "Enviar feedback" ou "Editar
+// avaliação". Sem a nota de ninguém (só o admin vê) e sem explicação. Saiu do
+// Perfil, que tinha o mesmo cartão.
+function pcFeedback() {
+  const c = minhaAcademia();
+  if (!c) return pcSemFicha();
+  const m = state.minhaNotaGuia || {};
+  if (!emVisaoAdmin() && !isAdmin && m.parceiro === undefined && !m.carregando_parceiro) setTimeout(() => carregarMinhaNotaDoGuia("parceiro"), 0);
+  return `
+    <section class="pc-pagina pc-estreita">
+      ${minhasAcademias().length > 1 ? pcNomeDaAcademia(c) : ""}
+      <h1 class="display">Feedback</h1>
+      <p class="pc-sec-sub">O que está funcionando e o que pode melhorar no GuiaTennis.</p>
+      ${emVisaoAdmin() || isAdmin ? `<div class="pc-card"><p class="pc-card-s">Os feedbacks das academias ficam no painel do admin, na aba Feedback.</p></div>` : cartaoMinhaNotaDoGuia("parceiro", "pc-card nota-guia-card pc-feedback-cartao", "pagina-feedback")}
+    </section>`;
+}
 function pcPagamentos() {
   const c = minhaAcademia();
   if (!c) return pcSemFicha();
@@ -14332,7 +14354,6 @@ function pcPerfil() {
               <a href="/parceiros/academias" class="cta-btn cta-secondary" data-pc="academias">Administrar as academias</a>
             </div>
           </div>
-          ${emVisaoAdmin() || isAdmin || !minhaAcademia() ? "" : cartaoMinhaNotaDoGuia("parceiro", "pc-card nota-guia-card")}
           <div class="pc-conta-rodape">
             <button type="button" class="inline-link sair-vermelho" id="conta-sair">${emVisaoAdmin() ? "Sair do modo admin" : "Sair da conta"}</button>
             ${emVisaoAdmin() || isAdmin ? "" : `<button type="button" class="inline-link jog-excluir" id="pc-excluir-conta">Excluir minha conta</button>`}
@@ -25530,6 +25551,7 @@ const CHAT_PAGINAS_PC = [
   { aba: "painel", t: "Atualizações", p: ["atualizac", "painel", "pagina inicial", "inicio da conta"],
     r: "o que mudou na academia: avaliações novas, pedidos de acesso, lembretes e os acessos dos últimos 30 dias" },
   { aba: "ficha", t: "Minha ficha", p: ["minha ficha", "ficha"], r: "a ficha como o jogador vê, o QR code e \"Editar a ficha\"" },
+  { aba: "feedback", t: "Feedback", p: ["feedback", "sugest", "elogio", "critica"], r: "o feedback da academia para o GuiaTennis, com a resposta" },
   { aba: "avaliacoes", t: "Avaliações", p: ["avaliac", "comentarios", "notas"], r: "as avaliações dos jogadores, para responder ou pedir análise" },
   { aba: "promocoes", t: "Promoções na ficha", p: ["promoc", "promocoes na ficha"], r: "as promoções na ficha e na busca, por semana, no Completo e no Premium" },
   { aba: "promocoes-email", t: "Leilão de promoções", p: ["promocoes por e mail", "promocoes por email", "avisos por e mail", "leilao", "lance", "creditos"],

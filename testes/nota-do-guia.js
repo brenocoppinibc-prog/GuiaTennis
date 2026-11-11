@@ -121,7 +121,22 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   await page.goto(page.url().replace(/\/parceiros\/.*$/, '/parceiros/perfil'));
   await page.waitForTimeout(1000);
   ok(await cor(page, '#conta-sair') === VERMELHO, '"Sair da conta" em vermelho no Perfil do Parceiros — ' + await cor(page, '#conta-sair'));
-  ok((await texto(page, '#pc-nota-guia')).includes('Seu feedback para o GuiaTennis'), 'o Perfil do Parceiros tem "Seu feedback para o GuiaTennis"');
+  ok(!(await page.$('#pc-nota-guia')), 'o Perfil não tem mais o cartão (foi para a aba Feedback, regra 243)');
+  ok(await page.evaluate(() => PC_MENU_LOGADO.some(i => i.aba === 'feedback' && i.t === 'Feedback')) && await page.$('a[data-pc="feedback"]'), 'o menu do Parceiros tem "Feedback"');
+  await page.evaluate(() => irParceiros('feedback'));
+  await page.waitForTimeout(600);
+  let pcFb = await texto(page, '#app');
+  ok(await page.evaluate(() => location.pathname === '/parceiros/feedback') && pcFb.includes('Feedback') && pcFb.includes('Feedback da Só Aula Tennis') && await page.$('#pc-nota-guia [data-avaliar-guia="parceiro"]') && !/4,8|média/.test(pcFb),
+    'a aba Feedback do Parceiros: o feedback da academia, sem a nota de todos — ' + pcFb.slice(pcFb.indexOf('Feedback'), pcFb.indexOf('Feedback') + 160));
+  await page.click('#pc-nota-guia [data-avaliar-guia="parceiro"]');
+  await page.waitForTimeout(200);
+  await page.click('[data-nota-guia-estrela="4"]');
+  await page.click('#nota-guia-enviar');
+  await page.waitForTimeout(500);
+  await page.click('#nota-guia-ok');
+  await page.waitForTimeout(300);
+  pcFb = await texto(page, '#pc-nota-guia');
+  ok(pcFb.includes('★★★★☆') && pcFb.includes('Editar avaliação') && pcFb.includes('Ainda sem resposta'), 'enviado pela aba, o feedback aparece nela com "Editar avaliação"');
   await page.evaluate(() => { state.parceirosAba = 'plano'; render(); });
   await page.waitForTimeout(500);
   ok(!(await page.$('.nota-guia-curta')) && !(await texto(page, '#app')).includes('Nota das academias'), 'o Plano não mostra a nota');

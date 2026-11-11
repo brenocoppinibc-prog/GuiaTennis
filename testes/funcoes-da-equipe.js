@@ -57,7 +57,7 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
   ({ browser, page } = await abrir({ academia: 'a1', completo: ['a1'], equipe: ['avaliacoes'], q: 'parceiros/painel' }));
   await page.waitForTimeout(400);
   let m = await page.evaluate(() => PC_MENU_LOGADO.filter(i => !i.funcao || posso(i.funcao)).map(i => i.aba).join(','));
-  ok(m === 'painel,avaliacoes,desempenho,academias,pessoas,plano,perfil,ajuda', 'o menu mostra só o que a pessoa pode fazer — ' + m);
+  ok(m === 'painel,avaliacoes,desempenho,academias,pessoas,plano,feedback,perfil,ajuda', 'o menu mostra só o que a pessoa pode fazer — ' + m);
   ok(await page.evaluate(() => [...document.querySelectorAll('[data-pc]')].every(a => !['ficha', 'promocoes', 'pagamentos'].includes(a.dataset.pc) || !a.closest('nav, .menu, .pc-menu, .pc-rodape-cols'))), 'nem no menu nem no rodapé aparecem Minha ficha, Promoções e Pagamentos');
   // Regra 213: em Atualizações, o que não é liberado não aparece.
   let at = await page.evaluate(() => ({ editar: !!document.querySelector('#parceiros .editar-academia'), avaliacoes: !!document.querySelector('#parceiros .pc-main [data-pc="avaliacoes"]'),

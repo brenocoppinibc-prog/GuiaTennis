@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 242)
+**Atualizado em:** 11/11/2026 (regra 243)
 
 | | |
 |---|---|
@@ -477,7 +477,7 @@ de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
 Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
 novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
-dia até a regra 242 (passos 57 a 68; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 242)
+dia até a regra 243 (passos 57 a 69; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 243)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -557,7 +557,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 243.
+**Próximo número:** regra 244.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1350,6 +1350,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `ligarReserva(holder)` liga os cartões do mapa. Sem SQL. Testes:
   `reserva-online.js` (28), `ver-no-mapa.js`, `busca-e-ficha.js`,
   `lista-de-20.js`, `convite-chamadas.js`, `comparar-e-avisos.js`.
+- **243 (11/11) — a aba Feedback no Parceiros** ("faça a aba de feedback no
+  parceiros"): `/parceiros/feedback` (`pcFeedback`; "Feedback" no menu, depois
+  de Pagamentos; `PC_PRIVADAS`; sem função de equipe, todo acesso vê), com o
+  feedback da academia (`cartaoMinhaNotaDoGuia("parceiro", …, "pagina-feedback")`,
+  título "Feedback da <academia>" com `pc-card-t`): a nota da própria academia,
+  o comentário, a resposta, o "Você pediu, nós fizemos" e "Enviar feedback" ou
+  "Editar avaliação". O cartão saiu do Perfil. Admin vendo como academia: o
+  aviso de que os feedbacks ficam no painel. Chat (`CHAT_PAGINAS_PC`) e ajuda
+  ("Como mando feedback ao GuiaTennis?") apontam para a aba. Sem SQL. Testes:
+  `nota-do-guia.js` (40), `parceiros.js` e `funcoes-da-equipe.js` (menu com
+  Feedback), `chat-parceiros.js`, `acesso-academia.js`, `dicas-do-parceiros.js`,
+  `varias-academias.js`, `voltar.js`, `links.js`, `sem-explicacao.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

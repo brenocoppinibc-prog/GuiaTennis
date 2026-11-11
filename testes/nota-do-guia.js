@@ -131,6 +131,8 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   ok(await cor(page, '#conta-sair') === VERMELHO, '"Sair da conta" em vermelho no Perfil do Parceiros — ' + await cor(page, '#conta-sair'));
   ok(!(await page.$('#pc-nota-guia')), 'o Perfil não tem mais o cartão (foi para a aba Feedback, regra 243)');
   ok(await page.evaluate(() => PC_MENU_LOGADO.some(i => i.aba === 'feedback' && i.t === 'Feedback')) && await page.$('a[data-pc="feedback"]'), 'o menu do Parceiros tem "Feedback"');
+  const rodapePc = await page.evaluate(() => [...document.querySelectorAll('.pc-rodape-cols > div')].map(d => ({ h: d.querySelector('h4').innerText, links: [...d.querySelectorAll('a, button')].map(a => a.innerText.trim()) })));
+  ok(rodapePc.find(c => c.h === 'GuiaTennis').links.includes('Feedback') && !rodapePc.find(c => c.h === 'Sua academia').links.includes('Feedback'), 'regra 245: no rodapé do Parceiros, o Feedback fica na coluna GuiaTennis — ' + JSON.stringify(rodapePc.map(c => c.h + ': ' + c.links.join(', '))));
   await page.evaluate(() => irParceiros('feedback'));
   await page.waitForTimeout(600);
   let pcFb = await texto(page, '#app');

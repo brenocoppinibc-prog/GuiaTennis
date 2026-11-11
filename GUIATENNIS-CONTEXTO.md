@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 244)
+**Atualizado em:** 11/11/2026 (regra 245)
 
 | | |
 |---|---|
@@ -477,7 +477,7 @@ de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
 Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
 novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
-dia até a regra 244 (passos 57 a 70; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 244)
+dia até a regra 245 (passos 57 a 70; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 245)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -557,7 +557,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 245.
+**Próximo número:** regra 246.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1380,7 +1380,15 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Ajuda do Parceiros também. Sem SQL. Testes: `nota-do-guia.js` (44) e os que
   conferem a data (`avaliacao-editada.js`, `ficha-basica.js`,
   `regras-de-conteudo.js`, `pixel-da-meta.js`, `dados-para-nota.js`),
-  `parceiros.js`, `painel-admin.js`.
+  `parceiros.js`, `painel-admin.js`. Depois, o Breno pediu "faça isso para as
+  academias tbm" e, perguntado, respondeu "os jogadores e parceiros marcarem
+  como opcional a autorização da divulgação do feedback": já era assim (a caixa
+  aparece também no feedback da academia, com o nome dela); nada mudou.
+- **245 (11/11) — o Feedback no rodapé do Parceiros, na coluna GuiaTennis** ("no
+  rodapé deixe o feedback na seção do site"): `pcRodape` tira "Feedback" da
+  coluna "Sua academia" e o coloca na coluna "GuiaTennis", depois de "Site para
+  jogadores" (só com a conta da academia). Sem SQL. Testes: `nota-do-guia.js`
+  (45), `parceiros.js`, `funcoes-da-equipe.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

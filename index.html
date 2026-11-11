@@ -11368,7 +11368,7 @@ function pcRodape() {
           <div>
             <h4>${contaAcademia ? "Sua academia" : "Parceiros"}</h4>
             ${contaAcademia
-              ? PC_MENU_LOGADO.filter(i => i.aba !== "ajuda" && (!i.funcao || posso(i.funcao))).map(i => `<a href="/parceiros/${i.aba}" data-pc="${i.aba}">${esc(i.t)}</a>`).join("")
+              ? PC_MENU_LOGADO.filter(i => i.aba !== "ajuda" && i.aba !== "feedback" && (!i.funcao || posso(i.funcao))).map(i => `<a href="/parceiros/${i.aba}" data-pc="${i.aba}">${esc(i.t)}</a>`).join("")
               : `<a href="/parceiros#pc-beneficios" data-pc="inicio" data-pc-ancora="pc-beneficios">Benefícios</a>
                  <a href="/parceiros/planos" data-pc="planos">Planos</a>
                  <a href="/parceiros/cadastro" data-pc="cadastro">Cadastrar academia</a>
@@ -11383,6 +11383,8 @@ function pcRodape() {
           <div>
             <h4>GuiaTennis</h4>
             <a href="/" data-pc-sair-do-portal>Site para jogadores</a>
+            ${/* Regra 245 ("no rodapé deixe o feedback na seção do site"): o Feedback fica na coluna GuiaTennis, não na da academia. */ ""}
+            ${contaAcademia ? `<a href="/parceiros/feedback" data-pc="feedback">Feedback</a>` : ""}
             <button type="button" id="terms-link">Termos de Uso</button>
             <button type="button" id="privacy-link">Política de Privacidade</button>
           </div>

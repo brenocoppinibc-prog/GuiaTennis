@@ -39,9 +39,12 @@ const cliques = (page) => page.evaluate(() => window.__cliques.filter(c => c.tip
   await comReserva(page, 'https://playtomic.io/arena-moema', 'completo');
   await page.waitForTimeout(400);
   const botoes = await page.$$eval('[data-reservar]', b => b.map(x => ({ t: x.innerText.trim(), href: x.getAttribute('href'), alvo: x.target, rel: x.rel, primario: x.classList.contains('cta-primary') })));
-  ok(botoes.length >= 2 && botoes.every(b => b.href === 'https://playtomic.io/arena-moema' && b.alvo === '_blank' && b.rel.includes('noopener') && b.primario),
+  ok(botoes.length >= 2 && botoes.every(b => b.href === 'https://playtomic.io/arena-moema' && b.alvo === '_blank' && b.rel.includes('noopener') && !b.primario),
     '"Reservar online" no Contato e "Reservar" na barra de baixo, com o link da academia — ' + JSON.stringify(botoes.map(b => b.t)));
-  ok((await texto(page, '#ht-contato .cta-col')).startsWith('Reservar online') && await page.$('#ht-contato [data-track="whatsapp"].cta-secondary'), 'no Contato, "Reservar online" vem primeiro e o WhatsApp continua, como segundo botão');
+  const ordem = await page.$$eval('#ht-contato .cta-col > *', b => b.map(x => x.dataset.track || x.id || ''));
+  ok(ordem[0] === 'whatsapp' && ordem[1] === 'reserva' && await page.$('#ht-contato [data-track="whatsapp"].cta-primary') && await page.$('.ht-book [data-track="whatsapp"] + [data-reservar]'),
+    'regra 240: o WhatsApp continua o principal e "Reservar online" vem logo depois (Contato e cartão ao lado) — ' + ordem.join());
+  ok(await page.$('.court-cta [data-track="whatsapp"].cta-primary + [data-reservar].cta-secondary'), 'na barra de baixo, "WhatsApp" principal e "Reservar" ao lado');
   ok((await texto(page, '#ht-contato')).includes('A reserva online é feita no sistema da academia. O GuiaTennis não recebe o pagamento.'), 'a ficha diz que a reserva é no sistema da academia');
   const barra = await page.evaluate(() => { const b = document.querySelector('.court-cta'); return { t: b.innerText.replace(/\s+/g, ' '), larg: b.scrollWidth <= b.clientWidth + 1 }; });
   ok(barra.t.includes('WhatsApp') && barra.t.includes('Reservar') && barra.larg, 'a barra de baixo cabe no celular com os dois botões — ' + barra.t);

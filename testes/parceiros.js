@@ -40,7 +40,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     cadastrar: document.querySelector('.pc-topo .pc-cta')?.getAttribute('href'),
     site: !!document.querySelector('#site-header, .home-head'),
   }));
-  ok(topo.nav === 'Benefícios | Como funciona | Planos | Ajuda' && topo.entrar === '/parceiros/entrar' && topo.cadastrar === '/parceiros/cadastro', 'cabeçalho próprio, com menu, Entrar e Cadastrar — ' + topo.nav);
+  ok(topo.nav === 'Como funciona | Planos | Ajuda' && topo.entrar === '/parceiros/entrar' && topo.cadastrar === '/parceiros/cadastro', 'cabeçalho próprio, com menu, Entrar e Cadastrar — ' + topo.nav);
   ok(!topo.site, 'sem o cabeçalho do site dos jogadores');
   const largura = await page.evaluate(() => ({ topo: document.querySelector('.pc-topo').getBoundingClientRect().width, tela: innerWidth, lateral: document.documentElement.scrollWidth > innerWidth }));
   ok(largura.topo === largura.tela && !largura.lateral, 'cabeçalho de ponta a ponta, sem rolar para o lado — ' + largura.topo + ' de ' + largura.tela);
@@ -91,7 +91,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(!(await page.isVisible('.pc-nav')), 'no celular, o menu de cima vira o botão de três barras');
   await page.click('#pc-menu-btn');
   const gaveta = await texto(page, '#pc-menu-overlay');
-  ok(gaveta.includes('Benefícios') && gaveta.includes('Planos') && gaveta.includes('Ajuda') && gaveta.includes('Cadastrar academia') && gaveta.includes('Entrar') && gaveta.includes('Ir para o GuiaTennis (jogadores)'), 'menu do celular com tudo o que a academia precisa');
+  ok(!gaveta.includes('Benefícios') && gaveta.includes('Sobre o GuiaTennis') && gaveta.includes('Planos') && gaveta.includes('Ajuda') && gaveta.includes('Cadastrar academia') && gaveta.includes('Entrar') && gaveta.includes('Ir para o GuiaTennis (jogadores)'), 'menu do celular com tudo o que a academia precisa');
   await page.click('#pc-menu-overlay [data-pc-ancora="pc-como"]');
   await page.waitForTimeout(700);
   const rolou = await page.evaluate(() => ({ menu: !!document.getElementById('pc-menu-overlay'), topo: document.getElementById('pc-como').getBoundingClientRect().top }));
@@ -253,7 +253,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     menu: (() => { state.pcMenu = true; render(); const m = [...document.querySelectorAll('#pc-menu-overlay .menu-item[data-pc]')].map(a => a.innerText.trim()).join(' | '); state.pcMenu = false; render(); return m; })(),
   }));
   ok(t.aba === 'painel' && semAcademia.corpo.includes('Olá, Joana') && semAcademia.corpo.includes('Só Aula Tennis'), 'painel da conta sem academia mostra o pedido');
-  ok(!semAcademia.barra && semAcademia.menu === 'Atualizações | Suas academias | Plano | Perfil | Ajuda', 'sem academia: menu curto e sem a barra de baixo — ' + semAcademia.menu);
+  ok(!semAcademia.barra && semAcademia.menu === 'Atualizações | Suas academias | Plano | Perfil | Ajuda | Sobre o GuiaTennis', 'sem academia: menu curto e sem a barra de baixo — ' + semAcademia.menu);
   await page.click('#pc-cancelar-pedido');
   await page.waitForTimeout(400);
   ok((await texto(page, '#parceiros .pc-main')).includes('Falta escolher a sua academia'), 'cancelar o pedido volta para escolher a academia');
@@ -498,7 +498,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     rodape: [...document.querySelectorAll('.pc-rodape a[data-pc]')].map(a => a.innerText).join(' | '),
   }));
   ok(t.h1 === 'Olá, Maria' && t.robots.includes('noindex'), 'painel cumprimenta o responsável e fica fora do Google');
-  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Promoções | Desempenho | Academias | Acessos | Plano | Pagamentos | Feedback | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
+  ok(painel.nav === 'Atualizações | Minha ficha | Avaliações | Promoções | Desempenho | Academias | Acessos | Plano | Pagamentos | Ajuda' && painel.quem === 'Quadra Locação', 'logado, o menu vira o da academia, com o nome dela — ' + painel.nav);
   ok(!painel.barra, 'no computador, sem a barra de baixo');
   ok(!painel.rodape.includes('Cadastrar') && !painel.rodape.includes('Entrar') && painel.rodape.includes('Desempenho'), 'rodapé de quem está logado não oferece Cadastrar nem Entrar — ' + painel.rodape);
   await page.click('.pc-nav a[data-pc="desempenho"]');

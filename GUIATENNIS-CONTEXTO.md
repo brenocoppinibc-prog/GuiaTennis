@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 247, troca de chat)
+**Atualizado em:** 11/11/2026 (regra 248)
 
 | | |
 |---|---|
@@ -482,7 +482,9 @@ ficha, no mapa e na lista, a agenda numa janela para os sistemas da lista;
 e 245 (aba Feedback no Parceiros, no rodapé dele na coluna GuiaTennis); 244 (a
 autorização opcional para usar o feedback na divulgação, Termos e Privacidade
 em 11/11); 246 (cada feedback no seu site); 247 (o WhatsApp de volta no "Fale
-com a gente"). Ainda sem resposta do Breno: qual sistema de reservas as
+com a gente"). No chat seguinte (11/11, noite): regra 248 (a página **Sobre o
+GuiaTennis**, `/sobre` e `/parceiros/sobre`; no menu do Parceiros, sem
+"Benefícios" e sem "Feedback"), na prévia. Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
 **bateria completa não roda desde a regra 230** (vale rodar antes do "pode
@@ -565,7 +567,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 248.
+**Próximo número:** regra 249.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1413,6 +1415,27 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Breno). No rodapé, o "Chat de ajuda" (um botão) ganhou o mesmo jeito dos
   links: ícone, espaço, altura e cor iguais. Sem SQL. Testes: `ficha-basica.js`
   (40), `chat-de-ajuda.js`, `menu-e-home.js`.
+- **248 (11/11) — Sobre o GuiaTennis e o menu do Parceiros mais curto** ("do
+  parceiros, tire o slot feedback do menu junto com a academia e tire o pq do
+  GuiaTennis no menu do parceiros acho legal criar uma página falando sobre a
+  gente ou o nome que os sites grandes dão"): página **Sobre o GuiaTennis**
+  (como o "Sobre o Google", o "Sobre a Booking.com" e o "Sobre nós" do Nubank),
+  `corpoSobre(parceiros)`: missão, o que fazemos (para quem joga e para as
+  academias), o que não fazemos, quem paga o quê ("Patrocinado", "Melhores
+  avaliadas" só pela nota), compromissos (avaliações, informação conferida,
+  privacidade, com os links da Política e dos Termos), os números
+  (`numerosDoSite`, só acima do mínimo), o contato e, no fim, "Buscar quadra"
+  (jogadores) ou "Cadastrar minha academia" (Parceiros sem conta). Em `/sobre`
+  (`goSobre`, `renderPaginaSobre`, no Google e no `sitemap.xml`; link no rodapé,
+  coluna Suporte) e em `/parceiros/sobre` (`pcSobre`, no fim do menu e no rodapé,
+  coluna GuiaTennis; `noindex`, endereço oficial `/sobre`). No Parceiros, o
+  "Benefícios" (a parte "Por que estar no GuiaTennis") saiu do menu e do alto
+  (continua na página inicial e no rodapé) e o "Feedback" saiu do menu e do alto
+  (`foraDoMenu`; fica no rodapé e no cartão do Painel). Chat do Parceiros leva à
+  página ("quem somos", "sobre nós"). Sem história da fundação (falta o texto do
+  Breno). Sem SQL. Testes: `sobre.js` (20, novo), `parceiros.js` (158),
+  `nota-do-guia.js` (47), `chat-parceiros.js`, `menu-e-home.js`, `links.js`,
+  `funcoes-da-equipe.js`, `ficha-basica.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

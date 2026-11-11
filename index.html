@@ -3246,6 +3246,30 @@
   .gt-cookies-t { margin: 0 0 12px; font-size: 14px; line-height: 1.45; color: var(--text); }
   .gt-cookies-bts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .gt-cookies-bts .cta-btn { width: 100%; justify-content: center; }
+  /* Sobre o GuiaTennis (regra 248): /sobre e /parceiros/sobre, o mesmo texto. */
+  .pag-sobre { max-width: 720px; margin: 0 auto; padding: 22px 16px 36px; }
+  .sobre-titulo { font-size: 30px; line-height: 1.15; margin: 0 0 10px; }
+  .sobre-lead { font-size: 17px; line-height: 1.55; color: var(--text); margin: 0 0 8px; }
+  .sobre-sec { margin-top: 30px; }
+  .sobre-sec h2 { font-family: var(--fonte-texto); font-size: 19px; font-weight: 700; margin: 0 0 10px; }
+  .sobre-sec p { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0; }
+  .sobre-sec h3 { font-size: 15px; font-weight: 700; margin: 0 0 4px; color: var(--text); }
+  .sobre-grade { display: grid; gap: 12px; }
+  @media (min-width: 640px) { .sobre-grade { grid-template-columns: 1fr 1fr; } }
+  .sobre-cartao { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 16px; }
+  .sobre-lista { display: grid; gap: 16px; }
+  .sobre-item { display: flex; gap: 12px; align-items: flex-start; }
+  .sobre-ic { flex-shrink: 0; width: 38px; height: 38px; border-radius: 10px; background: var(--green-soft, rgba(31, 92, 58, .08)); display: flex; align-items: center; justify-content: center; }
+  .sobre-sec .sobre-nota { margin-top: 14px; font-size: 14px; }
+  .sobre-nota .inline-link { font-size: 14px; color: var(--green); font-weight: 600; }
+  .sobre-numeros { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .sobre-numero { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 14px 16px; }
+  .sobre-numero strong { display: block; font-family: var(--fonte-titulo); font-size: 26px; color: var(--green); }
+  .sobre-numero span { display: block; font-size: 14px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
+  .sobre-contato { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+  .sobre-contato .contato-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; }
+  .sobre-fim { margin-top: 32px; }
+  .sobre-fim .cta-btn { width: auto; display: inline-flex; padding-left: 26px; padding-right: 26px; }
 </style>
 </head>
 <body>
@@ -6344,6 +6368,101 @@ function ligarLinksDoFeedback(raiz) {
     };
   });
 }
+
+// ---------- Sobre o GuiaTennis (regra 248) ----------
+// Pedido do Breno em 11/11/2026: "acho legal criar uma página falando sobre a
+// gente ou o nome que os sites grandes dão". Como o "Sobre o Google", o "Sobre a
+// Booking.com" e o "Sobre nós" do Nubank: a missão, o que fazemos e o que não
+// fazemos, quem paga o quê (o "Como ganhamos dinheiro" do Google), os
+// compromissos, os números e o contato. Uma página em cada site (/sobre e
+// /parceiros/sobre), com o mesmo texto; só o fim muda (buscar quadra ou
+// cadastrar a academia). O endereço que vale para o Google é o /sobre.
+function goSobre() {
+  state.page = "sobre";
+  state.selected = null;
+  state.avisoLink = "";
+  syncUrl(true);
+  render();
+  window.scrollTo(0, 0);
+}
+function corpoSobre(parceiros) {
+  const numeros = numerosDoSite();
+  const fazemos = [
+    { t: "Para quem joga", d: "Buscar, comparar e chamar a academia é grátis, para aula ou para locar quadra. Sem taxa, sem cartão e sem precisar de conta para começar." },
+    { t: "Para as academias", d: "A ficha no GuiaTennis é grátis no plano Básico, sem comissão e sem taxa por jogador. O jogador chama direto no WhatsApp da academia." },
+  ];
+  const compromissos = [
+    { ic: "sparkle", t: "Avaliações feitas no GuiaTennis", d: "Só quem tem conta avalia, uma vez por academia. A academia responde, mas não apaga. Não importamos nota de outro site." },
+    { ic: "check", t: "Informação conferida", d: "O WhatsApp que a academia coloca na ficha passa por um código de confirmação, e quem joga pode informar um problema em qualquer ficha." },
+    { ic: "key", t: "Privacidade", d: "De uma busca, guardamos só o bairro, a cidade, o CEP e um ponto aproximado. Nunca o IP nem o endereço digitado." },
+  ];
+  const fim = parceiros
+    ? (contaAcademia ? "" : `<div class="sobre-fim"><a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a></div>`)
+    : `<div class="sobre-fim"><a href="/busca" class="cta-btn cta-primary" data-menu="search">Buscar quadra</a></div>`;
+  return `
+    <div class="sobre">
+      <h1 class="display sobre-titulo">Sobre o GuiaTennis</h1>
+      <p class="sobre-lead">Um guia de quadras e academias de tênis. Você diz onde está, vê as academias mais perto, compara preço, estrutura e nota e fala direto com a academia pelo WhatsApp.</p>
+
+      <section class="sobre-sec">
+        <h2>Nossa missão</h2>
+        <p>Levar mais gente para a quadra: deixar fácil achar onde jogar, comparar com calma e combinar direto com a academia.</p>
+      </section>
+
+      <section class="sobre-sec">
+        <h2>O que fazemos</h2>
+        <div class="sobre-grade">
+          ${fazemos.map(f => `<div class="sobre-cartao"><h3>${f.t}</h3><p>${f.d}</p></div>`).join("")}
+        </div>
+      </section>
+
+      <section class="sobre-sec">
+        <h2>O que não fazemos</h2>
+        <p>Não reservamos, não cobramos taxa e não ficamos no meio da conversa. O horário, o valor e o pagamento são combinados direto com a academia.</p>
+      </section>
+
+      <section class="sobre-sec">
+        <h2>Quem paga o quê</h2>
+        <p>Quem joga não paga nada. As academias podem escolher planos com mais recursos e divulgar promoções. A posição paga na busca aparece sempre como "Patrocinado", e as "Melhores avaliadas" seguem só a nota dos jogadores.</p>
+      </section>
+
+      <section class="sobre-sec">
+        <h2>Nossos compromissos</h2>
+        <div class="sobre-lista">
+          ${compromissos.map(c => `
+            <div class="sobre-item">
+              <span class="sobre-ic">${icon(c.ic, 20, 'var(--green)')}</span>
+              <div><h3>${c.t}</h3><p>${c.d}</p></div>
+            </div>`).join("")}
+        </div>
+        <p class="sobre-nota"><button type="button" class="inline-link" data-menu="privacidade">Política de Privacidade</button> · <button type="button" class="inline-link" data-menu="termos">Termos de Uso</button></p>
+      </section>
+
+      ${numeros.length ? `
+      <section class="sobre-sec">
+        <h2>O GuiaTennis em números</h2>
+        <div class="sobre-numeros">
+          ${numeros.map(n => `<div class="sobre-numero"><strong>${esc(n.valor)}</strong><span>${esc(n.rotulo)}</span></div>`).join("")}
+        </div>
+      </section>` : ""}
+
+      <section class="sobre-sec">
+        <h2>Fale com a gente</h2>
+        <div class="sobre-contato">${linksContato("contato-link", 17, "var(--green)")}</div>
+      </section>
+      ${fim}
+    </div>`;
+}
+function renderPaginaSobre() {
+  return `
+    ${renderCabecalho()}
+    <div class="pag-sobre">${corpoSobre(false)}</div>
+    ${renderSiteFooter()}
+  `;
+}
+function pcSobre() {
+  return `<section class="pc-pagina pc-estreita pc-sobre">${corpoSobre(true)}</section>`;
+}
 function renderPaginaDeFeedback() {
   return `
     ${renderCabecalho()}
@@ -6770,6 +6889,7 @@ function render() {
     ${renderChat()}
     ${state.page === "perfil" ? renderPerfilJogador() : ""}
     ${state.page === "feedback" ? renderPaginaDeFeedback() : ""}
+    ${state.page === "sobre" ? renderPaginaSobre() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
     ${state.page === "parceiros" ? renderParceiros() : ""}
 
@@ -6925,6 +7045,8 @@ function urlCanonica(c) {
   if (state.page === "comparar") return location.origin + "/comparar";
   if (state.page === "perfil") return location.origin + "/perfil";
   if (state.page === "feedback") return location.origin + "/feedback";
+  // Regra 248: o /parceiros/sobre tem o mesmo texto; o endereço que vale é o /sobre.
+  if (state.page === "sobre" || (state.page === "parceiros" && state.parceirosAba === "sobre")) return location.origin + "/sobre";
   if (state.page === "admin") return location.origin + "/admin";
   if (state.page === "parceiros") return location.origin + caminhoDosParceiros(state.parceirosAba || "inicio");
   return location.origin + "/";
@@ -6945,6 +7067,8 @@ function definirMeta(nome, valor) {
 function seoDaPagina() {
   if (state.page === "parceiros") {
     const aba = state.parceirosAba || "inicio";
+    // Regra 248: o /parceiros/sobre repete o /sobre; fica fora do Google.
+    if (aba === "sobre") return { titulo: "Sobre o GuiaTennis · GuiaTennis Parceiros", descricao: DESCRICAO_PADRAO, robots: "noindex, follow" };
     const titulos = { inicio: "GuiaTennis Parceiros — mais jogadores para a sua academia de tênis", planos: "Planos · GuiaTennis Parceiros", ajuda: "Ajuda · GuiaTennis Parceiros", cadastro: "Cadastrar academia · GuiaTennis Parceiros" };
     // Entram no Google só as páginas públicas; o pedido de uma academia
     // (?academia=) e as páginas de quem está logado ficam de fora.
@@ -6966,6 +7090,7 @@ function seoDaPagina() {
     };
   }
   if (state.page === "perfil") return { titulo: "Minha conta | GuiaTennis", descricao: DESCRICAO_PADRAO, robots: "noindex, nofollow" };
+  if (state.page === "sobre") return { titulo: "Sobre o GuiaTennis", descricao: "O GuiaTennis é um guia de quadras e academias de tênis: a missão, o que fazemos, quem paga o quê e os nossos compromissos.", robots: "" };
   if (state.page === "feedback") return { titulo: "Feedback | GuiaTennis", descricao: "Envie o seu feedback sobre o GuiaTennis e veja a resposta.", robots: "noindex, follow" };
   if (state.page === "admin") return { titulo: `${(ADMIN_ABAS.find(x => x.aba === state.adminAba) || ADMIN_ABAS[0]).t} · Painel do admin | GuiaTennis`, descricao: DESCRICAO_PADRAO, robots: "noindex, nofollow" };
   if (state.page === "search" || state.page === "comparar" || state.avisoLink) return { titulo: TITULO_PADRAO, descricao: DESCRICAO_PADRAO, robots: "noindex, follow" };
@@ -10540,13 +10665,15 @@ function demoBusca() {
 // O plano libera partes da ficha, pessoas e números; o Premium também
 // aparece no topo da busca, marcado "Patrocinado" (regra 71).
 
-const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar"];
+const PC_PUBLICAS = ["inicio", "planos", "ajuda", "cadastro", "entrar", "sobre"];
 const PC_PRIVADAS = ["painel", "desempenho", "avaliacoes", "promocoes", "promocoes-email", "creditos", "ficha", "pessoas", "plano", "pagamentos", "feedback", "academias", "perfil", "contestar", "whatsapp"];
 // Só do admin: escolher a academia para ver o Parceiros como ela vê.
 const PC_ADMIN = ["ver"];
 const PC_MENU_PUBLICO = [
   { aba: "inicio", t: "Início", ic: "home" },
-  { aba: "inicio", ancora: "pc-beneficios", t: "Benefícios", ic: "sparkle" },
+  // Regra 248 (11/11/2026, "tire o pq do GuiaTennis no menu do parceiros"): o
+  // "Benefícios" (a parte "Por que estar no GuiaTennis") saiu do menu; continua
+  // na página inicial e no rodapé. No fim do menu, "Sobre o GuiaTennis".
   { aba: "inicio", ancora: "pc-como", t: "Como funciona", ic: "play" },
   { aba: "planos", t: "Planos", ic: "list" },
   { aba: "ajuda", t: "Ajuda", ic: "bubble" },
@@ -10566,8 +10693,10 @@ const PC_MENU_LOGADO = [
   // Os créditos e as compras da academia (regra 180), como a aba Finanças da
   // extranet da Booking.
   { aba: "pagamentos", t: "Pagamentos", ic: "pix", funcao: "pagamentos" },
-  // O feedback da academia para o GuiaTennis (regra 243).
-  { aba: "feedback", t: "Feedback", ic: "enviar" },
+  // O feedback da academia para o GuiaTennis (regra 243). Regra 248 ("tire o
+  // slot feedback do menu junto com a academia"): fora do menu e do alto; fica
+  // no rodapé (coluna GuiaTennis) e no cartão do Painel.
+  { aba: "feedback", t: "Feedback", ic: "enviar", foraDoMenu: true },
   { aba: "perfil", t: "Perfil", ic: "key", soNoMenu: true },
   { aba: "ajuda", t: "Ajuda", ic: "info" },
 ];
@@ -11261,7 +11390,7 @@ function pcTopoFocado() {
 function pcTopo() {
   const aba = state.parceirosAba;
   const logado = !!contaAcademia;
-  const menuLogado = temAcademia() ? PC_MENU_LOGADO.filter(i => !i.funcao || posso(i.funcao)) : PC_MENU_LOGADO.filter(i => ["painel", "academias", "plano", "perfil", "ajuda"].includes(i.aba));
+  const menuLogado = temAcademia() ? PC_MENU_LOGADO.filter(i => !i.foraDoMenu && (!i.funcao || posso(i.funcao))) : PC_MENU_LOGADO.filter(i => ["painel", "academias", "plano", "perfil", "ajuda"].includes(i.aba));
   const itens = logado ? menuLogado.filter(i => !i.soNoMenu) : PC_MENU_PUBLICO.filter(i => i.ancora || i.aba !== "inicio");
   const link = (i) => `<a href="/parceiros${i.aba === "inicio" ? "" : "/" + i.aba}${i.ancora ? "#" + i.ancora : ""}" class="pc-nav-i ${!i.ancora && (aba === "promocoes-email" ? "promocoes" : aba) === i.aba ? "on" : ""}" data-pc="${i.aba}" ${i.ancora ? `data-pc-ancora="${i.ancora}"` : ""}>${esc(i.curto || i.t)}</a>`;
   const inicial = logado ? (contaAcademia.nome || contaAcademia.usuario || "?").trim().charAt(0).toUpperCase() : "";
@@ -11293,6 +11422,7 @@ function pcTopo() {
             <a href="/parceiros/cadastro" class="menu-item" data-pc="cadastro">${icon('check', 17, 'var(--green)')}<span>Cadastrar academia</span></a>
             <a href="/parceiros/entrar" class="menu-item" data-pc="entrar">${icon('key', 17, 'var(--green)')}<span>Entrar</span></a>`}
           <div class="menu-rodape">
+            <a href="/parceiros/sobre" class="menu-item" data-pc="sobre">${icon('info', 17, 'var(--muted)')}<span>Sobre o GuiaTennis</span></a>
             <a href="/" class="menu-item" data-pc-sair-do-portal>${icon('chevronLeft', 17, 'var(--muted)')}<span>Ir para o GuiaTennis (jogadores)</span></a>
             ${logado ? `<button type="button" class="menu-item sair-vermelho" data-sair-conta>${icon('key', 17, 'currentColor')}<span>${emVisaoAdmin() ? "Sair do modo admin" : "Sair da conta"}</span></button>` : ""}
           </div>
@@ -11392,6 +11522,7 @@ function pcRodape() {
           </div>
           <div>
             <h4>GuiaTennis</h4>
+            <a href="/parceiros/sobre" data-pc="sobre">Sobre o GuiaTennis</a>
             <a href="/" data-pc-sair-do-portal>Site para jogadores</a>
             ${/* Regra 245 ("no rodapé deixe o feedback na seção do site"): o Feedback fica na coluna GuiaTennis, não na da academia. */ ""}
             ${contaAcademia ? `<a href="/parceiros/feedback" data-pc="feedback">Feedback</a>` : ""}
@@ -11552,6 +11683,7 @@ function renderParceiros() {
   else if (aba === "plano") miolo = pcPlanos(temAcademia());
   else if (aba === "pagamentos") miolo = pcPagamentos();
   else if (aba === "feedback") miolo = pcFeedback();
+  else if (aba === "sobre") miolo = pcSobre();
   else if (aba === "pessoas") miolo = pcPessoasDaAcademia();
   else if (aba === "academias") miolo = pcAcademias();
   else if (aba === "perfil") miolo = pcPerfil();
@@ -19113,6 +19245,7 @@ function renderSiteFooter() {
         </div>
         <div class="sf-col">
           <h4>Suporte</h4>
+          <a href="/sobre" data-menu="sobre">Sobre o GuiaTennis</a>
           <button type="button" id="footer-buscar">Como funciona a busca</button>
           <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
           ${contaAcademia ? `<button type="button" data-abrir-conta>Painel da minha academia</button>` : ""}
@@ -19387,6 +19520,8 @@ function urlDoEstado() {
     caminho = "/perfil";
   } else if (state.page === "feedback") {
     caminho = "/feedback";
+  } else if (state.page === "sobre") {
+    caminho = "/sobre";
   } else if (state.page === "admin") {
     caminho = state.adminAba && state.adminAba !== "inicio" ? "/admin/" + state.adminAba : "/admin";
   } else if (state.page === "parceiros") {
@@ -19476,6 +19611,8 @@ function lerLink() {
   else if (partes[0] === "perfil" || (!partes.length && q.get("conta") === "minha")) r.page = "perfil";
   // Feedback (regra 238); o /avaliacoes das regras 235 e 236 abre a mesma página.
   else if (partes[0] === "feedback" || partes[0] === "avaliacoes") r.page = "feedback";
+  // Sobre o GuiaTennis (regra 248).
+  else if (partes[0] === "sobre") r.page = "sobre";
   else if (partes[0] === "academia" && partes[1]) { r.page = "court"; r.slug = partes[1]; }
   else if (q.get("court")) { r.page = "court"; r.courtId = q.get("court"); }
   else if (partes[0] === "quadras") { r.page = "search"; r.regiao = { cidade: partes[1] || "", bairro: partes[2] || "" }; }
@@ -19561,6 +19698,10 @@ function aplicarLink(r) {
   }
   if (r.page === "feedback") {
     state.page = "feedback";
+    return {};
+  }
+  if (r.page === "sobre") {
+    state.page = "sobre";
     return {};
   }
   if (r.page === "comparar") {
@@ -25584,6 +25725,8 @@ const CHAT_PAGINAS_PC = [
   { aba: "pagamentos", t: "Pagamentos", p: ["pagamentos", "minhas compras", "quem comprou"], r: "os créditos de promoções e as compras da academia, com quem comprou" },
   { aba: "perfil", t: "Perfil", p: ["perfil", "meus dados", "meu nome", "meu email", "meu e mail", "senha", "trocar o email", "sair da conta"],
     r: "os seus dados, a senha, os e-mails do Parceiros e \"Sair da conta\"" },
+  // Regra 248.
+  { aba: "sobre", t: "Sobre o GuiaTennis", p: ["sobre o guiatennis", "sobre nos", "quem somos", "quem sao voces", "missao"], r: "quem é o GuiaTennis: a missão, o que faz e o que não faz e quem paga o quê" },
   { aba: "ajuda", t: "Ajuda", p: ["ajuda", "perguntas frequentes", "duvidas frequentes"], r: "as perguntas frequentes do Parceiros" },
   { aba: "cadastro", t: "Cadastrar academia", p: ["cadastro"], r: "o cadastro da conta e da academia" },
   { aba: "entrar", t: "Entrar", p: ["entrar", "login", "logar"], r: "a entrada na conta do Parceiros" },
@@ -27589,6 +27732,7 @@ function acaoDoMenu(alvo) {
   if (alvo === "parceiros-admin") { irParceiros("ver"); return; }
   if (alvo === "painel-admin") { irAdmin("inicio"); return; }
   if (alvo === "feedback") { goFeedback(); return; }
+  if (alvo === "sobre") { goSobre(); return; }
   if (alvo === "termos") { state.showTerms = true; render(); return; }
   if (alvo === "privacidade") { state.showPrivacy = true; render(); return; }
   if (alvo === "contato") { state.showContato = true; render(); return; }

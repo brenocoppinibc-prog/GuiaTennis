@@ -54,6 +54,7 @@
 #   /comparar?academias=…          comparação
 #   /perfil                        perfil da conta do jogador
 #   /feedback                      o feedback da conta e a resposta
+#   /sobre                         Sobre o GuiaTennis (regra 248)
 #   /admin/…                       painel do admin (só o admin vê)
 #   /parceiros/…                   GuiaTennis Parceiros (site das academias)
 # Não são arquivos: o Netlify entrega o index.html (status 200, sem mudar o
@@ -115,6 +116,12 @@
 
 [[redirects]]
   from = "/avaliacoes"
+  to = "/index.html"
+  status = 200
+
+# Sobre o GuiaTennis (11/11/2026, regra 248).
+[[redirects]]
+  from = "/sobre"
   to = "/index.html"
   status = 200
 

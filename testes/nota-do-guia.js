@@ -52,13 +52,13 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   await page.click('#perfil-nota [data-avaliar-guia="jogador"]');
   await page.waitForTimeout(200);
   let folha = await texto(page, '#nota-guia-overlay');
-  ok(folha.includes('Enviar feedback') && folha.includes('NOTA') && await page.$$eval('.nota-guia-n', b => b.map(x => x.innerText).join()) === '1,2,3,4,5' && !(await page.$('#nota-guia-enviar')),
-    'a primeira tela: título curto e a escala de 1 a 5 com números — ' + folha);
+  ok(folha.includes('Enviar feedback') && folha.includes('NOTA') && await page.$$eval('#nota-guia-overlay .nota-guia-estrela', b => b.length) === 5 && !(await page.$('#nota-guia-enviar')),
+    'a primeira tela: título curto e as 5 estrelas (regra 239) — ' + folha);
   ok(!/média|aparece no site|mostra a outr/i.test(folha), 'sem texto sobre a nota no site');
   await page.click('[data-nota-guia-estrela="2"]');
   await page.waitForTimeout(150);
   folha = await texto(page, '#nota-guia-overlay');
-  ok(await page.$('.nota-guia-n.on[data-nota-guia-estrela="2"]') && /O QUE FALTOU/i.test(folha) && folha.includes('Mais academias na minha região') && await page.$('#nota-guia-contato') && !(await page.$('#nota-guia-mostrar')),
+  ok(await page.$$eval('#nota-guia-overlay .nota-guia-estrela.on', b => b.length) === 2 && folha.includes('2 de 5 · Ruim') && /O QUE FALTOU/i.test(folha) && folha.includes('Mais academias na minha região') && await page.$('#nota-guia-contato') && !(await page.$('#nota-guia-mostrar')),
     'nota baixa: "O que faltou", o pedido de contato e nenhuma pergunta sobre mostrar no site');
   await page.click('[data-nota-guia-ponto="mais_academias"]');
   await page.fill('#nota-guia-texto', 'Faltam academias no meu bairro');
@@ -77,11 +77,11 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   await page.click('#nota-guia-ok');
   await page.waitForTimeout(200);
   cartao = await texto(page, '#perfil-nota');
-  ok(cartao.includes('2/5') && cartao.includes('Faltam academias no meu bairro') && cartao.includes('Editar avaliação') && cartao.includes('Ainda sem resposta'), 'a avaliação aparece na Minha conta, com "Editar avaliação"');
+  ok(cartao.includes('★★☆☆☆') && cartao.includes('Faltam academias no meu bairro') && cartao.includes('Editar avaliação') && cartao.includes('Ainda sem resposta'), 'a avaliação aparece na Minha conta, com "Editar avaliação"');
   await page.click('#perfil-nota [data-avaliar-guia="jogador"]');
   await page.waitForTimeout(200);
   folha = await texto(page, '#nota-guia-overlay');
-  ok(folha.includes('Editar avaliação') && await page.$('.nota-guia-n.on[data-nota-guia-estrela="2"]') && (await texto(page, '#nota-guia-enviar')) === 'Salvar', 'editar: a folha abre com "Editar avaliação", a nota marcada e "Salvar"');
+  ok(folha.includes('Editar avaliação') && folha.includes('2 de 5 · Ruim') && (await texto(page, '#nota-guia-enviar')) === 'Salvar', 'editar: a folha abre com "Editar avaliação", a nota marcada e "Salvar"');
   await page.click('#nota-guia-fechar');
   await page.evaluate(() => { window.__avaliacoesDoGuia[0].resposta = 'Obrigado! Estamos cadastrando o seu bairro.'; window.__avaliacoesDoGuia[0].feito_texto = '12 academias novas em Moema.'; state.minhaNotaGuia = {}; goFeedback(); });
   await page.waitForTimeout(600);
@@ -94,11 +94,11 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   // ---- Painel da academia: o pedido com a escala, "Agora não" e o obrigado com o QR code ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel', notaDoGuia: NOTA }));
   await page.waitForTimeout(1000);
-  ok((await texto(page, '#pc-nota-guia-pedido')).includes('Como o GuiaTennis está ajudando a Só Aula Tennis?') && await page.$$eval('#pc-nota-guia-pedido .nota-guia-n', b => b.length) === 5, 'o painel pede a nota, com a escala de 1 a 5');
+  ok((await texto(page, '#pc-nota-guia-pedido')).includes('Como o GuiaTennis está ajudando a Só Aula Tennis?') && await page.$$eval('#pc-nota-guia-pedido .nota-guia-estrela', b => b.length) === 5, 'o painel pede a nota, com as estrelas');
   await page.click('[data-nota-guia-direto="5"]');
   await page.waitForTimeout(200);
   folha = await texto(page, '#nota-guia-overlay');
-  ok(await page.$('.nota-guia-n.on[data-nota-guia-estrela="5"]') && /O QUE MAIS AJUDA/i.test(folha) && folha.includes('Contatos no WhatsApp') && folha.includes('Só Aula Tennis · GuiaTennis Parceiros') && !(await page.$('#nota-guia-contato')), 'tocar no 5 abre a folha com a nota escolhida');
+  ok(folha.includes('5 de 5 · Ótimo') && /O QUE MAIS AJUDA/i.test(folha) && folha.includes('Contatos no WhatsApp') && folha.includes('Só Aula Tennis · GuiaTennis Parceiros') && !(await page.$('#nota-guia-contato')), 'tocar na 5ª estrela abre a folha com a nota escolhida');
   await page.click('[data-nota-guia-ponto="contatos"]');
   await page.click('#nota-guia-enviar');
   await page.waitForTimeout(500);
@@ -111,7 +111,7 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   await page.evaluate(() => goFeedback());
   await page.waitForTimeout(500);
   pag = await texto(page, '.pag-feedback');
-  ok(pag.includes('Feedback da Só Aula Tennis') && pag.includes('5/5'), 'a conta da academia vê o feedback da academia na página — ' + pag);
+  ok(pag.includes('Feedback da Só Aula Tennis') && pag.includes('★★★★★'), 'a conta da academia vê o feedback da academia na página — ' + pag);
   await browser.close();
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' }));
   await page.waitForTimeout(800);

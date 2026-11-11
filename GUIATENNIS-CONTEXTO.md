@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 238)
+**Atualizado em:** 11/11/2026 (regra 239)
 
 | | |
 |---|---|
@@ -477,7 +477,7 @@ de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
 Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
 novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
-dia até a regra 238 (passos 57 a 67; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 238)
+dia até a regra 239 (passos 57 a 67; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 239)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -557,7 +557,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 239.
+**Próximo número:** regra 240.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1317,6 +1317,15 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   GuiaTennis?"), mesma data. SQL `20261111120000_feedback_so_o_admin_ve`.
   Testes: `nota-do-guia.js` (reescrito, 37), `banco-emails.py` (908; a seção da
   regra 235 virou a da 238); `pagina-das-avaliacoes.js` saiu.
+- **239 (11/11) — a nota do feedback com estrelas** ("mas pode deixar como
+  estrela nessa página"): `escalaDaNota` volta às 5 estrelas (na folha e no
+  pedido do Painel), alinhadas à esquerda embaixo de "Nota", com "4 de 5 · Bom"
+  ao lado; o cartão do próprio feedback mostra as estrelas. O resto da regra 238
+  fica. Sem SQL. Teste: `nota-do-guia.js` (37). Na mesma conversa, o Breno
+  perguntou se o site pode buscar o catálogo (valores por hora e promoções) no
+  sistema de reservas da academia: resposta dada, só por integração oficial
+  (API com autorização da academia), não lendo a página; esperando ele dizer
+  qual sistema as academias usam.
 
 ## 11. WhatsApp e mensagem para as academias
 

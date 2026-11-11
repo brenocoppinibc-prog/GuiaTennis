@@ -2555,13 +2555,12 @@
   .nota-guia-de { margin: 0 0 14px; font-size: 13px; color: var(--muted); }
   .nota-guia-rotulo { display: block; margin: 16px 0 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .nota-guia-rotulo span { font-weight: 400; text-transform: none; letter-spacing: 0; }
-  .nota-guia-escala { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .nota-guia-n { height: 46px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); font-family: inherit; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); cursor: pointer; }
-  .nota-guia-n:hover { border-color: var(--green); }
-  .nota-guia-n.on { background: var(--green); border-color: var(--green); color: #fff; }
-  .nota-guia-escala-l { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: var(--muted); }
-  .nota-guia-escala-p { margin: 10px 0 6px; max-width: 340px; }
-  .nota-guia-minha-n { display: inline-block; padding: 2px 7px; border-radius: 6px; background: var(--green); color: #fff; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .nota-guia-escala { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+  .nota-guia-estrela { background: none; border: none; font-size: 36px; line-height: 1; color: #D9D3C4; cursor: pointer; padding: 0 2px; font-family: inherit; }
+  .nota-guia-estrela.on { color: var(--gold); }
+  .nota-guia-estrela:hover { color: var(--gold); }
+  .nota-guia-escala-nome { margin-left: 10px; font-size: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .nota-guia-escala-p { margin: 8px 0 6px; }
   .nota-guia-fim { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 34px; padding-bottom: 26px; }
   .nota-guia-fim-ic { width: 54px; height: 54px; border-radius: 999px; background: var(--green); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
   .nota-guia-fim .sheet-title { margin: 0 0 8px; }
@@ -6295,15 +6294,17 @@ async function carregarNotaDoGuia() {
     state.notaDoGuia = r.error ? null : (r.data || null);
   } catch { state.notaDoGuia = null; }
 }
-// A escala de 1 a 5, com o número no botão (regra 238: "a primeira página mais
-// simples, algo com uma cara mais técnica"), como as escalas de satisfação dos
-// formulários de feedback de produto. `attr` é o atributo que cada botão leva.
+// A escala de 1 a 5 (regra 238: "a primeira página mais simples, algo com uma
+// cara mais técnica"), com estrelas (regra 239, 11/11/2026: "mas pode deixar
+// como estrela nessa página"): as cinco estrelas alinhadas à esquerda, embaixo
+// do rótulo "Nota", e ao lado o número e o nome ("4 de 5 · Bom"), como os
+// formulários de feedback das lojas de apps. `attr` é o atributo de cada botão.
 function escalaDaNota(nota, attr) {
   return `
     <div class="nota-guia-escala" role="radiogroup" aria-label="Nota de 1 a 5">
-      ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="nota-guia-n${n === nota ? " on" : ""}" ${attr}="${n}" role="radio" aria-checked="${n === nota}" aria-label="${n} de 5: ${NOMES_DAS_NOTAS[n]}">${n}</button>`).join("")}
-    </div>
-    <div class="nota-guia-escala-l" aria-hidden="true"><span>1 · ${NOMES_DAS_NOTAS[1]}</span><span>5 · ${NOMES_DAS_NOTAS[5]}</span></div>`;
+      ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="nota-guia-estrela${n <= nota ? " on" : ""}" ${attr}="${n}" role="radio" aria-checked="${n === nota}" aria-label="${n} ${plural(n, "estrela", "estrelas")}: ${NOMES_DAS_NOTAS[n]}">★</button>`).join("")}
+      <span class="nota-guia-escala-nome">${nota ? `${nota} de 5 · ${NOMES_DAS_NOTAS[nota]}` : ""}</span>
+    </div>`;
 }
 
 // ---------- Feedback (regras 235, 236 e 238) ----------
@@ -6477,7 +6478,7 @@ function cartaoMinhaNotaDoGuia(publico, classe, momento) {
     <${tag} class="${classe}" id="${publico === "parceiro" ? "pc-nota-guia" : "perfil-nota"}">
       ${publico === "parceiro" && mo !== "pagina-feedback" ? `<p class="pc-card-t">${titulo}</p>` : `<h2>${titulo}</h2>`}
       ${m === undefined ? `<p>${bolaGirando(14)} Carregando…</p>` : m ? `
-        <p class="nota-guia-minha"><span class="nota-guia-minha-n">${m.nota}/5</span> ${esc(NOMES_DAS_NOTAS[m.nota] || "")}${m.updated_at ? ` · ${esc(quando(m.updated_at))}` : ""}</p>
+        <p class="nota-guia-minha"><span class="nota-guia-estrelas" aria-label="${m.nota} de 5">${starsHtml(m.nota)}</span> ${esc(NOMES_DAS_NOTAS[m.nota] || "")}${m.updated_at ? ` · ${esc(quando(m.updated_at))}` : ""}</p>
         ${(m.pontos || []).length ? `<p class="footnote" style="margin:4px 0 0">${esc(m.pontos.map(x => rotuloDoPonto(publico, x)).join(" · "))}</p>` : ""}
         ${m.comentario ? `<p class="nota-guia-meu-texto">“${esc(m.comentario)}”</p>` : ""}
         ${m.resposta ? `<p class="nota-guia-resposta"><strong>Resposta do GuiaTennis:</strong> ${esc(m.resposta)}</p>` : `<p class="footnote">Ainda sem resposta. Quando o GuiaTennis responder, ela aparece aqui e chega no seu e-mail.</p>`}

@@ -78,6 +78,36 @@ const cliques = (page) => page.evaluate(() => window.__cliques.filter(c => c.tip
   ok(!(await page.$('#reserva-janela')) && await page.evaluate(() => state.page === 'court'), 'o ✕ fecha a janela');
   await browser.close();
 
+  // ---- Regra 242: no mapa e na lista, "Reservar online" se tiver; se não, o WhatsApp ----
+  ({ browser, page } = await abrir({ w: 412 }));
+  await page.evaluate(async () => {
+    const a = window.__db.academias.find(x => x.id === 'a1');
+    Object.assign(a, { reserva_link: 'https://calendly.com/arena-moema/quadra', plano: 'completo' });
+    await loadEverything();
+    state.cep = ''; goSearch(); await doSearch();
+  });
+  await page.waitForTimeout(700);
+  const lista = await page.evaluate(() => [...document.querySelectorAll('[data-open], .offer')].map(x => x.querySelector('.offer-contact')).filter(Boolean)
+    .map(a => ({ t: a.innerText.trim(), track: a.dataset.track, court: a.dataset.court, href: a.getAttribute('href') })));
+  const daA1 = lista.find(x => x.court === 'a1'), outra = lista.find(x => x.court && x.court !== 'a1');
+  ok(daA1 && daA1.track === 'reserva' && daA1.t.startsWith('Reservar online') && daA1.href.startsWith('https://calendly.com/') && outra && outra.track === 'whatsapp' && outra.t.startsWith('Falar no WhatsApp'),
+    'na lista: "Reservar online" na academia com o link e "Falar no WhatsApp" nas outras — ' + JSON.stringify([daA1, outra].map(x => x && x.t)));
+  await page.evaluate(() => { document.querySelectorAll('[data-reservar]').forEach(a => a.addEventListener('click', e => e.preventDefault())); window.__db.cliques.length = 0; });
+  await page.click('.offer-contact[data-court="a1"]');
+  await page.waitForTimeout(500);
+  ok(await page.$('#reserva-janela iframe') && await page.evaluate(() => state.page === 'search' && window.__cliques.filter(c => c.tipo === 'reserva').length === 1), 'na lista, "Reservar online" abre a agenda sem sair da busca e conta o clique');
+  await page.click('#reserva-fechar');
+  await page.waitForTimeout(400);
+  await page.evaluate(() => verNoMapaDoGuia('a1'));
+  await page.waitForTimeout(800);
+  const mapa = await page.evaluate(() => [...document.querySelectorAll('#map-carrossel [data-map-card]')].map(c => ({ id: c.dataset.mapCard, t: (c.querySelector('.mcard-wa') || {}).innerText || '', track: (c.querySelector('.mcard-wa') || { dataset: {} }).dataset.track })));
+  const noMapaA1 = mapa.find(x => x.id === 'a1'), noMapaOutra = mapa.find(x => x.id !== 'a1' && x.t);
+  ok(noMapaA1 && noMapaA1.track === 'reserva' && noMapaA1.t.trim() === 'Reservar online' && noMapaOutra && noMapaOutra.track === 'whatsapp', 'no mapa: "Reservar online" na academia com o link e o WhatsApp nas outras — ' + JSON.stringify(mapa.slice(0, 3)));
+  await page.click('[data-map-card="a1"] .mcard-wa');
+  await page.waitForTimeout(500);
+  ok(await page.$('#reserva-janela iframe'), 'no mapa, "Reservar online" abre a agenda');
+  await browser.close();
+
   // ---- A academia informa o link em Minha ficha › Contato ----
   ({ browser, page } = await abrir({ academia: 'a1', plano: 'completo', q: 'parceiros/ficha' }));
   await page.waitForTimeout(900);

@@ -10154,7 +10154,10 @@ function cartaoDoMapa(c, previa) {
             : `<span class="mcard-valores"><span class="sem-valor">${SEM_PRECO}</span></span>`}
         </div>
         ${previa ? "" : `<button type="button" class="mcard-btn">Ver academia ${icon('chevron', 14, '#fff')}</button>`}
-        ${c.phone && !previa ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')}<span class="mcard-wa-t">Falar no WhatsApp</span></a>` : ""}
+        ${/* Regra 242: no mapa, "Reservar online" quando a academia tem o link; se não, o WhatsApp. */ ""}
+        ${previa ? "" : c.reserva
+          ? `<a class="mcard-wa" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 14, 'var(--green)')}<span class="mcard-wa-t">Reservar online</span></a>`
+          : c.phone ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')}<span class="mcard-wa-t">Falar no WhatsApp</span></a>` : ""}
       </div>
     </div>`;
 }
@@ -10207,6 +10210,7 @@ function attachMapCardEvents() {
     el.addEventListener("click", (e) => e.stopPropagation());
   });
   holder.querySelectorAll("[data-track]").forEach(ligarRastreio);
+  ligarReserva(holder);
   holder.querySelectorAll("[data-fav]").forEach(el => {
     el.onclick = (e) => {
       e.stopPropagation();
@@ -20163,7 +20167,10 @@ function renderCard(c, badge) {
           </div>
           <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
         </div>
-        ${c.phone
+        ${/* Regra 242: na lista, "Reservar online" quando a academia tem o link; se não, o WhatsApp. */ ""}
+        ${c.reserva
+          ? `<a class="offer-contact" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 14, 'var(--green)')} Reservar online${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
+          : c.phone
           ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')} Falar no WhatsApp${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
           // Sem preço, o "Sob consulta · fale com a academia" já diz tudo: a
           // linha de baixo só traz a modalidade, sem repetir o recado.

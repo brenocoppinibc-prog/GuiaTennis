@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 240)
+**Atualizado em:** 11/11/2026 (regra 241)
 
 | | |
 |---|---|
@@ -477,7 +477,7 @@ de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
 Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
 novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
-dia até a regra 240 (passos 57 a 67; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 240)
+dia até a regra 241 (passos 57 a 67; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 241)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -557,7 +557,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 241.
+**Próximo número:** regra 242.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1333,6 +1333,14 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   segundo; sem WhatsApp, a reserva vira a principal. **Não puxar o assunto da
   API/catálogo do sistema de reservas** até o Breno pedir. Sem SQL. Testes:
   `reserva-online.js` (24), `ficha-hoteis.js`, `previa-da-ficha.js`.
+- **241 (11/11) — "Reservar online" antes do WhatsApp** ("antes do whatsapp no
+  caso, aparecer reservar se tiver"): a 240 foi entendida ao contrário. Volta a
+  ordem da 237 e a barra de baixo também: com o link, "Reservar online"
+  primeiro e principal (verde cheio) no Contato, no cartão ao lado, na prévia
+  do cadastro e na barra de baixo ("Reservar" e depois "WhatsApp"); o WhatsApp
+  logo depois, em segundo. Sem o link, o WhatsApp é o principal, como antes.
+  Sem API por enquanto (240). Sem SQL. Testes: `reserva-online.js` (24),
+  `ficha-hoteis.js`, `previa-da-ficha.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

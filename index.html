@@ -3663,9 +3663,10 @@ function aplicarPlano(c) {
 //    outros sites (SISTEMAS_COM_AGENDA), ela abre numa janela dentro do
 //    GuiaTennis; nos outros, o link abre em outra aba. A agenda só carrega
 //    quando a pessoa toca: não pesa a página nem chama o sistema antes.
-// Na ficha, o WhatsApp continua o principal e "Reservar online" vem logo depois
-// (regra 240, 11/11/2026: "não quero fazer uma api por enquanto, deixe com o
-// botão reservar em prioridade depois do whatsapp na visualização").
+// Na ficha, "Reservar online" vem antes do WhatsApp, como o botão principal,
+// quando a academia tem o link (regras 240 e 241, 11/11/2026: "deixe com o
+// botão reservar em prioridade depois do whatsapp na visualização" ... "antes
+// do whatsapp no caso, aparecer reservar se tiver"). Sem API por enquanto.
 // O GuiaTennis não faz a reserva nem recebe o pagamento. Completo e Premium
 // (LIMITES_DO_PLANO.contatos), como o Instagram e o site. O clique conta
 // como contato, no canal "reserva" (SQL 20261110160000).
@@ -7401,7 +7402,7 @@ function textoEstacionamento(c) {
   return fora ? `Sem vaga própria. ${fora}` : "Sem estacionamento próprio";
 }
 function textoContato(c) {
-  return listaPt([c.phone && "WhatsApp", c.reserva && "reserva online", c.instagram && "Instagram", c.site && "site"].filter(Boolean)) || "—";
+  return listaPt([c.reserva && "reserva online", c.phone && "WhatsApp", c.instagram && "Instagram", c.site && "site"].filter(Boolean)) || "—";
 }
 function textoFicha(c) {
   if (!c.confirmada) return "Ficha básica, de dados públicos";
@@ -22201,10 +22202,10 @@ function htCartaoContato(c) {
           <span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span>
           <span><strong>${scoreWord(c.appAvg, c.appCount)}</strong><br><span class="ht-book-sub">${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no GuiaTennis</span></span>
         </div>` : ""}
+      ${botaoReservar(c, "cta-primary", "margin-top:12px")}
       ${c.phone
-        ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer" style="margin-top:12px">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>`
+        ? `<a class="cta-btn ${c.reserva ? "cta-secondary" : "cta-primary"}" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer" style="margin-top:${c.reserva ? 8 : 12}px">${icon('phone', 15, c.reserva ? 'var(--green)' : '#fff')} Chamar no WhatsApp</a>`
         : (c.reserva ? "" : `<p class="ht-book-sub" style="margin-top:12px">O telefone não foi incluído.</p>`)}
-      ${botaoReservar(c, c.phone ? "cta-secondary" : "cta-primary", `margin-top:${c.phone ? 8 : 12}px`)}
       <button type="button" class="cta-btn cta-secondary" data-nav="${c.id}" style="margin-top:8px">${icon('pin', 15, 'var(--green)')} Ver no mapa</button>
       <p class="ht-book-note">Você fala direto com a academia.</p>
     </div>`;
@@ -22642,8 +22643,8 @@ function renderCourtPage(c) {
               <section class="ht-sec" id="ht-contato">
                 <h3 class="sec-title">Contato</h3>
                 <div class="cta-col" style="margin-top:0">
-                  ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
-                  ${botaoReservar(c, c.phone ? "cta-secondary" : "cta-primary")}
+                  ${botaoReservar(c)}
+                  ${c.phone ? `<a class="cta-btn ${c.reserva ? "cta-secondary" : "cta-primary"}" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 15, c.reserva ? 'var(--green)' : '#fff')} Chamar no WhatsApp</a>` : ""}
                   ${c.site ? `<a class="cta-btn cta-secondary" data-track="site" data-court="${c.id}" href="${esc(c.site)}" target="_blank" rel="noreferrer">${icon('globe', 15, 'var(--green)')} Ver site</a>` : ""}
                   ${c.instagram ? `<a class="cta-btn cta-secondary" data-track="instagram" data-court="${c.id}" href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noreferrer">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</a>` : ""}
                   <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
@@ -22731,8 +22732,8 @@ function renderCourtPage(c) {
             <span class="court-cta-val ${faixa ? "" : "sem-valor"}">${faixa ? esc(faixa.texto) : SEM_PRECO}</span>
             <span class="court-cta-unit">${faixa ? esc(faixa.rotulo) : SEM_PRECO_SUB}</span>
           </div>
-          ${c.phone ? `<a class="cta-btn cta-primary" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${c.reserva ? "WhatsApp" : "Chamar no WhatsApp"}</a>` : ""}
-          ${c.reserva ? `<a class="cta-btn ${c.phone ? "cta-secondary" : "cta-primary"} bt-reservar" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" href="${esc(c.reserva)}" target="_blank" rel="noopener noreferrer">Reservar</a>` : ""}
+          ${c.reserva ? `<a class="cta-btn cta-primary bt-reservar" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" href="${esc(c.reserva)}" target="_blank" rel="noopener noreferrer">Reservar</a>` : ""}
+          ${c.phone ? `<a class="cta-btn ${c.reserva ? "cta-secondary" : "cta-primary"}" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${c.reserva ? "WhatsApp" : "Chamar no WhatsApp"}</a>` : ""}
         </div>` : ""}
     </div>
   `;
@@ -24149,8 +24150,8 @@ function previaDaFicha(f) {
       </section>`;
   const adicionar = (id, t) => `<button type="button" class="reg-previa-mais" data-previa="${id}" data-reg-passo="${passo(id)}">${icon('plus', 15, 'currentColor')} ${esc(t)}</button>`;
   const contatos = [
-    c.phone ? `<span class="cta-btn cta-primary">${icon('phone', 15, '#fff')} Chamar no WhatsApp</span>` : "",
-    c.reserva ? `<span class="cta-btn ${c.phone ? "cta-secondary" : "cta-primary"}">${icon('calendario', 15, c.phone ? 'var(--green)' : '#fff')} Reservar online</span>` : "",
+    c.reserva ? `<span class="cta-btn cta-primary">${icon('calendario', 15, '#fff')} Reservar online</span>` : "",
+    c.phone ? `<span class="cta-btn ${c.reserva ? "cta-secondary" : "cta-primary"}">${icon('phone', 15, c.reserva ? 'var(--green)' : '#fff')} Chamar no WhatsApp</span>` : "",
     c.site ? `<span class="cta-btn cta-secondary">${icon('globe', 15, 'var(--green)')} Ver site</span>` : "",
     c.instagram ? `<span class="cta-btn cta-secondary">${icon('instagram', 15, 'var(--green)')} ${esc(c.instagram)}</span>` : "",
   ].join("");

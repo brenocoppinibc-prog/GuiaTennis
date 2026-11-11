@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 246)
+**Atualizado em:** 11/11/2026 (regra 247)
 
 | | |
 |---|---|
@@ -477,7 +477,7 @@ de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
 Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
 novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
-dia até a regra 246 (passos 57 a 70; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 246)
+dia até a regra 247 (passos 57 a 71; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 247)
 estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
 `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
 não ter: ver seção 6.
@@ -557,7 +557,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 247.
+**Próximo número:** regra 248.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1397,6 +1397,14 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Parceiros › Feedback já mostrava só o da academia. Termos e Privacidade dizem
   onde cada um vê (mesma data, 11/11). Sem SQL. Testes: `nota-do-guia.js` (47),
   `parceiros.js`, `ficha-basica.js`, `regras-de-conteudo.js`.
+- **247 (11/11) — o WhatsApp de volta no "Fale com a gente"** ("no fale com a
+  gente pode voltar o whatsapp e deixe o chat com a mesma do layout"):
+  `CONTATOS_GUIA` = Chat de ajuda, **WhatsApp** (`whatsappGuia()`, sem mensagem
+  pronta), Instagram e E-mail, no rodapé e na folha do menu ("Fale direto com o
+  GuiaTennis"; o texto da folha não diz mais que o chat leva ao WhatsApp do
+  Breno). No rodapé, o "Chat de ajuda" (um botão) ganhou o mesmo jeito dos
+  links: ícone, espaço, altura e cor iguais. Sem SQL. Testes: `ficha-basica.js`
+  (40), `chat-de-ajuda.js`, `menu-e-home.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

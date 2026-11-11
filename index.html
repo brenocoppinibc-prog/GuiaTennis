@@ -384,7 +384,7 @@
   .mini.sem-foto .mini-badge { position: static; display: inline-block; margin: 12px 0 0 12px; }
   .rcard-tag.solto { position: static; display: inline-block; margin: 0 6px 8px 0; }
   .footnote a, .ficha-dono a { color: var(--green); font-weight: 700; }
-  .sf-col a.contato-link { display: flex; align-items: center; gap: 7px; }
+  .sf-col a.contato-link, .sf-col button.contato-link { display: flex; align-items: center; gap: 7px; padding: 5px 0; font-size: 14px; color: var(--muted); }
   .ba-nota a { color: var(--gold-light); font-weight: 700; text-decoration: underline; }
   .mapa-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .mapa-acoes .cta-btn { flex: 1 1 auto; width: auto; margin: 0; padding: 10px 12px; font-size: 13px; }
@@ -1905,6 +1905,7 @@
   .sf-cols { gap: 30px; }
   .sf-col h4 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
   .sf-col button, .sf-col a { padding: 7px 0; font-size: 15px; }
+  .sf-col a.contato-link, .sf-col button.contato-link { padding: 7px 0; font-size: 15px; }
   .sf-base { margin-top: 30px; padding-top: 20px; font-size: 13px; }
 
   /* comparação */
@@ -7878,8 +7879,12 @@ function whatsappGuia(texto) {
 // O WhatsApp do Breno fica atrás do chat de ajuda (pedido de 08/10/2026:
 // "ao invés de já direcionar para o whatsapp fazer um chat dentro do site"):
 // o chat mostra o caminho e, se não resolver, leva ao WhatsApp.
+// O WhatsApp volta ao "Fale com a gente" (regra 247, 11/11/2026: "no fale com a
+// gente pode voltar o whatsapp e deixe o chat com a mesma do layout"), logo
+// depois do chat, sem mensagem pronta.
 const CONTATOS_GUIA = [
   { nome: "Chat de ajuda", icone: "bubble", chat: true },
+  { nome: "WhatsApp", icone: "whatsapp", link: () => whatsappGuia(), fora: true },
   { nome: "Instagram", icone: "instagram", link: () => "https://instagram.com/guiatennis", fora: true },
   // E-mail com o domínio desde 08/10/2026 (regra 67): chega no Gmail do
   // GuiaTennis pelo Resend. O login do admin continua guiatennis1@gmail.com.
@@ -24842,7 +24847,8 @@ ${META_PIXEL.id ? `<p style="font-size:14px"><strong>Cookies de anúncio da Meta
 // ícone e para que serve. Sem o número, o @ e o e-mail escritos (seção 12):
 // eles ficam nos Termos e na Privacidade.
 const PARA_QUE_SERVE_O_CONTATO = {
-  "Chat de ajuda": "Respostas na hora e, se precisar, o WhatsApp do Breno",
+  "Chat de ajuda": "Respostas na hora, a qualquer momento",
+  WhatsApp: "Fale direto com o GuiaTennis",
   Instagram: "Novidades, dicas e mensagens",
   "E-mail": "Parcerias, imprensa e assuntos mais longos",
 };
@@ -26056,7 +26062,7 @@ function ligarChat() {
 
 function renderContatoSheet() {
   return renderLegalSheet("Fale com a gente", `
-    <p class="subtitle" style="margin-top:4px">Dúvida, sugestão ou problema no site? Comece pelo chat de ajuda: ele mostra o caminho e, se precisar, leva você ao WhatsApp do Breno.</p>
+    <p class="subtitle" style="margin-top:4px">Dúvida, sugestão ou problema no site? O chat de ajuda responde na hora; se preferir, fale com o GuiaTennis no WhatsApp.</p>
     <div class="contato-opcoes">
       ${CONTATOS_GUIA.map(c => {
         const dentro = `

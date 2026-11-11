@@ -200,10 +200,12 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     state.showContato = false; render();
     return r;
   });
-  ok(!folhaContato.menu && folhaContato.itens.join() === 'Chat de ajuda,Instagram,E-mail' && folhaContato.links[0] === 'chat' && folhaContato.links[2] === 'mailto:contato@guiatennis.com.br',
-    'menu › "Fale com a gente" abre a folha com o chat de ajuda (no lugar do WhatsApp direto), Instagram e E-mail — ' + folhaContato.itens.join(' | '));
+  ok(!folhaContato.menu && folhaContato.itens.join() === 'Chat de ajuda,WhatsApp,Instagram,E-mail' && folhaContato.links[0] === 'chat' && folhaContato.links[1] === 'https://wa.me/5511927456457' && folhaContato.links[3] === 'mailto:contato@guiatennis.com.br',
+    'menu › "Fale com a gente" abre a folha com o chat de ajuda, o WhatsApp (de volta, regra 247), Instagram e E-mail — ' + folhaContato.itens.join(' | '));
   ok(!folhaContato.texto.includes('92745') && !folhaContato.texto.includes('@'), 'na folha, sem o número, o @ e o e-mail escritos');
-  ok(contato.rodape.join() === 'Chat de ajuda+logo,Instagram+logo,E-mail+logo', 'rodapé tem o chat de ajuda, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
+  ok(contato.rodape.join() === 'Chat de ajuda+logo,WhatsApp+logo,Instagram+logo,E-mail+logo', 'rodapé tem o chat de ajuda, o WhatsApp, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
+  const iguais = await page.evaluate(() => { const l = [...document.querySelectorAll('.sf-col .contato-link')].map(x => { const c = getComputedStyle(x); return [c.display, c.gap, c.paddingTop, c.fontSize, c.color].join('|'); }); return new Set(l).size === 1 ? l[0] : l.join(' / '); });
+  ok(!iguais.includes(' / ') && iguais.startsWith('flex|7px'), 'regra 247: o "Chat de ajuda" com o mesmo jeito dos outros (ícone, espaço, altura e cor) — ' + iguais);
   ok(!contato.wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'sem o bloco para academias na home (regra 98)');
   ok(!contato.texto.includes('92745-6457') && !contato.texto.includes('guiatennis1@gmail.com') && !contato.texto.includes('@guiatennis'), 'número, e-mail e @ não aparecem escritos na página');
   ok(termos.includes('(11) 92745-6457'), 'Termos e Privacidade têm o WhatsApp');

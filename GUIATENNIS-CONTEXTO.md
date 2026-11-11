@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 247)
+**Atualizado em:** 11/11/2026 (regra 247, troca de chat)
 
 | | |
 |---|---|
@@ -462,25 +462,33 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**Chat trocado em 10/11/2026 (à tarde):** este chat acompanha o PR #5
-(inscrito com `subscribe_pr_activity`, com conferência agendada). Depois da
-troca entraram as **regras 235 e 236** (as avaliações do GuiaTennis em
-`/avaliacoes`, abertas com e sem login; **desfeitas pela regra 238**, que virou
-a página **Feedback** só com o da própria conta e a resposta, e a nota só para o
-admin, SQL `20261111120000_feedback_so_o_admin_ve`) e a **regra 237** (reserva online na ficha: o botão e a agenda numa janela, SQL
-`20261110160000_reserva_online`; o Breno ainda não disse qual sistema as
-academias usam: quando disser, conferir se ele oferece a agenda para
-incorporar e incluir em `SISTEMAS_COM_AGENDA`; a reserva própria do
-GuiaTennis, opção 3, ficou para depois de ver os cliques). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
+**Chat trocado em 11/11/2026 (fim da tarde):** o chat novo volta a acompanhar o
+PR #5 (o anterior deixou de acompanhar e cancelou a conferência agendada;
+inscrever com `subscribe_pr_activity`). Último commit de código: `052e99a`
+(regra 247). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
 o site** (regra 229): continuar editando e testando o `index.html`. **O "Banco
 de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
 disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
-Actions; rodou para os SQLs das regras 231, 232, 234, 235, 237 e 238 (o mais
-novo, `20261111120000_feedback_so_o_admin_ve`, em 11/11). A descrição do PR está em
-dia até a regra 247 (passos 57 a 71; o 65 e o 66 trocados pelo Feedback). Os pedidos de 10 e 11/11 (regras 231 a 247)
-estão todos na prévia; nada em aberto da conversa. Banco local (Postgres 16 em
-`/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo pode
-não ter: ver seção 6.
+Actions; rodou para todos os SQLs até o mais novo,
+`20261111120000_feedback_so_o_admin_ve` (11/11). A descrição do PR está em dia
+até a regra 247 (passos 57 a 71). Os pedidos de 10 e 11/11 (regras 231 a 247)
+estão todos na prévia; nada em aberto da conversa.
+Neste chat (10 e 11/11): regras 235 e 236 (a página pública das avaliações do
+GuiaTennis, **desfeitas pela 238**: virou a página **Feedback**, só com o da
+própria conta e a resposta, e a nota só para o admin); 237, 240 a 242 (reserva
+online: o link do sistema da academia, "Reservar online" antes do WhatsApp na
+ficha, no mapa e na lista, a agenda numa janela para os sistemas da lista;
+**sem API por enquanto**, não puxar o assunto); 239 (estrelas no feedback); 243
+e 245 (aba Feedback no Parceiros, no rodapé dele na coluna GuiaTennis); 244 (a
+autorização opcional para usar o feedback na divulgação, Termos e Privacidade
+em 11/11); 246 (cada feedback no seu site); 247 (o WhatsApp de volta no "Fale
+com a gente"). Ainda sem resposta do Breno: qual sistema de reservas as
+academias usam (para conferir a agenda dentro do site e o
+`SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
+**bateria completa não roda desde a regra 230** (vale rodar antes do "pode
+subir"); `banco-emails.py` 908 conferências (regra 238). Banco local (Postgres
+16 em `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo
+pode não ter: ver seção 6.
 Decisões de 10/11 (detalhe nas regras 231 a 234): a nota fiscal sai à mão pelo
 Emissor Nacional enquanto o volume for pequeno (item 3 abaixo); a compra é uma
 tela só (dados do comprador › pagamento › confirmação), e o CPF ou CNPJ vai ao

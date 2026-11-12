@@ -11,7 +11,7 @@ const seo = (page) => page.evaluate(() => ({
   canonica: document.querySelector('link[rel="canonical"]')?.href || '',
   robots: document.querySelector('meta[name="robots"]')?.content || '',
 }));
-const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o GuiaTennis', 'Breno Coppini', 'Perdizes', 'Carla Di Pierro', 'Para quem é', 'Quem viaja', 'A missão do GuiaTennis', 'O que o GuiaTennis não faz', 'Quem paga o quê', 'Compromissos do GuiaTennis', 'Fale com a gente'];
+const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Breno Coppini', 'Perdizes', 'Carla Di Pierro', 'O que o GuiaTennis faz', 'para quem viaja', 'Grátis para quem joga', 'Compromissos', 'Fale com a gente'];
 
 (async () => {
   // ---- Site dos jogadores: o rodapé leva ao /sobre ----
@@ -25,6 +25,8 @@ const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o 
   ok(PARTES.every(p => pag.includes(p)), 'a página tem a missão, o que fazemos e não fazemos, quem paga o quê, os compromissos e o contato — ' + pag.slice(0, 200));
   ok(pag.includes('Patrocinado') && pag.includes('não reserva') && await page.$('.pag-sobre a[data-menu="search"]'), '"Patrocinado", o que não fazemos e "Buscar quadra"');
   ok(!/\bapp\b|aplicativo|clube|pôr|põe|ponha/i.test(pag), 'sem "app", "clube" nem "pôr"');
+  // Regra 255 ("está com cara de ia"): só texto, sem cartões, ícones, grade nem números.
+  ok(await page.evaluate(() => !document.querySelector('.pag-sobre .sobre-cartao, .pag-sobre .sobre-grade, .pag-sobre .sobre-numero, .pag-sobre svg, .pag-sobre img')), 'a página é só texto: sem cartões, ícones, grade nem números');
   let s = await seo(page);
   ok(s.titulo === 'Sobre o GuiaTennis' && s.canonica.endsWith('/sobre') && !s.robots.includes('noindex'), 'título, endereço oficial e no Google — ' + JSON.stringify(s));
   ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'sem rolar para o lado no celular');
@@ -43,6 +45,8 @@ const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o 
   ok(caixa.txt.includes('Esta página ajudou você?') && caixa.txt.includes('Faça o seu feedback') && caixa.antes && caixa.botao, 'a caixa "Esta página ajudou você?" antes do rodapé, com "Faça o seu feedback" — ' + caixa.txt);
   const colunaGuia = await page.evaluate(() => [...document.querySelectorAll('.sitefooter .sf-col')].map(d => ({ h: d.querySelector('h4')?.innerText, l: [...d.querySelectorAll('a, button')].map(a => a.innerText.trim()) })).find(c => c.h === 'GuiaTennis'));
   const colunaSuporte = await page.evaluate(() => [...document.querySelectorAll('.sitefooter .sf-col')].map(d => ({ h: d.querySelector('h4')?.innerText, l: [...d.querySelectorAll('a, button')].map(a => a.innerText.trim()) })).find(c => c.h === 'Suporte'));
+  const ordem = await page.evaluate(() => [...document.querySelectorAll('.sitefooter .sf-col h4')].map(h => h.innerText).filter(t => t !== 'Quadras por cidade').join('|'));
+  ok(ordem === 'GuiaTennis|Suporte|Termos e políticas', 'regra 254: no rodapé, GuiaTennis, Suporte e Termos e políticas por último — ' + ordem);
   ok(colunaGuia && colunaGuia.l.join('|') === 'Sobre nós|Instagram|WhatsApp|E-mail' && colunaSuporte.l.includes('Chat de ajuda') && colunaSuporte.l.includes('Feedback') && !(await texto(page, '.sitefooter')).includes('Fale com a gente'),
     'regra 253: no rodapé, Suporte com o Chat de ajuda e o Feedback, e a coluna GuiaTennis com Sobre nós, Instagram, WhatsApp e E-mail — ' + JSON.stringify([colunaSuporte, colunaGuia]));
   const home = await texto(page, '#app');
@@ -66,7 +70,7 @@ const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o 
 
   ({ browser, page } = await abrir({ q: 'sobre' }));
   await page.waitForTimeout(800);
-  ok(await page.evaluate(() => state.page === 'sobre') && (await texto(page, '.pag-sobre')).includes('Por que criei o GuiaTennis'), 'o link direto /sobre abre a página');
+  ok(await page.evaluate(() => state.page === 'sobre') && (await texto(page, '.pag-sobre')).includes('Breno Coppini'), 'o link direto /sobre abre a página');
   await browser.close();
 
   // ---- Parceiros sem conta: o menu sem "Benefícios", com "Sobre o GuiaTennis" ----

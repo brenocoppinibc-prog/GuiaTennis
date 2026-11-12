@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 12/11/2026 (regra 253)
+**Atualizado em:** 12/11/2026 (regra 255)
 
 | | |
 |---|---|
@@ -500,7 +500,8 @@ situação, como o Feedback Assistant da Apple) e pediu também ver e responder 
 conversas do chat como admin (regra 251, SQL `20261112120000_chat_com_o_guia_e_relatos`,
 disparado à mão no banco de teste); e a revisão do português de todos os textos
 (regra 252, "pode gastar meu limite fazendo a revisão"); regra 253, os rodapés com
-Suporte (Chat de ajuda, Feedback) e GuiaTennis (Sobre nós, Instagram, WhatsApp, E-mail). Ainda sem resposta do Breno: qual sistema de reservas as
+Suporte (Chat de ajuda, Feedback) e GuiaTennis (Sobre nós, Instagram, WhatsApp, E-mail);
+regra 254, a ordem GuiaTennis, Suporte, Termos; regra 255, a página Sobre só de texto. Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
 **bateria completa não roda desde a regra 230** (vale rodar antes do "pode
@@ -583,7 +584,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 254.
+**Próximo número:** regra 256.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1542,6 +1543,24 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Sem SQL. Testes: `sobre.js` (28), `nota-do-guia.js`, `ficha-basica.js`,
   `chat-de-ajuda.js`, `parceiros.js`, `funcoes-da-equipe.js`, `menu-e-home.js`,
   `chat-na-conta.js`, `chat-com-o-guia.js`, `links.js`.
+- **254 (12/11) — a ordem dos rodapés** ("deixando termos e política por último,
+  no meio suporte, e a segunda guia tênis"): jogadores = Quadras por cidade,
+  **GuiaTennis**, **Suporte**, **Termos e políticas**; Parceiros = Sua academia,
+  GuiaTennis, Suporte, Termos e políticas. Sem SQL. Testes: `sobre.js`,
+  `nota-do-guia.js`, `ficha-basica.js`, `parceiros.js`, `chat-de-ajuda.js`.
+- **255 (12/11) — a página Sobre sem "cara de IA"** ("a página de sobre o
+  GuiaTennis está com cara de ia"): `corpoSobre` virou uma página só de texto,
+  como uma carta (o "Sobre" do Airbnb e do Nubank): o olho "Sobre o GuiaTennis",
+  o título em Playfair **"Um guia de quadras de tênis feito por um professor"**, a
+  frase de abertura (nasceu em setembro de 2026, em São Paulo, de uma pergunta de
+  aluno sobre Perdizes), a carta do Breno em primeira pessoa (com os cursos) e a
+  assinatura "Breno Coppini, Professor de tênis e criador do GuiaTennis"; depois,
+  em terceira pessoa e separadas por uma linha fina: "O que o GuiaTennis faz"
+  (com para quem é, em texto corrido), "Grátis para quem joga" (o que não faz e
+  quem paga), "Compromissos" (lista simples) e "Fale com a gente" (links em
+  texto). Saíram os cartões, os ícones, a grade "Para quem é", a missão em
+  fórmula e os números. Sem SQL. Testes: `sobre.js` (30, confere que a página não
+  tem cartão, ícone, grade nem número).
 
 ## 11. WhatsApp e mensagem para as academias
 

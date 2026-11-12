@@ -3246,35 +3246,25 @@
   .gt-cookies-t { margin: 0 0 12px; font-size: 14px; line-height: 1.45; color: var(--text); }
   .gt-cookies-bts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .gt-cookies-bts .cta-btn { width: 100%; justify-content: center; }
-  /* Sobre o GuiaTennis (regra 248): /sobre e /parceiros/sobre, o mesmo texto. */
-  .pag-sobre { max-width: 720px; margin: 0 auto; padding: 22px 16px 36px; }
-  .sobre-titulo { font-size: 30px; line-height: 1.15; margin: 0 0 10px; }
-  .sobre-lead { font-size: 17px; line-height: 1.55; color: var(--text); margin: 0 0 8px; }
-  .sobre-sec { margin-top: 30px; }
-  .sobre-sec h2 { font-family: var(--fonte-texto); font-size: 19px; font-weight: 700; margin: 0 0 10px; }
-  .sobre-sec p { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0; }
-  .sobre-sec h3 { font-size: 15px; font-weight: 700; margin: 0 0 4px; color: var(--text); }
-  .sobre-grade { display: grid; gap: 12px; }
-  @media (min-width: 640px) { .sobre-grade { grid-template-columns: 1fr 1fr; } }
-  .sobre-cartao { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 16px; }
-  .sobre-lista { display: grid; gap: 16px; }
-  .sobre-item { display: flex; gap: 12px; align-items: flex-start; }
-  .sobre-ic { flex-shrink: 0; width: 38px; height: 38px; border-radius: 10px; background: var(--green-soft, rgba(31, 92, 58, .08)); display: flex; align-items: center; justify-content: center; }
-  .sobre-sec .sobre-nota { margin-top: 14px; font-size: 14px; }
-  .sobre-nota .inline-link { font-size: 14px; color: var(--green); font-weight: 600; }
-  .sobre-numeros { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-  .sobre-numero { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 14px 16px; }
-  .sobre-numero strong { display: block; font-family: var(--fonte-titulo); font-size: 26px; color: var(--green); }
-  .sobre-numero span { display: block; font-size: 14px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
-  .sobre-contato { display: flex; flex-wrap: wrap; gap: 8px 22px; }
-  .sobre-contato .contato-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; }
-  .sobre-sec-1 { margin-top: 18px; }
-  /* A parte do Breno, em primeira pessoa e assinada (regra 249). */
-  .sobre-fundador { border-left: 3px solid var(--gold, #C9A24A); padding-left: 16px; }
-  .sobre-fundador p { color: var(--text); margin-bottom: 12px; }
-  .sobre-sec .sobre-assinatura { margin: 4px 0 0; }
-  .sobre-assinatura strong { display: block; font-size: 15px; }
-  .sobre-assinatura span { display: block; font-size: 13px; color: var(--muted); }
+  /* Sobre o GuiaTennis (regras 248 e 255): /sobre e /parceiros/sobre, só texto, como uma carta. */
+  .pag-sobre { max-width: 680px; margin: 0 auto; padding: 28px 16px 40px; }
+  .sobre-olho { margin: 0 0 10px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+  .sobre-titulo { font-size: 34px; line-height: 1.12; margin: 0 0 14px; }
+  @media (min-width: 760px) { .sobre-titulo { font-size: 42px; } }
+  .sobre-lead { font-size: 19px; line-height: 1.5; color: var(--text); margin: 0 0 28px; }
+  .sobre-carta { border-top: 1px solid var(--border); padding-top: 24px; }
+  .sobre-carta p { font-size: 17px; line-height: 1.7; color: var(--text); margin: 0 0 16px; }
+  .sobre-carta .sobre-assinatura { margin: 22px 0 0; }
+  .sobre-assinatura strong { display: block; font-family: var(--fonte-titulo); font-size: 20px; font-weight: 700; }
+  .sobre-assinatura span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
+  .sobre-sec { margin-top: 36px; border-top: 1px solid var(--border); padding-top: 24px; }
+  .sobre-sec h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  .sobre-sec p { font-size: 16px; line-height: 1.65; color: var(--text); margin: 0 0 12px; }
+  .sobre-lista { margin: 0; padding-left: 20px; }
+  .sobre-lista li { font-size: 16px; line-height: 1.65; color: var(--text); margin-bottom: 10px; }
+  .sobre-sec .sobre-nota { font-size: 14px; color: var(--muted); }
+  .sobre-nota .inline-link, .sobre-contato .inline-link { font-size: inherit; color: var(--green); font-weight: 600; }
+  .sobre-contato { font-size: 16px; }
   .sobre-fim { margin-top: 32px; }
   .sobre-fim .cta-btn { width: auto; display: inline-flex; padding-left: 26px; padding-right: 26px; }
   /* A caixa "Esta página ajudou você?" antes do rodapé (regra 250). */
@@ -6429,92 +6419,61 @@ function goSobre() {
   window.scrollTo(0, 0);
 }
 function corpoSobre(parceiros) {
-  const numeros = numerosDoSite();
-  // Regra 249 (12/11/2026): "uma parte minha e outra do GuiaTennis, em primeira
-  // pessoa para mim e terceira pessoa para o GuiaTennis". A parte do Breno é a
-  // história de como surgiu, assinada, como a carta do fundador no "Sobre" do
-  // Nubank e do Airbnb; o resto fala do GuiaTennis em terceira pessoa.
-  const paraQuem = [
-    { t: "Quem quer começar", d: "Encontra perto de casa ou do trabalho onde dar os primeiros passos." },
-    { t: "Quem já joga", d: "Conhece outras quadras e compara antes de escolher." },
-    { t: "Quem viaja", d: "A trabalho ou a passeio, encontra onde jogar com a qualidade de que gosta." },
-    { t: "As academias", d: "São encontradas por quem procura, com a ficha grátis no plano Básico e sem comissão." },
-  ];
-  const compromissos = [
-    { ic: "sparkle", t: "Avaliações feitas no GuiaTennis", d: "Só quem tem conta avalia, uma vez por academia. A academia responde, mas não apaga. O GuiaTennis não importa nota de outro site." },
-    { ic: "check", t: "Informação conferida", d: "O WhatsApp que a academia coloca na ficha passa por um código de confirmação, e quem joga pode informar um problema em qualquer ficha." },
-    { ic: "key", t: "Privacidade", d: "De uma busca, o GuiaTennis guarda só o bairro, a cidade, o CEP e um ponto aproximado. Nunca o IP nem o endereço digitado." },
+  // Regra 255 (12/11/2026, "a página de sobre o GuiaTennis está com cara de ia"):
+  // sem cartões, ícones, grade de público, números nem seções em fórmula. Uma
+  // página só de texto, como uma carta, no jeito do "Sobre" do Airbnb e do Nubank:
+  // o título com a voz do GuiaTennis, a história do Breno em primeira pessoa
+  // (regra 249) e o resto em poucos parágrafos, em terceira pessoa.
+  const contatos = [
+    `<button type="button" class="inline-link" data-abrir-chat>Chat de ajuda</button>`,
+    ...["WhatsApp", "Instagram", "E-mail"].map(n => CONTATOS_GUIA.find(c => c.nome === n)).filter(Boolean)
+      .map(c => `<a class="inline-link" href="${c.link()}"${c.fora ? ' target="_blank" rel="noreferrer"' : ""}>${c.nome}</a>`),
   ];
   const fim = parceiros
     ? (contaAcademia ? "" : `<div class="sobre-fim"><a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a></div>`)
     : `<div class="sobre-fim"><a href="/busca" class="cta-btn cta-primary" data-menu="search">Buscar quadra</a></div>`;
   return `
-    <div class="sobre">
-      <h1 class="display sobre-titulo">Sobre o GuiaTennis</h1>
+    <article class="sobre">
+      <p class="sobre-olho">Sobre o GuiaTennis</p>
+      <h1 class="display sobre-titulo">Um guia de quadras de tênis feito por um professor</h1>
+      <p class="sobre-lead">O GuiaTennis nasceu em setembro de 2026, em São Paulo, de uma pergunta de aluno: onde dá para jogar em Perdizes?</p>
 
-      <section class="sobre-sec sobre-sec-1">
-        <h2>O que é o GuiaTennis</h2>
-        <p>O GuiaTennis é um guia de quadras e academias de tênis. Você informa onde está e vê as academias mais perto, com preço, horário, piso, estrutura, fotos, avaliações e como chegar. Dá para comparar até cinco academias lado a lado, guardar as favoritas, receber por e-mail as academias novas na região e encontrar quadras na cidade da sua viagem. O contato é direto com a academia, pelo WhatsApp ou pela reserva online, quando ela oferece. Para quem joga, tudo é grátis.</p>
-      </section>
+      <div class="sobre-carta">
+        <p>Sou Breno Coppini, de São Paulo. Dou aula de tênis desde 2022, a maior parte do tempo na região do Morumbi, e jogo torneios na 3ª classe. Na minha formação, fiz cursos com Gui Teixeira, sobre tênis de alto rendimento; com Juan Martín del Potro, sobre a transição do juvenil ao profissional; e com Carla Di Pierro, sobre saúde mental na psicologia do esporte.</p>
+        <p>Quando o aluno me perguntou sobre Perdizes, eu não soube responder: quase não dava aula por lá. Fui atrás das academias do bairro, uma por uma, e percebi como era difícil. As informações estavam espalhadas, e eu precisava perguntar a cada academia o que ela oferecia, quanto custava e como reservar.</p>
+        <p>Faltava um lugar só para isso. Foi daí que nasceu o GuiaTennis.</p>
+        <p>Quero que ele mude a forma de encontrar quadras de tênis, tornando tudo mais rápido, mais simples e mais prático, e que chegue ao mundo todo. Não para sermos reconhecidos, e sim para facilitar a vida de quem joga e de quem ensina.</p>
+        <p class="sobre-assinatura"><strong>Breno Coppini</strong><span>Professor de tênis e criador do GuiaTennis</span></p>
+      </div>
 
-      <section class="sobre-sec sobre-fundador">
-        <h2>Por que criei o GuiaTennis</h2>
-        <p>Sou Breno Coppini, de São Paulo. Dou aula de tênis desde 2022, a maior parte do tempo na região do Morumbi, e jogo torneios na 3ª classe.</p>
-        <p>Na minha formação, fiz cursos com Gui Teixeira, sobre tênis de alto rendimento; com Juan Martín del Potro, sobre a transição do juvenil ao profissional; e com Carla Di Pierro, sobre saúde mental na psicologia do esporte.</p>
-        <p>Em setembro de 2026, um aluno me perguntou quais quadras havia na região de Perdizes. Eu quase não dava aula por lá e não soube responder. Fui atrás de todas as academias do bairro e percebi como era difícil: as informações estavam espalhadas, e eu precisava perguntar a cada academia o que ela oferecia, quanto custava e como reservar.</p>
-        <p>Senti que faltava um lugar só para isso: uma busca fácil e completa, que acabasse com a dúvida de onde jogar e com o trabalho de perguntar tudo a cada academia. Foi daí que nasceu o GuiaTennis.</p>
-        <p>Quero que o GuiaTennis mude a forma de encontrar quadras de tênis, tornando tudo mais rápido, mais simples e mais prático, e que chegue ao mundo todo. Não para sermos reconhecidos, e sim para facilitar a vida de quem joga e de quem ensina.</p>
-        <p class="sobre-assinatura"><strong>Breno Coppini</strong><span>Criador do GuiaTennis</span></p>
+      <section class="sobre-sec">
+        <h2 class="display">O que o GuiaTennis faz</h2>
+        <p>Você informa onde está e vê as academias de tênis mais perto, com preço, horário, piso, fotos, avaliações e o caminho até lá. Dá para comparar até cinco lado a lado, guardar as favoritas e ver as quadras da cidade de uma viagem. O contato é direto com a academia, pelo WhatsApp ou pela reserva online, quando ela oferece.</p>
+        <p>É para quem vai começar e não sabe por onde, para quem já joga e quer conhecer outras quadras e para quem viaja, a trabalho ou a passeio, e não quer ficar sem jogar. E é para as academias, que passam a ser encontradas por quem procura.</p>
       </section>
 
       <section class="sobre-sec">
-        <h2>Para quem é</h2>
-        <div class="sobre-grade">
-          ${paraQuem.map(f => `<div class="sobre-cartao"><h3>${f.t}</h3><p>${f.d}</p></div>`).join("")}
-        </div>
+        <h2 class="display">Grátis para quem joga</h2>
+        <p>Quem joga não paga nada. O GuiaTennis não reserva, não cobra taxa e não fica no meio da conversa: o horário, o valor e o pagamento são combinados direto com a academia.</p>
+        <p>As academias podem escolher planos com mais recursos e divulgar promoções. A posição paga na busca aparece sempre como "Patrocinado", e as "Mais bem avaliadas" seguem só a nota dos jogadores.</p>
       </section>
 
       <section class="sobre-sec">
-        <h2>A missão do GuiaTennis</h2>
-        <p>Tornar a busca por quadras de tênis mais rápida, mais simples e mais prática, para todos e em qualquer lugar.</p>
-      </section>
-
-      <section class="sobre-sec">
-        <h2>O que o GuiaTennis não faz</h2>
-        <p>O GuiaTennis não reserva, não cobra taxa e não fica no meio da conversa. Assim, o serviço é gratuito para quem joga, mais rápido e acessível para todos. O horário, o valor e o pagamento são combinados direto com a academia.</p>
-      </section>
-
-      <section class="sobre-sec">
-        <h2>Quem paga o quê</h2>
-        <p>Quem joga não paga nada. As academias podem escolher planos com mais recursos e divulgar promoções. A posição paga na busca aparece sempre como "Patrocinado", e as "Mais bem avaliadas" seguem só a nota dos jogadores.</p>
-      </section>
-
-      <section class="sobre-sec">
-        <h2>Compromissos do GuiaTennis</h2>
-        <div class="sobre-lista">
-          ${compromissos.map(c => `
-            <div class="sobre-item">
-              <span class="sobre-ic">${icon(c.ic, 20, 'var(--green)')}</span>
-              <div><h3>${c.t}</h3><p>${c.d}</p></div>
-            </div>`).join("")}
-        </div>
+        <h2 class="display">Compromissos</h2>
+        <ul class="sobre-lista">
+          <li>As avaliações são feitas no GuiaTennis, por quem tem conta, uma por academia. A academia responde, mas não apaga, e nenhuma nota vem de outro site.</li>
+          <li>O WhatsApp que a academia coloca na ficha passa por um código de confirmação, e quem joga pode informar um problema em qualquer ficha.</li>
+          <li>De uma busca, o GuiaTennis guarda só o bairro, a cidade, o CEP e um ponto aproximado. Nunca o IP nem o endereço digitado.</li>
+        </ul>
         <p class="sobre-nota"><button type="button" class="inline-link" data-menu="privacidade">Política de Privacidade</button> · <button type="button" class="inline-link" data-menu="termos">Termos de Uso</button></p>
       </section>
 
-      ${numeros.length ? `
       <section class="sobre-sec">
-        <h2>O GuiaTennis em números</h2>
-        <div class="sobre-numeros">
-          ${numeros.map(n => `<div class="sobre-numero"><strong>${esc(n.valor)}</strong><span>${esc(n.rotulo)}</span></div>`).join("")}
-        </div>
-      </section>` : ""}
-
-      <section class="sobre-sec">
-        <h2>Fale com a gente</h2>
-        <div class="sobre-contato">${linksContato("contato-link", 17, "var(--green)")}</div>
+        <h2 class="display">Fale com a gente</h2>
+        <p class="sobre-contato">${contatos.join(" · ")}</p>
       </section>
       ${fim}
-    </div>`;
+    </article>`;
 }
 function renderPaginaSobre() {
   return `
@@ -11614,16 +11573,16 @@ function pcRodape() {
                  <a href="/parceiros/entrar" data-pc="entrar">Entrar</a>`}
           </div>
           <div>
+            <h4>GuiaTennis</h4>
+            ${linksDoGuia("", 0, "", true)}
+            <a href="/" data-pc-sair-do-portal>Site para jogadores</a>
+          </div>
+          <div>
             ${/* Regra 253: o Chat de ajuda e o Feedback ficam no Suporte (o Feedback, só com a conta da academia). */ ""}
             <h4>Suporte</h4>
             <a href="/parceiros/ajuda" data-pc="ajuda">Perguntas frequentes</a>
             <button type="button" data-abrir-chat>Chat de ajuda</button>
             ${contaAcademia ? `<a href="/parceiros/feedback" data-pc="feedback">Feedback</a>` : ""}
-          </div>
-          <div>
-            <h4>GuiaTennis</h4>
-            ${linksDoGuia("", 0, "", true)}
-            <a href="/" data-pc-sair-do-portal>Site para jogadores</a>
           </div>
           <div>
             <h4>Termos e políticas</h4>
@@ -19341,10 +19300,9 @@ function renderSiteFooter() {
             ${cidades.map(c => `<a href="${caminhoDaRegiao({ cidade: c.nome })}" data-regiao-link data-cidade="${esc(c.nome)}">Quadras em ${esc(c.nome)}</a>`).join("")}
           </div>` : ""}
         <div class="sf-col">
-          <h4>Termos e políticas</h4>
-          <button type="button" id="terms-link">Termos de Uso</button>
-          <button type="button" id="privacy-link">Política de Privacidade</button>
-          ${META_PIXEL.id || GOOGLE_ADS.id || PINTEREST_TAG.id ? `<button type="button" id="footer-cookies">Cookies</button>` : ""}
+          ${/* Regra 254 (12/11/2026): GuiaTennis em segundo, Suporte no meio e Termos por último. */ ""}
+          <h4>GuiaTennis</h4>
+          ${linksDoGuia("contato-link", 15, "currentColor", false)}
         </div>
         <div class="sf-col">
           ${/* Regra 253: o Chat de ajuda e o Feedback ficam no Suporte. */ ""}
@@ -19356,8 +19314,10 @@ function renderSiteFooter() {
           ${contaAcademia ? `<button type="button" data-abrir-conta>Painel da minha academia</button>` : ""}
         </div>
         <div class="sf-col">
-          <h4>GuiaTennis</h4>
-          ${linksDoGuia("contato-link", 15, "currentColor", false)}
+          <h4>Termos e políticas</h4>
+          <button type="button" id="terms-link">Termos de Uso</button>
+          <button type="button" id="privacy-link">Política de Privacidade</button>
+          ${META_PIXEL.id || GOOGLE_ADS.id || PINTEREST_TAG.id ? `<button type="button" id="footer-cookies">Cookies</button>` : ""}
         </div>
       </div>
     </div>

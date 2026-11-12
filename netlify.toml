@@ -125,6 +125,12 @@
   to = "/index.html"
   status = 200
 
+# As abas do Sobre (regra 256): /sobre/site, /sobre/equipe e /sobre/contato.
+[[redirects]]
+  from = "/sobre/*"
+  to = "/index.html"
+  status = 200
+
 # Painel do admin (06/10/2026): /admin e /admin/<seção>. Só o admin vê o
 # painel; para qualquer outra pessoa, o site mostra a página inicial. Fica
 # fora do Google (noindex) e não fica guardado no navegador. De propósito,

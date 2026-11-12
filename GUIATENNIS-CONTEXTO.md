@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 12/11/2026 (regra 255)
+**Atualizado em:** 12/11/2026 (regra 256)
 
 | | |
 |---|---|
@@ -501,7 +501,10 @@ conversas do chat como admin (regra 251, SQL `20261112120000_chat_com_o_guia_e_r
 disparado à mão no banco de teste); e a revisão do português de todos os textos
 (regra 252, "pode gastar meu limite fazendo a revisão"); regra 253, os rodapés com
 Suporte (Chat de ajuda, Feedback) e GuiaTennis (Sobre nós, Instagram, WhatsApp, E-mail);
-regra 254, a ordem GuiaTennis, Suporte, Termos; regra 255, a página Sobre só de texto. Ainda sem resposta do Breno: qual sistema de reservas as
+regra 254, a ordem GuiaTennis, Suporte, Termos; regra 255, a página Sobre só de texto;
+regra 256, o Sobre em abas (Nossa história, O site, Equipe, Contato). O site do trivago
+não abre deste ambiente (fora da rede permitida): as abas seguem o padrão da página
+da empresa dele, de memória. Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
 **bateria completa não roda desde a regra 230** (vale rodar antes do "pode
@@ -584,7 +587,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 256.
+**Próximo número:** regra 257.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1561,6 +1564,19 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   texto). Saíram os cartões, os ícones, a grade "Para quem é", a missão em
   fórmula e os números. Sem SQL. Testes: `sobre.js` (30, confere que a página não
   tem cartão, ícone, grade nem número).
+- **256 (12/11) — o Sobre em abas** ("vá atrás da página de sobre nós do trivago e
+  faça parecido com abas entre equipe, sobre o site algo do tipo"): embaixo do
+  título e da frase de abertura, as abas sublinhadas **Nossa história** (a carta
+  do Breno, curta, com a assinatura), **O site** (o que faz, grátis para quem
+  joga, compromissos, Termos e Privacidade), **Equipe** (Breno Coppini, "Fundador
+  e criador do GuiaTennis", com a formação e os cursos; "É quem responde o chat de
+  ajuda e conversa com as academias") e **Contato** (Chat de ajuda, WhatsApp,
+  Instagram e E-mail, cada um com para que serve, `PARA_QUE_SERVE_O_CONTATO`, e o
+  link do Parceiros). Nos jogadores, cada aba tem o endereço (`/sobre`,
+  `/sobre/site`, `/sobre/equipe`, `/sobre/contato`, `SOBRE_ABAS`,
+  `caminhoDoSobre`; o "voltar" volta à aba; redirect `/sobre/*` no
+  `netlify.toml`); no Parceiros, a aba muda só na tela. Continua só texto. Sem
+  SQL. Testes: `sobre.js` (37), `links.js`, `voltar.js`, `menu-e-home.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

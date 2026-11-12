@@ -487,8 +487,8 @@ em 11/11); 246 (cada feedback no seu site); 247 (o WhatsApp de volta no "Fale
 com a gente"). No chat seguinte (11/11, noite): regra 248 (a página **Sobre o
 GuiaTennis**, `/sobre` e `/parceiros/sobre`; no menu do Parceiros, sem
 "Benefícios" e sem "Feedback") e 249 (a história do Breno na página Sobre), na
-prévia. Decidido em 12/11: **sem a cidade natal** ("não quero contar de onde
-sou"), "professor desde 2022" confirmado e **sem foto por enquanto** (se um dia
+prévia. Decidido em 12/11: a cidade só como "de São Paulo" (pediu "fale que sou
+de sp"), "professor desde 2022" confirmado e **sem foto por enquanto** (se um dia
 mandar: em quadra, roupa de aula, raquete, luz natural, ao lado da assinatura). Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a

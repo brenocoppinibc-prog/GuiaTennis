@@ -25,7 +25,7 @@ async function abrirChat(page) {
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' });
   await page.waitForTimeout(300);
   await abrirChat(page);
-  ok((await nota(page)) === 'A conversa fica guardada na sua conta.' && (await barra(page)).join() === 'Conversa,Suas conversas', 'com a conta aberta: o chat avisa que guarda na conta e mostra as abas — ' + (await barra(page)).join());
+  ok((await nota(page)) === 'A conversa fica guardada na sua conta, e o GuiaTennis pode responder por aqui.' && (await barra(page)).join() === 'Conversa,Suas conversas', 'com a conta aberta: o chat avisa que guarda na conta e mostra as abas — ' + (await barra(page)).join());
   await escrever(page, 'esqueci minha senha');
   let g = await guardadas(page);
   ok(g.length === 1 && g[0].user === 'u-a1' && g[0].site === 'parceiros' && g[0].titulo === 'Esqueci a senha' && g[0].n === 3, 'a primeira dúvida cria a conversa na conta, com o assunto de título — ' + JSON.stringify(g));
@@ -162,7 +162,7 @@ async function abrirChat(page) {
   await page.waitForTimeout(250);
   await escrever(page, 'esqueci minha senha');
   g = await guardadas(page);
-  ok((await nota(page)) === 'A conversa fica guardada na sua conta.' && (await barra(page)).join() === 'Conversa,Suas conversas (1),Nova' && g.length === 1 && g[0].site === 'jogadores' && g[0].titulo === 'Esqueci a senha' && !g[0].resolvida,
+  ok((await nota(page)) === 'A conversa fica guardada na sua conta, e o GuiaTennis pode responder por aqui.' && (await barra(page)).join() === 'Conversa,Suas conversas (1),Nova' && g.length === 1 && g[0].site === 'jogadores' && g[0].titulo === 'Esqueci a senha' && !g[0].resolvida,
     'no site dos jogadores, com conta, a conversa vai para a conta, com o assunto de título — ' + JSON.stringify(g));
   const status = () => page.evaluate(() => document.querySelector('.chat-status')?.innerText.replace(/\s+/g, ' ').trim() || '');
   ok((await status()) === 'Esqueci a senha Em aberto Marcar resolvida', 'a conversa mostra o título e "Em aberto" — ' + await status());

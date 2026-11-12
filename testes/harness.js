@@ -59,6 +59,10 @@ async function abrir(opts = {}) {
     if (o.precoPromocao) window.__precoPromocao = o.precoPromocao;
     if (o.conversas) window.__conversasIniciais = o.conversas;
     if (o.semConversas) window.__semConversas = true;
+    // O chat com o GuiaTennis (regra 251): relatos e respostas do admin; o banco sem o SQL.
+    if (o.relatos) window.__relatosIniciais = o.relatos;
+    if (o.respostasNoChat) window.__respostasNoChatIniciais = o.respostasNoChat;
+    if (o.semChatComOGuia) window.__semChatComOGuia = true;
     if (o.falhas) window.__falhasIniciais = o.falhas;
     if (o.semFalhas) window.__semFalhas = true;
     if (o.pagamentoDeTeste) window.__pagamentoDeTeste = true;

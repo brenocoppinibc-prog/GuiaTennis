@@ -21,8 +21,8 @@ async function escrever(page, texto) {
   await page.click('#contato-close-overlay [data-abrir-chat]');
   await page.waitForTimeout(300);
   let u = await ultima(page);
-  ok(await page.isVisible('#chat-overlay .chat-caixa') && u.texto.includes('chat de ajuda do GuiaTennis') && u.chips.length === 7 && u.chips.includes('Achar quadra perto') && u.chips.includes('Algo não funcionou'),
-    'a folha "Fale com a gente" abre o chat, com a saudação e 7 assuntos (com "Algo não funcionou") — ' + u.chips.join(' | '));
+  ok(await page.isVisible('#chat-overlay .chat-caixa') && u.texto.includes('chat de ajuda do GuiaTennis') && u.chips.length === 9 && u.chips.includes('Achar quadra perto') && u.chips.includes('Algo não funcionou') && u.chips.includes('Informar um erro') && u.chips.includes('Dar uma sugestão'),
+    'a folha "Fale com a gente" abre o chat, com a saudação e 9 assuntos (com "Algo não funcionou", "Informar um erro" e "Dar uma sugestão", regra 251) — ' + u.chips.join(' | '));
   ok(await page.evaluate(() => document.activeElement && document.activeElement.id === 'chat-texto'), 'o campo já vem pronto para escrever');
   await escrever(page, 'esqueci minha senha');
   u = await ultima(page);
@@ -52,7 +52,7 @@ async function escrever(page, texto) {
   ok(!u.texto.includes('destaque por patrocínio') && u.texto.includes('Breno'), 'o mesmo assunto de novo: não repete a mesma resposta');
   await escrever(page, 'xpto qwerty');
   u = await ultima(page);
-  ok(u.texto.includes('Não entendi bem') && !u.whats && u.chips.length === 7, 'sem entender: pede para escrever de outro jeito e sugere assuntos (o WhatsApp fica para a segunda vez)');
+  ok(u.texto.includes('Não entendi bem') && !u.whats && u.chips.length === 9, 'sem entender: pede para escrever de outro jeito e sugere assuntos (o WhatsApp fica para a segunda vez)');
   const linha = await page.evaluate(() => { const c = [...document.querySelectorAll('.chat-chips')].pop(); const tops = [...c.querySelectorAll('.chip')].map(x => Math.round(x.getBoundingClientRect().top)); return { tops: new Set(tops).size, rola: getComputedStyle(c).overflowX }; });
   ok(linha.tops === 1 && linha.rola === 'auto', 'os assuntos ficam numa linha só, que desliza para o lado');
   await escrever(page, 'zzz aaa');

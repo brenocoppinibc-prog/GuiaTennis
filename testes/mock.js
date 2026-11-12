@@ -54,6 +54,10 @@
     // window.__conversasIniciais começa com algumas; window.__semConversas
     // finge o banco sem a tabela.
     conversas_de_ajuda: JSON.parse(JSON.stringify(window.__conversasIniciais || [])),
+    // O chat com o GuiaTennis (regra 251, SQL 20261112120000): os relatos e as
+    // respostas do admin. window.__semChatComOGuia finge o banco sem o SQL.
+    relatos_do_chat: JSON.parse(JSON.stringify(window.__relatosIniciais || [])),
+    respostas_no_chat: JSON.parse(JSON.stringify(window.__respostasNoChatIniciais || [])),
     // Falhas do site (SQL 20261011120000). window.__falhasIniciais começa com
     // algumas; window.__semFalhas finge o banco sem a tabela.
     falhas_do_site: JSON.parse(JSON.stringify(window.__falhasIniciais || [])),
@@ -323,6 +327,15 @@
         if (op === "delete") { minhas.forEach(r => t.splice(t.indexOf(r), 1)); return { data:null, error:null }; }
         return { data:null, error:{ message:"permission denied for table conversas_de_ajuda", code:"42501" } };
       }
+      // Relatos e respostas do chat (regra 251): só os da conta.
+      if (table === "relatos_do_chat" || table === "respostas_no_chat") {
+        if (window.__semChatComOGuia) return { data:null, error:{ message:`relation "public.${table}" does not exist` } };
+        if (op !== "select") return { data:null, error:{ message:"permission denied for table " + table, code:"42501" } };
+        const eu = sessao && sessao.user.id;
+        return { data: JSON.parse(JSON.stringify(t.filter(r => r.user_id === eu).filter(pass)
+          .sort((x, y) => table === "relatos_do_chat" ? String(y.criado_em).localeCompare(String(x.criado_em)) : String(x.criada_em).localeCompare(String(y.criada_em)))
+          .map(({ user_id, ...r }) => r))), error:null };
+      }
       // Acompanhamentos (regra 193): só os da conta; sem o SQL, a tabela não existe.
       if (table === "acompanhamentos") {
         if (!window.__acompanhamento) return { data:null, error:{ message:'relation "public.acompanhamentos" does not exist' } };
@@ -538,21 +551,85 @@
       if (!sessao) return erro("Entre na sua conta para guardar a conversa.", "42501");
       const eu = sessao.user.id, m = a.p_mensagens;
       if (!["parceiros", "jogadores"].includes(a.p_site)) return erro("Chat inválido.", "22023");
-      if (!Array.isArray(m) || !m.length || m.length > 120 || m.some(x => !x || !["eu", "gt"].includes(x.de) || typeof x.texto !== "string" || x.texto.length > 2000 || (x.de === "eu" && x.texto.length > 300)))
+      if (!Array.isArray(m) || !m.length || m.length > 120 || m.some(x => !x || !(window.__semChatComOGuia ? ["eu", "gt"] : ["eu", "gt", "equipe"]).includes(x.de) || typeof x.texto !== "string" || x.texto.length > 2000 || (x.de === "eu" && x.texto.length > 300)))
         return erro("Conversa inválida.", "22023");
       const titulo = String(a.p_titulo || "").trim().slice(0, 80) || String((m.find(x => x.de === "eu") || {}).texto || "").trim().slice(0, 80);
       if (!titulo) return erro("Escreva a sua dúvida antes.", "22023");
+      // As respostas do GuiaTennis só ficam se existirem nesta conversa, com o texto do banco (regra 251).
+      a = { ...a, p_mensagens: m.flatMap(x => {
+        if (x.de !== "equipe") return [x];
+        const rr = db.respostas_no_chat.find(y => y.id === x.id && y.conversa_id === a.p_id && y.user_id === eu);
+        return rr ? [{ de: "equipe", id: rr.id, texto: rr.texto, em: rr.criada_em }] : [];
+      }) };
       const quando = new Date(Date.now() + (++seqConversa)).toISOString();
       let c = a.p_id && db.conversas_de_ajuda.find(x => x.id === a.p_id && x.user_id === eu);
       const res = a.p_resolvida === undefined || a.p_resolvida === null ? {} : { resolvida: !!a.p_resolvida };
-      if (c) Object.assign(c, { mensagens: JSON.parse(JSON.stringify(m)), titulo, atualizada_em: quando, ...res });
+      if (c) Object.assign(c, { mensagens: JSON.parse(JSON.stringify(a.p_mensagens)), titulo, atualizada_em: quando, ...res });
       else {
-        c = { id: "conv-" + seqConversa, user_id: eu, site: a.p_site, titulo, mensagens: JSON.parse(JSON.stringify(m)), criada_em: quando, atualizada_em: quando, resolvida: !!a.p_resolvida };
+        c = { id: "conv-" + seqConversa, user_id: eu, site: a.p_site, titulo, mensagens: JSON.parse(JSON.stringify(a.p_mensagens.filter(x => x.de !== "equipe"))), criada_em: quando, atualizada_em: quando, resolvida: !!a.p_resolvida };
         db.conversas_de_ajuda.push(c);
         db.conversas_de_ajuda.filter(x => x.user_id === eu).sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em)))
           .slice(50).forEach(x => db.conversas_de_ajuda.splice(db.conversas_de_ajuda.indexOf(x), 1));
       }
       return { data: c.id, error:null };
+    }
+    // O chat com o GuiaTennis (regra 251, SQL 20261112120000).
+    const rpcsDoChat = ["enviar_relato_do_chat", "marcar_respostas_lidas", "conversas_do_chat_admin", "conversa_do_chat_admin", "responder_no_chat", "relatos_do_chat_admin", "mudar_situacao_do_relato"];
+    if (rpcsDoChat.includes(nome)) {
+      if (window.__semChatComOGuia) return semFuncao;
+      const eu = sessao && sessao.user.id;
+      const agora = () => new Date(Date.now() + (++seqConversa)).toISOString();
+      const nomeDe = (uid) => ((db.jogadores || []).find(j => j.user_id === uid) || {}).nome || ((db.academia_acessos || []).find(x => x.user_id === uid) || {}).nome_responsavel || "Sem nome";
+      const emailDe = (uid) => ((db.jogadores || []).find(j => j.user_id === uid) || {}).email || ((db.academia_acessos || []).find(x => x.user_id === uid) || {}).email || null;
+      const semUser = ({ user_id, ...x }) => x;
+      if (nome === "enviar_relato_do_chat") {
+        if (!eu) return erro("Entre na sua conta para acompanhar o que você mandou.", "42501");
+        const texto = String(a.p_texto || "").trim().slice(0, 1000);
+        if (texto.length < 5) return erro("Conte um pouco mais, em uma ou duas frases.", "22023");
+        if (db.relatos_do_chat.filter(x => x.user_id === eu).length >= 10) return erro("Você já mandou muitos relatos hoje. Tente de novo amanhã.", "54000");
+        const r = { id: "rel-" + (++seqConversa), user_id: eu, site: a.p_site, conversa_id: db.conversas_de_ajuda.some(c => c.id === a.p_conversa && c.user_id === eu) ? a.p_conversa : null,
+          tipo: a.p_tipo, texto, pagina: a.p_pagina || null, situacao: "recebido", criado_em: agora(), situacao_em: agora() };
+        db.relatos_do_chat.push(r);
+        db.emails_a_enviar.push({ id: "e-relato-" + r.id, tipo: "relato_do_chat", para: ADMIN, assunto: a.p_tipo === "erro" ? "Erro informado no chat" : "Sugestão no chat", criado_em: agora(), enviado_em: null });
+        return { data: semUser(r), error:null };
+      }
+      if (nome === "marcar_respostas_lidas") {
+        db.respostas_no_chat.filter(x => x.conversa_id === a.p_conversa && x.user_id === eu && !x.lida_em).forEach(x => { x.lida_em = agora(); });
+        return { data:null, error:null };
+      }
+      if (!souAdmin()) return erro("Só o admin.", "42501");
+      if (nome === "conversas_do_chat_admin") return { data: db.conversas_de_ajuda.slice().sort((x, y) => String(y.atualizada_em).localeCompare(String(x.atualizada_em))).map(c => ({
+          id: c.id, site: c.site, titulo: c.titulo, resolvida: !!c.resolvida, atualizada_em: c.atualizada_em, criada_em: c.criada_em, mensagens: (c.mensagens || []).length,
+          nome: nomeDe(c.user_id), email: emailDe(c.user_id), respostas: db.respostas_no_chat.filter(r => r.conversa_id === c.id).length, relatos: db.relatos_do_chat.filter(r => r.conversa_id === c.id).length })), error:null };
+      if (nome === "conversa_do_chat_admin") {
+        const c = db.conversas_de_ajuda.find(x => x.id === a.p_id);
+        if (!c) return erro("Conversa não encontrada.", "22023");
+        return { data: { id: c.id, site: c.site, titulo: c.titulo, resolvida: !!c.resolvida, atualizada_em: c.atualizada_em, nome: nomeDe(c.user_id), email: emailDe(c.user_id),
+          mensagens: JSON.parse(JSON.stringify(c.mensagens || [])), respostas: db.respostas_no_chat.filter(r => r.conversa_id === c.id).map(r => ({ id: r.id, texto: r.texto, em: r.criada_em, lida_em: r.lida_em || null })) }, error:null };
+      }
+      if (nome === "responder_no_chat") {
+        const c = db.conversas_de_ajuda.find(x => x.id === a.p_conversa);
+        const texto = String(a.p_texto || "").trim();
+        if (!texto || texto.length > 1000) return erro("Escreva a mensagem (até 1000 letras).", "22023");
+        if (!c) return erro("Conversa não encontrada.", "22023");
+        const r = { id: "resp-" + (++seqConversa), conversa_id: c.id, user_id: c.user_id, texto, criada_em: agora(), lida_em: null };
+        db.respostas_no_chat.push(r);
+        Object.assign(c, { resolvida: false, atualizada_em: agora() });
+        db.emails_a_enviar.push({ id: "e-resp-chat-" + r.id, tipo: "resposta_no_chat", para: emailDe(c.user_id), assunto: "O GuiaTennis respondeu no chat", criado_em: agora(), enviado_em: null });
+        return { data: { id: r.id, texto, em: r.criada_em, lida_em: null }, error:null };
+      }
+      if (nome === "relatos_do_chat_admin") return { data: db.relatos_do_chat.slice().sort((x, y) => (["concluido", "nao_sera_feito"].includes(x.situacao) - ["concluido", "nao_sera_feito"].includes(y.situacao)) || String(y.criado_em).localeCompare(String(x.criado_em)))
+          .map(x => ({ ...semUser(x), nome: nomeDe(x.user_id), email: emailDe(x.user_id) })), error:null };
+      if (nome === "mudar_situacao_do_relato") {
+        const x = db.relatos_do_chat.find(y => y.id === a.p_id);
+        if (!x) return erro("Relato não encontrado.", "22023");
+        if (!["recebido", "em_andamento", "concluido", "nao_sera_feito"].includes(a.p_situacao)) return erro("Situação inválida.", "22023");
+        if (x.situacao !== a.p_situacao) {
+          Object.assign(x, { situacao: a.p_situacao, situacao_em: agora() });
+          db.emails_a_enviar.push({ id: "e-relato-sit-" + x.id + a.p_situacao, tipo: "relato_situacao", para: emailDe(x.user_id), assunto: "Situação: " + a.p_situacao, criado_em: agora(), enviado_em: null });
+        }
+        return { data: semUser(x), error:null };
+      }
     }
     if (nome === "estatisticas_publicas") return { data:{ acessos_total:1234, buscas_total:567, fichas_total:89, contatos_total:12 }, error:null };
     if (window.__semAcesso) return semFuncao;

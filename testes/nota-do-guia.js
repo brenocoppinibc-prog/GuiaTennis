@@ -21,7 +21,7 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   let { browser, page } = await abrir({ notaDoGuia: NOTA });
   await page.waitForTimeout(1500);
   let rodape = await texto(page, '.sitefooter');
-  ok(rodape.includes('Feedback') && rodape.includes('Sobre o GuiaTennis') && !rodape.includes('4,7') && !rodape.includes('avaliações de jogadores'), 'o rodapé tem "Feedback", sem a nota');
+  ok(rodape.includes('Feedback') && rodape.includes('Sobre nós') && !rodape.includes('4,7') && !rodape.includes('avaliações de jogadores'), 'o rodapé tem "Feedback", sem a nota');
   ok(await naoChamouANota(page), 'o site nem busca a nota (só o admin)');
   await page.click('.sitefooter a[data-ir-feedback]');
   await page.waitForTimeout(500);
@@ -143,7 +143,7 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   ok(!(await page.$('#pc-nota-guia')), 'o Perfil não tem mais o cartão (foi para a aba Feedback, regra 243)');
   ok(await page.evaluate(() => PC_MENU_LOGADO.some(i => i.aba === 'feedback' && i.foraDoMenu)) && !(await page.$('.pc-nav a[data-pc="feedback"]')) && await page.$('.pc-rodape a[data-pc="feedback"]'), 'regra 248: o "Feedback" saiu do menu do Parceiros e fica no rodapé');
   const rodapePc = await page.evaluate(() => [...document.querySelectorAll('.pc-rodape-cols > div')].map(d => ({ h: d.querySelector('h4').innerText, links: [...d.querySelectorAll('a, button')].map(a => a.innerText.trim()) })));
-  ok(rodapePc.find(c => c.h === 'GuiaTennis').links.includes('Feedback') && !rodapePc.find(c => c.h === 'Sua academia').links.includes('Feedback'), 'regra 245: no rodapé do Parceiros, o Feedback fica na coluna GuiaTennis — ' + JSON.stringify(rodapePc.map(c => c.h + ': ' + c.links.join(', '))));
+  ok(rodapePc.find(c => c.h === 'Suporte').links.includes('Feedback') && !rodapePc.find(c => c.h === 'Sua academia').links.includes('Feedback'), 'regra 253: no rodapé do Parceiros, o Feedback fica no Suporte — ' + JSON.stringify(rodapePc.map(c => c.h + ': ' + c.links.join(', '))));
   await page.evaluate(() => irParceiros('feedback'));
   await page.waitForTimeout(600);
   let pcFb = await texto(page, '#app');

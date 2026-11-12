@@ -17,7 +17,7 @@ const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o 
   // ---- Site dos jogadores: o rodapé leva ao /sobre ----
   let { browser, page } = await abrir({});
   await page.waitForTimeout(1200);
-  ok((await texto(page, '.sitefooter')).includes('Sobre o GuiaTennis'), 'o rodapé tem "Sobre o GuiaTennis"');
+  ok((await texto(page, '.sitefooter')).includes('Sobre nós'), 'o rodapé tem "Sobre nós" (regra 253)');
   await page.click('.sitefooter a[data-menu="sobre"]');
   await page.waitForTimeout(500);
   let pag = await texto(page, '.pag-sobre');
@@ -42,7 +42,9 @@ const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o 
   });
   ok(caixa.txt.includes('Esta página ajudou você?') && caixa.txt.includes('Faça o seu feedback') && caixa.antes && caixa.botao, 'a caixa "Esta página ajudou você?" antes do rodapé, com "Faça o seu feedback" — ' + caixa.txt);
   const colunaGuia = await page.evaluate(() => [...document.querySelectorAll('.sitefooter .sf-col')].map(d => ({ h: d.querySelector('h4')?.innerText, l: [...d.querySelectorAll('a, button')].map(a => a.innerText.trim()) })).find(c => c.h === 'GuiaTennis'));
-  ok(colunaGuia && colunaGuia.l.join('|') === 'Sobre o GuiaTennis|Feedback', 'no rodapé, a coluna GuiaTennis com "Sobre o GuiaTennis" e "Feedback" — ' + JSON.stringify(colunaGuia));
+  const colunaSuporte = await page.evaluate(() => [...document.querySelectorAll('.sitefooter .sf-col')].map(d => ({ h: d.querySelector('h4')?.innerText, l: [...d.querySelectorAll('a, button')].map(a => a.innerText.trim()) })).find(c => c.h === 'Suporte'));
+  ok(colunaGuia && colunaGuia.l.join('|') === 'Sobre nós|Instagram|WhatsApp|E-mail' && colunaSuporte.l.includes('Chat de ajuda') && colunaSuporte.l.includes('Feedback') && !(await texto(page, '.sitefooter')).includes('Fale com a gente'),
+    'regra 253: no rodapé, Suporte com o Chat de ajuda e o Feedback, e a coluna GuiaTennis com Sobre nós, Instagram, WhatsApp e E-mail — ' + JSON.stringify([colunaSuporte, colunaGuia]));
   const home = await texto(page, '#app');
   ok(home.includes('Saibro ou rápida, coberta ou descoberta, aula ou locação:') && !home.includes('estacionamento, vestiário') && home.includes('quais dias e horários prefere') && !home.includes('o dia e o horário que prefere'), 'as dicas com o texto novo');
   ok(await page.evaluate(() => document.getElementById('app').textContent.includes('também ficam perto do endereço buscado')), '"Como funciona a ordem" diz que as patrocinadas também ficam perto do endereço');
@@ -81,7 +83,7 @@ const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o 
   ok(PARTES.every(p => pag.includes(p)) && await page.$('.pc-sobre a[data-pc="cadastro"]') && !(await page.$('.pc-sobre [data-menu="search"]')), 'o mesmo texto, terminando em "Cadastrar minha academia"');
   s = await seo(page);
   ok(s.canonica.endsWith('/sobre') && !s.canonica.includes('/parceiros') && s.robots.includes('noindex'), 'o endereço oficial é o /sobre — ' + JSON.stringify(s));
-  ok((await texto(page, '.pc-rodape')).includes('Sobre o GuiaTennis'), 'o rodapé do Parceiros tem "Sobre o GuiaTennis"');
+  ok((await texto(page, '.pc-rodape')).includes('Sobre nós'), 'o rodapé do Parceiros tem "Sobre nós"');
   await browser.close();
 
   // ---- Parceiros com a academia: "Feedback" fora do menu e do alto, no rodapé ----
@@ -91,8 +93,9 @@ const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o 
   gaveta = await texto(page, '#pc-menu-overlay');
   ok(!gaveta.includes('Feedback') && gaveta.includes('Atualizações') && gaveta.includes('Sobre o GuiaTennis'), 'o menu da academia sem "Feedback" — ' + gaveta);
   const rodape = await page.evaluate(() => [...document.querySelectorAll('.pc-rodape-cols > div')].map(d => ({ h: d.querySelector('h4').innerText, links: [...d.querySelectorAll('a, button')].map(a => a.innerText.trim()) })));
-  const g = rodape.find(c => c.h === 'GuiaTennis').links;
-  ok(g.includes('Feedback') && g.includes('Sobre o GuiaTennis'), 'no rodapé, a coluna GuiaTennis tem "Sobre o GuiaTennis" e "Feedback" — ' + g.join(', '));
+  const g = rodape.find(c => c.h === 'GuiaTennis').links, sup = rodape.find(c => c.h === 'Suporte').links;
+  ok(g.join('|') === 'Sobre nós|Instagram|WhatsApp|E-mail|Site para jogadores' && sup.join('|') === 'Perguntas frequentes|Chat de ajuda|Feedback' && rodape.some(c => c.h === 'Termos e políticas'),
+    'regra 253: no Parceiros, Suporte com o Chat de ajuda e o Feedback, GuiaTennis com Sobre nós e os contatos — ' + JSON.stringify(rodape.slice(1)));
   await page.click('#pc-menu-overlay a[data-pc="sobre"]');
   await page.waitForTimeout(500);
   ok(await page.evaluate(() => location.pathname === '/parceiros/sobre') && !(await page.$('.pc-sobre a[data-pc="cadastro"]')), 'logado, a página não oferece cadastrar academia');

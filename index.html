@@ -8078,6 +8078,18 @@ const CONTATOS_GUIA = [
   // GuiaTennis pelo Resend. O login do admin continua guiatennis1@gmail.com.
   { nome: "E-mail", icone: "mail", link: () => "mailto:contato@guiatennis.com.br", fora: false },
 ];
+// A coluna "GuiaTennis" dos rodapés (regra 253, 12/11/2026: "o feedback e chat
+// de ajuda pode se enquadrar no suporte e criar uma seção com GuiaTennis e
+// aparecer o sobre nós, Instagram, whatsapp e email"), como o rodapé do Nubank:
+// quem somos e onde nos achar, nessa ordem.
+function linksDoGuia(classe, tamanho, cor, parceiros) {
+  const contato = (nome) => CONTATOS_GUIA.find(c => c.nome === nome);
+  const sobre = parceiros
+    ? `<a href="/parceiros/sobre" class="${classe}" data-pc="sobre">${tamanho ? icon('info', tamanho, cor) : ""}<span>Sobre nós</span></a>`
+    : `<a href="/sobre" class="${classe}" data-menu="sobre">${tamanho ? icon('info', tamanho, cor) : ""}<span>Sobre nós</span></a>`;
+  return sobre + ["Instagram", "WhatsApp", "E-mail"].map(contato).filter(Boolean)
+    .map(c => `<a class="${classe}" href="${c.link()}"${c.fora ? ' target="_blank" rel="noreferrer"' : ""}>${tamanho ? icon(c.icone, tamanho, cor) : ""}<span>${c.nome}</span></a>`).join("");
+}
 function linksContato(classe, tamanho, cor) {
   return CONTATOS_GUIA.map(c => c.chat
     ? `<button type="button" class="${classe}" data-abrir-chat>${icon(c.icone, tamanho, cor)}<span>${c.nome}</span></button>`
@@ -11602,17 +11614,19 @@ function pcRodape() {
                  <a href="/parceiros/entrar" data-pc="entrar">Entrar</a>`}
           </div>
           <div>
-            <h4>Ajuda</h4>
+            ${/* Regra 253: o Chat de ajuda e o Feedback ficam no Suporte (o Feedback, só com a conta da academia). */ ""}
+            <h4>Suporte</h4>
             <a href="/parceiros/ajuda" data-pc="ajuda">Perguntas frequentes</a>
             <button type="button" data-abrir-chat>Chat de ajuda</button>
-            <a href="mailto:contato@guiatennis.com.br">E-mail</a>
+            ${contaAcademia ? `<a href="/parceiros/feedback" data-pc="feedback">Feedback</a>` : ""}
           </div>
           <div>
             <h4>GuiaTennis</h4>
-            <a href="/parceiros/sobre" data-pc="sobre">Sobre o GuiaTennis</a>
+            ${linksDoGuia("", 0, "", true)}
             <a href="/" data-pc-sair-do-portal>Site para jogadores</a>
-            ${/* Regra 245 ("no rodapé deixe o feedback na seção do site"): o Feedback fica na coluna GuiaTennis, não na da academia. */ ""}
-            ${contaAcademia ? `<a href="/parceiros/feedback" data-pc="feedback">Feedback</a>` : ""}
+          </div>
+          <div>
+            <h4>Termos e políticas</h4>
             <button type="button" id="terms-link">Termos de Uso</button>
             <button type="button" id="privacy-link">Política de Privacidade</button>
           </div>
@@ -19333,20 +19347,17 @@ function renderSiteFooter() {
           ${META_PIXEL.id || GOOGLE_ADS.id || PINTEREST_TAG.id ? `<button type="button" id="footer-cookies">Cookies</button>` : ""}
         </div>
         <div class="sf-col">
+          ${/* Regra 253: o Chat de ajuda e o Feedback ficam no Suporte. */ ""}
           <h4>Suporte</h4>
           <button type="button" id="footer-buscar">Como funciona a busca</button>
+          <button type="button" data-abrir-chat>Chat de ajuda</button>
+          <a href="/feedback" data-ir-feedback>Feedback</a>
           <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
           ${contaAcademia ? `<button type="button" data-abrir-conta>Painel da minha academia</button>` : ""}
         </div>
         <div class="sf-col">
-          <h4>Fale com a gente</h4>
-          ${linksContato("contato-link", 15, "currentColor")}
-        </div>
-        <div class="sf-col">
-          ${/* Regra 250 (12/11/2026, "deixe junto o feedback na seção do GuiaTennis"): o Sobre e o Feedback juntos, como no rodapé do Parceiros. */ ""}
           <h4>GuiaTennis</h4>
-          <a href="/sobre" data-menu="sobre">Sobre o GuiaTennis</a>
-          <a href="/feedback" data-ir-feedback>Feedback</a>
+          ${linksDoGuia("contato-link", 15, "currentColor", false)}
         </div>
       </div>
     </div>

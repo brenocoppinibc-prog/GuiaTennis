@@ -125,6 +125,6 @@ async function escrever(page, texto) {
   await page.evaluate(() => irParceiros('inicio', { mesmaAba: true }));
   await page.waitForTimeout(300);
   const rodape = await page.evaluate(() => [...document.querySelectorAll('.pc-rodape-cols [data-abrir-chat]')].map(b => b.innerText.trim()).join() + '|' + document.querySelectorAll('.pc-rodape-cols a[href^="https://wa.me"]').length);
-  ok(rodape === 'Chat de ajuda|0', 'o rodapé do Parceiros tem o chat de ajuda no lugar do WhatsApp');
+  ok(rodape === 'Chat de ajuda|1', 'o rodapé do Parceiros tem o chat de ajuda no Suporte e o WhatsApp na coluna GuiaTennis (regra 253)');
   await browser.close();
 })();

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 12/11/2026 (regras 251 e 252)
+**Atualizado em:** 12/11/2026 (regra 253)
 
 | | |
 |---|---|
@@ -499,7 +499,8 @@ Regras 250 a 252 na prévia: o Breno escolheu a **opção A** (o relato com a
 situação, como o Feedback Assistant da Apple) e pediu também ver e responder as
 conversas do chat como admin (regra 251, SQL `20261112120000_chat_com_o_guia_e_relatos`,
 disparado à mão no banco de teste); e a revisão do português de todos os textos
-(regra 252, "pode gastar meu limite fazendo a revisão"). Ainda sem resposta do Breno: qual sistema de reservas as
+(regra 252, "pode gastar meu limite fazendo a revisão"); regra 253, os rodapés com
+Suporte (Chat de ajuda, Feedback) e GuiaTennis (Sobre nós, Instagram, WhatsApp, E-mail). Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
 **bateria completa não roda desde a regra 230** (vale rodar antes do "pode
@@ -582,7 +583,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 253.
+**Próximo número:** regra 254.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1528,6 +1529,19 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Termos e Privacidade também ficaram em dia com o que o site faz (o WhatsApp "em
   confirmação" e as avaliações de conta excluída como "Usuário do GuiaTennis").
   Os e-mails (no SQL) não entraram. Testes: a bateria completa.
+- **253 (12/11) — os rodapés com Suporte e GuiaTennis** ("o feedback e chat de
+  ajuda pode se enquadrar no suporte e criar uma seção com GuiaTennis e aparecer
+  o sobre nós, Instagram, whatsapp e email"), como o rodapé do Nubank. Jogadores:
+  **Suporte** = Como funciona a busca, Chat de ajuda, Feedback, GuiaTennis
+  Parceiros (e o painel da academia); **GuiaTennis** = Sobre nós, Instagram,
+  WhatsApp e E-mail, com o logo pequeno (`linksDoGuia`); a coluna "Fale com a
+  gente" saiu (a folha do menu continua). Parceiros: **Suporte** = Perguntas
+  frequentes, Chat de ajuda, Feedback (com a conta); **GuiaTennis** = Sobre nós,
+  Instagram, WhatsApp, E-mail e Site para jogadores; **Termos e políticas** numa
+  coluna própria. A página continua "Sobre o GuiaTennis"; no rodapé, "Sobre nós".
+  Sem SQL. Testes: `sobre.js` (28), `nota-do-guia.js`, `ficha-basica.js`,
+  `chat-de-ajuda.js`, `parceiros.js`, `funcoes-da-equipe.js`, `menu-e-home.js`,
+  `chat-na-conta.js`, `chat-com-o-guia.js`, `links.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

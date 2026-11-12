@@ -203,7 +203,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
   ok(!folhaContato.menu && folhaContato.itens.join() === 'Chat de ajuda,WhatsApp,Instagram,E-mail' && folhaContato.links[0] === 'chat' && folhaContato.links[1] === 'https://wa.me/5511927456457' && folhaContato.links[3] === 'mailto:contato@guiatennis.com.br',
     'menu › "Fale com a gente" abre a folha com o chat de ajuda, o WhatsApp (de volta, regra 247), Instagram e E-mail — ' + folhaContato.itens.join(' | '));
   ok(!folhaContato.texto.includes('92745') && !folhaContato.texto.includes('@'), 'na folha, sem o número, o @ e o e-mail escritos');
-  ok(contato.rodape.join() === 'Chat de ajuda+logo,WhatsApp+logo,Instagram+logo,E-mail+logo', 'rodapé tem o chat de ajuda, o WhatsApp, Instagram e E-mail com o logo pequeno — ' + contato.rodape.join(' | '));
+  ok(contato.rodape.join() === 'Sobre nós+logo,Instagram+logo,WhatsApp+logo,E-mail+logo', 'rodapé: a coluna GuiaTennis com Sobre nós, Instagram, WhatsApp e E-mail, com o logo pequeno (regra 253) — ' + contato.rodape.join(' | '));
   const iguais = await page.evaluate(() => { const l = [...document.querySelectorAll('.sf-col .contato-link')].map(x => { const c = getComputedStyle(x); return [c.display, c.gap, c.paddingTop, c.fontSize, c.color].join('|'); }); return new Set(l).size === 1 ? l[0] : l.join(' / '); });
   ok(!iguais.includes(' / ') && iguais.startsWith('flex|7px'), 'regra 247: o "Chat de ajuda" com o mesmo jeito dos outros (ícone, espaço, altura e cor) — ' + iguais);
   ok(!contato.wa.some(t => t.includes('Chame o GuiaTennis no WhatsApp')), 'sem o bloco para academias na home (regra 98)');

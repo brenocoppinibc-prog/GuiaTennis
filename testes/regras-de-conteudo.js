@@ -17,7 +17,7 @@ const ultima = (page) => page.evaluate(() => { const l = [...document.querySelec
   // (nome-suspenso.js), e o da academia o GuiaTennis altera, com e-mail.
   ok(legal.termos.includes('Nomes. O nome da conta (de jogador ou do GuiaTennis Parceiros) e o nome da academia não podem ter palavrão, ofensa')
     && legal.termos.includes('nada que a lei brasileira proíba') && legal.termos.includes('O nome da conta que desrespeitar essas regras fica suspenso por 15 dias')
-    && legal.termos.includes('O nome da academia, o GuiaTennis pode alterar na ficha'),
+    && legal.termos.includes('O GuiaTennis pode alterar o nome da academia na ficha'),
     'Termos, seção 5: nomes sem ofensa, discriminação ou o que a lei proíbe; o da conta fica suspenso, o da academia o GuiaTennis altera');
   ok(legal.termos.includes('Racismo, homofobia, xenofobia e qualquer discriminação não são tolerados no GuiaTennis')
     && legal.termos.includes('Lei 7.716/1989') && legal.termos.includes('homofobia e a transfobia') && legal.termos.includes('xenofobia')

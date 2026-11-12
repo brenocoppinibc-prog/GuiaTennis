@@ -350,12 +350,13 @@ sozinho vira "-", "Sob consulta"), numa linha
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (04/11/2026, regra 206): **2.289
-  verificações** nos 77 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs` e
-  `cnpj.mjs`, nenhuma falha. O `falhas.txt` sempre aparece na lista (força
-  erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**908 conferências**,
-  nenhuma falha, 10/11/2026, regra 237; o teste roda de novo SQLs antigos, e o
+  segundo plano). Último resultado (12/11/2026, regra 252): **2.546
+  verificações** nos 90 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs`,
+  `cnpj.mjs` e `catalogo-meta.mjs`, nenhuma falha (as 3 da primeira rodada eram
+  testes com o texto antigo, corrigidos). O `falhas.txt` sempre aparece na lista
+  (força erros de propósito).
+- **Banco local** para o `testes/banco-emails.py` (**930 conferências**,
+  nenhuma falha, 12/11/2026, regra 251; o teste roda de novo SQLs antigos, e o
   `20261105130000` recoloca a trava dos cliques de antes: SQL que mexe em
   `cliques_tipo_valido` ou em `numeros_da_academia` é rodado de novo no começo
   da seção dele): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um

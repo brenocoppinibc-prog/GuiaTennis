@@ -122,7 +122,7 @@ const suspensao = (extra) => ({ id: 'ns-1', email: 'ana@exemplo.com', nome: 'Ana
   ({ browser, page } = await abrir({}));
   const legal = await page.evaluate(() => ({ termos: TERMS_HTML.replace(/<[^>]+>/g, ''), priv: PRIVACY_HTML.replace(/<[^>]+>/g, '') }));
   ok(legal.termos.includes('O nome da conta que desrespeitar essas regras fica suspenso por 15 dias') && legal.termos.includes('um lembrete 3 dias antes do fim')
-    && legal.termos.includes('não trocou em 15 dias, a conta é excluída') && legal.termos.includes('quem administra a academia recebe um e-mail com o nome de antes e o novo'),
+    && legal.termos.includes('se não trocar em 15 dias, a conta é excluída') && legal.termos.includes('quem administra a academia recebe um e-mail com o nome de antes e o novo'),
     'Termos, seção 5: a suspensão de 15 dias, os e-mails, a exclusão e o nome da academia');
   ok(legal.termos.includes('as avaliações continuam publicadas, sem o nome e sem a ligação com a conta: aparecem como "Usuário do GuiaTennis"'), 'Termos: a conta excluída deixa a avaliação como "Usuário do GuiaTennis"');
   ok(legal.priv.includes('Quando o nome da conta é suspenso, guardamos o nome suspenso, o motivo, a data, o prazo de 15 dias') && legal.priv.includes('aparecem como "Usuário do GuiaTennis"')

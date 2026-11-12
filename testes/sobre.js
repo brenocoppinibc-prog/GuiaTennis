@@ -11,7 +11,7 @@ const seo = (page) => page.evaluate(() => ({
   canonica: document.querySelector('link[rel="canonical"]')?.href || '',
   robots: document.querySelector('meta[name="robots"]')?.content || '',
 }));
-const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o GuiaTennis', 'Breno Coppini', 'Perdizes', 'Para quem é', 'Quem viaja', 'A missão do GuiaTennis', 'O que o GuiaTennis não faz', 'Quem paga o quê', 'Compromissos do GuiaTennis', 'Fale com a gente'];
+const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o GuiaTennis', 'Breno Coppini', 'Perdizes', 'Carla Di Pierro', 'Para quem é', 'Quem viaja', 'A missão do GuiaTennis', 'O que o GuiaTennis não faz', 'Quem paga o quê', 'Compromissos do GuiaTennis', 'Fale com a gente'];
 
 (async () => {
   // ---- Site dos jogadores: o rodapé leva ao /sobre ----

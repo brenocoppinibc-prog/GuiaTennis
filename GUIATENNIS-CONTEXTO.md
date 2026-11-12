@@ -1446,7 +1446,9 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   GuiaTennis"): `corpoSobre` agora tem "O que é o GuiaTennis" (o que oferece),
   **"Por que criei o GuiaTennis"** (primeira pessoa, assinada "Breno Coppini,
   Criador do GuiaTennis", com a borda dourada à esquerda: professor desde 2022,
-  quase sempre no Morumbi, torneios na 3ª classe; em setembro de 2026 um aluno
+  quase sempre no Morumbi, torneios na 3ª classe; cursos com Gui Teixeira (alto
+  rendimento), Juan Martín del Potro (do juvenil ao profissional) e Carla Di Pierro
+  (saúde mental na psicologia do esporte), pedido de 12/11; em setembro de 2026 um aluno
   perguntou por quadras em Perdizes; faltava um lugar só; quer mudar a forma de
   achar quadras e chegar ao mundo todo "não para sermos reconhecidos"), "Para
   quem é" (quem começa, quem joga, quem viaja, as academias), "A missão do

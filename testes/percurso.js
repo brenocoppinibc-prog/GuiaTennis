@@ -31,7 +31,7 @@ const passos = (page) => page.evaluate(() => JSON.parse(JSON.stringify(window.__
   // favoritas ficam na conta, 08/10/2026), e isso entra no caminho.
   await page.evaluate(() => { toggleCompare('a2'); toggleFavorite('a2'); });
   p = await passos(page);
-  ok(p.some(x => x.detalhe === 'Pôs na comparação · Quadra Locação') && p[p.length - 1].detalhe === 'Entrar: o e-mail' && !p.some(x => x.detalhe.startsWith('Favoritou')), 'comparar entra no caminho; sem conta, o coração abre o Entrar');
+  ok(p.some(x => x.detalhe === 'Incluiu na comparação · Quadra Locação') && p[p.length - 1].detalhe === 'Entrar: o e-mail' && !p.some(x => x.detalhe.startsWith('Favoritou')), 'comparar entra no caminho; sem conta, o coração abre o Entrar');
   await page.evaluate(() => { state.jogadorTela = null; state.showMenu = true; render(); });
   p = await passos(page);
   ok(p[p.length - 1].detalhe === 'Abriu o menu', 'janelas por cima (menu, cadastro, Entrar) também');

@@ -21,8 +21,8 @@ const { abrir, ok } = require('./harness');
   ok(!r.comPontoPerto && r.comPonto[0] === 'longe-48', 'com menos de 3 boas perto, a lista é do Guia inteiro — ' + r.comPonto.join(', '));
   ok(r.muitasPerto && r.muitas.join() === 'perto-46,perto-45,perto-44', 'com 3 ou mais boas perto, só as de perto, pela nota — ' + r.muitas.join(', '));
   // Na home, o título diz "perto de você" só quando é a lista de perto.
-  const titulo = await page.evaluate(() => [...document.querySelectorAll('.home-sec h3')].map(h => h.textContent).find(t => /Melhores avaliadas/.test(t)) || '');
-  ok(!titulo || titulo === 'Melhores avaliadas' || titulo === 'Melhores avaliadas perto de você', 'título da seção — ' + titulo);
+  const titulo = await page.evaluate(() => [...document.querySelectorAll('.home-sec h3')].map(h => h.textContent).find(t => /(Melhores|Mais bem) avaliadas/.test(t)) || '');
+  ok(!titulo || titulo === 'Mais bem avaliadas' || titulo === 'Mais bem avaliadas perto de você', 'título da seção — ' + titulo);
   await browser.close();
   console.log('\nmelhores-avaliadas.js: fim');
 })();

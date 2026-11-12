@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 12/11/2026 (regra 250)
+**Atualizado em:** 12/11/2026 (regras 251 e 252)
 
 | | |
 |---|---|
@@ -58,8 +58,12 @@ para o histórico).
 - Só coisa certa e legal ("se não for legal eu não quero").
 - Não gosta de mensagem automática no WhatsApp nem de botão em pílula para
   contato. Não gosta de depender de botão para o que o site faz sozinho.
-- **Sem a palavra "pôr"** (nem "põe", "ponha"): usar adicionar, incluir,
+- **Sem a palavra "pôr"** (nem "põe", "ponha", "pôs"): usar adicionar, incluir,
   informar, colocar ou cadastrar.
+- **Português formal e natural (regra 252):** "para" (nunca "pra"), "você" sem
+  "te", "avaliá-la" (não "avalia ela"), regência certa ("de que você gostou",
+  "em que você joga", "responder à verificação"), "Mais bem avaliadas", "Ex.:"
+  e "…". Texto novo pode passar pelo LanguageTool local (regra 252).
 - Prints de tela só quando o pedido é de visual, e com a fonte de verdade
   (seção 6).
 - Mensagem de erro simples, dizendo o que fazer; o técnico vai para o
@@ -490,11 +494,11 @@ GuiaTennis**, `/sobre` e `/parceiros/sobre`; no menu do Parceiros, sem
 prévia. Decidido em 12/11: a cidade só como "de São Paulo" (pediu "fale que sou
 de sp"), "professor desde 2022" confirmado e **sem foto por enquanto** (se um dia
 mandar: em quadra, roupa de aula, raquete, luz natural, ao lado da assinatura).
-Regra 250 na prévia. **Pergunta em aberto ao Breno (12/11):** o chat de ajuda como
-canal de feedback e de erros, "acompanhar com os clientes como eles estão
-trabalhando para corrigir": se é o relato do jogador com a situação (Recebido ›
-Em correção › Corrigido, como o Feedback Assistant da Apple) ou o problema
-contado sobre uma academia, encaminhado a ela para responder. Nada feito ainda. Ainda sem resposta do Breno: qual sistema de reservas as
+Regras 250 a 252 na prévia: o Breno escolheu a **opção A** (o relato com a
+situação, como o Feedback Assistant da Apple) e pediu também ver e responder as
+conversas do chat como admin (regra 251, SQL `20261112120000_chat_com_o_guia_e_relatos`,
+disparado à mão no banco de teste); e a revisão do português de todos os textos
+(regra 252, "pode gastar meu limite fazendo a revisão"). Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
 **bateria completa não roda desde a regra 230** (vale rodar antes do "pode
@@ -577,7 +581,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 251.
+**Próximo número:** regra 253.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1476,6 +1480,53 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   SQL. Testes: `sobre.js` (28), `nota-do-guia.js`, `premium-patrocinado.js`,
   `buscas-e-avisos.js`, `menu-e-home.js`, `parceiros.js`, `links.js`,
   `chat-de-ajuda.js`.
+- **251 (12/11) — o chat com o GuiaTennis: erros, sugestões e respostas do admin**
+  (opção A: "acompanhar com os clientes como eles estão trabalhando para
+  corrigir"; e "quero poder ter acesso as conversas do chat como admin e até
+  poder enviar mensagens"). No chat, os assuntos **"Informar um erro"** e **"Dar
+  uma sugestão"** (`relato` em `CHAT_TEMAS`; "Algo não funcionou" também oferece
+  "Informar o erro"): o chat pede o texto (`pedirRelato`, `receberRelato`), manda
+  com a página (só o endereço) e a conversa (`enviar_relato_do_chat`, até 10 por
+  dia) e confirma; sem conta, pede para entrar. A página **Feedback** (jogadores) e
+  o **Parceiros › Feedback** ganham **"Erros e sugestões"** (`blocoDosRelatos`):
+  cada relato com a situação em passos (erro: Recebido › Em correção › Corrigido;
+  sugestão: Recebida › Em andamento › No ar; ou "Não vamos fazer agora"), "Ver a
+  conversa" e "Informar um erro ou dar uma sugestão". Admin: aba **Chat de ajuda**
+  (`admChatHtml`): os relatos (em aberto primeiro, a situação em botões; cada
+  mudança manda e-mail) e as conversas guardadas; tocar abre a conversa inteira e
+  **"Responder no chat"** (`responder_no_chat`): a resposta fica na conversa com
+  "Breno, do GuiaTennis" e borda dourada (`de: "equipe"`; o banco só aceita a
+  resposta que existe em `respostas_no_chat`, com o texto dele), vai por e-mail
+  com o link `?chat=<id>` (abre a conversa; sem conta, pede para entrar), e o site
+  avisa "O GuiaTennis respondeu no chat" (dica que só sai pelo ✕); com o chat
+  aberto, a resposta chega sozinha a cada 20 s; abrir marca como lida. A nota do
+  chat com conta: "A conversa fica guardada na sua conta, e o GuiaTennis pode
+  responder por aqui." Termos e Privacidade (**12 de novembro de 2026**): o
+  GuiaTennis lê as conversas guardadas para responder e melhorar o site; o relato
+  guarda a página, a situação e as datas, com e-mail a cada mudança. FAQ do
+  Parceiros "Encontrei um erro ou tenho uma sugestão. Como aviso?". SQL
+  `20261112120000_chat_com_o_guia_e_relatos` (tabelas `relatos_do_chat` e
+  `respostas_no_chat`, `guardar_conversa_de_ajuda` aceita `equipe`, funções do
+  admin, e o **/sobre no sitemap**, que sai do banco: o `sitemap.xml` do
+  repositório é só reserva). Testes: `chat-com-o-guia.js` (29, novo),
+  `banco-emails.py` (930, seção nova), `chat-de-ajuda.js`, `chat-na-conta.js`,
+  `painel-admin.js` (17 seções), `parceiros.js` (26 perguntas) e os que conferem a
+  data.
+- **252 (12/11) — revisão do português em todo o site** ("seu nível e o dia e o
+  horário que prefere isso segue a gramática do português? ... corrija em todos
+  os lugares mas tbm deixe de forma natural e formal juntas"; "pode gastar meu
+  limite fazendo a revisão"): os 3.125 textos visíveis passaram pelo LanguageTool
+  (pt-BR, baixado pelo Maven e rodado no contêiner) e por leitura inteira, com
+  Termos e Privacidade. Corrigido: "pôr/põe/ponha/pôs" (7 lugares, inclusive o
+  passo "Incluiu na comparação" do percurso), "pra" (6), crase ("responder à"),
+  "avalia ela" → "avaliá-la", "te" com "você", regência ("de que você gostou",
+  "em que você joga", "pelas quais você responde"), "favoritou", "Peça que…",
+  vírgula depois de "por exemplo", frases soltas dos Termos ("Trocou, o nome
+  volta…", "Digitado o código" depois de vírgula), "Melhores avaliadas" → **"Mais
+  bem avaliadas"**, "Ex.:", "…" e "como no Google" (o site não se compara).
+  Termos e Privacidade também ficaram em dia com o que o site faz (o WhatsApp "em
+  confirmação" e as avaliações de conta excluída como "Usuário do GuiaTennis").
+  Os e-mails (no SQL) não entraram. Testes: a bateria completa.
 
 ## 11. WhatsApp e mensagem para as academias
 

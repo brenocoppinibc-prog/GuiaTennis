@@ -60,7 +60,7 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
     '1ª tela: as quatro barrinhas no alto, a primeira acendendo, e o título — ' + r.barras);
   r = await page.evaluate(() => ({ corpo: document.getElementById('pc-contestar').innerText, pular: /pular/i.test(document.getElementById('pc-contestar').innerText), desenho: !!document.querySelector('#pc-contestar svg:not(.pc-onb-voltar svg)'),
     animado: [...document.querySelectorAll('#pc-contestar, #pc-contestar *')].some(el => { const a = getComputedStyle(el); const p = getComputedStyle(el, '::after'); return a.animationName !== 'none' || p.animationName !== 'none'; }) }));
-  ok(r.corpo.includes('Conhece essa pessoa? Peça para ela aceitar o seu pedido') && !r.pular && !r.desenho && !r.animado && await page.$('#pc-contestar-continuar') && !(await page.$('#pc-contestar-enviar')),
+  ok(r.corpo.includes('Conhece essa pessoa? Peça a ela que aceite o seu pedido') && !r.pular && !r.desenho && !r.animado && await page.$('#pc-contestar-continuar') && !(await page.$('#pc-contestar-enviar')),
     'a dica de pedir a quem administra, só "Continuar", nada de "Pular" e nenhum desenho ou animação — ' + JSON.stringify({ desenho: r.desenho, animado: r.animado }));
   await continuar(page);
   let corpo = await texto(page, '#pc-contestar');

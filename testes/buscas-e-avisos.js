@@ -255,9 +255,9 @@ async function buscar(page, termo) {
   const ordem = await page.evaluate(() => [...document.querySelectorAll('.home-sec h3, .bloco-ideia h3')].map(h => h.innerText.trim()));
   const pos = (t) => ordem.findIndex(x => x.startsWith(t));
   // "Melhores avaliadas" só aparece com avaliação; o resto vem sempre, nesta ordem.
-  const esperada = ['Academias recomendadas', 'Academias por cidade', 'Melhores avaliadas', 'Por que o GuiaTennis', 'Como funciona a busca', 'Dicas para', 'Todo o tênis', 'Perguntas frequentes'];
+  const esperada = ['Academias recomendadas', 'Academias por cidade', 'Mais bem avaliadas', 'Por que o GuiaTennis', 'Como funciona a busca', 'Dicas para', 'Todo o tênis', 'Perguntas frequentes'];
   const achadas = esperada.map(pos);
-  ok(achadas.every((p, k) => p >= 0 || esperada[k] === 'Melhores avaliadas') && achadas.filter(p => p >= 0).every((p, k, a) => !k || p > a[k - 1]),
+  ok(achadas.every((p, k) => p >= 0 || esperada[k] === 'Mais bem avaliadas') && achadas.filter(p => p >= 0).every((p, k, a) => !k || p > a[k - 1]),
     'home: academias primeiro, depois o site explicado aos poucos — ' + ordem.join(' | '));
   // Regra 101: as Premium primeiro nas recomendadas; sem elas, nota e ficha completa.
   const reco = await page.evaluate(() => {

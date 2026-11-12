@@ -145,7 +145,7 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   await page.evaluate(() => { openCourt('a2'); openCourt('a1'); });
   await page.waitForTimeout(150);
   t = await page.evaluate(() => document.getElementById('convite-viagem')?.innerText.replace(/\s+/g, ' ') || '');
-  ok(t.includes('Vai viajar? A gente também te ajuda') && t.includes('hotel'), 'depois de navegar um pouco, a ficha mostra o convite — ' + t.slice(0, 60));
+  ok(t.includes('Vai viajar? A gente também ajuda') && t.includes('hotel'), 'depois de navegar um pouco, a ficha mostra o convite — ' + t.slice(0, 60));
   await page.click('#convite-viagem-sim');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => state.showViagem && !document.getElementById('convite-viagem')), '"Contar a viagem" abre a folha da viagem');
@@ -247,7 +247,7 @@ const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `$
   ({ browser, page } = await abrir({ jogador: true }));
   await page.waitForTimeout(8800);
   t = await page.evaluate(() => document.getElementById('push-viagem')?.innerText.replace(/\s+/g, ' ') || '');
-  ok(t.includes('Tem viagem marcada?') && t.includes('O GuiaTennis pode te ajudar') && t.includes('aviso por e-mail perto da data'), 'logado, o balão "Tem viagem marcada?" aparece — ' + t.slice(0, 50));
+  ok(t.includes('Tem viagem marcada?') && t.includes('O GuiaTennis pode ajudar você') && t.includes('aviso por e-mail perto da data'), 'logado, o balão "Tem viagem marcada?" aparece — ' + t.slice(0, 50));
   // Na busca, o "Ver no mapa" fica embaixo: o balão vai para o alto (13/10/2026).
   const caixas = await page.evaluate(() => {
     state.page = 'search'; render();

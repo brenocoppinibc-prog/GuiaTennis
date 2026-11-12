@@ -3246,40 +3246,71 @@
   .gt-cookies-t { margin: 0 0 12px; font-size: 14px; line-height: 1.45; color: var(--text); }
   .gt-cookies-bts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .gt-cookies-bts .cta-btn { width: 100%; justify-content: center; }
-  /* Sobre o GuiaTennis (regras 248 e 255): /sobre e /parceiros/sobre, só texto, como uma carta. */
-  .pag-sobre { max-width: 680px; margin: 0 auto; padding: 28px 16px 40px; }
-  .sobre-olho { margin: 0 0 10px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
-  .sobre-titulo { font-size: 34px; line-height: 1.12; margin: 0 0 14px; }
-  @media (min-width: 760px) { .sobre-titulo { font-size: 42px; } }
-  .sobre-lead { font-size: 19px; line-height: 1.5; color: var(--text); margin: 0 0 28px; }
-  .sobre-carta { padding-top: 24px; }
-  /* As abas do Sobre (regra 256), sublinhadas como as do chat e da ficha. */
-  .sobre-abas { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin: 0; overflow-x: auto; scrollbar-width: none; }
-  .sobre-abas::-webkit-scrollbar { display: none; }
-  .sobre-aba { padding: 12px 10px 11px; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--muted); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; }
-  .sobre-aba.on { color: var(--green); border-bottom-color: var(--green); }
-  .sobre-sec.sobre-primeira { margin-top: 0; border-top: 0; }
-  .sobre-pessoa { margin-top: 18px; }
-  .sobre-pessoa h2 { margin-bottom: 2px; }
-  .sobre-pessoa-cargo { font-size: 14px !important; color: var(--muted) !important; margin-bottom: 12px !important; }
-  .sobre-contatos { list-style: none; margin: 0 0 8px; padding: 0; }
-  .sobre-contatos li { display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .sobre-contato-nome .inline-link { font-size: 17px; color: var(--green); font-weight: 600; }
-  .sobre-contato-desc { font-size: 14px; color: var(--muted); }
-  .sobre-carta p { font-size: 17px; line-height: 1.7; color: var(--text); margin: 0 0 16px; }
-  .sobre-carta .sobre-assinatura { margin: 22px 0 0; }
-  .sobre-assinatura strong { display: block; font-family: var(--fonte-titulo); font-size: 20px; font-weight: 700; }
-  .sobre-assinatura span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
-  .sobre-sec { margin-top: 36px; border-top: 1px solid var(--border); padding-top: 24px; }
-  .sobre-sec h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
-  .sobre-sec p { font-size: 16px; line-height: 1.65; color: var(--text); margin: 0 0 12px; }
-  .sobre-lista { margin: 0; padding-left: 20px; }
-  .sobre-lista li { font-size: 16px; line-height: 1.65; color: var(--text); margin-bottom: 10px; }
-  .sobre-sec .sobre-nota { font-size: 14px; color: var(--muted); }
-  .sobre-nota .inline-link, .sobre-contato .inline-link { font-size: inherit; color: var(--green); font-weight: 600; }
-  .sobre-contato { font-size: 16px; }
-  .sobre-fim { margin-top: 32px; }
-  .sobre-fim .cta-btn { width: auto; display: inline-flex; padding-left: 26px; padding-right: 26px; }
+  /* Sobre o GuiaTennis (regras 248, 255 e 257): um site à parte, com o menu próprio, o topo
+     verde-escuro, as partes empilhadas e o contato no escuro. Sem ícone e sem animação. */
+  .sb { --sb-escuro: #163A2D; --sb-ouro: var(--gold); background: var(--bg); }
+  .sb-topo { position: sticky; top: 0; z-index: 40; background: var(--sb-escuro); color: #fff; box-shadow: 0 1px 0 rgba(255,255,255,.08); }
+  .sb-topo-in { max-width: 1100px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .sb-marca { display: inline-flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font-weight: 700; font-size: 17px; }
+  .sb-marca svg { width: 30px; height: 30px; }
+  .sb-marca em { font-style: normal; font-weight: 600; font-size: 13px; color: var(--sb-ouro); border-left: 1px solid rgba(255,255,255,.3); padding-left: 8px; letter-spacing: .04em; text-transform: uppercase; }
+  .sb-topo-cta { color: var(--sb-escuro) !important; background: var(--sb-ouro); border-radius: 8px; padding: 9px 14px; font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .sb-nav { max-width: 1100px; margin: 0 auto; display: flex; gap: 2px; padding: 0 8px; overflow-x: auto; scrollbar-width: none; }
+  .sb-nav::-webkit-scrollbar { display: none; }
+  .sb-nav-i { padding: 11px 10px 12px; color: rgba(255,255,255,.72); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; }
+  .sb-nav-i.on { color: #fff; border-bottom-color: var(--sb-ouro); }
+  .sb-in { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  .sb-hero { background: var(--sb-escuro); color: #fff; padding: 44px 0 56px; }
+  .sb-olho, .sb-rotulo { margin: 0 0 12px; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--sb-ouro); }
+  .sb-hero h1 { color: #fff; font-size: 38px; line-height: 1.1; margin: 0 0 16px; max-width: 760px; }
+  .sb-lead { font-size: 19px; line-height: 1.5; color: rgba(255,255,255,.85); margin: 0 0 26px; max-width: 640px; }
+  .sb-botoes { display: flex; flex-wrap: wrap; gap: 12px; }
+  .sb-bt { display: inline-flex; align-items: center; min-height: 48px; padding: 0 22px; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; }
+  .sb-bt-ouro { background: var(--sb-ouro); color: var(--sb-escuro) !important; }
+  .sb-bt-linha { border: 1.5px solid rgba(255,255,255,.55); color: #fff !important; }
+  .sb-sec { padding: 56px 0; scroll-margin-top: 100px; }
+  .sb-claro { background: var(--bg); }
+  .sb-branco { background: #fff; }
+  .sb-escuro { background: var(--sb-escuro); color: #fff; }
+  .sb-duas { display: grid; gap: 18px; }
+  .sb-destaque { font-size: 28px; line-height: 1.2; color: var(--green); margin: 0; }
+  .sb-texto p { font-size: 17px; line-height: 1.7; color: var(--text); margin: 0 0 16px; }
+  .sb-assinatura { margin-top: 22px !important; }
+  .sb-assinatura strong { display: block; font-family: var(--fonte-titulo); font-size: 21px; }
+  .sb-assinatura span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
+  .sb-sec h2 { font-size: 30px; line-height: 1.2; margin: 0 0 22px; max-width: 760px; }
+  .sb-escuro h2 { color: #fff; }
+  .sb-tres { display: grid; gap: 22px; margin-bottom: 30px; }
+  .sb-tres h3 { font-size: 17px; margin: 0 0 6px; color: var(--green); border-top: 3px solid var(--sb-ouro); padding-top: 12px; display: inline-block; }
+  .sb-tres p { font-size: 16px; line-height: 1.6; color: var(--text); margin: 0; }
+  .sb-gratis { background: var(--bg); border-left: 4px solid var(--green); padding: 18px 20px; margin-bottom: 28px; }
+  .sb-gratis h3 { font-size: 22px; margin: 0 0 8px; color: var(--green); }
+  .sb-gratis p { font-size: 16px; line-height: 1.65; margin: 0; color: var(--text); }
+  .sb-sub { font-size: 18px; margin: 0 0 10px; }
+  .sb-lista { margin: 0 0 12px; padding-left: 20px; }
+  .sb-lista li { font-size: 16px; line-height: 1.65; margin-bottom: 10px; color: var(--text); }
+  .sb-nota { font-size: 14px; color: var(--muted); margin: 0; }
+  .sb-nota .inline-link { font-size: inherit; color: var(--green); font-weight: 600; }
+  .sb-numeros { background: var(--green); color: #fff; padding: 36px 0; }
+  .sb-numeros-linha { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .sb-numeros strong { display: block; font-family: var(--fonte-titulo); font-size: 36px; color: var(--sb-ouro); }
+  .sb-numeros span { font-size: 15px; color: rgba(255,255,255,.85); }
+  .sb-nome { margin: 0 0 2px !important; font-size: 28px !important; }
+  .sb-cargo { font-size: 15px !important; color: var(--muted) !important; margin-bottom: 14px !important; }
+  .sb-canais { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 0; }
+  .sb-canais li { display: flex; flex-direction: column; gap: 2px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.15); }
+  .sb-canal-nome a, .sb-canal-nome button { color: #fff; font: inherit; font-size: 20px; font-weight: 700; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+  .sb-canal-desc { font-size: 14px; color: rgba(255,255,255,.7); }
+  @media (min-width: 820px) {
+    .sb-hero { padding: 72px 0 84px; }
+    .sb-hero h1 { font-size: 52px; }
+    .sb-duas { grid-template-columns: 1fr 1.6fr; gap: 56px; }
+    .sb-tres { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .sb-canais { grid-template-columns: 1fr 1fr; column-gap: 40px; }
+    .sb-sec { padding: 80px 0; }
+    .sb-sec h2 { font-size: 36px; }
+  }
+  .pc .sb-topo { top: 0; }
   /* A caixa "Esta página ajudou você?" antes do rodapé (regra 250). */
   .caixa-feedback { padding: 0 16px; margin: 28px 0 0; }
   .caixa-feedback-in { max-width: 1100px; margin: 0 auto; border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 16px 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
@@ -6426,18 +6457,23 @@ function ligarLinksDoFeedback(raiz) {
 function goSobre(aba) {
   state.page = "sobre";
   state.sobreAba = SOBRE_ABAS.some(x => x.aba === aba) ? aba : "historia";
+  if (state.sobreAba !== "historia") state.sobreIrPara = state.sobreAba;
   state.selected = null;
   state.avisoLink = "";
   syncUrl(true);
   render();
   window.scrollTo(0, 0);
 }
-// As abas do Sobre (regra 256, 12/11/2026: "vá atrás da página de sobre nós do
-// trivago e faça parecido com abas entre equipe, sobre o site algo do tipo"),
-// como a página da empresa do trivago, que separa a história, o produto, as
-// pessoas e o contato. No site dos jogadores, cada aba tem o seu endereço
-// (/sobre, /sobre/site, /sobre/equipe, /sobre/contato); no Parceiros, a aba muda
-// só na tela. Continua só texto, sem cartão nem ícone (regra 255).
+// O Sobre como um site à parte (regra 257, 12/11/2026: "eles fazem algo como
+// mudando de página com outro menu e uma cara parecida, com o menu sendo
+// diferente permitindo essa navegação, com cores diferentes e sendo um pouco mais
+// atrativo para vender e não brincar, se deslizar para baixo a página inteira pode
+// ir navegando os tópicos do menu"), como a página da empresa do trivago: um menu
+// próprio, fixo no alto, o topo verde-escuro com o título e os botões, e as partes
+// (Nossa história, O site, Equipe, Contato) uma embaixo da outra. Tocar no menu
+// leva à parte; rolar acende a parte no menu (e, nos jogadores, troca o endereço:
+// /sobre, /sobre/site, /sobre/equipe, /sobre/contato). Sem cartão de ícone nem
+// animação (regras 255 e "sem cara de IA"); a cor e a letra fazem a diferença.
 const SOBRE_ABAS = [
   { aba: "historia", t: "Nossa história" },
   { aba: "site", t: "O site" },
@@ -6450,98 +6486,176 @@ function abaDoSobre() {
 function caminhoDoSobre(aba = abaDoSobre()) {
   return aba === "historia" ? "/sobre" : "/sobre/" + aba;
 }
-function conteudoDaAbaDoSobre(aba, parceiros) {
-  if (aba === "site") return `
-      <section class="sobre-sec sobre-primeira">
-        <h2 class="display">O que o GuiaTennis faz</h2>
-        <p>Você informa onde está e vê as academias de tênis mais perto, com preço, horário, piso, fotos, avaliações e o caminho até lá. Dá para comparar até cinco lado a lado, guardar as favoritas e ver as quadras da cidade de uma viagem. O contato é direto com a academia, pelo WhatsApp ou pela reserva online, quando ela oferece.</p>
-        <p>É para quem vai começar e não sabe por onde, para quem já joga e quer conhecer outras quadras e para quem viaja, a trabalho ou a passeio, e não quer ficar sem jogar. E é para as academias, que passam a ser encontradas por quem procura.</p>
-      </section>
-      <section class="sobre-sec">
-        <h2 class="display">Grátis para quem joga</h2>
-        <p>Quem joga não paga nada. O GuiaTennis não reserva, não cobra taxa e não fica no meio da conversa: o horário, o valor e o pagamento são combinados direto com a academia.</p>
-        <p>As academias podem escolher planos com mais recursos e divulgar promoções. A posição paga na busca aparece sempre como "Patrocinado", e as "Mais bem avaliadas" seguem só a nota dos jogadores.</p>
-      </section>
-      <section class="sobre-sec">
-        <h2 class="display">Compromissos</h2>
-        <ul class="sobre-lista">
-          <li>As avaliações são feitas no GuiaTennis, por quem tem conta, uma por academia. A academia responde, mas não apaga, e nenhuma nota vem de outro site.</li>
-          <li>O WhatsApp que a academia coloca na ficha passa por um código de confirmação, e quem joga pode informar um problema em qualquer ficha.</li>
-          <li>De uma busca, o GuiaTennis guarda só o bairro, a cidade, o CEP e um ponto aproximado. Nunca o IP nem o endereço digitado.</li>
-        </ul>
-        <p class="sobre-nota"><button type="button" class="inline-link" data-menu="privacidade">Política de Privacidade</button> · <button type="button" class="inline-link" data-menu="termos">Termos de Uso</button></p>
-      </section>`;
-  if (aba === "equipe") return `
-      <section class="sobre-sec sobre-primeira">
-        <p>O GuiaTennis é feito em São Paulo, por quem está na quadra todos os dias.</p>
-        <div class="sobre-pessoa">
-          <h2 class="display">Breno Coppini</h2>
-          <p class="sobre-pessoa-cargo">Fundador e criador do GuiaTennis</p>
-          <p>De São Paulo. Professor de tênis desde 2022, a maior parte do tempo na região do Morumbi, e jogador de torneios na 3ª classe. Fez cursos com Gui Teixeira, sobre tênis de alto rendimento; com Juan Martín del Potro, sobre a transição do juvenil ao profissional; e com Carla Di Pierro, sobre saúde mental na psicologia do esporte.</p>
-          <p>É quem responde o chat de ajuda e conversa com as academias.</p>
-        </div>
-      </section>`;
-  if (aba === "contato") {
-    const linha = (nome, html) => `<li><span class="sobre-contato-nome">${html}</span><span class="sobre-contato-desc">${esc(PARA_QUE_SERVE_O_CONTATO[nome] || "")}</span></li>`;
-    const link = (n) => { const c = CONTATOS_GUIA.find(x => x.nome === n); return c ? linha(n, `<a class="inline-link" href="${c.link()}"${c.fora ? ' target="_blank" rel="noreferrer"' : ""}>${c.nome}</a>`) : ""; };
-    return `
-      <section class="sobre-sec sobre-primeira">
-        <ul class="sobre-contatos">
-          ${linha("Chat de ajuda", `<button type="button" class="inline-link" data-abrir-chat>Chat de ajuda</button>`)}
-          ${link("WhatsApp")}${link("Instagram")}${link("E-mail")}
-        </ul>
-        ${parceiros ? "" : `<p class="sobre-nota">Tem uma academia de tênis? Conheça o <a href="/parceiros" class="inline-link" data-pc="inicio">GuiaTennis Parceiros</a>.</p>`}
-      </section>`;
-  }
-  return `
-      <div class="sobre-carta">
-        <p>Sou Breno Coppini, professor de tênis em São Paulo.</p>
-        <p>Em setembro de 2026, um aluno me perguntou quais quadras havia na região de Perdizes. Eu quase não dava aula por lá e não soube responder. Fui atrás das academias do bairro, uma por uma, e percebi como era difícil: as informações estavam espalhadas, e eu precisava perguntar a cada academia o que ela oferecia, quanto custava e como reservar.</p>
-        <p>Faltava um lugar só para isso. Foi daí que nasceu o GuiaTennis.</p>
-        <p>Quero que ele mude a forma de encontrar quadras de tênis, tornando tudo mais rápido, mais simples e mais prático, e que chegue ao mundo todo. Não para sermos reconhecidos, e sim para facilitar a vida de quem joga e de quem ensina.</p>
-        <p class="sobre-assinatura"><strong>Breno Coppini</strong><span>Professor de tênis e criador do GuiaTennis</span></p>
-      </div>`;
-}
 function corpoSobre(parceiros) {
-  // Regra 255 ("está com cara de ia"): só texto, como uma carta. Regra 256: em abas.
   const aba = abaDoSobre();
-  const fim = parceiros
-    ? (contaAcademia ? "" : `<div class="sobre-fim"><a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a></div>`)
-    : `<div class="sobre-fim"><a href="/busca" class="cta-btn cta-primary" data-menu="search">Buscar quadra</a></div>`;
+  const numeros = numerosDoSite();
+  const contato = (nome) => CONTATOS_GUIA.find(c => c.nome === nome);
+  const canal = (nome, html) => `<li><span class="sb-canal-nome">${html}</span><span class="sb-canal-desc">${esc(PARA_QUE_SERVE_O_CONTATO[nome] || "")}</span></li>`;
+  const linkCanal = (n) => { const c = contato(n); return c ? canal(n, `<a href="${c.link()}"${c.fora ? ' target="_blank" rel="noreferrer"' : ""}>${c.nome}</a>`) : ""; };
+  const ctaPrincipal = parceiros
+    ? (contaAcademia ? `<a href="/parceiros/painel" class="sb-bt sb-bt-ouro" data-pc="painel">Ir para a minha academia</a>` : `<a href="/parceiros/cadastro" class="sb-bt sb-bt-ouro" data-pc="cadastro">Cadastrar minha academia</a>`)
+    : `<a href="/busca" class="sb-bt sb-bt-ouro" data-menu="search">Buscar quadra</a>`;
+  const ctaSegundo = parceiros
+    ? `<a href="/parceiros/planos" class="sb-bt sb-bt-linha" data-pc="planos">Ver os planos</a>`
+    : `<a href="/parceiros" class="sb-bt sb-bt-linha" data-pc="inicio">Tenho uma academia</a>`;
   return `
-    <article class="sobre">
-      <p class="sobre-olho">Sobre o GuiaTennis</p>
-      <h1 class="display sobre-titulo">Um guia de quadras de tênis feito por um professor</h1>
-      <p class="sobre-lead">O GuiaTennis nasceu em setembro de 2026, em São Paulo, de uma pergunta de aluno: onde dá para jogar em Perdizes?</p>
-      <nav class="sobre-abas" aria-label="Sobre o GuiaTennis" id="sobre-abas">
-        ${SOBRE_ABAS.map(x => `<a href="${parceiros ? "/parceiros/sobre" : caminhoDoSobre(x.aba)}" class="sobre-aba${x.aba === aba ? " on" : ""}" data-sobre-aba="${x.aba}"${x.aba === aba ? ' aria-current="page"' : ""}>${x.t}</a>`).join("")}
-      </nav>
-      ${conteudoDaAbaDoSobre(aba, parceiros)}
-      ${fim}
-    </article>`;
+    <div class="sb pag-sobre" id="sobre">
+      <header class="sb-topo">
+        <div class="sb-topo-in">
+          <a href="${parceiros ? "/parceiros" : "/"}" class="sb-marca" ${parceiros ? 'data-pc="inicio"' : 'data-menu="home"'} aria-label="GuiaTennis, início">${logoSvg()}<span>GuiaTennis</span><em>Sobre</em></a>
+          ${parceiros ? (contaAcademia ? `<a href="/parceiros/painel" class="sb-topo-cta" data-pc="painel">Minha academia</a>` : `<a href="/parceiros/cadastro" class="sb-topo-cta" data-pc="cadastro">Cadastrar academia</a>`)
+            : `<a href="/busca" class="sb-topo-cta" data-menu="search">Buscar quadra</a>`}
+        </div>
+        <nav class="sb-nav" aria-label="Sobre o GuiaTennis" id="sobre-abas">
+          ${SOBRE_ABAS.map(x => `<a href="${parceiros ? "/parceiros/sobre" : caminhoDoSobre(x.aba)}" class="sb-nav-i${x.aba === aba ? " on" : ""}" data-sobre-aba="${x.aba}"${x.aba === aba ? ' aria-current="true"' : ""}>${x.t}</a>`).join("")}
+        </nav>
+      </header>
+
+      <section class="sb-hero" data-sobre-parte="historia">
+        <div class="sb-in">
+          <p class="sb-olho">Sobre o GuiaTennis</p>
+          <h1 class="display">Um guia de quadras de tênis feito por um professor</h1>
+          <p class="sb-lead">O GuiaTennis nasceu em setembro de 2026, em São Paulo, de uma pergunta de aluno: onde dá para jogar em Perdizes?</p>
+          <div class="sb-botoes">${ctaPrincipal}${ctaSegundo}</div>
+        </div>
+      </section>
+
+      <section class="sb-sec sb-claro" id="sobre-historia" data-sobre-parte="historia">
+        <div class="sb-in sb-duas">
+          <div class="sb-lado">
+            <p class="sb-rotulo">Nossa história</p>
+            <p class="sb-destaque display">"Faltava um lugar só para isso."</p>
+          </div>
+          <div class="sb-texto">
+            <p>Sou Breno Coppini, professor de tênis em São Paulo.</p>
+            <p>Em setembro de 2026, um aluno me perguntou quais quadras havia na região de Perdizes. Eu quase não dava aula por lá e não soube responder. Fui atrás das academias do bairro, uma por uma, e percebi como era difícil: as informações estavam espalhadas, e eu precisava perguntar a cada academia o que ela oferecia, quanto custava e como reservar.</p>
+            <p>Faltava um lugar só para isso. Foi daí que nasceu o GuiaTennis.</p>
+            <p>Quero que ele mude a forma de encontrar quadras de tênis, tornando tudo mais rápido, mais simples e mais prático, e que chegue ao mundo todo. Não para sermos reconhecidos, e sim para facilitar a vida de quem joga e de quem ensina.</p>
+            <p class="sb-assinatura"><strong>Breno Coppini</strong><span>Professor de tênis e criador do GuiaTennis</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="sb-sec sb-branco" id="sobre-site" data-sobre-parte="site">
+        <div class="sb-in">
+          <p class="sb-rotulo">O site</p>
+          <h2 class="display">Tudo o que você precisa saber antes de chamar a academia</h2>
+          <div class="sb-tres">
+            <div><h3>Perto de você</h3><p>Você informa onde está e vê as academias de tênis da mais perto para a mais longe, com preço, horário, piso, fotos, avaliações e o caminho até lá.</p></div>
+            <div><h3>Lado a lado</h3><p>Compare até cinco academias na mesma tela, guarde as favoritas e veja as quadras da cidade de uma viagem.</p></div>
+            <div><h3>Direto com a academia</h3><p>O contato é pelo WhatsApp ou pela reserva online da própria academia, quando ela oferece. Sem ninguém no meio.</p></div>
+          </div>
+          <div class="sb-gratis">
+            <h3 class="display">Grátis para quem joga</h3>
+            <p>O GuiaTennis não reserva, não cobra taxa e não fica no meio da conversa: o horário, o valor e o pagamento são combinados direto com a academia. As academias podem escolher planos com mais recursos e divulgar promoções; a posição paga na busca aparece sempre como "Patrocinado", e as "Mais bem avaliadas" seguem só a nota dos jogadores.</p>
+          </div>
+          <h3 class="sb-sub">Compromissos</h3>
+          <ul class="sb-lista">
+            <li>As avaliações são feitas no GuiaTennis, por quem tem conta, uma por academia. A academia responde, mas não apaga, e nenhuma nota vem de outro site.</li>
+            <li>O WhatsApp que a academia coloca na ficha passa por um código de confirmação, e quem joga pode informar um problema em qualquer ficha.</li>
+            <li>De uma busca, o GuiaTennis guarda só o bairro, a cidade, o CEP e um ponto aproximado. Nunca o IP nem o endereço digitado.</li>
+          </ul>
+          <p class="sb-nota"><button type="button" class="inline-link" data-menu="privacidade">Política de Privacidade</button> · <button type="button" class="inline-link" data-menu="termos">Termos de Uso</button></p>
+        </div>
+      </section>
+
+      ${numeros.length ? `
+      <section class="sb-numeros">
+        <div class="sb-in">
+          <p class="sb-rotulo">O GuiaTennis em números</p>
+          <div class="sb-numeros-linha">${numeros.map(n => `<div><strong>${esc(n.valor)}</strong><span>${esc(n.rotulo)}</span></div>`).join("")}</div>
+        </div>
+      </section>` : ""}
+
+      <section class="sb-sec sb-claro" id="sobre-equipe" data-sobre-parte="equipe">
+        <div class="sb-in sb-duas">
+          <div class="sb-lado">
+            <p class="sb-rotulo">Equipe</p>
+            <p class="sb-destaque display">Feito em São Paulo, por quem está na quadra todos os dias.</p>
+          </div>
+          <div class="sb-texto">
+            <h2 class="display sb-nome">Breno Coppini</h2>
+            <p class="sb-cargo">Fundador e criador do GuiaTennis</p>
+            <p>De São Paulo. Professor de tênis desde 2022, a maior parte do tempo na região do Morumbi, e jogador de torneios na 3ª classe. Fez cursos com Gui Teixeira, sobre tênis de alto rendimento; com Juan Martín del Potro, sobre a transição do juvenil ao profissional; e com Carla Di Pierro, sobre saúde mental na psicologia do esporte.</p>
+            <p>É quem responde o chat de ajuda e conversa com as academias.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="sb-sec sb-escuro" id="sobre-contato" data-sobre-parte="contato">
+        <div class="sb-in">
+          <p class="sb-rotulo">Contato</p>
+          <h2 class="display">Fale com o GuiaTennis</h2>
+          <ul class="sb-canais">
+            ${canal("Chat de ajuda", `<button type="button" data-abrir-chat>Chat de ajuda</button>`)}
+            ${linkCanal("WhatsApp")}${linkCanal("Instagram")}${linkCanal("E-mail")}
+          </ul>
+          <div class="sb-botoes">${ctaPrincipal}${parceiros ? "" : `<a href="/parceiros" class="sb-bt sb-bt-linha" data-pc="inicio">Conheça o GuiaTennis Parceiros</a>`}</div>
+        </div>
+      </section>
+    </div>`;
+}
+// O menu do Sobre: tocar leva à parte; rolar acende a parte (e troca o endereço
+// nos jogadores, sem encher o histórico).
+let olhoDoSobre = null;
+function irParaParteDoSobre(aba, suave) {
+  const alvo = document.querySelector(`[data-sobre-parte="${aba}"]`);
+  const topo = document.querySelector(".sb-topo");
+  if (!alvo) return;
+  const y = aba === "historia" ? 0 : alvo.getBoundingClientRect().top + window.scrollY - (topo ? topo.offsetHeight : 0) + 1;
+  window.scrollTo({ top: Math.max(0, y), behavior: suave ? "smooth" : "auto" });
+}
+function marcarParteDoSobre(aba) {
+  if (state.sobreAba === aba && document.querySelector(`.sb-nav-i.on[data-sobre-aba="${aba}"]`)) return;
+  state.sobreAba = aba;
+  document.querySelectorAll(".sb-nav-i").forEach(a => {
+    const on = a.dataset.sobreAba === aba;
+    a.classList.toggle("on", on);
+    if (on) { a.setAttribute("aria-current", "true"); a.scrollIntoView({ block: "nearest", inline: "nearest" }); } else a.removeAttribute("aria-current");
+  });
+  if (state.page === "sobre") {
+    try { history.replaceState(history.state, "", caminhoDoSobre(aba)); } catch {}
+    const seo = seoDaPagina();
+    if (seo && seo.titulo) document.title = seo.titulo;
+    atualizarCanonical(null);
+  }
 }
 function ligarAbasDoSobre() {
+  if (olhoDoSobre) { olhoDoSobre.disconnect(); olhoDoSobre = null; }
+  const partes = [...document.querySelectorAll("[data-sobre-parte]")];
+  if (!partes.length) return;
   document.querySelectorAll("[data-sobre-aba]").forEach(a => {
     a.onclick = (e) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey) return;
       e.preventDefault();
-      state.sobreAba = a.dataset.sobreAba;
-      if (state.page === "sobre") syncUrl(true);
-      render();
-      const abas = document.getElementById("sobre-abas");
-      if (abas && abas.getBoundingClientRect().top < 0) window.scrollTo(0, Math.max(0, abas.getBoundingClientRect().top + window.scrollY - 80));
+      state.sobreTocou = Date.now();
+      marcarParteDoSobre(a.dataset.sobreAba);
+      irParaParteDoSobre(a.dataset.sobreAba, true);
     };
   });
+  if ("IntersectionObserver" in window) {
+    olhoDoSobre = new IntersectionObserver((itens) => {
+      // Logo depois do toque, a rolagem suave passa por outras partes: espera.
+      if (Date.now() - (state.sobreTocou || 0) < 900) return;
+      const visivel = itens.filter(i => i.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (visivel) marcarParteDoSobre(visivel.target.dataset.sobreParte);
+    }, { rootMargin: "-35% 0px -60% 0px" });
+    partes.forEach(p => olhoDoSobre.observe(p));
+  }
+  // Veio por /sobre/equipe (ou trocou de página): vai direto à parte.
+  if (state.sobreIrPara) {
+    const aba = state.sobreIrPara;
+    state.sobreIrPara = null;
+    state.sobreTocou = Date.now();
+    setTimeout(() => irParaParteDoSobre(aba, false), 0);
+  }
 }
 function renderPaginaSobre() {
+  // Regra 257: o Sobre tem o menu dele, no lugar do cabeçalho do site.
   return `
-    ${renderCabecalho()}
-    <div class="pag-sobre">${corpoSobre(false)}</div>
+    ${corpoSobre(false)}
     ${renderSiteFooter()}
   `;
-}
-function pcSobre() {
-  return `<section class="pc-pagina pc-estreita pc-sobre">${corpoSobre(true)}</section>`;
 }
 function renderPaginaDeFeedback() {
   return `
@@ -7006,7 +7120,8 @@ function render() {
   try { window.name = state.page === "parceiros" ? ABA_PARCEIROS : ABA_JOGADORES; } catch {}
   // O site dos parceiros ocupa a tela inteira, como o site de um parceiro
   // grande: cabeçalho e rodapé de ponta a ponta, conteúdo no meio.
-  app.className = state.page === "parceiros" ? "container pc-cheio" : noPainel ? "container adm-cheio" : "container";
+  // O Sobre ocupa a largura toda, como o Parceiros (regra 257).
+  app.className = state.page === "parceiros" || state.page === "sobre" ? "container pc-cheio" : noPainel ? "container adm-cheio" : "container";
 
   attachEvents();
   empilharAvisos();
@@ -11803,7 +11918,7 @@ function renderParceiros() {
   else if (aba === "plano") miolo = pcPlanos(temAcademia());
   else if (aba === "pagamentos") miolo = pcPagamentos();
   else if (aba === "feedback") miolo = pcFeedback();
-  else if (aba === "sobre") miolo = pcSobre();
+  else if (aba === "sobre") return `<div class="pc" id="parceiros">${corpoSobre(true)}${pcRodape()}</div>`;
   else if (aba === "pessoas") miolo = pcPessoasDaAcademia();
   else if (aba === "academias") miolo = pcAcademias();
   else if (aba === "perfil") miolo = pcPerfil();
@@ -19823,6 +19938,7 @@ function aplicarLink(r) {
   if (r.page === "sobre") {
     state.page = "sobre";
     state.sobreAba = SOBRE_ABAS.some(x => x.aba === r.sobreAba) ? r.sobreAba : "historia";
+    if (state.sobreAba !== "historia") state.sobreIrPara = state.sobreAba;
     return {};
   }
   if (r.page === "comparar") {

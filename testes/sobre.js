@@ -23,12 +23,13 @@ const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Nossa hi
   let pag = await texto(page, '.pag-sobre');
   ok(await page.evaluate(() => state.page === 'sobre' && location.pathname === '/sobre'), 'abre o /sobre');
   ok(PARTES.every(p => pag.includes(p)), 'a página tem a missão, o que fazemos e não fazemos, quem paga o quê, os compromissos e o contato — ' + pag.slice(0, 200));
-  ok(await page.$('.pag-sobre a[data-menu="search"]') && await page.evaluate(() => document.querySelector('.sobre-aba.on')?.innerText === 'Nossa história'), 'abre na aba "Nossa história", com "Buscar quadra"');
+  ok(await page.$('.pag-sobre a[data-menu="search"]') && await page.evaluate(() => document.querySelector('.sb-nav-i.on')?.innerText === 'Nossa história'), 'abre na aba "Nossa história", com "Buscar quadra"');
   // Regra 256: as abas, cada uma com o seu endereço, como a página da empresa do trivago.
   await page.click('[data-sobre-aba="site"]');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(900);
+  ok(await page.evaluate(() => { const r = document.getElementById('sobre-site').getBoundingClientRect(), t = document.querySelector('.sb-topo').getBoundingClientRect(); return Math.abs(r.top - t.bottom) < 40; }), 'tocar em "O site" leva à parte, logo embaixo do menu');
   let aba = await texto(page, '.pag-sobre');
-  ok(await page.evaluate(() => location.pathname === '/sobre/site') && aba.includes('O que o GuiaTennis faz') && aba.includes('Grátis para quem joga') && aba.includes('Patrocinado') && aba.includes('não reserva') && aba.includes('Compromissos'),
+  ok(await page.evaluate(() => location.pathname === '/sobre/site') && aba.includes('Perto de você') && aba.includes('Grátis para quem joga') && aba.includes('Patrocinado') && aba.includes('não reserva') && aba.includes('Compromissos'),
     'aba "O site": o que faz, grátis para quem joga e compromissos, em /sobre/site');
   ok(await page.evaluate(() => document.title === 'O site · Sobre o GuiaTennis'), 'o título da aba — ' + await page.title());
   await page.click('.pag-sobre [data-menu="privacidade"]');
@@ -43,14 +44,19 @@ const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Nossa hi
   await page.waitForTimeout(300);
   aba = await texto(page, '.pag-sobre');
   ok(await page.evaluate(() => location.pathname === '/sobre/contato') && ['Chat de ajuda', 'WhatsApp', 'Instagram', 'E-mail', 'Respostas na hora', 'GuiaTennis Parceiros'].every(t => aba.includes(t)), 'aba "Contato": os quatro canais, para que serve cada um, e o Parceiros');
-  await page.goBack();
-  await page.waitForTimeout(300);
-  ok(await page.evaluate(() => location.pathname === '/sobre/equipe' && state.sobreAba === 'equipe'), '"voltar" volta à aba anterior');
-  await page.click('[data-sobre-aba="historia"]');
-  await page.waitForTimeout(300);
+  // Regra 257: rolar acende a parte no menu e troca o endereço.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { const e = document.getElementById('sobre-equipe'); window.scrollTo(0, e.getBoundingClientRect().top + window.scrollY - 60); });
+  await page.waitForTimeout(700);
+  ok(await page.evaluate(() => document.querySelector('.sb-nav-i.on')?.innerText === 'Equipe' && location.pathname === '/sobre/equipe'), 'rolar até a Equipe acende "Equipe" no menu e troca o endereço');
+  ok(await page.evaluate(() => { const t = document.querySelector('.sb-topo').getBoundingClientRect(); return t.top === 0 && getComputedStyle(document.querySelector('.sb-topo')).position === 'sticky'; }), 'o menu do Sobre fica fixo no alto');
+  ok(await page.evaluate(() => !document.querySelector('#site-header, .home-head')), 'o Sobre tem o menu dele, no lugar do cabeçalho do site');
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(800);
   ok(!/\bapp\b|aplicativo|clube|pôr|põe|ponha/i.test(pag), 'sem "app", "clube" nem "pôr"');
   // Regra 255 ("está com cara de ia"): só texto, sem cartões, ícones, grade nem números.
-  ok(await page.evaluate(() => !document.querySelector('.pag-sobre .sobre-cartao, .pag-sobre .sobre-grade, .pag-sobre .sobre-numero, .pag-sobre svg, .pag-sobre img')), 'a página é só texto: sem cartões, ícones, grade nem números');
+  ok(await page.evaluate(() => !document.querySelector('.pag-sobre .sb-sec svg, .pag-sobre .sb-hero svg, .pag-sobre img, .pag-sobre .sobre-cartao')), 'a página é só texto: sem cartões, ícones, grade nem números');
   let s = await seo(page);
   ok(s.titulo === 'Sobre o GuiaTennis' && s.canonica.endsWith('/sobre') && !s.robots.includes('noindex'), 'título, endereço oficial e no Google — ' + JSON.stringify(s));
   ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'sem rolar para o lado no celular');
@@ -58,7 +64,7 @@ const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Nossa hi
 
   ({ browser, page } = await abrir({ q: 'sobre/equipe' }));
   await page.waitForTimeout(800);
-  ok(await page.evaluate(() => state.page === 'sobre' && state.sobreAba === 'equipe' && document.querySelector('.sobre-aba.on')?.innerText === 'Equipe'), 'o link direto /sobre/equipe abre a aba Equipe');
+  ok(await page.evaluate(() => state.page === 'sobre' && state.sobreAba === 'equipe' && document.querySelector('.sb-nav-i.on')?.innerText === 'Equipe'), 'o link direto /sobre/equipe abre a aba Equipe');
   await browser.close();
 
   // ---- Regra 250: a caixa antes do rodapé, o Sobre junto do Feedback e os textos corrigidos ----
@@ -108,15 +114,15 @@ const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Nossa hi
   ok(await page.$('#pc-beneficios'), '"Por que estar no GuiaTennis" continua na página inicial');
   await page.click('#pc-menu-overlay a[data-pc="sobre"]');
   await page.waitForTimeout(500);
-  pag = await texto(page, '.pc-sobre');
+  pag = await texto(page, '.pag-sobre');
   ok(await page.evaluate(() => location.pathname === '/parceiros/sobre' && !state.pcMenu && state.page === 'parceiros'), 'abre o /parceiros/sobre, no próprio Parceiros');
-  ok(PARTES.every(p => pag.includes(p)) && await page.$('.pc-sobre a[data-pc="cadastro"]') && !(await page.$('.pc-sobre [data-menu="search"]')), 'o mesmo texto, terminando em "Cadastrar minha academia"');
+  ok(PARTES.every(p => pag.includes(p)) && await page.$('.pag-sobre a[data-pc="cadastro"]') && !(await page.$('.pag-sobre [data-menu="search"]')), 'o mesmo texto, terminando em "Cadastrar minha academia"');
   s = await seo(page);
   ok(s.canonica.endsWith('/sobre') && !s.canonica.includes('/parceiros') && s.robots.includes('noindex'), 'o endereço oficial é o /sobre — ' + JSON.stringify(s));
   ok((await texto(page, '.pc-rodape')).includes('Sobre nós'), 'o rodapé do Parceiros tem "Sobre nós"');
-  await page.click('.pc-sobre [data-sobre-aba="equipe"]');
+  await page.click('.pag-sobre [data-sobre-aba="equipe"]');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => location.pathname === '/parceiros/sobre') && (await texto(page, '.pc-sobre')).includes('Fundador e criador do GuiaTennis'), 'no Parceiros, as abas mudam na tela, sem sair do /parceiros/sobre');
+  ok(await page.evaluate(() => location.pathname === '/parceiros/sobre') && (await texto(page, '.pag-sobre')).includes('Fundador e criador do GuiaTennis'), 'no Parceiros, as abas mudam na tela, sem sair do /parceiros/sobre');
   await browser.close();
 
   // ---- Parceiros com a academia: "Feedback" fora do menu e do alto, no rodapé ----
@@ -131,7 +137,7 @@ const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Nossa hi
     'regra 253: no Parceiros, Suporte com o Chat de ajuda e o Feedback, GuiaTennis com Sobre nós e os contatos — ' + JSON.stringify(rodape.slice(1)));
   await page.click('#pc-menu-overlay a[data-pc="sobre"]');
   await page.waitForTimeout(500);
-  ok(await page.evaluate(() => location.pathname === '/parceiros/sobre') && !(await page.$('.pc-sobre a[data-pc="cadastro"]')), 'logado, a página não oferece cadastrar academia');
+  ok(await page.evaluate(() => location.pathname === '/parceiros/sobre') && !(await page.$('.pag-sobre a[data-pc="cadastro"]')), 'logado, a página não oferece cadastrar academia');
   await browser.close();
 
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel', w: 1280 }));

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 12/11/2026 (regra 256)
+**Atualizado em:** 12/11/2026 (regra 257)
 
 | | |
 |---|---|
@@ -504,7 +504,8 @@ Suporte (Chat de ajuda, Feedback) e GuiaTennis (Sobre nós, Instagram, WhatsApp,
 regra 254, a ordem GuiaTennis, Suporte, Termos; regra 255, a página Sobre só de texto;
 regra 256, o Sobre em abas (Nossa história, O site, Equipe, Contato). O site do trivago
 não abre deste ambiente (fora da rede permitida): as abas seguem o padrão da página
-da empresa dele, de memória. Ainda sem resposta do Breno: qual sistema de reservas as
+da empresa dele, de memória; regra 257, o Sobre como um site à parte, com menu próprio
+fixo e as partes numa página só que o menu acompanha. Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
 **bateria completa não roda desde a regra 230** (vale rodar antes do "pode
@@ -587,7 +588,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 257.
+**Próximo número:** regra 258.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1577,6 +1578,27 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `caminhoDoSobre`; o "voltar" volta à aba; redirect `/sobre/*` no
   `netlify.toml`); no Parceiros, a aba muda só na tela. Continua só texto. Sem
   SQL. Testes: `sobre.js` (37), `links.js`, `voltar.js`, `menu-e-home.js`.
+- **257 (12/11) — o Sobre como um site à parte** ("eles fazem algo como mudando de
+  página com outro menu e uma cara parecida, com o menu sendo diferente permitindo
+  essa navegação, com cores diferentes e sendo um pouco mais atrativo para vender
+  e não brincar, se deslizar para baixo a página inteira pode ir navegando os
+  tópicos do menu"): `corpoSobre` tem o **menu próprio, fixo no alto** (`sb-topo`,
+  verde-escuro `#163A2D`: "GuiaTennis | SOBRE", "Buscar quadra" em dourado e as
+  partes Nossa história, O site, Equipe, Contato), no lugar do cabeçalho do site;
+  o **topo verde-escuro** com o título grande e os botões "Buscar quadra" e
+  "Tenho uma academia" (no Parceiros, "Cadastrar minha academia" e "Ver os
+  planos"); as **partes numa página só**, com fundos alternados (creme, branco,
+  creme e o Contato no verde-escuro), a frase em destaque à esquerda no
+  computador, três colunas em "O site" (Perto de você, Lado a lado, Direto com a
+  academia, com o traço dourado em cima, sem ícone), a faixa "Grátis para quem
+  joga" e a faixa verde dos números (só com os números acima do mínimo). Tocar no
+  menu rola até a parte; **rolar acende a parte no menu** (`IntersectionObserver`,
+  `marcarParteDoSobre`) e troca o endereço sem encher o histórico (`/sobre`,
+  `/sobre/site`, `/sobre/equipe`, `/sobre/contato`; o link direto rola até a
+  parte). Largura toda, como o Parceiros (`pc-cheio`). O `/parceiros/sobre` usa o
+  mesmo, com o rodapé do Parceiros. Sem animação de entrada. Sem SQL. Testes:
+  `sobre.js` (40), `links.js`, `voltar.js`, `menu-e-home.js`, `parceiros.js`,
+  `nota-do-guia.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -3277,6 +3277,14 @@
   .sobre-assinatura span { display: block; font-size: 13px; color: var(--muted); }
   .sobre-fim { margin-top: 32px; }
   .sobre-fim .cta-btn { width: auto; display: inline-flex; padding-left: 26px; padding-right: 26px; }
+  /* A caixa "Esta página ajudou você?" antes do rodapé (regra 250). */
+  .caixa-feedback { padding: 0 16px; margin: 28px 0 0; }
+  .caixa-feedback-in { max-width: 1100px; margin: 0 auto; border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 16px 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+  .caixa-feedback-t { margin: 0; font-size: 16px; font-weight: 700; color: var(--text); }
+  .caixa-feedback-s { margin: 2px 0 0; font-size: 14px; color: var(--muted); line-height: 1.45; }
+  .caixa-feedback .cta-btn { width: auto; margin: 0; padding-left: 20px; padding-right: 20px; }
+  @media (max-width: 520px) { .caixa-feedback .cta-btn { width: 100%; } }
+  .pc .caixa-feedback { margin: 32px 0 24px; }
 </style>
 </head>
 <body>
@@ -11527,8 +11535,30 @@ function pcSeletor() {
     </div>`;
 }
 
+// A caixa antes do rodapé, em todas as páginas dos dois sites (regra 250, 12/11/2026:
+// "uma caixa antes do rodapé do site em todas as páginas com uma pergunta se
+// aquilo ajudou ou se algo precisa melhorar e um botão de faça o seu feedback"),
+// como o "Esta página foi útil?" do GOV.UK, do Google e da Apple. Leva à página
+// Feedback de cada site (no Parceiros, sem conta, pede para entrar).
+function caixaDeFeedback(parceiros) {
+  const link = parceiros
+    ? `<a href="/parceiros/feedback" class="cta-btn cta-secondary" data-pc="feedback">Faça o seu feedback</a>`
+    : `<a href="/feedback" class="cta-btn cta-secondary" data-ir-feedback>Faça o seu feedback</a>`;
+  return `
+    <section class="caixa-feedback" aria-label="Feedback">
+      <div class="caixa-feedback-in">
+        <div class="caixa-feedback-txt">
+          <p class="caixa-feedback-t">Esta página ajudou você?</p>
+          <p class="caixa-feedback-s">Se algo precisa melhorar, conte para a gente.</p>
+        </div>
+        ${link}
+      </div>
+    </section>`;
+}
+
 function pcRodape() {
   return `
+    ${state.parceirosAba === "feedback" ? "" : caixaDeFeedback(true)}
     <footer class="pc-rodape">
       <div class="pc-rodape-in">
         <div class="pc-rodape-cols">
@@ -16263,6 +16293,7 @@ function renderMenu() {
                 : ""}
           <p class="menu-links">
             <button type="button" data-menu="porque">Por que o GuiaTennis</button>
+            <button type="button" data-menu="sobre">Sobre o GuiaTennis</button>
             <button type="button" data-menu="feedback">Feedback</button>
             <button type="button" data-menu="termos">Termos de Uso</button>
             <button type="button" data-menu="privacidade">Privacidade</button>
@@ -18537,10 +18568,10 @@ function indicarOGuia() {
 function blocoDicas() {
   const dicas = [
     { t: "Comece pela sua localização", d: "Toque no GPS ou digite o CEP: a lista vem da quadra mais perto para a mais longe. Vai jogar em outro lugar? Digite o endereço de lá." },
-    { t: "Marque só o que importa", d: "Saibro ou rápida, coberta, aula ou locação, estacionamento, vestiário: com os filtros, a lista mostra só as que combinam." },
+    { t: "Marque só o que importa", d: "Saibro ou rápida, coberta ou descoberta, aula ou locação: com os filtros, a lista mostra só as que combinam." },
     { t: "Salve e compare antes de decidir", d: "Toque no coração das que gostou e ponha até 5 na comparação: preço, quadras e nota ficam lado a lado." },
     { t: "Leia a ficha até o fim", d: "Cancelamento e reposição, como chegar e estacionamento estão na ficha. Evita surpresa na porta da academia." },
-    { t: "Chame com o essencial", d: "No WhatsApp, diga se é aula ou locação, o seu nível e o dia e o horário que prefere. A resposta vem mais rápida." },
+    { t: "Chame com o essencial", d: "No WhatsApp, diga se procura aula ou locação, qual é o seu nível e quais dias e horários prefere. Assim, a academia responde mais rápido." },
     { t: "Jogou? Avalie", d: "Leva um minuto e ajuda quem procura quadra perto de você a escolher." },
   ];
   return `
@@ -18582,7 +18613,7 @@ function perguntasDoSite() {
     // as patrocinadas são do Premium, sem contar como o site faz por dentro.
     {
       q: "Como funciona a ordem das academias?",
-      a: "Na busca, a lista segue a ordem que você escolher — por padrão, da mais perto para a mais longe. As marcadas \"Patrocinado\" são academias do plano Premium e aparecem em destaque no topo da busca (e também no lugar delas na lista, sem a marcação) e entre as recomendadas. As \"Melhores avaliadas\" seguem só a nota dos jogadores.",
+      a: "Na busca, a lista segue a ordem que você escolher — por padrão, da mais perto para a mais longe. As marcadas \"Patrocinado\" são academias do plano Premium que também ficam perto do endereço buscado (a até 10 km) e atendem aos filtros escolhidos; elas aparecem em destaque no topo da busca (e também no lugar delas na lista, sem a marcação) e entre as recomendadas. As \"Melhores avaliadas\" seguem só a nota dos jogadores.",
     },
   ];
   if (cidades.length) {
@@ -19257,6 +19288,7 @@ function renderSiteFooter() {
   // contato do GuiaTennis fica na última coluna (pedido de 01/10/2026).
   const cidades = cidadesComQuadra().slice(0, 6);
   return `
+    ${state.page === "feedback" ? "" : caixaDeFeedback(false)}
     <div class="sitefooter">
       <div class="sf-cols">
         ${cidades.length ? `
@@ -19272,7 +19304,6 @@ function renderSiteFooter() {
         </div>
         <div class="sf-col">
           <h4>Suporte</h4>
-          <a href="/sobre" data-menu="sobre">Sobre o GuiaTennis</a>
           <button type="button" id="footer-buscar">Como funciona a busca</button>
           <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
           ${contaAcademia ? `<button type="button" data-abrir-conta>Painel da minha academia</button>` : ""}
@@ -19282,9 +19313,10 @@ function renderSiteFooter() {
           ${linksContato("contato-link", 15, "currentColor")}
         </div>
         <div class="sf-col">
-          <h4>Feedback</h4>
-          <p class="sf-nota-t">O GuiaTennis está te ajudando?</p>
-          ${state.page === "feedback" ? "" : `<a href="/feedback" data-ir-feedback>Enviar feedback</a>`}
+          ${/* Regra 250 (12/11/2026, "deixe junto o feedback na seção do GuiaTennis"): o Sobre e o Feedback juntos, como no rodapé do Parceiros. */ ""}
+          <h4>GuiaTennis</h4>
+          <a href="/sobre" data-menu="sobre">Sobre o GuiaTennis</a>
+          <a href="/feedback" data-ir-feedback>Feedback</a>
         </div>
       </div>
     </div>
@@ -24234,7 +24266,7 @@ function renderRegisterSheet() {
         <p class="reg-cabeca">${isEditing ? "Editar " + esc(f.name || "academia") : (isAdmin ? "Adicionar academia" : parceiro ? "Cadastrar academia nova" : "Publicar academia/quadra")}</p>
         <p class="reg-progresso-t">Parte ${posicao} de ${visiveis.length} · ${passo.t}</p>
         <div class="reg-progresso" role="progressbar" aria-valuemin="1" aria-valuemax="${visiveis.length}" aria-valuenow="${posicao}"><i style="width:${Math.round(posicao / visiveis.length * 100)}%"></i></div>
-        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto pro ar, sem revisão." : parceiro ? (contaAcademia && contaAcademia.emailConfirmado ? "Com o seu e-mail confirmado, a academia entra no ar quando você finalizar." : "O GuiaTennis confere antes de publicar.") : "Apresentação no site mediante análise. São partes curtas; as obrigatórias têm *."}</p>` : ""}
+        ${i === 0 && !isEditing ? `<p class="subtitle reg-contexto">${isAdmin ? "Vai direto para o ar, sem revisão." : parceiro ? (contaAcademia && contaAcademia.emailConfirmado ? "Com o seu e-mail confirmado, a academia entra no ar quando você finalizar." : "O GuiaTennis confere antes de publicar.") : "Apresentação no site mediante análise. São partes curtas; as obrigatórias têm *."}</p>` : ""}
 
         <nav class="reg-secoes" aria-label="Partes da ficha">
           ${visiveis.map(({ passo: x, k }) => `<button type="button" class="${k === i ? "on" : ""}" data-reg-passo="${k}" ${k === i ? 'aria-current="step"' : ""}>${regPreenchido(f, x.id) && !regFaltas(f, x.id).length ? "✓ " : ""}${x.t}</button>`).join("")}
@@ -25255,7 +25287,7 @@ const CHAT_TEMAS = [
     a: [{ t: "Avisos por e-mail", ir: "menu:avisos" }] },
   { id: "patrocinado", onde: "jogadores", t: "\"Patrocinado\" na busca",
     p: ["patrocin", "anuncio", "propaganda", "pago", "paga", "primeiro lugar", "topo", "ordem", "recomendad"],
-    r: "\"Patrocinado\" identifica as academias que aparecem em destaque por patrocínio, no topo. Abaixo, todas seguem a ordem que você escolher na busca, as patrocinadas também, no lugar delas e sem a marcação.",
+    r: "\"Patrocinado\" identifica as academias que aparecem em destaque por patrocínio, no topo. Elas também ficam perto do endereço buscado (a até 10 km) e atendem aos filtros escolhidos. Abaixo, todas seguem a ordem que você escolher na busca, as patrocinadas também, no lugar delas e sem a marcação.",
     a: [] },
   // Regra 208 (05/11/2026): as academias no WhatsApp.
   { id: "whatsapp-varias", onde: "jogadores", t: "Mandar para o WhatsApp e falar com várias",

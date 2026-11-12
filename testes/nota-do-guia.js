@@ -21,7 +21,7 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   let { browser, page } = await abrir({ notaDoGuia: NOTA });
   await page.waitForTimeout(1500);
   let rodape = await texto(page, '.sitefooter');
-  ok(rodape.includes('Feedback') && rodape.includes('Enviar feedback') && !rodape.includes('4,7') && !rodape.includes('avaliações de jogadores'), 'o rodapé tem "Feedback", sem a nota');
+  ok(rodape.includes('Feedback') && rodape.includes('Sobre o GuiaTennis') && !rodape.includes('4,7') && !rodape.includes('avaliações de jogadores'), 'o rodapé tem "Feedback", sem a nota');
   ok(await naoChamouANota(page), 'o site nem busca a nota (só o admin)');
   await page.click('.sitefooter a[data-ir-feedback]');
   await page.waitForTimeout(500);
@@ -190,7 +190,7 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   // ---- Banco sem o SQL e os textos ----
   ({ browser, page } = await abrir({ jogador: true, jogadorConfirmado: true, q: 'perfil', semNotaDoGuia: true }));
   await page.waitForTimeout(1200);
-  ok(!(await page.$('#perfil-nota')) && (await texto(page, '.sitefooter')).includes('Enviar feedback'), 'banco sem o SQL: Minha conta sem o cartão, o resto igual');
+  ok(!(await page.$('#perfil-nota')) && (await texto(page, '.sitefooter')).includes('Feedback'), 'banco sem o SQL: Minha conta sem o cartão, o resto igual');
   ok(await page.evaluate(() => TERMS_HTML.includes('Feedback ao GuiaTennis:') && TERMS_HTML.includes('não aparecem no site') && TERMS_HTML.includes('não paga nem dá vantagem') && PRIVACY_HTML.includes('Quem manda feedback ao GuiaTennis') && PRIVACY_HTML.includes('página Feedback')
     && TERMS_HTML.includes('O comentário só é usado na divulgação do GuiaTennis') && PRIVACY_HTML.includes('se a pessoa autorizar, numa caixa opcional ao enviar o feedback (base legal: o consentimento)') && PRIVACY_HTML.includes('a autorização pode ser retirada a qualquer momento em "Editar avaliação"')),
     'Termos e Privacidade: o feedback, a nota só para o GuiaTennis e a página Feedback');

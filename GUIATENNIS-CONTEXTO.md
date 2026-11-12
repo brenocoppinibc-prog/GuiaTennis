@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 12/11/2026 (regra 249)
+**Atualizado em:** 12/11/2026 (regra 250)
 
 | | |
 |---|---|
@@ -489,7 +489,12 @@ GuiaTennis**, `/sobre` e `/parceiros/sobre`; no menu do Parceiros, sem
 "Benefícios" e sem "Feedback") e 249 (a história do Breno na página Sobre), na
 prévia. Decidido em 12/11: a cidade só como "de São Paulo" (pediu "fale que sou
 de sp"), "professor desde 2022" confirmado e **sem foto por enquanto** (se um dia
-mandar: em quadra, roupa de aula, raquete, luz natural, ao lado da assinatura). Ainda sem resposta do Breno: qual sistema de reservas as
+mandar: em quadra, roupa de aula, raquete, luz natural, ao lado da assinatura).
+Regra 250 na prévia. **Pergunta em aberto ao Breno (12/11):** o chat de ajuda como
+canal de feedback e de erros, "acompanhar com os clientes como eles estão
+trabalhando para corrigir": se é o relato do jogador com a situação (Recebido ›
+Em correção › Corrigido, como o Feedback Assistant da Apple) ou o problema
+contado sobre uma academia, encaminhado a ela para responder. Nada feito ainda. Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
 **bateria completa não roda desde a regra 230** (vale rodar antes do "pode
@@ -572,7 +577,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 250.
+**Próximo número:** regra 251.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1456,6 +1461,21 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   a quem joga, mais rápido e acessível"), "Quem paga o quê", "Compromissos do
   GuiaTennis" (tudo do GuiaTennis em terceira pessoa). Saiu "O que fazemos". Sem
   SQL. Testes: `sobre.js` (20).
+- **250 (12/11) — a caixa "Esta página ajudou você?" e textos corrigidos**: antes
+  do rodapé, em todas as páginas dos dois sites (`caixaDeFeedback`, como o GOV.UK,
+  o Google e a Apple), "Esta página ajudou você? Se algo precisa melhorar, conte
+  para a gente." e "Faça o seu feedback" (leva ao Feedback de cada site; some na
+  própria página Feedback). Rodapé dos jogadores: a coluna "Feedback" virou
+  **"GuiaTennis"**, com "Sobre o GuiaTennis" e "Feedback" (o Sobre saiu de
+  Suporte), como no Parceiros; no menu, "Sobre o GuiaTennis" junto do "Feedback".
+  "Como funciona a ordem" e o chat: as "Patrocinado" também ficam perto do
+  endereço buscado (a até 10 km) e atendem aos filtros. Dicas: "Saibro ou rápida,
+  coberta ou descoberta, aula ou locação" (sem estacionamento e vestiário) e "diga
+  se procura aula ou locação, qual é o seu nível e quais dias e horários prefere.
+  Assim, a academia responde mais rápido." Correção: "Vai direto para o ar". Sem
+  SQL. Testes: `sobre.js` (28), `nota-do-guia.js`, `premium-patrocinado.js`,
+  `buscas-e-avisos.js`, `menu-e-home.js`, `parceiros.js`, `links.js`,
+  `chat-de-ajuda.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

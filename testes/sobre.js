@@ -33,6 +33,35 @@ const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o 
   ok(await page.evaluate(() => state.showPrivacy === true), '"Política de Privacidade" abre a política');
   await browser.close();
 
+  // ---- Regra 250: a caixa antes do rodapé, o Sobre junto do Feedback e os textos corrigidos ----
+  ({ browser, page } = await abrir({}));
+  await page.waitForTimeout(1200);
+  const caixa = await page.evaluate(() => {
+    const c = document.querySelector('.caixa-feedback'), f = document.querySelector('.sitefooter');
+    return { txt: c ? c.innerText.replace(/\s+/g, ' ') : '', antes: !!(c && f && (c.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING)), botao: !!c?.querySelector('a[data-ir-feedback]') };
+  });
+  ok(caixa.txt.includes('Esta página ajudou você?') && caixa.txt.includes('Faça o seu feedback') && caixa.antes && caixa.botao, 'a caixa "Esta página ajudou você?" antes do rodapé, com "Faça o seu feedback" — ' + caixa.txt);
+  const colunaGuia = await page.evaluate(() => [...document.querySelectorAll('.sitefooter .sf-col')].map(d => ({ h: d.querySelector('h4')?.innerText, l: [...d.querySelectorAll('a, button')].map(a => a.innerText.trim()) })).find(c => c.h === 'GuiaTennis'));
+  ok(colunaGuia && colunaGuia.l.join('|') === 'Sobre o GuiaTennis|Feedback', 'no rodapé, a coluna GuiaTennis com "Sobre o GuiaTennis" e "Feedback" — ' + JSON.stringify(colunaGuia));
+  const home = await texto(page, '#app');
+  ok(home.includes('Saibro ou rápida, coberta ou descoberta, aula ou locação:') && !home.includes('estacionamento, vestiário') && home.includes('quais dias e horários prefere') && !home.includes('o dia e o horário que prefere'), 'as dicas com o texto novo');
+  ok(await page.evaluate(() => document.getElementById('app').textContent.includes('também ficam perto do endereço buscado')), '"Como funciona a ordem" diz que as patrocinadas também ficam perto do endereço');
+  await page.evaluate(() => { state.showMenu = true; render(); });
+  await page.waitForTimeout(200);
+  ok((await texto(page, '.menu-links')).includes('Sobre o GuiaTennis Feedback'), 'no menu, "Sobre o GuiaTennis" junto do "Feedback"');
+  await page.evaluate(() => { state.showMenu = false; render(); });
+  await page.click('.caixa-feedback a[data-ir-feedback]');
+  await page.waitForTimeout(500);
+  ok(await page.evaluate(() => location.pathname === '/feedback') && !(await page.$('.caixa-feedback')), '"Faça o seu feedback" abre o /feedback, que não repete a caixa');
+  await browser.close();
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel' }));
+  await page.waitForTimeout(1000);
+  ok((await texto(page, '.caixa-feedback')).includes('Esta página ajudou você?') && await page.$('.caixa-feedback a[data-pc="feedback"]'), 'no Parceiros, a mesma caixa antes do rodapé');
+  await page.click('.caixa-feedback a[data-pc="feedback"]');
+  await page.waitForTimeout(600);
+  ok(await page.evaluate(() => location.pathname === '/parceiros/feedback') && !(await page.$('.caixa-feedback')), 'no Parceiros, leva ao Feedback, que não repete a caixa');
+  await browser.close();
+
   ({ browser, page } = await abrir({ q: 'sobre' }));
   await page.waitForTimeout(800);
   ok(await page.evaluate(() => state.page === 'sobre') && (await texto(page, '.pag-sobre')).includes('Por que criei o GuiaTennis'), 'o link direto /sobre abre a página');

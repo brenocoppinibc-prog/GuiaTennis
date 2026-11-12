@@ -11,7 +11,7 @@ const seo = (page) => page.evaluate(() => ({
   canonica: document.querySelector('link[rel="canonical"]')?.href || '',
   robots: document.querySelector('meta[name="robots"]')?.content || '',
 }));
-const PARTES = ['Sobre o GuiaTennis', 'Nossa missão', 'O que fazemos', 'O que não fazemos', 'Quem paga o quê', 'Nossos compromissos', 'Fale com a gente'];
+const PARTES = ['Sobre o GuiaTennis', 'O que é o GuiaTennis', 'Por que criei o GuiaTennis', 'Breno Coppini', 'Perdizes', 'Para quem é', 'Quem viaja', 'A missão do GuiaTennis', 'O que o GuiaTennis não faz', 'Quem paga o quê', 'Compromissos do GuiaTennis', 'Fale com a gente'];
 
 (async () => {
   // ---- Site dos jogadores: o rodapé leva ao /sobre ----
@@ -23,7 +23,7 @@ const PARTES = ['Sobre o GuiaTennis', 'Nossa missão', 'O que fazemos', 'O que n
   let pag = await texto(page, '.pag-sobre');
   ok(await page.evaluate(() => state.page === 'sobre' && location.pathname === '/sobre'), 'abre o /sobre');
   ok(PARTES.every(p => pag.includes(p)), 'a página tem a missão, o que fazemos e não fazemos, quem paga o quê, os compromissos e o contato — ' + pag.slice(0, 200));
-  ok(pag.includes('Patrocinado') && pag.includes('Não reservamos') && await page.$('.pag-sobre a[data-menu="search"]'), '"Patrocinado", o que não fazemos e "Buscar quadra"');
+  ok(pag.includes('Patrocinado') && pag.includes('não reserva') && await page.$('.pag-sobre a[data-menu="search"]'), '"Patrocinado", o que não fazemos e "Buscar quadra"');
   ok(!/\bapp\b|aplicativo|clube|pôr|põe|ponha/i.test(pag), 'sem "app", "clube" nem "pôr"');
   let s = await seo(page);
   ok(s.titulo === 'Sobre o GuiaTennis' && s.canonica.endsWith('/sobre') && !s.robots.includes('noindex'), 'título, endereço oficial e no Google — ' + JSON.stringify(s));
@@ -35,7 +35,7 @@ const PARTES = ['Sobre o GuiaTennis', 'Nossa missão', 'O que fazemos', 'O que n
 
   ({ browser, page } = await abrir({ q: 'sobre' }));
   await page.waitForTimeout(800);
-  ok(await page.evaluate(() => state.page === 'sobre') && (await texto(page, '.pag-sobre')).includes('Nossa missão'), 'o link direto /sobre abre a página');
+  ok(await page.evaluate(() => state.page === 'sobre') && (await texto(page, '.pag-sobre')).includes('Por que criei o GuiaTennis'), 'o link direto /sobre abre a página');
   await browser.close();
 
   // ---- Parceiros sem conta: o menu sem "Benefícios", com "Sobre o GuiaTennis" ----

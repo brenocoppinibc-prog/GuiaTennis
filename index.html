@@ -3268,6 +3268,13 @@
   .sobre-numero span { display: block; font-size: 14px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
   .sobre-contato { display: flex; flex-wrap: wrap; gap: 8px 22px; }
   .sobre-contato .contato-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; }
+  .sobre-sec-1 { margin-top: 18px; }
+  /* A parte do Breno, em primeira pessoa e assinada (regra 249). */
+  .sobre-fundador { border-left: 3px solid var(--gold, #C9A24A); padding-left: 16px; }
+  .sobre-fundador p { color: var(--text); margin-bottom: 12px; }
+  .sobre-sec .sobre-assinatura { margin: 4px 0 0; }
+  .sobre-assinatura strong { display: block; font-size: 15px; }
+  .sobre-assinatura span { display: block; font-size: 13px; color: var(--muted); }
   .sobre-fim { margin-top: 32px; }
   .sobre-fim .cta-btn { width: auto; display: inline-flex; padding-left: 26px; padding-right: 26px; }
 </style>
@@ -6387,14 +6394,20 @@ function goSobre() {
 }
 function corpoSobre(parceiros) {
   const numeros = numerosDoSite();
-  const fazemos = [
-    { t: "Para quem joga", d: "Buscar, comparar e chamar a academia é grátis, para aula ou para locar quadra. Sem taxa, sem cartão e sem precisar de conta para começar." },
-    { t: "Para as academias", d: "A ficha no GuiaTennis é grátis no plano Básico, sem comissão e sem taxa por jogador. O jogador chama direto no WhatsApp da academia." },
+  // Regra 249 (12/11/2026): "uma parte minha e outra do GuiaTennis, em primeira
+  // pessoa para mim e terceira pessoa para o GuiaTennis". A parte do Breno é a
+  // história de como surgiu, assinada, como a carta do fundador no "Sobre" do
+  // Nubank e do Airbnb; o resto fala do GuiaTennis em terceira pessoa.
+  const paraQuem = [
+    { t: "Quem quer começar", d: "Encontra perto de casa ou do trabalho onde dar os primeiros passos." },
+    { t: "Quem já joga", d: "Conhece outras quadras e compara antes de escolher." },
+    { t: "Quem viaja", d: "A trabalho ou a passeio, encontra onde jogar com a qualidade de que gosta." },
+    { t: "As academias", d: "São encontradas por quem procura, com a ficha grátis no plano Básico e sem comissão." },
   ];
   const compromissos = [
-    { ic: "sparkle", t: "Avaliações feitas no GuiaTennis", d: "Só quem tem conta avalia, uma vez por academia. A academia responde, mas não apaga. Não importamos nota de outro site." },
+    { ic: "sparkle", t: "Avaliações feitas no GuiaTennis", d: "Só quem tem conta avalia, uma vez por academia. A academia responde, mas não apaga. O GuiaTennis não importa nota de outro site." },
     { ic: "check", t: "Informação conferida", d: "O WhatsApp que a academia coloca na ficha passa por um código de confirmação, e quem joga pode informar um problema em qualquer ficha." },
-    { ic: "key", t: "Privacidade", d: "De uma busca, guardamos só o bairro, a cidade, o CEP e um ponto aproximado. Nunca o IP nem o endereço digitado." },
+    { ic: "key", t: "Privacidade", d: "De uma busca, o GuiaTennis guarda só o bairro, a cidade, o CEP e um ponto aproximado. Nunca o IP nem o endereço digitado." },
   ];
   const fim = parceiros
     ? (contaAcademia ? "" : `<div class="sobre-fim"><a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a></div>`)
@@ -6402,23 +6415,36 @@ function corpoSobre(parceiros) {
   return `
     <div class="sobre">
       <h1 class="display sobre-titulo">Sobre o GuiaTennis</h1>
-      <p class="sobre-lead">Um guia de quadras e academias de tênis. Você diz onde está, vê as academias mais perto, compara preço, estrutura e nota e fala direto com a academia pelo WhatsApp.</p>
 
-      <section class="sobre-sec">
-        <h2>Nossa missão</h2>
-        <p>Levar mais gente para a quadra: deixar fácil achar onde jogar, comparar com calma e combinar direto com a academia.</p>
+      <section class="sobre-sec sobre-sec-1">
+        <h2>O que é o GuiaTennis</h2>
+        <p>O GuiaTennis é um guia de quadras e academias de tênis. Você informa onde está e vê as academias mais perto, com preço, horário, piso, estrutura, fotos, avaliações e como chegar. Dá para comparar até cinco academias lado a lado, guardar as favoritas, receber por e-mail as academias novas na região e encontrar quadras na cidade da sua viagem. O contato é direto com a academia, pelo WhatsApp ou pela reserva online, quando ela oferece. Para quem joga, tudo é grátis.</p>
+      </section>
+
+      <section class="sobre-sec sobre-fundador">
+        <h2>Por que criei o GuiaTennis</h2>
+        <p>Sou Breno Coppini, professor de tênis desde 2022, a maior parte do tempo na região do Morumbi, em São Paulo, e jogo torneios na 3ª classe.</p>
+        <p>Em setembro de 2026, um aluno me perguntou quais quadras havia na região de Perdizes. Eu quase não dava aula por lá e não soube responder. Fui atrás de todas as academias do bairro e percebi como era difícil: as informações estavam espalhadas, e eu precisava perguntar a cada academia o que ela oferecia, quanto custava e como reservar.</p>
+        <p>Senti que faltava um lugar só para isso: uma busca fácil e completa, que acabasse com a dúvida de onde jogar e com o trabalho de perguntar tudo a cada academia. Foi daí que nasceu o GuiaTennis.</p>
+        <p>Quero que o GuiaTennis mude a forma de encontrar quadras de tênis, tornando tudo mais rápido, mais simples e mais prático, e que chegue ao mundo todo. Não para sermos reconhecidos, e sim para facilitar a vida de quem joga e de quem ensina.</p>
+        <p class="sobre-assinatura"><strong>Breno Coppini</strong><span>Criador do GuiaTennis</span></p>
       </section>
 
       <section class="sobre-sec">
-        <h2>O que fazemos</h2>
+        <h2>Para quem é</h2>
         <div class="sobre-grade">
-          ${fazemos.map(f => `<div class="sobre-cartao"><h3>${f.t}</h3><p>${f.d}</p></div>`).join("")}
+          ${paraQuem.map(f => `<div class="sobre-cartao"><h3>${f.t}</h3><p>${f.d}</p></div>`).join("")}
         </div>
       </section>
 
       <section class="sobre-sec">
-        <h2>O que não fazemos</h2>
-        <p>Não reservamos, não cobramos taxa e não ficamos no meio da conversa. O horário, o valor e o pagamento são combinados direto com a academia.</p>
+        <h2>A missão do GuiaTennis</h2>
+        <p>Tornar a busca por quadras de tênis mais rápida, mais simples e mais prática, para todos e em qualquer lugar.</p>
+      </section>
+
+      <section class="sobre-sec">
+        <h2>O que o GuiaTennis não faz</h2>
+        <p>O GuiaTennis não reserva, não cobra taxa e não fica no meio da conversa. Assim, o serviço é gratuito para quem joga, mais rápido e acessível para todos. O horário, o valor e o pagamento são combinados direto com a academia.</p>
       </section>
 
       <section class="sobre-sec">
@@ -6427,7 +6453,7 @@ function corpoSobre(parceiros) {
       </section>
 
       <section class="sobre-sec">
-        <h2>Nossos compromissos</h2>
+        <h2>Compromissos do GuiaTennis</h2>
         <div class="sobre-lista">
           ${compromissos.map(c => `
             <div class="sobre-item">

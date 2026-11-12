@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 11/11/2026 (regra 248)
+**Atualizado em:** 12/11/2026 (regra 249)
 
 | | |
 |---|---|
@@ -486,7 +486,10 @@ autorização opcional para usar o feedback na divulgação, Termos e Privacidad
 em 11/11); 246 (cada feedback no seu site); 247 (o WhatsApp de volta no "Fale
 com a gente"). No chat seguinte (11/11, noite): regra 248 (a página **Sobre o
 GuiaTennis**, `/sobre` e `/parceiros/sobre`; no menu do Parceiros, sem
-"Benefícios" e sem "Feedback"), na prévia. Ainda sem resposta do Breno: qual sistema de reservas as
+"Benefícios" e sem "Feedback") e 249 (a história do Breno na página Sobre), na
+prévia. **Falta do Breno:** a cidade natal (pediu "de onde sou", não disse), conferir
+"professor desde 2022" (ele disse "há 4 anos") e a foto dele (sugerida: em quadra,
+roupa de aula, raquete, luz natural; a página ainda sem foto). Ainda sem resposta do Breno: qual sistema de reservas as
 academias usam (para conferir a agenda dentro do site e o
 `SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
 **bateria completa não roda desde a regra 230** (vale rodar antes do "pode
@@ -569,7 +572,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 249.
+**Próximo número:** regra 250.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1438,6 +1441,19 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Breno). Sem SQL. Testes: `sobre.js` (20, novo), `parceiros.js` (158),
   `nota-do-guia.js` (47), `chat-parceiros.js`, `menu-e-home.js`, `links.js`,
   `funcoes-da-equipe.js`, `ficha-basica.js`.
+- **249 (12/11) — a história do Breno no Sobre o GuiaTennis** ("uma parte minha
+  e outra do GuiaTennis, em primeira pessoa para mim e terceira pessoa para o
+  GuiaTennis"): `corpoSobre` agora tem "O que é o GuiaTennis" (o que oferece),
+  **"Por que criei o GuiaTennis"** (primeira pessoa, assinada "Breno Coppini,
+  Criador do GuiaTennis", com a borda dourada à esquerda: professor desde 2022,
+  quase sempre no Morumbi, torneios na 3ª classe; em setembro de 2026 um aluno
+  perguntou por quadras em Perdizes; faltava um lugar só; quer mudar a forma de
+  achar quadras e chegar ao mundo todo "não para sermos reconhecidos"), "Para
+  quem é" (quem começa, quem joga, quem viaja, as academias), "A missão do
+  GuiaTennis", "O que o GuiaTennis não faz" (com o porquê dele: "serviço gratuito
+  a quem joga, mais rápido e acessível"), "Quem paga o quê", "Compromissos do
+  GuiaTennis" (tudo do GuiaTennis em terceira pessoa). Saiu "O que fazemos". Sem
+  SQL. Testes: `sobre.js` (20).
 
 ## 11. WhatsApp e mensagem para as academias
 

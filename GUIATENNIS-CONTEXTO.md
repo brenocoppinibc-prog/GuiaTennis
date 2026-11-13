@@ -520,6 +520,18 @@ Lista/Mapa com preço nos pinos; ficha na ordem fatos › preços › horário �
 estrutura › como chegar › cancelamento › avaliações, com barra fixa (preço,
 Reservar, WhatsApp). Referências: Doctoralia, Airbnb, Booking, Google Maps, iFood
 (Playtomic evitado). Aprovado "em tudo, no geral" (regra 263, já no site).
+**Análise de conteúdo (13/11):** aba "Conteúdo" do mesmo protótipo. Propostas,
+esperando o "sim": glossário (academia = o que se lista; quadra só para contar;
+locação no rótulo e alugar no verbo; "Chamar no WhatsApp"; avaliação/nota; "Sem
+avaliações ainda"); preço sempre "R$ 100 por hora"/"R$ 90 por aula"; tirar o
+travessão (—) das frases (203 no código); página inicial com 3 blocos depois das
+academias (Dicas e perfis para "Como funciona a busca"); cartão sem "locação"
+repetido; ficha ("Sem avaliações ainda", "Sobre" automático curto, erro sem "eu",
+cancelamento "A academia ainda não informou…", "Avalie esta academia", "1
+quadra"); Parceiros ("1 em cada 14", passo 3 curto com a disputa no FAQ, sem
+"vende por você", sem exclamação, planos sem o parágrafo); Google (título e
+descrição da ficha com preço e nota). Ordem de aplicação: glossário e preço ›
+ficha e erros › página inicial › Parceiros › Google.
 **Próximo passo oferecido:**
 passar o site para essas regras na prévia (juntar os verdes, a escala de letras,
 os cantos e as sombras), esperando o "sim" do Breno. Ainda em Arial maiúscula: a imagem de compartilhar, os ícones e a

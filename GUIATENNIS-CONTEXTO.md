@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 264)
+**Atualizado em:** 13/11/2026 (regra 265)
 
 | | |
 |---|---|
@@ -530,8 +530,7 @@ repetido; ficha ("Sem avaliações ainda", "Sobre" automático curto, erro sem "
 cancelamento "A academia ainda não informou…", "Avalie esta academia", "1
 quadra"); Parceiros ("1 em cada 14", passo 3 curto com a disputa no FAQ, sem
 "vende por você", sem exclamação, planos sem o parágrafo); Google (título e
-descrição da ficha com preço e nota). Ordem de aplicação: glossário e preço ›
-ficha e erros › página inicial › Parceiros › Google.
+descrição da ficha com preço e nota). **Aplicada inteira na regra 265.**
 **Próximo passo oferecido:**
 passar o site para essas regras na prévia (juntar os verdes, a escala de letras,
 os cantos e as sombras), esperando o "sim" do Breno. Ainda em Arial maiúscula: a imagem de compartilhar, os ícones e a
@@ -618,7 +617,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 265.
+**Próximo número:** regra 266.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1735,6 +1734,37 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   os filtros…" ao lado do "Salvar busca". Sem SQL. Testes: `ficha-hoteis.js`,
   `whatsapp-das-academias.js` (abre o menu antes), `cadastro.js`, `catalogo.js`,
   `promocoes.js`, `reserva-online.js`, `busca-e-ficha.js`, `previa-da-ficha.js`.
+- **265 (13/11) — a análise de conteúdo aplicada** ("de aplicar tudo na prévia do
+  conteúdo… tudo faz sentido"). **Glossário:** a busca conta academias ("2
+  academias", "Nenhuma academia com esses filtros"); ordem "Recomendadas", "Mais
+  bem avaliadas", "Mais avaliadas"; "Chamar no WhatsApp" no lugar de "Falar" e
+  "Perguntar"; "alugar" no lugar de "locar"/"loque"; "Sem avaliações ainda" no
+  lugar de "Sem nota ainda" e "Seja o primeiro a avaliar"; sem o traço "—" no
+  lugar da nota (o `sbadge` só aparece com nota). **Preço:** " por hora" e " por
+  aula" (`curto`), "a partir de R$ X por hora", "Até R$ X por hora". **Ficha:**
+  "N quadras" (sem "Quadras — N no total"); "A academia ainda não informou a regra
+  de cancelamento. Pergunte antes de marcar."; "Jogou aqui? Avalie esta
+  academia"; "Ainda não há avaliações desta academia no GuiaTennis."; o "Sobre"
+  automático diz "Locação de R$ 100 a 120 por hora." no lugar de "A academia
+  cobra, por hora de quadra…". **Erros:** o site não fala como "eu": os 154 "Não
+  consegui…" viraram "Não foi possível…" ("Não foi possível concluir agora" quando
+  não havia verbo); "Os lugares por perto não carregaram." **Página inicial:**
+  "Por que o GuiaTennis" com 3 itens (a academia mais perto, direto com a
+  academia, avaliações feitas no GuiaTennis); saem "Grátis para quem joga"
+  (repetido), "Compare lado a lado" e "Avisos que trabalham por você"; **as Dicas e
+  os perfis ("Todo o tênis da sua região") foram para a página nova
+  `/como-funciona`** (`goComoFunciona`, `renderPaginaComoFunciona`, com o vídeo
+  da busca; redirect no `netlify.toml`), aberta pelo rodapé ("Como funciona") e
+  pelo "Dicas de uso" do menu. **Parceiros:** "1 em cada 14"; "Uma ficha completa,
+  que você atualiza pelo celular"; "Começar agora · grátis"; o passo 3 "Confirme
+  que responde pela academia" sem a disputa; os planos com "Comece grátis e mude
+  de plano quando quiser." **Google:** o título da ficha "Nome: aula e locação de
+  quadra de tênis em Bairro, Cidade | GuiaTennis" e a descrição "Locação a partir
+  de R$ 100 por hora · nota 4,8 (126 avaliações) · Moema, São Paulo. Compare e
+  chame a academia no WhatsApp." **Travessão:** fora das frases nas telas dos
+  jogadores e do Parceiros (fica nos títulos de aba e como "vazio" nas tabelas).
+  O `/como-funciona` ainda não está no sitemap (sai do banco: precisa de SQL).
+  Sem SQL.
 
 ## 11. WhatsApp e mensagem para as academias
 

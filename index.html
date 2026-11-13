@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="description" content="Onde jogar tênis perto de você: ache e compare quadras e academias de tênis — preço por hora, aulas, estrutura, avaliações e contato direto com a academia.">
+<meta name="description" content="Onde jogar tênis perto de você: ache e compare quadras e academias de tênis: preço por hora, aulas, estrutura, avaliações e contato direto com a academia.">
 <!-- Verificação do domínio no Pinterest (regra 227, 09/11/2026); vale depois do merge, no guiatennis.com.br. -->
 <meta name="p:domain_verify" content="097120c54c74f05a6f16ba9b88dee4ed"/>
 <meta property="og:title" content="GuiaTennis">
@@ -3392,6 +3392,11 @@
   .wa-acoes-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 25; display: grid; gap: 2px; width: min(260px, calc(100vw - 40px)); padding: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); }
   .wa-acoes-menu .tbtn { justify-content: flex-start; width: 100%; border: 0; border-radius: 8px; background: none; min-height: 44px; }
   .wa-acoes-menu .tbtn:hover { background: var(--bg-alt); }
+
+  /* Regra 265: a página "Como funciona" (as dicas e os perfis saíram da inicial). */
+  .pag-como { padding: 24px 20px 4px; max-width: 760px; margin: 0 auto; }
+  .pag-como-titulo { margin: 0; font-size: 28px; line-height: 1.15; }
+  .pag-como-sub { margin: 8px 0 0; font-size: 16px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -4295,11 +4300,11 @@ const QUADRA_COMBOS = [
 ];
 
 const SORT_OPTS = [
-  { key: "recomendados", label: "Recomendados", hint: "Equilibra distância, nota, preço e estrutura" },
+  { key: "recomendados", label: "Recomendadas", hint: "Equilibra distância, nota, preço e estrutura" },
   { key: "distance", label: "Mais perto", hint: "Precisa de CEP, endereço ou GPS" },
-  { key: "rating", label: "Melhor avaliado", hint: "Maior nota das avaliações feitas no GuiaTennis" },
+  { key: "rating", label: "Mais bem avaliadas", hint: "Maior nota das avaliações feitas no GuiaTennis" },
   { key: "price", label: "Menor preço", hint: "Pelo menor valor avulso informado (aula ou hora de quadra)" },
-  { key: "reviews", label: "Mais avaliados", hint: "Quem já recebeu mais avaliações" },
+  { key: "reviews", label: "Mais avaliadas", hint: "Quem já recebeu mais avaliações" },
   { key: "courts", label: "Mais quadras", hint: "Academias com mais quadras cadastradas" },
 ];
 
@@ -4692,7 +4697,7 @@ async function setPlano(courtId, plano) {
   if (error) {
     falhou("mudar o plano", error, { silenciosa: true, academia: courtId });
     alert(
-      "Não consegui salvar o plano.\n\n" +
+      "Não foi possível salvar o plano.\n\n" +
       "Se a tabela ainda não tem a coluna, rode isto no SQL Editor do Supabase:\n\n" +
       "alter table academias add column if not exists plano text not null default 'basico';\n\n" +
       "Erro: " + error.message
@@ -6005,7 +6010,7 @@ async function fetchViaCep(rawCep) {
   const cep = rawCep.replace(/\D/g, "");
   if (cep.length !== 8) throw new Error("CEP precisa ter 8 dígitos.");
   const viaCepRes = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-  if (!viaCepRes.ok) throw new Error("Não consegui consultar esse CEP.");
+  if (!viaCepRes.ok) throw new Error("Não foi possível consultar esse CEP.");
   const viaCepData = await viaCepRes.json();
   if (viaCepData.erro) throw new Error("CEP não encontrado.");
   return viaCepData;
@@ -6064,7 +6069,7 @@ async function geocodeCep(rawCep) {
       break;
     } catch (e) { /* tenta a próxima tentativa, mais genérica */ }
   }
-  if (!geo) throw new Error("Não consegui localizar esse CEP no mapa.");
+  if (!geo) throw new Error("Não foi possível localizar esse CEP no mapa.");
   return { ...geo, bairro: bairro || cidade, cidade, uf, approximate };
 }
 
@@ -6080,7 +6085,7 @@ function numeroDoTexto(q) {
 async function geocodeAddress(query, numero, naCidade) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=${naCidade ? 10 : 5}&addressdetails=1&countrycodes=br&q=${encodeURIComponent(query)}`;
   const res = await fetch(url, { headers: { "Accept": "application/json" } });
-  if (!res.ok) throw new Error("Não consegui localizar esse endereço no mapa.");
+  if (!res.ok) throw new Error("Não foi possível localizar esse endereço no mapa.");
   let data = await res.json();
   if (!data.length) throw new Error("Endereço não encontrado. Tente incluir bairro e cidade.");
   // Com a cidade digitada, só vale o lugar dessa cidade (ou desse bairro).
@@ -6122,12 +6127,12 @@ function estaNoLugar(d, nome) {
 async function geocodeNaCidade(lugar, cidade) {
   const base = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=br";
   const rc = await fetch(`${base}&limit=5&city=${encodeURIComponent(cidade)}`, { headers: { "Accept": "application/json" } });
-  if (!rc.ok) throw new Error("Não consegui localizar essa cidade no mapa.");
+  if (!rc.ok) throw new Error("Não foi possível localizar essa cidade no mapa.");
   const c = (await rc.json()).find(d => d.boundingbox && [d.address && (d.address.city || d.address.town || d.address.municipality), d.name].some(x => nomeDeLugar(x) === nomeDeLugar(cidade)));
   if (!c) throw new Error("Não achei essa cidade.");
   const [sul, norte, oeste, leste] = c.boundingbox.map(Number);
   const rl = await fetch(`${base}&limit=10&bounded=1&viewbox=${oeste},${norte},${leste},${sul}&q=${encodeURIComponent(lugar)}`, { headers: { "Accept": "application/json" } });
-  if (!rl.ok) throw new Error("Não consegui localizar esse lugar no mapa.");
+  if (!rl.ok) throw new Error("Não foi possível localizar esse lugar no mapa.");
   const lista = (await rl.json()).filter(d => estaNoLugar(d, cidade));
   const d = lista.find(x => estaNoLugar(x, lugar)) || lista[0];
   if (!d) throw new Error("Não achei esse lugar nessa cidade.");
@@ -6254,13 +6259,13 @@ async function geocodeFormAddress(f) {
       return { ...geo, approximate: i >= 3, grosso: attempts[i].nivel !== "rua" };
     } catch (e) { /* tenta a próxima, mais genérica */ }
   }
-  throw new Error("Não consegui localizar esse endereço. Confira o CEP, bairro e cidade.");
+  throw new Error("Não foi possível localizar esse endereço. Confira o CEP, bairro e cidade.");
 }
 
 async function reverseGeocode(lat, lng) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
   const res = await fetch(url, { headers: { "Accept": "application/json" } });
-  if (!res.ok) throw new Error("Não consegui identificar seu endereço.");
+  if (!res.ok) throw new Error("Não foi possível identificar seu endereço.");
   const data = await res.json();
   const a = data.address || {};
   const bairro = a.suburb || a.neighbourhood || a.city_district || a.village || "sua região";
@@ -6316,7 +6321,7 @@ async function submitRating(courtId, stars, comment) {
       : /Confirme o seu e-mail/.test(m) ? "Confirme o seu e-mail para avaliar: o código chega na hora."
       : /nome está suspenso/.test(m) ? NOME_SUSPENSO_AO_AVALIAR
       : /Entre na sua conta|row-level security/.test(m) ? "Entre na sua conta para avaliar."
-      : falhou("enviar a avaliação", error, { texto: "Não consegui enviar a avaliação agora. Tente de novo em instantes.", academia: courtId }));
+      : falhou("enviar a avaliação", error, { texto: "Não foi possível enviar a avaliação agora. Tente de novo em instantes.", academia: courtId }));
   }
   marcarAvaliada(courtId);
   registrarPasso("acao", { academia: courtId, detalhe: `Avaliou com ${stars} ${stars === 1 ? "estrela" : "estrelas"} · ${nomeDaAcademiaDoPasso(courtId)}` });
@@ -6408,7 +6413,7 @@ async function salvarEdicaoDaAvaliacao(courtId, stars, comment) {
       : /1 a 5/.test(t) ? "Escolha de 1 a 5 estrelas."
       : /2\.000/.test(t) ? "O texto passa de 2.000 letras."
       : /Entre na sua conta/.test(t) ? "Entre na sua conta para editar a avaliação."
-      : falhou("editar a avaliação", error || { message: "a edição não voltou" }, { texto: "Não consegui salvar a avaliação agora. Tente de novo em instantes.", academia: courtId }));
+      : falhou("editar a avaliação", error || { message: "a edição não voltou" }, { texto: "Não foi possível salvar a avaliação agora. Tente de novo em instantes.", academia: courtId }));
   }
   const nova = avaliacaoDaConta(x);
   state.minhasAvaliacoes[courtId] = nova;
@@ -6740,6 +6745,29 @@ function ligarAbasDoSobre() {
     setTimeout(() => irParaParteDoSobre(aba, false), 0);
   }
 }
+// Regra 265: as dicas e os perfis saem da página inicial e ficam aqui, como a
+// página "Como funciona" do Airbnb e do Booking (a inicial fica para as academias).
+function goComoFunciona() {
+  state.page = "como-funciona";
+  state.selected = null;
+  state.avisoLink = "";
+  syncUrl(true);
+  render();
+  window.scrollTo(0, 0);
+}
+function renderPaginaComoFunciona() {
+  return `
+    ${renderCabecalho()}
+    <div class="pag-como">
+      <h1 class="pag-como-titulo display">Como funciona o GuiaTennis</h1>
+      <p class="pag-como-sub">Como achar a academia certa, comparar e falar direto com ela.</p>
+    </div>
+    ${blocoVideo()}
+    ${blocoDicas()}
+    ${blocoIdeia()}
+    ${renderSiteFooter()}
+  `;
+}
 function renderPaginaSobre() {
   // Regra 257: o Sobre tem o menu dele, no lugar do cabeçalho do site.
   return `
@@ -6879,7 +6907,7 @@ async function enviarNotaDoGuia() {
   } catch (e) {
     k.enviando = false;
     const m = String(e && e.message || "");
-    k.erro = /Confirme|Entre na sua conta|1 a 5|600 letras|não administra|admin/.test(m) ? m : falhou("enviar o feedback", e, { texto: "Não consegui enviar o feedback agora. Tente de novo em instantes." });
+    k.erro = /Confirme|Entre na sua conta|1 a 5|600 letras|não administra|admin/.test(m) ? m : falhou("enviar o feedback", e, { texto: "Não foi possível enviar o feedback agora. Tente de novo em instantes." });
   }
   render();
 }
@@ -7174,6 +7202,7 @@ function render() {
     ${state.page === "perfil" ? renderPerfilJogador() : ""}
     ${state.page === "feedback" ? renderPaginaDeFeedback() : ""}
     ${state.page === "sobre" ? renderPaginaSobre() : ""}
+    ${state.page === "como-funciona" ? renderPaginaComoFunciona() : ""}
     ${state.page === "court" && state.selected ? renderCourtPage(state.selected) + conviteViagem() : ""}
     ${state.page === "parceiros" ? renderParceiros() : ""}
 
@@ -7261,7 +7290,7 @@ function mountMiniMap(c) {
   const temCoord = typeof c.lat === "number" && typeof c.lng === "number";
   if (!temCoord) { if (__miniMap) { __miniMap.remove(); __miniMap = null; } return; }
   if (!window.L) {
-    esperarLeaflet(el, "ht-map-empty", `Não consegui carregar o mapa agora. Toque em "Como chegar" para abrir no aplicativo de mapas.`);
+    esperarLeaflet(el, "ht-map-empty", `Não foi possível carregar o mapa agora. Toque em "Como chegar" para abrir no aplicativo de mapas.`);
     return;
   }
   if (__miniMap && __miniMap.getContainer() !== el) { __miniMap.remove(); __miniMap = null; }
@@ -7399,9 +7428,19 @@ function atualizarSeo(c) {
     return;
   }
   const local = [c.bairro, c.cidade].filter(Boolean).join(", ");
-  const titulo = `${c.name}${local ? " — " + local : ""} | GuiaTennis`;
+  // Regra 265: o título diz o que a academia oferece e onde; a descrição traz o
+  // que decide o clique (preço, nota e bairro), como os resultados do Booking.
+  const mods = (modalidadesTexto(c) || "").toLowerCase();
+  const oQue = /aula/.test(mods) && /loca/.test(mods) ? "aula e locação de quadra de tênis" : /aula/.test(mods) ? "aula de tênis" : /loca/.test(mods) ? "locação de quadra de tênis" : "quadra de tênis";
+  const titulo = `${c.name}: ${oQue}${local ? " em " + local : ""} | GuiaTennis`;
   if (document.title !== titulo) document.title = titulo;
-  definirMeta("description", `${descricaoAcademia(c)}`.slice(0, 300));
+  const comPreco = ofertas(c).find(o => o.min);
+  const partes = [
+    comPreco ? `${comPreco.label} a partir de R$ ${priceMin(comPreco.faixa)}${comPreco.curto || " por hora"}` : "",
+    c.appCount ? `nota ${c.appAvg.toFixed(1).replace(".", ",")} (${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")})` : "",
+    local,
+  ].filter(Boolean);
+  definirMeta("description", (partes.length ? `${partes.join(" · ")}. Compare e chame a academia no WhatsApp.` : descricaoAcademia(c)).slice(0, 300));
   // Ficha pausada ou em análise (só o admin e a academia veem) fica fora.
   definirMeta("robots", c.status === "published" && state.allCourts.some(x => x.id === c.id) ? "" : "noindex");
   if (!ld) return;
@@ -7697,7 +7736,7 @@ function listaDoSeletor(lista) {
             <span class="cmp-add-txt">
               <span class="cmp-add-n">${esc(c.name)}</span>
               <span class="cmp-add-l">${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}${dist ? ` · ${dist}` : ""}</span>
-              <span class="cmp-add-l">${c.appCount ? `Nota ${c.appAvg.toFixed(1).replace(".", ",")} · ${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Sem nota ainda"}</span>
+              <span class="cmp-add-l">${c.appCount ? `Nota ${c.appAvg.toFixed(1).replace(".", ",")} · ${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Sem avaliações ainda"}</span>
               <span class="cmp-add-p ${faixa ? "" : "sem-valor"}">${faixa ? `${esc(faixa.texto)}` : SEM_PRECO}</span>
             </span>
             <button type="button" class="cmp-add-btn" data-compare="${c.id}" aria-pressed="${dentro}" aria-label="${dentro ? "Remover da comparação" : "Adicionar à comparação"}">${icon('comparar', 20, dentro ? '#fff' : 'var(--green)')}</button>
@@ -7853,7 +7892,7 @@ function linhasComparacao(courts) {
     { titulo: "Avaliação", linhas: [
       { rot: "Nota", melhor: "maior", vals: courts.map(c => c.appCount
         ? { txt: `${starsHtml(c.appAvg)} ${c.appAvg.toFixed(1).replace(".", ",")}`, num: c.appAvg }
-        : { txt: "Sem nota ainda" }) },
+        : { txt: "Sem avaliações ainda" }) },
       { rot: "Avaliações", melhor: "maior", vals: courts.map(c => ({ txt: c.appCount ? String(c.appCount) : "—", num: c.appCount || null })) },
     ]},
     { titulo: "Preço", linhas: [
@@ -8027,7 +8066,7 @@ function resultadoDaDecisao(courts) {
               <div class="decide-result">
                 ${empate ? `
                   <p class="decide-verdict">Está muito equilibrado</p>
-                  <p class="decide-why">${esc(rank[0].court.name)} e ${esc(rank[1].court.name)} ficaram praticamente empatadas no que você marcou. Nesse caso, o desempate costuma ser visitar as duas — ou escolher pela que tem o contato mais fácil.</p>
+                  <p class="decide-why">${esc(rank[0].court.name)} e ${esc(rank[1].court.name)} ficaram praticamente empatadas no que você marcou. Nesse caso, o desempate costuma ser visitar as duas. Ou escolher pela que tem o contato mais fácil.</p>
                 ` : `
                   <p class="decide-verdict">${esc(top.court.name)}</p>
                   <p class="decide-why">${
@@ -8063,7 +8102,7 @@ function resultadoDaDecisao(courts) {
                   if (!an.achados.length && !an.criterios.length) {
                     return `
                       <p class="field-label" style="margin-top:14px">Sobre o que você anotou</p>
-                      <p class="decide-why">Não identifiquei um ponto específico no que você escreveu. Tente citar o que importa — estacionamento, reposição, horário, academia menor, aula, quadra coberta, saibro, preço, distância — que eu cruzo com a ficha de cada academia.</p>
+                      <p class="decide-why">Não identifiquei um ponto específico no que você escreveu. Tente citar o que importa: estacionamento, reposição, horário, academia menor, aula, quadra coberta, saibro, preço, distância — que eu cruzo com a ficha de cada academia.</p>
                     `;
                   }
                   return `
@@ -8081,7 +8120,7 @@ function resultadoDaDecisao(courts) {
                       if (a.atendem.length === a.total) {
                         return `<div class="note-hit note-hit-all">
                           <div class="note-hit-l"><strong>${esc(a.label)}</strong>
-                          <span>Todas têm — não serve de desempate</span></div>${cada}
+                          <span>Todas têm: não serve de desempate</span></div>${cada}
                         </div>`;
                       }
                       return `<div class="note-hit note-hit-some">
@@ -8115,7 +8154,7 @@ function decisaoFeita(courts) {
           <p class="decide-title">Sua escolha</p>
           <div class="decide-previa">${cartaoDoMapa(c, true)}</div>
           <p class="field-label" style="margin-top:18px">O que fazer agora</p>
-          ${c.phone ? `<a class="cta-btn cta-primary" href="${waLink(c)}" target="_blank" rel="noreferrer" data-track-wa="${c.id}" style="width:100%">${icon('phone', 15, '#fff')} Falar no WhatsApp</a>` : ""}
+          ${c.phone ? `<a class="cta-btn cta-primary" href="${waLink(c)}" target="_blank" rel="noreferrer" data-track-wa="${c.id}" style="width:100%">${icon('phone', 15, '#fff')} Chamar no WhatsApp</a>` : ""}
           <button type="button" class="cta-btn cta-secondary" data-decide-ficha="${c.id}" style="width:100%;margin-top:8px">Ver a ficha no site</button>
           <button type="button" class="inline-link" id="decidida-voltar" style="margin-top:12px">Escolher novamente</button>
         </div>`;
@@ -8265,7 +8304,7 @@ function renderQrSheet() {
         <button class="sheet-close" id="qr-close">✕</button>
         <p class="sheet-title display">${doSite ? "QR code do site" : "QR code da ficha"}</p>
         <p class="subtitle" style="margin-top:4px">${esc(c.name)}</p>
-        ${svg ? `<div class="qr-caixa">${svg}</div>` : `<p class="footnote" style="color:var(--red)">Não consegui gerar o código para esse endereço.</p>`}
+        ${svg ? `<div class="qr-caixa">${svg}</div>` : `<p class="footnote" style="color:var(--red)">Não foi possível gerar o código para esse endereço.</p>`}
         <p class="qr-link">${esc(url)}</p>
         <div class="cta-col" style="margin-top:12px">
           <button type="button" class="cta-btn cta-primary" data-qr-baixar="png" data-court="${c.id}">Baixar PNG (1200px)</button>
@@ -8810,7 +8849,7 @@ async function abrirAcademia(id) {
   const ficar = state.page === "parceiros" && ["painel", "ficha", "avaliacoes", "promocoes", "promocoes-email", "desempenho", "pessoas", "plano"].includes(state.parceirosAba) ? state.parceirosAba : "painel";
   if (!contaAcademia || !id || id === contaAcademia.academiaId) { if (state.page === "parceiros") render(); else irParceiros("painel"); return; }
   const r = await sb.rpc('abrir_minha_academia', { p_academia: id });
-  if (r.error) { avisarFalha("abrir essa academia", r.error, "Não consegui abrir essa academia agora. Tente de novo em instantes.", { texto: "Não consegui abrir essa academia agora. Tente de novo em instantes.", academia: id, tentar: () => abrirAcademia(id) }); return; }
+  if (r.error) { avisarFalha("abrir essa academia", r.error, "Não foi possível abrir essa academia agora. Tente de novo em instantes.", { texto: "Não foi possível abrir essa academia agora. Tente de novo em instantes.", academia: id, tentar: () => abrirAcademia(id) }); return; }
   state.numeros = null;
   state.pessoas = null;
   state.pessoaNova = null;
@@ -8969,14 +9008,14 @@ function blocoFichasParadas() {
 }
 async function lembrarFichaAdmin(id) {
   const r = await sb.rpc('lembrar_ficha_admin', { p_academia: id });
-  if (r.error) { avisarFalha("lembrar a academia de conferir a ficha", r.error, r.error.message || "Não consegui mandar o lembrete agora.", { academia: id }); return; }
+  if (r.error) { avisarFalha("lembrar a academia de conferir a ficha", r.error, r.error.message || "Não foi possível mandar o lembrete agora.", { academia: id }); return; }
   await carregarFichasParadas();
   render();
 }
 async function fichaConferidaAdmin(id, nome) {
   if (!confirm(`Você conferiu a ficha da "${nome || "academia"}" e está tudo certo? Ela sai desta lista por 3 meses. A data que o jogador vê continua a da academia.`)) return;
   const r = await sb.rpc('ficha_conferida_admin', { p_academia: id });
-  if (r.error) { avisarFalha("marcar a ficha como conferida", r.error, r.error.message || "Não consegui marcar agora.", { academia: id }); return; }
+  if (r.error) { avisarFalha("marcar a ficha como conferida", r.error, r.error.message || "Não foi possível marcar agora.", { academia: id }); return; }
   await carregarFichasParadas();
   render();
 }
@@ -9042,14 +9081,14 @@ function blocoWhatsappsParaConfirmar() {
 }
 async function gerarCodigoDoWhatsappAdmin(id) {
   const r = await sb.rpc('gerar_codigo_do_whatsapp_admin', { p_academia: id });
-  if (r.error) { avisarFalha("gerar o código do WhatsApp", r.error, "Não consegui gerar agora: " + r.error.message, { academia: id }); return; }
+  if (r.error) { avisarFalha("gerar o código do WhatsApp", r.error, "Não foi possível gerar agora: " + r.error.message, { academia: id }); return; }
   state.admCodigosWhatsapp = { ...(state.admCodigosWhatsapp || {}), [id]: r.data };
   await carregarAcessos();
   render();
 }
 async function mandarCodigoDoWhatsappAdmin(id) {
   const r = await sb.rpc('mandar_codigo_do_whatsapp_admin', { p_academia: id });
-  if (r.error) { avisarFalha("mandar o código do WhatsApp", r.error, "Não consegui mandar agora: " + r.error.message, { academia: id }); return; }
+  if (r.error) { avisarFalha("mandar o código do WhatsApp", r.error, "Não foi possível mandar agora: " + r.error.message, { academia: id }); return; }
   if (r.data !== "mandado") alert(r.data === "desligado" ? "O WhatsApp do GuiaTennis está desligado: gere o código e mande do seu WhatsApp." : "Não há número esperando o código.");
   await carregarAcessos();
   render();
@@ -9057,7 +9096,7 @@ async function mandarCodigoDoWhatsappAdmin(id) {
 async function aprovarWhatsappAdmin(id, semCodigo, nome) {
   if (semCodigo && !confirm(`Aprovar o WhatsApp da "${nome || "academia"}" sem o código? Faça isso só se você conferiu de outro jeito que o número é da academia.`)) return;
   const r = await sb.rpc('aprovar_whatsapp_admin', { p_academia: id });
-  if (r.error) { avisarFalha("aprovar o WhatsApp", r.error, "Não consegui aprovar agora: " + r.error.message, { academia: id }); return; }
+  if (r.error) { avisarFalha("aprovar o WhatsApp", r.error, "Não foi possível aprovar agora: " + r.error.message, { academia: id }); return; }
   await carregarAcessos();
   await loadEverything();
   render();
@@ -9067,7 +9106,7 @@ async function recusarWhatsappAdmin(id, nome) {
   const motivo = prompt(`Recusar o WhatsApp novo da "${nome || "academia"}"? ${noAr ? "Ele sai da ficha e volta o número de antes (ou a ficha fica sem WhatsApp)." : "A ficha fica como está."} Motivo para a academia (opcional, vai no e-mail):`, "");
   if (motivo === null) return;
   const r = await sb.rpc('recusar_whatsapp_admin', { p_academia: id, p_motivo: motivo || null });
-  if (r.error) { avisarFalha("recusar o WhatsApp", r.error, "Não consegui recusar agora: " + r.error.message, { academia: id }); return; }
+  if (r.error) { avisarFalha("recusar o WhatsApp", r.error, "Não foi possível recusar agora: " + r.error.message, { academia: id }); return; }
   await carregarAcessos();
   render();
 }
@@ -9118,14 +9157,14 @@ function blocoProblemasInformados() {
 }
 async function resolverProblemaAdmin(id, resolucao) {
   const r = await sb.rpc('resolver_problema_admin', { p_id: id, p_resolucao: resolucao });
-  if (r.error) { avisarFalha("resolver o problema informado", r.error, "Não consegui agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("resolver o problema informado", r.error, "Não foi possível concluir agora: " + r.error.message); return; }
   state.problemasAdmin = (state.problemasAdmin || []).filter(p => p.id !== id);
   render();
 }
 async function decidirWhatsappAdmin(id, manter, nome) {
   if (!manter && !confirm(`Tirar o WhatsApp da ficha da "${nome || "academia"}"? Quem administra recebe um e-mail para escrever o número certo (que passa pelo código e por você).`)) return;
   const r = await sb.rpc(manter ? 'manter_whatsapp_admin' : 'tirar_whatsapp_admin', { p_academia: id });
-  if (r.error) { avisarFalha(manter ? "manter o WhatsApp" : "tirar o WhatsApp", r.error, "Não consegui agora: " + r.error.message, { academia: id }); return; }
+  if (r.error) { avisarFalha(manter ? "manter o WhatsApp" : "tirar o WhatsApp", r.error, "Não foi possível concluir agora: " + r.error.message, { academia: id }); return; }
   await carregarAcessos();
   await loadEverything();
   render();
@@ -9208,7 +9247,7 @@ async function resolverDenunciaDeConta(user, suspender, nome, motivos) {
     if (motivo === null) return;
   }
   const r = await sb.rpc('resolver_denuncia_de_conta', { p_user: user, p_suspender: !!suspender, p_motivo: motivo });
-  if (r.error) { avisarFalha("resolver a denúncia da conta", r.error, "Não consegui agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("resolver a denúncia da conta", r.error, "Não foi possível concluir agora: " + r.error.message); return; }
   state.contasDenunciadasAdmin = (state.contasDenunciadasAdmin || []).filter(c => c.denunciado !== user);
   if (suspender) await carregarNomesSuspensos();
   render();
@@ -9216,14 +9255,14 @@ async function resolverDenunciaDeConta(user, suspender, nome, motivos) {
 async function resolverContestacaoDeAcesso(id, tirar, nome) {
   if (tirar && !confirm(`Tirar o acesso de ${nome || "essa pessoa"} a essa academia? A conta dela continua.`)) return;
   const r = await sb.rpc('resolver_contestacao_de_acesso', { p_id: id, p_tirar: !!tirar });
-  if (r.error) { avisarFalha("resolver a contestação do acesso", r.error, "Não consegui agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("resolver a contestação do acesso", r.error, "Não foi possível concluir agora: " + r.error.message); return; }
   state.acessosContestadosAdmin = (state.acessosContestadosAdmin || []).filter(c => c.id !== id);
   render();
 }
 async function resolverDenunciaAdmin(id, remover) {
   if (remover && !confirm("Remover essa avaliação? Ela sai do site e isso não pode ser desfeito.")) return;
   const r = await sb.rpc('resolver_denuncia_admin', { p_avaliacao: id, p_remover: !!remover });
-  if (r.error) { avisarFalha("resolver a denúncia", r.error, "Não consegui agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("resolver a denúncia", r.error, "Não foi possível concluir agora: " + r.error.message); return; }
   state.denunciasAdmin = (state.denunciasAdmin || []).filter(d => d.avaliacao_id !== id);
   if (remover) await loadEverything();
   render();
@@ -9325,9 +9364,9 @@ async function conferirNaReceita(id) {
     const resp = await fetch(`/.netlify/functions/cnpj?numero=${k.cnpj}`);
     const corpo = await resp.json().catch(() => ({}));
     if (state.admConferir !== k) return;
-    k.receita = resp.ok ? { dados: { ...corpo, telefones: corpo.telefones || [] } } : { erro: corpo.erro || "Não consegui consultar a Receita agora." };
+    k.receita = resp.ok ? { dados: { ...corpo, telefones: corpo.telefones || [] } } : { erro: corpo.erro || "Não foi possível consultar a Receita agora." };
   } catch {
-    if (state.admConferir === k) k.receita = { erro: "Não consegui consultar a Receita agora (a consulta funciona no site publicado, não no arquivo aberto no computador)." };
+    if (state.admConferir === k) k.receita = { erro: "Não foi possível consultar a Receita agora (a consulta funciona no site publicado, não no arquivo aberto no computador)." };
   }
   render();
 }
@@ -9340,7 +9379,7 @@ function academiaAssumida(a) {
 }
 async function marcarRevisada(id) {
   const r = await sb.rpc('marcar_academia_revisada', { p_academia: id });
-  if (r.error) { avisarFalha("marcar a academia como revisada", r.error, "Não consegui marcar agora: " + r.error.message, { academia: id }); return; }
+  if (r.error) { avisarFalha("marcar a academia como revisada", r.error, "Não foi possível marcar agora: " + r.error.message, { academia: id }); return; }
   state.paraRevisar = (state.paraRevisar || []).filter(a => a.id !== id);
   render();
 }
@@ -9382,7 +9421,7 @@ async function resolverAcademiaQueFechou(id, remover, nome) {
     if (resposta === null) return;
   }
   const r = await sb.rpc('resolver_pedido_para_sair', { p_id: id, p_remover: !!remover, p_resposta: resposta || null });
-  if (r.error) { avisarFalha("resolver o aviso de academia que fechou", r.error, "Não consegui agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("resolver o aviso de academia que fechou", r.error, "Não foi possível concluir agora: " + r.error.message); return; }
   state.pedidosParaSairAdmin = (state.pedidosParaSairAdmin || []).filter(p => p.id !== id);
   if (remover) await loadEverything();
   render();
@@ -9392,7 +9431,7 @@ async function tirarAcademiaQueFechou(c) {
   const detalhes = prompt(`A "${c.name}" fechou as portas? A ficha sai do Guia e o cadastro fica guardado como fechado (cadastro inativo), com as avaliações; quem a administrava recebe um e-mail. Se ela reabrir, dá para voltar.\n\nComo você conferiu? (opcional)`, "");
   if (detalhes === null) return;
   const r = await sb.rpc('tirar_academia_que_fechou', { p_academia: c.id, p_detalhes: detalhes || null });
-  if (r.error) { avisarFalha("tirar a academia que fechou", r.error, "Não consegui agora: " + r.error.message, { academia: c.id }); return; }
+  if (r.error) { avisarFalha("tirar a academia que fechou", r.error, "Não foi possível concluir agora: " + r.error.message, { academia: c.id }); return; }
   state.selected = null;
   await loadEverything();
   await carregarAcessos();
@@ -9430,7 +9469,7 @@ async function resolverReaberturaAdmin(id, aprovar, nome) {
     if (resposta === null) return;
   }
   const r = await sb.rpc('resolver_reabertura_admin', { p_id: id, p_aprovar: !!aprovar, p_resposta: resposta || null });
-  if (r.error) { avisarFalha("resolver o pedido para reabrir", r.error, "Não consegui agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("resolver o pedido para reabrir", r.error, "Não foi possível concluir agora: " + r.error.message); return; }
   await carregarAcessos();
   if (aprovar) await loadEverything();
   render();
@@ -9438,7 +9477,7 @@ async function resolverReaberturaAdmin(id, aprovar, nome) {
 async function reabrirAcademiaAdmin(id, nome) {
   if (!confirm(`Reabrir a "${nome || "academia"}"? A ficha volta ao Guia, com as avaliações, sem ninguém administrando.`)) return;
   const r = await sb.rpc('reabrir_academia_admin', { p_academia: id });
-  if (r.error) { avisarFalha("reabrir a academia", r.error, "Não consegui agora: " + r.error.message, { academia: id }); return; }
+  if (r.error) { avisarFalha("reabrir a academia", r.error, "Não foi possível concluir agora: " + r.error.message, { academia: id }); return; }
   await carregarAcessos();
   await loadEverything();
   render();
@@ -9521,7 +9560,7 @@ function mensagemDoAcesso(c, usuario, senha, nova) {
   ] : [
     `Oi, tudo bem? Aqui é o Breno, do GuiaTennis (guiatennis.com.br), o Guia de quadras e academias de tênis onde a ${c.name} já aparece: ${linkDaFicha(c)}`,
     "",
-    "Criei um acesso no GuiaTennis Parceiros, o site das academias, para vocês mesmos atualizarem a ficha — horário, preços, fotos e como chegar —, e responderem às avaliações dos jogadores. No plano Básico, não tem custo.",
+    "Criei um acesso no GuiaTennis Parceiros, o site das academias, para vocês mesmos atualizarem a ficha (horário, preços, fotos e como chegar) e responderem às avaliações dos jogadores. No plano Básico, não tem custo.",
     "",
   ]).concat([
     `Entrar: ${LINK_ENTRAR}`,
@@ -9586,7 +9625,7 @@ function mensagemSenha(error) {
   if (/same_password|different from the old/i.test(t)) return "A senha nova precisa ser diferente da anterior.";
   if (/weak_password|at least|characters/i.test(t)) return "Senha fraca: use pelo menos 8 caracteres, misturando letras e números.";
   if (/reauthentication|current_password|current password/i.test(t)) return "Por segurança, saia, entre de novo e troque a senha logo em seguida.";
-  return "Não consegui trocar a senha agora. Tente de novo em instantes.";
+  return "Não foi possível trocar a senha agora. Tente de novo em instantes.";
 }
 
 // ---- resposta da academia embaixo de cada avaliação ----
@@ -9965,7 +10004,7 @@ async function codigoDoResponsavelAdmin(academiaId, mandar) {
     if (!r.error && r.data !== "desligado") { await carregarAcessos(); render(); return; }
   }
   const { data, error } = await sb.rpc('gerar_codigo_do_responsavel', { p_academia: academiaId });
-  if (error) { avisarFalha("gerar o código de quem administra", error, "Não consegui: " + error.message, { academia: academiaId }); return; }
+  if (error) { avisarFalha("gerar o código de quem administra", error, "Não foi possível concluir: " + error.message, { academia: academiaId }); return; }
   state.codigosGerados = { ...(state.codigosGerados || {}), ["responsavel|" + academiaId]: data };
   await carregarAcessos();
   render();
@@ -9976,7 +10015,7 @@ async function codigoDoResponsavelAdmin(academiaId, mandar) {
 async function mandarCodigoDoPedido(userId, academiaId) {
   const { data, error } = await rpcDoPedido('mandar_codigo_admin', { p_user: userId }, academiaId);
   if (error && (error.code === "PGRST202" || /could not find the function/i.test(error.message || ""))) return gerarCodigoDoPedido(userId, academiaId);
-  if (error) { avisarFalha("mandar o código ao WhatsApp da academia", error, "Não consegui: " + error.message, { academia: academiaId }); return; }
+  if (error) { avisarFalha("mandar o código ao WhatsApp da academia", error, "Não foi possível concluir: " + error.message, { academia: academiaId }); return; }
   if (data === "desligado") return gerarCodigoDoPedido(userId, academiaId);
   if (data === "sem_whatsapp") { alert("A ficha não tem WhatsApp para receber o código. Peça documento e decida em \"Aprovar\"."); return; }
   await carregarAcessos();
@@ -9985,7 +10024,7 @@ async function mandarCodigoDoPedido(userId, academiaId) {
 
 async function gerarCodigoDoPedido(userId, academiaId) {
   const { data, error } = await rpcDoPedido('gerar_codigo_do_pedido', { p_user: userId }, academiaId);
-  if (error) { avisarFalha("gerar o código do pedido", error, "Não consegui: " + error.message, { academia: academiaId }); return; }
+  if (error) { avisarFalha("gerar o código do pedido", error, "Não foi possível concluir: " + error.message, { academia: academiaId }); return; }
   state.codigosGerados = { ...(state.codigosGerados || {}), [userId + "|" + academiaId]: data };
   await carregarAcessos();
   render();
@@ -9993,7 +10032,7 @@ async function gerarCodigoDoPedido(userId, academiaId) {
 
 async function decidirPedido(userId, academiaId, aprovar) {
   const { error } = await rpcDoPedido(aprovar ? 'aprovar_pedido_de_acesso' : 'recusar_pedido_de_acesso', { p_user: userId }, academiaId);
-  if (error) { avisarFalha(aprovar ? "aprovar o pedido de acesso" : "recusar o pedido de acesso", error, "Não consegui: " + error.message, { academia: academiaId }); return; }
+  if (error) { avisarFalha(aprovar ? "aprovar o pedido de acesso" : "recusar o pedido de acesso", error, "Não foi possível concluir: " + error.message, { academia: academiaId }); return; }
   await carregarAcessos();
   render();
 }
@@ -10053,7 +10092,7 @@ async function salvarDadosConta() {
       p_nome: juntarNome(f), p_cargo: f.cargo, p_email: f.email.trim(), p_whatsapp: whats,
       p_cnpj: cnpj, p_recebe_relatorio: false, p_aceite: !!f.aceite, p_tratamento: f.tratamento,
     });
-    if (error) throw new Error(falhou("salvar os dados de contato", error, { texto: "Não consegui salvar agora. Tente de novo em instantes.", regra: mensagemDoBanco(error, "Não consegui salvar agora. Tente de novo em instantes.") }));
+    if (error) throw new Error(falhou("salvar os dados de contato", error, { texto: "Não foi possível salvar agora. Tente de novo em instantes.", regra: mensagemDoBanco(error, "Não foi possível salvar agora. Tente de novo em instantes.") }));
     const primeiraVez = !contaAcademia.dadosCompletos;
     await recarregarConta();
     window.__conta = null;
@@ -10061,7 +10100,7 @@ async function salvarDadosConta() {
     state.contaAviso = primeiraVez ? "Tudo certo! Agora é só manter a ficha em dia." : "Dados salvos.";
     if (primeiraVez && state.page === "parceiros") { state.parceirosAba = "painel"; syncUrl(false); if (temAcademia()) { carregarNumeros(); carregarPedidosDeAcesso(); carregarProblemasDaFicha(); } }
   } catch (e) {
-    state.contaErro = e.message || "Não consegui salvar agora. Tente de novo em instantes.";
+    state.contaErro = e.message || "Não foi possível salvar agora. Tente de novo em instantes.";
   }
   state.contaSalvando = false;
   render();
@@ -10085,7 +10124,7 @@ async function trocarSenhaConta() {
     let login = contaAcademia.login || emailDoLogin(contaAcademia.usuario);
     try { const r = await sb.rpc('login_do_usuario', { p_usuario: contaAcademia.usuario }); if (!r.error && r.data) login = r.data; } catch {}
     const { error: errAtual } = await sb.auth.signInWithPassword({ email: login, password: f.atual });
-    if (errAtual) throw new Error(falhou("trocar a senha", errAtual, { texto: "Não consegui trocar a senha agora. Tente de novo em instantes.", regra: "A senha atual não confere." }));
+    if (errAtual) throw new Error(falhou("trocar a senha", errAtual, { texto: "Não foi possível trocar a senha agora. Tente de novo em instantes.", regra: "A senha atual não confere." }));
     const { error } = await sb.auth.updateUser({ password: f.nova, current_password: f.atual });
     if (error) throw new Error(falhou("trocar a senha", error, { texto: mensagemSenha(error), regra: mensagemSenha(error) }));
     await sb.rpc('marcar_senha_trocada');
@@ -10093,7 +10132,7 @@ async function trocarSenhaConta() {
     state.contaModo = "painel";
     state.contaAviso = "Senha trocada.";
   } catch (e) {
-    state.contaErro = e.message || "Não consegui trocar a senha agora.";
+    state.contaErro = e.message || "Não foi possível trocar a senha agora.";
   }
   state.contaSalvando = false;
   render();
@@ -10122,7 +10161,7 @@ async function publicarResposta(avaliacaoId) {
   if (error) {
     state.respondendo = avaliacaoId;
     state.respondendoOnde = onde;
-    state.respostaErro = falhou("publicar a resposta", error, { texto: "Não consegui publicar a resposta agora. Tente de novo em instantes." });
+    state.respostaErro = falhou("publicar a resposta", error, { texto: "Não foi possível publicar a resposta agora. Tente de novo em instantes." });
     render();
     return;
   }
@@ -10135,7 +10174,7 @@ async function publicarResposta(avaliacaoId) {
 async function apagarResposta(avaliacaoId) {
   if (!confirm("Apagar essa resposta? Ela sai da ficha na hora.")) return;
   const { error } = await sb.from('respostas').delete().eq('avaliacao_id', avaliacaoId);
-  if (error) { avisarFalha("apagar a resposta", error, "Não consegui apagar a resposta agora. Tente de novo.", { texto: "Não consegui apagar a resposta agora. Tente de novo em instantes.", tentar: () => apagarResposta(avaliacaoId) }); return; }
+  if (error) { avisarFalha("apagar a resposta", error, "Não foi possível apagar a resposta agora. Tente de novo.", { texto: "Não foi possível apagar a resposta agora. Tente de novo em instantes.", tentar: () => apagarResposta(avaliacaoId) }); return; }
   await recarregarTudo();
 }
 
@@ -10145,7 +10184,7 @@ async function convidarAcademia(courtId) {
   if (!EMAIL_VALIDO.test(email)) { state.acessoErro = "Escreva o e-mail da academia."; render(); return; }
   const { data, error } = await sb.rpc('convidar_academia', { p_academia: courtId, p_email: email });
   if (error) {
-    state.acessoErro = falhou("convidar a academia", error, { texto: "Não consegui convidar agora. Tente de novo em instantes.", regra: mensagemDoBanco(error, "Não consegui convidar: " + error.message), academia: courtId });
+    state.acessoErro = falhou("convidar a academia", error, { texto: "Não foi possível convidar agora. Tente de novo em instantes.", regra: mensagemDoBanco(error, "Não foi possível convidar: " + error.message), academia: courtId });
     render();
     return;
   }
@@ -10167,7 +10206,7 @@ async function criarAcesso(courtId) {
   const senha = senhaProvisoria();
   const { error } = await sb.rpc('criar_acesso_academia', { p_academia: courtId, p_usuario: usuario, p_senha: senha });
   if (error) {
-    state.acessoErro = falhou("criar o acesso da academia", error, { texto: "Não consegui criar o acesso agora. Tente de novo em instantes.", regra: mensagemDoBanco(error, "Não consegui criar o acesso: " + error.message), academia: courtId });
+    state.acessoErro = falhou("criar o acesso da academia", error, { texto: "Não foi possível criar o acesso agora. Tente de novo em instantes.", regra: mensagemDoBanco(error, "Não foi possível criar o acesso: " + error.message), academia: courtId });
     render();
     return;
   }
@@ -10183,7 +10222,7 @@ async function novaSenhaAcesso(userId, courtId) {
   const a = loginDaAcademia(courtId);
   const senha = senhaProvisoria();
   const { error } = await sb.rpc('nova_senha_academia', { p_user: userId, p_senha: senha });
-  if (error) { state.acessoErro = falhou("trocar a senha da academia", error, { texto: "Não consegui trocar a senha agora. Tente de novo em instantes.", regra: "Não consegui trocar a senha: " + error.message, academia: courtId }); render(); return; }
+  if (error) { state.acessoErro = falhou("trocar a senha da academia", error, { texto: "Não foi possível trocar a senha agora. Tente de novo em instantes.", regra: "Não foi possível trocar a senha: " + error.message, academia: courtId }); render(); return; }
   state.acessoErro = "";
   state.acessoNovo = { academiaId: courtId, usuario: a ? a.usuario : "", senha, mensagem: mensagemDoAcesso(c || { name: "academia", id: courtId }, a ? a.usuario : "", senha, true) };
   await carregarAcessos();
@@ -10197,7 +10236,7 @@ async function removerAcesso(userId, courtId) {
     ? `Tirar essa conta desta academia? Ela continua administrando ${outras} ${plural(outras, "outra academia", "outras academias")}. A ficha continua no site.`
     : "Remover o acesso dessa academia? Ela não entra mais na área da academia. A ficha continua no site.")) return;
   const { error } = await sb.rpc('remover_acesso_academia', courtId ? { p_user: userId, p_academia: courtId } : { p_user: userId });
-  if (error) { state.acessoErro = falhou("remover o acesso", error, { texto: "Não consegui remover agora. Tente de novo em instantes.", regra: "Não consegui remover: " + error.message, academia: courtId }); render(); return; }
+  if (error) { state.acessoErro = falhou("remover o acesso", error, { texto: "Não foi possível remover agora. Tente de novo em instantes.", regra: "Não foi possível remover: " + error.message, academia: courtId }); render(); return; }
   state.acessoErro = "";
   state.acessoNovo = null;
   await carregarAcessos();
@@ -10277,7 +10316,7 @@ function ligarEventosConta() {
   if (avisosEmail) avisosEmail.onchange = async (e) => {
     const ligado = e.target.checked;
     const r = await sb.rpc('mudar_avisos_dos_parceiros', { p_ligado: ligado });
-    if (r.error) { e.target.checked = !ligado; state.contaAviso = ""; state.contaErro = falhou("mudar os avisos por e-mail", r.error, { texto: "Não consegui mudar os avisos agora. Tente de novo em instantes." }); render(); return; }
+    if (r.error) { e.target.checked = !ligado; state.contaAviso = ""; state.contaErro = falhou("mudar os avisos por e-mail", r.error, { texto: "Não foi possível mudar os avisos agora. Tente de novo em instantes." }); render(); return; }
     contaAcademia.avisosPorEmail = ligado;
     state.contaErro = "";
     state.contaAviso = ligado ? "Avisos por e-mail ligados." : "Avisos por e-mail desligados.";
@@ -10287,7 +10326,7 @@ function ligarEventosConta() {
   document.querySelectorAll(".pc-aviso-um").forEach(cx => cx.onchange = async (e) => {
     const id = cx.dataset.aviso, ligado = e.target.checked;
     const r = await sb.rpc('mudar_aviso_dos_parceiros', { p_aviso: id, p_ligado: ligado });
-    if (r.error) { e.target.checked = !ligado; state.contaAviso = ""; state.contaErro = falhou("mudar os avisos por e-mail", r.error, { texto: "Não consegui mudar os avisos agora. Tente de novo em instantes." }); render(); return; }
+    if (r.error) { e.target.checked = !ligado; state.contaAviso = ""; state.contaErro = falhou("mudar os avisos por e-mail", r.error, { texto: "Não foi possível mudar os avisos agora. Tente de novo em instantes." }); render(); return; }
     const fora = (contaAcademia.avisosDesligados || []).filter(x => x !== id);
     // Com tudo parado pelo link do e-mail, ligar um liga só ele.
     contaAcademia.avisosDesligados = ligado
@@ -10400,7 +10439,7 @@ function baixarQr(c, formato) {
       setTimeout(() => URL.revokeObjectURL(endereco), 4000);
     }, "image/png");
   };
-  img.onerror = () => alert("Não consegui montar o PNG. Baixe o SVG, que abre em qualquer editor.");
+  img.onerror = () => alert("Não foi possível montar o PNG. Baixe o SVG, que abre em qualquer editor.");
   img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
@@ -10491,7 +10530,7 @@ function renderMapView(results) {
     <div class="mapwrap">
       <div class="map" id="map"></div>
       <div class="map-card-holder " id="map-card">${mapCardHtml(state.mapSelected)}</div>
-      ${results.length === 0 ? `<div class="map-empty">Nenhuma quadra encontrada com esses filtros.</div>` : ""}
+      ${results.length === 0 ? `<div class="map-empty">Nenhuma academia com esses filtros.</div>` : ""}
       ${results.length && !comCoord.length ? `<div class="map-empty">Nenhuma dessas academias tem endereço localizado no mapa ainda.</div>` : ""}
     </div>
     ${fora > 0 && comCoord.length ? `
@@ -10576,20 +10615,20 @@ function cartaoDoMapa(c, previa) {
         <p class="mcard-linha">${esc(localLine(c))}</p>
         ${marcas.length ? `<p class="mcard-selos">${marcas.map(m => `<span>${icon('check', 13, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</p>` : ""}
         <div class="rcard-score">
-          <span class="sbadge ${c.appCount ? "" : "none"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
+          ${c.appCount ? `<span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : ""}
           <span class="sword">${scoreWord(c.appAvg, c.appCount)}</span>
           ${c.appCount ? `<span class="scount">${icon('bubble', 13, 'var(--muted)')} ${c.appCount}</span>` : ""}
         </div>
         <div class="mcard-preco">
           ${precos.length
-            ? `<span class="mcard-apartir">a partir de</span><span class="mcard-valores">${precos.map(o => `<span><small>${esc(o.label)}</small><b>R$ ${esc(priceMin(o.faixa))}<em>${esc(o.curto || "/h")}</em></b></span>`).join("")}</span>`
+            ? `<span class="mcard-apartir">a partir de</span><span class="mcard-valores">${precos.map(o => `<span><small>${esc(o.label)}</small><b>R$ ${esc(priceMin(o.faixa))}<em>${esc(o.curto || " por hora")}</em></b></span>`).join("")}</span>`
             : `<span class="mcard-valores"><span class="sem-valor">${SEM_PRECO}</span></span>`}
         </div>
         ${previa ? "" : `<button type="button" class="mcard-btn">Ver academia ${icon('chevron', 14, '#fff')}</button>`}
         ${/* Regra 242: no mapa, "Reservar online" quando a academia tem o link; se não, o WhatsApp. */ ""}
         ${previa ? "" : c.reserva
           ? `<a class="mcard-wa" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 14, 'var(--green)')}<span class="mcard-wa-t">Reservar online</span></a>`
-          : c.phone ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')}<span class="mcard-wa-t">Falar no WhatsApp</span></a>` : ""}
+          : c.phone ? `<a class="mcard-wa" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')}<span class="mcard-wa-t">Chamar no WhatsApp</span></a>` : ""}
       </div>
     </div>`;
 }
@@ -10727,7 +10766,7 @@ function mountMap(results) {
     return;
   }
   if (!window.L) {
-    esperarLeaflet(el, "map-empty", "Não consegui carregar o mapa agora. Confira a conexão e recarregue a página.");
+    esperarLeaflet(el, "map-empty", "Não foi possível carregar o mapa agora. Confira a conexão e recarregue a página.");
     return;
   }
   if (__map && __map.getContainer() !== el) { __map.remove(); __map = null; __markers = []; }
@@ -10908,7 +10947,7 @@ function demoBusca() {
       </g>
 
       <g class="cena cena2">
-        <text x="239" y="72" font-size="11" font-weight="700" fill="var(--text)">7 quadras encontradas</text>
+        <text x="239" y="72" font-size="11" font-weight="700" fill="var(--text)">7 academias</text>
         <g class="sobe1">${linha(84, "#2E6B54", "R$ 90", "1,2 km")}</g>
         <g class="sobe2">${linha(146, "#8E6C3A", "R$ 110", "2,4 km")}</g>
         <g class="sobe3">${linha(208, "#3A5F4B", "R$ 70", "3,8 km")}</g>
@@ -11073,7 +11112,7 @@ function perguntasParceiros() {
     { q: "Minha academia já aparece no Guia. Como assumo a ficha?", a: "Em Cadastrar, comece pelo seu e-mail e crie a sua conta. Depois procure a academia, marque a declaração e toque em \"Administrar esta academia\": com o e-mail confirmado, a ficha passa a ser sua na hora, e o GuiaTennis confere depois. Se a academia já tiver um responsável no GuiaTennis Parceiros, o pedido vai para ele aceitar, ou ele pode incluir você diretamente em Acessos." },
     { q: "E se outra pessoa estiver administrando a minha academia?", a: "Peça para administrar a academia e, no cartão do pedido, toque em \"Contestar\": uma página explica a disputa passo a passo e, no fim, pede o WhatsApp da academia. O GuiaTennis manda um código de 6 números para esse número e outro para o WhatsApp da ficha, de quem administra. Os códigos mostram quem tem cada número, mas não decidem sozinhos: o GuiaTennis compara, pode pedir um documento da academia e decide." },
     { q: "Como cadastro uma academia nova?", a: "Crie a sua conta em Cadastrar e toque em \"Cadastrar academia nova\". Os seus dados de contato já vão junto. Com o seu e-mail confirmado, a academia entra no ar na hora e você já administra a ficha; o GuiaTennis confere depois." },
-    { q: "O que quer dizer \"atualizada há…\" na ficha?", a: "Na ficha, o jogador vê \"Confirmada pela academia\" e quando ela foi atualizada pela última vez. A data muda quando vocês salvam a ficha no GuiaTennis Parceiros — salvar, mesmo sem mudar nada, confirma que está tudo certo. Pausar a ficha ou mudar o plano não mexe na data. Quando a ficha passa 3 meses sem mudar, o GuiaTennis manda um e-mail para vocês conferirem. Depois de um ano sem mudar, a ficha pede ao jogador para confirmar horário e preço direto com vocês." },
+    { q: "O que quer dizer \"atualizada há…\" na ficha?", a: "Na ficha, o jogador vê \"Confirmada pela academia\" e quando ela foi atualizada pela última vez. A data muda quando vocês salvam a ficha no GuiaTennis Parceiros. Salvar, mesmo sem mudar nada, confirma que está tudo certo. Pausar a ficha ou mudar o plano não mexe na data. Quando a ficha passa 3 meses sem mudar, o GuiaTennis manda um e-mail para vocês conferirem. Depois de um ano sem mudar, a ficha pede ao jogador para confirmar horário e preço direto com vocês." },
     { id: "whatsapp", q: "Por que o WhatsApp novo não aparece na ficha?", a: "Para garantir que o número é da academia, o WhatsApp que vocês escrevem na ficha só aparece depois do código de 6 números mandado a ele: em Atualizações, toque em \"Digitar o código\". O código chega pela conta do GuiaTennis no WhatsApp (ou é mandado pelo GuiaTennis em até 1 dia útil) e vale 72 horas. Digitado o código, o número já aparece na ficha, com o aviso \"WhatsApp em confirmação pelo GuiaTennis\", e o GuiaTennis confere se ele é da academia em até 1 dia útil: o código mostra que vocês têm o número, a conferência, que ele é da academia. Confirmado, o aviso sai; se não, volta o número de antes." },
     { q: "Um jogador informou um problema na ficha. E agora?", a: "Quem tem conta no GuiaTennis pode informar que algo está errado na ficha (o WhatsApp, o endereço, o preço, o horário, ou que a academia fechou). Vocês veem o que foi informado em Atualizações, sem saber quem informou. Confira e salve a ficha: salvar, mesmo sem mudar nada, mostra que está tudo certo. Se duas contas disserem que o WhatsApp não é da academia, o botão do WhatsApp sai da ficha até o GuiaTennis conferir, em até 1 dia útil." },
     { q: "Tenho mais de uma academia. Preciso de outra conta?", a: "Não. A mesma conta administra todas as academias pelas quais você responde, em qualquer plano, até no Básico. Em Suas academias (ou no nome da academia, no topo do GuiaTennis Parceiros), toque em \"Adicionar outra academia\". Cada academia é confirmada do mesmo jeito que a primeira, e dá para pedir uma enquanto outra ainda está em análise. Cada uma tem o próprio plano, as próprias pessoas e os próprios números." },
@@ -11087,7 +11126,7 @@ function perguntasParceiros() {
     { id: "nota-fiscal", q: "Como recebo a nota fiscal das compras?", a: "Toda compra, de créditos ou do plano, começa pelos dados do comprador: o CNPJ (ou o CPF), a razão social e o e-mail que recebe a nota; com o CNPJ, o site busca a razão social na Receita. Nas compras seguintes, eles já vêm preenchidos, com \"Alterar\". O CPF ou CNPJ vai ao Mercado Pago como o de quem paga. O GuiaTennis emite a nota de cada compra paga e ela chega nesse e-mail; em Pagamentos, a compra mostra quando a nota foi enviada." },
     { q: "O GuiaTennis cobra comissão sobre aula ou locação?", a: "Não. O jogador fala direto com vocês, e o valor e o pagamento são combinados entre vocês." },
     { id: "avaliacoes", q: "Posso apagar uma avaliação ruim?", a: "Não. Para ser justo com quem procura, nenhuma academia apaga avaliação. Vocês podem responder em público e pedir a análise do GuiaTennis se a avaliação for falsa ou ofensiva." },
-    { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não pode avaliá-la: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador — busca, salva buscas, recebe avisos e avalia onde jogou." },
+    { q: "A academia pode avaliar outras academias?", a: "Quem administra uma academia não pode avaliá-la: responde às avaliações dela pelo GuiaTennis Parceiros. Nas outras academias, a mesma conta funciona como a de qualquer jogador: busca, salva buscas, recebe avisos e avalia onde jogou." },
     { id: "promocoes", q: "Como funcionam as promoções na ficha?", a: "Nos planos Completo e Premium, em Promoções › Na ficha, a academia publica uma promoção por vez (por exemplo, \"Primeira aula grátis\") e escolhe por quantas semanas ela vale (de 1 a 12). O título tem até 30 letras e os detalhes, até 150: o que é, para quem e quando, em poucas palavras. Antes de publicar, a tela mostra o preço por semana e o total, que sai dos créditos" + (leilao ? " (os mesmos do leilão)" : "") + "; no Premium, a semana sai mais barata. A promoção aparece na ficha e no resultado da busca, com a validade, e some sozinha quando vence. Mudar o texto não custa nada, e dá para somar semanas; encerrar antes devolve as semanas que ainda não começaram." + (leilao ? " No Premium, para mandar a mesma promoção por e-mail, toque em \"Mandar por e-mail\" (veja \"Como funciona o leilão das promoções por e-mail?\")." : "") + " A academia responde pelo que anuncia e combina as condições direto com o jogador." },
     ...(leilao ? [{ id: "promocoes-email", q: "Como funciona o leilão das promoções por e-mail?", a: "Duas vezes por semana, o GuiaTennis manda aos jogadores de cada bairro (quem pediu promoções e guardou uma academia de lá nas favoritas ou buscou perto) um e-mail com a promoção de uma academia do bairro, marcada como patrocinada. No plano Premium, em Promoções › Leilão, passo a passo, a academia vê se vale a pena, escreve a promoção (o título em até 30 letras e a mensagem em até 300, ou usa a da ficha) e dá um lance máximo até domingo às 20h; ninguém vê o lance das outras. Ganham as duas maiores notas, que são o lance vezes a qualidade (fotos, avaliações e uma promoção bem explicada): o 1º lugar sai na terça e o 2º na sexta, às 10h. O lance máximo é o teto, não o preço: quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, nunca mais que o lance máximo. Quem não ganha não paga nada, e se ninguém do bairro recebe, o valor volta. O lance sai dos créditos (os mesmos da promoção na ficha), comprados antes no próprio Parceiros, com Pix ou cartão (pelo Mercado Pago)." }] : []),
     { id: "numeros", q: "Como são contados os números do GuiaTennis?", a: NOTA_DOS_NUMEROS },
@@ -11167,7 +11206,7 @@ async function carregarNumeros(dias) {
     state.numerosDias = r.data.dias;
   } catch (e) {
     diag(`números da academia: ${e && e.message}`);
-    state.numeros = { dados: null, carregando: false, erro: falhou("carregar os números da academia", e, { texto: "Não consegui carregar os números agora. Tente de novo em instantes." }) };
+    state.numeros = { dados: null, carregando: false, erro: falhou("carregar os números da academia", e, { texto: "Não foi possível carregar os números agora. Tente de novo em instantes." }) };
   }
   if (state.page === "parceiros") render();
 }
@@ -11417,7 +11456,7 @@ async function escolherPlano(key) {
   state.pcPlanoMudando = null;
   if (r.error) {
     state.contaAviso = "";
-    state.contaErro = /responsável principal/.test(String(r.error.message || "")) ? r.error.message : falhou("mudar o plano", r.error, { texto: "Não consegui mudar o plano agora. Tente de novo em instantes.", academia: c.id });
+    state.contaErro = /responsável principal/.test(String(r.error.message || "")) ? r.error.message : falhou("mudar o plano", r.error, { texto: "Não foi possível mudar o plano agora. Tente de novo em instantes.", academia: c.id });
     render();
     return;
   }
@@ -12050,8 +12089,8 @@ function pcInicio() {
     // Studio: o que a academia ganha hoje, do jogador ao painel.
     { ic: "pin", t: "Jogadores que já querem jogar", d: "Quem chega ao GuiaTennis está procurando aula ou quadra perto de casa, agora. E quem salvou uma busca na sua região ou vai viajar para a sua cidade recebe a sua academia por e-mail." },
     { ic: "phone", t: "Contato direto no seu WhatsApp", d: "Sem intermediário, sem central de reservas e sem comissão: o jogador chama você, e você combina a aula ou a locação do seu jeito." },
-    { ic: "edit", t: "Uma ficha que vende por você", d: "Horário, preços, fotos, regra de cancelamento e como chegar, tudo num só lugar. Você atualiza pelo celular, a mudança aparece na hora, e dá para pausar a ficha nas férias ou numa reforma." },
-    { ic: "bubble", t: "Avaliação nova no seu e-mail", d: "Cada avaliação chega no seu e-mail. Responda às avaliações em público e, com o QR code no balcão, o jogador avalia na hora — quem vê uma academia que responde confia mais para chamar." },
+    { ic: "edit", t: "Uma ficha completa, que você atualiza pelo celular", d: "Horário, preços, fotos, regra de cancelamento e como chegar, tudo num só lugar. Você atualiza pelo celular, a mudança aparece na hora, e dá para pausar a ficha nas férias ou numa reforma." },
+    { ic: "bubble", t: "Avaliação nova no seu e-mail", d: "Cada avaliação chega no seu e-mail. Responda às avaliações em público e, com o QR code no balcão, o jogador avalia na hora. Quem vê uma academia que responde confia mais para chamar." },
     { ic: "pessoa", t: "Sua equipe e suas academias numa conta", d: "Dê acesso a quem trabalha com você e administre mais de uma academia com o mesmo login. Quem pede acesso à sua academia passa por você, com aviso por e-mail." },
     { ic: "barchart", t: "Saiba quantos jogadores você atrai", tag: "Premium", d: "Com o plano Premium, o GuiaTennis Parceiros mostra quantas pessoas abriram a ficha, quantas chamaram no WhatsApp, de onde vieram (Instagram, Google…) e de quais bairros.", nota: "No Básico e no Completo esses números já são contados, mas ficam escondidos. Ao passar para o Premium, eles aparecem em Desempenho, inclusive os de antes." },
   ];
@@ -12059,13 +12098,13 @@ function pcInicio() {
   const passos = [
     { t: "Crie a sua conta", tempo: "2 minutos", d: "Comece pelo seu e-mail, crie a conta do GuiaTennis e confirme o e-mail. É grátis e não pede cartão.", ic: "key" },
     { t: "Encontre a sua academia", tempo: "Na hora", d: "Procure pelo nome e pelo bairro e toque em \"Administrar esta academia\". Se a sua ainda não estiver no GuiaTennis, cadastre em poucos minutos.", ic: "search" },
-    { t: "Declare que responde pela academia", tempo: "Na hora", d: "Marque a declaração e, com o e-mail confirmado, a ficha passa a ser sua na hora — e o cadastro novo entra no ar. Se a academia já tem responsável, o pedido vai para ele; se houver disputa, cada lado confirma um WhatsApp por código, e o GuiaTennis compara e decide.", ic: "check" },
+    { t: "Confirme que responde pela academia", tempo: "Na hora", d: "Confirme que responde pela academia. Com o e-mail confirmado, a ficha passa a ser sua na hora. Se a academia já tem responsável, o pedido vai para ele.", ic: "check" },
     { t: "Complete a ficha e receba jogadores", tempo: "Todo dia", d: "Horário, preços, fotos e como chegar. O jogador compara, chama no seu WhatsApp, e você acompanha as visitas e os contatos no GuiaTennis Parceiros.", ic: "barchart" },
   ];
   return `
     <section class="pc-hero">
       <h1 class="display" ${revela("hero-1", 1)}>Mais jogadores para a sua academia de tênis</h1>
-      <p class="pc-hero-sub" ${revela("hero-2", 2)}>Apareça para quem procura aula ou quer locar quadra na sua região. O jogador compara e chama direto no seu WhatsApp — sem comissão.</p>
+      <p class="pc-hero-sub" ${revela("hero-2", 2)}>Apareça para quem procura aula ou quer alugar quadra na sua região. O jogador compara e chama direto no seu WhatsApp, sem comissão.</p>
       <div class="pc-hero-acoes" ${revela("hero-3", 3)}>
         <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a>
         <a href="/parceiros/entrar" class="cta-btn cta-secondary" data-pc="entrar">Já tenho acesso</a>
@@ -12101,12 +12140,12 @@ function pcInicio() {
           </li>`).join("")}
       </ol>
       <div class="pc-como-fim">
-        <a href="/parceiros/cadastro" class="cta-btn cta-primary pc-gratis" data-pc="cadastro">Começar agora <span class="pc-gratis-selo">é de graça!</span></a>
+        <a href="/parceiros/cadastro" class="cta-btn cta-primary pc-gratis" data-pc="cadastro">Começar agora <span class="pc-gratis-selo">grátis</span></a>
       </div>
     </section>
     <section class="pc-sec">
       <h2 class="display" ${revela("plano-h")}>Planos</h2>
-      <p class="pc-sec-sub" ${revela("plano-s", 1)}>Comece grátis e aprimore quando quiser. No Completo, o jogador vê a ficha inteira: todas as fotos e comodidades, o Instagram e o site, a regra de cancelamento e como chegar, e a academia entra entre as recomendadas da página inicial. No Premium, ela aparece no topo da busca, com o selo dourado, e vocês veem os números da ficha.</p>
+      <p class="pc-sec-sub" ${revela("plano-s", 1)}>Comece grátis e mude de plano quando quiser.</p>
       ${pcCartoesDePlano(null, true)}
     </section>
     <section class="pc-fim" ${revela("fim")}>
@@ -12251,7 +12290,7 @@ function pcPlanos(logado) {
       <h1 class="display">${logado && c ? `Plano ${esc(nomeDoPlano(atual))}${atual === "premium" ? " " + seloPremium(22) : ""}` : "Planos"}</h1>
       ${logado && state.contaAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.contaAviso)}</p>` : ""}
       ${logado && state.contaErro ? `<p class="form-error">${icon('warning', 14)} ${esc(state.contaErro)}</p>` : ""}
-      ${logado && c ? `<p class="pc-sec-sub">${esc(planoPorChave(atual).resumo)} ${esc(precoDoPlano(planoPorChave(atual)))}.</p>` : `<p class="pc-sec-sub">Comece grátis e aprimore quando quiser. No Completo, o jogador vê a ficha inteira: todas as fotos e comodidades, o Instagram e o site, a regra de cancelamento e como chegar, e a academia entra entre as recomendadas da página inicial. No Premium, ela aparece no topo da busca, com o selo dourado, e vocês veem os números da ficha.</p>`}
+      ${logado && c ? `<p class="pc-sec-sub">${esc(planoPorChave(atual).resumo)} ${esc(precoDoPlano(planoPorChave(atual)))}.</p>` : `<p class="pc-sec-sub">Comece grátis e mude de plano quando quiser.</p>`}
       ${logado && c ? pcOQueMelhorar(c, atual) : ""}
       ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}
       ${pcCartoesDePlano(atual)}
@@ -12610,7 +12649,7 @@ function pcCadastro() {
               : `Esqueceu a senha? <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">Fale com o GuiaTennis no WhatsApp</a>.`}</p>` : ""}
           ${passo === "esqueci" ? `
             ${state.pcCodigoFalhou
-              ? `<p class="email-sugestao">Não consegui mandar o código agora. Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>`
+              ? `<p class="email-sugestao">Não foi possível mandar o código agora. Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis Parceiros.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.</p>`
               : !state.pcCodigoConferido ? `
                 ${cabecaDeCodigo("email", "Digite o código", state.pcCodigoMandando ? bolaGirando(15) + " Mandando o código…" : `Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(state.pcLogin)}</strong>.`, "h2")}
                 ${caixasDeCodigo(DIGITOS_DO_EMAIL, `data-rascunho="codigo" id="pc-codigo-senha"`, (window.__codigo || {}).codigo, "Código do e-mail", "campo-codigo")}
@@ -12793,7 +12832,7 @@ async function reabrirAcademiaPelaConta(id, declaro) {
   try { r = await sb.rpc('reabrir_academia', { p_academia: id, p_detalhes: null, p_declaro: true }); } catch (e) { r = { error: e }; }
   state.pcReabrindo = null;
   if (r.error) {
-    state.pcReabrirErro = { id, texto: falhou("reabrir a academia", r.error, { texto: "Não consegui agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui agora.", academia: id }) };
+    state.pcReabrirErro = { id, texto: falhou("reabrir a academia", r.error, { texto: "Não foi possível concluir agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível concluir agora.", academia: id }) };
     state.pedidoErro = state.pcReabrirErro.texto; state.pedidoErroEm = null;
     render();
     return;
@@ -12843,7 +12882,7 @@ function botaoAdministrarHtml() {
 }
 
 function pcSemFicha() {
-  return `<section class="pc-pagina"><p class="pc-sec-sub">Não consegui abrir a ficha agora. Tente de novo em instantes.</p></section>`;
+  return `<section class="pc-pagina"><p class="pc-sec-sub">Não foi possível abrir a ficha agora. Tente de novo em instantes.</p></section>`;
 }
 
 function pcPainel() {
@@ -12986,7 +13025,7 @@ function pcAvaliacoes() {
       <p class="pc-sec-sub">Dica: agradeça e responda com educação. Avaliação falsa ou ofensiva? Toque em "Pedir análise". ${saibaMaisNaAjuda("avaliacoes")}</p>
       ${avaliacoes.length
         ? `<div class="ht-revs conta-revs">${avaliacoes.map(x => cartaoAvaliacao(x, c, "painel")).join("")}</div>`
-        : `<div class="pc-card"><p class="pc-card-t">Ainda sem avaliação</p><p class="pc-card-s">Peça aos jogadores que avaliem pela ficha — o QR code na recepção leva direto para ela.</p><button type="button" class="cta-btn cta-secondary" id="conta-qr" data-court="${c.id}">QR code da sua ficha no GuiaTennis</button></div>`}
+        : `<div class="pc-card"><p class="pc-card-t">Ainda sem avaliação</p><p class="pc-card-s">Peça aos jogadores que avaliem pela ficha: o QR code na recepção leva direto para ela.</p><button type="button" class="cta-btn cta-secondary" id="conta-qr" data-court="${c.id}">QR code da sua ficha no GuiaTennis</button></div>`}
     </section>`;
 }
 
@@ -13215,7 +13254,7 @@ function pcPagamentos() {
       <div class="pc-card" id="pc-pag-compras">
         <p class="pc-card-t">Compras</p>
         ${compras === undefined || compras === "carregando" ? `<p class="pc-vazio">${bolaGirando(16)} Carregando…</p>`
-          : compras === null ? `<p class="pc-card-s">Não consegui carregar as compras agora. <button type="button" class="inline-link" id="pc-pag-tentar">Tentar de novo</button></p>`
+          : compras === null ? `<p class="pc-card-s">Não foi possível carregar as compras agora. <button type="button" class="inline-link" id="pc-pag-tentar">Tentar de novo</button></p>`
           : compras.length ? `<ul class="pc-pessoas pc-compras">${compras.map(linha).join("")}</ul>`
           : `<p class="pc-card-s">Nenhuma compra ainda.</p>`}
       </div>
@@ -13389,7 +13428,7 @@ async function salvarDadosParaNota() {
   } catch (e) {
     const m = String(e && e.message || "");
     return /CNPJ ou o CPF|razão social|e-mail que recebe|não está liberado|não administra/.test(m) ? m
-      : falhou("salvar os dados da nota", e, { texto: "Não consegui salvar os dados da nota agora. Tente de novo em instantes.", academia: c.id });
+      : falhou("salvar os dados da nota", e, { texto: "Não foi possível salvar os dados da nota agora. Tente de novo em instantes.", academia: c.id });
   }
 }
 // Com um CNPJ de números certo e a razão social em branco, o site busca a
@@ -13632,7 +13671,7 @@ async function pagarCompra() {
       return;
     }
     if (status === 503) { state.pcCompra = { ...base, passo: "desligado" }; render(); return; }
-    if (status !== 200) throw new Error(d.erro || "Não consegui abrir o pagamento.");
+    if (status !== 200) throw new Error(d.erro || "Não foi possível abrir o pagamento.");
     if (d.forma === "cartao" && d.link) { registrarPasso("acao", { academia: c.id, detalhe: `Foi pagar ${oQue} no cartão` }); location.href = d.link; return; }
     state.pcCompra = { ...base, passo: "pix", compra, valorCobrado: d.valor || valor, pix: { qr: d.qr, copia: d.copia, expira: d.expira }, inicio: Date.now() };
     registrarPasso("acao", { academia: c.id, detalhe: `Abriu o Pix de ${oQue}` });
@@ -13641,7 +13680,7 @@ async function pagarCompra() {
   } catch (e) {
     k.enviando = false;
     if (/dados para a nota fiscal/.test(String(e && e.message || ""))) state.pcNota = { academia: c.id, dados: null };
-    k.erro = /R\$ 20|Pix ou cartão|Completo e do Premium|não administra|responsável principal|já está nesse plano|dados para a nota fiscal/.test(String(e && e.message || "")) ? e.message : falhou("abrir o pagamento", e, { texto: "Não consegui abrir o pagamento agora. Tente de novo em instantes.", academia: c.id });
+    k.erro = /R\$ 20|Pix ou cartão|Completo e do Premium|não administra|responsável principal|já está nesse plano|dados para a nota fiscal/.test(String(e && e.message || "")) ? e.message : falhou("abrir o pagamento", e, { texto: "Não foi possível abrir o pagamento agora. Tente de novo em instantes.", academia: c.id });
     render();
   }
 }
@@ -13667,7 +13706,7 @@ async function simularPagamento(qual) {
   try { r = await sb.rpc('simular_pagamento', { p_compra: k.compra, p_resultado: resultado }); } catch (e) { r = { error: e }; }
   if (r.error) {
     k.simulando = false;
-    k.erro = /banco de teste|não administra/.test(String(r.error.message || "")) ? r.error.message : falhou("simular o pagamento", r.error, { texto: "Não consegui simular o pagamento agora. Tente de novo em instantes.", academia: c.id });
+    k.erro = /banco de teste|não administra/.test(String(r.error.message || "")) ? r.error.message : falhou("simular o pagamento", r.error, { texto: "Não foi possível simular o pagamento agora. Tente de novo em instantes.", academia: c.id });
     render();
     return;
   }
@@ -14234,7 +14273,7 @@ async function enviarPromocaoPorEmail() {
   state.pcEmailEnviando = false;
   if (r.error) {
     const m = String(r.error.message || "");
-    state.pcEmailMsg = { tipo: "erro", texto: /créditos|lance|Completo| letras|no ar|bairro|fechou|não administra/.test(m) ? m : falhou("dar o lance", r.error, { texto: "Não consegui salvar o lance agora. Tente de novo daqui a pouco.", academia: c.id }) };
+    state.pcEmailMsg = { tipo: "erro", texto: /créditos|lance|Completo| letras|no ar|bairro|fechou|não administra/.test(m) ? m : falhou("dar o lance", r.error, { texto: "Não foi possível salvar o lance agora. Tente de novo daqui a pouco.", academia: c.id }) };
     render();
     return;
   }
@@ -14248,7 +14287,7 @@ async function cancelarLance() {
   if (!c || !confirm("Sair do leilão desta semana? A promoção deixa de concorrer, e nada é cobrado.")) return;
   let r;
   try { r = await sb.rpc('cancelar_lance', { p_academia: c.id }); } catch (e) { r = { error: e }; }
-  state.pcEmailMsg = r.error ? { tipo: "erro", texto: falhou("cancelar o lance", r.error, { texto: "Não consegui cancelar agora. Tente de novo.", academia: c.id }) } : { tipo: "ok", texto: "Você saiu do leilão desta semana." };
+  state.pcEmailMsg = r.error ? { tipo: "erro", texto: falhou("cancelar o lance", r.error, { texto: "Não foi possível cancelar agora. Tente de novo.", academia: c.id }) } : { tipo: "ok", texto: "Você saiu do leilão desta semana." };
   state.pcEmailForm = null; state.pcEmailEditando = false; state.pcLeilaoPasso = 1;
   await carregarPromocoesPorEmail(false);
   render();
@@ -14427,7 +14466,7 @@ async function salvarPromocao() {
     const m = String(r.error.message || "");
     // O banco de teste pode ter o texto de antes ("Mude ou encerre…").
     if (/promoção valendo/.test(m)) { state.pcPromoMsg = { tipo: "erro", texto: "A academia já tem uma promoção valendo. Altere ou encerre a de agora para publicar outra." }; render(); return; }
-    state.pcPromoMsg = { tipo: "erro", texto: /créditos|semanas|Completo|Premium| letras|em análise|não administra/.test(m) ? m : falhou("salvar a promoção", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes.", academia: c.id }) };
+    state.pcPromoMsg = { tipo: "erro", texto: /créditos|semanas|Completo|Premium| letras|em análise|não administra/.test(m) ? m : falhou("salvar a promoção", r.error, { texto: "Não foi possível salvar agora. Tente de novo em instantes.", academia: c.id }) };
     render();
     return;
   }
@@ -14449,7 +14488,7 @@ async function encerrarPromocao(id) {
   if (!confirm(x && x.valendo ? `Encerrar esta promoção? Ela sai da ficha e da busca na hora.${volta ? ` As semanas que ainda não começaram voltam para os créditos (${emReais(volta)}).` : ""}` : "Apagar esta promoção da lista?")) return;
   const r = await sb.rpc('apagar_promocao', { p_id: id });
   const devolvido = Number(r.data || 0);
-  state.pcPromoMsg = r.error ? { tipo: "erro", texto: falhou("encerrar a promoção", r.error, { texto: "Não consegui encerrar agora. Tente de novo." }) }
+  state.pcPromoMsg = r.error ? { tipo: "erro", texto: falhou("encerrar a promoção", r.error, { texto: "Não foi possível encerrar agora. Tente de novo." }) }
     : { tipo: "ok", texto: x && x.valendo ? `Promoção encerrada.${devolvido ? ` ${emReais(devolvido)} ${devolvido === 1 ? "voltou" : "voltaram"} para os créditos.` : ""}` : "Promoção apagada." };
   if (state.pcPromoEditando === id) { state.pcPromoEditando = null; state.pcPromoForm = null; }
   await Promise.all([carregarPromocoes(), carregarPromocoesDaAcademia()]);
@@ -14497,7 +14536,7 @@ async function carregarPedidosDeAcesso() {
 async function responderPedidoDeAcesso(userId, aceitar) {
   state.pedidoAcessoErro = "";
   const r = await sb.rpc('responder_pedido_de_acesso', { p_user: userId, p_aceitar: aceitar });
-  if (r.error) { state.pedidoAcessoErro = falhou("responder o pedido de acesso", r.error, { texto: "Não consegui responder agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui responder agora." }); render(); return; }
+  if (r.error) { state.pedidoAcessoErro = falhou("responder o pedido de acesso", r.error, { texto: "Não foi possível responder agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível responder agora." }); render(); return; }
   state.contaAviso = aceitar ? "Pronto! A pessoa entrou na equipe da academia." : "Pedido recusado.";
   await carregarPedidosDeAcesso();
   await carregarPessoas();
@@ -14634,7 +14673,7 @@ async function enviarContestacaoDeAcesso() {
     p_conhece: k.conhece === "sim", p_quem_e: k.quem, p_o_que_faz: k.quem === "nao_sei" ? null : k.faz, p_suspeita: k.suspeita, p_motivo: k.motivo, p_detalhes: k.detalhes || null });
   k.enviando = false;
   if (r.error) {
-    k.erro = r.error.code === "22023" || r.error.code === "42501" ? r.error.message : falhou("contestar o acesso", r.error, { texto: "Não consegui enviar agora. Tente de novo em instantes.", academia: c.id });
+    k.erro = r.error.code === "22023" || r.error.code === "42501" ? r.error.message : falhou("contestar o acesso", r.error, { texto: "Não foi possível enviar agora. Tente de novo em instantes.", academia: c.id });
     render(); return;
   }
   registrarPasso("acao", { site: "parceiros", academia: c.id, detalhe: `Contestou um acesso · ${nomeDaAcademiaDoPasso(c.id)}` });
@@ -14686,7 +14725,7 @@ async function responderVerificacaoDoAcesso() {
   const r = await sb.rpc('responder_verificacao_de_acesso', { p_academia: k.academia, p_quem_e: k.quem, p_o_que_faz: k.faz, p_desde: k.desde, p_texto: k.texto || null });
   k.enviando = false;
   if (r.error) {
-    k.erro = r.error.code === "22023" ? r.error.message : falhou("responder à verificação do acesso", r.error, { texto: "Não consegui enviar agora. Tente de novo em instantes.", academia: k.academia });
+    k.erro = r.error.code === "22023" ? r.error.message : falhou("responder à verificação do acesso", r.error, { texto: "Não foi possível enviar agora. Tente de novo em instantes.", academia: k.academia });
     render(); return;
   }
   registrarPasso("acao", { site: "parceiros", academia: k.academia, detalhe: `Respondeu à verificação do acesso · ${nomeDaAcademiaDoPasso(k.academia)}` });
@@ -14888,7 +14927,7 @@ async function excluirMinhaConta(origem, el) {
   if (r.error) {
     const erro = el.querySelector("#excluir-conta-erro");
     erro.hidden = false;
-    erro.textContent = falhou("excluir a conta", r.error, { texto: "Não consegui excluir a conta agora. Tente de novo em instantes." });
+    erro.textContent = falhou("excluir a conta", r.error, { texto: "Não foi possível excluir a conta agora. Tente de novo em instantes." });
     sim.disabled = false;
     sim.textContent = "Excluir a conta";
     return;
@@ -15019,7 +15058,7 @@ async function avisarQueFechou(academiaId) {
   state.pcSaidaEnviando = false;
   if (r.error) {
     const m = String(r.error.message || "");
-    state.pcSaidaErro = /responsável principal|Já existe|500 letras|fechou as portas/.test(m) ? m : falhou("avisar que a academia fechou", r.error, { texto: "Não consegui enviar agora. Tente de novo em instantes.", academia: academiaId });
+    state.pcSaidaErro = /responsável principal|Já existe|500 letras|fechou as portas/.test(m) ? m : falhou("avisar que a academia fechou", r.error, { texto: "Não foi possível enviar agora. Tente de novo em instantes.", academia: academiaId });
     render();
     return;
   }
@@ -15033,7 +15072,7 @@ async function avisarQueFechou(academiaId) {
 async function cancelarAvisoDeQueFechou(academiaId) {
   if (!confirm("Cancelar o aviso de que a academia fechou?")) return;
   const r = await sb.rpc('cancelar_pedido_para_sair', { p_academia: academiaId });
-  if (r.error) { avisarFalha("cancelar o aviso de que a academia fechou", r.error, "Não consegui cancelar agora. Tente de novo.", { texto: "Não consegui cancelar agora. Tente de novo em instantes.", academia: academiaId }); return; }
+  if (r.error) { avisarFalha("cancelar o aviso de que a academia fechou", r.error, "Não foi possível cancelar agora. Tente de novo.", { texto: "Não foi possível cancelar agora. Tente de novo em instantes.", academia: academiaId }); return; }
   state.contaAviso = "Aviso cancelado: a ficha volta ao site como estava.";
   await carregarPedidosParaSair();
   await recarregarConta();
@@ -15090,7 +15129,7 @@ async function continuarComEmail() {
   }
   state.pcContaSalvando = false;
   if (r.error) {
-    state.pcContaErro = falhou("conferir o e-mail", r.error, { texto: "Não consegui conferir o e-mail agora. Tente de novo em instantes." });
+    state.pcContaErro = falhou("conferir o e-mail", r.error, { texto: "Não foi possível conferir o e-mail agora. Tente de novo em instantes." });
   } else if (r.data && r.data.tipo === "outra") {
     state.pcContaErro = "Esse e-mail é de outra conta do GuiaTennis. Para a academia, use outro e-mail.";
   } else {
@@ -15184,7 +15223,7 @@ function pcConfirmarEmail(etapa) {
   if (!c || c.emailConfirmado || !recebeEmail(c.login)) return "";
   const enviado = state.pcConfirmar === "enviado";
   const sub = state.pcConfirmar === "falhou"
-    ? "Não consegui mandar o código agora. Tente de novo em instantes."
+    ? "Não foi possível mandar o código agora. Tente de novo em instantes."
     : enviado ? `Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(c.login)}</strong>.`
     : `O código vai para <strong>${esc(c.login)}</strong>.`;
   return `
@@ -15217,7 +15256,7 @@ async function ativarParceirosDoJogador() {
     p_nome: juntarNome(f), p_whatsapp: f.whatsapp, p_aceite: true,
     p_tratamento: f.tratamento, p_cargo: f.cargo, p_recebe_novidades: !!f.novidades,
   });
-  if (r.error) return erro(falhou("usar a conta de jogador no Parceiros", r.error, { texto: "Não consegui agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui agora. Tente de novo em instantes." }));
+  if (r.error) return erro(falhou("usar a conta de jogador no Parceiros", r.error, { texto: "Não foi possível concluir agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível concluir agora. Tente de novo em instantes." }));
   await recarregarConta();
   registrarPasso("acao", { site: "parceiros", detalhe: "Usou a conta de jogador no GuiaTennis Parceiros" });
   window.__pcConta = null;
@@ -15253,7 +15292,7 @@ async function pedirParaAdministrar(academiaId) {
   let r = await sb.rpc('pedir_para_administrar', { p_academia: academiaId, p_declaro: true });
   // Banco antes do SQL 20261006130000: pede como antes, sem guardar a hora.
   if (r.error && /could not find|PGRST202/i.test((r.error.message || "") + (r.error.code || ""))) r = await sb.rpc('pedir_para_administrar', { p_academia: academiaId });
-  if (r.error) { state.pedidoErro = falhou("pedir para administrar a academia", r.error, { texto: "Não consegui mandar o pedido agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui mandar o pedido agora.", academia: academiaId }); render(); return; }
+  if (r.error) { state.pedidoErro = falhou("pedir para administrar a academia", r.error, { texto: "Não foi possível mandar o pedido agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível mandar o pedido agora.", academia: academiaId }); render(); return; }
   state.pcReivindicar = null;
   state.pcSelecionada = undefined;
   state.pcDeclaro = false;
@@ -15513,7 +15552,7 @@ async function confirmarCodigoDaDisputa(id) {
     sem_disputa: "A disputa já foi decidida.",
   };
   if (r.error || r.data !== "analise") {
-    state.disputaErro = r.error ? falhou("conferir o código", r.error, { texto: "Não consegui conferir agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui conferir agora.", academia: id }) : (avisos[r.data] || "Não consegui conferir agora.");
+    state.disputaErro = r.error ? falhou("conferir o código", r.error, { texto: "Não foi possível conferir agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível conferir agora.", academia: id }) : (avisos[r.data] || "Não foi possível conferir agora.");
     render();
     return;
   }
@@ -15528,7 +15567,7 @@ async function pedirCodigoDaDisputa(id) {
   const r = await sb.rpc('pedir_codigo_do_responsavel', { p_academia: id });
   state.disputaSalvando = false;
   if (r.error) {
-    state.disputaErro = falhou("pedir outro código", r.error, { texto: "Não consegui pedir outro código agora. Fale com o GuiaTennis no WhatsApp.", academia: id });
+    state.disputaErro = falhou("pedir outro código", r.error, { texto: "Não foi possível pedir outro código agora. Fale com o GuiaTennis no WhatsApp.", academia: id });
   } else {
     state.disputaAviso = r.data === "desligado" ? "Para mandar outro código, fale com o GuiaTennis no WhatsApp." : r.data === "mandado" ? "Código mandado. Chega em instantes no WhatsApp da ficha, em nome do GuiaTennis." : AVISOS_DO_CODIGO[r.data] || "";
     await carregarDisputasDaAcademia();
@@ -15661,7 +15700,7 @@ async function confirmarWhatsappDaFicha() {
   const r = await sb.rpc('confirmar_whatsapp_da_ficha', { p_academia: c.id, p_codigo: codigo });
   state.pcWhatsappSalvando = false;
   if (r.error) {
-    state.pcWhatsappErro = falhou("confirmar o WhatsApp", r.error, { texto: "Não consegui conferir o código agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui conferir o código agora.", academia: c.id });
+    state.pcWhatsappErro = falhou("confirmar o WhatsApp", r.error, { texto: "Não foi possível conferir o código agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível conferir o código agora.", academia: c.id });
     render(); return;
   }
   state.pcCodigoWhatsapp = "";
@@ -15688,7 +15727,7 @@ async function confirmarWhatsappDaFicha() {
     irParceiros("painel");
     return;
   }
-  state.pcWhatsappErro = AVISOS_DO_WHATSAPP[r.data] || "Não consegui conferir o código agora.";
+  state.pcWhatsappErro = AVISOS_DO_WHATSAPP[r.data] || "Não foi possível conferir o código agora.";
   render();
   document.getElementById("pc-codigo-whatsapp")?.focus();
 }
@@ -15700,7 +15739,7 @@ async function pedirCodigoDoWhatsapp() {
   const r = await sb.rpc('pedir_codigo_do_whatsapp', { p_academia: c.id });
   state.pcWhatsappSalvando = false;
   if (r.error) {
-    state.pcWhatsappErro = falhou("mandar o código ao WhatsApp", r.error, { texto: "Não consegui mandar o código agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui mandar o código agora.", academia: c.id });
+    state.pcWhatsappErro = falhou("mandar o código ao WhatsApp", r.error, { texto: "Não foi possível mandar o código agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível mandar o código agora.", academia: c.id });
   } else {
     state.pcWhatsappAviso = AVISOS_DO_WHATSAPP[r.data] || "";
     await carregarWhatsappNovo();
@@ -15721,7 +15760,7 @@ async function desistirDoWhatsappNovo(id) {
   const w = whatsappNovoDe(id);
   if (!w || !confirm(w.troca ? "Cancelar a troca? A ficha continua com o WhatsApp de agora." : "Cancelar esse número? A ficha fica sem WhatsApp até vocês escreverem outro.")) return;
   const r = await sb.rpc('desistir_do_whatsapp_novo', { p_academia: id });
-  if (r.error) { avisarFalha("cancelar o WhatsApp novo", r.error, "Não consegui cancelar agora. Tente de novo em instantes.", { academia: id }); return; }
+  if (r.error) { avisarFalha("cancelar o WhatsApp novo", r.error, "Não foi possível cancelar agora. Tente de novo em instantes.", { academia: id }); return; }
   await carregarWhatsappNovo();
   state.contaAviso = w.troca ? "Troca cancelada: a ficha continua com o WhatsApp de antes." : "Número cancelado.";
   render();
@@ -15787,7 +15826,7 @@ async function contestarAcademia(academiaId) {
   const r = await sb.rpc('contestar_academia', { p_academia: academiaId, p_numero: numero });
   if (state.pcContestar) state.pcContestar.enviando = false;
   if (r.error) {
-    state.pedidoErro = falhou("contestar quem administra a academia", r.error, { texto: "Não consegui contestar agora. Fale com o GuiaTennis no WhatsApp.", regra: r.error.message || "Não consegui contestar agora.", academia: academiaId });
+    state.pedidoErro = falhou("contestar quem administra a academia", r.error, { texto: "Não foi possível contestar agora. Fale com o GuiaTennis no WhatsApp.", regra: r.error.message || "Não foi possível contestar agora.", academia: academiaId });
     render();
     return;
   }
@@ -15819,7 +15858,7 @@ async function pedirOutroCodigo(academiaId) {
   const r = await sb.rpc('pedir_codigo_da_disputa', { p_academia: academiaId });
   state.pcContaSalvando = false;
   if (r.error) {
-    state.pedidoErro = falhou("mandar outro código", r.error, { texto: "Não consegui mandar agora. Fale com o GuiaTennis no WhatsApp.", regra: r.error.message || "Não consegui mandar agora.", academia: academiaId });
+    state.pedidoErro = falhou("mandar outro código", r.error, { texto: "Não foi possível mandar agora. Fale com o GuiaTennis no WhatsApp.", regra: r.error.message || "Não foi possível mandar agora.", academia: academiaId });
     render();
     return;
   }
@@ -15849,7 +15888,7 @@ async function confirmarCodigo(academiaId) {
     sem_codigo: "O código ainda não foi mandado. Aguarde a mensagem no WhatsApp da academia.",
   };
   if (r.error || (r.data !== "ok" && r.data !== "analise")) {
-    state.pedidoErro = r.error ? falhou("conferir o código", r.error, { texto: "Não consegui conferir agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui conferir agora.", academia: academiaId }) : (avisos[r.data] || "Não consegui conferir agora.");
+    state.pedidoErro = r.error ? falhou("conferir o código", r.error, { texto: "Não foi possível conferir agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível conferir agora.", academia: academiaId }) : (avisos[r.data] || "Não foi possível conferir agora.");
     render();
     return;
   }
@@ -15881,7 +15920,7 @@ async function pausarAcademia(academiaId, pausar, dias) {
   if (pausar && dias > 0) { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + dias); ate = d.toISOString(); }
   const r = await sb.rpc('pausar_minha_academia', { p_academia: academiaId, p_pausar: !!pausar, p_ate: ate });
   if (r.error) {
-    state.pausaErro = (r.error.code === "42501" || r.error.code === "22023") && r.error.message ? r.error.message : falhou(pausar ? "pausar a academia" : "voltar a mostrar a academia", r.error, { texto: "Não consegui mudar agora. Tente de novo em instantes.", academia: academiaId });
+    state.pausaErro = (r.error.code === "42501" || r.error.code === "22023") && r.error.message ? r.error.message : falhou(pausar ? "pausar a academia" : "voltar a mostrar a academia", r.error, { texto: "Não foi possível mudar agora. Tente de novo em instantes.", academia: academiaId });
     state.pausaErroEm = academiaId;
     render();
     return;
@@ -15898,7 +15937,7 @@ async function pausarAcademia(academiaId, pausar, dias) {
 
 async function cancelarPedido(academiaId) {
   const r = await rpcDoPedido('cancelar_meu_pedido', {}, academiaId);
-  if (r.error) { state.pedidoErro = falhou("cancelar o pedido", r.error, { texto: "Não consegui cancelar agora. Tente de novo em instantes.", regra: "Não consegui cancelar agora.", academia: academiaId }); state.pedidoErroEm = academiaId; render(); return; }
+  if (r.error) { state.pedidoErro = falhou("cancelar o pedido", r.error, { texto: "Não foi possível cancelar agora. Tente de novo em instantes.", regra: "Não foi possível cancelar agora.", academia: academiaId }); state.pedidoErroEm = academiaId; render(); return; }
   state.pedidoErro = "";
   state.pedidoErroEm = null;
   if (state.pcPedidoFeito === academiaId) state.pcPedidoFeito = null;
@@ -15917,7 +15956,7 @@ async function adicionarPessoa() {
   // e-mail novo recebe o convite e cria a própria senha.
   const r = await sb.rpc('adicionar_pessoa', { p_email: email, p_nome: (f.nome || "").trim(), p_senha: "" });
   state.pessoaSalvando = false;
-  if (r.error) { state.pessoaErro = falhou("adicionar a pessoa", r.error, { texto: "Não consegui adicionar agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui adicionar agora." }); render(); return; }
+  if (r.error) { state.pessoaErro = falhou("adicionar a pessoa", r.error, { texto: "Não foi possível adicionar agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível adicionar agora." }); render(); return; }
   state.pessoaNova = { email, nome: (f.nome || "").trim(), ligada: r.data === "ligada" };
   window.__pessoa = null;
   await carregarPessoas();
@@ -15936,7 +15975,7 @@ async function mudarFuncao(userId, funcao) {
   const r = await sb.rpc('mudar_funcoes_da_pessoa', { p_user: userId, p_funcoes: novas });
   if (r.error) {
     x.funcoes = antes;
-    state.pessoaErro = falhou("mudar o que a pessoa pode fazer", r.error, { texto: "Não consegui mudar agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui mudar agora." });
+    state.pessoaErro = falhou("mudar o que a pessoa pode fazer", r.error, { texto: "Não foi possível mudar agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível mudar agora." });
     render(); focar();
     return;
   }
@@ -15946,7 +15985,7 @@ async function tornarPrincipal(userId, nome) {
   const c = minhaAcademia();
   if (!confirm(`Tornar ${nome} responsável principal da ${c ? c.name : "academia"}? Essa pessoa vai poder mudar o plano, adicionar e remover pessoas e escolher o que cada uma pode fazer. Depois, só o GuiaTennis tira esse papel (ou a própria pessoa).`)) return;
   const r = await sb.rpc('tornar_principal', { p_user: userId });
-  if (r.error) { state.pessoaErro = falhou("tornar a pessoa responsável principal", r.error, { texto: "Não consegui mudar agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui mudar agora." }); render(); return; }
+  if (r.error) { state.pessoaErro = falhou("tornar a pessoa responsável principal", r.error, { texto: "Não foi possível mudar agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível mudar agora." }); render(); return; }
   state.pessoaErro = "";
   state.contaAviso = `${nome} agora é responsável principal da ${c ? c.name : "academia"}.`;
   await carregarPessoas();
@@ -15955,7 +15994,7 @@ async function deixarDeSerPrincipal() {
   const c = minhaAcademia();
   if (!confirm(`Deixar de ser responsável principal da ${c ? c.name : "academia"}? Você continua na equipe, com todas as funções, e deixa de mudar o plano e as pessoas.`)) return;
   const r = await sb.rpc('deixar_de_ser_principal');
-  if (r.error) { state.pessoaErro = falhou("deixar de ser responsável principal", r.error, { texto: "Não consegui mudar agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui mudar agora." }); render(); return; }
+  if (r.error) { state.pessoaErro = falhou("deixar de ser responsável principal", r.error, { texto: "Não foi possível mudar agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível mudar agora." }); render(); return; }
   state.pessoaErro = "";
   state.contaAviso = "Você agora é da equipe.";
   await recarregarConta();
@@ -15965,7 +16004,7 @@ async function removerPessoa(userId, nome) {
   const c = minhaAcademia();
   if (!confirm(`Remover ${nome || "essa pessoa"} da ${c ? c.name : "academia"}? Se ela não administrar outra academia, deixa de entrar no GuiaTennis Parceiros.`)) return;
   const r = await sb.rpc('remover_pessoa', { p_user: userId });
-  if (r.error) { state.pessoaErro = falhou("remover a pessoa", r.error, { texto: "Não consegui remover agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui remover agora." }); render(); return; }
+  if (r.error) { state.pessoaErro = falhou("remover a pessoa", r.error, { texto: "Não foi possível remover agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível remover agora." }); render(); return; }
   state.pessoaErro = "";
   state.pessoaNova = null;
   await carregarPessoas();
@@ -16360,7 +16399,7 @@ function ligarEventosParceiros() {
     el.onclick = async () => {
       if (!confirm(`Cancelar o convite de ${el.dataset.pcCancelarConvite}?`)) return;
       const r = await sb.rpc('cancelar_convite', { p_email: el.dataset.pcCancelarConvite });
-      if (r.error) { state.pessoaErro = falhou("cancelar o convite", r.error, { texto: "Não consegui cancelar agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui cancelar agora." }); render(); return; }
+      if (r.error) { state.pessoaErro = falhou("cancelar o convite", r.error, { texto: "Não foi possível cancelar agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível cancelar agora." }); render(); return; }
       state.pessoaErro = "";
       await carregarPessoas();
     };
@@ -16399,7 +16438,7 @@ const PUSH_CONTA_KEY = "guiatennis_push_conta_v1";
 const PUSHES_CONTA = [
   { t: "Novidades das academias", d: "Com a conta grátis, você recebe por e-mail as academias novas na sua cidade.", motivo: "Entre para escolher os avisos por e-mail. Se ainda não tiver conta, o cadastro leva um minuto." },
   { t: "Avalie onde você joga", d: "Dê nota às academias em que você joga e ajude outros jogadores a escolher.", motivo: "Para avaliar, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto." },
-  { t: "Salve as suas buscas", d: "Guarde o lugar e os filtros na conta e receba por e-mail as academias novas onde você procura — no celular e no computador.", motivo: "Entre para salvar as suas buscas. Se ainda não tiver conta, o cadastro leva um minuto." },
+  { t: "Salve as suas buscas", d: "Guarde o lugar e os filtros na conta e receba por e-mail as academias novas onde você procura, no celular e no computador.", motivo: "Entre para salvar as suas buscas. Se ainda não tiver conta, o cadastro leva um minuto." },
 ];
 const PUSH_CONTA_PRIMEIRO = 10, PUSH_CONTA_INTERVALO = 40;
 function pushContaHtml() {
@@ -16875,7 +16914,7 @@ async function guardarAvisoDaViagem(r, cidade) {
   const dados = { avisos_viagem: true, viagem_uf: r.uf, viagem_cidade: cidade, viagem_ida: r.ida || null,
     viagem_volta: r.volta || null, avisos_mudados_em: new Date().toISOString() };
   const { error } = await sb.from('jogadores').update(dados).eq('user_id', jogador.user_id);
-  if (error) return " " + falhou("ligar o aviso da viagem", error, { texto: "Não consegui ligar o aviso por e-mail agora: tente de novo em Minhas quadras › Vou viajar.", silenciosa: true });
+  if (error) return " " + falhou("ligar o aviso da viagem", error, { texto: "Não foi possível ligar o aviso por e-mail agora: tente de novo em Minhas quadras › Vou viajar.", silenciosa: true });
   Object.assign(jogador, dados);
   registrarPasso("acao", { detalhe: "Ligou o aviso da viagem por e-mail" });
   return jogador.email_confirmado_em
@@ -17402,7 +17441,7 @@ function renderJogadorSheet() {
   // As telas de código (23/10/2026): a página de sempre do site (o título em
   // Playfair, para onde o código foi e o cartão), com as caixas.
   const paginaDeCodigo = pagina;
-  const naoMandou = `<p class="email-sugestao" role="alert">Não consegui mandar o código agora. ${tela === "codigo" ? "Você pode confirmar depois, em Minha conta." : `Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.`}</p>`;
+  const naoMandou = `<p class="email-sugestao" role="alert">Não foi possível mandar o código agora. ${tela === "codigo" ? "Você pode confirmar depois, em Minha conta." : `Tente de novo em instantes ou <a href="${whatsappGuia("Olá! Esqueci a senha do GuiaTennis.")}" target="_blank" rel="noreferrer">fale com o GuiaTennis no WhatsApp</a>.`}</p>`;
   if (tela === "codigo") miolo = paginaDeCodigo("Confirme o seu e-mail", `${state.confirmarParaAgir ? "Falta só confirmar o seu e-mail. " : ""}Mandamos um código de ${DIGITOS_DO_EMAIL} números para <strong>${esc(state.jogadorLogin || f.email || "")}</strong>.`, `
     ${state.codigoMandando ? `<p class="footnote">${bolaGirando(16)} Mandando o código…</p>` : ""}
     ${state.codigoFalhou ? naoMandou : campoCodigo}
@@ -17635,10 +17674,10 @@ async function enviarCodigo(email) {
   window.__codigo = {};
   try {
     const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
-    if (error) { diag(`código por e-mail: ${error.message}`); falhou("mandar o código por e-mail", error, { texto: "Não consegui mandar o código agora." }); }
+    if (error) { diag(`código por e-mail: ${error.message}`); falhou("mandar o código por e-mail", error, { texto: "Não foi possível mandar o código agora." }); }
     else state.codigoMandadoEm = Date.now();
     return !error;
-  } catch (e) { diag(`código por e-mail: ${e.message}`); falhou("mandar o código por e-mail", e, { texto: "Não consegui mandar o código agora." }); return false; }
+  } catch (e) { diag(`código por e-mail: ${e.message}`); falhou("mandar o código por e-mail", e, { texto: "Não foi possível mandar o código agora." }); return false; }
 }
 // Confere o código; certo, a pessoa fica logada por ele (e o banco aceita a
 // confirmação do e-mail).
@@ -17895,7 +17934,7 @@ async function continuarJogadorComEmail() {
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const r = await sb.rpc('conta_do_email', { p_email: email });
   state.jogadorSalvando = false;
-  if (r.error) { state.jogadorErro = falhou("conferir o e-mail", r.error, { texto: "Não consegui conferir o e-mail agora. Tente de novo em instantes." }); render(); return; }
+  if (r.error) { state.jogadorErro = falhou("conferir o e-mail", r.error, { texto: "Não foi possível conferir o e-mail agora. Tente de novo em instantes." }); render(); return; }
   state.jogadorLogin = (r.data && r.data.login) || email;
   state.jogadorContaTipo = (r.data && r.data.tipo) || "";
   state.jogadorTela = r.data ? "entrar" : "criar";
@@ -17958,7 +17997,7 @@ async function criarContaJogador() {
     state.jogadorSalvando = false;
     state.jogadorErro = /já tem conta/.test(r.error.message || "") ? "Esse e-mail já tem conta. Entre com a sua senha."
       : /Muitos cadastros|não pode criar conta/.test(r.error.message || "") ? r.error.message
-      : falhou("criar a conta", r.error, { texto: "Não consegui criar a conta agora. Tente de novo em instantes." });
+      : falhou("criar a conta", r.error, { texto: "Não foi possível criar a conta agora. Tente de novo em instantes." });
     if (/já tem conta/.test(r.error.message || "")) { state.jogadorTela = "entrar"; state.jogadorLogin = email; }
     render();
     return;
@@ -18001,7 +18040,7 @@ async function salvarContaJogador() {
   state.jogadorSalvando = true; state.jogadorErro = ""; render();
   const { error } = await sb.from('jogadores').update(dados).eq('user_id', jogador.user_id);
   state.jogadorSalvando = false;
-  if (error) { state.jogadorErro = falhou("salvar o perfil", error, { texto: "Não consegui salvar agora. Tente de novo em instantes." }); render(); return; }
+  if (error) { state.jogadorErro = falhou("salvar o perfil", error, { texto: "Não foi possível salvar agora. Tente de novo em instantes." }); render(); return; }
   const nomeMudou = dados.nome !== jogador.nome;
   Object.assign(jogador, dados);
   registrarPasso("acao", { detalhe: "Salvou o perfil" });
@@ -18086,7 +18125,7 @@ async function carregarMarquei() {
   m.carregando = false;
   const info = r && !r.error ? (Array.isArray(r.data) ? r.data[0] : r.data) : null;
   const invalido = r && r.error && (r.error.code === "22P02" || /invalid input syntax/i.test(r.error.message || ""));
-  if (r && r.error && !invalido) { m.erro = falhou("abrir o acompanhamento", r.error, { texto: "Não consegui abrir agora. Tente de novo em instantes." }); render(); return; }
+  if (r && r.error && !invalido) { m.erro = falhou("abrir o acompanhamento", r.error, { texto: "Não foi possível abrir agora. Tente de novo em instantes." }); render(); return; }
   if (!info) { m.invalido = true; render(); return; }
   m.info = info;
   // "Ainda não" no e-mail: anota na hora (um toque, como o "Não" do Booking).
@@ -18108,7 +18147,7 @@ async function responderMarquei(resposta) {
   try { r = await sb.rpc('responder_acompanhamento', args); } catch (e) { r = { error: e }; }
   m.salvando = false;
   if (r.error) {
-    m.erro = r.error.code === "22023" ? r.error.message : falhou("responder o acompanhamento", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes." });
+    m.erro = r.error.code === "22023" ? r.error.message : falhou("responder o acompanhamento", r.error, { texto: "Não foi possível salvar agora. Tente de novo em instantes." });
     render();
     return;
   }
@@ -18220,7 +18259,7 @@ async function carregarMeusHorarios() {
 async function tirarHorario(chave) {
   let r;
   try { r = await sb.rpc('responder_acompanhamento', { p_chave: chave, p_resposta: 'cancelar' }); } catch (e) { r = { error: e }; }
-  if (r.error) { state.jogadorErro = falhou("tirar o lembrete", r.error, { texto: "Não consegui tirar o lembrete agora. Tente de novo em instantes." }); render(); return; }
+  if (r.error) { state.jogadorErro = falhou("tirar o lembrete", r.error, { texto: "Não foi possível tirar o lembrete agora. Tente de novo em instantes." }); render(); return; }
   state.meusHorarios = (state.meusHorarios || []).filter(h => h.chave !== chave);
   state.jogadorAviso = "Lembrete tirado.";
   render();
@@ -18233,7 +18272,7 @@ async function salvarWhatsappDoJogador() {
   try { r = await sb.rpc('salvar_whatsapp_do_jogador', { p_whatsapp: numero, p_aceite: !!f.whatsappAceite }); } catch (e) { r = { error: e }; }
   state.jogadorSalvando = false;
   if (r.error) {
-    state.jogadorErro = r.error.code === "22023" ? r.error.message : falhou("salvar o WhatsApp", r.error, { texto: "Não consegui salvar o WhatsApp agora. Tente de novo em instantes." });
+    state.jogadorErro = r.error.code === "22023" ? r.error.message : falhou("salvar o WhatsApp", r.error, { texto: "Não foi possível salvar o WhatsApp agora. Tente de novo em instantes." });
     render();
     return false;
   }
@@ -18283,7 +18322,7 @@ async function confirmarPararAvisos() {
   // texto inválido — é link que não vale, não falha do site.
   const invalido = r.error && (r.error.code === "22P02" || /invalid input syntax/i.test(r.error.message || ""));
   if (r.error && !invalido || !r.data) {
-    p.erro = r.error && !invalido ? falhou("parar os avisos por e-mail", r.error, { texto: "Não consegui parar os avisos agora. Tente de novo em instantes." }) : "Esse link não vale mais. Entre na sua conta para mudar os avisos.";
+    p.erro = r.error && !invalido ? falhou("parar os avisos por e-mail", r.error, { texto: "Não foi possível parar os avisos agora. Tente de novo em instantes." }) : "Esse link não vale mais. Entre na sua conta para mudar os avisos.";
     render();
     return;
   }
@@ -18664,14 +18703,11 @@ function blocoDiferenciais() {
     // Pedido do Breno em 05/10/2026: sem repetir que não cobra taxa, e
     // dizendo a facilidade de achar a quadra mais perto com tudo o que
     // precisa saber — como o "tudo num lugar só" do Booking e do trivago.
-    { ic: 'check', t: "Grátis para quem joga", d: "Buscar, comparar e chamar a academia não custa nada — para aula ou para locar quadra. Sem taxa e sem cartão." },
-    { ic: 'pin', t: "A quadra mais perto, com tudo o que você precisa saber", d: "Uma facilidade tremenda: digite o CEP, o endereço ou toque no GPS e veja as quadras da mais perto para a mais longe, cada uma com preço, horário, piso, fotos e como chegar." },
+    { ic: 'pin', t: "A academia mais perto, com tudo o que você precisa saber", d: "Digite o CEP ou use a sua localização: as academias aparecem da mais perto para a mais longe, com preço, horário, piso, fotos e como chegar." },
     { ic: 'phone', t: "Você fala direto com a academia", d: "O WhatsApp abre com a conversa já iniciada. Você combina o horário com ela, sem central de reservas e sem ninguém no meio." },
     // "Só de quem jogou" o guia não tem como garantir (análise de
     // 07/10/2026): diz o que ele faz de fato.
     { ic: 'sparkle', t: "Avaliações feitas no GuiaTennis", d: "Só quem tem conta avalia, uma vez por academia, e edita quando quiser (aparece “editada”). A academia responde, mas não apaga. Não importamos nota de outro site." },
-    { ic: 'list', t: "Compare lado a lado", d: "Escolha até 5 academias e veja preço, quadras, comodidades e nota na mesma tabela — sem precisar abrir cinco abas." },
-    { ic: 'sino', t: "Avisos que trabalham por você", d: "Com a conta grátis, salve as suas buscas e receba por e-mail as academias novas onde você procura — e as quadras da cidade quando for viajar." },
   ];
   return `
     <div class="home-sec" id="home-porque">
@@ -18705,7 +18741,7 @@ function numeroRedondo(n) {
 function umEmCada(parte, todo) {
   if (!parte || !todo) return null;
   const n = Math.round(todo / parte);
-  return n <= 1 ? "quase todo mundo" : `1 em ${n}`;
+  return n <= 1 ? "quase todo mundo" : `1 em cada ${n}`;
 }
 
 function porcentoRedondo(parte, todo) {
@@ -18785,7 +18821,7 @@ function numerosDoSite() {
 function blocoIdeia() {
   const itens = [
     { t: "Para quem vai começar", d: "Ache aula perto de casa ou do trabalho e compare valor e horário antes de chamar." },
-    { t: "Para quem joga com os amigos", d: "Loque uma quadra no piso que você prefere — e coberta, para os dias de chuva." },
+    { t: "Para quem joga com os amigos", d: "Alugue uma quadra no piso que você prefere, coberta para os dias de chuva." },
     { t: "Para quem quer evoluir", d: "Compare as aulas da região e veja nas avaliações o que dizem os alunos." },
     { t: "Para quem vai viajar", d: "Leve a raquete: veja as quadras da cidade de destino antes de sair de casa." },
   ];
@@ -18871,13 +18907,13 @@ function perguntasDoSite() {
     // as patrocinadas são do Premium, sem contar como o site faz por dentro.
     {
       q: "Como funciona a ordem das academias?",
-      a: "Na busca, a lista segue a ordem que você escolher — por padrão, da mais perto para a mais longe. As marcadas \"Patrocinado\" são academias do plano Premium que também ficam perto do endereço buscado (a até 10 km) e atendem aos filtros escolhidos; elas aparecem em destaque no topo da busca (e também no lugar delas na lista, sem a marcação) e entre as recomendadas. As \"Mais bem avaliadas\" seguem só a nota dos jogadores.",
+      a: "Na busca, a lista segue a ordem que você escolher: por padrão, da mais perto para a mais longe. As marcadas \"Patrocinado\" são academias do plano Premium que também ficam perto do endereço buscado (a até 10 km) e atendem aos filtros escolhidos; elas aparecem em destaque no topo da busca (e também no lugar delas na lista, sem a marcação) e entre as recomendadas. As \"Mais bem avaliadas\" seguem só a nota dos jogadores.",
     },
   ];
   if (cidades.length) {
     faq.push({
       q: "Em quais cidades já tem quadra cadastrada?",
-      a: `Hoje o Guia tem academias em ${listaTexto(cidades)}. A lista cresce toda semana — se a sua cidade ainda não está, indique a academia em que você joga.`,
+      a: `Hoje o Guia tem academias em ${listaTexto(cidades)}. A lista cresce toda semana. Se a sua cidade ainda não está, indique a academia em que você joga.`,
     });
   }
   return faq;
@@ -19212,7 +19248,7 @@ function faixaCidade(courts) {
   const vals = courts.map(parsePriceValue).filter(v => isFinite(v));
   if (!vals.length) return "";
   const min = Math.min(...vals), max = Math.max(...vals);
-  return min === max ? `a partir de R$ ${min}/hora` : `de R$ ${min} a R$ ${max} a hora`;
+  return min === max ? `a partir de R$ ${min} por hora` : `de R$ ${min} a R$ ${max} por hora`;
 }
 
 // patrocinado: a Premium nas "Academias recomendadas" (regra 101) é posição
@@ -19230,7 +19266,7 @@ function renderMini(c, selo, extra, patrocinado) {
         <p class="mini-score">
           ${c.appCount
             ? `<strong>${c.appAvg.toFixed(1).replace(".", ",")} · ${scoreWord(c.appAvg, c.appCount)}</strong> <span>${c.appCount}</span>`
-            : `<span>Sem nota ainda</span>`}
+            : `<span>Sem avaliações ainda</span>`}
         </p>
         <p class="mini-stars">${estrelas ? "★".repeat(estrelas) : ""}<em>${totalQuadras(c) ? `${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}` : esc(c.bairro || "")}</em></p>
         ${extra ? `<p class="mini-extra">${esc(extra)}</p>` : ""}
@@ -19324,7 +19360,7 @@ function detalhesDaBuscaSalva(b) {
     ...rotulosNaOrdem(FILTER_AMENITY_OPTS, f.comodidades || []),
   ];
   if (f.distancia) partes.push(`até ${f.distancia} km`);
-  if (f.preco) partes.push(`até R$ ${f.preco}/hora`);
+  if (f.preco) partes.push(`até R$ ${f.preco} por hora`);
   if (f.nota) partes.push(`nota ${String(f.nota).replace(".", ",")}+`);
   return partes.join(" · ") || "Sem filtros";
 }
@@ -19343,7 +19379,7 @@ async function salvarBusca() {
   if (error || !data) {
     state.buscaSalvaErro = /20 buscas/.test((error && error.message) || "")
       ? "Você já tem 20 buscas salvas. Apague uma no seu perfil para salvar outra."
-      : falhou("salvar a busca", error, { texto: "Não consegui salvar a busca agora. Tente de novo em instantes." });
+      : falhou("salvar a busca", error, { texto: "Não foi possível salvar a busca agora. Tente de novo em instantes." });
     render();
     return;
   }
@@ -19356,14 +19392,14 @@ async function avisarDaBusca(id, avisar) {
   const b = buscasSalvas.find(x => x.id === id);
   if (!b) return;
   const { error } = await sb.from('buscas_salvas').update({ avisar: !!avisar }).eq('id', id);
-  if (error) { state.buscaSalvaErro = falhou("mudar o aviso da busca", error, { texto: "Não consegui mudar o aviso agora. Tente de novo em instantes." }); render(); return; }
+  if (error) { state.buscaSalvaErro = falhou("mudar o aviso da busca", error, { texto: "Não foi possível mudar o aviso agora. Tente de novo em instantes." }); render(); return; }
   b.avisar = !!avisar;
   if (avisar) registrarPasso("acao", { detalhe: "Ligou o aviso da busca salva" });
   render();
 }
 async function apagarBuscaSalva(id) {
   const { error } = await sb.from('buscas_salvas').delete().eq('id', id);
-  if (error) { state.buscaSalvaErro = falhou("apagar a busca salva", error, { texto: "Não consegui apagar agora. Tente de novo em instantes." }); render(); return; }
+  if (error) { state.buscaSalvaErro = falhou("apagar a busca salva", error, { texto: "Não foi possível apagar agora. Tente de novo em instantes." }); render(); return; }
   buscasSalvas = buscasSalvas.filter(x => x.id !== id);
   if (state.buscaSalvaAviso === id) state.buscaSalvaAviso = null;
   render();
@@ -19561,7 +19597,7 @@ function renderSiteFooter() {
         <div class="sf-col">
           ${/* Regra 253: o Chat de ajuda e o Feedback ficam no Suporte. */ ""}
           <h4>Suporte</h4>
-          <button type="button" id="footer-buscar">Como funciona a busca</button>
+          <button type="button" id="footer-buscar">Como funciona</button>
           <button type="button" data-abrir-chat>Chat de ajuda</button>
           <a href="/feedback" data-ir-feedback>Feedback</a>
           <a href="/parceiros" data-pc="inicio">GuiaTennis Parceiros</a>
@@ -19670,8 +19706,6 @@ function renderHome() {
     ${blocoDiferenciais()}
     ${blocoVideo()}
 
-    ${blocoDicas()}
-    ${blocoIdeia()}
     ${blocoFaqSite()}
 
     ${renderSiteFooter()}
@@ -19837,6 +19871,8 @@ function urlDoEstado() {
     caminho = "/feedback";
   } else if (state.page === "sobre") {
     caminho = caminhoDoSobre();
+  } else if (state.page === "como-funciona") {
+    caminho = "/como-funciona";
   } else if (state.page === "admin") {
     caminho = state.adminAba && state.adminAba !== "inicio" ? "/admin/" + state.adminAba : "/admin";
   } else if (state.page === "parceiros") {
@@ -19928,6 +19964,7 @@ function lerLink() {
   else if (partes[0] === "feedback" || partes[0] === "avaliacoes") r.page = "feedback";
   // Sobre o GuiaTennis (regra 248).
   else if (partes[0] === "sobre") { r.page = "sobre"; r.sobreAba = partes[1] || "historia"; }
+  else if (partes[0] === "como-funciona") r.page = "como-funciona";
   else if (partes[0] === "academia" && partes[1]) { r.page = "court"; r.slug = partes[1]; }
   else if (q.get("court")) { r.page = "court"; r.courtId = q.get("court"); }
   else if (partes[0] === "quadras") { r.page = "search"; r.regiao = { cidade: partes[1] || "", bairro: partes[2] || "" }; }
@@ -20223,7 +20260,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
 
     <div class="toolbar">
       <div class="toolbar-left">
-        <p class="toolbar-count">${results.length} ${plural(results.length, "quadra encontrada", "quadras encontradas")}</p>
+        <p class="toolbar-count">${results.length} ${plural(results.length, "academia", "academias")}</p>
         <p class="toolbar-sub">${state.origin ? `a partir de ${esc(state.origin.bairro || state.origin.cidade || "você")}` : state.cidadeDaPagina ? `em ${esc(state.cidadeDaPagina)}` : "Use o CEP ou o GPS para ordenar por distância"}</p>
       </div>
       <div class="toolbar-right">
@@ -20244,7 +20281,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
       <div class="results">
         ${results.length === 0 ? `
           <div class="empty">
-            <p style="margin:0 0 10px">Nenhuma quadra encontrada com esses filtros.</p>
+            <p style="margin:0 0 10px">Nenhuma academia com esses filtros.</p>
             ${activeFilters ? `<button type="button" class="chip small clear-filters">Limpar todos os filtros</button>` : ""}
           </div>` : ""}
         ${cartoesDaBusca(results, topBadge)}
@@ -20300,7 +20337,7 @@ function plural(n, singular, plural_) {
 }
 
 function scoreWord(avg, count) {
-  if (!count) return "Sem nota ainda";
+  if (!count) return "Sem avaliações ainda";
   if (avg >= 4.6) return "Excelente";
   if (avg >= 4.2) return "Muito bom";
   if (avg >= 3.6) return "Bom";
@@ -20313,7 +20350,7 @@ function scoreBox(avg, count, compact) {
   const num = count ? avg.toFixed(1).replace(".", ",") : "—";
   const sub = count
     ? `${count} ${plural(count, "avaliação", "avaliações")}${compact ? "" : " no GuiaTennis"}`
-    : (compact ? "" : "Seja o primeiro a avaliar");
+    : (compact ? "" : "Sem avaliações ainda");
   return `<span class="score-box">
     <span class="score-num ${count ? "" : "empty"}">${num}</span>
     <span class="score-word">${scoreWord(avg, count)}<span class="score-count">${sub}</span></span>
@@ -20382,7 +20419,7 @@ function filterGroupsHtml() {
   const semDist = applyFilters(state.allCourts, "distance");
   const semOutros = applyFilters(state.allCourts, "outros");
 
-  const priceLabel = state.priceMax === null ? "Qualquer preço" : `Até R$ ${state.priceMax}/hora`;
+  const priceLabel = state.priceMax === null ? "Qualquer preço" : `Até R$ ${state.priceMax} por hora`;
 
   return `
     ${pb ? `
@@ -20496,7 +20533,7 @@ function renderSortMenu() {
 // Chips dos filtros ligados, cada um com × pra desligar só aquele.
 function renderActiveChips() {
   const chips = [];
-  if (state.priceMax !== null) chips.push({ label: `Até R$ ${state.priceMax}/hora`, attr: `data-clear="price"` });
+  if (state.priceMax !== null) chips.push({ label: `Até R$ ${state.priceMax} por hora`, attr: `data-clear="price"` });
   if (state.minRating > 0) chips.push({ label: `Nota ${state.minRating.toString().replace(".", ",")}+`, attr: `data-clear="rating"` });
   if (state.maxDistance !== null) chips.push({ label: `Até ${state.maxDistance} km`, attr: `data-clear="distance"` });
   state.pisoFilters.forEach(k => chips.push({ label: PISO_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="piso" data-key="${k}"` }));
@@ -20627,7 +20664,7 @@ function renderCard(c, badge) {
           </div>
 
           <div class="rcard-score">
-            <span class="sbadge ${c.appCount ? "" : "none"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
+            ${c.appCount ? `<span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : ""}
             <span class="sword">${scoreWord(c.appAvg, c.appCount)}</span>
             ${c.appCount ? `<span class="scount">${icon('bubble', 13, 'var(--muted)')} ${c.appCount}</span>` : ""}
           </div>
@@ -20654,7 +20691,7 @@ function renderCard(c, badge) {
               ${(precos.length ? precos : [{ label: "Preço", min: null }]).map(o => `
                 <div class="offer-um">
                   <span class="offer-um-lbl">${esc(o.label)}</span>
-                  <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}<span class="offer-por-hora">${esc(o.curto || "/h")}</span>` : SEM_PRECO}</span>
+                  <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}<span class="offer-por-hora">${esc(o.curto || " por hora")}</span>` : SEM_PRECO}</span>
                 </div>`).join("")}
             </div>
             ${precos.some(o => o.min) ? "" : `<div class="offer-sub">${SEM_PRECO_SUB}</div>`}
@@ -20665,12 +20702,12 @@ function renderCard(c, badge) {
         ${c.reserva
           ? `<a class="offer-contact" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 14, 'var(--green)')} Reservar online${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
           : c.phone
-          ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')} Falar no WhatsApp${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
+          ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')} Chamar no WhatsApp${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
           // Sem preço, o "Sob consulta · fale com a academia" já diz tudo: a
           // linha de baixo só traz a modalidade, sem repetir o recado.
           : !precos.some(o => o.min)
             ? (modalidadesTexto(c) ? `<p class="offer-note">${esc(modalidadesTexto(c))}</p>` : "")
-            : `<p class="offer-note">${modalidadesTexto(c) ? `${esc(modalidadesTexto(c))} — confirme os valores com a academia.` : "Confirme o valor direto com a academia."}</p>`}
+            : `<p class="offer-note">${modalidadesTexto(c) ? `${esc(modalidadesTexto(c))}. Confirme os valores com a academia.` : "Confirme o valor direto com a academia."}</p>`}
       </div>
     </div>
   `;
@@ -21150,7 +21187,7 @@ function htPertoConteudo(c) {
         ${icon('map', 30, 'var(--muted-dark)')}
         <p>${local
           ? "Este arquivo está aberto direto do computador, e o navegador bloqueia essa consulta fora de um site. No ar, em guiatennis.com.br, a lista aparece normalmente."
-          : "Não consegui carregar agora."}</p>
+          : "Os lugares por perto não carregaram."}</p>
         ${local ? "" : `<button type="button" class="ht-poi-tentar" data-poi-retry="${c.id}">Tentar de novo</button>`}
       </div>
       ${diagnosticoPerto(c, dados)}`;
@@ -21719,7 +21756,7 @@ function descricaoAcademia(c, todas) {
     const semValor = [...new Set(opcoes.filter(o => !temPreco(o.faixa) && !comValor.some(x => x.resumo === o.resumo)).map(o => o.nomeResumo.toLowerCase()))];
     if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(n => "da " + n))} é sob consulta: fale com a academia.`);
   } else if (comValor.length) {
-    frases.push(`A academia cobra, por hora de quadra, ${listaTexto(comValor.map(o => `${precoTexto(o.faixa)} ${o.nome === "Preço" ? "no uso da quadra" : "na " + o.nome.toLowerCase()}`))}.`);
+    { const t = listaTexto(comValor.map(o => `${o.nome === "Preço" ? "uso da quadra" : o.nome.toLowerCase()} de ${precoTexto(o.faixa)} ${o.unidade || "por hora"}`)); frases.push(t.charAt(0).toUpperCase() + t.slice(1) + "."); }
     const semValor = opcoes.filter(o => !temPreco(o.faixa));
     if (semValor.length) frases.push(`O valor ${listaTexto(semValor.map(o => "da " + o.nome.toLowerCase()))} é sob consulta: fale com a academia.`);
   } else if (mod) {
@@ -22042,7 +22079,7 @@ function htComodidades(c) {
   if (!total && !lista.length) return "";
   return `
     ${total ? `
-      <p class="field-label" style="margin-top:0">Quadras — ${total} no total</p>
+      <p class="field-label" style="margin-top:0">${total} ${plural(total, "quadra", "quadras")}</p>
       <div class="ht-amen">
         ${QUADRA_COMBOS.filter(q => c.quadras[q.key] > 0).map(q => `
           <div class="ht-amen-i">${(PISO_OPTS.find(p => p.key === q.piso) || {}).icon || ""}
@@ -22106,7 +22143,7 @@ function cartaoVizinha(v, km) {
         ${quadras ? `<span class="ht-viz-l">${icon('ball', 16, 'var(--text)')}<span>${quadras} ${plural(quadras, "quadra", "quadras")}${mod ? ` · ${esc(mod.toLowerCase())}` : ""}</span></span>` : ""}
         <span class="ht-viz-l">${icon('pin', 16, 'var(--text)')}<span>${distanceText(km)} daqui</span></span>
         <span class="ht-viz-nota">
-          <span class="sbadge ${v.appCount ? "" : "none"}">${v.appCount ? v.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
+          ${v.appCount ? `<span class="sbadge">${v.appAvg.toFixed(1).replace(".", ",")}</span>` : ""}
           <span><strong>${scoreWord(v.appAvg, v.appCount)}</strong>${v.appCount ? `<br>${v.appCount} ${plural(v.appCount, "avaliação", "avaliações")}` : ""}</span>
         </span>
         <span class="ht-viz-p">${faixa ? `${esc(faixa.texto)} <small>${esc(faixa.rotulo)}</small>` : `<span class="sem-valor">${SEM_PRECO}</span> <small>${SEM_PRECO_SUB}</small>`}</span>
@@ -22578,15 +22615,15 @@ function opcoesPreco(c) {
     });
     // A modalidade marcada sem item continua aparecendo, sob consulta.
     if (mods.includes("aulas_proprias") && !cat.some(i => tipoDoItem(i).grupo === "aula"))
-      out.unshift({ nome: "Aula", desc: "Aula com professor da academia", faixa: "", assunto: "as aulas", unidade: "por aula", curto: "/aula", grupo: "aula", tipo: "aula", cobranca: "avulsa", publico: "", filtro: "Aula", resumo: "aula", nomeResumo: "Aula" });
+      out.unshift({ nome: "Aula", desc: "Aula com professor da academia", faixa: "", assunto: "as aulas", unidade: "por aula", curto: " por aula", grupo: "aula", tipo: "aula", cobranca: "avulsa", publico: "", filtro: "Aula", resumo: "aula", nomeResumo: "Aula" });
     if (mods.includes("locacao") && !cat.some(i => tipoDoItem(i).grupo === "locacao"))
-      out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: "", assunto: "alugar a quadra", unidade: "por hora", curto: "/h", grupo: "locacao", tipo: "locacao", cobranca: "avulsa", publico: "", filtro: "Locação", resumo: "locacao", nomeResumo: "Locação" });
+      out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: "", assunto: "alugar a quadra", unidade: "por hora", curto: " por hora", grupo: "locacao", tipo: "locacao", cobranca: "avulsa", publico: "", filtro: "Locação", resumo: "locacao", nomeResumo: "Locação" });
     return out;
   }
   const out = [];
   const temAula = !!c.priceAula || mods.includes("aulas_proprias");
   const temLoc = !!c.priceLocacao || mods.includes("locacao");
-  const porHora = { unidade: "por hora", curto: "/h", cobranca: "avulsa", publico: "" };
+  const porHora = { unidade: "por hora", curto: " por hora", cobranca: "avulsa", publico: "" };
   if (temAula) out.push({ nome: "Aula", desc: "Aula com professor da academia", faixa: c.priceAula || "", assunto: "as aulas", grupo: "aula", tipo: "aula", filtro: "Aula", resumo: "aula", nomeResumo: "Aula", ...porHora });
   if (temLoc) out.push({ nome: "Locação", desc: "Aluguel da quadra por hora", faixa: c.priceLocacao || "", assunto: "alugar a quadra", grupo: "locacao", tipo: "locacao", filtro: "Locação", resumo: "locacao", nomeResumo: "Locação", ...porHora });
   if (!out.length && c.priceRange) out.push({ nome: "Preço", desc: "Valor por hora de quadra", faixa: c.priceRange, assunto: "os valores", grupo: "", tipo: "", filtro: "Preço", resumo: "", nomeResumo: "Preço", ...porHora });
@@ -22720,8 +22757,8 @@ function htPolitica(c) {
     return `
       <div class="ht-poi-carregando">
         ${icon('clipboard', 28, 'var(--muted-dark)')}
-        <p>A política de cancelamento não foi incluída. Vale perguntar na academia antes de marcar o primeiro horário.</p>
-        ${c.phone ? `<a class="ht-poi-tentar" data-track="whatsapp" data-court="${c.id}" href="${waLink(c, "a política de cancelamento e reposição")}" target="_blank" rel="noreferrer">Perguntar no WhatsApp</a>` : ""}
+        <p>A academia ainda não informou a regra de cancelamento. Pergunte antes de marcar.</p>
+        ${c.phone ? `<a class="ht-poi-tentar" data-track="whatsapp" data-court="${c.id}" href="${waLink(c, "a política de cancelamento e reposição")}" target="_blank" rel="noreferrer">Chamar no WhatsApp</a>` : ""}
         ${podeEditar(c) ? `<button type="button" class="ht-poi-tentar editar-academia" data-court="${c.id}">Preencher agora</button>` : ""}
       </div>`;
   }
@@ -23011,7 +23048,7 @@ function htPromocoes(c) {
 }
 
 function avisoDaFichaBasica() {
-  return `<p class="ficha-basica">${icon('info', 13, 'var(--muted)')} <span><strong>Ficha básica.</strong> Informações públicas, ainda não confirmadas pela academia — confirme horário e preço direto com ela.</span></p>`;
+  return `<p class="ficha-basica">${icon('info', 13, 'var(--muted)')} <span><strong>Ficha básica.</strong> Informações públicas, ainda não confirmadas pela academia. Confirme horário e preço direto com ela.</span></p>`;
 }
 
 function renderCourtPage(c) {
@@ -23091,8 +23128,8 @@ function renderCourtPage(c) {
               <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}${dist ? ` · ${dist} de você` : ""}</p>
               <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button></p>
               <button type="button" class="ht-score" id="ir-avaliacoes">
-                <span class="ht-score-num ${c.appCount ? "" : "empty"}">${c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "—"}</span>
-                <span class="ht-link">${c.appCount ? `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Seja o primeiro a avaliar"} ${icon('chevron', 16, 'currentColor')}</span>
+                ${c.appCount ? `<span class="ht-score-num">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : ""}
+                <span class="ht-link">${c.appCount ? `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Sem avaliações ainda"} ${icon('chevron', 16, 'currentColor')}</span>
               </button>
               ${htEtiquetas(c)}
               ${avisoDeQueFechou(c)}
@@ -23177,7 +23214,7 @@ function renderCourtPage(c) {
                   <h3 class="sec-title">Avaliações</h3>
                   ${c.appCount ? `<span class="ht-sec-nota"><strong>${scoreWord(c.appAvg, c.appCount)}</strong><span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span></span>` : ""}
                 </div>
-                ${c.appCount ? ratingPanel(c) : `<p class="ht-sec-sub">Essa academia ainda não tem avaliação no GuiaTennis. A sua pode ser a primeira.</p>`}
+                ${c.appCount ? ratingPanel(c) : `<p class="ht-sec-sub">Ainda não há avaliações desta academia no GuiaTennis.</p>`}
                 ${reviewsSection(c)}
                 ${comoFuncionamAsAvaliacoes()}
 
@@ -23189,7 +23226,7 @@ function renderCourtPage(c) {
                   ` : minhaAvaliacao(c.id) ? caixaDaMinhaAvaliacao(c) : state.justRated ? `
                     <p class="rate-thanks">Obrigado por avaliar!${!isAdmin && !minhaNotaDoGuia("jogador") ? ` <button type="button" class="inline-link" data-avaliar-guia="jogador" data-momento="depois-da-avaliacao">E o GuiaTennis, como está ajudando você?</button>` : ""}</p>
                   ` : `
-                    <p>Já jogou aqui? Avalie essa quadra</p>
+                    <p>Jogou aqui? Avalie esta academia</p>
                     ${jogador ? (jogador.email_confirmado_em ? "" : `<p class="rate-login">Para avaliar, confirme o seu e-mail: ao enviar, mandamos o código.</p>`) : `<p class="rate-login">Para avaliar, <button type="button" class="inline-link" data-jogador="entrar">entre com o seu e-mail</button>. Leva um minuto.</p>`}
                     <div class="star-picker" id="star-picker">
                       ${[1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= state.pendingStar ? 'filled' : ''}">★</span>`).join("")}
@@ -24937,9 +24974,9 @@ async function carregarPercursos() {
       .gte('created_at', desde.toISOString()).order('created_at', { ascending: false }).limit(5000);
     state.percursos = r.error
       ? { linhas: [], erro: /does not exist|schema cache|could not find/i.test(r.error.message || "")
-          ? "O banco ainda não tem a tabela do percurso (SQL 20261005140000): ela entra sozinha com o PR." : "Não consegui carregar os percursos agora." }
+          ? "O banco ainda não tem a tabela do percurso (SQL 20261005140000): ela entra sozinha com o PR." : "Não foi possível carregar os percursos agora." }
       : { linhas: r.data || [] };
-  } catch { state.percursos = { linhas: [], erro: "Não consegui carregar os percursos agora." }; }
+  } catch { state.percursos = { linhas: [], erro: "Não foi possível carregar os percursos agora." }; }
   render();
 }
 function duracaoTexto(seg) {
@@ -26874,7 +26911,7 @@ async function enviarAvisoFicha() {
       : await sb.rpc('denunciar_avaliacao', { p_avaliacao: a.avaliacao, p_motivo: a.motivo });
     a.enviando = false;
     if (r.error) {
-      a.erro = r.error.code === "22023" && r.error.message ? r.error.message : falhou(problema ? "informar o problema" : daConta ? "denunciar a conta" : "denunciar a avaliação", r.error, { texto: "Não consegui enviar agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui enviar agora.", academia: a.academia });
+      a.erro = r.error.code === "22023" && r.error.message ? r.error.message : falhou(problema ? "informar o problema" : daConta ? "denunciar a conta" : "denunciar a avaliação", r.error, { texto: "Não foi possível enviar agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível enviar agora.", academia: a.academia });
       render();
       return;
     }
@@ -26909,7 +26946,7 @@ async function pedirAnaliseDaAvaliacao(a) {
     return;
   }
   if (r.error) {
-    a.erro = falhou("pedir a análise da avaliação", r.error, { texto: "Não consegui enviar agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui enviar agora.", academia: a.academia });
+    a.erro = falhou("pedir a análise da avaliação", r.error, { texto: "Não foi possível enviar agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível enviar agora.", academia: a.academia });
     render();
     return;
   }
@@ -27116,8 +27153,8 @@ async function carregarJogadoresDoAdmin() {
     const r = await sb.from('jogadores')
       .select('user_id, nome, email, cidade, avisos_academias, avisos_viagem, promocoes, novidades, email_confirmado_em, created_at')
       .order('created_at', { ascending: false }).limit(2000);
-    state.admJogadores = r.error ? { lista: [], erro: falhou("carregar as contas de jogador", r.error, { texto: "Não consegui carregar as contas agora.", silenciosa: true }) } : { lista: r.data || [] };
-  } catch (e) { state.admJogadores = { lista: [], erro: falhou("carregar as contas de jogador", e, { texto: "Não consegui carregar as contas agora.", silenciosa: true }) }; }
+    state.admJogadores = r.error ? { lista: [], erro: falhou("carregar as contas de jogador", r.error, { texto: "Não foi possível carregar as contas agora.", silenciosa: true }) } : { lista: r.data || [] };
+  } catch (e) { state.admJogadores = { lista: [], erro: falhou("carregar as contas de jogador", e, { texto: "Não foi possível carregar as contas agora.", silenciosa: true }) }; }
   if (state.page === "admin") render();
 }
 
@@ -27128,15 +27165,15 @@ async function carregarEmailsRecentes() {
     const r = await sb.rpc('emails_recentes_admin', { p_limite: 100 });
     state.admEmails = r.error
       ? { lista: [], erro: /could not find|does not exist|schema cache/i.test(r.error.message || "")
-          ? "O banco ainda não tem a lista dos e-mails (SQL 20261006120000): ela entra sozinha com o PR." : falhou("carregar os e-mails", r.error, { texto: "Não consegui carregar os e-mails agora.", silenciosa: true }) }
+          ? "O banco ainda não tem a lista dos e-mails (SQL 20261006120000): ela entra sozinha com o PR." : falhou("carregar os e-mails", r.error, { texto: "Não foi possível carregar os e-mails agora.", silenciosa: true }) }
       : { lista: r.data || [] };
-  } catch (e) { state.admEmails = { lista: [], erro: falhou("carregar os e-mails", e, { texto: "Não consegui carregar os e-mails agora.", silenciosa: true }) }; }
+  } catch (e) { state.admEmails = { lista: [], erro: falhou("carregar os e-mails", e, { texto: "Não foi possível carregar os e-mails agora.", silenciosa: true }) }; }
   if (state.page === "admin") render();
 }
 
 async function reenviarEmail(id) {
   const r = await sb.rpc('reenviar_email_admin', { p_id: id });
-  if (r.error) { avisarFalha("mandar o e-mail de novo", r.error, "Não consegui mandar de novo: " + r.error.message); return; }
+  if (r.error) { avisarFalha("mandar o e-mail de novo", r.error, "Não foi possível mandar de novo: " + r.error.message); return; }
   carregarSituacaoDosEmails();
   await carregarEmailsRecentes();
 }
@@ -27574,7 +27611,7 @@ function semRespostaDoGuia() {
 function admNotaHtml() {
   const lista = state.admNotaGuia;
   if (lista === undefined) return `<section class="adm-bloco"><p class="adm-nota">${bolaGirando(14)} Carregando as avaliações…</p></section>`;
-  if (lista === null) return `<section class="adm-bloco"><p class="adm-nota">Não consegui carregar as avaliações agora. <button type="button" class="inline-link" id="adm-nota-tentar">Tentar de novo</button></p></section>`;
+  if (lista === null) return `<section class="adm-bloco"><p class="adm-nota">Não foi possível carregar as avaliações agora. <button type="button" class="inline-link" id="adm-nota-tentar">Tentar de novo</button></p></section>`;
   const n = state.notaDoGuia || {};
   const resumo = (pub, t) => {
     const d = n[pub] || {};
@@ -27615,7 +27652,7 @@ async function salvarRespostaDoGuia(id, ocultar) {
   try {
     r = await sb.rpc('responder_avaliacao_do_guia', { p_id: id, p_resposta: soOcultar ? null : ler("nr-"), p_feito: soOcultar ? null : ler("nf-"), p_oculta: soOcultar ? ocultar : null });
   } catch (e) { r = { error: e }; }
-  if (r.error) { state.admAviso = falhou("responder à nota do GuiaTennis", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes." }); render(); return; }
+  if (r.error) { state.admAviso = falhou("responder à nota do GuiaTennis", r.error, { texto: "Não foi possível salvar agora. Tente de novo em instantes." }); render(); return; }
   const lista = state.admNotaGuia || [];
   const i = lista.findIndex(x => x.id === id);
   if (i >= 0) lista[i] = { ...lista[i], ...(r.data || {}) };
@@ -27654,7 +27691,7 @@ function admChatHtml() {
     const c = aberta.dados;
     const voltar = `<button type="button" class="inline-link" id="adm-chat-voltar">‹ Voltar às conversas</button>`;
     if (c === undefined) return `<section class="adm-bloco">${voltar}<p class="adm-nota">${bolaGirando(14)} Abrindo a conversa…</p></section>`;
-    if (c === null) return `<section class="adm-bloco">${voltar}<p class="adm-nota">Não consegui abrir a conversa agora.</p></section>`;
+    if (c === null) return `<section class="adm-bloco">${voltar}<p class="adm-nota">Não foi possível abrir a conversa agora.</p></section>`;
     const msgs = Array.isArray(c.mensagens) ? c.mensagens : [];
     const respostas = Array.isArray(c.respostas) ? c.respostas : [];
     const naConversa = new Set(msgs.filter(m => m.de === "equipe").map(m => m.id));
@@ -27680,7 +27717,7 @@ function admChatHtml() {
   }
   const conversas = state.admConversas, relatos = state.admRelatos;
   if (conversas === undefined || relatos === undefined) return `<section class="adm-bloco"><p class="adm-nota">${bolaGirando(14)} Carregando o chat…</p></section>`;
-  if (conversas === null || relatos === null) return `<section class="adm-bloco"><p class="adm-nota">Não consegui carregar o chat agora. <button type="button" class="inline-link" id="adm-chat-tentar">Tentar de novo</button></p></section>`;
+  if (conversas === null || relatos === null) return `<section class="adm-bloco"><p class="adm-nota">Não foi possível carregar o chat agora. <button type="button" class="inline-link" id="adm-chat-tentar">Tentar de novo</button></p></section>`;
   const filtro = state.admRelatosFiltro || "abertos";
   const lista = relatos.filter(x => filtro === "todos" || !["concluido", "nao_sera_feito"].includes(x.situacao));
   const chip = (v, t) => `<button type="button" class="chip small${filtro === v ? " active" : ""}" data-relatos-filtro="${v}" aria-pressed="${filtro === v}">${t}</button>`;
@@ -27717,7 +27754,7 @@ async function responderNoChatAdmin() {
   if (!aberta || !texto) return;
   let r;
   try { r = await sb.rpc('responder_no_chat', { p_conversa: aberta.id, p_texto: texto }); } catch (e) { r = { error: e }; }
-  if (r.error) { state.admAviso = falhou("responder no chat", r.error, { texto: "Não consegui enviar agora. Tente de novo em instantes." }); render(); return; }
+  if (r.error) { state.admAviso = falhou("responder no chat", r.error, { texto: "Não foi possível enviar agora. Tente de novo em instantes." }); render(); return; }
   state.admChatRascunho = "";
   if (aberta.dados) aberta.dados.respostas = [...(aberta.dados.respostas || []), r.data];
   state.admAviso = "Enviado. A pessoa vê no chat e recebe por e-mail.";
@@ -27728,7 +27765,7 @@ async function responderNoChatAdmin() {
 async function mudarSituacaoNoAdmin(id, situacao) {
   let r;
   try { r = await sb.rpc('mudar_situacao_do_relato', { p_id: id, p_situacao: situacao }); } catch (e) { r = { error: e }; }
-  if (r.error) { state.admAviso = falhou("mudar a situação do relato", r.error, { texto: "Não consegui salvar agora. Tente de novo em instantes." }); render(); return; }
+  if (r.error) { state.admAviso = falhou("mudar a situação do relato", r.error, { texto: "Não foi possível salvar agora. Tente de novo em instantes." }); render(); return; }
   const lista = state.admRelatos || [];
   const i = lista.findIndex(x => x.id === id);
   if (i >= 0) lista[i] = { ...lista[i], ...(r.data || {}) };
@@ -27768,7 +27805,7 @@ function notasParaEmitir() {
 function admComprasHtml() {
   const lista = state.admCompras;
   if (lista === undefined) return `<section class="adm-bloco"><p class="adm-nota">${bolaGirando(14)} Carregando as compras…</p></section>`;
-  if (lista === null) return `<section class="adm-bloco"><p class="adm-nota">Não consegui carregar as compras agora. <button type="button" class="inline-link" id="adm-compras-tentar">Tentar de novo</button></p></section>`;
+  if (lista === null) return `<section class="adm-bloco"><p class="adm-nota">Não foi possível carregar as compras agora. <button type="button" class="inline-link" id="adm-compras-tentar">Tentar de novo</button></p></section>`;
   const copiar = (rotulo, valor) => valor ? `<button type="button" class="chip small adm-copiar" data-copiar="${esc(valor)}" aria-label="Copiar ${esc(rotulo)}">${esc(rotulo)}</button>` : "";
   const que = (x) => x.tipo === "plano" ? `plano ${nomeDoPlano(x.plano)} ${x.periodo === "anual" ? "anual" : "mensal"}` : "créditos";
   const centavos = (v) => Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -27801,7 +27838,7 @@ function copiarDado(texto, el) {
 }
 async function marcarNotaEmitida(id, emitida) {
   const r = await sb.rpc('marcar_nota_emitida', { p_compra: id, p_emitida: emitida });
-  if (r.error) { state.admAviso = falhou("marcar a nota", r.error, { texto: "Não consegui marcar a nota agora. Tente de novo em instantes." }); render(); return; }
+  if (r.error) { state.admAviso = falhou("marcar a nota", r.error, { texto: "Não foi possível marcar a nota agora. Tente de novo em instantes." }); render(); return; }
   const x = (state.admCompras || []).find(y => y.id === id);
   if (x) x.nota_emitida_em = r.data || null;
   render();
@@ -27909,9 +27946,9 @@ async function carregarFalhas() {
     const r = await sb.rpc('falhas_admin', { p_dias: dias });
     state.admFalhas = r.error
       ? { dias, lista: [], erro: /could not find|does not exist|schema cache|PGRST202/i.test(`${r.error.message || ""} ${r.error.code || ""}`)
-          ? "O banco ainda não tem as falhas (SQL 20261011120000): elas entram sozinhas com o PR." : "Não consegui carregar as falhas agora." }
+          ? "O banco ainda não tem as falhas (SQL 20261011120000): elas entram sozinhas com o PR." : "Não foi possível carregar as falhas agora." }
       : { dias, lista: r.data || [] };
-  } catch { state.admFalhas = { dias, lista: [], erro: "Não consegui carregar as falhas agora." }; }
+  } catch { state.admFalhas = { dias, lista: [], erro: "Não foi possível carregar as falhas agora." }; }
   if (state.page === "admin") render();
 }
 // A mesma falha junta. A lista vem da mais nova para a mais antiga.
@@ -27970,7 +28007,7 @@ function ocorrenciaDaFalhaHtml(f) {
 }
 function caminhoDaVisitaHtml(v, f) {
   if (v.carregando) return `<p class="adm-nota">${bolaGirando(14)} Abrindo o caminho…</p>`;
-  if (v.erro || !v.passos.length) return `<p class="adm-nota">${v.erro ? "Não consegui abrir o caminho agora." : "Essa visita não tem passos gravados (admin e conta de academia no site dos jogadores não gravam o percurso)."}</p>`;
+  if (v.erro || !v.passos.length) return `<p class="adm-nota">${v.erro ? "Não foi possível abrir o caminho agora." : "Essa visita não tem passos gravados (admin e conta de academia no site dos jogadores não gravam o percurso)."}</p>`;
   const quando = new Date(f.created_at).getTime(), inicio = new Date(v.passos[0].created_at).getTime() - (v.passos[0].segundos || 0) * 1000;
   const antes = v.passos.filter(p => new Date(p.created_at).getTime() <= quando + 1000);
   const depois = v.passos.length - antes.length;
@@ -28009,7 +28046,7 @@ async function procurarFalhaPeloCodigo() {
 }
 async function resolverGrupoDeFalhas(grupo) {
   const r = await sb.rpc('resolver_falhas_admin', { p_grupo: grupo });
-  if (r.error) { avisarFalha("marcar a falha como resolvida", r.error, "Não consegui marcar agora: " + r.error.message); return; }
+  if (r.error) { avisarFalha("marcar a falha como resolvida", r.error, "Não foi possível marcar agora: " + r.error.message); return; }
   state.admAviso = "Marcada como resolvida. Se voltar a acontecer, ela aparece como \"Voltou\" e você recebe um e-mail.";
   await carregarFalhas();
 }
@@ -28032,7 +28069,7 @@ function admFalhasHtml() {
       </form>
       ${achada ? achada.carregando ? `<p class="adm-nota">${bolaGirando(14)} Procurando…</p>`
         : achada.lista.length ? `<ul class="adm-falha-ocs">${achada.lista.map(f => `<li class="adm-falha-achada"><p class="adm-falha-t"><span class="adm-pilula erro">${esc(ADM_TIPOS_DE_FALHA[f.tipo] || f.tipo)}</span> ${esc(f.acao)}</p>${f.mensagem ? `<p class="adm-falha-m">${esc(f.mensagem)}</p>` : ""}<ul class="adm-falha-ocs">${ocorrenciaDaFalhaHtml(f)}</ul></li>`).join("")}</ul>`
-        : `<p class="adm-vazio">${achada.erro ? "Não consegui procurar agora." : `Nenhuma falha com o código ${esc(achada.codigo)} nos últimos 90 dias.`}</p>` : ""}
+        : `<p class="adm-vazio">${achada.erro ? "Não foi possível procurar agora." : `Nenhuma falha com o código ${esc(achada.codigo)} nos últimos 90 dias.`}</p>` : ""}
     </section>
     <section class="adm-bloco">
       <div class="adm-barra">
@@ -28181,7 +28218,7 @@ async function suspenderNomeAgora() {
   const r = x.avaliacaoId
     ? await sb.rpc('suspender_nome_pela_avaliacao_admin', { p_avaliacao: x.avaliacaoId, p_motivo: motivo })
     : await sb.rpc('suspender_nome_admin', { p_user: x.userId, p_motivo: motivo, p_nome: x.nome || null });
-  if (r.error) { x.salvando = false; x.erro = falhou("suspender o nome", r.error, { texto: "Não consegui suspender agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui suspender agora." }); render(); return; }
+  if (r.error) { x.salvando = false; x.erro = falhou("suspender o nome", r.error, { texto: "Não foi possível suspender agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível suspender agora." }); render(); return; }
   state.admSuspendendo = null;
   const prazo = new Date(Date.now() + 15 * 864e5);
   state.admAviso = `Nome ${x.nome ? `“${x.nome}” ` : ""}suspenso. A pessoa recebeu o e-mail e tem até ${dataCurta(prazo)} para trocar.`;
@@ -28229,7 +28266,7 @@ function ligarNomesSuspensosDoAdmin() {
   document.querySelectorAll("[data-nome-conferido]").forEach(el => {
     el.onclick = async () => {
       const r = await sb.rpc('nome_trocado_conferido_admin', { p_id: el.dataset.nomeConferido });
-      if (r.error) { avisarFalha("marcar o nome como conferido", r.error, "Não consegui agora: " + r.error.message); return; }
+      if (r.error) { avisarFalha("marcar o nome como conferido", r.error, "Não foi possível concluir agora: " + r.error.message); return; }
       await carregarNomesSuspensos();
       render();
     };
@@ -28238,7 +28275,7 @@ function ligarNomesSuspensosDoAdmin() {
     el.onclick = async () => {
       if (!confirm(`Cancelar a suspensão de “${el.dataset.nome}”? O nome volta a aparecer no site, e a pessoa recebe um e-mail.`)) return;
       const r = await sb.rpc('cancelar_suspensao_admin', { p_id: el.dataset.nomeCancelar });
-      if (r.error) { avisarFalha("cancelar a suspensão", r.error, "Não consegui agora: " + r.error.message); return; }
+      if (r.error) { avisarFalha("cancelar a suspensão", r.error, "Não foi possível concluir agora: " + r.error.message); return; }
       state.admAviso = `Suspensão cancelada: “${el.dataset.nome}” voltou a aparecer.`;
       await carregarNomesSuspensos();
       await loadEverything();
@@ -28333,7 +28370,7 @@ async function excluirContaAgora() {
   if (motivo.length < 5) { x.erro = "Escreva o motivo da exclusão."; render(); return; }
   x.salvando = true; x.erro = ""; render();
   const r = await sb.rpc('excluir_conta_admin', { p_user: x.userId, p_motivo: motivo, p_apagar_avaliacoes: !!x.apagar });
-  if (r.error) { x.salvando = false; x.erro = falhou("excluir a conta", r.error, { texto: "Não consegui excluir agora. Tente de novo em instantes.", regra: r.error.message || "Não consegui excluir agora." }); render(); return; }
+  if (r.error) { x.salvando = false; x.erro = falhou("excluir a conta", r.error, { texto: "Não foi possível excluir agora. Tente de novo em instantes.", regra: r.error.message || "Não foi possível excluir agora." }); render(); return; }
   state.admExcluindo = null;
   state.admAviso = `Conta de ${x.nome || x.email} excluída. O e-mail fica em Contas excluídas, onde você libera quando quiser.`;
   await loadEverything();
@@ -28395,8 +28432,9 @@ function renderPainelAdmin() {
 // O que cada item do menu faz (também usado pelo chat de ajuda).
 function acaoDoMenu(alvo) {
   state.showMenu = false;
-  if (alvo === "home" || alvo === "como" || alvo === "porque" || alvo === "duvidas" || alvo === "dicas") {
-    const ancoras = { como: "home-como", porque: "home-porque", duvidas: "home-duvidas", dicas: "home-dicas" };
+  if (alvo === "dicas") { goComoFunciona(); return; }
+  if (alvo === "home" || alvo === "como" || alvo === "porque" || alvo === "duvidas") {
+    const ancoras = { como: "home-como", porque: "home-porque", duvidas: "home-duvidas" };
     if (state.page !== "home") goHome(); else render();
     if (ancoras[alvo]) {
       setTimeout(() => {
@@ -28467,7 +28505,7 @@ function ligarEventosDoPainel() {
   document.querySelectorAll("[data-adm-voltar]").forEach(el => {
     el.onclick = async () => {
       const { error } = await sb.from('academias').update({ pausada: false, pausada_ate: null }).eq('id', el.dataset.admVoltar);
-      if (error) { avisarFalha("trazer a academia de volta para a busca", error, "Não consegui trazer de volta: " + error.message, { academia: el.dataset.admVoltar }); return; }
+      if (error) { avisarFalha("trazer a academia de volta para a busca", error, "Não foi possível trazer de volta: " + error.message, { academia: el.dataset.admVoltar }); return; }
       await loadEverything();
       render();
     };
@@ -28517,7 +28555,7 @@ function ligarEventosDoPainel() {
     el.onclick = async () => {
       if (!confirm(`Liberar ${el.dataset.admLiberar}? Esse e-mail volta a poder criar conta.`)) return;
       const r = await sb.rpc('liberar_email_admin', { p_email: el.dataset.admLiberar });
-      if (r.error) { avisarFalha("liberar o e-mail", r.error, "Não consegui liberar: " + r.error.message); return; }
+      if (r.error) { avisarFalha("liberar o e-mail", r.error, "Não foi possível liberar: " + r.error.message); return; }
       state.admAviso = `${el.dataset.admLiberar} liberado: pode criar uma conta nova.`;
       carregarContasExcluidas();
     };
@@ -28628,7 +28666,7 @@ function attachEvents() {
     el.onclick = async () => {
       if (!confirm("Remover esta promoção do site?")) return;
       const r = await sb.rpc('apagar_promocao', { p_id: el.dataset.apagarPromo });
-      if (r.error) { avisarFalha("remover a promoção", r.error, "Não consegui remover agora. Tente de novo."); return; }
+      if (r.error) { avisarFalha("remover a promoção", r.error, "Não foi possível remover agora. Tente de novo."); return; }
       await carregarPromocoes();
       render();
     };
@@ -28712,7 +28750,7 @@ function attachEvents() {
       if (i < faltando.length - 1) await new Promise(r => setTimeout(r, 1100));
     }
     await loadEverything();
-    alert(`${ok} de ${faltando.length} com coordenada agora.` + (erros.length ? `\n\nNão consegui:\n` + erros.join("\n") + `\n\nConfira a rua, o número, o bairro e a cidade dessas academias em "Editar" e tente de novo.` : ""));
+    alert(`${ok} de ${faltando.length} com coordenada agora.` + (erros.length ? `\n\nNão foi possível localizar:\n` + erros.join("\n") + `\n\nConfira a rua, o número, o bairro e a cidade dessas academias em "Editar" e tente de novo.` : ""));
     render();
   });
 
@@ -28735,7 +28773,7 @@ function attachEvents() {
       alert(`Coordenada gravada: ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)}${geo.approximate ? "\n\nAtenção: veio do bairro/cidade, não do número exato. Confira no mapa." : ""}`);
       render();
     } catch (e) {
-      const texto = falhou("localizar a academia no mapa", e, { texto: "Não consegui localizar: " + (e.message || "erro desconhecido"), soSeTecnica: true, silenciosa: true });
+      const texto = falhou("localizar a academia no mapa", e, { texto: "Não foi possível localizar: " + (e.message || "erro desconhecido"), soSeTecnica: true, silenciosa: true });
       alert(texto);
       geocodeBtn.disabled = false;
       render();
@@ -28802,7 +28840,7 @@ function attachEvents() {
   });
 
   const footerBuscar = document.getElementById("footer-buscar");
-  if (footerBuscar) footerBuscar.onclick = goSearch;
+  if (footerBuscar) footerBuscar.onclick = goComoFunciona;
   document.querySelectorAll("[data-ir-busca]").forEach(el => { el.onclick = goSearch; });
   document.querySelectorAll("[data-indicar]").forEach(el => { el.onclick = indicarOGuia; });
 
@@ -28866,7 +28904,7 @@ function attachEvents() {
       const v = parseInt(el.value, 10);
       state.priceMax = (pb && v >= pb.max) ? null : v;
       document.querySelectorAll(".f-price-now").forEach(n => {
-        n.textContent = state.priceMax === null ? "Qualquer preço" : `Até R$ ${state.priceMax}/hora`;
+        n.textContent = state.priceMax === null ? "Qualquer preço" : `Até R$ ${state.priceMax} por hora`;
       });
     };
     el.onchange = () => render();
@@ -29127,7 +29165,7 @@ function attachEvents() {
   document.querySelectorAll("[data-tirar-pedido-plano]").forEach(el => {
     el.onclick = async () => {
       const { error } = await sb.from('pedidos_de_plano').delete().eq('academia_id', el.dataset.tirarPedidoPlano);
-      if (error) { avisarFalha("tirar o pedido de plano", error, "Não consegui tirar: " + error.message, { academia: el.dataset.tirarPedidoPlano }); return; }
+      if (error) { avisarFalha("tirar o pedido de plano", error, "Não foi possível tirar: " + error.message, { academia: el.dataset.tirarPedidoPlano }); return; }
       await carregarAcessos();
       render();
     };
@@ -29175,7 +29213,7 @@ function attachEvents() {
     el.onclick = async () => {
       if (!confirm("Não enviar esta promoção? O valor volta para os créditos da academia.")) return;
       const { error } = await sb.rpc('cancelar_envio_do_lance', { p_lance: el.dataset.leilaoNaoEnviar });
-      if (error) { alert(falhou("cancelar o envio", error, { texto: "Não consegui cancelar agora. Tente de novo." })); return; }
+      if (error) { alert(falhou("cancelar o envio", error, { texto: "Não foi possível cancelar agora. Tente de novo." })); return; }
       state.enviosAdmin = {};
       await carregarLeiloesDoAdmin();
     };
@@ -29184,21 +29222,21 @@ function attachEvents() {
   if (lanceMinimo) lanceMinimo.onclick = async () => {
     const v = parseInt(document.getElementById("adm-lance-minimo")?.value || "", 10);
     const { error } = await sb.rpc('mudar_lance_minimo', { p_valor: v });
-    if (error) { alert(/R\$/.test(String(error.message || "")) ? error.message : falhou("mudar o lance mínimo", error, { texto: "Não consegui mudar agora. Tente de novo." })); return; }
+    if (error) { alert(/R\$/.test(String(error.message || "")) ? error.message : falhou("mudar o lance mínimo", error, { texto: "Não foi possível mudar agora. Tente de novo." })); return; }
     await carregarLeiloesDoAdmin();
   };
   const precoPromocao = document.getElementById("adm-preco-promocao-salvar");
   if (precoPromocao) precoPromocao.onclick = async () => {
     const v = parseInt(document.getElementById("adm-preco-promocao")?.value || "", 10);
     const { error } = await sb.rpc('mudar_preco_da_promocao', { p_valor: v });
-    if (error) { alert(/R\$/.test(String(error.message || "")) ? error.message : falhou("mudar o preço da promoção", error, { texto: "Não consegui mudar agora. Tente de novo." })); return; }
+    if (error) { alert(/R\$/.test(String(error.message || "")) ? error.message : falhou("mudar o preço da promoção", error, { texto: "Não foi possível mudar agora. Tente de novo." })); return; }
     await carregarLeiloesDoAdmin();
   };
   document.querySelectorAll("[data-envios-somar]").forEach(el => {
     el.onclick = async () => {
       const id = el.dataset.enviosSomar, q = Number(el.dataset.q);
       const { data, error } = await sb.rpc('somar_envios', { p_academia: id, p_quantos: q });
-      if (error) { alert(falhou("somar os créditos", error, { texto: "Não consegui mudar os créditos agora. Tente de novo.", academia: id })); return; }
+      if (error) { alert(falhou("somar os créditos", error, { texto: "Não foi possível mudar os créditos agora. Tente de novo.", academia: id })); return; }
       state.enviosAdmin = { ...(state.enviosAdmin || {}), [id]: data };
       render();
     };
@@ -29217,7 +29255,7 @@ function attachEvents() {
       const days = parseInt(el.dataset.days, 10);
       const until = new Date(Date.now() + days * 86400000).toISOString();
       const { error } = await sb.from('academias').update({ pausada: true, pausada_ate: until }).eq('id', el.dataset.court);
-      if (error) { avisarFalha("pausar a academia", error, "Não consegui pausar: " + error.message, { academia: el.dataset.court }); return; }
+      if (error) { avisarFalha("pausar a academia", error, "Não foi possível pausar: " + error.message, { academia: el.dataset.court }); return; }
       await refreshAfterPauseChange();
     };
   });
@@ -29234,14 +29272,14 @@ function attachEvents() {
     if (!dateVal) { alert("Escolha uma data."); return; }
     const until = new Date(dateVal + "T23:59:59").toISOString();
     const { error } = await sb.from('academias').update({ pausada: true, pausada_ate: until }).eq('id', pauseCustomConfirm.dataset.court);
-    if (error) { avisarFalha("pausar a academia", error, "Não consegui pausar: " + error.message, { academia: pauseCustomConfirm.dataset.court }); return; }
+    if (error) { avisarFalha("pausar a academia", error, "Não foi possível pausar: " + error.message, { academia: pauseCustomConfirm.dataset.court }); return; }
     await refreshAfterPauseChange();
   };
 
   const resumeCourtBtn = document.getElementById("resume-court-btn");
   if (resumeCourtBtn) resumeCourtBtn.onclick = async () => {
     const { error } = await sb.from('academias').update({ pausada: false, pausada_ate: null }).eq('id', resumeCourtBtn.dataset.court);
-    if (error) { avisarFalha("reativar a academia", error, "Não consegui reativar: " + error.message, { academia: resumeCourtBtn.dataset.court }); return; }
+    if (error) { avisarFalha("reativar a academia", error, "Não foi possível reativar: " + error.message, { academia: resumeCourtBtn.dataset.court }); return; }
     await refreshAfterPauseChange();
   };
 
@@ -29262,7 +29300,7 @@ function attachEvents() {
     el.onclick = async () => {
       if (!confirm("Excluir essa avaliação? Isso não pode ser desfeito.")) return;
       const { error } = await sb.from('avaliacoes').delete().eq('id', el.dataset.review);
-      if (error) { avisarFalha("excluir a avaliação", error, "Não consegui excluir: " + error.message); return; }
+      if (error) { avisarFalha("excluir a avaliação", error, "Não foi possível excluir: " + error.message); return; }
       await loadEverything();
       if (state.selected) {
         state.selected = state.allCourts.find(c => c.id === state.selected.id) || state.pending.find(c => c.id === state.selected.id) || state.selected;
@@ -29832,7 +29870,7 @@ function attachEvents() {
       el.disabled = true;
       el.textContent = "Adicionando...";
       try { await adicionarDoMapa(el.dataset.mapaAdd); }
-      catch (e) { avisarFalha("adicionar a academia do mapa aberto", e, "Não consegui adicionar: " + (e.message || e)); }
+      catch (e) { avisarFalha("adicionar a academia do mapa aberto", e, "Não foi possível adicionar: " + (e.message || e)); }
       render();
     };
   });
@@ -30386,13 +30424,13 @@ function useMyLocation() {
         state.searchStatus = "done";
         registrarBusca(geo);
       } catch (e) {
-        state.errorMsg = falhou("achar a sua região", e, { texto: e.message || "Não consegui identificar sua região.", soSeTecnica: true });
+        state.errorMsg = falhou("achar a sua região", e, { texto: e.message || "Não foi possível identificar sua região.", soSeTecnica: true });
         state.searchStatus = "error";
       }
       render();
     },
     () => {
-      state.errorMsg = "Não consegui acessar sua localização. Permita o acesso ou digite um CEP.";
+      state.errorMsg = "Não foi possível acessar sua localização. Permita o acesso ou digite um CEP.";
       state.searchStatus = "error";
       render();
     },
@@ -30509,7 +30547,7 @@ async function doSearch(opcoes = {}) {
     diag(`a busca não achou o lugar: ${e.message}`);
     // Quem buscou e não achou também é procura: conta, sem região.
     registrar({ bairro: "", cidade: "" }, digitsOnly.length === 8 && termo.replace(/[\d\s-]/g, "").length === 0 ? digitsOnly : null);
-    state.errorMsg = falhou("buscar o endereço", e, { texto: e.message || "Não consegui buscar esse endereço ou CEP.", soSeTecnica: true });
+    state.errorMsg = falhou("buscar o endereço", e, { texto: e.message || "Não foi possível buscar esse endereço ou CEP.", soSeTecnica: true });
     state.searchStatus = "error";
   }
   render();
@@ -30673,7 +30711,7 @@ async function doRegisterSubmit() {
       if (!isAdmin) state.fichaSalvaEm = new Date().toISOString();
       state.registerStatus = "done";
     } catch (e) {
-      state.registerError = falhou("salvar a ficha", e, { texto: "Não consegui salvar as alterações agora. Tente de novo em instantes.", regra: e.message || "Não consegui salvar as alterações.", academia: f.__editingId });
+      state.registerError = falhou("salvar a ficha", e, { texto: "Não foi possível salvar as alterações agora. Tente de novo em instantes.", regra: e.message || "Não foi possível salvar as alterações.", academia: f.__editingId });
       state.registerStatus = "error";
     }
     render();
@@ -30766,7 +30804,7 @@ async function doRegisterSubmit() {
     await loadEverything();
     state.registerStatus = "done";
   } catch (e) {
-    state.registerError = falhou("enviar a ficha da academia", e, { texto: "Não consegui enviar agora. Tente de novo em instantes.", regra: e.message || "Não consegui localizar esse endereço." });
+    state.registerError = falhou("enviar a ficha da academia", e, { texto: "Não foi possível enviar agora. Tente de novo em instantes.", regra: e.message || "Não foi possível localizar esse endereço." });
     state.registerStatus = "error";
   }
   render();

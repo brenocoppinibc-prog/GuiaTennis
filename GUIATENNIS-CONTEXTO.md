@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 261)
+**Atualizado em:** 13/11/2026 (regra 262)
 
 | | |
 |---|---|
@@ -485,8 +485,9 @@ em Actions; rodou para todos os SQLs até o mais novo,
 `20261112120000_chat_com_o_guia_e_relatos` (12/11, sucesso). Nada em aberto da
 conversa: os pedidos de 11 e 12/11 (regras 248 a 257) estão todos na prévia.
 Nos chats de 11 e 12/11: a página **Sobre o GuiaTennis** (248, 249, 255 a 257;
-hoje um site à parte, com menu próprio fixo, topo verde-escuro e as partes Nossa
-história, O site, Equipe e Contato numa página só, que o menu acompanha; a
+hoje com o cabeçalho padrão do site e o menu de 3 listras na lateral (regra 262),
+o topo verde-escuro e as partes Nossa história, O site, Equipe e Contato numa
+página só, que o menu acompanha; a
 carta do Breno: de São Paulo, professor desde 2022, 3ª classe, os cursos, sem
 foto por enquanto); a caixa "Esta página ajudou você?" (250); o **chat com o
 GuiaTennis** (251: erros e sugestões com a situação na página Feedback; o admin
@@ -588,7 +589,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 262.
+**Próximo número:** regra 263.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1647,6 +1648,25 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   quatro passos e o "Começar agora" aparecem parados, sem o brilho dourado nos
   números). O resto da página continua acendendo. Sem SQL. Testes:
   `parceiros-acender.js` (10), `comparar-e-avisos.js`, `parceiros.js`.
+- **262 (13/11) — o cabeçalho do Sobre no padrão e o menu de 3 listras** ("tire a
+  escrita de GuiaTennis parceiros no início e o GuiaTennis naquele quadro do
+  jogadores, centralize melhor o título, corrija o cabeçalho do sobre nós, não está
+  como o padrão e deixe o menu com as 3 listras na lateral com opção para buscar
+  quadras e pro parceiros junto com as divisórias do sobre nós"). **Sobre:** o
+  `.sb-topo` agora é o cabeçalho padrão (fundo claro, o logo do tamanho do
+  Parceiros com o selo "Sobre"; antes o `.sb-marca svg` encolhia também o nome do
+  logo para 30 px) e, à direita, o **menu de 3 listras** (`#sobre-menu-btn`), que
+  abre na lateral (`#sobre-gaveta`): "Sobre o GuiaTennis" com Nossa história, O
+  site, Equipe e Contato (`.sb-nav-i`, a parte da tela acesa com o traço dourado),
+  uma divisória, **Buscar quadras** e **GuiaTennis Parceiros** (no
+  `/parceiros/sobre`, "Buscar quadras" abre o site dos jogadores). Fecha no ✕, no
+  fundo, no Esc e ao escolher. Saíram a barra de abas e o botão dourado do alto.
+  **Parceiros:** sem o "GuiaTennis Parceiros" acima do título da página inicial e
+  sem o "O GuiaTennis hoje" no quadro dos jogadores, com o título do quadro
+  centralizado e em linhas equilibradas (`text-wrap: balance`). Sem SQL. Testes:
+  `sobre.js` (43), `parceiros-acender.js` (11), `parceiros.js`, `menu-e-home.js`,
+  `links.js`, `voltar.js`, `confianca-na-ficha.js`, `nota-do-guia.js`,
+  `comparar-e-avisos.js`, `fonte-do-aparelho.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -28,6 +28,10 @@ const estado = (page, chave) => page.evaluate((k) => {
   await page.waitForTimeout(1400);
   ok((await estado(page, 'fim')).aceso && (await estado(page, 'plano-premium')).aceso, 'descendo até o fim, tudo acende');
   const texto = await page.evaluate(() => document.querySelector('#parceiros').innerText);
+  // Regra 262 (13/11/2026: "tire a escrita de GuiaTennis parceiros no início e o GuiaTennis naquele quadro do jogadores, centralize melhor o título").
+  const topoPc = await page.evaluate(() => ({ olho: !!document.querySelector('.pc-hero .pc-eyebrow, [data-revela="hero-0"]'), quadro: !!document.querySelector('.pc-faixa-eyebrow'),
+    titulo: getComputedStyle(document.querySelector('.pc-faixa-t')).textAlign, equilibrio: getComputedStyle(document.querySelector('.pc-faixa-t')).textWrap || getComputedStyle(document.querySelector('.pc-faixa-t')).textWrapStyle || '' }));
+  ok(!topoPc.olho && !topoPc.quadro && topoPc.titulo === 'center' && topoPc.equilibrio.includes('balance'), 'sem "GuiaTennis Parceiros" no alto nem "O GuiaTennis hoje" no quadro, com o título centralizado e equilibrado — ' + JSON.stringify(topoPc));
   // Regra 261 (13/11/2026: "no parceiros deixe o como funciona sem brilhar ao descer").
   ok(await page.evaluate(() => !document.querySelector('#pc-como [data-revela]') && [...document.querySelectorAll('#pc-como li, #pc-como h2, .pc-como-fim')].every(el => Number(getComputedStyle(el).opacity) === 1)
     && [...document.querySelectorAll('#pc-como .pc-etapa-n')].every(el => getComputedStyle(el).animationName === 'none')),

@@ -2257,7 +2257,8 @@
      (08/10/2026: "alinhe melhor os dados"; antes 2 em cima e 1 sozinho). */
   .pc-faixa-num { margin: 0 20px; padding: 28px 18px 20px; background: var(--green); border-radius: 18px; color: #fff; text-align: center; }
   .pc-faixa-eyebrow { margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-light); }
-  .pc-faixa-num .pc-faixa-t { margin: 0 auto 8px; max-width: 560px; font-size: 24px; line-height: 1.2; color: #fff; }
+  .pc-faixa-num .pc-faixa-t { margin: 0 auto 8px; max-width: 560px; font-size: 24px; line-height: 1.2; color: #fff; text-align: center; text-wrap: balance; }
+  .pc-faixa-num .pc-faixa-s { text-wrap: pretty; }
   .pc-faixa-num .pc-faixa-s { display: block; margin: 0 auto 20px; max-width: 560px; font-size: 14.5px; line-height: 1.5; color: rgba(255,255,255,0.86); }
   .pc-faixa-cta { margin: 22px auto 0; padding-top: 18px; max-width: 560px; border-top: 1px solid rgba(255,255,255,0.18); }
   .pc-faixa-cta p { margin: 0 0 12px; font-size: 14.5px; line-height: 1.45; color: #fff; }
@@ -3253,16 +3254,24 @@
   /* Sobre o GuiaTennis (regras 248, 255 e 257): um site à parte, com o menu próprio, o topo
      verde-escuro, as partes empilhadas e o contato no escuro. Sem ícone e sem animação. */
   .sb { --sb-escuro: #163A2D; --sb-ouro: var(--gold); background: var(--bg); }
-  .sb-topo { position: sticky; top: 0; z-index: 40; background: var(--sb-escuro); color: #fff; box-shadow: 0 1px 0 rgba(255,255,255,.08); }
-  .sb-topo-in { max-width: 1100px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .sb-marca { display: inline-flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font-weight: 700; font-size: 17px; }
-  .sb-marca svg { width: 30px; height: 30px; }
-  .sb-marca em { font-style: normal; font-weight: 600; font-size: 13px; color: var(--sb-ouro); border-left: 1px solid rgba(255,255,255,.3); padding-left: 8px; letter-spacing: .04em; text-transform: uppercase; }
-  .sb-topo-cta { color: var(--sb-escuro) !important; background: var(--sb-ouro); border-radius: 8px; padding: 9px 14px; font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap; }
-  .sb-nav { max-width: 1100px; margin: 0 auto; display: flex; gap: 2px; padding: 0 8px; overflow-x: auto; scrollbar-width: none; }
-  .sb-nav::-webkit-scrollbar { display: none; }
-  .sb-nav-i { padding: 11px 10px 12px; color: rgba(255,255,255,.72); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; }
-  .sb-nav-i.on { color: #fff; border-bottom-color: var(--sb-ouro); }
+  /* Cabeçalho do Sobre no padrão do site (regra 262): fundo claro, o logo do tamanho
+     do Parceiros, o selo "Sobre" e o menu de 3 listras, que abre na lateral. */
+  .sb-topo { position: sticky; top: 0; z-index: 40; background: var(--card); color: var(--text); box-shadow: 0 1px 0 var(--border); }
+  .sb-topo-in { max-width: 1100px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .sb-marca { display: inline-flex; align-items: center; gap: 8px; color: var(--green); text-decoration: none; font-weight: 700; font-size: 20px; min-width: 0; }
+  .sb-marca .logo-mark { width: 34px; height: 34px; }
+  .sb-gaveta { position: fixed; inset: 0; z-index: 60; display: flex; justify-content: flex-end; }
+  .sb-gaveta[hidden] { display: none; }
+  .sb-gaveta-fundo { position: absolute; inset: 0; background: rgba(20, 24, 21, 0.45); }
+  .sb-gaveta-painel { position: relative; width: min(320px, 86vw); height: 100%; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; background: var(--card); padding: calc(14px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 2px; box-shadow: -10px 0 30px rgba(33, 31, 26, 0.18); }
+  .sb-gaveta-cab { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px 6px; }
+  .sb-gaveta-t { font-size: 17px; font-weight: 700; color: var(--text); }
+  .sb-gaveta-rotulo { margin: 4px 0 4px 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .sb-gaveta-div { height: 1px; background: var(--border); margin: 10px 0; }
+  .sb-nav-i, .sb-gaveta-i { display: flex; align-items: center; min-height: 48px; padding: 0 12px; border-radius: 10px; color: var(--text); font-size: 16px; font-weight: 600; text-decoration: none; }
+  .sb-gaveta-i { color: var(--green); }
+  .sb-nav-i.on { background: var(--bg-alt); color: var(--green); box-shadow: inset 3px 0 0 var(--gold); }
+  html.sb-gaveta-aberta { overflow: hidden; }
   .sb-in { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
   .sb-hero { background: var(--sb-escuro); color: #fff; padding: 44px 0 56px; }
   .sb-olho, .sb-rotulo { margin: 0 0 12px; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--sb-ouro); }
@@ -6517,14 +6526,21 @@ function corpoSobre(parceiros) {
     <div class="sb pag-sobre" id="sobre">
       <header class="sb-topo">
         <div class="sb-topo-in">
-          <a href="${parceiros ? "/parceiros" : "/"}" class="sb-marca" ${parceiros ? 'data-pc="inicio"' : 'data-menu="home"'} aria-label="GuiaTennis, início">${logoSvg()}<span class="logo-nome">${nomeDoLogo()}</span><em>Sobre</em></a>
-          ${parceiros ? (contaAcademia ? `<a href="/parceiros/painel" class="sb-topo-cta" data-pc="painel">Minha academia</a>` : `<a href="/parceiros/cadastro" class="sb-topo-cta" data-pc="cadastro">Cadastrar academia</a>`)
-            : `<a href="/busca" class="sb-topo-cta" data-menu="search">Buscar quadra</a>`}
+          <a href="${parceiros ? "/parceiros" : "/"}" class="sb-marca" ${parceiros ? 'data-pc="inicio"' : 'data-menu="home"'} aria-label="GuiaTennis, início">${logoSvg()}<span class="logo-nome">${nomeDoLogo()}</span><span class="pc-selo">Sobre</span></a>
+          <button type="button" class="menu-btn sb-menu-btn" id="sobre-menu-btn" aria-label="Abrir o menu" aria-expanded="false" aria-controls="sobre-gaveta"><span></span><span></span><span></span></button>
         </div>
-        <nav class="sb-nav" aria-label="Sobre o GuiaTennis" id="sobre-abas">
-          ${SOBRE_ABAS.map(x => `<a href="${parceiros ? "/parceiros/sobre" : caminhoDoSobre(x.aba)}" class="sb-nav-i${x.aba === aba ? " on" : ""}" data-sobre-aba="${x.aba}"${x.aba === aba ? ' aria-current="true"' : ""}>${x.t}</a>`).join("")}
-        </nav>
       </header>
+      <div class="sb-gaveta" id="sobre-gaveta" hidden>
+        <div class="sb-gaveta-fundo" data-sobre-fechar></div>
+        <nav class="sb-gaveta-painel" aria-label="Menu do Sobre">
+          <div class="sb-gaveta-cab"><span class="sb-gaveta-t">Menu</span><button type="button" class="menu-fechar" data-sobre-fechar aria-label="Fechar o menu">✕</button></div>
+          <p class="sb-gaveta-rotulo">Sobre o GuiaTennis</p>
+          ${SOBRE_ABAS.map(x => `<a href="${parceiros ? "/parceiros/sobre" : caminhoDoSobre(x.aba)}" class="sb-nav-i${x.aba === aba ? " on" : ""}" data-sobre-aba="${x.aba}"${x.aba === aba ? ' aria-current="true"' : ""}>${x.t}</a>`).join("")}
+          <div class="sb-gaveta-div" role="separator"></div>
+          ${parceiros ? `<a href="/busca" class="sb-gaveta-i" data-pc-sair-do-portal>Buscar quadras</a>` : `<a href="/busca" class="sb-gaveta-i" data-menu="search">Buscar quadras</a>`}
+          <a href="/parceiros" class="sb-gaveta-i" data-pc="inicio">GuiaTennis Parceiros</a>
+        </nav>
+      </div>
 
       <section class="sb-hero" data-sobre-parte="historia">
         <div class="sb-in">
@@ -6626,7 +6642,7 @@ function marcarParteDoSobre(aba) {
   document.querySelectorAll(".sb-nav-i").forEach(a => {
     const on = a.dataset.sobreAba === aba;
     a.classList.toggle("on", on);
-    if (on) { a.setAttribute("aria-current", "true"); a.scrollIntoView({ block: "nearest", inline: "nearest" }); } else a.removeAttribute("aria-current");
+    if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
   });
   if (state.page === "sobre") {
     try { history.replaceState(history.state, "", caminhoDoSobre(aba)); } catch {}
@@ -6637,8 +6653,28 @@ function marcarParteDoSobre(aba) {
 }
 function ligarAbasDoSobre() {
   if (olhoDoSobre) { olhoDoSobre.disconnect(); olhoDoSobre = null; }
+  document.documentElement.classList.remove("sb-gaveta-aberta");
   const partes = [...document.querySelectorAll("[data-sobre-parte]")];
   if (!partes.length) return;
+  // O menu de 3 listras (regra 262): abre na lateral; fecha no ✕, no fundo, no Esc e ao escolher.
+  const gaveta = document.getElementById("sobre-gaveta"), botaoMenu = document.getElementById("sobre-menu-btn");
+  const abrirGaveta = (sim) => {
+    if (!gaveta) return;
+    gaveta.hidden = !sim;
+    if (botaoMenu) botaoMenu.setAttribute("aria-expanded", sim ? "true" : "false");
+    document.documentElement.classList.toggle("sb-gaveta-aberta", sim);
+    if (sim) gaveta.querySelector(".menu-fechar")?.focus();
+  };
+  window.__fecharGavetaDoSobre = () => abrirGaveta(false);
+  if (botaoMenu) botaoMenu.onclick = () => abrirGaveta(gaveta.hidden);
+  if (gaveta) {
+    gaveta.querySelectorAll("[data-sobre-fechar]").forEach(el => { el.onclick = () => abrirGaveta(false); });
+    gaveta.querySelectorAll("a").forEach(a => a.addEventListener("click", () => abrirGaveta(false)));
+  }
+  if (!window.__escDoSobre) {
+    window.__escDoSobre = true;
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && window.__fecharGavetaDoSobre) window.__fecharGavetaDoSobre(); });
+  }
   document.querySelectorAll("[data-sobre-aba]").forEach(a => {
     a.onclick = (e) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey) return;
@@ -11963,7 +11999,6 @@ function pcNumerosDoSite(revelar = false) {
   if (!itens.length) return "";
   return `
     <section class="pc-faixa-num" id="pc-numeros" ${revelar ? revela("numeros") : ""}>
-      <p class="pc-faixa-eyebrow">O GuiaTennis hoje</p>
       <h2 class="display pc-faixa-t">Jogadores já escolhem onde jogar por aqui</h2>
       <p class="pc-faixa-s">Quem entra no GuiaTennis está procurando aula ou quadra: compara as academias da região e chama direto no WhatsApp. Veja o caminho de quem chega:</p>
       <div class="pc-faixa-itens" style="--n:${itens.length}">
@@ -11998,7 +12033,6 @@ function pcInicio() {
   ];
   return `
     <section class="pc-hero">
-      <p class="pc-eyebrow" ${revela("hero-0", 0)}>GuiaTennis Parceiros</p>
       <h1 class="display" ${revela("hero-1", 1)}>Mais jogadores para a sua academia de tênis</h1>
       <p class="pc-hero-sub" ${revela("hero-2", 2)}>Apareça para quem procura aula ou quer locar quadra na sua região. O jogador compara e chama direto no seu WhatsApp — sem comissão.</p>
       <div class="pc-hero-acoes" ${revela("hero-3", 3)}>

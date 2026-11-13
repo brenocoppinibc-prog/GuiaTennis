@@ -3397,6 +3397,25 @@
   .pag-como { padding: 24px 20px 4px; max-width: 760px; margin: 0 auto; }
   .pag-como-titulo { margin: 0; font-size: 28px; line-height: 1.15; }
   .pag-como-sub { margin: 8px 0 0; font-size: 16px; color: var(--muted); }
+
+  /* Regra 266: o cartão e o topo da ficha como no protótipo. */
+  .offer.offer-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 16px 14px; padding: 12px 0 0; background: none; border: 0; border-top: 1px solid var(--bg-alt); border-radius: 0; }
+  .offer-linha .offer-precos { display: grid; gap: 2px; min-width: 0; font-size: 13px; color: var(--muted); }
+  .offer-linha .offer-um-lbl { color: var(--text); font-weight: 600; }
+  .offer-linha .offer-um-val { font-size: 17px; color: var(--text); font-weight: 700; }
+  .offer-linha .offer-um-val.sem-valor { font-size: 15px; }
+  .offer-linha .offer-contact { margin: 0; flex-shrink: 0; font-size: 14px; font-weight: 700; padding: 8px 0; }
+  .ht-head { text-align: left; }
+  .ht-head .court-name { font-size: 28px; line-height: 1.15; }
+  .ht-head .ht-score { justify-content: flex-start; }
+  .ht-head .ht-score-num { border-radius: 8px 8px 8px 0; font-size: 15px; font-weight: 800; padding: 6px 8px; }
+  .ht-checks { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 0; margin-top: 20px; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .ht-check { flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 12px 6px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text); }
+  .ht-check + .ht-check { border-left: 1px solid var(--border); }
+  .ht-checks .ht-check svg { display: none !important; }
+  .offer-linha .offer-um { display: block; line-height: 1.35; }
+  .offer-linha .offer-um-lbl { font-size: 13px; }
+  .offer-linha .offer-por-hora { font-size: 13px; margin-left: 0; }
 </style>
 </head>
 <body>
@@ -20678,36 +20697,21 @@ function renderCard(c, badge) {
         </div>
       </div>
 
-      <!-- Só preço e botão, como a caixa de oferta do Trivago: as
-           comodidades ficam no bloco de cima, junto das outras informações. -->
-      <div class="offer">
-        <div class="offer-body">
-          <div class="offer-precos">
-            ${/* O "a partir de" em cima da modalidade (regra 191, 01/11/2026: "na
-                 lista, a partir de acima da escrita sobre a modalidade"), como o
-                 "a partir de" do Booking e do hoteis.com, que vem antes do preço. */
-              precos.some(o => o.min) ? `<div class="offer-sub offer-sub-topo">a partir de</div>` : ""}
-            <div class="offer-dois">
-              ${(precos.length ? precos : [{ label: "Preço", min: null }]).map(o => `
-                <div class="offer-um">
-                  <span class="offer-um-lbl">${esc(o.label)}</span>
-                  <span class="offer-um-val ${o.min ? "" : "sem-valor"}">${o.min ? `R$ ${esc(priceMin(o.faixa))}<span class="offer-por-hora">${esc(o.curto || " por hora")}</span>` : SEM_PRECO}</span>
-                </div>`).join("")}
-            </div>
-            ${precos.some(o => o.min) ? "" : `<div class="offer-sub">${SEM_PRECO_SUB}</div>`}
-          </div>
-          <button type="button" class="offer-btn">Ver academia ${icon('chevron', 15, '#fff')}</button>
+      ${/* Regra 266 (13/11/2026), como no protótipo: o cartão inteiro abre a
+           ficha; embaixo, o preço numa linha ("Locação a partir de R$ 100 por
+           hora") e um atalho só: a reserva online, se a academia tem, ou o
+           WhatsApp (regra 242: a reserva antes do WhatsApp). */ ""}
+      <div class="offer offer-linha">
+        <div class="offer-precos">
+          ${precos.some(o => o.min)
+            ? precos.filter(o => o.min).slice(0, 2).map(o => `<div class="offer-um"><span class="offer-um-lbl">${esc(o.label)}</span> a partir de <strong class="offer-um-val">R$ ${esc(priceMin(o.faixa))}</strong><span class="offer-por-hora">${esc(o.curto || " por hora")}</span></div>`).join("")
+            : `<div class="offer-um"><strong class="offer-um-val sem-valor">${SEM_PRECO}</strong> <span class="offer-sub">${SEM_PRECO_SUB}</span></div>`}
         </div>
-        ${/* Regra 242: na lista, "Reservar online" quando a academia tem o link; se não, o WhatsApp. */ ""}
         ${c.reserva
-          ? `<a class="offer-contact" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 14, 'var(--green)')} Reservar online${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
+          ? `<a class="offer-contact" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 15, 'var(--green)')} Reservar</a>`
           : c.phone
-          ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('phone', 14, 'var(--green)')} Chamar no WhatsApp${modalidadesTexto(c) ? ` <span class="mod">· ${esc(modalidadesTexto(c).toLowerCase())}</span>` : ""}</a>`
-          // Sem preço, o "Sob consulta · fale com a academia" já diz tudo: a
-          // linha de baixo só traz a modalidade, sem repetir o recado.
-          : !precos.some(o => o.min)
-            ? (modalidadesTexto(c) ? `<p class="offer-note">${esc(modalidadesTexto(c))}</p>` : "")
-            : `<p class="offer-note">${modalidadesTexto(c) ? `${esc(modalidadesTexto(c))}. Confirme os valores com a academia.` : "Confirme o valor direto com a academia."}</p>`}
+          ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('whatsapp', 15, 'var(--green)')} WhatsApp</a>`
+          : ""}
       </div>
     </div>
   `;
@@ -23118,12 +23122,6 @@ function renderCourtPage(c) {
         <div class="ht-body">
           <div class="ht-main">
             <header class="ht-head">
-              ${estrelas ? `
-                <div class="ht-estrelas">
-                  <span class="court-stars" aria-label="${estrelas} de 5 estrelas">${"★".repeat(estrelas)}${"☆".repeat(5 - estrelas)}</span>
-                  <button type="button" class="ht-estrelas-info" data-info-pop="estrelas" aria-expanded="${state.infoPop === "estrelas"}" aria-label="Como funcionam as avaliações">${icon('info', 19, 'var(--text)')}</button>
-                  ${state.infoPop === "estrelas" ? balaoDeInfo("Como funcionam as avaliações", COMO_FUNCIONAM_AS_AVALIACOES) : ""}
-                </div>` : ""}
               <h2 class="court-name display">${esc(c.name)}${seloDaAcademia(c, 22, true)}</h2>
               <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}${dist ? ` · ${dist} de você` : ""}</p>
               <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button></p>

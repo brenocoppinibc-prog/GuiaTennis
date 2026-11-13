@@ -511,7 +511,16 @@ Diagnóstico: 126 cores (12 verdes-escuros parecidos), 34 tamanhos de letra, 14
 cantos e 58 sombras; a proposta tem 13 cores (verde, verde-claro, verde-escuro
 `#163A2E`, ouro, ouro-claro, ouro-texto `#7A5E1E`, creme, creme-2, branco, borda,
 texto, texto-suave `#6F6857`, erro), 9 estilos de letra, espaços de 4 em 4, 4
-cantos e 3 sombras; o selo dourado com texto escuro. **Próximo passo oferecido:**
+cantos e 3 sombras; o selo dourado com texto escuro. **Protótipo do site (13/11):** https://claude.ai/artifact/74eWwbWjLoaZsKqtRg6CfA
+(Início, Busca, Mapa, Ficha clicáveis e a aba Análise, com academias de exemplo):
+busca com "Aula | Locação de quadra" lado a lado e "Usar minha localização";
+"Perto de você" em lista no lugar do carrossel; cartão inteiro abre a ficha, só o
+atalho do WhatsApp; nota no quadrado verde e "Nova" sem nota; botão flutuante
+Lista/Mapa com preço nos pinos; ficha na ordem fatos › preços › horário ›
+estrutura › como chegar › cancelamento › avaliações, com barra fixa (preço,
+Reservar, WhatsApp). Referências: Doctoralia, Airbnb, Booking, Google Maps, iFood
+(Playtomic evitado). Esperando o Breno aprovar para levar ao site por partes.
+**Próximo passo oferecido:**
 passar o site para essas regras na prévia (juntar os verdes, a escala de letras,
 os cantos e as sombras), esperando o "sim" do Breno. Ainda em Arial maiúscula: a imagem de compartilhar, os ícones e a
 404 (`divulgacao/gerar-imagens.js`, `logoDesenho({ comNome })`); oferecido trocar

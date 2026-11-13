@@ -49,8 +49,8 @@ const daAna = (page) => page.evaluate(() => window.__db.jogadores.find(j => j.us
   ok(!cadastro.texto.includes('Se você ficar 3 meses sem entrar') && await page.evaluate(() => {
     const nota = document.querySelector('#jogador-overlay .jog-nota-conta'), botao = document.getElementById('jog-criar');
     return !!nota && nota.innerText === 'A conta recebe lembretes ocasionais, que você desliga em Minha conta.'
-      && !!(botao.compareDocumentPosition(nota) & Node.DOCUMENT_POSITION_FOLLOWING) && parseFloat(getComputedStyle(nota).fontSize) < 12;
-  }), 'o lembrete fica implícito: uma nota pequena embaixo de "Criar conta" (11/10/2026)');
+      && !!(botao.compareDocumentPosition(nota) & Node.DOCUMENT_POSITION_FOLLOWING) && parseFloat(getComputedStyle(nota).fontSize) <= 12;
+  }), 'o lembrete fica implícito: uma nota pequena (o menor tamanho do site, 12px) embaixo de "Criar conta" (11/10/2026)');
 
   // Sem o aceite (11/10/2026): o aviso diz o nome dos dois textos e some ao marcar a caixa.
   const erro = () => page.evaluate(() => (document.querySelector('#jogador-overlay .form-error')?.innerText || '').trim());

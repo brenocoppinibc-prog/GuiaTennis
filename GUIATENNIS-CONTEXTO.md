@@ -355,7 +355,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (12/11/2026, regra 252): **2.546
+  segundo plano). Último resultado (13/11/2026, regra 263): **2.570
   verificações** nos 90 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs`,
   `cnpj.mjs` e `catalogo-meta.mjs`, nenhuma falha (as 3 da primeira rodada eram
   testes com o texto antigo, corrigidos). O `falhas.txt` sempre aparece na lista
@@ -1707,7 +1707,8 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Ainda por fazer do protótipo: reordenar a ficha (fatos › preços › horário ›
   estrutura › como chegar › cancelamento › avaliações) e enxugar as ações em cima
   da lista (Salvar busca, Mandar para o meu WhatsApp, Falar com todas, Salvar os
-  contatos). O Breno mudou no sistema de design a cor de erro para `#E63D10`
+  contatos). **Bateria completa de 13/11 (regra 263): 2.570 verificações, nenhuma
+  falha** (3 testes com o texto, a cor e o tamanho antigos, corrigidos). O Breno mudou no sistema de design a cor de erro para `#E63D10`
   (4,2:1 com branco); o site segue com `#A8462C` até ele confirmar. Sem SQL.
 
 ## 11. WhatsApp e mensagem para as academias

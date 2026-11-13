@@ -8,7 +8,7 @@ const { abrir, ok } = require('./harness');
     return { kids, sub: hero.querySelector('.home-hero-sub')?.textContent };
   });
   ok(ordem.kids.indexOf('home-hero-sub') < ordem.kids.indexOf('searchcard'), 'frase vem antes da busca (regra 263): ' + ordem.kids.join(' > '));
-  ok(ordem.sub === 'Compare preço, estrutura e comodidades de academias de tênis — e fale direto com elas.', 'texto da frase');
+  ok(ordem.sub === 'Compare preço, estrutura e avaliações e fale direto com a academia.', 'texto da frase (regra 263)');
   await page.screenshot({ path: require('path').join(require('os').tmpdir(), 'guiatennis-home.png') });
   await page.fill('#cep-input', '05422-000');
   await page.keyboard.press('Enter');

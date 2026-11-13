@@ -59,7 +59,7 @@ const dia = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString('sv-SE
   const dados = await texto(page, '#pc-leilao');
   ok(dados.includes('Leilão · e-mail patrocinado') && dados.includes('Sem lance') && dados.includes('Pinheiros, São Paulo') && /Encerra\s+dom\. \d\d\/\d\d · 20:00/.test(dados) && /Alcance estimado\s+140\+ jogadores/.test(dados) && /Lance mínimo\s+R\$ 10/.test(dados) && /Créditos\s+R\$ 0/.test(dados) && await page.$('#pc-leilao #pc-comprar-creditos'),
     'no alto, o cabeçalho da campanha: status, bairro, encerramento, alcance, lance mínimo e créditos — ' + dados.replace(/\s+/g, ' ').slice(0, 160));
-  ok(await page.evaluate(() => getComputedStyle(document.querySelector('#parceiros .pc-main')).backgroundColor === 'rgb(242, 243, 245)' && getComputedStyle(document.querySelector('.pc-ads h1')).fontFamily.startsWith('Inter')),
+  ok(await page.evaluate(() => getComputedStyle(document.querySelector('#parceiros .pc-main')).backgroundColor === 'rgb(242, 243, 245)' && getComputedStyle(document.querySelector('.pc-ads h1')).fontFamily.startsWith('-apple-system')),
     'o leilão é um painel de anúncios: fundo neutro e título sem a fonte de revista (22/10/2026)');
   ok(await passo() === '0' && (await texto(page, '#pc-leilao-passo .pc-ads-etapa')) === 'Etapa 1 de 5 · Como funciona' && (await texto(page, '#pc-leilao-passo .pc-card-t')) === 'Como funciona o leilão de promoções' && await page.evaluate(() => document.querySelectorAll('.pc-leilao-como li').length === 4) && !(await page.$('.trilha')),
     'primeira etapa: como funciona, em 4 pontos, sem a barra das etapas (22/10/2026: "tire a barra")');

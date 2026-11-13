@@ -24,14 +24,9 @@
 <meta name="twitter:description" content="Ache e compare quadras e academias de tênis perto de você.">
 <meta name="twitter:image" content="https://guiatennis.com.br/og-image.png">
 <meta property="og:url" content="https://guiatennis.com.br">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://eultezheqwmxyakvgyjy.supabase.co" crossorigin>
 <!-- Site mais rápido (regra 229): as fontes não seguram a primeira pintura (o texto aparece na hora e troca de fonte quando ela chega) e o mapa (Leaflet) só carrega quando é usado ou em segundo plano, depois que a página abre. -->
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&text=GuiaTennis&display=swap">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&text=GuiaTennis&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&text=GuiaTennis&display=swap" rel="stylesheet"></noscript>
 <script type="application/ld+json" id="ld-academia"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <style>
@@ -111,7 +106,7 @@
   .email-previa { margin-top: 14px; }
   .email-previa-assunto { margin: 2px 0 8px; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
   .email-previa-corpo { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; color: #1F2A24; }
-  .email-previa-marca { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; font-family: var(--fonte-logo); font-size: 15px; font-weight: 700; color: var(--green); }
+  .email-previa-marca { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; font-family: Arial, Helvetica, sans-serif; letter-spacing: -0.2px; font-size: 15px; font-weight: 700; color: var(--green); }
   .email-previa-marca svg { width: 22px; height: 22px; }
   .email-previa-h { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
   .email-previa-p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.5; }
@@ -396,7 +391,12 @@
   }
   input, select, textarea, button { font-family: inherit; }
   .display { font-family: var(--fonte-titulo); letter-spacing: -0.01em; }
-  .logo-nome { font-family: var(--fonte-logo); letter-spacing: 0; }
+  /* O nome no logo (regra 260): Poppins Bold desenhada; "Guia" na cor do texto em
+     volta (verde no claro, branco no verde) e "Tennis" em dourado. */
+  .logo-nome { display: inline-flex; align-items: center; line-height: 1; letter-spacing: 0; }
+  .logo-nome-svg { display: block; height: 0.81em; width: auto; overflow: visible; }
+  .logo-nome-tennis { fill: var(--gold); }
+  .so-leitor { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   .container { max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
 
@@ -1731,10 +1731,9 @@
   :root {
     /* A fonte do próprio aparelho no site inteiro (regra 259): San Francisco no
        iPhone e no Mac, Roboto no Android, Segoe UI no Windows. Nada para baixar.
-       Só o nome no logo tem fonte própria (--fonte-logo). */
+       O nome no logo é desenho (nomeDoLogo, regra 260): nenhuma fonte baixada. */
     --fonte-texto: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --fonte-titulo: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --fonte-logo: 'Playfair Display', Georgia, 'Times New Roman', serif;
     --border: #E9E3D7;
     --muted: #6B6557;
     --muted-dark: #9A937F;
@@ -3566,6 +3565,17 @@ function logoDesenho(opcoes) {
 <text x="540" y="945" text-anchor="middle" font-family="Arial, Helvetica, 'Liberation Sans', sans-serif" font-weight="700" font-size="90" letter-spacing="1"><tspan fill="${creme}">GUIA</tspan><tspan fill="${ouro}">TENNIS</tspan></text>` : ""}`;
 }
 // LOGO-FIM
+
+// O nome "GuiaTennis" do logo, desenhado em Poppins Bold (regra 260, 13/11/2026:
+// "gostei da poppins e fica legal com e verde amarelo na escrita"). Desenho e
+// não fonte, como a raquete: igual em todo aparelho e nada para baixar. "Guia"
+// pega a cor do texto em volta; "Tennis" fica dourado (.logo-nome-tennis).
+const NOME_DO_LOGO = { caixa: "33 -801 5742 809",
+  guia: "M528 -480Q509 -515 474 -534Q438 -552 390 -552Q307 -552 257 -498Q207 -443 207 -352Q207 -255 260 -200Q312 -146 404 -146Q467 -146 510 -178Q554 -210 574 -270H357V-396H729V-237Q710 -173 664 -118Q619 -63 549 -29Q479 5 391 5Q287 5 206 -40Q124 -86 78 -167Q33 -248 33 -352Q33 -456 78 -538Q124 -619 205 -664Q286 -710 390 -710Q516 -710 602 -649Q689 -588 717 -480ZM1375 -558V0H1204V-76Q1178 -39 1134 -16Q1089 6 1035 6Q971 6 922 -22Q873 -51 846 -105Q819 -159 819 -232V-558H989V-255Q989 -199 1018 -168Q1047 -137 1096 -137Q1146 -137 1175 -168Q1204 -199 1204 -255V-558ZM1482 -708Q1482 -748 1510 -774Q1539 -801 1584 -801Q1628 -801 1656 -774Q1685 -748 1685 -708Q1685 -669 1656 -642Q1628 -616 1584 -616Q1539 -616 1510 -642Q1482 -669 1482 -708ZM1669 -558V0H1498V-558ZM2005 -566Q2064 -566 2108 -542Q2153 -518 2177 -479V-558H2348V0H2177V-79Q2152 -40 2108 -16Q2063 8 2004 8Q1936 8 1880 -28Q1824 -63 1792 -128Q1759 -194 1759 -280Q1759 -366 1792 -431Q1824 -496 1880 -531Q1936 -566 2005 -566ZM2055 -417Q2004 -417 1968 -380Q1933 -344 1933 -280Q1933 -216 1968 -178Q2004 -141 2055 -141Q2106 -141 2142 -178Q2177 -215 2177 -279Q2177 -343 2142 -380Q2106 -417 2055 -417Z",
+  tennis: "M2977 -702V-565H2791V0H2620V-565H2434V-702ZM3586 -238H3199Q3203 -186 3232 -158Q3262 -131 3305 -131Q3369 -131 3394 -185H3576Q3562 -130 3526 -86Q3489 -42 3434 -17Q3379 8 3311 8Q3229 8 3165 -27Q3101 -62 3065 -127Q3029 -192 3029 -279Q3029 -366 3064 -431Q3100 -496 3164 -531Q3228 -566 3311 -566Q3392 -566 3455 -532Q3518 -498 3554 -435Q3589 -372 3589 -288Q3589 -264 3586 -238ZM3414 -333Q3414 -377 3384 -403Q3354 -429 3309 -429Q3266 -429 3236 -404Q3207 -379 3200 -333ZM4234 -326V0H4064V-303Q4064 -359 4035 -390Q4006 -421 3957 -421Q3908 -421 3879 -390Q3850 -359 3850 -303V0H3679V-558H3850V-484Q3876 -521 3920 -542Q3964 -564 4019 -564Q4117 -564 4176 -500Q4234 -437 4234 -326ZM4908 -326V0H4738V-303Q4738 -359 4709 -390Q4680 -421 4631 -421Q4582 -421 4553 -390Q4524 -359 4524 -303V0H4353V-558H4524V-484Q4550 -521 4594 -542Q4638 -564 4693 -564Q4791 -564 4850 -500Q4908 -437 4908 -326ZM5011 -708Q5011 -748 5040 -774Q5068 -801 5113 -801Q5157 -801 5186 -774Q5214 -748 5214 -708Q5214 -669 5186 -642Q5157 -616 5113 -616Q5068 -616 5040 -642Q5011 -669 5011 -708ZM5198 -558V0H5027V-558ZM5292 -183H5461Q5464 -154 5488 -136Q5512 -118 5547 -118Q5579 -118 5596 -130Q5614 -143 5614 -163Q5614 -187 5589 -198Q5564 -210 5508 -224Q5448 -238 5408 -254Q5368 -269 5339 -302Q5310 -336 5310 -393Q5310 -441 5336 -480Q5363 -520 5414 -543Q5466 -566 5537 -566Q5642 -566 5702 -514Q5763 -462 5772 -376H5614Q5610 -405 5588 -422Q5567 -439 5532 -439Q5502 -439 5486 -428Q5470 -416 5470 -396Q5470 -372 5496 -360Q5521 -348 5575 -336Q5637 -320 5676 -304Q5715 -289 5744 -254Q5774 -220 5775 -162Q5775 -113 5748 -74Q5720 -36 5668 -14Q5617 8 5549 8Q5476 8 5419 -17Q5362 -42 5329 -86Q5296 -129 5292 -183Z" };
+function nomeDoLogo() {
+  return `<svg class="logo-nome-svg" viewBox="${NOME_DO_LOGO.caixa}" aria-hidden="true" focusable="false"><path fill="currentColor" d="${NOME_DO_LOGO.guia}"/><path class="logo-nome-tennis" d="${NOME_DO_LOGO.tennis}"/></svg><span class="so-leitor">GuiaTennis</span>`;
+}
 
 // Cada logo na tela ganha ids próprios: com o mesmo id em dois lugares, o
 // degradê some quando o primeiro está escondido (menu fechado).
@@ -6507,7 +6517,7 @@ function corpoSobre(parceiros) {
     <div class="sb pag-sobre" id="sobre">
       <header class="sb-topo">
         <div class="sb-topo-in">
-          <a href="${parceiros ? "/parceiros" : "/"}" class="sb-marca" ${parceiros ? 'data-pc="inicio"' : 'data-menu="home"'} aria-label="GuiaTennis, início">${logoSvg()}<span class="logo-nome">GuiaTennis</span><em>Sobre</em></a>
+          <a href="${parceiros ? "/parceiros" : "/"}" class="sb-marca" ${parceiros ? 'data-pc="inicio"' : 'data-menu="home"'} aria-label="GuiaTennis, início">${logoSvg()}<span class="logo-nome">${nomeDoLogo()}</span><em>Sobre</em></a>
           ${parceiros ? (contaAcademia ? `<a href="/parceiros/painel" class="sb-topo-cta" data-pc="painel">Minha academia</a>` : `<a href="/parceiros/cadastro" class="sb-topo-cta" data-pc="cadastro">Cadastrar academia</a>`)
             : `<a href="/busca" class="sb-topo-cta" data-menu="search">Buscar quadra</a>`}
         </div>
@@ -11584,7 +11594,7 @@ function textoDoPeriodo(dias) {
 // ---- cabeçalho, menu e rodapé do site dos parceiros ----
 
 function pcMarca() {
-  return `<a href="/parceiros" class="pc-marca" data-pc="inicio" aria-label="GuiaTennis Parceiros, início">${logoSvg()}<span class="pc-marca-t display logo-nome">GuiaTennis</span><span class="pc-selo">Parceiros</span></a>`;
+  return `<a href="/parceiros" class="pc-marca" data-pc="inicio" aria-label="GuiaTennis Parceiros, início">${logoSvg()}<span class="pc-marca-t display logo-nome">${nomeDoLogo()}</span><span class="pc-selo">Parceiros</span></a>`;
 }
 
 // Cadastro e Entrar sem nada em volta (13/10/2026), como o cadastro do
@@ -14031,7 +14041,7 @@ function previaDoEmail(c, f, bairro) {
       <p class="est-previa-t">Prévia do e-mail</p>
       <p class="email-previa-assunto"><strong>Assunto:</strong> Promoção em ${esc(bairro)}: ${titulo ? esc(titulo) : vazio("a promoção")}</p>
       <div class="email-previa-corpo">
-        <p class="email-previa-marca">${logoSvg()} <span>GuiaTennis</span></p>
+        <p class="email-previa-marca">${logoSvg()} <span>Guia<span style="color:#B8933F">Tennis</span></span></p>
         <p class="email-previa-h">Novidade em ${esc(bairro)}</p>
         <p class="email-previa-p">Olá, <em>nome do jogador</em>! A <strong>${esc(c.name)}</strong>, em ${esc(bairro)}, está com uma promoção:</p>
         <div class="email-previa-msg promo">
@@ -16388,7 +16398,7 @@ function renderCabecalho() {
     <div class="home-head">
       <button type="button" class="home-brand" id="brand-home">
         ${logoSvg()}
-        <h1 class="display logo-nome">GuiaTennis</h1>
+        <h1 class="display logo-nome">${nomeDoLogo()}</h1>
       </button>
       ${botaoConta()}
       <button type="button" class="menu-btn" id="menu-btn" aria-label="Abrir menu${state.compareList.length ? ` (${state.compareList.length} na comparação)` : ""}" aria-expanded="${state.showMenu ? "true" : "false"}">
@@ -16433,7 +16443,7 @@ function renderMenu() {
     <div class="overlay open menu-overlay" id="menu-overlay">
       <aside class="menu-drawer" role="dialog" aria-label="Menu">
         <div class="menu-topo">
-          <a href="/" class="menu-marca" data-menu="home" aria-label="GuiaTennis, início">${logoSvg()}<span class="display logo-nome">GuiaTennis</span></a>
+          <a href="/" class="menu-marca" data-menu="home" aria-label="GuiaTennis, início">${logoSvg()}<span class="display logo-nome">${nomeDoLogo()}</span></a>
           <button type="button" class="menu-fechar" id="menu-close" aria-label="Fechar menu">✕</button>
         </div>
         ${conta}
@@ -17394,7 +17404,7 @@ function renderJogadorSheet() {
       <div class="sheet jog-pagina" role="dialog" aria-label="Conta do GuiaTennis">
         <header class="pc-topo">
           <div class="pc-topo-in">
-            <span class="pc-marca">${logoSvg()}<span class="pc-marca-t display logo-nome">GuiaTennis</span></span>
+            <span class="pc-marca">${logoSvg()}<span class="pc-marca-t display logo-nome">${nomeDoLogo()}</span></span>
             <button type="button" class="pc-fechar" id="jogador-close" aria-label="Fechar">✕</button>
           </div>
         </header>
@@ -19458,7 +19468,7 @@ function blocoChamadas(chamadas) {
 function rodapeFaixa(parceiros) {
   return `
     <div class="rodape-faixa">
-      <span class="rodape-faixa-marca">${logoSvg()}<strong class="display logo-nome">GuiaTennis</strong>${parceiros ? `<span class="pc-selo">Parceiros</span>` : ""}</span>
+      <span class="rodape-faixa-marca">${logoSvg()}<strong class="display logo-nome">${nomeDoLogo()}</strong>${parceiros ? `<span class="pc-selo">Parceiros</span>` : ""}</span>
       <p>${parceiros ? "O GuiaTennis para academias e quadras de tênis" : "Guia de quadras e academias de tênis"} · guiatennis.com.br</p>
       <p class="rodape-faixa-copy">Copyright © ${new Date().getFullYear()} GuiaTennis | Todos os direitos reservados.</p>
       ${parceiros ? "" : `<p class="rodape-faixa-copy">Dados de localização © colaboradores do OpenStreetMap</p>`}
@@ -28287,7 +28297,7 @@ function renderPainelAdmin() {
     <div class="adm" id="painel-admin">
       <header class="adm-topo">
         <button type="button" class="adm-menu-btn" id="adm-menu-btn" aria-label="Seções do painel" aria-expanded="${state.admMenu ? "true" : "false"}"><span></span><span></span><span></span></button>
-        <a href="/admin" class="adm-marca" data-adm-aba="inicio">${logoSvg()}<span class="logo-nome">GuiaTennis</span><em>Admin</em></a>
+        <a href="/admin" class="adm-marca" data-adm-aba="inicio">${logoSvg()}<span class="logo-nome">${nomeDoLogo()}</span><em>Admin</em></a>
         <div class="adm-topo-acoes">
           <button type="button" id="adm-sino" class="adm-sino" data-adm-aba="avisos" aria-label="Avisos: ${contagem.avisos} para fazer" title="Avisos">${icon('sino', 17, 'currentColor')}${contagem.avisos ? `<b class="adm-sino-n">${contagem.avisos > 99 ? "99+" : contagem.avisos}</b>` : ""}</button>
           <button type="button" id="adm-ver-site" aria-label="Ver o site" title="Ver o site">${icon('globe', 15, 'currentColor')}<span>Ver o site</span></button>

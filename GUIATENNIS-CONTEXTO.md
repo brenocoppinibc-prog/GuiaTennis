@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 259)
+**Atualizado em:** 13/11/2026 (regra 260)
 
 | | |
 |---|---|
@@ -111,8 +111,10 @@ Texto e visual
 - Botão que desconecta diz **"Sair da conta"**.
 - Visual limpo e espaçado: **a fonte do aparelho** no texto e nos títulos
   (`--fonte-texto` e `--fonte-titulo`: San Francisco, Roboto, Segoe UI; regra
-  259), e só o nome "GuiaTennis" no logo com fonte própria (`--fonte-logo`,
-  classe `logo-nome`; Playfair até o Breno escolher outra); creme, verde e
+  259); o nome "GuiaTennis" no logo é **desenho em Poppins Bold** (`nomeDoLogo()`,
+  classe `logo-nome`, regra 260): "Guia" na cor do texto em volta (verde no claro,
+  branco no verde) e "Tennis" dourado; nos e-mails, Arial negrito nas mesmas
+  cores; creme, verde e
   dourado (o Breno quer manter essas cores, 13/11); nada abaixo de
   12px, campos com 16px, botões com 48px; sem caixa dentro de caixa. Regra
   nova de visual vai na camada "Acabamento limpo", no fim do `<style>`.
@@ -138,8 +140,8 @@ Texto e visual
 Técnica
 - **Um arquivo, sem build, sem framework, sem dependência nova e sem IA**
   (o site entende textos por palavras-chave). De fora só Supabase,
-  Leaflet/OpenStreetMap, Nominatim, Overpass, ViaCEP/awesomeapi e as
-  fontes do Google.
+  Leaflet/OpenStreetMap, Nominatim, Overpass e ViaCEP/awesomeapi (as
+  fontes do Google saíram na regra 260: nenhuma fonte é baixada).
 - Coluna nova no banco **degrada com elegância** (o site funciona com o
   banco antigo: `lerPublico` com a lista de colunas novas, `faltaColunaNova`).
 - Commits, comentários e nomes de função em português.
@@ -312,7 +314,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261113120000_portugues_dos_emails` (94 arquivos na pasta; regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261113130000_nome_do_logo_nos_emails` (95 arquivos na pasta; regra 260: o nome no alto dos e-mails em Arial negrito, "Guia" verde e "Tennis" dourado). Antes, `20261113120000_portugues_dos_emails` (regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -499,11 +501,12 @@ parceria com sistemas de reserva por enquanto; "futuramente quero ter
 parceria": não puxar o assunto antes de ele pedir). **Cores e fontes (13/11):**
 o Breno quer manter o verde-escuro e o dourado (quadro das paletas recusado:
 https://claude.ai/artifact/Qpno9SkKR893cGBT87UhUZ); o site inteiro passou para a
-fonte do aparelho (regra 259); **falta ele escolher a fonte do nome no logo** no
-quadro https://claude.ai/artifact/KMAgoNrMzi778JhqQmnTu6 (11 opções; sugeridas a
-2, DM Serif Display, e a 5, Montserrat ExtraBold). Escolhida, o nome vira desenho
-(SVG, como a raquete) e o Google Fonts sai do site (mexer na Privacidade se ela
-citar o Google Fonts). Testes:
+fonte do aparelho (regra 259); o nome do logo é a **Poppins** (escolhida no quadro
+https://claude.ai/artifact/KMAgoNrMzi778JhqQmnTu6), desenhada em SVG, com "Guia"
+verde e "Tennis" dourado (regra 260); o Google Fonts saiu do site (a Privacidade
+não o citava). Ainda em Arial maiúscula: a imagem de compartilhar, os ícones e a
+404 (`divulgacao/gerar-imagens.js`, `logoDesenho({ comNome })`); oferecido trocar
+para a Poppins, sem resposta. Testes:
 **bateria completa de 12/11 (até a regra 252): 2.546 verificações**, sem falha;
 depois, só os afetados de 253 a 257, todos verdes; `banco-emails.py` 930
 conferências. Banco local (Postgres 16 em `/var/lib/postgresql/gt`) foi montado
@@ -585,7 +588,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 260.
+**Próximo número:** regra 261.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1624,6 +1627,20 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   aparelho (o 404 não baixa fonte nenhuma). Cores mantidas. Sem SQL. Testes:
   `fonte-do-aparelho.js` (novo, 6), `contestar-passo-a-passo.js`,
   `veracidade.js`, `sobre.js`, `menu-e-home.js`, `parceiros.js`.
+- **260 (13/11) — o nome do logo em Poppins, verde e dourado** ("gostei da poppins
+  e fica legal com e verde amarelo na escrita"): "GuiaTennis" em Poppins Bold
+  virou desenho (`NOME_DO_LOGO`, `nomeDoLogo()`, depois do `LOGO-FIM`; caminhos
+  tirados da fonte com fontTools e HarfBuzz, com o acerto entre o "T" e o "e"),
+  com "Guia" em `currentColor` (verde no topo, no menu e no Parceiros; branco no
+  rodapé, no Sobre e no admin) e "Tennis" em `--gold` (`.logo-nome-tennis`); altura
+  `0.81em`, o texto "GuiaTennis" escondido (`.so-leitor`) para leitor de tela e
+  Google. Saíram o Google Fonts e o `--fonte-logo`: **o site não baixa fonte
+  nenhuma**. Nos e-mails, o nome no alto em Arial negrito, "Guia" verde e "Tennis"
+  dourado (antes Georgia toda verde), e a prévia do e-mail no Parceiros igual. SQL
+  `20261113130000_nome_do_logo_nos_emails`. Testes: `fonte-do-aparelho.js` (7),
+  `promocoes-por-email.js` (o título do leilão na fonte do aparelho), `menu-e-home.js`,
+  `parceiros.js`, `sobre.js`, `links.js`, `contestar-passo-a-passo.js`,
+  `veracidade.js`; `banco-emails.py` (953).
 
 ## 11. WhatsApp e mensagem para as academias
 

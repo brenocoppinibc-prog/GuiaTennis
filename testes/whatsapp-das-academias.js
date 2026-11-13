@@ -3,6 +3,8 @@
 // WhatsApp" (a lista com o link de cada ficha), "Falar com todas" (a mesma
 // mensagem, enviada uma por uma) e "Salvar os contatos" (um .vcf).
 const { abrir, ok } = require('./harness');
+// Regra 264: na busca, os atalhos ficam no menu "WhatsApp" ao lado do "Salvar busca".
+const abrirMenuWa = (page) => page.evaluate(() => { const d = document.querySelector('.busca-salvar .wa-mais'); if (d) d.open = true; });
 
 (async () => {
   let { browser, page } = await abrir({ q: '?busca=05422-000' });
@@ -22,6 +24,7 @@ const { abrir, ok } = require('./harness');
     return { lista: !!linha?.querySelector('[data-wa-lista]'), salvar: !!linha?.querySelector('#salvar-busca'), varias: linha?.querySelector('[data-wa-varias]')?.innerText || '', contatos: !!linha?.querySelector('[data-wa-contatos]') };
   });
   ok(t.lista && t.salvar && t.contatos, 'na busca, os botões do WhatsApp ficam na linha do "Salvar busca"');
+  await abrirMenuWa(page);
   await page.click('.busca-salvar [data-wa-lista]');
   await page.waitForTimeout(200);
   t = await page.evaluate(() => ({ url: decodeURIComponent((window.__abertos[0] || '').replace('https://wa.me/?text=', '')), push: document.querySelector('.gt-push')?.innerText || '' }));
@@ -32,6 +35,7 @@ const { abrir, ok } = require('./harness');
   ok(t.n >= 2 && t.url.includes('utm_source=WhatsApp-lista'), 'cada academia da lista conta "lista_whatsapp", e o link da ficha leva a origem — ' + t.n);
 
   // ---- Falar com todas ----
+  await abrirMenuWa(page);
   const varias = await page.$('.busca-salvar [data-wa-varias]');
   if (varias) {
     await varias.click();
@@ -63,6 +67,7 @@ const { abrir, ok } = require('./harness');
   } else ok(false, 'a busca tem "Falar com…" (há academias com WhatsApp)');
 
   // ---- Salvar os contatos ----
+  await abrirMenuWa(page);
   await page.click('.busca-salvar [data-wa-contatos]');
   await page.waitForTimeout(300);
   t = await page.evaluate(() => window.__vcf || '');

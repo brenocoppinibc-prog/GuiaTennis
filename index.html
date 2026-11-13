@@ -41,7 +41,7 @@
     --gold: #B8933F;
     --gold-light: #D8B865;
     --text: #211F1A;
-    --muted: var(--muted);
+    --muted: #6B6557;
     --muted-dark: #A79F8C;
     --red: #A8462C;
   }
@@ -3381,6 +3381,17 @@
   .sbadge { border-radius: 8px 8px 8px 0; padding: 5px 7px; font-weight: 800; }
   .sbadge.none { border-radius: 999px; background: none; border: 1px solid var(--border); color: var(--muted); font-weight: 600; }
   .conta-topo.entrar { width: auto; padding: 0 12px; border: 0; background: none; color: var(--green); font-family: var(--fonte-texto); font-size: 15px; font-weight: 700; }
+
+  /* Regra 264: os atalhos do WhatsApp da busca num menu que abre embaixo do botão. */
+  .wa-mais { position: relative; }
+  .wa-mais > summary { list-style: none; cursor: pointer; }
+  .wa-mais > summary::-webkit-details-marker { display: none; }
+  .wa-mais[open] > summary { border-color: var(--green); color: var(--green); }
+  .busca-salvar .wa-mais { margin-left: auto; }
+  .busca-salvar .wa-acoes-menu { left: auto; right: 0; }
+  .wa-acoes-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 25; display: grid; gap: 2px; width: min(260px, calc(100vw - 40px)); padding: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); }
+  .wa-acoes-menu .tbtn { justify-content: flex-start; width: 100%; border: 0; border-radius: 8px; background: none; min-height: 44px; }
+  .wa-acoes-menu .tbtn:hover { background: var(--bg-alt); }
 </style>
 </head>
 <body>
@@ -5135,12 +5146,16 @@ function acoesDoWhatsapp(origem) {
   const courts = academiasDaOrigem(origem);
   if (!courts.length) return "";
   const comWa = comWhatsappDaOrigem(courts);
+  // Regra 264: na busca, os três atalhos ficam atrás de um botão "WhatsApp",
+  // ao lado do "Salvar busca", para a lista não começar cheia de botões.
+  const menu = origem === "busca";
   return `
-    <div class="wa-acoes" data-wa-origem="${origem}">
+    ${menu ? `<details class="wa-mais"><summary class="tbtn">${icon('whatsapp', 14, 'currentColor')} WhatsApp <span aria-hidden="true">▾</span></summary>` : ""}
+    <div class="wa-acoes ${menu ? "wa-acoes-menu" : ""}" data-wa-origem="${origem}">
       <button type="button" class="tbtn" data-wa-lista="${origem}">${icon('whatsapp', 14, 'currentColor')} Mandar para o meu WhatsApp</button>
       ${comWa.length >= 2 ? `<button type="button" class="tbtn" data-wa-varias="${origem}">${icon('phone', 14, 'currentColor')} Falar com ${comWa.length === courts.length && comWa.length < VARIAS_MAX ? "todas" : `as ${comWa.length}`}</button>` : ""}
       ${comWa.length ? `<button type="button" class="tbtn" data-wa-contatos="${origem}">${icon('pessoa', 14, 'currentColor')} Salvar ${comWa.length === 1 ? "o contato" : "os contatos"}</button>` : ""}
-    </div>`;
+    </div>${menu ? "</details>" : ""}`;
 }
 function urlDoSite(caminho, origem) { return location.origin + caminho + (origem ? `${caminho.includes("?") ? "&" : "?"}utm_source=${origem}` : ""); }
 // Regra 209: os links da lista e do contato salvo levam a origem; quem abrir
@@ -19382,7 +19397,6 @@ function linhaSalvarBusca() {
         ${icon(salva ? 'check' : 'sino', 14, 'currentColor')} ${state.salvandoBusca ? "Salvando" : salva ? "Busca salva" : "Salvar busca"}
       </button>
       ${acoes}
-      ${salva ? "" : `<span class="busca-salvar-dica">Guarde o lugar e os filtros na sua conta e receba as academias novas daqui.</span>`}
     </div>
     ${state.buscaSalvaErro ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.buscaSalvaErro)}</div>` : ""}
     ${aviso ? `
@@ -22887,15 +22901,15 @@ function htPerguntas(c) {
 // hoteis.com).
 function htSecoesDisponiveis(c) {
   const secs = [];
-  if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Estrutura" });
-  // Regra 189: o "Sobre" logo depois da estrutura e a região logo depois
-  // das opções.
-  secs.push({ id: "ht-visao", label: "Visão geral" });
+  // Regra 264: a ordem da decisão (preço, horário, estrutura, onde fica,
+  // cancelamento e o que dizem os jogadores).
   secs.push({ id: "ht-opcoes", label: "Preços" });
-  secs.push({ id: "ht-local", label: "Localização" });
-  secs.push({ id: "avaliacoes", label: "Avaliações" });
   if (temHorario(c)) secs.push({ id: "ht-horario", label: "Horário" });
+  if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Estrutura" });
+  secs.push({ id: "ht-visao", label: "Visão geral" });
+  secs.push({ id: "ht-local", label: "Localização" });
   secs.push({ id: "ht-politica", label: "Cancelamento" });
+  secs.push({ id: "avaliacoes", label: "Avaliações" });
   if (perguntasAcademia(c).length) secs.push({ id: "ht-duvidas", label: "Dúvidas" });
   return secs;
 }
@@ -23095,27 +23109,14 @@ function renderCourtPage(c) {
 
               ${htDestaques(c) ? `<div class="ht-sec ht-sec-destaques">${htDestaques(c)}</div>` : ""}
 
-              ${(totalQuadras(c) || (c.amenities || []).length) ? `
-                <section class="ht-sec" id="ht-comodidades">
-                  <h3 class="sec-title">Estrutura</h3>
-                  ${htComodidades(c)}
-                </section>` : ""}
-
-              <section class="ht-sec" id="ht-visao">
-                <h3 class="sec-title">Sobre a academia</h3>
-                ${htSobre(c)}
-              </section>
-
+              ${/* Ficha na ordem da decisão (regra 264, 13/11/2026): preços, contato,
+                   horário, estrutura, "Sobre", localização, cancelamento, avaliações,
+                   dúvidas e as academias por perto, como no protótipo aprovado. */ ""}
               <section class="ht-sec" id="ht-opcoes">
                 <h3 class="sec-title">Opções para jogar</h3>
                 ${htCaixasDaEscolha(c)}
                 ${htPromocoes(c)}
                 ${htOpcoes(c)}
-              </section>
-
-              <section class="ht-sec" id="ht-local">
-                <h3 class="sec-title">Explore a região</h3>
-                ${htLocalizacao(c)}
               </section>
 
               ${/* Sem foto no meio da ficha (pedido de 27/10/2026: "igual na
@@ -23139,6 +23140,36 @@ function renderCourtPage(c) {
                 ${c.reserva ? `<p class="footnote ficha-reserva-nota">A reserva online é feita no sistema da academia. O GuiaTennis não recebe o pagamento.</p>` : ""}
                 ${c.phone && c.whatsappEmConfirmacao ? `<p class="footnote ficha-whats-confirmando">WhatsApp em confirmação pelo GuiaTennis.</p>` : ""}
                 ${(ehMinha(c) || ehDaMinhaConta(c)) && whatsappNovoDe(c.id) && whatsappNovoDe(c.id).numero && !whatsappNovoDe(c.id).codigoOkEm ? `<p class="footnote ficha-whatsapp-novo">Só vocês veem isto: o WhatsApp ${esc(telefoneBonito(whatsappNovoDe(c.id).numero))} precisa de confirmação e não fica público até ser confirmado. <a href="/parceiros/whatsapp" data-pc="whatsapp">Ver ›</a></p>` : ""}
+              </section>
+
+              ${temHorario(c) ? `
+                <section class="ht-sec" id="ht-horario">
+                  <div class="ht-sec-topo">
+                    <h3 class="sec-title">Horário</h3>
+                    ${seloAbertoAgora(c)}
+                  </div>
+                  ${htHorarioTabela(c)}
+                </section>` : ""}
+
+              ${(totalQuadras(c) || (c.amenities || []).length) ? `
+                <section class="ht-sec" id="ht-comodidades">
+                  <h3 class="sec-title">Estrutura</h3>
+                  ${htComodidades(c)}
+                </section>` : ""}
+
+              <section class="ht-sec" id="ht-visao">
+                <h3 class="sec-title">Sobre a academia</h3>
+                ${htSobre(c)}
+              </section>
+
+              <section class="ht-sec" id="ht-local">
+                <h3 class="sec-title">Explore a região</h3>
+                ${htLocalizacao(c)}
+              </section>
+
+              <section class="ht-sec" id="ht-politica">
+                <h3 class="sec-title">Cancelamento e reposição</h3>
+                ${htPolitica(c)}
               </section>
 
               <section class="ht-sec" id="avaliacoes">
@@ -23174,27 +23205,13 @@ function renderCourtPage(c) {
                 </div>
               </section>
 
-              ${htVizinhas(c)}
-
-              ${temHorario(c) ? `
-                <section class="ht-sec" id="ht-horario">
-                  <div class="ht-sec-topo">
-                    <h3 class="sec-title">Horário</h3>
-                    ${seloAbertoAgora(c)}
-                  </div>
-                  ${htHorarioTabela(c)}
-                </section>` : ""}
-
-              <section class="ht-sec" id="ht-politica">
-                <h3 class="sec-title">Cancelamento e reposição</h3>
-                ${htPolitica(c)}
-              </section>
-
               ${perguntasAcademia(c).length ? `
                 <section class="ht-sec" id="ht-duvidas">
                   <h3 class="sec-title">Perguntas frequentes sobre ${esc(c.name)}</h3>
                   ${htPerguntas(c)}
                 </section>` : ""}
+
+              ${htVizinhas(c)}
 
               <div class="ht-sec ht-sec-fim">
                 <div id="ficha-confirmacao">${c.confirmada ? linhaDaFichaConfirmada(c) : avisoDaFichaBasica()}</div>

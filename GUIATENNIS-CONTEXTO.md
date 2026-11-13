@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 263)
+**Atualizado em:** 13/11/2026 (regra 264)
 
 | | |
 |---|---|
@@ -606,7 +606,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 264.
+**Próximo número:** regra 265.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1704,12 +1704,25 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   no quadrado verde com o canto de baixo reto, como o Booking. **No alto:**
   "Entrar" escrito, sem o ícone piscando (desfaz o pedido de 05/10, aprovado no
   protótipo). O botão Lista/Mapa flutuante e a barra de baixo da ficha já existiam.
-  Ainda por fazer do protótipo: reordenar a ficha (fatos › preços › horário ›
-  estrutura › como chegar › cancelamento › avaliações) e enxugar as ações em cima
-  da lista (Salvar busca, Mandar para o meu WhatsApp, Falar com todas, Salvar os
-  contatos). **Bateria completa de 13/11 (regra 263): 2.570 verificações, nenhuma
+  A ficha na ordem da decisão e as ações da lista enxutas entraram na regra 264. **Bateria completa de 13/11 (regra 263): 2.570 verificações, nenhuma
   falha** (3 testes com o texto, a cor e o tamanho antigos, corrigidos). O Breno mudou no sistema de design a cor de erro para `#E63D10`
   (4,2:1 com branco); o site segue com `#A8462C` até ele confirmar. Sem SQL.
+- **264 (13/11) — a ficha na ordem da decisão e a busca menos cheia** ("na verdade
+  eu gostei sim, mas acho que dá pra alterar mais coisa fazendo um bom trabalho";
+  antes, "Não gostei muito… deixe a procura de aulas como estava", desfeito na
+  hora: a busca da página inicial fica como na regra 263). **Ficha:** destaques ›
+  **Opções para jogar (preços)** › Contato (logo depois das opções, como pedido em
+  26/10) › **Horário** › Estrutura › Sobre › Explore a região › Cancelamento ›
+  **Avaliações** › Dúvidas › Academias por perto › fim; as abas na mesma ordem
+  (Preços, Horário, Estrutura, Visão geral, Localização, Cancelamento, Avaliações,
+  Dúvidas). Desfaz a ordem da regra 189 (estrutura e "Sobre" primeiro, região logo
+  depois das opções), como no protótipo aprovado. **Busca:** "Mandar para o meu
+  WhatsApp", "Falar com todas" e "Salvar os contatos" ficam num botão
+  **"WhatsApp ▾"** (`details.wa-mais`, menu à direita) ao lado do "Salvar busca";
+  na comparação e nas Favoritas continuam soltos; sai a frase "Guarde o lugar e
+  os filtros…" ao lado do "Salvar busca". Sem SQL. Testes: `ficha-hoteis.js`,
+  `whatsapp-das-academias.js` (abre o menu antes), `cadastro.js`, `catalogo.js`,
+  `promocoes.js`, `reserva-online.js`, `busca-e-ficha.js`, `previa-da-ficha.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

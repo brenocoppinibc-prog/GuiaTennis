@@ -87,8 +87,9 @@ async function fichaCheia(page, extra) {
   // mais acima"); o "é o responsável?" e o "Algo errado" seguem no fim.
   // Regra 189 (30/10/2026): o "Sobre" logo depois da estrutura, e a região
   // ("o que tem por perto") logo depois das opções.
-  ok(r === 'ht-sec-destaques,ht-comodidades,ht-visao,ht-opcoes,ht-local,ht-contato,avaliacoes,ht-perto,ht-horario,ht-politica,ht-duvidas,ht-sec-fim',
-    'destaques, estrutura, "Sobre", opções, região, contato, avaliações, academias por perto, horário, cancelamento, dúvidas e o fim — ' + r);
+  // Regra 264 (13/11/2026): a ordem da decisão, como no protótipo aprovado.
+  ok(r === 'ht-sec-destaques,ht-opcoes,ht-contato,ht-horario,ht-comodidades,ht-visao,ht-local,ht-politica,avaliacoes,ht-duvidas,ht-perto,ht-sec-fim',
+    'destaques, preços, contato, horário, estrutura, "Sobre", localização, cancelamento, avaliações, dúvidas, academias por perto e o fim — ' + r);
   const fim = await page.evaluate(() => ({ fim: document.querySelector('.ht-sec-fim')?.innerText || '', contato: document.getElementById('ht-contato').innerText }));
   // O "Confirmada pela academia" volta para o fim (27/10/2026: "deixe isso no
   // final, era só os contatos mais para cima").
@@ -176,7 +177,7 @@ async function fichaCheia(page, extra) {
   await page.setViewportSize({ width: 1280, height: 900 });
   await fichaCheia(page);
   r = await page.evaluate(() => ({ capa: getComputedStyle(document.querySelector('.ht-capa')).display, galeria: getComputedStyle(document.querySelector('.ht-gal')).display, abas: [...document.querySelectorAll('#ht-tabs button')].map(b => b.innerText).join(',') }));
-  ok(r.capa === 'none' && r.galeria === 'grid' && r.abas === 'Estrutura,Visão geral,Preços,Localização,Avaliações,Horário,Cancelamento,Dúvidas', 'no computador, o mosaico e as abas na ordem da ficha — ' + r.abas);
+  ok(r.capa === 'none' && r.galeria === 'grid' && r.abas === 'Preços,Horário,Estrutura,Visão geral,Localização,Cancelamento,Avaliações,Dúvidas', 'no computador, o mosaico e as abas na ordem da ficha — ' + r.abas);
   await browser.close();
 
   // ---- sem foto: sem capa, e a barra de cima à vista ----

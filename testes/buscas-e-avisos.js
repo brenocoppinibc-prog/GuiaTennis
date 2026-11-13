@@ -261,7 +261,8 @@ async function buscar(page, termo) {
   const ordem = await page.evaluate(() => [...document.querySelectorAll('.home-sec h3, .bloco-ideia h3')].map(h => h.innerText.trim()));
   const pos = (t) => ordem.findIndex(x => x.startsWith(t));
   // "Melhores avaliadas" só aparece com avaliação; o resto vem sempre, nesta ordem.
-  const esperada = ['Academias recomendadas', 'Academias por cidade', 'Mais bem avaliadas', 'Por que o GuiaTennis', 'Como funciona a busca', 'Perguntas frequentes'];
+  // Regra 267: com o lugar da pessoa, as recomendadas viram "Perto de você".
+  const esperada = [ordem.some(x => x.startsWith('Perto de você')) ? 'Perto de você' : 'Academias recomendadas', 'Academias por cidade', 'Mais bem avaliadas', 'Por que o GuiaTennis', 'Como funciona a busca', 'Perguntas frequentes'];
   const achadas = esperada.map(pos);
   ok(achadas.every((p, k) => p >= 0 || esperada[k] === 'Mais bem avaliadas') && achadas.filter(p => p >= 0).every((p, k, a) => !k || p > a[k - 1]),
     'home: academias primeiro, depois o site explicado aos poucos — ' + ordem.join(' | '));

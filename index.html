@@ -3416,6 +3416,22 @@
   .offer-linha .offer-um { display: block; line-height: 1.35; }
   .offer-linha .offer-um-lbl { font-size: 13px; }
   .offer-linha .offer-por-hora { font-size: 13px; margin-left: 0; }
+
+  /* Regra 267: o resto do protótipo. "Usar minha localização" escrito; a lista
+     "Perto de você" com nota, distância e preço; o cartão com cinco informações;
+     o menu do Parceiros com 3 listras. */
+  .sc-perto { display: inline-flex; align-items: center; gap: 6px; margin: 10px 14px 0; padding: 4px 0; border: 0; background: none; color: var(--green); font-family: var(--fonte-texto); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .mini.mini-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .mini-linha .mini-body { padding: 0; min-width: 0; }
+  .mini-linha-meta { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .mini-linha .sbadge { flex-shrink: 0; }
+  .mini-linha-nova { flex-shrink: 0; font-size: 12px; color: var(--muted); text-align: right; max-width: 96px; }
+  .rcard-onde { color: var(--muted); }
+  .rcard-selos { display: block; font-size: 13px; color: var(--muted); }
+  .rcard-promo { color: var(--gold-text); }
+  .scount { font-size: 13px; color: var(--muted); }
+  .pc-menu-btn.menu-btn { flex-direction: column; gap: 5px; }
+  .pc-menu-btn.menu-btn > span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
 </style>
 </head>
 <body>
@@ -10516,6 +10532,7 @@ function renderSearchCard() {
         </div>
         <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização">${state.searchStatus === "loading" ? bolaGirando(18) : icon('locate', 18, 'var(--green)')}</button>
       </div>
+      <button type="button" class="sc-perto" id="locate-txt">${icon('locate', 15, 'var(--green)')} Usar minha localização</button>
       <div class="sc-seg" role="group" aria-label="O que você procura">
         ${[{ key: "", label: "Aula e locação" }, ...MODALIDADE_OPTS].map(m => `<button type="button" class="sc-seg-b ${modalidade === m.key ? "on" : ""}" data-sc-modalidade="${m.key}" aria-pressed="${modalidade === m.key}">${m.label}</button>`).join("")}
       </div>
@@ -11758,7 +11775,7 @@ function pcTopo() {
             : isAdmin ? `<a href="/parceiros/ver" class="pc-cta" data-pc="ver">Ver como academia</a>`
             : `<a href="/parceiros/entrar" class="pc-entrar" data-pc="entrar">Entrar</a>
                <a href="/parceiros/cadastro" class="pc-cta" data-pc="cadastro">Cadastrar academia</a>`}
-          <button type="button" class="pc-menu-btn" id="pc-menu-btn" aria-label="Abrir o menu">${icon('list', 20, 'var(--green)')}</button>
+          <button type="button" class="pc-menu-btn menu-btn" id="pc-menu-btn" aria-label="Abrir o menu"><span></span><span></span><span></span></button>
         </div>
       </div>
     </header>
@@ -19272,6 +19289,22 @@ function faixaCidade(courts) {
 
 // patrocinado: a Premium nas "Academias recomendadas" (regra 101) é posição
 // paga e vem escrita "Patrocinado", como no topo da busca (regra 16).
+// Regra 267: cada academia da lista "Perto de você" da página inicial numa
+// linha: o nome, a nota, o bairro, a distância e o preço, como no protótipo.
+function renderLinhaDaHome(c, km, patrocinado) {
+  const preco = ofertas(c).find(o => o.min);
+  const partes = [c.bairro || c.cidade, km !== null && km !== undefined && isFinite(km) ? distanceText(km) : "", preco ? `a partir de R$ ${priceMin(preco.faixa)}${preco.curto || " por hora"}` : SEM_PRECO].filter(Boolean);
+  return `
+    <a class="mini mini-linha" href="${caminhoDaFicha(c)}" data-open="${c.id}">
+      <div class="mini-body">
+        ${patrocinado ? `<p class="mini-patrocinado">Patrocinado</p>` : ""}
+        <p class="mini-name">${esc(c.name)}${seloDaAcademia(c, 14)}</p>
+        <p class="mini-linha-meta">${esc(partes.join(" · "))}</p>
+      </div>
+      ${c.appCount ? `<span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : `<span class="mini-linha-nova">Sem avaliações ainda</span>`}
+    </a>`;
+}
+
 function renderMini(c, selo, extra, patrocinado) {
   const photos = courtPhotos(c);
   const estrelas = c.appCount ? Math.round(c.appAvg) : 0;
@@ -19700,8 +19733,8 @@ function renderHome() {
 
     ${recomendadas.length ? `
       <div class="home-sec" id="home-recomendadas">
-        <h3 class="display">Academias recomendadas</h3>
-        <div class="home-strip">${recomendadas.map(c => renderMini(c, null, null, ehPremium(c))).join("")}</div>
+        <h3 class="display">${ponto ? "Perto de você" : "Academias recomendadas"}</h3>
+        <div class="home-strip">${recomendadas.map(c => renderLinhaDaHome(c, ponto ? kmDaHome(c) : null, ehPremium(c))).join("")}</div>
         <button type="button" class="ver-todas" data-ir-busca>Ver todas as academias ›</button>
       </div>` : ""}
 
@@ -20685,15 +20718,13 @@ function renderCard(c, badge) {
           <div class="rcard-score">
             ${c.appCount ? `<span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : ""}
             <span class="sword">${scoreWord(c.appAvg, c.appCount)}</span>
-            ${c.appCount ? `<span class="scount">${icon('bubble', 13, 'var(--muted)')} ${c.appCount}</span>` : ""}
+            ${c.appCount ? `<span class="scount">${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}</span>` : ""}
           </div>
 
-          <p class="rcard-line"><span class="ico">${icon('pin', 13, 'var(--muted)')}</span><span>${esc(localLine(c))}</span></p>
+          <p class="rcard-line rcard-onde">${esc([localLine(c), totalQuadras(c) ? `${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}${(c.pisos || []).length ? " de " + listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)).toLowerCase() : ""}` : ""].filter(Boolean).join(" · "))}</p>
           ${c.avisouQueFechouEm ? `<p class="rcard-line rcard-fechou"><span class="ico">${icon('warning', 13, 'var(--red)')}</span><span>A academia avisou que fechou</span></p>` : ""}
-          ${dest ? `<p class="rcard-line"><span class="ico">${icon('sparkle', 13, 'var(--gold)')}</span><span>${esc(dest)}</span></p>` : ""}
-          ${promo ? `<p class="rcard-line rcard-promo"><span class="ico">${icon('tag', 14, 'var(--gold)')}</span><span><strong>Promoção:</strong> ${esc(promo.titulo)}</span></p>` : ""}
-          ${totalQuadras(c) ? `<p class="rcard-line"><span class="ico">${icon('ball', 13, 'var(--muted)')}</span><span>${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")} · ${esc(listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)))}</span></p>` : ""}
-          ${marcas.length ? `<p class="rcard-selos">${marcas.map(m => `<span>${icon('check', 14, 'var(--green)')} ${esc(m.label)}</span>`).join("")}</p>` : ""}
+          ${promo ? `<p class="rcard-line rcard-promo"><strong>Promoção:</strong> ${esc(promo.titulo)}</p>` : ""}
+          ${promo ? "" : (marcas.length || dest) ? `<p class="rcard-selos">${esc(marcas.length ? marcas.map(m => m.label).join(" · ") : dest)}</p>` : ""}
         </div>
       </div>
 
@@ -29107,6 +29138,8 @@ function attachEvents() {
     doSearch().then(() => window.scrollTo(0, 0));
   };
 
+  const locateTxt = document.getElementById("locate-txt");
+  if (locateTxt) locateTxt.onclick = () => document.getElementById("locate-btn")?.click();
   const locateBtn = document.getElementById("locate-btn");
   if (locateBtn) locateBtn.onclick = () => { state.page = "search"; syncUrl(true); useMyLocation(); };
 

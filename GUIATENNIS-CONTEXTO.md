@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 12/11/2026 (regra 257)
+**Atualizado em:** 13/11/2026 (regra 257, troca de chat)
 
 | | |
 |---|---|
@@ -469,49 +469,33 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**Chat trocado em 11/11/2026 (fim da tarde):** o chat novo volta a acompanhar o
-PR #5 (o anterior deixou de acompanhar e cancelou a conferência agendada;
-inscrever com `subscribe_pr_activity`). Último commit de código: `052e99a`
-(regra 247). O PR está verde, sem conflito, e a prévia no ar. **A Netlify monta
-o site** (regra 229): continuar editando e testando o `index.html`. **O "Banco
-de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL novo,
-disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir em
-Actions; rodou para todos os SQLs até o mais novo,
-`20261111120000_feedback_so_o_admin_ve` (11/11). A descrição do PR está em dia
-até a regra 247 (passos 57 a 71). Os pedidos de 10 e 11/11 (regras 231 a 247)
-estão todos na prévia; nada em aberto da conversa.
-Neste chat (10 e 11/11): regras 235 e 236 (a página pública das avaliações do
-GuiaTennis, **desfeitas pela 238**: virou a página **Feedback**, só com o da
-própria conta e a resposta, e a nota só para o admin); 237, 240 a 242 (reserva
-online: o link do sistema da academia, "Reservar online" antes do WhatsApp na
-ficha, no mapa e na lista, a agenda numa janela para os sistemas da lista;
-**sem API por enquanto**, não puxar o assunto); 239 (estrelas no feedback); 243
-e 245 (aba Feedback no Parceiros, no rodapé dele na coluna GuiaTennis); 244 (a
-autorização opcional para usar o feedback na divulgação, Termos e Privacidade
-em 11/11); 246 (cada feedback no seu site); 247 (o WhatsApp de volta no "Fale
-com a gente"). No chat seguinte (11/11, noite): regra 248 (a página **Sobre o
-GuiaTennis**, `/sobre` e `/parceiros/sobre`; no menu do Parceiros, sem
-"Benefícios" e sem "Feedback") e 249 (a história do Breno na página Sobre), na
-prévia. Decidido em 12/11: a cidade só como "de São Paulo" (pediu "fale que sou
-de sp"), "professor desde 2022" confirmado e **sem foto por enquanto** (se um dia
-mandar: em quadra, roupa de aula, raquete, luz natural, ao lado da assinatura).
-Regras 250 a 252 na prévia: o Breno escolheu a **opção A** (o relato com a
-situação, como o Feedback Assistant da Apple) e pediu também ver e responder as
-conversas do chat como admin (regra 251, SQL `20261112120000_chat_com_o_guia_e_relatos`,
-disparado à mão no banco de teste); e a revisão do português de todos os textos
-(regra 252, "pode gastar meu limite fazendo a revisão"); regra 253, os rodapés com
-Suporte (Chat de ajuda, Feedback) e GuiaTennis (Sobre nós, Instagram, WhatsApp, E-mail);
-regra 254, a ordem GuiaTennis, Suporte, Termos; regra 255, a página Sobre só de texto;
-regra 256, o Sobre em abas (Nossa história, O site, Equipe, Contato). O site do trivago
-não abre deste ambiente (fora da rede permitida): as abas seguem o padrão da página
-da empresa dele, de memória; regra 257, o Sobre como um site à parte, com menu próprio
-fixo e as partes numa página só que o menu acompanha. Ainda sem resposta do Breno: qual sistema de reservas as
-academias usam (para conferir a agenda dentro do site e o
-`SISTEMAS_COM_AGENDA`). Testes: só os afetados de cada regra, todos verdes; a
-**bateria completa não roda desde a regra 230** (vale rodar antes do "pode
-subir"); `banco-emails.py` 908 conferências (regra 238). Banco local (Postgres
-16 em `/var/lib/postgresql/gt`) foi montado do zero neste chat; contêiner novo
-pode não ter: ver seção 6.
+**Chat trocado em 13/11/2026:** o chat novo volta a acompanhar o PR #5 (o
+anterior deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
+commit de código: `1fdcee5` (regra 257). O PR está verde, sem conflito, a prévia
+no ar e a descrição do PR em dia até a regra 257 (passos 72 a 79). **A Netlify
+monta o site** (regra 229): continuar editando e testando o `index.html`. **O
+"Banco de dados" não roda sozinho com os pushes do Claude:** depois de cada SQL
+novo, disparar à mão (`banco.yml`, `destino: teste`, na branch do PR) e conferir
+em Actions; rodou para todos os SQLs até o mais novo,
+`20261112120000_chat_com_o_guia_e_relatos` (12/11, sucesso). Nada em aberto da
+conversa: os pedidos de 11 e 12/11 (regras 248 a 257) estão todos na prévia.
+Nos chats de 11 e 12/11: a página **Sobre o GuiaTennis** (248, 249, 255 a 257;
+hoje um site à parte, com menu próprio fixo, topo verde-escuro e as partes Nossa
+história, O site, Equipe e Contato numa página só, que o menu acompanha; a
+carta do Breno: de São Paulo, professor desde 2022, 3ª classe, os cursos, sem
+foto por enquanto); a caixa "Esta página ajudou você?" (250); o **chat com o
+GuiaTennis** (251: erros e sugestões com a situação na página Feedback; o admin
+lê as conversas e responde no chat); a **revisão do português** (252); os
+rodapés GuiaTennis, Suporte, Termos (253 e 254). O site do trivago não abre
+deste ambiente (fora da rede permitida). Ofertas feitas ao Breno, sem resposta:
+revisar também os textos dos e-mails (no SQL); incluir outras pessoas na aba
+Equipe quando houver. Ainda sem resposta: qual sistema de reservas as academias
+usam (para conferir a agenda dentro do site e o `SISTEMAS_COM_AGENDA`). Testes:
+**bateria completa de 12/11 (até a regra 252): 2.546 verificações**, sem falha;
+depois, só os afetados de 253 a 257, todos verdes; `banco-emails.py` 930
+conferências. Banco local (Postgres 16 em `/var/lib/postgresql/gt`) foi montado
+do zero em 12/11; contêiner novo pode não ter: ver seção 6. O LanguageTool
+(regra 252) foi baixado pelo Maven numa pasta temporária: não fica no contêiner.
 Decisões de 10/11 (detalhe nas regras 231 a 234): a nota fiscal sai à mão pelo
 Emissor Nacional enquanto o volume for pequeno (item 3 abaixo); a compra é uma
 tela só (dados do comprador › pagamento › confirmação), e o CPF ou CNPJ vai ao

@@ -46,7 +46,7 @@ const mudarAcademia = (page, id, campos) => page.evaluate(async ({ id, campos })
   ok(r.url === '/parceiros/whatsapp' && r.eyebrow.includes('WhatsApp da academia') && r.h1 === 'Digite o código' && r.caixas === 6 && r.cartao,
     'a página do código: /parceiros/whatsapp, a etiqueta, "Digite o código" e as 6 caixas no cartão — ' + r.url);
   ok(r.sub.includes('em até 1 dia útil') && r.sub.includes('(11) 96666-2222'), 'diz para onde o código vai e o prazo enquanto o envio é à mão — ' + r.sub);
-  ok(r.desenhos === 0 && !r.rodape && !r.menu && r.fonte.includes('Playfair'), 'sem desenho, sem menu nem rodapé, com o título em Playfair (regras 154 e 155)');
+  ok(r.desenhos === 0 && !r.rodape && !r.menu && r.fonte.includes('apple-system'), 'sem desenho, sem menu nem rodapé, com o título na fonte do aparelho (regras 154, 155 e 259)');
   await page.fill('#pc-codigo-whatsapp', '111111');
   await page.click('#pc-confirmar-whatsapp');
   await page.waitForTimeout(300);

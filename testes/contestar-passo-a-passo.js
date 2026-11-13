@@ -8,7 +8,7 @@
 // do WhatsApp. No mesmo dia, "essas telas estão com muita cara de ia por
 // aparecer algo muito animado": sem desenho e sem animação. Em 24/10/2026,
 // "deixe todas essas telas com uma cara um pouco mais do GuiaTennis, com fonte
-// e cor": o creme do site, a marca, a etapa em dourado, o título em Playfair e
+// e cor": o creme do site, a marca, a etapa em dourado, o título na fonte do aparelho e
 // o texto num cartão com o botão verde logo abaixo.
 const { abrir, ok } = require('./harness');
 
@@ -54,8 +54,8 @@ const contestou = (page) => page.evaluate(() => window.__rpcs.some(x => x.nome =
   }));
   ok(r.url === '/parceiros/contestar?academia=a3' && r.marca && !r.sair && !r.rodape && r.fundo === 'rgb(247, 244, 236)',
     'abre /parceiros/contestar com o creme do site e só a marca no alto: sem menu, sem ✕ e sem rodapé — ' + JSON.stringify({ fundo: r.fundo, marca: r.marca, sair: r.sair }));
-  ok(r.etiqueta === 'rgb(142, 109, 37)' && r.titulo.includes('Playfair') && r.botao.includes('pc-card'),
-    'a cara do GuiaTennis: a etapa em dourado, o título em Playfair e o texto num cartão com o "Continuar" logo abaixo — ' + JSON.stringify({ etiqueta: r.etiqueta, titulo: r.titulo }));
+  ok(r.etiqueta === 'rgb(142, 109, 37)' && r.titulo.includes('apple-system') && r.botao.includes('pc-card'),
+    'a cara do GuiaTennis: a etapa em dourado, o título na fonte do aparelho e o texto num cartão com o "Continuar" logo abaixo — ' + JSON.stringify({ etiqueta: r.etiqueta, titulo: r.titulo }));
   ok(r.barras === 'agora,-,-,-' && await etapa(page) === '1 de 4 · Quando contestar' && await titulo(page) === 'A academia é sua, mas outra pessoa administra?',
     '1ª tela: as quatro barrinhas no alto, a primeira acendendo, e o título — ' + r.barras);
   r = await page.evaluate(() => ({ corpo: document.getElementById('pc-contestar').innerText, pular: /pular/i.test(document.getElementById('pc-contestar').innerText), desenho: !!document.querySelector('#pc-contestar svg:not(.pc-onb-voltar svg)'),

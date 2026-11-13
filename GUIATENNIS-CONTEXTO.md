@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 258)
+**Atualizado em:** 13/11/2026 (regra 259)
 
 | | |
 |---|---|
@@ -109,8 +109,11 @@ Texto e visual
   complexo vai para a Ajuda ("Saiba mais"); dica que facilita fica.
 - Sem preço = **"Sob consulta"** + "fale com a academia" (`SEM_PRECO`).
 - Botão que desconecta diz **"Sair da conta"**.
-- Visual limpo e espaçado: Inter no texto (`--fonte-texto`), Playfair só
-  nos títulos (`--fonte-titulo`), creme, verde e dourado; nada abaixo de
+- Visual limpo e espaçado: **a fonte do aparelho** no texto e nos títulos
+  (`--fonte-texto` e `--fonte-titulo`: San Francisco, Roboto, Segoe UI; regra
+  259), e só o nome "GuiaTennis" no logo com fonte própria (`--fonte-logo`,
+  classe `logo-nome`; Playfair até o Breno escolher outra); creme, verde e
+  dourado (o Breno quer manter essas cores, 13/11); nada abaixo de
   12px, campos com 16px, botões com 48px; sem caixa dentro de caixa. Regra
   nova de visual vai na camada "Acabamento limpo", no fim do `<style>`.
 - **Telas novas sem desenho decorativo e sem animação** de entrada ou de
@@ -493,7 +496,14 @@ foram revisados (regra 258, SQL `20261113120000_portugues_dos_emails`, disparar 
 eu trabalho no site"); **reservas:** as academias usam vários sistemas, e a
 reserva continua **só pelo link** que a academia cola (nada de integração ou
 parceria com sistemas de reserva por enquanto; "futuramente quero ter
-parceria": não puxar o assunto antes de ele pedir). Testes:
+parceria": não puxar o assunto antes de ele pedir). **Cores e fontes (13/11):**
+o Breno quer manter o verde-escuro e o dourado (quadro das paletas recusado:
+https://claude.ai/artifact/Qpno9SkKR893cGBT87UhUZ); o site inteiro passou para a
+fonte do aparelho (regra 259); **falta ele escolher a fonte do nome no logo** no
+quadro https://claude.ai/artifact/KMAgoNrMzi778JhqQmnTu6 (11 opções; sugeridas a
+2, DM Serif Display, e a 5, Montserrat ExtraBold). Escolhida, o nome vira desenho
+(SVG, como a raquete) e o Google Fonts sai do site (mexer na Privacidade se ela
+citar o Google Fonts). Testes:
 **bateria completa de 12/11 (até a regra 252): 2.546 verificações**, sem falha;
 depois, só os afetados de 253 a 257, todos verdes; `banco-emails.py` 930
 conferências. Banco local (Postgres 16 em `/var/lib/postgresql/gt`) foi montado
@@ -575,7 +585,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 259.
+**Próximo número:** regra 260.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1601,6 +1611,19 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   em contato". O link do aviso de responsável principal vai a `/parceiros/acessos`.
   Equipe só com o Breno e reserva só pelo link (respostas da seção 9). Testes:
   `banco-emails.py` (seção "Português dos e-mails", 953 conferências).
+- **259 (13/11) — a fonte do aparelho no site inteiro** ("eu gosto das cores
+  atuais do verde escuro um amarelo meio dourado, me de mais estilos de fontes
+  para a logo mas seria interessante usar a fonte do celular no site inteiro"):
+  `--fonte-texto` e `--fonte-titulo` com `-apple-system, BlinkMacSystemFont,
+  'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif` (sai a Inter e a
+  Playfair dos títulos; `.display` com `letter-spacing: -0.01em`), como o
+  Booking e o GitHub. O nome no logo (topo, menu, Parceiros, Sobre, admin,
+  rodapé e a prévia do e-mail) ganhou a classe `logo-nome` com `--fonte-logo`
+  (Playfair até a escolha), e o Google Fonts baixa só as letras de "GuiaTennis"
+  (`text=GuiaTennis`). O "P" do estacionamento e o `404.html` também na fonte do
+  aparelho (o 404 não baixa fonte nenhuma). Cores mantidas. Sem SQL. Testes:
+  `fonte-do-aparelho.js` (novo, 6), `contestar-passo-a-passo.js`,
+  `veracidade.js`, `sobre.js`, `menu-e-home.js`, `parceiros.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

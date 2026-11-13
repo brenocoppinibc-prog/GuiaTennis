@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 257, troca de chat)
+**Atualizado em:** 13/11/2026 (regra 258)
 
 | | |
 |---|---|
@@ -309,7 +309,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261111120000_feedback_so_o_admin_ve` (92 arquivos na pasta; `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261113120000_portugues_dos_emails` (94 arquivos na pasta; regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -355,8 +355,8 @@ sozinho vira "-", "Sob consulta"), numa linha
   `cnpj.mjs` e `catalogo-meta.mjs`, nenhuma falha (as 3 da primeira rodada eram
   testes com o texto antigo, corrigidos). O `falhas.txt` sempre aparece na lista
   (força erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**930 conferências**,
-  nenhuma falha, 12/11/2026, regra 251; o teste roda de novo SQLs antigos, e o
+- **Banco local** para o `testes/banco-emails.py` (**953 conferências**,
+  nenhuma falha, 13/11/2026, regra 258; o teste roda de novo SQLs antigos, e o
   `20261105130000` recoloca a trava dos cliques de antes: SQL que mexe em
   `cliques_tipo_valido` ou em `numeros_da_academia` é rodado de novo no começo
   da seção dele): Postgres 16 em `/var/lib/postgresql/gt`. Ele cai entre um
@@ -487,10 +487,13 @@ foto por enquanto); a caixa "Esta página ajudou você?" (250); o **chat com o
 GuiaTennis** (251: erros e sugestões com a situação na página Feedback; o admin
 lê as conversas e responde no chat); a **revisão do português** (252); os
 rodapés GuiaTennis, Suporte, Termos (253 e 254). O site do trivago não abre
-deste ambiente (fora da rede permitida). Ofertas feitas ao Breno, sem resposta:
-revisar também os textos dos e-mails (no SQL); incluir outras pessoas na aba
-Equipe quando houver. Ainda sem resposta: qual sistema de reservas as academias
-usam (para conferir a agenda dentro do site e o `SISTEMAS_COM_AGENDA`). Testes:
+deste ambiente (fora da rede permitida). **Respostas de 13/11:** os e-mails
+foram revisados (regra 258, SQL `20261113120000_portugues_dos_emails`, disparar o
+"Banco de dados" à mão); a aba **Equipe** fica só com o Breno ("por enquanto só
+eu trabalho no site"); **reservas:** as academias usam vários sistemas, e a
+reserva continua **só pelo link** que a academia cola (nada de integração ou
+parceria com sistemas de reserva por enquanto; "futuramente quero ter
+parceria": não puxar o assunto antes de ele pedir). Testes:
 **bateria completa de 12/11 (até a regra 252): 2.546 verificações**, sem falha;
 depois, só os afetados de 253 a 257, todos verdes; `banco-emails.py` 930
 conferências. Banco local (Postgres 16 em `/var/lib/postgresql/gt`) foi montado
@@ -572,7 +575,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 258.
+**Próximo número:** regra 259.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1583,6 +1586,21 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   mesmo, com o rodapé do Parceiros. Sem animação de entrada. Sem SQL. Testes:
   `sobre.js` (40), `links.js`, `voltar.js`, `menu-e-home.js`, `parceiros.js`,
   `nota-do-guia.js`.
+- **258 (13/11) — o português dos e-mails** ("sim", à oferta de revisar os
+  e-mails como na regra 252): as 65 funções que montam e-mails foram lidas, e 18
+  mudaram, no SQL `20261113120000_portugues_dos_emails` (cada uma é a versão mais
+  nova, só com o texto trocado). Corrigido: "pôs o WhatsApp" → "informou o
+  WhatsApp"; "Responder a avaliação" → **"Responder à avaliação"**; "esse
+  acompanhamento" → "este acompanhamento"; frases soltas ("Recusado, volta…" → "Se
+  for recusado, volta…"; "Trocou, ele volta…" → "Depois da troca, ele volta…";
+  "confirmado, o código dele sai…" → "assim que confirmar, o código sai…"); "nem
+  nada que a lei brasileira proíba"; "Se não a conhece, recuse"; "de quem jogou na
+  academia?"; "fechou de fato"; "o site pergunta"; "volta a ser enviado"; "no
+  começo de cada mês"; "Acha que foi um engano? Fale com o GuiaTennis pelo chat";
+  "ignore este e-mail"; "poderia melhorar"; "conversou pelo chat de ajuda"; "entre
+  em contato". O link do aviso de responsável principal vai a `/parceiros/acessos`.
+  Equipe só com o Breno e reserva só pelo link (respostas da seção 9). Testes:
+  `banco-emails.py` (seção "Português dos e-mails", 953 conferências).
 
 ## 11. WhatsApp e mensagem para as academias
 

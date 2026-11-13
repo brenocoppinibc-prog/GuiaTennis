@@ -127,7 +127,7 @@ const chamar = (page) => page.evaluate(() => { window.open = () => {}; const a =
   ok(await page.evaluate(() => window.__db.acompanhamentos.length === 0), 'com o acompanhamento desligado, chamar não abre');
   await browser.close();
 
-  // ---- "Não quero mais esse acompanhamento" do e-mail ----
+  // ---- "Não quero mais este acompanhamento" do e-mail ----
   ({ browser, page } = await abrir({ q: '?parar-avisos=tok-j-ana&aviso=acompanhamento', jogador: true, jogadorConfirmado: true, acompanhamento: true }));
   await page.waitForTimeout(600);
   ok((await texto(page, '#parar-overlay')).includes('o acompanhamento depois de chamar uma academia'), 'o link do e-mail diz o que para');

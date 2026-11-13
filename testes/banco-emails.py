@@ -2265,7 +2265,7 @@ ok("Edu Editor editou a avaliação" in texto and "★★★★★ (5 de 5) (ant
    "o e-mail diz quem editou, a nota nova, a de antes e o texto — " + texto[:100])
 html = um("select html from public.emails_a_enviar where tipo = 'avaliacao_editada'") or ""
 ok("&lt;b&gt;melhorou&lt;/b&gt; &amp; muito" in html and "<b>melhorou" not in html, "o texto vai escapado no HTML")
-ok("Responder a avaliação" in html and "utm_source=Email-avaliacao-editada" in html, "sem resposta, o botão é \"Responder a avaliação\"")
+ok("Responder à avaliação" in html and "utm_source=Email-avaliacao-editada" in html, "sem resposta, o botão é \"Responder à avaliação\"")
 antes = fila("tipo = 'avaliacao_editada'")
 um(EDITAR.format(id=rev_ed, n=4, t="Terceira versão"), papel="authenticated", user=ed)
 ok(um(f"select stars || '|' || comment from public.avaliacoes where id = '{rev_ed}'") == "4|Terceira versão" and fila("tipo = 'avaliacao_editada'") == antes,
@@ -2858,6 +2858,42 @@ for i in range(10):
 ok(um("select public.enviar_relato_do_chat('parceiros', 'sugestao', 'Mais uma sugestão para o site', null, null)::text", papel="authenticated", user=outro) is None, "até 10 relatos por dia por conta")
 sql(f"delete from auth.users where id = '{cj}'")
 ok(um(f"select count(*) from public.relatos_do_chat where user_id = '{cj}'") == "0" and um(f"select count(*) from public.respostas_no_chat where user_id = '{cj}'") == "0", "excluir a conta apaga os relatos e as respostas")
+
+# ---- Regra 258: o português dos e-mails (20261113120000_portugues_dos_emails) ----
+print("\n== Português dos e-mails ==")
+# As seções de cima rodam de novo SQLs antigos, que trazem os textos de antes; aqui o SQL novo volta a valer (e roda duas vezes sem estragar).
+for _ in range(2):
+    r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261113120000_portugues_dos_emails.sql"], capture_output=True, text=True)
+    ok(r.returncode == 0, "o SQL do português dos e-mails roda (e roda de novo) sem erro " + r.stderr[-200:])
+def corpo_da_funcao(nome):
+    return um(f"select string_agg(replace(pg_get_functiondef(p.oid), E'\\n', ' '), ' ') from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = '{nome}'") or ""
+trocas = [
+  ("aviso_de_avaliacao_nova", "Responder a avaliação", "Responder à avaliação"),
+  ("aviso_de_avaliacao_nova", "de quem jogou aí?", "de quem jogou na academia?"),
+  ("aviso_de_avaliacao_editada", "Responder a avaliação", "Responder à avaliação"),
+  ("aviso_de_pedido_de_acesso", "Se não conhece, recuse", "Se não a conhece, recuse"),
+  ("aviso_de_disputa", "confirmado, o código dele", "assim que confirmar, o código sai"),
+  ("pedir_para_sair_do_guia", "fechou mesmo", "fechou de fato"),
+  ("resolver_pedido_para_sair", "ele pergunta se você", "o site pergunta se você"),
+  ("preparar_lembretes_de_volta", "volta a sair", "volta a ser enviado"),
+  ("preparar_resumos_do_mes", "todo começo de mês", "no começo de cada mês"),
+  ("aviso_de_whatsapp_para_confirmar", "pôs o WhatsApp", "informou o WhatsApp"),
+  ("confirmar_whatsapp_da_ficha", "recusar. Recusado,", "recusar. Se for recusado,"),
+  ("suspender_nome_admin", "Trocou, ele volta", "Depois da troca, ele volta"),
+  ("suspender_nome_admin", "ou nada que a lei", "nem nada que a lei"),
+  ("aviso_de_nome_da_academia", "Responda pelo chat", "Fale com o GuiaTennis pelo chat"),
+  ("avisar_convite", "academia, ignore.'", "ignore este e-mail."),
+  ("rodar_acompanhamentos", "esse acompanhamento", "este acompanhamento"),
+  ("avaliar_o_guia", "fale com ele", "entre em contato"),
+  ("responder_avaliacao_do_guia", "podia melhorar", "poderia melhorar"),
+  ("responder_no_chat", "conversou com o chat", "conversou pelo chat"),
+  ("avisar_principal_novo", "/parceiros/pessoas", "/parceiros/acessos"),
+]
+for fn, velho, novo_txt in trocas:
+    c = corpo_da_funcao(fn)
+    ok(velho not in c and novo_txt in c, f"{fn}: \"{novo_txt}\" no lugar de \"{velho}\"")
+ok(um("select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prokind = 'f' and pg_get_functiondef(p.oid) ~ '[^a-z](pôs|põe|ponha) '") == "0",
+   "nenhuma função do banco usa \"pôs\", \"põe\" ou \"ponha\"")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

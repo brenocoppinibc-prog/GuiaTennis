@@ -76,10 +76,9 @@ async function fichaCheia(page, extra) {
   ok(r.meio === 'left' && !r.estrelas && r.mapa === 'Ver no mapa' && r.nota === '4,7 3 avaliações', 'regra 266: o topo à esquerda, sem a fileira de estrelas, "Ver no mapa" e a nota com "3 avaliações" — ' + r.nota);
   ok(r.checks.join('|') === 'Aula e locação|5 quadras|Saibro e Rápida|Coberta e Descoberta' && r.endereco.includes('Rua A, 1 - Pinheiros'), 'embaixo do nome, os ✓ verdes com o que a academia tem — ' + r.checks.join(', '));
   ok(r.abas === 'none', 'no celular, sem a barra de abas (como no hoteis.com)');
-  await page.click('[data-info-pop="estrelas"]');
-  await page.waitForTimeout(100);
-  ok((await page.evaluate(() => document.querySelector('.ht-estrelas .info-pop')?.innerText || '')).includes('Como funcionam as avaliações'), 'o ⓘ das estrelas explica como funcionam as avaliações');
-  await page.evaluate(() => { state.infoPop = null; render(); });
+  // Regra 266: sem a fileira de estrelas no topo; "Como funcionam as avaliações"
+  // continua na parte Avaliações (conferido na lista de "nada saiu da ficha").
+  ok(await page.evaluate(() => !document.querySelector('.ht-estrelas') && !!document.querySelector('#avaliacoes')), 'o topo sem a fileira de estrelas, e as avaliações com a explicação embaixo');
 
   // ---- a ordem do hoteis.com, sem tirar nada ----
   r = await page.evaluate(() => [...document.querySelectorAll('.ht-sections > .ht-sec')].map(s => s.id || s.className.replace('ht-sec ', '')).join(','));

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 266)
+**Atualizado em:** 13/11/2026 (regra 267)
 
 | | |
 |---|---|
@@ -617,7 +617,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 267.
+**Próximo número:** regra 268.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1781,6 +1781,26 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   (`buscas-e-avisos`, `codigo-so-em-disputa`, `comparar-e-avisos`, `ficha-hoteis`,
   `jogador`, `links`, `parceiros`, `premium-patrocinado`, `reserva-online`,
   `sobre`, `ver-no-mapa`, `catalogo`).
+- **267 (13/11) — o resto do protótipo** ("eu não quero corrigir só os textos… o
+  conteúdo, a estrutura, tudo que você disse naquele conteúdo do artefato").
+  **Busca da inicial:** "Usar minha localização" escrito embaixo do campo
+  (`#locate-txt`, aciona o `#locate-btn`). **Recomendadas:** com o lugar da pessoa,
+  o título vira "Perto de você", e cada academia é uma linha com o nome, a nota
+  (quadrado verde) ou "Sem avaliações ainda", o bairro, a distância e "a partir de
+  R$ X por hora" (`renderLinhaDaHome`, mantém `.mini` e `data-open`). **Cartão da
+  busca com cinco informações:** nome (e o coração), nota ("4,8 Excelente · 12
+  avaliações", sem o ícone de balão), onde ("Pinheiros, São Paulo · 1,2 km de você
+  · 2 quadras de saibro", `.rcard-onde`, sem ícone), um destaque (a promoção, se
+  houver; senão os selos ou o diferencial numa linha só, sem ✓) e o preço com um
+  atalho. **Parceiros:** o botão do menu com as 3 listras (`.pc-menu-btn.menu-btn`).
+  Fica de fora do protótipo a faixa verde "Para academias" na página inicial (a
+  regra de 14/10 diz que a página dos jogadores não fala com a academia);
+  perguntado ao Breno. Testes: `ficha-hoteis.js` (sem o ⓘ das estrelas no topo),
+  `buscas-e-avisos.js` ("Perto de você" ou "Academias recomendadas"),
+  `promocoes.js`, `perto-de-voce.js`, `menu-e-home.js`, `parceiros.js`,
+  `busca-e-ficha.js`, `premium-patrocinado.js`, sem falha. Bateria completa de
+  13/11 (até a regra 266): 2.546 verificações, uma falha (o ⓘ das estrelas),
+  corrigida.
 
 ## 11. WhatsApp e mensagem para as academias
 

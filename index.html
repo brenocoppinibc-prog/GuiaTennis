@@ -20723,7 +20723,7 @@ function renderCard(c, badge) {
 
           <p class="rcard-line rcard-onde">${esc([localLine(c), totalQuadras(c) ? `${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}${(c.pisos || []).length ? " de " + listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)).toLowerCase() : ""}` : ""].filter(Boolean).join(" · "))}</p>
           ${c.avisouQueFechouEm ? `<p class="rcard-line rcard-fechou"><span class="ico">${icon('warning', 13, 'var(--red)')}</span><span>A academia avisou que fechou</span></p>` : ""}
-          ${promo ? `<p class="rcard-line rcard-promo"><strong>Promoção:</strong> ${esc(promo.titulo)}</p>` : ""}
+          ${promo ? `<p class="rcard-line rcard-promo"><span><strong>Promoção:</strong> ${esc(promo.titulo)}</span></p>` : ""}
           ${promo ? "" : (marcas.length || dest) ? `<p class="rcard-selos">${esc(marcas.length ? marcas.map(m => m.label).join(" · ") : dest)}</p>` : ""}
         </div>
       </div>

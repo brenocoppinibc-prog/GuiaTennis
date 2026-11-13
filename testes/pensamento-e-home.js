@@ -25,7 +25,7 @@ async function abrirOChat(page) {
   await abrirOChat(page);
   await escrever(page, 'como encontro quadras');
   let u = await ultima(page);
-  ok(u.texto.includes('Pesquisar'), 'a busca: o caminho primeiro');
+  ok(u.texto.includes('Buscar academias'), 'a busca: o caminho primeiro');
   await escrever(page, 'Mas é pela localização que não está indo');
   u = await ultima(page);
   ok(u.texto.includes('permita a localização'), '"não está indo" é entendido como "não deu certo": a dica da localização');

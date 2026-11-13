@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 262)
+**Atualizado em:** 13/11/2026 (regra 263)
 
 | | |
 |---|---|
@@ -519,7 +519,7 @@ atalho do WhatsApp; nota no quadrado verde e "Nova" sem nota; botão flutuante
 Lista/Mapa com preço nos pinos; ficha na ordem fatos › preços › horário ›
 estrutura › como chegar › cancelamento › avaliações, com barra fixa (preço,
 Reservar, WhatsApp). Referências: Doctoralia, Airbnb, Booking, Google Maps, iFood
-(Playtomic evitado). Esperando o Breno aprovar para levar ao site por partes.
+(Playtomic evitado). Aprovado "em tudo, no geral" (regra 263, já no site).
 **Próximo passo oferecido:**
 passar o site para essas regras na prévia (juntar os verdes, a escala de letras,
 os cantos e as sombras), esperando o "sim" do Breno. Ainda em Arial maiúscula: a imagem de compartilhar, os ícones e a
@@ -606,7 +606,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 263.
+**Próximo número:** regra 264.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1684,6 +1684,31 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `sobre.js` (43), `parceiros-acender.js` (11), `parceiros.js`, `menu-e-home.js`,
   `links.js`, `voltar.js`, `confianca-na-ficha.js`, `nota-do-guia.js`,
   `comparar-e-avisos.js`, `fonte-do-aparelho.js`.
+- **263 (13/11) — o sistema de design no site inteiro** ("faça o melhor trabalho
+  sendo esse responsável de design… nada aglomerado, limpo"; depois do protótipo,
+  "EM TUDO, NO GERAL"). **Em todo o `<style>`:** tokens novos `--green-dark`
+  (`#163A2E`, um só verde de fundo escuro), `--gold-text` (`#7A5E1E`, dourado de
+  texto com 4,5:1), `--shadow-lg` e `--shadow-drawer`; 24 cores soltas viraram
+  tokens (os 12 verdes parecidos, os dourados de texto, os cinzas); **letras só em
+  12, 13, 14, 15, 16, 18, 22, 28 e 36** (216 trocas; nada abaixo de 12; acima de
+  36 só números grandes); **cantos só em 8, 12, 16 e pílula** (149 trocas); 19
+  sombras de elevação viraram `--shadow`/`--shadow-lg`/`--shadow-drawer`; os selos
+  dourados (`.card-badge`, `.rcard-tag`, `.pc-beneficio-tag`, `.mini-badge`) com
+  texto escuro. **Página inicial:** "Aula e quadra de tênis perto de você", a frase
+  antes da busca, "Aula e locação | Aulas | Locação" lado a lado
+  (`data-sc-modalidade`, no lugar do `<select id="sc-modalidade">`), "Buscar
+  academias" (era "Pesquisar"; chat de ajuda e o desenho da busca também), "Grátis
+  para quem joga. Sem cadastro e sem taxa." e as recomendadas em lista (`#home-
+  recomendadas`, foto pequena à esquerda). **Cartão da busca:** sem a fileira de
+  estrelas (a nota está no quadrado) e sem o compartilhar (fica na ficha); a nota
+  no quadrado verde com o canto de baixo reto, como o Booking. **No alto:**
+  "Entrar" escrito, sem o ícone piscando (desfaz o pedido de 05/10, aprovado no
+  protótipo). O botão Lista/Mapa flutuante e a barra de baixo da ficha já existiam.
+  Ainda por fazer do protótipo: reordenar a ficha (fatos › preços › horário ›
+  estrutura › como chegar › cancelamento › avaliações) e enxugar as ações em cima
+  da lista (Salvar busca, Mandar para o meu WhatsApp, Falar com todas, Salvar os
+  contatos). O Breno mudou no sistema de design a cor de erro para `#E63D10`
+  (4,2:1 com branco); o site segue com `#A8462C` até ele confirmar. Sem SQL.
 
 ## 11. WhatsApp e mensagem para as academias
 

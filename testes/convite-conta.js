@@ -8,7 +8,7 @@ const { abrir, ok } = require('./harness');
   // Primeira visita: ícone com brilho, sem o cartão (ainda não usou o site).
   let { browser, page } = await abrir();
   let t = await page.evaluate(() => ({ botao: document.getElementById('conta-topo')?.className || '', convite: !!document.querySelector('.convite-conta') }));
-  ok(t.botao.includes('destaque') && !t.convite, 'primeira visita: ícone da conta com brilho, sem cartão — ' + t.botao);
+  ok(t.botao.includes('entrar') && !t.botao.includes('destaque') && !t.convite, 'primeira visita: "Entrar" escrito no alto, sem brilho (regra 263), sem cartão — ' + t.botao);
   await page.click('#conta-topo');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => state.jogadorTela === 'email' && !!document.getElementById('jog-email')), 'o ícone abre o Entrar ou criar conta');

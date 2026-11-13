@@ -12,7 +12,7 @@ const { abrir, ok } = require('./harness');
     const b = document.getElementById('conta-topo');
     return { cls: b.className, anim: getComputedStyle(b).animationName, selo: getComputedStyle(b, '::after').content };
   });
-  ok(t.cls.includes('destaque') && t.anim === 'contaPisca' && t.selo.includes('!'), 'o ícone da conta pisca em amarelo, com o "!" de alerta — ' + t.anim);
+  ok(t.cls.includes('entrar') && t.anim === 'none', 'o alto mostra "Entrar" escrito, sem piscar (regra 263) — ' + t.cls + ' ' + t.anim);
   ok(!(await page.isVisible('#push-conta')), 'quem acabou de chegar ainda não vê o balão');
   await page.waitForTimeout(10600);
   // A mensagem do balão muda a cada dia (regra 202: um por visita, fica até o ✕).

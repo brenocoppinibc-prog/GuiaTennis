@@ -63,7 +63,7 @@ async function escrever(page, texto) {
     'entende "busca", "pesquiso", "localização" e "perto de mim" como achar quadra');
   await escrever(page, 'Não consegui fazer a busca');
   u = await ultima(page);
-  ok(u.texto.includes('Pesquisar') && !u.texto.includes('permita a localização'), 'a busca: o caminho primeiro, sem antecipar o "se não funcionar"');
+  ok(u.texto.includes('Buscar academias') && !u.texto.includes('permita a localização'), 'a busca: o caminho primeiro, sem antecipar o "se não funcionar"');
   await escrever(page, 'a localização não funciona');
   u = await ultima(page);
   ok(u.texto.includes('permita a localização'), 'a localização não funcionou: aí vem a dica do navegador');

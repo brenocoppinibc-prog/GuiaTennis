@@ -95,8 +95,12 @@ const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Nossa hi
   ok(ordem === 'GuiaTennis|Suporte|Termos e políticas', 'regra 254: no rodapé, GuiaTennis, Suporte e Termos e políticas por último — ' + ordem);
   ok(colunaGuia && colunaGuia.l.join('|') === 'Sobre nós|Instagram|WhatsApp|E-mail' && colunaSuporte.l.includes('Chat de ajuda') && colunaSuporte.l.includes('Feedback') && !(await texto(page, '.sitefooter')).includes('Fale com a gente'),
     'regra 253: no rodapé, Suporte com o Chat de ajuda e o Feedback, e a coluna GuiaTennis com Sobre nós, Instagram, WhatsApp e E-mail — ' + JSON.stringify([colunaSuporte, colunaGuia]));
+  await page.evaluate(() => goComoFunciona());
+  await page.waitForTimeout(300);
   const home = await texto(page, '#app');
-  ok(home.includes('Saibro ou rápida, coberta ou descoberta, aula ou locação:') && !home.includes('estacionamento, vestiário') && home.includes('quais dias e horários prefere') && !home.includes('o dia e o horário que prefere'), 'as dicas com o texto novo');
+  ok(home.includes('Saibro ou rápida, coberta ou descoberta, aula ou locação:') && !home.includes('estacionamento, vestiário') && home.includes('quais dias e horários prefere') && !home.includes('o dia e o horário que prefere'), 'as dicas com o texto novo (na página "Como funciona", regra 265)');
+  await page.evaluate(() => goHome());
+  await page.waitForTimeout(300);
   ok(await page.evaluate(() => document.getElementById('app').textContent.includes('também ficam perto do endereço buscado')), '"Como funciona a ordem" diz que as patrocinadas também ficam perto do endereço');
   await page.evaluate(() => { state.showMenu = true; render(); });
   await page.waitForTimeout(200);

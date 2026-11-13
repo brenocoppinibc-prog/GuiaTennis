@@ -217,7 +217,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.check('#jog-aceite');
   await page.click('#jog-criar');
   await page.waitForTimeout(600);
-  ok((await page.evaluate(() => document.querySelector('#jogador-overlay')?.innerText || '')).includes('Não consegui mandar o código agora'), 'sem o serviço de e-mail: avisa e não trava');
+  ok((await page.evaluate(() => document.querySelector('#jogador-overlay')?.innerText || '')).includes('Não foi possível mandar o código agora'), 'sem o serviço de e-mail: avisa e não trava');
   await page.click('#jog-depois');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => jogador && !jogador.email_confirmado_em && !state.jogadorTela), 'segue logado, com o e-mail para confirmar depois');

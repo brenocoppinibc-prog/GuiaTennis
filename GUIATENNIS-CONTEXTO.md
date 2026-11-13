@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 265)
+**Atualizado em:** 13/11/2026 (regra 266)
 
 | | |
 |---|---|
@@ -617,7 +617,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 266.
+**Próximo número:** regra 267.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1765,6 +1765,22 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   jogadores e do Parceiros (fica nos títulos de aba e como "vazio" nas tabelas).
   O `/como-funciona` ainda não está no sitemap (sai do banco: precisa de SQL).
   Sem SQL.
+- **266 (13/11) — o cartão da busca e o topo da ficha como no protótipo** ("mas só
+  os textos? e o resto de tudo?"). **Cartão da busca:** sai a caixa de oferta (o
+  "a partir de" em cima, os preços lado a lado e o botão "Ver academia"); embaixo
+  do cartão, separado por uma linha fina, **cada preço numa linha** ("Locação a
+  partir de R$ 100 por hora", até 3) e **um atalho só**: "Reservar" quando a
+  academia tem reserva online (regra 242), senão "WhatsApp" (`.offer.offer-linha`,
+  mantém `.offer-precos`, `.offer-um` e `.offer-contact`); o cartão inteiro abre a
+  ficha. **Cartão do mapa:** só o preço mais em conta, para continuar deitado
+  (regra 195). **Topo da ficha:** à esquerda, sem a fileira de estrelas (a nota
+  fica no quadrado ao lado das avaliações), e os `.ht-check` viram quadros lado a
+  lado (modalidade, quadras, piso, cobertura), sem o ✓. O `unidadeCurta` também
+  passou para " por hora"/" por aula". Sem SQL. Bateria completa de 13/11 depois
+  das regras 265 e 266: 20 testes com o texto e o desenho antigos atualizados
+  (`buscas-e-avisos`, `codigo-so-em-disputa`, `comparar-e-avisos`, `ficha-hoteis`,
+  `jogador`, `links`, `parceiros`, `premium-patrocinado`, `reserva-online`,
+  `sobre`, `ver-no-mapa`, `catalogo`).
 
 ## 11. WhatsApp e mensagem para as academias
 

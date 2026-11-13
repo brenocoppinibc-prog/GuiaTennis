@@ -70,8 +70,8 @@ const { abrir, ok } = require('./harness');
       espia: car.scrollWidth > car.clientWidth, texto: c.innerText.replace(/\s+/g, ' ').trim(), comoChegar: !!car.querySelector('[data-como-chegar]'), fechar: !!document.getElementById('map-card-close') };
   });
   ok(deitado.cartoes === deitado.comPonto && deitado.cartoes > 1 && deitado.on && deitado.deitado && deitado.embaixo && deitado.espia, 'no mapa, um cartão deitado por academia, no rodapé, em carrossel (o próximo aparece na borda), com o da escolhida aceso — ' + JSON.stringify({ ...deitado, texto: undefined }));
-  ok(deitado.texto === 'Só Aula Tennis Pinheiros, São Paulo · 0 m de você Coberta Estacionamento grátis — Sem nota ainda a partir de Locação R$ 130/h Aula R$ 150/aula Ver academia Falar no WhatsApp' && !deitado.comoChegar && !deitado.fechar,
-    'o cartão (regra 195, como o do hoteis.com): o nome, o endereço, as comodidades com o ✓ da lista, a nota, o "a partir de" com os preços, "Ver academia" e, embaixo, "Falar no WhatsApp", sem o diferencial ("tire isso") e sem o "Como chegar" — ' + deitado.texto);
+  ok(deitado.texto === 'Só Aula Tennis Pinheiros, São Paulo · 0 m de você Coberta Estacionamento grátis Sem avaliações ainda a partir de Locação R$ 130 por hora Ver academia Chamar no WhatsApp' && !deitado.comoChegar && !deitado.fechar,
+    'o cartão (regra 195, como o do hoteis.com): o nome, o endereço, as comodidades com o ✓ da lista, a nota, o "a partir de" com o preço mais em conta (regras 265 e 266), "Ver academia" e, embaixo, "Chamar no WhatsApp", sem o diferencial ("tire isso") e sem o "Como chegar" — ' + deitado.texto);
   const linhaWa = await page.evaluate(() => { const c = document.querySelector('[data-map-card="a1"]'); const w = c.querySelector('.mcard-wa').getBoundingClientRect(), t = c.querySelector('.mcard-wa-t').getBoundingClientRect(), b = c.querySelector('.mcard-btn').getBoundingClientRect(), sel = c.querySelector('.mcard-selos').getBoundingClientRect(), nota = c.querySelector('.rcard-score').getBoundingClientRect(); return { embaixo: w.top >= b.bottom - 1 && Math.abs(w.left - b.left) < 2, umaLinha: t.height < 24, semDif: !c.querySelector('.mcard-dif'), botao: b.height >= 44, comodidadesEmCima: sel.bottom <= nota.top + 1 }; });
   ok(linhaWa.embaixo && linhaWa.umaLinha && linhaWa.semDif && linhaWa.botao && linhaWa.comodidadesEmCima, '"Ver academia" (44px) e, logo embaixo, "Falar no WhatsApp"; as comodidades em cima da nota — ' + JSON.stringify(linhaWa));
   // Uma foto só, à esquerda, mesmo com várias (02/11/2026: "deve aparecer uma foto somente").
@@ -124,7 +124,7 @@ const { abrir, ok } = require('./harness');
   });
   await page.waitForTimeout(300);
   const precos = await page.evaluate(() => { const o = document.querySelector('.rcard[data-open="a1"] .offer-precos'); return o && [...o.children].map(x => x.innerText.replace(/\s+/g, ' ').trim()).join(' | '); });
-  ok(precos === 'a partir de | Locação R$ 130/h Aula R$ 150/aula', 'na lista, "a partir de" em cima da modalidade e do preço — ' + precos);
+  ok(precos === 'Locação a partir de R$ 130 por hora | Aula a partir de R$ 150 por aula', 'na lista, cada preço numa linha: "Locação a partir de R$ 130 por hora" (regras 265 e 266) — ' + precos);
   await page.evaluate(async () => { Object.assign(window.__db.academias.find(x => x.id === 'a1'), { catalogo: [], price_aula: null, price_locacao: null }); await loadEverything(); render(); });
   await page.waitForTimeout(300);
   const sem2 = await page.evaluate(() => [...document.querySelector('.rcard[data-open="a1"] .offer-precos').children].map(x => x.innerText.replace(/\s+/g, ' ').trim()).join(' | '));

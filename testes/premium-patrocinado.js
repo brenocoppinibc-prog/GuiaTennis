@@ -48,7 +48,7 @@ const buscar = (page, origem, extra) => page.evaluate(({ origem, extra }) => {
   ok(await page.evaluate(() => document.querySelectorAll('.results .rcard.patrocinada').length === 1 && document.querySelectorAll('.results .rcard-patrocinado').length === 1
     && document.querySelectorAll('.results [data-open="a1"]').length === 2),
     'a patrocinada aparece duas vezes, e só a do topo tem o "Patrocinado" e a borda dourada');
-  ok(await page.evaluate(() => document.querySelector('.toolbar-count').innerText.trim() === '4 quadras encontradas' && mapCourts(getResults()).length === 4),
+  ok(await page.evaluate(() => document.querySelector('.toolbar-count').innerText.trim() === '4 academias' && mapCourts(getResults()).length === 4),
     'a contagem e o mapa não contam a repetida — ' + await page.evaluate(() => document.querySelector('.toolbar-count').innerText.trim()));
   ok(lista.includes('Premium Longe ★') && !lista.includes('[P] Premium Longe ★'), 'Premium a mais de 10 km: selo dourado, mas sem o topo patrocinado');
   const pontinhos = await page.evaluate(async () => {

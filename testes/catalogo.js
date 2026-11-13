@@ -302,7 +302,7 @@ const CATALOGO = [
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.waitForTimeout(200);
   const aside = await page.evaluate(() => document.querySelector('.ht-aside .ht-book').textContent.replace(/\s+/g, ' ').trim());
-  ok(aside.startsWith('A partir de Aula individual R$ 150/aula Aula em dupla R$ 90/aula Aula em grupo R$ 300/aula Aula infantil R$ 110/aula Locação R$ 130/h Ver as 7 opções'), 'no computador, o "a partir de" de cada tipo (as aulas das crianças numa linha) e o atalho para as opções — ' + aside.slice(0, 160));
+  ok(aside.startsWith('A partir de Aula individual R$ 150 por aula Aula em dupla R$ 90 por aula Aula em grupo R$ 300 por aula Aula infantil R$ 110 por aula Locação R$ 130 por hora Ver as 7 opções'), 'no computador, o "a partir de" de cada tipo (as aulas das crianças numa linha) e o atalho para as opções — ' + aside.slice(0, 160));
   await page.click('.ht-book-ver');
   await page.waitForTimeout(500);
   const topo = await page.evaluate(() => document.getElementById('ht-opcoes').getBoundingClientRect().top);
@@ -322,7 +322,7 @@ const CATALOGO = [
     const c = [...document.querySelectorAll('.rcard')].find(x => x.innerText.includes('Só Aula Tennis'));
     return c ? [...c.querySelectorAll('.offer-um')].map(o => o.innerText.replace(/\s+/g, ' ').trim()).join(' | ') : '';
   });
-  ok(card === 'Aula R$ 90/aula | Aula infantil R$ 110/aula | Locação R$ 130/h', 'na busca, uma oferta por modalidade e a aula infantil à parte, com o que o valor paga — ' + card);
+  ok(card === 'Aula a partir de R$ 90 por aula | Aula infantil a partir de R$ 110 por aula | Locação a partir de R$ 130 por hora', 'na busca, uma oferta por modalidade e a aula infantil à parte, com o que o valor paga — ' + card);
   await browser.close();
 
   ({ browser, page } = await abrir({ q: 'comparar?academias=a1,a2', w: 1280 }));
@@ -437,7 +437,7 @@ const CATALOGO = [
   const grade4 = await page.evaluate(() => { const b = [...document.querySelectorAll('#ht-quartos .ht-quarto')].map(x => x.getBoundingClientRect()); return b.length === 4 && Math.abs(b[0].top - b[1].top) < 1 && b[2].top >= b[0].bottom && Math.abs(b[2].left - b[0].left) < 1; });
   ok(grade4, 'as opções em grade que desce, dois por linha, como os quartos do hoteis.com (regra 184)');
   const curtosLoc = await page.evaluate(() => opcoesPreco(state.selected).filter(o => o.grupo === 'locacao').map(o => rotuloCurto(o) + ' ' + o.curto).join(' | '));
-  ok(curtosLoc === 'por hora de quadra /h | por hora de quadra, no plano mensal /h', 'a locação mensal: por hora, no plano mensal — ' + curtosLoc);
+  ok(curtosLoc === 'por hora de quadra  por hora | por hora de quadra, no plano mensal  por hora', 'a locação mensal: por hora, no plano mensal — ' + curtosLoc);
   await browser.close();
 
   // Fora do Premium: a ficha não mostra a foto da aula, e o cadastro avisa.

@@ -28,7 +28,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(corpo.includes('sem comissão') && corpo.includes('Grátis no plano Básico'), 'deixa claro: grátis no Básico e sem comissão');
   ok(!/Google|TripAdvisor/.test(corpo.replaceAll('(Instagram, Google…)', '')) && corpo.includes('Responda às avaliações') && !corpo.includes('Responda as avaliações'), 'benefícios sem citar outras marcas, com a crase certa');
   const como = await page.evaluate(() => [...document.querySelectorAll('.pc-etapas-como li')].map(l => l.querySelector('.pc-card-t').innerText + ' (' + l.querySelector('.pc-etapa-tempo').innerText.trim() + ')'));
-  ok(como.join(' | ') === 'Crie a sua conta (2 minutos) | Encontre a sua academia (Na hora) | Declare que responde pela academia (Na hora) | Complete a ficha e receba jogadores (Todo dia)' && await page.isVisible('.pc-como-fim [data-pc="cadastro"]'), 'como funciona em 4 passos, com o tempo de cada um e o botão para começar — ' + como.length);
+  ok(como.join(' | ') === 'Crie a sua conta (2 minutos) | Encontre a sua academia (Na hora) | Confirme que responde pela academia (Na hora) | Complete a ficha e receba jogadores (Todo dia)' && await page.isVisible('.pc-como-fim [data-pc="cadastro"]'), 'como funciona em 4 passos, com o tempo de cada um e o botão para começar — ' + como.length);
   const marcasNoRodape = await page.evaluate(() => document.querySelectorAll('.pc-rodape .logo-mark').length);
   ok(marcasNoRodape === 1 && (await texto(page, '.pc-rodape')).split('O GuiaTennis para academias e quadras de tênis').length === 2, 'rodapé com a marca e a frase uma vez só, na faixa escura');
   const planos = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-n').innerText + ':' + (p.querySelector('.pc-plano-tag')?.innerText || '')));
@@ -422,7 +422,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(caixa.length && caixa.every(c => !c.oferta.includes('✓') && !/Coberta|Wi-?Fi|Estacionamento|Vestiário/i.test(c.oferta)), 'caixa de preço sem as comodidades no meio');
   ok(caixa.some(c => c.selos), 'comodidades ficam junto das outras informações da academia — ' + caixa.map(c => c.selos.replace(/\n/g, ' ')).join(' / '));
   ok(caixa.every(c => /a partir de|Sob consulta/i.test(c.oferta)), 'a legenda do preço fica embaixo dos valores');
-  ok(caixa.filter(c => /R\$/.test(c.oferta)).every(c => /R\$ \d+\/h/.test(c.oferta.replace(/\s+/g, ' '))), 'o "/h" fica do lado do valor, como o "/noite" do Airbnb');
+  ok(caixa.filter(c => /R\$/.test(c.oferta)).every(c => /R\$ \d+ por hora/.test(c.oferta.replace(/\s+/g, ' '))), 'o "por hora" fica do lado do valor (regra 265)');
   await browser.close();
 
   // ---- página de quem está logado, sem login ----
@@ -515,7 +515,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'premium', trocar: h => h.replace("sb.rpc('numeros_da_academia'", "sb.rpc('funcao_que_nao_existe'") }));
   await page.evaluate(async () => { window.__db.academias.find(a => a.id === 'a2').plano = 'premium'; await loadEverything(); render(); });
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Não consegui carregar os números agora') && await page.isVisible('.pc-main [data-pc-dias]'), 'sem os números: aviso simples e botão de tentar de novo');
+  ok(corpo.includes('Não foi possível carregar os números agora') && await page.isVisible('.pc-main [data-pc-dias]'), 'sem os números: aviso simples e botão de tentar de novo');
   await browser.close();
   // ---- pessoas com acesso: Básico 1, Completo 5, Premium 10 ----
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/pessoas' }));

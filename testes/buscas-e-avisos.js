@@ -14,7 +14,7 @@ async function buscar(page, termo) {
   let { browser, page } = await abrir();
   await buscar(page, 'Pinheiros');
   let t = await texto(page, '.busca-salvar');
-  ok(t.includes('Salvar busca') && t.includes('academias novas'), 'na busca, o botão "Salvar busca" com a dica — ' + t.slice(0, 60));
+  ok(t.includes('Salvar busca') && t.includes('WhatsApp') && !t.includes('academias novas'), 'na busca, o "Salvar busca" e o menu "WhatsApp", sem a frase ao lado (regra 264) — ' + t.slice(0, 60));
   await page.click('#salvar-busca');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => state.jogadorTela === 'email' && /salvar a busca/.test(state.jogadorMotivo) && typeof state.depoisDeEntrar === 'function'),
@@ -242,20 +242,26 @@ async function buscar(page, termo) {
   // ---- Textos ----
   ({ browser, page } = await abrir());
   t = await texto(page, '#home-porque');
-  ok(t.includes('facilidade tremenda') && t.includes('mais perto') && (t.match(/taxa/g) || []).length === 1, '"Por que o GuiaTennis": a facilidade de achar a quadra mais perto, e a taxa uma vez só');
+  ok(!t.includes('facilidade tremenda') && t.includes('A academia mais perto') && (t.match(/taxa/g) || []).length <= 1 && (await page.$$('#home-porque .dif-item')).length === 3, '"Por que o GuiaTennis": três itens, começando pela academia mais perto, sem frase de efeito (regra 265)');
   // 14/10/2026: a home dos jogadores não fala com a academia; no lugar,
   // a ideia do site e as dicas de uso.
   ok(!(await page.$('#home-academias')) && !(await texto(page, 'main, body')).includes('Por que estar no GuiaTennis'), 'a home dos jogadores não tem o bloco para academias');
+  // Regra 265: a ideia e as dicas foram para a página "Como funciona".
+  ok(!(await page.$('#home-ideia')) && !(await page.$('#home-dicas')), 'a home não tem mais a ideia nem as dicas (regra 265)');
+  await page.evaluate(() => goComoFunciona());
+  await page.waitForTimeout(300);
   t = await texto(page, '#home-ideia');
-  ok(t.includes('Todo o tênis da sua região num lugar só') && t.includes('Encontrar uma quadra') && t.includes('Indicar para quem joga') && !t.includes('Parceiros'), '"A ideia do GuiaTennis" na home, sem falar com a academia');
+  ok(t.includes('Todo o tênis da sua região num lugar só') && t.includes('Encontrar uma quadra') && t.includes('Indicar para quem joga') && !t.includes('Parceiros'), '"A ideia do GuiaTennis" na página "Como funciona", sem falar com a academia');
   t = await texto(page, '#home-dicas');
-  ok(t.includes('Dicas para achar a quadra certa') && (await page.$$('#home-dicas li')).length === 6 && t.includes('Chame com o essencial'), 'seis dicas de uso na home');
+  ok(t.includes('Dicas para achar a quadra certa') && (await page.$$('#home-dicas li')).length === 6 && t.includes('Chame com o essencial'), 'seis dicas de uso na página "Como funciona" (regra 265)');
+  await page.evaluate(() => goHome());
+  await page.waitForTimeout(300);
   ok(!(await texto(page, '#home-duvidas')).includes('Como uma academia entra'), 'as perguntas da home são de quem joga');
   // Regra 99: as academias primeiro; depois por quê, como funciona, dicas, ideia e perguntas.
   const ordem = await page.evaluate(() => [...document.querySelectorAll('.home-sec h3, .bloco-ideia h3')].map(h => h.innerText.trim()));
   const pos = (t) => ordem.findIndex(x => x.startsWith(t));
   // "Melhores avaliadas" só aparece com avaliação; o resto vem sempre, nesta ordem.
-  const esperada = ['Academias recomendadas', 'Academias por cidade', 'Mais bem avaliadas', 'Por que o GuiaTennis', 'Como funciona a busca', 'Dicas para', 'Todo o tênis', 'Perguntas frequentes'];
+  const esperada = ['Academias recomendadas', 'Academias por cidade', 'Mais bem avaliadas', 'Por que o GuiaTennis', 'Como funciona a busca', 'Perguntas frequentes'];
   const achadas = esperada.map(pos);
   ok(achadas.every((p, k) => p >= 0 || esperada[k] === 'Mais bem avaliadas') && achadas.filter(p => p >= 0).every((p, k, a) => !k || p > a[k - 1]),
     'home: academias primeiro, depois o site explicado aos poucos — ' + ordem.join(' | '));

@@ -90,8 +90,8 @@ const cliques = (page) => page.evaluate(() => window.__cliques.filter(c => c.tip
   const lista = await page.evaluate(() => [...document.querySelectorAll('[data-open], .offer')].map(x => x.querySelector('.offer-contact')).filter(Boolean)
     .map(a => ({ t: a.innerText.trim(), track: a.dataset.track, court: a.dataset.court, href: a.getAttribute('href') })));
   const daA1 = lista.find(x => x.court === 'a1'), outra = lista.find(x => x.court && x.court !== 'a1');
-  ok(daA1 && daA1.track === 'reserva' && daA1.t.startsWith('Reservar online') && daA1.href.startsWith('https://calendly.com/') && outra && outra.track === 'whatsapp' && outra.t.startsWith('Falar no WhatsApp'),
-    'na lista: "Reservar online" na academia com o link e "Falar no WhatsApp" nas outras — ' + JSON.stringify([daA1, outra].map(x => x && x.t)));
+  ok(daA1 && daA1.track === 'reserva' && daA1.t.startsWith('Reservar') && daA1.href.startsWith('https://calendly.com/') && outra && outra.track === 'whatsapp' && outra.t.startsWith('WhatsApp'),
+    'na lista: "Reservar" na academia com o link e "WhatsApp" nas outras (regra 266) — ' + JSON.stringify([daA1, outra].map(x => x && x.t)));
   await page.evaluate(() => { document.querySelectorAll('[data-reservar]').forEach(a => a.addEventListener('click', e => e.preventDefault())); window.__db.cliques.length = 0; });
   await page.click('.offer-contact[data-court="a1"]');
   await page.waitForTimeout(500);

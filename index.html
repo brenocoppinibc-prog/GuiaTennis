@@ -10620,7 +10620,7 @@ function fotosDoCartaoDoMapa(c) {
 function cartaoDoMapa(c, previa) {
   const fotos = fotosDoCartaoDoMapa(c);
   const fav = isFavorite(c.id);
-  const precos = ofertas(c).filter(o => o.min).slice(0, 2);
+  const precos = ofertas(c).filter(o => o.min).slice(0, 1);
   const marcas = selos(c);
   return `
     <div class="mcard ${previa ? "mcard-previa" : c.id === state.mapSelected ? "on" : ""}" ${previa ? `data-decide-ficha="${c.id}"` : `role="listitem" data-open="${c.id}" data-map-card="${c.id}"`}>
@@ -20704,7 +20704,7 @@ function renderCard(c, badge) {
       <div class="offer offer-linha">
         <div class="offer-precos">
           ${precos.some(o => o.min)
-            ? precos.filter(o => o.min).slice(0, 2).map(o => `<div class="offer-um"><span class="offer-um-lbl">${esc(o.label)}</span> a partir de <strong class="offer-um-val">R$ ${esc(priceMin(o.faixa))}</strong><span class="offer-por-hora">${esc(o.curto || " por hora")}</span></div>`).join("")
+            ? precos.filter(o => o.min).slice(0, 3).map(o => `<div class="offer-um"><span class="offer-um-lbl">${esc(o.label)}</span> a partir de <strong class="offer-um-val">R$ ${esc(priceMin(o.faixa))}</strong><span class="offer-por-hora">${esc(o.curto || " por hora")}</span></div>`).join("")
             : `<div class="offer-um"><strong class="offer-um-val sem-valor">${SEM_PRECO}</strong> <span class="offer-sub">${SEM_PRECO_SUB}</span></div>`}
         </div>
         ${c.reserva
@@ -22564,8 +22564,9 @@ function unidadeDoItem(i) {
   return t.porPessoa ? "por pessoa, por aula" : "por aula";
 }
 function unidadeCurta(i) {
-  if (tipoDoItem(i).grupo === "locacao") return "/h";
-  return "/aula";
+  // Regra 265: o preço sempre por extenso ("por hora", "por aula").
+  if (tipoDoItem(i).grupo === "locacao") return " por hora";
+  return " por aula";
 }
 // "Aula em grupo" ou, para as crianças, "Aula infantil em grupo".
 function nomeDoItem(i) {

@@ -19,7 +19,7 @@ const tela = (page) => page.evaluate(() => ({
   let t = await tela(page);
   ok(t.page === 'court' && t.ficha === 'a2', 'link /academia/<nome>-<id> abre a ficha certa — ' + t.link);
   ok(t.canonica === 'http://guia.test/academia/quadra-locacao-a2', 'endereço oficial da ficha para o Google — ' + t.canonica);
-  ok(t.titulo.startsWith('Quadra Locação — Moema, São Paulo') && !t.robots, 'título da ficha, e o Google pode indexar');
+  ok(t.titulo.startsWith('Quadra Locação: ') && t.titulo.includes('em Moema, São Paulo') && !t.robots, 'título da ficha, e o Google pode indexar');
   const ld = await page.evaluate(() => JSON.parse(document.getElementById('ld-academia').textContent));
   const trilha = (ld['@graph'] || []).find(x => x['@type'] === 'BreadcrumbList');
   ok(trilha && trilha.itemListElement.map(i => i.name).join(' › ') === 'Início › Quadras em São Paulo › Moema › Quadra Locação'

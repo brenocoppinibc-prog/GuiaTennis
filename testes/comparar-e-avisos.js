@@ -33,7 +33,7 @@ const { abrir, ok } = require('./harness');
   // ---- grátis para quem joga ----
   ({ browser, page } = await abrir());
   t = await page.evaluate(() => document.querySelector('#home-porque .dif-item')?.innerText.replace(/\s+/g, ' ') || '');
-  ok(t.includes('Grátis para quem joga') && t.includes('locar quadra'), '"Por que o GuiaTennis" começa dizendo que é grátis para quem joga — ' + t.slice(0, 60));
+  ok(t.includes('A academia mais perto') && !t.includes('locar'), '"Por que o GuiaTennis" começa pela academia mais perto; o "grátis" fica embaixo da busca (regra 265) — ' + t.slice(0, 60));
   ok(await page.evaluate(() => { const [a, b] = document.querySelectorAll('#home-porque .dif-item'); return getComputedStyle(a).backgroundColor === getComputedStyle(b).backgroundColor; }), 'o card do grátis tem a mesma cor dos outros');
 
   // ---- seletor com "Comparar", e a tabela alinhada ----
@@ -154,7 +154,7 @@ const { abrir, ok } = require('./harness');
     planos: [...document.querySelectorAll('.pc-plano-lista li:first-child')].map(li => li.innerText.trim()),
     alunos: /alun/i.test(document.body.innerText),
   }));
-  ok(t.botao === 'Começar agora é de graça!' && t.centro === 'center' && t.anim === 'gratisPulsa', '"Começar agora — é de graça!" no meio e pulsando — ' + t.botao);
+  ok(t.botao === 'Começar agora grátis' && t.centro === 'center' && t.anim === 'gratisPulsa', '"Começar agora — é de graça!" no meio e pulsando — ' + t.botao);
   ok(/só no premium/i.test(t.premium) && t.premium.includes('ficam escondidos') && t.premium.includes('aparecem em Desempenho'), 'o card dos números explica que eles aparecem no Premium');
   ok(t.planos.join(' | ') === '1 e-mail com acesso à academia | Até 5 e-mails com acesso à academia | Até 10 e-mails com acesso à academia', 'planos: "1 e-mail" e "5 e-mails" com acesso — ' + t.planos.join(' | '));
   ok(!t.alunos, 'a página dos parceiros fala de jogadores, não só de alunos');

@@ -73,7 +73,7 @@ async function fichaCheia(page, extra) {
       abas: getComputedStyle(document.getElementById('ht-tabs')).display,
     };
   });
-  ok(r.meio === 'center' && r.estrelas && r.mapa === 'Ver no mapa' && r.nota === '4,7 3 avaliações', 'nome no meio, estrelas com ⓘ, "Ver no mapa" e a nota com "3 avaliações" — ' + r.nota);
+  ok(r.meio === 'left' && !r.estrelas && r.mapa === 'Ver no mapa' && r.nota === '4,7 3 avaliações', 'regra 266: o topo à esquerda, sem a fileira de estrelas, "Ver no mapa" e a nota com "3 avaliações" — ' + r.nota);
   ok(r.checks.join('|') === 'Aula e locação|5 quadras|Saibro e Rápida|Coberta e Descoberta' && r.endereco.includes('Rua A, 1 - Pinheiros'), 'embaixo do nome, os ✓ verdes com o que a academia tem — ' + r.checks.join(', '));
   ok(r.abas === 'none', 'no celular, sem a barra de abas (como no hoteis.com)');
   await page.click('[data-info-pop="estrelas"]');
@@ -101,7 +101,7 @@ async function fichaCheia(page, extra) {
   const tudo = ['Estacionamento grátis', 'Vestiário', 'Loja de materiais', 'Wi-Fi', 'Lanchonete', 'Água grátis', 'Empréstimo de raquete', '2x Saibro coberta', '3x Rápida descoberta',
     'Portão preto', 'Avise na portaria', 'Ver todas as academias em Pinheiros', 'Quem avaliou elogia', 'Primeira aula grátis', 'Segunda a sexta', 'Domingo',
     'Desmarcou até 24h antes', 'Cobra metade.', 'Quanto custa jogar em Só Aula Tennis?', 'Ver site', '@soaula', 'Compartilhar', 'Confirmada pela academia',
-    'Gerencie a ficha no GuiaTennis Parceiros', 'Informar um problema', 'Como funcionam as avaliações', 'Já jogou aqui? Avalie essa quadra', 'Outras academias por perto', 'Quadra Locação'];
+    'Gerencie a ficha no GuiaTennis Parceiros', 'Informar um problema', 'Como funcionam as avaliações', 'Jogou aqui? Avalie esta academia', 'Outras academias por perto', 'Quadra Locação'];
   const faltam = tudo.filter(t => !r.includes(t));
   ok(!faltam.length, 'nada saiu da ficha — ' + (faltam.join(', ') || 'tudo lá'));
 

@@ -225,7 +225,7 @@ async function pedirPelaTela(page, busca, id) {
   // ---- textos ----
   ({ browser, page } = await abrir({ q: 'parceiros' }));
   const como = await page.evaluate(() => [...document.querySelectorAll('.pc-etapas-como li')][2]?.innerText || '');
-  ok(como.includes('Declare que responde pela academia') && como.includes('se houver disputa'), 'Como funciona: declarar, e o código só na disputa');
+  ok(como.includes('Confirme que responde pela academia') && !como.includes('disputa'), 'Como funciona: confirmar que responde pela academia; a disputa fica nas Perguntas (regra 265)');
   await page.evaluate(() => { state.showTerms = true; render(); });
   const termos = await page.evaluate(() => document.body.innerText);
   ok(termos.includes('Em caso de disputa') && !termos.includes('terceira academia nova da conta em 24 horas'), 'Termos: o código só na disputa, sem o limite de 3 em 24 horas');

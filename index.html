@@ -12022,11 +12022,11 @@ function pcInicio() {
       </div>
     </section>
     <section class="pc-sec" id="pc-como">
-      <h2 class="display" ${revela("como-h")}>Como funciona</h2>
-      <p class="pc-sec-sub" ${revela("como-s", 1)}>Quatro passos, do cadastro ao primeiro jogador. Tudo pelo celular.</p>
+      <h2 class="display">Como funciona</h2>
+      <p class="pc-sec-sub">Quatro passos, do cadastro ao primeiro jogador. Tudo pelo celular.</p>
       <ol class="pc-etapas-como">
         ${passos.map((p, i) => `
-          <li ${revela("como-" + i, 1)}>
+          <li>
             <span class="pc-etapa-n" aria-hidden="true">${i + 1}</span>
             <div class="pc-etapa-card">
               <p class="pc-etapa-topo"><span class="pc-etapa-passo">Passo ${i + 1}</span><span class="pc-etapa-tempo">${icon(p.ic, 13, 'var(--green)')} ${esc(p.tempo)}</span></p>
@@ -12035,7 +12035,7 @@ function pcInicio() {
             </div>
           </li>`).join("")}
       </ol>
-      <div class="pc-como-fim" ${revela("como-fim")}>
+      <div class="pc-como-fim">
         <a href="/parceiros/cadastro" class="cta-btn cta-primary pc-gratis" data-pc="cadastro">Começar agora <span class="pc-gratis-selo">é de graça!</span></a>
       </div>
     </section>

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 260)
+**Atualizado em:** 13/11/2026 (regra 261)
 
 | | |
 |---|---|
@@ -588,7 +588,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
    liberar o envio automático (mesma espera do CNPJ do item 5); o número e
    o aceite já ficam guardados.
 
-**Próximo número:** regra 261.
+**Próximo número:** regra 262.
 
 ## 10. Regras recentes (uma linha cada; o detalhe está no histórico)
 
@@ -1641,6 +1641,12 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `promocoes-por-email.js` (o título do leilão na fonte do aparelho), `menu-e-home.js`,
   `parceiros.js`, `sobre.js`, `links.js`, `contestar-passo-a-passo.js`,
   `veracidade.js`; `banco-emails.py` (953).
+- **261 (13/11) — "Como funciona" do Parceiros sem acender** ("no parceiros deixe
+  o como funciona sem brilhar ao descer"): a parte `#pc-como` da página inicial do
+  Parceiros saiu do efeito de acender ao descer (sem `revela()`: o título, os
+  quatro passos e o "Começar agora" aparecem parados, sem o brilho dourado nos
+  números). O resto da página continua acendendo. Sem SQL. Testes:
+  `parceiros-acender.js` (10), `comparar-e-avisos.js`, `parceiros.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

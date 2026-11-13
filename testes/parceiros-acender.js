@@ -28,6 +28,10 @@ const estado = (page, chave) => page.evaluate((k) => {
   await page.waitForTimeout(1400);
   ok((await estado(page, 'fim')).aceso && (await estado(page, 'plano-premium')).aceso, 'descendo até o fim, tudo acende');
   const texto = await page.evaluate(() => document.querySelector('#parceiros').innerText);
+  // Regra 261 (13/11/2026: "no parceiros deixe o como funciona sem brilhar ao descer").
+  ok(await page.evaluate(() => !document.querySelector('#pc-como [data-revela]') && [...document.querySelectorAll('#pc-como li, #pc-como h2, .pc-como-fim')].every(el => Number(getComputedStyle(el).opacity) === 1)
+    && [...document.querySelectorAll('#pc-como .pc-etapa-n')].every(el => getComputedStyle(el).animationName === 'none')),
+    '"Como funciona" fica parado: sem acender nem brilhar ao descer');
   ok(texto.includes('Por que estar no GuiaTennis') && texto.includes('Como funciona') && texto.includes('Pronto para aparecer'), 'o texto está todo na página (para o Google e para quem lê a tela)');
   // Redesenhar a tela não apaga o que já acendeu.
   await page.evaluate(() => render());

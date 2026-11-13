@@ -505,7 +505,15 @@ https://claude.ai/artifact/Qpno9SkKR893cGBT87UhUZ); o site inteiro passou para a
 fonte do aparelho (regra 259); o nome do logo é a **Poppins** (escolhida no quadro
 https://claude.ai/artifact/KMAgoNrMzi778JhqQmnTu6), desenhada em SVG, com "Guia"
 verde e "Tennis" dourado (regra 260); o Google Fonts saiu do site (a Privacidade
-não o citava). Ainda em Arial maiúscula: a imagem de compartilhar, os ícones e a
+não o citava). **Sistema de design (13/11):** https://claude.ai/artifact/DSCBuJTiPGCegW6p1MMHYp
+(cores, letras, espaços, cantos, sombras, logo e 5 peças, tirado do `index.html`).
+Diagnóstico: 126 cores (12 verdes-escuros parecidos), 34 tamanhos de letra, 14
+cantos e 58 sombras; a proposta tem 13 cores (verde, verde-claro, verde-escuro
+`#163A2E`, ouro, ouro-claro, ouro-texto `#7A5E1E`, creme, creme-2, branco, borda,
+texto, texto-suave `#6F6857`, erro), 9 estilos de letra, espaços de 4 em 4, 4
+cantos e 3 sombras; o selo dourado com texto escuro. **Próximo passo oferecido:**
+passar o site para essas regras na prévia (juntar os verdes, a escala de letras,
+os cantos e as sombras), esperando o "sim" do Breno. Ainda em Arial maiúscula: a imagem de compartilhar, os ícones e a
 404 (`divulgacao/gerar-imagens.js`, `logoDesenho({ comNome })`); oferecido trocar
 para a Poppins, sem resposta. Testes:
 **bateria completa de 12/11 (até a regra 252): 2.546 verificações**, sem falha;

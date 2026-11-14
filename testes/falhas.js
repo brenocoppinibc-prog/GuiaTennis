@@ -47,7 +47,7 @@ const BANCO = { message: 'Could not find the function public.conta_do_email(p_em
   await page.click('#jog-continuar');
   await page.waitForTimeout(600);
   aviso = await avisoComAjuda();
-  ok(aviso.includes('Não consegui conferir o e-mail agora') && !aviso.includes('código') && (await falhas(page)).length === 0,
+  ok(aviso.includes('Não foi possível conferir o e-mail agora') && !aviso.includes('código') && (await falhas(page)).length === 0,
     'erro de regra do banco: o aviso de sempre, sem código e sem registro');
   // Senha errada continua "E-mail ou senha incorretos."; a internet que cai, não.
   await page.evaluate(() => { window.__rpcComFalha = null; window.__db.jogadores.push({ user_id: 'j-z', nome: 'Zé', email: 'ze@exemplo.com' }); window.__senhas['ze@exemplo.com'] = 'senhadoze1'; abrirContaJogador('entrar'); });

@@ -355,7 +355,8 @@ sozinho vira "-", "Sob consulta"), numa linha
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (13/11/2026, regra 263): **2.570
+  segundo plano). Último resultado (14/11/2026, regra 270): **2.585 + 50
+  verificações** (a do `falhas.js` corrigida); antes, 13/11/2026, regra 263: **2.570
   verificações** nos 90 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs`,
   `cnpj.mjs` e `catalogo-meta.mjs`, nenhuma falha (as 3 da primeira rodada eram
   testes com o texto antigo, corrigidos). O `falhas.txt` sempre aparece na lista
@@ -1889,6 +1890,9 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   (`htDestaques`) não repetem a nota, a distância e as quadras (já estão no topo):
   ficam o preço e as comodidades, com "Empréstimo de raquete". **Distância:** abaixo de
   100 m, "menos de 100 m" (era "0 m de você"); os metros de 10 em 10. Sem SQL.
+  Teste novo `acabamento.js` (10). **Bateria completa de 14/11 (até a regra 270):
+  2.585 verificações**, uma falha: o `falhas.js` ainda esperava "Não consegui
+  conferir o e-mail" (texto da regra 265), corrigido.
 
 ## 11. WhatsApp e mensagem para as academias
 

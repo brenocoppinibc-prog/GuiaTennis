@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 14/11/2026 (regra 269)
+**Atualizado em:** 14/11/2026 (regra 270)
 
 | | |
 |---|---|
@@ -474,11 +474,12 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**14/11/2026, regras 268 e 269:** a página inicial com mais conteúdo (cartões com
+**14/11/2026, regras 268 a 270:** a página inicial com mais conteúdo (cartões com
 foto, "Busque pelo tipo de quadra", bairros da cidade); a caixa de busca de volta ao
 desenho do Trivago (o de antes da regra 263); no menu, o logo do tamanho certo e
-sem os links do fim (ficam no rodapé). Sem SQL. Testes afetados e o novo
-`inicial-com-conteudo.js` sem falha.
+sem os links do fim (ficam no rodapé); a revisão de acabamento (regra 270: busca
+compacta nos resultados, sem academia repetida na inicial, ficha sem repetir o
+topo, "menos de 100 m"). Sem SQL.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
 PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
@@ -1871,6 +1872,23 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `menu-e-home`, `nota-do-guia` e `sobre` (o "Feedback" e o "Sobre" agora conferidos
   no rodapé), mais `ajuda-na-busca`, `busca-e-ficha`, `buscas-e-avisos`, os `chat-*`,
   `links`, `pensamento-e-home`, `perto-de-voce`, `publico` e `tempo`, sem falha.
+- **270 (14/11) — revisão de acabamento** ("trabalha ele deixando redondinho,
+  conforme o que já foi dito, tudo que sabe sobre o site"). **Resultados:** a caixa de
+  busca numa linha só (`renderSearchCard(true)`, `.sc-compacto`: o onde, o alvo e o
+  botão quadrado com a lupa `.sc-buscar`, ainda `#search-btn`), como a barra do alto
+  dos resultados do Trivago e do Booking; "Aulas"/"Locação" ficam nos Filtros; a
+  inicial segue com a caixa inteira. O "a partir de Pinheiros" embaixo de "2
+  academias" saiu (a linha de cima já diz "A partir de Pinheiros, São Paulo"); a
+  `.toolbar-sub` fica só para a página da cidade e para a busca sem lugar.
+  **Inicial:** a mesma academia não aparece em três seções (`jaNaTela`, `soRepete`:
+  a fileira de "Academias por cidade" e "Mais bem avaliadas" saem quando só
+  repetiriam as de cima; os bairros e o link da cidade ficam); a nota dos cartões em
+  branco no quadrado verde (estava cinza); "Busque pelo tipo de quadra" numa fileira
+  que desliza, quadros do mesmo tamanho, sem o preço; exemplo do campo "CEP, bairro ou
+  endereço" (o antigo cortava no celular). **Ficha:** os destaques do topo
+  (`htDestaques`) não repetem a nota, a distância e as quadras (já estão no topo):
+  ficam o preço e as comodidades, com "Empréstimo de raquete". **Distância:** abaixo de
+  100 m, "menos de 100 m" (era "0 m de você"); os metros de 10 em 10. Sem SQL.
 
 ## 11. WhatsApp e mensagem para as academias
 

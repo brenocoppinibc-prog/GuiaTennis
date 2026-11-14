@@ -3435,9 +3435,7 @@
   .mini-home .mini-score .sbadge { margin-right: 2px; }
   .mini-onde, .mini-preco { margin: 0; font-size: 13px; color: var(--muted); }
   .mini-preco strong { color: var(--text); font-size: 15px; }
-  .home-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  @media (min-width: 720px) { .home-tipos { grid-template-columns: repeat(3, 1fr); } }
-  .home-tipo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); box-shadow: var(--shadow); text-align: left; cursor: pointer; font-family: var(--fonte-texto); color: var(--text); }
+  .home-tipo { flex: 0 0 148px; min-height: 120px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); box-shadow: var(--shadow); text-align: left; cursor: pointer; font-family: var(--fonte-texto); color: var(--text); }
   .home-tipo-icone { display: flex; margin-bottom: 8px; }
   .home-tipo strong { font-size: 15px; line-height: 1.25; }
   .home-tipo span:not(.home-tipo-icone) { font-size: 13px; color: var(--muted); }
@@ -3446,6 +3444,12 @@
   .home-bairro { display: flex; flex-direction: column; padding: 10px 0; border-top: 1px solid var(--border); color: var(--text); text-decoration: none; min-height: 48px; }
   .home-bairro strong { font-size: 14px; }
   .home-bairro span { font-size: 13px; color: var(--muted); }
+  /* Regra 270: acabamento. A caixa compacta dos resultados; a nota legível nos
+     cartões da inicial. */
+  .sc-compacto .sc-row { border-bottom: 0; padding: 10px 10px 10px 16px; gap: 10px; }
+  .sc-buscar { flex-shrink: 0; width: 48px; height: 48px; border: 0; border-radius: 12px; background: var(--green); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .sc-buscar:disabled { opacity: 0.65; cursor: default; }
+  .mini-home .mini-score .sbadge { color: #fff; }
 </style>
 </head>
 <body>
@@ -10538,16 +10542,31 @@ function totalQuadras(c) {
 // busca volta ao desenho do Trivago, como era antes da regra 263: uma linha para
 // onde (com o alvo da localização à direita), outra para o que a pessoa procura
 // (lista que abre, com a seta) e o botão.
-function renderSearchCard() {
+// Regra 270: na página de resultados, a caixa fica numa linha só (o onde, o alvo
+// e o botão com a lupa), como a barra do alto dos resultados do Trivago e do
+// Booking: a lista aparece logo, e "Aulas"/"Locação" ficam nos Filtros.
+function renderSearchCard(compacto) {
   const modalidade = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : "";
   const buscando = state.searchStatus === "loading";
+  if (compacto) return `
+    <div class="searchcard sc-compacto">
+      <div class="sc-row">
+        <span class="sc-icon">${icon('search', 18, 'var(--muted)')}</span>
+        <div class="sc-field">
+          <div class="sc-label">Onde você quer jogar</div>
+          <input class="sc-input" id="cep-input" placeholder="CEP, bairro ou endereço" enterkeyhint="search" value="${esc(state.cep)}" />
+        </div>
+        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização">${buscando ? bolaGirando(18) : icon('locate', 18, 'var(--green)')}</button>
+        <button class="sc-buscar" id="search-btn" aria-label="Buscar academias" ${buscando ? "disabled" : ""}>${buscando ? bolaGirando(18) : icon('search', 20, '#fff')}</button>
+      </div>
+    </div>`;
   return `
     <div class="searchcard">
       <div class="sc-row">
         <span class="sc-icon">${icon('search', 18, 'var(--muted)')}</span>
         <div class="sc-field">
           <div class="sc-label">Onde você quer jogar</div>
-          <input class="sc-input" id="cep-input" placeholder="CEP, endereço ou ponto de referência" value="${esc(state.cep)}" />
+          <input class="sc-input" id="cep-input" placeholder="CEP, bairro ou endereço" enterkeyhint="search" value="${esc(state.cep)}" />
         </div>
         <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização">${buscando ? bolaGirando(18) : icon('locate', 18, 'var(--green)')}</button>
       </div>
@@ -19351,13 +19370,12 @@ function blocoTiposDaHome() {
   return `
     <div class="home-sec" id="home-tipos">
       <h3 class="display">Busque pelo tipo de quadra</h3>
-      <div class="home-tipos">
+      <div class="home-tipos home-strip">
         ${tipos.map(x => `
           <button type="button" class="home-tipo" data-tipo-home="${x.i}">
             <span class="home-tipo-icone">${icon(x.t.icone[0], 22, x.t.icone[1])}</span>
             <strong>${esc(x.t.titulo)}</strong>
             <span>${x.courts.length} ${plural(x.courts.length, "academia", "academias")}</span>
-            ${faixaCidade(x.courts) ? `<span>${esc(faixaCidade(x.courts))}</span>` : ""}
           </button>`).join("")}
       </div>
     </div>`;
@@ -19781,6 +19799,10 @@ function renderHome() {
   const kmDaHome = (c) => { const d = kmDoPonto(ponto, c); return d === null ? Infinity : d; };
   const pertoDaHome = (c) => !ponto || kmDaHome(c) <= PARECIDAS_RAIO_KM;
   const melhores = melhoresAvaliadas(todas, ponto ? pertoDaHome : null);
+  // Regra 270: a mesma academia não aparece em três seções seguidas (o Airbnb
+  // e o Booking não repetem a fileira). A seção que só repetiria as de cima sai.
+  const jaNaTela = new Set(recomendadas.map(c => c.id));
+  const soRepete = (lista) => lista.length > 0 && lista.every(c => jaNaTela.has(c.id));
   const cidades = cidadesComQuadra();
   const cidadeAtiva = cidades.find(c => c.nome === state.homeCity)
     || cidades.find(c => mesmaCidade(c.nome, pref.cidade))
@@ -19827,12 +19849,15 @@ function renderHome() {
           ${cidades.map(c => `<button type="button" class="city-tab ${c.nome === cidadeAtiva.nome ? "on" : ""}" data-city="${esc(c.nome)}">${esc(c.nome)}</button>`).join("")}
         </div>
         <p class="city-note">${cidadeAtiva.courts.length} ${plural(cidadeAtiva.courts.length, "academia cadastrada", "academias cadastradas")}${faixaCidade(cidadeAtiva.courts) ? ` · ${faixaCidade(cidadeAtiva.courts)}` : ""}.</p>
-        <div class="home-strip">${(ponto ? [...cidadeAtiva.courts].sort((a, b) => kmDaHome(a) - kmDaHome(b)) : cidadeAtiva.courts).slice(0, 8).map(c => renderCartaoDaHome(decorate(c), ponto ? kmDaHome(c) : null)).join("")}</div>
+        ${(() => { const daCidade = (ponto ? [...cidadeAtiva.courts].sort((a, b) => kmDaHome(a) - kmDaHome(b)) : cidadeAtiva.courts).slice(0, 8);
+          if (soRepete(daCidade)) return "";
+          daCidade.forEach(c => jaNaTela.add(c.id));
+          return `<div class="home-strip">${daCidade.map(c => renderCartaoDaHome(decorate(c), ponto ? kmDaHome(c) : null)).join("")}</div>`; })()}
         ${bairrosDaCidade(cidadeAtiva)}
         <a class="cidade-link" href="${caminhoDaRegiao({ cidade: cidadeAtiva.nome })}" data-regiao-link data-cidade="${esc(cidadeAtiva.nome)}">Ver as academias de ${esc(cidadeAtiva.nome)} ›</a>
       </div>` : ""}
 
-    ${melhores.length ? `
+    ${melhores.length && !soRepete(melhores) ? `
       <div class="home-sec">
         <h3 class="display">Mais bem avaliadas${melhores.perto ? " perto de você" : ""}</h3>
         <div class="home-strip">${melhores.map(c => renderCartaoDaHome(c, ponto ? kmDaHome(c) : null)).join("")}</div>
@@ -20385,7 +20410,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
       ${renderCabecalho()}
       ${regiao ? `<h1 class="regiao-titulo display">Quadras e academias de tênis em ${esc(termoDaRegiao(regiao))}</h1>` : ""}
       <div class="search-header">
-        ${renderSearchCard()}
+        ${renderSearchCard(true)}
         ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
         ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
         ${state.cidadeDaPagina && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} Todas as academias de ${esc(state.cidadeDaPagina)}. Para ver as mais perto, digite o bairro, o endereço ou o CEP.</div>` : ""}
@@ -20396,7 +20421,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
     <div class="toolbar">
       <div class="toolbar-left">
         <p class="toolbar-count">${results.length} ${plural(results.length, "academia", "academias")}</p>
-        <p class="toolbar-sub">${state.origin ? `a partir de ${esc(state.origin.bairro || state.origin.cidade || "você")}` : state.cidadeDaPagina ? `em ${esc(state.cidadeDaPagina)}` : "Use o CEP ou o GPS para ordenar por distância"}</p>
+        ${state.origin ? "" : `<p class="toolbar-sub">${state.cidadeDaPagina ? `em ${esc(state.cidadeDaPagina)}` : "Use o CEP ou o GPS para ordenar por distância"}</p>`}
       </div>
       <div class="toolbar-right">
         <div class="sortwrap">
@@ -20525,7 +20550,9 @@ function avatarDoAutor(r) {
 
 function distanceText(km) {
   if (typeof km !== "number" || !isFinite(km)) return "";
-  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace(".", ",")} km`;
+  // Regra 270: "0 m de você" vira "menos de 100 m de você"; os metros de 10 em 10.
+  if (km < 0.1) return "menos de 100 m";
+  return km < 1 ? `${Math.round(km * 100) * 10} m` : `${km.toFixed(1).replace(".", ",")} km`;
 }
 
 
@@ -22015,13 +22042,12 @@ function listaTexto(itens) {
 // hoteis.com (26/10/2026).
 function htDestaques(c) {
   const faixa = faixaGeral(c);
-  const total = totalQuadras(c);
-  const dist = distanceText(c.distanceKm);
   const tem = k => (c.amenities || []).includes(k);
   const candidatos = [
-    c.appCount && { ic: 'sparkle', cor: 'var(--gold)', t: `${c.appAvg.toFixed(1).replace(".", ",")} ${scoreWord(c.appAvg, c.appCount)}`, s: `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no GuiaTennis` },
+    // Regra 270: a nota, a distância e as quadras já estão no topo (o quadrado
+    // da nota, o endereço e os quadros); aqui ficam o preço e o que a academia
+    // oferece, como os destaques do Airbnb, que não repetem o título.
     faixa && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: faixa.rotulo },
-    dist && { ic: 'pin', cor: 'var(--green)', t: `${dist} de você`, s: [c.bairro, c.cidade].filter(Boolean).join(", ") || "a partir da sua busca" },
     tem("estacionamento_gratuito") && { ic: 'parking', cor: regraDoEstacionamento(c) ? 'var(--gold)' : 'var(--green)', t: estacionamentoRotulo(c) },
     tem("vestiario") && { ic: 'droplet', cor: 'var(--green)', t: "Vestiário" },
     tem("camera") && { ic: 'camera', cor: 'var(--green)', t: "Câmera nas quadras" },
@@ -22031,7 +22057,7 @@ function htDestaques(c) {
     tem("agua") && { ic: 'watercup', cor: 'var(--green)', t: "Água grátis" },
     tem("assinatura_fitness") && { ic: 'pass', cor: 'var(--green)', t: "App de assinatura fitness" },
     tem("estacionamento_pago") && { ic: 'parking', cor: 'var(--gold)', t: "Estacionamento pago" },
-    total && { ic: 'ball', cor: 'var(--green)', t: `${total} ${plural(total, "quadra", "quadras")}` },
+    tem("raquete") && { ic: 'bag', cor: 'var(--green)', t: "Empréstimo de raquete" },
   ].filter(Boolean).slice(0, 4);
   if (!candidatos.length) return "";
   return `<div class="ht-destaques">${candidatos.map(d => `

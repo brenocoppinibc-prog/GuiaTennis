@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 14/11/2026 (regra 267, troca de chat)
+**Atualizado em:** 14/11/2026 (regra 268)
 
 | | |
 |---|---|
@@ -473,6 +473,11 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
+
+**14/11/2026, regra 268:** a caixa de busca refeita (abas sublinhadas, o campo
+inteiro, "Usar minha localização" numa linha, o botão) e a página inicial com mais
+conteúdo (cartões com foto, "Busque pelo tipo de quadra", bairros da cidade). Sem
+SQL. Testes afetados e o novo `inicial-com-conteudo.js` sem falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
 PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
@@ -1827,6 +1832,27 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `busca-e-ficha.js`, `premium-patrocinado.js`, sem falha. Bateria completa de
   13/11 (até a regra 266): 2.546 verificações, uma falha (o ⓘ das estrelas),
   corrigida.
+- **268 (14/11) — a caixa de busca e mais conteúdo na inicial** ("não gostei muito
+  da barra de pesquisa. Ficou com muito pouco conteúdo na página inicial dos
+  jogadores"). **Caixa de busca** (`renderSearchCard`, como a do Booking, com as abas
+  do Airbnb): "Aula e locação | Aulas | Locação" em **abas sublinhadas** no alto
+  (`.sc-tab`, `data-sc-modalidade`; sai a caixa cinza do `.sc-seg`); a linha do campo
+  é um `<label>` (tocar em qualquer ponto abre o teclado), exemplo "CEP, bairro ou
+  endereço"; **"Usar minha localização" numa linha só** (`#locate-btn`; saem o alvo
+  dentro do campo e o `#locate-txt`); o botão fecha a caixa. O vídeo e o chat de
+  ajuda dizem "toque em “Usar minha localização”" no lugar do "alvo". **Inicial:** as
+  academias de "Perto de você"/"Academias recomendadas", "Academias por cidade" e
+  "Mais bem avaliadas" em **cartões com foto** (`renderCartaoDaHome`, classe
+  `mini-home`: foto, nome, nota com "Excelente · N avaliações", bairro · distância,
+  "a partir de R$ X por hora"; sem foto, começa no nome); sai o `renderLinhaDaHome`.
+  Nova seção **"Busque pelo tipo de quadra"** (`blocoTiposDaHome`, `TIPOS_DA_HOME`:
+  saibro, rápida, coberta, estacionamento, vestiário, empréstimo de raquete; só o
+  que existe, com quantas academias e o preço; o toque abre a busca com o filtro,
+  `abrirTipoDaHome`), depois das recomendadas. Em "Academias por cidade", **"Bairros
+  de …"** com quantas academias (`bairrosDaCidade`, até 8, link
+  `/quadras/<cidade>/<bairro>`). Sem SQL. Teste novo `inicial-com-conteudo.js` (14);
+  `ajuda-na-busca`, `busca-e-ficha`, `buscas-e-avisos`, `melhores-avaliadas`,
+  `menu-e-home`, `perto-de-voce`, `publico` e `tempo` sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

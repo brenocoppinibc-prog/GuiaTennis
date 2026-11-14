@@ -1031,7 +1031,6 @@
   .sc-input::placeholder { color: var(--muted-dark); font-weight: 500; }
   .sc-select { cursor: pointer; -webkit-appearance: none; appearance: none; }
   .sc-caret { flex-shrink: 0; color: var(--muted); font-size: 12px; }
-  .sc-locate { flex-shrink: 0; width: 38px; height: 38px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .sc-foot { padding: 12px 14px; }
   .sc-go { width: 100%; border: none; border-radius: 12px; background: var(--green); color: #fff; font-family: var(--fonte-texto); font-size: 16px; font-weight: 700; padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .sc-go:disabled { opacity: 0.65; cursor: default; }
@@ -3367,17 +3366,8 @@
   /* Sistema de design aplicado ao site (regra 263, 13/11/2026): a busca da página
      inicial com "Aula e locação | Aulas | Locação" lado a lado, as recomendadas em
      lista, a nota num quadrado verde como o do Booking e "Entrar" escrito no alto. */
-  .sc-seg { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 4px; margin: 12px 14px 0; padding: 4px; background: var(--bg-alt); border-radius: 12px; }
-  .sc-seg-b { border: 0; background: none; min-height: 40px; padding: 6px 4px; border-radius: 8px; font-family: var(--fonte-texto); font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; line-height: 1.2; white-space: nowrap; }
-  .sc-seg-b.on { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(33,31,26,0.12); }
   .home-hero .home-hero-sub { margin: 6px 0 14px; font-size: 16px; line-height: 1.5; color: var(--muted); }
   .home-garantia { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
-  #home-recomendadas .home-strip { display: grid; gap: 0; overflow: visible; padding-bottom: 0; }
-  #home-recomendadas .mini { display: flex; align-items: center; gap: 12px; flex-basis: auto; border: 0; border-top: 1px solid var(--border); border-radius: 0; box-shadow: none; background: none; padding: 12px 0; }
-  #home-recomendadas .mini:last-child { border-bottom: 1px solid var(--border); }
-  #home-recomendadas .mini-photo { flex: 0 0 64px; height: 64px; border-radius: 12px; overflow: hidden; }
-  #home-recomendadas .mini-body { padding: 0; min-width: 0; }
-  #home-recomendadas .mini-badge { position: static; display: inline-block; margin: 0 0 4px; order: 2; }
   .sbadge { border-radius: 8px 8px 8px 0; padding: 5px 7px; font-weight: 800; }
   .sbadge.none { border-radius: 999px; background: none; border: 1px solid var(--border); color: var(--muted); font-weight: 600; }
   .conta-topo.entrar { width: auto; padding: 0 12px; border: 0; background: none; color: var(--green); font-family: var(--fonte-texto); font-size: 15px; font-weight: 700; }
@@ -3421,17 +3411,45 @@
      "Perto de você" com nota, distância e preço; o cartão com cinco informações;
      o menu do Parceiros com 3 listras. */
   .sc-perto { display: inline-flex; align-items: center; gap: 6px; margin: 10px 14px 0; padding: 4px 0; border: 0; background: none; color: var(--green); font-family: var(--fonte-texto); font-size: 14px; font-weight: 600; cursor: pointer; }
-  .mini.mini-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .mini-linha .mini-body { padding: 0; min-width: 0; }
-  .mini-linha-meta { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
-  .mini-linha .sbadge { flex-shrink: 0; }
-  .mini-linha-nova { flex-shrink: 0; font-size: 12px; color: var(--muted); text-align: right; max-width: 96px; }
   .rcard-onde { color: var(--muted); }
   .rcard-selos { display: block; font-size: 13px; color: var(--muted); }
   .rcard-promo { color: var(--gold-text); }
   .scount { font-size: 13px; color: var(--muted); }
   .pc-menu-btn.menu-btn { flex-direction: column; gap: 5px; }
   .pc-menu-btn.menu-btn > span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
+
+  /* Regra 268: a caixa de busca como a do Booking, com as abas sublinhadas em
+     cima (como o Airbnb); as academias da inicial em cartões com foto; "Busque
+     pelo tipo de quadra" e os bairros da cidade. */
+  .searchcard { padding: 0; }
+  .sc-tabs { display: flex; gap: 24px; padding: 0 16px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .sc-tabs::-webkit-scrollbar { display: none; }
+  .sc-tab { flex-shrink: 0; min-height: 48px; padding: 12px 0 9px; border: 0; border-bottom: 3px solid transparent; background: none; font-family: var(--fonte-texto); font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .sc-tab.on { color: var(--green); border-bottom-color: var(--green); }
+  label.sc-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: text; }
+  .sc-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
+  .sc-input { padding: 4px 0 2px; font-weight: 500; }
+  .sc-perto { display: flex; width: 100%; min-height: 52px; margin: 0; padding: 0 16px; gap: 12px; border: 0; border-bottom: 1px solid var(--border); font-size: 15px; text-align: left; }
+  .sc-foot { padding: 14px 16px 16px; }
+  .home-strip .mini-home { flex: 0 0 240px; }
+  .mini-home .mini-photo { height: 140px; }
+  .mini-home .mini-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .mini-home .mini-score { margin: 2px 0 0; color: var(--muted); }
+  .mini-home .mini-score strong { color: var(--text); }
+  .mini-home .mini-score .sbadge { margin-right: 2px; }
+  .mini-onde, .mini-preco { margin: 0; font-size: 13px; color: var(--muted); }
+  .mini-preco strong { color: var(--text); font-size: 15px; }
+  .home-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (min-width: 720px) { .home-tipos { grid-template-columns: repeat(3, 1fr); } }
+  .home-tipo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); box-shadow: var(--shadow); text-align: left; cursor: pointer; font-family: var(--fonte-texto); color: var(--text); }
+  .home-tipo-icone { display: flex; margin-bottom: 8px; }
+  .home-tipo strong { font-size: 15px; line-height: 1.25; }
+  .home-tipo span:not(.home-tipo-icone) { font-size: 13px; color: var(--muted); }
+  .home-bairros-titulo { margin: 22px 0 10px; font-size: 15px; font-weight: 700; }
+  .home-bairros { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .home-bairro { display: flex; flex-direction: column; padding: 10px 0; border-top: 1px solid var(--border); color: var(--text); text-decoration: none; min-height: 48px; }
+  .home-bairro strong { font-size: 14px; }
+  .home-bairro span { font-size: 13px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -10520,25 +10538,30 @@ function totalQuadras(c) {
 }
 
 // Bloco de busca no formato do Trivago: linhas empilhadas + botão grande.
+// Regra 268 ("não gostei muito da barra de pesquisa"): como a caixa de busca do
+// Booking e as abas do Airbnb em cima da busca. O que se procura vira abas
+// sublinhadas no alto da caixa (sem caixa dentro de caixa); o campo ocupa a linha
+// inteira e tocar em qualquer ponto dele abre o teclado; "Usar minha localização"
+// é uma linha só (sem o alvo repetido dentro do campo); e o botão fecha a caixa.
 function renderSearchCard() {
   const modalidade = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : "";
+  const buscando = state.searchStatus === "loading";
   return `
     <div class="searchcard">
-      <div class="sc-row">
-        <span class="sc-icon">${icon('search', 18, 'var(--muted)')}</span>
-        <div class="sc-field">
-          <div class="sc-label">Onde você quer jogar</div>
-          <input class="sc-input" id="cep-input" placeholder="CEP, endereço ou ponto de referência" value="${esc(state.cep)}" />
-        </div>
-        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização">${state.searchStatus === "loading" ? bolaGirando(18) : icon('locate', 18, 'var(--green)')}</button>
+      <div class="sc-tabs" role="group" aria-label="O que você procura">
+        ${[{ key: "", label: "Aula e locação" }, ...MODALIDADE_OPTS].map(m => `<button type="button" class="sc-tab ${modalidade === m.key ? "on" : ""}" data-sc-modalidade="${m.key}" aria-pressed="${modalidade === m.key}">${m.label}</button>`).join("")}
       </div>
-      <button type="button" class="sc-perto" id="locate-txt">${icon('locate', 15, 'var(--green)')} Usar minha localização</button>
-      <div class="sc-seg" role="group" aria-label="O que você procura">
-        ${[{ key: "", label: "Aula e locação" }, ...MODALIDADE_OPTS].map(m => `<button type="button" class="sc-seg-b ${modalidade === m.key ? "on" : ""}" data-sc-modalidade="${m.key}" aria-pressed="${modalidade === m.key}">${m.label}</button>`).join("")}
-      </div>
+      <label class="sc-row" for="cep-input">
+        <span class="sc-icon">${icon('search', 20, 'var(--green)')}</span>
+        <span class="sc-field">
+          <span class="sc-label">Onde você quer jogar</span>
+          <input class="sc-input" id="cep-input" placeholder="CEP, bairro ou endereço" autocomplete="off" enterkeyhint="search" value="${esc(state.cep)}" />
+        </span>
+      </label>
+      <button type="button" class="sc-perto" id="locate-btn">${buscando ? bolaGirando(18) : icon('locate', 18, 'var(--green)')} Usar minha localização</button>
       <div class="sc-foot">
-        <button class="sc-go" id="search-btn" ${state.searchStatus === "loading" ? "disabled" : ""}>
-          ${state.searchStatus === "loading" ? bolaGirando(16) + " Buscando" : "Buscar academias"}
+        <button class="sc-go" id="search-btn" ${buscando ? "disabled" : ""}>
+          ${buscando ? bolaGirando(16) + " Buscando" : "Buscar academias"}
         </button>
       </div>
     </div>
@@ -10979,7 +11002,7 @@ function demoBusca() {
         <rect class="cursor" x="356" y="105" width="1.6" height="15" fill="var(--green)"/>
         <rect x="239" y="140" width="162" height="34" rx="9" fill="var(--green)"/>
         <text x="320" y="162" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">Buscar academias</text>
-        <text x="320" y="200" font-size="10" fill="var(--muted)" text-anchor="middle">ou toque no alvo e use o GPS</text>
+        <text x="320" y="200" font-size="10" fill="var(--muted)" text-anchor="middle">ou toque em “Usar minha localização”</text>
       </g>
 
       <g class="cena cena2">
@@ -19289,20 +19312,80 @@ function faixaCidade(courts) {
 
 // patrocinado: a Premium nas "Academias recomendadas" (regra 101) é posição
 // paga e vem escrita "Patrocinado", como no topo da busca (regra 16).
-// Regra 267: cada academia da lista "Perto de você" da página inicial numa
-// linha: o nome, a nota, o bairro, a distância e o preço, como no protótipo.
-function renderLinhaDaHome(c, km, patrocinado) {
+// Regra 268 ("ficou com muito pouco conteúdo na página inicial"): as academias da
+// página inicial em cartões com foto, deslizando para o lado, como as fileiras do
+// Airbnb e o "Acomodações que os hóspedes amam" do Booking: a foto, o nome, a
+// nota, o bairro com a distância e o preço. Sem foto, o cartão começa no nome.
+function renderCartaoDaHome(c, km, patrocinado) {
+  const photos = courtPhotos(c);
   const preco = ofertas(c).find(o => o.min);
-  const partes = [c.bairro || c.cidade, km !== null && km !== undefined && isFinite(km) ? distanceText(km) : "", preco ? `a partir de R$ ${priceMin(preco.faixa)}${preco.curto || " por hora"}` : SEM_PRECO].filter(Boolean);
+  const onde = [c.bairro || c.cidade, km !== null && km !== undefined && isFinite(km) ? distanceText(km) : ""].filter(Boolean).join(" · ");
+  const nota = c.appCount ? c.appAvg.toFixed(1).replace(".", ",") : "";
   return `
-    <a class="mini mini-linha" href="${caminhoDaFicha(c)}" data-open="${c.id}">
+    <a class="mini mini-home ${photos.length ? "" : "sem-foto"}" href="${caminhoDaFicha(c)}" data-open="${c.id}">
+      ${photos.length ? `<div class="mini-photo"><img src="${esc(photos[0])}" alt="${esc(c.name)}" loading="lazy" decoding="async" /></div>` : ""}
       <div class="mini-body">
         ${patrocinado ? `<p class="mini-patrocinado">Patrocinado</p>` : ""}
         <p class="mini-name">${esc(c.name)}${seloDaAcademia(c, 14)}</p>
-        <p class="mini-linha-meta">${esc(partes.join(" · "))}</p>
+        <p class="mini-score">${c.appCount
+          ? `<span class="sbadge">${nota}</span> <strong>${scoreWord(c.appAvg, c.appCount)}</strong> <span>· ${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}</span>`
+          : `<span>Sem avaliações ainda</span>`}</p>
+        ${onde ? `<p class="mini-onde">${esc(onde)}</p>` : ""}
+        <p class="mini-preco">${preco ? `a partir de <strong>R$ ${esc(priceMin(preco.faixa))}</strong>${esc(preco.curto || " por hora")}` : SEM_PRECO}</p>
       </div>
-      ${c.appCount ? `<span class="sbadge">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : `<span class="mini-linha-nova">Sem avaliações ainda</span>`}
     </a>`;
+}
+
+// Regra 268: "Busque pelo tipo de quadra", como o "Pesquise por tipo de
+// acomodação" do Booking e as categorias do Airbnb. Cada quadro leva à busca já
+// com o filtro (e, com o lugar da pessoa, da mais perto para a mais longe). Só
+// aparece o tipo que alguma academia tem.
+const TIPOS_DA_HOME = [
+  { titulo: "Quadras de saibro", icone: ["dot", "#B5651D"], filtro: { pisoFilters: ["saibro"] }, tem: c => !!c.pisos?.includes("saibro") },
+  { titulo: "Quadras rápidas", icone: ["bolt", "var(--gold)"], filtro: { pisoFilters: ["rapida"] }, tem: c => !!c.pisos?.includes("rapida") },
+  { titulo: "Quadras cobertas", icone: ["home", "var(--green)"], filtro: { coberturaFilters: ["coberta"] }, tem: c => !!c.cobertura?.includes("coberta") },
+  { titulo: "Com estacionamento", icone: ["parking", "var(--green)"], filtro: { amenityFilters: ["estacionamento"] }, tem: c => matchesAmenityFilter(c, "estacionamento") },
+  { titulo: "Com vestiário", icone: ["droplet", "var(--green)"], filtro: { amenityFilters: ["vestiario"] }, tem: c => matchesAmenityFilter(c, "vestiario") },
+  { titulo: "Empréstimo de raquete", icone: ["bag", "var(--green)"], filtro: { amenityFilters: ["raquete"] }, tem: c => matchesAmenityFilter(c, "raquete") },
+];
+function blocoTiposDaHome() {
+  const tipos = TIPOS_DA_HOME.map((t, i) => ({ t, i, courts: state.allCourts.filter(t.tem) })).filter(x => x.courts.length);
+  if (!tipos.length) return "";
+  return `
+    <div class="home-sec" id="home-tipos">
+      <h3 class="display">Busque pelo tipo de quadra</h3>
+      <div class="home-tipos">
+        ${tipos.map(x => `
+          <button type="button" class="home-tipo" data-tipo-home="${x.i}">
+            <span class="home-tipo-icone">${icon(x.t.icone[0], 22, x.t.icone[1])}</span>
+            <strong>${esc(x.t.titulo)}</strong>
+            <span>${x.courts.length} ${plural(x.courts.length, "academia", "academias")}</span>
+            ${faixaCidade(x.courts) ? `<span>${esc(faixaCidade(x.courts))}</span>` : ""}
+          </button>`).join("")}
+      </div>
+    </div>`;
+}
+function abrirTipoDaHome(i) {
+  const t = TIPOS_DA_HOME[i];
+  if (!t) return;
+  state.pisoFilters = []; state.coberturaFilters = []; state.amenityFilters = []; state.modalidadeFilters = [];
+  Object.assign(state, JSON.parse(JSON.stringify(t.filtro)));
+  goSearch();
+}
+
+// Regra 268: os bairros da cidade escolhida, com quantas academias cada um tem,
+// como o "Inspiração para futuras viagens" do Airbnb e os destinos do Booking.
+// Cada bairro abre a página da região (/quadras/<cidade>/<bairro>).
+function bairrosDaCidade(cidade) {
+  const map = {};
+  cidade.courts.forEach(c => { const b = (c.bairro || "").trim(); if (b) map[b] = (map[b] || 0) + 1; });
+  const lista = Object.keys(map).sort((a, b) => map[b] - map[a] || a.localeCompare(b, "pt-BR")).slice(0, 8);
+  if (!lista.length) return "";
+  return `
+    <p class="home-bairros-titulo">Bairros de ${esc(cidade.nome)}</p>
+    <div class="home-bairros">
+      ${lista.map(b => `<a class="home-bairro" href="${caminhoDaRegiao({ cidade: cidade.nome, bairro: b })}" data-regiao-link data-cidade="${esc(cidade.nome)}" data-bairro="${esc(b)}"><strong>${esc(b)}</strong><span>${map[b]} ${plural(map[b], "academia", "academias")}</span></a>`).join("")}
+    </div>`;
 }
 
 function renderMini(c, selo, extra, patrocinado) {
@@ -19734,9 +19817,11 @@ function renderHome() {
     ${recomendadas.length ? `
       <div class="home-sec" id="home-recomendadas">
         <h3 class="display">${ponto ? "Perto de você" : "Academias recomendadas"}</h3>
-        <div class="home-strip">${recomendadas.map(c => renderLinhaDaHome(c, ponto ? kmDaHome(c) : null, ehPremium(c))).join("")}</div>
+        <div class="home-strip">${recomendadas.map(c => renderCartaoDaHome(c, ponto ? kmDaHome(c) : null, ehPremium(c))).join("")}</div>
         <button type="button" class="ver-todas" data-ir-busca>Ver todas as academias ›</button>
       </div>` : ""}
+
+    ${blocoTiposDaHome()}
 
     ${cidades.length ? `
       <div class="home-sec">
@@ -19745,14 +19830,15 @@ function renderHome() {
           ${cidades.map(c => `<button type="button" class="city-tab ${c.nome === cidadeAtiva.nome ? "on" : ""}" data-city="${esc(c.nome)}">${esc(c.nome)}</button>`).join("")}
         </div>
         <p class="city-note">${cidadeAtiva.courts.length} ${plural(cidadeAtiva.courts.length, "academia cadastrada", "academias cadastradas")}${faixaCidade(cidadeAtiva.courts) ? ` · ${faixaCidade(cidadeAtiva.courts)}` : ""}.</p>
-        <div class="home-strip">${(ponto ? [...cidadeAtiva.courts].sort((a, b) => kmDaHome(a) - kmDaHome(b)) : cidadeAtiva.courts).slice(0, 8).map(c => renderMini(decorate(c))).join("")}</div>
+        <div class="home-strip">${(ponto ? [...cidadeAtiva.courts].sort((a, b) => kmDaHome(a) - kmDaHome(b)) : cidadeAtiva.courts).slice(0, 8).map(c => renderCartaoDaHome(decorate(c), ponto ? kmDaHome(c) : null)).join("")}</div>
+        ${bairrosDaCidade(cidadeAtiva)}
         <a class="cidade-link" href="${caminhoDaRegiao({ cidade: cidadeAtiva.nome })}" data-regiao-link data-cidade="${esc(cidadeAtiva.nome)}">Ver as academias de ${esc(cidadeAtiva.nome)} ›</a>
       </div>` : ""}
 
     ${melhores.length ? `
       <div class="home-sec">
         <h3 class="display">Mais bem avaliadas${melhores.perto ? " perto de você" : ""}</h3>
-        <div class="home-strip">${melhores.map(c => renderMini(c)).join("")}</div>
+        <div class="home-strip">${melhores.map(c => renderCartaoDaHome(c, ponto ? kmDaHome(c) : null)).join("")}</div>
       </div>` : ""}
 
     ${blocoDiferenciais()}
@@ -25572,8 +25658,8 @@ const CHAT_TEMAS = [
       // Quando é a busca ou a localização que não funciona, a dica certa é
       // esta, não a do "Algo não funcionou".
       "localizacao nao", "gps nao", "busca nao", "pesquisa nao", "nao acho", "nao encontro"],
-    r: "Na página inicial, digite o bairro, o endereço ou o CEP e toque em Buscar academias — ou toque no alvo para usar a sua localização. A lista começa pela mais perto; em Filtros, escolha piso, quadra coberta, preço, nota e comodidades.",
-    d: "Vamos por outro caminho: digite só o CEP ou o nome do bairro. Quando o alvo não acha você, o navegador pode estar bloqueando a localização: permita a localização para o site nas configurações dele.",
+    r: "Na página inicial, digite o bairro, o endereço ou o CEP e toque em Buscar academias — ou toque em “Usar minha localização”. A lista começa pela mais perto; em Filtros, escolha piso, quadra coberta, preço, nota e comodidades.",
+    d: "Vamos por outro caminho: digite só o CEP ou o nome do bairro. Quando “Usar minha localização” não acha você, o navegador pode estar bloqueando a localização: permita a localização para o site nas configurações dele.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "reservar", onde: "jogadores", t: "Reservar ou marcar aula",
     p: ["reserv", "agendar", "agenda", "marcar", "alugar", "locar", "locacao", "horario livre", "disponivel", "disponibilidade", "aula experimental"],
@@ -28900,6 +28986,8 @@ function attachEvents() {
     render();
   };
 
+  document.querySelectorAll("[data-tipo-home]").forEach(b => { b.onclick = () => abrirTipoDaHome(Number(b.dataset.tipoHome)); });
+
   document.querySelectorAll("[data-sc-modalidade]").forEach(b => {
     b.onclick = () => {
       state.modalidadeFilters = b.dataset.scModalidade ? [b.dataset.scModalidade] : [];
@@ -29138,8 +29226,6 @@ function attachEvents() {
     doSearch().then(() => window.scrollTo(0, 0));
   };
 
-  const locateTxt = document.getElementById("locate-txt");
-  if (locateTxt) locateTxt.onclick = () => document.getElementById("locate-btn")?.click();
   const locateBtn = document.getElementById("locate-btn");
   if (locateBtn) locateBtn.onclick = () => { state.page = "search"; syncUrl(true); useMyLocation(); };
 

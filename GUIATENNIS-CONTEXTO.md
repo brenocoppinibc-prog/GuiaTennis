@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 13/11/2026 (regra 267)
+**Atualizado em:** 14/11/2026 (regra 267, troca de chat)
 
 | | |
 |---|---|
@@ -473,6 +473,32 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
+
+**Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
+PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
+commit de código: `dc32186` (regra 267). O PR está verde, sem conflito, a prévia
+no ar com tudo até a regra 267 e a descrição do PR em dia (passos 85 a 90). O
+"Banco de dados" rodou no banco de teste para o SQL mais novo,
+`20261113130000_nome_do_logo_nos_emails` (13/11, sucesso). **Do chat de 13/11:**
+regras 258 a 267: português dos e-mails, fonte do aparelho, logo em Poppins
+(verde e dourado, desenhado), Sobre com cabeçalho padrão e menu de 3 listras, o
+**sistema de design** no site inteiro, a ficha na ordem da decisão, a **análise de
+conteúdo** aplicada (glossário, preço por extenso, erros sem "eu", página
+`/como-funciona`, Google) e o cartão e o topo da ficha como no protótipo.
+Quadros (artefatos): sistema de design https://claude.ai/artifact/DSCBuJTiPGCegW6p1MMHYp
+(o Breno mudou nele a cor de erro para `#E63D10`; o site segue `#A8462C`, 4,2:1
+com branco, sem resposta), protótipo com as abas Análise e Conteúdo
+https://claude.ai/artifact/74eWwbWjLoaZsKqtRg6CfA, fontes do logo
+https://claude.ai/artifact/KMAgoNrMzi778JhqQmnTu6, paletas (recusadas)
+https://claude.ai/artifact/Qpno9SkKR893cGBT87UhUZ. **Perguntas ao Breno sem
+resposta:** (1) a faixa verde "Para academias" do protótipo na página inicial
+(contra a regra de 14/10; não entrou); (2) incluir `/como-funciona` no sitemap
+(sai do banco: SQL que refaz o `sitemap()`); (3) a cor de erro nova; (4) passar a
+imagem de compartilhar, os ícones e a 404 para o logo em Poppins. Ideias do
+analista ainda não pedidas: no Sobre, foto do Breno, linha do tempo, valores e
+contato para imprensa e parcerias. Testes: bateria completa de 13/11 (até a regra
+266) 2.546 verificações, a única falha corrigida; da 267, os afetados sem falha;
+`banco-emails.py` 953. O banco local e o LanguageTool não ficam no contêiner.
 
 **Chat trocado em 13/11/2026:** o chat novo volta a acompanhar o PR #5 (o
 anterior deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último

@@ -44,8 +44,8 @@ const fs = require('fs'), path = require('path');
   ok(menu.grupos.join() === 'GuiaTennis,Minhas quadras,Preferências,Suporte', 'grupos na ordem, com o Suporte (contato, Parceiros e links) junto no fim — ' + menu.grupos.join(' | '));
   const pos = t => menu.ordem.findIndex(i => i.startsWith(t));
   ok(pos('Favoritas') > 0 && pos('Vistas recentemente') > 0 && pos('Academias que você chamou') > 0, 'favoritas, vistas e chamadas no menu');
-  ok(pos('Como funciona') < pos('GuiaTennis Parceiros') && pos('Fale com a gente') > pos('GuiaTennis Parceiros') && !menu.ordem.some(i => i === 'WhatsApp') && pos('Termos de Uso') > pos('Fale com a gente') && pos('Privacidade') === menu.ordem.length - 1,
-    'no Suporte: como funciona, Parceiros e "Fale com a gente" (sem os contatos soltos); Termos e Privacidade em letra pequena, bem no fim');
+  ok(pos('Como funciona') < pos('GuiaTennis Parceiros') && pos('Fale com a gente') > pos('GuiaTennis Parceiros') && !menu.ordem.some(i => i === 'WhatsApp') && pos('Termos de Uso') === -1 && pos('Privacidade') === -1 && pos('Feedback') === -1,
+    'no Suporte: como funciona, Parceiros e "Fale com a gente"; sem "Por que", "Sobre", "Feedback", "Termos" e "Privacidade" no fim (regra 269: ficam no rodapé)');
   ok(menu.itens.some(i => i === 'Preferências de busca') && !menu.itens.some(i => /Escolher|Entrar$|Adicionar/.test(i)), 'na direita, só valor que diz algo (sem "Escolher", "Entrar", "Adicionar")');
   ok(!menu.itens.some(i => i.startsWith('Buscas salvas') || i.startsWith('Avisos por e-mail')), 'sem conta: sem "Buscas salvas" e "Avisos por e-mail" (a conta em cima leva a eles)');
 

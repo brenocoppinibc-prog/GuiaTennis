@@ -104,7 +104,7 @@ const PARTES = ['Um guia de quadras de tênis feito por um professor', 'Nossa hi
   ok(await page.evaluate(() => document.getElementById('app').textContent.includes('também ficam perto do endereço buscado')), '"Como funciona a ordem" diz que as patrocinadas também ficam perto do endereço');
   await page.evaluate(() => { state.showMenu = true; render(); });
   await page.waitForTimeout(200);
-  ok((await texto(page, '.menu-links')).includes('Sobre o GuiaTennis Feedback'), 'no menu, "Sobre o GuiaTennis" junto do "Feedback"');
+  ok(!(await page.$('.menu-links')) && (await texto(page, '.sitefooter')).includes('Sobre nós') && (await texto(page, '.sitefooter')).includes('Feedback'), '"Sobre" e "Feedback" no rodapé, não mais no fim do menu (regra 269)');
   await page.evaluate(() => { state.showMenu = false; render(); });
   await page.click('.caixa-feedback a[data-ir-feedback]');
   await page.waitForTimeout(500);

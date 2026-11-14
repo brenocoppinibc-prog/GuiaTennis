@@ -3410,7 +3410,6 @@
   /* Regra 267: o resto do protótipo. "Usar minha localização" escrito; a lista
      "Perto de você" com nota, distância e preço; o cartão com cinco informações;
      o menu do Parceiros com 3 listras. */
-  .sc-perto { display: inline-flex; align-items: center; gap: 6px; margin: 10px 14px 0; padding: 4px 0; border: 0; background: none; color: var(--green); font-family: var(--fonte-texto); font-size: 14px; font-weight: 600; cursor: pointer; }
   .rcard-onde { color: var(--muted); }
   .rcard-selos { display: block; font-size: 13px; color: var(--muted); }
   .rcard-promo { color: var(--gold-text); }
@@ -3418,19 +3417,16 @@
   .pc-menu-btn.menu-btn { flex-direction: column; gap: 5px; }
   .pc-menu-btn.menu-btn > span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--green); }
 
-  /* Regra 268: a caixa de busca como a do Booking, com as abas sublinhadas em
-     cima (como o Airbnb); as academias da inicial em cartões com foto; "Busque
-     pelo tipo de quadra" e os bairros da cidade. */
-  .searchcard { padding: 0; }
-  .sc-tabs { display: flex; gap: 24px; padding: 0 16px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
-  .sc-tabs::-webkit-scrollbar { display: none; }
-  .sc-tab { flex-shrink: 0; min-height: 48px; padding: 12px 0 9px; border: 0; border-bottom: 3px solid transparent; background: none; font-family: var(--fonte-texto); font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
-  .sc-tab.on { color: var(--green); border-bottom-color: var(--green); }
-  label.sc-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: text; }
-  .sc-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
-  .sc-input { padding: 4px 0 2px; font-weight: 500; }
-  .sc-perto { display: flex; width: 100%; min-height: 52px; margin: 0; padding: 0 16px; gap: 12px; border: 0; border-bottom: 1px solid var(--border); font-size: 15px; text-align: left; }
-  .sc-foot { padding: 14px 16px 16px; }
+  /* Regra 268: as academias da inicial em cartões com foto; "Busque pelo tipo
+     de quadra" e os bairros da cidade. Regra 269: a caixa de busca do Trivago
+     (a de antes da regra 263); a linha do que se procura abre a lista; o logo
+     do menu do tamanho do logo do alto. */
+  .sc-locate { flex-shrink: 0; width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  label.sc-row { cursor: pointer; }
+  .sc-field .sc-label { display: block; }
+  .menu-marca { gap: 10px; font-size: 24px; }
+  .menu-marca .logo-mark { width: 44px; height: 44px; }
+  .menu-marca .logo-nome-svg { width: auto; height: 0.81em; }
   .home-strip .mini-home { flex: 0 0 240px; }
   .mini-home .mini-photo { height: 140px; }
   .mini-home .mini-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; }
@@ -10538,27 +10534,33 @@ function totalQuadras(c) {
 }
 
 // Bloco de busca no formato do Trivago: linhas empilhadas + botão grande.
-// Regra 268 ("não gostei muito da barra de pesquisa"): como a caixa de busca do
-// Booking e as abas do Airbnb em cima da busca. O que se procura vira abas
-// sublinhadas no alto da caixa (sem caixa dentro de caixa); o campo ocupa a linha
-// inteira e tocar em qualquer ponto dele abre o teclado; "Usar minha localização"
-// é uma linha só (sem o alvo repetido dentro do campo); e o botão fecha a caixa.
+// Regra 269 ("deixe parecido com o do Trivago, estava legal antes"): a caixa de
+// busca volta ao desenho do Trivago, como era antes da regra 263: uma linha para
+// onde (com o alvo da localização à direita), outra para o que a pessoa procura
+// (lista que abre, com a seta) e o botão.
 function renderSearchCard() {
   const modalidade = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : "";
   const buscando = state.searchStatus === "loading";
   return `
     <div class="searchcard">
-      <div class="sc-tabs" role="group" aria-label="O que você procura">
-        ${[{ key: "", label: "Aula e locação" }, ...MODALIDADE_OPTS].map(m => `<button type="button" class="sc-tab ${modalidade === m.key ? "on" : ""}" data-sc-modalidade="${m.key}" aria-pressed="${modalidade === m.key}">${m.label}</button>`).join("")}
+      <div class="sc-row">
+        <span class="sc-icon">${icon('search', 18, 'var(--muted)')}</span>
+        <div class="sc-field">
+          <div class="sc-label">Onde você quer jogar</div>
+          <input class="sc-input" id="cep-input" placeholder="CEP, endereço ou ponto de referência" value="${esc(state.cep)}" />
+        </div>
+        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização">${buscando ? bolaGirando(18) : icon('locate', 18, 'var(--green)')}</button>
       </div>
-      <label class="sc-row" for="cep-input">
-        <span class="sc-icon">${icon('search', 20, 'var(--green)')}</span>
+      <label class="sc-row" for="sc-modalidade">
+        <span class="sc-icon">${icon('ball', 18, 'var(--muted)')}</span>
         <span class="sc-field">
-          <span class="sc-label">Onde você quer jogar</span>
-          <input class="sc-input" id="cep-input" placeholder="CEP, bairro ou endereço" autocomplete="off" enterkeyhint="search" value="${esc(state.cep)}" />
+          <span class="sc-label">O que você procura</span>
+          <select class="sc-input sc-select" id="sc-modalidade">
+            ${[{ key: "", label: "Aula e locação" }, ...MODALIDADE_OPTS].map(m => `<option value="${m.key}" ${modalidade === m.key ? "selected" : ""}>${m.label}</option>`).join("")}
+          </select>
         </span>
+        <span class="sc-caret" aria-hidden="true">▼</span>
       </label>
-      <button type="button" class="sc-perto" id="locate-btn">${buscando ? bolaGirando(18) : icon('locate', 18, 'var(--green)')} Usar minha localização</button>
       <div class="sc-foot">
         <button class="sc-go" id="search-btn" ${buscando ? "disabled" : ""}>
           ${buscando ? bolaGirando(16) + " Buscando" : "Buscar academias"}
@@ -11002,7 +11004,7 @@ function demoBusca() {
         <rect class="cursor" x="356" y="105" width="1.6" height="15" fill="var(--green)"/>
         <rect x="239" y="140" width="162" height="34" rx="9" fill="var(--green)"/>
         <text x="320" y="162" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">Buscar academias</text>
-        <text x="320" y="200" font-size="10" fill="var(--muted)" text-anchor="middle">ou toque em “Usar minha localização”</text>
+        <text x="320" y="200" font-size="10" fill="var(--muted)" text-anchor="middle">ou toque no alvo e use o GPS</text>
       </g>
 
       <g class="cena cena2">
@@ -16647,13 +16649,8 @@ function renderMenu() {
                 // Sem "Área do GuiaTennis" (02/10/2026): o admin entra pelo
                 // mesmo "Entrar" de todo mundo, com o e-mail dele.
                 : ""}
-          <p class="menu-links">
-            <button type="button" data-menu="porque">Por que o GuiaTennis</button>
-            <button type="button" data-menu="sobre">Sobre o GuiaTennis</button>
-            <button type="button" data-menu="feedback">Feedback</button>
-            <button type="button" data-menu="termos">Termos de Uso</button>
-            <button type="button" data-menu="privacidade">Privacidade</button>
-          </p>
+          ${/* Regra 269: "Por que", "Sobre", "Feedback", "Termos" e "Privacidade" saem
+               do menu; ficam no rodapé de todas as páginas, onde se procuram. */ ""}
           <p class="menu-versao">guiatennis.com.br</p>
         </div>
       </aside>
@@ -25658,8 +25655,8 @@ const CHAT_TEMAS = [
       // Quando é a busca ou a localização que não funciona, a dica certa é
       // esta, não a do "Algo não funcionou".
       "localizacao nao", "gps nao", "busca nao", "pesquisa nao", "nao acho", "nao encontro"],
-    r: "Na página inicial, digite o bairro, o endereço ou o CEP e toque em Buscar academias — ou toque em “Usar minha localização”. A lista começa pela mais perto; em Filtros, escolha piso, quadra coberta, preço, nota e comodidades.",
-    d: "Vamos por outro caminho: digite só o CEP ou o nome do bairro. Quando “Usar minha localização” não acha você, o navegador pode estar bloqueando a localização: permita a localização para o site nas configurações dele.",
+    r: "Na página inicial, digite o bairro, o endereço ou o CEP e toque em Buscar academias — ou toque no alvo para usar a sua localização. A lista começa pela mais perto; em Filtros, escolha piso, quadra coberta, preço, nota e comodidades.",
+    d: "Vamos por outro caminho: digite só o CEP ou o nome do bairro. Quando o alvo não acha você, o navegador pode estar bloqueando a localização: permita a localização para o site nas configurações dele.",
     a: [{ t: "Buscar quadras", ir: "menu:search" }] },
   { id: "reservar", onde: "jogadores", t: "Reservar ou marcar aula",
     p: ["reserv", "agendar", "agenda", "marcar", "alugar", "locar", "locacao", "horario livre", "disponivel", "disponibilidade", "aula experimental"],
@@ -28988,12 +28985,8 @@ function attachEvents() {
 
   document.querySelectorAll("[data-tipo-home]").forEach(b => { b.onclick = () => abrirTipoDaHome(Number(b.dataset.tipoHome)); });
 
-  document.querySelectorAll("[data-sc-modalidade]").forEach(b => {
-    b.onclick = () => {
-      state.modalidadeFilters = b.dataset.scModalidade ? [b.dataset.scModalidade] : [];
-      render();
-    };
-  });
+  const scModalidade = document.getElementById("sc-modalidade");
+  if (scModalidade) scModalidade.onchange = () => { state.modalidadeFilters = scModalidade.value ? [scModalidade.value] : []; };
 
   // ---- gaveta de filtros ----
   const drawerClose = document.getElementById("drawer-close");

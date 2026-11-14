@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 14/11/2026 (regra 268)
+**Atualizado em:** 14/11/2026 (regra 269)
 
 | | |
 |---|---|
@@ -474,10 +474,11 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
 
-**14/11/2026, regra 268:** a caixa de busca refeita (abas sublinhadas, o campo
-inteiro, "Usar minha localização" numa linha, o botão) e a página inicial com mais
-conteúdo (cartões com foto, "Busque pelo tipo de quadra", bairros da cidade). Sem
-SQL. Testes afetados e o novo `inicial-com-conteudo.js` sem falha.
+**14/11/2026, regras 268 e 269:** a página inicial com mais conteúdo (cartões com
+foto, "Busque pelo tipo de quadra", bairros da cidade); a caixa de busca de volta ao
+desenho do Trivago (o de antes da regra 263); no menu, o logo do tamanho certo e
+sem os links do fim (ficam no rodapé). Sem SQL. Testes afetados e o novo
+`inicial-com-conteudo.js` sem falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
 PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
@@ -1853,6 +1854,23 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `/quadras/<cidade>/<bairro>`). Sem SQL. Teste novo `inicial-com-conteudo.js` (14);
   `ajuda-na-busca`, `busca-e-ficha`, `buscas-e-avisos`, `melhores-avaliadas`,
   `menu-e-home`, `perto-de-voce`, `publico` e `tempo` sem falha.
+- **269 (14/11) — a busca do Trivago de volta e o menu** ("deixe parecido com o do
+  Trivago, estava legal antes. E no menu, o logo do GuiaTennis está muito pequeno.
+  Eu acho que pode tirar também o que aparece lá embaixo"). **Caixa de busca**
+  (`renderSearchCard`) como era antes da regra 263: a linha "Onde você quer jogar"
+  com o alvo à direita (`#locate-btn.sc-locate`) e a linha "O que você procura" com
+  a lista que abre (`#sc-modalidade`, "Aula e locação | Aulas | Locação", com a seta
+  ▼; a linha toda é um `<label>`), e "Buscar academias". Saem as abas da regra 268 e
+  o "Usar minha localização" escrito da 267; o vídeo e o chat de ajuda voltam a
+  dizer "toque no alvo". **Menu:** o logo com 44 px e o nome com 24 px; o nome
+  estava espremido pelo `.menu-marca svg { width: 30px }` antigo, que pegava também o
+  desenho do nome (`.menu-marca .logo-nome-svg` corrige). Saem do fim do menu "Por que
+  o GuiaTennis", "Sobre", "Feedback", "Termos de Uso" e "Privacidade" (`.menu-links`):
+  ficam no rodapé de todas as páginas, como no Booking, no Airbnb e no Trivago, e o
+  menu fica só com o que a pessoa faz. Testes: `inicial-com-conteudo.js` (15),
+  `menu-e-home`, `nota-do-guia` e `sobre` (o "Feedback" e o "Sobre" agora conferidos
+  no rodapé), mais `ajuda-na-busca`, `busca-e-ficha`, `buscas-e-avisos`, os `chat-*`,
+  `links`, `pensamento-e-home`, `perto-de-voce`, `publico` e `tempo`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

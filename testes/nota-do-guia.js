@@ -30,7 +30,7 @@ const naoChamouANota = (page) => page.evaluate(() => !window.__rpcs.some(r => r.
   ok(!/4,7|como funcionam|sem filtro|média/i.test(pag) && await page.evaluate(() => document.title === 'Feedback | GuiaTennis'), 'a página não mostra nota nem explica como funciona — ' + pag);
   await page.evaluate(() => { state.showMenu = true; render(); });
   await page.waitForTimeout(200);
-  ok((await texto(page, '[data-menu="feedback"]')) === 'Feedback', 'o menu tem "Feedback"');
+  ok(!(await page.$('.menu-drawer [data-menu="feedback"]')) && (await texto(page, '.sitefooter [data-ir-feedback]')) === 'Feedback', '"Feedback" no rodapé, não mais no fim do menu (regra 269)');
   await browser.close();
   ({ browser, page } = await abrir({ q: 'avaliacoes' }));
   await page.waitForTimeout(700);

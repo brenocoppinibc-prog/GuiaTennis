@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 14/11/2026 (regra 270)
+**Atualizado em:** 15/11/2026 (regra 271)
 
 | | |
 |---|---|
@@ -39,6 +39,10 @@ para o histórico).
   que foi feito e o que depende dele. **Sempre economizar o limite de uso**
   (pedido fixo de 11/11/2026): ler só o trecho necessário, rodar só os testes
   afetados, sem print nem ferramenta extra sem pedido, resposta curta.
+- **O site sempre precisa vender, para todos, da melhor maneira** (pedido fixo de
+  15/11/2026): para o jogador (achar e chamar a academia) e para a academia (o
+  Parceiros e os planos), sem empurrar e sem enfeite; toda decisão de design pesa
+  isso.
 - Quer **comparação com referências internacionais grandes** (Google,
   Booking, Airbnb, hoteis.com, trivago, Instagram, Nubank, Shopify…) nas
   decisões de site, Instagram e marketing — **na conversa**. No site,
@@ -480,7 +484,9 @@ foto, "Busque pelo tipo de quadra", bairros da cidade); a caixa de busca de volt
 desenho do Trivago (o de antes da regra 263); no menu, o logo do tamanho certo e
 sem os links do fim (ficam no rodapé); a revisão de acabamento (regra 270: busca
 compacta nos resultados, sem academia repetida na inicial, ficha sem repetir o
-topo, "menos de 100 m"). Sem SQL.
+topo); regra 271 (15/11): a distância exata de volta, filtros rápidos na busca, a
+opção única da ficha na linha inteira e "Comparação" sem o símbolo nos Filtros.
+Sem SQL.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
 PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
@@ -1889,10 +1895,23 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   endereço" (o antigo cortava no celular). **Ficha:** os destaques do topo
   (`htDestaques`) não repetem a nota, a distância e as quadras (já estão no topo):
   ficam o preço e as comodidades, com "Empréstimo de raquete". **Distância:** abaixo de
-  100 m, "menos de 100 m" (era "0 m de você"); os metros de 10 em 10. Sem SQL.
+  100 m, "menos de 100 m" (desfeito na 271: a distância exata). Sem SQL.
   Teste novo `acabamento.js` (10). **Bateria completa de 14/11 (até a regra 270):
   2.585 verificações**, uma falha: o `falhas.js` ainda esperava "Não consegui
   conferir o e-mail" (texto da regra 265), corrigido.
+- **271 (15/11) — distância exata, filtros rápidos e a opção única** ("acho legal
+  mostrar a distância exata"; "sim para as duas sugestões"; "o site SEMPRE precisa
+  vender para todos mas da melhor maneira"; "tirar o símbolo de comparação dos
+  filtros"). `distanceText` volta à distância exata (desfaz o "menos de 100 m" da
+  270). **Filtros rápidos** acima da lista da busca (`filtrosRapidos`,
+  `FILTROS_RAPIDOS`, `.frap`: Aulas, Locação, Saibro, Rápida, Coberta; só o que
+  alguma academia tem; um toque liga, fica verde com ✓ e vai no link; o ligado não se
+  repete nos filtros ativos, `noRapido`), como os "filtros populares" do Booking.
+  **Ficha:** com uma opção só, o cartão de "Opções para jogar" ocupa a linha inteira
+  (foto 16:9 e o botão largo). **Filtros:** "Comparação" sem o ícone. Testes:
+  `acabamento.js` (15), `ver-no-mapa` ("0 m de você" de volta), `avisos-rapidos`,
+  `busca-e-ficha`, `buscas-e-avisos`, `catalogo`, `ficha-hoteis`, `links`,
+  `parceiros` e `premium-patrocinado`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

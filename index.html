@@ -3450,6 +3450,14 @@
   .sc-buscar { flex-shrink: 0; width: 48px; height: 48px; border: 0; border-radius: 12px; background: var(--green); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .sc-buscar:disabled { opacity: 0.65; cursor: default; }
   .mini-home .mini-score .sbadge { color: #fff; }
+  /* Regra 271: os filtros rápidos da busca; na ficha, a opção única ocupa a
+     linha inteira (o botão de chamar fica largo, como o de reservar do Booking). */
+  .filtros-rapidos { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 12px 20px 4px; }
+  .filtros-rapidos::-webkit-scrollbar { display: none; }
+  .frap { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text); font-family: var(--fonte-texto); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .frap.on { background: var(--green); border-color: var(--green); color: #fff; }
+  .ht-quartos > .ht-quarto:only-child { grid-column: 1 / -1; }
+  .ht-quartos > .ht-quarto:only-child .ht-quarto-foto { aspect-ratio: 16 / 9; }
 </style>
 </head>
 <body>
@@ -20434,6 +20442,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
       </div>
     </div>
 
+    ${filtrosRapidos()}
     ${state.view === "map" ? "" : linhaSalvarBusca()}
     ${renderActiveChips()}
 
@@ -20550,9 +20559,8 @@ function avatarDoAutor(r) {
 
 function distanceText(km) {
   if (typeof km !== "number" || !isFinite(km)) return "";
-  // Regra 270: "0 m de você" vira "menos de 100 m de você"; os metros de 10 em 10.
-  if (km < 0.1) return "menos de 100 m";
-  return km < 1 ? `${Math.round(km * 100) * 10} m` : `${km.toFixed(1).replace(".", ",")} km`;
+  // Regra 271: a distância exata ("acho legal mostrar a distância exata").
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace(".", ",")} km`;
 }
 
 
@@ -20648,7 +20656,7 @@ function filterGroupsHtml() {
       <p class="fgroup-title">Suas listas</p>
       ${optBtn("f-favorites", "", state.favoritesOnly, "Favoritas",
         semOutros.filter(c => isFavorite(c.id)).length)}
-      ${optBtn("f-compareonly", "", state.compareOnly, `${icon('comparar', 14, 'var(--green)')} Comparação`,
+      ${optBtn("f-compareonly", "", state.compareOnly, "Comparação",
         semOutros.filter(c => isComparing(c.id)).length)}
     </div>
   `;
@@ -20693,14 +20701,43 @@ function renderSortMenu() {
 }
 
 // Chips dos filtros ligados, cada um com × pra desligar só aquele.
+// Regra 271: os filtros mais usados logo acima da lista, um toque liga e outro
+// desliga, como os "filtros populares" do Booking e as etiquetas do alto da
+// busca do Airbnb e do Google Maps. O que está ligado aqui não se repete nos
+// filtros ativos embaixo. O resto continua em "Filtros".
+const FILTROS_RAPIDOS = [
+  { lista: "modalidadeFilters", key: "aulas_proprias", label: "Aulas" },
+  { lista: "modalidadeFilters", key: "locacao", label: "Locação" },
+  { lista: "pisoFilters", key: "saibro", label: "Saibro" },
+  { lista: "pisoFilters", key: "rapida", label: "Rápida" },
+  { lista: "coberturaFilters", key: "coberta", label: "Coberta" },
+];
+function filtrosRapidos() {
+  const tem = f => state.allCourts.some(c => (f.lista === "modalidadeFilters" ? c.modalidades : f.lista === "pisoFilters" ? c.pisos : c.cobertura)?.includes(f.key));
+  const lista = FILTROS_RAPIDOS.map((f, i) => ({ ...f, i })).filter(tem);
+  if (lista.length < 2) return "";
+  return `<div class="filtros-rapidos" role="group" aria-label="Filtros rápidos">
+    ${lista.map(f => { const on = state[f.lista].includes(f.key); return `<button type="button" class="frap ${on ? "on" : ""}" data-filtro-rapido="${f.i}" aria-pressed="${on}">${on ? icon('check', 14, 'currentColor') + " " : ""}${f.label}</button>`; }).join("")}
+  </div>`;
+}
+function ligarFiltroRapido(i) {
+  const f = FILTROS_RAPIDOS[i];
+  if (!f) return;
+  const atual = state[f.lista];
+  state[f.lista] = atual.includes(f.key) ? atual.filter(k => k !== f.key) : [...atual, f.key];
+  syncUrl(false);
+  render();
+}
+const noRapido = (lista, k) => FILTROS_RAPIDOS.some(f => f.lista === lista && f.key === k);
+
 function renderActiveChips() {
   const chips = [];
   if (state.priceMax !== null) chips.push({ label: `Até R$ ${state.priceMax} por hora`, attr: `data-clear="price"` });
   if (state.minRating > 0) chips.push({ label: `Nota ${state.minRating.toString().replace(".", ",")}+`, attr: `data-clear="rating"` });
   if (state.maxDistance !== null) chips.push({ label: `Até ${state.maxDistance} km`, attr: `data-clear="distance"` });
-  state.pisoFilters.forEach(k => chips.push({ label: PISO_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="piso" data-key="${k}"` }));
-  state.coberturaFilters.forEach(k => chips.push({ label: COBERTURA_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="cobertura" data-key="${k}"` }));
-  state.modalidadeFilters.forEach(k => chips.push({ label: MODALIDADE_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="modalidade" data-key="${k}"` }));
+  state.pisoFilters.filter(k => !noRapido("pisoFilters", k)).forEach(k => chips.push({ label: PISO_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="piso" data-key="${k}"` }));
+  state.coberturaFilters.filter(k => !noRapido("coberturaFilters", k)).forEach(k => chips.push({ label: COBERTURA_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="cobertura" data-key="${k}"` }));
+  state.modalidadeFilters.filter(k => !noRapido("modalidadeFilters", k)).forEach(k => chips.push({ label: MODALIDADE_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="modalidade" data-key="${k}"` }));
   state.amenityFilters.forEach(k => chips.push({ label: FILTER_AMENITY_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="amenity" data-key="${k}"` }));
   if (state.favoritesOnly) chips.push({ label: "Favoritas", attr: `data-clear="favorites"` });
   if (state.compareOnly) chips.push({ label: "Só em comparação", attr: `data-clear="compareonly"` });
@@ -29009,6 +29046,7 @@ function attachEvents() {
     render();
   };
 
+  document.querySelectorAll("[data-filtro-rapido]").forEach(b => { b.onclick = () => ligarFiltroRapido(Number(b.dataset.filtroRapido)); });
   document.querySelectorAll("[data-tipo-home]").forEach(b => { b.onclick = () => abrirTipoDaHome(Number(b.dataset.tipoHome)); });
 
   const scModalidade = document.getElementById("sc-modalidade");

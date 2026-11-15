@@ -37,15 +37,38 @@ const { abrir, ok } = require('./harness');
   }));
   ok(r.compacta && r.botao === 'Buscar academias', 'nos resultados, a caixa numa linha (onde, alvo e a lupa)');
   ok(r.linha.includes('A partir de Pinheiros, São Paulo') && !r.sub, 'o "a partir de" aparece uma vez só — ' + r.sub);
-  ok(/menos de 100 m de você/.test(r.distancia) && !/\b0 m\b/.test(r.distancia), '"menos de 100 m de você" no lugar de "0 m" — ' + r.distancia);
+  ok(/0 m de você/.test(r.distancia), 'regra 271: a distância exata ("0 m de você") — ' + r.distancia);
   r = await page.evaluate(() => [distanceText(0.04), distanceText(0.347), distanceText(1.26)]);
-  ok(r.join('|') === 'menos de 100 m|350 m|1,3 km', 'distâncias — ' + r.join('|'));
+  ok(r.join('|') === '40 m|347 m|1,3 km', 'distâncias exatas — ' + r.join('|'));
+
+  // Regra 271: filtros rápidos acima da lista; o ligado não se repete embaixo.
+  r = await page.evaluate(() => [...document.querySelectorAll('.filtros-rapidos .frap')].map(b => b.innerText.trim()));
+  ok(r.join('|') === 'Aulas|Locação|Saibro|Rápida|Coberta', 'filtros rápidos — ' + r.join('|'));
+  await page.click('.frap:has-text("Locação")');
+  await page.waitForTimeout(300);
+  r = await page.evaluate(() => ({ nomes: getResults().map(c => c.name), on: document.querySelector('.frap.on')?.innerText.trim(), link: location.search, ativo: document.querySelector('.active-chips')?.innerText || '' }));
+  ok(r.nomes.join() === 'Quadra Locação' && r.on === 'Locação' && /modalidade=locacao/.test(r.link) && !/Locação/.test(r.ativo), 'um toque filtra, fica verde, vai no link e não se repete nos ativos — ' + r.link);
+  await page.click('.frap:has-text("Locação")');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => getResults().length === 2 && !document.querySelector('.frap.on')), 'outro toque desliga');
+
+  // "Comparação" nos Filtros sem o símbolo.
+  await page.evaluate(() => { state.showFilters = true; render(); });
+  await page.waitForTimeout(200);
+  ok(await page.evaluate(() => { const b = document.querySelector('.f-compareonly'); return !!b && !b.querySelector('svg') && b.innerText.includes('Comparação'); }), '"Comparação" nos Filtros sem o símbolo');
+  await page.evaluate(() => { state.showFilters = false; render(); });
 
   // Ficha: os destaques não repetem a nota, a distância nem as quadras.
   await page.evaluate(() => openCourt('a1'));
   await page.waitForTimeout(1200);
   r = await page.evaluate(() => [...document.querySelectorAll('.ht-destaque-t')].map(p => p.innerText.trim()));
   ok(!r.some(t => /de você|quadras?$|Excelente|Muito bom|Sem avaliações/.test(t)) && r.includes('Empréstimo de raquete'), 'destaques sem repetir o topo, com as comodidades — ' + r.join(' | '));
+
+  // Regra 271: a opção única ocupa a linha inteira.
+  await page.evaluate(() => openCourt('a2'));
+  await page.waitForTimeout(1000);
+  r = await page.evaluate(() => { const g = document.getElementById('ht-quartos'), c = g.querySelector('.ht-quarto'); return { n: g.children.length, larga: Math.abs(c.getBoundingClientRect().width - g.getBoundingClientRect().width) < 2 }; });
+  ok(r.n === 1 && r.larga, 'com uma opção só, o cartão ocupa a linha inteira');
 
   await browser.close();
 })();

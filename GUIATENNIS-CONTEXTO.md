@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 273)
+**Atualizado em:** 15/11/2026 (regra 274)
 
 | | |
 |---|---|
@@ -489,7 +489,8 @@ opção única da ficha na linha inteira e "Comparação" sem o símbolo nos Fil
 regra 272: o WhatsApp da busca no lugar certo (botão "Chamar" no cartão,
 "Compartilhar" na barra e "Peça o preço a várias academias" dentro da lista); regra
 273: a trilha com a bolinha só no cadastro (e-mail novo), a comparação com "Chamar as
-N" e "Compartilhar", os números do Parceiros sem encavalar. Sem SQL.
+N" e "Compartilhar", os números do Parceiros sem encavalar; regra 274: "Aberto agora"
+no cartão e nos filtros rápidos, e a comodidade "Iluminação para jogar à noite". Sem SQL.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
 PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
@@ -1950,6 +1951,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   e-mail), mais `rascunho`, `percurso`, `senha`, `confianca-na-ficha`,
   `comparacao-tudo`, `comparar-e-avisos`, `whatsapp-das-academias`, `veracidade` e
   outros 13 da comparação, Favoritas e ficha, sem falha.
+- **274 (15/11) — o que os diretórios de quadra mostram** ("revise detalhe por
+  detalhe, compare com o Trivago e os diretórios grandes de quadra de tênis"). Do
+  Google Maps e dos localizadores de quadra (USTA, ClubSpark/LTA, Playtomic):
+  **"Aberto agora · até 22h"** (ou "Fechado agora") no cartão da busca
+  (`linhaDoHorario`, `horaCurta`, `.rcard-hora`; sem horário informado, nada); o filtro
+  rápido **"Aberto agora"** (`state.abertoAgora`, `aberto=1` no link, conta nos filtros,
+  sai no "Limpar"); a comodidade nova **"Iluminação para jogar à noite"**
+  (`iluminacao` em `AMENITY_OPTS`, ícone `lampada`; entra sozinha no cadastro, nos
+  Filtros e na comparação; sem SQL, `amenities` não tem trava), o filtro rápido
+  "Iluminada", "Quadras iluminadas" em "Busque pelo tipo de quadra" e a iluminação
+  logo depois do preço nos destaques da ficha. Teste novo `aberto-e-iluminacao.js`
+  (8, com o relógio fixo); `acabamento.js` com o "Aberto agora" nos rápidos.
 
 ## 11. WhatsApp e mensagem para as academias
 

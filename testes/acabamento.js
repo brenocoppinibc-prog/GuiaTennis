@@ -43,7 +43,7 @@ const { abrir, ok } = require('./harness');
 
   // Regra 271: filtros rápidos acima da lista; o ligado não se repete embaixo.
   r = await page.evaluate(() => [...document.querySelectorAll('.filtros-rapidos .frap')].map(b => b.innerText.trim()));
-  ok(r.join('|') === 'Aulas|Locação|Saibro|Rápida|Coberta', 'filtros rápidos — ' + r.join('|'));
+  ok(r.join('|') === 'Aulas|Locação|Saibro|Rápida|Coberta|Aberto agora', 'filtros rápidos (com "Aberto agora", regra 274) — ' + r.join('|'));
   await page.click('.frap:has-text("Locação")');
   await page.waitForTimeout(300);
   r = await page.evaluate(() => ({ nomes: getResults().map(c => c.name), on: document.querySelector('.frap.on')?.innerText.trim(), link: location.search, ativo: document.querySelector('.active-chips')?.innerText || '' }));

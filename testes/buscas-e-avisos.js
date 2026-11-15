@@ -14,7 +14,7 @@ async function buscar(page, termo) {
   let { browser, page } = await abrir();
   await buscar(page, 'Pinheiros');
   let t = await texto(page, '.busca-salvar');
-  ok(t.includes('Salvar busca') && t.includes('WhatsApp') && !t.includes('academias novas'), 'na busca, o "Salvar busca" e o menu "WhatsApp", sem a frase ao lado (regra 264) — ' + t.slice(0, 60));
+  ok(t.includes('Salvar busca') && t.includes('Compartilhar') && !t.includes('academias novas'), 'na busca, o "Salvar busca" e o menu "Compartilhar" (regra 272), sem a frase ao lado (regra 264) — ' + t.slice(0, 60));
   await page.click('#salvar-busca');
   await page.waitForTimeout(250);
   ok(await page.evaluate(() => state.jogadorTela === 'email' && /salvar a busca/.test(state.jogadorMotivo) && typeof state.depoisDeEntrar === 'function'),

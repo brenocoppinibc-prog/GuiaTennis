@@ -3458,6 +3458,17 @@
   .frap.on { background: var(--green); border-color: var(--green); color: #fff; }
   .ht-quartos > .ht-quarto:only-child { grid-column: 1 / -1; }
   .ht-quartos > .ht-quarto:only-child .ht-quarto-foto { aspect-ratio: 16 / 9; }
+  /* Regra 272: o atalho do cartão da busca é um botão de verdade (como o "Ver
+     oferta" do Trivago); "Compartilhar" no lugar do "WhatsApp ▾"; o convite para
+     pedir o preço a várias academias dentro da lista. */
+  .offer-linha .offer-contact { min-height: 44px; padding: 0 16px; border-radius: 12px; background: var(--green); color: #fff; font-size: 15px; font-weight: 600; gap: 8px; text-decoration: none; }
+  .offer-linha .offer-contact:hover { text-decoration: none; background: var(--green-dark, var(--green)); }
+  .convite-precos { margin: 0 0 16px; padding: 18px 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); box-shadow: var(--shadow); }
+  .convite-precos-t { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.3; }
+  .convite-precos-s { margin: 6px 0 14px; font-size: 14px; line-height: 1.45; color: var(--muted); }
+  .convite-precos-b { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; background: var(--green); color: #fff; font-family: var(--fonte-texto); font-size: 16px; font-weight: 600; cursor: pointer; }
+  .busca-salvar .wa-acoes-menu { width: min(300px, calc(100vw - 40px)); }
+  .wa-acoes-menu .tbtn { white-space: normal; text-align: left; }
 </style>
 </head>
 <body>
@@ -5212,15 +5223,18 @@ function acoesDoWhatsapp(origem) {
   const courts = academiasDaOrigem(origem);
   if (!courts.length) return "";
   const comWa = comWhatsappDaOrigem(courts);
-  // Regra 264: na busca, os três atalhos ficam atrás de um botão "WhatsApp",
-  // ao lado do "Salvar busca", para a lista não começar cheia de botões.
+  // Regra 264: na busca, os atalhos ficam atrás de um botão, ao lado do "Salvar
+  // busca". Regra 272 ("o local que aparece o WhatsApp não está fazendo muito
+  // sentido"): o botão diz o que faz, "Compartilhar", como o "Compartilhar" do
+  // alto das listas do Airbnb e do Booking; "Falar com as N" sai daqui e vira o
+  // convite dentro da lista (convitePedirPrecos).
   const menu = origem === "busca";
   return `
-    ${menu ? `<details class="wa-mais"><summary class="tbtn">${icon('whatsapp', 14, 'currentColor')} WhatsApp <span aria-hidden="true">▾</span></summary>` : ""}
+    ${menu ? `<details class="wa-mais"><summary class="tbtn">${icon('share', 14, 'currentColor')} Compartilhar <span aria-hidden="true">▾</span></summary>` : ""}
     <div class="wa-acoes ${menu ? "wa-acoes-menu" : ""}" data-wa-origem="${origem}">
-      <button type="button" class="tbtn" data-wa-lista="${origem}">${icon('whatsapp', 14, 'currentColor')} Mandar para o meu WhatsApp</button>
-      ${comWa.length >= 2 ? `<button type="button" class="tbtn" data-wa-varias="${origem}">${icon('phone', 14, 'currentColor')} Falar com ${comWa.length === courts.length && comWa.length < VARIAS_MAX ? "todas" : `as ${comWa.length}`}</button>` : ""}
-      ${comWa.length ? `<button type="button" class="tbtn" data-wa-contatos="${origem}">${icon('pessoa', 14, 'currentColor')} Salvar ${comWa.length === 1 ? "o contato" : "os contatos"}</button>` : ""}
+      <button type="button" class="tbtn" data-wa-lista="${origem}">${icon('whatsapp', 14, 'currentColor')} ${menu ? "Mandar a lista para o meu WhatsApp" : "Mandar para o meu WhatsApp"}</button>
+      ${comWa.length >= 2 && !menu ? `<button type="button" class="tbtn" data-wa-varias="${origem}">${icon('phone', 14, 'currentColor')} Falar com ${comWa.length === courts.length && comWa.length < VARIAS_MAX ? "todas" : `as ${comWa.length}`}</button>` : ""}
+      ${comWa.length ? `<button type="button" class="tbtn" data-wa-contatos="${origem}">${icon('pessoa', 14, 'currentColor')} Salvar ${comWa.length === 1 ? "o contato" : "os contatos"}${menu ? " no celular" : ""}</button>` : ""}
     </div>${menu ? "</details>" : ""}`;
 }
 function urlDoSite(caminho, origem) { return location.origin + caminho + (origem ? `${caminho.includes("?") ? "&" : "?"}utm_source=${origem}` : ""); }
@@ -20491,12 +20505,35 @@ function ligarListaQueCresce() {
   io.observe(mais);
   window.__listaIO = io;
 }
+// Regra 272: "Peça o preço a várias academias" depois do terceiro cartão (ou do
+// último, se forem menos), como o "receba orçamentos de vários" dos sites de
+// serviço e o "contatar vários corretores" do Zillow: o jogador compara mais
+// rápido e as academias recebem mais chamadas. Uma mensagem pronta para cada
+// uma; a pessoa envia pelo WhatsApp, uma por uma (abrirFalarComVarias).
+function convitePedirPrecos(results) {
+  if (state.view === "map" || isAdmin) return "";
+  const comWa = comWhatsappDaOrigem(results);
+  if (comWa.length < 2) return "";
+  const n = comWa.length;
+  return `
+    <div class="convite-precos">
+      <p class="convite-precos-t">Peça o preço a várias academias de uma vez</p>
+      <p class="convite-precos-s">Uma mensagem pronta para ${n === results.length ? (n === 2 ? "as duas" : `as ${n}`) : `as ${n} primeiras`} desta lista. Você envia pelo WhatsApp e compara as respostas.</p>
+      <button type="button" class="convite-precos-b" data-wa-varias="busca">${icon('whatsapp', 18, '#fff')} Chamar ${n === 2 ? "as duas" : `as ${n}`} no WhatsApp</button>
+    </div>`;
+}
+function comConvite(cartoes, results) {
+  const convite = convitePedirPrecos(results);
+  if (!convite) return cartoes.join("");
+  const k = Math.min(3, cartoes.length);
+  return [...cartoes.slice(0, k), convite, ...cartoes.slice(k)].join("");
+}
 function cartoesDaBusca(results, topBadge) {
   const n = limiteDaLista(results);
   const topo = patrocinadasDoTopo(results);
-  if (!topo.length || results.length <= topo.length) return results.slice(0, n).map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")).join("") + maisDaLista(results, n);
+  if (!topo.length || results.length <= topo.length) return comConvite(results.slice(0, n).map((c, i) => renderCard(c, (i === 0 && results.length > 1) ? topBadge : "")), results) + maisDaLista(results, n);
   const titulo = { distance: "Mais perto de você", recomendados: "Recomendadas", price: "Menor preço", rating: "Melhor avaliadas", reviews: "Mais avaliadas", courts: "Mais quadras" }[effectiveSort()] || "Outras academias";
-  return topo.map(c => renderCard(c, "")).join("") + `<p class="resultados-titulo">${esc(titulo)}</p>` + results.slice(0, n).map(c => renderCard(c, "")).join("") + maisDaLista(results, n);
+  return topo.map(c => renderCard(c, "")).join("") + `<p class="resultados-titulo">${esc(titulo)}</p>` + comConvite(results.slice(0, n).map(c => renderCard(c, "")), results) + maisDaLista(results, n);
 }
 
 // ---------- componentes da interface de busca (estilo Trivago) ----------
@@ -20886,9 +20923,9 @@ function renderCard(c, badge) {
             : `<div class="offer-um"><strong class="offer-um-val sem-valor">${SEM_PRECO}</strong> <span class="offer-sub">${SEM_PRECO_SUB}</span></div>`}
         </div>
         ${c.reserva
-          ? `<a class="offer-contact" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 15, 'var(--green)')} Reservar</a>`
+          ? `<a class="offer-contact" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 16, '#fff')} Reservar</a>`
           : c.phone
-          ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('whatsapp', 15, 'var(--green)')} WhatsApp</a>`
+          ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('whatsapp', 16, '#fff')} Chamar</a>`
           : ""}
       </div>
     </div>
@@ -25770,8 +25807,8 @@ const CHAT_TEMAS = [
     a: [] },
   // Regra 208 (05/11/2026): as academias no WhatsApp.
   { id: "whatsapp-varias", onde: "jogadores", t: "Mandar para o WhatsApp e falar com várias",
-    p: ["mandar para o whatsapp", "salvar no whatsapp", "salvar contato", "salvar os contatos", "varias academias", "mesma mensagem", "falar com todas", "lista no whatsapp", "compartilhar lista"],
-    r: "Na busca (ao lado de \"Salvar busca\"), na comparação e nas Favoritas: \"Mandar para o meu WhatsApp\" abre o WhatsApp com a lista das academias e o link de cada ficha (escolha \"Você\" para guardar na sua conversa); \"Falar com todas\" manda a mesma mensagem para até 5 academias, uma por uma; e \"Salvar os contatos\" baixa um cartão de contato com o WhatsApp delas, para salvar no celular de uma vez.",
+    p: ["mandar para o whatsapp", "salvar no whatsapp", "salvar contato", "salvar os contatos", "varias academias", "mesma mensagem", "falar com todas", "lista no whatsapp", "compartilhar lista", "pedir preco", "varias de uma vez"],
+    r: "Na busca, em \"Compartilhar\" (ao lado de \"Salvar busca\"), e também na comparação e nas Favoritas: \"Mandar a lista para o meu WhatsApp\" abre o WhatsApp com a lista das academias e o link de cada ficha (escolha \"Você\" para guardar na sua conversa), e \"Salvar os contatos\" baixa um cartão de contato com o WhatsApp delas, para salvar no celular de uma vez. Para pedir o preço a várias academias, use \"Peça o preço a várias academias de uma vez\", no meio da lista da busca: a mesma mensagem, pronta, para até 5 academias, enviada uma por uma.",
     a: [] },
   { id: "avisos-jog", onde: "jogadores", t: "Avisos por e-mail",
     p: ["parar de receber", "nao quero receber", "receber emails", "receber e mails", "notificac", "avisos", "aviso por e mail", "newsletter"],

@@ -21,9 +21,13 @@ const abrirMenuWa = (page) => page.evaluate(() => { const d = document.querySele
   // ---- Na busca, junto do "Salvar busca" ----
   let t = await page.evaluate(() => {
     const linha = document.querySelector('.busca-salvar');
-    return { lista: !!linha?.querySelector('[data-wa-lista]'), salvar: !!linha?.querySelector('#salvar-busca'), varias: linha?.querySelector('[data-wa-varias]')?.innerText || '', contatos: !!linha?.querySelector('[data-wa-contatos]') };
+    const convite = document.querySelector('.results .convite-precos');
+    return { lista: !!linha?.querySelector('[data-wa-lista]'), salvar: !!linha?.querySelector('#salvar-busca'), contatos: !!linha?.querySelector('[data-wa-contatos]'),
+      botao: linha?.querySelector('.wa-mais > summary')?.innerText.trim() || '', variasNaLinha: !!linha?.querySelector('[data-wa-varias]'),
+      convite: convite?.innerText.replace(/\s+/g, ' ').trim() || '' };
   });
-  ok(t.lista && t.salvar && t.contatos, 'na busca, os botões do WhatsApp ficam na linha do "Salvar busca"');
+  ok(t.lista && t.salvar && t.contatos && /^Compartilhar/.test(t.botao) && !t.variasNaLinha, 'regra 272: na linha do "Salvar busca", "Compartilhar" (a lista e os contatos), sem o "Falar com" — ' + t.botao);
+  ok(t.convite.startsWith('Peça o preço a várias academias de uma vez') && /Chamar as duas no WhatsApp/.test(t.convite), 'o "falar com várias" vira o convite dentro da lista — ' + t.convite);
   await abrirMenuWa(page);
   await page.click('.busca-salvar [data-wa-lista]');
   await page.waitForTimeout(200);
@@ -36,7 +40,7 @@ const abrirMenuWa = (page) => page.evaluate(() => { const d = document.querySele
 
   // ---- Falar com todas ----
   await abrirMenuWa(page);
-  const varias = await page.$('.busca-salvar [data-wa-varias]');
+  const varias = await page.$('.results .convite-precos [data-wa-varias]');
   if (varias) {
     await varias.click();
     await page.waitForTimeout(200);

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 271)
+**Atualizado em:** 15/11/2026 (regra 272)
 
 | | |
 |---|---|
@@ -485,8 +485,9 @@ desenho do Trivago (o de antes da regra 263); no menu, o logo do tamanho certo e
 sem os links do fim (ficam no rodapé); a revisão de acabamento (regra 270: busca
 compacta nos resultados, sem academia repetida na inicial, ficha sem repetir o
 topo); regra 271 (15/11): a distância exata de volta, filtros rápidos na busca, a
-opção única da ficha na linha inteira e "Comparação" sem o símbolo nos Filtros.
-Sem SQL.
+opção única da ficha na linha inteira e "Comparação" sem o símbolo nos Filtros;
+regra 272: o WhatsApp da busca no lugar certo (botão "Chamar" no cartão,
+"Compartilhar" na barra e "Peça o preço a várias academias" dentro da lista). Sem SQL.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
 PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
@@ -1912,6 +1913,23 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `acabamento.js` (15), `ver-no-mapa` ("0 m de você" de volta), `avisos-rapidos`,
   `busca-e-ficha`, `buscas-e-avisos`, `catalogo`, `ficha-hoteis`, `links`,
   `parceiros` e `premium-patrocinado`, sem falha.
+- **272 (15/11) — o WhatsApp da busca no lugar certo** ("o local que aparece o
+  WhatsApp não está fazendo muito sentido, muito básico"). **Cartão da busca:** o
+  atalho vira botão verde de verdade (`.offer-linha .offer-contact`, 44 px, ícone
+  branco), "Chamar" com o ícone do WhatsApp (ou "Reservar"), como o "Ver oferta" do
+  Trivago. **Barra do "Salvar busca":** o "WhatsApp ▾" da regra 264 vira
+  **"Compartilhar ▾"** (ícone de compartilhar), com "Mandar a lista para o meu
+  WhatsApp" e "Salvar os contatos no celular" (menu de 300 px, texto quebra). **"Falar
+  com as N"** sai da barra e vira o convite **"Peça o preço a várias academias de uma
+  vez"** depois do terceiro cartão (ou do último), `convitePedirPrecos`/`comConvite`,
+  com "Chamar as N no WhatsApp" (abre a mesma folha `abrirFalarComVarias`); só com 2
+  ou mais academias com WhatsApp, fora do mapa e do admin. Na comparação e nas
+  Favoritas, os três botões continuam como eram. Chat de ajuda ("whatsapp-varias")
+  com o texto novo. Testes: `whatsapp-das-academias` (o convite e o "Compartilhar"),
+  `buscas-e-avisos` e `reserva-online` (textos novos), mais `acabamento`, `catalogo`,
+  `codigo-so-em-disputa`, `ficha-basica`, `lista-de-20`, `parceiros`,
+  `premium-patrocinado`, `promocoes`, `veracidade`, `ver-no-mapa`, `chat-de-ajuda` e
+  `pensamento-e-home`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

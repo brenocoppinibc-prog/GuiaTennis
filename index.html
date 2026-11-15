@@ -3496,6 +3496,8 @@
   .stats-grid { gap: 0 16px; }
   .stat-card { background: none; border: 0; border-top: 1px solid var(--border); border-radius: 0; padding: 14px 0 12px; text-align: left; }
   .stat-lbl { text-transform: none; letter-spacing: 0; font-size: 13px; margin-top: 4px; }
+  /* Regra 279: uma bolinha girando só (a do botão de buscar); o alvo fica parado. */
+  .sc-locate:disabled { opacity: 0.5; cursor: default; }
 </style>
 </head>
 <body>
@@ -10634,7 +10636,7 @@ function renderSearchCard(compacto) {
           <div class="sc-label">Onde você quer jogar</div>
           <input class="sc-input" id="cep-input" placeholder="CEP, bairro ou endereço" enterkeyhint="search" value="${esc(state.cep)}" />
         </div>
-        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização">${buscando ? bolaGirando(18) : icon('locate', 18, 'var(--green)')}</button>
+        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização" ${buscando ? "disabled" : ""}>${icon('locate', 18, 'var(--green)')}</button>
         <button class="sc-buscar" id="search-btn" aria-label="Buscar academias" ${buscando ? "disabled" : ""}>${buscando ? bolaGirando(18) : icon('search', 20, '#fff')}</button>
       </div>
     </div>`;
@@ -10646,7 +10648,7 @@ function renderSearchCard(compacto) {
           <div class="sc-label">Onde você quer jogar</div>
           <input class="sc-input" id="cep-input" placeholder="CEP, bairro ou endereço" enterkeyhint="search" value="${esc(state.cep)}" />
         </div>
-        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização">${buscando ? bolaGirando(18) : icon('locate', 18, 'var(--green)')}</button>
+        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização" ${buscando ? "disabled" : ""}>${icon('locate', 18, 'var(--green)')}</button>
       </div>
       <label class="sc-row" for="sc-modalidade">
         <span class="sc-icon">${icon('ball', 18, 'var(--muted)')}</span>
@@ -20108,7 +20110,7 @@ function urlDoEstado() {
     if (r && (state.cep || "").trim() === termoDaRegiao(r)) caminho = caminhoDaRegiao(r);
     else {
       caminho = "/busca";
-      if ((state.cep || "").trim()) p.set("q", state.cep.trim());
+      if ((state.cep || "").trim() && state.cep !== state.cepDoGps) p.set("q", state.cep.trim());
     }
     filtrosNoLink(p);
   } else if (state.page === "comparar") {
@@ -30707,7 +30709,13 @@ function useMyLocation() {
       try {
         const geo = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
         state.origin = geo;
-        state.cep = "";
+        // Regra 279 ("quando clicar no botão de localização exata, aparecer o CEP
+        // que está sendo procurado"): o campo mostra o CEP do lugar (sem CEP, o
+        // bairro e a cidade). Ele não vai para o link (cepDoGps, em syncUrl).
+        const cepGps = /^\d{8}$/.test(geo.cep || "") ? geo.cep.replace(/^(\d{5})(\d{3})$/, "$1-$2")
+          : geo.bairro && geo.bairro !== "sua região" ? [geo.bairro, geo.cidade].filter(Boolean).join(", ") : "";
+        state.cep = cepGps;
+        state.cepDoGps = cepGps;
         // Busca pelo GPS não vai para o link (nunca a localização exata).
         state.termoBuscado = "";
         state.sortBy = "distance";

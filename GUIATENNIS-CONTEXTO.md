@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 278)
+**Atualizado em:** 15/11/2026 (regra 279)
 
 | | |
 |---|---|
@@ -492,7 +492,8 @@ regra 272: o WhatsApp da busca no lugar certo (botão "Chamar" no cartão,
 N" e "Compartilhar", os números do Parceiros sem encavalar; regra 274: "Aberto agora"
 no cartão e nos filtros rápidos (a comodidade "Iluminação" saiu na 276: "isso é um
 fato"); regra 275: o painel do Parceiros e a Minha conta revistos; regra 277: a
-comodidade "Aceita pets"; regra 278: o painel do admin revisto. Sem SQL. Bateria completa de 15/11
+comodidade "Aceita pets"; regra 278: o painel do admin revisto; regra 279: o CEP no
+campo depois da localização e uma bolinha girando só. Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
@@ -1999,6 +2000,15 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   sem o travessão ("desligado. Você gera o código…"). O menu em grupos e a Visão
   geral ficam como estavam. Testes: os 44 que abrem o admin, sem falha
   (`codigo-pelo-whatsapp` com o texto novo).
+- **279 (15/11) — o CEP da localização e uma bolinha só** ("quando clicar no botão
+  de localização exata, aparecer o CEP que está sendo procurado. E as duas bolas
+  girando ao mesmo tempo não fica tão legal"). `useMyLocation`: o campo mostra o CEP do
+  Nominatim ("05422-030"; sem CEP, "Bairro, Cidade"); `state.cepDoGps` guarda o que
+  veio do GPS e o `syncUrl` não leva esse texto para o link (a busca pelo GPS continua
+  fora do link; o que a pessoa digita vai, como antes). Buscando, só o botão de
+  buscar gira; o alvo fica parado e desligado (nas duas caixas, a inteira e a
+  compacta). Teste novo `localizacao-cep.js` (5); `ajuda-na-busca`, `buscas-e-avisos`,
+  `busca-bairro-cidade`, `links` e outros, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

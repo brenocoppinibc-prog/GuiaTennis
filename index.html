@@ -3469,6 +3469,13 @@
   .convite-precos-b { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; background: var(--green); color: #fff; font-family: var(--fonte-texto); font-size: 16px; font-weight: 600; cursor: pointer; }
   .busca-salvar .wa-acoes-menu { width: min(300px, calc(100vw - 40px)); }
   .wa-acoes-menu .tbtn { white-space: normal; text-align: left; }
+  /* Regra 273: "Informar um problema" com o canto do sistema (12 px), sem a
+     pílula; nos números do Parceiros, "1 em cada" pequeno em cima do número (o
+     "1 em cada 14" encostava no "15%"); "Chamar as N" em destaque na comparação. */
+  .ht-bt-contorno { border-radius: 12px; min-height: 48px; padding: 0 22px; font-size: 16px; border-color: var(--border); }
+  .pc-faixa-pre { display: block; font-size: 13px; font-weight: 600; line-height: 1.2; opacity: 0.9; }
+  .pc-faixa-itens strong { white-space: nowrap; }
+  .wa-chamar-todas { margin: 4px 0 10px; }
 </style>
 </head>
 <body>
@@ -5229,6 +5236,15 @@ function acoesDoWhatsapp(origem) {
   // alto das listas do Airbnb e do Booking; "Falar com as N" sai daqui e vira o
   // convite dentro da lista (convitePedirPrecos).
   const menu = origem === "busca";
+  // Regra 273: na comparação e nas Favoritas, o mesmo desenho: "Compartilhar ▾"
+  // (a lista e os contatos) e, em destaque, "Chamar as N no WhatsApp".
+  if (!menu) return `
+    ${comWa.length >= 2 ? `<button type="button" class="convite-precos-b wa-chamar-todas" data-wa-varias="${origem}">${icon('whatsapp', 18, '#fff')} Chamar ${comWa.length === 2 ? "as duas" : `as ${comWa.length}`} no WhatsApp</button>` : ""}
+    <details class="wa-mais"><summary class="tbtn">${icon('share', 14, 'currentColor')} Compartilhar <span aria-hidden="true">▾</span></summary>
+    <div class="wa-acoes wa-acoes-menu" data-wa-origem="${origem}">
+      <button type="button" class="tbtn" data-wa-lista="${origem}">${icon('whatsapp', 14, 'currentColor')} Mandar a lista para o meu WhatsApp</button>
+      ${comWa.length ? `<button type="button" class="tbtn" data-wa-contatos="${origem}">${icon('pessoa', 14, 'currentColor')} Salvar ${comWa.length === 1 ? "o contato" : "os contatos"} no celular</button>` : ""}
+    </div></details>`;
   return `
     ${menu ? `<details class="wa-mais"><summary class="tbtn">${icon('share', 14, 'currentColor')} Compartilhar <span aria-hidden="true">▾</span></summary>` : ""}
     <div class="wa-acoes ${menu ? "wa-acoes-menu" : ""}" data-wa-origem="${origem}">
@@ -7976,9 +7992,10 @@ function linhasComparacao(courts) {
     ]},
     { titulo: "Localização", linhas: [
       { rot: "Bairro", vals: courts.map(c => ({ txt: esc([c.bairro, c.cidade].filter(Boolean).join(", ")) || "—" })) },
-      { rot: "Distância", melhor: "menor", vals: courts.map((c, i) => ({
-        txt: distanceText(dists[i]) || "Busque um endereço",
-        num: typeof dists[i] === "number" ? dists[i] : null })) },
+      // Regra 273: sem lugar buscado, a linha sai (repetia "Busque um endereço").
+      ...(dists.some(d => typeof d === "number") ? [{ rot: "Distância", melhor: "menor", vals: courts.map((c, i) => ({
+        txt: distanceText(dists[i]) || "—",
+        num: typeof dists[i] === "number" ? dists[i] : null })) }] : []),
       { rot: "Como chegar", vals: courts.map(c => { const a = acessoFicha(c); return { txt: a.fachada || a.entrada ? "Fachada e entrada na ficha" : "—" }; }) },
     ]},
     { titulo: "Estrutura", linhas: [
@@ -12174,7 +12191,8 @@ function pcNumerosDoSite(revelar = false) {
       <h2 class="display pc-faixa-t">Jogadores já escolhem onde jogar por aqui</h2>
       <p class="pc-faixa-s">Quem entra no GuiaTennis está procurando aula ou quadra: compara as academias da região e chama direto no WhatsApp. Veja o caminho de quem chega:</p>
       <div class="pc-faixa-itens" style="--n:${itens.length}">
-        ${itens.map(i => `<div><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
+        ${/* Regra 273: "1 em cada" pequeno em cima e o número grande, para caber lado a lado no celular. */ ""}
+        ${itens.map(i => { const m = /^(1 em cada) (.+)$/.exec(i.valor); return `<div><strong>${m ? `<small class="pc-faixa-pre">${m[1]}</small> ${esc(m[2])}` : esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`; }).join("")}
       </div>
       ${comoFuncionamOsNumeros()}
       <div class="pc-faixa-cta">
@@ -12713,7 +12731,7 @@ function pcCadastro() {
     const passo = state.pcEmailPasso;
     return `
       <section class="pc-pagina pc-estreita">
-        ${pcEtapas(0)}
+        ${/* Regra 273: no e-mail e na senha, sem a trilha; ela aparece no cadastro. */ ""}
         ${cabeca}
         ${escolhida ? `
           <div class="pc-card pc-reivindicar">
@@ -17512,9 +17530,13 @@ function renderJogadorSheet() {
     ${sub ? `<p class="pc-sec-sub">${sub}</p>` : ""}
     <div class="pc-card jog-card"${tela === "criar" || tela === "conta" ? ` data-aviso-sair="${tela === "conta" ? "na sua conta" : "no cadastro"}" data-rascunho-de="__jog"` : ""}>${corpo}</div>`;
   const subPadrao = esc(state.jogadorMotivo || "Com a conta, você avalia as academias e escolhe os avisos por e-mail.");
-  const trilha = tela === "conta" || tela === "esqueci" ? "" : trilhaTenis(
-    ["E-mail", tela === "entrar" ? "Senha" : tela === "criar" || tela === "codigo" ? "Seus dados" : "Senha ou cadastro", tela === "entrar" ? "Pronto" : "Confirmar"],
-    tela === "email" ? 0 : tela === "codigo" ? 2 : 1, "Etapas para entrar");
+  // Regra 273 ("se ele não tem conta, aparecerá a barra para criar todo o
+  // cadastro… se já tem conta… falar para ele entrar na senha. E aí pronto"):
+  // como o Booking e o Airbnb, o e-mail vem sozinho; a trilha com a bolinha só
+  // aparece no cadastro (e-mail novo), e quem já tem conta vê só a senha.
+  const trilha = tela === "criar" || tela === "codigo"
+    ? trilhaTenis(["E-mail", "Seus dados", "Confirmar"], tela === "codigo" ? 2 : 1, "Etapas do cadastro")
+    : "";
   let miolo = "";
   if (tela === "email") miolo = pagina("Entre ou crie a sua conta", subPadrao, `
     <label class="field-label" for="jog-email" style="margin-top:0">E-mail</label>
@@ -17522,7 +17544,7 @@ function renderJogadorSheet() {
     ${blocoSugestaoEmail(f.email)}
     ${erro}
     <button type="button" class="cta-btn cta-primary" id="jog-continuar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${salvando("Procurando") || "Continuar"}</button>`);
-  if (tela === "entrar") miolo = pagina("Entre ou crie a sua conta", subPadrao, `
+  if (tela === "entrar") miolo = pagina("Entre na sua conta", "", `
     ${emailFixo}
     ${contaAchada}
     <label class="field-label" for="jog-senha">Senha</label>

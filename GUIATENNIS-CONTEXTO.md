@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 272)
+**Atualizado em:** 15/11/2026 (regra 273)
 
 | | |
 |---|---|
@@ -487,7 +487,9 @@ compacta nos resultados, sem academia repetida na inicial, ficha sem repetir o
 topo); regra 271 (15/11): a distância exata de volta, filtros rápidos na busca, a
 opção única da ficha na linha inteira e "Comparação" sem o símbolo nos Filtros;
 regra 272: o WhatsApp da busca no lugar certo (botão "Chamar" no cartão,
-"Compartilhar" na barra e "Peça o preço a várias academias" dentro da lista). Sem SQL.
+"Compartilhar" na barra e "Peça o preço a várias academias" dentro da lista); regra
+273: a trilha com a bolinha só no cadastro (e-mail novo), a comparação com "Chamar as
+N" e "Compartilhar", os números do Parceiros sem encavalar. Sem SQL.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
 PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
@@ -1930,6 +1932,24 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `codigo-so-em-disputa`, `ficha-basica`, `lista-de-20`, `parceiros`,
   `premium-patrocinado`, `promocoes`, `veracidade`, `ver-no-mapa`, `chat-de-ajuda` e
   `pensamento-e-home`, sem falha.
+- **273 (15/11) — o e-mail primeiro e a revisão do resto** ("se ele não tem conta,
+  aparecerá a barra para criar todo o cadastro… se já tem conta… falar para ele
+  entrar na senha. E aí pronto"; "retrabalhe no site inteiro como um baita
+  designer"). **Entrar (jogadores):** a tela do e-mail vem sozinha, sem a trilha; e-mail
+  novo abre o cadastro com a trilha "E-mail | Seus dados | Confirmar" (a bolinha na
+  segunda etapa, depois na terceira no código); quem já tem conta vê "Entre na sua
+  conta" e a senha, sem trilha (como o Booking e o Airbnb). **Parceiros:** o mesmo, a
+  trilha "Sua conta…" sai da tela do e-mail e da senha (`pcEtapas(0)` saiu dali).
+  **Comparação e Favoritas:** o mesmo desenho da busca: "Chamar as N no WhatsApp" em
+  destaque (`.wa-chamar-todas`) e "Compartilhar ▾" (a lista e os contatos); na
+  comparação, sem lugar buscado, a linha "Distância" sai (repetia "Busque um
+  endereço"). **Ficha:** "Informar um problema" com o canto de 12 px (`.ht-bt-contorno`
+  sem a pílula). **Parceiros, números:** lado a lado como pedido em 24/09, com "1 em
+  cada" pequeno em cima do número (`.pc-faixa-pre`; o "1 em cada 14" encostava no
+  "15%"). Testes: `jogador`, `parceiros`, `cadastro-normal-parceiros` (sem a trilha no
+  e-mail), mais `rascunho`, `percurso`, `senha`, `confianca-na-ficha`,
+  `comparacao-tudo`, `comparar-e-avisos`, `whatsapp-das-academias`, `veracidade` e
+  outros 13 da comparação, Favoritas e ficha, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -159,7 +159,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   // E-mail digitado errado: o site sugere o certo; trilha com a bolinha.
   ({ browser, page } = await abrir());
   await page.evaluate(() => abrirContaJogador('entrar'));
-  ok(await page.evaluate(() => [...document.querySelectorAll('#jogador-overlay .trilha li')].map(l => l.innerText).join('|') === 'E-mail|Senha ou cadastro|Confirmar' && !!document.querySelector('#jogador-overlay .trilha-bola')), 'trilha de tênis: E-mail, Senha ou cadastro, Confirmar');
+  ok(await page.evaluate(() => !document.querySelector('#jogador-overlay .trilha') && !!document.getElementById('jog-email')), 'regra 273: o e-mail vem sozinho, sem a trilha (ainda não se sabe se tem conta)');
   await page.fill('#jog-email', 'bia@gmial.com');
   await page.click('#jog-continuar');
   await page.waitForTimeout(200);
@@ -167,7 +167,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.click('[data-email-sugestao="usar"]');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.jogadorTela === 'criar' && window.__jog.email === 'bia@gmail.com' && document.getElementById('jog-email-escolhido').innerText.includes('bia@gmail.com')), 'usou a sugestão e seguiu, com o e-mail no cartão com "Trocar", como no Parceiros');
-  ok(await page.evaluate(() => document.querySelector('#jogador-overlay .trilha-bola').style.left === '50%'), 'a bolinha andou para a segunda etapa');
+  ok(await page.evaluate(() => document.querySelector('#jogador-overlay .trilha-bola').style.left === '50%' && [...document.querySelectorAll('#jogador-overlay .trilha li')].map(l => l.innerText.replace(/\s+/g, ' ').trim()).join('|').endsWith('Seus dados|Confirmar')), 'e-mail novo: a trilha do cadastro aparece (E-mail, Seus dados, Confirmar), com a bolinha na segunda etapa');
   ok(await page.evaluate(() => sugestaoDeEmail('ana@hotmial.com') === 'ana@hotmail.com' && sugestaoDeEmail('ana@gmail') === 'ana@gmail.com' && sugestaoDeEmail('ana@minhaacademia.com.br') === null), 'sugere hotmail e gmail, e não mexe em domínio próprio');
   await browser.close();
 

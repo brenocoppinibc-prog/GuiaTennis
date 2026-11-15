@@ -3480,6 +3480,17 @@
   .rcard-hora { font-size: 13px; font-weight: 600; }
   .rcard-hora.aberto { color: var(--green-light, var(--green)); }
   .rcard-hora.fechado { color: var(--muted); font-weight: 500; }
+  /* Regra 275: no cartão "Desempenho" do painel, "Ver detalhes" sobe para a linha
+     do título e o número ganha a largura toda (o "7 contatos" quebrava em 3 linhas). */
+  .pc-desempenho-mini { display: grid; grid-template-columns: 36px 1fr auto; column-gap: 12px; row-gap: 4px; align-items: center; }
+  .pc-desempenho-mini .pc-desempenho-txt { display: contents; }
+  .pc-desempenho-mini .pc-desempenho-ic { grid-column: 1; grid-row: 1 / 3; align-self: start; }
+  .pc-desempenho-mini .pc-card-t { grid-column: 2; grid-row: 1; margin: 0; }
+  .pc-desempenho-mini .pc-desempenho-ver { grid-column: 3; grid-row: 1; white-space: nowrap; }
+  .pc-desempenho-mini .pc-card-s { grid-column: 2 / 4; grid-row: 2; margin: 0; }
+  /* Regra 275: no celular, o alto do Parceiros com a conta e o menu passava 1 px
+     da tela (rolava para o lado). */
+  @media (max-width: 420px) { .pc-topo-in { gap: 10px; padding: 12px 16px; } .pc-topo-acoes { gap: 8px; } }
 </style>
 </head>
 <body>
@@ -18580,14 +18591,13 @@ function renderPerfilJogador() {
           <p>Você chamou essas academias. Conte como foi e ajude outros jogadores a escolher.</p>
           <div class="perfil-lista">${paraAvaliar.map(x => item(`data-avaliar-academia="${x.id}"`, 'bubble', x.c.name, "Avaliar", textoDaChamada(x))).join("")}</div>
         </section>` : ""}
-        ${cartaoMinhaNotaDoGuia("jogador", "perfil-cartao perfil-largo")}
         <section class="perfil-cartao">
           <h2>Minhas quadras</h2>
           <div class="perfil-lista">
             ${item('data-menu="favoritas"', 'heart', "Favoritas", q.favoritas.length || "")}
             ${item('data-menu="vistas"', 'historico', "Vistas recentemente", q.vistas.length || "")}
             ${item('data-menu="chamadas"', 'phone', "Academias que você chamou", q.chamadas.length || "")}
-            ${item('data-menu="viagem"', 'map', "Vou viajar", viagem ? viagem.cidade : "Adicionar")}
+            ${item('data-menu="viagem"', 'map', "Vou viajar", viagem ? viagem.cidade : "")}
           </div>
         </section>
         ${blocoBuscasSalvasPerfil()}
@@ -18596,7 +18606,7 @@ function renderPerfilJogador() {
           <div class="perfil-lista">
             <div class="perfil-item" style="cursor:default">${icon('mail', 20, 'var(--text)')}<span>E-mail da conta<small>${esc(jogador.email || "")}</small></span></div>
             ${item('id="jog-trocar-senha"', 'key', "Trocar a senha", "", "Mandamos um código para o seu e-mail")}
-            ${item('data-menu="preferencias"', 'ajustes', "Preferências de busca", textoDaPreferencia(pref) || "Escolher")}
+            ${item('data-menu="preferencias"', 'ajustes', "Preferências de busca", textoDaPreferencia(pref) || "")}
           </div>
         </section>
         <section class="perfil-cartao perfil-largo" id="perfil-dados" data-aviso-sair="nos seus dados" data-rascunho-de="__jog">
@@ -18618,6 +18628,10 @@ function renderPerfilJogador() {
           ${state.jogadorErro ? `<div class="form-error">${icon('warning', 13)} ${esc(state.jogadorErro)}</div>` : ""}
           <button type="button" class="cta-btn cta-primary" id="jog-salvar" style="margin-top:18px;width:100%" ${state.jogadorSalvando ? "disabled" : ""}>${state.jogadorSalvando ? bolaGirando(16) + " Salvando" : "Salvar"}</button>
         </section>
+        ${/* Regra 275: o feedback depois do que é da pessoa (horários, quadras,
+             login e dados), como a "Ajuda e feedback" no fim da conta do Booking
+             e do Airbnb; era o primeiro cartão. */ ""}
+        ${cartaoMinhaNotaDoGuia("jogador", "perfil-cartao perfil-largo")}
       </div>
       <div class="perfil-rodape">
         <button type="button" class="inline-link sair-vermelho" id="jog-sair">Sair da conta</button>
@@ -19799,7 +19813,7 @@ function renderSiteFooter() {
   // contato do GuiaTennis fica na última coluna (pedido de 01/10/2026).
   const cidades = cidadesComQuadra().slice(0, 6);
   return `
-    ${state.page === "feedback" ? "" : caixaDeFeedback(false)}
+    ${state.page === "feedback" || state.page === "perfil" ? "" : caixaDeFeedback(false)}
     <div class="sitefooter">
       <div class="sf-cols">
         ${cidades.length ? `

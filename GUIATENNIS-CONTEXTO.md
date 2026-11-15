@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 274)
+**Atualizado em:** 15/11/2026 (regra 275)
 
 | | |
 |---|---|
@@ -359,8 +359,8 @@ sozinho vira "-", "Sob consulta"), numa linha
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~10 minutos; em
-  segundo plano). Último resultado (14/11/2026, regra 270): **2.585 + 50
-  verificações** (a do `falhas.js` corrigida); antes, 13/11/2026, regra 263: **2.570
+  segundo plano). Último resultado (15/11/2026, regra 274): **2.610 verificações**,
+  nenhuma falha; antes, 14/11/2026, regra 270: 2.585 + 50; antes, 13/11/2026, regra 263: **2.570
   verificações** nos 90 arquivos do navegador, mais `onde.mjs`, `pagamento.mjs`,
   `cnpj.mjs` e `catalogo-meta.mjs`, nenhuma falha (as 3 da primeira rodada eram
   testes com o texto antigo, corrigidos). O `falhas.txt` sempre aparece na lista
@@ -490,7 +490,9 @@ regra 272: o WhatsApp da busca no lugar certo (botão "Chamar" no cartão,
 "Compartilhar" na barra e "Peça o preço a várias academias" dentro da lista); regra
 273: a trilha com a bolinha só no cadastro (e-mail novo), a comparação com "Chamar as
 N" e "Compartilhar", os números do Parceiros sem encavalar; regra 274: "Aberto agora"
-no cartão e nos filtros rápidos, e a comodidade "Iluminação para jogar à noite". Sem SQL.
+no cartão e nos filtros rápidos, e a comodidade "Iluminação para jogar à noite"; regra
+275: o painel do Parceiros e a Minha conta revistos. Sem SQL. Bateria completa de 15/11
+(até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
 PR #5 (este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último
@@ -1963,6 +1965,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   "Iluminada", "Quadras iluminadas" em "Busque pelo tipo de quadra" e a iluminação
   logo depois do preço nos destaques da ficha. Teste novo `aberto-e-iluminacao.js`
   (8, com o relógio fixo); `acabamento.js` com o "Aberto agora" nos rápidos.
+- **275 (15/11) — o painel do Parceiros e a Minha conta** ("agora revise o painel do
+  Parceiros e a Minha conta"). **Painel:** no cartão "Desempenho", "Ver detalhes" sobe
+  para a linha do título e os números ganham a largura toda (o "7 contatos" quebrava
+  em 3 linhas; segue pequeno, embaixo das avaliações, como decidido); o alto do
+  Parceiros no celular passava 1 px da tela (rolava para o lado): menos espaço entre
+  o logo, a conta e o menu abaixo de 420 px. **Minha conta:** "Seu feedback para o
+  GuiaTennis" desce para depois dos dados (era o primeiro cartão; como a "Ajuda e
+  feedback" no fim da conta do Booking e do Airbnb); a caixa "Esta página ajudou
+  você?" não se repete ali; "Vou viajar" e "Preferências de busca" sem o "Adicionar" e
+  o "Escolher" à direita (a regra do menu: só valor que diz algo). Testes:
+  `acessos-em-destaque`, `acesso-academia`, `nota-do-guia`, `sobre`, `jogador`,
+  `perfil-e-avaliar`, `viagem`, `parceiros`, `menu-e-home` e outros 8, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

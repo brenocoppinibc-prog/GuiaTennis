@@ -113,7 +113,7 @@ async function disputaPronta(page, { confirmado = true } = {}) {
   ok(painel.includes('Código da disputa pelo WhatsApp: ligado'), 'em E-mails, a situação do código pelo WhatsApp');
   await page.evaluate(async () => { window.__whatsappLigado = false; window.__whatsapps = []; await carregarSituacaoDosEmails(); });
   painel = await page.evaluate(() => document.body.innerText);
-  ok(painel.includes('desligado — você gera o código e manda do seu WhatsApp') && painel.includes('WHATSAPP_TOKEN'), 'desligado: diz o que falta para ligar');
+  ok(painel.includes('desligado. Você gera o código e manda do seu WhatsApp') && painel.includes('WHATSAPP_TOKEN'), 'desligado: diz o que falta para ligar');
   await browser.close();
 
   // ---- textos ----

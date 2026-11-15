@@ -3491,6 +3491,11 @@
   /* Regra 275: no celular, o alto do Parceiros com a conta e o menu passava 1 px
      da tela (rolava para o lado). */
   @media (max-width: 420px) { .pc-topo-in { gap: 10px; padding: 12px 16px; } .pc-topo-acoes { gap: 8px; } }
+  /* Regra 278: os números das Estatísticas do admin como os da Visão geral: sem a
+     caixa bege dentro do cartão e sem letra maiúscula no rótulo. */
+  .stats-grid { gap: 0 16px; }
+  .stat-card { background: none; border: 0; border-top: 1px solid var(--border); border-radius: 0; padding: 14px 0 12px; text-align: left; }
+  .stat-lbl { text-transform: none; letter-spacing: 0; font-size: 13px; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -25447,7 +25452,7 @@ function situacaoDoWhatsappHtml() {
     <div class="emails-situacao ${w.ligado ? "" : "falta"}">
       <p style="margin:0"><strong>Código da disputa pelo WhatsApp:</strong> ${w.ligado
         ? `ligado${w.real ? "" : " (no teste, só para o número de teste)"} · ${w.enviados_30_dias} ${w.enviados_30_dias === 1 ? "mandado" : "mandados"} em 30 dias${w.falharam ? ` · ${w.falharam} não ${w.falharam === 1 ? "saiu" : "saíram"}` : ""}.`
-        : `desligado — você gera o código e manda do seu WhatsApp. Para ligar, falta ${esc(listaPt(falta))}.`}</p>
+        : `desligado. Você gera o código e manda do seu WhatsApp. Para ligar, falta ${esc(listaPt(falta))}.`}</p>
       ${w.ultimo_erro ? `<p class="fgroup-note" style="margin:4px 0 0">Último erro: ${esc(w.ultimo_erro)}</p>` : ""}
     </div>`;
 }
@@ -27762,11 +27767,14 @@ function admAcademiasHtml() {
   return `
     <section class="adm-bloco">
       <div class="adm-barra">
-        <input type="search" class="form-field adm-busca" id="adm-busca" placeholder="Buscar por nome, bairro ou cidade" value="${esc(state.admBusca || "")}" autocomplete="off" />
+        <input type="search" class="form-field adm-busca" id="adm-busca" placeholder="Nome, bairro ou cidade" value="${esc(state.admBusca || "")}" autocomplete="off" />
         <button type="button" class="cta-btn cta-primary adm-nova" id="adm-nova-academia">${icon('plus', 15, '#fff')} Adicionar academia</button>
       </div>
+      ${/* Regra 278: o filtro sem nenhuma academia não aparece (eram 10 botões em 5
+           linhas, quase todos com 0); "Todas" e o escolhido ficam sempre. */ ""}
       <div class="chip-row adm-filtros">${ADM_FILTROS_ACADEMIA.map(x => {
         const qtas = x.k === "fechadas" ? (state.fechadasAdmin || []).length : todas.filter(c => x.f(c, pausadaAgora)).length;
+        if (!qtas && x.k !== "todas" && filtro.k !== x.k) return "";
         return `<button type="button" class="chip small ${filtro.k === x.k ? "active" : ""}" data-adm-filtro="${x.k}">${x.t} <small>${qtas}</small></button>`;
       }).join("")}</div>
       ${filtro.k === "fechadas" ? academiasFechadasHtml(termo) : `

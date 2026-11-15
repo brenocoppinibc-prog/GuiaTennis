@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 276)
+**Atualizado em:** 15/11/2026 (regra 277)
 
 | | |
 |---|---|
@@ -491,7 +491,8 @@ regra 272: o WhatsApp da busca no lugar certo (botão "Chamar" no cartão,
 273: a trilha com a bolinha só no cadastro (e-mail novo), a comparação com "Chamar as
 N" e "Compartilhar", os números do Parceiros sem encavalar; regra 274: "Aberto agora"
 no cartão e nos filtros rápidos (a comodidade "Iluminação" saiu na 276: "isso é um
-fato"); regra 275: o painel do Parceiros e a Minha conta revistos. Sem SQL. Bateria completa de 15/11
+fato"); regra 275: o painel do Parceiros e a Minha conta revistos; regra 277: a
+comodidade "Aceita pets". Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
@@ -1982,6 +1983,13 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   rápido "Iluminada", de "Quadras iluminadas" na inicial, dos destaques da ficha e o
   ícone `lampada`). Fica o "Aberto agora". Teste `aberto-e-iluminacao.js` virou
   `aberto-agora.js` (6), sem falha.
+- **277 (15/11) — "Aceita pets"** ("eu quero colocar comodidade de pet friendly"):
+  comodidade nova `pet`, "Aceita pets" (como o "Aceita animais de estimação" do
+  Booking e do Airbnb), com o ícone `pata`; entra sozinha no cadastro do Parceiros,
+  nos Filtros, na comparação e na Estrutura da ficha (via `AMENITY_OPTS`), e também
+  em "Busque pelo tipo de quadra" e nos destaques da ficha. Sem SQL (`amenities` sem
+  trava). Teste novo `comodidade-pet.js` (4); `cadastro`, `catalogo`, `parceiros`,
+  `ficha-*`, `comparacao-tudo`, `estacionamento` e outros, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

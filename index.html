@@ -3642,7 +3642,6 @@ function icon(name, size, color) {
     droplet: '<path d="M12 2s7 8.5 7 13a7 7 0 0 1-14 0c0-4.5 7-13 7-13z"/>',
     bolt: '<polygon points="13 2 4 14 11 14 9 22 20 10 13 10 13 2" fill="' + color + '"/>',
     home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.8V20h13V9.8"/>',
-    lampada: '<path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1V16h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/>',
     sun: '<circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/>',
     cap: '<path d="M22 9.5 12 5 2 9.5l10 4.5 10-4.5z"/><path d="M6 11.7v4.3c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.3"/><path d="M22 9.5v5"/>',
     key: '<circle cx="7.5" cy="14.5" r="4.5"/><line x1="11" y1="11" x2="20.5" y2="1.5"/><line x1="15.5" y1="6.5" x2="18.5" y2="9.5"/><line x1="18" y1="4" x2="21" y2="7"/>',
@@ -3733,9 +3732,6 @@ function logoSvg() {
 const AMENITY_OPTS = [
   { key: "estacionamento_gratuito", label: "Estacionamento grátis", icon: icon('parking', 14, 'var(--green)') },
   { key: "estacionamento_pago", label: "Estacionamento pago", icon: icon('parking', 14, 'var(--gold)') },
-  // Regra 274: a iluminação, o primeiro filtro dos localizadores de quadra (USTA,
-  // ClubSpark, Playtomic): diz se dá para jogar à noite.
-  { key: "iluminacao", label: "Iluminação para jogar à noite", icon: icon('lampada', 14, 'var(--gold)') },
   { key: "vestiario", label: "Vestiário", icon: icon('droplet', 14, 'var(--green)') },
   { key: "loja", label: "Loja de materiais", icon: icon('bag', 14, 'var(--green)') },
   { key: "wifi", label: "Wi-Fi", icon: icon('wifi', 14, 'var(--green)') },
@@ -19441,7 +19437,6 @@ const TIPOS_DA_HOME = [
   { titulo: "Quadras de saibro", icone: ["dot", "#B5651D"], filtro: { pisoFilters: ["saibro"] }, tem: c => !!c.pisos?.includes("saibro") },
   { titulo: "Quadras rápidas", icone: ["bolt", "var(--gold)"], filtro: { pisoFilters: ["rapida"] }, tem: c => !!c.pisos?.includes("rapida") },
   { titulo: "Quadras cobertas", icone: ["home", "var(--green)"], filtro: { coberturaFilters: ["coberta"] }, tem: c => !!c.cobertura?.includes("coberta") },
-  { titulo: "Quadras iluminadas", icone: ["lampada", "var(--gold)"], filtro: { amenityFilters: ["iluminacao"] }, tem: c => matchesAmenityFilter(c, "iluminacao") },
   { titulo: "Com estacionamento", icone: ["parking", "var(--green)"], filtro: { amenityFilters: ["estacionamento"] }, tem: c => matchesAmenityFilter(c, "estacionamento") },
   { titulo: "Com vestiário", icone: ["droplet", "var(--green)"], filtro: { amenityFilters: ["vestiario"] }, tem: c => matchesAmenityFilter(c, "vestiario") },
   { titulo: "Empréstimo de raquete", icone: ["bag", "var(--green)"], filtro: { amenityFilters: ["raquete"] }, tem: c => matchesAmenityFilter(c, "raquete") },
@@ -20810,8 +20805,8 @@ const FILTROS_RAPIDOS = [
   { lista: "pisoFilters", key: "saibro", label: "Saibro" },
   { lista: "pisoFilters", key: "rapida", label: "Rápida" },
   { lista: "coberturaFilters", key: "coberta", label: "Coberta" },
-  // Regra 274: os dois que os diretórios de quadra mais usam.
-  { lista: "amenityFilters", key: "iluminacao", label: "Iluminada" },
+  // Regra 274: o "Aberto agora" dos diretórios de quadra e do Google Maps (a
+  // iluminação saiu na regra 276: "isso é um fato").
   { especial: "abertoAgora", label: "Aberto agora" },
 ];
 function filtrosRapidos() {
@@ -20834,7 +20829,6 @@ function ligarFiltroRapido(i) {
   render();
 }
 const noRapido = (lista, k) => FILTROS_RAPIDOS.some(f => f.lista === lista && f.key === k);
-// O "Iluminada" ligado no rápido não se repete nos ativos.
 
 function renderActiveChips() {
   const chips = [];
@@ -22192,7 +22186,6 @@ function htDestaques(c) {
     // da nota, o endereço e os quadros); aqui ficam o preço e o que a academia
     // oferece, como os destaques do Airbnb, que não repetem o título.
     faixa && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: faixa.rotulo },
-    tem("iluminacao") && { ic: 'lampada', cor: 'var(--gold)', t: "Iluminação para jogar à noite" },
     tem("estacionamento_gratuito") && { ic: 'parking', cor: regraDoEstacionamento(c) ? 'var(--gold)' : 'var(--green)', t: estacionamentoRotulo(c) },
     tem("vestiario") && { ic: 'droplet', cor: 'var(--green)', t: "Vestiário" },
     tem("camera") && { ic: 'camera', cor: 'var(--green)', t: "Câmera nas quadras" },

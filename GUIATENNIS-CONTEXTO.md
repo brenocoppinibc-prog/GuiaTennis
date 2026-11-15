@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 275)
+**Atualizado em:** 15/11/2026 (regra 276)
 
 | | |
 |---|---|
@@ -490,8 +490,8 @@ regra 272: o WhatsApp da busca no lugar certo (botão "Chamar" no cartão,
 "Compartilhar" na barra e "Peça o preço a várias academias" dentro da lista); regra
 273: a trilha com a bolinha só no cadastro (e-mail novo), a comparação com "Chamar as
 N" e "Compartilhar", os números do Parceiros sem encavalar; regra 274: "Aberto agora"
-no cartão e nos filtros rápidos, e a comodidade "Iluminação para jogar à noite"; regra
-275: o painel do Parceiros e a Minha conta revistos. Sem SQL. Bateria completa de 15/11
+no cartão e nos filtros rápidos (a comodidade "Iluminação" saiu na 276: "isso é um
+fato"); regra 275: o painel do Parceiros e a Minha conta revistos. Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
@@ -1977,6 +1977,11 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   o "Escolher" à direita (a regra do menu: só valor que diz algo). Testes:
   `acessos-em-destaque`, `acesso-academia`, `nota-do-guia`, `sobre`, `jogador`,
   `perfil-e-avaliar`, `viagem`, `parceiros`, `menu-e-home` e outros 8, sem falha.
+- **276 (15/11) — sem a iluminação** ("tire iluminação para jogar à noite, isso é
+  um fato"): sai a comodidade `iluminacao` da regra 274 (de `AMENITY_OPTS`, do filtro
+  rápido "Iluminada", de "Quadras iluminadas" na inicial, dos destaques da ficha e o
+  ícone `lampada`). Fica o "Aberto agora". Teste `aberto-e-iluminacao.js` virou
+  `aberto-agora.js` (6), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

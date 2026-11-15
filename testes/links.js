@@ -73,8 +73,8 @@ const tela = (page) => page.evaluate(() => ({
   ({ browser, page } = await abrir({ q: 'quadras/sao-paulo/moema' }));
   await page.waitForTimeout(600);
   t = await tela(page);
-  const regiao = await page.evaluate(() => ({ termo: state.cep, h1: document.querySelector('.regiao-titulo')?.innerText || '', origem: !!state.origin, busca: window.__cliques.filter(c => c.tipo === 'busca').length }));
-  ok(t.page === 'search' && regiao.termo === 'Moema, São Paulo' && regiao.origem, 'página da região busca pelo bairro, com os acentos certos — ' + regiao.termo);
+  const regiao = await page.evaluate(() => ({ termo: state.cep, h1: document.querySelector('.regiao-titulo')?.innerText || '', origem: !!state.origin, bairro: state.bairroDaPagina && state.bairroDaPagina.bairro, busca: window.__cliques.filter(c => c.tipo === 'busca').length }));
+  ok(t.page === 'search' && regiao.termo === 'Moema, São Paulo' && !regiao.origem && regiao.bairro === 'Moema', 'página da região mostra direto as academias do bairro (regra 280), com os acentos certos — ' + regiao.termo);
   ok(regiao.h1 === 'Quadras e academias de tênis em Moema, São Paulo' && t.titulo.startsWith('Quadras e academias de tênis em Moema, São Paulo'), 'título da região para o Google');
   ok(t.canonica === 'http://guia.test/quadras/sao-paulo/moema' && !t.robots && t.link === '/quadras/sao-paulo/moema', 'região tem endereço próprio e entra no Google — ' + t.link);
   ok(regiao.busca === 1, 'abrir a região conta como uma busca');

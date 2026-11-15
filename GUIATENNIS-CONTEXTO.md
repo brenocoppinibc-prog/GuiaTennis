@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 279)
+**Atualizado em:** 15/11/2026 (regra 280)
 
 | | |
 |---|---|
@@ -493,7 +493,9 @@ N" e "Compartilhar", os números do Parceiros sem encavalar; regra 274: "Aberto 
 no cartão e nos filtros rápidos (a comodidade "Iluminação" saiu na 276: "isso é um
 fato"); regra 275: o painel do Parceiros e a Minha conta revistos; regra 277: a
 comodidade "Aceita pets"; regra 278: o painel do admin revisto; regra 279: o CEP no
-campo depois da localização e uma bolinha girando só. Sem SQL. Bateria completa de 15/11
+campo depois da localização e uma bolinha girando só; regra 280: "Academias
+recomendadas" de volta no título, a página do bairro direta e o "O que tem por perto"
+mais confiável. Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
@@ -2009,6 +2011,27 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   buscar gira; o alvo fica parado e desligado (nas duas caixas, a inteira e a
   compacta). Teste novo `localizacao-cep.js` (5); `ajuda-na-busca`, `buscas-e-avisos`,
   `busca-bairro-cidade`, `links` e outros, sem falha.
+- **280 (15/11) — recomendadas, bairro direto e o "por perto"** ("por que as
+  academias recomendadas saíram? vamos perder isso para o Premium"; "clicando no
+  bairro… que vá direto para as academias que estão com essa localização e não
+  procurar"; "o mapa de procurar as coisas por perto… muitas vezes não funciona").
+  **Inicial:** o título é sempre "Academias recomendadas" (com o lugar, "Academias
+  recomendadas perto de você"; a regra 267 trocava por "Perto de você" e sumia a
+  palavra que o Premium promete). **Bairro:** `doSearch` com `regiaoLink` de bairro
+  mostra na hora as academias daquele bairro (`state.bairroDaPagina`, comparação por
+  `slugTexto`, filtro no `applyFilters`), como a página da cidade, sem Nominatim;
+  ordem "Recomendadas" (Premium primeiro); linha "Todas as academias de Moema, São
+  Paulo. Ver as de São Paulo"; salva como busca (`buscaAtualParaSalvar` com o link
+  `/quadras/<cidade>/<bairro>`). Bairro sem academia: procura como antes. Vale para os
+  bairros da inicial, "Ver todas as academias em …" da ficha e os links
+  `/quadras/…/…`. **"O que tem por perto":** um quarto espelho do Overpass
+  (`maps.mail.ru`), a consulta mais leve (o `tourism` só com os tipos que a lista
+  mostra), uma segunda tentativa sozinha com 20 s antes do erro e, no erro, "Ou veja no
+  mapa: Restaurantes · Padarias e cafeterias · Pontos turísticos e parques" (Google
+  Maps em volta da academia). **Mapa:** `camadaDoMapa` troca sozinho para os quadros da
+  CARTO (mesmos dados do OpenStreetMap) depois de 3 quadros com erro, nos quatro mapas
+  do site. Teste novo `bairro-direto.js` (10); `links` (a região sem procurar) e outros
+  24, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

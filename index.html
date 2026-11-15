@@ -3498,6 +3498,9 @@
   .stat-lbl { text-transform: none; letter-spacing: 0; font-size: 13px; margin-top: 4px; }
   /* Regra 279: uma bolinha girando só (a do botão de buscar); o alvo fica parado. */
   .sc-locate:disabled { opacity: 0.5; cursor: default; }
+  /* Regra 280: os atalhos para o mapa quando a lista de lugares não carrega. */
+  .ht-poi-fora { margin: 10px 0 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .ht-poi-fora a { color: var(--green); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -6403,6 +6406,24 @@ async function reverseGeocode(lat, lng) {
   return { lat, lng, bairro, cidade, cep: (a.postcode || "").replace(/\D/g, "") };
 }
 
+// Regra 280: os quadros do mapa vêm do OpenStreetMap; se começarem a falhar (o
+// servidor recusa ou demora), o mapa troca sozinho para os da CARTO, feitos com
+// os mesmos dados, e não fica cinza.
+const MAPA_OSM = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const MAPA_RESERVA = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png";
+function camadaDoMapa(opcoes) {
+  const camada = L.tileLayer(MAPA_OSM, opcoes);
+  let erros = 0, trocou = false;
+  camada.on("tileerror", () => {
+    erros += 1;
+    if (trocou || erros < 3) return;
+    trocou = true;
+    camada.setUrl(MAPA_RESERVA);
+    if (camada.options) camada.options.attribution = "© colaboradores do OpenStreetMap · © CARTO";
+  });
+  return camada;
+}
+
 function haversineKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -7164,6 +7185,7 @@ function ordenarPorPerto(lista, deQuem) {
 function applyFilters(list, skip) {
   skip = skip || "";
   if (state.cidadeDaPagina && state.page === "search") list = list.filter(c => mesmaCidade(c.cidade, state.cidadeDaPagina));
+  if (state.bairroDaPagina && state.page === "search") list = list.filter(c => mesmaCidade(c.cidade, state.bairroDaPagina.cidade) && slugTexto(c.bairro || "") === slugTexto(state.bairroDaPagina.bairro));
   if (skip !== "piso" && state.pisoFilters.length) list = list.filter(c => state.pisoFilters.some(p => c.pisos?.includes(p)));
   if (skip !== "cobertura" && state.coberturaFilters.length) list = list.filter(c => state.coberturaFilters.some(cv => c.cobertura?.includes(cv)));
   if (skip !== "amenity" && state.amenityFilters.length) list = list.filter(c => state.amenityFilters.every(a => matchesAmenityFilter(c, a)));
@@ -7428,7 +7450,7 @@ function mountMiniMap(c) {
   if (__miniMap && __miniMap.getContainer() !== el) { __miniMap.remove(); __miniMap = null; }
   if (!__miniMap) {
     __miniMap = L.map(el, { zoomControl: true, scrollWheelZoom: false });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    camadaDoMapa({
       maxZoom: 19,
       attribution: '© colaboradores do OpenStreetMap',
     }).addTo(__miniMap);
@@ -10714,7 +10736,7 @@ function verNoMapaDoGuia(id) {
   if (!c) return;
   if (typeof c.lat !== "number" || typeof c.lng !== "number" || c.status === "pending") { abrirComoChegar(c); return; }
   // A academia precisa aparecer: filtro ou página de cidade que a esconde sai.
-  if (!applyFilters([c]).length) { clearAllFilters(); state.cidadeDaPagina = null; }
+  if (!applyFilters([c]).length) { clearAllFilters(); state.cidadeDaPagina = null; state.bairroDaPagina = null; }
   state.page = "search";
   state.view = "map";
   state.selected = null;
@@ -10933,7 +10955,7 @@ function mountMap(results) {
 
   if (!__map) {
     __map = L.map(el, { zoomControl: true });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    camadaDoMapa({
       maxZoom: 19,
       attribution: '© colaboradores do OpenStreetMap',
     }).addTo(__map);
@@ -19569,20 +19591,21 @@ function buscaAtualParaSalvar() {
   if (state.page !== "search" || state.searchStatus !== "done") return null;
   const o = state.origin;
   const cidade = state.cidadeDaPagina;
-  if (!o && !cidade) return null;
-  const termo = cidade ? cidade : ((state.cep || "").trim() || [o.bairro, o.cidade].filter(Boolean).join(", "));
+  const bairroPag = state.bairroDaPagina; // regra 280: a página do bairro também se salva
+  if (!o && !cidade && !bairroPag) return null;
+  const termo = cidade ? cidade : bairroPag ? termoDaRegiao(bairroPag) : ((state.cep || "").trim() || [o.bairro, o.cidade].filter(Boolean).join(", "));
   if (!termo) return null;
   const p = new URLSearchParams();
-  if (!cidade) p.set("q", termo);
+  if (!cidade && !bairroPag) p.set("q", termo);
   filtrosNoLink(p);
   ["favoritas", "comparando", "ordem", "ver"].forEach(k => p.delete(k));
   const filtros = {};
   ["piso", "cobertura", "modalidade", "comodidades"].forEach(k => { if (p.get(k)) filtros[k] = p.get(k).split(","); });
   ["nota", "preco", "distancia"].forEach(k => { if (p.get(k)) filtros[k] = Number(p.get(k)); });
   const busca = p.toString().replace(/%2C/gi, ",");
-  const caminho = cidade ? caminhoDaRegiao({ cidade }) : "/busca";
+  const caminho = cidade ? caminhoDaRegiao({ cidade }) : bairroPag ? caminhoDaRegiao(bairroPag) : "/busca";
   return {
-    termo: termo.slice(0, 120), bairro: (o && o.bairro) || null, cidade: (o && o.cidade) || cidade || null,
+    termo: termo.slice(0, 120), bairro: (o && o.bairro) || (bairroPag && bairroPag.bairro) || null, cidade: (o && o.cidade) || cidade || (bairroPag && bairroPag.cidade) || null,
     lat: o ? pontoAproximado(o.lat) : null, lng: o ? pontoAproximado(o.lng) : null, filtros,
     link: caminho + (busca ? "?" + busca : ""),
   };
@@ -19924,7 +19947,10 @@ function renderHome() {
 
     ${recomendadas.length ? `
       <div class="home-sec" id="home-recomendadas">
-        <h3 class="display">${ponto ? "Perto de você" : "Academias recomendadas"}</h3>
+        ${/* Regra 280 ("por que as academias recomendadas saíram? vamos perder isso
+             para o Premium"): o título diz sempre "Academias recomendadas" (com o
+             lugar, "perto de você"), como o Premium promete. */ ""}
+        <h3 class="display">Academias recomendadas${ponto ? " perto de você" : ""}</h3>
         <div class="home-strip">${recomendadas.map(c => renderCartaoDaHome(c, ponto ? kmDaHome(c) : null, ehPremium(c))).join("")}</div>
         <button type="button" class="ver-todas" data-ir-busca>Ver todas as academias ›</button>
       </div>` : ""}
@@ -20504,6 +20530,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
         ${renderSearchCard(true)}
         ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
         ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
+        ${state.bairroDaPagina && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} Todas as academias de ${esc(termoDaRegiao(state.bairroDaPagina))}. <a href="${caminhoDaRegiao({ cidade: state.bairroDaPagina.cidade })}" class="inline-link" data-regiao-link data-cidade="${esc(state.bairroDaPagina.cidade)}">Ver as de ${esc(state.bairroDaPagina.cidade)}</a></div>` : ""}
         ${state.cidadeDaPagina && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} Todas as academias de ${esc(state.cidadeDaPagina)}. Para ver as mais perto, digite o bairro, o endereço ou o CEP.</div>` : ""}
         ${perguntaViagem()}
       </div>
@@ -20512,7 +20539,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
     <div class="toolbar">
       <div class="toolbar-left">
         <p class="toolbar-count">${results.length} ${plural(results.length, "academia", "academias")}</p>
-        ${state.origin ? "" : `<p class="toolbar-sub">${state.cidadeDaPagina ? `em ${esc(state.cidadeDaPagina)}` : "Use o CEP ou o GPS para ordenar por distância"}</p>`}
+        ${state.origin ? "" : `<p class="toolbar-sub">${state.bairroDaPagina ? `em ${esc(state.bairroDaPagina.bairro)}` : state.cidadeDaPagina ? `em ${esc(state.cidadeDaPagina)}` : "Use o CEP ou o GPS para ordenar por distância"}</p>`}
       </div>
       <div class="toolbar-right">
         <div class="sortwrap">
@@ -21034,6 +21061,9 @@ const POI_SERVIDORES = [
   "https://overpass.kumi.systems/api/interpreter",
   "https://overpass-api.de/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
+  // Regra 280 ("o mapa de procurar as coisas por perto… muitas vezes ele não
+  // funciona"): mais um espelho público, com CORS.
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ];
 const POI_ESPERA = 12000;   // 12 segundos no total, não por servidor
 
@@ -21081,7 +21111,11 @@ async function carregarPerto(c) {
     }
   }, 6000);
   try {
-    const itens = await buscarPerto(c.lat, c.lng);
+    // Regra 280: se nenhum servidor responder, tenta mais uma vez sozinho, com
+    // mais tempo, antes de mostrar o erro.
+    let itens;
+    try { itens = await buscarPerto(c.lat, c.lng); }
+    catch { await new Promise(ok => setTimeout(ok, 1500)); itens = await buscarPerto(c.lat, c.lng, 20000); }
     state.perto[c.id] = { status: "ok", itens };
     poiCacheGravar(c.id, itens);
   } catch (e) {
@@ -21125,7 +21159,9 @@ function consultaPerto(lat, lng) {
     'nwr["amenity"="cafe"]',
     'nwr["shop"="bakery"]',
     'nwr["leisure"="park"]',
-    'nwr["tourism"]',
+    // Regra 280: só os tipos de turismo que a lista mostra (o "tourism" inteiro
+    // trazia hotéis, placas e obras de arte e fazia a consulta passar do tempo).
+    'nwr["tourism"~"^(attraction|museum|viewpoint|theme_park|zoo|gallery)$"]',
   ].map(f => f + ";").join("");
   return `[out:json][timeout:15][bbox:${s},${w},${n},${e}];(${filtros});out center 250;`;
 }
@@ -21133,7 +21169,7 @@ function consultaPerto(lat, lng) {
 // Os servidores são chamados ao mesmo tempo e vale o primeiro que responder.
 // Antes eram seis tentativas em fila, uma depois da outra: quando todas
 // demoravam, dava dois minutos parado no "carregando".
-async function buscarPerto(lat, lng) {
+async function buscarPerto(lat, lng, espera) {
   const consulta = consultaPerto(lat, lng);
   const motivos = [];
   const cortes = [];
@@ -21143,7 +21179,7 @@ async function buscarPerto(lat, lng) {
     cortes.push(corte);
     // O primeiro vai por POST, que é o jeito recomendado; os outros por GET,
     // que passa em redes que barram POST para domínios desconhecidos.
-    return pedirOverpass(url, consulta, i === 0 ? "POST" : "GET", corte).catch(e => {
+    return pedirOverpass(url, consulta, i === 0 ? "POST" : "GET", corte, espera || POI_ESPERA).catch(e => {
       motivos.push(`${url.replace(/^https:\/\//, "").split("/")[0]}: ${e.message}`);
       throw e;
     });
@@ -21484,6 +21520,8 @@ function htPertoConteudo(c) {
           ? "Este arquivo está aberto direto do computador, e o navegador bloqueia essa consulta fora de um site. No ar, em guiatennis.com.br, a lista aparece normalmente."
           : "Os lugares por perto não carregaram."}</p>
         ${local ? "" : `<button type="button" class="ht-poi-tentar" data-poi-retry="${c.id}">Tentar de novo</button>`}
+        ${/* Regra 280: mesmo sem a lista, a pessoa vê o que tem em volta no mapa do celular. */ ""}
+        ${local || typeof c.lat !== "number" ? "" : `<p class="ht-poi-fora">Ou veja no mapa: ${POI_CATS.map(k => `<a href="https://www.google.com/maps/search/${encodeURIComponent(k.label.split(" e ")[0].toLowerCase())}/@${c.lat},${c.lng},16z" target="_blank" rel="noopener noreferrer">${esc(k.label)}</a>`).join(" · ")}</p>`}
       </div>
       ${diagnosticoPerto(c, dados)}`;
   }
@@ -24097,7 +24135,7 @@ function montarMapaDoPonto() {
   if (!el || !f || typeof f.__lat !== "number") return;
   if (!window.L) { __mapaEsperando = true; carregarLeaflet(); return; }
   __mapaPonto = L.map(el, { zoomControl: true, scrollWheelZoom: false });
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© colaboradores do OpenStreetMap" }).addTo(__mapaPonto);
+  camadaDoMapa({ maxZoom: 19, attribution: "© colaboradores do OpenStreetMap" }).addTo(__mapaPonto);
   const alfinete = L.marker([f.__lat, f.__lng], { draggable: true, autoPan: true,
     icon: L.divIcon({ className: "pin-wrap", iconSize: null, html: `<span class="pin-court"></span>` }) }).addTo(__mapaPonto);
   alfinete.on("dragend", () => { const p = alfinete.getLatLng(); moverPontoDaFicha(p.lat, p.lng); });
@@ -30065,7 +30103,7 @@ function attachEvents() {
   if (statsMapa && window.L && (state.statsPontos || []).length) {
     try {
       const m = L.map(statsMapa, { zoomControl: true, attributionControl: true });
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© colaboradores do OpenStreetMap" }).addTo(m);
+      camadaDoMapa({ maxZoom: 18, attribution: "© colaboradores do OpenStreetMap" }).addTo(m);
       const pts = state.statsPontos.map(p => [p.lat, p.lng]);
       state.statsPontos.forEach(p => L.circleMarker([p.lat, p.lng], { radius: 7, color: "#1F4D3F", weight: 2, fillColor: "#C9A54A", fillOpacity: 0.75 })
         .bindPopup(`${esc(p.onde)}${p.cep ? " · " + esc(p.cep) : ""}<br>${esc(new Date(p.quando).toLocaleString("pt-BR"))}`).addTo(m));
@@ -30781,6 +30819,7 @@ async function doSearch(opcoes = {}) {
   // em 05/10/2026), como as páginas de destino do Booking e do TripAdvisor.
   const r = state.regiaoLink;
   if (r && r.cidade && !r.bairro && termo === termoDaRegiao(r)) {
+    state.bairroDaPagina = null;
     state.cidadeDaPagina = r.cidade;
     state.origin = null;
     state.sortBy = opcoes.ordem || "recomendados";
@@ -30791,7 +30830,28 @@ async function doSearch(opcoes = {}) {
     render();
     return;
   }
+  // Regra 280 ("clicando no bairro… que vá direto para as academias que estão
+  // com essa localização e não procurar"): a página do bairro (/quadras/sao-
+  // paulo/moema, os bairros da inicial, "Ver todas as academias em Moema") mostra
+  // na hora as academias daquele bairro, como a da cidade, sem procurar o
+  // endereço no mapa. Sem academia no bairro, procura como antes.
+  if (r && r.cidade && r.bairro && termo === termoDaRegiao(r)) {
+    const doBairro = state.allCourts.filter(c => mesmaCidade(c.cidade, r.cidade) && slugTexto(c.bairro || "") === slugTexto(r.bairro));
+    if (doBairro.length) {
+      state.cidadeDaPagina = null;
+      state.bairroDaPagina = { cidade: r.cidade, bairro: r.bairro };
+      state.origin = null;
+      state.sortBy = opcoes.ordem || "recomendados";
+      state.searchStatus = "done";
+      contarNavegacao();
+      guardarUltimaBusca({ bairro: r.bairro, cidade: r.cidade }, termo);
+      registrar({ bairro: r.bairro, cidade: r.cidade }, null);
+      render();
+      return;
+    }
+  }
   state.cidadeDaPagina = null;
+  state.bairroDaPagina = null;
   state.searchStatus = "loading";
   render();
   const digitsOnly = termo.replace(/\D/g, "");

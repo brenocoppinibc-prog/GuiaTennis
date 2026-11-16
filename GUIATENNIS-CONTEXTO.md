@@ -86,7 +86,8 @@ para o histórico).
 4. **Este arquivo:** trocar o parágrafo da seção 9 (não acumular),
    acrescentar uma linha na seção 10 e os números de teste.
 5. **Descrição do PR (curta):** desde 02/11, só as regras e os passos
-   novos (o detalhe de 168 a 195 e os passos 1 a 29 estão em
+   novos (a descrição de 05/11 a 16/11, com as regras 212 a 289 e os passos 42 a
+   109, está em `historico/PR5-descricao-05-11-a-16-11-2026.md`; o detalhe de 168 a 195 e os passos 1 a 29 estão em
    `historico/PR5-descricao-28-10-a-02-11-2026.md`; o de 193 a 211 e os passos
    27 a 41, em `historico/PR5-descricao-02-11-a-05-11-2026.md`); uma linha por regra
    nova, o SQL novo e um passo em "Para testar". Salvar com
@@ -2238,8 +2239,8 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   página fica parada e mais clara (`body.pc-trocando`) enquanto a conta recarrega;
   `segurarRender` não deixa a página se desenhar no meio, sem a conta. Sem SQL. Testes:
   `contatos-e-cadastro.js` (novo, 11), `catalogo` (100), `chat-parceiros`, `cadastro`,
-  `plano-e-creditos`, `sobre`, `parceiros`, `links` e `ficha-hoteis`, sem falha; bateria
-  completa rodando no envio.
+  `plano-e-creditos`, `sobre`, `parceiros`, `links` e `ficha-hoteis`, sem falha; **bateria
+  completa de 16/11 (até a 290): 2.655 verificações, nenhuma falha**.
 
 ## 11. WhatsApp e mensagem para as academias
 

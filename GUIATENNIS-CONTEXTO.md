@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 15/11/2026 (regra 280)
+**Atualizado em:** 16/11/2026 (regra 281)
 
 | | |
 |---|---|
@@ -495,7 +495,7 @@ fato"); regra 275: o painel do Parceiros e a Minha conta revistos; regra 277: a
 comodidade "Aceita pets"; regra 278: o painel do admin revisto; regra 279: o CEP no
 campo depois da localização e uma bolinha girando só; regra 280: "Academias
 recomendadas" de volta no título, a página do bairro direta e o "O que tem por perto"
-mais confiável. Sem SQL. Bateria completa de 15/11
+mais confiável; regra 281 (16/11): a mesma caixa de busca na inicial e nos resultados. Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
@@ -2032,6 +2032,12 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   CARTO (mesmos dados do OpenStreetMap) depois de 3 quadros com erro, nos quatro mapas
   do site. Teste novo `bairro-direto.js` (10); `links` (a região sem procurar) e outros
   24, sem falha.
+- **281 (16/11) — a mesma caixa de busca** ("a barra de busca não deve ser
+  diferente do início para a busca"): os resultados voltam a usar a caixa inteira da
+  inicial (onde com o alvo, "O que você procura" e "Buscar academias"); sai a compacta
+  da regra 270 (`renderSearchCard(true)`, `.sc-compacto`, `.sc-buscar`). Testes:
+  `acabamento` (a mesma caixa), `localizacao-cep`, `buscas-e-avisos`, `busca-e-ficha`,
+  `links`, `whatsapp-das-academias` e `bairro-direto`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

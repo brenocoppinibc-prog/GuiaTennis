@@ -29,13 +29,13 @@ const { abrir, ok } = require('./harness');
   await page.evaluate(() => { state.cep = 'Pinheiros, São Paulo'; goSearch(); doSearch(); });
   await page.waitForTimeout(1500);
   r = await page.evaluate(() => ({
-    compacta: !!document.querySelector('.search-header .sc-compacto #cep-input') && !!document.querySelector('.sc-compacto #search-btn') && !document.getElementById('sc-modalidade'),
+    igual: !!document.querySelector('.search-header .searchcard #cep-input') && !!document.querySelector('.search-header #sc-modalidade') && document.getElementById('search-btn')?.innerText.trim() === 'Buscar academias',
     botao: document.getElementById('search-btn')?.getAttribute('aria-label'),
     linha: document.querySelector('.status-info')?.innerText || '',
     sub: document.querySelector('.toolbar-sub')?.innerText || '',
     distancia: document.querySelector('.rcard-onde')?.innerText || document.getElementById('app').innerText.match(/[^\n]*de você[^\n]*/)?.[0] || '',
   }));
-  ok(r.compacta && r.botao === 'Buscar academias', 'nos resultados, a caixa numa linha (onde, alvo e a lupa)');
+  ok(r.igual, 'regra 281: nos resultados, a mesma caixa da inicial (onde, o que procura e "Buscar academias")');
   ok(r.linha.includes('A partir de Pinheiros, São Paulo') && !r.sub, 'o "a partir de" aparece uma vez só — ' + r.sub);
   ok(/0 m de você/.test(r.distancia), 'regra 271: a distância exata ("0 m de você") — ' + r.distancia);
   r = await page.evaluate(() => [distanceText(0.04), distanceText(0.347), distanceText(1.26)]);

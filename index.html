@@ -3444,11 +3444,8 @@
   .home-bairro { display: flex; flex-direction: column; padding: 10px 0; border-top: 1px solid var(--border); color: var(--text); text-decoration: none; min-height: 48px; }
   .home-bairro strong { font-size: 14px; }
   .home-bairro span { font-size: 13px; color: var(--muted); }
-  /* Regra 270: acabamento. A caixa compacta dos resultados; a nota legível nos
-     cartões da inicial. */
-  .sc-compacto .sc-row { border-bottom: 0; padding: 10px 10px 10px 16px; gap: 10px; }
-  .sc-buscar { flex-shrink: 0; width: 48px; height: 48px; border: 0; border-radius: 12px; background: var(--green); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .sc-buscar:disabled { opacity: 0.65; cursor: default; }
+  /* Regra 270: acabamento. A nota legível nos cartões da inicial (a caixa
+     compacta dos resultados saiu na regra 281). */
   .mini-home .mini-score .sbadge { color: #fff; }
   /* Regra 271: os filtros rápidos da busca; na ficha, a opção única ocupa a
      linha inteira (o botão de chamar fica largo, como o de reservar do Booking). */
@@ -10644,24 +10641,9 @@ function totalQuadras(c) {
 // busca volta ao desenho do Trivago, como era antes da regra 263: uma linha para
 // onde (com o alvo da localização à direita), outra para o que a pessoa procura
 // (lista que abre, com a seta) e o botão.
-// Regra 270: na página de resultados, a caixa fica numa linha só (o onde, o alvo
-// e o botão com a lupa), como a barra do alto dos resultados do Trivago e do
-// Booking: a lista aparece logo, e "Aulas"/"Locação" ficam nos Filtros.
-function renderSearchCard(compacto) {
+function renderSearchCard() {
   const modalidade = state.modalidadeFilters.length === 1 ? state.modalidadeFilters[0] : "";
   const buscando = state.searchStatus === "loading";
-  if (compacto) return `
-    <div class="searchcard sc-compacto">
-      <div class="sc-row">
-        <span class="sc-icon">${icon('search', 18, 'var(--muted)')}</span>
-        <div class="sc-field">
-          <div class="sc-label">Onde você quer jogar</div>
-          <input class="sc-input" id="cep-input" placeholder="CEP, bairro ou endereço" enterkeyhint="search" value="${esc(state.cep)}" />
-        </div>
-        <button type="button" class="sc-locate" id="locate-btn" title="Usar minha localização" aria-label="Usar minha localização" ${buscando ? "disabled" : ""}>${icon('locate', 18, 'var(--green)')}</button>
-        <button class="sc-buscar" id="search-btn" aria-label="Buscar academias" ${buscando ? "disabled" : ""}>${buscando ? bolaGirando(18) : icon('search', 20, '#fff')}</button>
-      </div>
-    </div>`;
   return `
     <div class="searchcard">
       <div class="sc-row">
@@ -20527,7 +20509,9 @@ function renderSearchPage(results, activeFilters, topBadge) {
       ${renderCabecalho()}
       ${regiao ? `<h1 class="regiao-titulo display">Quadras e academias de tênis em ${esc(termoDaRegiao(regiao))}</h1>` : ""}
       <div class="search-header">
-        ${renderSearchCard(true)}
+        ${/* Regra 281 ("a barra de busca não deve ser diferente do início para a
+             busca"): a mesma caixa da página inicial (desfaz a compacta da 270). */ ""}
+        ${renderSearchCard()}
         ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
         ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
         ${state.bairroDaPagina && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} Todas as academias de ${esc(termoDaRegiao(state.bairroDaPagina))}. <a href="${caminhoDaRegiao({ cidade: state.bairroDaPagina.cidade })}" class="inline-link" data-regiao-link data-cidade="${esc(state.bairroDaPagina.cidade)}">Ver as de ${esc(state.bairroDaPagina.cidade)}</a></div>` : ""}

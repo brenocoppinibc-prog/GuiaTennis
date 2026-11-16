@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 290)
+**Atualizado em:** 16/11/2026 (regra 291)
 
 | | |
 |---|---|
@@ -2241,6 +2241,20 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `contatos-e-cadastro.js` (novo, 11), `catalogo` (100), `chat-parceiros`, `cadastro`,
   `plano-e-creditos`, `sobre`, `parceiros`, `links` e `ficha-hoteis`, sem falha; **bateria
   completa de 16/11 (até a 290): 2.655 verificações, nenhuma falha**.
+- **291 (16/11) — a nota com confiança** ("notas que têm mais avaliações são mais bem
+  avaliadas; isso também deve contar ao dizer academias recomendadas"): `notaComConfianca`
+  (média bayesiana, como o IMDb, a Amazon e o Google: cada academia ganha
+  `AVALIACOES_DE_PESO` = 5 avaliações com a `NOTA_DO_MEIO` = 3,5; 4,8 com 30 dá 4,61 e
+  passa 5,0 com uma, 3,75). Vale nas **Recomendadas** da busca (`recoScore`), nas
+  **"Academias recomendadas"** da inicial e da viagem (`recomendadasGuia`,
+  `blocoViagemDaConta`), na ordem **"Mais bem avaliadas"** da busca (no empate, quem tem
+  mais avaliações) e nas "Mais bem avaliadas" da inicial (antes, peso 3 com a média de
+  todas, que deixava 5,0 com uma na frente de 4,8 com 30). Textos: o "Ordenar" ("A nota e
+  quantas avaliações: 4,8 com 30 vem antes de 5,0 com uma") e a pergunta "Como funciona a
+  ordem das academias?". Sem SQL. Testes: `nota-com-confianca.js` (novo, 3),
+  `melhores-avaliadas`, `buscas-e-avisos`, `acabamento`, `inicial-com-conteudo`, `viagem`,
+  `premium-patrocinado`, `perto-de-voce`, `busca-e-ficha`, `comparacao-tudo` e
+  `chat-de-ajuda`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

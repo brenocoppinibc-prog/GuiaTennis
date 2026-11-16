@@ -4518,9 +4518,9 @@ const QUADRA_COMBOS = [
 ];
 
 const SORT_OPTS = [
-  { key: "recomendados", label: "Recomendadas", hint: "Equilibra distância, nota, preço e estrutura" },
+  { key: "recomendados", label: "Recomendadas", hint: "Equilibra distância, nota (e quantas avaliações), preço e estrutura" },
   { key: "distance", label: "Mais perto", hint: "Precisa de CEP, endereço ou GPS" },
-  { key: "rating", label: "Mais bem avaliadas", hint: "Maior nota das avaliações feitas no GuiaTennis" },
+  { key: "rating", label: "Mais bem avaliadas", hint: "A nota e quantas avaliações: 4,8 com 30 vem antes de 5,0 com uma" },
   { key: "price", label: "Menor preço", hint: "Pelo menor valor avulso informado (aula ou hora de quadra)" },
   { key: "reviews", label: "Mais avaliadas", hint: "Quem já recebeu mais avaliações" },
   { key: "courts", label: "Mais quadras", hint: "Academias com mais quadras cadastradas" },
@@ -7357,11 +7357,22 @@ function clearAllFilters() {
   state.abertoAgora = false;
 }
 
-// Nota "Recomendados": mistura distância, avaliação, preço e estrutura.
-// Quem não tem o dado fica no meio da tabela em vez de ser punido.
+// Regra 291 ("notas que têm mais avaliações são mais bem avaliadas; isso também
+// deve contar nas academias recomendadas"): a nota com confiança, a média
+// bayesiana do IMDb, da Amazon e do Google, a mesma das "Mais bem avaliadas" da
+// inicial. Cada academia ganha AVALIACOES_DE_PESO avaliações "de mentira" com a
+// nota do meio (3,5): com poucas avaliações, a nota fica perto do meio; com
+// muitas, vale a dela. 4,8 com 30 avaliações (4,61) passa à frente de 5,0 com
+// uma só (3,75); 4,7 com 50 (4,59) passa à frente de 4,9 com 10 (4,43).
+const NOTA_DO_MEIO = 3.5, AVALIACOES_DE_PESO = 5;
+function notaComConfianca(c) {
+  return c.appCount ? (c.appCount * c.appAvg + AVALIACOES_DE_PESO * NOTA_DO_MEIO) / (c.appCount + AVALIACOES_DE_PESO) : null;
+}
+// Nota "Recomendados": mistura distância, avaliação (com confiança), preço e
+// estrutura. Quem não tem o dado fica no meio da tabela em vez de ser punido.
 function recoScore(c, ctx) {
   const dist = typeof c.distanceKm === "number" ? norm(ctx.dists, c.distanceKm, true) : 50;
-  const rate = c.appCount ? norm(ctx.rates, c.appAvg, false) : 42;
+  const rate = c.appCount ? norm(ctx.rates, notaComConfianca(c), false) : 42;
   const pv = parsePriceValue(c);
   const price = isFinite(pv) ? norm(ctx.prices, pv, true) : 45;
   const estrutura = Math.min(100, totalQuadras(c) * 9 + (c.amenities || []).length * 6);
@@ -7385,15 +7396,16 @@ function getResults() {
   } else if (sort === "courts") {
     list = [...list].sort((a, b) => totalQuadras(b) - totalQuadras(a));
   } else if (sort === "rating") {
+    // Regra 291: a nota com confiança; no empate, quem tem mais avaliações.
     list = [...list].sort((a, b) => {
-      const aScore = a.appCount ? a.appAvg : -1;
-      const bScore = b.appCount ? b.appAvg : -1;
-      return bScore - aScore;
+      const aScore = a.appCount ? notaComConfianca(a) : -1;
+      const bScore = b.appCount ? notaComConfianca(b) : -1;
+      return (bScore - aScore) || (b.appCount - a.appCount);
     });
   } else {
     const ctx = {
       dists: list.map(c => c.distanceKm),
-      rates: list.map(c => c.appCount ? c.appAvg : null),
+      rates: list.map(c => c.appCount ? notaComConfianca(c) : null),
       prices: list.map(c => { const v = parsePriceValue(c); return isFinite(v) ? v : null; }),
     };
     list = list
@@ -11211,7 +11223,7 @@ function recomendadasGuia(todas, ponto, evitar) {
   const km = (c) => kmDoPonto(ponto, c);
   const perto = (c) => { const d = km(c); return ponto ? d !== null && d <= PARECIDAS_RAIO_KM : true; };
   const porKm = (a, b) => (km(a) !== null && km(b) !== null ? km(a) - km(b) : 0);
-  const nota = (c) => (c.appCount ? c.appAvg * 10 + Math.min(c.appCount, 20) : 0) + pontosDaFicha(c);
+  const nota = (c) => (c.appCount ? notaComConfianca(c) * 10 + Math.min(c.appCount, 20) : 0) + pontosDaFicha(c);
   const porNota = (a, b) => (nota(b) - nota(a)) || porKm(a, b);
   const premium = todas.filter(ehPremium).sort((a, b) => porKm(a, b) || porNota(a, b));
   const completo = todas.filter(c => ehCompletoNoGuia(c) && !(evitar && evitar.has(c.id)))
@@ -17479,7 +17491,7 @@ function blocoViagemDaConta(todas) {
   const v = proxima || viagensFeitas()[0];
   if (!v) return "";
   const hotel = Number.isFinite(v.lat) && Number.isFinite(v.lng) ? { lat: v.lat, lng: v.lng } : null;
-  const nota = (c) => (c.appCount ? c.appAvg * 10 + Math.min(c.appCount, 20) : 0) + pontosDaFicha(c);
+  const nota = (c) => (c.appCount ? notaComConfianca(c) * 10 + Math.min(c.appCount, 20) : 0) + pontosDaFicha(c);
   const lista = todas.filter(c => mesmaCidade(c.cidade, v.cidade))
     .sort((a, b) => hotel ? (kmDoPonto(hotel, a) ?? Infinity) - (kmDoPonto(hotel, b) ?? Infinity) : nota(b) - nota(a))
     .slice(0, 8);
@@ -19289,7 +19301,7 @@ function perguntasDoSite() {
     // as patrocinadas são do Premium, sem contar como o site faz por dentro.
     {
       q: "Como funciona a ordem das academias?",
-      a: "Na busca, a lista segue a ordem que você escolher: por padrão, da mais perto para a mais longe. As marcadas \"Patrocinado\" são academias do plano Premium que também ficam perto do endereço buscado (a até 10 km) e atendem aos filtros escolhidos; elas aparecem em destaque no topo da busca (e também no lugar delas na lista, sem a marcação) e entre as recomendadas. As \"Mais bem avaliadas\" seguem só a nota dos jogadores.",
+      a: "Na busca, a lista segue a ordem que você escolher: por padrão, da mais perto para a mais longe. As marcadas \"Patrocinado\" são academias do plano Premium que também ficam perto do endereço buscado (a até 10 km) e atendem aos filtros escolhidos; elas aparecem em destaque no topo da busca (e também no lugar delas na lista, sem a marcação) e entre as recomendadas. As \"Mais bem avaliadas\" seguem a nota dos jogadores e quantas avaliações cada academia tem: 4,8 com 30 avaliações vem antes de 5,0 com uma só. Nas recomendadas, a nota conta do mesmo jeito.",
     },
   ];
   if (cidades.length) {
@@ -20081,12 +20093,11 @@ function renderSiteFooter() {
 // só nota 4 ou mais, na ordem da nota ponderada pelo número de avaliações
 // (uma 5,0 com 1 avaliação não passa na frente de uma 4,8 com 40) e, com 3
 // ou mais perto da pessoa, só as de perto ("perto de você").
-const MELHORES_NOTA_MINIMA = 4, MELHORES_PESO = 3;
+const MELHORES_NOTA_MINIMA = 4;
 function melhoresAvaliadas(todas, ehPerto) {
   const avaliadas = todas.filter(c => c.appCount > 0);
   if (!avaliadas.length) return Object.assign([], { perto: false });
-  const media = avaliadas.reduce((s, c) => s + c.appAvg * c.appCount, 0) / avaliadas.reduce((s, c) => s + c.appCount, 0);
-  const ponderada = c => (c.appCount * c.appAvg + MELHORES_PESO * media) / (c.appCount + MELHORES_PESO);
+  const ponderada = c => notaComConfianca(c);
   const boas = avaliadas.filter(c => c.appAvg >= MELHORES_NOTA_MINIMA)
     .sort((a, b) => (ponderada(b) - ponderada(a)) || (b.appCount - a.appCount));
   const perto = ehPerto ? boas.filter(ehPerto) : [];

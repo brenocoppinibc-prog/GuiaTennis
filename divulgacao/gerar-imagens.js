@@ -22,7 +22,8 @@
 //   divulgacao/email-assinatura.png 566×184   — assinatura de e-mail
 //   divulgacao/instagram-stories-fundo.png 1080×1920, instagram-post-fundo.png
 //   e instagram-post-apresentacao.png 1080×1350, facebook-capa.png 1640×624,
-//   logo-horizontal.png / logo-horizontal-branco.png 969×280 e logo-horizontal.svg
+//   logo-horizontal.png / logo-horizontal-branco.png 969×280 e logo-horizontal.svg,
+//   logo-vertical.png / logo-vertical-branco.png 1080×940 e logo-quadrado-com-nome.png
 // Rodar: NODE_PATH=$(npm root -g) node divulgacao/gerar-imagens.js
 // Só algumas: … gerar-imagens.js email-logo.png (os nomes dos arquivos).
 const { chromium } = require('playwright');
@@ -167,6 +168,13 @@ const logoDeitadoSvg = (guia, id) => {
 const logoDeitado = (guia) => `<!doctype html><html><head><meta charset="utf-8">
 <style>html,body{margin:0;background:transparent}svg{display:block}</style></head><body>${logoDeitadoSvg(guia, 'l')}</body></html>`;
 fs.writeFileSync(path.join(__dirname, 'logo-horizontal.svg'), logoDeitadoSvg('#1F4D3D', 'svg') + '\n');
+// Logo em pé (regra 292, "o logo com a nova escrita embaixo"): a raquete e,
+// embaixo, o nome em Poppins; fundo transparente, "Guia" verde (fundo claro)
+// ou branco (fundo escuro). E o quadrado verde com o nome dentro.
+const logoEmPe = (guia) => `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:transparent}body{width:1080px;height:940px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:56px}svg{display:block}</style>
+</head><body>${logo(600, {})}${nomeSvg(120, guia, '#B8933F')}</body></html>`;
+const quadradoComNome = sozinho(1080, { comNome: true });
 
 (async () => {
   const browser = await chromium.launch();
@@ -185,6 +193,9 @@ fs.writeFileSync(path.join(__dirname, 'logo-horizontal.svg'), logoDeitadoSvg('#1
     [path.join(__dirname, 'instagram-post-apresentacao.png'), postApresentacao, 1080, 1350],
     [path.join(__dirname, 'facebook-capa.png'), facebookCapa, 1640, 624],
     [path.join(__dirname, 'logo-horizontal.png'), logoDeitado('#1F4D3D'), LOGO_W, LOGO_H],
+    [path.join(__dirname, 'logo-vertical.png'), logoEmPe('#1F4D3D'), 1080, 940],
+    [path.join(__dirname, 'logo-vertical-branco.png'), logoEmPe('#FFFFFF'), 1080, 940],
+    [path.join(__dirname, 'logo-quadrado-com-nome.png'), quadradoComNome, 1080, 1080],
     [path.join(__dirname, 'logo-horizontal-branco.png'), logoDeitado('#FFFFFF'), LOGO_W, LOGO_H],
   ];
   const so = process.argv.slice(2);

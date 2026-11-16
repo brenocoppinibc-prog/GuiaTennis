@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 291)
+**Atualizado em:** 16/11/2026 (regra 292)
 
 | | |
 |---|---|
@@ -2255,6 +2255,11 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `melhores-avaliadas`, `buscas-e-avisos`, `acabamento`, `inicial-com-conteudo`, `viagem`,
   `premium-patrocinado`, `perto-de-voce`, `busca-e-ficha`, `comparacao-tudo` e
   `chat-de-ajuda`, sem falha.
+- **292 (16/11) — o logo em pé** ("me manda o logo com a nova escrita embaixo"): no
+  `gerar-imagens.js`, `divulgacao/logo-vertical.png` (raquete e, embaixo, o nome em
+  Poppins, "Guia" verde, fundo transparente), `logo-vertical-branco.png` ("Guia" branco,
+  para fundo escuro) e `logo-quadrado-com-nome.png` (o quadrado verde com o nome dentro,
+  1080×1080). Mandados ao Breno. Fora do site; sem teste.
 
 ## 11. WhatsApp e mensagem para as academias
 

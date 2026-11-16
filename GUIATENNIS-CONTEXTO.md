@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 283)
+**Atualizado em:** 16/11/2026 (regra 284)
 
 | | |
 |---|---|
@@ -318,7 +318,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   `supabase/aplicar.sh`: PR para a `main` → banco de **teste**; merge →
   banco de **verdade**. Depois, `supabase/conferir.sh` testa pela API o que
   o site lê. Resultado: Actions → "Banco de dados".
-- **Último SQL:** `20261113130000_nome_do_logo_nos_emails` (95 arquivos na pasta; regra 260: o nome no alto dos e-mails em Arial negrito, "Guia" verde e "Tennis" dourado). Antes, `20261113120000_portugues_dos_emails` (regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
+- **Último SQL:** `20261116120000_fechamento_do_leilao` (96 arquivos na pasta; regra 284: o dia e a hora do fechamento do leilão em `leilao_config`, `proximo_fechamento()` pela config e `mudar_fechamento_do_leilao`, só o admin). Antes, `20261113130000_nome_do_logo_nos_emails` ( regra 260: o nome no alto dos e-mails em Arial negrito, "Guia" verde e "Tennis" dourado). Antes, `20261113120000_portugues_dos_emails` (regra 258: as 18 funções de e-mail com o texto revisado). Antes dele, `20261112120000_chat_com_o_guia_e_relatos`; antes, `20261111120000_feedback_so_o_admin_ve` ( `nota_do_guia` só para o admin, sai a `pagina_das_avaliacoes_do_guia` e o `sitemap()` volta sem `/avaliacoes`). Antes dele, `20261110160000_reserva_online` (coluna `reserva_link`, clique `reserva` e as funções dos números refeitas com ele). O `20261110150000_pagina_das_avaliacoes_do_guia` (regra 235) rodou só no banco de teste e saiu da pasta. O `20261105120000` (a mesma coisa com o Completo vendo quantos guardaram) rodou só no banco de teste e saiu da pasta. Os `20261029120000_textos_das_promocoes` (regra 176) e `20261029150000_textos_curtos_das_promocoes` (título 40, regra 177) rodaram só no banco de teste e saíram da pasta.
 - **Coluna nova que o site lê:** `grant select (coluna) … to anon,
   authenticated` (a leitura é liberada coluna por coluna) e a coluna na
   lista de colunas novas do `lerPublico`. Função chamada pelo visitante
@@ -365,7 +365,8 @@ sozinho vira "-", "Sob consulta"), numa linha
   `cnpj.mjs` e `catalogo-meta.mjs`, nenhuma falha (as 3 da primeira rodada eram
   testes com o texto antigo, corrigidos). O `falhas.txt` sempre aparece na lista
   (força erros de propósito).
-- **Banco local** para o `testes/banco-emails.py` (**953 conferências**,
+- **Banco local** para o `testes/banco-emails.py` (**963 conferências**, 16/11/2026,
+  regra 284; antes, 953,
   nenhuma falha, 13/11/2026, regra 258; o teste roda de novo SQLs antigos, e o
   `20261105130000` recoloca a trava dos cliques de antes: SQL que mexe em
   `cliques_tipo_valido` ou em `numeros_da_academia` é rodado de novo no começo
@@ -498,7 +499,10 @@ recomendadas" de volta no título, a página do bairro direta e o "O que tem por
 mais confiável; regra 281 (16/11): a mesma caixa de busca na inicial e nos resultados;
 regra 282: mandar a lista e salvar os contatos pedem conta; regra 283: cores do horário,
 linhas separadas no cartão e na ficha, foto do catálogo menor e o "Sobre" antes das
-opções. Sem SQL. Bateria completa de 15/11
+opções; regra 284: voltar da ficha na mesma posição, a trilha de volta no "Cadastrar
+minha academia" e o admin escolhe quando o leilão fecha (SQL
+`20261116120000_fechamento_do_leilao`, aplicado no banco local; o "Banco de dados" do
+PR roda no banco de teste). Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
@@ -2072,6 +2076,25 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   21:9, com `overflow: hidden` (a foto passava da proporção). Testes: `aberto-agora`
   (10: fecha em breve, cores, ficha), `acabamento` (as três linhas), `ficha-hoteis`
   (a ordem nova), `catalogo`, `ficha-basica` e outros, sem falha.
+- **284 (16/11) — voltar no lugar, a trilha no cadastro e o fechamento do leilão**
+  ("ao sair da ficha, voltar na mesma posição que clicou ao entrar"; "tirou a barra de
+  progresso? não é legal?"; "eu quero alterar as datas que finalizam o leilão").
+  **Voltar:** `syncUrl` guarda a rolagem da tela antes de ir para outra (`ROLAGENS`,
+  por endereço); o "voltar" do navegador e a seta da ficha (`voltarDaFicha`) descem até
+  lá de novo (`voltarARolagem`), como o Booking e o Airbnb. **Trilha:** no "Cadastrar
+  minha academia" do Parceiros, a trilha "Sua conta | Confirmar e-mail | Sua academia |
+  Início" volta já no e-mail (desfaz essa parte da 273; no "Entrar" e na senha
+  continua sem). **Leilão:** SQL `20261116120000_fechamento_do_leilao`:
+  `leilao_config.dia_fechamento` (0 domingo a 6 sábado, começa 0) e `hora_fechamento`
+  (0 a 23, começa 20); `proximo_fechamento()` usa a config (security definer); RPC
+  `mudar_fechamento_do_leilao(p_dia, p_hora)`, só o admin, move os lances abertos da
+  semana para o fechamento novo. Admin › Leilões › **"Quando o leilão fecha"** (dia e
+  hora, "Salvar"); os envios continuam contados do fechamento (1º: +1 dia e 14 h; 2º:
+  +4 dias e 14 h) e os textos mostram as datas de verdade (`enviosDoLeilao`; admin e
+  Parceiros), sem "domingo às 20h"/"terça e sexta" fixos (perguntas e chat de ajuda).
+  Testes: `volta-da-ficha.js` (3), `fechamento-do-leilao.js` (4), `parceiros` e
+  `cadastro-normal-parceiros` (a trilha no cadastro), `promocoes-por-email`,
+  `plano-e-creditos` e outros do leilão; `banco-emails.py` 963 (10 novas), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -2895,5 +2895,34 @@ for fn, velho, novo_txt in trocas:
 ok(um("select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prokind = 'f' and pg_get_functiondef(p.oid) ~ '[^a-z](pôs|põe|ponha) '") == "0",
    "nenhuma função do banco usa \"pôs\", \"põe\" ou \"ponha\"")
 
+print("\n# Fechamento do leilão (regra 284)")
+ok(um("select public.proximo_fechamento('2026-11-16 12:00-03')") == "2026-11-22 23:00:00+00",
+   "sem mudar nada: o próximo domingo às 20h de Brasília")
+ok(um("select public.proximo_fechamento('2026-11-15 19:00-03')") == "2026-11-15 23:00:00+00" and
+   um("select public.proximo_fechamento('2026-11-15 20:00-03')") == "2026-11-22 23:00:00+00",
+   "no domingo, antes das 20h fecha no mesmo dia; às 20h passa para o seguinte")
+ac_leilao = um("select id from public.academias order by created_at limit 1")
+sql("delete from public.lances where titulo = 'Teste do fechamento'")
+sql(f"insert into public.lances (academia_id, regiao, regiao_nome, fecha_em, titulo, mensagem, valor) "
+    f"values ('{ac_leilao}', 'sao-paulo/teste', 'Teste', public.proximo_fechamento(), 'Teste do fechamento', 'Mensagem', 10)")
+certo, _ = sql("select public.mudar_fechamento_do_leilao(3, 18)", papel="authenticated", user="00000000-0000-4000-8000-0000000000f1", email="qualquer@exemplo.com")
+ok(not certo, "só o admin muda o fechamento")
+certo, _ = sql("select public.mudar_fechamento_do_leilao(7, 18)", **admin_jwt)
+ok(not certo, "dia fora de domingo a sábado é recusado")
+certo, _ = sql("select public.mudar_fechamento_do_leilao(3, 24)", **admin_jwt)
+ok(not certo, "hora fora de 0 a 23 é recusada")
+certo, _ = sql("select public.mudar_fechamento_do_leilao(3, 18)", **admin_jwt)
+ok(certo and um("select dia_fechamento || '|' || hora_fechamento from public.leilao_config where id = 1") == "3|18",
+   "o admin muda para quarta às 18h")
+ok(um("select public.proximo_fechamento('2026-11-16 12:00-03')") == "2026-11-18 21:00:00+00",
+   "o próximo fechamento passa a ser quarta às 18h de Brasília")
+ok(um("select (fecha_em = public.proximo_fechamento()) from public.lances where titulo = 'Teste do fechamento'") == "t",
+   "o lance aberto da semana passa para o fechamento novo")
+ok(um("select (config->>'dia_fechamento') || '|' || (config->>'hora_fechamento') from (select public.leiloes_do_admin() as j) x, lateral (select j->'config' as config) y",
+      **admin_jwt) == "3|18", "o painel do admin lê o dia e a hora")
+sql("select public.mudar_fechamento_do_leilao(0, 20)", **admin_jwt)
+sql("delete from public.lances where titulo = 'Teste do fechamento'")
+ok(um("select public.proximo_fechamento('2026-11-16 12:00-03')") == "2026-11-22 23:00:00+00", "de volta ao domingo às 20h")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

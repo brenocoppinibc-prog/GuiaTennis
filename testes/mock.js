@@ -74,7 +74,7 @@
   Object.entries(window.__envios || {}).forEach(([id, n]) => { const ac = db.academias.find(y => y.id === id); if (ac) ac.envios_de_aviso = n; });
   db.avisos = window.__db.avisos = [];
   db.lances = window.__db.lances = [];
-  db.leilaoConfig = window.__db.leilaoConfig = { lance_minimo: 10, desconto_premium: 0.2, raio_km: 4, preco_promocao_semana: window.__precoPromocao || 0 };
+  db.leilaoConfig = window.__db.leilaoConfig = { lance_minimo: 10, desconto_premium: 0.2, raio_km: 4, preco_promocao_semana: window.__precoPromocao || 0, dia_fechamento: 0, hora_fechamento: 20 };
   const promocoesLiberadas = (ac) => !!ac && ["completo", "premium"].includes(ac.plano);
   // O preço da semana da promoção na ficha (SQL 20261022120000): o Premium paga 20% menos.
   const precoDaPromocao = (ac) => { const b = db.leilaoConfig.preco_promocao_semana || 0; return !b ? 0 : ac && ac.plano === "premium" ? Math.max(1, Math.floor(b * (1 - db.leilaoConfig.desconto_premium))) : b; };
@@ -1073,6 +1073,15 @@
       if (l.situacao === "ganhou") { const ac = db.academias.find(y => y.id === l.academia_id); ac.envios_de_aviso = (ac.envios_de_aviso || 0) + (l.preco || 0); }
       Object.assign(l, { situacao: "cancelado", preco: 0 });
       return { data: true, error:null };
+    }
+    // Regra 284: o dia e a hora do fechamento do leilão.
+    if (nome === "mudar_fechamento_do_leilao") {
+      if (!souAdmin()) return erro("Só o admin muda o fechamento do leilão.", "42501");
+      if (!(a.p_dia >= 0 && a.p_dia <= 6)) return erro("Escolha um dia da semana.", "22023");
+      if (!(a.p_hora >= 0 && a.p_hora <= 23)) return erro("Escolha uma hora de 0 a 23.", "22023");
+      Object.assign(db.leilaoConfig, { dia_fechamento: a.p_dia, hora_fechamento: a.p_hora });
+      window.__fechamentoMudado = [a.p_dia, a.p_hora];
+      return { data: fechaDoLeilao(), error:null };
     }
     if (nome === "mudar_lance_minimo") {
       if (!souAdmin()) return erro("Só o admin muda o lance mínimo.", "42501");

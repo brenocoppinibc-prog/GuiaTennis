@@ -501,8 +501,8 @@ regra 282: mandar a lista e salvar os contatos pedem conta; regra 283: cores do 
 linhas separadas no cartão e na ficha, foto do catálogo menor e o "Sobre" antes das
 opções; regra 284: voltar da ficha na mesma posição, a trilha de volta no "Cadastrar
 minha academia" e o admin escolhe quando o leilão fecha (SQL
-`20261116120000_fechamento_do_leilao`, aplicado no banco local; o "Banco de dados" do
-PR roda no banco de teste). Sem SQL. Bateria completa de 15/11
+`20261116120000_fechamento_do_leilao`, aplicado no banco local e no de teste: o "Banco
+de dados" disparado à mão nesta branch rodou com sucesso em 16/11). Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o

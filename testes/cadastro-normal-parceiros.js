@@ -10,7 +10,7 @@ const etapas = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-
 (async () => {
   // Veio da ficha ("É o responsável?"): a academia fica guardada até o pedido.
   let { browser, page } = await abrir({ q: 'parceiros/cadastro?academia=a2' });
-  ok((await etapas(page)) === '' && await page.isVisible('#pc-email'), 'regra 273: o e-mail primeiro, sem a trilha — ' + await etapas(page));
+  ok((await etapas(page)).startsWith('Sua conta*') && await page.isVisible('#pc-email'), 'regra 284: no cadastro, a trilha já no e-mail — ' + await etapas(page));
   await page.fill('#pc-email', 'rita@gmail.com');
   await page.click('#pc-email-continuar');
   await page.waitForTimeout(300);

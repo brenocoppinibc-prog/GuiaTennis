@@ -107,7 +107,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     feito: document.querySelector('.pc-trilho i')?.style.width,
   }));
   let etapas = await barra();
-  ok(etapas.etapas === '' && !(await page.isVisible('.trilha-bola')) && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'regra 273: o e-mail sem a trilha (ela aparece no cadastro) — ' + etapas.etapas);
+  ok(etapas.etapas === 'Sua conta* | Confirmar e-mail | Sua academia | Início' && etapas.feito === '0%' && await page.isVisible('.trilha-bola') && await page.isVisible('#pc-email') && !(await page.isVisible('#pc-busca')), 'regra 284: no "Cadastrar", a trilha de tênis já no e-mail, com a bolinha na primeira etapa — ' + etapas.etapas);
   ok((await texto(page, '.pc-main .pc-card .footnote')).includes('Recebeu um usuário do GuiaTennis? Escreva o usuário aqui.'), 'quem recebeu usuário do GuiaTennis usa o mesmo campo (a dica fica, a explicação não)');
   await page.fill('#pc-email', 'joana@semponto');
   await page.click('#pc-email-continuar');

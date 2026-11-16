@@ -12814,7 +12814,10 @@ function pcCadastro() {
     const passo = state.pcEmailPasso;
     return `
       <section class="pc-pagina pc-estreita">
-        ${/* Regra 273: no e-mail e na senha, sem a trilha; ela aparece no cadastro. */ ""}
+        ${/* Regra 273: no "Entrar" e na senha, sem a trilha. Regra 284 ("tirou a barra
+             de progresso? não é legal?"): no "Cadastrar minha academia", a trilha
+             volta já no e-mail, porque quem chega ali vai fazer o cadastro todo. */ ""}
+        ${state.parceirosAba === "cadastro" && passo === "email" ? pcEtapas(0) : ""}
         ${cabeca}
         ${escolhida ? `
           <div class="pc-card pc-reivindicar">
@@ -20194,10 +20197,21 @@ function semCamadas(url) {
 }
 const CAMADAS_DO_LINK = ["passo", "menu", "lista", "preferencias", "conta", "parte", "termos", "privacidade", "reserva"];
 
+// Regra 284 ("ao sair da ficha, voltar na mesma posição que clicou ao entrar"):
+// antes de ir para outra tela, guarda onde a pessoa estava; voltar (pelo
+// navegador ou pela seta da ficha) desce até lá de novo, como o Booking e o
+// Airbnb, em vez de recomeçar do alto.
+const ROLAGENS = {};
+function voltarARolagem() {
+  const y = ROLAGENS[location.pathname + location.search];
+  window.scrollTo(0, y || 0);
+  if (y) requestAnimationFrame(() => window.scrollTo(0, y));
+}
 function syncUrl(push) {
   try {
     const alvo = urlDoEstado();
     if (alvo === location.pathname + location.search + location.hash) return;
+    if (push) ROLAGENS[location.pathname + location.search] = window.scrollY;
     const dados = { page: state.page, prof: camadasDoEstado().length ? 1 : 0 };
     // Tela nova aberta de dentro de uma janela (o menu, por exemplo): toma o
     // lugar da janela no histórico, para o "voltar" não reabrir o menu.
@@ -20494,7 +20508,7 @@ function voltarDaFicha() {
   state.selected = null;
   syncUrl(true);
   render();
-  window.scrollTo(0, 0);
+  voltarARolagem();
 }
 
 window.addEventListener("popstate", () => {
@@ -20536,7 +20550,7 @@ window.addEventListener("popstate", () => {
   } else if (state.page === "court" && state.secaoFicha) {
     irParaSecao(state.secaoFicha, false);
   } else {
-    window.scrollTo(0, 0);
+    voltarARolagem();
   }
 });
 

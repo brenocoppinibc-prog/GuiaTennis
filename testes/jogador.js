@@ -63,7 +63,14 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.fill('#jog-codigo', '123456');
   await page.click('#jog-confirmar');
   await page.waitForTimeout(500);
-  ok(await page.evaluate(() => !state.jogadorTela && !!jogador.email_confirmado_em), 'código certo: e-mail confirmado e a janela fecha');
+  const bv = await page.evaluate(() => ({ tela: state.jogadorTela, texto: document.querySelector('#jogador-overlay .boas-vindas')?.innerText.replace(/\s+/g, ' ').trim() || '', confirmado: !!jogador.email_confirmado_em }));
+  ok(bv.tela === 'boas-vindas' && bv.confirmado && bv.texto.startsWith('Boas-vindas ao GuiaTennis, Bia!')
+    && bv.texto.includes('Agora ficou fácil encontrar as quadras mais perto de você, com tudo o que você precisa saber.')
+    && bv.texto.includes('Busque, compare, fale com as academias e decida.') && bv.texto.includes('Bons jogos!'),
+    'código certo: e-mail confirmado e a tela de boas-vindas com o nome (regra 288) — ' + bv.texto.slice(0, 60));
+  await page.click('#jog-boas-vindas');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => !state.jogadorTela), '"Continuar" fecha as boas-vindas');
   menu = await page.evaluate(() => { state.showMenu = true; render(); return [document.querySelector('#menu-overlay .menu-conta-topo')?.innerText.replace(/\s+/g, ' ').trim() || '', ...[...document.querySelectorAll('#menu-overlay .menu-item')].map(i => i.innerText.replace(/\s+/g, ' ').trim())]; });
   ok(menu[0].includes('Olá, Bia!') && menu.includes('Avisos por e-mail Ligados') && menu[menu.length - 1] === 'Sair da conta', 'logado: "Olá, Bia!" em cima, avisos ligados e "Sair da conta" por último — ' + menu[0]);
   // Minha conta: muda os avisos.
@@ -220,7 +227,10 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   ok((await page.evaluate(() => document.querySelector('#jogador-overlay')?.innerText || '')).includes('Não foi possível mandar o código agora'), 'sem o serviço de e-mail: avisa e não trava');
   await page.click('#jog-depois');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => jogador && !jogador.email_confirmado_em && !state.jogadorTela), 'segue logado, com o e-mail para confirmar depois');
+  ok(await page.evaluate(() => state.jogadorTela === 'boas-vindas' && document.querySelector('#jogador-overlay h1')?.innerText === 'Boas-vindas ao GuiaTennis, Sem!'), 'confirmar depois: as boas-vindas também');
+  await page.click('#jogador-close');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => jogador && !jogador.email_confirmado_em && !state.jogadorTela), 'o ✕ fecha; segue logado, com o e-mail para confirmar depois');
   await page.evaluate(() => abrirContaJogador('conta'));
   ok((await page.evaluate(() => document.querySelector('#perfil-jogador')?.innerText || '')).includes('E-mail ainda não confirmado'), 'Minha conta lembra de confirmar o e-mail');
   await browser.close();

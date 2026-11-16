@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 287)
+**Atualizado em:** 16/11/2026 (regra 288)
 
 | | |
 |---|---|
@@ -2169,6 +2169,21 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   e `logo-horizontal.svg` (para gráfica). A foto de perfil de todas as redes é o
   `whatsapp-perfil.png`. Mandados ao Breno com um .zip de tudo. Não mexe no site (a
   `divulgacao/` não gera publicação na Netlify). Sem SQL e sem teste.
+- **288 (16/11) — boas-vindas ao jogador** ("faça uma mensagem na tela de boas-vindas
+  ao GuiaTennis, no jogadores… Seja bem-vindo. O nome da pessoa… Fale, busque, compare,
+  decida e bons jogos!"): conta nova criada no site dos jogadores (não no Parceiros), depois
+  do código do e-mail ou do "Confirmar depois", a tela `jogadorTela = "boas-vindas"`
+  (`state.boasVindasJogador`, marcada no `criarContaJogador`; o `depoisDeEntrarJogador`
+  mostra a tela antes de seguir): a raquete, **"Boas-vindas ao GuiaTennis, Nome!"** (o
+  primeiro nome; "Boas-vindas" serve para todos, como o Nubank, o Airbnb e o Parceiros),
+  "Agora ficou fácil encontrar as quadras mais perto de você, com tudo o que você precisa
+  saber.", "Busque, compare, fale com as academias e decida." (na ordem em que o site é
+  usado) e **"Bons jogos!"**; "Continuar" (e o ✕) segue com o que a pessoa estava fazendo
+  (ex.: a avaliação sai depois do "Continuar"). Sem link próprio (`CONTA_NO_LINK`). Sem
+  SQL. Testes: `jogador.js` (49), `parceiros.js` (159, a avaliação depois das
+  boas-vindas), `senha`, `cadastro-normal-parceiros`, `convite-chamadas`, `viagem`,
+  `volta-e-resumo`, `painel-admin`, `whatsapp-das-academias` e `guardados-na-conta`, sem
+  falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -108,6 +108,12 @@
   .email-previa-corpo { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: #1F2A24; }
   .email-previa-marca { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 12px; padding: 9px 12px; background: var(--green); border-radius: 10px; color: #fff; font-size: 17px; }
   .email-previa-marca .logo-mark { width: 22px; height: 22px; }
+  .boas-vindas { text-align: center; padding: 28px 4px 8px; }
+  .boas-vindas-marca .logo-mark { width: 72px; height: 72px; }
+  .boas-vindas h1 { margin: 18px 0 14px; }
+  .boas-vindas-t { margin: 0 auto 10px; max-width: 380px; font-size: 17px; line-height: 1.5; color: var(--text); }
+  .boas-vindas-bons { margin: 16px 0 26px; font-size: 19px; font-weight: 700; color: var(--green); }
+  .boas-vindas .cta-btn { width: 100%; max-width: 380px; }
   .email-previa-h { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
   .email-previa-p { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
   .email-previa-msg { margin: 4px 0 12px; padding: 11px 13px; border: 1px solid #DCD6C8; border-radius: 12px; background: #FAF8F3; }
@@ -17724,6 +17730,21 @@ function renderJogadorSheet() {
       <button type="button" class="inline-link sair-vermelho" id="jog-sair">Sair da conta</button>
       <button type="button" class="inline-link jog-excluir" id="jog-excluir">Excluir minha conta</button>
     </div>`);
+  // Regra 288 (16/11/2026): "uma mensagem na tela de boas-vindas ao GuiaTennis,
+  // no jogadores… o nome da pessoa… Busque, compare, decida e bons jogos!".
+  // "Boas-vindas" serve para todos, como o Nubank e o Airbnb.
+  if (tela === "boas-vindas" && jogador) {
+    const primeiro = String(jogador.nome || "").trim().split(/\s+/)[0] || "";
+    miolo = `
+    <div class="boas-vindas" role="status">
+      <div class="boas-vindas-marca">${logoSvg()}</div>
+      <h1 class="display">Boas-vindas ao GuiaTennis${primeiro ? `, ${esc(primeiro)}` : ""}!</h1>
+      <p class="boas-vindas-t">Agora ficou fácil encontrar as quadras mais perto de você, com tudo o que você precisa saber.</p>
+      <p class="boas-vindas-t">Busque, compare, fale com as academias e decida.</p>
+      <p class="boas-vindas-bons">Bons jogos!</p>
+      <button type="button" class="cta-btn cta-primary" id="jog-boas-vindas">Continuar</button>
+    </div>`;
+  }
   return `
     <div class="overlay open" id="jogador-overlay">
       <div class="sheet jog-pagina" role="dialog" aria-label="Conta do GuiaTennis">
@@ -17741,8 +17762,16 @@ function renderJogadorSheet() {
 // Depois de entrar ou criar a conta: volta ao que a pessoa estava fazendo.
 async function depoisDeEntrarJogador() {
   state.jogadorSalvando = false;
-  state.jogadorTela = null;
   state.confirmarParaAgir = "";
+  // Conta nova no site dos jogadores (regra 288): primeiro a tela de
+  // boas-vindas; o "Continuar" volta aqui e segue com o que a pessoa fazia.
+  if (state.boasVindasJogador && jogador) {
+    state.boasVindasJogador = false;
+    state.jogadorTela = "boas-vindas";
+    render();
+    return;
+  }
+  state.jogadorTela = null;
   const acao = state.depoisDeEntrar;
   state.depoisDeEntrar = null;
   render();
@@ -18237,6 +18266,7 @@ async function criarContaJogador() {
   registrarPasso("acao", { detalhe: "Criou a conta de jogador" });
   eventoDoPixel("CompleteRegistration");
   if (state.page === "parceiros") state.pcContaCriadaAqui = jogador.user_id;
+  else state.boasVindasJogador = true;
   state.jogadorLogin = email;
   await irParaCodigoJogador("codigo");
 }
@@ -18840,7 +18870,12 @@ function ligarEventosJogador() {
       abrirContaJogador(el.dataset.jogador, motivo);
     };
   });
-  const fechar = () => { state.jogadorTela = null; state.depoisDeEntrar = null; state.confirmarParaAgir = ""; render(); };
+  const fechar = () => {
+    if (state.jogadorTela === "boas-vindas") { depoisDeEntrarJogador(); return; }
+    state.jogadorTela = null; state.depoisDeEntrar = null; state.confirmarParaAgir = ""; render();
+  };
+  const boasVindas = document.getElementById("jog-boas-vindas");
+  if (boasVindas) boasVindas.onclick = () => depoisDeEntrarJogador();
   document.querySelectorAll(".campo-codigo").forEach(el => {
     el.oninput = (e) => { window.__codigo = { ...(window.__codigo || {}), [el.dataset.rascunho]: e.target.value }; };
   });

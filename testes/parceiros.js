@@ -662,9 +662,13 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   await page.waitForTimeout(600);
   await page.fill('#jog-codigo', '123456');
   await page.click('#jog-confirmar');
+  await page.waitForTimeout(500);
+  // Conta nova: as boas-vindas primeiro; o "Continuar" segue com a avaliação (regra 288).
+  ok(await page.evaluate(() => state.jogadorTela === 'boas-vindas' && window.__db.avaliacoes.length === 0), 'conta nova: as boas-vindas antes de seguir');
+  await page.click('#jog-boas-vindas');
   await page.waitForTimeout(800);
   const avaliada = await page.evaluate(() => ({ n: window.__db.avaliacoes.length, nome: (window.__db.avaliacoes[0] || {}).nome_autor, obrigado: !!document.querySelector('.rate-thanks'), aberta: !!document.getElementById('jogador-overlay') }));
-  ok(avaliada.n === 1 && avaliada.nome === 'Rafa Jogador' && avaliada.obrigado && !avaliada.aberta, 'criou a conta: a avaliação sai sozinha, com o nome da conta — ' + JSON.stringify(avaliada));
+  ok(avaliada.n === 1 && avaliada.nome === 'Rafa Jogador' && avaliada.obrigado && !avaliada.aberta, 'criou a conta: depois das boas-vindas, a avaliação sai sozinha, com o nome da conta — ' + JSON.stringify(avaliada));
   await browser.close();
   // "No ar, com as informações confirmadas por vocês" só logo depois de
   // publicar ou atualizar (06/10/2026); "Voltar ao painel" não aparece mais.

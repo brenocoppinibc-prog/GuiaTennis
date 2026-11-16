@@ -2206,7 +2206,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   "Depois de chamar uma academia…" ligado (explicado ao Breno). Sem SQL. Testes:
   `acabamento.js` (17, a barra nova), `whatsapp-das-academias`, `buscas-e-avisos`,
   `aberto-agora`, `localizacao-cep`, `busca-e-ficha`, `bairro-direto` e `links`, sem
-  falha; `aberto-agora.js` (10, "Aberto agora" nos Filtros). Bateria completa rodando no envio.
+  falha; `aberto-agora.js` (10, "Aberto agora" nos Filtros). Bateria completa de 16/11 (até a 289): **2.644 verificações, nenhuma falha**.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 281)
+**Atualizado em:** 16/11/2026 (regra 282)
 
 | | |
 |---|---|
@@ -495,7 +495,8 @@ fato"); regra 275: o painel do Parceiros e a Minha conta revistos; regra 277: a
 comodidade "Aceita pets"; regra 278: o painel do admin revisto; regra 279: o CEP no
 campo depois da localização e uma bolinha girando só; regra 280: "Academias
 recomendadas" de volta no título, a página do bairro direta e o "O que tem por perto"
-mais confiável; regra 281 (16/11): a mesma caixa de busca na inicial e nos resultados. Sem SQL. Bateria completa de 15/11
+mais confiável; regra 281 (16/11): a mesma caixa de busca na inicial e nos resultados;
+regra 282: mandar a lista e salvar os contatos pedem conta. Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
@@ -2038,6 +2039,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   da regra 270 (`renderSearchCard(true)`, `.sc-compacto`, `.sc-buscar`). Testes:
   `acabamento` (a mesma caixa), `localizacao-cep`, `buscas-e-avisos`, `busca-e-ficha`,
   `links`, `whatsapp-das-academias` e `bairro-direto`, sem falha.
+- **282 (16/11) — a lista e os contatos pedem conta** ("fale que para mandar a lista
+  precisa de conta e salvar também"): "Mandar a lista para o meu WhatsApp" e "Salvar
+  os contatos" (busca, comparação e Favoritas) passam por `jogadorEntaoFaz`: sem conta,
+  abre o Entrar com o motivo ("Para mandar a lista para o seu WhatsApp, entre com o seu
+  e-mail…", "Para salvar os contatos das academias, entre…") e, depois de entrar, faz
+  o que foi pedido. O menu "Compartilhar" e a linha da comparação/Favoritas avisam,
+  sem conta: "Para mandar a lista e salvar os contatos, entre com a sua conta (é
+  grátis)." (`.wa-acoes-nota`). "Salvar busca" já pedia conta. "Chamar as N no
+  WhatsApp" continua sem conta. Chat de ajuda ("whatsapp-varias") diz que os dois pedem
+  conta. Testes: `whatsapp-das-academias` (20, com os casos sem conta),
+  `chat-de-ajuda`, `comparar-e-avisos`, `comparacao-tudo`, `guardados-na-conta` e
+  `buscas-e-avisos`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

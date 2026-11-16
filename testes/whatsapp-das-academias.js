@@ -7,7 +7,25 @@ const { abrir, ok } = require('./harness');
 const abrirMenuWa = (page) => page.evaluate(() => { const d = document.querySelector('.busca-salvar .wa-mais'); if (d) d.open = true; });
 
 (async () => {
+  // Regra 282: sem conta, mandar a lista e salvar os contatos pedem para entrar.
   let { browser, page } = await abrir({ q: '?busca=05422-000' });
+  await page.waitForTimeout(800);
+  await page.evaluate(() => { const d = document.querySelector('.busca-salvar .wa-mais'); if (d) d.open = true; });
+  let semConta = await page.evaluate(() => document.querySelector('.busca-salvar .wa-acoes-nota')?.innerText || '');
+  ok(semConta.includes('Para mandar a lista e salvar os contatos, entre com a sua conta'), 'sem conta: o menu avisa que mandar a lista e salvar os contatos pedem conta — ' + semConta);
+  await page.click('.busca-salvar [data-wa-lista]');
+  await page.waitForTimeout(300);
+  semConta = await page.evaluate(() => ({ tela: state.jogadorTela, motivo: state.jogadorMotivo, abertos: (window.__abertos || []).length }));
+  ok(semConta.tela === 'email' && semConta.motivo.startsWith('Para mandar a lista para o seu WhatsApp, entre') && semConta.abertos === 0, 'sem conta: "Mandar a lista" abre o Entrar com o motivo, sem abrir o WhatsApp');
+  await page.evaluate(() => { state.jogadorTela = null; render(); });
+  await page.evaluate(() => { const d = document.querySelector('.busca-salvar .wa-mais'); if (d) d.open = true; });
+  await page.click('.busca-salvar [data-wa-contatos]');
+  await page.waitForTimeout(300);
+  semConta = await page.evaluate(() => ({ tela: state.jogadorTela, motivo: state.jogadorMotivo }));
+  ok(semConta.tela === 'email' && semConta.motivo.startsWith('Para salvar os contatos das academias, entre'), 'sem conta: "Salvar os contatos" também pede para entrar');
+  await browser.close();
+
+  ({ browser, page } = await abrir({ q: '?busca=05422-000', jogador: true }));
   await page.waitForTimeout(800);
   await page.evaluate(() => {
     window.__abertos = [];

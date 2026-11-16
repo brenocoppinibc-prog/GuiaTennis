@@ -3498,6 +3498,8 @@
   /* Regra 280: os atalhos para o mapa quando a lista de lugares não carrega. */
   .ht-poi-fora { margin: 10px 0 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
   .ht-poi-fora a { color: var(--green); font-weight: 600; }
+  /* Regra 282: o aviso de que mandar a lista e salvar os contatos pedem conta. */
+  .wa-acoes-nota { margin: 4px 8px 6px; font-size: 13px; line-height: 1.4; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -5280,12 +5282,14 @@ function acoesDoWhatsapp(origem) {
     ${comWa.length >= 2 ? `<button type="button" class="convite-precos-b wa-chamar-todas" data-wa-varias="${origem}">${icon('whatsapp', 18, '#fff')} Chamar ${comWa.length === 2 ? "as duas" : `as ${comWa.length}`} no WhatsApp</button>` : ""}
     <details class="wa-mais"><summary class="tbtn">${icon('share', 14, 'currentColor')} Compartilhar <span aria-hidden="true">▾</span></summary>
     <div class="wa-acoes wa-acoes-menu" data-wa-origem="${origem}">
+      ${jogador ? "" : `<p class="wa-acoes-nota">Para mandar a lista e salvar os contatos, entre com a sua conta (é grátis).</p>`}
       <button type="button" class="tbtn" data-wa-lista="${origem}">${icon('whatsapp', 14, 'currentColor')} Mandar a lista para o meu WhatsApp</button>
       ${comWa.length ? `<button type="button" class="tbtn" data-wa-contatos="${origem}">${icon('pessoa', 14, 'currentColor')} Salvar ${comWa.length === 1 ? "o contato" : "os contatos"} no celular</button>` : ""}
     </div></details>`;
   return `
     ${menu ? `<details class="wa-mais"><summary class="tbtn">${icon('share', 14, 'currentColor')} Compartilhar <span aria-hidden="true">▾</span></summary>` : ""}
     <div class="wa-acoes ${menu ? "wa-acoes-menu" : ""}" data-wa-origem="${origem}">
+      ${jogador ? "" : `<p class="wa-acoes-nota">Para mandar a lista e salvar os contatos, entre com a sua conta (é grátis).</p>`}
       <button type="button" class="tbtn" data-wa-lista="${origem}">${icon('whatsapp', 14, 'currentColor')} ${menu ? "Mandar a lista para o meu WhatsApp" : "Mandar para o meu WhatsApp"}</button>
       ${comWa.length >= 2 && !menu ? `<button type="button" class="tbtn" data-wa-varias="${origem}">${icon('phone', 14, 'currentColor')} Falar com ${comWa.length === courts.length && comWa.length < VARIAS_MAX ? "todas" : `as ${comWa.length}`}</button>` : ""}
       ${comWa.length ? `<button type="button" class="tbtn" data-wa-contatos="${origem}">${icon('pessoa', 14, 'currentColor')} Salvar ${comWa.length === 1 ? "o contato" : "os contatos"}${menu ? " no celular" : ""}</button>` : ""}
@@ -25907,7 +25911,7 @@ const CHAT_TEMAS = [
   // Regra 208 (05/11/2026): as academias no WhatsApp.
   { id: "whatsapp-varias", onde: "jogadores", t: "Mandar para o WhatsApp e falar com várias",
     p: ["mandar para o whatsapp", "salvar no whatsapp", "salvar contato", "salvar os contatos", "varias academias", "mesma mensagem", "falar com todas", "lista no whatsapp", "compartilhar lista", "pedir preco", "varias de uma vez"],
-    r: "Na busca, em \"Compartilhar\" (ao lado de \"Salvar busca\"), e também na comparação e nas Favoritas: \"Mandar a lista para o meu WhatsApp\" abre o WhatsApp com a lista das academias e o link de cada ficha (escolha \"Você\" para guardar na sua conversa), e \"Salvar os contatos\" baixa um cartão de contato com o WhatsApp delas, para salvar no celular de uma vez. Para pedir o preço a várias academias, use \"Peça o preço a várias academias de uma vez\", no meio da lista da busca: a mesma mensagem, pronta, para até 5 academias, enviada uma por uma.",
+    r: "Na busca, em \"Compartilhar\" (ao lado de \"Salvar busca\"), e também na comparação e nas Favoritas (os dois pedem conta, que é grátis): \"Mandar a lista para o meu WhatsApp\" abre o WhatsApp com a lista das academias e o link de cada ficha (escolha \"Você\" para guardar na sua conversa), e \"Salvar os contatos\" baixa um cartão de contato com o WhatsApp delas, para salvar no celular de uma vez. Para pedir o preço a várias academias, use \"Peça o preço a várias academias de uma vez\", no meio da lista da busca: a mesma mensagem, pronta, para até 5 academias, enviada uma por uma.",
     a: [] },
   { id: "avisos-jog", onde: "jogadores", t: "Avisos por e-mail",
     p: ["parar de receber", "nao quero receber", "receber emails", "receber e mails", "notificac", "avisos", "aviso por e mail", "newsletter"],
@@ -29660,9 +29664,12 @@ function attachEvents() {
   };
 
   // As academias no WhatsApp (regra 208).
-  document.querySelectorAll("[data-wa-lista]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); mandarListaParaMeuWhatsapp(el.dataset.waLista); }; });
+  // Regra 282 ("fale que para mandar a lista precisa de conta e salvar também"):
+  // mandar a lista e salvar os contatos pedem conta; sem conta, abre o Entrar com
+  // o motivo e, depois de entrar, faz o que a pessoa pediu.
+  document.querySelectorAll("[data-wa-lista]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); const o = el.dataset.waLista; jogadorEntaoFaz(() => mandarListaParaMeuWhatsapp(o), "Para mandar a lista para o seu WhatsApp, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto."); }; });
   document.querySelectorAll("[data-wa-varias]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); abrirFalarComVarias(el.dataset.waVarias); }; });
-  document.querySelectorAll("[data-wa-contatos]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); salvarContatosDaOrigem(el.dataset.waContatos); }; });
+  document.querySelectorAll("[data-wa-contatos]").forEach(el => { el.onclick = (e) => { e.stopPropagation(); const o = el.dataset.waContatos; jogadorEntaoFaz(() => salvarContatosDaOrigem(o), "Para salvar os contatos das academias, entre com o seu e-mail. Se ainda não tiver conta, o cadastro leva um minuto."); }; });
   const waVariasFechar = document.getElementById("wa-varias-close");
   if (waVariasFechar) waVariasFechar.onclick = () => { state.waVarias = null; render(); };
   const waVariasFundo = document.getElementById("wa-varias-overlay");

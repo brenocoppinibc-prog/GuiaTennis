@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 292)
+**Atualizado em:** 16/11/2026 (regra 293)
 
 | | |
 |---|---|
@@ -2260,6 +2260,15 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Poppins, "Guia" verde, fundo transparente), `logo-vertical-branco.png` ("Guia" branco,
   para fundo escuro) e `logo-quadrado-com-nome.png` (o quadrado verde com o nome dentro,
   1080×1080). Mandados ao Breno. Fora do site; sem teste.
+- **293 (16/11) — os números sem o "1 em cada"** (print: "1 em cada" em cima e o "4"
+  embaixo, "assim não está muito legal, desorganizado"): em `numerosDoSite` (faixa de
+  números do Parceiros e o Sobre), a parte de quem abre uma ficha virou porcentagem, no
+  mesmo formato das outras, como as faixas de números do Booking e do Airbnb para
+  parceiros: "+5.000 / visitas ao GuiaTennis", "25% / das visitas abrem a ficha de uma
+  academia" ("Quase todas / as visitas…" com 95% ou mais) e "15% / das fichas abertas
+  viram contato com a academia". Saíram `umEmCada` e o `.pc-faixa-pre` (regra 273). Sem
+  SQL. Testes: `contatos-e-cadastro.js` (12), `parceiros`, `parceiros-acender`, `sobre`,
+  `confianca-na-ficha` e `painel-admin`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -3488,7 +3488,6 @@
      pílula; nos números do Parceiros, "1 em cada" pequeno em cima do número (o
      "1 em cada 14" encostava no "15%"); "Chamar as N" em destaque na comparação. */
   .ht-bt-contorno { border-radius: 12px; min-height: 48px; padding: 0 22px; font-size: 16px; border-color: var(--border); }
-  .pc-faixa-pre { display: block; font-size: 13px; font-weight: 600; line-height: 1.2; opacity: 0.9; }
   .pc-faixa-itens strong { white-space: nowrap; }
   .wa-chamar-todas { margin: 4px 0 10px; }
   /* Regra 274: o horário de hoje no cartão da busca. */
@@ -12397,8 +12396,7 @@ function pcNumerosDoSite(revelar = false) {
       <h2 class="display pc-faixa-t">Jogadores já escolhem onde jogar por aqui</h2>
       <p class="pc-faixa-s">Quem entra no GuiaTennis está procurando aula ou quadra: compara as academias da região e chama direto no WhatsApp. Veja o caminho de quem chega:</p>
       <div class="pc-faixa-itens" style="--n:${itens.length}">
-        ${/* Regra 273: "1 em cada" pequeno em cima e o número grande, para caber lado a lado no celular. */ ""}
-        ${itens.map(i => { const m = /^(1 em cada) (.+)$/.exec(i.valor); return `<div><strong>${m ? `<small class="pc-faixa-pre">${m[1]}</small> ${esc(m[2])}` : esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`; }).join("")}
+        ${itens.map(i => `<div><strong>${esc(i.valor)}</strong><span>${esc(i.rotulo)}</span></div>`).join("")}
       </div>
       ${comoFuncionamOsNumeros()}
       <div class="pc-faixa-cta">
@@ -19131,13 +19129,6 @@ function numeroRedondo(n) {
   return "+" + (Math.floor(v / passo) * passo).toLocaleString("pt-BR");
 }
 
-// "1 em 5", que é mais fácil de entender do que "20,4%".
-function umEmCada(parte, todo) {
-  if (!parte || !todo) return null;
-  const n = Math.round(todo / parte);
-  return n <= 1 ? "quase todo mundo" : `1 em cada ${n}`;
-}
-
 function porcentoRedondo(parte, todo) {
   if (!parte || !todo) return null;
   const pct = Math.round(((parte / todo) * 100) / 5) * 5;
@@ -19197,11 +19188,16 @@ function irParaPerguntaDaAjuda(id) {
 function numerosDoSite() {
   const e = state.estatisticas;
   if (!e || (e.acessos_total || 0) < MINIMO_TOTAL) return [];
-  const umEm = e.fichas_total ? umEmCada(e.fichas_total, e.acessos_total) : null;
+  // Regra 293 ("'1 em cada' em cima e o número embaixo: não está legal,
+  // desorganizado"): os três no mesmo formato, o número grande e a frase embaixo,
+  // como as faixas de números do Booking e do Airbnb para parceiros; a parte de
+  // quem abre uma ficha virou porcentagem, igual à dos contatos.
+  const quaseTodas = e.fichas_total && e.fichas_total >= e.acessos_total * 0.95;
+  const fichas = e.fichas_total ? (quaseTodas ? "Quase todas" : porcentoRedondo(e.fichas_total, e.acessos_total)) : null;
   const pct = e.contatos_total && e.fichas_total ? porcentoRedondo(e.contatos_total, e.fichas_total) : null;
   return [
     { valor: numeroRedondo(e.acessos_total), rotulo: "visitas ao GuiaTennis" },
-    umEm ? { valor: umEm, rotulo: umEm.startsWith("1 em") ? "visitas abre a ficha de uma academia" : "abre a ficha de uma academia" } : null,
+    fichas ? { valor: fichas, rotulo: quaseTodas ? "as visitas abrem a ficha de uma academia" : "das visitas abrem a ficha de uma academia" } : null,
     pct ? { valor: pct, rotulo: "das fichas abertas viram contato com a academia" } : null,
   ].filter(Boolean);
 }

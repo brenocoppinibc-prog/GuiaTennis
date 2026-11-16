@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 284, troca de chat)
+**Atualizado em:** 16/11/2026 (regra 285)
 
 | | |
 |---|---|
@@ -135,8 +135,10 @@ Texto e visual
 - Filtros e listas sempre na mesma ordem (`naOrdem`, constantes `*_OPTS`).
 - Números públicos arredondados para baixo (`numeroRedondo`), totais desde
   o começo.
-- O logo é um desenho só (`logoDesenho`); as imagens saem dele por
-  `divulgacao/gerar-imagens.js`.
+- O logo é um desenho só (`logoDesenho`, com o nome em Poppins `NOME_DO_LOGO`,
+  os dois entre `LOGO-INICIO` e `LOGO-FIM`); as imagens saem dele por
+  `divulgacao/gerar-imagens.js` (ícones, imagem de compartilhar, 404, assinatura de
+  e-mail e capa do WhatsApp, regra 285). Nos e-mails, o nome é texto em Arial negrito.
 - No celular, janela aberta ocupa a tela toda. O que se digita vai calado
   para o rascunho da aba (sem "Rascunho salvo") e sair com algo não salvo
   pergunta "Sair sem salvar?" (`data-aviso-sair`, `data-rascunho-de`).
@@ -500,10 +502,11 @@ vender, para todos, da melhor maneira. **Testes:** a bateria completa rodou em 1
 (até a regra 274: 2.610, nenhuma falha); das regras 275 a 284 só os testes afetados,
 sem falha. **Rodar a bateria completa no começo do próximo chat.** `banco-emails.py`:
 963 no banco local (16/11; o banco local foi montado neste contêiner e não fica).
-**Perguntas ao Breno sem resposta:** (1) a faixa verde "Para academias" do protótipo
-na inicial; (2) `/como-funciona` no sitemap (SQL do `sitemap()`); (3) a cor de erro
-nova (`#E63D10`); (4) a imagem de compartilhar, os ícones e a 404 com o logo em
-Poppins; (5) "Aceita pets" ou "Pet friendly" (ficou "Aceita pets"). Ideias ainda não
+**Respostas de 16/11 (regra 285):** `/como-funciona` no sitemap (sim), a cor de erro
+`#E63D10` (sim), o nome em Poppins na imagem de compartilhar, na 404, na assinatura e na
+capa (sim, "mesma escrita em todos os lugares") e "Pet friendly". **Sem resposta:** a
+faixa verde "Para academias" na inicial (o Breno não entendeu; explicado em 16/11, com a
+recomendação de não entrar) e trocar o nome dos e-mails por imagem (oferecido). Ideias ainda não
 pedidas: no Sobre, foto do Breno, linha do tempo, valores e contato para imprensa.
 
 **14/11/2026, regras 268 a 270:** a página inicial com mais conteúdo (cartões com
@@ -2121,6 +2124,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Testes: `volta-da-ficha.js` (3), `fechamento-do-leilao.js` (4), `parceiros` e
   `cadastro-normal-parceiros` (a trilha no cadastro), `promocoes-por-email`,
   `plano-e-creditos` e outros do leilão; `banco-emails.py` 963 (10 novas), sem falha.
+- **285 (16/11) — as respostas pendentes** ("Página 'Como funciona' no mapa do site:
+  sim"; "Cor de erro nova: sim"; "Logo em Poppins: mesma escrita em todos os lugares";
+  "deixe Pet friendly"): SQL `20261116130000_como_funciona_no_sitemap` (o `sitemap()` com
+  `/como-funciona` depois de `/sobre`); `--red` `#E63D10` (era `#A8462C`; 4,2:1 com
+  branco), e os vermelhos soltos do chat e da senha passam a `var(--red)`; o nome em
+  Poppins (`NOME_DO_LOGO`) entrou no trecho `LOGO-INICIO`/`LOGO-FIM` e a imagem de
+  compartilhar (`nomeNoLogo`), a 404 (raquete e nome), `divulgacao/email-assinatura.png`
+  e `divulgacao/whatsapp-capa.png` (texto em Roboto, sem a Playfair) saem com ele; os
+  ícones não têm escrita e não mudaram; "Aceita pets" virou **"Pet friendly"** (o filtro
+  segue `comodidades=pet`). Testes: `comodidade-pet.js`, `nota-do-guia.js` e
+  `aberto-agora.js` (a cor nova), `banco-emails.py` (seção nova, não rodada: o banco
+  local não está no contêiner; o SQL rodou no banco de teste). Bateria completa em andamento.
 
 ## 11. WhatsApp e mensagem para as academias
 

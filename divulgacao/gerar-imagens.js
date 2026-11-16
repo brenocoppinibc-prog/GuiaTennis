@@ -17,6 +17,7 @@
 //   divulgacao/whatsapp-capa.png    1600×900  — capa do perfil comercial
 //                                    (16:9; o texto fica longe da parte de
 //                                    baixo, onde a foto redonda fica por cima)
+//   divulgacao/email-assinatura.png 566×184   — assinatura de e-mail
 // Rodar: NODE_PATH=$(npm root -g) node divulgacao/gerar-imagens.js
 // Só algumas: … gerar-imagens.js email-logo.png (os nomes dos arquivos).
 const { chromium } = require('playwright');
@@ -27,6 +28,12 @@ const RAIZ = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8');
 const trecho = html.match(/\/\/ LOGO-INICIO([\s\S]*?)\/\/ LOGO-FIM/)[1];
 const logoDesenho = new Function(`${trecho}; return logoDesenho;`)();
+const NOME = new Function(`${trecho}; return NOME_DO_LOGO;`)();
+// O nome "GuiaTennis" em Poppins (o desenho do site), na altura e nas cores pedidas.
+const nomeSvg = (altura, guia, tennis) => {
+  const [, , w, h] = NOME.caixa.split(' ').map(Number);
+  return `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" height="${altura}" width="${(altura * w / h).toFixed(1)}" viewBox="${NOME.caixa}" style="display:block"><path fill="${guia}" d="${NOME.guia}"/><path fill="${tennis}" d="${NOME.tennis}"/></svg>`;
+};
 const logo = (lado, opcoes) => `<svg xmlns="http://www.w3.org/2000/svg" width="${lado}" height="${lado}" viewBox="0 0 1080 1080">${logoDesenho(opcoes)}</svg>`;
 
 // Logo da 404: o mesmo desenho, escrito dentro do arquivo (a 404 não roda o
@@ -34,7 +41,7 @@ const logo = (lado, opcoes) => `<svg xmlns="http://www.w3.org/2000/svg" width="$
 const p404 = path.join(RAIZ, '404.html');
 const pagina404 = fs.readFileSync(p404, 'utf8');
 const novo404 = pagina404.replace(/<!-- LOGO -->[\s\S]*?<!-- \/LOGO -->/,
-  `<!-- LOGO -->\n  <svg width="72" height="72" viewBox="0 0 1080 1080" aria-hidden="true">${logoDesenho({ id: 'g' })}</svg>\n  <!-- /LOGO -->`);
+  `<!-- LOGO -->\n  <div role="img" aria-label="GuiaTennis" style="display:flex;align-items:center;gap:12px;margin-bottom:6px">\n  <svg width="56" height="56" viewBox="0 0 1080 1080" aria-hidden="true">${logoDesenho({ id: 'g' })}</svg>\n  ${nomeSvg(26, '#1F4D3D', '#B8933F')}\n  </div>\n  <!-- /LOGO -->`);
 if (novo404 === pagina404 && !pagina404.includes('<!-- LOGO -->')) throw new Error('404.html sem as marcas <!-- LOGO -->');
 fs.writeFileSync(p404, novo404);
 
@@ -46,7 +53,14 @@ const compartilhar = `<!doctype html><html><head><meta charset="utf-8">
 
 const perfil = sozinho(1080, { quadrado: true });
 
-const FONTE = `<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">`;
+// Assinatura de e-mail: a raquete e o nome em Poppins, com o endereço embaixo.
+const assinatura = `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0}body{width:566px;height:184px;background:#FFFFFF;display:flex;align-items:center;gap:28px;padding:0 20px;box-sizing:border-box;font-family:Arial,'Liberation Sans',sans-serif}svg{display:block}p{margin:16px 0 0;font-size:30px;color:#6B6557}</style>
+</head><body>${logo(144, {})}<div>${nomeSvg(50, '#1F4D3D', '#B8933F')}<p>guiatennis.com.br</p></div></body></html>`;
+
+// Regra 285: a mesma escrita em todo lugar: o nome em Poppins (desenho) e o
+// texto na Roboto, a fonte do site nos celulares Android.
+const FONTE = `<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700&display=swap" rel="stylesheet">`;
 const FUNDO = 'linear-gradient(135deg, #2A5C4B 0%, #1F4D3D 45%, #153229 100%)';
 
 
@@ -75,8 +89,9 @@ const quadra = quadraEmPerspectiva();
 const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
 <style>
   html,body{margin:0}
-  body{width:1600px;height:900px;background:${FUNDO};position:relative;overflow:hidden;font-family:'Playfair Display',serif;color:#F7F4EC}
-  .txt{position:absolute;left:0;right:0;top:165px;text-align:center}
+  body{width:1600px;height:900px;background:${FUNDO};position:relative;overflow:hidden;font-family:'Roboto',sans-serif;color:#F7F4EC}
+  .txt{position:absolute;left:0;right:0;top:110px;text-align:center}
+  .marca{display:flex;justify-content:center;margin-bottom:46px}
   h1{margin:0;font-size:74px;line-height:1.1;font-weight:700;letter-spacing:-.5px}
   p{margin:26px 0 0;font-size:34px;font-weight:500;color:#D8B865}
   .pe{position:absolute;bottom:175px;font-size:32px;font-weight:600;opacity:.92}
@@ -84,6 +99,7 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
 </style></head><body>
   ${quadra}
   <div class="txt">
+    <div class="marca">${nomeSvg(60, '#F7F4EC', '#B8933F')}</div>
     <h1>Quadras e academias de tênis<br>perto de você</h1>
     <p>Compare preço e estrutura · fale direto no WhatsApp</p>
   </div>
@@ -101,6 +117,7 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     [path.join(RAIZ, 'email-logo.png'), sozinho(120, { pequeno: true }), 120, 120],
     [path.join(__dirname, 'whatsapp-perfil.png'), perfil, 1080, 1080],
     [path.join(__dirname, 'whatsapp-capa.png'), capa, 1600, 900],
+    [path.join(__dirname, 'email-assinatura.png'), assinatura, 566, 184],
   ];
   const so = process.argv.slice(2);
   for (const [arquivo, conteudo, w, h] of imagens) {
@@ -116,8 +133,8 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     });
     await page.setContent(conteudo, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
-    const fonte = await page.evaluate(() => document.fonts.check("700 74px 'Playfair Display'"));
-    if (nome.includes('capa') && !fonte) console.warn('ATENÇÃO: a fonte Playfair Display não carregou');
+    const fonte = await page.evaluate(() => document.fonts.check("700 74px 'Roboto'"));
+    if (nome.includes('capa') && !fonte) console.warn('ATENÇÃO: a fonte Roboto não carregou');
     await page.screenshot({ path: arquivo, omitBackground: nome.startsWith('favicon') || nome === 'email-logo.png' });
     await page.close();
     console.log('gerada', nome);

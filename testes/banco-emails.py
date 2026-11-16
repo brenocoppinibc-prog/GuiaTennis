@@ -2924,5 +2924,12 @@ sql("select public.mudar_fechamento_do_leilao(0, 20)", **admin_jwt)
 sql("delete from public.lances where titulo = 'Teste do fechamento'")
 ok(um("select public.proximo_fechamento('2026-11-16 12:00-03')") == "2026-11-22 23:00:00+00", "de volta ao domingo às 20h")
 
+# ---- /como-funciona no sitemap (regra 285, 20261116130000_como_funciona_no_sitemap) ----
+print("\nComo funciona no sitemap")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261116130000_como_funciona_no_sitemap.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL do sitemap roda — " + r.stderr[-200:])
+mapa = um("select convert_from(public.sitemap()::bytea, 'UTF8')", papel="anon") or ""
+ok("https://guiatennis.com.br/como-funciona" in mapa and "https://guiatennis.com.br/sobre" in mapa and "/avaliacoes" not in mapa, "o sitemap tem /sobre e /como-funciona, sem /avaliacoes")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

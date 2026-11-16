@@ -43,7 +43,7 @@
     --text: #211F1A;
     --muted: #6B6557;
     --muted-dark: #A79F8C;
-    --red: #A8462C;
+    --red: #E63D10;
   }
   * { box-sizing: border-box; }
   .ficha-basica { display: flex; gap: 6px; align-items: flex-start; margin: 10px 0 0; padding: 8px 10px; background: var(--bg-alt); border-radius: 12px; font-size: 13px; color: var(--muted); line-height: 1.4; }
@@ -1245,7 +1245,7 @@
   .senha-dicas .senha-exemplo { display: block; margin-top: 2px; }
   .senha-barra { display: inline-flex; gap: 3px; }
   .senha-barra i { width: 22px; height: 4px; border-radius: 2px; background: var(--border); }
-  .senha-barra.n0 i:nth-child(1) { background: var(--red, #C0392B); }
+  .senha-barra.n0 i:nth-child(1) { background: var(--red); }
   .senha-barra.n1 i:nth-child(-n+2) { background: var(--gold); }
   .senha-barra.n2 i { background: var(--green); }
   .conta-topo { width: 44px; height: 44px; margin-left: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--card); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-family: inherit; }
@@ -2528,10 +2528,10 @@
   .chat-conversa-t { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .chat-conversa-s { margin: 0; font-size: 13px; color: var(--muted); }
   .chat-conversa-apagar { flex-shrink: 0; width: 48px; display: flex; align-items: center; justify-content: center; background: none; border: 0; border-left: 1px solid var(--border); color: var(--muted); cursor: pointer; }
-  .chat-conversa-apagar:hover { color: #B3261E; }
+  .chat-conversa-apagar:hover { color: var(--red); }
   .chat-conversa.apagando { flex-direction: column; gap: 4px; padding: 12px 14px; border-color: #E8B4AE; background: #FFF6F5; }
   .chat-conversa-sim { display: flex; gap: 8px; margin-top: 8px; }
-  .chat-acao.perigo { border-color: #B3261E; background: #B3261E; color: #fff; }
+  .chat-acao.perigo { border-color: var(--red); background: var(--red); color: #fff; }
   .chat-lista-vazia { margin: 6px 4px; font-size: 14px; line-height: 1.5; color: var(--muted); text-align: center; }
   .chat-lista-nota { margin: 2px 0 0; font-size: 12px; color: var(--muted); text-align: center; }
   .contato-ic { width: 42px; height: 42px; border-radius: 12px; background: #EEF4F0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -3712,12 +3712,19 @@ function icon(name, size, color) {
 // função; o divulgacao/gerar-imagens.js lê o trecho entre LOGO-INICIO e
 // LOGO-FIM para fazer os ícones, a imagem de compartilhar e a 404.
 // LOGO-INICIO
+// O nome "GuiaTennis" do logo, desenhado em Poppins Bold (regra 260, 13/11/2026:
+// "gostei da poppins e fica legal com e verde amarelo na escrita"). Desenho e
+// não fonte, como a raquete: igual em todo aparelho e nada para baixar. "Guia"
+// pega a cor do texto em volta; "Tennis" fica dourado (.logo-nome-tennis).
+const NOME_DO_LOGO = { caixa: "33 -801 5742 809",
+  guia: "M528 -480Q509 -515 474 -534Q438 -552 390 -552Q307 -552 257 -498Q207 -443 207 -352Q207 -255 260 -200Q312 -146 404 -146Q467 -146 510 -178Q554 -210 574 -270H357V-396H729V-237Q710 -173 664 -118Q619 -63 549 -29Q479 5 391 5Q287 5 206 -40Q124 -86 78 -167Q33 -248 33 -352Q33 -456 78 -538Q124 -619 205 -664Q286 -710 390 -710Q516 -710 602 -649Q689 -588 717 -480ZM1375 -558V0H1204V-76Q1178 -39 1134 -16Q1089 6 1035 6Q971 6 922 -22Q873 -51 846 -105Q819 -159 819 -232V-558H989V-255Q989 -199 1018 -168Q1047 -137 1096 -137Q1146 -137 1175 -168Q1204 -199 1204 -255V-558ZM1482 -708Q1482 -748 1510 -774Q1539 -801 1584 -801Q1628 -801 1656 -774Q1685 -748 1685 -708Q1685 -669 1656 -642Q1628 -616 1584 -616Q1539 -616 1510 -642Q1482 -669 1482 -708ZM1669 -558V0H1498V-558ZM2005 -566Q2064 -566 2108 -542Q2153 -518 2177 -479V-558H2348V0H2177V-79Q2152 -40 2108 -16Q2063 8 2004 8Q1936 8 1880 -28Q1824 -63 1792 -128Q1759 -194 1759 -280Q1759 -366 1792 -431Q1824 -496 1880 -531Q1936 -566 2005 -566ZM2055 -417Q2004 -417 1968 -380Q1933 -344 1933 -280Q1933 -216 1968 -178Q2004 -141 2055 -141Q2106 -141 2142 -178Q2177 -215 2177 -279Q2177 -343 2142 -380Q2106 -417 2055 -417Z",
+  tennis: "M2977 -702V-565H2791V0H2620V-565H2434V-702ZM3586 -238H3199Q3203 -186 3232 -158Q3262 -131 3305 -131Q3369 -131 3394 -185H3576Q3562 -130 3526 -86Q3489 -42 3434 -17Q3379 8 3311 8Q3229 8 3165 -27Q3101 -62 3065 -127Q3029 -192 3029 -279Q3029 -366 3064 -431Q3100 -496 3164 -531Q3228 -566 3311 -566Q3392 -566 3455 -532Q3518 -498 3554 -435Q3589 -372 3589 -288Q3589 -264 3586 -238ZM3414 -333Q3414 -377 3384 -403Q3354 -429 3309 -429Q3266 -429 3236 -404Q3207 -379 3200 -333ZM4234 -326V0H4064V-303Q4064 -359 4035 -390Q4006 -421 3957 -421Q3908 -421 3879 -390Q3850 -359 3850 -303V0H3679V-558H3850V-484Q3876 -521 3920 -542Q3964 -564 4019 -564Q4117 -564 4176 -500Q4234 -437 4234 -326ZM4908 -326V0H4738V-303Q4738 -359 4709 -390Q4680 -421 4631 -421Q4582 -421 4553 -390Q4524 -359 4524 -303V0H4353V-558H4524V-484Q4550 -521 4594 -542Q4638 -564 4693 -564Q4791 -564 4850 -500Q4908 -437 4908 -326ZM5011 -708Q5011 -748 5040 -774Q5068 -801 5113 -801Q5157 -801 5186 -774Q5214 -748 5214 -708Q5214 -669 5186 -642Q5157 -616 5113 -616Q5068 -616 5040 -642Q5011 -669 5011 -708ZM5198 -558V0H5027V-558ZM5292 -183H5461Q5464 -154 5488 -136Q5512 -118 5547 -118Q5579 -118 5596 -130Q5614 -143 5614 -163Q5614 -187 5589 -198Q5564 -210 5508 -224Q5448 -238 5408 -254Q5368 -269 5339 -302Q5310 -336 5310 -393Q5310 -441 5336 -480Q5363 -520 5414 -543Q5466 -566 5537 -566Q5642 -566 5702 -514Q5763 -462 5772 -376H5614Q5610 -405 5588 -422Q5567 -439 5532 -439Q5502 -439 5486 -428Q5470 -416 5470 -396Q5470 -372 5496 -360Q5521 -348 5575 -336Q5637 -320 5676 -304Q5715 -289 5744 -254Q5774 -220 5775 -162Q5775 -113 5748 -74Q5720 -36 5668 -14Q5617 8 5549 8Q5476 8 5419 -17Q5362 -42 5329 -86Q5296 -129 5292 -183Z" };
 function logoDesenho(opcoes) {
   opcoes = opcoes || {};
   const id = opcoes.id || "logo";
   const creme = "#F7F4EC", ouro = "#B8933F";
   // Sem o nome, a raquete ocupa o quadrado; com o nome, sobe e encolhe para
-  // o GUIATENNIS caber embaixo. "pequeno" (ícone do e-mail, 08/10/2026): os
+  // o nome (em Poppins) caber embaixo. "pequeno" (ícone do e-mail, 08/10/2026): os
   // três riscos mais grossos e fortes, para não sumirem em 40 pixels.
   const [x, y, escala] = opcoes.comNome ? [507, 349, 1] : [500, 425, 1.285];
   const cordas = [-55, 0, 55].map(c => `<line x1="${c}" y1="-200" x2="${c}" y2="200"/><line x1="-150" y1="${c}" x2="150" y2="${c}"/>`).join("");
@@ -3735,18 +3742,18 @@ function logoDesenho(opcoes) {
 <ellipse cy="466" rx="34" ry="16" fill="${creme}"/>
 <circle r="100" fill="${ouro}" stroke="${creme}" stroke-width="8"/>
 </g>
-</g>${opcoes.comNome ? `
-<text x="540" y="945" text-anchor="middle" font-family="Arial, Helvetica, 'Liberation Sans', sans-serif" font-weight="700" font-size="90" letter-spacing="1"><tspan fill="${creme}">GUIA</tspan><tspan fill="${ouro}">TENNIS</tspan></text>` : ""}`;
+</g>${opcoes.comNome ? nomeNoLogo(creme, ouro) : ""}`;
+}
+// O nome embaixo da raquete (imagem de compartilhar): o mesmo desenho em
+// Poppins do site, 640 de largura, centrado (regra 285).
+function nomeNoLogo(guia, tennis) {
+  const [x0, , largura] = NOME_DO_LOGO.caixa.split(" ").map(Number);
+  const e = 640 / largura;
+  return `
+<g transform="translate(${(540 - (x0 + largura / 2) * e).toFixed(1)} 950) scale(${e.toFixed(5)})"><path fill="${guia}" d="${NOME_DO_LOGO.guia}"/><path fill="${tennis}" d="${NOME_DO_LOGO.tennis}"/></g>`;
 }
 // LOGO-FIM
 
-// O nome "GuiaTennis" do logo, desenhado em Poppins Bold (regra 260, 13/11/2026:
-// "gostei da poppins e fica legal com e verde amarelo na escrita"). Desenho e
-// não fonte, como a raquete: igual em todo aparelho e nada para baixar. "Guia"
-// pega a cor do texto em volta; "Tennis" fica dourado (.logo-nome-tennis).
-const NOME_DO_LOGO = { caixa: "33 -801 5742 809",
-  guia: "M528 -480Q509 -515 474 -534Q438 -552 390 -552Q307 -552 257 -498Q207 -443 207 -352Q207 -255 260 -200Q312 -146 404 -146Q467 -146 510 -178Q554 -210 574 -270H357V-396H729V-237Q710 -173 664 -118Q619 -63 549 -29Q479 5 391 5Q287 5 206 -40Q124 -86 78 -167Q33 -248 33 -352Q33 -456 78 -538Q124 -619 205 -664Q286 -710 390 -710Q516 -710 602 -649Q689 -588 717 -480ZM1375 -558V0H1204V-76Q1178 -39 1134 -16Q1089 6 1035 6Q971 6 922 -22Q873 -51 846 -105Q819 -159 819 -232V-558H989V-255Q989 -199 1018 -168Q1047 -137 1096 -137Q1146 -137 1175 -168Q1204 -199 1204 -255V-558ZM1482 -708Q1482 -748 1510 -774Q1539 -801 1584 -801Q1628 -801 1656 -774Q1685 -748 1685 -708Q1685 -669 1656 -642Q1628 -616 1584 -616Q1539 -616 1510 -642Q1482 -669 1482 -708ZM1669 -558V0H1498V-558ZM2005 -566Q2064 -566 2108 -542Q2153 -518 2177 -479V-558H2348V0H2177V-79Q2152 -40 2108 -16Q2063 8 2004 8Q1936 8 1880 -28Q1824 -63 1792 -128Q1759 -194 1759 -280Q1759 -366 1792 -431Q1824 -496 1880 -531Q1936 -566 2005 -566ZM2055 -417Q2004 -417 1968 -380Q1933 -344 1933 -280Q1933 -216 1968 -178Q2004 -141 2055 -141Q2106 -141 2142 -178Q2177 -215 2177 -279Q2177 -343 2142 -380Q2106 -417 2055 -417Z",
-  tennis: "M2977 -702V-565H2791V0H2620V-565H2434V-702ZM3586 -238H3199Q3203 -186 3232 -158Q3262 -131 3305 -131Q3369 -131 3394 -185H3576Q3562 -130 3526 -86Q3489 -42 3434 -17Q3379 8 3311 8Q3229 8 3165 -27Q3101 -62 3065 -127Q3029 -192 3029 -279Q3029 -366 3064 -431Q3100 -496 3164 -531Q3228 -566 3311 -566Q3392 -566 3455 -532Q3518 -498 3554 -435Q3589 -372 3589 -288Q3589 -264 3586 -238ZM3414 -333Q3414 -377 3384 -403Q3354 -429 3309 -429Q3266 -429 3236 -404Q3207 -379 3200 -333ZM4234 -326V0H4064V-303Q4064 -359 4035 -390Q4006 -421 3957 -421Q3908 -421 3879 -390Q3850 -359 3850 -303V0H3679V-558H3850V-484Q3876 -521 3920 -542Q3964 -564 4019 -564Q4117 -564 4176 -500Q4234 -437 4234 -326ZM4908 -326V0H4738V-303Q4738 -359 4709 -390Q4680 -421 4631 -421Q4582 -421 4553 -390Q4524 -359 4524 -303V0H4353V-558H4524V-484Q4550 -521 4594 -542Q4638 -564 4693 -564Q4791 -564 4850 -500Q4908 -437 4908 -326ZM5011 -708Q5011 -748 5040 -774Q5068 -801 5113 -801Q5157 -801 5186 -774Q5214 -748 5214 -708Q5214 -669 5186 -642Q5157 -616 5113 -616Q5068 -616 5040 -642Q5011 -669 5011 -708ZM5198 -558V0H5027V-558ZM5292 -183H5461Q5464 -154 5488 -136Q5512 -118 5547 -118Q5579 -118 5596 -130Q5614 -143 5614 -163Q5614 -187 5589 -198Q5564 -210 5508 -224Q5448 -238 5408 -254Q5368 -269 5339 -302Q5310 -336 5310 -393Q5310 -441 5336 -480Q5363 -520 5414 -543Q5466 -566 5537 -566Q5642 -566 5702 -514Q5763 -462 5772 -376H5614Q5610 -405 5588 -422Q5567 -439 5532 -439Q5502 -439 5486 -428Q5470 -416 5470 -396Q5470 -372 5496 -360Q5521 -348 5575 -336Q5637 -320 5676 -304Q5715 -289 5744 -254Q5774 -220 5775 -162Q5775 -113 5748 -74Q5720 -36 5668 -14Q5617 8 5549 8Q5476 8 5419 -17Q5362 -42 5329 -86Q5296 -129 5292 -183Z" };
 function nomeDoLogo() {
   return `<svg class="logo-nome-svg" viewBox="${NOME_DO_LOGO.caixa}" aria-hidden="true" focusable="false"><path fill="currentColor" d="${NOME_DO_LOGO.guia}"/><path class="logo-nome-tennis" d="${NOME_DO_LOGO.tennis}"/></svg><span class="so-leitor">GuiaTennis</span>`;
 }
@@ -3772,7 +3779,7 @@ const AMENITY_OPTS = [
   { key: "raquete", label: "Empréstimo de raquete", icon: icon('bag', 14, 'var(--green)') },
   // Regra 277 ("eu quero colocar comodidade de pet friendly"): como o "Aceita
   // animais de estimação" do Booking e do Airbnb.
-  { key: "pet", label: "Aceita pets", icon: icon('pata', 14, 'var(--green)') },
+  { key: "pet", label: "Pet friendly", icon: icon('pata', 14, 'var(--green)') },
   { key: "assinatura_fitness", label: "App de assinatura fitness", icon: icon('pass', 14, 'var(--green)') },
 ];
 const AMENITY_MAP = Object.fromEntries(AMENITY_OPTS.map(a => [a.key, a]));
@@ -19505,7 +19512,7 @@ const TIPOS_DA_HOME = [
   { titulo: "Com estacionamento", icone: ["parking", "var(--green)"], filtro: { amenityFilters: ["estacionamento"] }, tem: c => matchesAmenityFilter(c, "estacionamento") },
   { titulo: "Com vestiário", icone: ["droplet", "var(--green)"], filtro: { amenityFilters: ["vestiario"] }, tem: c => matchesAmenityFilter(c, "vestiario") },
   { titulo: "Empréstimo de raquete", icone: ["bag", "var(--green)"], filtro: { amenityFilters: ["raquete"] }, tem: c => matchesAmenityFilter(c, "raquete") },
-  { titulo: "Aceita pets", icone: ["pata", "var(--green)"], filtro: { amenityFilters: ["pet"] }, tem: c => matchesAmenityFilter(c, "pet") },
+  { titulo: "Pet friendly", icone: ["pata", "var(--green)"], filtro: { amenityFilters: ["pet"] }, tem: c => matchesAmenityFilter(c, "pet") },
 ];
 function blocoTiposDaHome() {
   const tipos = TIPOS_DA_HOME.map((t, i) => ({ t, i, courts: state.allCourts.filter(t.tem) })).filter(x => x.courts.length);
@@ -22299,7 +22306,7 @@ function htDestaques(c) {
     tem("assinatura_fitness") && { ic: 'pass', cor: 'var(--green)', t: "App de assinatura fitness" },
     tem("estacionamento_pago") && { ic: 'parking', cor: 'var(--gold)', t: "Estacionamento pago" },
     tem("raquete") && { ic: 'bag', cor: 'var(--green)', t: "Empréstimo de raquete" },
-    tem("pet") && { ic: 'pata', cor: 'var(--green)', t: "Aceita pets" },
+    tem("pet") && { ic: 'pata', cor: 'var(--green)', t: "Pet friendly" },
   ].filter(Boolean).slice(0, 4);
   if (!candidatos.length) return "";
   return `<div class="ht-destaques">${candidatos.map(d => `

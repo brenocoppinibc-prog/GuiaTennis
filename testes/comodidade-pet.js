@@ -1,5 +1,5 @@
 // Regra 277 (15/11/2026): "eu quero colocar comodidade de pet friendly". A
-// comodidade "Aceita pets" no cadastro, nos Filtros, na inicial e na ficha.
+// comodidade "Pet friendly" no cadastro, nos Filtros, na inicial e na ficha.
 const { abrir, ok } = require('./harness');
 
 (async () => {
@@ -13,10 +13,10 @@ const { abrir, ok } = require('./harness');
     filtro: FILTER_AMENITY_OPTS.some(a => a.key === 'pet'),
     tipos: [...document.querySelectorAll('.home-tipo strong')].map(s => s.innerText.trim()),
   }));
-  ok(r.opcao === 'Aceita pets' && r.filtro, '"Aceita pets" nas comodidades (cadastro) e nos Filtros');
-  ok(r.tipos.includes('Aceita pets'), '"Aceita pets" em "Busque pelo tipo de quadra" — ' + r.tipos.join(', '));
+  ok(r.opcao === 'Pet friendly' && r.filtro, '"Pet friendly" nas comodidades (cadastro) e nos Filtros');
+  ok(r.tipos.includes('Pet friendly'), '"Pet friendly" em "Busque pelo tipo de quadra" — ' + r.tipos.join(', '));
 
-  await page.click('.home-tipo:has-text("Aceita pets")');
+  await page.click('.home-tipo:has-text("Pet friendly")');
   await page.waitForTimeout(400);
   r = await page.evaluate(() => ({ nomes: getResults().map(c => c.id).join(), link: location.search }));
   ok(r.nomes === 'a2' && /comodidades=pet/.test(r.link), 'o toque abre a busca só com quem aceita pets — ' + r.link);
@@ -27,7 +27,7 @@ const { abrir, ok } = require('./harness');
     destaques: [...document.querySelectorAll('.ht-destaque-t')].map(p => p.innerText.trim()),
     estrutura: document.getElementById('ht-comodidades')?.innerText || '',
   }));
-  ok(r.destaques.includes('Aceita pets') && r.estrutura.includes('Aceita pets'), 'na ficha, nos destaques e na Estrutura — ' + r.destaques.join(' | '));
+  ok(r.destaques.includes('Pet friendly') && r.estrutura.includes('Pet friendly'), 'na ficha, nos destaques e na Estrutura — ' + r.destaques.join(' | '));
 
   await browser.close();
 })();

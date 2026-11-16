@@ -9,6 +9,8 @@
 //                                    nome no meio, fundo creme)
 //   404.html                         o logo da página "não existe", entre
 //                                    <!-- LOGO --> e <!-- /LOGO -->
+//   email-nome.png        426×60     o nome no alto dos e-mails, branco e
+//                                    dourado para a faixa verde (142×20)
 //   email-logo.png        120×120    o ícone no alto dos e-mails (aparece
 //                                    com 40 pixels; os riscos mais fortes,
 //                                    { pequeno: true }, para não sumirem)
@@ -52,6 +54,11 @@ const compartilhar = `<!doctype html><html><head><meta charset="utf-8">
 </head><body>${logo(630, { comNome: true })}</body></html>`;
 
 const perfil = sozinho(1080, { quadrado: true });
+
+// O nome no alto dos e-mails (regra 286): "Guia" branco e "Tennis" dourado,
+// fundo transparente, para a faixa verde (aparece com 142×20; feito em 3×).
+const nomeDoEmail = `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:transparent}svg{display:block}</style></head><body>${nomeSvg(60, '#FFFFFF', '#B8933F')}</body></html>`;
 
 // Assinatura de e-mail: a raquete e o nome em Poppins, com o endereço embaixo.
 const assinatura = `<!doctype html><html><head><meta charset="utf-8">
@@ -115,6 +122,7 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     [path.join(RAIZ, 'apple-touch-icon.png'), sozinho(180, { quadrado: true }), 180, 180],
     [path.join(RAIZ, 'og-image.png'), compartilhar, 1200, 630],
     [path.join(RAIZ, 'email-logo.png'), sozinho(120, { pequeno: true }), 120, 120],
+    [path.join(RAIZ, 'email-nome.png'), nomeDoEmail, 426, 60],
     [path.join(__dirname, 'whatsapp-perfil.png'), perfil, 1080, 1080],
     [path.join(__dirname, 'whatsapp-capa.png'), capa, 1600, 900],
     [path.join(__dirname, 'email-assinatura.png'), assinatura, 566, 184],
@@ -135,7 +143,7 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     await page.evaluate(() => document.fonts.ready);
     const fonte = await page.evaluate(() => document.fonts.check("700 74px 'Roboto'"));
     if (nome.includes('capa') && !fonte) console.warn('ATENÇÃO: a fonte Roboto não carregou');
-    await page.screenshot({ path: arquivo, omitBackground: nome.startsWith('favicon') || nome === 'email-logo.png' });
+    await page.screenshot({ path: arquivo, omitBackground: nome.startsWith('favicon') || nome === 'email-logo.png' || nome === 'email-nome.png' });
     await page.close();
     console.log('gerada', nome);
   }

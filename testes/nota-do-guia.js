@@ -9,7 +9,7 @@ const { abrir, ok, vigiarAbas, abasAbertas } = require('./harness');
 
 const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.innerText || '').replace(/\s+/g, ' '), sel);
 const cor = (page, sel) => page.evaluate((s) => { const el = document.querySelector(s); return el ? getComputedStyle(el).color : ''; }, sel);
-const VERMELHO = 'rgb(230, 61, 16)';
+const VERMELHO = 'rgb(194, 51, 13)';
 const NOTA = {
   jogador: { media: 4.7, total: 12, comentarios: [{ nome: 'Gabi L.', nota: 5, texto: 'Achei quadra perto de casa', quando: '2026-11-10', resposta: 'Obrigado, Gabi!' }] },
   parceiro: { media: 4.8, total: 5, comentarios: [{ nome: 'Arena Moema', nota: 5, texto: 'Chegaram alunos novos pelo WhatsApp', quando: '2026-11-10', resposta: 'Que bom, Arena Moema!' }] },

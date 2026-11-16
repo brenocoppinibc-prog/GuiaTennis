@@ -43,7 +43,7 @@
     --text: #211F1A;
     --muted: #6B6557;
     --muted-dark: #A79F8C;
-    --red: #E63D10;
+    --red: #C2330D;
   }
   * { box-sizing: border-box; }
   .ficha-basica { display: flex; gap: 6px; align-items: flex-start; margin: 10px 0 0; padding: 8px 10px; background: var(--bg-alt); border-radius: 12px; font-size: 13px; color: var(--muted); line-height: 1.4; }
@@ -106,8 +106,8 @@
   .email-previa { margin-top: 14px; }
   .email-previa-assunto { margin: 2px 0 8px; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
   .email-previa-corpo { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: #1F2A24; }
-  .email-previa-marca { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; font-family: Arial, Helvetica, sans-serif; letter-spacing: -0.2px; font-size: 15px; font-weight: 700; color: var(--green); }
-  .email-previa-marca svg { width: 22px; height: 22px; }
+  .email-previa-marca { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 12px; padding: 9px 12px; background: var(--green); border-radius: 10px; color: #fff; font-size: 17px; }
+  .email-previa-marca .logo-mark { width: 22px; height: 22px; }
   .email-previa-h { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
   .email-previa-p { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
   .email-previa-msg { margin: 4px 0 12px; padding: 11px 13px; border: 1px solid #DCD6C8; border-radius: 12px; background: #FAF8F3; }
@@ -14367,7 +14367,7 @@ function previaDoEmail(c, f, bairro) {
       <p class="est-previa-t">Prévia do e-mail</p>
       <p class="email-previa-assunto"><strong>Assunto:</strong> Promoção em ${esc(bairro)}: ${titulo ? esc(titulo) : vazio("a promoção")}</p>
       <div class="email-previa-corpo">
-        <p class="email-previa-marca">${logoSvg()} <span>Guia<span style="color:#B8933F">Tennis</span></span></p>
+        <p class="email-previa-marca">${logoSvg()}<span class="logo-nome">${nomeDoLogo()}</span></p>
         <p class="email-previa-h">Novidade em ${esc(bairro)}</p>
         <p class="email-previa-p">Olá, <em>nome do jogador</em>! A <strong>${esc(c.name)}</strong>, em ${esc(bairro)}, está com uma promoção:</p>
         <div class="email-previa-msg promo">

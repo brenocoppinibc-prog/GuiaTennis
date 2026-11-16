@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 285)
+**Atualizado em:** 16/11/2026 (regra 286)
 
 | | |
 |---|---|
@@ -117,8 +117,8 @@ Texto e visual
   (`--fonte-texto` e `--fonte-titulo`: San Francisco, Roboto, Segoe UI; regra
   259); o nome "GuiaTennis" no logo é **desenho em Poppins Bold** (`nomeDoLogo()`,
   classe `logo-nome`, regra 260): "Guia" na cor do texto em volta (verde no claro,
-  branco no verde) e "Tennis" dourado; nos e-mails, Arial negrito nas mesmas
-  cores; creme, verde e
+  branco no verde) e "Tennis" dourado; nos e-mails, a faixa verde com o nome em imagem (regra
+  286); creme, verde e
   dourado (o Breno quer manter essas cores, 13/11); nada abaixo de
   12px, campos com 16px, botões com 48px; sem caixa dentro de caixa. Regra
   nova de visual vai na camada "Acabamento limpo", no fim do `<style>`.
@@ -138,7 +138,8 @@ Texto e visual
 - O logo é um desenho só (`logoDesenho`, com o nome em Poppins `NOME_DO_LOGO`,
   os dois entre `LOGO-INICIO` e `LOGO-FIM`); as imagens saem dele por
   `divulgacao/gerar-imagens.js` (ícones, imagem de compartilhar, 404, assinatura de
-  e-mail e capa do WhatsApp, regra 285). Nos e-mails, o nome é texto em Arial negrito.
+  e-mail e capa do WhatsApp, regra 285). Nos e-mails, uma faixa verde no alto com a raquete
+  e o nome em imagem (`email-nome.png`, "Guia" branco e "Tennis" dourado, regra 286).
 - No celular, janela aberta ocupa a tela toda. O que se digita vai calado
   para o rascunho da aba (sem "Rascunho salvo") e sair com algo não salvo
   pergunta "Sair sem salvar?" (`data-aviso-sair`, `data-rascunho-de`).
@@ -506,7 +507,9 @@ sem falha. **Rodar a bateria completa no começo do próximo chat.** `banco-emai
 `#E63D10` (sim), o nome em Poppins na imagem de compartilhar, na 404, na assinatura e na
 capa (sim, "mesma escrita em todos os lugares") e "Pet friendly". **Sem resposta:** a
 faixa verde "Para academias" na inicial (o Breno não entendeu; explicado em 16/11, com a
-recomendação de não entrar) e trocar o nome dos e-mails por imagem (oferecido). Ideias ainda não
+recomendação de não entrar). **Regra 286:** "deixe as cores que forem melhor": o vermelho de
+erro ficou `#C2330D` (o tom do `#E63D10`, mais escuro para ler em letra pequena) e os e-mails
+ganharam a faixa verde com o nome em Poppins, como o rodapé. Ideias ainda não
 pedidas: no Sobre, foto do Breno, linha do tempo, valores e contato para imprensa.
 
 **14/11/2026, regras 268 a 270:** a página inicial com mais conteúdo (cartões com
@@ -2139,6 +2142,21 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   banco de teste em 16/11). **Bateria completa de 16/11 (até a 285): 2.640 verificações
   certas e 1 falha em `ficha-hoteis` (o `index.html` foi editado durante a bateria); rodado
   de novo, 35 certas, sem falha.**
+- **286 (16/11) — o vermelho legível e a faixa verde nos e-mails** ("deixe as cores que
+  forem melhor para visualização, carregamento do site, do e-mail. Pode deixar como se
+  fosse um amarelo e fundo verde, igual ... no rodapé"): `--red` `#C2330D` (o tom do
+  `#E63D10` do sistema de design, mais escuro: 5,6:1 no branco e 5,1:1 no creme, para
+  letra pequena; o `#E63D10` dá 4,2:1). E-mails: o alto vira uma **faixa verde**
+  (`#1F4D3D`, cantos de 12px) com a raquete (`email-logo.png`, 34px) e o nome em Poppins
+  numa imagem (`email-nome.png`, 426×60 mostrado em 142×20, 7 KB, "Guia" branco e
+  "Tennis" dourado, `alt="GuiaTennis"` branco se a imagem não carregar): legível no modo
+  claro e no escuro. SQL `20261116140000_faixa_verde_nos_emails` (`email_montado`); o
+  e-mail do código (`divulgacao/email-codigo.html`, que o "Banco de dados" manda ao
+  Supabase, agora trocando o endereço das duas imagens) e a prévia do e-mail no Parceiros
+  (`.email-previa-marca`) iguais. `email-nome.png` sai do `gerar-imagens.js` e entrou na
+  lista do `netlify.toml`. Testes: `nota-do-guia` (47), `aberto-agora` (9),
+  `promocoes-por-email` (72), sem falha; `banco-emails.py` (seção 19 e seção nova; o SQL
+  conferido num Postgres de passagem e no banco de teste).
 
 ## 11. WhatsApp e mensagem para as academias
 

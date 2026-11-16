@@ -46,7 +46,7 @@ const { abrir, ok } = require('./harness');
   r = await page.evaluate(() => [...document.querySelectorAll('.rcard-hora')].map(e => e.innerText.trim()));
   ok(r.includes('Fechado agora'), 'domingo: "Fechado agora" — ' + r.join('|'));
   r = await page.evaluate(() => getComputedStyle(document.querySelector('.rcard-hora.fechado')).color);
-  ok(r === 'rgb(230, 61, 16)', 'fechado no vermelho do site — ' + r);
+  ok(r === 'rgb(194, 51, 13)', 'fechado no vermelho do site — ' + r);
 
   // Regra 283: na ficha, a distância numa linha própria e o "Sobre" antes das opções.
   await page.evaluate(() => openCourt('a1'));

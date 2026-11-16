@@ -752,7 +752,7 @@ sql("delete from vault.secrets where name = 'whatsapp_token'; update public.what
 # 19. A logo nos e-mails (SQL 20261007150000) -----------------------------------
 print("\n# Logo nos e-mails")
 html_logo = um("select html from public.emails_a_enviar where tipo = 'avaliacao' order by criado_em desc limit 1") or ""
-ok('/email-logo.png"' in html_logo and ">Guia<span style=\"color:#B8933F\">Tennis</span></td>" in html_logo, "todo aviso tem a logo no alto, ao lado do nome (\"Guia\" verde e \"Tennis\" dourado, regra 260)")
+ok('/email-logo.png"' in html_logo and '/email-nome.png" width="142" height="20" alt="GuiaTennis"' in html_logo and 'bgcolor="#1F4D3D"' in html_logo, "todo aviso tem no alto a faixa verde com a raquete e o nome em Poppins (regra 286)")
 ok(um("select public.email_montado('t', '', null, null, '')").count(um("select public.site_dos_emails()") + '/email-logo.png') == 1,
    "o ícone do e-mail (com os riscos fortes) vem do site dos e-mails: a prévia no teste, o site de verdade no real")
 
@@ -2930,6 +2930,15 @@ r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "s
 ok(r.returncode == 0, "o SQL do sitemap roda — " + r.stderr[-200:])
 mapa = um("select convert_from(public.sitemap()::bytea, 'UTF8')", papel="anon") or ""
 ok("https://guiatennis.com.br/como-funciona" in mapa and "https://guiatennis.com.br/sobre" in mapa and "/avaliacoes" not in mapa, "o sitemap tem /sobre e /como-funciona, sem /avaliacoes")
+
+# ---- A faixa verde no alto dos e-mails (regra 286, 20261116140000_faixa_verde_nos_emails) ----
+print("\nFaixa verde nos e-mails")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261116140000_faixa_verde_nos_emails.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL da faixa verde roda de novo — " + r.stderr[-200:])
+faixa = um("select public.email_montado('Título', '<p>corpo</p>', 'Abrir', 'https://x', 'rodapé')") or ""
+site = um("select public.site_dos_emails()")
+ok(faixa.count(site + '/email-nome.png') == 1 and faixa.count(site + '/email-logo.png') == 1 and 'alt="GuiaTennis"' in faixa and ">Guia<span" not in faixa,
+   "a faixa verde com a raquete e o nome (imagem com o texto GuiaTennis), sem o nome em Arial")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

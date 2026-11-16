@@ -5,15 +5,18 @@
      Authentication → Emails → Templates → "Magic Link".
      Assunto: {{ .Token }} é o seu código do GuiaTennis
      (se chegar escrito "{{ .Token }}", usar: Seu código do GuiaTennis)
-     Com a logo no alto (07/10/2026), como os avisos do banco.
+     Com a logo no alto (07/10/2026), como os avisos do banco: desde 16/11/2026
+     (regra 286), a faixa verde com a raquete e o nome em Poppins (email-nome.png).
      Como Google, Booking e Instagram: o código grande, quanto tempo vale,
      "nunca compartilhe" (golpe do WhatsApp) e nenhum link para clicar. -->
 <div style="margin:0;padding:24px 12px;background:#F6F1E7;font-family:Arial,Helvetica,sans-serif;color:#1F2A24">
   <div style="max-width:440px;margin:0 auto;background:#FFFFFF;border-radius:16px;padding:28px 24px;border:1px solid #E7DFD0">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;border-collapse:collapse"><tr>
-      <td style="vertical-align:middle;padding:0"><img src="https://guiatennis.com.br/email-logo.png" width="40" height="40" alt="" style="display:block;border:0;outline:none;width:40px;height:40px"></td>
-      <td style="vertical-align:middle;padding:0 0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:bold;color:#1F4D3A">GuiaTennis</td>
-    </tr></table>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#1F4D3D" style="margin:0 0 20px;border-collapse:separate;background:#1F4D3D;border-radius:12px"><tr><td align="center" style="padding:14px 16px">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>
+        <td style="vertical-align:middle;padding:0"><img src="https://guiatennis.com.br/email-logo.png" width="34" height="34" alt="" style="display:block;border:0;outline:none;width:34px;height:34px"></td>
+        <td style="vertical-align:middle;padding:0 0 0 10px"><img src="https://guiatennis.com.br/email-nome.png" width="142" height="20" alt="GuiaTennis" style="display:block;border:0;outline:none;width:142px;height:20px;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:bold;color:#FFFFFF"></td>
+      </tr></table>
+    </td></tr></table>
     <p style="margin:0 0 8px;font-size:16px;line-height:1.5">Olá! Este é o seu código do GuiaTennis:</p>
     <p style="margin:18px 0;padding:16px 0;text-align:center;font-size:34px;font-weight:bold;letter-spacing:8px;color:#1F4D3A;background:#EEF4F0;border-radius:12px">{{ .Token }}</p>
     <p style="margin:0 0 8px;font-size:15px;line-height:1.5">Digite o código na tela do GuiaTennis. Ele vale por 1 hora.</p>

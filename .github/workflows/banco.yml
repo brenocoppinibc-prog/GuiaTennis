@@ -111,7 +111,7 @@ jobs:
       # gerenciamento, com o segredo SUPABASE_ACCESS_TOKEN (token pessoal do
       # Supabase, Account › Access Tokens), em vez de o Breno colar à mão nos
       # dois projetos. Na prévia, a logo vem da prévia do PR (o
-      # email-logo.png só chega ao site de verdade com o merge). A resposta
+      # email-logo.png e o email-nome.png só chegam ao site de verdade com o merge). A resposta
       # do Supabase traz a configuração inteira (com a senha do SMTP): não
       # vai para o registro, só a mensagem de erro, se houver. Junto vai o
       # tamanho do código (mailer_otp_length), lido do DIGITOS_DO_EMAIL do
@@ -136,7 +136,7 @@ jobs:
           import json, os, re
           html = open("divulgacao/email-codigo.html", encoding="utf-8").read()
           html = re.sub(r"^\s*<!--.*?-->\s*", "", html, count=1, flags=re.S)  # o comentário de instruções fica só no repositório
-          html = html.replace("https://guiatennis.com.br/email-logo.png", os.environ["SITE"] + "/email-logo.png")
+          html = html.replace("https://guiatennis.com.br/email-", os.environ["SITE"] + "/email-")  # email-logo.png e email-nome.png
           assert "{{ .Token }}" in html and "<!--" not in html
           corpo = {"mailer_subjects_magic_link": "Seu código do GuiaTennis", "mailer_templates_magic_link_content": html}
           digitos = re.search(r"const DIGITOS_DO_EMAIL = (\d+);", open("index.html", encoding="utf-8").read())

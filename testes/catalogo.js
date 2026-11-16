@@ -164,7 +164,7 @@ const CATALOGO = [
   // Regra 206: em branco, não entra no catálogo; 0 ou - é "Sob consulta".
   await page.fill('[data-cat-valor="f1:individual:avulsa"]', '');
   await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', '-');
-  ok(await page.isVisible('[data-cat-sob="adulto:dupla:avulsa"]') && !(await page.isVisible('[data-cat-sob="adulto:individual:avulsa"]')) && (await texto(page, '#cat-tabela ~ .footnote')).includes('Valor em branco: a opção não aparece no catálogo. Com 0 (zero), - ou espaço: aparece "Sob consulta".') && (await texto(page, '#cat-tabela ~ .footnote')).includes('Com o Premium, cada formato mostra a própria foto'), 'o "-" mostra "Sob consulta" na hora, e o texto embaixo explica (regra 213)');
+  ok(await page.isVisible('[data-cat-sob="adulto:dupla:avulsa"]') && !(await page.isVisible('[data-cat-sob="adulto:individual:avulsa"]')) && (await texto(page, '#cat-tabela ~ .cat-notas')).includes('Sob consulta: escreva 0 (zero), - ou espaço no valor') && (await texto(page, '#cat-tabela ~ .cat-notas')).includes('Com o Premium, cada formato mostra a própria foto') && !(await texto(page, '#cat-tabela ~ .cat-notas')).includes('na mensal, o valor de cada'), 'o "-" mostra "Sob consulta" na hora, e o texto embaixo explica (regra 213)');
   // Regra 213: espaço sozinho também é "Sob consulta" (vira "-"), e a vírgula é a dos centavos.
   await page.fill('[data-cat-valor="adulto:dupla:avulsa"]', ' ');
   ok(await page.inputValue('[data-cat-valor="adulto:dupla:avulsa"]') === '-' && await page.isVisible('[data-cat-sob="adulto:dupla:avulsa"]'), 'espaço vira "-" e mostra "Sob consulta"');

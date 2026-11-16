@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 289)
+**Atualizado em:** 16/11/2026 (regra 290)
 
 | | |
 |---|---|
@@ -2207,6 +2207,39 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `acabamento.js` (17, a barra nova), `whatsapp-das-academias`, `buscas-e-avisos`,
   `aberto-agora`, `localizacao-cep`, `busca-e-ficha`, `bairro-direto` e `links`, sem
   falha; `aberto-agora.js` (10, "Aberto agora" nos Filtros). Bateria completa de 16/11 (até a 289): **2.644 verificações, nenhuma falha**.
+- **290 (16/11) — contatos reais, pagamento e cadastro** ("o site deve sempre aceitar
+  WhatsApps reais, Instagrams e sites também, que funcionem"; "Sobre o GuiaTennis, tire
+  do topo do Sobre"; "R$ 02: não estava funcionando digitar o número no pagamento";
+  "Pagamento seguro: um link que explica o nosso pagamento"; "tire 'até 750 letras'";
+  "quando faltar algo obrigatório no cadastro, um push com a opção de corrigir; nas aulas
+  sem valor, alterar ou seguir"; "ao mudar de academia com o menu aberto, o site pisca";
+  os textos dos valores, das fotos e do cancelamento). **Contatos:**
+  `digitosDoWhatsapp`/`whatsappValido` (10 ou 11 dígitos, com ou sem +55, 0, link wa.me;
+  o DDD 55 do RS não some mais do link), `usuarioDoInstagram`/`linkDoInstagram` (@, nome
+  ou link do perfil) e `linkDoSite` (com ou sem https://); os links da ficha, do admin e do
+  Google usam esses; o cadastro guarda arrumado e aponta o que está errado (`regFaltas`,
+  passo contato, e no envio). **Sobre:** sem o "Sobre o GuiaTennis" acima do título.
+  **"Outro valor":** campo de texto com teclado de números (o `type=number` voltava o
+  cursor ao começo a cada tecla e saía "02"), só dígitos e sem zero na frente. **"Pagamento
+  seguro"** virou botão que abre "Como funciona o pagamento" (Mercado Pago, Pix na página,
+  cartão na página do Mercado Pago, o GuiaTennis não vê o cartão, CPF/CNPJ para a nota,
+  créditos e plano na aprovação, WhatsApp para dúvidas; "Entendi"). **Planos:** "\"Sobre a
+  academia\" escrito por vocês", sem "até 750 letras". **Cadastro:** `mostrarEscolha`, o
+  aviso do alto com botões: faltou algo, "Corrigir" (vai ao campo, `irAoQueFalta`); sem
+  valor, "Alterar" (vai ao primeiro valor vazio) ou "Seguir" (o "Seguir assim" embaixo
+  continua). Os valores (`notasDosValores`, igual em Aulas e Locação, em parágrafos):
+  "Valores exibidos por aula/hora, sendo avulsa ou mensal."; o "Sob consulta" num
+  parágrafo próprio; "Para valores com centavos, use a vírgula. Ex.: 150,50."; e as fotos
+  seguindo os Termos e a Política, "se alguma foto não seguir, o GuiaTennis entra em
+  contato" (saiu a parte das autorizações e das promoções; no chat de ajuda saiu o "(na
+  mensal, o valor de cada … no plano)"). **Cancelamento:** os exemplos "a aula conta como
+  dada e não tem reposição" e "o valor da hora não é devolvido" (antes "é cobrada e pode
+  ser reposta", que se contradizia). **Trocar de academia:** o menu fecha na hora e a
+  página fica parada e mais clara (`body.pc-trocando`) enquanto a conta recarrega;
+  `segurarRender` não deixa a página se desenhar no meio, sem a conta. Sem SQL. Testes:
+  `contatos-e-cadastro.js` (novo, 11), `catalogo` (100), `chat-parceiros`, `cadastro`,
+  `plano-e-creditos`, `sobre`, `parceiros`, `links` e `ficha-hoteis`, sem falha; bateria
+  completa rodando no envio.
 
 ## 11. WhatsApp e mensagem para as academias
 

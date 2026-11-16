@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 286)
+**Atualizado em:** 16/11/2026 (regra 287)
 
 | | |
 |---|---|
@@ -138,7 +138,8 @@ Texto e visual
 - O logo é um desenho só (`logoDesenho`, com o nome em Poppins `NOME_DO_LOGO`,
   os dois entre `LOGO-INICIO` e `LOGO-FIM`); as imagens saem dele por
   `divulgacao/gerar-imagens.js` (ícones, imagem de compartilhar, 404, assinatura de
-  e-mail e capa do WhatsApp, regra 285). Nos e-mails, uma faixa verde no alto com a raquete
+  e-mail, capa do WhatsApp e, na regra 287, os fundos do Instagram, a capa do Facebook e o
+  logo deitado em PNG e SVG). Nos e-mails, uma faixa verde no alto com a raquete
   e o nome em imagem (`email-nome.png`, "Guia" branco e "Tennis" dourado, regra 286).
 - No celular, janela aberta ocupa a tela toda. O que se digita vai calado
   para o rascunho da aba (sem "Rascunho salvo") e sair com algo não salvo
@@ -2157,6 +2158,17 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   lista do `netlify.toml`. Testes: `nota-do-guia` (47), `aberto-agora` (9),
   `promocoes-por-email` (72), sem falha; `banco-emails.py` (seção 19 e seção nova; o SQL
   conferido num Postgres de passagem e no banco de teste).
+- **287 (16/11) — logos e fundos para as redes** ("mande os novos arquivos de logos e
+  fundos para WhatsApp, Instagram, tudo mais"): no `divulgacao/gerar-imagens.js`, com o
+  verde da capa, a quadra embaixo, o nome em Poppins e o texto em Roboto:
+  `instagram-stories-fundo.png` (1080×1920, o meio livre e nada nas faixas de 250px que o
+  Instagram cobre), `instagram-post-fundo.png` e `instagram-post-apresentacao.png`
+  (1080×1350, o tamanho que mais aparece no feed), `facebook-capa.png` (1640×624, tudo no
+  meio, porque o celular corta as laterais), `logo-horizontal.png` ("Guia" verde, para
+  fundo claro), `logo-horizontal-branco.png` (para fundo escuro), os dois transparentes,
+  e `logo-horizontal.svg` (para gráfica). A foto de perfil de todas as redes é o
+  `whatsapp-perfil.png`. Mandados ao Breno com um .zip de tudo. Não mexe no site (a
+  `divulgacao/` não gera publicação na Netlify). Sem SQL e sem teste.
 
 ## 11. WhatsApp e mensagem para as academias
 

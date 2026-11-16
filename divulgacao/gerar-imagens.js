@@ -20,6 +20,9 @@
 //                                    (16:9; o texto fica longe da parte de
 //                                    baixo, onde a foto redonda fica por cima)
 //   divulgacao/email-assinatura.png 566×184   — assinatura de e-mail
+//   divulgacao/instagram-stories-fundo.png 1080×1920, instagram-post-fundo.png
+//   e instagram-post-apresentacao.png 1080×1350, facebook-capa.png 1640×624,
+//   logo-horizontal.png / logo-horizontal-branco.png 969×280 e logo-horizontal.svg
 // Rodar: NODE_PATH=$(npm root -g) node divulgacao/gerar-imagens.js
 // Só algumas: … gerar-imagens.js email-logo.png (os nomes dos arquivos).
 const { chromium } = require('playwright');
@@ -114,6 +117,57 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
   <div class="pe dir">@guiatennis</div>
 </body></html>`;
 
+// Redes (regra 287, "os novos arquivos de logos e fundos para WhatsApp,
+// Instagram e tudo mais"): o mesmo verde da capa, a quadra embaixo, o nome em
+// Poppins e o texto em Roboto. Os fundos deixam o meio livre para escrever.
+const quadraEm = (altura) => `<div style="position:absolute;left:0;right:0;bottom:0;height:${altura}px">${quadra
+  .replace('width="1600" height="900"', 'width="100%" height="100%" preserveAspectRatio="xMidYMax slice"')}</div>`;
+const rede = (w, h, miolo, alturaQuadra) => `<!doctype html><html><head><meta charset="utf-8">${FONTE}
+<style>
+  html,body{margin:0}
+  body{width:${w}px;height:${h}px;background:${FUNDO};position:relative;overflow:hidden;font-family:'Roboto',sans-serif;color:#F7F4EC}
+  .linha{position:absolute;left:0;right:0;display:flex;justify-content:center;text-align:center}
+  h1{margin:0;font-weight:700;letter-spacing:-.5px;line-height:1.12}
+  .sub{margin:0;font-weight:500;color:#D8B865}
+  .pe{position:absolute;font-weight:500;opacity:.92}
+</style></head><body>${quadraEm(alturaQuadra)}${miolo}</body></html>`;
+const NOME_CLARO = (altura) => nomeSvg(altura, '#F7F4EC', '#B8933F');
+const storiesFundo = rede(1080, 1920, `
+  <div class="linha" style="top:300px">${NOME_CLARO(96)}</div>
+  <div class="linha" style="bottom:300px;font-size:40px;font-weight:500;opacity:.92">@guiatennis</div>`, 1000);
+const postFundo = rede(1080, 1350, `
+  <div class="linha" style="top:110px">${NOME_CLARO(68)}</div>
+  <div class="pe" style="left:70px;bottom:64px;font-size:30px">guiatennis.com.br</div>
+  <div class="pe" style="right:70px;bottom:64px;font-size:30px">@guiatennis</div>`, 640);
+const postApresentacao = rede(1080, 1350, `
+  <div class="linha" style="top:130px">${NOME_CLARO(68)}</div>
+  <div class="linha" style="top:330px;flex-direction:column;align-items:center;gap:34px;padding:0 80px">
+    <h1 style="font-size:78px">Quadras e academias de tênis perto de você</h1>
+    <p class="sub" style="font-size:38px;line-height:1.35">Compare preço e estrutura<br>e fale direto no WhatsApp</p>
+  </div>
+  <div class="pe" style="left:70px;bottom:64px;font-size:30px">guiatennis.com.br</div>
+  <div class="pe" style="right:70px;bottom:64px;font-size:30px">@guiatennis</div>`, 640);
+// Facebook: no celular corta as laterais; tudo no meio.
+const facebookCapa = rede(1640, 624, `
+  <div class="linha" style="top:110px;flex-direction:column;align-items:center;gap:30px">
+    <div style="margin-bottom:14px">${NOME_CLARO(58)}</div>
+    <h1 style="font-size:56px">Quadras e academias de tênis perto de você</h1>
+    <p class="sub" style="font-size:30px">Compare preço e estrutura · fale direto no WhatsApp</p>
+  </div>`, 520);
+// Logo deitado (raquete + nome), fundo transparente: "Guia" verde para fundo
+// claro e branco para fundo escuro; e o mesmo em SVG, para gráfica e quem faz arte.
+const LOGO_W = 969, LOGO_H = 280;
+const logoDeitadoSvg = (guia, id) => {
+  const [, , w, h] = NOME.caixa.split(' ').map(Number);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${LOGO_W}" height="${LOGO_H}" viewBox="0 0 ${LOGO_W} ${LOGO_H}">
+<svg x="40" y="40" width="200" height="200" viewBox="0 0 1080 1080">${logoDesenho({ id })}</svg>
+<svg x="276" y="${(LOGO_H - 92) / 2}" height="92" width="${(92 * w / h).toFixed(1)}" viewBox="${NOME.caixa}"><path fill="${guia}" d="${NOME.guia}"/><path fill="#B8933F" d="${NOME.tennis}"/></svg>
+</svg>`;
+};
+const logoDeitado = (guia) => `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:transparent}svg{display:block}</style></head><body>${logoDeitadoSvg(guia, 'l')}</body></html>`;
+fs.writeFileSync(path.join(__dirname, 'logo-horizontal.svg'), logoDeitadoSvg('#1F4D3D', 'svg') + '\n');
+
 (async () => {
   const browser = await chromium.launch();
   const imagens = [
@@ -126,6 +180,12 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     [path.join(__dirname, 'whatsapp-perfil.png'), perfil, 1080, 1080],
     [path.join(__dirname, 'whatsapp-capa.png'), capa, 1600, 900],
     [path.join(__dirname, 'email-assinatura.png'), assinatura, 566, 184],
+    [path.join(__dirname, 'instagram-stories-fundo.png'), storiesFundo, 1080, 1920],
+    [path.join(__dirname, 'instagram-post-fundo.png'), postFundo, 1080, 1350],
+    [path.join(__dirname, 'instagram-post-apresentacao.png'), postApresentacao, 1080, 1350],
+    [path.join(__dirname, 'facebook-capa.png'), facebookCapa, 1640, 624],
+    [path.join(__dirname, 'logo-horizontal.png'), logoDeitado('#1F4D3D'), LOGO_W, LOGO_H],
+    [path.join(__dirname, 'logo-horizontal-branco.png'), logoDeitado('#FFFFFF'), LOGO_W, LOGO_H],
   ];
   const so = process.argv.slice(2);
   for (const [arquivo, conteudo, w, h] of imagens) {
@@ -141,9 +201,9 @@ const capa = `<!doctype html><html><head><meta charset="utf-8">${FONTE}
     });
     await page.setContent(conteudo, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
-    const fonte = await page.evaluate(() => document.fonts.check("700 74px 'Roboto'"));
-    if (nome.includes('capa') && !fonte) console.warn('ATENÇÃO: a fonte Roboto não carregou');
-    await page.screenshot({ path: arquivo, omitBackground: nome.startsWith('favicon') || nome === 'email-logo.png' || nome === 'email-nome.png' });
+    const fonte = await page.evaluate(() => document.fonts.check("500 30px 'Roboto'"));
+    if (/capa|instagram/.test(nome) && !fonte) console.warn('ATENÇÃO: a fonte Roboto não carregou');
+    await page.screenshot({ path: arquivo, omitBackground: nome.startsWith('favicon') || nome.startsWith('logo-') || nome === 'email-logo.png' || nome === 'email-nome.png' });
     await page.close();
     console.log('gerada', nome);
   }

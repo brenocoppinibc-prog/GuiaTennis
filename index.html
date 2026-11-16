@@ -3500,6 +3500,27 @@
   .ht-poi-fora a { color: var(--green); font-weight: 600; }
   /* Regra 282: o aviso de que mandar a lista e salvar os contatos pedem conta. */
   .wa-acoes-nota { margin: 4px 8px 6px; font-size: 13px; line-height: 1.4; color: var(--muted); }
+  /* Regra 283: as comodidades no verde do site no cartão da busca; o horário com
+     a bolinha (aberto verde, fecha em breve amarelo, fechado vermelho); uma linha
+     para onde, outra para a distância e outra para as quadras; a distância da
+     ficha numa linha própria; a foto do catálogo mais baixa; o "Sobre" em 4
+     linhas com "Ler mais". */
+  .rcard-selos { color: var(--green); font-weight: 600; }
+  .rcard-dist, .rcard-quadras { color: var(--muted); }
+  .rcard-onde + .rcard-line, .rcard-dist + .rcard-line { margin-top: 2px; }
+  .rcard-hora { display: flex; align-items: center; gap: 6px; }
+  .rcard-hora i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .rcard-hora.aberto { color: var(--green); }
+  .rcard-hora.aberto i { background: var(--green); }
+  .rcard-hora.breve { color: var(--gold-text, #7A5E1E); }
+  .rcard-hora.breve i { background: var(--gold); }
+  .rcard-hora.fechado { color: var(--red); font-weight: 600; }
+  .rcard-hora.fechado i { background: var(--red); }
+  .court-dist { margin-top: 2px; }
+  .ht-quarto-foto { aspect-ratio: 16 / 9; overflow: hidden; }
+  .ht-quartos > .ht-quarto:only-child .ht-quarto-foto { aspect-ratio: 21 / 9; }
+  .ht-about-curto { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .ht-about-mais { margin-top: 6px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -4328,13 +4349,26 @@ function faixaTexto(f) {
 // os diretórios de quadra: quem quer jogar hoje vê na hora quem atende. Sem
 // horário informado, não mostra nada.
 function horaCurta(t) { const m = /^(\d{1,2}):(\d{2})$/.exec(t || ""); return m ? `${parseInt(m[1], 10)}h${m[2] === "00" ? "" : m[2]}` : ""; }
+// Regra 283: "Fecha em breve" (até 1 hora antes de fechar) no amarelo do site,
+// "Aberto agora" no verde e "Fechado agora" no vermelho, com a bolinha da cor.
+function minutosAteFechar(c) {
+  const f = faixaDeHoje(c, new Date());
+  const m = /^(\d{1,2}):(\d{2})$/.exec((f && f.ate) || "");
+  if (!m) return null;
+  const agora = new Date();
+  let falta = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) - (agora.getHours() * 60 + agora.getMinutes());
+  if (falta < 0) falta += 24 * 60;
+  return falta;
+}
 function linhaDoHorario(c) {
   const aberto = abertoAgora(c);
   if (aberto === null) return "";
-  if (!aberto) return `<p class="rcard-line rcard-hora fechado">Fechado agora</p>`;
+  if (!aberto) return `<p class="rcard-line rcard-hora fechado"><i aria-hidden="true"></i>Fechado agora</p>`;
   const f = faixaDeHoje(c, new Date());
   const ate = horaCurta(f && f.ate);
-  return `<p class="rcard-line rcard-hora aberto">Aberto agora${ate ? ` · até ${ate}` : ""}</p>`;
+  const falta = minutosAteFechar(c);
+  if (falta !== null && falta <= 60) return `<p class="rcard-line rcard-hora breve"><i aria-hidden="true"></i>Fecha em breve${ate ? ` · às ${ate}` : ""}</p>`;
+  return `<p class="rcard-line rcard-hora aberto"><i aria-hidden="true"></i>Aberto agora${ate ? ` · até ${ate}` : ""}</p>`;
 }
 function abertoAgora(c) {
   const agora = new Date();
@@ -20995,7 +21029,12 @@ function renderCard(c, badge) {
             ${c.appCount ? `<span class="scount">${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}</span>` : ""}
           </div>
 
-          <p class="rcard-line rcard-onde">${esc([localLine(c), totalQuadras(c) ? `${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}${(c.pisos || []).length ? " de " + listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)).toLowerCase() : ""}` : ""].filter(Boolean).join(" · "))}</p>
+          ${/* Regra 283 ("deixe em linha separada a quantidade de quadra do bairro,
+               cidade e distância"): uma linha para onde fica, outra para a
+               distância e outra para as quadras. */ ""}
+          <p class="rcard-line rcard-onde">${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}</p>
+          ${distanceText(c.distanceKm) ? `<p class="rcard-line rcard-dist">${esc(distanceText(c.distanceKm))} de você</p>` : ""}
+          ${totalQuadras(c) ? `<p class="rcard-line rcard-quadras">${esc(`${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}${(c.pisos || []).length ? " de " + listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)).toLowerCase() : ""}`)}</p>` : ""}
           ${linhaDoHorario(c)}
           ${c.avisouQueFechouEm ? `<p class="rcard-line rcard-fechou"><span class="ico">${icon('warning', 13, 'var(--red)')}</span><span>A academia avisou que fechou</span></p>` : ""}
           ${promo ? `<p class="rcard-line rcard-promo"><span><strong>Promoção:</strong> ${esc(promo.titulo)}</span></p>` : ""}
@@ -22153,8 +22192,11 @@ function frasesDoResumoCompleto(c) {
 }
 function htSobre(c) {
   const tipo = limitesDoPlano(c.plano).sobre;
-  if (tipo === "academia" && c.sobre) return `<p class="ht-about ht-about-academia">${esc(c.sobre)}</p>`;
-  return `<p class="ht-about">${esc(tipo === "curto" ? descricaoAcademia(c) : resumoCompleto(c))}</p>`;
+  const texto = tipo === "academia" && c.sobre ? c.sobre : tipo === "curto" ? descricaoAcademia(c) : resumoCompleto(c);
+  const classe = tipo === "academia" && c.sobre ? "ht-about ht-about-academia" : "ht-about";
+  // Regra 283: texto longo em 4 linhas, com "Ler mais" (o "Mostrar mais" do Airbnb).
+  const longo = (texto || "").length > 220;
+  return `<p class="${classe}${longo ? " ht-about-curto" : ""}" id="ht-about-texto">${esc(texto)}</p>${longo ? `<button type="button" class="inline-link ht-about-mais" data-ler-mais>Ler mais</button>` : ""}`;
 }
 
 // O que os jogadores elogiam nas avaliações, como o "Os hóspedes adoraram"
@@ -23262,10 +23304,10 @@ function htSecoesDisponiveis(c) {
   const secs = [];
   // Regra 264: a ordem da decisão (preço, horário, estrutura, onde fica,
   // cancelamento e o que dizem os jogadores).
+  secs.push({ id: "ht-visao", label: "Visão geral" });
   secs.push({ id: "ht-opcoes", label: "Preços" });
   if (temHorario(c)) secs.push({ id: "ht-horario", label: "Horário" });
   if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Estrutura" });
-  secs.push({ id: "ht-visao", label: "Visão geral" });
   secs.push({ id: "ht-local", label: "Localização" });
   secs.push({ id: "ht-politica", label: "Cancelamento" });
   secs.push({ id: "avaliacoes", label: "Avaliações" });
@@ -23441,7 +23483,8 @@ function renderCourtPage(c) {
           <div class="ht-main">
             <header class="ht-head">
               <h2 class="court-name display">${esc(c.name)}${seloDaAcademia(c, 22, true)}</h2>
-              <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}${dist ? ` · ${dist} de você` : ""}</p>
+              <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</p>
+              ${dist ? `<p class="court-addr court-dist">${esc(dist)} de você</p>` : ""}
               <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button></p>
               <button type="button" class="ht-score" id="ir-avaliacoes">
                 ${c.appCount ? `<span class="ht-score-num">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : ""}
@@ -23465,6 +23508,14 @@ function renderCourtPage(c) {
               ${/* Ficha na ordem da decisão (regra 264, 13/11/2026): preços, contato,
                    horário, estrutura, "Sobre", localização, cancelamento, avaliações,
                    dúvidas e as academias por perto, como no protótipo aprovado. */ ""}
+              ${/* Regra 283 ("deixar o sobre a academia acima do catálogo"): como a
+                   descrição antes dos quartos no Booking, no Airbnb e no hoteis.com;
+                   o texto longo fica em 4 linhas com "Ler mais". */ ""}
+              <section class="ht-sec" id="ht-visao">
+                <h3 class="sec-title">Sobre a academia</h3>
+                ${htSobre(c)}
+              </section>
+
               <section class="ht-sec" id="ht-opcoes">
                 <h3 class="sec-title">Opções para jogar</h3>
                 ${htCaixasDaEscolha(c)}
@@ -23510,10 +23561,6 @@ function renderCourtPage(c) {
                   ${htComodidades(c)}
                 </section>` : ""}
 
-              <section class="ht-sec" id="ht-visao">
-                <h3 class="sec-title">Sobre a academia</h3>
-                ${htSobre(c)}
-              </section>
 
               <section class="ht-sec" id="ht-local">
                 <h3 class="sec-title">Explore a região</h3>
@@ -29189,6 +29236,7 @@ function attachEvents() {
     render();
   };
 
+  document.querySelectorAll("[data-ler-mais]").forEach(b => { b.onclick = () => { const t = document.getElementById("ht-about-texto"); if (!t) return; const aberto = t.classList.toggle("ht-about-curto") === false; b.textContent = aberto ? "Ler menos" : "Ler mais"; }; });
   document.querySelectorAll("[data-filtro-rapido]").forEach(b => { b.onclick = () => ligarFiltroRapido(Number(b.dataset.filtroRapido)); });
   document.querySelectorAll("[data-tipo-home]").forEach(b => { b.onclick = () => abrirTipoDaHome(Number(b.dataset.tipoHome)); });
 

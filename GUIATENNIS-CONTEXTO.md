@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 282)
+**Atualizado em:** 16/11/2026 (regra 283)
 
 | | |
 |---|---|
@@ -496,7 +496,9 @@ comodidade "Aceita pets"; regra 278: o painel do admin revisto; regra 279: o CEP
 campo depois da localização e uma bolinha girando só; regra 280: "Academias
 recomendadas" de volta no título, a página do bairro direta e o "O que tem por perto"
 mais confiável; regra 281 (16/11): a mesma caixa de busca na inicial e nos resultados;
-regra 282: mandar a lista e salvar os contatos pedem conta. Sem SQL. Bateria completa de 15/11
+regra 282: mandar a lista e salvar os contatos pedem conta; regra 283: cores do horário,
+linhas separadas no cartão e na ficha, foto do catálogo menor e o "Sobre" antes das
+opções. Sem SQL. Bateria completa de 15/11
 (até a 274): 2.610 verificações, nenhuma falha.
 
 **Chat trocado em 14/11/2026 (regra 267):** o chat novo volta a acompanhar o
@@ -2051,6 +2053,25 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   conta. Testes: `whatsapp-das-academias` (20, com os casos sem conta),
   `chat-de-ajuda`, `comparar-e-avisos`, `comparacao-tudo`, `guardados-na-conta` e
   `buscas-e-avisos`, sem falha.
+- **283 (16/11) — cores, linhas e o "Sobre" primeiro** ("deixe as comodidades… na
+  lista com o nosso verde… crie o fecha em breve… amarelo, aberta agora… verde e
+  fechada com o vermelho"; "em linha separada a quantidade de quadra do bairro, cidade e
+  distância; na ficha também a distância em linha diferente do bairro"; "a foto do
+  catálogo com uma visualização menor"; "o sobre a academia acima do catálogo").
+  **Cartão da busca:** as comodidades (`.rcard-selos`) no verde, em negrito; uma linha
+  para "Bairro, Cidade" (`.rcard-onde`), outra para "N m de você" (`.rcard-dist`) e outra
+  para "N quadras de …" (`.rcard-quadras`); o horário com a bolinha da cor
+  (`linhaDoHorario`): "Aberto agora · até 22h" verde, **"Fecha em breve · às 22h"**
+  (até 60 min antes, `minutosAteFechar`) amarelo (bolinha `--gold`, texto
+  `--gold-text`), "Fechado agora" vermelho (`--red`). **Ficha:** a distância numa
+  linha própria embaixo do endereço (`.court-dist`); **"Sobre a academia" antes de
+  "Opções para jogar"** (e "Visão geral" primeiro na barra de seções), como a
+  descrição antes dos quartos no Booking, no Airbnb e no hoteis.com; texto com mais
+  de 220 letras em 4 linhas com "Ler mais"/"Ler menos" (`data-ler-mais`); desfaz a
+  posição do "Sobre" da regra 264. **Catálogo:** foto 16:9 (era 4:3) e a opção única
+  21:9, com `overflow: hidden` (a foto passava da proporção). Testes: `aberto-agora`
+  (10: fecha em breve, cores, ficha), `acabamento` (as três linhas), `ficha-hoteis`
+  (a ordem nova), `catalogo`, `ficha-basica` e outros, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

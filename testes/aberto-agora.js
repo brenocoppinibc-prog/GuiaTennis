@@ -32,12 +32,28 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => getResults().length === 2 && !/aberto=1/.test(location.search)), 'outro toque desliga');
 
+  // Regra 283: 21h30 de segunda, "Fecha em breve · às 22h" no amarelo.
+  await page.clock.setFixedTime(new Date('2026-11-16T21:30:00'));
+  await page.evaluate(() => render());
+  await page.waitForTimeout(300);
+  r = await page.evaluate(() => { const e = document.querySelector('.rcard-hora'); return { t: e?.innerText.trim(), classe: e?.className, bola: e && getComputedStyle(e.querySelector('i')).backgroundColor }; });
+  ok(r.t === 'Fecha em breve · às 22h' && /breve/.test(r.classe) && r.bola === 'rgb(184, 147, 63)', 'faltando 1 hora: "Fecha em breve · às 22h", com a bolinha amarela — ' + JSON.stringify(r));
+
   // Domingo: a1 fecha.
   await page.clock.setFixedTime(new Date('2026-11-15T15:00:00'));
   await page.evaluate(() => render());
   await page.waitForTimeout(300);
   r = await page.evaluate(() => [...document.querySelectorAll('.rcard-hora')].map(e => e.innerText.trim()));
   ok(r.includes('Fechado agora'), 'domingo: "Fechado agora" — ' + r.join('|'));
+  r = await page.evaluate(() => getComputedStyle(document.querySelector('.rcard-hora.fechado')).color);
+  ok(r === 'rgb(168, 70, 44)', 'fechado no vermelho do site — ' + r);
+
+  // Regra 283: na ficha, a distância numa linha própria e o "Sobre" antes das opções.
+  await page.evaluate(() => openCourt('a1'));
+  await page.waitForTimeout(800);
+  r = await page.evaluate(() => ({ end: document.querySelector('.court-addr')?.innerText || '', dist: document.querySelector('.court-dist')?.innerText || '',
+    ordem: document.getElementById('ht-visao').compareDocumentPosition(document.getElementById('ht-opcoes')) & Node.DOCUMENT_POSITION_FOLLOWING }));
+  ok(!/de você/.test(r.end) && /de você$/.test(r.dist) && r.ordem, 'ficha: a distância embaixo do endereço e o "Sobre" antes das opções — ' + r.end + ' / ' + r.dist);
 
   await browser.close();
 })();

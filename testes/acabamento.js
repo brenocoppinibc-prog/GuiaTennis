@@ -33,11 +33,13 @@ const { abrir, ok } = require('./harness');
     botao: document.getElementById('search-btn')?.getAttribute('aria-label'),
     linha: document.querySelector('.status-info')?.innerText || '',
     sub: document.querySelector('.toolbar-sub')?.innerText || '',
-    distancia: document.querySelector('.rcard-onde')?.innerText || document.getElementById('app').innerText.match(/[^\n]*de você[^\n]*/)?.[0] || '',
+    distancia: document.querySelector('.rcard-dist')?.innerText || '',
+    linhas: [...(document.querySelector('.rcard')?.querySelectorAll('.rcard-onde, .rcard-dist, .rcard-quadras') || [])].map(e => e.innerText.trim()),
   }));
   ok(r.igual, 'regra 281: nos resultados, a mesma caixa da inicial (onde, o que procura e "Buscar academias")');
   ok(r.linha.includes('A partir de Pinheiros, São Paulo') && !r.sub, 'o "a partir de" aparece uma vez só — ' + r.sub);
-  ok(/0 m de você/.test(r.distancia), 'regra 271: a distância exata ("0 m de você") — ' + r.distancia);
+  ok(r.distancia === '0 m de você', 'regra 271: a distância exata ("0 m de você") — ' + r.distancia);
+  ok(r.linhas.join('|') === 'Pinheiros, São Paulo|0 m de você|2 quadras de saibro', 'regra 283: onde, distância e quadras em linhas separadas — ' + r.linhas.join('|'));
   r = await page.evaluate(() => [distanceText(0.04), distanceText(0.347), distanceText(1.26)]);
   ok(r.join('|') === '40 m|347 m|1,3 km', 'distâncias exatas — ' + r.join('|'));
 

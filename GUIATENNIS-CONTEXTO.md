@@ -502,7 +502,7 @@ vender, para todos, da melhor maneira. **Testes:** a bateria completa rodou em 1
 (até a regra 274: 2.610, nenhuma falha); das regras 275 a 284 só os testes afetados,
 sem falha. **Rodar a bateria completa no começo do próximo chat.** `banco-emails.py`:
 963 no banco local (16/11; o banco local foi montado neste contêiner e não fica).
-**Respostas de 16/11 (regra 285):** `/como-funciona` no sitemap (sim), a cor de erro
+**Bateria completa de 16/11 (até a regra 285): 2.640 certas, a única falha (`ficha-hoteis`, edição durante a bateria) passou ao rodar de novo.** **Respostas de 16/11 (regra 285):** `/como-funciona` no sitemap (sim), a cor de erro
 `#E63D10` (sim), o nome em Poppins na imagem de compartilhar, na 404, na assinatura e na
 capa (sim, "mesma escrita em todos os lugares") e "Pet friendly". **Sem resposta:** a
 faixa verde "Para academias" na inicial (o Breno não entendeu; explicado em 16/11, com a
@@ -2135,7 +2135,10 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   ícones não têm escrita e não mudaram; "Aceita pets" virou **"Pet friendly"** (o filtro
   segue `comodidades=pet`). Testes: `comodidade-pet.js`, `nota-do-guia.js` e
   `aberto-agora.js` (a cor nova), `banco-emails.py` (seção nova, não rodada: o banco
-  local não está no contêiner; o SQL rodou no banco de teste). Bateria completa em andamento.
+  local não está no contêiner; o "Banco de dados" disparado à mão rodou com sucesso no
+  banco de teste em 16/11). **Bateria completa de 16/11 (até a 285): 2.640 verificações
+  certas e 1 falha em `ficha-hoteis` (o `index.html` foi editado durante a bateria); rodado
+  de novo, 35 certas, sem falha.**
 
 ## 11. WhatsApp e mensagem para as academias
 

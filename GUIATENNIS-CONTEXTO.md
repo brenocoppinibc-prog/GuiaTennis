@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 284)
+**Atualizado em:** 16/11/2026 (regra 284, troca de chat)
 
 | | |
 |---|---|
@@ -479,6 +479,32 @@ novo, `parceiros.js`, `percurso.js`, `voltar.js`, `senha.js`, `rascunho.js`) e a
 **Modo de economia (02/11):** o Breno pediu para gastar menos limite:
 rodar só os testes afetados, mandar print só se ele pedir, respostas curtas
 e a descrição do PR curta (só as regras e os passos novos; seção 2).
+
+**Chat trocado em 16/11/2026 (regra 284):** o chat novo volta a acompanhar o PR #5
+(este deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de
+código: `5d78b16` (regra 284). O PR está verde, sem conflito, a prévia no ar com tudo
+até a regra 284 e a descrição do PR em dia (passos 91 a 105). O "Banco de dados" desta
+branch é **disparado à mão** (`banco.yml`, `destino: teste`, pela ferramenta
+`actions_run_trigger`): rodou com sucesso em 16/11 para o SQL mais novo,
+`20261116120000_fechamento_do_leilao`. **Do chat de 14 a 16/11:** regras 268 a 284
+(seção 10): inicial com mais conteúdo, a caixa de busca do Trivago (igual na inicial e
+nos resultados), menu sem os links do fim, filtros rápidos, o WhatsApp da busca
+("Chamar", "Compartilhar", "Peça o preço a várias academias"), o e-mail primeiro no
+Entrar (trilha só no cadastro, e de volta no "Cadastrar minha academia"), "Aberto
+agora"/"Fecha em breve"/"Fechado agora", "Aceita pets" (a iluminação entrou e saiu),
+painel do Parceiros, Minha conta e admin revistos, o CEP da localização no campo,
+"Academias recomendadas" de volta, o bairro direto, o "O que tem por perto" mais
+confiável, o "Sobre" antes das opções, voltar da ficha na mesma altura e o admin
+escolhendo quando o leilão fecha. **Regra fixa nova (seção 1):** o site sempre precisa
+vender, para todos, da melhor maneira. **Testes:** a bateria completa rodou em 15/11
+(até a regra 274: 2.610, nenhuma falha); das regras 275 a 284 só os testes afetados,
+sem falha. **Rodar a bateria completa no começo do próximo chat.** `banco-emails.py`:
+963 no banco local (16/11; o banco local foi montado neste contêiner e não fica).
+**Perguntas ao Breno sem resposta:** (1) a faixa verde "Para academias" do protótipo
+na inicial; (2) `/como-funciona` no sitemap (SQL do `sitemap()`); (3) a cor de erro
+nova (`#E63D10`); (4) a imagem de compartilhar, os ícones e a 404 com o logo em
+Poppins; (5) "Aceita pets" ou "Pet friendly" (ficou "Aceita pets"). Ideias ainda não
+pedidas: no Sobre, foto do Breno, linha do tempo, valores e contato para imprensa.
 
 **14/11/2026, regras 268 a 270:** a página inicial com mais conteúdo (cartões com
 foto, "Busque pelo tipo de quadra", bairros da cidade); a caixa de busca de volta ao

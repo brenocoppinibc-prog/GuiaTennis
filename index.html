@@ -3455,19 +3455,10 @@
   .mini-home .mini-score .sbadge { color: #fff; }
   /* Regra 271: os filtros rápidos da busca; na ficha, a opção única ocupa a
      linha inteira (o botão de chamar fica largo, como o de reservar do Booking). */
-  .filtros-rapidos { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 12px 20px 4px; }
-  .toolbar { flex-wrap: nowrap; justify-content: flex-start; padding: 10px 0 10px 20px; }
-  .toolbar > .tbtn, .toolbar > .sortwrap { flex-shrink: 0; }
-  .toolbar .filtros-rapidos { flex: 1; min-width: 0; padding: 0 20px 0 0; }
-  .busca-resumo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 12px 20px 2px; }
-  .busca-resumo > .status-line, .busca-resumo > .busca-salva-aviso { flex-basis: 100%; }
-  .busca-resumo .busca-salvar { padding: 0; gap: 0; flex-wrap: nowrap; margin-right: -6px; }
-  .busca-resumo .busca-salvar .tbtn, .busca-resumo .busca-salvar summary.tbtn { border: 0; background: none; padding: 0 6px; min-height: 40px; gap: 5px; font-size: 14px; color: var(--green); font-weight: 600; box-shadow: none; white-space: nowrap; }
-  .busca-resumo .busca-salvar .wa-mais { margin-left: 0; }
-  .busca-resumo .busca-salvar .tbtn.on { color: var(--green); }
-  .filtros-rapidos::-webkit-scrollbar { display: none; }
-  .frap { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text); font-family: var(--fonte-texto); font-size: 14px; font-weight: 600; cursor: pointer; }
-  .frap.on { background: var(--green); border-color: var(--green); color: #fff; }
+  .toolbar .sort-menu { left: auto; right: 0; }
+  .busca-salvar { justify-content: space-between; flex-wrap: nowrap; padding: 6px 12px 0 14px; }
+  .busca-salvar .tbtn, .busca-salvar summary.tbtn { border: 0; background: none; padding: 0 8px; min-height: 44px; gap: 6px; color: var(--green); font-weight: 600; box-shadow: none; white-space: nowrap; }
+  .busca-salvar .tbtn.on { color: var(--green); }
   .ht-quartos > .ht-quarto:only-child { grid-column: 1 / -1; }
   .ht-quartos > .ht-quarto:only-child .ht-quarto-foto { aspect-ratio: 16 / 9; }
   /* Regra 272: o atalho do cartão da busca é um botão de verdade (como o "Ver
@@ -3652,6 +3643,7 @@ function icon(name, size, color) {
   const paths = {
     search: '<circle cx="10" cy="10" r="6"/><line x1="20" y1="20" x2="14.5" y2="14.5"/>',
     filter: '<path d="M3 4.5h18l-7 8.2V20l-4-2.2v-5.1z"/>',
+    ordenar: '<path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/>',
     check: '<polyline points="4 12.5 9.5 18 20 6"/>',
     calendario: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
     tag: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7.3 7.3a1 1 0 0 1-1.4 0z"/><circle cx="8" cy="8" r="1.4"/>',
@@ -20632,27 +20624,27 @@ function renderSearchPage(results, activeFilters, topBadge) {
       </div>
     `}
 
-    ${/* Regra 289 ("os filtros abaixo da pesquisa estão muito aglomerados"):
-         duas linhas, como o Booking e o Google Maps. Em cima, presos ao rolar,
-         "Filtros", a ordem e os filtros rápidos numa fileira só (o resto da
-         fileira desliza); embaixo, o total, "Salvar busca" e "Compartilhar". */ ""}
+    ${/* Regra 289 ("os filtros abaixo da pesquisa estão muito aglomerados";
+         "deixar só de um lado ordenar e filtrar… abaixo, de um lado salvar busca e
+         do outro compartilhar"): como o Booking, em cima e preso ao rolar, o total
+         de um lado e "Ordenar" e "Filtros" do outro; embaixo, "Salvar busca" de um
+         lado e "Compartilhar" do outro. Os filtros rápidos saíram (estão em Filtros). */ ""}
     <div class="toolbar">
-      <button type="button" class="tbtn filters-tbtn ${activeFilters ? "on" : ""}" id="filters-toggle">
-        ${icon('filter', 14, 'currentColor')} Filtros ${activeFilters ? `<span class="tbtn-badge">${activeFilters}</span>` : ""}
-      </button>
-      <div class="sortwrap">
-        <button type="button" class="tbtn ${state.showSort ? "on" : ""}" id="sort-toggle">${SORT_OPTS.find(o => o.key === effectiveSort())?.label || "Ordenar"} <span class="caret">▼</span></button>
-        ${renderSortMenu()}
-      </div>
-      ${filtrosRapidos()}
-    </div>
-    <div class="busca-resumo">
       <div class="toolbar-left">
         <p class="toolbar-count">${results.length} ${plural(results.length, "academia", "academias")}</p>
         ${state.origin ? "" : `<p class="toolbar-sub">${state.bairroDaPagina ? `em ${esc(state.bairroDaPagina.bairro)}` : state.cidadeDaPagina ? `em ${esc(state.cidadeDaPagina)}` : "Use o CEP ou o GPS para ordenar por distância"}</p>`}
       </div>
-      ${state.view === "map" ? "" : linhaSalvarBusca()}
+      <div class="toolbar-right">
+        <div class="sortwrap">
+          <button type="button" class="tbtn ${state.showSort ? "on" : ""}" id="sort-toggle" aria-label="Ordenar: ${esc(SORT_OPTS.find(o => o.key === effectiveSort())?.label || "")}">${icon('ordenar', 14, 'currentColor')} Ordenar</button>
+          ${renderSortMenu()}
+        </div>
+        <button type="button" class="tbtn filters-tbtn ${activeFilters ? "on" : ""}" id="filters-toggle">
+          ${icon('filter', 14, 'currentColor')} Filtros ${activeFilters ? `<span class="tbtn-badge">${activeFilters}</span>` : ""}
+        </button>
+      </div>
     </div>
+    ${state.view === "map" ? "" : linhaSalvarBusca()}
     ${renderActiveChips()}
 
     ${state.view === "map" ? renderMapView(results) : `
@@ -20876,6 +20868,12 @@ function filterGroupsHtml() {
       )).join("")}
     </div>
 
+    ${semOutros.some(c => abertoAgora(c) !== null) || state.abertoAgora ? `
+    <div class="fgroup">
+      <p class="fgroup-title">Horário</p>
+      ${optBtn("f-aberto", "", state.abertoAgora, "Aberto agora", semOutros.filter(c => abertoAgora(c) === true).length)}
+    </div>` : ""}
+
     <div class="fgroup">
       <p class="fgroup-title">Comodidades</p>
       ${FILTER_AMENITY_OPTS.map(a => optBtn(
@@ -20933,49 +20931,19 @@ function renderSortMenu() {
 }
 
 // Chips dos filtros ligados, cada um com × pra desligar só aquele.
-// Regra 271: os filtros mais usados logo acima da lista, um toque liga e outro
-// desliga, como os "filtros populares" do Booking e as etiquetas do alto da
-// busca do Airbnb e do Google Maps. O que está ligado aqui não se repete nos
-// filtros ativos embaixo. O resto continua em "Filtros".
-// Regra 289: sem "Aulas" e "Locação", que já estão em "O que você procura".
-const FILTROS_RAPIDOS = [
-  { lista: "pisoFilters", key: "saibro", label: "Saibro" },
-  { lista: "pisoFilters", key: "rapida", label: "Rápida" },
-  { lista: "coberturaFilters", key: "coberta", label: "Coberta" },
-  // Regra 274: o "Aberto agora" dos diretórios de quadra e do Google Maps (a
-  // iluminação saiu na regra 276: "isso é um fato").
-  { especial: "abertoAgora", label: "Aberto agora" },
-];
-function filtrosRapidos() {
-  const tem = f => f.especial ? state.allCourts.some(c => abertoAgora(c) !== null)
-    : f.lista === "amenityFilters" ? state.allCourts.some(c => matchesAmenityFilter(c, f.key))
-    : state.allCourts.some(c => (f.lista === "modalidadeFilters" ? c.modalidades : f.lista === "pisoFilters" ? c.pisos : c.cobertura)?.includes(f.key));
-  const lista = FILTROS_RAPIDOS.map((f, i) => ({ ...f, i })).filter(tem);
-  if (lista.length < 2) return "";
-  return `<div class="filtros-rapidos" role="group" aria-label="Filtros rápidos">
-    ${lista.map(f => { const on = f.especial ? !!state[f.especial] : state[f.lista].includes(f.key); return `<button type="button" class="frap ${on ? "on" : ""}" data-filtro-rapido="${f.i}" aria-pressed="${on}">${on ? icon('check', 14, 'currentColor') + " " : ""}${f.label}</button>`; }).join("")}
-  </div>`;
-}
-function ligarFiltroRapido(i) {
-  const f = FILTROS_RAPIDOS[i];
-  if (!f) return;
-  if (f.especial) { state[f.especial] = !state[f.especial]; syncUrl(false); render(); return; }
-  const atual = state[f.lista];
-  state[f.lista] = atual.includes(f.key) ? atual.filter(k => k !== f.key) : [...atual, f.key];
-  syncUrl(false);
-  render();
-}
-const noRapido = (lista, k) => FILTROS_RAPIDOS.some(f => f.lista === lista && f.key === k);
+// Regra 289: os filtros rápidos da regra 271 saíram da busca ("deixar só ordenar e
+// filtrar"); "Aberto agora" (regra 274) passou para os Filtros, em "Horário".
 
 function renderActiveChips() {
   const chips = [];
   if (state.priceMax !== null) chips.push({ label: `Até R$ ${state.priceMax} por hora`, attr: `data-clear="price"` });
   if (state.minRating > 0) chips.push({ label: `Nota ${state.minRating.toString().replace(".", ",")}+`, attr: `data-clear="rating"` });
   if (state.maxDistance !== null) chips.push({ label: `Até ${state.maxDistance} km`, attr: `data-clear="distance"` });
-  state.pisoFilters.filter(k => !noRapido("pisoFilters", k)).forEach(k => chips.push({ label: PISO_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="piso" data-key="${k}"` }));
-  state.coberturaFilters.filter(k => !noRapido("coberturaFilters", k)).forEach(k => chips.push({ label: COBERTURA_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="cobertura" data-key="${k}"` }));
-  state.modalidadeFilters.filter(k => !noRapido("modalidadeFilters", k)).forEach(k => chips.push({ label: MODALIDADE_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="modalidade" data-key="${k}"` }));
-  state.amenityFilters.filter(k => !noRapido("amenityFilters", k)).forEach(k => chips.push({ label: FILTER_AMENITY_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="amenity" data-key="${k}"` }));
+  state.pisoFilters.forEach(k => chips.push({ label: PISO_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="piso" data-key="${k}"` }));
+  state.coberturaFilters.forEach(k => chips.push({ label: COBERTURA_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="cobertura" data-key="${k}"` }));
+  state.modalidadeFilters.forEach(k => chips.push({ label: MODALIDADE_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="modalidade" data-key="${k}"` }));
+  if (state.abertoAgora) chips.push({ label: "Aberto agora", attr: `data-clear="aberto"` });
+  state.amenityFilters.forEach(k => chips.push({ label: FILTER_AMENITY_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="amenity" data-key="${k}"` }));
   if (state.favoritesOnly) chips.push({ label: "Favoritas", attr: `data-clear="favorites"` });
   if (state.compareOnly) chips.push({ label: "Só em comparação", attr: `data-clear="compareonly"` });
   if (!chips.length) return "";
@@ -29325,7 +29293,6 @@ function attachEvents() {
   };
 
   document.querySelectorAll("[data-ler-mais]").forEach(b => { b.onclick = () => { const t = document.getElementById("ht-about-texto"); if (!t) return; const aberto = t.classList.toggle("ht-about-curto") === false; b.textContent = aberto ? "Ler menos" : "Ler mais"; }; });
-  document.querySelectorAll("[data-filtro-rapido]").forEach(b => { b.onclick = () => ligarFiltroRapido(Number(b.dataset.filtroRapido)); });
   document.querySelectorAll("[data-tipo-home]").forEach(b => { b.onclick = () => abrirTipoDaHome(Number(b.dataset.tipoHome)); });
 
   const scModalidade = document.getElementById("sc-modalidade");
@@ -29370,6 +29337,9 @@ function attachEvents() {
   document.querySelectorAll(".f-compareonly").forEach(el => {
     el.onclick = () => { state.compareOnly = !state.compareOnly; render(); };
   });
+  document.querySelectorAll(".f-aberto").forEach(el => {
+    el.onclick = () => { state.abertoAgora = !state.abertoAgora; syncUrl(false); render(); };
+  });
 
   // ---- chips de filtro ativo: o × tira só aquele filtro ----
   document.querySelectorAll("[data-clear]").forEach(el => {
@@ -29385,6 +29355,7 @@ function attachEvents() {
       else if (kind === "amenity") state.amenityFilters = state.amenityFilters.filter(x => x !== key);
       else if (kind === "favorites") state.favoritesOnly = false;
       else if (kind === "compareonly") state.compareOnly = false;
+      else if (kind === "aberto") state.abertoAgora = false;
       render();
     };
   });

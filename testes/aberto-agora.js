@@ -19,18 +19,23 @@ const { abrir, ok } = require('./harness');
   await page.waitForTimeout(1200);
   r = await page.evaluate(() => ({
     hora: [...document.querySelectorAll('.rcard')].map(c => (c.querySelector('.rcard-hora')?.innerText || '').trim()),
-    rapidos: [...document.querySelectorAll('.frap')].map(b => b.innerText.trim()),
   }));
   ok(r.hora.includes('Aberto agora · até 22h') && r.hora.includes(''), 'no cartão, "Aberto agora · até 22h"; sem horário, nada — ' + JSON.stringify(r.hora));
-  ok(!r.rapidos.includes('Iluminada') && r.rapidos[r.rapidos.length - 1] === 'Aberto agora', 'filtros rápidos com "Aberto agora", sem "Iluminada" — ' + r.rapidos.join('|'));
-
-  await page.click('.frap:has-text("Aberto agora")');
+  // Regra 289: "Aberto agora" saiu dos filtros rápidos e foi para os Filtros, em "Horário".
+  await page.click('#filters-toggle');
   await page.waitForTimeout(300);
-  r = await page.evaluate(() => ({ nomes: getResults().map(c => c.id).join(), link: location.search, on: document.querySelector('.frap.on')?.innerText.trim() }));
-  ok(r.nomes === 'a1' && /aberto=1/.test(r.link) && /Aberto agora/.test(r.on || ''), '"Aberto agora" deixa só quem atende agora e vai no link — ' + r.link);
-  await page.click('.frap:has-text("Aberto agora")');
+  r = await page.evaluate(() => [...document.querySelectorAll('.fgroup-title')].map(t => t.innerText.trim()).concat(document.querySelector('.frap') ? ['FRAP'] : []));
+  ok(r.includes('Horário') && !r.includes('FRAP'), 'nos Filtros, "Horário" com "Aberto agora"; sem filtros rápidos na busca — ' + r.join('|'));
+  await page.click('.f-aberto');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => getResults().length === 2 && !/aberto=1/.test(location.search)), 'outro toque desliga');
+  r = await page.evaluate(() => ({ nomes: getResults().map(c => c.id).join(), link: location.search, on: document.querySelector('.f-aberto')?.getAttribute('aria-pressed') || document.querySelector('.f-aberto')?.className }));
+  ok(r.nomes === 'a1' && /aberto=1/.test(r.link) && /true|on/.test(r.on || ''), '"Aberto agora" deixa só quem atende agora e vai no link — ' + r.link);
+  await page.evaluate(() => { state.showFilters = false; render(); });
+  await page.waitForTimeout(200);
+  ok(await page.evaluate(() => (document.querySelector('.active-chips')?.innerText || '').includes('Aberto agora')), 'com os Filtros fechados, "Aberto agora" aparece nos filtros ativos');
+  await page.click('[data-clear="aberto"]');
+  await page.waitForTimeout(300);
+  ok(await page.evaluate(() => getResults().length === 2 && !state.abertoAgora), 'o × do filtro ativo desliga');
 
   // Regra 283: 21h30 de segunda, "Fecha em breve · às 22h" no amarelo.
   await page.clock.setFixedTime(new Date('2026-11-16T21:30:00'));

@@ -2192,17 +2192,21 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Supabase de teste o e-mail do código com as imagens do site de verdade, onde o
   `email-nome.png` só chega com o merge. Agora o passo "PR da branch" (`banco.yml`,
   `pull-requests: read`) acha o PR aberto da branch e as imagens vêm da prévia (no e-mail
-  do código e no `configurar_emails`). **Busca:** duas linhas, como o Booking e o Google
-  Maps: em cima, presos ao rolar, "Filtros", a ordem e os filtros rápidos numa fileira só
-  (o resto desliza); embaixo, "N academias" com "Salvar busca" e "Compartilhar ▾" em
-  texto verde, sem caixa (`.busca-resumo`). Saíram "Aulas" e "Locação" dos rápidos (já
-  estão em "O que você procura") e o "A partir de …" quando repete o que está no campo.
+  do código e no `configurar_emails`; conferido: "PR da branch: 5"). **Busca** (depois:
+  "deixar só de um lado ordenar e filtrar… abaixo, de um lado salvar busca e do outro
+  compartilhar"): como o Booking, a barra presa ao rolar com "N academias" de um lado e
+  **"Ordenar"** (ícone novo `ordenar`; abre Recomendadas, Mais perto…; o rótulo de leitor
+  de tela diz a ordem escolhida) e **"Filtros"** do outro; embaixo, **"Salvar busca"** de
+  um lado e **"Compartilhar ▾"** do outro, em texto verde, sem caixa. Os **filtros
+  rápidos da regra 271 saíram** (Saibro, Rápida e Coberta estão nos Filtros); **"Aberto
+  agora"** foi para os Filtros, em "Horário" (`.f-aberto`, e o filtro ativo com ×,
+  `data-clear="aberto"`). O "A partir de …" só aparece quando diz algo a mais que o campo.
   **"Você marcou?":** sai no dia seguinte ao clique, das 10h às 21h, só para conta de
   jogador com o e-mail confirmado, sem ser o admin (o admin não grava nada) e com o aviso
   "Depois de chamar uma academia…" ligado (explicado ao Breno). Sem SQL. Testes:
   `acabamento.js` (17, a barra nova), `whatsapp-das-academias`, `buscas-e-avisos`,
   `aberto-agora`, `localizacao-cep`, `busca-e-ficha`, `bairro-direto` e `links`, sem
-  falha; bateria completa rodando no envio.
+  falha; `aberto-agora.js` (10, "Aberto agora" nos Filtros). Bateria completa rodando no envio.
 
 ## 11. WhatsApp e mensagem para as academias
 

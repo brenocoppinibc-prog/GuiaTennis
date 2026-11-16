@@ -43,24 +43,23 @@ const { abrir, ok } = require('./harness');
   r = await page.evaluate(() => [distanceText(0.04), distanceText(0.347), distanceText(1.26)]);
   ok(r.join('|') === '40 m|347 m|1,3 km', 'distâncias exatas — ' + r.join('|'));
 
-  // Regra 271: filtros rápidos acima da lista; o ligado não se repete embaixo.
-  r = await page.evaluate(() => [...document.querySelectorAll('.filtros-rapidos .frap')].map(b => b.innerText.trim()));
-  ok(r.join('|') === 'Saibro|Rápida|Coberta|Aberto agora', 'filtros rápidos sem Aulas e Locação, que estão em "O que você procura" (regra 289) — ' + r.join('|'));
+  // Regra 289: em cima, o total de um lado e "Ordenar" e "Filtros" do outro;
+  // embaixo, "Salvar busca" de um lado e "Compartilhar" do outro; sem filtros rápidos.
   r = await page.evaluate(() => {
-    const barra = document.querySelector('.toolbar');
-    const filhos = [...barra.children].map(e => e.id || e.className.split(' ')[0]);
-    return { filhos, resumo: document.querySelector('.busca-resumo')?.innerText.replace(/\s+/g, ' ').trim() || '', total: getResults().length };
+    const ladoDireito = [...document.querySelectorAll('.toolbar .toolbar-right .tbtn')].map(b => b.innerText.replace(/\s+/g, ' ').trim());
+    const embaixo = [...document.querySelectorAll('.busca-salvar > .tbtn, .busca-salvar summary.tbtn')].map(b => b.innerText.replace(/\s+/g, ' ').trim());
+    const ordem = [...document.querySelectorAll('.sort-option, .sort-menu button')].map(b => b.innerText.trim());
+    return { total: document.querySelector('.toolbar .toolbar-count')?.innerText || '', ladoDireito, embaixo, rapidos: document.querySelectorAll('.frap').length };
   });
-  ok(r.filhos.join('|') === 'filters-toggle|sortwrap|filtros-rapidos' && /^\d+ academias? /.test(r.resumo),
-    'regra 289: em cima, Filtros, a ordem e os rápidos numa fileira; embaixo, o total com Salvar busca e Compartilhar — ' + r.filhos.join('|') + ' / ' + r.resumo);
-  const total = r.total;
-  await page.click('.frap:has-text("Saibro")');
-  await page.waitForTimeout(300);
-  r = await page.evaluate(() => ({ todas: getResults().every(c => (c.pisos || []).includes('saibro')), n: getResults().length, on: document.querySelector('.frap.on')?.innerText.trim(), link: location.search, ativo: document.querySelector('.active-chips')?.innerText || '' }));
-  ok(r.todas && r.n >= 1 && r.on === 'Saibro' && /saibro/.test(r.link) && !/Saibro/.test(r.ativo), 'um toque filtra, fica verde, vai no link e não se repete nos ativos — ' + r.link);
-  await page.click('.frap:has-text("Saibro")');
-  await page.waitForTimeout(300);
-  ok(await page.evaluate((t) => getResults().length === t && !document.querySelector('.frap.on'), total), 'outro toque desliga');
+  ok(/^\d+ academias?$/.test(r.total) && r.ladoDireito.join('|') === 'Ordenar|Filtros' && r.rapidos === 0
+    && r.embaixo.length === 2 && r.embaixo[0] === 'Salvar busca' && /^Compartilhar/.test(r.embaixo[1]),
+    'regra 289: total com Ordenar e Filtros; embaixo, Salvar busca e Compartilhar; sem filtros rápidos — ' + JSON.stringify(r));
+  await page.click('#sort-toggle');
+  await page.waitForTimeout(200);
+  r = await page.evaluate(() => document.querySelector('.sort-menu')?.innerText || '');
+  ok(/Mais perto/.test(r) && /Recomendadas/.test(r), '"Ordenar" abre as ordens (Mais perto, Recomendadas…)');
+  await page.click('#sort-backdrop');
+  await page.waitForTimeout(200);
 
   // "Comparação" nos Filtros sem o símbolo.
   await page.evaluate(() => { state.showFilters = true; render(); });

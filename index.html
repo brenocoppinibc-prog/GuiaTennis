@@ -3456,6 +3456,15 @@
   /* Regra 271: os filtros rápidos da busca; na ficha, a opção única ocupa a
      linha inteira (o botão de chamar fica largo, como o de reservar do Booking). */
   .filtros-rapidos { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 12px 20px 4px; }
+  .toolbar { flex-wrap: nowrap; justify-content: flex-start; padding: 10px 0 10px 20px; }
+  .toolbar > .tbtn, .toolbar > .sortwrap { flex-shrink: 0; }
+  .toolbar .filtros-rapidos { flex: 1; min-width: 0; padding: 0 20px 0 0; }
+  .busca-resumo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 12px 20px 2px; }
+  .busca-resumo > .status-line, .busca-resumo > .busca-salva-aviso { flex-basis: 100%; }
+  .busca-resumo .busca-salvar { padding: 0; gap: 0; flex-wrap: nowrap; margin-right: -6px; }
+  .busca-resumo .busca-salvar .tbtn, .busca-resumo .busca-salvar summary.tbtn { border: 0; background: none; padding: 0 6px; min-height: 40px; gap: 5px; font-size: 14px; color: var(--green); font-weight: 600; box-shadow: none; white-space: nowrap; }
+  .busca-resumo .busca-salvar .wa-mais { margin-left: 0; }
+  .busca-resumo .busca-salvar .tbtn.on { color: var(--green); }
   .filtros-rapidos::-webkit-scrollbar { display: none; }
   .frap { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text); font-family: var(--fonte-texto); font-size: 14px; font-weight: 600; cursor: pointer; }
   .frap.on { background: var(--green); border-color: var(--green); color: #fff; }
@@ -20616,31 +20625,34 @@ function renderSearchPage(results, activeFilters, topBadge) {
              busca"): a mesma caixa da página inicial (desfaz a compacta da 270). */ ""}
         ${renderSearchCard()}
         ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
-        ${state.origin && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
+        ${state.origin && state.searchStatus === "done" && (state.origin.approximate || semAcento(String(state.cep || "").trim().toLowerCase()) !== semAcento(`${state.origin.bairro}, ${state.origin.cidade}`.toLowerCase())) ? `<div class="status-line status-info">${icon('pin',13)} A partir de ${esc(state.origin.bairro)}, ${esc(state.origin.cidade)}${state.origin.approximate ? " (localização aproximada)" : ""}</div>` : ""}
         ${state.bairroDaPagina && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} Todas as academias de ${esc(termoDaRegiao(state.bairroDaPagina))}. <a href="${caminhoDaRegiao({ cidade: state.bairroDaPagina.cidade })}" class="inline-link" data-regiao-link data-cidade="${esc(state.bairroDaPagina.cidade)}">Ver as de ${esc(state.bairroDaPagina.cidade)}</a></div>` : ""}
         ${state.cidadeDaPagina && state.searchStatus === "done" ? `<div class="status-line status-info">${icon('pin',13)} Todas as academias de ${esc(state.cidadeDaPagina)}. Para ver as mais perto, digite o bairro, o endereço ou o CEP.</div>` : ""}
         ${perguntaViagem()}
       </div>
     `}
 
+    ${/* Regra 289 ("os filtros abaixo da pesquisa estão muito aglomerados"):
+         duas linhas, como o Booking e o Google Maps. Em cima, presos ao rolar,
+         "Filtros", a ordem e os filtros rápidos numa fileira só (o resto da
+         fileira desliza); embaixo, o total, "Salvar busca" e "Compartilhar". */ ""}
     <div class="toolbar">
+      <button type="button" class="tbtn filters-tbtn ${activeFilters ? "on" : ""}" id="filters-toggle">
+        ${icon('filter', 14, 'currentColor')} Filtros ${activeFilters ? `<span class="tbtn-badge">${activeFilters}</span>` : ""}
+      </button>
+      <div class="sortwrap">
+        <button type="button" class="tbtn ${state.showSort ? "on" : ""}" id="sort-toggle">${SORT_OPTS.find(o => o.key === effectiveSort())?.label || "Ordenar"} <span class="caret">▼</span></button>
+        ${renderSortMenu()}
+      </div>
+      ${filtrosRapidos()}
+    </div>
+    <div class="busca-resumo">
       <div class="toolbar-left">
         <p class="toolbar-count">${results.length} ${plural(results.length, "academia", "academias")}</p>
         ${state.origin ? "" : `<p class="toolbar-sub">${state.bairroDaPagina ? `em ${esc(state.bairroDaPagina.bairro)}` : state.cidadeDaPagina ? `em ${esc(state.cidadeDaPagina)}` : "Use o CEP ou o GPS para ordenar por distância"}</p>`}
       </div>
-      <div class="toolbar-right">
-        <div class="sortwrap">
-          <button type="button" class="tbtn ${state.showSort ? "on" : ""}" id="sort-toggle">${SORT_OPTS.find(o => o.key === effectiveSort())?.label || "Ordenar"} <span class="caret">▼</span></button>
-          ${renderSortMenu()}
-        </div>
-        <button type="button" class="tbtn filters-tbtn ${activeFilters ? "on" : ""}" id="filters-toggle">
-          ${icon('filter', 14, 'currentColor')} Filtros ${activeFilters ? `<span class="tbtn-badge">${activeFilters}</span>` : ""}
-        </button>
-      </div>
+      ${state.view === "map" ? "" : linhaSalvarBusca()}
     </div>
-
-    ${filtrosRapidos()}
-    ${state.view === "map" ? "" : linhaSalvarBusca()}
     ${renderActiveChips()}
 
     ${state.view === "map" ? renderMapView(results) : `
@@ -20925,9 +20937,8 @@ function renderSortMenu() {
 // desliga, como os "filtros populares" do Booking e as etiquetas do alto da
 // busca do Airbnb e do Google Maps. O que está ligado aqui não se repete nos
 // filtros ativos embaixo. O resto continua em "Filtros".
+// Regra 289: sem "Aulas" e "Locação", que já estão em "O que você procura".
 const FILTROS_RAPIDOS = [
-  { lista: "modalidadeFilters", key: "aulas_proprias", label: "Aulas" },
-  { lista: "modalidadeFilters", key: "locacao", label: "Locação" },
   { lista: "pisoFilters", key: "saibro", label: "Saibro" },
   { lista: "pisoFilters", key: "rapida", label: "Rápida" },
   { lista: "coberturaFilters", key: "coberta", label: "Coberta" },

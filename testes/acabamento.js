@@ -37,7 +37,7 @@ const { abrir, ok } = require('./harness');
     linhas: [...(document.querySelector('.rcard')?.querySelectorAll('.rcard-onde, .rcard-dist, .rcard-quadras') || [])].map(e => e.innerText.trim()),
   }));
   ok(r.igual, 'regra 281: nos resultados, a mesma caixa da inicial (onde, o que procura e "Buscar academias")');
-  ok(r.linha.includes('A partir de Pinheiros, São Paulo') && !r.sub, 'o "a partir de" aparece uma vez só — ' + r.sub);
+  ok(!r.linha.includes('A partir de Pinheiros, São Paulo') && !r.sub, 'regra 289: o "a partir de" não repete o lugar que já está no campo — ' + r.linha + r.sub);
   ok(r.distancia === '0 m de você', 'regra 271: a distância exata ("0 m de você") — ' + r.distancia);
   ok(r.linhas.join('|') === 'Pinheiros, São Paulo|0 m de você|2 quadras de saibro', 'regra 283: onde, distância e quadras em linhas separadas — ' + r.linhas.join('|'));
   r = await page.evaluate(() => [distanceText(0.04), distanceText(0.347), distanceText(1.26)]);
@@ -45,14 +45,22 @@ const { abrir, ok } = require('./harness');
 
   // Regra 271: filtros rápidos acima da lista; o ligado não se repete embaixo.
   r = await page.evaluate(() => [...document.querySelectorAll('.filtros-rapidos .frap')].map(b => b.innerText.trim()));
-  ok(r.join('|') === 'Aulas|Locação|Saibro|Rápida|Coberta|Aberto agora', 'filtros rápidos (com "Aberto agora", regra 274) — ' + r.join('|'));
-  await page.click('.frap:has-text("Locação")');
+  ok(r.join('|') === 'Saibro|Rápida|Coberta|Aberto agora', 'filtros rápidos sem Aulas e Locação, que estão em "O que você procura" (regra 289) — ' + r.join('|'));
+  r = await page.evaluate(() => {
+    const barra = document.querySelector('.toolbar');
+    const filhos = [...barra.children].map(e => e.id || e.className.split(' ')[0]);
+    return { filhos, resumo: document.querySelector('.busca-resumo')?.innerText.replace(/\s+/g, ' ').trim() || '', total: getResults().length };
+  });
+  ok(r.filhos.join('|') === 'filters-toggle|sortwrap|filtros-rapidos' && /^\d+ academias? /.test(r.resumo),
+    'regra 289: em cima, Filtros, a ordem e os rápidos numa fileira; embaixo, o total com Salvar busca e Compartilhar — ' + r.filhos.join('|') + ' / ' + r.resumo);
+  const total = r.total;
+  await page.click('.frap:has-text("Saibro")');
   await page.waitForTimeout(300);
-  r = await page.evaluate(() => ({ nomes: getResults().map(c => c.name), on: document.querySelector('.frap.on')?.innerText.trim(), link: location.search, ativo: document.querySelector('.active-chips')?.innerText || '' }));
-  ok(r.nomes.join() === 'Quadra Locação' && r.on === 'Locação' && /modalidade=locacao/.test(r.link) && !/Locação/.test(r.ativo), 'um toque filtra, fica verde, vai no link e não se repete nos ativos — ' + r.link);
-  await page.click('.frap:has-text("Locação")');
+  r = await page.evaluate(() => ({ todas: getResults().every(c => (c.pisos || []).includes('saibro')), n: getResults().length, on: document.querySelector('.frap.on')?.innerText.trim(), link: location.search, ativo: document.querySelector('.active-chips')?.innerText || '' }));
+  ok(r.todas && r.n >= 1 && r.on === 'Saibro' && /saibro/.test(r.link) && !/Saibro/.test(r.ativo), 'um toque filtra, fica verde, vai no link e não se repete nos ativos — ' + r.link);
+  await page.click('.frap:has-text("Saibro")');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => getResults().length === 2 && !document.querySelector('.frap.on')), 'outro toque desliga');
+  ok(await page.evaluate((t) => getResults().length === t && !document.querySelector('.frap.on'), total), 'outro toque desliga');
 
   // "Comparação" nos Filtros sem o símbolo.
   await page.evaluate(() => { state.showFilters = true; render(); });

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 288)
+**Atualizado em:** 16/11/2026 (regra 289)
 
 | | |
 |---|---|
@@ -2184,6 +2184,25 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   boas-vindas), `senha`, `cadastro-normal-parceiros`, `convite-chamadas`, `viagem`,
   `volta-e-resumo`, `painel-admin`, `whatsapp-das-academias` e `guardados-na-conta`, sem
   falha.
+- **289 (16/11) — a imagem do e-mail, a busca mais limpa e o "Você marcou?"** ("a imagem
+  do e-mail não carregou, acredito que ficou muito pesada. Os filtros abaixo da pesquisa
+  estão muito aglomerados… como chegar a pergunta de confirmação se vai jogar nessa
+  academia? não chegou nada após clicar em um WhatsApp"). **Imagem:** não era o peso
+  (7 KB): o "Banco de dados" disparado à mão não sabia o número do PR e mandava ao
+  Supabase de teste o e-mail do código com as imagens do site de verdade, onde o
+  `email-nome.png` só chega com o merge. Agora o passo "PR da branch" (`banco.yml`,
+  `pull-requests: read`) acha o PR aberto da branch e as imagens vêm da prévia (no e-mail
+  do código e no `configurar_emails`). **Busca:** duas linhas, como o Booking e o Google
+  Maps: em cima, presos ao rolar, "Filtros", a ordem e os filtros rápidos numa fileira só
+  (o resto desliza); embaixo, "N academias" com "Salvar busca" e "Compartilhar ▾" em
+  texto verde, sem caixa (`.busca-resumo`). Saíram "Aulas" e "Locação" dos rápidos (já
+  estão em "O que você procura") e o "A partir de …" quando repete o que está no campo.
+  **"Você marcou?":** sai no dia seguinte ao clique, das 10h às 21h, só para conta de
+  jogador com o e-mail confirmado, sem ser o admin (o admin não grava nada) e com o aviso
+  "Depois de chamar uma academia…" ligado (explicado ao Breno). Sem SQL. Testes:
+  `acabamento.js` (17, a barra nova), `whatsapp-das-academias`, `buscas-e-avisos`,
+  `aberto-agora`, `localizacao-cep`, `busca-e-ficha`, `bairro-direto` e `links`, sem
+  falha; bateria completa rodando no envio.
 
 ## 11. WhatsApp e mensagem para as academias
 

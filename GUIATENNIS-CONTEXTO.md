@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 17/11/2026 (regra 296)
+**Atualizado em:** 17/11/2026 (regra 297)
 
 | | |
 |---|---|
@@ -442,28 +442,18 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**Chat trocado em 17/11/2026 (regra 296):** o chat novo volta a acompanhar o PR #5 (este
-deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código:
-`989007b` (regra 296). A prévia está no ar com tudo até a 296, o "Banco de dados" disparado
-à mão rodou com sucesso no banco de teste para o SQL mais novo
-(`20261117140000_quadras_publicas`) e a descrição do PR está em dia (passos 110 a 115; os
-42 a 109 no histórico). **Do chat de 16 e 17/11:** regras 285 a 296 (seção 10): sitemap com
-/como-funciona, vermelho `#C2330D`, nome em Poppins nas imagens, na 404 e na faixa verde dos
-e-mails, "Pet friendly", logos e fundos das redes (`divulgacao/`), boas-vindas ao jogador,
-busca com "Ordenar" e "Filtros" e "Salvar busca"/"Compartilhar" embaixo, contatos reais
-(WhatsApp, Instagram e site), "Outro valor" e "Pagamento seguro", aviso com "Corrigir",
-troca de academia sem piscar, nota com confiança (mais avaliações pesam), números sem o "1
-em cada", "Também oferece" (eventos e ranking no catálogo, projeto social à parte, até 100
-letras e sem venda) e **quadras públicas** com "Sugerir uma quadra ou academia" no menu.
-**Testes:** bateria completa de 16/11 até a 290: 2.655, nenhuma falha; das 291 a 296, os
-afetados, sem falha; **bateria completa de 17/11 (até a 296): 2.680 verificações, nenhuma
-falha**; rodada de novo no começo do chat seguinte, com o `index.html` final da 296:
-**2.680, nenhuma falha**. **Pendências e ofertas sem resposta:** (1) a faixa verde "Para
-academias" na inicial (recomendação: não entrar); (2) fazer o cartão de visita, os dois
-flyers e a plaquinha de balcão "Avalie no GuiaTennis" com QR (oferecido); (3) quando o CNPJ
-sair (o Breno espera nesta semana), colocar razão social e CNPJ no rodapé, nos Termos e na
-Privacidade, e trocar as chaves do Mercado Pago; (4) "Você marcou?" saindo 10 minutos depois
-só no banco de teste, para ele testar (oferecido); (5) ainda não feitos das quadras públicas:
+**17/11/2026 (regra 297):** o chat acompanha o PR #5 (inscrito). Último commit de código:
+regra 297 ("Você marcou?" duas horas depois, das 9h às 21h; no banco de teste, 10 minutos
+depois; o título do e-mail diferente do assunto; SQL `20261117150000_voce_marcou_mais_cedo`;
+Termos e Privacidade em 17 de novembro de 2026). O "Banco de dados" desta branch é disparado à
+mão (`banco.yml`, `destino: teste`). **Do chat de 16 e 17/11:** regras 285 a 297 (seção 10).
+**Testes:** bateria completa de 17/11 (até a 296, com o `index.html` final): **2.680, nenhuma
+falha**; na 297, os afetados e o `banco-emails.py` num Postgres local (982, nenhuma falha).
+**Respondido:** a faixa verde "Para academias" na inicial fica de fora ("sim, deixar igual",
+17/11; só um link pequeno no alto, como o "Anuncie seu imóvel" do Booking, se ele pedir).
+**Pendências e ofertas sem resposta:** (1) o cartão de visita, os dois flyers e a plaquinha de
+balcão "Avalie no GuiaTennis" com QR (oferecido); (2) quando o CNPJ sair, razão social e CNPJ
+no rodapé, nos Termos e na Privacidade, e as chaves do Mercado Pago; (3) das quadras públicas,
 a pergunta no chat de ajuda e a página de região "Quadras públicas de tênis em <bairro>".
 
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
@@ -2350,6 +2340,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   chat de ajuda (`enviar_relato_do_chat`, "Quadra pública sugerida: …"), que o admin vê em
   Chat de ajuda com o nome e o e-mail, responde ali, e a pessoa acompanha em Feedback.
   Testes: `quadras-publicas.js` (novo, 12), sem falha; bateria completa de 17/11: 2.680, nenhuma falha.
+- **297 (17/11) — "Você marcou?" mais cedo e sem repetir** ("melhor deixar mais rápido o você
+  marcou e quando chega a notificação vem escrito duas vez 'você marcou' pelo título e
+  mensagem"). SQL `20261117150000_voce_marcou_mais_cedo` (`rodar_acompanhamentos`): a pergunta
+  sai **duas horas depois da chamada, das 9h às 21h** (chamada depois das 19h, às 9h do dia
+  seguinte); no **banco de teste** (o site dos e-mails não é o guiatennis.com.br), **10 minutos
+  depois**, a qualquer hora. O assunto continua "Você marcou na …?"; o título dentro do e-mail
+  passa a ser "Receba como chegar duas horas antes" (o aviso do celular mostra o assunto e o
+  começo do e-mail, como no Gmail e no iPhone). Como o iFood e o Uber, que perguntam logo depois
+  do pedido, sem chegar de noite. Chat de ajuda e Privacidade ("cerca de duas horas depois, das
+  9h às 21h"); Termos e Privacidade em 17 de novembro de 2026. Testes: `acompanhamento`,
+  `regras-de-conteudo`, `ficha-basica`, `avaliacao-editada`, `pixel-da-meta` e
+  `dados-para-nota`, sem falha; `banco-emails.py` (982, nenhuma falha), com as conferências novas.
 
 ## 11. WhatsApp e mensagem para as academias
 

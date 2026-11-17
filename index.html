@@ -110,6 +110,8 @@
   .email-previa-marca .logo-mark { width: 22px; height: 22px; }
   .cat-notas { margin-top: 12px; display: grid; gap: 6px; }
   .reg-opcional { font-weight: 400; color: var(--muted); }
+  .ht-publica { display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 2px; padding: 4px 10px; border-radius: 999px; background: var(--bg-alt); font-size: 13px; font-weight: 600; color: var(--green); }
+  .ht-como-usar { margin: 0; font-size: 15px; line-height: 1.55; white-space: pre-line; }
   .ht-oferece { display: grid; gap: 16px; }
   .ht-oferece-i { display: flex; gap: 12px; align-items: flex-start; }
   .ht-oferece-ic { flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px; background: var(--bg-alt); display: inline-flex; align-items: center; justify-content: center; }
@@ -4606,6 +4608,8 @@ function mapRow(row) {
     site: row.site,
     reserva: linkDeReserva(row.reserva_link),
     projetoSocial: String(row.projeto_social || "").trim(),
+    tipo: row.tipo === "publica" ? "publica" : "academia",
+    comoUsar: String(row.como_usar || "").trim(),
     priceRange: row.price_range,
     priceAula: row.price_aula,
     priceLocacao: row.price_locacao,
@@ -4675,6 +4679,8 @@ function toRow(f) {
     phone: f.phone, instagram: usuarioDoInstagram(f.instagram) ? "@" + usuarioDoInstagram(f.instagram) : String(f.instagram || "").trim(), site: linkDoSite(f.site) || String(f.site || "").trim(),
     reserva_link: linkDeReserva(f.reserva) || null,
     projeto_social: f.projetoSocialOn ? (String(f.projetoSocial || "").trim().slice(0, PROJETO_SOCIAL_MAX) || null) : null,
+    tipo: f.tipo === "publica" ? "publica" : "academia",
+    como_usar: f.tipo === "publica" ? (String(f.comoUsar || "").trim().slice(0, COMO_USAR_MAX) || null) : null,
     price_range: f.priceRange,
     price_aula: avulsas("aula"),
     price_locacao: avulsas("locacao"),
@@ -4733,11 +4739,11 @@ async function carregarEstatisticasPublicas() {
 
 // O visitante só lê as colunas públicas. Quem pediu o cadastro e o WhatsApp
 // de quem avaliou ficam fechados no banco (SQL-SEGURANCA.sql) e só o admin vê.
-const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, reserva_link, projeto_social, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, dados_atualizados_em, created_at, avisou_que_fechou_em, catalogo, sobre, whatsapp_em_confirmacao";
+const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, reserva_link, projeto_social, tipo, como_usar, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, dados_atualizados_em, created_at, avisou_que_fechou_em, catalogo, sobre, whatsapp_em_confirmacao";
 // Colunas que chegam ao banco pelo SQL automático. Na publicação, o site
 // pode ir para o ar um pouco antes do SQL: aí lê sem elas, em vez de cair
 // no "*", que o visitante não pode ler.
-const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia", "dados_atualizados_em", "avisou_que_fechou_em", "catalogo", "sobre", "whatsapp_em_confirmacao", "reserva_link", "projeto_social"];
+const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia", "dados_atualizados_em", "avisou_que_fechou_em", "catalogo", "sobre", "whatsapp_em_confirmacao", "reserva_link", "projeto_social", "tipo", "como_usar"];
 const COLUNAS_AVALIACAO_PUBLICAS = "id, academia_id, stars, comment, nome_autor, created_at, autor_oculto, editada_em";
 
 // Enquanto o banco não tiver alguma dessas colunas, a lista falha; aí lê
@@ -6259,6 +6265,7 @@ let state = {
   cepStatus: "idle",
   favoritesOnly: false,
   compareOnly: false,
+  tipoLugar: "", // regra 296: "" (todos), "academia" ou "publica"
   abertoAgora: false, // regra 274: o filtro rápido "Aberto agora"
   decidePrios: [],
   showDecideResult: false,
@@ -7339,6 +7346,7 @@ function applyFilters(list, skip) {
     if (state.favoritesOnly) list = list.filter(c => isFavorite(c.id));
     if (state.compareOnly) list = list.filter(c => isComparing(c.id));
     if (state.abertoAgora) list = list.filter(c => abertoAgora(c) === true);
+    if (state.tipoLugar) list = list.filter(c => (ehPublica(c) ? "publica" : "academia") === state.tipoLugar);
   }
   return list;
 }
@@ -7353,7 +7361,7 @@ function activeFilterCount() {
     + state.amenityFilters.length + state.modalidadeFilters.length
     + (state.minRating > 0 ? 1 : 0) + (state.priceMax !== null ? 1 : 0)
     + (state.maxDistance !== null ? 1 : 0)
-    + (state.favoritesOnly ? 1 : 0) + (state.compareOnly ? 1 : 0) + (state.abertoAgora ? 1 : 0);
+    + (state.favoritesOnly ? 1 : 0) + (state.compareOnly ? 1 : 0) + (state.abertoAgora ? 1 : 0) + (state.tipoLugar ? 1 : 0);
 }
 
 function clearAllFilters() {
@@ -7367,6 +7375,7 @@ function clearAllFilters() {
   state.favoritesOnly = false;
   state.compareOnly = false;
   state.abertoAgora = false;
+  state.tipoLugar = "";
 }
 
 // Regra 291 ("notas que têm mais avaliações são mais bem avaliadas; isso também
@@ -7422,7 +7431,7 @@ function getResults() {
     };
     list = list
       .map(c => ({ c, s: recoScore(c, ctx) }))
-      .sort((a, b) => b.s - a.s)
+      .sort((a, b) => (ehPublica(a.c) - ehPublica(b.c)) || (b.s - a.s))
       .map(x => x.c);
   }
   return list;
@@ -7528,6 +7537,7 @@ function render() {
     ${state.showTerms ? renderLegalSheet("Termos de Uso", TERMS_HTML, "terms-close") : ""}
     ${state.showPrivacy ? renderLegalSheet("Política de Privacidade", PRIVACY_HTML, "privacy-close") : ""}
     ${state.showContato ? renderContatoSheet() : ""}
+    ${state.sugerirLugar ? renderSugerirLugar() : ""}
     ${state.showLogin ? renderLoginSheet() : ""}
     ${state.showVisitorSetup ? renderVisitorSetupSheet() : ""}
     ${state.page === "search" ? renderFilterDrawer(results.length) : ""}
@@ -7741,7 +7751,7 @@ function atualizarSeo(c) {
   // Regra 265: o título diz o que a academia oferece e onde; a descrição traz o
   // que decide o clique (preço, nota e bairro), como os resultados do Booking.
   const mods = (modalidadesTexto(c) || "").toLowerCase();
-  const oQue = /aula/.test(mods) && /loca/.test(mods) ? "aula e locação de quadra de tênis" : /aula/.test(mods) ? "aula de tênis" : /loca/.test(mods) ? "locação de quadra de tênis" : "quadra de tênis";
+  const oQue = ehPublica(c) ? "quadra de tênis pública e grátis" : /aula/.test(mods) && /loca/.test(mods) ? "aula e locação de quadra de tênis" : /aula/.test(mods) ? "aula de tênis" : /loca/.test(mods) ? "locação de quadra de tênis" : "quadra de tênis";
   const titulo = `${c.name}: ${oQue}${local ? " em " + local : ""} | GuiaTennis`;
   if (document.title !== titulo) document.title = titulo;
   const comPreco = ofertas(c).find(o => o.min);
@@ -11231,7 +11241,8 @@ function kmDoPonto(ponto, c) {
     ? haversineKm(ponto.lat, ponto.lng, c.lat, c.lng)
     : (typeof c.distanceKm === "number" && isFinite(c.distanceKm) ? c.distanceKm : null);
 }
-function recomendadasGuia(todas, ponto, evitar) {
+function recomendadasGuia(todasComPublicas, ponto, evitar) {
+  const todas = todasComPublicas.filter(c => !ehPublica(c));
   const km = (c) => kmDoPonto(ponto, c);
   const perto = (c) => { const d = km(c); return ponto ? d !== null && d <= PARECIDAS_RAIO_KM : true; };
   const porKm = (a, b) => (km(a) !== null && km(b) !== null ? km(a) - km(b) : 0);
@@ -12662,7 +12673,7 @@ function pcResultadosBusca() {
   let lista = [];
   if (termos.join("").length >= 2) {
     // Nome, bairro e cidade: "quadra moema" acha a Quadra Locação de Moema.
-    lista = state.allCourts.filter(c => {
+    lista = state.allCourts.filter(c => !ehPublica(c)).filter(c => {
       const onde = slugTexto([c.name, c.bairro, c.cidade].filter(Boolean).join(" "));
       return termos.every(t => onde.includes(t));
     }).slice(0, 8);
@@ -16931,6 +16942,7 @@ function renderMenu() {
         ${isAdmin ? item("painel-admin", "Painel do admin", "key", pendenciasDoAdmin() ? `${pendenciasDoAdmin()} ${pendenciasDoAdmin() === 1 ? "pendência" : "pendências"}` : "só você vê") : ""}
         ${item("home", "Início", "home")}
         ${item("search", "Buscar quadra", "search")}
+        ${item("sugerir-lugar", "Sugerir uma quadra ou academia", "plus")}
         ${item("comparar", "Comparar academias", "comparar", state.compareList.length || "")}
 
         <p class="menu-grupo">Minhas quadras</p>
@@ -20104,7 +20116,7 @@ function renderSiteFooter() {
 // ou mais perto da pessoa, só as de perto ("perto de você").
 const MELHORES_NOTA_MINIMA = 4;
 function melhoresAvaliadas(todas, ehPerto) {
-  const avaliadas = todas.filter(c => c.appCount > 0);
+  const avaliadas = todas.filter(c => c.appCount > 0 && !ehPublica(c));
   if (!avaliadas.length) return Object.assign([], { perto: false });
   const ponderada = c => notaComConfianca(c);
   const boas = avaliadas.filter(c => c.appAvg >= MELHORES_NOTA_MINIMA)
@@ -20314,6 +20326,7 @@ function filtrosNoLink(p) {
   if (state.favoritesOnly) p.set("favoritas", "1");
   if (state.compareOnly) p.set("comparando", "1");
   if (state.abertoAgora) p.set("aberto", "1");
+  if (state.tipoLugar) p.set("lugar", state.tipoLugar === "publica" ? "publicas" : "academias");
   if (effectiveSort() !== ordemPadrao() && ORDEM_NO_LINK[state.sortBy]) p.set("ordem", ORDEM_NO_LINK[state.sortBy]);
   if (state.view === "map") p.set("ver", "mapa");
 }
@@ -20335,6 +20348,7 @@ function filtrosDoLink(q) {
   state.favoritesOnly = q.get("favoritas") === "1";
   state.compareOnly = q.get("comparando") === "1";
   state.abertoAgora = q.get("aberto") === "1";
+  state.tipoLugar = q.get("lugar") === "publicas" ? "publica" : q.get("lugar") === "academias" ? "academia" : "";
   state.view = q.get("ver") === "mapa" ? "map" : "list";
   const ordem = Object.keys(ORDEM_NO_LINK).find(k => ORDEM_NO_LINK[k] === q.get("ordem")) || null;
   state.sortBy = ordem || ordemPadrao();
@@ -21033,6 +21047,13 @@ function filterGroupsHtml() {
       )).join("")}
     </div>
 
+    ${semOutros.some(ehPublica) || state.tipoLugar ? `
+    <div class="fgroup">
+      <p class="fgroup-title">Tipo de lugar</p>
+      ${optBtn("f-tipo-lugar", 'data-tipo-lugar="academia"', state.tipoLugar === "academia", "Academias", semOutros.filter(c => !ehPublica(c)).length)}
+      ${optBtn("f-tipo-lugar", 'data-tipo-lugar="publica"', state.tipoLugar === "publica", "Quadras públicas", semOutros.filter(ehPublica).length)}
+    </div>` : ""}
+
     <div class="fgroup">
       <p class="fgroup-title">Suas listas</p>
       ${optBtn("f-favorites", "", state.favoritesOnly, "Favoritas",
@@ -21094,6 +21115,7 @@ function renderActiveChips() {
   state.coberturaFilters.forEach(k => chips.push({ label: COBERTURA_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="cobertura" data-key="${k}"` }));
   state.modalidadeFilters.forEach(k => chips.push({ label: MODALIDADE_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="modalidade" data-key="${k}"` }));
   if (state.abertoAgora) chips.push({ label: "Aberto agora", attr: `data-clear="aberto"` });
+  if (state.tipoLugar) chips.push({ label: state.tipoLugar === "publica" ? "Quadras públicas" : "Academias", attr: `data-clear="tipo-lugar"` });
   state.amenityFilters.forEach(k => chips.push({ label: FILTER_AMENITY_OPTS.find(p => p.key === k)?.label || (OFERECE_OPTS.find(o => o.key === k) || {}).label || k, attr: `data-clear="amenity" data-key="${k}"` }));
   if (state.favoritesOnly) chips.push({ label: "Favoritas", attr: `data-clear="favorites"` });
   if (state.compareOnly) chips.push({ label: "Só em comparação", attr: `data-clear="compareonly"` });
@@ -21243,11 +21265,15 @@ function renderCard(c, badge) {
            WhatsApp (regra 242: a reserva antes do WhatsApp). */ ""}
       <div class="offer offer-linha">
         <div class="offer-precos">
-          ${precos.some(o => o.min)
+          ${ehPublica(c)
+            ? `<div class="offer-um"><strong class="offer-um-val">Grátis</strong> <span class="offer-sub">quadra pública</span></div>`
+            : precos.some(o => o.min)
             ? precos.filter(o => o.min).slice(0, 3).map(o => `<div class="offer-um"><span class="offer-um-lbl">${esc(o.label)}</span> a partir de <strong class="offer-um-val">R$ ${esc(priceMin(o.faixa))}</strong><span class="offer-por-hora">${esc(o.curto || " por hora")}</span></div>`).join("")
             : `<div class="offer-um"><strong class="offer-um-val sem-valor">${SEM_PRECO}</strong> <span class="offer-sub">${SEM_PRECO_SUB}</span></div>`}
         </div>
-        ${c.reserva
+        ${ehPublica(c)
+          ? linkComoChegarHtml(c, "offer-contact", `${icon('pin', 16, '#fff')} Como chegar`)
+          : c.reserva
           ? `<a class="offer-contact" href="${esc(c.reserva)}" data-track="reserva" data-court="${c.id}" data-reservar="${c.id}" data-stop target="_blank" rel="noopener noreferrer">${icon('calendario', 16, '#fff')} Reservar</a>`
           : c.phone
           ? `<a class="offer-contact" href="${waLink(c)}" data-track="whatsapp" data-court="${c.id}" data-stop target="_blank" rel="noreferrer">${icon('whatsapp', 16, '#fff')} Chamar</a>`
@@ -22252,7 +22278,7 @@ function linkDaRegiaoNaFicha(c) {
 // (26/10/2026): modalidade, quadras, piso e cobertura, duas por linha.
 function htEtiquetas(c) {
   const out = [];
-  const mod = modalidadesTexto(c);
+  const mod = ehPublica(c) ? "Pública" : modalidadesTexto(c);
   if (mod) out.push(mod);
   const total = totalQuadras(c);
   if (total) out.push(`${total} ${plural(total, "quadra", "quadras")}`);
@@ -22460,7 +22486,7 @@ function htDestaques(c) {
     // Regra 270: a nota, a distância e as quadras já estão no topo (o quadrado
     // da nota, o endereço e os quadros); aqui ficam o preço e o que a academia
     // oferece, como os destaques do Airbnb, que não repetem o título.
-    faixa && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: faixa.rotulo },
+    faixa && !ehPublica(c) && { ic: 'key', cor: 'var(--green)', t: `${faixa.texto}`, s: faixa.rotulo },
     tem("estacionamento_gratuito") && { ic: 'parking', cor: regraDoEstacionamento(c) ? 'var(--gold)' : 'var(--green)', t: estacionamentoRotulo(c) },
     tem("vestiario") && { ic: 'droplet', cor: 'var(--green)', t: "Vestiário" },
     tem("camera") && { ic: 'camera', cor: 'var(--green)', t: "Câmera nas quadras" },
@@ -22710,7 +22736,7 @@ function htVizinhas(c) {
   if (!perto.length) return "";
   return `
     <section class="ht-sec" id="ht-perto">
-      <h3 class="sec-title">Outras academias por perto</h3>
+      <h3 class="sec-title">${ehPublica(c) ? "Quer aula ou quadra reservada? Academias perto daqui" : "Outras academias por perto"}</h3>
       <div class="ht-carrossel">
         <div class="ht-viz" id="ht-viz" data-rolagem-x>${perto.map(x => cartaoVizinha(x.c, x.km)).join("")}</div>
         ${perto.length > 2 ? `<button type="button" class="ht-carrossel-seta" data-rolar="ht-viz" aria-label="Ver mais academias">${icon('chevron', 18, 'var(--text)')}</button>` : ""}
@@ -22799,7 +22825,7 @@ function htHorarioTabela(c) {
 function academiasPerto(c, quantas) {
   if (typeof c.lat !== "number" || typeof c.lng !== "number") return [];
   return state.allCourts
-    .filter(x => x.id !== c.id && typeof x.lat === "number" && typeof x.lng === "number")
+    .filter(x => x.id !== c.id && !ehPublica(x) && typeof x.lat === "number" && typeof x.lng === "number")
     .map(x => ({ c: decorate(x), km: haversineKm(c.lat, c.lng, x.lat, x.lng) }))
     .sort((a, b) => a.km - b.km)
     .slice(0, quantas);
@@ -22943,6 +22969,10 @@ const CATALOGO_EXTRAS = CATALOGO_TIPOS.filter(t => t.grupo === "extra");
 // O projeto social (regra 294) não é produto à venda: o texto da academia,
 // numa coluna própria (academias.projeto_social), em todos os planos.
 const PROJETO_SOCIAL_MAX = 100;
+// Regra 296: a quadra pública, ficha do GuiaTennis sem dono no Parceiros (como
+// os parques do Google Maps e o "Find a court" da federação americana).
+const COMO_USAR_MAX = 200;
+const ehPublica = (c) => !!c && c.tipo === "publica";
 // Regra 295 ("um limite para a escrita do projeto, algo até 100, e não permitir
 // qualquer intenção para que ocorra venda"): até 100 letras, sem preço, link,
 // @, telefone ou palavra de venda. O banco tem a mesma trava (SQL
@@ -23584,6 +23614,15 @@ function htSecoesDisponiveis(c) {
   const secs = [];
   // Regra 264: a ordem da decisão (preço, horário, estrutura, onde fica,
   // cancelamento e o que dizem os jogadores).
+  if (ehPublica(c)) {
+    if (c.comoUsar) secs.push({ id: "ht-visao", label: "Como usar" });
+    secs.push({ id: "ht-contato", label: "Como chegar" });
+    if (temHorario(c)) secs.push({ id: "ht-horario", label: "Horário" });
+    if (totalQuadras(c) || (c.amenities || []).length) secs.push({ id: "ht-comodidades", label: "Estrutura" });
+    secs.push({ id: "ht-local", label: "Localização" });
+    secs.push({ id: "avaliacoes", label: "Avaliações" });
+    return secs;
+  }
   secs.push({ id: "ht-visao", label: "Visão geral" });
   secs.push({ id: "ht-opcoes", label: "Preços" });
   if (temHorario(c)) secs.push({ id: "ht-horario", label: "Horário" });
@@ -23763,6 +23802,7 @@ function renderCourtPage(c) {
           <div class="ht-main">
             <header class="ht-head">
               <h2 class="court-name display">${esc(c.name)}${seloDaAcademia(c, 22, true)}</h2>
+              ${ehPublica(c) ? `<p class="ht-publica">${icon('pin', 14, 'var(--green)')} Quadra pública · grátis</p>` : ""}
               <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</p>
               ${dist ? `<p class="court-addr court-dist">${esc(dist)} de você</p>` : ""}
               <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button></p>
@@ -23791,6 +23831,11 @@ function renderCourtPage(c) {
               ${/* Regra 283 ("deixar o sobre a academia acima do catálogo"): como a
                    descrição antes dos quartos no Booking, no Airbnb e no hoteis.com;
                    o texto longo fica em 4 linhas com "Ler mais". */ ""}
+              ${ehPublica(c) ? (c.comoUsar ? `
+              <section class="ht-sec" id="ht-visao">
+                <h3 class="sec-title">Como usar a quadra</h3>
+                <p class="ht-como-usar">${esc(c.comoUsar)}</p>
+              </section>` : "") : `
               <section class="ht-sec" id="ht-visao">
                 <h3 class="sec-title">Sobre a academia</h3>
                 ${htSobre(c)}
@@ -23802,7 +23847,7 @@ function renderCourtPage(c) {
                 ${htPromocoes(c)}
                 ${htOpcoes(c)}
               </section>
-              ${htOferece(c)}
+              ${htOferece(c)}`}
 
               ${/* Sem foto no meio da ficha (pedido de 27/10/2026: "igual na
                    ficha dos hotéis.com, não tem foto no meio da ficha, só tem
@@ -23813,6 +23858,15 @@ function renderCourtPage(c) {
                    academia", o "é o responsável?" e o "Algo errado nesta
                    ficha?" seguem no fim (27/10/2026: "deixe isso no final,
                    era só os contatos mais para cima"). */ ""}
+              ${ehPublica(c) ? `
+              <section class="ht-sec" id="ht-contato">
+                <h3 class="sec-title">Como chegar</h3>
+                <div class="cta-col" style="margin-top:0">
+                  ${linkComoChegarHtml(c, "cta-btn cta-primary", `${icon('pin', 15, '#fff')} Como chegar`)}
+                  <button class="cta-btn cta-secondary" id="share-btn-3" data-court="${c.id}">${icon('share', 15, 'var(--green)')} Compartilhar</button>
+                </div>
+                <p class="footnote">Quadra pública: o GuiaTennis não administra o lugar. Viu algo diferente? Use "Informar um problema", no fim da página.</p>
+              </section>` : `
               <section class="ht-sec" id="ht-contato">
                 <h3 class="sec-title">Contato</h3>
                 <div class="cta-col" style="margin-top:0">
@@ -23825,7 +23879,7 @@ function renderCourtPage(c) {
                 ${c.reserva ? `<p class="footnote ficha-reserva-nota">A reserva online é feita no sistema da academia. O GuiaTennis não recebe o pagamento.</p>` : ""}
                 ${c.phone && c.whatsappEmConfirmacao ? `<p class="footnote ficha-whats-confirmando">WhatsApp em confirmação pelo GuiaTennis.</p>` : ""}
                 ${(ehMinha(c) || ehDaMinhaConta(c)) && whatsappNovoDe(c.id) && whatsappNovoDe(c.id).numero && !whatsappNovoDe(c.id).codigoOkEm ? `<p class="footnote ficha-whatsapp-novo">Só vocês veem isto: o WhatsApp ${esc(telefoneBonito(whatsappNovoDe(c.id).numero))} precisa de confirmação e não fica público até ser confirmado. <a href="/parceiros/whatsapp" data-pc="whatsapp">Ver ›</a></p>` : ""}
-              </section>
+              </section>`}
 
               ${temHorario(c) ? `
                 <section class="ht-sec" id="ht-horario">
@@ -23848,10 +23902,10 @@ function renderCourtPage(c) {
                 ${htLocalizacao(c)}
               </section>
 
-              <section class="ht-sec" id="ht-politica">
+              ${ehPublica(c) ? "" : `<section class="ht-sec" id="ht-politica">
                 <h3 class="sec-title">Cancelamento e reposição</h3>
                 ${htPolitica(c)}
-              </section>
+              </section>`}
 
               <section class="ht-sec" id="avaliacoes">
                 <div class="ht-sec-topo">
@@ -23886,7 +23940,7 @@ function renderCourtPage(c) {
                 </div>
               </section>
 
-              ${perguntasAcademia(c).length ? `
+              ${!ehPublica(c) && perguntasAcademia(c).length ? `
                 <section class="ht-sec" id="ht-duvidas">
                   <h3 class="sec-title">Perguntas frequentes sobre ${esc(c.name)}</h3>
                   ${htPerguntas(c)}
@@ -23896,7 +23950,7 @@ function renderCourtPage(c) {
 
               <div class="ht-sec ht-sec-fim">
                 <div id="ficha-confirmacao">${c.confirmada ? linhaDaFichaConfirmada(c) : avisoDaFichaBasica()}</div>
-                ${ehMinha(c) || ehDaMinhaConta(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="/parceiros/cadastro?academia=${idCurto(c.id)}" data-pc-reivindicar="${idCurto(c.id)}">Gerencie a ficha no GuiaTennis Parceiros</a>: atualize os dados, responda às avaliações e veja quem viu a academia.</p>`}
+                ${ehMinha(c) || ehDaMinhaConta(c) || ehPublica(c) ? "" : `<p class="footnote ficha-dono">É o responsável por esta academia? <a href="/parceiros/cadastro?academia=${idCurto(c.id)}" data-pc-reivindicar="${idCurto(c.id)}">Gerencie a ficha no GuiaTennis Parceiros</a>: atualize os dados, responda às avaliações e veja quem viu a academia.</p>`}
                 ${c.source === "osm" ? `<p class="footnote">Nome e localização: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores do OpenStreetMap</a>.</p>` : ""}
                 ${ehMinha(c) || ehDaMinhaConta(c) || isAdmin ? "" : `
                   <div class="ficha-problema">
@@ -23907,11 +23961,18 @@ function renderCourtPage(c) {
             </div>
           </div>
 
-          <aside class="ht-aside">${htCartaoContato(c)}</aside>
+          <aside class="ht-aside">${ehPublica(c) ? `<div class="ht-book"><p class="ht-book-lbl">Quadra pública</p><div class="ht-book-row"><span class="ht-book-val">Grátis</span></div><div class="ht-book-div"></div>${linkComoChegarHtml(c, "cta-btn cta-primary", `${icon('pin', 15, '#fff')} Como chegar`)}<button type="button" class="cta-btn cta-secondary" data-nav="${c.id}" style="margin-top:8px">${icon('pin', 15, 'var(--green)')} Ver no mapa</button></div>` : htCartaoContato(c)}</aside>
         </div>
       </div>
 
-      ${c.phone || c.reserva ? `
+      ${ehPublica(c) ? `
+        <div class="court-cta">
+          <div class="court-cta-price">
+            <span class="court-cta-val">Grátis</span>
+            <span class="court-cta-unit">quadra pública</span>
+          </div>
+          ${linkComoChegarHtml(c, "cta-btn cta-primary", `${icon('pin', 15, '#fff')} Como chegar`)}
+        </div>` : c.phone || c.reserva ? `
         <div class="court-cta${c.reserva ? " court-cta-reserva" : ""}">
           <div class="court-cta-price">
             <span class="court-cta-val ${faixa ? "" : "sem-valor"}">${faixa ? esc(faixa.texto) : SEM_PRECO}</span>
@@ -24354,6 +24415,8 @@ const REG_PASSOS = [
 // Os índices das partes continuam os de REG_PASSOS; a navegação pula as
 // que não aparecem.
 function passoVisivel(f, id) {
+  // Regra 296: a quadra pública só tem o lugar, as quadras, as fotos, o horário e como chegar.
+  if (ehPublica(f)) return ["dados", "quadras", "fotos", "horario", "chegada", "revisar"].includes(id);
   const mods = (f && f.modalidades) || [];
   if (id === "precos") return mods.includes("aulas_proprias");
   if (id === "locacao") return mods.includes("locacao");
@@ -24876,7 +24939,16 @@ function regPassoHtml(id, f, obrigatorio) {
   // qualquer plano.
   const maxFotos = FOTOS_MAXIMO;
   if (id === "dados") return `
-        <label class="field-label" for="f-name">Nome da academia</label>
+        ${isAdmin && !isEditing ? `
+        <p class="field-label" style="margin-top:0">É uma</p>
+        <div class="chip-row" role="group" aria-label="Tipo de lugar">
+          <button type="button" class="chip ${ehPublica(f) ? "" : "active"}" data-reg-tipo="academia" aria-pressed="${!ehPublica(f)}">Academia</button>
+          <button type="button" class="chip ${ehPublica(f) ? "active" : ""}" data-reg-tipo="publica" aria-pressed="${ehPublica(f)}">Quadra pública</button>
+        </div>` : ""}
+        ${ehPublica(f) ? `
+        <label class="field-label" for="f-como-usar">Como usar a quadra</label>
+        <textarea class="form-field" id="f-como-usar" rows="3" maxlength="${COMO_USAR_MAX}" style="resize:none;margin-top:0" placeholder="Ex.: chegue e jogue; nos fins de semana, agende no parque. Leve a própria rede.">${esc(f.comoUsar || "")}</textarea>` : ""}
+        <label class="field-label" for="f-name">${ehPublica(f) ? "Nome do lugar" : "Nome da academia"}</label>
         <input class="form-field" id="f-name" placeholder="Nome da academia/quadra *" value="${esc(f.name)}" style="margin-top:0" />
         <p class="field-label">Endereço</p>
         ${!isEditing ? `<input class="form-field" id="f-cep" inputmode="numeric" placeholder="CEP" value="${esc(f.cep || '')}" style="margin-top:0" />` : ""}
@@ -27517,6 +27589,59 @@ function ligarChat() {
   }
 }
 
+// Regra 296 ("um botão de sugerir quadras públicas ou até mesmo academia, no
+// início do menu, para eu entrar em contato"), como o "Adicionar um lugar" do
+// Google Maps: com a conta (o GuiaTennis responde pelo e-mail dela), vai como
+// sugestão do chat de ajuda; o admin vê com o nome e o e-mail em Chat de ajuda,
+// responde ali, e a pessoa acompanha em Feedback.
+function abrirSugerirLugar() {
+  state.showMenu = false;
+  if (!jogador && !contaAcademia && !isAdmin) {
+    jogadorEntaoFaz(() => abrirSugerirLugar(), "Para sugerir uma quadra ou academia, entre com a sua conta (é grátis): o GuiaTennis responde pelo seu e-mail.");
+    return;
+  }
+  const s = state.sugerirLugar || {};
+  state.sugerirLugar = { tipo: s.tipo || "publica", nome: s.nome || "", onde: s.onde || "", obs: s.obs || "", erro: "", enviado: false };
+  render();
+}
+function renderSugerirLugar() {
+  const s = state.sugerirLugar;
+  if (s.enviado) return renderLegalSheet("Sugestão enviada", `
+    <p class="subtitle" style="margin-top:4px">Obrigado! O GuiaTennis confere e fala com você pelo e-mail da sua conta. Você acompanha a resposta em Feedback.</p>
+    <button type="button" class="cta-btn cta-primary" id="sugerir-ok" style="width:100%;margin-top:14px">Fechar</button>`, "sugerir-close");
+  return renderLegalSheet("Sugerir uma quadra ou academia", `
+    <p class="subtitle" style="margin-top:4px">Conhece um lugar para jogar que ainda não está no GuiaTennis? Conte para a gente.</p>
+    <p class="field-label">É uma</p>
+    <div class="chip-row" role="group" aria-label="O que é">
+      <button type="button" class="chip ${s.tipo === "publica" ? "active" : ""}" data-sugerir-tipo="publica">Quadra pública</button>
+      <button type="button" class="chip ${s.tipo === "academia" ? "active" : ""}" data-sugerir-tipo="academia">Academia</button>
+    </div>
+    <label class="field-label" for="sugerir-nome">Nome do lugar</label>
+    <input class="form-field" id="sugerir-nome" maxlength="120" value="${esc(s.nome)}" placeholder="${s.tipo === "publica" ? "Ex.: Parque do Ibirapuera" : "Ex.: Academia de Tênis Moema"}" style="margin-top:0">
+    <label class="field-label" for="sugerir-onde">Onde fica</label>
+    <input class="form-field" id="sugerir-onde" maxlength="200" value="${esc(s.onde)}" placeholder="Endereço, bairro ou cidade" style="margin-top:0">
+    <label class="field-label" for="sugerir-obs">Algo mais? <span class="reg-opcional">(opcional)</span></label>
+    <textarea class="form-field" id="sugerir-obs" rows="3" maxlength="500" style="resize:none;margin-top:0" placeholder="${s.tipo === "publica" ? "Ex.: são duas quadras de saibro; nos fins de semana, precisa agendar." : "Ex.: tem aula para crianças e locação à noite."}">${esc(s.obs)}</textarea>
+    ${s.erro ? `<div class="form-error">${icon('warning', 13)} ${esc(s.erro)}</div>` : ""}
+    <button type="button" class="cta-btn cta-primary" id="sugerir-enviar" style="width:100%;margin-top:14px" ${s.enviando ? "disabled" : ""}>${s.enviando ? bolaGirando(15) + " Enviando" : "Enviar sugestão"}</button>
+    <p class="footnote" style="margin-top:10px">O GuiaTennis confere antes de colocar no site e pode falar com você pelo e-mail da sua conta.</p>`, "sugerir-close");
+}
+async function enviarSugestaoDeLugar() {
+  const s = state.sugerirLugar;
+  ["nome", "onde", "obs"].forEach(k => { const el = document.getElementById("sugerir-" + k); if (el) s[k] = el.value; });
+  const nome = s.nome.trim(), onde = s.onde.trim(), obs = s.obs.trim();
+  if (!nome || !onde) { s.erro = `Falta ${!nome && !onde ? "o nome e onde fica" : !nome ? "o nome do lugar" : "onde fica"}.`; render(); return; }
+  s.erro = ""; s.enviando = true; render();
+  const texto = `${s.tipo === "publica" ? "Quadra pública" : "Academia"} sugerida: ${nome} · ${onde}${obs ? " · " + obs : ""}`.slice(0, 1000);
+  let r;
+  try { r = await sb.rpc('enviar_relato_do_chat', { p_site: state.page === "parceiros" ? "parceiros" : "jogadores", p_tipo: "sugestao", p_texto: texto, p_pagina: "Sugerir uma quadra ou academia", p_conversa: null }); }
+  catch (e) { r = { error: e }; }
+  s.enviando = false;
+  if (r.error) { s.erro = falhou("mandar a sugestão", r.error, { texto: "Não foi possível mandar agora. Tente de novo em instantes." }); render(); return; }
+  s.enviado = true;
+  registrarPasso("acao", { detalhe: "Sugeriu um lugar" });
+  render();
+}
 function renderContatoSheet() {
   return renderLegalSheet("Fale com a gente", `
     <p class="subtitle" style="margin-top:4px">Dúvida, sugestão ou problema no site? O chat de ajuda responde na hora; se preferir, fale com o GuiaTennis no WhatsApp.</p>
@@ -28190,6 +28315,7 @@ function admAcademiasHtml() {
       <div class="adm-barra">
         <input type="search" class="form-field adm-busca" id="adm-busca" placeholder="Nome, bairro ou cidade" value="${esc(state.admBusca || "")}" autocomplete="off" />
         <button type="button" class="cta-btn cta-primary adm-nova" id="adm-nova-academia">${icon('plus', 15, '#fff')} Adicionar academia</button>
+        <button type="button" class="cta-btn cta-secondary adm-nova" id="adm-nova-publica">${icon('plus', 15, 'var(--green)')} Adicionar quadra pública</button>
       </div>
       ${/* Regra 278: o filtro sem nenhuma academia não aparece (eram 10 botões em 5
            linhas, quase todos com 0); "Todas" e o escolhido ficam sempre. */ ""}
@@ -29198,6 +29324,7 @@ function acaoDoMenu(alvo) {
   if (alvo === "termos") { state.showTerms = true; render(); return; }
   if (alvo === "privacidade") { state.showPrivacy = true; render(); return; }
   if (alvo === "contato") { state.showContato = true; render(); return; }
+  if (alvo === "sugerir-lugar") { abrirSugerirLugar(); return; }
   if (alvo === "admin") { state.showLogin = true; state.loginModo = "admin"; state.loginError = ""; render(); return; }
   if (alvo === "entrar") { abrirLoginAcademia(); return; }
   if (alvo === "conta") { abrirConta(); return; }
@@ -29288,12 +29415,14 @@ function ligarEventosDoPainel() {
   if (atualizarEmails) atualizarEmails.onclick = () => { carregarSituacaoDosEmails(); carregarEmailsRecentes(); };
   ligarFalhasDoAdmin();
   const nova = document.getElementById("adm-nova-academia");
-  if (nova) nova.onclick = () => {
-    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{} };
+  const novaPublica = document.getElementById("adm-nova-publica");
+  [nova, novaPublica].forEach(bt => { if (bt) bt.onclick = () => {
+    window.__form = { name:"", cep:"", address:"", numero:"", complemento:"", bairro:"", cidade:"", quadras:{}, amenities:[], modalidades:[], priceAula:"", priceLocacao:"", phone:"", instagram:"", site:"", photos:[], politica:{}, acesso:{}, horario:{}, tipo: bt === novaPublica ? "publica" : "academia", comoUsar: "" };
     state.showRegister = true;
     state.registerStatus = "idle";
+    state.regPasso = 0;
     render();
-  };
+  }; });
   // Busca enquanto digita, sem perder o cursor.
   const campoVivo = (id, chave) => {
     const el = document.getElementById(id);
@@ -29639,6 +29768,9 @@ function attachEvents() {
   document.querySelectorAll(".f-compareonly").forEach(el => {
     el.onclick = () => { state.compareOnly = !state.compareOnly; render(); };
   });
+  document.querySelectorAll(".f-tipo-lugar").forEach(el => {
+    el.onclick = () => { const t = el.dataset.tipoLugar; state.tipoLugar = state.tipoLugar === t ? "" : t; syncUrl(false); render(); };
+  });
   document.querySelectorAll(".f-aberto").forEach(el => {
     el.onclick = () => { state.abertoAgora = !state.abertoAgora; syncUrl(false); render(); };
   });
@@ -29658,6 +29790,7 @@ function attachEvents() {
       else if (kind === "favorites") state.favoritesOnly = false;
       else if (kind === "compareonly") state.compareOnly = false;
       else if (kind === "aberto") state.abertoAgora = false;
+      else if (kind === "tipo-lugar") state.tipoLugar = "";
       render();
     };
   });
@@ -30475,6 +30608,23 @@ function attachEvents() {
   if (termsClose) termsClose.onclick = () => { state.showTerms = false; render(); };
   if (termsOverlay) termsOverlay.onclick = (e) => { if (e.target === termsOverlay) { state.showTerms = false; render(); } };
 
+  // Regra 296: "Sugerir uma quadra ou academia".
+  const fecharSugerir = () => { state.sugerirLugar = null; render(); };
+  const sugerirClose = document.getElementById("sugerir-close");
+  if (sugerirClose) sugerirClose.onclick = fecharSugerir;
+  const sugerirOverlay = document.getElementById("sugerir-close-overlay");
+  if (sugerirOverlay) sugerirOverlay.onclick = (e) => { if (e.target === sugerirOverlay) fecharSugerir(); };
+  const sugerirOk = document.getElementById("sugerir-ok");
+  if (sugerirOk) sugerirOk.onclick = fecharSugerir;
+  document.querySelectorAll("[data-sugerir-tipo]").forEach(el => {
+    el.onclick = () => {
+      const s = state.sugerirLugar;
+      ["nome", "onde", "obs"].forEach(k => { const c = document.getElementById("sugerir-" + k); if (c) s[k] = c.value; });
+      s.tipo = el.dataset.sugerirTipo; render();
+    };
+  });
+  const sugerirEnviar = document.getElementById("sugerir-enviar");
+  if (sugerirEnviar) sugerirEnviar.onclick = () => enviarSugestaoDeLugar();
   const contatoClose = document.getElementById("contato-close");
   const contatoOverlay = document.getElementById("contato-close-overlay");
   if (contatoClose) contatoClose.onclick = () => { state.showContato = false; render(); };
@@ -30786,6 +30936,12 @@ function attachEvents() {
       if (entrou) focar(`[data-cat-valor="${bloco}:${tipo}:avulsa"]`);
     };
   });
+  // Regra 296: academia ou quadra pública (só o admin, ao cadastrar).
+  document.querySelectorAll("[data-reg-tipo]").forEach(el => {
+    el.onclick = () => { window.__form.tipo = el.dataset.regTipo; render(); };
+  });
+  const campoComoUsar = document.getElementById("f-como-usar");
+  if (campoComoUsar) campoComoUsar.oninput = (e) => { window.__form.comoUsar = e.target.value; };
   // Regra 294: eventos e ranking abrem o cartão; o projeto social, o texto.
   document.querySelectorAll("[data-reg-extra]").forEach(el => {
     el.onclick = () => {
@@ -31045,6 +31201,8 @@ function abrirEdicaoDaFicha(c, opcoes = {}) {
     cidade: c.cidade || "",
     quadras,
     amenities: [...(integral.amenities || [])],
+    tipo: c.tipo === "publica" ? "publica" : "academia",
+    comoUsar: c.comoUsar || "",
     projetoSocialOn: !!c.projetoSocial,
     projetoSocial: c.projetoSocial || "",
     modalidades: [...(c.modalidades || [])],
@@ -31345,7 +31503,7 @@ async function doSearch(opcoes = {}) {
 // falhar — e avisa o admin com o SQL que resolve. Mesmo caminho do "plano".
 function faltaColunaNova(erro) {
   const m = ((erro && erro.message) || "").toLowerCase();
-  return m.includes("reserva_link") || m.includes("projeto_social") || m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada") || m.includes("catalogo") || m.includes("sobre");
+  return m.includes("reserva_link") || m.includes("projeto_social") || m.includes("como_usar") || m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada") || m.includes("catalogo") || m.includes("sobre");
 }
 
 function avisarSqlColunas() {
@@ -31478,7 +31636,13 @@ async function doRegisterSubmit() {
         delete semNovas.sobre;
         delete semNovas.reserva_link;
       delete semNovas.projeto_social;
+      delete semNovas.tipo;
+      delete semNovas.como_usar;
         delete semNovas.projeto_social;
+      delete semNovas.tipo;
+      delete semNovas.como_usar;
+        delete semNovas.tipo;
+        delete semNovas.como_usar;
         ({ error } = await sb.from('academias').update(semNovas).eq('id', f.__editingId));
         if (!error) avisarSqlColunas();
       }
@@ -31575,6 +31739,8 @@ async function doRegisterSubmit() {
       delete semNovas.sobre;
       delete semNovas.reserva_link;
       delete semNovas.projeto_social;
+      delete semNovas.tipo;
+      delete semNovas.como_usar;
       ({ data, error } = await enviar(semNovas));
       if (!error) avisarSqlColunas();
     }

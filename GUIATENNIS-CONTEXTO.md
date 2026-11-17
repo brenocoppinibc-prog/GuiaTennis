@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 17/11/2026 (regra 295)
+**Atualizado em:** 17/11/2026 (regra 296)
 
 | | |
 |---|---|
@@ -2303,6 +2303,29 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `cadastro`, sem falha; o SQL conferido num Postgres de passagem (aceita "Valorizamos o
   esporte" e "Bolsas para jovens", barra "Aulas com desconto" e telefone) e
   `banco-emails.py` com as conferências novas.
+- **296 (17/11) — quadras públicas e "Sugerir uma quadra ou academia"** ("quero ter a
+  opção de adicionar quadras públicas, como pode ficar a administração delas?"; "sim, quero
+  um botão também de sugerir quadras públicas ou até mesmo academia, no início do menu, para
+  eu entrar em contato"). Como os parques do Google Maps e o "Find a court" da federação
+  americana: **ficha do GuiaTennis, sem dono no Parceiros**. SQL
+  `20261117140000_quadras_publicas` (`academias.tipo` 'academia'/'publica' e `como_usar`,
+  até 200 letras). **Admin:** "Adicionar quadra pública" ao lado de "Adicionar academia"
+  (e o "É uma: Academia | Quadra pública" no começo do cadastro dele); a pública só tem
+  lugar (com "Como usar a quadra"), quadras, fotos, horário e como chegar
+  (`passoVisivel`). **Ficha** (`ehPublica`): selo "Quadra pública · grátis", "Como usar a
+  quadra", "Como chegar" no lugar do contato, a barra de baixo "Grátis · quadra pública ·
+  Como chegar"; sem preços, "Também oferece", WhatsApp, cancelamento, dúvidas e "É o
+  responsável?"; embaixo, "Quer aula ou quadra reservada? Academias perto daqui" (só
+  academias); Google: "quadra de tênis pública e grátis". **Busca:** no cartão, "Grátis ·
+  quadra pública" e "Como chegar"; nas Recomendadas, depois das academias; Filtros › "Tipo
+  de lugar" (Academias, Quadras públicas; link `lugar=publicas`); fora das "Academias
+  recomendadas", das "Mais bem avaliadas" da inicial, do "por perto" das academias, da
+  reivindicação no Parceiros e do anúncio (sem preço). **Sugerir:** no menu, logo depois de
+  "Buscar quadra", "Sugerir uma quadra ou academia": com a conta (sem conta, o Entrar com o
+  motivo), quadra pública ou academia, nome, onde fica e algo mais; vai como sugestão do
+  chat de ajuda (`enviar_relato_do_chat`, "Quadra pública sugerida: …"), que o admin vê em
+  Chat de ajuda com o nome e o e-mail, responde ali, e a pessoa acompanha em Feedback.
+  Testes: `quadras-publicas.js` (novo, 12), sem falha; bateria completa rodando no envio.
 
 ## 11. WhatsApp e mensagem para as academias
 

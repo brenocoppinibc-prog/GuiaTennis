@@ -457,8 +457,8 @@ em cada", "Também oferece" (eventos e ranking no catálogo, projeto social à p
 letras e sem venda) e **quadras públicas** com "Sugerir uma quadra ou academia" no menu.
 **Testes:** bateria completa de 16/11 até a 290: 2.655, nenhuma falha; das 291 a 296, os
 afetados, sem falha; **bateria completa de 17/11 (até a 296): 2.680 verificações, nenhuma
-falha** (o `index.html` mudou um pouco durante ela: a barra de baixo da quadra pública;
-rodar de novo no começo do próximo chat). **Pendências e ofertas sem resposta:** (1) a faixa verde "Para
+falha**; rodada de novo no começo do chat seguinte, com o `index.html` final da 296:
+**2.680, nenhuma falha**. **Pendências e ofertas sem resposta:** (1) a faixa verde "Para
 academias" na inicial (recomendação: não entrar); (2) fazer o cartão de visita, os dois
 flyers e a plaquinha de balcão "Avalie no GuiaTennis" com QR (oferecido); (3) quando o CNPJ
 sair (o Breno espera nesta semana), colocar razão social e CNPJ no rodapé, nos Termos e na

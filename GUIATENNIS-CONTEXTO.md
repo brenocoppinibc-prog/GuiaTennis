@@ -442,6 +442,29 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
+**Chat trocado em 17/11/2026 (regra 296):** o chat novo volta a acompanhar o PR #5 (este
+deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código:
+`989007b` (regra 296). A prévia está no ar com tudo até a 296, o "Banco de dados" disparado
+à mão rodou com sucesso no banco de teste para o SQL mais novo
+(`20261117140000_quadras_publicas`) e a descrição do PR está em dia (passos 110 a 115; os
+42 a 109 no histórico). **Do chat de 16 e 17/11:** regras 285 a 296 (seção 10): sitemap com
+/como-funciona, vermelho `#C2330D`, nome em Poppins nas imagens, na 404 e na faixa verde dos
+e-mails, "Pet friendly", logos e fundos das redes (`divulgacao/`), boas-vindas ao jogador,
+busca com "Ordenar" e "Filtros" e "Salvar busca"/"Compartilhar" embaixo, contatos reais
+(WhatsApp, Instagram e site), "Outro valor" e "Pagamento seguro", aviso com "Corrigir",
+troca de academia sem piscar, nota com confiança (mais avaliações pesam), números sem o "1
+em cada", "Também oferece" (eventos e ranking no catálogo, projeto social à parte, até 100
+letras e sem venda) e **quadras públicas** com "Sugerir uma quadra ou academia" no menu.
+**Testes:** bateria completa de 16/11 até a 290: 2.655, nenhuma falha; das 291 a 296, os
+afetados, sem falha; **a bateria completa da 296 estava rodando na troca: rodar de novo no
+começo do próximo chat.** **Pendências e ofertas sem resposta:** (1) a faixa verde "Para
+academias" na inicial (recomendação: não entrar); (2) fazer o cartão de visita, os dois
+flyers e a plaquinha de balcão "Avalie no GuiaTennis" com QR (oferecido); (3) quando o CNPJ
+sair (o Breno espera nesta semana), colocar razão social e CNPJ no rodapé, nos Termos e na
+Privacidade, e trocar as chaves do Mercado Pago; (4) "Você marcou?" saindo 10 minutos depois
+só no banco de teste, para ele testar (oferecido); (5) ainda não feitos das quadras públicas:
+a pergunta no chat de ajuda e a página de região "Quadras públicas de tênis em <bairro>".
+
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
 avisos por e-mail do Parceiros um por um, SQL
 `20261104120000_avisos_um_por_um`; o aviso rápido de 5 segundos com a barra

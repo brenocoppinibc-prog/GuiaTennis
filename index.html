@@ -109,6 +109,15 @@
   .email-previa-marca { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 12px; padding: 9px 12px; background: var(--green); border-radius: 10px; color: #fff; font-size: 17px; }
   .email-previa-marca .logo-mark { width: 22px; height: 22px; }
   .cat-notas { margin-top: 12px; display: grid; gap: 6px; }
+  .reg-opcional { font-weight: 400; color: var(--muted); }
+  .ht-oferece { display: grid; gap: 16px; }
+  .ht-oferece-i { display: flex; gap: 12px; align-items: flex-start; }
+  .ht-oferece-ic { flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px; background: var(--bg-alt); display: inline-flex; align-items: center; justify-content: center; }
+  .ht-oferece-foto { flex-shrink: 0; width: 88px; height: 66px; border-radius: 12px; object-fit: cover; }
+  .ht-oferece-t { margin: 0; font-weight: 700; font-size: 16px; }
+  .ht-oferece-s { margin: 2px 0 4px; font-size: 14px; line-height: 1.45; color: var(--muted); }
+  .ht-oferece-p { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .ht-oferece-wa { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; font-size: 14px; font-weight: 600; color: var(--green); }
   .cat-notas .footnote { margin: 0; }
   .gt-escolha-bts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
   .gt-escolha-bts button { min-height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); background: none; color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
@@ -3654,6 +3663,7 @@ function icon(name, size, color) {
   const paths = {
     search: '<circle cx="10" cy="10" r="6"/><line x1="20" y1="20" x2="14.5" y2="14.5"/>',
     filter: '<path d="M3 4.5h18l-7 8.2V20l-4-2.2v-5.1z"/>',
+    trofeu: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5a3 3 0 0 0 3.5 4M16 6h3.5a3 3 0 0 1-3.5 4M12 13v4M8.5 20h7M10 17h4v3h-4z"/>',
     ordenar: '<path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/>',
     check: '<polyline points="4 12.5 9.5 18 20 6"/>',
     calendario: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
@@ -3917,6 +3927,7 @@ const FILTER_AMENITY_OPTS = [
 ];
 
 function matchesAmenityFilter(court, filterKey) {
+  if (OFERECE_KEYS.has(filterKey)) return OFERECE_OPTS.find(o => o.key === filterKey).tem(court);
   if (filterKey === "estacionamento") {
     return court.amenities?.includes("estacionamento_gratuito") || court.amenities?.includes("estacionamento_pago");
   }
@@ -4594,6 +4605,7 @@ function mapRow(row) {
     instagram: row.instagram,
     site: row.site,
     reserva: linkDeReserva(row.reserva_link),
+    projetoSocial: String(row.projeto_social || "").trim(),
     priceRange: row.price_range,
     priceAula: row.price_aula,
     priceLocacao: row.price_locacao,
@@ -4650,7 +4662,7 @@ function toRow(f) {
   // preço, o filtro e a comparação, e para o banco ainda sem a coluna.
   const modalidades = f.modalidades || [];
   const catalogo = fotoUmaVezPorLinha(semRepetir(catalogoDoForm(f).map(itemDoCatalogo))
-    .filter(i => modalidades.includes(tipoDoItem(i).grupo === "aula" ? "aulas_proprias" : "locacao"))
+    .filter(i => ehExtra(i) || modalidades.includes(tipoDoItem(i).grupo === "aula" ? "aulas_proprias" : "locacao"))
     .sort(ordemDoCatalogo).slice(0, CATALOGO_MAX));
   const avulsas = (grupo) => {
     const doGrupo = catalogo.filter(i => tipoDoItem(i).grupo === grupo && i.cobranca === "avulsa" && priceMin(i.preco));
@@ -4662,6 +4674,7 @@ function toRow(f) {
     bairro: f.bairro, cidade: f.cidade, endereco: f.endereco,
     phone: f.phone, instagram: usuarioDoInstagram(f.instagram) ? "@" + usuarioDoInstagram(f.instagram) : String(f.instagram || "").trim(), site: linkDoSite(f.site) || String(f.site || "").trim(),
     reserva_link: linkDeReserva(f.reserva) || null,
+    projeto_social: f.projetoSocialOn ? (String(f.projetoSocial || "").trim().slice(0, PROJETO_SOCIAL_MAX) || null) : null,
     price_range: f.priceRange,
     price_aula: avulsas("aula"),
     price_locacao: avulsas("locacao"),
@@ -4720,11 +4733,11 @@ async function carregarEstatisticasPublicas() {
 
 // O visitante só lê as colunas públicas. Quem pediu o cadastro e o WhatsApp
 // de quem avaliou ficam fechados no banco (SQL-SEGURANCA.sql) e só o admin vê.
-const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, reserva_link, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, dados_atualizados_em, created_at, avisou_que_fechou_em, catalogo, sobre, whatsapp_em_confirmacao";
+const COLUNAS_ACADEMIA_PUBLICAS = "id, name, address, numero, complemento, bairro, cidade, endereco, lat, lng, phone, instagram, site, reserva_link, projeto_social, price_range, price_aula, price_locacao, amenities, modalidades, pisos, cobertura, quadras, photos, source, status, pago, plano, politica, acesso, horario, pausada, pausada_ate, pausada_pela_academia, confirmada, dados_atualizados_em, created_at, avisou_que_fechou_em, catalogo, sobre, whatsapp_em_confirmacao";
 // Colunas que chegam ao banco pelo SQL automático. Na publicação, o site
 // pode ir para o ar um pouco antes do SQL: aí lê sem elas, em vez de cair
 // no "*", que o visitante não pode ler.
-const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia", "dados_atualizados_em", "avisou_que_fechou_em", "catalogo", "sobre", "whatsapp_em_confirmacao", "reserva_link"];
+const COLUNAS_ACADEMIA_NOVAS = ["confirmada", "pausada_pela_academia", "dados_atualizados_em", "avisou_que_fechou_em", "catalogo", "sobre", "whatsapp_em_confirmacao", "reserva_link", "projeto_social"];
 const COLUNAS_AVALIACAO_PUBLICAS = "id, academia_id, stars, comment, nome_autor, created_at, autor_oculto, editada_em";
 
 // Enquanto o banco não tiver alguma dessas colunas, a lista falha; aí lê
@@ -20997,6 +21010,15 @@ function filterGroupsHtml() {
       )).join("")}
     </div>
 
+    ${semAmen.some(c => OFERECE_OPTS.some(o => o.tem(c))) || state.amenityFilters.some(k => OFERECE_KEYS.has(k)) ? `
+    <div class="fgroup">
+      <p class="fgroup-title">Também oferece</p>
+      ${OFERECE_OPTS.map(o => optBtn(
+        "amenity-chip", `data-amenity="${o.key}"`, state.amenityFilters.includes(o.key),
+        o.label, semAmen.filter(c => o.tem(c)).length
+      )).join("")}
+    </div>` : ""}
+
     ${semOutros.some(c => abertoAgora(c) !== null) || state.abertoAgora ? `
     <div class="fgroup">
       <p class="fgroup-title">Horário</p>
@@ -21072,7 +21094,7 @@ function renderActiveChips() {
   state.coberturaFilters.forEach(k => chips.push({ label: COBERTURA_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="cobertura" data-key="${k}"` }));
   state.modalidadeFilters.forEach(k => chips.push({ label: MODALIDADE_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="modalidade" data-key="${k}"` }));
   if (state.abertoAgora) chips.push({ label: "Aberto agora", attr: `data-clear="aberto"` });
-  state.amenityFilters.forEach(k => chips.push({ label: FILTER_AMENITY_OPTS.find(p => p.key === k)?.label || k, attr: `data-clear="amenity" data-key="${k}"` }));
+  state.amenityFilters.forEach(k => chips.push({ label: FILTER_AMENITY_OPTS.find(p => p.key === k)?.label || (OFERECE_OPTS.find(o => o.key === k) || {}).label || k, attr: `data-clear="amenity" data-key="${k}"` }));
   if (state.favoritesOnly) chips.push({ label: "Favoritas", attr: `data-clear="favorites"` });
   if (state.compareOnly) chips.push({ label: "Só em comparação", attr: `data-clear="compareonly"` });
   if (!chips.length) return "";
@@ -22450,6 +22472,7 @@ function htDestaques(c) {
     tem("estacionamento_pago") && { ic: 'parking', cor: 'var(--gold)', t: "Estacionamento pago" },
     tem("raquete") && { ic: 'bag', cor: 'var(--green)', t: "Empréstimo de raquete" },
     tem("pet") && { ic: 'pata', cor: 'var(--green)', t: "Pet friendly" },
+    ...OFERECE_OPTS.filter(o => o.tem(c)).map(o => ({ ic: o.ic, cor: 'var(--green)', t: o.label })),
   ].filter(Boolean).slice(0, 4);
   if (!candidatos.length) return "";
   return `<div class="ht-destaques">${candidatos.map(d => `
@@ -22609,6 +22632,40 @@ function htCaixasDaEscolha(c) {
 }
 
 // Quadras e comodidades, na grade de ícones das "Comodidades da acomodação".
+// Regra 294: "Também oferece", depois das opções para jogar: a locação para
+// eventos e o ranking do catálogo (valor, foto no Premium e o WhatsApp com a
+// pergunta) e o projeto social, com o texto da academia.
+const MENSAGEM_DO_EXTRA = {
+  eventos: "Olá! Vim pelo GuiaTennis e tenho interesse na locação da quadra para um evento. Queria saber os valores e as datas disponíveis.\n\nTipo de evento: \nData: \nNúmero de pessoas: ",
+  ranking: "Olá! Vim pelo GuiaTennis e quero participar do ranking. Queria saber como funciona.\n\nMeu nível: ",
+  projeto_social: "Olá! Vim pelo GuiaTennis e queria saber sobre o projeto social. Como faço para participar?\n\nIdade: ",
+};
+const waDoExtra = (c, k) => `https://wa.me/55${digitosDoWhatsapp(c.phone)}?text=${encodeURIComponent(MENSAGEM_DO_EXTRA[k])}`;
+function htOferece(c) {
+  const cat = catalogoDe(c).filter(ehExtra);
+  const extras = CATALOGO_EXTRAS.filter(t => cat.some(i => i.tipo === t.key)).map(t => {
+    const itens = cat.filter(i => i.tipo === t.key);
+    const valores = itens.map(i => temPreco(i.preco) ? `${precoTexto(i.preco)} ${t.unidades[i.cobranca]}` : "").filter(Boolean);
+    return { key: t.key, nome: t.nome, ic: t.key === "eventos" ? "calendario" : "trofeu", desc: t.desc, preco: valores.join(" · ") || `${SEM_PRECO}, ${SEM_PRECO_SUB}`, foto: (itens.find(i => i.foto) || {}).foto };
+  });
+  if (c.projetoSocial) extras.push({ key: "projeto_social", nome: "Projeto social", ic: "heart", desc: c.projetoSocial, preco: "" });
+  if (!extras.length) return "";
+  return `
+              <section class="ht-sec" id="ht-oferece">
+                <h3 class="sec-title">Também oferece</h3>
+                <div class="ht-oferece">${extras.map(x => `
+                  <div class="ht-oferece-i" data-oferece="${x.key}">
+                    ${x.foto ? `<img class="ht-oferece-foto" src="${esc(x.foto)}" alt="${esc(x.nome)}" loading="lazy">` : `<span class="ht-oferece-ic">${icon(x.ic, 20, 'var(--green)')}</span>`}
+                    <div>
+                      <p class="ht-oferece-t">${esc(x.nome)}</p>
+                      <p class="ht-oferece-s">${esc(x.desc)}</p>
+                      ${x.preco ? `<p class="ht-oferece-p">${esc(x.preco)}</p>` : ""}
+                      ${c.phone ? `<a class="ht-oferece-wa" data-track="whatsapp" data-court="${c.id}" href="${waDoExtra(c, x.key)}" target="_blank" rel="noreferrer">${icon('whatsapp', 14, 'var(--green)')} Perguntar no WhatsApp</a>` : ""}
+                    </div>
+                  </div>`).join("")}
+                </div>
+              </section>`;
+}
 function htComodidades(c) {
   const total = totalQuadras(c);
   const lista = comodidadesNaOrdem(c);
@@ -22874,7 +22931,26 @@ const CATALOGO_TIPOS = [
   { key: "grupo", nome: "Aula em grupo", infantil: "Aula infantil em grupo", curto: "Grupo", grupo: "aula", porPessoa: true, desc: "Turma com o professor", descCrianca: "Turma de crianças com o professor" },
   { key: "aula", nome: "Aula", curto: "Aula", grupo: "aula", antigo: true, desc: "Com professor da academia" },
   { key: "locacao", nome: "Locação", curto: "Locação", grupo: "locacao", desc: "Aluguel da quadra" },
+  // Regra 294 ("academias que oferecem locação para eventos, rankings…"): o
+  // que a academia oferece além das aulas e da locação, no mesmo catálogo, com
+  // valor, foto e WhatsApp, como os "Produtos" do Perfil da Empresa no Google e
+  // as atividades com preço do Playtomic. Ficam fora das "Opções para jogar" e
+  // do "a partir de": aparecem em "Também oferece".
+  { key: "eventos", nome: "Locação para eventos", curto: "Eventos", grupo: "extra", desc: "Aniversários, empresas e confraternizações", cobrancas: ["avulsa"], unidades: { avulsa: "por evento" } },
+  { key: "ranking", nome: "Ranking", curto: "Ranking", grupo: "extra", desc: "Jogos do ranking da academia", cobrancas: ["avulsa", "mensal"], unidades: { avulsa: "de inscrição", mensal: "por mês" }, colunas: { avulsa: "Inscrição", mensal: "Mensalidade" }, rotulos: { avulsa: "uma vez", mensal: "por mês" } },
 ];
+const CATALOGO_EXTRAS = CATALOGO_TIPOS.filter(t => t.grupo === "extra");
+// O projeto social (regra 294) não é produto à venda: o texto da academia,
+// numa coluna própria (academias.projeto_social), em todos os planos.
+const PROJETO_SOCIAL_MAX = 300;
+// "Também oferece" na busca e na ficha: os dois do catálogo e o projeto social.
+const OFERECE_OPTS = [
+  { key: "eventos", label: "Locação para eventos", ic: "calendario", tem: c => catalogoDe(c).some(i => i.tipo === "eventos") },
+  { key: "ranking", label: "Ranking", ic: "trofeu", tem: c => catalogoDe(c).some(i => i.tipo === "ranking") },
+  { key: "projeto_social", label: "Projeto social", ic: "heart", tem: c => !!(c && c.projetoSocial) },
+];
+const OFERECE_KEYS = new Set(OFERECE_OPTS.map(o => o.key));
+const ehExtra = (i) => !!i && tipoDoItem(i).grupo === "extra";
 // Os formatos de aula que a academia escolhe (para adultos e para crianças).
 const CATALOGO_FORMATOS = CATALOGO_TIPOS.filter(t => t.grupo === "aula" && !t.antigo);
 const CATALOGO_COBRANCAS = [
@@ -22896,6 +22972,7 @@ function idadeDoCatalogo(v) {
 function faixaDoItem(i) { return i.publico === "crianca" ? `${i.idadeDe || ""}-${i.idadeAte || ""}` : ""; }
 function linhaDoItem(i) {
   if (i.tipo === "locacao") return "locacao:" + i.cobranca;
+  if (ehExtra(i)) return "extra:" + i.tipo;
   return (i.publico === "crianca" ? "crianca:" + faixaDoItem(i) : "adulto") + ":" + i.tipo;
 }
 
@@ -22923,7 +23000,7 @@ function itemDoCatalogo(x) {
   // valor só (regra 189, cobrança "") vale como avulsa.
   const item = {
     tipo: tipo.key,
-    cobranca: x.cobranca === "mensal" ? "mensal" : "avulsa",
+    cobranca: x.cobranca === "mensal" && (tipo.cobrancas || ["mensal"]).includes("mensal") ? "mensal" : "avulsa",
     preco: precoDoCatalogo(x.preco),
   };
   if (x.publico === "crianca" && tipo.infantil) {
@@ -23011,10 +23088,16 @@ function novaFaixa(g, de, ate) {
   return faixa;
 }
 function gradeDosItens(itens, modalidades) {
-  const g = { adulto: { on: false, formatos: [] }, crianca: { on: false, faixas: [] }, locacao: { cobrancas: [] }, valores: {}, fotos: {}, antiga: false, proxima: 1 };
+  const g = { adulto: { on: false, formatos: [] }, crianca: { on: false, faixas: [] }, locacao: { cobrancas: [] }, extras: [], valores: {}, fotos: {}, antiga: false, proxima: 1 };
   const cat = comFotoNaLinha(semRepetir(itens.map(itemDoCatalogo))).sort(ordemDoCatalogo);
   cat.forEach(i => {
     let base;
+    if (ehExtra(i)) {
+      if (!g.extras.includes(i.tipo)) g.extras.push(i.tipo);
+      g.valores[`extra:${i.tipo}:${i.cobranca}`] = i.preco || "-";
+      if (i.foto && !g.fotos["extra:" + i.tipo]) g.fotos["extra:" + i.tipo] = i.foto;
+      return;
+    }
     if (i.tipo === "locacao") {
       if (!g.locacao.cobrancas.includes(i.cobranca)) g.locacao.cobrancas.push(i.cobranca);
       g.valores["locacao:" + i.cobranca] = i.preco || "-";
@@ -23067,6 +23150,15 @@ function itensDaGrade(g) {
     .forEach(k => out.push(itemDoCatalogo({
       tipo: "locacao", cobranca: k.key, preco: valorSobConsulta(g.valores["locacao:" + k.key]) ? "" : g.valores["locacao:" + k.key], foto: g.fotos["locacao:" + k.key],
     })));
+  // Eventos e ranking (regra 294): marcado e sem valor, aparece "Sob consulta".
+  CATALOGO_EXTRAS.filter(t => g.extras.includes(t.key)).forEach(t => {
+    const chave = "extra:" + t.key;
+    const valor = k => g.valores[`${chave}:${k}`];
+    const cobs = t.cobrancas.filter(k => priceMin(valor(k)) || valorSobConsulta(valor(k)));
+    (cobs.length ? cobs : [t.cobrancas[0]]).forEach(k => out.push(itemDoCatalogo({
+      tipo: t.key, cobranca: k, preco: priceMin(valor(k)) ? valor(k) : "", foto: g.fotos[chave],
+    })));
+  });
   return fotoUmaVezPorLinha(semRepetir(out.filter(Boolean)).sort(ordemDoCatalogo)).slice(0, CATALOGO_MAX);
 }
 // Depois de cada mudança na grade, o catálogo do formulário acompanha. As
@@ -23082,7 +23174,7 @@ function catalogoDaGrade(f) {
 // mais nova para a mais velha) e a locação; em cada uma, individual, dupla,
 // grupo e aula; avulsa antes da mensal.
 function ordemDoCatalogo(a, b) {
-  const publico = x => x.tipo === "locacao" ? 2 : x.publico === "crianca" ? 1 : 0;
+  const publico = x => ehExtra(x) ? 3 : x.tipo === "locacao" ? 2 : x.publico === "crianca" ? 1 : 0;
   const idade = x => (x.idadeDe || 0) * 100 + (x.idadeAte || 0);
   const t = x => CATALOGO_TIPOS.findIndex(k => k.key === x.tipo);
   return publico(a) - publico(b) || idade(a) - idade(b) || t(a) - t(b) || (a.cobranca === "mensal") - (b.cobranca === "mensal");
@@ -23138,7 +23230,7 @@ function assuntoDoItem(i) {
 // de" da ficha, da busca e da comparação), em que as aulas das crianças
 // ficam juntas, como "Aula infantil".
 function opcoesPreco(c) {
-  const cat = catalogoDe(c);
+  const cat = catalogoDe(c).filter(i => !ehExtra(i));
   const mods = c.modalidades || [];
   if (cat.length) {
     const out = cat.slice().sort(ordemDoCatalogo).map(i => {
@@ -23695,6 +23787,7 @@ function renderCourtPage(c) {
                 ${htPromocoes(c)}
                 ${htOpcoes(c)}
               </section>
+              ${htOferece(c)}
 
               ${/* Sem foto no meio da ficha (pedido de 27/10/2026: "igual na
                    ficha dos hotéis.com, não tem foto no meio da ficha, só tem
@@ -24037,6 +24130,7 @@ const EXEMPLOS_DE_VALOR = {
 function exemploDoValor(chave) {
   const partes = chave.split(":");
   if (partes[0] === "locacao") return EXEMPLOS_DE_VALOR.locacao[partes[1]];
+  if (partes[0] === "extra") return { "eventos:avulsa": "800", "ranking:avulsa": "30", "ranking:mensal": "50" }[partes[1] + ":" + partes[2]] || "";
   const ex = EXEMPLOS_DE_VALOR[partes[0] === "adulto" ? "adulto" : "crianca"][partes[1]] || EXEMPLOS_DE_VALOR.adulto.aula;
   return ex[partes[2]];
 }
@@ -24154,6 +24248,43 @@ function editorDasAulas(f) {
 }
 // A parte "Locação" (só para quem escolheu a locação nas Modalidades, regra
 // 170): a avulsa e a mensal, cada uma com a foto e o valor.
+// Regra 294: "A academia também oferece" (opcional). Locação para eventos e
+// Ranking abrem o cartão do catálogo, com o valor e a foto (Premium), como a
+// locação; o Projeto social abre o texto de como participar.
+function editorDoQueMaisOferece(f) {
+  const g = gradeDoCatalogo(f);
+  const marcado = k => k === "projeto_social" ? !!f.projetoSocialOn : g.extras.includes(k);
+  const cartao = t => {
+    const chave = "extra:" + t.key;
+    const nome = t.nome.toLowerCase();
+    const colunas = t.cobrancas.map(k => `<div class="cat-valor-col"><span class="cat-col">${(t.colunas && t.colunas[k]) || "Valor"}<small>${(t.rotulos && t.rotulos[k]) || t.unidades[k]}</small></span>${campoDoValor(g, `${chave}:${k}`, nome)}</div>`).join("");
+    return `
+          <div class="cat-opcao" data-cat-opcao="${chave}">
+            <p class="cat-opcao-n">${t.nome}</p>
+            <div class="cat-valores">${colunas}</div>
+            ${fotoDoCartao(f, g, chave, nome, t.key === "eventos" ? "Foto de um evento" : "Foto do ranking")}
+          </div>`;
+  };
+  return `
+        <p class="field-label">A academia também oferece <span class="reg-opcional">(opcional)</span></p>
+        <div class="reg-mods" role="group" aria-label="A academia também oferece">
+          ${[
+            { key: "eventos", t: "Locação para eventos", d: "Aniversários, empresas e confraternizações" },
+            { key: "ranking", t: "Ranking", d: "Jogos do ranking da academia" },
+            { key: "projeto_social", t: "Projeto social", d: "Aulas gratuitas ou com bolsa" },
+          ].map(m => {
+            const on = marcado(m.key);
+            return `<button type="button" class="reg-mod ${on ? "on" : ""}" data-reg-extra="${m.key}" aria-pressed="${on}"><span class="cat-caixa">${on ? icon('check', 13, '#fff') : ""}</span><span class="reg-mod-txt"><span class="reg-mod-t">${m.t}</span><span class="reg-mod-d">${m.d}</span></span></button>`;
+          }).join("")}
+        </div>
+        ${g.extras.length ? `
+        <div class="cat-tabela" id="cat-tabela-extras">${CATALOGO_EXTRAS.filter(t => g.extras.includes(t.key)).map(cartao).join("")}</div>
+        <p class="footnote" style="margin-top:8px">Valor em branco: aparece "Sob consulta". Para valores com centavos, use a vírgula. Ex.: 80,50.</p>` : ""}
+        ${f.projetoSocialOn ? `
+        <label class="field-label" for="f-projeto-social">Projeto social: como funciona e quem pode participar</label>
+        <textarea class="form-field" id="f-projeto-social" rows="3" maxlength="${PROJETO_SOCIAL_MAX}" style="resize:none;margin-top:0" placeholder="Ex.: aulas gratuitas para crianças de 8 a 14 anos, às terças e quintas.">${esc(f.projetoSocial || "")}</textarea>
+        <p class="footnote" style="margin-top:4px">Aparece na ficha em todos os planos, com o WhatsApp para perguntar. Sem telefone, link ou preço.</p>` : ""}`;
+}
 function editorDaLocacao(f) {
   const g = gradeDoCatalogo(f);
   return `
@@ -24264,6 +24395,8 @@ function regFaltas(f, passo) {
   // 29/10/2026, regra 171: "obrigatório selecionar entre aula ou locação,
   // pelo menos um"). O admin segue só com o nome.
   if (passo === "modalidades" && !isAdmin && !(f.modalidades || []).length) falta.push(FALTA_MODALIDADE);
+  if (passo === "modalidades" && f.projetoSocialOn && !tem(f.projetoSocial)) falta.push("como funciona o projeto social");
+  if (passo === "modalidades" && f.projetoSocialOn && problemaNoSobre(f.projetoSocial)) falta.push("tirar o " + problemaNoSobre(f.projetoSocial) + " do projeto social");
   if (!regPedeTudo(f)) return falta;
   if (passo === "quadras" && !QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0)) falta.push("quantidade de quadras");
   if (passo === "contato" && !tem(f.phone)) falta.push("WhatsApp");
@@ -24754,7 +24887,8 @@ function regPassoHtml(id, f, obrigatorio) {
             const on = (f.modalidades || []).includes(m.key);
             return `<button type="button" class="reg-mod ${on ? "on" : ""}" data-reg-mod="${m.key}" aria-pressed="${on}"><span class="cat-caixa">${on ? icon('check', 13, '#fff') : ""}</span><span class="reg-mod-txt"><span class="reg-mod-t">${m.t}</span><span class="reg-mod-d">${m.d}</span></span></button>`;
           }).join("")}
-        </div>`;
+        </div>
+        ${editorDoQueMaisOferece(f)}`;
   if (id === "precos") return editorDasAulas(f);
   if (id === "locacao") return editorDaLocacao(f);
 
@@ -26682,7 +26816,7 @@ const CHAT_DETALHES_PC = [
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
   { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco", "valor mensal", "aula mensal", "locacao mensal"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula, e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora e a foto de cada uma. Cada valor pode ser um número, com os centavos depois da vírgula (ex.: 150,50), ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Valor em branco: a opção não aparece na ficha. Com 0 (zero), - ou espaço, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Logo abaixo, em \"A academia também oferece\", marque Locação para eventos ou Ranking (com o valor e, no Premium, a foto) e Projeto social (com o texto de como participar): aparecem na ficha, em \"Também oferece\", com o WhatsApp para o jogador perguntar, e nos filtros da busca. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula, e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora e a foto de cada uma. Cada valor pode ser um número, com os centavos depois da vírgula (ex.: 150,50), ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção vira um cartão na ficha, com o WhatsApp já sobre ela. Valor em branco: a opção não aparece na ficha. Com 0 (zero), - ou espaço, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -30636,6 +30770,21 @@ function attachEvents() {
       if (entrou) focar(`[data-cat-valor="${bloco}:${tipo}:avulsa"]`);
     };
   });
+  // Regra 294: eventos e ranking abrem o cartão; o projeto social, o texto.
+  document.querySelectorAll("[data-reg-extra]").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.regExtra;
+      const f = window.__form;
+      if (k === "projeto_social") { f.projetoSocialOn = !f.projetoSocialOn; render(); if (f.projetoSocialOn) focar("#f-projeto-social"); return; }
+      const g = gradeDoForm();
+      const entrou = !g.extras.includes(k);
+      g.extras = entrou ? [...g.extras, k] : g.extras.filter(x => x !== k);
+      mudouCatalogo(true);
+      if (entrou) focar(`[data-cat-valor="extra:${k}:avulsa"]`);
+    };
+  });
+  const campoProjeto = document.getElementById("f-projeto-social");
+  if (campoProjeto) campoProjeto.oninput = (e) => { window.__form.projetoSocial = e.target.value; };
   document.querySelectorAll("[data-cat-valor]").forEach(el => {
     el.oninput = (e) => {
       const v = valorNoCampo(e.target.value, (e.inputType || "").startsWith("delete"));
@@ -30876,6 +31025,8 @@ function abrirEdicaoDaFicha(c, opcoes = {}) {
     cidade: c.cidade || "",
     quadras,
     amenities: [...(integral.amenities || [])],
+    projetoSocialOn: !!c.projetoSocial,
+    projetoSocial: c.projetoSocial || "",
     modalidades: [...(c.modalidades || [])],
     priceAula: c.priceAula || "",
     priceLocacao: c.priceLocacao || "",
@@ -31174,7 +31325,7 @@ async function doSearch(opcoes = {}) {
 // falhar — e avisa o admin com o SQL que resolve. Mesmo caminho do "plano".
 function faltaColunaNova(erro) {
   const m = ((erro && erro.message) || "").toLowerCase();
-  return m.includes("reserva_link") || m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada") || m.includes("catalogo") || m.includes("sobre");
+  return m.includes("reserva_link") || m.includes("projeto_social") || m.includes("politica") || m.includes("acesso") || m.includes("horario") || m.includes("confirmada") || m.includes("catalogo") || m.includes("sobre");
 }
 
 function avisarSqlColunas() {
@@ -31306,6 +31457,8 @@ async function doRegisterSubmit() {
         delete semNovas.catalogo;
         delete semNovas.sobre;
         delete semNovas.reserva_link;
+      delete semNovas.projeto_social;
+        delete semNovas.projeto_social;
         ({ error } = await sb.from('academias').update(semNovas).eq('id', f.__editingId));
         if (!error) avisarSqlColunas();
       }
@@ -31401,6 +31554,7 @@ async function doRegisterSubmit() {
       delete semNovas.catalogo;
       delete semNovas.sobre;
       delete semNovas.reserva_link;
+      delete semNovas.projeto_social;
       ({ data, error } = await enviar(semNovas));
       if (!error) avisarSqlColunas();
     }

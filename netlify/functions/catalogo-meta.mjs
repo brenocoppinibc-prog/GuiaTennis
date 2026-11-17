@@ -29,14 +29,18 @@ function numero(v) {
   const m = String(v || "").match(/\d+(?:,\d{1,2}(?!\d))?/);
   return m ? Number(m[0].replace(",", ".")) : 0;
 }
+// Eventos e ranking (regra 294) ficam fora do anúncio: o "a partir de" e as
+// modalidades são das aulas e da locação.
+const EXTRAS = new Set(["eventos", "ranking"]);
+const doCatalogo = (c) => (Array.isArray(c.catalogo) ? c.catalogo : []).filter(i => i && !EXTRAS.has(i.tipo));
 // O menor valor da academia: o do catálogo ou o preço antigo.
 export function menorPreco(c) {
-  const itens = Array.isArray(c.catalogo) ? c.catalogo : [];
+  const itens = doCatalogo(c);
   const valores = [...itens.map(i => numero(i && i.preco)), numero(c.price_aula), numero(c.price_locacao)].filter(n => n > 0);
   return valores.length ? Math.min(...valores) : 0;
 }
 function modalidadesDe(c) {
-  const itens = Array.isArray(c.catalogo) ? c.catalogo : [];
+  const itens = doCatalogo(c);
   const aula = itens.some(i => i && i.tipo !== "locacao") || numero(c.price_aula) > 0;
   const locacao = itens.some(i => i && i.tipo === "locacao") || numero(c.price_locacao) > 0;
   return aula && locacao ? "aulas e locacao" : aula ? "aulas" : locacao ? "locacao" : "";

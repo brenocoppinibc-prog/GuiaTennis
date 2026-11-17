@@ -54,3 +54,5 @@ globalThis.fetch = async () => new Response('x', { status: 500 });
 r = await funcao(new Request('https://guiatennis.com.br/catalogo-meta.csv'));
 ok(r.status === 503, 'banco fora do ar: responde 503, e a Meta tenta de novo no dia seguinte');
 globalThis.fetch = antes;
+// Regra 294: eventos e ranking ficam fora do "a partir de" do anúncio.
+ok(menorPreco({ catalogo: [{ tipo: 'ranking', preco: '30' }, { tipo: 'eventos', preco: '20' }, { tipo: 'individual', preco: '150' }] }) === 150, 'eventos e ranking fora do menor preço do anúncio');

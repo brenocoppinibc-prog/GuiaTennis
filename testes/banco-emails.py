@@ -2940,5 +2940,15 @@ site = um("select public.site_dos_emails()")
 ok(faixa.count(site + '/email-nome.png') == 1 and faixa.count(site + '/email-logo.png') == 1 and 'alt="GuiaTennis"' in faixa and ">Guia<span" not in faixa,
    "a faixa verde com a raquete e o nome (imagem com o texto GuiaTennis), sem o nome em Arial")
 
+# ---- Projeto social (regra 294, 20261117120000_projeto_social) ----
+print("\nProjeto social")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261117120000_projeto_social.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL roda (de novo) sem erro — " + r.stderr[-200:])
+certo, saida = sql("update public.academias set projeto_social = 'Aulas gratuitas para crianças.' where id = (select id from public.academias limit 1)")
+ok(certo, "o texto entra — " + saida[-120:])
+certo, saida = sql("update public.academias set projeto_social = repeat('a', 301) where id = (select id from public.academias limit 1)")
+ok(not certo, "mais de 300 letras não entra")
+ok(um("select count(*) from public.academias where projeto_social is not null", papel="anon") is not None, "o visitante lê a coluna")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

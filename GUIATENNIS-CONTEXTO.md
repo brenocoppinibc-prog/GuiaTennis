@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 16/11/2026 (regra 293)
+**Atualizado em:** 17/11/2026 (regra 294)
 
 | | |
 |---|---|
@@ -2269,6 +2269,28 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   viram contato com a academia". Saíram `umEmCada` e o `.pc-faixa-pre` (regra 273). Sem
   SQL. Testes: `contatos-e-cadastro.js` (12), `parceiros`, `parceiros-acender`, `sobre`,
   `confianca-na-ficha` e `painel-admin`, sem falha.
+- **294 (17/11) — "Também oferece": eventos, ranking e projeto social** ("tem academias
+  que oferecem locação para eventos, rankings, aulas com projeto social, como incluir isso
+  no site"; depois de ver a recomendação: "continue assim, mas tire a opção torneios, deixe
+  só ranking"). **Locação para eventos** e **Ranking** entram no **catálogo**
+  (`CATALOGO_TIPOS` com `grupo: "extra"`, sem SQL: eventos com valor "por evento"; ranking
+  com "Inscrição" e "Mensalidade", "por mês"), com a foto no Premium, como os "Produtos" do
+  Google e as atividades com preço do Playtomic; ficam **fora das "Opções para jogar", do
+  "a partir de" e do anúncio da Meta** (`opcoesPreco` e `catalogo-meta.mjs` ignoram os
+  extras). Marcado sem valor, "Sob consulta". O **Projeto social** não é produto: coluna
+  própria `academias.projeto_social` (texto até 300 letras, todos os planos; SQL
+  `20261117120000_projeto_social`), obrigatório escrever como funciona quando marcado e sem
+  telefone, link ou preço. **Cadastro:** no passo Modalidades, "A academia também oferece
+  (opcional)" com os três (`editorDoQueMaisOferece`). **Ficha:** "Também oferece" logo
+  depois das "Opções para jogar" (`htOferece`), cada um com o valor e "Perguntar no
+  WhatsApp" com a mensagem pronta (`MENSAGEM_DO_EXTRA`), e nos destaques do topo.
+  **Busca:** nos Filtros, o grupo "Também oferece" (`OFERECE_OPTS`, pela lista das
+  comodidades: `comodidades=ranking`). Chat de ajuda (Modalidades) atualizado. Testes:
+  `oferece.js` (novo, 7), `catalogo-meta.mjs` (15), `cadastro`, `catalogo`, `ficha-hoteis`,
+  `busca-e-ficha`, `parceiros`, `chat-parceiros`, `comodidade-pet`, `acabamento`,
+  `aberto-agora`, `links`, `painel-admin`, `dicas-do-parceiros` e `confianca-na-ficha`,
+  sem falha; `banco-emails.py` com a seção nova (o SQL roda no banco de teste pelo "Banco
+  de dados").
 
 ## 11. WhatsApp e mensagem para as academias
 

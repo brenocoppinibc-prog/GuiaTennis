@@ -456,8 +456,9 @@ troca de academia sem piscar, nota com confiança (mais avaliações pesam), nú
 em cada", "Também oferece" (eventos e ranking no catálogo, projeto social à parte, até 100
 letras e sem venda) e **quadras públicas** com "Sugerir uma quadra ou academia" no menu.
 **Testes:** bateria completa de 16/11 até a 290: 2.655, nenhuma falha; das 291 a 296, os
-afetados, sem falha; **a bateria completa da 296 estava rodando na troca: rodar de novo no
-começo do próximo chat.** **Pendências e ofertas sem resposta:** (1) a faixa verde "Para
+afetados, sem falha; **bateria completa de 17/11 (até a 296): 2.680 verificações, nenhuma
+falha** (o `index.html` mudou um pouco durante ela: a barra de baixo da quadra pública;
+rodar de novo no começo do próximo chat). **Pendências e ofertas sem resposta:** (1) a faixa verde "Para
 academias" na inicial (recomendação: não entrar); (2) fazer o cartão de visita, os dois
 flyers e a plaquinha de balcão "Avalie no GuiaTennis" com QR (oferecido); (3) quando o CNPJ
 sair (o Breno espera nesta semana), colocar razão social e CNPJ no rodapé, nos Termos e na
@@ -2348,7 +2349,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   motivo), quadra pública ou academia, nome, onde fica e algo mais; vai como sugestão do
   chat de ajuda (`enviar_relato_do_chat`, "Quadra pública sugerida: …"), que o admin vê em
   Chat de ajuda com o nome e o e-mail, responde ali, e a pessoa acompanha em Feedback.
-  Testes: `quadras-publicas.js` (novo, 12), sem falha; bateria completa rodando no envio.
+  Testes: `quadras-publicas.js` (novo, 12), sem falha; bateria completa de 17/11: 2.680, nenhuma falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

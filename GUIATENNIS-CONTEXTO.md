@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 17/11/2026 (regra 294)
+**Atualizado em:** 17/11/2026 (regra 295)
 
 | | |
 |---|---|
@@ -2278,7 +2278,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Google e as atividades com preço do Playtomic; ficam **fora das "Opções para jogar", do
   "a partir de" e do anúncio da Meta** (`opcoesPreco` e `catalogo-meta.mjs` ignoram os
   extras). Marcado sem valor, "Sob consulta". O **Projeto social** não é produto: coluna
-  própria `academias.projeto_social` (texto até 300 letras, todos os planos; SQL
+  própria `academias.projeto_social` (texto até 100 letras desde a 295, todos os planos; SQL
   `20261117120000_projeto_social`), obrigatório escrever como funciona quando marcado e sem
   telefone, link ou preço. **Cadastro:** no passo Modalidades, "A academia também oferece
   (opcional)" com os três (`editorDoQueMaisOferece`). **Ficha:** "Também oferece" logo
@@ -2291,6 +2291,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `aberto-agora`, `links`, `painel-admin`, `dicas-do-parceiros` e `confianca-na-ficha`,
   sem falha; `banco-emails.py` com a seção nova (o SQL roda no banco de teste pelo "Banco
   de dados").
+- **295 (17/11) — o projeto social sem venda** ("dê um limite para a escrita do projeto,
+  algo até 100, e não permitir qualquer intenção para que ocorra venda"): o texto vai até
+  **100 letras** (`PROJETO_SOCIAL_MAX`, com o contador embaixo do campo) e não aceita
+  preço (R$), link, @, telefone nem palavra de venda (`VENDA_NO_PROJETO`, palavra inteira:
+  promoção, desconto, oferta, imperdível, pacote, matrícula, mensalidade, preço, valor,
+  pagamento, parcela, compra, venda, barato, plano; "Valorizamos" passa).
+  `problemaNoProjetoSocial` explica o que tirar (com o aviso "Corrigir"). A mesma trava no
+  banco: SQL `20261117130000_projeto_social_sem_venda` (corta o que já estava em 100 e
+  apaga o texto com venda; o SQL da 294 também ficou com 100). Testes: `oferece.js` (8),
+  `cadastro`, sem falha; o SQL conferido num Postgres de passagem (aceita "Valorizamos o
+  esporte" e "Bolsas para jovens", barra "Aulas com desconto" e telefone) e
+  `banco-emails.py` com as conferências novas.
 
 ## 11. WhatsApp e mensagem para as academias
 

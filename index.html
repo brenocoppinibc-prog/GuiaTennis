@@ -22942,7 +22942,22 @@ const CATALOGO_TIPOS = [
 const CATALOGO_EXTRAS = CATALOGO_TIPOS.filter(t => t.grupo === "extra");
 // O projeto social (regra 294) não é produto à venda: o texto da academia,
 // numa coluna própria (academias.projeto_social), em todos os planos.
-const PROJETO_SOCIAL_MAX = 300;
+const PROJETO_SOCIAL_MAX = 100;
+// Regra 295 ("um limite para a escrita do projeto, algo até 100, e não permitir
+// qualquer intenção para que ocorra venda"): até 100 letras, sem preço, link,
+// @, telefone ou palavra de venda. O banco tem a mesma trava (SQL
+// 20261117130000_projeto_social_sem_venda).
+const VENDA_NO_PROJETO = /(^|[^\p{L}])(promo[cç][aã]o|promo[cç][oõ]es|promo|descontos?|ofertas?|imperd[ií]ve(l|is)|pacotes?|matr[ií]culas?|mensalidades?|pre[cç]os?|valor(es)?|pagamentos?|pague|parcelas?|compre|comprar|vendas?|vendemos|barat[oa]s?|planos?)(?![\p{L}])/iu;
+function problemaNoProjetoSocial(t) {
+  const x = String(t || "");
+  if (/(https?:\/\/|www\.|@[a-z0-9_])/i.test(x) || /\b[\w-]+\.(com|br|net|org)\b/i.test(x)) return "o link ou o @";
+  if (/[0-9][0-9 ().-]{7,}[0-9]/.test(x)) return "o telefone";
+  if (/R\$/i.test(x)) return "o preço";
+  const venda = x.match(VENDA_NO_PROJETO);
+  if (venda) return `o que é venda ("${venda[2]}")`;
+  if (x.trim().length > PROJETO_SOCIAL_MAX) return `o que passa de ${PROJETO_SOCIAL_MAX} letras`;
+  return "";
+}
 // "Também oferece" na busca e na ficha: os dois do catálogo e o projeto social.
 const OFERECE_OPTS = [
   { key: "eventos", label: "Locação para eventos", ic: "calendario", tem: c => catalogoDe(c).some(i => i.tipo === "eventos") },
@@ -24283,7 +24298,8 @@ function editorDoQueMaisOferece(f) {
         ${f.projetoSocialOn ? `
         <label class="field-label" for="f-projeto-social">Projeto social: como funciona e quem pode participar</label>
         <textarea class="form-field" id="f-projeto-social" rows="3" maxlength="${PROJETO_SOCIAL_MAX}" style="resize:none;margin-top:0" placeholder="Ex.: aulas gratuitas para crianças de 8 a 14 anos, às terças e quintas.">${esc(f.projetoSocial || "")}</textarea>
-        <p class="footnote" style="margin-top:4px">Aparece na ficha em todos os planos, com o WhatsApp para perguntar. Sem telefone, link ou preço.</p>` : ""}`;
+        <p class="footnote reg-projeto-conta" id="f-projeto-social-conta" style="text-align:right;margin-top:4px">${String(f.projetoSocial || "").length}/${PROJETO_SOCIAL_MAX}</p>
+        <p class="footnote" style="margin-top:2px">Só como funciona e quem pode participar: sem preço, promoção, plano, matrícula, telefone ou link. Aparece na ficha em todos os planos, com o WhatsApp para perguntar.</p>` : ""}`;
 }
 function editorDaLocacao(f) {
   const g = gradeDoCatalogo(f);
@@ -24396,7 +24412,7 @@ function regFaltas(f, passo) {
   // pelo menos um"). O admin segue só com o nome.
   if (passo === "modalidades" && !isAdmin && !(f.modalidades || []).length) falta.push(FALTA_MODALIDADE);
   if (passo === "modalidades" && f.projetoSocialOn && !tem(f.projetoSocial)) falta.push("como funciona o projeto social");
-  if (passo === "modalidades" && f.projetoSocialOn && problemaNoSobre(f.projetoSocial)) falta.push("tirar o " + problemaNoSobre(f.projetoSocial) + " do projeto social");
+  if (passo === "modalidades" && f.projetoSocialOn && problemaNoProjetoSocial(f.projetoSocial)) falta.push("tirar do projeto social " + problemaNoProjetoSocial(f.projetoSocial));
   if (!regPedeTudo(f)) return falta;
   if (passo === "quadras" && !QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0)) falta.push("quantidade de quadras");
   if (passo === "contato" && !tem(f.phone)) falta.push("WhatsApp");
@@ -30784,7 +30800,11 @@ function attachEvents() {
     };
   });
   const campoProjeto = document.getElementById("f-projeto-social");
-  if (campoProjeto) campoProjeto.oninput = (e) => { window.__form.projetoSocial = e.target.value; };
+  if (campoProjeto) campoProjeto.oninput = (e) => {
+    window.__form.projetoSocial = e.target.value;
+    const conta = document.getElementById("f-projeto-social-conta");
+    if (conta) conta.textContent = `${e.target.value.length}/${PROJETO_SOCIAL_MAX}`;
+  };
   document.querySelectorAll("[data-cat-valor]").forEach(el => {
     el.oninput = (e) => {
       const v = valorNoCampo(e.target.value, (e.inputType || "").startsWith("delete"));

@@ -55,5 +55,9 @@ const { abrir, ok } = require('./harness');
   });
   ok(r.itens.join() === 'eventos:avulsa:-,ranking:avulsa:30' && r.banco.join() === 'eventos,ranking', 'eventos e ranking entram no catálogo, sem valor como "Sob consulta" — ' + r.itens.join());
   ok(r.falta.includes('como funciona o projeto social') && r.projeto === 'Aulas grátis às terças.' && r.sem === null, 'o projeto social pede o texto e vai para a coluna própria');
+  // Regra 295: até 100 letras e sem venda.
+  r = await page.evaluate(() => ['Aulas gratuitas para crianças de 8 a 14 anos.', 'Valorizamos o esporte na comunidade.', 'Matrícula com desconto!', 'Aulas por R$ 10', 'Chame no 11 91234-5678', 'Veja em www.academia.com.br', 'a'.repeat(101)].map(t => problemaNoProjetoSocial(t)));
+  ok(r[0] === '' && r[1] === '' && /venda \("Matrícula"\)/.test(r[2]) && r[3] === 'o preço' && r[4] === 'o telefone' && r[5] === 'o link ou o @' && /100 letras/.test(r[6]) ,
+    'o projeto social: até 100 letras, sem preço, telefone, link ou palavra de venda — ' + r.join(' | '));
   await browser.close();
 })();

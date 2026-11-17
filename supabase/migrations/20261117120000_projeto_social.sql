@@ -7,14 +7,15 @@
 -- (academias.catalogo, tipos "eventos" e "ranking"): sem SQL. O projeto social
 -- não é produto à venda: tem uma coluna própria, com o texto da academia
 -- (como funciona e quem pode participar), e aparece em todos os planos.
---   academias.projeto_social   o texto (até 300 letras); vazio, sem projeto.
+--   academias.projeto_social   o texto (até 100 letras desde a regra 295, sem
+--                              venda: SQL 20261117130000); vazio, sem projeto.
 -- Pode rodar de novo sem estragar.
 
 alter table public.academias add column if not exists projeto_social text;
 
 alter table public.academias drop constraint if exists academias_projeto_social_tamanho;
 alter table public.academias add constraint academias_projeto_social_tamanho
-  check (projeto_social is null or char_length(projeto_social) <= 300);
+  check (projeto_social is null or char_length(projeto_social) <= 100);
 
 grant select (projeto_social) on public.academias to anon, authenticated;
 

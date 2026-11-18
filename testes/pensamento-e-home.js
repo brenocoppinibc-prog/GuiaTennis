@@ -88,7 +88,7 @@ async function abrirOChat(page) {
   ok(!(await secao()), 'sem viagem guardada, sem a seção');
   await page.evaluate(([ida, volta]) => { jogador.guardados = { ...(jogador.guardados || {}), viagens: [{ id: 1, uf: 'SP', cidade: 'São Paulo', ida, volta, ficar: 'Hotel Moema', lat: -23.60, lng: -46.66 }] }; render(); }, [dia(30), dia(35)]);
   let s = await secao();
-  ok(s.startsWith('Para a sua viagem a São Paulo') && s.includes('da mais perto do seu hotel') && s.indexOf('Quadra Locação') < s.indexOf('Só Aula Tennis') && s.includes('Ver as quadras da viagem'),
+  ok(s.startsWith('Para a sua viagem a São Paulo') && s.includes('da mais perto do seu hotel') && s.indexOf('Quadra Locação') < s.indexOf('Só Aula Tennis') && s.includes('Ver as academias da viagem'),
     'viagem marcada: as academias de lá, da mais perto do hotel — ' + s.slice(0, 140));
   await page.evaluate(([ida, volta]) => { jogador.guardados = { ...jogador.guardados, viagens: [{ id: 2, uf: 'SP', cidade: 'São Paulo', ida, volta }] }; render(); }, [dia(-20), dia(-15)]);
   s = await secao();

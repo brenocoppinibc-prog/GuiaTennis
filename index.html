@@ -17403,8 +17403,8 @@ function pushAjudaBuscaHtml() {
     <div class="push-conta push-avaliar push-ajuda-busca no-alto" id="push-ajuda-busca" role="dialog" aria-label="Precisa de ajuda para encontrar as quadras?">
       <span class="push-conta-ic" aria-hidden="true">${icon('locate', 20, '#C99A1C')}</span>
       <span>
-        <p class="push-conta-t">Está precisando de ajuda para encontrar as quadras mais perto?</p>
-        <p class="push-conta-s">Use a localização do celular: a lista começa pela quadra mais perto de você.</p>
+        <p class="push-conta-t">Está precisando de ajuda para encontrar as academias mais perto?</p>
+        <p class="push-conta-s">Use a localização do celular: a lista começa pela academia mais perto de você.</p>
         <span class="push-avaliar-acoes"><button type="button" class="push-viagem-sim" id="push-ajuda-local">Usar minha localização</button><button type="button" id="push-ajuda-chat">Falar com o chat de ajuda</button></span>
       </span>
       <button type="button" class="push-conta-x" id="push-ajuda-x" aria-label="Fechar">✕</button>
@@ -17529,7 +17529,7 @@ function blocoViagemDaConta(todas) {
       <h3 class="display">${esc(titulo)}</h3>
       <p class="city-note">${esc(sub)}</p>
       <div class="home-strip">${lista.map(c => renderMini(c)).join("")}</div>
-      ${proxima ? `<button type="button" class="ver-todas" data-viagem-ver="${esc(String(v.id))}">Ver as quadras da viagem ›</button>`
+      ${proxima ? `<button type="button" class="ver-todas" data-viagem-ver="${esc(String(v.id))}">Ver as academias da viagem ›</button>`
         : `<a class="cidade-link" href="${caminhoDaRegiao({ cidade: v.cidade })}" data-regiao-link data-cidade="${esc(v.cidade)}">Ver as academias de ${esc(v.cidade)} ›</a>`}
     </div>`;
 }
@@ -17897,7 +17897,7 @@ function renderJogadorSheet() {
     <div class="boas-vindas" role="status">
       <div class="boas-vindas-marca">${logoSvg()}</div>
       <h1 class="display">Boas-vindas ao GuiaTennis${primeiro ? `, ${esc(primeiro)}` : ""}!</h1>
-      <p class="boas-vindas-t">Agora ficou fácil encontrar as quadras mais perto de você, com tudo o que você precisa saber.</p>
+      <p class="boas-vindas-t">Agora ficou fácil encontrar as academias mais perto de você, com tudo o que você precisa saber.</p>
       <p class="boas-vindas-t">Busque, compare, fale com as academias e decida.</p>
       <p class="boas-vindas-bons">Bons jogos!</p>
       <button type="button" class="cta-btn cta-primary" id="jog-boas-vindas">Continuar</button>
@@ -19277,12 +19277,12 @@ function indicarOGuia() {
 // o que facilita a busca, sem narrar o que o site faz (regra 93).
 function blocoDicas() {
   const dicas = [
-    { t: "Comece pela sua localização", d: "Toque no GPS ou digite o CEP: a lista vem da quadra mais perto para a mais longe. Vai jogar em outro lugar? Digite o endereço de lá." },
+    { t: "Comece pela sua localização", d: "Toque no GPS ou digite o CEP: a lista vem da academia mais perto para a mais longe. Vai jogar em outro lugar? Digite o endereço de lá." },
     { t: "Marque só o que importa", d: "Saibro ou rápida, coberta ou descoberta, aula ou locação: com os filtros, a lista mostra só as que combinam." },
     { t: "Salve e compare antes de decidir", d: "Toque no coração das academias de que você gostou e inclua até 5 na comparação: preço, quadras e nota ficam lado a lado." },
     { t: "Leia a ficha até o fim", d: "Cancelamento e reposição, como chegar e estacionamento estão na ficha. Evita surpresa na porta da academia." },
     { t: "Chame com o essencial", d: "No WhatsApp, diga se procura aula ou locação, qual é o seu nível e quais dias e horários prefere. Assim, a academia responde mais rápido." },
-    { t: "Jogou? Avalie", d: "Leva um minuto e ajuda quem procura quadra perto de você a escolher." },
+    { t: "Jogou? Avalie", d: "Leva um minuto e ajuda quem procura academia perto de você a escolher." },
   ];
   return `
     <div class="home-sec" id="home-dicas">
@@ -25073,7 +25073,7 @@ function regPassoHtml(id, f, obrigatorio) {
         <textarea class="form-field" id="f-acesso-fachada" rows="2" ${travaChegada} style="resize:none;margin-top:0" placeholder="Ex.: portão preto sem placa, do lado do hotel — a quadra fica nos fundos.">${esc(acessoForm(f).fachada)}</textarea>
 
         <p class="field-label">O que fazer ao chegar</p>
-        <textarea class="form-field" id="f-acesso-entrada" rows="2" ${travaChegada} style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da quadra.">${esc(acessoForm(f).entrada)}</textarea>
+        <textarea class="form-field" id="f-acesso-entrada" rows="2" ${travaChegada} style="resize:none;margin-top:0" placeholder="Ex.: avise na portaria que vai jogar tênis e siga até a recepção da academia.">${esc(acessoForm(f).entrada)}</textarea>
 
         ${!temEstacionamentoProprio(f) ? `
         <p class="field-label">Onde estacionar</p>

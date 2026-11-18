@@ -65,7 +65,7 @@ const texto = (page, sel) => page.evaluate((s) => document.querySelector(s)?.inn
   await page.waitForTimeout(500);
   const bv = await page.evaluate(() => ({ tela: state.jogadorTela, texto: document.querySelector('#jogador-overlay .boas-vindas')?.innerText.replace(/\s+/g, ' ').trim() || '', confirmado: !!jogador.email_confirmado_em }));
   ok(bv.tela === 'boas-vindas' && bv.confirmado && bv.texto.startsWith('Boas-vindas ao GuiaTennis, Bia!')
-    && bv.texto.includes('Agora ficou fácil encontrar as quadras mais perto de você, com tudo o que você precisa saber.')
+    && bv.texto.includes('Agora ficou fácil encontrar as academias mais perto de você, com tudo o que você precisa saber.')
     && bv.texto.includes('Busque, compare, fale com as academias e decida.') && bv.texto.includes('Bons jogos!'),
     'código certo: e-mail confirmado e a tela de boas-vindas com o nome (regra 288) — ' + bv.texto.slice(0, 60));
   await page.click('#jog-boas-vindas');

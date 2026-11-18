@@ -19,7 +19,7 @@ const push = (page) => page.evaluate(() => document.getElementById('push-ajuda-b
   await buscar(page, 'Vila Mariana, São Paulo');
   await page.waitForTimeout(200);
   const t = await push(page);
-  ok(t.startsWith('Está precisando de ajuda para encontrar as quadras mais perto?') && t.includes('Use a localização do celular: a lista começa pela quadra mais perto de você.'),
+  ok(t.startsWith('Está precisando de ajuda para encontrar as academias mais perto?') && t.includes('Use a localização do celular: a lista começa pela academia mais perto de você.'),
     'na quinta busca seguida, o aviso pergunta se precisa de ajuda e indica o melhor caminho — ' + t);
   ok((await page.evaluate(() => document.getElementById('push-ajuda-local')?.innerText)) === 'Usar minha localização' && (await page.evaluate(() => document.getElementById('push-ajuda-chat')?.innerText)) === 'Falar com o chat de ajuda',
     'os caminhos: a localização do celular e o chat de ajuda');

@@ -113,7 +113,10 @@ Texto e visual
 - **O lugar é "academia"** (18/11/2026: "pode deixar escrito academias no site, mas quando
   for em relação à estrutura da quadra nós chamamos de academia"): "quadra" é a quadra em
   si (piso, coberta, aluguel da quadra) e a quadra pública; não repetir "academias e
-  quadras" para o mesmo lugar sem precisar.
+  quadras" para o mesmo lugar sem precisar. **"Quadra" fica onde a pessoa procura** ("muita
+  gente também procura como quadra"): "Buscar quadra" no menu e no chat, os títulos e textos
+  para o Google ("quadras e academias de tênis"), "Aula e quadra de tênis perto de você"
+  (regra 298).
 - O site **não narra o que faz**; opção pequena não se explica; o
   complexo vai para a Ajuda ("Saiba mais"); dica que facilita fica.
 - Sem preço = **"Sob consulta"** + "fale com a academia" (`SEM_PRECO`).
@@ -446,8 +449,9 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**17/11/2026 (regra 297):** o chat acompanha o PR #5 (inscrito). Último commit de código:
-regra 297 ("Você marcou?" duas horas depois, das 9h às 21h; no banco de teste, 10 minutos
+**18/11/2026 (regra 298):** o chat acompanha o PR #5 (inscrito; os check-ins automáticos
+pararam depois de três sem novidade). Último commit de código: regra 298 (o lugar é
+"academia" nos textos do site; "quadra" fica onde a pessoa procura). Antes, regra 297 ("Você marcou?" duas horas depois, das 9h às 21h; no banco de teste, 10 minutos
 depois; o título do e-mail diferente do assunto; SQL `20261117150000_voce_marcou_mais_cedo`;
 Termos e Privacidade em 17 de novembro de 2026). O "Banco de dados" desta branch é disparado à
 mão (`banco.yml`, `destino: teste`). **Do chat de 16 e 17/11:** regras 285 a 297 (seção 10).
@@ -2356,6 +2360,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   9h às 21h"); Termos e Privacidade em 17 de novembro de 2026. Testes: `acompanhamento`,
   `regras-de-conteudo`, `ficha-basica`, `avaliacao-editada`, `pixel-da-meta` e
   `dados-para-nota`, sem falha; `banco-emails.py` (982, nenhuma falha), com as conferências novas.
+- **298 (18/11) — o lugar é "academia"; "quadra" onde a pessoa procura** ("quando for em
+  relação à estrutura da quadra nós chamamos de academia"; "muita gente também procura como
+  quadra, então é bom deixar quadra em outros lugares, mas o site diz academia"). Viraram
+  "academia": o aviso "Está precisando de ajuda para encontrar as academias mais perto?" e
+  "a lista começa pela academia mais perto de você", as boas-vindas ("encontrar as academias
+  mais perto de você"), as dicas ("a lista vem da academia mais perto…", "ajuda quem procura
+  academia perto de você"), "Ver as academias da viagem ›" e o exemplo do "Como chegar"
+  ("siga até a recepção da academia"). Ficam com "quadra": "Buscar quadra" (menu e chat),
+  títulos e textos para o Google, "Aula e quadra de tênis perto de você", aluguel/locação e
+  foto da quadra, quadra pública. A Privacidade ("ajuda para encontrar as quadras mais perto")
+  ficou como está. Sem SQL. Testes: `ajuda-na-busca` (12), `jogador` (49),
+  `pensamento-e-home` (17) e `viagem` (54), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

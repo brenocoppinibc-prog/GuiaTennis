@@ -110,6 +110,10 @@ admin** (`/admin`, só o admin vê).
 Texto e visual
 - Só quadra e academia, **nunca clube**. "Guia" com G maiúsculo. O
   GuiaTennis é **site, não app**.
+- **O lugar é "academia"** (18/11/2026: "pode deixar escrito academias no site, mas quando
+  for em relação à estrutura da quadra nós chamamos de academia"): "quadra" é a quadra em
+  si (piso, coberta, aluguel da quadra) e a quadra pública; não repetir "academias e
+  quadras" para o mesmo lugar sem precisar.
 - O site **não narra o que faz**; opção pequena não se explica; o
   complexo vai para a Ajuda ("Saiba mais"); dica que facilita fica.
 - Sem preço = **"Sob consulta"** + "fale com a academia" (`SEM_PRECO`).

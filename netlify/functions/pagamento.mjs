@@ -19,8 +19,13 @@
 // Variáveis no Netlify (Production e Deploy Previews, "Contains secret
 // values"; cada uma com o banco do lugar: o de verdade em Production, o de
 // teste nas prévias):
-//   MERCADOPAGO_ACCESS_TOKEN   a credencial de produção (APP_USR-…) ou de
-//                              teste (TEST-…) do Mercado Pago
+//   MERCADOPAGO_ACCESS_TOKEN   o Access Token do Mercado Pago: em Production o
+//                              de "Credenciais de produção", nas prévias o de
+//                              "Credenciais de teste" (desde 2026 os dois
+//                              começam com APP_USR-; o que vale é a seção).
+//                              Aplicação "Checkout Pro", API de Preferences
+//                              (trocar para a API de Orders quando o Mercado
+//                              Pago marcar a data). Ligadas em 19/11/2026.
 //   SUPABASE_URL               https://<projeto>.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY  a chave service_role (só a função usa)
 // Sem elas, responde 503: o site de verdade oferece a compra pelo WhatsApp,

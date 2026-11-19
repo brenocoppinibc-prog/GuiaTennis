@@ -465,8 +465,11 @@ balcão "Avalie no GuiaTennis" com QR (oferecido); (2) o CNPJ já está no site 
 falta o Breno criar a conta Mercado Pago no CNPJ (com chave Pix; a aplicação "Checkout Pro"
 com a "API de Preferences", a que o `pagamento.mjs` usa; o Mercado Pago avisa que ela "será
 descontinuada em breve": **quando houver data, trocar para a "API de Orders"**, o token é o
-mesmo) e colocar as credenciais na
-Netlify (`MERCADOPAGO_ACCESS_TOKEN`: `TEST-…` em Deploy Previews, `APP_USR-…` em Production),
+mesmo). **As três variáveis já estão na Netlify (19/11/2026)**, cada uma com valor por
+contexto: `MERCADOPAGO_ACCESS_TOKEN` (o de "Credenciais de teste" em Deploy Previews e o de
+"Credenciais de produção" em Production; desde 2026 os dois começam com `APP_USR-`),
+`SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (a "Legacy" service_role de cada projeto). Falta a
+compra de teste na prévia (conta e cartão de teste do Mercado Pago),
 e a razão social e o endereço já estão no rodapé do Parceiros e nos Termos (regra 300).
 **Planos (proposta de 19/11, esperando o "pode fazer"; os preços ele ainda não sabe):** mensal
 sem fidelidade (cartão com cobrança automática ou Pix por e-mail 5 dias antes; 5 dias de

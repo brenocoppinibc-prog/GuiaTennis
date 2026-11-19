@@ -29,11 +29,15 @@ const ultima = (page) => page.evaluate(() => { const l = [...document.querySelec
     'Privacidade: o registro do nome suspenso e do que foi removido, e só às autoridades quando a lei exigir');
   ok(await page.evaluate(() => TERMS_HTML.includes('Última atualização: 19 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 19 de novembro de 2026')), 'os dois textos com a data da última mudança (08/11: a tag do Google Ads)');
   // Regra 299: o CNPJ, pequeno, só onde a lei pede (rodapé, Termos e Privacidade).
-  const cnpj = await page.evaluate(() => ({ termos: TERMS_HTML.includes('O GuiaTennis (CNPJ 70.120.796/0001-00)'),
+  const cnpj = await page.evaluate(() => ({ termos: TERMS_HTML.includes('CNPJ 70.120.796/0001-00'),
     priv: PRIVACY_HTML.includes('controlador) é o GuiaTennis, CNPJ 70.120.796/0001-00'),
     rodape: [...document.querySelectorAll('.rodape-faixa-copy')].some(p => p.textContent.includes('CNPJ 70.120.796/0001-00')),
     home: (document.querySelector('.home-hero') || {}).textContent || '' }));
   ok(cnpj.termos && cnpj.priv && cnpj.rodape && !cnpj.home.includes('CNPJ'), 'CNPJ no rodapé, nos Termos e na Privacidade, e só lá — ' + JSON.stringify({ ...cnpj, home: undefined }));
+  // Regra 300: razão social e endereço só no rodapé do Parceiros (onde se compra) e nos Termos.
+  const empresa = await page.evaluate(() => ({ parceiros: rodapeFaixa(true), jogadores: rodapeFaixa(false), termos: TERMS_HTML.includes('O GuiaTennis (BRENO COPPINI MARINHO LTDA, CNPJ 70.120.796/0001-00, Rua José de Jesus, 66, 44B, São Paulo, SP, CEP 05630-090)'), priv: PRIVACY_HTML.includes('BRENO COPPINI') }));
+  ok(empresa.parceiros.includes('BRENO COPPINI MARINHO LTDA · Rua José de Jesus, 66, 44B, São Paulo, SP, CEP 05630-090 · contato@guiatennis.com.br') && empresa.parceiros.includes('CNPJ 70.120.796/0001-00')
+    && !empresa.jogadores.includes('BRENO COPPINI') && empresa.termos && !empresa.priv, 'razão social, CNPJ e endereço no rodapé do Parceiros e nos Termos; o rodapé dos jogadores e a Privacidade só com o CNPJ');
 
   // ---- na ficha: o aceite, o "Como funcionam" e a denúncia ----
   await page.evaluate(() => openCourt('a1'));

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 17/11/2026 (regra 297)
+**Atualizado em:** 19/11/2026 (regra 299)
 
 | | |
 |---|---|
@@ -21,6 +21,7 @@ para o histórico).
 | Banco de verdade | Supabase `eultezheqwmxyakvgyjy` |
 | Banco de teste | Supabase `ohvbengbujdioxdtewsy` (projeto `guiatennis-teste`) |
 | Admin | entra com o e-mail `guiatennis1@gmail.com` (`isAdmin` é pelo e-mail) |
+| CNPJ | 70.120.796/0001-00 (`CNPJ_DO_GUIA`; Simples Nacional, CNAE 6319-4/00, serviço 17.25; a razão social não vai no site, a pedido do Breno) |
 | Contatos | WhatsApp Business (11) 92745-6457 (`WHATSAPP_GUIA`), Instagram @guiatennis, contato@guiatennis.com.br (chega no Gmail do admin) |
 
 ## 0. Chat novo: por onde começar
@@ -460,8 +461,11 @@ falha**; na 297, os afetados e o `banco-emails.py` num Postgres local (982, nenh
 **Respondido:** a faixa verde "Para academias" na inicial fica de fora ("sim, deixar igual",
 17/11; só um link pequeno no alto, como o "Anuncie seu imóvel" do Booking, se ele pedir).
 **Pendências e ofertas sem resposta:** (1) o cartão de visita, os dois flyers e a plaquinha de
-balcão "Avalie no GuiaTennis" com QR (oferecido); (2) quando o CNPJ sair, razão social e CNPJ
-no rodapé, nos Termos e na Privacidade, e as chaves do Mercado Pago; (3) das quadras públicas,
+balcão "Avalie no GuiaTennis" com QR (oferecido); (2) o CNPJ já está no site (regra 299);
+falta o Breno criar a conta Mercado Pago no CNPJ (com chave Pix) e colocar as credenciais na
+Netlify (`MERCADOPAGO_ACCESS_TOKEN`: `TEST-…` em Deploy Previews, `APP_USR-…` em Production),
+e, se a lei de comércio eletrônico (Decreto 7.962) for exigida, a razão social e o endereço
+pequenos no rodapé do Parceiros (ele não gostou da razão social); (3) das quadras públicas,
 a pergunta no chat de ajuda e a página de região "Quadras públicas de tênis em <bairro>".
 
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
@@ -2372,6 +2376,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   foto da quadra, quadra pública. A Privacidade ("ajuda para encontrar as quadras mais perto")
   ficou como está. Sem SQL. Testes: `ajuda-na-busca` (12), `jogador` (49),
   `pensamento-e-home` (17) e `viagem` (54), sem falha.
+- **299 (19/11) — o CNPJ no site, pequeno e só onde a lei pede** ("meu CNPJ é 70.120.796/0001-00,
+  faça o que precisa ser feito no site e deixe pequeno, porque a razão social não gostei tanto,
+  ou então deixe o nome fantasia, apenas em lugares obrigatórios"). `CNPJ_DO_GUIA`: na faixa
+  verde do rodapé, na linha do copyright ("… Todos os direitos reservados. · CNPJ …"); nos
+  Termos, item 1 ("O GuiaTennis (CNPJ …) é um Guia online…"); na Privacidade, item 8 ("O
+  responsável pelos seus dados (controlador) é o GuiaTennis, CNPJ …", como pede a LGPD).
+  Sem a razão social (nome fantasia GuiaTennis). Termos e Privacidade em 19 de novembro de
+  2026. Na conversa: Simples Nacional com o Fator R (o pró-labore pela "Otimização automática
+  inteligente", sem valor mínimo, porque o Breno não paga INSS em outro lugar), serviço 17.25
+  (publicidade na internet) e o Mercado Pago na conta do CNPJ. Sem SQL. Testes:
+  `regras-de-conteudo` (13, com a conferência nova), `ficha-basica`, `avaliacao-editada`,
+  `pixel-da-meta` e `dados-para-nota`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -27,7 +27,13 @@ const ultima = (page) => page.evaluate(() => { const l = [...document.querySelec
   ok(legal.priv.includes('Nomes e conteúdo que desrespeitam as regras') && legal.priv.includes('Quando o nome da conta é suspenso, guardamos')
     && legal.priv.includes('Marco Civil da Internet') && legal.priv.includes('ordem judicial'),
     'Privacidade: o registro do nome suspenso e do que foi removido, e só às autoridades quando a lei exigir');
-  ok(await page.evaluate(() => TERMS_HTML.includes('Última atualização: 17 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 17 de novembro de 2026')), 'os dois textos com a data da última mudança (08/11: a tag do Google Ads)');
+  ok(await page.evaluate(() => TERMS_HTML.includes('Última atualização: 19 de novembro de 2026') && PRIVACY_HTML.includes('Última atualização: 19 de novembro de 2026')), 'os dois textos com a data da última mudança (08/11: a tag do Google Ads)');
+  // Regra 299: o CNPJ, pequeno, só onde a lei pede (rodapé, Termos e Privacidade).
+  const cnpj = await page.evaluate(() => ({ termos: TERMS_HTML.includes('O GuiaTennis (CNPJ 70.120.796/0001-00)'),
+    priv: PRIVACY_HTML.includes('controlador) é o GuiaTennis, CNPJ 70.120.796/0001-00'),
+    rodape: [...document.querySelectorAll('.rodape-faixa-copy')].some(p => p.textContent.includes('CNPJ 70.120.796/0001-00')),
+    home: (document.querySelector('.home-hero') || {}).textContent || '' }));
+  ok(cnpj.termos && cnpj.priv && cnpj.rodape && !cnpj.home.includes('CNPJ'), 'CNPJ no rodapé, nos Termos e na Privacidade, e só lá — ' + JSON.stringify({ ...cnpj, home: undefined }));
 
   // ---- na ficha: o aceite, o "Como funcionam" e a denúncia ----
   await page.evaluate(() => openCourt('a1'));

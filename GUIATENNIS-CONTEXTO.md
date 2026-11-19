@@ -462,7 +462,10 @@ falha**; na 297, os afetados e o `banco-emails.py` num Postgres local (982, nenh
 17/11; só um link pequeno no alto, como o "Anuncie seu imóvel" do Booking, se ele pedir).
 **Pendências e ofertas sem resposta:** (1) o cartão de visita, os dois flyers e a plaquinha de
 balcão "Avalie no GuiaTennis" com QR (oferecido); (2) o CNPJ já está no site (regra 299);
-falta o Breno criar a conta Mercado Pago no CNPJ (com chave Pix) e colocar as credenciais na
+falta o Breno criar a conta Mercado Pago no CNPJ (com chave Pix; a aplicação "Checkout Pro"
+com a "API de Preferences", a que o `pagamento.mjs` usa; o Mercado Pago avisa que ela "será
+descontinuada em breve": **quando houver data, trocar para a "API de Orders"**, o token é o
+mesmo) e colocar as credenciais na
 Netlify (`MERCADOPAGO_ACCESS_TOKEN`: `TEST-…` em Deploy Previews, `APP_USR-…` em Production),
 e a razão social e o endereço já estão no rodapé do Parceiros e nos Termos (regra 300).
 **Planos (proposta de 19/11, esperando o "pode fazer"; os preços ele ainda não sabe):** mensal

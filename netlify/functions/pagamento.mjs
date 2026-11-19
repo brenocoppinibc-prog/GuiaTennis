@@ -10,6 +10,13 @@
 //                                       (o valor vem do banco, nunca do
 //                                       navegador): Pix devolve o QR code e
 //                                       o copia e cola; cartão, o link.
+//   POST { acao: "cobrar", compra, noSite: true }  cartão no próprio site
+//                                       (regra 301): só devolve o valor e o
+//                                       e-mail para o formulário do Mercado
+//                                       Pago (Card Payment Brick) na página.
+//   POST { acao: "cartao", compra, cartao }  paga com o token que o
+//                                       formulário do Mercado Pago gerou (o
+//                                       número do cartão nunca passa por aqui).
 //   POST { acao: "consultar", compra }  pergunta ao Mercado Pago e confirma
 //                                       (para quando o aviso demora).
 //   POST ?mp=1 (o aviso do Mercado Pago, "payment")  busca o pagamento no
@@ -92,16 +99,19 @@ export function pagadorDe(c, onde = "pix") {
   return p;
 }
 
-async function cobrar(req, compraId) {
+const descricaoDe = (c) => c.tipo === "plano"
+  ? `Plano ${c.plano === "premium" ? "Premium" : "Completo"} ${c.periodo === "anual" ? "anual" : "mensal"} GuiaTennis · ${c.academia}`
+  : `Créditos de promoções GuiaTennis · ${c.academia}`;
+
+async function cobrar(req, compraId, noSite) {
   const c = await rpc("compra_para_cobrar", { p_compra: compraId });
   if (!c || !c.id) return json(404, { erro: "Compra não encontrada." });
   if (c.situacao !== "aberta") return json(409, { erro: "Essa compra já foi paga ou recusada.", situacao: c.situacao });
+  if (noSite && c.forma !== "pix") return json(200, { forma: "cartao", noSite: true, valor: c.valor, email: c.nota_email || c.email || "" });
   const origem = origemDe(req);
   const aviso = `${origem}/.netlify/functions/pagamento?mp=1`;
   const plano = c.tipo === "plano";
-  const descricao = plano
-    ? `Plano ${c.plano === "premium" ? "Premium" : "Completo"} ${c.periodo === "anual" ? "anual" : "mensal"} GuiaTennis · ${c.academia}`
-    : `Créditos de promoções GuiaTennis · ${c.academia}`;
+  const descricao = descricaoDe(c);
   if (c.forma === "pix") {
     const expira = new Date(Date.now() + 30 * 60 * 1000).toISOString().replace("Z", "-00:00");
     const p = await mp("/v1/payments", {
@@ -129,6 +139,38 @@ async function cobrar(req, compraId) {
   });
   await rpc("registrar_cobranca", { p_compra: c.id, p_gateway_id: String(pref.id) });
   return json(200, { forma: "cartao", valor: c.valor, link: pref.init_point });
+}
+
+// Regra 301: o cartão no próprio site. O formulário do Mercado Pago (Card
+// Payment Brick) transforma o cartão num token; aqui o pagamento é criado com
+// o valor do banco (nunca o do navegador), à vista. Aprovado ou recusado, o
+// banco fica sabendo na hora; em análise, o aviso do Mercado Pago confirma.
+async function cartaoNoSite(req, compraId, dados) {
+  const c = await rpc("compra_para_cobrar", { p_compra: compraId });
+  if (!c || !c.id) return json(404, { erro: "Compra não encontrada." });
+  if (c.situacao !== "aberta") return json(409, { erro: "Essa compra já foi paga ou recusada.", situacao: c.situacao });
+  if (!dados || !dados.token || !dados.payment_method_id) return json(400, { erro: "Faltam os dados do cartão." });
+  const doCartao = dados.payer || {};
+  const payer = { ...pagadorDe(c, "pix") };
+  if (!payer.email && doCartao.email) payer.email = doCartao.email;
+  if (doCartao.identification && doCartao.identification.number) payer.identification = { type: doCartao.identification.type, number: String(doCartao.identification.number) };
+  const p = await mp("/v1/payments", {
+    method: "POST",
+    headers: { "X-Idempotency-Key": `cartao-${c.id}-${String(dados.token).slice(0, 40)}` },
+    body: JSON.stringify({
+      transaction_amount: c.valor, token: dados.token, installments: 1,
+      payment_method_id: dados.payment_method_id, issuer_id: dados.issuer_id || undefined,
+      description: descricaoDe(c),
+      statement_descriptor: "GUIATENNIS", payer,
+      external_reference: c.id, notification_url: `${origemDe(req)}/.netlify/functions/pagamento?mp=1`,
+    }),
+  });
+  await rpc("registrar_cobranca", { p_compra: c.id, p_gateway_id: String(p.id || "") });
+  if (p.status === "approved" || p.status === "rejected") {
+    const situacao = await confirmar(c.id, p);
+    return json(200, { situacao, motivo: p.status === "rejected" ? String(p.status_detail || "") : "" });
+  }
+  return json(200, { situacao: "aberta", status: String(p.status || "") });
 }
 
 async function consultar(compraId) {
@@ -164,7 +206,8 @@ export default async (req) => {
     let corpo = {};
     try { corpo = await req.json(); } catch { return json(400, { erro: "Corpo inválido." }); }
     if (!/^[0-9a-f-]{36}$/i.test(String(corpo.compra || ""))) return json(400, { erro: "Falta a compra." });
-    if (corpo.acao === "cobrar") return await cobrar(req, corpo.compra);
+    if (corpo.acao === "cobrar") return await cobrar(req, corpo.compra, corpo.noSite === true);
+    if (corpo.acao === "cartao") return await cartaoNoSite(req, corpo.compra, corpo.cartao);
     if (corpo.acao === "consultar") return await consultar(corpo.compra);
     return json(400, { erro: "Ação inválida." });
   } catch (e) {

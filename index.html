@@ -2043,6 +2043,15 @@
   .rodape-faixa p { margin: 12px 0 0; font-size: 14px; line-height: 1.5; }
   .rodape-faixa .rodape-faixa-copy { margin-top: 6px; font-size: 13px; color: rgba(255,255,255,0.68); }
   .rodape-faixa .rodape-faixa-empresa { font-size: 11px; color: rgba(255,255,255,0.6); }
+  /* Regra 301: o cartão no próprio site, numa folha por cima da página. */
+  .pc-cartao-folha { position: fixed; inset: 0; z-index: 1000; background: rgba(15,25,20,0.55); display: flex; align-items: flex-end; justify-content: center; }
+  .pc-cartao-caixa { background: var(--card); color: var(--text); width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; border-radius: 18px 18px 0 0; padding: 18px 16px 24px; box-sizing: border-box; }
+  .pc-cartao-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pc-cartao-fechar { background: none; border: none; color: var(--text); font-size: 18px; width: 34px; height: 34px; cursor: pointer; }
+  .pc-cartao-s { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; color: var(--muted); margin: 4px 0 10px; }
+  .pc-cartao-erro { color: var(--red); font-size: 14px; margin: 0 0 8px; }
+  .pc-cartao-erro:empty { display: none; }
+  @media (min-width: 700px) { .pc-cartao-folha { align-items: center; } .pc-cartao-caixa { border-radius: 18px; } }
   .sitefooter + .rodape-faixa { margin-top: 0; }
   .sitefooter { box-shadow: 0 0 0 100vmax var(--bg-alt); clip-path: inset(0 -100vmax); }
   .pc-rodape .rodape-faixa { box-shadow: none; clip-path: none; }
@@ -3567,6 +3576,12 @@
 const BANCO_DE_TESTE = { url: "https://ohvbengbujdioxdtewsy.supabase.co", chave: "sb_publishable_NEF5wHWslCi3Uu9GfbHruQ_Ut3r_BBT" };
 const NO_SITE_DE_TESTE = /^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$|(^|--)lucky-liger-1c29a3\.netlify\.app$|^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const USANDO_BANCO_DE_TESTE = NO_SITE_DE_TESTE && !!BANCO_DE_TESTE.url && !!BANCO_DE_TESTE.chave;
+// Chave pública do Mercado Pago (regra 301; pública de propósito, como a do
+// Supabase): abre o formulário do cartão dentro do site. A de teste nas prévias
+// e a de produção no site de verdade; sem ela, o cartão vai para a página do
+// Mercado Pago, como antes.
+const MP_CHAVE_PUBLICA = { teste: "APP_USR-bfdb7475-9042-401e-8b19-5aa2a9227a6f", real: "" };
+const chavePublicaMP = () => (USANDO_BANCO_DE_TESTE ? MP_CHAVE_PUBLICA.teste : MP_CHAVE_PUBLICA.real);
 const SUPABASE_URL = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.url : "https://eultezheqwmxyakvgyjy.supabase.co";
 const SUPABASE_ANON_KEY = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.chave : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";
 // Falhas do site (pedido do Breno em 11/10/2026): toda chamada de rede do
@@ -13538,7 +13553,7 @@ function pcTopoCheckout() {
       <ul>
         <li>O pagamento é feito pelo <strong>Mercado Pago</strong>, um dos maiores meios de pagamento do Brasil.</li>
         <li><strong>Pix:</strong> o QR code aparece nesta página e a aprovação é na hora.</li>
-        <li><strong>Cartão:</strong> você paga na página segura do Mercado Pago, à vista. O GuiaTennis não vê nem guarda os dados do cartão.</li>
+        <li><strong>Cartão:</strong> ${chavePublicaMP() ? "você paga aqui mesmo, num formulário seguro do Mercado Pago, à vista" : "você paga na página segura do Mercado Pago, à vista"}. O GuiaTennis não vê nem guarda os dados do cartão.</li>
         <li>O CPF ou o CNPJ do comprador vai ao Mercado Pago e serve para a nota fiscal.</li>
         <li>Os créditos ou o plano entram na conta assim que o pagamento é aprovado, e a compra fica em Pagamentos.</li>
       </ul>
@@ -13974,11 +13989,11 @@ function pcCreditos() {
         <p class="pc-checkout-bloco-t"><span class="pc-checkout-n">3</span> Forma de pagamento</p>
         <div class="pc-checkout-formas" role="radiogroup" aria-label="Forma de pagamento">
           ${opcao("data-compra-forma", "pix", forma === "pix", `${icon('pix', 15, 'currentColor')} Pix`, "Aprovação na hora. O QR code aparece nesta página.")}
-          ${opcao("data-compra-forma", "cartao", forma === "cartao", "Cartão de crédito", "Na página segura do Mercado Pago, à vista.")}
+          ${opcao("data-compra-forma", "cartao", forma === "cartao", "Cartão de crédito", chavePublicaMP() ? "Aqui mesmo, no formulário seguro do Mercado Pago, à vista." : "Na página segura do Mercado Pago, à vista.")}
         </div>
       </div>
       ${k.erro ? `<p class="form-error">${icon('warning', 14)} ${esc(k.erro)}</p>` : ""}
-      <button type="button" class="cta-btn cta-primary pc-checkout-pagar" id="pc-compra-pagar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(15) + " Abrindo o pagamento…" : forma === "pix" ? `Pagar com Pix${valor ? ` · ${emReais(valor)}` : ""}` : `Ir para o Mercado Pago${valor ? ` · ${emReais(valor)}` : ""}`}</button>
+      <button type="button" class="cta-btn cta-primary pc-checkout-pagar" id="pc-compra-pagar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(15) + " Abrindo o pagamento…" : forma === "pix" ? `Pagar com Pix${valor ? ` · ${emReais(valor)}` : ""}` : chavePublicaMP() ? `Pagar com cartão${valor ? ` · ${emReais(valor)}` : ""}` : `Ir para o Mercado Pago${valor ? ` · ${emReais(valor)}` : ""}`}</button>
       <p class="pc-checkout-seguro-nota">${icon('cadeado', 13, 'currentColor')} Pagamento processado pelo Mercado Pago, com o CPF ou CNPJ do comprador. O GuiaTennis não vê os dados do cartão.${pagamentoDeTeste() ? " No site de teste, sem o Mercado Pago ligado, o pagamento é de teste e nada é cobrado." : ""}</p>`;
   }
   return `
@@ -14006,8 +14021,8 @@ async function continuarDosDados() {
   render();
   window.scrollTo(0, 0);
 }
-async function chamarPagamento(acao, compra) {
-  const r = await fetch("/.netlify/functions/pagamento", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao, compra }) });
+async function chamarPagamento(acao, compra, extra = {}) {
+  const r = await fetch("/.netlify/functions/pagamento", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...extra, acao, compra }) });
   let d = {};
   try { d = await r.json(); } catch { /* resposta vazia */ }
   return { status: r.status, d };
@@ -14037,7 +14052,7 @@ async function pagarCompra() {
       : await sb.rpc('criar_compra_de_creditos', { p_academia: c.id, p_valor: valor, p_forma: forma });
     if (r.error) throw r.error;
     compra = r.data;
-    const { status, d } = await chamarPagamento("cobrar", compra);
+    const { status, d } = await chamarPagamento("cobrar", compra, forma === "cartao" && chavePublicaMP() ? { noSite: true } : {});
     if ((status === 503 || status === 404) && pagamentoDeTeste()) {
       state.pcCompra = { ...base, passo: "teste", compra, valorCobrado: valor };
       registrarPasso("acao", { academia: c.id, detalhe: `Abriu o pagamento de teste de ${oQue}` });
@@ -14046,6 +14061,12 @@ async function pagarCompra() {
     }
     if (status === 503) { state.pcCompra = { ...base, passo: "desligado" }; render(); return; }
     if (status !== 200) throw new Error(d.erro || "Não foi possível abrir o pagamento.");
+    if (d.forma === "cartao" && d.noSite) {
+      k.enviando = false; render();
+      registrarPasso("acao", { academia: c.id, detalhe: `Abriu o cartão no site para ${oQue}` });
+      abrirCartaoNoSite({ base, compra, valor: Number(d.valor || valor), email: d.email || "" });
+      return;
+    }
     if (d.forma === "cartao" && d.link) { registrarPasso("acao", { academia: c.id, detalhe: `Foi pagar ${oQue} no cartão` }); location.href = d.link; return; }
     state.pcCompra = { ...base, passo: "pix", compra, valorCobrado: d.valor || valor, pix: { qr: d.qr, copia: d.copia, expira: d.expira }, inicio: Date.now() };
     registrarPasso("acao", { academia: c.id, detalhe: `Abriu o Pix de ${oQue}` });
@@ -14058,6 +14079,108 @@ async function pagarCompra() {
     render();
   }
 }
+// ---------- cartão no próprio site (regra 301) ----------
+// Pedido de 19/11/2026 ("não dá para fazer algo direto no site mesmo?"). O
+// formulário do cartão é o do Mercado Pago (Card Payment Brick), dentro da
+// página: os campos do cartão são do Mercado Pago, que devolve um token; o
+// GuiaTennis nunca vê o número (como o Stripe Elements no Booking e no Airbnb).
+// Fica numa folha fora do #app, para o render() não apagar o que a pessoa
+// digitou.
+let cartaoBrick = null;
+function carregarSdkMercadoPago() {
+  if (window.MercadoPago) return Promise.resolve(true);
+  return new Promise((ok) => {
+    const s = document.createElement("script");
+    s.src = "https://sdk.mercadopago.com/js/v2";
+    s.onload = () => ok(!!window.MercadoPago);
+    s.onerror = () => ok(false);
+    document.head.appendChild(s);
+  });
+}
+function fecharCartaoNoSite() {
+  try { if (cartaoBrick && cartaoBrick.unmount) cartaoBrick.unmount(); } catch { /* já fechado */ }
+  cartaoBrick = null;
+  const f = document.getElementById("pc-cartao-folha");
+  if (f) f.remove();
+}
+const MOTIVOS_DO_CARTAO = {
+  cc_rejected_insufficient_amount: "o cartão não tem limite para esse valor",
+  cc_rejected_bad_filled_security_code: "o código de segurança (CVV) não confere",
+  cc_rejected_bad_filled_date: "a validade não confere",
+  cc_rejected_bad_filled_card_number: "o número do cartão não confere",
+  cc_rejected_bad_filled_other: "algum dado do cartão não confere",
+  cc_rejected_call_for_authorize: "o banco pede que você autorize a compra com ele",
+  cc_rejected_card_disabled: "o cartão está bloqueado: fale com o banco",
+  cc_rejected_duplicated_payment: "esse pagamento já foi feito agora há pouco",
+  cc_rejected_high_risk: "o Mercado Pago não aprovou por segurança",
+};
+async function abrirCartaoNoSite(info) {
+  fecharCartaoNoSite();
+  const folha = document.createElement("div");
+  folha.id = "pc-cartao-folha";
+  folha.className = "pc-cartao-folha";
+  folha.setAttribute("role", "dialog");
+  folha.setAttribute("aria-modal", "true");
+  folha.setAttribute("aria-label", "Pagar com cartão");
+  folha.innerHTML = `
+    <div class="pc-cartao-caixa">
+      <div class="pc-cartao-topo">
+        <p class="pc-checkout-bloco-t">Pague ${esc(emReais(info.valor))} com cartão</p>
+        <button type="button" class="pc-cartao-fechar" aria-label="Fechar">✕</button>
+      </div>
+      <p class="pc-cartao-s">${icon('cadeado', 13, 'currentColor')} À vista. O cartão vai direto para o Mercado Pago: o GuiaTennis não vê nem guarda os dados.</p>
+      <p class="pc-cartao-erro" id="pc-cartao-erro" role="alert"></p>
+      <div id="pc-cartao-brick"><p class="pc-checkout-espera">${bolaGirando(14)} Abrindo o formulário do cartão…</p></div>
+    </div>`;
+  document.body.appendChild(folha);
+  folha.querySelector(".pc-cartao-fechar").addEventListener("click", fecharCartaoNoSite);
+  const erro = (t) => { const e = document.getElementById("pc-cartao-erro"); if (e) e.textContent = t; };
+  const falhou = "Não consegui abrir o formulário do cartão. Tente de novo ou pague com Pix.";
+  if (!(await carregarSdkMercadoPago())) { erro(falhou); diag("cartão no site: o SDK do Mercado Pago não carregou"); return; }
+  try {
+    const mp = new window.MercadoPago(chavePublicaMP(), { locale: "pt-BR" });
+    cartaoBrick = await mp.bricks().create("cardPayment", "pc-cartao-brick", {
+      initialization: { amount: info.valor, ...(info.email ? { payer: { email: info.email } } : {}) },
+      customization: {
+        paymentMethods: { minInstallments: 1, maxInstallments: 1 },
+        visual: { texts: { formSubmit: `Pagar ${emReais(info.valor)}` }, style: { theme: "default", customVariables: { baseColor: "#1F4D3A" } } },
+      },
+      callbacks: {
+        onReady: () => {},
+        onError: (e) => { diag("cartão no site: " + (e && (e.message || e.type) || "erro")); },
+        onSubmit: (dados) => pagarComCartaoNoSite(info, dados, erro),
+      },
+    });
+  } catch (e) {
+    erro(falhou);
+    diag("cartão no site: " + (e && e.message || e));
+  }
+}
+async function pagarComCartaoNoSite(info, dados, erro) {
+  erro("");
+  const c = minhaAcademia();
+  let r;
+  try { r = await chamarPagamento("cartao", info.compra, { cartao: dados }); }
+  catch { r = { status: 0, d: {} }; }
+  const { status, d } = r;
+  if (status !== 200) {
+    if (status === 409) { fecharCartaoNoSite(); compraRecusada({ ...info.base, valorCobrado: info.valor }, "Essa compra já foi encerrada. Toque em pagar de novo."); return; }
+    erro("Não consegui falar com o Mercado Pago agora. Confira os dados e tente de novo.");
+    throw new Error("cartão: " + status);
+  }
+  if (d.situacao === "recusada") {
+    fecharCartaoNoSite();
+    const motivo = MOTIVOS_DO_CARTAO[d.motivo] || "o cartão foi recusado";
+    compraRecusada({ ...info.base, valorCobrado: info.valor }, `Cartão não aprovado: ${motivo}. Tente outro cartão ou pague com Pix.`);
+    return;
+  }
+  fecharCartaoNoSite();
+  state.pcCompra = { ...info.base, passo: "volta", compra: info.compra, valorCobrado: info.valor, inicio: Date.now() };
+  if (d.situacao === "paga" && c) { await compraPaga(c, state.pcCompra); return; }
+  render();
+  esperarPagamento();
+}
+
 // O gateway fingido: o Pix pago ou vencido, ou o cartão (APRO aprova, OTHE
 // recusa). O banco confirma como se fosse o Mercado Pago (simular_pagamento).
 async function simularPagamento(qual) {

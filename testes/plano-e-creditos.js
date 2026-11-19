@@ -86,15 +86,72 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.click('#pc-creditos-concluir');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email' && !state.pcCompra) && /Créditos\s+R\$ 100/.test(await texto(page, '#pc-leilao')), '"Voltar ao leilão" volta, com os créditos');
-  // Cartão: vai para a página do Mercado Pago.
-  resposta = () => ({ status: 200, body: { forma: 'cartao', valor: 50, link: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=x' } });
-  await page.route('https://www.mercadopago.com.br/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>Mercado Pago</p>' }));
+  // Regra 301: o cartão no próprio site, no formulário do Mercado Pago (Card
+  // Payment Brick). Aqui um Mercado Pago de mentira: o formulário é um botão
+  // que devolve um token, como o de verdade.
+  await page.evaluate(() => {
+    MP_CHAVE_PUBLICA.real = MP_CHAVE_PUBLICA.teste = 'APP_USR-chave-publica-de-teste';
+    window.MercadoPago = function (chave, opcoes) {
+      window.__mpChave = chave; window.__mpOpcoes = opcoes;
+      return { bricks: () => ({ create: async (tipo, lugar, cfg) => {
+        window.__brick = { tipo, lugar, cfg };
+        const el = document.getElementById(lugar);
+        el.innerHTML = '<button type="button" id="brick-pagar">Pagar no formulário</button>';
+        el.querySelector('#brick-pagar').onclick = () => cfg.callbacks.onSubmit({ token: 'tok123', payment_method_id: 'master', issuer_id: '24', installments: 1, transaction_amount: 1, payer: { email: 'dono@academia.com', identification: { type: 'CPF', number: '12345678909' } } });
+        return { unmount: () => { window.__brickDesmontado = true; } };
+      } }) };
+    };
+  });
+  resposta = (corpo) => corpo.acao === 'cartao' ? { status: 200, body: { situacao: window.__respostaCartao || 'paga' } } : { status: 200, body: { forma: 'cartao', noSite: true, valor: 50, email: 'dono@academia.com' } };
   await page.click('#pc-comprar-creditos');
   await page.waitForTimeout(200);
   await page.click('[data-compra-valor="50"]');
   await page.click('[data-compra-forma="cartao"]');
   await page.waitForTimeout(150);
-  ok((await texto(page, '#pc-compra-pagar')) === 'Ir para o Mercado Pago · R$ 50' && (await texto(page, '#parceiros .pc-main')).includes('página segura do Mercado Pago'), 'cartão: "Ir para o Mercado Pago"');
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar com cartão · R$ 50' && corpo.includes('Aqui mesmo, no formulário seguro do Mercado Pago'), 'cartão: "Pagar com cartão", aqui mesmo no formulário do Mercado Pago');
+  const antes = chamadas.length;
+  await page.click('#pc-compra-pagar');
+  await page.waitForTimeout(500);
+  const folha = await page.evaluate(() => ({ aberta: !!document.getElementById('pc-cartao-folha'), fora: !document.querySelector('#app #pc-cartao-folha'), texto: (document.getElementById('pc-cartao-folha') || {}).innerText || '',
+    tipo: (window.__brick || {}).tipo, valor: window.__brick && window.__brick.cfg.initialization.amount, email: window.__brick && (window.__brick.cfg.initialization.payer || {}).email,
+    parcelas: window.__brick && window.__brick.cfg.customization.paymentMethods.maxInstallments, chave: window.__mpChave }));
+  ok(chamadas[antes] && chamadas[antes].acao === 'cobrar' && chamadas[antes].noSite === true, 'pede a cobrança com noSite (sem ir para outra página)');
+  ok(folha.aberta && folha.fora && folha.texto.includes('Pague R$ 50 com cartão') && folha.texto.includes('o GuiaTennis não vê nem guarda os dados') && folha.tipo === 'cardPayment' && folha.valor === 50 && folha.email === 'dono@academia.com' && folha.parcelas === 1 && /^APP_USR-/.test(folha.chave),
+    'a folha do cartão abre por cima da página (fora do #app), com o formulário do Mercado Pago, o valor do banco, o e-mail e à vista — ' + JSON.stringify({ ...folha, texto: undefined }));
+  // Recusado: a folha fecha e a compra volta para a escolha, com o motivo.
+  await page.evaluate(() => { window.__respostaCartao = 'recusada'; });
+  resposta = (corpo) => corpo.acao === 'cartao' ? { status: 200, body: { situacao: 'recusada', motivo: 'cc_rejected_insufficient_amount' } } : { status: 200, body: { forma: 'cartao', noSite: true, valor: 50, email: 'dono@academia.com' } };
+  await page.click('#brick-pagar');
+  await page.waitForTimeout(400);
+  const cartao = chamadas.find(x => x.acao === 'cartao');
+  ok(cartao && cartao.cartao.token === 'tok123' && cartao.cartao.payment_method_id === 'master' && !('valor' in cartao), 'paga com o token do formulário (o número do cartão não passa pelo site e o valor sai do banco)');
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(!(await page.evaluate(() => !!document.getElementById('pc-cartao-folha'))) && corpo.includes('Cartão não aprovado: o cartão não tem limite para esse valor. Tente outro cartão ou pague com Pix.') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com cartão · R$ 50',
+    'recusado: a folha fecha e a compra volta, com o motivo e o mesmo valor');
+  // Aprovado: os créditos entram na hora.
+  resposta = (corpo) => corpo.acao === 'cartao' ? { status: 200, body: { situacao: 'paga' } } : { status: 200, body: { forma: 'cartao', noSite: true, valor: 50, email: 'dono@academia.com' } };
+  await page.click('#pc-compra-pagar');
+  await page.waitForTimeout(400);
+  await page.evaluate(() => { window.__compras[window.__compras.length - 1].situacao = 'paga'; window.__db.academias.find(a => a.id === 'a1').envios_de_aviso = 150; });
+  await page.click('#brick-pagar');
+  await page.waitForTimeout(800);
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(!(await page.evaluate(() => !!document.getElementById('pc-cartao-folha'))) && corpo.includes('Pagamento confirmado'), 'aprovado: a folha fecha e o pagamento aparece confirmado — ' + corpo.slice(0, 120));
+  await browser.close();
+
+  // Sem a chave pública (o site de verdade, até ela entrar): o cartão vai para a página do Mercado Pago.
+  ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'] }));
+  await page.route('**/.netlify/functions/pagamento', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ forma: 'cartao', valor: 50, link: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=x' }) }));
+  await page.route('https://www.mercadopago.com.br/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>Mercado Pago</p>' }));
+  await page.evaluate(() => { MP_CHAVE_PUBLICA.real = MP_CHAVE_PUBLICA.teste = ''; });
+  await page.waitForTimeout(400);
+  await page.click('#pc-comprar-creditos');
+  await page.waitForTimeout(200);
+  await page.click('[data-compra-valor="50"]');
+  await page.click('[data-compra-forma="cartao"]');
+  await page.waitForTimeout(150);
+  ok((await texto(page, '#pc-compra-pagar')) === 'Ir para o Mercado Pago · R$ 50' && (await texto(page, '#parceiros .pc-main')).includes('página segura do Mercado Pago'), 'sem a chave pública: "Ir para o Mercado Pago"');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(800);
   ok(page.url().startsWith('https://www.mercadopago.com.br/checkout/'), 'e vai para a página do Mercado Pago');
@@ -194,7 +251,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.click('[data-simular="cartao"]');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('O pagamento foi recusado') && (await texto(page, '#pc-compra-pagar')) === 'Ir para o Mercado Pago · R$ 200' && await page.evaluate(() => window.__compras[0].situacao === 'recusada' && !window.__db.academias.find(a => a.id === 'a1').envios_de_aviso),
+  ok(corpo.includes('O pagamento foi recusado') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com cartão · R$ 200' && await page.evaluate(() => window.__compras[0].situacao === 'recusada' && !window.__db.academias.find(a => a.id === 'a1').envios_de_aviso),
     'OTHE recusa: volta à compra com R$ 200 e cartão, sem créditos');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
@@ -245,8 +302,10 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
 
   // ---- O admin vê as compras ----
   ({ browser, page } = await abrir({ admin: true, q: 'admin', w: 1280 }));
-  await page.evaluate(() => { window.__compras = [{ id: 'k1', academia_id: 'a1', valor: 100, forma: 'pix', situacao: 'paga', created_at: '2026-10-19T12:00:00Z', paga_em: '2026-10-19T12:01:00Z' },
-    { id: 'k2', academia_id: 'a1', valor: 490, forma: 'cartao', situacao: 'paga', tipo: 'plano', plano: 'completo', periodo: 'anual', de_teste: true, created_at: '2026-10-19T13:00:00Z', paga_em: '2026-10-19T13:01:00Z' }]; });
+  // Datas de ontem (a lista é dos últimos 30 dias; data fixa vencia com o tempo).
+  await page.evaluate(() => { const h = (min) => new Date(Date.now() - 864e5 + min * 6e4).toISOString();
+    window.__compras = [{ id: 'k1', academia_id: 'a1', valor: 100, forma: 'pix', situacao: 'paga', created_at: h(0), paga_em: h(1) },
+    { id: 'k2', academia_id: 'a1', valor: 490, forma: 'cartao', situacao: 'paga', tipo: 'plano', plano: 'completo', periodo: 'anual', de_teste: true, created_at: h(60), paga_em: h(61) }]; });
   await page.click('.adm-nav [data-adm-aba="compras"]');
   await page.waitForTimeout(400);
   const adm = await texto(page, '#painel-admin');

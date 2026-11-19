@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 19/11/2026 (regra 300)
+**Atualizado em:** 19/11/2026 (regra 301)
 
 | | |
 |---|---|
@@ -469,7 +469,9 @@ mesmo). **As três variáveis já estão na Netlify (19/11/2026)**, cada uma com
 contexto: `MERCADOPAGO_ACCESS_TOKEN` (o de "Credenciais de teste" em Deploy Previews e o de
 "Credenciais de produção" em Production; desde 2026 os dois começam com `APP_USR-`),
 `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (a "Legacy" service_role de cada projeto). Falta a
-compra de teste na prévia (conta e cartão de teste do Mercado Pago),
+compra de teste na prévia (cartão de teste do Mercado Pago, agora no formulário dentro do
+site, regra 301) e a **Public Key de produção** em `MP_CHAVE_PUBLICA.real` (é pública; sem ela,
+o site de verdade manda o cartão para a página do Mercado Pago),
 e a razão social e o endereço já estão no rodapé do Parceiros e nos Termos (regra 300).
 **Planos (proposta de 19/11, esperando o "pode fazer"; os preços ele ainda não sabe):** mensal
 sem fidelidade (cartão com cobrança automática ou Pix por e-mail 5 dias antes; 5 dias de
@@ -2410,6 +2412,23 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Contabilizei). Nos **Termos** (o contrato), item 1: "O GuiaTennis (BRENO COPPINI MARINHO
   LTDA, CNPJ …, endereço) é…". O rodapé dos jogadores e a Privacidade ficam só com o CNPJ. Sem
   SQL. Teste: `regras-de-conteudo` (14), sem falha.
+- **301 (19/11) — o cartão dentro do site** ("com o gateway do Mercado Pago não fica direto
+  no site o pagamento?"; "mas não dá para fazer algo direto no site mesmo"). O formulário do
+  cartão é o do Mercado Pago (**Card Payment Brick**, `https://sdk.mercadopago.com/js/v2`,
+  carregado só ao pagar com cartão), numa folha por cima da página (`#pc-cartao-folha`, fora do
+  `#app`, para o `render()` não apagar o que a pessoa digitou), à vista. O número do cartão vai
+  direto para o Mercado Pago, que devolve um token; a função (`acao: "cartao"`) cria o
+  pagamento com o valor do banco (`/v1/payments`, `statement_descriptor` GUIATENNIS, o CPF do
+  titular que o formulário pede) e confirma na hora se aprovado ou recusado. Recusado: a folha
+  fecha e a compra volta com o motivo (`MOTIVOS_DO_CARTAO`: limite, CVV, validade…) e "Tente
+  outro cartão ou pague com Pix"; em análise, "Conferindo o pagamento" e o aviso do Mercado
+  Pago confirma. Como o Stripe Elements do Booking e do Airbnb. A chave pública
+  (`MP_CHAVE_PUBLICA`: a de teste já no código; a de produção falta) escolhe: com ela,
+  "Pagar com cartão" e "Aqui mesmo, no formulário seguro do Mercado Pago"; sem ela, "Ir para o
+  Mercado Pago" (Checkout Pro), como antes. "Como funciona o pagamento" acompanha. Sem SQL.
+  Testes: `plano-e-creditos` (52, com o Mercado Pago de mentira: a folha fora do `#app`, o
+  token sem o número, recusado com o motivo, aprovado, e sem a chave a página do Mercado Pago;
+  a lista do admin passou a usar datas de ontem, porque a data fixa de 19/10 saiu dos 30 dias).
 
 ## 11. WhatsApp e mensagem para as academias
 

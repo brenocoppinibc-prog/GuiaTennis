@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 20/11/2026 (regra 302)
+**Atualizado em:** 20/11/2026 (regra 304)
 
 | | |
 |---|---|
@@ -2449,6 +2449,25 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   que mostre qual está sendo o erro"). A chave do Supabase do tipo novo
   (`sb_secret_…`) vai só no `apikey`; a "service_role" antiga (JWT) continua também no
   `Authorization`. Teste: `plano-e-creditos` (52), sem falha.
+- **304 (20/11) — vantagem do Pix e o teste com dinheiro de verdade** ("repassar as taxas para
+  os clientes não é algo melhor?"; "faça os dois e coloque o access token de produção na deploy
+  preview"). Em vez de "taxa do cartão", **desconto no Pix** (Mercado Livre, Magalu; Lei
+  13.455/2017 permite preço por forma de pagamento, informado antes): **créditos no Pix valem
+  5% a mais** (`bonus_do_pix`, para cima: R$ 50 → 53, R$ 100 → 105) e **o plano no Pix tem 5%
+  de desconto** (`preco_no_pix`, para baixo: R$ 49 → 46, R$ 490 → 465); o preço continua
+  saindo do banco (`criar_compra_de_plano`, `confirmar_compra`). SQL
+  `20261120120000_vantagem_do_pix`. Na tela: a opção Pix diz "5% de desconto" ou "5% a mais em
+  créditos"; o resumo mostra "Desconto do Pix (5%)" (plano) ou "Bônus do Pix (5%) + R$ 5,00 em
+  créditos"; a tela de pago mostra os créditos com o bônus; "Como funciona o pagamento" e
+  **Termos** (créditos, com a frase do Pix) atualizados, Termos e Privacidade em 20 de
+  novembro de 2026. **O ambiente de teste do Mercado Pago recusava o cartão de teste** (com as
+  chaves de teste, "Não foi possível obter a informação de pagamento"; com o token de produção
+  na prévia, "401 Unauthorized use of live credentials"): a prévia passou a usar as chaves de
+  **produção** (`MP_CHAVE_PUBLICA.teste` = a de produção; o Breno coloca o token de produção em
+  Deploy Previews) para um teste com R$ 20 de verdade, devolvido no app do Mercado Pago.
+  Testes: `plano-e-creditos` (52), `regras-de-conteudo`, `ficha-basica`, `avaliacao-editada`,
+  `pixel-da-meta`, `dados-para-nota` e `compra-com-prazo`, sem falha; `banco-emails.py` num
+  Postgres local: 987, nenhuma falha (seção nova "Vantagem do Pix").
 
 ## 11. WhatsApp e mensagem para as academias
 

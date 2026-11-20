@@ -57,7 +57,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
     '"Comprar créditos" abre uma página própria, sem o menu do Parceiros, com "Pagamento seguro" no alto');
   ok(corpo.includes('Comprar créditos') && corpo.includes('R$ 50') && corpo.includes('R$ 200') && corpo.includes('Outro valor') && corpo.includes('Mais escolhido') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 100',
     'o valor (R$ 100 marcado), a forma de pagamento e "Pagar com Pix" (regra 232)');
-  ok(/Créditos\s+R\$ 100,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 100,00/.test(await texto(page, '.pc-checkout-resumo')), 'o resumo do pedido: créditos, taxas e total');
+  ok(/Créditos\s+R\$ 100,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 100,00\s+Bônus do Pix \(5%\)\s+\+ R\$ 5,00 em créditos/.test(await texto(page, '.pc-checkout-resumo')) && (await texto(page, '#parceiros .pc-main')).includes('5% a mais em créditos. Aprovação na hora'), 'o resumo do pedido: créditos, taxas, total e o bônus do Pix (regra 304)');
   ok(await page.evaluate(() => [...document.querySelectorAll('.pc-checkout-trilha li')].map(l => l.className).join(',')) === 'feito,agora,', 'com os dados do comprador salvos, a compra abre na etapa do pagamento (regra 232)');
   await page.click('[data-compra-valor="outro"]');
   await page.waitForTimeout(150);
@@ -79,13 +79,13 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.waitForTimeout(150);
   ok((await texto(page, '#pc-compra-copiar')) === 'Copiado', '"Copiar" copia o código');
   // O Mercado Pago confirmou: os créditos entram e a página confere sozinha.
-  await page.evaluate(() => { window.__compras[0].situacao = 'paga'; window.__db.academias.find(a => a.id === 'a1').envios_de_aviso = 100; });
+  await page.evaluate(() => { window.__compras[0].situacao = 'paga'; window.__db.academias.find(a => a.id === 'a1').envios_de_aviso = 105; });
   await page.waitForTimeout(5000);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Pagamento confirmado') && corpo.includes('R$ 100 entraram nos créditos da Só Aula Tennis') && /Saldo de créditos\s+R\$ 100/.test(corpo), 'pago: a página confere sozinha e mostra o saldo novo');
+  ok(corpo.includes('Pagamento confirmado') && corpo.includes('R$ 105 entraram nos créditos da Só Aula Tennis') && /Saldo de créditos\s+R\$ 105/.test(corpo), 'pago: a página confere sozinha e mostra o saldo novo, com os 5% do Pix (regra 304)');
   await page.click('#pc-creditos-concluir');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email' && !state.pcCompra) && /Créditos\s+R\$ 100/.test(await texto(page, '#pc-leilao')), '"Voltar ao leilão" volta, com os créditos');
+  ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email' && !state.pcCompra) && /Créditos\s+R\$ 105/.test(await texto(page, '#pc-leilao')), '"Voltar ao leilão" volta, com os créditos');
   // Regra 301: o cartão no próprio site, no formulário do Mercado Pago (Card
   // Payment Brick). Aqui um Mercado Pago de mentira: o formulário é um botão
   // que devolve um token, como o de verdade.
@@ -203,11 +203,11 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.click('.pc-planos [data-escolher-plano="completo"]');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(await page.evaluate(() => location.pathname === '/parceiros/creditos') && corpo.includes('Assinar o Completo') && corpo.includes('Comprador') && corpo.includes('Mensal · R$ 49') && corpo.includes('Anual · R$ 490') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 49',
-    'subir de plano abre a mesma tela da compra (regra 232): o comprador, o período e a forma, mensal e Pix de saída');
+  ok(await page.evaluate(() => location.pathname === '/parceiros/creditos') && corpo.includes('Assinar o Completo') && corpo.includes('Comprador') && corpo.includes('Mensal · R$ 49') && corpo.includes('Anual · R$ 490') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 46' && /Mensal\s+R\$ 49,00\s+Desconto do Pix \(5%\)\s+− R\$ 3,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 46,00/.test(await texto(page, '.pc-checkout-resumo')),
+    'subir de plano abre a mesma tela da compra (regra 232): o comprador, o período e a forma, mensal e Pix de saída, com 5% de desconto no Pix (regra 304)');
   await page.click('[data-compra-periodo="anual"]');
   await page.waitForTimeout(150);
-  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 490' && (await texto(page, '#parceiros .pc-main')).includes('2 meses saem de graça') && /Anual\s+R\$ 490,00/.test(await texto(page, '.pc-checkout-resumo')), 'anual: R$ 490, com os 2 meses de graça no período e no resumo');
+  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 465' && (await texto(page, '#parceiros .pc-main')).includes('2 meses saem de graça') && /Anual\s+R\$ 490,00/.test(await texto(page, '.pc-checkout-resumo')), 'anual: R$ 490, com os 2 meses de graça no período e no resumo');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#pc-compra');

@@ -1600,10 +1600,10 @@ ok(cob.get("valor") == 100 and cob.get("forma") == "pix" and cob.get("email") ==
 ok(um(f"select public.registrar_cobranca('{compra}', 'mp1')::text", papel="service_role") == "true", "anota a cobrança do Mercado Pago")
 ok(um(f"select public.confirmar_compra('{compra}', 'mp1', 100, 'pending')", papel="service_role") == "aberta" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "0", "pendente: ainda não entra crédito")
 ok(um(f"select public.confirmar_compra('{compra}', 'mp1', 50, 'approved')", papel="service_role") == "aberta" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "0", "pagou menos que a compra: não entra crédito")
-ok(um(f"select public.confirmar_compra('{compra}', 'mp1', 100, 'approved')", papel="service_role") == "paga" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "100", "pago: os R$ 100 entram nos créditos")
-ok(um(f"select public.confirmar_compra('{compra}', 'mp1', 100, 'approved')", papel="service_role") == "paga" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "100", "o mesmo aviso de novo não soma duas vezes")
+ok(um(f"select public.confirmar_compra('{compra}', 'mp1', 100, 'approved')", papel="service_role") == "paga" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "105", "pago no Pix: os R$ 100 entram nos créditos, com os 5% (R$ 105, regra 304)")
+ok(um(f"select public.confirmar_compra('{compra}', 'mp1', 100, 'approved')", papel="service_role") == "paga" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "105", "o mesmo aviso de novo não soma duas vezes")
 outra = um(f"select public.criar_compra_de_creditos('{PINHEIROS}', 50, 'cartao')", papel="authenticated", user=dono)
-ok(um(f"select public.confirmar_compra('{outra}', 'mp2', 50, 'rejected')", papel="service_role") == "recusada" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "100", "cartão recusado: a compra fica recusada, sem crédito")
+ok(um(f"select public.confirmar_compra('{outra}', 'mp2', 50, 'rejected')", papel="service_role") == "recusada" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "105", "cartão recusado: a compra fica recusada, sem crédito")
 lista = json.loads(um(f"select public.minhas_compras('{PINHEIROS}')::text", papel="authenticated", user=dono) or "[]")
 ok([x["situacao"] for x in lista] == ["recusada", "paga"], "a academia vê as últimas compras")
 ok(um(f"select public.minhas_compras('{PINHEIROS}')::text", papel="authenticated", user=carla) in (None, "", "null"), "outra conta não vê as compras")
@@ -1630,7 +1630,7 @@ ok(not certo and "Só o responsável principal" in saida, "só o responsável pr
 certo, saida = sql(f"select public.criar_compra_de_plano('{PINHEIROS}', 'basico', 'mensal', 'pix')", papel="authenticated", user=dono)
 ok(not certo and "Plano inválido" in saida, "o Básico não se compra")
 plano = um(f"select public.criar_compra_de_plano('{PINHEIROS}', 'completo', 'anual', 'pix')", papel="authenticated", user=dono)
-ok(um(f"select tipo || '|' || plano || '|' || periodo || '|' || valor || '|' || situacao from public.compras_de_creditos where id = '{plano}'") == "plano|completo|anual|490|aberta", "a compra do plano sai com o preço do banco (R$ 490 no anual)")
+ok(um(f"select tipo || '|' || plano || '|' || periodo || '|' || valor || '|' || situacao from public.compras_de_creditos where id = '{plano}'") == "plano|completo|anual|465|aberta", "a compra do plano sai com o preço do banco (R$ 490 no anual, R$ 465 no Pix, regra 304)")
 cob = json.loads(um(f"select public.compra_para_cobrar('{plano}')::text", papel="service_role") or "{}")
 ok(cob.get("tipo") == "plano" and cob.get("plano") == "completo" and cob.get("periodo") == "anual", "a função do Netlify sabe que é plano")
 certo, saida = sql(f"select public.simular_pagamento('{plano}', 'aprovado')", papel="authenticated", user=carla)
@@ -2985,6 +2985,22 @@ ok(fila("tipo = 'acompanhamento'") == "0", "banco de teste: 9 minutos depois, es
 um(f"select public.rodar_acompanhamentos({as_hora('23:10')})")
 ok(fila("tipo = 'acompanhamento'") == "1", "banco de teste: 10 minutos depois sai, mesmo de noite")
 sql("truncate public.emails_a_enviar")
+
+# Vantagem do Pix (regra 304, 20261120120000_vantagem_do_pix) --------------------
+print("\nVantagem do Pix")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261120120000_vantagem_do_pix.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+ok(um("select public.bonus_do_pix(50) || ',' || public.bonus_do_pix(100) || ',' || public.bonus_do_pix(60) || ',' || public.preco_no_pix(49) || ',' || public.preco_no_pix(490) || ',' || public.preco_no_pix(99)") == "3,5,3,46,465,94",
+   "bônus de pelo menos 5% (para cima) e preço com pelo menos 5% de desconto (para baixo)")
+def compra_teste(forma, valor=100):
+    return um(f"insert into public.compras_de_creditos (academia_id, valor, forma) values ('{PINHEIROS}', {valor}, '{forma}') returning id")
+sql(f"update public.academias set envios_de_aviso = 0 where id = '{PINHEIROS}'")
+ok(um(f"select public.confirmar_compra('{compra_teste('pix')}', 'mp1', 100, 'approved')") == "paga" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "105",
+   "créditos de R$ 100 pagos com Pix: entram R$ 105")
+ok(um(f"select public.confirmar_compra('{compra_teste('cartao')}', 'mp2', 100, 'approved')") == "paga" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "205",
+   "no cartão: entram os R$ 100, sem bônus")
+ok(um(f"select public.confirmar_compra('{compra_teste('pix', 50)}', 'mp3', 50, 'approved')") == "paga" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "258",
+   "R$ 50 no Pix: entram R$ 53")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

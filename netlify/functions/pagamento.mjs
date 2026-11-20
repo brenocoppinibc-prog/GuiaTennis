@@ -34,9 +34,11 @@
 //                              (trocar para a API de Orders quando o Mercado
 //                              Pago marcar a data). Ligadas em 19/11/2026.
 //                              "401 Unauthorized use of live credentials" nas
-//                              Falhas = o token de produção nas prévias (20/11:
-//                              trocado pelo de teste); o cartão de teste só
-//                              passa com as duas chaves de teste.
+//                              Falhas = o token de produção com dados de teste.
+//                              O ambiente de teste do Mercado Pago recusava o
+//                              cartão de teste; desde 20/11 as prévias usam o
+//                              token e a chave pública de produção (teste com
+//                              dinheiro de verdade, devolvido depois).
 //   SUPABASE_URL               https://<projeto>.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY  a chave service_role (só a função usa)
 // Sem elas, responde 503: o site de verdade oferece a compra pelo WhatsApp,

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 20/11/2026 (regra 306)
+**Atualizado em:** 20/11/2026 (regra 306, troca de chat)
 
 | | |
 |---|---|
@@ -450,38 +450,47 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**18/11/2026 (regra 298):** o chat acompanha o PR #5 (inscrito; os check-ins automáticos
-pararam depois de três sem novidade). Último commit de código: regra 298 (o lugar é
-"academia" nos textos do site; "quadra" fica onde a pessoa procura). Antes, regra 297 ("Você marcou?" duas horas depois, das 9h às 21h; no banco de teste, 10 minutos
-depois; o título do e-mail diferente do assunto; SQL `20261117150000_voce_marcou_mais_cedo`;
-Termos e Privacidade em 17 de novembro de 2026). O "Banco de dados" desta branch é disparado à
-mão (`banco.yml`, `destino: teste`). **Do chat de 16 e 17/11:** regras 285 a 297 (seção 10).
-**Testes:** bateria completa de 17/11 (até a 296, com o `index.html` final): **2.680, nenhuma
-falha**; na 297, os afetados e o `banco-emails.py` num Postgres local (982, nenhuma falha).
-**Respondido:** a faixa verde "Para academias" na inicial fica de fora ("sim, deixar igual",
-17/11; só um link pequeno no alto, como o "Anuncie seu imóvel" do Booking, se ele pedir).
-**Pendências e ofertas sem resposta:** (1) o cartão de visita, os dois flyers e a plaquinha de
-balcão "Avalie no GuiaTennis" com QR (oferecido); (2) o CNPJ já está no site (regra 299);
-falta o Breno criar a conta Mercado Pago no CNPJ (com chave Pix; a aplicação "Checkout Pro"
-com a "API de Preferences", a que o `pagamento.mjs` usa; o Mercado Pago avisa que ela "será
-descontinuada em breve": **quando houver data, trocar para a "API de Orders"**, o token é o
-mesmo). **As três variáveis já estão na Netlify (19/11/2026)**, cada uma com valor por
-contexto: `MERCADOPAGO_ACCESS_TOKEN` (o de "Credenciais de teste" em Deploy Previews e o de
-"Credenciais de produção" em Production; desde 2026 os dois começam com `APP_USR-`),
-`SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (a "Legacy" service_role de cada projeto). Falta a
-compra de teste na prévia (cartão de teste do Mercado Pago, agora no formulário dentro do
-site, regra 301) (a Public Key de produção já está em `MP_CHAVE_PUBLICA.real`, 20/11/2026; o Pix da prévia deu
-erro em 20/11: provável falta da chave Pix na conta do Mercado Pago; o motivo fica nas Falhas
-do admin),
-e a razão social e o endereço já estão no rodapé do Parceiros e nos Termos (regra 300).
-**Planos (proposta de 19/11, esperando o "pode fazer"; os preços ele ainda não sabe):** mensal
-sem fidelidade (cartão com cobrança automática ou Pix por e-mail 5 dias antes; 5 dias de
-tolerância e volta ao Básico); anual = 12 meses pelo preço de 10, à vista, avisos 30 e 7 dias
-antes; cancelar o anual: até 7 dias devolve tudo (CDC art. 49), depois devolve os meses que
-faltam cobrando os usados pelo preço do mensal; trocar para cima na hora (paga a diferença),
-para baixo no fim do período; créditos avulsos sem prazo; antes de pagar, o resumo do plano e
-o link dos Termos (Decreto 7.962, art. 4); (3) das quadras públicas,
-a pergunta no chat de ajuda e a página de região "Quadras públicas de tênis em <bairro>".
+**Chat trocado em 20/11/2026 (regra 306):** o chat novo volta a acompanhar o PR #5 (este
+deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `a15b8ec`
+(regra 306, o rodapé); depois só o contexto. O PR está verde, a prévia no ar com tudo até a 306
+e a descrição em dia (passos 110 a 124). O "Banco de dados" desta branch é disparado à mão
+(`banco.yml`, `destino: teste`): rodou com sucesso em 20/11 para o SQL mais novo,
+`20261120120000_vantagem_do_pix`. **Do chat de 17 a 20/11:** regras 297 a 306 (seção 10):
+"Você marcou?" duas horas depois, "academia" para o lugar, CNPJ, razão social e endereço
+(empresa **BRENO COPPINI MARINHO LTDA**, CNPJ 70.120.796/0001-00), cartão dentro do site
+(Card Payment Brick), prazo na compra, motivo do erro só nas Falhas, **vantagem do Pix** (5%
+em créditos / 5% de desconto no plano, em qualquer valor) e o rodapé arrumado. Na conversa:
+Simples Nacional com Fator R (pró-labore pela "Otimização automática inteligente", sem valor
+mínimo), serviço 17.25 (publicidade na internet), a conta do CNPJ é a do Mercado Pago (o extrato
+vai todo mês para a Contabilizei), nota por compra pelo app da Contabilizei até a nota
+automática.
+**Mercado Pago:** conta do CNPJ com chave Pix; aplicação "Checkout Pro", API de Preferences
+(trocar para a "API de Orders" quando o Mercado Pago marcar a data). Na Netlify,
+`MERCADOPAGO_ACCESS_TOKEN`, `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` por contexto.
+**Atenção: a prévia usa as credenciais de PRODUÇÃO** (token de produção em Deploy Previews e
+`MP_CHAVE_PUBLICA.teste` = a chave pública de produção), porque o ambiente de teste do Mercado
+Pago recusava o cartão de teste ("Não foi possível obter a informação de pagamento") e o token de
+produção com dados de teste dá "401 Unauthorized use of live credentials". Compra na prévia é
+dinheiro de verdade (o teste de R$ 20 passou em 20/11 e foi devolvido). Depois do merge, tudo
+igual em produção.
+**Testes:** bateria completa de 17/11 (até a 296): 2.680, nenhuma falha; das 297 a 306, os
+afetados (lista em cada regra) e o `banco-emails.py` num Postgres local (987, nenhuma falha).
+**Rodar a bateria completa no começo do próximo chat** (`bash testes/rodar-todos.sh`, em
+segundo plano).
+**Pendências e ofertas sem resposta:** (1) **o "pode subir" do PR #5** (o Breno confere os
+passos 110 a 124); (2) **nota fiscal automática** no Emissor Nacional, com o certificado A1
+e-CNPJ dele, num **PR novo depois do #5** (detalhe na regra 306); (3) "Baixar planilha do mês"
+em Admin › Compras e notas (oferecido); (4) **planos com vigência** (proposta de 19/11, esperando
+o "pode fazer"; os preços ele ainda não sabe): mensal sem fidelidade (cartão com cobrança
+automática ou Pix por e-mail 5 dias antes; 5 dias de tolerância e volta ao Básico); anual = 12
+meses pelo preço de 10, à vista, avisos 30 e 7 dias antes; cancelar o anual: até 7 dias devolve
+tudo (CDC art. 49), depois devolve os meses que faltam cobrando os usados pelo preço do mensal;
+trocar para cima na hora, para baixo no fim do período; créditos avulsos sem prazo; antes de
+pagar, o resumo do plano e o link dos Termos (Decreto 7.962, art. 4); (5) da empresa, com o
+Breno: domínio no CNPJ (registro.br), Meta e Google Ads cobrando no CNPJ, marca no INPI, CCM e
+nota na Contabilizei; (6) cartão de visita, flyers e plaquinha "Avalie no GuiaTennis" com QR
+(oferecido); (7) das quadras públicas, a pergunta no chat de ajuda e a página de região
+"Quadras públicas de tênis em <bairro>".
 
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
 avisos por e-mail do Parceiros um por um, SQL

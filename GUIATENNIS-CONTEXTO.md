@@ -2475,6 +2475,8 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Pix"); nos cartões dos planos, "R$ 46 por mês no Pix (5% off)" com o ícone do Pix
   (`.pc-plano-pix`), como o "no Pix" das lojas grandes. O teste de R$ 20 com dinheiro de verdade
   passou na prévia (20/11); orientado a devolver no mesmo dia, sem nota (venda cancelada).
+  Decidido (20/11): **os 5% do Pix valem em qualquer valor** (o Breno achou que perdia dinheiro
+  em R$ 20; o bônus é crédito, não dinheiro, e o Pix rende mais que o cartão mesmo com ele).
   Testes: `plano-e-creditos` (52), `parceiros` (159) e `planos` (9), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias

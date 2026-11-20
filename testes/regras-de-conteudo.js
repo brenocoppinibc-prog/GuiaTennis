@@ -36,8 +36,9 @@ const ultima = (page) => page.evaluate(() => { const l = [...document.querySelec
   ok(cnpj.termos && cnpj.priv && cnpj.rodape && !cnpj.home.includes('CNPJ'), 'CNPJ no rodapé, nos Termos e na Privacidade, e só lá — ' + JSON.stringify({ ...cnpj, home: undefined }));
   // Regra 300: razão social e endereço só no rodapé do Parceiros (onde se compra) e nos Termos.
   const empresa = await page.evaluate(() => ({ parceiros: rodapeFaixa(true), jogadores: rodapeFaixa(false), termos: TERMS_HTML.includes('O GuiaTennis (BRENO COPPINI MARINHO LTDA, CNPJ 70.120.796/0001-00, Rua José de Jesus, 66, 44B, São Paulo, SP, CEP 05630-090)'), priv: PRIVACY_HTML.includes('BRENO COPPINI') }));
-  ok(empresa.parceiros.includes('BRENO COPPINI MARINHO LTDA · Rua José de Jesus, 66, 44B, São Paulo, SP, CEP 05630-090 · contato@guiatennis.com.br') && empresa.parceiros.includes('CNPJ 70.120.796/0001-00')
-    && !empresa.jogadores.includes('BRENO COPPINI') && empresa.termos && !empresa.priv, 'razão social, CNPJ e endereço no rodapé do Parceiros e nos Termos; o rodapé dos jogadores e a Privacidade só com o CNPJ');
+  const rodapeP = empresa.parceiros.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
+  ok(rodapeP.includes('Breno Coppini Marinho Ltda. · CNPJ 70.120.796/0001-00') && rodapeP.includes('Rua José de Jesus, 66, 44B') && rodapeP.includes('São Paulo, SP · CEP 05630-090') && rodapeP.includes('contato@guiatennis.com.br')
+    && !/Breno Coppini/i.test(empresa.jogadores) && empresa.jogadores.includes('CNPJ 70.120.796/0001-00') && empresa.termos && !empresa.priv, 'razão social, CNPJ e endereço no rodapé do Parceiros e nos Termos; o rodapé dos jogadores e a Privacidade só com o CNPJ');
 
   // ---- na ficha: o aceite, o "Como funcionam" e a denúncia ----
   await page.evaluate(() => openCourt('a1'));

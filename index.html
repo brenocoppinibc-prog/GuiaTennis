@@ -2042,7 +2042,10 @@
   .rodape-faixa-marca strong { font-size: 22px; font-weight: 700; color: #fff; }
   .rodape-faixa p { margin: 12px 0 0; font-size: 14px; line-height: 1.5; }
   .rodape-faixa .rodape-faixa-copy { margin-top: 6px; font-size: 13px; color: rgba(255,255,255,0.68); }
-  .rodape-faixa .rodape-faixa-empresa { font-size: 11px; color: rgba(255,255,255,0.6); }
+  .rodape-faixa .rodape-faixa-legal { margin-top: 10px; display: grid; gap: 2px; }
+  .rodape-faixa .rodape-faixa-legal .rodape-faixa-copy { margin-top: 0; font-size: 12px; line-height: 1.5; }
+  .rodape-faixa .rodape-faixa-legal span { white-space: nowrap; }
+  .rodape-faixa .rodape-faixa-empresa { color: rgba(255,255,255,0.6); }
   /* Regra 301: o cartão no próprio site, numa folha por cima da página. */
   .pc-pix-vantagem span, .pc-pix-vantagem strong { color: var(--green); }
   /* Regra 305: a vantagem do Pix à vista, no mesmo verde dos selos do site. */
@@ -8675,6 +8678,9 @@ const CNPJ_DO_GUIA = "70.120.796/0001-00";
 // compram (Decreto 7.962/2013, comércio eletrônico), e nos Termos, que são o contrato.
 const RAZAO_SOCIAL_DO_GUIA = "BRENO COPPINI MARINHO LTDA";
 const ENDERECO_DO_GUIA = "Rua José de Jesus, 66, 44B, São Paulo, SP, CEP 05630-090";
+// No rodapé (regra 306), a razão social em letras normais, como o "iFood.com Agência
+// de Restaurantes Online S.A." do rodapé do iFood; nos Termos fica como no CNPJ.
+const RAZAO_SOCIAL_NO_RODAPE = "Breno Coppini Marinho Ltda.";
 function whatsappGuia(texto) {
   return `https://wa.me/${WHATSAPP_GUIA}${texto ? "?text=" + encodeURIComponent(texto) : ""}`;
 }
@@ -20270,9 +20276,19 @@ function rodapeFaixa(parceiros) {
     <div class="rodape-faixa">
       <span class="rodape-faixa-marca">${logoSvg()}<strong class="display logo-nome">${nomeDoLogo()}</strong>${parceiros ? `<span class="pc-selo">Parceiros</span>` : ""}</span>
       <p>${parceiros ? "O GuiaTennis para academias e quadras de tênis" : "Guia de quadras e academias de tênis"} · guiatennis.com.br</p>
-      <p class="rodape-faixa-copy">Copyright © ${new Date().getFullYear()} GuiaTennis | Todos os direitos reservados. · CNPJ ${CNPJ_DO_GUIA}</p>
-      ${parceiros ? `<p class="rodape-faixa-copy rodape-faixa-empresa">${esc(RAZAO_SOCIAL_DO_GUIA)} · ${esc(ENDERECO_DO_GUIA)} · contato@guiatennis.com.br</p>`
-        : `<p class="rodape-faixa-copy">Dados de localização © colaboradores do OpenStreetMap</p>`}
+      ${/* Regra 306: cada dado legal numa linha própria e sem quebrar no meio
+           (o CNPJ, o CEP e o e-mail inteiros), em letra pequena, como os rodapés do
+           iFood e do Nubank. Razão social e endereço só no Parceiros (regra 300). */ ""}
+      <div class="rodape-faixa-legal">
+        <p class="rodape-faixa-copy"><span>© ${new Date().getFullYear()} GuiaTennis</span> · <span>Todos os direitos reservados</span></p>
+        ${parceiros ? `
+        <p class="rodape-faixa-copy rodape-faixa-empresa"><span>${esc(RAZAO_SOCIAL_NO_RODAPE)}</span> · <span>CNPJ ${CNPJ_DO_GUIA}</span></p>
+        <p class="rodape-faixa-copy rodape-faixa-empresa"><span>Rua José de Jesus, 66, 44B</span></p>
+        <p class="rodape-faixa-copy rodape-faixa-empresa"><span>São Paulo, SP</span> · <span>CEP 05630-090</span></p>
+        <p class="rodape-faixa-copy rodape-faixa-empresa"><span>contato@guiatennis.com.br</span></p>` : `
+        <p class="rodape-faixa-copy"><span>CNPJ ${CNPJ_DO_GUIA}</span></p>
+        <p class="rodape-faixa-copy"><span>Dados de localização ©</span> <span>colaboradores do OpenStreetMap</span></p>`}
+      </div>
     </div>`;
 }
 

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 20/11/2026 (regra 305)
+**Atualizado em:** 20/11/2026 (regra 306)
 
 | | |
 |---|---|
@@ -2478,6 +2478,15 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Decidido (20/11): **os 5% do Pix valem em qualquer valor** (o Breno achou que perdia dinheiro
   em R$ 20; o bônus é crédito, não dinheiro, e o Pix rende mais que o cartão mesmo com ele).
   Testes: `plano-e-creditos` (52), `parceiros` (159) e `planos` (9), sem falha.
+- **306 (20/11) — o rodapé com os dados da empresa, arrumado** ("confira sendo designer o rodapé
+  com os novos dados"). A linha do copyright quebrava no meio ("reservados. · CNPJ …") e o
+  endereço deixava "·" sobrando. Agora um bloco legal (`.rodape-faixa-legal`, 12 px, um dado por
+  linha, cada pedaço sem quebrar no meio), como os rodapés do iFood e do Nubank: "© 2026
+  GuiaTennis · Todos os direitos reservados"; no **Parceiros**, "Breno Coppini Marinho Ltda. ·
+  CNPJ …" (a razão social em letras normais, `RAZAO_SOCIAL_NO_RODAPE`; nos Termos continua como
+  no CNPJ), "Rua José de Jesus, 66, 44B", "São Paulo, SP · CEP 05630-090" e o e-mail; nos
+  **jogadores**, "CNPJ …" e "Dados de localização © colaboradores do OpenStreetMap". Sem SQL.
+  Testes: `regras-de-conteudo` (14), `parceiros` (159) e `fonte-do-aparelho` (7), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

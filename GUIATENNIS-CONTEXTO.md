@@ -2533,7 +2533,8 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   quando passa de 30% (`PORCENTAGEM_QUE_VENDE`); abaixo disso, o número de vezes ("+1.300 fichas
   de academias abertas", "+200 contatos com as academias"), como o Google Meu Negócio. Sem SQL.
   Testes: `erros-no-push` (14), `acabamento`, `ver-no-mapa`, `ficha-hoteis`, `contatos-e-cadastro`,
-  `convite-conta`, `viagem`, `plano-e-creditos` e `sobre`, sem falha.
+  `convite-conta`, `viagem`, `plano-e-creditos`, `sobre` e `confianca-na-ficha`, sem falha. Bateria
+  completa de 20/11 (até a 308): 2.710 verificações, nenhuma falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -70,7 +70,7 @@ const abrirFicha = (page, id) => page.evaluate((id) => {
     nota: document.querySelector('.pc-faixa-num')?.innerText || '',
     resumo: document.querySelector('.pc-faixa-num .como-numeros button')?.innerText || '',
   }));
-  ok(pc.nums.length === 3 && pc.nums[0] === '+1.200 visitas ao GuiaTennis' && pc.nums[2].startsWith('15% das fichas abertas'), 'Parceiros: os mesmos números — ' + pc.nums.join(' | '));
+  ok(pc.nums.length === 3 && pc.nums[0] === '+1.200 visitas ao GuiaTennis' && pc.nums[1] === '+80 fichas de academias abertas' && pc.nums[2] === '+10 contatos com as academias', 'Parceiros: os mesmos números (regra 308: porcentagem baixa vira o número de vezes) — ' + pc.nums.join(' | '));
   ok(!pc.nota.includes('Desde o lançamento') && pc.resumo.includes('Entenda como funciona'), 'Parceiros: o bloco verde só com os números e "Entenda como funciona" (o texto fica oculto)');
   ok(new Set(pc.tops).size === 1, 'Parceiros, no celular: os três números lado a lado, na mesma linha — ' + pc.tops.join(','));
   // 11/10/2026: um texto antes dos números e o convite para cadastrar depois.

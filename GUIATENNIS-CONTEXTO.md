@@ -470,8 +470,9 @@ contexto: `MERCADOPAGO_ACCESS_TOKEN` (o de "Credenciais de teste" em Deploy Prev
 "Credenciais de produção" em Production; desde 2026 os dois começam com `APP_USR-`),
 `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (a "Legacy" service_role de cada projeto). Falta a
 compra de teste na prévia (cartão de teste do Mercado Pago, agora no formulário dentro do
-site, regra 301) e a **Public Key de produção** em `MP_CHAVE_PUBLICA.real` (é pública; sem ela,
-o site de verdade manda o cartão para a página do Mercado Pago),
+site, regra 301) (a Public Key de produção já está em `MP_CHAVE_PUBLICA.real`, 20/11/2026; o Pix da prévia deu
+erro em 20/11: provável falta da chave Pix na conta do Mercado Pago; o motivo fica nas Falhas
+do admin),
 e a razão social e o endereço já estão no rodapé do Parceiros e nos Termos (regra 300).
 **Planos (proposta de 19/11, esperando o "pode fazer"; os preços ele ainda não sabe):** mensal
 sem fidelidade (cartão com cobrança automática ou Pix por e-mail 5 dias antes; 5 dias de
@@ -2423,7 +2424,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   fecha e a compra volta com o motivo (`MOTIVOS_DO_CARTAO`: limite, CVV, validade…) e "Tente
   outro cartão ou pague com Pix"; em análise, "Conferindo o pagamento" e o aviso do Mercado
   Pago confirma. Como o Stripe Elements do Booking e do Airbnb. A chave pública
-  (`MP_CHAVE_PUBLICA`: a de teste já no código; a de produção falta) escolhe: com ela,
+  (`MP_CHAVE_PUBLICA`: as duas no código desde 20/11) escolhe: com ela,
   "Pagar com cartão" e "Aqui mesmo, no formulário seguro do Mercado Pago"; sem ela, "Ir para o
   Mercado Pago" (Checkout Pro), como antes. "Como funciona o pagamento" acompanha. Sem SQL.
   Testes: `plano-e-creditos` (52, com o Mercado Pago de mentira: a folha fora do `#app`, o

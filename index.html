@@ -3580,7 +3580,7 @@ const USANDO_BANCO_DE_TESTE = NO_SITE_DE_TESTE && !!BANCO_DE_TESTE.url && !!BANC
 // Supabase): abre o formulário do cartão dentro do site. A de teste nas prévias
 // e a de produção no site de verdade; sem ela, o cartão vai para a página do
 // Mercado Pago, como antes.
-const MP_CHAVE_PUBLICA = { teste: "APP_USR-bfdb7475-9042-401e-8b19-5aa2a9227a6f", real: "" };
+const MP_CHAVE_PUBLICA = { teste: "APP_USR-bfdb7475-9042-401e-8b19-5aa2a9227a6f", real: "APP_USR-b0b14704-f623-4a87-9b88-a3256737bf31" };
 const chavePublicaMP = () => (USANDO_BANCO_DE_TESTE ? MP_CHAVE_PUBLICA.teste : MP_CHAVE_PUBLICA.real);
 const SUPABASE_URL = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.url : "https://eultezheqwmxyakvgyjy.supabase.co";
 const SUPABASE_ANON_KEY = USANDO_BANCO_DE_TESTE ? BANCO_DE_TESTE.chave : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY";

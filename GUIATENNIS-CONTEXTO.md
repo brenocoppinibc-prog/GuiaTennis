@@ -2487,6 +2487,13 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   no CNPJ), "Rua José de Jesus, 66, 44B", "São Paulo, SP · CEP 05630-090" e o e-mail; nos
   **jogadores**, "CNPJ …" e "Dados de localização © colaboradores do OpenStreetMap". Sem SQL.
   Testes: `regras-de-conteudo` (14), `parceiros` (159) e `fonte-do-aparelho` (7), sem falha.
+  **Nota fiscal automática (próximo PR, depois do #5):** o Breno tem **certificado A1 e-CNPJ**
+  (20/11). Plano: o site emite a NFS-e no Emissor Nacional (grátis; código 17.25) a cada pagamento
+  aprovado, mostra em Pagamentos e manda por e-mail; o certificado e a senha guardados só no
+  servidor (Netlify ou o cofre do Supabase, enviados pelo painel do admin, nunca pelo chat);
+  testar antes no ambiente de testes do governo. Até lá, uma nota por compra pelo app da
+  Contabilizei, com a lista de Admin › Compras e notas. A conta do CNPJ é a do próprio Mercado
+  Pago (sem saque para outro banco); o extrato vai todo mês para a Contabilizei.
 
 ## 11. WhatsApp e mensagem para as academias
 

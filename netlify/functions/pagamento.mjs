@@ -48,10 +48,12 @@ async function rpc(nome, args) {
   const url = env("SUPABASE_URL"), chave = env("SUPABASE_SERVICE_ROLE_KEY");
   const r = await fetch(`${url}/rest/v1/rpc/${nome}`, {
     method: "POST",
-    headers: { apikey: chave, Authorization: `Bearer ${chave}`, "Content-Type": "application/json" },
+    // A chave "service_role" antiga é um JWT e vai também no Authorization; a
+    // "secret" nova (sb_secret_…) vai só no apikey (o Supabase recusa no Bearer).
+    headers: { apikey: chave, ...(chave.startsWith("eyJ") ? { Authorization: `Bearer ${chave}` } : {}), "Content-Type": "application/json" },
     body: JSON.stringify(args),
   });
-  if (!r.ok) throw new Error(`banco ${nome}: ${r.status}`);
+  if (!r.ok) throw new Error(`banco ${nome}: ${r.status} ${(await r.text().catch(() => "")).slice(0, 120)}`.trim());
   return r.json();
 }
 
@@ -212,6 +214,8 @@ export default async (req) => {
     return json(400, { erro: "Ação inválida." });
   } catch (e) {
     console.error("pagamento:", e && e.message);
-    return json(502, { erro: "Não consegui falar com o Mercado Pago agora." });
+    // O motivo técnico (sem chave nem senha: só o status e a mensagem do banco ou
+    // do Mercado Pago) vai junto, para o site de teste e as Falhas do admin.
+    return json(502, { erro: "Não consegui falar com o Mercado Pago agora.", detalhe: String((e && e.message) || "").slice(0, 240) });
   }
 };

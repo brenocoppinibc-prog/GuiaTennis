@@ -2441,6 +2441,13 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `data-compra-conferir`, `data-compra-recomecar`; `chamarPagamento` com tempo-limite). Sem SQL.
   Testes: `compra-com-prazo.js` (novo, 6), `plano-e-creditos` (52) e `dados-para-nota` (29),
   sem falha.
+- **303 (20/11) — o motivo do erro do pagamento** (o Breno recebeu "Não foi possível abrir o
+  pagamento agora", código M8TMP9, na prévia; daqui não se alcança a prévia nem o banco). A
+  função devolve o motivo técnico em `detalhe` (status e mensagem do banco ou do Mercado Pago,
+  sem chave), que vai para as Falhas do admin e, **só no site de teste**, aparece embaixo do
+  erro ("Detalhe técnico (só no site de teste): …"). A chave do Supabase do tipo novo
+  (`sb_secret_…`) vai só no `apikey`; a "service_role" antiga (JWT) continua também no
+  `Authorization`. Teste: `plano-e-creditos` (52), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

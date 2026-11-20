@@ -163,9 +163,9 @@ async function fichaCheia(page, extra) {
   r = await page.evaluate(() => { const c = [...document.querySelectorAll('#ht-revs .ht-rev')].map(x => x.getBoundingClientRect()); return { lista: document.getElementById('ht-revs').classList.contains('ht-revs-lista'), empilhadas: c[1].top > c[0].bottom - 1, link: document.getElementById('reviews-more').innerText.trim() }; });
   ok(r.lista && r.empilhadas && r.link === 'Mostrar menos', '"Ver todas" põe as avaliações uma embaixo da outra');
 
-  // ---- barra de baixo: o valor e o botão com o anel dourado ----
+  // ---- barra de baixo: o valor e o botão verde (sem o anel dourado, regra 308) ----
   r = await page.evaluate(() => { const b = document.querySelector('.court-cta'); const a = b.querySelector('a[data-track="whatsapp"]'); return { texto: a.innerText.trim(), anel: getComputedStyle(a).boxShadow, compartilhar: !!b.querySelector('#share-btn-2, [data-share-court]'), valor: b.querySelector('.court-cta-val').innerText }; });
-  ok(r.texto === 'Chamar no WhatsApp' && /184, 147, 63/.test(r.anel) && !r.compartilhar && r.valor === 'R$ 90 a 120', 'barra de baixo com o valor e o WhatsApp de anel dourado; compartilhar fica no alto');
+  ok(r.texto === 'Chamar no WhatsApp' && r.anel === 'none' && !r.compartilhar && r.valor === 'R$ 90 a 120', 'barra de baixo com o valor e o WhatsApp verde, sem o anel dourado (regra 308); compartilhar fica no alto');
 
   // ---- voltar pelo botão da capa ----
   await page.evaluate(() => window.scrollTo(0, 0));

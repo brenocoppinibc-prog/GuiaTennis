@@ -14,9 +14,12 @@ const { abrir, ok } = require('./harness');
   ok(await page.evaluate(() => state.jogadorTela === 'email' && !!document.getElementById('jog-email')), 'o ícone abre o Entrar ou criar conta');
   await browser.close();
 
-  // Já usou o site: o cartão aparece; fechar some por 14 dias.
+  // Regra 308: só viu academia, sem chamar, não vê o "Jogou numa dessas academias?".
   ({ browser, page } = await abrir());
   await page.evaluate(() => { pushRecent('a1'); render(); });
+  ok(await page.evaluate(() => !document.querySelector('.convite-conta')), 'só viu academia: sem o convite (ainda não jogou)');
+  // Já chamou uma academia: o cartão aparece; fechar some por 14 dias.
+  await page.evaluate(() => { lembrarChamadaSemConta('a1', 'whatsapp'); render(); });
   t = await page.evaluate(() => document.querySelector('.convite-conta')?.textContent.replace(/\s+/g, ' ') || '');
   ok(t.includes('Jogou numa dessas academias?') && t.includes('Criar conta') && !/desconto/i.test(t), 'quem já viu academia vê o convite, sem prometer o que a conta não faz');
   await page.click('#convite-fechar');

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 20/11/2026 (regra 307)
+**Atualizado em:** 20/11/2026 (regra 308)
 
 | | |
 |---|---|
@@ -454,10 +454,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 `subscribe_pr_activity`). Regra 307: o site mais rápido de novo (as consultas ao banco ao abrir
 vão juntas, em vez de em fila, inclusive os cliques do admin) e **todo erro no
 push vermelho do alto** (`mostrarErro`/`errosNoPush`; a faixa de falha também foi para o alto).
-Revisão de design feita e perguntas mandadas ao Breno (lista na resposta do chat de 20/11: os
-dois números na compra, "Cartão não aprovado: o cartão foi recusado", "0 m de você", o "Jogou
-numa dessas academias?" cedo demais, o anel dourado do botão fixo da ficha e o "5% das visitas"
-no Parceiros), **esperando as respostas**. Antes, do chat de 17 a 20/11: regras 297 a 306
+Da revisão de design, o Breno aprovou as 6 propostas (regra 308). Antes, do chat de 17 a 20/11: regras 297 a 306
 (seção 10): "Você marcou?" duas horas depois, "academia" para o lugar, CNPJ, razão social e
 endereço (empresa **BRENO COPPINI MARINHO LTDA**, CNPJ 70.120.796/0001-00), cartão dentro do
 site (Card Payment Brick), prazo na compra, motivo do erro só nas Falhas, **vantagem do Pix**
@@ -2523,6 +2520,20 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   (`#falha-faixa`) saiu de baixo e virou o mesmo push vermelho do alto. "De R$ 20 a R$ 5.000"
   não quebra mais no meio do valor. Sem SQL. Testes: `erros-no-push.js` (novo, 12) e `falhas`
   ajustado, sem falha; bateria completa de 20/11 (até a 307): 2.703 verificações, nenhuma falha (as 5 do `painel-admin` e do `tempo` vinham dos cliques guardados, desfeito).
+- **308 (20/11) — a revisão de design** ("pode fazer todas as 6, mas quando tiver um número
+  grande de abrir a ficha é legal aparecer"). (1) Comprar créditos e assinar: as partes sem número
+  ("Comprador", "Valor", "Forma de pagamento"); os números ficam só nas etapas do alto, como o
+  checkout da Stripe e da Apple. (2) Cartão recusado sem motivo: "Cartão recusado pelo banco.
+  Tente outro cartão ou pague com Pix." (antes, "Cartão não aprovado: o cartão foi recusado").
+  (3) Abaixo de 50 m (`BEM_PERTO_KM`), "bem perto" no lugar de "0 m" ("Bem perto de você" na
+  ficha e na lista; "bem perto de onde você buscou" no Sobre a academia). (4) O "Jogou numa
+  dessas academias?" (`conviteParaConta`) só para quem já chamou uma academia, como o Airbnb pede
+  a avaliação depois da estadia (antes, bastava ver uma ficha). (5) O botão fixo "Chamar no
+  WhatsApp" da ficha sem o anel dourado. (6) Números do Parceiros e do Sobre: a porcentagem só
+  quando passa de 30% (`PORCENTAGEM_QUE_VENDE`); abaixo disso, o número de vezes ("+1.300 fichas
+  de academias abertas", "+200 contatos com as academias"), como o Google Meu Negócio. Sem SQL.
+  Testes: `erros-no-push` (14), `acabamento`, `ver-no-mapa`, `ficha-hoteis`, `contatos-e-cadastro`,
+  `convite-conta`, `viagem`, `plano-e-creditos` e `sobre`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

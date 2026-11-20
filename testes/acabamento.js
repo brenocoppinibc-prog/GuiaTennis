@@ -38,10 +38,10 @@ const { abrir, ok } = require('./harness');
   }));
   ok(r.igual, 'regra 281: nos resultados, a mesma caixa da inicial (onde, o que procura e "Buscar academias")');
   ok(!r.linha.includes('A partir de Pinheiros, São Paulo') && !r.sub, 'regra 289: o "a partir de" não repete o lugar que já está no campo — ' + r.linha + r.sub);
-  ok(r.distancia === '0 m de você', 'regra 271: a distância exata ("0 m de você") — ' + r.distancia);
-  ok(r.linhas.join('|') === 'Pinheiros, São Paulo|0 m de você|2 quadras de saibro', 'regra 283: onde, distância e quadras em linhas separadas — ' + r.linhas.join('|'));
-  r = await page.evaluate(() => [distanceText(0.04), distanceText(0.347), distanceText(1.26)]);
-  ok(r.join('|') === '40 m|347 m|1,3 km', 'distâncias exatas — ' + r.join('|'));
+  ok(r.distancia === 'Bem perto de você', 'regra 308: abaixo de 50 m, "Bem perto de você" em vez de "0 m" — ' + r.distancia);
+  ok(r.linhas.join('|') === 'Pinheiros, São Paulo|Bem perto de você|2 quadras de saibro', 'regra 283: onde, distância e quadras em linhas separadas — ' + r.linhas.join('|'));
+  r = await page.evaluate(() => [distanceText(0.04), distanceText(0.05), distanceText(0.347), distanceText(1.26)]);
+  ok(r.join('|') === 'bem perto|50 m|347 m|1,3 km', 'distâncias exatas — ' + r.join('|'));
 
   // Regra 289: em cima, o total de um lado e "Ordenar" e "Filtros" do outro;
   // embaixo, "Salvar busca" de um lado e "Compartilhar" do outro; sem filtros rápidos.

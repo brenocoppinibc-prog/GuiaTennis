@@ -279,7 +279,6 @@
   .pc-nota-botoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   .pc-checkout-bloco:first-child { padding-top: 0; border-top: 0; }
   .pc-checkout-bloco-t { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 16px; font-weight: 600; }
-  .pc-checkout-n { width: 22px; height: 22px; border-radius: 50%; background: #1C2024; color: #fff; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
   .pc-checkout-valores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .pc-checkout-formas { display: grid; gap: 10px; }
   .pc-checkout-opcao { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 14px; border: 1px solid #DCDFE4; border-radius: 8px; background: #fff; color: #1C2024; font: inherit; text-align: left; cursor: pointer; }
@@ -3184,12 +3183,13 @@
   .ficha-problema p { margin: 0 0 12px; font-size: 15px; font-weight: 700; }
   .ht-bt-contorno { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 30px; border: 1px solid var(--text); border-radius: 999px; background: var(--card); font: 500 17px var(--fonte-texto); color: var(--text); cursor: pointer; }
 
-  /* Barra de baixo: o valor à esquerda e o botão com o anel dourado. */
+  /* Barra de baixo: o valor à esquerda e o botão verde (regra 308: sem o anel
+     dourado, como o "Reservar" do Airbnb). */
   .court-cta { align-items: center; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); border-top: 0; border-radius: 16px 16px 0 0; box-shadow: 0 -6px 22px rgba(33,31,26,0.10); }
   .court-cta-val { font-size: 22px; }
   .court-cta-val.sem-valor { font-size: 18px; }
   .court-cta-unit { font-size: 13px; color: var(--text); }
-  .court-cta .cta-btn.cta-primary { flex: 0 0 auto; width: auto; margin-left: auto; min-height: 50px; padding: 0 22px; border-radius: 999px; font-size: 16px; box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--gold); }
+  .court-cta .cta-btn.cta-primary { flex: 0 0 auto; width: auto; margin-left: auto; min-height: 50px; padding: 0 22px; border-radius: 999px; font-size: 16px; box-shadow: none; }
 
   /* Barra de cima da ficha sem o nome, nem descendo, e quase transparente
      (pedido do Breno em 26/10/2026: "deixe ela com pouca diferença de cor na
@@ -14050,7 +14050,7 @@ function pcCreditos() {
       </div>`;
   else if (carregandoNota || pedeDados) principal = `
       <div class="pc-checkout-bloco" id="pc-nota">
-        <p class="pc-checkout-bloco-t"><span class="pc-checkout-n">1</span> Dados do comprador</p>
+        <p class="pc-checkout-bloco-t">Dados do comprador</p>
         ${carregandoNota ? `<p class="pc-card-s">${bolaGirando(13)} Carregando…</p>` : camposDaNota()}
       </div>
       ${k.erro ? `<p class="form-error">${icon('warning', 14)} ${esc(k.erro)}</p>` : ""}
@@ -14067,11 +14067,11 @@ function pcCreditos() {
     principal = `
       ${nota && nota.dados ? `
       <div class="pc-checkout-bloco pc-checkout-comprador" id="pc-nota">
-        <p class="pc-checkout-bloco-t"><span class="pc-checkout-n">1</span> Comprador</p>
+        <p class="pc-checkout-bloco-t">Comprador</p>
         ${resumoDaNota(nota.dados)}
       </div>` : ""}
       <div class="pc-checkout-bloco">
-        <p class="pc-checkout-bloco-t"><span class="pc-checkout-n">2</span> ${plano ? "Período" : "Valor"}</p>
+        <p class="pc-checkout-bloco-t">${plano ? "Período" : "Valor"}</p>
         ${plano ? `
         <div class="pc-checkout-formas" role="radiogroup" aria-label="Período">
           ${opcao("data-compra-periodo", "mensal", periodo === "mensal", `Mensal · R$ ${esc(valorDoPlano(k.plano, "mensal"))}`, "Por mês")}
@@ -14084,7 +14084,7 @@ function pcCreditos() {
         ${k.outro ? `<div class="pc-ads-moeda pc-checkout-outro"><span>R$</span><input class="form-field" id="pc-compra-outro" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="Ex.: 150" value="${esc(k.valorOutro || "")}" aria-label="Outro valor, em reais" /></div>` : ""}`}
       </div>
       <div class="pc-checkout-bloco">
-        <p class="pc-checkout-bloco-t"><span class="pc-checkout-n">3</span> Forma de pagamento</p>
+        <p class="pc-checkout-bloco-t">Forma de pagamento</p>
         <div class="pc-checkout-formas" role="radiogroup" aria-label="Forma de pagamento">
           ${opcao("data-compra-forma", "pix", forma === "pix", `${icon('pix', 15, 'currentColor')} Pix`, `${plano ? "5% de desconto" : "5% a mais em créditos"}. Aprovação na hora, com o QR code nesta página.`, `<span class="pc-pix-selo" aria-hidden="true">${plano ? "−5%" : "+5%"}</span>`)}
           ${opcao("data-compra-forma", "cartao", forma === "cartao", "Cartão de crédito", chavePublicaMP() ? "Aqui mesmo, no formulário seguro do Mercado Pago, à vista." : "Na página segura do Mercado Pago, à vista.")}
@@ -14295,8 +14295,9 @@ async function pagarComCartaoNoSite(info, dados, erro) {
   }
   if (d.situacao === "recusada") {
     fecharCartaoNoSite();
-    const motivo = MOTIVOS_DO_CARTAO[d.motivo] || "o cartão foi recusado";
-    compraRecusada({ ...info.base, valorCobrado: info.valor }, `Cartão não aprovado: ${motivo}. Tente outro cartão ou pague com Pix.`);
+    // Regra 308: sem o motivo, a frase não repete "cartão não aprovado: o cartão foi recusado".
+    const motivo = MOTIVOS_DO_CARTAO[d.motivo];
+    compraRecusada({ ...info.base, valorCobrado: info.valor }, motivo ? `Cartão não aprovado: ${motivo}. Tente outro cartão ou pague com Pix.` : "Cartão recusado pelo banco. Tente outro cartão ou pague com Pix.");
     return;
   }
   fecharCartaoNoSite();
@@ -17133,7 +17134,9 @@ function ligarPushesDaConta() {
 }
 
 // Convite para criar a conta, como o "Acesse ainda mais descontos" do
-// trivago: só na home, para quem já usou o site (viu academia ou buscou),
+// trivago: só na home, para quem já chamou uma academia (regra 308: "Jogou numa
+// dessas academias?" só faz sentido depois do contato, como o Airbnb pede a
+// avaliação só depois da estadia),
 // ainda não tem conta e não fechou o convite nos últimos 14 dias. Promete só
 // o que a conta faz hoje.
 const CONVITE_CONTA_KEY = "guiatennis_convite_conta_v1";
@@ -19483,6 +19486,7 @@ function irParaPerguntaDaAjuda(id) {
   const alvo = document.getElementById("pc-faq-" + id);
   if (alvo) window.scrollTo(0, Math.max(0, alvo.getBoundingClientRect().top + window.scrollY - 90));
 }
+const PORCENTAGEM_QUE_VENDE = 0.3;
 function numerosDoSite() {
   const e = state.estatisticas;
   if (!e || (e.acessos_total || 0) < MINIMO_TOTAL) return [];
@@ -19490,14 +19494,19 @@ function numerosDoSite() {
   // desorganizado"): os três no mesmo formato, o número grande e a frase embaixo,
   // como as faixas de números do Booking e do Airbnb para parceiros; a parte de
   // quem abre uma ficha virou porcentagem, igual à dos contatos.
+  // Regra 308 ("quando tiver um número grande de abrir a ficha é legal
+  // aparecer"): a porcentagem só quando é alta (PORCENTAGEM_QUE_VENDE); abaixo
+  // disso, o número de vezes, como o Google Meu Negócio mostra as visualizações.
+  const alta = (parte, todo) => parte && todo && parte / todo >= PORCENTAGEM_QUE_VENDE;
   const quaseTodas = e.fichas_total && e.fichas_total >= e.acessos_total * 0.95;
-  const fichas = e.fichas_total ? (quaseTodas ? "Quase todas" : porcentoRedondo(e.fichas_total, e.acessos_total)) : null;
-  const pct = e.contatos_total && e.fichas_total ? porcentoRedondo(e.contatos_total, e.fichas_total) : null;
-  return [
-    { valor: numeroRedondo(e.acessos_total), rotulo: "visitas ao GuiaTennis" },
-    fichas ? { valor: fichas, rotulo: quaseTodas ? "as visitas abrem a ficha de uma academia" : "das visitas abrem a ficha de uma academia" } : null,
-    pct ? { valor: pct, rotulo: "das fichas abertas viram contato com a academia" } : null,
-  ].filter(Boolean);
+  const fichas = !e.fichas_total ? null
+    : quaseTodas ? { valor: "Quase todas", rotulo: "as visitas abrem a ficha de uma academia" }
+    : alta(e.fichas_total, e.acessos_total) ? { valor: porcentoRedondo(e.fichas_total, e.acessos_total), rotulo: "das visitas abrem a ficha de uma academia" }
+    : { valor: numeroRedondo(e.fichas_total), rotulo: "fichas de academias abertas" };
+  const contatos = !e.contatos_total ? null
+    : alta(e.contatos_total, e.fichas_total) ? { valor: porcentoRedondo(e.contatos_total, e.fichas_total), rotulo: "das fichas abertas viram contato com a academia" }
+    : { valor: numeroRedondo(e.contatos_total), rotulo: "contatos com as academias" };
+  return [{ valor: numeroRedondo(e.acessos_total), rotulo: "visitas ao GuiaTennis" }, fichas, contatos].filter(Boolean);
 }
 
 // "A ideia do GuiaTennis" — pedido do Breno em 14/10/2026: tirar da home dos
@@ -20440,7 +20449,7 @@ function renderHome() {
   // por quê, como funciona, dicas, a ideia e as perguntas (regra 99).
   return `
     ${renderCabecalho()}
-    ${conviteParaConta(recentes.length > 0 || !!ultima || chamadas.length > 0) || conviteViagem()}
+    ${conviteParaConta((chamadas.length > 0 || chamadasDaAba().length > 0) && !window.__conviteChamadas) || conviteViagem()}
 
     ${state.avisoLink ? `<p class="aviso-link">${esc(state.avisoLink)}</p>` : ""}
     <div class="home-hero">
@@ -21221,8 +21230,13 @@ function avatarDoAutor(r) {
   return `<span class="rev-avatar rev-avatar-oculto" aria-hidden="true"><svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="9.3" r="4.3" fill="#fff"/><path d="M3.8 22c.5-4.6 3.9-7.4 8.2-7.4s7.7 2.8 8.2 7.4z" fill="#fff"/></svg></span>`;
 }
 
+// Regra 308: abaixo de 50 m, "bem perto" em vez de "0 m de você" (quando a
+// busca cai no próprio endereço da academia), como o "Aqui" do Google Maps.
+const BEM_PERTO_KM = 0.05;
+function primeiraMaiuscula(t) { return t ? t[0].toUpperCase() + t.slice(1) : t; }
 function distanceText(km) {
   if (typeof km !== "number" || !isFinite(km)) return "";
+  if (km < BEM_PERTO_KM) return "bem perto";
   // Regra 271: a distância exata ("acho legal mostrar a distância exata").
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace(".", ",")} km`;
 }
@@ -21534,7 +21548,7 @@ function renderCard(c, badge) {
                cidade e distância"): uma linha para onde fica, outra para a
                distância e outra para as quadras. */ ""}
           <p class="rcard-line rcard-onde">${esc([c.bairro, c.cidade].filter(Boolean).join(", "))}</p>
-          ${distanceText(c.distanceKm) ? `<p class="rcard-line rcard-dist">${esc(distanceText(c.distanceKm))} de você</p>` : ""}
+          ${distanceText(c.distanceKm) ? `<p class="rcard-line rcard-dist">${esc(primeiraMaiuscula(distanceText(c.distanceKm)))} de você</p>` : ""}
           ${totalQuadras(c) ? `<p class="rcard-line rcard-quadras">${esc(`${totalQuadras(c)} ${plural(totalQuadras(c), "quadra", "quadras")}${(c.pisos || []).length ? " de " + listaPt(rotulosNaOrdem(PISO_OPTS, c.pisos)).toLowerCase() : ""}`)}</p>` : ""}
           ${linhaDoHorario(c)}
           ${c.avisouQueFechouEm ? `<p class="rcard-line rcard-fechou"><span class="ico">${icon('warning', 13, 'var(--red)')}</span><span>A academia avisou que fechou</span></p>` : ""}
@@ -22601,7 +22615,7 @@ function descricaoAcademia(c, todas) {
   const frases = [];
   const local = [c.bairro, c.cidade].filter(Boolean).join(", ");
   const dist = distanceText(c.distanceKm);
-  if (local) frases.push(`${c.name} fica em ${local}${dist ? `, a ${dist} de onde você buscou` : ""}.`);
+  if (local) frases.push(`${c.name} fica em ${local}${dist ? (c.distanceKm < BEM_PERTO_KM ? ", bem perto de onde você buscou" : `, a ${dist} de onde você buscou`) : ""}.`);
 
   const total = totalQuadras(c);
   if (total) frases.push(textoQuadras(c));
@@ -24088,7 +24102,7 @@ function renderCourtPage(c) {
               <h2 class="court-name display">${esc(c.name)}${seloDaAcademia(c, 22, true)}</h2>
               ${ehPublica(c) ? `<p class="ht-publica">${icon('pin', 14, 'var(--green)')} Quadra pública · grátis</p>` : ""}
               <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</p>
-              ${dist ? `<p class="court-addr court-dist">${esc(dist)} de você</p>` : ""}
+              ${dist ? `<p class="court-addr court-dist">${esc(primeiraMaiuscula(dist))} de você</p>` : ""}
               <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button></p>
               <button type="button" class="ht-score" id="ir-avaliacoes">
                 ${c.appCount ? `<span class="ht-score-num">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : ""}

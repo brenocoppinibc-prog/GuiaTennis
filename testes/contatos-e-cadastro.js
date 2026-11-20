@@ -56,7 +56,9 @@ const { abrir, ok } = require('./harness');
   ok(r.bts.join() === 'Corrigir' && r.saiu && r.dois.join() === 'Alterar,Seguir' && r.feito === 'corrigir+seguir', 'o aviso com "Corrigir"; sem valor, "Alterar" ou "Seguir" — ' + JSON.stringify(r));
   // Regra 293: os números do Parceiros e do Sobre no mesmo formato (o número e a frase).
   r = await page.evaluate(() => { state.estatisticas = { ...(state.estatisticas || {}), acessos_total: 5230, fichas_total: 1310, contatos_total: 200 }; return numerosDoSite().map(n => n.valor + ' ' + n.rotulo); });
-  ok(r.join(' | ') === '+5.000 visitas ao GuiaTennis | 25% das visitas abrem a ficha de uma academia | 15% das fichas abertas viram contato com a academia', 'os números sem o "1 em cada": porcentagem, como o dos contatos — ' + r.join(' | '));
+  ok(r.join(' | ') === '+5.000 visitas ao GuiaTennis | +1.300 fichas de academias abertas | +200 contatos com as academias', 'regra 308: porcentagem baixa vira o número de vezes — ' + r.join(' | '));
+  r = await page.evaluate(() => { state.estatisticas = { ...state.estatisticas, acessos_total: 5230, fichas_total: 2100, contatos_total: 700 }; return numerosDoSite().map(n => n.valor + ' ' + n.rotulo); });
+  ok(r.join(' | ') === '+5.000 visitas ao GuiaTennis | 40% das visitas abrem a ficha de uma academia | 35% das fichas abertas viram contato com a academia', 'regra 308: porcentagem alta (30% ou mais) aparece — ' + r.join(' | '));
   await browser.close();
 
   // ---- Pagamento: "Outro valor" e "Pagamento seguro" ----

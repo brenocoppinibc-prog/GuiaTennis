@@ -37,6 +37,13 @@ const push = (page) => page.evaluate(() => { const e = document.querySelector('.
   ok(p && p.origem === 'cartao' && await page.evaluate(() => !document.getElementById('pc-cartao-erro')), 'cartão no site: o erro no push, e a folha sem o texto vermelho');
   await page.evaluate(() => fecharCartaoNoSite());
   ok(!(await push(page)), 'fechou a folha do cartão: o erro dela sai junto');
+  // Regra 308: cartão recusado sem o motivo, sem repetir "o cartão foi recusado".
+  await page.evaluate(async () => { window.chamarPagamento = async () => ({ status: 200, d: { situacao: 'recusada' } }); await pagarComCartaoNoSite({ base: { tipo: 'creditos' }, compra: 'x', valor: 50 }, {}, () => {}); });
+  await page.waitForTimeout(150);
+  ok((await push(page) || {}).t === 'Cartão recusado pelo banco. Tente outro cartão ou pague com Pix.', 'regra 308: recusado sem motivo — "Cartão recusado pelo banco…"');
+  // Regra 308: as partes da compra sem número (os números ficam só nas etapas do alto).
+  const partes = await page.evaluate(() => [...document.querySelectorAll('#app .pc-checkout-bloco-t')].map(p => p.innerText.trim()).concat(document.querySelector('.pc-checkout-n') ? ['NUMERO'] : []));
+  ok(partes.includes('Comprador') && partes.includes('Valor') && partes.includes('Forma de pagamento') && !partes.includes('NUMERO'), 'regra 308: "Comprador", "Valor" e "Forma de pagamento" sem número — ' + partes.join(' | '));
   await browser.close();
 
   // ---- o jogador: senha errada, no push; o aviso com botão fica na tela ----

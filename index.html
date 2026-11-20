@@ -13919,10 +13919,24 @@ function pcCreditos() {
     </section>`;
   let principal = "";
   if (k.passo === "teste") principal = `<div class="pc-checkout-bloco pc-compra" id="pc-compra">${pcGatewayDeTeste(k)}</div>`;
+  else if (k.passo === "volta" && k.esgotado) principal = `
+      <div class="pc-checkout-bloco" id="pc-compra">
+        <p class="pc-checkout-bloco-t">O pagamento ainda não foi confirmado</p>
+        <p class="pc-card-s">O Mercado Pago ainda está analisando o cartão. Se for aprovado, ${muda} sozinho e a compra aparece em Pagamentos. Nada é cobrado sem a aprovação.</p>
+        <button type="button" class="cta-btn cta-primary pc-checkout-pagar" data-compra-conferir>Conferir de novo</button>
+        <button type="button" class="cta-btn cta-secondary pc-checkout-pagar" data-compra-recomecar>Pagar de outro jeito</button>
+      </div>`;
   else if (k.passo === "volta") principal = `
       <div class="pc-checkout-bloco" id="pc-compra">
         <p class="pc-checkout-bloco-t">Conferindo o pagamento</p>
         <p class="pc-checkout-espera">${bolaGirando(14)} Assim que o Mercado Pago confirmar, ${muda}. Pode levar alguns segundos.</p>
+      </div>`;
+  else if (k.passo === "pix" && k.esgotado) principal = `
+      <div class="pc-checkout-bloco" id="pc-compra">
+        <p class="pc-checkout-bloco-t">O código Pix venceu</p>
+        <p class="pc-card-s">Se você pagou antes de vencer, ${muda} sozinho. Se não pagou, gere outro código.</p>
+        <button type="button" class="cta-btn cta-primary pc-checkout-pagar" data-compra-recomecar>Gerar outro Pix</button>
+        <button type="button" class="cta-btn cta-secondary pc-checkout-pagar" data-compra-conferir>Já paguei: conferir</button>
       </div>`;
   else if (k.passo === "desligado") principal = plano ? `
       <div class="pc-checkout-bloco" id="pc-compra">
@@ -14021,8 +14035,12 @@ async function continuarDosDados() {
   render();
   window.scrollTo(0, 0);
 }
-async function chamarPagamento(acao, compra, extra = {}) {
-  const r = await fetch("/.netlify/functions/pagamento", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...extra, acao, compra }) });
+async function chamarPagamento(acao, compra, extra = {}, segundos = 30) {
+  const parar = new AbortController();
+  const relogio = setTimeout(() => parar.abort(), segundos * 1000);
+  let r;
+  try { r = await fetch("/.netlify/functions/pagamento", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...extra, acao, compra }), signal: parar.signal }); }
+  finally { clearTimeout(relogio); }
   let d = {};
   try { d = await r.json(); } catch { /* resposta vazia */ }
   return { status: r.status, d };
@@ -14135,7 +14153,16 @@ async function abrirCartaoNoSite(info) {
   document.body.appendChild(folha);
   folha.querySelector(".pc-cartao-fechar").addEventListener("click", fecharCartaoNoSite);
   const erro = (t) => { const e = document.getElementById("pc-cartao-erro"); if (e) e.textContent = t; };
-  const falhou = "Não consegui abrir o formulário do cartão. Tente de novo ou pague com Pix.";
+  const falhou = "Não consegui abrir o formulário do cartão. Feche e tente de novo, ou pague com Pix.";
+  // Regra 302: o formulário tem 20 segundos para abrir; depois, a folha diz o que fazer.
+  let pronto = false;
+  setTimeout(() => {
+    if (pronto || !document.getElementById("pc-cartao-folha")) return;
+    erro(falhou);
+    const lugar = document.getElementById("pc-cartao-brick");
+    if (lugar && !lugar.querySelector("iframe, form, input")) lugar.innerHTML = "";
+    diag("cartão no site: o formulário não abriu em 20 segundos");
+  }, 20000);
   if (!(await carregarSdkMercadoPago())) { erro(falhou); diag("cartão no site: o SDK do Mercado Pago não carregou"); return; }
   try {
     const mp = new window.MercadoPago(chavePublicaMP(), { locale: "pt-BR" });
@@ -14146,7 +14173,7 @@ async function abrirCartaoNoSite(info) {
         visual: { texts: { formSubmit: `Pagar ${emReais(info.valor)}` }, style: { theme: "default", customVariables: { baseColor: "#1F4D3A" } } },
       },
       callbacks: {
-        onReady: () => {},
+        onReady: () => { pronto = true; erro(""); },
         onError: (e) => { diag("cartão no site: " + (e && (e.message || e.type) || "erro")); },
         onSubmit: (dados) => pagarComCartaoNoSite(info, dados, erro),
       },
@@ -14160,9 +14187,18 @@ async function pagarComCartaoNoSite(info, dados, erro) {
   erro("");
   const c = minhaAcademia();
   let r;
-  try { r = await chamarPagamento("cartao", info.compra, { cartao: dados }); }
+  try { r = await chamarPagamento("cartao", info.compra, { cartao: dados }, 40); }
   catch { r = { status: 0, d: {} }; }
   const { status, d } = r;
+  // Sem resposta em 40 segundos: o pagamento pode ter entrado. Em vez de deixar
+  // pagar de novo, a tela confere pelo Mercado Pago (com o prazo de 3 minutos).
+  if (status === 0) {
+    fecharCartaoNoSite();
+    state.pcCompra = { ...info.base, passo: "volta", compra: info.compra, valorCobrado: info.valor, inicio: Date.now() };
+    render();
+    esperarPagamento();
+    return;
+  }
   if (status !== 200) {
     if (status === 409) { fecharCartaoNoSite(); compraRecusada({ ...info.base, valorCobrado: info.valor }, "Essa compra já foi encerrada. Toque em pagar de novo."); return; }
     erro("Não consegui falar com o Mercado Pago agora. Confira os dados e tente de novo.");
@@ -14243,7 +14279,13 @@ function esperarPagamento() {
   clearTimeout(window.__pcCompraTimer);
   const k = state.pcCompra;
   if (!k || !k.compra || !["pix", "volta"].includes(k.passo)) return;
-  if (Date.now() - (k.inicio || Date.now()) > 35 * 60 * 1000) return;
+  // Regra 302 ("dê um limite para a compra e não ficar sempre esperando"): o
+  // cartão confere por 3 minutos; o Pix, até o código vencer (30 minutos). Depois,
+  // a tela diz o que aconteceu, com "Conferir de novo" e "Pagar de outro jeito".
+  const prazo = k.passo === "pix"
+    ? Math.max(60 * 1000, (Date.parse((k.pix || {}).expira || "") || ((k.inicio || Date.now()) + 30 * 60 * 1000)) - (k.inicio || Date.now()) + 60 * 1000)
+    : 3 * 60 * 1000;
+  if (Date.now() - (k.inicio || Date.now()) > prazo) { k.esgotado = true; render(); return; }
   window.__pcCompraTimer = setTimeout(async () => {
     const c = minhaAcademia();
     const atual = state.pcCompra;
@@ -16747,6 +16789,19 @@ function ligarEventosParceiros() {
   if (pcComprar) pcComprar.onclick = abrirCreditos;
   document.querySelectorAll("[data-comprar-creditos]").forEach(el => { el.onclick = abrirCreditos; });
   ["pc-creditos-voltar", "pc-creditos-fechar", "pc-creditos-concluir"].forEach(id => { const el = document.getElementById(id); if (el) el.onclick = voltarDosCreditos; });
+  document.querySelectorAll("[data-compra-conferir]").forEach(el => { el.onclick = () => {
+    const k = state.pcCompra; if (!k) return;
+    k.esgotado = false; k.inicio = Date.now();
+    if (k.passo === "pix") k.pix = { ...(k.pix || {}), expira: new Date(Date.now() + 2 * 60 * 1000).toISOString() };
+    render(); esperarPagamento();
+  }; });
+  document.querySelectorAll("[data-compra-recomecar]").forEach(el => { el.onclick = () => {
+    const k = state.pcCompra; if (!k) return;
+    clearTimeout(window.__pcCompraTimer);
+    compraRecusada(k, "-");
+    state.pcCompra.erro = "";
+    render();
+  }; });
   const pcSeguro = document.getElementById("pc-pagamento-seguro");
   if (pcSeguro) pcSeguro.onclick = () => { state.pcSeguroAberto = !state.pcSeguroAberto; render(); };
   const pcSeguroOk = document.getElementById("pc-seguro-ok");

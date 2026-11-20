@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 19/11/2026 (regra 301)
+**Atualizado em:** 20/11/2026 (regra 302)
 
 | | |
 |---|---|
@@ -2429,6 +2429,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Testes: `plano-e-creditos` (52, com o Mercado Pago de mentira: a folha fora do `#app`, o
   token sem o número, recusado com o motivo, aprovado, e sem a chave a página do Mercado Pago;
   a lista do admin passou a usar datas de ontem, porque a data fixa de 19/10 saiu dos 30 dias).
+- **302 (20/11) — prazo na compra, sem esperar para sempre** ("dê um limite para a compra ser
+  realizada e não ficar sempre em esperando o cartão"). O formulário do cartão tem **20
+  segundos** para abrir (senão: "Não consegui abrir o formulário do cartão. Feche e tente de
+  novo, ou pague com Pix."); o pedido de pagamento, **40 segundos** (sem resposta, não deixa
+  pagar de novo: vai para "Conferindo o pagamento", que acha o pagamento pelo Mercado Pago);
+  "Conferindo o pagamento" do cartão, **3 minutos**, e depois "O pagamento ainda não foi
+  confirmado… Nada é cobrado sem a aprovação" com **"Conferir de novo"** e **"Pagar de outro
+  jeito"**; o **Pix**, até o código vencer (30 minutos), e depois "O código Pix venceu" com
+  **"Gerar outro Pix"** e **"Já paguei: conferir"** (`esperarPagamento`, `k.esgotado`,
+  `data-compra-conferir`, `data-compra-recomecar`; `chamarPagamento` com tempo-limite). Sem SQL.
+  Testes: `compra-com-prazo.js` (novo, 6), `plano-e-creditos` (52) e `dados-para-nota` (29),
+  sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

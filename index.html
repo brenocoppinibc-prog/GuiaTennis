@@ -14006,7 +14006,7 @@ function pcCreditos() {
           ${opcao("data-compra-forma", "cartao", forma === "cartao", "Cartão de crédito", chavePublicaMP() ? "Aqui mesmo, no formulário seguro do Mercado Pago, à vista." : "Na página segura do Mercado Pago, à vista.")}
         </div>
       </div>
-      ${k.erro ? `<p class="form-error">${icon('warning', 14)} ${esc(k.erro)}</p>${k.erroTecnico ? `<p class="footnote">Detalhe técnico (só no site de teste): ${esc(k.erroTecnico)}</p>` : ""}` : ""}
+      ${k.erro ? `<p class="form-error">${icon('warning', 14)} ${esc(k.erro)}</p>` : ""}
       <button type="button" class="cta-btn cta-primary pc-checkout-pagar" id="pc-compra-pagar" ${k.enviando ? "disabled" : ""}>${k.enviando ? bolaGirando(15) + " Abrindo o pagamento…" : forma === "pix" ? `Pagar com Pix${valor ? ` · ${emReais(valor)}` : ""}` : chavePublicaMP() ? `Pagar com cartão${valor ? ` · ${emReais(valor)}` : ""}` : `Ir para o Mercado Pago${valor ? ` · ${emReais(valor)}` : ""}`}</button>
       <p class="pc-checkout-seguro-nota">${icon('cadeado', 13, 'currentColor')} Pagamento processado pelo Mercado Pago, com o CPF ou CNPJ do comprador. O GuiaTennis não vê os dados do cartão.${pagamentoDeTeste() ? " No site de teste, sem o Mercado Pago ligado, o pagamento é de teste e nada é cobrado." : ""}</p>`;
   }
@@ -14056,7 +14056,7 @@ async function pagarCompra() {
   const valor = plano ? valorDoPlano(k.plano, periodo) : k.outro ? Number(k.valorOutro || 0) : Number(k.valor || 100);
   const forma = k.forma || "pix";
   if (!plano && (!Number.isInteger(valor) || valor < 20 || valor > 5000)) { k.erro = "Escolha um valor de R$ 20 a R$ 5.000, em reais inteiros."; render(); return; }
-  k.erro = ""; k.erroTecnico = ""; k.enviando = true; render();
+  k.erro = ""; k.enviando = true; render();
   // Regra 232: os dados do comprador são a primeira parte da compra.
   await carregarDadosParaNota({ semRender: true });
   const nota = notaDaAcademia();
@@ -14098,8 +14098,6 @@ async function pagarCompra() {
     k.enviando = false;
     if (/dados para a nota fiscal/.test(String(e && e.message || ""))) state.pcNota = { academia: c.id, dados: null };
     k.erro = /R\$ 20|Pix ou cartão|Completo e do Premium|não administra|responsável principal|já está nesse plano|dados para a nota fiscal/.test(String(e && e.message || "")) ? e.message : falhou("abrir o pagamento", e, { texto: "Não foi possível abrir o pagamento agora. Tente de novo em instantes.", academia: c.id });
-    // Só no site de teste (prévia), o motivo técnico aparece embaixo, para o print.
-    k.erroTecnico = NO_SITE_DE_TESTE ? String((e && (e.detalhe || e.message)) || "").slice(0, 240) : "";
     render();
   }
 }

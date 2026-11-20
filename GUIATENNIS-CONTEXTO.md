@@ -2444,8 +2444,8 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
 - **303 (20/11) — o motivo do erro do pagamento** (o Breno recebeu "Não foi possível abrir o
   pagamento agora", código M8TMP9, na prévia; daqui não se alcança a prévia nem o banco). A
   função devolve o motivo técnico em `detalhe` (status e mensagem do banco ou do Mercado Pago,
-  sem chave), que vai para as Falhas do admin e, **só no site de teste**, aparece embaixo do
-  erro ("Detalhe técnico (só no site de teste): …"). A chave do Supabase do tipo novo
+  sem chave), que vai só para as Falhas do admin (o Breno não quer o motivo na tela: "não quero
+  que mostre qual está sendo o erro"). A chave do Supabase do tipo novo
   (`sb_secret_…`) vai só no `apikey`; a "service_role" antiga (JWT) continua também no
   `Authorization`. Teste: `plano-e-creditos` (52), sem falha.
 

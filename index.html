@@ -359,6 +359,16 @@
   .gt-push-acao .gt-push-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .gt-push-ver { text-decoration: underline; text-underline-offset: 2px; font-weight: 700; }
   .gt-push-x { flex-shrink: 0; padding: 4px 6px; border: 0; background: none; color: rgba(255,255,255,.8); font: inherit; cursor: pointer; }
+  /* Regra 307: o erro no push vermelho, fixo até o ✕ ou até o erro sair da tela. */
+  .gt-push.erro, .falha-faixa { background: var(--red); color: #fff; }
+  .sem-quebra { white-space: nowrap; }
+  .gt-push.erro .gt-push-tempo { display: none; }
+  .gt-push.erro .gt-escolha-bts button.principal { color: var(--red); }
+  .gt-erro .gt-push-t { min-width: 0; }
+  .gt-erro-ver { margin-left: 6px; padding: 0; border: 0; background: none; color: #fff; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .gt-erro .falha-ajuda, .falha-faixa .falha-ajuda { display: block; margin-top: 3px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,.9); }
+  .gt-erro .falha-link, .falha-faixa .falha-link { color: #fff; }
+  .erro-no-push { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   .gt-push.gt-dica { align-items: flex-start; width: 420px; max-width: calc(100vw - 32px); padding: 13px 10px 13px 14px; }
   .gt-dica-txt { flex: 1; min-width: 0; }
   .gt-dica-t { margin: 3px 0 0; font-size: 15px; font-weight: 700; }
@@ -2056,8 +2066,6 @@
   .pc-cartao-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .pc-cartao-fechar { background: none; border: none; color: var(--text); font-size: 18px; width: 34px; height: 34px; cursor: pointer; }
   .pc-cartao-s { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; color: var(--muted); margin: 4px 0 10px; }
-  .pc-cartao-erro { color: var(--red); font-size: 14px; margin: 0 0 8px; }
-  .pc-cartao-erro:empty { display: none; }
   @media (min-width: 700px) { .pc-cartao-folha { align-items: center; } .pc-cartao-caixa { border-radius: 18px; } }
   .sitefooter + .rodape-faixa { margin-top: 0; }
   .sitefooter { box-shadow: 0 0 0 100vmax var(--bg-alt); clip-path: inset(0 -100vmax); }
@@ -2958,15 +2966,16 @@
   .pc-saiba-mais { color: var(--green); font-weight: 600; text-decoration: underline; white-space: nowrap; }
   .falha-ajuda { display: block; margin-top: 4px; font-size: 13px; line-height: 1.4; color: var(--muted); }
   .falha-link { border: 0; background: none; padding: 0; font: inherit; color: var(--green); font-weight: 600; text-decoration: underline; cursor: pointer; }
-  .falha-faixa { position: fixed; left: 12px; right: 12px; bottom: 16px; margin: 0 auto; max-width: 440px; z-index: 9000; display: flex; gap: 10px; align-items: flex-start; background: var(--card); border: 1px solid var(--border); border-left: 5px solid var(--red); border-radius: 16px; padding: 12px 36px 12px 12px; box-shadow: var(--shadow-lg); color: var(--text); font-family: inherit; animation: pushEntra 0.3s ease-out; }
-  .falha-faixa-ic { color: var(--red); line-height: 0; margin-top: 1px; }
+  /* Regra 307: a falha sem aviso na tela sai no mesmo push vermelho do alto (antes, uma faixa embaixo). */
+  .falha-faixa { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: 420px; max-width: calc(100vw - 32px); z-index: 4000; display: flex; gap: 10px; align-items: flex-start; border-radius: 16px; padding: 13px 40px 13px 14px; box-shadow: var(--shadow-lg); font-family: inherit; animation: gt-push-entra .32s ease-out; }
+  .falha-faixa-ic { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.18); color: #fff; line-height: 0; }
   .falha-faixa-txt { flex: 1; min-width: 0; }
-  .falha-faixa-t { margin: 0; font-size: 14px; line-height: 1.4; font-weight: 600; }
+  .falha-faixa-t { margin: 3px 0 0; font-size: 14px; line-height: 1.4; font-weight: 600; }
   .falha-faixa-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .falha-faixa-bt { display: inline-block; border: 1px solid var(--border); background: var(--card); color: var(--green); border-radius: 12px; padding: 7px 12px; font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
-  .falha-faixa-bt.forte { background: var(--green); border-color: var(--green); color: #fff; }
-  .falha-faixa-cod { margin: 8px 0 0; font-size: 12px; color: var(--muted); letter-spacing: 0.02em; }
-  .falha-faixa-fechar { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border: 0; background: none; color: var(--muted); font-size: 15px; cursor: pointer; }
+  .falha-faixa-bt { display: inline-block; border: 1px solid rgba(255,255,255,.5); background: none; color: #fff; border-radius: 10px; padding: 7px 12px; font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .falha-faixa-bt.forte { background: #fff; border-color: #fff; color: var(--red); }
+  .falha-faixa-cod { margin: 8px 0 0; font-size: 12px; color: rgba(255,255,255,.85); letter-spacing: 0.02em; }
+  .falha-faixa-fechar { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border: 0; background: none; color: rgba(255,255,255,.85); font-size: 15px; cursor: pointer; }
   @media (prefers-reduced-motion: reduce) { .falha-faixa { animation: none; } }
   /* Janela aberta = tela fechada nela (pedido do Breno em 13/10/2026: "não
      quero que a tela de cadastro seja assim superficial, nem do email para
@@ -4827,57 +4836,42 @@ async function lerRespostas() {
   } catch { return {}; }
 }
 
+// Regra 307 ("o site está lento de novo"): tudo vai junto ao banco e a tela
+// espera só a resposta mais lenta, em vez de seis ou doze idas e voltas em
+// fila. Os cliques do admin (até 20 mil linhas) são lidos no máximo a cada
+// 10 minutos: aprovar ou editar uma academia não os baixa de novo.
 async function loadEverything() {
-  const { data: published, error: erroAcademias } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'), COLUNAS_ACADEMIA_NOVAS);
+  const [{ data: published, error: erroAcademias }, minhaR, pendR, , reviewsR, respostas, , contatos] = await Promise.all([
+    lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'), COLUNAS_ACADEMIA_NOVAS),
+    temAcademia() ? lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('id', contaAcademia.academiaId), COLUNAS_ACADEMIA_NOVAS) : null,
+    isAdmin ? lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'pending').order('created_at'), COLUNAS_ACADEMIA_NOVAS) : null,
+    carregarEstatisticasPublicas(),
+    lerPublico('avaliacoes', COLUNAS_AVALIACAO_PUBLICAS, q => q.order('created_at', { ascending: false }), ["autor_oculto", "editada_em"]),
+    lerRespostas(),
+    carregarPromocoes(),
+    isAdmin ? lerContatosPrivados() : [],
+    isAdmin ? carregarAcessos() : null,
+    isAdmin ? carregarCliquesDoAdmin() : (cliquesLidosEm = 0, null),
+  ]);
   // A academia que avisou que fechou fica fora do site (regra 157): o banco
   // já a pausa (SQL 20261026180000); aqui, o mesmo vale com o banco antigo.
   state.allCourts = (published || []).map(mapRow).filter(c => isAdmin || !c.avisouQueFechouEm);
   diag(`academias lidas: ${state.allCourts.length}${erroAcademias ? ` · o banco recusou: ${erroAcademias.message}` : ""}`);
 
   // A academia logada lê a própria ficha mesmo pausada ou em análise.
-  state.minhaAcademia = null;
-  if (temAcademia()) {
-    const { data: minha } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('id', contaAcademia.academiaId), COLUNAS_ACADEMIA_NOVAS);
-    state.minhaAcademia = minha && minha[0] ? mapRow(minha[0]) : null;
-  }
+  const minha = minhaR && minhaR.data;
+  state.minhaAcademia = minha && minha[0] ? mapRow(minha[0]) : null;
+  state.pending = isAdmin ? ((pendR && pendR.data) || []).map(mapRow) : [];
 
-  if (isAdmin) {
-    const { data: pend } = await lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'pending').order('created_at'), COLUNAS_ACADEMIA_NOVAS);
-    state.pending = (pend || []).map(mapRow);
-
-    const { data: clicks } = await sb.from('cliques').select('*').order('created_at', { ascending: false }).limit(20000);
-    state.clicksRaw = clicks || [];
-    // Sem as colunas da busca, a gravação cai para uma versão sem elas e o
-    // admin fica sem saber. Aqui ele fica sabendo, com o SQL.
-    state.faltaSqlCliques = "";
-    for (const coluna of ["detalhe", "cep", "lat", "origem"]) {
-      const { error: semColuna } = await sb.from('cliques').select(coluna).limit(1);
-      if (semColuna) { state.faltaSqlCliques = coluna; break; }
-    }
-    const clicksCache = {};
-    (clicks || []).forEach(c => {
-      if (!clicksCache[c.academia_id]) clicksCache[c.academia_id] = { whatsapp: 0, site: 0, instagram: 0 };
-      clicksCache[c.academia_id][c.tipo] = (clicksCache[c.academia_id][c.tipo] || 0) + 1;
-    });
-    state.clicksCache = clicksCache;
-  } else {
-    state.pending = [];
-  }
-
-  await carregarEstatisticasPublicas();
-
-  const { data: reviews } = await lerPublico('avaliacoes', COLUNAS_AVALIACAO_PUBLICAS, q => q.order('created_at', { ascending: false }), ["autor_oculto", "editada_em"]);
-  const respostas = await lerRespostas();
+  const reviews = reviewsR && reviewsR.data;
   const reviewsCache = {};
   (reviews || []).forEach(r => {
     if (!reviewsCache[r.academia_id]) reviewsCache[r.academia_id] = [];
     reviewsCache[r.academia_id].push({ id: r.id, stars: r.stars, comment: r.comment, nome_autor: r.nome_autor, autor_oculto: !!r.autor_oculto, contato_autor: r.contato_autor, ts: r.created_at, editadaEm: r.editada_em || null, resposta: respostas[r.id] || null });
   });
   state.reviewsCache = reviewsCache;
-  await carregarPromocoes();
 
   if (isAdmin) {
-    const contatos = await lerContatosPrivados();
     const porId = {};
     contatos.forEach(x => { porId[x.tabela + ":" + x.id] = x; });
     [...state.allCourts, ...state.pending].forEach(c => {
@@ -4888,8 +4882,26 @@ async function loadEverything() {
       const x = porId["avaliacoes:" + r.id];
       if (x) r.contato_autor = x.contato;
     }));
-    await carregarAcessos();
   }
+}
+let cliquesLidosEm = 0;
+async function carregarCliquesDoAdmin() {
+  if (Date.now() - cliquesLidosEm < 10 * 60000) return;
+  const [{ data: clicks }, ...colunas] = await Promise.all([
+    sb.from('cliques').select('*').order('created_at', { ascending: false }).limit(20000),
+    // Sem as colunas da busca, a gravação cai para uma versão sem elas e o
+    // admin fica sem saber. Aqui ele fica sabendo, com o SQL.
+    ...["detalhe", "cep", "lat", "origem"].map(async coluna => (await sb.from('cliques').select(coluna).limit(1)).error ? coluna : ""),
+  ]);
+  cliquesLidosEm = clicks ? Date.now() : 0;
+  state.clicksRaw = clicks || [];
+  state.faltaSqlCliques = colunas.find(Boolean) || "";
+  const clicksCache = {};
+  (clicks || []).forEach(c => {
+    if (!clicksCache[c.academia_id]) clicksCache[c.academia_id] = { whatsapp: 0, site: 0, instagram: 0 };
+    clicksCache[c.academia_id][c.tipo] = (clicksCache[c.academia_id][c.tipo] || 0) + 1;
+  });
+  state.clicksCache = clicksCache;
 }
 
 // Promoções das academias Premium (pedido de 08/10/2026, SQL
@@ -5328,7 +5340,7 @@ window.addEventListener("online", () => { FALHAS.quedaAnotada = false; mandarFil
 // venda (mostrarDica) só sai pelo ✕: o aviso novo não a tira e desce embaixo dela.
 const PUSH_DURA_MS = 5000;
 function mostrarPush(texto, tipo = "ok", acao) {
-  document.querySelectorAll(".gt-push:not(.gt-dica)").forEach(el => el.remove());
+  document.querySelectorAll(".gt-push:not(.gt-dica):not(.gt-erro)").forEach(el => el.remove());
   const el = document.createElement("div");
   el.className = "gt-push" + (tipo === "ok" ? "" : " " + tipo);
   el.setAttribute("role", "status");
@@ -5374,9 +5386,60 @@ function mostrarEscolha(texto, opcoes) {
   el.innerHTML = `<span class="gt-push-ic">${icon('warning', 15, '#fff')}</span>
     <div class="gt-dica-txt"><p class="gt-dica-t">${esc(texto)}</p><div class="gt-escolha-bts">${opcoes.map((o, i) => `<button type="button" class="${i === 0 ? "principal" : ""}" data-escolha="${i}">${esc(o.t)}</button>`).join("")}</div></div>
     <button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
-  el.querySelector(".gt-push-x").onclick = () => el.remove();
-  el.querySelectorAll("[data-escolha]").forEach(b => { b.onclick = () => { el.remove(); opcoes[Number(b.dataset.escolha)].fn(); }; });
+  el.querySelector(".gt-push-x").onclick = () => { fecharErrosDaTela(); el.remove(); };
+  el.querySelectorAll("[data-escolha]").forEach(b => { b.onclick = () => { fecharErrosDaTela(); el.remove(); opcoes[Number(b.dataset.escolha)].fn(); }; });
   document.body.appendChild(el);
+}
+// Regra 307 ("notas de erro sempre devem aparecer como push", 20/11/2026): todo
+// erro sai no aviso do alto, em vermelho, como os avisos de erro da Shopify e do
+// Nubank, e não mais escrito no meio da tela. Fica até o ✕ ou até o erro sair da
+// tela (a pessoa corrigiu ou mudou de tela): erro que some em 5 segundos a pessoa
+// nem lê. Com o lugar do erro fora da tela, o aviso ganha o "Ver".
+// origem: "tela" (o erro escrito pela tela, acompanhado por errosNoPush) ou o
+// nome de quem chamou (a folha do cartão, a caixa de excluir a conta).
+function mostrarErro(texto, origem = "avulso", ancora) {
+  texto = String(texto || "").replace(/\s+/g, " ").trim();
+  document.querySelectorAll(".gt-push.gt-erro").forEach(el => el.remove());
+  if (!texto) return;
+  document.querySelectorAll(".gt-push:not(.gt-dica)").forEach(el => el.remove());
+  const el = document.createElement("div");
+  el.className = "gt-push erro gt-erro";
+  el.dataset.origem = origem;
+  el.dataset.texto = texto;
+  el.setAttribute("role", "alert");
+  const lugar = ancora && (ancora.parentElement || ancora);
+  const r = lugar && lugar.getBoundingClientRect();
+  const longe = r && (r.bottom < 70 || r.top > innerHeight - 40);
+  el.innerHTML = `<span class="gt-push-ic">${icon('warning', 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}${longe ? `<button type="button" class="gt-erro-ver">Ver</button>` : ""}</span><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
+  el.querySelector(".gt-push-x").onclick = () => { errosFechados.add(texto); el.remove(); };
+  const ver = el.querySelector(".gt-erro-ver");
+  if (ver) ver.onclick = () => { if (document.body.contains(lugar)) lugar.scrollIntoView({ block: "center", behavior: "smooth" }); ver.remove(); };
+  document.body.appendChild(el);
+  ligarAjudaDasFalhas();
+}
+// Roda em cada render: o erro escrito pela tela sai do meio da página (fica só
+// para o leitor de tela achar o lugar) e vai para o push. Fica de fora o aviso
+// que tem botão ou link dentro (ele é o caminho para resolver) e o que faz
+// conta na hora (.fica-na-tela, como "Faltam R$ 40 em créditos").
+const ERROS_DA_TELA = ".form-error:not(.pc-email-bloqueio), .status-error, .acesso-erro";
+const errosFechados = new Set();
+function textoDoErro(el) { return String(el.textContent || "").replace(/\s+/g, " ").trim(); }
+function errosDaTela() {
+  return [...document.querySelectorAll(`#app :is(${ERROS_DA_TELA})`)]
+    .filter(el => !el.hidden && !el.closest(".fica-na-tela") && !el.querySelector("button, a, input, select") && textoDoErro(el));
+}
+function fecharErrosDaTela() { errosDaTela().forEach(el => errosFechados.add(textoDoErro(el))); }
+function errosNoPush() {
+  const lista = errosDaTela();
+  lista.forEach(el => { el.classList.add("erro-no-push"); el.setAttribute("aria-hidden", "true"); });
+  const atual = document.querySelector('.gt-push.gt-erro[data-origem="tela"]');
+  const textos = lista.map(textoDoErro);
+  [...errosFechados].forEach(t => { if (!textos.includes(t)) errosFechados.delete(t); });
+  // O push com "Corrigir" (regra 290) já fala desse erro.
+  const i = document.querySelector(".gt-push.gt-escolha") ? -1 : textos.findIndex(t => !errosFechados.has(t));
+  if (i < 0) { if (atual) atual.remove(); return; }
+  if (atual && atual.dataset.texto === textos[i]) return;
+  mostrarErro(textos[i], "tela", lista[i]);
 }
 // Leva ao primeiro campo do que falta (ou ao aviso do erro na própria parte).
 function irAoQueFalta(texto) {
@@ -5399,7 +5462,7 @@ function irAoPrimeiroValorVazio() {
 // por último) e os de baixo, um em cima do outro. Roda depois de cada render()
 // e quando um aviso entra ou sai do <body>.
 function empilharAvisos() {
-  const visiveis = [...document.querySelectorAll(".gt-push, .push-conta")].filter(el => el.getClientRects().length);
+  const visiveis = [...document.querySelectorAll(".gt-push, .push-conta, .falha-faixa")].filter(el => el.getClientRects().length);
   const deBaixo = el => el.classList.contains("push-avaliar") && !el.classList.contains("no-alto");
   visiveis.forEach(el => { el.style.top = ""; el.style.bottom = ""; });
   const ordem = (a, b) => (a.offsetTop - b.offsetTop) || ((a.classList.contains("gt-push") && !a.classList.contains("gt-dica")) - (b.classList.contains("gt-push") && !b.classList.contains("gt-dica")));
@@ -5625,12 +5688,21 @@ function ligarAjudaDasFalhas() {
   const igual = (t) => String(t || "").replace(/\s+/g, " ").trim();
   const alvos = [...new Set([f.texto, ...(f.alvos || [])].map(igual).filter(Boolean))];
   if (alvos.length) document.querySelectorAll(".form-error, .status-error, [role=alert], .email-sugestao, .map-empty, .ht-map-empty, .pc-sec-sub, .pc-card-s, .pc-vazio, .acesso-erro, .chat-lista-vazia, .adm-erro").forEach(el => {
-    if (el.closest("#falha-faixa") || el.querySelector(".falha-ajuda") || (el.nextElementSibling && el.nextElementSibling.classList.contains("falha-ajuda"))) return;
+    if (el.closest("#falha-faixa") || el.classList.contains("erro-no-push") || el.querySelector(".falha-ajuda") || (el.nextElementSibling && el.nextElementSibling.classList.contains("falha-ajuda"))) return;
     const t = igual(el.textContent);
     if (!alvos.some(a => t.includes(a))) return;
     el.insertAdjacentHTML("afterend", ajudaDaFalhaHtml(f));
   });
-  if (document.querySelector(`#app .falha-ajuda[data-codigo="${f.codigo}"]`)) f.mostrada = true;
+  // O erro que foi para o push (regra 307) leva a linha de ajuda dentro dele.
+  document.querySelectorAll(".gt-push.gt-erro").forEach(el => {
+    if (el.querySelector(".falha-ajuda") || !alvos.some(a => el.dataset.texto.includes(a))) return;
+    el.querySelector(".gt-push-t").insertAdjacentHTML("beforeend", ajudaDaFalhaHtml(f));
+    const bt = el.querySelector("[data-falha-ajuda]");
+    if (bt) bt.onclick = (e) => { e.preventDefault(); el.remove(); abrirChatDaFalha(f); };
+    const painel = el.querySelector("[data-falha-painel]");
+    if (painel) painel.onclick = (e) => { e.preventDefault(); el.remove(); irAdmin("falhas"); };
+  });
+  if (document.querySelector(`#app .falha-ajuda[data-codigo="${f.codigo}"], .gt-erro .falha-ajuda[data-codigo="${f.codigo}"]`)) f.mostrada = true;
   document.querySelectorAll("[data-falha-painel]").forEach(a => { a.onclick = (e) => { e.preventDefault(); esconderFaixaDeFalha(); irAdmin("falhas"); }; });
   document.querySelectorAll("#app [data-falha-ajuda]").forEach(bt => {
     bt.onclick = (e) => { e.preventDefault(); e.stopPropagation(); abrirChatDaFalha(FALHAS.naTela && FALHAS.naTela.codigo === bt.dataset.falhaAjuda ? FALHAS.naTela : { codigo: bt.dataset.falhaAjuda, acao: "concluir o que você tentava" }); };
@@ -5647,7 +5719,7 @@ function mostrarFaixaDeFalha(f) {
   el.className = "falha-faixa";
   el.setAttribute("role", "alert");
   el.innerHTML = `
-    <span class="falha-faixa-ic" aria-hidden="true">${icon('warning', 18, 'currentColor')}</span>
+    <span class="falha-faixa-ic" aria-hidden="true">${icon('warning', 15, '#fff')}</span>
     <div class="falha-faixa-txt">
       <p class="falha-faixa-t">${esc(f.texto)}</p>
       <div class="falha-faixa-acoes">
@@ -7592,6 +7664,7 @@ function render() {
   // O Sobre ocupa a largura toda, como o Parceiros (regra 257).
   app.className = state.page === "parceiros" || state.page === "sobre" ? "container pc-cheio" : noPainel ? "container adm-cheio" : "container";
 
+  errosNoPush();
   attachEvents();
   empilharAvisos();
   // A página de trás para quando há janela aberta (no computador, o chat é
@@ -9029,22 +9102,24 @@ async function carregarConta(session) {
   const user = session && session.user;
   if (!user) return;
   if ((user.email || "").toLowerCase() === EMAIL_ADMIN) { isAdmin = true; contaAcademia = visao; return; }
-  try {
-    const { data, error } = await sb.from('academia_acessos').select('*').eq('user_id', user.id);
-    if (!error && data && data[0]) contaAcademia = { ...contaDeLinha(data[0]), login: user.email };
-  } catch { /* banco sem a tabela: fica como visitante */ }
+  // Regra 307 ("o site está lento de novo"): as leituras que não dependem uma
+  // da outra vão juntas ao banco, como o Google e o Booking carregam a página,
+  // em vez de uma esperar a outra (cada ida e volta no 4G leva uns 200 ms).
+  const linha = async (tabela) => {
+    try {
+      const { data, error } = await sb.from(tabela).select('*').eq('user_id', user.id);
+      return !error && data && data[0] ? data[0] : null;
+    } catch { return null; /* banco sem a tabela: fica como visitante */ }
+  };
+  const [acesso, j] = await Promise.all([linha('academia_acessos'), linha('jogadores')]);
+  if (acesso) contaAcademia = { ...contaDeLinha(acesso), login: user.email };
+  if (j) jogador = j;
   if (contaAcademia) {
-    contaAcademia.academias = await carregarMinhasAcademias(contaAcademia);
-    contaAcademia.pedidos = await carregarMeusPedidos(contaAcademia);
-    await carregarWhatsappNovo();
-    await carregarDisputasDaAcademia();
-    await carregarVerificacoesDoMeuAcesso();
-    await carregarAcademiasFechadas();
+    const [academias, pedidos] = await Promise.all([carregarMinhasAcademias(contaAcademia), carregarMeusPedidos(contaAcademia),
+      carregarWhatsappNovo(), carregarDisputasDaAcademia(), carregarVerificacoesDoMeuAcesso(), carregarAcademiasFechadas()]);
+    contaAcademia.academias = academias;
+    contaAcademia.pedidos = pedidos;
   } else { state.whatsappNovo = {}; state.disputasDaAcademia = {}; state.verificacoesDoAcesso = []; state.academiasFechadas = []; }
-  try {
-    const { data, error } = await sb.from('jogadores').select('*').eq('user_id', user.id);
-    if (!error && data && data[0]) jogador = data[0];
-  } catch { /* banco sem a tabela: fica como visitante */ }
   // Conta do GuiaTennis Parceiros também joga (pedido do Breno em
   // 05/10/2026): no site dos jogadores, é uma conta normal — perfil, buscas
   // salvas, avisos e avaliações (menos da academia que administra). A parte
@@ -9056,11 +9131,8 @@ async function carregarConta(session) {
       if (j && j.user_id) jogador = j;
     } catch { /* banco sem a função: segue só como academia */ }
   }
-  if (jogador) await carregarBuscasSalvas();
-  if (jogador) await carregarMeusHorarios();
+  await Promise.all([jogador && carregarBuscasSalvas(), jogador && carregarMeusHorarios(), carregarNomeSuspenso(), carregarMinhasAvaliacoes()]);
   if (jogador) levarParaAConta();
-  await carregarNomeSuspenso();
-  await carregarMinhasAvaliacoes();
   // Última visita com a conta aberta (regra 86): o banco anota no máximo uma
   // vez a cada 12 horas. Uma vez por abertura do site, sem esperar.
   if (jogador && visitaMarcadaPara !== user.id) {
@@ -9274,54 +9346,46 @@ async function recarregarConta() {
 // Admin: os logins das academias, com o último acesso de cada um. Sem a
 // função no banco, o bloco do admin avisa em vez de sumir.
 async function carregarAcessos() {
-  try {
-    const r = await sb.rpc('acessos_das_academias');
-    state.acessos = r.error ? null : (r.data || []);
-  } catch { state.acessos = null; }
-  // Um pedido por linha (SQL 20261005120000); sem a função, os pedidos vêm
-  // da lista dos acessos, um por conta.
-  try {
-    const r = await sb.rpc('convites_pendentes');
-    state.convitesPendentes = r.error ? [] : (r.data || []);
-  } catch { state.convitesPendentes = []; }
-  try {
-    const r = await sb.rpc('pedidos_de_acesso_admin');
-    state.pedidosAcesso = r.error ? null : (r.data || []);
-  } catch { state.pedidosAcesso = null; }
-  try {
-    const r = await sb.rpc('pedidos_de_plano_admin');
-    state.pedidosDePlano = r.error ? [] : (r.data || []);
-  } catch { state.pedidosDePlano = []; }
-  // Avisos de academia que fechou as portas (SQL 20261020170000).
-  try {
-    const r = await sb.rpc('pedidos_para_sair_admin');
-    state.pedidosParaSairAdmin = r.error ? [] : (r.data || []);
-  } catch { state.pedidosParaSairAdmin = []; }
-  // Academias novas que foram ao ar sozinhas (SQL 20261006140000).
-  try {
-    const r = await sb.rpc('academias_para_revisar_admin');
-    state.paraRevisar = r.error ? [] : (r.data || []);
-  } catch { state.paraRevisar = []; }
-  // Veracidade (SQL 20261026120000): o WhatsApp que espera o código, o que os
-  // jogadores informaram nas fichas e as avaliações denunciadas.
-  const [w, p, d, ca, dc] = await Promise.all(['whatsapps_para_confirmar_admin', 'problemas_admin', 'denuncias_admin', 'contestacoes_de_acesso_admin', 'denuncias_de_conta_admin'].map(async nome => {
-    try { const r = await sb.rpc(nome); return r.error ? [] : (r.data || []); } catch { return []; }
-  }));
+  // Regra 307: as consultas do painel vão todas juntas ao banco (antes, umas
+  // dez em fila). Cada uma sem a função no banco devolve o "sem SQL" de sempre.
+  const rpc = async (nome, semFuncao) => {
+    try { const r = await sb.rpc(nome); return r.error ? semFuncao : (r.data || []); } catch { return semFuncao; }
+  };
+  const [acessos, convites, pedidosAcesso, pedidosDePlano, paraSair, paraRevisar, w, p, d, ca, dc, f, ra, av] = await Promise.all([
+    rpc('acessos_das_academias', null),
+    // Um pedido por linha (SQL 20261005120000); sem a função, os pedidos vêm
+    // da lista dos acessos, um por conta.
+    rpc('convites_pendentes', []),
+    rpc('pedidos_de_acesso_admin', null),
+    rpc('pedidos_de_plano_admin', []),
+    // Avisos de academia que fechou as portas (SQL 20261020170000).
+    rpc('pedidos_para_sair_admin', []),
+    // Academias novas que foram ao ar sozinhas (SQL 20261006140000).
+    rpc('academias_para_revisar_admin', []),
+    // Veracidade (SQL 20261026120000): o WhatsApp que espera o código, o que os
+    // jogadores informaram nas fichas e as avaliações denunciadas.
+    rpc('whatsapps_para_confirmar_admin', []), rpc('problemas_admin', []), rpc('denuncias_admin', []),
+    rpc('contestacoes_de_acesso_admin', []), rpc('denuncias_de_conta_admin', []),
+    // Regra 158 (SQL 20261026200000): as academias fechadas, guardadas, os
+    // pedidos para reabrir e os avisos que chegaram ao admin. Sem o SQL, null.
+    rpc('academias_fechadas_admin', null), rpc('pedidos_de_reabertura_admin', null), rpc('avisos_do_admin', null),
+    carregarFichasParadas(),
+    carregarNomesSuspensos(),
+  ]);
+  state.acessos = acessos;
+  state.convitesPendentes = convites;
+  state.pedidosAcesso = pedidosAcesso;
+  state.pedidosDePlano = pedidosDePlano;
+  state.pedidosParaSairAdmin = paraSair;
+  state.paraRevisar = paraRevisar;
   state.acessosContestadosAdmin = ca;
   state.contasDenunciadasAdmin = dc;
   state.whatsappsAdmin = w;
   state.problemasAdmin = p;
   state.denunciasAdmin = d;
-  await carregarFichasParadas();
-  // Regra 158 (SQL 20261026200000): as academias fechadas, guardadas, os
-  // pedidos para reabrir e os avisos que chegaram ao admin. Sem o SQL, null.
-  const [f, ra, av] = await Promise.all(['academias_fechadas_admin', 'pedidos_de_reabertura_admin', 'avisos_do_admin'].map(async nome => {
-    try { const r = await sb.rpc(nome); return r.error ? null : (r.data || []); } catch { return null; }
-  }));
   state.fechadasAdmin = f;
   state.reaberturasAdmin = ra || [];
   state.avisosAdmin = av;
-  await carregarNomesSuspensos();
 }
 
 // ---------- o controle das fichas paradas (regra 157) ----------
@@ -14018,7 +14082,7 @@ function pcCreditos() {
         </div>` : `
         <div class="pc-checkout-valores" role="radiogroup" aria-label="Valor">
           ${VALORES_DE_CREDITO.map(v => opcao("data-compra-valor", v, !k.outro && valor === v, emReais(v), [v === 100 ? "Mais escolhido" : "", (k.forma || "pix") === "pix" ? `vira ${emReais(v + bonusDoPix(v))} no Pix` : ""].filter(Boolean).join(" · "))).join("")}
-          ${opcao("data-compra-valor", "outro", !!k.outro, "Outro valor", "De R$ 20 a R$ 5.000")}
+          ${opcao("data-compra-valor", "outro", !!k.outro, "Outro valor", `De <span class="sem-quebra">R$ 20</span> a <span class="sem-quebra">R$ 5.000</span>`)}
         </div>
         ${k.outro ? `<div class="pc-ads-moeda pc-checkout-outro"><span>R$</span><input class="form-field" id="pc-compra-outro" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="Ex.: 150" value="${esc(k.valorOutro || "")}" aria-label="Outro valor, em reais" /></div>` : ""}`}
       </div>
@@ -14147,6 +14211,7 @@ function fecharCartaoNoSite() {
   cartaoBrick = null;
   const f = document.getElementById("pc-cartao-folha");
   if (f) f.remove();
+  document.querySelectorAll('.gt-erro[data-origem="cartao"]').forEach(el => el.remove());
 }
 const MOTIVOS_DO_CARTAO = {
   cc_rejected_insufficient_amount: "o cartão não tem limite para esse valor",
@@ -14174,12 +14239,12 @@ async function abrirCartaoNoSite(info) {
         <button type="button" class="pc-cartao-fechar" aria-label="Fechar">✕</button>
       </div>
       <p class="pc-cartao-s">${icon('cadeado', 13, 'currentColor')} À vista. O cartão vai direto para o Mercado Pago: o GuiaTennis não vê nem guarda os dados.</p>
-      <p class="pc-cartao-erro" id="pc-cartao-erro" role="alert"></p>
       <div id="pc-cartao-brick"><p class="pc-checkout-espera">${bolaGirando(14)} Abrindo o formulário do cartão…</p></div>
     </div>`;
   document.body.appendChild(folha);
   folha.querySelector(".pc-cartao-fechar").addEventListener("click", fecharCartaoNoSite);
-  const erro = (t) => { const e = document.getElementById("pc-cartao-erro"); if (e) e.textContent = t; };
+  // O erro do cartão sai no push vermelho do alto (regra 307), por cima da folha.
+  const erro = (t) => mostrarErro(t, "cartao");
   const falhou = "Não consegui abrir o formulário do cartão. Feche e tente de novo, ou pague com Pix.";
   // Regra 302: o formulário tem 20 segundos para abrir; depois, a folha diz o que fazer.
   let pronto = false;
@@ -14927,7 +14992,7 @@ function precoNaPromocao(c, semanas) {
           ${semanas ? `<li class="total"><span>${nSemanas(semanas)}</span><strong>${emReais(total)}</strong></li>` : ""}
           <li><span>Créditos disponíveis</span><strong>${emReais(saldo)}${posso("pagamentos") ? ` · <button type="button" class="inline-link" data-comprar-creditos>Comprar</button>` : ""}</strong></li>
         </ul>
-        ${total > saldo ? `<p class="form-error" role="alert">${icon('warning', 14)} Faltam ${emReais(total - saldo)} em créditos. Compre créditos ou escolha menos semanas.</p>` : ""}
+        ${total > saldo ? `<p class="form-error fica-na-tela" role="alert">${icon('warning', 14)} Faltam ${emReais(total - saldo)} em créditos. Compre créditos ou escolha menos semanas.</p>` : ""}
         ${!premium && p.premium < p.cheio ? `<p class="footnote">No Premium, a semana sai por ${emReais(p.premium)} (${p.desconto}% menos). <a href="${esc(caminhoDosParceiros("plano"))}" data-pc="plano">Ver os planos ›</a></p>` : ""}
       </div>`;
 }
@@ -15477,7 +15542,6 @@ function perguntarExcluirConta(origem) {
         <p class="conta-excluir-r">O que fica</p>
         <ul><li>As avaliações que você escreveu continuam publicadas, sem o seu nome: aparecem como “${AUTOR_OCULTO}”.</li></ul>
         <label class="consent-row conta-excluir-ok"><input type="checkbox" id="excluir-conta-ok" /><span>Entendi que a exclusão não pode ser desfeita.</span></label>
-        <p class="form-error" id="excluir-conta-erro" hidden></p>
       </div>
       <button type="button" class="reg-sair-sim" id="excluir-conta-sim" disabled>Excluir a conta</button>
       <button type="button" class="reg-sair-nao" id="excluir-conta-nao">Cancelar</button>
@@ -15500,9 +15564,7 @@ async function excluirMinhaConta(origem, el) {
   // a do jogador. No banco, as duas excluem o login inteiro.
   try { r = await sb.rpc(contaAcademia ? 'excluir_minha_conta_parceiros' : 'excluir_minha_conta_jogador'); } catch (e) { r = { error: e }; }
   if (r.error) {
-    const erro = el.querySelector("#excluir-conta-erro");
-    erro.hidden = false;
-    erro.textContent = falhou("excluir a conta", r.error, { texto: "Não foi possível excluir a conta agora. Tente de novo em instantes." });
+    mostrarErro(falhou("excluir a conta", r.error, { texto: "Não foi possível excluir a conta agora. Tente de novo em instantes." }), "excluir-conta");
     sim.disabled = false;
     sim.textContent = "Excluir a conta";
     return;

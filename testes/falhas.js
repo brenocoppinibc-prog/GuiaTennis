@@ -18,7 +18,8 @@ const BANCO = { message: 'Could not find the function public.conta_do_email(p_em
   await page.click('#jog-continuar');
   await page.waitForTimeout(600);
   // O aviso e, logo embaixo dele, a linha de ajuda.
-  const avisoComAjuda = () => page.evaluate(() => { const e = document.querySelector('.form-error'); const a = e && e.nextElementSibling && e.nextElementSibling.classList.contains('falha-ajuda') ? e.nextElementSibling : null; return ((e ? e.innerText : '') + (a ? ' ' + a.innerText : '')).replace(/\s+/g, ' '); });
+  // Regra 307: o erro sai no push vermelho do alto, com a linha de ajuda dentro dele.
+  const avisoComAjuda = () => page.evaluate(() => { const e = document.querySelector('.gt-push.gt-erro'); return e ? e.innerText.replace(/\s+/g, ' ').replace(' ✕', '') : ''; });
   let aviso = await avisoComAjuda();
   ok(aviso.includes('A conexão falhou. Confira a internet e tente de novo em instantes.'), 'sem conexão, o aviso diz para conferir a internet — ' + aviso);
   const codigo = (aviso.match(/código ([A-HJ-NP-Z2-9]{6})/) || [])[1];
@@ -31,7 +32,7 @@ const BANCO = { message: 'Could not find the function public.conta_do_email(p_em
   ok(lista[0].site === 'jogadores' && lista[0].quem === 'visitante' && /^[a-z0-9]{8,32}$/.test(lista[0].visita || '') && lista[0].dispositivo && lista[0].navegador && lista[0].tela === '/',
     'com o site, quem, a visita do percurso, o aparelho, o navegador e a tela');
   ok(!(await page.isVisible('#falha-faixa')), 'com o aviso na tela, sem a faixa embaixo (nada repetido)');
-  await page.click('.falha-ajuda [data-falha-ajuda]');
+  await page.click('.gt-erro .falha-ajuda [data-falha-ajuda]');
   await page.waitForTimeout(300);
   const chat = await page.evaluate(() => { const l = [...document.querySelectorAll('#chat-msgs .chat-msg')].pop(); return { texto: l.innerText.replace(/\s+/g, ' '), acoes: [...l.querySelectorAll('.chat-acao')].map(a => a.innerText.trim()), whats: decodeURIComponent(l.querySelector('a.chat-acao.whats')?.getAttribute('href') || '') }; });
   ok(chat.texto.includes(`não deu para conferir o e-mail (código ${codigo})`) && chat.texto.includes('Wi-Fi') && chat.acoes.includes('Recarregar a página') && chat.acoes.includes('Falar com o Breno no WhatsApp'),

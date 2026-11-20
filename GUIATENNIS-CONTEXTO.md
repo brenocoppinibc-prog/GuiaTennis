@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 20/11/2026 (regra 306, troca de chat)
+**Atualizado em:** 20/11/2026 (regra 307)
 
 | | |
 |---|---|
@@ -450,16 +450,18 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**Chat trocado em 20/11/2026 (regra 306):** o chat novo volta a acompanhar o PR #5 (este
-deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `a15b8ec`
-(regra 306, o rodapé); depois só o contexto. O PR está verde, a prévia no ar com tudo até a 306
-e a descrição em dia (passos 110 a 124). O "Banco de dados" desta branch é disparado à mão
-(`banco.yml`, `destino: teste`): rodou com sucesso em 20/11 para o SQL mais novo,
-`20261120120000_vantagem_do_pix`. **Do chat de 17 a 20/11:** regras 297 a 306 (seção 10):
-"Você marcou?" duas horas depois, "academia" para o lugar, CNPJ, razão social e endereço
-(empresa **BRENO COPPINI MARINHO LTDA**, CNPJ 70.120.796/0001-00), cartão dentro do site
-(Card Payment Brick), prazo na compra, motivo do erro só nas Falhas, **vantagem do Pix** (5%
-em créditos / 5% de desconto no plano, em qualquer valor) e o rodapé arrumado. Na conversa:
+**Chat de 20/11/2026 (regra 307):** o chat acompanha o PR #5 (inscrito com
+`subscribe_pr_activity`). Regra 307: o site mais rápido de novo (as consultas ao banco ao abrir
+vão juntas, em vez de em fila; os cliques do admin no máximo a cada 10 minutos) e **todo erro no
+push vermelho do alto** (`mostrarErro`/`errosNoPush`; a faixa de falha também foi para o alto).
+Revisão de design feita e perguntas mandadas ao Breno (lista na resposta do chat de 20/11: os
+dois números na compra, "Cartão não aprovado: o cartão foi recusado", "0 m de você", o "Jogou
+numa dessas academias?" cedo demais, o anel dourado do botão fixo da ficha e o "5% das visitas"
+no Parceiros), **esperando as respostas**. Antes, do chat de 17 a 20/11: regras 297 a 306
+(seção 10): "Você marcou?" duas horas depois, "academia" para o lugar, CNPJ, razão social e
+endereço (empresa **BRENO COPPINI MARINHO LTDA**, CNPJ 70.120.796/0001-00), cartão dentro do
+site (Card Payment Brick), prazo na compra, motivo do erro só nas Falhas, **vantagem do Pix**
+(5% em créditos / 5% de desconto no plano, em qualquer valor) e o rodapé arrumado. Na conversa:
 Simples Nacional com Fator R (pró-labore pela "Otimização automática inteligente", sem valor
 mínimo), serviço 17.25 (publicidade na internet), a conta do CNPJ é a do Mercado Pago (o extrato
 vai todo mês para a Contabilizei), nota por compra pelo app da Contabilizei até a nota
@@ -2503,6 +2505,23 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   testar antes no ambiente de testes do governo. Até lá, uma nota por compra pelo app da
   Contabilizei, com a lista de Admin › Compras e notas. A conta do CNPJ é a do próprio Mercado
   Pago (sem saque para outro banco); o extrato vai todo mês para a Contabilizei.
+- **307 (20/11) — o site mais rápido de novo e todo erro no push** ("parece que o site está
+  lento de novo, notas de erro sempre devem aparecer como push, no pgto não está assim, faça isso
+  em todo o site"). **Lentidão:** ao abrir, o site esperava cada consulta ao banco terminar para
+  começar a próxima (5 em fila para o visitante, umas 20 para o admin, mais até 20 mil cliques a
+  cada aprovação). Agora `loadEverything`, `carregarConta` e `carregarAcessos` mandam tudo junto
+  (`Promise.all`), como o Google e o Booking: a tela espera só a resposta mais lenta; os cliques
+  do admin (`carregarCliquesDoAdmin`) são lidos no máximo a cada 10 minutos. **Erros:** todo
+  `.form-error`, `.status-error` e `.acesso-erro` da tela vai para o **push vermelho do alto**
+  (`errosNoPush` em cada render, `mostrarErro`), como os avisos de erro da Shopify e do Nubank;
+  fica até o ✕ ou até o erro sair da tela (sem a barra dos 5 segundos), com "Ver" quando o lugar
+  do erro está fora da tela e a linha "Se continuar, fale com a gente · código" dentro dele. O
+  texto no meio da página fica só para o leitor de tela (`.erro-no-push`). Ficam na tela os
+  avisos com botão dentro e os que fazem conta na hora (`.fica-na-tela`, "Faltam R$ 40 em
+  créditos"). O cartão no site e o excluir a conta também usam o push; a faixa de falha
+  (`#falha-faixa`) saiu de baixo e virou o mesmo push vermelho do alto. "De R$ 20 a R$ 5.000"
+  não quebra mais no meio do valor. Sem SQL. Testes: `erros-no-push.js` (novo, 12) e `falhas`
+  ajustado, sem falha; bateria completa rodando no momento do commit.
 
 ## 11. WhatsApp e mensagem para as academias
 

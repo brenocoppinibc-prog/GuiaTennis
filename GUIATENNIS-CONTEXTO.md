@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 20/11/2026 (regra 304)
+**Atualizado em:** 20/11/2026 (regra 305)
 
 | | |
 |---|---|
@@ -2468,6 +2468,14 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Testes: `plano-e-creditos` (52), `regras-de-conteudo`, `ficha-basica`, `avaliacao-editada`,
   `pixel-da-meta`, `dados-para-nota` e `compra-com-prazo`, sem falha; `banco-emails.py` num
   Postgres local: 987, nenhuma falha (seção nova "Vantagem do Pix").
+- **305 (20/11) — a vantagem do Pix mais à vista** ("deixe mais atrativa a promoção seguindo o
+  trabalho de designer no site todo"). Selo verde **"+5%"** (créditos) ou **"−5%"** (plano) à
+  direita da opção Pix (`.pc-pix-selo`, o mesmo verde dos selos do site, cantos de 6 px, sem
+  pílula); cada valor de créditos diz quanto vira no Pix ("Mais escolhido · vira R$ 105,00 no
+  Pix"); nos cartões dos planos, "R$ 46 por mês no Pix (5% off)" com o ícone do Pix
+  (`.pc-plano-pix`), como o "no Pix" das lojas grandes. O teste de R$ 20 com dinheiro de verdade
+  passou na prévia (20/11); orientado a devolver no mesmo dia, sem nota (venda cancelada).
+  Testes: `plano-e-creditos` (52), `parceiros` (159) e `planos` (9), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

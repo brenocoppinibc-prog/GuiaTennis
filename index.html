@@ -2045,6 +2045,9 @@
   .rodape-faixa .rodape-faixa-empresa { font-size: 11px; color: rgba(255,255,255,0.6); }
   /* Regra 301: o cartão no próprio site, numa folha por cima da página. */
   .pc-pix-vantagem span, .pc-pix-vantagem strong { color: var(--green); }
+  /* Regra 305: a vantagem do Pix à vista, no mesmo verde dos selos do site. */
+  .pc-pix-selo { margin-left: auto; align-self: center; background: #E6F4EC; color: var(--green); font-weight: 700; font-size: 12px; line-height: 1; padding: 5px 8px; border-radius: 6px; font-variant-numeric: tabular-nums; }
+  .pc-plano-pix { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: var(--green); margin: -2px 0 6px; }
   .pc-cartao-folha { position: fixed; inset: 0; z-index: 1000; background: rgba(15,25,20,0.55); display: flex; align-items: flex-end; justify-content: center; }
   .pc-cartao-caixa { background: var(--card); color: var(--text); width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; border-radius: 18px 18px 0 0; padding: 18px 16px 24px; box-sizing: border-box; }
   .pc-cartao-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -12610,6 +12613,7 @@ function pcCartoesDePlano(atual, revelar = false) {
           ${atual === p.key ? `<span class="pc-plano-tag">Seu plano</span>` : (p.key === destaque ? `<span class="pc-plano-tag">Recomendado</span>` : "")}
           <p class="pc-plano-n">${esc(p.nome)}${p.key === "premium" ? seloPremium(20) : ""}</p>
           <p class="pc-plano-p">${esc(precoDoPlano(p))}</p>
+          ${p.key !== "basico" && valorDoPlano(p.key, "mensal") ? `<p class="pc-plano-pix">${icon('pix', 13, 'currentColor')} R$ ${esc(precoNoPix(valorDoPlano(p.key, "mensal")))} por mês no Pix (5% off)</p>` : ""}
           ${precoAnualDoPlano(p) ? `<p class="pc-plano-anual">ou R$ ${esc(precoAnualDoPlano(p))} por ano · 2 meses grátis · preço de teste</p>` : ""}
           <p class="pc-card-s">${esc(p.resumo)}</p>
           ${nov.abaixo ? `<p class="pc-plano-mais">Tudo do ${esc(nomeDoPlano(nov.abaixo))}, mais:</p>` : ""}
@@ -14007,7 +14011,7 @@ function pcCreditos() {
           ${opcao("data-compra-periodo", "anual", periodo === "anual", `Anual · R$ ${esc(valorDoPlano(k.plano, "anual"))}`, "2 meses saem de graça")}
         </div>` : `
         <div class="pc-checkout-valores" role="radiogroup" aria-label="Valor">
-          ${VALORES_DE_CREDITO.map(v => opcao("data-compra-valor", v, !k.outro && valor === v, emReais(v), v === 100 ? "Mais escolhido" : "")).join("")}
+          ${VALORES_DE_CREDITO.map(v => opcao("data-compra-valor", v, !k.outro && valor === v, emReais(v), [v === 100 ? "Mais escolhido" : "", (k.forma || "pix") === "pix" ? `vira ${emReais(v + bonusDoPix(v))} no Pix` : ""].filter(Boolean).join(" · "))).join("")}
           ${opcao("data-compra-valor", "outro", !!k.outro, "Outro valor", "De R$ 20 a R$ 5.000")}
         </div>
         ${k.outro ? `<div class="pc-ads-moeda pc-checkout-outro"><span>R$</span><input class="form-field" id="pc-compra-outro" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="Ex.: 150" value="${esc(k.valorOutro || "")}" aria-label="Outro valor, em reais" /></div>` : ""}`}
@@ -14015,7 +14019,7 @@ function pcCreditos() {
       <div class="pc-checkout-bloco">
         <p class="pc-checkout-bloco-t"><span class="pc-checkout-n">3</span> Forma de pagamento</p>
         <div class="pc-checkout-formas" role="radiogroup" aria-label="Forma de pagamento">
-          ${opcao("data-compra-forma", "pix", forma === "pix", `${icon('pix', 15, 'currentColor')} Pix`, `${plano ? "5% de desconto" : "5% a mais em créditos"}. Aprovação na hora, com o QR code nesta página.`)}
+          ${opcao("data-compra-forma", "pix", forma === "pix", `${icon('pix', 15, 'currentColor')} Pix`, `${plano ? "5% de desconto" : "5% a mais em créditos"}. Aprovação na hora, com o QR code nesta página.`, `<span class="pc-pix-selo" aria-hidden="true">${plano ? "−5%" : "+5%"}</span>`)}
           ${opcao("data-compra-forma", "cartao", forma === "cartao", "Cartão de crédito", chavePublicaMP() ? "Aqui mesmo, no formulário seguro do Mercado Pago, à vista." : "Na página segura do Mercado Pago, à vista.")}
         </div>
       </div>

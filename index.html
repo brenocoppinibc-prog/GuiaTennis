@@ -4838,8 +4838,8 @@ async function lerRespostas() {
 
 // Regra 307 ("o site está lento de novo"): tudo vai junto ao banco e a tela
 // espera só a resposta mais lenta, em vez de seis ou doze idas e voltas em
-// fila. Os cliques do admin (até 20 mil linhas) são lidos no máximo a cada
-// 10 minutos: aprovar ou editar uma academia não os baixa de novo.
+// fila. Os cliques do admin (até 20 mil linhas) vêm junto com o resto, e não
+// mais antes de tudo.
 async function loadEverything() {
   const [{ data: published, error: erroAcademias }, minhaR, pendR, , reviewsR, respostas, , contatos] = await Promise.all([
     lerPublico('academias', COLUNAS_ACADEMIA_PUBLICAS, q => q.eq('status', 'published').order('created_at'), COLUNAS_ACADEMIA_NOVAS),
@@ -4851,7 +4851,7 @@ async function loadEverything() {
     carregarPromocoes(),
     isAdmin ? lerContatosPrivados() : [],
     isAdmin ? carregarAcessos() : null,
-    isAdmin ? carregarCliquesDoAdmin() : (cliquesLidosEm = 0, null),
+    isAdmin ? carregarCliquesDoAdmin() : null,
   ]);
   // A academia que avisou que fechou fica fora do site (regra 157): o banco
   // já a pausa (SQL 20261026180000); aqui, o mesmo vale com o banco antigo.
@@ -4884,16 +4884,13 @@ async function loadEverything() {
     }));
   }
 }
-let cliquesLidosEm = 0;
 async function carregarCliquesDoAdmin() {
-  if (Date.now() - cliquesLidosEm < 10 * 60000) return;
   const [{ data: clicks }, ...colunas] = await Promise.all([
     sb.from('cliques').select('*').order('created_at', { ascending: false }).limit(20000),
     // Sem as colunas da busca, a gravação cai para uma versão sem elas e o
     // admin fica sem saber. Aqui ele fica sabendo, com o SQL.
     ...["detalhe", "cep", "lat", "origem"].map(async coluna => (await sb.from('cliques').select(coluna).limit(1)).error ? coluna : ""),
   ]);
-  cliquesLidosEm = clicks ? Date.now() : 0;
   state.clicksRaw = clicks || [];
   state.faltaSqlCliques = colunas.find(Boolean) || "";
   const clicksCache = {};

@@ -452,7 +452,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 **Chat de 20/11/2026 (regra 307):** o chat acompanha o PR #5 (inscrito com
 `subscribe_pr_activity`). Regra 307: o site mais rápido de novo (as consultas ao banco ao abrir
-vão juntas, em vez de em fila; os cliques do admin no máximo a cada 10 minutos) e **todo erro no
+vão juntas, em vez de em fila, inclusive os cliques do admin) e **todo erro no
 push vermelho do alto** (`mostrarErro`/`errosNoPush`; a faixa de falha também foi para o alto).
 Revisão de design feita e perguntas mandadas ao Breno (lista na resposta do chat de 20/11: os
 dois números na compra, "Cartão não aprovado: o cartão foi recusado", "0 m de você", o "Jogou
@@ -2511,7 +2511,8 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   começar a próxima (5 em fila para o visitante, umas 20 para o admin, mais até 20 mil cliques a
   cada aprovação). Agora `loadEverything`, `carregarConta` e `carregarAcessos` mandam tudo junto
   (`Promise.all`), como o Google e o Booking: a tela espera só a resposta mais lenta; os cliques
-  do admin (`carregarCliquesDoAdmin`) são lidos no máximo a cada 10 minutos. **Erros:** todo
+  do admin (`carregarCliquesDoAdmin`) vêm junto (guardá-los por 10 minutos deixava o painel
+  atrasado, e foi desfeito). **Erros:** todo
   `.form-error`, `.status-error` e `.acesso-erro` da tela vai para o **push vermelho do alto**
   (`errosNoPush` em cada render, `mostrarErro`), como os avisos de erro da Shopify e do Nubank;
   fica até o ✕ ou até o erro sair da tela (sem a barra dos 5 segundos), com "Ver" quando o lugar
@@ -2521,7 +2522,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   créditos"). O cartão no site e o excluir a conta também usam o push; a faixa de falha
   (`#falha-faixa`) saiu de baixo e virou o mesmo push vermelho do alto. "De R$ 20 a R$ 5.000"
   não quebra mais no meio do valor. Sem SQL. Testes: `erros-no-push.js` (novo, 12) e `falhas`
-  ajustado, sem falha; bateria completa rodando no momento do commit.
+  ajustado, sem falha; bateria completa de 20/11 (até a 307): 2.703 verificações, nenhuma falha (as 5 do `painel-admin` e do `tempo` vinham dos cliques guardados, desfeito).
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -13,12 +13,13 @@ const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.in
   await page.waitForTimeout(500);
   const cartao = (k) => texto(page, `.pc-planos [data-plano-cartao="${k}"]`);
   let completo = await cartao('completo'), premium = await cartao('premium');
-  ok(completo.includes('R$ 49 Grátis') && completo.includes('Por tempo limitado') && completo.includes('avisamos 30 dias antes de cobrar')
+  ok(completo.includes('R$ 49 Grátis') && completo.includes('Por tempo limitado') && !completo.includes('avisamos 30 dias')
     && await page.evaluate(() => !!document.querySelector('[data-plano-cartao="completo"] s.pc-plano-riscado')),
-    'Completo: R$ 49 riscado e "Grátis", com o aviso de 30 dias — ' + completo.slice(0, 120));
-  ok(premium.includes('1º mês grátis') && premium.includes('R$ 89 R$ 49 por mês') && premium.includes('Preço de lançamento · 45% abaixo do normal')
-    && premium.includes('R$ 46 por mês no Pix') && premium.includes('ou R$ 490 por ano · 2 meses grátis'),
-    'Premium: 1º mês grátis, R$ 89 riscado por R$ 49 (preço de lançamento), Pix e anual — ' + premium.slice(0, 160));
+    'Completo: R$ 49 riscado, "Grátis" e "Por tempo limitado", sem texto a mais (regra 313) — ' + completo.slice(0, 120));
+  ok(premium.includes('1º mês grátis') && premium.includes('R$ 89 R$ 49 por mês') && premium.includes('Preço de lançamento')
+    && !premium.includes('no Pix') && !premium.includes('por ano') && !premium.includes('abaixo do normal'),
+    'Premium: 1º mês grátis, R$ 89 riscado por R$ 49 e "Preço de lançamento"; o Pix e o anual ficam para a hora de pagar (regra 313) — ' + premium.slice(0, 160));
+  ok((await texto(page, '#parceiros .pc-main')).includes('avisamos com 30 dias de antecedência'), 'o aviso dos 30 dias continua na nota de baixo');
   ok((await texto(page, '.pc-planos [data-escolher-plano="premium"]')) === 'Experimentar 1 mês grátis', 'o botão do Premium: "Experimentar 1 mês grátis"');
   ok((await texto(page, '#parceiros .pc-main')).includes('Sem fidelidade: cancele quando quiser, aqui em Plano.'), 'embaixo: sem fidelidade, cancele quando quiser');
 

@@ -292,6 +292,7 @@
   .pc-checkout-pagar { width: 100%; min-height: 50px; margin-top: 18px; border-radius: 8px; font-size: 16px; }
   .pc-checkout-seguro-nota { display: flex; align-items: flex-start; gap: 6px; margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #5F6670; }
   .pc-checkout-seguro-nota svg { flex-shrink: 0; margin-top: 2px; }
+  @media (min-width: 860px) { .pc-checkout-grade.sem-resumo { grid-template-columns: minmax(0, 560px); } }
   .pc-checkout-resumo { padding: 18px; border: 1px solid #E3E5E8; border-radius: 12px; background: #F7F8FA; }
   .pc-checkout-rotulo { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: #5F6670; }
   .pc-checkout-item { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid #E3E5E8; }
@@ -13837,19 +13838,18 @@ function precoDoPlano(p) {
   const v = valorDoPlano(p.key, "mensal");
   return v ? `R$ ${v} por mês${valorNormalDoPlano(p.key, "mensal") > v ? " no lançamento" : ""}` : p.preco;
 }
-// O preço no cartão do plano: o riscado (o normal) e o de agora.
+// O preço no cartão do plano: o riscado (o normal) e o de agora, mais uma linha
+// só (regra 313, "achei muita informação assim"): como os cartões do Spotify e
+// da Apple, o preço e uma frase; o Pix e o anual aparecem na hora de pagar.
 function precoDoCartao(p) {
   if (p.key === "basico") return `<p class="pc-plano-p">Grátis</p>`;
   const v = valorDoPlano(p.key, "mensal"), n = valorNormalDoPlano(p.key, "mensal");
   if (completoGratis(p.key)) return `
           <p class="pc-plano-p"><s class="pc-plano-riscado">R$ ${esc(n)}</s> Grátis</p>
-          <p class="pc-plano-lanc">Por tempo limitado: o preço normal é R$ ${esc(n)} por mês, e avisamos 30 dias antes de cobrar.</p>`;
-  const anual = valorDoPlano(p.key, "anual");
+          <p class="pc-plano-lanc">Por tempo limitado</p>`;
   return `
           <p class="pc-plano-p">${n > v ? `<s class="pc-plano-riscado">R$ ${esc(n)}</s> ` : ""}R$ ${esc(v)} <small>por mês</small></p>
-          ${n > v ? `<p class="pc-plano-lanc">Preço de lançamento · ${Math.round((1 - v / n) * 100)}% abaixo do normal</p>` : ""}
-          <p class="pc-plano-pix">${icon('pix', 13, 'currentColor')} R$ ${esc(precoNoPix(v))} por mês no Pix (5% off)</p>
-          ${anual ? `<p class="pc-plano-anual">ou R$ ${esc(anual)} por ano · 2 meses grátis</p>` : ""}`;
+          ${n > v ? `<p class="pc-plano-lanc">Preço de lançamento</p>` : ""}`;
 }
 // O QR e o código do Pix de teste não são Pix: o app do banco recusa.
 function codigoDoPixDeTeste(compra) {
@@ -14387,10 +14387,15 @@ function pcCreditos() {
       <h1 class="pc-checkout-h">${plano ? `Assinar o ${esc(nomeDoPlano(k.plano))}` : "Comprar créditos"}</h1>
       <p class="pc-checkout-sub">${plano ? `Para a ${esc(c.name)}.` : `Para as promoções da ${esc(c.name)}: ${c.plano === "premium" ? "na ficha e no leilão" : "na ficha"}.`}</p>
       ${trilha}
-      <div class="pc-checkout-grade">
+      ${etapa === 0
+        // Regra 313 ("não faz sentido aparecer resumo sendo que não pedi nada
+        // ainda"): nos dados do comprador, o resumo ainda não aparece; ele vem
+        // com a escolha do valor e da forma, como no checkout da Apple.
+        ? `<div class="pc-checkout-grade sem-resumo"><div class="pc-checkout-principal">${principal}</div></div>`
+        : `<div class="pc-checkout-grade">
         <div class="pc-checkout-principal">${principal}</div>
         ${resumo}
-      </div>
+      </div>`}
     </section>`;
 }
 // "Continuar para o pagamento": grava os dados do comprador e passa ao pagamento.

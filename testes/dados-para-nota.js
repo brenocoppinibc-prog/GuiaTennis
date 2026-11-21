@@ -29,6 +29,7 @@ const desligada = async (page) => page.route('**/.netlify/functions/pagamento', 
   let corpo = await texto(page, '#parceiros .pc-main');
   ok(corpo.includes('Dados do comprador') && await page.$('#nota-doc') && await page.$('#pc-compra-dados') && !(await page.$('#pc-compra-pagar')) && (await etapaAgora()).includes('Dados do comprador'),
     'a compra começa pelos dados do comprador, antes do pagamento');
+  ok(!(await page.$('.pc-checkout-resumo')), 'nos dados do comprador, sem o resumo do pedido: nada foi escolhido ainda (regra 313)');
   ok((await page.inputValue('#nota-email')).includes('@'), 'o e-mail já vem com o da conta — ' + await page.inputValue('#nota-email'));
   await page.click('#pc-compra-dados');
   await page.waitForTimeout(400);

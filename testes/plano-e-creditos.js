@@ -201,7 +201,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.evaluate(() => { window.__assinaturas = { a1: { plano: 'premium', ate: new Date(Date.now() - 864e5).toISOString(), depois: 'completo', testeUsado: true, encerrada: true } }; delete state.assinaturas; render(); });
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('R$ 49 por mês') && corpo.includes('ou R$ 490 por ano · 2 meses grátis') && corpo.includes('Site de teste: o pagamento é de teste'), 'site de teste: os planos com preço de teste, mensal e anual');
+  ok(corpo.includes('R$ 49 por mês') && corpo.includes('Preço de lançamento') && corpo.includes('Site de teste: o pagamento é de teste'), 'site de teste: os planos com preço de teste, mensal e anual');
   await page.click('.pc-planos [data-escolher-plano="premium"]');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
@@ -288,7 +288,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', pagamentoDeTeste: true }));
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Por tempo limitado') && corpo.includes('Preço de lançamento · 45% abaixo do normal') && !corpo.includes('Site de teste') && await page.evaluate(() => !pagamentoDeTeste()),
+  ok(corpo.includes('Por tempo limitado') && corpo.includes('Preço de lançamento') && !corpo.includes('Site de teste') && await page.evaluate(() => !pagamentoDeTeste()),
     'no site de verdade (regra 310): os preços de lançamento aparecem, sem o pagamento de teste');
   await browser.close();
 

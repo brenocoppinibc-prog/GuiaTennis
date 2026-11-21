@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 21/11/2026 (regra 312)
+**Atualizado em:** 21/11/2026 (regra 313)
 
 | | |
 |---|---|
@@ -2597,6 +2597,17 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   ganha 2 pontos para a sugestão, e o "acho que" deixa de contar como o "achar" da busca ("onde
   acho quadra" continua indo para a busca). Sem SQL. Testes: `chat-de-ajuda` (39), `chat-com-o-guia`,
   `chat-na-conta`, `chat-parceiros`, `ajuda-na-busca`, `pensamento-e-home`, sem falha.
+- **313 (21/11) — menos informação na compra e nos cartões** (prints do Breno: "não faz sentido
+  aparecer resumo sendo que não pedi nada ainda"; "achei muita informação assim"). Nos dados do
+  comprador (etapa 0), o resumo do pedido não aparece (`.pc-checkout-grade.sem-resumo`); ele vem com
+  a escolha do valor e da forma, como no checkout da Apple. Nos cartões dos planos (`precoDoCartao`),
+  só o preço e uma frase: Premium "~~R$ 89~~ R$ 49 por mês" + "Preço de lançamento"; Completo
+  "~~R$ 49~~ Grátis" + "Por tempo limitado" (o Pix 5% off, o anual e o "45% abaixo do normal"
+  saíram do cartão: ficam na hora de pagar; o aviso dos 30 dias fica na nota de baixo e nos
+  Termos). Sem SQL. Testes: `dados-para-nota` (30), `assinatura`, `plano-e-creditos`, `planos`,
+  `parceiros`, `promocoes`, `compra-com-prazo`, `erros-no-push`, sem falha. **Na conversa:** a
+  assinatura não cobra sozinha como o Spotify (é paga mês a mês, com o e-mail 5 dias antes);
+  oferecida a cobrança automática no cartão pelas Assinaturas do Mercado Pago (e o Pix Automático).
 
 ## 11. WhatsApp e mensagem para as academias
 

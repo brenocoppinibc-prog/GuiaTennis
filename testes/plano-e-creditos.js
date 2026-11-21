@@ -288,7 +288,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', pagamentoDeTeste: true }));
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Por tempo limitado') && corpo.includes('Preço de lançamento: o normal é R$ 89') && !corpo.includes('Site de teste') && await page.evaluate(() => !pagamentoDeTeste()),
+  ok(corpo.includes('Por tempo limitado') && corpo.includes('Preço de lançamento · 45% abaixo do normal') && !corpo.includes('Site de teste') && await page.evaluate(() => !pagamentoDeTeste()),
     'no site de verdade (regra 310): os preços de lançamento aparecem, sem o pagamento de teste');
   await browser.close();
 

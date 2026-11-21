@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 21/11/2026 (regra 310)
+**Atualizado em:** 21/11/2026 (regra 311)
 
 | | |
 |---|---|
@@ -454,7 +454,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 `subscribe_pr_activity`). Regra 307: o site mais rápido de novo (as consultas ao banco ao abrir
 vão juntas, em vez de em fila, inclusive os cliques do admin) e **todo erro no
 push vermelho do alto** (`mostrarErro`/`errosNoPush`; a faixa de falha também foi para o alto).
-Da revisão de design, o Breno aprovou as 6 propostas (regra 308). Regra 309: o QR do Pix centralizado. **Regra 310 (21/11): a assinatura do Premium** (seção 10): preços de lançamento, mês grátis, cancelamento com Completo ou Básico, vistas do mês no Básico e selo Fundadora; o SQL `20261121120000_assinatura_do_premium` precisa rodar no banco de teste (disparar o "Banco de dados" à mão, `destino: teste`). **WhatsApp automático do código (21/11):** o Breno está criando o modelo de Autenticação no Gerenciador do WhatsApp (copiar código, aviso de segurança, expira em 10 minutos, validade da mensagem 10 minutos). Falta ele: a aprovação do modelo, a forma de pagamento, o `WHATSAPP_TOKEN` na Netlify (usuário do sistema, nunca pelo chat) e mandar o Phone number ID; e responder se o número ligado é o mesmo do app (coexistência) e os preços do Completo e do Premium para o catálogo do WhatsApp Business. Ao ligar: o código passa de 72 horas para 10 minutos, com "Mandar outro código", e o envio à mão sai do painel. Antes, do chat de 17 a 20/11: regras 297 a 306
+Da revisão de design, o Breno aprovou as 6 propostas (regra 308). Regra 309: o QR do Pix centralizado. **Regra 310 (21/11): a assinatura do Premium** (seção 10): preços de lançamento, mês grátis, cancelamento com Completo ou Básico, vistas do mês no Básico e selo Fundadora; o SQL `20261121120000_assinatura_do_premium` já rodou no banco de teste (21/11). **Regra 311:** a mesma parte revista com design e marketing (oferta do mês grátis no alto de Plano, Premium recomendado, dias que faltam, número grande no Básico). **WhatsApp automático do código (21/11):** o Breno está criando o modelo de Autenticação no Gerenciador do WhatsApp (copiar código, aviso de segurança, expira em 10 minutos, validade da mensagem 10 minutos). Falta ele: a aprovação do modelo, a forma de pagamento, o `WHATSAPP_TOKEN` na Netlify (usuário do sistema, nunca pelo chat) e mandar o Phone number ID; e responder se o número ligado é o mesmo do app (coexistência) e os preços do Completo e do Premium para o catálogo do WhatsApp Business. Ao ligar: o código passa de 72 horas para 10 minutos, com "Mandar outro código", e o envio à mão sai do painel. Antes, do chat de 17 a 20/11: regras 297 a 306
 (seção 10): "Você marcou?" duas horas depois, "academia" para o lugar, CNPJ, razão social e
 endereço (empresa **BRENO COPPINI MARINHO LTDA**, CNPJ 70.120.796/0001-00), cartão dentro do
 site (Card Payment Brick), prazo na compra, motivo do erro só nas Falhas, **vantagem do Pix**
@@ -2568,6 +2568,24 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   textos legais e o `banco-emails.py` (seção "Assinatura do Premium"; 1.010 no banco local).
   **Bateria completa de 21/11 (até a 310): 2.735 verificações, nenhuma falha.** O SQL rodou no banco de
   teste pelo "Banco de dados" (21/11, sucesso).
+- **311 (21/11) — a assinatura com o melhor design e o melhor marketing** ("faça o trabalho do
+  melhor designer e juntos com o melhor marketing nessa nova parte em tudo"). No alto de Plano, a
+  **oferta do mês grátis** (`blocoOfertaDoPremium`, classe `.pc-mes-gratis`; `.pc-oferta` já era das
+  promoções), verde, como o "Experimente o Premium" do Spotify: o que ganha (selo e topo da busca,
+  os números, o leilão), o botão e "Nada é cobrado sozinho… Sem fidelidade". O **destaque
+  "Recomendado" vai para o Premium** (o plano que se vende), também para o visitante, com "Começar
+  com 1 mês grátis" e a pílula do mês grátis. No Premium: "Preço de lançamento · 45% abaixo do
+  normal" (antes, "sai pelo preço do Completo", que confundia com o Completo grátis). "Sua
+  assinatura" conta os dias ("Faltam N dias", `diasQueFaltam`). A caixa de cancelar mostra primeiro
+  o que sai e depois a escolha, com "Continuar no Premium" em verde e "Prefere pagar menos? No
+  anual, 2 meses saem de graça". O Básico vê o **número grande** ("7 vezes que a sua ficha foi
+  aberta em novembro"), a curiosidade ("Quantos chamaram no WhatsApp? De quais bairros vieram? O
+  Premium mostra.") e o botão em destaque. O selo de fundadora no painel virou uma pílula
+  ("Fundadora", o texto ao lado; antes quebrava em colunas) e, na ficha, uma pílula na linha da
+  confirmação. Na compra do Premium, "Por mês · o normal é R$ 89" e "Preço de lançamento. Sem
+  fidelidade". No alto do Parceiros: "Grátis no plano Básico · Premium com 1º mês grátis · sem
+  comissão". Sem SQL. Testes: `assinatura` (26), `parceiros` (159), `plano-e-creditos` (52),
+  `plano-ao-finalizar`, `planos`, `confianca-na-ficha`, `ficha-hoteis`, `varias-academias`.
 
 ## 11. WhatsApp e mensagem para as academias
 

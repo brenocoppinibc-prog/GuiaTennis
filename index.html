@@ -338,7 +338,22 @@
   .pc-assinatura { border-color: #E9D9A8; }
   .pc-assinatura .pc-acoes { align-items: center; }
   .pc-cancelar-opcoes { display: grid; gap: 8px; margin: 6px 0 4px; }
-  .pc-fundadora { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 14px; padding: 10px 14px; border-radius: 12px; background: #FFF6E0; color: var(--gold-text); font-size: 14px; line-height: 1.4; }
+  .pc-fundadora { display: flex; gap: 10px; align-items: center; margin: 0 0 14px; padding: 10px 14px; border-radius: 12px; background: #FFF6E0; color: var(--gold-text); font-size: 14px; line-height: 1.4; }
+  .pc-fundadora-selo, .ficha-fundadora { flex-shrink: 0; display: inline-block; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--gold); color: var(--gold-text); font-size: 12px; font-weight: 700; letter-spacing: .02em; background: #fff; }
+  /* A oferta do mês grátis no alto do Plano, como o "Experimente o Premium" do Spotify. */
+  .pc-mes-gratis { position: relative; margin: 0 0 18px; padding: 20px 18px 18px; border-radius: 16px; background: var(--green); color: #fff; box-shadow: var(--shadow); }
+  .pc-mes-gratis-tag { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--gold-light); color: #2A2410; font-size: 12px; font-weight: 700; letter-spacing: .02em; }
+  .pc-mes-gratis-t { margin: 10px 0 4px; font-family: var(--fonte-titulo); font-size: 22px; font-weight: 700; line-height: 1.2; }
+  .pc-mes-gratis ul { list-style: none; padding: 0; margin: 10px 0 14px; display: grid; gap: 6px; font-size: 14px; }
+  .pc-mes-gratis li { display: flex; gap: 8px; align-items: flex-start; }
+  .pc-mes-gratis .cta-btn { background: #fff; color: var(--green); border-color: #fff; width: 100%; }
+  .pc-mes-gratis-nota { margin: 10px 0 0; font-size: 12.5px; color: rgba(255,255,255,.85); line-height: 1.4; }
+  .pc-assinatura-dias { display: inline-block; margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: #FFF6E0; color: var(--gold-text); font-size: 12px; font-weight: 700; vertical-align: 2px; }
+  .pc-vistas-n { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
+  .pc-vistas-n strong { font-family: var(--fonte-titulo); font-size: 40px; line-height: 1; color: var(--green); }
+  .pc-vistas-n span { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .pc-cancelar-anual { display: block; margin: 8px 0 0; font-size: 13px; }
+  .reg-sair-nao.forte { color: var(--green); font-weight: 700; }
   .pc-vistas .pc-card-t { font-size: 17px; }
   /* Promoções: as partes Na ficha e Por e-mail (16/10/2026). */
   .pc-promo-partes { margin: 4px 0 14px; }
@@ -11961,6 +11976,10 @@ function mesGratisDisponivel(atual) {
   const a = assinaturaDaAcademia();
   return !!a && !a.carregando && !a.semBanco && !a.teste_usado && (atual || planoAtual()) !== "premium";
 }
+function diasQueFaltam(iso) {
+  const t = iso ? new Date(iso).getTime() : NaN;
+  return isNaN(t) ? null : Math.max(0, Math.ceil((t - Date.now()) / 864e5));
+}
 function diaDaAssinatura(iso) {
   return iso ? diaPorExtenso(new Date(iso).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" })) : "";
 }
@@ -12027,15 +12046,16 @@ function perguntarCancelarAssinatura() {
       <p class="reg-sair-t" id="cancelar-assinatura-t">Cancelar a assinatura do ${esc(nomeDoPlano(a.plano))}?</p>
       <div class="conta-excluir-corpo">
         <p>O ${esc(nomeDoPlano(a.plano))} continua até <strong>${esc(diaDaAssinatura(a.ate))}</strong>. Nada mais é cobrado.</p>
-        <p class="conta-excluir-r">Depois, a ${esc(c.name)} vai para</p>
+        <p class="conta-excluir-r">Depois disso, a ${esc(c.name)} deixa de ter</p>
+        <ul id="cancelar-assinatura-sai">${lista("completo")}</ul>
+        <p class="conta-excluir-r">E passa para</p>
         <div class="pc-cancelar-opcoes" role="radiogroup">
           <label class="consent-row"><input type="radio" name="cancelar-depois" value="completo" checked /><span><strong>Completo</strong>${completoGratis("completo") ? " · grátis por enquanto" : ""}</span></label>
           <label class="consent-row"><input type="radio" name="cancelar-depois" value="basico" /><span><strong>Básico</strong> · grátis</span></label>
         </div>
-        <p class="conta-excluir-r">E deixa de ter</p>
-        <ul id="cancelar-assinatura-sai">${lista("completo")}</ul>
+        ${valorDoPlano(a.plano, "anual") ? `<button type="button" class="pc-linha-link pc-cancelar-anual" id="cancelar-assinatura-anual">Prefere pagar menos? No anual, 2 meses saem de graça ›</button>` : ""}
       </div>
-      <button type="button" class="reg-sair-nao" id="cancelar-assinatura-fica">Continuar no ${esc(nomeDoPlano(a.plano))}</button>
+      <button type="button" class="reg-sair-nao forte" id="cancelar-assinatura-fica">Continuar no ${esc(nomeDoPlano(a.plano))}</button>
       <button type="button" class="reg-sair-sim" id="cancelar-assinatura-sim">Cancelar assinatura</button>
     </div>`;
   document.body.appendChild(el);
@@ -12043,6 +12063,8 @@ function perguntarCancelarAssinatura() {
   const depois = () => (el.querySelector('input[name="cancelar-depois"]:checked') || {}).value || "completo";
   el.querySelectorAll('input[name="cancelar-depois"]').forEach(i => { i.onchange = () => { el.querySelector("#cancelar-assinatura-sai").innerHTML = lista(depois()); }; });
   el.querySelector("#cancelar-assinatura-fica").onclick = fechar;
+  const anual = el.querySelector("#cancelar-assinatura-anual");
+  if (anual) anual.onclick = () => { fechar(); abrirCompraDoPlano(a.plano); state.pcCompra.periodo = "anual"; render(); };
   el.onclick = (e) => { if (e.target === el) fechar(); };
   el.querySelector("#cancelar-assinatura-sim").onclick = () => {
     const d = depois();
@@ -12051,6 +12073,25 @@ function perguntarCancelarAssinatura() {
       (x) => `Assinatura cancelada. O ${nomeDoPlano(x.plano || "premium")} continua até ${diaDaAssinatura(x.ate)}; depois, a academia passa para o ${nomeDoPlano(d)}.`);
   };
   el.querySelector("#cancelar-assinatura-fica").focus();
+}
+// A oferta do mês grátis no alto do Plano (regra 311), como o "Experimente o
+// Premium por 1 mês" do Spotify e do LinkedIn: o que a academia ganha, o preço
+// depois e o "cancele quando quiser" (risco zero), num cartão só.
+function blocoOfertaDoPremium(c, atual) {
+  if (!mesGratisDisponivel(atual) || !souPrincipal()) return "";
+  const v = valorDoPlano("premium", "mensal"), n = valorNormalDoPlano("premium", "mensal");
+  return `
+      <div class="pc-mes-gratis" id="pc-mes-gratis">
+        <span class="pc-mes-gratis-tag">1 mês grátis · sem cartão</span>
+        <p class="pc-mes-gratis-t">Experimente o Premium na ${esc(c.name)}</p>
+        <ul>
+          <li>${seloPremium(15)}<span>Selo dourado e o topo da busca da região, como "Patrocinado"</span></li>
+          <li>${icon('barchart', 15, '#fff')}<span>Quantos jogadores abriram a ficha, quantos chamaram e de onde vieram</span></li>
+          <li>${icon('mail', 15, '#fff')}<span>O leilão das promoções por e-mail para os jogadores do bairro</span></li>
+        </ul>
+        <button type="button" class="cta-btn" data-escolher-plano="premium">Experimentar 1 mês grátis</button>
+        <p class="pc-mes-gratis-nota">Nada é cobrado sozinho: cinco dias antes do fim, avisamos por e-mail. Para continuar, R$ ${esc(v)} por mês no lançamento${n > v ? ` (o normal é R$ ${esc(n)})` : ""}. Sem fidelidade.</p>
+      </div>`;
 }
 // O bloco "Sua assinatura", no alto de Plano.
 function blocoDaAssinatura(c) {
@@ -12064,7 +12105,7 @@ function blocoDaAssinatura(c) {
   const mudando = state.pcPlanoMudando === "assinatura";
   return `
       <div class="pc-card pc-assinatura" id="pc-assinatura">
-        <p class="pc-card-t">${a.plano === "premium" ? seloPremium(16) + " " : ""}Sua assinatura</p>
+        <p class="pc-card-t">${a.plano === "premium" ? seloPremium(16) + " " : ""}Sua assinatura${diasQueFaltam(a.ate) !== null ? `<span class="pc-assinatura-dias">${diasQueFaltam(a.ate) <= 1 ? "Último dia" : `Faltam ${diasQueFaltam(a.ate)} dias`}</span>` : ""}</p>
         <p class="pc-card-s">${esc(texto)}</p>
         ${souPrincipal() ? `<div class="pc-acoes">
           ${a.cancelada
@@ -12093,9 +12134,11 @@ function blocoVistasDoBasico(c) {
   const mes = new Date().toLocaleDateString("pt-BR", { month: "long", timeZone: "America/Sao_Paulo" });
   return `
       <div class="pc-card pc-vistas">
-        <p class="pc-card-t">${n ? `A sua ficha foi vista ${n} ${plural(n, "vez", "vezes")} em ${esc(mes)}` : `A sua ficha ainda não foi vista em ${esc(mes)}`}</p>
-        <p class="pc-card-s">No Premium, você vê quantos jogadores chamaram, de onde vieram e o que procuraram.</p>
-        ${souPrincipal() ? `<button type="button" class="cta-btn cta-secondary" data-escolher-plano="premium">${mesGratisDisponivel() ? "Experimentar 1 mês grátis" : "Ver o Premium"}</button>` : ""}
+        ${n ? `<p class="pc-vistas-n"><strong>${n}</strong><span>${n === 1 ? "vez que a sua ficha foi aberta" : "vezes que a sua ficha foi aberta"} em ${esc(mes)}</span></p>
+        <p class="pc-card-s">Quantos chamaram no WhatsApp? De quais bairros vieram? O Premium mostra.</p>`
+        : `<p class="pc-card-t">A sua ficha ainda não foi vista em ${esc(mes)}</p>
+        <p class="pc-card-s">No Premium, a ficha aparece no topo da busca da região, como "Patrocinado".</p>`}
+        ${souPrincipal() ? `<button type="button" class="cta-btn cta-primary" data-escolher-plano="premium">${mesGratisDisponivel() ? "Experimentar 1 mês grátis" : "Ver o Premium"}</button>` : ""}
       </div>`;
 }
 // As academias fundadoras (as 30 primeiras com responsável no Parceiros): o
@@ -12758,7 +12801,7 @@ function pcInicio() {
         <a href="/parceiros/cadastro" class="cta-btn cta-primary" data-pc="cadastro">Cadastrar minha academia</a>
         <a href="/parceiros/entrar" class="cta-btn cta-secondary" data-pc="entrar">Já tenho acesso</a>
       </div>
-      <p class="pc-hero-nota" ${revela("hero-4", 4)}>${icon('check', 14, 'var(--green)')} Grátis no plano Básico · sem comissão · sem taxa por jogador</p>
+      <p class="pc-hero-nota" ${revela("hero-4", 4)}>${icon('check', 14, 'var(--green)')} Grátis no plano Básico · Premium com 1º mês grátis · sem comissão</p>
     </section>
     ${pcNumerosDoSite(true)}
     <section class="pc-sec" id="pc-beneficios">
@@ -12869,7 +12912,10 @@ function novidadesDoPlano(key) {
 // lado a lado. Abre no plano de hoje (ou no recomendado).
 function pcCartoesDePlano(atual, revelar = false) {
   const prox = atual ? proximoPlano(atual) : null;
-  const destaque = atual ? (prox && prox.key) : "completo";
+  // Regra 311 (o melhor design com o melhor marketing): o destaque vai para o
+  // Premium, o plano que se vende, como o Spotify destaca o plano que quer
+  // vender; o Completo, grátis por enquanto, fica ao lado como a escolha fácil.
+  const destaque = atual === "premium" ? null : "premium";
   const inicio = atual || destaque;
   return `
     <div class="pc-planos" data-plano-inicio="${inicio}">
@@ -12879,7 +12925,7 @@ function pcCartoesDePlano(atual, revelar = false) {
         <div class="pc-plano ${atual === p.key ? "atual" : ""} ${p.key === destaque ? "destaque" : ""}" data-plano-cartao="${p.key}" ${revelar ? revela("plano-" + p.key, i) : ""}>
           ${atual === p.key ? `<span class="pc-plano-tag">Seu plano</span>` : (p.key === destaque ? `<span class="pc-plano-tag">Recomendado</span>` : "")}
           <p class="pc-plano-n">${esc(p.nome)}${p.key === "premium" ? seloPremium(20) : ""}</p>
-          ${p.key === "premium" && mesGratisDisponivel(atual) ? `<p class="pc-plano-gratis">1º mês grátis · sem cartão</p>` : ""}
+          ${p.key === "premium" && (atual ? mesGratisDisponivel(atual) : true) ? `<p class="pc-plano-gratis">1º mês grátis · sem cartão</p>` : ""}
           ${precoDoCartao(p)}
           <p class="pc-card-s">${esc(p.resumo)}</p>
           ${nov.abaixo ? `<p class="pc-plano-mais">Tudo do ${esc(nomeDoPlano(nov.abaixo))}, mais:</p>` : ""}
@@ -12891,7 +12937,7 @@ function pcCartoesDePlano(atual, revelar = false) {
             : p.key === "basico"
               ? (atual ? botaoDeEscolherPlano("basico", atual, false) : `<a href="/parceiros/cadastro" class="cta-btn cta-secondary" data-pc="cadastro">Começar grátis</a>`)
               : atual ? botaoDeEscolherPlano(p.key, atual, p.key === destaque)
-              : `<a href="/parceiros/cadastro" class="cta-btn ${p.key === destaque ? "cta-primary" : "cta-secondary"}" data-pc="cadastro">Começar com o ${esc(p.nome)}</a>`}
+              : `<a href="/parceiros/cadastro" class="cta-btn ${p.key === destaque ? "cta-primary" : "cta-secondary"}" data-pc="cadastro">${p.key === "premium" ? "Começar com 1 mês grátis" : `Começar com o ${esc(p.nome)}`}</a>`}
         </div>`;
       }).join("")}
     </div>
@@ -12941,6 +12987,7 @@ function pcPlanos(logado) {
       ${logado && state.contaErro ? `<p class="form-error">${icon('warning', 14)} ${esc(state.contaErro)}</p>` : ""}
       ${logado && c ? `<p class="pc-sec-sub">${esc(planoPorChave(atual).resumo)} ${esc(precoDoPlano(planoPorChave(atual)))}.</p>` : `<p class="pc-sec-sub">Comece grátis e mude de plano quando quiser.</p>`}
       ${logado && c ? blocoDaAssinatura(c) : ""}
+      ${logado && c ? blocoOfertaDoPremium(c, atual) : ""}
       ${logado && c ? pcOQueMelhorar(c, atual) : ""}
       ${logado && c ? `<h2 class="pc-plano-comparar">Compare os planos</h2>` : ""}
       ${pcCartoesDePlano(atual)}
@@ -13560,7 +13607,7 @@ function pcPainel() {
       ${pcSituacao(c)}
       ${pcWhatsappNovo(c)}
       ${pcProblemasDaFicha(c)}
-      ${ehFundadora(c) ? `<p class="pc-fundadora">${icon('check', 14, 'var(--gold-text)')} A ${esc(c.name)} é uma das academias <strong>fundadoras</strong> do GuiaTennis. O selo fica na ficha para sempre.</p>` : ""}
+      ${ehFundadora(c) ? `<p class="pc-fundadora"><span class="pc-fundadora-selo">Fundadora</span><span>A ${esc(c.name)} é uma das 30 primeiras academias do GuiaTennis. O selo fica na ficha para sempre.</span></p>` : ""}
       ${!veNumeros() && planoAtual() === "basico" ? blocoVistasDoBasico(c) : ""}
 
       ${veNumeros() ? `
@@ -13800,7 +13847,7 @@ function precoDoCartao(p) {
   const anual = valorDoPlano(p.key, "anual");
   return `
           <p class="pc-plano-p">${n > v ? `<s class="pc-plano-riscado">R$ ${esc(n)}</s> ` : ""}R$ ${esc(v)} <small>por mês</small></p>
-          ${n > v ? `<p class="pc-plano-lanc">Preço de lançamento: o normal é R$ ${esc(n)}${p.key === "premium" && v <= valorNormalDoPlano("completo", "mensal") ? ", e agora sai pelo preço do Completo" : ""}.</p>` : ""}
+          ${n > v ? `<p class="pc-plano-lanc">Preço de lançamento · ${Math.round((1 - v / n) * 100)}% abaixo do normal</p>` : ""}
           <p class="pc-plano-pix">${icon('pix', 13, 'currentColor')} R$ ${esc(precoNoPix(v))} por mês no Pix (5% off)</p>
           ${anual ? `<p class="pc-plano-anual">ou R$ ${esc(anual)} por ano · 2 meses grátis</p>` : ""}`;
 }
@@ -14313,9 +14360,10 @@ function pcCreditos() {
         <p class="pc-checkout-bloco-t">${plano ? "Período" : "Valor"}</p>
         ${plano ? `
         <div class="pc-checkout-formas" role="radiogroup" aria-label="Período">
-          ${opcao("data-compra-periodo", "mensal", periodo === "mensal", `Mensal · R$ ${esc(valorDoPlano(k.plano, "mensal"))}`, "Por mês")}
+          ${opcao("data-compra-periodo", "mensal", periodo === "mensal", `Mensal · R$ ${esc(valorDoPlano(k.plano, "mensal"))}`, valorNormalDoPlano(k.plano, "mensal") > valorDoPlano(k.plano, "mensal") ? `Por mês · o normal é R$ ${valorNormalDoPlano(k.plano, "mensal")}` : "Por mês")}
           ${opcao("data-compra-periodo", "anual", periodo === "anual", `Anual · R$ ${esc(valorDoPlano(k.plano, "anual"))}`, "2 meses saem de graça")}
-        </div>` : `
+        </div>
+        ${valorNormalDoPlano(k.plano, "mensal") > valorDoPlano(k.plano, "mensal") ? `<p class="pc-checkout-nota">Preço de lançamento. Sem fidelidade: cancele quando quiser, em Plano.</p>` : ""}` : `
         <div class="pc-checkout-valores" role="radiogroup" aria-label="Valor">
           ${VALORES_DE_CREDITO.map(v => opcao("data-compra-valor", v, !k.outro && valor === v, emReais(v), [v === 100 ? "Mais escolhido" : "", (k.forma || "pix") === "pix" ? `vira ${emReais(v + bonusDoPix(v))} no Pix` : ""].filter(Boolean).join(" · "))).join("")}
           ${opcao("data-compra-valor", "outro", !!k.outro, "Outro valor", `De <span class="sem-quebra">R$ 20</span> a <span class="sem-quebra">R$ 5.000</span>`)}
@@ -24193,7 +24241,7 @@ function linhaDaFichaConfirmada(c) {
   const premium = ehPremium(c);
   // Sem dizer o plano (pedido do Breno em 26/10/2026: "tire a escrita de qual
   // plano academia é, independente do plano"): só o selo dourado muda.
-  return `<p class="ficha-confirmada ${premium ? "premium" : ""}">${premium ? seloPremium(15) : seloConfirmada(15)} <span><strong>Confirmada pela academia</strong>${ehFundadora(c) ? ` · <span class="ficha-fundadora" title="Uma das primeiras academias do GuiaTennis">Fundadora do GuiaTennis</span>` : ""}${quando ? ` · ${esc(quando)}` : ""}${c.phone && c.whatsappEmConfirmacao ? ` · <span class="ficha-whats-confirmando">WhatsApp em confirmação pelo GuiaTennis</span>` : ""}${fichaVelha(c) ? `. <span class="ficha-velha">Faz mais de um ano: confirme horário e preço direto com a academia.</span>` : ""}</span></p>`;
+  return `<p class="ficha-confirmada ${premium ? "premium" : ""}">${premium ? seloPremium(15) : seloConfirmada(15)} <span><strong>Confirmada pela academia</strong>${ehFundadora(c) ? ` <span class="ficha-fundadora" title="Uma das 30 primeiras academias do GuiaTennis">Fundadora do GuiaTennis</span>` : ""}${quando ? ` · ${esc(quando)}` : ""}${c.phone && c.whatsappEmConfirmacao ? ` · <span class="ficha-whats-confirmando">WhatsApp em confirmação pelo GuiaTennis</span>` : ""}${fichaVelha(c) ? `. <span class="ficha-velha">Faz mais de um ano: confirme horário e preço direto com a academia.</span>` : ""}</span></p>`;
 }
 // Mais de um ano sem a academia atualizar (pedido de 26/10/2026, veracidade):
 // a data já aparece, e a ficha avisa para confirmar, como faz com a ficha

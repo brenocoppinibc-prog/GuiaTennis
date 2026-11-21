@@ -32,7 +32,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   const marcasNoRodape = await page.evaluate(() => document.querySelectorAll('.pc-rodape .logo-mark').length);
   ok(marcasNoRodape === 1 && (await texto(page, '.pc-rodape')).split('O GuiaTennis para academias e quadras de tênis').length === 2, 'rodapé com a marca e a frase uma vez só, na faixa escura');
   const planos = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-n').innerText + ':' + (p.querySelector('.pc-plano-tag')?.innerText || '')));
-  ok(planos.join() === 'Básico:,Completo:Recomendado,Premium:', 'três planos, o do meio recomendado — ' + planos.join());
+  ok(planos.join() === 'Básico:,Completo:,Premium:Recomendado', 'três planos, o Premium recomendado (regra 311) — ' + planos.join());
   ok(!corpo.includes('mesma em todos os planos') && !corpo.includes('compra posição'), 'não promete que nunca haverá posição paga');
   const topo = await page.evaluate(() => ({
     nav: [...document.querySelectorAll('.pc-nav a')].map(a => a.innerText).join(' | '),
@@ -456,8 +456,8 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   t = await tela(page);
   ok(t.aba === 'plano' && t.h1 === 'Plano Básico', '"Ver os números no Premium" leva aos planos');
   const meu = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => (p.querySelector('.pc-plano-tag')?.innerText || '-')).join());
-  ok(meu === 'Seu plano,Recomendado,-', 'Plano marca o plano atual e recomenda o próximo — ' + meu);
-  ok(await texto(page, '.pc-plano.destaque [data-escolher-plano="completo"]') === 'Mudar para o Completo (grátis)', '"Mudar para o Completo (grátis)" no plano recomendado (escolhe direto, 19/10/2026; grátis por enquanto, regra 310)');
+  ok(meu === 'Seu plano,-,Recomendado', 'Plano marca o plano atual e recomenda o Premium (regra 311) — ' + meu);
+  ok(await texto(page, '.pc-plano [data-escolher-plano="completo"]') === 'Mudar para o Completo (grátis)', '"Mudar para o Completo (grátis)" no plano recomendado (escolhe direto, 19/10/2026; grátis por enquanto, regra 310)');
   await browser.close();
 
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'completo' }));

@@ -26895,13 +26895,22 @@ const CHAT_TEMAS = [
     p: ["informar um erro", "informar erro", "reportar", "relatar", "avisar de um erro", "achei um erro", "encontrei um erro", "erro no site", "bug no site"],
     r: "Conte o que aconteceu: em qual página, o que você fez e o que esperava." },
   { id: "sugestao", onde: "todos", t: "Dar uma sugestão", relato: "sugestao",
-    p: ["sugestao", "sugestoes", "sugerir", "sugiro", "ideia", "melhoria", "seria bom", "seria legal", "poderia ter"],
+    p: ["sugestao", "sugestoes", "sugerir", "sugiro", "ideia", "melhoria", "seria bom", "seria legal", "seria otimo", "poderia ter", "deveria ter", "podia ter", "devia ter", "poderia mostrar", "deveria mostrar", "acho que o site"],
     r: "Conte a sua sugestão: o que poderia ser melhor no GuiaTennis?" },
   { id: "humano", onde: "todos", t: "Falar com uma pessoa",
     p: ["falar com", "atendente", "humano", "pessoa de verdade", "alguem", "whatsapp", "contato", "suporte", "atendimento", "breno"],
     r: "Claro. O Breno, do GuiaTennis, responde pelo WhatsApp. A sua dúvida já vai escrita na mensagem.",
     a: [{ t: "Falar com o Breno no WhatsApp", ir: "whatsapp" }] },
   // ---- GuiaTennis (jogadores) ----
+  // Regra 312 (21/11/2026, um feedback no chat: "Eu acho que o site poderia ter
+  // mais quadras na minha região" recebeu a dica de como buscar): quem pede
+  // mais lugares recebe o agradecimento e o caminho para indicar um, como o
+  // "Adicionar um lugar que falta" do Google Maps.
+  { id: "mais-lugares", onde: "jogadores", t: "Mais quadras na minha região",
+    p: ["mais quadras", "mais academias", "mais lugares", "poucas quadras", "poucas academias", "faltam quadras", "faltam academias", "falta quadra", "falta academia",
+      "nao tem quadra", "nao tem academia", "nao tem nenhuma", "nenhuma quadra", "nenhuma academia", "ter mais", "nao achei nenhuma"],
+    r: "Obrigado pela sugestão! O GuiaTennis cresce bairro por bairro, e quem joga ajuda muito. Conhece uma quadra ou academia da sua região que ainda não está no Guia? Indique aqui: a gente confere e convida o lugar.",
+    a: [{ t: "Indicar uma quadra ou academia", ir: "menu:sugerir-lugar" }] },
   { id: "buscar", onde: "jogadores", t: "Achar quadra perto",
     // Pedido de 14/10/2026: "busca", "localização", "pesquisar"… são o
     // vocabulário de quem quer achar quadra (o "busca" não era entendido).
@@ -27029,12 +27038,18 @@ function pontosDoTema(tema, txt, palavras) {
   });
   return n;
 }
+// Opinião ("acho que…", "o site poderia…", "seria bom…") é sugestão, não a
+// dúvida de quem procura (regra 312): o "acho" do "acho que" não é o "achar"
+// da busca, e a sugestão ganha pontos.
+const CHAT_OPINIAO = / (acho que|o site (poderia|deveria|podia|devia)|poderia ter|deveria ter|devia ter|podia ter|seria (bom|legal|otimo)|sugiro) /;
 function entenderDuvida(pergunta) {
-  const txt = textoDoChat(pergunta);
+  const original = textoDoChat(pergunta);
+  const opiniao = CHAT_OPINIAO.test(original);
+  const txt = original.replace(/ acho que /g, " que ");
   const palavras = txt.trim().split(" ").filter(Boolean);
   const site = siteDoChat();
   const lista = CHAT_TEMAS.filter(t => t.onde === "todos" || t.onde === site)
-    .map(t => ({ t, n: pontosDoTema(t, txt, palavras) }))
+    .map(t => ({ t, n: pontosDoTema(t, txt, palavras) + (opiniao && t.id === "sugestao" ? 2 : 0) }))
     .filter(x => x.n >= 2)
     .sort((a, b) => b.n - a.n);
   if (!lista.length) return { tipo: "nada" };

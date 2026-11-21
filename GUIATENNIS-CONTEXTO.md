@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 21/11/2026 (regra 311)
+**Atualizado em:** 21/11/2026 (regra 312)
 
 | | |
 |---|---|
@@ -2587,6 +2587,16 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   comissão". Sem SQL. Testes: `assinatura` (26), `parceiros` (159), `plano-e-creditos` (52),
   `plano-ao-finalizar`, `planos`, `confianca-na-ficha`, `ficha-hoteis`, `varias-academias`.
   **Bateria completa de 21/11 (até a 311): 2.738 verificações, nenhuma falha.**
+- **312 (21/11) — opinião no chat de ajuda é sugestão** (print do Breno: "Eu acho que o site poderia
+  ter mais quadras na minha região" recebeu a dica de como buscar, por causa do "acho" e do
+  "região"). Assunto novo `mais-lugares` (jogadores): "mais quadras", "mais academias", "poucas
+  quadras", "falta quadra", "não tem academia", "ter mais"… agradece ("Obrigado pela sugestão! O
+  GuiaTennis cresce bairro por bairro…") e oferece "Indicar uma quadra ou academia"
+  (`menu:sugerir-lugar`), como o "Adicionar um lugar que falta" do Google Maps. E a opinião
+  (`CHAT_OPINIAO`: "acho que", "o site poderia/deveria", "poderia ter", "seria bom", "sugiro")
+  ganha 2 pontos para a sugestão, e o "acho que" deixa de contar como o "achar" da busca ("onde
+  acho quadra" continua indo para a busca). Sem SQL. Testes: `chat-de-ajuda` (39), `chat-com-o-guia`,
+  `chat-na-conta`, `chat-parceiros`, `ajuda-na-busca`, `pensamento-e-home`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

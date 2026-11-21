@@ -92,6 +92,19 @@ async function escrever(page, texto) {
   ok(!(await page.$('#chat-overlay')), 'o ✕ fecha o chat');
   const priv = await page.evaluate(() => PRIVACY_HTML);
   ok(priv.includes('<strong>Chat de ajuda:</strong>') && priv.includes('não grava o que você escreve'), 'a Política de Privacidade diz que a conversa não é gravada');
+  // Regra 312: a opinião é sugestão, não a dica de como buscar.
+  await page.evaluate(() => { abrirChat(); });
+  await page.waitForTimeout(200);
+  await escrever(page, 'Eu acho que o site poderia ter mais quadras na minha região');
+  u = await ultima(page);
+  ok(u.texto.includes('Obrigado pela sugestão') && u.texto.includes('Indique aqui') && !u.texto.includes('digite o bairro') && await page.$('[data-chat-ir="menu:sugerir-lugar"]'),
+    '"o site poderia ter mais quadras na minha região": agradece e oferece indicar um lugar (regra 312) — ' + u.texto.slice(0, 60));
+  await escrever(page, 'acho que o site deveria ter um filtro de horário');
+  u = await ultima(page);
+  ok(u.texto.includes('Conte a sua sugestão') || u.texto.includes('entre na sua conta'), 'opinião sobre o site vira sugestão, não busca — ' + u.texto.slice(0, 60));
+  await escrever(page, 'onde acho quadra de saibro perto?');
+  u = await ultima(page);
+  ok(!u.texto.includes('Obrigado pela sugestão'), 'quem procura ("onde acho…") continua indo para a busca');
   await browser.close();
 
   // ---- GuiaTennis Parceiros: Ajuda › Abrir o chat de ajuda ----

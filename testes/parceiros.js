@@ -457,7 +457,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(t.aba === 'plano' && t.h1 === 'Plano Básico', '"Ver os números no Premium" leva aos planos');
   const meu = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => (p.querySelector('.pc-plano-tag')?.innerText || '-')).join());
   ok(meu === 'Seu plano,Recomendado,-', 'Plano marca o plano atual e recomenda o próximo — ' + meu);
-  ok(await texto(page, '.pc-plano.destaque [data-escolher-plano="completo"]') === 'Mudar para o Completo', '"Mudar para o Completo" no plano recomendado (escolhe direto, 19/10/2026)');
+  ok(await texto(page, '.pc-plano.destaque [data-escolher-plano="completo"]') === 'Mudar para o Completo (grátis)', '"Mudar para o Completo (grátis)" no plano recomendado (escolhe direto, 19/10/2026; grátis por enquanto, regra 310)');
   await browser.close();
 
   ({ browser, page } = await abrir({ academia: 'a2', q: 'parceiros/desempenho', plano: 'completo' }));

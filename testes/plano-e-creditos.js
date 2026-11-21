@@ -13,22 +13,22 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   let { browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano' });
   await page.waitForTimeout(400);
   let corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Grátis por enquanto') && corpo.includes('Por enquanto, todos os planos são grátis: o responsável principal muda aqui, na hora.'), 'Planos: "Grátis por enquanto" e o recado de que muda ali mesmo');
+  ok(corpo.includes('Grátis') && corpo.includes('Sem fidelidade: cancele quando quiser, aqui em Plano.'), 'Planos: o Completo grátis por tempo limitado e "Sem fidelidade" (regra 310)');
   ok(!(await page.$('.pc-planos a[href*="wa.me"]')) && await page.$('.pc-planos [data-escolher-plano="completo"]') && await page.$('.pc-planos [data-escolher-plano="premium"]'), 'os planos se escolhem ali, sem o WhatsApp');
   let pergunta = '';
   page.once('dialog', d => { pergunta = d.message(); d.accept(); });
-  await page.click('.pc-planos [data-escolher-plano="premium"]');
+  await page.click('.pc-planos [data-escolher-plano="completo"]');
   await page.waitForTimeout(600);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(pergunta.includes('Passar a Só Aula Tennis para o plano Premium?') && pergunta.includes('Por enquanto é grátis'), 'pergunta antes de mudar — ' + pergunta.split('\n')[0]);
-  ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'premium' && planoAtual() === 'premium') && corpo.includes('Pronto! A Só Aula Tennis agora está no plano Premium.'),
-    'muda para o Premium na hora, com o recado');
-  ok(await page.evaluate(() => (window.__rpcs.find(r => r.nome === 'escolher_plano') || {}).args.p_plano === 'premium'), 'vai para o banco (escolher_plano)');
-  ok(await page.$('.pc-planos [data-escolher-plano="basico"]') && (await texto(page, '.pc-planos [data-escolher-plano="basico"]')) === 'Voltar ao Básico', 'no Premium, dá para voltar ao Básico');
+  ok(pergunta.includes('Passar a Só Aula Tennis para o plano Completo?') && pergunta.includes('Por enquanto é grátis'), 'pergunta antes de mudar — ' + pergunta.split('\n')[0]);
+  ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'completo' && planoAtual() === 'completo') && corpo.includes('Pronto! A Só Aula Tennis agora está no plano Completo.'),
+    'o Completo (grátis por enquanto) muda na hora, com o recado');
+  ok(await page.evaluate(() => (window.__rpcs.find(r => r.nome === 'escolher_plano') || {}).args.p_plano === 'completo'), 'vai para o banco (escolher_plano)');
+  ok(await page.$('.pc-planos [data-escolher-plano="basico"]') && (await texto(page, '.pc-planos [data-escolher-plano="basico"]')) === 'Voltar ao Básico', 'no Completo, dá para voltar ao Básico');
   page.once('dialog', d => { pergunta = d.message(); d.dismiss(); });
   await page.click('.pc-planos [data-escolher-plano="basico"]');
   await page.waitForTimeout(300);
-  ok(pergunta.includes('Na hora:') && pergunta.includes('sai o selo dourado') && await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'premium'), 'voltar ao Básico mostra o que muda e, sem confirmar, não muda');
+  ok(pergunta.includes('Na hora:') && await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'completo'), 'voltar ao Básico mostra o que muda e, sem confirmar, não muda');
   await browser.close();
 
   // ---- A equipe vê, mas não muda ----
@@ -197,13 +197,15 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   const desligada = async (page, status = 503) => page.route('**/.netlify/functions/pagamento', r => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ erro: 'desligado' }) }));
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', host: PREVIA, pagamentoDeTeste: true }));
   await desligada(page);
+  // Regra 310: o Completo está grátis e o Premium já usou o mês grátis: a compra é a do Premium.
+  await page.evaluate(() => { window.__assinaturas = { a1: { plano: 'premium', ate: new Date(Date.now() - 864e5).toISOString(), depois: 'completo', testeUsado: true, encerrada: true } }; delete state.assinaturas; render(); });
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('R$ 49 por mês') && corpo.includes('ou R$ 990 por ano · 2 meses grátis · preço de teste') && corpo.includes('Site de teste: os preços são de teste e o pagamento também'), 'site de teste: os planos com preço de teste, mensal e anual');
-  await page.click('.pc-planos [data-escolher-plano="completo"]');
+  ok(corpo.includes('R$ 49 por mês') && corpo.includes('ou R$ 490 por ano · 2 meses grátis') && corpo.includes('Site de teste: o pagamento é de teste'), 'site de teste: os planos com preço de teste, mensal e anual');
+  await page.click('.pc-planos [data-escolher-plano="premium"]');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(await page.evaluate(() => location.pathname === '/parceiros/creditos') && corpo.includes('Assinar o Completo') && corpo.includes('Comprador') && corpo.includes('Mensal · R$ 49') && corpo.includes('Anual · R$ 490') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 46' && /Mensal\s+R\$ 49,00\s+Desconto do Pix \(5%\)\s+− R\$ 3,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 46,00/.test(await texto(page, '.pc-checkout-resumo')),
+  ok(await page.evaluate(() => location.pathname === '/parceiros/creditos') && corpo.includes('Assinar o Premium') && corpo.includes('Comprador') && corpo.includes('Mensal · R$ 49') && corpo.includes('Anual · R$ 490') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 46' && /Mensal\s+R\$ 49,00\s+Desconto do Pix \(5%\)\s+− R\$ 3,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 46,00/.test(await texto(page, '.pc-checkout-resumo')),
     'subir de plano abre a mesma tela da compra (regra 232): o comprador, o período e a forma, mensal e Pix de saída, com 5% de desconto no Pix (regra 304)');
   await page.click('[data-compra-periodo="anual"]');
   await page.waitForTimeout(150);
@@ -211,14 +213,14 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#pc-compra');
-  ok(await page.$('#pc-compra .pc-teste-tag') && corpo.includes('Pague R$ 490 com Pix') && corpo.includes('Plano Completo anual · R$ 490') && await page.$('.pc-compra-qr-teste svg') && (await page.inputValue('#pc-compra-codigo')).startsWith('PIX-DE-TESTE-GUIATENNIS-'),
+  ok(await page.$('#pc-compra .pc-teste-tag') && corpo.includes('Pague R$ 490 com Pix') && corpo.includes('Plano Premium anual · R$ 490') && await page.$('.pc-compra-qr-teste svg') && (await page.inputValue('#pc-compra-codigo')).startsWith('PIX-DE-TESTE-GUIATENNIS-'),
     'sem o Mercado Pago: o Pix de teste, com a etiqueta, o QR e o código que não é Pix');
-  ok(await page.evaluate(() => { const r = window.__rpcs.find(x => x.nome === 'criar_compra_de_plano'); return r && r.args.p_plano === 'completo' && r.args.p_periodo === 'anual' && r.args.p_forma === 'pix' && !('p_valor' in r.args); }), 'a compra do plano vai ao banco sem o valor (o preço sai do banco)');
+  ok(await page.evaluate(() => { const r = window.__rpcs.find(x => x.nome === 'criar_compra_de_plano'); return r && r.args.p_plano === 'premium' && r.args.p_periodo === 'anual' && r.args.p_forma === 'pix' && !('p_valor' in r.args); }), 'a compra do plano vai ao banco sem o valor (o preço sai do banco)');
   await page.click('[data-simular="aprovado"]');
   await page.waitForTimeout(800);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Pagamento confirmado') && corpo.includes('A Só Aula Tennis agora está no plano Completo.') && await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'completo' && planoAtual() === 'completo' && window.__compras[0].de_teste),
-    '"Simular Pix pago": o plano muda e a tela confirma');
+  ok(corpo.includes('Pagamento confirmado') && corpo.includes('A Só Aula Tennis agora está no plano Premium.') && await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'premium' && planoAtual() === 'premium' && window.__compras[0].de_teste && new Date(window.__assinaturas.a1.ate) - Date.now() > 360 * 864e5),
+    '"Simular Pix pago": o Premium anual entra (um ano de assinatura) e a tela confirma');
   await page.click('#pc-creditos-concluir');
   await page.waitForTimeout(400);
   ok(await page.evaluate(() => location.pathname === '/parceiros/plano'), '"Voltar ao plano" volta à página Plano');
@@ -273,6 +275,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   // ---- Mercado Pago ligado na prévia: vai para ele, mesmo com o teste ligado ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', host: PREVIA, pagamentoDeTeste: true }));
   await page.route('**/.netlify/functions/pagamento', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(JSON.parse(r.request().postData()).acao === 'consultar' ? { situacao: 'aberta' } : { forma: 'pix', valor: 99, qr: '', copia: '00020101PIXCOPIA' }) }));
+  await page.evaluate(() => { window.__assinaturas = { a1: { testeUsado: true, encerrada: true } }; delete state.assinaturas; render(); });
   await page.waitForTimeout(500);
   await page.click('.pc-planos [data-escolher-plano="premium"]');
   await page.click('#pc-compra-pagar');
@@ -281,11 +284,12 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ok(corpo.includes('Pague R$ 99 com Pix') && !(await page.$('#pc-compra .pc-teste-tag')) && corpo.includes('O plano muda sozinho.') && (await page.inputValue('#pc-compra-codigo')) === '00020101PIXCOPIA', 'com o Mercado Pago ligado, o Pix é o dele');
   await browser.close();
 
-  // ---- Site de verdade: nada de preço nem de pagamento de teste ----
+  // ---- Site de verdade: os preços de lançamento, sem o pagamento de teste ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/plano', pagamentoDeTeste: true }));
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Grátis por enquanto') && !corpo.includes('R$ 49') && !(await page.evaluate(() => window.__rpcs.some(r => r.nome === 'pagamento_de_teste'))), 'no site de verdade, os planos seguem grátis e nem perguntam do teste');
+  ok(corpo.includes('Por tempo limitado') && corpo.includes('Preço de lançamento: o normal é R$ 89') && !corpo.includes('Site de teste') && await page.evaluate(() => !pagamentoDeTeste()),
+    'no site de verdade (regra 310): os preços de lançamento aparecem, sem o pagamento de teste');
   await browser.close();
 
   // ---- Prévia com o interruptor desligado: o WhatsApp, como antes ----

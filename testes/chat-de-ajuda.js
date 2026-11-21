@@ -106,7 +106,7 @@ async function escrever(page, texto) {
   const casos = [
     ['quero excluir minha academia', 'continua no Guia'],
     ['quero pausar durante as férias', 'Pausar no site'],
-    ['quanto custa o premium?', 'todos os planos são grátis'],
+    ['quanto custa o premium?', 'o 1º mês grátis'],
     ['vocês cobram comissão?', 'não cobra comissão'],
     ['como faço promoção de aula grátis', 'uma promoção por vez'],
     ['outra pessoa está administrando minha academia', 'Contestar'],

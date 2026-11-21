@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 21/11/2026 (regra 309)
+**Atualizado em:** 21/11/2026 (regra 310)
 
 | | |
 |---|---|
@@ -454,7 +454,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 `subscribe_pr_activity`). Regra 307: o site mais rápido de novo (as consultas ao banco ao abrir
 vão juntas, em vez de em fila, inclusive os cliques do admin) e **todo erro no
 push vermelho do alto** (`mostrarErro`/`errosNoPush`; a faixa de falha também foi para o alto).
-Da revisão de design, o Breno aprovou as 6 propostas (regra 308). Regra 309: o QR do Pix centralizado. **WhatsApp automático do código (21/11):** o Breno está criando o modelo de Autenticação no Gerenciador do WhatsApp (copiar código, aviso de segurança, expira em 10 minutos, validade da mensagem 10 minutos). Falta ele: a aprovação do modelo, a forma de pagamento, o `WHATSAPP_TOKEN` na Netlify (usuário do sistema, nunca pelo chat) e mandar o Phone number ID; e responder se o número ligado é o mesmo do app (coexistência) e os preços do Completo e do Premium para o catálogo do WhatsApp Business. Ao ligar: o código passa de 72 horas para 10 minutos, com "Mandar outro código", e o envio à mão sai do painel. Antes, do chat de 17 a 20/11: regras 297 a 306
+Da revisão de design, o Breno aprovou as 6 propostas (regra 308). Regra 309: o QR do Pix centralizado. **Regra 310 (21/11): a assinatura do Premium** (seção 10): preços de lançamento, mês grátis, cancelamento com Completo ou Básico, vistas do mês no Básico e selo Fundadora; o SQL `20261121120000_assinatura_do_premium` precisa rodar no banco de teste (disparar o "Banco de dados" à mão, `destino: teste`). **WhatsApp automático do código (21/11):** o Breno está criando o modelo de Autenticação no Gerenciador do WhatsApp (copiar código, aviso de segurança, expira em 10 minutos, validade da mensagem 10 minutos). Falta ele: a aprovação do modelo, a forma de pagamento, o `WHATSAPP_TOKEN` na Netlify (usuário do sistema, nunca pelo chat) e mandar o Phone number ID; e responder se o número ligado é o mesmo do app (coexistência) e os preços do Completo e do Premium para o catálogo do WhatsApp Business. Ao ligar: o código passa de 72 horas para 10 minutos, com "Mandar outro código", e o envio à mão sai do painel. Antes, do chat de 17 a 20/11: regras 297 a 306
 (seção 10): "Você marcou?" duas horas depois, "academia" para o lugar, CNPJ, razão social e
 endereço (empresa **BRENO COPPINI MARINHO LTDA**, CNPJ 70.120.796/0001-00), cartão dentro do
 site (Card Payment Brick), prazo na compra, motivo do erro só nas Falhas, **vantagem do Pix**
@@ -479,8 +479,7 @@ segundo plano).
 **Pendências e ofertas sem resposta:** (1) **o "pode subir" do PR #5** (o Breno confere os
 passos 110 a 124); (2) **nota fiscal automática** no Emissor Nacional, com o certificado A1
 e-CNPJ dele, num **PR novo depois do #5** (detalhe na regra 306); (3) "Baixar planilha do mês"
-em Admin › Compras e notas (oferecido); (4) **planos com vigência** (proposta de 19/11, esperando
-o "pode fazer"; os preços ele ainda não sabe): mensal sem fidelidade (cartão com cobrança
+em Admin › Compras e notas (oferecido); (4) ~~planos com vigência~~ **feito na regra 310** (o resto da proposta de 19/11, como a cobrança automática no cartão, fica para depois): mensal sem fidelidade (cartão com cobrança
 automática ou Pix por e-mail 5 dias antes; 5 dias de tolerância e volta ao Básico); anual = 12
 meses pelo preço de 10, à vista, avisos 30 e 7 dias antes; cancelar o anual: até 7 dias devolve
 tudo (CDC art. 49), depois devolve os meses que faltam cobrando os usados pelo preço do mensal;
@@ -2538,6 +2537,35 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
 - **309 (21/11) — o QR code do Pix no meio** ("deixe o qr code centralizado no site"): na compra
   com Pix, o QR ficava à esquerda (`.pc-checkout .pc-compra-qr` com margem 0); agora no meio, no
   celular e no computador. Sem SQL. Teste: `compra-com-prazo` (9), sem falha.
+- **310 (21/11) — a assinatura do Premium e os gatilhos de venda** ("pode aparecer completo de 49
+  de graça, Premium 89 por 49, faça tudo"; "deixaria o Premium com 1° mês grátis e se cancelar a
+  assinatura, ter opção de básico ou completo"; "não cravaria lançamento ainda"). Preços em
+  `precos_dos_planos` (`valor` cobrado e `valor_normal` riscado), lidos nos dois sites
+  (`carregarPrecosDosPlanos`, `PRECOS_PADRAO`): **Completo ~~R$ 49~~ Grátis** "por tempo limitado,
+  avisamos 30 dias antes de cobrar" (`COMPLETO_GRATIS_POR_ENQUANTO`, sem data); **Premium ~~R$ 89~~
+  R$ 49 por mês** ("Preço de lançamento: o normal é R$ 89, e agora sai pelo preço do Completo"),
+  R$ 490 por ano ("2 meses grátis"), Pix 5% off. O riscado é dito como **preço normal depois do
+  lançamento** (um "de/por" com preço que nunca existiu seria propaganda enganosa, CDC art. 37).
+  **Assinatura** (tabela `assinaturas`, uma linha por academia): **1º mês do Premium grátis**, uma vez
+  por academia, sem cartão (`comecar_mes_gratis`; também ao escolher o Premium no fim do
+  cadastro); cinco dias antes do fim (do teste ou do pago), e-mail ao responsável principal
+  (`rodar_assinaturas`, relógio de hora em hora, tipo `assinatura`, que não se desliga); sem
+  pagamento, passa sozinha para o plano escolhido (Completo por padrão). Pagar soma 1 mês ou 1 ano
+  (`confirmar_compra`); `criar_compra_de_plano` aceita o mesmo plano com assinatura ativa ("Pagar o
+  próximo mês"). `escolher_plano` recusa o Premium direto e, ao descer de plano, encerra a
+  assinatura na hora. **Cancelar** em Plano › bloco "Sua assinatura" › "Cancelar assinatura": caixa
+  com Completo ou Básico e o que sai (aversão à perda, sem dificultar), o Premium fica até o fim do
+  prazo (`cancelar_assinatura`), "Continuar no Premium" desfaz (`continuar_assinatura`). Gatilhos:
+  o Básico vê "A sua ficha foi vista N vezes em <mês>" com o convite do Premium (`vistas_do_mes`);
+  "Sua ficha está X% completa"; selo **"Fundadora do GuiaTennis"** para as 30 primeiras academias
+  com responsável (`academias_fundadoras`, gatilho em `academia_vinculos`), na linha da confirmação
+  da ficha e no painel; "Sem fidelidade: cancele quando quiser". Termos (planos, cancelamento, 7
+  dias do CDC, anual com devolução dos meses que faltam, aviso de 30 dias, fundadora), FAQ do
+  Parceiros e chat de ajuda atualizados; Termos e Privacidade em 21/11/2026. As academias que já
+  estavam no Premium grátis ficam como estão, sem prazo (só quem tem assinatura vence). SQL
+  `20261121120000_assinatura_do_premium`. Testes: `assinatura.js` (novo, 23), `plano-e-creditos`
+  (o pago agora é o Premium), `parceiros`, `plano-ao-finalizar`, `chat-de-ajuda`, as datas dos
+  textos legais e o `banco-emails.py` (seção "Assinatura do Premium"; 1.010 no banco local).
 
 ## 11. WhatsApp e mensagem para as academias
 

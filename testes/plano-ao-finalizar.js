@@ -46,7 +46,7 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   const ordem = await page.evaluate(() => [...document.querySelectorAll('[data-reg-plano]')].map(b => b.dataset.regPlano + (b.closest('.destaque') ? '*' : '')).join(','));
   ok(ordem === 'premium*,completo,basico', 'Premium primeiro e em destaque, depois Completo, e o Básico por último — ' + ordem);
   ok((await texto(page, '.reg-plano-basico')).trim() === 'Continuar no Básico sem essas partes', 'continuar no Básico diz que fica sem essas partes — ' + await texto(page, '.reg-plano-basico'));
-  ok(tela.includes('Por enquanto, todos os planos são grátis'), 'deixa claro que, por enquanto, os planos são grátis (19/10/2026)');
+  ok(tela.includes('O Completo está grátis por tempo limitado, e o Premium tem o 1º mês grátis'), 'deixa claro o Completo grátis e o mês grátis do Premium (regra 310)');
 
   // "Adicionar fotos" leva até a parte, e voltar a enviar mostra a tela de novo.
   await page.click('[data-reg-plano-passo]');

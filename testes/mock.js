@@ -704,6 +704,35 @@
     }
     // Plano e créditos pelo site (SQL 20261019130000). window.__compras guarda
     // as compras; o pagamento é fingido em testes/plano-e-creditos.js.
+    // A assinatura (regra 310, SQL 20261121120000). window.__assinaturas guarda
+    // uma por academia; window.__semAssinatura finge o banco sem o SQL.
+    if (["minha_assinatura", "comecar_mes_gratis", "cancelar_assinatura", "continuar_assinatura", "vistas_do_mes", "academias_fundadoras"].includes(nome)) {
+      if (window.__semAssinatura) return semFuncao;
+      const todas = window.__assinaturas || (window.__assinaturas = {});
+      if (nome === "academias_fundadoras") return { data: window.__fundadoras || [], error:null };
+      const x = meuAcesso();
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v) return erro("Entre na conta da academia.", "42501");
+      if (nome === "vistas_do_mes") return { data: window.__vistasDoMes === undefined ? 7 : window.__vistasDoMes, error:null };
+      const s1 = todas[a.p_academia];
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if (nome === "minha_assinatura") return { data: s1 ? { ativa: !s1.encerrada, plano: s1.plano, ate: s1.ate, depois: s1.depois, teste: !!s1.teste, teste_usado: !!s1.testeUsado, cancelada: !!s1.cancelada } : { ativa: false, teste_usado: false }, error:null };
+      if (v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
+      if (nome === "comecar_mes_gratis") {
+        if (s1 && s1.testeUsado) return erro("O mês grátis do Premium já foi usado por esta academia.", "22023");
+        if (ac.plano === "premium") return erro("A academia já está no Premium.", "22023");
+        const ate = new Date(Date.now() + 30 * 864e5).toISOString();
+        todas[a.p_academia] = { plano: "premium", ate, depois: "completo", teste: true, testeUsado: true, cancelada: false, encerrada: false };
+        ac.plano = "premium";
+        return { data: ate, error:null };
+      }
+      if (!s1 || s1.encerrada) return erro("A academia não tem assinatura ativa.", "22023");
+      if (nome === "cancelar_assinatura") {
+        if (!["basico", "completo"].includes(a.p_depois)) return erro("Escolha o Completo ou o Básico.", "22023");
+        s1.cancelada = true; s1.depois = a.p_depois;
+      } else { s1.cancelada = false; s1.depois = "completo"; }
+      return { data: s1.ate, error:null };
+    }
     if (nome === "escolher_plano") {
       const x = meuAcesso();
       if (!["basico", "completo", "premium"].includes(a.p_plano)) return erro("Plano inválido.", "22023");
@@ -711,6 +740,9 @@
       if (!v || v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
       const ac = db.academias.find(y => y.id === a.p_academia);
       if (!ac) return erro("Academia não encontrada.", "22023");
+      if (a.p_plano === "premium" && ac.plano !== "premium" && !window.__semAssinatura) return erro("O Premium começa pelo mês grátis ou pelo pagamento, em Plano.", "22023");
+      const s2 = (window.__assinaturas || {})[a.p_academia];
+      if (s2 && a.p_plano !== ac.plano) s2.encerrada = true;
       ac.plano = a.p_plano;
       const i = db.pedidos_de_plano.findIndex(y => y.academia_id === a.p_academia);
       if (i >= 0) db.pedidos_de_plano.splice(i, 1);
@@ -812,15 +844,17 @@
     }
     // Pagamento de teste (SQL 20261020120000): window.__pagamentoDeTeste liga.
     if (nome === "pagamento_de_teste") {
-      return { data: { ligado: !!window.__pagamentoDeTeste, precos: { completo_mensal: 49, completo_anual: 490, premium_mensal: 99, premium_anual: 990 } }, error:null };
+      return { data: { ligado: !!window.__pagamentoDeTeste, precos: { completo_mensal: 49, completo_anual: 490, premium_mensal: 49, premium_anual: 490 },
+        normais: { completo_mensal: 49, completo_anual: 490, premium_mensal: 89, premium_anual: 890 } }, error:null };
     }
     if (nome === "criar_compra_de_plano") {
       const x = meuAcesso();
       const v = x && vinculo(x.user_id, a.p_academia);
       if (!v || v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
       const ac = db.academias.find(y => y.id === a.p_academia);
-      if (ac && ac.plano === a.p_plano) return erro("A academia já está nesse plano.", "22023");
-      const valor = { completo_mensal: 49, completo_anual: 490, premium_mensal: 99, premium_anual: 990 }[a.p_plano + "_" + a.p_periodo];
+      const ass = (window.__assinaturas || {})[a.p_academia];
+      if (ac && ac.plano === a.p_plano && !(ass && !ass.encerrada && ass.plano === a.p_plano)) return erro("A academia já está nesse plano.", "22023");
+      const valor = { completo_mensal: 49, completo_anual: 490, premium_mensal: 49, premium_anual: 490 }[a.p_plano + "_" + a.p_periodo];
       if (!valor) return erro("Plano inválido.", "22023");
       const nota = notaDe(a.p_academia);
       if (!nota && !window.__semNotaNoBanco) return erro("Informe os dados para a nota fiscal.", "22023");
@@ -839,7 +873,14 @@
       if (a.p_resultado !== "aprovado") { k.situacao = "recusada"; return { data: "recusada", error:null }; }
       k.situacao = "paga"; k.paga_em = new Date().toISOString();
       const ac = db.academias.find(y => y.id === k.academia_id);
-      if (k.tipo === "plano") ac.plano = k.plano;
+      if (k.tipo === "plano") {
+        ac.plano = k.plano;
+        // Regra 310: o plano pago vale um mês (ou um ano) a partir do prazo de agora.
+        const todas = window.__assinaturas || (window.__assinaturas = {});
+        const s0 = todas[k.academia_id], dias = k.periodo === "anual" ? 365 : 30;
+        const base = s0 && !s0.encerrada && s0.plano === k.plano && new Date(s0.ate) > new Date() ? new Date(s0.ate).getTime() : Date.now();
+        todas[k.academia_id] = { ...(s0 || {}), plano: k.plano, ate: new Date(base + dias * 864e5).toISOString(), depois: k.plano === "premium" ? "completo" : "basico", teste: false, cancelada: false, encerrada: false };
+      }
       else ac.envios_de_aviso = Number(ac.envios_de_aviso || 0) + k.valor;
       return { data: "paga", error:null };
     }

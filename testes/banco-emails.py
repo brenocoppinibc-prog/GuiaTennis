@@ -1566,16 +1566,17 @@ ok(not certo and "Só o responsável principal" in saida, "só o responsável pr
 certo, saida = sql(f"select public.escolher_plano('{PINHEIROS}', 'ouro')", papel="authenticated", user=dono)
 ok(not certo and "Plano inválido" in saida, "plano que não existe é recusado")
 sql(f"insert into public.pedidos_de_plano (academia_id, plano, user_id, onde) values ('{PINHEIROS}', 'completo', '{dono}', 'painel') on conflict (academia_id) do nothing")
+sql(f"set local session_replication_role = replica; update public.academias set plano = 'basico' where id = '{PINHEIROS}'")
 datas = um(f"select dados_atualizados_em::text from public.academias where id = '{PINHEIROS}'")
-ok(um(f"select public.escolher_plano('{PINHEIROS}', 'premium')", papel="authenticated", user=dono) == "premium"
-   and um(f"select plano from public.academias where id = '{PINHEIROS}'") == "premium"
+ok(um(f"select public.escolher_plano('{PINHEIROS}', 'completo')", papel="authenticated", user=dono) == "completo"
+   and um(f"select plano from public.academias where id = '{PINHEIROS}'") == "completo"
    and um(f"select count(*) from public.pedidos_de_plano where academia_id = '{PINHEIROS}'") == "0",
-   "o responsável escolhe o Premium: muda na hora e o pedido para o admin some")
+   "o responsável escolhe o Completo: muda na hora e o pedido para o admin some (o Premium, desde a regra 310, é pelo mês grátis ou pelo pagamento)")
 ok(um(f"select dados_atualizados_em::text from public.academias where id = '{PINHEIROS}'") == datas, "mudar o plano não mexe na data \"atualizada há…\"")
 ok(fila("tipo = 'plano'") != "0", "quem administra recebe o e-mail do plano novo")
 # A academia não muda o plano nem os créditos por fora da função.
 sql(f"update public.academias set plano = 'basico', envios_de_aviso = 999 where id = '{PINHEIROS}'", papel="authenticated", user=dono)
-ok(um(f"select plano || '|' || envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "premium|0", "por fora da função, o plano e os créditos não mudam")
+ok(um(f"select plano || '|' || envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "completo|0", "por fora da função, o plano e os créditos não mudam")
 # Compra de créditos. Desde a regra 231 (SQL 20261110120000), a compra pede os dados para a nota.
 sql(f"insert into public.dados_para_nota (academia_id, documento, nome, email) values ('{PINHEIROS}', '11222333000181', 'Pinheiros Tênis Ltda', 'nota@exemplo.com') on conflict (academia_id) do nothing")
 certo, saida = sql(f"select public.criar_compra_de_creditos('{PINHEIROS}', 10, 'pix')", papel="authenticated", user=dono)
@@ -1624,7 +1625,7 @@ eva = parceiro("Eva Teste", f"evateste{sufixo}@exemplo.com", PINHEIROS, papel="e
 sql(f"update public.academia_vinculos set funcoes = array['ficha', 'avaliacoes', 'promocoes', 'pagamentos'] where user_id = '{eva}' and academia_id = '{PINHEIROS}'")
 ok(um("select ligado::text from public.pagamento_de_teste") == "true", "o aplicar.sh teste liga o pagamento de teste")
 t = json.loads(um("select public.pagamento_de_teste()::text", papel="anon") or "{}")
-ok(t.get("ligado") is True and t.get("precos", {}).get("completo_mensal") == 49 and t.get("precos", {}).get("premium_anual") == 990, "o site lê o interruptor e os preços de teste — " + str(t))
+ok(t.get("ligado") is True and t.get("precos", {}).get("completo_mensal") == 49 and t.get("precos", {}).get("premium_anual") == 490 and t.get("normais", {}).get("premium_mensal") == 89, "o site lê o interruptor e os preços de teste — " + str(t))
 certo, saida = sql(f"select public.criar_compra_de_plano('{PINHEIROS}', 'completo', 'mensal', 'pix')", papel="authenticated", user=eva)
 ok(not certo and "Só o responsável principal" in saida, "só o responsável principal compra o plano")
 certo, saida = sql(f"select public.criar_compra_de_plano('{PINHEIROS}', 'basico', 'mensal', 'pix')", papel="authenticated", user=dono)
@@ -1644,7 +1645,10 @@ ok(um(f"select public.simular_pagamento('{plano}', 'aprovado')", papel="authenti
 ok(fila("tipo = 'plano'") != "0", "quem administra recebe o e-mail do plano novo")
 ok(um(f"select public.simular_pagamento('{plano}', 'aprovado')", papel="authenticated", user=dono) == "paga", "simular de novo não muda nada")
 certo, saida = sql(f"select public.criar_compra_de_plano('{PINHEIROS}', 'completo', 'mensal', 'pix')", papel="authenticated", user=dono)
-ok(not certo and "já está nesse plano" in saida, "não compra o plano que já tem")
+ok(certo, "com a assinatura do Completo ativa, comprar o Completo de novo é pagar o próximo período (regra 310)")
+sql(f"update public.assinaturas set encerrada_em = now() where academia_id = '{PINHEIROS}'")
+certo, saida = sql(f"select public.criar_compra_de_plano('{PINHEIROS}', 'completo', 'mensal', 'pix')", papel="authenticated", user=dono)
+ok(not certo and "já está nesse plano" in saida, "sem assinatura, não compra o plano que já tem")
 cred = um(f"select public.criar_compra_de_creditos('{PINHEIROS}', 200, 'cartao')", papel="authenticated", user=eva)
 ok(um(f"select public.simular_pagamento('{cred}', 'recusado')", papel="authenticated", user=eva) == "recusada"
    and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "0", "créditos recusados: nada entra")
@@ -3001,6 +3005,72 @@ ok(um(f"select public.confirmar_compra('{compra_teste('cartao')}', 'mp2', 100, '
    "no cartão: entram os R$ 100, sem bônus")
 ok(um(f"select public.confirmar_compra('{compra_teste('pix', 50)}', 'mp3', 50, 'approved')") == "paga" and um(f"select envios_de_aviso from public.academias where id = '{PINHEIROS}'") == "258",
    "R$ 50 no Pix: entram R$ 53")
+
+# Assinatura do Premium (regra 310, 20261121120000_assinatura_do_premium) ---------
+print("\nAssinatura do Premium")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261121120000_assinatura_do_premium.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+ok(um("select (public.pagamento_de_teste()->'precos'->>'premium_mensal') || ',' || (public.pagamento_de_teste()->'normais'->>'premium_mensal') || ',' || (public.pagamento_de_teste()->'normais'->>'completo_mensal')", papel="anon") == "49,89,49",
+   "o visitante lê o preço de lançamento do Premium (R$ 49) e os normais riscados (R$ 89 e R$ 49)")
+assin = academia_nova("Assinatura Tênis", -23.61, -46.67, ["saibro"])
+zeca = parceiro("Zeca Dono", f"zeca{sufixo}@exemplo.com", assin)
+equipe_z = parceiro("Lia Equipe", f"liaz{sufixo}@exemplo.com", assin, "equipe")
+def plano_de(a): return um(f"select coalesce(plano, 'basico') from public.academias where id = '{a}'")
+def erro(texto, **kw):
+    certo, saida = sql(texto, **kw)
+    return "" if certo else saida
+ok("mês grátis ou pelo pagamento" in erro(f"select public.escolher_plano('{assin}', 'premium')", papel="authenticated", user=zeca),
+   "escolher o Premium direto não vale: é pelo mês grátis ou pelo pagamento")
+ok("responsável principal" in erro(f"select public.comecar_mes_gratis('{assin}')", papel="authenticated", user=equipe_z), "a equipe não começa o mês grátis")
+um(f"select public.comecar_mes_gratis('{assin}')", papel="authenticated", user=zeca)
+ok(plano_de(assin) == "premium" and um(f"select (ate - now() between interval '27 days' and interval '32 days') || ',' || teste || ',' || depois from public.assinaturas where academia_id = '{assin}'") == "true,true,completo",
+   "o mês grátis: Premium por um mês, depois o Completo")
+ok("já foi usado" in erro(f"select public.comecar_mes_gratis('{assin}')", papel="authenticated", user=zeca), "um mês grátis por academia")
+m = json.loads(um(f"select public.minha_assinatura('{assin}')", papel="authenticated", user=equipe_z))
+ok(m["ativa"] and m["teste"] and m["teste_usado"] and not m["cancelada"] and m["depois"] == "completo", "a equipe vê a assinatura")
+# Cinco dias antes: o e-mail, uma vez só.
+sql(f"update public.assinaturas set ate = now() + interval '4 days' where academia_id = '{assin}'")
+sql("select public.rodar_assinaturas()"); sql("select public.rodar_assinaturas()")
+ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'assinatura' and para = 'zeca{sufixo}@exemplo.com'") == "1"
+   and "mês grátis do Premium acaba em" in um(f"select assunto from public.emails_a_enviar where tipo = 'assinatura' and para = 'zeca{sufixo}@exemplo.com'"),
+   "cinco dias antes, o e-mail do fim do mês grátis (uma vez só, e só para o responsável principal)")
+ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'assinatura' and para = 'liaz{sufixo}@exemplo.com'") == "0", "a equipe não recebe o e-mail da cobrança")
+# Cancelar: fica até o fim e depois vira o escolhido.
+ok("Escolha o Completo ou o Básico" in erro(f"select public.cancelar_assinatura('{assin}', 'premium')", papel="authenticated", user=zeca), "cancelar pede Completo ou Básico")
+um(f"select public.cancelar_assinatura('{assin}', 'basico')", papel="authenticated", user=zeca)
+ok(plano_de(assin) == "premium" and json.loads(um(f"select public.minha_assinatura('{assin}')", papel="authenticated", user=zeca))["cancelada"], "cancelada, o Premium continua até o fim do prazo")
+um(f"select public.continuar_assinatura('{assin}')", papel="authenticated", user=zeca)
+ok(not json.loads(um(f"select public.minha_assinatura('{assin}')", papel="authenticated", user=zeca))["cancelada"], "\"Continuar no Premium\" desfaz o cancelamento")
+um(f"select public.cancelar_assinatura('{assin}', 'basico')", papel="authenticated", user=zeca)
+sql(f"update public.assinaturas set ate = now() - interval '1 minute' where academia_id = '{assin}'")
+sql("select public.rodar_assinaturas()")
+ok(plano_de(assin) == "basico" and um(f"select (encerrada_em is not null) || ',' || teste from public.assinaturas where academia_id = '{assin}'") == "true,false",
+   "no fim do prazo, a academia passa para o plano escolhido (Básico)")
+# Pagar o Premium: um mês a partir de hoje; pagar de novo soma.
+def compra_plano(periodo="mensal", valor=49):
+    return um(f"insert into public.compras_de_creditos (academia_id, valor, forma, tipo, plano, periodo) values ('{assin}', {valor}, 'pix', 'plano', 'premium', '{periodo}') returning id")
+ok(um(f"select public.confirmar_compra('{compra_plano()}', 'mp-a1', 49, 'approved')") == "paga" and plano_de(assin) == "premium"
+   and um(f"select (ate - now() between interval '27 days' and interval '32 days') || ',' || teste || ',' || depois || ',' || (encerrada_em is null) from public.assinaturas where academia_id = '{assin}'") == "true,false,completo,true",
+   "pagou o Premium: um mês, sem o teste, depois o Completo")
+um(f"select public.confirmar_compra('{compra_plano()}', 'mp-a2', 49, 'approved')")
+ok(um(f"select ate - now() > interval '56 days' from public.assinaturas where academia_id = '{assin}'") == "t", "pagar de novo soma mais um mês ao prazo")
+sql(f"insert into public.dados_para_nota (academia_id, documento, nome, email) values ('{assin}', '11222333000181', 'Assinatura Ltda', 'nota@exemplo.com') on conflict (academia_id) do nothing")
+cid = um(f"select public.criar_compra_de_plano('{assin}', 'premium', 'mensal', 'pix')", papel="authenticated", user=zeca)
+ok(um(f"select valor from public.compras_de_creditos where id = '{cid}'") == "46",
+   "no Premium, \"Pagar o próximo mês\" cria a compra (R$ 49, R$ 46 no Pix)")
+um(f"select public.confirmar_compra('{compra_plano('anual', 490)}', 'mp-a3', 490, 'approved')")
+ok(um(f"select ate - now() > interval '420 days' from public.assinaturas where academia_id = '{assin}'") == "t", "o anual soma um ano")
+# Descer de plano direto encerra a assinatura na hora.
+um(f"select public.escolher_plano('{assin}', 'completo')", papel="authenticated", user=zeca)
+sql("select public.rodar_assinaturas()")
+ok(plano_de(assin) == "completo" and um(f"select encerrada_em is not null from public.assinaturas where academia_id = '{assin}'") == "t", "escolher o Completo encerra a assinatura na hora")
+# Fundadoras e as vistas do mês.
+ok(um("select count(*) <= 30 from public.academias_fundadoras") == "t" and um("select count(*) from public.academias_fundadoras() x", papel="anon") == um("select count(*) from public.academias_fundadoras"),
+   "até 30 fundadoras, e o visitante lê a lista")
+ok("permission denied" in erro("select * from public.academias_fundadoras", papel="anon"), "a tabela das fundadoras é fechada; só a função lê")
+sql(f"insert into public.cliques (academia_id, tipo) values ('{assin}', 'visualizacao'), ('{assin}', 'visualizacao'), ('{assin}', 'whatsapp')")
+ok(um(f"select public.vistas_do_mes('{assin}')", papel="authenticated", user=equipe_z) == "2", "as vistas do mês: só as fichas abertas")
+ok("conta da academia" in erro(f"select public.vistas_do_mes('{assin}')", papel="authenticated", user=carla), "quem não é da academia não vê as vistas")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

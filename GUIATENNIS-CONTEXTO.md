@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 21/11/2026 (regra 313)
+**Atualizado em:** 21/11/2026 (regra 313, troca de chat)
 
 | | |
 |---|---|
@@ -450,19 +450,26 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**Chat de 20/11/2026 (regra 307):** o chat acompanha o PR #5 (inscrito com
-`subscribe_pr_activity`). Regra 307: o site mais rápido de novo (as consultas ao banco ao abrir
-vão juntas, em vez de em fila, inclusive os cliques do admin) e **todo erro no
-push vermelho do alto** (`mostrarErro`/`errosNoPush`; a faixa de falha também foi para o alto).
-Da revisão de design, o Breno aprovou as 6 propostas (regra 308). Regra 309: o QR do Pix centralizado. **Regra 310 (21/11): a assinatura do Premium** (seção 10): preços de lançamento, mês grátis, cancelamento com Completo ou Básico, vistas do mês no Básico e selo Fundadora; o SQL `20261121120000_assinatura_do_premium` já rodou no banco de teste (21/11). **Regra 311:** a mesma parte revista com design e marketing (oferta do mês grátis no alto de Plano, Premium recomendado, dias que faltam, número grande no Básico). **WhatsApp automático do código (21/11):** o Breno está criando o modelo de Autenticação no Gerenciador do WhatsApp (copiar código, aviso de segurança, expira em 10 minutos, validade da mensagem 10 minutos). Falta ele: a aprovação do modelo, a forma de pagamento, o `WHATSAPP_TOKEN` na Netlify (usuário do sistema, nunca pelo chat) e mandar o Phone number ID; e responder se o número ligado é o mesmo do app (coexistência) e os preços do Completo e do Premium para o catálogo do WhatsApp Business. Ao ligar: o código passa de 72 horas para 10 minutos, com "Mandar outro código", e o envio à mão sai do painel. Antes, do chat de 17 a 20/11: regras 297 a 306
-(seção 10): "Você marcou?" duas horas depois, "academia" para o lugar, CNPJ, razão social e
-endereço (empresa **BRENO COPPINI MARINHO LTDA**, CNPJ 70.120.796/0001-00), cartão dentro do
-site (Card Payment Brick), prazo na compra, motivo do erro só nas Falhas, **vantagem do Pix**
-(5% em créditos / 5% de desconto no plano, em qualquer valor) e o rodapé arrumado. Na conversa:
-Simples Nacional com Fator R (pró-labore pela "Otimização automática inteligente", sem valor
-mínimo), serviço 17.25 (publicidade na internet), a conta do CNPJ é a do Mercado Pago (o extrato
-vai todo mês para a Contabilizei), nota por compra pelo app da Contabilizei até a nota
-automática.
+**Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
+deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `34f039e`
+(regra 313). O PR está verde, a prévia no ar com tudo até a 313 e a descrição em dia (passos 125 a
+134). O SQL mais novo, `20261121120000_assinatura_do_premium`, já rodou no banco de teste (21/11,
+"Banco de dados" à mão, `destino: teste`). **Deste chat (20 e 21/11):** 307, o site mais rápido (as
+consultas ao banco juntas) e todo erro no push vermelho do alto; 308, a revisão de design (as 6
+propostas aprovadas); 309, o QR do Pix no meio; 310, **a assinatura do Premium** (Completo ~~R$ 49~~
+grátis por tempo limitado, Premium ~~R$ 89~~ R$ 49 no lançamento, 1º mês grátis sem cartão,
+cancelar com Completo ou Básico, vistas do mês no Básico, selo Fundadora); 311, a mesma parte com
+design e marketing (oferta do mês grátis no alto de Plano, Premium recomendado); 312, opinião no
+chat de ajuda é sugestão ("o site poderia ter mais quadras na minha região"); 313, menos informação
+na compra (sem resumo nos dados do comprador) e nos cartões dos planos. **Na conversa:** o estudo
+de preços (Doctoralia, Playtomic, Wellhub; aula em SP ~R$ 145; um aluno paga o plano) e os gatilhos
+de venda; o PDF do cartão CNPJ (Receita, ⋮ › Imprimir/PDF); a verificação da Meta com o cartão CNPJ
+(nome e endereço iguais; o telefone pode ser o do WhatsApp Business; confirmar pelo e-mail do
+domínio ou pela meta tag, que o Breno manda e o Claude coloca no site); os gastos do site no CNPJ
+(Pix/boleto na Meta, no Google Ads e no registro.br; conta PJ digital com cartão de débito para o
+que é em dólar; perguntar à Contabilizei sobre serviço do exterior); o capital social de R$ 1.000
+(transferir por Pix para a conta do CNPJ como "Integralização de capital social", conferindo o
+prazo no contrato social).
 **Mercado Pago:** conta do CNPJ com chave Pix; aplicação "Checkout Pro", API de Preferences
 (trocar para a "API de Orders" quando o Mercado Pago marcar a data). Na Netlify,
 `MERCADOPAGO_ACCESS_TOKEN`, `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` por contexto.
@@ -472,23 +479,30 @@ Pago recusava o cartão de teste ("Não foi possível obter a informação de pa
 produção com dados de teste dá "401 Unauthorized use of live credentials". Compra na prévia é
 dinheiro de verdade (o teste de R$ 20 passou em 20/11 e foi devolvido). Depois do merge, tudo
 igual em produção.
-**Testes:** bateria completa de 17/11 (até a 296): 2.680, nenhuma falha; das 297 a 306, os
-afetados (lista em cada regra) e o `banco-emails.py` num Postgres local (987, nenhuma falha).
-**Rodar a bateria completa no começo do próximo chat** (`bash testes/rodar-todos.sh`, em
-segundo plano).
+**Testes:** bateria completa de 21/11 (até a 311): **2.738, nenhuma falha**; 312 e 313, os testes
+afetados (seção 10), sem falha; `banco-emails.py` num Postgres local: 1.010, nenhuma falha (o banco
+local não fica no contêiner: montar como diz `testes/banco-local-base.sql`). **Rodar a bateria
+completa no começo do próximo chat** (`bash testes/rodar-todos.sh`, em segundo plano).
 **Pendências e ofertas sem resposta:** (1) **o "pode subir" do PR #5** (o Breno confere os
-passos 110 a 124); (2) **nota fiscal automática** no Emissor Nacional, com o certificado A1
-e-CNPJ dele, num **PR novo depois do #5** (detalhe na regra 306); (3) "Baixar planilha do mês"
-em Admin › Compras e notas (oferecido); (4) ~~planos com vigência~~ **feito na regra 310** (o resto da proposta de 19/11, como a cobrança automática no cartão, fica para depois): mensal sem fidelidade (cartão com cobrança
-automática ou Pix por e-mail 5 dias antes; 5 dias de tolerância e volta ao Básico); anual = 12
-meses pelo preço de 10, à vista, avisos 30 e 7 dias antes; cancelar o anual: até 7 dias devolve
-tudo (CDC art. 49), depois devolve os meses que faltam cobrando os usados pelo preço do mensal;
-trocar para cima na hora, para baixo no fim do período; créditos avulsos sem prazo; antes de
-pagar, o resumo do plano e o link dos Termos (Decreto 7.962, art. 4); (5) da empresa, com o
-Breno: domínio no CNPJ (registro.br), Meta e Google Ads cobrando no CNPJ, marca no INPI, CCM e
-nota na Contabilizei; (6) cartão de visita, flyers e plaquinha "Avalie no GuiaTennis" com QR
-(oferecido); (7) das quadras públicas, a pergunta no chat de ajuda e a página de região
-"Quadras públicas de tênis em <bairro>".
+passos 125 a 134); (2) **cobrança automática igual ao Spotify** (pergunta de 21/11, esperando a
+resposta e se vai num PR novo ou no #5): cartão com cobrança automática pelas Assinaturas do Mercado
+Pago (preapproval) e o Pix Automático (conferir se a conta do Mercado Pago tem); hoje a assinatura é
+paga mês a mês, com o e-mail 5 dias antes e a volta sozinha para o Completo; (3) **WhatsApp
+automático do código** (seção 9 do contexto antigo, item 5; o `enviar_whatsapps()` já existe no
+banco): o Breno criou o modelo de **Autenticação** no Gerenciador do WhatsApp (copiar código, aviso
+de segurança, expira em 10 min, validade da mensagem 10 min); falta a aprovação, a forma de
+pagamento, o `WHATSAPP_TOKEN` na Netlify (usuário do sistema; nunca pelo chat), o Phone number ID e
+a resposta se o número ligado é o mesmo (11) 92745-6457 do app (coexistência). Ao ligar: o código
+passa de 72 horas para 10 minutos, com "Mandar outro código", e o envio à mão sai do painel;
+(4) **catálogo do WhatsApp Business**: preços definidos (Completo grátis por tempo limitado, Premium
+R$ 49 no lançamento, créditos R$ 50/100/200), itens com link para o Parceiros; fotos quadradas com o
+logo oferecidas; conferir a Política de Comércio do WhatsApp; (5) carrosséis do Instagram ("Quanto
+custa jogar tênis em <bairro>", "As 5 mais bem avaliadas de <bairro>") e a plaquinha "Avalie no
+GuiaTennis" com QR (oferecidos); (6) **nota fiscal automática** no Emissor Nacional, num PR novo
+depois do #5 (regra 306); (7) "Baixar planilha do mês" em Admin › Compras e notas (oferecido);
+(8) da empresa, com o Breno: domínio no CNPJ (registro.br), Meta e Google Ads cobrando no CNPJ,
+marca no INPI, CCM e nota na Contabilizei; (9) das quadras públicas, a pergunta no chat de ajuda e a
+página de região "Quadras públicas de tênis em <bairro>".
 
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
 avisos por e-mail do Parceiros um por um, SQL

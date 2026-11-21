@@ -2566,6 +2566,8 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `20261121120000_assinatura_do_premium`. Testes: `assinatura.js` (novo, 23), `plano-e-creditos`
   (o pago agora é o Premium), `parceiros`, `plano-ao-finalizar`, `chat-de-ajuda`, as datas dos
   textos legais e o `banco-emails.py` (seção "Assinatura do Premium"; 1.010 no banco local).
+  **Bateria completa de 21/11 (até a 310): 2.735 verificações, nenhuma falha.** O SQL rodou no banco de
+  teste pelo "Banco de dados" (21/11, sucesso).
 
 ## 11. WhatsApp e mensagem para as academias
 

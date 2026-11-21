@@ -2586,6 +2586,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   fidelidade". No alto do Parceiros: "Grátis no plano Básico · Premium com 1º mês grátis · sem
   comissão". Sem SQL. Testes: `assinatura` (26), `parceiros` (159), `plano-e-creditos` (52),
   `plano-ao-finalizar`, `planos`, `confianca-na-ficha`, `ficha-hoteis`, `varias-academias`.
+  **Bateria completa de 21/11 (até a 311): 2.738 verificações, nenhuma falha.**
 
 ## 11. WhatsApp e mensagem para as academias
 

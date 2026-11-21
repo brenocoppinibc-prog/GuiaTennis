@@ -48,6 +48,16 @@ const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s) || 
   });
   await page.waitForTimeout(300);
   ok((await texto(page, '#pc-compra')).includes('Esperando o pagamento'), 'Pix dentro do prazo: continua esperando');
+  // Regra 309: o QR code do Pix no meio da caixa (no celular e no computador).
+  for (const w of [390, 1280]) {
+    await page.setViewportSize({ width: w, height: 900 });
+    const meio = await page.evaluate(() => {
+      state.pcCompra.pix.qr = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='; render();
+      const q = document.querySelector('.pc-compra-qr').getBoundingClientRect(), c = document.getElementById('pc-compra').getBoundingClientRect();
+      return Math.abs((q.left + q.width / 2) - (c.left + c.width / 2));
+    });
+    ok(meio < 2, `regra 309: o QR do Pix centralizado (${w} px) — desvio ${meio.toFixed(1)} px`);
+  }
   await browser.close();
   console.log('\ncompra-com-prazo.js: fim');
 })();

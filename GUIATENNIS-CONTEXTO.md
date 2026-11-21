@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 20/11/2026 (regra 308)
+**Atualizado em:** 21/11/2026 (regra 309)
 
 | | |
 |---|---|
@@ -454,7 +454,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 `subscribe_pr_activity`). Regra 307: o site mais rápido de novo (as consultas ao banco ao abrir
 vão juntas, em vez de em fila, inclusive os cliques do admin) e **todo erro no
 push vermelho do alto** (`mostrarErro`/`errosNoPush`; a faixa de falha também foi para o alto).
-Da revisão de design, o Breno aprovou as 6 propostas (regra 308). Antes, do chat de 17 a 20/11: regras 297 a 306
+Da revisão de design, o Breno aprovou as 6 propostas (regra 308). Regra 309: o QR do Pix centralizado. **WhatsApp automático do código (21/11):** o Breno está criando o modelo de Autenticação no Gerenciador do WhatsApp (copiar código, aviso de segurança, expira em 10 minutos, validade da mensagem 10 minutos). Falta ele: a aprovação do modelo, a forma de pagamento, o `WHATSAPP_TOKEN` na Netlify (usuário do sistema, nunca pelo chat) e mandar o Phone number ID; e responder se o número ligado é o mesmo do app (coexistência) e os preços do Completo e do Premium para o catálogo do WhatsApp Business. Ao ligar: o código passa de 72 horas para 10 minutos, com "Mandar outro código", e o envio à mão sai do painel. Antes, do chat de 17 a 20/11: regras 297 a 306
 (seção 10): "Você marcou?" duas horas depois, "academia" para o lugar, CNPJ, razão social e
 endereço (empresa **BRENO COPPINI MARINHO LTDA**, CNPJ 70.120.796/0001-00), cartão dentro do
 site (Card Payment Brick), prazo na compra, motivo do erro só nas Falhas, **vantagem do Pix**
@@ -2535,6 +2535,9 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Testes: `erros-no-push` (14), `acabamento`, `ver-no-mapa`, `ficha-hoteis`, `contatos-e-cadastro`,
   `convite-conta`, `viagem`, `plano-e-creditos`, `sobre` e `confianca-na-ficha`, sem falha. Bateria
   completa de 20/11 (até a 308): 2.710 verificações, nenhuma falha.
+- **309 (21/11) — o QR code do Pix no meio** ("deixe o qr code centralizado no site"): na compra
+  com Pix, o QR ficava à esquerda (`.pc-checkout .pc-compra-qr` com margem 0); agora no meio, no
+  celular e no computador. Sem SQL. Teste: `compra-com-prazo` (9), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

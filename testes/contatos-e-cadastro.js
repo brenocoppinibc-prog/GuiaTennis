@@ -58,7 +58,7 @@ const { abrir, ok } = require('./harness');
   r = await page.evaluate(() => { state.estatisticas = { ...(state.estatisticas || {}), acessos_total: 5230, fichas_total: 1310, contatos_total: 200 }; return numerosDoSite().map(n => n.valor + ' ' + n.rotulo); });
   ok(r.join(' | ') === '+5.000 visitas ao GuiaTennis | +1.300 fichas de academias abertas | +200 contatos com as academias', 'regra 308: porcentagem baixa vira o número de vezes — ' + r.join(' | '));
   r = await page.evaluate(() => { state.estatisticas = { ...state.estatisticas, acessos_total: 5230, fichas_total: 2100, contatos_total: 700 }; return numerosDoSite().map(n => n.valor + ' ' + n.rotulo); });
-  ok(r.join(' | ') === '+5.000 visitas ao GuiaTennis | 40% das visitas abrem a ficha de uma academia | 35% das fichas abertas viram contato com a academia', 'regra 308: porcentagem alta (30% ou mais) aparece — ' + r.join(' | '));
+  ok(r.join(' | ') === '+5.000 visitas ao GuiaTennis | 40% das visitas abrem a ficha de uma academia | 35% das fichas abertas resultam em contato com a academia', 'regra 308: porcentagem alta (30% ou mais) aparece — ' + r.join(' | '));
   await browser.close();
 
   // ---- Pagamento: "Outro valor" e "Pagamento seguro" ----
@@ -75,7 +75,7 @@ const { abrir, ok } = require('./harness');
   await page.click('#pc-pagamento-seguro');
   await page.waitForTimeout(150);
   r = await page.evaluate(() => document.querySelector('.pc-seguro-explica')?.innerText || '');
-  ok(/Mercado Pago/.test(r) && /não vê nem guarda os dados do cartão/.test(r) && /Pix/.test(r), '"Pagamento seguro" abre a explicação do pagamento');
+  ok(/Mercado Pago/.test(r) && /sem passar pelo GuiaTennis/.test(r) && /Pix/.test(r), '"Pagamento seguro" abre a explicação do pagamento');
   await page.click('#pc-seguro-ok');
   await page.waitForTimeout(150);
   ok(await page.evaluate(() => !document.querySelector('.pc-seguro-explica')), '"Entendi" fecha');

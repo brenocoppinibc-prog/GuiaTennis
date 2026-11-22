@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 22/11/2026 (regra 314)
+**Atualizado em:** 22/11/2026 (regra 315)
 
 | | |
 |---|---|
@@ -44,6 +44,11 @@ para o histórico).
   15/11/2026): para o jogador (achar e chamar a academia) e para a academia (o
   Parceiros e os planos), sem empurrar e sem enfeite; toda decisão de design pesa
   isso.
+- **Sempre o melhor marketing e o melhor design de sites** (pedido fixo de 22/11/2026, regra 315):
+  em toda tela, gatilhos de venda bem usados (ancoragem com o preço riscado, economia em reais,
+  bônus em destaque, prova social como "Mais escolhido", risco zero) e o acabamento dos melhores
+  sites (Spotify, Apple, Stripe, Booking, Mercado Livre), com texto formal: nada de "vira R$ …",
+  "o normal é…" ou "sai por"; usar "Receba…", "Preço regular", "Economize…".
 - Quer **comparação com referências internacionais grandes** (Google,
   Booking, Airbnb, hoteis.com, trivago, Instagram, Nubank, Shopify…) nas
   decisões de site, Instagram e marketing — **na conversa**. No site,
@@ -450,7 +455,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**22/11/2026 (regra 314, a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Webhooks salvos pelo Breno em 22/11 (Modo de produção, `pagamento?mp=1`, Pagamentos e Planos e assinaturas). Falta o Breno: (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
+**22/11/2026 (regra 315: bônus do Pix e período em destaque, voltar do QR, contatos do Parceiros pelo WhatsApp, revisão do português; regra 314: a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Webhooks salvos pelo Breno em 22/11 (Modo de produção, `pagamento?mp=1`, Pagamentos e Planos e assinaturas). Falta o Breno: (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
 deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `34f039e`
 (regra 313). O PR está verde, a prévia no ar com tudo até a 313 e a descrição em dia (passos 125 a
 134). O SQL mais novo, `20261121120000_assinatura_do_premium`, já rodou no banco de teste (21/11,
@@ -2657,6 +2662,39 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `pagamento.mjs` (37), `plano-e-creditos`, `assinatura`, `dados-para-nota`, as datas dos textos
   legais, `parceiros` (o FAQ com 29) e o `banco-emails.py` (seção "Renovação automática"; 1.030 no banco
   local, sem falha). **Bateria completa de 22/11 (até a 314): 2.776 verificações, nenhuma falha.**
+- **315 (22/11) — o melhor marketing e design na compra, contatos e português** ("deixe mais
+  chamativo o 5% de crédito e falar vira … é muito informal"; "ao voltar do qr code, voltar para
+  selecionar o valor"; "'o normal é R$ 89' informal também e está muito básico a seleção entre o
+  período"; "o bônus deve aparecer em cima e depois dar o total"; "termos de uso … deve ter um
+  link"; "só quando é para parceiros, direcionar primeiramente para falar comigo no WhatsApp.
+  Dúvidas sobre o funcionamento do site, … para as perguntas, depois para o chat"; "não vê nem
+  guarda os dados do cartão … não está seguindo uma boa gramática"). **Regra fixa nova na seção 1**
+  (o melhor marketing e design, texto formal). Créditos: faixa verde **"+5% · Bônus de 5% no
+  Pix"** no alto do Valor (`.pc-bonus-pix`), cada valor com **"Receba R$ 105 em créditos"** (no
+  cartão, "No Pix, receba R$ 105"), "Mais escolhido" em etiqueta; no resumo, o **bônus antes do
+  total** e, por último, **"Você recebe R$ 105,00 em créditos"** (`.pc-recebe`); "(Termos de Uso)"
+  vira link (`data-menu="termos"`). Plano: **o período em dois cartões** (`cartoesDoPeriodo`,
+  `.pc-periodo`), como Spotify, Apple e Duolingo: Mensal ~~R$ 89~~ **R$ 49** por mês · "Preço de
+  lançamento"; Anual com o selo **"2 meses grátis"**, ~~R$ 588~~ **R$ 490** por ano, "Equivale a
+  R$ 40,83 por mês" e **"Economize R$ 98"**. No QR code do Pix (e no pagamento de teste),
+  **"Voltar e trocar o valor"** volta à escolha com o mesmo valor e forma (`voltarAEscolhaDaCompra`);
+  o voltar do celular também (`guardarPassoDaCompra` guarda um passo no histórico). **Contatos**
+  (`contatosNaOrdem`): no Parceiros, "Fale com a gente" com **WhatsApp primeiro**, depois
+  "Perguntas frequentes" (a Ajuda), o chat, Instagram e e-mail; para os jogadores, as perguntas
+  ("Como funciona") primeiro e depois o chat; a Ajuda do Parceiros com "Falar no WhatsApp" em
+  destaque; o chat, na primeira vez que não entende, oferece "Ver as perguntas frequentes" (`ir:
+  "perguntas"`) e, na segunda, o WhatsApp; a assinatura desligada aponta para o WhatsApp.
+  **Português** (LanguageTool pt-BR, via Maven `org.languagetool:language-pt:6.4` com um
+  `Checa.java`, em todo texto novo desde a regra 252, e leitura): "Os dados do cartão vão direto
+  para o Mercado Pago, sem passar pelo GuiaTennis" (no lugar de "não vê nem guarda"); "preço
+  regular" (no lugar de "o normal é"); "custa" (no lugar de "sai por"); "automaticamente" (no lugar
+  de "sozinho"); "aplicativo do banco"; "resultam em contato"; "aparece como um cartão".
+  **Na conversa:** o Pix Automático abriu o app do Mercado Pago no celular (o Breno vai tentar em
+  outro aparelho). SQL: só textos no `20261121130000_cobranca_automatica` (rodar de novo no
+  teste). Testes: `bonus-e-periodo.js` (novo, 17), `plano-e-creditos`, `renovacao-automatica`,
+  `promocoes`, `contatos-e-cadastro`, `assinatura`, `chat-de-ajuda`, `dados-para-nota`,
+  `ficha-basica` e `parceiros` (os contatos na ordem nova), sem falha. **Bateria completa de 22/11
+  (até a 315): 2.793 verificações, nenhuma falha.**
 
 ## 11. WhatsApp e mensagem para as academias
 

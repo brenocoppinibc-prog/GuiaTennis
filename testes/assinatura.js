@@ -25,7 +25,7 @@ const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.in
 
   // Regra 311: a oferta no alto, o destaque no Premium.
   const oferta = await texto(page, '#pc-mes-gratis');
-  ok(oferta.includes('1 mês grátis · sem cartão') && oferta.includes('Experimente o Premium na Só Aula Tennis') && oferta.includes('Nada é cobrado sozinho') && oferta.includes('Sem fidelidade')
+  ok(oferta.includes('1 mês grátis · sem cartão') && oferta.includes('Experimente o Premium na Só Aula Tennis') && oferta.includes('Nada é cobrado automaticamente') && oferta.includes('Sem fidelidade')
     && await page.evaluate(() => document.querySelector('.pc-plano.destaque')?.dataset.planoCartao === 'premium'),
     'no alto, a oferta do mês grátis (o que ganha, o preço depois, sem fidelidade), e o destaque no Premium — ' + oferta.slice(0, 80));
   // ---- O mês grátis ----
@@ -33,7 +33,7 @@ const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.in
   page.once('dialog', d => { pergunta = d.message(); d.accept(); });
   await page.click('.pc-planos [data-escolher-plano="premium"]');
   await page.waitForTimeout(700);
-  ok(pergunta.includes('Começar o mês grátis do Premium') && pergunta.includes('Sem cartão e sem cobrança') && pergunta.includes('passa sozinha para o Completo'),
+  ok(pergunta.includes('Começar o mês grátis do Premium') && pergunta.includes('Sem cartão e sem cobrança') && pergunta.includes('passa automaticamente para o Completo'),
     'pergunta antes, sem cartão e sem cobrança — ' + pergunta.split('\n')[0]);
   ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'premium' && (window.__rpcs.find(r => r.nome === 'comecar_mes_gratis') || {}).args.p_academia === 'a1'),
     'vai para o banco (comecar_mes_gratis) e a academia fica no Premium');

@@ -111,7 +111,7 @@ begin
   end if;
   if exists (select 1 from public.cobrancas_automaticas
              where academia_id = p_academia and situacao in ('ativa', 'pausada') and desejada = 'ativa') then
-    raise exception 'A renovação automática já está ligada: o próximo pagamento sai sozinho.' using errcode = '22023';
+    raise exception 'A renovação automática já está ligada: o próximo pagamento será feito automaticamente.' using errcode = '22023';
   end if;
   if (select coalesce(plano, 'basico') from public.academias where id = p_academia) = p_plano
      and not exists (select 1 from public.assinaturas where academia_id = p_academia and plano = p_plano and encerrada_em is null) then
@@ -263,7 +263,7 @@ begin
     v_meio := case when a.forma = 'pix' then 'no Pix Automático' else 'no cartão' || coalesce(' final ' || a.final, '') end;
     v_link := public.site_dos_emails() || '/parceiros/plano?abrir=' || right(replace(a.academia_id::text, '-', ''), 8) || '&utm_source=Email-assinatura';
     v_texto := 'A renovação de R$ ' || a.valor || ' do ' || public.nome_do_plano(a.plano) || ' da ' || v_nome || ' não passou ' || v_meio || '. '
-      || case when a.forma = 'pix' then 'Confira o Pix Automático no app do banco.' else 'O Mercado Pago tenta de novo nos próximos dias; para trocar o cartão, vá em Plano.' end
+      || case when a.forma = 'pix' then 'Confira o Pix Automático no aplicativo do banco.' else 'O Mercado Pago tenta de novo nos próximos dias; para trocar o cartão, vá em Plano.' end
       || ' Sem pagamento, a academia passa para o ' || public.nome_do_plano(case when a.plano = 'premium' then 'completo' else 'basico' end) || ' no fim do prazo.';
     for r in select * from public.principais_da_academia(a.academia_id) loop
       perform public.por_na_fila(
@@ -364,7 +364,7 @@ begin
   end if;
   if exists (select 1 from public.cobrancas_automaticas
              where academia_id = p_academia and situacao = 'ativa' and desejada = 'ativa') then
-    raise exception 'A renovação automática já está ligada: o próximo pagamento sai sozinho.' using errcode = '22023';
+    raise exception 'A renovação automática já está ligada: o próximo pagamento será feito automaticamente.' using errcode = '22023';
   end if;
   if (select coalesce(plano, 'basico') from public.academias where id = p_academia) = p_plano
      and not exists (select 1 from public.assinaturas where academia_id = p_academia and plano = p_plano and encerrada_em is null) then
@@ -471,9 +471,9 @@ begin
       when s.cancelada_em is not null then
         'O Premium da ' || v_nome || ' vai até ' || v_quando || '. Depois, a academia passa para o ' || public.nome_do_plano(s.depois) || ', como vocês escolheram. Mudou de ideia? Continue no Premium em Plano.'
       when a.id is not null and s.teste then
-        'O mês grátis do Premium da ' || v_nome || ' acaba em ' || v_quando || '. Nesse dia, a renovação automática cobra R$ ' || a.valor || ' ' || v_meio || ', e o Premium continua sem vocês fazerem nada. Para não ser cobrado, cancele em Plano até lá.'
+        'O mês grátis do Premium da ' || v_nome || ' acaba em ' || v_quando || '. Nesse dia, a renovação automática cobra R$ ' || a.valor || ' ' || v_meio || ', e o Premium continua ativo sem que vocês precisem fazer nada. Para não ser cobrado, cancele em Plano até lá.'
       when a.id is not null then
-        'O ' || public.nome_do_plano(s.plano) || ' da ' || v_nome || ' renova sozinho em ' || v_quando || ': R$ ' || a.valor || ' ' || v_meio || '. Não precisa fazer nada. Para mudar ou cancelar, vá em Plano.'
+        'O ' || public.nome_do_plano(s.plano) || ' da ' || v_nome || ' será renovado automaticamente em ' || v_quando || ': R$ ' || a.valor || ' ' || v_meio || '. Não precisa fazer nada. Para mudar ou cancelar, vá em Plano.'
       when s.teste then
         'O mês grátis do Premium da ' || v_nome || ' acaba em ' || v_quando || '. Para continuar com o selo, o Patrocinado, as promoções e os números, pague o próximo mês em Plano. Sem pagamento, a academia passa para o ' || public.nome_do_plano(s.depois) || ' e nada é cobrado.'
       else

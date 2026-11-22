@@ -54,7 +54,7 @@ const desligada = async (page) => page.route('**/.netlify/functions/pagamento', 
   ok(salvo && salvo.documento === '11222333000181' && salvo.nome === 'SO AULA TENNIS LTDA' && salvo.email === 'financeiro@soaula.com.br', '"Continuar para o pagamento" grava os dados do comprador — ' + JSON.stringify(salvo));
   ok(corpo.includes('Comprador') && corpo.includes('SO AULA TENNIS LTDA') && corpo.includes('CNPJ 11.222.333/0001-81') && await page.$('#pc-compra-pagar') && (await etapaAgora()).includes('Pagamento'),
     'e passa ao pagamento, com o comprador em cima');
-  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 100' && corpo.includes('com o CPF ou CNPJ do comprador'), '"Pagar com Pix · R$ 100", processado com o CPF ou CNPJ do comprador');
+  ok((await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 100' && corpo.includes('com o CPF ou o CNPJ do comprador'), '"Pagar com Pix · R$ 100", processado com o CPF ou o CNPJ do comprador');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(800);
   const compra = await page.evaluate(() => (window.__compras || [])[0] || {});

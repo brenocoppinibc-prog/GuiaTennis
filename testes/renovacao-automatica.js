@@ -42,7 +42,7 @@ const mercadoPago = (page) => page.evaluate(() => {
   await page.click('[data-assinatura="pagar"]');
   await page.waitForTimeout(500);
   let corpo = await texto(page, '#parceiros .pc-main');
-  ok(await page.evaluate(() => state.pcCompra.forma === 'cartao_auto') && corpo.includes('Cartão de crédito') && corpo.includes('Primeira cobrança em') && corpo.includes('Renova sozinho todo mês')
+  ok(await page.evaluate(() => state.pcCompra.forma === 'cartao_auto') && corpo.includes('Cartão de crédito') && corpo.includes('Primeira cobrança em') && corpo.includes('Renovação automática todo mês')
     && corpo.includes('Pix · só este mês') && !corpo.includes('Pix Automático'),
     'a compra do plano: o cartão com a renovação vem marcado, a primeira cobrança no fim do mês grátis e o Pix só deste mês; no site de verdade, sem o Pix Automático — ' + corpo.slice(0, 60));
   ok((await texto(page, '#pc-compra-pagar')) === 'Ligar a renovação automática' && (await texto(page, '.pc-checkout-resumo')).includes('nada é cobrado hoje'), 'o botão "Ligar a renovação automática" e, no resumo, nada cobrado hoje');
@@ -54,7 +54,7 @@ const mercadoPago = (page) => page.evaluate(() => {
   const folha = await texto(page, '#pc-cartao-folha');
   ok(criada && criada.p_plano === 'premium' && criada.p_periodo === 'mensal' && criada.p_forma === 'cartao' && !('p_valor' in criada) && chamadas.at(-1).acao === 'assinar' && chamadas.at(-1).previa === true,
     'cria a assinatura no banco (sem o valor, que sai do banco) e confere a função antes do formulário');
-  ok(folha.includes('Assinar o Premium com cartão') && folha.includes('Nada é cobrado hoje') && folha.includes('Cancele quando quiser') && folha.includes('o GuiaTennis não vê nem guarda os dados')
+  ok(folha.includes('Assinar o Premium com cartão') && folha.includes('Nada é cobrado hoje') && folha.includes('Cancele quando quiser') && folha.includes('Os dados do cartão vão direto para o Mercado Pago, sem passar pelo GuiaTennis')
     && await page.evaluate(() => window.__brick.cfg.customization.visual.texts.formSubmit === 'Ligar a renovação automática'),
     'o formulário do cartão diz que nada é cobrado hoje, quando é a primeira cobrança e que dá para cancelar — ' + folha.slice(0, 120));
   await page.evaluate((ate) => { window.__assinaturas.a1.automatica = { id: 'cccccccc-0000-4000-8000-000000000001', forma: 'cartao', situacao: 'ativa', desejada: 'ativa', plano: 'premium', periodo: 'mensal', valor: 49, bandeira: 'visa', final: '4242', comeca_em: ate }; }, daqui(20));
@@ -109,7 +109,7 @@ const mercadoPago = (page) => page.evaluate(() => {
   ok((await texto(page, '#pc-compra-pagar')) === 'Assinar com cartão · R$ 49 por mês' && !(await texto(page, '#parceiros .pc-main')).includes('Primeira cobrança em'), 'sem o plano: "Assinar com cartão · R$ 49 por mês", cobrado hoje');
   await page.click('#pc-compra-pagar');
   await page.waitForTimeout(400);
-  ok((await texto(page, '#pc-cartao-folha')).includes('R$ 49 hoje e depois todo mês, sozinho'), 'o formulário diz que cobra hoje e depois todo mês');
+  ok((await texto(page, '#pc-cartao-folha')).includes('R$ 49 hoje e, depois, todo mês, automaticamente'), 'o formulário diz que cobra hoje e depois todo mês');
   await page.evaluate(() => { window.__db.academias.find(a => a.id === 'a1').plano = 'premium'; });
   await page.click('#brick-pagar');
   await page.waitForTimeout(9500);
@@ -131,7 +131,7 @@ const mercadoPago = (page) => page.evaluate(() => {
   await page.click('.pc-planos [data-escolher-plano="premium"]');
   await page.waitForTimeout(400);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(corpo.includes('Pix Automático') && corpo.includes('Autorize uma vez no app do banco'), 'no site de teste, a opção Pix Automático, com o desconto');
+  ok(corpo.includes('Pix Automático') && corpo.includes('Autorize uma vez no aplicativo do banco'), 'no site de teste, a opção Pix Automático, com o desconto');
   await page.click('[data-compra-forma="pix_auto"]');
   await page.waitForTimeout(150);
   ok((await texto(page, '#pc-compra-pagar')) === 'Autorizar o Pix Automático' && /Desconto do Pix \(5%\)/.test(await texto(page, '.pc-checkout-resumo')), 'Pix Automático: "Autorizar o Pix Automático", com os 5% no resumo');

@@ -111,7 +111,7 @@ async function escrever(page, texto) {
   ({ browser, page } = await abrir({ q: 'parceiros/ajuda' }));
   await page.waitForTimeout(300);
   const card = await page.evaluate(() => document.querySelector('.pc-contato')?.innerText || '');
-  ok(card.includes('chat de ajuda') && !(await page.$('.pc-contato a[href^="https://wa.me"]')), 'em Ajuda, "Fale com o GuiaTennis" abre o chat, sem o WhatsApp direto');
+  ok(card.includes('chat de ajuda') && await page.$('.pc-contato a.cta-primary[href^="https://wa.me"]'), 'em Ajuda, "Fale com o GuiaTennis": o WhatsApp primeiro e o chat de ajuda em seguida (regra 315)');
   await page.click('.pc-contato [data-abrir-chat]');
   await page.waitForTimeout(300);
   u = await ultima(page);

@@ -93,7 +93,7 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   await page.waitForTimeout(500);
   corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
   ok(corpo.includes('Por semana R$ 10') && corpo.includes('4 semanas R$ 40') && corpo.includes('Créditos disponíveis R$ 25') && corpo.includes('Faltam R$ 15 em créditos')
-    && corpo.includes('No Premium, a semana sai por R$ 8 (20% menos)') && !corpo.includes('menos no Premium'), 'Completo: preço cheio por semana, o total, os créditos, o que falta e o preço do Premium — ' + corpo);
+    && corpo.includes('No Premium, a semana custa R$ 8 (20% a menos)') && !corpo.includes('menos no Premium'), 'Completo: preço cheio por semana, o total, os créditos, o que falta e o preço do Premium — ' + corpo);
   ok((await texto(page, '.pc-sec-sub')).includes('paga com os créditos (R$ 10 por semana)'), 'no alto, o preço da semana');
   await page.fill('#pc-promo-titulo', 'Aula experimental');
   await page.click('#pc-promo-revisar');

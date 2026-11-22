@@ -57,7 +57,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
     '"Comprar créditos" abre uma página própria, sem o menu do Parceiros, com "Pagamento seguro" no alto');
   ok(corpo.includes('Comprar créditos') && corpo.includes('R$ 50') && corpo.includes('R$ 200') && corpo.includes('Outro valor') && corpo.includes('Mais escolhido') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 100',
     'o valor (R$ 100 marcado), a forma de pagamento e "Pagar com Pix" (regra 232)');
-  ok(/Créditos\s+R\$ 100,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 100,00\s+Bônus do Pix \(5%\)\s+\+ R\$ 5,00 em créditos/.test(await texto(page, '.pc-checkout-resumo')) && (await texto(page, '#parceiros .pc-main')).includes('5% a mais em créditos. Aprovação na hora'), 'o resumo do pedido: créditos, taxas, total e o bônus do Pix (regra 304)');
+  ok(/Créditos\s+R\$ 100,00\s+Bônus do Pix \(5%\)\s+\+ R\$ 5,00 em créditos\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 100,00/.test(await texto(page, '.pc-checkout-resumo')) && (await texto(page, '#parceiros .pc-main')).includes('5% a mais em créditos. Aprovação na hora'), 'o resumo do pedido: créditos, taxas, total e o bônus do Pix (regra 304)');
   ok(await page.evaluate(() => [...document.querySelectorAll('.pc-checkout-trilha li')].map(l => l.className).join(',')) === 'feito,agora,', 'com os dados do comprador salvos, a compra abre na etapa do pagamento (regra 232)');
   await page.click('[data-compra-valor="outro"]');
   await page.waitForTimeout(150);
@@ -117,7 +117,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
     tipo: (window.__brick || {}).tipo, valor: window.__brick && window.__brick.cfg.initialization.amount, email: window.__brick && (window.__brick.cfg.initialization.payer || {}).email,
     parcelas: window.__brick && window.__brick.cfg.customization.paymentMethods.maxInstallments, chave: window.__mpChave }));
   ok(chamadas[antes] && chamadas[antes].acao === 'cobrar' && chamadas[antes].noSite === true, 'pede a cobrança com noSite (sem ir para outra página)');
-  ok(folha.aberta && folha.fora && folha.texto.includes('Pague R$ 50 com cartão') && folha.texto.includes('o GuiaTennis não vê nem guarda os dados') && folha.tipo === 'cardPayment' && folha.valor === 50 && folha.email === 'dono@academia.com' && folha.parcelas === 1 && /^APP_USR-/.test(folha.chave),
+  ok(folha.aberta && folha.fora && folha.texto.includes('Pague R$ 50 com cartão') && folha.texto.includes('sem passar pelo GuiaTennis') && folha.tipo === 'cardPayment' && folha.valor === 50 && folha.email === 'dono@academia.com' && folha.parcelas === 1 && /^APP_USR-/.test(folha.chave),
     'a folha do cartão abre por cima da página (fora do #app), com o formulário do Mercado Pago, o valor do banco, o e-mail e à vista — ' + JSON.stringify({ ...folha, texto: undefined }));
   // Recusado: a folha fecha e a compra volta para a escolha, com o motivo.
   await page.evaluate(() => { window.__respostaCartao = 'recusada'; });
@@ -205,7 +205,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.click('.pc-planos [data-escolher-plano="premium"]');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#parceiros .pc-main');
-  ok(await page.evaluate(() => location.pathname === '/parceiros/creditos') && corpo.includes('Assinar o Premium') && corpo.includes('Comprador') && corpo.includes('Mensal · R$ 49') && corpo.includes('Anual · R$ 490') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 46' && /Mensal\s+R\$ 49,00\s+Desconto do Pix \(5%\)\s+− R\$ 3,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 46,00/.test(await texto(page, '.pc-checkout-resumo')),
+  ok(await page.evaluate(() => location.pathname === '/parceiros/creditos') && corpo.includes('Assinar o Premium') && corpo.includes('Comprador') && /R\$ 49\s+por mês/.test(corpo) && /R\$ 490\s+por ano/.test(corpo) && corpo.includes('2 meses grátis') && corpo.includes('Equivale a R$ 40,83 por mês') && corpo.includes('Economize R$ 98') && !corpo.includes('o normal é') && (await texto(page, '#pc-compra-pagar')) === 'Pagar com Pix · R$ 46' && /Mensal\s+R\$ 49,00\s+Desconto do Pix \(5%\)\s+− R\$ 3,00\s+Taxas\s+R\$ 0,00\s+Total\s+R\$ 46,00/.test(await texto(page, '.pc-checkout-resumo')),
     'subir de plano abre a mesma tela da compra (regra 232): o comprador, o período e a forma, mensal e Pix de saída, com 5% de desconto no Pix (regra 304)');
   await page.click('[data-compra-periodo="anual"]');
   await page.waitForTimeout(150);

@@ -450,7 +450,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**22/11/2026 (regra 314, a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Falta o Breno: (a) os Webhooks no painel do Mercado Pago (regra 314); (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
+**22/11/2026 (regra 314, a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Webhooks salvos pelo Breno em 22/11 (Modo de produção, `pagamento?mp=1`, Pagamentos e Planos e assinaturas). Falta o Breno: (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
 deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `34f039e`
 (regra 313). O PR está verde, a prévia no ar com tudo até a 313 e a descrição em dia (passos 125 a
 134). O SQL mais novo, `20261121120000_assinatura_do_premium`, já rodou no banco de teste (21/11,
@@ -487,7 +487,7 @@ completa no começo do próximo chat** (`bash testes/rodar-todos.sh`, em segundo
 passos 125 a 134); (2) **cobrança automática igual ao Spotify** (pergunta de 21/11, esperando a
 resposta e se vai num PR novo ou no #5): cartão com cobrança automática pelas Assinaturas do Mercado
 Pago (preapproval) e o Pix Automático (conferir se a conta do Mercado Pago tem); hoje a assinatura é
-paga mês a mês, com o e-mail 5 dias antes e a volta sozinha para o Completo — **feito na regra 314** (falta o Breno: Webhooks e conferir o Pix Automático); (3) **WhatsApp
+paga mês a mês, com o e-mail 5 dias antes e a volta sozinha para o Completo — **feito na regra 314** (Webhooks salvos em 22/11; falta conferir o Pix Automático); (3) **WhatsApp
 automático do código** (seção 9 do contexto antigo, item 5; o `enviar_whatsapps()` já existe no
 banco): o Breno criou o modelo de **Autenticação** no Gerenciador do WhatsApp (copiar código, aviso
 de segurança, expira em 10 min, validade da mensagem 10 min); falta a aprovação, a forma de

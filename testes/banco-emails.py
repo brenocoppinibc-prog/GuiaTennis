@@ -3072,5 +3072,64 @@ sql(f"insert into public.cliques (academia_id, tipo) values ('{assin}', 'visuali
 ok(um(f"select public.vistas_do_mes('{assin}')", papel="authenticated", user=equipe_z) == "2", "as vistas do mês: só as fichas abertas")
 ok("conta da academia" in erro(f"select public.vistas_do_mes('{assin}')", papel="authenticated", user=carla), "quem não é da academia não vê as vistas")
 
+# Renovação automática (regra 314, 20261121130000_cobranca_automatica) ---------
+print("\nRenovação automática")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261121130000_cobranca_automatica.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+reno = academia_nova("Renova Tênis", -23.62, -46.68, ["saibro"])
+rita = parceiro("Rita Dona", f"rdona{sufixo}@exemplo.com", reno)
+leo = parceiro("Leo Equipe", f"renovaleo{sufixo}@exemplo.com", reno, "equipe")
+def liga(forma="cartao", periodo="mensal", user=None):
+    return f"select public.criar_cobranca_automatica('{reno}', 'premium', '{periodo}', '{forma}')"
+ok("responsável principal" in erro(liga(), papel="authenticated", user=leo), "a equipe não liga a renovação automática")
+ok("dados para a nota" in erro(liga(), papel="authenticated", user=rita), "sem os dados do comprador, não liga")
+sql(f"insert into public.dados_para_nota (academia_id, documento, nome, email) values ('{reno}', '11222333000181', 'Renova Ltda', 'nota@renova.com') on conflict (academia_id) do nothing")
+um(f"select public.comecar_mes_gratis('{reno}')", papel="authenticated", user=rita)
+cob = um(liga(), papel="authenticated", user=rita)
+ok(um(f"select valor || ',' || situacao || ',' || desejada || ',' || (abs(extract(epoch from comeca_em - (select ate from public.assinaturas where academia_id = '{reno}'))) < 1) from public.cobrancas_automaticas where id = '{cob}'") == "49,aguardando,ativa,true",
+   "no mês grátis, a renovação no cartão (R$ 49) começa no fim dele")
+pix = um(liga("pix"), papel="authenticated", user=rita)
+ok(um(f"select valor from public.cobrancas_automaticas where id = '{pix}'") == "46" and um(f"select desejada from public.cobrancas_automaticas where id = '{cob}'") == "cancelada",
+   "no Pix Automático, 5% de desconto (R$ 46); a tentativa anterior sai do caminho")
+cob = um(liga(), papel="authenticated", user=rita)
+ok("permission denied" in erro(f"select public.cobranca_automatica_para_assinar('{cob}')", papel="authenticated", user=rita)
+   and "permission denied" in erro(f"select public.pagamento_automatico('{cob}', 'x', 49, 'approved')", papel="authenticated", user=rita)
+   and "permission denied" in erro(f"select * from public.cobrancas_automaticas", papel="authenticated", user=rita),
+   "só a função do Netlify lê a assinatura e confirma as cobranças; a tabela é fechada")
+ok(um(f"select public.registrar_cobranca_automatica('{cob}', 'pre-9', 'authorized', 'visa', '4242')") == "ativa", "o Mercado Pago autorizou: ativa")
+m = json.loads(um(f"select public.minha_assinatura('{reno}')", papel="authenticated", user=rita))
+ok(m["automatica"]["situacao"] == "ativa" and m["automatica"]["final"] == "4242" and m["automatica"]["id"] == cob and not m["automatica"]["conferir"], "Plano mostra a renovação ligada, com o cartão")
+ok(json.loads(um(f"select public.minha_assinatura('{reno}')", papel="authenticated", user=leo))["automatica"]["id"] is None, "a equipe vê a renovação, sem o id")
+ok("já está ligada" in erro(liga(), papel="authenticated", user=rita), "não liga duas vezes")
+ok("já está ligada" in erro(f"select public.criar_compra_de_plano('{reno}', 'premium', 'mensal', 'pix')", papel="authenticated", user=rita), "com a renovação ligada, não paga o mesmo período à parte")
+# Cinco dias antes: o e-mail diz quando e onde.
+sql(f"update public.assinaturas set ate = now() + interval '4 days' where academia_id = '{reno}'")
+sql("select public.rodar_assinaturas()")
+ok("a renovação automática cobra R$ 49 no cartão Visa final 4242" in um(f"select replace(texto, E'\\n', ' ') from public.emails_a_enviar where tipo = 'assinatura' and para = 'rdona{sufixo}@exemplo.com' order by criado_em desc limit 1"),
+   "cinco dias antes do fim do mês grátis, o e-mail diz o valor, o dia e o cartão")
+# A cobrança aprovada: compra paga, prazo somado, uma vez só.
+antes = um(f"select ate from public.assinaturas where academia_id = '{reno}'")
+ok(um(f"select public.pagamento_automatico('{cob}', 'pay-1', 49, 'approved')") == "paga" and um(f"select public.pagamento_automatico('{cob}', 'pay-1', 49, 'approved')") == "paga"
+   and um(f"select count(*) || ',' || min(forma) || ',' || min(nota_email) from public.compras_de_creditos where academia_id = '{reno}' and gateway_id = 'pay-1' and situacao = 'paga'") == "1,cartao,nota@renova.com",
+   "a cobrança aprovada vira uma compra paga (com os dados da nota), uma vez só")
+ok(um(f"select (ate > '{antes}'::timestamptz + interval '27 days') || ',' || teste from public.assinaturas where academia_id = '{reno}'") == "true,false", "soma um mês ao prazo e sai do mês grátis")
+ok(um(f"select public.pagamento_automatico('{cob}', 'pay-2', 49, 'rejected')") == "recusada"
+   and um(f"select count(*) from public.emails_a_enviar where tipo = 'assinatura' and para = 'rdona{sufixo}@exemplo.com' and assunto like '%não passou'") == "1",
+   "a cobrança recusada avisa o responsável principal")
+sql(f"update public.assinaturas set ate = now() - interval '1 day' where academia_id = '{reno}'")
+sql("select public.rodar_assinaturas()")
+ok(plano_de(reno) == "premium" and um(f"select encerrada_em is null from public.assinaturas where academia_id = '{reno}'") == "t", "com a renovação ligada, 3 dias de folga para a cobrança passar")
+# Cancelar pausa; a cobrança depois disso é devolvida; continuar volta.
+um(f"select public.cancelar_assinatura('{reno}', 'completo')", papel="authenticated", user=rita)
+ok(json.loads(um(f"select public.cobrancas_para_sincronizar('{reno}')")) == [{"id": cob, "gateway_id": "pre-9", "status": "paused"}], "cancelar pausa a renovação (a função pausa no Mercado Pago)")
+ok(um(f"select public.pagamento_automatico('{cob}', 'pay-3', 49, 'approved')") == "nao_quer", "a cobrança que chega depois de cancelar não vale (a função devolve)")
+um(f"select public.registrar_cobranca_automatica('{cob}', 'pre-9', 'paused')")
+um(f"select public.continuar_assinatura('{reno}')", papel="authenticated", user=rita)
+ok(json.loads(um(f"select public.cobrancas_para_sincronizar('{reno}')"))[0]["status"] == "authorized", "\"Continuar no Premium\" volta a ligar a renovação")
+um(f"select public.registrar_cobranca_automatica('{cob}', 'pre-9', 'authorized')")
+sql(f"update public.assinaturas set ate = now() - interval '4 days' where academia_id = '{reno}'")
+sql("select public.rodar_assinaturas()")
+ok(plano_de(reno) == "completo" and um(f"select desejada from public.cobrancas_automaticas where id = '{cob}'") == "cancelada", "sem a cobrança depois da folga, a academia passa para o Completo e a renovação é cancelada")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

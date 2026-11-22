@@ -19,6 +19,23 @@
 //                                       número do cartão nunca passa por aqui).
 //   POST { acao: "consultar", compra }  pergunta ao Mercado Pago e confirma
 //                                       (para quando o aviso demora).
+//   Regra 314, a renovação automática (Assinaturas do Mercado Pago, o
+//   "preapproval"), no cartão ou no Pix Automático:
+//   POST { acao: "assinar", cobranca, previa: true }  só confere se está ligada
+//                                       e devolve o valor e o e-mail do formulário.
+//   POST { acao: "assinar", cobranca, cartao }  cartão: cria a assinatura com o
+//                                       token do formulário (status authorized).
+//   POST { acao: "assinar", cobranca }  Pix Automático: cria a assinatura sem
+//                                       cartão e devolve o link do Mercado Pago,
+//                                       onde a academia autoriza.
+//   POST { acao: "automatica", cobranca }  sincroniza (pausar, voltar, cancelar)
+//                                       e busca no Mercado Pago a situação e as
+//                                       cobranças (para quando o aviso demora ou
+//                                       não chega, como na prévia).
+//   POST { acao: "trocar_cartao", cobranca, cartao }  troca o cartão.
+//   No painel do Mercado Pago (Suas integrações › a aplicação › Webhooks), o
+//   endereço /.netlify/functions/pagamento?mp=1 com os eventos "Pagamentos" e
+//   "Planos e assinaturas": a assinatura não aceita o notification_url.
 //   POST ?mp=1 (o aviso do Mercado Pago, "payment")  busca o pagamento no
 //                                       Mercado Pago e confirma. A
 //                                       confirmação vale só pelo que o
@@ -69,7 +86,11 @@ async function mp(caminho, opcoes = {}) {
     headers: { Authorization: `Bearer ${env("MERCADOPAGO_ACCESS_TOKEN")}`, "Content-Type": "application/json", ...(opcoes.headers || {}) },
   });
   const corpo = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(`Mercado Pago ${caminho}: ${r.status} ${corpo.message || ""}`.trim());
+  if (!r.ok) {
+    const e = new Error(`Mercado Pago ${caminho.split("?")[0]}: ${r.status} ${corpo.message || ""}`.trim());
+    e.status = r.status;
+    throw e;
+  }
   return corpo;
 }
 
@@ -198,10 +219,124 @@ async function avisoDoMercadoPago(req) {
   try { corpo = await req.json(); } catch { /* aviso antigo: só a query */ }
   const tipo = corpo.type || u.searchParams.get("type") || u.searchParams.get("topic");
   const id = (corpo.data && corpo.data.id) || u.searchParams.get("data.id") || u.searchParams.get("id");
-  if (tipo !== "payment" || !id) return json(200, { ok: true, ignorado: true });
+  if (!id) return json(200, { ok: true, ignorado: true });
+  if (tipo === "subscription_preapproval") {
+    const a = await mp(`/preapproval/${encodeURIComponent(id)}`);
+    if (!UUID.test(String(a.external_reference || ""))) return json(200, { ok: true, ignorado: true });
+    return json(200, { ok: true, situacao: await rpc("registrar_cobranca_automatica", { p_cobranca: a.external_reference, p_gateway_id: String(a.id || id), p_status: String(a.status || "") }) });
+  }
+  if (tipo === "subscription_authorized_payment") {
+    const f = await mp(`/authorized_payments/${encodeURIComponent(id)}`);
+    const a = await mp(`/preapproval/${encodeURIComponent(f.preapproval_id || "")}`);
+    if (!UUID.test(String(a.external_reference || ""))) return json(200, { ok: true, ignorado: true });
+    return json(200, { ok: true, situacao: await cobrancaDaAssinatura(a.external_reference, f) });
+  }
+  if (tipo !== "payment") return json(200, { ok: true, ignorado: true });
   const p = await mp(`/v1/payments/${encodeURIComponent(id)}`);
   if (!p.external_reference) return json(200, { ok: true, ignorado: true });
-  return json(200, { ok: true, situacao: await confirmar(p.external_reference, p) });
+  const situacao = await confirmar(p.external_reference, p);
+  // A cobrança da renovação automática chega também como "payment".
+  if (situacao === "nao_achou" && UUID.test(String(p.external_reference))) {
+    return json(200, { ok: true, situacao: await cobrancaDaAssinatura(p.external_reference, { transaction_amount: p.transaction_amount, payment: { id: p.id, status: p.status } }) });
+  }
+  return json(200, { ok: true, situacao });
+}
+
+// ---------- a renovação automática (regra 314) ----------
+// Como o Spotify e a Netflix: autoriza uma vez e o Mercado Pago cobra sozinho
+// todo mês (ou todo ano). O valor, o período e o dia da primeira cobrança vêm
+// do banco, nunca do navegador. Com o plano já pago (ou no mês grátis), a
+// primeira cobrança é no fim do prazo de agora.
+const UUID = /^[0-9a-f-]{36}$/i;
+const comecaDe = (a) => (a.comeca_em && Date.parse(a.comeca_em) > Date.now() + 10 * 60 * 1000 ? new Date(a.comeca_em).toISOString() : null);
+
+// Uma cobrança da assinatura (uma "fatura" do Mercado Pago), uma vez só pelo
+// id do pagamento. A que a academia já não queria (cancelou antes de o Mercado
+// Pago saber) é devolvida na hora.
+async function cobrancaDaAssinatura(cobranca, fatura) {
+  const pg = fatura.payment || {};
+  if (!pg.id) return "aberta";
+  const situacao = await rpc("pagamento_automatico", {
+    p_cobranca: cobranca, p_pagamento: String(pg.id), p_valor: Number(fatura.transaction_amount || pg.transaction_amount || 0), p_situacao: String(pg.status || ""),
+  });
+  if (situacao === "nao_quer") {
+    await mp(`/v1/payments/${encodeURIComponent(pg.id)}/refunds`, { method: "POST", headers: { "X-Idempotency-Key": `devolver-${pg.id}` }, body: "{}" });
+    return "devolvida";
+  }
+  return situacao;
+}
+
+async function sincronizar(academia) {
+  const lista = (await rpc("cobrancas_para_sincronizar", { p_academia: academia })) || [];
+  for (const x of lista) {
+    try {
+      const a = await mp(`/preapproval/${encodeURIComponent(x.gateway_id)}`, { method: "PUT", body: JSON.stringify({ status: x.status }) });
+      await rpc("registrar_cobranca_automatica", { p_cobranca: x.id, p_gateway_id: x.gateway_id, p_status: String(a.status || x.status) });
+    } catch (e) {
+      console.error("sincronizar:", e && e.message);
+    }
+  }
+  return lista.length;
+}
+
+async function assinar(req, cobrancaId, corpo) {
+  const a = await rpc("cobranca_automatica_para_assinar", { p_cobranca: cobrancaId });
+  if (!a || !a.id) return json(404, { erro: "Assinatura não encontrada." });
+  if (a.desejada !== "ativa" || a.situacao !== "aguardando" || a.gateway_id) return json(409, { erro: "Essa assinatura já foi ligada ou cancelada.", situacao: a.situacao });
+  const comeca = comecaDe(a);
+  if (corpo.previa) return json(200, { forma: a.forma, valor: a.valor, email: a.nota_email || a.email || "", comeca_em: comeca });
+  const cartao = corpo.cartao || null;
+  if (a.forma === "cartao" && (!cartao || !cartao.token)) return json(400, { erro: "Faltam os dados do cartão." });
+  const email = (cartao && cartao.payer && cartao.payer.email) || a.nota_email || a.email || "";
+  const pedido = {
+    reason: descricaoDe({ tipo: "plano", ...a }), external_reference: a.id, payer_email: email,
+    back_url: `${origemDe(req)}/parceiros/plano?automatica=${a.id}`,
+    auto_recurring: { frequency: a.periodo === "anual" ? 12 : 1, frequency_type: "months", transaction_amount: a.valor, currency_id: "BRL", ...(comeca ? { start_date: comeca } : {}) },
+    ...(a.forma === "cartao" ? { card_token_id: cartao.token, status: "authorized" } : { status: "pending" }),
+  };
+  let p;
+  try {
+    p = await mp("/preapproval", { method: "POST", headers: { "X-Idempotency-Key": `assinatura-${a.id}-${String((cartao && cartao.token) || "pix").slice(0, 40)}` }, body: JSON.stringify(pedido) });
+  } catch (e) {
+    // O cartão que não passou na validação do Mercado Pago (400): a tela pede outro.
+    if (a.forma === "cartao" && e.status >= 400 && e.status < 500) return json(200, { situacao: "recusada", detalhe: String(e.message || "").slice(0, 200) });
+    throw e;
+  }
+  const situacao = await rpc("registrar_cobranca_automatica", {
+    p_cobranca: a.id, p_gateway_id: String(p.id || ""), p_status: String(p.status || ""),
+    p_bandeira: (cartao && cartao.payment_method_id) || "", p_final: (cartao && cartao.final) || "",
+  });
+  if (a.forma === "pix") return json(200, { forma: "pix", link: p.init_point || "" });
+  return json(200, { forma: "cartao", situacao, cobraAgora: !comeca, comeca_em: comeca });
+}
+
+async function acompanhar(cobrancaId) {
+  const a = await rpc("cobranca_automatica_para_assinar", { p_cobranca: cobrancaId });
+  if (!a || !a.id) return json(404, { erro: "Assinatura não encontrada." });
+  if (!a.gateway_id) return json(200, { situacao: a.situacao, paga: false });
+  await sincronizar(a.academia_id);
+  const pre = await mp(`/preapproval/${encodeURIComponent(a.gateway_id)}`);
+  const situacao = await rpc("registrar_cobranca_automatica", { p_cobranca: a.id, p_gateway_id: a.gateway_id, p_status: String(pre.status || "") });
+  const busca = await mp(`/authorized_payments/search?preapproval_id=${encodeURIComponent(a.gateway_id)}`);
+  let paga = false;
+  for (const f of (busca && busca.results) || []) {
+    if ((await cobrancaDaAssinatura(a.id, f)) === "paga") paga = true;
+  }
+  return json(200, { situacao, paga });
+}
+
+async function trocarCartao(cobrancaId, cartao) {
+  const a = await rpc("cobranca_automatica_para_assinar", { p_cobranca: cobrancaId });
+  if (!a || !a.id || !a.gateway_id || a.forma !== "cartao") return json(404, { erro: "Assinatura não encontrada." });
+  if (!cartao || !cartao.token) return json(400, { erro: "Faltam os dados do cartão." });
+  try {
+    await mp(`/preapproval/${encodeURIComponent(a.gateway_id)}`, { method: "PUT", body: JSON.stringify({ card_token_id: cartao.token }) });
+  } catch (e) {
+    if (e.status >= 400 && e.status < 500) return json(200, { situacao: "recusada", detalhe: String(e.message || "").slice(0, 200) });
+    throw e;
+  }
+  await rpc("registrar_cobranca_automatica", { p_cobranca: a.id, p_gateway_id: a.gateway_id, p_status: a.situacao === "pausada" ? "paused" : "authorized", p_bandeira: cartao.payment_method_id || "", p_final: cartao.final || "" });
+  return json(200, { situacao: "trocado" });
 }
 
 export default async (req) => {
@@ -213,6 +348,12 @@ export default async (req) => {
     if (new URL(req.url).searchParams.get("mp") === "1") return await avisoDoMercadoPago(req);
     let corpo = {};
     try { corpo = await req.json(); } catch { return json(400, { erro: "Corpo inválido." }); }
+    if (["assinar", "automatica", "trocar_cartao"].includes(corpo.acao)) {
+      if (!UUID.test(String(corpo.cobranca || ""))) return json(400, { erro: "Falta a assinatura." });
+      if (corpo.acao === "assinar") return await assinar(req, corpo.cobranca, corpo);
+      if (corpo.acao === "automatica") return await acompanhar(corpo.cobranca);
+      return await trocarCartao(corpo.cobranca, corpo.cartao);
+    }
     if (!/^[0-9a-f-]{36}$/i.test(String(corpo.compra || ""))) return json(400, { erro: "Falta a compra." });
     if (corpo.acao === "cobrar") return await cobrar(req, corpo.compra, corpo.noSite === true);
     if (corpo.acao === "cartao") return await cartaoNoSite(req, corpo.compra, corpo.cartao);

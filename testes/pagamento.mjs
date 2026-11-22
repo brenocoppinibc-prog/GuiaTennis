@@ -129,5 +129,100 @@ ok(JSON.stringify(dadosDoPix({})) === JSON.stringify({ qr: "", copia: "", expira
 r = await pagar(new Request("https://x/.netlify/functions/pagamento", { method: "GET" }));
 ok(r.status === 405, "só POST");
 
+// ---- A renovação automática (regra 314): as Assinaturas do Mercado Pago ----
+const AUTO = "aaaaaaaa-2222-4333-8444-555555555555";
+let auto = { id: AUTO, academia_id: "bbbbbbbb-2222-4333-8444-555555555555", academia: "Só Aula Tennis", plano: "premium", periodo: "mensal", forma: "cartao", valor: 49,
+  situacao: "aguardando", desejada: "ativa", gateway_id: null, comeca_em: new Date(Date.now() + 20 * 864e5).toISOString(), nota_email: "fin@soaula.com.br", email: "ana@exemplo.com" };
+let registros = [], automaticos = [], sincronizar = [], devolvidos = [], preStatus = "authorized", faturas = [];
+const fetchAntes = globalThis.fetch;
+globalThis.fetch = async (url, op = {}) => {
+  url = String(url);
+  const corpo = op.body ? JSON.parse(op.body) : null;
+  const resp = (status, obj) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });
+  if (url.endsWith("/rpc/cobranca_automatica_para_assinar")) { pedidos.push({ url, corpo }); return resp(200, corpo.p_cobranca === AUTO ? auto : null); }
+  if (url.endsWith("/rpc/registrar_cobranca_automatica")) {
+    registros.push(corpo);
+    auto = { ...auto, gateway_id: corpo.p_gateway_id || auto.gateway_id, situacao: { authorized: "ativa", paused: "pausada", cancelled: "cancelada" }[corpo.p_status] || "aguardando" };
+    return resp(200, auto.situacao);
+  }
+  if (url.endsWith("/rpc/cobrancas_para_sincronizar")) return resp(200, sincronizar);
+  if (url.endsWith("/rpc/pagamento_automatico")) {
+    automaticos.push(corpo);
+    return resp(200, auto.desejada !== "ativa" ? "nao_quer" : corpo.p_situacao === "approved" ? "paga" : corpo.p_situacao === "rejected" ? "recusada" : "aberta");
+  }
+  if (url === "https://api.mercadopago.com/preapproval" && op.method === "POST") {
+    pedidos.push({ url, metodo: "POST", cabecalhos: op.headers || {}, corpo });
+    if (corpo.card_token_id === "tok-ruim") return resp(400, { message: "CC_VAL_433 Credit card validation has failed" });
+    return resp(201, { id: "pre-1", status: corpo.status, init_point: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_id=pre-1" });
+  }
+  let m = url.match(/^https:\/\/api\.mercadopago\.com\/preapproval\/([\w-]+)$/);
+  if (m) { pedidos.push({ url, metodo: op.method || "GET", corpo }); return resp(200, { id: m[1], status: corpo && corpo.status ? corpo.status : preStatus, external_reference: AUTO }); }
+  if (url.startsWith("https://api.mercadopago.com/authorized_payments/search")) return resp(200, { results: faturas });
+  m = url.match(/^https:\/\/api\.mercadopago\.com\/authorized_payments\/(\w+)$/);
+  if (m) return resp(200, { id: m[1], preapproval_id: "pre-1", transaction_amount: 49, payment: { id: 777, status: "approved" } });
+  m = url.match(/^https:\/\/api\.mercadopago\.com\/v1\/payments\/(\w+)\/refunds$/);
+  if (m) { devolvidos.push(m[1]); return resp(201, { id: 1 }); }
+  return fetchAntes(url, op);
+};
+r = await pedir({ acao: "assinar", cobranca: "x" });
+ok(r.status === 400, "assinatura que não é um id: 400");
+r = await pedir({ acao: "assinar", cobranca: AUTO, previa: true });
+d = await r.json();
+ok(r.status === 200 && d.forma === "cartao" && d.valor === 49 && d.email === "fin@soaula.com.br" && d.comeca_em && !pedidos.some(p => p.url === "https://api.mercadopago.com/preapproval"),
+  "prévia: devolve o valor do banco, o e-mail e o dia da primeira cobrança, sem falar com o Mercado Pago");
+r = await pedir({ acao: "assinar", cobranca: AUTO, cartao: { token: "tok-1", payment_method_id: "visa", final: "4242", payer: { email: "dono@academia.com" } }, valor: 1 });
+d = await r.json();
+let pre = pedidos.filter(p => p.url === "https://api.mercadopago.com/preapproval").at(-1);
+ok(r.status === 200 && d.situacao === "ativa" && d.cobraAgora === false && pre.corpo.card_token_id === "tok-1" && pre.corpo.status === "authorized" && pre.corpo.external_reference === AUTO
+  && pre.corpo.auto_recurring.transaction_amount === 49 && pre.corpo.auto_recurring.frequency === 1 && pre.corpo.auto_recurring.frequency_type === "months" && pre.corpo.auto_recurring.currency_id === "BRL"
+  && pre.corpo.auto_recurring.start_date === new Date(auto.comeca_em).toISOString() && pre.corpo.payer_email === "dono@academia.com" && pre.corpo.reason === "Plano Premium mensal GuiaTennis · Só Aula Tennis"
+  && pre.corpo.back_url === `https://deploy-preview-5--x.netlify.app/parceiros/plano?automatica=${AUTO}`,
+  "cartão: a assinatura no Mercado Pago com o token, o valor do banco (não o do navegador), todo mês e a primeira cobrança no fim do prazo");
+ok(registros.at(-1).p_bandeira === "visa" && registros.at(-1).p_final === "4242" && registros.at(-1).p_gateway_id === "pre-1", "guarda a bandeira e os 4 últimos números");
+r = await pedir({ acao: "assinar", cobranca: AUTO, cartao: { token: "tok-2" } });
+ok(r.status === 409, "assinar de novo a que já está ligada: 409");
+auto = { ...auto, situacao: "aguardando", gateway_id: null, comeca_em: null, periodo: "anual", valor: 490 };
+r = await pedir({ acao: "assinar", cobranca: AUTO, cartao: { token: "tok-ruim" } });
+d = await r.json();
+ok(r.status === 200 && d.situacao === "recusada", "cartão que não passa na validação do Mercado Pago: \"recusada\" (a tela pede outro)");
+r = await pedir({ acao: "assinar", cobranca: AUTO, cartao: { token: "tok-3" } });
+d = await r.json();
+pre = pedidos.filter(p => p.url === "https://api.mercadopago.com/preapproval").at(-1);
+ok(d.cobraAgora === true && !pre.corpo.auto_recurring.start_date && pre.corpo.auto_recurring.frequency === 12 && pre.corpo.auto_recurring.transaction_amount === 490, "sem plano pago: cobra na hora; no anual, a cada 12 meses");
+auto = { ...auto, situacao: "aguardando", gateway_id: null, forma: "pix", valor: 46, periodo: "mensal" };
+r = await pedir({ acao: "assinar", cobranca: AUTO });
+d = await r.json();
+pre = pedidos.filter(p => p.url === "https://api.mercadopago.com/preapproval").at(-1);
+ok(r.status === 200 && d.forma === "pix" && d.link.startsWith("https://www.mercadopago.com.br/subscriptions/") && pre.corpo.status === "pending" && !pre.corpo.card_token_id && pre.corpo.auto_recurring.transaction_amount === 46,
+  "Pix Automático: a assinatura sem cartão (pending) e o link do Mercado Pago para autorizar");
+// Acompanhar: sincroniza, lê a situação e as cobranças (uma vez cada).
+auto = { ...auto, situacao: "ativa", gateway_id: "pre-1", forma: "cartao", valor: 49 };
+faturas = [{ id: 5001, preapproval_id: "pre-1", transaction_amount: 49, payment: { id: 777, status: "approved" } }, { id: 5002, transaction_amount: 49, status: "scheduled" }];
+r = await pedir({ acao: "automatica", cobranca: AUTO });
+d = await r.json();
+ok(r.status === 200 && d.paga === true && automaticos.length === 1 && automaticos[0].p_pagamento === "777" && automaticos[0].p_valor === 49 && automaticos[0].p_situacao === "approved",
+  "acompanhar: a cobrança aprovada vai ao banco pelo id do pagamento; a agendada, ainda não");
+sincronizar = [{ id: AUTO, gateway_id: "pre-1", status: "paused" }];
+await pedir({ acao: "automatica", cobranca: AUTO });
+ok(pedidos.some(p => p.url === "https://api.mercadopago.com/preapproval/pre-1" && p.metodo === "PUT" && p.corpo.status === "paused") && registros.some(x => x.p_status === "paused"),
+  "cancelada no site: pausa a assinatura no Mercado Pago na hora");
+sincronizar = [];
+// A cobrança que a academia já não queria é devolvida.
+auto = { ...auto, desejada: "pausada" };
+await pedir({ acao: "automatica", cobranca: AUTO });
+ok(devolvidos.includes("777"), "cobrança que chegou depois de cancelar é devolvida na hora");
+auto = { ...auto, desejada: "ativa" };
+// Os avisos do Mercado Pago.
+const antesAuto = automaticos.length;
+r = await pedir({ type: "subscription_authorized_payment", data: { id: "5001" } }, "?mp=1");
+ok(r.status === 200 && automaticos.length === antesAuto + 1 && automaticos.at(-1).p_cobranca === AUTO, "aviso da cobrança da assinatura: confirma pelo que o Mercado Pago diz");
+preStatus = "cancelled";
+r = await pedir({ type: "subscription_preapproval", data: { id: "pre-1" } }, "?mp=1");
+ok(r.status === 200 && registros.at(-1).p_status === "cancelled" && registros.at(-1).p_cobranca === AUTO, "aviso da assinatura (cancelada no Mercado Pago): o banco fica sabendo");
+r = await pedir({ acao: "trocar_cartao", cobranca: AUTO, cartao: { token: "tok-novo", payment_method_id: "master", final: "1111" } });
+d = await r.json();
+ok(d.situacao === "trocado" && pedidos.some(p => p.url === "https://api.mercadopago.com/preapproval/pre-1" && p.metodo === "PUT" && p.corpo.card_token_id === "tok-novo") && registros.at(-1).p_final === "1111",
+  "trocar o cartão: o token novo na assinatura do Mercado Pago");
+
 console.log(`\n${falhas ? falhas + " falha(s)" : "Tudo certo"}`);
 process.exit(falhas ? 1 : 0);

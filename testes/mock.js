@@ -716,7 +716,7 @@
       if (nome === "vistas_do_mes") return { data: window.__vistasDoMes === undefined ? 7 : window.__vistasDoMes, error:null };
       const s1 = todas[a.p_academia];
       const ac = db.academias.find(y => y.id === a.p_academia);
-      if (nome === "minha_assinatura") return { data: s1 ? { ativa: !s1.encerrada, plano: s1.plano, ate: s1.ate, depois: s1.depois, teste: !!s1.teste, teste_usado: !!s1.testeUsado, cancelada: !!s1.cancelada } : { ativa: false, teste_usado: false }, error:null };
+      if (nome === "minha_assinatura") return { data: s1 ? { ativa: !s1.encerrada, plano: s1.plano, ate: s1.ate, depois: s1.depois, teste: !!s1.teste, teste_usado: !!s1.testeUsado, cancelada: !!s1.cancelada, automatica: s1.automatica || null } : { ativa: false, teste_usado: false, automatica: null }, error:null };
       if (v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
       if (nome === "comecar_mes_gratis") {
         if (s1 && s1.testeUsado) return erro("O mês grátis do Premium já foi usado por esta academia.", "22023");
@@ -846,6 +846,17 @@
     if (nome === "pagamento_de_teste") {
       return { data: { ligado: !!window.__pagamentoDeTeste, precos: { completo_mensal: 49, completo_anual: 490, premium_mensal: 49, premium_anual: 490 },
         normais: { completo_mensal: 49, completo_anual: 490, premium_mensal: 89, premium_anual: 890 } }, error:null };
+    }
+    // A renovação automática (regra 314): window.__automaticas guarda as criadas.
+    if (nome === "criar_cobranca_automatica") {
+      const x = meuAcesso();
+      const v = x && vinculo(x.user_id, a.p_academia);
+      if (!v || v.papel !== "principal") return erro("Só o responsável principal muda o plano da academia.", "42501");
+      if (!["pix", "cartao"].includes(a.p_forma)) return erro("Escolha cartão ou Pix Automático.", "22023");
+      const lista = window.__automaticas || (window.__automaticas = []);
+      const id = "cccccccc-0000-4000-8000-" + String(lista.length + 1).padStart(12, "0");
+      lista.push({ id, ...a });
+      return { data: id, error:null };
     }
     if (nome === "criar_compra_de_plano") {
       const x = meuAcesso();

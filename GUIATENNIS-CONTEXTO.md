@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 21/11/2026 (regra 313, troca de chat)
+**Atualizado em:** 22/11/2026 (regra 314)
 
 | | |
 |---|---|
@@ -450,7 +450,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
+**22/11/2026 (regra 314, a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Falta o Breno: (a) os Webhooks no painel do Mercado Pago (regra 314); (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
 deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `34f039e`
 (regra 313). O PR está verde, a prévia no ar com tudo até a 313 e a descrição em dia (passos 125 a
 134). O SQL mais novo, `20261121120000_assinatura_do_premium`, já rodou no banco de teste (21/11,
@@ -487,7 +487,7 @@ completa no começo do próximo chat** (`bash testes/rodar-todos.sh`, em segundo
 passos 125 a 134); (2) **cobrança automática igual ao Spotify** (pergunta de 21/11, esperando a
 resposta e se vai num PR novo ou no #5): cartão com cobrança automática pelas Assinaturas do Mercado
 Pago (preapproval) e o Pix Automático (conferir se a conta do Mercado Pago tem); hoje a assinatura é
-paga mês a mês, com o e-mail 5 dias antes e a volta sozinha para o Completo; (3) **WhatsApp
+paga mês a mês, com o e-mail 5 dias antes e a volta sozinha para o Completo — **feito na regra 314** (falta o Breno: Webhooks e conferir o Pix Automático); (3) **WhatsApp
 automático do código** (seção 9 do contexto antigo, item 5; o `enviar_whatsapps()` já existe no
 banco): o Breno criou o modelo de **Autenticação** no Gerenciador do WhatsApp (copiar código, aviso
 de segurança, expira em 10 min, validade da mensagem 10 min); falta a aprovação, a forma de
@@ -2622,6 +2622,41 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `parceiros`, `promocoes`, `compra-com-prazo`, `erros-no-push`, sem falha. **Na conversa:** a
   assinatura não cobra sozinha como o Spotify (é paga mês a mês, com o e-mail 5 dias antes);
   oferecida a cobrança automática no cartão pelas Assinaturas do Mercado Pago (e o Pix Automático).
+- **314 (22/11) — a renovação automática no cartão e no Pix Automático** ("quero fazer as cobranças
+  automáticas em Pix ou cartão tudo", no PR #5). Como o Spotify e a Netflix: a academia autoriza uma
+  vez e o Mercado Pago cobra sozinho no fim de cada mês (ou ano), pelas **Assinaturas do Mercado
+  Pago** (`/preapproval`). Tabela `cobrancas_automaticas` (uma por tentativa; `situacao` = o que o
+  Mercado Pago tem, `desejada` = o que a academia quer; a função sincroniza). **Cartão:** o mesmo
+  formulário do Mercado Pago no site (regra 301) gera o token, e `pagamento.mjs` (`acao: "assinar"`)
+  cria a assinatura `authorized` com o valor do banco; com o plano pago ou no mês grátis, a primeira
+  cobrança é no fim do prazo (`start_date`), e a tela diz "Renovação automática ligada · Nada foi
+  cobrado hoje"; sem plano, cobra na hora e a tela espera a primeira cobrança. **Pix Automático:**
+  assinatura `pending`, sem cartão, e o link do Mercado Pago (`init_point`) para autorizar no app do
+  banco; **ligado só no site de teste** (`PIX_AUTOMATICO = { teste: true, real: false }`) até o Breno
+  conferir que a página da assinatura do Mercado Pago oferece o Pix Automático (a documentação da
+  API não confirma; a busca de 21/11 achou só o blog do Mercado Pago). Na compra do plano, o
+  **cartão com renovação vem marcado** (no pagamento de teste, o Pix); as formas: Cartão de crédito
+  ("Renova sozinho todo mês; cancele quando quiser"), Pix Automático (−5%) e "Pix · só este mês"
+  (−5%, sem renovação). Cada cobrança aprovada vira uma compra paga (`pagamento_automatico` →
+  `confirmar_compra`, com os dados da nota, uma vez por id do pagamento) e soma o prazo; a recusada
+  manda o e-mail "A renovação … não passou". Com a renovação ligada, o prazo tem **3 dias de folga**
+  (o Mercado Pago tenta de novo) e o e-mail de 5 dias antes diz valor, dia e cartão ("Nesse dia, a
+  renovação automática cobra R$ 49 no cartão Visa final 4242"). "Sua assinatura" mostra o próximo
+  pagamento, **"Trocar o cartão"** (`acao: "trocar_cartao"`) e cancelar: `cancelar_assinatura`
+  pausa (desejada `pausada`), "Continuar no Premium" volta, descer de plano ou o fim do prazo
+  cancela; a tela chama `acao: "automatica"` (sincroniza e busca as faturas) sempre que a
+  situação não bate com a desejada; cobrança que chega depois de cancelar é **devolvida na hora**.
+  `criar_compra_de_plano` recusa pagar à parte com a renovação ligada. Webhooks: `subscription_preapproval`
+  e `subscription_authorized_payment` (e o `payment`). **Depende do Breno:** no painel do Mercado
+  Pago, Suas integrações › a aplicação › Webhooks, o endereço
+  `https://guiatennis.com.br/.netlify/functions/pagamento?mp=1` com "Pagamentos" e "Planos e
+  assinaturas" (a assinatura não aceita `notification_url`; na prévia, sem o aviso, a tela busca
+  sozinha). Termos e Privacidade em 22/11/2026 (o cartão fica no Mercado Pago; o GuiaTennis guarda
+  a bandeira e os 4 últimos números), FAQ ("Como funciona a renovação automática?") e chat de
+  ajuda. SQL `20261121130000_cobranca_automatica`. Testes: `renovacao-automatica.js` (novo, 19),
+  `pagamento.mjs` (37), `plano-e-creditos`, `assinatura`, `dados-para-nota`, as datas dos textos
+  legais, `parceiros` (o FAQ com 29) e o `banco-emails.py` (seção "Renovação automática"; 1.030 no banco
+  local, sem falha). **Bateria completa de 22/11 (até a 314): 2.776 verificações, nenhuma falha.**
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -25,12 +25,25 @@ const rodape = (page) => page.evaluate(() => [...document.querySelectorAll('.reg
   ok((await texto(page, '.reg-titulo')) === 'Confira a prévia da ficha' && await page.isVisible('#reg-previa'), 'a última parte abre com a prévia da ficha');
   ok((await texto(page, '.reg-porque')).includes('Toque no lápis para editar uma seção') && !(await page.$('.reg-previa-topo')), 'sem a caixa de explicação: só o lápis, dito embaixo do título');
   const blocos = await page.evaluate(() => [...document.querySelectorAll('.reg-previa [data-previa]')].map(b => b.dataset.previa).join());
-  // A ordem da ficha no jeito do hoteis.com (26/10/2026): estrutura e como
-  // chegar antes do "Sobre", das opções e do cancelamento.
-  ok(blocos === 'fotos,dados,quadras,chegada,sobre,horario,precos,cancelamento,contato', 'as partes da ficha, na ordem da página da academia — ' + blocos);
+  // Regra 328 ("no revisar a ficha deve aparecer na mesma ordem do normal"):
+  // Sobre, Opções, Contato, Horário, Estrutura, Como chegar e Cancelamento.
+  ok(blocos === 'fotos,dados,sobre,precos,contato,horario,quadras,chegada,cancelamento', 'as partes da ficha, na mesma ordem da página da academia — ' + blocos);
+  // Regra 328: o que o Básico não mostra leva a etiqueta do plano que mostra.
+  t = await page.evaluate(() => ({
+    cancel: document.querySelector('.reg-previa [data-previa="cancelamento"] .cat-premium, .reg-previa-mais[data-previa="cancelamento"] .cat-premium')?.innerText || '',
+    sobre: !!document.querySelector('.reg-previa [data-previa="sobre"] .cat-premium'),
+  }));
+  await irParte(page, 'contato');
+  t.insta = await texto(page, 'label[for="f-instagram"]');
+  t.whats = await texto(page, 'label[for="f-phone"]');
+  await irParte(page, 'cancelamento');
+  t.titulo = await texto(page, '.reg-titulo');
+  await irParte(page, 'revisar');
+  ok(t.insta === 'Instagram Completo' && !/Completo|Premium/.test(t.whats) && t.titulo === 'Cancelamento e reposição Completo' && !t.sobre,
+    'no Básico, a etiqueta "Completo" no Instagram e no Cancelamento (o WhatsApp, sem etiqueta) — ' + JSON.stringify(t));
   ok((await bloco(page, 'fotos')) === 'Adicionar fotos' && await page.evaluate(() => document.querySelector('.reg-previa-mais[data-previa="fotos"]')?.tagName === 'BUTTON'), 'sem foto: só "+ Adicionar fotos", no lugar da galeria');
   t = await page.evaluate(() => ({ lapis: document.querySelectorAll('.reg-previa .reg-previa-lapis').length, titulos: [...document.querySelectorAll('.reg-previa .sec-title')].map(h => h.innerText).join(' | '), maiusculas: !!document.querySelector('.reg-previa-h'), botoes: [...document.querySelectorAll('.reg-previa button')].filter(b => /Editar/.test(b.innerText)).length }));
-  ok(t.lapis === 8 && t.titulos === 'Estrutura | Como chegar | Sobre a academia | Horário | Opções para jogar | Cancelamento e reposição' && !t.maiusculas && t.botoes === 0,
+  ok(t.lapis === 8 && t.titulos === 'Sobre a academia | Opções para jogar | Contato | Horário | Estrutura | Como chegar Completo | Cancelamento e reposição Completo' && !t.maiusculas && t.botoes === 0,
     'como na ficha: os mesmos títulos e um lápis pequeno por parte, sem rótulo em maiúsculas nem botão "Editar" — ' + JSON.stringify(t));
   ok((await bloco(page, 'dados')).startsWith('Só Aula Tennis') && await page.evaluate(() => !!document.querySelector('.reg-previa [data-previa="dados"] .selo-confirmada:not(.selo-premium)')) && (await bloco(page, 'dados')).includes('Rua A, 1 - Pinheiros, São Paulo'),
     'nome com o selo e o endereço — ' + await bloco(page, 'dados'));

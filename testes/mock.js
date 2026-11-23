@@ -1364,7 +1364,7 @@
       const x = meuAcesso();
       if (!x) return erro("Entre na sua conta do GuiaTennis Parceiros.", "42501");
       // A declaração (SQL 20261006130000): false recusa, true guarda a hora.
-      if (a.p_declaro === false) return erro("Marque a declaração para pedir.", "22023");
+      if (a.p_declaro === false) return erro("Para enviar o pedido, marque a declaração.", "22023");
       if (vinculo(x.user_id, a.p_academia)) return erro("A sua conta já administra essa academia.", "22023");
       const ac = db.academias.find(y => y.id === a.p_academia && y.status === "published");
       if (!ac) return erro("Academia não encontrada.", "22023");

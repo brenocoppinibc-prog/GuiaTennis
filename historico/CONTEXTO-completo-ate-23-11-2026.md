@@ -2963,6 +2963,20 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   verdade não existe em e-mail (e-mail não roda programa). Gramática: "Para enviar o pedido, marque a
   declaração." e "Para continuar, marque a declaração."; textos novos no LanguageTool, sem erro.
   Testes: `oferece.js` (+12).
+- **328 (23/11) — a revisão na mesma ordem da ficha e a etiqueta do plano** ("no revisar a ficha deve
+  aparecer na mesma ordem do normal e para academias que não possuem o plano que oferece tal opção no
+  cadastro aparecer um símbolo como aparece o do Premium na apresentação"). A prévia da revisão segue a
+  página da academia: Sobre, Opções para jogar, Também oferece, Contato (agora com o título), Horário,
+  Estrutura, Como chegar e Cancelamento. `etiquetaDoPlano(f, libera)`: a etiqueta dourada
+  (`cat-premium`) do primeiro plano que mostra a opção, como os recursos "Pro" do Shopify e do Canva:
+  Instagram, Site e Link de reserva ("Completo" no Básico), as fotos além do plano (no canto da foto),
+  o título de Cancelamento e de Como chegar (na parte e na prévia); a foto do catálogo e a Apresentação
+  continuam com "Premium". O admin não vê etiqueta. O aviso do banco "Marque a declaração para pedir."
+  virou "Para enviar o pedido, marque a declaração." no próprio arquivo (`20261006130000`,
+  `20261007130000`): vale no banco de verdade com o merge. Na conversa: ampliar o Básico grátis no que
+  ajuda o jogador a decidir (como o Perfil da Empresa no Google), deixando pago o que traz contato e
+  visibilidade (como o Yelp e o Tripadvisor). Testes: `previa-da-ficha.js`, `parceiros.js`,
+  `cadastro.js`, `fechada-guardada.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

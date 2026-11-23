@@ -221,7 +221,7 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   ok(decl.includes('Declaro que estou autorizado(a) pela academia') && decl.includes('respondo pelas informações') && !decl.includes('dono'), 'caixinha da declaração, sem "é dono(a)" — ' + decl);
   await page.click('#pc-administrar');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => !window.__rpcs.some(r => r.nome === 'pedir_para_administrar') && document.querySelector('.pc-declaro.falta') && document.body.innerText.includes('Marque a declaração para pedir')), 'sem marcar, o pedido não vai e a caixinha pede a marcação');
+  ok(await page.evaluate(() => !window.__rpcs.some(r => r.nome === 'pedir_para_administrar') && document.querySelector('.pc-declaro.falta') && document.body.innerText.includes('Para enviar o pedido, marque a declaração')), 'sem marcar, o pedido não vai e a caixinha pede a marcação');
   await page.check('#pc-declaro');
   await page.click('#pc-administrar');
   await page.waitForTimeout(500);
@@ -283,10 +283,10 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
     voltar: !!document.getElementById('reg-voltar'),
   }));
   ok(telaUm.partes === 1 && telaUm.progresso === 'Parte 1 de 10 · Nome e endereço' && telaUm.continuar && !telaUm.voltar && !telaUm.enviar, 'cadastro abre na primeira parte, com Continuar e sem o envio — ' + telaUm.progresso);
-  await page.click('[data-reg-passo="8"]');
+  await page.click(`[data-reg-passo="${await page.evaluate(() => REG_PASSOS.findIndex(x => x.id === 'cancelamento'))}"]`);
   await page.waitForTimeout(300);
   const aba = await page.evaluate(() => ({ passo: document.querySelector('#register-overlay .reg-passo')?.dataset.passo, rolou: document.querySelector('#register-overlay .sheet').scrollTop, titulo: document.querySelector('.reg-titulo')?.innerText }));
-  ok(aba.passo === 'cancelamento' && aba.rolou === 0 && aba.titulo === 'Cancelamento e reposição', 'a aba leva direto à parte, do começo da tela — ' + aba.titulo);
+  ok(aba.passo === 'cancelamento' && aba.rolou === 0 && aba.titulo === 'Cancelamento e reposição Completo', 'a aba leva direto à parte, do começo da tela — ' + aba.titulo);
   await page.click('#reg-voltar');
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => document.querySelector('#register-overlay .reg-passo').dataset.passo === 'horario'), 'Voltar volta uma parte');

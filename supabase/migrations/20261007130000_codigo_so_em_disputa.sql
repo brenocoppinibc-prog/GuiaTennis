@@ -169,7 +169,7 @@ begin
     raise exception 'Entre na sua conta do GuiaTennis Parceiros.' using errcode = '42501';
   end if;
   if p_declaro is false then
-    raise exception 'Marque a declaração para pedir.' using errcode = '22023';
+    raise exception 'Para enviar o pedido, marque a declaração.' using errcode = '22023';
   end if;
   if exists (select 1 from public.academia_vinculos
              where user_id = auth.uid() and academia_id = p_academia) then

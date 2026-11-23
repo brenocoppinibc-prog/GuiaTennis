@@ -63,7 +63,7 @@ const fecharA1 = (page, emails) => page.evaluate(async (emails) => {
     'quem administrava, com o mesmo e-mail, vê a pergunta "reabriu?" — ' + r.slice(0, 120));
   await page.click('[data-reabrir-minha="a1"]');
   await page.waitForTimeout(200);
-  ok((await texto(page, '#parceiros .pc-reabrir .form-error')).includes('Marque a declaração'), 'sem a declaração, não reabre');
+  ok((await texto(page, '#parceiros .pc-reabrir .form-error')).includes('marque a declaração'), 'sem a declaração, não reabre');
   await page.check('[data-reabrir-declaro="a1"]');
   await page.click('[data-reabrir-minha="a1"]');
   await page.waitForTimeout(800);

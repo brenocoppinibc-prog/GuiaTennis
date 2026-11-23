@@ -956,6 +956,8 @@
   .cat-foto img { width: 72px; height: 54px; object-fit: cover; border-radius: 8px; display: block; }
   .cat-foto-tirar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 12px; cursor: pointer; }
   .cat-premium { font-size: 12px; font-weight: 600; color: var(--gold); border: 1px solid var(--gold); border-radius: 999px; padding: 1px 7px; }
+  .reg-titulo .cat-premium, .reg-previa .sec-title .cat-premium { font-family: var(--fonte-texto); vertical-align: middle; margin-left: 4px; }
+  .reg-foto .cat-premium { position: absolute; right: 8px; bottom: 8px; padding: 4px 9px; background: rgba(255,255,255,0.94); }
   .price-input-row input { margin-top: 0 !important; flex: 1; text-align: center; }
   .form-error { color: var(--red); font-size: 13px; display: flex; align-items: center; gap: 6px; margin-top: 10px; }
   .consent-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--muted); }
@@ -25817,6 +25819,18 @@ function politicaParaSalvar(f) {
 // preenche; fora dele, a etiqueta avisa, e o fim do cadastro diz o que o
 // plano esconde.
 function catalogoPremium(f) { return isAdmin || (f.__plano || "basico") === "premium"; }
+// Regra 328 (23/11/2026: "para academias que não possuem o plano que oferece
+// tal opção no cadastro aparecer um símbolo como aparece o do Premium na
+// apresentação"): a opção que o plano da academia não mostra na ficha leva a
+// etiqueta do primeiro plano que mostra, como o "Premium" da Apresentação e os
+// recursos "Pro" do Shopify e do Canva. O admin não vê etiqueta.
+function etiquetaDoPlano(f, libera) {
+  if (isAdmin) return "";
+  const atual = (f && f.__plano) || "basico";
+  if (libera(limitesDoPlano(atual))) return "";
+  const plano = ["completo", "premium"].find(k => ordemDoPlano(k) > ordemDoPlano(atual) && libera(LIMITES_DO_PLANO[k]));
+  return plano ? ` <span class="cat-premium">${esc(nomeDoPlano(plano))}</span>` : "";
+}
 function fotoDoCartao(f, g, chave, nome, rotulo) {
   const premium = catalogoPremium(f);
   return fotoDoCatalogoValida(g.fotos[chave])
@@ -26514,6 +26528,7 @@ function regFotosHtml(f) {
               <div class="reg-foto${i === 0 ? " capa" : ""}" data-foto-ordem="${i}">
                 <img src="${esc(p)}" alt="Foto ${i + 1} da academia" draggable="false" />
                 ${i === 0 ? `<span class="reg-foto-tag">Capa</span>` : `<button type="button" class="reg-foto-capa" data-photo-capa="${i}">Usar como capa</button>`}
+                ${etiquetaDoPlano(f, l => l.fotos > i)}
                 <button type="button" class="reg-foto-ajustar" data-photo-ajustar="${i}" aria-label="Ajustar o enquadramento da foto ${i + 1}">${icon('expandir', 13, 'currentColor')} Ajustar</button>
                 <button type="button" class="reg-foto-tirar" data-photo-idx="${i}" aria-label="Tirar a foto ${i + 1}">✕</button>
               </div>`).join("")}
@@ -26676,11 +26691,11 @@ function regPassoHtml(id, f, obrigatorio) {
         <label class="field-label" for="f-phone" style="margin-top:0">WhatsApp da academia${obrigatorio}</label>
         <input class="form-field" id="f-phone" inputmode="tel" placeholder="WhatsApp (com DDD)${obrigatorio}" value="${esc(f.phone)}" style="margin-top:0" />
         ${isAdmin || !contaAcademia ? "" : `<p class="footnote reg-whatsapp-dica">${esc(dicaDoWhatsappNoCadastro(f))}</p>`}
-        <label class="field-label" for="f-instagram">Instagram</label>
+        <label class="field-label" for="f-instagram">Instagram${etiquetaDoPlano(f, l => l.contatos.includes("instagram"))}</label>
         <input class="form-field" id="f-instagram" placeholder="Instagram (@academia ou o link do perfil)" value="${esc(f.instagram)}" style="margin-top:0" />
-        <label class="field-label" for="f-site">Site</label>
+        <label class="field-label" for="f-site">Site${etiquetaDoPlano(f, l => l.contatos.includes("site"))}</label>
         <input class="form-field" id="f-site" inputmode="url" placeholder="Site (opcional, ex.: academia.com.br)" value="${esc(f.site)}" style="margin-top:0" />
-        <label class="field-label" for="f-reserva">Link de reserva online</label>
+        <label class="field-label" for="f-reserva">Link de reserva online${etiquetaDoPlano(f, l => l.contatos.includes("reserva"))}</label>
         <input class="form-field" id="f-reserva" inputmode="url" placeholder="Link do sistema de reservas (opcional, com https://)" maxlength="${RESERVA_LINK_MAX}" value="${esc(f.reserva || "")}" style="margin-top:0" />
         <p class="footnote reg-reserva-dica">Se vocês já usam um sistema de reservas, colem aqui o link da página de reserva: no Completo e no Premium, a ficha ganha o botão "Reservar online". Com ${listaPt(SISTEMAS_COM_AGENDA.map(x => x.nome))}, a agenda abre dentro do GuiaTennis; com os outros, abre em outra aba. A reserva e o pagamento continuam no sistema de vocês.</p>`;
 
@@ -27000,7 +27015,7 @@ function renderRegisterSheet() {
           ${visiveis.map(({ passo: x, k }) => `<button type="button" class="${k === i ? "on" : ""}" data-reg-passo="${k}" ${k === i ? 'aria-current="step"' : ""}>${regPreenchido(f, x.id) && !regFaltas(f, x.id).length ? "✓ " : ""}${x.t}</button>`).join("")}
         </nav>
 
-        <h2 class="sheet-title display reg-titulo">${passo.titulo}</h2>
+        <h2 class="sheet-title display reg-titulo">${passo.titulo}${passo.id === "cancelamento" ? etiquetaDoPlano(f, l => l.cancelamento) : passo.id === "chegada" ? etiquetaDoPlano(f, l => l.chegada) : ""}</h2>
         <p class="subtitle reg-porque">${passo.porque}</p>
         ${passo.id === "dados" || (passo.id === "modalidades" && !isAdmin) || (obrigatorio && ["quadras", "contato"].includes(passo.id)) ? `<p class="reg-legenda">* Obrigatório</p>` : ""}
 
@@ -27144,19 +27159,19 @@ function previaDaFicha(f) {
           <h2 class="court-name display">${esc(c.name || "Nome da academia")}${seloDaAcademia(c, 20, false)}</h2>
           <p class="court-addr">${esc(c.endereco || [c.bairro, c.cidade].filter(Boolean).join(", ") || "Endereço não informado")}</p>
           ${htEtiquetas(c)}</div>`)}
+        ${secao("sobre", "Sobre a academia", htSobre(c))}
+        ${secao("precos", "Opções para jogar", htCaixasDaEscolha(c) + htOpcoes(c))}
+        ${parteDoOferece && htOferece(c) ? secao(parteDoOferece, "", htOferece(c)) : ""}
+        ${contatos
+          ? secao("contato", "Contato", `<div class="cta-col" style="margin-top:0">${contatos}</div>`,
+            whatsappAConfirmar ? `<p class="reg-previa-nota">${icon('info', 13, 'var(--muted)')} <span>Precisa de confirmação: o WhatsApp ${esc(telefoneBonito(c.phone))} só entra na ficha depois do código de 6 números mandado a ele, com o aviso "WhatsApp em confirmação pelo GuiaTennis" até o GuiaTennis conferir.</span></p>` : "")
+          : adicionar("contato", "Adicionar o WhatsApp")}
+        ${parte("horario", regPreenchido(f, "horario"), "Horário", htHorario(c), "Adicionar o horário")}
         ${(totalQuadras(c) || (c.amenities || []).length)
           ? secao("quadras", "Estrutura", htComodidades(c))
           : adicionar("quadras", "Adicionar quadras e comodidades")}
-        ${parte("chegada", temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar", htAcesso(c), "Adicionar como chegar")}
-        ${secao("sobre", "Sobre a academia", htSobre(c))}
-        ${parte("horario", regPreenchido(f, "horario"), "Horário", htHorario(c), "Adicionar o horário")}
-        ${secao("precos", "Opções para jogar", htCaixasDaEscolha(c) + htOpcoes(c))}
-        ${parteDoOferece && htOferece(c) ? secao(parteDoOferece, "", htOferece(c)) : ""}
-        ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
-        ${contatos
-          ? secao("contato", "", `<div class="cta-col" style="margin-top:0">${contatos}</div>`,
-            whatsappAConfirmar ? `<p class="reg-previa-nota">${icon('info', 13, 'var(--muted)')} <span>Precisa de confirmação: o WhatsApp ${esc(telefoneBonito(c.phone))} só entra na ficha depois do código de 6 números mandado a ele, com o aviso "WhatsApp em confirmação pelo GuiaTennis" até o GuiaTennis conferir.</span></p>` : "")
-          : adicionar("contato", "Adicionar o WhatsApp")}
+        ${parte("chegada", temAcesso(c) || regPreenchido(f, "chegada"), "Como chegar" + etiquetaDoPlano(f, l => l.chegada), htAcesso(c), "Adicionar como chegar")}
+        ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição" + etiquetaDoPlano(f, l => l.cancelamento), htPolitica(c), "Adicionar a regra de cancelamento")}
       </div>
     </div>`;
 }

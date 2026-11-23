@@ -20,7 +20,7 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   ok(f.rep.join() === '24@aula' && f.fora.length === 1 && f.fora[0].includes('Perde a aula'), 'só aula: um bloco, com a regra da aula carregada — ' + f.rep + ' ' + f.fora);
   ok(f.horas.startsWith('06:00,22:00'), 'edição carrega o horário — ' + f.horas);
   ok(!f.estacionar, 'com estacionamento grátis: sem "Onde estacionar"');
-  ok(ordem === 'dados,modalidades,precos,locacao,quadras,contato,fotos,horario,cancelamento,chegada,sobre,revisar', 'partes na ordem (a Apresentação antes de Revisar, regra 205): primeiro o que o jogador e o GuiaTennis precisam (as modalidades e, depois, as aulas e a locação em partes separadas, regras 169 e 170), fachada/chegada depois do cancelamento');
+  ok(ordem === 'dados,modalidades,precos,locacao,eventos,ranking,projeto,quadras,contato,fotos,horario,cancelamento,chegada,sobre,revisar', 'partes na ordem (a Apresentação antes de Revisar, regra 205): primeiro o que o jogador e o GuiaTennis precisam (as modalidades e, depois, as aulas e a locação em partes separadas, regras 169 e 170), fachada/chegada depois do cancelamento');
 
   // Tira o estacionamento: aparece o campo com o texto antigo
   await irParte(page, 'quadras');

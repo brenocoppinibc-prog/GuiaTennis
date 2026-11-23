@@ -1,7 +1,7 @@
 # GuiaTennis — contexto do projeto
 
 Versão enxuta (23/11/2026). Basta ler este arquivo para continuar o
-trabalho. O texto completo até 23/11/2026 (com o detalhe das regras 156 a 327) está em
+trabalho. O texto completo até 23/11/2026 (com o detalhe das regras 156 a 328) está em
 `historico/CONTEXTO-completo-ate-23-11-2026.md`; o anterior (regras 1 a 167, resumos de cada chat,
 todas as seções), em `historico/CONTEXTO-completo-ate-28-10-2026.md`;
 a descrição completa do PR #5 (seções 1 a 73, passos 1 a 99), em
@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 327)
+**Atualizado em:** 23/11/2026 (regra 328)
 
 | | |
 |---|---|
@@ -389,7 +389,7 @@ sozinho vira "-", "Sob consulta"), numa linha
   academia, avaliacoes, respostas, … })` monta o cenário; `sem*` finge o
   banco antigo. Mudou o banco? Ensinar o mesmo ao `mock.js`.
 - **Bateria completa:** `bash testes/rodar-todos.sh` (~15 minutos; em segundo plano). Último
-  resultado (23/11/2026, regra 322): **2.784 verificações, nenhuma falha**, nos arquivos do navegador
+  resultado (23/11/2026, regra 327): **2.794 verificações** (as 3 falhas, de testes com a ordem antiga, ajustadas), nos arquivos do navegador
   mais `onde.mjs`, `pagamento.mjs`, `cnpj.mjs`, `catalogo-meta.mjs` e `regiao.mjs`. O `falhas.txt`
   sempre aparece na lista (força erros de propósito).
 - **Gramática:** `testes/gramatica/` (LanguageTool pt-BR pelo Maven; o passo a passo no `LEIA.md`).
@@ -466,7 +466,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026, troca de chat)
 
-**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 327**; este chat acompanha o PR
+**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 328**; este chat acompanha o PR
 (`subscribe_pr_activity`). O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino:
 teste`, `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:**
 o assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTennis"; se chegar
@@ -474,9 +474,9 @@ escrito "{{ .Token }}", voltar o assunto para "Seu código do GuiaTennis" no `ba
 324 e 326 corrigiram textos de e-mail no próprio arquivo de SQL antigo (`20261013140000`,
 `20261121130000`, `20261123120000`): valem no banco de verdade com o merge.
 
-**Testes:** bateria completa de 23/11 (até a 322): **2.784 verificações, nenhuma falha**; depois, só
-os afetados (323 a 326), sem falha; `banco-emails.py`: **1.087**, sem falha. Gramática: verificador
-em `testes/gramatica/` (LEIA.md). **Rodar a bateria completa no começo do próximo chat.**
+**Testes:** bateria completa de 23/11 (regra 327): **2.794 verificações**; as 3 que falharam esperavam a
+ordem antiga das partes e o texto antigo da declaração e foram ajustadas (passam); depois da 328, os
+afetados, sem falha. `banco-emails.py`: **1.087**, sem falha (22/11). Gramática: `testes/gramatica/`.
 
 **Mercado Pago:** conta do CNPJ com chave Pix; aplicação "Checkout Pro" (API de Preferences; trocar
 para a "API de Orders" quando o Mercado Pago marcar a data); na Netlify, `MERCADOPAGO_ACCESS_TOKEN`,
@@ -559,6 +559,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 325 (23/11) — Pagamentos sem lista gigante.
 - 326 (23/11) — as regras nas mudanças 324 e 325.
 - 327 (23/11) — "Também oferece" em partes próprias, sem teclado à toa, Enter avança, "Corrigir" no campo exato, o código confirma sozinho e vai no assunto do e-mail; a regra da tela exata.
+- 328 (23/11) — a revisão na mesma ordem da ficha e a etiqueta do plano (Completo/Premium) no que o plano não mostra.
 
 ## 11. WhatsApp e mensagem para as academias
 

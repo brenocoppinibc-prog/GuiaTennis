@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 316)
+**Atualizado em:** 23/11/2026 (regra 317)
 
 | | |
 |---|---|
@@ -455,7 +455,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**23/11/2026 (regra 316: estornos e pedidos de reembolso; regra 315: bônus do Pix e período em destaque, voltar do QR, contatos do Parceiros pelo WhatsApp, revisão do português; regra 314: a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Webhooks salvos pelo Breno em 22/11 (Modo de produção, `pagamento?mp=1`, Pagamentos e Planos e assinaturas). Falta o Breno: (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
+**23/11/2026 (regra 317: Promover, as semanas e o alcance num pagamento só, a faixa patrocinada e o e-mail do Premium pelo alcance; regra 316: estornos e pedidos de reembolso; regra 315: bônus do Pix e período em destaque, voltar do QR, contatos do Parceiros pelo WhatsApp, revisão do português; regra 314: a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Webhooks salvos pelo Breno em 22/11 (Modo de produção, `pagamento?mp=1`, Pagamentos e Planos e assinaturas). Falta o Breno: (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
 deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `34f039e`
 (regra 313). O PR está verde, a prévia no ar com tudo até a 313 e a descrição em dia (passos 125 a
 134). O SQL mais novo, `20261121120000_assinatura_do_premium`, já rodou no banco de teste (21/11,
@@ -2726,6 +2726,47 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   (seção "Estornos e reembolsos"; 1.052 no banco local). **Bateria completa de 23/11 (até a
   316): 2.808 verificações, nenhuma falha.** Na prévia, o R$ 20 de teste de 20/11 (devolvido)
   ainda conta como pago no banco de teste: "Conferir com o Mercado Pago" no admin da prévia o acerta.
+- **317 (23/11) — Promover: tudo num pagamento só** ("o trivago funciona como leilão… ter anúncio de
+  alguma academia no início… como no insta"; "faixa menor só com o nome da academia e o conteúdo da
+  promoção"; "pq não ganhamos dinheiro com as que não aparecem tanto"; "15% de desconto no
+  Premium"; "valor estimado… aumentando proporcional aos acessos e visitas"; "não podemos deixar
+  tudo isso incluído para a academia não ter que pagar duas vezes"; "não quero usar a palavra
+  turbinar"; "seria legal para eu acompanhar e divulgar no Instagram"). Como o Instagram (um valor
+  para todos os lugares) e o Google (cada um paga o que a concorrência pede): em **Promoções**, uma
+  tela só (sem a aba do leilão), a academia escreve a promoção, escolhe as **semanas** (garantem a
+  promoção na ficha e na busca) e o **alcance** opcional (Sem alcance, R$ 20, 50, 100 ou outro, de
+  R$ 10 a 5.000), com a estimativa ("rendem entre X e Y aparições… pelo preço de hoje… Sugerido para
+  aparecer em cerca de 1 a cada 4 buscas: R$ …"; `estimativa_de_alcance`) e o total num pagamento
+  só (`promover` = `salvar_promocao` + o alcance dos créditos). O alcance compra aparições na
+  **faixa patrocinada** (`.faixa-patro`, `faixaPatrocinada`): pequena, "Patrocinado" + o nome da
+  academia + a promoção, uma por tela, no início (antes das recomendadas) e no alto da lista da
+  busca, perto do lugar (até ~5 km), só com qualidade ≥ 0,80 (`qualidade_do_lance`); sorteio na
+  proporção do orçamento do dia × qualidade (Premium vale 1/0,85); a mesma pessoa vê a mesma faixa
+  até 3 vezes por dia (`exibicoes_da_faixa`, código aleatório `gt-visitante` no navegador); uma
+  aparição por página; o admin não vê nem gasta. **Preço:** `preco_da_exibicao` = o que as OUTRAS
+  academias do bairro investem por dia ÷ as aparições do bairro (`exibicoes_do_bairro`: cliques das
+  últimas 2 semanas nas fichas do bairro e nas buscas perto, mínimo 30/dia), nunca abaixo de
+  `preco_mil_faixa` (R$ 30 por mil); sozinha no bairro, paga o mínimo; Premium com 15% de
+  desconto em tudo (`desconto_premium` = 0,15, também nas semanas: R$ 8 em vez de R$ 10). O que
+  não for usado volta aos créditos no fim (`rodar_alcance`, relógio de hora em hora) ou ao
+  encerrar (`apagar_promocao`). **E-mail (Premium) sem lance:** `rodar_alcance` coloca a promoção
+  com alcance no leilão da semana do bairro (`lances.promocao_id`, valor = alcance que sobra ÷
+  semanas), e `fechar_leiloes` cobra do alcance, não dos créditos. A página antiga do leilão
+  (`promocoes-email`) virou "E-mail das promoções do bairro" (`pcEmailDasPromocoes`: como funciona,
+  os créditos e os e-mails anteriores, sem lance). Cada promoção mostra "Alcance: R$ x de R$ y
+  usados · N aparições na faixa · M toques · e-mail para K jogadores" (`alcance_das_promocoes`).
+  **Admin › Leilões:** "Promoções no ar" (`promocoes_do_admin`) com o investimento e os números,
+  **"Copiar a legenda"** (`legendaDaPromocao`: 🎾 título, academia, bairro, validade, @ da academia e
+  hashtags) e **"Baixar a imagem"** (`baixarImagemDaPromocao`, canvas 1080 × 1350 nas cores do
+  GuiaTennis). "Como funciona" e a explicação da busca dizem que a faixa é anúncio e não muda a
+  ordem; Termos (Promover, preço do dia, mínimo, 15%, 3 vezes por dia, estimativa não é garantia,
+  e-mail do Premium pelo alcance, a sobra volta), Privacidade (o código aleatório), FAQ ("Como
+  funciona Promover?", "Como funciona o e-mail das promoções no Premium?") e o chat de ajuda. SQL
+  `20261123130000_promover`. Testes: `promocoes-por-email.js` (reescrito para o Promover, 13),
+  `promocoes`, `aviso-ao-sair` (sem o leilão), `plano-e-creditos`, `chat-parceiros`,
+  `sem-explicacao`; `banco-emails.py` (seção "Promover"; 1.067 no banco local). **Bateria completa
+  de 23/11 (até a 317): 2.741 verificações, nenhuma falha** (menos que antes porque os testes do
+  leilão com lance saíram).
 
 ## 11. WhatsApp e mensagem para as academias
 

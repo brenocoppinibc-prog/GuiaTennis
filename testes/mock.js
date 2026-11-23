@@ -74,9 +74,9 @@
   Object.entries(window.__envios || {}).forEach(([id, n]) => { const ac = db.academias.find(y => y.id === id); if (ac) ac.envios_de_aviso = n; });
   db.avisos = window.__db.avisos = [];
   db.lances = window.__db.lances = [];
-  db.leilaoConfig = window.__db.leilaoConfig = { lance_minimo: 10, desconto_premium: 0.2, raio_km: 4, preco_promocao_semana: window.__precoPromocao || 0, dia_fechamento: 0, hora_fechamento: 20 };
+  db.leilaoConfig = window.__db.leilaoConfig = { lance_minimo: 10, desconto_premium: 0.15, raio_km: 4, preco_promocao_semana: window.__precoPromocao || 0, dia_fechamento: 0, hora_fechamento: 20 };
   const promocoesLiberadas = (ac) => !!ac && ["completo", "premium"].includes(ac.plano);
-  // O preço da semana da promoção na ficha (SQL 20261022120000): o Premium paga 20% menos.
+  // O preço da semana da promoção na ficha (SQL 20261022120000): o Premium paga 15% menos (regra 317).
   const precoDaPromocao = (ac) => { const b = db.leilaoConfig.preco_promocao_semana || 0; return !b ? 0 : ac && ac.plano === "premium" ? Math.max(1, Math.floor(b * (1 - db.leilaoConfig.desconto_premium))) : b; };
   const ADMIN = "guiatennis1@gmail.com";
   const DOMINIO = "@acesso.guiatennis.com.br";
@@ -1056,6 +1056,33 @@
       return { data:null, error:null };
     }
     // Promoções (SQL 20261008140000; paga por semana desde 20261022120000).
+    // Promover (regra 317): as semanas pela salvar_promocao e o alcance dos créditos.
+    if (nome === "promover") {
+      if (window.__semPromover) return semFuncao;
+      const ac = db.academias.find(y => y.id === a.p_academia);
+      if ((a.p_alcance || 0) && ((a.p_alcance < 10) || (a.p_alcance > 5000))) return erro("O alcance vai de R$ 10 a R$ 5.000 (ou nenhum).", "22023");
+      const r = rodarRpc("salvar_promocao", { p_academia: a.p_academia, p_id: a.p_id, p_titulo: a.p_titulo, p_detalhes: a.p_detalhes, p_semanas: a.p_semanas });
+      if (r.error) return r;
+      if (a.p_alcance) {
+        if ((ac.envios_de_aviso || 0) < a.p_alcance) return erro(`A academia tem R$ ${ac.envios_de_aviso || 0} de créditos. Compre créditos ou escolha um alcance menor.`, "22023");
+        ac.envios_de_aviso -= a.p_alcance;
+        (window.__alcances = window.__alcances || {})[r.data.id] = { id: r.data.id, alcance: a.p_alcance, gasto: 0, exibicoes: 0, toques: 0, avisados: 0 };
+      }
+      return { data: { ...r.data, alcance: a.p_alcance || 0, pago: (r.data.pago || 0) + (a.p_alcance || 0) }, error:null };
+    }
+    if (nome === "estimativa_de_alcance") {
+      return { data: window.__estimativa || { bairro: "Pinheiros, São Paulo", exibicoes_dia: 120, preco_mil: 30, dias: 7 * (a.p_semanas || 1), exibicoes_min: Math.floor((a.p_alcance || 0) / 0.03 * 0.8), exibicoes_max: Math.ceil((a.p_alcance || 0) / 0.03 * 1.2), parte: 0.5, sugerido: 25, concorrentes: 1 }, error:null };
+    }
+    if (nome === "alcance_das_promocoes") return { data: Object.values(window.__alcances || {}), error:null };
+    if (nome === "faixa_patrocinada") {
+      window.__faixaPedida = (window.__faixaPedida || 0) + 1;
+      return { data: window.__faixa || null, error:null };
+    }
+    if (nome === "tocar_na_faixa") { window.__toques = (window.__toques || 0) + 1; return { data:null, error:null }; }
+    if (nome === "promocoes_do_admin") {
+      if (!souAdmin()) return erro("Só o admin vê as promoções.", "42501");
+      return { data: window.__promocoesDoAdmin || [], error:null };
+    }
     if (nome === "salvar_promocao") {
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("A sua conta não administra essa academia.", "42501");

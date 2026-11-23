@@ -57,8 +57,8 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   }));
   ok(r.args && r.args.p_academia === 'a1' && r.args.p_id === null && r.args.p_titulo === 'Primeira aula grátis' && r.args.p_semanas === 2 && !('p_valida_ate' in r.args) && r.db.valida_ate === dia(13),
     'publica com a academia, o título, os detalhes e as semanas (a validade sai do banco)');
-  ok(r.aviso.includes('Promoção publicada na ficha e na busca até') && !r.aviso.includes('créditos') && r.aviso.includes('Mandar por e-mail'), 'publicar na ficha não manda e-mail; sem custo, nada sai dos créditos — ' + r.aviso);
-  ok(r.lista.length === 1 && /valendo/i.test(r.lista[0]) && /Válida até \d+ de [a-zç]+ · 2 semanas/.test(r.lista[0]) && r.lista[0].includes('Mandar por e-mail'), 'a promoção aparece na lista, valendo, com as semanas e "Mandar por e-mail" — ' + r.lista[0]);
+  ok(r.aviso.includes('Promoção publicada na ficha e na busca até') && !r.aviso.includes('créditos') && !r.aviso.includes('Mandar por e-mail'), 'publicar na ficha, sem alcance e sem custo: nada sai dos créditos (regra 317: sem "Mandar por e-mail") — ' + r.aviso);
+  ok(r.lista.length === 1 && /valendo/i.test(r.lista[0]) && /Válida até \d+ de [a-zç]+ · 2 semanas/.test(r.lista[0]) && !r.lista[0].includes('Mandar por e-mail'), 'a promoção aparece na lista, valendo, com as semanas (o e-mail vem do alcance, regra 317) — ' + r.lista[0]);
   ok(r.site.join() === 'Primeira aula grátis', 'e já aparece no site');
   await page.click('[data-promo-mudar]');
   await page.waitForTimeout(200);
@@ -92,9 +92,9 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', completo: ['a1'], envios: { a1: 25 }, precoPromocao: 10 }));
   await page.waitForTimeout(500);
   corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
-  ok(corpo.includes('Por semana R$ 10') && corpo.includes('4 semanas R$ 40') && corpo.includes('Créditos disponíveis R$ 25') && corpo.includes('Faltam R$ 15 em créditos')
-    && corpo.includes('No Premium, a semana custa R$ 8 (20% a menos)') && !corpo.includes('menos no Premium'), 'Completo: preço cheio por semana, o total, os créditos, o que falta e o preço do Premium — ' + corpo);
-  ok((await texto(page, '.pc-sec-sub')).includes('paga com os créditos (R$ 10 por semana)'), 'no alto, o preço da semana');
+  ok(corpo.includes('Por semana R$ 10') && corpo.includes('4 semanas na ficha R$ 40') && corpo.includes('Total R$ 40') && corpo.includes('Créditos disponíveis R$ 25') && corpo.includes('Faltam R$ 15 em créditos')
+    && corpo.includes('No Premium, a semana custa R$ 8 (15% a menos)') && !corpo.includes('menos no Premium'), 'Completo: preço cheio por semana, o total, os créditos, o que falta e o preço do Premium — ' + corpo);
+  ok((await texto(page, '.pc-sec-sub')).includes('(R$ 10 por semana)') && (await texto(page, '.pc-sec-sub')).includes('num pagamento só'), 'no alto, o preço da semana');
   await page.fill('#pc-promo-titulo', 'Aula experimental');
   await page.click('#pc-promo-revisar');
   await page.waitForTimeout(150);
@@ -113,7 +113,7 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   await page.click('[data-promo-semanas="2"]');
   await page.waitForTimeout(150);
   corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
-  ok(corpo.includes('2 semanas R$ 20') && !corpo.includes('Faltam'), '2 semanas cabem nos créditos — ' + corpo);
+  ok(corpo.includes('2 semanas na ficha R$ 20') && !corpo.includes('Faltam'), '2 semanas cabem nos créditos — ' + corpo);
   await page.click('#pc-promo-revisar');
   await page.waitForTimeout(150);
   ok((await texto(page, '#pc-promo-salvar')) === 'Publicar promoção · R$ 20' && (await texto(page, '#pc-promo-revisao')).includes('R$ 20 dos créditos'), 'o botão diz o valor: "Publicar promoção · R$ 20"');
@@ -139,11 +139,11 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   ok(pergunta.includes('As semanas que ainda não começaram voltam para os créditos (R$ 10)') && r.saldo === 15 && r.aviso.includes('R$ 10 voltaram para os créditos'), 'encerrar devolve a semana que ainda não começou — ' + pergunta);
   await browser.close();
 
-  // Premium com preço: 20% menos.
+  // Premium com preço: 15% menos.
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'], envios: { a1: 100 }, precoPromocao: 10 }));
   await page.waitForTimeout(500);
   corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
-  ok(corpo.includes('Por semana R$ 8 20% menos no Premium') && corpo.includes('4 semanas R$ 32') && !corpo.includes('Ver os planos'), 'Premium: R$ 8 por semana, com o desconto à vista — ' + corpo);
+  ok(corpo.includes('Por semana R$ 8 15% menos no Premium') && corpo.includes('4 semanas na ficha R$ 32') && !corpo.includes('Ver os planos'), 'Premium: R$ 8 por semana, com o desconto à vista — ' + corpo);
   await browser.close();
 
   // ---- o jogador vê: atalho no topo, bloco com os preços e o cartão da busca ----
@@ -188,16 +188,16 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   ({ browser, page } = await abrir({ q: 'parceiros/planos' }));
   r = await page.evaluate(() => ({
     premium: [...document.querySelectorAll('.pc-plano')].pop().innerText,
-    faq: perguntasParceiros().filter(f => /^Como funcionam as promoções/.test(f.q)).map(f => f.a).join(' '),
+    faq: perguntasParceiros().filter(f => /^Como funciona Promover/.test(f.q)).map(f => f.a).join(' '),
     termos: TERMS_HTML, privacidade: PRIVACY_HTML,
     aviso: AVISOS_JOGADOR.find(x => x.campo === 'promocoes').t,
     link: AVISOS_DO_LINK.promocoes || '',
   }));
   ok(r.premium.includes('Promoções na ficha e na busca') && !/em breve/i.test(r.premium), 'o Premium mostra as promoções, sem "Em breve"');
-  ok(r.faq.includes('uma promoção por vez') && r.faq.includes('de 1 a 12') && r.faq.includes('preço por semana') && r.faq.includes('Completo e Premium') && r.faq.includes('Mandar por e-mail'), 'a Ajuda explica como funcionam as promoções, pagas por semana');
+  ok(r.faq.includes('uma promoção por vez') && r.faq.includes('de 1 a 12') && r.faq.includes('alcance') && r.faq.includes('Completo e Premium') && r.faq.includes('num pagamento só'), 'a Ajuda explica Promover: as semanas e o alcance num pagamento só (regra 317)');
   ok(r.termos.includes('uma promoção por vez') && r.termos.includes('responde pelo que anuncia') && r.termos.includes('remover a promoção enganosa'), 'os Termos dizem quem responde pela promoção');
   ok(r.termos.includes('Nos planos Completo e Premium, a academia também pode divulgar uma promoção por vez') && r.termos.includes('paga por semana com os créditos') && r.termos.includes('devolve aos créditos as semanas que ainda não começaram')
-    && r.termos.includes('No plano Premium, a academia pode dar lances') && !r.termos.includes('20% menos no Premium'), 'os Termos: promoção na ficha paga por semana (Completo e Premium) e leilão só do Premium');
+    && r.termos.includes('Ao promover, a academia paga num pagamento só') && r.termos.includes('No plano Premium, o alcance também concorre ao e-mail semanal') && !r.termos.includes('20% menos no Premium'), 'os Termos: as semanas e o alcance num pagamento só; o e-mail do Premium vem do alcance (regra 317)');
   ok(r.privacidade.includes('os favoritos, a cidade da conta ou das preferências, as buscas salvas e a última busca também servem para isso') && r.privacidade.includes('a academia não recebe o seu nome nem o seu e-mail'), 'a Privacidade explica o uso dos favoritos no aviso');
   ok(r.aviso === 'Promoções das academias favoritas e perto de você' && r.link.includes('perto de você') && !/aviso/i.test(r.link), 'a conta e o link do e-mail falam das promoções das favoritas e das academias perto (regras 104 e 113)');
   await browser.close();

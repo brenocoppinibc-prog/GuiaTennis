@@ -3190,5 +3190,53 @@ ok(um("select public.registrar_estorno('pay-e3', 49, 'mercadopago')") == "estorn
 ok(json.loads(um("select public.compras_para_conferir()"))[0]["gateway_id"].isdigit() if um("select jsonb_array_length(public.compras_para_conferir())") != "0" else True,
    "a conferência só leva pagamentos do Mercado Pago (id numérico)")
 
+# Promover (regra 317, 20261123130000_promover) ---------------------------------
+print("\nPromover")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261123130000_promover.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+sql("update public.leilao_config set preco_promocao_semana = 10, desconto_premium = 0.15, preco_mil_faixa = 30")
+prom = academia_nova("Promove Tênis", -23.64, -46.70, ["saibro"])
+pdona = parceiro("Pia Dona", f"piaprom{sufixo}@exemplo.com", prom)
+sql(f"update public.academias set plano = 'premium', envios_de_aviso = 200, photos = '[\"a.jpg\"]'::jsonb, status = 'published' where id = '{prom}'")
+est = json.loads(um(f"select public.estimativa_de_alcance('{prom}', 50, 2)", papel="authenticated", user=pdona))
+ok(est["exibicoes_dia"] >= 30 and float(est["preco_mil"]) == 25.5 and est["exibicoes_max"] > est["exibicoes_min"] > 0 and est["sugerido"] >= 5,
+   "a estimativa: as aparições do bairro, o preço de hoje com os 15% do Premium (R$ 25,50 a cada mil) e o sugerido")
+ok("Entre na conta" in erro(f"select public.estimativa_de_alcance('{prom}', 50, 2)", papel="authenticated", user=carla), "quem não é da academia não vê a estimativa")
+ok("alcance vai de R$ 10" in erro(f"select public.promover('{prom}', null, 'Primeira aula grátis', '', 2, 5)", papel="authenticated", user=pdona), "alcance abaixo de R$ 10 não vale")
+pr = json.loads(um(f"select public.promover('{prom}', null, 'Primeira aula grátis', 'Para quem nunca fez aula aqui, de segunda a sexta.', 2, 50)", papel="authenticated", user=pdona))
+pid = pr["id"]
+ok(um(f"select envios_de_aviso from public.academias where id = '{prom}'") == "134" and pr["pago"] == 66
+   and um(f"select alcance || ',' || semanas from public.promocoes where id = '{pid}'") == "50,2",
+   "Promover: 2 semanas (R$ 8 cada, com os 15% do Premium) e R$ 50 de alcance num pagamento só (R$ 66)")
+ok("permission denied" in erro("select * from public.exibicoes_da_faixa", papel="anon"), "as aparições da faixa são fechadas; só as funções mexem")
+v = "visitante" + sufixo + "abc"
+f1 = json.loads(um(f"select public.faixa_patrocinada(-23.64, -46.70, '{v}')", papel="anon") or "null")
+ok(f1 and f1["promocao"] == pid and f1["academia"] == "Promove Tênis" and f1["titulo"] == "Primeira aula grátis", "a faixa patrocinada aparece perto da academia, com o nome e a promoção")
+ok(um(f"select (alcance_gasto > 0) || ',' || exibicoes from public.promocoes where id = '{pid}'") == "true,1", "cada aparição sai do alcance e é contada")
+um(f"select public.faixa_patrocinada(-23.64, -46.70, '{v}')", papel="anon"); um(f"select public.faixa_patrocinada(-23.64, -46.70, '{v}')", papel="anon")
+ok(um(f"select public.faixa_patrocinada(-23.64, -46.70, '{v}')", papel="anon") in ("", None), "a mesma pessoa vê a mesma faixa no máximo 3 vezes por dia")
+ok(um("select public.faixa_patrocinada(-10.0, -40.0, 'outrovisitante123')", papel="anon") in ("", None), "longe da academia, a faixa não aparece")
+um(f"select public.tocar_na_faixa('{pid}', '{v}')", papel="anon"); um(f"select public.tocar_na_faixa('{pid}', 'ninguemviu12345')", papel="anon")
+ok(um(f"select toques from public.promocoes where id = '{pid}'") == "1", "o toque conta só de quem viu a faixa")
+a = json.loads(um(f"select public.alcance_das_promocoes('{prom}')", papel="authenticated", user=pdona))
+ok(a[0]["exibicoes"] == 3 and a[0]["toques"] == 1, "a academia vê as aparições e os toques")
+# O e-mail da semana vem do alcance (Premium), sem lance separado, e sai do alcance.
+sql("select public.rodar_alcance()")
+lid = um(f"select id from public.lances where promocao_id = '{pid}' and situacao = 'aberto'")
+ok(lid not in ("", None), "o Premium entra sozinho no e-mail da semana do bairro, com o alcance")
+antes_cred = um(f"select envios_de_aviso from public.academias where id = '{prom}'")
+antes_gasto = float(um(f"select alcance_gasto from public.promocoes where id = '{pid}'"))
+sql(f"update public.lances set fecha_em = now() - interval '1 minute' where id = '{lid}'")
+sql("select public.fechar_leiloes(now())")
+ok(um(f"select situacao from public.lances where id = '{lid}'") == "ganhou" and um(f"select envios_de_aviso from public.academias where id = '{prom}'") == antes_cred
+   and float(um(f"select alcance_gasto from public.promocoes where id = '{pid}'")) > antes_gasto,
+   "ganhou o e-mail: o valor sai do alcance, não dos créditos (sem pagar duas vezes)")
+# Encerrar devolve o alcance que sobrou.
+sobra = float(um(f"select alcance - alcance_gasto from public.promocoes where id = '{pid}'"))
+cred = int(um(f"select envios_de_aviso from public.academias where id = '{prom}'"))
+volta = int(um(f"select public.apagar_promocao('{pid}')", papel="authenticated", user=pdona))
+ok(volta >= int(sobra) and int(um(f"select envios_de_aviso from public.academias where id = '{prom}'")) == cred + volta, "encerrar devolve as semanas que faltam e o alcance que sobrou")
+sql("update public.leilao_config set preco_promocao_semana = 0")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

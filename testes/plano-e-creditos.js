@@ -85,7 +85,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ok(corpo.includes('Pagamento confirmado') && corpo.includes('R$ 105 entraram nos créditos da Só Aula Tennis') && /Saldo de créditos\s+R\$ 105/.test(corpo), 'pago: a página confere sozinha e mostra o saldo novo, com os 5% do Pix (regra 304)');
   await page.click('#pc-creditos-concluir');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email' && !state.pcCompra) && /Créditos\s+R\$ 105/.test(await texto(page, '#pc-leilao')), '"Voltar ao leilão" volta, com os créditos');
+  ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email' && !state.pcCompra) && /Créditos\s+R\$ 105/.test(await texto(page, '#parceiros .pc-main')), '"Voltar ao leilão" volta, com os créditos');
   // Regra 301: o cartão no próprio site, no formulário do Mercado Pago (Card
   // Payment Brick). Aqui um Mercado Pago de mentira: o formulário é um botão
   // que devolve um token, como o de verdade.
@@ -157,18 +157,15 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   ok(page.url().startsWith('https://www.mercadopago.com.br/checkout/'), 'e vai para a página do Mercado Pago');
   await browser.close();
 
-  // ---- Do lance para a compra e de volta: o leilão continua onde estava ----
+  // ---- Regra 317: o e-mail das promoções vem do alcance (sem lance): a página mostra os créditos ----
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes-email', premium: ['a1'] }));
-  await page.evaluate(async () => { window.__alcance = 143; await carregarPromocoesPorEmail(); });
   await page.waitForTimeout(300);
-  await page.evaluate(() => { state.pcLeilaoPasso = 3; state.pcEmailForm = { titulo: 'Aula grátis', mensagem: 'Para quem nunca jogou aqui.', valor: '30' }; render(); });
-  await page.waitForTimeout(150);
-  await page.click('#pc-leilao-passo [data-comprar-creditos]');
+  corpo = await texto(page, '#parceiros .pc-main');
+  ok(corpo.includes('E-mail das promoções do bairro') && corpo.includes('sem lance separado') && await page.$('#pc-comprar-creditos') && !(await page.$('#pc-email-valor')),
+    'o e-mail das promoções: como funciona, os créditos e nenhum lance separado');
+  await page.click('#pc-comprar-creditos');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => state.parceirosAba === 'creditos') && (await texto(page, '#pc-creditos-voltar')) === 'Voltar ao leilão', '"Comprar" na etapa do lance abre a compra, com "Voltar ao leilão"');
-  await page.click('#pc-creditos-fechar');
-  await page.waitForTimeout(300);
-  ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email' && document.querySelector('#pc-leilao-passo')?.dataset.passo === '3') && (await page.inputValue('#pc-email-valor')) === '30', 'o ✕ volta para a etapa do lance, com o anúncio e o valor');
+  ok(await page.evaluate(() => state.parceirosAba === 'creditos'), '"Comprar créditos" abre a compra');
   await browser.close();
 
   // ---- A volta do cartão: confere sozinha ----

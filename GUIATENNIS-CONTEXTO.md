@@ -2815,8 +2815,10 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   "Como divulgo a academia no Instagram?" e o chat de ajuda. SQL
   `20261123140000_fundadoras_metas_e_divulgar`. Testes: `divulgar-e-metas.js` (novo, 15),
   `assinatura`, `parceiros` (FAQ com 31), `chat-parceiros`, `regras-de-conteudo`, `ficha-basica`,
-  `sem-explicacao`, `acesso-academia`, `falhas`; `banco-emails.py` (seção "Fundadoras, metas e
-  divulgar"; 1.081 no banco local, sem falha).
+  `sem-explicacao`, `acesso-academia`, `falhas`, `painel-admin` (18 seções); `banco-emails.py` (seção
+  "Fundadoras, metas e divulgar"; 1.081 no banco local, sem falha). SQL rodou no banco de teste em
+  23/11 ("Banco de dados", `destino: teste`, sucesso). **Bateria completa de 23/11 (até a 319): 2.758
+  verificações, nenhuma falha** (a única falha, a contagem de seções do admin, foi acertada no teste).
 
 ## 11. WhatsApp e mensagem para as academias
 

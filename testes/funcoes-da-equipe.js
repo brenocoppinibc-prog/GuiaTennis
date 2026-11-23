@@ -108,7 +108,7 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
   const pag = await texto(page, '#parceiros .pc-main');
   ok(pag.startsWith('Pagamentos Créditos de promoções R$ 50') && await page.$('.pc-pag-comprar[data-comprar-creditos]'), 'Pagamentos mostra o saldo de créditos e "Comprar créditos" — ' + pag.slice(0, 90));
   const compras = await page.evaluate(() => [...document.querySelectorAll('.pc-compras li')].map(l => l.innerText.replace(/\s+/g, ' ').trim()));
-  ok(compras.join(' | ') === 'Plano Premium anual · R$ 990 Esperando o pagamento · por Maria Teste · cartão | Créditos de promoções · R$ 100 Paga em 29 de outubro · por Dono da Quadra · Pix Pedir reembolso',
+  ok(/^Plano Premium anual · R\$ 990 (Em processamento|Não finalizado) · por Maria Teste · cartão \| Créditos de promoções · R\$ 100 Aprovado em 29 de outubro · por Dono da Quadra · Pix Pedir reembolso$/.test(compras.join(' | ')),
     'cada compra com o que foi, o valor, a situação e quem comprou — ' + compras.join(' | '));
   await page.click('.pc-pag-comprar');
   await page.waitForTimeout(300);

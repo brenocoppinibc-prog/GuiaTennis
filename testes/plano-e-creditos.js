@@ -310,6 +310,6 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.click('.adm-nav [data-adm-aba="compras"]');
   await page.waitForTimeout(400);
   const adm = await texto(page, '#painel-admin');
-  ok(adm.includes('Compras de créditos e planos (30 dias)') && adm.includes('Só Aula Tennis · R$ 100 · Pix · paga') && adm.includes('Pagas: R$ 100 (fora R$ 490 de teste)') && /plano Completo anual · R\$ 490 · cartão · paga .*Teste/i.test(adm.replace(/\s+/g, ' ')), 'o admin vê as compras, com o plano e as de teste à parte — ' + adm.replace(/\s+/g, ' ').match(/Compras de créditos.{0,90}/)?.[0]);
+  ok(adm.includes('Compras de créditos e planos (30 dias)') && adm.includes('Só Aula Tennis · R$ 100 · Pix · aprovado') && adm.includes('Pagas: R$ 100 (fora R$ 490 de teste)') && /plano Completo anual · R\$ 490 · cartão · aprovado .*Teste/i.test(adm.replace(/\s+/g, ' ')), 'o admin vê as compras, com o plano e as de teste à parte — ' + adm.replace(/\s+/g, ' ').match(/Compras de créditos.{0,90}/)?.[0]);
   await browser.close();
 })();

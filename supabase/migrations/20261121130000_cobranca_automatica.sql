@@ -262,14 +262,14 @@ begin
     v_nome := coalesce((select name from public.academias where id = a.academia_id), 'academia');
     v_meio := case when a.forma = 'pix' then 'no Pix Automático' else 'no cartão' || coalesce(' final ' || a.final, '') end;
     v_link := public.site_dos_emails() || '/parceiros/plano?abrir=' || right(replace(a.academia_id::text, '-', ''), 8) || '&utm_source=Email-assinatura';
-    v_texto := 'A renovação de R$ ' || a.valor || ' do ' || public.nome_do_plano(a.plano) || ' da ' || v_nome || ' não passou ' || v_meio || '. '
+    v_texto := 'O pagamento de R$ ' || a.valor || ' da renovação do ' || public.nome_do_plano(a.plano) || ' da ' || v_nome || ' foi recusado ' || v_meio || '. '
       || case when a.forma = 'pix' then 'Confira o Pix Automático no aplicativo do banco.' else 'O Mercado Pago tenta de novo nos próximos dias; para trocar o cartão, vá em Plano.' end
       || ' Sem pagamento, a academia passa para o ' || public.nome_do_plano(case when a.plano = 'premium' then 'completo' else 'basico' end) || ' no fim do prazo.';
     for r in select * from public.principais_da_academia(a.academia_id) loop
       perform public.por_na_fila(
         'automatica-recusada:' || p_pagamento || ':' || r.user_id, 'assinatura', r.email,
-        'A renovação do ' || public.nome_do_plano(a.plano) || ' da ' || v_nome || ' não passou',
-        public.email_montado('O pagamento não passou', public.email_p(public.html_texto(v_texto)), 'Ver o plano', v_link,
+        'Pagamento recusado: renovação do ' || public.nome_do_plano(a.plano) || ' da ' || v_nome,
+        public.email_montado('Pagamento recusado', public.email_p(public.html_texto(v_texto)), 'Ver o plano', v_link,
           'Você recebe este e-mail porque é responsável principal da ' || public.html_texto(v_nome) || ' no GuiaTennis Parceiros.'),
         v_texto || E'\n\n' || v_link);
     end loop;

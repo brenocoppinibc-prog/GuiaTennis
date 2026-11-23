@@ -14437,8 +14437,7 @@ function pcPagamentos() {
   const compras = state.pcCompras;
   const linha = (x) => {
     const que = x.tipo === "plano" ? `Plano ${nomeDoPlano(x.plano)} ${x.periodo === "anual" ? "anual" : "mensal"}` : "Créditos de promoções";
-    const situacao = x.situacao === "paga" ? `Paga em ${diaPorExtenso(String(x.paga_em || x.created_at).slice(0, 10))}`
-      : x.situacao === "estornada" ? "Reembolsada" : x.situacao === "recusada" ? "Recusada" : "Esperando o pagamento";
+    const situacao = situacaoDaCompra(x);
     const detalhes = [situacao, x.quem ? "por " + x.quem : "", x.forma === "cartao" ? "cartão" : "Pix", x.de_teste ? "de teste" : "",
       x.nota_emitida_em ? "nota fiscal enviada" + (x.nota_email ? " para " + x.nota_email : "") : ""].filter(Boolean);
     return `<li><div><strong>${esc(que)} · ${emReais(x.valor)}</strong><span>${esc(detalhes.join(" · "))}</span>${linhaDoReembolso(x)}</div></li>`;
@@ -14484,6 +14483,16 @@ function linhaDoReembolso(x) {
   return x.situacao === "paga" && posso("pagamentos")
     ? `${recusado}<span class="pc-compra-reembolso"><button type="button" class="inline-link" data-pedir-reembolso="${esc(x.id)}">Pedir reembolso</button></span>`
     : recusado;
+}
+// Regra 324 ("não existe pagamento que não passou, existe aprovado, recusado,
+// processando, não finalizado"): os nomes do Mercado Pago, do Stripe e das
+// lojas. A compra aberta há mais de 30 minutos (o Pix vence, o cartão não
+// voltou) é "Não finalizado"; antes disso, "Em processamento".
+function situacaoDaCompra(x) {
+  if (x.situacao === "paga") return `Aprovado em ${diaPorExtenso(String(x.paga_em || x.created_at).slice(0, 10))}`;
+  if (x.situacao === "estornada") return "Reembolsado";
+  if (x.situacao === "recusada") return "Recusado";
+  return Date.now() - new Date(x.created_at || 0).getTime() < 30 * 60000 ? "Em processamento" : "Não finalizado";
 }
 function reaisComCentavos(v) {
   return "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -30290,7 +30299,7 @@ function admComprasHtml() {
     <section class="adm-bloco">
       <h2 class="adm-h2">Compras de créditos e planos (30 dias)</h2>
       ${recentes.length ? recentes.map(x => `
-        <div class="adm-lance"><strong>${esc(x.academia)}</strong> · ${x.tipo === "plano" ? `plano ${esc(nomeDoPlano(x.plano))} ${x.periodo === "anual" ? "anual" : "mensal"} · ` : ""}R$ ${esc(x.valor)} · ${x.forma === "pix" ? "Pix" : "cartão"} · ${x.situacao === "paga" ? `paga ${esc(dataHora(x.paga_em))}` : x.situacao === "recusada" ? "recusada" : `aberta desde ${esc(dataHora(x.created_at))}`}${x.de_teste ? ` · <span class="pc-teste-tag">Teste</span>` : ""}${x.situacao === "paga" ? (x.nota_emitida_em ? ` · nota emitida <button type="button" class="inline-link" data-nota-desmarcar="${esc(x.id)}">Desmarcar</button>` : " · nota para emitir") : ""}${estorno(x)}${x.situacao === "paga" ? ` · <button type="button" class="inline-link" data-estornar="${esc(x.id)}">Estornar</button>` : ""}</div>`).join("")
+        <div class="adm-lance"><strong>${esc(x.academia)}</strong> · ${x.tipo === "plano" ? `plano ${esc(nomeDoPlano(x.plano))} ${x.periodo === "anual" ? "anual" : "mensal"} · ` : ""}R$ ${esc(x.valor)} · ${x.forma === "pix" ? "Pix" : "cartão"} · ${x.situacao === "paga" ? `aprovado ${esc(dataHora(x.paga_em))}` : x.situacao === "aberta" ? `${esc(situacaoDaCompra(x).toLowerCase())} desde ${esc(dataHora(x.created_at))}` : esc(situacaoDaCompra(x).toLowerCase())}${x.de_teste ? ` · <span class="pc-teste-tag">Teste</span>` : ""}${x.situacao === "paga" ? (x.nota_emitida_em ? ` · nota emitida <button type="button" class="inline-link" data-nota-desmarcar="${esc(x.id)}">Desmarcar</button>` : " · nota para emitir") : ""}${estorno(x)}${x.situacao === "paga" ? ` · <button type="button" class="inline-link" data-estornar="${esc(x.id)}">Estornar</button>` : ""}</div>`).join("")
         : `<p class="adm-nota">Nenhuma compra nos últimos 30 dias.</p>`}
       <p class="adm-nota">Pagas: R$ ${esc(recentes.filter(x => x.situacao === "paga" && !x.de_teste).reduce((t, x) => t + Number(x.valor || 0), 0))}${recentes.some(x => x.de_teste && x.situacao === "paga") ? ` (fora R$ ${esc(recentes.filter(x => x.situacao === "paga" && x.de_teste).reduce((t, x) => t + Number(x.valor || 0), 0))} de teste)` : ""}. O pagamento entra pelo Mercado Pago.</p>
     </section>`;

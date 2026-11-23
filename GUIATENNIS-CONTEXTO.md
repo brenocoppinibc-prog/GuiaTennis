@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 323)
+**Atualizado em:** 23/11/2026 (regra 324)
 
 | | |
 |---|---|
@@ -2662,7 +2662,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   ("Renova sozinho todo mês; cancele quando quiser"), Pix Automático (−5%) e "Pix · só este mês"
   (−5%, sem renovação). Cada cobrança aprovada vira uma compra paga (`pagamento_automatico` →
   `confirmar_compra`, com os dados da nota, uma vez por id do pagamento) e soma o prazo; a recusada
-  manda o e-mail "A renovação … não passou". Com a renovação ligada, o prazo tem **3 dias de folga**
+  manda o e-mail "Pagamento recusado" (regra 324; antes, "não passou"). Com a renovação ligada, o prazo tem **3 dias de folga**
   (o Mercado Pago tenta de novo) e o e-mail de 5 dias antes diz valor, dia e cartão ("Nesse dia, a
   renovação automática cobra R$ 49 no cartão Visa final 4242"). "Sua assinatura" mostra o próximo
   pagamento, **"Trocar o cartão"** (`acao: "trocar_cartao"`) e cancelar: `cancelar_assinatura`
@@ -2914,6 +2914,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `jogador`, `ficha-hoteis`, `plano-e-creditos`, `menu-e-home`, `inicial-com-conteudo`,
   `comparar-e-avisos` (40), `catalogo`, `links`, `ficha-topo-e-sobre`, `whatsapp-das-academias` e
   `banco-emails.py` (1.087), sem falha.
+
+- **324 (23/11) — os nomes da situação do pagamento** ("não existe pagamento que não passou, existe
+  exemplos aprovado recusado processando, não finalizado"). Como o Mercado Pago, o Stripe e as lojas:
+  em Pagamentos (`situacaoDaCompra`), "Aprovado em <dia>", "Recusado", "Em processamento" (aberta há
+  menos de 30 minutos), "Não finalizado" (aberta há mais) e "Reembolsado"; no admin (Compras e notas),
+  "aprovado <data>", "recusado", "em processamento desde…" e "não finalizado desde…"; o e-mail da
+  renovação recusada é "Pagamento recusado: renovação do Premium da <academia>", com o título
+  "Pagamento recusado" e "O pagamento de R$ 49 da renovação do Premium da <academia> foi recusado no
+  cartão final 4242" (corrigido no próprio `20261121130000_cobranca_automatica`, que ainda não rodou
+  no banco de verdade). A tela de espera do Pix continua "Esperando o pagamento". Testes:
+  `funcoes-da-equipe`, `plano-e-creditos`, `reembolso`, `dados-para-nota` e `banco-emails.py`
+  (1.087), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

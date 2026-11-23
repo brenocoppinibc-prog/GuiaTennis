@@ -3114,7 +3114,7 @@ ok(um(f"select public.pagamento_automatico('{cob}', 'pay-1', 49, 'approved')") =
    "a cobrança aprovada vira uma compra paga (com os dados da nota), uma vez só")
 ok(um(f"select (ate > '{antes}'::timestamptz + interval '27 days') || ',' || teste from public.assinaturas where academia_id = '{reno}'") == "true,false", "soma um mês ao prazo e sai do mês grátis")
 ok(um(f"select public.pagamento_automatico('{cob}', 'pay-2', 49, 'rejected')") == "recusada"
-   and um(f"select count(*) from public.emails_a_enviar where tipo = 'assinatura' and para = 'rdona{sufixo}@exemplo.com' and assunto like '%não passou'") == "1",
+   and um(f"select count(*) from public.emails_a_enviar where tipo = 'assinatura' and para = 'rdona{sufixo}@exemplo.com' and assunto like 'Pagamento recusado: renovação do%' and html like '%foi recusado no cartão%'") == "1",
    "a cobrança recusada avisa o responsável principal")
 sql(f"update public.assinaturas set ate = now() - interval '1 day' where academia_id = '{reno}'")
 sql("select public.rodar_assinaturas()")

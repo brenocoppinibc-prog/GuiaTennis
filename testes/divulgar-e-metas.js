@@ -36,7 +36,7 @@ const escolher = async (page, sel) => { await page.click(sel); await page.waitFo
   await copiaFalsa(page);
   await page.waitForSelector('#pc-divulgar-abrir', { timeout: 8000 }).catch(() => {});
   const cartao = await texto(page, '.pc-divulgar');
-  ok(cartao.includes('Divulgue seu desempenho') && cartao.includes('+120') && cartao.includes('WhatsApp, o Instagram e o Facebook'), 'o painel mostra "Divulgue seu desempenho", com os acessos — ' + cartao.replace(/\s+/g, ' '));
+  ok(cartao.includes('Divulgue seu desempenho') && !cartao.includes('+120') && cartao.includes('WhatsApp, o Instagram e o Facebook'), 'o painel mostra "Divulgue seu desempenho", sem repetir os acessos do Desempenho — ' + cartao.replace(/\s+/g, ' '));
   await page.click('#pc-divulgar-abrir');
   let tam = await imagem(page);
   const abas = await page.$$eval('[data-div-aba]', b => b.map(x => x.innerText).join());
@@ -89,7 +89,7 @@ const escolher = async (page, sel) => { await page.click(sel); await page.waitFo
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/painel', avaliacoes: AVALIACOES }));
   await copiaFalsa(page);
   await page.waitForSelector('#pc-divulgar-abrir', { timeout: 8000 }).catch(() => {});
-  ok(!(await texto(page, '.pc-divulgar')).includes('+120'), 'no Básico, o cartão não repete os acessos (já estão no bloco do mês)');
+  ok(!(await texto(page, '.pc-divulgar')).includes('+120'), 'no Básico, o cartão também não repete os acessos');
   await page.click('#pc-divulgar-abrir').catch(() => {});
   await imagem(page);
   const lb = await legenda(page).catch(() => '');

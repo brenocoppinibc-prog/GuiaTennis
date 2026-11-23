@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 322)
+**Atualizado em:** 23/11/2026 (regra 323)
 
 | | |
 |---|---|
@@ -455,7 +455,9 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026)
 
-**Chat de 23/11/2026 (regras 318 a 322, acompanhando o PR #5):** 322, a revisão de gramática
+**Chat de 23/11/2026 (regras 318 a 323, acompanhando o PR #5):** 323, a revisão visual de todas as
+telas (jogador, Parceiros e e-mails) com as regras de marketing, design e gramática ("revise
+tudo"). 322, a revisão de gramática
 (LanguageTool em todo o texto do site e das funções do banco) e de marketing e design nas telas
 principais ("faz tudo direto"). 321, a página de cada região
 pronta para o Google (função `netlify/functions/regiao.mjs` em `/quadras/*` e o texto de cada bairro
@@ -2891,6 +2893,27 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   avaliação diz "Seja o primeiro a avaliar" (como o TripAdvisor e o Google; a própria academia e o
   admin continuam vendo "Sem avaliações ainda"); o "Garantir a vaga ›" das Fundadoras na cor do
   texto. As telas de compra, Promover, Divulgue, Metas e região já seguiam a regra (315 a 321).
+
+- **323 (23/11) — revisão visual de todas as telas** ("repito mais uma vez, faça tudo de novo… revise
+  tudo"). Prints de página inteira (celular) de comparação, Minha conta, Entrar, mapa, Sobre,
+  feedback, painel, Minha ficha, Avaliações, Promoções, Desempenho, Acessos, Plano, Pagamentos,
+  créditos, Ajuda, cadastro e Entrar do Parceiros, e dos e-mails do banco local (plano, renovação,
+  reembolso, pessoa nova). Ajustes: **comparação**, o botão do WhatsApp quebrava ("WhatsA/pp") e era
+  pílula (o Breno não gosta de pílula para contato): agora "Chamar", sem quebrar, cantos de 10px, e
+  só o ícone com 4 ou 5 academias (`ct-wa-t`, `aria-label`); **Entrar**, "Com a conta, você salva as
+  academias favoritas, avalia onde jogou e recebe as promoções do seu bairro por e-mail" (o que a
+  conta dá, como o Airbnb e o Booking); **oferta do Premium** (Plano), o preço antes do botão,
+  "Depois, ~~R$ 89~~ **R$ 49** por mês · preço de lançamento" (`pc-mes-gratis-preco`), e a nota só
+  com o risco zero; **painel**, o "Divulgue seu desempenho" sem repetir os acessos (já estão no
+  Desempenho); **Promoções**, o "Ver os planos ›" da caixa dourada na cor do texto; **e-mails**, "no
+  cartão, o valor pode aparecer em até duas faturas" (era "aparece na fatura em até duas faturas") e
+  "Fulano, Dono(a) · e-mail, agora também administra…" (sem parêntese dentro de parêntese); os dois
+  SQL foram corrigidos no próprio arquivo (`20261123120000` e `20261013140000`, ainda não rodaram no
+  banco de verdade; no de teste, fica o texto antigo). Testes: bateria completa de 23/11 (até a 322):
+  **2.784 verificações, nenhuma falha**; depois dos ajustes, `divulgar-e-metas`, `assinatura`,
+  `jogador`, `ficha-hoteis`, `plano-e-creditos`, `menu-e-home`, `inicial-com-conteudo`,
+  `comparar-e-avisos` (40), `catalogo`, `links`, `ficha-topo-e-sobre`, `whatsapp-das-academias` e
+  `banco-emails.py` (1.087), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -1383,7 +1383,7 @@ ok(fila() == "0", "a primeira pessoa da academia não gera aviso (não há quem 
 equipe_eq = parceiro("Edu Equipe", f"edueq{sufixo}@exemplo.com", eq, "equipe")
 novo = um(f"select html || '|' || assunto || '|' || para from public.emails_a_enviar where tipo = 'pessoa_nova'") or ""
 ok(fila("tipo = 'pessoa_nova'") == "1" and f"paulaeq{sufixo}@exemplo.com" in novo and "Edu Equipe agora administra a Academia da Equipe com você" in novo
-   and f"<strong>Edu Equipe</strong> (Dono(a) · edueq{sufixo}@exemplo.com)" in novo.split("|")[0] and "Tire o acesso dela em <strong>Acessos</strong>" in novo and "Acesso novo na academia" in novo and "/parceiros/acessos?abrir=" in novo and "Ver os acessos" in novo,
+   and f"<strong>Edu Equipe</strong>, Dono(a) · edueq{sufixo}@exemplo.com, agora" in novo.split("|")[0] and "Tire o acesso dela em <strong>Acessos</strong>" in novo and "Acesso novo na academia" in novo and "/parceiros/acessos?abrir=" in novo and "Ver os acessos" in novo,
    "pessoa nova: quem já administrava recebe, com o nome, o cargo e o e-mail dela e como tirar o acesso (SQL 20261013130000) — " + novo[-120:])
 sem_conf = parceiro("Sid Sem", f"sideq{sufixo}@exemplo.com", eq, "equipe", confirmado=False)
 equipe_html = um(f"select html from public.emails_a_enviar where tipo = 'pessoa_nova' and para = 'edueq{sufixo}@exemplo.com'") or ""

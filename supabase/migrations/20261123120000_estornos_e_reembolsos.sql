@@ -203,7 +203,7 @@ begin
     v_link := public.site_dos_emails() || '/parceiros/pagamentos?abrir=' || right(replace(c.academia_id::text, '-', ''), 8) || '&utm_source=Email-reembolso';
     v_texto := 'O reembolso de R$ ' || replace(to_char(v_delta, 'FM999990.00'), '.', ',') || ' da compra ' || v_que || ' da ' || v_academia
       || ' foi feito pelo Mercado Pago, no mesmo meio de pagamento'
-      || case when c.forma = 'cartao' then ' (no cartão, o valor aparece na fatura em até duas faturas)' else '' end || '. '
+      || case when c.forma = 'cartao' then ' (no cartão, o valor pode aparecer em até duas faturas)' else '' end || '. '
       || case when c.tipo = 'plano' then 'O prazo do plano foi ajustado.' else 'Os créditos correspondentes saíram do saldo.' end;
     for r in select * from public.principais_da_academia(c.academia_id) loop
       perform public.por_na_fila('reembolso:' || c.id || ':' || v_total || ':' || r.user_id, 'compra_paga', r.email,

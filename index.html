@@ -368,6 +368,9 @@
   .pc-mes-gratis ul { list-style: none; padding: 0; margin: 10px 0 14px; display: grid; gap: 6px; font-size: 14px; }
   .pc-mes-gratis li { display: flex; gap: 8px; align-items: flex-start; }
   .pc-mes-gratis .cta-btn { background: #fff; color: var(--green); border-color: #fff; width: 100%; }
+  .pc-mes-gratis-preco { margin: 4px 0 12px; font-size: 15px; color: #fff; }
+  .pc-mes-gratis-preco s { opacity: .7; }
+  .pc-mes-gratis-preco strong { font-size: 18px; color: var(--gold-light); }
   .pc-mes-gratis-nota { margin: 10px 0 0; font-size: 12.5px; color: rgba(255,255,255,.85); line-height: 1.4; }
   .pc-assinatura-dias { display: inline-block; margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: #FFF6E0; color: var(--gold-text); font-size: 12px; font-weight: 700; vertical-align: 2px; }
   .pc-vistas-n { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
@@ -717,7 +720,7 @@
   .ct-cel.melhor { background: rgba(31,77,58,0.07); font-weight: 700; }
   .ct-win { position: absolute; top: 11px; right: 8px; display: inline-flex; }
   .ct-acao { border-bottom: none; padding-top: 14px; }
-  .ct-wa { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; border-radius: 999px; padding: 8px 13px; font-size: 12px; font-weight: 700; text-decoration: none; }
+  .ct-wa { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #fff; border-radius: 10px; padding: 8px 13px; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; }
   .ct-sem { font-size: 12px; color: var(--muted); }
   .ct-cel-sem { color: var(--muted); font-weight: 400; }
   .ct-cel-unid { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
@@ -1391,7 +1394,8 @@
     .ct-n4 .ct-cel, .ct-n5 .ct-cel { font-size: 12px; padding: 8px 14px 8px 5px; line-height: 1.3; }
     .ct-n4 .ct-rot, .ct-n5 .ct-rot { font-size: 12px; padding-right: 4px; }
     .ct-n4 .ct-win, .ct-n5 .ct-win { top: 6px; right: 2px; transform: scale(0.8); }
-    .ct-n4 .ct-wa, .ct-n5 .ct-wa { padding: 6px 8px; font-size: 12px; gap: 3px; }
+    .ct-n4 .ct-wa, .ct-n5 .ct-wa { padding: 8px 10px; font-size: 12px; gap: 3px; }
+    .ct-n4 .ct-wa-t, .ct-n5 .ct-wa-t { display: none; }
     .ct-n4 .cmp-vaga-foto, .ct-n5 .cmp-vaga-foto { width: 30px; height: 30px; }
     .ct-n4 .cmp-vaga-n, .ct-n5 .cmp-vaga-n { font-size: 12px; }
     .ct-n4 .ct-topo, .ct-n5 .ct-topo { padding-left: 2px; padding-right: 2px; }
@@ -3696,7 +3700,7 @@
   .pc-promo-eco { margin: 8px 0 0; font-size: 13.5px; font-weight: 700; color: var(--green); }
   .pc-promo-garantia { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 13px; color: var(--muted); }
   .pc-promo-upsell { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: #FFF6DB; color: #2A2410; font-size: 13.5px; line-height: 1.45; }
-  .pc-promo-upsell a { font-weight: 700; }
+  .pc-promo-upsell a { font-weight: 700; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -8533,7 +8537,7 @@ function tabelaComparacao(courts) {
         ${courts.map(c => `
           <div class="ct-cel ct-acao">
             ${c.phone
-              ? `<a class="ct-wa" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer">${icon('phone', 13, '#fff')} WhatsApp</a>`
+              ? `<a class="ct-wa" data-track="whatsapp" data-court="${c.id}" href="${waLink(c)}" target="_blank" rel="noreferrer" aria-label="Chamar ${esc(c.name)} no WhatsApp">${icon('phone', 13, '#fff')}<span class="ct-wa-t">Chamar</span></a>`
               : `<span class="ct-sem">Sem telefone</span>`}
           </div>`).join("")}
       </div>
@@ -12246,8 +12250,9 @@ function blocoOfertaDoPremium(c, atual) {
           <li>${icon('barchart', 15, '#fff')}<span>Quantos jogadores abriram a ficha, quantos chamaram e de onde vieram</span></li>
           <li>${icon('mail', 15, '#fff')}<span>O e-mail das promoções para os jogadores do bairro</span></li>
         </ul>
+        <p class="pc-mes-gratis-preco">Depois, ${n > v ? `<s>R$ ${esc(n)}</s> ` : ""}<strong>R$ ${esc(v)}</strong> por mês${n > v ? " · preço de lançamento" : ""}</p>
         <button type="button" class="cta-btn" data-escolher-plano="premium">Experimentar 1 mês grátis</button>
-        <p class="pc-mes-gratis-nota">Nada é cobrado automaticamente: cinco dias antes do fim, avisamos por e-mail. Para continuar, R$ ${esc(v)} por mês no lançamento${n > v ? ` (preço regular: R$ ${esc(n)})` : ""}. Sem fidelidade.</p>
+        <p class="pc-mes-gratis-nota">Nada é cobrado automaticamente: cinco dias antes do fim, avisamos por e-mail. Sem fidelidade.</p>
       </div>`;
 }
 // O bloco "Sua assinatura", no alto de Plano.
@@ -12352,11 +12357,9 @@ function blocoDivulgar(c) {
   const d = (state.pcDivulgar || {})[c.id];
   const r = getAppRating(c.id);
   if (!d || !(Number(d.acessos_total) >= 10 || r.count)) return "";
-  const ac = Number(d.acessos || 0);
   return `
       <div class="pc-card pc-divulgar">
         <p class="pc-card-t">${icon('share', 16, 'var(--green)')} Divulgue seu desempenho</p>
-        ${ac >= 10 && planoAtual() !== "basico" ? `<p class="pc-divulgar-n"><strong>${esc(numeroRedondo(ac))}</strong><span>acessos à ficha nos últimos 30 dias</span></p>` : ""}
         <p class="pc-card-s">Mostre quantos jogadores procuram a ${esc(c.name)}. Escolha o período, e a imagem fica pronta para o WhatsApp, o Instagram e o Facebook. Avaliações e promoções também.</p>
         <button type="button" class="cta-btn cta-primary" id="pc-divulgar-abrir">${icon('share', 15, '#fff')} Criar a imagem</button>
       </div>`;
@@ -19192,7 +19195,7 @@ function renderJogadorSheet() {
     <h1 class="display">${titulo}</h1>
     ${sub ? `<p class="pc-sec-sub">${sub}</p>` : ""}
     <div class="pc-card jog-card"${tela === "criar" || tela === "conta" ? ` data-aviso-sair="${tela === "conta" ? "na sua conta" : "no cadastro"}" data-rascunho-de="__jog"` : ""}>${corpo}</div>`;
-  const subPadrao = esc(state.jogadorMotivo || "Com a conta, você avalia as academias e escolhe os avisos por e-mail.");
+  const subPadrao = esc(state.jogadorMotivo || "Com a conta, você salva as academias favoritas, avalia onde jogou e recebe as promoções do seu bairro por e-mail.");
   // Regra 273 ("se ele não tem conta, aparecerá a barra para criar todo o
   // cadastro… se já tem conta… falar para ele entrar na senha. E aí pronto"):
   // como o Booking e o Airbnb, o e-mail vem sozinho; a trilha com a bolinha só

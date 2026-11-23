@@ -50,7 +50,7 @@ begin
   loop
     v_parar := public.link_parar_avisos(r.token_avisos, 'parceiros');
     v_corpo := public.email_p('<strong>' || public.html_texto(v_quem) || '</strong>'
-        || case when v_dados <> '' then ' (' || public.html_texto(v_dados) || ')' else '' end
+        || case when v_dados <> '' then ', ' || public.html_texto(v_dados) || ',' else '' end
         || ' agora também administra a <strong>' || public.html_texto(v_academia) || '</strong> no GuiaTennis Parceiros'
         || case when new.papel = 'principal' then ', como responsável principal.' else '.' end)
       || public.email_p(case when r.papel = 'principal'
@@ -66,7 +66,7 @@ begin
         'Você recebe este e-mail porque administra a ' || public.html_texto(v_academia)
         || ' no GuiaTennis Parceiros. <a href="' || public.html_texto(v_parar)
         || '" style="color:#6B6458">Não quero mais receber avisos por e-mail</a>.'),
-      v_quem || case when v_dados <> '' then ' (' || v_dados || ')' else '' end
+      v_quem || case when v_dados <> '' then ', ' || v_dados || ',' else '' end
         || ' agora também administra a ' || v_academia || ' no GuiaTennis Parceiros'
         || case when new.papel = 'principal' then ', como responsável principal.' else '.' end
         || E'\n\n' || case when r.papel = 'principal'

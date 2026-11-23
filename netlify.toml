@@ -232,7 +232,10 @@
   to = "/404.html"
   status = 404
 
-# Imagens de divulgação (perfil e capa do WhatsApp) e o gerador delas.
+# Imagens de divulgação (perfil e capa do WhatsApp) e o gerador delas. Sem
+# "force": os arquivos que existem continuam no ar, e o "Divulgue seu
+# desempenho" (regra 320) desenha sobre /divulgacao/instagram-post-fundo.png e
+# instagram-stories-fundo.png. Não colocar "force" aqui.
 [[redirects]]
   from = "/divulgacao/*"
   to = "/404.html"

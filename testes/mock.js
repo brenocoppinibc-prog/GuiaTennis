@@ -704,6 +704,25 @@
     }
     // Plano e créditos pelo site (SQL 20261019130000). window.__compras guarda
     // as compras; o pagamento é fingido em testes/plano-e-creditos.js.
+    // Regra 319 (SQL 20261123140000): os números para divulgar e as metas do
+    // admin. window.__divulgar troca os números; window.__metas guarda as metas.
+    if (nome === "numeros_para_divulgar") {
+      const x = meuAcesso();
+      if (!x || !vinculo(x.user_id, a.p_academia)) return erro("Entre na conta da academia.", "42501");
+      const pl = planoDe(a.p_academia), n = window.__divulgar || { acessos_30: 137, acessos_total: 612, contatos_30: 23, contatos_total: 80 };
+      return { data: { plano: pl, ...n, contatos_30: pl === "basico" ? null : n.contatos_30, contatos_total: pl === "basico" ? null : n.contatos_total }, error:null };
+    }
+    if (nome === "metas_da_semana" || nome === "salvar_metas") {
+      if (!window.__admin) return erro("Só o GuiaTennis vê as metas.", "42501");
+      const metas = window.__metas || (window.__metas = { contatos: 50, conversao: 5, visitas: 500, avaliacoes: 10, parceiros: 3, com_preco: 70, com_foto: 80, fundadoras: 15, pagantes: 5, receita: 250 });
+      if (nome === "salvar_metas") { Object.assign(metas, a.p_metas); return { data:null, error:null }; }
+      const h = new Date(), d0 = new Date(Date.UTC(h.getUTCFullYear(), h.getUTCMonth(), h.getUTCDate()));
+      d0.setUTCDate(d0.getUTCDate() - ((d0.getUTCDay() + 6) % 7));
+      const seg = (i) => { const d = new Date(d0); d.setUTCDate(d.getUTCDate() - 7 * i); return d.toISOString().slice(0, 10); };
+      const semanas = [0, 1, 2, 3, 4, 5, 6, 7].map(i => ({ semana: seg(i), visitas: 400 - i * 10, buscas: 300, fichas_abertas: 200, contatos: i === 1 ? 60 : 40,
+        avaliacoes: i === 1 ? 6 : 4, parceiros: 1, receita: i === 1 ? 98 : 49, retrato: i <= 1 ? { fichas: 20, com_preco: i ? 10 : 12, com_foto: 18, fundadoras: 4, pagantes: 2 } : null }));
+      return { data: { metas: { ...metas }, agora: semanas[0].retrato, semanas }, error:null };
+    }
     // A assinatura (regra 310, SQL 20261121120000). window.__assinaturas guarda
     // uma por academia; window.__semAssinatura finge o banco sem o SQL.
     if (["minha_assinatura", "comecar_mes_gratis", "cancelar_assinatura", "continuar_assinatura", "vistas_do_mes", "academias_fundadoras"].includes(nome)) {

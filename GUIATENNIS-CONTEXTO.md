@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 318)
+**Atualizado em:** 23/11/2026 (regra 319)
 
 | | |
 |---|---|
@@ -455,9 +455,13 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026)
 
-**Chat de 23/11/2026 (regra 318, acompanhando o PR #5):** a regra fixa de marketing e design aplicada
-ao Promover (preço riscado, economia em reais, garantia do alcance) e os textos do leilão antigo
-trocados pelo alcance e pelo "E-mail das promoções". Sem SQL novo. **Chat trocado em 23/11/2026
+**Chat de 23/11/2026 (regras 318 e 319, acompanhando o PR #5):** 318, a regra fixa de marketing e
+design no Promover e os textos do leilão antigo trocados pelo alcance; 319, **Fundadoras com 15 vagas**
+(só quando o dono entra no Parceiros; resposta do Breno: "Dono assumiu, conta"), **Admin › Metas** (a
+análise semanal) e **"Divulgue a academia"** (imagem dos números e das avaliações para o Instagram,
+como o Spotify Wrapped). SQL novo `20261123140000_fundadoras_metas_e_divulgar` (**rodar no banco de
+teste**). Na conversa: o leilão não acabou, ficou por dentro do alcance (preço do dia pela concorrência
+do bairro e o e-mail do Premium em leilão de segundo preço), como o Google e o Instagram. **Chat trocado em 23/11/2026
 (regras 314 a 317):** o chat novo volta a acompanhar o PR #5. Último commit de código antes da 318:
 `0fc9e41` (regra 317). O PR está verde, a prévia no ar com tudo até a 317 e a descrição em dia (passos 135 a
 147). O SQL mais novo, `20261123130000_promover`, já rodou no banco de teste (23/11, "Banco de
@@ -2784,6 +2788,35 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   jogadores chamaram a academia"); nos **Termos**, a frase do e-mail pelo alcance (sem "lance
   máximo"), mesma data de 23/11/2026. Ficou como estava: a função da equipe "Promoções e leilão"
   (o nome vem do SQL `nome_da_funcao`). Testes: `promocoes.js` (48), `dicas-do-parceiros.js` (17) e `plano-na-ficha.js` (22). **Bateria completa de 23/11 (até a 318): 2.743 verificações, nenhuma falha** (a única falha, o texto novo do "baixar o plano", foi acertada no teste).
+
+- **319 (23/11) — Fundadoras com 15 vagas, metas da semana e "Divulgue a academia"** ("não quero 30
+  fundadoras e sim 15 que eu próprio adicionar não devem ganhar esse emblema"; resposta na pergunta:
+  "Dono assumiu, conta"; "preciso que essas metas entrem no meu painel que eu posso fazer análises
+  semanalmente"; "gostei da mesma ideia do Spotify de publicar minha academia teve tantos acessos…
+  para eles poderem divulgar metas, avaliações próprias"). **Fundadoras:** as 15 primeiras academias
+  cujo responsável entrou sozinho no Parceiros (cadastrou ou pediu a ficha), mesmo que a ficha tenha
+  sido cadastrada pelo admin; não contam a conta do admin nem os acessos provisórios
+  (`@acesso.guiatennis.com.br` ou `academia_id` no `raw_user_meta_data`; `conta_de_fundadora`); a
+  lista é refeita pela data da conta da academia (o banco de verdade ainda não tinha o selo); as
+  quase 10 academias que o Breno completou ganham só se o dono assumir entre as 15. `FUNDADORAS = 15`;
+  no Parceiros, "Restam N vagas" (`vagasDeFundadora`, escassez de verdade, como o Booking). **Admin ›
+  Metas** (grupo Números; `admMetasHtml`): as metas editáveis (`metas_do_guia`: contatos 50,
+  conversão 5%, visitas 500, avaliações 10, academias no Parceiros 3, receita R$ 250, fichas com preço
+  70%, com foto 80%, fundadoras 15, pagantes 5), a semana passada com "Meta batida"/"% da meta", esta
+  semana até hoje, a variação, as últimas 8 semanas e "Copiar o resumo da semana"; fichas com preço e
+  foto, fundadoras e pagantes vêm do retrato gravado quando as metas são abertas (`metas_retratos`).
+  **Divulgue a academia** (Atualizações, `blocoDivulgar`, aparece com 10 acessos ou 1 avaliação):
+  imagem 1080 × 1350 (feed) ou 1080 × 1920 (Stories) sobre os fundos do Instagram
+  (`divulgacao/instagram-*-fundo.png`), com os acessos dos últimos 30 dias, os contatos (Completo e
+  Premium), a nota e o marco de acessos, números arredondados para baixo; em Avaliações,
+  "Compartilhar no Instagram" nas de 4 e 5 estrelas (`imagemDaAvaliacao`); "Compartilhar" abre o
+  Instagram no celular (ou baixa a imagem) e copia a legenda junto. Termos (Fundadoras; a academia
+  pode compartilhar a avaliação publicada) e Privacidade (o mesmo), datas mantidas em 23/11/2026; FAQ
+  "Como divulgo a academia no Instagram?" e o chat de ajuda. SQL
+  `20261123140000_fundadoras_metas_e_divulgar`. Testes: `divulgar-e-metas.js` (novo, 15),
+  `assinatura`, `parceiros` (FAQ com 31), `chat-parceiros`, `regras-de-conteudo`, `ficha-basica`,
+  `sem-explicacao`, `acesso-academia`, `falhas`; `banco-emails.py` (seção "Fundadoras, metas e
+  divulgar"; 1.081 no banco local, sem falha).
 
 ## 11. WhatsApp e mensagem para as academias
 

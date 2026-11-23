@@ -3065,8 +3065,8 @@ um(f"select public.escolher_plano('{assin}', 'completo')", papel="authenticated"
 sql("select public.rodar_assinaturas()")
 ok(plano_de(assin) == "completo" and um(f"select encerrada_em is not null from public.assinaturas where academia_id = '{assin}'") == "t", "escolher o Completo encerra a assinatura na hora")
 # Fundadoras e as vistas do mês.
-ok(um("select count(*) <= 30 from public.academias_fundadoras") == "t" and um("select count(*) from public.academias_fundadoras() x", papel="anon") == um("select count(*) from public.academias_fundadoras"),
-   "até 30 fundadoras, e o visitante lê a lista")
+ok(um("select count(*) from public.academias_fundadoras() x", papel="anon") == um("select count(*) from public.academias_fundadoras"),
+   "o visitante lê a lista das fundadoras")
 ok("permission denied" in erro("select * from public.academias_fundadoras", papel="anon"), "a tabela das fundadoras é fechada; só a função lê")
 sql(f"insert into public.cliques (academia_id, tipo) values ('{assin}', 'visualizacao'), ('{assin}', 'visualizacao'), ('{assin}', 'whatsapp')")
 ok(um(f"select public.vistas_do_mes('{assin}')", papel="authenticated", user=equipe_z) == "2", "as vistas do mês: só as fichas abertas")
@@ -3237,6 +3237,54 @@ cred = int(um(f"select envios_de_aviso from public.academias where id = '{prom}'
 volta = int(um(f"select public.apagar_promocao('{pid}')", papel="authenticated", user=pdona))
 ok(volta >= int(sobra) and int(um(f"select envios_de_aviso from public.academias where id = '{prom}'")) == cred + volta, "encerrar devolve as semanas que faltam e o alcance que sobrou")
 sql("update public.leilao_config set preco_promocao_semana = 0")
+
+# Regra 319: as 15 fundadoras sem os acessos do admin, as metas da semana e
+# os números para a academia divulgar ------------------------------------------
+print("\n# Fundadoras, metas e divulgar")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261123140000_fundadoras_metas_e_divulgar.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL 20261123140000 roda de novo sem erro " + r.stderr[-300:])
+ok(um("select count(*) <= 15 from public.academias_fundadoras") == "t", "no máximo 15 fundadoras, refeitas pela data da conta da academia")
+f1 = academia_nova("Fundadora Um", -23.61, -46.67, ["rapida"])
+f2 = academia_nova("Fundadora Dois", -23.62, -46.67, ["rapida"])
+provisorio = login(f"prov{sufixo}@acesso.guiatennis.com.br")
+com_meta = login(f"meta{sufixo}@exemplo.com")
+sql(f"update auth.users set raw_user_meta_data = jsonb_build_object('academia_id', '{f1}') where id = '{com_meta}'")
+dona_f = parceiro("Fá Dona", f"fa{sufixo}@exemplo.com")
+ok(um(f"select public.conta_de_fundadora('{provisorio}')") == "f" and um(f"select public.conta_de_fundadora('{com_meta}')") == "f"
+   and um(f"select public.conta_de_fundadora('{dona_f}')") == "t", "acesso criado pelo admin não conta como fundadora; a conta da academia conta")
+sql(f"delete from public.academias_fundadoras; insert into public.academia_vinculos (user_id, academia_id, papel) values ('{dona_f}', '{f2}', 'principal')")
+sql(f"insert into public.academia_acessos (user_id, usuario, academia_id) values ('{provisorio}', 'prov{sufixo}', '{f1}') on conflict do nothing; "
+    f"insert into public.academia_vinculos (user_id, academia_id, papel) values ('{provisorio}', '{f1}', 'principal')")
+ok(um(f"select count(*) from public.academias_fundadoras where academia_id = '{f1}'") == "0" and um(f"select count(*) from public.academias_fundadoras where academia_id = '{f2}'") == "1",
+   "o selo vai para quem o dono assumiu, não para o acesso provisório do admin")
+sql(f"insert into public.academias_fundadoras (academia_id) select id from public.academias where id <> '{f1}' on conflict do nothing")
+sql(f"delete from public.academias_fundadoras where academia_id not in (select academia_id from public.academias_fundadoras order by desde limit 15)")
+f3 = academia_nova("Fundadora Três", -23.63, -46.67, ["rapida"])
+dona_3 = parceiro("Lia Dona", f"lia{sufixo}@exemplo.com", f3)
+ok(um("select count(*) from public.academias_fundadoras") == "15" and um(f"select count(*) from public.academias_fundadoras where academia_id = '{f3}'") == "0",
+   "com 15 fundadoras, a 16ª não ganha o selo")
+# Metas da semana.
+ok("Só o GuiaTennis" in erro("select public.metas_da_semana(8)", papel="authenticated", user=dona_f), "só o admin vê as metas")
+m = json.loads(um("select public.metas_da_semana(8)", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN))
+ok(len(m["semanas"]) == 8 and m["metas"]["contatos"] > 0 and m["semanas"][0]["retrato"]["fundadoras"] == 15 and "contatos" in m["semanas"][1],
+   "as metas: 8 semanas, a meta de contatos e o retrato da semana com as fundadoras")
+sql(f"insert into public.cliques (academia_id, tipo) values ('{f2}', 'whatsapp'), ('{f2}', 'acesso_site')")
+m = json.loads(um("select public.metas_da_semana(2)", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN))
+ok(m["semanas"][0]["contatos"] >= 1 and m["semanas"][0]["visitas"] >= 1, "os contatos e as visitas da semana entram na conta")
+um("select public.salvar_metas('{\"contatos\": 80, \"receita\": 400}')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+ok(um("select valor from public.metas_do_guia where chave = 'contatos'") == "80", "o admin muda a meta")
+ok("desconhecida" in erro("select public.salvar_metas('{\"vendas\": 1}')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+   and "maior que zero" in erro("select public.salvar_metas('{\"contatos\": -1}')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+   and "Só o GuiaTennis" in erro("select public.salvar_metas('{\"contatos\": 1}')", papel="authenticated", user=dona_f),
+   "meta desconhecida, negativa ou de quem não é admin é recusada")
+ok("permission denied" in erro("select * from public.metas_do_guia", papel="authenticated", user=dona_f), "a tabela das metas é fechada")
+# Os números para divulgar.
+n = json.loads(um(f"select public.numeros_para_divulgar('{f2}')", papel="authenticated", user=dona_f))
+ok(n["plano"] == "basico" and n["contatos_30"] is None and n["acessos_30"] >= 0, "no Básico, os acessos, sem os contatos")
+sql(f"update public.academias set plano = 'completo' where id = '{f2}'")
+n = json.loads(um(f"select public.numeros_para_divulgar('{f2}')", papel="authenticated", user=dona_f))
+ok(n["contatos_30"] >= 1 and n["contatos_total"] >= 1, "no Completo, os contatos também")
+ok("Entre na conta" in erro(f"select public.numeros_para_divulgar('{f2}')", papel="authenticated", user=dona_3), "só quem é da academia vê os números dela")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

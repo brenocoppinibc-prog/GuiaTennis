@@ -96,7 +96,7 @@ const texto = (page, sel) => page.evaluate((s) => (document.querySelector(s)?.in
   const painel = await texto(page, '#parceiros .pc-main');
   ok(painel.includes('7 vezes que a sua ficha foi aberta em') && painel.includes('Quantos chamaram no WhatsApp? De quais bairros vieram? O Premium mostra.') && await page.$('.pc-vistas .cta-primary[data-escolher-plano="premium"]'),
     'Básico: o número grande das vistas do mês, a curiosidade e o convite do Premium em destaque (regra 311) — ' + (painel.match(/7 vezes[^.]*/) || [''])[0]);
-  ok(painel.includes('Fundadora') && painel.includes('é uma das 30 primeiras academias do GuiaTennis'), 'o painel diz que a academia é fundadora, com o selo');
+  ok(painel.includes('Fundadora') && painel.includes('é uma das 15 primeiras academias do GuiaTennis'), 'o painel diz que a academia é fundadora, com o selo');
   ok(/Sua ficha está \d+% completa|Ficha completa/.test(painel), 'a barra da ficha em porcentagem ("Sua ficha está 78% completa")');
   await page.evaluate(() => openCourt('a1'));
   await page.waitForTimeout(400);

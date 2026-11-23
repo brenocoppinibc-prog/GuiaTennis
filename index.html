@@ -3640,6 +3640,21 @@
   .ht-quartos > .ht-quarto:only-child .ht-quarto-foto { aspect-ratio: 21 / 9; }
   .ht-about-curto { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
   .ht-about-mais { margin-top: 6px; font-weight: 600; }
+  /* Regra 321 (23/11/2026): o texto de cada região, embaixo da lista. */
+  .regiao-info { margin: 28px 0 8px; padding: 20px 0 0; border-top: 1px solid var(--border); }
+  .regiao-info h2 { margin: 0 0 6px; font-size: 22px; line-height: 1.25; }
+  .regiao-info h3 { margin: 22px 0 10px; font-size: 17px; line-height: 1.3; }
+  .regiao-precos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .regiao-precos li { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+  .regiao-precos span { font-size: 13px; color: var(--muted); }
+  .regiao-precos strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+  .regiao-precos small { font-size: 13px; color: var(--muted); }
+  .regiao-info .footnote { margin-top: 8px; }
+  .regiao-melhores { margin: 0; padding-left: 22px; }
+  .regiao-melhores li { margin: 0 0 8px; font-size: 15px; }
+  .regiao-melhores a { font-weight: 700; color: var(--green); }
+  .regiao-melhores span { display: block; font-size: 13px; color: var(--muted); }
+  .regiao-ssr ul { padding-left: 20px; }
   /* Regra 319 (23/11/2026): vagas de fundadora, metas do admin e Divulgue. */
   .pc-hero-vagas { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0 0; padding: 10px 14px; border-radius: 12px; background: #FFF6E0; color: var(--gold-text); font-size: 14px; line-height: 1.45; text-align: left; }
   .adm-metas-lista { display: grid; gap: 10px; margin-top: 12px; }
@@ -7957,6 +7972,7 @@ function seoDaPagina() {
 function atualizarSeo(c) {
   const ld = document.getElementById("ld-academia");
   atualizarCanonical(c);
+  ldDaRegiao(!c && state.page === "search" && state.regiaoLink && (state.cep || "").trim() === termoDaRegiao(state.regiaoLink) ? state.regiaoLink : null);
   if (!c) {
     const pagina = seoDaPagina();
     if (document.title !== pagina.titulo) document.title = pagina.titulo;
@@ -22205,6 +22221,105 @@ window.addEventListener("popstate", () => {
   }
 });
 
+// ---------- A página de cada região para o Google (regra 321) ----------
+// "Faça essa página do Google": como as páginas de destino do trivago, do
+// Booking e do TripAdvisor, cada bairro e cada cidade tem, embaixo da lista, o
+// texto que só ela tem: quanto custa jogar tênis ali (aula avulsa e locação
+// por hora, "a partir de" e o valor típico), as mais bem avaliadas, as
+// perguntas frequentes e os outros bairros. A função netlify/functions/
+// regiao.mjs entrega a mesma página já montada (título, descrição, lista e
+// dados estruturados) para o Google, o Bing e as prévias do WhatsApp.
+function academiasDaRegiao(r) {
+  const cid = slugTexto(r.cidade), bai = r.bairro ? slugTexto(r.bairro) : "";
+  return state.allCourts.filter(c => slugTexto(c.cidade) === cid && (!bai || slugTexto(c.bairro) === bai)).map(decorate);
+}
+function precosDaRegiao(lista) {
+  const aula = [], hora = [];
+  lista.forEach(c => {
+    const ops = opcoesPreco(c);
+    const valor = (o) => numeroDoPreco(priceMin(o.faixa)) || 0;
+    const a = ops.filter(o => o.grupo === "aula" && o.cobranca !== "mensal").map(valor).filter(v => v > 0);
+    const h = ops.filter(o => o.grupo === "locacao").map(valor).filter(v => v > 0);
+    if (a.length) aula.push(Math.min(...a));
+    if (h.length) hora.push(Math.min(...h));
+  });
+  const faixa = (v) => {
+    if (!v.length) return null;
+    const o = v.slice().sort((x, y) => x - y);
+    return { min: o[0], tipico: o[Math.floor((o.length - 1) / 2)], n: o.length };
+  };
+  return { aula: faixa(aula), hora: faixa(hora) };
+}
+function reaisDaRegiao(v) {
+  return "R$ " + Number(v).toLocaleString("pt-BR", { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 });
+}
+function perguntasDaRegiao(lugar, lista, p) {
+  const cobertas = lista.filter(c => (c.cobertura || []).includes("coberta")).length;
+  const publicas = lista.filter(ehPublica);
+  const daLocacao = lista.filter(c => opcoesPreco(c).some(o => o.grupo === "locacao")).length;
+  return [
+    { q: `Quanto custa uma aula de tênis em ${lugar}?`, a: p.aula
+      ? `Nas academias de ${lugar} no GuiaTennis, a aula avulsa custa a partir de ${reaisDaRegiao(p.aula.min)}${p.aula.n > 1 ? `, e o valor típico é de ${reaisDaRegiao(p.aula.tipico)}` : ""}. O preço muda com o professor, a duração e o número de alunos; confirme com a academia.`
+      : `As academias de ${lugar} informam o preço da aula pelo WhatsApp: escolha na lista e fale direto com a academia.` },
+    ...(p.hora || daLocacao ? [{ q: `Quanto custa alugar uma quadra de tênis em ${lugar}?`, a: p.hora
+      ? `A locação da quadra em ${lugar} custa a partir de ${reaisDaRegiao(p.hora.min)} por hora${p.hora.n > 1 ? `; o valor típico é de ${reaisDaRegiao(p.hora.tipico)} por hora` : ""}.`
+      : `As academias de ${lugar} que alugam quadra informam o valor da hora pelo WhatsApp.` }] : []),
+    ...(cobertas ? [{ q: `Tem quadra de tênis coberta em ${lugar}?`, a: `Sim: ${cobertas} ${plural(cobertas, "academia de", "academias de")} ${lugar} ${plural(cobertas, "tem", "têm")} quadra coberta, para jogar mesmo com chuva. Use o filtro "Coberta" na busca.` }] : []),
+    ...(publicas.length ? [{ q: `Tem quadra pública de tênis em ${lugar}?`, a: `Sim: ${publicas.slice(0, 3).map(c => c.name).join(", ")}${publicas.length > 3 ? " e outras" : ""}. A quadra pública é gratuita; confira o horário na ficha.` }] : []),
+    { q: "Como falar com a academia?", a: "Na ficha da academia, toque em \"Falar no WhatsApp\": a conversa é direta com a academia, sem taxa e sem intermediário." },
+  ];
+}
+function infoDaRegiao(r) {
+  const lista = academiasDaRegiao(r);
+  if (!lista.length) return "";
+  const lugar = r.bairro || r.cidade;
+  const p = precosDaRegiao(lista);
+  const melhores = lista.filter(c => c.appCount && c.appAvg >= 4).sort((a, b) => b.appAvg - a.appAvg || b.appCount - a.appCount).slice(0, 3);
+  const contagem = {};
+  state.allCourts.forEach(c => { if (c.bairro && slugTexto(c.cidade) === slugTexto(r.cidade) && slugTexto(c.bairro) !== slugTexto(r.bairro || "")) contagem[c.bairro] = (contagem[c.bairro] || 0) + 1; });
+  const bairros = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a] || a.localeCompare(b, "pt-BR")).slice(0, 12);
+  const linhaPreco = (t, f, un) => f ? `<li><span>${t}</span><strong>a partir de ${reaisDaRegiao(f.min)}${un}</strong>${f.n > 1 ? `<small>Valor típico: ${reaisDaRegiao(f.tipico)}${un}</small>` : ""}</li>` : "";
+  return `
+      <section class="regiao-info" aria-labelledby="regiao-info-t">
+        <h2 id="regiao-info-t">Tênis em ${esc(lugar)}</h2>
+        ${p.aula || p.hora ? `
+        <h3>Quanto custa jogar tênis em ${esc(lugar)}</h3>
+        <ul class="regiao-precos">${linhaPreco("Aula avulsa", p.aula, "")}${linhaPreco("Locação da quadra", p.hora, " por hora")}</ul>
+        <p class="footnote">Valores informados pelas academias no GuiaTennis. Confirme com a academia antes de combinar.</p>` : ""}
+        ${melhores.length ? `
+        <h3>Mais bem avaliadas em ${esc(lugar)}</h3>
+        <ol class="regiao-melhores">${melhores.map(c => `<li><a href="${esc(caminhoDaFicha(c))}" data-regiao-ficha="${esc(c.id)}">${esc(c.name)}</a><span>${c.appAvg.toFixed(1).replace(".", ",")} ★ · ${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}</span></li>`).join("")}</ol>` : ""}
+        <h3>Perguntas frequentes</h3>
+        <div class="ht-faq">
+          ${perguntasDaRegiao(lugar, lista, p).map(f => `
+          <details>
+            <summary>${esc(f.q)}<span class="ht-faq-ic">${icon('chevron', 16, 'var(--green)')}</span></summary>
+            <p>${esc(f.a)}</p>
+          </details>`).join("")}
+        </div>
+        ${bairros.length ? `
+        <h3>${r.bairro ? `Outros bairros de ${esc(r.cidade)}` : `Bairros de ${esc(r.cidade)}`}</h3>
+        <div class="home-bairros">${bairros.map(b => `<a class="home-bairro" href="${caminhoDaRegiao({ cidade: r.cidade, bairro: b })}" data-regiao-link data-cidade="${esc(r.cidade)}" data-bairro="${esc(b)}"><strong>${esc(b)}</strong><span>${contagem[b]} ${plural(contagem[b], "academia", "academias")}</span></a>`).join("")}</div>` : ""}
+      </section>`;
+}
+// Os dados estruturados da região (o caminho e a lista), os mesmos que a
+// função regiao.mjs entrega pronta.
+function ldDaRegiao(r) {
+  let el = document.getElementById("ld-regiao");
+  if (!r) { if (el) el.remove(); return; }
+  const lista = academiasDaRegiao(r);
+  const lugar = termoDaRegiao(r);
+  const caminho = [{ nome: "GuiaTennis", url: location.origin + "/" }, { nome: `Quadras em ${r.cidade}`, url: location.origin + caminhoDaRegiao({ cidade: r.cidade }) }];
+  if (r.bairro) caminho.push({ nome: r.bairro, url: location.origin + caminhoDaRegiao(r) });
+  const dados = [
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: caminho.map((x, i) => ({ "@type": "ListItem", position: i + 1, name: x.nome, item: x.url })) },
+    { "@context": "https://schema.org", "@type": "ItemList", name: `Quadras e academias de tênis em ${lugar}`, numberOfItems: lista.length,
+      itemListElement: lista.slice(0, 30).map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, url: location.origin + caminhoDaFicha(c) })) },
+  ];
+  if (!el) { el = document.createElement("script"); el.type = "application/ld+json"; el.id = "ld-regiao"; document.head.appendChild(el); }
+  const novo = JSON.stringify(dados);
+  if (el.textContent !== novo) el.textContent = novo;
+}
 function renderSearchPage(results, activeFilters, topBadge) {
   const regiao = state.regiaoLink && (state.cep || "").trim() === termoDaRegiao(state.regiaoLink) ? state.regiaoLink : null;
   return `
@@ -22256,6 +22371,7 @@ function renderSearchPage(results, activeFilters, topBadge) {
           </div>` : ""}
         ${cartoesDaBusca(results, topBadge)}
       </div>
+      ${regiao && state.searchStatus === "done" ? infoDaRegiao(regiao) : ""}
       ${renderSiteFooter()}
     `}
   `;
@@ -32275,6 +32391,7 @@ function attachEvents() {
   const informar = document.getElementById("informar-problema");
   if (informar) informar.onclick = () => abrirAvisoFicha("problema", informar.dataset.court);
   document.querySelectorAll("[data-denunciar]").forEach(el => { el.onclick = () => abrirAvisoFicha("denuncia", el.dataset.court, el.dataset.denunciar); });
+  document.querySelectorAll("[data-regiao-ficha]").forEach(el => { el.onclick = (e) => { e.preventDefault(); openCourt(el.dataset.regiaoFicha); }; });
   document.querySelectorAll("[data-compartilhar-avaliacao]").forEach(el => { el.onclick = () => divulgarAvaliacao(el.dataset.compartilharAvaliacao); });
   document.querySelectorAll("[data-pedir-analise]").forEach(el => { el.onclick = () => abrirAvisoFicha("analise", el.dataset.court, el.dataset.pedirAnalise); });
   document.querySelectorAll('input[name="aviso-motivo"]').forEach(el => {

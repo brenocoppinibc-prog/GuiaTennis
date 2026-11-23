@@ -7,7 +7,7 @@
 // (a Meta exige os dois). Só dados públicos da ficha, os mesmos do site.
 // Endereço: /catalogo-meta.csv (netlify.toml). Sem pacote nenhum.
 
-const BANCOS = {
+export const BANCOS = {
   real: { url: "https://eultezheqwmxyakvgyjy.supabase.co", chave: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1bHRlemhlcXdteHlha3ZneWp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDk5OTcsImV4cCI6MjEwMzg4NTk5N30.JORQlxn0UjezbntZAiQGyA7Mo26zEpnHriPh9IceuuY" },
   teste: { url: "https://ohvbengbujdioxdtewsy.supabase.co", chave: "sb_publishable_NEF5wHWslCi3Uu9GfbHruQ_Ut3r_BBT" },
 };

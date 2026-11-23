@@ -49,7 +49,7 @@
 
 # Endereços de cada tela (30/09/2026), no padrão dos sites grandes:
 #   /academia/<nome>-<fim do id>   ficha da academia
-#   /quadras/<cidade>/<bairro>     academias de uma região
+#   /quadras/<cidade>/<bairro>     academias de uma região (função regiao.mjs)
 #   /busca?q=…&piso=…              busca com filtros
 #   /comparar?academias=…          comparação
 #   /perfil                        perfil da conta do jogador
@@ -69,15 +69,9 @@
   to = "/index.html"
   status = 200
 
-[[redirects]]
-  from = "/quadras/*"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/quadras"
-  to = "/index.html"
-  status = 200
+# /quadras e /quadras/* ficam com a função netlify/functions/regiao.mjs
+# (regra 321): o mesmo index.html, já com o título, a descrição e a página da
+# região escrita, para o Google, o Bing e as prévias do WhatsApp.
 
 [[redirects]]
   from = "/busca"

@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 320)
+**Atualizado em:** 23/11/2026 (regra 321)
 
 | | |
 |---|---|
@@ -455,7 +455,10 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026)
 
-**Chat de 23/11/2026 (regras 318 a 320, acompanhando o PR #5):** 320, Fundadoras para os 15
+**Chat de 23/11/2026 (regras 318 a 321, acompanhando o PR #5):** 321, a página de cada região
+pronta para o Google (função `netlify/functions/regiao.mjs` em `/quadras/*` e o texto de cada bairro
+no site), sem SQL; na conversa, o domínio no CNPJ antes de divulgar (o Breno concorda: "pela receita é
+ruim ter o site que estou monetizando e não saberem de qual site é"). 320, Fundadoras para os 15
 primeiros donos (ficha confirmada no site ou conta no Parceiros, pela ordem de chegada) e o
 "Divulgue seu desempenho" numa janela só (período escolhido pela academia, avaliação ou promoção,
 post ou Stories e Status, qualquer app), SQL `20261123150000_fundadoras_confirmadas_e_periodo`
@@ -2852,6 +2855,26 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `ficha-basica`, `sem-explicacao`, `acesso-academia`, `assinatura`, `dicas-do-parceiros`;
   `banco-emails.py` (seção "Fundadoras confirmadas, período e devolução"; 1.087 no banco local, sem
   falha).
+
+- **321 (23/11) — a página de cada região para o Google** ("como funciona aquela página de região
+  para o google"; "faça essa página do Google"). Antes, `/quadras/<cidade>/<bairro>` devolvia o
+  `index.html` vazio e o site montava tudo no navegador. Agora, como o trivago, o Booking e o
+  TripAdvisor: **`netlify/functions/regiao.mjs`** (`config.path` `/quadras` e `/quadras/*`; os
+  redirecionamentos do `netlify.toml` saíram) busca o `index.html` e as academias no ar da região
+  (banco de verdade em guiatennis.com.br, de teste na prévia) e entrega o título, a descrição, o
+  canônico, as prévias (og: e twitter:), os dados estruturados (`ld-regiao`: BreadcrumbList e
+  ItemList) e, dentro do `#app`, a página escrita (H1, resumo com quantas e quantas cobertas, "Quanto
+  custa jogar tênis em …" e a lista com link, "a partir de" e nota); guardada 1 hora na Netlify
+  (`netlify-cdn-cache-control`); região sem academia sai do Google (`noindex`); sem o banco, a página
+  do site. **No site** (`infoDaRegiao`, embaixo da lista): "Tênis em <bairro>", "Quanto custa jogar
+  tênis em …" (aula avulsa e locação por hora, a partir de e valor típico, `precosDaRegiao`), "Mais
+  bem avaliadas em …" (até 3, nota 4 ou mais), "Perguntas frequentes" (quanto custa a aula, a
+  locação, quadra coberta, quadra pública, como falar com a academia; só as que têm resposta) e
+  "Outros bairros de <cidade>" (ou "Bairros de <cidade>" na página da cidade); `ldDaRegiao` mantém os
+  mesmos dados estruturados e sai fora da região. `BANCOS` agora é exportado por `catalogo-meta.mjs`.
+  Testes: `regiao.mjs` (novo, 11; entrou na `rodar-todos.sh`), `regiao-google.js` (novo, 9),
+  `bairro-direto`, `links`, `buscas-e-avisos`, `menu-e-home`, `inicial-com-conteudo`, `acabamento`,
+  `catalogo` e `catalogo-meta.mjs`, sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

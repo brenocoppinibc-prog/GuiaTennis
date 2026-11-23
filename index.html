@@ -3487,7 +3487,7 @@
      inicial com "Aula e locação | Aulas | Locação" lado a lado, as recomendadas em
      lista, a nota num quadrado verde como o do Booking e "Entrar" escrito no alto. */
   .home-hero .home-hero-sub { margin: 6px 0 14px; font-size: 16px; line-height: 1.5; color: var(--muted); }
-  .home-garantia { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+  .home-garantia { display: flex; align-items: center; gap: 6px; margin: 12px 0 0; font-size: 13px; color: var(--muted); }
   .sbadge { border-radius: 8px 8px 8px 0; padding: 5px 7px; font-weight: 800; }
   .sbadge.none { border-radius: 999px; background: none; border: 1px solid var(--border); color: var(--muted); font-weight: 600; }
   .conta-topo.entrar { width: auto; padding: 0 12px; border: 0; background: none; color: var(--green); font-family: var(--fonte-texto); font-size: 15px; font-weight: 700; }
@@ -3656,6 +3656,7 @@
   .regiao-melhores span { display: block; font-size: 13px; color: var(--muted); }
   .regiao-ssr ul { padding-left: 20px; }
   /* Regra 319 (23/11/2026): vagas de fundadora, metas do admin e Divulgue. */
+  .pc-hero-vagas a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
   .pc-hero-vagas { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0 0; padding: 10px 14px; border-radius: 12px; background: #FFF6E0; color: var(--gold-text); font-size: 14px; line-height: 1.45; text-align: left; }
   .adm-metas-lista { display: grid; gap: 10px; margin-top: 12px; }
   @media (min-width: 900px) { .adm-metas-lista { grid-template-columns: 1fr 1fr; } }
@@ -14871,7 +14872,7 @@ function pcCreditos() {
       <div class="pc-checkout-bloco" id="pc-compra">
         <p class="pc-checkout-bloco-t">${icon('pix', 16, 'currentColor')} Pague ${emReais(k.valorCobrado)} com Pix</p>
         <ol class="pc-checkout-como">
-          <li>Abra o app do seu banco e escolha Pix.</li>
+          <li>Abra o aplicativo do seu banco e escolha Pix.</li>
           <li>Leia o QR code ou use o Pix copia e cola.</li>
           <li>Confira o valor e confirme. ${plano ? "O plano muda sozinho." : "Os créditos entram sozinhos."}</li>
         </ol>
@@ -21619,7 +21620,7 @@ function renderHome() {
       <h2 class="display">Aula e quadra de tênis perto de você</h2>
       <p class="home-hero-sub">Compare preço, estrutura e avaliações e fale direto com a academia.</p>
       ${renderSearchCard()}
-      <p class="home-garantia">Grátis para quem joga. Sem cadastro e sem taxa.</p>
+      <p class="home-garantia">${icon('check', 14, 'var(--green)')} Grátis para quem joga · Sem cadastro · Sem taxa</p>
       ${state.searchStatus === "error" ? `<div class="status-line status-error">${icon('warning',13)} ${esc(state.errorMsg)}</div>` : ""}
       ${state.viagemAviso ? `<p class="conta-aviso">${icon('check', 14, 'var(--green)')} ${esc(state.viagemAviso)}</p>` : ""}${state.viagemAviso ? (setTimeout(() => { state.viagemAviso = ""; }, 0), "") : ""}
       ${cartaoViagem()}
@@ -25373,7 +25374,7 @@ function renderCourtPage(c) {
               <p class="ht-atalhos"><button type="button" class="ht-link" data-nav="${c.id}">Ver no mapa ${icon('chevron', 16, 'currentColor')}</button></p>
               <button type="button" class="ht-score" id="ir-avaliacoes">
                 ${c.appCount ? `<span class="ht-score-num">${c.appAvg.toFixed(1).replace(".", ",")}</span>` : ""}
-                <span class="ht-link">${c.appCount ? `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : "Sem avaliações ainda"} ${icon('chevron', 16, 'currentColor')}</span>
+                <span class="ht-link">${c.appCount ? `${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")}` : ehDaMinhaConta(c) || isAdmin ? "Sem avaliações ainda" : "Seja o primeiro a avaliar"} ${icon('chevron', 16, 'currentColor')}</span>
               </button>
               ${htEtiquetas(c)}
               ${avisoDeQueFechou(c)}
@@ -27614,7 +27615,7 @@ function conteudoDasEstatisticas() {
             ${topPublico(r.d.origens) ? `<p class="pending-detail"><strong>Vieram de:</strong> ${esc(topPublico(r.d.origens))}</p>` : ""}
             ${topPublico(r.d.regioes) ? `<p class="pending-detail"><strong>Regiões:</strong> ${esc(topPublico(r.d.regioes))}</p>` : ""}
             ${topPublico(r.d.aparelhos) ? `<p class="pending-detail"><strong>Aparelho:</strong> ${esc(topPublico(r.d.aparelhos))}</p>` : ""}
-            <button type="button" class="stat-copy" data-copy-stats="${r.court.id}">Copiar resumo pra mandar</button>
+            <button type="button" class="stat-copy" data-copy-stats="${r.court.id}">Copiar o resumo para enviar</button>
           </div>
         `).join("")}
 
@@ -32534,7 +32535,7 @@ function attachEvents() {
       const d = Object.assign({ whatsapp:0, site:0, instagram:0, compartilhar:0, visualizacao:0 }, porAcademia[c.id] || {});
       const txt = resumoTexto(c, d);
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt).then(() => { el.textContent = "Copiado!"; setTimeout(() => { el.textContent = "Copiar resumo pra mandar"; }, 1800); })
+        navigator.clipboard.writeText(txt).then(() => { el.textContent = "Copiado!"; setTimeout(() => { el.textContent = "Copiar o resumo para enviar"; }, 1800); })
           .catch(() => window.prompt("Copie o resumo:", txt));
       } else {
         window.prompt("Copie o resumo:", txt);
@@ -33254,7 +33255,7 @@ function shareCourt(courtId) {
   // A etiqueta faz a visita de quem recebe o link aparecer como
   // "Compartilhado" em "De onde vieram", em vez de "Direto".
   const url = `${location.origin}${caminhoDaFicha(c)}?utm_source=Compartilhado`;
-  const text = `Olha essa quadra/academia que eu achei, no GuiaTennis:\n${c.name}${c.endereco ? " - " + c.endereco : (c.bairro ? " - " + c.bairro : "")}`;
+  const text = `${ehPublica(c) ? "Veja esta quadra" : "Veja esta academia"} no GuiaTennis:\n${c.name}${c.endereco ? " - " + c.endereco : (c.bairro ? " - " + c.bairro : "")}`;
   const fullText = `${text} ${url}`;
 
   function lastResort() {

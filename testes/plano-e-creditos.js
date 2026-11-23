@@ -73,7 +73,7 @@ const ID = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
   await page.waitForTimeout(500);
   corpo = await texto(page, '#pc-compra');
   ok(chamadas[0] && chamadas[0].acao === 'cobrar' && chamadas[0].compra === ID(1) && !('valor' in chamadas[0]), 'abre a compra no banco e pede a cobrança só com o id (o valor sai do banco)');
-  ok(corpo.includes('Pague R$ 100 com Pix') && corpo.includes('Abra o app do seu banco') && await page.isVisible('.pc-compra-qr') && (await page.inputValue('#pc-compra-codigo')) === '00020101PIXCOPIA' && corpo.includes('Esperando o pagamento'), 'Pix: o passo a passo, o QR code, o copia e cola e "Esperando o pagamento"');
+  ok(corpo.includes('Pague R$ 100 com Pix') && corpo.includes('Abra o aplicativo do seu banco') && await page.isVisible('.pc-compra-qr') && (await page.inputValue('#pc-compra-codigo')) === '00020101PIXCOPIA' && corpo.includes('Esperando o pagamento'), 'Pix: o passo a passo, o QR code, o copia e cola e "Esperando o pagamento"');
   ok(await page.evaluate(() => [...document.querySelectorAll('.pc-checkout-trilha li')].map(l => l.className).join(',')) === 'feito,agora,', 'na etapa do pagamento');
   await page.click('#pc-compra-copiar');
   await page.waitForTimeout(150);

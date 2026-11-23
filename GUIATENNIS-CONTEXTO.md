@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 321)
+**Atualizado em:** 23/11/2026 (regra 322)
 
 | | |
 |---|---|
@@ -455,7 +455,9 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026)
 
-**Chat de 23/11/2026 (regras 318 a 321, acompanhando o PR #5):** 321, a página de cada região
+**Chat de 23/11/2026 (regras 318 a 322, acompanhando o PR #5):** 322, a revisão de gramática
+(LanguageTool em todo o texto do site e das funções do banco) e de marketing e design nas telas
+principais ("faz tudo direto"). 321, a página de cada região
 pronta para o Google (função `netlify/functions/regiao.mjs` em `/quadras/*` e o texto de cada bairro
 no site), sem SQL; na conversa, o domínio no CNPJ antes de divulgar (o Breno concorda: "pela receita é
 ruim ter o site que estou monetizando e não saberem de qual site é"). 320, Fundadoras para os 15
@@ -2875,6 +2877,20 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Testes: `regiao.mjs` (novo, 11; entrou na `rodar-todos.sh`), `regiao-google.js` (novo, 9),
   `bairro-direto`, `links`, `buscas-e-avisos`, `menu-e-home`, `inicial-com-conteudo`, `acabamento`,
   `catalogo` e `catalogo-meta.mjs`, sem falha.
+
+- **322 (23/11) — gramática e marketing em todo o site** ("a regra de marketing e design foi passada
+  em todo o site? junto com a regra de gramática?"; "faz tudo direto"). **Gramática:** LanguageTool
+  pt-BR 6.4 (Maven, `Checa.java` no scratchpad, montado de novo neste chat) em 2.161 trechos: todo
+  texto entre aspas do `index.html` (sem comentários nem CSS) e as funções do banco local (e-mails e
+  mensagens); fora as marcações falsas (nomes, código, espaços da extração), três ajustes: "Copiar o
+  resumo para enviar" (era "pra mandar"), o compartilhar da ficha "Veja esta academia no
+  GuiaTennis:" (era "Olha essa quadra/academia que eu achei") e "Abra o aplicativo do seu banco".
+  "Fale com a gente" e "A gente também ajuda" ficam (pedidos do Breno). **Marketing e design**
+  (prints do início, da busca, da ficha e do Parceiros): a garantia do início em itens com o visto
+  ("Grátis para quem joga · Sem cadastro · Sem taxa", risco zero como o Booking); a ficha sem
+  avaliação diz "Seja o primeiro a avaliar" (como o TripAdvisor e o Google; a própria academia e o
+  admin continuam vendo "Sem avaliações ainda"); o "Garantir a vaga ›" das Fundadoras na cor do
+  texto. As telas de compra, Promover, Divulgue, Metas e região já seguiam a regra (315 a 321).
 
 ## 11. WhatsApp e mensagem para as academias
 

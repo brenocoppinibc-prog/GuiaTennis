@@ -132,7 +132,7 @@ async function editarFicha(page) {
   page.once('dialog', d => { pergunta = d.message(); d.dismiss(); });
   await page.click('.adm-acad.aberta .plano-btn[data-plano="completo"]');
   await page.waitForTimeout(400);
-  ok(pergunta.includes('do Premium para o Completo') && pergunta.includes('sai o selo dourado') && pergunta.includes('sai do leilão de promoções por e-mail') && !pergunta.includes('as promoções saem da ficha') && pergunta.includes('Nada é apagado'), 'baixar o plano pergunta antes, dizendo o que muda (no Completo, a promoção na ficha fica) — ' + pergunta.split('\n')[0]);
+  ok(pergunta.includes('do Premium para o Completo') && pergunta.includes('sai o selo dourado') && pergunta.includes('sai do e-mail das promoções do bairro') && !pergunta.includes('leilão') && !pergunta.includes('as promoções saem da ficha') && pergunta.includes('Nada é apagado'), 'baixar o plano pergunta antes, dizendo o que muda (no Completo, a promoção na ficha fica) — ' + pergunta.split('\n')[0]);
   ok(await page.evaluate(() => window.__db.academias.find(a => a.id === 'a1').plano === 'premium'), '"Cancelar" não muda o plano');
   page.once('dialog', d => { pergunta = d.message(); d.accept(); });
   await page.click('.adm-acad.aberta .plano-btn[data-plano="basico"]');

@@ -2783,7 +2783,7 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   15% menos para promover, leva as promoções ao e-mail do bairro", "cobra automaticamente", "quantos
   jogadores chamaram a academia"); nos **Termos**, a frase do e-mail pelo alcance (sem "lance
   máximo"), mesma data de 23/11/2026. Ficou como estava: a função da equipe "Promoções e leilão"
-  (o nome vem do SQL `nome_da_funcao`). Testes: `promocoes.js` (48) e `dicas-do-parceiros.js` (17).
+  (o nome vem do SQL `nome_da_funcao`). Testes: `promocoes.js` (48), `dicas-do-parceiros.js` (17) e `plano-na-ficha.js` (22). **Bateria completa de 23/11 (até a 318): 2.743 verificações, nenhuma falha** (a única falha, o texto novo do "baixar o plano", foi acertada no teste).
 
 ## 11. WhatsApp e mensagem para as academias
 

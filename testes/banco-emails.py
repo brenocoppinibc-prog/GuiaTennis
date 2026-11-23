@@ -3278,13 +3278,29 @@ ok("desconhecida" in erro("select public.salvar_metas('{\"vendas\": 1}')", papel
    and "Só o GuiaTennis" in erro("select public.salvar_metas('{\"contatos\": 1}')", papel="authenticated", user=dona_f),
    "meta desconhecida, negativa ou de quem não é admin é recusada")
 ok("permission denied" in erro("select * from public.metas_do_guia", papel="authenticated", user=dona_f), "a tabela das metas é fechada")
-# Os números para divulgar.
-n = json.loads(um(f"select public.numeros_para_divulgar('{f2}')", papel="authenticated", user=dona_f))
-ok(n["plano"] == "basico" and n["contatos_30"] is None and n["acessos_30"] >= 0, "no Básico, os acessos, sem os contatos")
+# Regra 320: as fundadoras pela chegada do dono (ficha confirmada ou conta no
+# Parceiros), os números do período escolhido e a devolução do alcance -------
+print("\n# Fundadoras confirmadas, período e devolução")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261123150000_fundadoras_confirmadas_e_periodo.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "o SQL 20261123150000 roda de novo sem erro " + r.stderr[-300:])
+ok(um("select count(*) <= 15 from public.academias_fundadoras") == "t", "no máximo 15 fundadoras, pela chegada do dono")
+sql("delete from public.academias_fundadoras")
+f4 = academia_nova("Fundadora Quatro", -23.64, -46.67, ["rapida"])
+ok(um(f"select count(*) from public.academias_fundadoras where academia_id = '{f4}'") == "0", "a ficha que o admin cadastrou sem confirmar não ganha o selo")
+sql(f"update public.academias set confirmada = true where id = '{f4}'")
+ok(um(f"select count(*) from public.academias_fundadoras where academia_id = '{f4}'") == "1", "a ficha confirmada pela academia ganha o selo")
 sql(f"update public.academias set plano = 'completo' where id = '{f2}'")
+n = json.loads(um(f"select public.numeros_para_divulgar('{f2}', 7)", papel="authenticated", user=dona_f))
+ok(n["dias"] == 7 and n["plano"] == "completo" and n["contatos"] >= 1 and n["acessos"] >= 0 and "avaliacoes" in n and n["inicio"], "os números dos últimos 7 dias, com os contatos no Completo")
+n0 = json.loads(um(f"select public.numeros_para_divulgar('{f2}', 0)", papel="authenticated", user=dona_f))
+ok(n0["dias"] == 0 and n0["acessos"] == n0["acessos_total"], "desde o início: todos os acessos")
+sql(f"update public.academias set plano = 'basico' where id = '{f2}'")
 n = json.loads(um(f"select public.numeros_para_divulgar('{f2}')", papel="authenticated", user=dona_f))
-ok(n["contatos_30"] >= 1 and n["contatos_total"] >= 1, "no Completo, os contatos também")
-ok("Entre na conta" in erro(f"select public.numeros_para_divulgar('{f2}')", papel="authenticated", user=dona_3), "só quem é da academia vê os números dela")
+ok(n["dias"] == 30 and n["contatos"] is None, "no Básico, sem os contatos; 30 dias quando não escolhe")
+ok("Entre na conta" in erro(f"select public.numeros_para_divulgar('{f2}', 30)", papel="authenticated", user=dona_3), "só quem é da academia vê os números dela")
+ok(um("select prosrc like '%devolvido_em%' from pg_proc where proname = 'alcance_das_promocoes'") == "t"
+   and um(f"select public.alcance_das_promocoes('{prom}') is not null", papel="authenticated", user=pdona) == "t",
+   "cada promoção diz quando o alcance que sobrou voltou para os créditos")
 
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

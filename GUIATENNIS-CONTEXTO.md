@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 319)
+**Atualizado em:** 23/11/2026 (regra 320)
 
 | | |
 |---|---|
@@ -455,7 +455,12 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026)
 
-**Chat de 23/11/2026 (regras 318 e 319, acompanhando o PR #5):** 318, a regra fixa de marketing e
+**Chat de 23/11/2026 (regras 318 a 320, acompanhando o PR #5):** 320, Fundadoras para os 15
+primeiros donos (ficha confirmada no site ou conta no Parceiros, pela ordem de chegada) e o
+"Divulgue seu desempenho" numa janela só (período escolhido pela academia, avaliação ou promoção,
+post ou Stories e Status, qualquer app), SQL `20261123150000_fundadoras_confirmadas_e_periodo`
+(**rodar no banco de teste**); na conversa, a devolução do alcance não usado (volta para os créditos
+no fim; os créditos não usados viram dinheiro pelo "Pedir reembolso"). 318, a regra fixa de marketing e
 design no Promover e os textos do leilão antigo trocados pelo alcance; 319, **Fundadoras com 15 vagas**
 (só quando o dono entra no Parceiros; resposta do Breno: "Dono assumiu, conta"), **Admin › Metas** (a
 análise semanal) e **"Divulgue a academia"** (imagem dos números e das avaliações para o Instagram,
@@ -2819,6 +2824,34 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   "Fundadoras, metas e divulgar"; 1.081 no banco local, sem falha). SQL rodou no banco de teste em
   23/11 ("Banco de dados", `destino: teste`, sucesso). **Bateria completa de 23/11 (até a 319): 2.758
   verificações, nenhuma falha** (a única falha, a contagem de seções do admin, foi acertada no teste).
+
+- **320 (23/11) — Fundadoras pela chegada do dono e "Divulgue seu desempenho" numa janela só** ("são
+  para os 15 donos que chegarem primeiro. Tem academias que já foram confirmadas no site, e essas
+  podem ser com selo do fundador"; "como será a devolução de quem colocou mais dinheiro e não usou";
+  "deixe ex: divulgue seu desempenho e faça com que a foto seja criada com o tempo determinado pela
+  academia… tente deixar algo unificado e compartilhar não ser necessariamente para o Instagram";
+  "aplique a regra de marketing e design nessas últimas edições"). **Fundadoras:** contam a ficha
+  confirmada pela academia (`confirmada`, no ar; todas as que estavam no guia em 29/09 foram
+  conferidas uma a uma) e a conta que entrou sozinha no Parceiros; a ordem é a da chegada
+  (`publicada_em`/`created_at` da confirmada ou o vínculo, o que vier primeiro), até 15; o gatilho
+  `marcar_fundadora_confirmada` dá o selo quando a ficha passa a confirmada e no ar. No Parceiros,
+  "Os 15 primeiros donos de academia a chegar ao GuiaTennis… Restam N vagas. Garantir a vaga ›".
+  **Divulgue seu desempenho** (`abrirDivulgue`, uma janela para tudo, como o Spotify Wrapped e o
+  "Compartilhar" do Airbnb): Desempenho (período 7 dias, 30 dias, 3 meses, 12 meses ou desde o
+  início; `numeros_para_divulgar(p_academia, p_dias)` com acessos, contatos no Completo e no Premium e
+  avaliações novas), Avaliação (as de 4 e 5 estrelas com comentário) e Promoção (a que está
+  valendo); formatos Post (1080 × 1350) e Stories e Status (1080 × 1920); "Compartilhar" abre os
+  apps do celular (WhatsApp, Instagram, Facebook…) ou baixa a imagem, e a legenda vai junto, com o
+  link da ficha (sem "link na bio"). Atalhos: o cartão do painel (com os acessos de 30 dias, fora
+  do Básico, que já os vê no bloco do mês), "Compartilhar" em cada avaliação e na promoção
+  valendo. A imagem da promoção do admin usa o mesmo desenho (`imagemDaPromocao`). **Devolução do
+  alcance:** cada promoção mostra "R$ x voltaram para os créditos" (`alcance_das_promocoes` com
+  `devolvido_em`). Termos (Fundadoras), FAQ "Como divulgo o desempenho da academia?" e chat de
+  ajuda. SQL `20261123150000_fundadoras_confirmadas_e_periodo`. Testes: `divulgar-e-metas.js` (21),
+  `promocoes-por-email`, `promocoes`, `parceiros`, `chat-parceiros`, `regras-de-conteudo`,
+  `ficha-basica`, `sem-explicacao`, `acesso-academia`, `assinatura`, `dicas-do-parceiros`;
+  `banco-emails.py` (seção "Fundadoras confirmadas, período e devolução"; 1.087 no banco local, sem
+  falha).
 
 ## 11. WhatsApp e mensagem para as academias
 

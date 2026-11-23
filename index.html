@@ -3665,8 +3665,13 @@
   .adm-metas-tab th { font-weight: 600; color: var(--muted); }
   .rev-compartilhar-l { margin: 8px 0 0; }
   .rev-compartilhar { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0; border: 0; background: none; color: var(--green); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-  .pc-divulgar-janela { max-width: 420px; }
-  .pc-divulgar-formato { justify-content: center; margin: 0 16px 10px; }
+  .pc-divulgar-janela { max-width: 440px; }
+  .pc-divulgar-opcoes { margin: 0 16px 10px; text-align: left; }
+  .pc-divulgar-opcoes .chip-row { flex-wrap: wrap; margin: 0 0 8px; }
+  .pc-divulgar-rot { margin: 6px 0 6px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .pc-divulgar-n { display: flex; align-items: baseline; gap: 10px; margin: 8px 0 2px; }
+  .pc-divulgar-n strong { font-size: 32px; line-height: 1; color: var(--green); font-variant-numeric: tabular-nums; }
+  .pc-divulgar-n span { font-size: 14px; color: var(--muted); }
   .pc-divulgar-previa { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 220px; margin: 0 16px; font-size: 14px; color: var(--muted); }
   .pc-divulgar-previa img { display: block; max-width: 100%; max-height: 52vh; border-radius: 10px; }
   .pc-divulgar-nota { margin: 10px 16px 12px; }
@@ -10259,7 +10264,7 @@ function cartaoAvaliacao(r, c, onde) {
         </div>
       </div>
       ${r.comment ? `<p class="ht-rev-text">${esc(r.comment)}</p>` : ""}
-      ${minha && onde === "painel" && r.id && !r.enviando && r.stars >= 4 ? `<p class="rev-compartilhar-l"><button type="button" class="rev-compartilhar" data-compartilhar-avaliacao="${esc(r.id)}">${icon('share', 13, 'currentColor')} Compartilhar no Instagram</button></p>` : ""}
+      ${minha && onde === "painel" && r.id && !r.enviando && r.stars >= 4 && String(r.comment || "").trim() ? `<p class="rev-compartilhar-l"><button type="button" class="rev-compartilhar" data-compartilhar-avaliacao="${esc(r.id)}">${icon('share', 13, 'currentColor')} Compartilhar</button></p>` : ""}
       ${blocoResposta(r, c, onde)}
       ${minha || isAdmin || ehDaMinhaConta(c) || !r.id ? "" : `<p class="rev-denunciar-l"><button type="button" class="rev-denunciar" data-denunciar="${r.id}" data-court="${c.id}">Denunciar</button></p>`}
     </article>`;
@@ -11701,7 +11706,7 @@ function perguntasParceiros() {
     { q: "Como funciona o mês grátis do Premium?", a: "Em Plano, \"Experimentar 1 mês grátis\" liga o Premium na hora, sem cartão e sem cobrança, uma vez por academia. Cinco dias antes do fim, o responsável principal recebe um e-mail. Para continuar, ligue a renovação automática ou pague o próximo mês em Plano (no lançamento, R$ 49 por mês, ou R$ 490 por ano, com 5% de desconto no Pix); sem pagamento, a academia passa sozinha para o Completo, e nada é cobrado." },
     { q: "Como funciona a renovação automática?", a: "Em Plano, o responsável principal liga a renovação no cartão de crédito, no formulário seguro do Mercado Pago: o valor do plano é cobrado automaticamente no fim de cada mês (ou ano), e o plano continua ativo sem que vocês precisem fazer nada, como numa assinatura de música ou de filmes. No mês grátis, a primeira cobrança é só no fim dele. Cinco dias antes de cada cobrança chega um e-mail com o valor e o dia, e cada pagamento aparece em Pagamentos. Se o cartão não passar, o Mercado Pago tenta de novo nos próximos dias. Para trocar o cartão, \"Trocar o cartão\", em Plano; para parar, \"Cancelar assinatura\": a renovação para na hora e o plano fica até o fim do período pago." },
     { q: "Como cancelo o Premium?", a: "Em Plano › \"Cancelar assinatura\", o responsável principal escolhe se a academia vai para o Completo ou para o Básico. O Premium continua até o fim do período já pago (ou do mês grátis), a renovação automática para na hora, e nada mais é cobrado. Sem fidelidade: dá para voltar quando quiser." },
-    { q: "Como divulgo a academia no Instagram?", a: "Em Atualizações, toque em \"Criar a imagem\", em \"Divulgue a academia\": a imagem, para o feed ou para os Stories, mostra os acessos à ficha nos últimos 30 dias, os contatos (no Completo e no Premium) e a nota dos jogadores. Em Avaliações, \"Compartilhar no Instagram\" cria a imagem de uma avaliação de 4 ou 5 estrelas. No celular, \"Compartilhar\" abre o Instagram; a legenda é copiada junto." },
+    { q: "Como divulgo o desempenho da academia?", a: "Em Atualizações, toque em \"Criar a imagem\", em \"Divulgue seu desempenho\", e escolha o período (7 dias, 30 dias, 3 meses, 12 meses ou desde o início): a imagem mostra os acessos à ficha, os contatos (no Completo e no Premium) e a nota dos jogadores. Na mesma janela, dá para divulgar uma avaliação de 4 ou 5 estrelas ou a promoção que está valendo, em post ou em Stories e Status. No celular, \"Compartilhar\" abre o WhatsApp, o Instagram, o Facebook e os outros apps; a legenda é copiada junto." },
     { q: "Como peço reembolso?", a: "Em Pagamentos, toque em \"Pedir reembolso\" na compra e conte o motivo. O GuiaTennis analisa e responde por e-mail. Nos créditos, são devolvidos os que ainda não foram usados; no plano, até 7 dias depois do pagamento, a devolução é integral e, no anual, depois disso, voltam os meses que faltam. Aprovado, o valor volta pelo Mercado Pago, no mesmo meio de pagamento, e os créditos correspondentes saem do saldo." },
     { q: "Esqueci a senha. E agora?", a: "Na tela de entrar, digite o seu e-mail e toque em \"Esqueceu a senha?\": mandamos um código para o seu e-mail, e você cria a senha nova ali mesmo. Se você entra com o usuário que o GuiaTennis mandou (sem e-mail), fale com o GuiaTennis no WhatsApp." },
     { id: "pausar", q: "Posso pausar ou tirar a academia do Guia?", a: "Pausar, sim, quando quiser: em Suas academias, toque em \"Pausar no site\" na academia e escolha por quanto tempo (ou até você voltar). Cada academia pausa separada, e \"Voltar a aparecer\" traz a ficha de volta. Tirar do Guia, só se a academia fechar as portas: em Suas academias, o responsável principal toca em \"A academia fechou as portas?\": a ficha sai do site na hora e, depois de o GuiaTennis conferir, sai do Guia. O cadastro fica guardado, com as avaliações: se a academia reabrir, entre com o mesmo e-mail e toque em \"Reabrir e administrar\". Enquanto a academia estiver aberta, ou houver informações públicas sobre ela, a ficha continua no Guia, como no Google. Quem não quer mais administrar exclui a própria conta em Perfil; se houver outro acesso, a pessoa mais antiga da equipe passa a ser a responsável e o plano passa a ser dela; sem outro acesso, a academia volta ao plano Básico." },
@@ -12285,38 +12290,57 @@ function blocoVistasDoBasico(c) {
         ${souPrincipal() ? `<button type="button" class="cta-btn cta-primary" data-escolher-plano="premium">${mesGratisDisponivel() ? "Experimentar 1 mês grátis" : "Ver o Premium"}</button>` : ""}
       </div>`;
 }
-// ---------- Divulgue a academia (regra 319) ----------
+// ---------- Divulgue seu desempenho (regras 319 e 320) ----------
 // "Gostei da mesma ideia do Spotify de publicar minha academia teve tantos
-// acessos… para eles poderem divulgar metas, avaliações próprias e assim nos
-// divulgando": como o Spotify Wrapped e os cartões de avaliação do Google e do
-// Tripadvisor, uma imagem pronta para o feed e os Stories do Instagram, nos
-// fundos do GuiaTennis (logo, guiatennis.com.br e @guiatennis). Números
-// públicos arredondados para baixo (numeroRedondo).
+// acessos"; depois (regra 320): "deixe ex: divulgue seu desempenho e faça com
+// que a foto seja criada com o tempo determinado pela academia… tente deixar
+// algo unificado e compartilhar não ser necessariamente para o Instagram".
+// Como o Spotify Wrapped, os cartões de avaliação do Google e o
+// "Compartilhar" do Airbnb: uma janela só, com o desempenho (no período que a
+// academia escolhe), uma avaliação ou a promoção, em post (4:5) ou em Stories
+// e Status (9:16), nos fundos do GuiaTennis; "Compartilhar" abre os apps do
+// celular (WhatsApp, Instagram, Facebook…) e a legenda vai junto para colar.
+// Números públicos arredondados para baixo (numeroRedondo).
 const MARCOS_DE_ACESSOS = [10000, 5000, 2500, 1000, 500, 250, 100, 50];
+const PERIODOS_DE_DIVULGAR = [[7, "7 dias"], [30, "30 dias"], [90, "3 meses"], [365, "12 meses"], [0, "Desde o início"]];
+function numerosParaDivulgar(dias) {
+  const c = minhaAcademia();
+  if (!c) return Promise.resolve(false);
+  state.pcDivulgarP = state.pcDivulgarP || {};
+  const chave = `${c.id}:${dias}`;
+  if (!state.pcDivulgarP[chave]) state.pcDivulgarP[chave] = (async () => {
+    try { const r = await sb.rpc('numeros_para_divulgar', { p_academia: c.id, p_dias: dias }); return r.error ? false : r.data; } catch { return false; }
+  })();
+  return state.pcDivulgarP[chave];
+}
 async function carregarNumerosParaDivulgar() {
   const c = minhaAcademia();
   if (!c) return;
   state.pcDivulgar = state.pcDivulgar || {};
   if (c.id in state.pcDivulgar) return;
   state.pcDivulgar[c.id] = null;
-  try {
-    const r = await sb.rpc('numeros_para_divulgar', { p_academia: c.id });
-    state.pcDivulgar[c.id] = r.error ? false : r.data;
-  } catch { state.pcDivulgar[c.id] = false; }
+  state.pcDivulgar[c.id] = await numerosParaDivulgar(30);
   if (state.page === "parceiros" && state.pcDivulgar[c.id]) render();
 }
 function maisDe(n) {
   const t = numeroRedondo(n);
   return t.startsWith("+") ? "mais de " + t.slice(1) : t;
 }
+function periodoDoDivulgar(d) {
+  const dias = Number(d.dias || 0);
+  if (dias) return ({ 7: "nos últimos 7 dias", 30: "nos últimos 30 dias", 90: "nos últimos 3 meses", 365: "nos últimos 12 meses" })[dias] || `nos últimos ${dias} dias`;
+  return d.inicio ? "desde " + new Date(d.inicio).toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "America/Sao_Paulo" }) : "desde a chegada ao GuiaTennis";
+}
 function blocoDivulgar(c) {
   const d = (state.pcDivulgar || {})[c.id];
   const r = getAppRating(c.id);
   if (!d || !(Number(d.acessos_total) >= 10 || r.count)) return "";
+  const ac = Number(d.acessos || 0);
   return `
       <div class="pc-card pc-divulgar">
-        <p class="pc-card-t">${icon('share', 16, 'var(--green)')} Divulgue a ${esc(c.name)}</p>
-        <p class="pc-card-s">Uma imagem pronta para o Instagram, no feed ou nos Stories, com os números da academia no GuiaTennis${r.count ? " e a nota dos jogadores" : ""}. As avaliações também podem ser compartilhadas, em Avaliações.</p>
+        <p class="pc-card-t">${icon('share', 16, 'var(--green)')} Divulgue seu desempenho</p>
+        ${ac >= 10 && planoAtual() !== "basico" ? `<p class="pc-divulgar-n"><strong>${esc(numeroRedondo(ac))}</strong><span>acessos à ficha nos últimos 30 dias</span></p>` : ""}
+        <p class="pc-card-s">Mostre quantos jogadores procuram a ${esc(c.name)}. Escolha o período, e a imagem fica pronta para o WhatsApp, o Instagram e o Facebook. Avaliações e promoções também.</p>
         <button type="button" class="cta-btn cta-primary" id="pc-divulgar-abrir">${icon('share', 15, '#fff')} Criar a imagem</button>
       </div>`;
 }
@@ -12346,20 +12370,21 @@ function etiquetaNaTela(ctx, texto, x, y) {
   ctx.fill();
   ctx.fillStyle = "#1F2A24"; ctx.fillText(texto, x + 22, y + 39);
 }
-async function imagemDosNumeros(c, d, formato) {
+async function imagemDoDesempenho(c, d, formato) {
   const { cv, ctx, topo, fim } = await telaDeDivulgacao(formato);
   const r = getAppRating(c.id);
-  etiquetaNaTela(ctx, "NOS ÚLTIMOS 30 DIAS", 90, topo);
+  etiquetaNaTela(ctx, periodoDoDivulgar(d).toUpperCase(), 90, topo);
   ctx.fillStyle = "#FFFFFF"; ctx.font = "600 56px Poppins, Arial, sans-serif";
   let y = topo + 140;
   quebrarTexto(ctx, c.name, 900).slice(0, 2).forEach(l => { ctx.fillText(l, 90, y); y += 68; });
   const linhas = [];
-  const ac = Number(d.acessos_30 || 0), ct = d.contatos_30 === null || d.contatos_30 === undefined ? 0 : Number(d.contatos_30);
+  const ac = Number(d.acessos || 0), ct = Number(d.contatos || 0), av = Number(d.avaliacoes || 0);
   if (ac) linhas.push([numeroRedondo(ac), ac === 1 ? "acesso à ficha no GuiaTennis" : "acessos à ficha no GuiaTennis"]);
-  if (ct) linhas.push([numeroRedondo(ct), ct === 1 ? "jogador chamou a academia" : "jogadores chamaram a academia"]);
-  if (r.count) linhas.push([r.avg.toFixed(1).replace(".", ",") + " ★", `nota em ${r.count} ${r.count === 1 ? "avaliação" : "avaliações"} dos jogadores`]);
+  if (ct) linhas.push([numeroRedondo(ct), ct === 1 ? "contato de jogador interessado" : "contatos de jogadores interessados"]);
+  if (r.count) linhas.push([r.avg.toFixed(1).replace(".", ",") + " ★", `nota dos jogadores, em ${r.count} ${r.count === 1 ? "avaliação" : "avaliações"}`]);
+  if (linhas.length < 3 && av && Number(d.dias)) linhas.push([numeroRedondo(av), av === 1 ? "avaliação nova" : "avaliações novas"]);
   const marco = MARCOS_DE_ACESSOS.find(m => Number(d.acessos_total || 0) >= m);
-  if (linhas.length < 3 && marco) linhas.push([numeroRedondo(marco), "acessos desde a chegada ao GuiaTennis"]);
+  if (linhas.length < 3 && marco && Number(d.dias)) linhas.push([numeroRedondo(marco), "acessos desde a chegada ao GuiaTennis"]);
   const passo = Math.min(formato === "stories" ? 260 : 160, (fim - y - 40) / Math.max(1, linhas.length));
   y += passo * 0.75;
   linhas.forEach(([n, t]) => {
@@ -12384,21 +12409,38 @@ async function imagemDaAvaliacao(c, rv, formato) {
   const maximo = Math.max(3, Math.floor((fim - y - 150) / 62));
   let linhas = quebrarTexto(ctx, `“${String(rv.comment || "").trim()}”`, 900);
   if (linhas.length > maximo) { linhas = linhas.slice(0, maximo); linhas[maximo - 1] = linhas[maximo - 1].replace(/[\s,.;:!?”]*$/, "") + "…”"; }
-  if (rv.comment) linhas.forEach(l => { ctx.fillText(l, 90, y); y += 62; });
+  linhas.forEach(l => { ctx.fillText(l, 90, y); y += 62; });
   ctx.fillStyle = "#F3DFA2"; ctx.font = "600 40px Poppins, Arial, sans-serif";
   y += 30; ctx.fillText(`— ${nomeDoAutor(rv)}`, 90, y);
   ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.font = "400 36px Poppins, Arial, sans-serif";
   y += 56; quebrarTexto(ctx, `sobre a ${c.name}`, 900).slice(0, 2).forEach(l => { ctx.fillText(l, 90, y); y += 46; });
   return cv;
 }
+// A promoção (da academia, em Promoções, e do admin, em "Promoções no ar").
+async function imagemDaPromocao(x, formato) {
+  const { cv, ctx, topo, fim } = await telaDeDivulgacao(formato);
+  etiquetaNaTela(ctx, "PROMOÇÃO", 90, topo);
+  ctx.fillStyle = "#FFFFFF"; ctx.font = "600 52px Poppins, Arial, sans-serif";
+  let y = topo + 140;
+  quebrarTexto(ctx, x.academia, 900).slice(0, 2).forEach(l => { ctx.fillText(l, 90, y); y += 64; });
+  ctx.fillStyle = "#F3DFA2"; ctx.font = "700 84px Poppins, Arial, sans-serif"; y += 50;
+  quebrarTexto(ctx, x.titulo, 900).slice(0, 3).forEach(l => { ctx.fillText(l, 90, y); y += 96; });
+  ctx.fillStyle = "#FFFFFF"; ctx.font = "400 42px Poppins, Arial, sans-serif";
+  const cabem = Math.max(0, Math.min(4, Math.floor((fim - y - 70) / 56)));
+  quebrarTexto(ctx, x.detalhes || "", 900).slice(0, cabem).forEach(l => { ctx.fillText(l, 90, y); y += 56; });
+  ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.font = "500 36px Poppins, Arial, sans-serif";
+  ctx.fillText(`${x.bairro ? x.bairro + " · " : ""}válida até ${diaPorExtenso(String(x.valida_ate || "").slice(0, 10))}`, 90, Math.min(y + 30, fim));
+  return cv;
+}
 function hashtagsDaAcademia(c) {
   const tag = (t) => "#" + slugTexto(t || "").replace(/-/g, "");
   return ["#tenis", "#aulasdetenis", c.bairro ? tag(c.bairro) : "", c.cidade ? tag(c.cidade) : "", "#guiatennis"].filter(Boolean).join(" ");
 }
-function legendaDosNumeros(c, d) {
+function legendaDoDesempenho(c, d) {
   const r = getAppRating(c.id);
-  const ac = Number(d.acessos_30 || 0), ct = d.contatos_30 === null || d.contatos_30 === undefined ? 0 : Number(d.contatos_30);
-  return [ac ? `🎾 Nos últimos 30 dias, a ficha da ${c.name} no GuiaTennis foi aberta ${maisDe(ac)} ${ac === 1 ? "vez" : "vezes"}${ct ? `, e ${maisDe(ct)} ${ct === 1 ? "jogador chamou" : "jogadores chamaram"} a academia` : ""}.` : `🎾 A ${c.name} está no GuiaTennis.`,
+  const ac = Number(d.acessos || 0), ct = Number(d.contatos || 0);
+  const quando = periodoDoDivulgar(d);
+  return [ac ? `🎾 ${quando.charAt(0).toUpperCase() + quando.slice(1)}, a ficha da ${c.name} no GuiaTennis teve ${maisDe(ac)} ${ac === 1 ? "acesso" : "acessos"}${ct ? `, e ${maisDe(ct)} ${ct === 1 ? "jogador entrou" : "jogadores entraram"} em contato com a academia` : ""}.` : `🎾 A ${c.name} está no GuiaTennis.`,
     r.count ? `⭐ Nota ${r.avg.toFixed(1).replace(".", ",")} em ${r.count} ${r.count === 1 ? "avaliação" : "avaliações"} dos jogadores.` : "",
     `Obrigado a todos os alunos e jogadores! Veja a ficha e avalie a academia: ${linkDaFicha(c).replace(/^https?:\/\//, "")}`,
     hashtagsDaAcademia(c)].filter(Boolean).join("\n\n");
@@ -12409,82 +12451,109 @@ function legendaDaAvaliacao(c, rv) {
     `Veja as avaliações e fale com a ${c.name}: ${linkDaFicha(c).replace(/^https?:\/\//, "")}`,
     hashtagsDaAcademia(c)].join("\n\n");
 }
-function divulgarNumeros() {
-  const c = minhaAcademia(), d = c && (state.pcDivulgar || {})[c.id];
-  if (!c || !d) return;
-  registrarPasso("acao", { academia: c.id, detalhe: "Abriu Divulgue a academia" });
-  abrirDivulgacao({ titulo: `Divulgue a ${c.name}`, desenhar: (f) => imagemDosNumeros(c, d, f), legenda: legendaDosNumeros(c, d), arquivo: `guiatennis-${slugTexto(c.name)}` });
+function baixarArquivo(blob, nome) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
-function divulgarAvaliacao(id) {
-  const c = minhaAcademia(), rv = c && getReviews(c.id).find(x => String(x.id) === String(id));
-  if (!c || !rv) return;
-  registrarPasso("acao", { academia: c.id, detalhe: "Compartilhou uma avaliação" });
-  abrirDivulgacao({ titulo: "Compartilhar a avaliação", desenhar: (f) => imagemDaAvaliacao(c, rv, f), legenda: legendaDaAvaliacao(c, rv), arquivo: `avaliacao-${slugTexto(c.name)}` });
+function avaliacoesParaDivulgar(c) {
+  return getReviews(c.id).filter(r => r.id && !r.enviando && r.stars >= 4 && String(r.comment || "").trim()).slice(0, 8);
 }
-// A janela: feed ou Stories, a prévia e "Compartilhar" (no celular, abre o
-// Instagram e os outros apps; no computador, baixa a imagem). A legenda vai
-// junto para a área de transferência, sem precisar de outro toque.
-function abrirDivulgacao(o) {
+function promocaoParaDivulgar(c) {
+  // Em Promoções, a da conta; no painel, a que está valendo na ficha.
+  const x = (state.pcPromocoes || []).find(p => p.valendo) || promocoesDe(c)[0];
+  return x ? { ...x, academia: c.name, bairro: c.bairro, cidade: c.cidade, instagram: c.instagram, link: linkDaFicha(c).replace(/^https?:\/\//, "") } : null;
+}
+function divulgarAvaliacao(id) { abrirDivulgue({ aba: "avaliacao", avaliacao: id }); }
+// A janela única: o que divulgar (desempenho, avaliação ou promoção), o
+// período, o formato, a prévia e "Compartilhar" (no celular, os apps; no
+// computador, baixa a imagem). A legenda vai junto para a área de
+// transferência, sem precisar de outro toque.
+function abrirDivulgue(op = {}) {
+  const c = minhaAcademia();
+  if (!c) return;
+  const avs = avaliacoesParaDivulgar(c), promo = promocaoParaDivulgar(c);
+  const s = { aba: op.aba || "desempenho", dias: 30, formato: "post", avaliacao: op.avaliacao || (avs[0] && avs[0].id) };
+  if (s.aba === "avaliacao" && !avs.length) s.aba = "desempenho";
+  if (s.aba === "promocao" && !promo) s.aba = "desempenho";
+  registrarPasso("acao", { academia: c.id, detalhe: "Abriu Divulgue seu desempenho" });
   document.getElementById("pc-divulgar")?.remove();
   const el = document.createElement("div");
   el.className = "reg-sair-fundo";
   el.id = "pc-divulgar";
   el.innerHTML = `
     <div class="reg-sair pc-divulgar-janela" role="dialog" aria-modal="true" aria-labelledby="pc-divulgar-t">
-      <p class="reg-sair-t" id="pc-divulgar-t">${esc(o.titulo)}</p>
-      <div class="chip-row pc-divulgar-formato" role="radiogroup" aria-label="Formato">
-        <button type="button" class="chip small active" role="radio" aria-checked="true" data-formato="feed">Feed</button>
-        <button type="button" class="chip small" role="radio" aria-checked="false" data-formato="stories">Stories</button>
-      </div>
-      <div class="pc-divulgar-previa" id="pc-divulgar-previa">${bolaGirando(16)} Preparando a imagem…</div>
-      <p class="footnote pc-divulgar-nota">A legenda é copiada junto: no Instagram, é só colar.</p>
+      <p class="reg-sair-t" id="pc-divulgar-t">Divulgue seu desempenho</p>
+      <div class="pc-divulgar-opcoes" id="pc-divulgar-opcoes"></div>
+      <div class="pc-divulgar-previa" id="pc-divulgar-previa"></div>
+      <p class="footnote pc-divulgar-nota">A legenda é copiada junto: é só colar no WhatsApp, no Instagram ou no Facebook.</p>
       <button type="button" class="reg-sair-nao forte" id="pc-divulgar-enviar" disabled>${navigator.share ? "Compartilhar" : "Baixar a imagem"}</button>
       <button type="button" class="reg-sair-sim" id="pc-divulgar-legenda">Copiar só a legenda</button>
       <button type="button" class="reg-sair-sim" id="pc-divulgar-fechar">Fechar</button>
     </div>`;
   document.body.appendChild(el);
-  let arquivo = null, formato = "feed";
-  const previa = el.querySelector("#pc-divulgar-previa"), enviar = el.querySelector("#pc-divulgar-enviar");
+  const opcoes = el.querySelector("#pc-divulgar-opcoes"), previa = el.querySelector("#pc-divulgar-previa"), enviar = el.querySelector("#pc-divulgar-enviar");
+  let arquivo = null, legenda = "", vez = 0;
+  const abas = [["desempenho", "Desempenho"], ...(avs.length ? [["avaliacao", "Avaliação"]] : []), ...(promo ? [["promocao", "Promoção"]] : [])];
+  const chips = (k, lista, atual, rotulo) => `
+        <div class="chip-row" role="radiogroup" aria-label="${rotulo}">${lista.map(([v, t]) => `<button type="button" class="chip small${String(v) === String(atual) ? " active" : ""}" role="radio" aria-checked="${String(v) === String(atual)}" data-div-${k}="${esc(v)}">${esc(t)}</button>`).join("")}</div>`;
   const desenhar = async () => {
+    const minha = ++vez;
     arquivo = null; enviar.disabled = true;
     previa.innerHTML = `${bolaGirando(16)} Preparando a imagem…`;
     try {
-      const cv = await o.desenhar(formato);
+      let cv;
+      if (s.aba === "avaliacao") {
+        const rv = avs.find(r => String(r.id) === String(s.avaliacao)) || avs[0];
+        cv = await imagemDaAvaliacao(c, rv, s.formato); legenda = legendaDaAvaliacao(c, rv);
+      } else if (s.aba === "promocao") {
+        cv = await imagemDaPromocao(promo, s.formato); legenda = legendaDaPromocao(promo);
+      } else {
+        const d = await numerosParaDivulgar(s.dias);
+        if (!d) throw new Error("sem números");
+        cv = await imagemDoDesempenho(c, d, s.formato); legenda = legendaDoDesempenho(c, d);
+      }
       const blob = await new Promise(ok => cv.toBlob(ok, "image/png"));
+      if (minha !== vez) return;
       if (!blob) throw new Error("sem imagem");
-      arquivo = new File([blob], `${o.arquivo}-${formato}.png`, { type: "image/png" });
-      previa.innerHTML = `<img src="${cv.toDataURL("image/png")}" alt="Prévia da imagem para o Instagram" />`;
+      arquivo = new File([blob], `guiatennis-${slugTexto(c.name)}-${s.aba}.png`, { type: "image/png" });
+      previa.innerHTML = `<img src="${cv.toDataURL("image/png")}" alt="Prévia da imagem para divulgar" />`;
       enviar.disabled = false;
-    } catch { previa.textContent = "Não foi possível criar a imagem neste aparelho. Tente em outro navegador."; }
+    } catch { if (minha === vez) previa.textContent = "Não foi possível criar a imagem agora. Tente de novo em instantes."; }
   };
-  const copiar = () => { try { navigator.clipboard && navigator.clipboard.writeText(o.legenda); } catch { /* sem área de transferência */ } };
-  el.querySelectorAll("[data-formato]").forEach(b => { b.onclick = () => {
-    formato = b.dataset.formato;
-    el.querySelectorAll("[data-formato]").forEach(x => { x.classList.toggle("active", x === b); x.setAttribute("aria-checked", String(x === b)); });
-    desenhar();
-  }; });
+  const montar = () => {
+    opcoes.innerHTML = `
+        ${abas.length > 1 ? chips("aba", abas, s.aba, "O que divulgar") : ""}
+        ${s.aba === "desempenho" ? `<p class="pc-divulgar-rot">Período</p>${chips("dias", PERIODOS_DE_DIVULGAR, s.dias, "Período")}` : ""}
+        ${s.aba === "avaliacao" ? `<p class="pc-divulgar-rot">Avaliação</p>${chips("avaliacao", avs.map(r => [r.id, `${nomeDoAutor(r).split(" ")[0]} · ${r.stars} ★`]), s.avaliacao, "Avaliação")}` : ""}
+        <p class="pc-divulgar-rot">Formato</p>${chips("formato", [["post", "Post"], ["stories", "Stories e Status"]], s.formato, "Formato")}`;
+    [["aba", "divAba"], ["dias", "divDias"], ["avaliacao", "divAvaliacao"], ["formato", "divFormato"]].forEach(([k, ds]) => {
+      opcoes.querySelectorAll(`[data-div-${k}]`).forEach(b => { b.onclick = () => { s[k] = k === "dias" ? Number(b.dataset[ds]) : b.dataset[ds]; montar(); desenhar(); }; });
+    });
+  };
   enviar.onclick = async () => {
     if (!arquivo) return;
-    copiar();
+    try { if (navigator.clipboard) navigator.clipboard.writeText(legenda); } catch { /* sem área de transferência */ }
+    registrarPasso("acao", { academia: c.id, detalhe: `Compartilhou: ${s.aba}` });
     if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
-      try { await navigator.share({ files: [arquivo] }); mostrarPush("Legenda copiada: cole no Instagram."); } catch { /* a pessoa fechou o compartilhar */ }
+      try { await navigator.share({ files: [arquivo] }); } catch { /* a pessoa fechou o compartilhar */ }
       return;
     }
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(arquivo); a.download = arquivo.name;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    baixarArquivo(arquivo, arquivo.name);
     mostrarPush("Imagem baixada e legenda copiada.");
   };
-  el.querySelector("#pc-divulgar-legenda").onclick = (e) => copiarDado(o.legenda, e.currentTarget);
+  el.querySelector("#pc-divulgar-legenda").onclick = (e) => copiarDado(legenda, e.currentTarget);
   const fechar = () => el.remove();
   el.querySelector("#pc-divulgar-fechar").onclick = fechar;
   el.onclick = (e) => { if (e.target === el) fechar(); };
+  montar();
   desenhar();
 }
 
-// As academias fundadoras (regra 319: as 15 primeiras cujo responsável entrou
-// sozinho no Parceiros; os acessos criados pelo admin não contam): o
+// As academias fundadoras (regra 320: os 15 primeiros donos a chegar, com a
+// ficha confirmada pela academia ou com a conta no Parceiros; os acessos
+// criados pelo admin não contam): o
 // selo fica na ficha para sempre, como o "Superhost desde" do Airbnb.
 async function carregarFundadoras() {
   try {
@@ -12498,7 +12567,7 @@ const FUNDADORAS = 15;
 function vagasDeFundadora() {
   if (!(state.fundadoras instanceof Set)) return "";
   const restam = FUNDADORAS - state.fundadoras.size;
-  return restam > 0 ? `<p class="pc-hero-vagas"><span class="pc-fundadora-selo">Fundadora</span><span>As ${FUNDADORAS} primeiras academias a entrar no GuiaTennis Parceiros ganham o selo "Fundadora do GuiaTennis" na ficha, para sempre. <strong>${restam === 1 ? "Resta 1 vaga" : `Restam ${restam} vagas`}.</strong></span></p>` : "";
+  return restam > 0 ? `<p class="pc-hero-vagas"><span class="pc-fundadora-selo">Fundadora</span><span>Os ${FUNDADORAS} primeiros donos de academia a chegar ao GuiaTennis ganham o selo "Fundadora do GuiaTennis" na ficha, para sempre. <strong>${restam === 1 ? "Resta 1 vaga" : `Restam ${restam} vagas`}.</strong> <a href="/parceiros/cadastro" data-pc="cadastro">Garantir a vaga ›</a></span></p>` : "";
 }
 function ehFundadora(c) { return !!c && !!state.fundadoras && state.fundadoras.has(c.id); }
 function ligarAssinatura() {
@@ -12518,7 +12587,7 @@ function ligarAssinatura() {
   if (state.parceirosAba === "painel" && planoAtual() === "basico") carregarVistasDoMes();
   if (state.parceirosAba === "painel") carregarNumerosParaDivulgar();
   const pcDivulgarAbrir = document.getElementById("pc-divulgar-abrir");
-  if (pcDivulgarAbrir) pcDivulgarAbrir.onclick = divulgarNumeros;
+  if (pcDivulgarAbrir) pcDivulgarAbrir.onclick = () => abrirDivulgue({ aba: "desempenho" });
 }
 
 // "Quero o …" de antes (o pedido ficava anotado para o GuiaTennis): segue
@@ -16070,7 +16139,7 @@ function pcPromocoes() {
               <p class="footnote" style="margin-top:8px">${x.valendo ? `Válida até ${esc(diaPorExtenso(x.valida_ate))}` : `Terminou em ${esc(diaPorExtenso(x.valida_ate))}`}${x.semanas ? ` · ${nSemanas(x.semanas)}` : ""}${x.pago ? ` · ${emReais(x.pago)} dos créditos` : ""}${x.avisados ? ` · por e-mail para ${x.avisados} ${plural(x.avisados, "pessoa", "pessoas")}` : ""}</p>
               ${numerosDaPromocao(x)}
               <div class="pc-promo-acoes">
-                ${x.valendo ? `<button type="button" class="inline-link" data-promo-mudar="${x.id}">Alterar</button>` : ""}
+                ${x.valendo ? `<button type="button" class="inline-link" data-promo-divulgar="${x.id}">Compartilhar</button><button type="button" class="inline-link" data-promo-mudar="${x.id}">Alterar</button>` : ""}
                 <button type="button" class="inline-link" data-promo-encerrar="${x.id}">${x.valendo ? "Encerrar" : "Apagar"}</button>
               </div>
             </div>`).join("")}
@@ -16084,7 +16153,8 @@ function numerosDaPromocao(x) {
   const n = (v) => Number(v || 0).toLocaleString("pt-BR");
   return `<p class="pc-promo-numeros">${[a.alcance ? `Alcance: ${reaisComCentavos(a.gasto)} de ${emReais(a.alcance)} usados` : "",
     `${n(a.exibicoes)} ${Number(a.exibicoes) === 1 ? "aparição" : "aparições"} na faixa`, `${n(a.toques)} ${Number(a.toques) === 1 ? "toque" : "toques"}`,
-    a.avisados ? `e-mail para ${n(a.avisados)} ${Number(a.avisados) === 1 ? "jogador" : "jogadores"}` : ""].filter(Boolean).join(" · ")}</p>`;
+    a.avisados ? `e-mail para ${n(a.avisados)} ${Number(a.avisados) === 1 ? "jogador" : "jogadores"}` : "",
+    a.devolvido_em && Number(a.alcance) > Number(a.gasto) ? `${reaisComCentavos(Number(a.alcance) - Number(a.gasto))} voltaram para os créditos` : ""].filter(Boolean).join(" · ")}</p>`;
 }
 // Promoção na ficha em dois passos: escrever e escolher as semanas, depois
 // conferir e publicar.
@@ -17863,6 +17933,7 @@ function ligarEventosParceiros() {
   const pcPromoEditar = document.getElementById("pc-promo-editar");
   if (pcPromoEditar) pcPromoEditar.onclick = () => { state.pcPromoPasso = null; state.pcPromoMsg = null; render(); };
   document.querySelectorAll("[data-promo-mudar]").forEach(el => { el.onclick = () => { state.pcPromoEditando = el.dataset.promoMudar; state.pcPromoForm = null; state.pcPromoMsg = null; state.pcPromoPasso = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }; });
+  document.querySelectorAll("[data-promo-divulgar]").forEach(el => { el.onclick = () => abrirDivulgue({ aba: "promocao" }); });
   document.querySelectorAll("[data-promo-encerrar]").forEach(el => { el.onclick = () => encerrarPromocao(el.dataset.promoEncerrar); });
   // "Mandar por e-mail" na promoção da ficha: abre o Leilão na etapa da
   // promoção, com o texto pronto.
@@ -27447,7 +27518,7 @@ const TERMS_HTML = `
 <p class="field-label" style="margin-top:16px">3. Cadastro de academias e quadras</p>
 <p style="font-size:14px">A academia ou quadra que ainda não está no Guia é cadastrada no GuiaTennis Parceiros, por quem responde por ela: com o e-mail da conta confirmado, ela entra no ar na hora e o GuiaTennis confere depois; sem o e-mail confirmado, o cadastro passa por análise antes de ser publicado. O GuiaTennis pode recusar o cadastro em análise e corrigir ou pausar a ficha publicada a qualquer momento. A ficha publicada é pública e continua no Guia, mesmo sem responsável, enquanto a academia estiver aberta ou houver informações públicas sobre ela; a academia que fecha as portas sai do Guia, depois de o GuiaTennis conferir, e o cadastro dela fica guardado como fechado (cadastro inativo), com as avaliações, fora do site. Se ela reabrir, quem a administrava volta a administrá-la pelo GuiaTennis Parceiros, com o mesmo e-mail; uma conta nova pede a reabertura ao GuiaTennis, que confere antes. O responsável pelo estabelecimento pode pedir a correção da página da academia a qualquer momento, pelo link "É o responsável por esta academia?" na própria página, pelo WhatsApp (11) 92745-6457 ou pelo e-mail contato@guiatennis.com.br.</p>
 <p class="field-label" style="margin-top:16px">4. GuiaTennis Parceiros (área da academia)</p>
-<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, quem contesta informa o WhatsApp que considera ser o da academia, e o GuiaTennis manda a ele um código de 6 números; quem administra recebe outro código no WhatsApp que está na ficha. Os códigos saem pela conta oficial do GuiaTennis no WhatsApp, quando disponível, e mostram quem tem acesso a cada número, mas não decidem a disputa sozinhos: o GuiaTennis compara, pode pedir documentos que mostrem quem responde pela academia e ouvir os dois lados, e decide; se decidir a favor de quem contestou, essa pessoa passa a ser a responsável, quem administrava perde o acesso e o WhatsApp confirmado por quem contestou passa a ser o da ficha. O WhatsApp da academia que a conta escreve na ficha (no cadastro ou depois) só aparece depois que alguém da academia digita o código de 6 números mandado a ele, pela conta oficial do GuiaTennis no WhatsApp ou, enquanto ela não está disponível, pelo GuiaTennis em até 1 dia útil. Digitado o código, o número entra na ficha com o aviso "WhatsApp em confirmação pelo GuiaTennis" até o GuiaTennis conferir que ele é da academia (o código mostra que a pessoa tem o número; a conferência, que ele é da academia); se o GuiaTennis não confirmar, o número sai da ficha e volta o de antes. Até o código, a ficha mostra o número de antes, ou fica sem o botão do WhatsApp. O código vale 72 horas e 5 tentativas. A academia vê, em Atualizações, o que os jogadores informaram sobre a ficha (sem saber quem informou); salvar a ficha, mesmo sem mudar nada, mostra que a academia conferiu. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode convidar a academia pelo e-mail dela: quem responde pela academia cria a conta com esse e-mail e a própria senha e, ao confirmar o e-mail, já administra a ficha. Os acessos criados antes, com usuário e senha provisória, continuam valendo: no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia com um convite pelo e-mail delas, até o número de pessoas do plano (o convite que ainda não foi usado conta no número e pode ser cancelado): a pessoa cria a conta com esse e-mail e a própria senha e, ao confirmar o e-mail, já entra na academia. Ele também pode escolher o que cada uma pode fazer (editar a ficha, responder avaliações, promoções e leilão, pagamentos) e tornar outra pessoa responsável principal também; os responsáveis principais podem tudo na academia, respondem pelo que a equipe faz e recebem um e-mail a cada compra feita para ela, com quem comprou e o valor. Só o GuiaTennis tira um responsável principal, ou ele mesmo deixa de ser, se houver outro. Quem tem acesso à academia pode contestar o acesso de outra pessoa da academia, respondendo primeiro sobre si (quem é na academia, o que faz e há quanto tempo está lá) e depois sobre ela (se a conhece, quem é, o que faz, se suspeita de algo e por quê); nada muda na hora, a pessoa contestada é chamada a responder às mesmas perguntas sobre si, sem saber quem contestou, e o GuiaTennis compara os dois lados e decide se mantém ou tira o acesso. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?): a ficha sai do site na hora e, depois de o GuiaTennis conferir, sai do Guia, e o cadastro fica guardado como fechado (cadastro inativo), com as avaliações; se a academia continuar aberta, ou se o aviso for cancelado, a ficha volta ao site como estava; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta, no Perfil do GuiaTennis Parceiros ou em "Minha conta", no site dos jogadores (é a mesma conta, e excluir num lugar exclui nos dois): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. A academia autoriza o GuiaTennis a usar o nome, as fotos, o bairro, a cidade e os preços da ficha para divulgar a própria ficha, inclusive nos anúncios do GuiaTennis no Instagram, no Facebook, no Google e em outras plataformas de anúncio, sempre com o link para a ficha dela; quem preferir ficar de fora dos anúncios avisa o GuiaTennis. As respostas são públicas, uma por avaliação, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. A academia pode editar a resposta quando quiser; a resposta editada passa a mostrar "editada". Se quem avaliou editar a avaliação, a resposta continua embaixo dela, e a academia recebe um e-mail para conferir. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo, grátis por tempo limitado; Premium, por assinatura) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar), até 5 pessoas e quantos contatos a ficha recebeu nos últimos 30 dias; no Premium, o mesmo, até 10 pessoas, uma foto para cada aula do catálogo e para a locação e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ali (ou em Plano, pelo responsável principal) muda o plano da academia na hora. O Completo está grátis por tempo limitado: antes de ele passar a ser cobrado (preço regular: R$ 49 por mês), a academia é avisada por e-mail com pelo menos 30 dias de antecedência, e nada é cobrado sem ela escolher pagar. O Premium é por assinatura, sem fidelidade: no lançamento, R$ 49 por mês ou R$ 490 por ano (preço regular: R$ 89 por mês e R$ 890 por ano), com 5% de desconto no Pix. O primeiro mês do Premium é grátis, uma vez por academia, sem cartão e sem cobrança automática. Cinco dias antes do fim do mês grátis, ou do período pago, o responsável principal recebe um e-mail; sem pagamento, a academia passa sozinha para o plano escolhido (o Completo, se nada for escolhido). Cada pagamento soma um mês (ou um ano) ao prazo. O responsável principal pode ligar a renovação automática, no cartão de crédito (ou no Pix Automático, quando ele aparecer em Plano), pelas assinaturas do Mercado Pago: o valor do plano é cobrado automaticamente no fim de cada período (no mês grátis, só no fim dele) até o cancelamento, e o e-mail de cinco dias antes diz o valor, o dia e a forma de pagamento. A cobrança que não passa é tentada de novo pelo Mercado Pago por alguns dias; sem pagamento, a academia passa para o plano escolhido. O responsável principal cancela quando quiser, em Plano › "Cancelar assinatura", e escolhe se a academia vai para o Completo ou para o Básico: o plano continua até o fim do período já pago, a renovação automática para na hora e nada mais é cobrado. A compra pode ser desfeita em até 7 dias, com a devolução do valor (Código de Defesa do Consumidor, art. 49); no plano anual, quem cancela depois disso pode pedir pelo chat de ajuda a devolução dos meses inteiros que faltam, com os meses usados cobrados pelo preço do mensal. Uma mudança de preço é avisada com 30 dias de antecedência e só vale a partir do período seguinte. As 15 primeiras academias cujo responsável entrar no GuiaTennis Parceiros (cadastrando a academia ou pedindo para administrar a ficha dela) ganham o selo "Fundadora do GuiaTennis" na ficha, para sempre; os acessos criados pelo GuiaTennis não contam. Os créditos de promoções são comprados à parte, com Pix ou cartão pelo Mercado Pago (no Pix, os créditos valem 5% a mais e o plano tem 5% de desconto), valem para as promoções (as semanas na ficha e o alcance) e não são devolvidos depois de usados. O reembolso é pedido em Pagamentos › "Pedir reembolso", com o motivo; o GuiaTennis analisa e responde por e-mail. Nos créditos, são devolvidos os ainda não usados, na proporção do valor pago; no plano, valem as regras acima. O valor volta pelo Mercado Pago, no mesmo meio de pagamento. Quando um pagamento é devolvido, pelo GuiaTennis, pelo Mercado Pago ou por contestação no cartão, os créditos correspondentes saem do saldo e o prazo do plano é reduzido na mesma proporção (na devolução integral, o plano e a renovação automática terminam). Toda compra, de créditos ou do plano, começa pelos dados do comprador (CNPJ ou CPF, razão social ou nome e o e-mail que recebe a nota), que a academia informa e por cuja exatidão responde; eles vão ao Mercado Pago como os de quem paga, e o GuiaTennis emite a nota de cada compra paga com esses dados e a manda a esse e-mail. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a lista mostra todas as academias na ordem escolhida pelo jogador, inclusive as do topo, de novo no lugar delas e sem a marcação; essa ordem não depende do plano. No início e no alto da busca, pode aparecer também uma faixa pequena marcada "Patrocinado", com o nome de uma academia perto do lugar buscado e a promoção dela, paga pela academia (o alcance de Promover); ela não muda a ordem da lista. As "Mais bem avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. Nos planos Completo e Premium, a academia também pode divulgar uma promoção por vez na ficha e no resultado da busca, por 1 a 12 semanas, paga por semana com os créditos, pelo preço mostrado antes de publicar (menor no Premium; enquanto o preço for zero, sem custo). Mudar o texto da promoção não custa nada; encerrar a promoção antes do fim devolve aos créditos as semanas que ainda não começaram. Se a academia voltar ao Básico, a promoção sai da ficha e da busca, sem devolução. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Ao promover, a academia paga num pagamento só, com os créditos, as semanas da promoção na ficha e, se quiser, o alcance: aparições numa faixa marcada "Patrocinado" no início e no alto da busca, perto da academia, pelo preço do dia, que depende dos acessos ao site e do que as outras academias do bairro investem, com o mínimo de R$ 30 por mil aparições (no Premium, 15% de desconto nas semanas e no alcance). A mesma pessoa vê a mesma faixa no máximo três vezes por dia, e a estimativa de aparições mostrada antes de pagar não é garantia. No plano Premium, o alcance também concorre ao e-mail semanal com as promoções do bairro, marcado como patrocinado: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção com o maior alcance e a melhor qualidade, e o valor sai do alcance dela. O alcance que não for usado volta aos créditos quando a promoção termina ou é encerrada. Ganham as duas maiores notas (o alcance da semana vezes a qualidade da ficha e da promoção): a 1ª sai na terça e a 2ª na sexta, e quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, tirado do próprio alcance; quem não ganha não paga pelo e-mail. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar a promoção enganosa ou fora do assunto, devolvendo o valor aos créditos. <strong>Feedback ao GuiaTennis:</strong> jogadores e academias com conta podem dar uma nota de 1 a 5 ao GuiaTennis, com o que mais ajudou ou o que faltou e um comentário opcional, e editar a avaliação quando quiserem. Por enquanto, a nota e os comentários não aparecem no site: só a administração do GuiaTennis vê, e quem enviou vê o próprio feedback e a resposta na página Feedback (o jogador em guiatennis.com.br/feedback; a academia no GuiaTennis Parceiros › Feedback). O comentário só é usado na divulgação do GuiaTennis (no site, nas redes sociais e em anúncios) com a autorização de quem escreveu, dada numa caixa opcional ao enviar o feedback, com o primeiro nome e a inicial do sobrenome do jogador ou o nome da academia; a autorização pode ser retirada a qualquer momento em "Editar avaliação", e aí o GuiaTennis para de usar o comentário. A nota média, sem nomes, pode passar a aparecer no site. O GuiaTennis responde os feedbacks e não paga nem dá vantagem por eles. Pelo chat de ajuda, quem tem conta também pode informar um erro ou dar uma sugestão e acompanhar a situação na página Feedback; o GuiaTennis pode ler as conversas guardadas na conta, para responder e melhorar o site, e responder por ali.</p>
+<p style="font-size:14px">O GuiaTennis Parceiros (guiatennis.com.br/parceiros) é a parte do site para academias e quadras. Quem responde por uma academia cria a própria conta com e-mail, tratamento, nome e sobrenome, cargo, WhatsApp e senha, declara que representa a academia e pede para administrar a ficha dela ou cadastra uma academia nova. Com o e-mail confirmado, a conta passa a administrar na hora uma ficha que já está no Guia e não tem responsável, e a academia nova que ela cadastrar entra no ar na hora, no plano Básico; o GuiaTennis confere depois e pode corrigir, pausar ou remover a ficha e tirar o acesso. Sem o e-mail confirmado, o pedido espera a confirmação do e-mail ou a conferência do GuiaTennis. Se a academia já tem responsável, o pedido vai para ele. Em caso de disputa — quem pediu contesta quem administra a academia —, quem contesta informa o WhatsApp que considera ser o da academia, e o GuiaTennis manda a ele um código de 6 números; quem administra recebe outro código no WhatsApp que está na ficha. Os códigos saem pela conta oficial do GuiaTennis no WhatsApp, quando disponível, e mostram quem tem acesso a cada número, mas não decidem a disputa sozinhos: o GuiaTennis compara, pode pedir documentos que mostrem quem responde pela academia e ouvir os dois lados, e decide; se decidir a favor de quem contestou, essa pessoa passa a ser a responsável, quem administrava perde o acesso e o WhatsApp confirmado por quem contestou passa a ser o da ficha. O WhatsApp da academia que a conta escreve na ficha (no cadastro ou depois) só aparece depois que alguém da academia digita o código de 6 números mandado a ele, pela conta oficial do GuiaTennis no WhatsApp ou, enquanto ela não está disponível, pelo GuiaTennis em até 1 dia útil. Digitado o código, o número entra na ficha com o aviso "WhatsApp em confirmação pelo GuiaTennis" até o GuiaTennis conferir que ele é da academia (o código mostra que a pessoa tem o número; a conferência, que ele é da academia); se o GuiaTennis não confirmar, o número sai da ficha e volta o de antes. Até o código, a ficha mostra o número de antes, ou fica sem o botão do WhatsApp. O código vale 72 horas e 5 tentativas. A academia vê, em Atualizações, o que os jogadores informaram sobre a ficha (sem saber quem informou); salvar a ficha, mesmo sem mudar nada, mostra que a academia conferiu. Pedir para administrar ou cadastrar uma academia exige marcar a declaração de que a pessoa está autorizada pela academia e responde pelas informações que publicar; o GuiaTennis guarda a data dessa declaração. Pedir acesso a uma academia que não representa é proibido e leva à exclusão da conta. O GuiaTennis também pode convidar a academia pelo e-mail dela: quem responde pela academia cria a conta com esse e-mail e a própria senha e, ao confirmar o e-mail, já administra a ficha. Os acessos criados antes, com usuário e senha provisória, continuam valendo: no primeiro acesso, o responsável informa nome e sobrenome, cargo, e-mail e WhatsApp, cria uma senha nova e declara que representa a academia; a partir daí, a conta entra também por esse e-mail, que recebe o código do "Esqueci a senha". O responsável principal pode dar acesso a outras pessoas da academia com um convite pelo e-mail delas, até o número de pessoas do plano (o convite que ainda não foi usado conta no número e pode ser cancelado): a pessoa cria a conta com esse e-mail e a própria senha e, ao confirmar o e-mail, já entra na academia. Ele também pode escolher o que cada uma pode fazer (editar a ficha, responder avaliações, promoções e leilão, pagamentos) e tornar outra pessoa responsável principal também; os responsáveis principais podem tudo na academia, respondem pelo que a equipe faz e recebem um e-mail a cada compra feita para ela, com quem comprou e o valor. Só o GuiaTennis tira um responsável principal, ou ele mesmo deixa de ser, se houver outro. Quem tem acesso à academia pode contestar o acesso de outra pessoa da academia, respondendo primeiro sobre si (quem é na academia, o que faz e há quanto tempo está lá) e depois sobre ela (se a conhece, quem é, o que faz, se suspeita de algo e por quê); nada muda na hora, a pessoa contestada é chamada a responder às mesmas perguntas sobre si, sem saber quem contestou, e o GuiaTennis compara os dois lados e decide se mantém ou tira o acesso. Quem pede para administrar uma academia que já tem responsável tem o pedido enviado a ele, com o nome e o e-mail de quem pediu; o responsável aceita ou recusa, e o GuiaTennis só decide em casos excepcionais. A mesma conta pode administrar mais de uma academia, em qualquer plano, e pedir uma academia enquanto outro pedido ainda está em análise: cada academia é pedida e confirmada separadamente, do mesmo jeito, e o plano, as pessoas com acesso e os números são de cada academia. Cada academia tem o próprio plano: a academia que entra na conta começa no Básico, e o plano de uma não vale para as outras. <strong>Quem administra uma academia não avalia essa academia</strong>, nem com o e-mail ou o WhatsApp de quem a administra; nas outras academias, a mesma conta é usada como a de qualquer jogador. Na área da academia é possível editar a ficha da própria academia e responder às avaliações dela. A academia não pode apagar avaliações, avaliar a si mesma, mudar a situação, a exibição ou o plano da ficha, nem mexer em outra academia. Quem administra a academia pode pausar a ficha dela (tirar da busca por um tempo, ou até voltar) e trazer de volta, uma academia por vez; a pausa feita pelo GuiaTennis só o GuiaTennis desfaz. A ficha da academia é pública e continua no Guia mesmo que ninguém a administre, enquanto a academia estiver aberta ou houver informações públicas sobre ela. Se a academia fechar as portas, o responsável principal avisa no GuiaTennis Parceiros (Suas academias › A academia fechou as portas?): a ficha sai do site na hora e, depois de o GuiaTennis conferir, sai do Guia, e o cadastro fica guardado como fechado (cadastro inativo), com as avaliações; se a academia continuar aberta, ou se o aviso for cancelado, a ficha volta ao site como estava; o GuiaTennis também tira a ficha da academia que fechou quando confere por conta própria. Quem administra a academia pode excluir a própria conta, no Perfil do GuiaTennis Parceiros ou em "Minha conta", no site dos jogadores (é a mesma conta, e excluir num lugar exclui nos dois): se houver outro acesso à academia, a pessoa mais antiga da equipe passa a ser a responsável principal e assume o plano, inclusive o pagamento, quando houver; sem outro acesso, a academia volta ao plano Básico e fica sem responsável, até alguém pedir para administrá-la. O que a academia salva passa a aparecer como informação confirmada por ela, e ela responde pelo que publica. A academia autoriza o GuiaTennis a usar o nome, as fotos, o bairro, a cidade e os preços da ficha para divulgar a própria ficha, inclusive nos anúncios do GuiaTennis no Instagram, no Facebook, no Google e em outras plataformas de anúncio, sempre com o link para a ficha dela; quem preferir ficar de fora dos anúncios avisa o GuiaTennis. As respostas são públicas, uma por avaliação, aparecem embaixo da avaliação como "Resposta da academia" e devem ser respeitosas, sem expor dados de quem avaliou. A academia pode editar a resposta quando quiser; a resposta editada passa a mostrar "editada". Se quem avaliou editar a avaliação, a resposta continua embaixo dela, e a academia recebe um e-mail para conferir. O GuiaTennis pode remover respostas que desrespeitem estes termos e suspender o acesso em caso de uso indevido. A senha é da academia: não a compartilhe com quem não responde por ela. Os planos (Básico, gratuito; Completo, grátis por tempo limitado; Premium, por assinatura) definem o que a ficha mostra e quantas pessoas têm acesso: no Básico, até 3 comodidades, até 3 fotos, só o WhatsApp, sem a regra de cancelamento, sem "como chegar" e 1 pessoa; no Completo, a ficha inteira (todas as comodidades, até 5 fotos, WhatsApp, Instagram, site, cancelamento e como chegar — fachada, entrada e onde estacionar), até 5 pessoas e quantos contatos a ficha recebeu nos últimos 30 dias; no Premium, o mesmo, até 10 pessoas, uma foto para cada aula do catálogo e para a locação e os números da própria ficha — visitas, contatos, o dia a dia, de onde vieram, o aparelho, os bairros de quem procurou, a média das academias da cidade e o relatório completo do mês por e-mail. Todo plano recebe, no começo de cada mês, o resumo do mês anterior por e-mail (acessos à ficha e avaliações). O que a academia guardou além do que o plano mostra continua guardado e volta a aparecer se ela aprimorar o plano. No cadastro e na edição, a academia preenche tudo o que quiser; ao finalizar, o site mostra o que o plano esconde e deixa escolher outro plano. Escolher o Completo ali (ou em Plano, pelo responsável principal) muda o plano da academia na hora. O Completo está grátis por tempo limitado: antes de ele passar a ser cobrado (preço regular: R$ 49 por mês), a academia é avisada por e-mail com pelo menos 30 dias de antecedência, e nada é cobrado sem ela escolher pagar. O Premium é por assinatura, sem fidelidade: no lançamento, R$ 49 por mês ou R$ 490 por ano (preço regular: R$ 89 por mês e R$ 890 por ano), com 5% de desconto no Pix. O primeiro mês do Premium é grátis, uma vez por academia, sem cartão e sem cobrança automática. Cinco dias antes do fim do mês grátis, ou do período pago, o responsável principal recebe um e-mail; sem pagamento, a academia passa sozinha para o plano escolhido (o Completo, se nada for escolhido). Cada pagamento soma um mês (ou um ano) ao prazo. O responsável principal pode ligar a renovação automática, no cartão de crédito (ou no Pix Automático, quando ele aparecer em Plano), pelas assinaturas do Mercado Pago: o valor do plano é cobrado automaticamente no fim de cada período (no mês grátis, só no fim dele) até o cancelamento, e o e-mail de cinco dias antes diz o valor, o dia e a forma de pagamento. A cobrança que não passa é tentada de novo pelo Mercado Pago por alguns dias; sem pagamento, a academia passa para o plano escolhido. O responsável principal cancela quando quiser, em Plano › "Cancelar assinatura", e escolhe se a academia vai para o Completo ou para o Básico: o plano continua até o fim do período já pago, a renovação automática para na hora e nada mais é cobrado. A compra pode ser desfeita em até 7 dias, com a devolução do valor (Código de Defesa do Consumidor, art. 49); no plano anual, quem cancela depois disso pode pedir pelo chat de ajuda a devolução dos meses inteiros que faltam, com os meses usados cobrados pelo preço do mensal. Uma mudança de preço é avisada com 30 dias de antecedência e só vale a partir do período seguinte. As 15 primeiras academias cujo responsável chegar ao GuiaTennis, confirmando a ficha da academia com o GuiaTennis ou entrando no GuiaTennis Parceiros (cadastrando a academia ou pedindo para administrar a ficha dela), ganham o selo "Fundadora do GuiaTennis" na ficha, para sempre, pela ordem de chegada; os acessos criados pelo GuiaTennis sem a academia não contam. Os créditos de promoções são comprados à parte, com Pix ou cartão pelo Mercado Pago (no Pix, os créditos valem 5% a mais e o plano tem 5% de desconto), valem para as promoções (as semanas na ficha e o alcance) e não são devolvidos depois de usados. O reembolso é pedido em Pagamentos › "Pedir reembolso", com o motivo; o GuiaTennis analisa e responde por e-mail. Nos créditos, são devolvidos os ainda não usados, na proporção do valor pago; no plano, valem as regras acima. O valor volta pelo Mercado Pago, no mesmo meio de pagamento. Quando um pagamento é devolvido, pelo GuiaTennis, pelo Mercado Pago ou por contestação no cartão, os créditos correspondentes saem do saldo e o prazo do plano é reduzido na mesma proporção (na devolução integral, o plano e a renovação automática terminam). Toda compra, de créditos ou do plano, começa pelos dados do comprador (CNPJ ou CPF, razão social ou nome e o e-mail que recebe a nota), que a academia informa e por cuja exatidão responde; eles vão ao Mercado Pago como os de quem paga, e o GuiaTennis emite a nota de cada compra paga com esses dados e a manda a esse e-mail. No plano Premium, a academia ganha o selo dourado ao lado do nome e pode aparecer no topo da busca, identificada como patrocinada ("Patrocinado"): no máximo duas por busca, entre as que atendem aos filtros escolhidos pelo jogador e, quando ele informa onde está, a até 10 km. Abaixo delas, a lista mostra todas as academias na ordem escolhida pelo jogador, inclusive as do topo, de novo no lugar delas e sem a marcação; essa ordem não depende do plano. No início e no alto da busca, pode aparecer também uma faixa pequena marcada "Patrocinado", com o nome de uma academia perto do lugar buscado e a promoção dela, paga pela academia (o alcance de Promover); ela não muda a ordem da lista. As "Mais bem avaliadas" da página inicial seguem só a nota dada pelos jogadores no GuiaTennis (4 ou mais, pesando quantas avaliações cada academia tem), sem relação com o plano. Na página inicial, as academias Premium aparecem primeiro entre as "Academias recomendadas", também identificadas como "Patrocinado"; depois vêm as do plano Completo, da ficha mais completa para a menos completa, e as vagas que sobram vão para as mais bem avaliadas e com a ficha mais completa — sempre antes as que ficam perto de quem procura. Nos planos Completo e Premium, a academia também pode divulgar uma promoção por vez na ficha e no resultado da busca, por 1 a 12 semanas, paga por semana com os créditos, pelo preço mostrado antes de publicar (menor no Premium; enquanto o preço for zero, sem custo). Mudar o texto da promoção não custa nada; encerrar a promoção antes do fim devolve aos créditos as semanas que ainda não começaram. Se a academia voltar ao Básico, a promoção sai da ficha e da busca, sem devolução. A promoção é da academia: ela responde pelo que anuncia e cumpre as condições combinadas com o jogador. O GuiaTennis pode remover a promoção enganosa ou que descumpra estes termos. Ao promover, a academia paga num pagamento só, com os créditos, as semanas da promoção na ficha e, se quiser, o alcance: aparições numa faixa marcada "Patrocinado" no início e no alto da busca, perto da academia, pelo preço do dia, que depende dos acessos ao site e do que as outras academias do bairro investem, com o mínimo de R$ 30 por mil aparições (no Premium, 15% de desconto nas semanas e no alcance). A mesma pessoa vê a mesma faixa no máximo três vezes por dia, e a estimativa de aparições mostrada antes de pagar não é garantia. No plano Premium, o alcance também concorre ao e-mail semanal com as promoções do bairro, marcado como patrocinado: duas vezes por semana, o GuiaTennis manda aos jogadores do bairro que pediram promoções a promoção com o maior alcance e a melhor qualidade, e o valor sai do alcance dela. O alcance que não for usado volta aos créditos quando a promoção termina ou é encerrada. Ganham as duas maiores notas (o alcance da semana vezes a qualidade da ficha e da promoção): a 1ª sai na terça e a 2ª na sexta, e quem ganha paga só o suficiente para ficar à frente da academia seguinte, mais R$ 1, tirado do próprio alcance; quem não ganha não paga pelo e-mail. A academia responde pelo que escreve na promoção, e o GuiaTennis pode não enviar a promoção enganosa ou fora do assunto, devolvendo o valor aos créditos. <strong>Feedback ao GuiaTennis:</strong> jogadores e academias com conta podem dar uma nota de 1 a 5 ao GuiaTennis, com o que mais ajudou ou o que faltou e um comentário opcional, e editar a avaliação quando quiserem. Por enquanto, a nota e os comentários não aparecem no site: só a administração do GuiaTennis vê, e quem enviou vê o próprio feedback e a resposta na página Feedback (o jogador em guiatennis.com.br/feedback; a academia no GuiaTennis Parceiros › Feedback). O comentário só é usado na divulgação do GuiaTennis (no site, nas redes sociais e em anúncios) com a autorização de quem escreveu, dada numa caixa opcional ao enviar o feedback, com o primeiro nome e a inicial do sobrenome do jogador ou o nome da academia; a autorização pode ser retirada a qualquer momento em "Editar avaliação", e aí o GuiaTennis para de usar o comentário. A nota média, sem nomes, pode passar a aparecer no site. O GuiaTennis responde os feedbacks e não paga nem dá vantagem por eles. Pelo chat de ajuda, quem tem conta também pode informar um erro ou dar uma sugestão e acompanhar a situação na página Feedback; o GuiaTennis pode ler as conversas guardadas na conta, para responder e melhorar o site, e responder por ali.</p>
 <p class="field-label" style="margin-top:16px">5. Conta, identificação para avaliar ou cadastrar</p>
 <p style="font-size:14px">Buscar, comparar e chamar academias não exige conta. <strong>Para avaliar, é preciso ter uma conta do GuiaTennis com o e-mail confirmado</strong> (nome e sobrenome, e-mail e senha; a cidade é opcional; o e-mail é confirmado por um código mandado a ele), e cada conta faz uma avaliação por academia. Quem avaliou pode editar a nota e o texto da própria avaliação quando quiser, com a mesma declaração de que ela é verídica e segue estes Termos; a avaliação continua com a data de quando foi feita e passa a mostrar "editada", e quem administra a academia recebe um e-mail com a avaliação editada. Enquanto o nome estiver suspenso, a conta não avalia nem edita avaliações. Informar um problema numa ficha também pede a conta com o e-mail confirmado; denunciar uma avaliação pede a conta. O nome da conta aparece junto das suas avaliações. Na conta, você escolhe se quer receber por e-mail avisos de academias novas na sua cidade, promoções das suas academias favoritas e das academias perto de você e novidades do GuiaTennis — todos começam desligados e podem ser mudados ou desligados a qualquer momento em "Minha conta". Você também pode excluir a conta por lá; as avaliações continuam publicadas, sem o nome e sem a ligação com a conta: aparecem como "Usuário do GuiaTennis". A senha é sua: não a compartilhe.</p>
 <p style="font-size:14px"><strong>Nomes.</strong> O nome da conta (de jogador ou do GuiaTennis Parceiros) e o nome da academia não podem ter palavrão, ofensa, apelido que humilhe alguém, conteúdo discriminatório ou de ódio, nada que a lei brasileira proíba, nem se passar por outra pessoa, academia ou empresa. A academia usa o nome com que atende os alunos. <strong>O nome da conta que desrespeitar essas regras fica suspenso por 15 dias:</strong> sai do site na hora (nas avaliações, aparece "Usuário do GuiaTennis"), a conta não avalia enquanto isso, e a pessoa recebe um e-mail com o motivo e o prazo para trocar, e um lembrete 3 dias antes do fim. Se a pessoa trocar, o nome volta a aparecer; se não trocar em 15 dias, a conta é excluída, o e-mail dela não cria outra conta, e as avaliações continuam publicadas como "Usuário do GuiaTennis". O GuiaTennis pode alterar o nome da academia na ficha, e quem administra a academia recebe um e-mail com o nome de antes e o novo.</p>
@@ -28257,10 +28328,10 @@ function lugarDaDuvida(pergunta, det) {
 // conforme o plano e a situação da academia aberta.
 const CHAT_PAGINAS_PC = [
   { aba: "painel", t: "Atualizações", p: ["atualizac", "painel", "pagina inicial", "inicio da conta", "divulg", "stories", "postar"],
-    r: "o que mudou na academia: avaliações novas, pedidos de acesso, lembretes, os acessos dos últimos 30 dias e a imagem para divulgar a academia no Instagram" },
+    r: "o que mudou na academia: avaliações novas, pedidos de acesso, lembretes, os acessos dos últimos 30 dias e a imagem para divulgar o desempenho da academia" },
   { aba: "ficha", t: "Minha ficha", p: ["minha ficha", "ficha"], r: "a ficha como o jogador vê, o QR code e \"Editar a ficha\"" },
   { aba: "feedback", t: "Feedback", p: ["feedback", "sugest", "elogio", "critica"], r: "o feedback da academia para o GuiaTennis, com a resposta" },
-  { aba: "avaliacoes", t: "Avaliações", p: ["avaliac", "comentarios", "notas"], r: "as avaliações dos jogadores, para responder, pedir análise ou compartilhar no Instagram" },
+  { aba: "avaliacoes", t: "Avaliações", p: ["avaliac", "comentarios", "notas"], r: "as avaliações dos jogadores, para responder, pedir análise ou compartilhar" },
   { aba: "promocoes", t: "Promoções na ficha", p: ["promoc", "promocoes na ficha"], r: "as promoções na ficha e na busca, por semana, no Completo e no Premium" },
   { aba: "promocoes-email", t: "E-mail das promoções", p: ["promocoes por e mail", "promocoes por email", "avisos por e mail", "leilao", "lance", "creditos"],
     r: "o e-mail das promoções do bairro, no Premium, que usa o alcance de Promover" },
@@ -30213,7 +30284,7 @@ function legendaDaPromocao(x) {
   const insta = String(x.instagram || "").trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/[/?#].*$/, "").replace(/^@/, "");
   const tag = (t) => "#" + slugTexto(t || "").replace(/-/g, "");
   return [`🎾 ${x.titulo} na ${x.academia}${x.bairro ? `, em ${x.bairro}` : ""}.`, x.detalhes || "",
-    `Válida até ${dia}. Veja a ficha e fale com a academia pelo GuiaTennis (link na bio).`, insta ? `@${insta}` : "",
+    `Válida até ${dia}. ${x.link ? `Veja a ficha e fale com a academia: ${x.link}` : "Veja a ficha e fale com a academia pelo GuiaTennis (link na bio)."}`, insta ? `@${insta}` : "",
     ["#tenis", "#aulasdetenis", x.bairro ? tag(x.bairro) : "", x.cidade ? tag(x.cidade) : "", "#guiatennis"].filter(Boolean).join(" ")].filter(Boolean).join("\n\n");
 }
 function quebrarTexto(ctx, texto, largura) {
@@ -30227,30 +30298,7 @@ function quebrarTexto(ctx, texto, largura) {
   return linhas;
 }
 function baixarImagemDaPromocao(x) {
-  const cv = document.createElement("canvas");
-  cv.width = 1080; cv.height = 1350;
-  const ctx = cv.getContext("2d");
-  ctx.fillStyle = "#1F4D3A"; ctx.fillRect(0, 0, 1080, 1350);
-  ctx.fillStyle = "#E9C46A"; ctx.fillRect(90, 150, 260, 64);
-  ctx.fillStyle = "#1F2A24"; ctx.font = "700 34px Poppins, Arial, sans-serif"; ctx.fillText("PROMOÇÃO", 112, 194);
-  ctx.fillStyle = "#FFFFFF"; ctx.font = "600 52px Poppins, Arial, sans-serif";
-  let y = 330;
-  quebrarTexto(ctx, x.academia, 900).slice(0, 2).forEach(l => { ctx.fillText(l, 90, y); y += 66; });
-  ctx.fillStyle = "#F3DFA2"; ctx.font = "700 92px Poppins, Arial, sans-serif"; y += 50;
-  quebrarTexto(ctx, x.titulo, 900).slice(0, 3).forEach(l => { ctx.fillText(l, 90, y); y += 108; });
-  ctx.fillStyle = "#FFFFFF"; ctx.font = "400 42px Poppins, Arial, sans-serif"; y += 20;
-  quebrarTexto(ctx, x.detalhes || "", 900).slice(0, 4).forEach(l => { ctx.fillText(l, 90, y); y += 58; });
-  ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.font = "500 38px Poppins, Arial, sans-serif";
-  ctx.fillText(`${x.bairro ? x.bairro + " · " : ""}válida até ${diaPorExtenso(String(x.valida_ate || "").slice(0, 10))}`, 90, 1170);
-  ctx.fillStyle = "#E9C46A"; ctx.font = "700 44px Poppins, Arial, sans-serif"; ctx.fillText("guiatennis.com.br", 90, 1250);
-  cv.toBlob(b => {
-    if (!b) return;
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(b);
-    a.download = `promocao-${slugTexto(x.academia || "academia")}.png`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  }, "image/png");
+  imagemDaPromocao(x, "post").then(cv => cv.toBlob(b => { if (b) baixarArquivo(b, `promocao-${slugTexto(x.academia || "academia")}.png`); }, "image/png"));
 }
 function admPromocoesNoArHtml() {
   const lista = state.admPromocoes;

@@ -709,8 +709,12 @@
     if (nome === "numeros_para_divulgar") {
       const x = meuAcesso();
       if (!x || !vinculo(x.user_id, a.p_academia)) return erro("Entre na conta da academia.", "42501");
-      const pl = planoDe(a.p_academia), n = window.__divulgar || { acessos_30: 137, acessos_total: 612, contatos_30: 23, contatos_total: 80 };
-      return { data: { plano: pl, ...n, contatos_30: pl === "basico" ? null : n.contatos_30, contatos_total: pl === "basico" ? null : n.contatos_total }, error:null };
+      // Regra 320: o período escolhido (p_dias; 0 = desde o início).
+      const pl = planoDe(a.p_academia), dias = a.p_dias === undefined ? 30 : Number(a.p_dias || 0);
+      const n = window.__divulgar || { acessos: 137, acessos_total: 612, contatos: 23, avaliacoes: 2 };
+      const f = dias ? dias / 30 : n.acessos_total / n.acessos;
+      return { data: { plano: pl, dias, inicio: "2026-03-10T12:00:00Z", acessos_total: n.acessos_total, acessos: Math.round(n.acessos * f),
+        contatos: pl === "basico" ? null : Math.round(n.contatos * f), avaliacoes: Math.round(n.avaliacoes * f) }, error:null };
     }
     if (nome === "metas_da_semana" || nome === "salvar_metas") {
       if (!window.__admin) return erro("Só o GuiaTennis vê as metas.", "42501");

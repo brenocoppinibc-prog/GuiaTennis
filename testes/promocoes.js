@@ -93,7 +93,8 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   await page.waitForTimeout(500);
   corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
   ok(corpo.includes('Por semana R$ 10') && corpo.includes('4 semanas na ficha R$ 40') && corpo.includes('Total R$ 40') && corpo.includes('Créditos disponíveis R$ 25') && corpo.includes('Faltam R$ 15 em créditos')
-    && corpo.includes('No Premium, a semana custa R$ 8 (15% a menos)') && !corpo.includes('menos no Premium'), 'Completo: preço cheio por semana, o total, os créditos, o que falta e o preço do Premium — ' + corpo);
+    && corpo.includes('No Premium, a semana custa R$ 10 R$ 8 (15% a menos), e o alcance tem o mesmo desconto. Economize R$ 8 nesta promoção. Ver os planos ›') && !corpo.includes('desconto do Premium') && !corpo.includes('economiza'), 'Completo: preço cheio por semana, o total, os créditos, o que falta e o Premium com o preço riscado e a economia (regra 315) — ' + corpo);
+  ok(await page.evaluate(() => getComputedStyle(document.querySelector('.pc-promo-upsell .pc-preco-de')).textDecorationLine === 'line-through'), 'o preço regular aparece riscado');
   ok((await texto(page, '.pc-sec-sub')).includes('(R$ 10 por semana)') && (await texto(page, '.pc-sec-sub')).includes('num pagamento só'), 'no alto, o preço da semana');
   await page.fill('#pc-promo-titulo', 'Aula experimental');
   await page.click('#pc-promo-revisar');
@@ -143,7 +144,11 @@ const PROMO = { id: 'p1', academia_id: 'a1', titulo: 'Primeira aula grátis', de
   ({ browser, page } = await abrir({ academia: 'a1', q: 'parceiros/promocoes', premium: ['a1'], envios: { a1: 100 }, precoPromocao: 10 }));
   await page.waitForTimeout(500);
   corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
-  ok(corpo.includes('Por semana R$ 8 15% menos no Premium') && corpo.includes('4 semanas na ficha R$ 32') && !corpo.includes('Ver os planos'), 'Premium: R$ 8 por semana, com o desconto à vista — ' + corpo);
+  ok(corpo.includes('Por semana R$ 10 R$ 8 15% de desconto do Premium') && corpo.includes('4 semanas na ficha R$ 32') && corpo.includes('Com o Premium, você economiza R$ 8 nesta promoção.') && !corpo.includes('Ver os planos') && !corpo.includes('volta para os créditos'), 'Premium: R$ 10 riscado, R$ 8 por semana e a economia em reais (regra 315) — ' + corpo);
+  await page.click('[data-promo-alcance="50"]');
+  await page.waitForTimeout(300);
+  corpo = (await texto(page, '#pc-promo-preco')).replace(/\s+/g, ' ');
+  ok(corpo.includes('Alcance R$ 50') && corpo.includes('Total R$ 82') && corpo.includes('O alcance que não for usado volta para os créditos.'), 'com alcance: o total e a garantia de que a sobra volta — ' + corpo);
   await browser.close();
 
   // ---- o jogador vê: atalho no topo, bloco com os preços e o cartão da busca ----

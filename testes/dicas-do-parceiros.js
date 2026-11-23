@@ -100,10 +100,10 @@ async function pedirDica(page) {
   await page.evaluate(async () => { await carregarPromocoes(); });
   await pedirDica(page);
   dica = await texto(page, '#gt-dica');
-  ok(dica.startsWith('Entre no leilão de promoções') && dica.includes('duas promoções do bairro') && dica.includes('Ver o leilão ›'), 'Premium com promoção: entrar no leilão de promoções — ' + dica);
+  ok(dica.startsWith('Leve a promoção ao e-mail do bairro') && dica.includes('faixa patrocinada') && dica.includes('Promover ›') && !dica.includes('leilão'), 'Premium com promoção sem alcance: levar a promoção ao e-mail do bairro (regra 317) — ' + dica);
   await page.click('.gt-dica-acao');
   await page.waitForTimeout(300);
-  ok(await page.evaluate(() => state.parceirosAba === 'promocoes-email'), 'o atalho abre Promoções › Leilão');
+  ok(await page.evaluate(() => state.parceirosAba === 'promocoes'), 'o atalho abre Promoções');
 
   // ---- não cobre o formulário nem outro aviso ----
   await page.evaluate(() => { localStorage.removeItem('guiatennis_dica_parceiros_v1'); state.pcDicas = {}; mostrarPush('Senha nova salva.'); irParceiros('painel'); });

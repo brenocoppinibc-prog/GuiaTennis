@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 317, troca de chat)
+**Atualizado em:** 23/11/2026 (regra 318)
 
 | | |
 |---|---|
@@ -455,9 +455,11 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026)
 
-**Chat trocado em 23/11/2026 (regras 314 a 317):** o chat novo volta a acompanhar o PR #5 (este
-deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `0fc9e41`
-(regra 317). O PR está verde, a prévia no ar com tudo até a 317 e a descrição em dia (passos 135 a
+**Chat de 23/11/2026 (regra 318, acompanhando o PR #5):** a regra fixa de marketing e design aplicada
+ao Promover (preço riscado, economia em reais, garantia do alcance) e os textos do leilão antigo
+trocados pelo alcance e pelo "E-mail das promoções". Sem SQL novo. **Chat trocado em 23/11/2026
+(regras 314 a 317):** o chat novo volta a acompanhar o PR #5. Último commit de código antes da 318:
+`0fc9e41` (regra 317). O PR está verde, a prévia no ar com tudo até a 317 e a descrição em dia (passos 135 a
 147). O SQL mais novo, `20261123130000_promover`, já rodou no banco de teste (23/11, "Banco de
 dados" à mão, `destino: teste`, sucesso). **Deste chat (21 a 23/11):** 314, a renovação automática
 no cartão e no Pix Automático (Assinaturas do Mercado Pago); 315, o melhor marketing e design na
@@ -2767,6 +2769,21 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `sem-explicacao`; `banco-emails.py` (seção "Promover"; 1.067 no banco local). **Bateria completa
   de 23/11 (até a 317): 2.741 verificações, nenhuma falha** (menos que antes porque os testes do
   leilão com lance saíram).
+- **318 (23/11) — a regra de marketing e design nas últimas mudanças** ("passe a regra de marketing e
+  design nas últimas modificações do site"). **Promover** (`precoNaPromocao`): no Premium, "Por semana
+  ~~R$ 10~~ R$ 8 · 15% de desconto do Premium" e **"Com o Premium, você economiza R$ 8 nesta
+  promoção."**; com alcance, **"O alcance que não for usado volta para os créditos."** (risco zero,
+  saiu da estimativa); no Completo, a caixa dourada "No Premium, a semana custa ~~R$ 10~~ **R$ 8**
+  (15% a menos), e o alcance tem o mesmo desconto. Economize R$ 8 nesta promoção. Ver os planos ›"
+  (classes `.pc-preco-de`, `.pc-promo-eco`, `.pc-promo-garantia`, `.pc-promo-upsell`). **Textos do
+  leilão antigo** (sobraram da 317): o título da página `promocoes-email` é "E-mail das promoções";
+  a dica do painel e as oportunidades do Premium dizem "Leve a promoção ao e-mail do bairro" e levam
+  a Promoções (`temAlcance()`: alguma promoção com alcance); planos, compra de créditos e voltar
+  falam do alcance ("na ficha, na faixa patrocinada e no e-mail do bairro"); o chat de ajuda ("paga
+  15% menos para promover, leva as promoções ao e-mail do bairro", "cobra automaticamente", "quantos
+  jogadores chamaram a academia"); nos **Termos**, a frase do e-mail pelo alcance (sem "lance
+  máximo"), mesma data de 23/11/2026. Ficou como estava: a função da equipe "Promoções e leilão"
+  (o nome vem do SQL `nome_da_funcao`). Testes: `promocoes.js` (48) e `dicas-do-parceiros.js` (17).
 
 ## 11. WhatsApp e mensagem para as academias
 

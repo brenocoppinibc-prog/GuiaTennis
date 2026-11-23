@@ -5554,10 +5554,21 @@ function mostrarErro(texto, origem = "avulso", ancora) {
   const lugar = ancora && (ancora.parentElement || ancora);
   const r = lugar && lugar.getBoundingClientRect();
   const longe = r && (r.bottom < 70 || r.top > innerHeight - 40);
-  el.innerHTML = `<span class="gt-push-ic">${icon('warning', 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}${longe ? `<button type="button" class="gt-erro-ver">Ver</button>` : ""}</span><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
+  // Regra 327 (o site leva à tela e ao campo exatos): o erro de um campo ganha
+  // "Corrigir", que leva até ele; sem campo, "Ver" quando está fora da tela.
+  // O campo é o que vem logo antes do erro (o erro fica embaixo do campo dele).
+  const antes = ancora && ancora.previousElementSibling;
+  const campo = antes ? [antes, ...antes.querySelectorAll("*")].filter(x => x.matches("input:not([type=hidden]), textarea, select") && x.getClientRects().length).pop() || null : null;
+  const botao = campo ? "Corrigir" : longe ? "Ver" : "";
+  el.innerHTML = `<span class="gt-push-ic">${icon('warning', 15, '#fff')}</span><span class="gt-push-t">${esc(texto)}${botao ? `<button type="button" class="gt-erro-ver">${botao}</button>` : ""}</span><button type="button" class="gt-push-x" aria-label="Fechar o aviso">✕</button>`;
   el.querySelector(".gt-push-x").onclick = () => { errosFechados.add(texto); el.remove(); };
   const ver = el.querySelector(".gt-erro-ver");
-  if (ver) ver.onclick = () => { if (document.body.contains(lugar)) lugar.scrollIntoView({ block: "center", behavior: "smooth" }); ver.remove(); };
+  if (ver) ver.onclick = () => {
+    const alvo = campo && document.body.contains(campo) ? campo : lugar;
+    if (document.body.contains(alvo)) alvo.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (alvo === campo) setTimeout(() => campo.focus({ preventScroll: true }), 250);
+    ver.remove();
+  };
   document.body.appendChild(el);
   ligarAjudaDasFalhas();
 }
@@ -5586,14 +5597,35 @@ function errosNoPush() {
   mostrarErro(textos[i], "tela", lista[i]);
 }
 // Leva ao primeiro campo do que falta (ou ao aviso do erro na própria parte).
+// Regra 327 ("ao clicar no botão corrigir não direciona exatamente para
+// corrigir"): cada item da lista tem o seu campo; vale o primeiro que está na
+// tela. Endereço vai ao primeiro campo vazio dele.
+// Celular ou tablet: tela de toque, sem mouse.
+function telaDeToque() { return !!(window.matchMedia && matchMedia("(hover: none) and (pointer: coarse)").matches); }
+const CAMPOS_DO_QUE_FALTA = [
+  [/instagram/, "#f-instagram"], [/site/, "#f-site"], [/reserva/, "#f-reserva"], [/whatsapp/, "#f-phone"],
+  [/projeto social/, "#f-projeto-social"], [/sobre a academia/, "#f-sobre"],
+  [/estacionamento/, "#register-overlay .reg-estac-falta, #f-estac-horas"],
+  [/quadras/, "#register-overlay .reg-quadra-count"], [/modalidade/, "#register-overlay [data-reg-mod]"],
+  [/aceite|termos/, "#f-consent"], [/declaração/, "#f-declaro, #pc-declaro"],
+  [/endereço/, "#f-address, #f-numero, #f-bairro, #f-cidade"], [/^(o )?nome$/, "#f-name"],
+];
+function campoDoQueFalta(texto) {
+  const itens = String(texto || "").toLowerCase().replace(/^(preencha|falta preencher):\s*/, "").replace(/\.$/, "").split(/,\s*/);
+  for (const item of itens) {
+    const par = CAMPOS_DO_QUE_FALTA.find(([re]) => re.test(item.trim()));
+    if (!par) continue;
+    const lista = [...document.querySelectorAll(par[1])].filter(el => el.getClientRects().length);
+    const campo = lista.find(el => el.matches("input:not([type=checkbox]), textarea") && !el.value.trim()) || lista[0];
+    if (campo) return campo;
+  }
+  return null;
+}
 function irAoQueFalta(texto) {
-  const t = String(texto || "").toLowerCase();
-  const id = /instagram/.test(t) ? "f-instagram" : /site/.test(t) ? "f-site" : /whatsapp/.test(t) ? "f-phone" : /reserva/.test(t) ? "f-reserva"
-    : /^preencha: nome|nome[,.]|o nome/.test(t) ? "f-name" : /endereço/.test(t) ? "f-address" : "";
-  const campo = (id && document.getElementById(id)) || document.querySelector("#register-overlay .form-error, #register-overlay .reg-falta, #register-overlay .reg-estac-falta.erro");
+  const campo = campoDoQueFalta(texto) || document.querySelector("#register-overlay .form-error, #register-overlay .reg-falta, #register-overlay .reg-estac-falta.erro");
   if (!campo) return;
   campo.scrollIntoView({ block: "center", behavior: "smooth" });
-  if (campo.matches("input, textarea, select")) setTimeout(() => campo.focus({ preventScroll: true }), 250);
+  if (campo.matches("input, textarea, select, button")) setTimeout(() => campo.focus({ preventScroll: true }), 250);
 }
 function irAoPrimeiroValorVazio() {
   const vazio = [...document.querySelectorAll("#register-overlay .cat-valor")].find(i => !i.value.trim());
@@ -13904,7 +13936,7 @@ function caixaDeDeclaracao() {
       <input type="checkbox" id="pc-declaro" ${state.pcDeclaro ? "checked" : ""} />
       <span>${TEXTO_DECLARACAO}</span>
     </label>
-    ${state.pcDeclaroErro ? `<div class="form-error">${icon('warning', 13)} Marque a declaração para pedir.</div>` : ""}`;
+    ${state.pcDeclaroErro ? `<div class="form-error">${icon('warning', 13)} Para enviar o pedido, marque a declaração.</div>` : ""}`;
 }
 
 // Entrar e Cadastro são a mesma tela, que começa pelo e-mail.
@@ -13981,7 +14013,7 @@ async function reabrirAcademiaPelaConta(id, declaro) {
   const a = academiaFechada(id);
   if (!a) return;
   state.pcReabrirErro = null;
-  if (!declaro) { state.pcReabrirErro = { id, texto: "Marque a declaração para continuar." }; state.pcDeclaroErro = true; render(); return; }
+  if (!declaro) { state.pcReabrirErro = { id, texto: "Para continuar, marque a declaração." }; state.pcDeclaroErro = true; render(); return; }
   state.pcDeclaroErro = false; state.pedidoErro = "";
   state.pcReabrindo = id; render();
   let r;
@@ -19462,11 +19494,23 @@ document.addEventListener("input", (e) => {
   const n = Number(caixa.dataset.otp) || 6;
   const limpo = el.value.replace(/\D/g, "").slice(0, n);
   if (limpo !== el.value) el.value = limpo;
+  const antes = caixa.classList.contains("completo");
   caixa.querySelector(".otp-caixas").innerHTML = caixasDoValor(n, limpo);
   caixa.classList.toggle("completo", limpo.length === n);
-  caixa.parentElement.querySelectorAll("[data-precisa-codigo]").forEach(b => {
+  const botoes = [...caixa.parentElement.querySelectorAll("[data-precisa-codigo]")];
+  botoes.forEach(b => {
     if (!b.querySelector(".bola")) b.disabled = limpo.length !== n;
   });
+  // Regra 327 (o site sempre mais rápido): o código completo (digitado, colado
+  // ou sugerido pelo teclado do celular) confirma sozinho, como o WhatsApp, o
+  // Google e a Apple. Nos testes automáticos (navigator.webdriver), quem
+  // confirma é o clique do teste.
+  if (limpo.length === n && !antes && !navigator.webdriver && botoes.length === 1 && !caixa.parentElement.querySelector(".otp:not(.completo)")) {
+    setTimeout(() => {
+      const b = botoes[0];
+      if (document.body.contains(b) && !b.disabled && !b.querySelector(".bola") && el.value.replace(/\D/g, "").length === n) b.click();
+    }, 250);
+  }
 }, true);
 // Enter com caixa vazia também não confirma.
 document.addEventListener("keydown", (e) => {
@@ -25920,43 +25964,53 @@ function editorDasAulas(f) {
 }
 // A parte "Locação" (só para quem escolheu a locação nas Modalidades, regra
 // 170): a avulsa e a mensal, cada uma com a foto e o valor.
-// Regra 294: "A academia também oferece" (opcional). Locação para eventos e
-// Ranking abrem o cartão do catálogo, com o valor e a foto (Premium), como a
-// locação; o Projeto social abre o texto de como participar.
-function editorDoQueMaisOferece(f) {
+// Regra 294: "A academia também oferece" (opcional). Regra 327 (23/11/2026:
+// "academia também oferece com essas opções devem aparecer outras páginas
+// igual as aulas e locações"): nas Modalidades fica só a escolha; Locação para
+// eventos, Ranking e Projeto social ganham cada um a sua parte, que só aparece
+// para quem marcou (`passoVisivel`), como Aulas e Locação.
+const OFERECE_OPCOES = [
+  { key: "eventos", passo: "eventos", t: "Locação para eventos", d: "Aniversários, empresas e confraternizações" },
+  { key: "ranking", passo: "ranking", t: "Ranking", d: "Jogos do ranking da academia" },
+  { key: "projeto_social", passo: "projeto", t: "Projeto social", d: "Aulas gratuitas ou com bolsa" },
+];
+function escolhaDoQueMaisOferece(f) {
   const g = gradeDoCatalogo(f);
   const marcado = k => k === "projeto_social" ? !!f.projetoSocialOn : g.extras.includes(k);
-  const cartao = t => {
-    const chave = "extra:" + t.key;
-    const nome = t.nome.toLowerCase();
-    const colunas = t.cobrancas.map(k => `<div class="cat-valor-col"><span class="cat-col">${(t.colunas && t.colunas[k]) || "Valor"}<small>${(t.rotulos && t.rotulos[k]) || t.unidades[k]}</small></span>${campoDoValor(g, `${chave}:${k}`, nome)}</div>`).join("");
-    return `
+  return `
+        <p class="field-label">A academia também oferece <span class="reg-opcional">(opcional)</span></p>
+        <div class="reg-mods" role="group" aria-label="A academia também oferece">
+          ${OFERECE_OPCOES.map(m => {
+            const on = marcado(m.key);
+            return `<button type="button" class="reg-mod ${on ? "on" : ""}" data-reg-extra="${m.key}" aria-pressed="${on}"><span class="cat-caixa">${on ? icon('check', 13, '#fff') : ""}</span><span class="reg-mod-txt"><span class="reg-mod-t">${m.t}</span><span class="reg-mod-d">${m.d}</span></span></button>`;
+          }).join("")}
+        </div>`;
+}
+// A parte de Locação para eventos ou de Ranking: o cartão do catálogo, com o
+// valor e a foto (Premium), como a locação.
+function editorDoExtra(f, key) {
+  const g = gradeDoCatalogo(f);
+  const t = CATALOGO_EXTRAS.find(x => x.key === key);
+  if (!t) return "";
+  const chave = "extra:" + t.key;
+  const nome = t.nome.toLowerCase();
+  const colunas = t.cobrancas.map(k => `<div class="cat-valor-col"><span class="cat-col">${(t.colunas && t.colunas[k]) || "Valor"}<small>${(t.rotulos && t.rotulos[k]) || t.unidades[k]}</small></span>${campoDoValor(g, `${chave}:${k}`, nome)}</div>`).join("");
+  return `
+      <div class="cat-tabela" id="cat-tabela-${t.key}">
           <div class="cat-opcao" data-cat-opcao="${chave}">
             <p class="cat-opcao-n">${t.nome}</p>
             <div class="cat-valores">${colunas}</div>
             ${fotoDoCartao(f, g, chave, nome, t.key === "eventos" ? "Foto de um evento" : "Foto do ranking")}
-          </div>`;
-  };
+          </div>
+      </div>
+      <p class="footnote" style="margin-top:8px">Valor em branco: aparece "Sob consulta". Para valores com centavos, use a vírgula. Ex.: 80,50.</p>`;
+}
+function editorDoProjetoSocial(f) {
   return `
-        <p class="field-label">A academia também oferece <span class="reg-opcional">(opcional)</span></p>
-        <div class="reg-mods" role="group" aria-label="A academia também oferece">
-          ${[
-            { key: "eventos", t: "Locação para eventos", d: "Aniversários, empresas e confraternizações" },
-            { key: "ranking", t: "Ranking", d: "Jogos do ranking da academia" },
-            { key: "projeto_social", t: "Projeto social", d: "Aulas gratuitas ou com bolsa" },
-          ].map(m => {
-            const on = marcado(m.key);
-            return `<button type="button" class="reg-mod ${on ? "on" : ""}" data-reg-extra="${m.key}" aria-pressed="${on}"><span class="cat-caixa">${on ? icon('check', 13, '#fff') : ""}</span><span class="reg-mod-txt"><span class="reg-mod-t">${m.t}</span><span class="reg-mod-d">${m.d}</span></span></button>`;
-          }).join("")}
-        </div>
-        ${g.extras.length ? `
-        <div class="cat-tabela" id="cat-tabela-extras">${CATALOGO_EXTRAS.filter(t => g.extras.includes(t.key)).map(cartao).join("")}</div>
-        <p class="footnote" style="margin-top:8px">Valor em branco: aparece "Sob consulta". Para valores com centavos, use a vírgula. Ex.: 80,50.</p>` : ""}
-        ${f.projetoSocialOn ? `
-        <label class="field-label" for="f-projeto-social">Projeto social: como funciona e quem pode participar</label>
+        <label class="field-label" for="f-projeto-social" style="margin-top:0">Como funciona e quem pode participar *</label>
         <textarea class="form-field" id="f-projeto-social" rows="3" maxlength="${PROJETO_SOCIAL_MAX}" style="resize:none;margin-top:0" placeholder="Ex.: aulas gratuitas para crianças de 8 a 14 anos, às terças e quintas.">${esc(f.projetoSocial || "")}</textarea>
         <p class="footnote reg-projeto-conta" id="f-projeto-social-conta" style="text-align:right;margin-top:4px">${String(f.projetoSocial || "").length}/${PROJETO_SOCIAL_MAX}</p>
-        <p class="footnote" style="margin-top:2px">Só como funciona e quem pode participar: sem preço, promoção, plano, matrícula, telefone ou link. Aparece na ficha em todos os planos, com o WhatsApp para perguntar.</p>` : ""}`;
+        <p class="footnote" style="margin-top:2px">Sem preço, promoção, plano, matrícula, telefone ou link.</p>`;
 }
 function editorDaLocacao(f) {
   const g = gradeDoCatalogo(f);
@@ -25989,6 +26043,10 @@ const REG_PASSOS = [
   { id: "modalidades", t: "Modalidades", titulo: "O que a academia oferece?", porque: "Escolha as modalidades. A parte de cada uma aparece em seguida." },
   { id: "precos", t: "Aulas", titulo: "Aulas", porque: "Para quem são, os formatos e, em cada um, a foto e os valores. Cada aula aparece como um cartão na ficha, com o WhatsApp." },
   { id: "locacao", t: "Locação", titulo: "Locação de quadra", porque: "Avulsa ou mensal, com a foto e o valor por hora de cada uma." },
+  // Regra 327: uma parte para cada opção de "A academia também oferece".
+  { id: "eventos", t: "Eventos", titulo: "Locação para eventos", porque: "O valor por evento e a foto. Aparece na ficha em \"Também oferece\", com o WhatsApp." },
+  { id: "ranking", t: "Ranking", titulo: "Ranking", porque: "A inscrição, a mensalidade e a foto. Aparece na ficha em \"Também oferece\", com o WhatsApp." },
+  { id: "projeto", t: "Projeto social", titulo: "Projeto social", porque: "Aparece na ficha em todos os planos, com o WhatsApp para perguntar." },
   { id: "quadras", t: "Quadras", titulo: "Quadras e estrutura", porque: "Piso, cobertura e comodidades viram filtros na busca." },
   { id: "contato", t: "Contato", titulo: "Como os jogadores falam com vocês?", porque: "O botão da ficha abre o WhatsApp da academia com a conversa iniciada." },
   { id: "fotos", t: "Fotos", titulo: "Fotos da academia", porque: "Ficha com foto recebe muito mais contato." },
@@ -26016,6 +26074,9 @@ function passoVisivel(f, id) {
   const mods = (f && f.modalidades) || [];
   if (id === "precos") return mods.includes("aulas_proprias");
   if (id === "locacao") return mods.includes("locacao");
+  // Lê o catálogo sem mexer no formulário (mexer faria o "Sair sem salvar?" perguntar à toa).
+  if (id === "eventos" || id === "ranking") return !!f && Array.isArray(f.catalogo) && f.catalogo.some(i => i && i.tipo === id);
+  if (id === "projeto") return !!(f && f.projetoSocialOn);
   return true;
 }
 function passosVisiveis(f) {
@@ -26070,8 +26131,8 @@ function regFaltas(f, passo) {
   // 29/10/2026, regra 171: "obrigatório selecionar entre aula ou locação,
   // pelo menos um"). O admin segue só com o nome.
   if (passo === "modalidades" && !isAdmin && !(f.modalidades || []).length) falta.push(FALTA_MODALIDADE);
-  if (passo === "modalidades" && f.projetoSocialOn && !tem(f.projetoSocial)) falta.push("como funciona o projeto social");
-  if (passo === "modalidades" && f.projetoSocialOn && problemaNoProjetoSocial(f.projetoSocial)) falta.push("tirar do projeto social " + problemaNoProjetoSocial(f.projetoSocial));
+  if (passo === "projeto" && f.projetoSocialOn && !tem(f.projetoSocial)) falta.push("como funciona o projeto social");
+  if (passo === "projeto" && f.projetoSocialOn && problemaNoProjetoSocial(f.projetoSocial)) falta.push("tirar do projeto social " + problemaNoProjetoSocial(f.projetoSocial));
   if (!regPedeTudo(f)) return falta;
   if (passo === "quadras" && !QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0)) falta.push("quantidade de quadras");
   if (passo === "contato" && !tem(f.phone)) falta.push("WhatsApp");
@@ -26090,6 +26151,8 @@ function regPreenchido(f, passo) {
     case "modalidades": return (f.modalidades || []).length > 0;
     case "precos": return (f.modalidades || []).includes("aulas_proprias") && (Array.isArray(f.catalogo) ? f.catalogo : catalogoAntigo(f)).some(i => i && i.tipo !== "locacao");
     case "locacao": return (f.modalidades || []).includes("locacao") && (Array.isArray(f.catalogo) ? f.catalogo : catalogoAntigo(f)).some(i => i && i.tipo === "locacao");
+    case "eventos": case "ranking": return passoVisivel(f, passo);
+    case "projeto": return !!f.projetoSocialOn && tem(f.projetoSocial);
     case "quadras": return QUADRA_COMBOS.some(q => (f.quadras || {})[q.key] > 0);
     case "contato": return tem(f.phone) || tem(f.instagram) || tem(f.site) || tem(f.reserva);
     case "fotos": return (f.photos || []).length > 0;
@@ -26572,9 +26635,11 @@ function regPassoHtml(id, f, obrigatorio) {
             return `<button type="button" class="reg-mod ${on ? "on" : ""}" data-reg-mod="${m.key}" aria-pressed="${on}"><span class="cat-caixa">${on ? icon('check', 13, '#fff') : ""}</span><span class="reg-mod-txt"><span class="reg-mod-t">${m.t}</span><span class="reg-mod-d">${m.d}</span></span></button>`;
           }).join("")}
         </div>
-        ${editorDoQueMaisOferece(f)}`;
+        ${escolhaDoQueMaisOferece(f)}`;
   if (id === "precos") return editorDasAulas(f);
   if (id === "locacao") return editorDaLocacao(f);
+  if (id === "eventos" || id === "ranking") return editorDoExtra(f, id);
+  if (id === "projeto") return editorDoProjetoSocial(f);
 
   if (id === "quadras") return `
         <p class="field-label" style="margin-top:0">Quantas quadras de cada tipo${obrigatorio}</p>
@@ -27047,7 +27112,9 @@ function fichaDoFormulario(f) {
 function previaDaFicha(f) {
   const c = fichaDoFormulario(f);
   const passo = (id) => REG_PASSOS.findIndex(x => x.id === id);
-  const nomes = { fotos: "Fotos", dados: "Nome e endereço", horario: "Horário", sobre: "Apresentação", precos: "Aulas, locação e preço", quadras: "Estrutura", cancelamento: "Cancelamento e reposição", chegada: "Como chegar", contato: "Contato" };
+  const nomes = { fotos: "Fotos", dados: "Nome e endereço", horario: "Horário", sobre: "Apresentação", precos: "Aulas, locação e preço", eventos: "Locação para eventos", ranking: "Ranking", projeto: "Projeto social", quadras: "Estrutura", cancelamento: "Cancelamento e reposição", chegada: "Como chegar", contato: "Contato" };
+  // Regra 327: "Também oferece" na prévia; o lápis leva à primeira parte dele.
+  const parteDoOferece = ["eventos", "ranking", "projeto"].find(x => passoVisivel(f, x));
   // Links viram texto: na prévia, nada abre o WhatsApp nem conta clique.
   const soParaVer = (html) => html.replace(/<a\b/g, "<span").replace(/<\/a>/g, "</span>").replace(/ (href|target|rel|data-track|data-court|data-lightbox-open)="[^"]*"/g, "");
   const lapis = (id) => `<button type="button" class="reg-previa-lapis" data-reg-passo="${passo(id)}" aria-label="Editar: ${esc(nomes[id])}">${icon('edit', 15, 'currentColor')}</button>`;
@@ -27084,6 +27151,7 @@ function previaDaFicha(f) {
         ${secao("sobre", "Sobre a academia", htSobre(c))}
         ${parte("horario", regPreenchido(f, "horario"), "Horário", htHorario(c), "Adicionar o horário")}
         ${secao("precos", "Opções para jogar", htCaixasDaEscolha(c) + htOpcoes(c))}
+        ${parteDoOferece && htOferece(c) ? secao(parteDoOferece, "", htOferece(c)) : ""}
         ${parte("cancelamento", regPreenchido(f, "cancelamento"), "Cancelamento e reposição", htPolitica(c), "Adicionar a regra de cancelamento")}
         ${contatos
           ? secao("contato", "", `<div class="cta-col" style="margin-top:0">${contatos}</div>`,
@@ -28516,7 +28584,7 @@ const CHAT_DETALHES_PC = [
     r: x => "Em Minha ficha › Editar a ficha, na parte Fotos: envie, troque a ordem e escolha a de capa. "
       + (x.c ? `No ${x.nome}, a ficha mostra até ${x.l.fotos} fotos${x.l.fotos < FOTOS_MAXIMO ? `; no Completo e no Premium, ${FOTOS_MAXIMO}` : ""}.` : `O Básico mostra 3 fotos; o Completo e o Premium, ${FOTOS_MAXIMO}.`) },
   { id: "pc-preco", t: "Preço", p: ["preco", "valor da aula", "valor da hora", "hora aula", "quanto cobro", "sob consulta", "catalogo", "aula infantil", "aula para criancas", "aulas para criancas", "idade", "intervalo", "faixa de preco", "valor mensal", "aula mensal", "locacao mensal"], nao: ["plano", "planos", "premium", "completo", "basico", "mensalidade", "guiatennis"],
-    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Logo abaixo, em \"A academia também oferece\", marque Locação para eventos ou Ranking (com o valor e, no Premium, a foto) e Projeto social (com o texto de como participar): aparecem na ficha, em \"Também oferece\", com o WhatsApp para o jogador perguntar, e nos filtros da busca. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula, e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora e a foto de cada uma. Cada valor pode ser um número, com os centavos depois da vírgula (ex.: 150,50), ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção aparece como um cartão na ficha, com o WhatsApp já sobre ela. Valor em branco: a opção não aparece na ficha. Com 0 (zero), - ou espaço, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
+    r: () => "Em Minha ficha › Editar a ficha, na parte Modalidades, marque Aulas e/ou Locação de quadra: a parte de cada uma aparece em seguida. Logo abaixo, em \"A academia também oferece\", marque Locação para eventos, Ranking ou Projeto social: cada um ganha a sua parte em seguida (eventos e ranking com o valor e, no Premium, a foto; o projeto social com o texto de como participar) e aparece na ficha, em \"Também oferece\", com o WhatsApp para o jogador perguntar, e nos filtros da busca. Na parte Aulas: escolha para quem são (adultos, crianças ou os dois; nas crianças, uma faixa de idade para cada turma, com \"Adicionar faixa de idade\"), os formatos (individual, em dupla, em grupo) e, em cada um, os valores avulso e mensal, os dois por aula, e a foto. Na parte Locação: escolha avulsa e/ou mensal, com o valor por hora e a foto de cada uma. Cada valor pode ser um número, com os centavos depois da vírgula (ex.: 150,50), ou um intervalo (ex.: 150 a 200, que a ficha mostra como \"R$ 150 a 200\"). Cada opção aparece como um cartão na ficha, com o WhatsApp já sobre ela. Valor em branco: a opção não aparece na ficha. Com 0 (zero), - ou espaço, a ficha mostra \"Sob consulta\" e o jogador combina com vocês." },
   { id: "pc-horario", t: "Horário", p: ["horario", "horarios", "funcionamento", "que horas"],
     r: () => "Em Minha ficha › Editar a ficha, na parte Horário: os dias e as horas em que a academia funciona." },
   { id: "pc-quadras", t: "Quadras", p: ["quadra", "quadras", "saibro", "rapida", "coberta", "piso"],
@@ -32829,7 +32897,12 @@ function attachEvents() {
   // do formulário acompanham.
   const gradeDoForm = () => gradeDoCatalogo(window.__form);
   const mudouCatalogo = (redesenhar) => { catalogoDaGrade(window.__form); if (redesenhar) render(); };
-  const focar = (sel) => { const campo = document.querySelector(sel); if (campo) campo.focus({ preventScroll: true }); };
+  const focar = (sel) => {
+    const campo = document.querySelector(sel);
+    if (!campo) return;
+    if (telaDeToque()) campo.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    else campo.focus({ preventScroll: true });
+  };
   document.querySelectorAll("[data-cat-publico]").forEach(el => {
     el.onclick = () => {
       const g = gradeDoForm();
@@ -32858,17 +32931,15 @@ function attachEvents() {
   });
   const campoComoUsar = document.getElementById("f-como-usar");
   if (campoComoUsar) campoComoUsar.oninput = (e) => { window.__form.comoUsar = e.target.value; };
-  // Regra 294: eventos e ranking abrem o cartão; o projeto social, o texto.
+  // Regras 294 e 327: marcar abre a parte de cada um, logo depois das Modalidades.
   document.querySelectorAll("[data-reg-extra]").forEach(el => {
     el.onclick = () => {
       const k = el.dataset.regExtra;
       const f = window.__form;
-      if (k === "projeto_social") { f.projetoSocialOn = !f.projetoSocialOn; render(); if (f.projetoSocialOn) focar("#f-projeto-social"); return; }
+      if (k === "projeto_social") { f.projetoSocialOn = !f.projetoSocialOn; render(); return; }
       const g = gradeDoForm();
-      const entrou = !g.extras.includes(k);
-      g.extras = entrou ? [...g.extras, k] : g.extras.filter(x => x !== k);
+      g.extras = g.extras.includes(k) ? g.extras.filter(x => x !== k) : [...g.extras, k];
       mudouCatalogo(true);
-      if (entrou) focar(`[data-cat-valor="extra:${k}:avulsa"]`);
     };
   });
   const campoProjeto = document.getElementById("f-projeto-social");
@@ -32973,6 +33044,26 @@ function attachEvents() {
   if (abaAtual) abaAtual.parentElement.scrollLeft = Math.max(0, abaAtual.offsetLeft - 22);
   const regSeguirSemValor = document.getElementById("reg-seguir-sem-valor");
   if (regSeguirSemValor) regSeguirSemValor.onclick = () => irParaPasso(Number(state.regSemValor), true, true);
+  // Regra 327 ("se a página estiver toda completa e clicar no enter, passar para
+  // a próxima etapa"): o Enter vai ao próximo campo vazio da parte, como o
+  // "Próximo" do teclado do celular; sem campo vazio depois, segue para a
+  // próxima parte (com o que falta, o aviso com "Corrigir").
+  const telaDoCadastro = document.getElementById("register-overlay");
+  const CAMPOS_DO_ENTER = ".reg-passo input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]):not(.otp-campo)";
+  if (telaDoCadastro && telaDoCadastro.querySelector(".reg-passo")) {
+    telaDoCadastro.querySelectorAll(CAMPOS_DO_ENTER).forEach(el => { if (!el.hasAttribute("enterkeyhint")) el.setAttribute("enterkeyhint", "next"); });
+    telaDoCadastro.onkeydown = (e) => {
+      const el = e.target;
+      if (e.key !== "Enter" || e.isComposing || e.defaultPrevented || !el || !el.matches || !el.matches(CAMPOS_DO_ENTER)) return;
+      e.preventDefault();
+      const campos = [...telaDoCadastro.querySelectorAll(`${CAMPOS_DO_ENTER}, .reg-passo textarea`)].filter(x => x.getClientRects().length && !x.disabled && !x.readOnly);
+      const proximo = campos.slice(campos.indexOf(el) + 1).find(x => !x.value.trim());
+      if (proximo) { proximo.focus(); return; }
+      el.blur();
+      const seguir = document.getElementById("reg-confirmar-revisao") || document.getElementById("reg-continuar");
+      if (seguir) seguir.click();
+    };
+  }
   const regContinuar = document.getElementById("reg-continuar");
   if (regContinuar) {
     regContinuar.onclick = () => irParaPasso(regPassoAtual().i + 1, true);
@@ -33501,6 +33592,16 @@ async function doRegisterSubmit() {
       state.regPasso = 0;
       state.regFaltaVisivel = true;
       render();
+      return;
+    }
+    if (regFaltas(f, "projeto").length) {
+      state.registerError = `Preencha: ${regFaltas(f, "projeto").join(", ")}.`;
+      state.registerStatus = "error";
+      state.regPassoErro = "";
+      state.regPasso = REG_PASSOS.findIndex(x => x.id === "projeto");
+      state.regFaltaVisivel = true;
+      render();
+      mostrarEscolha(`Falta preencher: ${regFaltas(f, "projeto").join(", ")}.`, [{ t: "Corrigir", fn: () => irAoQueFalta(state.registerError) }]);
       return;
     }
     if (regFaltas(f, "modalidades").length) {

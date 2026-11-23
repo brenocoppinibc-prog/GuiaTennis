@@ -1,7 +1,7 @@
 # GuiaTennis — contexto do projeto
 
 Versão enxuta (23/11/2026). Basta ler este arquivo para continuar o
-trabalho. O texto completo até 23/11/2026 (com o detalhe das regras 156 a 326) está em
+trabalho. O texto completo até 23/11/2026 (com o detalhe das regras 156 a 327) está em
 `historico/CONTEXTO-completo-ate-23-11-2026.md`; o anterior (regras 1 a 167, resumos de cada chat,
 todas as seções), em `historico/CONTEXTO-completo-ate-28-10-2026.md`;
 a descrição completa do PR #5 (seções 1 a 73, passos 1 a 99), em
@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 326, troca de chat; contexto enxugado)
+**Atualizado em:** 23/11/2026 (regra 327)
 
 | | |
 |---|---|
@@ -50,6 +50,15 @@ para o histórico).
   bônus em destaque, prova social como "Mais escolhido", risco zero) e o acabamento dos melhores
   sites (Spotify, Apple, Stripe, Booking, Mercado Livre), com texto formal: nada de "vira R$ …",
   "o normal é…" ou "sai por"; usar "Receba…", "Preço regular", "Economize…".
+- **O site sempre leva à tela exata** (pedido fixo de 23/11/2026, regra 327, "muito importante"):
+  todo botão, push, link e e-mail leva à tela **e ao campo** em que a pessoa está mexendo, estava ou
+  vai mexer ("Corrigir" no campo do erro, o lápis na parte certa, voltar para onde estava).
+- **O site sempre facilita e acelera** (pedido fixo de 23/11/2026; não dizer isso no site): completo
+  de opções e direto, no celular e no computador. A cada pedido, procurar onde a pessoa trava
+  (teclado que abre à toa, Enter que não avança, passo a mais) e resolver junto.
+- **Gramática, marketing e design em todo texto novo** (regra 327): também nos slots novos do
+  catálogo, nos pushes, nos erros e nos e-mails; passar no verificador (`testes/gramatica/`) antes do
+  push.
 - Quer **comparação com referências internacionais grandes** (Google,
   Booking, Airbnb, hoteis.com, trivago, Instagram, Nubank, Shopify…) nas
   decisões de site, Instagram e marketing — **na conversa**. No site,
@@ -83,16 +92,18 @@ para o histórico).
 ## 2. Como entregar cada pedido (checklist)
 
 1. Código no `index.html` (e SQL novo em `supabase/migrations/`, seção 5).
-2. Teste: criar ou ajustar `testes/<tema>.js`; rodar os afetados; no fim,
+2. Texto novo (tela, push, erro, slot do catálogo, e-mail): verificador de gramática e as regras de
+   marketing e design; botão ou aviso novo leva à tela e ao campo exatos (seção 1).
+3. Teste: criar ou ajustar `testes/<tema>.js`; rodar os afetados; no fim,
    a bateria completa (`bash testes/rodar-todos.sh`, seção 6). SQL novo:
    seção nova no `testes/banco-emails.py`.
-3. Termos/Privacidade quando o pedido toca no que eles dizem, com a data
+4. Termos/Privacidade quando o pedido toca no que eles dizem, com a data
    de "Última atualização" nos dois (`ficha-basica.js` e
    `regras-de-conteudo.js` conferem a data). Chat de ajuda (`CHAT_TEMAS`,
    `CHAT_DETALHES*`) e "Como funcionam as avaliações" quando for o caso.
-4. **Este arquivo:** trocar o parágrafo da seção 9 (não acumular),
+5. **Este arquivo:** trocar o parágrafo da seção 9 (não acumular),
    acrescentar uma linha na seção 10 e os números de teste.
-5. **Descrição do PR (curta):** desde 02/11, só as regras e os passos
+6. **Descrição do PR (curta):** desde 02/11, só as regras e os passos
    novos (a descrição de 05/11 a 16/11, com as regras 212 a 289 e os passos 42 a
    109, está em `historico/PR5-descricao-05-11-a-16-11-2026.md`; o detalhe de 168 a 195 e os passos 1 a 29 estão em
    `historico/PR5-descricao-28-10-a-02-11-2026.md`; o de 193 a 211 e os passos
@@ -100,10 +111,10 @@ para o histórico).
    nova, o SQL novo e um passo em "Para testar". Salvar com
    `update_pull_request` e conferir (ler o PR e comparar o `body` com o
    arquivo local com `jq -r .body` + `diff`).
-6. Commit em português, com as linhas finais de autoria pedidas pela
+7. Commit em português, com as linhas finais de autoria pedidas pela
    sessão; push; conferir o "Banco de dados" (Actions) e a prévia do
    Netlify. Sem identificador de modelo em commit, PR ou código.
-7. Resposta curta ao Breno: o que mudou e o link da prévia.
+8. Resposta curta ao Breno: o que mudou e o link da prévia.
 
 ## 3. O que é e regras que valem sempre
 
@@ -455,14 +466,13 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026, troca de chat)
 
-**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 326**: verde, sem conflito, prévia
-no ar e descrição em dia (passos 135 a 156; o detalhe dos passos 1 a 109 está no histórico). Este chat
-deixou de acompanhar o PR: **o chat novo se inscreve com `subscribe_pr_activity`**. O "Banco de dados"
-desta branch é disparado à mão (`banco.yml`, `destino: teste`, `actions_run_trigger`); o SQL mais
-novo, `20261123150000_fundadoras_confirmadas_e_periodo`, já rodou no banco de teste (23/11). As
-regras 323, 324 e 326 corrigiram **textos de e-mail no próprio arquivo** de SQL antigo
-(`20261013140000`, `20261121130000`, `20261123120000`): valem no banco de verdade com o merge; no de
-teste, fica o texto antigo.
+**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 327**; este chat acompanha o PR
+(`subscribe_pr_activity`). O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino:
+teste`, `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:**
+o assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTennis"; se chegar
+escrito "{{ .Token }}", voltar o assunto para "Seu código do GuiaTennis" no `banco.yml`. As regras 323,
+324 e 326 corrigiram textos de e-mail no próprio arquivo de SQL antigo (`20261013140000`,
+`20261121130000`, `20261123120000`): valem no banco de verdade com o merge.
 
 **Testes:** bateria completa de 23/11 (até a 322): **2.784 verificações, nenhuma falha**; depois, só
 os afetados (323 a 326), sem falha; `banco-emails.py`: **1.087**, sem falha. Gramática: verificador
@@ -548,6 +558,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 324 (23/11) — os nomes da situação do pagamento.
 - 325 (23/11) — Pagamentos sem lista gigante.
 - 326 (23/11) — as regras nas mudanças 324 e 325.
+- 327 (23/11) — "Também oferece" em partes próprias, sem teclado à toa, Enter avança, "Corrigir" no campo exato, o código confirma sozinho e vai no assunto do e-mail; a regra da tela exata.
 
 ## 11. WhatsApp e mensagem para as academias
 

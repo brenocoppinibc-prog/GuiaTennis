@@ -2942,6 +2942,27 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   "Confira a autorização no aplicativo do banco" (sem repetir "Pix Automático"); corrigido no próprio
   `20261121130000`. Testes: `funcoes-da-equipe`, `plano-e-creditos`, `reembolso`, `dados-para-nota`
   e `banco-emails.py` (1.087), sem falha.
+- **327 (23/11) — "Também oferece" em partes próprias e a tela exata** ("academia também oferece com
+  essas opções devem aparecer outras páginas igual as aulas e locações"; "é chato o teclado abrir a
+  todo momento que seleciona a categoria"; "se a página estiver toda completa e clicar no enter,
+  passar para a próxima etapa"; "ao clicar no botão corrigir não direciona exatamente para corrigir";
+  "crie uma regra do site sempre direcionar para a exata tela que o cliente está mexendo ou estava ou
+  vai"). Cadastro: nas Modalidades fica só a escolha de "A academia também oferece"
+  (`escolhaDoQueMaisOferece`); Locação para eventos, Ranking e Projeto social viram partes próprias
+  (`REG_PASSOS` `eventos`, `ranking`, `projeto`, depois da Locação; `passoVisivel` lê o catálogo sem
+  mexer no formulário; `editorDoExtra`, `editorDoProjetoSocial`); a revisão mostra "Também oferece"
+  com o lápis na parte dele. Marcar uma opção não põe o cursor em nenhum campo no celular
+  (`telaDeToque`, o `focar` só rola). Enter: vai ao próximo campo vazio da parte (`enterkeyhint="next"`)
+  e, sem campo vazio depois, segue para a próxima parte, como o Typeform e o cadastro do Airbnb.
+  "Corrigir" vai ao campo exato de cada item (`CAMPOS_DO_QUE_FALTA`, `campoDoQueFalta`); o erro de um
+  campo no push ganha "Corrigir" (o campo logo antes do erro). Código: completo (digitado, colado ou
+  sugerido pelo teclado), confirma sozinho, como o WhatsApp e o Google (fora dos testes automáticos,
+  `navigator.webdriver`). E-mail do código: o código no assunto ("123456 é o seu código do GuiaTennis",
+  `banco.yml`), como Google, Instagram e Nubank, para aparecer na notificação e o celular oferecer
+  copiar ou preencher; o código se seleciona inteiro num toque (`user-select: all`); botão "Copiar" de
+  verdade não existe em e-mail (e-mail não roda programa). Gramática: "Para enviar o pedido, marque a
+  declaração." e "Para continuar, marque a declaração."; textos novos no LanguageTool, sem erro.
+  Testes: `oferece.js` (+12).
 
 ## 11. WhatsApp e mensagem para as academias
 

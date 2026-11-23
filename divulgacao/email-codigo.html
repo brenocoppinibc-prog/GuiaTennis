@@ -3,8 +3,12 @@
      08/10/2026: banco.yml, segredo SUPABASE_ACCESS_TOKEN; a prévia na
      abertura do PR e o de verdade no merge). À mão, seria colar em
      Authentication → Emails → Templates → "Magic Link".
-     Assunto: {{ .Token }} é o seu código do GuiaTennis
-     (se chegar escrito "{{ .Token }}", usar: Seu código do GuiaTennis)
+     Assunto: {{ .Token }} é o seu código do GuiaTennis (regra 327, no banco.yml):
+     o código aparece na notificação e o celular oferece copiar ou preencher
+     sozinho, como Google, Instagram e Nubank. Se chegar escrito "{{ .Token }}",
+     voltar para: Seu código do GuiaTennis.
+     O código numa linha só, que se seleciona inteiro num toque (user-select:
+     all): e-mail não roda programa, então um botão "Copiar" não funcionaria.
      Com a logo no alto (07/10/2026), como os avisos do banco: desde 16/11/2026
      (regra 286), a faixa verde com a raquete e o nome em Poppins (email-nome.png).
      Como Google, Booking e Instagram: o código grande, quanto tempo vale,
@@ -18,8 +22,8 @@
       </tr></table>
     </td></tr></table>
     <p style="margin:0 0 8px;font-size:16px;line-height:1.5">Olá! Este é o seu código do GuiaTennis:</p>
-    <p style="margin:18px 0;padding:16px 0;text-align:center;font-size:34px;font-weight:bold;letter-spacing:8px;color:#1F4D3A;background:#EEF4F0;border-radius:12px">{{ .Token }}</p>
-    <p style="margin:0 0 8px;font-size:15px;line-height:1.5">Digite o código na tela do GuiaTennis. Ele vale por 1 hora.</p>
+    <p style="margin:18px 0;padding:16px 0;text-align:center;font-size:34px;font-weight:bold;letter-spacing:8px;color:#1F4D3A;background:#EEF4F0;border-radius:12px"><span style="-webkit-user-select:all;user-select:all">{{ .Token }}</span></p>
+    <p style="margin:0 0 8px;font-size:15px;line-height:1.5">Digite ou cole o código na tela do GuiaTennis. Ele vale por 1 hora.</p>
     <p style="margin:0 0 8px;font-size:14px;line-height:1.5;color:#1F2A24"><strong>Não passe este código para ninguém.</strong> O GuiaTennis nunca pede o código por WhatsApp, telefone ou e-mail.</p>
     <p style="margin:0 0 20px;font-size:14px;line-height:1.5;color:#6B6458">Não foi você que pediu? É só ignorar este e-mail: ninguém entra na sua conta sem o código.</p>
     <p style="margin:0;font-size:13px;color:#6B6458">GuiaTennis · guiatennis.com.br</p>

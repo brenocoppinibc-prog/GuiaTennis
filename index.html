@@ -368,6 +368,7 @@
   .pc-mes-gratis ul { list-style: none; padding: 0; margin: 10px 0 14px; display: grid; gap: 6px; font-size: 14px; }
   .pc-mes-gratis li { display: flex; gap: 8px; align-items: flex-start; }
   .pc-mes-gratis .cta-btn { background: #fff; color: var(--green); border-color: #fff; width: 100%; }
+  .pc-compras-mais { margin-top: 10px; }
   .pc-mes-gratis-preco { margin: 4px 0 12px; font-size: 15px; color: #fff; }
   .pc-mes-gratis-preco s { opacity: .7; }
   .pc-mes-gratis-preco strong { font-size: 18px; color: var(--gold-light); }
@@ -14462,7 +14463,8 @@ function pcPagamentos() {
         <p class="pc-card-t">Compras</p>
         ${compras === undefined || compras === "carregando" ? `<p class="pc-vazio">${bolaGirando(16)} Carregando…</p>`
           : compras === null ? `<p class="pc-card-s">Não foi possível carregar as compras agora. <button type="button" class="inline-link" id="pc-pag-tentar">Tentar de novo</button></p>`
-          : compras.length ? `<ul class="pc-pessoas pc-compras">${compras.map(linha).join("")}</ul>`
+          : comprasParaMostrar(compras).length ? `<ul class="pc-pessoas pc-compras">${comprasParaMostrar(compras).slice(0, state.pcComprasVer || 5).map(linha).join("")}</ul>
+             ${comprasParaMostrar(compras).length > (state.pcComprasVer || 5) ? `<button type="button" class="pc-link-btn pc-compras-mais" id="pc-compras-mais">Ver mais compras (${comprasParaMostrar(compras).length - (state.pcComprasVer || 5)})</button>` : ""}`
           : `<p class="pc-card-s">Nenhuma compra ainda.</p>`}
       </div>
     </section>`;
@@ -14483,6 +14485,13 @@ function linhaDoReembolso(x) {
   return x.situacao === "paga" && posso("pagamentos")
     ? `${recusado}<span class="pc-compra-reembolso"><button type="button" class="inline-link" data-pedir-reembolso="${esc(x.id)}">Pedir reembolso</button></span>`
     : recusado;
+}
+// Regra 325 ("ficar acumulado um monte de pagamento… simplificar isso para
+// não ficar uma lista gigante"): como o histórico de compras da Apple e do
+// Spotify, sem as compras não finalizadas (nunca foram pagas) e com as 5 mais
+// recentes primeiro; "Ver mais compras" mostra mais 10 de cada vez.
+function comprasParaMostrar(compras) {
+  return (Array.isArray(compras) ? compras : []).filter(x => situacaoDaCompra(x) !== "Não finalizado");
 }
 // Regra 324 ("não existe pagamento que não passou, existe aprovado, recusado,
 // processando, não finalizado"): os nomes do Mercado Pago, do Stripe e das
@@ -18156,6 +18165,8 @@ function ligarEventosParceiros() {
   document.querySelectorAll("[data-pc-principal]").forEach(el => { el.onclick = () => tornarPrincipal(el.dataset.pcPrincipal, el.dataset.nome); });
   const pcDeixar = document.getElementById("pc-deixar-principal");
   if (pcDeixar) pcDeixar.onclick = deixarDeSerPrincipal;
+  const pcComprasMais = document.getElementById("pc-compras-mais");
+  if (pcComprasMais) pcComprasMais.onclick = () => { state.pcComprasVer = (state.pcComprasVer || 5) + 10; render(); };
   document.querySelectorAll("[data-pedir-reembolso]").forEach(el => { el.onclick = () => abrirPedidoDeReembolso(el.dataset.pedirReembolso); });
   const pcPagTentar = document.getElementById("pc-pag-tentar");
   if (pcPagTentar) pcPagTentar.onclick = carregarComprasDaAcademia;

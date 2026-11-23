@@ -108,8 +108,20 @@ const menu = (page) => page.evaluate(() => [...document.querySelectorAll('.pc-me
   const pag = await texto(page, '#parceiros .pc-main');
   ok(pag.startsWith('Pagamentos Créditos de promoções R$ 50') && await page.$('.pc-pag-comprar[data-comprar-creditos]'), 'Pagamentos mostra o saldo de créditos e "Comprar créditos" — ' + pag.slice(0, 90));
   const compras = await page.evaluate(() => [...document.querySelectorAll('.pc-compras li')].map(l => l.innerText.replace(/\s+/g, ' ').trim()));
-  ok(/^Plano Premium anual · R\$ 990 (Em processamento|Não finalizado) · por Maria Teste · cartão \| Créditos de promoções · R\$ 100 Aprovado em 29 de outubro · por Dono da Quadra · Pix Pedir reembolso$/.test(compras.join(' | ')),
-    'cada compra com o que foi, o valor, a situação e quem comprou — ' + compras.join(' | '));
+  ok(compras.join(' | ') === 'Créditos de promoções · R$ 100 Aprovado em 29 de outubro · por Dono da Quadra · Pix Pedir reembolso',
+    'cada compra com o que foi, o valor, a situação e quem comprou; a compra não finalizada não aparece (regra 325) — ' + compras.join(' | '));
+  // Regra 325: as 5 mais recentes e "Ver mais compras".
+  await page.evaluate(() => {
+    state.pcCompras = Array.from({ length: 8 }, (_, i) => ({ id: 'k' + i, tipo: 'creditos', valor: 50, forma: 'pix', situacao: 'paga', paga_em: '2026-11-0' + (i + 1) + 'T12:00:00Z', created_at: '2026-11-0' + (i + 1) + 'T12:00:00Z' }))
+      .concat([{ id: 'kx', tipo: 'creditos', valor: 20, forma: 'pix', situacao: 'aberta', created_at: '2026-11-01T12:00:00Z' }]);
+    state.pcComprasVer = 0; render();
+  });
+  let n = await page.$$eval('.pc-compras li', l => l.length);
+  const mais = await texto(page, '#pc-compras-mais');
+  ok(n === 5 && mais === 'Ver mais compras (3)', 'com muitas compras, só as 5 mais recentes e "Ver mais compras (3)" — ' + n + ' · ' + mais);
+  await page.click('#pc-compras-mais');
+  n = await page.$$eval('.pc-compras li', l => l.length);
+  ok(n === 8 && !(await page.$('#pc-compras-mais')), '"Ver mais compras" mostra o resto (sem a não finalizada)');
   await page.click('.pc-pag-comprar');
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => state.parceirosAba) === 'creditos' && (await texto(page, '#pc-creditos-voltar')) === 'Voltar aos pagamentos', '"Comprar créditos" abre a compra, com a volta para Pagamentos');

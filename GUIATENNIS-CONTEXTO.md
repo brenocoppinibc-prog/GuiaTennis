@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 324)
+**Atualizado em:** 23/11/2026 (regra 325)
 
 | | |
 |---|---|
@@ -2926,6 +2926,12 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   no banco de verdade). A tela de espera do Pix continua "Esperando o pagamento". Testes:
   `funcoes-da-equipe`, `plano-e-creditos`, `reembolso`, `dados-para-nota` e `banco-emails.py`
   (1.087), sem falha.
+
+- **325 (23/11) — Pagamentos sem lista gigante** ("ficar acumulado um monte de pagamento na aba
+  pagamentos tbm é um pouco ruim, tenta simplificar"). Como o histórico de compras da Apple e do
+  Spotify: a compra "Não finalizado" (aberta há mais de 30 minutos, nunca paga) não aparece
+  (`comprasParaMostrar`); aparecem as 5 mais recentes e "Ver mais compras (N)" mostra mais 10 de cada
+  vez (`state.pcComprasVer`). Testes: `funcoes-da-equipe` (29), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

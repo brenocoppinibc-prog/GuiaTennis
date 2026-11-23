@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 317)
+**Atualizado em:** 23/11/2026 (regra 317, troca de chat)
 
 | | |
 |---|---|
@@ -453,46 +453,43 @@ sozinho vira "-", "Sob consulta"), numa linha
   SQL novo (05/11: o da regra 209 não rodou). Conferir em Actions e, se faltar,
   rodar à mão no banco de teste (`banco.yml`, `destino: teste`, na branch do PR).
 
-## 9. Estado atual e pendências (10/11/2026)
+## 9. Estado atual e pendências (23/11/2026)
 
-**23/11/2026 (regra 317: Promover, as semanas e o alcance num pagamento só, a faixa patrocinada e o e-mail do Premium pelo alcance; regra 316: estornos e pedidos de reembolso; regra 315: bônus do Pix e período em destaque, voltar do QR, contatos do Parceiros pelo WhatsApp, revisão do português; regra 314: a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Webhooks salvos pelo Breno em 22/11 (Modo de produção, `pagamento?mp=1`, Pagamentos e Planos e assinaturas). Falta o Breno: (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
-deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `34f039e`
-(regra 313). O PR está verde, a prévia no ar com tudo até a 313 e a descrição em dia (passos 125 a
-134). O SQL mais novo, `20261121120000_assinatura_do_premium`, já rodou no banco de teste (21/11,
-"Banco de dados" à mão, `destino: teste`). **Deste chat (20 e 21/11):** 307, o site mais rápido (as
-consultas ao banco juntas) e todo erro no push vermelho do alto; 308, a revisão de design (as 6
-propostas aprovadas); 309, o QR do Pix no meio; 310, **a assinatura do Premium** (Completo ~~R$ 49~~
-grátis por tempo limitado, Premium ~~R$ 89~~ R$ 49 no lançamento, 1º mês grátis sem cartão,
-cancelar com Completo ou Básico, vistas do mês no Básico, selo Fundadora); 311, a mesma parte com
-design e marketing (oferta do mês grátis no alto de Plano, Premium recomendado); 312, opinião no
-chat de ajuda é sugestão ("o site poderia ter mais quadras na minha região"); 313, menos informação
-na compra (sem resumo nos dados do comprador) e nos cartões dos planos. **Na conversa:** o estudo
-de preços (Doctoralia, Playtomic, Wellhub; aula em SP ~R$ 145; um aluno paga o plano) e os gatilhos
-de venda; o PDF do cartão CNPJ (Receita, ⋮ › Imprimir/PDF); a verificação da Meta com o cartão CNPJ
-(nome e endereço iguais; o telefone pode ser o do WhatsApp Business; confirmar pelo e-mail do
-domínio ou pela meta tag, que o Breno manda e o Claude coloca no site); os gastos do site no CNPJ
-(Pix/boleto na Meta, no Google Ads e no registro.br; conta PJ digital com cartão de débito para o
-que é em dólar; perguntar à Contabilizei sobre serviço do exterior); o capital social de R$ 1.000
-(transferir por Pix para a conta do CNPJ como "Integralização de capital social", conferindo o
-prazo no contrato social).
+**Chat trocado em 23/11/2026 (regras 314 a 317):** o chat novo volta a acompanhar o PR #5 (este
+deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `0fc9e41`
+(regra 317). O PR está verde, a prévia no ar com tudo até a 317 e a descrição em dia (passos 135 a
+147). O SQL mais novo, `20261123130000_promover`, já rodou no banco de teste (23/11, "Banco de
+dados" à mão, `destino: teste`, sucesso). **Deste chat (21 a 23/11):** 314, a renovação automática
+no cartão e no Pix Automático (Assinaturas do Mercado Pago); 315, o melhor marketing e design na
+compra (bônus do Pix, período em dois cartões, voltar do QR), os contatos do Parceiros pelo WhatsApp
+e a revisão do português (com a **regra fixa nova na seção 1**); 316, estornos e pedidos de
+reembolso; 317, **Promover**: as semanas e o alcance num pagamento só, a faixa patrocinada no início
+e na busca, o preço do dia do bairro, o e-mail do Premium pelo alcance (sem lance) e as "Promoções
+no ar" do admin com a legenda e a imagem para o Instagram. **Na conversa:** como o trivago, o
+Instagram e o Google cobram (leilão com orçamento e qualidade; a multa de A$ 44,7 milhões do trivago
+na Austrália, em 2022, por ordem influenciada pelo lance); a regra de reembolso em texto corrido (no
+Termos, item dos créditos); os Webhooks do Mercado Pago salvos pelo Breno em 22/11 (Modo de
+produção, Pagamentos e Planos e assinaturas); o Pix Automático abriu o app do Mercado Pago no
+celular. **LanguageTool local:** `org.languagetool:language-pt:6.4` pelo Maven, com um `Checa.java`
+(o `languagetool-commandline` não está no Maven Central); o Postgres local é montado como diz
+`testes/banco-local-base.sql` (se a porta 5433 cair, `pg_ctl … start` de novo).
 **Mercado Pago:** conta do CNPJ com chave Pix; aplicação "Checkout Pro", API de Preferences
 (trocar para a "API de Orders" quando o Mercado Pago marcar a data). Na Netlify,
 `MERCADOPAGO_ACCESS_TOKEN`, `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` por contexto.
 **Atenção: a prévia usa as credenciais de PRODUÇÃO** (token de produção em Deploy Previews e
-`MP_CHAVE_PUBLICA.teste` = a chave pública de produção), porque o ambiente de teste do Mercado
-Pago recusava o cartão de teste ("Não foi possível obter a informação de pagamento") e o token de
-produção com dados de teste dá "401 Unauthorized use of live credentials". Compra na prévia é
-dinheiro de verdade (o teste de R$ 20 passou em 20/11 e foi devolvido). Depois do merge, tudo
-igual em produção.
-**Testes:** bateria completa de 21/11 (até a 311): **2.738, nenhuma falha**; 312 e 313, os testes
-afetados (seção 10), sem falha; `banco-emails.py` num Postgres local: 1.010, nenhuma falha (o banco
-local não fica no contêiner: montar como diz `testes/banco-local-base.sql`). **Rodar a bateria
-completa no começo do próximo chat** (`bash testes/rodar-todos.sh`, em segundo plano).
+`MP_CHAVE_PUBLICA.teste` = a chave pública de produção): compra na prévia é dinheiro de verdade
+(devolver pelo "Estornar" do admin). O R$ 20 de 20/11 (devolvido) ainda conta como pago no banco de
+teste: "Conferir com o Mercado Pago" no admin da prévia acerta.
+**Testes:** bateria completa de 23/11 (até a 317): **2.741 verificações, nenhuma falha** (menos que
+as 2.808 da 316 porque os testes do leilão com lance saíram); `banco-emails.py` num Postgres local:
+1.067, nenhuma falha. **Rodar a bateria completa no começo do próximo chat** (`bash
+testes/rodar-todos.sh`, em segundo plano).
+
 **Pendências e ofertas sem resposta:** (1) **o "pode subir" do PR #5** (o Breno confere os
-passos 125 a 134); (2) **cobrança automática igual ao Spotify** (pergunta de 21/11, esperando a
-resposta e se vai num PR novo ou no #5): cartão com cobrança automática pelas Assinaturas do Mercado
-Pago (preapproval) e o Pix Automático (conferir se a conta do Mercado Pago tem); hoje a assinatura é
-paga mês a mês, com o e-mail 5 dias antes e a volta sozinha para o Completo — **feito na regra 314** (Webhooks salvos em 22/11; falta conferir o Pix Automático); (3) **WhatsApp
+passos 135 a 147); (2) **Pix Automático**: o Breno vai abrir na prévia em outro celular (no dele,
+abriu o app do Mercado Pago) e mandar o print da página da assinatura; se ela oferecer o Pix
+Automático, ligar no site de verdade (`PIX_AUTOMATICO.real = true`); se não, pedir ao suporte do
+Mercado Pago ou avaliar o Asaas (Pix Automático por API e nota fiscal automática); (3) **WhatsApp
 automático do código** (seção 9 do contexto antigo, item 5; o `enviar_whatsapps()` já existe no
 banco): o Breno criou o modelo de **Autenticação** no Gerenciador do WhatsApp (copiar código, aviso
 de segurança, expira em 10 min, validade da mensagem 10 min); falta a aprovação, a forma de
@@ -504,10 +501,13 @@ R$ 49 no lançamento, créditos R$ 50/100/200), itens com link para o Parceiros;
 logo oferecidas; conferir a Política de Comércio do WhatsApp; (5) carrosséis do Instagram ("Quanto
 custa jogar tênis em <bairro>", "As 5 mais bem avaliadas de <bairro>") e a plaquinha "Avalie no
 GuiaTennis" com QR (oferecidos); (6) **nota fiscal automática** no Emissor Nacional, num PR novo
-depois do #5 (regra 306); (7) "Baixar planilha do mês" em Admin › Compras e notas (oferecido);
-(8) da empresa, com o Breno: domínio no CNPJ (registro.br), Meta e Google Ads cobrando no CNPJ,
-marca no INPI, CCM e nota na Contabilizei; (9) das quadras públicas, a pergunta no chat de ajuda e a
-página de região "Quadras públicas de tênis em <bairro>".
+depois do #5 (regra 306); (7) "Baixar planilha do mês" em Admin › Compras e notas, com o número da
+operação do Mercado Pago para conferir com o extrato (oferecido na regra 316); (8) da empresa, com o
+Breno: domínio no CNPJ (registro.br), Meta e Google Ads cobrando no CNPJ, marca no INPI, CCM e nota
+na Contabilizei; (9) das quadras públicas, a pergunta no chat de ajuda e a página de região
+"Quadras públicas de tênis em <bairro>"; (10) do Promover, ajustar com os números reais: o mínimo
+de R$ 30 por mil (`leilao_config.preco_mil_faixa`), o limite de 3 vezes por dia e a nota de
+qualidade 0,80 da faixa.
 
 O PR #5 está **verde e sem conflito**, com tudo até a **regra 202** (os
 avisos por e-mail do Parceiros um por um, SQL

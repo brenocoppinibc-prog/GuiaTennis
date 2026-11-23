@@ -224,5 +224,45 @@ d = await r.json();
 ok(d.situacao === "trocado" && pedidos.some(p => p.url === "https://api.mercadopago.com/preapproval/pre-1" && p.metodo === "PUT" && p.corpo.card_token_id === "tok-novo") && registros.at(-1).p_final === "1111",
   "trocar o cartão: o token novo na assinatura do Mercado Pago");
 
+// ---- Estornos (regra 316) ----
+const { devolvidoNoPagamento } = await import("../netlify/functions/pagamento.mjs");
+ok(devolvidoNoPagamento({ status: "approved", transaction_amount: 100 }) === null
+  && JSON.stringify(devolvidoNoPagamento({ status: "refunded", transaction_amount: 100, transaction_amount_refunded: 100 })) === JSON.stringify({ valor: 100, origem: "mercadopago" })
+  && JSON.stringify(devolvidoNoPagamento({ status: "approved", transaction_amount: 100, transaction_amount_refunded: 40 })) === JSON.stringify({ valor: 40, origem: "mercadopago" })
+  && devolvidoNoPagamento({ status: "charged_back", transaction_amount: 100 }).origem === "contestacao",
+  "lê o estorno total, o parcial e a contestação no cartão");
+const EST = "eeeeeeee-2222-4333-8444-555555555555";
+let estorno = { id: EST, gateway_id: "555", pedido: 57.14, estornado: 0, situacao: "paga" }, registrados = [], devolucoes = [], conferir = [{ id: EST, gateway_id: "555" }, { id: "x", gateway_id: "556" }];
+const fetchAntes2 = globalThis.fetch;
+globalThis.fetch = async (url, op = {}) => {
+  url = String(url);
+  const corpo = op.body ? JSON.parse(op.body) : null;
+  const resp = (status, obj) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });
+  if (url.endsWith("/rpc/estorno_para_fazer")) return resp(200, corpo.p_compra === EST ? estorno : null);
+  if (url.endsWith("/rpc/registrar_estorno")) { registrados.push(corpo); return resp(200, "parcial"); }
+  if (url.endsWith("/rpc/compras_para_conferir")) return resp(200, conferir);
+  if (url.endsWith("/rpc/confirmar_compra")) return resp(200, "paga");
+  let m = url.match(/^https:\/\/api\.mercadopago\.com\/v1\/payments\/(\d+)\/refunds$/);
+  if (m) { devolucoes.push({ id: m[1], corpo, chave: (op.headers || {})["X-Idempotency-Key"] }); return resp(201, { id: 1 }); }
+  m = url.match(/^https:\/\/api\.mercadopago\.com\/v1\/payments\/(\d+)$/);
+  if (m) return m[1] === "555" ? resp(200, { id: 555, status: "approved", transaction_amount: 100, transaction_amount_refunded: 20, external_reference: EST }) : resp(200, { id: 556, status: "approved", transaction_amount: 49 });
+  return fetchAntes2(url, op);
+};
+r = await pedir({ acao: "estornar", compra: EST });
+d = await r.json();
+ok(r.status === 200 && devolucoes[0].id === "555" && devolucoes[0].corpo.amount === 57.14 && devolucoes[0].chave.startsWith("estorno-") && registrados[0].p_total === 57.14 && registrados[0].p_origem === "admin",
+  "estornar: devolve no Mercado Pago só o valor que o admin pediu e avisa o banco");
+estorno = { ...estorno, estornado: 57.14 };
+r = await pedir({ acao: "estornar", compra: EST });
+ok(r.status === 409 && devolucoes.length === 1, "estornar de novo sem pedido novo: 409, sem devolver duas vezes");
+registrados = [];
+r = await pedir({ acao: "conferir" });
+d = await r.json();
+ok(r.status === 200 && d.conferidas === 2 && d.estornos === 1 && registrados.length === 1 && registrados[0].p_gateway_id === "555" && registrados[0].p_total === 20,
+  "conferir: aplica o estorno feito no Mercado Pago (R$ 20 de 100) e ignora o que não mudou");
+registrados = [];
+r = await pedir({ type: "payment", data: { id: "555" } }, "?mp=1");
+ok(r.status === 200 && registrados.length === 1 && registrados[0].p_origem === "mercadopago", "o aviso de pagamento estornado também aplica o estorno");
+
 console.log(`\n${falhas ? falhas + " falha(s)" : "Tudo certo"}`);
 process.exit(falhas ? 1 : 0);

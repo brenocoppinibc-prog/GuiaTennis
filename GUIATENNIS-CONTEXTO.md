@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 22/11/2026 (regra 315)
+**Atualizado em:** 23/11/2026 (regra 316)
 
 | | |
 |---|---|
@@ -455,7 +455,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (10/11/2026)
 
-**22/11/2026 (regra 315: bônus do Pix e período em destaque, voltar do QR, contatos do Parceiros pelo WhatsApp, revisão do português; regra 314: a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Webhooks salvos pelo Breno em 22/11 (Modo de produção, `pagamento?mp=1`, Pagamentos e Planos e assinaturas). Falta o Breno: (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
+**23/11/2026 (regra 316: estornos e pedidos de reembolso; regra 315: bônus do Pix e período em destaque, voltar do QR, contatos do Parceiros pelo WhatsApp, revisão do português; regra 314: a renovação automática no cartão e no Pix Automático):** pronta no PR #5; o SQL `20261121130000_cobranca_automatica` entra pelo "Banco de dados" no push. Webhooks salvos pelo Breno em 22/11 (Modo de produção, `pagamento?mp=1`, Pagamentos e Planos e assinaturas). Falta o Breno: (b) abrir na prévia o Pix Automático e ver se a página do Mercado Pago o oferece (se sim, `PIX_AUTOMATICO.real = true`); (c) testar o cartão na prévia (dinheiro de verdade, devolver depois). **Chat trocado em 21/11/2026 (regras 307 a 313):** o chat novo volta a acompanhar o PR #5 (este
 deixou de acompanhar; inscrever com `subscribe_pr_activity`). Último commit de código: `34f039e`
 (regra 313). O PR está verde, a prévia no ar com tudo até a 313 e a descrição em dia (passos 125 a
 134). O SQL mais novo, `20261121120000_assinatura_do_premium`, já rodou no banco de teste (21/11,
@@ -2695,6 +2695,37 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   `promocoes`, `contatos-e-cadastro`, `assinatura`, `chat-de-ajuda`, `dados-para-nota`,
   `ficha-basica` e `parceiros` (os contatos na ordem nova), sem falha. **Bateria completa de 22/11
   (até a 315): 2.793 verificações, nenhuma falha.**
+- **316 (23/11) — estornos e pedidos de reembolso** ("existe algo para eu conseguir conectar o
+  extrato da conta com os créditos ou pagamento? … estornar um dinheiro e esse crédito ainda
+  continuar?"; "sim, opção a e em pagamentos faça uma solicitação para pedirem reembolso").
+  Antes, o estorno no Mercado Pago não mudava nada no site (`confirmar_compra` ignorava a compra já
+  paga). Agora, como a Shopify e a Stripe: **Admin › Compras e notas** tem "Pedidos de reembolso"
+  no alto (motivo, quem pediu, **Estornar** e **Recusar** com a resposta por e-mail), **"Estornar"**
+  em cada compra paga (caixa com o valor sugerido e editável: **opção a, só os créditos ainda não
+  usados**, na proporção do valor pago, `estorno_sugerido`; no plano, integral até 7 dias e, no
+  anual, os meses que faltam pelo preço do mensal) e **"Conferir com o Mercado Pago"** (`acao:
+  "conferir"`: as compras pagas de até 180 dias com o pagamento no Mercado Pago, aplicando os
+  estornos e as contestações feitos por lá). O estorno: `pedir_estorno` (admin) → `pagamento.mjs`
+  `acao: "estornar"` (POST `/v1/payments/{id}/refunds` com o valor) → `registrar_estorno` →
+  `aplicar_estorno`: tira os créditos na proporção (`creditos_tirados`; o saldo não fica negativo,
+  `mexer_creditos` para em zero), encurta o plano na proporção (integral: encerra o plano e a
+  renovação automática), marca `estornada` (integral) ou guarda `valor_estornado` (parcial), fecha o
+  pedido como reembolsado e manda o e-mail "Reembolso feito" à academia; estorno pelo Mercado Pago
+  ou contestação, ou nota já emitida, avisa o admin ("cancele ou ajuste a nota no Emissor
+  Nacional"). Os avisos `payment` do Mercado Pago com `refunded`, `charged_back` ou
+  `transaction_amount_refunded` aplicam o estorno sozinhos (`devolvidoNoPagamento`). Compra de
+  teste (sem Mercado Pago) é estornada direto no banco. **Pagamentos (academia):** "Pedir
+  reembolso" em cada compra paga (caixa com o reembolso estimado, a regra e o motivo;
+  `pedir_reembolso`, um pedido em análise por compra, aviso ao admin); a compra mostra "Reembolso
+  pedido em … · em análise", "Reembolso de R$ … em …, no mesmo meio de pagamento" ou "Reembolso
+  não aprovado: <resposta>". Termos (como pedir, o que volta, o estorno tira créditos e encurta o
+  plano) e Privacidade (o motivo, quem pediu, a data e a resposta) em 23/11/2026; FAQ "Como peço
+  reembolso?" e o chat de ajuda (reembolso, estorno, devolução). SQL
+  `20261123120000_estornos_e_reembolsos`. Testes: `reembolso.js` (novo, 10), `pagamento.mjs` (42),
+  `parceiros` (FAQ com 30), `funcoes-da-equipe` e as datas dos textos legais; `banco-emails.py`
+  (seção "Estornos e reembolsos"; 1.052 no banco local). **Bateria completa de 23/11 (até a
+  316): 2.808 verificações, nenhuma falha.** Na prévia, o R$ 20 de teste de 20/11 (devolvido)
+  ainda conta como pago no banco de teste: "Conferir com o Mercado Pago" no admin da prévia o acerta.
 
 ## 11. WhatsApp e mensagem para as academias
 

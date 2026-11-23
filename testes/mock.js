@@ -902,6 +902,41 @@
       return { data: (window.__compras || []).filter(y => y.academia_id === a.p_academia).slice().reverse()
         .map(y => window.__semFuncoes ? y : { ...y, quem: y.quem || quem(y.user_id) }), error:null };
     }
+    // Reembolso e estorno (regra 316). window.__pedidosReembolso guarda os pedidos.
+    if (nome === "estorno_sugerido") {
+      const c = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!c) return erro("Compra não encontrada.", "22023");
+      const recebidos = c.tipo === "plano" ? 0 : c.valor + (c.forma === "pix" ? Math.ceil(c.valor * 5 / 100) : 0);
+      const saldo = (db.academias.find(z => z.id === c.academia_id) || {}).envios_de_aviso || 0;
+      const nao = Math.max(0, Math.min(saldo, recebidos));
+      return { data: { tipo: c.tipo || "creditos", valor_pago: c.valor, creditos_recebidos: recebidos, creditos_nao_usados: nao,
+        sugerido: recebidos ? Math.floor(c.valor * nao / recebidos * 100) / 100 : c.valor,
+        regra: nao >= recebidos ? "Nenhum crédito desta compra foi usado: a devolução é integral." : `Devolução dos créditos ainda não usados (R$ ${nao} de R$ ${recebidos}). Créditos usados não são devolvidos.` }, error:null };
+    }
+    if (nome === "pedir_reembolso") {
+      const c = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!c || c.situacao !== "paga") return erro("Só uma compra paga pode ter reembolso.", "22023");
+      if ((a.p_motivo || "").trim().length < 5) return erro("Conte o motivo do pedido.", "22023");
+      if (c.reembolso && c.reembolso.situacao === "aberto") return erro("Já existe um pedido de reembolso desta compra em análise.", "22023");
+      c.reembolso = { id: "rr-" + c.id, situacao: "aberto", motivo: a.p_motivo, created_at: new Date().toISOString(), quem: "Ana Dona" };
+      return { data: c.reembolso.id, error:null };
+    }
+    if (nome === "recusar_reembolso") {
+      if (!souAdmin()) return erro("Só o admin responde aos pedidos.", "42501");
+      const c = (window.__compras || []).find(y => y.reembolso && y.reembolso.id === a.p_pedido);
+      if (!c) return erro("Pedido em análise não encontrado.", "22023");
+      c.reembolso = { ...c.reembolso, situacao: "recusado", resposta: a.p_resposta };
+      return { data:null, error:null };
+    }
+    if (nome === "pedir_estorno") {
+      if (!souAdmin()) return erro("Só o admin estorna.", "42501");
+      const c = (window.__compras || []).find(y => y.id === a.p_compra);
+      if (!c || c.situacao !== "paga") return erro("Compra paga não encontrada.", "22023");
+      if (!(a.p_valor > 0) || a.p_valor > c.valor) return erro(`Valor inválido: no máximo R$ ${c.valor}.`, "22023");
+      window.__estornoPedido = { compra: c.id, valor: a.p_valor, motivo: a.p_motivo };
+      if (c.de_teste) { c.valor_estornado = a.p_valor; c.estornada_em = new Date().toISOString(); if (a.p_valor >= c.valor) c.situacao = "estornada"; if (c.reembolso) c.reembolso.situacao = "reembolsado"; return { data: "estornada", error:null }; }
+      return { data: "mercadopago", error:null };
+    }
     if (nome === "compras_do_admin") {
       if (!souAdmin()) return erro("Só o admin vê as compras.", "42501");
       return { data: (window.__compras || []).map(y => ({ ...y, academia: (db.academias.find(z => z.id === y.academia_id) || {}).name })), error:null };

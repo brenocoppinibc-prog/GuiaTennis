@@ -33,6 +33,14 @@
 //                                       cobranças (para quando o aviso demora ou
 //                                       não chega, como na prévia).
 //   POST { acao: "trocar_cartao", cobranca, cartao }  troca o cartão.
+//   Regra 316, estornos (como a Shopify e a Stripe: o estorno desfaz a compra):
+//   POST { acao: "estornar", compra }   devolve no Mercado Pago o valor que o
+//                                       admin pediu (pedir_estorno) e o banco
+//                                       tira os créditos ou encurta o plano.
+//   POST { acao: "conferir" }           confere as compras pagas (até 180 dias)
+//                                       com o Mercado Pago e aplica os estornos
+//                                       e as contestações que achar.
+//   Os avisos de pagamento (e "consultar") também aplicam o estorno.
 //   No painel do Mercado Pago (Suas integrações › a aplicação › Webhooks), o
 //   endereço /.netlify/functions/pagamento?mp=1 com os eventos "Pagamentos" e
 //   "Planos e assinaturas": a assinatura não aceita o notification_url.
@@ -202,6 +210,45 @@ async function cartaoNoSite(req, compraId, dados) {
   return json(200, { situacao: "aberta", status: String(p.status || "") });
 }
 
+// Regra 316: quanto o Mercado Pago já devolveu (estorno total, parcial ou
+// contestação no cartão) vai ao banco, que tira os créditos ou encurta o plano.
+export function devolvidoNoPagamento(p) {
+  const total = Number(p.transaction_amount || 0);
+  if (p.status === "refunded" || p.status === "charged_back") return { valor: Number(p.transaction_amount_refunded || 0) || total, origem: p.status === "charged_back" ? "contestacao" : "mercadopago" };
+  const parcial = Number(p.transaction_amount_refunded || 0);
+  return parcial > 0 ? { valor: parcial, origem: "mercadopago" } : null;
+}
+async function estornoDoPagamento(p) {
+  const d = devolvidoNoPagamento(p);
+  if (!d || !p.id) return null;
+  return rpc("registrar_estorno", { p_gateway_id: String(p.id), p_total: d.valor, p_origem: d.origem });
+}
+async function estornar(compraId) {
+  const e = await rpc("estorno_para_fazer", { p_compra: compraId });
+  if (!e || !e.id) return json(404, { erro: "Compra não encontrada." });
+  const falta = Math.round((Number(e.pedido || 0) - Number(e.estornado || 0)) * 100) / 100;
+  if (falta <= 0 || e.situacao !== "paga") return json(409, { erro: "Não há estorno pedido para esta compra.", situacao: e.situacao });
+  if (!/^\d+$/.test(String(e.gateway_id || ""))) return json(409, { erro: "A compra não tem o pagamento do Mercado Pago." });
+  await mp(`/v1/payments/${encodeURIComponent(e.gateway_id)}/refunds`, {
+    method: "POST", headers: { "X-Idempotency-Key": `estorno-${e.id}-${e.pedido}` }, body: JSON.stringify({ amount: falta }),
+  });
+  const situacao = await rpc("registrar_estorno", { p_gateway_id: String(e.gateway_id), p_total: Number(e.pedido), p_origem: "admin" });
+  return json(200, { situacao });
+}
+async function conferirComOMercadoPago() {
+  const lista = (await rpc("compras_para_conferir", {})) || [];
+  let conferidas = 0, estornos = 0, erros = 0;
+  for (const x of lista) {
+    try {
+      const p = await mp(`/v1/payments/${encodeURIComponent(x.gateway_id)}`);
+      conferidas += 1;
+      const r = await estornoDoPagamento(p);
+      if (r === "estornada" || r === "parcial") estornos += 1;
+    } catch { erros += 1; }
+  }
+  return json(200, { conferidas, estornos, erros });
+}
+
 async function consultar(compraId) {
   const c = await rpc("compra_para_cobrar", { p_compra: compraId });
   if (!c || !c.id) return json(404, { erro: "Compra não encontrada." });
@@ -235,6 +282,8 @@ async function avisoDoMercadoPago(req) {
   const p = await mp(`/v1/payments/${encodeURIComponent(id)}`);
   if (!p.external_reference) return json(200, { ok: true, ignorado: true });
   const situacao = await confirmar(p.external_reference, p);
+  const estorno = await estornoDoPagamento(p);
+  if (estorno) return json(200, { ok: true, situacao, estorno });
   // A cobrança da renovação automática chega também como "payment".
   if (situacao === "nao_achou" && UUID.test(String(p.external_reference))) {
     return json(200, { ok: true, situacao: await cobrancaDaAssinatura(p.external_reference, { transaction_amount: p.transaction_amount, payment: { id: p.id, status: p.status } }) });
@@ -348,6 +397,7 @@ export default async (req) => {
     if (new URL(req.url).searchParams.get("mp") === "1") return await avisoDoMercadoPago(req);
     let corpo = {};
     try { corpo = await req.json(); } catch { return json(400, { erro: "Corpo inválido." }); }
+    if (corpo.acao === "conferir") return await conferirComOMercadoPago();
     if (["assinar", "automatica", "trocar_cartao"].includes(corpo.acao)) {
       if (!UUID.test(String(corpo.cobranca || ""))) return json(400, { erro: "Falta a assinatura." });
       if (corpo.acao === "assinar") return await assinar(req, corpo.cobranca, corpo);
@@ -358,6 +408,7 @@ export default async (req) => {
     if (corpo.acao === "cobrar") return await cobrar(req, corpo.compra, corpo.noSite === true);
     if (corpo.acao === "cartao") return await cartaoNoSite(req, corpo.compra, corpo.cartao);
     if (corpo.acao === "consultar") return await consultar(corpo.compra);
+    if (corpo.acao === "estornar") return await estornar(corpo.compra);
     return json(400, { erro: "Ação inválida." });
   } catch (e) {
     console.error("pagamento:", e && e.message);

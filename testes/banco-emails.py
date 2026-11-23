@@ -3131,5 +3131,64 @@ sql(f"update public.assinaturas set ate = now() - interval '4 days' where academ
 sql("select public.rodar_assinaturas()")
 ok(plano_de(reno) == "completo" and um(f"select desejada from public.cobrancas_automaticas where id = '{cob}'") == "cancelada", "sem a cobrança depois da folga, a academia passa para o Completo e a renovação é cancelada")
 
+# Estornos e reembolsos (regra 316, 20261123120000_estornos_e_reembolsos) ---------
+print("\nEstornos e reembolsos")
+r = subprocess.run(["psql", BANCO, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/migrations/20261123120000_estornos_e_reembolsos.sql"], capture_output=True, text=True)
+ok(r.returncode == 0, "a migração roda de novo sem erro" + ("" if r.returncode == 0 else ": " + r.stderr[-200:]))
+estac = academia_nova("Estorno Tênis", -23.63, -46.69, ["saibro"])
+edona = parceiro("Eva Dona", f"evaest{sufixo}@exemplo.com", estac)
+ecarla = parceiro("Caio Equipe", f"caioest{sufixo}@exemplo.com", estac, "equipe")
+sql(f"update public.academias set plano = 'completo', envios_de_aviso = 0 where id = '{estac}'")
+cpix = um(f"insert into public.compras_de_creditos (academia_id, user_id, valor, forma, tipo, gateway_id) values ('{estac}', '{edona}', 100, 'pix', 'creditos', 'pay-e1') returning id")
+um(f"select public.confirmar_compra('{cpix}', 'pay-e1', 100, 'approved')")
+ok(um(f"select envios_de_aviso from public.academias where id = '{estac}'") == "105", "a compra de R$ 100 no Pix deu R$ 105 em créditos")
+sql(f"update public.academias set envios_de_aviso = 60 where id = '{estac}'")
+sug = json.loads(um(f"select public.estorno_sugerido('{cpix}')", papel="authenticated", user=edona))
+ok(sug["creditos_nao_usados"] == 60 and abs(float(sug["sugerido"]) - 57.14) < 0.01, "a sugestão: só os créditos não usados (R$ 60 de 105 → R$ 57,14)")
+ok("Entre na conta" in erro(f"select public.estorno_sugerido('{cpix}')", papel="authenticated", user=carla), "quem não é da academia não vê a sugestão")
+ok("motivo" in erro(f"select public.pedir_reembolso('{cpix}', 'oi')", papel="authenticated", user=edona), "o pedido de reembolso pede o motivo")
+ped = um(f"select public.pedir_reembolso('{cpix}', 'Comprei o valor errado.')", papel="authenticated", user=edona)
+ok(ped and "em análise" in erro(f"select public.pedir_reembolso('{cpix}', 'De novo, por favor.')", papel="authenticated", user=edona), "um pedido em análise por compra")
+ok(um(f"select count(*) from public.emails_a_enviar where tipo = 'nota_a_emitir' and assunto like 'Pedido de reembolso: Estorno Tênis%'") == "1", "o admin recebe o aviso do pedido")
+m = json.loads(um(f"select public.minhas_compras('{estac}')", papel="authenticated", user=edona))
+ok(m[0]["reembolso"]["situacao"] == "aberto", "Pagamentos mostra o pedido em análise")
+ok("Só o admin" in erro(f"select public.pedir_estorno('{cpix}', 57.14, 'x')", papel="authenticated", user=edona), "só o admin estorna")
+ok("no máximo" in erro(f"select public.pedir_estorno('{cpix}', 150, 'x')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN), "não estorna mais do que foi pago")
+ok(um(f"select public.pedir_estorno('{cpix}', 57.14, 'Pedido da academia')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN) == "mercadopago",
+   "a compra de verdade vai à função do Mercado Pago")
+ok("permission denied" in erro(f"select public.registrar_estorno('pay-e1', 57.14, 'admin')", papel="authenticated", user=edona), "só a função do Netlify registra o estorno")
+ok(um(f"select public.registrar_estorno('pay-e1', 57.14, 'admin')") == "parcial"
+   and um(f"select envios_de_aviso from public.academias where id = '{estac}'") == "0"
+   and um(f"select situacao || ',' || valor_estornado || ',' || creditos_tirados from public.compras_de_creditos where id = '{cpix}'") == "paga,57.14,60",
+   "estorno parcial: tira os R$ 60 em créditos não usados e a compra segue paga, com o valor devolvido")
+ok(um(f"select public.registrar_estorno('pay-e1', 57.14, 'mercadopago')") == "sem_mudanca", "o mesmo estorno de novo não muda nada")
+ok(um(f"select situacao from public.pedidos_de_reembolso where id = '{ped}'") == "reembolsado"
+   and um(f"select count(*) from public.emails_a_enviar where para = 'evaest{sufixo}@exemplo.com' and assunto like 'Reembolso na Estorno Tênis%'") == "1",
+   "o pedido fica reembolsado e a academia recebe o e-mail")
+# Contestação no cartão: devolução integral, os créditos saem (o saldo não fica negativo).
+sql(f"update public.academias set envios_de_aviso = 30 where id = '{estac}'")
+ccar = um(f"insert into public.compras_de_creditos (academia_id, user_id, valor, forma, tipo) values ('{estac}', '{edona}', 50, 'cartao', 'creditos') returning id")
+um(f"select public.confirmar_compra('{ccar}', 'pay-e2', 50, 'approved')")
+ok(um("select public.registrar_estorno('pay-e2', 50, 'contestacao')") == "estornada"
+   and um(f"select envios_de_aviso from public.academias where id = '{estac}'") == "30"
+   and um(f"select situacao from public.compras_de_creditos where id = '{ccar}'") == "estornada",
+   "contestação no cartão: a compra fica estornada e os R$ 50 saem do saldo")
+ok(um("select count(*) from public.emails_a_enviar where tipo = 'nota_a_emitir' and assunto like 'Contestação no cartão: Estorno Tênis%'") == "1", "o admin é avisado da contestação")
+# Plano: a devolução integral encerra o Premium e a renovação automática.
+cpl = um(f"insert into public.compras_de_creditos (academia_id, user_id, valor, forma, tipo, plano, periodo) values ('{estac}', '{edona}', 49, 'cartao', 'plano', 'premium', 'mensal') returning id")
+um(f"select public.confirmar_compra('{cpl}', 'pay-e3', 49, 'approved')")
+ok(plano_de(estac) == "premium", "pagou o Premium")
+ped2 = um(f"select public.pedir_reembolso('{cpl}', 'Não vou usar o Premium.')", papel="authenticated", user=edona)
+ok("resposta" in erro(f"select public.recusar_reembolso('{ped2}', 'x')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN), "recusar pede a resposta")
+um(f"select public.recusar_reembolso('{ped2}', 'O plano mensal não tem devolução depois de 7 dias.')", papel="authenticated", user=str(uuid.uuid4()), email=ADMIN)
+ok(json.loads(um(f"select public.minhas_compras('{estac}')", papel="authenticated", user=edona))[0]["reembolso"]["situacao"] == "recusado"
+   and um(f"select count(*) from public.emails_a_enviar where para = 'evaest{sufixo}@exemplo.com' and assunto like 'Pedido de reembolso da%'") == "1",
+   "recusado: a academia vê a resposta e recebe o e-mail")
+ok(um("select public.registrar_estorno('pay-e3', 49, 'mercadopago')") == "estornada" and plano_de(estac) == "completo"
+   and um(f"select encerrada_em is not null from public.assinaturas where academia_id = '{estac}'") == "t",
+   "plano devolvido por inteiro: o Premium termina e a academia volta ao plano de antes")
+ok(json.loads(um("select public.compras_para_conferir()"))[0]["gateway_id"].isdigit() if um("select jsonb_array_length(public.compras_para_conferir())") != "0" else True,
+   "a conferência só leva pagamentos do Mercado Pago (id numérico)")
+
 print(f"\n{'Tudo certo' if not falhas else str(falhas) + ' falha(s)'}")
 sys.exit(1 if falhas else 0)

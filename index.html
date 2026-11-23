@@ -369,6 +369,11 @@
   .pc-mes-gratis li { display: flex; gap: 8px; align-items: flex-start; }
   .pc-mes-gratis .cta-btn { background: #fff; color: var(--green); border-color: #fff; width: 100%; }
   .pc-compras-mais { margin-top: 10px; }
+  .pc-sit { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; line-height: 1.6; }
+  .pc-sit.ok { background: #E3F1E8; color: var(--green); }
+  .pc-sit.erro { background: #FBE9E7; color: var(--red); }
+  .pc-sit.espera { background: #FFF6DB; color: #8A6A00; }
+  .pc-sit.volta { background: #EEF0F3; color: #4A5260; }
   .pc-mes-gratis-preco { margin: 4px 0 12px; font-size: 15px; color: #fff; }
   .pc-mes-gratis-preco s { opacity: .7; }
   .pc-mes-gratis-preco strong { font-size: 18px; color: var(--gold-light); }
@@ -14439,9 +14444,11 @@ function pcPagamentos() {
   const linha = (x) => {
     const que = x.tipo === "plano" ? `Plano ${nomeDoPlano(x.plano)} ${x.periodo === "anual" ? "anual" : "mensal"}` : "Créditos de promoções";
     const situacao = situacaoDaCompra(x);
-    const detalhes = [situacao, x.quem ? "por " + x.quem : "", x.forma === "cartao" ? "cartão" : "Pix", x.de_teste ? "de teste" : "",
+    // A situação em etiqueta colorida, como no Stripe e no Mercado Pago (regra 326).
+    const tom = x.situacao === "paga" ? "ok" : x.situacao === "recusada" ? "erro" : x.situacao === "estornada" ? "volta" : "espera";
+    const detalhes = [x.quem ? "por " + x.quem : "", x.forma === "cartao" ? "cartão" : "Pix", x.de_teste ? "de teste" : "",
       x.nota_emitida_em ? "nota fiscal enviada" + (x.nota_email ? " para " + x.nota_email : "") : ""].filter(Boolean);
-    return `<li><div><strong>${esc(que)} · ${emReais(x.valor)}</strong><span>${esc(detalhes.join(" · "))}</span>${linhaDoReembolso(x)}</div></li>`;
+    return `<li><div><strong>${esc(que)} · ${emReais(x.valor)}</strong><span><b class="pc-sit ${tom}">${esc(situacao)}</b> · ${esc(detalhes.join(" · "))}</span>${linhaDoReembolso(x)}</div></li>`;
   };
   return `
     <section class="pc-pagina pc-estreita">

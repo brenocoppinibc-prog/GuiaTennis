@@ -9,7 +9,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 325)
+**Atualizado em:** 23/11/2026 (regra 326)
 
 | | |
 |---|---|
@@ -2932,6 +2932,16 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Spotify: a compra "Não finalizado" (aberta há mais de 30 minutos, nunca paga) não aparece
   (`comprasParaMostrar`); aparecem as 5 mais recentes e "Ver mais compras (N)" mostra mais 10 de cada
   vez (`state.pcComprasVer`). Testes: `funcoes-da-equipe` (29), sem falha.
+
+- **326 (23/11) — as regras nas mudanças 324 e 325** ("as regras na vdd, gramática, marketing e
+  design"). Gramática: os textos novos no LanguageTool, sem erro (só os nomes próprios). Design: em
+  Pagamentos, a situação em etiqueta colorida, como no Stripe e no Mercado Pago (`pc-sit`: verde
+  "Aprovado", vermelho "Recusado", dourado "Em processamento", cinza "Reembolsado"). Marketing: o
+  e-mail "Pagamento recusado" leva direto à solução, com o botão "Trocar o cartão" (no Pix
+  Automático, "Ver a assinatura"), como o e-mail de cobrança recusada do Spotify e da Netflix; no Pix,
+  "Confira a autorização no aplicativo do banco" (sem repetir "Pix Automático"); corrigido no próprio
+  `20261121130000`. Testes: `funcoes-da-equipe`, `plano-e-creditos`, `reembolso`, `dados-para-nota`
+  e `banco-emails.py` (1.087), sem falha.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -2989,6 +2989,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   Perfil da Empresa no Google: as comodidades viram filtro na busca, então a ficha grátis traz todas.
   Testes: `planos`, `parceiros`, `plano-na-ficha`, `plano-ao-finalizar`, `fotos-ponto-e-aviso` e os
   que conferem a data dos Termos.
+- **330 (24/11) — o resumo do Completo curto e com o que dizem as avaliações** ("acho esse resumo do
+  completo grande demais e só com informações que já tem na ficha, acho legal diminuir um pouco o
+  resumo e falar oq diz as avaliações tbm"). `resumoCompleto` (Completo e Premium sem texto próprio): até
+  `RESUMO_MAX` (400), com onde fica, as quadras, para quem são as aulas ("Tem aulas para adultos, além
+  de locação de quadra."), a nota, "Quem avaliou elogia principalmente os professores (2 avaliações),
+  o atendimento (2)…" (`temasDasAvaliacoes`, com a contagem) e "Uma avaliação diz: “…”"
+  (`trechoDaAvaliacao`: a mais recente de 4 ou 5 estrelas sobre o mais elogiado, sem frase negativa,
+  telefone ou link, até 110 letras). Saem preço, comodidades, horário, estacionar e cancelamento (ficam
+  nas partes deles; `frasesDoResumoCompleto` saiu). Sem avaliação, o resumo de sempre. Como o "Os
+  hóspedes adoraram" do Booking e o "Pessoas mencionam" do Google Maps. Em Planos: "\"Sobre a
+  academia\" com o resumo do que dizem as avaliações". Testes: `resumo-do-completo.js` (novo, 10),
+  `cadastro.js`.
 
 ## 11. WhatsApp e mensagem para as academias
 

@@ -11686,7 +11686,7 @@ const PC_RECURSOS = [
   // Pedido de 27/10/2026 (regra 162).
   { t: "Uma foto para cada aula e locação do catálogo", p: ["premium"] },
   // Regra 204 (04/11/2026): o "Sobre a academia" por plano.
-  { t: "\"Sobre a academia\" com o resumo completo feito pelo site", p: ["completo", "premium"], grupo: "sobre" },
+  { t: "\"Sobre a academia\" com o resumo do que dizem as avaliações", p: ["completo", "premium"], grupo: "sobre" },
   { t: "\"Sobre a academia\" escrito por vocês", p: ["premium"], grupo: "sobre" },
   // Pedido de 08/10/2026 (regra 71): selo dourado e topo da busca.
   { t: "Selo Premium dourado ao lado do nome", p: ["premium"], selo: true },
@@ -24013,49 +24013,48 @@ function descricaoAcademia(c, todas) {
 // tamanho para o completo"). Como o Perfil da Empresa no Google (a descrição
 // escrita pela empresa, até 750) e o resumo que o Booking monta da ficha do
 // hotel: no Premium, o texto da academia (sem ele, o resumo completo); no
-// Completo, o resumo completo, até 750 letras, com tudo o que a ficha tem; no
+// Completo, o resumo completo (desde a regra 330, curto e com o que dizem as
+// avaliações); no
 // Básico, o resumo curto de sempre. Sem IA (regra 13): frases montadas com os
 // dados da ficha e as respostas das perguntas frequentes.
+// Regra 330 (24/11/2026: "acho esse resumo do completo grande demais e só com
+// informações que já tem na ficha, acho legal diminuir um pouco o resumo e
+// falar o que diz as avaliações também"): o resumo do Completo fica curto (até
+// RESUMO_MAX) e conta o que a ficha sozinha não conta, o que dizem as
+// avaliações, como o "Os hóspedes adoraram" do Booking e o "Pessoas mencionam"
+// do Google Maps: a nota, o que mais elogiam (com quantas avaliações) e um
+// trecho de uma avaliação. Da ficha, só onde fica, as quadras e para quem são
+// as aulas; preço, comodidades, horário e cancelamento ficam nas partes deles.
+// Sem avaliação com texto, o resumo de sempre (o do Básico).
+const RESUMO_MAX = 400;
 function resumoCompleto(c) {
-  const frases = t => String(t || "").split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
-  const base = frases(descricaoAcademia(c, true));
-  const fim = base.filter(x => /^(Quem avaliou|Os jogadores deram nota)/.test(x));
-  const extras = frases(frasesDoResumoCompleto(c).join(" "));
-  // Cabe primeiro o resumo de sempre (com o que os jogadores elogiam e a nota,
-  // que fecham o texto); as respostas das perguntas entram no espaço que sobra.
-  const escolhidas = [];
-  let tamanho = -1;
-  for (const f of [...base, ...extras]) {
-    if (escolhidas.includes(f) || tamanho + 1 + f.length > SOBRE_MAX) continue;
-    escolhidas.push(f);
-    tamanho += 1 + f.length;
-  }
-  return [...escolhidas.filter(x => !fim.includes(x)), ...escolhidas.filter(x => fim.includes(x))].join(" ");
-}
-// O que o resumo completo soma ao curto, em texto corrido: as aulas (e as das
-// crianças, com a idade), onde estacionar sem vaga própria, o horário e o
-// cancelamento.
-function frasesDoResumoCompleto(c) {
-  const out = [];
+  const temas = temasDasAvaliacoes(c.id);
+  if (!c.appCount && !temas.length) return descricaoAcademia(c);
+  const partes = []; // { t, p }: p maior sai por último quando não cabe
+  const primeira = String(descricaoAcademia(c)).split(/(?<=\.)\s+/)[0] || "";
+  if (/ fica em /.test(primeira)) partes.push({ t: primeira, p: 4 });
+  const total = totalQuadras(c);
+  if (total) { const q = textoQuadras(c); partes.push({ t: q.length <= 90 ? q : `São ${total} quadras.`, p: 2 }); }
   const opcoes = opcoesPreco(c);
-  const formatos = (publico) => CATALOGO_FORMATOS.filter(t => opcoes.some(o => o.item && o.tipo === t.key && o.publico === publico))
-    .map(t => t.nome.replace(/^Aula /i, "").toLowerCase());
-  const adultos = formatos(""), criancas = formatos("crianca");
-  if (adultos.length) out.push(`Tem aula ${listaTexto(adultos)}${criancas.length ? " para adultos" : ""}.`);
-  if (criancas.length) {
-    const idades = [...new Set(opcoes.filter(o => o.item && o.publico === "crianca").map(o => idadeTexto(o.item).toLowerCase()).filter(Boolean))];
-    out.push(`Para crianças, aula ${listaTexto(criancas)}${idades.length ? `, ${listaTexto(idades)}` : ""}.`);
+  const paraQuem = [opcoes.some(o => o.item && o.tipo !== "locacao" && !ehExtra(o.item) && o.publico !== "crianca") ? "adultos" : "", opcoes.some(o => o.item && o.publico === "crianca") ? "crianças" : ""].filter(Boolean);
+  const locacao = opcoes.some(o => o.item && o.tipo === "locacao");
+  const aulas = paraQuem.length ? `aulas para ${listaTexto(paraQuem)}` : "";
+  if (aulas || locacao) partes.push({ t: `Tem ${aulas && locacao ? `${aulas}, além de locação de quadra` : aulas || "locação de quadra"}.`, p: 1 });
+  if (c.appCount) partes.push({ t: `Os jogadores dão nota ${c.appAvg.toFixed(1).replace(".", ",")} de 5, em ${c.appCount} ${plural(c.appCount, "avaliação", "avaliações")} no GuiaTennis.`, p: 6 });
+  if (temas.length) {
+    const comNumero = temas.some(x => x.n > 1);
+    const lista = temas.map((x, k) => comNumero ? `${x.t} (${k === 0 ? `${x.n} ${plural(x.n, "avaliação", "avaliações")}` : x.n})` : x.t);
+    partes.push({ t: `Quem avaliou elogia principalmente ${listaTexto(lista)}.`, p: 5 });
+    const trecho = trechoDaAvaliacao(c.id, temas[0]);
+    if (trecho) partes.push({ t: `Uma avaliação diz: “${trecho}”`, p: 3 });
   }
-  const am = c.amenities || [];
-  if (!am.includes("estacionamento_gratuito") && !am.includes("estacionamento_pago")) {
-    const est = estacionarLinhas(c).map(l => `${l.rot.toLowerCase()}${l.tag ? ` (${l.tag.toLowerCase()})` : ""}${l.txt ? `, ${l.txt.replace(/\.$/, "").replace(/^./, x => x.toLowerCase())}` : ""}`);
-    if (est.length) out.push(`Para estacionar: ${est.join("; ")}.`);
+  let usadas = [...partes];
+  const tamanho = () => usadas.map(x => x.t).join(" ").length;
+  while (usadas.length > 1 && tamanho() > RESUMO_MAX) {
+    const menor = usadas.reduce((a, b) => (b.p < a.p ? b : a));
+    usadas = usadas.filter(x => x !== menor);
   }
-  const horario = horarioLinhas(c).map(l => `${l.label.toLowerCase()}, ${l.texto.toLowerCase()}`);
-  if (horario.length) out.push(`Horário: ${horario.join("; ")}.`);
-  const cancelamento = perguntasAcademia(c).find(p => /cancelamento e a reposição/.test(p.q));
-  if (cancelamento) out.push(cancelamento.a);
-  return out;
+  return usadas.map(x => x.t).join(" ");
 }
 function htSobre(c) {
   const tipo = limitesDoPlano(c.plano).sobre;
@@ -24087,6 +24086,9 @@ const TEMAS_DAS_AVALIACOES = [
 ];
 const NEGATIVO_NA_FRASE = /\b(nao|nem|sem|falta|faltou|ruim|pessim|horrivel|sujo|suja|caro|cara|demor|fraco|fraca|poderia|deveria|precisa|apertad|quebrad|mal\b)/;
 function elogiosDasAvaliacoes(courtId) {
+  return temasDasAvaliacoes(courtId).map(x => x.t);
+}
+function temasDasAvaliacoes(courtId) {
   const vezes = new Map();
   getReviews(courtId).filter(r => r.stars >= 4 && r.comment).forEach(r => {
     const frases = semAcento(String(r.comment).toLowerCase()).split(/[.!?;,\n]+|\bmas\b|\bporem\b/);
@@ -24095,7 +24097,25 @@ function elogiosDasAvaliacoes(courtId) {
     });
   });
   return TEMAS_DAS_AVALIACOES.map(x => x.t).filter(t => vezes.has(t))
-    .sort((a, b) => vezes.get(b) - vezes.get(a)).slice(0, 3);
+    .sort((a, b) => vezes.get(b) - vezes.get(a)).slice(0, 3).map(t => ({ t, n: vezes.get(t) }));
+}
+// Regra 330: um trecho curto de uma avaliação de 4 ou 5 estrelas sobre o que
+// mais elogiam (a mais recente primeiro), sem frase negativa, sem telefone e
+// sem link, como os trechos de avaliação do Booking.
+function trechoDaAvaliacao(courtId, tema) {
+  const def = TEMAS_DAS_AVALIACOES.find(x => x.t === (tema && tema.t));
+  if (!def) return "";
+  const lista = getReviews(courtId).filter(r => r.stars >= 4 && r.comment && !r.enviando)
+    .sort((a, b) => String(b.ts || "").localeCompare(String(a.ts || "")));
+  for (const r of lista) {
+    for (const f of String(r.comment).split(/(?<=[.!?])\s+|\n+/)) {
+      const t = f.trim().replace(/\s+/g, " ");
+      const sem = semAcento(t.toLowerCase());
+      if (t.length < 15 || t.length > 110 || !def.p.test(sem) || NEGATIVO_NA_FRASE.test(sem) || /\d{4,}|https?:|www\.|@/.test(t)) continue;
+      return (t.charAt(0).toUpperCase() + t.slice(1)).replace(/[,;:\s]+$/, "").replace(/([^.!?])$/, "$1.");
+    }
+  }
+  return "";
 }
 
 // "São 8 quadras: 3 de saibro cobertas, 2 de saibro descobertas..." — a mesma

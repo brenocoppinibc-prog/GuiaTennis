@@ -178,7 +178,7 @@ const { abrir, ok, irParte, salvarFicha } = require('./harness');
   let ps = await sobreNoPlano('premium');
   ok(ps.academia === sobre, 'Premium: a ficha mostra o texto da academia em "Sobre a academia"');
   ps = await sobreNoPlano('completo');
-  ok(!ps.academia && !ps.texto.includes(sobre) && ps.texto.includes('Horário: segunda a sexta') && ps.texto.length > ps.curto.length && ps.texto.length <= 750, 'Completo: sem o texto da academia, o resumo completo do site, até 750 letras — ' + ps.texto.length + ' letras: ' + ps.texto.slice(0, 120));
+  ok(!ps.academia && !ps.texto.includes(sobre) && ps.texto.length <= 400, 'Completo: sem o texto da academia, o resumo do site, até 400 letras (regra 330) — ' + ps.texto.length + ' letras: ' + ps.texto.slice(0, 120));
   ps = await sobreNoPlano('basico');
   ok(!ps.academia && ps.texto === ps.curto, 'Básico: o resumo curto de sempre');
   ps = await page.evaluate(() => { const c = decorate(aplicarPlano({ ...state.allCourts.find(x => x.id === 'a1'), plano: 'premium', sobre: '' })); return { r: esc(resumoCompleto(c)), h: htSobre(c) }; });

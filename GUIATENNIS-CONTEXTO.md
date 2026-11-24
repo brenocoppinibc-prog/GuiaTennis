@@ -504,7 +504,12 @@ suporte do Mercado Pago.
 4. **Catálogo do WhatsApp Business** (preços definidos; fotos quadradas com o logo oferecidas).
 5. Carrosséis do Instagram e a plaquinha "Avalie no GuiaTennis" com QR (oferecidos).
 6. **Nota fiscal automática** no Emissor Nacional, num PR novo depois do #5; "Baixar planilha do mês"
-   em Compras e notas (oferecido).
+   em Compras e notas (oferecido). O Breno **já tem o e-CNPJ A1** (24/11). Combinado: ele emite uma
+   nota à mão no Emissor Nacional com o A1 para confirmar o cadastro e o código do serviço; no PR
+   novo, o admin envia o arquivo .pfx e a senha por uma tela própria (nunca pelo chat nem pelo GitHub),
+   guardados cifrados fora das variáveis da Netlify (o limite de 4 KB das funções não comporta o
+   certificado); a função assina a DPS e manda à API do Sefin Nacional (primeiro na produção restrita);
+   aviso 30 dias antes de o A1 vencer.
 7. **Empresa:** Mercado Pago no CNPJ regularizado (o Breno confirmou em 24/11) e, segundo ele, "tudo
    funcionando". Faltam: verificação da empresa na Meta (libera o código automático no WhatsApp e os
    anúncios), verificação de anunciante no Google Ads (ao anunciar), e-CNPJ A1 (só para a nota

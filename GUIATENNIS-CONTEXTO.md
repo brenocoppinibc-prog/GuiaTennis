@@ -502,9 +502,12 @@ suporte do Mercado Pago.
    24/11, o portfólio tem 3 contas do WhatsApp: **"GuiaTenni" (1411995697158663), a que tem o número
    "Guia Tennis" conectado: é a que vale**; "GuiaTennis" (2855937403038324, conferir se está vazia) e a
    "Test WhatsApp Business Account" (do app de desenvolvedor). Falta: a forma de pagamento na
-   "GuiaTenni", o modelo aprovado nela, confirmar que o número é o (11) 92745-6457 com o aplicativo
-   funcionando (coexistência) e os segredos **do GitHub** `WHATSAPP_TOKEN` (token permanente de um
-   usuário do sistema) e `WHATSAPP_NUMERO_ID` (nunca pelo chat); depois, rodar o "Banco de dados".
+   "GuiaTenni" e o modelo aprovado nela (o Breno já criou um modelo). **O número conectado é um número
+   novo, comprado só para isso, sem WhatsApp antes** (sem coexistência): ele só manda os códigos; o
+   (11) 92745-6457 continua o contato do GuiaTennis no site (`WHATSAPP_GUIA`), nos Termos e no chat.
+   Faltam os segredos **do GitHub** `WHATSAPP_TOKEN` (token permanente de um usuário do sistema),
+   `WHATSAPP_NUMERO_ID` (o ID do número novo) e `WHATSAPP_NUMERO_DE_TESTE` (5511927456457, que recebe
+   os códigos do banco de teste), nunca pelo chat; depois, rodar o "Banco de dados".
 4. **Catálogo do WhatsApp Business** (preços definidos; fotos quadradas com o logo oferecidas).
 5. Carrosséis do Instagram e a plaquinha "Avalie no GuiaTennis" com QR (oferecidos).
 6. **Nota fiscal automática** no Emissor Nacional, num PR novo depois do #5; "Baixar planilha do mês"

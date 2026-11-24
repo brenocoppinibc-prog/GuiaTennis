@@ -505,8 +505,11 @@ suporte do Mercado Pago.
 5. Carrosséis do Instagram e a plaquinha "Avalie no GuiaTennis" com QR (oferecidos).
 6. **Nota fiscal automática** no Emissor Nacional, num PR novo depois do #5; "Baixar planilha do mês"
    em Compras e notas (oferecido).
-7. **Empresa:** domínio no CNPJ (registro.br), Meta e Google Ads no CNPJ, marca no INPI, CCM e nota na
-   Contabilizei; aporte de capital no Mercado Pago.
+7. **Empresa:** Mercado Pago no CNPJ regularizado (o Breno confirmou em 24/11) e, segundo ele, "tudo
+   funcionando". Faltam: verificação da empresa na Meta (libera o código automático no WhatsApp e os
+   anúncios), verificação de anunciante no Google Ads (ao anunciar), e-CNPJ A1 (só para a nota
+   automática), CCM e nota na Contabilizei e marca no INPI. Confirmar se o domínio já está no CNPJ no
+   registro.br (a mensagem de 24/11 não deixou claro).
 8. Quadras públicas: a pergunta no chat de ajuda e a página "Quadras públicas de tênis em <bairro>".
 9. Promover: ajustar com os números reais (mínimo de R$ 30 por mil, 3 vezes por dia, qualidade 0,80).
 10. Metas do admin: os valores iniciais são palpites; o Breno ajusta em "Editar as metas".

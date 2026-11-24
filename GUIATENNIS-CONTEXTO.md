@@ -504,7 +504,9 @@ suporte do Mercado Pago.
    "Test WhatsApp Business Account" (do app de desenvolvedor). Falta: a forma de pagamento na
    "GuiaTenni" e o modelo aprovado nela (o Breno já criou um modelo). **O número conectado é um número
    novo, comprado só para isso, sem WhatsApp antes** (sem coexistência): ele só manda os códigos; o
-   (11) 92745-6457 continua o contato do GuiaTennis no site (`WHATSAPP_GUIA`), nos Termos e no chat.
+   (11) 92745-6457 (WhatsApp Business no celular do Breno) continua o contato do GuiaTennis no site
+   (`WHATSAPP_GUIA`), nos Termos e no chat. A coexistência daria para usar o 92745 na API, mas o chip
+   novo é mais simples e não limita o aplicativo (decidido em 24/11).
    Faltam os segredos **do GitHub** `WHATSAPP_TOKEN` (token permanente de um usuário do sistema),
    `WHATSAPP_NUMERO_ID` (o ID do número novo) e `WHATSAPP_NUMERO_DE_TESTE` (5511927456457, que recebe
    os códigos do banco de teste), nunca pelo chat; depois, rodar o "Banco de dados".

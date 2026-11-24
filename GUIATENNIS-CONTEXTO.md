@@ -1,7 +1,7 @@
 # GuiaTennis — contexto do projeto
 
 Versão enxuta (23/11/2026). Basta ler este arquivo para continuar o
-trabalho. O texto completo até 23/11/2026 (com o detalhe das regras 156 a 328) está em
+trabalho. O texto completo até 23/11/2026 (com o detalhe das regras 156 a 329) está em
 `historico/CONTEXTO-completo-ate-23-11-2026.md`; o anterior (regras 1 a 167, resumos de cada chat,
 todas as seções), em `historico/CONTEXTO-completo-ate-28-10-2026.md`;
 a descrição completa do PR #5 (seções 1 a 73, passos 1 a 99), em
@@ -10,7 +10,7 @@ inteiros:** procurar com `grep` só quando precisar de um detalhe
 ("regra 133", "seção 4" e afins nos comentários do código e do SQL apontam
 para o histórico).
 
-**Atualizado em:** 23/11/2026 (regra 328)
+**Atualizado em:** 24/11/2026 (regra 329)
 
 | | |
 |---|---|
@@ -221,7 +221,7 @@ Produto (o que já foi decidido)
   (e-mails, lembrete a 3 dias); sem troca, a conta é excluída sozinha.
   Racismo, homofobia, xenofobia e qualquer discriminação não são tolerados.
 - **Planos** (todos grátis por enquanto; a academia é avisada antes de
-  cobrar): **Básico** (3 comodidades, 3 fotos, só WhatsApp, 1 pessoa),
+  cobrar): **Básico** (todas as comodidades desde a regra 329, 3 fotos, só WhatsApp, 1 pessoa, o resumo curto no Sobre),
   **Completo** (ficha inteira, 5 fotos, 5 pessoas, promoção na ficha paga
   por semana, **quantos chamaram nos últimos 30 dias**, regra 196), **Premium** (10 pessoas, foto de cada opção do catálogo,
   números da ficha, selo dourado, até 2 "Patrocinado" no topo da busca a
@@ -466,7 +466,7 @@ sozinho vira "-", "Sob consulta"), numa linha
 
 ## 9. Estado atual e pendências (23/11/2026, troca de chat)
 
-**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 328**; este chat acompanha o PR
+**PR #5** (`ccr-0a610d86-k6plx0` → `main`) com tudo até a **regra 329**; este chat acompanha o PR
 (`subscribe_pr_activity`). O "Banco de dados" desta branch é disparado à mão (`banco.yml`, `destino:
 teste`, `actions_run_trigger`); ele também leva o e-mail do código ao Supabase. **Conferir na prévia:**
 o assunto do e-mail do código deve chegar como "123456 é o seu código do GuiaTennis"; se chegar
@@ -560,6 +560,7 @@ mesmo histórico de 23/11 e nas descrições antigas do PR (`historico/PR5-descr
 - 326 (23/11) — as regras nas mudanças 324 e 325.
 - 327 (23/11) — "Também oferece" em partes próprias, sem teclado à toa, Enter avança, "Corrigir" no campo exato, o código confirma sozinho e vai no assunto do e-mail; a regra da tela exata.
 - 328 (23/11) — a revisão na mesma ordem da ficha e a etiqueta do plano (Completo/Premium) no que o plano não mostra.
+- 329 (24/11) — todas as comodidades no Básico (Termos de 24/11).
 
 ## 11. WhatsApp e mensagem para as academias
 

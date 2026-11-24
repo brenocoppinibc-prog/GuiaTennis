@@ -45,12 +45,12 @@ async function editarFicha(page) {
   await page.waitForTimeout(300);
   const erro = await texto(page, '#reg-erro');
   const lista = await texto(page, '.reg-plano-perde');
-  ok(erro.startsWith('4 partes não vão aparecer na ficha') && erro.includes('No plano Básico, os jogadores não veem o que você preencheu') && erro.includes('Nada se perde'),
-    'depois de confirmar: "4 partes não vão aparecer na ficha", como uma página de erro — ' + erro);
-  ok(lista.includes('2 das 5 comodidades') && lista.includes('Instagram') && lista.includes('A regra de cancelamento e reposição') && lista.includes('Como chegar'),
-    'a lista: comodidades, Instagram, cancelamento e como chegar — ' + lista);
-  ok(await page.isVisible('.reg-plano-perde #reg-destaques') && (await texto(page, '#reg-destaques')).includes('Quais aparecem na ficha no plano Básico'),
-    'a escolha das 3 comodidades que aparecem fica ali, junto do que o Básico esconde');
+  ok(erro.startsWith('3 partes não vão aparecer na ficha') && erro.includes('No plano Básico, os jogadores não veem o que você preencheu') && erro.includes('Nada se perde'),
+    'depois de confirmar: "3 partes não vão aparecer na ficha", como uma página de erro — ' + erro);
+  // Regra 329: todas as comodidades aparecem no Básico.
+  ok(!lista.includes('comodidades') && lista.includes('Instagram') && lista.includes('A regra de cancelamento e reposição') && lista.includes('Como chegar'),
+    'a lista: Instagram, cancelamento e como chegar (as comodidades aparecem todas no Básico) — ' + lista);
+  ok(!(await page.$('#reg-destaques')), 'sem a escolha de quais comodidades aparecem: no Básico, aparecem todas');
   ok(await page.isVisible('[data-reg-plano="completo"]') && (await texto(page, '#register-overlay')).includes('Para mostrar tudo, mude de plano'), 'e logo embaixo, os planos para mostrar tudo');
   await page.click('[data-reg-plano="completo"]');
   await page.waitForTimeout(900);

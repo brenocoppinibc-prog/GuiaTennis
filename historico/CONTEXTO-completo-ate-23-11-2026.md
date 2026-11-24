@@ -2977,6 +2977,18 @@ https://claude.ai/artifact/GoyAvA7iTqwc2v3JGshpL2.
   ajuda o jogador a decidir (como o Perfil da Empresa no Google), deixando pago o que traz contato e
   visibilidade (como o Yelp e o Tripadvisor). Testes: `previa-da-ficha.js`, `parceiros.js`,
   `cadastro.js`, `fechada-guardada.js`.
+- **329 (24/11) — todas as comodidades no Básico** ("Sobre a academia com o resumo completo feito pelo
+  site isso a básica tem já? e o básico pode ter todas as comodidades e com isso pode sair a diferença
+  no completo só isso"). O Básico continua com o resumo curto no "Sobre" (o completo é do Completo).
+  `LIMITES_DO_PLANO.basico.comodidades = Infinity`: some a escolha de quais 3 aparecem
+  (`regDestaquesHtml`) e o item das comodidades em "o que o plano esconde". Planos: "Todas as
+  comodidades na ficha" em todos; "Até 3 fotos" no Básico e "Até 5 fotos" no Completo e no Premium.
+  Ajustados a pergunta "Quanto custa", a dor "Três fotos contam pouco da estrutura", o cartão do
+  Completo na escolha do plano, o chat de ajuda, os Termos (24/11, com a Privacidade) e o e-mail
+  `o_que_muda_no_plano` no próprio `20261015130000` (vale no banco de verdade com o merge). Como o
+  Perfil da Empresa no Google: as comodidades viram filtro na busca, então a ficha grátis traz todas.
+  Testes: `planos`, `parceiros`, `plano-na-ficha`, `plano-ao-finalizar`, `fotos-ponto-e-aviso` e os
+  que conferem a data dos Termos.
 
 ## 11. WhatsApp e mensagem para as academias
 

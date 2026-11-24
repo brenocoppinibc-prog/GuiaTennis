@@ -37,15 +37,15 @@ const texto = (page, sel) => page.evaluate((sel) => (document.querySelector(sel)
   const tela = await texto(page, '#register-overlay');
   ok(!(await page.evaluate(() => window.__db.academias.some(a => a.name === 'Academia do Rui'))), 'ao finalizar, a tela do plano vem antes de enviar');
   // 21/10/2026: com o que o plano esconde, a tela é um aviso, como uma página de erro.
-  ok(await page.isVisible('#reg-erro .reg-erro-ic') && (await texto(page, '#reg-erro .reg-titulo')).trim() === '2 partes não vão aparecer na ficha' && (await texto(page, '#reg-erro .reg-porque')).includes('No plano Básico, os jogadores não veem o que você preencheu'),
-    'o que o Básico esconde vem como um aviso de erro: ícone, "2 partes não vão aparecer na ficha" — ' + await texto(page, '#reg-erro'));
+  ok(await page.isVisible('#reg-erro .reg-erro-ic') && (await texto(page, '#reg-erro .reg-titulo')).trim() === 'Uma parte não vai aparecer na ficha' && (await texto(page, '#reg-erro .reg-porque')).includes('No plano Básico, os jogadores não veem o que você preencheu'),
+    'o que o Básico esconde vem como um aviso de erro: ícone, "Uma parte não vai aparecer na ficha" — ' + await texto(page, '#reg-erro'));
   ok(tela.includes('Para mostrar tudo, mude de plano') && !tela.includes('Quase lá'), 'e os planos logo embaixo, para mostrar tudo');
-  ok(tela.includes('2 das 5 comodidades') && tela.includes('A ficha mostra só 3') && tela.includes('Instagram'), 'mostra o que o Básico esconde: 2 comodidades e o Instagram');
+  ok(!tela.includes('das 5 comodidades') && tela.includes('Instagram'), 'mostra o que o Básico esconde: o Instagram (as comodidades aparecem todas, regra 329)');
   ok(tela.includes('Nada se perde'), 'avisa que nada se perde: fica guardado');
   ok(tela.includes('Adicionar fotos') && tela.includes('Dizer o preço') && tela.includes('Informar o horário'), 'mostra o que falta para a ficha receber mais jogadores');
   const ordem = await page.evaluate(() => [...document.querySelectorAll('[data-reg-plano]')].map(b => b.dataset.regPlano + (b.closest('.destaque') ? '*' : '')).join(','));
   ok(ordem === 'premium*,completo,basico', 'Premium primeiro e em destaque, depois Completo, e o Básico por último — ' + ordem);
-  ok((await texto(page, '.reg-plano-basico')).trim() === 'Continuar no Básico sem essas partes', 'continuar no Básico diz que fica sem essas partes — ' + await texto(page, '.reg-plano-basico'));
+  ok((await texto(page, '.reg-plano-basico')).trim() === 'Continuar no Básico sem essa parte', 'continuar no Básico diz que fica sem essa parte — ' + await texto(page, '.reg-plano-basico'));
   ok(tela.includes('O Completo está grátis por tempo limitado, e o Premium tem o 1º mês grátis'), 'deixa claro o Completo grátis e o mês grátis do Premium (regra 310)');
 
   // "Adicionar fotos" leva até a parte, e voltar a enviar mostra a tela de novo.

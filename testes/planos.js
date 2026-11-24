@@ -15,7 +15,7 @@ const { abrir, ok, irParte } = require('./harness');
       numeros: ['basico', 'completo', 'premium'].map(k => limitesDoPlano(k).numeros).join(),
     };
   });
-  ok(r.basico === '3|3||', 'Básico: até 3 fotos, até 3 comodidades e só o WhatsApp — ' + r.basico);
+  ok(r.basico === '3|5||', 'Básico: até 3 fotos, todas as comodidades (regra 329) e só o WhatsApp — ' + r.basico);
   ok(r.completo === '5|5|@x|https://x.com.br', 'Completo: tudo — ' + r.completo);
   ok(r.guardado === '5|5|@x', 'o que passou do plano continua guardado e volta se aprimorar');
   ok(r.pessoas === '1,5,10', 'pessoas por plano: 1, 5 e 10');

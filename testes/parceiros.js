@@ -52,14 +52,15 @@ const pedidos = (page) => page.evaluate(() => window.__rpcs.filter(r => r.nome =
   const ordemPlanos = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => {
     const li = [...p.querySelectorAll('.pc-plano-lista li')];
     const prim = li.findIndex(l => l.classList.contains('nao'));
-    return { emCima: prim === -1 || li.slice(prim).every(l => l.classList.contains('nao')), ate3: li.some(l => l.innerText.includes('Até 3 comodidades')) };
+    return { emCima: prim === -1 || li.slice(prim).every(l => l.classList.contains('nao')), ate3: li.some(l => l.innerText.includes('Até 3 fotos')) };
   }));
-  ok(ordemPlanos.every(p => p.emCima) && ordemPlanos.map(p => p.ate3).join() === 'true,false,false', 'em cada plano, o que tem em cima e o que não tem embaixo; quem tem "Todas as comodidades" não mostra "Até 3" como falta — ' + JSON.stringify(ordemPlanos));
+  ok(ordemPlanos.every(p => p.emCima) && ordemPlanos.map(p => p.ate3).join() === 'true,false,false', 'em cada plano, o que tem em cima e o que não tem embaixo; quem tem "Até 5 fotos" não mostra "Até 3" como falta — ' + JSON.stringify(ordemPlanos));
   // 19/10/2026: cada plano mostra só o que soma ao de baixo ("Tudo do Básico, mais:").
   const mais = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => (p.querySelector('.pc-plano-mais') || {}).textContent || '').join('|'));
   // 27/10/2026 (regra 162): o Premium ganha "Uma foto para cada aula e locação do catálogo".
   // 04/11/2026 (regra 204): o Completo ganha o resumo completo no "Sobre" e o Premium, o texto de vocês.
-  ok(tabela === '8,10,10' && mais === '|Tudo do Básico, mais:|Tudo do Completo, mais:', 'cada plano mostra só o que soma ao de baixo — ' + tabela + ' · ' + mais);  // regra 237: o Completo ganha o botão "Reservar online";  // regra 196: o Completo ganha "Quantos chamaram vocês"; + o resumo do mês (regra 87), as recomendadas (regra 101) e os avisos por e-mail no Completo e no Premium (regra 104) e o Completo nas recomendadas (regra 106); do mesmo grupo, só a maior versão (regra 109); desde 22/10/2026 (regra 147), a promoção na ficha no Completo e, no Premium, a semana mais barata e o leilão
+  ok(tabela === '9,10,10' &&  // regra 329: o Básico ganha "Todas as comodidades na ficha"
+     mais === '|Tudo do Básico, mais:|Tudo do Completo, mais:', 'cada plano mostra só o que soma ao de baixo — ' + tabela + ' · ' + mais);  // regra 237: o Completo ganha o botão "Reservar online";  // regra 196: o Completo ganha "Quantos chamaram vocês"; + o resumo do mês (regra 87), as recomendadas (regra 101) e os avisos por e-mail no Completo e no Premium (regra 104) e o Completo nas recomendadas (regra 106); do mesmo grupo, só a maior versão (regra 109); desde 22/10/2026 (regra 147), a promoção na ficha no Completo e, no Premium, a semana mais barata e o leilão
   const pessoasPorPlano = await page.evaluate(() => [...document.querySelectorAll('.pc-plano')].map(p => p.querySelector('.pc-plano-lista li').innerText.match(/\d+/)[0]).join());
   ok(pessoasPorPlano === '1,5,10', 'cada plano diz quantas pessoas têm acesso — ' + pessoasPorPlano);
   ok(!/em breve/i.test(await texto(page, '.pc-plano:last-child')) && (await texto(page, '.pc-plano:last-child')).includes('Promoções na ficha e na busca'), 'Premium mostra as promoções, que já funcionam (sem "Em breve")');

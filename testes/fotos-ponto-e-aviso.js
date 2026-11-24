@@ -89,43 +89,21 @@ const foto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ
   for (const parte of ['quadras', 'contato', 'cancelamento', 'chegada']) { await irParte(page, parte); if (await page.$('#reg-plano-aviso')) algum.push(parte); }
   ok(!algum.length, 'nenhuma parte tem o aviso do plano — ' + algum.join());
 
-  // 5) Comodidades: escolher as 3 que aparecem no Básico, na tela depois de confirmar.
+  // 5) Comodidades (regra 329: "o básico pode ter todas as comodidades"): no
+  // Básico, aparecem todas, sem escolher quais.
   await irParte(page, 'quadras');
   for (const k of ['wifi', 'vestiario', 'loja']) await page.click(`.reg-amenity[data-amenity="${k}"]`);
-  ok(!(await page.$('#reg-destaques')), 'nas Quadras, a escolha não aparece mais, mesmo com 5 marcadas');
+  ok(!(await page.$('#reg-destaques')), 'nas Quadras, sem a escolha de quais aparecem, mesmo com 5 marcadas');
+  // Salvar: o ponto arrastado e todas as comodidades vão para o banco.
   await irParte(page, 'revisar');
   await salvarFicha(page);
   await page.waitForTimeout(300);
-  ok(await page.isVisible('#reg-erro') && await page.isVisible('#reg-destaques'), 'depois de confirmar, a escolha vem junto do que o Básico esconde');
-  let escolhidas = await page.evaluate(() => [...document.querySelectorAll('.reg-destaque.active')].map(b => b.dataset.destaque).join());
-  ok(escolhidas === 'raquete,estacionamento_gratuito,wifi' && (await texto(page, '.reg-destaques-n')) === '3 de 3 escolhidas.', 'com 5 marcadas, aparecem as 3 primeiras, para trocar — ' + escolhidas);
-  await page.click('.reg-destaque[data-destaque="loja"]');
-  ok((await texto(page, '#reg-destaques')).includes('Já são 3. Toque numa escolhida para tirar e depois escolha outra.'), 'com 3 escolhidas, pede para tirar uma antes');
-  await page.click('.reg-destaque[data-destaque="raquete"]');
-  ok((await texto(page, '.reg-destaques-n')).startsWith('2 de 3 escolhidas · com menos de 3'), 'tirou uma: 2 de 3, e diz o que acontece');
-  await page.click('.reg-destaque[data-destaque="loja"]');
-  escolhidas = await page.evaluate(() => window.__form.amenities.slice(0, 3).join());
-  ok(escolhidas === 'estacionamento_gratuito,wifi,loja', 'as escolhidas vão para o começo da lista (a ficha mostra as primeiras) — ' + escolhidas);
-  ok((await texto(page, '.reg-plano-perde li')).includes('Ficam de fora: Empréstimo de raquete, Vestiário'), 'e a lista diz quais ficam de fora — ' + await texto(page, '.reg-plano-perde li'));
-  await page.click('#reg-plano-voltar');
-  await page.waitForTimeout(150);
-  await page.click('.reg-previa [data-previa="quadras"] .reg-previa-lapis');
-  await page.waitForTimeout(150);
-  await page.click('.reg-amenity[data-amenity="wifi"]');
-  ok(await page.evaluate(() => !window.__form.__destaques.includes('wifi') && window.__form.amenities.length === 4), 'desmarcar a comodidade tira das escolhidas');
-  await page.click('.reg-amenity[data-amenity="wifi"]');
-  ok(await page.evaluate(() => window.__form.__destaques.includes('wifi')), 'marcar de novo, com vaga, entra nas escolhidas');
-
-  // Salvar: o ponto arrastado e as comodidades escolhidas vão para o banco.
-  await page.click('#reg-confirmar-revisao');
-  await page.waitForTimeout(150);
-  await salvarFicha(page);
-  await page.waitForTimeout(300);
-  await page.click('.reg-plano-basico');
+  ok(!(await page.$('#reg-destaques')), 'depois de confirmar, também sem a escolha');
+  if (await page.$('.reg-plano-basico')) await page.click('.reg-plano-basico');
   await page.waitForTimeout(900);
-  const salvo = await page.evaluate(() => { const a = window.__db.academias.find(x => x.id === 'a1'); return { lat: a.lat, lng: a.lng, am: a.amenities.slice(0, 3).join(), ficha: (state.allCourts.find(x => x.id === 'a1') || {}).amenities.slice().sort().join() }; });
+  const salvo = await page.evaluate(() => { const a = window.__db.academias.find(x => x.id === 'a1'); return { lat: a.lat, lng: a.lng, am: a.amenities.length, ficha: ((state.allCourts.find(x => x.id === 'a1') || {}).amenities || []).length }; });
   ok(salvo.lat === -23.5612 && salvo.lng === -46.6815, 'salvou o ponto arrastado — ' + salvo.lat + ',' + salvo.lng);
-  ok(salvo.am === 'estacionamento_gratuito,loja,wifi' && salvo.ficha === 'estacionamento_gratuito,loja,wifi', 'a ficha do Básico mostra as 3 escolhidas — ' + JSON.stringify(salvo));
+  ok(salvo.am === 5 && salvo.ficha === 5, 'a ficha do Básico mostra as 5 comodidades marcadas — ' + JSON.stringify(salvo));
   await browser.close();
 
   // ---- pedido pelo site: "Falta preencher" só ao concluir sem o obrigatório ----

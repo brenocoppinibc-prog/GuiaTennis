@@ -92,7 +92,6 @@ declare
 begin
   select coalesce(array_agg(t.item order by t.ordem), '{}') into v_itens
   from (values
-    (1, 2, 'Todas as comodidades na ficha (no Básico, até 3)'),
     (2, 2, 'Até 5 fotos (no Básico, 3)'),
     (3, 2, 'Instagram e site'),
     (4, 2, 'A regra de cancelamento'),

@@ -41,6 +41,8 @@ const { abrir, ok } = require('./harness');
     'a tag do Pinterest carrega junto e conta a visita, a ficha vista e o contato, com o id da academia — ' + p.fila.join(', '));
   const conv = await page.evaluate(() => JSON.stringify(((window.dataLayer || []).find(a => a[1] === 'conversion') || [])[2] || {}));
   ok(conv === '{"send_to":"AW-1/uUlSCMKeibUdEJ656JJF"}', 'o contato também conta como a conversão "Chamou uma academia" — ' + conv);
+  // 24/11/2026: a metatag que verifica o domínio no Gerenciador de Negócios da Meta, no <head> da página inicial.
+  ok(await page.evaluate(() => document.head.querySelector('meta[name="facebook-domain-verification"]')?.content === 'lfp3t0j310sxw497u94sm017nfob47'), 'a metatag de verificação do domínio da Meta está no <head>');
   await browser.close();
 
   // A correspondência controlada: o e-mail só do jogador logado, nunca da academia.

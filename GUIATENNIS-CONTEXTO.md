@@ -510,7 +510,10 @@ suporte do Mercado Pago.
    guardados cifrados fora das variáveis da Netlify (o limite de 4 KB das funções não comporta o
    certificado); a função assina a DPS e manda à API do Sefin Nacional (primeiro na produção restrita);
    aviso 30 dias antes de o A1 vencer.
-7. **Empresa:** Mercado Pago no CNPJ regularizado (o Breno confirmou em 24/11) e, segundo ele, "tudo
+7. **Domínio na Meta (24/11):** a metatag `facebook-domain-verification` está no `<head>` do `index.html`
+   (vale no guiatennis.com.br depois do merge; ou, sem esperar, o registro TXT no DNS); depois, "Verificar
+   domínio" em Gerenciador de Negócios › Domínios.
+   **Empresa:** Mercado Pago no CNPJ regularizado (o Breno confirmou em 24/11) e, segundo ele, "tudo
    funcionando". Faltam: verificação da empresa na Meta (libera o código automático no WhatsApp e os
    anúncios), verificação de anunciante no Google Ads (ao anunciar), e-CNPJ A1 (só para a nota
    automática), CCM e nota na Contabilizei e marca no INPI. Confirmar se o domínio já está no CNPJ no

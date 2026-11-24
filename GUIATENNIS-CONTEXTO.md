@@ -498,9 +498,13 @@ suporte do Mercado Pago.
 1. **"Pode subir" do PR #5** (o Breno confere os passos 135 a 156 na prévia).
 2. **Pix Automático:** o Breno confere se a página da assinatura do Mercado Pago oferece o Pix
    Automático; se sim, `PIX_AUTOMATICO.real = true`; se não, suporte do Mercado Pago ou Asaas.
-3. **WhatsApp automático do código:** modelo de Autenticação criado no Gerenciador do WhatsApp; falta
-   a aprovação, a forma de pagamento, o `WHATSAPP_TOKEN` na Netlify (nunca pelo chat), o Phone number
-   ID e se o número é o mesmo (11) 92745-6457 (coexistência).
+3. **WhatsApp automático do código:** modelo de Autenticação criado no Gerenciador do WhatsApp. Em
+   24/11, o portfólio tem 3 contas do WhatsApp: **"GuiaTenni" (1411995697158663), a que tem o número
+   "Guia Tennis" conectado: é a que vale**; "GuiaTennis" (2855937403038324, conferir se está vazia) e a
+   "Test WhatsApp Business Account" (do app de desenvolvedor). Falta: a forma de pagamento na
+   "GuiaTenni", o modelo aprovado nela, confirmar que o número é o (11) 92745-6457 com o aplicativo
+   funcionando (coexistência) e os segredos **do GitHub** `WHATSAPP_TOKEN` (token permanente de um
+   usuário do sistema) e `WHATSAPP_NUMERO_ID` (nunca pelo chat); depois, rodar o "Banco de dados".
 4. **Catálogo do WhatsApp Business** (preços definidos; fotos quadradas com o logo oferecidas).
 5. Carrosséis do Instagram e a plaquinha "Avalie no GuiaTennis" com QR (oferecidos).
 6. **Nota fiscal automática** no Emissor Nacional, num PR novo depois do #5; "Baixar planilha do mês"

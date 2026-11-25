@@ -182,7 +182,14 @@ export function idDaDps(serie, numero) {
 // O total aproximado dos tributos do Simples (Lei 12.741): a alíquota do ISS é
 // 33,5% da do Simples na primeira faixa do Anexo III (2,01% de 6%).
 export const percentualDoSimples = (aliquotaIss) => valorXml(Math.min(99, Number(aliquotaIss || 0.0201) * 100 / 0.335));
-export function dpsXml(d, cert, { comIM = true, alg = "sha1", numero, dhEmi = agoraEmBrasilia() } = {}) {
+// O leiaute da reforma tributária (RTC, Nota Técnica 009): o campo finNFSe
+// ("0 - NFS-e regular") logo depois do tpEmit. A produção restrita já usa esse
+// leiaute (25/11/2026: "E1235 … has invalid child element 'cLocEmi' … expected:
+// 'cMotivoEmisTI, finNFSe'"); a produção passa a usar quando a Receita publicar
+// o cronograma. Por isso o finNFSe vai no Teste e não na Produção, e a emissão
+// troca sozinha se a Sefin reclamar do campo (mandarDps).
+export const LEIAUTE_RTC = { teste: true, producao: false };
+export function dpsXml(d, cert, { comIM = true, alg = "sha1", numero, dhEmi = agoraEmBrasilia(), rtc = LEIAUTE_RTC[d.ambiente === "producao" ? "producao" : "teste"] } = {}) {
   const nDps = String(numero ?? d.numero_rps);
   if (!/^[1-9][0-9]{0,14}$/.test(nDps)) throw new Error("número da DPS inválido");
   const serie = String(Number(so(d.serie)) || 1);
@@ -197,7 +204,7 @@ export function dpsXml(d, cert, { comIM = true, alg = "sha1", numero, dhEmi = ag
     : "";
   const im = comIM && so(d.ccm) ? `<IM>${so(d.ccm)}</IM>` : "";
   const corpo = el("tpAmb", d.ambiente === "producao" ? "1" : "2") + el("dhEmi", dhEmi) + el("verAplic", VER_APLIC)
-    + el("serie", serie) + el("nDPS", nDps) + el("dCompet", d.data) + el("tpEmit", "1") + el("cLocEmi", MUNICIPIO_SP)
+    + el("serie", serie) + el("nDPS", nDps) + el("dCompet", d.data) + el("tpEmit", "1") + (rtc ? el("finNFSe", "0") : "") + el("cLocEmi", MUNICIPIO_SP)
     + `<prest><CNPJ>${CNPJ_DO_GUIA}</CNPJ>${im}<regTrib><opSimpNac>3</opSimpNac><regApTribSN>1</regApTribSN><regEspTrib>0</regEspTrib></regTrib></prest>`
     + toma
     + `<serv><locPrest><cLocPrestacao>${MUNICIPIO_SP}</cLocPrestacao></locPrest>`
@@ -270,14 +277,17 @@ const temErro = (r, codigo) => r.erros.some(e => e.codigo.toUpperCase() === codi
 // Manda a DPS. A inscrição municipal vai quando o CNC tem o cadastro
 // complementar de São Paulo; se a Sefin disser que não tem (E0120), ou o
 // contrário (E0116), manda de novo do outro jeito. Assinatura recusada (E0714):
-// de novo com RSA-SHA256.
+// de novo com RSA-SHA256. Esquema recusado por causa do finNFSe (E1235): de
+// novo no outro leiaute (com ou sem o campo).
 export async function mandarDps(d, cert, opcoes = {}) {
-  const url = `${SEFIN[d.ambiente === "producao" ? "producao" : "teste"]}/nfse`;
-  let comIM = true, alg = "sha1", r;
-  for (let tentativa = 0; tentativa < 3; tentativa += 1) {
-    const { xml } = dpsXml(d, cert, { ...opcoes, comIM, alg });
+  const ambiente = d.ambiente === "producao" ? "producao" : "teste";
+  const url = `${SEFIN[ambiente]}/nfse`;
+  let comIM = true, alg = "sha1", rtc = LEIAUTE_RTC[ambiente], trocouLeiaute = false, r;
+  for (let tentativa = 0; tentativa < 4; tentativa += 1) {
+    const { xml } = dpsXml(d, cert, { ...opcoes, comIM, alg, rtc });
     r = lerResposta(await transporte(url, JSON.stringify({ dpsXmlGZipB64: compactar(xml) }), cert));
     if (r.sucesso) break;
+    if (!trocouLeiaute && r.erros.some(e => /finNFSe/.test(e.descricao))) { rtc = !rtc; trocouLeiaute = true; continue; }
     if (comIM && temErro(r, "E0120")) { comIM = false; continue; }
     if (!comIM && temErro(r, "E0116")) { comIM = true; continue; }
     if (alg === "sha1" && temErro(r, "E0714")) { alg = "sha256"; continue; }

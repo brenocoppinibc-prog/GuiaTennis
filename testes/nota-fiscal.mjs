@@ -6,7 +6,9 @@
 // A DPS e o pedido de cancelamento são conferidos contra os esquemas oficiais
 // do leiaute 1.01 (testes/nfse-nacional-v1.01, baixados do portal da NFS-e) com o
 // xmllint, e a assinatura XML com a canonicalização C14N do lxml (Python),
-// independente da nossa. Na cópia dos esquemas, o padrão da série
+// independente da nossa. A DPS do Teste, no leiaute da reforma tributária
+// (finNFSe), é conferida contra os esquemas da produção restrita
+// (testes/nfse-nacional-rtc, "esquemas_prod_restrita_20261020"). Na cópia dos esquemas 1.01, o padrão da série
 // ("^0{0,4}\d{1,5}$") foi trocado por "0{0,4}\d{1,5}": no XSD, ^ e $ são letras
 // (o validador .NET da Sefin os lê como âncoras; o xmllint, não).
 import { execFileSync } from "node:child_process";
@@ -63,10 +65,10 @@ const dados = {
   valor: 105.5, data: "2026-11-25", tipo: "plano", plano: "premium", periodo: "mensal", academia: "Só Aula Tennis & Cia",
   tomador: { documento: "12.345.678/0001-95", nome: "SO AULA TENNIS LTDA", email: "financeiro@soaula.com.br" },
 };
-const valida = (nome, xml, schema) => {
+const valida = (nome, xml, schema, pasta = "nfse-nacional-v1.01") => {
   const f = join(tmp, nome + ".xml");
   writeFileSync(f, xml);
-  try { execFileSync("xmllint", ["--noout", "--schema", join(aqui, "nfse-nacional-v1.01", schema), f], { stdio: ["ignore", "pipe", "pipe"] }); return ""; }
+  try { execFileSync("xmllint", ["--noout", "--schema", join(aqui, pasta, schema), f], { stdio: ["ignore", "pipe", "pipe"] }); return ""; }
   catch (e) { return String(e.stderr || e.message).slice(0, 400); }
 };
 // O lxml acha o elemento do Id, canonicaliza (C14N 1.0) o pedaço e o
@@ -107,8 +109,8 @@ ok(/<vServ>105.50<\/vServ>/.test(dps) && /<tribMun><tribISSQN>1<\/tribISSQN><tpR
   "os valores: o valor pago, ISS tributável sem retenção e sem alíquota (E0625), 6% de tributos do Simples, sem IBS/CBS (só em 2027)");
 const teste = dpsXml({ ...dados, ambiente: "teste" }, cert, { numero: "1764090000", comIM: false, alg: "sha256" }).xml;
 a = confereAssinatura("teste", teste);
-ok(valida("teste", teste, "DPS_v1.01.xsd") === "" && /<tpAmb>2<\/tpAmb>/.test(teste) && !/<IM>/.test(teste) && a.alg === "sha256" && a.digestConfere && a.assinaturaConfere,
-  "teste: produção restrita (tpAmb 2), sem a inscrição municipal e com RSA-SHA256, também no esquema e com a assinatura certa");
+ok(valida("teste", teste, "DPS_v1.01.xsd", "nfse-nacional-rtc") === "" && /<tpEmit>1<\/tpEmit><finNFSe>0<\/finNFSe><cLocEmi>/.test(teste) && !/finNFSe/.test(dps) && /<tpAmb>2<\/tpAmb>/.test(teste) && !/<IM>/.test(teste) && a.alg === "sha256" && a.digestConfere && a.assinaturaConfere,
+  "teste: produção restrita (tpAmb 2) no leiaute da reforma (finNFSe 0, esquemas da produção restrita de 20/10/2026), sem a inscrição municipal e com RSA-SHA256");
 const semTomador = dpsXml({ ...dados, tomador: { documento: "", nome: "", email: "" } }, cert).xml;
 ok(valida("sem", semTomador, "DPS_v1.01.xsd") === "" && !/<toma>/.test(semTomador), "sem CPF/CNPJ do tomador: a DPS vai sem o tomador e passa no esquema");
 erro = "";
@@ -167,6 +169,10 @@ banco.nota_para_emitir = dados;
 respostas = [recusa("E0120", "A IM não deve ser informada."), sucesso];
 x = await emitir(ID);
 ok(x.situacao === "emitida" && sefin.length === 2 && /<IM>/.test(xmlMandado(0)) && !/<IM>/.test(xmlMandado(1)), "a Sefin diz que a inscrição municipal não vai (E0120): manda de novo sem ela");
+sefin = []; registros = [];
+respostas = [recusa("E1235", "Falha no esquema XML do DF-e. The element 'infDPS' has invalid child element 'cLocEmi'. List of possible elements expected: 'cMotivoEmisTI, finNFSe'."), sucesso];
+x = await emitir(ID);
+ok(x.situacao === "emitida" && sefin.length === 2 && !/finNFSe/.test(xmlMandado(0)) && /<finNFSe>0<\/finNFSe>/.test(xmlMandado(1)), "a produção passou para o leiaute da reforma (E1235 pedindo o finNFSe): manda de novo com o campo");
 sefin = []; registros = [];
 respostas = [recusa("E0714", "A assinatura da DPS deve ser válida."), sucesso];
 x = await emitir(ID);

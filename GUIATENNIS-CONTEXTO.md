@@ -502,7 +502,10 @@ restrita). A consulta aos parâmetros de São Paulo (`/SefinNacional/parametros_
 ambientes (o caminho é outro; a documentação do ADN só abre com o certificado) e saiu. **3º teste (13h39): E0312
 de novo.** Próximo passo combinado: o Breno confere no Emissor Nacional (produção) se o 17.25.01 aparece para São
 Paulo ao começar uma nota (sem emitir); se aparecer, é limitação da produção restrita e o 1º teste real é na
-produção, depois do merge.
+produção, depois do merge. **Conferido (13h49): na produção, o Emissor Nacional mostra o 17.25.01 para São Paulo
+(e já pergunta "Preencher as informações IBS/CBS?" e pede o item da NBS): o E0312 é só da produção restrita.**
+Depois do merge: A1 de novo no site de verdade, Configurar › Ligada › Produção; a 1ª compra paga é o teste real
+(com erro, a nota fica "com erro", o admin é avisado e emite à mão).
 **Contabilizei (25/11, respondeu):** código nacional 17.25.01 + **NBS 114063300** (agora em toda DPS, `CODIGO_NBS`;
 antes da descrição no leiaute RTC, depois no 1.01); Simples pelo SN, sem retenção; 6,00% (2,01% ISS + 3,99%
 federais), recalculada todo mês em Minhas rotinas › Ver minhas alíquotas; IM = CCM 05930642; IBS/CBS "Não" para o
